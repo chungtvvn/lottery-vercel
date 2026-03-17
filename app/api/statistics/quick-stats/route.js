@@ -14,12 +14,20 @@ export async function GET() {
 
         // If no cache, compute on the fly
         console.log('[quick-stats] Cache miss, computing on-the-fly...');
-        const lotteryService = require('../../../../lib/services/lotteryService');
-        if (!lotteryService.getRawData()) {
-            await lotteryService.loadRawData();
-        }
+        
+        // Buộc xoá cache cục bộ ở instance này vì cache Postgres đã xoá (người dùng vừa cập nhật)
+        const historicalExclusionService = require('../../../../lib/services/historicalExclusionService');
+        if (historicalExclusionService.clearCache) historicalExclusionService.clearCache();
         
         const statisticsService = require('../../../../lib/services/statisticsService');
+        if (statisticsService.clearCache) statisticsService.clearCache();
+
+        const lotteryService = require('../../../../lib/services/lotteryService');
+        if (lotteryService.clearCache) lotteryService.clearCache();
+        
+        // Tải lại dữ liệu mới từ Database
+        await lotteryService.loadRawData();
+        
         const quickStats = await statisticsService.getQuickStats();
         
         return NextResponse.json(quickStats);

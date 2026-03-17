@@ -8,18 +8,30 @@ export async function GET() {
         // Try cache first
         const { getQuickStatsHistoryFromCache } = require('@/lib/data-access');
         const cached = await getQuickStatsHistoryFromCache();
-        if (cached) {
-            return NextResponse.json(cached);
+        if (cached && cached.length > 0) {
+            if (cached[0].streaks && cached[0].streaks.length > 0) {
+                 return NextResponse.json(cached);
+            }
         }
 
-        // If no cache, compute on the fly
-        console.log('[quick-stats-history] Cache miss, computing on-the-fly...');
-        const lotteryService = require('../../../../lib/services/lotteryService');
-        if (!lotteryService.getRawData()) {
-            await lotteryService.loadRawData();
+        const historicalExclusionService = require('../../../../lib/services/historicalExclusionService');
+        if (historicalExclusionService.clearCache) {
+             historicalExclusionService.clearCache();
         }
-        
+
         const statisticsService = require('../../../../lib/services/statisticsService');
+        if (statisticsService.clearCache) {
+             statisticsService.clearCache();
+        }
+
+        console.log('[quick-stats-history] Cache miss or empty, computing on-the-fly...');
+        const lotteryService = require('../../../../lib/services/lotteryService');
+        
+        if (lotteryService.clearCache) {
+            lotteryService.clearCache();
+        }
+        await lotteryService.loadRawData();
+        
         const history = await statisticsService.getQuickStatsHistory();
 
         if (!history || history.length === 0) {
