@@ -164,8 +164,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const fetchRecentResults = async () => {
         try {
             const [recentRes, historyRes] = await Promise.all([
-                fetch(`${BASE_URL}/api/recent-results?limit=7`),
-                fetch(`${BASE_URL}/statistics/api/v2/quick-stats-history`)
+                fetch(`${BASE_URL}/api/recent-results?limit=30`),
+                fetch(`${BASE_URL}/api/statistics/quick-stats-history`)
             ]);
             if (!recentRes.ok || !historyRes.ok) throw new Error('Network response was not ok');
 
@@ -181,6 +181,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (error) {
             console.error('Lỗi khi tải kết quả hoặc lịch sử gần đây:', error);
         }
+    };
+
+    // Helper: subtract 1 day from DD/MM/YYYY and return DD/MM/YYYY
+    const getPrevDay = (ddmmyyyy) => {
+        const [d, m, y] = ddmmyyyy.split('/').map(Number);
+        const dt = new Date(y, m - 1, d);
+        dt.setDate(dt.getDate() - 1);
+        return `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}/${dt.getFullYear()}`;
     };
 
     const renderRecentResults = () => {
@@ -216,6 +224,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         let html = `
             <div class="bg-white rounded-lg shadow-md p-5 flex flex-col border-t-4 border-indigo-500 animate-fade-in-up">
                 <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center"><i class="bi bi-calendar-range text-indigo-500 me-2"></i> Lịch sử Chuỗi Đang Diễn Ra (${globalActiveStreaksHistory.length} Ngày)</h4>
+                <p class="text-xs text-gray-500 mb-3">Chọn ngày để xem chuỗi đang diễn ra tính đến ngày đó (dùng để dự đoán cho ngày hôm sau)</p>
                 <div class="flex gap-3 overflow-x-auto py-2 px-1 justify-start items-center">
         `;
 
@@ -223,17 +232,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         const displayData = [...globalActiveStreaksHistory].reverse();
 
         displayData.forEach(item => {
-            const dateStr = item.date; // Already in DD/MM/YYYY format
-            const specialValue = specialLookup[dateStr] !== undefined ? specialLookup[dateStr] : '??';
+            const historyDate = item.date; // The actual result date from the API
+            const specialValue = specialLookup[historyDate] !== undefined ? specialLookup[historyDate] : '??';
             const streakCount = item.streaks ? item.streaks.length : 0;
 
-            const isActive = currentSelectedHistoryDate === dateStr;
+            const isActive = currentSelectedHistoryDate === historyDate;
             const activeClasses = isActive ? 'border-2 border-red-500 bg-red-50 shadow-md' : 'border border-gray-200 bg-white hover:bg-gray-50 hover:shadow-sm opacity-80 cursor-pointer';
 
             html += `
-                <div onclick="window.selectHistoryDate('${dateStr}')" class="transition-all duration-200 rounded-xl p-3 flex flex-col items-center min-w-[80px] ${activeClasses}">
+                <div onclick="window.selectHistoryDate('${historyDate}')" class="transition-all duration-200 rounded-xl p-3 flex flex-col items-center min-w-[80px] ${activeClasses}">
                     <span class="text-2xl font-bold ${isActive ? 'text-red-600' : 'text-gray-600'} mb-1">${specialValue}</span>
-                    <span class="text-xs ${isActive ? 'text-red-500 font-semibold' : 'text-gray-500'} whitespace-nowrap">${dateStr}</span>
+                    <span class="text-xs ${isActive ? 'text-red-500 font-semibold' : 'text-gray-500'} whitespace-nowrap">${historyDate}</span>
                     <span class="text-[10px] ${isActive ? 'text-red-400' : 'text-gray-400'} mt-0.5">${streakCount} chuỗi</span>
                 </div>
             `;
@@ -258,6 +267,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!currentSelectedHistoryDate || globalActiveStreaksHistory.length === 0) return;
 
         const historyForDate = globalActiveStreaksHistory.find(h => h.date === currentSelectedHistoryDate);
+        const displayDate = currentSelectedHistoryDate;
+
         if (historyForDate) {
             const streaksByLength = historyForDate.streaks.reduce((acc, streak) => {
                 if (!acc[streak.length]) { acc[streak.length] = []; }
@@ -265,12 +276,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return acc;
             }, {});
 
-            renderCurrentStreaks(streaksByLength, historyForDate.streaks.length, window.GLOBAL_TOTAL_YEARS || 20.41, currentSelectedHistoryDate);
+            renderCurrentStreaks(streaksByLength, historyForDate.streaks.length, window.GLOBAL_TOTAL_YEARS || 20.41, displayDate);
         } else {
             const container = document.getElementById('current-streaks-container');
             if (container) {
                 container.innerHTML = '<p class="text-gray-500 p-4">Không có chuỗi nào cho ngày này.</p>';
-                currentStreaksTitle.innerHTML = `Chuỗi Đang Diễn Ra (${currentSelectedHistoryDate}) <span class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">0</span>`;
+                currentStreaksTitle.innerHTML = `Chuỗi Đang Diễn Ra (${displayDate}) <span class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">0</span>`;
                 currentStreaksSection.classList.remove('d-none');
             }
         }
@@ -292,16 +303,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     const handleDataUpdate = async () => {
         const btn = updateDataButton;
         btn.disabled = true;
-        btn.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Đang cập nhật...`;
+        const steps = [
+            { step: 'data', label: 'Đang tải dữ liệu...' },
+            { step: 'stats_number', label: 'Tính toán thống kê số...' },
+            { step: 'stats_head_tail', label: 'Tính toán thống kê đầu-đít...' },
+            { step: 'stats_sum_diff', label: 'Tính toán thống kê tổng-hiệu...' }
+        ];
         try {
-            const response = await fetch(`${BASE_URL}/api/update-data`, { method: 'POST' });
-            const result = await response.json();
-            alert(result.message);
-            if (response.ok) {
-                window.location.reload();
+            for (const { step, label } of steps) {
+                btn.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> ${label}`;
+                const response = await fetch(`${BASE_URL}/api/update-data?step=${step}`, { method: 'POST' });
+                const result = await response.json();
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || 'Lỗi không xác định');
+                }
+                console.log(`[Update] ${step}: ${result.message}`);
             }
+            alert('Cập nhật hoàn tất! Trang sẽ tải lại.');
+            window.location.reload();
         } catch (error) {
-            alert('Cập nhật dữ liệu thất bại. Vui lòng thử lại sau.');
+            alert('Cập nhật thất bại: ' + error.message);
             console.error('Lỗi khi cập nhật dữ liệu:', error);
         } finally {
             btn.disabled = false;
@@ -313,7 +334,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const fetchQuickStats = async () => {
         try {
-            const response = await fetch(`${BASE_URL}/statistics/api/v2/quick-stats`);
+            const response = await fetch(`${BASE_URL}/api/statistics/quick-stats`);
             if (!response.ok) throw new Error('Network response was not ok');
             const data = await response.json();
             quickStatsContainer.innerHTML = '';

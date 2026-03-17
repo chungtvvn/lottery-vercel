@@ -21,7 +21,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const data = await analysisRes.json();
-            renderAnalysis(data);
+            if (data && data.danh) {
+                renderAnalysis(data);
+            } else {
+                // No predictions available yet - show informational message
+                analysisContent.innerHTML = `
+                    <div class="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 rounded-r-lg">
+                        <p class="font-bold">Chưa có dữ liệu phân tích</p>
+                        <p>${data?.message || 'Dữ liệu dự đoán sẽ được cập nhật tự động. Vui lòng sử dụng tab Giả lập để chạy phân tích.'}</p>
+                        ${data?.latestDate ? `<p class="text-sm mt-2">Dữ liệu mới nhất: <strong>${data.latestDate}</strong></p>` : ''}
+                    </div>`;
+            }
         } catch (error) {
             console.error('[DEBUG] Error loading analysis:', error);
             analysisContent.innerHTML = `<p class="text-red-500">Lỗi tải phân tích: ${error.message}</p>`;
@@ -33,7 +43,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('/api/analysis/history');
             if (!response.ok) { const err = await response.json(); throw new Error(err.error || 'Lỗi không xác định'); }
             const data = await response.json();
-            renderHistory(data.reverse());
+            // API returns { predictions: [...] }, extract the array
+            const historyArray = Array.isArray(data) ? data : (data.predictions || []);
+            renderHistory(historyArray.reverse());
         } catch (error) {
             historyContent.innerHTML = `<p class="text-red-500">Lỗi tải lịch sử: ${error.message}</p>`;
         }
@@ -409,10 +421,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    window.runFutureSimulation = async function () {
-        const duration = document.getElementById('futureDuration').value;
-        const betAmount = parseInt(document.getElementById('futureBetAmount').value) || 10;
-        const betStep = parseInt(document.getElementById('futureBetStep').value) || 5;
+    window.runProgressiveSimulation = async function () {
+        const days = parseInt(document.getElementById('futureDuration').value) || 30;
         const btn = document.getElementById('btnRunFuture');
         const progress = document.getElementById('futureProgress');
         const summary = document.getElementById('futureSummary');
@@ -424,10 +434,10 @@ document.addEventListener('DOMContentLoaded', () => {
         results.classList.add('hidden');
 
         try {
-            const response = await fetch('/api/simulation/future', {
+            const response = await fetch('/api/simulation/run', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ duration, betAmount, betStep })
+                body: JSON.stringify({ simulationDays: days })
             });
 
             if (!response.ok) {
@@ -436,11 +446,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const data = await response.json();
-            renderFutureSummary(data);
-            renderProfitChart(data);
-            renderWeeklyStats(data);
-            renderMethodComparison(data);
-            renderFutureResults(data);
+            renderProgressiveSummary(data);
+            renderProgressiveResults(data);
 
             summary.classList.remove('hidden');
             results.classList.remove('hidden');
@@ -452,352 +459,120 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    let profitChartInstance = null;
-
-    function renderFutureSummary(data) {
+    function renderProgressiveSummary(data) {
         const summaryCards = document.getElementById('futureSummaryCards');
-        const methods = [
-            { key: 'exclusion', name: '📊 Exclusion', color: 'blue', bg: 'bg-blue-50', border: 'border-blue-200' },
-            { key: 'unified', name: '🌟 Unified', color: 'green', bg: 'bg-green-50', border: 'border-green-200' },
-            { key: 'advanced', name: '🔬 Advanced', color: 'purple', bg: 'bg-purple-50', border: 'border-purple-200' },
-            { key: 'hybridAI', name: '🤖 Hybrid AI', color: 'orange', bg: 'bg-orange-50', border: 'border-orange-200' },
-            { key: 'combined', name: '🔗 Combined', color: 'pink', bg: 'bg-pink-50', border: 'border-pink-200' }
-        ];
+        const s = data.summary;
+        const profitClass = s.totalProfit >= 0 ? 'text-green-600' : 'text-red-600';
+        const sign = s.totalProfit >= 0 ? '+' : '';
 
-        let html = `
-            <div class="bg-gray-100 p-4 rounded-lg mb-4">
-                <div class="grid grid-cols-3 md:grid-cols-6 gap-4 text-center">
-                    <div>
-                        <div class="text-xs text-gray-500">Khoảng thời gian</div>
-                        <div class="font-bold text-lg">${data.duration === 'week' ? '1 Tuần' : data.duration === 'month' ? '1 Tháng' : data.duration === '3months' ? '3 Tháng' : '1 Năm'}</div>
-                    </div>
-                    <div>
-                        <div class="text-xs text-gray-500">Số ngày</div>
-                        <div class="font-bold text-lg text-blue-600">${data.numDays}</div>
-                    </div>
-                    <div>
-                        <div class="text-xs text-gray-500">Cược ban đầu</div>
-                        <div class="font-bold text-lg">${data.initialBetAmount}k</div>
-                    </div>
-                    <div>
-                        <div class="text-xs text-gray-500">Bước nhảy</div>
-                        <div class="font-bold text-lg text-orange-600">+${data.betStep}k</div>
-                    </div>
-                    <div>
-                        <div class="text-xs text-gray-500">Từ ngày</div>
-                        <div class="font-bold">${new Date(data.startDate).toLocaleDateString('vi-VN')}</div>
-                    </div>
-                    <div>
-                        <div class="text-xs text-gray-500">Đến ngày</div>
-                        <div class="font-bold">${new Date(data.endDate).toLocaleDateString('vi-VN')}</div>
-                    </div>
-                </div>
+        summaryCards.innerHTML = `
+            <div class="bg-gray-100 p-4 rounded-lg shadow text-center">
+                <div class="text-xs text-gray-500">Số Ngày Đánh (Trên Tổng)</div>
+                <div class="font-bold text-2xl text-blue-600">${s.playedDays} / ${s.days}</div>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div class="bg-gray-100 p-4 rounded-lg shadow text-center">
+                <div class="text-xs text-gray-500">Tỷ Lệ Thắng (Win Rate)</div>
+                <div class="font-bold text-2xl text-green-600">${s.winRate}%</div>
+                <div class="text-xs mt-1 text-gray-500">(${s.winCount} ngày trúng)</div>
+            </div>
+            <div class="bg-gray-100 p-4 rounded-lg shadow text-center border-2 border-green-200">
+                <div class="text-xs text-gray-500">Tổng Lợi Nhuận</div>
+                <div class="font-bold text-2xl ${profitClass}">${sign}${s.totalProfit.toLocaleString('vi-VN')}k</div>
+                <div class="text-xs mt-1 text-gray-500">ROI: ${s.roi}%</div>
+            </div>
+            <div class="bg-gray-100 p-4 rounded-lg shadow text-center">
+                <div class="text-xs text-gray-500">Tổng Vốn Bỏ Ra</div>
+                <div class="font-bold text-2xl text-red-600">${s.totalCost.toLocaleString('vi-VN')}k</div>
+                <div class="text-xs mt-1 text-gray-500">Thu về: ${s.totalRevenue.toLocaleString('vi-VN')}k</div>
+            </div>
         `;
-
-        for (const m of methods) {
-            const s = data.summary[m.key];
-            if (!s) continue;
-
-            const profitClass = s.totalProfit >= 0 ? 'text-green-600' : 'text-red-600';
-            const profitSign = s.totalProfit >= 0 ? '+' : '';
-
-            html += `
-                <div class="p-4 ${m.bg} rounded-lg border-2 ${m.border}">
-                    <h4 class="font-bold text-${m.color}-800 mb-3">${m.name}</h4>
-                    <div class="text-sm space-y-2">
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Tỷ lệ thắng:</span>
-                            <span class="font-bold">${s.winRate} (${s.wins}W/${s.losses}L)</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Tổng cược:</span>
-                            <span class="font-bold text-red-600">${s.totalBet.toLocaleString()}k</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Tổng thắng:</span>
-                            <span class="font-bold text-green-600">${s.totalWin.toLocaleString()}k</span>
-                        </div>
-                        <div class="flex justify-between border-t pt-2">
-                            <span class="font-bold">Lợi nhuận:</span>
-                            <span class="font-bold text-lg ${profitClass}">${profitSign}${s.totalProfit.toLocaleString()}k</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">ROI:</span>
-                            <span class="font-bold ${profitClass}">${s.roi}</span>
-                        </div>
-                        <div class="flex justify-between border-t pt-2 bg-yellow-50 -mx-2 px-2 py-1">
-                            <span class="text-gray-600">📈 Cược max:</span>
-                            <span class="font-bold text-red-600">${s.maxBetAmount}k/số</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">💸 Lỗ max tích lũy:</span>
-                            <span class="font-bold text-red-600">${s.maxAccumulatedLoss.toLocaleString()}k</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        html += `</div>`;
-        summaryCards.innerHTML = html;
     }
 
-    function renderProfitChart(data) {
-        const ctx = document.getElementById('profitChart').getContext('2d');
+    function renderProgressiveResults(data) {
+        const tableBody = document.getElementById('futureResultsTable');
+        tableBody.innerHTML = '';
 
-        // Destroy previous chart if exists
-        if (profitChartInstance) {
-            profitChartInstance.destroy();
+        if (!data.details || data.details.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="7" class="text-center p-4">Không có dữ liệu chi tiết</td></tr>';
+            return;
         }
 
-        const chartData = data.chartData;
-        const labels = chartData.labels.map(d => {
-            const date = new Date(d);
-            return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
-        });
-
-        // Limit labels for readability
-        const step = Math.max(1, Math.floor(labels.length / 30));
-        const displayLabels = labels.map((l, i) => i % step === 0 ? l : '');
-
-        profitChartInstance = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: displayLabels,
-                datasets: [
-                    {
-                        label: 'Exclusion',
-                        data: chartData.methods.exclusion.cumulativeProfit,
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        borderWidth: 2,
-                        fill: false,
-                        tension: 0.1
-                    },
-                    {
-                        label: 'Unified',
-                        data: chartData.methods.unified.cumulativeProfit,
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        borderWidth: 2,
-                        fill: false,
-                        tension: 0.1
-                    },
-                    {
-                        label: 'Advanced',
-                        data: chartData.methods.advanced.cumulativeProfit,
-                        borderColor: '#8b5cf6',
-                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                        borderWidth: 2,
-                        fill: false,
-                        tension: 0.1
-                    },
-                    {
-                        label: 'Hybrid AI',
-                        data: chartData.methods.hybridAI.cumulativeProfit,
-                        borderColor: '#f97316',
-                        backgroundColor: 'rgba(249, 115, 22, 0.1)',
-                        borderWidth: 2,
-                        fill: false,
-                        tension: 0.1
-                    },
-                    {
-                        label: 'Combined',
-                        data: chartData.methods.combined?.cumulativeProfit || [],
-                        borderColor: '#ec4899',
-                        backgroundColor: 'rgba(236, 72, 153, 0.1)',
-                        borderWidth: 2,
-                        fill: false,
-                        tension: 0.1
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    title: {
-                        display: false
-                    }
-                },
-                scales: {
-                    y: {
-                        title: {
-                            display: true,
-                            text: 'Lợi nhuận (k)'
-                        }
-                    }
-                }
+        data.details.forEach(row => {
+            const tr = document.createElement('tr');
+            
+            // Format date
+            const dateStr = new Date(row.date).toLocaleDateString('vi-VN');
+            
+            // Status formatting
+            let statusHtml = '';
+            let rowClass = 'hover:bg-gray-50';
+            
+            if (row.isSkipped) {
+                statusHtml = '<span class="bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs font-bold">⏭️ BỎ QUA</span>';
+                rowClass = 'bg-gray-100 opacity-60';
+            } else if (row.isWin) {
+                statusHtml = '<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-bold">✅ TRÚNG</span>';
+                rowClass = 'bg-green-50 hover:bg-green-100';
+            } else {
+                statusHtml = '<span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-bold">❌ TRƯỢT</span>';
+                rowClass = 'bg-red-50 hover:bg-red-100';
             }
-        });
-    }
+            
+            // Profit formatting
+            const profitClass = row.profit > 0 ? 'text-green-600 font-bold' : (row.profit < 0 ? 'text-red-600' : 'text-gray-500');
+            const totalProfitClass = row.totalProfit > 0 ? 'text-green-600 font-bold' : (row.totalProfit < 0 ? 'text-red-600' : 'text-gray-500');
+            const profitSign = row.profit > 0 ? '+' : '';
+            const totalProfitSign = row.totalProfit > 0 ? '+' : '';
 
-    function renderWeeklyStats(data) {
-        const container = document.getElementById('weeklyStatsContent');
-        const weeklyStats = data.weeklyStats;
-        const methods = ['exclusion', 'unified', 'advanced', 'hybridAI', 'combined'];
-        const methodNames = ['Exclusion', 'Unified', 'Advanced', 'Hybrid AI', 'Combined'];
-        const colors = ['blue', 'green', 'purple', 'orange', 'pink'];
-
-        let html = `
-            <table class="w-full text-xs">
-                <thead class="bg-gray-100">
-                    <tr>
-                        <th class="p-2 text-left">Tuần</th>
-                        ${methods.map((m, i) => `<th class="p-2 text-center bg-${colors[i]}-50">${methodNames[i]}</th>`).join('')}
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-
-        for (const [weekNum, ws] of Object.entries(weeklyStats)) {
-            html += `<tr class="border-b">
-                <td class="p-2 font-medium">Tuần ${parseInt(weekNum) + 1}</td>`;
-
-            methods.forEach((method, idx) => {
-                const s = ws[method];
-                if (s) {
-                    const profitClass = s.profit >= 0 ? 'text-green-600' : 'text-red-600';
-                    const sign = s.profit >= 0 ? '+' : '';
-                    html += `<td class="p-2 text-center bg-${colors[idx]}-50">
-                        <span class="font-bold ${profitClass}">${sign}${s.profit.toLocaleString()}k</span>
-                        <br><span class="text-[10px] text-gray-500">${s.wins}W/${s.losses}L</span>
-                    </td>`;
-                } else {
-                    html += `<td class="p-2 text-center bg-${colors[idx]}-50">-</td>`;
-                }
-            });
-
-            html += `</tr>`;
-        }
-
-        html += `</tbody></table>`;
-        container.innerHTML = html;
-    }
-
-    function renderMethodComparison(data) {
-        const container = document.getElementById('methodComparison');
-        const summary = data.summary;
-
-        const methods = [
-            { key: 'exclusion', name: '📊 Exclusion', emoji: '📊' },
-            { key: 'unified', name: '🌟 Unified', emoji: '🌟' },
-            { key: 'advanced', name: '🔬 Advanced', emoji: '🔬' },
-            { key: 'hybridAI', name: '🤖 Hybrid AI', emoji: '🤖' },
-            { key: 'combined', name: '🔗 Combined', emoji: '🔗' }
-        ];
-
-        // Sort by profit
-        const sorted = methods
-            .map(m => ({ ...m, profit: summary[m.key]?.totalProfit || 0, roi: summary[m.key]?.roi || '0%' }))
-            .sort((a, b) => b.profit - a.profit);
-
-        const best = sorted[0];
-        const worst = sorted[sorted.length - 1];
-
-        container.innerHTML = `
-            <h4 class="font-bold text-gray-700 mb-3">🏆 So Sánh Phương Pháp</h4>
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-                ${sorted.map((m, i) => {
-            const rank = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i === 3 ? '4️⃣' : '5️⃣';
-            const profitClass = m.profit >= 0 ? 'text-green-600' : 'text-red-600';
-            const sign = m.profit >= 0 ? '+' : '';
-            return `
-                        <div class="bg-white p-3 rounded-lg shadow text-center ${i === 0 ? 'ring-2 ring-yellow-400' : ''}">
-                            <div class="text-2xl mb-1">${rank}</div>
-                            <div class="font-bold text-sm">${m.name}</div>
-                            <div class="text-lg font-bold ${profitClass}">${sign}${m.profit.toLocaleString()}k</div>
-                            <div class="text-xs text-gray-500">ROI: ${m.roi}</div>
-                        </div>
-                    `;
-        }).join('')}
-            </div>
-            <div class="mt-4 text-center text-sm">
-                <span class="text-green-600 font-bold">🏆 Tốt nhất: ${best.name}</span> | 
-                <span class="text-red-600 font-bold">⚠️ Kém nhất: ${worst.name}</span>
-            </div>
-        `;
-    }
-
-    function renderFutureResults(data) {
-        const resultsTable = document.getElementById('futureResultsTable');
-        const displayResults = data.results;
-
-        let html = `
-            <p class="text-xs text-gray-500 mb-2">Hiển thị ${displayResults.length} ngày. Cược thay đổi theo chiến lược gấp thếp. Click vào số để xem danh sách số đánh.</p>
-            <table class="w-full text-xs text-left">
-                <thead class="bg-gray-100 sticky top-0">
-                    <tr>
-                        <th class="p-2">Ngày</th>
-                        <th class="p-2 text-center">Số Về</th>
-                        <th class="p-2 text-center bg-blue-50">Exclusion</th>
-                        <th class="p-2 text-center bg-green-50">Unified</th>
-                        <th class="p-2 text-center bg-purple-50">Advanced</th>
-                        <th class="p-2 text-center bg-orange-50">Hybrid AI</th>
-                        <th class="p-2 text-center bg-pink-50">Combined</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-
-        for (const day of displayResults) {
-            const date = new Date(day.date).toLocaleDateString('vi-VN');
-
-            html += `<tr class="border-b hover:bg-gray-50">
-                <td class="p-2 font-medium">${date}</td>
-                <td class="p-2 text-center">
-                    <span class="font-bold bg-yellow-100 text-yellow-800 px-2 py-1 rounded">${day.winningNumber}</span>
-                </td>`;
-
-            const methods = ['exclusion', 'unified', 'advanced', 'hybridAI', 'combined'];
-            const colors = ['blue', 'green', 'purple', 'orange', 'pink'];
-
-            methods.forEach((method, idx) => {
-                const m = day.methods[method];
-                if (m) {
-                    const isWin = m.isWin;
-                    const profitClass = m.profit >= 0 ? 'text-green-600' : 'text-red-600';
-                    const sign = m.profit >= 0 ? '+' : '';
-                    const betUsed = m.betAmountUsed || m.betAmount || 10;
-
-                    // Hiển thị 10 số đầu tiên
-                    const toBetDisplay = m.toBet ? m.toBet.slice(0, 10).map(n => String(n).padStart(2, '0')).join(', ') : '';
-                    const toBetFull = m.toBet ? m.toBet.map(n => {
-                        const numStr = String(n).padStart(2, '0');
-                        const winNum = parseInt(day.winningNumber);
-                        if (n === winNum) {
-                            return `<span class="bg-green-500 text-white px-1 rounded font-bold">${numStr}</span>`;
-                        }
-                        return numStr;
-                    }).join(', ') : '';
-
-                    html += `<td class="p-2 text-center bg-${colors[idx]}-50">
+            // Numbers bet breakdown
+            let numbersHtml = '-';
+            if (!row.isSkipped && row.numbersBet && row.numbersBet.length > 0) {
+                // Determine if winning number is in the set
+                const winNum = parseInt(row.special);
+                
+                numbersHtml = `
+                    <div class="text-[10px] sm:text-xs">
                         <details class="cursor-pointer">
-                            <summary class="flex flex-col items-center gap-1">
-                                <span class="${isWin ? 'bg-green-500 text-white px-1 rounded' : ''}">${isWin ? '✅' : '❌'}</span>
-                                <span class="font-bold ${profitClass}">${sign}${m.profit.toLocaleString()}k</span>
-                                <span class="text-[10px] text-gray-500">${betUsed}k × ${m.numBets || 40}số</span>
-                            </summary>
-                            <div class="mt-2 p-2 bg-white rounded text-[10px] text-left max-w-xs">
-                                <div class="font-bold mb-1">Các số đánh (${m.numBets || 40}):</div>
-                                <div class="break-words">${toBetFull}</div>
+                            <summary class="font-medium text-blue-600 outline-none">Xem ${row.numbersBet.length} số (Loại ${row.excludedCount})</summary>
+                            <div class="mt-1 p-2 bg-white border border-gray-200 rounded text-left max-w-xs md:max-w-md flex flex-wrap gap-1">
+                                ${row.numbersBet.map(n => {
+                                    const formatted = String(n).padStart(2, '0');
+                                    return (n === winNum) 
+                                        ? `<span class="bg-green-500 text-white font-bold px-1 rounded inline-block">${formatted}</span>` 
+                                        : `<span class="text-gray-600 inline-block px-0.5">${formatted}</span>`;
+                                }).join('')}
                             </div>
                         </details>
-                    </td>`;
-                } else {
-                    html += `<td class="p-2 text-center bg-${colors[idx]}-50">-</td>`;
-                }
-            });
+                    </div>
+                `;
+            }
 
-            html += `</tr>`;
-        }
-
-        html += `</tbody></table>`;
-        resultsTable.innerHTML = html;
+            tr.className = `border-b border-gray-200 ${rowClass}`;
+            tr.innerHTML = `
+                <td class="px-3 py-3 whitespace-nowrap text-xs font-medium text-gray-900">${dateStr}</td>
+                <td class="px-3 py-3 whitespace-nowrap text-center">
+                    <span class="font-bold bg-yellow-100 text-yellow-800 px-2 py-1 rounded border border-yellow-300 text-sm">
+                        ${String(row.special).padStart(2, '0')}
+                    </span>
+                </td>
+                <td class="px-3 py-3 whitespace-nowrap text-center text-xs">
+                    ${row.isSkipped ? '<span class="text-gray-400">-</span>' : `<strong>${row.stake.toLocaleString('vi-VN')}k</strong>`}
+                </td>
+                <td class="px-3 py-3 whitespace-nowrap text-center text-xs">
+                    ${numbersHtml}
+                </td>
+                <td class="px-3 py-3 whitespace-nowrap text-center text-xs ${profitClass}">
+                    ${row.isSkipped ? '<span class="text-gray-400">-</span>' : `${profitSign}${row.profit.toLocaleString('vi-VN')}k`}
+                </td>
+                <td class="px-3 py-3 whitespace-nowrap text-center text-xs ${totalProfitClass}">
+                    ${totalProfitSign}${row.totalProfit.toLocaleString('vi-VN')}k
+                </td>
+                <td class="px-3 py-3 whitespace-nowrap text-left">
+                    ${statusHtml}
+                </td>
+            `;
+            tableBody.appendChild(tr);
+        });
     }
 
     // === BACKTEST FUNCTIONS ===

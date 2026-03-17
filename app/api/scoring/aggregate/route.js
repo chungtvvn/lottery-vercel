@@ -26,20 +26,9 @@ export async function GET() {
             .map(row => {
                 // Extract all 2-digit numbers from the row (lottery "de" mode)
                 const numbers = [];
-                const prizeFields = [
-                    'special', 'prize1',
-                    'prize2_1', 'prize2_2',
-                    'prize3_1', 'prize3_2', 'prize3_3', 'prize3_4', 'prize3_5', 'prize3_6',
-                    'prize4_1', 'prize4_2', 'prize4_3', 'prize4_4',
-                    'prize5_1', 'prize5_2', 'prize5_3', 'prize5_4', 'prize5_5', 'prize5_6',
-                    'prize6_1', 'prize6_2', 'prize6_3',
-                    'prize7_1', 'prize7_2', 'prize7_3', 'prize7_4'
-                ];
-                prizeFields.forEach(field => {
-                    if (row[field] !== undefined && row[field] !== null) {
-                        numbers.push(row[field]);
-                    }
-                });
+                if (row.special !== undefined && row.special !== null) {
+                    numbers.push(row.special);
+                }
                 return { date: row.date, numbers };
             });
 

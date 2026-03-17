@@ -1,17 +1,30 @@
 import { NextResponse } from 'next/server';
-import { getQuickStatsFromCache } from '@/lib/data-access';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60; // Allow up to 60s for computation
 
 export async function GET() {
     try {
-        const quickStats = await getQuickStatsFromCache();
-        if (!quickStats) {
-            return NextResponse.json({ error: 'Quick stats chưa được tính toán. Hãy chạy daily-update.' }, { status: 404 });
+        // Try cache first
+        const { getQuickStatsFromCache } = require('@/lib/data-access');
+        const cached = await getQuickStatsFromCache();
+        if (cached) {
+            return NextResponse.json(cached);
         }
+
+        // If no cache, compute on the fly
+        console.log('[quick-stats] Cache miss, computing on-the-fly...');
+        const lotteryService = require('../../../../lib/services/lotteryService');
+        if (!lotteryService.getRawData()) {
+            await lotteryService.loadRawData();
+        }
+        
+        const statisticsService = require('../../../../lib/services/statisticsService');
+        const quickStats = await statisticsService.getQuickStats();
+        
         return NextResponse.json(quickStats);
     } catch (error) {
         console.error('Error in quick-stats:', error);
-        return NextResponse.json({ error: 'Lỗi server' }, { status: 500 });
+        return NextResponse.json({ error: 'Lỗi server: ' + error.message }, { status: 500 });
     }
 }

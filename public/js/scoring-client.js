@@ -1,9 +1,8 @@
-// public/js/scoring-client.js
-
 // Expose init function for async data loading
 window._initScoringPage = function(data) {
     window._scoringData = data;
-    if (window._scoringReady) initWithData(data);
+    // If DOMContentLoaded already fired and initWithData is ready, call it
+    if (window._scoringInitFn) window._scoringInitFn(data);
 };
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -152,8 +151,8 @@ document.addEventListener('DOMContentLoaded', function() {
         setDefaultDates();
     }
 
-    // Mark DOM as ready for async init
-    window._scoringReady = true;
+    // Expose initWithData for async callback
+    window._scoringInitFn = initWithData;
     if (window._scoringData) initWithData(window._scoringData);
 
     /**
@@ -273,8 +272,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function setDefaultStartDate() {
         const endDate = new Date(endDateInput.value);
-        const startDate = new Date(endDate);
-        startDate.setDate(endDate.getDate() - 365); // Mặc định 1 năm
+        const startDate = new Date(endDate.getFullYear(), 0, 1); // Ngày 1 tháng 1 năm hiện tại
         const formattedStartDate = startDate.toISOString().split('T')[0];
         startDateInput.value = formattedStartDate;
     }

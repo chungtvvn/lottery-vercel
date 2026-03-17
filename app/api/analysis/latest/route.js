@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(request) {
     try {
         const lotteryService = require('../../../../lib/services/lotteryService');
         if (!lotteryService.getRawData()) await lotteryService.loadRawData();
@@ -10,14 +10,14 @@ export async function GET() {
             return NextResponse.json({ predictions: null, message: 'No data' });
         }
 
-        // Return latest result info for the simulation page
-        const latest = rawData[rawData.length - 1];
-        return NextResponse.json({
-            predictions: null,
-            latestDate: latest.date,
-            latestSpecial: latest.special,
-            message: 'Dữ liệu có sẵn. Sử dụng tab Giả lập để chạy phân tích.'
-        });
+        const suggestionsController = require('../../../../lib/controllers/suggestionsController');
+        const url = new URL(request.url);
+        const req = { query: Object.fromEntries(url.searchParams.entries()) };
+        let result;
+        const res = { json(d) { result = d; return res; }, status(c) { res._status = c; return res; }, _status: 200 };
+        await suggestionsController.getSuggestions(req, res);
+        
+        return NextResponse.json(result, { status: res._status });
     } catch (error) {
         console.error('[Analysis Latest] Error:', error);
         return NextResponse.json({ predictions: null, error: error.message }, { status: 500 });

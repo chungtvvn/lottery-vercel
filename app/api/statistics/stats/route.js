@@ -4,7 +4,7 @@ import { getCategoryStats } from '@/lib/data-access';
 export const dynamic = 'force-dynamic';
 
 /**
- * API: /api/statistics/stats?category=dau_chan&subcategory=veSole&minLength=3
+ * API: /api/statistics/stats?category=dau_chan&subcategory=veSole&exactLength=2&startDate=dd/mm/yyyy&endDate=dd/mm/yyyy
  * Tương đương: /statistics/api/v2/stats cũ
  */
 export async function GET(request) {
@@ -12,21 +12,19 @@ export async function GET(request) {
         const { searchParams } = new URL(request.url);
         const category = searchParams.get('category');
         const subcategory = searchParams.get('subcategory');
+        const exactLength = searchParams.get('exactLength');
         const minLength = parseInt(searchParams.get('minLength')) || 2;
+        const startDate = searchParams.get('startDate');
+        const endDate = searchParams.get('endDate');
 
         if (!category) {
             return NextResponse.json({ error: 'Thiếu tham số category' }, { status: 400 });
         }
 
         // Determine which bucket the category belongs to
-        // Categories from headTailStatsGenerator use 'head_tail' bucket
-        // Categories from sumDifferenceStatsGenerator use 'sum_diff' bucket
-        // Categories from statisticsGenerator use 'number' bucket
-        
         const sumDiffPrefixes = ['tong_tt', 'tong_moi', 'hieu'];
         const isSumDiff = sumDiffPrefixes.some(p => category.startsWith(p));
         
-        // Number stats categories
         const numberCategories = [
             'motSoVeLienTiep', 'motSoVeSole', 'motSoVeSoleMoi',
             'motSoTienLienTiep', 'motSoTienDeuLienTiep', 'motSoLuiLienTiep', 'motSoLuiDeuLienTiep',
@@ -50,37 +48,40 @@ export async function GET(request) {
 
         const categoryData = await getCategoryStats(bucket, category);
         if (!categoryData) {
-            // Try other buckets as fallback
             for (const fallbackBucket of ['head_tail', 'sum_diff', 'number']) {
                 if (fallbackBucket === bucket) continue;
                 const fallbackData = await getCategoryStats(fallbackBucket, category);
                 if (fallbackData) {
-                    return handleCategoryResponse(fallbackData, subcategory, minLength);
+                    return handleCategoryResponse(fallbackData, subcategory, exactLength, minLength, startDate, endDate);
                 }
             }
             return NextResponse.json({ error: `Category "${category}" không tìm thấy` }, { status: 404 });
         }
 
-        return handleCategoryResponse(categoryData, subcategory, minLength);
+        return handleCategoryResponse(categoryData, subcategory, exactLength, minLength, startDate, endDate);
     } catch (error) {
         console.error('Error in stats API:', error);
         return NextResponse.json({ error: 'Lỗi server: ' + error.message }, { status: 500 });
     }
 }
 
-function handleCategoryResponse(categoryData, subcategory, minLength) {
+function parseDate(dateStr) {
+    if (!dateStr) return null;
+    const parts = dateStr.split('/');
+    if (parts.length !== 3) return null;
+    return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+}
+
+function handleCategoryResponse(categoryData, subcategory, exactLength, minLength, startDate, endDate) {
     let result;
 
     if (subcategory && categoryData[subcategory]) {
-        // Category has subcategories (e.g., dau_chan.veSole)
         result = categoryData[subcategory];
     } else if (categoryData.streaks) {
-        // Category is a direct stats object
         result = categoryData;
     } else if (subcategory) {
         return NextResponse.json({ error: `Subcategory "${subcategory}" không tìm thấy` }, { status: 404 });
     } else {
-        // Return all subcategories info
         const summary = {};
         for (const [key, value] of Object.entries(categoryData)) {
             if (value && value.streaks) {
@@ -94,13 +95,38 @@ function handleCategoryResponse(categoryData, subcategory, minLength) {
         return NextResponse.json(summary);
     }
 
-    // Apply minLength filter
     if (result && result.streaks) {
-        const filtered = {
+        let filtered = result.streaks;
+
+        // Filter theo exactLength hoặc minLength
+        if (exactLength && exactLength !== 'all') {
+            const len = parseInt(exactLength);
+            if (!isNaN(len)) {
+                filtered = filtered.filter(s => s.length === len);
+            }
+        } else {
+            filtered = filtered.filter(s => s.length >= minLength);
+        }
+
+        // Filter theo date range (overlap: streak phải nằm trong hoặc chồng lên khoảng thời gian)
+        if (startDate || endDate) {
+            const start = startDate ? parseDate(startDate) : null;
+            const end = endDate ? parseDate(endDate) : null;
+            filtered = filtered.filter(s => {
+                const sEnd = parseDate(s.endDate);
+                const sStart = parseDate(s.startDate);
+                if (!sEnd || !sStart) return true;
+                // Streak nằm trong range: endDate >= filterStart AND startDate <= filterEnd
+                if (start && sEnd < start) return false;
+                if (end && sStart > end) return false;
+                return true;
+            });
+        }
+
+        return NextResponse.json({
             ...result,
-            streaks: result.streaks.filter(s => s.length >= minLength)
-        };
-        return NextResponse.json(filtered);
+            streaks: filtered
+        });
     }
 
     return NextResponse.json(result);
