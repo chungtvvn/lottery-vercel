@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống tính điểm XSMB</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .hidden {
+            display: none;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #09f;
+            animation: spin 1s ease infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Thêm style cho hàng con được expand */
+        .details-row>td {
+            padding: 0 !important;
+            border: 0 !important;
+        }
+
+        body {
+            background-color: #f7fafc;
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .highlight {
+            background-color: #92d7ff;
+            color: #fe7155;
+            font-weight: 800;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+
+<body class="antialiased">
+    <div class="container mx-auto max-w-7xl px-4 py-8">
+        <header class="bg-white shadow-md sticky top-0 z-10 mb-8">
+            <div class="container mx-auto px-4">
+                <div class="flex justify-between items-center py-4">
+                    <a href="/" class="text-2xl font-bold text-gray-800">XSMB Stats</a>
+                    <nav class="flex space-x-2 sm:space-x-4 overflow-x-auto">
+                        <a href="/statistics"
+                            class="text-gray-600 hover:text-blue-500 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium whitespace-nowrap">Thống
+                            kê</a>
+                        <a href="/scoring"
+                            class="bg-blue-100 text-blue-600 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-semibold whitespace-nowrap">Tính
+                            điểm</a>
+                        <a href="/simulation"
+                            class="text-gray-600 hover:text-blue-500 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium whitespace-nowrap">Mô
+                            phỏng</a>
+                        <a href="/settings"
+                            class="text-gray-600 hover:text-blue-500 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium whitespace-nowrap">⚙️</a>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <div id="customSearchSection" class="bg-white p-6 rounded-lg shadow-lg mb-12">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-4">Tìm kiếm Tùy chỉnh</h2>
+            <form id="scoringForm">
+                <input type="hidden" name="mode" value="de">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <fieldset>
+                        <legend class="block text-sm font-medium text-gray-700">Loại tìm kiếm</legend>
+                        <div class="mt-4 flex gap-x-8">
+                            <div class="flex items-center">
+                                <input id="searchTypeOccurrence" name="searchType" type="radio" value="occurrence"
+                                    checked class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                <label for="searchTypeOccurrence"
+                                    class="ml-3 block text-sm font-medium text-gray-700">Theo số lần về</label>
+                            </div>
+                            <div class="flex items-center">
+                                <input id="searchTypeForms" name="searchType" type="radio" value="forms"
+                                    class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                <label for="searchTypeForms" class="ml-3 block text-sm font-medium text-gray-700">Theo
+                                    dạng số</label>
+                            </div>
+                        </div>
+                    </fieldset>
+                    <div>
+                        <label for="startDate" class="block text-sm font-medium text-gray-700">Từ ngày</label>
+                        <input type="date" id="startDate" name="startDate"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="endDate" class="block text-sm font-medium text-gray-700">Đến ngày</label>
+                        <input type="date" id="endDate" name="endDate"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                </div>
+                <div id="occurrenceInput" class="mt-4">
+                    <label for="occurrenceCount" class="block text-sm font-medium text-gray-700">Nhập số lần về</label>
+                    <input type="number" name="occurrenceCount" id="occurrenceCount"
+                        class="mt-1 block w-full md:w-1/3 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        placeholder="Ví dụ: 0">
+                </div>
+
+                <div id="formsSelection" class="mt-4 hidden">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="text-sm font-medium text-gray-700">Chọn các dạng số</h4>
+                        <div>
+                            <button type="button" id="selectAllForms"
+                                class="text-xs bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-1 px-2 rounded">Chọn
+                                tất cả</button>
+                            <button type="button" id="clearAllForms"
+                                class="text-xs bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-1 px-2 rounded ml-2">Bỏ
+                                chọn</button>
+                        </div>
+                    </div>
+                    <div id="checkboxGrid"
+                        class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 border rounded-md max-h-60 overflow-y-auto bg-gray-50">
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <button type="submit" id="searchButton"
+                        class="w-full bg-indigo-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+                        <span id="searchButtonText">Tìm kiếm</span>
+                        <div id="searchSpinner" class="spinner hidden"
+                            style="width: 20px; height: 20px; border-width: 2px;"></div>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div id="customSearchResultsContainer" class="mt-10"></div>
+
+        <hr class="my-12 border-t-2 border-blue-200">
+
+        <div id="aggregateResultsContainer" class="mt-10">
+            <div class="text-center py-8">
+                <div class="spinner mx-auto mb-4"></div>
+                <p class="text-gray-500">Đang tải dữ liệu tổng hợp...</p>
+            </div>
+        </div>
+
+        <footer class="bg-gray-800 text-white text-center p-4 mt-auto">
+            <p>&copy; <script>document.write(new Date().getFullYear())</script> XSMB Stats. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Fetch scoring data from API instead of EJS server-side injection
+        let serverData = { results: [], scoringForms: [] };
+        fetch('/api/scoring/aggregate')
+            .then(r => r.json())
+            .then(data => {
+                serverData = data;
+                // Re-dispatch DOMContentLoaded won't work, so call init directly
+                if (window._initScoringPage) window._initScoringPage(data);
+            })
+            .catch(err => {
+                console.error('Error loading scoring data:', err);
+                document.getElementById('aggregateResultsContainer').innerHTML =
+                    '<div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4"><p>Lỗi tải dữ liệu: ' + err.message + '</p></div>';
+            });
+    </script>
+    <script src="/js/scoring-client.js"></script>
+</body>
+
+</html>

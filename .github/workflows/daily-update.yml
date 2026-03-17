@@ -1,0 +1,39 @@
+name: Daily Lottery Data Update
+on:
+  schedule:
+    # 7:00 AM Vietnam time (UTC+7) = 0:00 UTC
+    - cron: '0 0 * * *'
+    # 7:00 PM Vietnam time (UTC+7) = 12:00 UTC
+    - cron: '0 12 * * *'
+  workflow_dispatch: # Cho phép trigger thủ công từ GitHub UI
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run daily update
+        run: node scripts/daily-update.js
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
+      # Optional: Trigger Vercel redeployment to invalidate cache
+      # - name: Trigger Vercel Redeploy
+      #   run: curl -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}"

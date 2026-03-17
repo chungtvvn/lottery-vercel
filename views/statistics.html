@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thống Kê Xổ Số (Giao diện Tailwind)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.default.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f7fafc;
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .highlight {
+            background-color: #92d7ff;
+            color: #fe7155;
+            font-weight: 800;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+
+<body class="antialiased">
+    <div class="container mx-auto max-w-7xl px-4 py-8">
+        <header class="bg-white shadow-md sticky top-0 z-10 mb-8">
+            <div class="container mx-auto px-4">
+                <div class="flex justify-between items-center py-4">
+                    <a href="/" class="text-2xl font-bold text-gray-800">XSMB Stats</a>
+                    <nav class="flex space-x-2 sm:space-x-4 overflow-x-auto">
+                        <a href="/statistics"
+                            class="bg-blue-100 text-blue-600 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-semibold whitespace-nowrap">Thống
+                            kê</a>
+                        <a href="/scoring"
+                            class="text-gray-600 hover:text-blue-500 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium whitespace-nowrap">Tính
+                            điểm</a>
+                        <a href="/simulation"
+                            class="text-gray-600 hover:text-blue-500 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium whitespace-nowrap">Mô
+                            phỏng</a>
+                        <a href="/settings"
+                            class="text-gray-600 hover:text-blue-500 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium whitespace-nowrap">⚙️</a>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6 rounded-md shadow" role="alert">
+            <div class="flex justify-between items-center flex-wrap gap-4">
+                <p id="dataUpdateNote">Dữ liệu được cập nhật từ 1/10/2005 đến ngày <span id="lastUpdateDate"
+                        class="font-semibold">...</span></p>
+                <button id="updateDataButton"
+                    class="bg-yellow-500 text-white font-bold py-2 px-4 rounded hover:bg-yellow-600 transition duration-150 flex items-center">
+                    <i class="bi bi-arrow-clockwise mr-2"></i>Cập nhật dữ liệu
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <form id="statsForm">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-4">
+                        <label for="statsType" class="block text-sm font-medium text-gray-700">Loại thống kê:</label>
+                        <select id="statsType" name="statsType"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></select>
+                    </div>
+                    <div class="lg:col-span-2">
+                        <label for="minLength" class="block text-sm font-medium text-gray-700">Số ngày:</label>
+                        <select id="minLength"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></select>
+                    </div>
+                    <div class="lg:col-span-3">
+                        <label for="startDate" class="block text-sm font-medium text-gray-700">Từ ngày:</label>
+                        <input type="date" id="startDate" name="startDate"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                    <div class="lg:col-span-3">
+                        <label for="endDate" class="block text-sm font-medium text-gray-700">Đến ngày:</label>
+                        <input type="date" id="endDate" name="endDate"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <button type="submit"
+                        class="w-full bg-indigo-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+                        Thống Kê
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div x-data="{ open: true }" class="bg-white rounded-lg shadow-md mb-8">
+            <div @click="open = !open" class="flex justify-between items-center p-4 cursor-pointer">
+                <h3 id="result-title" class="text-xl font-semibold text-gray-800 flex items-center">
+                    <i class="bi bi-search me-2"></i>Kết Quả Truy Vấn
+                </h3>
+                <i class="bi" :class="open ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+            </div>
+            <div x-show="open" x-transition class="accordion-content-highlight" :class="{ 'expanded': open }">
+                <div class="border-t border-gray-200 p-6">
+                    <div id="result-table-container">
+                        <p class="text-gray-500">Vui lòng chọn loại thống kê và nhấn nút "Thống Kê" để xem kết quả.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Phần Gợi Ý Loại Trừ đã được chuyển sang trang Distribution -->
+
+
+        <div id="current-streaks-section" x-data="{ open: true }" class="bg-white rounded-lg shadow-md mb-8 d-none">
+            <div @click="open = !open" class="flex justify-between items-center p-4 cursor-pointer">
+                <h3 class="text-xl font-semibold text-gray-800 flex items-center">
+                    <i class="bi bi-fire text-red-500 me-2"></i>
+                    <span id="current-streaks-title">Chuỗi Đang Diễn Ra</span>
+                </h3>
+                <i class="bi" :class="open ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+            </div>
+            <div x-show="open" x-transition class="accordion-content-highlight" :class="{ 'expanded': open }">
+                <div class="border-t border-gray-200 p-6">
+                    <div id="current-streaks-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <div x-data="{ open: true }" class="bg-white rounded-lg shadow-md">
+            <div @click="open = !open" class="flex justify-between items-center p-4 cursor-pointer">
+                <h3 class="text-xl font-semibold text-gray-800 flex items-center">
+                    <i class="bi bi-trophy-fill text-yellow-500 me-2"></i> Thống Kê Kỷ Lục
+                </h3>
+                <i class="bi" :class="open ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+            </div>
+            <div x-show="open" x-transition class="accordion-content-highlight" :class="{ 'expanded': open }">
+                <div class="border-t border-gray-200">
+                    <div id="quick-stats-container" class="divide-y divide-gray-200">
+                        <div class="text-center p-8">
+                            <div role="status"
+                                class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] text-indigo-600 motion-reduce:animate-[spin_1.5s_linear_infinite]">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Thông báo Phiên bản Mới -->
+    <div id="versionModal"
+        class="fixed inset-0 z-50 hidden bg-gray-900 bg-opacity-70 flex items-center justify-center p-4">
+        <div
+            class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden animate-[scale_0.3s_ease-out]">
+            <!-- Header -->
+            <div
+                class="bg-gradient-to-r from-purple-700 to-indigo-800 p-5 flex justify-between items-center text-white">
+                <div>
+                    <h2 class="text-2xl font-bold flex items-center gap-2">
+                        <i class="bi bi-rocket-takeoff-fill text-yellow-300"></i>
+                        Cập nhật Phiên bản v2.2
+                    </h2>
+                    <p class="text-indigo-200 text-sm mt-1">Bản build: 08/03/2026 - Tối ưu hóa Toàn Diện</p>
+                </div>
+                <button id="closeVersionModalBtn"
+                    class="text-indigo-200 hover:text-white transition rounded-full p-1 bg-white/10 hover:bg-white/20">
+                    <i class="bi bi-x-lg text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="p-6 overflow-y-auto custom-scrollbar flex-1 text-gray-700 bg-gray-50">
+                <div class="mb-6">
+                    <p class="mb-3 text-lg">Hệ thống đã được cập nhật phiên bản lớn giúp <strong
+                            class="text-purple-700">Tốc độ truy xuất và Lọc số thông minh</strong> vượt trội hơn.</p>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="bg-white p-4 rounded-lg border border-indigo-100 shadow-sm relative overflow-hidden">
+                        <h3 class="text-[15px] font-bold text-indigo-700 mb-1 flex items-center gap-2">
+                            <i class="bi bi-ui-radios-grid"></i> Cải thiệu siêu tốc Load Danh Sách (1500 cấu hình)
+                        </h3>
+                        <p
+                            class="text-[13px] border-l-2 border-indigo-200 pl-3 py-1 bg-indigo-50/50 rounded-r text-gray-600">
+                            Loại bỏ tình trạng đơ/nặng trình duyệt khi nhấn vào hộp tìm kiếm "Loại thống kê". Hệ thống áp dụng <strong>Virtual Scroll Rendering</strong> giúp thao tác xổ xuống cũng như lọc gợi ý nhẹ tựa lông hồng.
+                        </p>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-lg border border-red-100 shadow-sm relative overflow-hidden">
+                        <h3 class="text-[15px] font-bold text-red-600 mb-1 flex items-center gap-2">
+                            <i class="bi bi-eye-fill"></i> Hiển thị Popup Thông Minh hơn
+                        </h3>
+                        <p class="text-[13px] border-l-2 border-red-200 pl-3 py-1 bg-red-50/50 rounded-r text-gray-600">
+                            Popup các dãy số bây giờ đã phân tích sâu ngữ cảnh:<br/>
+                            1. <strong>Chuỗi đang diễn ra</strong>: Chỉ hiển thị các bộ số có <strong>khả năng xuất hiện</strong> tiếp theo. Giúp thu gọn phán đoán.<br/>
+                            2. <strong>Lịch sử Thống Kê</strong>: Liệt kê minh bạch <strong>toàn bộ</strong> mảng số cấu thành định dạng của chuỗi. Cực kỳ dễ hiểu!
+                        </p>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-lg border border-purple-100 shadow-sm relative overflow-hidden">
+                        <h3 class="text-[15px] font-bold text-purple-700 mb-1 flex items-center gap-2">
+                            <i class="bi bi-funnel-fill"></i> Chuẩn Hoá Bộ Lọc Tiến Lùi Vô Hình
+                        </h3>
+                        <p
+                            class="text-[13px] border-l-2 border-purple-200 pl-3 py-1 bg-purple-50/50 rounded-r text-gray-600">
+                            Khắc phục hoàn toàn lỗi lọt số rác. Với hơn <strong>142 tổ hợp phức tạp</strong> (Đầu Nhỏ Đít Lớn, Tổng Mới...), thuật toán lọc Tiến Lùi/So Le giờ đây tự động quét cả 2 lớp base logic giúp phán đoán đúng 100% con số thoả mãn.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-4 bg-white border-t border-gray-100 flex justify-end">
+                <button id="understandVersionBtn"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg font-semibold shadow-md hover:shadow-lg transition flex items-center gap-2">
+                    <i class="bi bi-check2-circle"></i> Xác nhận & Đóng
+                </button>
+            </div>
+        </div></div>
+    </div>
+    <style>
+        @keyframes scale {
+            0% {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #e5e7eb;
+            border-radius: 20px;
+        }
+    </style>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+    <script src="/js/app-config.js"></script>
+    <script src="/js/stats-config.js"></script>
+    <script src="/js/statistics.js"></script>
+    <script src="/js/suggestions.js"></script>
+</body>
+
+</html>

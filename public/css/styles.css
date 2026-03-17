@@ -1,0 +1,146 @@
+/* styles.css */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #007bff;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+.form-label {
+    font-weight: bold;
+}
+
+.form-control, .form-select {
+    margin-bottom: 10px;
+}
+
+.table {
+    margin-top: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.table th, .table td {
+    padding: 12px;
+    text-align: center;
+}
+
+.table th {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.table tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.highlight {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.highlight-head, .highlight-tail {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.special {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.legend {
+    margin-bottom: 20px;
+}
+
+.legend-blue {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            background-color: #0d6efd;
+            margin-right: 5px;
+}
+.legend-red {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            background-color: #dc3545;
+            margin-right: 5px;
+}
+
+.legend-blue {
+    background-color: #28a745;
+}
+
+.legend-red {
+    background-color: #dc3545;
+}
+
+/* Trong /css/styles.css */
+.blink-new {
+    color: red;
+    font-weight: bold;
+    margin-left: 5px;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .form-control, .form-select {
+        width: 100%;
+    }
+
+    .table th, .table td {
+        padding: 4px;
+    }
+}
+.nav-tabs .nav-link {
+            font-weight: 500;
+            color: #495057;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            margin-right: 5px;
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: #007bff;
+            background-color: #fff;
+            border-bottom-color: #fff;
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            border: 1px solid #dee2e6;
+            border-top: none;
+            padding: 20px;
+            background-color: #fff;
+        }
