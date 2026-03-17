@@ -123,6 +123,23 @@ export async function POST(request) {
             clearAllCaches();
             const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
             return NextResponse.json({ success: true, step, message: `Sum/Diff Stats hoàn thành (${elapsed}s)` });
+
+        } else if (step === 'stats_quick') {
+            // Pre-compute quick stats to prevent 504 timeouts on the frontend
+            console.log('[Update] Pre-computing Quick Stats...');
+            clearAllCaches();
+            await lotteryService.loadRawData(); // This now does sequential loads safely
+            const [quickStats, history] = await Promise.all([
+                statisticsService.getQuickStats(),
+                statisticsService.getQuickStatsHistory()
+            ]);
+            
+            const { saveCacheEntry } = require('@/lib/data-access');
+            await saveCacheEntry('quick_stats', quickStats);
+            await saveCacheEntry('quick_stats_history', history);
+            
+            const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+            return NextResponse.json({ success: true, step, message: `Quick Stats và History hoàn thành (${elapsed}s)` });
         }
 
         return NextResponse.json({ success: false, message: 'Invalid step' }, { status: 400 });

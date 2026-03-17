@@ -307,7 +307,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             { step: 'data', label: 'Đang tải dữ liệu...' },
             { step: 'stats_number', label: 'Tính toán thống kê số...' },
             { step: 'stats_head_tail', label: 'Tính toán thống kê đầu-đít...' },
-            { step: 'stats_sum_diff', label: 'Tính toán thống kê tổng-hiệu...' }
+            { step: 'stats_sum_diff', label: 'Tính toán thống kê tổng-hiệu...' },
+            { step: 'stats_quick', label: 'Nạp bộ nhớ đệm nhanh...' }
         ];
         try {
             for (const { step, label } of steps) {
