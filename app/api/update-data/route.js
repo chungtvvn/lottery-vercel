@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { clearMemoryCache, upsertLotteryResults, saveStatsToDb } from '@/lib/data-access';
+import { clearMemoryCache, upsertLotteryResults, saveStatsToDb, uploadFullStatsToStorage } from '@/lib/data-access';
 import generateNumberStats from '@/lib/generators/statisticsGenerator';
 import generateHeadTailStats from '@/lib/generators/headTailStatsGenerator';
 import generateSumDifferenceStats from '@/lib/generators/sumDifferenceStatsGenerator';
@@ -84,7 +84,10 @@ export async function POST(request) {
             const statsPath = path.join(tmpStatsDir, 'number_stats.json');
             if (fs.existsSync(statsPath)) {
                 const stats = JSON.parse(fs.readFileSync(statsPath, 'utf8'));
-                await saveStatsToDb('number', stats);
+                await Promise.all([
+                    saveStatsToDb('number', stats),
+                    uploadFullStatsToStorage('number', stats)
+                ]);
             }
             clearAllCaches();
             const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
@@ -101,7 +104,10 @@ export async function POST(request) {
             const statsPath = path.join(tmpStatsDir, 'head_tail_stats.json');
             if (fs.existsSync(statsPath)) {
                 const stats = JSON.parse(fs.readFileSync(statsPath, 'utf8'));
-                await saveStatsToDb('head_tail', stats);
+                await Promise.all([
+                    saveStatsToDb('head_tail', stats),
+                    uploadFullStatsToStorage('head_tail', stats)
+                ]);
             }
             clearAllCaches();
             const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
@@ -118,7 +124,10 @@ export async function POST(request) {
             const statsPath = path.join(tmpStatsDir, 'sum_difference_stats.json');
             if (fs.existsSync(statsPath)) {
                 const stats = JSON.parse(fs.readFileSync(statsPath, 'utf8'));
-                await saveStatsToDb('sum_diff', stats);
+                await Promise.all([
+                    saveStatsToDb('sum_diff', stats),
+                    uploadFullStatsToStorage('sum_diff', stats)
+                ]);
             }
             clearAllCaches();
             const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
