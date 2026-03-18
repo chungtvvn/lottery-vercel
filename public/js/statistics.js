@@ -181,6 +181,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             renderSelectedHistoryDate();
         } catch (error) {
             console.error('Lỗi khi tải kết quả hoặc lịch sử gần đây:', error);
+            const skeleton = document.getElementById('recent-results-skeleton');
+            if (skeleton) skeleton.classList.add('hidden');
+            
+            let container = document.getElementById('recent-results-selector');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'recent-results-selector';
+                container.className = 'mb-6 text-red-500 bg-red-50 p-4 rounded-lg shadow';
+                const currentStreaksSec = document.getElementById('current-streaks-section');
+                if (currentStreaksSec) currentStreaksSec.parentNode.insertBefore(container, currentStreaksSec);
+            }
+            container.innerHTML = '<p><i class="bi bi-exclamation-triangle mr-2"></i>Không thể tải dữ liệu mới. Lỗi mạng hoặc máy chủ đang quá tải. Hãy thử tải lại trang hoặc Cập nhật dữ liệu thủ công.</p>';
         }
     };
 
@@ -254,8 +266,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
         `;
 
+        const skeleton = document.getElementById('recent-results-skeleton');
+        if (skeleton) skeleton.classList.add('hidden');
+
         container.innerHTML = html;
-        resultContainer.innerHTML = '<p class="text-gray-500">Vui lòng chọn loại thống kê và nhấn nút "Thống Kê" để xem kết quả.</p>';
+        if (!document.getElementById('result-table-container').hasAttribute('data-loaded')) {
+            resultContainer.innerHTML = '<p class="text-gray-500">Vui lòng chọn loại thống kê và nhấn nút "Thống Kê" để xem kết quả.</p>';
+            document.getElementById('result-table-container').setAttribute('data-loaded', 'true');
+        }
     };
 
     window.selectHistoryDate = (dateStr) => {
@@ -315,7 +333,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             for (const { step, label } of steps) {
                 btn.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> ${label}`;
                 const response = await fetch(`${BASE_URL}/api/update-data?step=${step}`, { method: 'POST' });
-                const result = await response.json();
+                
+                const text = await response.text();
+                let result;
+                try {
+                    result = JSON.parse(text);
+                } catch(e) {
+                    if (text.includes('An error occurred with this application') || response.status === 504) {
+                        throw new Error(`Máy chủ Vercel quá tải khi xử lý bước [${label}]. Dữ liệu có quá nhiều hoặc bị timeout 10s. Vui lòng thử lại sau!`);
+                    }
+                    throw new Error(`Dữ liệu không hợp lệ từ server ở bước [${label}]: ${text.substring(0, 50)}`);
+                }
+
                 if (!response.ok || !result.success) {
                     throw new Error(result.message || 'Lỗi không xác định');
                 }

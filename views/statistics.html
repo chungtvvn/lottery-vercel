@@ -109,6 +109,23 @@
 
         <!-- Phần Gợi Ý Loại Trừ đã được chuyển sang trang Distribution -->
 
+        <!-- Skeleton Loading cho Lịch sử chuỗi -->
+        <div id="recent-results-skeleton" class="mb-6 animate-pulse">
+            <div class="bg-white rounded-lg shadow-md p-5 flex flex-col border-t-4 border-gray-300">
+                <div class="h-6 bg-gray-200 rounded w-1/4 mb-4"></div>
+                <div class="h-3 bg-gray-200 rounded w-1/2 mb-5"></div>
+                <div class="flex gap-3 overflow-hidden justify-start py-2">
+                    <div class="rounded-xl bg-gray-200 h-24 w-20 flex-shrink-0"></div>
+                    <div class="rounded-xl bg-gray-200 h-24 w-20 flex-shrink-0"></div>
+                    <div class="rounded-xl bg-gray-200 h-24 w-20 flex-shrink-0"></div>
+                    <div class="rounded-xl bg-gray-200 h-24 w-20 flex-shrink-0 hidden sm:block"></div>
+                    <div class="rounded-xl bg-gray-200 h-24 w-20 flex-shrink-0 hidden md:block"></div>
+                    <div class="rounded-xl bg-gray-200 h-24 w-20 flex-shrink-0 hidden lg:block"></div>
+                    <div class="rounded-xl bg-gray-200 h-24 w-20 flex-shrink-0 hidden xl:block"></div>
+                </div>
+            </div>
+        </div>
+
 
         <div id="current-streaks-section" x-data="{ open: true }" class="bg-white rounded-lg shadow-md mb-8 d-none">
             <div @click="open = !open" class="flex justify-between items-center p-4 cursor-pointer">
