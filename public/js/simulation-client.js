@@ -423,6 +423,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.runProgressiveSimulation = async function () {
         const days = parseInt(document.getElementById('futureDuration').value) || 30;
+        const strategy = document.getElementById('futureStrategy') ? document.getElementById('futureStrategy').value : 'standard';
+        const useExclusionPlus = strategy === 'plus';
+
         const btn = document.getElementById('btnRunFuture');
         const progress = document.getElementById('futureProgress');
         const summary = document.getElementById('futureSummary');
@@ -437,7 +440,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('/api/simulation/run', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ simulationDays: days })
+                body: JSON.stringify({ simulationDays: days, useExclusionPlus })
             });
 
             if (!response.ok) {
