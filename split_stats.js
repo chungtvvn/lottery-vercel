@@ -4,7 +4,7 @@ const fs = require('fs');
 
 async function checkSupabaseConnection() {
     const admin = getAdminClient();
-    const { data, error } = await admin.from('cache_store').select('id').limit(1);
+    const { data, error } = await admin.from('cache_store').select('key').limit(1);
     if(error) {
         console.error("SUPABASE CONNECTION FAILED:", error);
     } else {

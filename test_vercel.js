@@ -1,25 +1,26 @@
 require('dotenv').config({ path: '.env.local' });
-const { getPublicClient } = require('./lib/supabase');
+const { getRawData } = require('./lib/data-access');
+const generateNumberStats = require('./lib/generators/statisticsGenerator');
+const generateHeadTailStats = require('./lib/generators/headTailStatsGenerator');
+const generateSumDifferenceStats = require('./lib/generators/sumDifferenceStatsGenerator');
+const { saveStatsToDb, loadStatsFromDb } = require('./lib/data-access');
 
-async function testVercelLoad() {
-    console.log('Fetching keys...');
-    const t0 = Date.now();
-    const { data: keysData, error } = await getPublicClient()
-        .from('cache_store')
-        .select('key')
-        .like('key', 'stats_chunk_sum_diff_%');
-    
-    console.log(`Fetched keys in ${Date.now() - t0}ms, count:`, keysData?.length, 'err:', error?.message);
+async function run() {
+    console.log("Loading raw data...");
+    const rawData = await getRawData();
+    console.log(`Loaded ${rawData.length} rows.`);
 
-    if (keysData && keysData.length > 0) {
-        const keys = keysData.map(k => k.key);
-        console.log('Fetching IN data...');
-        const t1 = Date.now();
-        const { data: chunkData, error: errChunk } = await getPublicClient()
-            .from('cache_store')
-            .select('key, data')
-            .in('key', keys);
-        console.log(`Fetched chunks in ${Date.now() - t1}ms, count: ${chunkData?.length}, err:`, errChunk?.message);
-    }
+    console.log("Generating Number stats...");
+    const stats = await generateNumberStats(null, null, rawData);
+    console.log("Stats motSoVeLienTiep length:", stats.motSoVeLienTiep.streaks.length);
+
+    console.log("Saving to DB...");
+    await saveStatsToDb('number', stats);
+
+    console.log("Loading from DB...");
+    const loaded = await loadStatsFromDb('number');
+    console.log("Loaded motSoVeLienTiep length:", loaded.motSoVeLienTiep.streaks.length);
+    console.log("First element:", loaded.motSoVeLienTiep.streaks[0]);
 }
-testVercelLoad();
+
+run().catch(console.error);

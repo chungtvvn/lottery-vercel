@@ -74,64 +74,43 @@ export async function POST(request) {
             });
 
         } else if (step === 'stats_number') {
-            // Generate number stats → save to Postgres
-            const tmpDataDir = await ensureDataFile();
-            const tmpStatsDir = '/tmp/lottery_stats';
-            fs.mkdirSync(tmpStatsDir, { recursive: true });
+            await lotteryService.loadRawData();
+            const rawJsonData = await lotteryService.getRawData();
             
-            await generateNumberStats(tmpDataDir, tmpStatsDir);
+            console.log('[Update] Generator Number Stats in-memory...');
+            const stats = await generateNumberStats(null, null, rawJsonData);
             
-            const statsPath = path.join(tmpStatsDir, 'number_stats.json');
-            if (fs.existsSync(statsPath)) {
-                const stats = JSON.parse(fs.readFileSync(statsPath, 'utf8'));
-                await Promise.all([
-                    saveStatsToDb('number', stats),
-                    uploadFullStatsToStorage('number', stats)
-                ]);
-            }
+            await saveStatsToDb('number', stats);
             clearAllCaches();
+            
             const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-            return NextResponse.json({ success: true, step, message: `Number Stats hoàn thành (${elapsed}s)` });
+            return NextResponse.json({ success: true, step, message: `Number Stats in-memory hoàn thành (${elapsed}s)` });
 
         } else if (step === 'stats_head_tail') {
-            // Generate head/tail stats → save to Postgres
-            const tmpDataDir = await ensureDataFile();
-            const tmpStatsDir = '/tmp/lottery_stats';
-            fs.mkdirSync(tmpStatsDir, { recursive: true });
+            await lotteryService.loadRawData();
+            const rawJsonData = await lotteryService.getRawData();
             
-            await generateHeadTailStats(tmpDataDir, tmpStatsDir);
+            console.log('[Update] Generator Head/Tail Stats in-memory...');
+            const stats = await generateHeadTailStats(null, null, rawJsonData);
             
-            const statsPath = path.join(tmpStatsDir, 'head_tail_stats.json');
-            if (fs.existsSync(statsPath)) {
-                const stats = JSON.parse(fs.readFileSync(statsPath, 'utf8'));
-                await Promise.all([
-                    saveStatsToDb('head_tail', stats),
-                    uploadFullStatsToStorage('head_tail', stats)
-                ]);
-            }
+            await saveStatsToDb('head_tail', stats);
             clearAllCaches();
+            
             const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-            return NextResponse.json({ success: true, step, message: `Head/Tail Stats hoàn thành (${elapsed}s)` });
+            return NextResponse.json({ success: true, step, message: `Head/Tail Stats in-memory hoàn thành (${elapsed}s)` });
 
         } else if (step === 'stats_sum_diff') {
-            // Generate sum/diff stats → save to Postgres
-            const tmpDataDir = await ensureDataFile();
-            const tmpStatsDir = '/tmp/lottery_stats';
-            fs.mkdirSync(tmpStatsDir, { recursive: true });
+            await lotteryService.loadRawData();
+            const rawJsonData = await lotteryService.getRawData();
             
-            await generateSumDifferenceStats(tmpDataDir, tmpStatsDir);
+            console.log('[Update] Generator Sum/Diff Stats in-memory...');
+            const stats = await generateSumDifferenceStats(null, null, rawJsonData);
             
-            const statsPath = path.join(tmpStatsDir, 'sum_difference_stats.json');
-            if (fs.existsSync(statsPath)) {
-                const stats = JSON.parse(fs.readFileSync(statsPath, 'utf8'));
-                await Promise.all([
-                    saveStatsToDb('sum_diff', stats),
-                    uploadFullStatsToStorage('sum_diff', stats)
-                ]);
-            }
+            await saveStatsToDb('sum_diff', stats);
             clearAllCaches();
+            
             const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-            return NextResponse.json({ success: true, step, message: `Sum/Diff Stats hoàn thành (${elapsed}s)` });
+            return NextResponse.json({ success: true, step, message: `Sum/Diff Stats in-memory hoàn thành (${elapsed}s)` });
 
         } else if (step === 'stats_quick') {
             // Pre-compute quick stats to prevent 504 timeouts on the frontend
