@@ -31,24 +31,6 @@ const nextConfig = {
         ];
     },
 
-    // Headers for API caching
-    async headers() {
-        return [
-            {
-                source: '/api/statistics/:path*',
-                headers: [
-                    { key: 'Cache-Control', value: 's-maxage=3600, stale-while-revalidate=86400' },
-                ],
-            },
-            {
-                source: '/api/config',
-                headers: [
-                    { key: 'Cache-Control', value: 's-maxage=86400' },
-                ],
-            },
-        ];
-    },
-
     // Increase serverless function timeout (Vercel Pro only, otherwise ignored)
     serverExternalPackages: [],
 };

@@ -163,9 +163,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const fetchRecentResults = async () => {
         try {
+            const cacheBuster = `?t=${Date.now()}`;
             const [recentRes, historyRes] = await Promise.all([
-                fetch(`${BASE_URL}/api/recent-results?limit=30`),
-                fetch(`${BASE_URL}/api/statistics/quick-stats-history`)
+                fetch(`${BASE_URL}/api/recent-results?limit=30&t=${Date.now()}`),
+                fetch(`${BASE_URL}/api/statistics/quick-stats-history${cacheBuster}`)
             ]);
             if (!recentRes.ok || !historyRes.ok) throw new Error('Network response was not ok');
 
@@ -335,7 +336,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const fetchQuickStats = async () => {
         try {
-            const response = await fetch(`${BASE_URL}/api/statistics/quick-stats`);
+            const response = await fetch(`${BASE_URL}/api/statistics/quick-stats?t=${Date.now()}`);
             if (!response.ok) throw new Error('Network response was not ok');
             const data = await response.json();
             quickStatsContainer.innerHTML = '';
