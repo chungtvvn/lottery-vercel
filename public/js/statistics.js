@@ -863,7 +863,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         resultContainer.innerHTML = '<div class="flex justify-center p-8"><div role="status" class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] text-indigo-600 motion-reduce:animate-[spin_1.5s_linear_infinite]"></div></div>';
         const selectedValue = statsTypeSelect.value;
         const [category, subcategory] = selectedValue.split(':');
-        let url = `${BASE_URL}/statistics/api/v2/stats?category=${category}&exactLength=${minLengthSelect.value}`;
+        let url = `${BASE_URL}/api/statistics/stats?category=${category}&exactLength=${minLengthSelect.value}`;
         if (subcategory) { url += `&subcategory=${subcategory}`; }
         if (startDateInput.value) url += `&startDate=${toApiDateFormat(startDateInput.value)}`;
         if (endDateInput.value) url += `&endDate=${toApiDateFormat(endDateInput.value)}`;
