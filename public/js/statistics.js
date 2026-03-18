@@ -161,19 +161,65 @@ document.addEventListener('DOMContentLoaded', async () => {
         fetchLastUpdateDate();
     };
 
+    // --- CLIENT-SIDE CACHING LOGIC ---
+    // 7AM VN (UTC+7) = 00:00 UTC. 7PM VN = 12:00 UTC.
+    const CACHE_VERSION = 'v2';
+    const getNextExpiration = () => {
+        const now = new Date();
+        const utcHour = now.getUTCHours();
+        const next = new Date(now);
+        next.setUTCMinutes(0, 0, 0);
+        if (utcHour < 12) {
+            next.setUTCHours(12);
+        } else {
+            next.setUTCDate(next.getUTCDate() + 1);
+            next.setUTCHours(0);
+        }
+        return next.getTime();
+    };
+
+    const fetchWithClientCache = async (key, url) => {
+        const cacheKey = `ls_cache_${CACHE_VERSION}_${key}`;
+        try {
+            const cachedStr = localStorage.getItem(cacheKey);
+            if (cachedStr) {
+                const parsed = JSON.parse(cachedStr);
+                if (Date.now() < parsed.expiration) {
+                    console.log(`[Cache] Using LOCAL data for ${key}`);
+                    return parsed.data;
+                }
+            }
+        } catch(e) { console.warn('Cache read error', e); }
+
+        console.log(`[Cache] Fetching FRESH data for ${key}`);
+        // Thêm cacheBuster để đảm bảo Vercel không cache cấp CDN khi ta thực sự ấn lấy fresh data
+        const cacheBuster = url.includes('?') ? `&t=${Date.now()}` : `?t=${Date.now()}`;
+        const res = await fetch(url + cacheBuster);
+        if (!res.ok) throw new Error('Network response was not ok');
+        const data = await res.json();
+        
+        try {
+            localStorage.setItem(cacheKey, JSON.stringify({
+                expiration: getNextExpiration(),
+                data: data
+            }));
+        } catch(e) { console.warn('Cache write limit exceeded or error', e); }
+        
+        return data;
+    };
+    // ---------------------------------
+
     const fetchRecentResults = async () => {
         try {
-            const cacheBuster = `?t=${Date.now()}`;
-            const [recentRes, historyRes] = await Promise.all([
-                fetch(`${BASE_URL}/api/recent-results?limit=30&t=${Date.now()}`),
-                fetch(`${BASE_URL}/api/statistics/quick-stats-history${cacheBuster}`)
+            const [recentResData, historyResData] = await Promise.all([
+                fetchWithClientCache('recent_results', `${BASE_URL}/api/recent-results?limit=30`),
+                fetchWithClientCache('quick_stats_history', `${BASE_URL}/api/statistics/quick-stats-history`)
             ]);
-            if (!recentRes.ok || !historyRes.ok) throw new Error('Network response was not ok');
 
-            recentLotteryData = await recentRes.json();
-            globalActiveStreaksHistory = await historyRes.json();
+            recentLotteryData = recentResData;
+            globalActiveStreaksHistory = historyResData;
 
-            if (globalActiveStreaksHistory.length > 0) {
+            if (globalActiveStreaksHistory && globalActiveStreaksHistory.length > 0) {
                 currentSelectedHistoryDate = globalActiveStreaksHistory[0].date;
             }
 
@@ -351,6 +397,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 console.log(`[Update] ${step}: ${result.message}`);
             }
             alert('Cập nhật hoàn tất! Trang sẽ tải lại.');
+            // Xóa toàn bộ cache localStorage để Client nhận diện data mới
+            Object.keys(localStorage).forEach(k => { if(k.startsWith('ls_cache_')) localStorage.removeItem(k); });
             window.location.reload();
         } catch (error) {
             alert('Cập nhật thất bại: ' + error.message);
@@ -365,9 +413,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const fetchQuickStats = async () => {
         try {
-            const response = await fetch(`${BASE_URL}/api/statistics/quick-stats?t=${Date.now()}`);
-            if (!response.ok) throw new Error('Network response was not ok');
-            const data = await response.json();
+            const data = await fetchWithClientCache('quick_stats', `${BASE_URL}/api/statistics/quick-stats`);
             quickStatsContainer.innerHTML = '';
             const allCurrentStreaks = [];
 
