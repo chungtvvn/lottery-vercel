@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cachedResponse } from '@/lib/cache-headers';
 
 export async function GET() {
     try {
@@ -9,7 +10,7 @@ export async function GET() {
             .select('data')
             .eq('key', 'scoring_stats')
             .single();
-        return NextResponse.json(data?.data || {});
+        return cachedResponse(data?.data || {}, 'DAILY');
     } catch (error) {
         return NextResponse.json({ message: 'Lỗi server' }, { status: 500 });
     }

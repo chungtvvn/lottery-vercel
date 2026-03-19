@@ -1,21 +1,21 @@
 import { NextResponse } from 'next/server';
 
-export const dynamic = 'force-dynamic';
-export const maxDuration = 60; // Allow up to 60s for computation
+export const maxDuration = 60;
 
 export async function GET() {
     try {
+        const { cachedResponse } = require('@/lib/cache-headers');
+
         // Try cache first
         const { getQuickStatsFromCache } = require('@/lib/data-access');
         const cached = await getQuickStatsFromCache();
         if (cached) {
-            return NextResponse.json(cached);
+            return cachedResponse(cached, 'DAILY');
         }
 
         // If no cache, compute on the fly
         console.log('[quick-stats] Cache miss, computing on-the-fly...');
         
-        // Buộc xoá cache cục bộ ở instance này vì cache Postgres đã xoá (người dùng vừa cập nhật)
         const historicalExclusionService = require('../../../../lib/services/historicalExclusionService');
         if (historicalExclusionService.clearCache) historicalExclusionService.clearCache();
         
@@ -25,14 +25,13 @@ export async function GET() {
         const lotteryService = require('../../../../lib/services/lotteryService');
         if (lotteryService.clearCache) lotteryService.clearCache();
         
-        // Tải lại dữ liệu mới từ Database
         await lotteryService.loadRawData();
-        
         const quickStats = await statisticsService.getQuickStats();
         
-        return NextResponse.json(quickStats);
+        return cachedResponse(quickStats, 'DAILY');
     } catch (error) {
         console.error('Error in quick-stats:', error);
-        return NextResponse.json({ error: 'Lỗi server: ' + error.message }, { status: 500 });
+        const { errorResponse } = require('@/lib/cache-headers');
+        return errorResponse('Lỗi server: ' + error.message);
     }
 }

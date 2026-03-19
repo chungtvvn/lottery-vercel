@@ -192,9 +192,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch(e) { console.warn('Cache read error', e); }
 
         console.log(`[Cache] Fetching FRESH data for ${key}`);
-        // Thêm cacheBuster để đảm bảo Vercel không cache cấp CDN khi ta thực sự ấn lấy fresh data
-        const cacheBuster = url.includes('?') ? `&t=${Date.now()}` : `?t=${Date.now()}`;
-        const res = await fetch(url + cacheBuster);
+        // Không dùng cacheBuster — tận dụng Vercel CDN cache (s-maxage headers)
+        // CDN sẽ trả cached response nếu còn fresh, giảm DB hits xuống ~0
+        const res = await fetch(url);
         if (!res.ok) throw new Error('Network response was not ok');
         const data = await res.json();
         

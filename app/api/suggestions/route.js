@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cachedResponse } from '@/lib/cache-headers';
 
 export async function GET(request) {
     try {
@@ -11,7 +12,7 @@ export async function GET(request) {
         let result;
         const res = { json(d) { result = d; return res; }, status(c) { res._status = c; return res; }, _status: 200 };
         await suggestionsController.getSuggestions(req, res);
-        return NextResponse.json(result, { status: res._status });
+        return cachedResponse(result, 'DAILY');
     } catch (error) {
         console.error('suggestions error:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });

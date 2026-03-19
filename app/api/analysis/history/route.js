@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cachedResponse } from '@/lib/cache-headers';
 
 export async function GET() {
     try {
@@ -9,10 +10,10 @@ export async function GET() {
         
         const rawData = lotteryService.getRawData();
         if (!rawData || rawData.length === 0) {
-            return NextResponse.json([]);
+            return cachedResponse([], 'DAILY');
         }
 
-        const days = 14; // Lấy 14 ngày gần nhất
+        const days = 14;
         const startIndex = Math.max(0, rawData.length - days);
         const historyData = [];
 
@@ -25,7 +26,7 @@ export async function GET() {
             if (actualNumber === null) continue;
 
             const legacyExcl = futureSimulationService.exclusionByRecordMethod(dataForPrediction);
-            const legacyExclPlus = futureSimulationService.exclusionByRecordMethod(dataForPrediction); // For Exclusion+ use same or plus
+            const legacyExclPlus = futureSimulationService.exclusionByRecordMethod(dataForPrediction);
             const unified = futureSimulationService.unifiedMethod(dataForPrediction);
             const advanced = futureSimulationService.advancedMethod(dataForPrediction);
             const hybridAI = futureSimulationService.hybridAIMethod(dataForPrediction);
@@ -60,7 +61,7 @@ export async function GET() {
                 danhAdvanced: { numbers: mapStrs(advanced.toBet) },
                 danhHybrid: { numbers: mapStrs(hybridAI.toBet) },
                 danhCombined: { numbers: mapStrs(combinedBet) },
-                danhSmart: { numbers: mapStrs(smart25) }, // using smart25 to represent Exclusion+
+                danhSmart: { numbers: mapStrs(smart25) },
                 
                 result: calcRes(legacyExcl.toBet, actualNumber, legacyExcl.skipped),
                 resultUnified: calcRes(unified.toBet, actualNumber),
@@ -71,7 +72,7 @@ export async function GET() {
             });
         }
 
-        return NextResponse.json(historyData);
+        return cachedResponse(historyData, 'DAILY');
     } catch (error) {
         console.error('[Analysis History] Error:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });

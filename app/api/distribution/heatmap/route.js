@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cachedResponse } from '@/lib/cache-headers';
 
 export async function GET(request) {
     try {
@@ -9,6 +10,6 @@ export async function GET(request) {
         let result; let sc = 200;
         const res = { json(d) { result = d; return res; }, status(c) { sc = c; return res; } };
         await controller.getNumberHeatmap(req, res);
-        return NextResponse.json(result, { status: sc });
+        return cachedResponse(result, 'DAILY');
     } catch (error) { return NextResponse.json({ error: error.message }, { status: 500 }); }
 }

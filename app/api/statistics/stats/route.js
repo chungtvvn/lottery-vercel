@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCategoryStats } from '@/lib/data-access';
-
-export const dynamic = 'force-dynamic';
+import { cachedResponse, errorResponse } from '@/lib/cache-headers';
 
 /**
  * API: /api/statistics/stats?category=dau_chan&subcategory=veSole&exactLength=2&startDate=dd/mm/yyyy&endDate=dd/mm/yyyy
@@ -55,13 +54,13 @@ export async function GET(request) {
                     return handleCategoryResponse(fallbackData, subcategory, exactLength, minLength, startDate, endDate);
                 }
             }
-            return NextResponse.json({ error: `Category "${category}" không tìm thấy` }, { status: 404 });
+            return errorResponse(`Category "${category}" không tìm thấy`, 404);
         }
 
         return handleCategoryResponse(categoryData, subcategory, exactLength, minLength, startDate, endDate);
     } catch (error) {
         console.error('Error in stats API:', error);
-        return NextResponse.json({ error: 'Lỗi server: ' + error.message }, { status: 500 });
+        return errorResponse('Lỗi server: ' + error.message);
     }
 }
 
@@ -80,7 +79,7 @@ function handleCategoryResponse(categoryData, subcategory, exactLength, minLengt
     } else if (categoryData.streaks) {
         result = categoryData;
     } else if (subcategory) {
-        return NextResponse.json({ error: `Subcategory "${subcategory}" không tìm thấy` }, { status: 404 });
+        return errorResponse(`Subcategory "${subcategory}" không tìm thấy`, 404);
     } else {
         const summary = {};
         for (const [key, value] of Object.entries(categoryData)) {
@@ -92,7 +91,7 @@ function handleCategoryResponse(categoryData, subcategory, exactLength, minLengt
                 };
             }
         }
-        return NextResponse.json(summary);
+        return cachedResponse(summary, 'MEDIUM');
     }
 
     if (result && result.streaks) {
@@ -123,11 +122,11 @@ function handleCategoryResponse(categoryData, subcategory, exactLength, minLengt
             });
         }
 
-        return NextResponse.json({
+        return cachedResponse({
             ...result,
             streaks: filtered
-        });
+        }, 'MEDIUM');
     }
 
-    return NextResponse.json(result);
+    return cachedResponse(result, 'MEDIUM');
 }

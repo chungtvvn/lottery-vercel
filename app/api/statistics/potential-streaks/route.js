@@ -1,11 +1,9 @@
 import { NextResponse } from 'next/server';
 
-export const dynamic = 'force-dynamic';
-
 // Potential streaks - tính toán nhẹ, trả về từ cache hoặc compute nhanh
 export async function GET() {
     try {
-        // Đọc từ cache nếu có
+        const { cachedResponse } = require('@/lib/cache-headers');
         const { getPublicClient } = require('@/lib/supabase');
         const supabase = getPublicClient();
         const { data } = await supabase
@@ -15,10 +13,10 @@ export async function GET() {
             .single();
 
         if (data) {
-            return NextResponse.json(data.data);
+            return cachedResponse(data.data, 'DAILY');
         }
 
-        return NextResponse.json([]);
+        return cachedResponse([], 'DAILY');
     } catch (error) {
         console.error('Error in potential-streaks:', error);
         return NextResponse.json([], { status: 200 });

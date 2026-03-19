@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 export async function POST(request) {
     try {
         const lotteryService = require('@/lib/services/lotteryService');
-        if (!lotteryService.getRawData()) await lotteryService.loadRawData();
+        if (!lotteryService.getRawData()) await lotteryService.loadAll();
         const simulationService = require('@/lib/services/simulationService');
         const options = await request.json();
         const lotteryData = lotteryService.getRawData();

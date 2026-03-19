@@ -3,7 +3,7 @@ import { clearMemoryCache, upsertLotteryResults, saveStatsToDb, uploadFullStatsT
 import generateNumberStats from '@/lib/generators/statisticsGenerator';
 import generateHeadTailStats from '@/lib/generators/headTailStatsGenerator';
 import generateSumDifferenceStats from '@/lib/generators/sumDifferenceStatsGenerator';
-import { getAdminClient } from '@/lib/supabase';
+import { getAdminClient, getPublicClient } from '@/lib/supabase';
 import * as lotteryService from '@/lib/services/lotteryService';
 import * as statisticsService from '@/lib/services/statisticsService';
 import * as historicalExclusionService from '@/lib/services/historicalExclusionService';
@@ -12,21 +12,6 @@ const DATA_SOURCE_URL = 'https://raw.githubusercontent.com/khiemdoan/vietnam-lot
 
 export const maxDuration = 60;
 
-async function ensureDataFile() {
-    const fs = require('fs');
-    const path = require('path');
-    const tmpDataDir = '/tmp/lottery_data';
-    const dataFilePath = path.join(tmpDataDir, 'xsmb-2-digits.json');
-    
-    fs.mkdirSync(tmpDataDir, { recursive: true });
-    if (!fs.existsSync(dataFilePath)) {
-        const response = await fetch(DATA_SOURCE_URL, { cache: 'no-store' });
-        const rawJsonData = await response.json();
-        fs.writeFileSync(dataFilePath, JSON.stringify(rawJsonData));
-    }
-    return tmpDataDir;
-}
-
 function clearAllCaches() {
     clearMemoryCache();
     try { if (lotteryService.clearCache) lotteryService.clearCache(); } catch(e) {}
@@ -34,10 +19,72 @@ function clearAllCaches() {
     try { if (historicalExclusionService.clearCache) historicalExclusionService.clearCache(); } catch(e) {}
 }
 
+/**
+ * Lấy ngày mới nhất trong DB (draw_date dạng YYYY-MM-DD)
+ */
+async function getLatestDbDate() {
+    const supabase = getPublicClient();
+    const { data, error } = await supabase
+        .from('lottery_results')
+        .select('draw_date')
+        .order('draw_date', { ascending: false })
+        .limit(1)
+        .single();
+
+    if (error || !data) return null;
+    return data.draw_date; // "2026-03-18" format
+}
+
+/**
+ * So sánh dữ liệu JSON mới với DB và chỉ insert các ngày còn thiếu.
+ * Trả về { newCount, latestDate, allData }
+ */
+async function incrementalUpsert(rawJsonData) {
+    // Sort ascending by date
+    rawJsonData.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    // Lấy ngày mới nhất trong DB
+    const latestDbDate = await getLatestDbDate();
+    console.log(`[Update] Latest date in DB: ${latestDbDate || 'EMPTY'}`);
+
+    let newRecords;
+    if (!latestDbDate) {
+        // DB trống – insert tất cả
+        newRecords = rawJsonData;
+        console.log(`[Update] DB empty, inserting ALL ${rawJsonData.length} records`);
+    } else {
+        // Chỉ lấy các ngày > latestDbDate
+        const latestDbTimestamp = new Date(latestDbDate).getTime();
+        newRecords = rawJsonData.filter(r => {
+            const d = new Date(r.date);
+            return d.getTime() > latestDbTimestamp;
+        });
+        console.log(`[Update] Found ${newRecords.length} new records after ${latestDbDate}`);
+    }
+
+    if (newRecords.length === 0) {
+        // Không có dữ liệu mới
+        const lastEntry = rawJsonData[rawJsonData.length - 1];
+        const d = new Date(lastEntry.date);
+        const formattedDate = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+        return { newCount: 0, latestDate: formattedDate, allData: rawJsonData };
+    }
+
+    // Upsert CHỈ các ngày mới
+    await upsertLotteryResults(newRecords);
+
+    const lastEntry = rawJsonData[rawJsonData.length - 1];
+    const d = new Date(lastEntry.date);
+    const formattedDate = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+    
+    return { newCount: newRecords.length, latestDate: formattedDate, allData: rawJsonData };
+}
+
 export async function POST(request) {
     try {
         const url = new URL(request.url);
         const step = url.searchParams.get('step') || 'data';
+        const forceRecompute = url.searchParams.get('force') === 'true';
         const startTime = Date.now();
         const fs = require('fs');
         const path = require('path');
@@ -48,75 +95,112 @@ export async function POST(request) {
             if (!response.ok) throw new Error(`Failed to fetch: ${response.status}`);
             
             const rawJsonData = await response.json();
-            await upsertLotteryResults(rawJsonData);
-            clearAllCaches();
             
-            // Delete stale quick_stats cache
-            try {
-                await getAdminClient().from('cache_store').delete().in('key', ['quick_stats', 'quick_stats_history']);
-            } catch(e) {}
-
-            // Write data for subsequent generator steps
+            // INCREMENTAL: So sánh với DB chỉ insert ngày mới
+            const { newCount, latestDate, allData } = await incrementalUpsert(rawJsonData);
+            
+            // Lưu metadata cho các bước sau
             const tmpDataDir = '/tmp/lottery_data';
             fs.mkdirSync(tmpDataDir, { recursive: true });
-            fs.writeFileSync(path.join(tmpDataDir, 'xsmb-2-digits.json'), JSON.stringify(rawJsonData));
+            fs.writeFileSync(path.join(tmpDataDir, 'xsmb-2-digits.json'), JSON.stringify(allData));
+            fs.writeFileSync(path.join(tmpDataDir, 'update_meta.json'), JSON.stringify({ 
+                newCount, 
+                latestDate, 
+                timestamp: Date.now() 
+            }));
 
-            rawJsonData.sort((a, b) => new Date(a.date) - new Date(b.date));
-            const lastEntry = rawJsonData[rawJsonData.length - 1];
-            const d = new Date(lastEntry.date);
-            const formattedDate = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+            if (newCount > 0) {
+                clearAllCaches();
+                // Xóa stale quick_stats cache khi có dữ liệu mới
+                try {
+                    await getAdminClient().from('cache_store').delete().in('key', ['quick_stats', 'quick_stats_history']);
+                    await getAdminClient().from('cache_store').delete().like('key', 'quick_stats_chunk_%');
+                } catch(e) {}
+            }
 
             const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
             return NextResponse.json({
                 success: true, step: 'data',
-                message: `Đã cập nhật ${rawJsonData.length} bản ghi (${elapsed}s). Mới nhất: ${formattedDate}.`,
-                latestDate: formattedDate
+                message: newCount > 0 
+                    ? `Đã thêm ${newCount} ngày mới (${elapsed}s). Mới nhất: ${latestDate}.`
+                    : `Dữ liệu đã cập nhật rồi (0 ngày mới, ${elapsed}s). Mới nhất: ${latestDate}.`,
+                latestDate,
+                newCount
             });
 
-        } else if (step === 'stats_number') {
-            await lotteryService.loadRawData();
-            const rawJsonData = await lotteryService.getRawData();
-            
-            console.log('[Update] Generator Number Stats in-memory...');
-            const stats = await generateNumberStats(null, null, rawJsonData);
-            
-            await saveStatsToDb('number', stats);
-            clearAllCaches();
-            
-            const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-            return NextResponse.json({ success: true, step, message: `Number Stats in-memory hoàn thành (${elapsed}s)` });
+        } else if (step === 'stats_number' || step === 'stats_head_tail' || step === 'stats_sum_diff') {
+            // INCREMENTAL: Kiểm tra có dữ liệu mới không
+            const metaPath = '/tmp/lottery_data/update_meta.json';
+            let newCount = 0;
+            try {
+                const meta = JSON.parse(fs.readFileSync(metaPath, 'utf-8'));
+                newCount = meta.newCount || 0;
+            } catch(e) {
+                // Nếu không đọc được meta, assume cần recompute
+                newCount = 1;
+                console.log('[Update] Cannot read meta, assuming new data exists');
+            }
 
-        } else if (step === 'stats_head_tail') {
-            await lotteryService.loadRawData();
-            const rawJsonData = await lotteryService.getRawData();
-            
-            console.log('[Update] Generator Head/Tail Stats in-memory...');
-            const stats = await generateHeadTailStats(null, null, rawJsonData);
-            
-            await saveStatsToDb('head_tail', stats);
-            clearAllCaches();
-            
-            const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-            return NextResponse.json({ success: true, step, message: `Head/Tail Stats in-memory hoàn thành (${elapsed}s)` });
+            // SKIP nếu không có dữ liệu mới VÀ không force
+            if (newCount === 0 && !forceRecompute) {
+                const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+                const stepName = step.replace('stats_', '').replace('_', '/');
+                return NextResponse.json({ 
+                    success: true, step, 
+                    message: `SKIP ${stepName} — không có dữ liệu mới (${elapsed}s)`,
+                    skipped: true
+                });
+            }
 
-        } else if (step === 'stats_sum_diff') {
+            // Có dữ liệu mới → recompute stats (cần toàn bộ lịch sử để tính streaks chính xác)
             await lotteryService.loadRawData();
             const rawJsonData = await lotteryService.getRawData();
+
+            let stats;
+            if (step === 'stats_number') {
+                console.log('[Update] Generator Number Stats in-memory...');
+                stats = await generateNumberStats(null, null, rawJsonData);
+                await saveStatsToDb('number', stats);
+            } else if (step === 'stats_head_tail') {
+                console.log('[Update] Generator Head/Tail Stats in-memory...');
+                stats = await generateHeadTailStats(null, null, rawJsonData);
+                await saveStatsToDb('head_tail', stats);
+            } else {
+                console.log('[Update] Generator Sum/Diff Stats in-memory...');
+                stats = await generateSumDifferenceStats(null, null, rawJsonData);
+                await saveStatsToDb('sum_diff', stats);
+            }
             
-            console.log('[Update] Generator Sum/Diff Stats in-memory...');
-            const stats = await generateSumDifferenceStats(null, null, rawJsonData);
-            
-            await saveStatsToDb('sum_diff', stats);
             clearAllCaches();
-            
             const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-            return NextResponse.json({ success: true, step, message: `Sum/Diff Stats in-memory hoàn thành (${elapsed}s)` });
+            return NextResponse.json({ success: true, step, message: `${step} hoàn thành (${elapsed}s, ${newCount} ngày mới)` });
 
         } else if (step === 'stats_quick') {
+            // INCREMENTAL: Kiểm tra có dữ liệu mới không
+            const metaPath = '/tmp/lottery_data/update_meta.json';
+            let newCount = 0;
+            try {
+                const meta = JSON.parse(fs.readFileSync(metaPath, 'utf-8'));
+                newCount = meta.newCount || 0;
+            } catch(e) {
+                newCount = 1;
+                console.log('[Update] Cannot read meta, assuming new data exists');
+            }
+
+            // SKIP nếu không có dữ liệu mới VÀ không force
+            if (newCount === 0 && !forceRecompute) {
+                const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+                return NextResponse.json({ 
+                    success: true, step, 
+                    message: `SKIP Quick Stats — không có dữ liệu mới (${elapsed}s)`,
+                    skipped: true
+                });
+            }
+
             // Pre-compute quick stats to prevent 504 timeouts on the frontend
             console.log('[Update] Pre-computing Quick Stats...');
             clearAllCaches();
-            await lotteryService.loadRawData(); // This now does sequential loads safely
+            await lotteryService.loadAll(); // Need both rawData + stats for getQuickStats
             const [quickStats, history] = await Promise.all([
                 statisticsService.getQuickStats(),
                 statisticsService.getQuickStatsHistory()
@@ -127,7 +211,7 @@ export async function POST(request) {
             await saveCacheEntry('quick_stats_history', history);
             
             const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-            return NextResponse.json({ success: true, step, message: `Quick Stats và History hoàn thành (${elapsed}s)` });
+            return NextResponse.json({ success: true, step, message: `Quick Stats và History hoàn thành (${elapsed}s, ${newCount} ngày mới)` });
         }
 
         return NextResponse.json({ success: false, message: 'Invalid step' }, { status: 400 });

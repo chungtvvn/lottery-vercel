@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cachedResponse } from '@/lib/cache-headers';
 
 export async function GET(request) {
     try {
@@ -7,7 +8,7 @@ export async function GET(request) {
         
         const rawData = lotteryService.getRawData();
         if (!rawData || rawData.length === 0) {
-            return NextResponse.json({ predictions: null, message: 'No data' });
+            return cachedResponse({ predictions: null, message: 'No data' }, 'MEDIUM');
         }
 
         const suggestionsController = require('../../../../lib/controllers/suggestionsController');
@@ -17,7 +18,7 @@ export async function GET(request) {
         const res = { json(d) { result = d; return res; }, status(c) { res._status = c; return res; }, _status: 200 };
         await suggestionsController.getSuggestions(req, res);
         
-        return NextResponse.json(result, { status: res._status });
+        return cachedResponse(result, 'DAILY');
     } catch (error) {
         console.error('[Analysis Latest] Error:', error);
         return NextResponse.json({ predictions: null, error: error.message }, { status: 500 });
