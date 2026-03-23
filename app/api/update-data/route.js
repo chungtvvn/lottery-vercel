@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { clearMemoryCache, upsertLotteryResults, saveStatsToDb, uploadFullStatsToStorage } from '@/lib/data-access';
+import { clearMemoryCache, upsertLotteryResults, saveStatsToDb, saveCacheEntry } from '@/lib/data-access';
 import generateNumberStats from '@/lib/generators/statisticsGenerator';
 import generateHeadTailStats from '@/lib/generators/headTailStatsGenerator';
 import generateSumDifferenceStats from '@/lib/generators/sumDifferenceStatsGenerator';
@@ -20,7 +20,7 @@ function clearAllCaches() {
 }
 
 /**
- * Lấy ngày mới nhất trong DB (draw_date dạng YYYY-MM-DD)
+ * Lấy ngày mới nhất trong DB — chỉ 1 query nhẹ
  */
 async function getLatestDbDate() {
     const supabase = getPublicClient();
@@ -39,11 +39,11 @@ async function getLatestDbDate() {
  * So sánh dữ liệu JSON mới với DB và chỉ insert các ngày còn thiếu.
  * Trả về { newCount, latestDate, allData }
  */
-async function incrementalUpsert(rawJsonData) {
+async function incrementalInsert(rawJsonData) {
     // Sort ascending by date
     rawJsonData.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    // Lấy ngày mới nhất trong DB
+    // Lấy ngày mới nhất trong DB (1 lightweight read)
     const latestDbDate = await getLatestDbDate();
     console.log(`[Update] Latest date in DB: ${latestDbDate || 'EMPTY'}`);
 
@@ -62,21 +62,17 @@ async function incrementalUpsert(rawJsonData) {
         console.log(`[Update] Found ${newRecords.length} new records after ${latestDbDate}`);
     }
 
-    if (newRecords.length === 0) {
-        // Không có dữ liệu mới
-        const lastEntry = rawJsonData[rawJsonData.length - 1];
-        const d = new Date(lastEntry.date);
-        const formattedDate = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
-        return { newCount: 0, latestDate: formattedDate, allData: rawJsonData };
-    }
-
-    // Upsert CHỈ các ngày mới
-    await upsertLotteryResults(newRecords);
-
     const lastEntry = rawJsonData[rawJsonData.length - 1];
     const d = new Date(lastEntry.date);
     const formattedDate = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
-    
+
+    if (newRecords.length === 0) {
+        return { newCount: 0, latestDate: formattedDate, allData: rawJsonData };
+    }
+
+    // INSERT chỉ các ngày mới (thay vì upsert toàn bộ)
+    await upsertLotteryResults(newRecords);
+
     return { newCount: newRecords.length, latestDate: formattedDate, allData: rawJsonData };
 }
 
@@ -86,8 +82,6 @@ export async function POST(request) {
         const step = url.searchParams.get('step') || 'data';
         const forceRecompute = url.searchParams.get('force') === 'true';
         const startTime = Date.now();
-        const fs = require('fs');
-        const path = require('path');
 
         if (step === 'data') {
             console.log('[Update] Fetching data from GitHub...');
@@ -96,18 +90,24 @@ export async function POST(request) {
             
             const rawJsonData = await response.json();
             
-            // INCREMENTAL: So sánh với DB chỉ insert ngày mới
-            const { newCount, latestDate, allData } = await incrementalUpsert(rawJsonData);
+            // SMART: So sánh với DB, chỉ insert ngày mới
+            const { newCount, latestDate, allData } = await incrementalInsert(rawJsonData);
             
-            // Lưu metadata cho các bước sau
-            const tmpDataDir = '/tmp/lottery_data';
-            fs.mkdirSync(tmpDataDir, { recursive: true });
-            fs.writeFileSync(path.join(tmpDataDir, 'xsmb-2-digits.json'), JSON.stringify(allData));
-            fs.writeFileSync(path.join(tmpDataDir, 'update_meta.json'), JSON.stringify({ 
-                newCount, 
-                latestDate, 
-                timestamp: Date.now() 
-            }));
+            // Lưu metadata vào /tmp cho các bước sau (nếu Vercel serverless cùng instance)
+            try {
+                const fs = require('fs');
+                const path = require('path');
+                const tmpDataDir = '/tmp/lottery_data';
+                fs.mkdirSync(tmpDataDir, { recursive: true });
+                fs.writeFileSync(path.join(tmpDataDir, 'xsmb-2-digits.json'), JSON.stringify(allData));
+                fs.writeFileSync(path.join(tmpDataDir, 'update_meta.json'), JSON.stringify({ 
+                    newCount, 
+                    latestDate, 
+                    timestamp: Date.now() 
+                }));
+            } catch(e) {
+                console.warn('[Update] Cannot write tmp files:', e.message);
+            }
 
             if (newCount > 0) {
                 clearAllCaches();
@@ -129,15 +129,14 @@ export async function POST(request) {
             });
 
         } else if (step === 'stats_number' || step === 'stats_head_tail' || step === 'stats_sum_diff') {
-            // INCREMENTAL: Kiểm tra có dữ liệu mới không
-            const metaPath = '/tmp/lottery_data/update_meta.json';
+            // SMART: Đọc meta từ /tmp để check có dữ liệu mới không
             let newCount = 0;
             try {
-                const meta = JSON.parse(fs.readFileSync(metaPath, 'utf-8'));
+                const fs = require('fs');
+                const meta = JSON.parse(fs.readFileSync('/tmp/lottery_data/update_meta.json', 'utf-8'));
                 newCount = meta.newCount || 0;
             } catch(e) {
-                // Nếu không đọc được meta, assume cần recompute
-                newCount = 1;
+                newCount = 1; // Fallback: assume cần recompute
                 console.log('[Update] Cannot read meta, assuming new data exists');
             }
 
@@ -152,21 +151,31 @@ export async function POST(request) {
                 });
             }
 
-            // Có dữ liệu mới → recompute stats (cần toàn bộ lịch sử để tính streaks chính xác)
-            await lotteryService.loadRawData();
-            const rawJsonData = await lotteryService.getRawData();
+            // SMART: Ưu tiên dùng GitHub data từ /tmp (không đọc lại từ DB)
+            let rawJsonData;
+            try {
+                const fs = require('fs');
+                const tmpData = fs.readFileSync('/tmp/lottery_data/xsmb-2-digits.json', 'utf-8');
+                rawJsonData = JSON.parse(tmpData);
+                console.log(`[Update] Using GitHub data from /tmp (${rawJsonData.length} records, 0 DB reads)`);
+            } catch(e) {
+                // Fallback: phải đọc từ DB
+                console.log('[Update] /tmp data unavailable, loading from DB...');
+                await lotteryService.loadRawData();
+                rawJsonData = lotteryService.getRawData();
+            }
 
             let stats;
             if (step === 'stats_number') {
-                console.log('[Update] Generator Number Stats in-memory...');
+                console.log('[Update] Generating Number Stats in-memory...');
                 stats = await generateNumberStats(null, null, rawJsonData);
                 await saveStatsToDb('number', stats);
             } else if (step === 'stats_head_tail') {
-                console.log('[Update] Generator Head/Tail Stats in-memory...');
+                console.log('[Update] Generating Head/Tail Stats in-memory...');
                 stats = await generateHeadTailStats(null, null, rawJsonData);
                 await saveStatsToDb('head_tail', stats);
             } else {
-                console.log('[Update] Generator Sum/Diff Stats in-memory...');
+                console.log('[Update] Generating Sum/Diff Stats in-memory...');
                 stats = await generateSumDifferenceStats(null, null, rawJsonData);
                 await saveStatsToDb('sum_diff', stats);
             }
@@ -176,11 +185,11 @@ export async function POST(request) {
             return NextResponse.json({ success: true, step, message: `${step} hoàn thành (${elapsed}s, ${newCount} ngày mới)` });
 
         } else if (step === 'stats_quick') {
-            // INCREMENTAL: Kiểm tra có dữ liệu mới không
-            const metaPath = '/tmp/lottery_data/update_meta.json';
+            // SMART: Kiểm tra có dữ liệu mới không
             let newCount = 0;
             try {
-                const meta = JSON.parse(fs.readFileSync(metaPath, 'utf-8'));
+                const fs = require('fs');
+                const meta = JSON.parse(fs.readFileSync('/tmp/lottery_data/update_meta.json', 'utf-8'));
                 newCount = meta.newCount || 0;
             } catch(e) {
                 newCount = 1;
@@ -197,7 +206,7 @@ export async function POST(request) {
                 });
             }
 
-            // Pre-compute quick stats to prevent 504 timeouts on the frontend
+            // Pre-compute quick stats
             console.log('[Update] Pre-computing Quick Stats...');
             clearAllCaches();
             await lotteryService.loadAll(); // Need both rawData + stats for getQuickStats
@@ -206,7 +215,6 @@ export async function POST(request) {
                 statisticsService.getQuickStatsHistory()
             ]);
             
-            const { saveCacheEntry } = require('@/lib/data-access');
             await saveCacheEntry('quick_stats', quickStats);
             await saveCacheEntry('quick_stats_history', history);
             
