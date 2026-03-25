@@ -858,7 +858,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const streakLength = sortedStreaks[0].length;
         let detailsHtml = sortedStreaks.map(streak => `
                     <li class="mb-2">
-                        <strong class="text-sm">${streak.startDate} → ${streak.endDate}</strong>
+                        <strong class="text-sm">${normDate(streak.startDate)} → ${normDate(streak.endDate)}</strong>
                         <div class="flex flex-wrap gap-1 mt-1">${renderFullSequence(streak, description)}</div>
                     </li>`).join('');
         return `<h6 class="font-semibold text-gray-600">${title} (Dài ${streakLength} ngày)</h6><ul class="list-none p-0 mt-2">${detailsHtml}</ul>`;
@@ -915,10 +915,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         resultContainer.innerHTML = content;
     };
 
-    // SỬA LỖI: Hàm này nhận 'description' để xác định cách hiển thị
+    // Normalize date: nếu API trả YYYY-MM-DD thì convert sang DD/MM/YYYY
+    const normDate = (d) => {
+        if (!d) return '';
+        if (d.includes('-')) {
+            const parts = d.split('-');
+            return `${parts[2].substring(0,2)}/${parts[1]}/${parts[0]}`;
+        }
+        return d;
+    };
+
     const renderFullSequence = (streak, description) => {
         if (!streak.fullSequence) return '<span></span>';
-        const streakDates = new Set(streak.dates);
+        // Normalize dates trong fullSequence
+        const normalizedSeq = streak.fullSequence.map(day => ({...day, date: normDate(day.date)}));
+        // Normalize dates trong streak.dates
+        const normalizedDates = streak.dates ? streak.dates.map(d => normDate(d)) : [];
+        const streakDates = new Set(normalizedDates);
 
         const desc = (typeof description === 'string') ? description.toLowerCase() : '';
         const isTongTT = desc.includes('tổng tt');
@@ -926,7 +939,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const isHieu = desc.includes('hiệu');
         const isTienLuiSoLe = desc.includes('tiến lùi') || desc.includes('lùi tiến');
 
-        return streak.fullSequence.map((day, index) => {
+        return normalizedSeq.map((day, index) => {
             // Check if this is the latest day (not part of actual streak)
             const isLatest = day.isLatest === true;
             const isInStreak = streakDates.has(day.date);
@@ -942,12 +955,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // For tienLuiSoLe, show arrow indicating direction (only for streak items)
                 // Find previous streak item index
                 let prevIndex = index - 1;
-                while (prevIndex >= 0 && !streakDates.has(streak.fullSequence[prevIndex].date)) {
+                while (prevIndex >= 0 && !streakDates.has(normalizedSeq[prevIndex].date)) {
                     prevIndex--;
                 }
 
                 if (prevIndex >= 0) {
-                    const prevValue = parseInt(streak.fullSequence[prevIndex].value, 10);
+                    const prevValue = parseInt(normalizedSeq[prevIndex].value, 10);
                     const currValue = parseInt(day.value, 10);
                     const arrow = currValue > prevValue ? '↑' : (currValue < prevValue ? '↓' : '→');
                     subText = `<span class="block text-purple-600 font-bold">${arrow}</span>`;
