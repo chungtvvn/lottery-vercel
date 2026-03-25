@@ -8,7 +8,7 @@ export async function GET(request) {
         const limit = parseInt(searchParams.get('limit')) || 7;
         const results = await getRecentResults(limit);
         const formatted = results.map(r => ({
-            date: r.draw_date,
+            date: r.date,
             special: r.special,
             prize1: r.prize1
         }));
