@@ -1,21 +1,14 @@
 import { NextResponse } from 'next/server';
+import { cachedResponse } from '@/lib/cache-headers';
 
 // Potential streaks - tính toán nhẹ, trả về từ cache hoặc compute nhanh
 export async function GET() {
     try {
-        const { cachedResponse } = require('@/lib/cache-headers');
-        const { getPublicClient } = require('@/lib/supabase');
-        const supabase = getPublicClient();
-        const { data } = await supabase
-            .from('cache_store')
-            .select('data')
-            .eq('key', 'potential_streaks')
-            .single();
-
-        if (data) {
-            return cachedResponse(data.data, 'DAILY');
-        }
-
+        const lotteryService = require('@/lib/services/lotteryService');
+        await lotteryService.loadAll();
+        
+        // Potential streaks was removed from static JSON generation to save space.
+        // Return empty array to prevent 500 errors and UI crashes.
         return cachedResponse([], 'DAILY');
     } catch (error) {
         console.error('Error in potential-streaks:', error);

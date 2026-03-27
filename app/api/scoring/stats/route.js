@@ -3,15 +3,10 @@ import { cachedResponse } from '@/lib/cache-headers';
 
 export async function GET() {
     try {
-        const { getPublicClient } = require('@/lib/supabase');
-        const supabase = getPublicClient();
-        const { data } = await supabase
-            .from('cache_store')
-            .select('data')
-            .eq('key', 'scoring_stats')
-            .single();
-        return cachedResponse(data?.data || {}, 'DAILY');
+        const lotteryService = require('@/lib/services/lotteryService');
+        await lotteryService.loadAll();
+        return cachedResponse({}, 'DAILY');
     } catch (error) {
-        return NextResponse.json({ message: 'Lỗi server' }, { status: 500 });
+        return NextResponse.json({ message: 'Lỗi server', error: error.message }, { status: 500 });
     }
 }

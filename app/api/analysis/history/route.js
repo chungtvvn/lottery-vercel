@@ -3,8 +3,8 @@ import { cachedResponse } from '@/lib/cache-headers';
 
 export async function GET() {
     try {
-        const lotteryService = require('../../../../lib/services/lotteryService');
-        const futureSimulationService = require('../../../../lib/services/futureSimulationService');
+        const lotteryService = require('@/lib/services/lotteryService');
+        const futureSimulationService = require('@/lib/services/futureSimulationService');
         
         if (!lotteryService.getRawData()) await lotteryService.loadRawData();
         
@@ -25,17 +25,20 @@ export async function GET() {
             const actualNumber = futureSimulationService.getSpecialNumber(actualDay);
             if (actualNumber === null) continue;
 
-            const legacyExcl = futureSimulationService.exclusionByRecordMethod(dataForPrediction);
-            const legacyExclPlus = futureSimulationService.exclusionByRecordMethod(dataForPrediction);
+            // Exclusion/Exclusion+ from raw data (fast, deterministic)
+            const exclResult = futureSimulationService.exclusionByRecordMethod(dataForPrediction);
             const unified = futureSimulationService.unifiedMethod(dataForPrediction);
             const advanced = futureSimulationService.advancedMethod(dataForPrediction);
             const hybridAI = futureSimulationService.hybridAIMethod(dataForPrediction);
 
-            const combinedSet = new Set([...legacyExcl.toBet, ...unified.toBet, ...advanced.toBet, ...hybridAI.toBet]);
+            const combinedSet = new Set([...exclResult.toBet, ...unified.toBet, ...advanced.toBet, ...hybridAI.toBet]);
             const combinedBet = Array.from(combinedSet).sort((a,b) => a-b);
 
             const scoreMap = new Map();
-            legacyExclPlus.toBetPlus.forEach((n, idx) => scoreMap.set(n, (scoreMap.get(n)||0) + 3 + (legacyExclPlus.toBetPlus.length - idx)/(legacyExclPlus.toBetPlus.length||1)));
+            (exclResult.toBetPlus || []).forEach((n, idx) => {
+                const len = (exclResult.toBetPlus || []).length || 1;
+                scoreMap.set(n, (scoreMap.get(n)||0) + 3 + (len - idx)/len);
+            });
             [unified.toBet, advanced.toBet, hybridAI.toBet].forEach(arr => {
                 arr.forEach((n, idx) => scoreMap.set(n, (scoreMap.get(n)||0) + 1 + (arr.length - idx)/(arr.length||1)));
             });
@@ -54,16 +57,16 @@ export async function GET() {
 
             const mapStrs = arr => arr.map(n => String(n).padStart(2, '0'));
 
-             historyData.push({
+            historyData.push({
                 date: actualDay.date,
-                danh: { numbers: mapStrs(legacyExcl.toBet), isSkipped: legacyExcl.skipped },
+                danh: { numbers: mapStrs(exclResult.toBet), isSkipped: exclResult.skipped },
                 danhUnified: { numbers: mapStrs(unified.toBet) },
                 danhAdvanced: { numbers: mapStrs(advanced.toBet) },
                 danhHybrid: { numbers: mapStrs(hybridAI.toBet) },
                 danhCombined: { numbers: mapStrs(combinedBet) },
                 danhSmart: { numbers: mapStrs(smart25) },
                 
-                result: calcRes(legacyExcl.toBet, actualNumber, legacyExcl.skipped),
+                result: calcRes(exclResult.toBet, actualNumber, exclResult.skipped),
                 resultUnified: calcRes(unified.toBet, actualNumber),
                 resultAdvanced: calcRes(advanced.toBet, actualNumber),
                 resultHybrid: calcRes(hybridAI.toBet, actualNumber),
