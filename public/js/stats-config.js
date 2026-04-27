@@ -1600,6 +1600,150 @@ function populateHeadTailOptions() {
 
 // [MỚI] Gọi hàm này ngay lập tức để cập nhật STATS_OPTIONS
 populateHeadTailOptions();
+
+// --- [MỚI] Thêm nhóm Đồng Tiến/Lùi cách 22, 33, 44, 55 ---
+STATS_OPTIONS["Thống kê Đồng Step (22,33,44,55)"] = [];
+function populateDongStepOptions() {
+    const arr = STATS_OPTIONS["Thống kê Đồng Step (22,33,44,55)"];
+    const steps = [22, 33, 44, 55];
+    const stepLabels = { 22: 'Cách 22', 33: 'Cách 33', 44: 'Cách 44', 55: 'Cách 55' };
+
+    steps.forEach(step => {
+        for (let start = 0; start < step && start <= 99; start++) {
+            // Generate the numbers in this set
+            const numbers = [];
+            for (let n = start; n <= 99; n += step) {
+                numbers.push(n.toString().padStart(2, '0'));
+            }
+            if (numbers.length < 3) continue; // Chỉ hiện bộ >= 3 số
+
+            const category = `dong_step_${step}_${start}`;
+            const preview = numbers.slice(0, 3).join(',') + (numbers.length > 3 ? '...' : '');
+            const prefix = `Đồng ${stepLabels[step]} (${preview})`;
+
+            ['tienLienTiep', 'tienDeuLienTiep', 'luiLienTiep', 'luiDeuLienTiep'].forEach(sub => {
+                const subLabels = {
+                    tienLienTiep: 'Tiến', tienDeuLienTiep: 'Tiến Đều',
+                    luiLienTiep: 'Lùi', luiDeuLienTiep: 'Lùi Đều'
+                };
+                arr.push({ text: `${prefix} - ${subLabels[sub]}`, category, subcategory: sub });
+            });
+        }
+    });
+}
+populateDongStepOptions();
+
+// --- [MỚI] Thêm nhóm Đầu/Đít 3 số ghép ---
+STATS_OPTIONS["Thống kê Đầu/Đít 3 số ghép"] = [];
+function populateDauDit3DOptions() {
+    const arr = STATS_OPTIONS["Thống kê Đầu/Đít 3 số ghép"];
+
+    // Generate valid 3-digit groups (same logic as numberAnalysis.js)
+    for (let a = 0; a <= 7; a++) {
+        for (let b = a + 2; b <= 8; b++) {
+            for (let c = b + 2; c <= 9; c++) {
+                if ((b - a) >= 2 && (c - b) >= 2 && (c - a) >= 2) {
+                    const groupKey = `${a}_${b}_${c}`;
+                    const groupLabel = `${a},${b},${c}`;
+
+                    // Đầu
+                    ['veLienTiep', 'veSole', 'veSoleMoi'].forEach(sub => {
+                        const subLabels = {
+                            veLienTiep: 'Về liên tiếp', veSole: 'Về so le', veSoleMoi: 'Về so le Mới'
+                        };
+                        arr.push({
+                            text: `Đầu (${groupLabel}) - ${subLabels[sub]}`,
+                            category: `dau_3d_${groupKey}`,
+                            subcategory: sub
+                        });
+                    });
+
+                    // Đít
+                    ['veLienTiep', 'veSole', 'veSoleMoi'].forEach(sub => {
+                        const subLabels = {
+                            veLienTiep: 'Về liên tiếp', veSole: 'Về so le', veSoleMoi: 'Về so le Mới'
+                        };
+                        arr.push({
+                            text: `Đít (${groupLabel}) - ${subLabels[sub]}`,
+                            category: `dit_3d_${groupKey}`,
+                            subcategory: sub
+                        });
+                    });
+                }
+            }
+        }
+    }
+}
+populateDauDit3DOptions();
+
+// --- [MỚI] Thêm nhóm CC/CL/LC/LL + Tổng/Hiệu ---
+STATS_OPTIONS["Thống kê Dạng Số + Tổng/Hiệu"] = [];
+function populateParitySumDiffOptions() {
+    const arr = STATS_OPTIONS["Thống kê Dạng Số + Tổng/Hiệu"];
+    const parityTypes = [
+        { key: 'chan_chan', label: 'Chẵn-Chẵn' },
+        { key: 'chan_le', label: 'Chẵn-Lẻ' },
+        { key: 'le_chan', label: 'Lẻ-Chẵn' },
+        { key: 'le_le', label: 'Lẻ-Lẻ' }
+    ];
+    const suffixes = [
+        { key: 'tong_tt_chan', label: 'Tổng TT Chẵn' },
+        { key: 'tong_tt_le', label: 'Tổng TT Lẻ' },
+        { key: 'tong_moi_chan', label: 'Tổng Mới Chẵn' },
+        { key: 'tong_moi_le', label: 'Tổng Mới Lẻ' },
+        { key: 'hieu_chan', label: 'Hiệu Chẵn' },
+        { key: 'hieu_le', label: 'Hiệu Lẻ' }
+    ];
+    const subcats = [
+        { key: 'veLienTiep', label: 'Về liên tiếp' },
+        { key: 'tienLienTiep', label: 'Tiến' },
+        { key: 'tienDeuLienTiep', label: 'Tiến Đều' },
+        { key: 'luiLienTiep', label: 'Lùi' },
+        { key: 'luiDeuLienTiep', label: 'Lùi Đều' }
+    ];
+
+    parityTypes.forEach(parity => {
+        suffixes.forEach(suffix => {
+            const category = `${parity.key}_${suffix.key}`;
+            const prefix = `${parity.label} + ${suffix.label}`;
+            subcats.forEach(sub => {
+                arr.push({ text: `${prefix} - ${sub.label}`, category, subcategory: sub.key });
+            });
+        });
+    });
+}
+populateParitySumDiffOptions();
+
+// --- [MỚI] Thêm nhóm Pattern Sequence (24 permutation CC/CL/LC/LL) ---
+STATS_OPTIONS["Thống kê Pattern Sequence (Dạng Chẵn/Lẻ tuần hoàn)"] = [];
+function populatePatternSequenceOptions() {
+    const arr = STATS_OPTIONS["Thống kê Pattern Sequence (Dạng Chẵn/Lẻ tuần hoàn)"];
+    const types = ['CC', 'CL', 'LC', 'LL'];
+    const labels = { CC: 'CC', CL: 'CL', LC: 'LC', LL: 'LL' };
+
+    // Generate all 24 permutations
+    function perms(a) {
+        if (a.length <= 1) return [a];
+        const r = [];
+        for (let i = 0; i < a.length; i++) {
+            const rest = [...a.slice(0, i), ...a.slice(i + 1)];
+            for (const p of perms(rest)) r.push([a[i], ...p]);
+        }
+        return r;
+    }
+
+    const allPerms = perms(types);
+    allPerms.forEach(perm => {
+        const patternLabel = perm.map(t => labels[t]).join('→');
+        const category = `pattern_seq_${perm.join('_').toLowerCase()}`;
+        arr.push({
+            text: `Dạng ${patternLabel} tuần hoàn liên tiếp`,
+            category: category
+        });
+    });
+}
+populatePatternSequenceOptions();
+
 const BASE_URL = window.location.origin;
 
 

@@ -124,6 +124,31 @@ async function main() {
         await fs.writeFile(path.join(DATA_DIR, 'statistics', 'quick_stats_history.json'), JSON.stringify(historyStats, null, 2));
         console.log('✅ Đã lưu kết quả quick_stats_history.json');
         
+        console.log(' -> Tạo Data Caching Predictions...');
+        const unifiedPrediction = require('../lib/services/unifiedPredictionService');
+        const hybridAIPrediction = require('../lib/services/hybridAIPredictionService');
+        const advancedAnalysis = require('../lib/services/advancedAnalysisService');
+        
+        const [unifiedResult, advancedResult, hybridResult] = await Promise.all([
+            unifiedPrediction.getDailyPrediction({ topCount: 40 }),
+            advancedAnalysis.getDailyAdvancedPrediction({ topCount: 40, excludeCount: 60 }),
+            hybridAIPrediction.getHybridPrediction({ topCount: 40, excludeCount: 60 })
+        ]);
+        
+        const cachedPredictions = {
+            unified: unifiedResult,
+            advanced: {
+                predictions: advancedResult.predictions,
+                exclusions: advancedResult.exclusions,
+                allNumbers: advancedResult.allNumbers
+            },
+            hybrid: hybridResult,
+            dataDate: ls.getRawData() && ls.getRawData().length > 0 ? ls.getRawData()[ls.getRawData().length - 1].date.substring(0, 10) : new Date().toISOString()
+        };
+        await fs.writeFile(path.join(DATA_DIR, 'statistics', 'cached_predictions.json'), JSON.stringify(cachedPredictions, null, 0));
+        console.log('✅ Đã lưu kết quả cached_predictions.json');
+
+        
         // BƯỚC ĐẶC BIỆT: Minify để xóa fullSequence (cứu github khỏi bị lố 100MB giới hạn)
         console.log('[+] Đang minify siêu gọn các file stats...');
         function minifyStats(stats) {
