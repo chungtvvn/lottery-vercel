@@ -117,12 +117,45 @@ async function main() {
         await ls.loadStats();
         
         const quickStats = await ss.getQuickStats();
-        await fs.writeFile(path.join(DATA_DIR, 'statistics', 'quick_stats.json'), JSON.stringify(quickStats, null, 2));
-        console.log('✅ Đã lưu kết quả quick_stats.json');
+        // Minify: Xoá fullSequence khỏi longest/secondLongest/current để giảm kích thước
+        function stripFullSequence(obj) {
+            if (!obj || typeof obj !== 'object') return obj;
+            if (obj._meta) return obj; // skip meta
+            const result = {};
+            for (const [key, val] of Object.entries(obj)) {
+                if (key === '_meta') { result[key] = val; continue; }
+                if (val && typeof val === 'object' && !Array.isArray(val)) {
+                    const cleaned = { ...val };
+                    // Strip fullSequence from longest arrays
+                    if (Array.isArray(cleaned.longest)) {
+                        cleaned.longest = cleaned.longest.map(({ fullSequence, ...rest }) => rest);
+                    }
+                    if (Array.isArray(cleaned.secondLongest)) {
+                        cleaned.secondLongest = cleaned.secondLongest.map(({ fullSequence, ...rest }) => rest);
+                    }
+                    if (cleaned.current && cleaned.current.fullSequence) {
+                        const { fullSequence, ...restCurrent } = cleaned.current;
+                        cleaned.current = restCurrent;
+                    }
+                    result[key] = cleaned;
+                } else {
+                    result[key] = val;
+                }
+            }
+            return result;
+        }
+        const minifiedQS = stripFullSequence(quickStats);
+        await fs.writeFile(path.join(DATA_DIR, 'statistics', 'quick_stats.json'), JSON.stringify(minifiedQS, null, 0));
+        console.log('✅ Đã lưu kết quả quick_stats.json (minified)');
         
         const historyStats = await ss.getQuickStatsHistory();
-        await fs.writeFile(path.join(DATA_DIR, 'statistics', 'quick_stats_history.json'), JSON.stringify(historyStats, null, 2));
-        console.log('✅ Đã lưu kết quả quick_stats_history.json');
+        // Strip fullSequence from history streaks too
+        const minifiedHistory = historyStats.map(entry => ({
+            ...entry,
+            streaks: entry.streaks ? entry.streaks.map(({ fullSequence, ...rest }) => rest) : []
+        }));
+        await fs.writeFile(path.join(DATA_DIR, 'statistics', 'quick_stats_history.json'), JSON.stringify(minifiedHistory, null, 0));
+        console.log('✅ Đã lưu kết quả quick_stats_history.json (minified)');
         
         console.log(' -> Tạo Data Caching Predictions...');
         const unifiedPrediction = require('../lib/services/unifiedPredictionService');
