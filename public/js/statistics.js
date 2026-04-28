@@ -235,9 +235,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         const specialLookup = {};
         if (recentLotteryData && recentLotteryData.length > 0) {
             recentLotteryData.forEach(item => {
-                const dateObj = new Date(item.date);
-                const dateStr = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}`;
-                specialLookup[dateStr] = item.special;
+                // Parse date directly from string (YYYY-MM-DD) to avoid timezone issues
+                const parts = item.date.split('-');
+                if (parts.length === 3) {
+                    const dateStr = `${parts[2]}/${parts[1]}/${parts[0]}`;
+                    specialLookup[dateStr] = item.special;
+                } else {
+                    // Fallback: date might already be DD/MM/YYYY
+                    specialLookup[item.date] = item.special;
+                }
             });
         }
 
