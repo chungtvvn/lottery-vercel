@@ -184,6 +184,22 @@ async function main() {
         await fs.writeFile(path.join(DATA_DIR, 'statistics', 'cached_predictions.json'), JSON.stringify(cachedPredictions, null, 0));
         console.log('✅ Đã lưu kết quả cached_predictions.json');
 
+        // PRE-COMPUTE: Suggestions (to avoid Vercel serverless timeout)
+        console.log(' -> Tạo Cached Suggestions...');
+        try {
+            const suggestionsController = require('../lib/controllers/suggestionsController');
+            let suggestionsResult;
+            const mockReq = { query: { gapStrategy: 'COMBINED', gapBuffer: '0', strategy: 'BALANCED' } };
+            const mockRes = { json(d) { suggestionsResult = d; return mockRes; }, status(c) { mockRes._status = c; return mockRes; }, _status: 200 };
+            await suggestionsController.getSuggestions(mockReq, mockRes);
+            if (suggestionsResult) {
+                await fs.writeFile(path.join(DATA_DIR, 'statistics', 'cached_suggestions.json'), JSON.stringify(suggestionsResult, null, 0));
+                console.log('✅ Đã lưu kết quả cached_suggestions.json');
+            }
+        } catch (sugErr) {
+            console.error('⚠️ Lỗi khi tạo cached suggestions (không ảnh hưởng các bước khác):', sugErr.message);
+        }
+
         
         // BƯỚC ĐẶC BIỆT: Minify để xóa fullSequence (cứu github khỏi bị lố 100MB giới hạn)
         console.log('[+] Đang minify siêu gọn các file stats...');

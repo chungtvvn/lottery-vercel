@@ -1,10 +1,23 @@
 import { NextResponse } from 'next/server';
 import { cachedResponse } from '@/lib/cache-headers';
+import fs from 'fs';
+import path from 'path';
 
 export async function GET(request) {
     try {
+        // FAST PATH: Serve pre-computed suggestions from cached JSON
+        const cachedPath = path.join(process.cwd(), 'lib/data/statistics/cached_suggestions.json');
+        if (fs.existsSync(cachedPath)) {
+            const data = JSON.parse(fs.readFileSync(cachedPath, 'utf8'));
+            return cachedResponse(data, 'DAILY');
+        }
+
+        // FALLBACK: Compute on-the-fly (may timeout on Vercel free tier)
         const lotteryService = require('@/lib/services/lotteryService');
-        if (!lotteryService.getRawData()) await lotteryService.loadRawData();
+        if (!lotteryService.getRawData() || !lotteryService.getNumberStats() || Object.keys(lotteryService.getNumberStats()).length === 0) {
+            await lotteryService.loadRawData();
+            await lotteryService.loadStats();
+        }
         const suggestionsController = require('@/lib/controllers/suggestionsController');
         
         const url = new URL(request.url);
