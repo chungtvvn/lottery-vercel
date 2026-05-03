@@ -26,14 +26,8 @@ document.addEventListener('DOMContentLoaded', function () {
             const gapStrategy = config.GAP_STRATEGY || 'COMBINED';
             const gapBuffer = config.GAP_BUFFER_PERCENT !== undefined ? config.GAP_BUFFER_PERCENT : 0;
 
-            let url;
-            if (useConfidence) {
-                // Use new confidence-based API
-                url = `/api/suggestions/confidence?strategy=${strategy}`;
-            } else {
-                // Use legacy API
-                url = `/api/suggestions?gapStrategy=${gapStrategy}&gapBuffer=${gapBuffer}`;
-            }
+            // All requests now go to /api/suggestions
+            const url = `/api/suggestions?gapStrategy=${gapStrategy}&gapBuffer=${gapBuffer}&strategy=${strategy}`;
 
             const response = await fetch(url);
             if (!response.ok) {

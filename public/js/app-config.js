@@ -7,7 +7,7 @@ const AppConfig = {
     // Default values
     defaults: {
         // NEW: Exclusion Strategy Settings
-        USE_CONFIDENCE_SCORE: true,
+        USE_CONFIDENCE_SCORE: false,
         EXCLUSION_STRATEGY: 'BALANCED',
         // Gap Settings
         GAP_STRATEGY: 'COMBINED',
