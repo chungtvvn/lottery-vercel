@@ -68,14 +68,37 @@ document.addEventListener('DOMContentLoaded', function () {
             } catch (e) {}
         }
 
-        // Sub-tier groups with Vietnamese labels and colors
+        // 1. Build explanationsBySubTier FIRST to ensure we have all data
+        const explanationsBySubTier = {};
+        if (data.explanations) {
+            data.explanations.forEach(exp => {
+                if (exp.subTier) {
+                    if (!explanationsBySubTier[exp.subTier]) explanationsBySubTier[exp.subTier] = [];
+                    explanationsBySubTier[exp.subTier].push(exp);
+                }
+            });
+        }
+
+        // Helper to get all unique numbers for a subTier directly from its explanations
+        const getNumbersFromExplanations = (subTierKey) => {
+            const exps = explanationsBySubTier[subTierKey] || [];
+            const nums = new Set();
+            exps.forEach(exp => {
+                if (exp.numbers) {
+                    exp.numbers.forEach(n => nums.add(parseInt(n, 10)));
+                }
+            });
+            return Array.from(nums);
+        };
+
+        // 2. Sub-tier groups with Vietnamese labels and colors
         const subTierGroups = [
             {
                 key: 'achieved',
                 emoji: '🔴',
                 label: 'ĐẠT KỶ LỤC',
                 description: 'Chuỗi đã vượt hoặc bằng mốc kỷ lục. Xác suất tiếp tục gần bằng 0.',
-                numbers: (data.exclusionsBySubTier.achieved || []).map(n => parseInt(n, 10)),
+                numbers: getNumbersFromExplanations('achieved'),
                 bgClass: 'bg-red-50',
                 borderClass: 'border-red-400',
                 badgeClass: 'bg-red-600',
@@ -87,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 emoji: '🟠',
                 label: 'TỚI HẠN KỶ LỤC',
                 description: 'Chuỗi chỉ cần thêm 1 ngày là đạt kỷ lục. Lên tiếp cực khó.',
-                numbers: (data.exclusionsBySubTier.threshold || []).map(n => parseInt(n, 10)),
+                numbers: getNumbersFromExplanations('threshold'),
                 bgClass: 'bg-orange-50',
                 borderClass: 'border-orange-400',
                 badgeClass: 'bg-orange-500',
@@ -99,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 emoji: '🟡',
                 label: 'ĐẠT SIÊU KỶ LỤC',
                 description: 'Chuỗi đã đạt Siêu Kỷ Lục (cực kỳ hiếm). Gần như không thể tiếp tục.',
-                numbers: (data.exclusionsBySubTier.achievedSuper || []).map(n => parseInt(n, 10)),
+                numbers: getNumbersFromExplanations('achievedSuper'),
                 bgClass: 'bg-yellow-50',
                 borderClass: 'border-yellow-500',
                 badgeClass: 'bg-yellow-600',
@@ -111,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 emoji: '🟣',
                 label: 'TỚI HẠN SIÊU KỶ LỤC',
                 description: 'Chuỗi tới hạn Siêu Kỷ Lục. Lên tiếp cực kỳ khó.',
-                numbers: (data.exclusionsBySubTier.superThreshold || []).map(n => parseInt(n, 10)),
+                numbers: getNumbersFromExplanations('superThreshold'),
                 bgClass: 'bg-purple-50',
                 borderClass: 'border-purple-400',
                 badgeClass: 'bg-purple-600',
@@ -119,17 +142,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 headerBg: 'bg-purple-100'
             }
         ];
-
-        // Find matching explanations for each sub-tier
-        const explanationsBySubTier = {};
-        if (data.explanations) {
-            data.explanations.forEach(exp => {
-                if (exp.subTier) {
-                    if (!explanationsBySubTier[exp.subTier]) explanationsBySubTier[exp.subTier] = [];
-                    explanationsBySubTier[exp.subTier].push(exp);
-                }
-            });
-        }
 
         const totalExcluded = data.excludedNumbers ? data.excludedNumbers.length : 0;
         const totalBet = data.numbersToBet ? data.numbersToBet.length : 0;
@@ -154,7 +166,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (groupExplanations.length > 0) {
                 explanationList = `
                     <div class="mt-3 space-y-2">
-                        ${groupExplanations.slice(0, 8).map(exp => {
+                        ${groupExplanations.map(exp => {
                             const nums = exp.numbers || [];
                             const numsHtml = nums.map(n => 
                                 '<span class="' + group.badgeClass + ' opacity-90 text-white font-bold px-1.5 py-0.5 rounded text-[10px]">' + String(n).padStart(2, '0') + '</span>'
@@ -169,7 +181,6 @@ document.addEventListener('DOMContentLoaded', function () {
                             </div>
                             `;
                         }).join('')}
-                        ${groupExplanations.length > 8 ? `<p class="text-[10px] text-gray-400 italic pl-2 mt-2">...và ${groupExplanations.length - 8} pattern khác</p>` : ''}
                     </div>
                 `;
             }
