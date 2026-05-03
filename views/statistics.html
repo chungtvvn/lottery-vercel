@@ -140,6 +140,23 @@
             </div>
         </div>
 
+        <!-- Phần Tổng Hợp Dự Đoán Ngày Tiếp Theo -->
+        <div id="prediction-summary-section" x-data="{ open: false }" class="bg-white rounded-lg shadow-md mb-8" style="display: none;">
+            <div @click="open = !open" class="flex justify-between items-center p-4 cursor-pointer bg-gradient-to-r from-amber-50 to-orange-50 rounded-t-lg border-b border-amber-200">
+                <h3 class="text-xl font-semibold text-gray-800 flex items-center">
+                    <i class="bi bi-stars text-amber-500 me-2"></i>
+                    <span id="prediction-summary-title">Tổng Hợp Dự Đoán</span>
+                    <span id="prediction-summary-count" class="ml-2 text-sm font-normal text-gray-500"></span>
+                </h3>
+                <i class="bi" :class="open ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+            </div>
+            <div x-show="open" x-transition class="accordion-content-highlight" :class="{ 'expanded': open }">
+                <div class="p-6">
+                    <div id="prediction-summary-container"></div>
+                </div>
+            </div>
+        </div>
+
         <div id="current-streaks-section" x-data="{ open: true }" class="bg-white rounded-lg shadow-md mb-8 d-none">
             <div @click="open = !open" class="flex justify-between items-center p-4 cursor-pointer">
                 <h3 class="text-xl font-semibold text-gray-800 flex items-center">
