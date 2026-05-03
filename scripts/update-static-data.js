@@ -162,11 +162,14 @@ async function main() {
         const hybridAIPrediction = require('../lib/services/hybridAIPredictionService');
         const advancedAnalysis = require('../lib/services/advancedAnalysisService');
         
-        const [unifiedResult, advancedResult, hybridResult] = await Promise.all([
-            unifiedPrediction.getDailyPrediction({ topCount: 40 }),
-            advancedAnalysis.getDailyAdvancedPrediction({ topCount: 40, excludeCount: 60 }),
-            hybridAIPrediction.getHybridPrediction({ topCount: 40, excludeCount: 60 })
-        ]);
+        console.log(' -> Tạo Unified Prediction...');
+        const unifiedResult = await unifiedPrediction.getDailyPrediction({ topCount: 40 });
+        
+        console.log(' -> Tạo Advanced Analysis...');
+        const advancedResult = await advancedAnalysis.getDailyAdvancedPrediction({ topCount: 40, excludeCount: 60 });
+        
+        console.log(' -> Tạo Hybrid Prediction...');
+        const hybridResult = await hybridAIPrediction.getHybridPrediction({ topCount: 40, excludeCount: 60 });
         
         const cachedPredictions = {
             unified: unifiedResult,
