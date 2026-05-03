@@ -153,14 +153,23 @@ document.addEventListener('DOMContentLoaded', function () {
             let explanationList = '';
             if (groupExplanations.length > 0) {
                 explanationList = `
-                    <div class="mt-3 space-y-1.5">
-                        ${groupExplanations.slice(0, 8).map(exp => `
-                            <div class="flex items-start gap-2 text-xs ${group.textClass} bg-white/60 p-2 rounded-lg border border-white/80">
-                                <span class="font-bold whitespace-nowrap min-w-[80px]">${exp.title || ''}</span>
-                                <span class="text-gray-600 flex-1">${(exp.explanation || exp.reason || '').replace(/\[.*?\]\s*/, '')}</span>
+                    <div class="mt-3 space-y-2">
+                        ${groupExplanations.slice(0, 8).map(exp => {
+                            const nums = exp.numbers || [];
+                            const numsHtml = nums.map(n => 
+                                '<span class="' + group.badgeClass + ' opacity-90 text-white font-bold px-1.5 py-0.5 rounded text-[10px]">' + String(n).padStart(2, '0') + '</span>'
+                            ).join(' ');
+                            return `
+                            <div class="flex flex-col gap-1.5 text-xs ${group.textClass} bg-white/80 p-2.5 rounded-lg border border-white shadow-sm">
+                                <div class="flex sm:items-center sm:flex-row flex-col gap-1 sm:gap-2">
+                                    <span class="font-bold whitespace-nowrap min-w-[120px] pb-1 sm:pb-0 border-b sm:border-0 border-gray-100">${exp.title || ''}</span>
+                                    <span class="text-gray-600 flex-1 leading-relaxed">${(exp.explanation || exp.reason || '').replace(/\[.*?\]\s*/, '')}</span>
+                                </div>
+                                ${nums.length > 0 ? `<div class="flex flex-wrap gap-1 mt-0.5 sm:pl-[128px]">${numsHtml}</div>` : ''}
                             </div>
-                        `).join('')}
-                        ${groupExplanations.length > 8 ? `<p class="text-[10px] text-gray-400 italic pl-2">...và ${groupExplanations.length - 8} pattern khác</p>` : ''}
+                            `;
+                        }).join('')}
+                        ${groupExplanations.length > 8 ? `<p class="text-[10px] text-gray-400 italic pl-2 mt-2">...và ${groupExplanations.length - 8} pattern khác</p>` : ''}
                     </div>
                 `;
             }
