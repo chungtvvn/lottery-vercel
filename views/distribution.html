@@ -1427,13 +1427,43 @@
             const allNumbers = Array.from({ length: 100 }, (_, i) => String(i).padStart(2, '0'));
             const toBet = exclusionData.numbersToBet?.map(n => String(n).padStart(2, '0')) || allNumbers.filter(n => !excluded.includes(n));
             const explanations = exclusionData.explanations || [];
-            const exclusionsBySubTier = exclusionData.exclusionsBySubTier || {};
-            const countBySubTier = exclusionData.countBySubTier || {};
-            // 4 subTier
-            const achievedNums = (exclusionsBySubTier.achieved || []).map(n => parseInt(n));
-            const achievedSuperNums = (exclusionsBySubTier.achievedSuper || []).map(n => parseInt(n));
-            const thresholdNums = (exclusionsBySubTier.threshold || []).map(n => parseInt(n));
-            const superThresholdNums = (exclusionsBySubTier.superThreshold || []).map(n => parseInt(n));
+            let achievedNums = [];
+            let achievedSuperNums = [];
+            let thresholdNums = [];
+            let superThresholdNums = [];
+
+            if (explanations && explanations.length > 0) {
+                explanations.forEach(exp => {
+                    const reason = (exp.reason || exp.explanation || '').toLowerCase();
+                    const nums = (exp.numbers || []).map(n => parseInt(n));
+                    if (reason.includes('đạt siêu kl') || reason.includes('đạt siêu kỷ lục')) {
+                        achievedSuperNums.push(...nums);
+                    } else if (reason.includes('tới hạn siêu kl') || reason.includes('tới hạn siêu kỷ lục')) {
+                        superThresholdNums.push(...nums);
+                    } else if (reason.includes('đạt kỷ lục') || reason.includes('đạt kl')) {
+                        achievedNums.push(...nums);
+                    } else if (reason.includes('tới hạn kỷ lục') || reason.includes('tới hạn kl')) {
+                        thresholdNums.push(...nums);
+                    }
+                });
+            }
+            achievedNums = [...new Set(achievedNums)];
+            achievedSuperNums = [...new Set(achievedSuperNums)];
+            thresholdNums = [...new Set(thresholdNums)];
+            superThresholdNums = [...new Set(superThresholdNums)];
+            
+            const countBySubTier = {
+                achieved: achievedNums.length,
+                achievedSuper: achievedSuperNums.length,
+                threshold: thresholdNums.length,
+                superThreshold: superThresholdNums.length
+            };
+            const exclusionsBySubTier = {
+                achieved: achievedNums,
+                achievedSuper: achievedSuperNums,
+                threshold: thresholdNums,
+                superThreshold: superThresholdNums
+            };
             // Exclusion + chỉ gồm: achieved + achievedSuper + superThreshold (không có threshold/cam)
             const exclusionPlusNums = new Set([...achievedNums, ...achievedSuperNums, ...superThresholdNums]);
 
@@ -1545,22 +1575,23 @@
                     let bgColor = 'gray';
                     let tierLabel = '';
 
-                    if (exp.subTier === 'achieved') {
-                        borderColor = 'red'; bgColor = 'red'; tierLabel = '🔴 ĐẠT KỶ LỤC';
-                    } else if (exp.subTier === 'achievedSuper') {
+                    const reasonLC = (exp.reason || exp.explanation || '').toLowerCase();
+                    if (reasonLC.includes('đạt siêu kl') || reasonLC.includes('đạt siêu kỷ lục')) {
                         borderColor = 'purple'; bgColor = 'purple'; tierLabel = '🟡 ĐẠT SIÊU KỶ LỤC';
-                    } else if (exp.subTier === 'threshold') {
-                        borderColor = 'orange'; bgColor = 'orange'; tierLabel = '🟠 TỚI HẠN KỶ LỤC';
-                    } else if (exp.subTier === 'superThreshold') {
+                    } else if (reasonLC.includes('tới hạn siêu kl') || reasonLC.includes('tới hạn siêu kỷ lục')) {
                         borderColor = 'purple'; bgColor = 'purple'; tierLabel = '🟣 TỚI HẠN SIÊU KỶ LỤC';
-                    } else if (exp.tier === 'red') {
+                    } else if (reasonLC.includes('đạt kỷ lục') || reasonLC.includes('đạt kl')) {
+                        borderColor = 'red'; bgColor = 'red'; tierLabel = '🔴 ĐẠT KỶ LỤC';
+                    } else if (reasonLC.includes('tới hạn kỷ lục') || reasonLC.includes('tới hạn kl')) {
+                        borderColor = 'orange'; bgColor = 'orange'; tierLabel = '🟠 TỚI HẠN KỶ LỤC';
+                    } else if (exp.tier === 'red' || exp.tier === 'critical') {
                         borderColor = 'red'; bgColor = 'red'; tierLabel = '🔴 ĐỎ (Loại trừ ngay)';
                     } else if (exp.tier === 'purple') {
                         borderColor = 'purple'; bgColor = 'purple'; tierLabel = '🟣 TÍM (Tiềm năng kỷ lục)';
-                    } else if (exp.tier === 'orange') {
+                    } else if (exp.tier === 'orange' || exp.tier === 'high') {
                         borderColor = 'orange'; bgColor = 'orange'; tierLabel = '🟠 CAM (Cẩn thận)';
-                    } else if (exp.tier === 'light_red') {
-                        borderColor = 'pink'; bgColor = 'pink'; tierLabel = '🩷 LIGHT RED (Threshold động)';
+                    } else {
+                        borderColor = 'pink'; bgColor = 'pink'; tierLabel = '🩷 BĂNG/LẠNH/KHÁC';
                     }
 
                     // Hiển thị các số bị loại trừ bởi chuỗi này

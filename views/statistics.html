@@ -125,7 +125,20 @@
                 </div>
             </div>
         </div>
-
+        <div id="suggestions-section" x-data="{ open: false }" class="bg-white rounded-lg shadow-md mb-8" style="display: none;">
+            <div @click="open = !open" class="flex justify-between items-center p-4 cursor-pointer bg-red-50 rounded-t-lg">
+                <h3 class="text-xl font-semibold text-gray-800 flex items-center">
+                    <i class="bi bi-shield-x text-red-600 me-2"></i>
+                    Tổng Quan Loại Trừ & Dự Đoán <span id="exclusion-count" class="ml-2 text-sm font-normal"></span>
+                </h3>
+                <i class="bi" :class="open ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+            </div>
+            <div x-show="open" x-transition class="accordion-content-highlight" :class="{ 'expanded': open }">
+                <div class="border-t border-red-100 p-6">
+                    <div id="suggestions-container"></div>
+                </div>
+            </div>
+        </div>
 
         <div id="current-streaks-section" x-data="{ open: true }" class="bg-white rounded-lg shadow-md mb-8 d-none">
             <div @click="open = !open" class="flex justify-between items-center p-4 cursor-pointer">

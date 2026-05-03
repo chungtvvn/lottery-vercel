@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 export async function GET(request) {
     try {
         const lotteryService = require('@/lib/services/lotteryService');
-        if (!lotteryService.getRawData()) await lotteryService.loadRawData();
+        await lotteryService.loadAll();
         const futureSimulationService = require('@/lib/services/futureSimulationService');
         const url = new URL(request.url);
         const days = parseInt(url.searchParams.get('days')) || 30;

@@ -92,6 +92,11 @@ export async function GET() {
         const exclToBet = skipped4 ? [] : toBet4;
         const exclToBetPlus = skipped3 ? [] : toBet3;
 
+        // --- Get Explanations ---
+        const exclusionLogicService = require('@/lib/services/exclusionLogicService');
+        const unifiedExclusions = await exclusionLogicService.getUnifiedExclusions(quickStats);
+        const explanations = unifiedExclusions.explanations || [];
+
         // --- Other methods ---
         const unified = futureSimulationService.unifiedMethod(rawData);
         const advanced = futureSimulationService.advancedMethod(rawData);
@@ -124,7 +129,7 @@ export async function GET() {
 
         const result = {
             date: nextDateStr,
-            danh: { numbers: mapStrs(exclToBet), isSkipped: skipped4 },
+            danh: { numbers: mapStrs(exclToBet), excluded: Array.from(excluded4).map(n => String(n).padStart(2, '0')), isSkipped: skipped4, explanations },
             danhUnified: { numbers: mapStrs(unified.toBet) },
             danhAdvanced: { numbers: mapStrs(advanced.toBet) },
             danhHybrid: { numbers: mapStrs(hybridAI.toBet) },

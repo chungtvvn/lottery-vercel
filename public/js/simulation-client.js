@@ -74,6 +74,71 @@ document.addEventListener('DOMContentLoaded', () => {
         return html;
     }
 
+    function renderExplanationsUI(explanations) {
+        if (!explanations || explanations.length === 0) return '';
+        
+        let achievedNums = [];
+        let achievedSuperNums = [];
+        let thresholdNums = [];
+        let superThresholdNums = [];
+
+        explanations.forEach(exp => {
+            const reason = (exp.reason || exp.explanation || '').toLowerCase();
+            const nums = (exp.numbers || []).map(n => parseInt(n));
+            if (reason.includes('đạt siêu kl') || reason.includes('đạt siêu kỷ lục')) {
+                achievedSuperNums.push(...nums);
+            } else if (reason.includes('tới hạn siêu kl') || reason.includes('tới hạn siêu kỷ lục')) {
+                superThresholdNums.push(...nums);
+            } else if (reason.includes('đạt kỷ lục') || reason.includes('đạt kl')) {
+                achievedNums.push(...nums);
+            } else if (reason.includes('tới hạn kỷ lục') || reason.includes('tới hạn kl')) {
+                thresholdNums.push(...nums);
+            }
+        });
+
+        achievedNums = [...new Set(achievedNums)];
+        achievedSuperNums = [...new Set(achievedSuperNums)];
+        thresholdNums = [...new Set(thresholdNums)];
+        superThresholdNums = [...new Set(superThresholdNums)];
+
+        const subTierDefs = [
+            {
+                name: '🔴 Đạt Kỷ Lục', key: 'achieved', nums: achievedNums,
+                colorStyle: 'color:#dc2626', bgStyle: 'background:rgba(220,38,38,0.1); border-color:#dc2626'
+            },
+            {
+                name: '🟠 Tới Hạn Kỷ Lục', key: 'threshold', nums: thresholdNums,
+                colorStyle: 'color:#f97316', bgStyle: 'background:rgba(249,115,22,0.1); border-color:#f97316'
+            },
+            {
+                name: '🟡 Đạt Siêu KL', key: 'achievedSuper', nums: achievedSuperNums,
+                colorStyle: 'color:#7c3aed', bgStyle: 'background:rgba(124,58,237,0.15); border-color:#7c3aed'
+            },
+            {
+                name: '🟣 Tới Hạn Siêu KL', key: 'superThreshold', nums: superThresholdNums,
+                colorStyle: 'color:#a855f7', bgStyle: 'background:rgba(168,85,247,0.1); border-color:#a855f7'
+            }
+        ];
+
+        let tierHtml = '<div class="mt-3 space-y-2">';
+        for (const st of subTierDefs) {
+            if (st.nums.length > 0) {
+                tierHtml += `
+                    <div class="border-l-4 rounded-r-lg p-2" style="${st.bgStyle}">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="font-bold text-xs" style="${st.colorStyle}">${st.name} (${st.nums.length} số)</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1">
+                            ${st.nums.map(n => `<span class="px-1 py-0.5 rounded text-[10px] font-medium" style="${st.colorStyle}; background:rgba(0,0,0,0.05); border: 1px solid">${String(n).padStart(2, '0')}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        tierHtml += '</div>';
+        return tierHtml;
+    }
+
     function renderAnalysis(data) {
         if (!data || !data.danh) {
             analysisContent.innerHTML = `<p class="text-red-500">Lỗi: Dữ liệu phân tích không hợp lệ.</p>`;
@@ -117,6 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="number-grid-100 p-2 bg-white rounded-lg">
                         ${render100Numbers(exclusionBet, exclusionExclude, 'bg-blue-300 text-blue-900 border-blue-500')}
                     </div>
+                    ${renderExplanationsUI(danh.explanations || [])}
                 </div>
                 
                 <!-- METHOD 2: UNIFIED -->
