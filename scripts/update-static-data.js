@@ -3,7 +3,7 @@ const path = require('path');
 const https = require('https');
 
 const DATA_URL = 'https://raw.githubusercontent.com/khiemdoan/vietnam-lottery-xsmb-analysis/refs/heads/main/data/xsmb-2-digits.json';
-const DATA_DIR = path.join(process.cwd(), 'lib', 'data');
+const DATA_DIR = path.join(__dirname, '..', 'lib', 'data');
 const JSON_FILE = path.join(DATA_DIR, 'xsmb-2-digits.json');
 
 async function downloadData() {
@@ -118,26 +118,28 @@ async function main() {
         
         const quickStats = await ss.getQuickStats();
         // Minify: Xoá fullSequence khỏi longest/secondLongest/current để giảm kích thước
-        function stripFullSequence(obj) {
+        function stripFullSequence(obj, isPreserved = false) {
             if (!obj || typeof obj !== 'object') return obj;
-            if (obj._meta) return obj; // skip meta
+            
+            if (Array.isArray(obj)) {
+                return obj.map(item => stripFullSequence(item, isPreserved));
+            }
+
             const result = {};
             for (const [key, val] of Object.entries(obj)) {
-                if (key === '_meta') { result[key] = val; continue; }
-                if (val && typeof val === 'object' && !Array.isArray(val)) {
-                    const cleaned = { ...val };
-                    // Strip fullSequence from longest arrays
-                    if (Array.isArray(cleaned.longest)) {
-                        cleaned.longest = cleaned.longest.map(({ fullSequence, ...rest }) => rest);
-                    }
-                    if (Array.isArray(cleaned.secondLongest)) {
-                        cleaned.secondLongest = cleaned.secondLongest.map(({ fullSequence, ...rest }) => rest);
-                    }
-                    if (cleaned.current && cleaned.current.fullSequence) {
-                        const { fullSequence, ...restCurrent } = cleaned.current;
-                        cleaned.current = restCurrent;
-                    }
-                    result[key] = cleaned;
+                if (key === 'fullSequence' && !isPreserved) {
+                    continue; // Skip fullSequence for non-preserved streaks
+                }
+
+                if (key === 'current' || key === 'longest' || key === 'secondLongest') {
+                    // Preserve fullSequence for these key streaks (Dashboard & Accordion)
+                    result[key] = stripFullSequence(val, true);
+                } else if (key === 'streaks') {
+                    // Strip fullSequence for the bulk 'streaks' list (History results)
+                    // These are hydrated at runtime by the API if needed.
+                    result[key] = stripFullSequence(val, false);
+                } else if (typeof val === 'object') {
+                    result[key] = stripFullSequence(val, isPreserved);
                 } else {
                     result[key] = val;
                 }
@@ -147,6 +149,9 @@ async function main() {
         const minifiedQS = stripFullSequence(quickStats);
         await fs.writeFile(path.join(DATA_DIR, 'statistics', 'quick_stats.json'), JSON.stringify(minifiedQS, null, 0));
         console.log('✅ Đã lưu kết quả quick_stats.json (minified)');
+        
+        // --- NEW: Immediately clear memory for quickStats ---
+        // (Helpful if memory is tight)
         
         const historyStats = await ss.getQuickStatsHistory();
         // Strip fullSequence from history streaks too
@@ -203,23 +208,39 @@ async function main() {
         
         // BƯỚC ĐẶC BIỆT: Minify để xóa fullSequence (cứu github khỏi bị lố 100MB giới hạn)
         console.log('[+] Đang minify siêu gọn các file stats...');
-        function minifyStats(stats) {
+        
+        function minifyStreak(streak) {
+            if (!streak) return streak;
+            const { fullSequence, ...mini } = streak;
+            return mini;
+        }
+
+        function minifyStatsObject(stats) {
+            if (!stats || typeof stats !== 'object') return stats;
             const result = {};
-            function minifyStreak(streak) {
-                if (!streak) return streak;
-                const { fullSequence, ...mini } = streak;
-                return mini;
-            }
+            
             for (const key of Object.keys(stats)) {
                 const val = stats[key];
-                if (val && Array.isArray(val.streaks)) {
-                    result[key] = { description: val.description, streaks: val.streaks.map(minifyStreak) };
-                } else if (val && typeof val === 'object' && !Array.isArray(val)) {
+                if (!val) {
+                    result[key] = val;
+                    continue;
+                }
+
+                if (Array.isArray(val.streaks)) {
+                    result[key] = { 
+                        ...val, 
+                        streaks: val.streaks.map(minifyStreak) 
+                    };
+                } else if (typeof val === 'object' && !Array.isArray(val)) {
+                    // Handle nested structures like head_tail_stats
                     result[key] = {};
                     for (const subKey of Object.keys(val)) {
                         const sub = val[subKey];
                         if (sub && Array.isArray(sub.streaks)) {
-                            result[key][subKey] = { description: sub.description, streaks: sub.streaks.map(minifyStreak) };
+                            result[key][subKey] = { 
+                                ...sub, 
+                                streaks: sub.streaks.map(minifyStreak) 
+                            };
                         } else {
                             result[key][subKey] = sub;
                         }
@@ -235,8 +256,24 @@ async function main() {
         for (const f of statFiles) {
             const p = path.join(DATA_DIR, 'statistics', f);
             if (require('fs').existsSync(p)) {
-                const raw = JSON.parse(await fs.readFile(p, 'utf8'));
-                await fs.writeFile(p, JSON.stringify(minifyStats(raw), null, 0)); // dùng null, 0 cho bé nhất có thể
+                try {
+                    console.log(` -> Đang xử lý ${f}...`);
+                    const content = await fs.readFile(p, 'utf8');
+                    // Check if content is valid before parsing
+                    if (!content || content.length < 2) continue;
+                    
+                    const raw = JSON.parse(content);
+                    const minified = minifyStatsObject(raw);
+                    
+                    await fs.writeFile(p, JSON.stringify(minified, null, 0)); 
+                    console.log(`    ✅ Đã nén ${f}`);
+                    
+                    // GC hint (if possible)
+                    // global.gc && global.gc(); 
+                } catch (miniErr) {
+                    console.error(`    ⚠️ Lỗi khi nén ${f}:`, miniErr.message);
+                    // If it failed due to "Bad control character", try to fix it or skip
+                }
             }
         }
         console.log('✅ Minify thành công!');

@@ -671,7 +671,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             currentStreaksContainer.innerHTML = finalHtml;
         } else {
-            currentStreaksSection.classList.add('d-none');
+            const dateSuffix = forDate ? ` (${forDate})` : '';
+            currentStreaksTitle.innerHTML = `Chuỗi Đang Diễn Ra${dateSuffix} <span class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">0</span>`;
+            currentStreaksContainer.innerHTML = `
+                <div class="bg-white rounded-lg shadow-sm p-8 text-center border border-gray-100">
+                    <div class="mb-3 text-gray-300">
+                        <i class="bi bi-wind text-5xl"></i>
+                    </div>
+                    <p class="text-gray-500 font-medium">Hiện tại không có chuỗi nào đang diễn ra.</p>
+                    <p class="text-xs text-gray-400 mt-1 italic">Hãy thử cập nhật dữ liệu mới nhất hoặc kiểm tra lại sau.</p>
+                </div>
+            `;
+            currentStreaksSection.classList.remove('d-none');
         }
     };
 
@@ -896,15 +907,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     // SỬA LỖI: Hàm này nhận thêm 'description' để truyền xuống hàm con
     const renderResults = (streaks, description) => {
         if (!streaks || streaks.length === 0) {
-            resultContainer.innerHTML = '<p class="text-gray-500">Không có chuỗi nào phù hợp với điều kiện lọc.</p>';
+            resultContainer.innerHTML = `
+                <div class="text-center py-8">
+                    <p class="text-gray-500 mb-2">Không có chuỗi nào phù hợp với điều kiện lọc.</p>
+                    <p class="text-xs text-gray-400 italic">Mẹo: Thử giảm độ dài tối thiểu hoặc chọn khoảng ngày rộng hơn.</p>
+                </div>`;
             return;
         }
         const sortedStreaks = streaks.sort((a, b) => parseDate(b.endDate) - parseDate(a.endDate));
-        let content = sortedStreaks.map(streak => `
+        let content = sortedStreaks.map(streak => {
+            const isCurrentBadge = streak.isCurrent ? 
+                `<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 animate-pulse">
+                    <i class="bi bi-broadcast mr-1"></i> Đang Diễn Ra
+                </span>` : '';
+
+            return `
                     <div class="py-3 border-b border-gray-200 last:border-b-0">
                         <div class="relative group cursor-pointer inline-block" onclick="this.querySelector('.group-hover\\\\:block').classList.toggle('hidden')">
                             <p class="font-semibold hover:text-indigo-600 transition flex items-center gap-1">
-                                ${formatStreakValue(streak, description)} <i class="bi bi-info-circle text-xs text-gray-400"></i>
+                                ${formatStreakValue(streak, description)}${isCurrentBadge} <i class="bi bi-info-circle text-xs text-gray-400"></i>
                             </p>
                             ${streak.patternNumbers && streak.patternNumbers.length > 0 ? `
                             <div class="absolute left-0 top-full mt-2 w-64 p-3 bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-50 hidden group-hover:block transition shadow-[0_0_15px_rgba(0,0,0,0.5)]">
@@ -917,7 +938,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                         <p class="text-sm text-gray-600">${streak.startDate} đến ${streak.endDate} (${streak.length} ngày)</p>
                         <div class="flex flex-wrap gap-1 mt-1">${renderFullSequence(streak, description)}</div>
-                    </div>`).join('');
+                    </div>`;
+        }).join('');
         resultContainer.innerHTML = content;
     };
 
@@ -932,9 +954,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     const renderFullSequence = (streak, description) => {
-        if (!streak.fullSequence) return '<span></span>';
+        let sequenceToRender = streak.fullSequence;
+        
+        // Fallback: Nếu không có fullSequence (do lỗi hydrate), dùng dates và values có sẵn
+        if (!sequenceToRender || sequenceToRender.length === 0) {
+            if (streak.dates && streak.values && streak.dates.length === streak.values.length) {
+                sequenceToRender = streak.dates.map((date, i) => ({
+                    date: date,
+                    value: streak.values[i]
+                }));
+            } else {
+                return '<span></span>';
+            }
+        }
+
         // Normalize dates trong fullSequence
-        const normalizedSeq = streak.fullSequence.map(day => ({...day, date: normDate(day.date)}));
+        const normalizedSeq = sequenceToRender.map(day => ({...day, date: normDate(day.date)}));
         // Normalize dates trong streak.dates
         const normalizedDates = streak.dates ? streak.dates.map(d => normDate(d)) : [];
         const streakDates = new Set(normalizedDates);
