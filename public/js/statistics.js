@@ -431,11 +431,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             currentStreaksTitle.innerHTML = `Chuỗi Đang Diễn Ra${dateSuffix} <span class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">${totalCount}</span>`;
             let finalHtml = '';
             sortedLengths.forEach(length => {
+                const hasPotentialInGroup = streaksByLength[length].some(s => s.isPotential);
                 finalHtml += `
                             <div class="mt-4">
                                 <h4 class="text-sm font-semibold text-gray-600 uppercase tracking-wider flex justify-between items-center border-b pb-2 mb-4">
-                                    <span><i class="bi bi-fire"></i> ${length == 1 ? 'Chuỗi tiềm năng kỷ lục (2 ngày)' : 'Chuỗi'}</span>
-                                    ${length != 1 ? `<span class="font-bold text-lg text-red-500">${length} Ngày</span>` : ''}
+                                    <span><i class="bi bi-fire"></i> ${hasPotentialInGroup ? '🔮 Chuỗi tiềm năng (đang hình thành)' : 'Chuỗi'}</span>
+                                    ${hasPotentialInGroup ? `<span class="font-bold text-lg text-orange-500">${length} Ngày</span>` : `<span class="font-bold text-lg text-red-500">${length} Ngày</span>`}
                                 </h4>
                                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">`;
 
