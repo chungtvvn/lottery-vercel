@@ -450,6 +450,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const gapInfoOuter = streak.exactGapStats ? streak.exactGapStats[targetLenOuter] : null;
                     const targetCountOuter = gapInfoOuter ? gapInfoOuter.count : 0;
                     const targetFreqYearOuter = targetCountOuter / totalYears;
+                    const isNextSuperRecordOuter = targetFreqYearOuter <= 0.5;
 
                     const hasReachedOriginalRecordOuter = streakLen >= streak.originalRecord && streak.originalRecord > 0;
                     const isApproachingOriginalRecordOuter = targetLenOuter >= streak.originalRecord && streakLen < streak.originalRecord && streak.originalRecord > 0;
