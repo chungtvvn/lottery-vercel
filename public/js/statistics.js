@@ -460,14 +460,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const currentFreqYearOuter = currentCountOuter / totalYears;
                     const isCurrentSuperOuter = currentFreqYearOuter <= 0.5;
 
+                    let isHighRiskOuter = false;
+                    let dropOffRateOuter = 0;
+                    if (currentCountOuter >= 10 && targetCountOuter >= 0) {
+                        const continuationRateOuter = targetCountOuter / currentCountOuter;
+                        dropOffRateOuter = 1 - continuationRateOuter;
+                        if (dropOffRateOuter >= 0.90) {
+                            isHighRiskOuter = true;
+                        }
+                    }
+
                     const isRecord = hasReachedOriginalRecordOuter || isApproachingOriginalRecordOuter;
                     const isSuperRecord = hasReachedOriginalRecordOuter ? isCurrentSuperOuter : isNextSuperRecordOuter;
 
-                    const borderColor = isRecord ? (isSuperRecord ? 'border-l-purple-700' : 'border-l-red-700') : 'border-l-blue-300';
-                    const bgColor = isRecord ? (isSuperRecord ? 'bg-purple-50' : 'bg-red-50') : 'bg-white';
-                    const titleWeight = isRecord ? 'font-bold' : 'font-semibold';
+                    const borderColor = isRecord ? (isSuperRecord ? 'border-l-purple-700' : 'border-l-red-700') : (isHighRiskOuter ? 'border-l-orange-500' : 'border-l-blue-300');
+                    const bgColor = isRecord ? (isSuperRecord ? 'bg-purple-50' : 'bg-red-50') : (isHighRiskOuter ? 'bg-orange-50' : 'bg-white');
+                    const titleWeight = isRecord || isHighRiskOuter ? 'font-bold' : 'font-semibold';
 
-                    const superBadge = isSuperRecord ? '<span class="ml-2 inline-block bg-purple-600 text-white text-[9px] px-1 py-0.5 rounded uppercase">Siêu KL</span>' : '';
+                    let badgeHtml = '';
+                    if (isSuperRecord) {
+                        badgeHtml = '<span class="ml-2 inline-block bg-purple-600 text-white text-[9px] px-1 py-0.5 rounded uppercase">Siêu KL</span>';
+                    } else if (isHighRiskOuter && !isRecord) {
+                        badgeHtml = `<span class="ml-2 inline-block bg-orange-500 text-white text-[9px] px-1 py-0.5 rounded uppercase">⚠️ Gãy ${(dropOffRateOuter*100).toFixed(0)}%</span>`;
+                    }
 
                     finalHtml += `
                                 <div class="${bgColor} rounded-lg shadow-sm border border-l-4 ${borderColor} transition hover:shadow-lg hover:-translate-y-1">
@@ -475,7 +490,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                         
                                         <div class="relative group cursor-pointer" onclick="this.querySelector('.group-hover\\:block').classList.toggle('hidden')">
                                             <h6 class="${titleWeight} text-gray-800 hover:text-indigo-600 transition flex items-center gap-1">
-                                                ${streak.description}${superBadge} <i class="bi bi-info-circle text-xs text-gray-400"></i>
+                                                ${streak.description}${badgeHtml} <i class="bi bi-info-circle text-xs text-gray-400"></i>
                                             </h6>
                                             ${streak.patternNumbers && streak.patternNumbers.length > 0 ? `
                                             <div class="absolute left-0 top-full mt-2 w-64 p-3 bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-50 hidden group-hover:block transition shadow-[0_0_15px_rgba(0,0,0,0.5)]">
@@ -625,18 +640,31 @@ document.addEventListener('DOMContentLoaded', async () => {
                             const hasReachedOriginalRecord = currentLen >= streak.originalRecord && streak.originalRecord > 0;
                             const isApproachingOriginalRecord = nextLen >= streak.originalRecord && currentLen < streak.originalRecord && streak.originalRecord > 0;
 
+                            // Drop-off rate logic
+                            let isHighRisk = false;
+                            let dropOffRate = 0;
+                            if (currentCountInner >= 10 && targetCount >= 0) {
+                                const continuationRate = targetCount / currentCountInner;
+                                dropOffRate = 1 - continuationRate;
+                                if (dropOffRate >= 0.90) {
+                                    isHighRisk = true;
+                                }
+                            }
+
                             let probBadge;
                             if (hasReachedOriginalRecord) {
                                 probBadge = `<span class="inline-block ${isCurrentSuper ? 'bg-purple-600' : 'bg-red-600'} text-white text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">🏆 Đạt ${isCurrentSuper ? 'Siêu KL' : 'Kỷ Lục'} (${currentFreqYear.toFixed(2)}/năm)</span>`;
                             } else if (isApproachingOriginalRecord) {
                                 probBadge = `<span class="inline-block ${isNextSuperRecord ? 'bg-purple-600' : 'bg-red-600'} text-white text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">🚧 Tới hạn ${isNextSuperRecord ? 'Siêu KL' : 'Kỷ Lục'}</span>`;
+                            } else if (isHighRisk) {
+                                probBadge = `<span class="inline-block bg-orange-500 text-white text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">⚠️ Rủi Ro Gãy ${(dropOffRate*100).toFixed(0)}%</span>`;
                             } else {
                                 probBadge = `<span class="inline-block bg-green-100 text-green-800 text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">✅ Dễ Tiếp Tục</span>`;
                             }
 
                             const isSuperLevel = hasReachedOriginalRecord ? isCurrentSuper : isNextSuperRecord;
                             const isRecordState = hasReachedOriginalRecord || isApproachingOriginalRecord;
-                            const cardBg = isRecordState ? (isSuperLevel ? 'bg-purple-50' : 'bg-red-50') : 'bg-white';
+                            const cardBg = isRecordState ? (isSuperLevel ? 'bg-purple-50' : 'bg-red-50') : (isHighRisk ? 'bg-orange-50' : 'bg-white');
 
 
                             let freqHtml = '';
