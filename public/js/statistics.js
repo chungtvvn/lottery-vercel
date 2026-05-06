@@ -459,15 +459,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (currentCountOuter > 0) {
                         const continuationRateOuter = targetCountOuter / currentCountOuter;
                         dropOffRateOuter = 1 - continuationRateOuter;
+                    } else if (streak.isPotential) {
+                        dropOffRateOuter = 0; // Tiềm năng chưa thành chuỗi, không tính rủi ro gãy ở đây
                     } else {
                         dropOffRateOuter = 1;
                     }
                     
                     const isRecord = dropOffRateOuter >= 0.70;
-                    const isForecastRecord = targetFreqYearOuter > 0 && targetFreqYearOuter < 1.5;
+                    const isForecastRecord = targetFreqYearOuter > 0 && targetFreqYearOuter <= 1.5;
                     
                     if (isForecastRecord && !isRecord) {
-                        forecastHtml += `<li class="flex items-center gap-2"><i class="bi bi-arrow-right-short text-blue-500"></i><span class="font-bold text-gray-800">${streak.description}</span> <span class="text-xs bg-gray-200 px-1.5 py-0.5 rounded">${streakLen} ngày</span> <span class="text-gray-500 text-xs">→ Dự báo: <strong class="text-blue-600">${targetFreqYearOuter.toFixed(2)} lần/năm</strong></span></li>`;
+                        const lenDisplay = streak.isPotential ? `${streakLen} ngày (tiềm năng)` : `${streakLen} ngày`;
+                        forecastHtml += `<li class="flex items-center gap-2"><i class="bi bi-arrow-right-short text-blue-500"></i><span class="font-bold text-gray-800">${streak.description}</span> <span class="text-xs bg-gray-200 px-1.5 py-0.5 rounded">${lenDisplay}</span> <span class="text-gray-500 text-xs">→ Dự báo: <strong class="text-blue-600">${targetFreqYearOuter.toFixed(2)} lần/năm</strong></span></li>`;
                         forecastCount++;
                     }
                 });
@@ -524,16 +527,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (currentCountOuter > 0) {
                         const continuationRateOuter = targetCountOuter / currentCountOuter;
                         dropOffRateOuter = 1 - continuationRateOuter;
+                    } else if (streak.isPotential) {
+                        dropOffRateOuter = 0;
                     } else {
                         dropOffRateOuter = 1;
                     }
 
                     const isRecord = dropOffRateOuter >= 0.70;
                     const isSuperRecord = dropOffRateOuter >= 0.90;
-                    const isForecastRecord = targetFreqYearOuter > 0 && targetFreqYearOuter < 1.5;
+                    const isForecastRecord = targetFreqYearOuter > 0 && targetFreqYearOuter <= 1.5;
 
-                    const borderColor = isRecord ? (isSuperRecord ? 'border-l-purple-700' : 'border-l-red-700') : 'border-l-blue-300';
-                    const bgColor = isRecord ? (isSuperRecord ? 'bg-purple-50' : 'bg-red-50') : 'bg-white';
+                    const borderColor = isRecord ? (isSuperRecord ? 'border-l-purple-700' : 'border-l-red-700') : (streak.isPotential ? 'border-l-orange-400' : 'border-l-blue-300');
+                    const bgColor = isRecord ? (isSuperRecord ? 'bg-purple-50' : 'bg-red-50') : (streak.isPotential ? 'bg-orange-50' : 'bg-white');
                     const titleWeight = isRecord ? 'font-bold' : 'font-semibold';
 
                     let badgeHtml = '';
@@ -541,6 +546,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                         badgeHtml = `<span class="ml-2 inline-block bg-purple-600 text-white text-[9px] px-1 py-0.5 rounded uppercase">Rủi ro gãy ${(dropOffRateOuter*100).toFixed(0)}%</span>`;
                     } else if (isRecord) {
                         badgeHtml = `<span class="ml-2 inline-block bg-red-600 text-white text-[9px] px-1 py-0.5 rounded uppercase">Rủi ro gãy ${(dropOffRateOuter*100).toFixed(0)}%</span>`;
+                    } else if (streak.isPotential) {
+                        badgeHtml = `<span class="ml-2 inline-block bg-orange-500 text-white text-[9px] px-1 py-0.5 rounded uppercase">Tiềm Năng</span>`;
                     }
                     
                     if (isForecastRecord && !isRecord) {
@@ -716,19 +723,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                             if (currentCountInner > 0) {
                                 const continuationRateInner = targetCount / currentCountInner;
                                 dropOffRateInner = 1 - continuationRateInner;
+                            } else if (streak.isPotential) {
+                                dropOffRateInner = 0;
                             } else {
                                 dropOffRateInner = 1;
                             }
 
                             const isInnerRecord = dropOffRateInner >= 0.70;
                             const isInnerSuperRecord = dropOffRateInner >= 0.90;
-                            const isInnerForecastRecord = targetFreqYear > 0 && targetFreqYear < 1.5;
+                            const isInnerForecastRecord = targetFreqYear > 0 && targetFreqYear <= 1.5;
 
                             let probBadge = '';
                             if (isInnerSuperRecord) {
                                 probBadge = `<span class="inline-block bg-purple-600 text-white text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">Rủi Ro Gãy ${(dropOffRateInner*100).toFixed(0)}%</span>`;
                             } else if (isInnerRecord) {
                                 probBadge = `<span class="inline-block bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">Rủi Ro Gãy ${(dropOffRateInner*100).toFixed(0)}%</span>`;
+                            } else if (streak.isPotential) {
+                                probBadge = `<span class="inline-block bg-orange-100 text-orange-800 text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">🔮 Đang Hình Thành</span>`;
                             } else {
                                 probBadge = `<span class="inline-block bg-green-100 text-green-800 text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">✅ An Toàn Hơn (${(dropOffRateInner*100).toFixed(0)}% gãy)</span>`;
                             }
@@ -737,7 +748,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 probBadge += `<span class="inline-block bg-blue-100 text-blue-800 text-[10px] px-1.5 py-0.5 rounded font-bold mt-1 ml-1">🔮 Dự báo KL</span>`;
                             }
 
-                            const cardBg = isInnerRecord ? (isInnerSuperRecord ? 'bg-purple-50' : 'bg-red-50') : 'bg-white';
+                            const cardBg = isInnerRecord ? (isInnerSuperRecord ? 'bg-purple-50' : 'bg-red-50') : (streak.isPotential ? 'bg-orange-50' : 'bg-white');
 
 
                             let freqHtml = '';
