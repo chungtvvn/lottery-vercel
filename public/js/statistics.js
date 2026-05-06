@@ -451,23 +451,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const targetCountOuter = gapInfoOuter ? gapInfoOuter.count : 0;
                     const targetFreqYearOuter = targetCountOuter / totalYears;
 
-                    const isNextSuperRecordOuter = targetFreqYearOuter <= 0.5;
-                    const isNextRecordOuter = targetFreqYearOuter <= 1.5;
+                    const hasReachedOriginalRecordOuter = streakLen >= streak.originalRecord && streak.originalRecord > 0;
+                    const isApproachingOriginalRecordOuter = targetLenOuter >= streak.originalRecord && streakLen < streak.originalRecord && streak.originalRecord > 0;
 
-                    // [FIX] Dùng tần suất THỰC TẾ của chuỗi hiện tại thay vì threshold cũ
                     const currentGapInfoOuter = streak.exactGapStats ? streak.exactGapStats[streakLen] : null;
                     const currentCountOuter = currentGapInfoOuter ? currentGapInfoOuter.count : 0;
                     const currentFreqYearOuter = currentCountOuter / totalYears;
-                    const isCurrentRecordOuter = currentFreqYearOuter <= 1.5 && currentCountOuter > 0;
                     const isCurrentSuperOuter = currentFreqYearOuter <= 0.5;
 
-                    const isRecord = isCurrentRecordOuter || isNextRecordOuter;
-                    const isSuperRecord = isCurrentRecordOuter ? isCurrentSuperOuter : isNextSuperRecordOuter;
+                    const isRecord = hasReachedOriginalRecordOuter || isApproachingOriginalRecordOuter;
+                    const isSuperRecord = hasReachedOriginalRecordOuter ? isCurrentSuperOuter : isNextSuperRecordOuter;
 
                     const borderColor = isRecord ? (isSuperRecord ? 'border-l-purple-700' : 'border-l-red-700') : 'border-l-blue-300';
                     const bgColor = isRecord ? (isSuperRecord ? 'bg-purple-50' : 'bg-red-50') : 'bg-white';
                     const titleWeight = isRecord ? 'font-bold' : 'font-semibold';
-
 
                     const superBadge = isSuperRecord ? '<span class="ml-2 inline-block bg-purple-600 text-white text-[9px] px-1 py-0.5 rounded uppercase">Siêu KL</span>' : '';
 
@@ -490,7 +487,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                                         </div>
 
                                         <p class="text-xs text-gray-500 mb-1">Từ ngày: ${streak.startDate}</p>
-                                        <p class="text-xs ${isRecord ? 'text-red-500 font-bold' : 'text-gray-500'}">Mốc kỷ lục mới: ${streak.recordLength} ngày</p>
                                         <div class="mt-auto pt-2">
                                            <div class="flex flex-wrap gap-1">${renderFullSequence(streak, streak.description)}</div>
                                         </div>
@@ -616,29 +612,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                             const targetFreqYear = targetCount / totalYears;
 
                             const isNextSuperRecord = targetFreqYear <= 0.5;
-                            const isNextRecord = targetFreqYear <= 1.5;
 
                             // Badge - show different messages based on condition
-                            // LOGIC MỚI: Chỉ hiện "Khó" khi là Kỷ lục/Siêu kỷ lục (freq <= 1.5)
-                            // Gap analysis cũ bị bỏ qua nếu tần suất > 1.5 lần/năm
                             // [FIX] Tần suất THỰC TẾ của chuỗi hiện tại
                             const currentGapInfoInner = streak.exactGapStats ? streak.exactGapStats[currentLen] : null;
                             const currentCountInner = currentGapInfoInner ? currentGapInfoInner.count : 0;
                             const currentFreqYear = currentCountInner / totalYears;
-                            const isCurrentRecord = currentFreqYear <= 1.5 && currentCountInner > 0;
                             const isCurrentSuper = currentFreqYear <= 0.5;
 
+                            const hasReachedOriginalRecord = currentLen >= streak.originalRecord && streak.originalRecord > 0;
+                            const isApproachingOriginalRecord = nextLen >= streak.originalRecord && currentLen < streak.originalRecord && streak.originalRecord > 0;
+
                             let probBadge;
-                            if (isCurrentRecord) {
+                            if (hasReachedOriginalRecord) {
                                 probBadge = `<span class="inline-block ${isCurrentSuper ? 'bg-purple-600' : 'bg-red-600'} text-white text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">🏆 Đạt ${isCurrentSuper ? 'Siêu KL' : 'Kỷ Lục'} (${currentFreqYear.toFixed(2)}/năm)</span>`;
-                            } else if (isNextRecord) {
+                            } else if (isApproachingOriginalRecord) {
                                 probBadge = `<span class="inline-block ${isNextSuperRecord ? 'bg-purple-600' : 'bg-red-600'} text-white text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">🚧 Tới hạn ${isNextSuperRecord ? 'Siêu KL' : 'Kỷ Lục'}</span>`;
                             } else {
                                 probBadge = `<span class="inline-block bg-green-100 text-green-800 text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">✅ Dễ Tiếp Tục</span>`;
                             }
 
-                            const isSuperLevel = isCurrentRecord ? isCurrentSuper : isNextSuperRecord;
-                            const cardBg = (isCurrentRecord || isNextRecord) ? (isSuperLevel ? 'bg-purple-50' : 'bg-red-50') : 'bg-white';
+                            const isSuperLevel = hasReachedOriginalRecord ? isCurrentSuper : isNextSuperRecord;
+                            const isRecordState = hasReachedOriginalRecord || isApproachingOriginalRecord;
+                            const cardBg = isRecordState ? (isSuperLevel ? 'bg-purple-50' : 'bg-red-50') : 'bg-white';
 
 
                             let freqHtml = '';
@@ -661,8 +657,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                                         ${freqHtml}
                                         <div class="text-center mt-2">${probBadge}</div>
                                     </div>`;
-                            } else if (isCurrentRecord || isNextRecord) {
-                                let badgeText = isCurrentRecord ? `🏆 Đạt ${isSuperLevel ? 'Siêu KL' : 'Kỷ Lục'}` : `🚧 Tới hạn ${isSuperLevel ? 'Siêu KL' : 'Kỷ Lục'}`;
+                            } else if (isRecordState) {
+                                let badgeText = hasReachedOriginalRecord ? `🏆 Đạt ${isSuperLevel ? 'Siêu KL' : 'Kỷ Lục'}` : `🚧 Tới hạn ${isSuperLevel ? 'Siêu KL' : 'Kỷ Lục'}`;
                                 return `
                                     <div class="mt-2 pt-2 border-t border-gray-100 text-xs ${isSuperLevel ? 'bg-purple-50' : 'bg-red-50'} -mx-4 -mb-4 p-4 rounded-b-lg">
                                         <div class="text-center">
