@@ -438,7 +438,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const isTienLuiSoLePattern = (streak.key && (streak.key.includes('tienLuiSoLe') || streak.key.includes('luiTienSoLe'))) || (streak.description && (streak.description.includes('Tiến-Lùi') || streak.description.includes('Lùi-Tiến')));
                     const isSoLePatternOuter = (streak.key && (streak.key.toLowerCase().includes('sole') || streak.key.toLowerCase().includes('solemoi')) && !isTienLuiSoLePattern) || (streak.description && streak.description.toLowerCase().includes('so le') && !isTienLuiSoLePattern);
                     const targetLenOuter = isSoLePatternOuter ? streakLen + 2 : streakLen + 1;
-                    const gapInfoOuter = streak.exactGapStats ? streak.exactGapStats[targetLenOuter] : null;
+                    
+                    let checkTargetLenOuter = targetLenOuter;
+                    const recordLenOuter = streak.originalRecord || 0;
+                    if (recordLenOuter > streakLen) {
+                        const step = isSoLePatternOuter ? 2 : 1;
+                        const stepsToRecord = (recordLenOuter - streakLen) / step;
+                        if (stepsToRecord > 0 && stepsToRecord <= 2) {
+                            checkTargetLenOuter = recordLenOuter;
+                        }
+                    }
+
+                    const gapInfoOuter = streak.exactGapStats ? streak.exactGapStats[checkTargetLenOuter] : null;
                     const targetCountOuter = gapInfoOuter ? gapInfoOuter.count : 0;
                     const targetFreqYearOuter = targetCountOuter / totalYears;
                     
@@ -490,13 +501,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const isSoLePatternOuter = (streak.key && (streak.key.toLowerCase().includes('sole') || streak.key.toLowerCase().includes('solemoi')) && !isTienLuiSoLePattern) || (streak.description && streak.description.toLowerCase().includes('so le') && !isTienLuiSoLePattern);
 
                     const targetLenOuter = isSoLePatternOuter ? streakLen + 2 : streakLen + 1;
-                    const gapInfoOuter = streak.exactGapStats ? streak.exactGapStats[targetLenOuter] : null;
+                    
+                    let checkTargetLenOuter = targetLenOuter;
+                    const recordLenOuter = streak.originalRecord || 0;
+                    if (recordLenOuter > streakLen) {
+                        const step = isSoLePatternOuter ? 2 : 1;
+                        const stepsToRecord = (recordLenOuter - streakLen) / step;
+                        if (stepsToRecord > 0 && stepsToRecord <= 2) {
+                            checkTargetLenOuter = recordLenOuter;
+                        }
+                    }
+
+                    const gapInfoOuter = streak.exactGapStats ? streak.exactGapStats[checkTargetLenOuter] : null;
                     const targetCountOuter = gapInfoOuter ? gapInfoOuter.count : 0;
                     const targetFreqYearOuter = targetCountOuter / totalYears;
                     const isNextSuperRecordOuter = targetFreqYearOuter <= 0.5;
-
-                    const hasReachedOriginalRecordOuter = streakLen >= streak.originalRecord && streak.originalRecord > 0;
-                    const isApproachingOriginalRecordOuter = targetLenOuter >= streak.originalRecord && streakLen < streak.originalRecord && streak.originalRecord > 0;
 
                     const currentGapInfoOuter = streak.exactGapStats ? streak.exactGapStats[streakLen] : null;
                     const currentCountOuter = currentGapInfoOuter ? currentGapInfoOuter.count : 0;
@@ -667,21 +686,32 @@ document.addEventListener('DOMContentLoaded', async () => {
                             // Include Extension Gap in low prob calculation
                             const isLowProbFinal = isLowProb || isLowProbExt;
 
-                            // --- NEW LOGIC: Prediction for NEXT day Record ---
-                            const targetCount = gapInfoExact ? gapInfoExact.count : 0;
+                            // --- NEW LOGIC: Prediction with LOOK-AHEAD to Record ---
+                            // Look-ahead: nếu cách kỷ lục 1-2 bước, tính tỉ lệ gãy tới kỷ lục
+                            let checkNextLen = nextLen;
+                            const recordLenInner = streak.originalRecord || streak.recordLength || 0;
+                            if (recordLenInner > currentLen) {
+                                const stepInner = isSoLePattern ? 2 : 1;
+                                const stepsToRecordInner = (recordLenInner - currentLen) / stepInner;
+                                if (stepsToRecordInner > 0 && stepsToRecordInner <= 2) {
+                                    checkNextLen = recordLenInner;
+                                }
+                            }
+                            
+                            const checkGapInfoExact = (streak.exactGapStats && streak.exactGapStats[checkNextLen]) ? streak.exactGapStats[checkNextLen] : null;
+                            const targetCount = checkGapInfoExact ? checkGapInfoExact.count : 0;
                             const targetFreqYear = targetCount / totalYears;
 
                             const isNextSuperRecord = targetFreqYear <= 0.5;
                             const isNextRecord = targetFreqYear <= 1.5;
 
                             // Badge - show different messages based on condition
-                            // [FIX] Tần suất THỰC TẾ của chuỗi hiện tại
                             const currentGapInfoInner = streak.exactGapStats ? streak.exactGapStats[currentLen] : null;
                             const currentCountInner = currentGapInfoInner ? currentGapInfoInner.count : 0;
                             const currentFreqYear = currentCountInner / totalYears;
                             const isCurrentSuper = currentFreqYear <= 0.5;
 
-                            // Drop-off rate logic for Inner Block
+                            // Drop-off rate logic for Inner Block (with look-ahead)
                             let dropOffRateInner = 0;
                             if (currentCountInner > 0) {
                                 const continuationRateInner = targetCount / currentCountInner;
