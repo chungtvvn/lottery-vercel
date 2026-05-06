@@ -613,6 +613,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             const targetFreqYear = targetCount / totalYears;
 
                             const isNextSuperRecord = targetFreqYear <= 0.5;
+                            const isNextRecord = targetFreqYear <= 1.5;
 
                             // Badge - show different messages based on condition
                             // [FIX] Tần suất THỰC TẾ của chuỗi hiện tại
