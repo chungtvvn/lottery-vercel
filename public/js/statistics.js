@@ -429,7 +429,50 @@ document.addEventListener('DOMContentLoaded', async () => {
             currentStreaksSection.classList.remove('d-none');
             const dateSuffix = forDate ? ` (${forDate})` : '';
             currentStreaksTitle.innerHTML = `Chuỗi Đang Diễn Ra${dateSuffix} <span class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">${totalCount}</span>`;
+            
+            let forecastHtml = '';
+            let forecastCount = 0;
+            sortedLengths.forEach(length => {
+                streaksByLength[length].forEach(streak => {
+                    const streakLen = parseInt(length);
+                    const isTienLuiSoLePattern = (streak.key && (streak.key.includes('tienLuiSoLe') || streak.key.includes('luiTienSoLe'))) || (streak.description && (streak.description.includes('Tiến-Lùi') || streak.description.includes('Lùi-Tiến')));
+                    const isSoLePatternOuter = (streak.key && (streak.key.toLowerCase().includes('sole') || streak.key.toLowerCase().includes('solemoi')) && !isTienLuiSoLePattern) || (streak.description && streak.description.toLowerCase().includes('so le') && !isTienLuiSoLePattern);
+                    const targetLenOuter = isSoLePatternOuter ? streakLen + 2 : streakLen + 1;
+                    const gapInfoOuter = streak.exactGapStats ? streak.exactGapStats[targetLenOuter] : null;
+                    const targetCountOuter = gapInfoOuter ? gapInfoOuter.count : 0;
+                    const targetFreqYearOuter = targetCountOuter / totalYears;
+                    
+                    const currentGapInfoOuter = streak.exactGapStats ? streak.exactGapStats[streakLen] : null;
+                    const currentCountOuter = currentGapInfoOuter ? currentGapInfoOuter.count : 0;
+                    let dropOffRateOuter = 0;
+                    if (currentCountOuter > 0) {
+                        const continuationRateOuter = targetCountOuter / currentCountOuter;
+                        dropOffRateOuter = 1 - continuationRateOuter;
+                    } else {
+                        dropOffRateOuter = 1;
+                    }
+                    
+                    const isRecord = dropOffRateOuter >= 0.70;
+                    const isForecastRecord = targetFreqYearOuter > 0 && targetFreqYearOuter < 1.5;
+                    
+                    if (isForecastRecord && !isRecord) {
+                        forecastHtml += `<li class="flex items-center gap-2"><i class="bi bi-arrow-right-short text-blue-500"></i><span class="font-bold text-gray-800">${streak.description}</span> <span class="text-xs bg-gray-200 px-1.5 py-0.5 rounded">${streakLen} ngày</span> <span class="text-gray-500 text-xs">→ Dự báo: <strong class="text-blue-600">${targetFreqYearOuter.toFixed(2)} lần/năm</strong></span></li>`;
+                        forecastCount++;
+                    }
+                });
+            });
+
             let finalHtml = '';
+            if (forecastCount > 0) {
+                finalHtml += `
+                <div class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm">
+                    <h4 class="text-blue-800 font-bold mb-3 flex items-center"><i class="bi bi-stars mr-2"></i>Dự báo chuỗi có thể xảy ra (Tần suất < 1.5/năm)</h4>
+                    <ul class="text-sm space-y-2">
+                        ${forecastHtml}
+                    </ul>
+                </div>
+                `;
+            }
             sortedLengths.forEach(length => {
                 const hasPotentialInGroup = streaksByLength[length].some(s => s.isPotential);
                 finalHtml += `
@@ -457,31 +500,32 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     const currentGapInfoOuter = streak.exactGapStats ? streak.exactGapStats[streakLen] : null;
                     const currentCountOuter = currentGapInfoOuter ? currentGapInfoOuter.count : 0;
-                    const currentFreqYearOuter = currentCountOuter / totalYears;
-                    const isCurrentSuperOuter = currentFreqYearOuter <= 0.5;
-
-                    let isHighRiskOuter = false;
+                    
                     let dropOffRateOuter = 0;
-                    if (currentCountOuter >= 10 && targetCountOuter >= 0) {
+                    if (currentCountOuter > 0) {
                         const continuationRateOuter = targetCountOuter / currentCountOuter;
                         dropOffRateOuter = 1 - continuationRateOuter;
-                        if (dropOffRateOuter >= 0.90) {
-                            isHighRiskOuter = true;
-                        }
+                    } else {
+                        dropOffRateOuter = 1;
                     }
 
-                    const isRecord = hasReachedOriginalRecordOuter || isApproachingOriginalRecordOuter;
-                    const isSuperRecord = hasReachedOriginalRecordOuter ? isCurrentSuperOuter : isNextSuperRecordOuter;
+                    const isRecord = dropOffRateOuter >= 0.70;
+                    const isSuperRecord = dropOffRateOuter >= 0.90;
+                    const isForecastRecord = targetFreqYearOuter > 0 && targetFreqYearOuter < 1.5;
 
-                    const borderColor = isRecord ? (isSuperRecord ? 'border-l-purple-700' : 'border-l-red-700') : (isHighRiskOuter ? 'border-l-orange-500' : 'border-l-blue-300');
-                    const bgColor = isRecord ? (isSuperRecord ? 'bg-purple-50' : 'bg-red-50') : (isHighRiskOuter ? 'bg-orange-50' : 'bg-white');
-                    const titleWeight = isRecord || isHighRiskOuter ? 'font-bold' : 'font-semibold';
+                    const borderColor = isRecord ? (isSuperRecord ? 'border-l-purple-700' : 'border-l-red-700') : 'border-l-blue-300';
+                    const bgColor = isRecord ? (isSuperRecord ? 'bg-purple-50' : 'bg-red-50') : 'bg-white';
+                    const titleWeight = isRecord ? 'font-bold' : 'font-semibold';
 
                     let badgeHtml = '';
                     if (isSuperRecord) {
-                        badgeHtml = '<span class="ml-2 inline-block bg-purple-600 text-white text-[9px] px-1 py-0.5 rounded uppercase">Siêu KL</span>';
-                    } else if (isHighRiskOuter && !isRecord) {
-                        badgeHtml = `<span class="ml-2 inline-block bg-orange-500 text-white text-[9px] px-1 py-0.5 rounded uppercase">⚠️ Gãy ${(dropOffRateOuter*100).toFixed(0)}%</span>`;
+                        badgeHtml = `<span class="ml-2 inline-block bg-purple-600 text-white text-[9px] px-1 py-0.5 rounded uppercase">Rủi ro gãy ${(dropOffRateOuter*100).toFixed(0)}%</span>`;
+                    } else if (isRecord) {
+                        badgeHtml = `<span class="ml-2 inline-block bg-red-600 text-white text-[9px] px-1 py-0.5 rounded uppercase">Rủi ro gãy ${(dropOffRateOuter*100).toFixed(0)}%</span>`;
+                    }
+                    
+                    if (isForecastRecord && !isRecord) {
+                        badgeHtml += `<span class="ml-2 inline-block bg-blue-500 text-white text-[9px] px-1 py-0.5 rounded uppercase">Dự báo KL (<1.5/năm)</span>`;
                     }
 
                     finalHtml += `
@@ -637,34 +681,33 @@ document.addEventListener('DOMContentLoaded', async () => {
                             const currentFreqYear = currentCountInner / totalYears;
                             const isCurrentSuper = currentFreqYear <= 0.5;
 
-                            const hasReachedOriginalRecord = currentLen >= streak.originalRecord && streak.originalRecord > 0;
-                            const isApproachingOriginalRecord = nextLen >= streak.originalRecord && currentLen < streak.originalRecord && streak.originalRecord > 0;
-
-                            // Drop-off rate logic
-                            let isHighRisk = false;
-                            let dropOffRate = 0;
-                            if (currentCountInner >= 10 && targetCount >= 0) {
-                                const continuationRate = targetCount / currentCountInner;
-                                dropOffRate = 1 - continuationRate;
-                                if (dropOffRate >= 0.90) {
-                                    isHighRisk = true;
-                                }
-                            }
-
-                            let probBadge;
-                            if (hasReachedOriginalRecord) {
-                                probBadge = `<span class="inline-block ${isCurrentSuper ? 'bg-purple-600' : 'bg-red-600'} text-white text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">🏆 Đạt ${isCurrentSuper ? 'Siêu KL' : 'Kỷ Lục'} (${currentFreqYear.toFixed(2)}/năm)</span>`;
-                            } else if (isApproachingOriginalRecord) {
-                                probBadge = `<span class="inline-block ${isNextSuperRecord ? 'bg-purple-600' : 'bg-red-600'} text-white text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">🚧 Tới hạn ${isNextSuperRecord ? 'Siêu KL' : 'Kỷ Lục'}</span>`;
-                            } else if (isHighRisk) {
-                                probBadge = `<span class="inline-block bg-orange-500 text-white text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">⚠️ Rủi Ro Gãy ${(dropOffRate*100).toFixed(0)}%</span>`;
+                            // Drop-off rate logic for Inner Block
+                            let dropOffRateInner = 0;
+                            if (currentCountInner > 0) {
+                                const continuationRateInner = targetCount / currentCountInner;
+                                dropOffRateInner = 1 - continuationRateInner;
                             } else {
-                                probBadge = `<span class="inline-block bg-green-100 text-green-800 text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">✅ Dễ Tiếp Tục</span>`;
+                                dropOffRateInner = 1;
                             }
 
-                            const isSuperLevel = hasReachedOriginalRecord ? isCurrentSuper : isNextSuperRecord;
-                            const isRecordState = hasReachedOriginalRecord || isApproachingOriginalRecord;
-                            const cardBg = isRecordState ? (isSuperLevel ? 'bg-purple-50' : 'bg-red-50') : (isHighRisk ? 'bg-orange-50' : 'bg-white');
+                            const isInnerRecord = dropOffRateInner >= 0.70;
+                            const isInnerSuperRecord = dropOffRateInner >= 0.90;
+                            const isInnerForecastRecord = targetFreqYear > 0 && targetFreqYear < 1.5;
+
+                            let probBadge = '';
+                            if (isInnerSuperRecord) {
+                                probBadge = `<span class="inline-block bg-purple-600 text-white text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">Rủi Ro Gãy ${(dropOffRateInner*100).toFixed(0)}%</span>`;
+                            } else if (isInnerRecord) {
+                                probBadge = `<span class="inline-block bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">Rủi Ro Gãy ${(dropOffRateInner*100).toFixed(0)}%</span>`;
+                            } else {
+                                probBadge = `<span class="inline-block bg-green-100 text-green-800 text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">✅ An Toàn Hơn (${(dropOffRateInner*100).toFixed(0)}% gãy)</span>`;
+                            }
+                            
+                            if (isInnerForecastRecord && !isInnerRecord) {
+                                probBadge += `<span class="inline-block bg-blue-100 text-blue-800 text-[10px] px-1.5 py-0.5 rounded font-bold mt-1 ml-1">🔮 Dự báo KL</span>`;
+                            }
+
+                            const cardBg = isInnerRecord ? (isInnerSuperRecord ? 'bg-purple-50' : 'bg-red-50') : 'bg-white';
 
 
                             let freqHtml = '';
