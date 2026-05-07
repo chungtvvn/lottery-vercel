@@ -159,6 +159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Remove `fetchQuickStats();` from here because we will call `fetchQuickStats` inside `fetchRecentResults` if needed? No, `fetchQuickStats` is standalone. 
         fetchQuickStats();
         fetchLastUpdateDate();
+        fetchStreakExclusion();
     };
 
     // --- NO CLIENT-SIDE CACHING ---
@@ -377,6 +378,89 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     updateDataButton.addEventListener('click', handleDataUpdate);
+
+    // === STREAK DROP-OFF EXCLUSION RENDERING ===
+    const fetchStreakExclusion = async () => {
+        const section = document.getElementById('streak-exclusion-section');
+        const container = document.getElementById('streak-exclusion-container');
+        const countSpan = document.getElementById('streak-exclusion-count');
+        if (!section || !container) return;
+
+        try {
+            const data = await fetchJSON(`${BASE_URL}/api/analysis/latest`);
+            const danhStreak = data.danhStreak;
+            if (!danhStreak) {
+                section.style.display = 'none';
+                return;
+            }
+
+            const betNumbers = (danhStreak.numbers || []).map(n => String(n).padStart(2, '0'));
+            const excludedNumbers = (danhStreak.excluded || []).map(n => String(n).padStart(2, '0'));
+            const isSkipped = danhStreak.isSkipped;
+
+            if (isSkipped || betNumbers.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = '';
+            if (countSpan) {
+                countSpan.textContent = `(${betNumbers.length} đánh | ${excludedNumbers.length} loại trừ)`;
+            }
+
+            const betSet = new Set(betNumbers);
+            const excludedSet = new Set(excludedNumbers);
+
+            let gridHtml = '<div class="mb-3 text-sm text-gray-600"><i class="bi bi-info-circle me-1"></i>Số <span class="text-teal-700 font-bold">XANH</span> = đánh, số <span class="text-red-600 font-bold">ĐỎ</span> = loại trừ (rủi ro gãy cao)</div>';
+            gridHtml += '<div style="display:grid; grid-template-columns:repeat(10,1fr); gap:4px; max-width:500px;">';
+
+            for (let i = 0; i < 100; i++) {
+                const numStr = String(i).padStart(2, '0');
+                let cellClass = '';
+                let cellStyle = '';
+
+                if (excludedSet.has(numStr)) {
+                    cellStyle = 'background:rgba(239,68,68,0.15); color:#dc2626; border:1.5px solid #f87171; font-weight:700;';
+                } else if (betSet.has(numStr)) {
+                    cellStyle = 'background:rgba(20,184,166,0.15); color:#0d9488; border:1.5px solid #2dd4bf; font-weight:700;';
+                } else {
+                    cellStyle = 'background:#f9fafb; color:#9ca3af; border:1px solid #e5e7eb;';
+                }
+
+                gridHtml += `<div style="${cellStyle} text-align:center; padding:6px 2px; border-radius:6px; font-size:12px; font-family:monospace; cursor:default; transition:transform 0.1s;" 
+                    onmouseover="this.style.transform='scale(1.15)'" 
+                    onmouseout="this.style.transform='scale(1)'">${numStr}</div>`;
+            }
+            gridHtml += '</div>';
+
+            // Summary stats
+            gridHtml += `
+                <div class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="bg-teal-50 rounded-lg p-3 text-center border border-teal-200">
+                        <div class="text-2xl font-bold text-teal-700">${betNumbers.length}</div>
+                        <div class="text-xs text-teal-600">Số đánh</div>
+                    </div>
+                    <div class="bg-red-50 rounded-lg p-3 text-center border border-red-200">
+                        <div class="text-2xl font-bold text-red-600">${excludedNumbers.length}</div>
+                        <div class="text-xs text-red-500">Số loại trừ</div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-3 text-center border border-gray-200">
+                        <div class="text-2xl font-bold text-gray-700">${(betNumbers.length / 100 * 100).toFixed(0)}%</div>
+                        <div class="text-xs text-gray-500">Coverage</div>
+                    </div>
+                    <div class="bg-blue-50 rounded-lg p-3 text-center border border-blue-200">
+                        <div class="text-2xl font-bold text-blue-700">${data.date || '-'}</div>
+                        <div class="text-xs text-blue-500">Ngày dự đoán</div>
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = gridHtml;
+        } catch (error) {
+            console.error('Lỗi khi tải Streak Exclusion:', error);
+            section.style.display = 'none';
+        }
+    };
 
     const fetchQuickStats = async () => {
         try {

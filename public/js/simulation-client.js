@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
             analysisContent.innerHTML = `<p class="text-red-500">Lỗi: Dữ liệu phân tích không hợp lệ.</p>`;
             return;
         }
-        const { date, danh, betAmount, danhUnified, betAmountUnified, danhAdvanced, betAmountAdvanced, danhHybrid, betAmountHybrid, danhCombined, betAmountCombined, danhSmart, betAmountSmart } = data;
+        const { date, danh, betAmount, danhUnified, betAmountUnified, danhAdvanced, betAmountAdvanced, danhHybrid, betAmountHybrid, danhCombined, betAmountCombined, danhSmart, betAmountSmart, danhStreak, betAmountStreak } = data;
         const [year, month, day] = date.split('-');
         const formattedDate = new Date(Date.UTC(year, month - 1, day)).toLocaleDateString('vi-VN');
 
@@ -161,6 +161,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const combinedExclude = danhCombined?.excluded || [];
         const smartBet = danhSmart?.numbers || [];
         const smartExclude = danhSmart?.excluded || [];
+        const streakBet = danhStreak?.numbers || [];
+        const streakExclude = danhStreak?.excluded || [];
 
         let html = `
             <div class="mb-6">
@@ -259,11 +261,26 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${render100Numbers(smartBet, smartExclude, 'bg-yellow-300 text-yellow-900 border-yellow-500')}
                     </div>
                 </div>
+
+                <!-- METHOD 7: STREAK DROP-OFF -->
+                <div class="bg-teal-50 p-4 rounded-lg border-2 border-teal-200">
+                    <div class="text-lg font-bold text-teal-800 mb-3 block">
+                        🎯 7. Streak Drop-off
+                    </div>
+                    <p class="text-xs text-gray-500 mb-2">Loại trừ theo tỷ lệ gãy chuỗi (drop-off rate) từ gapStats</p>
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-sm text-gray-600">Cược: <span class="font-bold text-teal-600">${(betAmountStreak || 10).toLocaleString()}k/số</span></span>
+                        <span class="text-xs"><span class="text-green-600 font-bold">${streakBet.length}</span> đánh | <span class="text-red-600">${streakExclude.length}</span> loại trừ</span>
+                    </div>
+                    <div class="number-grid-100 p-2 bg-white rounded-lg">
+                        ${render100Numbers(streakBet, streakExclude, 'bg-teal-300 text-teal-900 border-teal-500')}
+                    </div>
+                </div>
             </div>
             
             <!-- Comparison note -->
             <div class="mt-4 p-3 bg-gray-100 rounded-lg text-sm text-gray-600">
-                <strong>💡 Ghi chú:</strong> So sánh 5 phương pháp song song. Combined tổng hợp cả 4 phương pháp khác (tối đa 60 số). <strong>Exclusion +</strong> chỉ dùng loại trừ kỷ lục RED+PURPLE từ Distribution, đánh toàn bộ số còn lại. Kết quả thực tế sẽ được cập nhật trong Lịch Sử Đối Chiếu bên dưới.
+                <strong>💡 Ghi chú:</strong> So sánh 7 phương pháp song song. Combined tổng hợp cả 4 phương pháp khác (tối đa 60 số). <strong>Exclusion +</strong> chỉ dùng loại trừ kỷ lục RED+PURPLE từ Distribution. <strong>Streak Drop-off</strong> loại trừ số có tỷ lệ gãy cao nhất theo gapStats.
             </div>
         `;
 
@@ -283,7 +300,8 @@ document.addEventListener('DOMContentLoaded', () => {
             advanced: { totalBet: 0, totalWin: 0, winDays: 0, loseDays: 0, skipDays: 0 },
             hybrid: { totalBet: 0, totalWin: 0, winDays: 0, loseDays: 0, skipDays: 0 },
             combined: { totalBet: 0, totalWin: 0, winDays: 0, loseDays: 0, skipDays: 0 },
-            exclusionPlus: { totalBet: 0, totalWin: 0, winDays: 0, loseDays: 0, skipDays: 0 }
+            exclusionPlus: { totalBet: 0, totalWin: 0, winDays: 0, loseDays: 0, skipDays: 0 },
+            streak: { totalBet: 0, totalWin: 0, winDays: 0, loseDays: 0, skipDays: 0 }
         };
 
         let tableHtml = `<table class="w-full text-xs text-left">
@@ -297,6 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <th class="p-2 text-center bg-orange-50 border-l-2 border-orange-300" colspan="3">🤖 Hybrid AI</th>
                     <th class="p-2 text-center bg-pink-50 border-l-2 border-pink-300" colspan="3">🔗 Combined</th>
                     <th class="p-2 text-center bg-yellow-50 border-l-2 border-yellow-300" colspan="3">⚡ Exclusion +</th>
+                    <th class="p-2 text-center bg-teal-50 border-l-2 border-teal-300" colspan="3">🎯 Streak</th>
                 </tr>
                 <tr class="text-[10px]">
                     <th class="p-1 text-center bg-blue-50 border-l-2 border-blue-300">Đánh</th>
@@ -317,6 +336,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     <th class="p-1 text-center bg-yellow-50 border-l-2 border-yellow-300">Đánh</th>
                     <th class="p-1 text-right bg-yellow-50">Lãi/Lỗ</th>
                     <th class="p-1 text-center bg-yellow-50">W/L</th>
+                    <th class="p-1 text-center bg-teal-50 border-l-2 border-teal-300">Đánh</th>
+                    <th class="p-1 text-right bg-teal-50">Lãi/Lỗ</th>
+                    <th class="p-1 text-center bg-teal-50">W/L</th>
                 </tr>
             </thead>
             <tbody>`;
@@ -334,6 +356,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let hybridHtml = renderMethodCell(item, 'hybrid', 'orange', stats.hybrid);
             let combinedHtml = renderMethodCell(item, 'combined', 'pink', stats.combined);
             let exclusionPlusHtml = renderMethodCell(item, 'exclusionPlus', 'yellow', stats.exclusionPlus);
+            let streakHtml = renderMethodCell(item, 'streak', 'teal', stats.streak);
 
             tableHtml += `<tr class="border-b hover:bg-gray-50">
                 <td class="p-1 font-medium">${date}</td>
@@ -344,6 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${hybridHtml}
                 ${combinedHtml}
                 ${exclusionPlusHtml}
+                ${streakHtml}
             </tr>`;
         }
         tableHtml += `</tbody></table>`;
@@ -415,10 +439,11 @@ document.addEventListener('DOMContentLoaded', () => {
             { key: 'advanced', name: '🔬 Advanced', color: 'purple' },
             { key: 'hybrid', name: '🤖 Hybrid AI', color: 'orange' },
             { key: 'combined', name: '🔗 Combined', color: 'pink' },
-            { key: 'exclusionPlus', name: '⚡ Exclusion +', color: 'yellow' }
+            { key: 'exclusionPlus', name: '⚡ Exclusion +', color: 'yellow' },
+            { key: 'streak', name: '🎯 Streak', color: 'teal' }
         ];
 
-        let summaryHtml = `<div class="mt-4 grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">`;
+        let summaryHtml = `<div class="mt-4 grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-3">`;
 
         for (const m of methods) {
             const s = stats[m.key];

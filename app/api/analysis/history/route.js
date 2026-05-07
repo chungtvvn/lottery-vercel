@@ -31,6 +31,9 @@ export async function GET() {
             const advanced = futureSimulationService.advancedMethod(dataForPrediction);
             const hybridAI = futureSimulationService.hybridAIMethod(dataForPrediction);
 
+            // Streak drop-off exclusion
+            const streakExcl = futureSimulationService.streakDropOffExclusion(dataForPrediction);
+
             const combinedSet = new Set([...exclResult.toBet, ...unified.toBet, ...advanced.toBet, ...hybridAI.toBet]);
             const combinedBet = Array.from(combinedSet).sort((a,b) => a-b);
 
@@ -65,6 +68,7 @@ export async function GET() {
                 danhHybrid: { numbers: mapStrs(hybridAI.toBet) },
                 danhCombined: { numbers: mapStrs(combinedBet) },
                 danhSmart: { numbers: mapStrs(smart25) },
+                danhStreak: { numbers: mapStrs(streakExcl.toBet), isSkipped: streakExcl.skipped },
                 
                 result: calcRes(exclResult.toBet, actualNumber, exclResult.skipped),
                 resultUnified: calcRes(unified.toBet, actualNumber),
@@ -72,6 +76,7 @@ export async function GET() {
                 resultHybrid: calcRes(hybridAI.toBet, actualNumber),
                 resultCombined: calcRes(combinedBet, actualNumber),
                 resultSmart: calcRes(smart25, actualNumber),
+                resultStreak: calcRes(streakExcl.toBet, actualNumber, streakExcl.skipped),
             });
         }
 

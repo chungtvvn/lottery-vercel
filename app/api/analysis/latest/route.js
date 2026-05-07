@@ -127,6 +127,9 @@ export async function GET() {
         nextDt.setUTCDate(nextDt.getUTCDate() + 1);
         const nextDateStr = nextDt.toISOString().split('T')[0];
 
+        // --- Streak Drop-off method ---
+        const streakResult = futureSimulationService.streakDropOffExclusion(rawData);
+
         const result = {
             date: nextDateStr,
             danh: { numbers: mapStrs(exclToBet), excluded: Array.from(excluded4).map(n => String(n).padStart(2, '0')), isSkipped: skipped4, explanations },
@@ -134,7 +137,8 @@ export async function GET() {
             danhAdvanced: { numbers: mapStrs(advanced.toBet) },
             danhHybrid: { numbers: mapStrs(hybridAI.toBet) },
             danhCombined: { numbers: mapStrs(combinedBet) },
-            danhSmart: { numbers: mapStrs(smart25) }
+            danhSmart: { numbers: mapStrs(smart25) },
+            danhStreak: { numbers: mapStrs(streakResult.toBet), excluded: mapStrs(streakResult.excluded), isSkipped: streakResult.skipped }
         };
 
         return cachedResponse(result, 'DAILY');

@@ -127,7 +127,22 @@
         </div>
 
 
-        <!-- Phần Tổng Hợp Dự Đoán Ngày Tiếp Theo -->
+        <div id="current-streaks-section" x-data="{ open: true }" class="bg-white rounded-lg shadow-md mb-8 d-none">
+            <div @click="open = !open" class="flex justify-between items-center p-4 cursor-pointer">
+                <h3 class="text-xl font-semibold text-gray-800 flex items-center">
+                    <i class="bi bi-fire text-red-500 me-2"></i>
+                    <span id="current-streaks-title">Chuỗi Đang Diễn Ra</span>
+                </h3>
+                <i class="bi" :class="open ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+            </div>
+            <div x-show="open" x-transition class="accordion-content-highlight" :class="{ 'expanded': open }">
+                <div class="border-t border-gray-200 p-6">
+                    <div id="current-streaks-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phần Tổng Hợp Dự Đoán Ngày Tiếp Theo (đã chuyển xuống dưới Chuỗi Đang Diễn Ra) -->
         <div id="prediction-summary-section" x-data="{ open: false }" class="bg-white rounded-lg shadow-md mb-8" style="display: none;">
             <div @click="open = !open" class="flex justify-between items-center p-4 cursor-pointer bg-gradient-to-r from-amber-50 to-orange-50 rounded-t-lg border-b border-amber-200">
                 <h3 class="text-xl font-semibold text-gray-800 flex items-center">
@@ -144,17 +159,19 @@
             </div>
         </div>
 
-        <div id="current-streaks-section" x-data="{ open: true }" class="bg-white rounded-lg shadow-md mb-8 d-none">
-            <div @click="open = !open" class="flex justify-between items-center p-4 cursor-pointer">
+        <!-- Phần Số Loại Trừ & Số Đánh theo Tỷ Lệ Gãy -->
+        <div id="streak-exclusion-section" x-data="{ open: true }" class="bg-white rounded-lg shadow-md mb-8" style="display: none;">
+            <div @click="open = !open" class="flex justify-between items-center p-4 cursor-pointer bg-gradient-to-r from-teal-50 to-emerald-50 rounded-t-lg border-b border-teal-200">
                 <h3 class="text-xl font-semibold text-gray-800 flex items-center">
-                    <i class="bi bi-fire text-red-500 me-2"></i>
-                    <span id="current-streaks-title">Chuỗi Đang Diễn Ra</span>
+                    <i class="bi bi-bullseye text-teal-600 me-2"></i>
+                    <span id="streak-exclusion-title">Số Đánh & Loại Trừ (Streak Drop-off)</span>
+                    <span id="streak-exclusion-count" class="ml-2 text-sm font-normal text-gray-500"></span>
                 </h3>
                 <i class="bi" :class="open ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
             </div>
             <div x-show="open" x-transition class="accordion-content-highlight" :class="{ 'expanded': open }">
-                <div class="border-t border-gray-200 p-6">
-                    <div id="current-streaks-container"></div>
+                <div class="p-6">
+                    <div id="streak-exclusion-container"></div>
                 </div>
             </div>
         </div>
