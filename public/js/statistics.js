@@ -593,9 +593,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                         const nums = streak.patternNumbers && streak.patternNumbers.length > 0
                             ? streak.patternNumbers.map(n => `<span class="px-1 py-0.5 bg-gray-800 text-gray-200 text-[10px] rounded">${String(n).padStart(2,'0')}</span>`).join(' ')
                             : '<span class="text-gray-400">-</span>';
+                        const potentialLabel = streak.isPotential ? ' <span class="text-[9px] bg-orange-500 text-white px-1 py-0.5 rounded">tiềm năng</span>' : '';
                         predHtml += `<tr class="${rowBg} border-b hover:bg-gray-50">
-                            <td class="px-3 py-2 font-medium text-gray-900">${streak.description}</td>
-                            <td class="px-3 py-2 text-center">${streakLen}d</td>
+                            <td class="px-3 py-2 font-medium text-gray-900">${streak.description}${potentialLabel}</td>
+                            <td class="px-3 py-2 text-center">${streakLen}d${streak.isPotential ? '<span class="text-[9px] text-orange-500"> ↗</span>' : ''}</td>
                             <td class="px-3 py-2 text-center ${riskColor}">${(dropOffRate*100).toFixed(0)}%</td>
                             <td class="px-3 py-2 text-center">${currentCount}</td>
                             <td class="px-3 py-2 text-center">${nextCount}</td>
@@ -650,8 +651,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     let dropOffRateOuter = 0;
                     if (currentCountOuter > 0) {
                         dropOffRateOuter = 1 - (targetCountOuter / currentCountOuter);
-                    } else if (streak.isPotential) {
-                        dropOffRateOuter = 0;
                     } else {
                         dropOffRateOuter = 1;
                     }
