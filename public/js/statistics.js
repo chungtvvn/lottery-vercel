@@ -430,57 +430,108 @@ document.addEventListener('DOMContentLoaded', async () => {
             const dateSuffix = forDate ? ` (${forDate})` : '';
             currentStreaksTitle.innerHTML = `Chuỗi Đang Diễn Ra${dateSuffix} <span class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">${totalCount}</span>`;
             
-            let forecastHtml = '';
-            let forecastCount = 0;
+            // === TÍNH TỶ LỆ GÃY MỚI: dùng gapStats (>=) thay vì exactGapStats (==) ===
+            // dropOffRate = 1 - (gapStats[L+step].count / gapStats[L].count)
+            // Ý nghĩa: trong tất cả chuỗi đạt >= L ngày, bao nhiêu % dừng lại tại L (không tiếp tục)
+            const calcDropOffRate = (streak, streakLen) => {
+                const isTienLuiSoLe = (streak.key && (streak.key.includes('tienLuiSoLe') || streak.key.includes('luiTienSoLe'))) || (streak.description && (streak.description.includes('Tiến-Lùi') || streak.description.includes('Lùi-Tiến')));
+                const isSoLe = (streak.key && (streak.key.toLowerCase().includes('sole') || streak.key.toLowerCase().includes('solemoi')) && !isTienLuiSoLe) || (streak.description && streak.description.toLowerCase().includes('so le') && !isTienLuiSoLe);
+                const step = isSoLe ? 2 : 1;
+                const nextLen = streakLen + step;
+
+                const currentGE = streak.gapStats ? streak.gapStats[streakLen] : null;
+                const nextGE = streak.gapStats ? streak.gapStats[nextLen] : null;
+                const currentCount = currentGE ? currentGE.count : 0;
+                const nextCount = nextGE ? nextGE.count : 0;
+
+                if (currentCount > 0) {
+                    return { rate: 1 - (nextCount / currentCount), step, nextLen, currentCount, nextCount, isSoLe };
+                } else if (streak.isPotential) {
+                    return { rate: 0, step, nextLen, currentCount, nextCount, isSoLe };
+                }
+                return { rate: 1, step, nextLen, currentCount, nextCount, isSoLe };
+            };
+
+            // Thu thập TẤT CẢ chuỗi với tỷ lệ gãy để dùng cho Dự báo + Tổng hợp dự đoán
+            const allStreakDropOffs = [];
             sortedLengths.forEach(length => {
                 streaksByLength[length].forEach(streak => {
                     const streakLen = parseInt(length);
-                    const isTienLuiSoLePattern = (streak.key && (streak.key.includes('tienLuiSoLe') || streak.key.includes('luiTienSoLe'))) || (streak.description && (streak.description.includes('Tiến-Lùi') || streak.description.includes('Lùi-Tiến')));
-                    const isSoLePatternOuter = (streak.key && (streak.key.toLowerCase().includes('sole') || streak.key.toLowerCase().includes('solemoi')) && !isTienLuiSoLePattern) || (streak.description && streak.description.toLowerCase().includes('so le') && !isTienLuiSoLePattern);
-                    const targetLenOuter = isSoLePatternOuter ? streakLen + 2 : streakLen + 1;
-                    
-                    let checkTargetLenOuter = targetLenOuter;
-                    const recordLenOuter = streak.originalRecord || 0;
-                    if (recordLenOuter > streakLen) {
-                        const step = isSoLePatternOuter ? 2 : 1;
-                        const stepsToRecord = (recordLenOuter - streakLen) / step;
-                        if (stepsToRecord > 0 && stepsToRecord <= 2) {
-                            checkTargetLenOuter = recordLenOuter;
-                        }
-                    }
-
-                    const gapInfoOuter = streak.exactGapStats ? streak.exactGapStats[checkTargetLenOuter] : null;
-                    const targetCountOuter = gapInfoOuter ? gapInfoOuter.count : 0;
-                    const targetFreqYearOuter = targetCountOuter / totalYears;
-                    
-                    const currentGapInfoOuter = streak.exactGapStats ? streak.exactGapStats[streakLen] : null;
-                    const currentCountOuter = currentGapInfoOuter ? currentGapInfoOuter.count : 0;
-                    let dropOffRateOuter = 0;
-                    if (currentCountOuter > 0) {
-                        const continuationRateOuter = targetCountOuter / currentCountOuter;
-                        dropOffRateOuter = 1 - continuationRateOuter;
-                    } else if (streak.isPotential) {
-                        dropOffRateOuter = 0; // Tiềm năng chưa thành chuỗi, không tính rủi ro gãy ở đây
-                    } else {
-                        dropOffRateOuter = 1;
-                    }
-                    
-                    const isRecord = dropOffRateOuter >= 0.70;
-                    const isForecastRecord = targetFreqYearOuter > 0 && targetFreqYearOuter <= 1.5;
-                    
-                    if (isForecastRecord && !isRecord) {
-                        const lenDisplay = streak.isPotential ? `${streakLen} ngày (tiềm năng)` : `${streakLen} ngày`;
-                        forecastHtml += `<li class="flex items-center gap-2"><i class="bi bi-arrow-right-short text-blue-500"></i><span class="font-bold text-gray-800">${streak.description}</span> <span class="text-xs bg-gray-200 px-1.5 py-0.5 rounded">${lenDisplay}</span> <span class="text-gray-500 text-xs">→ Dự báo: <strong class="text-blue-600">${targetFreqYearOuter.toFixed(2)} lần/năm</strong></span></li>`;
-                        forecastCount++;
-                    }
+                    const { rate, step, nextLen, currentCount, nextCount, isSoLe } = calcDropOffRate(streak, streakLen);
+                    allStreakDropOffs.push({ streak, streakLen, dropOffRate: rate, step, nextLen, currentCount, nextCount, isSoLe });
                 });
             });
+
+            // Sắp xếp theo tỷ lệ gãy giảm dần
+            allStreakDropOffs.sort((a, b) => b.dropOffRate - a.dropOffRate);
+
+            // === DỰ BÁO CHUỖI CÓ THỂ XẢY RA ===
+            // Hiển thị các chuỗi đang diễn ra có tỷ lệ gãy >= 50% (khả năng cao sẽ dừng lại ngày mai)
+            let forecastHtml = '';
+            let forecastCount = 0;
+            allStreakDropOffs.forEach(({ streak, streakLen, dropOffRate, nextLen, currentCount }) => {
+                if (dropOffRate >= 0.50 && currentCount > 0) {
+                    const lenDisplay = streak.isPotential ? `${streakLen} ngày (tiềm năng)` : `${streakLen} ngày`;
+                    const riskColor = dropOffRate >= 0.90 ? 'text-purple-700' : dropOffRate >= 0.70 ? 'text-red-600' : 'text-orange-600';
+                    const riskBg = dropOffRate >= 0.90 ? 'bg-purple-100' : dropOffRate >= 0.70 ? 'bg-red-100' : 'bg-orange-100';
+                    forecastHtml += `<li class="flex items-center gap-2 ${riskBg} rounded px-2 py-1">
+                        <i class="bi bi-exclamation-triangle-fill ${riskColor}"></i>
+                        <span class="font-bold text-gray-800">${streak.description}</span>
+                        <span class="text-xs bg-gray-200 px-1.5 py-0.5 rounded">${lenDisplay}</span>
+                        <span class="${riskColor} text-xs font-bold">→ Gãy ${(dropOffRate*100).toFixed(0)}%</span>
+                        <span class="text-gray-400 text-[10px]">(${currentCount} chuỗi đạt ${streakLen}d, chỉ ${currentCount - Math.round(currentCount * dropOffRate)} tiếp tục)</span>
+                    </li>`;
+                    forecastCount++;
+                }
+            });
+
+            // === TỔNG HỢP DỰ ĐOÁN ===
+            const predSummarySection = document.getElementById('prediction-summary-section');
+            const predSummaryContainer = document.getElementById('prediction-summary-container');
+            const predSummaryCount = document.getElementById('prediction-summary-count');
+            if (predSummarySection && predSummaryContainer) {
+                const predItems = allStreakDropOffs.filter(({ dropOffRate, currentCount }) => dropOffRate > 0 && currentCount > 0);
+                if (predItems.length > 0) {
+                    predSummarySection.style.display = '';
+                    predSummaryCount.textContent = `(${predItems.length} chuỗi)`;
+                    let predHtml = `<div class="overflow-x-auto"><table class="min-w-full text-xs text-left text-gray-500">
+                        <thead class="text-xs text-gray-700 uppercase bg-amber-50">
+                            <tr>
+                                <th class="px-3 py-2">Dạng chuỗi</th>
+                                <th class="px-3 py-2 text-center">Độ dài</th>
+                                <th class="px-3 py-2 text-center">Tỷ lệ gãy</th>
+                                <th class="px-3 py-2 text-center">SL đạt</th>
+                                <th class="px-3 py-2 text-center">SL tiếp tục</th>
+                                <th class="px-3 py-2">Số dự đoán</th>
+                            </tr>
+                        </thead><tbody>`;
+                    predItems.forEach(({ streak, streakLen, dropOffRate, nextLen, currentCount, nextCount }) => {
+                        const riskColor = dropOffRate >= 0.90 ? 'text-purple-700 font-bold' : dropOffRate >= 0.70 ? 'text-red-600 font-bold' : dropOffRate >= 0.50 ? 'text-orange-600 font-semibold' : 'text-gray-600';
+                        const rowBg = dropOffRate >= 0.90 ? 'bg-purple-50' : dropOffRate >= 0.70 ? 'bg-red-50' : dropOffRate >= 0.50 ? 'bg-orange-50' : 'bg-white';
+                        const nums = streak.patternNumbers && streak.patternNumbers.length > 0
+                            ? streak.patternNumbers.map(n => `<span class="px-1 py-0.5 bg-gray-800 text-gray-200 text-[10px] rounded">${String(n).padStart(2,'0')}</span>`).join(' ')
+                            : '<span class="text-gray-400">-</span>';
+                        predHtml += `<tr class="${rowBg} border-b hover:bg-gray-50">
+                            <td class="px-3 py-2 font-medium text-gray-900">${streak.description}</td>
+                            <td class="px-3 py-2 text-center">${streakLen}d</td>
+                            <td class="px-3 py-2 text-center ${riskColor}">${(dropOffRate*100).toFixed(0)}%</td>
+                            <td class="px-3 py-2 text-center">${currentCount}</td>
+                            <td class="px-3 py-2 text-center">${nextCount}</td>
+                            <td class="px-3 py-2"><div class="flex flex-wrap gap-0.5">${nums}</div></td>
+                        </tr>`;
+                    });
+                    predHtml += '</tbody></table></div>';
+                    predSummaryContainer.innerHTML = predHtml;
+                } else {
+                    predSummarySection.style.display = 'none';
+                }
+            }
 
             let finalHtml = '';
             if (forecastCount > 0) {
                 finalHtml += `
                 <div class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm">
-                    <h4 class="text-blue-800 font-bold mb-3 flex items-center"><i class="bi bi-stars mr-2"></i>Dự báo chuỗi có thể xảy ra (Tần suất < 1.5/năm)</h4>
+                    <h4 class="text-blue-800 font-bold mb-3 flex items-center"><i class="bi bi-stars mr-2"></i>Dự báo chuỗi có khả năng GÃY ngày mai (sắp theo tỷ lệ gãy ↓)</h4>
                     <ul class="text-sm space-y-2">
                         ${forecastHtml}
                     </ul>
@@ -503,30 +554,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const isTienLuiSoLePattern = (streak.key && (streak.key.includes('tienLuiSoLe') || streak.key.includes('luiTienSoLe'))) || (streak.description && (streak.description.includes('Tiến-Lùi') || streak.description.includes('Lùi-Tiến')));
                     const isSoLePatternOuter = (streak.key && (streak.key.toLowerCase().includes('sole') || streak.key.toLowerCase().includes('solemoi')) && !isTienLuiSoLePattern) || (streak.description && streak.description.toLowerCase().includes('so le') && !isTienLuiSoLePattern);
 
-                    const targetLenOuter = isSoLePatternOuter ? streakLen + 2 : streakLen + 1;
-                    
-                    let checkTargetLenOuter = targetLenOuter;
-                    const recordLenOuter = streak.originalRecord || 0;
-                    if (recordLenOuter > streakLen) {
-                        const step = isSoLePatternOuter ? 2 : 1;
-                        const stepsToRecord = (recordLenOuter - streakLen) / step;
-                        if (stepsToRecord > 0 && stepsToRecord <= 2) {
-                            checkTargetLenOuter = recordLenOuter;
-                        }
-                    }
+                    const stepOuter = isSoLePatternOuter ? 2 : 1;
+                    const targetLenOuter = streakLen + stepOuter;
 
-                    const gapInfoOuter = streak.exactGapStats ? streak.exactGapStats[checkTargetLenOuter] : null;
-                    const targetCountOuter = gapInfoOuter ? gapInfoOuter.count : 0;
+                    // === Dùng gapStats (>=) thay vì exactGapStats (==) cho drop-off ===
+                    const currentGEOuter = streak.gapStats ? streak.gapStats[streakLen] : null;
+                    const nextGEOuter = streak.gapStats ? streak.gapStats[targetLenOuter] : null;
+                    const currentCountOuter = currentGEOuter ? currentGEOuter.count : 0;
+                    const targetCountOuter = nextGEOuter ? nextGEOuter.count : 0;
                     const targetFreqYearOuter = targetCountOuter / totalYears;
                     const isNextSuperRecordOuter = targetFreqYearOuter <= 0.5;
 
-                    const currentGapInfoOuter = streak.exactGapStats ? streak.exactGapStats[streakLen] : null;
-                    const currentCountOuter = currentGapInfoOuter ? currentGapInfoOuter.count : 0;
-                    
                     let dropOffRateOuter = 0;
                     if (currentCountOuter > 0) {
-                        const continuationRateOuter = targetCountOuter / currentCountOuter;
-                        dropOffRateOuter = 1 - continuationRateOuter;
+                        dropOffRateOuter = 1 - (targetCountOuter / currentCountOuter);
                     } else if (streak.isPotential) {
                         dropOffRateOuter = 0;
                     } else {
@@ -693,36 +734,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                             // Include Extension Gap in low prob calculation
                             const isLowProbFinal = isLowProb || isLowProbExt;
 
-                            // --- NEW LOGIC: Prediction with LOOK-AHEAD to Record ---
-                            // Look-ahead: nếu cách kỷ lục 1-2 bước, tính tỉ lệ gãy tới kỷ lục
-                            let checkNextLen = nextLen;
-                            const recordLenInner = streak.originalRecord || streak.recordLength || 0;
-                            if (recordLenInner > currentLen) {
-                                const stepInner = isSoLePattern ? 2 : 1;
-                                const stepsToRecordInner = (recordLenInner - currentLen) / stepInner;
-                                if (stepsToRecordInner > 0 && stepsToRecordInner <= 2) {
-                                    checkNextLen = recordLenInner;
-                                }
-                            }
-                            
-                            const checkGapInfoExact = (streak.exactGapStats && streak.exactGapStats[checkNextLen]) ? streak.exactGapStats[checkNextLen] : null;
-                            const targetCount = checkGapInfoExact ? checkGapInfoExact.count : 0;
+                            // === Dùng gapStats (>=) cho drop-off rate thay vì exactGapStats (==) ===
+                            const currentGEInner = streak.gapStats ? streak.gapStats[currentLen] : null;
+                            const nextGEInner = streak.gapStats ? streak.gapStats[nextLen] : null;
+                            const currentCountInner = currentGEInner ? currentGEInner.count : 0;
+                            const targetCount = nextGEInner ? nextGEInner.count : 0;
                             const targetFreqYear = targetCount / totalYears;
 
                             const isNextSuperRecord = targetFreqYear <= 0.5;
                             const isNextRecord = targetFreqYear <= 1.5;
-
-                            // Badge - show different messages based on condition
-                            const currentGapInfoInner = streak.exactGapStats ? streak.exactGapStats[currentLen] : null;
-                            const currentCountInner = currentGapInfoInner ? currentGapInfoInner.count : 0;
                             const currentFreqYear = currentCountInner / totalYears;
                             const isCurrentSuper = currentFreqYear <= 0.5;
 
-                            // Drop-off rate logic for Inner Block (with look-ahead)
+                            // Drop-off rate: dùng gapStats (>=)
                             let dropOffRateInner = 0;
                             if (currentCountInner > 0) {
-                                const continuationRateInner = targetCount / currentCountInner;
-                                dropOffRateInner = 1 - continuationRateInner;
+                                dropOffRateInner = 1 - (targetCount / currentCountInner);
                             } else if (streak.isPotential) {
                                 dropOffRateInner = 0;
                             } else {
