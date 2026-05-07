@@ -530,8 +530,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (currentCount > 0) {
                     return { rate: 1 - (nextCount / currentCount), step, nextLen, currentCount, nextCount, isSoLe };
-                } else if (streak.isPotential) {
-                    return { rate: 0, step, nextLen, currentCount, nextCount, isSoLe };
                 }
                 return { rate: 1, step, nextLen, currentCount, nextCount, isSoLe };
             };
@@ -671,12 +669,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                         badgeHtml = `<span class="ml-2 inline-block bg-purple-600 text-white text-[9px] px-1 py-0.5 rounded uppercase">Rủi ro gãy ${(dropOffRateOuter*100).toFixed(0)}%</span>`;
                     } else if (isRecord) {
                         badgeHtml = `<span class="ml-2 inline-block bg-red-600 text-white text-[9px] px-1 py-0.5 rounded uppercase">Rủi ro gãy ${(dropOffRateOuter*100).toFixed(0)}%</span>`;
+                    } else if (streak.isPotential && dropOffRateOuter >= 0.50) {
+                        // Chuỗi tiềm năng nhưng có tỷ lệ gãy cao → hiện risk
+                        const potRiskColor = dropOffRateOuter >= 0.70 ? 'bg-red-500' : 'bg-orange-500';
+                        badgeHtml = `<span class="ml-2 inline-block ${potRiskColor} text-white text-[9px] px-1 py-0.5 rounded uppercase">⚡ Gãy ${(dropOffRateOuter*100).toFixed(0)}%</span>`;
                     } else if (streak.isPotential) {
                         badgeHtml = `<span class="ml-2 inline-block bg-orange-500 text-white text-[9px] px-1 py-0.5 rounded uppercase">Tiềm Năng</span>`;
-                    }
-                    
-                    if (isForecastRecord && !isRecord) {
-                        badgeHtml += `<span class="ml-2 inline-block bg-blue-500 text-white text-[9px] px-1 py-0.5 rounded uppercase">Dự báo KL (<1.5/năm)</span>`;
                     }
 
                     finalHtml += `
@@ -849,14 +847,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 probBadge = `<span class="inline-block bg-purple-600 text-white text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">Rủi Ro Gãy ${(dropOffRateInner*100).toFixed(0)}%</span>`;
                             } else if (isInnerRecord) {
                                 probBadge = `<span class="inline-block bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">Rủi Ro Gãy ${(dropOffRateInner*100).toFixed(0)}%</span>`;
+                            } else if (streak.isPotential && dropOffRateInner >= 0.50) {
+                                // Chuỗi tiềm năng có tỷ lệ gãy >= 50% → hiện risk thay vì chỉ "Đang Hình Thành"
+                                const potBg = dropOffRateInner >= 0.70 ? 'bg-red-500 text-white' : 'bg-orange-100 text-orange-800';
+                                probBadge = `<span class="inline-block ${potBg} text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">⚡ Gãy ${(dropOffRateInner*100).toFixed(0)}% (đang hình thành)</span>`;
                             } else if (streak.isPotential) {
                                 probBadge = `<span class="inline-block bg-orange-100 text-orange-800 text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">🔮 Đang Hình Thành</span>`;
                             } else {
                                 probBadge = `<span class="inline-block bg-green-100 text-green-800 text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">✅ An Toàn Hơn (${(dropOffRateInner*100).toFixed(0)}% gãy)</span>`;
-                            }
-                            
-                            if (isInnerForecastRecord && !isInnerRecord) {
-                                probBadge += `<span class="inline-block bg-blue-100 text-blue-800 text-[10px] px-1.5 py-0.5 rounded font-bold mt-1 ml-1">🔮 Dự báo KL</span>`;
                             }
 
                             const cardBg = isInnerRecord ? (isInnerSuperRecord ? 'bg-purple-50' : 'bg-red-50') : (streak.isPotential ? 'bg-orange-50' : 'bg-white');
