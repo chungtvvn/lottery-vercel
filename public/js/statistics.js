@@ -379,7 +379,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     updateDataButton.addEventListener('click', handleDataUpdate);
 
-    // === STREAK DROP-OFF EXCLUSION RENDERING ===
+    // === UNIFIED DROP-OFF EXCLUSION RENDERING ===
     const fetchStreakExclusion = async () => {
         const section = document.getElementById('streak-exclusion-section');
         const container = document.getElementById('streak-exclusion-container');
@@ -388,15 +388,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         try {
             const data = await fetchJSON(`${BASE_URL}/api/analysis/latest`);
-            const danhStreak = data.danhStreak;
-            if (!danhStreak) {
+            // Sử dụng `danh` (từ exclusionLogicService.getDropOffExclusions)
+            // thay vì `danhStreak` (từ futureSimulationService) để đồng bộ với Tổng Hợp Dự Đoán
+            const danhData = data.danh;
+            if (!danhData) {
                 section.style.display = 'none';
                 return;
             }
 
-            const betNumbers = (danhStreak.numbers || []).map(n => String(n).padStart(2, '0'));
-            const excludedNumbers = (danhStreak.excluded || []).map(n => String(n).padStart(2, '0'));
-            const isSkipped = danhStreak.isSkipped;
+            const betNumbers = (danhData.numbers || []).map(n => String(n).padStart(2, '0'));
+            const excludedNumbers = (danhData.excluded || []).map(n => String(n).padStart(2, '0'));
+            const isSkipped = danhData.isSkipped;
 
             if (isSkipped || betNumbers.length === 0) {
                 section.style.display = 'none';
