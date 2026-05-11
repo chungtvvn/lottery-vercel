@@ -12,92 +12,21 @@ export async function GET() {
         }
 
         const futureSimulationService = require('@/lib/services/futureSimulationService');
-        const { getNumbersFromCategory } = require('@/lib/controllers/suggestionsController');
         const { getQuickStatsFromCache } = require('@/lib/data-access');
+        const exclusionLogic = require('@/lib/services/exclusionLogicService');
 
-        const totalYears = lotteryService.getTotalYears();
         const quickStats = await getQuickStatsFromCache();
 
-        // --- Compute Exclusion / Exclusion+ from pre-computed quickStats ---
-        const excluded4 = new Set(); 
-        const excluded3 = new Set(); 
+        // === PHƯƠNG PHÁP DUY NHẤT: Drop-off >= 85% ===
+        // exclusionLogicService.getDropOffExclusions() là SINGLE SOURCE OF TRUTH
+        const dropOffResult = exclusionLogic.getDropOffExclusions(quickStats);
 
-        for (const key in quickStats) {
-            const stat = quickStats[key];
-            if (!stat || !stat.current) continue;
+        const exclToBet = dropOffResult.skipped ? [] : dropOffResult.toBet;
+        const excluded = dropOffResult.excluded;
+        const explanations = dropOffResult.explanations;
+        const isSkipped = dropOffResult.skipped;
 
-            const currentLen = stat.current.length;
-            const [category, subcategory] = key.split(':');
-
-            const isSoLePattern =
-                subcategory &&
-                (subcategory.toLowerCase() === 'vesole' || subcategory.toLowerCase() === 'vesolemoi') &&
-                key !== 'tienLuiSoLe' && key !== 'luiTienSoLe';
-            const targetLen = isSoLePattern ? currentLen + 2 : currentLen + 1;
-
-            const recordLen = stat.computedMaxStreak || (stat.longest && stat.longest[0] ? stat.longest[0].length : 0);
-            const gapInfoExact = stat.exactGapStats ? stat.exactGapStats[targetLen] : null;
-            const targetCount = gapInfoExact ? gapInfoExact.count : 0;
-            const targetFreqYear = targetCount / totalYears;
-            const isSuper = targetFreqYear <= 0.5 || stat.isSuperMaxThreshold;
-
-            let shouldExclude = false;
-            let subTier = null;
-
-            if (targetFreqYear <= 1.5 || (currentLen >= recordLen && recordLen > 0)) {
-                shouldExclude = true;
-                if (currentLen >= recordLen && recordLen > 0) {
-                    subTier = isSuper ? 'achievedSuper' : 'achieved';
-                } else if (isSuper) {
-                    subTier = 'superThreshold';
-                } else {
-                    subTier = 'threshold';
-                }
-            }
-
-            if (!shouldExclude) continue;
-
-            const isExcludedPattern =
-                category === 'tong_tt_lon' || category === 'tong_tt_nho' ||
-                category === 'tong_moi_lon' || category === 'tong_moi_nho' ||
-                category === 'hieu_lon' || category === 'hieu_nho';
-            if (isExcludedPattern) continue;
-
-            let nums = [];
-            if (stat.current.patternNumbers && stat.current.patternNumbers.length > 0) {
-                nums = [...stat.current.patternNumbers];
-            } else {
-                nums = getNumbersFromCategory(category) || [];
-            }
-            nums = nums.filter(n => n !== null && n !== undefined && !isNaN(n) && typeof n === 'number');
-            if (nums.length === 0) continue;
-
-            nums.forEach(n => {
-                excluded4.add(n);
-                if (subTier === 'achieved' || subTier === 'achievedSuper' || subTier === 'superThreshold') {
-                    excluded3.add(n);
-                }
-            });
-        }
-
-        const toBet4 = [], toBet3 = [];
-        for (let i = 0; i < 100; i++) {
-            if (!excluded4.has(i)) toBet4.push(i);
-            if (!excluded3.has(i)) toBet3.push(i);
-        }
-        const MAX_BET = 65;
-        const skipped4 = toBet4.length > MAX_BET || toBet4.length === 0;
-        const skipped3 = toBet3.length > MAX_BET || toBet3.length === 0;
-
-        const exclToBet = skipped4 ? [] : toBet4;
-        const exclToBetPlus = skipped3 ? [] : toBet3;
-
-        // --- Get Explanations ---
-        const exclusionLogicService = require('@/lib/services/exclusionLogicService');
-        const unifiedExclusions = await exclusionLogicService.getUnifiedExclusions(quickStats);
-        const explanations = unifiedExclusions.explanations || [];
-
-        // --- Other methods ---
+        // --- Other methods (kept for comparison) ---
         const unified = futureSimulationService.unifiedMethod(rawData);
         const advanced = futureSimulationService.advancedMethod(rawData);
         const hybridAI = futureSimulationService.hybridAIMethod(rawData);
@@ -106,8 +35,8 @@ export async function GET() {
         const combinedBet = Array.from(combinedSet).sort((a, b) => a - b);
 
         const scoreMap = new Map();
-        exclToBetPlus.forEach((n, idx) =>
-            scoreMap.set(n, (scoreMap.get(n) || 0) + 3 + (exclToBetPlus.length - idx) / (exclToBetPlus.length || 1))
+        exclToBet.forEach((n, idx) =>
+            scoreMap.set(n, (scoreMap.get(n) || 0) + 3 + (exclToBet.length - idx) / (exclToBet.length || 1))
         );
         [unified.toBet, advanced.toBet, hybridAI.toBet].forEach(arr => {
             arr.forEach((n, idx) =>
@@ -127,17 +56,19 @@ export async function GET() {
         nextDt.setUTCDate(nextDt.getUTCDate() + 1);
         const nextDateStr = nextDt.toISOString().split('T')[0];
 
-        // --- Streak Drop-off method ---
+        // --- Streak Drop-off method (futureSimulationService - basic categories) ---
         const streakResult = futureSimulationService.streakDropOffExclusion(rawData);
 
         const result = {
             date: nextDateStr,
-            danh: { numbers: mapStrs(exclToBet), excluded: Array.from(excluded4).map(n => String(n).padStart(2, '0')), isSkipped: skipped4, explanations },
+            // Primary method: Drop-off >= 85% from quickStats (comprehensive)
+            danh: { numbers: mapStrs(exclToBet), excluded: mapStrs(excluded), isSkipped, explanations },
             danhUnified: { numbers: mapStrs(unified.toBet) },
             danhAdvanced: { numbers: mapStrs(advanced.toBet) },
             danhHybrid: { numbers: mapStrs(hybridAI.toBet) },
             danhCombined: { numbers: mapStrs(combinedBet) },
             danhSmart: { numbers: mapStrs(smart25) },
+            // Streak Drop-off (basic categories from futureSimulationService)
             danhStreak: { numbers: mapStrs(streakResult.toBet), excluded: mapStrs(streakResult.excluded), isSkipped: streakResult.skipped }
         };
 
