@@ -11,7 +11,6 @@ export async function GET() {
             return cachedResponse({ predictions: null, message: 'No data' }, 'MEDIUM');
         }
 
-        const futureSimulationService = require('@/lib/services/futureSimulationService');
         const { getQuickStatsFromCache } = require('@/lib/data-access');
         const exclusionLogic = require('@/lib/services/exclusionLogicService');
 
@@ -19,35 +18,13 @@ export async function GET() {
 
         // === PHƯƠNG PHÁP DUY NHẤT: Drop-off >= 85% ===
         // exclusionLogicService.getDropOffExclusions() là SINGLE SOURCE OF TRUTH
+        // Không sử dụng bất kỳ phương pháp nào khác
         const dropOffResult = exclusionLogic.getDropOffExclusions(quickStats);
 
-        const exclToBet = dropOffResult.skipped ? [] : dropOffResult.toBet;
+        const toBet = dropOffResult.skipped ? [] : dropOffResult.toBet;
         const excluded = dropOffResult.excluded;
         const explanations = dropOffResult.explanations;
         const isSkipped = dropOffResult.skipped;
-
-        // --- Other methods (kept for comparison) ---
-        const unified = futureSimulationService.unifiedMethod(rawData);
-        const advanced = futureSimulationService.advancedMethod(rawData);
-        const hybridAI = futureSimulationService.hybridAIMethod(rawData);
-
-        const combinedSet = new Set([...exclToBet, ...unified.toBet, ...advanced.toBet, ...hybridAI.toBet]);
-        const combinedBet = Array.from(combinedSet).sort((a, b) => a - b);
-
-        const scoreMap = new Map();
-        exclToBet.forEach((n, idx) =>
-            scoreMap.set(n, (scoreMap.get(n) || 0) + 3 + (exclToBet.length - idx) / (exclToBet.length || 1))
-        );
-        [unified.toBet, advanced.toBet, hybridAI.toBet].forEach(arr => {
-            arr.forEach((n, idx) =>
-                scoreMap.set(n, (scoreMap.get(n) || 0) + 1 + (arr.length - idx) / (arr.length || 1))
-            );
-        });
-        const smart25 = Array.from(scoreMap.entries())
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 25)
-            .map(e => e[0])
-            .sort((a, b) => a - b);
 
         const mapStrs = arr => arr.map(n => String(n).padStart(2, '0'));
 
@@ -56,20 +33,21 @@ export async function GET() {
         nextDt.setUTCDate(nextDt.getUTCDate() + 1);
         const nextDateStr = nextDt.toISOString().split('T')[0];
 
-        // --- Streak Drop-off method (futureSimulationService - basic categories) ---
-        const streakResult = futureSimulationService.streakDropOffExclusion(rawData);
-
         const result = {
             date: nextDateStr,
-            // Primary method: Drop-off >= 85% from quickStats (comprehensive)
-            danh: { numbers: mapStrs(exclToBet), excluded: mapStrs(excluded), isSkipped, explanations },
-            danhUnified: { numbers: mapStrs(unified.toBet) },
-            danhAdvanced: { numbers: mapStrs(advanced.toBet) },
-            danhHybrid: { numbers: mapStrs(hybridAI.toBet) },
-            danhCombined: { numbers: mapStrs(combinedBet) },
-            danhSmart: { numbers: mapStrs(smart25) },
-            // Streak Drop-off (basic categories from futureSimulationService)
-            danhStreak: { numbers: mapStrs(streakResult.toBet), excluded: mapStrs(streakResult.excluded), isSkipped: streakResult.skipped }
+            // Drop-off >= 85% — phương pháp duy nhất
+            danh: {
+                numbers: mapStrs(toBet),
+                excluded: mapStrs(excluded),
+                isSkipped,
+                explanations
+            },
+            // Legacy compatibility — tất cả trỏ về cùng 1 kết quả
+            danhStreak: {
+                numbers: mapStrs(toBet),
+                excluded: mapStrs(excluded),
+                isSkipped
+            }
         };
 
         return cachedResponse(result, 'DAILY');
