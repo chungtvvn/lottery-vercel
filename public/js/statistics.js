@@ -516,24 +516,32 @@ document.addEventListener('DOMContentLoaded', async () => {
             const dateSuffix = forDate ? ` (${forDate})` : '';
             currentStreaksTitle.innerHTML = `Chuỗi Đang Diễn Ra${dateSuffix} <span class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">${totalCount}</span>`;
             
-            // === TÍNH TỶ LỆ GÃY MỚI: dùng gapStats (>=) thay vì exactGapStats (==) ===
-            // dropOffRate = 1 - (gapStats[L+step].count / gapStats[L].count)
-            // Ý nghĩa: trong tất cả chuỗi đạt >= L ngày, bao nhiêu % dừng lại tại L (không tiếp tục)
+            // === TÍNH TỶ LỆ GÃY: dùng gapStats (>=) + look-ahead to record ===
+            // Khớp chính xác với exclusionLogicService.calculateDropOff()
             const calcDropOffRate = (streak, streakLen) => {
                 const isTienLuiSoLe = (streak.key && (streak.key.includes('tienLuiSoLe') || streak.key.includes('luiTienSoLe'))) || (streak.description && (streak.description.includes('Tiến-Lùi') || streak.description.includes('Lùi-Tiến')));
                 const isSoLe = (streak.key && (streak.key.toLowerCase().includes('sole') || streak.key.toLowerCase().includes('solemoi')) && !isTienLuiSoLe) || (streak.description && streak.description.toLowerCase().includes('so le') && !isTienLuiSoLe);
                 const step = isSoLe ? 2 : 1;
-                const nextLen = streakLen + step;
+                let checkTargetLen = streakLen + step;
+
+                // Look-ahead: nếu gần kỷ lục (1-2 bước), tính drop-off tới kỷ lục
+                const recordLen = streak.originalRecord || streak.recordLength || 0;
+                if (recordLen > streakLen) {
+                    const stepsToRecord = (recordLen - streakLen) / step;
+                    if (stepsToRecord > 0 && stepsToRecord <= 2) {
+                        checkTargetLen = recordLen;
+                    }
+                }
 
                 const currentGE = streak.gapStats ? streak.gapStats[streakLen] : null;
-                const nextGE = streak.gapStats ? streak.gapStats[nextLen] : null;
+                const targetGE = streak.gapStats ? streak.gapStats[checkTargetLen] : null;
                 const currentCount = currentGE ? currentGE.count : 0;
-                const nextCount = nextGE ? nextGE.count : 0;
+                const nextCount = targetGE ? targetGE.count : 0;
 
                 if (currentCount > 0) {
-                    return { rate: 1 - (nextCount / currentCount), step, nextLen, currentCount, nextCount, isSoLe };
+                    return { rate: 1 - (nextCount / currentCount), step, nextLen: checkTargetLen, currentCount, nextCount, isSoLe };
                 }
-                return { rate: 1, step, nextLen, currentCount, nextCount, isSoLe };
+                return { rate: 1, step, nextLen: checkTargetLen, currentCount, nextCount, isSoLe };
             };
 
             // Thu thập TẤT CẢ chuỗi với tỷ lệ gãy để dùng cho Dự báo + Tổng hợp dự đoán
