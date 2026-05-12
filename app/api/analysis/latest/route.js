@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cachedResponse } from '@/lib/cache-headers';
 
-export async function GET() {
+export async function GET(request) {
     try {
         const lotteryService = require('@/lib/services/lotteryService');
         await lotteryService.loadAll();
@@ -14,12 +14,19 @@ export async function GET() {
         const { getQuickStatsFromCache } = require('@/lib/data-access');
         const exclusionLogic = require('@/lib/services/exclusionLogicService');
 
-        const quickStats = await getQuickStatsFromCache();
+        const cachedQuickStats = await getQuickStatsFromCache();
+        const statisticsService = require('@/lib/services/statisticsService');
+        const quickStats = statisticsService.rehydrateCurrentStreaks(cachedQuickStats);
+        const url = new URL(request.url);
+        const rawMinDropOff = parseFloat(url.searchParams.get('minDropOff'));
+        const minDropOff = Number.isFinite(rawMinDropOff)
+            ? Math.min(0.99, Math.max(0, rawMinDropOff))
+            : 0.85;
 
         // === PHƯƠNG PHÁP DUY NHẤT: Drop-off >= 85% ===
         // exclusionLogicService.getDropOffExclusions() là SINGLE SOURCE OF TRUTH
         // Không sử dụng bất kỳ phương pháp nào khác
-        const dropOffResult = exclusionLogic.getDropOffExclusions(quickStats);
+        const dropOffResult = exclusionLogic.getDropOffExclusions(quickStats, { minDropOff });
 
         const toBet = dropOffResult.skipped ? [] : dropOffResult.toBet;
         const excluded = dropOffResult.excluded;
@@ -40,7 +47,8 @@ export async function GET() {
                 numbers: mapStrs(toBet),
                 excluded: mapStrs(excluded),
                 isSkipped,
-                explanations
+                explanations,
+                minDropOff
             },
             // Legacy compatibility — tất cả trỏ về cùng 1 kết quả
             danhStreak: {

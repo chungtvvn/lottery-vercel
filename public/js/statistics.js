@@ -212,6 +212,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         return `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}/${dt.getFullYear()}`;
     };
 
+    const getNextDay = (ddmmyyyy) => {
+        if (!ddmmyyyy || !ddmmyyyy.includes('/')) return '';
+        const [d, m, y] = ddmmyyyy.split('/').map(Number);
+        const dt = new Date(y, m - 1, d);
+        dt.setDate(dt.getDate() + 1);
+        return `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}/${dt.getFullYear()}`;
+    };
+
     const renderRecentResults = () => {
         let container = document.getElementById('recent-results-selector');
 
@@ -380,6 +388,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateDataButton.addEventListener('click', handleDataUpdate);
 
     // === UNIFIED DROP-OFF EXCLUSION RENDERING ===
+    let selectedDropOffThreshold = parseFloat(localStorage.getItem('streak-dropoff-threshold') || '0.85');
+    if (!Number.isFinite(selectedDropOffThreshold)) selectedDropOffThreshold = 0.85;
+
     const fetchStreakExclusion = async () => {
         const section = document.getElementById('streak-exclusion-section');
         const container = document.getElementById('streak-exclusion-container');
@@ -387,7 +398,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!section || !container) return;
 
         try {
-            const data = await fetchJSON(`${BASE_URL}/api/analysis/latest`);
+            const data = await fetchJSON(`${BASE_URL}/api/analysis/latest?minDropOff=${selectedDropOffThreshold}`);
             // Sử dụng `danh` (từ exclusionLogicService.getDropOffExclusions)
             // thay vì `danhStreak` (từ futureSimulationService) để đồng bộ với Tổng Hợp Dự Đoán
             const danhData = data.danh;
@@ -397,23 +408,49 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             const betNumbers = (danhData.numbers || []).map(n => String(n).padStart(2, '0'));
-            const excludedNumbers = (danhData.excluded || []).map(n => String(n).padStart(2, '0'));
+            const explanationNumbers = new Set();
+            (danhData.explanations || []).forEach(exp => {
+                (exp.numbers || []).forEach(n => {
+                    const num = parseInt(n, 10);
+                    if (!isNaN(num) && num >= 0 && num < 100) {
+                        explanationNumbers.add(String(num).padStart(2, '0'));
+                    }
+                });
+            });
+            const excludedNumbers = Array.from(
+                explanationNumbers.size > 0
+                    ? explanationNumbers
+                    : new Set((danhData.excluded || []).map(n => String(n).padStart(2, '0')))
+            ).sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+            const displayBetNumbers = Array.from({ length: 100 }, (_, i) => String(i).padStart(2, '0'))
+                .filter(n => !excludedNumbers.includes(n));
             const isSkipped = danhData.isSkipped;
 
-            if (isSkipped || betNumbers.length === 0) {
+            if (!isSkipped && displayBetNumbers.length === 0 && excludedNumbers.length === 0) {
                 section.style.display = 'none';
                 return;
             }
 
             section.style.display = '';
             if (countSpan) {
-                countSpan.textContent = `(${betNumbers.length} đánh | ${excludedNumbers.length} loại trừ)`;
+                countSpan.textContent = `(${displayBetNumbers.length} đánh | ${excludedNumbers.length} loại trừ)`;
             }
 
-            const betSet = new Set(betNumbers);
+            const betSet = new Set(displayBetNumbers);
             const excludedSet = new Set(excludedNumbers);
 
-            let gridHtml = '<div class="mb-3 text-sm text-gray-600"><i class="bi bi-info-circle me-1"></i>Số <span class="text-teal-700 font-bold">XANH</span> = đánh, số <span class="text-red-600 font-bold">ĐỎ</span> = loại trừ (rủi ro gãy cao)</div>';
+            let gridHtml = `
+                <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div class="text-sm text-gray-600">
+                        <i class="bi bi-info-circle me-1"></i>Số <span class="text-teal-700 font-bold">XANH</span> = đánh, số <span class="text-red-600 font-bold">ĐỎ</span> = loại trừ (rủi ro gãy cao)
+                    </div>
+                    <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+                        <span>Ngưỡng drop-off</span>
+                        <select id="dropoff-threshold-select" class="rounded-md border-gray-300 text-sm px-2 py-1 focus:border-teal-500 focus:ring-teal-500">
+                            ${[50, 60, 70, 75, 80, 85, 90, 95, 99].map(v => `<option value="${v / 100}" ${Math.round(selectedDropOffThreshold * 100) === v ? 'selected' : ''}>≥ ${v}%</option>`).join('')}
+                        </select>
+                    </label>
+                </div>`;
             gridHtml += '<div style="display:grid; grid-template-columns:repeat(10,1fr); gap:4px; max-width:500px;">';
 
             for (let i = 0; i < 100; i++) {
@@ -439,7 +476,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             gridHtml += `
                 <div class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div class="bg-teal-50 rounded-lg p-3 text-center border border-teal-200">
-                        <div class="text-2xl font-bold text-teal-700">${betNumbers.length}</div>
+                        <div class="text-2xl font-bold text-teal-700">${displayBetNumbers.length}</div>
                         <div class="text-xs text-teal-600">Số đánh</div>
                     </div>
                     <div class="bg-red-50 rounded-lg p-3 text-center border border-red-200">
@@ -447,7 +484,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <div class="text-xs text-red-500">Số loại trừ</div>
                     </div>
                     <div class="bg-gray-50 rounded-lg p-3 text-center border border-gray-200">
-                        <div class="text-2xl font-bold text-gray-700">${(betNumbers.length / 100 * 100).toFixed(0)}%</div>
+                        <div class="text-2xl font-bold text-gray-700">${(displayBetNumbers.length / 100 * 100).toFixed(0)}%</div>
                         <div class="text-xs text-gray-500">Coverage</div>
                     </div>
                     <div class="bg-blue-50 rounded-lg p-3 text-center border border-blue-200">
@@ -458,6 +495,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             `;
 
             container.innerHTML = gridHtml;
+            const thresholdSelect = document.getElementById('dropoff-threshold-select');
+            if (thresholdSelect) {
+                thresholdSelect.addEventListener('change', (event) => {
+                    selectedDropOffThreshold = parseFloat(event.target.value);
+                    localStorage.setItem('streak-dropoff-threshold', String(selectedDropOffThreshold));
+                    fetchStreakExclusion();
+                });
+            }
         } catch (error) {
             console.error('Lỗi khi tải Streak Exclusion:', error);
             section.style.display = 'none';
@@ -519,11 +564,28 @@ document.addEventListener('DOMContentLoaded', async () => {
             // === XÁC SUẤT CÓ ĐIỀU KIỆN (Conditional Probability) ===
             // P(gãy ngày mai) = 1 - count(≥L+step) / count(≥L)
             // Khớp chính xác với exclusionLogicService.calculateDropOff()
+            const MAX_POTENTIAL_FORM_FREQ_PER_YEAR = 1;
             const calcDropOffRate = (streak, streakLen) => {
-                const isTienLuiSoLe = (streak.key && (streak.key.includes('tienLuiSoLe') || streak.key.includes('luiTienSoLe'))) || (streak.description && (streak.description.includes('Tiến-Lùi') || streak.description.includes('Lùi-Tiến')));
-                const isSoLe = (streak.key && (streak.key.toLowerCase().includes('sole') || streak.key.toLowerCase().includes('solemoi')) && !isTienLuiSoLe) || (streak.description && streak.description.toLowerCase().includes('so le') && !isTienLuiSoLe);
+                const lowerStreakKey = (streak.key || '').toLowerCase();
+                const lowerDescription = (streak.description || '').toLowerCase();
+                const isTienLuiSoLe = lowerStreakKey.includes('tienluisole') || lowerStreakKey.includes('luitiensole') || lowerDescription.includes('tiến-lùi') || lowerDescription.includes('lùi-tiến');
+                const isSoLeTheoCap = lowerStreakKey.includes('soletheocap');
+                const isSoLe = ((lowerStreakKey.includes('vesole') || lowerStreakKey.includes('solemoi')) || lowerDescription.includes('về so le')) && !isTienLuiSoLe && !isSoLeTheoCap;
                 const step = isSoLe ? 2 : 1;
                 const nextLen = streakLen + step;
+
+                // TÍNH TOÁN LẠI DROPOFF CHO CHUỖI TIỀM NĂNG SAO CHO ĐÚNG:
+                if (streak.isPotential) {
+                    const formLen = streakLen + step;
+                    const gForm = streak.gapStats ? streak.gapStats[formLen] : null;
+                    const gBreak = streak.gapStats ? streak.gapStats[formLen + step] : null;
+                    const countForm = gForm ? gForm.count : 0;
+                    const countBreak = gBreak ? gBreak.count : 0;
+                    const formFrequencyPerYear = totalYears > 0 ? countForm / totalYears : 0;
+                    const rate = countForm > 0 ? 1 - (countBreak / countForm) : 1;
+                    const isHighFrequencyPotential = formFrequencyPerYear > MAX_POTENTIAL_FORM_FREQ_PER_YEAR;
+                    return { rate, step, nextLen, currentCount: countForm, nextCount: countBreak, isSoLe, formFrequencyPerYear, isHighFrequencyPotential };
+                }
 
                 const currentGE = streak.gapStats ? streak.gapStats[streakLen] : null;
                 const nextGE = streak.gapStats ? streak.gapStats[nextLen] : null;
@@ -541,29 +603,34 @@ document.addEventListener('DOMContentLoaded', async () => {
             sortedLengths.forEach(length => {
                 streaksByLength[length].forEach(streak => {
                     const streakLen = parseInt(length);
-                    const { rate, step, nextLen, currentCount, nextCount, isSoLe } = calcDropOffRate(streak, streakLen);
-                    allStreakDropOffs.push({ streak, streakLen, dropOffRate: rate, step, nextLen, currentCount, nextCount, isSoLe });
+                    const { rate, step, nextLen, currentCount, nextCount, isSoLe, formFrequencyPerYear, isHighFrequencyPotential } = calcDropOffRate(streak, streakLen);
+                    allStreakDropOffs.push({ streak, streakLen, dropOffRate: rate, step, nextLen, currentCount, nextCount, isSoLe, formFrequencyPerYear, isHighFrequencyPotential });
                 });
             });
 
             // Sắp xếp theo tỷ lệ gãy giảm dần
             allStreakDropOffs.sort((a, b) => b.dropOffRate - a.dropOffRate);
+            const actionableStreakDropOffs = allStreakDropOffs.filter(({ streak, isHighFrequencyPotential }) => !(streak.isPotential && isHighFrequencyPotential));
 
             // === DỰ BÁO CHUỖI CÓ THỂ XẢY RA ===
             // Hiển thị các chuỗi đang diễn ra có tỷ lệ gãy >= 50% (khả năng cao sẽ dừng lại ngày mai)
             let forecastHtml = '';
             let forecastCount = 0;
-            allStreakDropOffs.forEach(({ streak, streakLen, dropOffRate, nextLen, currentCount }) => {
+            actionableStreakDropOffs.forEach(({ streak, streakLen, dropOffRate, nextLen, currentCount, nextCount, formFrequencyPerYear }) => {
                 if (dropOffRate >= 0.50 && currentCount > 0) {
                     const lenDisplay = streak.isPotential ? `${streakLen} ngày (tiềm năng)` : `${streakLen} ngày`;
                     const riskColor = dropOffRate >= 0.90 ? 'text-purple-700' : dropOffRate >= 0.70 ? 'text-red-600' : 'text-orange-600';
                     const riskBg = dropOffRate >= 0.90 ? 'bg-purple-100' : dropOffRate >= 0.70 ? 'bg-red-100' : 'bg-orange-100';
+                    const riskText = streak.isPotential ? `→ Sau hình thành gãy ${(dropOffRate*100).toFixed(0)}%` : `→ Gãy ${(dropOffRate*100).toFixed(0)}%`;
+                    const countText = streak.isPotential
+                        ? `(${currentCount} lần hình thành ${nextLen}d, ${formFrequencyPerYear.toFixed(1)} lần/năm, ${nextCount} lần kéo dài tiếp)`
+                        : `(${currentCount} chuỗi đạt ${streakLen}d, chỉ ${nextCount} tiếp tục)`;
                     forecastHtml += `<li class="flex items-center gap-2 ${riskBg} rounded px-2 py-1">
                         <i class="bi bi-exclamation-triangle-fill ${riskColor}"></i>
                         <span class="font-bold text-gray-800">${streak.description}</span>
                         <span class="text-xs bg-gray-200 px-1.5 py-0.5 rounded">${lenDisplay}</span>
-                        <span class="${riskColor} text-xs font-bold">→ Gãy ${(dropOffRate*100).toFixed(0)}%</span>
-                        <span class="text-gray-400 text-[10px]">(${currentCount} chuỗi đạt ${streakLen}d, chỉ ${currentCount - Math.round(currentCount * dropOffRate)} tiếp tục)</span>
+                        <span class="${riskColor} text-xs font-bold">${riskText}</span>
+                        <span class="text-gray-400 text-[10px]">${countText}</span>
                     </li>`;
                     forecastCount++;
                 }
@@ -572,11 +639,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             // === TỔNG HỢP DỰ ĐOÁN ===
             const predSummarySection = document.getElementById('prediction-summary-section');
             const predSummaryContainer = document.getElementById('prediction-summary-container');
+            const predSummaryTitle = document.getElementById('prediction-summary-title');
             const predSummaryCount = document.getElementById('prediction-summary-count');
             if (predSummarySection && predSummaryContainer) {
-                const predItems = allStreakDropOffs.filter(({ dropOffRate, currentCount }) => dropOffRate > 0 && currentCount > 0);
+                const predItems = actionableStreakDropOffs.filter(({ dropOffRate, currentCount }) => dropOffRate > 0 && currentCount > 0);
                 if (predItems.length > 0) {
                     predSummarySection.style.display = '';
+                    if (predSummaryTitle) {
+                        const nextDate = forDate ? getNextDay(forDate) : '';
+                        predSummaryTitle.innerHTML = nextDate
+                            ? `Tổng Hợp Dự Đoán — <span class="text-red-600 font-bold">${nextDate}</span>`
+                            : 'Tổng Hợp Dự Đoán';
+                    }
                     predSummaryCount.textContent = `(${predItems.length} chuỗi)`;
                     let predHtml = `<div class="overflow-x-auto"><table class="min-w-full text-xs text-left text-gray-500">
                         <thead class="text-xs text-gray-700 uppercase bg-amber-50">
@@ -589,18 +663,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <th class="px-3 py-2">Số dự đoán</th>
                             </tr>
                         </thead><tbody>`;
-                    predItems.forEach(({ streak, streakLen, dropOffRate, nextLen, currentCount, nextCount }) => {
+                    predItems.forEach(({ streak, streakLen, dropOffRate, nextLen, currentCount, nextCount, formFrequencyPerYear }) => {
                         const riskColor = dropOffRate >= 0.90 ? 'text-purple-700 font-bold' : dropOffRate >= 0.70 ? 'text-red-600 font-bold' : dropOffRate >= 0.50 ? 'text-orange-600 font-semibold' : 'text-gray-600';
                         const rowBg = dropOffRate >= 0.90 ? 'bg-purple-50' : dropOffRate >= 0.70 ? 'bg-red-50' : dropOffRate >= 0.50 ? 'bg-orange-50' : 'bg-white';
                         const nums = streak.patternNumbers && streak.patternNumbers.length > 0
                             ? streak.patternNumbers.map(n => `<span class="px-1 py-0.5 bg-gray-800 text-gray-200 text-[10px] rounded">${String(n).padStart(2,'0')}</span>`).join(' ')
                             : '<span class="text-gray-400">-</span>';
                         const potentialLabel = streak.isPotential ? ' <span class="text-[9px] bg-orange-500 text-white px-1 py-0.5 rounded">tiềm năng</span>' : '';
+                        const dropOffLabel = streak.isPotential
+                            ? `<div class="${riskColor}">${(dropOffRate*100).toFixed(0)}%</div><div class="text-[9px] text-gray-500 font-normal">sau hình thành</div>`
+                            : `<span class="${riskColor}">${(dropOffRate*100).toFixed(0)}%</span>`;
+                        const currentCountLabel = streak.isPotential
+                            ? `<div>${currentCount}</div><div class="text-[9px] text-gray-500">${formFrequencyPerYear.toFixed(1)}/năm</div>`
+                            : currentCount;
                         predHtml += `<tr class="${rowBg} border-b hover:bg-gray-50">
                             <td class="px-3 py-2 font-medium text-gray-900">${streak.description}${potentialLabel}</td>
                             <td class="px-3 py-2 text-center">${streakLen}d${streak.isPotential ? '<span class="text-[9px] text-orange-500"> ↗</span>' : ''}</td>
-                            <td class="px-3 py-2 text-center ${riskColor}">${(dropOffRate*100).toFixed(0)}%</td>
-                            <td class="px-3 py-2 text-center">${currentCount}</td>
+                            <td class="px-3 py-2 text-center">${dropOffLabel}</td>
+                            <td class="px-3 py-2 text-center">${currentCountLabel}</td>
                             <td class="px-3 py-2 text-center">${nextCount}</td>
                             <td class="px-3 py-2"><div class="flex flex-wrap gap-0.5">${nums}</div></td>
                         </tr>`;
@@ -636,8 +716,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 streaksByLength[length].forEach(streak => {
                     const streakLen = parseInt(length);
                     // Check for so le pattern 
-                    const isTienLuiSoLePattern = (streak.key && (streak.key.includes('tienLuiSoLe') || streak.key.includes('luiTienSoLe'))) || (streak.description && (streak.description.includes('Tiến-Lùi') || streak.description.includes('Lùi-Tiến')));
-                    const isSoLePatternOuter = (streak.key && (streak.key.toLowerCase().includes('sole') || streak.key.toLowerCase().includes('solemoi')) && !isTienLuiSoLePattern) || (streak.description && streak.description.toLowerCase().includes('so le') && !isTienLuiSoLePattern);
+                    const lowerStreakKeyOuter = (streak.key || '').toLowerCase();
+                    const lowerDescriptionOuter = (streak.description || '').toLowerCase();
+                    const isTienLuiSoLePattern = lowerStreakKeyOuter.includes('tienluisole') || lowerStreakKeyOuter.includes('luitiensole') || lowerDescriptionOuter.includes('tiến-lùi') || lowerDescriptionOuter.includes('lùi-tiến');
+                    const isSoLeTheoCapOuter = lowerStreakKeyOuter.includes('soletheocap');
+                    const isSoLePatternOuter = ((lowerStreakKeyOuter.includes('vesole') || lowerStreakKeyOuter.includes('solemoi')) || lowerDescriptionOuter.includes('về so le')) && !isTienLuiSoLePattern && !isSoLeTheoCapOuter;
 
                     const stepOuter = isSoLePatternOuter ? 2 : 1;
                     const targetLenOuter = streakLen + stepOuter;
@@ -651,7 +734,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const isNextSuperRecordOuter = targetFreqYearOuter <= 0.5;
 
                     let dropOffRateOuter = 0;
-                    if (currentCountOuter > 0) {
+                    if (streak.isPotential) {
+                        const formLen = streakLen + stepOuter;
+                        const gForm = streak.gapStats ? streak.gapStats[formLen] : null;
+                        const gBreak = streak.gapStats ? streak.gapStats[formLen + stepOuter] : null;
+                        const countForm = gForm ? gForm.count : 0;
+                        const countBreak = gBreak ? gBreak.count : 0;
+                        dropOffRateOuter = countForm > 0 ? 1 - (countBreak / countForm) : 1;
+                    } else if (currentCountOuter > 0) {
                         dropOffRateOuter = 1 - (targetCountOuter / currentCountOuter);
                     } else {
                         dropOffRateOuter = 1;
@@ -667,9 +757,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     let badgeHtml = '';
                     if (isSuperRecord) {
-                        badgeHtml = `<span class="ml-2 inline-block bg-purple-600 text-white text-[9px] px-1 py-0.5 rounded uppercase">Rủi ro gãy ${(dropOffRateOuter*100).toFixed(0)}%</span>`;
+                        badgeHtml = `<span class="ml-2 inline-block bg-purple-600 text-white text-[9px] px-1 py-0.5 rounded uppercase">${streak.isPotential ? 'Sau hình thành gãy' : 'Rủi ro gãy'} ${(dropOffRateOuter*100).toFixed(0)}%</span>`;
                     } else if (isRecord) {
-                        badgeHtml = `<span class="ml-2 inline-block bg-red-600 text-white text-[9px] px-1 py-0.5 rounded uppercase">Rủi ro gãy ${(dropOffRateOuter*100).toFixed(0)}%</span>`;
+                        badgeHtml = `<span class="ml-2 inline-block bg-red-600 text-white text-[9px] px-1 py-0.5 rounded uppercase">${streak.isPotential ? 'Sau hình thành gãy' : 'Rủi ro gãy'} ${(dropOffRateOuter*100).toFixed(0)}%</span>`;
                     } else if (streak.isPotential && dropOffRateOuter >= 0.50) {
                         // Chuỗi tiềm năng nhưng có tỷ lệ gãy cao → hiện risk
                         const potRiskColor = dropOffRateOuter >= 0.70 ? 'bg-red-500' : 'bg-orange-500';
@@ -702,13 +792,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                                         </div>
                         ${(() => {
                             // Check for Tiến Lùi So Le pattern (special handling)
-                            const isTienLuiSoLeByKey = streak.key && (streak.key.includes('tienLuiSoLe') || streak.key.includes('luiTienSoLe'));
-                            const isTienLuiSoLeByDesc = streak.description && (streak.description.includes('Tiến-Lùi') || streak.description.includes('Lùi-Tiến'));
+                            const lowerStreakKeyInner = (streak.key || '').toLowerCase();
+                            const lowerDescriptionInner = (streak.description || '').toLowerCase();
+                            const isTienLuiSoLeByKey = lowerStreakKeyInner.includes('tienluisole') || lowerStreakKeyInner.includes('luitiensole');
+                            const isTienLuiSoLeByDesc = lowerDescriptionInner.includes('tiến-lùi') || lowerDescriptionInner.includes('lùi-tiến');
                             const isTienLuiSoLePattern = isTienLuiSoLeByKey || isTienLuiSoLeByDesc;
+                            const isSoLeTheoCapPattern = lowerStreakKeyInner.includes('soletheocap');
 
                             // Check for so le pattern - check both key and description (excluding Tiến Lùi So Le)
-                            const isSoLeByKey = streak.key && (streak.key.toLowerCase().includes('sole') || streak.key.toLowerCase().includes('solemoi')) && !isTienLuiSoLePattern;
-                            const isSoLeByDesc = streak.description && streak.description.toLowerCase().includes('so le') && !isTienLuiSoLePattern;
+                            const isSoLeByKey = (lowerStreakKeyInner.includes('vesole') || lowerStreakKeyInner.includes('solemoi')) && !isTienLuiSoLePattern && !isSoLeTheoCapPattern;
+                            const isSoLeByDesc = lowerDescriptionInner.includes('về so le') && !isTienLuiSoLePattern && !isSoLeTheoCapPattern;
                             const isSoLePattern = isSoLeByKey || isSoLeByDesc;
 
                             // Tiến Lùi So Le: step = 1, So Le thường: step = 2
@@ -831,10 +924,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                             // Drop-off rate: dùng gapStats (>=)
                             let dropOffRateInner = 0;
-                            if (currentCountInner > 0) {
+                            if (streak.isPotential) {
+                                const stepInner = isSoLePattern ? 2 : 1;
+                                const formLen = currentLen + stepInner;
+                                const gForm = streak.gapStats ? streak.gapStats[formLen] : null;
+                                const gBreak = streak.gapStats ? streak.gapStats[formLen + stepInner] : null;
+                                const countForm = gForm ? gForm.count : 0;
+                                const countBreak = gBreak ? gBreak.count : 0;
+                                dropOffRateInner = countForm > 0 ? 1 - (countBreak / countForm) : 1;
+                            } else if (currentCountInner > 0) {
                                 dropOffRateInner = 1 - (targetCount / currentCountInner);
-                            } else if (streak.isPotential) {
-                                dropOffRateInner = 0;
                             } else {
                                 dropOffRateInner = 1;
                             }
@@ -845,9 +944,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                             let probBadge = '';
                             if (isInnerSuperRecord) {
-                                probBadge = `<span class="inline-block bg-purple-600 text-white text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">Rủi Ro Gãy ${(dropOffRateInner*100).toFixed(0)}%</span>`;
+                                probBadge = `<span class="inline-block bg-purple-600 text-white text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">${streak.isPotential ? 'Sau Hình Thành Gãy' : 'Rủi Ro Gãy'} ${(dropOffRateInner*100).toFixed(0)}%</span>`;
                             } else if (isInnerRecord) {
-                                probBadge = `<span class="inline-block bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">Rủi Ro Gãy ${(dropOffRateInner*100).toFixed(0)}%</span>`;
+                                probBadge = `<span class="inline-block bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">${streak.isPotential ? 'Sau Hình Thành Gãy' : 'Rủi Ro Gãy'} ${(dropOffRateInner*100).toFixed(0)}%</span>`;
                             } else if (streak.isPotential && dropOffRateInner >= 0.50) {
                                 // Chuỗi tiềm năng có tỷ lệ gãy >= 50% → hiện risk thay vì chỉ "Đang Hình Thành"
                                 const potBg = dropOffRateInner >= 0.70 ? 'bg-red-500 text-white' : 'bg-orange-100 text-orange-800';
@@ -863,8 +962,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                             let freqHtml = '';
                             if (targetCount > 0) {
+                                const actionText = streak.isPotential ? 'Hình thành' : 'Kéo dài';
                                 freqHtml = `<div class="text-[11px] mt-1 border-t border-gray-100 pt-2 text-center text-gray-700">
-                                    <div class="mb-1"><strong>Dự đoán Kéo dài (${nextLen} ngày)</strong></div>
+                                    <div class="mb-1"><strong>Dự đoán ${actionText} (${nextLen} ngày)</strong></div>
                                     <div class="flex justify-between px-2 bg-gray-100 rounded py-1">
                                         <span>Số lần: <strong class="text-blue-600">${targetCount}</strong></span>
                                         <span>Tần suất: <strong class="${isNextRecord ? (isNextSuperRecord ? 'text-purple-600' : 'text-red-600') : 'text-green-600'}">${targetFreqYear.toFixed(2)} lần/năm</strong></span>
@@ -881,7 +981,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                         ${freqHtml}
                                         <div class="text-center mt-2">${probBadge}</div>
                                     </div>`;
-                            } else if (isRecordState) {
+                            } else if (typeof isRecordState !== 'undefined' && isRecordState) {
                                 let badgeText = hasReachedOriginalRecord ? `🏆 Đạt ${isSuperLevel ? 'Siêu KL' : 'Kỷ Lục'}` : `🚧 Tới hạn ${isSuperLevel ? 'Siêu KL' : 'Kỷ Lục'}`;
                                 return `
                                     <div class="mt-2 pt-2 border-t border-gray-100 text-xs ${isSuperLevel ? 'bg-purple-50' : 'bg-red-50'} -mx-4 -mb-4 p-4 rounded-b-lg">

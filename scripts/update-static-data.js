@@ -6,6 +6,34 @@ const DATA_URL = 'https://raw.githubusercontent.com/khiemdoan/vietnam-lottery-xs
 const DATA_DIR = path.join(__dirname, '..', 'lib', 'data');
 const JSON_FILE = path.join(DATA_DIR, 'xsmb-2-digits.json');
 
+async function readJsonIfExists(filePath) {
+    try {
+        const content = await fs.readFile(filePath, 'utf-8');
+        return JSON.parse(content);
+    } catch (e) {
+        return null;
+    }
+}
+
+function getLatestDateValue(rows) {
+    if (!Array.isArray(rows) || rows.length === 0) return null;
+    const latest = rows[rows.length - 1];
+    return latest && latest.date ? String(latest.date).substring(0, 10) : null;
+}
+
+function hasRawDataChanged(currentRows, nextRows) {
+    if (!Array.isArray(currentRows) || !Array.isArray(nextRows)) return true;
+    if (currentRows.length !== nextRows.length) return true;
+
+    const currentLatest = getLatestDateValue(currentRows);
+    const nextLatest = getLatestDateValue(nextRows);
+    if (currentLatest !== nextLatest) return true;
+
+    const currentLast = currentRows[currentRows.length - 1] || {};
+    const nextLast = nextRows[nextRows.length - 1] || {};
+    return Number(currentLast.special) !== Number(nextLast.special);
+}
+
 async function downloadData() {
     return new Promise((resolve, reject) => {
         https.get(DATA_URL, (res) => {
@@ -84,7 +112,13 @@ async function main() {
     const { data: finalArray } = formattedData;
     
     await fs.mkdir(path.join(DATA_DIR, 'statistics'), { recursive: true });
-    await fs.writeFile(JSON_FILE, JSON.stringify(finalArray, null, 2), 'utf-8');
+    const currentArray = await readJsonIfExists(JSON_FILE);
+    if (!hasRawDataChanged(currentArray, finalArray)) {
+        console.log(`[3] RAW_DATA không đổi (latest=${getLatestDateValue(finalArray)}, rows=${finalArray.length}). Bỏ qua generate stats để tiết kiệm Action time.`);
+        return;
+    }
+
+    await fs.writeFile(JSON_FILE, JSON.stringify(finalArray, null, 0), 'utf-8');
     console.log('[3] Ghi file xsmb-2-digits.json (RAW_DATA) thành công! (' + finalArray.length + ' bản ghi)');
 
     console.log('[4] Chạy luồng sinh Thống kê Statically (Không cần DB)...');
