@@ -215,14 +215,19 @@ async function main() {
     console.log(`[1] Đọc dữ liệu local: ${Array.isArray(currentArray) ? currentArray.length : 0} bản ghi, latest=${getLatestDateValue(currentArray) || 'none'}`);
     console.log('[2] Cập nhật dữ liệu từ nguồn độc lập xoso.com.vn...');
     const { data: finalArray, source } = await buildRawDataFromSources(currentArray);
+    const forceRegenerateStats = process.env.FORCE_REGENERATE_STATS === '1';
 
-    if (!hasRawDataChanged(currentArray, finalArray)) {
+    if (!hasRawDataChanged(currentArray, finalArray) && !forceRegenerateStats) {
         console.log(`[3] RAW_DATA không đổi (latest=${getLatestDateValue(finalArray)}, rows=${finalArray.length}, source=${source}). Bỏ qua generate stats để tiết kiệm Action time.`);
         return;
     }
 
-    await fs.writeFile(JSON_FILE, JSON.stringify(finalArray, null, 0), 'utf-8');
-    console.log(`[3] Ghi file xsmb-2-digits.json (RAW_DATA) thành công! (${finalArray.length} bản ghi, latest=${getLatestDateValue(finalArray)}, source=${source})`);
+    if (hasRawDataChanged(currentArray, finalArray)) {
+        await fs.writeFile(JSON_FILE, JSON.stringify(finalArray, null, 0), 'utf-8');
+        console.log(`[3] Ghi file xsmb-2-digits.json (RAW_DATA) thành công! (${finalArray.length} bản ghi, latest=${getLatestDateValue(finalArray)}, source=${source})`);
+    } else {
+        console.log(`[3] RAW_DATA không đổi nhưng FORCE_REGENERATE_STATS=1, sinh lại thống kê/cache từ code mới.`);
+    }
 
     console.log('[4] Chạy luồng sinh Thống kê Statically (Không cần DB)...');
     

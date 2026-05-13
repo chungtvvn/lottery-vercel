@@ -264,11 +264,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     const exclusionPriorityScore = (item) => {
-        const reliability = item.streak.reliability || {};
+        const reliability = (item.streak && item.streak.reliability) || {};
         const rate = Number(item.exclusionRate ?? item.dropOffRate ?? 0);
         const lower = Number(item.exclusionLowerBound ?? reliability.lowerBound ?? 0);
-        const trust = Math.max(0, Math.min(1, Number(reliability.score || 0) / 100));
         const sample = sampleScore(item.exclusionSampleSize || item.currentCount || reliability.sampleSize || 0);
+        const rawTrust = Number(reliability.score);
+        const trust = Number.isFinite(rawTrust)
+            ? Math.max(0, Math.min(1, rawTrust / 100))
+            : Math.max(0, Math.min(1, lower * 0.72 + sample * 0.28));
         return Math.round((rate * 0.55 + lower * 0.25 + trust * 0.15 + sample * 0.05) * 1000) / 10;
     };
 
@@ -439,9 +442,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     updateDataButton.addEventListener('click', handleDataUpdate);
 
-    // === UNIFIED DROP-OFF EXCLUSION RENDERING ===
-    let selectedDropOffThreshold = parseFloat(localStorage.getItem('streak-dropoff-threshold') || '0.85');
-    if (!Number.isFinite(selectedDropOffThreshold)) selectedDropOffThreshold = 0.85;
+    // === UNIFIED PRIORITY EXCLUSION RENDERING ===
+    const EXCLUSION_PRIORITY_STORAGE_KEY = 'streak-exclusion-priority-threshold';
+    const legacyDropOffThreshold = parseFloat(localStorage.getItem('streak-dropoff-threshold') || '');
+    let selectedExclusionPriorityThreshold = parseFloat(
+        localStorage.getItem(EXCLUSION_PRIORITY_STORAGE_KEY) ||
+        (Number.isFinite(legacyDropOffThreshold) ? String(Math.round(legacyDropOffThreshold * 100)) : '85')
+    );
+    if (!Number.isFinite(selectedExclusionPriorityThreshold)) selectedExclusionPriorityThreshold = 85;
     let latestPredictionItemsForExclusion = [];
     let latestPredictionDateForExclusion = '';
 
@@ -474,6 +482,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             : `Gãy ${(riskRate * 100).toFixed(0)}%`;
     };
 
+    const getPredictionPriority = (item) => {
+        const priority = Number(item && item.exclusionPriority);
+        return Number.isFinite(priority) ? priority : 0;
+    };
+
     const fetchStreakExclusion = () => {
         const section = document.getElementById('streak-exclusion-section');
         const container = document.getElementById('streak-exclusion-container');
@@ -493,7 +506,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const activePredictionItems = sourceItems.filter(item => {
                 const sample = item.formationBaseCount || item.currentCount || 0;
                 return sample > 0
-                    && getPredictionRiskRate(item) >= selectedDropOffThreshold
+                    && getPredictionPriority(item) >= selectedExclusionPriorityThreshold
                     && getPredictionNumbers(item).length > 0;
             });
 
@@ -538,12 +551,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div class="text-sm text-gray-600">
                         <i class="bi bi-info-circle me-1"></i>Số <span class="text-teal-700 font-bold">XANH</span> = đánh, số <span class="text-red-600 font-bold">ĐỎ</span> = loại trừ theo thứ tự ưu tiên trong Tổng Hợp Dự Đoán
-                        <div class="text-xs text-gray-500 mt-1">${activePredictionItems.length} chuỗi đạt ngưỡng loại ≥ ${(selectedDropOffThreshold * 100).toFixed(0)}%</div>
+                        <div class="text-xs text-gray-500 mt-1">${activePredictionItems.length} chuỗi đạt điểm ưu tiên loại ≥ ${selectedExclusionPriorityThreshold.toFixed(0)}</div>
                     </div>
                     <label class="inline-flex items-center gap-2 text-sm text-gray-700">
-                        <span>Ngưỡng loại</span>
-                        <select id="dropoff-threshold-select" class="rounded-md border-gray-300 text-sm px-2 py-1 focus:border-teal-500 focus:ring-teal-500">
-                            ${[50, 60, 70, 75, 80, 85, 90, 95, 99].map(v => `<option value="${v / 100}" ${Math.round(selectedDropOffThreshold * 100) === v ? 'selected' : ''}>≥ ${v}%</option>`).join('')}
+                        <span>Ưu tiên min</span>
+                        <select id="priority-threshold-select" class="rounded-md border-gray-300 text-sm px-2 py-1 focus:border-teal-500 focus:ring-teal-500">
+                            ${[50, 60, 70, 75, 80, 85, 90, 95, 99].map(v => `<option value="${v}" ${Math.round(selectedExclusionPriorityThreshold) === v ? 'selected' : ''}>≥ ${v}</option>`).join('')}
                         </select>
                     </label>
                 </div>`;
@@ -621,11 +634,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             `;
 
             container.innerHTML = gridHtml;
-            const thresholdSelect = document.getElementById('dropoff-threshold-select');
+            const thresholdSelect = document.getElementById('priority-threshold-select');
             if (thresholdSelect) {
                 thresholdSelect.addEventListener('change', (event) => {
-                    selectedDropOffThreshold = parseFloat(event.target.value);
-                    localStorage.setItem('streak-dropoff-threshold', String(selectedDropOffThreshold));
+                    selectedExclusionPriorityThreshold = parseFloat(event.target.value);
+                    localStorage.setItem(EXCLUSION_PRIORITY_STORAGE_KEY, String(selectedExclusionPriorityThreshold));
                     fetchStreakExclusion();
                 });
             }
@@ -709,12 +722,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const countPrefix = gPrefix ? gPrefix.count : 0;
                     const countForm = gForm ? gForm.count : 0;
                     const countBreak = gBreak ? gBreak.count : 0;
+                    const totalHistoricalDays = Math.max(1, Math.round(totalYears * 365.25));
                     const formFrequencyPerYear = totalYears > 0 ? countForm / totalYears : 0;
-                    const formationRate = countPrefix > 0 ? countForm / countPrefix : 0;
-                    const nonFormationRate = countPrefix > 0 ? 1 - formationRate : 1;
+                    const hasConditionalPrefixSample = countPrefix > countForm;
+                    const formationBaseCount = hasConditionalPrefixSample ? countPrefix : totalHistoricalDays;
+                    const formationRate = formationBaseCount > 0 ? countForm / formationBaseCount : 0;
+                    const nonFormationRate = formationBaseCount > 0 ? 1 - formationRate : 1;
                     const rate = countForm > 0 ? 1 - (countBreak / countForm) : 1;
-                    const nonFormationCount = Math.max(0, countPrefix - countForm);
-                    const nonFormationLowerBound = wilsonLowerBound(nonFormationCount, countPrefix);
+                    const nonFormationCount = Math.max(0, formationBaseCount - countForm);
+                    const nonFormationLowerBound = wilsonLowerBound(nonFormationCount, formationBaseCount);
                     const isHighFrequencyPotential = formFrequencyPerYear > MAX_POTENTIAL_FORM_FREQ_PER_YEAR;
                     return {
                         rate,
@@ -725,7 +741,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         isSoLe,
                         formFrequencyPerYear,
                         isHighFrequencyPotential,
-                        formationBaseCount: countPrefix,
+                        formationBaseCount,
+                        rawFormationBaseCount: countPrefix,
+                        usesFrequencyFallback: !hasConditionalPrefixSample,
                         formationCount: countForm,
                         nonFormationCount,
                         formationRate,
@@ -733,7 +751,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         nonFormationLowerBound,
                         exclusionRate: nonFormationRate,
                         exclusionLowerBound: nonFormationLowerBound,
-                        exclusionSampleSize: countPrefix
+                        exclusionSampleSize: formationBaseCount
                     };
                 }
 
@@ -800,17 +818,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Chuỗi đã hình thành: tỷ lệ gãy. Chuỗi tiềm năng: tỷ lệ không hình thành.
             let forecastHtml = '';
             let forecastCount = 0;
-            actionableStreakDropOffs.forEach(({ streak, streakLen, dropOffRate, exclusionRate, nextLen, currentCount, nextCount, formFrequencyPerYear, formationBaseCount, formationRate, nonFormationRate }) => {
+            actionableStreakDropOffs.forEach(({ streak, streakLen, dropOffRate, exclusionRate, nextLen, currentCount, nextCount, formFrequencyPerYear, formationBaseCount, formationRate, nonFormationRate, usesFrequencyFallback }) => {
                 const riskRate = streak.isPotential ? nonFormationRate : dropOffRate;
-                if (riskRate >= 0.50 && currentCount > 0) {
+                const riskSample = streak.isPotential ? formationBaseCount : currentCount;
+                if (riskRate >= 0.50 && riskSample > 0) {
                     const lenDisplay = streak.isPotential ? `${streakLen} ngày (tiềm năng)` : `${streakLen} ngày`;
                     const riskColor = riskRate >= 0.90 ? 'text-purple-700' : riskRate >= 0.70 ? 'text-red-600' : 'text-orange-600';
                     const riskBg = riskRate >= 0.90 ? 'bg-purple-100' : riskRate >= 0.70 ? 'bg-red-100' : 'bg-orange-100';
                     const riskText = streak.isPotential
                         ? `→ Không hình thành ${(nonFormationRate*100).toFixed(0)}%`
                         : `→ Gãy ${(dropOffRate*100).toFixed(0)}%`;
+                    const potentialSampleLabel = usesFrequencyFallback ? 'ngày mẫu' : 'tiền đề';
                     const countText = streak.isPotential
-                        ? `(${formationBaseCount} tiền đề, ${currentCount} lần hình thành ${nextLen}d, HT ${(formationRate*100).toFixed(0)}%, sau HT gãy ${(dropOffRate*100).toFixed(0)}%)`
+                        ? `(${formatMetric(formationBaseCount)} ${potentialSampleLabel}, ${currentCount} lần hình thành ${nextLen}d, HT ${(formationRate*100).toFixed(1)}%, sau HT gãy ${(dropOffRate*100).toFixed(0)}%)`
                         : `(${currentCount} chuỗi đạt ${streakLen}d, chỉ ${nextCount} tiếp tục)`;
                     forecastHtml += `<li class="flex items-center gap-2 ${riskBg} rounded px-2 py-1">
                         <i class="bi bi-exclamation-triangle-fill ${riskColor}"></i>
@@ -902,7 +922,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <th class="px-3 py-2">Số dự đoán</th>
                             </tr>
                         </thead><tbody>`;
-                    reliabilityItems.forEach(({ streak, streakLen, dropOffRate, exclusionRate, exclusionPriority, nextLen, currentCount, nextCount, formFrequencyPerYear, reliability, formationBaseCount, formationRate, nonFormationRate, nonFormationLowerBound }) => {
+                    reliabilityItems.forEach(({ streak, streakLen, dropOffRate, exclusionRate, exclusionPriority, nextLen, currentCount, nextCount, formFrequencyPerYear, reliability, formationBaseCount, formationRate, nonFormationRate, nonFormationLowerBound, usesFrequencyFallback }) => {
                         const riskRate = streak.isPotential ? nonFormationRate : dropOffRate;
                         const riskColor = riskRate >= 0.90 ? 'text-purple-700 font-bold' : riskRate >= 0.70 ? 'text-red-600 font-bold' : riskRate >= 0.50 ? 'text-orange-600 font-semibold' : 'text-gray-600';
                         const rowBg = riskRate >= 0.90 ? 'bg-purple-50' : riskRate >= 0.70 ? 'bg-red-50' : riskRate >= 0.50 ? 'bg-orange-50' : 'bg-white';
@@ -913,8 +933,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         const dropOffLabel = streak.isPotential
                             ? `<div class="${riskColor}">Không HT ${(nonFormationRate*100).toFixed(0)}%</div><div class="text-[9px] text-gray-500 font-normal">sau HT gãy ${(dropOffRate*100).toFixed(0)}%</div>`
                             : `<span class="${riskColor}">${(dropOffRate*100).toFixed(0)}%</span>`;
+                        const potentialSampleLabel = usesFrequencyFallback ? 'ngày mẫu' : 'tiền đề';
                         const formationHtml = streak.isPotential
-                            ? `<div class="font-semibold text-gray-700">${(formationRate*100).toFixed(0)}%</div><div class="text-[9px] text-gray-500">${formatMetric(formationBaseCount)} tiền đề</div>`
+                            ? `<div class="font-semibold text-gray-700">${(formationRate*100).toFixed(1)}%</div><div class="text-[9px] text-gray-500">${formatMetric(formationBaseCount)} ${potentialSampleLabel}</div>`
                             : '<span class="text-gray-400">-</span>';
                         const currentCountLabel = streak.isPotential
                             ? `<div>${currentCount}</div><div class="text-[9px] text-gray-500">${formFrequencyPerYear.toFixed(1)}/năm</div>`
@@ -991,13 +1012,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const isNextSuperRecordOuter = targetFreqYearOuter <= 0.5;
 
                     let dropOffRateOuter = 0;
+                    let riskLabelOuter = 'Rủi ro gãy';
                     if (streak.isPotential) {
                         const formLen = streakLen + stepOuter;
+                        const gPrefix = streak.gapStats ? streak.gapStats[streakLen] : null;
                         const gForm = streak.gapStats ? streak.gapStats[formLen] : null;
-                        const gBreak = streak.gapStats ? streak.gapStats[formLen + stepOuter] : null;
+                        const countPrefix = gPrefix ? gPrefix.count : 0;
                         const countForm = gForm ? gForm.count : 0;
-                        const countBreak = gBreak ? gBreak.count : 0;
-                        dropOffRateOuter = countForm > 0 ? 1 - (countBreak / countForm) : 1;
+                        const totalHistoricalDays = Math.max(1, Math.round(totalYears * 365.25));
+                        const formationBaseCount = countPrefix > countForm ? countPrefix : totalHistoricalDays;
+                        dropOffRateOuter = formationBaseCount > 0 ? 1 - (countForm / formationBaseCount) : 1;
+                        riskLabelOuter = 'Không HT';
                     } else if (currentCountOuter > 0) {
                         dropOffRateOuter = 1 - (targetCountOuter / currentCountOuter);
                     } else {
@@ -1014,13 +1039,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     let badgeHtml = '';
                     if (isSuperRecord) {
-                        badgeHtml = `<span class="ml-2 inline-block bg-purple-600 text-white text-[9px] px-1 py-0.5 rounded uppercase">${streak.isPotential ? 'Sau hình thành gãy' : 'Rủi ro gãy'} ${(dropOffRateOuter*100).toFixed(0)}%</span>`;
+                        badgeHtml = `<span class="ml-2 inline-block bg-purple-600 text-white text-[9px] px-1 py-0.5 rounded uppercase">${riskLabelOuter} ${(dropOffRateOuter*100).toFixed(0)}%</span>`;
                     } else if (isRecord) {
-                        badgeHtml = `<span class="ml-2 inline-block bg-red-600 text-white text-[9px] px-1 py-0.5 rounded uppercase">${streak.isPotential ? 'Sau hình thành gãy' : 'Rủi ro gãy'} ${(dropOffRateOuter*100).toFixed(0)}%</span>`;
+                        badgeHtml = `<span class="ml-2 inline-block bg-red-600 text-white text-[9px] px-1 py-0.5 rounded uppercase">${riskLabelOuter} ${(dropOffRateOuter*100).toFixed(0)}%</span>`;
                     } else if (streak.isPotential && dropOffRateOuter >= 0.50) {
-                        // Chuỗi tiềm năng nhưng có tỷ lệ gãy cao → hiện risk
                         const potRiskColor = dropOffRateOuter >= 0.70 ? 'bg-red-500' : 'bg-orange-500';
-                        badgeHtml = `<span class="ml-2 inline-block ${potRiskColor} text-white text-[9px] px-1 py-0.5 rounded uppercase">⚡ Gãy ${(dropOffRateOuter*100).toFixed(0)}%</span>`;
+                        badgeHtml = `<span class="ml-2 inline-block ${potRiskColor} text-white text-[9px] px-1 py-0.5 rounded uppercase">⚡ Không HT ${(dropOffRateOuter*100).toFixed(0)}%</span>`;
                     } else if (streak.isPotential) {
                         badgeHtml = `<span class="ml-2 inline-block bg-orange-500 text-white text-[9px] px-1 py-0.5 rounded uppercase">Tiềm Năng</span>`;
                     }
@@ -1181,14 +1205,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                             // Drop-off rate: dùng gapStats (>=)
                             let dropOffRateInner = 0;
+                            let riskLabelInner = 'Rủi Ro Gãy';
                             if (streak.isPotential) {
                                 const stepInner = isSoLePattern ? 2 : 1;
                                 const formLen = currentLen + stepInner;
+                                const gPrefix = streak.gapStats ? streak.gapStats[currentLen] : null;
                                 const gForm = streak.gapStats ? streak.gapStats[formLen] : null;
-                                const gBreak = streak.gapStats ? streak.gapStats[formLen + stepInner] : null;
+                                const countPrefix = gPrefix ? gPrefix.count : 0;
                                 const countForm = gForm ? gForm.count : 0;
-                                const countBreak = gBreak ? gBreak.count : 0;
-                                dropOffRateInner = countForm > 0 ? 1 - (countBreak / countForm) : 1;
+                                const totalHistoricalDays = Math.max(1, Math.round(totalYears * 365.25));
+                                const formationBaseCount = countPrefix > countForm ? countPrefix : totalHistoricalDays;
+                                dropOffRateInner = formationBaseCount > 0 ? 1 - (countForm / formationBaseCount) : 1;
+                                riskLabelInner = 'Không HT';
                             } else if (currentCountInner > 0) {
                                 dropOffRateInner = 1 - (targetCount / currentCountInner);
                             } else {
@@ -1201,13 +1229,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                             let probBadge = '';
                             if (isInnerSuperRecord) {
-                                probBadge = `<span class="inline-block bg-purple-600 text-white text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">${streak.isPotential ? 'Sau Hình Thành Gãy' : 'Rủi Ro Gãy'} ${(dropOffRateInner*100).toFixed(0)}%</span>`;
+                                probBadge = `<span class="inline-block bg-purple-600 text-white text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">${riskLabelInner} ${(dropOffRateInner*100).toFixed(0)}%</span>`;
                             } else if (isInnerRecord) {
-                                probBadge = `<span class="inline-block bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">${streak.isPotential ? 'Sau Hình Thành Gãy' : 'Rủi Ro Gãy'} ${(dropOffRateInner*100).toFixed(0)}%</span>`;
+                                probBadge = `<span class="inline-block bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">${riskLabelInner} ${(dropOffRateInner*100).toFixed(0)}%</span>`;
                             } else if (streak.isPotential && dropOffRateInner >= 0.50) {
-                                // Chuỗi tiềm năng có tỷ lệ gãy >= 50% → hiện risk thay vì chỉ "Đang Hình Thành"
                                 const potBg = dropOffRateInner >= 0.70 ? 'bg-red-500 text-white' : 'bg-orange-100 text-orange-800';
-                                probBadge = `<span class="inline-block ${potBg} text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">⚡ Gãy ${(dropOffRateInner*100).toFixed(0)}% (đang hình thành)</span>`;
+                                probBadge = `<span class="inline-block ${potBg} text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">⚡ Không HT ${(dropOffRateInner*100).toFixed(0)}%</span>`;
                             } else if (streak.isPotential) {
                                 probBadge = `<span class="inline-block bg-orange-100 text-orange-800 text-[10px] px-1.5 py-0.5 rounded font-bold mt-1">🔮 Đang Hình Thành</span>`;
                             } else {

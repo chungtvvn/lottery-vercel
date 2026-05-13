@@ -18,15 +18,19 @@ export async function GET(request) {
         const statisticsService = require('@/lib/services/statisticsService');
         const quickStats = statisticsService.rehydrateCurrentStreaks(cachedQuickStats);
         const url = new URL(request.url);
+        const rawMinPriority = parseFloat(url.searchParams.get('minPriority'));
         const rawMinDropOff = parseFloat(url.searchParams.get('minDropOff'));
-        const minDropOff = Number.isFinite(rawMinDropOff)
-            ? Math.min(0.99, Math.max(0, rawMinDropOff))
-            : 0.85;
+        const minPriority = Number.isFinite(rawMinPriority)
+            ? Math.min(100, Math.max(0, rawMinPriority))
+            : (Number.isFinite(rawMinDropOff)
+                ? Math.min(100, Math.max(0, rawMinDropOff <= 1 ? rawMinDropOff * 100 : rawMinDropOff))
+                : 85);
 
-        // === PHƯƠNG PHÁP DUY NHẤT: Drop-off >= 85% ===
+        // === PHƯƠNG PHÁP DUY NHẤT: Exclusion priority >= ngưỡng ===
+        // Chuỗi đã hình thành dùng tỷ lệ gãy; chuỗi tiềm năng dùng tỷ lệ không hình thành.
         // exclusionLogicService.getDropOffExclusions() là SINGLE SOURCE OF TRUTH
         // Không sử dụng bất kỳ phương pháp nào khác
-        const dropOffResult = exclusionLogic.getDropOffExclusions(quickStats, { minDropOff });
+        const dropOffResult = exclusionLogic.getDropOffExclusions(quickStats, { minPriority });
 
         const toBet = dropOffResult.skipped ? [] : dropOffResult.toBet;
         const excluded = dropOffResult.excluded;
@@ -42,13 +46,14 @@ export async function GET(request) {
 
         const result = {
             date: nextDateStr,
-            // Drop-off >= 85% — phương pháp duy nhất
+            // Exclusion priority >= ngưỡng — phương pháp duy nhất
             danh: {
                 numbers: mapStrs(toBet),
                 excluded: mapStrs(excluded),
                 isSkipped,
                 explanations,
-                minDropOff
+                minPriority,
+                minDropOff: minPriority / 100
             },
             // Legacy compatibility — tất cả trỏ về cùng 1 kết quả
             danhStreak: {

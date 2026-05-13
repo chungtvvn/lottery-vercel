@@ -7,19 +7,19 @@
     };
 
     const METHOD_LABELS = {
-        dropoff85: 'Dropoff 85%',
-        dropoff85Edge: 'Edge 85%',
-        ranked40to50: 'Ưu tiên trúng 40-50',
-        ranked60to70: 'Xếp hạng 60-70',
+        dropoff85: 'Ưu tiên 85+',
+        dropoff85Edge: 'Ưu tiên 85 + Edge',
+        ranked40to50: 'Ưu tiên loại 40-50',
+        ranked60to70: 'Ưu tiên loại 60-70',
         combined20to30: 'Tổng hợp rủi ro 30'
     };
 
     function methodDescription(methodId) {
-        if (methodId === 'dropoff85') return 'Dropoff >= 85% và tiềm năng hiếm <= 1 lần/năm';
-        if (methodId === 'dropoff85Edge') return 'Chỉ lấy chuỗi 85% khi dropoff vượt xác suất nền theo số lượng số loại';
-        if (methodId === 'ranked40to50') return 'Lấy dropoff cao nhất nhưng chỉ loại khoảng 40-50 số để tăng xác suất trúng';
-        if (methodId === 'ranked60to70') return 'Lấy chuỗi dropoff cao nhất đến vùng loại trừ 60-70 số';
-        return 'Chấm điểm rủi ro từng số bằng dropoff, tin cậy, mẫu, lower, TB dài, TB cách, gần nhất và edge để còn 30 số đánh';
+        if (methodId === 'dropoff85') return 'Điểm ưu tiên loại >= 85, gồm dropoff/không hình thành, lower, mẫu và tin cậy';
+        if (methodId === 'dropoff85Edge') return 'Chỉ lấy chuỗi ưu tiên >= 85 khi rủi ro vượt xác suất nền theo số lượng số loại';
+        if (methodId === 'ranked40to50') return 'Lấy ưu tiên loại cao nhất nhưng chỉ loại khoảng 40-50 số để tăng xác suất trúng';
+        if (methodId === 'ranked60to70') return 'Lấy chuỗi ưu tiên loại cao nhất đến vùng loại trừ 60-70 số';
+        return 'Chấm điểm rủi ro từng số bằng ưu tiên loại, dropoff/không hình thành, tin cậy, mẫu, lower, TB dài, TB cách, gần nhất và edge để còn 30 số đánh';
     }
 
     function el(id) {
@@ -157,7 +157,10 @@
                     <div class="font-semibold text-slate-900">${item.title || item.key}</div>
                     <div class="text-xs text-slate-500">${item.isPotential ? 'Sắp hình thành' : 'Đang diễn ra'} · ${item.numbersCount} số</div>
                 </td>
-                <td class="px-3 py-2 text-right font-semibold">${formatPercent(item.dropOffRate)}</td>
+                <td class="px-3 py-2 text-right font-semibold">
+                    <div>${formatNumberValue(item.exclusionPriority)}</div>
+                    <div class="text-[10px] font-normal text-slate-400">${formatPercent(item.dropOffRate)}</div>
+                </td>
                 <td class="px-3 py-2 text-right">${formatNumberValue(item.edgePercent, '%')}</td>
                 <td class="px-3 py-2 text-right">
                     <span class="inline-flex rounded border px-2 py-1 text-xs font-bold ${reliabilityBadge(item.reliabilityScore)}">
@@ -208,7 +211,7 @@
                     <thead class="bg-slate-100 text-xs font-semibold uppercase text-slate-600">
                         <tr>
                             <th class="px-3 py-2 text-left">Chuỗi</th>
-                            <th class="px-3 py-2 text-right">Dropoff</th>
+                            <th class="px-3 py-2 text-right">Ưu tiên</th>
                             <th class="px-3 py-2 text-right">Edge</th>
                             <th class="px-3 py-2 text-right">Tin cậy</th>
                             <th class="px-3 py-2 text-right">Mẫu</th>
@@ -223,7 +226,7 @@
             </div>
 
             <div class="mt-5">
-                <div class="mb-2 text-sm font-bold text-slate-900">Dropoff cao nhưng độ tin cậy thấp</div>
+                <div class="mb-2 text-sm font-bold text-slate-900">Rủi ro cao nhưng độ tin cậy thấp</div>
                 <div class="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
                     ${weakRows || '<div class="text-sm text-slate-500">Không có nhóm rủi ro nổi bật.</div>'}
                 </div>
@@ -321,12 +324,13 @@
             <div class="rounded-md border border-slate-200 p-3">
                 <div class="flex items-start justify-between gap-2">
                     <div class="font-semibold text-slate-900">${item.title || item.key}</div>
-                    <div class="whitespace-nowrap text-sm font-bold ${item.dropOffRate >= 0.85 ? 'text-red-700' : 'text-purple-700'}">
-                        ${formatPercent(item.dropOffRate)}
+                    <div class="whitespace-nowrap text-sm font-bold ${(item.exclusionPriority || 0) >= 85 ? 'text-red-700' : 'text-purple-700'}">
+                        ${formatNumberValue(item.exclusionPriority)}
                     </div>
                 </div>
                 <div class="mt-1 text-xs text-slate-500">
                     ${item.isPotential ? 'Sắp hình thành' : 'Đang diễn ra'} · ${item.streak}d · ${item.numbersCount} số
+                    · dropoff ${formatPercent(item.dropOffRate)}
                     ${Number.isFinite(item.edge) ? ` · edge ${formatPercent(item.edge)}` : ''}
                     ${Number.isFinite(Number(item.reliabilityScore)) ? ` · tin cậy ${item.reliabilityScore}` : ''}
                     ${Number.isFinite(Number(item.combinedScore)) ? ` · tổng ${item.combinedScore}` : ''}
