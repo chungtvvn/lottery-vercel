@@ -241,6 +241,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         return 'mỏng';
     };
 
+    const wilsonLowerBound = (successes, total, z = 1.64) => {
+        if (!total || total <= 0) return 0;
+        const phat = successes / total;
+        const z2 = z * z;
+        const denominator = 1 + z2 / total;
+        const centre = phat + z2 / (2 * total);
+        const margin = z * Math.sqrt((phat * (1 - phat) + z2 / (4 * total)) / total);
+        return Math.max(0, (centre - margin) / denominator);
+    };
+
+    const sampleScore = (sampleSize) => {
+        const sample = Math.max(0, Number(sampleSize) || 0);
+        return Math.max(0, Math.min(1, Math.log10(sample + 1) / Math.log10(100)));
+    };
+
+    const exclusionPriorityScore = (item) => {
+        const reliability = item.streak.reliability || {};
+        const rate = Number(item.exclusionRate ?? item.dropOffRate ?? 0);
+        const lower = Number(item.exclusionLowerBound ?? reliability.lowerBound ?? 0);
+        const trust = Math.max(0, Math.min(1, Number(reliability.score || 0) / 100));
+        const sample = sampleScore(item.exclusionSampleSize || item.currentCount || reliability.sampleSize || 0);
+        return Math.round((rate * 0.55 + lower * 0.25 + trust * 0.15 + sample * 0.05) * 1000) / 10;
+    };
+
     const renderRecentResults = () => {
         let container = document.getElementById('recent-results-selector');
 
@@ -598,14 +622,38 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // TÍNH TOÁN LẠI DROPOFF CHO CHUỖI TIỀM NĂNG SAO CHO ĐÚNG:
                 if (streak.isPotential) {
                     const formLen = streakLen + step;
+                    const gPrefix = streak.gapStats ? streak.gapStats[streakLen] : null;
                     const gForm = streak.gapStats ? streak.gapStats[formLen] : null;
                     const gBreak = streak.gapStats ? streak.gapStats[formLen + step] : null;
+                    const countPrefix = gPrefix ? gPrefix.count : 0;
                     const countForm = gForm ? gForm.count : 0;
                     const countBreak = gBreak ? gBreak.count : 0;
                     const formFrequencyPerYear = totalYears > 0 ? countForm / totalYears : 0;
+                    const formationRate = countPrefix > 0 ? countForm / countPrefix : 0;
+                    const nonFormationRate = countPrefix > 0 ? 1 - formationRate : 1;
                     const rate = countForm > 0 ? 1 - (countBreak / countForm) : 1;
+                    const nonFormationCount = Math.max(0, countPrefix - countForm);
+                    const nonFormationLowerBound = wilsonLowerBound(nonFormationCount, countPrefix);
                     const isHighFrequencyPotential = formFrequencyPerYear > MAX_POTENTIAL_FORM_FREQ_PER_YEAR;
-                    return { rate, step, nextLen, currentCount: countForm, nextCount: countBreak, isSoLe, formFrequencyPerYear, isHighFrequencyPotential };
+                    return {
+                        rate,
+                        step,
+                        nextLen,
+                        currentCount: countForm,
+                        nextCount: countBreak,
+                        isSoLe,
+                        formFrequencyPerYear,
+                        isHighFrequencyPotential,
+                        formationBaseCount: countPrefix,
+                        formationCount: countForm,
+                        nonFormationCount,
+                        formationRate,
+                        nonFormationRate,
+                        nonFormationLowerBound,
+                        exclusionRate: nonFormationRate,
+                        exclusionLowerBound: nonFormationLowerBound,
+                        exclusionSampleSize: countPrefix
+                    };
                 }
 
                 const currentGE = streak.gapStats ? streak.gapStats[streakLen] : null;
@@ -614,9 +662,30 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const nextCount = nextGE ? nextGE.count : 0;
 
                 if (currentCount > 0) {
-                    return { rate: 1 - (nextCount / currentCount), step, nextLen, currentCount, nextCount, isSoLe };
+                    const rate = 1 - (nextCount / currentCount);
+                    return {
+                        rate,
+                        step,
+                        nextLen,
+                        currentCount,
+                        nextCount,
+                        isSoLe,
+                        exclusionRate: rate,
+                        exclusionLowerBound: streak.reliability ? streak.reliability.lowerBound : wilsonLowerBound(currentCount - nextCount, currentCount),
+                        exclusionSampleSize: currentCount
+                    };
                 }
-                return { rate: 1, step, nextLen, currentCount, nextCount, isSoLe };
+                return {
+                    rate: 1,
+                    step,
+                    nextLen,
+                    currentCount,
+                    nextCount,
+                    isSoLe,
+                    exclusionRate: 1,
+                    exclusionLowerBound: 0,
+                    exclusionSampleSize: currentCount
+                };
             };
 
             // Thu thập TẤT CẢ chuỗi với tỷ lệ gãy để dùng cho Dự báo + Tổng hợp dự đoán
@@ -624,27 +693,43 @@ document.addEventListener('DOMContentLoaded', async () => {
             sortedLengths.forEach(length => {
                 streaksByLength[length].forEach(streak => {
                     const streakLen = parseInt(length);
-                    const { rate, step, nextLen, currentCount, nextCount, isSoLe, formFrequencyPerYear, isHighFrequencyPotential } = calcDropOffRate(streak, streakLen);
-                    allStreakDropOffs.push({ streak, streakLen, dropOffRate: rate, step, nextLen, currentCount, nextCount, isSoLe, formFrequencyPerYear, isHighFrequencyPotential });
+                    const dropOffInfo = calcDropOffRate(streak, streakLen);
+                    const item = {
+                        ...dropOffInfo,
+                        streak,
+                        streakLen,
+                        dropOffRate: dropOffInfo.rate,
+                        exclusionRate: dropOffInfo.exclusionRate ?? dropOffInfo.rate
+                    };
+                    item.exclusionPriority = exclusionPriorityScore(item);
+                    allStreakDropOffs.push(item);
                 });
             });
 
-            // Sắp xếp theo tỷ lệ gãy giảm dần
-            allStreakDropOffs.sort((a, b) => b.dropOffRate - a.dropOffRate);
+            // Sắp xếp theo khả năng loại trừ thực tế: chuỗi đã hình thành dùng tỷ lệ gãy,
+            // chuỗi tiềm năng dùng tỷ lệ không hình thành, sau đó xét lower/tin cậy/mẫu.
+            allStreakDropOffs.sort((a, b) => {
+                if ((b.exclusionPriority || 0) !== (a.exclusionPriority || 0)) return (b.exclusionPriority || 0) - (a.exclusionPriority || 0);
+                if ((b.exclusionRate || 0) !== (a.exclusionRate || 0)) return (b.exclusionRate || 0) - (a.exclusionRate || 0);
+                return (b.dropOffRate || 0) - (a.dropOffRate || 0);
+            });
             const actionableStreakDropOffs = allStreakDropOffs.filter(({ streak, isHighFrequencyPotential }) => !(streak.isPotential && isHighFrequencyPotential));
 
             // === DỰ BÁO CHUỖI CÓ THỂ XẢY RA ===
-            // Hiển thị các chuỗi đang diễn ra có tỷ lệ gãy >= 50% (khả năng cao sẽ dừng lại ngày mai)
+            // Chuỗi đã hình thành: tỷ lệ gãy. Chuỗi tiềm năng: tỷ lệ không hình thành.
             let forecastHtml = '';
             let forecastCount = 0;
-            actionableStreakDropOffs.forEach(({ streak, streakLen, dropOffRate, nextLen, currentCount, nextCount, formFrequencyPerYear }) => {
-                if (dropOffRate >= 0.50 && currentCount > 0) {
+            actionableStreakDropOffs.forEach(({ streak, streakLen, dropOffRate, exclusionRate, nextLen, currentCount, nextCount, formFrequencyPerYear, formationBaseCount, formationRate, nonFormationRate }) => {
+                const riskRate = streak.isPotential ? nonFormationRate : dropOffRate;
+                if (riskRate >= 0.50 && currentCount > 0) {
                     const lenDisplay = streak.isPotential ? `${streakLen} ngày (tiềm năng)` : `${streakLen} ngày`;
-                    const riskColor = dropOffRate >= 0.90 ? 'text-purple-700' : dropOffRate >= 0.70 ? 'text-red-600' : 'text-orange-600';
-                    const riskBg = dropOffRate >= 0.90 ? 'bg-purple-100' : dropOffRate >= 0.70 ? 'bg-red-100' : 'bg-orange-100';
-                    const riskText = streak.isPotential ? `→ Sau hình thành gãy ${(dropOffRate*100).toFixed(0)}%` : `→ Gãy ${(dropOffRate*100).toFixed(0)}%`;
+                    const riskColor = riskRate >= 0.90 ? 'text-purple-700' : riskRate >= 0.70 ? 'text-red-600' : 'text-orange-600';
+                    const riskBg = riskRate >= 0.90 ? 'bg-purple-100' : riskRate >= 0.70 ? 'bg-red-100' : 'bg-orange-100';
+                    const riskText = streak.isPotential
+                        ? `→ Không hình thành ${(nonFormationRate*100).toFixed(0)}%`
+                        : `→ Gãy ${(dropOffRate*100).toFixed(0)}%`;
                     const countText = streak.isPotential
-                        ? `(${currentCount} lần hình thành ${nextLen}d, ${formFrequencyPerYear.toFixed(1)} lần/năm, ${nextCount} lần kéo dài tiếp)`
+                        ? `(${formationBaseCount} tiền đề, ${currentCount} lần hình thành ${nextLen}d, HT ${(formationRate*100).toFixed(0)}%, sau HT gãy ${(dropOffRate*100).toFixed(0)}%)`
                         : `(${currentCount} chuỗi đạt ${streakLen}d, chỉ ${nextCount} tiếp tục)`;
                     forecastHtml += `<li class="flex items-center gap-2 ${riskBg} rounded px-2 py-1">
                         <i class="bi bi-exclamation-triangle-fill ${riskColor}"></i>
@@ -663,7 +748,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             const predSummaryTitle = document.getElementById('prediction-summary-title');
             const predSummaryCount = document.getElementById('prediction-summary-count');
             if (predSummarySection && predSummaryContainer) {
-                const predItems = actionableStreakDropOffs.filter(({ dropOffRate, currentCount }) => dropOffRate > 0 && currentCount > 0);
+                const predItems = actionableStreakDropOffs.filter(({ dropOffRate, exclusionRate, currentCount, formationBaseCount }) => {
+                    const sample = formationBaseCount || currentCount || 0;
+                    return sample > 0 && ((exclusionRate || 0) > 0 || (dropOffRate || 0) > 0);
+                });
                 if (predItems.length > 0) {
                     predSummarySection.style.display = '';
                     if (predSummaryTitle) {
@@ -693,7 +781,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <div>
                                     <div class="font-bold"><i class="bi bi-shield-check mr-1"></i>Độ tin cậy lịch sử của toàn bộ chuỗi dự đoán</div>
                                     <div class="mt-1 text-xs leading-5 text-blue-700">
-                                        Tính trên ${yearsText} năm dữ liệu: Wilson lower bound + cỡ mẫu + độ gần hiện tại + nhịp xuất hiện trung bình. Lower giúp tránh ảo giác khi mẫu quá ít.
+                                        Tính trên ${yearsText} năm dữ liệu: chuỗi đã hình thành dùng tỷ lệ gãy; chuỗi tiềm năng dùng tỷ lệ không hình thành. Điểm ưu tiên loại còn xét Wilson lower bound, cỡ mẫu, độ tin cậy và nhịp xuất hiện.
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-3 gap-2 text-center text-xs">
@@ -717,7 +805,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <tr>
                                 <th class="px-3 py-2">Dạng chuỗi</th>
                                 <th class="px-3 py-2 text-center">Độ dài</th>
-                                <th class="px-3 py-2 text-center">Tỷ lệ gãy</th>
+                                <th class="px-3 py-2 text-center">Ưu tiên loại</th>
+                                <th class="px-3 py-2 text-center">Gãy / Không HT</th>
+                                <th class="px-3 py-2 text-center">HT</th>
                                 <th class="px-3 py-2 text-center">Tin cậy</th>
                                 <th class="px-3 py-2 text-center">Lower</th>
                                 <th class="px-3 py-2 text-center">SL đạt</th>
@@ -728,16 +818,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <th class="px-3 py-2">Số dự đoán</th>
                             </tr>
                         </thead><tbody>`;
-                    reliabilityItems.forEach(({ streak, streakLen, dropOffRate, nextLen, currentCount, nextCount, formFrequencyPerYear, reliability }) => {
-                        const riskColor = dropOffRate >= 0.90 ? 'text-purple-700 font-bold' : dropOffRate >= 0.70 ? 'text-red-600 font-bold' : dropOffRate >= 0.50 ? 'text-orange-600 font-semibold' : 'text-gray-600';
-                        const rowBg = dropOffRate >= 0.90 ? 'bg-purple-50' : dropOffRate >= 0.70 ? 'bg-red-50' : dropOffRate >= 0.50 ? 'bg-orange-50' : 'bg-white';
+                    reliabilityItems.forEach(({ streak, streakLen, dropOffRate, exclusionRate, exclusionPriority, nextLen, currentCount, nextCount, formFrequencyPerYear, reliability, formationBaseCount, formationRate, nonFormationRate, nonFormationLowerBound }) => {
+                        const riskRate = streak.isPotential ? nonFormationRate : dropOffRate;
+                        const riskColor = riskRate >= 0.90 ? 'text-purple-700 font-bold' : riskRate >= 0.70 ? 'text-red-600 font-bold' : riskRate >= 0.50 ? 'text-orange-600 font-semibold' : 'text-gray-600';
+                        const rowBg = riskRate >= 0.90 ? 'bg-purple-50' : riskRate >= 0.70 ? 'bg-red-50' : riskRate >= 0.50 ? 'bg-orange-50' : 'bg-white';
                         const nums = streak.patternNumbers && streak.patternNumbers.length > 0
                             ? streak.patternNumbers.map(n => `<span class="px-1 py-0.5 bg-gray-800 text-gray-200 text-[10px] rounded">${String(n).padStart(2,'0')}</span>`).join(' ')
                             : '<span class="text-gray-400">-</span>';
                         const potentialLabel = streak.isPotential ? ' <span class="text-[9px] bg-orange-500 text-white px-1 py-0.5 rounded">tiềm năng</span>' : '';
                         const dropOffLabel = streak.isPotential
-                            ? `<div class="${riskColor}">${(dropOffRate*100).toFixed(0)}%</div><div class="text-[9px] text-gray-500 font-normal">sau hình thành</div>`
+                            ? `<div class="${riskColor}">Không HT ${(nonFormationRate*100).toFixed(0)}%</div><div class="text-[9px] text-gray-500 font-normal">sau HT gãy ${(dropOffRate*100).toFixed(0)}%</div>`
                             : `<span class="${riskColor}">${(dropOffRate*100).toFixed(0)}%</span>`;
+                        const formationHtml = streak.isPotential
+                            ? `<div class="font-semibold text-gray-700">${(formationRate*100).toFixed(0)}%</div><div class="text-[9px] text-gray-500">${formatMetric(formationBaseCount)} tiền đề</div>`
+                            : '<span class="text-gray-400">-</span>';
                         const currentCountLabel = streak.isPotential
                             ? `<div>${currentCount}</div><div class="text-[9px] text-gray-500">${formFrequencyPerYear.toFixed(1)}/năm</div>`
                             : currentCount;
@@ -746,12 +840,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                             ? `<div class="inline-flex min-w-12 justify-center rounded border px-2 py-1 text-[11px] font-bold ${reliabilityBadgeClass(reliabilityScore)}">${reliabilityScore}</div><div class="text-[9px] text-gray-500 mt-0.5">${reliabilityLabel(reliabilityScore)}</div>`
                             : '<span class="text-gray-400">-</span>';
                         const lowerHtml = reliability
-                            ? `<div class="font-semibold">${formatMetric(reliability.lowerBoundPercent, '%')}</div><div class="text-[9px] text-gray-500">mẫu ${formatMetric(reliability.sampleSize)}</div>`
+                            ? `<div class="font-semibold">${formatMetric(streak.isPotential ? nonFormationLowerBound * 100 : reliability.lowerBoundPercent, '%')}</div><div class="text-[9px] text-gray-500">mẫu ${formatMetric(streak.isPotential ? formationBaseCount : reliability.sampleSize)}</div>`
                             : '<span class="text-gray-400">-</span>';
                         predHtml += `<tr class="${rowBg} border-b hover:bg-gray-50">
                             <td class="px-3 py-2 font-medium text-gray-900">${streak.description}${potentialLabel}</td>
                             <td class="px-3 py-2 text-center">${streakLen}d${streak.isPotential ? '<span class="text-[9px] text-orange-500"> ↗</span>' : ''}</td>
+                            <td class="px-3 py-2 text-center"><span class="inline-flex min-w-12 justify-center rounded bg-gray-900 px-2 py-1 text-[11px] font-bold text-white">${formatMetric(exclusionPriority, '')}</span></td>
                             <td class="px-3 py-2 text-center">${dropOffLabel}</td>
+                            <td class="px-3 py-2 text-center">${formationHtml}</td>
                             <td class="px-3 py-2 text-center">${reliabilityHtml}</td>
                             <td class="px-3 py-2 text-center">${lowerHtml}</td>
                             <td class="px-3 py-2 text-center">${currentCountLabel}</td>
@@ -773,7 +869,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (forecastCount > 0) {
                 finalHtml += `
                 <div class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm">
-                    <h4 class="text-blue-800 font-bold mb-3 flex items-center"><i class="bi bi-stars mr-2"></i>Dự báo chuỗi có khả năng GÃY ngày mai (sắp theo tỷ lệ gãy ↓)</h4>
+                    <h4 class="text-blue-800 font-bold mb-3 flex items-center"><i class="bi bi-stars mr-2"></i>Dự báo chuỗi có khả năng GÃY / KHÔNG HÌNH THÀNH ngày mai (sắp theo ưu tiên loại ↓)</h4>
                     <ul class="text-sm space-y-2">
                         ${forecastHtml}
                     </ul>
