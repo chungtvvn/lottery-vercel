@@ -9,10 +9,8 @@ export async function GET() {
         const historicalExclusionService = require('../../../../lib/services/historicalExclusionService');
         const statisticsService = require('../../../../lib/services/statisticsService');
 
-        // LUÔN load rawData vì hydrateStreak() cần nó để build Bong Bóng
-        if (!lotteryService.getRawData()) {
-            await lotteryService.loadRawData();
-        }
+        // LUÔN load đủ rawData + stats để hydrateStreak() và reliability enrichment hoạt động đúng
+        await lotteryService.loadAll();
 
         // Try DB cache first 
         const { getQuickStatsHistoryFromCache } = require('@/lib/data-access');

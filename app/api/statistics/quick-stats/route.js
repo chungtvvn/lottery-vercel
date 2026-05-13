@@ -7,10 +7,8 @@ export async function GET() {
         const { cachedResponse } = require('@/lib/cache-headers');
         const lotteryService = require('../../../../lib/services/lotteryService');
 
-        // LUÔN load rawData trước để hydrateStreak() hoạt động đúng
-        if (!lotteryService.getRawData()) {
-            await lotteryService.loadRawData();
-        }
+        // LUÔN load đủ rawData + stats để hydrateStreak() và reliability enrichment hoạt động đúng
+        await lotteryService.loadAll();
 
         // Try cache first
         const { getQuickStatsFromCache } = require('@/lib/data-access');

@@ -4,153 +4,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phân tích & Giả lập</title>
+    <title>Simulation loại trừ</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .hidden {
-            display: none;
-        }
-
         .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(255, 255, 255, 0.45);
             border-left-color: #fff;
-            animation: spin 1s ease infinite;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
         }
 
         @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
+            to {
                 transform: rotate(360deg);
             }
         }
 
         .number-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(28px, 1fr));
-            gap: 4px;
+            grid-template-columns: repeat(auto-fill, minmax(34px, 1fr));
+            gap: 6px;
         }
 
-        .number-grid-100 {
-            display: grid;
-            grid-template-columns: repeat(10, 1fr);
-            gap: 3px;
-        }
-
-        .number-item {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: monospace;
-            font-size: 11px;
-            border-radius: 4px;
-            padding: 4px 2px;
-            min-width: 24px;
-            border: 1px solid transparent;
-        }
-
-        .tab-button {
-            border-bottom: 2px solid transparent;
-            color: #6b7280;
-        }
-
-        .tab-button.active {
-            border-bottom-color: #4f46e5;
-            color: #4f46e5;
-            font-weight: 600;
+        .table-wrap {
+            max-height: 680px;
         }
     </style>
 </head>
 
-<body class="antialiased bg-gray-50">
-    <div class="container mx-auto max-w-7xl px-4 py-8">
-        <header class="bg-white shadow-md sticky top-0 z-10 mb-8">
-            <div class="container mx-auto px-4">
-                <div class="flex justify-between items-center py-4">
-                    <a href="/" class="text-2xl font-bold text-gray-800">XSMB Stats</a>
-                    <nav class="flex space-x-2 sm:space-x-4 overflow-x-auto">
-                        <a href="/statistics"
-                            class="text-gray-600 hover:text-blue-500 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium whitespace-nowrap">Thống
-                            kê</a>
-                        <a href="/scoring"
-                            class="text-gray-600 hover:text-blue-500 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium whitespace-nowrap">Tính
-                            điểm</a>
-                        <a href="/simulation"
-                            class="bg-blue-100 text-blue-600 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-semibold whitespace-nowrap">Mô
-                            phỏng</a>
-                        <a href="/settings"
-                            class="text-gray-600 hover:text-blue-500 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium whitespace-nowrap">⚙️</a>
-                    </nav>
-                </div>
-            </div>
-        </header>
-
-        <!-- Tab Navigation -->
-        <div class="bg-white shadow rounded-lg mb-6">
-            <div class="flex border-b">
-                <button id="tabAnalysis" class="tab-button active px-6 py-3 text-sm font-medium"
-                    onclick="switchTab('analysis')">
-                    📊 Phân Tích & Lịch Sử
-                </button>
-                <button id="tabFuture" class="tab-button px-6 py-3 text-sm font-medium" onclick="switchTab('future')">
-                    🔮 Giả Lập Tương Lai
-                </button>
-                <button id="tabBacktest" class="tab-button px-6 py-3 text-sm font-medium"
-                    onclick="switchTab('backtest')">
-                    📈 Backtest Lịch Sử
-                </button>
+<body class="antialiased bg-slate-50 text-slate-900">
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-20">
+        <div class="mx-auto max-w-7xl px-4">
+            <div class="flex items-center justify-between py-4">
+                <a href="/" class="text-xl font-bold tracking-tight text-slate-900">XSMB Stats</a>
+                <nav class="flex gap-2 overflow-x-auto">
+                    <a href="/statistics"
+                        class="px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:bg-slate-100">Thống kê</a>
+                    <a href="/scoring"
+                        class="px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:bg-slate-100">Tính điểm</a>
+                    <a href="/simulation"
+                        class="px-3 py-2 rounded-md text-sm font-semibold bg-blue-50 text-blue-700">Mô phỏng</a>
+                    <a href="/settings"
+                        class="px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:bg-slate-100">Cài đặt</a>
+                </nav>
             </div>
         </div>
+    </header>
 
-        <!-- Tab Content: Phân Tích & Lịch Sử -->
-        <div id="content-analysis">
-            <div class="bg-white p-6 rounded-lg shadow-lg mb-8">
-                <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-3">📊 Phân Tích Chi Tiết</h2>
-                <div id="analysisContent">
-                    <p class="text-gray-500">Đang tải...</p>
+    <main class="mx-auto max-w-7xl px-4 py-8">
+        <section class="mb-6">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                    <p class="text-sm font-semibold uppercase tracking-wide text-blue-700">Backtest phương pháp loại trừ</p>
+                    <h1 class="mt-1 text-3xl font-bold tracking-tight">Simulation theo Tổng hợp dự đoán</h1>
+                    <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+                        Mỗi ngày dùng dữ liệu trước ngày dự đoán để sinh danh sách loại trừ, sau đó đối chiếu với kết quả thực tế.
+                        Ngày nào loại trừ dưới 30 số thì bỏ qua không đánh.
+                    </p>
                 </div>
-            </div>
-            <div class="bg-white p-6 rounded-lg shadow-lg">
-                <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-3">📜 Lịch Sử Đối Chiếu</h2>
-                <div id="historyContent" class="overflow-auto max-h-[600px]">
-                    <p class="text-gray-500">Đang tải...</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tab Content: Giả Lập Tương Lai (Giờ là Giả Lập Gấp Thếp) -->
-        <div id="content-future" class="hidden">
-            <div class="bg-white p-6 rounded-lg shadow-lg mb-6">
-                <h2 class="text-3xl font-bold text-gray-800 mb-4 border-b pb-3">🎯 Giả Lập Gấp Thếp (Dữ Liệu Thực Tế)</h2>
-
-                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
-                    <h3 class="font-bold text-blue-800 mb-2">📌 Cách hoạt động</h3>
-                    <ul class="text-sm text-blue-700 space-y-1">
-                        <li>• Sử dụng <strong>Dữ liệu Xổ Số Thực Tế</strong> để backtest mô phỏng quá trình chơi dài ngày.</li>
-                        <li>• Kết hợp bộ số dư từ Distribution thông qua Logic Loại Trừ hiện tại (dựa vào Cài đặt).</li>
-                        <li>• Chiến thuật <strong>gấp thếp</strong> chủ động: Mỗi ngày thua sẽ tăng cược để gỡ lỗ, khi nào có lãi kỳ vọng sẽ quay về cược cơ bản (10k).</li>
-                        <li>• Những ngày có quá nhiều số rủi ro (< 40 số loại trừ) hệ thống tự động SKIP không đánh để bảo toàn vốn.</li>
-                    </ul>
-                </div>
-
-                <!-- Controls -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Chiến thuật loại trừ:</label>
-                        <select id="futureStrategy" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-                            <option value="standard" selected>Tiêu chuẩn (Exclusion)</option>
-                            <option value="plus">Kỷ lục (Exclusion+)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Số ngày mô phỏng:</label>
-                        <select id="futureDuration" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+                    <label class="block">
+                        <span class="mb-1 block text-sm font-medium text-slate-700">Số ngày</span>
+                        <select id="simulationDays"
+                            class="h-10 w-40 rounded-md border border-slate-300 bg-white px-3 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
                             <option value="7">7 ngày</option>
                             <option value="14">14 ngày</option>
                             <option value="30" selected>30 ngày</option>
@@ -159,119 +77,93 @@
                             <option value="180">180 ngày</option>
                             <option value="365">365 ngày</option>
                         </select>
-                    </div>
-                    <div class="flex items-end">
-                        <button id="btnRunFuture" onclick="runProgressiveSimulation()"
-                            class="w-full px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-lg hover:from-blue-700 hover:to-indigo-700 transition shadow-lg">
-                            🚀 Chạy Mô Phỏng
-                        </button>
-                    </div>
-                    <div class="flex items-end col-span-2">
-                        <div id="futureProgress" class="hidden w-full">
-                            <div class="flex items-center gap-2">
-                                <div class="spinner border-blue-500"></div>
-                                <span class="text-sm text-gray-600">Đang xử lý giả lập (có thể mất thời gian tuỳ vào số ngày)...</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Summary Stats Cards -->
-                <div id="futureSummary" class="hidden mb-6">
-                    <h3 class="text-xl font-bold text-gray-800 mb-4">📈 Tổng Kết Lãi/Lỗ</h3>
-                    <div id="futureSummaryCards" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
-                </div>
-
-                <!-- Detailed Results Table -->
-                <div id="futureResults" class="hidden">
-                    <h3 class="text-xl font-bold text-gray-800 mb-4">📋 Lịch Sử Từng Ngày</h3>
-                    <div class="overflow-auto max-h-[700px]">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50 sticky top-0">
-                                <tr>
-                                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày</th>
-                                    <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ĐB</th>
-                                    <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Mức Cược</th>
-                                    <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tiền Đánh</th>
-                                    <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Lời Lỗ</th>
-                                    <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tổng Lãi Lỗ</th>
-                                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng Thái</th>
-                                </tr>
-                            </thead>
-                            <tbody id="futureResultsTable" class="bg-white divide-y divide-gray-200">
-                            </tbody>
-                        </table>
-                    </div>
+                    </label>
+                    <button id="runSimulation"
+                        class="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-200">
+                        <span id="runSpinner" class="spinner hidden"></span>
+                        <span id="runLabel">Chạy simulation</span>
+                    </button>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <!-- Tab Content: Backtest Lịch Sử -->
-        <div id="content-backtest" class="hidden">
-            <div class="bg-white p-6 rounded-lg shadow-lg mb-6">
-                <h2 class="text-3xl font-bold text-gray-800 mb-4 border-b pb-3">📈 Backtest Trên Dữ Liệu Thực</h2>
+        <section class="mb-6 grid gap-3 md:grid-cols-4" id="configStrip">
+            <div class="rounded-md border border-slate-200 bg-white p-4">
+                <div class="text-xs font-semibold uppercase text-slate-500">Tiền đánh</div>
+                <div class="mt-1 text-2xl font-bold">10K</div>
+                <div class="text-xs text-slate-500">mỗi số</div>
+            </div>
+            <div class="rounded-md border border-slate-200 bg-white p-4">
+                <div class="text-xs font-semibold uppercase text-slate-500">Tỉ lệ ăn</div>
+                <div class="mt-1 text-2xl font-bold">1 ăn 70</div>
+                <div class="text-xs text-slate-500">trúng 1 số</div>
+            </div>
+            <div class="rounded-md border border-slate-200 bg-white p-4">
+                <div class="text-xs font-semibold uppercase text-slate-500">Bỏ qua nếu</div>
+                <div class="mt-1 text-2xl font-bold">&lt; 30</div>
+                <div class="text-xs text-slate-500">số loại trừ</div>
+            </div>
+            <div class="rounded-md border border-slate-200 bg-white p-4">
+                <div class="text-xs font-semibold uppercase text-slate-500">Phương pháp</div>
+                <div class="mt-1 text-2xl font-bold">5</div>
+                <div class="text-xs text-slate-500">dropoff, edge, tổng hợp rủi ro</div>
+            </div>
+        </section>
 
-                <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
-                    <h3 class="font-bold text-green-800 mb-2">📌 Cách hoạt động</h3>
-                    <ul class="text-sm text-green-700 space-y-1">
-                        <li>• Kiểm tra 3 phương pháp <strong>Unified, Advanced, Hybrid AI</strong> trên dữ liệu XỔ SỐ
-                            THỰC</li>
-                        <li>• Mỗi phương pháp chọn <strong>20 số</strong> có xác suất cao nhất</li>
-                        <li>• <strong>Combined</strong> = UNION của 3 phương pháp (~40-60 số)</li>
-                        <li>• Kết quả thể hiện khả năng dự đoán THỰC SỰ của các phương pháp</li>
-                    </ul>
+        <div id="errorBox" class="mb-6 hidden rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700"></div>
+
+        <section id="summarySection" class="mb-6 hidden">
+            <div class="mb-3 flex items-center justify-between">
+                <h2 class="text-lg font-bold">Tổng kết</h2>
+                <div id="generatedInfo" class="text-sm text-slate-500"></div>
+            </div>
+            <div id="summaryCards" class="grid gap-4 lg:grid-cols-2"></div>
+        </section>
+
+        <section id="reliabilitySection" class="mb-6 hidden rounded-md border border-slate-200 bg-white">
+            <div class="border-b border-slate-200 px-4 py-3">
+                <h2 class="text-lg font-bold">Độ tin cậy chuỗi theo toàn bộ lịch sử</h2>
+                <p class="mt-1 text-sm text-slate-500">
+                    Đo dropoff, cỡ mẫu, Wilson lower bound, thời gian diễn ra trung bình và khoảng cách tới hiện tại.
+                </p>
+            </div>
+            <div id="reliabilityContent" class="p-4"></div>
+        </section>
+
+        <section id="detailsSection" class="grid hidden gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
+            <div class="rounded-md border border-slate-200 bg-white">
+                <div class="border-b border-slate-200 px-4 py-3">
+                    <h2 class="text-lg font-bold">Chi tiết từng ngày</h2>
                 </div>
-
-                <!-- Controls -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Số ngày backtest:</label>
-                        <select id="backtestDays"
-                            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500">
-                            <option value="7">7 ngày</option>
-                            <option value="14">14 ngày</option>
-                            <option value="30" selected>30 ngày</option>
-                            <option value="60">60 ngày</option>
-                            <option value="90">90 ngày</option>
-                            <option value="180">180 ngày</option>
-                            <option value="365">365 ngày</option>
-                        </select>
-                    </div>
-                    <div class="flex items-end">
-                        <button id="btnRunBacktest" onclick="runBacktest()"
-                            class="w-full px-6 py-2 bg-gradient-to-r from-green-600 to-teal-600 text-white font-bold rounded-lg hover:from-green-700 hover:to-teal-700 transition shadow-lg">
-                            🔍 Chạy Backtest
-                        </button>
-                    </div>
-                    <div class="flex items-end">
-                        <div id="backtestProgress" class="hidden w-full">
-                            <div class="flex items-center gap-2">
-                                <div class="spinner border-green-500"></div>
-                                <span class="text-sm text-gray-600">Đang chạy backtest...</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Summary Cards -->
-                <div id="backtestSummary" class="hidden">
-                    <h3 class="text-xl font-bold text-gray-800 mb-4">📊 So Sánh Phương Pháp</h3>
-                    <div id="backtestSummaryCards" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-                    </div>
-                </div>
-
-                <!-- Detailed Results -->
-                <div id="backtestResults" class="hidden">
-                    <h3 class="text-xl font-bold text-gray-800 mb-4">📋 Chi Tiết Từng Ngày</h3>
-                    <div id="backtestResultsTable" class="overflow-auto max-h-[500px]"></div>
+                <div class="table-wrap overflow-auto">
+                    <table class="min-w-full divide-y divide-slate-200 text-sm">
+                        <thead class="sticky top-0 bg-slate-100 text-left text-xs font-semibold uppercase text-slate-600">
+                            <tr>
+                                <th class="px-4 py-3">Ngày dự đoán</th>
+                                <th class="px-4 py-3 text-center">ĐB</th>
+                                <th class="px-4 py-3">Dropoff 85%</th>
+                                <th class="px-4 py-3">Edge 85%</th>
+                                <th class="px-4 py-3">Ưu tiên trúng 40-50</th>
+                                <th class="px-4 py-3">Xếp hạng 60-70</th>
+                                <th class="px-4 py-3">Tổng hợp rủi ro 30</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detailsTable" class="divide-y divide-slate-200 bg-white"></tbody>
+                    </table>
                 </div>
             </div>
-        </div>
 
-        <footer class="bg-gray-800 text-white text-center p-4 mt-8">
-            <p>&copy; <script>document.write(new Date().getFullYear())</script> XSMB Stats.</p>
-        </footer>
-    </div>
+            <aside class="rounded-md border border-slate-200 bg-white">
+                <div class="border-b border-slate-200 px-4 py-3">
+                    <h2 class="text-lg font-bold">Dự đoán được chọn</h2>
+                </div>
+                <div id="methodDetail" class="p-4 text-sm text-slate-600">
+                    Chọn một ô kết quả để xem chuỗi và các số loại trừ.
+                </div>
+            </aside>
+        </section>
+    </main>
+
     <script src="/js/app-config.js"></script>
     <script src="/js/simulation-client.js"></script>
 </body>

@@ -220,6 +220,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         return `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}/${dt.getFullYear()}`;
     };
 
+    const formatMetric = (value, suffix = '') => {
+        if (value === null || value === undefined || value === '' || !Number.isFinite(Number(value))) return '-';
+        return `${Number(value).toLocaleString('vi-VN')}${suffix}`;
+    };
+
+    const reliabilityBadgeClass = (score) => {
+        const value = Number(score || 0);
+        if (value >= 75) return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+        if (value >= 60) return 'bg-blue-100 text-blue-800 border-blue-200';
+        if (value >= 45) return 'bg-amber-100 text-amber-800 border-amber-200';
+        return 'bg-red-100 text-red-800 border-red-200';
+    };
+
+    const reliabilityLabel = (score) => {
+        const value = Number(score || 0);
+        if (value >= 75) return 'cao';
+        if (value >= 60) return 'khá';
+        if (value >= 45) return 'vừa';
+        return 'mỏng';
+    };
+
     const renderRecentResults = () => {
         let container = document.getElementById('recent-results-selector');
 
@@ -652,18 +673,62 @@ document.addEventListener('DOMContentLoaded', async () => {
                             : 'Tổng Hợp Dự Đoán';
                     }
                     predSummaryCount.textContent = `(${predItems.length} chuỗi)`;
-                    let predHtml = `<div class="overflow-x-auto"><table class="min-w-full text-xs text-left text-gray-500">
+                    const reliabilityItems = predItems.map(item => ({
+                        ...item,
+                        reliability: item.streak.reliability || null
+                    }));
+                    const reliabilityScores = reliabilityItems
+                        .map(item => item.reliability && Number(item.reliability.score))
+                        .filter(score => Number.isFinite(score));
+                    const avgReliability = reliabilityScores.length > 0
+                        ? Math.round(reliabilityScores.reduce((sum, score) => sum + score, 0) / reliabilityScores.length)
+                        : 0;
+                    const strongReliabilityCount = reliabilityScores.filter(score => score >= 70).length;
+                    const thinReliabilityCount = reliabilityScores.filter(score => score < 45).length;
+                    const yearsText = Number.isFinite(Number(totalYears)) ? totalYears.toFixed(1) : '20+';
+
+                    let predHtml = `
+                        <div class="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
+                            <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                                <div>
+                                    <div class="font-bold"><i class="bi bi-shield-check mr-1"></i>Độ tin cậy lịch sử của toàn bộ chuỗi dự đoán</div>
+                                    <div class="mt-1 text-xs leading-5 text-blue-700">
+                                        Tính trên ${yearsText} năm dữ liệu: Wilson lower bound + cỡ mẫu + độ gần hiện tại + nhịp xuất hiện trung bình. Lower giúp tránh ảo giác khi mẫu quá ít.
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                                    <div class="rounded-md bg-white/80 px-3 py-2 border border-blue-100">
+                                        <div class="text-lg font-bold text-blue-800">${avgReliability}</div>
+                                        <div class="text-blue-600">Tin cậy TB</div>
+                                    </div>
+                                    <div class="rounded-md bg-white/80 px-3 py-2 border border-blue-100">
+                                        <div class="text-lg font-bold text-emerald-700">${strongReliabilityCount}</div>
+                                        <div class="text-blue-600">Chuỗi mạnh</div>
+                                    </div>
+                                    <div class="rounded-md bg-white/80 px-3 py-2 border border-blue-100">
+                                        <div class="text-lg font-bold text-red-700">${thinReliabilityCount}</div>
+                                        <div class="text-blue-600">Mẫu mỏng</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto"><table class="min-w-full text-xs text-left text-gray-500">
                         <thead class="text-xs text-gray-700 uppercase bg-amber-50">
                             <tr>
                                 <th class="px-3 py-2">Dạng chuỗi</th>
                                 <th class="px-3 py-2 text-center">Độ dài</th>
                                 <th class="px-3 py-2 text-center">Tỷ lệ gãy</th>
+                                <th class="px-3 py-2 text-center">Tin cậy</th>
+                                <th class="px-3 py-2 text-center">Lower</th>
                                 <th class="px-3 py-2 text-center">SL đạt</th>
                                 <th class="px-3 py-2 text-center">SL tiếp tục</th>
+                                <th class="px-3 py-2 text-center">TB dài</th>
+                                <th class="px-3 py-2 text-center">TB cách</th>
+                                <th class="px-3 py-2 text-center">Gần nhất</th>
                                 <th class="px-3 py-2">Số dự đoán</th>
                             </tr>
                         </thead><tbody>`;
-                    predItems.forEach(({ streak, streakLen, dropOffRate, nextLen, currentCount, nextCount, formFrequencyPerYear }) => {
+                    reliabilityItems.forEach(({ streak, streakLen, dropOffRate, nextLen, currentCount, nextCount, formFrequencyPerYear, reliability }) => {
                         const riskColor = dropOffRate >= 0.90 ? 'text-purple-700 font-bold' : dropOffRate >= 0.70 ? 'text-red-600 font-bold' : dropOffRate >= 0.50 ? 'text-orange-600 font-semibold' : 'text-gray-600';
                         const rowBg = dropOffRate >= 0.90 ? 'bg-purple-50' : dropOffRate >= 0.70 ? 'bg-red-50' : dropOffRate >= 0.50 ? 'bg-orange-50' : 'bg-white';
                         const nums = streak.patternNumbers && streak.patternNumbers.length > 0
@@ -676,12 +741,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                         const currentCountLabel = streak.isPotential
                             ? `<div>${currentCount}</div><div class="text-[9px] text-gray-500">${formFrequencyPerYear.toFixed(1)}/năm</div>`
                             : currentCount;
+                        const reliabilityScore = reliability ? reliability.score : null;
+                        const reliabilityHtml = reliability
+                            ? `<div class="inline-flex min-w-12 justify-center rounded border px-2 py-1 text-[11px] font-bold ${reliabilityBadgeClass(reliabilityScore)}">${reliabilityScore}</div><div class="text-[9px] text-gray-500 mt-0.5">${reliabilityLabel(reliabilityScore)}</div>`
+                            : '<span class="text-gray-400">-</span>';
+                        const lowerHtml = reliability
+                            ? `<div class="font-semibold">${formatMetric(reliability.lowerBoundPercent, '%')}</div><div class="text-[9px] text-gray-500">mẫu ${formatMetric(reliability.sampleSize)}</div>`
+                            : '<span class="text-gray-400">-</span>';
                         predHtml += `<tr class="${rowBg} border-b hover:bg-gray-50">
                             <td class="px-3 py-2 font-medium text-gray-900">${streak.description}${potentialLabel}</td>
                             <td class="px-3 py-2 text-center">${streakLen}d${streak.isPotential ? '<span class="text-[9px] text-orange-500"> ↗</span>' : ''}</td>
                             <td class="px-3 py-2 text-center">${dropOffLabel}</td>
+                            <td class="px-3 py-2 text-center">${reliabilityHtml}</td>
+                            <td class="px-3 py-2 text-center">${lowerHtml}</td>
                             <td class="px-3 py-2 text-center">${currentCountLabel}</td>
                             <td class="px-3 py-2 text-center">${nextCount}</td>
+                            <td class="px-3 py-2 text-center">${reliability ? formatMetric(reliability.avgLength, 'd') : '-'}</td>
+                            <td class="px-3 py-2 text-center">${reliability ? formatMetric(reliability.avgGapDays, 'd') : '-'}</td>
+                            <td class="px-3 py-2 text-center">${reliability ? formatMetric(reliability.daysSinceLatestEnd, 'd') : '-'}</td>
                             <td class="px-3 py-2"><div class="flex flex-wrap gap-0.5">${nums}</div></td>
                         </tr>`;
                     });

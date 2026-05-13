@@ -1,818 +1,432 @@
 // public/js/simulation-client.js
-document.addEventListener('DOMContentLoaded', () => {
-    // --- KHAI BÁO BIẾN ---
-    const analysisContent = document.getElementById('analysisContent');
-    const historyContent = document.getElementById('historyContent');
 
-    // --- HÀM KHỞI TẠO ---
-    async function initializePage() {
-        await loadLatestAnalysis();
-        await loadPredictionHistory();
-    }
-
-    // --- LOGIC CHO TAB 1: PHÂN TÍCH & LỊCH SỬ ---
-    async function loadLatestAnalysis() {
-        try {
-            const analysisRes = await fetch('/api/analysis/latest');
-
-            if (!analysisRes.ok) {
-                const err = await analysisRes.json();
-                throw new Error(err.error || 'Lỗi không xác định');
-            }
-
-            const data = await analysisRes.json();
-            if (data && data.danh) {
-                renderAnalysis(data);
-            } else {
-                // No predictions available yet - show informational message
-                analysisContent.innerHTML = `
-                    <div class="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 rounded-r-lg">
-                        <p class="font-bold">Chưa có dữ liệu phân tích</p>
-                        <p>${data?.message || 'Dữ liệu dự đoán sẽ được cập nhật tự động. Vui lòng sử dụng tab Giả lập để chạy phân tích.'}</p>
-                        ${data?.latestDate ? `<p class="text-sm mt-2">Dữ liệu mới nhất: <strong>${data.latestDate}</strong></p>` : ''}
-                    </div>`;
-            }
-        } catch (error) {
-            console.error('[DEBUG] Error loading analysis:', error);
-            analysisContent.innerHTML = `<p class="text-red-500">Lỗi tải phân tích: ${error.message}</p>`;
-        }
-    }
-
-    async function loadPredictionHistory() {
-        try {
-            const response = await fetch('/api/analysis/history');
-            if (!response.ok) { const err = await response.json(); throw new Error(err.error || 'Lỗi không xác định'); }
-            const data = await response.json();
-            // API returns { predictions: [...] }, extract the array
-            const historyArray = Array.isArray(data) ? data : (data.predictions || []);
-            renderHistory(historyArray.reverse());
-        } catch (error) {
-            historyContent.innerHTML = `<p class="text-red-500">Lỗi tải lịch sử: ${error.message}</p>`;
-        }
-    }
-
-    // Helper: Render 100 số với highlight
-    function render100Numbers(betNumbers, excludeNumbers, colorClass, excludeClass = 'bg-red-200 text-red-800 border-red-400') {
-        const betSet = new Set(betNumbers || []);
-        const excludeSet = new Set((excludeNumbers || []).map(n => String(n).padStart(2, '0')));
-
-        let html = '';
-        for (let i = 0; i < 100; i++) {
-            const num = String(i).padStart(2, '0');
-            let className = 'number-item ';
-
-            if (betSet.has(num)) {
-                className += colorClass + ' font-bold';
-            } else if (excludeSet.has(num)) {
-                className += excludeClass + ' opacity-60';
-            } else {
-                className += 'bg-gray-100 text-gray-400 border-gray-200';
-            }
-
-            html += `<div class="${className}">${num}</div>`;
-        }
-        return html;
-    }
-
-    function renderExplanationsUI(explanations) {
-        if (!explanations || explanations.length === 0) return '';
-        
-        let achievedNums = [];
-        let achievedSuperNums = [];
-        let thresholdNums = [];
-        let superThresholdNums = [];
-
-        explanations.forEach(exp => {
-            const reason = (exp.reason || exp.explanation || '').toLowerCase();
-            const nums = (exp.numbers || []).map(n => parseInt(n));
-            if (reason.includes('đạt siêu kl') || reason.includes('đạt siêu kỷ lục')) {
-                achievedSuperNums.push(...nums);
-            } else if (reason.includes('tới hạn siêu kl') || reason.includes('tới hạn siêu kỷ lục')) {
-                superThresholdNums.push(...nums);
-            } else if (reason.includes('đạt kỷ lục') || reason.includes('đạt kl')) {
-                achievedNums.push(...nums);
-            } else if (reason.includes('tới hạn kỷ lục') || reason.includes('tới hạn kl')) {
-                thresholdNums.push(...nums);
-            }
-        });
-
-        achievedNums = [...new Set(achievedNums)];
-        achievedSuperNums = [...new Set(achievedSuperNums)];
-        thresholdNums = [...new Set(thresholdNums)];
-        superThresholdNums = [...new Set(superThresholdNums)];
-
-        const subTierDefs = [
-            {
-                name: '🔴 Đạt Kỷ Lục', key: 'achieved', nums: achievedNums,
-                colorStyle: 'color:#dc2626', bgStyle: 'background:rgba(220,38,38,0.1); border-color:#dc2626'
-            },
-            {
-                name: '🟠 Tới Hạn Kỷ Lục', key: 'threshold', nums: thresholdNums,
-                colorStyle: 'color:#f97316', bgStyle: 'background:rgba(249,115,22,0.1); border-color:#f97316'
-            },
-            {
-                name: '🟡 Đạt Siêu KL', key: 'achievedSuper', nums: achievedSuperNums,
-                colorStyle: 'color:#7c3aed', bgStyle: 'background:rgba(124,58,237,0.15); border-color:#7c3aed'
-            },
-            {
-                name: '🟣 Tới Hạn Siêu KL', key: 'superThreshold', nums: superThresholdNums,
-                colorStyle: 'color:#a855f7', bgStyle: 'background:rgba(168,85,247,0.1); border-color:#a855f7'
-            }
-        ];
-
-        let tierHtml = '<div class="mt-3 space-y-2">';
-        for (const st of subTierDefs) {
-            if (st.nums.length > 0) {
-                tierHtml += `
-                    <div class="border-l-4 rounded-r-lg p-2" style="${st.bgStyle}">
-                        <div class="flex items-center justify-between mb-1">
-                            <span class="font-bold text-xs" style="${st.colorStyle}">${st.name} (${st.nums.length} số)</span>
-                        </div>
-                        <div class="flex flex-wrap gap-1">
-                            ${st.nums.map(n => `<span class="px-1 py-0.5 rounded text-[10px] font-medium" style="${st.colorStyle}; background:rgba(0,0,0,0.05); border: 1px solid">${String(n).padStart(2, '0')}</span>`).join('')}
-                        </div>
-                    </div>
-                `;
-            }
-        }
-        tierHtml += '</div>';
-        return tierHtml;
-    }
-
-    function renderAnalysis(data) {
-        if (!data || !data.danh) {
-            analysisContent.innerHTML = `<p class="text-red-500">Lỗi: Dữ liệu phân tích không hợp lệ.</p>`;
-            return;
-        }
-        const { date, danh, betAmount, danhUnified, betAmountUnified, danhAdvanced, betAmountAdvanced, danhHybrid, betAmountHybrid, danhCombined, betAmountCombined, danhSmart, betAmountSmart, danhStreak, betAmountStreak } = data;
-        const [year, month, day] = date.split('-');
-        const formattedDate = new Date(Date.UTC(year, month - 1, day)).toLocaleDateString('vi-VN');
-
-        // Chuẩn bị dữ liệu
-        const exclusionBet = danh.numbers || [];
-        const exclusionExclude = danh.excluded || [];
-        const unifiedBet = danhUnified?.numbers || [];
-        const unifiedExclude = danhUnified?.excluded || [];
-        const advancedBet = danhAdvanced?.numbers || [];
-        const advancedExclude = danhAdvanced?.excluded || [];
-        const hybridBet = danhHybrid?.numbers || [];
-        const hybridExclude = danhHybrid?.excluded || [];
-        const combinedBet = danhCombined?.numbers || [];
-        const combinedExclude = danhCombined?.excluded || [];
-        const smartBet = danhSmart?.numbers || [];
-        const smartExclude = danhSmart?.excluded || [];
-        const streakBet = danhStreak?.numbers || [];
-        const streakExclude = danhStreak?.excluded || [];
-
-        let html = `
-            <div class="mb-6">
-                <p class="text-sm text-gray-600 mb-1">Dự đoán cho ngày: <span class="font-bold text-2xl text-blue-600">${formattedDate}</span></p>
-                <p class="text-xs text-gray-500 mt-1">🟢 Số đánh (highlight màu) | 🔴 Số loại trừ (đỏ) | ⚪ Số khác (xám)</p>
-            </div>
-            
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <!-- METHOD 1: EXCLUSION -->
-                <div class="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
-                    <a href="/distribution#exclusion" class="text-lg font-bold text-blue-800 mb-3 block hover:underline">
-                        📊 1. Exclusion <i class="bi bi-box-arrow-up-right text-xs"></i>
-                    </a>
-                    <p class="text-xs text-gray-500 mb-2">Loại trừ theo Chuỗi + Gap (tier: đỏ, tím, cam)</p>
-                    <div class="flex justify-between items-center mb-3">
-                        <span class="text-sm text-gray-600">Cược: <span class="font-bold text-blue-600">${(betAmount || 0).toLocaleString()}k/số</span></span>
-                        <span class="text-xs"><span class="text-green-600 font-bold">${exclusionBet.length}</span> đánh | <span class="text-red-600">${exclusionExclude.length}</span> loại trừ</span>
-                    </div>
-                    <div class="number-grid-100 p-2 bg-white rounded-lg">
-                        ${render100Numbers(exclusionBet, exclusionExclude, 'bg-blue-300 text-blue-900 border-blue-500')}
-                    </div>
-                    ${renderExplanationsUI(danh.explanations || [])}
-                </div>
-                
-                <!-- METHOD 2: UNIFIED -->
-                <div class="bg-green-50 p-4 rounded-lg border-2 border-green-200">
-                    <a href="/distribution#unified" class="text-lg font-bold text-green-800 mb-3 block hover:underline">
-                        🌟 2. Unified (6 methods) <i class="bi bi-box-arrow-up-right text-xs"></i>
-                    </a>
-                    <p class="text-xs text-gray-500 mb-2">Gap, Streak, Exclusion, Yearly, Day, Recent</p>
-                    <div class="flex justify-between items-center mb-3">
-                        <span class="text-sm text-gray-600">Cược: <span class="font-bold text-green-600">${(betAmountUnified || 10).toLocaleString()}k/số</span></span>
-                        <span class="text-xs"><span class="text-green-600 font-bold">${unifiedBet.length}</span> đánh | <span class="text-red-600">${unifiedExclude.length}</span> loại trừ</span>
-                    </div>
-                    <div class="number-grid-100 p-2 bg-white rounded-lg">
-                        ${render100Numbers(unifiedBet, unifiedExclude, 'bg-green-300 text-green-900 border-green-500')}
-                    </div>
-                </div>
-                
-                <!-- METHOD 3: ADVANCED -->
-                <div class="bg-purple-50 p-4 rounded-lg border-2 border-purple-200">
-                    <a href="/distribution#advanced" class="text-lg font-bold text-purple-800 mb-3 block hover:underline">
-                        🔬 3. Advanced (13 methods) <i class="bi bi-box-arrow-up-right text-xs"></i>
-                    </a>
-                    <p class="text-xs text-gray-500 mb-2">Chi-Square, Z-Score, Poisson, Bayesian...</p>
-                    <div class="flex justify-between items-center mb-3">
-                        <span class="text-sm text-gray-600">Cược: <span class="font-bold text-purple-600">${(betAmountAdvanced || 10).toLocaleString()}k/số</span></span>
-                        <span class="text-xs"><span class="text-green-600 font-bold">${advancedBet.length}</span> đánh | <span class="text-red-600">${advancedExclude.length}</span> loại trừ</span>
-                    </div>
-                    <div class="number-grid-100 p-2 bg-white rounded-lg">
-                        ${render100Numbers(advancedBet, advancedExclude, 'bg-purple-300 text-purple-900 border-purple-500')}
-                    </div>
-                </div>
-                
-                <!-- METHOD 4: HYBRID AI -->
-                <div class="bg-orange-50 p-4 rounded-lg border-2 border-orange-200">
-                    <a href="/distribution#hybrid" class="text-lg font-bold text-orange-800 mb-3 block hover:underline">
-                        🤖 4. Hybrid AI <i class="bi bi-box-arrow-up-right text-xs"></i>
-                    </a>
-                    <p class="text-xs text-gray-500 mb-2">Markov, Monte Carlo, ARIMA, Pattern</p>
-                    <div class="flex justify-between items-center mb-3">
-                        <span class="text-sm text-gray-600">Cược: <span class="font-bold text-orange-600">${(betAmountHybrid || 10).toLocaleString()}k/số</span></span>
-                        <span class="text-xs"><span class="text-green-600 font-bold">${hybridBet.length}</span> đánh | <span class="text-red-600">${hybridExclude.length}</span> loại trừ</span>
-                    </div>
-                    <div class="number-grid-100 p-2 bg-white rounded-lg">
-                        ${render100Numbers(hybridBet, hybridExclude, 'bg-orange-300 text-orange-900 border-orange-500')}
-                    </div>
-                </div>
-                
-                <!-- METHOD 5: COMBINED -->
-                <div class="bg-pink-50 p-4 rounded-lg border-2 border-pink-200">
-                    <a href="/distribution#combined" class="text-lg font-bold text-pink-800 mb-3 block hover:underline">
-                        🔗 5. Combined (Tổng hợp) <i class="bi bi-box-arrow-up-right text-xs"></i>
-                    </a>
-                    <p class="text-xs text-gray-500 mb-2">Tổng hợp cả 4 phương pháp trên (loại trùng)</p>
-                    <div class="flex justify-between items-center mb-3">
-                        <span class="text-sm text-gray-600">Cược: <span class="font-bold text-pink-600">${(betAmountCombined || 10).toLocaleString()}k/số</span></span>
-                        <span class="text-xs"><span class="text-green-600 font-bold">${combinedBet.length}</span> đánh | <span class="text-red-600">${combinedExclude.length}</span> loại trừ</span>
-                    </div>
-                    <div class="number-grid-100 p-2 bg-white rounded-lg">
-                        ${render100Numbers(combinedBet, combinedExclude, 'bg-pink-300 text-pink-900 border-pink-500')}
-                    </div>
-                </div>
-
-                <!-- METHOD 6: EXCLUSION + -->
-                <div class="bg-yellow-50 p-4 rounded-lg border-2 border-yellow-200">
-                    <div class="text-lg font-bold text-yellow-800 mb-3 block">
-                        ⚡ 6. Exclusion + (Kỷ lục)
-                    </div>
-                    <p class="text-xs text-gray-500 mb-2">Chỉ đánh số sau khi loại trừ “Đạt kỷ lục” và “Tới hạn siêu kỷ lục” (chỉ RED+PURPLE)</p>
-                    <div class="flex justify-between items-center mb-3">
-                        <span class="text-sm text-gray-600">Cược: <span class="font-bold text-yellow-600">${(betAmountSmart || 10).toLocaleString()}k/số</span></span>
-                        <span class="text-xs"><span class="text-green-600 font-bold">${smartBet.length}</span> đánh | <span class="text-red-600">${smartExclude.length}</span> loại trừ</span>
-                    </div>
-                    <div class="number-grid-100 p-2 bg-white rounded-lg">
-                        ${render100Numbers(smartBet, smartExclude, 'bg-yellow-300 text-yellow-900 border-yellow-500')}
-                    </div>
-                </div>
-
-                <!-- METHOD 7: STREAK DROP-OFF -->
-                <div class="bg-teal-50 p-4 rounded-lg border-2 border-teal-200">
-                    <div class="text-lg font-bold text-teal-800 mb-3 block">
-                        🎯 7. Streak Drop-off
-                    </div>
-                    <p class="text-xs text-gray-500 mb-2">Loại trừ theo tỷ lệ gãy chuỗi (drop-off rate) từ gapStats</p>
-                    <div class="flex justify-between items-center mb-3">
-                        <span class="text-sm text-gray-600">Cược: <span class="font-bold text-teal-600">${(betAmountStreak || 10).toLocaleString()}k/số</span></span>
-                        <span class="text-xs"><span class="text-green-600 font-bold">${streakBet.length}</span> đánh | <span class="text-red-600">${streakExclude.length}</span> loại trừ</span>
-                    </div>
-                    <div class="number-grid-100 p-2 bg-white rounded-lg">
-                        ${render100Numbers(streakBet, streakExclude, 'bg-teal-300 text-teal-900 border-teal-500')}
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Comparison note -->
-            <div class="mt-4 p-3 bg-gray-100 rounded-lg text-sm text-gray-600">
-                <strong>💡 Ghi chú:</strong> So sánh 7 phương pháp song song. Combined tổng hợp cả 4 phương pháp khác (tối đa 60 số). <strong>Exclusion +</strong> chỉ dùng loại trừ kỷ lục RED+PURPLE từ Distribution. <strong>Streak Drop-off</strong> loại trừ số có tỷ lệ gãy cao nhất theo gapStats.
-            </div>
-        `;
-
-        analysisContent.innerHTML = html;
-    }
-
-    function renderHistory(historyData) {
-        if (historyData.length === 0) {
-            historyContent.innerHTML = `<p class="text-gray-500">Chưa có lịch sử đối chiếu.</p>`;
-            return;
-        }
-
-        // Totals for 6 methods
-        let stats = {
-            exclusion: { totalBet: 0, totalWin: 0, winDays: 0, loseDays: 0, skipDays: 0 },
-            unified: { totalBet: 0, totalWin: 0, winDays: 0, loseDays: 0, skipDays: 0 },
-            advanced: { totalBet: 0, totalWin: 0, winDays: 0, loseDays: 0, skipDays: 0 },
-            hybrid: { totalBet: 0, totalWin: 0, winDays: 0, loseDays: 0, skipDays: 0 },
-            combined: { totalBet: 0, totalWin: 0, winDays: 0, loseDays: 0, skipDays: 0 },
-            exclusionPlus: { totalBet: 0, totalWin: 0, winDays: 0, loseDays: 0, skipDays: 0 },
-            streak: { totalBet: 0, totalWin: 0, winDays: 0, loseDays: 0, skipDays: 0 }
-        };
-
-        let tableHtml = `<table class="w-full text-xs text-left">
-            <thead class="bg-gray-100 sticky top-0">
-                <tr>
-                    <th class="p-2" rowspan="2">Ngày</th>
-                    <th class="p-2 text-center" rowspan="2">Số Về</th>
-                    <th class="p-2 text-center bg-blue-50 border-l-2 border-blue-300" colspan="3">📊 Exclusion</th>
-                    <th class="p-2 text-center bg-green-50 border-l-2 border-green-300" colspan="3">🌟 Unified</th>
-                    <th class="p-2 text-center bg-purple-50 border-l-2 border-purple-300" colspan="3">🔬 Advanced</th>
-                    <th class="p-2 text-center bg-orange-50 border-l-2 border-orange-300" colspan="3">🤖 Hybrid AI</th>
-                    <th class="p-2 text-center bg-pink-50 border-l-2 border-pink-300" colspan="3">🔗 Combined</th>
-                    <th class="p-2 text-center bg-yellow-50 border-l-2 border-yellow-300" colspan="3">⚡ Exclusion +</th>
-                    <th class="p-2 text-center bg-teal-50 border-l-2 border-teal-300" colspan="3">🎯 Streak</th>
-                </tr>
-                <tr class="text-[10px]">
-                    <th class="p-1 text-center bg-blue-50 border-l-2 border-blue-300">Đánh</th>
-                    <th class="p-1 text-right bg-blue-50">Lãi/Lỗ</th>
-                    <th class="p-1 text-center bg-blue-50">W/L</th>
-                    <th class="p-1 text-center bg-green-50 border-l-2 border-green-300">Đánh</th>
-                    <th class="p-1 text-right bg-green-50">Lãi/Lỗ</th>
-                    <th class="p-1 text-center bg-green-50">W/L</th>
-                    <th class="p-1 text-center bg-purple-50 border-l-2 border-purple-300">Đánh</th>
-                    <th class="p-1 text-right bg-purple-50">Lãi/Lỗ</th>
-                    <th class="p-1 text-center bg-purple-50">W/L</th>
-                    <th class="p-1 text-center bg-orange-50 border-l-2 border-orange-300">Đánh</th>
-                    <th class="p-1 text-right bg-orange-50">Lãi/Lỗ</th>
-                    <th class="p-1 text-center bg-orange-50">W/L</th>
-                    <th class="p-1 text-center bg-pink-50 border-l-2 border-pink-300">Đánh</th>
-                    <th class="p-1 text-right bg-pink-50">Lãi/Lỗ</th>
-                    <th class="p-1 text-center bg-pink-50">W/L</th>
-                    <th class="p-1 text-center bg-yellow-50 border-l-2 border-yellow-300">Đánh</th>
-                    <th class="p-1 text-right bg-yellow-50">Lãi/Lỗ</th>
-                    <th class="p-1 text-center bg-yellow-50">W/L</th>
-                    <th class="p-1 text-center bg-teal-50 border-l-2 border-teal-300">Đánh</th>
-                    <th class="p-1 text-right bg-teal-50">Lãi/Lỗ</th>
-                    <th class="p-1 text-center bg-teal-50">W/L</th>
-                </tr>
-            </thead>
-            <tbody>`;
-
-        for (const item of historyData) {
-            const [year, month, day] = item.date.split('-');
-            const date = new Date(Date.UTC(year, month - 1, day)).toLocaleDateString('vi-VN');
-            const winNumDisplay = item.result?.winningNumber
-                ? `<span class="font-mono bg-yellow-100 text-yellow-800 rounded px-1">${item.result.winningNumber}</span>`
-                : `<span class="text-yellow-600 font-semibold">⏳</span>`;
-
-            let exclusionHtml = renderMethodCell(item, 'exclusion', 'blue', stats.exclusion);
-            let unifiedHtml = renderMethodCell(item, 'unified', 'green', stats.unified);
-            let advancedHtml = renderMethodCell(item, 'advanced', 'purple', stats.advanced);
-            let hybridHtml = renderMethodCell(item, 'hybrid', 'orange', stats.hybrid);
-            let combinedHtml = renderMethodCell(item, 'combined', 'pink', stats.combined);
-            let exclusionPlusHtml = renderMethodCell(item, 'exclusionPlus', 'yellow', stats.exclusionPlus);
-            let streakHtml = renderMethodCell(item, 'streak', 'teal', stats.streak);
-
-            tableHtml += `<tr class="border-b hover:bg-gray-50">
-                <td class="p-1 font-medium">${date}</td>
-                <td class="p-1 text-center">${winNumDisplay}</td>
-                ${exclusionHtml}
-                ${unifiedHtml}
-                ${advancedHtml}
-                ${hybridHtml}
-                ${combinedHtml}
-                ${exclusionPlusHtml}
-                ${streakHtml}
-            </tr>`;
-        }
-        tableHtml += `</tbody></table>`;
-
-        // Summary for all methods
-        let summaryHtml = renderSummary(stats);
-        historyContent.innerHTML = tableHtml + summaryHtml;
-    }
-
-    function renderMethodCell(item, method, color, totals) {
-        // Map method key sang field name trong data
-        // 'smart' hoặc 'exclusionPlus' đều map sang danhSmart/resultSmart
-        const fieldMethod = (method === 'exclusionPlus') ? 'smart' : method;
-        const danhKey = fieldMethod === 'exclusion' ? 'danh'
-            : `danh${fieldMethod.charAt(0).toUpperCase() + fieldMethod.slice(1)}`;
-        const resultKey = fieldMethod === 'exclusion' ? 'result'
-            : `result${fieldMethod.charAt(0).toUpperCase() + fieldMethod.slice(1)}`;
-
-        const result = item[resultKey];
-        const danh = item[danhKey];
-        const numCount = danh?.numbers?.length || 0;
-
-        // Kiểm tra skip: từ danh.isSkipped (chưa có kết quả) hoặc result.skipped (đã có kết quả)
-        const isSkipped = danh?.isSkipped || (result && result.skipped);
-        if (isSkipped) {
-            if (totals && result?.winningNumber) totals.skipDays++;
-            return `
-                <td class="p-1 text-center bg-${color}-50 border-l-2 border-${color}-300">
-                    <span class="text-gray-400 text-[10px]">—</span>
-                </td>
-                <td class="p-1 text-center bg-${color}-50 text-gray-400 text-[10px]" colspan="2">Bỏ qua (&gt;65)</td>
-            `;
-        }
-
-        if (result && result.winningNumber) {
-            const winNum = result.winningNumber;
-            const isWin = result.isWin || danh?.numbers?.includes(winNum);
-            const profit = result.profit || 0;
-
-            totals.totalBet += result.totalBet || 0;
-            totals.totalWin += result.winAmount || 0;
-            if (isWin) totals.winDays++; else totals.loseDays++;
-
-            return `
-                <td class="p-1 text-center bg-${color}-50 border-l-2 border-${color}-300">
-                    <details class="cursor-pointer"><summary class="text-${color}-600">${numCount}</summary>
-                        <div class="number-grid p-1 mt-1 bg-white rounded max-w-xs text-[9px]">
-                            ${danh?.numbers?.map(n => `<span class="${n === winNum ? 'bg-green-500 text-white font-bold px-1 rounded' : ''}">${n}</span>`).join(' ') || '-'}
-                        </div>
-                    </details>
-                </td>
-                <td class="p-1 text-right bg-${color}-50 font-semibold ${profit >= 0 ? 'text-green-600' : 'text-red-600'}">${Math.round(profit).toLocaleString()}k</td>
-                <td class="p-1 text-center bg-${color}-50">${isWin ? '\u2705' : '\u274c'}</td>
-            `;
-        } else if (danh && danh.numbers && danh.numbers.length > 0) {
-            return `
-                <td class="p-1 text-center bg-${color}-50 border-l-2 border-${color}-300">${numCount}</td>
-                <td class="p-1 text-center bg-${color}-50 text-gray-400" colspan="2">⏳</td>
-            `;
-        } else {
-            return `<td class="p-1 text-center bg-${color}-50 border-l-2 border-${color}-300" colspan="3"><span class="text-gray-400">-</span></td>`;
-        }
-    }
-
-    function renderSummary(stats) {
-        const methods = [
-            { key: 'exclusion', name: '📊 Exclusion', color: 'blue' },
-            { key: 'unified', name: '🌟 Unified', color: 'green' },
-            { key: 'advanced', name: '🔬 Advanced', color: 'purple' },
-            { key: 'hybrid', name: '🤖 Hybrid AI', color: 'orange' },
-            { key: 'combined', name: '🔗 Combined', color: 'pink' },
-            { key: 'exclusionPlus', name: '⚡ Exclusion +', color: 'yellow' },
-            { key: 'streak', name: '🎯 Streak', color: 'teal' }
-        ];
-
-        let summaryHtml = `<div class="mt-4 grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-3">`;
-
-        for (const m of methods) {
-            const s = stats[m.key];
-            const profit = s.totalWin - s.totalBet;
-            const winRate = s.winDays + s.loseDays > 0 ? ((s.winDays / (s.winDays + s.loseDays)) * 100).toFixed(1) : '-';
-            const skipNote = s.skipDays > 0 ? `<div><span class="text-gray-500">Bỏ qua:</span> <span class="font-bold text-gray-600">${s.skipDays} ngày</span></div>` : '';
-
-            summaryHtml += `
-                <div class="p-3 bg-${m.color}-50 rounded-lg border-2 border-${m.color}-200">
-                    <h4 class="font-bold text-${m.color}-800 mb-2 text-sm">${m.name}</h4>
-                    <div class="text-xs space-y-1">
-                        <div><span class="text-gray-600">Vốn:</span> <span class="font-bold text-red-600">${s.totalBet.toLocaleString()}k</span></div>
-                        <div><span class="text-gray-600">Thắng:</span> <span class="font-bold text-green-600">${s.totalWin.toLocaleString()}k</span></div>
-                        <div><span class="text-gray-600">Lãi/Lỗ:</span> <span class="font-bold ${profit >= 0 ? 'text-green-600' : 'text-red-600'}">${profit.toLocaleString()}k</span></div>
-                        <div><span class="text-gray-600">Tỷ lệ:</span> <span class="font-bold">${winRate}% (${s.winDays}W/${s.loseDays}L)</span></div>
-                        ${skipNote}
-                    </div>
-                </div>
-            `;
-        }
-
-        summaryHtml += `</div>`;
-
-        // Best method comparison (chỉ tính phương pháp có bet > 0)
-        const profits = methods
-            .filter(m => stats[m.key].totalBet > 0)
-            .map(m => ({ key: m.key, name: m.name, profit: stats[m.key].totalWin - stats[m.key].totalBet }));
-        if (profits.length > 0) {
-            profits.sort((a, b) => b.profit - a.profit);
-            const best = profits[0];
-            summaryHtml += `
-                <div class="mt-3 p-3 bg-gray-100 rounded-lg text-center text-sm">
-                    <strong>🏆 Phương pháp tốt nhất:</strong> 
-                    <span class="font-bold ${best.profit >= 0 ? 'text-green-600' : 'text-red-600'}">${best.name} (${best.profit >= 0 ? '+' : ''}${best.profit.toLocaleString()}k)</span>
-                </div>
-            `;
-        }
-
-        return summaryHtml;
-    }
-
-    // === FUTURE SIMULATION FUNCTIONS ===
-    window.switchTab = function (tab) {
-        // Hide all content
-        document.getElementById('content-analysis').classList.add('hidden');
-        document.getElementById('content-future').classList.add('hidden');
-        const backtestContent = document.getElementById('content-backtest');
-        if (backtestContent) backtestContent.classList.add('hidden');
-
-        // Remove active from all tabs
-        document.getElementById('tabAnalysis').classList.remove('active');
-        document.getElementById('tabFuture').classList.remove('active');
-        const tabBacktest = document.getElementById('tabBacktest');
-        if (tabBacktest) tabBacktest.classList.remove('active');
-
-        // Show selected content and activate tab
-        if (tab === 'analysis') {
-            document.getElementById('content-analysis').classList.remove('hidden');
-            document.getElementById('tabAnalysis').classList.add('active');
-        } else if (tab === 'future') {
-            document.getElementById('content-future').classList.remove('hidden');
-            document.getElementById('tabFuture').classList.add('active');
-        } else if (tab === 'backtest') {
-            if (backtestContent) backtestContent.classList.remove('hidden');
-            if (tabBacktest) tabBacktest.classList.add('active');
-        }
+(function () {
+    const state = {
+        result: null,
+        selected: null
     };
 
-    window.runProgressiveSimulation = async function () {
-        const days = parseInt(document.getElementById('futureDuration').value) || 30;
-        const strategy = document.getElementById('futureStrategy') ? document.getElementById('futureStrategy').value : 'standard';
-        const useExclusionPlus = strategy === 'plus';
-
-        const btn = document.getElementById('btnRunFuture');
-        const progress = document.getElementById('futureProgress');
-        const summary = document.getElementById('futureSummary');
-        const results = document.getElementById('futureResults');
-
-        btn.disabled = true;
-        progress.classList.remove('hidden');
-        summary.classList.add('hidden');
-        results.classList.add('hidden');
-
-        try {
-            const response = await fetch('/api/simulation/run', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ simulationDays: days, useExclusionPlus })
-            });
-
-            if (!response.ok) {
-                const err = await response.json();
-                throw new Error(err.error || 'Lỗi không xác định');
-            }
-
-            const data = await response.json();
-            renderProgressiveSummary(data);
-            renderProgressiveResults(data);
-
-            summary.classList.remove('hidden');
-            results.classList.remove('hidden');
-        } catch (error) {
-            alert('Lỗi: ' + error.message);
-        } finally {
-            btn.disabled = false;
-            progress.classList.add('hidden');
-        }
+    const METHOD_LABELS = {
+        dropoff85: 'Dropoff 85%',
+        dropoff85Edge: 'Edge 85%',
+        ranked40to50: 'Ưu tiên trúng 40-50',
+        ranked60to70: 'Xếp hạng 60-70',
+        combined20to30: 'Tổng hợp rủi ro 30'
     };
 
-    function renderProgressiveSummary(data) {
-        const summaryCards = document.getElementById('futureSummaryCards');
-        const s = data.summary;
-        const profitClass = s.totalProfit >= 0 ? 'text-green-600' : 'text-red-600';
-        const sign = s.totalProfit >= 0 ? '+' : '';
+    function methodDescription(methodId) {
+        if (methodId === 'dropoff85') return 'Dropoff >= 85% và tiềm năng hiếm <= 1 lần/năm';
+        if (methodId === 'dropoff85Edge') return 'Chỉ lấy chuỗi 85% khi dropoff vượt xác suất nền theo số lượng số loại';
+        if (methodId === 'ranked40to50') return 'Lấy dropoff cao nhất nhưng chỉ loại khoảng 40-50 số để tăng xác suất trúng';
+        if (methodId === 'ranked60to70') return 'Lấy chuỗi dropoff cao nhất đến vùng loại trừ 60-70 số';
+        return 'Chấm điểm rủi ro từng số bằng dropoff, tin cậy, mẫu, lower, TB dài, TB cách, gần nhất và edge để còn 30 số đánh';
+    }
 
-        summaryCards.innerHTML = `
-            <div class="bg-gray-100 p-4 rounded-lg shadow text-center">
-                <div class="text-xs text-gray-500">Số Ngày Đánh (Trên Tổng)</div>
-                <div class="font-bold text-2xl text-blue-600">${s.playedDays} / ${s.days}</div>
-            </div>
-            <div class="bg-gray-100 p-4 rounded-lg shadow text-center">
-                <div class="text-xs text-gray-500">Tỷ Lệ Thắng (Win Rate)</div>
-                <div class="font-bold text-2xl text-green-600">${s.winRate}%</div>
-                <div class="text-xs mt-1 text-gray-500">(${s.winCount} ngày trúng)</div>
-            </div>
-            <div class="bg-gray-100 p-4 rounded-lg shadow text-center border-2 border-green-200">
-                <div class="text-xs text-gray-500">Tổng Lợi Nhuận</div>
-                <div class="font-bold text-2xl ${profitClass}">${sign}${s.totalProfit.toLocaleString('vi-VN')}k</div>
-                <div class="text-xs mt-1 text-gray-500">ROI: ${s.roi}%</div>
-            </div>
-            <div class="bg-gray-100 p-4 rounded-lg shadow text-center">
-                <div class="text-xs text-gray-500">Tổng Vốn Bỏ Ra</div>
-                <div class="font-bold text-2xl text-red-600">${s.totalCost.toLocaleString('vi-VN')}k</div>
-                <div class="text-xs mt-1 text-gray-500">Thu về: ${s.totalRevenue.toLocaleString('vi-VN')}k</div>
-            </div>
+    function el(id) {
+        return document.getElementById(id);
+    }
+
+    function formatPercent(value) {
+        if (!Number.isFinite(value)) return '0%';
+        return `${(value * 100).toFixed(1)}%`;
+    }
+
+    function formatMoney(value) {
+        const number = Number(value || 0);
+        const sign = number > 0 ? '+' : '';
+        return `${sign}${number.toLocaleString('vi-VN')}K`;
+    }
+
+    function formatNumberValue(value, suffix = '') {
+        if (value === null || value === undefined || !Number.isFinite(Number(value))) return '-';
+        return `${Number(value).toLocaleString('vi-VN')}${suffix}`;
+    }
+
+    function formatNumbers(numbers, limit) {
+        const values = (numbers || []).map(num => String(num).padStart(2, '0'));
+        if (!limit || values.length <= limit) return values.join(' ');
+        return `${values.slice(0, limit).join(' ')} +${values.length - limit}`;
+    }
+
+    function setLoading(isLoading) {
+        const button = el('runSimulation');
+        const spinner = el('runSpinner');
+        const label = el('runLabel');
+        if (!button || !spinner || !label) return;
+        button.disabled = isLoading;
+        button.classList.toggle('opacity-70', isLoading);
+        spinner.classList.toggle('hidden', !isLoading);
+        label.textContent = isLoading ? 'Đang chạy...' : 'Chạy simulation';
+    }
+
+    function showError(message) {
+        const box = el('errorBox');
+        if (!box) return;
+        if (!message) {
+            box.classList.add('hidden');
+            box.textContent = '';
+            return;
+        }
+        box.textContent = message;
+        box.classList.remove('hidden');
+    }
+
+    function methodStatusClass(method) {
+        if (method.skipped) return 'bg-slate-100 text-slate-600 border-slate-200';
+        if (method.hit) return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        return 'bg-red-50 text-red-700 border-red-200';
+    }
+
+    function methodStatusText(method) {
+        if (method.skipped) return 'Bỏ qua';
+        return method.hit ? 'Trúng' : 'Trượt';
+    }
+
+    function renderSummaryCard(methodMeta, summary) {
+        const profitClass = summary.totalProfit >= 0 ? 'text-emerald-700' : 'text-red-700';
+        return `
+            <article class="rounded-md border border-slate-200 bg-white p-5">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900">${methodMeta.name}</h3>
+                        <p class="mt-1 text-xs leading-5 text-slate-500">
+                            ${methodDescription(methodMeta.id)}
+                        </p>
+                    </div>
+                    <div class="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600">
+                        ${summary.playedDays}/${summary.totalDays} ngày đánh
+                    </div>
+                </div>
+                <div class="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
+                    <div>
+                        <div class="text-xs uppercase text-slate-500">Tỉ lệ trúng</div>
+                        <div class="mt-1 text-xl font-bold">${formatPercent(summary.hitRate)}</div>
+                    </div>
+                    <div>
+                        <div class="text-xs uppercase text-slate-500">Trúng / Trượt</div>
+                        <div class="mt-1 text-xl font-bold">${summary.wins}/${summary.losses}</div>
+                    </div>
+                    <div>
+                        <div class="text-xs uppercase text-slate-500">Loại trừ TB</div>
+                        <div class="mt-1 text-xl font-bold">${summary.averageExcluded}</div>
+                    </div>
+                    <div>
+                        <div class="text-xs uppercase text-slate-500">Lãi/lỗ</div>
+                        <div class="mt-1 text-xl font-bold ${profitClass}">${formatMoney(summary.totalProfit)}</div>
+                    </div>
+                </div>
+                <div class="mt-4 grid grid-cols-3 gap-2 text-xs text-slate-600">
+                    <div class="rounded-md bg-slate-50 px-3 py-2">Bỏ qua: <b>${summary.skippedDays}</b></div>
+                    <div class="rounded-md bg-slate-50 px-3 py-2">Tiền đánh: <b>${formatMoney(summary.totalStake)}</b></div>
+                    <div class="rounded-md bg-slate-50 px-3 py-2">Tiền ăn: <b>${formatMoney(summary.totalPayout)}</b></div>
+                </div>
+            </article>
         `;
     }
 
-    function renderProgressiveResults(data) {
-        const tableBody = document.getElementById('futureResultsTable');
-        tableBody.innerHTML = '';
+    function renderSummary(result) {
+        const section = el('summarySection');
+        const cards = el('summaryCards');
+        const generated = el('generatedInfo');
+        if (!section || !cards) return;
 
-        if (!data.details || data.details.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="7" class="text-center p-4">Không có dữ liệu chi tiết</td></tr>';
-            return;
+        cards.innerHTML = result.methods
+            .map(method => renderSummaryCard(method, result.summary[method.id]))
+            .join('');
+        if (generated) {
+            generated.textContent = `${result.config.effectiveDays} ngày, đơn vị ${result.config.moneyUnit}`;
         }
+        section.classList.remove('hidden');
+    }
 
-        data.details.forEach(row => {
-            const tr = document.createElement('tr');
-            
-            // Format date
-            const dateStr = new Date(row.date).toLocaleDateString('vi-VN');
-            
-            // Status formatting
-            let statusHtml = '';
-            let rowClass = 'hover:bg-gray-50';
-            
-            if (row.isSkipped) {
-                statusHtml = '<span class="bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs font-bold">⏭️ BỎ QUA</span>';
-                rowClass = 'bg-gray-100 opacity-60';
-            } else if (row.isWin) {
-                statusHtml = '<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-bold">✅ TRÚNG</span>';
-                rowClass = 'bg-green-50 hover:bg-green-100';
-            } else {
-                statusHtml = '<span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-bold">❌ TRƯỢT</span>';
-                rowClass = 'bg-red-50 hover:bg-red-100';
-            }
-            
-            // Profit formatting
-            const profitClass = row.profit > 0 ? 'text-green-600 font-bold' : (row.profit < 0 ? 'text-red-600' : 'text-gray-500');
-            const totalProfitClass = row.totalProfit > 0 ? 'text-green-600 font-bold' : (row.totalProfit < 0 ? 'text-red-600' : 'text-gray-500');
-            const profitSign = row.profit > 0 ? '+' : '';
-            const totalProfitSign = row.totalProfit > 0 ? '+' : '';
+    function reliabilityBadge(score) {
+        if (score >= 70) return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        if (score >= 55) return 'bg-amber-50 text-amber-700 border-amber-200';
+        return 'bg-red-50 text-red-700 border-red-200';
+    }
 
-            // Numbers bet breakdown
-            let numbersHtml = '-';
-            if (!row.isSkipped && row.numbersBet && row.numbersBet.length > 0) {
-                // Determine if winning number is in the set
-                const winNum = parseInt(row.special);
-                
-                numbersHtml = `
-                    <div class="text-[10px] sm:text-xs">
-                        <details class="cursor-pointer">
-                            <summary class="font-medium text-blue-600 outline-none">Xem ${row.numbersBet.length} số (Loại ${row.excludedCount})</summary>
-                            <div class="mt-1 p-2 bg-white border border-gray-200 rounded text-left max-w-xs md:max-w-md flex flex-wrap gap-1">
-                                ${row.numbersBet.map(n => {
-                                    const formatted = String(n).padStart(2, '0');
-                                    return (n === winNum) 
-                                        ? `<span class="bg-green-500 text-white font-bold px-1 rounded inline-block">${formatted}</span>` 
-                                        : `<span class="text-gray-600 inline-block px-0.5">${formatted}</span>`;
-                                }).join('')}
-                            </div>
-                        </details>
-                    </div>
-                `;
-            }
+    function renderReliability(result) {
+        const section = el('reliabilitySection');
+        const content = el('reliabilityContent');
+        const data = result.reliability;
+        if (!section || !content || !data) return;
 
-            tr.className = `border-b border-gray-200 ${rowClass}`;
-            tr.innerHTML = `
-                <td class="px-3 py-3 whitespace-nowrap text-xs font-medium text-gray-900">${dateStr}</td>
-                <td class="px-3 py-3 whitespace-nowrap text-center">
-                    <span class="font-bold bg-yellow-100 text-yellow-800 px-2 py-1 rounded border border-yellow-300 text-sm">
-                        ${String(row.special).padStart(2, '0')}
+        const currentRows = (data.currentCandidates || []).slice(0, 24).map(item => `
+            <tr class="border-t border-slate-100">
+                <td class="px-3 py-2">
+                    <div class="font-semibold text-slate-900">${item.title || item.key}</div>
+                    <div class="text-xs text-slate-500">${item.isPotential ? 'Sắp hình thành' : 'Đang diễn ra'} · ${item.numbersCount} số</div>
+                </td>
+                <td class="px-3 py-2 text-right font-semibold">${formatPercent(item.dropOffRate)}</td>
+                <td class="px-3 py-2 text-right">${formatNumberValue(item.edgePercent, '%')}</td>
+                <td class="px-3 py-2 text-right">
+                    <span class="inline-flex rounded border px-2 py-1 text-xs font-bold ${reliabilityBadge(item.reliabilityScore)}">
+                        ${item.reliabilityScore}
                     </span>
                 </td>
-                <td class="px-3 py-3 whitespace-nowrap text-center text-xs">
-                    ${row.isSkipped ? '<span class="text-gray-400">-</span>' : `<strong>${row.stake.toLocaleString('vi-VN')}k</strong>`}
-                </td>
-                <td class="px-3 py-3 whitespace-nowrap text-center text-xs">
-                    ${numbersHtml}
-                </td>
-                <td class="px-3 py-3 whitespace-nowrap text-center text-xs ${profitClass}">
-                    ${row.isSkipped ? '<span class="text-gray-400">-</span>' : `${profitSign}${row.profit.toLocaleString('vi-VN')}k`}
-                </td>
-                <td class="px-3 py-3 whitespace-nowrap text-center text-xs ${totalProfitClass}">
-                    ${totalProfitSign}${row.totalProfit.toLocaleString('vi-VN')}k
-                </td>
-                <td class="px-3 py-3 whitespace-nowrap text-left">
-                    ${statusHtml}
-                </td>
-            `;
-            tableBody.appendChild(tr);
-        });
+                <td class="px-3 py-2 text-right">${item.sampleSize}</td>
+                <td class="px-3 py-2 text-right">${formatNumberValue(item.lowerBoundPercent, '%')}</td>
+                <td class="px-3 py-2 text-right">${formatNumberValue(item.avgLength, 'd')}</td>
+                <td class="px-3 py-2 text-right">${formatNumberValue(item.avgGapDays, 'd')}</td>
+                <td class="px-3 py-2 text-right">${formatNumberValue(item.daysSinceLatestEnd, 'd')}</td>
+            </tr>
+        `).join('');
+
+        const weakRows = (data.highDropLowTrust || []).slice(0, 8).map(item => `
+            <div class="rounded-md border border-red-100 bg-red-50 p-3">
+                <div class="font-semibold text-red-900">${item.title || item.key}</div>
+                <div class="mt-1 text-xs text-red-700">
+                    Dropoff ${formatPercent(item.bestPoint.dropOffRate)} · tin cậy ${item.bestPoint.reliabilityScore}
+                    · mẫu ${item.bestPoint.reached} · cách hiện tại ${formatNumberValue(item.daysSinceLatestEnd, 'd')}
+                </div>
+            </div>
+        `).join('');
+
+        content.innerHTML = `
+            <div class="grid gap-3 md:grid-cols-4">
+                <div class="rounded-md bg-slate-50 p-3">
+                    <div class="text-xs font-semibold uppercase text-slate-500">Số chuỗi</div>
+                    <div class="mt-1 text-2xl font-bold">${data.totalPatterns}</div>
+                </div>
+                <div class="rounded-md bg-slate-50 p-3">
+                    <div class="text-xs font-semibold uppercase text-slate-500">Tin cậy TB</div>
+                    <div class="mt-1 text-2xl font-bold">${data.avgReliabilityScore}</div>
+                </div>
+                <div class="rounded-md bg-slate-50 p-3">
+                    <div class="text-xs font-semibold uppercase text-slate-500">Chuỗi mạnh</div>
+                    <div class="mt-1 text-2xl font-bold">${data.highReliabilityCount}</div>
+                </div>
+                <div class="rounded-md bg-slate-50 p-3">
+                    <div class="text-xs font-semibold uppercase text-slate-500">Lịch sử</div>
+                    <div class="mt-1 text-2xl font-bold">${formatNumberValue(data.totalYears, ' năm')}</div>
+                </div>
+            </div>
+
+            <div class="mt-5 overflow-auto">
+                <div class="mb-2 text-sm font-bold text-slate-900">Ứng viên gần nhất theo độ tin cậy</div>
+                <table class="min-w-full text-sm">
+                    <thead class="bg-slate-100 text-xs font-semibold uppercase text-slate-600">
+                        <tr>
+                            <th class="px-3 py-2 text-left">Chuỗi</th>
+                            <th class="px-3 py-2 text-right">Dropoff</th>
+                            <th class="px-3 py-2 text-right">Edge</th>
+                            <th class="px-3 py-2 text-right">Tin cậy</th>
+                            <th class="px-3 py-2 text-right">Mẫu</th>
+                            <th class="px-3 py-2 text-right">Lower</th>
+                            <th class="px-3 py-2 text-right">TB dài</th>
+                            <th class="px-3 py-2 text-right">TB cách</th>
+                            <th class="px-3 py-2 text-right">Gần nhất</th>
+                        </tr>
+                    </thead>
+                    <tbody>${currentRows}</tbody>
+                </table>
+            </div>
+
+            <div class="mt-5">
+                <div class="mb-2 text-sm font-bold text-slate-900">Dropoff cao nhưng độ tin cậy thấp</div>
+                <div class="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+                    ${weakRows || '<div class="text-sm text-slate-500">Không có nhóm rủi ro nổi bật.</div>'}
+                </div>
+            </div>
+        `;
+        section.classList.remove('hidden');
     }
 
-    // === BACKTEST FUNCTIONS ===
-    window.runBacktest = async function () {
-        const days = parseInt(document.getElementById('backtestDays').value) || 30;
-        const btn = document.getElementById('btnRunBacktest');
-        const progress = document.getElementById('backtestProgress');
-        const summary = document.getElementById('backtestSummary');
-        const results = document.getElementById('backtestResults');
+    function renderMethodCell(day, methodId) {
+        const method = day.methods[methodId];
+        if (!method) return '';
+        const profitClass = method.profit >= 0 ? 'text-emerald-700' : 'text-red-700';
+        return `
+            <button class="w-full rounded-md border p-3 text-left transition hover:shadow-sm ${methodStatusClass(method)}"
+                data-date="${day.predictionDate}" data-method="${methodId}">
+                <div class="flex items-center justify-between gap-2">
+                    <span class="text-xs font-bold uppercase">${methodStatusText(method)}</span>
+                    <span class="text-xs font-semibold ${profitClass}">${formatMoney(method.profit)}</span>
+                </div>
+                <div class="mt-2 grid grid-cols-3 gap-2 text-xs">
+                    <span>Loại: <b>${method.excludedCount}</b></span>
+                    <span>Đánh: <b>${method.betCount}</b></span>
+                    <span>Chuỗi: <b>${method.selectedStreakCount}</b></span>
+                </div>
+            </button>
+        `;
+    }
 
-        btn.disabled = true;
-        progress.classList.remove('hidden');
-        summary.classList.add('hidden');
-        results.classList.add('hidden');
+    function renderDetails(result) {
+        const section = el('detailsSection');
+        const table = el('detailsTable');
+        if (!section || !table) return;
 
-        try {
-            const response = await fetch(`/api/simulation/backtest?days=${days}`);
+        table.innerHTML = result.details.map(day => `
+            <tr>
+                <td class="whitespace-nowrap px-4 py-3 align-top">
+                    <div class="font-semibold">${day.predictionDate}</div>
+                    <div class="text-xs text-slate-500">Dữ liệu tới ${day.basisDate}</div>
+                    <div class="mt-1 text-xs text-slate-500">${day.candidatesCount} chuỗi dự đoán</div>
+                </td>
+                <td class="px-4 py-3 text-center align-top">
+                    <span class="inline-flex min-w-10 justify-center rounded-md bg-slate-900 px-2 py-1 font-mono text-sm font-bold text-white">
+                        ${day.actualNumberText}
+                    </span>
+                </td>
+                <td class="min-w-64 px-4 py-3 align-top">${renderMethodCell(day, 'dropoff85')}</td>
+                <td class="min-w-64 px-4 py-3 align-top">${renderMethodCell(day, 'dropoff85Edge')}</td>
+                <td class="min-w-64 px-4 py-3 align-top">${renderMethodCell(day, 'ranked40to50')}</td>
+                <td class="min-w-64 px-4 py-3 align-top">${renderMethodCell(day, 'ranked60to70')}</td>
+                <td class="min-w-64 px-4 py-3 align-top">${renderMethodCell(day, 'combined20to30')}</td>
+            </tr>
+        `).join('');
 
-            if (!response.ok) {
-                const err = await response.json();
-                throw new Error(err.error || 'Lỗi không xác định');
-            }
+        table.querySelectorAll('button[data-method]').forEach(button => {
+            button.addEventListener('click', () => {
+                const date = button.getAttribute('data-date');
+                const methodId = button.getAttribute('data-method');
+                selectMethod(date, methodId);
+            });
+        });
 
-            const data = await response.json();
-            renderBacktestSummary(data);
-            renderBacktestResults(data);
+        section.classList.remove('hidden');
+    }
 
-            summary.classList.remove('hidden');
-            results.classList.remove('hidden');
-        } catch (error) {
-            alert('Lỗi: ' + error.message);
-        } finally {
-            btn.disabled = false;
-            progress.classList.add('hidden');
+    function renderNumberGrid(numbers, colorClass) {
+        if (!numbers || numbers.length === 0) {
+            return '<div class="text-sm text-slate-500">Không có số.</div>';
         }
-    };
+        return `
+            <div class="number-grid">
+                ${numbers.map(num => `
+                    <span class="rounded border px-2 py-1 text-center font-mono text-xs font-semibold ${colorClass}">
+                        ${String(num).padStart(2, '0')}
+                    </span>
+                `).join('')}
+            </div>
+        `;
+    }
 
-    function renderBacktestSummary(data) {
-        const container = document.getElementById('backtestSummaryCards');
-        const methods = [
-            { key: 'exclusion', name: '🚫 Exclusion', color: 'red' },
-            { key: 'unified', name: '🎯 Unified', color: 'blue' },
-            { key: 'advanced', name: '🔬 Advanced', color: 'purple' },
-            { key: 'hybridAI', name: '🤖 Hybrid AI', color: 'orange' },
-            { key: 'combined', name: '🔄 Combined', color: 'green' },
-            { key: 'smart20', name: '⚡ Exclusion +', color: 'yellow' }
-        ];
+    function selectMethod(date, methodId) {
+        if (!state.result) return;
+        const day = state.result.details.find(item => item.predictionDate === date);
+        if (!day) return;
+        const method = day.methods[methodId];
+        if (!method) return;
+        state.selected = { date, methodId };
+        renderMethodDetail(day, methodId, method);
+    }
 
-        let html = '';
-        methods.forEach(m => {
-            const s = data.summary[m.key];
-            const winRate = parseFloat(s.winRate);
-            const rateClass = winRate >= 50 ? 'text-green-600' : (winRate >= 30 ? 'text-yellow-600' : 'text-red-600');
+    function renderMethodDetail(day, methodId, method) {
+        const panel = el('methodDetail');
+        if (!panel) return;
 
-            html += `
-                <div class="bg-${m.color}-50 border border-${m.color}-200 rounded-lg p-4">
-                    <h4 class="font-bold text-${m.color}-800 mb-2">${m.name}</h4>
-                    <div class="space-y-2">
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Tỷ lệ thắng:</span>
-                            <span class="font-bold ${rateClass}">${s.winRate}%</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Thắng/Thua:</span>
-                            <span><span class="text-green-600 font-bold">${s.wins}</span> / <span class="text-red-600">${s.losses}</span></span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">TB số đánh:</span>
-                            <span class="font-semibold">${s.avgBets} số</span>
-                        </div>
-                    </div>
-                    <div class="mt-3 pt-3 border-t border-${m.color}-200">
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-${m.color}-600 h-2 rounded-full" style="width: ${Math.min(winRate, 100)}%"></div>
-                        </div>
+        const streakRows = method.selectedStreaks.map(item => `
+            <div class="rounded-md border border-slate-200 p-3">
+                <div class="flex items-start justify-between gap-2">
+                    <div class="font-semibold text-slate-900">${item.title || item.key}</div>
+                    <div class="whitespace-nowrap text-sm font-bold ${item.dropOffRate >= 0.85 ? 'text-red-700' : 'text-purple-700'}">
+                        ${formatPercent(item.dropOffRate)}
                     </div>
                 </div>
-            `;
-        });
+                <div class="mt-1 text-xs text-slate-500">
+                    ${item.isPotential ? 'Sắp hình thành' : 'Đang diễn ra'} · ${item.streak}d · ${item.numbersCount} số
+                    ${Number.isFinite(item.edge) ? ` · edge ${formatPercent(item.edge)}` : ''}
+                    ${Number.isFinite(Number(item.reliabilityScore)) ? ` · tin cậy ${item.reliabilityScore}` : ''}
+                    ${Number.isFinite(Number(item.combinedScore)) ? ` · tổng ${item.combinedScore}` : ''}
+                    ${Number.isFinite(Number(item.numberRiskScore)) ? ` · risk số ${item.numberRiskScore}` : ''}
+                    ${item.addedNumbersCount !== undefined ? ` · thêm ${item.addedNumbersCount}` : ''}
+                </div>
+                <div class="mt-1 text-xs text-slate-500">
+                    Mẫu ${formatNumberValue(item.sampleSize)} · lower ${formatNumberValue(item.lowerBoundPercent, '%')}
+                    · TB dài ${formatNumberValue(item.avgLength, 'd')} · TB cách ${formatNumberValue(item.avgGapDays, 'd')}
+                    · gần nhất ${formatNumberValue(item.daysSinceLatestEnd, 'd')}
+                </div>
+                <div class="mt-2 font-mono text-xs leading-5 text-slate-700">${formatNumbers(item.numbers, 36)}</div>
+            </div>
+        `).join('');
 
-        container.innerHTML = html;
-    }
+        panel.innerHTML = `
+            <div class="mb-4">
+                <div class="text-xs font-semibold uppercase text-slate-500">${day.predictionDate}</div>
+                <div class="mt-1 text-lg font-bold text-slate-900">${METHOD_LABELS[methodId]}</div>
+                <div class="mt-2 inline-flex rounded-md border px-2 py-1 text-xs font-bold ${methodStatusClass(method)}">
+                    ${methodStatusText(method)}
+                </div>
+                ${method.skipReason ? `<div class="mt-2 text-sm text-slate-600">${method.skipReason}</div>` : ''}
+            </div>
 
-    function renderBacktestResults(data) {
-        const container = document.getElementById('backtestResultsTable');
+            <div class="mb-4 grid grid-cols-2 gap-2 text-center text-xs md:grid-cols-5">
+                <div class="rounded-md bg-slate-50 p-2">
+                    <div class="text-slate-500">Loại trừ</div>
+                    <div class="text-lg font-bold">${method.excludedCount}</div>
+                </div>
+                <div class="rounded-md bg-slate-50 p-2">
+                    <div class="text-slate-500">Unique chuỗi</div>
+                    <div class="text-lg font-bold">${method.selectedNumbersUnionCount ?? method.excludedCount}</div>
+                </div>
+                <div class="rounded-md bg-slate-50 p-2">
+                    <div class="text-slate-500">Trùng lặp</div>
+                    <div class="text-lg font-bold">${method.duplicateNumbersCount ?? 0}</div>
+                </div>
+                <div class="rounded-md bg-slate-50 p-2">
+                    <div class="text-slate-500">Số đánh</div>
+                    <div class="text-lg font-bold">${method.betCount}</div>
+                </div>
+                <div class="rounded-md bg-slate-50 p-2">
+                    <div class="text-slate-500">Lãi/lỗ</div>
+                    <div class="text-lg font-bold ${method.profit >= 0 ? 'text-emerald-700' : 'text-red-700'}">${formatMoney(method.profit)}</div>
+                </div>
+            </div>
 
-        let html = `
-            <table class="w-full text-sm border-collapse">
-                <thead class="bg-gray-100 sticky top-0">
-                    <tr>
-                        <th class="p-2 text-left border-b">Ngày</th>
-                        <th class="p-2 text-center border-b">Số về</th>
-                        <th class="p-2 text-center border-b bg-red-50">🚫 Exclusion</th>
-                        <th class="p-2 text-center border-b bg-blue-50">🎯 Unified</th>
-                        <th class="p-2 text-center border-b bg-purple-50">🔬 Advanced</th>
-                        <th class="p-2 text-center border-b bg-orange-50">🤖 Hybrid</th>
-                        <th class="p-2 text-center border-b bg-green-50">🔄 Combined</th>
-                        <th class="p-2 text-center border-b bg-yellow-50">⚡ Exclusion +</th>
-                    </tr>
-                </thead>
-                <tbody>
+            <div class="mb-5">
+                <div class="mb-2 text-sm font-bold text-slate-900">Số loại trừ</div>
+                ${renderNumberGrid(method.excluded, 'border-red-200 bg-red-50 text-red-700')}
+            </div>
+
+            <div class="mb-5">
+                <div class="mb-2 text-sm font-bold text-slate-900">Số đánh</div>
+                ${renderNumberGrid(method.betNumbers, 'border-emerald-200 bg-emerald-50 text-emerald-700')}
+            </div>
+
+            <div>
+                <div class="mb-2 flex items-center justify-between">
+                    <div class="text-sm font-bold text-slate-900">Chuỗi dùng để loại trừ</div>
+                    <div class="text-xs text-slate-500">${method.selectedStreakCount} chuỗi</div>
+                </div>
+                <div class="space-y-2">${streakRows || '<div class="text-sm text-slate-500">Không có chuỗi đủ điều kiện.</div>'}</div>
+            </div>
         `;
-
-        const details = data.details || [];
-        details.forEach(d => {
-            html += `<tr class="border-b hover:bg-gray-50">
-                <td class="p-2 font-medium">${d.date}</td>
-                <td class="p-2 text-center">
-                    <span class="bg-yellow-500 text-white px-2 py-1 rounded font-bold">${d.actualNumber}</span>
-                </td>`;
-
-            const methods = [
-                { key: 'exclusion', bg: 'red' },
-                { key: 'unified', bg: 'blue' },
-                { key: 'advanced', bg: 'purple' },
-                { key: 'hybridAI', bg: 'orange' },
-                { key: 'combined', bg: 'green' },
-                { key: 'smart20', bg: 'yellow' }
-            ];
-
-            methods.forEach(m => {
-                const method = d[m.key];
-                const isWin = method.win;
-                const nums = method.numbers.join(', ');
-                const count = method.count;
-
-                html += `<td class="p-2 text-center bg-${m.bg}-50">
-                    <details class="cursor-pointer">
-                        <summary class="flex flex-col items-center gap-1">
-                            <span class="${isWin ? 'bg-green-500 text-white px-2 rounded' : 'bg-red-100 text-red-600 px-2 rounded'}">${isWin ? '✅ TRÚNG' : '❌ THUA'}</span>
-                            <span class="text-xs text-gray-500">${count} số</span>
-                        </summary>
-                        <div class="mt-2 p-2 bg-white rounded text-[10px] text-left max-w-xs">
-                            <div class="font-bold mb-1">Top 10 số:</div>
-                            <div class="break-words">${nums}...</div>
-                        </div>
-                    </details>
-                </td>`;
-            });
-
-            html += `</tr>`;
-        });
-
-        html += `</tbody></table>`;
-        container.innerHTML = html;
     }
 
-    initializePage();
-});
+    async function runSimulation() {
+        const days = el('simulationDays') ? el('simulationDays').value : 30;
+        setLoading(true);
+        showError('');
+
+        try {
+            const response = await fetch(`/api/simulation/backtest?days=${encodeURIComponent(days)}`);
+            const result = await response.json();
+            if (!response.ok || result.error) {
+                throw new Error(result.error || 'Không thể chạy simulation.');
+            }
+
+            state.result = result;
+            renderSummary(result);
+            renderReliability(result);
+            renderDetails(result);
+
+            if (result.details && result.details.length > 0) {
+                selectMethod(result.details[0].predictionDate, 'combined20to30');
+            }
+        } catch (error) {
+            showError(error.message || 'Không thể chạy simulation.');
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    window.runSimulation = runSimulation;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const button = el('runSimulation');
+        if (button) button.addEventListener('click', runSimulation);
+        runSimulation();
+    });
+})();
