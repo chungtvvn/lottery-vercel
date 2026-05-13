@@ -1,8 +1,9 @@
 const fs = require('fs').promises;
 const path = require('path');
 const https = require('https');
+const { fetchLatestXsmbResult, XOSO_XSMB_URL } = require('./sources/xoso-com-vn');
 
-const DATA_URL = 'https://raw.githubusercontent.com/khiemdoan/vietnam-lottery-xsmb-analysis/refs/heads/main/data/xsmb-2-digits.json';
+const LEGACY_DATA_URL = 'https://raw.githubusercontent.com/khiemdoan/vietnam-lottery-xsmb-analysis/refs/heads/main/data/xsmb-2-digits.json';
 const DATA_DIR = path.join(__dirname, '..', 'lib', 'data');
 const JSON_FILE = path.join(DATA_DIR, 'xsmb-2-digits.json');
 
@@ -31,12 +32,12 @@ function hasRawDataChanged(currentRows, nextRows) {
 
     const currentLast = currentRows[currentRows.length - 1] || {};
     const nextLast = nextRows[nextRows.length - 1] || {};
-    return Number(currentLast.special) !== Number(nextLast.special);
+    return JSON.stringify(normalizeDataRow(currentLast)) !== JSON.stringify(normalizeDataRow(nextLast));
 }
 
 async function downloadData() {
     return new Promise((resolve, reject) => {
-        https.get(DATA_URL, (res) => {
+        https.get(LEGACY_DATA_URL, (res) => {
             if (res.statusCode !== 200) {
                 return reject(new Error('Failed to fetch data: ' + res.statusCode));
             }
@@ -45,6 +46,64 @@ async function downloadData() {
             res.on('end', () => resolve(data));
         }).on('error', reject);
     });
+}
+
+function normalizeDataRow(row) {
+    return {
+        date: String(row.date || '').substring(0, 10),
+        special: Number(row.special),
+        prize1: Number(row.prize1),
+        prize2_1: Number(row.prize2_1),
+        prize2_2: Number(row.prize2_2),
+        prize3_1: Number(row.prize3_1),
+        prize3_2: Number(row.prize3_2),
+        prize3_3: Number(row.prize3_3),
+        prize3_4: Number(row.prize3_4),
+        prize3_5: Number(row.prize3_5),
+        prize3_6: Number(row.prize3_6),
+        prize4_1: Number(row.prize4_1),
+        prize4_2: Number(row.prize4_2),
+        prize4_3: Number(row.prize4_3),
+        prize4_4: Number(row.prize4_4),
+        prize5_1: Number(row.prize5_1),
+        prize5_2: Number(row.prize5_2),
+        prize5_3: Number(row.prize5_3),
+        prize5_4: Number(row.prize5_4),
+        prize5_5: Number(row.prize5_5),
+        prize5_6: Number(row.prize5_6),
+        prize6_1: Number(row.prize6_1),
+        prize6_2: Number(row.prize6_2),
+        prize6_3: Number(row.prize6_3),
+        prize7_1: Number(row.prize7_1),
+        prize7_2: Number(row.prize7_2),
+        prize7_3: Number(row.prize7_3),
+        prize7_4: Number(row.prize7_4)
+    };
+}
+
+function sortRowsByDate(rows) {
+    return [...rows].sort((a, b) => String(a.date).localeCompare(String(b.date)));
+}
+
+function daysBetweenDates(fromDate, toDate) {
+    if (!fromDate || !toDate) return 0;
+    const from = new Date(`${fromDate}T00:00:00Z`);
+    const to = new Date(`${toDate}T00:00:00Z`);
+    if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) return 0;
+    return Math.round((to.getTime() - from.getTime()) / 86400000);
+}
+
+function mergeRowsByDate(currentRows, incomingRows) {
+    const byDate = new Map();
+    for (const row of currentRows || []) {
+        const normalized = normalizeDataRow(row);
+        if (normalized.date) byDate.set(normalized.date, normalized);
+    }
+    for (const row of incomingRows || []) {
+        const normalized = normalizeDataRow(row);
+        if (normalized.date) byDate.set(normalized.date, normalized);
+    }
+    return sortRowsByDate(Array.from(byDate.values()));
 }
 
 function convertFormat(rawDataStr) {
@@ -103,23 +162,67 @@ function convertFormat(rawDataStr) {
     })};
 }
 
-async function main() {
-    console.log('[1] Tải dữ liệu từ Nguồn Github...');
+async function getLegacyFormattedRows() {
     const rawDataStr = await downloadData();
-    console.log('[2] Chuyển đổi format dữ liệu...');
-    const formattedData = convertFormat(rawDataStr);
-    
-    const { data: finalArray } = formattedData;
-    
+    return convertFormat(rawDataStr).data;
+}
+
+async function buildRawDataFromSources(currentArray) {
+    let finalArray = Array.isArray(currentArray) ? sortRowsByDate(currentArray.map(normalizeDataRow)) : [];
+    const sourceLog = [];
+
+    if (finalArray.length === 0 || process.env.REFRESH_FULL_DATA === '1') {
+        console.log('[1a] Local raw data trống hoặc REFRESH_FULL_DATA=1, tải full data fallback từ Github...');
+        finalArray = await getLegacyFormattedRows();
+        sourceLog.push(`legacy-full:${getLatestDateValue(finalArray)}`);
+    }
+
+    try {
+        console.log(`[1b] Lấy kết quả XSMB mới nhất từ ${XOSO_XSMB_URL}...`);
+        const latestXosoRow = await fetchLatestXsmbResult();
+        const latestLocalDate = getLatestDateValue(finalArray);
+        const gapDays = daysBetweenDates(latestLocalDate, latestXosoRow.date);
+
+        if (gapDays > 1) {
+            console.warn(`[1c] Phát hiện thiếu ${gapDays - 1} ngày giữa local=${latestLocalDate} và xoso=${latestXosoRow.date}. Thử fallback full data để lấp khoảng trống...`);
+            try {
+                finalArray = mergeRowsByDate(finalArray, await getLegacyFormattedRows());
+                sourceLog.push(`legacy-gap-fill:${getLatestDateValue(finalArray)}`);
+            } catch (fallbackError) {
+                console.warn(`[1c] Fallback full data lỗi, vẫn upsert ngày mới nhất từ xoso.com.vn: ${fallbackError.message}`);
+            }
+        }
+
+        finalArray = mergeRowsByDate(finalArray, [latestXosoRow]);
+        sourceLog.push(`xoso:${latestXosoRow.date}`);
+        console.log(`[1d] Đã parse kết quả xoso.com.vn ngày ${latestXosoRow.date}, ĐB=${String(latestXosoRow.special).padStart(2, '0')}`);
+    } catch (xosoError) {
+        console.warn(`[1b] Không lấy được kết quả xoso.com.vn: ${xosoError.message}`);
+        if (finalArray.length === 0) {
+            throw xosoError;
+        }
+    }
+
+    return {
+        data: finalArray,
+        source: sourceLog.join(' + ') || 'local'
+    };
+}
+
+async function main() {
     await fs.mkdir(path.join(DATA_DIR, 'statistics'), { recursive: true });
     const currentArray = await readJsonIfExists(JSON_FILE);
+    console.log(`[1] Đọc dữ liệu local: ${Array.isArray(currentArray) ? currentArray.length : 0} bản ghi, latest=${getLatestDateValue(currentArray) || 'none'}`);
+    console.log('[2] Cập nhật dữ liệu từ nguồn độc lập xoso.com.vn...');
+    const { data: finalArray, source } = await buildRawDataFromSources(currentArray);
+
     if (!hasRawDataChanged(currentArray, finalArray)) {
-        console.log(`[3] RAW_DATA không đổi (latest=${getLatestDateValue(finalArray)}, rows=${finalArray.length}). Bỏ qua generate stats để tiết kiệm Action time.`);
+        console.log(`[3] RAW_DATA không đổi (latest=${getLatestDateValue(finalArray)}, rows=${finalArray.length}, source=${source}). Bỏ qua generate stats để tiết kiệm Action time.`);
         return;
     }
 
     await fs.writeFile(JSON_FILE, JSON.stringify(finalArray, null, 0), 'utf-8');
-    console.log('[3] Ghi file xsmb-2-digits.json (RAW_DATA) thành công! (' + finalArray.length + ' bản ghi)');
+    console.log(`[3] Ghi file xsmb-2-digits.json (RAW_DATA) thành công! (${finalArray.length} bản ghi, latest=${getLatestDateValue(finalArray)}, source=${source})`);
 
     console.log('[4] Chạy luồng sinh Thống kê Statically (Không cần DB)...');
     

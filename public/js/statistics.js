@@ -225,6 +225,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         return `${Number(value).toLocaleString('vi-VN')}${suffix}`;
     };
 
+    const escapeHtml = (value) => String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
     const reliabilityBadgeClass = (score) => {
         const value = Number(score || 0);
         if (value >= 75) return 'bg-emerald-100 text-emerald-800 border-emerald-200';
@@ -435,48 +442,91 @@ document.addEventListener('DOMContentLoaded', async () => {
     // === UNIFIED DROP-OFF EXCLUSION RENDERING ===
     let selectedDropOffThreshold = parseFloat(localStorage.getItem('streak-dropoff-threshold') || '0.85');
     if (!Number.isFinite(selectedDropOffThreshold)) selectedDropOffThreshold = 0.85;
+    let latestPredictionItemsForExclusion = [];
+    let latestPredictionDateForExclusion = '';
 
-    const fetchStreakExclusion = async () => {
+    const normalizePredictionNumber = (value) => {
+        const num = parseInt(value, 10);
+        if (!Number.isFinite(num) || num < 0 || num > 99) return null;
+        return String(num).padStart(2, '0');
+    };
+
+    const getPredictionNumbers = (item) => {
+        const rawNumbers = item && item.streak && Array.isArray(item.streak.patternNumbers)
+            ? item.streak.patternNumbers
+            : [];
+        return Array.from(new Set(rawNumbers
+            .map(normalizePredictionNumber)
+            .filter(Boolean)))
+            .sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+    };
+
+    const getPredictionRiskRate = (item) => {
+        if (!item) return 0;
+        if (item.streak && item.streak.isPotential) return Number(item.nonFormationRate || 0);
+        return Number(item.dropOffRate || item.exclusionRate || 0);
+    };
+
+    const getPredictionRiskLabel = (item) => {
+        const riskRate = getPredictionRiskRate(item);
+        return item && item.streak && item.streak.isPotential
+            ? `Không HT ${(riskRate * 100).toFixed(0)}%`
+            : `Gãy ${(riskRate * 100).toFixed(0)}%`;
+    };
+
+    const fetchStreakExclusion = () => {
         const section = document.getElementById('streak-exclusion-section');
         const container = document.getElementById('streak-exclusion-container');
         const countSpan = document.getElementById('streak-exclusion-count');
+        const titleSpan = document.getElementById('streak-exclusion-title');
         if (!section || !container) return;
 
         try {
-            const data = await fetchJSON(`${BASE_URL}/api/analysis/latest?minDropOff=${selectedDropOffThreshold}`);
-            // Sử dụng `danh` (từ exclusionLogicService.getDropOffExclusions)
-            // thay vì `danhStreak` (từ futureSimulationService) để đồng bộ với Tổng Hợp Dự Đoán
-            const danhData = data.danh;
-            if (!danhData) {
+            const sourceItems = Array.isArray(latestPredictionItemsForExclusion)
+                ? latestPredictionItemsForExclusion
+                : [];
+            if (sourceItems.length === 0) {
                 section.style.display = 'none';
                 return;
             }
 
-            const betNumbers = (danhData.numbers || []).map(n => String(n).padStart(2, '0'));
-            const explanationNumbers = new Set();
-            (danhData.explanations || []).forEach(exp => {
-                (exp.numbers || []).forEach(n => {
-                    const num = parseInt(n, 10);
-                    if (!isNaN(num) && num >= 0 && num < 100) {
-                        explanationNumbers.add(String(num).padStart(2, '0'));
+            const activePredictionItems = sourceItems.filter(item => {
+                const sample = item.formationBaseCount || item.currentCount || 0;
+                return sample > 0
+                    && getPredictionRiskRate(item) >= selectedDropOffThreshold
+                    && getPredictionNumbers(item).length > 0;
+            });
+
+            const excludedSourceByNumber = new Map();
+            activePredictionItems.forEach((item, itemIndex) => {
+                getPredictionNumbers(item).forEach(numStr => {
+                    if (!excludedSourceByNumber.has(numStr)) {
+                        excludedSourceByNumber.set(numStr, {
+                            numStr,
+                            sourceRank: item.summaryRank || itemIndex + 1,
+                            title: item.streak.description,
+                            riskLabel: getPredictionRiskLabel(item),
+                            priority: item.exclusionPriority || 0
+                        });
                     }
                 });
             });
-            const excludedNumbers = Array.from(
-                explanationNumbers.size > 0
-                    ? explanationNumbers
-                    : new Set((danhData.excluded || []).map(n => String(n).padStart(2, '0')))
-            ).sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+
+            const excludedEntries = Array.from(excludedSourceByNumber.values())
+                .sort((a, b) => a.sourceRank - b.sourceRank || parseInt(a.numStr, 10) - parseInt(b.numStr, 10));
+            const excludedNumbers = excludedEntries.map(entry => entry.numStr);
             const displayBetNumbers = Array.from({ length: 100 }, (_, i) => String(i).padStart(2, '0'))
                 .filter(n => !excludedNumbers.includes(n));
-            const isSkipped = danhData.isSkipped;
 
-            if (!isSkipped && displayBetNumbers.length === 0 && excludedNumbers.length === 0) {
+            if (displayBetNumbers.length === 0 && excludedNumbers.length === 0) {
                 section.style.display = 'none';
                 return;
             }
 
             section.style.display = '';
+            if (titleSpan) {
+                titleSpan.textContent = 'Số Đánh & Loại Trừ (theo Tổng Hợp Dự Đoán)';
+            }
             if (countSpan) {
                 countSpan.textContent = `(${displayBetNumbers.length} đánh | ${excludedNumbers.length} loại trừ)`;
             }
@@ -487,10 +537,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             let gridHtml = `
                 <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div class="text-sm text-gray-600">
-                        <i class="bi bi-info-circle me-1"></i>Số <span class="text-teal-700 font-bold">XANH</span> = đánh, số <span class="text-red-600 font-bold">ĐỎ</span> = loại trừ (rủi ro gãy cao)
+                        <i class="bi bi-info-circle me-1"></i>Số <span class="text-teal-700 font-bold">XANH</span> = đánh, số <span class="text-red-600 font-bold">ĐỎ</span> = loại trừ theo thứ tự ưu tiên trong Tổng Hợp Dự Đoán
+                        <div class="text-xs text-gray-500 mt-1">${activePredictionItems.length} chuỗi đạt ngưỡng loại ≥ ${(selectedDropOffThreshold * 100).toFixed(0)}%</div>
                     </div>
                     <label class="inline-flex items-center gap-2 text-sm text-gray-700">
-                        <span>Ngưỡng drop-off</span>
+                        <span>Ngưỡng loại</span>
                         <select id="dropoff-threshold-select" class="rounded-md border-gray-300 text-sm px-2 py-1 focus:border-teal-500 focus:ring-teal-500">
                             ${[50, 60, 70, 75, 80, 85, 90, 95, 99].map(v => `<option value="${v / 100}" ${Math.round(selectedDropOffThreshold * 100) === v ? 'selected' : ''}>≥ ${v}%</option>`).join('')}
                         </select>
@@ -502,20 +553,50 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const numStr = String(i).padStart(2, '0');
                 let cellClass = '';
                 let cellStyle = '';
+                let titleText = numStr;
 
                 if (excludedSet.has(numStr)) {
                     cellStyle = 'background:rgba(239,68,68,0.15); color:#dc2626; border:1.5px solid #f87171; font-weight:700;';
+                    const source = excludedSourceByNumber.get(numStr);
+                    if (source) {
+                        titleText = `${numStr} • #${source.sourceRank} ${source.title} • ${source.riskLabel} • Ưu tiên ${source.priority}`;
+                    }
                 } else if (betSet.has(numStr)) {
                     cellStyle = 'background:rgba(20,184,166,0.15); color:#0d9488; border:1.5px solid #2dd4bf; font-weight:700;';
+                    titleText = `${numStr} • số đánh`;
                 } else {
                     cellStyle = 'background:#f9fafb; color:#9ca3af; border:1px solid #e5e7eb;';
                 }
 
-                gridHtml += `<div style="${cellStyle} text-align:center; padding:6px 2px; border-radius:6px; font-size:12px; font-family:monospace; cursor:default; transition:transform 0.1s;" 
+                gridHtml += `<div title="${escapeHtml(titleText)}" style="${cellStyle} text-align:center; padding:6px 2px; border-radius:6px; font-size:12px; font-family:monospace; cursor:default; transition:transform 0.1s;"
                     onmouseover="this.style.transform='scale(1.15)'" 
                     onmouseout="this.style.transform='scale(1)'">${numStr}</div>`;
             }
             gridHtml += '</div>';
+
+            const exclusionOrderHtml = excludedEntries.length > 0
+                ? `<div class="mt-4 rounded-lg border border-red-100 bg-red-50/40 p-3">
+                    <div class="mb-2 flex items-center justify-between gap-2">
+                        <div class="text-sm font-bold text-red-700"><i class="bi bi-sort-down mr-1"></i>Thứ tự loại trừ theo Tổng Hợp Dự Đoán</div>
+                        <div class="text-[11px] text-red-500">Số bị loại bởi chuỗi ưu tiên cao nhất trước</div>
+                    </div>
+                    <div class="max-h-48 overflow-y-auto pr-1">
+                        <div class="flex flex-wrap gap-1.5">
+                            ${excludedEntries.map((entry, index) => `
+                                <span title="${escapeHtml(`#${entry.sourceRank} ${entry.title} • ${entry.riskLabel} • Ưu tiên ${entry.priority}`)}" class="inline-flex items-center gap-1 rounded-md border border-red-200 bg-white px-2 py-1 text-xs text-red-700">
+                                    <span class="font-mono text-[10px] text-gray-400">${index + 1}</span>
+                                    <span class="font-mono font-bold">${entry.numStr}</span>
+                                    <span class="text-[10px] text-gray-500">#${entry.sourceRank}</span>
+                                </span>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>`
+                : `<div class="mt-4 rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-sm text-emerald-700">
+                    Không có số nào đạt ngưỡng loại theo Tổng Hợp Dự Đoán hiện tại.
+                </div>`;
+
+            gridHtml += exclusionOrderHtml;
 
             // Summary stats
             gridHtml += `
@@ -533,7 +614,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <div class="text-xs text-gray-500">Coverage</div>
                     </div>
                     <div class="bg-blue-50 rounded-lg p-3 text-center border border-blue-200">
-                        <div class="text-2xl font-bold text-blue-700">${data.date || '-'}</div>
+                        <div class="text-2xl font-bold text-blue-700">${latestPredictionDateForExclusion || '-'}</div>
                         <div class="text-xs text-blue-500">Ngày dự đoán</div>
                     </div>
                 </div>
@@ -752,12 +833,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const sample = formationBaseCount || currentCount || 0;
                     return sample > 0 && ((exclusionRate || 0) > 0 || (dropOffRate || 0) > 0);
                 });
+                const predictionDate = forDate ? getNextDay(forDate) : '';
+                latestPredictionItemsForExclusion = predItems.map((item, index) => ({ ...item, summaryRank: index + 1 }));
+                latestPredictionDateForExclusion = predictionDate;
+                fetchStreakExclusion();
                 if (predItems.length > 0) {
                     predSummarySection.style.display = '';
                     if (predSummaryTitle) {
-                        const nextDate = forDate ? getNextDay(forDate) : '';
-                        predSummaryTitle.innerHTML = nextDate
-                            ? `Tổng Hợp Dự Đoán — <span class="text-red-600 font-bold">${nextDate}</span>`
+                        predSummaryTitle.innerHTML = predictionDate
+                            ? `Tổng Hợp Dự Đoán — <span class="text-red-600 font-bold">${predictionDate}</span>`
                             : 'Tổng Hợp Dự Đoán';
                     }
                     predSummaryCount.textContent = `(${predItems.length} chuỗi)`;

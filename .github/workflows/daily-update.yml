@@ -2,8 +2,10 @@ name: Daily Vina Lottery Static Generator
 
 on:
   schedule:
-    # Chạy hàng ngày lúc 18:45 VN (tương đương 11:45 UTC)
+    # Chạy hàng ngày sau giờ quay XSMB: 18:45 VN (11:45 UTC)
     - cron: '45 11 * * *'
+    # Retry an toàn lúc 19:15 VN nếu nguồn kết quả cập nhật chậm.
+    - cron: '15 12 * * *'
   workflow_dispatch:
 
 permissions:
@@ -12,6 +14,7 @@ permissions:
 jobs:
   generator:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -30,9 +33,37 @@ jobs:
       - name: Pull Data & Generate Static JSON
         run: node scripts/update-static-data.js
 
+      - name: Kiểm tra dữ liệu có thay đổi không
+        id: changes
+        run: |
+          if git diff --quiet -- lib/data/xsmb-2-digits.json lib/data/statistics; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Không có dữ liệu mới, bỏ qua build/commit."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Có dữ liệu mới, sẽ build kiểm tra trước khi commit."
+          fi
+
+      - name: Build kiểm tra trước khi deploy
+        if: steps.changes.outputs.changed == 'true'
+        run: npm run build
+
       - name: Tự động commit và đẩy dữ liệu mới
+        if: steps.changes.outputs.changed == 'true'
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add lib/data/xsmb-2-digits.json lib/data/statistics/*.json
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-update: Kết quả xổ số & Thống kê Tĩnh (Bot)" && git push)
+          git commit -m "Auto-update: Kết quả xổ số & Thống kê Tĩnh (Bot)"
+          git push
+
+      - name: Kích hoạt Vercel Deploy Hook dự phòng
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -n "$VERCEL_DEPLOY_HOOK_URL" ]; then
+            curl -fsS -X POST "$VERCEL_DEPLOY_HOOK_URL"
+          else
+            echo "Không cấu hình VERCEL_DEPLOY_HOOK_URL; Vercel sẽ deploy qua Git integration khi workflow push commit."
+          fi
