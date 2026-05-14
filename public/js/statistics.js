@@ -232,6 +232,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
 
+    const renderHeaderTooltip = (label, tooltip, alignClass = '') => `
+        <th class="px-3 py-2 ${alignClass}">
+            <span class="inline-flex items-center gap-1 ${alignClass.includes('text-center') ? 'justify-center' : ''}">
+                <span>${label}</span>
+                <i class="bi bi-question-circle text-[10px] text-gray-400 normal-case cursor-help"
+                    title="${escapeHtml(tooltip)}"
+                    aria-label="${escapeHtml(tooltip)}"></i>
+            </span>
+        </th>
+    `;
+
     const reliabilityBadgeClass = (score) => {
         const value = Number(score || 0);
         if (value >= 75) return 'bg-emerald-100 text-emerald-800 border-emerald-200';
@@ -907,19 +918,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <div class="overflow-x-auto"><table class="min-w-full text-xs text-left text-gray-500">
                         <thead class="text-xs text-gray-700 uppercase bg-amber-50">
                             <tr>
-                                <th class="px-3 py-2">Dạng chuỗi</th>
-                                <th class="px-3 py-2 text-center">Độ dài</th>
-                                <th class="px-3 py-2 text-center">Ưu tiên loại</th>
-                                <th class="px-3 py-2 text-center">Gãy / Không HT</th>
-                                <th class="px-3 py-2 text-center">HT</th>
-                                <th class="px-3 py-2 text-center">Tin cậy</th>
-                                <th class="px-3 py-2 text-center">Lower</th>
-                                <th class="px-3 py-2 text-center">SL đạt</th>
-                                <th class="px-3 py-2 text-center">SL tiếp tục</th>
-                                <th class="px-3 py-2 text-center">TB dài</th>
-                                <th class="px-3 py-2 text-center">TB cách</th>
-                                <th class="px-3 py-2 text-center">Gần nhất</th>
-                                <th class="px-3 py-2">Số dự đoán</th>
+                                ${renderHeaderTooltip('Dạng chuỗi', 'Tên pattern đang được dùng để dự đoán. Nhãn tiềm năng nghĩa là chuỗi còn 1 ngày nữa mới hình thành.')}
+                                ${renderHeaderTooltip('Độ dài', 'Độ dài chuỗi hiện tại. Với chuỗi tiềm năng, mũi tên cho biết nếu ngày mai tiếp tục thì sẽ hình thành chuỗi ở độ dài này.', 'text-center')}
+                                ${renderHeaderTooltip('Ưu tiên loại', 'Điểm 0-100 dùng để sắp xếp khả năng loại trừ. Công thức hiện tại: 55% rủi ro gãy/không hình thành, 25% Wilson lower bound, 15% độ tin cậy, 5% cỡ mẫu.', 'text-center')}
+                                ${renderHeaderTooltip('Gãy / Không HT', 'Chuỗi đã hình thành hiển thị tỷ lệ gãy lịch sử. Chuỗi tiềm năng hiển thị tỷ lệ không hình thành; dòng phụ cho biết nếu đã hình thành thì tỷ lệ gãy sau đó là bao nhiêu.', 'text-center')}
+                                ${renderHeaderTooltip('HT', 'Tỷ lệ hình thành của chuỗi tiềm năng. Dòng phụ là số tiền đề hoặc số ngày mẫu dùng để tính tỷ lệ này.', 'text-center')}
+                                ${renderHeaderTooltip('Tin cậy', 'Score tổng hợp từ Wilson lower bound, tỷ lệ gãy/không hình thành, cỡ mẫu, độ gần hiện tại, nhịp xuất hiện và độ dài so với trung bình.', 'text-center')}
+                                ${renderHeaderTooltip('Lower', 'Wilson lower bound: cận dưới tin cậy của tỷ lệ gãy hoặc không hình thành, giúp tránh ưu tiên ảo khi mẫu quá ít.', 'text-center')}
+                                ${renderHeaderTooltip('SL đạt', 'Số lần lịch sử đạt mốc đang xét. Với chuỗi tiềm năng, dòng phụ hiển thị tần suất hình thành mỗi năm.', 'text-center')}
+                                ${renderHeaderTooltip('SL tiếp tục', 'Số lần lịch sử tiếp tục sang mốc kế tiếp sau độ dài đang xét. Số này càng thấp thì rủi ro gãy càng cao.', 'text-center')}
+                                ${renderHeaderTooltip('TB dài', 'Độ dài trung bình của các lần chuỗi này từng xuất hiện trong lịch sử.', 'text-center')}
+                                ${renderHeaderTooltip('TB cách', 'Khoảng cách trung bình giữa các lần xuất hiện của chuỗi trong lịch sử.', 'text-center')}
+                                ${renderHeaderTooltip('Gần nhất', 'Số ngày từ lần xuất hiện gần nhất của chuỗi tới ngày đang dùng làm dữ liệu hiện tại.', 'text-center')}
+                                ${renderHeaderTooltip('Số dự đoán', 'Danh sách số bị tác động bởi chuỗi này. Các số này được đưa vào tập loại trừ theo thứ tự ưu tiên.')}
                             </tr>
                         </thead><tbody>`;
                     reliabilityItems.forEach(({ streak, streakLen, dropOffRate, exclusionRate, exclusionPriority, nextLen, currentCount, nextCount, formFrequencyPerYear, reliability, formationBaseCount, formationRate, nonFormationRate, nonFormationLowerBound, usesFrequencyFallback }) => {

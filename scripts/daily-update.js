@@ -1,6 +1,6 @@
 /**
  * daily-update.js — SMART INCREMENTAL VERSION
- * Script chạy bởi GitHub Actions hàng ngày (7AM + 7PM VN)
+ * Script lịch sử cho workflow cũ. Workflow Static JSON hiện chạy 18:40 GMT+7 qua scripts/update-static-data.js.
  * 
  * Tối ưu Supabase Free Tier:
  * - Chỉ 1 query nhẹ để kiểm tra ngày mới nhất trong DB

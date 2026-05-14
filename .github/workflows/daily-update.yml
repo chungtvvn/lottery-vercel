@@ -2,10 +2,8 @@ name: Daily Vina Lottery Static Generator
 
 on:
   schedule:
-    # Chạy hàng ngày sau giờ quay XSMB: 18:45 VN (11:45 UTC)
-    - cron: '45 11 * * *'
-    # Retry an toàn lúc 19:15 VN nếu nguồn kết quả cập nhật chậm.
-    - cron: '15 12 * * *'
+    # Chạy hàng ngày lúc 18:40 GMT+7 (Hà Nội) = 11:40 UTC.
+    - cron: '40 11 * * *'
   workflow_dispatch:
 
 permissions:
