@@ -12,23 +12,27 @@ permissions:
 jobs:
   generator:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 120
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v5
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
 
       - name: Pull Data & Generate Static JSON
+        env:
+          WAIT_FOR_NEW_XOSO: '1'
+          XOSO_MAX_WAIT_MINUTES: '90'
+          XOSO_RETRY_INTERVAL_SECONDS: '60'
         run: node scripts/update-static-data.js
 
       - name: Kiểm tra dữ liệu có thay đổi không

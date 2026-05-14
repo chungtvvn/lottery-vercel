@@ -1,4 +1,6 @@
+const XOSO_HOME_URL = 'https://xoso.com.vn/';
 const XOSO_XSMB_URL = 'https://xoso.com.vn/xo-so-mien-bac/xsmb-p1.html';
+const XOSO_SOURCE_URLS = [XOSO_HOME_URL, XOSO_XSMB_URL];
 
 const REQUIRED_PRIZE_COUNTS = {
     DB: 1,
@@ -22,22 +24,36 @@ const DATA_KEYS = [
     'prize7_1', 'prize7_2', 'prize7_3', 'prize7_4'
 ];
 
-async function fetchText(url) {
-    const response = await fetch(url, {
-        headers: {
-            'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'accept-language': 'vi-VN,vi;q=0.9,en;q=0.8',
-            'cache-control': 'no-cache',
-            'pragma': 'no-cache',
-            'user-agent': 'Mozilla/5.0 (compatible; lottery-stats-updater/1.0)'
+async function fetchText(url, options = {}) {
+    const timeoutMs = Number(options.timeoutMs || 20000);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+        const response = await fetch(url, {
+            signal: controller.signal,
+            headers: {
+                'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'accept-language': 'vi-VN,vi;q=0.9,en;q=0.8',
+                'cache-control': 'no-cache',
+                'pragma': 'no-cache',
+                'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36 lottery-stats-updater/1.0'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`xoso.com.vn trả về HTTP ${response.status}`);
         }
-    });
 
-    if (!response.ok) {
-        throw new Error(`xoso.com.vn trả về HTTP ${response.status}`);
+        return response.text();
+    } catch (error) {
+        if (error && error.name === 'AbortError') {
+            throw new Error(`Timeout sau ${timeoutMs}ms khi tải ${url}`);
+        }
+        throw error;
+    } finally {
+        clearTimeout(timeout);
     }
-
-    return response.text();
 }
 
 function extractEmbeddedLotteryJson(html) {
@@ -189,13 +205,34 @@ function convertXosoResultToDataRow(result) {
 }
 
 async function fetchLatestXsmbResult(options = {}) {
-    const url = options.url || XOSO_XSMB_URL;
-    const html = await fetchText(url);
-    return convertXosoResultToDataRow(parseLatestXsmbResult(html));
+    const urls = options.urls || (options.url ? [options.url] : XOSO_SOURCE_URLS);
+    const uniqueUrls = [...new Set(urls.filter(Boolean))];
+    const errors = [];
+
+    for (const url of uniqueUrls) {
+        try {
+            const html = await fetchText(url, { timeoutMs: options.timeoutMs });
+            const row = convertXosoResultToDataRow(parseLatestXsmbResult(html));
+            Object.defineProperty(row, '_sourceUrl', {
+                value: url,
+                enumerable: false
+            });
+            return row;
+        } catch (error) {
+            errors.push(`${url}: ${error.message}`);
+            if (options.throwOnFirstError) {
+                throw error;
+            }
+        }
+    }
+
+    throw new Error(`Không lấy được kết quả XSMB từ xoso.com.vn. ${errors.join(' | ')}`);
 }
 
 module.exports = {
+    XOSO_HOME_URL,
     XOSO_XSMB_URL,
+    XOSO_SOURCE_URLS,
     parseLatestXsmbResult,
     convertXosoResultToDataRow,
     fetchLatestXsmbResult

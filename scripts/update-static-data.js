@@ -1,11 +1,20 @@
 const fs = require('fs').promises;
 const path = require('path');
 const https = require('https');
-const { fetchLatestXsmbResult, XOSO_XSMB_URL } = require('./sources/xoso-com-vn');
+const { fetchLatestXsmbResult, XOSO_HOME_URL, XOSO_SOURCE_URLS } = require('./sources/xoso-com-vn');
 
 const LEGACY_DATA_URL = 'https://raw.githubusercontent.com/khiemdoan/vietnam-lottery-xsmb-analysis/refs/heads/main/data/xsmb-2-digits.json';
 const DATA_DIR = path.join(__dirname, '..', 'lib', 'data');
 const JSON_FILE = path.join(DATA_DIR, 'xsmb-2-digits.json');
+const WAIT_FOR_NEW_XOSO = process.env.WAIT_FOR_NEW_XOSO === '1';
+const XOSO_MAX_WAIT_MINUTES = readNumberEnv('XOSO_MAX_WAIT_MINUTES', WAIT_FOR_NEW_XOSO ? 90 : 0, 0);
+const XOSO_RETRY_INTERVAL_SECONDS = readNumberEnv('XOSO_RETRY_INTERVAL_SECONDS', 60, 5);
+
+function readNumberEnv(name, fallback, minValue) {
+    const parsed = Number(process.env[name]);
+    if (!Number.isFinite(parsed)) return fallback;
+    return Math.max(minValue, parsed);
+}
 
 async function readJsonIfExists(filePath) {
     try {
@@ -93,6 +102,70 @@ function daysBetweenDates(fromDate, toDate) {
     return Math.round((to.getTime() - from.getTime()) / 86400000);
 }
 
+function compareDateValues(a, b) {
+    if (!a || !b) return 0;
+    return String(a).substring(0, 10).localeCompare(String(b).substring(0, 10));
+}
+
+function getVietnamTodayDate(date = new Date()) {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Ho_Chi_Minh',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    }).formatToParts(date);
+    const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+    return `${values.year}-${values.month}-${values.day}`;
+}
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function fetchLatestXsmbResultWithRetry(latestLocalDate) {
+    const targetDate = process.env.XOSO_TARGET_DATE || getVietnamTodayDate();
+    const shouldRequireTargetDate = WAIT_FOR_NEW_XOSO
+        && latestLocalDate
+        && compareDateValues(targetDate, latestLocalDate) > 0;
+    const deadline = Date.now() + (XOSO_MAX_WAIT_MINUTES * 60 * 1000);
+    let attempt = 0;
+    let lastSeenDate = null;
+    let lastError = null;
+
+    while (true) {
+        attempt += 1;
+
+        try {
+            const row = await fetchLatestXsmbResult();
+            lastSeenDate = row.date;
+            const meetsTargetDate = !shouldRequireTargetDate || compareDateValues(row.date, targetDate) >= 0;
+            const isNewerThanLocal = !latestLocalDate || compareDateValues(row.date, latestLocalDate) > 0;
+
+            if (meetsTargetDate && (isNewerThanLocal || !shouldRequireTargetDate)) {
+                console.log(`[1b] xoso.com.vn trả kết quả ngày ${row.date} từ ${row._sourceUrl || XOSO_HOME_URL} sau ${attempt} lần thử.`);
+                return row;
+            }
+
+            lastError = new Error(`Nguồn mới nhất là ${row.date}, local=${latestLocalDate}, cần >= ${targetDate}`);
+            console.log(`[1b] Lần ${attempt}: ${lastError.message}. Sẽ thử lại.`);
+        } catch (error) {
+            lastError = error;
+            console.warn(`[1b] Lần ${attempt}: chưa lấy được dữ liệu từ xoso.com.vn (${error.message}).`);
+        }
+
+        const remainingMs = deadline - Date.now();
+        if (!WAIT_FOR_NEW_XOSO || !shouldRequireTargetDate || remainingMs <= 0) {
+            if (shouldRequireTargetDate) {
+                throw new Error(`Chưa lấy được kết quả XSMB mới ngày ${targetDate} sau ${XOSO_MAX_WAIT_MINUTES} phút. Latest source=${lastSeenDate || 'unknown'}. Lỗi cuối: ${lastError ? lastError.message : 'unknown'}`);
+            }
+            throw lastError;
+        }
+
+        const waitMs = Math.min(XOSO_RETRY_INTERVAL_SECONDS * 1000, remainingMs);
+        await sleep(waitMs);
+    }
+}
+
 function mergeRowsByDate(currentRows, incomingRows) {
     const byDate = new Map();
     for (const row of currentRows || []) {
@@ -178,9 +251,12 @@ async function buildRawDataFromSources(currentArray) {
     }
 
     try {
-        console.log(`[1b] Lấy kết quả XSMB mới nhất từ ${XOSO_XSMB_URL}...`);
-        const latestXosoRow = await fetchLatestXsmbResult();
         const latestLocalDate = getLatestDateValue(finalArray);
+        console.log(`[1b] Lấy kết quả XSMB mới nhất từ ${XOSO_SOURCE_URLS.join(', ')}...`);
+        if (WAIT_FOR_NEW_XOSO) {
+            console.log(`[1b] Bật chế độ chờ dữ liệu mới: target=${process.env.XOSO_TARGET_DATE || getVietnamTodayDate()}, local=${latestLocalDate || 'none'}, retry=${XOSO_RETRY_INTERVAL_SECONDS}s, max=${XOSO_MAX_WAIT_MINUTES} phút.`);
+        }
+        const latestXosoRow = await fetchLatestXsmbResultWithRetry(latestLocalDate);
         const gapDays = daysBetweenDates(latestLocalDate, latestXosoRow.date);
 
         if (gapDays > 1) {
@@ -194,11 +270,11 @@ async function buildRawDataFromSources(currentArray) {
         }
 
         finalArray = mergeRowsByDate(finalArray, [latestXosoRow]);
-        sourceLog.push(`xoso:${latestXosoRow.date}`);
+        sourceLog.push(`xoso:${latestXosoRow.date}@${latestXosoRow._sourceUrl || XOSO_HOME_URL}`);
         console.log(`[1d] Đã parse kết quả xoso.com.vn ngày ${latestXosoRow.date}, ĐB=${String(latestXosoRow.special).padStart(2, '0')}`);
     } catch (xosoError) {
         console.warn(`[1b] Không lấy được kết quả xoso.com.vn: ${xosoError.message}`);
-        if (finalArray.length === 0) {
+        if (finalArray.length === 0 || WAIT_FOR_NEW_XOSO) {
             throw xosoError;
         }
     }
@@ -428,4 +504,7 @@ async function main() {
     console.log('[5] Hoàn tất Update Workflow Tĩnh (Static). Các file json đã sẵn sàng trong lib/data/statistics/');
 }
 
-main().catch(console.error);
+main().catch(error => {
+    console.error(error);
+    process.exit(1);
+});

@@ -18,7 +18,7 @@ export async function POST(request) {
             return NextResponse.json({
                 success: true,
                 step: 'data',
-                message: 'Dữ liệu được cập nhật tự động qua GitHub Actions hàng ngày lúc 18:40 GMT+7 (Hà Nội), lấy kết quả mới từ xoso.com.vn rồi sinh lại Static JSON.',
+                message: 'Dữ liệu được cập nhật tự động qua GitHub Actions hàng ngày lúc 18:40 GMT+7 (Hà Nội). Workflow sẽ thử lại từ xoso.com.vn đến khi lấy được kết quả mới rồi sinh lại toàn bộ Static JSON/thống kê.',
                 newCount: 0
             });
         }
