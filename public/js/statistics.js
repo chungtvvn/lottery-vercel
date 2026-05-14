@@ -232,16 +232,128 @@ document.addEventListener('DOMContentLoaded', async () => {
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
 
+    let activePredictionTooltipTarget = null;
+
+    const getPredictionTooltipElement = () => {
+        let tooltip = document.getElementById('prediction-column-tooltip');
+        if (tooltip) return tooltip;
+
+        tooltip = document.createElement('div');
+        tooltip.id = 'prediction-column-tooltip';
+        tooltip.setAttribute('role', 'tooltip');
+        tooltip.style.cssText = [
+            'position:fixed',
+            'z-index:99999',
+            'display:none',
+            'max-width:320px',
+            'padding:10px 12px',
+            'border-radius:8px',
+            'background:#111827',
+            'color:#fff',
+            'font-size:12px',
+            'line-height:1.45',
+            'box-shadow:0 12px 28px rgba(15,23,42,0.28)',
+            'pointer-events:none',
+            'opacity:0',
+            'transform:translateY(4px)',
+            'transition:opacity 120ms ease, transform 120ms ease'
+        ].join(';');
+        document.body.appendChild(tooltip);
+        return tooltip;
+    };
+
+    const positionPredictionTooltip = (target, tooltip) => {
+        const rect = target.getBoundingClientRect();
+        tooltip.style.display = 'block';
+        tooltip.style.left = '0px';
+        tooltip.style.top = '0px';
+
+        const tooltipRect = tooltip.getBoundingClientRect();
+        const margin = 10;
+        let left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+        left = Math.max(8, Math.min(left, window.innerWidth - tooltipRect.width - 8));
+
+        let top = rect.bottom + margin;
+        if (top + tooltipRect.height > window.innerHeight - 8) {
+            top = Math.max(8, rect.top - tooltipRect.height - margin);
+        }
+
+        tooltip.style.left = `${left}px`;
+        tooltip.style.top = `${top}px`;
+    };
+
+    const showPredictionTooltip = (target) => {
+        const text = target && target.getAttribute('data-tooltip');
+        if (!text) return;
+
+        activePredictionTooltipTarget = target;
+        const tooltip = getPredictionTooltipElement();
+        tooltip.textContent = text;
+        positionPredictionTooltip(target, tooltip);
+        requestAnimationFrame(() => {
+            tooltip.style.opacity = '1';
+            tooltip.style.transform = 'translateY(0)';
+        });
+    };
+
+    const hidePredictionTooltip = () => {
+        activePredictionTooltipTarget = null;
+        const tooltip = document.getElementById('prediction-column-tooltip');
+        if (!tooltip) return;
+        tooltip.style.opacity = '0';
+        tooltip.style.transform = 'translateY(4px)';
+        window.setTimeout(() => {
+            if (!activePredictionTooltipTarget) tooltip.style.display = 'none';
+        }, 130);
+    };
+
+    const setupPredictionTooltips = () => {
+        if (window.__predictionTooltipsReady) return;
+        window.__predictionTooltipsReady = true;
+
+        document.addEventListener('pointerover', (event) => {
+            const target = event.target.closest('[data-tooltip]');
+            if (!target || !target.classList.contains('prediction-header-tooltip')) return;
+            showPredictionTooltip(target);
+        });
+
+        document.addEventListener('pointerout', (event) => {
+            const target = event.target.closest('[data-tooltip]');
+            if (!target || !target.classList.contains('prediction-header-tooltip')) return;
+            const related = event.relatedTarget;
+            if (related && target.contains(related)) return;
+            hidePredictionTooltip();
+        });
+
+        document.addEventListener('focusin', (event) => {
+            const target = event.target.closest('[data-tooltip]');
+            if (!target || !target.classList.contains('prediction-header-tooltip')) return;
+            showPredictionTooltip(target);
+        });
+
+        document.addEventListener('focusout', (event) => {
+            const target = event.target.closest('[data-tooltip]');
+            if (!target || !target.classList.contains('prediction-header-tooltip')) return;
+            hidePredictionTooltip();
+        });
+
+        window.addEventListener('scroll', hidePredictionTooltip, true);
+        window.addEventListener('resize', hidePredictionTooltip);
+    };
+
     const renderHeaderTooltip = (label, tooltip, alignClass = '') => `
         <th class="px-3 py-2 ${alignClass}">
-            <span class="inline-flex items-center gap-1 ${alignClass.includes('text-center') ? 'justify-center' : ''}">
+            <span class="prediction-header-tooltip inline-flex items-center gap-1 rounded px-1 py-0.5 normal-case cursor-help hover:bg-amber-100 focus:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-300 ${alignClass.includes('text-center') ? 'justify-center' : ''}"
+                data-tooltip="${escapeHtml(tooltip)}"
+                tabindex="0"
+                aria-label="${escapeHtml(`${label}: ${tooltip}`)}">
                 <span>${label}</span>
-                <i class="bi bi-question-circle text-[10px] text-gray-400 normal-case cursor-help"
-                    title="${escapeHtml(tooltip)}"
-                    aria-label="${escapeHtml(tooltip)}"></i>
+                <i class="bi bi-question-circle text-[10px] text-gray-400"></i>
             </span>
         </th>
     `;
+
+    setupPredictionTooltips();
 
     const reliabilityBadgeClass = (score) => {
         const value = Number(score || 0);

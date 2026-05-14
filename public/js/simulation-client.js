@@ -400,7 +400,7 @@
     }
 
     async function runSimulation() {
-        const days = el('simulationDays') ? el('simulationDays').value : 30;
+        const days = el('simulationDays') ? el('simulationDays').value : 7;
         setLoading(true);
         showError('');
 

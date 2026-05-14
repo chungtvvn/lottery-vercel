@@ -6,7 +6,7 @@ export async function GET(request) {
         await lotteryService.loadAll();
         const simulationService = require('@/lib/services/simulationService');
         const url = new URL(request.url);
-        const days = parseInt(url.searchParams.get('days')) || 30;
+        const days = parseInt(url.searchParams.get('days')) || 7;
         if (days < 7 || days > 365) {
             return NextResponse.json({ error: 'Số ngày phải từ 7 đến 365' }, { status: 400 });
         }
