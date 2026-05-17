@@ -236,11 +236,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     const getStreakRecordLength = (streak) => {
+        const longestLength = streak && Array.isArray(streak.longest) && streak.longest[0]
+            ? streak.longest[0].length
+            : null;
         const candidates = [
-            streak && streak.recordLength,
-            streak && streak.computedMaxStreak,
             streak && streak.originalRecord,
-            streak && streak.reliability && streak.reliability.maxLength
+            longestLength,
+            streak && streak.reliability && streak.reliability.maxLength,
+            streak && streak.recordLength,
+            streak && streak.computedMaxStreak
         ];
         const value = candidates.find(candidate => Number.isFinite(Number(candidate)) && Number(candidate) > 0);
         return value ? Number(value) : 0;
@@ -1142,7 +1146,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <tr>
                                 ${renderHeaderTooltip('Dạng chuỗi', 'Tên pattern đang được dùng để dự đoán. Nhãn tiềm năng nghĩa là chuỗi còn 1 ngày nữa mới hình thành.')}
                                 ${renderHeaderTooltip('Độ dài', 'Độ dài chuỗi hiện tại. Với chuỗi tiềm năng, mũi tên cho biết nếu ngày mai tiếp tục thì sẽ hình thành chuỗi ở độ dài này.', 'text-center')}
-                                ${renderHeaderTooltip('Kỷ lục', 'Mốc kỷ lục lịch sử của riêng chuỗi này, dùng để so sánh chuỗi hiện tại đang cách hoặc đã vượt kỷ lục bao nhiêu ngày.', 'text-center')}
+                                ${renderHeaderTooltip('Kỷ lục', 'Số ngày dài nhất chuỗi dạng này từng kéo dài trong toàn bộ lịch sử dữ liệu.', 'text-center')}
                                 ${renderHeaderTooltip('Ưu tiên loại', 'Điểm 0-100 dùng để sắp xếp khả năng loại trừ. Công thức hiện tại: 55% rủi ro gãy/không hình thành, 25% Wilson lower bound, 15% độ tin cậy, 5% cỡ mẫu.', 'text-center')}
                                 ${renderHeaderTooltip('Gãy / Không HT', 'Chuỗi đã hình thành hiển thị tỷ lệ gãy lịch sử. Chuỗi tiềm năng hiển thị tỷ lệ không hình thành; dòng phụ cho biết nếu đã hình thành thì tỷ lệ gãy sau đó là bao nhiêu.', 'text-center')}
                                 ${renderHeaderTooltip('HT', 'Tỷ lệ hình thành của chuỗi tiềm năng. Dòng phụ là số tiền đề hoặc số ngày mẫu dùng để tính tỷ lệ này.', 'text-center')}
@@ -1360,7 +1364,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                             // Tiến Lùi So Le: step = 1, So Le thường: step = 2
                             const nextLen = isSoLePattern ? parseInt(length) + 2 : parseInt(length) + 1;
                             const currentLen = parseInt(length);
-                            const hasReachedRecord = currentLen >= streak.recordLength && streak.recordLength > 0;
+                            const actualRecordLengthInner = getStreakRecordLength(streak);
+                            const hasReachedRecord = actualRecordLengthInner > 0 && currentLen >= actualRecordLengthInner;
 
                             // Debug log for so le detection
                             if (isSoLeByDesc) {
