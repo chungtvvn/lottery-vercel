@@ -411,6 +411,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         return Math.max(0, Math.min(1, Math.log10(sample + 1) / Math.log10(100)));
     };
 
+    const formationScarcityScore = (frequencyPerYear) => {
+        const frequency = Number(frequencyPerYear);
+        if (!Number.isFinite(frequency) || frequency <= 0) return 1;
+        return Math.max(0, Math.min(1, 1 - (Math.log10(frequency + 1) / Math.log10(25))));
+    };
+
     const isHistoricalRecordDropOffItem = (item) => {
         if (!item || (item.streak && item.streak.isPotential)) return false;
         const recordLength = getStreakRecordLength(item.streak);
@@ -435,7 +441,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const trust = Number.isFinite(rawTrust)
             ? Math.max(0, Math.min(1, rawTrust / 100))
             : Math.max(0, Math.min(1, lower * 0.72 + sample * 0.28));
-        const baseScore = (rate * 0.55 + lower * 0.25 + trust * 0.15 + sample * 0.05) * 100;
+        const potentialNeedsFrequencyGuard = !!(item.streak && item.streak.isPotential) && !!item.usesFrequencyFallback;
+        const scarcity = potentialNeedsFrequencyGuard ? formationScarcityScore(item.formFrequencyPerYear) : 1;
+        const baseScore = potentialNeedsFrequencyGuard
+            ? (rate * 0.40 + lower * 0.22 + trust * 0.12 + sample * 0.06 + scarcity * 0.20) * 100
+            : (rate * 0.55 + lower * 0.25 + trust * 0.15 + sample * 0.05) * 100;
         const recordScore = isHistoricalRecordDropOffItem(item) ? 100 : 0;
         return Math.round(Math.max(baseScore, recordScore) * 10) / 10;
     };
@@ -1139,7 +1149,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <div>
                                     <div class="font-bold"><i class="bi bi-shield-check mr-1"></i>Độ tin cậy lịch sử của toàn bộ chuỗi dự đoán</div>
                                     <div class="mt-1 text-xs leading-5 text-blue-700">
-                                        Tính trên ${yearsText} năm dữ liệu: chuỗi đã hình thành dùng tỷ lệ gãy; chuỗi tiềm năng dùng tỷ lệ không hình thành. Điểm ưu tiên loại còn xét Wilson lower bound, cỡ mẫu, độ tin cậy và nhịp xuất hiện; chuỗi đã chạm kỷ lục lịch sử thật và chưa từng tiếp tục được đẩy lên nhóm ưu tiên cao nhất.
+                                        Tính trên ${yearsText} năm dữ liệu: chuỗi đã hình thành dùng tỷ lệ gãy; chuỗi tiềm năng dùng tỷ lệ không hình thành. Điểm ưu tiên loại còn xét Wilson lower bound, cỡ mẫu, độ tin cậy, nhịp xuất hiện và tần suất hình thành/năm; chuỗi đã chạm kỷ lục lịch sử thật và chưa từng tiếp tục được đẩy lên nhóm ưu tiên cao nhất.
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-3 gap-2 text-center text-xs">
@@ -1165,7 +1175,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 ${renderHeaderTooltip('Dạng chuỗi', 'Tên pattern đang được dùng để dự đoán. Nhãn tiềm năng nghĩa là chuỗi còn 1 ngày nữa mới hình thành.')}
                                 ${renderHeaderTooltip('Độ dài', 'Độ dài chuỗi hiện tại. Với chuỗi tiềm năng, mũi tên cho biết nếu ngày mai tiếp tục thì sẽ hình thành chuỗi ở độ dài này.', 'text-center')}
                                 ${renderHeaderTooltip('Kỷ lục', 'Số ngày dài nhất chuỗi dạng này từng kéo dài trong toàn bộ lịch sử dữ liệu.', 'text-center')}
-                                ${renderHeaderTooltip('Ưu tiên loại', 'Điểm 0-100 dùng để sắp xếp khả năng loại trừ. Công thức hiện tại: 55% rủi ro gãy/không hình thành, 25% Wilson lower bound, 15% độ tin cậy, 5% cỡ mẫu. Chuỗi đã chạm kỷ lục lịch sử thật và chưa từng tiếp tục được ưu tiên gần 100 để xếp trước.', 'text-center')}
+                                ${renderHeaderTooltip('Ưu tiên loại', 'Điểm 0-100 dùng để sắp xếp khả năng loại trừ. Chuỗi đã hình thành dùng 55% rủi ro gãy/không hình thành, 25% Wilson lower bound, 15% độ tin cậy, 5% cỡ mẫu. Chuỗi tiềm năng thiếu mẫu tiền đề điều kiện được điều chỉnh thêm theo tần suất hình thành/năm để tránh ưu tiên ảo.', 'text-center')}
                                 ${renderHeaderTooltip('Gãy / Không HT', 'Chuỗi đã hình thành hiển thị tỷ lệ gãy lịch sử. Chuỗi tiềm năng hiển thị tỷ lệ không hình thành; dòng phụ cho biết nếu đã hình thành thì tỷ lệ gãy sau đó là bao nhiêu.', 'text-center')}
                                 ${renderHeaderTooltip('HT', 'Tỷ lệ hình thành của chuỗi tiềm năng. Dòng phụ là số tiền đề hoặc số ngày mẫu dùng để tính tỷ lệ này.', 'text-center')}
                                 ${renderHeaderTooltip('Tin cậy', 'Score tổng hợp từ Wilson lower bound, tỷ lệ gãy/không hình thành, cỡ mẫu, độ gần hiện tại, nhịp xuất hiện và độ dài so với trung bình.', 'text-center')}
