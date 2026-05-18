@@ -11,7 +11,8 @@
         dropoff85Edge: 'Ưu tiên 85 + Edge',
         ranked40to50: 'Ưu tiên loại 40-50',
         ranked60to70: 'Ưu tiên loại 60-70',
-        combined20to30: 'Tổng hợp rủi ro 30'
+        combined20to30: 'Tổng hợp rủi ro 30',
+        scoringProtected30: 'Scoring bảo vệ 30'
     };
 
     function methodDescription(methodId) {
@@ -19,6 +20,7 @@
         if (methodId === 'dropoff85Edge') return 'Chỉ lấy chuỗi ưu tiên >= 85 khi rủi ro vượt xác suất nền theo số lượng số loại';
         if (methodId === 'ranked40to50') return 'Lấy ưu tiên loại cao nhất nhưng chỉ loại khoảng 40-50 số để tăng xác suất trúng';
         if (methodId === 'ranked60to70') return 'Lấy chuỗi ưu tiên loại cao nhất đến vùng loại trừ 60-70 số';
+        if (methodId === 'scoringProtected30') return 'Dùng scoring năm hiện tại để mở lại số điểm cao đang bị loại, giữ khoảng 30 số đánh';
         return 'Chấm điểm rủi ro từng số bằng ưu tiên loại, dropoff/không hình thành, tin cậy, mẫu, lower, TB dài, TB cách, gần nhất và edge để còn 30 số đánh';
     }
 
@@ -277,6 +279,7 @@
                 <td class="min-w-64 px-4 py-3 align-top">${renderMethodCell(day, 'ranked40to50')}</td>
                 <td class="min-w-64 px-4 py-3 align-top">${renderMethodCell(day, 'ranked60to70')}</td>
                 <td class="min-w-64 px-4 py-3 align-top">${renderMethodCell(day, 'combined20to30')}</td>
+                <td class="min-w-64 px-4 py-3 align-top">${renderMethodCell(day, 'scoringProtected30')}</td>
             </tr>
         `).join('');
 
@@ -319,6 +322,21 @@
     function renderMethodDetail(day, methodId, method) {
         const panel = el('methodDetail');
         if (!panel) return;
+
+        const protectedNumbersHtml = method.protectedNumbers && method.protectedNumbers.length > 0
+            ? `<div class="mb-5">
+                <div class="mb-2 text-sm font-bold text-slate-900">Số scoring cao được mở lại để đánh</div>
+                <div class="number-grid">
+                    ${method.protectedNumbers.map(item => `
+                        <span title="Rank scoring #${item.scoringRank}, điểm ${formatNumberValue(item.scoringScore)}, tỉ lệ ${formatNumberValue(item.scoringRatio, '%')}"
+                            class="rounded border border-blue-200 bg-blue-50 px-2 py-1 text-center font-mono text-xs font-semibold text-blue-700">
+                            ${String(item.number).padStart(2, '0')}
+                            <span class="block text-[9px] font-normal text-blue-500">#${item.scoringRank}</span>
+                        </span>
+                    `).join('')}
+                </div>
+            </div>`
+            : '';
 
         const streakRows = method.selectedStreaks.map(item => `
             <div class="rounded-md border border-slate-200 p-3">
@@ -379,6 +397,8 @@
                 </div>
             </div>
 
+            ${protectedNumbersHtml}
+
             <div class="mb-5">
                 <div class="mb-2 text-sm font-bold text-slate-900">Số loại trừ</div>
                 ${renderNumberGrid(method.excluded, 'border-red-200 bg-red-50 text-red-700')}
@@ -417,7 +437,7 @@
             renderDetails(result);
 
             if (result.details && result.details.length > 0) {
-                selectMethod(result.details[0].predictionDate, 'combined20to30');
+                selectMethod(result.details[0].predictionDate, 'scoringProtected30');
             }
         } catch (error) {
             showError(error.message || 'Không thể chạy simulation.');
