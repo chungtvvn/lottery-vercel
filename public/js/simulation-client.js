@@ -9,23 +9,43 @@
     const METHOD_LABELS = {
         dropoff85: 'Ưu tiên 85+',
         dropoff85Edge: 'Ưu tiên 85 + Edge',
-        ranked40to50: 'Ưu tiên loại 40-50',
         ranked60to70: 'Ưu tiên loại 60-70',
         combined20to30: 'Tổng hợp rủi ro 30',
-        scoringProtected30: 'Scoring bảo vệ 30'
+        customExclusion: 'Custom loại trừ'
     };
 
     function methodDescription(methodId) {
         if (methodId === 'dropoff85') return 'Điểm ưu tiên loại >= 85, gồm dropoff/không hình thành, lower, mẫu và tin cậy';
         if (methodId === 'dropoff85Edge') return 'Chỉ lấy chuỗi ưu tiên >= 85 khi rủi ro vượt xác suất nền theo số lượng số loại';
-        if (methodId === 'ranked40to50') return 'Lấy ưu tiên loại cao nhất nhưng chỉ loại khoảng 40-50 số để tăng xác suất trúng';
         if (methodId === 'ranked60to70') return 'Lấy chuỗi ưu tiên loại cao nhất đến vùng loại trừ 60-70 số';
-        if (methodId === 'scoringProtected30') return 'Dùng scoring năm hiện tại để mở lại số điểm cao đang bị loại, giữ khoảng 30 số đánh';
+        if (methodId === 'customExclusion') return 'Method thử nghiệm theo các ngưỡng người dùng chọn: ưu tiên, dropoff, tần suất, lower, mẫu và edge';
         return 'Chấm điểm rủi ro từng số bằng ưu tiên loại, dropoff/không hình thành, tin cậy, mẫu, lower, TB dài, TB cách, gần nhất và edge để còn 30 số đánh';
     }
 
     function el(id) {
         return document.getElementById(id);
+    }
+
+    function getMethodOrder(result) {
+        return (result && Array.isArray(result.methods) ? result.methods : [])
+            .map(method => method.id)
+            .filter(Boolean);
+    }
+
+    function getCustomQueryParams() {
+        const params = {
+            customMinPriority: el('customMinPriority')?.value,
+            customMinDropOffPercent: el('customMinDropOff')?.value,
+            customMaxFrequencyPerYear: el('customMaxFrequency')?.value,
+            customMaxPotentialFrequencyPerYear: el('customMaxPotentialFrequency')?.value,
+            customMinLowerBoundPercent: el('customMinLower')?.value,
+            customMinSampleSize: el('customMinSample')?.value,
+            customTargetExcluded: el('customTargetExcluded')?.value,
+            customRequirePositiveEdge: el('customRequireEdge')?.checked ? '1' : '0',
+            customIncludeFormed: '1',
+            customIncludePotential: el('customIncludePotential')?.checked ? '1' : '0'
+        };
+        return Object.entries(params).filter(([, value]) => value !== undefined && value !== null);
     }
 
     function formatPercent(value) {
@@ -37,6 +57,10 @@
         const number = Number(value || 0);
         const sign = number > 0 ? '+' : '';
         return `${sign}${number.toLocaleString('vi-VN')}K`;
+    }
+
+    function formatMoneyPlain(value) {
+        return `${Number(value || 0).toLocaleString('vi-VN')}K`;
     }
 
     function formatNumberValue(value, suffix = '') {
@@ -138,6 +162,59 @@
         if (generated) {
             generated.textContent = `${result.config.effectiveDays} ngày, đơn vị ${result.config.moneyUnit}`;
         }
+        section.classList.remove('hidden');
+    }
+
+    function renderNextMethodCard(methodMeta, method) {
+        const numbersHtml = method.betNumbers && method.betNumbers.length > 0
+            ? method.betNumbers.map(num => `
+                <span class="rounded border border-emerald-200 bg-emerald-50 px-2 py-1 text-center font-mono text-xs font-semibold text-emerald-700">
+                    ${String(num).padStart(2, '0')}
+                </span>
+            `).join('')
+            : '<span class="text-sm text-slate-500">Không có số đánh.</span>';
+
+        return `
+            <article class="rounded-md border border-slate-200 bg-white p-4">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <h3 class="font-bold text-slate-900">${methodMeta.name || METHOD_LABELS[method.id] || method.name}</h3>
+                        <p class="mt-1 text-xs leading-5 text-slate-500">${method.description || methodDescription(method.id)}</p>
+                    </div>
+                    <div class="whitespace-nowrap rounded-md ${method.skipped ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'} px-2 py-1 text-xs font-bold">
+                        ${method.skipped ? 'Bỏ qua' : `${method.betCount} số đánh`}
+                    </div>
+                </div>
+                <div class="mt-3 grid grid-cols-3 gap-2 text-xs text-slate-600">
+                    <div class="rounded-md bg-slate-50 px-3 py-2">Loại: <b>${method.excludedCount}</b></div>
+                    <div class="rounded-md bg-slate-50 px-3 py-2">Chuỗi: <b>${method.selectedStreakCount}</b></div>
+                    <div class="rounded-md bg-slate-50 px-3 py-2">Tiền đánh: <b>${formatMoneyPlain(method.stake)}</b></div>
+                </div>
+                ${method.skipReason ? `<div class="mt-3 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-700">${method.skipReason}</div>` : ''}
+                <div class="mt-4">
+                    <div class="mb-2 text-xs font-bold uppercase text-slate-500">Số sẽ đánh</div>
+                    <div class="number-grid">${numbersHtml}</div>
+                </div>
+            </article>
+        `;
+    }
+
+    function renderNextPrediction(result) {
+        const section = el('nextPredictionSection');
+        const content = el('nextPredictionContent');
+        const info = el('nextPredictionInfo');
+        const data = result.nextPrediction;
+        if (!section || !content || !data) return;
+
+        const methodsById = new Map((result.methods || []).map(method => [method.id, method]));
+        const orderedMethods = getMethodOrder(result)
+            .map(id => data.methods[id] ? renderNextMethodCard(methodsById.get(id) || {}, data.methods[id]) : '')
+            .join('');
+
+        if (info) {
+            info.textContent = `Dự đoán ngày ${data.predictionDate}, dùng dữ liệu tới ${data.basisDate}; ${data.candidatesCount} chuỗi ứng viên.`;
+        }
+        content.innerHTML = orderedMethods || '<div class="text-sm text-slate-500">Chưa có dữ liệu dự đoán ngày kế tiếp.</div>';
         section.classList.remove('hidden');
     }
 
@@ -261,6 +338,7 @@
         const section = el('detailsSection');
         const table = el('detailsTable');
         if (!section || !table) return;
+        const methodIds = getMethodOrder(result);
 
         table.innerHTML = result.details.map(day => `
             <tr>
@@ -274,12 +352,9 @@
                         ${day.actualNumberText}
                     </span>
                 </td>
-                <td class="min-w-64 px-4 py-3 align-top">${renderMethodCell(day, 'dropoff85')}</td>
-                <td class="min-w-64 px-4 py-3 align-top">${renderMethodCell(day, 'dropoff85Edge')}</td>
-                <td class="min-w-64 px-4 py-3 align-top">${renderMethodCell(day, 'ranked40to50')}</td>
-                <td class="min-w-64 px-4 py-3 align-top">${renderMethodCell(day, 'ranked60to70')}</td>
-                <td class="min-w-64 px-4 py-3 align-top">${renderMethodCell(day, 'combined20to30')}</td>
-                <td class="min-w-64 px-4 py-3 align-top">${renderMethodCell(day, 'scoringProtected30')}</td>
+                ${methodIds.map(methodId => `
+                    <td class="min-w-64 px-4 py-3 align-top">${renderMethodCell(day, methodId)}</td>
+                `).join('')}
             </tr>
         `).join('');
 
@@ -323,21 +398,6 @@
         const panel = el('methodDetail');
         if (!panel) return;
 
-        const protectedNumbersHtml = method.protectedNumbers && method.protectedNumbers.length > 0
-            ? `<div class="mb-5">
-                <div class="mb-2 text-sm font-bold text-slate-900">Số scoring cao được mở lại để đánh</div>
-                <div class="number-grid">
-                    ${method.protectedNumbers.map(item => `
-                        <span title="Rank scoring #${item.scoringRank}, điểm ${formatNumberValue(item.scoringScore)}, tỉ lệ ${formatNumberValue(item.scoringRatio, '%')}"
-                            class="rounded border border-blue-200 bg-blue-50 px-2 py-1 text-center font-mono text-xs font-semibold text-blue-700">
-                            ${String(item.number).padStart(2, '0')}
-                            <span class="block text-[9px] font-normal text-blue-500">#${item.scoringRank}</span>
-                        </span>
-                    `).join('')}
-                </div>
-            </div>`
-            : '';
-
         const streakRows = method.selectedStreaks.map(item => `
             <div class="rounded-md border border-slate-200 p-3">
                 <div class="flex items-start justify-between gap-2">
@@ -353,6 +413,8 @@
                     ${Number.isFinite(Number(item.reliabilityScore)) ? ` · tin cậy ${item.reliabilityScore}` : ''}
                     ${Number.isFinite(Number(item.combinedScore)) ? ` · tổng ${item.combinedScore}` : ''}
                     ${Number.isFinite(Number(item.numberRiskScore)) ? ` · risk số ${item.numberRiskScore}` : ''}
+                    ${Number.isFinite(Number(item.frequencyPerYear)) ? ` · tần suất ${item.frequencyPerYear}/năm` : ''}
+                    ${item.isPotential && Number.isFinite(Number(item.formFrequencyPerYear)) ? ` · HT ${formatNumberValue(item.formFrequencyPerYear, '/năm')}` : ''}
                     ${item.addedNumbersCount !== undefined ? ` · thêm ${item.addedNumbersCount}` : ''}
                 </div>
                 <div class="mt-1 text-xs text-slate-500">
@@ -397,8 +459,6 @@
                 </div>
             </div>
 
-            ${protectedNumbersHtml}
-
             <div class="mb-5">
                 <div class="mb-2 text-sm font-bold text-slate-900">Số loại trừ</div>
                 ${renderNumberGrid(method.excluded, 'border-red-200 bg-red-50 text-red-700')}
@@ -421,11 +481,13 @@
 
     async function runSimulation() {
         const days = el('simulationDays') ? el('simulationDays').value : 7;
+        const params = new URLSearchParams({ days });
+        getCustomQueryParams().forEach(([key, value]) => params.set(key, value));
         setLoading(true);
         showError('');
 
         try {
-            const response = await fetch(`/api/simulation/backtest?days=${encodeURIComponent(days)}`);
+            const response = await fetch(`/api/simulation/backtest?${params.toString()}`);
             const result = await response.json();
             if (!response.ok || result.error) {
                 throw new Error(result.error || 'Không thể chạy simulation.');
@@ -433,11 +495,13 @@
 
             state.result = result;
             renderSummary(result);
+            renderNextPrediction(result);
             renderReliability(result);
             renderDetails(result);
 
             if (result.details && result.details.length > 0) {
-                selectMethod(result.details[0].predictionDate, 'scoringProtected30');
+                const defaultMethod = getMethodOrder(result).includes('customExclusion') ? 'customExclusion' : getMethodOrder(result)[0];
+                if (defaultMethod) selectMethod(result.details[0].predictionDate, defaultMethod);
             }
         } catch (error) {
             showError(error.message || 'Không thể chạy simulation.');
