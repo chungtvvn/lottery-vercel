@@ -941,7 +941,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             // === XÁC SUẤT CÓ ĐIỀU KIỆN (Conditional Probability) ===
             // P(gãy ngày mai) = 1 - count(≥L+step) / count(≥L)
             // Khớp chính xác với exclusionLogicService.calculateDropOff()
-            const MAX_POTENTIAL_FORM_FREQ_PER_YEAR = 1;
             const calcDropOffRate = (streak, streakLen) => {
                 const lowerStreakKey = (streak.key || '').toLowerCase();
                 const lowerDescription = (streak.description || '').toLowerCase();
@@ -969,7 +968,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const rate = countForm > 0 ? 1 - (countBreak / countForm) : 1;
                     const nonFormationCount = Math.max(0, formationBaseCount - countForm);
                     const nonFormationLowerBound = wilsonLowerBound(nonFormationCount, formationBaseCount);
-                    const isHighFrequencyPotential = formFrequencyPerYear > MAX_POTENTIAL_FORM_FREQ_PER_YEAR;
                     return {
                         rate,
                         step,
@@ -978,7 +976,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         nextCount: countBreak,
                         isSoLe,
                         formFrequencyPerYear,
-                        isHighFrequencyPotential,
                         formationBaseCount,
                         rawFormationBaseCount: countPrefix,
                         usesFrequencyFallback: !hasConditionalPrefixSample,
@@ -1056,7 +1053,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if ((b.exclusionRate || 0) !== (a.exclusionRate || 0)) return (b.exclusionRate || 0) - (a.exclusionRate || 0);
                 return (b.dropOffRate || 0) - (a.dropOffRate || 0);
             });
-            const actionableStreakDropOffs = allStreakDropOffs.filter(({ streak, isHighFrequencyPotential }) => !(streak.isPotential && isHighFrequencyPotential));
+            // Một nguồn loại trừ duy nhất cho bảng tổng hợp, card highlight và grid số.
+            // Không chặn cứng chuỗi tiềm năng theo tần suất; tần suất đã được phản ánh vào điểm ưu tiên.
+            const actionableStreakDropOffs = allStreakDropOffs;
 
             // === DỰ BÁO CHUỖI CÓ THỂ XẢY RA ===
             // Chuỗi đã hình thành: tỷ lệ gãy. Chuỗi tiềm năng: tỷ lệ không hình thành.
