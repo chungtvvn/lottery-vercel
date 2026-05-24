@@ -417,35 +417,123 @@ document.addEventListener('DOMContentLoaded', async () => {
         return Math.max(0, Math.min(1, 1 - (Math.log10(frequency + 1) / Math.log10(25))));
     };
 
-    const isHistoricalRecordDropOffItem = (item) => {
-        if (!item || (item.streak && item.streak.isPotential)) return false;
-        const recordLength = getStreakRecordLength(item.streak);
-        const streakLen = Number(item.streakLen ?? item.currentLen ?? 0);
-        const nextCount = Number(item.nextCount ?? 0);
-        const currentCount = Number(item.currentCount ?? item.exclusionSampleSize ?? 0);
-        const rate = Number(item.exclusionRate ?? item.dropOffRate ?? 0);
-
-        return recordLength > 0
-            && streakLen >= recordLength
-            && currentCount > 0
-            && nextCount === 0
-            && rate >= 0.999;
+    const roundOneNumber = (value) => {
+        if (value === null || value === undefined || value === '') return null;
+        const number = Number(value);
+        return Number.isFinite(number) ? Math.round(number * 10) / 10 : null;
     };
 
-    const exclusionPriorityScore = (item) => {
-        const reliability = (item.streak && item.streak.reliability) || {};
+    const getTargetHistoryMetrics = (streak, targetLen) => {
+        const length = Number(targetLen);
+        if (!streak || !Number.isFinite(length) || length <= 0) return null;
+        const byLength = streak.lengthHistoryMetrics || streak.targetHistoryMetrics || {};
+        const metrics = byLength[length] || byLength[String(length)];
+        if (metrics) return metrics;
+        const gapInfo = streak.gapStats ? (streak.gapStats[length] || streak.gapStats[String(length)]) : null;
+        if (gapInfo) {
+            return {
+                targetLength: length,
+                occurrences: Number(gapInfo.count || gapInfo.pastCount || 0),
+                avgLength: null,
+                avgGapDays: Number.isFinite(Number(gapInfo.avgGap)) ? Number(gapInfo.avgGap) : null,
+                latestEndDate: gapInfo.lastStoppedDate || '',
+                daysSinceLatestEnd: Number.isFinite(Number(gapInfo.lastGap)) ? Number(gapInfo.lastGap) : null
+            };
+        }
+        return null;
+    };
+
+    const calculateTargetTiming = (metrics) => {
+        const occurrences = Number(metrics && metrics.occurrences || 0);
+        const avgGapDays = Number(metrics && metrics.avgGapDays);
+        const daysSinceLatestEnd = Number(metrics && metrics.daysSinceLatestEnd);
+        if (occurrences <= 0) return { targetTimingRatio: 0, targetTimingScore: 1 };
+        if (!Number.isFinite(avgGapDays) || avgGapDays <= 0 || !Number.isFinite(daysSinceLatestEnd)) {
+            return { targetTimingRatio: null, targetTimingScore: occurrences <= 1 ? 0.85 : 0.5 };
+        }
+        const ratio = Math.max(0, daysSinceLatestEnd) / avgGapDays;
+        return {
+            targetTimingRatio: roundOneNumber(ratio),
+            targetTimingScore: Math.max(0, Math.min(1, 1 - Math.min(ratio, 1)))
+        };
+    };
+
+    const attachTargetTiming = (item, streak, targetLen) => {
+        const metrics = getTargetHistoryMetrics(streak, targetLen) || {};
+        const timing = calculateTargetTiming(metrics);
+        return {
+            ...item,
+            targetHistoryLength: Number(targetLen),
+            targetOccurrenceCount: Number(metrics.occurrences || 0),
+            targetAvgLength: roundOneNumber(metrics.avgLength),
+            targetAvgGapDays: roundOneNumber(metrics.avgGapDays),
+            targetLatestEndDate: metrics.latestEndDate || '',
+            targetDaysSinceLatestEnd: metrics.daysSinceLatestEnd === null || metrics.daysSinceLatestEnd === undefined
+                ? null
+                : Number(metrics.daysSinceLatestEnd),
+            ...timing
+        };
+    };
+
+    const getPredictionStepFromStreak = (streak = {}) => {
+        const lowerStreakKey = (streak.key || '').toLowerCase();
+        const lowerDescription = (streak.description || '').toLowerCase();
+        const isTienLuiSoLe = lowerStreakKey.includes('tienluisole')
+            || lowerStreakKey.includes('luitiensole')
+            || lowerDescription.includes('tiến-lùi')
+            || lowerDescription.includes('lùi-tiến');
+        const isSoLeTheoCap = lowerStreakKey.includes('soletheocap');
+        const isSoLe = ((lowerStreakKey.includes('vesole') || lowerStreakKey.includes('solemoi')) || lowerDescription.includes('về so le'))
+            && !isTienLuiSoLe
+            && !isSoLeTheoCap;
+        return isSoLe ? 2 : 1;
+    };
+
+    const getRecordDropOffState = (item) => {
+        if (!item || (item.streak && item.streak.isPotential)) {
+            return {
+                isCritical: false,
+                atRecord: false,
+                targetExceedsRecord: false,
+                recordLength: 0,
+                currentLength: 0,
+                targetLength: 0,
+                label: ''
+            };
+        }
+
+        const recordLength = getStreakRecordLength(item.streak);
+        const currentLength = Number(item.streakLen ?? item.currentLen ?? item.currentLength ?? item.streak?.length ?? 0);
+        const step = Number(item.step || getPredictionStepFromStreak(item.streak));
+        const targetLength = Number(item.targetLen ?? item.nextLen ?? item.targetLength ?? item.targetHistoryLength ?? (currentLength + step));
+        const nextCount = Number(item.nextCount ?? 0);
+        const currentCount = Number(item.currentCount ?? item.curCount ?? item.exclusionSampleSize ?? 0);
         const rate = Number(item.exclusionRate ?? item.dropOffRate ?? 0);
-        const lower = Number(item.exclusionLowerBound ?? reliability.lowerBound ?? 0);
-        const sample = sampleScore(item.exclusionSampleSize || item.currentCount || reliability.sampleSize || 0);
-        const rawTrust = Number(reliability.score);
-        const trust = Number.isFinite(rawTrust)
-            ? Math.max(0, Math.min(1, rawTrust / 100))
-            : Math.max(0, Math.min(1, lower * 0.72 + sample * 0.28));
-        const potentialNeedsFrequencyGuard = !!(item.streak && item.streak.isPotential) && !!item.usesFrequencyFallback;
-        const scarcity = potentialNeedsFrequencyGuard ? formationScarcityScore(item.formFrequencyPerYear) : 1;
-        const baseScore = potentialNeedsFrequencyGuard
-            ? (rate * 0.40 + lower * 0.22 + trust * 0.12 + sample * 0.06 + scarcity * 0.20) * 100
-            : (rate * 0.55 + lower * 0.25 + trust * 0.15 + sample * 0.05) * 100;
+        const atRecord = recordLength > 0 && currentLength >= recordLength;
+        const targetExceedsRecord = recordLength > 0 && targetLength > recordLength;
+        const noHistoricalContinuation = currentCount > 0 && nextCount === 0 && rate >= 0.999;
+        const isCritical = atRecord && targetExceedsRecord && noHistoricalContinuation;
+
+        return {
+            isCritical,
+            atRecord,
+            targetExceedsRecord,
+            recordLength,
+            currentLength,
+            targetLength,
+            label: isCritical ? `${currentLength}d → ${targetLength}d vượt kỷ lục ${recordLength}d` : ''
+        };
+    };
+
+    const isHistoricalRecordDropOffItem = (item) => getRecordDropOffState(item).isCritical;
+
+    const exclusionPriorityScore = (item) => {
+        const rate = Number(item.exclusionRate ?? item.dropOffRate ?? 0);
+        const targetTiming = Number(item.targetTimingScore);
+        const timing = Number.isFinite(targetTiming)
+            ? Math.max(0, Math.min(1, targetTiming))
+            : 0.5;
+        const baseScore = (Math.max(0, Math.min(1, rate)) * 0.5 + timing * 0.5) * 100;
         const recordScore = isHistoricalRecordDropOffItem(item) ? 100 : 0;
         return Math.round(Math.max(baseScore, recordScore) * 10) / 10;
     };
@@ -612,7 +700,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     // === UNIFIED PRIORITY EXCLUSION RENDERING ===
     const EXCLUSION_PRIORITY_STORAGE_KEY = 'streak-exclusion-priority-threshold';
     const LOW_FREQUENCY_EXCLUSION_STORAGE_KEY = 'streak-include-low-frequency-potential';
+    const POTENTIAL_EXCLUSION_STORAGE_KEY = 'streak-include-potential-exclusion';
+    const HIGH_FREQUENCY_EXCLUSION_STORAGE_KEY = 'streak-include-high-frequency-exclusion';
     const LOW_FREQUENCY_EXCLUSION_LIMIT_PER_YEAR = 1;
+    const MAX_POTENTIAL_FORMATION_COUNT = 10;
+    const MAX_POTENTIAL_FORMATION_PER_YEAR = 1;
+    const HIGH_FREQUENCY_LIMIT_PER_YEAR = 20;
     const legacyDropOffThreshold = parseFloat(localStorage.getItem('streak-dropoff-threshold') || '');
     let selectedExclusionPriorityThreshold = parseFloat(
         localStorage.getItem(EXCLUSION_PRIORITY_STORAGE_KEY) ||
@@ -620,6 +713,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     );
     if (!Number.isFinite(selectedExclusionPriorityThreshold)) selectedExclusionPriorityThreshold = 85;
     let includeLowFrequencyPotentialExclusions = localStorage.getItem(LOW_FREQUENCY_EXCLUSION_STORAGE_KEY) === '1';
+    let includePotentialExclusions = localStorage.getItem(POTENTIAL_EXCLUSION_STORAGE_KEY) !== '0';
+    let includeHighFrequencyExclusions = localStorage.getItem(HIGH_FREQUENCY_EXCLUSION_STORAGE_KEY) !== '0';
     let latestPredictionItemsForExclusion = [];
     let latestLowFrequencyItemsForExclusion = [];
     let latestPredictionDateForExclusion = '';
@@ -662,10 +757,33 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const getPredictionSample = (item) => Number((item && (item.formationBaseCount || item.currentCount)) || 0);
 
+    const isPotentialPredictionItem = (item) => !!(item && item.streak && item.streak.isPotential);
+
+    const getPotentialFormationCount = (item) => {
+        const value = Number(item && (item.formationCount ?? item.currentCount));
+        return Number.isFinite(value) ? value : Infinity;
+    };
+
+    const isPotentialFormationEligible = (item) => {
+        if (!isPotentialPredictionItem(item)) return true;
+        const frequency = getPredictionFrequencyPerYear(item);
+        if (Number.isFinite(frequency)) return frequency <= MAX_POTENTIAL_FORMATION_PER_YEAR;
+        return getPotentialFormationCount(item) <= MAX_POTENTIAL_FORMATION_COUNT;
+    };
+
+    const isHighFrequencyPredictionItem = (item) => {
+        const frequency = getPredictionFrequencyPerYear(item);
+        return Number.isFinite(frequency) && frequency > HIGH_FREQUENCY_LIMIT_PER_YEAR;
+    };
+
     const isPrimaryExclusionItem = (item) => {
+        const recordDropOffState = getRecordDropOffState(item);
         return getPredictionSample(item) > 0
-            && getPredictionPriority(item) >= selectedExclusionPriorityThreshold
-            && getPredictionNumbers(item).length > 0;
+            && getPredictionNumbers(item).length > 0
+            && (recordDropOffState.isCritical || getPredictionPriority(item) >= selectedExclusionPriorityThreshold)
+            && (includePotentialExclusions || !isPotentialPredictionItem(item))
+            && isPotentialFormationEligible(item)
+            && (includeHighFrequencyExclusions || !isHighFrequencyPredictionItem(item));
     };
 
     const getPredictionFrequencyPerYear = (item) => {
@@ -685,8 +803,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const isLowFrequencyExclusionItem = (item) => {
         const frequency = getPredictionFrequencyPerYear(item);
-        return Number.isFinite(frequency)
-            && frequency < LOW_FREQUENCY_EXCLUSION_LIMIT_PER_YEAR
+        return isPotentialPredictionItem(item)
+            && includePotentialExclusions
+            && isPotentialFormationEligible(item)
+            && Number.isFinite(frequency)
+            && frequency <= LOW_FREQUENCY_EXCLUSION_LIMIT_PER_YEAR
             && getPredictionNumbers(item).length > 0;
     };
 
@@ -726,9 +847,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             const lowFrequencyAdditionalItems = includeLowFrequencyPotentialExclusions
                 ? lowFrequencyCandidateItems
                 : [];
+            const highFrequencyCandidateCount = sourceItems.filter(item =>
+                getPredictionPriority(item) >= selectedExclusionPriorityThreshold &&
+                isHighFrequencyPredictionItem(item)
+            ).length;
+            const potentialCandidateCount = sourceItems.filter(item =>
+                isPotentialPredictionItem(item) &&
+                isPotentialFormationEligible(item) &&
+                getPredictionPriority(item) >= selectedExclusionPriorityThreshold
+            ).length;
 
             const excludedSourceByNumber = new Map();
             const addExclusionSource = (item, itemIndex, sourceType) => {
+                const recordDropOffState = getRecordDropOffState(item);
+                const effectiveSourceType = recordDropOffState.isCritical ? 'record' : sourceType;
                 getPredictionNumbers(item).forEach(numStr => {
                     if (!excludedSourceByNumber.has(numStr)) {
                         excludedSourceByNumber.set(numStr, {
@@ -737,7 +869,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                             title: item.streak.description,
                             riskLabel: getPredictionRiskLabel(item),
                             priority: item.exclusionPriority || 0,
-                            sourceType,
+                            sourceType: effectiveSourceType,
+                            recordLabel: recordDropOffState.label,
                             frequencyPerYear: getPredictionFrequencyPerYear(item)
                         });
                     }
@@ -774,8 +907,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             let gridHtml = `
                 <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div class="text-sm text-gray-600">
-                        <i class="bi bi-info-circle me-1"></i>Số <span class="text-teal-700 font-bold">XANH</span> = đánh, <span class="text-red-600 font-bold">ĐỎ</span> = loại theo ưu tiên, <span class="text-amber-700 font-bold">VÀNG</span> = loại thêm từ chuỗi tần suất &lt; 1/năm
-                        <div class="text-xs text-gray-500 mt-1">${activePredictionItems.length} chuỗi đạt điểm ưu tiên loại ≥ ${selectedExclusionPriorityThreshold.toFixed(0)}${includeLowFrequencyPotentialExclusions ? `, thêm ${lowFrequencyAddedCount} số từ ${lowFrequencyAdditionalItems.length} chuỗi tần suất &lt; 1/năm` : `, có ${lowFrequencyCandidateItems.length} chuỗi tần suất &lt; 1/năm có thể bật thêm`}</div>
+                        <i class="bi bi-info-circle me-1"></i>Số <span class="text-teal-700 font-bold">XANH</span> = đánh, <span class="text-red-600 font-bold">ĐỎ</span> = loại theo ưu tiên, <span class="text-amber-700 font-bold">VÀNG</span> = loại thêm từ chuỗi tiềm năng tần suất &lt; 1/năm
+                        <div class="text-xs text-gray-500 mt-1">${activePredictionItems.length} chuỗi đạt điểm ưu tiên loại ≥ ${selectedExclusionPriorityThreshold.toFixed(0)}${includePotentialExclusions ? `, có ${potentialCandidateCount} chuỗi tiềm năng HT ≤ ${MAX_POTENTIAL_FORMATION_PER_YEAR}/năm` : ', đang tắt chuỗi tiềm năng'}${includeHighFrequencyExclusions ? `, đang lấy cả ${highFrequencyCandidateCount} chuỗi tần suất lớn` : `, bỏ ${highFrequencyCandidateCount} chuỗi tần suất > ${HIGH_FREQUENCY_LIMIT_PER_YEAR}/năm`}${includeLowFrequencyPotentialExclusions ? `, thêm ${lowFrequencyAddedCount} số từ ${lowFrequencyAdditionalItems.length} chuỗi tiềm năng ≤ 1/năm` : `, có ${lowFrequencyCandidateItems.length} chuỗi tiềm năng ≤ 1/năm có thể bật thêm`}</div>
                         ${actualNumber ? `<div class="mt-1 inline-flex items-center gap-1 rounded border border-yellow-300 bg-yellow-50 px-2 py-1 text-xs text-yellow-800">KQ thực tế ${latestActualPredictionDate}: <span class="font-mono font-bold">${actualNumber}</span>${actualExcludedEntry ? ` • đang bị loại bởi #${actualExcludedEntry.sourceRank}` : ' • đang nằm trong danh sách đánh'}</div>` : ''}
                     </div>
                     <div class="flex flex-col sm:items-end gap-2">
@@ -788,6 +921,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <label class="inline-flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-xs text-amber-800">
                             <input id="low-frequency-potential-checkbox" type="checkbox" class="rounded border-amber-300 text-amber-600 focus:ring-amber-500" ${includeLowFrequencyPotentialExclusions ? 'checked' : ''}>
                             <span>Loại thêm tần suất &lt; 1/năm</span>
+                        </label>
+                        <label class="inline-flex items-center gap-2 rounded-md border border-orange-200 bg-orange-50 px-2 py-1 text-xs text-orange-800">
+                            <input id="potential-exclusion-checkbox" type="checkbox" class="rounded border-orange-300 text-orange-600 focus:ring-orange-500" ${includePotentialExclusions ? 'checked' : ''}>
+                            <span>Loại chuỗi chưa HT</span>
+                        </label>
+                        <label class="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-700">
+                            <input id="high-frequency-exclusion-checkbox" type="checkbox" class="rounded border-slate-300 text-slate-700 focus:ring-slate-400" ${includeHighFrequencyExclusions ? 'checked' : ''}>
+                            <span>Loại cả tần suất &gt; ${HIGH_FREQUENCY_LIMIT_PER_YEAR}/năm</span>
                         </label>
                     </div>
                 </div>`;
@@ -802,11 +943,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (excludedSet.has(numStr)) {
                     const source = excludedSourceByNumber.get(numStr);
                     const isLowFrequencySource = source && source.sourceType === 'lowFrequency';
-                    cellStyle = isLowFrequencySource
+                    const isRecordSource = source && source.sourceType === 'record';
+                    cellStyle = isRecordSource
+                        ? 'background:rgba(127,29,29,0.16); color:#991b1b; border:1.5px solid #991b1b; font-weight:800;'
+                        : isLowFrequencySource
                         ? 'background:rgba(245,158,11,0.18); color:#92400e; border:1.5px solid #f59e0b; font-weight:700;'
                         : 'background:rgba(239,68,68,0.15); color:#dc2626; border:1.5px solid #f87171; font-weight:700;';
                     if (source) {
-                        const sourceText = isLowFrequencySource ? `tần suất ${Number.isFinite(source.frequencyPerYear) ? source.frequencyPerYear.toFixed(2) : '?'} lần/năm` : `Ưu tiên ${source.priority}`;
+                        const sourceText = isRecordSource
+                            ? source.recordLabel
+                            : (isLowFrequencySource ? `tần suất ${Number.isFinite(source.frequencyPerYear) ? source.frequencyPerYear.toFixed(2) : '?'} lần/năm` : `Ưu tiên ${source.priority}`);
                         titleText = `${numStr} • #${source.sourceRank} ${source.title} • ${source.riskLabel} • ${sourceText}`;
                     }
                 } else if (betSet.has(numStr)) {
@@ -835,10 +981,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="max-h-48 overflow-y-auto pr-1">
                         <div class="flex flex-wrap gap-1.5">
                             ${excludedEntries.map((entry, index) => `
-                                <span title="${escapeHtml(`#${entry.sourceRank} ${entry.title} • ${entry.riskLabel} • ${entry.sourceType === 'lowFrequency' ? `tần suất ${Number.isFinite(entry.frequencyPerYear) ? entry.frequencyPerYear.toFixed(2) : '?'} lần/năm` : `Ưu tiên ${entry.priority}`}`)}" class="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs ${entry.sourceType === 'lowFrequency' ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-red-200 bg-white text-red-700'} ${actualNumber && entry.numStr === actualNumber ? 'ring-2 ring-yellow-300 bg-yellow-50' : ''}">
+                                <span title="${escapeHtml(`#${entry.sourceRank} ${entry.title} • ${entry.riskLabel} • ${entry.sourceType === 'record' ? entry.recordLabel : (entry.sourceType === 'lowFrequency' ? `tần suất ${Number.isFinite(entry.frequencyPerYear) ? entry.frequencyPerYear.toFixed(2) : '?'} lần/năm` : `Ưu tiên ${entry.priority}`)}`)}" class="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs ${entry.sourceType === 'record' ? 'border-red-700 bg-red-50 text-red-800' : (entry.sourceType === 'lowFrequency' ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-red-200 bg-white text-red-700')} ${actualNumber && entry.numStr === actualNumber ? 'ring-2 ring-yellow-300 bg-yellow-50' : ''}">
                                     <span class="font-mono text-[10px] text-gray-400">${index + 1}</span>
                                     <span class="font-mono font-bold">${entry.numStr}</span>
-                                    <span class="text-[10px] text-gray-500">${entry.sourceType === 'lowFrequency' ? '&lt;1/năm' : `#${entry.sourceRank}`}</span>
+                                    <span class="text-[10px] text-gray-500">${entry.sourceType === 'record' ? 'vượt KL' : (entry.sourceType === 'lowFrequency' ? '&lt;1/năm' : `#${entry.sourceRank}`)}</span>
                                     ${actualNumber && entry.numStr === actualNumber ? '<span class="rounded bg-yellow-200 px-1 text-[9px] text-yellow-900">KQ</span>' : ''}
                                 </span>
                             `).join('')}
@@ -890,6 +1036,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                     renderSelectedHistoryDate();
                 });
             }
+            const potentialCheckbox = document.getElementById('potential-exclusion-checkbox');
+            if (potentialCheckbox) {
+                potentialCheckbox.addEventListener('change', (event) => {
+                    includePotentialExclusions = Boolean(event.target.checked);
+                    localStorage.setItem(POTENTIAL_EXCLUSION_STORAGE_KEY, includePotentialExclusions ? '1' : '0');
+                    renderSelectedHistoryDate();
+                });
+            }
+            const highFrequencyCheckbox = document.getElementById('high-frequency-exclusion-checkbox');
+            if (highFrequencyCheckbox) {
+                highFrequencyCheckbox.addEventListener('change', (event) => {
+                    includeHighFrequencyExclusions = Boolean(event.target.checked);
+                    localStorage.setItem(HIGH_FREQUENCY_EXCLUSION_STORAGE_KEY, includeHighFrequencyExclusions ? '1' : '0');
+                    renderSelectedHistoryDate();
+                });
+            }
         } catch (error) {
             console.error('Lỗi khi tải Streak Exclusion:', error);
             section.style.display = 'none';
@@ -922,7 +1084,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                             originalRecord: stat.longest && stat.longest.length > 0 ? stat.longest[0].length : 0,
                             gapStats: stat.gapStats,
                             exactGapStats: stat.exactGapStats,
-                            extensionGapStats: stat.extensionGapStats
+                            extensionGapStats: stat.extensionGapStats,
+                            lengthHistoryMetrics: stat.lengthHistoryMetrics,
+                            historyMetrics: stat.historyMetrics
                         });
                     }
                     renderRecordAccordionItem(key, stat);
@@ -978,7 +1142,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const rate = countForm > 0 ? 1 - (countBreak / countForm) : 1;
                     const nonFormationCount = Math.max(0, formationBaseCount - countForm);
                     const nonFormationLowerBound = wilsonLowerBound(nonFormationCount, formationBaseCount);
-                    return {
+                    return attachTargetTiming({
                         rate,
                         step,
                         nextLen,
@@ -997,7 +1161,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         exclusionRate: nonFormationRate,
                         exclusionLowerBound: nonFormationLowerBound,
                         exclusionSampleSize: formationBaseCount
-                    };
+                    }, streak, formLen);
                 }
 
                 const currentGE = streak.gapStats ? streak.gapStats[streakLen] : null;
@@ -1007,7 +1171,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (currentCount > 0) {
                     const rate = 1 - (nextCount / currentCount);
-                    return {
+                    return attachTargetTiming({
                         rate,
                         step,
                         nextLen,
@@ -1017,9 +1181,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         exclusionRate: rate,
                         exclusionLowerBound: streak.reliability ? streak.reliability.lowerBound : wilsonLowerBound(currentCount - nextCount, currentCount),
                         exclusionSampleSize: currentCount
-                    };
+                    }, streak, nextLen);
                 }
-                return {
+                return attachTargetTiming({
                     rate: 1,
                     step,
                     nextLen,
@@ -1029,7 +1193,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     exclusionRate: 1,
                     exclusionLowerBound: 0,
                     exclusionSampleSize: currentCount
-                };
+                }, streak, nextLen);
             };
 
             // Thu thập TẤT CẢ chuỗi với tỷ lệ gãy để dùng cho Dự báo + Tổng hợp dự đoán
@@ -1054,27 +1218,38 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
             });
 
-            // Sắp xếp theo khả năng loại trừ thực tế: chuỗi đã hình thành dùng tỷ lệ gãy,
-            // chuỗi tiềm năng dùng tỷ lệ không hình thành, sau đó xét lower/tin cậy/mẫu.
-            allStreakDropOffs.sort((a, b) => {
-                const recordCriticalDiff = Number(isHistoricalRecordDropOffItem(b)) - Number(isHistoricalRecordDropOffItem(a));
-                if (recordCriticalDiff !== 0) return recordCriticalDiff;
+            const getPredictionSortGroup = (item) => {
+                if (isHistoricalRecordDropOffItem(item)) return 0;
+                return item && item.streak && item.streak.isPotential ? 2 : 1;
+            };
+
+            const comparePredictionItems = (a, b) => {
+                const groupDiff = getPredictionSortGroup(a) - getPredictionSortGroup(b);
+                if (groupDiff !== 0) return groupDiff;
                 if ((b.exclusionPriority || 0) !== (a.exclusionPriority || 0)) return (b.exclusionPriority || 0) - (a.exclusionPriority || 0);
                 if ((b.exclusionRate || 0) !== (a.exclusionRate || 0)) return (b.exclusionRate || 0) - (a.exclusionRate || 0);
                 return (b.dropOffRate || 0) - (a.dropOffRate || 0);
+            };
+
+            // Sắp xếp theo khả năng loại trừ thực tế: kỷ lục đứng đầu, chuỗi đã hình thành đứng trước,
+            // chuỗi tiềm năng không hình thành đứng sau và chỉ giữ nếu tần suất hình thành <= 1 lần/năm.
+            allStreakDropOffs.sort((a, b) => {
+                return comparePredictionItems(a, b);
             });
+            const skippedPotentialByFormation = allStreakDropOffs.filter(item => item.streak && item.streak.isPotential && !isPotentialFormationEligible(item)).length;
             // Một nguồn loại trừ duy nhất cho bảng tổng hợp, card highlight và grid số.
-            // Không chặn cứng chuỗi tiềm năng theo tần suất; tần suất đã được phản ánh vào điểm ưu tiên.
-            const actionableStreakDropOffs = allStreakDropOffs;
+            const actionableStreakDropOffs = allStreakDropOffs.filter(isPotentialFormationEligible);
 
             // === DỰ BÁO CHUỖI CÓ THỂ XẢY RA ===
             // Chuỗi đã hình thành: tỷ lệ gãy. Chuỗi tiềm năng: tỷ lệ không hình thành.
             let forecastHtml = '';
             let forecastCount = 0;
-            actionableStreakDropOffs.forEach(({ streak, streakLen, dropOffRate, exclusionRate, nextLen, currentCount, nextCount, formFrequencyPerYear, formationBaseCount, formationRate, nonFormationRate, usesFrequencyFallback }) => {
+            actionableStreakDropOffs.forEach((forecastItem) => {
+                const { streak, streakLen, dropOffRate, exclusionRate, nextLen, currentCount, nextCount, formFrequencyPerYear, formationBaseCount, formationRate, nonFormationRate, usesFrequencyFallback } = forecastItem;
                 const riskRate = streak.isPotential ? nonFormationRate : dropOffRate;
                 const riskSample = streak.isPotential ? formationBaseCount : currentCount;
                 if (riskRate >= 0.50 && riskSample > 0) {
+                    const recordDropOffState = getRecordDropOffState(forecastItem);
                     const lenDisplay = streak.isPotential ? `${streakLen} ngày (tiềm năng)` : `${streakLen} ngày`;
                     const riskColor = riskRate >= 0.90 ? 'text-purple-700' : riskRate >= 0.70 ? 'text-red-600' : 'text-orange-600';
                     const riskBg = riskRate >= 0.90 ? 'bg-purple-100' : riskRate >= 0.70 ? 'bg-red-100' : 'bg-orange-100';
@@ -1090,6 +1265,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <span class="font-bold text-gray-800">${streak.description}</span>
                         <span class="text-xs bg-gray-200 px-1.5 py-0.5 rounded">${lenDisplay}</span>
                         <span class="${riskColor} text-xs font-bold">${riskText}</span>
+                        ${recordDropOffState.isCritical ? `<span class="text-[10px] rounded bg-red-700 px-1.5 py-0.5 font-bold text-white">${recordDropOffState.label}</span>` : ''}
                         <span class="text-gray-400 text-[10px]">${countText}</span>
                     </li>`;
                     forecastCount++;
@@ -1111,7 +1287,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     return sample > 0 && ((exclusionRate || 0) > 0 || (dropOffRate || 0) > 0);
                 });
                 latestPredictionItemsForExclusion = predItems.map((item, index) => ({ ...item, summaryRank: index + 1 }));
-                latestLowFrequencyItemsForExclusion = allStreakDropOffs.map((item, index) => ({ ...item, summaryRank: index + 1 }));
+                latestLowFrequencyItemsForExclusion = actionableStreakDropOffs.map((item, index) => ({ ...item, summaryRank: index + 1 }));
                 fetchStreakExclusion();
                 if (predItems.length > 0) {
                     predSummarySection.style.display = '';
@@ -1149,7 +1325,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <div>
                                     <div class="font-bold"><i class="bi bi-shield-check mr-1"></i>Độ tin cậy lịch sử của toàn bộ chuỗi dự đoán</div>
                                     <div class="mt-1 text-xs leading-5 text-blue-700">
-                                        Tính trên ${yearsText} năm dữ liệu: chuỗi đã hình thành dùng tỷ lệ gãy; chuỗi tiềm năng dùng tỷ lệ không hình thành. Điểm ưu tiên loại còn xét Wilson lower bound, cỡ mẫu, độ tin cậy, nhịp xuất hiện và tần suất hình thành/năm; chuỗi đã chạm kỷ lục lịch sử thật và chưa từng tiếp tục được đẩy lên nhóm ưu tiên cao nhất.
+                                        Tính trên ${yearsText} năm dữ liệu: ưu tiên chuỗi đạt kỷ lục, sau đó chuỗi đã hình thành có khả năng gãy, cuối cùng mới đến chuỗi tiềm năng không hình thành. Mặc định chỉ xét chuỗi tiềm năng có tần suất hình thành <= ${MAX_POTENTIAL_FORMATION_PER_YEAR}/năm; đã bỏ ${skippedPotentialByFormation} chuỗi tiềm năng vượt ngưỡng này.
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-3 gap-2 text-center text-xs">
@@ -1175,7 +1351,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 ${renderHeaderTooltip('Dạng chuỗi', 'Tên pattern đang được dùng để dự đoán. Nhãn tiềm năng nghĩa là chuỗi còn 1 ngày nữa mới hình thành.')}
                                 ${renderHeaderTooltip('Độ dài', 'Độ dài chuỗi hiện tại. Với chuỗi tiềm năng, mũi tên cho biết nếu ngày mai tiếp tục thì sẽ hình thành chuỗi ở độ dài này.', 'text-center')}
                                 ${renderHeaderTooltip('Kỷ lục', 'Số ngày dài nhất chuỗi dạng này từng kéo dài trong toàn bộ lịch sử dữ liệu.', 'text-center')}
-                                ${renderHeaderTooltip('Ưu tiên loại', 'Điểm 0-100 dùng để sắp xếp khả năng loại trừ. Chuỗi đã hình thành dùng 55% rủi ro gãy/không hình thành, 25% Wilson lower bound, 15% độ tin cậy, 5% cỡ mẫu. Chuỗi tiềm năng thiếu mẫu tiền đề điều kiện được điều chỉnh thêm theo tần suất hình thành/năm để tránh ưu tiên ảo.', 'text-center')}
+                                ${renderHeaderTooltip('Ưu tiên loại', 'Điểm 0-100 dùng để sắp xếp khả năng loại trừ. Chuỗi đạt kỷ lục được ưu tiên đầu tiên. Điểm còn lại gồm 50% xác suất gãy/không hình thành và 50% nhịp xuất hiện của độ dài dự đoán: ngày gần nhất target xuất hiện càng gần so với TB cách thì điểm càng cao.', 'text-center')}
                                 ${renderHeaderTooltip('Gãy / Không HT', 'Chuỗi đã hình thành hiển thị tỷ lệ gãy lịch sử. Chuỗi tiềm năng hiển thị tỷ lệ không hình thành; dòng phụ cho biết nếu đã hình thành thì tỷ lệ gãy sau đó là bao nhiêu.', 'text-center')}
                                 ${renderHeaderTooltip('HT', 'Tỷ lệ hình thành của chuỗi tiềm năng. Dòng phụ là số tiền đề hoặc số ngày mẫu dùng để tính tỷ lệ này.', 'text-center')}
                                 ${renderHeaderTooltip('Tin cậy', 'Score tổng hợp từ Wilson lower bound, tỷ lệ gãy/không hình thành, cỡ mẫu, độ gần hiện tại, nhịp xuất hiện và độ dài so với trung bình.', 'text-center')}
@@ -1183,17 +1359,33 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 ${renderHeaderTooltip('SL đạt', 'Số lần lịch sử đạt mốc đang xét. Với chuỗi tiềm năng, dòng phụ hiển thị tần suất hình thành mỗi năm.', 'text-center')}
                                 ${renderHeaderTooltip('SL tiếp tục', 'Số lần lịch sử tiếp tục sang mốc kế tiếp sau độ dài đang xét. Số này càng thấp thì rủi ro gãy càng cao.', 'text-center')}
                                 ${renderHeaderTooltip('TB dài', 'Độ dài trung bình của các lần chuỗi này từng xuất hiện trong lịch sử.', 'text-center')}
-                                ${renderHeaderTooltip('TB cách', 'Khoảng cách trung bình giữa các lần xuất hiện của chuỗi trong lịch sử.', 'text-center')}
-                                ${renderHeaderTooltip('Gần nhất', 'Số ngày từ lần xuất hiện gần nhất của chuỗi tới ngày đang dùng làm dữ liệu hiện tại.', 'text-center')}
+                                ${renderHeaderTooltip('TB cách', 'Khoảng cách trung bình giữa các lần xuất hiện của độ dài chuỗi dự đoán. Ví dụ đang 2d thì cột này lấy lịch sử các lần đạt >=3d.', 'text-center')}
+                                ${renderHeaderTooltip('Gần nhất', 'Số ngày từ lần gần nhất độ dài chuỗi dự đoán từng xuất hiện tới ngày đang dùng làm dữ liệu hiện tại.', 'text-center')}
                                 ${renderHeaderTooltip('Số dự đoán', 'Danh sách số bị tác động bởi chuỗi này. Các số này được đưa vào tập loại trừ theo thứ tự ưu tiên.')}
                             </tr>
                         </thead><tbody>`;
-                    reliabilityItems.forEach(({ streak, streakLen, dropOffRate, exclusionRate, exclusionPriority, nextLen, currentCount, nextCount, formFrequencyPerYear, reliability, formationBaseCount, formationRate, nonFormationRate, nonFormationLowerBound, usesFrequencyFallback }) => {
-                        const itemForExclusion = { streak, formationBaseCount, currentCount, exclusionPriority, formFrequencyPerYear, totalYearsForFrequency: totalYears };
-                        const predictionNumbers = getPredictionNumbers({ streak });
+                    reliabilityItems.forEach(({ streak, streakLen, dropOffRate, exclusionRate, exclusionPriority, nextLen, currentCount, nextCount, formFrequencyPerYear, reliability, formationBaseCount, formationRate, nonFormationRate, nonFormationLowerBound, usesFrequencyFallback, targetAvgLength, targetAvgGapDays, targetDaysSinceLatestEnd, targetTimingScore }) => {
+                        const itemForExclusion = {
+                            streak,
+                            streakLen,
+                            nextLen,
+                            formationBaseCount,
+                            currentCount,
+                            formationCount: currentCount,
+                            nextCount,
+                            dropOffRate,
+                            exclusionRate,
+                            exclusionPriority,
+                            formFrequencyPerYear,
+                            totalYearsForFrequency: totalYears
+                        };
+                        const predictionNumbers = getPredictionNumbers(itemForExclusion);
+                        const recordDropOffState = getRecordDropOffState(itemForExclusion);
                         const isActualHit = latestActualPredictionNumber && isActivePredictionExclusionItem(itemForExclusion) && predictionNumbers.includes(latestActualPredictionNumber);
                         const recordLength = getStreakRecordLength(streak);
-                        const recordClass = recordLength > 0 && streakLen >= recordLength
+                        const recordClass = recordDropOffState.isCritical
+                            ? 'bg-red-700 text-white border-red-800'
+                            : recordLength > 0 && streakLen >= recordLength
                             ? 'bg-red-100 text-red-700 border-red-200'
                             : 'bg-gray-100 text-gray-700 border-gray-200';
                         const riskRate = streak.isPotential ? nonFormationRate : dropOffRate;
@@ -1208,10 +1400,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                             }).join(' ')
                             : '<span class="text-gray-400">-</span>';
                         const potentialLabel = streak.isPotential ? ' <span class="text-[9px] bg-orange-500 text-white px-1 py-0.5 rounded">tiềm năng</span>' : '';
+                        const recordCriticalLabel = recordDropOffState.isCritical
+                            ? ` <span title="${escapeHtml(recordDropOffState.label)}" class="text-[9px] bg-red-700 text-white px-1 py-0.5 rounded">${isActualHit ? 'KQ vượt KL' : 'vượt KL nếu tiếp tục'}</span>`
+                            : '';
                         const actualHitLabel = isActualHit ? ' <span class="text-[9px] bg-yellow-300 text-yellow-900 px-1 py-0.5 rounded border border-yellow-500">KQ thực tế</span>' : '';
-                        const dropOffLabel = streak.isPotential
+                        const dropOffLabelBase = streak.isPotential
                             ? `<div class="${riskColor}">Không HT ${(nonFormationRate*100).toFixed(0)}%</div><div class="text-[9px] text-gray-500 font-normal">sau HT gãy ${(dropOffRate*100).toFixed(0)}%</div>`
                             : `<span class="${riskColor}">${(dropOffRate*100).toFixed(0)}%</span>`;
+                        const dropOffLabel = recordDropOffState.isCritical
+                            ? `${dropOffLabelBase}<div class="mt-0.5 text-[9px] font-bold text-red-700">${recordDropOffState.label}</div>`
+                            : dropOffLabelBase;
                         const potentialSampleLabel = usesFrequencyFallback ? 'ngày mẫu' : 'tiền đề';
                         const formationHtml = streak.isPotential
                             ? `<div class="font-semibold text-gray-700">${(formationRate*100).toFixed(1)}%</div><div class="text-[9px] text-gray-500">${formatMetric(formationBaseCount)} ${potentialSampleLabel}</div>`
@@ -1227,7 +1425,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             ? `<div class="font-semibold">${formatMetric(streak.isPotential ? nonFormationLowerBound * 100 : reliability.lowerBoundPercent, '%')}</div><div class="text-[9px] text-gray-500">mẫu ${formatMetric(streak.isPotential ? formationBaseCount : reliability.sampleSize)}</div>`
                             : '<span class="text-gray-400">-</span>';
                         predHtml += `<tr class="${rowBg} border-b ${isActualHit ? 'outline outline-2 outline-yellow-300' : 'hover:bg-gray-50'}">
-                            <td class="px-3 py-2 font-medium text-gray-900">${streak.description}${potentialLabel}${actualHitLabel}</td>
+                            <td class="px-3 py-2 font-medium text-gray-900">${streak.description}${potentialLabel}${recordCriticalLabel}${actualHitLabel}</td>
                             <td class="px-3 py-2 text-center">${streakLen}d${streak.isPotential ? '<span class="text-[9px] text-orange-500"> ↗</span>' : ''}</td>
                             <td class="px-3 py-2 text-center"><span class="inline-flex min-w-10 justify-center rounded border px-2 py-1 text-[11px] font-semibold ${recordClass}">${recordLength ? `${recordLength}d` : '-'}</span></td>
                             <td class="px-3 py-2 text-center"><span class="inline-flex min-w-12 justify-center rounded bg-gray-900 px-2 py-1 text-[11px] font-bold text-white">${formatMetric(exclusionPriority, '')}</span></td>
@@ -1237,9 +1435,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <td class="px-3 py-2 text-center">${lowerHtml}</td>
                             <td class="px-3 py-2 text-center">${currentCountLabel}</td>
                             <td class="px-3 py-2 text-center">${nextCount}</td>
-                            <td class="px-3 py-2 text-center">${reliability ? formatMetric(reliability.avgLength, 'd') : '-'}</td>
-                            <td class="px-3 py-2 text-center">${reliability ? formatMetric(reliability.avgGapDays, 'd') : '-'}</td>
-                            <td class="px-3 py-2 text-center">${reliability ? formatMetric(reliability.daysSinceLatestEnd, 'd') : '-'}</td>
+                            <td class="px-3 py-2 text-center">${targetAvgLength !== null && targetAvgLength !== undefined ? formatMetric(targetAvgLength, 'd') : (reliability ? formatMetric(reliability.avgLength, 'd') : '-')}</td>
+                            <td class="px-3 py-2 text-center">${targetAvgGapDays !== null && targetAvgGapDays !== undefined ? formatMetric(targetAvgGapDays, 'd') : '-'}</td>
+                            <td class="px-3 py-2 text-center">${targetDaysSinceLatestEnd !== null && targetDaysSinceLatestEnd !== undefined ? formatMetric(targetDaysSinceLatestEnd, 'd') : '-'}</td>
                             <td class="px-3 py-2"><div class="flex flex-wrap gap-0.5">${nums}</div></td>
                         </tr>`;
                     });
@@ -1317,11 +1515,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const bgColor = isRecord ? (isSuperRecord ? 'bg-purple-50' : 'bg-red-50') : (streak.isPotential ? 'bg-orange-50' : 'bg-white');
                     const titleWeight = isRecord ? 'font-bold' : 'font-semibold';
                     const recordLength = getStreakRecordLength(streak);
-                    const recordBadgeClass = recordLength > 0 && streakLen >= recordLength
+                    const cardDropOffItem = allStreakDropOffs.find(item => item.streak === streak) || {
+                        streak,
+                        streakLen,
+                        nextLen: targetLenOuter,
+                        currentCount: currentCountOuter,
+                        nextCount: targetCountOuter,
+                        dropOffRate: dropOffRateOuter,
+                        exclusionRate: dropOffRateOuter
+                    };
+                    const cardRecordDropOffState = getRecordDropOffState(cardDropOffItem);
+                    const recordBadgeClass = cardRecordDropOffState.isCritical
+                        ? 'border-red-800 bg-red-700 text-white'
+                        : recordLength > 0 && streakLen >= recordLength
                         ? 'border-red-200 bg-red-50 text-red-700'
                         : 'border-gray-200 bg-gray-50 text-gray-600';
                     const cardPredictionNumbers = getPredictionNumbers({ streak });
-                    const cardDropOffItem = allStreakDropOffs.find(item => item.streak === streak);
                     const isCardActualHit = latestActualPredictionNumber
                         && cardDropOffItem
                         && isActivePredictionExclusionItem(cardDropOffItem)
@@ -1342,6 +1551,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                     if (isCardActualHit) {
                         badgeHtml += `<span class="ml-2 inline-block bg-yellow-300 text-yellow-900 text-[9px] px-1 py-0.5 rounded border border-yellow-500 uppercase">KQ thực tế</span>`;
+                    }
+                    if (cardRecordDropOffState.isCritical) {
+                        badgeHtml += `<span title="${escapeHtml(cardRecordDropOffState.label)}" class="ml-2 inline-block bg-red-700 text-white text-[9px] px-1 py-0.5 rounded uppercase">${isCardActualHit ? 'KQ vượt KL' : 'Vượt KL nếu tiếp tục'}</span>`;
                     }
 
                     finalHtml += `
@@ -1368,7 +1580,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 	                                        </div>
 
 	                                        <div class="mt-2 mb-1 flex flex-wrap items-center gap-1.5 text-[11px]">
-	                                            <span class="inline-flex items-center rounded border px-2 py-0.5 font-semibold ${recordBadgeClass}">Kỷ lục: ${recordLength ? `${recordLength}d` : '-'}</span>
+	                                            <span title="${escapeHtml(cardRecordDropOffState.label || 'Kỷ lục dài nhất trong lịch sử')}" class="inline-flex items-center rounded border px-2 py-0.5 font-semibold ${recordBadgeClass}">Kỷ lục: ${recordLength ? `${recordLength}d` : '-'}</span>
 	                                            <span class="text-gray-500">Hiện tại: ${streakLen}d</span>
 	                                        </div>
 	                                        <p class="text-xs text-gray-500 mb-1">Từ ngày: ${streak.startDate}</p>

@@ -10,7 +10,12 @@
         dropoff85: 'Ưu tiên 85+',
         dropoff85Edge: 'Ưu tiên 85 + Edge',
         ranked60to70: 'Ưu tiên loại 60-70',
-        combined20to30: 'Tổng hợp rủi ro 30',
+        combined20to30: 'Tổng hợp rủi ro 25',
+        edgePerNumber2: 'Edge từng số 2',
+        edgePerNumber5: 'Edge từng số 5',
+        bayesianLogOdds2: 'Bayes log-odds 2',
+        bayesianLogOdds3: 'Bayes log-odds 3',
+        bayesianLogOdds5: 'Bayes log-odds 5',
         customExclusion: 'Custom loại trừ'
     };
 
@@ -18,8 +23,13 @@
         if (methodId === 'dropoff85') return 'Điểm ưu tiên loại >= 85, gồm dropoff/không hình thành, lower, mẫu và tin cậy';
         if (methodId === 'dropoff85Edge') return 'Chỉ lấy chuỗi ưu tiên >= 85 khi rủi ro vượt xác suất nền theo số lượng số loại';
         if (methodId === 'ranked60to70') return 'Lấy chuỗi ưu tiên loại cao nhất đến vùng loại trừ 60-70 số';
+        if (methodId === 'edgePerNumber2') return 'Cộng edge dương theo từng số, loại 98 số điểm cao nhất và đánh 2 số còn lại; đây là cấu hình tốt nhất trong search mới';
+        if (methodId === 'edgePerNumber5') return 'Chấm điểm từng số bằng edge dương chia cho số lượng số của chuỗi, loại 95 số và đánh 5 số còn lại';
+        if (methodId === 'bayesianLogOdds2') return 'Bayesian log-odds alpha 500, loại khoảng 98 số và đánh 2-3 số còn lại';
+        if (methodId === 'bayesianLogOdds3') return 'Bayesian shrinkage tỷ lệ gãy về xác suất nền, dùng log-odds lift để loại 97 số và đánh 3 số còn lại';
+        if (methodId === 'bayesianLogOdds5') return 'Biến thể Bayesian log-odds ổn định hơn, loại 95 số và đánh 5 số còn lại';
         if (methodId === 'customExclusion') return 'Method thử nghiệm theo các ngưỡng người dùng chọn: ưu tiên, dropoff, tần suất, lower, mẫu và edge';
-        return 'Chấm điểm rủi ro từng số bằng ưu tiên loại, dropoff/không hình thành, tin cậy, mẫu, lower, TB dài, TB cách, gần nhất và edge để còn 30 số đánh';
+        return 'Loại đúng 75 số theo thứ tự ưu tiên mới từ Tổng hợp dự đoán, để lại 25 số đánh';
     }
 
     function el(id) {
@@ -43,7 +53,9 @@
             customTargetExcluded: el('customTargetExcluded')?.value,
             customRequirePositiveEdge: el('customRequireEdge')?.checked ? '1' : '0',
             customIncludeFormed: '1',
-            customIncludePotential: el('customIncludePotential')?.checked ? '1' : '0'
+            customIncludePotential: el('customIncludePotential')?.checked ? '1' : '0',
+            customIncludeHighFrequency: el('customIncludeHighFrequency')?.checked ? '1' : '0',
+            customExcludeFixedThreeValueGroups: el('customExcludeFixedThreeValueGroups')?.checked ? '1' : '0'
         };
         return Object.entries(params).filter(([, value]) => value !== undefined && value !== null);
     }

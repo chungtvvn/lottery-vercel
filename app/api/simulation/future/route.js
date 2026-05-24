@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+export const maxDuration = 300;
+
 export async function POST(request) {
     try {
         const lotteryService = require('@/lib/services/lotteryService');

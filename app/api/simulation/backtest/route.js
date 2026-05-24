@@ -1,4 +1,8 @@
 import { NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
+
+export const maxDuration = 300;
 
 export async function GET(request) {
     try {
@@ -20,9 +24,32 @@ export async function GET(request) {
             targetExcluded: url.searchParams.get('customTargetExcluded'),
             requirePositiveEdge: url.searchParams.get('customRequirePositiveEdge'),
             includeFormed: url.searchParams.get('customIncludeFormed'),
-            includePotential: url.searchParams.get('customIncludePotential')
+            includePotential: url.searchParams.get('customIncludePotential'),
+            includeHighFrequency: url.searchParams.get('customIncludeHighFrequency'),
+            excludeFixedThreeValueGroups: url.searchParams.get('customExcludeFixedThreeValueGroups')
         };
-        const results = await simulationService.runBacktest(days, null, { custom });
+        const cachedPath = path.join(process.cwd(), 'lib/data/statistics', `cached_simulation_${days}.json`);
+        let cachedPayload = null;
+        if (fs.existsSync(cachedPath)) {
+            try {
+                cachedPayload = JSON.parse(fs.readFileSync(cachedPath, 'utf8'));
+            } catch {
+                cachedPayload = null;
+            }
+        }
+        const canUseStaticCache = days === 365
+            && url.searchParams.get('refresh') !== '1'
+            && simulationService.isDefaultCustomOptions
+            && simulationService.isDefaultCustomOptions({ custom })
+            && cachedPayload
+            && cachedPayload.config?.methodVersion === simulationService.SIMULATION_METHOD_VERSION;
+        if (canUseStaticCache) {
+            return NextResponse.json(cachedPayload);
+        }
+        const results = await simulationService.runBacktest(days, null, {
+            custom,
+            compactDetails: days > 90
+        });
         if (results.error) return NextResponse.json({ error: results.error }, { status: 400 });
         return NextResponse.json(results);
     } catch (e) { return NextResponse.json({ error: e.message }, { status: 500 }); }

@@ -423,6 +423,18 @@ async function main() {
             console.error('⚠️ Lỗi khi tạo cached suggestions (không ảnh hưởng các bước khác):', sugErr.message);
         }
 
+        // PRE-COMPUTE: 365-day simulation backtest so Vercel does not have to run
+        // the heavy historical loop inside a serverless request.
+        console.log(' -> Tạo Cached Simulation Backtest 365 ngày...');
+        try {
+            const simulationService = require('../lib/services/simulationService');
+            const simulationResult = await simulationService.runBacktest(365, null, { compactDetails: true });
+            await fs.writeFile(path.join(DATA_DIR, 'statistics', 'cached_simulation_365.json'), JSON.stringify(simulationResult, null, 0));
+            console.log('✅ Đã lưu kết quả cached_simulation_365.json');
+        } catch (simErr) {
+            console.error('⚠️ Lỗi khi tạo cached simulation 365 (không ảnh hưởng các bước khác):', simErr.message);
+        }
+
         
         // BƯỚC ĐẶC BIỆT: Minify để xóa fullSequence (cứu github khỏi bị lố 100MB giới hạn)
         console.log('[+] Đang minify siêu gọn các file stats...');

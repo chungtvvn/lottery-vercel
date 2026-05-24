@@ -1,0 +1,253 @@
+year,id,name,played,skipped,wins,losses,hitRate,avgExcluded,avgBet,profit,roi
+2006,errNumberRisk70,"Điểm số theo sai số, loại 70",90,0,27,63,30,70,30,-8100,-30
+2006,errNumberRisk75,"Điểm số theo sai số, loại 75",90,0,22,68,24.44,75,25,-7100,-31.56
+2006,errNumberRisk80,"Điểm số theo sai số, loại 80",90,0,17,73,18.89,80,20,-6100,-33.89
+2006,errNumberRiskStrict70,"Điểm số strict theo sai số, loại 70",90,0,33,57,36.67,70,30,-3900,-14.44
+2006,errNumberRiskStrict75,"Điểm số strict theo sai số, loại 75",90,0,29,61,32.22,75,25,-2200,-9.78
+2006,errNumberRiskStrict80,"Điểm số strict theo sai số, loại 80",90,0,22,68,24.44,80,20,-2600,-14.44
+2006,errUnion70,"Union sai số tốt, loại 70",85,5,33,52,38.82,65.45,34.55,-6270,-21.35
+2006,errUnion75,"Union sai số tốt, loại 75",85,5,29,56,34.12,69.42,30.58,-5690,-21.89
+2006,errUnion80,"Union sai số tốt, loại 80",86,4,31,55,36.05,73.21,26.79,-1340,-5.82
+2006,errUnionStrict70,"Union strict sai số, loại 70",74,16,30,44,40.54,61.91,38.09,-7190,-25.51
+2006,errUnionStrict75,"Union strict sai số, loại 75",77,13,30,47,38.96,65.47,34.53,-5590,-21.02
+2006,errUnionStrict80,"Union strict sai số, loại 80",79,11,27,52,34.18,70.56,29.44,-4360,-18.74
+2007,errNumberRisk70,"Điểm số theo sai số, loại 70",363,0,136,227,37.47,70,30,-13700,-12.58
+2007,errNumberRisk75,"Điểm số theo sai số, loại 75",363,0,110,253,30.3,75,25,-13750,-15.15
+2007,errNumberRisk80,"Điểm số theo sai số, loại 80",363,0,91,272,25.07,80,20,-8900,-12.26
+2007,errNumberRiskStrict70,"Điểm số strict theo sai số, loại 70",363,0,141,222,38.84,70,30,-10200,-9.37
+2007,errNumberRiskStrict75,"Điểm số strict theo sai số, loại 75",363,0,124,239,34.16,75,25,-3950,-4.35
+2007,errNumberRiskStrict80,"Điểm số strict theo sai số, loại 80",363,0,98,265,27,80,20,-4000,-5.51
+2007,errUnion70,"Union sai số tốt, loại 70",341,22,156,185,45.75,61.79,38.21,-21110,-16.2
+2007,errUnion75,"Union sai số tốt, loại 75",341,22,141,200,41.35,65.99,34.01,-17290,-14.91
+2007,errUnion80,"Union sai số tốt, loại 80",345,18,129,216,37.39,70.32,29.68,-12110,-11.83
+2007,errUnionStrict70,"Union strict sai số, loại 70",299,64,148,151,49.5,59.95,40.05,-16160,-13.49
+2007,errUnionStrict75,"Union strict sai số, loại 75",303,60,131,172,43.23,63.77,36.23,-18080,-16.47
+2007,errUnionStrict80,"Union strict sai số, loại 80",311,52,122,189,39.23,68.19,31.81,-13520,-13.67
+2008,errNumberRisk70,"Điểm số theo sai số, loại 70",364,0,120,244,32.97,70,30,-25200,-23.08
+2008,errNumberRisk75,"Điểm số theo sai số, loại 75",364,0,94,270,25.82,75,25,-25200,-27.69
+2008,errNumberRisk80,"Điểm số theo sai số, loại 80",364,0,76,288,20.88,80,20,-19600,-26.92
+2008,errNumberRiskStrict70,"Điểm số strict theo sai số, loại 70",364,0,138,226,37.91,70,30,-12600,-11.54
+2008,errNumberRiskStrict75,"Điểm số strict theo sai số, loại 75",364,0,111,253,30.49,75,25,-13300,-14.62
+2008,errNumberRiskStrict80,"Điểm số strict theo sai số, loại 80",364,0,87,277,23.9,80,20,-11900,-16.35
+2008,errUnion70,"Union sai số tốt, loại 70",332,32,152,180,45.78,63.07,36.93,-16210,-13.22
+2008,errUnion75,"Union sai số tốt, loại 75",333,31,135,198,40.54,66.75,33.25,-16210,-14.64
+2008,errUnion80,"Union sai số tốt, loại 80",342,22,119,223,34.8,71.68,28.32,-13540,-13.98
+2008,errUnionStrict70,"Union strict sai số, loại 70",308,56,144,164,46.75,61.65,38.35,-17320,-14.66
+2008,errUnionStrict75,"Union strict sai số, loại 75",309,55,131,178,42.39,65.22,34.78,-15760,-14.67
+2008,errUnionStrict80,"Union strict sai số, loại 80",317,47,115,202,36.28,69.78,30.22,-15310,-15.98
+2009,errNumberRisk70,"Điểm số theo sai số, loại 70",362,0,109,253,30.11,70,30,-32300,-29.74
+2009,errNumberRisk75,"Điểm số theo sai số, loại 75",362,0,93,269,25.69,75,25,-25400,-28.07
+2009,errNumberRisk80,"Điểm số theo sai số, loại 80",362,0,78,284,21.55,80,20,-17800,-24.59
+2009,errNumberRiskStrict70,"Điểm số strict theo sai số, loại 70",362,0,125,237,34.53,70,30,-21100,-19.43
+2009,errNumberRiskStrict75,"Điểm số strict theo sai số, loại 75",362,0,109,253,30.11,75,25,-14200,-15.69
+2009,errNumberRiskStrict80,"Điểm số strict theo sai số, loại 80",362,0,90,272,24.86,80,20,-9400,-12.98
+2009,errUnion70,"Union sai số tốt, loại 70",322,40,127,195,39.44,62.57,37.43,-31620,-26.24
+2009,errUnion75,"Union sai số tốt, loại 75",323,39,118,205,36.53,66,34,-27230,-24.79
+2009,errUnion80,"Union sai số tốt, loại 80",333,29,110,223,33.03,70.89,29.11,-19940,-20.57
+2009,errUnionStrict70,"Union strict sai số, loại 70",305,57,127,178,41.64,60.97,39.03,-30130,-25.31
+2009,errUnionStrict75,"Union strict sai số, loại 75",308,54,121,187,39.29,63.99,36.01,-26200,-23.62
+2009,errUnionStrict80,"Union strict sai số, loại 80",318,44,110,208,34.59,68.76,31.24,-22330,-22.48
+2010,errNumberRisk70,"Điểm số theo sai số, loại 70",361,0,113,248,31.3,70,30,-29200,-26.96
+2010,errNumberRisk75,"Điểm số theo sai số, loại 75",361,0,96,265,26.59,75,25,-23050,-25.54
+2010,errNumberRisk80,"Điểm số theo sai số, loại 80",361,0,78,283,21.61,80,20,-17600,-24.38
+2010,errNumberRiskStrict70,"Điểm số strict theo sai số, loại 70",361,0,142,219,39.34,70,30,-8900,-8.22
+2010,errNumberRiskStrict75,"Điểm số strict theo sai số, loại 75",361,0,125,236,34.63,75,25,-2750,-3.05
+2010,errNumberRiskStrict80,"Điểm số strict theo sai số, loại 80",361,0,104,257,28.81,80,20,600,0.83
+2010,errUnion70,"Union sai số tốt, loại 70",330,31,164,166,49.7,62.29,37.71,-9650,-7.75
+2010,errUnion75,"Union sai số tốt, loại 75",333,28,153,180,45.95,65.99,34.01,-6140,-5.42
+2010,errUnion80,"Union sai số tốt, loại 80",336,25,130,206,38.69,70.19,29.81,-9160,-9.15
+2010,errUnionStrict70,"Union strict sai số, loại 70",308,53,155,153,50.32,60.32,39.68,-13720,-11.23
+2010,errUnionStrict75,"Union strict sai số, loại 75",313,48,150,163,47.92,63.61,36.39,-8910,-7.82
+2010,errUnionStrict80,"Union strict sai số, loại 80",317,44,131,186,41.32,67.93,32.07,-9970,-9.81
+2011,errNumberRisk70,"Điểm số theo sai số, loại 70",359,0,127,232,35.38,70,30,-18800,-17.46
+2011,errNumberRisk75,"Điểm số theo sai số, loại 75",359,0,108,251,30.08,75,25,-14150,-15.77
+2011,errNumberRisk80,"Điểm số theo sai số, loại 80",359,0,91,268,25.35,80,20,-8100,-11.28
+2011,errNumberRiskStrict70,"Điểm số strict theo sai số, loại 70",359,0,137,222,38.16,70,30,-11800,-10.96
+2011,errNumberRiskStrict75,"Điểm số strict theo sai số, loại 75",359,0,122,237,33.98,75,25,-4350,-4.85
+2011,errNumberRiskStrict80,"Điểm số strict theo sai số, loại 80",359,0,86,273,23.96,80,20,-11600,-16.16
+2011,errUnion70,"Union sai số tốt, loại 70",323,36,128,195,39.63,64.45,35.55,-25240,-21.98
+2011,errUnion75,"Union sai số tốt, loại 75",325,34,117,208,36,68.3,31.7,-21130,-20.51
+2011,errUnion80,"Union sai số tốt, loại 80",332,27,108,224,32.53,72.01,27.99,-17320,-18.64
+2011,errUnionStrict70,"Union strict sai số, loại 70",311,48,129,182,41.48,62.39,37.61,-26680,-22.81
+2011,errUnionStrict75,"Union strict sai số, loại 75",314,45,119,195,37.9,66.04,33.96,-23320,-21.87
+2011,errUnionStrict80,"Union strict sai số, loại 80",323,36,110,213,34.06,69.7,30.3,-20860,-21.32
+2012,errNumberRisk70,"Điểm số theo sai số, loại 70",362,0,113,249,31.22,70,30,-29500,-27.16
+2012,errNumberRisk75,"Điểm số theo sai số, loại 75",362,0,96,266,26.52,75,25,-23300,-25.75
+2012,errNumberRisk80,"Điểm số theo sai số, loại 80",362,0,79,283,21.82,80,20,-17100,-23.62
+2012,errNumberRiskStrict70,"Điểm số strict theo sai số, loại 70",362,0,133,229,36.74,70,30,-15500,-14.27
+2012,errNumberRiskStrict75,"Điểm số strict theo sai số, loại 75",362,0,114,248,31.49,75,25,-10700,-11.82
+2012,errNumberRiskStrict80,"Điểm số strict theo sai số, loại 80",362,0,97,265,26.8,80,20,-4500,-6.22
+2012,errUnion70,"Union sai số tốt, loại 70",327,35,147,180,44.95,62.47,37.53,-19820,-16.15
+2012,errUnion75,"Union sai số tốt, loại 75",330,32,132,198,40,66.9,33.1,-16840,-15.42
+2012,errUnion80,"Union sai số tốt, loại 80",336,26,117,219,34.82,71.75,28.25,-13020,-13.72
+2012,errUnionStrict70,"Union strict sai số, loại 70",298,64,133,165,44.63,61.57,38.43,-21420,-18.7
+2012,errUnionStrict75,"Union strict sai số, loại 75",304,58,122,182,40.13,65.41,34.59,-19740,-18.77
+2012,errUnionStrict80,"Union strict sai số, loại 80",313,49,106,207,33.87,70.12,29.88,-19330,-20.67
+2013,errNumberRisk70,"Điểm số theo sai số, loại 70",361,0,141,220,39.06,70,30,-9600,-8.86
+2013,errNumberRisk75,"Điểm số theo sai số, loại 75",361,0,113,248,31.3,75,25,-11150,-12.35
+2013,errNumberRisk80,"Điểm số theo sai số, loại 80",361,0,84,277,23.27,80,20,-13400,-18.56
+2013,errNumberRiskStrict70,"Điểm số strict theo sai số, loại 70",361,0,124,237,34.35,70,30,-21500,-19.85
+2013,errNumberRiskStrict75,"Điểm số strict theo sai số, loại 75",361,0,110,251,30.47,75,25,-13250,-14.68
+2013,errNumberRiskStrict80,"Điểm số strict theo sai số, loại 80",361,0,91,270,25.21,80,20,-8500,-11.77
+2013,errUnion70,"Union sai số tốt, loại 70",336,25,132,204,39.29,63.74,36.26,-29430,-24.16
+2013,errUnion75,"Union sai số tốt, loại 75",336,25,120,216,35.71,67.92,32.08,-23790,-22.07
+2013,errUnion80,"Union sai số tốt, loại 80",340,21,97,243,28.53,73.43,26.57,-22430,-24.83
+2013,errUnionStrict70,"Union strict sai số, loại 70",303,58,118,185,38.94,62.35,37.65,-31470,-27.59
+2013,errUnionStrict75,"Union strict sai số, loại 75",308,53,114,194,37.01,65.79,34.21,-25570,-24.27
+2013,errUnionStrict80,"Union strict sai số, loại 80",321,40,97,224,30.22,71.42,28.58,-23840,-25.99
+2014,errNumberRisk70,"Điểm số theo sai số, loại 70",361,0,120,241,33.24,70,30,-24300,-22.44
+2014,errNumberRisk75,"Điểm số theo sai số, loại 75",361,0,107,254,29.64,75,25,-15350,-17.01
+2014,errNumberRisk80,"Điểm số theo sai số, loại 80",361,0,89,272,24.65,80,20,-9900,-13.71
+2014,errNumberRiskStrict70,"Điểm số strict theo sai số, loại 70",361,0,129,232,35.73,70,30,-18000,-16.62
+2014,errNumberRiskStrict75,"Điểm số strict theo sai số, loại 75",361,0,114,247,31.58,75,25,-10450,-11.58
+2014,errNumberRiskStrict80,"Điểm số strict theo sai số, loại 80",361,0,100,261,27.7,80,20,-2200,-3.05
+2014,errUnion70,"Union sai số tốt, loại 70",338,23,132,206,39.05,64.33,35.67,-28150,-23.35
+2014,errUnion75,"Union sai số tốt, loại 75",340,21,117,223,34.41,68.59,31.41,-24880,-23.3
+2014,errUnion80,"Union sai số tốt, loại 80",345,16,97,248,28.12,73.29,26.71,-24250,-26.32
+2014,errUnionStrict70,"Union strict sai số, loại 70",311,50,130,181,41.8,62.71,37.29,-24980,-21.54
+2014,errUnionStrict75,"Union strict sai số, loại 75",317,44,121,196,38.17,66.9,33.1,-20240,-19.29
+2014,errUnionStrict80,"Union strict sai số, loại 80",327,34,106,221,32.42,71.11,28.89,-20280,-21.46
+2015,errNumberRisk70,"Điểm số theo sai số, loại 70",361,0,106,255,29.36,70,30,-34100,-31.49
+2015,errNumberRisk75,"Điểm số theo sai số, loại 75",361,0,83,278,22.99,75,25,-32150,-35.62
+2015,errNumberRisk80,"Điểm số theo sai số, loại 80",361,0,66,295,18.28,80,20,-26000,-36.01
+2015,errNumberRiskStrict70,"Điểm số strict theo sai số, loại 70",361,0,129,232,35.73,70,30,-18000,-16.62
+2015,errNumberRiskStrict75,"Điểm số strict theo sai số, loại 75",361,0,112,249,31.02,75,25,-11850,-13.13
+2015,errNumberRiskStrict80,"Điểm số strict theo sai số, loại 80",361,0,88,273,24.38,80,20,-10600,-14.68
+2015,errUnion70,"Union sai số tốt, loại 70",349,12,144,205,41.26,63.37,36.63,-27040,-21.15
+2015,errUnion75,"Union sai số tốt, loại 75",349,12,127,222,36.39,67.09,32.91,-25970,-22.61
+2015,errUnion80,"Union sai số tốt, loại 80",352,9,110,242,31.25,71.63,28.38,-22880,-22.91
+2015,errUnionStrict70,"Union strict sai số, loại 70",303,58,133,170,43.89,62.01,37.99,-22020,-19.13
+2015,errUnionStrict75,"Union strict sai số, loại 75",307,54,121,186,39.41,65.5,34.5,-21210,-20.03
+2015,errUnionStrict80,"Union strict sai số, loại 80",319,42,111,208,34.8,70.35,29.65,-16870,-17.84
+2016,errNumberRisk70,"Điểm số theo sai số, loại 70",362,0,134,228,37.02,70,30,-14800,-13.63
+2016,errNumberRisk75,"Điểm số theo sai số, loại 75",362,0,105,257,29.01,75,25,-17000,-18.78
+2016,errNumberRisk80,"Điểm số theo sai số, loại 80",362,0,82,280,22.65,80,20,-15000,-20.72
+2016,errNumberRiskStrict70,"Điểm số strict theo sai số, loại 70",362,0,144,218,39.78,70,30,-7800,-7.18
+2016,errNumberRiskStrict75,"Điểm số strict theo sai số, loại 75",362,0,123,239,33.98,75,25,-4400,-4.86
+2016,errNumberRiskStrict80,"Điểm số strict theo sai số, loại 80",362,0,106,256,29.28,80,20,1800,2.49
+2016,errUnion70,"Union sai số tốt, loại 70",350,12,161,189,46,63.89,36.11,-13670,-10.82
+2016,errUnion75,"Union sai số tốt, loại 75",350,12,146,204,41.71,67.83,32.17,-10410,-9.24
+2016,errUnion80,"Union sai số tốt, loại 80",350,12,121,229,34.57,72.61,27.39,-11160,-11.64
+2016,errUnionStrict70,"Union strict sai số, loại 70",311,51,141,170,45.34,63.16,36.84,-15860,-13.84
+2016,errUnionStrict75,"Union strict sai số, loại 75",315,47,132,183,41.9,66.59,33.41,-12840,-12.2
+2016,errUnionStrict80,"Union strict sai số, loại 80",325,37,114,211,35.08,71.23,28.77,-13710,-14.66
+2017,errNumberRisk70,"Điểm số theo sai số, loại 70",361,0,114,247,31.58,70,30,-28500,-26.32
+2017,errNumberRisk75,"Điểm số theo sai số, loại 75",361,0,87,274,24.1,75,25,-29350,-32.52
+2017,errNumberRisk80,"Điểm số theo sai số, loại 80",361,0,65,296,18.01,80,20,-26700,-36.98
+2017,errNumberRiskStrict70,"Điểm số strict theo sai số, loại 70",361,0,133,228,36.84,70,30,-15200,-14.04
+2017,errNumberRiskStrict75,"Điểm số strict theo sai số, loại 75",361,0,115,246,31.86,75,25,-9750,-10.8
+2017,errNumberRiskStrict80,"Điểm số strict theo sai số, loại 80",361,0,91,270,25.21,80,20,-8500,-11.77
+2017,errUnion70,"Union sai số tốt, loại 70",345,16,133,212,38.55,64.47,35.53,-29480,-24.05
+2017,errUnion75,"Union sai số tốt, loại 75",345,16,117,228,33.91,68.51,31.49,-26750,-24.62
+2017,errUnion80,"Union sai số tốt, loại 80",347,14,100,247,28.82,72.95,27.05,-23870,-25.43
+2017,errUnionStrict70,"Union strict sai số, loại 70",310,51,127,183,40.97,62.78,37.22,-26490,-22.96
+2017,errUnionStrict75,"Union strict sai số, loại 75",311,50,115,196,36.98,66.5,33.5,-23700,-22.74
+2017,errUnionStrict80,"Union strict sai số, loại 80",323,38,105,218,32.51,70.8,29.2,-20810,-22.07
+2018,errNumberRisk70,"Điểm số theo sai số, loại 70",361,0,136,225,37.67,70,30,-13100,-12.1
+2018,errNumberRisk75,"Điểm số theo sai số, loại 75",361,0,106,255,29.36,75,25,-16050,-17.78
+2018,errNumberRisk80,"Điểm số theo sai số, loại 80",361,0,80,281,22.16,80,20,-16200,-22.44
+2018,errNumberRiskStrict70,"Điểm số strict theo sai số, loại 70",361,0,145,216,40.17,70,30,-6800,-6.28
+2018,errNumberRiskStrict75,"Điểm số strict theo sai số, loại 75",361,0,121,240,33.52,75,25,-5550,-6.15
+2018,errNumberRiskStrict80,"Điểm số strict theo sai số, loại 80",361,0,100,261,27.7,80,20,-2200,-3.05
+2018,errUnion70,"Union sai số tốt, loại 70",343,18,144,199,41.98,64.92,35.08,-19510,-16.22
+2018,errUnion75,"Union sai số tốt, loại 75",347,14,131,216,37.75,69.57,30.43,-13890,-13.15
+2018,errUnion80,"Union sai số tốt, loại 80",352,9,124,228,35.23,74.04,25.96,-4580,-5.01
+2018,errUnionStrict70,"Union strict sai số, loại 70",314,47,138,176,43.95,63.23,36.77,-18870,-16.34
+2018,errUnionStrict75,"Union strict sai số, loại 75",324,37,129,195,39.81,67.22,32.78,-15900,-14.97
+2018,errUnionStrict80,"Union strict sai số, loại 80",331,30,122,209,36.86,71.57,28.43,-8710,-9.26
+2019,errNumberRisk70,"Điểm số theo sai số, loại 70",361,0,116,245,32.13,70,30,-27100,-25.02
+2019,errNumberRisk75,"Điểm số theo sai số, loại 75",361,0,101,260,27.98,75,25,-19550,-21.66
+2019,errNumberRisk80,"Điểm số theo sai số, loại 80",361,0,85,276,23.55,80,20,-12700,-17.59
+2019,errNumberRiskStrict70,"Điểm số strict theo sai số, loại 70",361,0,145,216,40.17,70,30,-6800,-6.28
+2019,errNumberRiskStrict75,"Điểm số strict theo sai số, loại 75",361,0,128,233,35.46,75,25,-650,-0.72
+2019,errNumberRiskStrict80,"Điểm số strict theo sai số, loại 80",361,0,106,255,29.36,80,20,2000,2.77
+2019,errUnion70,"Union sai số tốt, loại 70",349,12,160,189,45.85,63.41,36.59,-15700,-12.29
+2019,errUnion75,"Union sai số tốt, loại 75",349,12,147,202,42.12,67.03,32.97,-12170,-10.58
+2019,errUnion80,"Union sai số tốt, loại 80",352,9,125,227,35.51,72.36,27.64,-9800,-10.07
+2019,errUnionStrict70,"Union strict sai số, loại 70",293,68,129,164,44.03,63.69,36.31,-16100,-15.13
+2019,errUnionStrict75,"Union strict sai số, loại 75",296,65,124,172,41.89,66.93,33.07,-11090,-11.33
+2019,errUnionStrict80,"Union strict sai số, loại 80",310,51,110,200,35.48,71.74,28.26,-10600,-12.1
+2020,errNumberRisk70,"Điểm số theo sai số, loại 70",340,0,117,223,34.41,70,30,-20100,-19.71
+2020,errNumberRisk75,"Điểm số theo sai số, loại 75",340,0,103,237,30.29,75,25,-12900,-15.18
+2020,errNumberRisk80,"Điểm số theo sai số, loại 80",340,0,87,253,25.59,80,20,-7100,-10.44
+2020,errNumberRiskStrict70,"Điểm số strict theo sai số, loại 70",340,0,148,192,43.53,70,30,1600,1.57
+2020,errNumberRiskStrict75,"Điểm số strict theo sai số, loại 75",340,0,121,219,35.59,75,25,-300,-0.35
+2020,errNumberRiskStrict80,"Điểm số strict theo sai số, loại 80",340,0,99,241,29.12,80,20,1300,1.91
+2020,errUnion70,"Union sai số tốt, loại 70",325,15,134,191,41.23,64.7,35.3,-20920,-18.24
+2020,errUnion75,"Union sai số tốt, loại 75",327,13,122,205,37.31,68.69,31.31,-16980,-16.59
+2020,errUnion80,"Union sai số tốt, loại 80",330,10,102,228,30.91,72.98,27.02,-17750,-19.91
+2020,errUnionStrict70,"Union strict sai số, loại 70",288,52,124,164,43.06,64.02,35.98,-16810,-16.22
+2020,errUnionStrict75,"Union strict sai số, loại 75",291,49,114,177,39.18,67.81,32.19,-13880,-14.82
+2020,errUnionStrict80,"Union strict sai số, loại 80",299,41,100,199,33.44,71.67,28.33,-14710,-17.37
+2021,errNumberRisk70,"Điểm số theo sai số, loại 70",361,0,111,250,30.75,70,30,-30600,-28.25
+2021,errNumberRisk75,"Điểm số theo sai số, loại 75",361,0,95,266,26.32,75,25,-23750,-26.32
+2021,errNumberRisk80,"Điểm số theo sai số, loại 80",361,0,74,287,20.5,80,20,-20400,-28.25
+2021,errNumberRiskStrict70,"Điểm số strict theo sai số, loại 70",361,0,150,211,41.55,70,30,-3300,-3.05
+2021,errNumberRiskStrict75,"Điểm số strict theo sai số, loại 75",361,0,129,232,35.73,75,25,50,0.06
+2021,errNumberRiskStrict80,"Điểm số strict theo sai số, loại 80",361,0,107,254,29.64,80,20,2700,3.74
+2021,errUnion70,"Union sai số tốt, loại 70",341,20,135,206,39.59,65.91,34.09,-21750,-18.71
+2021,errUnion75,"Union sai số tốt, loại 75",343,18,123,220,35.86,70.24,29.76,-15960,-15.64
+2021,errUnion80,"Union sai số tốt, loại 80",344,17,106,238,30.81,74.75,25.25,-12650,-14.57
+2021,errUnionStrict70,"Union strict sai số, loại 70",309,52,128,181,41.42,64.72,35.28,-19430,-17.82
+2021,errUnionStrict75,"Union strict sai số, loại 75",314,47,123,191,39.17,68.61,31.39,-12480,-12.66
+2021,errUnionStrict80,"Union strict sai số, loại 80",322,39,108,214,33.54,72.98,27.02,-11410,-13.11
+2022,errNumberRisk70,"Điểm số theo sai số, loại 70",361,0,119,242,32.96,70,30,-25000,-23.08
+2022,errNumberRisk75,"Điểm số theo sai số, loại 75",361,0,96,265,26.59,75,25,-23050,-25.54
+2022,errNumberRisk80,"Điểm số theo sai số, loại 80",361,0,75,286,20.78,80,20,-19700,-27.29
+2022,errNumberRiskStrict70,"Điểm số strict theo sai số, loại 70",361,0,153,208,42.38,70,30,-1200,-1.11
+2022,errNumberRiskStrict75,"Điểm số strict theo sai số, loại 75",361,0,123,238,34.07,75,25,-4150,-4.6
+2022,errNumberRiskStrict80,"Điểm số strict theo sai số, loại 80",361,0,100,261,27.7,80,20,-2200,-3.05
+2022,errUnion70,"Union sai số tốt, loại 70",347,14,149,198,42.94,65.08,34.92,-16860,-13.92
+2022,errUnion75,"Union sai số tốt, loại 75",347,14,130,217,37.46,69.2,30.8,-15860,-14.84
+2022,errUnion80,"Union sai số tốt, loại 80",349,12,110,239,31.52,73.8,26.2,-14450,-15.8
+2022,errUnionStrict70,"Union strict sai số, loại 70",317,44,151,166,47.63,62.63,37.37,-12760,-10.77
+2022,errUnionStrict75,"Union strict sai số, loại 75",320,41,133,187,41.56,66.1,33.9,-15390,-14.19
+2022,errUnionStrict80,"Union strict sai số, loại 80",327,34,120,207,36.7,71.22,28.78,-10110,-10.74
+2023,errNumberRisk70,"Điểm số theo sai số, loại 70",361,0,124,237,34.35,70,30,-21500,-19.85
+2023,errNumberRisk75,"Điểm số theo sai số, loại 75",361,0,114,247,31.58,75,25,-10450,-11.58
+2023,errNumberRisk80,"Điểm số theo sai số, loại 80",361,0,81,280,22.44,80,20,-15500,-21.47
+2023,errNumberRiskStrict70,"Điểm số strict theo sai số, loại 70",361,0,135,226,37.4,70,30,-13800,-12.74
+2023,errNumberRiskStrict75,"Điểm số strict theo sai số, loại 75",361,0,114,247,31.58,75,25,-10450,-11.58
+2023,errNumberRiskStrict80,"Điểm số strict theo sai số, loại 80",361,0,87,274,24.1,80,20,-11300,-15.65
+2023,errUnion70,"Union sai số tốt, loại 70",348,13,153,195,43.97,65.38,34.62,-13380,-11.11
+2023,errUnion75,"Union sai số tốt, loại 75",349,12,134,215,38.4,69.19,30.81,-13720,-12.76
+2023,errUnion80,"Union sai số tốt, loại 80",351,10,112,239,31.91,73.74,26.26,-13780,-14.95
+2023,errUnionStrict70,"Union strict sai số, loại 70",316,45,142,174,44.94,64.02,35.98,-14290,-12.57
+2023,errUnionStrict75,"Union strict sai số, loại 75",318,43,126,192,39.62,67.49,32.51,-15170,-14.68
+2023,errUnionStrict80,"Union strict sai số, loại 80",327,34,111,216,33.94,71.75,28.25,-14690,-15.9
+2024,errNumberRisk70,"Điểm số theo sai số, loại 70",362,0,133,229,36.74,70,30,-15500,-14.27
+2024,errNumberRisk75,"Điểm số theo sai số, loại 75",362,0,104,258,28.73,75,25,-17700,-19.56
+2024,errNumberRisk80,"Điểm số theo sai số, loại 80",362,0,82,280,22.65,80,20,-15000,-20.72
+2024,errNumberRiskStrict70,"Điểm số strict theo sai số, loại 70",362,0,130,232,35.91,70,30,-17600,-16.21
+2024,errNumberRiskStrict75,"Điểm số strict theo sai số, loại 75",362,0,106,256,29.28,75,25,-16300,-18.01
+2024,errNumberRiskStrict80,"Điểm số strict theo sai số, loại 80",362,0,87,275,24.03,80,20,-11500,-15.88
+2024,errUnion70,"Union sai số tốt, loại 70",349,13,156,193,44.7,65.02,34.98,-12880,-10.55
+2024,errUnion75,"Union sai số tốt, loại 75",350,12,137,213,39.14,69.29,30.71,-11600,-10.79
+2024,errUnion80,"Union sai số tốt, loại 80",352,10,119,233,33.81,74,26,-8220,-8.98
+2024,errUnionStrict70,"Union strict sai số, loại 70",308,54,139,169,45.13,63.88,36.12,-13940,-12.53
+2024,errUnionStrict75,"Union strict sai số, loại 75",309,53,123,186,39.81,67.71,32.29,-13680,-13.71
+2024,errUnionStrict80,"Union strict sai số, loại 80",321,41,112,209,34.89,72.4,27.6,-10190,-11.5
+2025,errNumberRisk70,"Điểm số theo sai số, loại 70",361,0,107,254,29.64,70,30,-33400,-30.84
+2025,errNumberRisk75,"Điểm số theo sai số, loại 75",361,0,91,270,25.21,75,25,-26550,-29.42
+2025,errNumberRisk80,"Điểm số theo sai số, loại 80",361,0,76,285,21.05,80,20,-19000,-26.32
+2025,errNumberRiskStrict70,"Điểm số strict theo sai số, loại 70",361,0,150,211,41.55,70,30,-3300,-3.05
+2025,errNumberRiskStrict75,"Điểm số strict theo sai số, loại 75",361,0,127,234,35.18,75,25,-1350,-1.5
+2025,errNumberRiskStrict80,"Điểm số strict theo sai số, loại 80",361,0,99,262,27.42,80,20,-2900,-4.02
+2025,errUnion70,"Union sai số tốt, loại 70",349,12,151,198,43.27,64.82,35.18,-17090,-13.92
+2025,errUnion75,"Union sai số tốt, loại 75",349,12,135,214,38.68,69.4,30.6,-12280,-11.5
+2025,errUnion80,"Union sai số tốt, loại 80",352,9,112,240,31.82,74.01,25.99,-13080,-14.3
+2025,errUnionStrict70,"Union strict sai số, loại 70",309,52,126,183,40.78,63.52,36.48,-24520,-21.75
+2025,errUnionStrict75,"Union strict sai số, loại 75",315,46,118,197,37.46,67.5,32.5,-19780,-19.32
+2025,errUnionStrict80,"Union strict sai số, loại 80",325,36,104,221,32,71.9,28.1,-18530,-20.29
+2026,errNumberRisk70,"Điểm số theo sai số, loại 70",134,0,49,85,36.57,70,30,-5900,-14.68
+2026,errNumberRisk75,"Điểm số theo sai số, loại 75",134,0,43,91,32.09,75,25,-3400,-10.15
+2026,errNumberRisk80,"Điểm số theo sai số, loại 80",134,0,32,102,23.88,80,20,-4400,-16.42
+2026,errNumberRiskStrict70,"Điểm số strict theo sai số, loại 70",134,0,65,69,48.51,70,30,5300,13.18
+2026,errNumberRiskStrict75,"Điểm số strict theo sai số, loại 75",134,0,57,77,42.54,75,25,6400,19.1
+2026,errNumberRiskStrict80,"Điểm số strict theo sai số, loại 80",134,0,42,92,31.34,80,20,2600,9.7
+2026,errUnion70,"Union sai số tốt, loại 70",130,4,60,70,46.15,65.55,34.45,-2780,-6.21
+2026,errUnion75,"Union sai số tốt, loại 75",130,4,53,77,40.77,70.02,29.98,-1870,-4.8
+2026,errUnion80,"Union sai số tốt, loại 80",131,3,36,95,27.48,75.37,24.63,-7070,-21.91
+2026,errUnionStrict70,"Union strict sai số, loại 70",119,15,59,60,49.58,63.97,36.03,-1580,-3.68
+2026,errUnionStrict75,"Union strict sai số, loại 75",121,13,57,64,47.11,67.86,32.14,1010,2.6
+2026,errUnionStrict80,"Union strict sai số, loại 80",124,10,44,80,35.48,72.44,27.56,-3370,-9.86
