@@ -9,8 +9,8 @@ export async function GET() {
         const historicalExclusionService = require('../../../../lib/services/historicalExclusionService');
         const statisticsService = require('../../../../lib/services/statisticsService');
 
-        // LUÔN load đủ rawData + stats để hydrateStreak() và reliability enrichment hoạt động đúng
-        await lotteryService.loadAll();
+        // Cache lịch sử đã được daily job ghi sẵn; chỉ cần rawData để hydrate/bổ sung ngày mới nhất.
+        await lotteryService.loadRawData();
 
         // Try DB cache first 
         const { getQuickStatsHistoryFromCache } = require('@/lib/data-access');
@@ -48,7 +48,7 @@ export async function GET() {
 
         console.log('[quick-stats-history] Cache miss or empty, computing on-the-fly...');
 
-        // Cần tải stats đầy đủ để compute trên backend nếu miss cache
+        // Fallback khi cache miss mới cần tải stats đầy đủ để compute trên backend.
         await lotteryService.loadAll();
 
         // Clear cache để đảm bảo compute mới nhất

@@ -1,6 +1,10 @@
+require('dotenv').config({ path: '.env.local' });
+require('dotenv').config();
+
 const fs = require('fs').promises;
 const path = require('path');
 const https = require('https');
+const { spawnSync } = require('child_process');
 const { fetchLatestXsmbResult, XOSO_HOME_URL, XOSO_SOURCE_URLS } = require('./sources/xoso-com-vn');
 
 const LEGACY_DATA_URL = 'https://raw.githubusercontent.com/khiemdoan/vietnam-lottery-xsmb-analysis/refs/heads/main/data/xsmb-2-digits.json';
@@ -120,6 +124,45 @@ function getVietnamTodayDate(date = new Date()) {
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function hasSupabaseEnv() {
+    return Boolean(
+        (process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL)
+        && process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+}
+
+function syncSupabaseAfterStaticGeneration() {
+    if (process.env.SYNC_SUPABASE_AFTER_UPDATE === '0') {
+        console.log('[6] SYNC_SUPABASE_AFTER_UPDATE=0, bỏ qua sync Supabase.');
+        return;
+    }
+    if (!hasSupabaseEnv()) {
+        console.log('[6] Không có Supabase env, bỏ qua sync Supabase.');
+        return;
+    }
+
+    const statsMode = String(process.env.LOTTERY_STATS_SOURCE || '').trim().toLowerCase();
+    const dbStatsMode = ['supabase', 'supabase-db', 'db'].includes(statsMode);
+    const script = dbStatsMode ? 'scripts/seed-supabase-raw-data.js' : 'scripts/sync-supabase.js';
+    const label = dbStatsMode
+        ? 'Sync raw data lên Supabase; stats/cache đã được ghi trực tiếp vào DB.'
+        : 'Sync raw data + statistics gzip lên Supabase.';
+
+    console.log(`[6] ${label}`);
+    const result = spawnSync(process.execPath, [script], {
+        cwd: path.join(__dirname, '..'),
+        stdio: 'inherit',
+        env: {
+            ...process.env,
+            LOTTERY_DATA_SOURCE: 'local'
+        }
+    });
+    if (result.status !== 0) {
+        throw new Error(`Sync Supabase thất bại với exit code ${result.status}`);
+    }
+    console.log('[6] Sync Supabase thành công.');
 }
 
 async function fetchLatestXsmbResultWithRetry(latestLocalDate) {
@@ -286,6 +329,12 @@ async function buildRawDataFromSources(currentArray) {
 }
 
 async function main() {
+    // The generator must read the freshly written local JSON files.
+    process.env.LOTTERY_DATA_SOURCE = 'local';
+    if (!process.env.LOTTERY_STATS_SOURCE) {
+        process.env.LOTTERY_STATS_SOURCE = hasSupabaseEnv() ? 'supabase-db' : 'local';
+    }
+
     await fs.mkdir(path.join(DATA_DIR, 'statistics'), { recursive: true });
     const currentArray = await readJsonIfExists(JSON_FILE);
     console.log(`[1] Đọc dữ liệu local: ${Array.isArray(currentArray) ? currentArray.length : 0} bản ghi, latest=${getLatestDateValue(currentArray) || 'none'}`);
@@ -305,37 +354,21 @@ async function main() {
         console.log(`[3] RAW_DATA không đổi nhưng FORCE_REGENERATE_STATS=1, sinh lại thống kê/cache từ code mới.`);
     }
 
-    console.log('[4] Chạy luồng sinh Thống kê Statically (Không cần DB)...');
+    const { shouldUseSupabaseDbStats, writeCacheStoreDirect, clearCache: daClearCache } = require('../lib/data-access.js');
+    const dbStatsActive = shouldUseSupabaseDbStats();
+
+    if (dbStatsActive) {
+        console.log('[4] Chạy luồng sinh Thống kê trực tiếp vào Supabase DB (Streaming mode)...');
+    } else {
+        console.log('[4] Chạy luồng sinh Thống kê Statically (Ghi file cục bộ)...');
+    }
     
     try {
         const generateNumberStats = require('../lib/generators/statisticsGenerator.js');
         const generateHeadTailStats = require('../lib/generators/headTailStatsGenerator.js');
         const generateSumDiffStats = require('../lib/generators/sumDifferenceStatsGenerator.js');
         
-        console.log(' -> Tạo Data Number Stats...');
-        await generateNumberStats();
-        
-        console.log(' -> Tạo Data Head/Tail Stats...');
-        await generateHeadTailStats();
-        
-        console.log(' -> Tạo Data Sum/Diff Stats...');
-        await generateSumDiffStats();
-        
-        console.log(' -> Load dữ liệu nội bộ và Sinh Quick Stats...');
-        const ls = require('../lib/services/lotteryService.js');
-        const ss = require('../lib/services/statisticsService.js');
-        const he = require('../lib/services/historicalExclusionService.js');
-        
-        ls.clearCache();
-        ss.clearCache();
-        he.clearCache();
-        
-        // Load nội bộ từ các file vừa tạo
-        await ls.loadRawData();
-        await ls.loadStats();
-        
-        const quickStats = await ss.getQuickStats();
-        // Minify: Xoá fullSequence khỏi longest/secondLongest/current để giảm kích thước
+        // Define helper function to strip fullSequence
         function stripFullSequence(obj, isPreserved = false) {
             if (!obj || typeof obj !== 'object') return obj;
             
@@ -346,15 +379,12 @@ async function main() {
             const result = {};
             for (const [key, val] of Object.entries(obj)) {
                 if (key === 'fullSequence' && !isPreserved) {
-                    continue; // Skip fullSequence for non-preserved streaks
+                    continue;
                 }
 
                 if (key === 'current' || key === 'longest' || key === 'secondLongest') {
-                    // Preserve fullSequence for these key streaks (Dashboard & Accordion)
                     result[key] = stripFullSequence(val, true);
                 } else if (key === 'streaks') {
-                    // Strip fullSequence for the bulk 'streaks' list (History results)
-                    // These are hydrated at runtime by the API if needed.
                     result[key] = stripFullSequence(val, false);
                 } else if (typeof val === 'object') {
                     result[key] = stripFullSequence(val, isPreserved);
@@ -364,21 +394,162 @@ async function main() {
             }
             return result;
         }
-        const minifiedQS = stripFullSequence(quickStats);
-        await fs.writeFile(path.join(DATA_DIR, 'statistics', 'quick_stats.json'), JSON.stringify(minifiedQS, null, 0));
-        console.log('✅ Đã lưu kết quả quick_stats.json (minified)');
-        
-        // --- NEW: Immediately clear memory for quickStats ---
-        // (Helpful if memory is tight)
-        
-        const historyStats = await ss.getQuickStatsHistory();
-        // Strip fullSequence from history streaks too
-        const minifiedHistory = historyStats.map(entry => ({
-            ...entry,
-            streaks: entry.streaks ? entry.streaks.map(({ fullSequence, ...rest }) => rest) : []
-        }));
-        await fs.writeFile(path.join(DATA_DIR, 'statistics', 'quick_stats_history.json'), JSON.stringify(minifiedHistory, null, 0));
-        console.log('✅ Đã lưu kết quả quick_stats_history.json (minified)');
+
+        const ls = require('../lib/services/lotteryService.js');
+        const ss = require('../lib/services/statisticsService.js');
+        const he = require('../lib/services/historicalExclusionService.js');
+
+        if (dbStatsActive) {
+            const { identifyCategories } = require('../lib/utils/numberAnalysis');
+            const { calculateQuickStatsForPattern } = require('../lib/utils/quickStatsCalculator');
+            const { saveSinglePatternStatsToDb } = require('../lib/data-access');
+
+            const latestResult = finalArray[finalArray.length - 1];
+            const yesterdayResult = finalArray.length >= 2 ? finalArray[finalArray.length - 2] : null;
+            const dayBeforeYesterdayResult = finalArray.length >= 3 ? finalArray[finalArray.length - 3] : null;
+
+            const formatToDDMMYYYY = (dateStr) => {
+                if (!dateStr) return '';
+                if (dateStr.includes('/')) return dateStr;
+                const parts = dateStr.split('-');
+                if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+                return dateStr;
+            };
+
+            const latestDate = latestResult ? formatToDDMMYYYY(latestResult.date) : '';
+            const yestDate = yesterdayResult ? formatToDDMMYYYY(yesterdayResult.date) : '';
+            const dayBeforeYestDate = dayBeforeYesterdayResult ? formatToDDMMYYYY(dayBeforeYesterdayResult.date) : '';
+
+            const hasLatest = !!latestResult;
+            const hasYesterday = !!yesterdayResult;
+            const hasDayBeforeYesterday = !!dayBeforeYesterdayResult;
+
+            const numTodayStr = latestResult && latestResult.special !== null ? String(latestResult.special).padStart(2, '0') : '';
+            const numYesterdayStr = yesterdayResult && yesterdayResult.special !== null ? String(yesterdayResult.special).padStart(2, '0') : '';
+            const numDayBeforeYesterdayStr = dayBeforeYesterdayResult && dayBeforeYesterdayResult.special !== null ? String(dayBeforeYesterdayResult.special).padStart(2, '0') : '';
+
+            const matchedToday = numTodayStr ? identifyCategories(numTodayStr) : [];
+            const matchedYesterday = numYesterdayStr ? identifyCategories(numYesterdayStr) : [];
+
+            const calculatorOptions = {
+                latestDate,
+                today: latestDate ? new Date(latestResult.date) : new Date(),
+                totalYears: 20,
+                matchedToday,
+                matchedYesterday,
+                numTodayStr,
+                numYesterdayStr,
+                numDayBeforeYesterdayStr,
+                yestDate,
+                dayBeforeYestDate,
+                hasLatest,
+                hasYesterday,
+                hasDayBeforeYesterday
+            };
+
+            let quickStatsPatternCount = 0;
+            const quickStatsHistoryEntries = [];
+
+            const onPatternGenerated = async (patternKey, categoryType, category, subcategory, description, streaks) => {
+                const qs = calculateQuickStatsForPattern(patternKey, { description, streaks }, calculatorOptions);
+                if (qs) {
+                    await saveSinglePatternStatsToDb(patternKey, categoryType, category, subcategory, description, streaks, qs);
+                    quickStatsPatternCount += 1;
+
+                    if (qs.current) {
+                        const recordLength = qs.computedMaxStreak || (qs.longest && qs.longest.length > 0 ? qs.longest[0].length : 0);
+                        quickStatsHistoryEntries.push({
+                            key: patternKey,
+                            current: {
+                                ...qs.current,
+                                patternNumbers: qs.current.patternNumbers || []
+                            },
+                            recordLength
+                        });
+                    }
+                }
+            };
+
+            console.log(' -> Sinh dữ liệu và lưu trực tiếp Number Stats...');
+            await generateNumberStats(null, null, null, onPatternGenerated);
+
+            console.log(' -> Sinh dữ liệu và lưu trực tiếp Head/Tail Stats...');
+            await generateHeadTailStats(null, null, null, onPatternGenerated);
+
+            console.log(' -> Sinh dữ liệu và lưu trực tiếp Sum/Diff Stats...');
+            await generateSumDiffStats(null, null, null, onPatternGenerated);
+
+            console.log(' -> Lưu quick_stats_history vào Cache Store...');
+            console.log(`    quick_stats có ${quickStatsPatternCount} pattern; nguồn chính là bảng streak_statistics, không ghi một JSONB lớn vào cache_store.`);
+
+            let historyStats = [];
+            try {
+                const { readCacheStore } = require('../lib/data-access');
+                const existingHistory = await readCacheStore('quick_stats_history');
+                if (Array.isArray(existingHistory)) {
+                    historyStats = existingHistory;
+                }
+            } catch (err) {
+                console.warn('Lỗi khi đọc quick_stats_history từ cache_store:', err.message);
+            }
+
+            const todayMiniStreaks = quickStatsHistoryEntries.map(({ key, current, recordLength }) => {
+                const { fullSequence, ...rest } = current;
+                return { key, current: rest, recordLength };
+            });
+
+            const todayHistoryEntry = {
+                date: latestDate,
+                streaks: todayMiniStreaks
+            };
+
+            historyStats = historyStats.filter(entry => entry.date !== latestDate);
+            historyStats.unshift(todayHistoryEntry);
+            historyStats = historyStats.slice(0, 7);
+
+            await writeCacheStoreDirect('quick_stats_history', 'statistics', historyStats);
+            console.log('✅ Đã lưu kết quả quick_stats_history vào Cache Store');
+
+            // Clear internal caches so that services read the newly generated/uploaded DB statistics
+            ls.clearCache();
+            ss.clearCache();
+            he.clearCache();
+            daClearCache();
+
+            // Load raw data so services can run predictions
+            await ls.loadRawData();
+
+        } else {
+            console.log(' -> Tạo Data Number Stats...');
+            await generateNumberStats();
+            
+            console.log(' -> Tạo Data Head/Tail Stats...');
+            await generateHeadTailStats();
+            
+            console.log(' -> Tạo Data Sum/Diff Stats...');
+            await generateSumDiffStats();
+            
+            console.log(' -> Load dữ liệu nội bộ và Sinh Quick Stats...');
+            ls.clearCache();
+            ss.clearCache();
+            he.clearCache();
+            
+            await ls.loadRawData();
+            await ls.loadStats();
+            
+            const quickStats = await ss.getQuickStats();
+            const minifiedQS = stripFullSequence(quickStats);
+            await fs.writeFile(path.join(DATA_DIR, 'statistics', 'quick_stats.json'), JSON.stringify(minifiedQS, null, 0));
+            console.log('✅ Đã lưu kết quả quick_stats.json (minified)');
+            
+            const historyStats = await ss.getQuickStatsHistory();
+            const minifiedHistory = historyStats.map(entry => ({
+                ...entry,
+                streaks: entry.streaks ? entry.streaks.map(({ fullSequence, ...rest }) => rest) : []
+            }));
+            await fs.writeFile(path.join(DATA_DIR, 'statistics', 'quick_stats_history.json'), JSON.stringify(minifiedHistory, null, 0));
+            console.log('✅ Đã lưu kết quả quick_stats_history.json (minified)');
+        }
         
         console.log(' -> Tạo Data Caching Predictions...');
         const unifiedPrediction = require('../lib/services/unifiedPredictionService');
@@ -404,8 +575,14 @@ async function main() {
             hybrid: hybridResult,
             dataDate: ls.getRawData() && ls.getRawData().length > 0 ? ls.getRawData()[ls.getRawData().length - 1].date.substring(0, 10) : new Date().toISOString()
         };
-        await fs.writeFile(path.join(DATA_DIR, 'statistics', 'cached_predictions.json'), JSON.stringify(cachedPredictions, null, 0));
-        console.log('✅ Đã lưu kết quả cached_predictions.json');
+
+        if (dbStatsActive) {
+            await writeCacheStoreDirect('cached_predictions', 'statistics', cachedPredictions);
+            console.log('✅ Đã lưu kết quả cached_predictions vào Cache Store');
+        } else {
+            await fs.writeFile(path.join(DATA_DIR, 'statistics', 'cached_predictions.json'), JSON.stringify(cachedPredictions, null, 0));
+            console.log('✅ Đã lưu kết quả cached_predictions.json');
+        }
 
         // PRE-COMPUTE: Suggestions (to avoid Vercel serverless timeout)
         console.log(' -> Tạo Cached Suggestions...');
@@ -416,8 +593,13 @@ async function main() {
             const mockRes = { json(d) { suggestionsResult = d; return mockRes; }, status(c) { mockRes._status = c; return mockRes; }, _status: 200 };
             await suggestionsController.getSuggestions(mockReq, mockRes);
             if (suggestionsResult) {
-                await fs.writeFile(path.join(DATA_DIR, 'statistics', 'cached_suggestions.json'), JSON.stringify(suggestionsResult, null, 0));
-                console.log('✅ Đã lưu kết quả cached_suggestions.json');
+                if (dbStatsActive) {
+                    await writeCacheStoreDirect('cached_suggestions', 'statistics', suggestionsResult);
+                    console.log('✅ Đã lưu kết quả cached_suggestions vào Cache Store');
+                } else {
+                    await fs.writeFile(path.join(DATA_DIR, 'statistics', 'cached_suggestions.json'), JSON.stringify(suggestionsResult, null, 0));
+                    console.log('✅ Đã lưu kết quả cached_suggestions.json');
+                }
             }
         } catch (sugErr) {
             console.error('⚠️ Lỗi khi tạo cached suggestions (không ảnh hưởng các bước khác):', sugErr.message);
@@ -425,88 +607,87 @@ async function main() {
 
         // PRE-COMPUTE: 365-day simulation backtest so Vercel does not have to run
         // the heavy historical loop inside a serverless request.
-        console.log(' -> Tạo Cached Simulation Backtest 365 ngày...');
-        try {
-            const simulationService = require('../lib/services/simulationService');
-            const simulationResult = await simulationService.runBacktest(365, null, { compactDetails: true });
-            await fs.writeFile(path.join(DATA_DIR, 'statistics', 'cached_simulation_365.json'), JSON.stringify(simulationResult, null, 0));
-            console.log('✅ Đã lưu kết quả cached_simulation_365.json');
-        } catch (simErr) {
-            console.error('⚠️ Lỗi khi tạo cached simulation 365 (không ảnh hưởng các bước khác):', simErr.message);
+        if (!dbStatsActive) {
+            console.log(' -> Tạo Cached Simulation Backtest 365 ngày...');
+            try {
+                const simulationService = require('../lib/services/simulationService');
+                const simulationResult = await simulationService.runBacktest(365, null, { compactDetails: true });
+                await fs.writeFile(path.join(DATA_DIR, 'statistics', 'cached_simulation_365.json'), JSON.stringify(simulationResult, null, 0));
+                console.log('✅ Đã lưu kết quả cached_simulation_365.json');
+            } catch (simErr) {
+                console.error('⚠️ Lỗi khi tạo cached simulation 365 (không ảnh hưởng các bước khác):', simErr.message);
+            }
+        } else {
+            console.log(' -> DB stats active, bỏ qua sinh Cached Simulation 365 ngày (tránh OOM và Postgres connection limits).');
         }
-
         
-        // BƯỚC ĐẶC BIỆT: Minify để xóa fullSequence (cứu github khỏi bị lố 100MB giới hạn)
-        console.log('[+] Đang minify siêu gọn các file stats...');
-        
-        function minifyStreak(streak) {
-            if (!streak) return streak;
-            const { fullSequence, ...mini } = streak;
-            return mini;
-        }
-
-        function minifyStatsObject(stats) {
-            if (!stats || typeof stats !== 'object') return stats;
-            const result = {};
+        if (!dbStatsActive) {
+            // BƯỚC ĐẶC BIỆT: Minify để xóa fullSequence (cứu github khỏi bị lố 100MB giới hạn)
+            console.log('[+] Đang minify siêu gọn các file stats...');
             
-            for (const key of Object.keys(stats)) {
-                const val = stats[key];
-                if (!val) {
-                    result[key] = val;
-                    continue;
-                }
+            function minifyStreak(streak) {
+                if (!streak) return streak;
+                const { fullSequence, ...mini } = streak;
+                return mini;
+            }
 
-                if (Array.isArray(val.streaks)) {
-                    result[key] = { 
-                        ...val, 
-                        streaks: val.streaks.map(minifyStreak) 
-                    };
-                } else if (typeof val === 'object' && !Array.isArray(val)) {
-                    // Handle nested structures like head_tail_stats
-                    result[key] = {};
-                    for (const subKey of Object.keys(val)) {
-                        const sub = val[subKey];
-                        if (sub && Array.isArray(sub.streaks)) {
-                            result[key][subKey] = { 
-                                ...sub, 
-                                streaks: sub.streaks.map(minifyStreak) 
-                            };
-                        } else {
-                            result[key][subKey] = sub;
-                        }
+            function minifyStatsObject(stats) {
+                if (!stats || typeof stats !== 'object') return stats;
+                const result = {};
+                
+                for (const key of Object.keys(stats)) {
+                    const val = stats[key];
+                    if (!val) {
+                        result[key] = val;
+                        continue;
                     }
-                } else {
-                    result[key] = val;
-                }
-            }
-            return result;
-        }
 
-        const statFiles = ['number_stats.json', 'head_tail_stats.json', 'sum_difference_stats.json'];
-        for (const f of statFiles) {
-            const p = path.join(DATA_DIR, 'statistics', f);
-            if (require('fs').existsSync(p)) {
-                try {
-                    console.log(` -> Đang xử lý ${f}...`);
-                    const content = await fs.readFile(p, 'utf8');
-                    // Check if content is valid before parsing
-                    if (!content || content.length < 2) continue;
-                    
-                    const raw = JSON.parse(content);
-                    const minified = minifyStatsObject(raw);
-                    
-                    await fs.writeFile(p, JSON.stringify(minified, null, 0)); 
-                    console.log(`    ✅ Đã nén ${f}`);
-                    
-                    // GC hint (if possible)
-                    // global.gc && global.gc(); 
-                } catch (miniErr) {
-                    console.error(`    ⚠️ Lỗi khi nén ${f}:`, miniErr.message);
-                    // If it failed due to "Bad control character", try to fix it or skip
+                    if (Array.isArray(val.streaks)) {
+                        result[key] = { 
+                            ...val, 
+                            streaks: val.streaks.map(minifyStreak) 
+                        };
+                    } else if (typeof val === 'object' && !Array.isArray(val)) {
+                        result[key] = {};
+                        for (const subKey of Object.keys(val)) {
+                            const sub = val[subKey];
+                            if (sub && Array.isArray(sub.streaks)) {
+                                result[key][subKey] = { 
+                                    ...sub, 
+                                    streaks: sub.streaks.map(minifyStreak) 
+                                };
+                            } else {
+                                result[key][subKey] = sub;
+                            }
+                        }
+                    } else {
+                        result[key] = val;
+                    }
+                }
+                return result;
+            }
+
+            const statFiles = ['number_stats.json', 'head_tail_stats.json', 'sum_difference_stats.json'];
+            for (const f of statFiles) {
+                const p = path.join(DATA_DIR, 'statistics', f);
+                if (require('fs').existsSync(p)) {
+                    try {
+                        console.log(` -> Đang xử lý ${f}...`);
+                        const content = await fs.readFile(p, 'utf8');
+                        if (!content || content.length < 2) continue;
+                        
+                        const raw = JSON.parse(content);
+                        const minified = minifyStatsObject(raw);
+                        
+                        await fs.writeFile(p, JSON.stringify(minified, null, 0)); 
+                        console.log(`    ✅ Đã nén ${f}`);
+                    } catch (miniErr) {
+                        console.error(`    ⚠️ Lỗi khi nén ${f}:`, miniErr.message);
+                    }
                 }
             }
+            console.log('✅ Minify thành công!');
         }
-        console.log('✅ Minify thành công!');
         
     } catch (err) {
         console.error('Lỗi khi chạy Generators:', err.message);
@@ -514,6 +695,7 @@ async function main() {
     }
     
     console.log('[5] Hoàn tất Update Workflow Tĩnh (Static). Các file json đã sẵn sàng trong lib/data/statistics/');
+    syncSupabaseAfterStaticGeneration();
 }
 
 main().catch(error => {

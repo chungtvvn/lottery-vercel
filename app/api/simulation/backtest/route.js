@@ -28,17 +28,29 @@ export async function GET(request) {
             includeHighFrequency: url.searchParams.get('customIncludeHighFrequency'),
             excludeFixedThreeValueGroups: url.searchParams.get('customExcludeFixedThreeValueGroups')
         };
-        const cachedPath = path.join(process.cwd(), 'lib/data/statistics', `cached_simulation_${days}.json`);
+        const { readCacheStore, shouldUseSupabaseDbStats } = require('@/lib/data-access');
+        const dbStatsActive = shouldUseSupabaseDbStats();
         let cachedPayload = null;
-        if (fs.existsSync(cachedPath)) {
+        if (dbStatsActive) {
             try {
-                cachedPayload = JSON.parse(fs.readFileSync(cachedPath, 'utf8'));
-            } catch {
-                cachedPayload = null;
+                cachedPayload = await readCacheStore(`cached_simulation_${days}`);
+            } catch (dbErr) {
+                console.error(`Lỗi khi đọc cached_simulation_${days} từ DB:`, dbErr.message);
+            }
+        }
+        if (!cachedPayload) {
+            const cachedPath = path.join(process.cwd(), 'lib/data/statistics', `cached_simulation_${days}.json`);
+            if (fs.existsSync(cachedPath)) {
+                try {
+                    cachedPayload = JSON.parse(fs.readFileSync(cachedPath, 'utf8'));
+                } catch {
+                    cachedPayload = null;
+                }
             }
         }
         const canUseStaticCache = days === 365
             && url.searchParams.get('refresh') !== '1'
+            && !url.searchParams.get('methods')
             && simulationService.isDefaultCustomOptions
             && simulationService.isDefaultCustomOptions({ custom })
             && cachedPayload
@@ -48,7 +60,8 @@ export async function GET(request) {
         }
         const results = await simulationService.runBacktest(days, null, {
             custom,
-            compactDetails: days > 90
+            compactDetails: days > 90,
+            methodIds: url.searchParams.get('methods')
         });
         if (results.error) return NextResponse.json({ error: results.error }, { status: 400 });
         return NextResponse.json(results);

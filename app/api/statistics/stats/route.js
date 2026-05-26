@@ -45,11 +45,11 @@ export async function GET(request) {
             bucket = 'head_tail';
         }
 
-        const categoryData = await getCategoryStats(bucket, category);
+        const categoryData = await getCategoryStats(bucket, category, subcategory);
         if (!categoryData) {
             for (const fallbackBucket of ['head_tail', 'sum_diff', 'number']) {
                 if (fallbackBucket === bucket) continue;
-                const fallbackData = await getCategoryStats(fallbackBucket, category);
+                const fallbackData = await getCategoryStats(fallbackBucket, category, subcategory);
                 if (fallbackData) {
                     return await handleCategoryResponse(fallbackData, subcategory, exactLength, minLength, startDate, endDate, category);
                 }

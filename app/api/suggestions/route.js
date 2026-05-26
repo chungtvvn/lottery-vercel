@@ -6,6 +6,18 @@ import path from 'path';
 export async function GET(request) {
     try {
         // FAST PATH: Serve pre-computed suggestions from cached JSON
+        const { readCacheStore, shouldUseSupabaseDbStats } = require('@/lib/data-access');
+        if (shouldUseSupabaseDbStats()) {
+            try {
+                const dbData = await readCacheStore('cached_suggestions');
+                if (dbData) {
+                    return cachedResponse(dbData, 'DAILY');
+                }
+            } catch (dbErr) {
+                console.error('Lỗi khi đọc cached_suggestions từ DB:', dbErr.message);
+            }
+        }
+
         const cachedPath = path.join(process.cwd(), 'lib/data/statistics/cached_suggestions.json');
         if (fs.existsSync(cachedPath)) {
             const data = JSON.parse(fs.readFileSync(cachedPath, 'utf8'));

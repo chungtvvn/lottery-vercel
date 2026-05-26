@@ -5,12 +5,15 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "supabase:check": "node scripts/check-supabase.js",
+    "supabase:seed:raw": "node scripts/seed-supabase-raw-data.js",
+    "supabase:seed:stats": "node scripts/seed-supabase-statistics-storage.js",
+    "supabase:sync": "node scripts/sync-supabase.js"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.99.1",
-    "axios": "^1.13.6",
-    "dotenv": "^17.3.1",
+    "@supabase/supabase-js": "^2.106.2",
+    "dotenv": "^17.4.2",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3"

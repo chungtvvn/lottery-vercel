@@ -7,29 +7,14 @@
     };
 
     const METHOD_LABELS = {
-        dropoff85: 'Ưu tiên 85+',
-        dropoff85Edge: 'Ưu tiên 85 + Edge',
-        ranked60to70: 'Ưu tiên loại 60-70',
-        combined20to30: 'Tổng hợp rủi ro 25',
-        edgePerNumber2: 'Edge từng số 2',
-        edgePerNumber5: 'Edge từng số 5',
-        bayesianLogOdds2: 'Bayes log-odds 2',
-        bayesianLogOdds3: 'Bayes log-odds 3',
-        bayesianLogOdds5: 'Bayes log-odds 5',
-        customExclusion: 'Custom loại trừ'
+        riskHold60: 'Ôm 60 theo rủi ro',
+        frequencyHold60: 'Ôm 60 theo HT/Target'
     };
 
     function methodDescription(methodId) {
-        if (methodId === 'dropoff85') return 'Điểm ưu tiên loại >= 85, gồm dropoff/không hình thành, lower, mẫu và tin cậy';
-        if (methodId === 'dropoff85Edge') return 'Chỉ lấy chuỗi ưu tiên >= 85 khi rủi ro vượt xác suất nền theo số lượng số loại';
-        if (methodId === 'ranked60to70') return 'Lấy chuỗi ưu tiên loại cao nhất đến vùng loại trừ 60-70 số';
-        if (methodId === 'edgePerNumber2') return 'Cộng edge dương theo từng số, loại 98 số điểm cao nhất và đánh 2 số còn lại; đây là cấu hình tốt nhất trong search mới';
-        if (methodId === 'edgePerNumber5') return 'Chấm điểm từng số bằng edge dương chia cho số lượng số của chuỗi, loại 95 số và đánh 5 số còn lại';
-        if (methodId === 'bayesianLogOdds2') return 'Bayesian log-odds alpha 500, loại khoảng 98 số và đánh 2-3 số còn lại';
-        if (methodId === 'bayesianLogOdds3') return 'Bayesian shrinkage tỷ lệ gãy về xác suất nền, dùng log-odds lift để loại 97 số và đánh 3 số còn lại';
-        if (methodId === 'bayesianLogOdds5') return 'Biến thể Bayesian log-odds ổn định hơn, loại 95 số và đánh 5 số còn lại';
-        if (methodId === 'customExclusion') return 'Method thử nghiệm theo các ngưỡng người dùng chọn: ưu tiên, dropoff, tần suất, lower, mẫu và edge';
-        return 'Loại đúng 75 số theo thứ tự ưu tiên mới từ Tổng hợp dự đoán, để lại 25 số đánh';
+        if (methodId === 'riskHold60') return 'Sắp xếp chuỗi dự đoán theo rủi ro cao xuống thấp, lấy từ trên xuống tới khoảng 60 số ôm và đánh 40 số còn lại.';
+        if (methodId === 'frequencyHold60') return 'Sắp xếp chuỗi dự đoán theo HT/Target thấp lên cao, lấy từ trên xuống tới khoảng 60 số ôm và đánh 40 số còn lại.';
+        return 'Tính theo danh sách loại trừ và danh sách đánh hiện tại.';
     }
 
     function el(id) {
@@ -111,13 +96,13 @@
 
     function methodStatusClass(method) {
         if (method.skipped) return 'bg-slate-100 text-slate-600 border-slate-200';
-        if (method.hit) return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        if ((method.profit || 0) > 0) return 'bg-emerald-50 text-emerald-700 border-emerald-200';
         return 'bg-red-50 text-red-700 border-red-200';
     }
 
     function methodStatusText(method) {
         if (method.skipped) return 'Bỏ qua';
-        return method.hit ? 'Trúng' : 'Trượt';
+        return (method.profit || 0) > 0 ? 'Lãi' : 'Lỗ';
     }
 
     function renderSummaryCard(methodMeta, summary) {
@@ -137,11 +122,11 @@
                 </div>
                 <div class="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
                     <div>
-                        <div class="text-xs uppercase text-slate-500">Tỉ lệ trúng</div>
+                        <div class="text-xs uppercase text-slate-500">Tỉ lệ lãi</div>
                         <div class="mt-1 text-xl font-bold">${formatPercent(summary.hitRate)}</div>
                     </div>
                     <div>
-                        <div class="text-xs uppercase text-slate-500">Trúng / Trượt</div>
+                        <div class="text-xs uppercase text-slate-500">Lãi / Lỗ</div>
                         <div class="mt-1 text-xl font-bold">${summary.wins}/${summary.losses}</div>
                     </div>
                     <div>
@@ -155,8 +140,8 @@
                 </div>
                 <div class="mt-4 grid grid-cols-3 gap-2 text-xs text-slate-600">
                     <div class="rounded-md bg-slate-50 px-3 py-2">Bỏ qua: <b>${summary.skippedDays}</b></div>
-                    <div class="rounded-md bg-slate-50 px-3 py-2">Tiền đánh: <b>${formatMoney(summary.totalStake)}</b></div>
-                    <div class="rounded-md bg-slate-50 px-3 py-2">Tiền ăn: <b>${formatMoney(summary.totalPayout)}</b></div>
+                    <div class="rounded-md bg-slate-50 px-3 py-2">Lãi đánh: <b>${formatMoney(summary.totalBetProfit ?? 0)}</b></div>
+                    <div class="rounded-md bg-slate-50 px-3 py-2">Lãi ôm: <b>${formatMoney(summary.totalHoldProfit ?? 0)}</b></div>
                 </div>
             </article>
         `;
@@ -200,7 +185,7 @@
                 <div class="mt-3 grid grid-cols-3 gap-2 text-xs text-slate-600">
                     <div class="rounded-md bg-slate-50 px-3 py-2">Loại: <b>${method.excludedCount}</b></div>
                     <div class="rounded-md bg-slate-50 px-3 py-2">Chuỗi: <b>${method.selectedStreakCount}</b></div>
-                    <div class="rounded-md bg-slate-50 px-3 py-2">Tiền đánh: <b>${formatMoneyPlain(method.stake)}</b></div>
+                    <div class="rounded-md bg-slate-50 px-3 py-2">Ôm: <b>${method.excludedCount}</b></div>
                 </div>
                 ${method.skipReason ? `<div class="mt-3 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-700">${method.skipReason}</div>` : ''}
                 <div class="mt-4">
@@ -338,7 +323,7 @@
                     <span class="text-xs font-semibold ${profitClass}">${formatMoney(method.profit)}</span>
                 </div>
                 <div class="mt-2 grid grid-cols-3 gap-2 text-xs">
-                    <span>Loại: <b>${method.excludedCount}</b></span>
+                    <span>Ôm: <b>${method.excludedCount}</b></span>
                     <span>Đánh: <b>${method.betCount}</b></span>
                     <span>Chuỗi: <b>${method.selectedStreakCount}</b></span>
                 </div>
@@ -414,8 +399,8 @@
             <div class="rounded-md border border-slate-200 p-3">
                 <div class="flex items-start justify-between gap-2">
                     <div class="font-semibold text-slate-900">${item.title || item.key}</div>
-                    <div class="whitespace-nowrap text-sm font-bold ${(item.exclusionPriority || 0) >= 85 ? 'text-red-700' : 'text-purple-700'}">
-                        ${formatNumberValue(item.exclusionPriority)}
+                    <div class="whitespace-nowrap text-sm font-bold text-red-700">
+                        ${formatPercent(item.dropOffRate)}
                     </div>
                 </div>
                 <div class="mt-1 text-xs text-slate-500">
@@ -425,14 +410,20 @@
                     ${Number.isFinite(Number(item.reliabilityScore)) ? ` · tin cậy ${item.reliabilityScore}` : ''}
                     ${Number.isFinite(Number(item.combinedScore)) ? ` · tổng ${item.combinedScore}` : ''}
                     ${Number.isFinite(Number(item.numberRiskScore)) ? ` · risk số ${item.numberRiskScore}` : ''}
+                    ${Number.isFinite(Number(item.chainSignalScore)) ? ` · tín hiệu ${item.chainSignalScore}` : ''}
+                    ${Number.isFinite(Number(item.chainDueScore)) ? ` · gap chuỗi ${item.chainDueScore}` : ''}
+                    ${Number.isFinite(Number(item.chainFrequencyPerYear)) ? ` · chuỗi ${item.chainFrequencyPerYear}/năm` : ''}
+                    ${Number.isFinite(Number(item.chainAppearanceRate)) ? ` · HT/tiếp ${formatPercent(Number(item.chainAppearanceRate))}` : ''}
                     ${Number.isFinite(Number(item.frequencyPerYear)) ? ` · tần suất ${item.frequencyPerYear}/năm` : ''}
                     ${item.isPotential && Number.isFinite(Number(item.formFrequencyPerYear)) ? ` · HT ${formatNumberValue(item.formFrequencyPerYear, '/năm')}` : ''}
+                    ${Number.isFinite(Number(item.protectedNumbersCount)) && Number(item.protectedNumbersCount) > 0 ? ` · bảo vệ ${item.protectedNumbersCount}` : ''}
                     ${item.addedNumbersCount !== undefined ? ` · thêm ${item.addedNumbersCount}` : ''}
                 </div>
                 <div class="mt-1 text-xs text-slate-500">
                     Mẫu ${formatNumberValue(item.sampleSize)} · lower ${formatNumberValue(item.lowerBoundPercent, '%')}
                     · TB dài ${formatNumberValue(item.avgLength, 'd')} · TB cách ${formatNumberValue(item.avgGapDays, 'd')}
                     · gần nhất ${formatNumberValue(item.daysSinceLatestEnd, 'd')}
+                    ${Number.isFinite(Number(item.chainRiskDiscountScore)) ? ` · giữ điểm ${formatNumberValue(item.chainRiskDiscountScore, '%')}` : ''}
                 </div>
                 <div class="mt-2 font-mono text-xs leading-5 text-slate-700">${formatNumbers(item.numbers, 36)}</div>
             </div>
@@ -441,7 +432,7 @@
         panel.innerHTML = `
             <div class="mb-4">
                 <div class="text-xs font-semibold uppercase text-slate-500">${day.predictionDate}</div>
-                <div class="mt-1 text-lg font-bold text-slate-900">${METHOD_LABELS[methodId]}</div>
+                <div class="mt-1 text-lg font-bold text-slate-900">${METHOD_LABELS[methodId] || method.name || methodId}</div>
                 <div class="mt-2 inline-flex rounded-md border px-2 py-1 text-xs font-bold ${methodStatusClass(method)}">
                     ${methodStatusText(method)}
                 </div>
@@ -450,7 +441,7 @@
 
             <div class="mb-4 grid grid-cols-2 gap-2 text-center text-xs md:grid-cols-5">
                 <div class="rounded-md bg-slate-50 p-2">
-                    <div class="text-slate-500">Loại trừ</div>
+                    <div class="text-slate-500">Số ôm</div>
                     <div class="text-lg font-bold">${method.excludedCount}</div>
                 </div>
                 <div class="rounded-md bg-slate-50 p-2">
@@ -466,14 +457,21 @@
                     <div class="text-lg font-bold">${method.betCount}</div>
                 </div>
                 <div class="rounded-md bg-slate-50 p-2">
-                    <div class="text-slate-500">Lãi/lỗ</div>
+                    <div class="text-slate-500">Lãi/lỗ tổng</div>
                     <div class="text-lg font-bold ${method.profit >= 0 ? 'text-emerald-700' : 'text-red-700'}">${formatMoney(method.profit)}</div>
                 </div>
             </div>
 
             <div class="mb-5">
-                <div class="mb-2 text-sm font-bold text-slate-900">Số loại trừ</div>
+                <div class="mb-2 text-sm font-bold text-slate-900">Số ôm / loại trừ</div>
                 ${renderNumberGrid(method.excluded, 'border-red-200 bg-red-50 text-red-700')}
+            </div>
+
+            <div class="mb-4 grid grid-cols-2 gap-2 text-xs md:grid-cols-4">
+                <div class="rounded-md bg-emerald-50 px-3 py-2 text-emerald-800">Lãi đánh: <b>${formatMoney(method.betProfit ?? 0)}</b></div>
+                <div class="rounded-md bg-blue-50 px-3 py-2 text-blue-800">Lãi ôm: <b>${formatMoney(method.holdProfit ?? 0)}</b></div>
+                <div class="rounded-md bg-slate-50 px-3 py-2">Thu ôm: <b>${formatMoney(method.holdIncome ?? 0)}</b></div>
+                <div class="rounded-md bg-slate-50 px-3 py-2">Lỗ ôm: <b>${formatMoney(method.holdLoss ?? 0)}</b></div>
             </div>
 
             <div class="mb-5">

@@ -15,6 +15,7 @@ const getHieu = (n) => {
 
 
 document.addEventListener('DOMContentLoaded', async () => {
+    const MOVE_PREDICTION_SUMMARY_TO_CHAIN_TAB = true;
     const form = document.getElementById('statsForm');
     const startDateInput = document.getElementById('startDate');
     const endDateInput = document.getElementById('endDate');
@@ -829,6 +830,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const countSpan = document.getElementById('streak-exclusion-count');
         const titleSpan = document.getElementById('streak-exclusion-title');
         if (!section || !container) return;
+        if (MOVE_PREDICTION_SUMMARY_TO_CHAIN_TAB) {
+            section.style.display = 'none';
+            container.innerHTML = '';
+            return;
+        }
 
         try {
             const sourceItems = Array.isArray(latestPredictionItemsForExclusion)
@@ -1289,7 +1295,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 latestPredictionItemsForExclusion = predItems.map((item, index) => ({ ...item, summaryRank: index + 1 }));
                 latestLowFrequencyItemsForExclusion = actionableStreakDropOffs.map((item, index) => ({ ...item, summaryRank: index + 1 }));
                 fetchStreakExclusion();
-                if (predItems.length > 0) {
+                if (MOVE_PREDICTION_SUMMARY_TO_CHAIN_TAB) {
+                    predSummarySection.style.display = 'none';
+                    predSummaryContainer.innerHTML = '';
+                } else if (predItems.length > 0) {
                     predSummarySection.style.display = '';
                     if (predSummaryTitle) {
                         predSummaryTitle.innerHTML = predictionDate

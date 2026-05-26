@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chọn chuỗi loại trừ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(255, 255, 255, 0.45);
+            border-left-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .number-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+            gap: 8px;
+        }
+    </style>
+</head>
+
+<body class="antialiased bg-slate-50 text-slate-900">
+    <header class="sticky top-0 z-20 border-b border-slate-200 bg-white">
+        <div class="mx-auto max-w-7xl px-4">
+            <div class="flex items-center justify-between py-4">
+                <a href="/" class="text-xl font-bold tracking-tight text-slate-900">XSMB Stats</a>
+                <nav class="flex gap-2 overflow-x-auto">
+                    <a href="/statistics"
+                        class="px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:bg-slate-100">Thống kê</a>
+                    <a href="/chain-frequency"
+                        class="px-3 py-2 rounded-md text-sm font-semibold bg-blue-50 text-blue-700">Chọn chuỗi loại</a>
+                    <a href="/scoring"
+                        class="px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:bg-slate-100">Tính điểm</a>
+                    <a href="/simulation"
+                        class="px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:bg-slate-100">Mô phỏng</a>
+                    <a href="/settings"
+                        class="px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:bg-slate-100">Cài đặt</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="mx-auto max-w-7xl px-4 py-8">
+        <section class="mb-6">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                    <p class="text-sm font-semibold uppercase tracking-wide text-blue-700">Tổng hợp dự đoán</p>
+                    <h1 class="mt-1 text-3xl font-bold tracking-tight">Chọn chuỗi loại trừ</h1>
+                    <p class="mt-2 max-w-4xl text-sm leading-6 text-slate-600">
+                        Tick các chuỗi muốn ôm/loại trừ. Grid bên dưới sẽ tự tổng hợp số ôm và số đánh theo lựa chọn hiện tại.
+                        Tier 1 là chuỗi kỷ lục hoặc siêu kỷ lục, Tier 2 là chuỗi đang diễn ra có tần suất target dưới 1 lần/năm,
+                        Tier 3 là phần còn lại theo xác suất gãy hoặc không hình thành. Danh sách được sắp xếp theo Tier rồi tần suất HT/Target từ thấp đến cao.
+                    </p>
+                </div>
+                <div class="flex flex-wrap items-end gap-3">
+                    <label class="block">
+                        <span class="mb-1 block text-xs font-semibold uppercase text-slate-500">Sắp xếp</span>
+                        <select id="sortBy"
+                            class="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
+                            <option value="frequency" selected>HT/Target thấp → cao</option>
+                            <option value="risk">Rủi ro cao → thấp</option>
+                        </select>
+                    </label>
+                    <label class="inline-flex h-10 items-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700">
+                        <input id="includePotential" type="checkbox" checked
+                            class="h-4 w-4 rounded border-slate-300 text-blue-700 focus:ring-blue-200">
+                        Chuỗi chưa hình thành
+                    </label>
+                    <label class="inline-flex h-10 items-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700">
+                        <input id="excludeFixedThreeValueGroups" type="checkbox"
+                            class="h-4 w-4 rounded border-slate-300 text-blue-700 focus:ring-blue-200">
+                        Bỏ nhóm 3 cố định
+                    </label>
+                    <button id="refreshButton"
+                        class="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-200">
+                        <span id="spinner" class="spinner hidden"></span>
+                        <span id="refreshLabel">Tính lại</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <div id="errorBox" class="mb-6 hidden rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700"></div>
+
+        <section id="summaryCards" class="mb-6 grid gap-3 md:grid-cols-5"></section>
+
+        <section class="mb-6 grid gap-6 xl:grid-cols-2">
+            <div class="rounded-md border border-red-100 bg-white">
+                <div class="border-b border-red-100 px-4 py-3">
+                    <h2 class="text-lg font-bold text-red-800">Số ôm / loại trừ</h2>
+                    <p id="predictionInfo" class="mt-1 text-sm text-slate-500"></p>
+                </div>
+                <div id="excludedGrid" class="p-4"></div>
+            </div>
+            <div class="rounded-md border border-emerald-100 bg-white">
+                <div class="border-b border-emerald-100 px-4 py-3">
+                    <h2 class="text-lg font-bold text-emerald-800">Số đánh</h2>
+                    <p class="mt-1 text-sm text-slate-500">Các số còn lại sau khi trừ tập số ôm/loại.</p>
+                </div>
+                <div id="betGrid" class="p-4"></div>
+            </div>
+        </section>
+
+        <section class="rounded-md border border-slate-200 bg-white">
+            <div class="flex flex-col gap-3 border-b border-slate-200 px-4 py-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h2 class="text-lg font-bold">Danh sách chuỗi dự đoán</h2>
+                    <p class="mt-1 text-sm text-slate-500">Chọn nhanh theo tier hoặc tick từng chuỗi để kiểm tra danh sách số. Thứ tự hiển thị theo Tier và tần suất HT/Target tăng dần.</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button id="selectTier1"
+                        class="h-9 rounded-md border border-red-200 bg-red-50 px-3 text-sm font-semibold text-red-700 hover:bg-red-100">Chọn Tier 1</button>
+                    <button id="selectTier2"
+                        class="h-9 rounded-md border border-amber-200 bg-amber-50 px-3 text-sm font-semibold text-amber-700 hover:bg-amber-100">Chọn Tier 2</button>
+                    <button id="selectTier3"
+                        class="h-9 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-700 hover:bg-slate-100">Chọn Tier 3</button>
+                    <button id="clearSelection"
+                        class="h-9 rounded-md border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">Bỏ chọn hết</button>
+                    <a href="/simulation"
+                        class="inline-flex h-9 items-center rounded-md border border-blue-200 bg-blue-50 px-3 text-sm font-semibold text-blue-700 hover:bg-blue-100">
+                        Sang Simulation
+                    </a>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-[1180px] table-fixed text-sm">
+                    <thead class="bg-slate-100 text-xs font-semibold uppercase text-slate-600">
+                        <tr>
+                            <th class="w-16 px-3 py-3 text-left">Chọn</th>
+                            <th class="w-[560px] px-3 py-3 text-left">Chuỗi</th>
+                            <th class="w-40 px-3 py-3 text-center">Tier</th>
+                            <th class="w-24 px-3 py-3 text-right">Rủi ro</th>
+                            <th class="w-44 px-3 py-3 text-right">HT/Target</th>
+                            <th class="w-24 px-3 py-3 text-right">TB cách</th>
+                            <th class="w-24 px-3 py-3 text-right">Gần nhất</th>
+                        </tr>
+                    </thead>
+                    <tbody id="chainsTable"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="/js/app-config.js"></script>
+    <script src="/js/chain-frequency.js"></script>
+</body>
+
+</html>

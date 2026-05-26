@@ -7,6 +7,16 @@ export async function GET(request) {
         const url = new URL(request.url);
         const date = url.searchParams.get('date');
         
+        // FAST PATH: Read from cached predictions if possible
+        const { getCachedPredictionsFromCache } = require('@/lib/data-access');
+        const cache = await getCachedPredictionsFromCache();
+        if (cache && cache.unified) {
+            const cacheDate = cache.dataDate;
+            if (!date || date === cacheDate) {
+                return cachedResponse({ success: true, data: cache.unified }, 'DAILY');
+            }
+        }
+
         const lotteryService = require('@/lib/services/lotteryService');
         if (!lotteryService.getRawData()) await lotteryService.loadAll();
         

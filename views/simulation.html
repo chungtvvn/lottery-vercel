@@ -42,6 +42,8 @@
                 <nav class="flex gap-2 overflow-x-auto">
                     <a href="/statistics"
                         class="px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:bg-slate-100">Thống kê</a>
+                    <a href="/chain-frequency"
+                        class="px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:bg-slate-100">Chọn chuỗi loại</a>
                     <a href="/scoring"
                         class="px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:bg-slate-100">Tính điểm</a>
                     <a href="/simulation"
@@ -60,8 +62,8 @@
                     <p class="text-sm font-semibold uppercase tracking-wide text-blue-700">Backtest phương pháp loại trừ</p>
                     <h1 class="mt-1 text-3xl font-bold tracking-tight">Simulation theo Tổng hợp dự đoán</h1>
                     <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-                        Mỗi ngày dùng dữ liệu trước ngày dự đoán để sinh danh sách loại trừ, sau đó đối chiếu với kết quả thực tế.
-                        Ngày nào loại trừ dưới 30 số thì bỏ qua không đánh.
+                        Backtest dùng mốc lịch sử hiện tại để tính toàn bộ kỷ lục chuỗi, rồi áp vào chuỗi đang diễn ra và chuỗi tiềm năng của từng ngày quá khứ.
+                        Hai phương án sẽ ôm khoảng 60 số theo thứ tự rủi ro hoặc HT/Target, 40 số còn lại dùng để đánh.
                     </p>
                 </div>
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
@@ -89,14 +91,14 @@
 
         <section class="mb-6 grid gap-3 md:grid-cols-4" id="configStrip">
             <div class="rounded-md border border-slate-200 bg-white p-4">
-                <div class="text-xs font-semibold uppercase text-slate-500">Tiền đánh</div>
-                <div class="mt-1 text-2xl font-bold">10K</div>
-                <div class="text-xs text-slate-500">mỗi số</div>
+                <div class="text-xs font-semibold uppercase text-slate-500">Đánh</div>
+                <div class="mt-1 text-2xl font-bold">0.8x</div>
+                <div class="text-xs text-slate-500">chi phí mỗi đơn vị, trúng ăn 70</div>
             </div>
             <div class="rounded-md border border-slate-200 bg-white p-4">
-                <div class="text-xs font-semibold uppercase text-slate-500">Tỉ lệ ăn</div>
-                <div class="mt-1 text-2xl font-bold">1 ăn 70</div>
-                <div class="text-xs text-slate-500">trúng 1 số</div>
+                <div class="text-xs font-semibold uppercase text-slate-500">Ôm</div>
+                <div class="mt-1 text-2xl font-bold">0.705x</div>
+                <div class="text-xs text-slate-500">nhận nếu số ôm không về, về thì mất 70</div>
             </div>
             <div class="rounded-md border border-slate-200 bg-white p-4">
                 <div class="text-xs font-semibold uppercase text-slate-500">Bỏ qua nếu</div>
@@ -105,12 +107,12 @@
             </div>
             <div class="rounded-md border border-slate-200 bg-white p-4">
                 <div class="text-xs font-semibold uppercase text-slate-500">Phương pháp</div>
-                <div class="mt-1 text-2xl font-bold">10</div>
-                <div class="text-xs text-slate-500">dropoff, edge, xếp hạng, rủi ro 25 số, edge từng số 2/5, Bayes và custom</div>
+                <div class="mt-1 text-2xl font-bold">2</div>
+                <div class="text-xs text-slate-500">Ôm 60 theo rủi ro và HT/Target</div>
             </div>
         </section>
 
-        <section class="mb-6 rounded-md border border-slate-200 bg-white" id="customConfig">
+        <section class="mb-6 hidden rounded-md border border-slate-200 bg-white" id="customConfig">
             <div class="border-b border-slate-200 px-4 py-3">
                 <h2 class="text-lg font-bold">Custom loại trừ để backtest</h2>
                 <p class="mt-1 text-sm text-slate-500">
@@ -229,16 +231,8 @@
                             <tr>
                                 <th class="px-4 py-3">Ngày dự đoán</th>
                                 <th class="px-4 py-3 text-center">ĐB</th>
-                                <th class="px-4 py-3">Dropoff 85%</th>
-                                <th class="px-4 py-3">Edge 85%</th>
-                                <th class="px-4 py-3">Xếp hạng 60-70</th>
-                                <th class="px-4 py-3">Tổng hợp rủi ro 25</th>
-                                <th class="px-4 py-3">Edge từng số 2</th>
-                                <th class="px-4 py-3">Edge từng số 5</th>
-                                <th class="px-4 py-3">Bayes log-odds 2</th>
-                                <th class="px-4 py-3">Bayes log-odds 3</th>
-                                <th class="px-4 py-3">Bayes log-odds 5</th>
-                                <th class="px-4 py-3">Custom</th>
+                                <th class="px-4 py-3">Ôm 60 theo rủi ro</th>
+                                <th class="px-4 py-3">Ôm 60 theo HT/Target</th>
                             </tr>
                         </thead>
                         <tbody id="detailsTable" class="divide-y divide-slate-200 bg-white"></tbody>

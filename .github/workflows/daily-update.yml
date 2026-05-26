@@ -1,4 +1,4 @@
-name: Daily Vina Lottery Static Generator
+name: Daily Vina Lottery Supabase Generator
 
 on:
   schedule:
@@ -28,16 +28,37 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Pull Data & Generate Static JSON
+      - name: Kiểm tra kết nối Supabase
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_STATS_BUCKET: ${{ vars.SUPABASE_STATS_BUCKET || 'lottery-stats' }}
+        run: npm run supabase:check
+
+      - name: Pull Data & Generate Supabase Stats
         env:
           WAIT_FOR_NEW_XOSO: '1'
           XOSO_MAX_WAIT_MINUTES: '90'
           XOSO_RETRY_INTERVAL_SECONDS: '60'
+          LOTTERY_STATS_SOURCE: 'supabase-db'
+          SYNC_SUPABASE_AFTER_UPDATE: '1'
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_STATS_BUCKET: ${{ vars.SUPABASE_STATS_BUCKET || 'lottery-stats' }}
         run: node scripts/update-static-data.js
 
       - name: Kiểm tra dữ liệu có thay đổi không
         id: changes
+        env:
+          COMMIT_STATIC_DATA: ${{ vars.COMMIT_STATIC_DATA || '0' }}
         run: |
+          if [ "$COMMIT_STATIC_DATA" != "1" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Đã sync Supabase; bỏ qua commit static JSON vì COMMIT_STATIC_DATA != 1."
+            exit 0
+          fi
           if git diff --quiet -- lib/data/xsmb-2-digits.json lib/data/statistics; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "Không có dữ liệu mới, bỏ qua build/commit."

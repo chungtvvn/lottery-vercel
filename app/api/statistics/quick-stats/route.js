@@ -7,8 +7,8 @@ export async function GET() {
         const { cachedResponse } = require('@/lib/cache-headers');
         const lotteryService = require('../../../../lib/services/lotteryService');
 
-        // LUÔN load đủ rawData + stats để hydrateStreak() và reliability enrichment hoạt động đúng
-        await lotteryService.loadAll();
+        // Chỉ cần rawData để hydrate current streaks; quick_stats lấy từ Supabase cache/DB.
+        await lotteryService.loadRawData();
 
         // Try cache first
         const { getQuickStatsFromCache } = require('@/lib/data-access');
