@@ -402,7 +402,7 @@ async function main() {
         if (dbStatsActive) {
             const { identifyCategories } = require('../lib/utils/numberAnalysis');
             const { calculateQuickStatsForPattern } = require('../lib/utils/quickStatsCalculator');
-            const { saveSinglePatternStatsToDb } = require('../lib/data-access');
+            const { savePatternStatsBatchToDb } = require('../lib/data-access');
 
             const latestResult = finalArray[finalArray.length - 1];
             const yesterdayResult = finalArray.length >= 2 ? finalArray[finalArray.length - 2] : null;
@@ -450,10 +450,10 @@ async function main() {
             let quickStatsPatternCount = 0;
             const quickStatsHistoryEntries = [];
 
-            const onPatternGenerated = async (patternKey, categoryType, category, subcategory, description, streaks) => {
+            const collectPattern = (entries) => async (patternKey, categoryType, category, subcategory, description, streaks) => {
                 const qs = calculateQuickStatsForPattern(patternKey, { description, streaks }, calculatorOptions);
                 if (qs) {
-                    await saveSinglePatternStatsToDb(patternKey, categoryType, category, subcategory, description, streaks, qs);
+                    entries.push({ patternKey, categoryType, category, subcategory, description, streaks, qs });
                     quickStatsPatternCount += 1;
 
                     if (qs.current) {
@@ -470,14 +470,17 @@ async function main() {
                 }
             };
 
-            console.log(' -> Sinh dữ liệu và lưu trực tiếp Number Stats...');
-            await generateNumberStats(null, null, null, onPatternGenerated);
+            async function generateAndSaveBatch(label, categoryType, generator) {
+                const entries = [];
+                console.log(` -> Sinh dữ liệu ${label}...`);
+                await generator(null, null, null, collectPattern(entries));
+                console.log(` -> Ghi batch ${entries.length} pattern ${label} vào Supabase DB...`);
+                await savePatternStatsBatchToDb(categoryType, entries);
+            }
 
-            console.log(' -> Sinh dữ liệu và lưu trực tiếp Head/Tail Stats...');
-            await generateHeadTailStats(null, null, null, onPatternGenerated);
-
-            console.log(' -> Sinh dữ liệu và lưu trực tiếp Sum/Diff Stats...');
-            await generateSumDiffStats(null, null, null, onPatternGenerated);
+            await generateAndSaveBatch('Number Stats', 'number', generateNumberStats);
+            await generateAndSaveBatch('Head/Tail Stats', 'head_tail', generateHeadTailStats);
+            await generateAndSaveBatch('Sum/Diff Stats', 'sum_diff', generateSumDiffStats);
 
             console.log(' -> Lưu quick_stats_history vào Cache Store...');
             console.log(`    quick_stats có ${quickStatsPatternCount} pattern; nguồn chính là bảng streak_statistics, không ghi một JSONB lớn vào cache_store.`);
@@ -550,64 +553,82 @@ async function main() {
             await fs.writeFile(path.join(DATA_DIR, 'statistics', 'quick_stats_history.json'), JSON.stringify(minifiedHistory, null, 0));
             console.log('✅ Đã lưu kết quả quick_stats_history.json (minified)');
         }
-        
-        console.log(' -> Tạo Data Caching Predictions...');
-        const unifiedPrediction = require('../lib/services/unifiedPredictionService');
-        const hybridAIPrediction = require('../lib/services/hybridAIPredictionService');
-        const advancedAnalysis = require('../lib/services/advancedAnalysisService');
-        
-        console.log(' -> Tạo Unified Prediction...');
-        const unifiedResult = await unifiedPrediction.getDailyPrediction({ topCount: 40 });
-        
-        console.log(' -> Tạo Advanced Analysis...');
-        const advancedResult = await advancedAnalysis.getDailyAdvancedPrediction({ topCount: 40, excludeCount: 60 });
-        
-        console.log(' -> Tạo Hybrid Prediction...');
-        const hybridResult = await hybridAIPrediction.getHybridPrediction({ topCount: 40, excludeCount: 60 });
-        
-        const cachedPredictions = {
-            unified: unifiedResult,
-            advanced: {
-                predictions: advancedResult.predictions,
-                exclusions: advancedResult.exclusions,
-                allNumbers: advancedResult.allNumbers
-            },
-            hybrid: hybridResult,
-            dataDate: ls.getRawData() && ls.getRawData().length > 0 ? ls.getRawData()[ls.getRawData().length - 1].date.substring(0, 10) : new Date().toISOString()
-        };
 
         if (dbStatsActive) {
-            await writeCacheStoreDirect('cached_predictions', 'statistics', cachedPredictions);
-            console.log('✅ Đã lưu kết quả cached_predictions vào Cache Store');
-        } else {
-            await fs.writeFile(path.join(DATA_DIR, 'statistics', 'cached_predictions.json'), JSON.stringify(cachedPredictions, null, 0));
-            console.log('✅ Đã lưu kết quả cached_predictions.json');
+            console.log(' -> Tạo cache Chain Frequency cho Supabase DB...');
+            const simulationService = require('../lib/services/simulationService');
+            const chainCacheVariants = [
+                { sortBy: 'frequency', includePotential: '1', excludeFixedThreeValueGroups: '0' },
+                { sortBy: 'risk', includePotential: '1', excludeFixedThreeValueGroups: '0' },
+                { sortBy: 'frequency', includePotential: '0', excludeFixedThreeValueGroups: '0' },
+                { sortBy: 'risk', includePotential: '0', excludeFixedThreeValueGroups: '0' }
+            ];
+            for (const variant of chainCacheVariants) {
+                const result = await simulationService.runChainFrequencyAnalysis({
+                    includePotential: variant.includePotential,
+                    sortBy: variant.sortBy,
+                    excludeFixedThreeValueGroups: variant.excludeFixedThreeValueGroups
+                });
+                if (result && !result.error) {
+                    const cacheKey = `chain_frequency:${variant.sortBy}:potential:${variant.includePotential}:exclude3:${variant.excludeFixedThreeValueGroups}`;
+                    await writeCacheStoreDirect(cacheKey, 'statistics', {
+                        ...result,
+                        cachedAt: new Date().toISOString()
+                    });
+                    console.log(`✅ Đã lưu cache ${cacheKey}`);
+                } else {
+                    throw new Error(`Không tạo được chain frequency cache (${variant.sortBy}/${variant.includePotential}): ${result ? result.error : 'empty result'}`);
+                }
+            }
         }
 
-        // PRE-COMPUTE: Suggestions (to avoid Vercel serverless timeout)
-        console.log(' -> Tạo Cached Suggestions...');
-        try {
-            const suggestionsController = require('../lib/controllers/suggestionsController');
-            let suggestionsResult;
-            const mockReq = { query: { gapStrategy: 'COMBINED', gapBuffer: '0', strategy: 'BALANCED' } };
-            const mockRes = { json(d) { suggestionsResult = d; return mockRes; }, status(c) { mockRes._status = c; return mockRes; }, _status: 200 };
-            await suggestionsController.getSuggestions(mockReq, mockRes);
-            if (suggestionsResult) {
-                if (dbStatsActive) {
-                    await writeCacheStoreDirect('cached_suggestions', 'statistics', suggestionsResult);
-                    console.log('✅ Đã lưu kết quả cached_suggestions vào Cache Store');
-                } else {
+        if (!dbStatsActive) {
+            console.log(' -> Tạo Data Caching Predictions...');
+            const unifiedPrediction = require('../lib/services/unifiedPredictionService');
+            const hybridAIPrediction = require('../lib/services/hybridAIPredictionService');
+            const advancedAnalysis = require('../lib/services/advancedAnalysisService');
+
+            console.log(' -> Tạo Unified Prediction...');
+            const unifiedResult = await unifiedPrediction.getDailyPrediction({ topCount: 40 });
+
+            console.log(' -> Tạo Advanced Analysis...');
+            const advancedResult = await advancedAnalysis.getDailyAdvancedPrediction({ topCount: 40, excludeCount: 60 });
+
+            console.log(' -> Tạo Hybrid Prediction...');
+            const hybridResult = await hybridAIPrediction.getHybridPrediction({ topCount: 40, excludeCount: 60 });
+
+            const cachedPredictions = {
+                unified: unifiedResult,
+                advanced: {
+                    predictions: advancedResult.predictions,
+                    exclusions: advancedResult.exclusions,
+                    allNumbers: advancedResult.allNumbers
+                },
+                hybrid: hybridResult,
+                dataDate: ls.getRawData() && ls.getRawData().length > 0 ? ls.getRawData()[ls.getRawData().length - 1].date.substring(0, 10) : new Date().toISOString()
+            };
+
+            await fs.writeFile(path.join(DATA_DIR, 'statistics', 'cached_predictions.json'), JSON.stringify(cachedPredictions, null, 0));
+            console.log('✅ Đã lưu kết quả cached_predictions.json');
+
+            // PRE-COMPUTE: Suggestions (to avoid Vercel serverless timeout)
+            console.log(' -> Tạo Cached Suggestions...');
+            try {
+                const suggestionsController = require('../lib/controllers/suggestionsController');
+                let suggestionsResult;
+                const mockReq = { query: { gapStrategy: 'COMBINED', gapBuffer: '0', strategy: 'BALANCED' } };
+                const mockRes = { json(d) { suggestionsResult = d; return mockRes; }, status(c) { mockRes._status = c; return mockRes; }, _status: 200 };
+                await suggestionsController.getSuggestions(mockReq, mockRes);
+                if (suggestionsResult) {
                     await fs.writeFile(path.join(DATA_DIR, 'statistics', 'cached_suggestions.json'), JSON.stringify(suggestionsResult, null, 0));
                     console.log('✅ Đã lưu kết quả cached_suggestions.json');
                 }
+            } catch (sugErr) {
+                console.error('⚠️ Lỗi khi tạo cached suggestions (không ảnh hưởng các bước khác):', sugErr.message);
             }
-        } catch (sugErr) {
-            console.error('⚠️ Lỗi khi tạo cached suggestions (không ảnh hưởng các bước khác):', sugErr.message);
-        }
 
-        // PRE-COMPUTE: 365-day simulation backtest so Vercel does not have to run
-        // the heavy historical loop inside a serverless request.
-        if (!dbStatsActive) {
+            // PRE-COMPUTE: 365-day simulation backtest so Vercel does not have to run
+            // the heavy historical loop inside a serverless request.
             console.log(' -> Tạo Cached Simulation Backtest 365 ngày...');
             try {
                 const simulationService = require('../lib/services/simulationService');
@@ -618,7 +639,7 @@ async function main() {
                 console.error('⚠️ Lỗi khi tạo cached simulation 365 (không ảnh hưởng các bước khác):', simErr.message);
             }
         } else {
-            console.log(' -> DB stats active, bỏ qua sinh Cached Simulation 365 ngày (tránh OOM và Postgres connection limits).');
+            console.log(' -> DB stats active, bỏ qua legacy cached predictions/suggestions/simulation để tránh timeout và dữ liệu fallback stale.');
         }
         
         if (!dbStatsActive) {
@@ -694,7 +715,7 @@ async function main() {
         process.exit(1);
     }
     
-    console.log('[5] Hoàn tất Update Workflow Tĩnh (Static). Các file json đã sẵn sàng trong lib/data/statistics/');
+    console.log(`[5] Hoàn tất Update Workflow (${dbStatsActive ? 'Supabase DB' : 'Static JSON'}).`);
     syncSupabaseAfterStaticGeneration();
 }
 
