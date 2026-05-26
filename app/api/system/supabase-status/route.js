@@ -9,6 +9,7 @@ export async function GET() {
             hasSupabaseAdminConfig,
             getSupabaseAdminClient
         } = require('../../../../lib/supabase/client');
+        const { shouldUseSupabaseDbStats } = require('../../../../lib/data-access');
 
         if (!hasSupabaseAdminConfig()) {
             return NextResponse.json({
@@ -86,7 +87,8 @@ export async function GET() {
             },
             runtime: {
                 dataSource: process.env.LOTTERY_DATA_SOURCE || 'auto',
-                statsSource: process.env.LOTTERY_STATS_SOURCE || 'auto'
+                statsSource: process.env.LOTTERY_STATS_SOURCE || 'auto',
+                effectiveStatsSource: shouldUseSupabaseDbStats() ? 'supabase-db' : (process.env.LOTTERY_STATS_SOURCE || 'auto')
             }
         });
     } catch (error) {
