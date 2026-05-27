@@ -57,7 +57,6 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          SUPABASE_STATS_BUCKET: ${{ vars.SUPABASE_STATS_BUCKET || 'lottery-stats' }}
         run: npm run supabase:check
 
       - name: Pull Data & Generate Supabase Stats
@@ -71,7 +70,6 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          SUPABASE_STATS_BUCKET: ${{ vars.SUPABASE_STATS_BUCKET || 'lottery-stats' }}
         run: node scripts/update-static-data.js
 
       - name: Kiểm tra dữ liệu có thay đổi không

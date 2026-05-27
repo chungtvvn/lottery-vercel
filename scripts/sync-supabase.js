@@ -10,5 +10,9 @@ function run(script, args = []) {
 }
 
 run('scripts/seed-supabase-raw-data.js');
-run('scripts/seed-supabase-statistics-storage.js');
+if (process.env.SYNC_LEGACY_STORAGE === '1') {
+    run('scripts/seed-supabase-statistics-storage.js');
+} else {
+    console.log('[Supabase] Bỏ qua legacy Storage sync. Set SYNC_LEGACY_STORAGE=1 nếu cần upload JSON gzip cũ.');
+}
 run('scripts/sync-supabase-db-stats.js');

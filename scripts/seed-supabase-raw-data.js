@@ -37,6 +37,12 @@ function toRow(item) {
     return row;
 }
 
+function rowsEqual(a, b) {
+    if (!a || !b) return false;
+    if (String(a.draw_date || '').substring(0, 10) !== String(b.draw_date || '').substring(0, 10)) return false;
+    return PRIZE_FIELDS.every(field => Number(a[field]) === Number(b[field]));
+}
+
 function logError(error) {
     console.error('[Supabase] Seed failed:', error.message);
     if (error.cause && error.cause.message) {
@@ -47,6 +53,7 @@ function logError(error) {
 
 async function main() {
     const dryRun = process.argv.includes('--dry-run');
+    const forceFull = process.argv.includes('--full') || process.env.SUPABASE_RAW_SEED_FULL === '1';
     const limitArg = process.argv.find(arg => arg.startsWith('--limit='));
     const limit = limitArg ? Number(limitArg.split('=')[1]) : null;
 
@@ -67,16 +74,62 @@ async function main() {
     }
 
     const supabase = getSupabaseAdminClient();
+    let rowsToUpsert = rows;
+
+    if (!forceFull) {
+        const { data: latestRows, error: latestError } = await supabase
+            .from('lottery_results')
+            .select('*')
+            .order('draw_date', { ascending: false })
+            .limit(1);
+        if (latestError) throw latestError;
+
+        const { count, error: countError } = await supabase
+            .from('lottery_results')
+            .select('draw_date', { count: 'exact', head: true });
+        if (countError) throw countError;
+
+        const latestDbRow = latestRows && latestRows[0] ? latestRows[0] : null;
+        const latestDbDate = latestDbRow ? String(latestDbRow.draw_date).substring(0, 10) : null;
+        const shouldBackfill = latestDbDate && Number(count || 0) < rows.length - 7;
+
+        if (!latestDbDate || shouldBackfill) {
+            rowsToUpsert = rows;
+            if (shouldBackfill) {
+                console.log(`[Supabase] DB thiếu nhiều dòng (${count}/${rows.length}), chạy full seed để backfill.`);
+            }
+        } else {
+            const latestIndex = rows.findIndex(row => row.draw_date === latestDbDate);
+            if (latestIndex === -1) {
+                rowsToUpsert = rows.slice(-7);
+                console.log(`[Supabase] Không tìm thấy latest DB date ${latestDbDate} trong local, chỉ upsert 7 dòng cuối để tránh ghi lại toàn bộ.`);
+            } else {
+                rowsToUpsert = rows.slice(latestIndex);
+                if (rowsToUpsert.length === 1 && rowsEqual(rowsToUpsert[0], latestDbRow)) {
+                    rowsToUpsert = [];
+                }
+            }
+            console.log(`[Supabase] Delta raw seed: DB latest=${latestDbDate}, local latest=${rows[rows.length - 1].draw_date}, upsert=${rowsToUpsert.length}/${rows.length}`);
+        }
+    } else {
+        console.log('[Supabase] SUPABASE_RAW_SEED_FULL=1/--full, upsert toàn bộ raw data.');
+    }
+
+    if (rowsToUpsert.length === 0) {
+        console.log('[Supabase] Raw data không đổi, bỏ qua upsert lottery_results.');
+        return;
+    }
+
     const batchSize = 500;
 
-    for (let index = 0; index < rows.length; index += batchSize) {
-        const batch = rows.slice(index, index + batchSize);
+    for (let index = 0; index < rowsToUpsert.length; index += batchSize) {
+        const batch = rowsToUpsert.slice(index, index + batchSize);
         const { error } = await supabase
             .from('lottery_results')
             .upsert(batch, { onConflict: 'draw_date' });
 
         if (error) throw error;
-        console.log(`[Supabase] Upserted ${Math.min(index + batch.length, rows.length)}/${rows.length}`);
+        console.log(`[Supabase] Upserted ${Math.min(index + batch.length, rowsToUpsert.length)}/${rowsToUpsert.length}`);
     }
 
     const { count, error } = await supabase

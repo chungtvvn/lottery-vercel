@@ -57,6 +57,15 @@ async function main() {
         console.log(`[Supabase] DB Stats OK. historical_streaks rows: ${historicalStreaksCount ?? 0}`);
     }
 
+    const statsMode = String(process.env.LOTTERY_STATS_SOURCE || '').trim().toLowerCase();
+    const shouldCheckLegacyStorage = process.env.CHECK_SUPABASE_STORAGE === '1'
+        || ['supabase-storage', 'supabase-storage-only', 'storage', 'storage-only'].includes(statsMode);
+
+    if (!shouldCheckLegacyStorage) {
+        console.log('[Supabase] Storage check skipped. Runtime uses DB stats/cache_store, not legacy Storage.');
+        return;
+    }
+
     const bucket = process.env.SUPABASE_STATS_BUCKET || 'lottery-stats';
     const prefix = process.env.SUPABASE_STATS_PREFIX || 'statistics';
     const { data: manifestBlob, error: manifestError } = await supabase
@@ -65,12 +74,12 @@ async function main() {
         .download(`${prefix}/manifest.json`);
 
     if (manifestError) {
-        console.warn(`[Supabase] Storage manifest not found yet (${bucket}/${prefix}/manifest.json): ${manifestError.message}`);
+        console.warn(`[Supabase] Legacy Storage manifest not found (${bucket}/${prefix}/manifest.json): ${manifestError.message}`);
         return;
     }
 
     const manifest = JSON.parse(Buffer.from(await manifestBlob.arrayBuffer()).toString('utf8'));
-    console.log(`[Supabase] Storage OK. stats files: ${manifest.files ? manifest.files.length : 0}, generatedAt: ${manifest.generatedAt || 'unknown'}`);
+    console.log(`[Supabase] Legacy Storage OK. stats files: ${manifest.files ? manifest.files.length : 0}, generatedAt: ${manifest.generatedAt || 'unknown'}`);
 }
 
 main().catch(error => {

@@ -20,9 +20,6 @@ export async function GET() {
         }
 
         const supabase = getSupabaseAdminClient();
-        const bucket = process.env.SUPABASE_STATS_BUCKET || 'lottery-stats';
-        const prefix = process.env.SUPABASE_STATS_PREFIX || 'statistics';
-
         const { count, error: countError } = await supabase
             .from('lottery_results')
             .select('draw_date', { count: 'exact', head: true });
@@ -49,22 +46,28 @@ export async function GET() {
 
         const { data: quickStatsCache, error: quickStatsCacheError } = await supabase
             .from('cache_store')
-            .select('updated_at, data')
+            .select('updated_at')
             .eq('cache_key', 'quick_stats')
             .maybeSingle();
         if (quickStatsCacheError) throw quickStatsCacheError;
-        const quickStatsCacheKeys = quickStatsCache && quickStatsCache.data && typeof quickStatsCache.data === 'object'
-            ? Object.keys(quickStatsCache.data).length
-            : 0;
 
-        const { data: manifestBlob, error: manifestError } = await supabase
-            .storage
-            .from(bucket)
-            .download(`${prefix}/manifest.json`);
+        const statsMode = String(process.env.LOTTERY_STATS_SOURCE || '').trim().toLowerCase();
+        const shouldCheckLegacyStorage = process.env.CHECK_SUPABASE_STORAGE === '1'
+            || ['supabase-storage', 'supabase-storage-only', 'storage', 'storage-only'].includes(statsMode);
 
         let manifest = null;
-        if (!manifestError && manifestBlob) {
-            manifest = JSON.parse(Buffer.from(await manifestBlob.arrayBuffer()).toString('utf8'));
+        let manifestError = null;
+        if (shouldCheckLegacyStorage) {
+            const bucket = process.env.SUPABASE_STATS_BUCKET || 'lottery-stats';
+            const prefix = process.env.SUPABASE_STATS_PREFIX || 'statistics';
+            const { data: manifestBlob, error } = await supabase
+                .storage
+                .from(bucket)
+                .download(`${prefix}/manifest.json`);
+            manifestError = error;
+            if (!manifestError && manifestBlob) {
+                manifest = JSON.parse(Buffer.from(await manifestBlob.arrayBuffer()).toString('utf8'));
+            }
         }
 
         return NextResponse.json({
@@ -75,13 +78,13 @@ export async function GET() {
             dbStats: {
                 streakStatisticsRows: streakStatsCount || 0,
                 historicalStreakRows: historicalStreaksCount || 0,
-                legacyQuickStatsCacheKeys: quickStatsCacheKeys,
+                legacyQuickStatsCacheExists: Boolean(quickStatsCache),
                 quickStatsUpdatedAt: quickStatsCache ? quickStatsCache.updated_at : null
             },
             storage: {
-                bucket,
-                prefix,
-                manifestFound: !manifestError,
+                checked: shouldCheckLegacyStorage,
+                legacyEnabled: shouldCheckLegacyStorage,
+                manifestFound: shouldCheckLegacyStorage ? !manifestError : false,
                 files: manifest && Array.isArray(manifest.files) ? manifest.files.length : 0,
                 generatedAt: manifest ? manifest.generatedAt : null
             },

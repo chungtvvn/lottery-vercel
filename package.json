@@ -8,7 +8,9 @@
     "start": "next start",
     "supabase:check": "node scripts/check-supabase.js",
     "supabase:seed:raw": "node scripts/seed-supabase-raw-data.js",
-    "supabase:seed:stats": "node scripts/seed-supabase-statistics-storage.js",
+    "supabase:seed:stats": "node scripts/sync-supabase-db-stats.js",
+    "supabase:seed:storage": "node scripts/seed-supabase-statistics-storage.js",
+    "supabase:cleanup:legacy": "node scripts/cleanup-supabase-legacy-storage.js",
     "supabase:sync": "node scripts/sync-supabase.js"
   },
   "dependencies": {
