@@ -19,8 +19,9 @@ export async function GET(request) {
         }
 
         const cachedPath = path.join(process.cwd(), 'lib/data/statistics/cached_suggestions.json');
-        if (fs.existsSync(cachedPath)) {
-            const data = JSON.parse(fs.readFileSync(cachedPath, 'utf8'));
+        const fsModule = eval("require('fs')");
+        if (fsModule.existsSync(cachedPath)) {
+            const data = JSON.parse(fsModule.readFileSync(cachedPath, 'utf8'));
             return cachedResponse(data, 'DAILY');
         }
 

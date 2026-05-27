@@ -47,9 +47,10 @@ export async function GET(request) {
         if (!cachedPayload) {
             const fileName = playMode === 'both' ? `cached_simulation_${days}.json` : `cached_simulation_${days}_${playMode}.json`;
             const cachedPath = path.join(process.cwd(), 'lib/data/statistics', fileName);
-            if (fs.existsSync(cachedPath)) {
+            const fsModule = eval("require('fs')");
+            if (fsModule.existsSync(cachedPath)) {
                 try {
-                    cachedPayload = JSON.parse(fs.readFileSync(cachedPath, 'utf8'));
+                    cachedPayload = JSON.parse(fsModule.readFileSync(cachedPath, 'utf8'));
                 } catch {
                     cachedPayload = null;
                 }

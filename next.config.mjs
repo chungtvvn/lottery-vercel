@@ -12,8 +12,12 @@ const nextConfig = {
         ];
     },
 
-    // Increase serverless function timeout (Vercel Pro only, otherwise ignored)
-    serverExternalPackages: [],
+    // Exclude statistics files from serverless function bundles to avoid exceeding size limit
+    outputFileTracingExcludes: {
+        '*': [
+            'lib/data/statistics/**/*',
+        ],
+    },
 };
 
 export default nextConfig;
