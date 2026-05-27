@@ -7,6 +7,43 @@
         return `${Number(value).toLocaleString('vi-VN')}${suffix}`;
     };
     const numText = n => String(n).padStart(2, '0');
+    const CATEGORY_LABELS = {
+        tong_tt_chan: 'Tổng TT - Tổng Chẵn',
+        tong_tt_le: 'Tổng TT - Tổng Lẻ',
+        tong_moi_chan: 'Tổng Mới - Tổng Chẵn',
+        tong_moi_le: 'Tổng Mới - Tổng Lẻ',
+        hieu_chan: 'Hiệu Chẵn',
+        hieu_le: 'Hiệu Lẻ',
+        tong_tt_chan_chan: 'Tổng TT - Dạng Chẵn-Chẵn',
+        tong_tt_chan_le: 'Tổng TT - Dạng Chẵn-Lẻ',
+        tong_tt_le_chan: 'Tổng TT - Dạng Lẻ-Chẵn',
+        tong_tt_le_le: 'Tổng TT - Dạng Lẻ-Lẻ',
+        tong_moi_chan_chan: 'Tổng Mới - Dạng Chẵn-Chẵn',
+        tong_moi_chan_le: 'Tổng Mới - Dạng Chẵn-Lẻ',
+        tong_moi_le_chan: 'Tổng Mới - Dạng Lẻ-Chẵn',
+        tong_moi_le_le: 'Tổng Mới - Dạng Lẻ-Lẻ',
+        dau_chan_lon_hon_4: 'Đầu chẵn > 4',
+        dau_chan_nho_hon_4: 'Đầu chẵn < 4',
+        dit_chan_lon_hon_4: 'Đít chẵn > 4',
+        dit_chan_nho_hon_4: 'Đít chẵn < 4',
+        dau_le_lon_hon_5: 'Đầu lẻ > 5',
+        dau_le_nho_hon_5: 'Đầu lẻ < 5',
+        dit_le_lon_hon_5: 'Đít lẻ > 5',
+        dit_le_nho_hon_5: 'Đít lẻ < 5'
+    };
+    function displayTitle(title, key) {
+        const raw = String(title || key || '');
+        const category = String(key || '').split(':')[0];
+        if (CATEGORY_LABELS[category]) {
+            return raw.includes(' - ')
+                ? `${CATEGORY_LABELS[category]} - ${raw.split(' - ').slice(1).join(' - ')}`
+                : CATEGORY_LABELS[category];
+        }
+        return raw.replace(/^dong_step_(\d+)_(\d+)\b/i, (_, step, start) => {
+            const paddedStart = String(start).padStart(2, '0');
+            return `Đồng cách ${step} từ ${paddedStart}`;
+        });
+    }
     const fmtDecimal = (value, fractionDigits = 1) => {
         const number = Number(value);
         if (!Number.isFinite(number)) return '-';
@@ -107,7 +144,7 @@
                         data-key="${row.key}" ${state.selectedKeys.has(row.key) ? 'checked' : ''}>
                 </td>
                 <td class="px-3 py-3 align-top">
-                    <div class="font-semibold text-slate-900">${row.title || row.key}</div>
+                    <div class="font-semibold text-slate-900">${displayTitle(row.title, row.key)}</div>
                     <div class="mt-1 text-xs text-slate-500">
                         ${row.isPotential ? 'Chưa hình thành' : 'Đang diễn ra'} · ${fmt(row.streak, 'd')} → ${fmt(row.targetLength, 'd')}
                         · KL ${fmt(row.maxStreak, 'd')} · ${row.numbersCount} số
@@ -161,8 +198,8 @@
             const data = await response.json();
             if (!response.ok || data.error) throw new Error(data.error || 'Không thể tải dữ liệu loại trừ.');
             state.data = data;
-            state.selectedKeys = new Set((data.chainRows || []).filter(row => row.selectedByDefault).map(row => row.key));
-            el('predictionInfo').textContent = `Dữ liệu tới ${data.basisDate}; ${data.candidatesCount} chuỗi ứng viên. Có thể tick/bỏ tick từng chuỗi để xem số ôm và số đánh thay đổi ngay.`;
+            state.selectedKeys = new Set();
+            el('predictionInfo').textContent = `Dữ liệu tới ${data.basisDate}; ${data.candidatesCount} chuỗi ứng viên. Mặc định chưa chọn chuỗi nào; hãy chọn Tier hoặc tick từng chuỗi để xem số ôm và số đánh thay đổi ngay.`;
             renderSummary();
             renderRows();
         } catch (error) {

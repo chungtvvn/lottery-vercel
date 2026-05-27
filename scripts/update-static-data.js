@@ -655,37 +655,40 @@ async function main() {
                     throw new Error(`Không tạo được chain frequency cache (${variant.sortBy}/${variant.includePotential}): ${result ? result.error : 'empty result'}`);
                 }
             }
+
+            const simulationCacheDays = String(process.env.SIMULATION_CACHE_DAYS || '7,365')
+                .split(',')
+                .map(value => Number(value.trim()))
+                .filter(value => Number.isFinite(value) && value >= 7 && value <= 365);
+            const simulationCacheModes = String(process.env.SIMULATION_CACHE_PLAY_MODES || 'both,bet,hold')
+                .split(',')
+                .map(value => value.trim().toLowerCase())
+                .filter(value => ['both', 'bet', 'hold'].includes(value));
+
+            if (simulationCacheDays.length > 0 && simulationCacheModes.length > 0) {
+                console.log(' -> Tạo cache Simulation Backtest cho Supabase DB...');
+                for (const cacheDays of simulationCacheDays) {
+                    for (const playMode of simulationCacheModes) {
+                        const simulationResult = await simulationService.runBacktest(cacheDays, null, {
+                            compactDetails: cacheDays > 90,
+                            playMode
+                        });
+                        if (simulationResult && !simulationResult.error) {
+                            const cacheKey = `cached_simulation_${cacheDays}_${playMode}`;
+                            await writeCacheStoreDirect(cacheKey, 'simulation', {
+                                ...simulationResult,
+                                cachedAt: new Date().toISOString()
+                            });
+                            console.log(`✅ Đã lưu cache ${cacheKey}`);
+                        } else {
+                            throw new Error(`Không tạo được simulation cache (${cacheDays}/${playMode}): ${simulationResult ? simulationResult.error : 'empty result'}`);
+                        }
+                    }
+                }
+            }
         }
 
         if (!dbStatsActive) {
-            console.log(' -> Tạo Data Caching Predictions...');
-            const unifiedPrediction = require('../lib/services/unifiedPredictionService');
-            const hybridAIPrediction = require('../lib/services/hybridAIPredictionService');
-            const advancedAnalysis = require('../lib/services/advancedAnalysisService');
-
-            console.log(' -> Tạo Unified Prediction...');
-            const unifiedResult = await unifiedPrediction.getDailyPrediction({ topCount: 40 });
-
-            console.log(' -> Tạo Advanced Analysis...');
-            const advancedResult = await advancedAnalysis.getDailyAdvancedPrediction({ topCount: 40, excludeCount: 60 });
-
-            console.log(' -> Tạo Hybrid Prediction...');
-            const hybridResult = await hybridAIPrediction.getHybridPrediction({ topCount: 40, excludeCount: 60 });
-
-            const cachedPredictions = {
-                unified: unifiedResult,
-                advanced: {
-                    predictions: advancedResult.predictions,
-                    exclusions: advancedResult.exclusions,
-                    allNumbers: advancedResult.allNumbers
-                },
-                hybrid: hybridResult,
-                dataDate: ls.getRawData() && ls.getRawData().length > 0 ? ls.getRawData()[ls.getRawData().length - 1].date.substring(0, 10) : new Date().toISOString()
-            };
-
-            await fs.writeFile(path.join(DATA_DIR, 'statistics', 'cached_predictions.json'), JSON.stringify(cachedPredictions, null, 0));
-            console.log('✅ Đã lưu kết quả cached_predictions.json');
-
             // PRE-COMPUTE: Suggestions (to avoid Vercel serverless timeout)
             console.log(' -> Tạo Cached Suggestions...');
             try {

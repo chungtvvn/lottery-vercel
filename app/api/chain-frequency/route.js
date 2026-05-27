@@ -12,6 +12,26 @@ function normalizeSortParam(value) {
     return String(value || 'frequency').trim().toLowerCase() === 'risk' ? 'risk' : 'frequency';
 }
 
+function withoutDefaultSelection(payload) {
+    if (!payload || payload.error) return payload;
+    const chainRows = Array.isArray(payload.chainRows)
+        ? payload.chainRows.map(row => ({ ...row, selectedByDefault: false }))
+        : [];
+    const allNumbers = Array.from({ length: 100 }, (_, index) => index);
+    return {
+        ...payload,
+        chainRows,
+        excludedNumbers: [],
+        betNumbers: allNumbers,
+        summary: {
+            ...(payload.summary || {}),
+            selectedChainCount: 0,
+            excludedNumberCount: 0,
+            betNumberCount: allNumbers.length
+        }
+    };
+}
+
 export async function GET(request) {
     try {
         const simulationService = require('@/lib/services/simulationService');
@@ -34,7 +54,7 @@ export async function GET(request) {
             const cached = await readCacheStore(`chain_frequency:${sortBy}:potential:${includePotential}:exclude3:${excludeFixed}`);
             if (cached && !cached.error) {
                 return NextResponse.json({
-                    ...cached,
+                    ...withoutDefaultSelection(cached),
                     cached: true
                 });
             }
@@ -43,7 +63,7 @@ export async function GET(request) {
         const result = await simulationService.runChainFrequencyAnalysis(options);
 
         if (result.error) return NextResponse.json({ error: result.error }, { status: 400 });
-        return NextResponse.json(result);
+        return NextResponse.json(withoutDefaultSelection(result));
     } catch (error) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }

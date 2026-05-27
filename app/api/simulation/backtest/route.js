@@ -6,14 +6,14 @@ export const maxDuration = 300;
 
 export async function GET(request) {
     try {
-        const lotteryService = require('@/lib/services/lotteryService');
-        await lotteryService.loadAll();
         const simulationService = require('@/lib/services/simulationService');
         const url = new URL(request.url);
         const days = parseInt(url.searchParams.get('days')) || 7;
         if (days < 7 || days > 365) {
             return NextResponse.json({ error: 'Số ngày phải từ 7 đến 365' }, { status: 400 });
         }
+        const playModeParam = String(url.searchParams.get('playMode') || 'both').trim().toLowerCase();
+        const playMode = ['bet', 'hold', 'both'].includes(playModeParam) ? playModeParam : 'both';
         const custom = {
             minPriority: url.searchParams.get('customMinPriority'),
             minDropOffPercent: url.searchParams.get('customMinDropOffPercent'),
@@ -31,14 +31,20 @@ export async function GET(request) {
         const { readCacheStore, shouldUseSupabaseDbStats } = require('@/lib/data-access');
         const dbStatsActive = shouldUseSupabaseDbStats();
         let cachedPayload = null;
+        const defaultCustom = simulationService.isDefaultCustomOptions
+            && simulationService.isDefaultCustomOptions({ custom });
+        const canReadPrecomputedCache = url.searchParams.get('refresh') !== '1'
+            && !url.searchParams.get('methods')
+            && defaultCustom;
         if (dbStatsActive) {
             try {
-                cachedPayload = await readCacheStore(`cached_simulation_${days}`);
+                cachedPayload = await readCacheStore(`cached_simulation_${days}_${playMode}`)
+                    || (playMode === 'both' ? await readCacheStore(`cached_simulation_${days}`) : null);
             } catch (dbErr) {
                 console.error(`Lỗi khi đọc cached_simulation_${days} từ DB:`, dbErr.message);
             }
         }
-        if (!cachedPayload) {
+        if (!cachedPayload && playMode === 'both') {
             const cachedPath = path.join(process.cwd(), 'lib/data/statistics', `cached_simulation_${days}.json`);
             if (fs.existsSync(cachedPath)) {
                 try {
@@ -49,17 +55,22 @@ export async function GET(request) {
             }
         }
         const canUseStaticCache = days === 365
-            && url.searchParams.get('refresh') !== '1'
-            && !url.searchParams.get('methods')
-            && simulationService.isDefaultCustomOptions
-            && simulationService.isDefaultCustomOptions({ custom })
+            && canReadPrecomputedCache
             && cachedPayload
             && cachedPayload.config?.methodVersion === simulationService.SIMULATION_METHOD_VERSION;
-        if (canUseStaticCache) {
+        const canUseDbCache = dbStatsActive
+            && canReadPrecomputedCache
+            && cachedPayload
+            && cachedPayload.config?.methodVersion === simulationService.SIMULATION_METHOD_VERSION
+            && cachedPayload.config?.playMode === playMode;
+        if (canUseStaticCache || canUseDbCache) {
             return NextResponse.json(cachedPayload);
         }
+        const lotteryService = require('@/lib/services/lotteryService');
+        await lotteryService.loadAll();
         const results = await simulationService.runBacktest(days, null, {
             custom,
+            playMode,
             compactDetails: days > 90,
             methodIds: url.searchParams.get('methods')
         });

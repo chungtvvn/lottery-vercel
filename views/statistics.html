@@ -4,156 +4,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thống Kê Xổ Số (Giao diện Tailwind)</title>
+    <title>Thống Kê Xổ Số | Lottery Stats</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.default.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
     <style>
-        body {
-            background-color: #f7fafc;
-            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
-
         .highlight {
-            background-color: #92d7ff;
-            color: #fe7155;
+            background-color: rgba(99, 102, 241, 0.1) !important;
+            color: #dc2626 !important;
             font-weight: 800;
             border-radius: 6px;
+            padding: 2px 4px;
+            border: 1px solid rgba(220, 38, 38, 0.2);
         }
     </style>
 </head>
 
-<body class="antialiased">
-    <div class="container mx-auto max-w-7xl px-4 py-8">
-        <header class="bg-white shadow-md sticky top-0 z-10 mb-8">
-            <div class="container mx-auto px-4">
-                <div class="flex justify-between items-center py-4">
-                    <a href="/" class="text-2xl font-bold text-gray-800">XSMB Stats</a>
-                    <nav class="flex space-x-2 sm:space-x-4 overflow-x-auto">
-                        <a href="/statistics"
-                            class="bg-blue-100 text-blue-600 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-semibold whitespace-nowrap">Thống
-                            kê</a>
-                        <a href="/chain-frequency"
-                            class="text-gray-600 hover:text-blue-500 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium whitespace-nowrap">Chọn
-                            chuỗi loại</a>
-                        <a href="/scoring"
-                            class="text-gray-600 hover:text-blue-500 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium whitespace-nowrap">Tính
-                            điểm</a>
-                        <a href="/simulation"
-                            class="text-gray-600 hover:text-blue-500 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium whitespace-nowrap">Mô
-                            phỏng</a>
-                        <a href="/settings"
-                            class="text-gray-600 hover:text-blue-500 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium whitespace-nowrap">⚙️</a>
+<body class="antialiased text-slate-850">
+    <!-- Header / Navigation -->
+    <header class="nav-glass-blur sticky top-0 z-50 mb-8 w-full">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="flex h-16 items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                        <i class="bi bi-graph-up text-white text-lg"></i>
+                    </div>
+                    <a href="/" class="text-xl font-bold tracking-tight text-slate-900 hover:opacity-90 transition">XSMB <span class="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent font-extrabold">Stats</span></a>
+                </div>
+                <nav class="hidden md:flex space-x-1">
+                    <a href="/statistics" class="nav-link-custom px-3 py-2 text-sm font-semibold whitespace-nowrap active">Thống kê</a>
+                    <a href="/chain-frequency" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Chọn chuỗi loại</a>
+                    <a href="/simulation" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Mô phỏng</a>
+                    <a href="/scoring" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Tính điểm</a>
+                    <a href="/settings" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">⚙️</a>
+                </nav>
+                <!-- Mobile Navigation Bar -->
+                <div class="flex md:hidden">
+                    <nav class="flex space-x-1 overflow-x-auto max-w-[280px] sm:max-w-[400px] py-1 custom-scrollbar">
+                        <a href="/statistics" class="nav-link-custom px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap active">Thống kê</a>
+                        <a href="/chain-frequency" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Chuỗi loại</a>
+                        <a href="/simulation" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Mô phỏng</a>
+                        <a href="/scoring" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Tính điểm</a>
+                        <a href="/settings" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">⚙️</a>
                     </nav>
                 </div>
             </div>
-        </header>
+        </div>
+    </header>
 
-        <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6 rounded-md shadow" role="alert">
+    <div class="container mx-auto max-w-7xl px-4 pb-12">
+        <!-- Update Notification Alert -->
+        <div class="glass-card bg-gradient-to-r from-indigo-500/5 to-purple-500/5 border-l-4 border-indigo-500 p-4 mb-6 shadow-sm" role="alert">
             <div class="flex justify-between items-center flex-wrap gap-4">
-                <p id="dataUpdateNote">Dữ liệu được cập nhật từ 1/10/2005 đến ngày <span id="lastUpdateDate"
-                        class="font-semibold">...</span></p>
-                <button id="updateDataButton"
-                    class="bg-yellow-500 text-white font-bold py-2 px-4 rounded hover:bg-yellow-600 transition duration-150 flex items-center">
+                <p id="dataUpdateNote" class="text-sm text-slate-700 font-medium">Dữ liệu được cập nhật từ 1/10/2005 đến ngày <span id="lastUpdateDate" class="font-bold text-indigo-600">...</span></p>
+                <button id="updateDataButton" class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold py-2 px-4 rounded-xl shadow transition duration-150 flex items-center">
                     <i class="bi bi-arrow-clockwise mr-2"></i>Cập nhật dữ liệu
                 </button>
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <!-- Query Form Card -->
+        <div class="glass-card p-6 mb-8">
             <form id="statsForm">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
                     <div class="lg:col-span-4">
-                        <label for="statsType" class="block text-sm font-medium text-gray-700">Loại thống kê:</label>
-                        <select id="statsType" name="statsType"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></select>
+                        <label for="statsType" class="block text-sm font-medium text-slate-650">Loại thống kê:</label>
+                        <select id="statsType" name="statsType" class="glass-input mt-1 block w-full text-sm"></select>
                     </div>
                     <div class="lg:col-span-2">
-                        <label for="minLength" class="block text-sm font-medium text-gray-700">Số ngày:</label>
-                        <select id="minLength"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></select>
+                        <label for="minLength" class="block text-sm font-medium text-slate-650">Số ngày:</label>
+                        <select id="minLength" class="glass-input mt-1 block w-full text-sm"></select>
                     </div>
                     <div class="lg:col-span-3">
-                        <label for="startDate" class="block text-sm font-medium text-gray-700">Từ ngày:</label>
-                        <input type="date" id="startDate" name="startDate"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        <label for="startDate" class="block text-sm font-medium text-slate-650">Từ ngày:</label>
+                        <input type="date" id="startDate" name="startDate" class="glass-input mt-1 block w-full text-sm">
                     </div>
                     <div class="lg:col-span-3">
-                        <label for="endDate" class="block text-sm font-medium text-gray-700">Đến ngày:</label>
-                        <input type="date" id="endDate" name="endDate"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        <label for="endDate" class="block text-sm font-medium text-slate-650">Đến ngày:</label>
+                        <input type="date" id="endDate" name="endDate" class="glass-input mt-1 block w-full text-sm">
                     </div>
                 </div>
                 <div class="mt-6">
-                    <button type="submit"
-                        class="w-full bg-indigo-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+                    <button type="submit" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-2.5 px-4 rounded-xl shadow hover:shadow-indigo-500/10 transition duration-150 transform hover:-translate-y-0.5">
                         Thống Kê
                     </button>
                 </div>
             </form>
         </div>
 
-        <div x-data="{ open: true }" class="bg-white rounded-lg shadow-md mb-8">
-            <div @click="open = !open" class="flex justify-between items-center p-4 cursor-pointer">
-                <h3 id="result-title" class="text-xl font-semibold text-gray-800 flex items-center">
-                    <i class="bi bi-search me-2"></i>Kết Quả Truy Vấn
+        <!-- Query Results Accordion -->
+        <div x-data="{ open: true }" class="glass-card mb-8 overflow-hidden">
+            <div @click="open = !open" class="flex justify-between items-center p-4 cursor-pointer hover:bg-black/2 transition border-b border-black/5">
+                <h3 id="result-title" class="text-xl font-semibold text-slate-900 flex items-center">
+                    <i class="bi bi-search text-indigo-600 me-2"></i>Kết Quả Truy Vấn
                 </h3>
-                <i class="bi" :class="open ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+                <i class="bi text-slate-500" :class="open ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
             </div>
             <div x-show="open" x-transition class="accordion-content-highlight" :class="{ 'expanded': open }">
-                <div class="border-t border-gray-200 p-6">
+                <div class="p-6">
                     <div id="result-table-container">
-                        <p class="text-gray-500">Vui lòng chọn loại thống kê và nhấn nút "Thống Kê" để xem kết quả.</p>
+                        <p class="text-slate-500">Vui lòng chọn loại thống kê và nhấn nút "Thống Kê" để xem kết quả.</p>
                     </div>
                 </div>
             </div>
         </div>
 
-
-        <!-- Phần Gợi Ý Loại Trừ đã được chuyển sang trang Distribution -->
-
-        <!-- Skeleton Loading cho Lịch sử chuỗi -->
+        <!-- Skeleton Loading for Chain History -->
         <div id="recent-results-skeleton" class="mb-6 animate-pulse">
-            <div class="bg-white rounded-lg shadow-md p-5 flex flex-col border-t-4 border-gray-300">
-                <div class="h-6 bg-gray-200 rounded w-1/4 mb-4"></div>
-                <div class="h-3 bg-gray-200 rounded w-1/2 mb-5"></div>
+            <div class="glass-card p-5 flex flex-col border-t-4 border-slate-350">
+                <div class="h-6 bg-slate-200 rounded w-1/4 mb-4"></div>
+                <div class="h-3 bg-slate-200 rounded w-1/2 mb-5"></div>
                 <div class="flex gap-3 overflow-hidden justify-start py-2">
-                    <div class="rounded-xl bg-gray-200 h-24 w-20 flex-shrink-0"></div>
-                    <div class="rounded-xl bg-gray-200 h-24 w-20 flex-shrink-0"></div>
-                    <div class="rounded-xl bg-gray-200 h-24 w-20 flex-shrink-0"></div>
-                    <div class="rounded-xl bg-gray-200 h-24 w-20 flex-shrink-0 hidden sm:block"></div>
-                    <div class="rounded-xl bg-gray-200 h-24 w-20 flex-shrink-0 hidden md:block"></div>
-                    <div class="rounded-xl bg-gray-200 h-24 w-20 flex-shrink-0 hidden lg:block"></div>
-                    <div class="rounded-xl bg-gray-200 h-24 w-20 flex-shrink-0 hidden xl:block"></div>
+                    <div class="rounded-xl bg-slate-200 h-24 w-20 flex-shrink-0"></div>
+                    <div class="rounded-xl bg-slate-200 h-24 w-20 flex-shrink-0"></div>
+                    <div class="rounded-xl bg-slate-200 h-24 w-20 flex-shrink-0"></div>
+                    <div class="rounded-xl bg-slate-200 h-24 w-20 flex-shrink-0 hidden sm:block"></div>
+                    <div class="rounded-xl bg-slate-200 h-24 w-20 flex-shrink-0 hidden md:block"></div>
+                    <div class="rounded-xl bg-slate-200 h-24 w-20 flex-shrink-0 hidden lg:block"></div>
+                    <div class="rounded-xl bg-slate-200 h-24 w-20 flex-shrink-0 hidden xl:block"></div>
                 </div>
             </div>
         </div>
 
-
-        <div id="current-streaks-section" x-data="{ open: true }" class="bg-white rounded-lg shadow-md mb-8 d-none">
-            <div @click="open = !open" class="flex justify-between items-center p-4 cursor-pointer">
-                <h3 class="text-xl font-semibold text-gray-800 flex items-center">
-                    <i class="bi bi-fire text-red-500 me-2"></i>
+        <!-- Current Streaks Section -->
+        <div id="current-streaks-section" x-data="{ open: true }" class="glass-card mb-8 d-none overflow-hidden">
+            <div @click="open = !open" class="flex justify-between items-center p-4 cursor-pointer hover:bg-black/2 transition border-b border-black/5">
+                <h3 class="text-xl font-semibold text-slate-900 flex items-center">
+                    <i class="bi bi-fire text-red-500 me-2 glow-text-danger"></i>
                     <span id="current-streaks-title">Chuỗi Đang Diễn Ra</span>
                 </h3>
-                <i class="bi" :class="open ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+                <i class="bi text-slate-500" :class="open ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
             </div>
             <div x-show="open" x-transition class="accordion-content-highlight" :class="{ 'expanded': open }">
-                <div class="border-t border-gray-200 p-6">
+                <div class="p-6">
                     <div id="current-streaks-container"></div>
                 </div>
             </div>
         </div>
 
-        <!-- Phần Tổng Hợp Dự Đoán Ngày Tiếp Theo (đã chuyển xuống dưới Chuỗi Đang Diễn Ra) -->
-        <div id="prediction-summary-section" x-data="{ open: false }" class="bg-white rounded-lg shadow-md mb-8" style="display: none;">
-            <div @click="open = !open" class="flex justify-between items-center p-4 cursor-pointer bg-gradient-to-r from-amber-50 to-orange-50 rounded-t-lg border-b border-amber-200">
-                <h3 class="text-xl font-semibold text-gray-800 flex items-center">
-                    <i class="bi bi-stars text-amber-500 me-2"></i>
+        <!-- Prediction Summary Section -->
+        <div id="prediction-summary-section" x-data="{ open: false }" class="glass-card mb-8 overflow-hidden" style="display: none;">
+            <div @click="open = !open" class="flex justify-between items-center p-4 cursor-pointer bg-gradient-to-r from-amber-500/5 to-orange-500/5 hover:bg-black/2 transition border-b border-amber-500/20">
+                <h3 class="text-xl font-semibold text-slate-900 flex items-center">
+                    <i class="bi bi-stars text-amber-500 me-2 glow-text-warning"></i>
                     <span id="prediction-summary-title">Tổng Hợp Dự Đoán</span>
-                    <span id="prediction-summary-count" class="ml-2 text-sm font-normal text-gray-500"></span>
+                    <span id="prediction-summary-count" class="ml-2 text-sm font-normal text-slate-500"></span>
                 </h3>
-                <i class="bi" :class="open ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+                <i class="bi text-slate-500" :class="open ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
             </div>
             <div x-show="open" x-transition class="accordion-content-highlight" :class="{ 'expanded': open }">
                 <div class="p-6">
@@ -162,15 +160,15 @@
             </div>
         </div>
 
-        <!-- Phần Số Loại Trừ & Số Đánh theo Tỷ Lệ Gãy -->
-        <div id="streak-exclusion-section" x-data="{ open: true }" class="bg-white rounded-lg shadow-md mb-8" style="display: none;">
-            <div @click="open = !open" class="flex justify-between items-center p-4 cursor-pointer bg-gradient-to-r from-teal-50 to-emerald-50 rounded-t-lg border-b border-teal-200">
-                <h3 class="text-xl font-semibold text-gray-800 flex items-center">
-                    <i class="bi bi-bullseye text-teal-600 me-2"></i>
+        <!-- Exclusion & Bet numbers by Streak Drop-off -->
+        <div id="streak-exclusion-section" x-data="{ open: true }" class="glass-card mb-8 overflow-hidden" style="display: none;">
+            <div @click="open = !open" class="flex justify-between items-center p-4 cursor-pointer bg-gradient-to-r from-teal-500/5 to-emerald-500/5 hover:bg-black/2 transition border-b border-teal-500/20">
+                <h3 class="text-xl font-semibold text-slate-900 flex items-center">
+                    <i class="bi bi-bullseye text-teal-600 me-2 glow-text-success"></i>
                     <span id="streak-exclusion-title">Số Đánh & Loại Trừ (Streak Drop-off)</span>
-                    <span id="streak-exclusion-count" class="ml-2 text-sm font-normal text-gray-500"></span>
+                    <span id="streak-exclusion-count" class="ml-2 text-sm font-normal text-slate-500"></span>
                 </h3>
-                <i class="bi" :class="open ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+                <i class="bi text-slate-500" :class="open ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
             </div>
             <div x-show="open" x-transition class="accordion-content-highlight" :class="{ 'expanded': open }">
                 <div class="p-6">
@@ -179,19 +177,19 @@
             </div>
         </div>
 
-        <div x-data="{ open: true }" class="bg-white rounded-lg shadow-md">
-            <div @click="open = !open" class="flex justify-between items-center p-4 cursor-pointer">
-                <h3 class="text-xl font-semibold text-gray-800 flex items-center">
-                    <i class="bi bi-trophy-fill text-yellow-500 me-2"></i> Thống Kê Kỷ Lục
+        <!-- Quick Stats / Records -->
+        <div x-data="{ open: true }" class="glass-card overflow-hidden">
+            <div @click="open = !open" class="flex justify-between items-center p-4 cursor-pointer hover:bg-black/2 transition border-b border-black/5">
+                <h3 class="text-xl font-semibold text-slate-900 flex items-center">
+                    <i class="bi bi-trophy-fill text-yellow-600 me-2 glow-text-warning"></i> Thống Kê Kỷ Lục
                 </h3>
-                <i class="bi" :class="open ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+                <i class="bi text-slate-500" :class="open ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
             </div>
             <div x-show="open" x-transition class="accordion-content-highlight" :class="{ 'expanded': open }">
-                <div class="border-t border-gray-200">
-                    <div id="quick-stats-container" class="divide-y divide-gray-200">
+                <div>
+                    <div id="quick-stats-container" class="divide-y divide-black/5">
                         <div class="text-center p-8">
-                            <div role="status"
-                                class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] text-indigo-600 motion-reduce:animate-[spin_1.5s_linear_infinite]">
+                            <div role="status" class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] text-indigo-650 motion-reduce:animate-[spin_1.5s_linear_infinite]">
                             </div>
                         </div>
                     </div>
@@ -200,62 +198,55 @@
         </div>
     </div>
 
-    <!-- Modal Thông báo Phiên bản Mới -->
-    <div id="versionModal"
-        class="fixed inset-0 z-50 hidden bg-gray-900 bg-opacity-70 flex items-center justify-center p-4">
-        <div
-            class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden animate-[scale_0.3s_ease-out]">
+    <!-- Smart Version Modal -->
+    <div id="versionModal" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="glass-card max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden animate-[scale_0.3s_ease-out]">
             <!-- Header -->
-            <div
-                class="bg-gradient-to-r from-purple-700 to-indigo-800 p-5 flex justify-between items-center text-white">
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-5 flex justify-between items-center text-white border-b border-indigo-500/20">
                 <div>
                     <h2 class="text-2xl font-bold flex items-center gap-2">
-                        <i class="bi bi-rocket-takeoff-fill text-yellow-300"></i>
+                        <i class="bi bi-rocket-takeoff-fill text-yellow-350"></i>
                         Cập nhật Phiên bản v2.2
                     </h2>
-                    <p class="text-indigo-200 text-sm mt-1">Bản build: 08/03/2026 - Tối ưu hóa Toàn Diện</p>
+                    <p class="text-indigo-100 text-sm mt-1">Bản build: 08/03/2026 - Tối ưu hóa Toàn Diện</p>
                 </div>
-                <button id="closeVersionModalBtn"
-                    class="text-indigo-200 hover:text-white transition rounded-full p-1 bg-white/10 hover:bg-white/20">
+                <button id="closeVersionModalBtn" class="text-indigo-100 hover:text-white transition rounded-full p-1 bg-white/10 hover:bg-white/20">
                     <i class="bi bi-x-lg text-xl"></i>
                 </button>
             </div>
 
             <!-- Body -->
-            <div class="p-6 overflow-y-auto custom-scrollbar flex-1 text-gray-700 bg-gray-50">
+            <div class="p-6 overflow-y-auto custom-scrollbar flex-1 text-slate-700 bg-white/30">
                 <div class="mb-6">
-                    <p class="mb-3 text-lg">Hệ thống đã được cập nhật phiên bản lớn giúp <strong
-                            class="text-purple-700">Tốc độ truy xuất và Lọc số thông minh</strong> vượt trội hơn.</p>
+                    <p class="mb-3 text-lg">Hệ thống đã được cập nhật phiên bản lớn giúp <strong class="text-indigo-600">Tốc độ truy xuất và Lọc số thông minh</strong> vượt trội hơn.</p>
                 </div>
 
                 <div class="space-y-4">
-                    <div class="bg-white p-4 rounded-lg border border-indigo-100 shadow-sm relative overflow-hidden">
+                    <div class="glass-card p-4 border border-indigo-500/10 shadow-sm bg-indigo-50/20 relative overflow-hidden">
                         <h3 class="text-[15px] font-bold text-indigo-700 mb-1 flex items-center gap-2">
-                            <i class="bi bi-ui-radios-grid"></i> Cải thiệu siêu tốc Load Danh Sách (1500 cấu hình)
+                            <i class="bi bi-ui-radios-grid"></i> Cải thiện siêu tốc Load Danh Sách (1500 cấu hình)
                         </h3>
-                        <p
-                            class="text-[13px] border-l-2 border-indigo-200 pl-3 py-1 bg-indigo-50/50 rounded-r text-gray-600">
+                        <p class="text-[13px] border-l-2 border-indigo-500/30 pl-3 py-1 bg-indigo-50/10 rounded-r text-slate-600">
                             Loại bỏ tình trạng đơ/nặng trình duyệt khi nhấn vào hộp tìm kiếm "Loại thống kê". Hệ thống áp dụng <strong>Virtual Scroll Rendering</strong> giúp thao tác xổ xuống cũng như lọc gợi ý nhẹ tựa lông hồng.
                         </p>
                     </div>
 
-                    <div class="bg-white p-4 rounded-lg border border-red-100 shadow-sm relative overflow-hidden">
+                    <div class="glass-card p-4 border border-red-500/10 shadow-sm bg-red-50/20 relative overflow-hidden">
                         <h3 class="text-[15px] font-bold text-red-600 mb-1 flex items-center gap-2">
                             <i class="bi bi-eye-fill"></i> Hiển thị Popup Thông Minh hơn
                         </h3>
-                        <p class="text-[13px] border-l-2 border-red-200 pl-3 py-1 bg-red-50/50 rounded-r text-gray-600">
+                        <p class="text-[13px] border-l-2 border-red-500/30 pl-3 py-1 bg-red-50/10 rounded-r text-slate-600">
                             Popup các dãy số bây giờ đã phân tích sâu ngữ cảnh:<br/>
                             1. <strong>Chuỗi đang diễn ra</strong>: Chỉ hiển thị các bộ số có <strong>khả năng xuất hiện</strong> tiếp theo. Giúp thu gọn phán đoán.<br/>
                             2. <strong>Lịch sử Thống Kê</strong>: Liệt kê minh bạch <strong>toàn bộ</strong> mảng số cấu thành định dạng của chuỗi. Cực kỳ dễ hiểu!
                         </p>
                     </div>
 
-                    <div class="bg-white p-4 rounded-lg border border-purple-100 shadow-sm relative overflow-hidden">
+                    <div class="glass-card p-4 border border-purple-500/10 shadow-sm bg-purple-50/20 relative overflow-hidden">
                         <h3 class="text-[15px] font-bold text-purple-700 mb-1 flex items-center gap-2">
                             <i class="bi bi-funnel-fill"></i> Chuẩn Hoá Bộ Lọc Tiến Lùi Vô Hình
                         </h3>
-                        <p
-                            class="text-[13px] border-l-2 border-purple-200 pl-3 py-1 bg-purple-50/50 rounded-r text-gray-600">
+                        <p class="text-[13px] border-l-2 border-purple-500/30 pl-3 py-1 bg-purple-50/10 rounded-r text-slate-600">
                             Khắc phục hoàn toàn lỗi lọt số rác. Với hơn <strong>142 tổ hợp phức tạp</strong> (Đầu Nhỏ Đít Lớn, Tổng Mới...), thuật toán lọc Tiến Lùi/So Le giờ đây tự động quét cả 2 lớp base logic giúp phán đoán đúng 100% con số thoả mãn.
                         </p>
                     </div>
@@ -263,14 +254,14 @@
             </div>
 
             <!-- Footer -->
-            <div class="p-4 bg-white border-t border-gray-100 flex justify-end">
-                <button id="understandVersionBtn"
-                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg font-semibold shadow-md hover:shadow-lg transition flex items-center gap-2">
+            <div class="p-4 bg-slate-50 border-t border-black/5 flex justify-end">
+                <button id="understandVersionBtn" class="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-6 py-2.5 rounded-lg font-semibold shadow-md hover:shadow-lg transition flex items-center gap-2">
                     <i class="bi bi-check2-circle"></i> Xác nhận & Đóng
                 </button>
             </div>
-        </div></div>
+        </div>
     </div>
+
     <style>
         @keyframes scale {
             0% {
@@ -282,19 +273,6 @@
                 opacity: 1;
                 transform: scale(1);
             }
-        }
-
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background-color: #e5e7eb;
-            border-radius: 20px;
         }
     </style>
 

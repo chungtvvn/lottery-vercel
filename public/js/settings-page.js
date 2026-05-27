@@ -103,33 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Clear prediction history
-    document.getElementById('clear-history').addEventListener('click', async () => {
-        if (!confirm('⚠️ XÁC NHẬN XÓA LỊCH SỬ\n\nHành động này sẽ:\n• Xóa toàn bộ lịch sử dự đoán\n• Chỉ giữ lại dự đoán mới nhất\n• Reset mức cược về mặc định\n\nBạn có chắc chắn muốn tiếp tục?')) {
-            return;
-        }
 
-        try {
-            const defaultBetAmount = AppConfig.current.INITIAL_BET_AMOUNT || 10;
-
-            const response = await fetch('/api/analysis/history/clear', {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ defaultBetAmount })
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                showNotification(`✓ ${result.message}`, 'success');
-            } else {
-                showNotification(`✗ ${result.error || 'Lỗi không xác định'}`, 'error');
-            }
-        } catch (error) {
-            console.error('Lỗi khi xóa lịch sử:', error);
-            showNotification('✗ Lỗi kết nối server', 'error');
-        }
-    });
 
     // Update display when checkboxes change
     ['use-min-gap', 'show-backgrounds', 'highlight-gap'].forEach(id => {

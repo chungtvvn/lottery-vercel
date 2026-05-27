@@ -4,14 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulation loại trừ</title>
+    <title>Mô Phỏng Loại Trừ | Lottery Stats</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/styles.css">
     <style>
         .spinner {
             width: 18px;
             height: 18px;
-            border: 3px solid rgba(255, 255, 255, 0.45);
-            border-left-color: #fff;
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #4f46e5;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
@@ -34,43 +36,62 @@
     </style>
 </head>
 
-<body class="antialiased bg-slate-50 text-slate-900">
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-20">
-        <div class="mx-auto max-w-7xl px-4">
-            <div class="flex items-center justify-between py-4">
-                <a href="/" class="text-xl font-bold tracking-tight text-slate-900">XSMB Stats</a>
-                <nav class="flex gap-2 overflow-x-auto">
-                    <a href="/statistics"
-                        class="px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:bg-slate-100">Thống kê</a>
-                    <a href="/chain-frequency"
-                        class="px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:bg-slate-100">Chọn chuỗi loại</a>
-                    <a href="/scoring"
-                        class="px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:bg-slate-100">Tính điểm</a>
-                    <a href="/simulation"
-                        class="px-3 py-2 rounded-md text-sm font-semibold bg-blue-50 text-blue-700">Mô phỏng</a>
-                    <a href="/settings"
-                        class="px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:bg-slate-100">Cài đặt</a>
+<body class="antialiased text-slate-800">
+    <!-- Header / Navigation -->
+    <header class="nav-glass-blur sticky top-0 z-50 mb-8 w-full">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="flex h-16 items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                        <i class="bi bi-graph-up text-white text-lg"></i>
+                    </div>
+                    <a href="/" class="text-xl font-bold tracking-tight text-slate-900 hover:opacity-90 transition">XSMB <span class="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent font-extrabold">Stats</span></a>
+                </div>
+                <nav class="hidden md:flex space-x-1">
+                    <a href="/statistics" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Thống kê</a>
+                    <a href="/chain-frequency" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Chọn chuỗi loại</a>
+                    <a href="/simulation" class="nav-link-custom px-3 py-2 text-sm font-semibold whitespace-nowrap active">Mô phỏng</a>
+                    <a href="/scoring" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Tính điểm</a>
+                    <a href="/settings" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">⚙️</a>
                 </nav>
+                <!-- Mobile Navigation Bar -->
+                <div class="flex md:hidden">
+                    <nav class="flex space-x-1 overflow-x-auto max-w-[280px] sm:max-w-[400px] py-1 custom-scrollbar">
+                        <a href="/statistics" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Thống kê</a>
+                        <a href="/chain-frequency" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Chuỗi loại</a>
+                        <a href="/simulation" class="nav-link-custom px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap active">Mô phỏng</a>
+                        <a href="/scoring" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Tính điểm</a>
+                        <a href="/settings" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">⚙️</a>
+                    </nav>
+                </div>
             </div>
         </div>
     </header>
 
-    <main class="mx-auto max-w-7xl px-4 py-8">
+    <main class="mx-auto max-w-7xl px-4 pb-12">
         <section class="mb-6">
             <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div>
-                    <p class="text-sm font-semibold uppercase tracking-wide text-blue-700">Backtest phương pháp loại trừ</p>
-                    <h1 class="mt-1 text-3xl font-bold tracking-tight">Simulation theo Tổng hợp dự đoán</h1>
-                    <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+                    <p class="text-sm font-semibold uppercase tracking-wide text-indigo-650 glow-text-primary">Backtest phương pháp loại trừ</p>
+                    <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-900">Simulation theo Tổng hợp dự đoán</h1>
+                    <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-650">
                         Backtest dùng mốc lịch sử hiện tại để tính toàn bộ kỷ lục chuỗi, rồi áp vào chuỗi đang diễn ra và chuỗi tiềm năng của từng ngày quá khứ.
                         Hai phương án sẽ ôm khoảng 60 số theo thứ tự rủi ro hoặc HT/Target, 40 số còn lại dùng để đánh.
+                        Có thể chạy cả hai chiều đánh + ôm, hoặc chỉ tính riêng đánh / riêng ôm để so sánh lãi lỗ.
                     </p>
                 </div>
-                <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+                <div class="flex flex-col sm:flex-row gap-3 sm:items-end bg-white/50 p-4 rounded-xl border border-slate-200/50 backdrop-blur">
                     <label class="block">
-                        <span class="mb-1 block text-sm font-medium text-slate-700">Số ngày</span>
-                        <select id="simulationDays"
-                            class="h-10 w-40 rounded-md border border-slate-300 bg-white px-3 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
+                        <span class="mb-1 block text-sm font-medium text-slate-600">Chế độ</span>
+                        <select id="playMode" class="glass-input h-10 w-44 text-sm font-medium">
+                            <option value="both" selected>Đánh + Ôm</option>
+                            <option value="bet">Chỉ đánh</option>
+                            <option value="hold">Chỉ ôm</option>
+                        </select>
+                    </label>
+                    <label class="block">
+                        <span class="mb-1 block text-sm font-medium text-slate-600">Số ngày</span>
+                        <select id="simulationDays" class="glass-input h-10 w-40 text-sm font-medium">
                             <option value="7" selected>7 ngày</option>
                             <option value="14">14 ngày</option>
                             <option value="30">30 ngày</option>
@@ -80,8 +101,7 @@
                             <option value="365">365 ngày</option>
                         </select>
                     </label>
-                    <button id="runSimulation"
-                        class="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-blue-700 px-5 text-sm font-semibold text-white shadow-sm hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-200">
+                    <button id="runSimulation" class="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 px-5 text-sm font-semibold text-white shadow hover:shadow-indigo-500/10 transition-all duration-300">
                         <span id="runSpinner" class="spinner hidden"></span>
                         <span id="runLabel">Chạy simulation</span>
                     </button>
@@ -89,76 +109,71 @@
             </div>
         </section>
 
-        <section class="mb-6 grid gap-3 md:grid-cols-4" id="configStrip">
-            <div class="rounded-md border border-slate-200 bg-white p-4">
+        <!-- Stats strip cards -->
+        <section class="mb-6 grid gap-4 md:grid-cols-4" id="configStrip">
+            <div class="glass-card p-4 border-l-4 border-indigo-500">
                 <div class="text-xs font-semibold uppercase text-slate-500">Đánh</div>
-                <div class="mt-1 text-2xl font-bold">0.8x</div>
-                <div class="text-xs text-slate-500">chi phí mỗi đơn vị, trúng ăn 70</div>
+                <div class="mt-1 text-2xl font-bold text-slate-900 glow-text-primary">0.8x</div>
+                <div class="text-[10px] text-slate-500">chi phí mỗi đơn vị, trúng ăn 70</div>
             </div>
-            <div class="rounded-md border border-slate-200 bg-white p-4">
+            <div class="glass-card p-4 border-l-4 border-purple-500">
                 <div class="text-xs font-semibold uppercase text-slate-500">Ôm</div>
-                <div class="mt-1 text-2xl font-bold">0.705x</div>
-                <div class="text-xs text-slate-500">nhận nếu số ôm không về, về thì mất 70</div>
+                <div class="mt-1 text-2xl font-bold text-slate-900 glow-text-primary">0.705x</div>
+                <div class="text-[10px] text-slate-500">nhận nếu số ôm không về, về thì mất 70</div>
             </div>
-            <div class="rounded-md border border-slate-200 bg-white p-4">
+            <div class="glass-card p-4 border-l-4 border-amber-500">
                 <div class="text-xs font-semibold uppercase text-slate-500">Bỏ qua nếu</div>
-                <div class="mt-1 text-2xl font-bold">&lt; 30</div>
-                <div class="text-xs text-slate-500">số loại trừ</div>
+                <div class="mt-1 text-2xl font-bold text-amber-600 glow-text-warning">&lt; 30</div>
+                <div class="text-[10px] text-slate-500">số loại trừ</div>
             </div>
-            <div class="rounded-md border border-slate-200 bg-white p-4">
+            <div class="glass-card p-4 border-l-4 border-emerald-500">
                 <div class="text-xs font-semibold uppercase text-slate-500">Phương pháp</div>
-                <div class="mt-1 text-2xl font-bold">2</div>
-                <div class="text-xs text-slate-500">Ôm 60 theo rủi ro và HT/Target</div>
+                <div class="mt-1 text-2xl font-bold text-emerald-600 glow-text-success">2</div>
+                <div class="text-[10px] text-slate-500">Ôm 60 theo rủi ro và HT/Target</div>
             </div>
         </section>
 
-        <section class="mb-6 hidden rounded-md border border-slate-200 bg-white" id="customConfig">
-            <div class="border-b border-slate-200 px-4 py-3">
-                <h2 class="text-lg font-bold">Custom loại trừ để backtest</h2>
-                <p class="mt-1 text-sm text-slate-500">
-                    Mặc định giống “Ưu tiên loại >=85”: ưu tiên min 85 và chỉ lấy chuỗi tiềm năng có tần suất hình thành <= 1/năm.
+        <!-- Advanced Custom Configurations -->
+        <section class="mb-6 hidden glass-card overflow-hidden" id="customConfig">
+            <div class="border-b border-slate-200 bg-slate-50/50 px-4 py-3">
+                <h2 class="text-lg font-bold text-slate-900">Custom loại trừ để backtest</h2>
+                <p class="mt-1 text-xs text-slate-500">
+                    Mặc định giống “Ưu tiên loại >=85”: ưu tiên min 85 và chỉ lấy chuỗi tiềm năng có tần suất hình thành &lt;= 1/năm.
                     Gợi ý test: target loại 70-80 để giảm số đánh; bật Edge dương để tránh chuỗi rộng nhưng rủi ro không hơn nền.
                     Có thể bật “Bỏ nhóm 3 cố định” để loại các dạng Đầu/Đít/Tổng/Hiệu dạng (a,b,c) khỏi toàn bộ phương pháp trong lần chạy.
                 </p>
             </div>
-            <div class="grid gap-3 p-4 md:grid-cols-4 xl:grid-cols-8">
+            <div class="grid gap-4 p-4 md:grid-cols-4 xl:grid-cols-8">
                 <label class="block">
                     <span class="mb-1 block text-xs font-semibold uppercase text-slate-500">Ưu tiên min</span>
-                    <input id="customMinPriority" type="number" min="0" max="100" step="1" value="85"
-                        class="h-10 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
+                    <input id="customMinPriority" type="number" min="0" max="100" step="1" value="85" class="glass-input h-10 w-full text-sm">
                 </label>
                 <label class="block">
                     <span class="mb-1 block text-xs font-semibold uppercase text-slate-500">Dropoff min %</span>
-                    <input id="customMinDropOff" type="number" min="0" max="100" step="1" value="0"
-                        class="h-10 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
-                    <span class="mt-1 block text-[11px] text-slate-400">0 = không giới hạn</span>
+                    <input id="customMinDropOff" type="number" min="0" max="100" step="1" value="0" class="glass-input h-10 w-full text-sm">
+                    <span class="mt-1 block text-[10px] text-slate-400">0 = không giới hạn</span>
                 </label>
                 <label class="block">
                     <span class="mb-1 block text-xs font-semibold uppercase text-slate-500">Tần suất max/năm</span>
-                    <input id="customMaxFrequency" type="number" min="0" max="365" step="0.1" value="0"
-                        class="h-10 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
-                    <span class="mt-1 block text-[11px] text-slate-400">0 = không giới hạn</span>
+                    <input id="customMaxFrequency" type="number" min="0" max="365" step="0.1" value="0" class="glass-input h-10 w-full text-sm">
+                    <span class="mt-1 block text-[10px] text-slate-400">0 = không giới hạn</span>
                 </label>
                 <label class="block">
                     <span class="mb-1 block text-xs font-semibold uppercase text-slate-500">Tiềm năng max/năm</span>
-                    <input id="customMaxPotentialFrequency" type="number" min="0" max="365" step="0.1" value="1"
-                        class="h-10 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
-                    <span class="mt-1 block text-[11px] text-slate-400">0 = không giới hạn</span>
+                    <input id="customMaxPotentialFrequency" type="number" min="0" max="365" step="0.1" value="1" class="glass-input h-10 w-full text-sm">
+                    <span class="mt-1 block text-[10px] text-slate-400">0 = không giới hạn</span>
                 </label>
                 <label class="block">
                     <span class="mb-1 block text-xs font-semibold uppercase text-slate-500">Lower min %</span>
-                    <input id="customMinLower" type="number" min="0" max="100" step="1" value="0"
-                        class="h-10 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
+                    <input id="customMinLower" type="number" min="0" max="100" step="1" value="0" class="glass-input h-10 w-full text-sm">
                 </label>
                 <label class="block">
                     <span class="mb-1 block text-xs font-semibold uppercase text-slate-500">Mẫu min</span>
-                    <input id="customMinSample" type="number" min="0" max="100000" step="1" value="0"
-                        class="h-10 w-full rounded-md border border-slate-300 px-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
+                    <input id="customMinSample" type="number" min="0" max="100000" step="1" value="0" class="glass-input h-10 w-full text-sm">
                 </label>
                 <label class="block">
                     <span class="mb-1 block text-xs font-semibold uppercase text-slate-500">Target loại</span>
-                    <select id="customTargetExcluded"
-                        class="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
+                    <select id="customTargetExcluded" class="glass-input h-10 w-full text-sm">
                         <option value="0" selected>Không giới hạn</option>
                         <option value="50">50 số</option>
                         <option value="60">60 số</option>
@@ -167,67 +182,67 @@
                         <option value="90">90 số</option>
                     </select>
                 </label>
-                <div class="flex flex-col justify-end gap-2">
-                    <label class="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
-                        <input id="customRequireEdge" type="checkbox"
-                            class="h-4 w-4 rounded border-slate-300 text-blue-700 focus:ring-blue-200">
+                <div class="flex flex-col justify-end gap-2 bg-slate-50/50 p-2.5 rounded-xl border border-slate-200">
+                    <label class="inline-flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+                        <input id="customRequireEdge" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 bg-white">
                         Edge dương
                     </label>
-                    <label class="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
-                        <input id="customIncludePotential" type="checkbox" checked
-                            class="h-4 w-4 rounded border-slate-300 text-blue-700 focus:ring-blue-200">
+                    <label class="inline-flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+                        <input id="customIncludePotential" type="checkbox" checked class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 bg-white">
                         Chuỗi tiềm năng
                     </label>
-                    <label class="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
-                        <input id="customIncludeHighFrequency" type="checkbox" checked
-                            class="h-4 w-4 rounded border-slate-300 text-blue-700 focus:ring-blue-200">
+                    <label class="inline-flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+                        <input id="customIncludeHighFrequency" type="checkbox" checked class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 bg-white">
                         Tần suất lớn
                     </label>
-                    <label class="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
-                        <input id="customExcludeFixedThreeValueGroups" type="checkbox"
-                            class="h-4 w-4 rounded border-slate-300 text-blue-700 focus:ring-blue-200">
+                    <label class="inline-flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+                        <input id="customExcludeFixedThreeValueGroups" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 bg-white">
                         Bỏ nhóm 3 cố định
                     </label>
                 </div>
             </div>
         </section>
 
-        <div id="errorBox" class="mb-6 hidden rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700"></div>
+        <div id="errorBox" class="mb-6 hidden rounded-xl border border-red-500/10 bg-red-50 p-4 text-sm text-red-650"></div>
 
-        <section id="summarySection" class="mb-6 hidden">
+        <!-- Summary Section -->
+        <section id="summarySection" class="mb-6 hidden animate-fade-in">
             <div class="mb-3 flex items-center justify-between">
-                <h2 class="text-lg font-bold">Tổng kết</h2>
-                <div id="generatedInfo" class="text-sm text-slate-500"></div>
+                <h2 class="text-lg font-bold text-slate-900">Tổng kết</h2>
+                <div id="generatedInfo" class="text-xs text-slate-500"></div>
             </div>
             <div id="summaryCards" class="grid gap-4 lg:grid-cols-2"></div>
         </section>
 
-        <section id="nextPredictionSection" class="mb-6 hidden rounded-md border border-slate-200 bg-white">
-            <div class="border-b border-slate-200 px-4 py-3">
-                <h2 class="text-lg font-bold">Số đánh cho ngày kế tiếp</h2>
-                <p id="nextPredictionInfo" class="mt-1 text-sm text-slate-500"></p>
+        <!-- Next Prediction Section -->
+        <section id="nextPredictionSection" class="mb-6 hidden glass-card overflow-hidden border-t-2 border-indigo-500/50">
+            <div class="border-b border-slate-100 bg-indigo-500/5 px-4 py-3">
+                <h2 class="text-lg font-bold text-indigo-650">Số đánh cho ngày kế tiếp</h2>
+                <p id="nextPredictionInfo" class="mt-1 text-xs text-slate-500"></p>
             </div>
             <div id="nextPredictionContent" class="grid gap-4 p-4 lg:grid-cols-2"></div>
         </section>
 
-        <section id="reliabilitySection" class="mb-6 hidden rounded-md border border-slate-200 bg-white">
-            <div class="border-b border-slate-200 px-4 py-3">
-                <h2 class="text-lg font-bold">Độ tin cậy chuỗi theo toàn bộ lịch sử</h2>
-                <p class="mt-1 text-sm text-slate-500">
+        <!-- Reliability stats -->
+        <section id="reliabilitySection" class="mb-6 hidden glass-card overflow-hidden">
+            <div class="border-b border-slate-100 bg-slate-50/50 px-4 py-3">
+                <h2 class="text-lg font-bold text-slate-900">Độ tin cậy chuỗi theo toàn bộ lịch sử</h2>
+                <p class="mt-1 text-xs text-slate-500">
                     Đo dropoff, cỡ mẫu, Wilson lower bound, thời gian diễn ra trung bình và khoảng cách tới hiện tại.
                 </p>
             </div>
-            <div id="reliabilityContent" class="p-4"></div>
+            <div id="reliabilityContent" class="p-4 overflow-x-auto"></div>
         </section>
 
-        <section id="detailsSection" class="grid hidden gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
-            <div class="rounded-md border border-slate-200 bg-white">
-                <div class="border-b border-slate-200 px-4 py-3">
-                    <h2 class="text-lg font-bold">Chi tiết từng ngày</h2>
+        <!-- Daily Details & Details View side-by-side -->
+        <section id="detailsSection" class="grid hidden gap-6 xl:grid-cols-[minmax(0,1fr)_420px] animate-fade-in">
+            <div class="glass-card overflow-hidden">
+                <div class="border-b border-slate-100 bg-slate-50/50 px-4 py-3">
+                    <h2 class="text-lg font-bold text-slate-900">Chi tiết từng ngày</h2>
                 </div>
-                <div class="table-wrap overflow-auto">
-                    <table class="min-w-full divide-y divide-slate-200 text-sm">
-                        <thead class="sticky top-0 bg-slate-100 text-left text-xs font-semibold uppercase text-slate-600">
+                <div class="table-wrap overflow-auto custom-scrollbar">
+                    <table class="min-w-full divide-y divide-slate-150 text-sm">
+                        <thead class="sticky top-0 bg-slate-50 text-left text-xs font-semibold uppercase text-slate-500 border-b border-slate-200 z-10">
                             <tr>
                                 <th class="px-4 py-3">Ngày dự đoán</th>
                                 <th class="px-4 py-3 text-center">ĐB</th>
@@ -235,16 +250,16 @@
                                 <th class="px-4 py-3">Ôm 60 theo HT/Target</th>
                             </tr>
                         </thead>
-                        <tbody id="detailsTable" class="divide-y divide-slate-200 bg-white"></tbody>
+                        <tbody id="detailsTable" class="divide-y divide-slate-100 bg-white/40"></tbody>
                     </table>
                 </div>
             </div>
 
-            <aside class="rounded-md border border-slate-200 bg-white">
-                <div class="border-b border-slate-200 px-4 py-3">
-                    <h2 class="text-lg font-bold">Dự đoán được chọn</h2>
+            <aside class="glass-card overflow-hidden h-fit sticky top-24">
+                <div class="border-b border-slate-100 bg-slate-50/50 px-4 py-3">
+                    <h2 class="text-lg font-bold text-slate-900">Dự đoán được chọn</h2>
                 </div>
-                <div id="methodDetail" class="p-4 text-sm text-slate-600">
+                <div id="methodDetail" class="p-4 text-sm text-slate-500">
                     Chọn một ô kết quả để xem chuỗi và các số loại trừ.
                 </div>
             </aside>

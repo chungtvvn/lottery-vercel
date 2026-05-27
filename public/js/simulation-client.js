@@ -27,8 +27,54 @@
             .filter(Boolean);
     }
 
+    const CATEGORY_LABELS = {
+        tong_tt_chan: 'Tổng TT - Tổng Chẵn',
+        tong_tt_le: 'Tổng TT - Tổng Lẻ',
+        tong_moi_chan: 'Tổng Mới - Tổng Chẵn',
+        tong_moi_le: 'Tổng Mới - Tổng Lẻ',
+        hieu_chan: 'Hiệu Chẵn',
+        hieu_le: 'Hiệu Lẻ',
+        tong_tt_chan_chan: 'Tổng TT - Dạng Chẵn-Chẵn',
+        tong_tt_chan_le: 'Tổng TT - Dạng Chẵn-Lẻ',
+        tong_tt_le_chan: 'Tổng TT - Dạng Lẻ-Chẵn',
+        tong_tt_le_le: 'Tổng TT - Dạng Lẻ-Lẻ',
+        tong_moi_chan_chan: 'Tổng Mới - Dạng Chẵn-Chẵn',
+        tong_moi_chan_le: 'Tổng Mới - Dạng Chẵn-Lẻ',
+        tong_moi_le_chan: 'Tổng Mới - Dạng Lẻ-Chẵn',
+        tong_moi_le_le: 'Tổng Mới - Dạng Lẻ-Lẻ',
+        dau_chan_lon_hon_4: 'Đầu chẵn > 4',
+        dau_chan_nho_hon_4: 'Đầu chẵn < 4',
+        dit_chan_lon_hon_4: 'Đít chẵn > 4',
+        dit_chan_nho_hon_4: 'Đít chẵn < 4',
+        dau_le_lon_hon_5: 'Đầu lẻ > 5',
+        dau_le_nho_hon_5: 'Đầu lẻ < 5',
+        dit_le_lon_hon_5: 'Đít lẻ > 5',
+        dit_le_nho_hon_5: 'Đít lẻ < 5'
+    };
+
+    function displayTitle(title, key) {
+        const raw = String(title || key || '');
+        const category = String(key || '').split(':')[0];
+        if (CATEGORY_LABELS[category]) {
+            return raw.includes(' - ')
+                ? `${CATEGORY_LABELS[category]} - ${raw.split(' - ').slice(1).join(' - ')}`
+                : CATEGORY_LABELS[category];
+        }
+        return raw.replace(/^dong_step_(\d+)_(\d+)\b/i, (_, step, start) => {
+            const paddedStart = String(start).padStart(2, '0');
+            return `Đồng cách ${step} từ ${paddedStart}`;
+        });
+    }
+
+    function playModeLabel(mode) {
+        if (mode === 'bet') return 'Chỉ đánh';
+        if (mode === 'hold') return 'Chỉ ôm';
+        return 'Đánh + Ôm';
+    }
+
     function getCustomQueryParams() {
         const params = {
+            playMode: el('playMode')?.value || 'both',
             customMinPriority: el('customMinPriority')?.value,
             customMinDropOffPercent: el('customMinDropOff')?.value,
             customMaxFrequencyPerYear: el('customMaxFrequency')?.value,
@@ -157,19 +203,25 @@
             .map(method => renderSummaryCard(method, result.summary[method.id]))
             .join('');
         if (generated) {
-            generated.textContent = `${result.config.effectiveDays} ngày, đơn vị ${result.config.moneyUnit}`;
+            generated.textContent = `${result.config.effectiveDays} ngày, ${playModeLabel(result.config.playMode)}, đơn vị ${result.config.moneyUnit}`;
         }
         section.classList.remove('hidden');
     }
 
     function renderNextMethodCard(methodMeta, method) {
-        const numbersHtml = method.betNumbers && method.betNumbers.length > 0
-            ? method.betNumbers.map(num => `
-                <span class="rounded border border-emerald-200 bg-emerald-50 px-2 py-1 text-center font-mono text-xs font-semibold text-emerald-700">
+        const mode = method.playMode || 'both';
+        const primaryNumbers = mode === 'hold' ? method.excluded : method.betNumbers;
+        const primaryLabel = mode === 'hold' ? 'Số sẽ ôm' : 'Số sẽ đánh';
+        const numberClass = mode === 'hold'
+            ? 'border-red-200 bg-red-50 text-red-700'
+            : 'border-emerald-200 bg-emerald-50 text-emerald-700';
+        const numbersHtml = primaryNumbers && primaryNumbers.length > 0
+            ? primaryNumbers.map(num => `
+                <span class="rounded border px-2 py-1 text-center font-mono text-xs font-semibold ${numberClass}">
                     ${String(num).padStart(2, '0')}
                 </span>
             `).join('')
-            : '<span class="text-sm text-slate-500">Không có số đánh.</span>';
+            : '<span class="text-sm text-slate-500">Không có số.</span>';
 
         return `
             <article class="rounded-md border border-slate-200 bg-white p-4">
@@ -179,17 +231,17 @@
                         <p class="mt-1 text-xs leading-5 text-slate-500">${method.description || methodDescription(method.id)}</p>
                     </div>
                     <div class="whitespace-nowrap rounded-md ${method.skipped ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'} px-2 py-1 text-xs font-bold">
-                        ${method.skipped ? 'Bỏ qua' : `${method.betCount} số đánh`}
+                        ${method.skipped ? 'Bỏ qua' : playModeLabel(mode)}
                     </div>
                 </div>
                 <div class="mt-3 grid grid-cols-3 gap-2 text-xs text-slate-600">
                     <div class="rounded-md bg-slate-50 px-3 py-2">Loại: <b>${method.excludedCount}</b></div>
                     <div class="rounded-md bg-slate-50 px-3 py-2">Chuỗi: <b>${method.selectedStreakCount}</b></div>
-                    <div class="rounded-md bg-slate-50 px-3 py-2">Ôm: <b>${method.excludedCount}</b></div>
+                    <div class="rounded-md bg-slate-50 px-3 py-2">Ôm: <b>${method.holdCount ?? method.excludedCount}</b></div>
                 </div>
                 ${method.skipReason ? `<div class="mt-3 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-700">${method.skipReason}</div>` : ''}
                 <div class="mt-4">
-                    <div class="mb-2 text-xs font-bold uppercase text-slate-500">Số sẽ đánh</div>
+                    <div class="mb-2 text-xs font-bold uppercase text-slate-500">${primaryLabel}</div>
                     <div class="number-grid">${numbersHtml}</div>
                 </div>
             </article>
@@ -230,7 +282,7 @@
         const currentRows = (data.currentCandidates || []).slice(0, 24).map(item => `
             <tr class="border-t border-slate-100">
                 <td class="px-3 py-2">
-                    <div class="font-semibold text-slate-900">${item.title || item.key}</div>
+                    <div class="font-semibold text-slate-900">${displayTitle(item.title, item.key)}</div>
                     <div class="text-xs text-slate-500">${item.isPotential ? 'Sắp hình thành' : 'Đang diễn ra'} · ${item.numbersCount} số</div>
                 </td>
                 <td class="px-3 py-2 text-right font-semibold">
@@ -253,7 +305,7 @@
 
         const weakRows = (data.highDropLowTrust || []).slice(0, 8).map(item => `
             <div class="rounded-md border border-red-100 bg-red-50 p-3">
-                <div class="font-semibold text-red-900">${item.title || item.key}</div>
+                <div class="font-semibold text-red-900">${displayTitle(item.title, item.key)}</div>
                 <div class="mt-1 text-xs text-red-700">
                     Dropoff ${formatPercent(item.bestPoint.dropOffRate)} · tin cậy ${item.bestPoint.reliabilityScore}
                     · mẫu ${item.bestPoint.reached} · cách hiện tại ${formatNumberValue(item.daysSinceLatestEnd, 'd')}
@@ -323,7 +375,7 @@
                     <span class="text-xs font-semibold ${profitClass}">${formatMoney(method.profit)}</span>
                 </div>
                 <div class="mt-2 grid grid-cols-3 gap-2 text-xs">
-                    <span>Ôm: <b>${method.excludedCount}</b></span>
+                    <span>Ôm: <b>${method.holdCount ?? method.excludedCount}</b></span>
                     <span>Đánh: <b>${method.betCount}</b></span>
                     <span>Chuỗi: <b>${method.selectedStreakCount}</b></span>
                 </div>
@@ -398,7 +450,7 @@
         const streakRows = method.selectedStreaks.map(item => `
             <div class="rounded-md border border-slate-200 p-3">
                 <div class="flex items-start justify-between gap-2">
-                    <div class="font-semibold text-slate-900">${item.title || item.key}</div>
+                    <div class="font-semibold text-slate-900">${displayTitle(item.title, item.key)}</div>
                     <div class="whitespace-nowrap text-sm font-bold text-red-700">
                         ${formatPercent(item.dropOffRate)}
                     </div>
@@ -442,7 +494,7 @@
             <div class="mb-4 grid grid-cols-2 gap-2 text-center text-xs md:grid-cols-5">
                 <div class="rounded-md bg-slate-50 p-2">
                     <div class="text-slate-500">Số ôm</div>
-                    <div class="text-lg font-bold">${method.excludedCount}</div>
+                    <div class="text-lg font-bold">${method.holdCount ?? method.excludedCount}</div>
                 </div>
                 <div class="rounded-md bg-slate-50 p-2">
                     <div class="text-slate-500">Unique chuỗi</div>

@@ -4,125 +4,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cài Đặt - XSMB Stats</title>
+    <title>Cài Đặt | Lottery Stats</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/styles.css">
 </head>
 
-<body class="bg-gray-50">
-    <div class="container mx-auto max-w-4xl px-4 py-8">
-        <header class="bg-white shadow-md sticky top-0 z-10 mb-8">
-            <div class="container mx-auto px-4">
-                <div class="flex justify-between items-center py-4">
-                    <a href="/" class="text-2xl font-bold text-gray-800">XSMB Stats</a>
-                    <nav class="flex space-x-2 sm:space-x-4 overflow-x-auto">
-                        <a href="/statistics"
-                            class="text-gray-600 hover:text-blue-500 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium whitespace-nowrap">Thống
-                            kê</a>
-                        <a href="/chain-frequency"
-                            class="text-gray-600 hover:text-blue-500 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium whitespace-nowrap">Chọn
-                            chuỗi loại</a>
-                        <a href="/scoring"
-                            class="text-gray-600 hover:text-blue-500 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium whitespace-nowrap">Tính
-                            điểm</a>
-                        <a href="/simulation"
-                            class="text-gray-600 hover:text-blue-500 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium whitespace-nowrap">Mô
-                            phỏng</a>
-                        <a href="/settings"
-                            class="bg-blue-100 text-blue-600 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-semibold whitespace-nowrap">⚙️</a>
+<body class="antialiased text-slate-800">
+    <!-- Header / Navigation -->
+    <header class="nav-glass-blur sticky top-0 z-50 mb-8 w-full">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="flex h-16 items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                        <i class="bi bi-graph-up text-white text-lg"></i>
+                    </div>
+                    <a href="/" class="text-xl font-bold tracking-tight text-slate-900 hover:opacity-90 transition">XSMB <span class="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent font-extrabold">Stats</span></a>
+                </div>
+                <nav class="hidden md:flex space-x-1">
+                    <a href="/statistics" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Thống kê</a>
+                    <a href="/chain-frequency" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Chọn chuỗi loại</a>
+                    <a href="/simulation" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Mô phỏng</a>
+                    <a href="/scoring" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Tính điểm</a>
+                    <a href="/settings" class="nav-link-custom px-3 py-2 text-sm font-semibold whitespace-nowrap active">⚙️</a>
+                </nav>
+                <!-- Mobile Navigation Bar -->
+                <div class="flex md:hidden">
+                    <nav class="flex space-x-1 overflow-x-auto max-w-[280px] sm:max-w-[400px] py-1 custom-scrollbar">
+                        <a href="/statistics" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Thống kê</a>
+                        <a href="/chain-frequency" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Chuỗi loại</a>
+                        <a href="/simulation" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Mô phỏng</a>
+                        <a href="/scoring" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Tính điểm</a>
+                        <a href="/settings" class="nav-link-custom px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap active">⚙️</a>
                     </nav>
                 </div>
             </div>
-        </header>
+        </div>
+    </header>
 
-        <div class="bg-white rounded-lg shadow-lg p-8">
-            <h1 class="text-3xl font-bold text-gray-800 mb-6">⚙️ Cài Đặt Thống Kê</h1>
+    <div class="container mx-auto max-w-4xl px-4 pb-12">
+        <div class="glass-card p-6 md:p-8">
+            <h1 class="text-3xl font-bold text-slate-900 mb-8 flex items-center gap-2 border-b border-slate-100 pb-4">
+                <i class="bi bi-gear text-indigo-650"></i> Cài Đặt Thống Kê
+            </h1>
 
             <div class="space-y-8">
                 <!-- Exclusion Strategy Setting (NEW) -->
-                <div
-                    class="border-b pb-6 bg-gradient-to-r from-blue-50 to-purple-50 -mx-8 px-8 py-6 -mt-6 rounded-t-lg">
-                    <h2 class="text-xl font-semibold text-gray-800 mb-4">🎯 Chiến Lược Loại Trừ</h2>
-                    <p class="text-sm text-gray-600 mb-4">
+                <div class="border-b border-slate-100 pb-6 bg-gradient-to-r from-indigo-500/5 to-purple-500/5 -mx-6 md:-mx-8 px-6 md:px-8 py-6 rounded-xl border-l-4 border-indigo-500">
+                    <h2 class="text-xl font-semibold text-slate-900 mb-2 flex items-center gap-2">
+                        <i class="bi bi-bullseye text-indigo-600"></i> Chiến Lược Loại Trừ
+                    </h2>
+                    <p class="text-sm text-slate-600 mb-4">
                         Sử dụng hệ thống <strong>Confidence Score</strong> để xếp hạng và lọc các pattern loại trừ.
                     </p>
 
                     <div class="space-y-4">
                         <div class="flex items-center gap-4">
-                            <label class="text-sm font-semibold text-gray-700 w-40">Bật Confidence Score:</label>
+                            <label class="text-sm font-semibold text-slate-700 w-44">Bật Confidence Score:</label>
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" id="use-confidence-score" class="sr-only peer">
-                                <div
-                                    class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
-                                </div>
+                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-350 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                             </label>
                         </div>
 
                         <div class="flex items-center gap-4">
-                            <label class="text-sm font-semibold text-gray-700 w-40">Chiến lược:</label>
-                            <select id="exclusion-strategy"
-                                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-white">
+                            <label class="text-sm font-semibold text-slate-700 w-44">Chiến lược:</label>
+                            <select id="exclusion-strategy" class="glass-input flex-1 px-4 py-2 text-sm">
                                 <option value="CONSERVATIVE">🔵 Conservative (Max 35 số, ≥60% confidence)</option>
                                 <option value="BALANCED">🟢 Balanced (Max 50 số, ≥40% confidence)</option>
                                 <option value="AGGRESSIVE">🔴 Aggressive (Max 100 số, ≥20% confidence)</option>
                             </select>
                         </div>
 
-                        <div class="mt-4 p-4 bg-white rounded-lg border border-gray-200">
-                            <h3 class="font-semibold text-gray-700 mb-2">Giải thích các chiến lược:</h3>
-                            <ul class="text-sm text-gray-600 space-y-2">
-                                <li><strong>🔵 Conservative:</strong> Ít số loại trừ, chỉ lấy pattern có độ tin cậy cao
-                                    nhất. Phù hợp khi muốn đánh ít số, mỗi số nhiều tiền.</li>
-                                <li><strong>🟢 Balanced (Khuyến nghị):</strong> Cân bằng giữa số lượng và độ tin cậy.
-                                    Phù hợp với đa số người chơi.</li>
-                                <li><strong>🔴 Aggressive:</strong> Nhiều số loại trừ, bao gồm cả pattern có độ tin cậy
-                                    thấp. Phù hợp khi muốn loại nhiều số.</li>
+                        <div class="mt-4 p-4 bg-white/50 rounded-xl border border-slate-200">
+                            <h3 class="font-semibold text-slate-800 mb-2 text-sm">Giải thích các chiến lược:</h3>
+                            <ul class="text-xs text-slate-600 space-y-2">
+                                <li>• <strong>🔵 Conservative:</strong> Ít số loại trừ, chỉ lấy các pattern có độ tin cậy cao nhất. Phù hợp khi muốn đánh ít số, đầu tư thông minh.</li>
+                                <li>• <strong>🟢 Balanced (Khuyến nghị):</strong> Cân bằng tối ưu giữa số lượng loại trừ và độ tin cậy.</li>
+                                <li>• <strong>🔴 Aggressive:</strong> Loại tối đa số lượng số có thể, bao gồm cả pattern có độ tin cậy vừa phải.</li>
                             </ul>
                         </div>
                     </div>
                 </div>
 
                 <!-- Threshold Setting -->
-                <div class="border-b pb-6">
-                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Ngưỡng Gap</h2>
-                    <p class="text-sm text-gray-600 mb-4">
+                <div class="border-b border-slate-100 pb-6">
+                    <h2 class="text-xl font-semibold text-slate-900 mb-2">Ngưỡng Gap</h2>
+                    <p class="text-sm text-slate-600 mb-4">
                         Xác định ngưỡng để phân loại xác suất thấp. Pattern được coi là có xác suất thấp nếu:
-                        <code class="bg-gray-100 px-2 py-1 rounded">Cách lần cuối &lt; X% × TB giữa các chuỗi</code>
+                        <code class="bg-slate-100 px-2 py-1 rounded text-indigo-750">Cách lần cuối &lt; X% × TB giữa các chuỗi</code>
                     </p>
 
                     <div class="flex items-center gap-4">
-                        <label class="text-sm font-semibold text-gray-700 w-32">Ngưỡng:</label>
-                        <input type="range" id="gap-threshold" min="5" max="100" step="5"
-                            class="flex-1 h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer">
-                        <span id="gap-threshold-value" class="text-2xl font-bold text-blue-600 w-20 text-right"></span>
+                        <label class="text-sm font-semibold text-slate-700 w-32">Ngưỡng:</label>
+                        <input type="range" id="gap-threshold" min="5" max="100" step="5" class="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+                        <span id="gap-threshold-value" class="text-2xl font-bold text-indigo-600 w-20 text-right glow-text-primary"></span>
                     </div>
-                    <div class="flex justify-between text-xs text-gray-500 mt-2 ml-32">
+                    <div class="flex justify-between text-xs text-slate-500 mt-2 ml-32">
                         <span>5% (Nghiêm ngặt)</span>
                         <span>50% (Cân bằng)</span>
                         <span>100% (Lỏng lẻo)</span>
                     </div>
 
-                    <div class="mt-4 ml-32 p-4 bg-blue-50 rounded-lg">
-                        <p class="text-sm text-gray-700">
-                            <strong>Ảnh hưởng:</strong><br>
+                    <div class="mt-4 ml-0 md:ml-32 p-4 bg-indigo-50/50 border border-indigo-200 rounded-xl">
+                        <p class="text-xs text-indigo-850 leading-relaxed">
+                            <strong>Ảnh hưởng thiết lập:</strong><br>
                             • <strong>5-15%</strong>: Nhiều pattern "Khó lên X ngày", ít "Dễ Tiếp Tục"<br>
-                            • <strong>15-30%</strong>: Cân bằng (khuyến nghị)<br>
-                            • <strong>30-100%</strong>: Ít "Khó", nhiều "Dễ Tiếp Tục"
+                            • <strong>15-30%</strong>: Trạng thái cân bằng (khuyến nghị)<br>
+                            • <strong>30-100%</strong>: Ít dạng "Khó", tăng cường dạng "Dễ Tiếp Tục"
                         </p>
                     </div>
                 </div>
 
                 <!-- Gap Strategy Setting -->
-                <div class="border-b pb-6">
-                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Chiến lược Gap</h2>
-                    <p class="text-sm text-gray-600 mb-4">
-                        Chọn cách tính toán khoảng cách để so sánh và thiết lập phần trăm đệm cho minGap.
+                <div class="border-b border-slate-100 pb-6">
+                    <h2 class="text-xl font-semibold text-slate-900 mb-2">Chiến lược Gap</h2>
+                    <p class="text-sm text-slate-600 mb-4">
+                        Chọn cách thức tính toán khoảng cách để so sánh và thiết lập phần trăm đệm cho minGap.
                     </p>
 
                     <div class="space-y-6">
                         <div class="flex items-center gap-4">
-                            <label class="text-sm font-semibold text-gray-700 w-40">Chiến lược:</label>
-                            <select id="gap-strategy"
-                                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-white">
+                            <label class="text-sm font-semibold text-slate-700 w-40">Chiến lược:</label>
+                            <select id="gap-strategy" class="glass-input flex-1 px-4 py-2 text-sm">
                                 <option value="GE">Lớn hơn hoặc bằng (>=)</option>
                                 <option value="EXACT">Chính xác (==)</option>
                                 <option value="COMBINED">Kết hợp (Cả hai)</option>
@@ -131,13 +135,11 @@
 
                         <div>
                             <div class="flex items-center gap-4 mb-2">
-                                <label class="text-sm font-semibold text-gray-700 w-40">Gap Buffer (%):</label>
-                                <input type="range" id="gap-buffer" min="0" max="50" step="1"
-                                    class="flex-1 h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer">
-                                <span id="gap-buffer-value"
-                                    class="text-2xl font-bold text-blue-600 w-20 text-right"></span>
+                                <label class="text-sm font-semibold text-slate-700 w-40">Gap Buffer (%):</label>
+                                <input type="range" id="gap-buffer" min="0" max="50" step="1" class="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+                                <span id="gap-buffer-value" class="text-2xl font-bold text-indigo-600 w-20 text-right glow-text-primary"></span>
                             </div>
-                            <p class="text-xs text-gray-500 ml-44">
+                            <p class="text-xs text-slate-500 ml-0 md:ml-40">
                                 Công thức loại trừ: <code>lastGap < minGap * (1 + Buffer%)</code>
                             </p>
                         </div>
@@ -145,36 +147,36 @@
                 </div>
 
                 <!-- Advanced Options -->
-                <div class="border-b pb-6">
-                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Tùy Chọn Nâng Cao</h2>
+                <div class="border-b border-slate-100 pb-6">
+                    <h2 class="text-xl font-semibold text-slate-900 mb-4">Tùy Chọn Nâng Cao</h2>
 
                     <div class="space-y-4">
-                        <label class="flex items-start cursor-pointer hover:bg-gray-50 p-3 rounded-lg">
-                            <input type="checkbox" id="use-min-gap" class="mt-1 w-5 h-5 text-blue-600 rounded">
+                        <label class="flex items-start cursor-pointer hover:bg-slate-100/50 p-3 rounded-xl transition">
+                            <input type="checkbox" id="use-min-gap" class="mt-1 w-5 h-5 text-indigo-650 rounded bg-white border-slate-300">
                             <div class="ml-3">
-                                <span class="font-semibold text-gray-800">Sử dụng Khoảng cách ngắn nhất (minGap)</span>
-                                <p class="text-sm text-gray-600 mt-1">
-                                    Khi bật: Kiểm tra cả minGap VÀ ngưỡng % TB. Nghiêm ngặt hơn.
+                                <span class="font-semibold text-slate-800">Sử dụng Khoảng cách ngắn nhất (minGap)</span>
+                                <p class="text-xs text-slate-500 mt-1">
+                                    Khi bật: Kiểm tra cả minGap VÀ ngưỡng % trung bình. Nghiêm ngặt hơn.
                                 </p>
                             </div>
                         </label>
 
-                        <label class="flex items-start cursor-pointer hover:bg-gray-50 p-3 rounded-lg">
-                            <input type="checkbox" id="show-backgrounds" class="mt-1 w-5 h-5 text-blue-600 rounded">
+                        <label class="flex items-start cursor-pointer hover:bg-slate-100/50 p-3 rounded-xl transition">
+                            <input type="checkbox" id="show-backgrounds" class="mt-1 w-5 h-5 text-indigo-650 rounded bg-white border-slate-300">
                             <div class="ml-3">
-                                <span class="font-semibold text-gray-800">Hiển thị màu nền cho thẻ</span>
-                                <p class="text-sm text-gray-600 mt-1">
-                                    Vàng nhạt = Đạt kỷ lục, Đỏ nhạt = Khó lên X ngày, Trắng = Dễ Tiếp Tục
+                                <span class="font-semibold text-slate-800">Hiển thị màu nền cho thẻ</span>
+                                <p class="text-xs text-slate-500 mt-1">
+                                    Bật hiển thị màu nền cảnh báo trực quan: Vàng nhạt = Đạt kỷ lục, Đỏ nhạt = Khó lên X ngày, Trắng/Xám = Dễ Tiếp Tục.
                                 </p>
                             </div>
                         </label>
 
-                        <label class="flex items-start cursor-pointer hover:bg-gray-50 p-3 rounded-lg">
-                            <input type="checkbox" id="highlight-gap" class="mt-1 w-5 h-5 text-blue-600 rounded">
+                        <label class="flex items-start cursor-pointer hover:bg-slate-100/50 p-3 rounded-xl transition">
+                            <input type="checkbox" id="highlight-gap" class="mt-1 w-5 h-5 text-indigo-650 rounded bg-white border-slate-300">
                             <div class="ml-3">
-                                <span class="font-semibold text-gray-800">Highlight số "Cách lần cuối"</span>
-                                <p class="text-sm text-gray-600 mt-1">
-                                    Đỏ = lastGap &lt; minGap (trong thẻ Khó), Xanh = thẻ Dễ Tiếp Tục
+                                <span class="font-semibold text-slate-800">Highlight số "Cách lần cuối"</span>
+                                <p class="text-xs text-slate-500 mt-1">
+                                    Đỏ = lastGap &lt; minGap (trong thẻ Khó), Xanh = thẻ Dễ Tiếp Tục.
                                 </p>
                             </div>
                         </label>
@@ -182,88 +184,65 @@
                 </div>
 
                 <!-- Bet Amount Settings -->
-                <div class="border-b pb-6">
-                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Cài Đặt Đặt Cược</h2>
+                <div class="border-b border-slate-100 pb-6">
+                    <h2 class="text-xl font-semibold text-slate-900 mb-4">Cài Đặt Đặt Cược</h2>
 
                     <!-- Min Gap Percent -->
                     <div class="mb-6">
-                        <label class="text-sm font-semibold text-gray-700 block mb-2">Phần trăm minGap (% của
-                            avgGap):</label>
+                        <label class="text-sm font-semibold text-slate-700 block mb-2">Phần trăm minGap (% của avgGap):</label>
                         <div class="flex items-center gap-4">
-                            <input type="range" id="min-gap-percent" min="10" max="100" step="5"
-                                class="flex-1 h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer">
-                            <span id="min-gap-percent-value"
-                                class="text-2xl font-bold text-blue-600 w-20 text-right"></span>
+                            <input type="range" id="min-gap-percent" min="10" max="100" step="5" class="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+                            <span id="min-gap-percent-value" class="text-2xl font-bold text-indigo-600 w-20 text-right glow-text-primary"></span>
                         </div>
-                        <div class="flex justify-between text-xs text-gray-500 mt-2">
+                        <div class="flex justify-between text-xs text-slate-500 mt-2">
                             <span>10% (Nghiêm ngặt)</span>
                             <span>50% (Cân bằng)</span>
                             <span>100% (Lỏng lẻo)</span>
                         </div>
                     </div>
 
-                    <!-- Initial Bet Amount -->
-                    <div class="mb-6">
-                        <label class="text-sm font-semibold text-gray-700 block mb-2">Số tiền đặt cược ban đầu (nghìn
-                            VND):</label>
-                        <div class="flex items-center gap-4">
-                            <input type="number" id="initial-bet" min="1" max="100" step="1"
-                                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg">
-                            <span class="text-sm text-gray-600">× 1,000 VND</span>
+                    <!-- Initial Bet Amount & Step in Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="text-sm font-semibold text-slate-700 block mb-2">Số tiền đặt cược ban đầu:</label>
+                            <div class="flex items-center gap-3">
+                                <input type="number" id="initial-bet" min="1" max="100" step="1" class="glass-input flex-1 px-4 py-2 text-sm">
+                                <span class="text-xs text-slate-550 whitespace-nowrap">× 1,000 VND</span>
+                            </div>
                         </div>
-                    </div>
-
-                    <!-- Bet Step Amount -->
-                    <div>
-                        <label class="text-sm font-semibold text-gray-700 block mb-2">Bước nhảy khi tăng tiền (nghìn
-                            VND):</label>
-                        <div class="flex items-center gap-4">
-                            <input type="number" id="bet-step" min="1" max="50" step="1"
-                                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg">
-                            <span class="text-sm text-gray-600">× 1,000 VND</span>
+                        <div>
+                            <label class="text-sm font-semibold text-slate-700 block mb-2">Bước nhảy khi tăng tiền:</label>
+                            <div class="flex items-center gap-3">
+                                <input type="number" id="bet-step" min="1" max="50" step="1" class="glass-input flex-1 px-4 py-2 text-sm">
+                                <span class="text-xs text-slate-550 whitespace-nowrap">× 1,000 VND</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Current Config Display -->
-                <div class="bg-gray-50 rounded-lg p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-3">Cấu hình hiện tại</h3>
-                    <pre id="current-config" class="bg-white p-4 rounded text-sm overflow-auto"></pre>
+                <div class="bg-slate-50/50 border border-slate-200 rounded-xl p-6">
+                    <h3 class="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                        <i class="bi bi-file-earmark-code text-indigo-600"></i> Cấu hình hiện tại
+                    </h3>
+                    <pre id="current-config" class="bg-white border border-slate-200 p-4 rounded-xl text-xs text-indigo-850 overflow-auto custom-scrollbar max-h-48 font-mono"></pre>
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="flex gap-4">
-                    <button id="save-settings"
-                        class="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-semibold text-lg">
-                        💾 Lưu Cài Đặt
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button id="save-settings" class="flex-1 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-6 py-3 rounded-xl shadow hover:shadow-lg hover:shadow-indigo-500/10 font-bold transition duration-150 transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                        <i class="bi bi-check-circle"></i> Lưu Cài Đặt
                     </button>
-                    <button id="reset-settings"
-                        class="flex-1 bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300 font-semibold text-lg">
-                        ↻ Khôi Phục Mặc Định
+                    <button id="reset-settings" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-750 px-6 py-3 rounded-xl border border-slate-200 font-semibold transition duration-150 flex items-center justify-center gap-2">
+                        <i class="bi bi-arrow-counterclockwise"></i> Khôi Phục Mặc Định
                     </button>
                 </div>
 
-                <!-- Danger Zone: Clear History -->
-                <div class="border-t pt-6 mt-6">
-                    <h2 class="text-xl font-semibold text-red-600 mb-4">⚠️ Vùng Nguy Hiểm</h2>
-                    <div class="bg-red-50 border border-red-200 rounded-lg p-6">
-                        <h3 class="text-lg font-semibold text-red-800 mb-2">Xóa Lịch Sử Dự Đoán</h3>
-                        <p class="text-sm text-red-700 mb-4">
-                            Hành động này sẽ xóa toàn bộ lịch sử dự đoán, chỉ giữ lại dự đoán mới nhất.<br>
-                            Mức tiền cược sẽ được reset về giá trị mặc định.<br>
-                            <strong>Lưu ý: Hành động này không thể hoàn tác!</strong>
-                        </p>
-                        <button id="clear-history"
-                            class="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 font-semibold">
-                            🗑️ Xóa Lịch Sử Dự Đoán
-                        </button>
-                    </div>
-                </div>
             </div>
         </div>
 
         <!-- Notification Area -->
-        <div id="notification" class="hidden fixed top-4 right-4 px-6 py-4 rounded-lg shadow-lg z-50"></div>
+        <div id="notification" class="hidden fixed top-4 right-4 px-6 py-4 rounded-xl shadow-lg border border-slate-200 bg-white text-slate-850 z-50 animate-fade-in"></div>
     </div>
 
     <script src="/js/app-config.js"></script>

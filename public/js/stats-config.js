@@ -1657,9 +1657,13 @@ function populateDauDit3DOptions() {
                     const groupLabel = `${a},${b},${c}`;
 
                     // Đầu
-                    ['veLienTiep', 'veSole', 'veSoleMoi'].forEach(sub => {
+                    ['veLienTiep', 'veSole', 'veSoleMoi', 'veTheoThuTu', 'veSoLeTheoThuTu'].forEach(sub => {
                         const subLabels = {
-                            veLienTiep: 'Về liên tiếp', veSole: 'Về so le', veSoleMoi: 'Về so le Mới'
+                            veLienTiep: 'Về liên tiếp',
+                            veSole: 'Về so le',
+                            veSoleMoi: 'Về so le Mới',
+                            veTheoThuTu: 'Về theo thứ tự',
+                            veSoLeTheoThuTu: 'Về so le theo thứ tự'
                         };
                         arr.push({
                             text: `Đầu (${groupLabel}) - ${subLabels[sub]}`,
@@ -1669,9 +1673,13 @@ function populateDauDit3DOptions() {
                     });
 
                     // Đít
-                    ['veLienTiep', 'veSole', 'veSoleMoi'].forEach(sub => {
+                    ['veLienTiep', 'veSole', 'veSoleMoi', 'veTheoThuTu', 'veSoLeTheoThuTu'].forEach(sub => {
                         const subLabels = {
-                            veLienTiep: 'Về liên tiếp', veSole: 'Về so le', veSoleMoi: 'Về so le Mới'
+                            veLienTiep: 'Về liên tiếp',
+                            veSole: 'Về so le',
+                            veSoleMoi: 'Về so le Mới',
+                            veTheoThuTu: 'Về theo thứ tự',
+                            veSoLeTheoThuTu: 'Về so le theo thứ tự'
                         };
                         arr.push({
                             text: `Đít (${groupLabel}) - ${subLabels[sub]}`,
