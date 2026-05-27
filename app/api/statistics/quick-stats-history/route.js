@@ -13,18 +13,19 @@ export async function GET() {
         await lotteryService.loadRawData();
 
         // Try DB cache first 
-        const { getQuickStatsHistoryFromCache } = require('@/lib/data-access');
-        const cached = await getQuickStatsHistoryFromCache();
+        const { getQuickStatsHistoryFromCache, getQuickStatsFromCache } = require('@/lib/data-access');
+        const [cached, quickStats] = await Promise.all([
+            getQuickStatsHistoryFromCache().catch(() => null),
+            getQuickStatsFromCache().catch(() => null)
+        ]);
         if (cached && cached.length > 0) {
             if (cached[0].streaks && cached[0].streaks.length > 0) {
-                 const hydratedHistory = statisticsService.rehydrateHistoryStreaks(cached);
+                 const hydratedHistory = statisticsService.rehydrateHistoryStreaks(cached, quickStats);
 
                  // Cache history được sinh sẵn có thể thiếu các nhóm "tiềm năng còn 1 ngày".
                  // Bổ sung lại riêng ngày mới nhất từ quick_stats đầy đủ để UI hiện ngay mà không chờ bot regenerate JSON.
                  try {
-                    const { getQuickStatsFromCache } = require('@/lib/data-access');
-                    const quickStats = await getQuickStatsFromCache();
-                    const latestRaw = lotteryService.getRawData()?.slice(-1)?.[0];
+                     const latestRaw = lotteryService.getRawData()?.slice(-1)?.[0];
                     if (quickStats && latestRaw && latestRaw.date) {
                         const latestDate = latestRaw.date.includes('-')
                             ? `${latestRaw.date.split('-')[2].substring(0, 2)}/${latestRaw.date.split('-')[1]}/${latestRaw.date.split('-')[0]}`
