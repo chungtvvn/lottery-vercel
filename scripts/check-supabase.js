@@ -35,6 +35,17 @@ async function main() {
         console.warn(`[Supabase] streak_statistics not ready: ${streakStatsError.message}`);
     } else {
         console.log(`[Supabase] DB Stats OK. streak_statistics rows: ${streakStatsCount ?? 0}`);
+
+        const { error: deltaHashError } = await supabase
+            .from('streak_statistics')
+            .select('pattern_key, stats_hash, streaks_hash')
+            .limit(1);
+        if (deltaHashError) {
+            console.warn(`[Supabase] Delta sync hash columns missing: ${deltaHashError.message}`);
+            console.warn('[Supabase] Apply supabase/migrations/005_streak_delta_hashes.sql once to enable changed-only streak updates.');
+        } else {
+            console.log('[Supabase] Delta sync OK. streak_statistics has stats_hash/streaks_hash.');
+        }
     }
 
     const { count: historicalStreaksCount, error: historicalStreaksError } = await supabase
