@@ -44,8 +44,9 @@ export async function GET(request) {
                 console.error(`Lỗi khi đọc cached_simulation_${days} từ DB:`, dbErr.message);
             }
         }
-        if (!cachedPayload && playMode === 'both') {
-            const cachedPath = path.join(process.cwd(), 'lib/data/statistics', `cached_simulation_${days}.json`);
+        if (!cachedPayload) {
+            const fileName = playMode === 'both' ? `cached_simulation_${days}.json` : `cached_simulation_${days}_${playMode}.json`;
+            const cachedPath = path.join(process.cwd(), 'lib/data/statistics', fileName);
             if (fs.existsSync(cachedPath)) {
                 try {
                     cachedPayload = JSON.parse(fs.readFileSync(cachedPath, 'utf8'));
@@ -54,10 +55,10 @@ export async function GET(request) {
                 }
             }
         }
-        const canUseStaticCache = days === 365
-            && canReadPrecomputedCache
+        const canUseStaticCache = canReadPrecomputedCache
             && cachedPayload
-            && cachedPayload.config?.methodVersion === simulationService.SIMULATION_METHOD_VERSION;
+            && cachedPayload.config?.methodVersion === simulationService.SIMULATION_METHOD_VERSION
+            && (cachedPayload.config?.playMode || 'both') === playMode;
         const canUseDbCache = dbStatsActive
             && canReadPrecomputedCache
             && cachedPayload

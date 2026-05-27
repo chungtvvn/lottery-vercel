@@ -656,7 +656,7 @@ async function main() {
                 }
             }
 
-            const simulationCacheDays = String(process.env.SIMULATION_CACHE_DAYS || '7,365')
+            const simulationCacheDays = String(process.env.SIMULATION_CACHE_DAYS || '7,14,30,60,90,180,365')
                 .split(',')
                 .map(value => Number(value.trim()))
                 .filter(value => Number.isFinite(value) && value >= 7 && value <= 365);
@@ -705,16 +705,26 @@ async function main() {
                 console.error('⚠️ Lỗi khi tạo cached suggestions (không ảnh hưởng các bước khác):', sugErr.message);
             }
 
-            // PRE-COMPUTE: 365-day simulation backtest so Vercel does not have to run
-            // the heavy historical loop inside a serverless request.
-            console.log(' -> Tạo Cached Simulation Backtest 365 ngày...');
+            // PRE-COMPUTE: simulation backtests for all default periods and play modes
+            // so Vercel does not have to run heavy loops inside serverless requests.
+            console.log(' -> Tạo Cached Simulation Backtest cho tất cả khoảng thời gian...');
             try {
                 const simulationService = require('../lib/services/simulationService');
-                const simulationResult = await simulationService.runBacktest(365, null, { compactDetails: true });
-                await fs.writeFile(path.join(DATA_DIR, 'statistics', 'cached_simulation_365.json'), JSON.stringify(simulationResult, null, 0));
-                console.log('✅ Đã lưu kết quả cached_simulation_365.json');
+                const staticCacheDays = [7, 14, 30, 60, 90, 180, 365];
+                const staticCacheModes = ['both', 'bet', 'hold'];
+                for (const days of staticCacheDays) {
+                    for (const playMode of staticCacheModes) {
+                        const simulationResult = await simulationService.runBacktest(days, null, {
+                            compactDetails: days > 90,
+                            playMode
+                        });
+                        const fileName = playMode === 'both' ? `cached_simulation_${days}.json` : `cached_simulation_${days}_${playMode}.json`;
+                        await fs.writeFile(path.join(DATA_DIR, 'statistics', fileName), JSON.stringify(simulationResult, null, 0));
+                        console.log(`✅ Đã lưu kết quả ${fileName}`);
+                    }
+                }
             } catch (simErr) {
-                console.error('⚠️ Lỗi khi tạo cached simulation 365 (không ảnh hưởng các bước khác):', simErr.message);
+                console.error('⚠️ Lỗi khi tạo cached simulation (không ảnh hưởng các bước khác):', simErr.message);
             }
         } else {
             console.log(' -> DB stats active, bỏ qua legacy cached predictions/suggestions/simulation để tránh timeout và dữ liệu fallback stale.');
