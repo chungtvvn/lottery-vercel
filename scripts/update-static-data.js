@@ -133,6 +133,82 @@ function hasSupabaseEnv() {
     );
 }
 
+function shouldReadCurrentRawFromSupabase() {
+    if (process.env.UPDATE_READ_SUPABASE_RAW === '0') return false;
+    if (!hasSupabaseEnv()) return false;
+    const statsMode = String(process.env.LOTTERY_STATS_SOURCE || '').trim().toLowerCase();
+    return statsMode === ''
+        || ['supabase', 'supabase-db', 'db'].includes(statsMode);
+}
+
+function mapSupabaseRawRow(row) {
+    return normalizeDataRow({
+        date: row.draw_date,
+        special: row.special,
+        prize1: row.prize1,
+        prize2_1: row.prize2_1,
+        prize2_2: row.prize2_2,
+        prize3_1: row.prize3_1,
+        prize3_2: row.prize3_2,
+        prize3_3: row.prize3_3,
+        prize3_4: row.prize3_4,
+        prize3_5: row.prize3_5,
+        prize3_6: row.prize3_6,
+        prize4_1: row.prize4_1,
+        prize4_2: row.prize4_2,
+        prize4_3: row.prize4_3,
+        prize4_4: row.prize4_4,
+        prize5_1: row.prize5_1,
+        prize5_2: row.prize5_2,
+        prize5_3: row.prize5_3,
+        prize5_4: row.prize5_4,
+        prize5_5: row.prize5_5,
+        prize5_6: row.prize5_6,
+        prize6_1: row.prize6_1,
+        prize6_2: row.prize6_2,
+        prize6_3: row.prize6_3,
+        prize7_1: row.prize7_1,
+        prize7_2: row.prize7_2,
+        prize7_3: row.prize7_3,
+        prize7_4: row.prize7_4
+    });
+}
+
+async function readCurrentRawData() {
+    if (shouldReadCurrentRawFromSupabase()) {
+        try {
+            const { getSupabaseAdminClient } = require('../lib/supabase/client');
+            const supabase = getSupabaseAdminClient();
+            const rows = [];
+            const pageSize = 1000;
+
+            for (let from = 0; ; from += pageSize) {
+                const to = from + pageSize - 1;
+                const { data, error } = await supabase
+                    .from('lottery_results')
+                    .select('*')
+                    .order('draw_date', { ascending: true })
+                    .range(from, to);
+                if (error) throw error;
+                if (!data || data.length === 0) break;
+                rows.push(...data.map(mapSupabaseRawRow));
+                if (data.length < pageSize) break;
+            }
+
+            if (rows.length > 0) {
+                console.log(`[1] Đọc dữ liệu hiện tại từ Supabase DB: ${rows.length} bản ghi, latest=${getLatestDateValue(rows) || 'none'}`);
+                return rows;
+            }
+        } catch (error) {
+            console.warn(`[1] Không đọc được raw data từ Supabase, fallback local JSON: ${error.message}`);
+        }
+    }
+
+    const localRows = await readJsonIfExists(JSON_FILE);
+    console.log(`[1] Đọc dữ liệu local: ${Array.isArray(localRows) ? localRows.length : 0} bản ghi, latest=${getLatestDateValue(localRows) || 'none'}`);
+    return localRows;
+}
+
 function syncSupabaseAfterStaticGeneration() {
     if (process.env.SYNC_SUPABASE_AFTER_UPDATE === '0') {
         console.log('[6] SYNC_SUPABASE_AFTER_UPDATE=0, bỏ qua sync Supabase.');
@@ -336,8 +412,7 @@ async function main() {
     }
 
     await fs.mkdir(path.join(DATA_DIR, 'statistics'), { recursive: true });
-    const currentArray = await readJsonIfExists(JSON_FILE);
-    console.log(`[1] Đọc dữ liệu local: ${Array.isArray(currentArray) ? currentArray.length : 0} bản ghi, latest=${getLatestDateValue(currentArray) || 'none'}`);
+    const currentArray = await readCurrentRawData();
     console.log('[2] Cập nhật dữ liệu từ nguồn độc lập xoso.com.vn...');
     const { data: finalArray, source } = await buildRawDataFromSources(currentArray);
     const forceRegenerateStats = process.env.FORCE_REGENERATE_STATS === '1';
