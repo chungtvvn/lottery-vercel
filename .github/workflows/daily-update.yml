@@ -5,6 +5,30 @@ on:
     # Chạy hàng ngày lúc 18:40 GMT+7 (Hà Nội) = 11:40 UTC.
     - cron: '40 11 * * *'
   workflow_dispatch:
+    inputs:
+      wait_for_new_xoso:
+        description: '1 = chờ dữ liệu ngày mới, 0 = chỉ test luồng bằng dữ liệu mới nhất đang có'
+        required: true
+        default: '1'
+        type: choice
+        options:
+          - '1'
+          - '0'
+      xoso_max_wait_minutes:
+        description: 'Số phút chờ tối đa khi wait_for_new_xoso=1'
+        required: true
+        default: '90'
+        type: string
+      xoso_retry_interval_seconds:
+        description: 'Khoảng cách retry nguồn xoso.com.vn'
+        required: true
+        default: '60'
+        type: string
+      xoso_target_date:
+        description: 'Ngày cần chờ dạng YYYY-MM-DD; để trống sẽ dùng ngày hiện tại GMT+7'
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: write
@@ -38,9 +62,10 @@ jobs:
 
       - name: Pull Data & Generate Supabase Stats
         env:
-          WAIT_FOR_NEW_XOSO: '1'
-          XOSO_MAX_WAIT_MINUTES: '90'
-          XOSO_RETRY_INTERVAL_SECONDS: '60'
+          WAIT_FOR_NEW_XOSO: ${{ github.event_name == 'workflow_dispatch' && inputs.wait_for_new_xoso || '1' }}
+          XOSO_MAX_WAIT_MINUTES: ${{ github.event_name == 'workflow_dispatch' && inputs.xoso_max_wait_minutes || '90' }}
+          XOSO_RETRY_INTERVAL_SECONDS: ${{ github.event_name == 'workflow_dispatch' && inputs.xoso_retry_interval_seconds || '60' }}
+          XOSO_TARGET_DATE: ${{ github.event_name == 'workflow_dispatch' && inputs.xoso_target_date || '' }}
           LOTTERY_STATS_SOURCE: 'supabase-db'
           SYNC_SUPABASE_AFTER_UPDATE: '1'
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}

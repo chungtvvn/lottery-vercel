@@ -141,6 +141,14 @@ function toLastTwoDigits(value) {
     return Number(digits.slice(-2));
 }
 
+function validateDataRow(row) {
+    const invalidKey = DATA_KEYS.find(key => !Number.isInteger(row[key]) || row[key] < 0 || row[key] > 99);
+    if (invalidKey) {
+        throw new Error(`Dữ liệu ${invalidKey} không hợp lệ sau khi parse xoso.com.vn`);
+    }
+    return row;
+}
+
 function getPrizeRanges(result, prizeName) {
     const item = result.LotteryPrizeRanges.find(range => String(range.Prize || '').trim() === prizeName);
     if (!item || !Array.isArray(item.Ranges)) {
@@ -153,6 +161,55 @@ function getPrizeRanges(result, prizeName) {
     }
 
     return item.Ranges.map(toLastTwoDigits);
+}
+
+function buildDataRowFromPrizeValues(date, prizeValues) {
+    for (const [prizeName, expectedCount] of Object.entries(REQUIRED_PRIZE_COUNTS)) {
+        const values = prizeValues[prizeName];
+        if (!Array.isArray(values) || values.length !== expectedCount) {
+            throw new Error(`${prizeName} có ${values ? values.length : 0} số, kỳ vọng ${expectedCount}`);
+        }
+    }
+
+    const db = prizeValues.DB;
+    const g1 = prizeValues['G.1'];
+    const g2 = prizeValues['G.2'];
+    const g3 = prizeValues['G.3'];
+    const g4 = prizeValues['G.4'];
+    const g5 = prizeValues['G.5'];
+    const g6 = prizeValues['G.6'];
+    const g7 = prizeValues['G.7'];
+
+    return validateDataRow({
+        date,
+        special: db[0],
+        prize1: g1[0],
+        prize2_1: g2[0],
+        prize2_2: g2[1],
+        prize3_1: g3[0],
+        prize3_2: g3[1],
+        prize3_3: g3[2],
+        prize3_4: g3[3],
+        prize3_5: g3[4],
+        prize3_6: g3[5],
+        prize4_1: g4[0],
+        prize4_2: g4[1],
+        prize4_3: g4[2],
+        prize4_4: g4[3],
+        prize5_1: g5[0],
+        prize5_2: g5[1],
+        prize5_3: g5[2],
+        prize5_4: g5[3],
+        prize5_5: g5[4],
+        prize5_6: g5[5],
+        prize6_1: g6[0],
+        prize6_2: g6[1],
+        prize6_3: g6[2],
+        prize7_1: g7[0],
+        prize7_2: g7[1],
+        prize7_3: g7[2],
+        prize7_4: g7[3]
+    });
 }
 
 function convertXosoResultToDataRow(result) {
@@ -196,12 +253,87 @@ function convertXosoResultToDataRow(result) {
         prize7_4: g7[3]
     };
 
-    const invalidKey = DATA_KEYS.find(key => !Number.isInteger(row[key]) || row[key] < 0 || row[key] > 99);
-    if (invalidKey) {
-        throw new Error(`Dữ liệu ${invalidKey} không hợp lệ sau khi parse xoso.com.vn`);
-    }
+    validateDataRow(row);
 
     return row;
+}
+
+function decodeHtmlText(value) {
+    return String(value || '')
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/&amp;/gi, '&')
+        .replace(/&lt;/gi, '<')
+        .replace(/&gt;/gi, '>')
+        .replace(/&#272;/g, 'Đ')
+        .replace(/&#273;/g, 'đ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function normalizePrizeLabel(label) {
+    const text = decodeHtmlText(label).toUpperCase();
+    if (text === 'ĐB' || text === 'DB') return 'DB';
+    if (/^[1-7]$/.test(text)) return `G.${text}`;
+    const match = text.match(/^G\.?\s*([1-7])$/);
+    return match ? `G.${match[1]}` : null;
+}
+
+function normalizeDateFromSectionId(value) {
+    const text = String(value || '');
+    if (!/^\d{8}$/.test(text)) {
+        throw new Error(`ID ngày kết quả không hợp lệ: ${text}`);
+    }
+    const day = text.slice(0, 2);
+    const month = text.slice(2, 4);
+    const year = text.slice(4, 8);
+    return `${year}-${month}-${day}`;
+}
+
+function inferResultDateFromSection(rawDate, sectionHtml) {
+    const titleDate = String(sectionHtml || '').match(/XSMB\s+(\d{1,2}\/\d{1,2}\/\d{4})/i);
+    if (titleDate) return normalizeDate(titleDate[1]);
+
+    const hrefDate = String(sectionHtml || '').match(/\/xsmb-(\d{1,2})-(\d{1,2})-(\d{4})\.html/i);
+    if (hrefDate) {
+        const [, day, month, year] = hrefDate;
+        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    }
+
+    return normalizeDateFromSectionId(rawDate);
+}
+
+function parseLatestXsmbResultFromHtmlTable(html) {
+    const sectionRegex = /<section\b[^>]*\bid=(?:"|')?kqngay_(\d{8})(?:"|')?[^>]*>([\s\S]*?)(?=<section\b[^>]*\bid=|$)/gi;
+    let lastError = null;
+
+    for (const sectionMatch of html.matchAll(sectionRegex)) {
+        const [, rawDate, sectionHtml] = sectionMatch;
+        if (!/table-result/i.test(sectionHtml)) continue;
+
+        const prizeValues = {};
+        const rowRegex = /<tr\b[^>]*>\s*<(?:td|th)\b[^>]*>([\s\S]*?)<(?:td|th)\b[^>]*>([\s\S]*?)(?=<tr\b|<\/tbody>|<\/table>|<\/section>)/gi;
+        for (const rowMatch of sectionHtml.matchAll(rowRegex)) {
+            const prizeName = normalizePrizeLabel(rowMatch[1]);
+            if (!prizeName) continue;
+
+            const valuesText = decodeHtmlText(rowMatch[2]);
+            const values = (valuesText.match(/\d{2,6}/g) || []).map(toLastTwoDigits);
+            if (values.length > 0) {
+                prizeValues[prizeName] = values;
+            }
+        }
+
+        try {
+            return buildDataRowFromPrizeValues(inferResultDateFromSection(rawDate, sectionHtml), prizeValues);
+        } catch (error) {
+            lastError = error;
+        }
+    }
+
+    throw new Error(lastError
+        ? `Không parse được bảng kết quả HTML: ${lastError.message}`
+        : 'Không tìm thấy bảng kết quả XSMB đã hoàn tất trong HTML xoso.com.vn');
 }
 
 async function fetchLatestXsmbResult(options = {}) {
@@ -212,7 +344,16 @@ async function fetchLatestXsmbResult(options = {}) {
     for (const url of uniqueUrls) {
         try {
             const html = await fetchText(url, { timeoutMs: options.timeoutMs });
-            const row = convertXosoResultToDataRow(parseLatestXsmbResult(html));
+            let row;
+            try {
+                row = convertXosoResultToDataRow(parseLatestXsmbResult(html));
+            } catch (jsonError) {
+                try {
+                    row = parseLatestXsmbResultFromHtmlTable(html);
+                } catch (htmlError) {
+                    throw new Error(`${jsonError.message}; fallback HTML lỗi: ${htmlError.message}`);
+                }
+            }
             Object.defineProperty(row, '_sourceUrl', {
                 value: url,
                 enumerable: false
@@ -234,6 +375,7 @@ module.exports = {
     XOSO_XSMB_URL,
     XOSO_SOURCE_URLS,
     parseLatestXsmbResult,
+    parseLatestXsmbResultFromHtmlTable,
     convertXosoResultToDataRow,
     fetchLatestXsmbResult
 };
