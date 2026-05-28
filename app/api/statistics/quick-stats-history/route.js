@@ -13,13 +13,21 @@ export async function GET() {
         await lotteryService.loadRawData();
 
         // Try DB cache first 
-        const { getQuickStatsHistoryFromCache, getQuickStatsFromCache } = require('@/lib/data-access');
-        const [cached, quickStats] = await Promise.all([
-            getQuickStatsHistoryFromCache().catch(() => null),
-            getQuickStatsFromCache().catch(() => null)
-        ]);
+        const { getQuickStatsHistoryFromCache, getPatternStatsByKeysFromDb } = require('@/lib/data-access');
+        const cached = await getQuickStatsHistoryFromCache().catch(() => null);
         if (cached && cached.length > 0) {
             if (cached[0].streaks && cached[0].streaks.length > 0) {
+                 // Collect unique keys to load selectively from DB to avoid Vercel 10s timeout
+                 const activeKeys = new Set();
+                 for (const day of cached) {
+                     if (day.streaks) {
+                         for (const s of day.streaks) {
+                             if (s.key) activeKeys.add(s.key);
+                         }
+                     }
+                 }
+                 
+                 const quickStats = await getPatternStatsByKeysFromDb(Array.from(activeKeys)).catch(() => null);
                  const hydratedHistory = statisticsService.rehydrateHistoryStreaks(cached, quickStats);
 
                  // Cache history được sinh sẵn có thể thiếu các nhóm "tiềm năng còn 1 ngày".
