@@ -686,6 +686,20 @@ async function main() {
                     }
                 }
             }
+
+            // Sync daily prediction runs history and generate tomorrow's prediction
+            console.log(' -> Đồng bộ lịch sử dự đoán (Prediction History)...');
+            try {
+                const predictionHistoryService = require('../lib/services/predictionHistoryService');
+                await predictionHistoryService.backfillHistoryIfEmpty();
+                if (latestResult) {
+                    const drawDateStr = latestResult.date; // YYYY-MM-DD
+                    const specialNumber = latestResult.special;
+                    await predictionHistoryService.syncPredictionHistory(drawDateStr, specialNumber);
+                }
+            } catch (histErr) {
+                console.error('⚠️ Lỗi khi đồng bộ lịch sử dự đoán:', histErr.message);
+            }
         }
 
         if (!dbStatsActive) {
