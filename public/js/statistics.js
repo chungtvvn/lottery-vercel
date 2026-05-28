@@ -88,6 +88,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     const initializePage = async () => {
+        if (window.AppConfig && typeof window.AppConfig.checkAndClearCacheOnNewData === 'function') {
+            await window.AppConfig.checkAndClearCacheOnNewData();
+        }
         cleanupExpiredCache();
         await fetchConfig(); // Load config first
 

@@ -74,6 +74,34 @@ const AppConfig = {
         this.current[key] = value;
         this.save(this.current);
         return value;
+    },
+
+    /**
+     * Check if there's new data on the server and clear client-side cache
+     */
+    async checkAndClearCacheOnNewData() {
+        try {
+            // Fetch without caching
+            const res = await fetch('/api/latest-date?_t=' + Date.now(), { cache: 'no-store' });
+            if (!res.ok) return;
+            const data = await res.json();
+            const serverLatestDate = data.latestDate;
+            if (!serverLatestDate || serverLatestDate === 'Lỗi' || serverLatestDate === 'Không có dữ liệu') return;
+            
+            const cachedLatestDate = localStorage.getItem('ls_latest_date');
+            if (cachedLatestDate !== serverLatestDate) {
+                console.log(`[Cache Sync] New data detected on server (${serverLatestDate} vs cached ${cachedLatestDate}). Clearing local storage cache...`);
+                // Clear all ls_cache_ keys
+                Object.keys(localStorage).forEach(key => {
+                    if (key.startsWith('ls_cache_')) {
+                        localStorage.removeItem(key);
+                    }
+                });
+                localStorage.setItem('ls_latest_date', serverLatestDate);
+            }
+        } catch (e) {
+            console.warn('[Cache Sync] Error checking latest date:', e);
+        }
     }
 };
 

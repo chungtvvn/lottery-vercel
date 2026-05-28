@@ -75,6 +75,9 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     async function loadSuggestions() {
+        if (window.AppConfig && typeof window.AppConfig.checkAndClearCacheOnNewData === 'function') {
+            await window.AppConfig.checkAndClearCacheOnNewData();
+        }
         cleanupExpiredCache();
         try {
             // 1. Fetch config from server to ensure sync with settings

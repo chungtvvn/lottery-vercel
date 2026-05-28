@@ -117,6 +117,9 @@
         setLoading(true);
         cleanupExpiredCache();
         try {
+            if (window.AppConfig && typeof window.AppConfig.checkAndClearCacheOnNewData === 'function') {
+                await window.AppConfig.checkAndClearCacheOnNewData();
+            }
             const data = await fetchJSON('/api/prediction/history?limit=90&v=2');
             if (data && data.success && Array.isArray(data.history)) {
                 state.history = data.history;
