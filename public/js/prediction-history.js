@@ -53,16 +53,76 @@
         }
     }
 
+    const cleanupExpiredCache = () => {
+        const CACHE_PREFIX = 'ls_cache_';
+        const CACHE_EXPIRY = 2 * 60 * 60 * 1000; // 2 hours
+        const now = Date.now();
+        try {
+            Object.keys(localStorage).forEach(key => {
+                if (key.startsWith(CACHE_PREFIX)) {
+                    try {
+                        const item = JSON.parse(localStorage.getItem(key));
+                        if (item && item.timestamp && (now - item.timestamp > CACHE_EXPIRY)) {
+                            localStorage.removeItem(key);
+                            console.log(`[Cache Cleanup] Expired key removed: ${key}`);
+                        }
+                    } catch (e) {
+                        localStorage.removeItem(key);
+                    }
+                }
+            });
+        } catch (e) {
+            console.warn('LocalStorage access is blocked or full:', e);
+        }
+    };
+
+    const fetchJSON = async (url) => {
+        const CACHE_PREFIX = 'ls_cache_';
+        const CACHE_EXPIRY = 2 * 60 * 60 * 1000; // 2 hours
+        const cacheKey = `${CACHE_PREFIX}${url}`;
+        
+        try {
+            const cached = localStorage.getItem(cacheKey);
+            if (cached) {
+                const item = JSON.parse(cached);
+                if (item && item.timestamp && (Date.now() - item.timestamp < CACHE_EXPIRY)) {
+                    console.log(`[Cache Hit] ${url}`);
+                    return item.data;
+                } else {
+                    localStorage.removeItem(cacheKey);
+                }
+            }
+        } catch (e) {
+            // Ignore cache error, fetch from network
+        }
+
+        console.log(`[Cache Miss] Fetching from network: ${url}`);
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Network response was not ok');
+        const data = await res.json();
+        
+        try {
+            localStorage.setItem(cacheKey, JSON.stringify({
+                timestamp: Date.now(),
+                data: data
+            }));
+        } catch (e) {
+            console.warn('Failed to save to localStorage:', e);
+        }
+        
+        return data;
+    };
+
     async function loadHistory() {
         setLoading(true);
+        cleanupExpiredCache();
         try {
-            const res = await fetch('/api/prediction/history?limit=90');
-            const data = await res.json();
+            const data = await fetchJSON('/api/prediction/history?limit=90');
             if (data && data.success && Array.isArray(data.history)) {
                 state.history = data.history;
                 renderDashboard();
             } else {
-                showError(data.error || 'Không thể tải lịch sử dự đoán.');
+                showError((data && data.error) || 'Không thể tải lịch sử dự đoán.');
             }
         } catch (error) {
             showError('Lỗi kết nối máy chủ.');
