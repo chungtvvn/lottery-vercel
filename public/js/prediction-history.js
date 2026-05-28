@@ -117,7 +117,7 @@
         setLoading(true);
         cleanupExpiredCache();
         try {
-            const data = await fetchJSON('/api/prediction/history?limit=90&v=1');
+            const data = await fetchJSON('/api/prediction/history?limit=90&v=2');
             if (data && data.success && Array.isArray(data.history)) {
                 state.history = data.history;
                 renderDashboard();
