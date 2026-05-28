@@ -1268,7 +1268,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         : `(${currentCount} chuỗi đạt ${streakLen}d, chỉ ${nextCount} tiếp tục)`;
                     forecastHtml += `<li class="flex items-center gap-2 ${riskBg} rounded px-2 py-1">
                         <i class="bi bi-exclamation-triangle-fill ${riskColor}"></i>
-                        <span class="font-bold text-gray-800">${streak.description}</span>
+                        <span class="font-bold text-gray-800">${escapeHtml(streak.description)}</span>
                         <span class="text-xs bg-gray-200 px-1.5 py-0.5 rounded">${lenDisplay}</span>
                         <span class="${riskColor} text-xs font-bold">${riskText}</span>
                         ${recordDropOffState.isCritical ? `<span class="text-[10px] rounded bg-red-700 px-1.5 py-0.5 font-bold text-white">${recordDropOffState.label}</span>` : ''}
@@ -1434,7 +1434,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             ? `<div class="font-semibold">${formatMetric(streak.isPotential ? nonFormationLowerBound * 100 : reliability.lowerBoundPercent, '%')}</div><div class="text-[9px] text-gray-500">mẫu ${formatMetric(streak.isPotential ? formationBaseCount : reliability.sampleSize)}</div>`
                             : '<span class="text-gray-400">-</span>';
                         predHtml += `<tr class="${rowBg} border-b ${isActualHit ? 'outline outline-2 outline-yellow-300' : 'hover:bg-gray-50'}">
-                            <td class="px-3 py-2 font-medium text-gray-900">${streak.description}${potentialLabel}${recordCriticalLabel}${actualHitLabel}</td>
+                            <td class="px-3 py-2 font-medium text-gray-900">${escapeHtml(streak.description)}${potentialLabel}${recordCriticalLabel}${actualHitLabel}</td>
                             <td class="px-3 py-2 text-center">${streakLen}d${streak.isPotential ? '<span class="text-[9px] text-orange-500"> ↗</span>' : ''}</td>
                             <td class="px-3 py-2 text-center"><span class="inline-flex min-w-10 justify-center rounded border px-2 py-1 text-[11px] font-semibold ${recordClass}">${recordLength ? `${recordLength}d` : '-'}</span></td>
                             <td class="px-3 py-2 text-center"><span class="inline-flex min-w-12 justify-center rounded bg-gray-900 px-2 py-1 text-[11px] font-bold text-white">${formatMetric(exclusionPriority, '')}</span></td>
@@ -1571,7 +1571,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                         
                                         <div class="relative group cursor-pointer" onclick="this.querySelector('.group-hover\\:block').classList.toggle('hidden')">
                                             <h6 class="${titleWeight} text-gray-800 hover:text-indigo-600 transition flex items-center gap-1">
-                                                ${streak.description}${badgeHtml} <i class="bi bi-info-circle text-xs text-gray-400"></i>
+                                                ${escapeHtml(streak.description)}${badgeHtml} <i class="bi bi-info-circle text-xs text-gray-400"></i>
                                             </h6>
                                             ${cardPredictionNumbers.length > 0 ? `
                                             <div class="absolute left-0 top-full mt-2 w-64 p-3 bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-50 hidden group-hover:block transition shadow-[0_0_15px_rgba(0,0,0,0.5)]">
@@ -1986,7 +1986,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const itemHtml = `
                     <div x-data="{ open: false }">
                         <div @click="open = !open" class="record-accordion-button p-4 flex flex-wrap justify-between items-center cursor-pointer hover:bg-gray-50 border-b border-gray-100">
-                             <span class="w-full lg:w-2/5 font-semibold text-gray-700 text-left">${stat.description}</span>
+                             <span class="w-full lg:w-2/5 font-semibold text-gray-700 text-left">${escapeHtml(stat.description)}</span>
                              <div class="flex-grow grid grid-cols-4 gap-x-4 text-sm text-gray-500 text-left">
                                  <span><i class="bi bi-trophy"></i> KL: ${longestInfo}</span>
                                  <span><i class="bi bi-award"></i> Nhì: ${secondLongestInfo}</span>
