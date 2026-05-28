@@ -178,13 +178,13 @@
         });
 
         // 1. Render Summary Cards
-        el('summarySection').classList.remove('hidden');
-        const summaryCards = el('summaryCards');
+        const summarySection = el('summarySection');
+        summarySection.classList.remove('hidden');
         
         const betWinRate = totalDays > 0 ? ((betWins / totalDays) * 100).toFixed(1) : '0.0';
         const holdWinRate = totalDays > 0 ? ((holdWins / totalDays) * 100).toFixed(1) : '0.0';
 
-        summaryCards.innerHTML = `
+        summarySection.innerHTML = `
             <div class="glass-card p-5 border-l-4 border-indigo-500 bg-white/60">
                 <div class="text-xs font-bold uppercase text-slate-500 tracking-wider">Tổng số ngày chơi</div>
                 <div class="mt-2 text-3xl font-extrabold text-slate-900">${totalDays} <span class="text-xs font-normal text-slate-500">ngày đã kết toán</span></div>
