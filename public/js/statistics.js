@@ -79,18 +79,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const fetchConfig = async () => {
         try {
-            const response = await fetch(`${BASE_URL}/api/config`);
-            if (response.ok) {
-                const data = await response.json();
-                currentConfig = { ...currentConfig, ...data };
-                console.log('Config loaded:', currentConfig);
-            }
+            const data = await fetchJSON(`${BASE_URL}/api/config`);
+            currentConfig = { ...currentConfig, ...data };
+            console.log('Config loaded:', currentConfig);
         } catch (error) {
             console.error('Error fetching config:', error);
         }
     };
 
     const initializePage = async () => {
+        cleanupExpiredCache();
         await fetchConfig(); // Load config first
 
         for (const groupName in STATS_OPTIONS) {
@@ -162,12 +160,65 @@ document.addEventListener('DOMContentLoaded', async () => {
         fetchStreakExclusion();
     };
 
-    // --- NO CLIENT-SIDE CACHING ---
-    // Tất cả API calls đều fetch trực tiếp, không cache localStorage
+    // --- CLIENT-SIDE CACHING (2 Hours Expiry) ---
+    const cleanupExpiredCache = () => {
+        const CACHE_PREFIX = 'ls_cache_';
+        const CACHE_EXPIRY = 2 * 60 * 60 * 1000; // 2 hours
+        const now = Date.now();
+        try {
+            Object.keys(localStorage).forEach(key => {
+                if (key.startsWith(CACHE_PREFIX)) {
+                    try {
+                        const item = JSON.parse(localStorage.getItem(key));
+                        if (item && item.timestamp && (now - item.timestamp > CACHE_EXPIRY)) {
+                            localStorage.removeItem(key);
+                            console.log(`[Cache Cleanup] Expired key removed: ${key}`);
+                        }
+                    } catch (e) {
+                        localStorage.removeItem(key);
+                    }
+                }
+            });
+        } catch (e) {
+            console.warn('LocalStorage access is blocked or full:', e);
+        }
+    };
+
     const fetchJSON = async (url) => {
+        const CACHE_PREFIX = 'ls_cache_';
+        const CACHE_EXPIRY = 2 * 60 * 60 * 1000; // 2 hours
+        const cacheKey = `${CACHE_PREFIX}${url}`;
+        
+        try {
+            const cached = localStorage.getItem(cacheKey);
+            if (cached) {
+                const item = JSON.parse(cached);
+                if (item && item.timestamp && (Date.now() - item.timestamp < CACHE_EXPIRY)) {
+                    console.log(`[Cache Hit] ${url}`);
+                    return item.data;
+                } else {
+                    localStorage.removeItem(cacheKey);
+                }
+            }
+        } catch (e) {
+            // Ignore cache error, fetch from network
+        }
+
+        console.log(`[Cache Miss] Fetching from network: ${url}`);
         const res = await fetch(url);
         if (!res.ok) throw new Error('Network response was not ok');
-        return res.json();
+        const data = await res.json();
+        
+        try {
+            localStorage.setItem(cacheKey, JSON.stringify({
+                timestamp: Date.now(),
+                data: data
+            }));
+        } catch (e) {
+            console.warn('Failed to save to localStorage:', e);
+        }
+        
+        return data;
     };
     // ---------------------------------
 
