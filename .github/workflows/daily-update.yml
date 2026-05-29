@@ -113,3 +113,19 @@ jobs:
           else
             echo "Không cấu hình VERCEL_DEPLOY_HOOK_URL; Vercel sẽ deploy qua Git integration khi workflow push commit."
           fi
+
+      # In Supabase-DB mode (COMMIT_STATIC_DATA=0), stats go directly to DB without git commits.
+      # We must still redeploy Vercel to kill warm serverless instances that cache old data in memory.
+      - name: Force Vercel Redeploy (Supabase DB mode)
+        if: steps.changes.outputs.changed != 'true'
+        env:
+          VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -n "$VERCEL_DEPLOY_HOOK_URL" ]; then
+            echo "Supabase DB mode: Triggering Vercel redeploy to clear warm function caches..."
+            curl -fsS -X POST "$VERCEL_DEPLOY_HOOK_URL"
+            echo ""
+            echo "✅ Vercel redeploy triggered."
+          else
+            echo "⚠️ VERCEL_DEPLOY_HOOK_URL not configured. Warm serverless functions may serve stale data for up to 10 minutes."
+          fi
