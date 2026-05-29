@@ -1762,8 +1762,6 @@ function populatePatternSequenceOptions() {
 }
 populatePatternSequenceOptions();
 
-const BASE_URL = window.location.origin;
-
 
 for (const groupName in STATS_OPTIONS) {
     if (groupName.includes('Tổng') || groupName.includes('Hiệu')) {

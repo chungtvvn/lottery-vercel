@@ -15,6 +15,7 @@ const getHieu = (n) => {
 
 
 document.addEventListener('DOMContentLoaded', async () => {
+    const BASE_URL = window.location.origin;
     const MOVE_PREDICTION_SUMMARY_TO_CHAIN_TAB = true;
     const form = document.getElementById('statsForm');
     const startDateInput = document.getElementById('startDate');
