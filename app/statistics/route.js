@@ -6,6 +6,9 @@ export async function GET() {
     const htmlPath = path.join(process.cwd(), 'views', 'statistics.html');
     const html = fs.readFileSync(htmlPath, 'utf-8');
     return new NextResponse(html, {
-        headers: { 'Content-Type': 'text/html; charset=utf-8' },
+        headers: { 
+            'Content-Type': 'text/html; charset=utf-8',
+            'Cache-Control': 'no-store, no-cache, must-revalidate'
+        },
     });
 }
