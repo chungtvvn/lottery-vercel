@@ -1,3 +1,4 @@
+(() => {
 const getTongMoi = (n) => {
     const num = parseInt(n, 10);
     return Math.floor(num / 10) + (num % 10);
@@ -595,3 +596,4 @@ document.addEventListener('DOMContentLoaded', () => {
     // Run Initialization
     initPage();
 });
+})();
