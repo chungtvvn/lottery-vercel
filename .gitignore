@@ -39,3 +39,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# lottery statistics generated caches
+lib/data/statistics/head_tail_stats.json
+lib/data/statistics/quick_stats.json
+lib/data/statistics/quick_stats_history.json
+lib/data/statistics/sum_difference_stats.json
+lib/data/statistics/number_stats.json
+
+# temporary scripts & scratch
+test_get_history.js
+scratch/

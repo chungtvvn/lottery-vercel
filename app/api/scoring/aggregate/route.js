@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { cachedResponse } from '@/lib/cache-headers';
 import { getRawData } from '@/lib/data-access';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
     try {
         const lotteryScoring = require('../../../../lib/utils/lotteryScoring');

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thống Kê Kỷ Lục | XSMB Stats</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        .highlight {
+            background-color: rgba(99, 102, 241, 0.1) !important;
+            color: #dc2626 !important;
+            font-weight: 800;
+            border-radius: 6px;
+            padding: 2px 4px;
+            border: 1px solid rgba(220, 38, 38, 0.2);
+        }
+    </style>
+</head>
+
+<body class="antialiased text-slate-850">
+    <!-- Header / Navigation -->
+    <header class="nav-glass-blur sticky top-0 z-50 mb-8 w-full">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="flex h-16 items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                        <i class="bi bi-graph-up text-white text-lg"></i>
+                    </div>
+                    <a href="/" class="text-xl font-bold tracking-tight text-slate-900 hover:opacity-90 transition">XSMB <span class="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent font-extrabold">Stats</span></a>
+                </div>
+                <nav class="hidden md:flex space-x-1">
+                    <a href="/statistics" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Thống kê</a>
+                    <a href="/records" class="nav-link-custom px-3 py-2 text-sm font-semibold whitespace-nowrap active">Kỷ lục</a>
+                    <a href="/chain-frequency" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Chọn chuỗi loại</a>
+                    <a href="/simulation" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Lịch sử</a>
+                    <a href="/scoring" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Tính điểm</a>
+                    <a href="/settings" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">⚙️</a>
+                </nav>
+                <!-- Mobile Navigation Bar -->
+                <div class="flex md:hidden">
+                    <nav class="flex space-x-1 overflow-x-auto max-w-[280px] sm:max-w-[400px] py-1 custom-scrollbar">
+                        <a href="/statistics" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Thống kê</a>
+                        <a href="/records" class="nav-link-custom px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap active">Kỷ lục</a>
+                        <a href="/chain-frequency" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Chuỗi loại</a>
+                        <a href="/simulation" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Lịch sử</a>
+                        <a href="/scoring" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Tính điểm</a>
+                        <a href="/settings" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">⚙️</a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto max-w-7xl px-4 pb-12">
+        <!-- Title Section -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-3">
+                <i class="bi bi-trophy-fill text-yellow-500 glow-text-warning"></i>
+                <span>Thống Kê Kỷ Lục Chi Tiết</span>
+            </h1>
+            <p class="text-slate-650 mt-2">Dữ liệu phân tích kỷ lục gan, chuỗi tiến/lùi, gap statistics chi tiết của hơn 2,400 dạng số trên toàn bộ lịch sử XSMB từ 2005.</p>
+        </div>
+
+        <!-- Filter & Search Controls -->
+        <div class="glass-card p-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                <!-- Search bar -->
+                <div class="md:col-span-5">
+                    <label for="recordSearch" class="block text-sm font-semibold text-slate-700">Tìm kiếm kỷ lục:</label>
+                    <div class="relative mt-1">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" id="recordSearch" placeholder="Nhập tên kỷ lục cần tìm (ví dụ: Tiến liên tiếp, Chẵn lẻ...)" class="glass-input pl-10 block w-full text-sm py-2">
+                    </div>
+                </div>
+
+                <!-- Group filter -->
+                <div class="md:col-span-4">
+                    <label for="recordGroup" class="block text-sm font-semibold text-slate-700">Nhóm thống kê:</label>
+                    <select id="recordGroup" class="glass-input mt-1 block w-full text-sm py-2">
+                        <option value="ALL">-- Tất cả các nhóm --</option>
+                    </select>
+                </div>
+
+                <!-- Items per page -->
+                <div class="md:col-span-3">
+                    <label for="pageSize" class="block text-sm font-semibold text-slate-700">Hiển thị mỗi trang:</label>
+                    <select id="pageSize" class="glass-input mt-1 block w-full text-sm py-2">
+                        <option value="25">25 kỷ lục</option>
+                        <option value="50" selected>50 kỷ lục</option>
+                        <option value="100">100 kỷ lục</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination Top Controls -->
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4 bg-slate-50/60 p-4 rounded-xl border border-slate-200/50">
+            <span id="pageInfo" class="text-sm font-medium text-slate-750">Đang tải cấu hình chỉ số...</span>
+            <div class="flex items-center gap-2">
+                <button id="prevPageBtn" disabled class="px-3.5 py-2 text-sm font-bold bg-white border border-slate-250 text-slate-500 rounded-xl hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-1">
+                    <i class="bi bi-chevron-left"></i> Trước
+                </button>
+                <div id="pageSelectorContainer" class="flex items-center gap-1">
+                    <!-- Dynamic page numbers will go here -->
+                </div>
+                <button id="nextPageBtn" disabled class="px-3.5 py-2 text-sm font-bold bg-white border border-slate-250 text-slate-500 rounded-xl hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-1">
+                    Sau <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Records Container -->
+        <div class="glass-card overflow-hidden">
+            <!-- Skeleton Loader -->
+            <div id="recordsSkeleton" class="divide-y divide-slate-100 animate-pulse">
+                <div class="p-6 flex flex-col gap-3">
+                    <div class="h-6 bg-slate-200 rounded w-2/5"></div>
+                    <div class="h-4 bg-slate-200 rounded w-3/5"></div>
+                </div>
+                <div class="p-6 flex flex-col gap-3">
+                    <div class="h-6 bg-slate-200 rounded w-1/3"></div>
+                    <div class="h-4 bg-slate-200 rounded w-1/2"></div>
+                </div>
+                <div class="p-6 flex flex-col gap-3">
+                    <div class="h-6 bg-slate-200 rounded w-1/4"></div>
+                    <div class="h-4 bg-slate-200 rounded w-2/5"></div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div id="recordsEmptyState" class="hidden text-center py-16 px-4">
+                <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4 text-slate-400">
+                    <i class="bi bi-info-circle text-3xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-800">Không tìm thấy kỷ lục nào</h3>
+                <p class="text-slate-500 text-sm mt-1">Vui lòng thay đổi từ khóa tìm kiếm hoặc nhóm thống kê để thử lại.</p>
+            </div>
+
+            <!-- Dynamic Records Content -->
+            <div id="quick-stats-container" class="divide-y divide-black/5 hidden">
+                <!-- Loaded items will go here -->
+            </div>
+        </div>
+
+        <!-- Pagination Bottom Controls -->
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 bg-slate-50/60 p-4 rounded-xl border border-slate-200/50">
+            <span id="pageInfoBottom" class="text-sm font-medium text-slate-750"></span>
+            <div class="flex items-center gap-2">
+                <button id="prevPageBtnBottom" disabled class="px-3.5 py-2 text-sm font-bold bg-white border border-slate-250 text-slate-500 rounded-xl hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition">
+                    <i class="bi bi-chevron-left"></i> Trước
+                </button>
+                <button id="nextPageBtnBottom" disabled class="px-3.5 py-2 text-sm font-bold bg-white border border-slate-250 text-slate-500 rounded-xl hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition">
+                    Sau <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="/js/app-config.js"></script>
+    <script src="/js/stats-config.js"></script>
+    <script src="/js/records.js"></script>
+</body>
+
+</html>

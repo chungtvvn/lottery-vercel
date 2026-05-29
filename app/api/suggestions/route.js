@@ -3,6 +3,8 @@ import { cachedResponse } from '@/lib/cache-headers';
 import fs from 'fs';
 import path from 'path';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request) {
     try {
         // FAST PATH: Serve pre-computed suggestions from cached JSON

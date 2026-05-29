@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { cachedResponse } from '@/lib/cache-headers';
 
+export const dynamic = 'force-dynamic';
+
 // Potential streaks - tính toán nhẹ, trả về từ cache hoặc compute nhanh
 export async function GET() {
     try {

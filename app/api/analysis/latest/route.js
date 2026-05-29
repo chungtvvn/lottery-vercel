@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { cachedResponse } from '@/lib/cache-headers';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request) {
     try {
         const lotteryService = require('@/lib/services/lotteryService');

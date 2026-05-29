@@ -1,17 +1,36 @@
 import { NextResponse } from 'next/server';
 
 export const maxDuration = 60;
+export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request) {
     try {
+        const { searchParams } = new URL(request.url);
+        const metaOnly = searchParams.get('metaOnly') === 'true';
+        const keysStr = searchParams.get('keys');
+
         const { cachedResponse } = require('@/lib/cache-headers');
         const lotteryService = require('../../../../lib/services/lotteryService');
 
         // Chỉ cần rawData để hydrate current streaks; quick_stats lấy từ Supabase cache/DB.
         await lotteryService.loadRawData();
 
+        if (metaOnly) {
+            const totalYears = lotteryService.getTotalYears();
+            return cachedResponse({ _meta: { totalYears } }, 'NO_CACHE');
+        }
+
+        const { getQuickStatsFromCache, getPatternStatsByKeysFromDb } = require('@/lib/data-access');
+
+        if (keysStr) {
+            const keys = keysStr.split(',').filter(Boolean);
+            const stats = await getPatternStatsByKeysFromDb(keys);
+            const statisticsService = require('../../../../lib/services/statisticsService');
+            const hydrated = statisticsService.rehydrateCurrentStreaks(stats);
+            return cachedResponse(hydrated, 'NO_CACHE');
+        }
+
         // Try cache first
-        const { getQuickStatsFromCache } = require('@/lib/data-access');
         const cached = await getQuickStatsFromCache();
         if (cached) {
             // Re-hydrate current streaks on-the-fly để đảm bảo fullSequence luôn có

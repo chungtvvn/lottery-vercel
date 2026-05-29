@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 export const maxDuration = 300;
+export const dynamic = 'force-dynamic';
 
 function normalizeBooleanParam(value, fallback) {
     if (value === null || value === undefined || value === '') return fallback;

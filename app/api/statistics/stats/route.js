@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { getCategoryStats, getRawData } from '@/lib/data-access';
 import { cachedResponse, errorResponse } from '@/lib/cache-headers';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * API: /api/statistics/stats?category=dau_chan&subcategory=veSole&exactLength=2&startDate=dd/mm/yyyy&endDate=dd/mm/yyyy
  * Tương đương: /statistics/api/v2/stats cũ

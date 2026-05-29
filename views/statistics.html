@@ -34,6 +34,7 @@
                 </div>
                 <nav class="hidden md:flex space-x-1">
                     <a href="/statistics" class="nav-link-custom px-3 py-2 text-sm font-semibold whitespace-nowrap active">Thống kê</a>
+                    <a href="/records" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Kỷ lục</a>
                     <a href="/chain-frequency" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Chọn chuỗi loại</a>
                     <a href="/simulation" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Lịch sử</a>
                     <a href="/scoring" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Tính điểm</a>
@@ -43,6 +44,7 @@
                 <div class="flex md:hidden">
                     <nav class="flex space-x-1 overflow-x-auto max-w-[280px] sm:max-w-[400px] py-1 custom-scrollbar">
                         <a href="/statistics" class="nav-link-custom px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap active">Thống kê</a>
+                        <a href="/records" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Kỷ lục</a>
                         <a href="/chain-frequency" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Chuỗi loại</a>
                         <a href="/simulation" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Lịch sử</a>
                         <a href="/scoring" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Tính điểm</a>
@@ -177,24 +179,20 @@
             </div>
         </div>
 
-        <!-- Quick Stats / Records -->
-        <div x-data="{ open: true }" class="glass-card overflow-hidden">
-            <div @click="open = !open" class="flex justify-between items-center p-4 cursor-pointer hover:bg-black/2 transition border-b border-black/5">
-                <h3 class="text-xl font-semibold text-slate-900 flex items-center">
-                    <i class="bi bi-trophy-fill text-yellow-600 me-2 glow-text-warning"></i> Thống Kê Kỷ Lục
-                </h3>
-                <i class="bi text-slate-500" :class="open ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-            </div>
-            <div x-show="open" x-transition class="accordion-content-highlight" :class="{ 'expanded': open }">
+        <!-- Quick Stats / Records Banner -->
+        <div class="glass-card bg-gradient-to-r from-amber-500/5 to-purple-500/5 border border-amber-500/20 p-6 flex flex-col sm:flex-row justify-between items-center gap-6 shadow-sm hover:shadow-md transition">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/20 flex-shrink-0 animate-pulse">
+                    <i class="bi bi-trophy-fill text-white text-xl"></i>
+                </div>
                 <div>
-                    <div id="quick-stats-container" class="divide-y divide-black/5">
-                        <div class="text-center p-8">
-                            <div role="status" class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] text-indigo-650 motion-reduce:animate-[spin_1.5s_linear_infinite]">
-                            </div>
-                        </div>
-                    </div>
+                    <h4 class="text-lg font-bold text-slate-900">Thống Kê Kỷ Lục XSMB</h4>
+                    <p class="text-sm text-slate-650 mt-1">Xem chi tiết các kỷ lục gan số, kỷ lục chuỗi tiến lùi, gap stats và bộ lọc nâng cao trên 20 năm dữ liệu.</p>
                 </div>
             </div>
+            <a href="/records" class="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl shadow hover:shadow-indigo-500/20 transition duration-150 transform hover:-translate-y-0.5 whitespace-nowrap">
+                <i class="bi bi-eye mr-2"></i>Xem ngay trang Kỷ Lục
+            </a>
         </div>
     </div>
 

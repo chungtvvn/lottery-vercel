@@ -417,16 +417,66 @@ async function main() {
     const { data: finalArray, source } = await buildRawDataFromSources(currentArray);
     const forceRegenerateStats = process.env.FORCE_REGENERATE_STATS === '1';
 
-    if (!hasRawDataChanged(currentArray, finalArray) && !forceRegenerateStats) {
-        console.log(`[3] RAW_DATA không đổi (latest=${getLatestDateValue(finalArray)}, rows=${finalArray.length}, source=${source}). Bỏ qua generate stats để tiết kiệm Action time.`);
+    const latestRawDate = getLatestDateValue(finalArray);
+    let isStale = false;
+    if (latestRawDate) {
+        try {
+            const { readCacheStore, shouldUseSupabaseDbStats } = require('../lib/data-access.js');
+            if (shouldUseSupabaseDbStats()) {
+                const qsHistory = await readCacheStore('quick_stats_history');
+                if (!qsHistory || !Array.isArray(qsHistory) || qsHistory.length === 0) {
+                    console.log('[Cache Check] quick_stats_history cache is empty/missing in DB. Stats need to be regenerated.');
+                    isStale = true;
+                } else {
+                    const expectedDateParts = latestRawDate.split('-');
+                    const expectedDateStr = expectedDateParts.length === 3 ? `${expectedDateParts[2]}/${expectedDateParts[1]}/${expectedDateParts[0]}` : latestRawDate;
+                    const latestStatsDate = qsHistory[0].date;
+                    if (latestStatsDate !== expectedDateStr) {
+                        console.log(`[Cache Check] Stats are behind! Raw latest draw date is ${expectedDateStr}, but stats latest date is ${latestStatsDate}. Forcing stats generation.`);
+                        isStale = true;
+                    } else {
+                        console.log(`[Cache Check] Stats are up to date in DB (both at ${expectedDateStr}).`);
+                    }
+                }
+            } else {
+                const fsSync = require('fs');
+                const localHistoryPath = path.join(DATA_DIR, 'statistics', 'quick_stats_history.json');
+                if (!fsSync.existsSync(localHistoryPath)) {
+                    console.log('[Cache Check] Local quick_stats_history.json does not exist. Stats need to be regenerated.');
+                    isStale = true;
+                } else {
+                    const localData = JSON.parse(fsSync.readFileSync(localHistoryPath, 'utf8'));
+                    if (!localData || !Array.isArray(localData) || localData.length === 0) {
+                        isStale = true;
+                    } else {
+                        const expectedDateParts = latestRawDate.split('-');
+                        const expectedDateStr = expectedDateParts.length === 3 ? `${expectedDateParts[2]}/${expectedDateParts[1]}/${expectedDateParts[0]}` : latestRawDate;
+                        const latestStatsDate = localData[0].date;
+                        if (latestStatsDate !== expectedDateStr) {
+                            console.log(`[Cache Check] Local stats are behind! Raw latest draw date is ${expectedDateStr}, but local stats latest date is ${latestStatsDate}. Forcing stats generation.`);
+                            isStale = true;
+                        } else {
+                            console.log(`[Cache Check] Local stats are up to date (both at ${expectedDateStr}).`);
+                        }
+                    }
+                }
+            }
+        } catch (checkErr) {
+            console.warn('[Cache Check] Failed to check if stats are stale, assuming stale:', checkErr.message);
+            isStale = true;
+        }
+    }
+
+    if (!hasRawDataChanged(currentArray, finalArray) && !forceRegenerateStats && !isStale) {
+        console.log(`[3] RAW_DATA không đổi (latest=${latestRawDate}, rows=${finalArray.length}, source=${source}). Bỏ qua generate stats để tiết kiệm Action time.`);
         return;
     }
 
     if (hasRawDataChanged(currentArray, finalArray)) {
         await fs.writeFile(JSON_FILE, JSON.stringify(finalArray, null, 0), 'utf-8');
-        console.log(`[3] Ghi file xsmb-2-digits.json (RAW_DATA) thành công! (${finalArray.length} bản ghi, latest=${getLatestDateValue(finalArray)}, source=${source})`);
+        console.log(`[3] Ghi file xsmb-2-digits.json (RAW_DATA) thành công! (${finalArray.length} bản ghi, latest=${latestRawDate}, source=${source})`);
     } else {
-        console.log(`[3] RAW_DATA không đổi nhưng FORCE_REGENERATE_STATS=1, sinh lại thống kê/cache từ code mới.`);
+        console.log(`[3] RAW_DATA không đổi nhưng stats đang bị chậm hoặc FORCE_REGENERATE_STATS=1, sinh lại thống kê/cache từ code mới.`);
     }
 
     const { shouldUseSupabaseDbStats, writeCacheStoreDirect, clearCache: daClearCache } = require('../lib/data-access.js');
@@ -474,14 +524,14 @@ async function main() {
         const ss = require('../lib/services/statisticsService.js');
         const he = require('../lib/services/historicalExclusionService.js');
 
+        const latestResult = finalArray[finalArray.length - 1];
+        const yesterdayResult = finalArray.length >= 2 ? finalArray[finalArray.length - 2] : null;
+        const dayBeforeYesterdayResult = finalArray.length >= 3 ? finalArray[finalArray.length - 3] : null;
+
         if (dbStatsActive) {
             const { identifyCategories } = require('../lib/utils/numberAnalysis');
             const { calculateQuickStatsForPattern } = require('../lib/utils/quickStatsCalculator');
             const { savePatternStatsBatchToDb } = require('../lib/data-access');
-
-            const latestResult = finalArray[finalArray.length - 1];
-            const yesterdayResult = finalArray.length >= 2 ? finalArray[finalArray.length - 2] : null;
-            const dayBeforeYesterdayResult = finalArray.length >= 3 ? finalArray[finalArray.length - 3] : null;
 
             const formatToDDMMYYYY = (dateStr) => {
                 if (!dateStr) return '';
@@ -685,6 +735,25 @@ async function main() {
                         }
                     }
                 }
+            }
+
+            // PRE-COMPUTE: Suggestions and write to DB Cache Store
+            console.log(' -> Tạo Cached Suggestions cho Supabase DB Cache Store...');
+            try {
+                const suggestionsController = require('../lib/controllers/suggestionsController');
+                let suggestionsResult;
+                const mockReq = { query: { gapStrategy: 'COMBINED', gapBuffer: '0', strategy: 'BALANCED' } };
+                const mockRes = { json(d) { suggestionsResult = d; return mockRes; }, status(c) { mockRes._status = c; return mockRes; }, _status: 200 };
+                await suggestionsController.getSuggestions(mockReq, mockRes);
+                if (suggestionsResult) {
+                    await writeCacheStoreDirect('cached_suggestions', 'statistics', {
+                        ...suggestionsResult,
+                        cachedAt: new Date().toISOString()
+                    });
+                    console.log('✅ Đã lưu kết quả cached_suggestions vào Cache Store');
+                }
+            } catch (sugErr) {
+                console.error('⚠️ Lỗi khi tạo cached suggestions cho DB:', sugErr.message);
             }
 
             // Sync daily prediction runs history and generate tomorrow's prediction

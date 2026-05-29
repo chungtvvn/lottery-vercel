@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { getAppConfig } from '@/lib/data-access';
 import { cachedResponse } from '@/lib/cache-headers';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
     try {
         const config = await getAppConfig();

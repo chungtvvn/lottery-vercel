@@ -1120,45 +1120,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const fetchQuickStats = async () => {
         try {
-            const data = await fetchJSON(`${BASE_URL}/api/statistics/quick-stats`);
-            quickStatsContainer.innerHTML = '';
-            const allCurrentStreaks = [];
-
+            const data = await fetchJSON(`${BASE_URL}/api/statistics/quick-stats?metaOnly=true`);
             let totalYears = 20.41; // fallback
             if (data._meta && data._meta.totalYears) {
                 totalYears = data._meta.totalYears;
                 window.GLOBAL_TOTAL_YEARS = totalYears;
             }
-
-            ORDERED_STATS_KEYS.forEach(key => {
-                const stat = data[key];
-                if (stat && !stat.error) {
-                    if (stat.current) {
-                        const recordLength = stat.computedMaxStreak || (stat.longest && stat.longest.length > 0 ? stat.longest[0].length : 0);
-                        allCurrentStreaks.push({
-                            ...stat.current,
-                            key: key,
-                            description: stat.description,
-                            recordLength: recordLength,
-                            isSuperRecord: stat.isSuperMaxThreshold || false,
-                            originalRecord: stat.longest && stat.longest.length > 0 ? stat.longest[0].length : 0,
-                            gapStats: stat.gapStats,
-                            exactGapStats: stat.exactGapStats,
-                            extensionGapStats: stat.extensionGapStats,
-                            lengthHistoryMetrics: stat.lengthHistoryMetrics,
-                            historyMetrics: stat.historyMetrics
-                        });
-                    }
-                    renderRecordAccordionItem(key, stat);
-                }
-            });
-            const streaksByLength = allCurrentStreaks.reduce((acc, streak) => {
-                if (!acc[streak.length]) { acc[streak.length] = []; }
-                acc[streak.length].push(streak);
-                return acc;
-            }, {});
-
-            // We no longer call renderCurrentStreaks here as it's handled by selectHistoryDate
         } catch (error) {
             console.error("Lỗi khi tải thống kê nhanh:", error);
         }

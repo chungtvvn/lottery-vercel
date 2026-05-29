@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 export const maxDuration = 300;
+export const dynamic = 'force-dynamic';
 
 export async function GET(request) {
     try {
