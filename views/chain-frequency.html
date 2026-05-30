@@ -82,18 +82,11 @@
                     <label class="block">
                         <span class="mb-1 block text-xs font-semibold uppercase text-slate-500">Sắp xếp</span>
                         <select id="sortBy" class="glass-input h-10 text-sm font-medium">
-                            <option value="frequency" selected>HT/Target thấp → cao</option>
-                            <option value="risk">Rủi ro cao → thấp</option>
+                            <option value="risk" selected>Rủi ro cao → thấp</option>
+                            <option value="frequency">HT/Target thấp → cao</option>
                         </select>
                     </label>
-                    <label class="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white/60 px-3 text-sm font-medium text-slate-700 hover:bg-white/90 transition cursor-pointer">
-                        <input id="includePotential" type="checkbox" checked class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
-                        Chuỗi chưa hình thành
-                    </label>
-                    <label class="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white/60 px-3 text-sm font-medium text-slate-700 hover:bg-white/90 transition cursor-pointer">
-                        <input id="excludeFixedThreeValueGroups" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
-                        Bỏ nhóm 3 cố định
-                    </label>
+
                     <button id="refreshButton" class="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 px-5 text-sm font-semibold text-white shadow hover:shadow-indigo-500/10 transition-all duration-300">
                         <span id="spinner" class="spinner hidden"></span>
                         <span id="refreshLabel">Tính lại</span>

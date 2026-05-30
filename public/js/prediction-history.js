@@ -3,7 +3,7 @@
     const state = {
         history: [],
         selectedIndex: -1,
-        selectedMethod: 'riskHold60'
+        selectedMethod: 'riskHold70'
     };
 
     function getActiveSummary(run, selectedMethod) {
