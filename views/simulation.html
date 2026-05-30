@@ -91,6 +91,20 @@
             </div>
         </section>
 
+        <!-- Method Selector -->
+        <div class="glass-card p-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <label for="methodSelector" class="text-sm font-bold text-slate-700">Phương pháp dự đoán:</label>
+                <select id="methodSelector" class="glass-input text-sm py-1.5 px-3 block w-72">
+                    <option value="riskHold60" selected>Phương pháp Rủi ro (riskHold60)</option>
+                    <option value="frequencyHold60">Phương pháp Tần suất (frequencyHold60)</option>
+                </select>
+            </div>
+            <div class="text-xs text-slate-500 italic">
+                * Thay đổi phương pháp để xem lại thống kê hiệu quả và dàn số tương ứng.
+            </div>
+        </div>
+
         <!-- Stats summary cards -->
         <section id="summarySection" class="mb-6 grid gap-4 md:grid-cols-4 hidden animate-fade-in"></section>
 

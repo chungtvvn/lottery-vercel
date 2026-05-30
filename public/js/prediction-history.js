@@ -2,8 +2,21 @@
 (function () {
     const state = {
         history: [],
-        selectedIndex: -1
+        selectedIndex: -1,
+        selectedMethod: 'riskHold60'
     };
+
+    function getActiveSummary(run, selectedMethod) {
+        const sum = run.summary || {};
+        if (sum.methods && sum.methods[selectedMethod]) {
+            return {
+                resolved: sum.resolved,
+                actualSpecial: sum.actualSpecial,
+                ...sum.methods[selectedMethod]
+            };
+        }
+        return sum; // Fallback
+    }
 
     function el(id) { return document.getElementById(id); }
 
@@ -172,7 +185,8 @@
         let totalProfit = 0;
 
         resolvedRuns.forEach(r => {
-            const sum = r.summary;
+            const sum = getActiveSummary(r, state.selectedMethod);
+            if (!sum) return;
             if (sum.betWin) betWins++;
             if (sum.holdWin) holdWins++;
             totalBetProfit += sum.betProfit || 0;
@@ -217,12 +231,12 @@
         detailsTable.innerHTML = '';
 
         history.forEach((run, idx) => {
-            const sum = run.summary || {};
-            const isToday = !sum.resolved;
+            const sum = getActiveSummary(run, state.selectedMethod) || {};
+            const isToday = !run.summary?.resolved;
 
             const dateStr = formatDateToDMY(run.predictionDate);
-            const deStr = sum.resolved && sum.actualSpecial !== null ? String(sum.actualSpecial).padStart(2, '0') : '<span class="text-slate-450 font-bold animate-pulse">Chờ...</span>';
-            const profitHtml = sum.resolved ? formatProfit(sum.profit) : '<span class="text-slate-450 font-medium">Chờ...</span>';
+            const deStr = run.summary?.resolved && run.summary?.actualSpecial !== null ? String(run.summary.actualSpecial).padStart(2, '0') : '<span class="text-slate-450 font-bold animate-pulse">Chờ...</span>';
+            const profitHtml = run.summary?.resolved ? formatProfit(sum.profit) : '<span class="text-slate-450 font-medium">Chờ...</span>';
 
             const row = document.createElement('tr');
             row.className = `cursor-pointer hover:bg-indigo-50/40 transition border-b border-slate-100 ${state.selectedIndex === idx ? 'bg-indigo-50/60 font-semibold' : (isToday ? 'bg-amber-50/20' : 'bg-white/40')}`;
@@ -269,14 +283,14 @@
         }
 
         const run = state.history[index];
-        const sum = run.summary || {};
+        const sum = getActiveSummary(run, state.selectedMethod) || {};
         const dateStr = formatDateToDMY(run.predictionDate);
 
         // Render Details Sidebar
         const sidebar = el('methodDetail');
         
         let headerStatusHtml = '';
-        if (!sum.resolved) {
+        if (!run.summary?.resolved) {
             headerStatusHtml = `
                 <div class="rounded-xl bg-amber-50 border border-amber-200 p-3 mb-4 text-xs text-amber-800">
                     <i class="bi bi-clock-history mr-1.5 font-bold"></i> Dự báo đang hoạt động. Đang đợi kết quả quay thưởng lúc 18:30 ngày ${dateStr}.
@@ -290,7 +304,7 @@
                     <div class="flex items-center gap-2.5">
                         <span class="text-3xl">🎯</span>
                         <div>
-                            <div class="text-xs opacity-75 font-semibold">KẾT QUẢ ĐỀ: <span class="font-extrabold text-sm opacity-100">${String(sum.actualSpecial).padStart(2, '0')}</span></div>
+                            <div class="text-xs opacity-75 font-semibold">KẾT QUẢ ĐỀ: <span class="font-extrabold text-sm opacity-100">${String(run.summary.actualSpecial).padStart(2, '0')}</span></div>
                             <div class="text-[10px] opacity-75">Dựa trên kết quả draw ngày ${dateStr}</div>
                         </div>
                     </div>
@@ -375,6 +389,13 @@
 
     // Initialize Page
     document.addEventListener('DOMContentLoaded', () => {
+        const methodSelector = el('methodSelector');
+        if (methodSelector) {
+            methodSelector.addEventListener('change', (e) => {
+                state.selectedMethod = e.target.value;
+                renderDashboard();
+            });
+        }
         loadHistory();
     });
 })();
