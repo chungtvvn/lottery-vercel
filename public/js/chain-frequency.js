@@ -210,10 +210,10 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        el('refreshButton').addEventListener('click', loadData);
-        el('sortBy').addEventListener('change', loadData);
-        el('includePotential').addEventListener('change', loadData);
-        el('excludeFixedThreeValueGroups').addEventListener('change', loadData);
+        el('refreshButton')?.addEventListener('click', loadData);
+        el('sortBy')?.addEventListener('change', loadData);
+        el('includePotential')?.addEventListener('change', loadData);
+        el('excludeFixedThreeValueGroups')?.addEventListener('change', loadData);
         el('selectTier1').addEventListener('click', () => setTier(1, true));
         el('selectTier2').addEventListener('click', () => setTier(2, true));
         el('selectTier3').addEventListener('click', () => setTier(3, true));
