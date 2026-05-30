@@ -133,7 +133,7 @@
             if (window.AppConfig && typeof window.AppConfig.checkAndClearCacheOnNewData === 'function') {
                 await window.AppConfig.checkAndClearCacheOnNewData();
             }
-            const data = await fetchJSON('/api/prediction/history?limit=90&v=2');
+            const data = await fetchJSON('/api/prediction/history?limit=90&v=4');
             if (data && data.success && Array.isArray(data.history)) {
                 state.history = data.history;
                 renderDashboard();
