@@ -6,9 +6,6 @@ export const dynamic = 'force-dynamic';
 // Potential streaks - tính toán nhẹ, trả về từ cache hoặc compute nhanh
 export async function GET() {
     try {
-        const lotteryService = require('@/lib/services/lotteryService');
-        await lotteryService.loadAll();
-        
         // Potential streaks was removed from static JSON generation to save space.
         // Return empty array to prevent 500 errors and UI crashes.
         return cachedResponse([], 'DAILY');

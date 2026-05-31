@@ -10,50 +10,13 @@ export async function GET() {
         const historicalExclusionService = require('../../../../lib/services/historicalExclusionService');
         const statisticsService = require('../../../../lib/services/statisticsService');
 
-        // Cache lịch sử đã được daily job ghi sẵn; chỉ cần rawData để hydrate/bổ sung ngày mới nhất.
-        await lotteryService.loadRawData();
-
-        // Try DB cache first 
-        const { getQuickStatsHistoryFromCache, getPatternStatsByKeysFromDb } = require('@/lib/data-access');
+        // Cache lịch sử đã được daily job ghi sẵn trên R2/local và đã chứa đủ
+        // fullSequence/gap/reliability. Không hydrate lại bằng quick_stats đầy đủ
+        // ở runtime vì file đó rất lớn và dễ làm Vercel timeout.
+        const { getQuickStatsHistoryFromCache } = require('@/lib/data-access');
         const cached = await getQuickStatsHistoryFromCache().catch(() => null);
         if (cached && cached.length > 0) {
-            if (cached[0].streaks && cached[0].streaks.length > 0) {
-                 // Collect unique keys to load selectively from DB to avoid Vercel 10s timeout
-                 const activeKeys = new Set();
-                 for (const day of cached) {
-                     if (day.streaks) {
-                         for (const s of day.streaks) {
-                             if (s.key) activeKeys.add(s.key);
-                         }
-                     }
-                 }
-                 
-                 const quickStats = await getPatternStatsByKeysFromDb(Array.from(activeKeys)).catch(() => null);
-                 const hydratedHistory = statisticsService.rehydrateHistoryStreaks(cached, quickStats);
-
-                 // Cache history được sinh sẵn có thể thiếu các nhóm "tiềm năng còn 1 ngày".
-                 // Bổ sung lại riêng ngày mới nhất từ quick_stats đầy đủ để UI hiện ngay mà không chờ bot regenerate JSON.
-                 try {
-                     const latestRaw = lotteryService.getRawData()?.slice(-1)?.[0];
-                    if (quickStats && latestRaw && latestRaw.date) {
-                        const latestDate = latestRaw.date.includes('-')
-                            ? `${latestRaw.date.split('-')[2].substring(0, 2)}/${latestRaw.date.split('-')[1]}/${latestRaw.date.split('-')[0]}`
-                            : latestRaw.date;
-                        const activeStreaks = statisticsService.buildActiveStreaksFromQuickStats(quickStats);
-                        const latestIndex = hydratedHistory.findIndex(item => item.date === latestDate);
-                        if (latestIndex >= 0) {
-                            hydratedHistory[latestIndex] = {
-                                ...hydratedHistory[latestIndex],
-                                streaks: activeStreaks
-                            };
-                        }
-                    }
-                 } catch (augmentError) {
-                    console.warn('[quick-stats-history] Cannot augment latest potential streaks:', augmentError.message);
-                 }
-
-                 return cachedResponse(hydratedHistory, 'NO_CACHE');
-            }
+            return cachedResponse(cached, 'NO_CACHE');
         }
 
         console.log('[quick-stats-history] Cache miss or empty, computing on-the-fly...');
