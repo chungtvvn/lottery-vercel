@@ -16,3 +16,4 @@ if (process.env.SYNC_LEGACY_STORAGE === '1') {
     console.log('[Supabase] Bỏ qua legacy Storage sync. Set SYNC_LEGACY_STORAGE=1 nếu cần upload JSON gzip cũ.');
 }
 run('scripts/sync-supabase-db-stats.js');
+run('scripts/upload-to-r2.js');
