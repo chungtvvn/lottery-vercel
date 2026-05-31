@@ -1846,12 +1846,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    // Helper to detect pattern type
     const detectPatternType = (key) => {
-        if (key.includes('tienLuiSoLe') || key.includes('luiTienSoLe')) {
+        const lowerKey = String(key || '').toLowerCase();
+        if (lowerKey.includes('tienluisole') || lowerKey.includes('luitiensole')) {
             return 'tienLuiSoLe'; // Min 4
-        } else if ((key.includes('veSole') || key.includes('veSoleMoi')) &&
-            !key.includes('tienLuiSoLe') && !key.includes('luiTienSoLe')) {
+        } else if ((lowerKey.includes('vesole') || lowerKey.includes('solemoi')) &&
+            !lowerKey.includes('tienluisole') && !lowerKey.includes('luitiensole') && !lowerKey.includes('soletheocap')) {
             return 'soLe'; // Odd only (3, 5, 7...) min 3
         }
         return 'default'; // Min 2

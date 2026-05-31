@@ -108,10 +108,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const detectPatternType = (key) => {
-        if (key.includes('tienLuiSoLe') || key.includes('luiTienSoLe')) {
+        const lowerKey = String(key || '').toLowerCase();
+        if (lowerKey.includes('tienluisole') || lowerKey.includes('luitiensole')) {
             return 'tienLuiSoLe';
-        } else if ((key.includes('veSole') || key.includes('veSoleMoi')) &&
-            !key.includes('tienLuiSoLe') && !key.includes('luiTienSoLe')) {
+        } else if ((lowerKey.includes('vesole') || lowerKey.includes('solemoi')) &&
+            !lowerKey.includes('tienluisole') && !lowerKey.includes('luitiensole') && !lowerKey.includes('soletheocap')) {
             return 'soLe';
         }
         return 'default';

@@ -472,7 +472,7 @@ async function main() {
         return;
     }
 
-    if (hasRawDataChanged(currentArray, finalArray)) {
+    if (hasRawDataChanged(currentArray, finalArray) || forceRegenerateStats || isStale) {
         await fs.writeFile(JSON_FILE, JSON.stringify(finalArray, null, 0), 'utf-8');
         console.log(`[3] Ghi file xsmb-2-digits.json (RAW_DATA) thành công! (${finalArray.length} bản ghi, latest=${latestRawDate}, source=${source})`);
     } else {

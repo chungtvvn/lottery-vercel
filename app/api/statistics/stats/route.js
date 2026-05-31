@@ -236,7 +236,7 @@ async function handleCategoryResponse(categoryData, subcategory, exactLength, mi
 
         // 🔥 HYDRATE: Xây dựng fullSequence cho mỗi streak để frontend render bubbles
         const rawData = await getRawData();
-        const categoryName = (categoryData.description || '') + ' ' + (subcategory || '');
+        const categoryName = (categoryData.description || '') + ' ' + (subcategory || '') + ' ' + categoryKey;
         filtered = filtered.map(s => hydrateStreak(s, rawData, categoryName));
 
         // Sắp xếp lại: Mới nhất lên đầu
