@@ -65,11 +65,16 @@ jobs:
           XOSO_MAX_WAIT_MINUTES: ${{ github.event_name == 'workflow_dispatch' && inputs.xoso_max_wait_minutes || '90' }}
           XOSO_RETRY_INTERVAL_SECONDS: ${{ github.event_name == 'workflow_dispatch' && inputs.xoso_retry_interval_seconds || '60' }}
           XOSO_TARGET_DATE: ${{ github.event_name == 'workflow_dispatch' && inputs.xoso_target_date || '' }}
-          LOTTERY_STATS_SOURCE: 'supabase-db'
+          LOTTERY_STATS_SOURCE: 'local'
           SYNC_SUPABASE_AFTER_UPDATE: '1'
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
+          CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
+          CLOUDFLARE_R2_ENDPOINT: ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
+          CLOUDFLARE_R2_BUCKET: ${{ secrets.CLOUDFLARE_R2_BUCKET }}
+          NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL: ${{ secrets.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL }}
         run: node scripts/update-static-data.js
 
       - name: Kiểm tra dữ liệu có thay đổi không
