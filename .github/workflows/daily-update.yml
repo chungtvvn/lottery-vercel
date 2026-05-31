@@ -37,6 +37,8 @@ jobs:
   generator:
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    env:
+      NODE_OPTIONS: --max-old-space-size=8192
     steps:
       - name: Checkout repo
         uses: actions/checkout@v5
