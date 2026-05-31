@@ -1,4 +1,4 @@
-name: Daily Vina Lottery Supabase Generator
+name: Daily Vina Lottery R2 Generator
 
 on:
   schedule:
@@ -52,30 +52,28 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Kiểm tra kết nối Supabase
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: npm run supabase:check
-
-      - name: Pull Data & Generate Supabase Stats
+      - name: Pull Data & Generate R2 Static Stats
         env:
           WAIT_FOR_NEW_XOSO: ${{ github.event_name == 'workflow_dispatch' && inputs.wait_for_new_xoso || '1' }}
           XOSO_MAX_WAIT_MINUTES: ${{ github.event_name == 'workflow_dispatch' && inputs.xoso_max_wait_minutes || '90' }}
           XOSO_RETRY_INTERVAL_SECONDS: ${{ github.event_name == 'workflow_dispatch' && inputs.xoso_retry_interval_seconds || '60' }}
           XOSO_TARGET_DATE: ${{ github.event_name == 'workflow_dispatch' && inputs.xoso_target_date || '' }}
+          LOTTERY_DATA_SOURCE: 'r2'
           LOTTERY_STATS_SOURCE: 'local'
-          SYNC_SUPABASE_AFTER_UPDATE: '1'
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          FORCE_REGENERATE_STATS: ${{ vars.FORCE_REGENERATE_STATS || '0' }}
+          SYNC_R2_AFTER_UPDATE: '1'
+          SYNC_SUPABASE_AFTER_UPDATE: '0'
           CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
           CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
           CLOUDFLARE_R2_ENDPOINT: ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
           CLOUDFLARE_R2_BUCKET: ${{ secrets.CLOUDFLARE_R2_BUCKET }}
           NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL: ${{ secrets.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL }}
         run: node scripts/update-static-data.js
+
+      - name: Audit thống kê Local/R2
+        env:
+          NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL: ${{ secrets.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL }}
+        run: npm run stats:audit
 
       - name: Kiểm tra dữ liệu có thay đổi không
         id: changes
@@ -84,7 +82,7 @@ jobs:
         run: |
           if [ "$COMMIT_STATIC_DATA" != "1" ]; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "Đã sync Supabase; bỏ qua commit static JSON vì COMMIT_STATIC_DATA != 1."
+            echo "Đã upload R2; bỏ qua commit static JSON vì COMMIT_STATIC_DATA != 1."
             exit 0
           fi
           if git diff --quiet -- lib/data/xsmb-2-digits.json lib/data/statistics; then
@@ -119,15 +117,15 @@ jobs:
             echo "Không cấu hình VERCEL_DEPLOY_HOOK_URL; Vercel sẽ deploy qua Git integration khi workflow push commit."
           fi
 
-      # In Supabase-DB mode (COMMIT_STATIC_DATA=0), stats go directly to DB without git commits.
+      # In R2 mode (COMMIT_STATIC_DATA=0), stats go directly to R2 without git commits.
       # We must still redeploy Vercel to kill warm serverless instances that cache old data in memory.
-      - name: Force Vercel Redeploy (Supabase DB mode)
+      - name: Force Vercel Redeploy (R2 mode)
         if: steps.changes.outputs.changed != 'true'
         env:
           VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
         run: |
           if [ -n "$VERCEL_DEPLOY_HOOK_URL" ]; then
-            echo "Supabase DB mode: Triggering Vercel redeploy to clear warm function caches..."
+            echo "R2 mode: Triggering Vercel redeploy to clear warm function caches..."
             curl -fsS -X POST "$VERCEL_DEPLOY_HOOK_URL"
             echo ""
             echo "✅ Vercel redeploy triggered."

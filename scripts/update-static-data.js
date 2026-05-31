@@ -4,6 +4,7 @@ require('dotenv').config();
 const fs = require('fs').promises;
 const path = require('path');
 const https = require('https');
+const zlib = require('zlib');
 const { spawnSync } = require('child_process');
 const { fetchLatestXsmbResult, XOSO_HOME_URL, XOSO_SOURCE_URLS } = require('./sources/xoso-com-vn');
 
@@ -111,6 +112,66 @@ function compareDateValues(a, b) {
     return String(a).substring(0, 10).localeCompare(String(b).substring(0, 10));
 }
 
+function flattenStatsKeys(stats) {
+    const keys = new Set();
+    for (const [category, value] of Object.entries(stats || {})) {
+        if (value && Array.isArray(value.streaks)) {
+            keys.add(category);
+        } else if (value && typeof value === 'object') {
+            for (const [subcategory, subvalue] of Object.entries(value)) {
+                if (subvalue && Array.isArray(subvalue.streaks)) {
+                    keys.add(`${category}:${subcategory}`);
+                }
+            }
+        }
+    }
+    return keys;
+}
+
+function hasRequiredLocalStatsCoverage() {
+    if (process.env.SKIP_STATS_COVERAGE_CHECK === '1') return true;
+    try {
+        const {
+            VALID_3_DIGIT_GROUPS,
+            VALID_TONG_TT_3_VALUE_GROUPS,
+            VALID_TONG_MOI_3_VALUE_GROUPS,
+            VALID_HIEU_3_VALUE_GROUPS
+        } = require('../lib/utils/numberAnalysis');
+        const fsSync = require('fs');
+        const required = [];
+        const add = (category, subcategories) => subcategories.forEach(sub => required.push(`${category}:${sub}`));
+        const digitSubs = ['veLienTiep', 'veSole', 'veSoleMoi', 'tienLuiSoLe', 'luiTienSoLe', 'veTheoThuTu', 'veSoLeTheoThuTu', 'tienLienTiep', 'tienDeuLienTiep', 'luiLienTiep', 'luiDeuLienTiep'];
+        const metricSubs = ['veLienTiep', 'veSole', 'veSoleMoi', 'veTheoThuTu', 'veSoLeTheoThuTu', 'tienLienTiep', 'tienDeuLienTiep', 'luiLienTiep', 'luiDeuLienTiep', 'tienLuiSoLe', 'luiTienSoLe'];
+
+        for (const group of VALID_3_DIGIT_GROUPS) {
+            const suffix = group.join('_');
+            add(`dau_3d_${suffix}`, digitSubs);
+            add(`dit_3d_${suffix}`, digitSubs);
+        }
+        for (const group of VALID_TONG_TT_3_VALUE_GROUPS) add(`tong_tt_${group.join('_')}`, metricSubs);
+        for (const group of VALID_TONG_MOI_3_VALUE_GROUPS) add(`tong_moi_${group.join('_')}`, metricSubs);
+        for (const group of VALID_HIEU_3_VALUE_GROUPS) add(`hieu_${group.join('_')}`, metricSubs);
+
+        const actual = new Set();
+        for (const file of ['number_stats.json', 'head_tail_stats.json', 'sum_difference_stats.json']) {
+            const filePath = path.join(DATA_DIR, 'statistics', file);
+            if (!fsSync.existsSync(filePath)) return false;
+            const stats = JSON.parse(fsSync.readFileSync(filePath, 'utf8'));
+            flattenStatsKeys(stats).forEach(key => actual.add(key));
+        }
+
+        const missingCount = required.reduce((count, key) => count + (actual.has(key) ? 0 : 1), 0);
+        if (missingCount > 0) {
+            console.log(`[Cache Check] Stats coverage missing ${missingCount}/${required.length} required fixed 3-value patterns. Forcing stats generation.`);
+            return false;
+        }
+        return true;
+    } catch (error) {
+        console.warn(`[Cache Check] Không kiểm tra được stats coverage, sẽ sinh lại để an toàn: ${error.message}`);
+        return false;
+    }
+}
+
 function getVietnamTodayDate(date = new Date()) {
     const parts = new Intl.DateTimeFormat('en-CA', {
         timeZone: 'Asia/Ho_Chi_Minh',
@@ -133,8 +194,24 @@ function hasSupabaseEnv() {
     );
 }
 
+function getR2PublicUrl() {
+    return String(process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || process.env.CLOUDFLARE_R2_PUBLIC_URL || '').trim().replace(/\/$/, '');
+}
+
+async function readJsonFromR2(fileName, prefix = process.env.CLOUDFLARE_R2_DATA_PREFIX || 'data') {
+    const baseUrl = getR2PublicUrl();
+    if (!baseUrl) return null;
+    const normalizedPrefix = String(prefix || '').replace(/^\/|\/$/g, '');
+    const response = await fetch(`${baseUrl}/${normalizedPrefix}/${fileName}.gz`, { cache: 'no-store' });
+    if (!response.ok) {
+        throw new Error(`R2 HTTP ${response.status} for ${normalizedPrefix}/${fileName}.gz`);
+    }
+    const compressed = Buffer.from(await response.arrayBuffer());
+    return JSON.parse(zlib.gunzipSync(compressed).toString('utf8'));
+}
+
 function shouldReadCurrentRawFromSupabase() {
-    if (process.env.UPDATE_READ_SUPABASE_RAW === '0') return false;
+    if (process.env.UPDATE_READ_SUPABASE_RAW !== '1') return false;
     if (!hasSupabaseEnv()) return false;
     const statsMode = String(process.env.LOTTERY_STATS_SOURCE || '').trim().toLowerCase();
     return statsMode === ''
@@ -175,6 +252,18 @@ function mapSupabaseRawRow(row) {
 }
 
 async function readCurrentRawData() {
+    if (process.env.UPDATE_READ_R2_RAW !== '0') {
+        try {
+            const r2Rows = await readJsonFromR2('xsmb-2-digits.json');
+            if (Array.isArray(r2Rows) && r2Rows.length > 0) {
+                console.log(`[1] Đọc dữ liệu hiện tại từ Cloudflare R2: ${r2Rows.length} bản ghi, latest=${getLatestDateValue(r2Rows) || 'none'}`);
+                return r2Rows.map(normalizeDataRow);
+            }
+        } catch (error) {
+            console.warn(`[1] Không đọc được raw data từ R2, fallback nguồn tiếp theo: ${error.message}`);
+        }
+    }
+
     if (shouldReadCurrentRawFromSupabase()) {
         try {
             const { getSupabaseAdminClient } = require('../lib/supabase/client');
@@ -209,16 +298,37 @@ async function readCurrentRawData() {
     return localRows;
 }
 
-function syncSupabaseAfterStaticGeneration() {
-    if (process.env.SYNC_SUPABASE_AFTER_UPDATE === '0') {
-        console.log('[6] SYNC_SUPABASE_AFTER_UPDATE=0, bỏ qua sync Supabase.');
+function runNodeScript(script, label, extraEnv = {}) {
+    console.log(`[6] ${label}`);
+    const result = spawnSync(process.execPath, [script], {
+        cwd: path.join(__dirname, '..'),
+        stdio: 'inherit',
+        env: {
+            ...process.env,
+            ...extraEnv
+        }
+    });
+    if (result.status !== 0) {
+        throw new Error(`${label} thất bại với exit code ${result.status}`);
+    }
+}
+
+function syncRemoteAfterStaticGeneration() {
+    if (process.env.SYNC_R2_AFTER_UPDATE !== '0') {
+        runNodeScript('scripts/upload-to-r2.js', 'Upload raw data + statistics gzip lên Cloudflare R2.');
+        console.log('[6] Upload R2 thành công.');
+    } else {
+        console.log('[6] SYNC_R2_AFTER_UPDATE=0, bỏ qua upload R2.');
+    }
+
+    if (process.env.SYNC_SUPABASE_AFTER_UPDATE !== '1') {
+        console.log('[6] Không sync Supabase (mặc định tắt). Set SYNC_SUPABASE_AFTER_UPDATE=1 nếu cần.');
         return;
     }
     if (!hasSupabaseEnv()) {
         console.log('[6] Không có Supabase env, bỏ qua sync Supabase.');
         return;
     }
-
     const statsMode = String(process.env.LOTTERY_STATS_SOURCE || '').trim().toLowerCase();
     const dbStatsMode = ['supabase', 'supabase-db', 'db'].includes(statsMode);
     const script = dbStatsMode ? 'scripts/seed-supabase-raw-data.js' : 'scripts/sync-supabase.js';
@@ -226,18 +336,7 @@ function syncSupabaseAfterStaticGeneration() {
         ? 'Sync raw data lên Supabase; stats/cache đã được ghi trực tiếp vào DB.'
         : 'Sync raw data + statistics gzip lên Supabase.';
 
-    console.log(`[6] ${label}`);
-    const result = spawnSync(process.execPath, [script], {
-        cwd: path.join(__dirname, '..'),
-        stdio: 'inherit',
-        env: {
-            ...process.env,
-            LOTTERY_DATA_SOURCE: 'local'
-        }
-    });
-    if (result.status !== 0) {
-        throw new Error(`Sync Supabase thất bại với exit code ${result.status}`);
-    }
+    runNodeScript(script, label, { LOTTERY_DATA_SOURCE: 'local' });
     console.log('[6] Sync Supabase thành công.');
 }
 
@@ -408,7 +507,7 @@ async function main() {
     // The generator must read the freshly written local JSON files.
     process.env.LOTTERY_DATA_SOURCE = 'local';
     if (!process.env.LOTTERY_STATS_SOURCE) {
-        process.env.LOTTERY_STATS_SOURCE = hasSupabaseEnv() ? 'supabase-db' : 'local';
+        process.env.LOTTERY_STATS_SOURCE = 'local';
     }
 
     await fs.mkdir(path.join(DATA_DIR, 'statistics'), { recursive: true });
@@ -457,6 +556,9 @@ async function main() {
                             isStale = true;
                         } else {
                             console.log(`[Cache Check] Local stats are up to date (both at ${expectedDateStr}).`);
+                            if (!hasRequiredLocalStatsCoverage()) {
+                                isStale = true;
+                            }
                         }
                     }
                 }
@@ -809,6 +911,36 @@ async function main() {
             } catch (simErr) {
                 console.error('⚠️ Lỗi khi tạo cached simulation (không ảnh hưởng các bước khác):', simErr.message);
             }
+
+            console.log(' -> Tạo Cached Chain Frequency cho R2/static JSON...');
+            try {
+                const simulationService = require('../lib/services/simulationService');
+                const chainCacheVariants = [
+                    { sortBy: 'frequency', includePotential: '1', excludeFixedThreeValueGroups: '0' },
+                    { sortBy: 'risk', includePotential: '1', excludeFixedThreeValueGroups: '0' },
+                    { sortBy: 'frequency', includePotential: '0', excludeFixedThreeValueGroups: '0' },
+                    { sortBy: 'risk', includePotential: '0', excludeFixedThreeValueGroups: '0' }
+                ];
+                for (const variant of chainCacheVariants) {
+                    const result = await simulationService.runChainFrequencyAnalysis({
+                        includePotential: variant.includePotential,
+                        sortBy: variant.sortBy,
+                        excludeFixedThreeValueGroups: variant.excludeFixedThreeValueGroups
+                    });
+                    if (result && !result.error) {
+                        const fileName = `chain_frequency_${variant.sortBy}_potential_${variant.includePotential}_exclude3_${variant.excludeFixedThreeValueGroups}.json`;
+                        await fs.writeFile(path.join(DATA_DIR, 'statistics', fileName), JSON.stringify({
+                            ...result,
+                            cachedAt: new Date().toISOString()
+                        }, null, 0));
+                        console.log(`✅ Đã lưu kết quả ${fileName}`);
+                    } else {
+                        throw new Error(`Không tạo được chain frequency cache (${variant.sortBy}/${variant.includePotential}): ${result ? result.error : 'empty result'}`);
+                    }
+                }
+            } catch (chainErr) {
+                console.error('⚠️ Lỗi khi tạo cached chain frequency (không ảnh hưởng các bước khác):', chainErr.message);
+            }
         } else {
             console.log(' -> DB stats active, bỏ qua legacy cached predictions/suggestions/simulation để tránh timeout và dữ liệu fallback stale.');
         }
@@ -887,7 +1019,7 @@ async function main() {
     }
     
     console.log(`[5] Hoàn tất Update Workflow (${dbStatsActive ? 'Supabase DB' : 'Static JSON'}).`);
-    syncSupabaseAfterStaticGeneration();
+    syncRemoteAfterStaticGeneration();
 }
 
 main().catch(error => {

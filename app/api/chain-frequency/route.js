@@ -36,7 +36,7 @@ function withoutDefaultSelection(payload) {
 export async function GET(request) {
     try {
         const simulationService = require('@/lib/services/simulationService');
-        const { readCacheStore } = require('@/lib/data-access');
+        const { readCacheStore, shouldUseSupabaseDbStats, loadJsonWithSupabaseFallback } = require('@/lib/data-access');
         const url = new URL(request.url);
         const options = {
             targetBetCount: url.searchParams.get('targetBetCount'),
@@ -52,7 +52,13 @@ export async function GET(request) {
         const sortBy = normalizeSortParam(options.sortBy);
 
         if (!hasLegacyCustomParams) {
-            const cached = await readCacheStore(`chain_frequency:${sortBy}:potential:${includePotential}:exclude3:${excludeFixed}`);
+            let cached = null;
+            if (shouldUseSupabaseDbStats()) {
+                cached = await readCacheStore(`chain_frequency:${sortBy}:potential:${includePotential}:exclude3:${excludeFixed}`);
+            }
+            if (!cached) {
+                cached = await loadJsonWithSupabaseFallback(`chain_frequency_${sortBy}_potential_${includePotential}_exclude3_${excludeFixed}.json`);
+            }
             if (cached && !cached.error) {
                 return NextResponse.json({
                     ...withoutDefaultSelection(cached),
