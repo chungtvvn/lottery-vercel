@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(request) {
     try {
         // FAST PATH: Serve pre-computed suggestions from cached JSON
-        const { readCacheStore, shouldUseSupabaseDbStats } = require('@/lib/data-access');
+        const { readCacheStore, shouldUseSupabaseDbStats, loadJsonWithSupabaseFallback } = require('@/lib/data-access');
         if (shouldUseSupabaseDbStats()) {
             try {
                 const dbData = await readCacheStore('cached_suggestions');
@@ -20,10 +20,8 @@ export async function GET(request) {
             }
         }
 
-        const cachedPath = path.join(process.cwd(), 'lib/data/statistics/cached_suggestions.json');
-        const fsModule = eval("require('fs')");
-        if (fsModule.existsSync(cachedPath)) {
-            const data = JSON.parse(fsModule.readFileSync(cachedPath, 'utf8'));
+        const data = await loadJsonWithSupabaseFallback('cached_suggestions.json');
+        if (data) {
             return cachedResponse(data, 'DAILY');
         }
 

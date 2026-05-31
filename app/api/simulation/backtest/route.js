@@ -29,7 +29,7 @@ export async function GET(request) {
             includeHighFrequency: url.searchParams.get('customIncludeHighFrequency'),
             excludeFixedThreeValueGroups: url.searchParams.get('customExcludeFixedThreeValueGroups')
         };
-        const { readCacheStore, shouldUseSupabaseDbStats } = require('@/lib/data-access');
+        const { readCacheStore, shouldUseSupabaseDbStats, loadJsonWithSupabaseFallback } = require('@/lib/data-access');
         const dbStatsActive = shouldUseSupabaseDbStats();
         let cachedPayload = null;
         const defaultCustom = simulationService.isDefaultCustomOptions
@@ -47,14 +47,10 @@ export async function GET(request) {
         }
         if (!cachedPayload) {
             const fileName = playMode === 'both' ? `cached_simulation_${days}.json` : `cached_simulation_${days}_${playMode}.json`;
-            const cachedPath = path.join(process.cwd(), 'lib/data/statistics', fileName);
-            const fsModule = eval("require('fs')");
-            if (fsModule.existsSync(cachedPath)) {
-                try {
-                    cachedPayload = JSON.parse(fsModule.readFileSync(cachedPath, 'utf8'));
-                } catch {
-                    cachedPayload = null;
-                }
+            try {
+                cachedPayload = await loadJsonWithSupabaseFallback(fileName);
+            } catch {
+                cachedPayload = null;
             }
         }
         const canUseStaticCache = canReadPrecomputedCache
