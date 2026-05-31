@@ -74,6 +74,7 @@ jobs:
 
       - name: Audit thống kê Local/R2
         env:
+          AUDIT_LOCAL: '0'
           NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL: ${{ secrets.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL }}
         run: npm run stats:audit
 

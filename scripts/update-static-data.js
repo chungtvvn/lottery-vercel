@@ -210,6 +210,10 @@ async function readJsonFromR2(fileName, prefix = process.env.CLOUDFLARE_R2_DATA_
     return JSON.parse(zlib.gunzipSync(compressed).toString('utf8'));
 }
 
+async function readStatsJsonFromR2(fileName) {
+    return readJsonFromR2(fileName, process.env.CLOUDFLARE_R2_STATS_PREFIX || 'statistics');
+}
+
 function shouldReadCurrentRawFromSupabase() {
     if (process.env.UPDATE_READ_SUPABASE_RAW !== '1') return false;
     if (!hasSupabaseEnv()) return false;
@@ -539,6 +543,25 @@ async function main() {
                 }
             } else {
                 const fsSync = require('fs');
+                const expectedDateParts = latestRawDate.split('-');
+                const expectedDateStr = expectedDateParts.length === 3 ? `${expectedDateParts[2]}/${expectedDateParts[1]}/${expectedDateParts[0]}` : latestRawDate;
+
+                if (getR2PublicUrl() && process.env.UPDATE_CHECK_R2_STATS !== '0') {
+                    try {
+                        const r2History = await readStatsJsonFromR2('quick_stats_history.json');
+                        const latestStatsDate = Array.isArray(r2History) && r2History[0] ? r2History[0].date : null;
+                        if (latestStatsDate === expectedDateStr) {
+                            console.log(`[Cache Check] R2 stats are up to date (both at ${expectedDateStr}).`);
+                            isStale = false;
+                            return;
+                        }
+                        console.log(`[Cache Check] R2 stats are behind! Raw latest draw date is ${expectedDateStr}, but R2 stats latest date is ${latestStatsDate || 'none'}. Forcing stats generation.`);
+                        isStale = true;
+                    } catch (r2CheckError) {
+                        console.warn(`[Cache Check] Không kiểm tra được R2 stats, fallback local check: ${r2CheckError.message}`);
+                    }
+                }
+
                 const localHistoryPath = path.join(DATA_DIR, 'statistics', 'quick_stats_history.json');
                 if (!fsSync.existsSync(localHistoryPath)) {
                     console.log('[Cache Check] Local quick_stats_history.json does not exist. Stats need to be regenerated.');
@@ -548,8 +571,6 @@ async function main() {
                     if (!localData || !Array.isArray(localData) || localData.length === 0) {
                         isStale = true;
                     } else {
-                        const expectedDateParts = latestRawDate.split('-');
-                        const expectedDateStr = expectedDateParts.length === 3 ? `${expectedDateParts[2]}/${expectedDateParts[1]}/${expectedDateParts[0]}` : latestRawDate;
                         const latestStatsDate = localData[0].date;
                         if (latestStatsDate !== expectedDateStr) {
                             console.log(`[Cache Check] Local stats are behind! Raw latest draw date is ${expectedDateStr}, but local stats latest date is ${latestStatsDate}. Forcing stats generation.`);

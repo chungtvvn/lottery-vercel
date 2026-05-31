@@ -32,6 +32,7 @@ function flattenStatsKeys(stats) {
 }
 
 function readLocalStatsKeys() {
+    if (process.env.AUDIT_LOCAL === '0') return null;
     const keys = new Set();
     for (const file of STAT_FILES) {
         const filePath = path.join(STATS_DIR, file);
