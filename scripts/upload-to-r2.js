@@ -1,7 +1,12 @@
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const {
+    S3Client,
+    PutObjectCommand,
+    ListObjectsV2Command,
+    DeleteObjectsCommand
+} = require('@aws-sdk/client-s3');
 
 // Load environment variables
 require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') });
@@ -16,6 +21,8 @@ const DATA_FILE = path.join(__dirname, '..', 'lib', 'data', 'xsmb-2-digits.json'
 const STATS_DIR = path.join(__dirname, '..', 'lib', 'data', 'statistics');
 const STATS_PREFIX = process.env.CLOUDFLARE_R2_STATS_PREFIX || 'statistics';
 const DATA_PREFIX = process.env.CLOUDFLARE_R2_DATA_PREFIX || 'data';
+const CLEAR_STATS_PREFIX = process.env.CLOUDFLARE_R2_CLEAR_STATS_PREFIX === '1'
+    || process.env.CLOUDFLARE_R2_CLEAR_PREFIX === '1';
 
 async function uploadJsonGzip(s3, filePath, key) {
     const fileContent = fs.readFileSync(filePath, 'utf8');
@@ -31,6 +38,46 @@ async function uploadJsonGzip(s3, filePath, key) {
         CacheControl: 'public, max-age=60, s-maxage=300',
     });
     await s3.send(command);
+}
+
+async function clearPrefix(s3, prefix) {
+    const normalizedPrefix = String(prefix || '').replace(/^\/|\/$/g, '');
+    if (!normalizedPrefix) {
+        throw new Error('Không được xóa R2 prefix rỗng.');
+    }
+
+    console.log(`[R2 Upload] CLEAR prefix bật: xóa object cũ dưới ${normalizedPrefix}/ trước khi upload...`);
+    let continuationToken;
+    let deletedCount = 0;
+
+    do {
+        const listResult = await s3.send(new ListObjectsV2Command({
+            Bucket: BUCKET,
+            Prefix: `${normalizedPrefix}/`,
+            ContinuationToken: continuationToken
+        }));
+
+        const objects = (listResult.Contents || [])
+            .map(item => item.Key)
+            .filter(Boolean);
+
+        for (let i = 0; i < objects.length; i += 1000) {
+            const chunk = objects.slice(i, i + 1000);
+            if (chunk.length === 0) continue;
+            await s3.send(new DeleteObjectsCommand({
+                Bucket: BUCKET,
+                Delete: {
+                    Objects: chunk.map(Key => ({ Key })),
+                    Quiet: true
+                }
+            }));
+            deletedCount += chunk.length;
+        }
+
+        continuationToken = listResult.IsTruncated ? listResult.NextContinuationToken : undefined;
+    } while (continuationToken);
+
+    console.log(`[R2 Upload] Đã xóa ${deletedCount} object cũ dưới ${normalizedPrefix}/.`);
 }
 
 async function uploadToR2() {
@@ -53,6 +100,10 @@ async function uploadToR2() {
     if (!fs.existsSync(STATS_DIR)) {
         console.error(`[R2 Upload] Thư mục chứa dữ liệu không tồn tại: ${STATS_DIR}`);
         return;
+    }
+
+    if (CLEAR_STATS_PREFIX) {
+        await clearPrefix(s3, STATS_PREFIX);
     }
 
     if (fs.existsSync(DATA_FILE)) {

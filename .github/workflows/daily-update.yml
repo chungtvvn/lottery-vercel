@@ -29,6 +29,22 @@ on:
         required: false
         default: ''
         type: string
+      force_regenerate_stats:
+        description: '1 = xoá cache cũ và sinh lại toàn bộ thống kê từ raw data hiện tại'
+        required: true
+        default: '0'
+        type: choice
+        options:
+          - '0'
+          - '1'
+      clear_r2_statistics:
+        description: '1 = xoá toàn bộ object cũ trong R2 statistics/ trước khi upload'
+        required: true
+        default: '0'
+        type: choice
+        options:
+          - '0'
+          - '1'
 
 permissions:
   contents: write
@@ -62,7 +78,8 @@ jobs:
           XOSO_TARGET_DATE: ${{ github.event_name == 'workflow_dispatch' && inputs.xoso_target_date || '' }}
           LOTTERY_DATA_SOURCE: 'r2'
           LOTTERY_STATS_SOURCE: 'local'
-          FORCE_REGENERATE_STATS: ${{ vars.FORCE_REGENERATE_STATS || '0' }}
+          FORCE_REGENERATE_STATS: ${{ github.event_name == 'workflow_dispatch' && inputs.force_regenerate_stats || vars.FORCE_REGENERATE_STATS || '0' }}
+          CLOUDFLARE_R2_CLEAR_STATS_PREFIX: ${{ github.event_name == 'workflow_dispatch' && inputs.clear_r2_statistics || '0' }}
           SYNC_R2_AFTER_UPDATE: '1'
           SYNC_SUPABASE_AFTER_UPDATE: '0'
           CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
