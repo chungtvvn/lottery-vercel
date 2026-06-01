@@ -545,6 +545,7 @@ async function main() {
                 const fsSync = require('fs');
                 const expectedDateParts = latestRawDate.split('-');
                 const expectedDateStr = expectedDateParts.length === 3 ? `${expectedDateParts[2]}/${expectedDateParts[1]}/${expectedDateParts[0]}` : latestRawDate;
+                let checkedRemoteStats = false;
 
                 if (getR2PublicUrl() && process.env.UPDATE_CHECK_R2_STATS !== '0') {
                     try {
@@ -553,15 +554,21 @@ async function main() {
                         if (latestStatsDate === expectedDateStr) {
                             console.log(`[Cache Check] R2 stats are up to date (both at ${expectedDateStr}).`);
                             isStale = false;
-                            return;
+                            checkedRemoteStats = true;
+                        } else {
+                            console.log(`[Cache Check] R2 stats are behind! Raw latest draw date is ${expectedDateStr}, but R2 stats latest date is ${latestStatsDate || 'none'}. Forcing stats generation.`);
+                            isStale = true;
+                            checkedRemoteStats = true;
                         }
-                        console.log(`[Cache Check] R2 stats are behind! Raw latest draw date is ${expectedDateStr}, but R2 stats latest date is ${latestStatsDate || 'none'}. Forcing stats generation.`);
-                        isStale = true;
                     } catch (r2CheckError) {
                         console.warn(`[Cache Check] Không kiểm tra được R2 stats, fallback local check: ${r2CheckError.message}`);
                     }
                 }
 
+                if (checkedRemoteStats) {
+                    // R2 is the source of truth in R2 mode; do not let stale local
+                    // files force unnecessary regeneration unless explicitly requested.
+                } else {
                 const localHistoryPath = path.join(DATA_DIR, 'statistics', 'quick_stats_history.json');
                 if (!fsSync.existsSync(localHistoryPath)) {
                     console.log('[Cache Check] Local quick_stats_history.json does not exist. Stats need to be regenerated.');
@@ -582,6 +589,7 @@ async function main() {
                             }
                         }
                     }
+                }
                 }
             }
         } catch (checkErr) {
