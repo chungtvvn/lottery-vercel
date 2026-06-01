@@ -800,6 +800,10 @@ async function main() {
             const minifiedQS = stripFullSequence(quickStats);
             await fs.writeFile(path.join(DATA_DIR, 'statistics', 'quick_stats.json'), JSON.stringify(minifiedQS, null, 0));
             console.log('✅ Đã lưu kết quả quick_stats.json (minified)');
+
+            const quickStatsKeys = Object.keys(minifiedQS || {}).sort();
+            await fs.writeFile(path.join(DATA_DIR, 'statistics', 'quick_stats_keys.json'), JSON.stringify(quickStatsKeys, null, 0));
+            console.log(`✅ Đã lưu kết quả quick_stats_keys.json (${quickStatsKeys.length} keys)`);
             
             const historyStats = await ss.getQuickStatsHistory();
             const minifiedHistory = historyStats.map(entry => ({

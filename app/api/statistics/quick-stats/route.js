@@ -7,6 +7,7 @@ export async function GET(request) {
     try {
         const { searchParams } = new URL(request.url);
         const metaOnly = searchParams.get('metaOnly') === 'true';
+        const keysOnly = searchParams.get('keysOnly') === 'true';
         const keysStr = searchParams.get('keys');
 
         const { cachedResponse } = require('@/lib/cache-headers');
@@ -20,7 +21,12 @@ export async function GET(request) {
             return cachedResponse({ _meta: { totalYears } }, 'NO_CACHE');
         }
 
-        const { getQuickStatsFromCache, getPatternStatsByKeysFromDb } = require('@/lib/data-access');
+        const { getQuickStatsFromCache, getPatternStatsByKeysFromDb, getQuickStatsKeysFromCache } = require('@/lib/data-access');
+
+        if (keysOnly) {
+            const keys = await getQuickStatsKeysFromCache();
+            return cachedResponse({ keys }, 'DAILY');
+        }
 
         if (keysStr) {
             const keys = keysStr.split(',').filter(Boolean);

@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let searchQuery = '';
     let selectedGroup = 'ALL';
     let allPatterns = [];
+    let availablePatternKeys = null;
     let filteredPatterns = [];
 
     // Helper functions
@@ -382,13 +383,17 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Filter Logic
+    const hasRecordData = (key) => {
+        return !availablePatternKeys || availablePatternKeys.has(key);
+    };
+
     const applyFilters = () => {
         filteredPatterns = allPatterns.filter(pattern => {
             const matchesGroup = selectedGroup === 'ALL' || pattern.groupName === selectedGroup;
             const matchesSearch = !searchQuery || 
                 pattern.text.toLowerCase().includes(searchQuery) ||
                 pattern.key.toLowerCase().includes(searchQuery);
-            return matchesGroup && matchesSearch;
+            return hasRecordData(pattern.key) && matchesGroup && matchesSearch;
         });
 
         currentPage = 1;
@@ -505,31 +510,50 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Initialize Page
-    const initPage = () => {
+    const loadAvailablePatternKeys = async () => {
+        try {
+            const data = await fetchJSON(`${BASE_URL}/api/statistics/quick-stats?keysOnly=true`);
+            if (data && Array.isArray(data.keys)) {
+                availablePatternKeys = new Set(data.keys);
+            }
+        } catch (error) {
+            console.warn('Không tải được danh sách key quick_stats, vẫn hiển thị toàn bộ cấu hình:', error);
+            availablePatternKeys = null;
+        }
+    };
+
+    const initPage = async () => {
         if (typeof STATS_OPTIONS === 'undefined') {
             console.error('STATS_OPTIONS is not loaded! Check stats-config.js inclusion.');
             pageInfo.textContent = 'Lỗi cấu hình STATS_OPTIONS.';
             return;
         }
 
+        await loadAvailablePatternKeys();
+
         // 1. Populate category dropdown and compile allPatterns array
         allPatterns = [];
         for (const groupName in STATS_OPTIONS) {
-            // Add option to dropdown
-            const opt = document.createElement('option');
-            opt.value = groupName;
-            opt.textContent = groupName;
-            recordGroup.appendChild(opt);
+            const groupPatterns = [];
 
             // Compile flat list of patterns
             STATS_OPTIONS[groupName].forEach(option => {
                 const key = `${option.category}${option.subcategory ? ':' + option.subcategory : ''}`;
-                allPatterns.push({
+                if (!hasRecordData(key)) return;
+                groupPatterns.push({
                     key: key,
                     text: option.text,
                     groupName: groupName
                 });
             });
+
+            if (groupPatterns.length > 0) {
+                const opt = document.createElement('option');
+                opt.value = groupName;
+                opt.textContent = groupName;
+                recordGroup.appendChild(opt);
+                allPatterns.push(...groupPatterns);
+            }
         }
 
         filteredPatterns = [...allPatterns];
