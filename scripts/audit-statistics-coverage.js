@@ -11,7 +11,9 @@ const {
     CONSECUTIVE_TONG_MOI_3_VALUE_CATEGORIES,
     VALID_TONG_MOI_3_VALUE_GROUPS,
     CONSECUTIVE_HIEU_3_VALUE_CATEGORIES,
-    VALID_HIEU_3_VALUE_GROUPS
+    VALID_HIEU_3_VALUE_GROUPS,
+    buildPermutations,
+    withOrderedPermutationCategory
 } = require('../lib/utils/numberAnalysis');
 const { isInvalidStatsKey, loadStatsOptions } = require('../lib/utils/statsOptionsManifest');
 const { hasSupabaseAdminConfig, getSupabaseAdminClient } = require('../lib/supabase/client');
@@ -89,20 +91,59 @@ async function readSupabaseStatsKeys() {
 function requiredCoverageKeys() {
     const keys = [];
     const add = (category, subcategories) => subcategories.forEach(sub => keys.push(`${category}:${sub}`));
-    const digitSubs = ['veLienTiep', 'veSole', 'veSoleMoi', 'tienLuiSoLe', 'luiTienSoLe', 'veTheoThuTu', 'veSoLeTheoThuTu', 'tienLienTiep', 'tienDeuLienTiep', 'luiLienTiep', 'luiDeuLienTiep'];
-    const metricSubs = ['veLienTiep', 'veSole', 'veSoleMoi', 'veTheoThuTu', 'veSoLeTheoThuTu', 'tienLienTiep', 'tienDeuLienTiep', 'luiLienTiep', 'luiDeuLienTiep', 'tienLuiSoLe', 'luiTienSoLe'];
+    const addOrderedPermutations = (category, values) => {
+        for (const permutation of buildPermutations(values)) {
+            add(withOrderedPermutationCategory(category, permutation), ['veTheoThuTu', 'veSoLeTheoThuTu']);
+        }
+    };
+    const cyclicWindowValues = (category, prefix, min, max) => {
+        const [start] = category.replace(prefix, '').split('_').map(Number);
+        const values = [start];
+        let current = start;
+        while (values.length < 3) {
+            current += 1;
+            if (current > max) current = min;
+            values.push(current);
+        }
+        return values;
+    };
+    const digitSubs = ['veLienTiep', 'veSole', 'veSoleMoi', 'tienLuiSoLe', 'luiTienSoLe', 'tienLienTiep', 'tienDeuLienTiep', 'luiLienTiep', 'luiDeuLienTiep'];
+    const metricSubs = ['veLienTiep', 'veSole', 'veSoleMoi', 'tienLienTiep', 'tienDeuLienTiep', 'luiLienTiep', 'luiDeuLienTiep', 'tienLuiSoLe', 'luiTienSoLe'];
 
     for (const group of ALL_3_DIGIT_GROUPS) {
         const suffix = group.join('_');
         add(`dau_3d_${suffix}`, digitSubs);
         add(`dit_3d_${suffix}`, digitSubs);
+        addOrderedPermutations(`dau_3d_${suffix}`, group);
+        addOrderedPermutations(`dit_3d_${suffix}`, group);
     }
-    for (const category of CONSECUTIVE_TONG_TT_3_VALUE_CATEGORIES) add(category, metricSubs);
-    for (const group of VALID_TONG_TT_3_VALUE_GROUPS) add(`tong_tt_${group.join('_')}`, metricSubs);
-    for (const category of CONSECUTIVE_TONG_MOI_3_VALUE_CATEGORIES) add(category, metricSubs);
-    for (const group of VALID_TONG_MOI_3_VALUE_GROUPS) add(`tong_moi_${group.join('_')}`, metricSubs);
-    for (const category of CONSECUTIVE_HIEU_3_VALUE_CATEGORIES) add(category, metricSubs);
-    for (const group of VALID_HIEU_3_VALUE_GROUPS) add(`hieu_${group.join('_')}`, metricSubs);
+    for (const category of CONSECUTIVE_TONG_TT_3_VALUE_CATEGORIES) {
+        add(category, metricSubs);
+        addOrderedPermutations(category, cyclicWindowValues(category, 'tong_tt_', 1, 10));
+    }
+    for (const group of VALID_TONG_TT_3_VALUE_GROUPS) {
+        const category = `tong_tt_${group.join('_')}`;
+        add(category, metricSubs);
+        addOrderedPermutations(category, group);
+    }
+    for (const category of CONSECUTIVE_TONG_MOI_3_VALUE_CATEGORIES) {
+        add(category, metricSubs);
+        addOrderedPermutations(category, cyclicWindowValues(category, 'tong_moi_', 0, 18));
+    }
+    for (const group of VALID_TONG_MOI_3_VALUE_GROUPS) {
+        const category = `tong_moi_${group.join('_')}`;
+        add(category, metricSubs);
+        addOrderedPermutations(category, group);
+    }
+    for (const category of CONSECUTIVE_HIEU_3_VALUE_CATEGORIES) {
+        add(category, metricSubs);
+        addOrderedPermutations(category, cyclicWindowValues(category, 'hieu_', 0, 9));
+    }
+    for (const group of VALID_HIEU_3_VALUE_GROUPS) {
+        const category = `hieu_${group.join('_')}`;
+        add(category, metricSubs);
+        addOrderedPermutations(category, group);
+    }
 
     return keys.filter(key => !isInvalidStatsKey(key));
 }

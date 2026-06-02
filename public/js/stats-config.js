@@ -1674,6 +1674,55 @@ function buildThreeValueGroups(values, excludedGroups = []) {
     return groups;
 }
 
+const ORDERED_PERMUTATION_SEPARATOR = '_ord_';
+
+function buildPermutations(values) {
+    const normalized = (values || []).map(String);
+    if (normalized.length <= 1) return [normalized];
+    const result = [];
+    const seen = new Set();
+    const walk = (prefix, remaining) => {
+        if (remaining.length === 0) {
+            const signature = prefix.join('_');
+            if (!seen.has(signature)) {
+                seen.add(signature);
+                result.push(prefix);
+            }
+            return;
+        }
+        for (let i = 0; i < remaining.length; i++) {
+            walk([...prefix, remaining[i]], [...remaining.slice(0, i), ...remaining.slice(i + 1)]);
+        }
+    };
+    walk([], normalized);
+    return result;
+}
+
+function withOrderedPermutationCategory(category, permutation) {
+    return `${category}${ORDERED_PERMUTATION_SEPARATOR}${(permutation || []).map(String).join('_')}`;
+}
+
+function isFixedThreeValueBaseCategory(category) {
+    return /^(dau|dit)_3d_(\d+_){2}\d+$/.test(category) ||
+        /^(tong_tt|tong_moi|hieu)_(\d+_){1,2}\d+$/.test(category);
+}
+
+function pushThreeValueOption(arr, prefix, category, subcategory, label, values) {
+    if (subcategory === 'veTheoThuTu' || subcategory === 'veSoLeTheoThuTu') {
+        buildPermutations(values).forEach(permutation => {
+            const orderedCategory = withOrderedPermutationCategory(category, permutation);
+            arr.push({
+                text: `${prefix} - ${label} ${permutation.join('→')}`,
+                category: orderedCategory,
+                subcategory
+            });
+        });
+        return;
+    }
+
+    arr.push({ text: `${prefix} - ${label}`, category, subcategory });
+}
+
 function populateDauDit3DOptions() {
     const arr = STATS_OPTIONS["Thống kê Đầu/Đít 3 số ghép"];
     const digitValues = Array.from({ length: 10 }, (_, i) => i);
@@ -1697,8 +1746,8 @@ function populateDauDit3DOptions() {
         const groupLabel = group.join(',');
 
         Object.entries(subLabels).forEach(([sub, label]) => {
-            arr.push({ text: `Đầu (${groupLabel}) - ${label}`, category: `dau_3d_${groupKey}`, subcategory: sub });
-            arr.push({ text: `Đít (${groupLabel}) - ${label}`, category: `dit_3d_${groupKey}`, subcategory: sub });
+            pushThreeValueOption(arr, `Đầu (${groupLabel})`, `dau_3d_${groupKey}`, sub, label, group);
+            pushThreeValueOption(arr, `Đít (${groupLabel})`, `dit_3d_${groupKey}`, sub, label, group);
         });
     }
 }
@@ -1719,8 +1768,8 @@ function populateDauDit3DConsecutiveOrderedOptions() {
         const groupKey = group.join('_');
         const groupLabel = group.join(',');
         Object.entries(orderedSubs).forEach(([sub, label]) => {
-            arr.push({ text: `Đầu (${groupLabel}) - ${label}`, category: `dau_3d_${groupKey}`, subcategory: sub });
-            arr.push({ text: `Đít (${groupLabel}) - ${label}`, category: `dit_3d_${groupKey}`, subcategory: sub });
+            pushThreeValueOption(arr, `Đầu (${groupLabel})`, `dau_3d_${groupKey}`, sub, label, group);
+            pushThreeValueOption(arr, `Đít (${groupLabel})`, `dit_3d_${groupKey}`, sub, label, group);
         });
     }
 }
@@ -1771,16 +1820,50 @@ function populateMetric3ValueOptions() {
             const groupLabel = group.join(',');
             const category = `${config.categoryPrefix}_${groupKey}`;
             Object.entries(subLabels).forEach(([sub, label]) => {
-                arr.push({
-                    text: `${config.labelPrefix} (${groupLabel}) - ${label}`,
-                    category,
-                    subcategory: sub
-                });
+                pushThreeValueOption(arr, `${config.labelPrefix} (${groupLabel})`, category, sub, label, group);
             });
         }
     }
 }
 populateMetric3ValueOptions();
+
+// --- Nhóm Tổng/Hiệu 3 giá trị liên tiếp theo thứ tự ---
+STATS_OPTIONS["Thống kê Tổng/Hiệu 3 giá trị liên tiếp theo thứ tự"] = [];
+function populateMetricConsecutiveOrderedOptions() {
+    const arr = STATS_OPTIONS["Thống kê Tổng/Hiệu 3 giá trị liên tiếp theo thứ tự"];
+    const orderedSubs = {
+        veTheoThuTu: 'Về theo thứ tự',
+        veSoLeTheoThuTu: 'Về so le theo thứ tự'
+    };
+    const configs = [
+        {
+            categoryPrefix: 'tong_tt',
+            values: Array.from({ length: 10 }, (_, i) => i + 1),
+            labelPrefix: 'Tổng TT - Dạng tổng'
+        },
+        {
+            categoryPrefix: 'tong_moi',
+            values: Array.from({ length: 19 }, (_, i) => i),
+            labelPrefix: 'Tổng Mới - Dạng tổng'
+        },
+        {
+            categoryPrefix: 'hieu',
+            values: Array.from({ length: 10 }, (_, i) => i),
+            labelPrefix: 'Hiệu - Dạng hiệu'
+        }
+    ];
+
+    configs.forEach(config => {
+        buildCyclicWindows(config.values, 3).forEach(group => {
+            const category = `${config.categoryPrefix}_${group[0]}_${group[group.length - 1]}`;
+            const groupLabel = group.join(',');
+            Object.entries(orderedSubs).forEach(([sub, label]) => {
+                pushThreeValueOption(arr, `${config.labelPrefix} (${groupLabel})`, category, sub, label, group);
+            });
+        });
+    });
+}
+populateMetricConsecutiveOrderedOptions();
 
 // --- [MỚI] Thêm nhóm CC/CL/LC/LL + Tổng/Hiệu ---
 STATS_OPTIONS["Thống kê Dạng Số + Tổng/Hiệu"] = [];
@@ -1890,6 +1973,7 @@ function populateMissingOrderedSequenceOptions() {
             item.subcats.has('luiLienTiep') ||
             item.subcats.has('luiDeuLienTiep');
         if (!canHaveOrdered) continue;
+        if (isFixedThreeValueBaseCategory(item.category)) continue;
 
         const targetArray = STATS_OPTIONS[item.groupName];
         for (const subcat of orderedSubcats) {

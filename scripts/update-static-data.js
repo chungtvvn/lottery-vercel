@@ -139,25 +139,70 @@ function hasRequiredLocalStatsCoverage() {
             CONSECUTIVE_TONG_MOI_3_VALUE_CATEGORIES,
             VALID_TONG_MOI_3_VALUE_GROUPS,
             CONSECUTIVE_HIEU_3_VALUE_CATEGORIES,
-            VALID_HIEU_3_VALUE_GROUPS
+            VALID_HIEU_3_VALUE_GROUPS,
+            buildPermutations,
+            withOrderedPermutationCategory
         } = require('../lib/utils/numberAnalysis');
         const fsSync = require('fs');
         const required = [];
         const add = (category, subcategories) => subcategories.forEach(sub => required.push(`${category}:${sub}`));
-        const digitSubs = ['veLienTiep', 'veSole', 'veSoleMoi', 'tienLuiSoLe', 'luiTienSoLe', 'veTheoThuTu', 'veSoLeTheoThuTu', 'tienLienTiep', 'tienDeuLienTiep', 'luiLienTiep', 'luiDeuLienTiep'];
-        const metricSubs = ['veLienTiep', 'veSole', 'veSoleMoi', 'veTheoThuTu', 'veSoLeTheoThuTu', 'tienLienTiep', 'tienDeuLienTiep', 'luiLienTiep', 'luiDeuLienTiep', 'tienLuiSoLe', 'luiTienSoLe'];
+        const addOrderedPermutations = (category, values) => {
+            for (const permutation of buildPermutations(values)) {
+                const orderedCategory = withOrderedPermutationCategory(category, permutation);
+                add(orderedCategory, ['veTheoThuTu', 'veSoLeTheoThuTu']);
+            }
+        };
+        const cyclicWindowValues = (category, prefix, min, max) => {
+            const [start] = category.replace(prefix, '').split('_').map(Number);
+            const values = [start];
+            let current = start;
+            while (values.length < 3) {
+                current += 1;
+                if (current > max) current = min;
+                values.push(current);
+            }
+            return values;
+        };
+        const digitSubs = ['veLienTiep', 'veSole', 'veSoleMoi', 'tienLuiSoLe', 'luiTienSoLe', 'tienLienTiep', 'tienDeuLienTiep', 'luiLienTiep', 'luiDeuLienTiep'];
+        const metricSubs = ['veLienTiep', 'veSole', 'veSoleMoi', 'tienLienTiep', 'tienDeuLienTiep', 'luiLienTiep', 'luiDeuLienTiep', 'tienLuiSoLe', 'luiTienSoLe'];
 
         for (const group of ALL_3_DIGIT_GROUPS) {
             const suffix = group.join('_');
             add(`dau_3d_${suffix}`, digitSubs);
             add(`dit_3d_${suffix}`, digitSubs);
+            addOrderedPermutations(`dau_3d_${suffix}`, group);
+            addOrderedPermutations(`dit_3d_${suffix}`, group);
         }
-        for (const category of CONSECUTIVE_TONG_TT_3_VALUE_CATEGORIES) add(category, metricSubs);
-        for (const group of VALID_TONG_TT_3_VALUE_GROUPS) add(`tong_tt_${group.join('_')}`, metricSubs);
-        for (const category of CONSECUTIVE_TONG_MOI_3_VALUE_CATEGORIES) add(category, metricSubs);
-        for (const group of VALID_TONG_MOI_3_VALUE_GROUPS) add(`tong_moi_${group.join('_')}`, metricSubs);
-        for (const category of CONSECUTIVE_HIEU_3_VALUE_CATEGORIES) add(category, metricSubs);
-        for (const group of VALID_HIEU_3_VALUE_GROUPS) add(`hieu_${group.join('_')}`, metricSubs);
+        for (const category of CONSECUTIVE_TONG_TT_3_VALUE_CATEGORIES) {
+            const values = cyclicWindowValues(category, 'tong_tt_', 1, 10);
+            add(category, metricSubs);
+            addOrderedPermutations(category, values);
+        }
+        for (const group of VALID_TONG_TT_3_VALUE_GROUPS) {
+            const category = `tong_tt_${group.join('_')}`;
+            add(category, metricSubs);
+            addOrderedPermutations(category, group);
+        }
+        for (const category of CONSECUTIVE_TONG_MOI_3_VALUE_CATEGORIES) {
+            const values = cyclicWindowValues(category, 'tong_moi_', 0, 18);
+            add(category, metricSubs);
+            addOrderedPermutations(category, values);
+        }
+        for (const group of VALID_TONG_MOI_3_VALUE_GROUPS) {
+            const category = `tong_moi_${group.join('_')}`;
+            add(category, metricSubs);
+            addOrderedPermutations(category, group);
+        }
+        for (const category of CONSECUTIVE_HIEU_3_VALUE_CATEGORIES) {
+            const values = cyclicWindowValues(category, 'hieu_', 0, 9);
+            add(category, metricSubs);
+            addOrderedPermutations(category, values);
+        }
+        for (const group of VALID_HIEU_3_VALUE_GROUPS) {
+            const category = `hieu_${group.join('_')}`;
+            add(category, metricSubs);
+            addOrderedPermutations(category, group);
+        }
 
         const actual = new Set();
         for (const file of ['number_stats.json', 'head_tail_stats.json', 'sum_difference_stats.json']) {
@@ -631,26 +676,32 @@ async function main() {
         const generateHeadTailStats = require('../lib/generators/headTailStatsGenerator.js');
         const generateSumDiffStats = require('../lib/generators/sumDifferenceStatsGenerator.js');
         
-        // Define helper function to strip fullSequence
-        function stripFullSequence(obj, isPreserved = false) {
+        // Define helper function to compact runtime-only/hydratable fields before persisting caches.
+        function stripFullSequence(obj, mode = 'default') {
             if (!obj || typeof obj !== 'object') return obj;
             
             if (Array.isArray(obj)) {
-                return obj.map(item => stripFullSequence(item, isPreserved));
+                return obj.map(item => stripFullSequence(item, mode));
             }
 
             const result = {};
             for (const [key, val] of Object.entries(obj)) {
-                if (key === 'fullSequence' && !isPreserved) {
+                if (key === 'fullSequence' || key === '_startD' || key === '_endD') {
+                    continue;
+                }
+                if (mode === 'summary' && (key === 'values' || key === 'dates' || key === 'orderedValues')) {
                     continue;
                 }
 
-                if (key === 'current' || key === 'longest' || key === 'secondLongest') {
-                    result[key] = stripFullSequence(val, true);
+                if (key === 'current') {
+                    result[key] = stripFullSequence(val, 'current');
+                } else if (key === 'longest' || key === 'secondLongest') {
+                    const limited = Array.isArray(val) ? val.slice(0, 5) : val;
+                    result[key] = stripFullSequence(limited, 'summary');
                 } else if (key === 'streaks') {
-                    result[key] = stripFullSequence(val, false);
+                    result[key] = stripFullSequence(val, 'summary');
                 } else if (typeof val === 'object') {
-                    result[key] = stripFullSequence(val, isPreserved);
+                    result[key] = stripFullSequence(val, mode);
                 } else {
                     result[key] = val;
                 }
@@ -1040,10 +1091,16 @@ async function main() {
             }
 
             const statFiles = ['number_stats.json', 'head_tail_stats.json', 'sum_difference_stats.json'];
+            const largeFileLimitBytes = Number(process.env.MINIFY_STATS_MAX_BYTES || 64 * 1024 * 1024);
             for (const f of statFiles) {
                 const p = path.join(DATA_DIR, 'statistics', f);
                 if (require('fs').existsSync(p)) {
                     try {
+                        const fileStat = await fs.stat(p);
+                        if (fileStat.size > largeFileLimitBytes && process.env.FORCE_MINIFY_LARGE_STATS !== '1') {
+                            console.log(` -> Bỏ qua ${f}: ${(fileStat.size / 1024 / 1024).toFixed(1)}MB, generator đã ghi dạng compact.`);
+                            continue;
+                        }
                         console.log(` -> Đang xử lý ${f}...`);
                         const content = await fs.readFile(p, 'utf8');
                         if (!content || content.length < 2) continue;
