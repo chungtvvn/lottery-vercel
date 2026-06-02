@@ -166,7 +166,9 @@
             if (window.AppConfig && typeof window.AppConfig.checkAndClearCacheOnNewData === 'function') {
                 await window.AppConfig.checkAndClearCacheOnNewData();
             }
-            const data = await fetchJSON('/api/prediction/history?limit=90&v=4');
+            const historyRes = await fetch(`/api/prediction/history?limit=90&v=5&_t=${Date.now()}`, { cache: 'no-store' });
+            if (!historyRes.ok) throw new Error('Network response was not ok');
+            const data = await historyRes.json();
             if (data && data.success && Array.isArray(data.history)) {
                 state.history = data.history;
                 renderDashboard();
