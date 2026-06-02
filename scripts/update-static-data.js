@@ -7,6 +7,7 @@ const https = require('https');
 const zlib = require('zlib');
 const { spawnSync } = require('child_process');
 const { fetchLatestXsmbResult, XOSO_HOME_URL, XOSO_SOURCE_URLS } = require('./sources/xoso-com-vn');
+const { isInvalidStatsKey } = require('../lib/utils/statsOptionsManifest');
 
 const LEGACY_DATA_URL = 'https://raw.githubusercontent.com/khiemdoan/vietnam-lottery-xsmb-analysis/refs/heads/main/data/xsmb-2-digits.json';
 const DATA_DIR = path.join(__dirname, '..', 'lib', 'data');
@@ -686,6 +687,7 @@ async function main() {
 
             const matchedToday = numTodayStr ? identifyCategories(numTodayStr) : [];
             const matchedYesterday = numYesterdayStr ? identifyCategories(numYesterdayStr) : [];
+            const matchedDayBeforeYesterday = numDayBeforeYesterdayStr ? identifyCategories(numDayBeforeYesterdayStr) : [];
 
             const calculatorOptions = {
                 latestDate,
@@ -693,6 +695,7 @@ async function main() {
                 totalYears: 20,
                 matchedToday,
                 matchedYesterday,
+                matchedDayBeforeYesterday,
                 numTodayStr,
                 numYesterdayStr,
                 numDayBeforeYesterdayStr,
@@ -707,6 +710,7 @@ async function main() {
             const quickStatsHistoryEntries = [];
 
             const collectPattern = (entries) => async (patternKey, categoryType, category, subcategory, description, streaks) => {
+                if (isInvalidStatsKey(patternKey)) return;
                 const qs = calculateQuickStatsForPattern(patternKey, { description, streaks }, calculatorOptions);
                 if (qs) {
                     entries.push({ patternKey, categoryType, category, subcategory, description, streaks, qs });

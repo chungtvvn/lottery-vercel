@@ -3,8 +3,13 @@
     const state = {
         history: [],
         selectedIndex: -1,
-        selectedMethod: 'riskHold70'
+        selectedMethod: 'riskHold70',
+        betCostMultiplier: 0.8
     };
+    const BET_PER_NUMBER_K = 1000;
+    const WIN_MULTIPLIER = 70;
+    const HOLD_WIN_MULTIPLIER = 0.705;
+    const HOLD_LOSS_MULTIPLIER = 70;
 
     function getActiveSummary(run, selectedMethod) {
         const sum = run.summary || {};
@@ -16,6 +21,34 @@
             };
         }
         return sum; // Fallback
+    }
+
+    function recalculateSummary(summary) {
+        if (!summary || !summary.resolved) return summary;
+        const betNumbers = summary.numbersToBet || [];
+        const excludedNumbers = summary.excludedNumbers || [];
+        const actual = Number(summary.actualSpecial);
+        const betWin = betNumbers.some(n => Number(n) === actual);
+        const holdWin = !excludedNumbers.some(n => Number(n) === actual);
+        const betStake = betNumbers.length * BET_PER_NUMBER_K * state.betCostMultiplier;
+        const betPayout = betWin ? BET_PER_NUMBER_K * WIN_MULTIPLIER : 0;
+        const holdIncome = excludedNumbers.length * BET_PER_NUMBER_K * HOLD_WIN_MULTIPLIER;
+        const holdLoss = holdWin ? 0 : BET_PER_NUMBER_K * HOLD_LOSS_MULTIPLIER;
+        const betProfit = Math.round(betPayout - betStake);
+        const holdProfit = Math.round(holdIncome - holdLoss);
+        return {
+            ...summary,
+            betWin,
+            holdWin,
+            betProfit,
+            holdProfit,
+            profit: betProfit + holdProfit,
+            betCostMultiplier: state.betCostMultiplier
+        };
+    }
+
+    function getDisplaySummary(run, selectedMethod) {
+        return recalculateSummary(getActiveSummary(run, selectedMethod));
     }
 
     function el(id) { return document.getElementById(id); }
@@ -185,7 +218,7 @@
         let totalProfit = 0;
 
         resolvedRuns.forEach(r => {
-            const sum = getActiveSummary(r, state.selectedMethod);
+            const sum = getDisplaySummary(r, state.selectedMethod);
             if (!sum) return;
             if (sum.betWin) betWins++;
             if (sum.holdWin) holdWins++;
@@ -231,7 +264,7 @@
         detailsTable.innerHTML = '';
 
         history.forEach((run, idx) => {
-            const sum = getActiveSummary(run, state.selectedMethod) || {};
+            const sum = getDisplaySummary(run, state.selectedMethod) || {};
             const isToday = !run.summary?.resolved;
 
             const dateStr = formatDateToDMY(run.predictionDate);
@@ -283,7 +316,7 @@
         }
 
         const run = state.history[index];
-        const sum = getActiveSummary(run, state.selectedMethod) || {};
+        const sum = getDisplaySummary(run, state.selectedMethod) || {};
         const dateStr = formatDateToDMY(run.predictionDate);
 
         // Render Details Sidebar
@@ -364,7 +397,7 @@
                 <div class="border-t border-slate-100 pt-3">
                     <div class="flex items-center justify-between mb-2">
                         <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Số Đánh (${sum.betCount || 0} số)</h4>
-                        <span class="text-[10px] text-slate-500">Mua tỷ lệ 80% (ăn 70)</span>
+                        <span class="text-[10px] text-slate-500">Mua tỷ lệ ${(state.betCostMultiplier * 100).toFixed(0)}% (ăn 70)</span>
                     </div>
                     ${renderNumberGrid(sum.numbersToBet, 'border-emerald-200 bg-emerald-50/50 text-emerald-700')}
                 </div>
@@ -394,6 +427,16 @@
             methodSelector.addEventListener('change', (e) => {
                 state.selectedMethod = e.target.value;
                 renderDashboard();
+            });
+        }
+        const betCostInput = el('betCostMultiplier');
+        if (betCostInput) {
+            betCostInput.addEventListener('input', (e) => {
+                const nextValue = Number(e.target.value);
+                if (Number.isFinite(nextValue)) {
+                    state.betCostMultiplier = Math.max(0.8, Math.min(0.9, Math.round(nextValue * 100) / 100));
+                    renderDashboard();
+                }
             });
         }
         loadHistory();

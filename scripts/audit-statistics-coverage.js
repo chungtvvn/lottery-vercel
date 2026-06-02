@@ -10,6 +10,7 @@ const {
     VALID_TONG_MOI_3_VALUE_GROUPS,
     VALID_HIEU_3_VALUE_GROUPS
 } = require('../lib/utils/numberAnalysis');
+const { isInvalidStatsKey } = require('../lib/utils/statsOptionsManifest');
 const { hasSupabaseAdminConfig, getSupabaseAdminClient } = require('../lib/supabase/client');
 
 const STATS_DIR = path.join(__dirname, '..', 'lib', 'data', 'statistics');
@@ -97,7 +98,7 @@ function requiredCoverageKeys() {
     for (const group of VALID_TONG_MOI_3_VALUE_GROUPS) add(`tong_moi_${group.join('_')}`, metricSubs);
     for (const group of VALID_HIEU_3_VALUE_GROUPS) add(`hieu_${group.join('_')}`, metricSubs);
 
-    return keys;
+    return keys.filter(key => !isInvalidStatsKey(key));
 }
 
 function reportMissing(label, actualKeys, requiredKeys) {

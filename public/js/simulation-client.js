@@ -8,11 +8,17 @@
 
     const METHOD_LABELS = {
         riskHold60: 'Ôm 60 theo rủi ro',
+        riskHold70: 'Ôm 70 theo rủi ro',
+        riskHold80: 'Ôm 80 theo rủi ro',
+        riskHold90: 'Ôm 90 theo rủi ro',
         frequencyHold60: 'Ôm 60 theo HT/Target'
     };
 
     function methodDescription(methodId) {
         if (methodId === 'riskHold60') return 'Sắp xếp chuỗi dự đoán theo rủi ro cao xuống thấp, lấy từ trên xuống tới khoảng 60 số ôm và đánh 40 số còn lại.';
+        if (methodId === 'riskHold70') return 'Sắp xếp chuỗi dự đoán theo rủi ro cao xuống thấp, lấy từ trên xuống tới khoảng 70 số ôm và đánh 30 số còn lại.';
+        if (methodId === 'riskHold80') return 'Sắp xếp chuỗi dự đoán theo rủi ro cao xuống thấp, lấy từ trên xuống tới khoảng 80 số ôm và đánh 20 số còn lại.';
+        if (methodId === 'riskHold90') return 'Sắp xếp chuỗi dự đoán theo rủi ro cao xuống thấp, lấy từ trên xuống tới khoảng 90 số ôm và đánh 10 số còn lại.';
         if (methodId === 'frequencyHold60') return 'Sắp xếp chuỗi dự đoán theo HT/Target thấp lên cao, lấy từ trên xuống tới khoảng 60 số ôm và đánh 40 số còn lại.';
         return 'Tính theo danh sách loại trừ và danh sách đánh hiện tại.';
     }

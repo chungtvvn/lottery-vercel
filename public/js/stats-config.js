@@ -7,6 +7,8 @@ const STATS_OPTIONS = {
         { text: "Các số - Tiến Đều", category: "cacSoTienDeuLienTiep" },
         { text: "Các số - Lùi liên tiếp", category: "cacSoLuiLienTiep" },
         { text: "Các số - Lùi Đều", category: "cacSoLuiDeuLienTiep" },
+        { text: "Các số - Về theo thứ tự", category: "cacSoVeTheoThuTu" },
+        { text: "Các số - Về so le theo thứ tự", category: "cacSoVeSoLeTheoThuTu" },
         { text: "Cặp số - Về so le", category: "capSoVeSoLe" },
         // --- BẮT ĐẦU DẠNG TIẾN/LÙI SO LE (Yêu cầu 2) ---
         { text: "Các số - Tiến Lùi So Le (>= 4 ngày)", category: "tienLuiSoLe" },
@@ -1577,6 +1579,8 @@ function createStatVariants(prefix, category) {
         { text: `${prefix} - Về liên tiếp`, category: category, subcategory: "veLienTiep" },
         { text: `${prefix} - Về so le`, category: category, subcategory: "veSole" },
         { text: `${prefix} - Về so le Mới`, category: category, subcategory: "veSoleMoi" },
+        { text: `${prefix} - Về theo thứ tự`, category: category, subcategory: "veTheoThuTu" },
+        { text: `${prefix} - Về so le theo thứ tự`, category: category, subcategory: "veSoLeTheoThuTu" },
         { text: `${prefix} - Tiến liên tiếp`, category: category, subcategory: "tienLienTiep" },
         { text: `${prefix} - Tiến Đều`, category: category, subcategory: "tienDeuLienTiep" },
         { text: `${prefix} - Lùi liên tiếp`, category: category, subcategory: "luiLienTiep" },
@@ -1631,8 +1635,9 @@ function populateDongStepOptions() {
             const preview = numbers.slice(0, 3).join(',') + (numbers.length > 3 ? '...' : '');
             const prefix = `Đồng ${stepLabels[step]} (${preview})`;
 
-            ['tienLienTiep', 'tienDeuLienTiep', 'luiLienTiep', 'luiDeuLienTiep'].forEach(sub => {
+            ['veTheoThuTu', 'veSoLeTheoThuTu', 'tienLienTiep', 'tienDeuLienTiep', 'luiLienTiep', 'luiDeuLienTiep'].forEach(sub => {
                 const subLabels = {
+                    veTheoThuTu: 'Về theo thứ tự', veSoLeTheoThuTu: 'Về so le theo thứ tự',
                     tienLienTiep: 'Tiến', tienDeuLienTiep: 'Tiến Đều',
                     luiLienTiep: 'Lùi', luiDeuLienTiep: 'Lùi Đều'
                 };
@@ -1645,54 +1650,115 @@ populateDongStepOptions();
 
 // --- [MỚI] Thêm nhóm Đầu/Đít 3 số ghép ---
 STATS_OPTIONS["Thống kê Đầu/Đít 3 số ghép"] = [];
-function populateDauDit3DOptions() {
-    const arr = STATS_OPTIONS["Thống kê Đầu/Đít 3 số ghép"];
+function groupSignature(values) {
+    return [...values].map(Number).sort((a, b) => a - b).join('_');
+}
 
-    // Generate valid 3-digit groups (same logic as numberAnalysis.js)
-    for (let a = 0; a <= 7; a++) {
-        for (let b = a + 2; b <= 8; b++) {
-            for (let c = b + 2; c <= 9; c++) {
-                if ((b - a) >= 2 && (c - b) >= 2 && (c - a) >= 2) {
-                    const groupKey = `${a}_${b}_${c}`;
-                    const groupLabel = `${a},${b},${c}`;
+function buildCyclicWindows(values, size = 3) {
+    return values.map((_, startIndex) =>
+        Array.from({ length: size }, (_, offset) => values[(startIndex + offset) % values.length])
+    );
+}
 
-                    // Đầu
-                    ['veLienTiep', 'veSole', 'veSoleMoi', 'veTheoThuTu', 'veSoLeTheoThuTu'].forEach(sub => {
-                        const subLabels = {
-                            veLienTiep: 'Về liên tiếp',
-                            veSole: 'Về so le',
-                            veSoleMoi: 'Về so le Mới',
-                            veTheoThuTu: 'Về theo thứ tự',
-                            veSoLeTheoThuTu: 'Về so le theo thứ tự'
-                        };
-                        arr.push({
-                            text: `Đầu (${groupLabel}) - ${subLabels[sub]}`,
-                            category: `dau_3d_${groupKey}`,
-                            subcategory: sub
-                        });
-                    });
-
-                    // Đít
-                    ['veLienTiep', 'veSole', 'veSoleMoi', 'veTheoThuTu', 'veSoLeTheoThuTu'].forEach(sub => {
-                        const subLabels = {
-                            veLienTiep: 'Về liên tiếp',
-                            veSole: 'Về so le',
-                            veSoleMoi: 'Về so le Mới',
-                            veTheoThuTu: 'Về theo thứ tự',
-                            veSoLeTheoThuTu: 'Về so le theo thứ tự'
-                        };
-                        arr.push({
-                            text: `Đít (${groupLabel}) - ${subLabels[sub]}`,
-                            category: `dit_3d_${groupKey}`,
-                            subcategory: sub
-                        });
-                    });
-                }
+function buildThreeValueGroups(values, excludedGroups = []) {
+    const excluded = new Set(excludedGroups.map(groupSignature));
+    const groups = [];
+    for (let i = 0; i < values.length - 2; i++) {
+        for (let j = i + 1; j < values.length - 1; j++) {
+            for (let k = j + 1; k < values.length; k++) {
+                const group = [values[i], values[j], values[k]];
+                if (!excluded.has(groupSignature(group))) groups.push(group);
             }
         }
     }
+    return groups;
+}
+
+function populateDauDit3DOptions() {
+    const arr = STATS_OPTIONS["Thống kê Đầu/Đít 3 số ghép"];
+    const digitValues = Array.from({ length: 10 }, (_, i) => i);
+    const groups = buildThreeValueGroups(digitValues, buildCyclicWindows(digitValues, 3));
+    const subLabels = {
+        veLienTiep: 'Về liên tiếp',
+        veSole: 'Về so le',
+        veSoleMoi: 'Về so le Mới',
+        veTheoThuTu: 'Về theo thứ tự',
+        veSoLeTheoThuTu: 'Về so le theo thứ tự',
+        tienLienTiep: 'Tiến liên tiếp',
+        tienDeuLienTiep: 'Tiến Đều',
+        luiLienTiep: 'Lùi liên tiếp',
+        luiDeuLienTiep: 'Lùi Đều',
+        tienLuiSoLe: 'Tiến-Lùi So Le (>=4)',
+        luiTienSoLe: 'Lùi-Tiến So Le (>=4)'
+    };
+
+    for (const group of groups) {
+        const groupKey = group.join('_');
+        const groupLabel = group.join(',');
+
+        Object.entries(subLabels).forEach(([sub, label]) => {
+            arr.push({ text: `Đầu (${groupLabel}) - ${label}`, category: `dau_3d_${groupKey}`, subcategory: sub });
+            arr.push({ text: `Đít (${groupLabel}) - ${label}`, category: `dit_3d_${groupKey}`, subcategory: sub });
+        });
+    }
 }
 populateDauDit3DOptions();
+
+// --- [MỚI] Thêm nhóm Tổng/Hiệu 3 giá trị ghép, đồng bộ với generator ---
+STATS_OPTIONS["Thống kê Tổng/Hiệu 3 giá trị ghép"] = [];
+function populateMetric3ValueOptions() {
+    const arr = STATS_OPTIONS["Thống kê Tổng/Hiệu 3 giá trị ghép"];
+    const subLabels = {
+        veLienTiep: 'Về liên tiếp',
+        veSole: 'Về so le',
+        veSoleMoi: 'Về so le Mới',
+        veTheoThuTu: 'Về theo thứ tự',
+        veSoLeTheoThuTu: 'Về so le theo thứ tự',
+        tienLienTiep: 'Tiến liên tiếp',
+        tienDeuLienTiep: 'Tiến Đều',
+        luiLienTiep: 'Lùi liên tiếp',
+        luiDeuLienTiep: 'Lùi Đều',
+        tienLuiSoLe: 'Tiến-Lùi So Le (>=4)',
+        luiTienSoLe: 'Lùi-Tiến So Le (>=4)'
+    };
+    const configs = [
+        {
+            prefix: 'Tổng TT',
+            categoryPrefix: 'tong_tt',
+            values: Array.from({ length: 10 }, (_, i) => i + 1),
+            labelPrefix: 'Tổng TT - Dạng tổng'
+        },
+        {
+            prefix: 'Tổng Mới',
+            categoryPrefix: 'tong_moi',
+            values: Array.from({ length: 19 }, (_, i) => i),
+            labelPrefix: 'Tổng Mới - Dạng tổng'
+        },
+        {
+            prefix: 'Hiệu',
+            categoryPrefix: 'hieu',
+            values: Array.from({ length: 10 }, (_, i) => i),
+            labelPrefix: 'Hiệu - Dạng hiệu'
+        }
+    ];
+
+    for (const config of configs) {
+        const groups = buildThreeValueGroups(config.values, buildCyclicWindows(config.values, 3));
+        for (const group of groups) {
+            const groupKey = group.join('_');
+            const groupLabel = group.join(',');
+            const category = `${config.categoryPrefix}_${groupKey}`;
+            Object.entries(subLabels).forEach(([sub, label]) => {
+                arr.push({
+                    text: `${config.labelPrefix} (${groupLabel}) - ${label}`,
+                    category,
+                    subcategory: sub
+                });
+            });
+        }
+    }
+}
+populateMetric3ValueOptions();
 
 // --- [MỚI] Thêm nhóm CC/CL/LC/LL + Tổng/Hiệu ---
 STATS_OPTIONS["Thống kê Dạng Số + Tổng/Hiệu"] = [];
@@ -1714,6 +1780,10 @@ function populateParitySumDiffOptions() {
     ];
     const subcats = [
         { key: 'veLienTiep', label: 'Về liên tiếp' },
+        { key: 'veSole', label: 'Về so le' },
+        { key: 'veSoleMoi', label: 'Về so le Mới' },
+        { key: 'veTheoThuTu', label: 'Về theo thứ tự' },
+        { key: 'veSoLeTheoThuTu', label: 'Về so le theo thứ tự' },
         { key: 'tienLienTiep', label: 'Tiến' },
         { key: 'tienDeuLienTiep', label: 'Tiến Đều' },
         { key: 'luiLienTiep', label: 'Lùi' },
@@ -1762,6 +1832,56 @@ function populatePatternSequenceOptions() {
 }
 populatePatternSequenceOptions();
 
+function stripStatsSuffix(text) {
+    return String(text || '')
+        .replace(/\s*-\s*(Về liên tiếp|Về so le Mới|Về so le|Tiến liên tiếp|Tiến Đều|Lùi liên tiếp|Lùi Đều|Tiến|Lùi)\s*$/i, '')
+        .trim();
+}
+
+function populateMissingOrderedSequenceOptions() {
+    const orderedSubcats = [
+        { key: 'veTheoThuTu', label: 'Về theo thứ tự' },
+        { key: 'veSoLeTheoThuTu', label: 'Về so le theo thứ tự' }
+    ];
+    const categoriesByGroup = new Map();
+
+    for (const groupName in STATS_OPTIONS) {
+        for (const option of STATS_OPTIONS[groupName]) {
+            if (!option || !option.category || !option.subcategory) continue;
+            const mapKey = `${groupName}|${option.category}`;
+            if (!categoriesByGroup.has(mapKey)) {
+                categoriesByGroup.set(mapKey, {
+                    groupName,
+                    category: option.category,
+                    prefix: stripStatsSuffix(option.text) || option.category,
+                    subcats: new Set()
+                });
+            }
+            categoriesByGroup.get(mapKey).subcats.add(option.subcategory);
+        }
+    }
+
+    for (const item of categoriesByGroup.values()) {
+        const canHaveOrdered = item.subcats.has('veLienTiep') ||
+            item.subcats.has('tienLienTiep') ||
+            item.subcats.has('tienDeuLienTiep') ||
+            item.subcats.has('luiLienTiep') ||
+            item.subcats.has('luiDeuLienTiep');
+        if (!canHaveOrdered) continue;
+
+        const targetArray = STATS_OPTIONS[item.groupName];
+        for (const subcat of orderedSubcats) {
+            if (item.subcats.has(subcat.key)) continue;
+            targetArray.push({
+                text: `${item.prefix} - ${subcat.label}`,
+                category: item.category,
+                subcategory: subcat.key
+            });
+        }
+    }
+}
+populateMissingOrderedSequenceOptions();
+
 
 for (const groupName in STATS_OPTIONS) {
     if (groupName.includes('Tổng') || groupName.includes('Hiệu')) {
@@ -1776,6 +1896,16 @@ for (const groupName in STATS_OPTIONS) {
             return true;
         });
     }
+}
+
+const seenStatsOptionKeys = new Set();
+for (const groupName in STATS_OPTIONS) {
+    STATS_OPTIONS[groupName] = STATS_OPTIONS[groupName].filter(option => {
+        const key = `${option.category}${option.subcategory ? ':' + option.subcategory : ''}`;
+        if (seenStatsOptionKeys.has(key)) return false;
+        seenStatsOptionKeys.add(key);
+        return true;
+    });
 }
 
 const ORDERED_STATS_KEYS = [];
