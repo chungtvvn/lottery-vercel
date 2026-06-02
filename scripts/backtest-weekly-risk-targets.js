@@ -118,6 +118,30 @@ function computeLongestStreaks(details, methodId) {
     return { longestWin, longestLoss, longestWinRange, longestLossRange };
 }
 
+function buildDailyRows(details, methods) {
+    return details.map(day => {
+        const row = {
+            predictionIsoDate: day.predictionIsoDate,
+            predictionDate: day.predictionDate,
+            actualNumber: day.actualNumber
+        };
+        for (const methodId of methods) {
+            const method = day.methods && day.methods[methodId];
+            row[methodId] = method
+                ? {
+                    skipped: !!method.skipped,
+                    profit: method.profit || 0,
+                    stake: method.stake || 0,
+                    payout: method.payout || 0,
+                    excludedCount: method.excludedCount || 0,
+                    betCount: method.betCount || 0
+                }
+                : null;
+        }
+        return row;
+    });
+}
+
 async function main() {
     const args = new Map(process.argv.slice(2).map(arg => {
         const [key, value] = arg.replace(/^--/, '').split('=');
@@ -134,7 +158,9 @@ async function main() {
         playMode: 'bet',
         methods: methods.join(','),
         compactDetails: true,
-        betCostMultiplier: Number(args.get('betCostMultiplier') || 0.8)
+        betCostMultiplier: Number(args.get('betCostMultiplier') || 0.8),
+        startIndex: args.has('startIndex') ? Number(args.get('startIndex')) : undefined,
+        endIndexExclusive: args.has('endIndex') ? Number(args.get('endIndex')) : undefined
     });
     if (result.error) throw new Error(result.error);
 
@@ -185,7 +211,8 @@ async function main() {
         generatedAt: result.generatedAt,
         config: result.config,
         methodSummary,
-        weeklyRows
+        weeklyRows,
+        dailyRows: buildDailyRows(chronological, methods)
     }, null, 2));
 
     console.log(`[WeeklyBacktest] CSV: ${csvPath}`);

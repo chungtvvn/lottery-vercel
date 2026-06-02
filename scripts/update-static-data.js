@@ -808,6 +808,8 @@ async function main() {
             const quickStatsKeys = Object.keys(minifiedQS || {}).sort();
             await fs.writeFile(path.join(DATA_DIR, 'statistics', 'quick_stats_keys.json'), JSON.stringify(quickStatsKeys, null, 0));
             console.log(`✅ Đã lưu kết quả quick_stats_keys.json (${quickStatsKeys.length} keys)`);
+
+            runNodeScript('scripts/generate-quick-stats-shards.js', 'Sinh quick_stats shards cho API Kỷ lục.');
             
             const historyStats = await ss.getQuickStatsHistory();
             const minifiedHistory = historyStats.map(entry => ({
