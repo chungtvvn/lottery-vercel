@@ -5,12 +5,15 @@ const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 const {
-    VALID_3_DIGIT_GROUPS,
+    ALL_3_DIGIT_GROUPS,
+    CONSECUTIVE_TONG_TT_3_VALUE_CATEGORIES,
     VALID_TONG_TT_3_VALUE_GROUPS,
+    CONSECUTIVE_TONG_MOI_3_VALUE_CATEGORIES,
     VALID_TONG_MOI_3_VALUE_GROUPS,
+    CONSECUTIVE_HIEU_3_VALUE_CATEGORIES,
     VALID_HIEU_3_VALUE_GROUPS
 } = require('../lib/utils/numberAnalysis');
-const { isInvalidStatsKey } = require('../lib/utils/statsOptionsManifest');
+const { isInvalidStatsKey, loadStatsOptions } = require('../lib/utils/statsOptionsManifest');
 const { hasSupabaseAdminConfig, getSupabaseAdminClient } = require('../lib/supabase/client');
 
 const STATS_DIR = path.join(__dirname, '..', 'lib', 'data', 'statistics');
@@ -89,16 +92,26 @@ function requiredCoverageKeys() {
     const digitSubs = ['veLienTiep', 'veSole', 'veSoleMoi', 'tienLuiSoLe', 'luiTienSoLe', 'veTheoThuTu', 'veSoLeTheoThuTu', 'tienLienTiep', 'tienDeuLienTiep', 'luiLienTiep', 'luiDeuLienTiep'];
     const metricSubs = ['veLienTiep', 'veSole', 'veSoleMoi', 'veTheoThuTu', 'veSoLeTheoThuTu', 'tienLienTiep', 'tienDeuLienTiep', 'luiLienTiep', 'luiDeuLienTiep', 'tienLuiSoLe', 'luiTienSoLe'];
 
-    for (const group of VALID_3_DIGIT_GROUPS) {
+    for (const group of ALL_3_DIGIT_GROUPS) {
         const suffix = group.join('_');
         add(`dau_3d_${suffix}`, digitSubs);
         add(`dit_3d_${suffix}`, digitSubs);
     }
+    for (const category of CONSECUTIVE_TONG_TT_3_VALUE_CATEGORIES) add(category, metricSubs);
     for (const group of VALID_TONG_TT_3_VALUE_GROUPS) add(`tong_tt_${group.join('_')}`, metricSubs);
+    for (const category of CONSECUTIVE_TONG_MOI_3_VALUE_CATEGORIES) add(category, metricSubs);
     for (const group of VALID_TONG_MOI_3_VALUE_GROUPS) add(`tong_moi_${group.join('_')}`, metricSubs);
+    for (const category of CONSECUTIVE_HIEU_3_VALUE_CATEGORIES) add(category, metricSubs);
     for (const group of VALID_HIEU_3_VALUE_GROUPS) add(`hieu_${group.join('_')}`, metricSubs);
 
     return keys.filter(key => !isInvalidStatsKey(key));
+}
+
+function requiredOrderedOptionKeys() {
+    const { keys } = loadStatsOptions();
+    return keys.filter(key =>
+        key.endsWith(':veTheoThuTu') || key.endsWith(':veSoLeTheoThuTu')
+    );
 }
 
 function reportMissing(label, actualKeys, requiredKeys) {
@@ -114,14 +127,26 @@ function reportMissing(label, actualKeys, requiredKeys) {
     return missing.length;
 }
 
+function reportMissingOrdered(label, actualKeys, requiredKeys) {
+    if (!actualKeys) return 0;
+    const missing = requiredKeys.filter(key => !actualKeys.has(key));
+    console.log(`[Audit] ${label}: thiếu ${missing.length}/${requiredKeys.length} pattern về theo thứ tự / so le theo thứ tự.`);
+    if (missing.length > 0) {
+        console.log(`[Audit] ${label} ordered missing sample: ${missing.slice(0, 20).join(', ')}`);
+    }
+    return missing.length;
+}
+
 async function main() {
     const requiredKeys = requiredCoverageKeys();
+    const orderedKeys = requiredOrderedOptionKeys();
     console.log('[Audit] Expected group counts:', {
-        headTail3DigitGroups: VALID_3_DIGIT_GROUPS.length,
+        headTail3DigitGroups: ALL_3_DIGIT_GROUPS.length,
         tongTt3ValueGroups: VALID_TONG_TT_3_VALUE_GROUPS.length,
         tongMoi3ValueGroups: VALID_TONG_MOI_3_VALUE_GROUPS.length,
         hieu3ValueGroups: VALID_HIEU_3_VALUE_GROUPS.length,
-        requiredPatternKeys: requiredKeys.length
+        requiredPatternKeys: requiredKeys.length,
+        requiredOrderedPatternKeys: orderedKeys.length
     });
 
     const localKeys = readLocalStatsKeys();
@@ -131,7 +156,10 @@ async function main() {
     const missingCounts = [
         reportMissing('Local JSON', localKeys, requiredKeys),
         reportMissing('Cloudflare R2', r2Keys, requiredKeys),
-        reportMissing('Supabase DB', dbKeys, requiredKeys)
+        reportMissing('Supabase DB', dbKeys, requiredKeys),
+        reportMissingOrdered('Local JSON', localKeys, orderedKeys),
+        reportMissingOrdered('Cloudflare R2', r2Keys, orderedKeys),
+        reportMissingOrdered('Supabase DB', dbKeys, orderedKeys)
     ];
 
     if (missingCounts.some(count => count > 0)) {

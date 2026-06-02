@@ -1704,6 +1704,28 @@ function populateDauDit3DOptions() {
 }
 populateDauDit3DOptions();
 
+// --- Nhóm Đầu/Đít 3 số liên tiếp: chỉ bổ sung các dạng theo thứ tự đang thiếu ---
+STATS_OPTIONS["Thống kê Đầu/Đít 3 số liên tiếp theo thứ tự"] = [];
+function populateDauDit3DConsecutiveOrderedOptions() {
+    const arr = STATS_OPTIONS["Thống kê Đầu/Đít 3 số liên tiếp theo thứ tự"];
+    const digitValues = Array.from({ length: 10 }, (_, i) => i);
+    const groups = buildCyclicWindows(digitValues, 3);
+    const orderedSubs = {
+        veTheoThuTu: 'Về theo thứ tự',
+        veSoLeTheoThuTu: 'Về so le theo thứ tự'
+    };
+
+    for (const group of groups) {
+        const groupKey = group.join('_');
+        const groupLabel = group.join(',');
+        Object.entries(orderedSubs).forEach(([sub, label]) => {
+            arr.push({ text: `Đầu (${groupLabel}) - ${label}`, category: `dau_3d_${groupKey}`, subcategory: sub });
+            arr.push({ text: `Đít (${groupLabel}) - ${label}`, category: `dit_3d_${groupKey}`, subcategory: sub });
+        });
+    }
+}
+populateDauDit3DConsecutiveOrderedOptions();
+
 // --- [MỚI] Thêm nhóm Tổng/Hiệu 3 giá trị ghép, đồng bộ với generator ---
 STATS_OPTIONS["Thống kê Tổng/Hiệu 3 giá trị ghép"] = [];
 function populateMetric3ValueOptions() {
@@ -1834,7 +1856,7 @@ populatePatternSequenceOptions();
 
 function stripStatsSuffix(text) {
     return String(text || '')
-        .replace(/\s*-\s*(Về liên tiếp|Về so le Mới|Về so le|Tiến liên tiếp|Tiến Đều|Lùi liên tiếp|Lùi Đều|Tiến|Lùi)\s*$/i, '')
+        .replace(/\s*-\s*(Về liên tiếp|Về so le Mới|Về so le|Tiến liên tiếp|Tiến Đều|Lùi liên tiếp|Lùi Đều|Tiến-Lùi So Le \(>=4\)|Lùi-Tiến So Le \(>=4\)|Tiến|Lùi)\s*$/i, '')
         .trim();
 }
 

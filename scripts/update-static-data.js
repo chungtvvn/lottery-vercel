@@ -133,9 +133,12 @@ function hasRequiredLocalStatsCoverage() {
     if (process.env.SKIP_STATS_COVERAGE_CHECK === '1') return true;
     try {
         const {
-            VALID_3_DIGIT_GROUPS,
+            ALL_3_DIGIT_GROUPS,
+            CONSECUTIVE_TONG_TT_3_VALUE_CATEGORIES,
             VALID_TONG_TT_3_VALUE_GROUPS,
+            CONSECUTIVE_TONG_MOI_3_VALUE_CATEGORIES,
             VALID_TONG_MOI_3_VALUE_GROUPS,
+            CONSECUTIVE_HIEU_3_VALUE_CATEGORIES,
             VALID_HIEU_3_VALUE_GROUPS
         } = require('../lib/utils/numberAnalysis');
         const fsSync = require('fs');
@@ -144,13 +147,16 @@ function hasRequiredLocalStatsCoverage() {
         const digitSubs = ['veLienTiep', 'veSole', 'veSoleMoi', 'tienLuiSoLe', 'luiTienSoLe', 'veTheoThuTu', 'veSoLeTheoThuTu', 'tienLienTiep', 'tienDeuLienTiep', 'luiLienTiep', 'luiDeuLienTiep'];
         const metricSubs = ['veLienTiep', 'veSole', 'veSoleMoi', 'veTheoThuTu', 'veSoLeTheoThuTu', 'tienLienTiep', 'tienDeuLienTiep', 'luiLienTiep', 'luiDeuLienTiep', 'tienLuiSoLe', 'luiTienSoLe'];
 
-        for (const group of VALID_3_DIGIT_GROUPS) {
+        for (const group of ALL_3_DIGIT_GROUPS) {
             const suffix = group.join('_');
             add(`dau_3d_${suffix}`, digitSubs);
             add(`dit_3d_${suffix}`, digitSubs);
         }
+        for (const category of CONSECUTIVE_TONG_TT_3_VALUE_CATEGORIES) add(category, metricSubs);
         for (const group of VALID_TONG_TT_3_VALUE_GROUPS) add(`tong_tt_${group.join('_')}`, metricSubs);
+        for (const category of CONSECUTIVE_TONG_MOI_3_VALUE_CATEGORIES) add(category, metricSubs);
         for (const group of VALID_TONG_MOI_3_VALUE_GROUPS) add(`tong_moi_${group.join('_')}`, metricSubs);
+        for (const category of CONSECUTIVE_HIEU_3_VALUE_CATEGORIES) add(category, metricSubs);
         for (const group of VALID_HIEU_3_VALUE_GROUPS) add(`hieu_${group.join('_')}`, metricSubs);
 
         const actual = new Set();
@@ -947,6 +953,9 @@ async function main() {
                         console.log(`✅ Đã lưu kết quả ${fileName}`);
                     }
                 }
+
+                const predictionHistoryService = require('../lib/services/predictionHistoryService');
+                await predictionHistoryService.generateLocalPredictionHistoryFromSimulation(90);
             } catch (simErr) {
                 console.error('⚠️ Lỗi khi tạo cached simulation (không ảnh hưởng các bước khác):', simErr.message);
             }
