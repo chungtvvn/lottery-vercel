@@ -9,7 +9,7 @@ on:
       wait_for_new_xoso:
         description: '1 = chờ dữ liệu ngày mới, 0 = chỉ test luồng bằng dữ liệu mới nhất đang có'
         required: true
-        default: '1'
+        default: '0'
         type: choice
         options:
           - '1'

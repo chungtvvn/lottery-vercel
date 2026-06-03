@@ -415,7 +415,15 @@ async function fetchLatestXsmbResultWithRetry(latestLocalDate) {
             const meetsTargetDate = !shouldRequireTargetDate || compareDateValues(row.date, targetDate) >= 0;
             const isNewerThanLocal = !latestLocalDate || compareDateValues(row.date, latestLocalDate) > 0;
 
-            if (meetsTargetDate && (isNewerThanLocal || !shouldRequireTargetDate)) {
+            if (isNewerThanLocal) {
+                if (!meetsTargetDate) {
+                    console.log(`[1b] Nguồn có dữ liệu mới hơn local (${latestLocalDate || 'none'} -> ${row.date}) dù chưa tới target=${targetDate}; dùng ngày mới nhất đang có.`);
+                }
+                console.log(`[1b] xoso.com.vn trả kết quả ngày ${row.date} từ ${row._sourceUrl || XOSO_HOME_URL} sau ${attempt} lần thử.`);
+                return row;
+            }
+
+            if (meetsTargetDate && !shouldRequireTargetDate) {
                 console.log(`[1b] xoso.com.vn trả kết quả ngày ${row.date} từ ${row._sourceUrl || XOSO_HOME_URL} sau ${attempt} lần thử.`);
                 return row;
             }
@@ -548,9 +556,10 @@ async function buildRawDataFromSources(currentArray) {
         console.log(`[1d] Đã parse kết quả xoso.com.vn ngày ${latestXosoRow.date}, ĐB=${String(latestXosoRow.special).padStart(2, '0')}`);
     } catch (xosoError) {
         console.warn(`[1b] Không lấy được kết quả xoso.com.vn: ${xosoError.message}`);
-        if (finalArray.length === 0 || WAIT_FOR_NEW_XOSO) {
+        if (finalArray.length === 0) {
             throw xosoError;
         }
+        console.warn(`[1b] Tiếp tục sinh thống kê với dữ liệu mới nhất hiện có (${getLatestDateValue(finalArray) || 'none'}) thay vì dừng workflow.`);
     }
 
     return {
