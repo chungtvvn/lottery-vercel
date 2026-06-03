@@ -2,8 +2,14 @@ name: Daily Vina Lottery R2 Generator
 
 on:
   schedule:
-    # Chạy hàng ngày lúc 18:40 GMT+7 (Hà Nội) = 11:40 UTC.
+    # GitHub Actions schedule is best-effort, so keep several idempotent retry slots
+    # after 18:40 GMT+7 (11:40 UTC) instead of relying on one exact minute.
     - cron: '40 11 * * *'
+    - cron: '50 11 * * *'
+    - cron: '0 12 * * *'
+    - cron: '10 12 * * *'
+    - cron: '20 12 * * *'
+    - cron: '40 12 * * *'
   workflow_dispatch:
     inputs:
       wait_for_new_xoso:
@@ -49,6 +55,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: daily-vina-lottery-r2-generator
+  cancel-in-progress: false
+
 jobs:
   generator:
     runs-on: ubuntu-latest
@@ -70,12 +80,24 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Resolve XOSO target date
+        id: xoso_target
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            # Scheduled runs can start hours late. Subtract 6h so runs shortly
+            # after midnight VN time still target the draw date that just closed.
+            echo "date=$(TZ=Asia/Ho_Chi_Minh date -d '6 hours ago' +%F)" >> "$GITHUB_OUTPUT"
+          else
+            echo "date=${{ inputs.xoso_target_date }}" >> "$GITHUB_OUTPUT"
+          fi
+          echo "Resolved XOSO_TARGET_DATE=$(cat "$GITHUB_OUTPUT" | tail -n 1 | cut -d= -f2)"
+
       - name: Pull Data & Generate R2 Static Stats
         env:
           WAIT_FOR_NEW_XOSO: ${{ github.event_name == 'workflow_dispatch' && inputs.wait_for_new_xoso || '1' }}
           XOSO_MAX_WAIT_MINUTES: ${{ github.event_name == 'workflow_dispatch' && inputs.xoso_max_wait_minutes || '90' }}
           XOSO_RETRY_INTERVAL_SECONDS: ${{ github.event_name == 'workflow_dispatch' && inputs.xoso_retry_interval_seconds || '60' }}
-          XOSO_TARGET_DATE: ${{ github.event_name == 'workflow_dispatch' && inputs.xoso_target_date || '' }}
+          XOSO_TARGET_DATE: ${{ steps.xoso_target.outputs.date }}
           LOTTERY_DATA_SOURCE: 'r2'
           LOTTERY_STATS_SOURCE: 'local'
           FORCE_REGENERATE_STATS: ${{ github.event_name == 'workflow_dispatch' && inputs.force_regenerate_stats || vars.FORCE_REGENERATE_STATS || '0' }}
