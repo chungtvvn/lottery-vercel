@@ -24,6 +24,41 @@ const DATA_PREFIX = process.env.CLOUDFLARE_R2_DATA_PREFIX || 'data';
 const CLEAR_STATS_PREFIX = process.env.CLOUDFLARE_R2_CLEAR_STATS_PREFIX === '1'
     || process.env.CLOUDFLARE_R2_CLEAR_PREFIX === '1';
 
+function getSimulationCacheDays() {
+    const values = String(process.env.SIMULATION_CACHE_DAYS || '90')
+        .split(',')
+        .map(value => Number(value.trim()))
+        .filter(value => Number.isFinite(value) && value >= 7 && value <= 365);
+    return values.length > 0 ? [...new Set(values)] : [90];
+}
+
+function getSimulationCachePlayModes() {
+    const values = String(process.env.SIMULATION_CACHE_PLAY_MODES || 'both')
+        .split(',')
+        .map(value => value.trim().toLowerCase())
+        .filter(value => ['both', 'bet', 'hold'].includes(value));
+    return values.length > 0 ? [...new Set(values)] : ['both'];
+}
+
+function getAllowedSimulationCacheFiles() {
+    const allowed = new Set();
+    for (const days of getSimulationCacheDays()) {
+        for (const playMode of getSimulationCachePlayModes()) {
+            allowed.add(playMode === 'both'
+                ? `cached_simulation_${days}.json`
+                : `cached_simulation_${days}_${playMode}.json`);
+        }
+    }
+    return allowed;
+}
+
+function shouldUploadStatsFile(file, allowedSimulationCaches) {
+    if (/^cached_simulation_\d+(?:_(?:bet|hold))?\.json$/.test(file)) {
+        return allowedSimulationCaches.has(file);
+    }
+    return true;
+}
+
 async function uploadJsonGzip(s3, filePath, key) {
     const fileContent = fs.readFileSync(filePath, 'utf8');
     const gzipContent = zlib.gzipSync(Buffer.from(fileContent, 'utf8'));
@@ -112,8 +147,14 @@ async function uploadToR2() {
         console.warn(`[R2 Upload] Không tìm thấy raw data file: ${DATA_FILE}`);
     }
 
-    const files = fs.readdirSync(STATS_DIR).filter(file => file.endsWith('.json'));
+    const allowedSimulationCaches = getAllowedSimulationCacheFiles();
+    const allFiles = fs.readdirSync(STATS_DIR).filter(file => file.endsWith('.json'));
+    const files = allFiles.filter(file => shouldUploadStatsFile(file, allowedSimulationCaches));
+    const skippedSimulationCaches = allFiles.length - files.length;
     console.log(`[R2 Upload] Tìm thấy ${files.length} tệp tin JSON thống kê cần tải lên.`);
+    if (skippedSimulationCaches > 0) {
+        console.log(`[R2 Upload] Bỏ qua ${skippedSimulationCaches} cache simulation cũ/không dùng. Chỉ upload: ${[...allowedSimulationCaches].join(', ')}`);
+    }
     for (const file of files) {
         const filePath = path.join(STATS_DIR, file);
         try {
