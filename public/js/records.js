@@ -119,6 +119,82 @@ document.addEventListener('DOMContentLoaded', () => {
         return 'default';
     };
 
+    const normalizeSearchText = (value = '') => String(value || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd');
+
+    const getAxisRank = (key = '', text = '', groupName = '') => {
+        const haystack = normalizeSearchText(`${key} ${text} ${groupName}`);
+        if (haystack.includes('so de') || haystack.includes('1 so') || haystack.includes('cac so') || /^so[_:]/.test(haystack)) return { rank: 10, label: 'Số' };
+        if (haystack.includes('dau dit')) return { rank: 18, label: 'Đầu/đít' };
+        if (haystack.includes('dau')) return { rank: 20, label: 'Đầu' };
+        if (haystack.includes('dit')) return { rank: 30, label: 'Đít' };
+        if (haystack.includes('tong tt')) return { rank: 40, label: 'Tổng TT' };
+        if (haystack.includes('tong moi')) return { rank: 50, label: 'Tổng mới' };
+        if (haystack.includes('hieu')) return { rank: 60, label: 'Hiệu' };
+        if (haystack.includes('tong')) return { rank: 45, label: 'Tổng' };
+        return { rank: 99, label: 'Khác' };
+    };
+
+    const getValueGroupRank = (key = '', text = '') => {
+        const haystack = normalizeSearchText(`${key} ${text}`);
+        if (haystack.includes('_3d_') || haystack.match(/\(\d,\d,\d\)/) || haystack.match(/\(\d+,\d+,\d+\)/)) return { rank: 10, label: 'Nhóm 3 giá trị' };
+        if (haystack.includes('combo') || haystack.includes('ket hop') || haystack.includes('+')) return { rank: 20, label: 'Kết hợp' };
+        if (haystack.includes('chan-le') || haystack.includes('chan le') || haystack.includes('le-chan') || haystack.includes('le chan')) return { rank: 30, label: 'Chẵn/lẻ' };
+        if (haystack.includes('nho-to') || haystack.includes('nho to') || haystack.includes('to-nho') || haystack.includes('to nho')) return { rank: 40, label: 'Nhỏ/to' };
+        if (haystack.includes('nguyento') || haystack.includes('nguyen to') || haystack.includes('hopso') || haystack.includes('hop so')) return { rank: 50, label: 'Nguyên tố/hợp số' };
+        if (haystack.includes('chia3') || haystack.includes('chia het cho 3')) return { rank: 60, label: 'Chia hết 3' };
+        if (haystack.includes('cung') || haystack.includes('khac')) return { rank: 70, label: 'Cùng/khác' };
+        if (haystack.match(/_\d+(?:$|:|_)/) || haystack.match(/\(\d+\)/)) return { rank: 5, label: 'Giá trị cố định' };
+        return { rank: 90, label: 'Tổng quát' };
+    };
+
+    const getSequenceRank = (key = '', text = '') => {
+        const haystack = normalizeSearchText(`${key} ${text}`);
+        if (haystack.includes('soletheocap') || haystack.includes('so le theo cap')) return { rank: 10, label: 'So le theo cặp' };
+        if (haystack.includes('soletheothutu') || haystack.includes('so le theo thu tu')) return { rank: 20, label: 'So le theo thứ tự' };
+        if (haystack.includes('vetheothutu') || haystack.includes('ve theo thu tu')) return { rank: 30, label: 'Về theo thứ tự' };
+        if (haystack.includes('tienluisole') || haystack.includes('tien lui so le')) return { rank: 40, label: 'Tiến/lùi so le' };
+        if (haystack.includes('luitiensole') || haystack.includes('lui tien so le')) return { rank: 45, label: 'Lùi/tiến so le' };
+        if (haystack.includes('ve sole') || haystack.includes('so le')) return { rank: 50, label: 'So le' };
+        if (haystack.includes('tien deu')) return { rank: 60, label: 'Tiến đều' };
+        if (haystack.includes('lui deu')) return { rank: 70, label: 'Lùi đều' };
+        if (haystack.includes('tien lien tiep')) return { rank: 80, label: 'Tiến liên tiếp' };
+        if (haystack.includes('lui lien tiep')) return { rank: 90, label: 'Lùi liên tiếp' };
+        if (haystack.includes('lien tiep')) return { rank: 100, label: 'Liên tiếp' };
+        return { rank: 999, label: 'Khác' };
+    };
+
+    const buildPatternSortMeta = (pattern) => {
+        const axis = getAxisRank(pattern.key, pattern.text, pattern.groupName);
+        const valueGroup = getValueGroupRank(pattern.key, pattern.text);
+        const sequence = getSequenceRank(pattern.key, pattern.text);
+        return {
+            axisRank: axis.rank,
+            axisLabel: axis.label,
+            valueRank: valueGroup.rank,
+            valueLabel: valueGroup.label,
+            sequenceRank: sequence.rank,
+            sequenceLabel: sequence.label,
+            normalizedText: normalizeSearchText(pattern.text),
+            groupSortText: normalizeSearchText(pattern.groupName),
+            keySortText: normalizeSearchText(pattern.key)
+        };
+    };
+
+    const comparePatterns = (a, b) => {
+        const metaA = a.sortMeta || buildPatternSortMeta(a);
+        const metaB = b.sortMeta || buildPatternSortMeta(b);
+        return metaA.axisRank - metaB.axisRank ||
+            metaA.valueRank - metaB.valueRank ||
+            metaA.sequenceRank - metaB.sequenceRank ||
+            metaA.groupSortText.localeCompare(metaB.groupSortText) ||
+            metaA.normalizedText.localeCompare(metaB.normalizedText) ||
+            metaA.keySortText.localeCompare(metaB.keySortText);
+    };
+
     const filterGapEntries = (entries, patternType) => {
         return entries.filter(([len, data]) => {
             if (data.count === 0) return false;
@@ -312,11 +388,23 @@ document.addEventListener('DOMContentLoaded', () => {
         return `<h6 class="font-semibold text-slate-800 text-sm mb-2"><i class="bi bi-clock-history"></i> ${title} (Dài ${streakLength} ngày)</h6><ul class="list-none p-0 mt-2">${detailsHtml}</ul>`;
     };
 
-    const renderRecordAccordionItem = (key, stat) => {
+    const renderRecordAccordionItem = (key, stat, pattern = null) => {
         const longestInfo = stat.longest && stat.longest.length > 0 ? `${stat.longest[0].length} ngày (${stat.longest.length})` : 'N/A';
         const secondLongestInfo = stat.secondLongest && stat.secondLongest.length > 0 ? `${stat.secondLongest[0].length} ngày (${stat.secondLongest.length})` : 'N/A';
         const avgIntervalInfo = stat.averageInterval !== null ? `${stat.averageInterval} ngày` : 'N/A';
         const sinceLastInfo = stat.daysSinceLast !== null && stat.daysSinceLast !== 'N/A' ? `${stat.daysSinceLast} ngày` : 'N/A';
+        const sortMeta = pattern && pattern.sortMeta ? pattern.sortMeta : buildPatternSortMeta({
+            key,
+            text: stat.description || '',
+            groupName: pattern ? pattern.groupName : ''
+        });
+        const groupBadges = `
+            <div class="mt-1 flex flex-wrap gap-1.5 text-[10px] font-semibold">
+                <span class="rounded-md border border-indigo-100 bg-indigo-50 px-1.5 py-0.5 text-indigo-700">${escapeHtml(sortMeta.axisLabel)}</span>
+                <span class="rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-slate-600">${escapeHtml(sortMeta.valueLabel)}</span>
+                <span class="rounded-md border border-purple-100 bg-purple-50 px-1.5 py-0.5 text-purple-700">${escapeHtml(sortMeta.sequenceLabel)}</span>
+            </div>
+        `;
 
         const gapStatsSection = (stat.gapStats) ? `
             <div class="col-span-1 md:col-span-2">
@@ -340,7 +428,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const itemHtml = `
             <div class="record-accordion-item">
                 <div class="record-accordion-button p-4 flex flex-wrap justify-between items-center cursor-pointer hover:bg-slate-50 border-b border-slate-100 transition" onclick="window.toggleAccordion(this)">
-                     <span class="w-full lg:w-2/5 font-semibold text-slate-800 text-left text-sm lg:text-base">${escapeHtml(stat.description)}</span>
+                     <span class="w-full lg:w-2/5 font-semibold text-slate-800 text-left text-sm lg:text-base">
+                        ${escapeHtml(stat.description)}
+                        ${groupBadges}
+                     </span>
                      <div class="flex-grow grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-slate-600 text-left mt-2 lg:mt-0">
                          <span class="flex items-center gap-1"><i class="bi bi-trophy text-yellow-600"></i> KL: <strong class="text-slate-800">${longestInfo}</strong></span>
                          <span class="flex items-center gap-1"><i class="bi bi-award text-slate-500"></i> Nhì: <strong class="text-slate-800">${secondLongestInfo}</strong></span>
@@ -392,9 +483,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const matchesGroup = selectedGroup === 'ALL' || pattern.groupName === selectedGroup;
             const matchesSearch = !searchQuery || 
                 pattern.text.toLowerCase().includes(searchQuery) ||
-                pattern.key.toLowerCase().includes(searchQuery);
+                pattern.key.toLowerCase().includes(searchQuery) ||
+                pattern.groupName.toLowerCase().includes(searchQuery) ||
+                (pattern.sortSearchText && pattern.sortSearchText.includes(searchQuery));
             return hasRecordData(pattern.key) && matchesGroup && matchesSearch;
-        });
+        }).sort(comparePatterns);
 
         currentPage = 1;
         renderPagination();
@@ -476,7 +569,7 @@ document.addEventListener('DOMContentLoaded', () => {
             pageItems.forEach(pattern => {
                 const stat = data[pattern.key];
                 if (stat) {
-                    renderRecordAccordionItem(pattern.key, stat);
+                    renderRecordAccordionItem(pattern.key, stat, pattern);
                 } else {
                     // Fallback placeholder if API doesn't have it
                     renderRecordAccordionItem(pattern.key, {
@@ -486,7 +579,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         current: null,
                         averageInterval: null,
                         daysSinceLast: 'N/A'
-                    });
+                    }, pattern);
                 }
             });
 
@@ -540,11 +633,21 @@ document.addEventListener('DOMContentLoaded', () => {
             STATS_OPTIONS[groupName].forEach(option => {
                 const key = `${option.category}${option.subcategory ? ':' + option.subcategory : ''}`;
                 if (!hasRecordData(key)) return;
-                groupPatterns.push({
+                const pattern = {
                     key: key,
                     text: option.text,
                     groupName: groupName
-                });
+                };
+                pattern.sortMeta = buildPatternSortMeta(pattern);
+                pattern.sortSearchText = normalizeSearchText([
+                    pattern.key,
+                    pattern.text,
+                    pattern.groupName,
+                    pattern.sortMeta.axisLabel,
+                    pattern.sortMeta.valueLabel,
+                    pattern.sortMeta.sequenceLabel
+                ].join(' '));
+                groupPatterns.push(pattern);
             });
 
             if (groupPatterns.length > 0) {
@@ -552,10 +655,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 opt.value = groupName;
                 opt.textContent = groupName;
                 recordGroup.appendChild(opt);
-                allPatterns.push(...groupPatterns);
+                allPatterns.push(...groupPatterns.sort(comparePatterns));
             }
         }
 
+        allPatterns.sort(comparePatterns);
         filteredPatterns = [...allPatterns];
 
         // 2. Bind event listeners
