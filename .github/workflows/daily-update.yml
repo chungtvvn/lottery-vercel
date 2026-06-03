@@ -82,6 +82,9 @@ jobs:
           CLOUDFLARE_R2_CLEAR_STATS_PREFIX: ${{ github.event_name == 'workflow_dispatch' && inputs.clear_r2_statistics || '0' }}
           SYNC_R2_AFTER_UPDATE: '1'
           SYNC_SUPABASE_AFTER_UPDATE: '0'
+          SIMULATION_CACHE_DAYS: '90'
+          SIMULATION_CACHE_PLAY_MODES: 'both'
+          BACKTEST_CLEAR_HISTORY_CACHE_INTERVAL: '30'
           CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
           CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
           CLOUDFLARE_R2_ENDPOINT: ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}

@@ -22,6 +22,22 @@ function readNumberEnv(name, fallback, minValue) {
     return Math.max(minValue, parsed);
 }
 
+function getSimulationCacheDays() {
+    const values = String(process.env.SIMULATION_CACHE_DAYS || '90')
+        .split(',')
+        .map(value => Number(value.trim()))
+        .filter(value => Number.isFinite(value) && value >= 7 && value <= 365);
+    return values.length > 0 ? [...new Set(values)] : [90];
+}
+
+function getSimulationCachePlayModes() {
+    const values = String(process.env.SIMULATION_CACHE_PLAY_MODES || 'both')
+        .split(',')
+        .map(value => value.trim().toLowerCase())
+        .filter(value => ['both', 'bet', 'hold'].includes(value));
+    return values.length > 0 ? [...new Set(values)] : ['both'];
+}
+
 async function readJsonIfExists(filePath) {
     try {
         const content = await fs.readFile(filePath, 'utf-8');
@@ -913,14 +929,8 @@ async function main() {
                 }
             }
 
-            const simulationCacheDays = String(process.env.SIMULATION_CACHE_DAYS || '7,14,30,60,90,180,365')
-                .split(',')
-                .map(value => Number(value.trim()))
-                .filter(value => Number.isFinite(value) && value >= 7 && value <= 365);
-            const simulationCacheModes = String(process.env.SIMULATION_CACHE_PLAY_MODES || 'both,bet,hold')
-                .split(',')
-                .map(value => value.trim().toLowerCase())
-                .filter(value => ['both', 'bet', 'hold'].includes(value));
+            const simulationCacheDays = getSimulationCacheDays();
+            const simulationCacheModes = getSimulationCachePlayModes();
 
             if (simulationCacheDays.length > 0 && simulationCacheModes.length > 0) {
                 console.log(' -> Tạo cache Simulation Backtest cho Supabase DB...');
@@ -928,7 +938,8 @@ async function main() {
                     for (const playMode of simulationCacheModes) {
                         const simulationResult = await simulationService.runBacktest(cacheDays, null, {
                             compactDetails: cacheDays > 90,
-                            playMode
+                            playMode,
+                            clearHistoryCacheInterval: Number(process.env.BACKTEST_CLEAR_HISTORY_CACHE_INTERVAL || 30)
                         });
                         if (simulationResult && !simulationResult.error) {
                             const cacheKey = `cached_simulation_${cacheDays}_${playMode}`;
@@ -1000,17 +1011,20 @@ async function main() {
             console.log(' -> Tạo Cached Simulation Backtest cho tất cả khoảng thời gian...');
             try {
                 const simulationService = require('../lib/services/simulationService');
-                const staticCacheDays = [7, 14, 30, 60, 90, 180, 365];
-                const staticCacheModes = ['both', 'bet', 'hold'];
+                const staticCacheDays = getSimulationCacheDays();
+                const staticCacheModes = getSimulationCachePlayModes();
+                console.log(`    Cache simulation: days=${staticCacheDays.join(',')}, modes=${staticCacheModes.join(',')}`);
                 for (const days of staticCacheDays) {
                     for (const playMode of staticCacheModes) {
                         const simulationResult = await simulationService.runBacktest(days, null, {
                             compactDetails: days > 90,
-                            playMode
+                            playMode,
+                            clearHistoryCacheInterval: Number(process.env.BACKTEST_CLEAR_HISTORY_CACHE_INTERVAL || 30)
                         });
                         const fileName = playMode === 'both' ? `cached_simulation_${days}.json` : `cached_simulation_${days}_${playMode}.json`;
                         await fs.writeFile(path.join(DATA_DIR, 'statistics', fileName), JSON.stringify(simulationResult, null, 0));
                         console.log(`✅ Đã lưu kết quả ${fileName}`);
+                        if (he.clearStaticHistoryCaches) he.clearStaticHistoryCaches();
                     }
                 }
 
