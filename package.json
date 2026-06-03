@@ -13,7 +13,11 @@
     "supabase:cleanup:legacy": "node scripts/cleanup-supabase-legacy-storage.js",
     "supabase:sync": "node scripts/sync-supabase.js",
     "stats:audit": "node scripts/audit-statistics-coverage.js",
-    "backtest:weekly-risk": "node scripts/backtest-weekly-risk-targets.js"
+    "backtest:weekly-risk": "node scripts/backtest-weekly-risk-targets.js",
+    "cf:cron:deploy": "npx wrangler deploy -c wrangler.daily-update.toml",
+    "cf:cron:tail": "npx wrangler tail xsmb-daily-update-dispatcher",
+    "cf:cron:secret:github": "npx wrangler secret put GITHUB_TOKEN -c wrangler.daily-update.toml",
+    "cf:cron:secret:dispatch": "npx wrangler secret put DISPATCH_SECRET -c wrangler.daily-update.toml"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1057.0",

@@ -1,0 +1,13 @@
+name = "xsmb-daily-update-dispatcher"
+main = "workers/daily-update-dispatcher/src/index.js"
+compatibility_date = "2026-06-03"
+workers_dev = true
+
+[triggers]
+crons = ["40 11 * * *"]
+
+[vars]
+GITHUB_OWNER = "chungtvvn"
+GITHUB_REPO = "lottery-vercel"
+GITHUB_WORKFLOW = "daily-update.yml"
+GITHUB_REF = "main"
