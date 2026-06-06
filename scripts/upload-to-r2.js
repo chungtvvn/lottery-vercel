@@ -5,7 +5,8 @@ const {
     S3Client,
     PutObjectCommand,
     ListObjectsV2Command,
-    DeleteObjectsCommand
+    DeleteObjectsCommand,
+    GetObjectCommand
 } = require('@aws-sdk/client-s3');
 
 // Load environment variables
@@ -23,6 +24,76 @@ const STATS_PREFIX = process.env.CLOUDFLARE_R2_STATS_PREFIX || 'statistics';
 const DATA_PREFIX = process.env.CLOUDFLARE_R2_DATA_PREFIX || 'data';
 const CLEAR_STATS_PREFIX = process.env.CLOUDFLARE_R2_CLEAR_STATS_PREFIX === '1'
     || process.env.CLOUDFLARE_R2_CLEAR_PREFIX === '1';
+const ALLOW_STALE_R2_UPLOAD = process.env.ALLOW_STALE_R2_UPLOAD === '1';
+
+function normalizeDateValue(value) {
+    if (!value) return null;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+    return date.toISOString().slice(0, 10);
+}
+
+function getLatestDateValue(rows) {
+    if (!Array.isArray(rows) || rows.length === 0) return null;
+    let latest = null;
+    for (const row of rows) {
+        const normalized = normalizeDateValue(row?.date || row?.ngay || row?.drawDate);
+        if (normalized && (!latest || normalized > latest)) latest = normalized;
+    }
+    return latest;
+}
+
+async function streamToBuffer(stream) {
+    const chunks = [];
+    for await (const chunk of stream) {
+        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    }
+    return Buffer.concat(chunks);
+}
+
+async function readRemoteJsonGzip(s3, key) {
+    try {
+        const result = await s3.send(new GetObjectCommand({
+            Bucket: BUCKET,
+            Key: key
+        }));
+        const buffer = await streamToBuffer(result.Body);
+        return JSON.parse(zlib.gunzipSync(buffer).toString('utf8'));
+    } catch (error) {
+        if (error?.name === 'NoSuchKey' || error?.$metadata?.httpStatusCode === 404) {
+            return null;
+        }
+        throw error;
+    }
+}
+
+async function assertLocalRawIsNotOlderThanR2(s3) {
+    if (!fs.existsSync(DATA_FILE)) return;
+
+    const localRows = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+    const localLatest = getLatestDateValue(localRows);
+    if (!localLatest) {
+        throw new Error(`Raw local không có ngày hợp lệ: ${DATA_FILE}`);
+    }
+
+    const remoteKey = `${DATA_PREFIX}/xsmb-2-digits.json.gz`;
+    const remoteRows = await readRemoteJsonGzip(s3, remoteKey);
+    const remoteLatest = getLatestDateValue(remoteRows);
+
+    if (!remoteLatest) {
+        console.log(`[R2 Upload] Không có raw R2 hiện tại để so sánh (${remoteKey}).`);
+        return;
+    }
+
+    console.log(`[R2 Upload] Kiểm tra raw trước upload: local=${localLatest}, R2=${remoteLatest}.`);
+    if (localLatest < remoteLatest && !ALLOW_STALE_R2_UPLOAD) {
+        throw new Error([
+            `Raw local cũ hơn R2 (${localLatest} < ${remoteLatest}).`,
+            'Dừng upload để tránh ghi đè dữ liệu mới bằng dữ liệu cũ.',
+            'Hãy chạy scripts/update-static-data.js hoặc set ALLOW_STALE_R2_UPLOAD=1 nếu thật sự muốn override.'
+        ].join(' '));
+    }
+}
 
 function getSimulationCacheDays() {
     const values = String(process.env.SIMULATION_CACHE_DAYS || '90')
@@ -136,6 +207,8 @@ async function uploadToR2() {
         console.error(`[R2 Upload] Thư mục chứa dữ liệu không tồn tại: ${STATS_DIR}`);
         return;
     }
+
+    await assertLocalRawIsNotOlderThanR2(s3);
 
     if (CLEAR_STATS_PREFIX) {
         await clearPrefix(s3, STATS_PREFIX);
