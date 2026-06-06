@@ -938,6 +938,7 @@ async function main() {
                     for (const playMode of simulationCacheModes) {
                         const simulationResult = await simulationService.runBacktest(cacheDays, null, {
                             compactDetails: cacheDays > 90,
+                            selectedStreakDetailLimit: cacheDays <= 90 ? 1000 : undefined,
                             playMode,
                             clearHistoryCacheInterval: Number(process.env.BACKTEST_CLEAR_HISTORY_CACHE_INTERVAL || 30)
                         });
@@ -1018,6 +1019,7 @@ async function main() {
                     for (const playMode of staticCacheModes) {
                         const simulationResult = await simulationService.runBacktest(days, null, {
                             compactDetails: days > 90,
+                            selectedStreakDetailLimit: days <= 90 ? 1000 : undefined,
                             playMode,
                             clearHistoryCacheInterval: Number(process.env.BACKTEST_CLEAR_HISTORY_CACHE_INTERVAL || 30)
                         });
