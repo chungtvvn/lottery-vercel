@@ -198,7 +198,8 @@ async function main() {
             path.join(process.cwd(), 'scripts', 'backtest-weekly-risk-targets.js'),
             `--startIndex=${chunk.start}`,
             `--endIndex=${chunk.end}`,
-            '--years=20'
+            '--years=20',
+            `--betWinMultiplier=${Number(args.get('betWinMultiplier') || args.get('winMultiplier') || 84)}`
         ], {
             cwd: process.cwd(),
             env: {

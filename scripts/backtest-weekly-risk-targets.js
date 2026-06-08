@@ -158,7 +158,7 @@ async function main() {
         playMode: 'bet',
         methods: methods.join(','),
         compactDetails: true,
-        betCostMultiplier: Number(args.get('betCostMultiplier') || 0.8),
+        betWinMultiplier: Number(args.get('betWinMultiplier') || args.get('winMultiplier') || 84),
         startIndex: args.has('startIndex') ? Number(args.get('startIndex')) : undefined,
         endIndexExclusive: args.has('endIndex') ? Number(args.get('endIndex')) : undefined
     });

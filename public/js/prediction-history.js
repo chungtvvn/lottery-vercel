@@ -4,11 +4,10 @@
         history: [],
         selectedIndex: -1,
         selectedMethod: 'riskHold70',
-        betCostMultiplier: 0.8,
+        betWinMultiplier: 84,
         holdWinMultiplier: 0.705
     };
     const BET_PER_NUMBER_K = 1000;
-    const WIN_MULTIPLIER = 70;
     const HOLD_LOSS_MULTIPLIER = 70;
 
     function getActiveSummary(run, selectedMethod) {
@@ -30,8 +29,8 @@
         const actual = Number(summary.actualSpecial);
         const betWin = betNumbers.some(n => Number(n) === actual);
         const holdWin = !excludedNumbers.some(n => Number(n) === actual);
-        const betStake = betNumbers.length * BET_PER_NUMBER_K * state.betCostMultiplier;
-        const betPayout = betWin ? BET_PER_NUMBER_K * WIN_MULTIPLIER : 0;
+        const betStake = betNumbers.length * BET_PER_NUMBER_K;
+        const betPayout = betWin ? BET_PER_NUMBER_K * state.betWinMultiplier : 0;
         const holdIncome = excludedNumbers.length * BET_PER_NUMBER_K * state.holdWinMultiplier;
         const holdLoss = holdWin ? 0 : BET_PER_NUMBER_K * HOLD_LOSS_MULTIPLIER;
         const betProfit = Math.round(betPayout - betStake);
@@ -43,7 +42,7 @@
             betProfit,
             holdProfit,
             profit: betProfit + holdProfit,
-            betCostMultiplier: state.betCostMultiplier,
+            betWinMultiplier: state.betWinMultiplier,
             holdWinMultiplier: state.holdWinMultiplier
         };
     }
@@ -96,16 +95,19 @@
             parts.push('Về so le: ngày thỏa điều kiện xuất hiện xen kẽ, giữa hai ngày thỏa có một ngày không thỏa.');
         }
         if (normalized.includes('so le theo cặp')) {
-            parts.push('So le theo cặp: chuỗi luân phiên giữa đúng 2 nhãn khác nhau, ví dụ chẵn rồi lẻ rồi chẵn rồi lẻ; nếu hai nhãn giống nhau thì thuộc dạng liên tiếp, không phải so le theo cặp.');
+            parts.push('So le theo cặp: mỗi ngày được gán vào 1 trong 2 nhãn của cặp, rồi chuỗi chỉ được tính khi hai nhãn luân phiên qua lại, ví dụ A→B→A→B. Nếu A→A hoặc B→B thì đó là liên tiếp/cùng dạng, không phải so le theo cặp.');
         }
         if (normalized.includes('đầu đít cùng/khác')) {
-            parts.push('Đầu đít cùng/khác: so sánh chữ số hàng chục và hàng đơn vị của cùng một số. Cùng chẵn lẻ nghĩa là đầu và đít cùng chẵn hoặc cùng lẻ; khác chẵn lẻ nghĩa là một chẵn một lẻ.');
+            parts.push('Đầu đít cùng/khác tính chẵn lẻ: lấy chữ số hàng chục là đầu và hàng đơn vị là đít của cùng một số. Cùng chẵn lẻ nghĩa là chẵn-chẵn hoặc lẻ-lẻ; khác chẵn lẻ nghĩa là chẵn-lẻ hoặc lẻ-chẵn.');
+            parts.push('Ví dụ: 24 và 35 là cùng chẵn lẻ; 27 và 38 là khác chẵn lẻ. Khi đi với so le theo cặp, chuỗi phải luân phiên Cùng→Khác→Cùng→Khác hoặc ngược lại.');
         }
         if (normalized.includes('nhỏ') && normalized.includes('to')) {
             parts.push('Nhỏ/to: với số là <50 hoặc >=50; với đầu/đít là chữ số 0-4 hoặc 5-9.');
         }
         if (normalized.includes('nguyên tố') || normalized.includes('hợp số')) {
-            parts.push('Nguyên tố/hợp số: phân loại theo giá trị số hoặc chữ số/metric đang xét trong pattern.');
+            parts.push('Nguyên tố: số tự nhiên lớn hơn 1 chỉ chia hết cho 1 và chính nó, ví dụ 02, 03, 05, 07, 11, 13, 17, 19, 23, 29.');
+            parts.push('Hợp số: số tự nhiên lớn hơn 1 có thêm ước khác ngoài 1 và chính nó. Trong cách chia hiện tại, các giá trị không thuộc tập nguyên tố của trục đang xét sẽ rơi vào nhãn hợp số/không nguyên tố.');
+            parts.push('Với "Số nguyên tố - hợp số so le theo cặp", chuỗi chỉ tính khi nhãn nguyên tố và hợp số luân phiên qua các ngày.');
         }
         if (normalized.includes('tiến') || normalized.includes('lùi')) {
             parts.push('Tiến/lùi: giá trị đi lên hoặc đi xuống theo trục thứ tự của tập số/đầu/đít/tổng/hiệu tương ứng.');
@@ -310,7 +312,7 @@
             <div class="glass-card p-5 border-l-4 border-amber-500 bg-white/60">
                 <div class="text-xs font-bold uppercase text-slate-500 tracking-wider">Tổng lợi nhuận ròng</div>
                 <div class="mt-2 text-3xl font-extrabold text-slate-900">${formatProfit(totalProfit)}</div>
-                <div class="text-xs text-slate-500 mt-1.5">Đã trừ chiết khấu hoa hồng & phế</div>
+                <div class="text-xs text-slate-500 mt-1.5">Đánh 1000K mỗi số, trúng nhận theo tỷ lệ ăn đã chọn.</div>
             </div>
         `;
 
@@ -456,7 +458,7 @@
                 <div class="border-t border-slate-100 pt-3">
                     <div class="flex items-center justify-between mb-2">
                         <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Số Đánh (${sum.betCount || 0} số)</h4>
-                        <span class="text-[10px] text-slate-500">Mua tỷ lệ ${(state.betCostMultiplier * 100).toFixed(0)}% (ăn 70)</span>
+                        <span class="text-[10px] text-slate-500">Mỗi số 1000K (ăn ${state.betWinMultiplier})</span>
                     </div>
                     ${renderNumberGrid(sum.numbersToBet, 'border-emerald-200 bg-emerald-50/50 text-emerald-700')}
                 </div>
@@ -488,12 +490,12 @@
                 renderDashboard();
             });
         }
-        const betCostInput = el('betCostMultiplier');
-        if (betCostInput) {
-            betCostInput.addEventListener('input', (e) => {
+        const betWinInput = el('betWinMultiplier');
+        if (betWinInput) {
+            betWinInput.addEventListener('input', (e) => {
                 const nextValue = Number(e.target.value);
                 if (Number.isFinite(nextValue)) {
-                    state.betCostMultiplier = Math.max(0.8, Math.min(1, Math.round(nextValue * 100) / 100));
+                    state.betWinMultiplier = Math.max(70, Math.min(90, Math.round(nextValue)));
                     renderDashboard();
                 }
             });

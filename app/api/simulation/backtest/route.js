@@ -15,7 +15,7 @@ export async function GET(request) {
         }
         const playModeParam = String(url.searchParams.get('playMode') || 'both').trim().toLowerCase();
         const playMode = ['bet', 'hold', 'both'].includes(playModeParam) ? playModeParam : 'both';
-        const betCostMultiplier = url.searchParams.get('betCostMultiplier') || undefined;
+        const betWinMultiplier = url.searchParams.get('betWinMultiplier') || undefined;
         const holdWinMultiplier = url.searchParams.get('holdWinMultiplier') || undefined;
         const custom = {
             minPriority: url.searchParams.get('customMinPriority'),
@@ -38,7 +38,7 @@ export async function GET(request) {
             && simulationService.isDefaultCustomOptions({ custom });
         const canReadPrecomputedCache = url.searchParams.get('refresh') !== '1'
             && !url.searchParams.get('methods')
-            && !betCostMultiplier
+            && !betWinMultiplier
             && !holdWinMultiplier
             && defaultCustom;
         if (dbStatsActive) {
@@ -74,7 +74,7 @@ export async function GET(request) {
         const results = await simulationService.runBacktest(days, null, {
             custom,
             playMode,
-            betCostMultiplier,
+            betWinMultiplier,
             holdWinMultiplier,
             compactDetails: days > 90,
             methodIds: url.searchParams.get('methods')

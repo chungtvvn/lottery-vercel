@@ -81,19 +81,24 @@ document.addEventListener('DOMContentLoaded', () => {
             parts.push('Về so le: dạng xuất hiện cách ngày, giữa hai ngày thỏa điều kiện có một ngày xen kẽ không tính vào chuỗi.');
         }
         if (normalized.includes('so le theo cặp')) {
-            parts.push('So le theo cặp: chuỗi luân phiên giữa đúng 2 nhãn khác nhau, ví dụ Chẵn→Lẻ→Chẵn→Lẻ. Nếu hai nhãn giống nhau thì thuộc liên tiếp, không phải so le theo cặp.');
+            parts.push('So le theo cặp: mỗi ngày được gán vào 1 trong 2 nhãn của cặp, rồi chuỗi chỉ được tính khi hai nhãn luân phiên qua lại, ví dụ A→B→A→B. Nếu A→A hoặc B→B thì đó là liên tiếp/cùng dạng, không phải so le theo cặp.');
         }
-        if (normalized.includes('đầu đít cùng') || normalized.includes('đầu/đít cùng') || normalized.includes('dau dit cung')) {
-            parts.push('Đầu đít cùng chẵn/lẻ: chữ số hàng chục và hàng đơn vị của cùng một số cùng nhóm chẵn-lẻ, ví dụ chẵn-chẵn hoặc lẻ-lẻ tùy dạng.');
-        }
-        if (normalized.includes('đầu đít khác') || normalized.includes('đầu/đít khác') || normalized.includes('dau dit khac')) {
-            parts.push('Đầu đít khác chẵn/lẻ: chữ số hàng chục và hàng đơn vị khác nhóm chẵn-lẻ, một bên chẵn và một bên lẻ.');
+        if (normalized.includes('đầu đít cùng/khác') || normalized.includes('đầu/đít cùng/khác') || normalized.includes('dau dit cung/khac')) {
+            parts.push('Đầu đít cùng/khác tính chẵn lẻ: lấy chữ số hàng chục là đầu và hàng đơn vị là đít của cùng một số. Cùng chẵn lẻ nghĩa là đầu và đít cùng tính chẵn/lẻ: chẵn-chẵn hoặc lẻ-lẻ. Khác chẵn lẻ nghĩa là một chẵn một lẻ: chẵn-lẻ hoặc lẻ-chẵn.');
+            parts.push('Ví dụ: 24 là cùng chẵn lẻ vì 2 và 4 đều chẵn; 35 là cùng chẵn lẻ vì 3 và 5 đều lẻ; 27 là khác chẵn lẻ vì 2 chẵn, 7 lẻ; 38 là khác chẵn lẻ vì 3 lẻ, 8 chẵn.');
+            parts.push('Khi đi với so le theo cặp, chuỗi phải luân phiên Cùng→Khác→Cùng→Khác hoặc Khác→Cùng→Khác→Cùng qua các ngày được tính.');
+        } else if (normalized.includes('đầu đít cùng') || normalized.includes('đầu/đít cùng') || normalized.includes('dau dit cung')) {
+            parts.push('Đầu đít cùng chẵn/lẻ: chữ số hàng chục và hàng đơn vị của cùng một số cùng nhóm chẵn-lẻ, gồm chẵn-chẵn hoặc lẻ-lẻ. Ví dụ 24, 35, 88.');
+        } else if (normalized.includes('đầu đít khác') || normalized.includes('đầu/đít khác') || normalized.includes('dau dit khac')) {
+            parts.push('Đầu đít khác chẵn/lẻ: chữ số hàng chục và hàng đơn vị khác nhóm chẵn-lẻ, gồm chẵn-lẻ hoặc lẻ-chẵn. Ví dụ 27, 38, 61.');
         }
         if (normalized.includes('nhỏ') || normalized.includes('to')) {
             parts.push('Nhỏ/to: với số hai chữ số thường chia nhỏ <50 và to >=50; với đầu/đít là chữ số 0-4 hoặc 5-9.');
         }
         if (normalized.includes('nguyên tố') || normalized.includes('hợp số')) {
-            parts.push('Nguyên tố/hợp số: phân loại theo tính chất nguyên tố/hợp số của số hoặc giá trị đang xét trong dạng.');
+            parts.push('Nguyên tố: số tự nhiên lớn hơn 1 chỉ chia hết cho 1 và chính nó. Trong dàn 00-99, ví dụ 02, 03, 05, 07, 11, 13, 17, 19, 23, 29 là nguyên tố.');
+            parts.push('Hợp số: số tự nhiên lớn hơn 1 có thêm ước khác ngoài 1 và chính nó. Trong cách chia hiện tại, các giá trị không thuộc tập nguyên tố của trục đang xét sẽ rơi vào nhãn hợp số/không nguyên tố.');
+            parts.push('Với "Số nguyên tố - hợp số so le theo cặp", mỗi ngày số về được gán nhãn nguyên tố hoặc hợp số, rồi chuỗi chỉ tính khi hai nhãn luân phiên: nguyên tố→hợp số→nguyên tố→hợp số hoặc ngược lại.');
         }
         if (normalized.includes('tiến đều')) {
             parts.push('Tiến đều: giá trị tăng theo cùng một bước trên trục thứ tự của tập đang xét.');
