@@ -12,6 +12,7 @@ export function proxy(request) {
         pathname.startsWith('/css/') ||
         pathname.startsWith('/js/') ||
         pathname.startsWith('/api/auth/') ||
+        pathname === '/logout' ||
         pathname === '/login'
     ) {
         return NextResponse.next();

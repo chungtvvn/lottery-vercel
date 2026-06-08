@@ -79,6 +79,8 @@
     }
 
     function getCustomQueryParams() {
+        const betCostValue = el('betCostMultiplier')?.value;
+        const holdWinValue = el('holdWinMultiplier')?.value;
         const params = {
             playMode: el('playMode')?.value || 'both',
             customMinPriority: el('customMinPriority')?.value,
@@ -94,6 +96,12 @@
             customIncludeHighFrequency: el('customIncludeHighFrequency')?.checked ? '1' : '0',
             customExcludeFixedThreeValueGroups: el('customExcludeFixedThreeValueGroups')?.checked ? '1' : '0'
         };
+        if (Number.isFinite(Number(betCostValue)) && Math.abs(Number(betCostValue) - 0.8) > 0.0001) {
+            params.betCostMultiplier = betCostValue;
+        }
+        if (Number.isFinite(Number(holdWinValue)) && Math.abs(Number(holdWinValue) - 0.705) > 0.0001) {
+            params.holdWinMultiplier = holdWinValue;
+        }
         return Object.entries(params).filter(([, value]) => value !== undefined && value !== null);
     }
 

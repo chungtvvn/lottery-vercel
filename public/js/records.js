@@ -55,6 +55,79 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/'/g, '&#039;');
     };
 
+    const cleanPatternTitle = (title) => String(title || '')
+        .replace(/\bSố đề\b/g, 'Số')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    const explainPatternTitle = (title, key = '') => {
+        const displayTitle = cleanPatternTitle(title);
+        const normalized = `${displayTitle} ${key}`.toLowerCase();
+        const parts = [];
+
+        if (normalized.includes('về liên tiếp')) {
+            parts.push('Về liên tiếp: các ngày liền nhau đều thỏa đúng điều kiện của dạng chuỗi.');
+        }
+        if (normalized.includes('về theo thứ tự')) {
+            parts.push('Về theo thứ tự: các giá trị xuất hiện theo đúng thứ tự được ghi trong tên dạng, ví dụ A→B→C. Nếu thứ tự khác thì là một dạng khác.');
+        }
+        if (normalized.includes('về so le theo thứ tự tiến')) {
+            parts.push('Về so le theo thứ tự TIẾN: các ngày thỏa điều kiện cách nhau 1 ngày xen kẽ, và giá trị đi theo chiều tăng trên trục của tập số/đầu/đít/tổng/hiệu.');
+        } else if (normalized.includes('về so le theo thứ tự lùi')) {
+            parts.push('Về so le theo thứ tự LÙI: các ngày thỏa điều kiện cách nhau 1 ngày xen kẽ, và giá trị đi theo chiều giảm trên trục của tập số/đầu/đít/tổng/hiệu.');
+        } else if (normalized.includes('về so le theo thứ tự')) {
+            parts.push('Về so le theo thứ tự: chuỗi xuất hiện xen kẽ ngày, đồng thời giá trị chạy theo trật tự đã định.');
+        } else if (normalized.includes('về so le')) {
+            parts.push('Về so le: dạng xuất hiện cách ngày, giữa hai ngày thỏa điều kiện có một ngày xen kẽ không tính vào chuỗi.');
+        }
+        if (normalized.includes('so le theo cặp')) {
+            parts.push('So le theo cặp: chuỗi luân phiên giữa đúng 2 nhãn khác nhau, ví dụ Chẵn→Lẻ→Chẵn→Lẻ. Nếu hai nhãn giống nhau thì thuộc liên tiếp, không phải so le theo cặp.');
+        }
+        if (normalized.includes('đầu đít cùng') || normalized.includes('đầu/đít cùng') || normalized.includes('dau dit cung')) {
+            parts.push('Đầu đít cùng chẵn/lẻ: chữ số hàng chục và hàng đơn vị của cùng một số cùng nhóm chẵn-lẻ, ví dụ chẵn-chẵn hoặc lẻ-lẻ tùy dạng.');
+        }
+        if (normalized.includes('đầu đít khác') || normalized.includes('đầu/đít khác') || normalized.includes('dau dit khac')) {
+            parts.push('Đầu đít khác chẵn/lẻ: chữ số hàng chục và hàng đơn vị khác nhóm chẵn-lẻ, một bên chẵn và một bên lẻ.');
+        }
+        if (normalized.includes('nhỏ') || normalized.includes('to')) {
+            parts.push('Nhỏ/to: với số hai chữ số thường chia nhỏ <50 và to >=50; với đầu/đít là chữ số 0-4 hoặc 5-9.');
+        }
+        if (normalized.includes('nguyên tố') || normalized.includes('hợp số')) {
+            parts.push('Nguyên tố/hợp số: phân loại theo tính chất nguyên tố/hợp số của số hoặc giá trị đang xét trong dạng.');
+        }
+        if (normalized.includes('tiến đều')) {
+            parts.push('Tiến đều: giá trị tăng theo cùng một bước trên trục thứ tự của tập đang xét.');
+        } else if (normalized.includes('tiến liên tiếp')) {
+            parts.push('Tiến liên tiếp: giá trị tăng qua các ngày liên tiếp theo trục thứ tự của tập đang xét.');
+        }
+        if (normalized.includes('lùi đều')) {
+            parts.push('Lùi đều: giá trị giảm theo cùng một bước trên trục thứ tự của tập đang xét.');
+        } else if (normalized.includes('lùi liên tiếp')) {
+            parts.push('Lùi liên tiếp: giá trị giảm qua các ngày liên tiếp theo trục thứ tự của tập đang xét.');
+        }
+        if (normalized.includes('tiến lùi so le')) {
+            parts.push('Tiến lùi so le: hướng di chuyển luân phiên tăng rồi giảm trên cùng trục giá trị.');
+        }
+        if (normalized.includes('lùi tiến so le')) {
+            parts.push('Lùi tiến so le: hướng di chuyển luân phiên giảm rồi tăng trên cùng trục giá trị.');
+        }
+        if (normalized.includes('tổng tt')) {
+            parts.push('Tổng TT: lấy hàng đơn vị của tổng hai chữ số, quy 0 thành 10 theo cách thống kê hiện tại.');
+        } else if (normalized.includes('tổng mới')) {
+            parts.push('Tổng Mới: tổng thật của hai chữ số, từ 0 đến 18.');
+        } else if (normalized.includes('tổng')) {
+            parts.push('Tổng: nhóm số theo tổng của hai chữ số.');
+        }
+        if (normalized.includes('hiệu')) {
+            parts.push('Hiệu: nhóm số theo trị tuyệt đối của chênh lệch giữa hàng chục và hàng đơn vị.');
+        }
+
+        if (parts.length === 0) {
+            parts.push('Dạng thống kê dùng để đo kỷ lục chuỗi, khoảng cách xuất hiện và khả năng tiếp tục/gãy của nhóm số tương ứng.');
+        }
+        return `${displayTitle}\n\n${parts.join('\n')}`;
+    };
+
     const normDate = (d) => {
         if (!d) return '';
         if (d.includes('-')) {
@@ -389,6 +462,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const renderRecordAccordionItem = (key, stat, pattern = null) => {
+        const displayDescription = cleanPatternTitle(stat.description || (pattern && pattern.text) || key);
+        const descriptionTooltip = explainPatternTitle(displayDescription, key);
         const longestInfo = stat.longest && stat.longest.length > 0 ? `${stat.longest[0].length} ngày (${stat.longest.length})` : 'N/A';
         const secondLongestInfo = stat.secondLongest && stat.secondLongest.length > 0 ? `${stat.secondLongest[0].length} ngày (${stat.secondLongest.length})` : 'N/A';
         const avgIntervalInfo = stat.averageInterval !== null ? `${stat.averageInterval} ngày` : 'N/A';
@@ -429,7 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="record-accordion-item">
                 <div class="record-accordion-button p-4 flex flex-wrap justify-between items-center cursor-pointer hover:bg-slate-50 border-b border-slate-100 transition" onclick="window.toggleAccordion(this)">
                      <span class="w-full lg:w-2/5 font-semibold text-slate-800 text-left text-sm lg:text-base">
-                        ${escapeHtml(stat.description)}
+                        <span class="cursor-help decoration-dotted underline-offset-4 hover:underline" title="${escapeHtml(descriptionTooltip)}">${escapeHtml(displayDescription)}</span>
                         ${groupBadges}
                      </span>
                      <div class="flex-grow grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-slate-600 text-left mt-2 lg:mt-0">
@@ -443,8 +518,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="record-accordion-content hidden bg-slate-50/50 p-6 border-b border-slate-200/80">
                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         ${gapStatsSection}
-                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/50">${renderStreakDetails('Kỷ lục', stat.longest, stat.description)}</div>
-                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/50">${renderStreakDetails('Dài nhì', stat.secondLongest, stat.description)}</div>
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/50">${renderStreakDetails('Kỷ lục', stat.longest, displayDescription)}</div>
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/50">${renderStreakDetails('Dài nhì', stat.secondLongest, displayDescription)}</div>
                     </div>
                 </div>
             </div>

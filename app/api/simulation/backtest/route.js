@@ -16,6 +16,7 @@ export async function GET(request) {
         const playModeParam = String(url.searchParams.get('playMode') || 'both').trim().toLowerCase();
         const playMode = ['bet', 'hold', 'both'].includes(playModeParam) ? playModeParam : 'both';
         const betCostMultiplier = url.searchParams.get('betCostMultiplier') || undefined;
+        const holdWinMultiplier = url.searchParams.get('holdWinMultiplier') || undefined;
         const custom = {
             minPriority: url.searchParams.get('customMinPriority'),
             minDropOffPercent: url.searchParams.get('customMinDropOffPercent'),
@@ -38,6 +39,7 @@ export async function GET(request) {
         const canReadPrecomputedCache = url.searchParams.get('refresh') !== '1'
             && !url.searchParams.get('methods')
             && !betCostMultiplier
+            && !holdWinMultiplier
             && defaultCustom;
         if (dbStatsActive) {
             try {
@@ -73,6 +75,7 @@ export async function GET(request) {
             custom,
             playMode,
             betCostMultiplier,
+            holdWinMultiplier,
             compactDetails: days > 90,
             methodIds: url.searchParams.get('methods')
         });
