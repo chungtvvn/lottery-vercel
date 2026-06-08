@@ -165,7 +165,7 @@ function hasRequiredLocalStatsCoverage() {
         const addOrderedPermutations = (category, values) => {
             for (const permutation of buildPermutations(values)) {
                 const orderedCategory = withOrderedPermutationCategory(category, permutation);
-                add(orderedCategory, ['veTheoThuTu', 'veSoLeTheoThuTu']);
+                add(orderedCategory, ['veTheoThuTu', 'veSoLeTheoThuTu', 'veSoLeTheoThuTuTien', 'veSoLeTheoThuTuLui']);
             }
         };
         const cyclicWindowValues = (category, prefix, min, max) => {
@@ -541,6 +541,16 @@ async function getLegacyFormattedRows() {
 async function buildRawDataFromSources(currentArray) {
     let finalArray = Array.isArray(currentArray) ? sortRowsByDate(currentArray.map(normalizeDataRow)) : [];
     const sourceLog = [];
+    const latestExistingDate = getLatestDateValue(finalArray);
+    const targetDate = process.env.XOSO_TARGET_DATE || getVietnamTodayDate();
+
+    if (WAIT_FOR_NEW_XOSO && latestExistingDate && compareDateValues(latestExistingDate, targetDate) >= 0) {
+        console.log(`[1b] Raw data đã có ngày target (${latestExistingDate} >= ${targetDate}). Bỏ qua lấy xoso.com.vn để tránh chạy trùng.`);
+        return {
+            data: finalArray,
+            source: `existing:${latestExistingDate}`
+        };
+    }
 
     if (finalArray.length === 0 || process.env.REFRESH_FULL_DATA === '1') {
         console.log('[1a] Local raw data trống hoặc REFRESH_FULL_DATA=1, tải full data fallback từ Github...');

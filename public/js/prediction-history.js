@@ -4,11 +4,11 @@
         history: [],
         selectedIndex: -1,
         selectedMethod: 'riskHold70',
-        betCostMultiplier: 0.8
+        betCostMultiplier: 0.8,
+        holdWinMultiplier: 0.705
     };
     const BET_PER_NUMBER_K = 1000;
     const WIN_MULTIPLIER = 70;
-    const HOLD_WIN_MULTIPLIER = 0.705;
     const HOLD_LOSS_MULTIPLIER = 70;
 
     function getActiveSummary(run, selectedMethod) {
@@ -32,7 +32,7 @@
         const holdWin = !excludedNumbers.some(n => Number(n) === actual);
         const betStake = betNumbers.length * BET_PER_NUMBER_K * state.betCostMultiplier;
         const betPayout = betWin ? BET_PER_NUMBER_K * WIN_MULTIPLIER : 0;
-        const holdIncome = excludedNumbers.length * BET_PER_NUMBER_K * HOLD_WIN_MULTIPLIER;
+        const holdIncome = excludedNumbers.length * BET_PER_NUMBER_K * state.holdWinMultiplier;
         const holdLoss = holdWin ? 0 : BET_PER_NUMBER_K * HOLD_LOSS_MULTIPLIER;
         const betProfit = Math.round(betPayout - betStake);
         const holdProfit = Math.round(holdIncome - holdLoss);
@@ -43,7 +43,8 @@
             betProfit,
             holdProfit,
             profit: betProfit + holdProfit,
-            betCostMultiplier: state.betCostMultiplier
+            betCostMultiplier: state.betCostMultiplier,
+            holdWinMultiplier: state.holdWinMultiplier
         };
     }
 
@@ -54,17 +55,71 @@
     function el(id) { return document.getElementById(id); }
 
     function formatMoney(amountK) {
-        const amount = amountK * 1000;
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
-            .format(amount)
-            .replace('₫', 'K VND'); // Keep 'K' notation consistent
+        return `${Number(amountK || 0).toLocaleString('vi-VN')}K`;
     }
 
     function formatProfit(profit) {
         if (profit === null || profit === undefined) return '<span class="text-slate-400">—</span>';
-        const formatted = profit >= 0 ? `+${profit}K` : `${profit}K`;
+        const formatted = profit >= 0
+            ? `+${Number(profit).toLocaleString('vi-VN')}K`
+            : `${Number(profit).toLocaleString('vi-VN')}K`;
         const colorClass = profit > 0 ? 'text-emerald-600 font-semibold' : (profit < 0 ? 'text-rose-600 font-semibold' : 'text-slate-600');
         return `<span class="${colorClass}">${formatted}</span>`;
+    }
+
+    function cleanPatternTitle(title) {
+        return String(title || '')
+            .replace(/\bSố đề\b/g, 'Số')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function explainPatternTitle(title) {
+        const normalized = cleanPatternTitle(title).toLowerCase();
+        const parts = [];
+
+        if (normalized.includes('về liên tiếp')) {
+            parts.push('Về liên tiếp: các ngày liền nhau cùng thỏa điều kiện của dạng chuỗi.');
+        }
+        if (normalized.includes('về so le theo thứ tự')) {
+            parts.push('Về so le theo thứ tự: các ngày thỏa điều kiện cách nhau 1 ngày xen kẽ; giá trị chạy theo đúng thứ tự đã nêu.');
+        } else if (normalized.includes('về so le')) {
+            parts.push('Về so le: ngày thỏa điều kiện xuất hiện xen kẽ, giữa hai ngày thỏa có một ngày không thỏa.');
+        }
+        if (normalized.includes('so le theo cặp')) {
+            parts.push('So le theo cặp: chuỗi luân phiên giữa đúng 2 nhãn khác nhau, ví dụ chẵn rồi lẻ rồi chẵn rồi lẻ; nếu hai nhãn giống nhau thì thuộc dạng liên tiếp, không phải so le theo cặp.');
+        }
+        if (normalized.includes('đầu đít cùng/khác')) {
+            parts.push('Đầu đít cùng/khác: so sánh chữ số hàng chục và hàng đơn vị của cùng một số. Cùng chẵn lẻ nghĩa là đầu và đít cùng chẵn hoặc cùng lẻ; khác chẵn lẻ nghĩa là một chẵn một lẻ.');
+        }
+        if (normalized.includes('nhỏ') && normalized.includes('to')) {
+            parts.push('Nhỏ/to: với số là <50 hoặc >=50; với đầu/đít là chữ số 0-4 hoặc 5-9.');
+        }
+        if (normalized.includes('nguyên tố') || normalized.includes('hợp số')) {
+            parts.push('Nguyên tố/hợp số: phân loại theo giá trị số hoặc chữ số/metric đang xét trong pattern.');
+        }
+        if (normalized.includes('tiến') || normalized.includes('lùi')) {
+            parts.push('Tiến/lùi: giá trị đi lên hoặc đi xuống theo trục thứ tự của tập số/đầu/đít/tổng/hiệu tương ứng.');
+        }
+        if (normalized.includes('tổng')) {
+            parts.push('Tổng: nhóm theo tổng hai chữ số. Tổng TT dùng hàng đơn vị của tổng, còn Tổng Mới dùng tổng thật từ 0 đến 18.');
+        }
+        if (normalized.includes('hiệu')) {
+            parts.push('Hiệu: nhóm theo trị tuyệt đối giữa chữ số hàng chục và hàng đơn vị.');
+        }
+
+        return parts.length
+            ? `${cleanPatternTitle(title)}\n\n${parts.join('\n')}`
+            : `${cleanPatternTitle(title)}\n\nPattern thống kê dùng để xác định nhóm số bị loại trừ trong ngày dự đoán.`;
     }
 
     function formatResultBadge(win, label) {
@@ -332,7 +387,7 @@
                 </div>
             `;
         } else {
-            const profitText = sum.profit >= 0 ? `Lãi +${sum.profit}K` : `Lỗ ${sum.profit}K`;
+            const profitText = sum.profit >= 0 ? `Lãi ${formatMoney(sum.profit)}` : `Lỗ ${formatMoney(sum.profit)}`;
             const profitBg = sum.profit > 0 ? 'bg-emerald-50 text-emerald-800 border-emerald-250' : (sum.profit < 0 ? 'bg-rose-50 text-rose-800 border-rose-250' : 'bg-slate-50 text-slate-800 border-slate-200');
             headerStatusHtml = `
                 <div class="rounded-xl border p-4 mb-4 flex items-center justify-between shadow-sm ${profitBg}">
@@ -370,13 +425,15 @@
         if (sum.explanations && sum.explanations.length > 0) {
             explanationsHtml = sum.explanations.map(exp => {
                 const badgeColor = exp.tier === 'red' ? 'bg-red-500' : 'bg-purple-600';
+                const title = cleanPatternTitle(exp.title);
+                const tooltip = explainPatternTitle(exp.title);
                 return `
                     <div class="p-3 bg-white border border-slate-200 rounded-xl shadow-sm text-xs space-y-1.5">
                         <div class="flex items-center justify-between">
-                            <span class="font-bold text-slate-800 text-[12px]">${exp.title}</span>
+                            <span class="font-bold text-slate-800 text-[12px] cursor-help underline decoration-dotted decoration-slate-400" title="${escapeHtml(tooltip)}">${escapeHtml(title)}</span>
                             <span class="text-[10px] text-white px-2 py-0.5 rounded-full font-bold ${badgeColor}">${exp.tier === 'red' ? 'Record' : 'Potential'}</span>
                         </div>
-                        <p class="text-slate-650 leading-relaxed text-[11px]">${exp.reason}</p>
+                        <p class="text-slate-650 leading-relaxed text-[11px]">${escapeHtml(exp.reason)}</p>
                         <div class="flex flex-wrap gap-1 mt-1">
                             ${(exp.numbers || []).map(n => `<span class="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold">${String(n).padStart(2, '0')}</span>`).join('')}
                         </div>
@@ -407,7 +464,7 @@
                 <div class="border-t border-slate-100 pt-3">
                     <div class="flex items-center justify-between mb-2">
                         <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Số Ôm / Loại trừ (${sum.excludedCount || 0} số)</h4>
-                        <span class="text-[10px] text-slate-500">Giữ tỷ lệ 70.5% (đền 70)</span>
+                        <span class="text-[10px] text-slate-500">Giữ tỷ lệ ${(state.holdWinMultiplier * 100).toFixed(1)}% (đền 70)</span>
                     </div>
                     ${renderNumberGrid(sum.excludedNumbers, 'border-red-200 bg-red-50/50 text-red-700')}
                 </div>
@@ -436,7 +493,17 @@
             betCostInput.addEventListener('input', (e) => {
                 const nextValue = Number(e.target.value);
                 if (Number.isFinite(nextValue)) {
-                    state.betCostMultiplier = Math.max(0.8, Math.min(0.9, Math.round(nextValue * 100) / 100));
+                    state.betCostMultiplier = Math.max(0.8, Math.min(1, Math.round(nextValue * 100) / 100));
+                    renderDashboard();
+                }
+            });
+        }
+        const holdInput = el('holdWinMultiplier');
+        if (holdInput) {
+            holdInput.addEventListener('input', (e) => {
+                const nextValue = Number(e.target.value);
+                if (Number.isFinite(nextValue)) {
+                    state.holdWinMultiplier = Math.max(0.5, Math.min(1, Math.round(nextValue * 1000) / 1000));
                     renderDashboard();
                 }
             });

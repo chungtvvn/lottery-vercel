@@ -93,7 +93,7 @@ function requiredCoverageKeys() {
     const add = (category, subcategories) => subcategories.forEach(sub => keys.push(`${category}:${sub}`));
     const addOrderedPermutations = (category, values) => {
         for (const permutation of buildPermutations(values)) {
-            add(withOrderedPermutationCategory(category, permutation), ['veTheoThuTu', 'veSoLeTheoThuTu']);
+            add(withOrderedPermutationCategory(category, permutation), ['veTheoThuTu', 'veSoLeTheoThuTu', 'veSoLeTheoThuTuTien', 'veSoLeTheoThuTuLui']);
         }
     };
     const cyclicWindowValues = (category, prefix, min, max) => {
@@ -151,7 +151,10 @@ function requiredCoverageKeys() {
 function requiredOrderedOptionKeys() {
     const { keys } = loadStatsOptions();
     return keys.filter(key =>
-        key.endsWith(':veTheoThuTu') || key.endsWith(':veSoLeTheoThuTu')
+        key.endsWith(':veTheoThuTu') ||
+        key.endsWith(':veSoLeTheoThuTu') ||
+        key.endsWith(':veSoLeTheoThuTuTien') ||
+        key.endsWith(':veSoLeTheoThuTuLui')
     );
 }
 

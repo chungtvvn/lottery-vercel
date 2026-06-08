@@ -20,10 +20,10 @@ const STATS_OPTIONS = {
         { text: "Tổng mới chia hết cho 3 - So le theo cặp", category: "tong_moi_chia3", subcategory: "soLeTheoCap" },
         { text: "Hiệu nguyên tố - hợp số - So le theo cặp", category: "hieu_nguyento_hopso", subcategory: "soLeTheoCap" },
         { text: "Hiệu chia hết cho 3 - So le theo cặp", category: "hieu_chia3", subcategory: "soLeTheoCap" },
-        { text: "Số đề chẵn - lẻ - So le theo cặp", category: "so_chan_le", subcategory: "soLeTheoCap" },
-        { text: "Số đề nhỏ - to - So le theo cặp", category: "so_nho_to", subcategory: "soLeTheoCap" },
-        { text: "Số đề nguyên tố - hợp số - So le theo cặp", category: "so_nguyento_hopso", subcategory: "soLeTheoCap" },
-        { text: "Số đề chia hết cho 3 - So le theo cặp", category: "so_chia3", subcategory: "soLeTheoCap" },
+        { text: "Số chẵn - lẻ - So le theo cặp", category: "so_chan_le", subcategory: "soLeTheoCap" },
+        { text: "Số nhỏ - to - So le theo cặp", category: "so_nho_to", subcategory: "soLeTheoCap" },
+        { text: "Số nguyên tố - hợp số - So le theo cặp", category: "so_nguyento_hopso", subcategory: "soLeTheoCap" },
+        { text: "Số chia hết cho 3 - So le theo cặp", category: "so_chia3", subcategory: "soLeTheoCap" },
         { text: "Đầu đít cùng/khác tính chẵn lẻ - So le theo cặp", category: "dau_dit_cung_khac_chan_le", subcategory: "soLeTheoCap" },
         { text: "Đầu đít cùng/khác tính nhỏ to - So le theo cặp", category: "dau_dit_cung_khac_nho_to", subcategory: "soLeTheoCap" }
     ],
@@ -1967,7 +1967,7 @@ populatePatternSequenceOptions();
 
 function stripStatsSuffix(text) {
     return String(text || '')
-        .replace(/\s*-\s*(Về liên tiếp|Về so le Mới|Về so le|Tiến liên tiếp|Tiến Đều|Lùi liên tiếp|Lùi Đều|Tiến-Lùi So Le \(>=4\)|Lùi-Tiến So Le \(>=4\)|Tiến|Lùi)\s*$/i, '')
+        .replace(/\s*-\s*(Về liên tiếp|Về so le theo thứ tự TIẾN|Về so le theo thứ tự LÙI|Về so le theo thứ tự|Về theo thứ tự|Về so le Mới|Về so le|Tiến liên tiếp|Tiến Đều|Lùi liên tiếp|Lùi Đều|Tiến-Lùi So Le \(>=4\)|Lùi-Tiến So Le \(>=4\)|Tiến|Lùi)\s*$/i, '')
         .trim();
 }
 
@@ -2015,6 +2015,30 @@ function populateMissingOrderedSequenceOptions() {
     }
 }
 populateMissingOrderedSequenceOptions();
+
+function populateSplitAlternatingOrderedOptions() {
+    for (const groupName in STATS_OPTIONS) {
+        const additions = [];
+        for (const option of STATS_OPTIONS[groupName]) {
+            if (!option) continue;
+            if (option.subcategory === 'veSoLeTheoThuTu') {
+                const prefix = stripStatsSuffix(option.text) || option.category;
+                additions.push(
+                    { text: `${prefix} - Về so le theo thứ tự TIẾN`, category: option.category, subcategory: 'veSoLeTheoThuTuTien' },
+                    { text: `${prefix} - Về so le theo thứ tự LÙI`, category: option.category, subcategory: 'veSoLeTheoThuTuLui' }
+                );
+            } else if (!option.subcategory && /VeSoLeTheoThuTu$/.test(option.category || '')) {
+                const prefix = stripStatsSuffix(option.text) || option.category.replace(/VeSoLeTheoThuTu$/, '');
+                additions.push(
+                    { text: `${prefix} - Về so le theo thứ tự TIẾN`, category: `${option.category}Tien` },
+                    { text: `${prefix} - Về so le theo thứ tự LÙI`, category: `${option.category}Lui` }
+                );
+            }
+        }
+        STATS_OPTIONS[groupName].push(...additions);
+    }
+}
+populateSplitAlternatingOrderedOptions();
 
 
 for (const groupName in STATS_OPTIONS) {
