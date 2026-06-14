@@ -150,15 +150,17 @@ async function main() {
     const years = Number(args.get('years') || 20);
     const days = Math.round(years * 365.25);
     const methods = ['riskHold60', 'riskHold70', 'riskHold80', 'riskHold90'];
+    const rollingHistory = args.get('rollingHistory') === '1' || args.get('rolling') === '1';
     const outputDir = path.join(process.cwd(), 'reports');
     fs.mkdirSync(outputDir, { recursive: true });
 
-    console.log(`[WeeklyBacktest] Running ${days} days, playMode=bet, methods=${methods.join(',')}`);
+    console.log(`[WeeklyBacktest] Running ${days} days, playMode=bet, rollingHistory=${rollingHistory ? '1' : '0'}, methods=${methods.join(',')}`);
     const result = await simulationService.runBacktest(days, null, {
         playMode: 'bet',
         methods: methods.join(','),
         compactDetails: true,
         betWinMultiplier: Number(args.get('betWinMultiplier') || args.get('winMultiplier') || 84),
+        rollingHistory,
         startIndex: args.has('startIndex') ? Number(args.get('startIndex')) : undefined,
         endIndexExclusive: args.has('endIndex') ? Number(args.get('endIndex')) : undefined
     });
@@ -209,7 +211,10 @@ async function main() {
     fs.writeFileSync(csvPath, csv);
     fs.writeFileSync(jsonPath, JSON.stringify({
         generatedAt: result.generatedAt,
-        config: result.config,
+        config: {
+            ...result.config,
+            rollingHistory
+        },
         methodSummary,
         weeklyRows,
         dailyRows: buildDailyRows(chronological, methods)

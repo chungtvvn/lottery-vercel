@@ -51,6 +51,20 @@
         return recalculateSummary(getActiveSummary(run, selectedMethod));
     }
 
+    function isPendingRun(run) {
+        return !(run && run.summary && run.summary.resolved);
+    }
+
+    function getHistoryRowClass(isSelected, isPending) {
+        if (isSelected && isPending) {
+            return 'bg-amber-100/90 font-bold shadow-sm ring-1 ring-amber-300';
+        }
+        if (isSelected) {
+            return 'bg-indigo-50/80 font-bold shadow-sm';
+        }
+        return isPending ? 'bg-amber-50/60' : 'bg-white/40';
+    }
+
     function el(id) { return document.getElementById(id); }
 
     function formatMoney(amountK) {
@@ -324,16 +338,16 @@
 
         history.forEach((run, idx) => {
             const sum = getDisplaySummary(run, state.selectedMethod) || {};
-            const isToday = !run.summary?.resolved;
+            const isPending = isPendingRun(run);
 
             const dateStr = formatDateToDMY(run.predictionDate);
             const deStr = run.summary?.resolved && run.summary?.actualSpecial !== null ? String(run.summary.actualSpecial).padStart(2, '0') : '<span class="text-slate-450 font-bold animate-pulse">Chờ...</span>';
             const profitHtml = run.summary?.resolved ? formatProfit(sum.profit) : '<span class="text-slate-450 font-medium">Chờ...</span>';
 
             const row = document.createElement('tr');
-            row.className = `cursor-pointer hover:bg-indigo-50/40 transition border-b border-slate-100 ${state.selectedIndex === idx ? 'bg-indigo-50/60 font-semibold' : (isToday ? 'bg-amber-50/20' : 'bg-white/40')}`;
+            row.className = `cursor-pointer hover:bg-indigo-50/40 transition border-b border-slate-100 ${getHistoryRowClass(state.selectedIndex === idx, isPending)}`;
             row.innerHTML = `
-                <td class="px-4 py-3.5 whitespace-nowrap font-medium text-slate-800">${dateStr} ${isToday ? '<span class="ml-1 text-[10px] bg-amber-500 text-white px-1.5 py-0.5 rounded-full font-bold">Mới</span>' : ''}</td>
+                <td class="px-4 py-3.5 whitespace-nowrap font-medium text-slate-800">${dateStr} ${isPending ? '<span class="ml-1 text-[10px] bg-amber-500 text-white px-1.5 py-0.5 rounded-full font-bold">Dự báo</span>' : ''}</td>
                 <td class="px-4 py-3.5 text-center whitespace-nowrap"><span class="inline-block text-sm font-bold bg-slate-100 px-2.5 py-1 rounded-lg text-slate-900 border border-slate-200">${deStr}</span></td>
                 <td class="px-4 py-3.5 whitespace-nowrap">
                     <div class="flex items-center gap-2">
@@ -370,22 +384,29 @@
         // Update table row styling
         const rows = el('detailsTable').children;
         for (let i = 0; i < rows.length; i++) {
-            const isToday = !state.history[i].summary?.resolved;
-            rows[i].className = `cursor-pointer hover:bg-indigo-50/40 transition border-b border-slate-100 ${i === index ? 'bg-indigo-50/80 font-bold shadow-sm' : (isToday ? 'bg-amber-50/20' : 'bg-white/40')}`;
+            const isPending = isPendingRun(state.history[i]);
+            rows[i].className = `cursor-pointer hover:bg-indigo-50/40 transition border-b border-slate-100 ${getHistoryRowClass(i === index, isPending)}`;
         }
 
         const run = state.history[index];
         const sum = getDisplaySummary(run, state.selectedMethod) || {};
         const dateStr = formatDateToDMY(run.predictionDate);
+        const isPending = isPendingRun(run);
 
         // Render Details Sidebar
         const sidebar = el('methodDetail');
         
         let headerStatusHtml = '';
-        if (!run.summary?.resolved) {
+        if (isPending) {
             headerStatusHtml = `
-                <div class="rounded-xl bg-amber-50 border border-amber-200 p-3 mb-4 text-xs text-amber-800">
-                    <i class="bi bi-clock-history mr-1.5 font-bold"></i> Dự báo đang hoạt động. Đang đợi kết quả quay thưởng lúc 18:30 ngày ${dateStr}.
+                <div class="rounded-xl bg-amber-100 border border-amber-300 p-4 mb-4 text-xs text-amber-900 shadow-sm">
+                    <div class="flex items-start gap-2.5">
+                        <i class="bi bi-exclamation-triangle-fill text-amber-600 text-base"></i>
+                        <div>
+                            <div class="font-extrabold uppercase tracking-wide">Dự đoán tương lai - chưa có kết quả</div>
+                            <div class="mt-1 leading-relaxed">Dàn số bên dưới là snapshot dự báo cho ngày ${dateStr}, dựa trên dữ liệu của ngày trước đó. Chưa dùng dòng này để kết toán thắng/thua cho tới khi có kết quả quay thưởng.</div>
+                        </div>
+                    </div>
                 </div>
             `;
         } else {
@@ -446,11 +467,18 @@
             explanationsHtml = '<div class="text-xs text-slate-500 italic">Không có chuỗi loại trừ kích hoạt trong ngày này.</div>';
         }
 
+        const panelClass = isPending
+            ? 'space-y-5 rounded-2xl border border-amber-200 bg-amber-50/70 p-4 shadow-inner'
+            : 'space-y-5';
+        const detailBadge = isPending
+            ? '<span class="ml-2 align-middle rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white">Tương lai</span>'
+            : '';
+
         sidebar.innerHTML = `
-            <div class="space-y-5">
+            <div class="${panelClass}">
                 <div>
-                    <h3 class="text-base font-bold text-slate-900">Chi tiết ngày ${dateStr}</h3>
-                    <p class="text-xs text-slate-500 mt-0.5">Dựa trên kết quả thống kê của ngày trước đó</p>
+                    <h3 class="text-base font-bold text-slate-900">Chi tiết ngày ${dateStr}${detailBadge}</h3>
+                    <p class="text-xs ${isPending ? 'text-amber-800' : 'text-slate-500'} mt-0.5">Dựa trên kết quả thống kê của ngày trước đó${isPending ? ', chưa có kết quả thực tế để kết toán' : ''}</p>
                 </div>
 
                 ${headerStatusHtml}

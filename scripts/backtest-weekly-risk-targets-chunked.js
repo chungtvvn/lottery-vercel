@@ -172,6 +172,7 @@ async function main() {
     const args = parseArgs();
     const years = Number(args.get('years') || 20);
     const chunkSize = Math.max(30, Number(args.get('chunkSize') || 500));
+    const rollingHistory = args.get('rollingHistory') === '1' || args.get('rolling') === '1';
     const outputDir = path.join(process.cwd(), 'reports');
     fs.mkdirSync(outputDir, { recursive: true });
 
@@ -187,7 +188,7 @@ async function main() {
         chunks.push({ start, end: Math.min(endIndex, start + chunkSize) });
     }
 
-    console.log(`[ChunkedBacktest] Running ${totalDays} days in ${chunks.length} chunks (${chunkSize} days/chunk)`);
+    console.log(`[ChunkedBacktest] Running ${totalDays} days in ${chunks.length} chunks (${chunkSize} days/chunk), rollingHistory=${rollingHistory ? '1' : '0'}`);
     const weeklyMap = new Map();
     const dailyRows = [];
     const chunkReports = [];
@@ -199,7 +200,8 @@ async function main() {
             `--startIndex=${chunk.start}`,
             `--endIndex=${chunk.end}`,
             '--years=20',
-            `--betWinMultiplier=${Number(args.get('betWinMultiplier') || args.get('winMultiplier') || 84)}`
+            `--betWinMultiplier=${Number(args.get('betWinMultiplier') || args.get('winMultiplier') || 84)}`,
+            `--rollingHistory=${rollingHistory ? '1' : '0'}`
         ], {
             cwd: process.cwd(),
             env: {
@@ -246,6 +248,7 @@ async function main() {
             startDate: formatIsoDate(sortedData[startIndex].date),
             endDate: formatIsoDate(sortedData[endIndex - 1].date),
             playMode: 'bet',
+            rollingHistory,
             methods: METHODS,
             childReports: chunkReports
         },
