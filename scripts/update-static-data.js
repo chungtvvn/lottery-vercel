@@ -789,7 +789,8 @@ async function main() {
     }
 
     const rawDataChanged = hasRawDataChanged(currentArray, finalArray);
-    const lotoCacheMissing = !hasLotoPredictionCache(latestRawDate);
+    const trustR2LotoCache = Boolean(getR2PublicUrl() && process.env.UPDATE_CHECK_R2_LOTO !== '0');
+    const lotoCacheMissing = trustR2LotoCache ? false : !hasLotoPredictionCache(latestRawDate);
     const r2LotoCacheMissing = !(await hasLotoPredictionCacheOnR2(latestRawDate));
     const onlyLotoCacheNeedsRefresh = !rawDataChanged && !forceRegenerateStats && !isStale && (lotoCacheMissing || r2LotoCacheMissing);
 
