@@ -25,6 +25,18 @@ function round(value, digits = 4) {
     return Math.round(n * factor) / factor;
 }
 
+function parseMethods(args) {
+    const source = args.get('methods')
+        || (args.get('targets')
+            ? String(args.get('targets')).split(',').map(value => `riskHold${value.trim()}`).join(',')
+            : METHODS.join(','));
+    const methods = String(source)
+        .split(',')
+        .map(value => value.trim())
+        .filter(value => /^(riskHold|frequencyHold|tierHold|edgeHold|bayesHold|scarcityHold|recordHold|wilsonHold)\d{1,3}$/.test(value));
+    return [...new Set(methods)];
+}
+
 function formatIsoDate(rawDate) {
     const d = new Date(rawDate);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -119,8 +131,8 @@ function computeLongestStreaks(dailyRows, methodId) {
     return { longestWin, longestLoss, longestWinRange, longestLossRange };
 }
 
-function summarizeMethods(dailyRows) {
-    return METHODS.map(methodId => {
+function summarizeMethods(dailyRows, methods = METHODS) {
+    return methods.map(methodId => {
         const rows = dailyRows.map(row => row[methodId]).filter(Boolean);
         const totalDays = rows.length;
         const played = rows.filter(row => !row.skipped);
@@ -173,6 +185,7 @@ async function main() {
     const years = Number(args.get('years') || 20);
     const chunkSize = Math.max(30, Number(args.get('chunkSize') || 500));
     const rollingHistory = args.get('rollingHistory') === '1' || args.get('rolling') === '1';
+    const methods = parseMethods(args);
     const outputDir = path.join(process.cwd(), 'reports');
     fs.mkdirSync(outputDir, { recursive: true });
 
@@ -201,7 +214,8 @@ async function main() {
             `--endIndex=${chunk.end}`,
             '--years=20',
             `--betWinMultiplier=${Number(args.get('betWinMultiplier') || args.get('winMultiplier') || 84)}`,
-            `--rollingHistory=${rollingHistory ? '1' : '0'}`
+            `--rollingHistory=${rollingHistory ? '1' : '0'}`,
+            `--methods=${methods.join(',')}`
         ], {
             cwd: process.cwd(),
             env: {
@@ -233,7 +247,7 @@ async function main() {
 
     dailyRows.sort((a, b) => String(a.predictionIsoDate).localeCompare(String(b.predictionIsoDate)));
     const weeklyRows = finalizeWeeklyRows(weeklyMap);
-    const methodSummary = summarizeMethods(dailyRows);
+    const methodSummary = summarizeMethods(dailyRows, methods);
     const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
     const csvPath = path.join(outputDir, `backtest_weekly_risk_targets_bet_only_chunked_${stamp}.csv`);
     const jsonPath = path.join(outputDir, `backtest_weekly_risk_targets_bet_only_chunked_${stamp}.json`);
@@ -249,7 +263,7 @@ async function main() {
             endDate: formatIsoDate(sortedData[endIndex - 1].date),
             playMode: 'bet',
             rollingHistory,
-            methods: METHODS,
+            methods,
             childReports: chunkReports
         },
         methodSummary,

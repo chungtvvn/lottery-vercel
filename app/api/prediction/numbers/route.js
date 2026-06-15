@@ -11,8 +11,8 @@ const NO_STORE_HEADERS = {
 };
 
 function parseCounts(value) {
-    const raw = String(value || 'all').trim().toLowerCase();
-    if (!raw || raw === 'all') return [10, 20, 30, 40];
+    const raw = String(value || '').trim().toLowerCase();
+    if (!raw || raw === 'all') return null;
     return raw
         .split(',')
         .map(item => parseInt(item.trim(), 10))
@@ -43,6 +43,7 @@ export async function GET(request) {
 
         const url = new URL(request.url);
         const counts = parseCounts(url.searchParams.get('count') || url.searchParams.get('counts'));
+        const strategy = url.searchParams.get('strategy') || url.searchParams.get('source') || undefined;
         const selectedStreakDetailLimit = url.searchParams.get('selectedStreakDetailLimit')
             || url.searchParams.get('detailLimit')
             || undefined;
@@ -50,6 +51,7 @@ export async function GET(request) {
         const simulationService = require('@/lib/services/simulationService');
         const payload = await simulationService.buildNextBetNumberPrediction({
             counts,
+            strategy,
             selectedStreakDetailLimit
         });
 

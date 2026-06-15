@@ -31,6 +31,18 @@ function csvEscape(value) {
     return str;
 }
 
+function parseMethods(args) {
+    const source = args.get('methods')
+        || (args.get('targets')
+            ? String(args.get('targets')).split(',').map(value => `riskHold${value.trim()}`).join(',')
+            : 'riskHold60,riskHold70,riskHold80,riskHold90');
+    const methods = String(source)
+        .split(',')
+        .map(value => value.trim())
+        .filter(value => /^(riskHold|frequencyHold|tierHold|edgeHold|bayesHold|scarcityHold|recordHold|wilsonHold)\d{1,3}$/.test(value));
+    return [...new Set(methods)];
+}
+
 function emptyWeekRow(methodId, weekStart, weekEnd) {
     return {
         methodId,
@@ -149,7 +161,7 @@ async function main() {
     }));
     const years = Number(args.get('years') || 20);
     const days = Math.round(years * 365.25);
-    const methods = ['riskHold60', 'riskHold70', 'riskHold80', 'riskHold90'];
+    const methods = parseMethods(args);
     const rollingHistory = args.get('rollingHistory') === '1' || args.get('rolling') === '1';
     const outputDir = path.join(process.cwd(), 'reports');
     fs.mkdirSync(outputDir, { recursive: true });

@@ -78,8 +78,7 @@
                     <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-900">Lịch sử dự đoán (Đánh & Ôm)</h1>
                     <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-650">
                         Đối chiếu danh sách số dự đoán của mỗi ngày với kết quả đề xổ số thực tế (2 số cuối giải Đặc biệt).
-                        Đánh thắng nếu số đề nằm trong dàn đánh (40 số còn lại).
-                        Ôm thắng nếu số đề không nằm trong dàn ôm/loại trừ (60 số có priority cao nhất).
+                        Mỗi phương pháp có số đánh/số ôm riêng và được lưu theo snapshot point-in-time của ngày dự đoán.
                     </p>
                 </div>
                 <div>
@@ -96,7 +95,12 @@
             <div class="flex items-center gap-3">
                 <label for="methodSelector" class="text-sm font-bold text-slate-700">Phương pháp dự đoán:</label>
                 <select id="methodSelector" class="glass-input text-sm py-1.5 px-3 block w-72">
-                    <option value="riskHold70" selected>Risk Sort - Hold 70 (Đánh 30) - Lãi cao nhất</option>
+                    <option value="bayesHold70" selected>Bayes log-odds - Hold 70 (Đánh 30) - 20 năm ổn định nhất</option>
+                    <option value="bayesHold60">Bayes log-odds - Hold 60 (Đánh 40) - Lãi tổng cao nhất</option>
+                    <option value="bayesHold80">Bayes log-odds - Hold 80 (Đánh 20)</option>
+                    <option value="bayesHold90">Bayes log-odds - Hold 90 (Đánh 10)</option>
+                    <option value="bayesHold95">Bayes log-odds - Hold 95 (Đánh 5)</option>
+                    <option value="riskHold70">Risk Sort - Hold 70 (Đánh 30)</option>
                     <option value="riskHold80">Risk Sort - Hold 80 (Đánh 20)</option>
                     <option value="riskHold90">Risk Sort - Hold 90 (Đánh 10)</option>
                     <option value="riskHold60">Risk Sort - Hold 60 (Đánh 40)</option>
@@ -159,7 +163,7 @@
     </main>
 
     <script src="/js/app-config.js"></script>
-    <script src="/js/prediction-history.js?v=1.0.3"></script>
+    <script src="/js/prediction-history.js?v=1.0.4"></script>
 </body>
 
 </html>

@@ -3,7 +3,7 @@
     const state = {
         history: [],
         selectedIndex: -1,
-        selectedMethod: 'riskHold70',
+        selectedMethod: 'bayesHold70',
         betWinMultiplier: 84,
         holdWinMultiplier: 0.705
     };
@@ -19,10 +19,28 @@
                 ...sum.methods[selectedMethod]
             };
         }
+        if (sum.methods) {
+            return {
+                missingMethod: true,
+                resolved: false,
+                actualSpecial: sum.actualSpecial,
+                excludedNumbers: [],
+                numbersToBet: [],
+                explanations: [],
+                betCount: 0,
+                excludedCount: 0,
+                betWin: null,
+                holdWin: null,
+                betProfit: null,
+                holdProfit: null,
+                profit: null
+            };
+        }
         return sum; // Fallback
     }
 
     function recalculateSummary(summary) {
+        if (summary && summary.missingMethod) return summary;
         if (!summary || !summary.resolved) return summary;
         const betNumbers = summary.numbersToBet || [];
         const excludedNumbers = summary.excludedNumbers || [];
@@ -280,9 +298,11 @@
             return;
         }
 
-        // Calculate aggregates for resolved runs
-        const resolvedRuns = history.filter(r => r.summary?.resolved);
-        const totalDays = resolvedRuns.length;
+        // Calculate aggregates for resolved runs that have the currently selected method.
+        const resolvedSummaries = history
+            .map(r => getDisplaySummary(r, state.selectedMethod))
+            .filter(sum => sum && sum.resolved && !sum.missingMethod);
+        const totalDays = resolvedSummaries.length;
 
         let betWins = 0;
         let holdWins = 0;
@@ -290,9 +310,7 @@
         let totalHoldProfit = 0;
         let totalProfit = 0;
 
-        resolvedRuns.forEach(r => {
-            const sum = getDisplaySummary(r, state.selectedMethod);
-            if (!sum) return;
+        resolvedSummaries.forEach(sum => {
             if (sum.betWin) betWins++;
             if (sum.holdWin) holdWins++;
             totalBetProfit += sum.betProfit || 0;
@@ -342,7 +360,9 @@
 
             const dateStr = formatDateToDMY(run.predictionDate);
             const deStr = run.summary?.resolved && run.summary?.actualSpecial !== null ? String(run.summary.actualSpecial).padStart(2, '0') : '<span class="text-slate-450 font-bold animate-pulse">Chờ...</span>';
-            const profitHtml = run.summary?.resolved ? formatProfit(sum.profit) : '<span class="text-slate-450 font-medium">Chờ...</span>';
+            const profitHtml = sum.missingMethod
+                ? '<span class="text-slate-400 text-xs">Chưa có dữ liệu</span>'
+                : (run.summary?.resolved ? formatProfit(sum.profit) : '<span class="text-slate-450 font-medium">Chờ...</span>');
 
             const row = document.createElement('tr');
             row.className = `cursor-pointer hover:bg-indigo-50/40 transition border-b border-slate-100 ${getHistoryRowClass(state.selectedIndex === idx, isPending)}`;
@@ -395,6 +415,15 @@
 
         // Render Details Sidebar
         const sidebar = el('methodDetail');
+        if (sum.missingMethod) {
+            sidebar.innerHTML = `
+                <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                    <div class="font-bold">Chưa có dữ liệu cho phương pháp ${escapeHtml(state.selectedMethod)}</div>
+                    <div class="mt-2 text-xs leading-5">Cache lịch sử hiện tại chưa được sinh với phương pháp này. Hãy chạy lại action cập nhật dữ liệu để tạo snapshot mới, hoặc chọn phương pháp khác đã có trong lịch sử.</div>
+                </div>
+            `;
+            return;
+        }
         
         let headerStatusHtml = '';
         if (isPending) {
