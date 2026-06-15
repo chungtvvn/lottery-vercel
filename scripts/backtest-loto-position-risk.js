@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const fs = require('fs');
 const path = require('path');
-const { spawnSync } = require('child_process');
+const { spawn, spawnSync } = require('child_process');
 
 const lotteryService = require('../lib/services/lotteryService');
 const historicalExclusionService = require('../lib/services/historicalExclusionService');
@@ -411,6 +411,94 @@ function updateLivePredictionStore(output, rawData, betCounts, options) {
     return livePayload;
 }
 
+function runPositionChild({ key, outPath, maxMonths, methodId, betCounts, stakePerNumberK, payoutPerHitK, skipBacktest }) {
+    return new Promise((resolve, reject) => {
+        const child = spawn(process.execPath, [
+            __filename,
+            `--positionKey=${key}`,
+            `--out=${outPath}`,
+            `--months=${maxMonths}`,
+            `--method=${methodId}`,
+            `--betCounts=${betCounts.join(',')}`,
+            `--stakeK=${stakePerNumberK}`,
+            `--payoutK=${payoutPerHitK}`,
+            skipBacktest ? '--skipBacktest=1' : '--skipBacktest=0'
+        ], {
+            cwd: process.cwd(),
+            env: {
+                ...process.env,
+                NODE_OPTIONS: process.env.NODE_OPTIONS || '--max-old-space-size=4096'
+            },
+            stdio: ['ignore', 'pipe', 'pipe']
+        });
+
+        let stdout = '';
+        let stderr = '';
+        const timeoutMs = Math.max(60_000, Number(process.env.LOTO_POSITION_TIMEOUT_MS || (skipBacktest ? 300_000 : 0)) || 0);
+        const timer = timeoutMs > 0 ? setTimeout(() => {
+            child.kill('SIGTERM');
+            reject(new Error(`Child ${key} quá thời gian cho phép (${timeoutMs}ms)`));
+        }, timeoutMs) : null;
+
+        child.stdout.on('data', chunk => {
+            stdout += chunk.toString();
+        });
+        child.stderr.on('data', chunk => {
+            stderr += chunk.toString();
+        });
+        child.on('error', error => {
+            if (timer) clearTimeout(timer);
+            reject(error);
+        });
+        child.on('close', code => {
+            if (timer) clearTimeout(timer);
+            if (code !== 0) {
+                process.stdout.write(stdout || '');
+                process.stderr.write(stderr || '');
+                reject(new Error(`Child ${key} failed with exit code ${code}`));
+                return;
+            }
+            const tail = stdout.trim().split('\n').filter(Boolean).slice(-1)[0];
+            if (tail) console.log(tail);
+            try {
+                const payload = JSON.parse(fs.readFileSync(outPath, 'utf8'));
+                resolve(payload);
+            } catch (error) {
+                reject(new Error(`Không đọc được output child ${key}: ${error.message}`));
+            }
+        });
+    });
+}
+
+async function runPositionChildren(keys, options) {
+    const concurrency = Math.max(1, Math.min(keys.length, Number(process.env.LOTO_POSITION_CONCURRENCY || (options.skipBacktest ? 4 : 1)) || 1));
+    const results = new Map();
+    let cursor = 0;
+
+    async function worker(workerIndex) {
+        while (cursor < keys.length) {
+            const currentIndex = cursor++;
+            const key = keys[currentIndex];
+            const outPath = path.join(options.tmpDir, `${key}.json`);
+            console.log(`[LotoPositionRisk] ${key}: worker ${workerIndex}/${concurrency} sinh ${options.skipBacktest ? 'dự đoán ngày tiếp theo' : options.methodId} (${currentIndex + 1}/${keys.length})...`);
+            const payload = await runPositionChild({
+                key,
+                outPath,
+                maxMonths: options.maxMonths,
+                methodId: options.methodId,
+                betCounts: options.betCounts,
+                stakePerNumberK: options.stakePerNumberK,
+                payoutPerHitK: options.payoutPerHitK,
+                skipBacktest: options.skipBacktest
+            });
+            results.set(key, payload);
+        }
+    }
+
+    await Promise.all(Array.from({ length: concurrency }, (_, index) => worker(index + 1)));
+    return keys.map(key => [key, results.get(key)]);
+}
+
 async function main() {
     const args = parseArgs();
     const childPositionKey = args.get('positionKey');
@@ -464,12 +552,21 @@ async function main() {
     const tmpDir = path.join(process.cwd(), 'reports', 'chunks', `loto_position_${Date.now()}`);
     fs.mkdirSync(tmpDir, { recursive: true });
     if (skipBacktest) {
-        for (const [index, key] of PRIZE_KEYS.entries()) {
-            console.log(`[LotoPositionRisk] ${key}: sinh dự đoán ngày tiếp theo (${index + 1}/${PRIZE_KEYS.length})...`);
-            const next = await buildPositionNextPrediction(rawData, key, { methodId });
-            nextByPosition.push(next);
+        const childResults = await runPositionChildren(PRIZE_KEYS, {
+            tmpDir,
+            maxMonths,
+            methodId,
+            betCounts,
+            stakePerNumberK,
+            payoutPerHitK,
+            skipBacktest
+        });
+        for (const [key, childPayload] of childResults) {
             byPosition.set(key, []);
-            console.log(`[LotoPositionRisk] ${key}: next=${next?.predictionDate || 'none'}, bet=${next?.betCount || 0}, excluded=${next?.excludedCount || 0}`);
+            if (childPayload?.next) {
+                nextByPosition.push(childPayload.next);
+                console.log(`[LotoPositionRisk] ${key}: next=${childPayload.next.predictionDate || 'none'}, bet=${childPayload.next.betCount || 0}, excluded=${childPayload.next.excludedCount || 0}`);
+            }
         }
     } else for (const key of PRIZE_KEYS) {
         const outPath = path.join(tmpDir, `${key}.json`);
@@ -696,8 +793,14 @@ async function main() {
 
     console.log(`[LotoPositionRisk] JSON: ${jsonPath}`);
     for (const months of monthsList) {
+        const windowSummary = output.summariesByWindow?.[`${months}m`] || {};
+        if (Object.keys(windowSummary).length === 0) {
+            console.log(`\n=== ${months} tháng gần nhất ===`);
+            console.log('[LotoPositionRisk] Chế độ prediction-only chưa có backtest summary tham khảo; dùng livePredictions để theo dõi thực tế.');
+            continue;
+        }
         console.log(`\n=== ${months} tháng gần nhất ===`);
-        console.table(Object.values(output.summariesByWindow[`${months}m`]).map(item => ({
+        console.table(Object.values(windowSummary).map(item => ({
             method: item.label,
             days: item.days,
             wins: item.wins,
