@@ -427,7 +427,7 @@ function runPositionChild({ key, outPath, maxMonths, methodId, betCounts, stakeP
             cwd: process.cwd(),
             env: {
                 ...process.env,
-                NODE_OPTIONS: process.env.NODE_OPTIONS || '--max-old-space-size=4096'
+                NODE_OPTIONS: process.env.LOTO_CHILD_NODE_OPTIONS || '--max-old-space-size=2048'
             },
             stdio: ['ignore', 'pipe', 'pipe']
         });
