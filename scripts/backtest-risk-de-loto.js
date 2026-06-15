@@ -376,6 +376,7 @@ function writeCsv(filePath, rows) {
 
 async function runChunk(args) {
     const methods = buildMethodIds(parseTargets(args.get('targets')));
+    const rollingHistory = args.get('rollingHistory') === '1' || args.get('rolling') === '1';
     await lotteryService.loadRawData();
     const sortedData = getSortedLotteryData(lotteryService.getRawData());
     const rawByIso = buildRawDataByIso(sortedData);
@@ -389,6 +390,7 @@ async function runChunk(args) {
         betCostMultiplier: DE_BET_COST_MULTIPLIER,
         methods: methods.join(','),
         compactDetails: true,
+        rollingHistory,
         startIndex,
         endIndexExclusive,
         clearHistoryCacheInterval: 80
@@ -423,12 +425,17 @@ async function runChunk(args) {
 async function runParent(args) {
     const targets = parseTargets(args.get('targets'));
     const methods = buildMethodIds(targets);
+    const rollingHistory = args.get('rollingHistory') === '1' || args.get('rolling') === '1';
+    const initialHistoryDays = Math.max(1, Math.round(Number(args.get('initialHistoryDays') || 365)));
     await lotteryService.loadRawData();
     const sortedData = getSortedLotteryData(lotteryService.getRawData());
     const years = Number(args.get('years') || 20);
     const requestedDays = Math.round(years * 365.25);
-    const effectiveDays = Math.min(requestedDays, sortedData.length - 1);
-    const startIndex = sortedData.length - effectiveDays;
+    const rollingStartIndex = Math.min(sortedData.length - 1, initialHistoryDays);
+    const effectiveDays = rollingHistory
+        ? Math.max(1, sortedData.length - rollingStartIndex)
+        : Math.min(requestedDays, sortedData.length - 1);
+    const startIndex = rollingHistory ? rollingStartIndex : sortedData.length - effectiveDays;
     const endIndex = sortedData.length;
     const chunkSize = Math.max(30, Number(args.get('chunkSize') || 500));
     const chunks = [];
@@ -436,7 +443,7 @@ async function runParent(args) {
         chunks.push({ start, end: Math.min(endIndex, start + chunkSize) });
     }
 
-    console.log(`[RiskDeLoto] Running ${effectiveDays} days (${formatIsoDate(sortedData[startIndex].date)}..${formatIsoDate(sortedData[endIndex - 1].date)}) in ${chunks.length} chunks`);
+    console.log(`[RiskDeLoto] Running ${effectiveDays} days (${formatIsoDate(sortedData[startIndex].date)}..${formatIsoDate(sortedData[endIndex - 1].date)}) in ${chunks.length} chunks, rollingHistory=${rollingHistory ? '1' : '0'}`);
     const dailyRows = [];
     const childReports = [];
     chunks.forEach((chunk, index) => {
@@ -446,7 +453,8 @@ async function runParent(args) {
             '--chunk=1',
             `--startIndex=${chunk.start}`,
             `--endIndex=${chunk.end}`,
-            `--targets=${targets.join(',')}`
+            `--targets=${targets.join(',')}`,
+            `--rollingHistory=${rollingHistory ? '1' : '0'}`
         ], {
             cwd: process.cwd(),
             env: {
@@ -493,6 +501,8 @@ async function runParent(args) {
             years,
             requestedDays,
             effectiveDays,
+            rollingHistory,
+            initialHistoryDays: rollingHistory ? initialHistoryDays : null,
             startDate: formatIsoDate(sortedData[startIndex].date),
             endDate: formatIsoDate(sortedData[endIndex - 1].date),
             targets,

@@ -3,7 +3,7 @@
     const state = {
         history: [],
         selectedIndex: -1,
-        selectedMethod: 'bayesHold70',
+        selectedMethod: 'edgeHold90',
         betWinMultiplier: 84,
         holdWinMultiplier: 0.705
     };
