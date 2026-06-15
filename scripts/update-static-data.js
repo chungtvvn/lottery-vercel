@@ -15,6 +15,8 @@ const JSON_FILE = path.join(DATA_DIR, 'xsmb-2-digits.json');
 const WAIT_FOR_NEW_XOSO = process.env.WAIT_FOR_NEW_XOSO === '1';
 const XOSO_MAX_WAIT_MINUTES = readNumberEnv('XOSO_MAX_WAIT_MINUTES', WAIT_FOR_NEW_XOSO ? 90 : 0, 0);
 const XOSO_RETRY_INTERVAL_SECONDS = readNumberEnv('XOSO_RETRY_INTERVAL_SECONDS', 60, 5);
+const LOTO_STAKE_PER_NUMBER_K = 2300;
+const LOTO_PAYOUT_PER_HIT_K = 8000;
 
 function readNumberEnv(name, fallback, minValue) {
     const parsed = Number(process.env[name]);
@@ -63,6 +65,13 @@ function normalizeDateValue(value) {
     const date = new Date(text);
     if (Number.isNaN(date.getTime())) return null;
     return date.toISOString().slice(0, 10);
+}
+
+function isLotoPredictionFormulaCurrent(cache) {
+    const config = cache?.config || cache?.livePredictions?.config || {};
+    const stake = Number(config.stakePerNumberK);
+    const payout = Number(config.payoutPerHitK);
+    return stake === LOTO_STAKE_PER_NUMBER_K && payout === LOTO_PAYOUT_PER_HIT_K;
 }
 
 function hasRawDataChanged(currentRows, nextRows) {
@@ -418,7 +427,12 @@ function hasLotoPredictionCache(expectedLatestDate = null) {
     try {
         const cache = JSON.parse(fsSync.readFileSync(cachePath, 'utf8'));
         const latest = normalizeDateValue(cache?.latestDataDate || cache?.nextPrediction?.dataIsoDate);
-        if (latest === expectedLatestDate) return true;
+        if (latest === expectedLatestDate && isLotoPredictionFormulaCurrent(cache)) return true;
+        if (!isLotoPredictionFormulaCurrent(cache)) {
+            const config = cache?.config || {};
+            console.log(`[Cache Check] Local Lô cache formula stale: stake=${config.stakePerNumberK || 'unknown'}, payout=${config.payoutPerHitK || 'unknown'}, expected=${LOTO_STAKE_PER_NUMBER_K}/${LOTO_PAYOUT_PER_HIT_K}.`);
+            return false;
+        }
         console.log(`[Cache Check] Local Lô cache stale: latest=${latest || 'unknown'}, expected=${expectedLatestDate}.`);
         return false;
     } catch (error) {
@@ -434,8 +448,13 @@ async function hasLotoPredictionCacheOnR2(expectedLatestDate = null) {
         const live = await readStatsJsonFromR2('cached_loto_live_predictions.json');
         const cacheLatest = normalizeDateValue(cache && (cache.latestDataDate || cache.nextPrediction?.dataIsoDate));
         const liveLatest = normalizeDateValue(live && live.latestDataDate);
-        console.log(`[Cache Check] R2 Lô cache OK: cached_loto latest=${cacheLatest || 'unknown'}, live latest=${liveLatest || 'unknown'}.`);
         if (!cache || !live) return false;
+        if (!isLotoPredictionFormulaCurrent(cache)) {
+            const config = cache?.config || {};
+            console.log(`[Cache Check] R2 Lô cache formula stale: stake=${config.stakePerNumberK || 'unknown'}, payout=${config.payoutPerHitK || 'unknown'}, expected=${LOTO_STAKE_PER_NUMBER_K}/${LOTO_PAYOUT_PER_HIT_K}.`);
+            return false;
+        }
+        console.log(`[Cache Check] R2 Lô cache OK: cached_loto latest=${cacheLatest || 'unknown'}, live latest=${liveLatest || 'unknown'}.`);
         if (expectedLatestDate && cacheLatest !== expectedLatestDate) {
             console.log(`[Cache Check] R2 Lô cache stale: latest=${cacheLatest || 'unknown'}, expected=${expectedLatestDate}.`);
             return false;
@@ -449,12 +468,14 @@ async function hasLotoPredictionCacheOnR2(expectedLatestDate = null) {
 
 function generateLotoPredictionCache() {
     const skipBacktest = process.env.LOTO_SKIP_BACKTEST !== '0';
-    const timeoutMs = Math.max(60_000, Number(process.env.LOTO_PREDICTION_TIMEOUT_MS || (skipBacktest ? 600_000 : 0)) || 0);
+    const timeoutMs = Math.max(60_000, Number(process.env.LOTO_PREDICTION_TIMEOUT_MS || (skipBacktest ? 1_800_000 : 0)) || 0);
     runNodeScript([
         'scripts/backtest-loto-position-risk.js',
         `--months=${process.env.LOTO_CACHE_MONTHS || '1,3,6'}`,
-        '--method=riskHold95',
+        '--method=dropoff85',
         '--betCounts=5,6,7',
+        `--stakeK=${LOTO_STAKE_PER_NUMBER_K}`,
+        `--payoutK=${LOTO_PAYOUT_PER_HIT_K}`,
         '--writeCache=1',
         skipBacktest ? '--skipBacktest=1' : '--skipBacktest=0'
     ], skipBacktest

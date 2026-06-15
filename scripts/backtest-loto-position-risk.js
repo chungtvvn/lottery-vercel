@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const fs = require('fs');
 const path = require('path');
-const { spawn, spawnSync } = require('child_process');
+const { spawn } = require('child_process');
 
 const lotteryService = require('../lib/services/lotteryService');
 const historicalExclusionService = require('../lib/services/historicalExclusionService');
@@ -9,6 +9,9 @@ const simulationService = require('../lib/services/simulationService');
 const generateNumberStats = require('../lib/generators/statisticsGenerator');
 const generateHeadTailStats = require('../lib/generators/headTailStatsGenerator');
 const generateSumDiffStats = require('../lib/generators/sumDifferenceStatsGenerator');
+
+const DEFAULT_LOTO_STAKE_PER_NUMBER_K = 2300;
+const DEFAULT_LOTO_PAYOUT_PER_HIT_K = 8000;
 
 const PRIZE_KEYS = [
     'special',
@@ -427,7 +430,7 @@ function runPositionChild({ key, outPath, maxMonths, methodId, betCounts, stakeP
             cwd: process.cwd(),
             env: {
                 ...process.env,
-                NODE_OPTIONS: process.env.LOTO_CHILD_NODE_OPTIONS || '--max-old-space-size=2048'
+                NODE_OPTIONS: process.env.LOTO_CHILD_NODE_OPTIONS || '--max-old-space-size=8192'
             },
             stdio: ['ignore', 'pipe', 'pipe']
         });
@@ -508,13 +511,13 @@ async function main() {
         .filter(Boolean);
     const maxMonths = Math.max(...monthsList);
     const days = Math.round(maxMonths * 30.4375);
-    const methodId = String(args.get('method') || 'riskHold95');
+    const methodId = String(args.get('method') || 'dropoff85');
     const betCounts = String(args.get('betCounts') || '5,6,7')
         .split(',')
         .map(value => Math.max(1, Math.min(30, Number(value.trim()) || 0)))
         .filter(Boolean);
-    const stakePerNumberK = Number(args.get('stakeK') || 2300);
-    const payoutPerHitK = Number(args.get('payoutK') || 80000);
+    const stakePerNumberK = Number(args.get('stakeK') || DEFAULT_LOTO_STAKE_PER_NUMBER_K);
+    const payoutPerHitK = Number(args.get('payoutK') || DEFAULT_LOTO_PAYOUT_PER_HIT_K);
     const writeCache = args.get('writeCache') === '1' || args.get('cache') === '1';
     const skipBacktest = args.get('skipBacktest') === '1' || args.get('predictionOnly') === '1';
 
@@ -568,39 +571,21 @@ async function main() {
                 console.log(`[LotoPositionRisk] ${key}: next=${childPayload.next.predictionDate || 'none'}, bet=${childPayload.next.betCount || 0}, excluded=${childPayload.next.excludedCount || 0}`);
             }
         }
-    } else for (const key of PRIZE_KEYS) {
-        const outPath = path.join(tmpDir, `${key}.json`);
-        console.log(`[LotoPositionRisk] ${key}: spawn child sinh stats và ${skipBacktest ? 'dự đoán ngày tiếp theo' : `chạy ${methodId} cho ${days} ngày`}...`);
-        const child = spawnSync(process.execPath, [
-            __filename,
-            `--positionKey=${key}`,
-            `--out=${outPath}`,
-            `--months=${maxMonths}`,
-            `--method=${methodId}`,
-            `--betCounts=${betCounts.join(',')}`,
-            `--stakeK=${stakePerNumberK}`,
-            `--payoutK=${payoutPerHitK}`,
-            skipBacktest ? '--skipBacktest=1' : '--skipBacktest=0'
-        ], {
-            cwd: process.cwd(),
-            env: {
-                ...process.env,
-                NODE_OPTIONS: process.env.NODE_OPTIONS || '--max-old-space-size=12288'
-            },
-            encoding: 'utf8',
-            maxBuffer: 1024 * 1024 * 32
+    } else {
+        const childResults = await runPositionChildren(PRIZE_KEYS, {
+            tmpDir,
+            maxMonths,
+            methodId,
+            betCounts,
+            stakePerNumberK,
+            payoutPerHitK,
+            skipBacktest
         });
-        if (child.status !== 0) {
-            process.stdout.write(child.stdout || '');
-            process.stderr.write(child.stderr || '');
-            throw new Error(`Child ${key} failed with exit code ${child.status}`);
-        }
-        const tail = (child.stdout || '').trim().split('\n').slice(-1)[0];
-        if (tail) console.log(tail);
-        const childPayload = JSON.parse(fs.readFileSync(outPath, 'utf8'));
-        byPosition.set(key, Array.isArray(childPayload) ? childPayload : (childPayload.rows || []));
-        if (!Array.isArray(childPayload) && childPayload.next) {
-            nextByPosition.push(childPayload.next);
+        for (const [key, childPayload] of childResults) {
+            byPosition.set(key, Array.isArray(childPayload) ? childPayload : (childPayload?.rows || []));
+            if (!Array.isArray(childPayload) && childPayload?.next) {
+                nextByPosition.push(childPayload.next);
+            }
         }
     }
 

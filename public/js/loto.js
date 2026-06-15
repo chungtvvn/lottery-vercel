@@ -30,7 +30,7 @@
             ['Ngày dữ liệu', data.latestDataDate || next.dataIsoDate || '-'],
             ['Ngày dự đoán', next.predictionDate || '-'],
             ['Vị trí', `${cfg.positionCount || 27} giải`],
-            ['Công thức', `${nf.format(cfg.stakePerNumberK || 2300)}K ăn ${nf.format(cfg.payoutPerHitK || 80000)}K`]
+            ['Công thức', `${nf.format(cfg.stakePerNumberK || 2300)}K ăn ${nf.format(cfg.payoutPerHitK || 8000)}K`]
         ].map(([label, value]) => `
             <div class="glass-card p-4">
                 <div class="text-xs font-semibold uppercase text-slate-500">${label}</div>
@@ -90,15 +90,27 @@
 
     function renderDaily(data) {
         const root = document.getElementById('dailyList');
+        const live = data.livePredictions || {};
+        const realDates = new Set((live.predictions || []).map(p => p.predictionIsoDate || p.predictionDate));
+
         const rows = (data.recentDaily || []).slice().reverse().slice(0, 30);
         root.innerHTML = rows.map(row => {
+            const isReal = realDates.has(row.date);
             const method = row.methods?.top7 || row.methods?.top6 || row.methods?.top5 || {};
             const actual = Object.keys(row.actual || {}).sort().join(', ');
+            const badgeHtml = isReal 
+                ? `<span class="ml-2 inline-flex items-center rounded-md bg-indigo-50 px-1.5 py-0.5 text-[10px] font-bold text-indigo-700 border border-indigo-150">THỰC TẾ</span>`
+                : '';
+            const highlightClass = isReal ? 'bg-indigo-50/20 border-l-4 border-l-indigo-500' : '';
+
             return `
-                <div class="p-4">
+                <div class="p-4 ${highlightClass}">
                     <div class="flex items-center justify-between gap-3">
                         <div>
-                            <div class="font-bold text-slate-900">${row.date}</div>
+                            <div class="flex items-center font-bold text-slate-900">
+                                ${row.date}
+                                ${badgeHtml}
+                            </div>
                             <div class="text-xs text-slate-500">KQ: ${actual || '-'}</div>
                         </div>
                         <div class="text-right">
@@ -107,7 +119,7 @@
                         </div>
                     </div>
                     <div class="mt-3 flex flex-wrap gap-1.5">
-                        ${(method.betNumbers || []).map(number => numberBadge(number, 'slate')).join('')}
+                        ${(method.betNumbers || []).map(number => numberBadge(number, isReal ? 'indigo' : 'slate')).join('')}
                     </div>
                 </div>
             `;
