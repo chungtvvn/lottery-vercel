@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import bundledLotoPrediction from '@/lib/data/statistics/cached_loto_prediction.json';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -47,10 +46,6 @@ function filterCount(payload, countParam) {
     };
 }
 
-function readBundledLotoCache() {
-    return bundledLotoPrediction || null;
-}
-
 export async function GET(request) {
     try {
         if (!isAuthorized(request)) {
@@ -62,8 +57,7 @@ export async function GET(request) {
 
         const { loadJsonWithSupabaseFallback } = require('@/lib/data-access');
         const url = new URL(request.url);
-        const payload = await loadJsonWithSupabaseFallback('cached_loto_prediction.json')
-            || readBundledLotoCache();
+        const payload = await loadJsonWithSupabaseFallback('cached_loto_prediction.json');
 
         if (!payload) {
             return NextResponse.json(

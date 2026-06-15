@@ -393,6 +393,21 @@ function hasLotoPredictionCache() {
         && fsSync.existsSync(path.join(statsDir, 'cached_loto_live_predictions.json'));
 }
 
+async function hasLotoPredictionCacheOnR2() {
+    if (!getR2PublicUrl() || process.env.UPDATE_CHECK_R2_LOTO === '0') return true;
+    try {
+        const cache = await readStatsJsonFromR2('cached_loto_prediction.json');
+        const live = await readStatsJsonFromR2('cached_loto_live_predictions.json');
+        const cacheLatest = cache && (cache.latestDataDate || cache.nextPrediction?.dataIsoDate);
+        const liveLatest = live && live.latestDataDate;
+        console.log(`[Cache Check] R2 Lô cache OK: cached_loto latest=${cacheLatest || 'unknown'}, live latest=${liveLatest || 'unknown'}.`);
+        return Boolean(cache && live);
+    } catch (error) {
+        console.log(`[Cache Check] R2 Lô cache missing/stale: ${error.message}`);
+        return false;
+    }
+}
+
 function generateLotoPredictionCache() {
     runNodeScript([
         'scripts/backtest-loto-position-risk.js',
@@ -629,6 +644,12 @@ async function main() {
     const forceRegenerateStats = process.env.FORCE_REGENERATE_STATS === '1';
 
     const latestRawDate = getLatestDateValue(finalArray);
+    const localArray = await readJsonIfExists(JSON_FILE);
+    const latestLocalFileDate = getLatestDateValue(localArray);
+    const localRawOutOfSync = latestRawDate && latestLocalFileDate !== latestRawDate;
+    if (localRawOutOfSync) {
+        console.log(`[Cache Check] Local raw tạm đang lệch R2/source (local=${latestLocalFileDate || 'none'}, source=${latestRawDate}); sẽ ghi lại trước khi tính toán.`);
+    }
     let isStale = false;
     if (latestRawDate) {
         try {
@@ -707,15 +728,23 @@ async function main() {
     }
 
     const lotoCacheMissing = !hasLotoPredictionCache();
-    if (!hasRawDataChanged(currentArray, finalArray) && !forceRegenerateStats && !isStale && !lotoCacheMissing) {
+    const r2LotoCacheMissing = !(await hasLotoPredictionCacheOnR2());
+    if (!hasRawDataChanged(currentArray, finalArray) && !forceRegenerateStats && !isStale && !lotoCacheMissing && !r2LotoCacheMissing) {
+        if (localRawOutOfSync) {
+            await fs.writeFile(JSON_FILE, JSON.stringify(finalArray, null, 0), 'utf-8');
+            console.log(`[3] RAW_DATA R2 đã mới nhất; chỉ đồng bộ file local tạm (${latestLocalFileDate || 'none'} -> ${latestRawDate}) rồi bỏ qua generate stats.`);
+        }
         console.log(`[3] RAW_DATA không đổi (latest=${latestRawDate}, rows=${finalArray.length}, source=${source}). Bỏ qua generate stats để tiết kiệm Action time.`);
         return;
     }
     if (lotoCacheMissing) {
-        console.log('[3] Cache Lô đang thiếu, vẫn chạy workflow để sinh cached_loto_prediction.json và cached_loto_live_predictions.json.');
+        console.log('[3] Cache Lô local đang thiếu, vẫn chạy workflow để sinh cached_loto_prediction.json và cached_loto_live_predictions.json.');
+    }
+    if (r2LotoCacheMissing) {
+        console.log('[3] Cache Lô trên R2 đang thiếu, vẫn chạy workflow để sinh/upload lại cached_loto_prediction.json và cached_loto_live_predictions.json.');
     }
 
-    if (hasRawDataChanged(currentArray, finalArray) || forceRegenerateStats || isStale) {
+    if (hasRawDataChanged(currentArray, finalArray) || forceRegenerateStats || isStale || localRawOutOfSync || r2LotoCacheMissing || lotoCacheMissing) {
         await fs.writeFile(JSON_FILE, JSON.stringify(finalArray, null, 0), 'utf-8');
         console.log(`[3] Ghi file xsmb-2-digits.json (RAW_DATA) thành công! (${finalArray.length} bản ghi, latest=${latestRawDate}, source=${source})`);
     } else {
