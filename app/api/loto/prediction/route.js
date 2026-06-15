@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import bundledLotoPrediction from '@/lib/data/statistics/cached_loto_prediction.json';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -49,14 +48,7 @@ function filterCount(payload, countParam) {
 }
 
 function readBundledLotoCache() {
-    try {
-        const filePath = path.join(process.cwd(), 'lib', 'data', 'statistics', 'cached_loto_prediction.json');
-        if (!fs.existsSync(filePath)) return null;
-        return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    } catch (error) {
-        console.error('[LotoPredictionAPI] Bundled cache fallback failed:', error.message);
-        return null;
-    }
+    return bundledLotoPrediction || null;
 }
 
 export async function GET(request) {
