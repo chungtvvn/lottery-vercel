@@ -409,13 +409,17 @@ async function hasLotoPredictionCacheOnR2() {
 }
 
 function generateLotoPredictionCache() {
+    const skipBacktest = process.env.LOTO_SKIP_BACKTEST !== '0';
     runNodeScript([
         'scripts/backtest-loto-position-risk.js',
         `--months=${process.env.LOTO_CACHE_MONTHS || '1,3,6'}`,
         '--method=riskHold95',
         '--betCounts=5,6,7',
-        '--writeCache=1'
-    ], 'Sinh/đối soát cache dự đoán Lô 27 vị trí cho API/tab Lô.', {
+        '--writeCache=1',
+        skipBacktest ? '--skipBacktest=1' : '--skipBacktest=0'
+    ], skipBacktest
+        ? 'Sinh/đối soát cache dự đoán Lô 27 vị trí cho API/tab Lô (không chạy backtest trong action).'
+        : 'Sinh/đối soát cache dự đoán Lô 27 vị trí cho API/tab Lô + backtest tham khảo.', {
         NODE_OPTIONS: process.env.NODE_OPTIONS || '--max-old-space-size=12288',
         BACKTEST_PROGRESS: process.env.BACKTEST_PROGRESS || '0'
     });

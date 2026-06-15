@@ -157,6 +157,13 @@ async function runPositionBacktest(rawData, key, options) {
     }));
 }
 
+async function runPositionPredictionOnly(rawData, key, options) {
+    return {
+        rows: [],
+        next: await buildPositionNextPrediction(rawData, key, options)
+    };
+}
+
 async function buildPositionNextPrediction(rawData, key, options) {
     const positionData = toPositionData(rawData, key);
     const stats = await buildStatsForPosition(positionData);
@@ -421,6 +428,7 @@ async function main() {
     const stakePerNumberK = Number(args.get('stakeK') || 2300);
     const payoutPerHitK = Number(args.get('payoutK') || 80000);
     const writeCache = args.get('writeCache') === '1' || args.get('cache') === '1';
+    const skipBacktest = args.get('skipBacktest') === '1' || args.get('predictionOnly') === '1';
 
     await lotteryService.loadRawData();
     const rawData = (lotteryService.getRawData() || [])
@@ -439,11 +447,15 @@ async function main() {
         if (!outPath) {
             throw new Error('Thiếu --out cho child position run.');
         }
-        const rows = await runPositionBacktest(rawData, childPositionKey, { days, methodId });
-        const next = await buildPositionNextPrediction(rawData, childPositionKey, { methodId });
+        const childResult = skipBacktest
+            ? await runPositionPredictionOnly(rawData, childPositionKey, { methodId })
+            : {
+                rows: await runPositionBacktest(rawData, childPositionKey, { days, methodId }),
+                next: await buildPositionNextPrediction(rawData, childPositionKey, { methodId })
+            };
         fs.mkdirSync(path.dirname(outPath), { recursive: true });
-        fs.writeFileSync(outPath, JSON.stringify({ rows, next }));
-        console.log(`[LotoPositionRiskChild] ${childPositionKey}: ${rows.length} rows -> ${outPath}`);
+        fs.writeFileSync(outPath, JSON.stringify(childResult));
+        console.log(`[LotoPositionRiskChild] ${childPositionKey}: ${childResult.rows.length} rows, next=${childResult.next?.predictionDate || 'none'} -> ${outPath}`);
         return;
     }
 
@@ -451,9 +463,17 @@ async function main() {
     const nextByPosition = [];
     const tmpDir = path.join(process.cwd(), 'reports', 'chunks', `loto_position_${Date.now()}`);
     fs.mkdirSync(tmpDir, { recursive: true });
-    for (const key of PRIZE_KEYS) {
+    if (skipBacktest) {
+        for (const [index, key] of PRIZE_KEYS.entries()) {
+            console.log(`[LotoPositionRisk] ${key}: sinh dự đoán ngày tiếp theo (${index + 1}/${PRIZE_KEYS.length})...`);
+            const next = await buildPositionNextPrediction(rawData, key, { methodId });
+            nextByPosition.push(next);
+            byPosition.set(key, []);
+            console.log(`[LotoPositionRisk] ${key}: next=${next?.predictionDate || 'none'}, bet=${next?.betCount || 0}, excluded=${next?.excludedCount || 0}`);
+        }
+    } else for (const key of PRIZE_KEYS) {
         const outPath = path.join(tmpDir, `${key}.json`);
-        console.log(`[LotoPositionRisk] ${key}: spawn child sinh stats và chạy ${methodId} cho ${days} ngày...`);
+        console.log(`[LotoPositionRisk] ${key}: spawn child sinh stats và ${skipBacktest ? 'dự đoán ngày tiếp theo' : `chạy ${methodId} cho ${days} ngày`}...`);
         const child = spawnSync(process.execPath, [
             __filename,
             `--positionKey=${key}`,
@@ -462,7 +482,8 @@ async function main() {
             `--method=${methodId}`,
             `--betCounts=${betCounts.join(',')}`,
             `--stakeK=${stakePerNumberK}`,
-            `--payoutK=${payoutPerHitK}`
+            `--payoutK=${payoutPerHitK}`,
+            skipBacktest ? '--skipBacktest=1' : '--skipBacktest=0'
         ], {
             cwd: process.cwd(),
             env: {
@@ -487,7 +508,7 @@ async function main() {
     }
 
     const dayRows = [];
-    for (let offset = 0; offset < latestRows.length; offset++) {
+    if (!skipBacktest) for (let offset = 0; offset < latestRows.length; offset++) {
         const rawDay = latestRows[offset];
         const date = formatIsoDate(rawDay.date);
         const score = new Map();
@@ -597,6 +618,7 @@ async function main() {
             positions: PRIZE_KEYS,
             months: monthsList,
             days,
+            skipBacktest,
             stakePerNumberK,
             payoutPerHitK,
             betCounts
@@ -625,6 +647,14 @@ async function main() {
         daily
     };
 
+    if (skipBacktest) {
+        const existingCachePath = path.join(process.cwd(), 'lib', 'data', 'statistics', 'cached_loto_prediction.json');
+        const existingCache = readJsonIfExists(existingCachePath, null);
+        output.summaries = existingCache?.summaries || {};
+        output.summariesByWindow = existingCache?.summariesByWindow || {};
+        output.daily = existingCache?.recentDaily || [];
+    }
+
     const outputDir = path.join(process.cwd(), 'reports');
     fs.mkdirSync(outputDir, { recursive: true });
     const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
@@ -651,7 +681,13 @@ async function main() {
                 summary: livePayload.summary,
                 predictions: (livePayload.predictions || []).slice(-90)
             },
-            recentDaily: output.daily.slice(-90)
+            recentDaily: output.daily.slice(-90),
+            notes: [
+                skipBacktest
+                    ? 'Cache này được sinh ở chế độ predictionOnly: action hằng ngày chỉ settle kết quả thực tế và sinh dàn Lô mới, không chạy backtest rolling.'
+                    : 'Cache này bao gồm backtest tham khảo và dự đoán Lô mới.',
+                'Nhật ký real trong livePredictions là nguồn theo dõi thực tế từ ngày chức năng Lô được triển khai.'
+            ]
         };
         fs.mkdirSync(path.dirname(cachePath), { recursive: true });
         fs.writeFileSync(cachePath, JSON.stringify(cachePayload, null, 0));
