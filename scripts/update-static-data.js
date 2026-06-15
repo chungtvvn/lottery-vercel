@@ -372,7 +372,8 @@ async function readCurrentRawData() {
 
 function runNodeScript(script, label, extraEnv = {}) {
     console.log(`[6] ${label}`);
-    const result = spawnSync(process.execPath, [script], {
+    const args = Array.isArray(script) ? script : [script];
+    const result = spawnSync(process.execPath, args, {
         cwd: path.join(__dirname, '..'),
         stdio: 'inherit',
         env: {
@@ -1042,6 +1043,17 @@ async function main() {
 
                 const predictionHistoryService = require('../lib/services/predictionHistoryService');
                 await predictionHistoryService.generateLocalPredictionHistoryFromSimulation(90);
+
+                runNodeScript([
+                    'scripts/backtest-loto-position-risk.js',
+                    '--months=1,3,6',
+                    '--method=riskHold95',
+                    '--betCounts=5,6,7',
+                    '--writeCache=1'
+                ], 'Sinh cache dự đoán Lô 27 vị trí cho API/tab Lô.', {
+                    NODE_OPTIONS: process.env.NODE_OPTIONS || '--max-old-space-size=12288',
+                    BACKTEST_PROGRESS: process.env.BACKTEST_PROGRESS || '0'
+                });
             } catch (simErr) {
                 console.error('⚠️ Lỗi khi tạo cached simulation (không ảnh hưởng các bước khác):', simErr.message);
             }

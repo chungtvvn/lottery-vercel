@@ -13,6 +13,7 @@ export function proxy(request) {
         pathname.startsWith('/js/') ||
         pathname.startsWith('/api/auth/') ||
         pathname.startsWith('/api/prediction/numbers') ||
+        pathname.startsWith('/api/loto/prediction') ||
         pathname === '/logout' ||
         pathname === '/login'
     ) {

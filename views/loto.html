@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lô 27 Vị Trí | XSMB Stats</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body class="antialiased text-slate-800">
+    <header class="nav-glass-blur sticky top-0 z-50 mb-8 w-full">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="flex h-16 items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                        <i class="bi bi-graph-up text-white text-lg"></i>
+                    </div>
+                    <a href="/" class="text-xl font-bold tracking-tight text-slate-900 hover:opacity-90 transition">XSMB <span class="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent font-extrabold">Stats</span></a>
+                </div>
+                <nav class="hidden md:flex space-x-1">
+                    <a href="/statistics" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Thống kê</a>
+                    <a href="/records" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Kỷ lục</a>
+                    <a href="/chain-frequency" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Chọn chuỗi loại</a>
+                    <a href="/simulation" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Lịch sử</a>
+                    <a href="/loto" class="nav-link-custom px-3 py-2 text-sm font-semibold whitespace-nowrap active">Lô</a>
+                    <a href="/scoring" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Tính điểm</a>
+                    <a href="/settings" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">⚙️</a>
+                </nav>
+                <div class="flex md:hidden">
+                    <nav class="flex space-x-1 overflow-x-auto max-w-[300px] py-1 custom-scrollbar">
+                        <a href="/statistics" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Thống kê</a>
+                        <a href="/records" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Kỷ lục</a>
+                        <a href="/chain-frequency" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Chuỗi loại</a>
+                        <a href="/simulation" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Lịch sử</a>
+                        <a href="/loto" class="nav-link-custom px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap active">Lô</a>
+                        <a href="/scoring" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Tính điểm</a>
+                        <a href="/settings" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">⚙️</a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="mx-auto max-w-7xl px-4 pb-12">
+        <section class="mb-6">
+            <p class="text-sm font-semibold uppercase tracking-wide text-indigo-600">Dự đoán Lô theo 27 vị trí</p>
+            <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-900">Lô 5/6/7 số cho ngày tiếp theo</h1>
+            <p class="mt-2 max-w-4xl text-sm leading-6 text-slate-600">
+                Mỗi vị trí trong 27 giải tự chạy logic loại trừ giống Risk Hold, giữ lại 5 số có thể về.
+                Hệ thống cộng điểm theo số vị trí cùng đề xuất, rồi chọn top 5, 6 hoặc 7 số để đánh lô.
+            </p>
+        </section>
+
+        <div id="errorBox" class="mb-6 hidden rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"></div>
+
+        <section id="metaBox" class="mb-6 grid gap-4 md:grid-cols-4"></section>
+
+        <section class="mb-6 grid gap-4 lg:grid-cols-3" id="predictionCards"></section>
+
+        <section class="mb-6 glass-card overflow-hidden">
+            <div class="border-b border-amber-100 bg-amber-50/70 px-4 py-3.5">
+                <h2 class="flex items-center gap-2 text-lg font-bold text-slate-900">
+                    <i class="bi bi-broadcast-pin text-amber-600"></i>
+                    Nhật ký đánh thực tế
+                </h2>
+                <p class="mt-1 text-xs text-slate-600">Các dàn này được lưu cố định từ lúc chức năng Lô được triển khai; khi có kết quả chỉ cập nhật thắng/thua, không tính lại dàn cũ.</p>
+            </div>
+            <div id="liveSummary" class="grid gap-3 border-b border-slate-100 p-4 md:grid-cols-3"></div>
+            <div id="liveList" class="divide-y divide-slate-100"></div>
+        </section>
+
+        <section class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
+            <div class="glass-card overflow-hidden">
+                <div class="border-b border-slate-100 bg-slate-50/60 px-4 py-3.5">
+                    <h2 class="flex items-center gap-2 text-lg font-bold text-slate-900">
+                        <i class="bi bi-calendar-check text-indigo-600"></i>
+                        Backtest gần nhất (tham khảo)
+                    </h2>
+                </div>
+                <div class="overflow-auto custom-scrollbar">
+                    <table class="min-w-full divide-y divide-slate-150 text-sm">
+                        <thead class="bg-slate-100 text-left text-xs font-semibold uppercase text-slate-600">
+                            <tr>
+                                <th class="px-4 py-3">Khoảng</th>
+                                <th class="px-4 py-3">Phương án</th>
+                                <th class="px-4 py-3 text-right">Thắng</th>
+                                <th class="px-4 py-3 text-right">Tỷ lệ</th>
+                                <th class="px-4 py-3 text-right">Hit</th>
+                                <th class="px-4 py-3 text-right">Lãi/lỗ</th>
+                                <th class="px-4 py-3 text-right">ROI</th>
+                            </tr>
+                        </thead>
+                        <tbody id="summaryTable" class="divide-y divide-slate-100 bg-white/40"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <aside class="glass-card overflow-hidden h-fit">
+                <div class="border-b border-slate-100 bg-slate-50/60 px-4 py-3.5">
+                    <h2 class="text-lg font-bold text-slate-900">Nhật ký backtest gần đây</h2>
+                </div>
+                <div id="dailyList" class="max-h-[620px] overflow-auto custom-scrollbar divide-y divide-slate-100"></div>
+            </aside>
+        </section>
+    </main>
+
+    <script src="/js/loto.js"></script>
+</body>
+
+</html>

@@ -52,6 +52,7 @@
                     <a href="/records" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Kỷ lục</a>
                     <a href="/chain-frequency" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Chọn chuỗi loại</a>
                     <a href="/simulation" class="nav-link-custom px-3 py-2 text-sm font-semibold whitespace-nowrap active">Lịch sử</a>
+                    <a href="/loto" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Lô</a>
                     <a href="/scoring" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Tính điểm</a>
                     <a href="/settings" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">⚙️</a>
                 </nav>
@@ -62,6 +63,7 @@
                         <a href="/records" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Kỷ lục</a>
                         <a href="/chain-frequency" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Chuỗi loại</a>
                         <a href="/simulation" class="nav-link-custom px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap active">Lịch sử</a>
+                        <a href="/loto" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Lô</a>
                         <a href="/scoring" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Tính điểm</a>
                         <a href="/settings" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">⚙️</a>
                     </nav>
@@ -95,12 +97,19 @@
             <div class="flex items-center gap-3">
                 <label for="methodSelector" class="text-sm font-bold text-slate-700">Phương pháp dự đoán:</label>
                 <select id="methodSelector" class="glass-input text-sm py-1.5 px-3 block w-72">
-                    <option value="bayesHold70" selected>Bayes log-odds - Hold 70 (Đánh 30) - 20 năm ổn định nhất</option>
-                    <option value="bayesHold60">Bayes log-odds - Hold 60 (Đánh 40) - Lãi tổng cao nhất</option>
-                    <option value="bayesHold80">Bayes log-odds - Hold 80 (Đánh 20)</option>
-                    <option value="bayesHold90">Bayes log-odds - Hold 90 (Đánh 10)</option>
-                    <option value="bayesHold95">Bayes log-odds - Hold 95 (Đánh 5)</option>
+                    <option value="edgeHold90" selected>Edge từng số - Hold 90 (Đánh 10) - lãi tốt nhất 20 năm</option>
+                    <option value="edgeHold85">Edge từng số - Hold 85 (Đánh 15)</option>
+                    <option value="edgeHold80">Edge từng số - Hold 80 (Đánh 20)</option>
+                    <option value="edgeHold75">Edge từng số - Hold 75 (Đánh 25)</option>
+                    <option value="edgeHold70">Edge từng số - Hold 70 (Đánh 30)</option>
+                    <option value="edgeHold65">Edge từng số - Hold 65 (Đánh 35)</option>
+                    <option value="edgeHold60">Edge từng số - Hold 60 (Đánh 40)</option>
                     <option value="riskHold70">Risk Sort - Hold 70 (Đánh 30)</option>
+                    <option value="potentialHold70">Không hình thành trước - Hold 70 (Đánh 30)</option>
+                    <option value="recordFirstHold70">Kỷ lục trước - Hold 70 (Đánh 30)</option>
+                    <option value="recordHold70">Kỷ lục hiệu chỉnh - Hold 70 (Đánh 30)</option>
+                    <option value="scarcityHold70">Tiềm năng hiếm - Hold 70 (Đánh 30)</option>
+                    <option value="wilsonHold70">Wilson/Edge chuỗi - Hold 70 (Đánh 30)</option>
                     <option value="riskHold80">Risk Sort - Hold 80 (Đánh 20)</option>
                     <option value="riskHold90">Risk Sort - Hold 90 (Đánh 10)</option>
                     <option value="riskHold60">Risk Sort - Hold 60 (Đánh 40)</option>
@@ -163,7 +172,7 @@
     </main>
 
     <script src="/js/app-config.js"></script>
-    <script src="/js/prediction-history.js?v=1.0.4"></script>
+    <script src="/js/prediction-history.js?v=1.0.5"></script>
 </body>
 
 </html>
