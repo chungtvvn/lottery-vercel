@@ -386,6 +386,26 @@ function runNodeScript(script, label, extraEnv = {}) {
     }
 }
 
+function hasLotoPredictionCache() {
+    const fsSync = require('fs');
+    const statsDir = path.join(DATA_DIR, 'statistics');
+    return fsSync.existsSync(path.join(statsDir, 'cached_loto_prediction.json'))
+        && fsSync.existsSync(path.join(statsDir, 'cached_loto_live_predictions.json'));
+}
+
+function generateLotoPredictionCache() {
+    runNodeScript([
+        'scripts/backtest-loto-position-risk.js',
+        `--months=${process.env.LOTO_CACHE_MONTHS || '1,3,6'}`,
+        '--method=riskHold95',
+        '--betCounts=5,6,7',
+        '--writeCache=1'
+    ], 'Sinh/đối soát cache dự đoán Lô 27 vị trí cho API/tab Lô.', {
+        NODE_OPTIONS: process.env.NODE_OPTIONS || '--max-old-space-size=12288',
+        BACKTEST_PROGRESS: process.env.BACKTEST_PROGRESS || '0'
+    });
+}
+
 function syncRemoteAfterStaticGeneration() {
     if (process.env.SYNC_R2_AFTER_UPDATE !== '0') {
         runNodeScript('scripts/upload-to-r2.js', 'Upload raw data + statistics gzip lên Cloudflare R2.');
@@ -686,9 +706,13 @@ async function main() {
         }
     }
 
-    if (!hasRawDataChanged(currentArray, finalArray) && !forceRegenerateStats && !isStale) {
+    const lotoCacheMissing = !hasLotoPredictionCache();
+    if (!hasRawDataChanged(currentArray, finalArray) && !forceRegenerateStats && !isStale && !lotoCacheMissing) {
         console.log(`[3] RAW_DATA không đổi (latest=${latestRawDate}, rows=${finalArray.length}, source=${source}). Bỏ qua generate stats để tiết kiệm Action time.`);
         return;
+    }
+    if (lotoCacheMissing) {
+        console.log('[3] Cache Lô đang thiếu, vẫn chạy workflow để sinh cached_loto_prediction.json và cached_loto_live_predictions.json.');
     }
 
     if (hasRawDataChanged(currentArray, finalArray) || forceRegenerateStats || isStale) {
@@ -999,6 +1023,12 @@ async function main() {
             } catch (histErr) {
                 console.error('⚠️ Lỗi khi đồng bộ lịch sử dự đoán:', histErr.message);
             }
+
+            try {
+                generateLotoPredictionCache();
+            } catch (lotoErr) {
+                console.error('⚠️ Lỗi khi sinh cache Lô cho DB mode:', lotoErr.message);
+            }
         }
 
         if (!dbStatsActive) {
@@ -1044,18 +1074,14 @@ async function main() {
                 const predictionHistoryService = require('../lib/services/predictionHistoryService');
                 await predictionHistoryService.generateLocalPredictionHistoryFromSimulation(90);
 
-                runNodeScript([
-                    'scripts/backtest-loto-position-risk.js',
-                    '--months=1,3,6',
-                    '--method=riskHold95',
-                    '--betCounts=5,6,7',
-                    '--writeCache=1'
-                ], 'Sinh cache dự đoán Lô 27 vị trí cho API/tab Lô.', {
-                    NODE_OPTIONS: process.env.NODE_OPTIONS || '--max-old-space-size=12288',
-                    BACKTEST_PROGRESS: process.env.BACKTEST_PROGRESS || '0'
-                });
             } catch (simErr) {
                 console.error('⚠️ Lỗi khi tạo cached simulation (không ảnh hưởng các bước khác):', simErr.message);
+            }
+
+            try {
+                generateLotoPredictionCache();
+            } catch (lotoErr) {
+                console.error('⚠️ Lỗi khi sinh cache Lô (không ảnh hưởng các cache khác):', lotoErr.message);
             }
 
             console.log(' -> Tạo Cached Chain Frequency cho R2/static JSON...');

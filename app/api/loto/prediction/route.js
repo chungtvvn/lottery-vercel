@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -46,6 +48,17 @@ function filterCount(payload, countParam) {
     };
 }
 
+function readBundledLotoCache() {
+    try {
+        const filePath = path.join(process.cwd(), 'lib', 'data', 'statistics', 'cached_loto_prediction.json');
+        if (!fs.existsSync(filePath)) return null;
+        return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    } catch (error) {
+        console.error('[LotoPredictionAPI] Bundled cache fallback failed:', error.message);
+        return null;
+    }
+}
+
 export async function GET(request) {
     try {
         if (!isAuthorized(request)) {
@@ -57,7 +70,8 @@ export async function GET(request) {
 
         const { loadJsonWithSupabaseFallback } = require('@/lib/data-access');
         const url = new URL(request.url);
-        const payload = await loadJsonWithSupabaseFallback('cached_loto_prediction.json');
+        const payload = await loadJsonWithSupabaseFallback('cached_loto_prediction.json')
+            || readBundledLotoCache();
 
         if (!payload) {
             return NextResponse.json(
