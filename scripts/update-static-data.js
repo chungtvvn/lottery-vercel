@@ -53,6 +53,18 @@ function getLatestDateValue(rows) {
     return latest && latest.date ? String(latest.date).substring(0, 10) : null;
 }
 
+function normalizeDateValue(value) {
+    if (!value) return null;
+    const text = String(value).trim();
+    const ddmmyyyy = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (ddmmyyyy) {
+        return `${ddmmyyyy[3]}-${String(ddmmyyyy[2]).padStart(2, '0')}-${String(ddmmyyyy[1]).padStart(2, '0')}`;
+    }
+    const date = new Date(text);
+    if (Number.isNaN(date.getTime())) return null;
+    return date.toISOString().slice(0, 10);
+}
+
 function hasRawDataChanged(currentRows, nextRows) {
     if (!Array.isArray(currentRows) || !Array.isArray(nextRows)) return true;
     if (currentRows.length !== nextRows.length) return true;
@@ -395,22 +407,40 @@ function runNodeScript(script, label, extraEnv = {}, options = {}) {
     }
 }
 
-function hasLotoPredictionCache() {
+function hasLotoPredictionCache(expectedLatestDate = null) {
     const fsSync = require('fs');
     const statsDir = path.join(DATA_DIR, 'statistics');
-    return fsSync.existsSync(path.join(statsDir, 'cached_loto_prediction.json'))
-        && fsSync.existsSync(path.join(statsDir, 'cached_loto_live_predictions.json'));
+    const cachePath = path.join(statsDir, 'cached_loto_prediction.json');
+    const livePath = path.join(statsDir, 'cached_loto_live_predictions.json');
+    if (!fsSync.existsSync(cachePath) || !fsSync.existsSync(livePath)) return false;
+    if (!expectedLatestDate) return true;
+
+    try {
+        const cache = JSON.parse(fsSync.readFileSync(cachePath, 'utf8'));
+        const latest = normalizeDateValue(cache?.latestDataDate || cache?.nextPrediction?.dataIsoDate);
+        if (latest === expectedLatestDate) return true;
+        console.log(`[Cache Check] Local Lô cache stale: latest=${latest || 'unknown'}, expected=${expectedLatestDate}.`);
+        return false;
+    } catch (error) {
+        console.log(`[Cache Check] Local Lô cache unreadable: ${error.message}`);
+        return false;
+    }
 }
 
-async function hasLotoPredictionCacheOnR2() {
+async function hasLotoPredictionCacheOnR2(expectedLatestDate = null) {
     if (!getR2PublicUrl() || process.env.UPDATE_CHECK_R2_LOTO === '0') return true;
     try {
         const cache = await readStatsJsonFromR2('cached_loto_prediction.json');
         const live = await readStatsJsonFromR2('cached_loto_live_predictions.json');
-        const cacheLatest = cache && (cache.latestDataDate || cache.nextPrediction?.dataIsoDate);
-        const liveLatest = live && live.latestDataDate;
+        const cacheLatest = normalizeDateValue(cache && (cache.latestDataDate || cache.nextPrediction?.dataIsoDate));
+        const liveLatest = normalizeDateValue(live && live.latestDataDate);
         console.log(`[Cache Check] R2 Lô cache OK: cached_loto latest=${cacheLatest || 'unknown'}, live latest=${liveLatest || 'unknown'}.`);
-        return Boolean(cache && live);
+        if (!cache || !live) return false;
+        if (expectedLatestDate && cacheLatest !== expectedLatestDate) {
+            console.log(`[Cache Check] R2 Lô cache stale: latest=${cacheLatest || 'unknown'}, expected=${expectedLatestDate}.`);
+            return false;
+        }
+        return true;
     } catch (error) {
         console.log(`[Cache Check] R2 Lô cache missing/stale: ${error.message}`);
         return false;
@@ -435,9 +465,9 @@ function generateLotoPredictionCache() {
     }, timeoutMs > 0 ? { timeoutMs } : {});
 }
 
-function uploadR2StaticData(label = 'Upload raw data + statistics gzip lên Cloudflare R2.') {
+function uploadR2StaticData(label = 'Upload raw data + statistics gzip lên Cloudflare R2.', extraEnv = {}) {
     if (process.env.SYNC_R2_AFTER_UPDATE !== '0') {
-        runNodeScript('scripts/upload-to-r2.js', label);
+        runNodeScript('scripts/upload-to-r2.js', label, extraEnv);
         console.log('[6] Upload R2 thành công.');
         return true;
     } else {
@@ -471,6 +501,12 @@ function syncRemoteAfterStaticGeneration() {
 
     runNodeScript(script, label, { LOTTERY_DATA_SOURCE: 'local' });
     console.log('[6] Sync Supabase thành công.');
+}
+
+function uploadOnlyLotoCaches() {
+    uploadR2StaticData('Upload riêng cache Lô lên Cloudflare R2.', {
+        R2_UPLOAD_ONLY_STATS_FILES: 'cached_loto_prediction.json,cached_loto_live_predictions.json'
+    });
 }
 
 async function fetchLatestXsmbResultWithRetry(latestLocalDate) {
@@ -752,9 +788,28 @@ async function main() {
         }
     }
 
-    const lotoCacheMissing = !hasLotoPredictionCache();
-    const r2LotoCacheMissing = !(await hasLotoPredictionCacheOnR2());
-    if (!hasRawDataChanged(currentArray, finalArray) && !forceRegenerateStats && !isStale && !lotoCacheMissing && !r2LotoCacheMissing) {
+    const rawDataChanged = hasRawDataChanged(currentArray, finalArray);
+    const lotoCacheMissing = !hasLotoPredictionCache(latestRawDate);
+    const r2LotoCacheMissing = !(await hasLotoPredictionCacheOnR2(latestRawDate));
+    const onlyLotoCacheNeedsRefresh = !rawDataChanged && !forceRegenerateStats && !isStale && (lotoCacheMissing || r2LotoCacheMissing);
+
+    if (onlyLotoCacheNeedsRefresh) {
+        if (localRawOutOfSync) {
+            await fs.writeFile(JSON_FILE, JSON.stringify(finalArray, null, 0), 'utf-8');
+            console.log(`[3] Đồng bộ raw local tạm cho Lô (${latestLocalFileDate || 'none'} -> ${latestRawDate}).`);
+        }
+        console.log('[3] Stats R2 đã mới, chỉ sinh/đối soát cache Lô và upload 2 file Lô.');
+        try {
+            generateLotoPredictionCache();
+            uploadOnlyLotoCaches();
+        } catch (lotoErr) {
+            console.error('⚠️ Lỗi khi sinh/upload cache Lô:', lotoErr.message);
+            process.exit(1);
+        }
+        return;
+    }
+
+    if (!rawDataChanged && !forceRegenerateStats && !isStale && !lotoCacheMissing && !r2LotoCacheMissing) {
         if (localRawOutOfSync) {
             await fs.writeFile(JSON_FILE, JSON.stringify(finalArray, null, 0), 'utf-8');
             console.log(`[3] RAW_DATA R2 đã mới nhất; chỉ đồng bộ file local tạm (${latestLocalFileDate || 'none'} -> ${latestRawDate}) rồi bỏ qua generate stats.`);
@@ -769,7 +824,7 @@ async function main() {
         console.log('[3] Cache Lô trên R2 đang thiếu, vẫn chạy workflow để sinh/upload lại cached_loto_prediction.json và cached_loto_live_predictions.json.');
     }
 
-    if (hasRawDataChanged(currentArray, finalArray) || forceRegenerateStats || isStale || localRawOutOfSync || r2LotoCacheMissing || lotoCacheMissing) {
+    if (rawDataChanged || forceRegenerateStats || isStale || localRawOutOfSync || r2LotoCacheMissing || lotoCacheMissing) {
         await fs.writeFile(JSON_FILE, JSON.stringify(finalArray, null, 0), 'utf-8');
         console.log(`[3] Ghi file xsmb-2-digits.json (RAW_DATA) thành công! (${finalArray.length} bản ghi, latest=${latestRawDate}, source=${source})`);
     } else {
