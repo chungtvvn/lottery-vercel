@@ -47,10 +47,11 @@
     <main class="mx-auto max-w-7xl px-4 pb-12">
         <section class="mb-6">
             <p class="text-sm font-semibold uppercase tracking-wide text-indigo-600">Dự đoán Lô theo 27 vị trí</p>
-            <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-900">Lô 5/6/7 số cho ngày tiếp theo</h1>
+            <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-900">Lô 3/4/5/6/7 số cho ngày tiếp theo</h1>
             <p class="mt-2 max-w-4xl text-sm leading-6 text-slate-600">
-                Mỗi vị trí trong 27 giải chạy phương pháp loại trừ tự động giống giải ĐB (ngưỡng priority &ge; 85).
-                Hệ thống cộng điểm theo số vị trí đồng thuận giữ lại (không loại trừ), rồi chọn top 5, 6 hoặc 7 số để dự đoán.
+                Mỗi vị trí trong 27 giải tự chạy logic loại trừ giống giải ĐB với phương pháp Risk Hold 75:
+                loại 75 số rủi ro cao, giữ lại 25 số có thể về cho chính vị trí đó.
+                Hệ thống cộng điểm theo số vị trí cùng giữ lại rồi chọn top 3, 4, 5, 6 hoặc 7 số để dự đoán.
             </p>
         </section>
 
@@ -68,7 +69,7 @@
                 </h2>
                 <p class="mt-1 text-xs text-slate-600">Các dàn này được lưu cố định từ lúc chức năng Lô được triển khai; khi có kết quả chỉ cập nhật thắng/thua, không tính lại dàn cũ.</p>
             </div>
-            <div id="liveSummary" class="grid gap-3 border-b border-slate-100 p-4 md:grid-cols-3"></div>
+            <div id="liveSummary" class="grid gap-3 border-b border-slate-100 p-4 md:grid-cols-3 xl:grid-cols-5"></div>
             <div id="liveList" class="divide-y divide-slate-100"></div>
         </section>
 

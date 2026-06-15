@@ -437,7 +437,8 @@ function runPositionChild({ key, outPath, maxMonths, methodId, betCounts, stakeP
 
         let stdout = '';
         let stderr = '';
-        const timeoutMs = Math.max(60_000, Number(process.env.LOTO_POSITION_TIMEOUT_MS || (skipBacktest ? 300_000 : 0)) || 0);
+        const timeoutValue = Number(process.env.LOTO_POSITION_TIMEOUT_MS || (skipBacktest ? 300_000 : 0)) || 0;
+        const timeoutMs = timeoutValue > 0 ? Math.max(60_000, timeoutValue) : 0;
         const timer = timeoutMs > 0 ? setTimeout(() => {
             child.kill('SIGTERM');
             reject(new Error(`Child ${key} quá thời gian cho phép (${timeoutMs}ms)`));
@@ -511,8 +512,8 @@ async function main() {
         .filter(Boolean);
     const maxMonths = Math.max(...monthsList);
     const days = Math.round(maxMonths * 30.4375);
-    const methodId = String(args.get('method') || 'dropoff85');
-    const betCounts = String(args.get('betCounts') || '5,6,7')
+    const methodId = String(args.get('method') || 'riskHold75');
+    const betCounts = String(args.get('betCounts') || '3,4,5,6,7')
         .split(',')
         .map(value => Math.max(1, Math.min(30, Number(value.trim()) || 0)))
         .filter(Boolean);

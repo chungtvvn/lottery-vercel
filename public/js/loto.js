@@ -42,7 +42,7 @@
     function renderPredictions(data) {
         const root = document.getElementById('predictionCards');
         const predictions = data.nextPrediction?.predictions || {};
-        root.innerHTML = [5, 6, 7].map(count => {
+        root.innerHTML = [3, 4, 5, 6, 7].map(count => {
             const item = predictions[`top${count}`] || {};
             const supportRows = (item.support || []).map(entry => `
                 <div class="flex items-center justify-between gap-3 rounded-lg bg-white/60 px-3 py-2 text-xs">
@@ -131,7 +131,7 @@
         const summaryRoot = document.getElementById('liveSummary');
         const listRoot = document.getElementById('liveList');
         const summary = live.summary || {};
-        summaryRoot.innerHTML = [5, 6, 7].map(count => {
+        summaryRoot.innerHTML = [3, 4, 5, 6, 7].map(count => {
             const item = summary[`top${count}`] || {};
             return `
                 <div class="rounded-xl border border-amber-100 bg-white/70 p-4">
@@ -150,8 +150,8 @@
                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                 : 'bg-amber-50 text-amber-700 border-amber-200';
             const actual = row.actual ? Object.keys(row.actual).sort().join(', ') : '-';
-            const top7 = row.predictions?.top7 || {};
-            const method = row.methods?.top7 || {};
+            const top7 = row.predictions?.top7 || row.predictions?.top6 || row.predictions?.top5 || row.predictions?.top4 || row.predictions?.top3 || {};
+            const method = row.methods?.top7 || row.methods?.top6 || row.methods?.top5 || row.methods?.top4 || row.methods?.top3 || {};
             return `
                 <article class="p-4 ${row.status === 'pending' ? 'bg-amber-50/30' : 'bg-white/30'}">
                     <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">

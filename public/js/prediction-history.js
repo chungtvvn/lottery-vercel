@@ -3,12 +3,78 @@
     const state = {
         history: [],
         selectedIndex: -1,
-        selectedMethod: 'edgeHold90',
+        selectedMethod: null,
         betWinMultiplier: 84,
         holdWinMultiplier: 0.705
     };
     const BET_PER_NUMBER_K = 1000;
     const HOLD_LOSS_MULTIPLIER = 70;
+    const METHOD_META = {
+        edgeHold90: {
+            label: 'Edge từng số - Hold 90 (Đánh 10)',
+            description: 'Chấm điểm rủi ro theo từng số bằng edge/lift từ các chuỗi kích hoạt, loại 90 số có rủi ro cao nhất và đánh 10 số còn lại.'
+        },
+        edgeHold85: {
+            label: 'Edge từng số - Hold 85 (Đánh 15)',
+            description: 'Biến thể edge từng số nhưng chỉ loại 85 số, giữ 15 số đánh để tăng độ phủ so với Hold 90.'
+        },
+        edgeHold80: {
+            label: 'Edge từng số - Hold 80 (Đánh 20)',
+            description: 'Loại 80 số theo edge từng số và đánh 20 số còn lại; cân bằng giữa xác suất trúng và chi phí đánh.'
+        },
+        edgeHold75: {
+            label: 'Edge từng số - Hold 75 (Đánh 25)',
+            description: 'Loại 75 số theo edge từng số, giữ 25 số đánh; độ phủ rộng hơn nhưng chi phí cao hơn.'
+        },
+        edgeHold70: {
+            label: 'Edge từng số - Hold 70 (Đánh 30)',
+            description: 'Loại 70 số theo edge từng số, đánh 30 số còn lại; ưu tiên độ phủ.'
+        },
+        edgeHold65: {
+            label: 'Edge từng số - Hold 65 (Đánh 35)',
+            description: 'Loại 65 số theo edge từng số, đánh 35 số còn lại; dùng để so sánh khi cần tăng số đánh.'
+        },
+        edgeHold60: {
+            label: 'Edge từng số - Hold 60 (Đánh 40)',
+            description: 'Loại 60 số theo edge từng số, đánh 40 số còn lại; độ phủ cao nhất trong nhóm edge.'
+        },
+        riskHold70: {
+            label: 'Risk Sort - Hold 70 (Đánh 30)',
+            description: 'Sắp xếp các chuỗi dự đoán theo rủi ro từ cao xuống thấp, lấy chuỗi từ trên xuống tới khoảng 70 số loại trừ.'
+        },
+        riskHold80: {
+            label: 'Risk Sort - Hold 80 (Đánh 20)',
+            description: 'Sắp xếp chuỗi theo rủi ro và loại khoảng 80 số, đánh 20 số còn lại.'
+        },
+        riskHold90: {
+            label: 'Risk Sort - Hold 90 (Đánh 10)',
+            description: 'Sắp xếp chuỗi theo rủi ro và loại khoảng 90 số, đánh 10 số còn lại.'
+        },
+        riskHold60: {
+            label: 'Risk Sort - Hold 60 (Đánh 40)',
+            description: 'Sắp xếp chuỗi theo rủi ro và loại khoảng 60 số, đánh 40 số còn lại.'
+        },
+        potentialHold70: {
+            label: 'Không hình thành trước - Hold 70',
+            description: 'Ưu tiên các chuỗi tiềm năng có xác suất không hình thành cao trước, sau đó loại đến khoảng 70 số.'
+        },
+        recordFirstHold70: {
+            label: 'Kỷ lục trước - Hold 70',
+            description: 'Ưu tiên chuỗi đạt/vượt kỷ lục lịch sử trước các nhóm rủi ro khác, loại đến khoảng 70 số.'
+        },
+        recordHold70: {
+            label: 'Kỷ lục hiệu chỉnh - Hold 70',
+            description: 'Dùng điểm kỷ lục đã hiệu chỉnh theo mẫu, tần suất và nhịp xuất hiện để loại khoảng 70 số.'
+        },
+        scarcityHold70: {
+            label: 'Tiềm năng hiếm - Hold 70',
+            description: 'Ưu tiên các chuỗi tiềm năng hiếm, đặc biệt nhóm có HT/Target thấp, rồi loại đến khoảng 70 số.'
+        },
+        wilsonHold70: {
+            label: 'Wilson/Edge chuỗi - Hold 70',
+            description: 'Xếp chuỗi theo Wilson lower bound và edge để giảm ảo giác do mẫu ít, loại khoảng 70 số.'
+        }
+    };
 
     function getActiveSummary(run, selectedMethod) {
         const sum = run.summary || {};
@@ -96,6 +162,67 @@
             : `${Number(profit).toLocaleString('vi-VN')}K`;
         const colorClass = profit > 0 ? 'text-emerald-600 font-semibold' : (profit < 0 ? 'text-rose-600 font-semibold' : 'text-slate-600');
         return `<span class="${colorClass}">${formatted}</span>`;
+    }
+
+    function getMethodLabel(methodId) {
+        return METHOD_META[methodId]?.label || methodId;
+    }
+
+    function getMethodDescription(methodId) {
+        return METHOD_META[methodId]?.description || 'Phương pháp này dùng snapshot point-in-time của ngày dự đoán để tạo danh sách số đánh và số ôm/loại trừ.';
+    }
+
+    function getSortedMethodStats(history) {
+        const stats = new Map();
+        for (const run of history || []) {
+            const methods = run.summary?.methods || {};
+            for (const [methodId, rawSummary] of Object.entries(methods)) {
+                if (!stats.has(methodId)) {
+                    stats.set(methodId, { methodId, days: 0, profit: 0, wins: 0, losses: 0 });
+                }
+                const item = stats.get(methodId);
+                const recalculated = recalculateSummary(rawSummary);
+                if (!recalculated || !recalculated.resolved || recalculated.profit === null || recalculated.profit === undefined) continue;
+                item.days += 1;
+                item.profit += Number(recalculated.profit || 0);
+                if (Number(recalculated.profit || 0) > 0) item.wins += 1;
+                if (Number(recalculated.profit || 0) < 0) item.losses += 1;
+            }
+        }
+        return [...stats.values()].sort((a, b) => {
+            if (b.profit !== a.profit) return b.profit - a.profit;
+            if (b.days !== a.days) return b.days - a.days;
+            return getMethodLabel(a.methodId).localeCompare(getMethodLabel(b.methodId), 'vi');
+        });
+    }
+
+    function renderMethodSelector() {
+        const methodSelector = el('methodSelector');
+        if (!methodSelector) return;
+        const sorted = getSortedMethodStats(state.history);
+        const available = sorted.length > 0
+            ? sorted
+            : [...methodSelector.options].map(option => ({ methodId: option.value, days: 0, profit: 0, wins: 0, losses: 0 }));
+        const currentExists = state.selectedMethod && available.some(item => item.methodId === state.selectedMethod);
+        if (!currentExists && available.length > 0) {
+            state.selectedMethod = available[0].methodId;
+        }
+        methodSelector.innerHTML = available.map(item => {
+            const profitText = item.days > 0 ? ` · ${item.profit >= 0 ? '+' : ''}${Number(item.profit).toLocaleString('vi-VN')}K` : '';
+            const daysText = item.days > 0 ? ` · ${item.wins}/${item.days} ngày lãi` : '';
+            return `<option value="${escapeHtml(item.methodId)}"${item.methodId === state.selectedMethod ? ' selected' : ''}>${escapeHtml(getMethodLabel(item.methodId))}${profitText}${daysText}</option>`;
+        }).join('');
+        renderMethodDescription();
+    }
+
+    function renderMethodDescription() {
+        const box = el('methodDescription');
+        if (!box) return;
+        const stats = getSortedMethodStats(state.history).find(item => item.methodId === state.selectedMethod);
+        const statsText = stats && stats.days > 0
+            ? ` Lịch sử hiện có: ${stats.wins}/${stats.days} ngày lãi, tổng ${stats.profit >= 0 ? '+' : ''}${Number(stats.profit).toLocaleString('vi-VN')}K.`
+            : '';
+        box.innerHTML = `<span class="font-bold">${escapeHtml(getMethodLabel(state.selectedMethod))}:</span> ${escapeHtml(getMethodDescription(state.selectedMethod))}${escapeHtml(statsText)}`;
     }
 
     function cleanPatternTitle(title) {
@@ -260,6 +387,7 @@
             const data = await historyRes.json();
             if (data && data.success && Array.isArray(data.history)) {
                 state.history = data.history;
+                renderMethodSelector();
                 renderDashboard();
             } else {
                 showError((data && data.error) || 'Không thể tải lịch sử dự đoán.');
@@ -544,6 +672,7 @@
         if (methodSelector) {
             methodSelector.addEventListener('change', (e) => {
                 state.selectedMethod = e.target.value;
+                renderMethodDescription();
                 renderDashboard();
             });
         }
@@ -553,6 +682,7 @@
                 const nextValue = Number(e.target.value);
                 if (Number.isFinite(nextValue)) {
                     state.betWinMultiplier = Math.max(70, Math.min(90, Math.round(nextValue)));
+                    renderMethodSelector();
                     renderDashboard();
                 }
             });
@@ -563,6 +693,7 @@
                 const nextValue = Number(e.target.value);
                 if (Number.isFinite(nextValue)) {
                     state.holdWinMultiplier = Math.max(0.5, Math.min(1, Math.round(nextValue * 1000) / 1000));
+                    renderMethodSelector();
                     renderDashboard();
                 }
             });

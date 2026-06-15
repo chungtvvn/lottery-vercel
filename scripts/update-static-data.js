@@ -17,6 +17,8 @@ const XOSO_MAX_WAIT_MINUTES = readNumberEnv('XOSO_MAX_WAIT_MINUTES', WAIT_FOR_NE
 const XOSO_RETRY_INTERVAL_SECONDS = readNumberEnv('XOSO_RETRY_INTERVAL_SECONDS', 60, 5);
 const LOTO_STAKE_PER_NUMBER_K = 2300;
 const LOTO_PAYOUT_PER_HIT_K = 8000;
+const LOTO_METHOD_ID = 'riskHold75';
+const LOTO_BET_COUNTS = [3, 4, 5, 6, 7];
 
 function readNumberEnv(name, fallback, minValue) {
     const parsed = Number(process.env[name]);
@@ -71,7 +73,14 @@ function isLotoPredictionFormulaCurrent(cache) {
     const config = cache?.config || cache?.livePredictions?.config || {};
     const stake = Number(config.stakePerNumberK);
     const payout = Number(config.payoutPerHitK);
-    return stake === LOTO_STAKE_PER_NUMBER_K && payout === LOTO_PAYOUT_PER_HIT_K;
+    const methodId = String(config.methodId || cache?.nextPrediction?.methodId || '');
+    const betCounts = Array.isArray(config.betCounts) ? config.betCounts.map(Number) : [];
+    const betCountsOk = betCounts.length === LOTO_BET_COUNTS.length
+        && LOTO_BET_COUNTS.every((count, index) => count === betCounts[index]);
+    return stake === LOTO_STAKE_PER_NUMBER_K
+        && payout === LOTO_PAYOUT_PER_HIT_K
+        && methodId === LOTO_METHOD_ID
+        && betCountsOk;
 }
 
 function hasRawDataChanged(currentRows, nextRows) {
@@ -430,7 +439,7 @@ function hasLotoPredictionCache(expectedLatestDate = null) {
         if (latest === expectedLatestDate && isLotoPredictionFormulaCurrent(cache)) return true;
         if (!isLotoPredictionFormulaCurrent(cache)) {
             const config = cache?.config || {};
-            console.log(`[Cache Check] Local Lô cache formula stale: stake=${config.stakePerNumberK || 'unknown'}, payout=${config.payoutPerHitK || 'unknown'}, expected=${LOTO_STAKE_PER_NUMBER_K}/${LOTO_PAYOUT_PER_HIT_K}.`);
+            console.log(`[Cache Check] Local Lô cache stale config: method=${config.methodId || cache?.nextPrediction?.methodId || 'unknown'}, betCounts=${(config.betCounts || []).join(',') || 'unknown'}, stake=${config.stakePerNumberK || 'unknown'}, payout=${config.payoutPerHitK || 'unknown'}, expected=${LOTO_METHOD_ID}/${LOTO_BET_COUNTS.join(',')}/${LOTO_STAKE_PER_NUMBER_K}/${LOTO_PAYOUT_PER_HIT_K}.`);
             return false;
         }
         console.log(`[Cache Check] Local Lô cache stale: latest=${latest || 'unknown'}, expected=${expectedLatestDate}.`);
@@ -451,7 +460,7 @@ async function hasLotoPredictionCacheOnR2(expectedLatestDate = null) {
         if (!cache || !live) return false;
         if (!isLotoPredictionFormulaCurrent(cache)) {
             const config = cache?.config || {};
-            console.log(`[Cache Check] R2 Lô cache formula stale: stake=${config.stakePerNumberK || 'unknown'}, payout=${config.payoutPerHitK || 'unknown'}, expected=${LOTO_STAKE_PER_NUMBER_K}/${LOTO_PAYOUT_PER_HIT_K}.`);
+            console.log(`[Cache Check] R2 Lô cache stale config: method=${config.methodId || cache?.nextPrediction?.methodId || 'unknown'}, betCounts=${(config.betCounts || []).join(',') || 'unknown'}, stake=${config.stakePerNumberK || 'unknown'}, payout=${config.payoutPerHitK || 'unknown'}, expected=${LOTO_METHOD_ID}/${LOTO_BET_COUNTS.join(',')}/${LOTO_STAKE_PER_NUMBER_K}/${LOTO_PAYOUT_PER_HIT_K}.`);
             return false;
         }
         console.log(`[Cache Check] R2 Lô cache OK: cached_loto latest=${cacheLatest || 'unknown'}, live latest=${liveLatest || 'unknown'}.`);
@@ -472,8 +481,8 @@ function generateLotoPredictionCache() {
     runNodeScript([
         'scripts/backtest-loto-position-risk.js',
         `--months=${process.env.LOTO_CACHE_MONTHS || '1,3,6'}`,
-        '--method=dropoff85',
-        '--betCounts=5,6,7',
+        `--method=${LOTO_METHOD_ID}`,
+        `--betCounts=${LOTO_BET_COUNTS.join(',')}`,
         `--stakeK=${LOTO_STAKE_PER_NUMBER_K}`,
         `--payoutK=${LOTO_PAYOUT_PER_HIT_K}`,
         '--writeCache=1',
