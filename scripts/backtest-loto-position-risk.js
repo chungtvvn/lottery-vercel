@@ -129,6 +129,7 @@ function finalizeSummary(summary) {
     const { currentType, currentLength, ...rest } = summary;
     return {
         ...rest,
+        winRate: rest.days > 0 ? rest.wins / rest.days : 0,
         hitRate: rest.days > 0 ? rest.hitDays / rest.days : 0,
         roi: rest.stakeK > 0 ? rest.profitK / rest.stakeK : 0,
         avgHitsPerDay: rest.days > 0 ? rest.totalHits / rest.days : 0
@@ -151,6 +152,7 @@ async function runPositionBacktest(rawData, key, options) {
         compactDetails: true,
         selectedStreakDetailLimit: 0,
         betWinMultiplier: 84,
+        exactTargetExcluded: true,
         clearHistoryCacheInterval: 30
     });
     if (result.error) throw new Error(`${key}: ${result.error}`);
@@ -182,7 +184,8 @@ async function buildPositionNextPrediction(rawData, key, options) {
         compactDetails: true,
         selectedStreakDetailLimit: 0,
         forceComputeQuickStats: true,
-        betWinMultiplier: 84
+        betWinMultiplier: 84,
+        exactTargetExcluded: true
     });
     const method = next?.methods?.[options.methodId] || {};
     return {
@@ -247,18 +250,44 @@ function readJsonIfExists(filePath, fallback) {
     }
 }
 
+function hasAllBetCountKeys(container, betCounts) {
+    if (!container || typeof container !== 'object') return false;
+    return betCounts.every(count => Boolean(container[`top${count}`]));
+}
+
+function isReusableBacktestCache(cache, options) {
+    if (!cache || !cache.config || cache.config.skipBacktest === true) return false;
+    const cfg = cache.config;
+    const configuredCounts = Array.isArray(cfg.betCounts) ? cfg.betCounts.map(Number) : [];
+    const countsMatch = configuredCounts.length === options.betCounts.length
+        && options.betCounts.every((count, index) => count === configuredCounts[index]);
+    if (!countsMatch) return false;
+    if (String(cfg.methodId || '') !== String(options.methodId || '')) return false;
+    if (Number(cfg.stakePerNumberK) !== Number(options.stakePerNumberK)) return false;
+    if (Number(cfg.payoutPerHitK) !== Number(options.payoutPerHitK)) return false;
+    if (cfg.exactTargetExcluded !== true) return false;
+    if (!hasAllBetCountKeys(cache.summariesByWindow?.[`${options.maxMonths}m`] || Object.values(cache.summariesByWindow || {})[0], options.betCounts)) return false;
+    const recentDaily = Array.isArray(cache.recentDaily) ? cache.recentDaily : [];
+    if (recentDaily.length > 0) {
+        const latestWithMethods = recentDaily.slice().reverse().find(row => row && row.methods);
+        if (latestWithMethods && !hasAllBetCountKeys(latestWithMethods.methods, options.betCounts)) return false;
+    }
+    return true;
+}
+
 function evaluateNumbers(numbers, actualCounts, stakePerNumberK, payoutPerHitK) {
     const betNumbers = (numbers || []).map(value => normalizeNumber(value)).filter(value => value !== null);
     const hits = betNumbers.reduce((sum, number) => sum + (actualCounts.get(number) || 0), 0);
     const stakeK = betNumbers.length * stakePerNumberK;
     const payoutK = hits * payoutPerHitK;
+    const profitK = payoutK - stakeK;
     return {
         betNumbers: betNumbers.map(formatNumber),
         hits,
         stakeK,
         payoutK,
-        profitK: payoutK - stakeK,
-        result: hits > 0 ? 'win' : 'loss'
+        profitK,
+        result: profitK > 0 ? 'win' : (profitK < 0 ? 'loss' : 'flat')
     };
 }
 
@@ -318,12 +347,12 @@ function summarizeLivePredictions(livePayload, betCounts) {
             if (!method) continue;
             const profitK = method.profitK || 0;
             sum.days += 1;
-            if ((method.hits || 0) > 0) {
+            if (profitK > 0) {
                 sum.wins += 1;
-                sum.hitDays += 1;
-            } else {
+            } else if (profitK < 0) {
                 sum.losses += 1;
             }
+            if ((method.hits || 0) > 0) sum.hitDays += 1;
             sum.totalHits += method.hits || 0;
             sum.stakeK += method.stakeK || 0;
             sum.payoutK += method.payoutK || 0;
@@ -337,13 +366,10 @@ function summarizeLivePredictions(livePayload, betCounts) {
     return summary;
 }
 
-function upsertNextLivePrediction(livePayload, nextPrediction, betCounts) {
+function buildLivePredictionRecord(nextPrediction, betCounts) {
     const predictionIsoDate = normalizeDateText(nextPrediction?.predictionDate);
-    if (!predictionIsoDate) return false;
-    const exists = (livePayload.predictions || []).some(item => item.predictionIsoDate === predictionIsoDate);
-    if (exists) return false;
-
-    livePayload.predictions.push({
+    if (!predictionIsoDate) return null;
+    return {
         type: 'real',
         status: 'pending',
         createdAt: new Date().toISOString(),
@@ -362,7 +388,71 @@ function upsertNextLivePrediction(livePayload, nextPrediction, betCounts) {
             betCounts
         ),
         positionPredictions: nextPrediction.positionPredictions || []
+    };
+}
+
+function sameFormattedNumberList(left, right) {
+    const a = (left || []).map(value => normalizeNumber(value)).filter(value => value !== null).map(formatNumber);
+    const b = (right || []).map(value => normalizeNumber(value)).filter(value => value !== null).map(formatNumber);
+    if (a.length !== b.length) return false;
+    return a.every((value, index) => value === b[index]);
+}
+
+function hasCurrentPositionPredictions(item, nextPrediction) {
+    const current = Array.isArray(item.positionPredictions) ? item.positionPredictions : [];
+    const expected = Array.isArray(nextPrediction?.positionPredictions) ? nextPrediction.positionPredictions : [];
+    if (current.length !== expected.length || expected.length !== PRIZE_KEYS.length) return false;
+    const currentByKey = new Map(current.map(entry => [entry.positionKey, entry]));
+    for (const expectedEntry of expected) {
+        const currentEntry = currentByKey.get(expectedEntry.positionKey);
+        if (!currentEntry) return false;
+        if (Number(currentEntry.betCount) !== Number(expectedEntry.betCount)) return false;
+        if (Number(currentEntry.excludedCount) !== Number(expectedEntry.excludedCount)) return false;
+        if (!sameFormattedNumberList(currentEntry.numbers, expectedEntry.numbers)) return false;
+    }
+    return true;
+}
+
+function isPendingLivePredictionCurrent(item, nextPrediction, betCounts) {
+    if (!item || item.status !== 'pending') return true;
+    if (String(item.methodId || '') !== String(nextPrediction?.methodId || '')) return false;
+    const expectedSets = buildPredictionSetsFromRanked(
+        (nextPrediction.ranked || []).map(entry => ({
+            number: normalizeNumber(entry.number),
+            supportCount: entry.supportCount,
+            positions: entry.positions || []
+        })),
+        betCounts
+    );
+    const hasExpectedTopSets = betCounts.every(count => {
+        const key = `top${count}`;
+        const numbers = item.predictions?.[key]?.numbers;
+        const expectedNumbers = expectedSets?.[key]?.numbers;
+        return Array.isArray(numbers)
+            && numbers.length === count
+            && sameFormattedNumberList(numbers, expectedNumbers);
     });
+    return hasExpectedTopSets && hasCurrentPositionPredictions(item, nextPrediction);
+}
+
+function upsertNextLivePrediction(livePayload, nextPrediction, betCounts) {
+    const record = buildLivePredictionRecord(nextPrediction, betCounts);
+    if (!record) return false;
+    const predictions = livePayload.predictions || [];
+    const existingIndex = predictions.findIndex(item => item.predictionIsoDate === record.predictionIsoDate);
+    if (existingIndex < 0) {
+        predictions.push(record);
+        return true;
+    }
+    const existing = predictions[existingIndex];
+    if (existing.status === 'settled') return false;
+    if (isPendingLivePredictionCurrent(existing, nextPrediction, betCounts)) return false;
+    predictions[existingIndex] = {
+        ...record,
+        replacedAt: new Date().toISOString(),
+        previousMethodId: existing.methodId || null
+    };
+    console.log(`[LotoPositionRisk] Thay pending Lô ${record.predictionIsoDate} vì cache cũ không cùng công thức hoặc thiếu top.`);
     return true;
 }
 
@@ -637,12 +727,12 @@ async function main() {
             const profitK = payoutK - stakeK;
 
             summary.days += 1;
-            if (hits > 0) {
+            if (profitK > 0) {
                 summary.wins += 1;
-                summary.hitDays += 1;
-            } else {
+            } else if (profitK < 0) {
                 summary.losses += 1;
             }
+            if (hits > 0) summary.hitDays += 1;
             summary.totalHits += hits;
             summary.stakeK += stakeK;
             summary.payoutK += payoutK;
@@ -674,12 +764,12 @@ async function main() {
                 const method = row.methods[`top${betCount}`];
                 const profitK = method.profitK;
                 sum.days += 1;
-                if (method.hits > 0) {
+                if (profitK > 0) {
                     sum.wins += 1;
-                    sum.hitDays += 1;
-                } else {
+                } else if (profitK < 0) {
                     sum.losses += 1;
                 }
+                if (method.hits > 0) sum.hitDays += 1;
                 sum.totalHits += method.hits;
                 sum.stakeK += method.stakeK;
                 sum.payoutK += method.payoutK;
@@ -702,6 +792,7 @@ async function main() {
             months: monthsList,
             days,
             skipBacktest,
+            exactTargetExcluded: true,
             stakePerNumberK,
             payoutPerHitK,
             betCounts
@@ -733,9 +824,24 @@ async function main() {
     if (skipBacktest) {
         const existingCachePath = path.join(process.cwd(), 'lib', 'data', 'statistics', 'cached_loto_prediction.json');
         const existingCache = readJsonIfExists(existingCachePath, null);
-        output.summaries = existingCache?.summaries || {};
-        output.summariesByWindow = existingCache?.summariesByWindow || {};
-        output.daily = existingCache?.recentDaily || [];
+        const canReuseBacktest = isReusableBacktestCache(existingCache, {
+            methodId,
+            betCounts,
+            stakePerNumberK,
+            payoutPerHitK,
+            maxMonths
+        });
+        if (canReuseBacktest) {
+            output.summaries = existingCache.summaries || {};
+            output.summariesByWindow = existingCache.summariesByWindow || {};
+            output.daily = existingCache.recentDaily || [];
+            console.log('[LotoPositionRisk] Reuse full backtest cache cùng công thức.');
+        } else {
+            output.summaries = {};
+            output.summariesByWindow = {};
+            output.daily = [];
+            console.log('[LotoPositionRisk] Bỏ qua backtest cache cũ vì không cùng công thức hoặc chỉ là prediction-only.');
+        }
     }
 
     const outputDir = path.join(process.cwd(), 'reports');
@@ -750,10 +856,18 @@ async function main() {
             stakePerNumberK,
             payoutPerHitK
         });
+        const hasReusableBacktest = Object.keys(output.summariesByWindow || {}).length > 0
+            && Array.isArray(output.daily)
+            && output.daily.length > 0;
+        const cacheConfig = {
+            ...output.config,
+            skipBacktest: hasReusableBacktest ? false : output.config.skipBacktest,
+            lastRunSkipBacktest: skipBacktest
+        };
         const cachePayload = {
             generatedAt: output.generatedAt,
             latestDataDate: output.latestDataDate,
-            config: output.config,
+            config: cacheConfig,
             nextPrediction: output.nextPrediction,
             summariesByWindow: output.summariesByWindow,
             livePredictions: {

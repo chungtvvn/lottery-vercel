@@ -72,12 +72,15 @@
         const rows = [];
         for (const [window, methods] of Object.entries(windows)) {
             for (const item of Object.values(methods || {})) {
+                const winRate = Number.isFinite(Number(item.winRate))
+                    ? Number(item.winRate)
+                    : (Number(item.days || 0) > 0 ? Number(item.wins || 0) / Number(item.days || 1) : 0);
                 rows.push(`
                     <tr>
                         <td class="px-4 py-3 font-semibold text-slate-700">${window}</td>
                         <td class="px-4 py-3 font-semibold text-slate-900">${item.label}</td>
                         <td class="px-4 py-3 text-right">${item.wins}/${item.days}</td>
-                        <td class="px-4 py-3 text-right">${percent(item.hitRate)}</td>
+                        <td class="px-4 py-3 text-right">${percent(winRate)}</td>
                         <td class="px-4 py-3 text-right">${nf.format(item.totalHits)}</td>
                         <td class="px-4 py-3 text-right font-bold ${item.profitK >= 0 ? 'text-emerald-600' : 'text-red-600'}">${money(item.profitK)}</td>
                         <td class="px-4 py-3 text-right">${percent(item.roi)}</td>
@@ -97,7 +100,12 @@
         root.innerHTML = rows.map(row => {
             const isReal = realDates.has(row.date);
             const method = row.methods?.top7 || row.methods?.top6 || row.methods?.top5 || {};
-            const actual = Object.keys(row.actual || {}).sort().join(', ');
+            const actual = Object.keys(row.actual || {})
+                .map(value => Number(value))
+                .filter(value => Number.isFinite(value))
+                .sort((a, b) => a - b)
+                .map(value => String(value).padStart(2, '0'))
+                .join(', ');
             const badgeHtml = isReal 
                 ? `<span class="ml-2 inline-flex items-center rounded-md bg-indigo-50 px-1.5 py-0.5 text-[10px] font-bold text-indigo-700 border border-indigo-150">THỰC TẾ</span>`
                 : '';
