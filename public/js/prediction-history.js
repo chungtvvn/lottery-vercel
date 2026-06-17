@@ -36,7 +36,7 @@
         },
         edgeHold60: {
             label: 'Edge từng số - Hold 60 (Đánh 40)',
-            description: 'Loại 60 số theo edge từng số, đánh 40 số còn lại; độ phủ cao nhất trong nhóm edge.'
+            description: 'Loại 60 số theo edge từng số, đánh 40 số còn lại; độ phủ đánh cao nhất trong nhóm edge.'
         },
         riskHold70: {
             label: 'Risk Sort - Hold 70 (Đánh 30)',
@@ -172,6 +172,40 @@
         return METHOD_META[methodId]?.description || 'Phương pháp này dùng snapshot point-in-time của ngày dự đoán để tạo danh sách số đánh và số ôm/loại trừ.';
     }
 
+    function getEdgeHoldMeta(methodId) {
+        const match = String(methodId || '').match(/^edgeHold(\d+)$/);
+        if (!match) return null;
+        const holdCount = Number(match[1]);
+        if (!Number.isFinite(holdCount)) return null;
+        return {
+            holdCount,
+            betCount: 100 - holdCount
+        };
+    }
+
+    function renderEdgeHoldExplanation(methodId, compact = false) {
+        const meta = getEdgeHoldMeta(methodId);
+        if (!meta) return '';
+        const coverageText = meta.holdCount === 60
+            ? 'Vì chỉ loại 60 số nên đây là biến thể có độ phủ đánh cao nhất trong nhóm edge: còn 40 số để đánh.'
+            : `Biến thể này loại ${meta.holdCount} số và còn ${meta.betCount} số để đánh.`;
+        const listClass = compact ? 'mt-2 space-y-1 text-[11px]' : 'mt-2 space-y-1.5 text-xs';
+        return `
+            <div class="mt-2 rounded-xl border border-indigo-100 bg-white/70 p-3 text-indigo-950">
+                <div class="font-extrabold">Cách chọn chuỗi/số loại trừ của Edge từng số</div>
+                <ol class="${listClass} list-decimal pl-4 leading-relaxed text-slate-650">
+                    <li>Mỗi chuỗi dự đoán tạo ra một tập số có thể loại trừ.</li>
+                    <li>Hệ thống tính <b>edge</b> của chuỗi = rủi ro gãy/không hình thành thực tế trừ xác suất nền của tập số đó.</li>
+                    <li>Chỉ chuỗi có edge dương mới được dùng. Chuỗi rộng quá nhưng rủi ro không vượt nền sẽ không được cộng điểm.</li>
+                    <li>Điểm chuỗi được chia cho từng số theo công thức: <b>edge dương × ưu tiên loại ÷ số lượng số trong chuỗi</b>.</li>
+                    <li>Một số có thể được nhiều chuỗi cùng đề xuất loại; điểm của số đó là tổng điểm đóng góp từ tất cả chuỗi.</li>
+                    <li>Sắp xếp 00-99 theo tổng điểm edge, lấy ${meta.holdCount} số cao nhất để ôm/loại, ${meta.betCount} số còn lại là dàn đánh.</li>
+                </ol>
+                <div class="mt-2 text-xs font-semibold text-indigo-700">${coverageText}</div>
+            </div>
+        `;
+    }
+
     function getSortedMethodStats(history) {
         const stats = new Map();
         for (const run of history || []) {
@@ -222,7 +256,10 @@
         const statsText = stats && stats.days > 0
             ? ` Lịch sử hiện có: ${stats.wins}/${stats.days} ngày lãi, tổng ${stats.profit >= 0 ? '+' : ''}${Number(stats.profit).toLocaleString('vi-VN')}K.`
             : '';
-        box.innerHTML = `<span class="font-bold">${escapeHtml(getMethodLabel(state.selectedMethod))}:</span> ${escapeHtml(getMethodDescription(state.selectedMethod))}${escapeHtml(statsText)}`;
+        box.innerHTML = `
+            <div><span class="font-bold">${escapeHtml(getMethodLabel(state.selectedMethod))}:</span> ${escapeHtml(getMethodDescription(state.selectedMethod))}${escapeHtml(statsText)}</div>
+            ${renderEdgeHoldExplanation(state.selectedMethod)}
+        `;
     }
 
     function cleanPatternTitle(title) {
@@ -630,6 +667,7 @@
         const detailBadge = isPending
             ? '<span class="ml-2 align-middle rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white">Tương lai</span>'
             : '';
+        const methodExplanationHtml = renderEdgeHoldExplanation(state.selectedMethod, true);
 
         sidebar.innerHTML = `
             <div class="${panelClass}">
@@ -639,6 +677,7 @@
                 </div>
 
                 ${headerStatusHtml}
+                ${methodExplanationHtml}
 
                 <div class="border-t border-slate-100 pt-3">
                     <div class="flex items-center justify-between mb-2">
