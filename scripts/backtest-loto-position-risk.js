@@ -250,31 +250,6 @@ function readJsonIfExists(filePath, fallback) {
     }
 }
 
-function hasAllBetCountKeys(container, betCounts) {
-    if (!container || typeof container !== 'object') return false;
-    return betCounts.every(count => Boolean(container[`top${count}`]));
-}
-
-function isReusableBacktestCache(cache, options) {
-    if (!cache || !cache.config || cache.config.skipBacktest === true) return false;
-    const cfg = cache.config;
-    const configuredCounts = Array.isArray(cfg.betCounts) ? cfg.betCounts.map(Number) : [];
-    const countsMatch = configuredCounts.length === options.betCounts.length
-        && options.betCounts.every((count, index) => count === configuredCounts[index]);
-    if (!countsMatch) return false;
-    if (String(cfg.methodId || '') !== String(options.methodId || '')) return false;
-    if (Number(cfg.stakePerNumberK) !== Number(options.stakePerNumberK)) return false;
-    if (Number(cfg.payoutPerHitK) !== Number(options.payoutPerHitK)) return false;
-    if (cfg.exactTargetExcluded !== true) return false;
-    if (!hasAllBetCountKeys(cache.summariesByWindow?.[`${options.maxMonths}m`] || Object.values(cache.summariesByWindow || {})[0], options.betCounts)) return false;
-    const recentDaily = Array.isArray(cache.recentDaily) ? cache.recentDaily : [];
-    if (recentDaily.length > 0) {
-        const latestWithMethods = recentDaily.slice().reverse().find(row => row && row.methods);
-        if (latestWithMethods && !hasAllBetCountKeys(latestWithMethods.methods, options.betCounts)) return false;
-    }
-    return true;
-}
-
 function evaluateNumbers(numbers, actualCounts, stakePerNumberK, payoutPerHitK) {
     const betNumbers = (numbers || []).map(value => normalizeNumber(value)).filter(value => value !== null);
     const hits = betNumbers.reduce((sum, number) => sum + (actualCounts.get(number) || 0), 0);
@@ -495,7 +470,7 @@ function updateLivePredictionStore(output, rawData, betCounts, options) {
     livePayload.notes = [
         'Các bản ghi type=real là dàn dự đoán đã sinh để đánh thực tế.',
         'Khi predictionIsoDate đã tồn tại, script không ghi đè numbers; chỉ cập nhật actual/methods khi có kết quả thật.',
-        'Backtest trong cached_loto_prediction.json chỉ dùng để tham khảo, không thay thế nhật ký real.'
+        'Mỗi vị trí dùng Dropoff TB từng số Hold 65; tab Lô chỉ hiển thị dự đoán và kết quả thực tế.'
     ];
 
     fs.mkdirSync(path.dirname(livePath), { recursive: true });
@@ -602,7 +577,7 @@ async function main() {
         .filter(Boolean);
     const maxMonths = Math.max(...monthsList);
     const days = Math.round(maxMonths * 30.4375);
-    const methodId = String(args.get('method') || 'edgeHold60');
+    const methodId = String(args.get('method') || 'avgDropoffHold65');
     const betCounts = String(args.get('betCounts') || '3,4,5,6,7')
         .split(',')
         .map(value => Math.max(1, Math.min(30, Number(value.trim()) || 0)))
@@ -754,7 +729,7 @@ async function main() {
     }
 
     const summariesByWindow = {};
-    for (const months of monthsList) {
+    if (!skipBacktest) for (const months of monthsList) {
         const windowDays = Math.min(Math.round(months * 30.4375), daily.length);
         const windowDaily = daily.slice(-windowDays);
         summariesByWindow[`${months}m`] = {};
@@ -822,33 +797,20 @@ async function main() {
     };
 
     if (skipBacktest) {
-        const existingCachePath = path.join(process.cwd(), 'lib', 'data', 'statistics', 'cached_loto_prediction.json');
-        const existingCache = readJsonIfExists(existingCachePath, null);
-        const canReuseBacktest = isReusableBacktestCache(existingCache, {
-            methodId,
-            betCounts,
-            stakePerNumberK,
-            payoutPerHitK,
-            maxMonths
-        });
-        if (canReuseBacktest) {
-            output.summaries = existingCache.summaries || {};
-            output.summariesByWindow = existingCache.summariesByWindow || {};
-            output.daily = existingCache.recentDaily || [];
-            console.log('[LotoPositionRisk] Reuse full backtest cache cùng công thức.');
-        } else {
-            output.summaries = {};
-            output.summariesByWindow = {};
-            output.daily = [];
-            console.log('[LotoPositionRisk] Bỏ qua backtest cache cũ vì không cùng công thức hoặc chỉ là prediction-only.');
-        }
+        output.summaries = {};
+        output.summariesByWindow = {};
+        output.daily = [];
+        console.log('[LotoPositionRisk] Prediction-only: không đọc hoặc tái sử dụng backtest cũ.');
     }
 
-    const outputDir = path.join(process.cwd(), 'reports');
-    fs.mkdirSync(outputDir, { recursive: true });
-    const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    const jsonPath = path.join(outputDir, `backtest_loto_position_risk_${stamp}.json`);
-    fs.writeFileSync(jsonPath, JSON.stringify(output, null, 2));
+    let jsonPath = null;
+    if (!skipBacktest) {
+        const outputDir = path.join(process.cwd(), 'reports');
+        fs.mkdirSync(outputDir, { recursive: true });
+        const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        jsonPath = path.join(outputDir, `backtest_loto_position_risk_${stamp}.json`);
+        fs.writeFileSync(jsonPath, JSON.stringify(output, null, 2));
+    }
     if (writeCache) {
         const cachePath = path.join(process.cwd(), 'lib', 'data', 'statistics', 'cached_loto_prediction.json');
         const livePayload = updateLivePredictionStore(output, rawData, betCounts, {
@@ -856,20 +818,16 @@ async function main() {
             stakePerNumberK,
             payoutPerHitK
         });
-        const hasReusableBacktest = Object.keys(output.summariesByWindow || {}).length > 0
-            && Array.isArray(output.daily)
-            && output.daily.length > 0;
         const cacheConfig = {
             ...output.config,
-            skipBacktest: hasReusableBacktest ? false : output.config.skipBacktest,
-            lastRunSkipBacktest: skipBacktest
+            skipBacktest: true,
+            historyMode: 'live-only'
         };
         const cachePayload = {
             generatedAt: output.generatedAt,
             latestDataDate: output.latestDataDate,
             config: cacheConfig,
             nextPrediction: output.nextPrediction,
-            summariesByWindow: output.summariesByWindow,
             livePredictions: {
                 generatedAt: livePayload.generatedAt,
                 startedAt: livePayload.startedAt,
@@ -878,11 +836,8 @@ async function main() {
                 summary: livePayload.summary,
                 predictions: (livePayload.predictions || []).slice(-90)
             },
-            recentDaily: output.daily.slice(-90),
             notes: [
-                skipBacktest
-                    ? 'Cache này được sinh ở chế độ predictionOnly: action hằng ngày chỉ settle kết quả thực tế và sinh dàn Lô mới, không chạy backtest rolling.'
-                    : 'Cache này bao gồm backtest tham khảo và dự đoán Lô mới.',
+                'Action hằng ngày chỉ settle kết quả thực tế và sinh dàn Lô mới, không chạy hoặc tái sử dụng backtest.',
                 'Nhật ký real trong livePredictions là nguồn theo dõi thực tế từ ngày chức năng Lô được triển khai.'
             ]
         };
@@ -891,14 +846,9 @@ async function main() {
         console.log(`[LotoPositionRisk] Cache: ${cachePath}`);
     }
 
-    console.log(`[LotoPositionRisk] JSON: ${jsonPath}`);
-    for (const months of monthsList) {
+    if (jsonPath) console.log(`[LotoPositionRisk] JSON: ${jsonPath}`);
+    if (!skipBacktest) for (const months of monthsList) {
         const windowSummary = output.summariesByWindow?.[`${months}m`] || {};
-        if (Object.keys(windowSummary).length === 0) {
-            console.log(`\n=== ${months} tháng gần nhất ===`);
-            console.log('[LotoPositionRisk] Chế độ prediction-only chưa có backtest summary tham khảo; dùng livePredictions để theo dõi thực tế.');
-            continue;
-        }
         console.log(`\n=== ${months} tháng gần nhất ===`);
         console.table(Object.values(windowSummary).map(item => ({
             method: item.label,

@@ -458,8 +458,8 @@
                 await window.AppConfig.checkAndClearCacheOnNewData();
             }
             const historyRes = await fetch(`/api/prediction/history?limit=90&v=5&_t=${Date.now()}`, { cache: 'no-store' });
-            if (!historyRes.ok) throw new Error('Network response was not ok');
             const data = await historyRes.json();
+            if (!historyRes.ok) throw new Error(data?.error || 'Không thể tải cache Lịch sử từ R2.');
             if (data && data.success && Array.isArray(data.history)) {
                 state.history = data.history;
                 renderMethodSelector();
@@ -468,7 +468,7 @@
                 showError((data && data.error) || 'Không thể tải lịch sử dự đoán.');
             }
         } catch (error) {
-            showError('Lỗi kết nối máy chủ.');
+            showError(error.message || 'Lỗi kết nối máy chủ.');
         } finally {
             setLoading(false);
         }

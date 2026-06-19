@@ -17,7 +17,7 @@ const XOSO_MAX_WAIT_MINUTES = readNumberEnv('XOSO_MAX_WAIT_MINUTES', WAIT_FOR_NE
 const XOSO_RETRY_INTERVAL_SECONDS = readNumberEnv('XOSO_RETRY_INTERVAL_SECONDS', 60, 5);
 const LOTO_STAKE_PER_NUMBER_K = 2300;
 const LOTO_PAYOUT_PER_HIT_K = 8000;
-const LOTO_METHOD_ID = process.env.LOTO_METHOD_ID || 'edgeHold60';
+const LOTO_METHOD_ID = process.env.LOTO_METHOD_ID || 'avgDropoffHold65';
 const LOTO_BET_COUNTS = [3, 4, 5, 6, 7];
 
 function readNumberEnv(name, fallback, minValue) {
@@ -495,6 +495,24 @@ function generateLotoPredictionCache() {
     }, timeoutMs > 0 ? { timeoutMs } : {});
 }
 
+async function hydrateLotoLiveCacheFromR2() {
+    if (!getR2PublicUrl()) return false;
+
+    try {
+        const remoteLive = await readStatsJsonFromR2('cached_loto_live_predictions.json');
+        if (!remoteLive || !Array.isArray(remoteLive.predictions)) return false;
+
+        const livePath = path.join(DATA_DIR, 'statistics', 'cached_loto_live_predictions.json');
+        await fs.mkdir(path.dirname(livePath), { recursive: true });
+        await fs.writeFile(livePath, JSON.stringify(remoteLive, null, 0), 'utf8');
+        console.log(`[Lô] Hydrate ${remoteLive.predictions.length} bản ghi thực tế từ R2 trước khi kết toán.`);
+        return true;
+    } catch (error) {
+        console.warn(`[Lô] Không hydrate được nhật ký R2, giữ dữ liệu local hiện có: ${error.message}`);
+        return false;
+    }
+}
+
 function uploadR2StaticData(label = 'Upload raw data + statistics gzip lên Cloudflare R2.', extraEnv = {}) {
     if (process.env.SYNC_R2_AFTER_UPDATE !== '0') {
         runNodeScript('scripts/upload-to-r2.js', label, extraEnv);
@@ -831,6 +849,7 @@ async function main() {
         }
         console.log('[3] Stats R2 đã mới, chỉ sinh/đối soát cache Lô và upload 2 file Lô.');
         try {
+            await hydrateLotoLiveCacheFromR2();
             generateLotoPredictionCache();
             uploadOnlyLotoCaches();
         } catch (lotoErr) {
@@ -1165,6 +1184,7 @@ async function main() {
             }
 
             try {
+                await hydrateLotoLiveCacheFromR2();
                 generateLotoPredictionCache();
             } catch (lotoErr) {
                 console.error('⚠️ Lỗi khi sinh cache Lô cho DB mode:', lotoErr.message);
@@ -1331,6 +1351,7 @@ async function main() {
 
             if (process.env.LOTO_GENERATE_CACHE !== '0') {
                 try {
+                    await hydrateLotoLiveCacheFromR2();
                     generateLotoPredictionCache();
                 } catch (lotoErr) {
                     console.error('⚠️ Lỗi khi sinh cache Lô (không ảnh hưởng các cache khác):', lotoErr.message);

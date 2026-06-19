@@ -30,6 +30,7 @@
             ['Ngày dữ liệu', data.latestDataDate || next.dataIsoDate || '-'],
             ['Ngày dự đoán', next.predictionDate || '-'],
             ['Vị trí', `${cfg.positionCount || 27} giải`],
+            ['Phương pháp', 'Dropoff TB từng số · Hold 65'],
             ['Công thức', `${nf.format(cfg.stakePerNumberK || 2300)}K ăn ${nf.format(cfg.payoutPerHitK || 8000)}K`]
         ].map(([label, value]) => `
             <div class="glass-card p-4">
@@ -64,74 +65,6 @@
                 </article>
             `;
         }).join('');
-    }
-
-    function renderSummary(data) {
-        const tbody = document.getElementById('summaryTable');
-        const windows = data.summariesByWindow || {};
-        const rows = [];
-        for (const [window, methods] of Object.entries(windows)) {
-            for (const item of Object.values(methods || {})) {
-                const winRate = Number.isFinite(Number(item.winRate))
-                    ? Number(item.winRate)
-                    : (Number(item.days || 0) > 0 ? Number(item.wins || 0) / Number(item.days || 1) : 0);
-                rows.push(`
-                    <tr>
-                        <td class="px-4 py-3 font-semibold text-slate-700">${window}</td>
-                        <td class="px-4 py-3 font-semibold text-slate-900">${item.label}</td>
-                        <td class="px-4 py-3 text-right">${item.wins}/${item.days}</td>
-                        <td class="px-4 py-3 text-right">${percent(winRate)}</td>
-                        <td class="px-4 py-3 text-right">${nf.format(item.totalHits)}</td>
-                        <td class="px-4 py-3 text-right font-bold ${item.profitK >= 0 ? 'text-emerald-600' : 'text-red-600'}">${money(item.profitK)}</td>
-                        <td class="px-4 py-3 text-right">${percent(item.roi)}</td>
-                    </tr>
-                `);
-            }
-        }
-        tbody.innerHTML = rows.join('') || '<tr><td colspan="7" class="px-4 py-6 text-center text-slate-500">Chưa có backtest.</td></tr>';
-    }
-
-    function renderDaily(data) {
-        const root = document.getElementById('dailyList');
-        const live = data.livePredictions || {};
-        const realDates = new Set((live.predictions || []).map(p => p.predictionIsoDate || p.predictionDate));
-
-        const rows = (data.recentDaily || []).slice().reverse().slice(0, 30);
-        root.innerHTML = rows.map(row => {
-            const isReal = realDates.has(row.date);
-            const method = row.methods?.top7 || row.methods?.top6 || row.methods?.top5 || {};
-            const actual = Object.keys(row.actual || {})
-                .map(value => Number(value))
-                .filter(value => Number.isFinite(value))
-                .sort((a, b) => a - b)
-                .map(value => String(value).padStart(2, '0'))
-                .join(', ');
-            const badgeHtml = isReal 
-                ? `<span class="ml-2 inline-flex items-center rounded-md bg-indigo-50 px-1.5 py-0.5 text-[10px] font-bold text-indigo-700 border border-indigo-150">THỰC TẾ</span>`
-                : '';
-            const highlightClass = isReal ? 'bg-indigo-50/20 border-l-4 border-l-indigo-500' : '';
-
-            return `
-                <div class="p-4 ${highlightClass}">
-                    <div class="flex items-center justify-between gap-3">
-                        <div>
-                            <div class="flex items-center font-bold text-slate-900">
-                                ${row.date}
-                                ${badgeHtml}
-                            </div>
-                            <div class="text-xs text-slate-500">KQ: ${actual || '-'}</div>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-sm font-bold ${method.profitK >= 0 ? 'text-emerald-600' : 'text-red-600'}">${money(method.profitK)}</div>
-                            <div class="text-xs text-slate-500">${method.hits || 0} hit</div>
-                        </div>
-                    </div>
-                    <div class="mt-3 flex flex-wrap gap-1.5">
-                        ${(method.betNumbers || []).map(number => numberBadge(number, isReal ? 'indigo' : 'slate')).join('')}
-                    </div>
-                </div>
-            `;
-        }).join('') || '<div class="p-4 text-sm text-slate-500">Chưa có nhật ký.</div>';
     }
 
     function renderLive(data) {
@@ -195,8 +128,6 @@
             renderMeta(data);
             renderPredictions(data);
             renderLive(data);
-            renderSummary(data);
-            renderDaily(data);
         } catch (error) {
             errorBox.textContent = error.message;
             errorBox.classList.remove('hidden');

@@ -27,10 +27,10 @@ function filterCount(payload, countParam) {
     if (!raw || raw === 'all') return payload;
 
     const count = Number(raw);
-    if (![5, 6, 7].includes(count)) {
+    if (![3, 4, 5, 6, 7].includes(count)) {
         return {
             ...payload,
-            error: 'count chỉ hỗ trợ 5, 6, 7 hoặc all.'
+            error: 'count chỉ hỗ trợ 3, 4, 5, 6, 7 hoặc all.'
         };
     }
 

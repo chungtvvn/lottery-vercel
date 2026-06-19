@@ -49,15 +49,15 @@
             <p class="text-sm font-semibold uppercase tracking-wide text-indigo-600">Dự đoán Lô theo 27 vị trí</p>
             <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-900">Lô 3/4/5/6/7 số cho ngày tiếp theo</h1>
             <p class="mt-2 max-w-4xl text-sm leading-6 text-slate-600">
-                Mỗi vị trí trong 27 giải tự chạy logic loại trừ giống giải ĐB với phương pháp Risk Hold 75:
-                loại 75 số rủi ro cao, giữ lại 25 số có thể về cho chính vị trí đó.
+                Mỗi vị trí trong 27 giải tự tính dropoff trung bình của từng số theo các chuỗi đang diễn ra và tiềm năng:
+                loại 65 số có dropoff trung bình cao nhất, giữ lại 35 số có thể về cho chính vị trí đó.
                 Hệ thống cộng điểm theo số vị trí cùng giữ lại rồi chọn top 3, 4, 5, 6 hoặc 7 số để dự đoán.
             </p>
         </section>
 
         <div id="errorBox" class="mb-6 hidden rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"></div>
 
-        <section id="metaBox" class="mb-6 grid gap-4 md:grid-cols-4"></section>
+        <section id="metaBox" class="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-5"></section>
 
         <section class="mb-6 grid gap-4 lg:grid-cols-3" id="predictionCards"></section>
 
@@ -73,39 +73,6 @@
             <div id="liveList" class="divide-y divide-slate-100"></div>
         </section>
 
-        <section class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
-            <div class="glass-card overflow-hidden">
-                <div class="border-b border-slate-100 bg-slate-50/60 px-4 py-3.5">
-                    <h2 class="flex items-center gap-2 text-lg font-bold text-slate-900">
-                        <i class="bi bi-calendar-check text-indigo-600"></i>
-                        Backtest gần nhất (tham khảo)
-                    </h2>
-                </div>
-                <div class="overflow-auto custom-scrollbar">
-                    <table class="min-w-full divide-y divide-slate-150 text-sm">
-                        <thead class="bg-slate-100 text-left text-xs font-semibold uppercase text-slate-600">
-                            <tr>
-                                <th class="px-4 py-3">Khoảng</th>
-                                <th class="px-4 py-3">Phương án</th>
-                                <th class="px-4 py-3 text-right">Thắng</th>
-                                <th class="px-4 py-3 text-right">Tỷ lệ</th>
-                                <th class="px-4 py-3 text-right">Hit</th>
-                                <th class="px-4 py-3 text-right">Lãi/lỗ</th>
-                                <th class="px-4 py-3 text-right">ROI</th>
-                            </tr>
-                        </thead>
-                        <tbody id="summaryTable" class="divide-y divide-slate-100 bg-white/40"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <aside class="glass-card overflow-hidden h-fit">
-                <div class="border-b border-slate-100 bg-slate-50/60 px-4 py-3.5">
-                    <h2 class="text-lg font-bold text-slate-900">Nhật ký backtest gần đây</h2>
-                </div>
-                <div id="dailyList" class="max-h-[620px] overflow-auto custom-scrollbar divide-y divide-slate-100"></div>
-            </aside>
-        </section>
     </main>
 
     <script src="/js/loto.js"></script>
