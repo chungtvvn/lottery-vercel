@@ -17,7 +17,7 @@ const XOSO_MAX_WAIT_MINUTES = readNumberEnv('XOSO_MAX_WAIT_MINUTES', WAIT_FOR_NE
 const XOSO_RETRY_INTERVAL_SECONDS = readNumberEnv('XOSO_RETRY_INTERVAL_SECONDS', 60, 5);
 const LOTO_STAKE_PER_NUMBER_K = 2300;
 const LOTO_PAYOUT_PER_HIT_K = 8000;
-const LOTO_METHOD_ID = 'riskHold75';
+const LOTO_METHOD_ID = process.env.LOTO_METHOD_ID || 'edgeHold60';
 const LOTO_BET_COUNTS = [3, 4, 5, 6, 7];
 
 function readNumberEnv(name, fallback, minValue) {

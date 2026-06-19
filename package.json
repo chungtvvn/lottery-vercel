@@ -13,6 +13,8 @@
     "supabase:cleanup:legacy": "node scripts/cleanup-supabase-legacy-storage.js",
     "supabase:sync": "node scripts/sync-supabase.js",
     "stats:audit": "node scripts/audit-statistics-coverage.js",
+    "analyze:exclusion-overlap": "node scripts/analyze-exclusion-number-overlap.js",
+    "test:so-le-theo-cap": "node scripts/test-so-le-theo-cap.js",
     "backtest:weekly-risk": "node scripts/backtest-weekly-risk-targets.js",
     "cf:cron:deploy": "npx wrangler deploy -c wrangler.daily-update.toml",
     "cf:cron:tail": "npx wrangler tail xsmb-daily-update-dispatcher",

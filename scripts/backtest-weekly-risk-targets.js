@@ -39,7 +39,7 @@ function parseMethods(args) {
     const methods = String(source)
         .split(',')
         .map(value => value.trim())
-        .filter(value => /^(riskHold|frequencyHold|tierHold|edgeHold|bayesHold|scarcityHold|recordHold|recordFirstHold|potentialHold|wilsonHold)\d{1,3}$/.test(value));
+        .filter(value => /^(riskHold|frequencyHold|tierHold|edgeHold|confidentEdgeHold|avgDropoffHold|bayesHold|scarcityHold|recordHold|recordFirstHold|potentialHold|wilsonHold)\d{1,3}$/.test(value));
     return [...new Set(methods)];
 }
 
@@ -146,7 +146,8 @@ function buildDailyRows(details, methods) {
                     stake: method.stake || 0,
                     payout: method.payout || 0,
                     excludedCount: method.excludedCount || 0,
-                    betCount: method.betCount || 0
+                    betCount: method.betCount || 0,
+                    scoreDiagnostics: method.scoreDiagnostics || null
                 }
                 : null;
         }

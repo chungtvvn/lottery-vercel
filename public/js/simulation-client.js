@@ -7,6 +7,7 @@
     };
 
     const METHOD_LABELS = {
+        confidentEdgeHold90: 'Edge đủ bằng chứng - Hold 90',
         riskHold60: 'Ôm 60 theo rủi ro',
         riskHold70: 'Ôm 70 theo rủi ro',
         riskHold80: 'Ôm 80 theo rủi ro',
@@ -15,6 +16,8 @@
     };
 
     function methodDescription(methodId) {
+        if (/^avgDropoffHold\d+$/.test(methodId)) return 'Với mỗi số 00-99, lấy trung bình cộng dropoff của mọi chuỗi đang diễn ra và tiềm năng chứa số đó, xếp giảm dần rồi loại đủ số theo mức Hold.';
+        if (methodId === 'confidentEdgeHold90') return 'Chấm edge cho từng số như Edge Hold 90 nhưng chỉ chơi khi có đủ 90 số mang edge dương. Ngày phải ép số score 0 vào danh sách loại sẽ được bỏ qua.';
         if (methodId === 'riskHold60') return 'Sắp xếp chuỗi dự đoán theo rủi ro cao xuống thấp, lấy từ trên xuống tới khoảng 60 số ôm và đánh 40 số còn lại.';
         if (methodId === 'riskHold70') return 'Sắp xếp chuỗi dự đoán theo rủi ro cao xuống thấp, lấy từ trên xuống tới khoảng 70 số ôm và đánh 30 số còn lại.';
         if (methodId === 'riskHold80') return 'Sắp xếp chuỗi dự đoán theo rủi ro cao xuống thấp, lấy từ trên xuống tới khoảng 80 số ôm và đánh 20 số còn lại.';
@@ -80,6 +83,7 @@
 
     function getCustomQueryParams() {
         const betWinValue = el('betWinMultiplier')?.value;
+        const betWinFactorValue = el('betWinFactor')?.value;
         const holdWinValue = el('holdWinMultiplier')?.value;
         const params = {
             playMode: el('playMode')?.value || 'both',
@@ -98,6 +102,9 @@
         };
         if (Number.isFinite(Number(betWinValue)) && Math.abs(Number(betWinValue) - 84) > 0.0001) {
             params.betWinMultiplier = betWinValue;
+        }
+        if (Number.isFinite(Number(betWinFactorValue)) && Math.abs(Number(betWinFactorValue) - 1) > 0.0001) {
+            params.betWinFactor = betWinFactorValue;
         }
         if (Number.isFinite(Number(holdWinValue)) && Math.abs(Number(holdWinValue) - 0.705) > 0.0001) {
             params.holdWinMultiplier = holdWinValue;

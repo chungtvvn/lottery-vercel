@@ -3,13 +3,50 @@
     const state = {
         history: [],
         selectedIndex: -1,
-        selectedMethod: null,
+        selectedMethod: 'avgDropoffHold70',
         betWinMultiplier: 84,
+        betWinFactor: 1,
         holdWinMultiplier: 0.705
     };
     const BET_PER_NUMBER_K = 1000;
     const HOLD_LOSS_MULTIPLIER = 70;
     const METHOD_META = {
+        avgDropoffHold60: {
+            label: 'Dropoff TB từng số - Hold 60 (Đánh 40)',
+            description: 'Tính trung bình dropoff của mọi chuỗi đang diễn ra/tiềm năng chứa từng số, loại 60 số có trung bình cao nhất và đánh 40 số còn lại.'
+        },
+        avgDropoffHold65: {
+            label: 'Dropoff TB từng số - Hold 65 (Đánh 35)',
+            description: 'Xếp 100 số theo dropoff trung bình giảm dần, loại 65 số đầu và đánh 35 số cuối.'
+        },
+        avgDropoffHold70: {
+            label: 'Dropoff TB từng số - Hold 70 (Đánh 30)',
+            description: 'Xếp 100 số theo dropoff trung bình giảm dần, loại 70 số đầu và đánh 30 số cuối.'
+        },
+        avgDropoffHold75: {
+            label: 'Dropoff TB từng số - Hold 75 (Đánh 25)',
+            description: 'Xếp 100 số theo dropoff trung bình giảm dần, loại 75 số đầu và đánh 25 số cuối.'
+        },
+        avgDropoffHold80: {
+            label: 'Dropoff TB từng số - Hold 80 (Đánh 20)',
+            description: 'Xếp 100 số theo dropoff trung bình giảm dần, loại 80 số đầu và đánh 20 số cuối.'
+        },
+        avgDropoffHold85: {
+            label: 'Dropoff TB từng số - Hold 85 (Đánh 15)',
+            description: 'Xếp 100 số theo dropoff trung bình giảm dần, loại 85 số đầu và đánh 15 số cuối.'
+        },
+        avgDropoffHold90: {
+            label: 'Dropoff TB từng số - Hold 90 (Đánh 10)',
+            description: 'Xếp 100 số theo dropoff trung bình giảm dần, loại 90 số đầu và đánh 10 số cuối.'
+        },
+        avgDropoffHold95: {
+            label: 'Dropoff TB từng số - Hold 95 (Đánh 5)',
+            description: 'Xếp 100 số theo dropoff trung bình giảm dần, loại 95 số đầu và đánh 5 số cuối.'
+        },
+        confidentEdgeHold90: {
+            label: 'Edge đủ bằng chứng - Hold 90',
+            description: 'Loại 90 số theo edge từng số nhưng chỉ chơi khi cả 90 số loại đều có edge dương. Ngày thiếu bằng chứng được bỏ qua thay vì ép score 0 vào danh sách loại.'
+        },
         edgeHold90: {
             label: 'Edge từng số - Hold 90 (Đánh 10)',
             description: 'Chấm điểm rủi ro theo từng số bằng edge/lift từ các chuỗi kích hoạt, loại 90 số có rủi ro cao nhất và đánh 10 số còn lại.'
@@ -114,7 +151,7 @@
         const betWin = betNumbers.some(n => Number(n) === actual);
         const holdWin = !excludedNumbers.some(n => Number(n) === actual);
         const betStake = betNumbers.length * BET_PER_NUMBER_K;
-        const betPayout = betWin ? BET_PER_NUMBER_K * state.betWinMultiplier : 0;
+        const betPayout = betWin ? BET_PER_NUMBER_K * state.betWinMultiplier * state.betWinFactor : 0;
         const holdIncome = excludedNumbers.length * BET_PER_NUMBER_K * state.holdWinMultiplier;
         const holdLoss = holdWin ? 0 : BET_PER_NUMBER_K * HOLD_LOSS_MULTIPLIER;
         const betProfit = Math.round(betPayout - betStake);
@@ -127,6 +164,7 @@
             holdProfit,
             profit: betProfit + holdProfit,
             betWinMultiplier: state.betWinMultiplier,
+            betWinFactor: state.betWinFactor,
             holdWinMultiplier: state.holdWinMultiplier
         };
     }
@@ -682,7 +720,7 @@
                 <div class="border-t border-slate-100 pt-3">
                     <div class="flex items-center justify-between mb-2">
                         <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Số Đánh (${sum.betCount || 0} số)</h4>
-                        <span class="text-[10px] text-slate-500">Mỗi số 1000K (ăn ${state.betWinMultiplier})</span>
+                        <span class="text-[10px] text-slate-500">Mỗi số 1000K (hệ số ${state.betWinFactor} × ăn ${state.betWinMultiplier})</span>
                     </div>
                     ${renderNumberGrid(sum.numbersToBet, 'border-emerald-200 bg-emerald-50/50 text-emerald-700')}
                 </div>
@@ -721,6 +759,17 @@
                 const nextValue = Number(e.target.value);
                 if (Number.isFinite(nextValue)) {
                     state.betWinMultiplier = Math.max(70, Math.min(90, Math.round(nextValue)));
+                    renderMethodSelector();
+                    renderDashboard();
+                }
+            });
+        }
+        const betWinFactorInput = el('betWinFactor');
+        if (betWinFactorInput) {
+            betWinFactorInput.addEventListener('input', (e) => {
+                const nextValue = Number(e.target.value);
+                if (Number.isFinite(nextValue)) {
+                    state.betWinFactor = Math.max(0.01, Math.min(100, Math.round(nextValue * 100) / 100));
                     renderMethodSelector();
                     renderDashboard();
                 }

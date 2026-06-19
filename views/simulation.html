@@ -98,7 +98,16 @@
                 <label for="methodSelector" class="text-sm font-bold text-slate-700">Phương pháp dự đoán:</label>
                 <div class="min-w-0">
                     <select id="methodSelector" class="glass-input text-sm py-1.5 px-3 block w-72 max-w-full">
-                        <option value="edgeHold90" selected>Edge từng số - Hold 90 (Đánh 10) - lãi tốt nhất 20 năm</option>
+                        <option value="avgDropoffHold60">Dropoff TB từng số - Hold 60 (Đánh 40)</option>
+                        <option value="avgDropoffHold65">Dropoff TB từng số - Hold 65 (Đánh 35)</option>
+                        <option value="avgDropoffHold70" selected>Dropoff TB từng số - Hold 70 (Đánh 30)</option>
+                        <option value="avgDropoffHold75">Dropoff TB từng số - Hold 75 (Đánh 25)</option>
+                        <option value="avgDropoffHold80">Dropoff TB từng số - Hold 80 (Đánh 20)</option>
+                        <option value="avgDropoffHold85">Dropoff TB từng số - Hold 85 (Đánh 15)</option>
+                        <option value="avgDropoffHold90">Dropoff TB từng số - Hold 90 (Đánh 10)</option>
+                        <option value="avgDropoffHold95">Dropoff TB từng số - Hold 95 (Đánh 5)</option>
+                        <option value="edgeHold90">Edge từng số - Hold 90 (Đánh 10)</option>
+                        <option value="confidentEdgeHold90">Edge đủ bằng chứng - Hold 90 (bỏ qua ngày yếu)</option>
                         <option value="edgeHold85">Edge từng số - Hold 85 (Đánh 15)</option>
                         <option value="edgeHold80">Edge từng số - Hold 80 (Đánh 20)</option>
                         <option value="edgeHold75">Edge từng số - Hold 75 (Đánh 25)</option>
@@ -119,6 +128,11 @@
                 </div>
             </div>
             <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+                <div class="flex flex-col gap-1 sm:items-end">
+                    <label for="betWinFactor" class="text-xs font-semibold text-slate-600">Hệ số ăn</label>
+                    <input id="betWinFactor" type="number" min="0.01" max="100" step="0.01" value="1" class="glass-input w-24 px-3 py-1.5 text-sm">
+                    <div class="text-xs text-slate-500 italic">Mặc định 1 lần.</div>
+                </div>
                 <div class="flex flex-col gap-1 sm:items-end">
                     <label for="betWinMultiplier" class="text-xs font-semibold text-slate-600">Tỷ lệ ăn đánh</label>
                     <input id="betWinMultiplier" type="number" min="70" max="90" step="1" value="84" class="glass-input w-28 px-3 py-1.5 text-sm">
@@ -175,7 +189,7 @@
     </main>
 
     <script src="/js/app-config.js"></script>
-    <script src="/js/prediction-history.js?v=1.0.6"></script>
+    <script src="/js/prediction-history.js?v=1.0.7"></script>
 </body>
 
 </html>

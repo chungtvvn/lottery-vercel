@@ -1,5 +1,5 @@
 (function () {
-    const state = { data: null, selectedKeys: new Set() };
+    const state = { data: null, selectedKeys: new Set(), aggregationMode: 'average', averageHoldCount: 70 };
 
     const el = id => document.getElementById(id);
     const fmt = (value, suffix = '') => {
@@ -91,6 +91,15 @@
     }
 
     function collectNumbers(rows) {
+        if (state.aggregationMode === 'average') {
+            const hold = state.data?.averageDropoff?.holds?.[String(state.averageHoldCount)];
+            if (hold) {
+                return {
+                    excludedNumbers: hold.excludedNumbers || [],
+                    betNumbers: hold.betNumbers || []
+                };
+            }
+        }
         const excluded = new Set();
         rows.forEach(row => {
             if (!state.selectedKeys.has(row.key)) return;
@@ -103,13 +112,22 @@
     }
 
     function renderNumberGrid(numbers, selectedClass) {
+        const rankingByNumber = new Map(
+            (state.data?.averageDropoff?.ranking || []).map(item => [Number(item.number), item])
+        );
         return `
             <div class="number-grid">
-                ${numbers.map(num => `
-                    <span class="rounded-md border px-2 py-2 text-center font-mono text-sm font-bold ${selectedClass}">
-                        ${numText(num)}
+                ${numbers.map(num => {
+                    const score = state.aggregationMode === 'average' ? rankingByNumber.get(Number(num)) : null;
+                    const title = score
+                        ? `Hạng ${score.rank} · Dropoff TB ${fmtDecimal(score.averageDropOffPercent, 1)}% · ${score.supportCount} chuỗi`
+                        : '';
+                    return `
+                    <span title="${title}" class="rounded-md border px-2 py-2 text-center font-mono text-sm font-bold ${selectedClass}">
+                        <span class="block">${numText(num)}</span>
+                        ${score ? `<span class="mt-0.5 block text-[9px] font-sans font-semibold opacity-70">${fmtDecimal(score.averageDropOffPercent, 1)}%</span>` : ''}
                     </span>
-                `).join('')}
+                `; }).join('')}
             </div>
         `;
     }
@@ -120,6 +138,7 @@
         const { excludedNumbers, betNumbers } = collectNumbers(rows);
         el('summaryCards').innerHTML = [
             ['Ngày dự đoán', state.data.predictionDate],
+            ['Cách tổng hợp', state.aggregationMode === 'average' ? `Dropoff TB · Hold ${state.averageHoldCount}` : 'Chuỗi tự chọn'],
             ['Chuỗi chọn', selectedRows.length],
             ['Số ôm/loại', excludedNumbers.length],
             ['Số đánh', betNumbers.length],
@@ -166,6 +185,7 @@
 
         document.querySelectorAll('.chain-check').forEach(input => {
             input.addEventListener('change', () => {
+                setAggregationMode('manual');
                 if (input.checked) state.selectedKeys.add(input.dataset.key);
                 else state.selectedKeys.delete(input.dataset.key);
                 renderSummary();
@@ -175,6 +195,7 @@
     }
 
     function setTier(tierRank, checked) {
+        setAggregationMode('manual');
         (state.data?.chainRows || []).forEach(row => {
             if (row.tierRank === tierRank) {
                 if (checked) state.selectedKeys.add(row.key);
@@ -183,6 +204,12 @@
         });
         renderSummary();
         renderRows();
+    }
+
+    function setAggregationMode(mode) {
+        state.aggregationMode = mode === 'manual' ? 'manual' : 'average';
+        if (el('aggregationMode')) el('aggregationMode').value = state.aggregationMode;
+        el('averageHoldWrap')?.classList.toggle('hidden', state.aggregationMode !== 'average');
     }
 
     async function loadData() {
@@ -199,7 +226,9 @@
             if (!response.ok || data.error) throw new Error(data.error || 'Không thể tải dữ liệu loại trừ.');
             state.data = data;
             state.selectedKeys = new Set();
-            el('predictionInfo').textContent = `Dữ liệu tới ${data.basisDate}; ${data.candidatesCount} chuỗi ứng viên. Mặc định chưa chọn chuỗi nào; hãy chọn Tier hoặc tick từng chuỗi để xem số ôm và số đánh thay đổi ngay.`;
+            setAggregationMode(el('aggregationMode')?.value || 'average');
+            state.averageHoldCount = Number(el('averageHoldCount')?.value || 70);
+            el('predictionInfo').textContent = `Dữ liệu tới ${data.basisDate}; Dropoff TB dùng ${data.averageDropoff?.candidatesCount || 0} chuỗi chứa số. Chuyển sang Chuỗi tự chọn để tick Tier hoặc từng dòng trong ${data.candidatesCount} ứng viên ưu tiên.`;
             renderSummary();
             renderRows();
         } catch (error) {
@@ -212,12 +241,21 @@
     document.addEventListener('DOMContentLoaded', () => {
         el('refreshButton')?.addEventListener('click', loadData);
         el('sortBy')?.addEventListener('change', loadData);
+        el('aggregationMode')?.addEventListener('change', event => {
+            setAggregationMode(event.target.value);
+            renderSummary();
+        });
+        el('averageHoldCount')?.addEventListener('change', event => {
+            state.averageHoldCount = Number(event.target.value || 70);
+            renderSummary();
+        });
         el('includePotential')?.addEventListener('change', loadData);
         el('excludeFixedThreeValueGroups')?.addEventListener('change', loadData);
         el('selectTier1').addEventListener('click', () => setTier(1, true));
         el('selectTier2').addEventListener('click', () => setTier(2, true));
         el('selectTier3').addEventListener('click', () => setTier(3, true));
         el('clearSelection').addEventListener('click', () => {
+            setAggregationMode('manual');
             state.selectedKeys.clear();
             renderSummary();
             renderRows();
