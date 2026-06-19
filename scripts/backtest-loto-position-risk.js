@@ -181,13 +181,41 @@ async function buildPositionNextPrediction(rawData, key, options) {
     const next = await simulationService.buildNextPrediction(positionData, {
         playMode: 'bet',
         methodIds: options.methodId,
-        compactDetails: true,
+        compactDetails: false,
         selectedStreakDetailLimit: 0,
         forceComputeQuickStats: true,
         betWinMultiplier: 84,
         exactTargetExcluded: true
     });
     const method = next?.methods?.[options.methodId] || {};
+    const numberScores = method.numberScores || [];
+
+    const holds = {};
+    [60, 65, 70, 75, 80, 85, 90, 95].forEach(holdCount => {
+        const holdNumbers = numberScores.slice(0, holdCount).map(item => String(item.number).padStart(2, '0'));
+        const holdSet = new Set(holdNumbers);
+        holds[String(holdCount)] = {
+            excludedNumbers: holdNumbers,
+            betNumbers: Array.from({ length: 100 }, (_, idx) => String(idx).padStart(2, '0')).filter(n => !holdSet.has(n))
+        };
+    });
+
+    const averageDropoff = {
+        methodId: options.methodId,
+        description: method.description || '',
+        ranking: numberScores.map(item => ({
+            rank: item.rank,
+            number: String(item.number).padStart(2, '0'),
+            averageDropOffRate: item.averageDropOffRate || item.score || 0,
+            averageDropOffPercent: Math.round((item.averageDropOffRate || item.score || 0) * 1000) / 10,
+            supportCount: item.supportCount || 0,
+            distinctSetCount: item.distinctSetCount || 0,
+            maxDropOffPercent: Math.round((item.maxDropOffRate || 0) * 1000) / 10,
+            contributors: item.contributors || []
+        })),
+        holds
+    };
+
     return {
         positionKey: key,
         dataDate: next?.basisDate || null,
@@ -196,7 +224,8 @@ async function buildPositionNextPrediction(rawData, key, options) {
         numbers: (method.rawBetNumbers || method.betNumbers || []).map(Number),
         excludedCount: method.excludedCount || 0,
         betCount: method.rawBetCount ?? method.betCount ?? 0,
-        selectedChainCount: method.selectedStreakCount || 0
+        selectedChainCount: method.selectedStreakCount || 0,
+        averageDropoff
     };
 }
 
@@ -366,50 +395,6 @@ function buildLivePredictionRecord(nextPrediction, betCounts) {
     };
 }
 
-function sameFormattedNumberList(left, right) {
-    const a = (left || []).map(value => normalizeNumber(value)).filter(value => value !== null).map(formatNumber);
-    const b = (right || []).map(value => normalizeNumber(value)).filter(value => value !== null).map(formatNumber);
-    if (a.length !== b.length) return false;
-    return a.every((value, index) => value === b[index]);
-}
-
-function hasCurrentPositionPredictions(item, nextPrediction) {
-    const current = Array.isArray(item.positionPredictions) ? item.positionPredictions : [];
-    const expected = Array.isArray(nextPrediction?.positionPredictions) ? nextPrediction.positionPredictions : [];
-    if (current.length !== expected.length || expected.length !== PRIZE_KEYS.length) return false;
-    const currentByKey = new Map(current.map(entry => [entry.positionKey, entry]));
-    for (const expectedEntry of expected) {
-        const currentEntry = currentByKey.get(expectedEntry.positionKey);
-        if (!currentEntry) return false;
-        if (Number(currentEntry.betCount) !== Number(expectedEntry.betCount)) return false;
-        if (Number(currentEntry.excludedCount) !== Number(expectedEntry.excludedCount)) return false;
-        if (!sameFormattedNumberList(currentEntry.numbers, expectedEntry.numbers)) return false;
-    }
-    return true;
-}
-
-function isPendingLivePredictionCurrent(item, nextPrediction, betCounts) {
-    if (!item || item.status !== 'pending') return true;
-    if (String(item.methodId || '') !== String(nextPrediction?.methodId || '')) return false;
-    const expectedSets = buildPredictionSetsFromRanked(
-        (nextPrediction.ranked || []).map(entry => ({
-            number: normalizeNumber(entry.number),
-            supportCount: entry.supportCount,
-            positions: entry.positions || []
-        })),
-        betCounts
-    );
-    const hasExpectedTopSets = betCounts.every(count => {
-        const key = `top${count}`;
-        const numbers = item.predictions?.[key]?.numbers;
-        const expectedNumbers = expectedSets?.[key]?.numbers;
-        return Array.isArray(numbers)
-            && numbers.length === count
-            && sameFormattedNumberList(numbers, expectedNumbers);
-    });
-    return hasExpectedTopSets && hasCurrentPositionPredictions(item, nextPrediction);
-}
-
 function upsertNextLivePrediction(livePayload, nextPrediction, betCounts) {
     const record = buildLivePredictionRecord(nextPrediction, betCounts);
     if (!record) return false;
@@ -420,15 +405,26 @@ function upsertNextLivePrediction(livePayload, nextPrediction, betCounts) {
         return true;
     }
     const existing = predictions[existingIndex];
-    if (existing.status === 'settled') return false;
-    if (isPendingLivePredictionCurrent(existing, nextPrediction, betCounts)) return false;
-    predictions[existingIndex] = {
-        ...record,
-        replacedAt: new Date().toISOString(),
-        previousMethodId: existing.methodId || null
+    console.log(`[LotoPositionRisk] Giữ nguyên dàn point-in-time ${record.predictionIsoDate} (${existing.methodId || 'unknown'}, ${existing.status || 'pending'}).`);
+    return false;
+}
+
+function preservePublishedNextPrediction(nextPrediction, livePayload) {
+    const predictionIsoDate = normalizeDateText(nextPrediction?.predictionDate);
+    const published = (livePayload.predictions || []).find(item => item.predictionIsoDate === predictionIsoDate);
+    if (!published) return nextPrediction;
+    return {
+        ...nextPrediction,
+        dataDate: published.dataDate || nextPrediction.dataDate,
+        dataIsoDate: published.dataIsoDate || nextPrediction.dataIsoDate,
+        predictionDate: published.predictionDate || nextPrediction.predictionDate,
+        methodId: published.methodId || nextPrediction.methodId,
+        positionCount: published.positionCount || nextPrediction.positionCount,
+        positionPredictions: published.positionPredictions || nextPrediction.positionPredictions,
+        predictions: published.predictions || nextPrediction.predictions,
+        pointInTimeLocked: true,
+        publishedAt: published.createdAt || null
     };
-    console.log(`[LotoPositionRisk] Thay pending Lô ${record.predictionIsoDate} vì cache cũ không cùng công thức hoặc thiếu top.`);
-    return true;
 }
 
 function updateLivePredictionStore(output, rawData, betCounts, options) {
@@ -469,8 +465,8 @@ function updateLivePredictionStore(output, rawData, betCounts, options) {
     livePayload.summary = summarizeLivePredictions(livePayload, betCounts);
     livePayload.notes = [
         'Các bản ghi type=real là dàn dự đoán đã sinh để đánh thực tế.',
-        'Khi predictionIsoDate đã tồn tại, script không ghi đè numbers; chỉ cập nhật actual/methods khi có kết quả thật.',
-        'Mỗi vị trí dùng Dropoff TB từng số Hold 65; tab Lô chỉ hiển thị dự đoán và kết quả thực tế.'
+        'Khi predictionIsoDate đã tồn tại, script không ghi đè dàn dù còn pending; chỉ cập nhật actual/methods khi có kết quả thật.',
+        `Mỗi vị trí dùng ${options.methodId}; tab Lô chỉ hiển thị dự đoán và kết quả thực tế.`
     ];
 
     fs.mkdirSync(path.dirname(livePath), { recursive: true });
@@ -577,7 +573,7 @@ async function main() {
         .filter(Boolean);
     const maxMonths = Math.max(...monthsList);
     const days = Math.round(maxMonths * 30.4375);
-    const methodId = String(args.get('method') || 'avgDropoffHold65');
+    const methodId = String(args.get('method') || 'dedupDropoffHold60');
     const betCounts = String(args.get('betCounts') || '3,4,5,6,7')
         .split(',')
         .map(value => Math.max(1, Math.min(30, Number(value.trim()) || 0)))
@@ -827,7 +823,7 @@ async function main() {
             generatedAt: output.generatedAt,
             latestDataDate: output.latestDataDate,
             config: cacheConfig,
-            nextPrediction: output.nextPrediction,
+            nextPrediction: preservePublishedNextPrediction(output.nextPrediction, livePayload),
             livePredictions: {
                 generatedAt: livePayload.generatedAt,
                 startedAt: livePayload.startedAt,

@@ -57,7 +57,10 @@ export async function GET(request) {
 
         const { loadJsonWithSupabaseFallback } = require('@/lib/data-access');
         const url = new URL(request.url);
-        const payload = await loadJsonWithSupabaseFallback('cached_loto_prediction.json');
+        const [payload, livePayload] = await Promise.all([
+            loadJsonWithSupabaseFallback('cached_loto_prediction.json'),
+            loadJsonWithSupabaseFallback('cached_loto_live_predictions.json').catch(() => null)
+        ]);
 
         if (!payload) {
             return NextResponse.json(
@@ -69,7 +72,20 @@ export async function GET(request) {
             );
         }
 
-        const filtered = filterCount(payload, url.searchParams.get('count'));
+        const mergedPayload = livePayload
+            ? {
+                ...payload,
+                livePredictions: {
+                    generatedAt: livePayload.generatedAt,
+                    startedAt: livePayload.startedAt,
+                    latestDataDate: livePayload.latestDataDate,
+                    config: livePayload.config,
+                    summary: livePayload.summary,
+                    predictions: (livePayload.predictions || []).slice(-90)
+                }
+            }
+            : payload;
+        const filtered = filterCount(mergedPayload, url.searchParams.get('count'));
         if (filtered.error) {
             return NextResponse.json(
                 { success: false, error: filtered.error },

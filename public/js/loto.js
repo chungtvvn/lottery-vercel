@@ -30,7 +30,7 @@
             ['Ngày dữ liệu', data.latestDataDate || next.dataIsoDate || '-'],
             ['Ngày dự đoán', next.predictionDate || '-'],
             ['Vị trí', `${cfg.positionCount || 27} giải`],
-            ['Phương pháp', 'Dropoff TB từng số · Hold 65'],
+            ['Phương pháp', next.methodId || cfg.methodId || '-'],
             ['Công thức', `${nf.format(cfg.stakePerNumberK || 2300)}K ăn ${nf.format(cfg.payoutPerHitK || 8000)}K`]
         ].map(([label, value]) => `
             <div class="glass-card p-4">
@@ -103,6 +103,7 @@
                                 <span class="rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-700">THỰC TẾ</span>
                             </div>
                             <div class="mt-1 text-xs text-slate-500">Dựa trên dữ liệu đến ${row.dataIsoDate || row.dataDate || '-'}</div>
+                            <div class="mt-1 text-xs font-semibold text-indigo-600">${row.methodId || '-'}</div>
                             <div class="mt-1 text-xs text-slate-500">KQ: ${actual}</div>
                         </div>
                         <div class="text-left lg:text-right">

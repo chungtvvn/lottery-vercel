@@ -3,7 +3,7 @@
     const state = {
         history: [],
         selectedIndex: -1,
-        selectedMethod: 'avgDropoffHold70',
+        selectedMethod: 'dedupDropoffHold60',
         betWinMultiplier: 84,
         betWinFactor: 1,
         holdWinMultiplier: 0.705
@@ -11,6 +11,10 @@
     const BET_PER_NUMBER_K = 1000;
     const HOLD_LOSS_MULTIPLIER = 70;
     const METHOD_META = {
+        dedupDropoffHold60: {
+            label: 'Dropoff TB khử trùng tập số - Hold 60 (Đánh 40)',
+            description: 'Gộp các chuỗi đang diễn ra/tiềm năng tạo cùng một tập số thành một bằng chứng trước khi lấy dropoff trung bình. Cách này tránh pattern trùng lặp làm phình điểm của một số.'
+        },
         avgDropoffHold60: {
             label: 'Dropoff TB từng số - Hold 60 (Đánh 40)',
             description: 'Tính trung bình dropoff của mọi chuỗi đang diễn ra/tiềm năng chứa từng số, loại 60 số có trung bình cao nhất và đánh 40 số còn lại.'
