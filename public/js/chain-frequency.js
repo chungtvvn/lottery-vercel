@@ -1,5 +1,5 @@
 (function () {
-    const state = { data: null, selectedKeys: new Set(), aggregationMode: 'average', averageHoldCount: 70 };
+    const state = { data: null, selectedKeys: new Set(), aggregationMode: 'recommended', averageHoldCount: 70 };
 
     const el = id => document.getElementById(id);
     const fmt = (value, suffix = '') => {
@@ -91,8 +91,11 @@
     }
 
     function collectNumbers(rows) {
-        if (state.aggregationMode === 'average') {
-            const hold = state.data?.averageDropoff?.holds?.[String(state.averageHoldCount)];
+        if (state.aggregationMode !== 'manual') {
+            const source = state.aggregationMode === 'recommended'
+                ? state.data?.recommendedExclusion
+                : state.data?.averageDropoff;
+            const hold = source?.holds?.[String(state.averageHoldCount)];
             if (hold) {
                 return {
                     excludedNumbers: hold.excludedNumbers || [],
@@ -112,20 +115,26 @@
     }
 
     function renderNumberGrid(numbers, selectedClass) {
+        const rankingSource = state.aggregationMode === 'recommended'
+            ? state.data?.recommendedExclusion
+            : state.data?.averageDropoff;
         const rankingByNumber = new Map(
-            (state.data?.averageDropoff?.ranking || []).map(item => [Number(item.number), item])
+            (rankingSource?.ranking || []).map(item => [Number(item.number), item])
         );
         return `
             <div class="number-grid">
                 ${numbers.map(num => {
-                    const score = state.aggregationMode === 'average' ? rankingByNumber.get(Number(num)) : null;
+                    const score = state.aggregationMode !== 'manual' ? rankingByNumber.get(Number(num)) : null;
+                    const scorePercent = state.aggregationMode === 'recommended'
+                        ? score?.scorePercent
+                        : score?.averageDropOffPercent;
                     const title = score
-                        ? `Hạng ${score.rank} · Dropoff TB ${fmtDecimal(score.averageDropOffPercent, 1)}% · ${score.supportCount} chuỗi`
+                        ? `Hạng ${score.rank} · ${state.aggregationMode === 'recommended' ? 'Điểm hiệu chỉnh' : 'Dropoff TB'} ${fmtDecimal(scorePercent, 1)}% · ${score.supportCount} chuỗi`
                         : '';
                     return `
                     <span title="${title}" class="rounded-md border px-2 py-2 text-center font-mono text-sm font-bold ${selectedClass}">
                         <span class="block">${numText(num)}</span>
-                        ${score ? `<span class="mt-0.5 block text-[9px] font-sans font-semibold opacity-70">${fmtDecimal(score.averageDropOffPercent, 1)}%</span>` : ''}
+                        ${score ? `<span class="mt-0.5 block text-[9px] font-sans font-semibold opacity-70">${fmtDecimal(scorePercent, 1)}%</span>` : ''}
                     </span>
                 `; }).join('')}
             </div>
@@ -138,7 +147,9 @@
         const { excludedNumbers, betNumbers } = collectNumbers(rows);
         el('summaryCards').innerHTML = [
             ['Ngày dự đoán', state.data.predictionDate],
-            ['Cách tổng hợp', state.aggregationMode === 'average' ? `Dropoff TB · Hold ${state.averageHoldCount}` : 'Chuỗi tự chọn'],
+            ['Cách tổng hợp', state.aggregationMode === 'recommended'
+                ? `Hiệu chỉnh 50% nền · Hold ${state.averageHoldCount}`
+                : (state.aggregationMode === 'average' ? `Dropoff TB · Hold ${state.averageHoldCount}` : 'Chuỗi tự chọn')],
             ['Chuỗi chọn', selectedRows.length],
             ['Số ôm/loại', excludedNumbers.length],
             ['Số đánh', betNumbers.length],
@@ -207,9 +218,9 @@
     }
 
     function setAggregationMode(mode) {
-        state.aggregationMode = mode === 'manual' ? 'manual' : 'average';
+        state.aggregationMode = ['recommended', 'average', 'manual'].includes(mode) ? mode : 'recommended';
         if (el('aggregationMode')) el('aggregationMode').value = state.aggregationMode;
-        el('averageHoldWrap')?.classList.toggle('hidden', state.aggregationMode !== 'average');
+        el('averageHoldWrap')?.classList.toggle('hidden', state.aggregationMode === 'manual');
     }
 
     async function loadData() {
@@ -226,9 +237,9 @@
             if (!response.ok || data.error) throw new Error(data.error || 'Không thể tải dữ liệu loại trừ.');
             state.data = data;
             state.selectedKeys = new Set();
-            setAggregationMode(el('aggregationMode')?.value || 'average');
+            setAggregationMode(el('aggregationMode')?.value || 'recommended');
             state.averageHoldCount = Number(el('averageHoldCount')?.value || 70);
-            el('predictionInfo').textContent = `Dữ liệu tới ${data.basisDate}; Dropoff TB dùng ${data.averageDropoff?.candidatesCount || 0} chuỗi chứa số. Chuyển sang Chuỗi tự chọn để tick Tier hoặc từng dòng trong ${data.candidatesCount} ứng viên ưu tiên.`;
+            el('predictionInfo').textContent = `Dữ liệu tới ${data.basisDate}; phương án mặc định hiệu chỉnh 50% xác suất nền từ ${data.recommendedExclusion?.candidatesCount || 0} chuỗi chứa số. Chuyển sang Chuỗi tự chọn để tick Tier hoặc từng dòng trong ${data.candidatesCount} ứng viên ưu tiên.`;
             renderSummary();
             renderRows();
         } catch (error) {

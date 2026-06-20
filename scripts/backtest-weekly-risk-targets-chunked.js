@@ -33,7 +33,7 @@ function parseMethods(args) {
     const methods = String(source)
         .split(',')
         .map(value => value.trim())
-        .filter(value => /^(riskHold|frequencyHold|tierHold|edgeHold|confidentEdgeHold|avgDropoffHold|dedupDropoffHold|bayesHold|scarcityHold|recordHold|recordFirstHold|potentialHold|wilsonHold)\d{1,3}$/.test(value));
+        .filter(value => /^(riskHold|frequencyHold|tierHold|edgeHold|confidentEdgeHold|avgDropoffHold|avgEdge25Hold|avgEdge50Hold|avgEdge75Hold|dedupDropoffHold|dedupEdgeHold|dedupEdge25Hold|dedupEdge50Hold|dedupEdge75Hold|bayesHold|scarcityHold|recordHold|recordFirstHold|potentialHold|wilsonHold)\d{1,3}$/.test(value));
     return [...new Set(methods)];
 }
 
@@ -165,6 +165,19 @@ function summarizeMethods(dailyRows, methods = METHODS) {
     }).sort((a, b) => (b.totalProfit || 0) - (a.totalProfit || 0));
 }
 
+function summarizeMethodsByYear(dailyRows, methods = METHODS) {
+    const byYear = new Map();
+    for (const row of dailyRows) {
+        const year = String(row.predictionIsoDate || '').slice(0, 4);
+        if (!/^\d{4}$/.test(year)) continue;
+        if (!byYear.has(year)) byYear.set(year, []);
+        byYear.get(year).push(row);
+    }
+    return [...byYear.entries()].sort(([a], [b]) => a.localeCompare(b)).flatMap(([year, rows]) =>
+        summarizeMethods(rows, methods).map(summary => ({ year: Number(year), ...summary }))
+    );
+}
+
 function writeCsv(outputPath, weeklyRows) {
     const headers = [
         'weekStart', 'weekEnd', 'methodId', 'days', 'playedDays', 'skippedDays',
@@ -183,6 +196,7 @@ function writeCsv(outputPath, weeklyRows) {
 async function main() {
     const args = parseArgs();
     const years = Number(args.get('years') || 20);
+    const warmupDays = Math.max(1, Math.round(Number(args.get('warmupDays') || 365)));
     const chunkSize = Math.max(30, Number(args.get('chunkSize') || 500));
     const rollingHistory = args.get('rollingHistory') === '1' || args.get('rolling') === '1';
     const methods = parseMethods(args);
@@ -193,7 +207,7 @@ async function main() {
     const sortedData = (lotteryService.getRawData() || [])
         .slice()
         .sort((a, b) => new Date(a.date) - new Date(b.date));
-    const totalDays = Math.min(Math.round(years * 365.25), sortedData.length - 1);
+    const totalDays = Math.min(Math.round(years * 365.25), Math.max(0, sortedData.length - warmupDays));
     const startIndex = sortedData.length - totalDays;
     const endIndex = sortedData.length;
     const chunks = [];
@@ -201,7 +215,7 @@ async function main() {
         chunks.push({ start, end: Math.min(endIndex, start + chunkSize) });
     }
 
-    console.log(`[ChunkedBacktest] Running ${totalDays} days in ${chunks.length} chunks (${chunkSize} days/chunk), rollingHistory=${rollingHistory ? '1' : '0'}`);
+    console.log(`[ChunkedBacktest] Running ${totalDays} days after ${warmupDays} warm-up days in ${chunks.length} chunks (${chunkSize} days/chunk), rollingHistory=${rollingHistory ? '1' : '0'}`);
     const weeklyMap = new Map();
     const dailyRows = [];
     const chunkReports = [];
@@ -248,6 +262,7 @@ async function main() {
     dailyRows.sort((a, b) => String(a.predictionIsoDate).localeCompare(String(b.predictionIsoDate)));
     const weeklyRows = finalizeWeeklyRows(weeklyMap);
     const methodSummary = summarizeMethods(dailyRows, methods);
+    const yearlySummary = summarizeMethodsByYear(dailyRows, methods);
     const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
     const csvPath = path.join(outputDir, `backtest_weekly_risk_targets_bet_only_chunked_${stamp}.csv`);
     const jsonPath = path.join(outputDir, `backtest_weekly_risk_targets_bet_only_chunked_${stamp}.json`);
@@ -258,6 +273,7 @@ async function main() {
         config: {
             years,
             totalDays,
+            warmupDays,
             chunkSize,
             startDate: formatIsoDate(sortedData[startIndex].date),
             endDate: formatIsoDate(sortedData[endIndex - 1].date),
@@ -267,6 +283,7 @@ async function main() {
             childReports: chunkReports
         },
         methodSummary,
+        yearlySummary,
         weeklyRows,
         dailyRows
     }, null, 2));

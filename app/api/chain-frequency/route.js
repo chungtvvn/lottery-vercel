@@ -59,7 +59,13 @@ export async function GET(request) {
             if (!cached) {
                 cached = await loadJsonWithSupabaseFallback(`chain_frequency_${sortBy}_potential_${includePotential}_exclude3_${excludeFixed}.json`);
             }
-            if (cached && !cached.error && cached.averageDropoff?.ranking?.length === 100) {
+            if (
+                cached &&
+                !cached.error &&
+                cached.averageDropoff?.ranking?.length === 100 &&
+                cached.recommendedExclusion?.methodId === 'avgEdge50Hold70' &&
+                cached.recommendedExclusion?.ranking?.length === 100
+            ) {
                 return NextResponse.json({
                     ...withoutDefaultSelection(cached),
                     cached: true

@@ -17,6 +17,8 @@
 
     function methodDescription(methodId) {
         if (/^dedupDropoffHold\d+$/.test(methodId)) return 'Gộp các chuỗi đang diễn ra và tiềm năng có cùng tập số trước khi tính trung bình dropoff. Mỗi tập số chỉ có một phiếu, tránh nhiều pattern trùng nhau làm phình điểm loại.';
+        if (/^dedupEdge(?:25|50|75)?Hold\d+$/.test(methodId)) return 'Gộp các chuỗi có cùng tập số, sau đó hiệu chỉnh dropoff theo xác suất nền của độ rộng tập số. Edge cao hơn nghĩa là bằng chứng loại trừ vượt nền mạnh hơn.';
+        if (/^avgEdge(?:25|50|75)Hold\d+$/.test(methodId)) return 'Với từng số, lấy trung bình dropoff đã hiệu chỉnh theo xác suất nền của tất cả chuỗi chứa số đó, xếp giảm dần rồi loại đủ số theo mức Hold.';
         if (/^avgDropoffHold\d+$/.test(methodId)) return 'Với mỗi số 00-99, lấy trung bình cộng dropoff của mọi chuỗi đang diễn ra và tiềm năng chứa số đó, xếp giảm dần rồi loại đủ số theo mức Hold.';
         if (methodId === 'confidentEdgeHold90') return 'Chấm edge cho từng số như Edge Hold 90 nhưng chỉ chơi khi có đủ 90 số mang edge dương. Ngày phải ép số score 0 vào danh sách loại sẽ được bỏ qua.';
         if (methodId === 'riskHold60') return 'Sắp xếp chuỗi dự đoán theo rủi ro cao xuống thấp, lấy từ trên xuống tới khoảng 60 số ôm và đánh 40 số còn lại.';

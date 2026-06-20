@@ -2016,6 +2016,36 @@ function populateMissingOrderedSequenceOptions() {
 }
 populateMissingOrderedSequenceOptions();
 
+function populateQuadrantPairAlternatingOptions() {
+    const group = STATS_OPTIONS["Thống kê so le theo cặp"];
+    const families = [
+        { prefix: 'cap_chan_le', label: 'Đầu-đít chẵn/lẻ', positive: 'chẵn', negative: 'lẻ' },
+        { prefix: 'cap_nho_to', label: 'Đầu-đít nhỏ/to', positive: 'nhỏ', negative: 'to' },
+        { prefix: 'cap_nguyento_khac', label: 'Đầu-đít nguyên tố/khác', positive: 'nguyên tố', negative: 'khác' },
+        { prefix: 'cap_chia3_khac', label: 'Đầu-đít chia hết 3/khác', positive: 'chia hết 3', negative: 'khác' }
+    ];
+    const stateDefs = family => [
+        { key: 'aa', label: `${family.positive}-${family.positive}` },
+        { key: 'ab', label: `${family.positive}-${family.negative}` },
+        { key: 'ba', label: `${family.negative}-${family.positive}` },
+        { key: 'bb', label: `${family.negative}-${family.negative}` }
+    ];
+
+    for (const family of families) {
+        const states = stateDefs(family);
+        for (let i = 0; i < states.length; i++) {
+            for (let j = i + 1; j < states.length; j++) {
+                group.push({
+                    text: `${family.label}: ${states[i].label} ↔ ${states[j].label} - So le theo cặp`,
+                    category: `${family.prefix}_${states[i].key}_${states[j].key}`,
+                    subcategory: 'soLeTheoCap'
+                });
+            }
+        }
+    }
+}
+populateQuadrantPairAlternatingOptions();
+
 function populateSplitAlternatingOrderedOptions() {
     for (const groupName in STATS_OPTIONS) {
         const additions = [];

@@ -18,7 +18,9 @@ const makeRows = values => values.map((special, index) => ({
 }));
 
 async function verifyAllPairCategories() {
-    for (const config of getSoLeTheoCapConfigs()) {
+    const configs = getSoLeTheoCapConfigs();
+    assert.equal(configs.length, 50, 'phải có đủ 26 dạng tổng quát + 24 cặp trạng thái chi tiết');
+    for (const config of configs) {
         const a = allNumbers.find(number => getSoLeTheoCapLabel(number, config.key) === config.labels[0].key);
         const b = allNumbers.find(number => getSoLeTheoCapLabel(number, config.key) === config.labels[1].key);
         assert.ok(a && b, `${config.key}: thiếu số mẫu cho một trong hai nhãn`);
@@ -70,7 +72,7 @@ async function verifyGeneratorMinimumLength() {
 async function main() {
     await verifyAllPairCategories();
     await verifyGeneratorMinimumLength();
-    console.log(`So le theo cặp hợp lệ: 26 dạng đều tuân theo A-B-A-B-A-B.`);
+    console.log(`So le theo cặp hợp lệ: ${getSoLeTheoCapConfigs().length} dạng đều tuân theo A-B-A-B-A-B.`);
 }
 
 main().catch(error => {

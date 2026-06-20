@@ -573,7 +573,7 @@ async function main() {
         .filter(Boolean);
     const maxMonths = Math.max(...monthsList);
     const days = Math.round(maxMonths * 30.4375);
-    const methodId = String(args.get('method') || 'dedupDropoffHold60');
+    const methodId = String(args.get('method') || 'avgEdge50Hold70');
     const betCounts = String(args.get('betCounts') || '3,4,5,6,7')
         .split(',')
         .map(value => Math.max(1, Math.min(30, Number(value.trim()) || 0)))

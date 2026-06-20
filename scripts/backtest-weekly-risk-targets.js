@@ -39,7 +39,7 @@ function parseMethods(args) {
     const methods = String(source)
         .split(',')
         .map(value => value.trim())
-        .filter(value => /^(riskHold|frequencyHold|tierHold|edgeHold|confidentEdgeHold|avgDropoffHold|dedupDropoffHold|bayesHold|scarcityHold|recordHold|recordFirstHold|potentialHold|wilsonHold)\d{1,3}$/.test(value));
+        .filter(value => /^(riskHold|frequencyHold|tierHold|edgeHold|confidentEdgeHold|avgDropoffHold|avgEdge25Hold|avgEdge50Hold|avgEdge75Hold|dedupDropoffHold|dedupEdgeHold|dedupEdge25Hold|dedupEdge50Hold|dedupEdge75Hold|bayesHold|scarcityHold|recordHold|recordFirstHold|potentialHold|wilsonHold)\d{1,3}$/.test(value));
     return [...new Set(methods)];
 }
 

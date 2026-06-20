@@ -3,7 +3,7 @@
     const state = {
         history: [],
         selectedIndex: -1,
-        selectedMethod: 'dedupDropoffHold60',
+        selectedMethod: 'avgEdge50Hold70',
         betWinMultiplier: 84,
         betWinFactor: 1,
         holdWinMultiplier: 0.705
@@ -11,8 +11,16 @@
     const BET_PER_NUMBER_K = 1000;
     const HOLD_LOSS_MULTIPLIER = 70;
     const METHOD_META = {
-        dedupDropoffHold60: {
-            label: 'Dropoff TB khử trùng tập số - Hold 60 (Đánh 40)',
+        avgEdge50Hold70: {
+            label: 'Dropoff TB hiệu chỉnh 50% nền - Hold 70 (Đánh 30)',
+            description: 'Với mỗi chuỗi chứa một số, lấy dropoff trừ 50% xác suất gãy tự nhiên theo độ rộng tập số; sau đó lấy trung bình các bằng chứng. Loại 70 số có điểm cao nhất. Đây là phương án dẫn đầu backtest point-in-time 20 năm.'
+        },
+        dedupEdge75Hold70: {
+            label: 'Edge khử trùng 75% nền - Hold 70 (Đánh 30)',
+            description: 'Gộp các pattern tạo cùng tập số thành một bằng chứng, lấy dropoff trừ 75% xác suất gãy tự nhiên rồi loại 70 số có edge trung bình cao nhất.'
+        },
+        dedupDropoffHold70: {
+            label: 'Dropoff TB khử trùng tập số - Hold 70 (Đánh 30)',
             description: 'Gộp các chuỗi đang diễn ra/tiềm năng tạo cùng một tập số thành một bằng chứng trước khi lấy dropoff trung bình. Cách này tránh pattern trùng lặp làm phình điểm của một số.'
         },
         avgDropoffHold60: {
