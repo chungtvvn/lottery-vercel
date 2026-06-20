@@ -1346,7 +1346,12 @@ async function main() {
 
             if (process.env.SYNC_R2_BEFORE_LOTO !== '0') {
                 console.log('[5b] Upload R2 trước bước Lô để dữ liệu chính không bị chặn nếu Lô quá nặng.');
-                didEarlyR2Upload = uploadR2StaticData('Upload raw data + non-Lô statistics gzip lên Cloudflare R2 trước bước Lô.');
+                didEarlyR2Upload = uploadR2StaticData(
+                    'Upload raw data + non-Lô statistics gzip lên Cloudflare R2 trước bước Lô.',
+                    {
+                        R2_UPLOAD_EXCLUDE_STATS_FILES: 'cached_loto_prediction.json,cached_loto_live_predictions.json'
+                    }
+                );
             }
 
             if (process.env.LOTO_GENERATE_CACHE !== '0') {

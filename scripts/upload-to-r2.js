@@ -29,6 +29,10 @@ const ONLY_STATS_FILES = String(process.env.R2_UPLOAD_ONLY_STATS_FILES || '')
     .split(',')
     .map(file => file.trim())
     .filter(Boolean);
+const EXCLUDED_STATS_FILES = new Set(String(process.env.R2_UPLOAD_EXCLUDE_STATS_FILES || '')
+    .split(',')
+    .map(file => file.trim())
+    .filter(Boolean));
 
 function normalizeDateValue(value) {
     if (!value) return null;
@@ -228,14 +232,20 @@ async function uploadToR2() {
     const allFiles = fs.readdirSync(STATS_DIR).filter(file => file.endsWith('.json'));
     const files = ONLY_STATS_FILES.length > 0
         ? allFiles.filter(file => ONLY_STATS_FILES.includes(file))
-        : allFiles.filter(file => shouldUploadStatsFile(file, allowedSimulationCaches));
-    const skippedSimulationCaches = allFiles.length - files.length;
+        : allFiles.filter(file =>
+            shouldUploadStatsFile(file, allowedSimulationCaches) &&
+            !EXCLUDED_STATS_FILES.has(file)
+        );
+    const skippedStatsFiles = allFiles.length - files.length;
     console.log(`[R2 Upload] Tìm thấy ${files.length} tệp tin JSON thống kê cần tải lên.`);
     if (ONLY_STATS_FILES.length > 0) {
         console.log(`[R2 Upload] Chỉ upload các file được yêu cầu: ${ONLY_STATS_FILES.join(', ')}`);
     }
-    if (skippedSimulationCaches > 0) {
-        console.log(`[R2 Upload] Bỏ qua ${skippedSimulationCaches} cache simulation cũ/không dùng. Chỉ upload: ${[...allowedSimulationCaches].join(', ')}`);
+    if (EXCLUDED_STATS_FILES.size > 0) {
+        console.log(`[R2 Upload] Giữ nguyên trên R2: ${[...EXCLUDED_STATS_FILES].join(', ')}`);
+    }
+    if (skippedStatsFiles > 0) {
+        console.log(`[R2 Upload] Bỏ qua ${skippedStatsFiles} file thống kê do bộ lọc upload hiện tại.`);
     }
     for (const file of files) {
         const filePath = path.join(STATS_DIR, file);
