@@ -19,6 +19,8 @@ const LOTO_STAKE_PER_NUMBER_K = 2300;
 const LOTO_PAYOUT_PER_HIT_K = 8000;
 const LOTO_METHOD_ID = process.env.LOTO_METHOD_ID || 'avgEdge50Hold70';
 const LOTO_BET_COUNTS = [3, 4, 5, 6, 7];
+const ANALYSIS_CACHE_VERSION = 'hold70-edge-v1';
+const ANALYSIS_CACHE_VERSION_FILE = 'analysis_cache_version.json';
 
 function readNumberEnv(name, fallback, minValue) {
     const parsed = Number(process.env[name]);
@@ -49,6 +51,39 @@ async function readJsonIfExists(filePath) {
     } catch (e) {
         return null;
     }
+}
+
+async function hasCurrentAnalysisCacheVersionOnR2() {
+    if (!getR2PublicUrl() || process.env.UPDATE_CHECK_R2_ANALYSIS_CACHE === '0') return true;
+    try {
+        const marker = await readStatsJsonFromR2(ANALYSIS_CACHE_VERSION_FILE);
+        const current = marker && marker.version === ANALYSIS_CACHE_VERSION;
+        console.log(`[Cache Check] R2 analysis cache version=${marker?.version || 'missing'}, expected=${ANALYSIS_CACHE_VERSION}.`);
+        return current;
+    } catch (error) {
+        console.log(`[Cache Check] R2 analysis cache marker missing/stale: ${error.message}`);
+        return false;
+    }
+}
+
+async function writeVerifiedAnalysisCacheVersion() {
+    const statsDir = path.join(DATA_DIR, 'statistics');
+    const history = await readJsonIfExists(path.join(statsDir, 'cached_prediction_history.json'));
+    const chain = await readJsonIfExists(path.join(statsDir, 'chain_frequency_risk_potential_1_exclude3_0.json'));
+    const historyHasMethod = Array.isArray(history) && history.some(run =>
+        !!run?.summary?.methods?.avgEdge50Hold70
+    );
+    const chainIsCurrent = chain?.recommendedExclusion?.methodId === 'avgEdge50Hold70'
+        && chain?.recommendedExclusion?.ranking?.length === 100;
+    if (!historyHasMethod || !chainIsCurrent) {
+        throw new Error(`Cache phân tích chưa đạt schema ${ANALYSIS_CACHE_VERSION}: history=${historyHasMethod}, chain=${chainIsCurrent}`);
+    }
+    await fs.writeFile(path.join(statsDir, ANALYSIS_CACHE_VERSION_FILE), JSON.stringify({
+        version: ANALYSIS_CACHE_VERSION,
+        generatedAt: new Date().toISOString(),
+        predictionMethodId: 'avgEdge50Hold70'
+    }, null, 0));
+    console.log(`✅ Đã xác minh và ghi ${ANALYSIS_CACHE_VERSION_FILE}: ${ANALYSIS_CACHE_VERSION}`);
 }
 
 function getLatestDateValue(rows) {
@@ -836,6 +871,11 @@ async function main() {
         }
     }
 
+    if (!(await hasCurrentAnalysisCacheVersionOnR2())) {
+        console.log('[Cache Check] Thuật toán/cache phân tích đã đổi. Buộc sinh lại Lịch sử và Chọn chuỗi dù raw data không đổi.');
+        isStale = true;
+    }
+
     const rawDataChanged = hasRawDataChanged(currentArray, finalArray);
     const trustR2LotoCache = Boolean(getR2PublicUrl() && process.env.UPDATE_CHECK_R2_LOTO !== '0');
     const lotoCacheMissing = trustR2LotoCache ? false : !hasLotoPredictionCache(latestRawDate);
@@ -1267,6 +1307,8 @@ async function main() {
             } catch (chainErr) {
                 console.error('⚠️ Lỗi khi tạo cached chain frequency (không ảnh hưởng các bước khác):', chainErr.message);
             }
+
+            await writeVerifiedAnalysisCacheVersion();
         } else {
             console.log(' -> DB stats active, bỏ qua legacy cached predictions/suggestions/simulation để tránh timeout và dữ liệu fallback stale.');
         }
