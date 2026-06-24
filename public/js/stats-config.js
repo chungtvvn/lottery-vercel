@@ -2046,6 +2046,67 @@ function populateQuadrantPairAlternatingOptions() {
 }
 populateQuadrantPairAlternatingOptions();
 
+const BO_GROUPS = [
+    { id: '01', numbers: ['01', '06', '10', '15', '51', '56', '60', '65'] },
+    { id: '02', numbers: ['02', '07', '20', '25', '52', '57', '70', '75'] },
+    { id: '03', numbers: ['03', '08', '30', '35', '53', '58', '80', '85'] },
+    { id: '04', numbers: ['04', '09', '40', '45', '54', '59', '90', '95'] },
+    { id: '05', numbers: ['00', '05', '50', '55'] },
+    { id: '11', numbers: ['11', '16', '61', '66'] },
+    { id: '12', numbers: ['12', '17', '21', '26', '62', '67', '71', '76'] },
+    { id: '13', numbers: ['13', '18', '31', '36', '63', '68', '81', '86'] },
+    { id: '22', numbers: ['22', '27', '72', '77'] },
+    { id: '23', numbers: ['23', '28', '32', '37', '73', '78', '82', '87'] },
+    { id: '24', numbers: ['24', '29', '42', '47', '74', '79', '92', '97'] },
+    { id: '33', numbers: ['33', '38', '83', '88'] },
+    { id: '34', numbers: ['34', '39', '43', '48', '84', '89', '93', '98'] },
+    { id: '41', numbers: ['14', '19', '41', '46', '64', '69', '91', '96'] },
+    { id: '44', numbers: ['44', '49', '94', '99'] }
+];
+
+STATS_OPTIONS["Thống kê theo Bộ"] = [];
+function populateBoOptions() {
+    const arr = STATS_OPTIONS["Thống kê theo Bộ"];
+    const subLabels = {
+        veLienTiep: 'Về liên tiếp',
+        veSole: 'Về so le',
+        veSoleMoi: 'Về so le Mới',
+        veTheoThuTu: 'Về theo thứ tự',
+        veSoLeTheoThuTu: 'Về so le theo thứ tự',
+        tienLienTiep: 'Tiến liên tiếp',
+        tienDeuLienTiep: 'Tiến Đều',
+        luiLienTiep: 'Lùi liên tiếp',
+        luiDeuLienTiep: 'Lùi Đều',
+        tienLuiSoLe: 'Tiến-Lùi So Le (>=4)',
+        luiTienSoLe: 'Lùi-Tiến So Le (>=4)'
+    };
+
+    for (const group of BO_GROUPS) {
+        const category = `bo_${group.id}`;
+        const prefix = `Bộ ${group.id} (${group.numbers.join(',')})`;
+        Object.entries(subLabels).forEach(([subcategory, label]) => {
+            arr.push({ text: `${prefix} - ${label}`, category, subcategory });
+        });
+    }
+}
+populateBoOptions();
+
+function populateBoPairAlternatingOptions() {
+    const group = STATS_OPTIONS["Thống kê so le theo cặp"];
+    for (let i = 0; i < BO_GROUPS.length; i++) {
+        for (let j = i + 1; j < BO_GROUPS.length; j++) {
+            const left = BO_GROUPS[i];
+            const right = BO_GROUPS[j];
+            group.push({
+                text: `Bộ ${left.id} ↔ Bộ ${right.id} - So le theo cặp`,
+                category: `bo_pair_${left.id}_${right.id}`,
+                subcategory: 'soLeTheoCap'
+            });
+        }
+    }
+}
+populateBoPairAlternatingOptions();
+
 function populateSplitAlternatingOrderedOptions() {
     for (const groupName in STATS_OPTIONS) {
         const additions = [];

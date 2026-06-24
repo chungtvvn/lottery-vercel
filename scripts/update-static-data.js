@@ -19,7 +19,7 @@ const LOTO_STAKE_PER_NUMBER_K = 2300;
 const LOTO_PAYOUT_PER_HIT_K = 8000;
 const LOTO_METHOD_ID = process.env.LOTO_METHOD_ID || 'avgEdge50Hold70';
 const LOTO_BET_COUNTS = [3, 4, 5, 6, 7];
-const ANALYSIS_CACHE_VERSION = 'hold70-edge-v1';
+const ANALYSIS_CACHE_VERSION = 'hold70-edge-bo-v1';
 const ANALYSIS_CACHE_VERSION_FILE = 'analysis_cache_version.json';
 
 function readNumberEnv(name, fallback, minValue) {

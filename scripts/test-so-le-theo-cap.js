@@ -10,6 +10,7 @@ const {
     getSoLeTheoCapNextLabel,
     predictSoLeTheoCapNumbers
 } = require('../lib/utils/soLeTheoCapPairs');
+const { BO_GROUPS } = require('../lib/utils/boGroups');
 
 const allNumbers = Array.from({ length: 100 }, (_, number) => String(number).padStart(2, '0'));
 const makeRows = values => values.map((special, index) => ({
@@ -19,7 +20,8 @@ const makeRows = values => values.map((special, index) => ({
 
 async function verifyAllPairCategories() {
     const configs = getSoLeTheoCapConfigs();
-    assert.equal(configs.length, 50, 'phải có đủ 26 dạng tổng quát + 24 cặp trạng thái chi tiết');
+    const expectedCount = 50 + (BO_GROUPS.length * (BO_GROUPS.length - 1) / 2);
+    assert.equal(configs.length, expectedCount, 'phải có đủ dạng tổng quát, cặp trạng thái chi tiết và cặp Bộ');
     for (const config of configs) {
         const a = allNumbers.find(number => getSoLeTheoCapLabel(number, config.key) === config.labels[0].key);
         const b = allNumbers.find(number => getSoLeTheoCapLabel(number, config.key) === config.labels[1].key);
