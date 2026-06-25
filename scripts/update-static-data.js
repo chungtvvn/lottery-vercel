@@ -12,6 +12,7 @@ const { isInvalidStatsKey } = require('../lib/utils/statsOptionsManifest');
 const LEGACY_DATA_URL = 'https://raw.githubusercontent.com/khiemdoan/vietnam-lottery-xsmb-analysis/refs/heads/main/data/xsmb-2-digits.json';
 const DATA_DIR = path.join(__dirname, '..', 'lib', 'data');
 const JSON_FILE = path.join(DATA_DIR, 'xsmb-2-digits.json');
+const RUN_STATUS_FILE = path.join(__dirname, '..', '.update-static-data-result.json');
 const WAIT_FOR_NEW_XOSO = process.env.WAIT_FOR_NEW_XOSO === '1';
 const XOSO_MAX_WAIT_MINUTES = readNumberEnv('XOSO_MAX_WAIT_MINUTES', WAIT_FOR_NEW_XOSO ? 90 : 0, 0);
 const XOSO_RETRY_INTERVAL_SECONDS = readNumberEnv('XOSO_RETRY_INTERVAL_SECONDS', 60, 5);
@@ -19,8 +20,56 @@ const LOTO_STAKE_PER_NUMBER_K = 2300;
 const LOTO_PAYOUT_PER_HIT_K = 8000;
 const LOTO_METHOD_ID = process.env.LOTO_METHOD_ID || 'avgEdge50Hold70';
 const LOTO_BET_COUNTS = [3, 4, 5, 6, 7];
+const MILESTONE20Y_METHOD_VERSION = 'annual20y-2026-06-25';
+const MILESTONE20Y_BASELINE_VERSION = 'annual20y-baseline-2026-06-25';
+const MILESTONE20Y_CACHE_FILES = [
+    'cached_milestone20y_prediction.json',
+    'cached_milestone20y_live_predictions.json'
+];
 const ANALYSIS_CACHE_VERSION = 'hold70-edge-bo-v1';
 const ANALYSIS_CACHE_VERSION_FILE = 'analysis_cache_version.json';
+const runStatus = {
+    startedAt: new Date().toISOString(),
+    skipped: false,
+    didWork: false,
+    rawDataChanged: false,
+    statsRegenerated: false,
+    predictionCacheRefreshed: false,
+    r2Uploaded: false,
+    uploadLabels: [],
+    latestRawDate: null,
+    reason: ''
+};
+
+function markRunStatus(fields = {}) {
+    Object.assign(runStatus, fields);
+    runStatus.didWork = Boolean(
+        runStatus.didWork ||
+        runStatus.rawDataChanged ||
+        runStatus.statsRegenerated ||
+        runStatus.predictionCacheRefreshed ||
+        runStatus.r2Uploaded
+    );
+}
+
+async function writeRunStatus(fields = {}) {
+    markRunStatus(fields);
+    const payload = {
+        ...runStatus,
+        finishedAt: new Date().toISOString()
+    };
+    await fs.writeFile(RUN_STATUS_FILE, JSON.stringify(payload, null, 2), 'utf8');
+    console.log(`[Status] ${JSON.stringify({
+        skipped: payload.skipped,
+        didWork: payload.didWork,
+        rawDataChanged: payload.rawDataChanged,
+        statsRegenerated: payload.statsRegenerated,
+        predictionCacheRefreshed: payload.predictionCacheRefreshed,
+        r2Uploaded: payload.r2Uploaded,
+        latestRawDate: payload.latestRawDate,
+        reason: payload.reason
+    })}`);
+}
 
 function readNumberEnv(name, fallback, minValue) {
     const parsed = Number(process.env[name]);
@@ -116,6 +165,41 @@ function isLotoPredictionFormulaCurrent(cache) {
         && payout === LOTO_PAYOUT_PER_HIT_K
         && methodId === LOTO_METHOD_ID
         && betCountsOk;
+}
+
+function isMilestone20yFormulaCurrent(cache) {
+    const config = cache?.config || cache?.livePredictions?.config || {};
+    const version = String(config.methodVersion || '');
+    const strategies = Array.isArray(config.strategies) ? config.strategies.map(item => item && item.id).filter(Boolean) : [];
+    const required = [
+        'chainSmallFirst',
+        'chainFreqFirst',
+        'chainRiskFirst',
+        'numberAvgRisk',
+        'numberConsensusRisk',
+        'numberWeightedRisk',
+        'activeOnlyAvgRisk'
+    ];
+    return version === MILESTONE20Y_METHOD_VERSION && required.every(id => strategies.includes(id));
+}
+
+function getMilestone20yPredictionYear(cache, expectedLatestDate = null) {
+    const predictionDate = normalizeDateValue(cache?.nextPrediction?.predictionIsoDate || cache?.nextPrediction?.predictionDate);
+    if (predictionDate) return Number(predictionDate.slice(0, 4));
+    const latest = normalizeDateValue(expectedLatestDate || cache?.latestDataDate);
+    if (!latest) return null;
+    const next = new Date(`${latest}T00:00:00Z`);
+    if (Number.isNaN(next.getTime())) return null;
+    next.setUTCDate(next.getUTCDate() + 1);
+    return next.getUTCFullYear();
+}
+
+function isMilestone20yBaselineCurrent(payload, year) {
+    return payload
+        && payload.version === MILESTONE20Y_BASELINE_VERSION
+        && Number(payload.year) === Number(year)
+        && Array.isArray(payload.entries)
+        && payload.entries.length > 0;
 }
 
 function hasRawDataChanged(currentRows, nextRows) {
@@ -347,6 +431,23 @@ async function readStatsJsonFromR2(fileName) {
     return readJsonFromR2(fileName, process.env.CLOUDFLARE_R2_STATS_PREFIX || 'statistics');
 }
 
+async function hydrateCoreStatsFromR2ForPredictionCache() {
+    if (!getR2PublicUrl()) return false;
+    const fileNames = ['number_stats.json', 'head_tail_stats.json', 'sum_difference_stats.json'];
+    try {
+        await fs.mkdir(path.join(DATA_DIR, 'statistics'), { recursive: true });
+        for (const fileName of fileNames) {
+            const data = await readStatsJsonFromR2(fileName);
+            await fs.writeFile(path.join(DATA_DIR, 'statistics', fileName), JSON.stringify(data, null, 0), 'utf8');
+            console.log(`[Mốc 20 năm] Hydrate ${fileName} từ R2 để sinh cache point-in-time.`);
+        }
+        return true;
+    } catch (error) {
+        console.warn(`[Mốc 20 năm] Không hydrate được stats lõi từ R2, dùng file local hiện có: ${error.message}`);
+        return false;
+    }
+}
+
 function shouldReadCurrentRawFromSupabase() {
     if (process.env.UPDATE_READ_SUPABASE_RAW !== '1') return false;
     if (!hasSupabaseEnv()) return false;
@@ -510,6 +611,75 @@ async function hasLotoPredictionCacheOnR2(expectedLatestDate = null) {
     }
 }
 
+function hasMilestone20yPredictionCache(expectedLatestDate = null) {
+    const fsSync = require('fs');
+    const statsDir = path.join(DATA_DIR, 'statistics');
+    const cachePath = path.join(statsDir, 'cached_milestone20y_prediction.json');
+    const livePath = path.join(statsDir, 'cached_milestone20y_live_predictions.json');
+    if (!fsSync.existsSync(cachePath) || !fsSync.existsSync(livePath)) return false;
+    if (!expectedLatestDate) return true;
+
+    try {
+        const cache = JSON.parse(fsSync.readFileSync(cachePath, 'utf8'));
+        const latest = normalizeDateValue(cache?.latestDataDate || cache?.nextPrediction?.dataIsoDate);
+        const predictionYear = getMilestone20yPredictionYear(cache, expectedLatestDate);
+        const baselinePath = predictionYear
+            ? path.join(statsDir, `cached_milestone20y_baseline_${predictionYear}.json`)
+            : null;
+        const baseline = baselinePath && fsSync.existsSync(baselinePath)
+            ? JSON.parse(fsSync.readFileSync(baselinePath, 'utf8'))
+            : null;
+        if (!isMilestone20yBaselineCurrent(baseline, predictionYear)) {
+            console.log(`[Cache Check] Local Mốc 20 năm baseline missing/stale for year=${predictionYear || 'unknown'}.`);
+            return false;
+        }
+        if (latest === expectedLatestDate && isMilestone20yFormulaCurrent(cache)) return true;
+        if (!isMilestone20yFormulaCurrent(cache)) {
+            const version = cache?.config?.methodVersion || 'unknown';
+            console.log(`[Cache Check] Local Mốc 20 năm cache stale schema: version=${version}, expected=${MILESTONE20Y_METHOD_VERSION}.`);
+            return false;
+        }
+        console.log(`[Cache Check] Local Mốc 20 năm cache stale: latest=${latest || 'unknown'}, expected=${expectedLatestDate}.`);
+        return false;
+    } catch (error) {
+        console.log(`[Cache Check] Local Mốc 20 năm cache unreadable: ${error.message}`);
+        return false;
+    }
+}
+
+async function hasMilestone20yPredictionCacheOnR2(expectedLatestDate = null) {
+    if (!getR2PublicUrl() || process.env.UPDATE_CHECK_R2_MILESTONE20Y === '0') return true;
+    try {
+        const cache = await readStatsJsonFromR2('cached_milestone20y_prediction.json');
+        const live = await readStatsJsonFromR2('cached_milestone20y_live_predictions.json');
+        const cacheLatest = normalizeDateValue(cache && (cache.latestDataDate || cache.nextPrediction?.dataIsoDate));
+        const liveLatest = normalizeDateValue(live && live.latestDataDate);
+        if (!cache || !live) return false;
+        const predictionYear = getMilestone20yPredictionYear(cache, expectedLatestDate);
+        const baseline = predictionYear
+            ? await readStatsJsonFromR2(`cached_milestone20y_baseline_${predictionYear}.json`).catch(() => null)
+            : null;
+        if (!isMilestone20yBaselineCurrent(baseline, predictionYear)) {
+            console.log(`[Cache Check] R2 Mốc 20 năm baseline missing/stale for year=${predictionYear || 'unknown'}.`);
+            return false;
+        }
+        if (!isMilestone20yFormulaCurrent(cache)) {
+            const version = cache?.config?.methodVersion || 'unknown';
+            console.log(`[Cache Check] R2 Mốc 20 năm cache stale schema: version=${version}, expected=${MILESTONE20Y_METHOD_VERSION}.`);
+            return false;
+        }
+        console.log(`[Cache Check] R2 Mốc 20 năm cache OK: cached latest=${cacheLatest || 'unknown'}, live latest=${liveLatest || 'unknown'}.`);
+        if (expectedLatestDate && cacheLatest !== expectedLatestDate) {
+            console.log(`[Cache Check] R2 Mốc 20 năm cache stale: latest=${cacheLatest || 'unknown'}, expected=${expectedLatestDate}.`);
+            return false;
+        }
+        return true;
+    } catch (error) {
+        console.log(`[Cache Check] R2 Mốc 20 năm cache missing/stale: ${error.message}`);
+        return false;
+    }
+}
+
 function generateLotoPredictionCache() {
     const skipBacktest = process.env.LOTO_SKIP_BACKTEST !== '0';
     const timeoutMs = Math.max(60_000, Number(process.env.LOTO_PREDICTION_TIMEOUT_MS || (skipBacktest ? 1_800_000 : 0)) || 0);
@@ -527,6 +697,16 @@ function generateLotoPredictionCache() {
         : 'Sinh/đối soát cache dự đoán Lô 27 vị trí cho API/tab Lô + backtest tham khảo.', {
         NODE_OPTIONS: process.env.NODE_OPTIONS || '--max-old-space-size=12288',
         BACKTEST_PROGRESS: process.env.BACKTEST_PROGRESS || '0'
+    }, timeoutMs > 0 ? { timeoutMs } : {});
+}
+
+function generateMilestone20yPredictionCache() {
+    const timeoutMs = Math.max(60_000, Number(process.env.MILESTONE20Y_PREDICTION_TIMEOUT_MS || 900_000) || 0);
+    runNodeScript('scripts/generate-milestone-20y-cache.js',
+        'Sinh/đối soát cache dự đoán Mốc 20 năm cho API/tab Mốc 20 năm.', {
+        NODE_OPTIONS: process.env.NODE_OPTIONS || '--max-old-space-size=12288',
+        LOTTERY_DATA_SOURCE: process.env.MILESTONE20Y_DATA_SOURCE || process.env.LOTTERY_DATA_SOURCE || 'local',
+        LOTTERY_STATS_SOURCE: process.env.MILESTONE20Y_STATS_SOURCE || process.env.LOTTERY_STATS_SOURCE || 'local'
     }, timeoutMs > 0 ? { timeoutMs } : {});
 }
 
@@ -548,10 +728,33 @@ async function hydrateLotoLiveCacheFromR2() {
     }
 }
 
+async function hydrateMilestone20yLiveCacheFromR2() {
+    if (!getR2PublicUrl()) return false;
+
+    try {
+        const remoteLive = await readStatsJsonFromR2('cached_milestone20y_live_predictions.json');
+        if (!remoteLive || !Array.isArray(remoteLive.predictions)) return false;
+
+        const livePath = path.join(DATA_DIR, 'statistics', 'cached_milestone20y_live_predictions.json');
+        await fs.mkdir(path.dirname(livePath), { recursive: true });
+        await fs.writeFile(livePath, JSON.stringify(remoteLive, null, 0), 'utf8');
+        console.log(`[Mốc 20 năm] Hydrate ${remoteLive.predictions.length} bản ghi thực tế từ R2 trước khi kết toán.`);
+        return true;
+    } catch (error) {
+        console.warn(`[Mốc 20 năm] Không hydrate được nhật ký R2, giữ dữ liệu local hiện có: ${error.message}`);
+        return false;
+    }
+}
+
 function uploadR2StaticData(label = 'Upload raw data + statistics gzip lên Cloudflare R2.', extraEnv = {}) {
     if (process.env.SYNC_R2_AFTER_UPDATE !== '0') {
         runNodeScript('scripts/upload-to-r2.js', label, extraEnv);
         console.log('[6] Upload R2 thành công.');
+        markRunStatus({
+            didWork: true,
+            r2Uploaded: true,
+            uploadLabels: [...runStatus.uploadLabels, label]
+        });
         return true;
     } else {
         console.log('[6] SYNC_R2_AFTER_UPDATE=0, bỏ qua upload R2.');
@@ -589,6 +792,22 @@ function syncRemoteAfterStaticGeneration() {
 function uploadOnlyLotoCaches() {
     uploadR2StaticData('Upload riêng cache Lô lên Cloudflare R2.', {
         R2_UPLOAD_ONLY_STATS_FILES: 'cached_loto_prediction.json,cached_loto_live_predictions.json'
+    });
+}
+
+function uploadOnlyPredictionCaches() {
+    const fsSync = require('fs');
+    const statsDir = path.join(DATA_DIR, 'statistics');
+    const baselineFiles = fsSync.existsSync(statsDir)
+        ? fsSync.readdirSync(statsDir).filter(file => /^cached_milestone20y_baseline_\d{4}\.json$/.test(file))
+        : [];
+    uploadR2StaticData('Upload riêng cache dự đoán Lô + Mốc 20 năm lên Cloudflare R2.', {
+        R2_UPLOAD_ONLY_STATS_FILES: [
+            'cached_loto_prediction.json',
+            'cached_loto_live_predictions.json',
+            ...MILESTONE20Y_CACHE_FILES,
+            ...baselineFiles
+        ].join(',')
     });
 }
 
@@ -788,6 +1007,7 @@ async function main() {
     const forceRegenerateStats = process.env.FORCE_REGENERATE_STATS === '1';
 
     const latestRawDate = getLatestDateValue(finalArray);
+    markRunStatus({ latestRawDate });
     const localArray = await readJsonIfExists(JSON_FILE);
     const latestLocalFileDate = getLatestDateValue(localArray);
     const localRawOutOfSync = latestRawDate && latestLocalFileDate !== latestRawDate;
@@ -877,34 +1097,53 @@ async function main() {
     }
 
     const rawDataChanged = hasRawDataChanged(currentArray, finalArray);
+    markRunStatus({ rawDataChanged });
     const trustR2LotoCache = Boolean(getR2PublicUrl() && process.env.UPDATE_CHECK_R2_LOTO !== '0');
     const lotoCacheMissing = trustR2LotoCache ? false : !hasLotoPredictionCache(latestRawDate);
     const r2LotoCacheMissing = !(await hasLotoPredictionCacheOnR2(latestRawDate));
-    const onlyLotoCacheNeedsRefresh = !rawDataChanged && !forceRegenerateStats && !isStale && (lotoCacheMissing || r2LotoCacheMissing);
+    const trustR2MilestoneCache = Boolean(getR2PublicUrl() && process.env.UPDATE_CHECK_R2_MILESTONE20Y !== '0');
+    const milestoneCacheMissing = trustR2MilestoneCache ? false : !hasMilestone20yPredictionCache(latestRawDate);
+    const r2MilestoneCacheMissing = !(await hasMilestone20yPredictionCacheOnR2(latestRawDate));
+    const onlyPredictionCacheNeedsRefresh = !rawDataChanged
+        && !forceRegenerateStats
+        && !isStale
+        && (lotoCacheMissing || r2LotoCacheMissing || milestoneCacheMissing || r2MilestoneCacheMissing);
 
-    if (onlyLotoCacheNeedsRefresh) {
+    if (onlyPredictionCacheNeedsRefresh) {
         if (localRawOutOfSync) {
             await fs.writeFile(JSON_FILE, JSON.stringify(finalArray, null, 0), 'utf-8');
-            console.log(`[3] Đồng bộ raw local tạm cho Lô (${latestLocalFileDate || 'none'} -> ${latestRawDate}).`);
+            console.log(`[3] Đồng bộ raw local tạm cho cache dự đoán (${latestLocalFileDate || 'none'} -> ${latestRawDate}).`);
         }
-        console.log('[3] Stats R2 đã mới, chỉ sinh/đối soát cache Lô và upload 2 file Lô.');
+        console.log('[3] Stats R2 đã mới, chỉ sinh/đối soát cache dự đoán và upload riêng các file cache.');
         try {
             await hydrateLotoLiveCacheFromR2();
+            await hydrateMilestone20yLiveCacheFromR2();
+            await hydrateCoreStatsFromR2ForPredictionCache();
             generateLotoPredictionCache();
-            uploadOnlyLotoCaches();
-        } catch (lotoErr) {
-            console.error('⚠️ Lỗi khi sinh/upload cache Lô:', lotoErr.message);
+            generateMilestone20yPredictionCache();
+            markRunStatus({ predictionCacheRefreshed: true, didWork: true, reason: 'prediction_cache_refresh_only' });
+            uploadOnlyPredictionCaches();
+        } catch (predictionCacheErr) {
+            console.error('⚠️ Lỗi khi sinh/upload cache dự đoán:', predictionCacheErr.message);
             process.exit(1);
         }
+        await writeRunStatus();
         return;
     }
 
-    if (!rawDataChanged && !forceRegenerateStats && !isStale && !lotoCacheMissing && !r2LotoCacheMissing) {
+    if (!rawDataChanged
+        && !forceRegenerateStats
+        && !isStale
+        && !lotoCacheMissing
+        && !r2LotoCacheMissing
+        && !milestoneCacheMissing
+        && !r2MilestoneCacheMissing) {
         if (localRawOutOfSync) {
             await fs.writeFile(JSON_FILE, JSON.stringify(finalArray, null, 0), 'utf-8');
             console.log(`[3] RAW_DATA R2 đã mới nhất; chỉ đồng bộ file local tạm (${latestLocalFileDate || 'none'} -> ${latestRawDate}) rồi bỏ qua generate stats.`);
         }
         console.log(`[3] RAW_DATA không đổi (latest=${latestRawDate}, rows=${finalArray.length}, source=${source}). Bỏ qua generate stats để tiết kiệm Action time.`);
+        await writeRunStatus({ skipped: true, reason: 'up_to_date' });
         return;
     }
     if (lotoCacheMissing) {
@@ -913,8 +1152,14 @@ async function main() {
     if (r2LotoCacheMissing) {
         console.log('[3] Cache Lô trên R2 đang thiếu, vẫn chạy workflow để sinh/upload lại cached_loto_prediction.json và cached_loto_live_predictions.json.');
     }
+    if (milestoneCacheMissing) {
+        console.log('[3] Cache Mốc 20 năm local đang thiếu, vẫn chạy workflow để sinh cached_milestone20y_prediction.json và cached_milestone20y_live_predictions.json.');
+    }
+    if (r2MilestoneCacheMissing) {
+        console.log('[3] Cache Mốc 20 năm trên R2 đang thiếu, vẫn chạy workflow để sinh/upload lại cached_milestone20y_prediction.json và cached_milestone20y_live_predictions.json.');
+    }
 
-    if (rawDataChanged || forceRegenerateStats || isStale || localRawOutOfSync || r2LotoCacheMissing || lotoCacheMissing) {
+    if (rawDataChanged || forceRegenerateStats || isStale || localRawOutOfSync || r2LotoCacheMissing || lotoCacheMissing || r2MilestoneCacheMissing || milestoneCacheMissing) {
         await fs.writeFile(JSON_FILE, JSON.stringify(finalArray, null, 0), 'utf-8');
         console.log(`[3] Ghi file xsmb-2-digits.json (RAW_DATA) thành công! (${finalArray.length} bản ghi, latest=${latestRawDate}, source=${source})`);
     } else {
@@ -929,6 +1174,7 @@ async function main() {
     } else {
         console.log('[4] Chạy luồng sinh Thống kê Statically (Ghi file cục bộ)...');
     }
+    markRunStatus({ statsRegenerated: true, didWork: true, reason: rawDataChanged ? 'raw_data_changed' : 'stats_or_cache_stale' });
     
     try {
         const generateNumberStats = require('../lib/generators/statisticsGenerator.js');
@@ -1226,8 +1472,17 @@ async function main() {
             try {
                 await hydrateLotoLiveCacheFromR2();
                 generateLotoPredictionCache();
+                markRunStatus({ predictionCacheRefreshed: true, didWork: true });
             } catch (lotoErr) {
                 console.error('⚠️ Lỗi khi sinh cache Lô cho DB mode:', lotoErr.message);
+            }
+
+            try {
+                await hydrateMilestone20yLiveCacheFromR2();
+                generateMilestone20yPredictionCache();
+                markRunStatus({ predictionCacheRefreshed: true, didWork: true });
+            } catch (milestoneErr) {
+                console.error('⚠️ Lỗi khi sinh cache Mốc 20 năm cho DB mode:', milestoneErr.message);
             }
         }
 
@@ -1306,6 +1561,18 @@ async function main() {
                 }
             } catch (chainErr) {
                 console.error('⚠️ Lỗi khi tạo cached chain frequency (không ảnh hưởng các bước khác):', chainErr.message);
+            }
+
+            if (process.env.MILESTONE20Y_GENERATE_CACHE !== '0') {
+                try {
+                    await hydrateMilestone20yLiveCacheFromR2();
+                    generateMilestone20yPredictionCache();
+                    markRunStatus({ predictionCacheRefreshed: true, didWork: true });
+                } catch (milestoneErr) {
+                    console.error('⚠️ Lỗi khi sinh cache Mốc 20 năm (không ảnh hưởng các cache khác):', milestoneErr.message);
+                }
+            } else {
+                console.log('[6] MILESTONE20Y_GENERATE_CACHE=0, bỏ qua sinh cache Mốc 20 năm.');
             }
 
             await writeVerifiedAnalysisCacheVersion();
@@ -1400,6 +1667,7 @@ async function main() {
                 try {
                     await hydrateLotoLiveCacheFromR2();
                     generateLotoPredictionCache();
+                    markRunStatus({ predictionCacheRefreshed: true, didWork: true });
                 } catch (lotoErr) {
                     console.error('⚠️ Lỗi khi sinh cache Lô (không ảnh hưởng các cache khác):', lotoErr.message);
                 }
@@ -1415,6 +1683,7 @@ async function main() {
     
     console.log(`[5] Hoàn tất Update Workflow (${dbStatsActive ? 'Supabase DB' : 'Static JSON'}).`);
     syncRemoteAfterStaticGeneration();
+    await writeRunStatus();
 }
 
 main().catch(error => {

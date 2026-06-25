@@ -2,14 +2,10 @@ name: Daily Vina Lottery R2 Generator
 
 on:
   schedule:
-    # GitHub Actions schedule is best-effort, so keep several idempotent retry slots
-    # after 18:40 GMT+7 (11:40 UTC) instead of relying on one exact minute.
-    - cron: '40 11 * * *'
-    - cron: '50 11 * * *'
-    - cron: '0 12 * * *'
-    - cron: '10 12 * * *'
-    - cron: '20 12 * * *'
-    - cron: '40 12 * * *'
+    # Cloudflare Worker dispatches the primary run at 18:40 GMT+7 (11:40 UTC).
+    # Keep one GitHub-native backup slot only; update-static-data is idempotent
+    # and exits without redeploy when R2 already has full data/cache for the day.
+    - cron: '5 12 * * *'
   workflow_dispatch:
     inputs:
       wait_for_new_xoso:
@@ -93,6 +89,7 @@ jobs:
           echo "Resolved XOSO_TARGET_DATE=$(cat "$GITHUB_OUTPUT" | tail -n 1 | cut -d= -f2)"
 
       - name: Pull Data & Generate R2 Static Stats
+        id: update
         env:
           WAIT_FOR_NEW_XOSO: ${{ github.event_name == 'workflow_dispatch' && inputs.wait_for_new_xoso || '1' }}
           XOSO_MAX_WAIT_MINUTES: ${{ github.event_name == 'workflow_dispatch' && inputs.xoso_max_wait_minutes || '90' }}
@@ -118,7 +115,30 @@ jobs:
           NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL: ${{ secrets.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL }}
         run: node scripts/update-static-data.js
 
+      - name: Đọc kết quả cập nhật
+        id: update_result
+        run: |
+          node - <<'NODE' >> "$GITHUB_OUTPUT"
+          const fs = require('fs');
+          let result = {};
+          try {
+            result = JSON.parse(fs.readFileSync('.update-static-data-result.json', 'utf8'));
+          } catch (error) {
+            result = { didWork: true, skipped: false, reason: 'missing-status-file' };
+          }
+          const bool = value => value ? 'true' : 'false';
+          console.log(`did_work=${bool(result.didWork)}`);
+          console.log(`skipped=${bool(result.skipped)}`);
+          console.log(`r2_uploaded=${bool(result.r2Uploaded)}`);
+          console.log(`prediction_cache_refreshed=${bool(result.predictionCacheRefreshed)}`);
+          console.log(`stats_regenerated=${bool(result.statsRegenerated)}`);
+          console.log(`raw_data_changed=${bool(result.rawDataChanged)}`);
+          console.log(`latest_raw_date=${result.latestRawDate || ''}`);
+          console.log(`reason=${result.reason || ''}`);
+          NODE
+
       - name: Audit thống kê Local/R2
+        if: steps.update_result.outputs.did_work == 'true'
         env:
           AUDIT_LOCAL: '0'
           NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL: ${{ secrets.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL }}
@@ -129,16 +149,25 @@ jobs:
         env:
           COMMIT_STATIC_DATA: ${{ vars.COMMIT_STATIC_DATA || '0' }}
         run: |
+          if [ "${{ steps.update_result.outputs.did_work }}" != "true" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "redeploy=false" >> "$GITHUB_OUTPUT"
+            echo "Dữ liệu/cache đã đầy đủ (reason=${{ steps.update_result.outputs.reason }}); bỏ qua build/commit/redeploy."
+            exit 0
+          fi
           if [ "$COMMIT_STATIC_DATA" != "1" ]; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "redeploy=true" >> "$GITHUB_OUTPUT"
             echo "Đã upload R2; bỏ qua commit static JSON vì COMMIT_STATIC_DATA != 1."
             exit 0
           fi
           if git diff --quiet -- lib/data/xsmb-2-digits.json lib/data/statistics; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "redeploy=${{ steps.update_result.outputs.r2_uploaded }}" >> "$GITHUB_OUTPUT"
             echo "Không có dữ liệu mới, bỏ qua build/commit."
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "redeploy=false" >> "$GITHUB_OUTPUT"
             echo "Có dữ liệu mới, sẽ build kiểm tra trước khi commit."
           fi
 
@@ -169,7 +198,7 @@ jobs:
       # In R2 mode (COMMIT_STATIC_DATA=0), stats go directly to R2 without git commits.
       # We must still redeploy Vercel to kill warm serverless instances that cache old data in memory.
       - name: Force Vercel Redeploy (R2 mode)
-        if: steps.changes.outputs.changed != 'true'
+        if: steps.changes.outputs.changed != 'true' && steps.changes.outputs.redeploy == 'true'
         env:
           VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
         run: |

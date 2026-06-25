@@ -14,6 +14,7 @@ export function proxy(request) {
         pathname.startsWith('/api/auth/') ||
         pathname.startsWith('/api/prediction/numbers') ||
         pathname.startsWith('/api/loto/prediction') ||
+        pathname.startsWith('/api/milestone-20y/prediction') ||
         pathname === '/logout' ||
         pathname === '/login'
     ) {

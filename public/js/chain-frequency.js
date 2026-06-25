@@ -1,81 +1,34 @@
 (function () {
-    const state = { data: null, selectedKeys: new Set(), aggregationMode: 'recommended', averageHoldCount: 70 };
+    const state = {
+        payload: null,
+        strategy: 'chainSmallFirst',
+        target: 65
+    };
 
     const el = id => document.getElementById(id);
-    const fmt = (value, suffix = '') => {
-        if (value === null || value === undefined || !Number.isFinite(Number(value))) return '-';
-        return `${Number(value).toLocaleString('vi-VN')}${suffix}`;
-    };
-    const numText = n => String(n).padStart(2, '0');
-    const CATEGORY_LABELS = {
-        tong_tt_chan: 'Tổng TT - Tổng Chẵn',
-        tong_tt_le: 'Tổng TT - Tổng Lẻ',
-        tong_moi_chan: 'Tổng Mới - Tổng Chẵn',
-        tong_moi_le: 'Tổng Mới - Tổng Lẻ',
-        hieu_chan: 'Hiệu Chẵn',
-        hieu_le: 'Hiệu Lẻ',
-        tong_tt_chan_chan: 'Tổng TT - Dạng Chẵn-Chẵn',
-        tong_tt_chan_le: 'Tổng TT - Dạng Chẵn-Lẻ',
-        tong_tt_le_chan: 'Tổng TT - Dạng Lẻ-Chẵn',
-        tong_tt_le_le: 'Tổng TT - Dạng Lẻ-Lẻ',
-        tong_moi_chan_chan: 'Tổng Mới - Dạng Chẵn-Chẵn',
-        tong_moi_chan_le: 'Tổng Mới - Dạng Chẵn-Lẻ',
-        tong_moi_le_chan: 'Tổng Mới - Dạng Lẻ-Chẵn',
-        tong_moi_le_le: 'Tổng Mới - Dạng Lẻ-Lẻ',
-        dau_chan_lon_hon_4: 'Đầu chẵn > 4',
-        dau_chan_nho_hon_4: 'Đầu chẵn < 4',
-        dit_chan_lon_hon_4: 'Đít chẵn > 4',
-        dit_chan_nho_hon_4: 'Đít chẵn < 4',
-        dau_le_lon_hon_5: 'Đầu lẻ > 5',
-        dau_le_nho_hon_5: 'Đầu lẻ < 5',
-        dit_le_lon_hon_5: 'Đít lẻ > 5',
-        dit_le_nho_hon_5: 'Đít lẻ < 5'
-    };
-    function displayTitle(title, key) {
-        const raw = String(title || key || '');
-        const category = String(key || '').split(':')[0];
-        if (CATEGORY_LABELS[category]) {
-            return raw.includes(' - ')
-                ? `${CATEGORY_LABELS[category]} - ${raw.split(' - ').slice(1).join(' - ')}`
-                : CATEGORY_LABELS[category];
-        }
-        return raw.replace(/^dong_step_(\d+)_(\d+)\b/i, (_, step, start) => {
-            const paddedStart = String(start).padStart(2, '0');
-            return `Đồng cách ${step} từ ${paddedStart}`;
-        });
-    }
-    const fmtDecimal = (value, fractionDigits = 1) => {
+    const numText = value => String(value).padStart(2, '0');
+    const fmt = value => Number.isFinite(Number(value)) ? Number(value).toLocaleString('vi-VN') : '-';
+    const fmtK = value => `${Number(value || 0).toLocaleString('vi-VN')}K`;
+    const fmtPercent = value => {
         const number = Number(value);
         if (!Number.isFinite(number)) return '-';
-        return number.toLocaleString('vi-VN', {
-            minimumFractionDigits: fractionDigits,
-            maximumFractionDigits: fractionDigits
-        });
+        return `${(number * (Math.abs(number) <= 1 ? 100 : 1)).toLocaleString('vi-VN', {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1
+        })}%`;
     };
-
-    function fmtFrequency(row) {
-        const value = Number(row.frequencyPerYear);
-        if (!Number.isFinite(value)) return '<span class="text-slate-400">-</span>';
-
-        const fractionDigits = value > 0 && value < 0.1 ? 3 : (value > 0 && value < 1 ? 2 : 1);
-        const count = Number(row.frequencyCount);
-        const years = Number(row.frequencyYears || state.data?.totalYears);
-        const kindLabel = row.frequencyKind === 'formation' ? 'HT' : 'Target';
-        const detail = Number.isFinite(count) && Number.isFinite(years)
-            ? `${count.toLocaleString('vi-VN')} lần / ${fmtDecimal(years, 1)} năm`
-            : '';
-
-        return `
-            <div class="font-semibold text-slate-900">${fmtDecimal(value, fractionDigits)}/năm</div>
-            <div class="mt-0.5 text-[11px] text-slate-500">${kindLabel}${detail ? ` · ${detail}` : ''}</div>
-        `;
-    }
+    const escapeHtml = value => String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 
     function setLoading(isLoading) {
         el('refreshButton').disabled = isLoading;
         el('refreshButton').classList.toggle('opacity-70', isLoading);
         el('spinner').classList.toggle('hidden', !isLoading);
-        el('refreshLabel').textContent = isLoading ? 'Đang tải...' : 'Tính lại';
+        el('refreshLabel').textContent = isLoading ? 'Đang tải...' : 'Tải lại';
     }
 
     function showError(message) {
@@ -84,166 +37,271 @@
         box.classList.toggle('hidden', !message);
     }
 
-    function tierClass(row) {
-        if (row.tierRank === 1) return 'border-red-200 bg-red-50 text-red-700';
-        if (row.tierRank === 2) return 'border-amber-200 bg-amber-50 text-amber-700';
+    function getStrategies() {
+        const configStrategies = state.payload?.config?.strategies;
+        if (Array.isArray(configStrategies) && configStrategies.length) return configStrategies;
+        return Object.entries(state.payload?.nextPrediction?.strategies || {}).map(([id, value]) => ({ id, ...value }));
+    }
+
+    function getStrategy(strategyId = state.strategy) {
+        return getStrategies().find(item => item.id === strategyId)
+            || state.payload?.nextPrediction?.strategies?.[strategyId]
+            || getStrategies()[0]
+            || null;
+    }
+
+    function getTargets() {
+        const values = state.payload?.config?.targets || [];
+        return values.length ? values : [20, 23, 28, 34, 40, 50, 60, 65, 70, 75, 80, 85, 90];
+    }
+
+    function getPrediction(strategyId = state.strategy, target = state.target) {
+        const strategy = state.payload?.nextPrediction?.strategies?.[strategyId];
+        const prediction = strategy?.holds?.[String(target)] || null;
+        if (!prediction) return null;
+        if (!prediction.ranking && strategy?.ranking) {
+            return { ...prediction, ranking: strategy.ranking };
+        }
+        return prediction;
+    }
+
+    function getResultKey(strategy = state.strategy, target = state.target) {
+        return `${strategy}:hold${target}`;
+    }
+
+    function tierClass(tier) {
+        if (tier === 1) return 'border-red-200 bg-red-50 text-red-700';
+        if (tier === 2) return 'border-amber-200 bg-amber-50 text-amber-700';
+        if (tier === 3) return 'border-indigo-200 bg-indigo-50 text-indigo-700';
         return 'border-slate-200 bg-slate-50 text-slate-600';
     }
 
-    function collectNumbers(rows) {
-        if (state.aggregationMode !== 'manual') {
-            const source = state.aggregationMode === 'recommended'
-                ? state.data?.recommendedExclusion
-                : state.data?.averageDropoff;
-            const hold = source?.holds?.[String(state.averageHoldCount)];
-            if (hold) {
-                return {
-                    excludedNumbers: hold.excludedNumbers || [],
-                    betNumbers: hold.betNumbers || []
-                };
-            }
-        }
-        const excluded = new Set();
-        rows.forEach(row => {
-            if (!state.selectedKeys.has(row.key)) return;
-            (row.numbers || []).forEach(num => excluded.add(Number(num)));
-        });
-        const excludedNumbers = [...excluded].sort((a, b) => a - b);
-        const excludedSet = new Set(excludedNumbers);
-        const betNumbers = Array.from({ length: 100 }, (_, i) => i).filter(num => !excludedSet.has(num));
-        return { excludedNumbers, betNumbers };
-    }
-
-    function renderNumberGrid(numbers, selectedClass) {
-        const rankingSource = state.aggregationMode === 'recommended'
-            ? state.data?.recommendedExclusion
-            : state.data?.averageDropoff;
-        const rankingByNumber = new Map(
-            (rankingSource?.ranking || []).map(item => [Number(item.number), item])
-        );
+    function renderNumberGrid(numbers, mode, ranking = []) {
+        const rankingByNumber = new Map((ranking || []).map(row => [String(row.number).padStart(2, '0'), row]));
+        const classes = mode === 'bet'
+            ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+            : 'border-red-200 bg-red-50 text-red-700';
         return `
             <div class="number-grid">
-                ${numbers.map(num => {
-                    const score = state.aggregationMode !== 'manual' ? rankingByNumber.get(Number(num)) : null;
-                    const scorePercent = state.aggregationMode === 'recommended'
-                        ? score?.scorePercent
-                        : score?.averageDropOffPercent;
-                    const title = score
-                        ? `Hạng ${score.rank} · ${state.aggregationMode === 'recommended' ? 'Điểm hiệu chỉnh' : 'Dropoff TB'} ${fmtDecimal(scorePercent, 1)}% · ${score.supportCount} chuỗi`
+                ${(numbers || []).map(value => {
+                    const text = numText(value);
+                    const rank = rankingByNumber.get(text);
+                    const title = rank
+                        ? `#${rank.rank} · điểm ${rank.scorePercent || 0}% · ${rank.supportCount || 0} chuỗi`
                         : '';
                     return `
-                    <span title="${title}" class="rounded-md border px-2 py-2 text-center font-mono text-sm font-bold ${selectedClass}">
-                        <span class="block">${numText(num)}</span>
-                        ${score ? `<span class="mt-0.5 block text-[9px] font-sans font-semibold opacity-70">${fmtDecimal(scorePercent, 1)}%</span>` : ''}
-                    </span>
-                `; }).join('')}
+                        <span title="${escapeHtml(title)}" class="rounded-lg border px-2 py-2 text-center font-mono text-sm font-bold ${classes}">
+                            <span class="block">${text}</span>
+                            ${rank ? `<span class="mt-0.5 block text-[9px] font-sans font-semibold opacity-70">#${rank.rank}</span>` : ''}
+                        </span>
+                    `;
+                }).join('')}
             </div>
         `;
     }
 
+    function renderControls() {
+        const strategies = getStrategies();
+        const strategySelect = el('strategySelect');
+        strategySelect.innerHTML = strategies.map(strategy => `
+            <option value="${escapeHtml(strategy.id)}" ${strategy.id === state.strategy ? 'selected' : ''}>${escapeHtml(strategy.name || strategy.id)}</option>
+        `).join('');
+
+        const targetSelect = el('targetSelect');
+        targetSelect.innerHTML = getTargets().map(target => `
+            <option value="${target}" ${Number(target) === Number(state.target) ? 'selected' : ''}>Loại ${target} · đánh ${100 - Number(target)}</option>
+        `).join('');
+
+        const presets = state.payload?.config?.presets || state.payload?.nextPrediction?.presets || [];
+        el('presetButtons').innerHTML = presets.map(preset => `
+            <button type="button" data-strategy="${escapeHtml(preset.strategy)}" data-target="${Number(preset.target)}"
+                class="preset-btn h-10 rounded-xl border px-3 text-xs font-semibold transition ${preset.strategy === state.strategy && Number(preset.target) === Number(state.target)
+                    ? 'border-indigo-500 bg-indigo-600 text-white shadow'
+                    : 'border-slate-200 bg-white text-slate-700 hover:bg-indigo-50'}">
+                ${escapeHtml(preset.label)}
+            </button>
+        `).join('');
+
+        document.querySelectorAll('.preset-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                state.strategy = button.dataset.strategy;
+                state.target = Number(button.dataset.target);
+                render();
+            });
+        });
+
+        const strategy = getStrategy();
+        el('strategyDescription').innerHTML = strategy
+            ? `<strong>${escapeHtml(strategy.name || strategy.id)}:</strong> ${escapeHtml(strategy.description || '')}`
+            : 'Chưa có phương pháp.';
+    }
+
     function renderSummary() {
-        const rows = state.data?.chainRows || [];
-        const selectedRows = rows.filter(row => state.selectedKeys.has(row.key));
-        const { excludedNumbers, betNumbers } = collectNumbers(rows);
-        el('summaryCards').innerHTML = [
-            ['Ngày dự đoán', state.data.predictionDate],
-            ['Cách tổng hợp', state.aggregationMode === 'recommended'
-                ? `Hiệu chỉnh 50% nền · Hold ${state.averageHoldCount}`
-                : (state.aggregationMode === 'average' ? `Dropoff TB · Hold ${state.averageHoldCount}` : 'Chuỗi tự chọn')],
-            ['Chuỗi chọn', selectedRows.length],
-            ['Số ôm/loại', excludedNumbers.length],
-            ['Số đánh', betNumbers.length],
-            ['Tier 1/2/3', `${state.data.summary.tier1Count}/${state.data.summary.tier2Count}/${state.data.summary.tier3Count}`]
-        ].map(([label, value]) => `
-            <div class="rounded-md border border-slate-200 bg-white p-4">
-                <div class="text-xs font-semibold uppercase text-slate-500">${label}</div>
-                <div class="mt-1 text-2xl font-bold">${value}</div>
+        const payload = state.payload;
+        const next = payload?.nextPrediction || {};
+        const prediction = getPrediction();
+        const strategy = getStrategy();
+        const liveSummary = payload?.livePredictions?.summary?.[presetIdForSelection()];
+        const cards = [
+            ['Dữ liệu tới', payload?.latestDataDate || '-'],
+            ['Ngày dự đoán', next.predictionIsoDate || '-'],
+            ['Mốc dữ liệu', `${next.baseline?.startIso || '-'} → ${next.baseline?.cutoffIso || '-'}`],
+            ['Ứng viên', fmt(next.summary?.candidatesCount || 0)],
+            ['Số loại', fmt(prediction?.excludedNumbers?.length || 0)],
+            ['Số đánh', fmt(prediction?.betNumbers?.length || 0)]
+        ];
+        el('summaryCards').innerHTML = cards.map(([label, value]) => `
+            <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div class="text-xs font-semibold uppercase text-slate-500">${escapeHtml(label)}</div>
+                <div class="mt-1 text-xl font-bold text-slate-900">${escapeHtml(value)}</div>
             </div>
         `).join('');
 
-        el('excludedGrid').innerHTML = renderNumberGrid(excludedNumbers, 'border-red-200 bg-red-50 text-red-700');
-        el('betGrid').innerHTML = renderNumberGrid(betNumbers, 'border-emerald-200 bg-emerald-50 text-emerald-700');
+        el('predictionInfo').textContent = `${strategy?.name || state.strategy} · loại ${state.target} số, đánh ${100 - state.target} số.`;
+        el('excludedGrid').innerHTML = renderNumberGrid(prediction?.excludedNumbers || [], 'exclude', prediction?.ranking || []);
+        el('betGrid').innerHTML = renderNumberGrid(prediction?.betNumbers || [], 'bet', prediction?.ranking || []);
     }
 
-    function renderRows() {
-        const rows = state.data?.chainRows || [];
-        el('chainsTable').innerHTML = rows.map(row => `
-            <tr class="border-t border-slate-100 ${state.selectedKeys.has(row.key) ? 'bg-blue-50/40' : 'bg-white'}">
-                <td class="px-3 py-3 align-top">
-                    <input type="checkbox" class="chain-check h-4 w-4 rounded border-slate-300 text-blue-700"
-                        data-key="${row.key}" ${state.selectedKeys.has(row.key) ? 'checked' : ''}>
-                </td>
-                <td class="px-3 py-3 align-top">
-                    <div class="font-semibold text-slate-900">${displayTitle(row.title, row.key)}</div>
+    function presetIdForSelection() {
+        const presets = state.payload?.config?.presets || [];
+        const preset = presets.find(item => item.strategy === state.strategy && Number(item.target) === Number(state.target));
+        return preset?.id || getResultKey();
+    }
+
+    function renderChains() {
+        const prediction = getPrediction();
+        const chains = prediction?.selectedChains || [];
+        el('chainsTable').innerHTML = chains.map(chain => `
+            <tr class="border-t border-slate-100 bg-white">
+                <td class="px-4 py-3 align-top">
+                    <div class="font-semibold text-slate-900">${escapeHtml(chain.title || chain.key)}</div>
                     <div class="mt-1 text-xs text-slate-500">
-                        ${row.isPotential ? 'Chưa hình thành' : 'Đang diễn ra'} · ${fmt(row.streak, 'd')} → ${fmt(row.targetLength, 'd')}
-                        · KL ${fmt(row.maxStreak, 'd')} · ${row.numbersCount} số
-                    </div>
-                    <div class="mt-2 flex flex-wrap gap-1 font-mono text-xs text-slate-600">
-                        ${(row.numbers || []).slice(0, 36).map(num => `<span class="rounded bg-slate-900 px-1.5 py-0.5 text-white">${numText(num)}</span>`).join('')}
-                        ${(row.numbers || []).length > 36 ? `<span class="text-slate-400">+${row.numbers.length - 36}</span>` : ''}
+                        ${chain.currentLen || '-'}d → ${chain.targetLen || '-'}d · KL ${chain.recordLen || '-'}d · mẫu ${fmt(chain.currentCount || 0)}
                     </div>
                 </td>
-                <td class="px-3 py-3 align-top text-center">
-                    <span class="inline-flex max-w-full justify-center rounded-md border px-2 py-1 text-center text-xs font-bold leading-5 ${tierClass(row)}">${row.tierLabel}</span>
+                <td class="px-4 py-3 align-top text-center">
+                    <span class="inline-flex rounded-md border px-2 py-1 text-xs font-bold ${tierClass(chain.tier)}">${escapeHtml(chain.tierLabel || `Tier ${chain.tier || '-'}`)}</span>
                 </td>
-                <td class="px-3 py-3 align-top text-right whitespace-nowrap">${fmt(row.riskPercent, '%')}</td>
-                <td class="px-3 py-3 align-top text-right">${fmtFrequency(row)}</td>
-                <td class="px-3 py-3 align-top text-right whitespace-nowrap">${fmt(row.targetAvgGapDays, 'd')}</td>
-                <td class="px-3 py-3 align-top text-right whitespace-nowrap">${fmt(row.targetDaysSinceLatestEnd, 'd')}</td>
+                <td class="px-4 py-3 align-top text-right whitespace-nowrap font-semibold">${fmt(chain.riskPercent, '')}%</td>
+                <td class="px-4 py-3 align-top text-right whitespace-nowrap">
+                    <div class="font-semibold text-slate-900">${fmt(chain.exposureFrequencyPerYear)}/năm</div>
+                    <div class="text-[11px] text-slate-500">${fmt(chain.currentCount)} → ${fmt(chain.nextCount)}</div>
+                </td>
+                <td class="px-4 py-3 align-top text-right whitespace-nowrap">${(chain.numbers || []).length}</td>
+                <td class="px-4 py-3 align-top">
+                    <div class="compact-number-grid">
+                        ${(chain.numbers || []).slice(0, 32).map(num => `<span class="rounded bg-slate-900 px-1.5 py-1 text-center font-mono text-xs text-white">${numText(num)}</span>`).join('')}
+                    </div>
+                    ${(chain.numbers || []).length > 32 ? `<div class="mt-1 text-xs text-slate-400">+${chain.numbers.length - 32} số</div>` : ''}
+                </td>
             </tr>
-        `).join('') || '<tr><td colspan="7" class="px-3 py-6 text-center text-slate-500">Không có chuỗi ứng viên.</td></tr>';
-
-        document.querySelectorAll('.chain-check').forEach(input => {
-            input.addEventListener('change', () => {
-                setAggregationMode('manual');
-                if (input.checked) state.selectedKeys.add(input.dataset.key);
-                else state.selectedKeys.delete(input.dataset.key);
-                renderSummary();
-                renderRows();
-            });
-        });
+        `).join('') || '<tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">Không có chuỗi kích hoạt cho phương pháp này.</td></tr>';
     }
 
-    function setTier(tierRank, checked) {
-        setAggregationMode('manual');
-        (state.data?.chainRows || []).forEach(row => {
-            if (row.tierRank === tierRank) {
-                if (checked) state.selectedKeys.add(row.key);
-                else state.selectedKeys.delete(row.key);
-            }
-        });
+    function renderRanking() {
+        const prediction = getPrediction();
+        const ranking = prediction?.ranking || [];
+        if (!ranking.length) {
+            el('rankingList').innerHTML = '<div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">Phương pháp chuỗi trực tiếp không có bảng điểm từng số.</div>';
+            return;
+        }
+        el('rankingList').innerHTML = ranking.slice(0, 100).map(row => `
+            <div class="mb-2 rounded-xl border border-slate-200 bg-white p-3">
+                <div class="flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-2">
+                        <span class="w-9 rounded-lg bg-slate-900 py-1 text-center font-mono font-bold text-white">${numText(row.number)}</span>
+                        <span class="text-xs font-semibold text-slate-500">#${row.rank}</span>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm font-bold text-slate-900">${fmt(row.scorePercent)}%</div>
+                        <div class="text-[11px] text-slate-500">${fmt(row.supportCount)} chuỗi</div>
+                    </div>
+                </div>
+                <div class="mt-2 text-xs leading-5 text-slate-500">
+                    ${(row.contributors || []).slice(0, 2).map(chain => escapeHtml(chain.title || chain.key)).join('<br>')}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function renderLiveSummary() {
+        const summary = state.payload?.livePredictions?.summary || {};
+        const presets = state.payload?.config?.presets || [];
+        const rows = presets.map(preset => summary[preset.id]).filter(Boolean);
+        el('liveSummary').innerHTML = rows.map(item => `
+            <div class="rounded-xl border ${Number(item.profitK || 0) >= 0 ? 'border-emerald-200 bg-emerald-50' : 'border-red-200 bg-red-50'} p-4">
+                <div class="text-xs font-semibold uppercase text-slate-500">${escapeHtml(item.label || item.id)}</div>
+                <div class="mt-1 text-2xl font-bold ${Number(item.profitK || 0) >= 0 ? 'text-emerald-700' : 'text-red-700'}">${fmtK(item.profitK)}</div>
+                <div class="mt-1 text-xs text-slate-600">${fmt(item.wins || 0)}/${fmt(item.days || 0)} ngày thắng · ROI ${fmtPercent(item.roi || 0)}</div>
+            </div>
+        `).join('') || '<div class="col-span-full rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">Chưa có dòng thực tế nào được kết toán.</div>';
+    }
+
+    function renderLiveRows() {
+        const rows = (state.payload?.livePredictions?.predictions || [])
+            .slice()
+            .sort((a, b) => String(b.predictionIsoDate).localeCompare(String(a.predictionIsoDate)))
+            .slice(0, 30);
+        const key = getResultKey();
+        el('liveRows').innerHTML = rows.map(row => {
+            const result = row.results?.[key];
+            const pending = row.status !== 'settled' || !result?.resolved;
+            const prediction = row.strategies?.[state.strategy]?.holds?.[String(state.target)];
+            const profit = result?.profitK || 0;
+            return `
+                <div class="grid gap-3 px-4 py-4 md:grid-cols-[150px_1fr_130px] md:items-start ${pending ? 'bg-amber-50/30' : 'bg-white'}">
+                    <div>
+                        <div class="font-bold text-slate-900">${escapeHtml(row.predictionIsoDate || row.predictionDate || '-')}</div>
+                        <div class="mt-1 text-xs text-slate-500">${pending ? 'Đang chờ kết quả' : `KQ ${escapeHtml(result.actual || row.actualSpecial || '-')}`}</div>
+                    </div>
+                    <div>
+                        <div class="text-xs font-semibold uppercase text-slate-500">Số đánh (${prediction?.betNumbers?.length || 0})</div>
+                        <div class="mt-2 flex flex-wrap gap-1.5">
+                            ${(prediction?.betNumbers || []).slice(0, 45).map(num => `<span class="rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 font-mono text-xs font-bold text-emerald-700">${numText(num)}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-lg font-bold ${pending ? 'text-slate-500' : (profit >= 0 ? 'text-emerald-700' : 'text-red-700')}">
+                            ${pending ? 'Chờ...' : fmtK(profit)}
+                        </div>
+                        <div class="mt-1 text-xs text-slate-500">${pending ? '-' : (result.hit ? 'Đánh thắng' : 'Đánh thua')}</div>
+                    </div>
+                </div>
+            `;
+        }).join('') || '<div class="px-4 py-8 text-center text-slate-500">Chưa có nhật ký thực tế.</div>';
+    }
+
+    function render() {
+        if (!state.payload) return;
+        renderControls();
         renderSummary();
-        renderRows();
-    }
-
-    function setAggregationMode(mode) {
-        state.aggregationMode = ['recommended', 'average', 'manual'].includes(mode) ? mode : 'recommended';
-        if (el('aggregationMode')) el('aggregationMode').value = state.aggregationMode;
-        el('averageHoldWrap')?.classList.toggle('hidden', state.aggregationMode === 'manual');
+        renderChains();
+        renderRanking();
+        renderLiveSummary();
+        renderLiveRows();
     }
 
     async function loadData() {
-        const params = new URLSearchParams({
-            includePotential: el('includePotential').checked ? '1' : '0',
-            excludeFixedThreeValueGroups: el('excludeFixedThreeValueGroups').checked ? '1' : '0',
-            sortBy: el('sortBy')?.value || 'risk'
-        });
         setLoading(true);
         showError('');
         try {
-            const response = await fetch(`/api/chain-frequency?${params.toString()}`);
+            const response = await fetch('/api/milestone-20y/prediction');
             const data = await response.json();
-            if (!response.ok || data.error) throw new Error(data.error || 'Không thể tải dữ liệu loại trừ.');
-            state.data = data;
-            state.selectedKeys = new Set();
-            setAggregationMode(el('aggregationMode')?.value || 'recommended');
-            state.averageHoldCount = Number(el('averageHoldCount')?.value || 70);
-            el('predictionInfo').textContent = `Dữ liệu tới ${data.basisDate}; phương án mặc định hiệu chỉnh 50% xác suất nền từ ${data.recommendedExclusion?.candidatesCount || 0} chuỗi chứa số. Chuyển sang Chuỗi tự chọn để tick Tier hoặc từng dòng trong ${data.candidatesCount} ứng viên ưu tiên.`;
-            renderSummary();
-            renderRows();
+            if (!response.ok || data.error) throw new Error(data.error || 'Không thể tải dữ liệu Mốc 20 năm.');
+            state.payload = data;
+            const profitPreset = data.config?.presets?.[0];
+            state.strategy = state.strategy || profitPreset?.strategy || 'chainSmallFirst';
+            if (!data.nextPrediction?.strategies?.[state.strategy]) {
+                state.strategy = profitPreset?.strategy || Object.keys(data.nextPrediction?.strategies || {})[0] || 'chainSmallFirst';
+            }
+            const strategy = getStrategy();
+            state.target = Number(state.target || strategy?.defaultTarget || profitPreset?.target || 65);
+            if (!getPrediction(state.strategy, state.target)) {
+                state.target = Number(strategy?.defaultTarget || profitPreset?.target || getTargets()[0] || 65);
+            }
+            render();
         } catch (error) {
-            showError(error.message || 'Không thể tải dữ liệu loại trừ.');
+            showError(error.message || 'Không thể tải dữ liệu Mốc 20 năm.');
         } finally {
             setLoading(false);
         }
@@ -251,25 +309,15 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         el('refreshButton')?.addEventListener('click', loadData);
-        el('sortBy')?.addEventListener('change', loadData);
-        el('aggregationMode')?.addEventListener('change', event => {
-            setAggregationMode(event.target.value);
-            renderSummary();
+        el('strategySelect')?.addEventListener('change', event => {
+            state.strategy = event.target.value;
+            const strategy = getStrategy();
+            state.target = Number(strategy?.defaultTarget || state.target || 65);
+            render();
         });
-        el('averageHoldCount')?.addEventListener('change', event => {
-            state.averageHoldCount = Number(event.target.value || 70);
-            renderSummary();
-        });
-        el('includePotential')?.addEventListener('change', loadData);
-        el('excludeFixedThreeValueGroups')?.addEventListener('change', loadData);
-        el('selectTier1').addEventListener('click', () => setTier(1, true));
-        el('selectTier2').addEventListener('click', () => setTier(2, true));
-        el('selectTier3').addEventListener('click', () => setTier(3, true));
-        el('clearSelection').addEventListener('click', () => {
-            setAggregationMode('manual');
-            state.selectedKeys.clear();
-            renderSummary();
-            renderRows();
+        el('targetSelect')?.addEventListener('change', event => {
+            state.target = Number(event.target.value || state.target);
+            render();
         });
         loadData();
     });
