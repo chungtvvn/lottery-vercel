@@ -33,6 +33,7 @@ function parseArgs() {
             .map(value => Number(value.trim()))
             .filter(value => Number.isFinite(value) && value > 0 && value < 100),
         maxBetCount: Number(args.get('maxBetCount') || 65),
+        fixedBaselineYear: args.has('fixedBaselineYear') ? Number(args.get('fixedBaselineYear')) : null,
         startYear: args.has('startYear') ? Number(args.get('startYear')) : null,
         endYear: args.has('endYear') ? Number(args.get('endYear')) : null,
         activeFrequencyLimit: Number(args.get('activeFrequencyLimit') || 0.5),
@@ -44,6 +45,9 @@ function parseArgs() {
             .filter(Boolean),
         winMultiplier: Number(args.get('winMultiplier') || DEFAULT_WIN_MULTIPLIER),
         useFullHistoryStats: args.get('useFullHistoryStats') === '1',
+        activeOnly: args.get('activeOnly') !== '0',
+        includeDetails: args.get('includeDetails') === '1',
+        progress: args.get('progress') === '1',
         compact: args.get('compact') !== '0'
     };
 }
@@ -205,7 +209,8 @@ function resolveNumbers(stat, key) {
 
 function buildCandidatesForDate(targetDateDisplay, baseline, options) {
     const quickStats = historicalExclusionService.computeQuickStatsForDateFast(targetDateDisplay, options.historyYears, {
-        useFullHistoryStats: !!options.useFullHistoryStats
+        useFullHistoryStats: !!options.useFullHistoryStats,
+        activeOnly: options.activeOnly !== false
     });
     const candidates = [];
 
@@ -540,6 +545,8 @@ async function main() {
     const yearly = new Map();
     const details = [];
     let skippedBeforeWarmup = 0;
+    let lastProgressYear = null;
+    let evaluatedDays = 0;
 
     for (let index = 1; index < rawData.length; index++) {
         const targetRow = rawData[index];
@@ -548,32 +555,43 @@ async function main() {
         const year = targetDate.getFullYear();
         if (options.startYear && year < options.startYear) continue;
         if (options.endYear && year > options.endYear) continue;
-
-        const baselineCutoff = new Date(year - 1, 11, 31);
-        const minStart = new Date(baselineCutoff);
-        minStart.setFullYear(minStart.getFullYear() - options.historyYears);
-        const firstDate = parseDate(rawData[0].date);
-        if (!firstDate || firstDate > minStart) {
-            skippedBeforeWarmup++;
-            continue;
+        if (options.progress && year !== lastProgressYear) {
+            lastProgressYear = year;
+            console.log(`[Annual20Y] Processing year ${year} with baseline ${options.fixedBaselineYear || year}...`);
         }
 
-        if (!baselines.has(year)) {
-            baselines.set(year, buildAnnualBaseline(entries, year, options));
+        const baselineYear = options.fixedBaselineYear || year;
+        if (!options.fixedBaselineYear) {
+            const baselineCutoff = new Date(year - 1, 11, 31);
+            const minStart = new Date(baselineCutoff);
+            minStart.setFullYear(minStart.getFullYear() - options.historyYears);
+            const firstDate = parseDate(rawData[0].date);
+            if (!firstDate || firstDate > minStart) {
+                skippedBeforeWarmup++;
+                continue;
+            }
         }
-        const baseline = baselines.get(year);
+
+        if (!baselines.has(baselineYear)) {
+            baselines.set(baselineYear, buildAnnualBaseline(entries, baselineYear, options));
+        }
+        const baseline = baselines.get(baselineYear);
         const targetDisplay = formatDisplayDate(targetDate);
         const candidates = buildCandidatesForDate(targetDisplay, baseline, options);
         const actual = toSpecialNumber(targetRow);
         if (actual === null) continue;
+        evaluatedDays++;
 
-        const day = {
-            date: formatIso(targetDate),
-            year,
-            actual: String(actual).padStart(2, '0'),
-            candidateCount: candidates.length,
-            results: {}
-        };
+        const day = options.includeDetails
+            ? {
+                date: formatIso(targetDate),
+                year,
+                baselineYear,
+                actual: String(actual).padStart(2, '0'),
+                candidateCount: candidates.length,
+                results: {}
+            }
+            : null;
 
         for (const strategy of options.strategies) {
             for (const target of options.targets) {
@@ -588,15 +606,17 @@ async function main() {
                     yearly.set(yearKey, yearSummary);
                 }
                 updateSummary(yearly.get(yearKey), result);
-                day.results[`${strategy}:hold${target}`] = {
-                    ...result,
-                    toBet: options.compact ? prediction.toBet.map(n => String(n).padStart(2, '0')) : prediction.toBet,
-                    excluded: options.compact ? prediction.excluded.map(n => String(n).padStart(2, '0')) : prediction.excluded,
-                    selectedChains: prediction.selectedChains
-                };
+                if (day) {
+                    day.results[`${strategy}:hold${target}`] = {
+                        ...result,
+                        toBet: options.compact ? prediction.toBet.map(n => String(n).padStart(2, '0')) : prediction.toBet,
+                        excluded: options.compact ? prediction.excluded.map(n => String(n).padStart(2, '0')) : prediction.excluded,
+                        selectedChains: prediction.selectedChains
+                    };
+                }
             }
         }
-        details.push(day);
+        if (day) details.push(day);
     }
 
     const summaryRows = [...summaries.values()].map(finalizeSummary)
@@ -612,6 +632,7 @@ async function main() {
         generatedAt: new Date().toISOString(),
         options,
         skippedBeforeWarmup,
+        evaluatedDays,
         baselineYears: [...baselines.keys()].sort(),
         summary: summaryRows,
         yearly: yearlyRows,
