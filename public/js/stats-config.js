@@ -2047,21 +2047,21 @@ function populateQuadrantPairAlternatingOptions() {
 populateQuadrantPairAlternatingOptions();
 
 const BO_GROUPS = [
-    { id: '01', numbers: ['01', '06', '10', '15', '51', '56', '60', '65'] },
-    { id: '02', numbers: ['02', '07', '20', '25', '52', '57', '70', '75'] },
-    { id: '03', numbers: ['03', '08', '30', '35', '53', '58', '80', '85'] },
-    { id: '04', numbers: ['04', '09', '40', '45', '54', '59', '90', '95'] },
-    { id: '05', numbers: ['00', '05', '50', '55'] },
-    { id: '11', numbers: ['11', '16', '61', '66'] },
-    { id: '12', numbers: ['12', '17', '21', '26', '62', '67', '71', '76'] },
-    { id: '13', numbers: ['13', '18', '31', '36', '63', '68', '81', '86'] },
-    { id: '22', numbers: ['22', '27', '72', '77'] },
-    { id: '23', numbers: ['23', '28', '32', '37', '73', '78', '82', '87'] },
-    { id: '24', numbers: ['24', '29', '42', '47', '74', '79', '92', '97'] },
-    { id: '33', numbers: ['33', '38', '83', '88'] },
-    { id: '34', numbers: ['34', '39', '43', '48', '84', '89', '93', '98'] },
-    { id: '41', numbers: ['14', '19', '41', '46', '64', '69', '91', '96'] },
-    { id: '44', numbers: ['44', '49', '94', '99'] }
+    { id: '01', tokens: ['010', '060', '565', '515'] },
+    { id: '02', tokens: ['020', '070', '252', '575'] },
+    { id: '03', tokens: ['030', '080', '353', '585'] },
+    { id: '04', tokens: ['040', '090', '545', '595'] },
+    { id: '05', tokens: ['00', '55', '050'] },
+    { id: '11', tokens: ['11', '66', '161'] },
+    { id: '12', tokens: ['121', '171', '262', '676'] },
+    { id: '13', tokens: ['131', '181', '363', '686'] },
+    { id: '22', tokens: ['22', '77', '272'] },
+    { id: '23', tokens: ['232', '282', '373', '787'] },
+    { id: '24', tokens: ['242', '292', '474', '797'] },
+    { id: '33', tokens: ['33', '88', '383'] },
+    { id: '34', tokens: ['343', '393', '848', '898'] },
+    { id: '41', tokens: ['141', '191', '464', '696'] },
+    { id: '44', tokens: ['44', '99', '494'] }
 ];
 
 STATS_OPTIONS["Thống kê theo Bộ"] = [];
@@ -2083,7 +2083,7 @@ function populateBoOptions() {
 
     for (const group of BO_GROUPS) {
         const category = `bo_${group.id}`;
-        const prefix = `Bộ ${group.id} (${group.numbers.join(',')})`;
+        const prefix = `Bộ ${group.id}: ${group.tokens.join(' - ')}`;
         Object.entries(subLabels).forEach(([subcategory, label]) => {
             arr.push({ text: `${prefix} - ${label}`, category, subcategory });
         });
@@ -2098,7 +2098,7 @@ function populateBoPairAlternatingOptions() {
             const left = BO_GROUPS[i];
             const right = BO_GROUPS[j];
             group.push({
-                text: `Bộ ${left.id} ↔ Bộ ${right.id} - So le theo cặp`,
+                text: `Bộ ${left.id}: ${left.tokens.join(' - ')} ↔ Bộ ${right.id}: ${right.tokens.join(' - ')} - So le theo cặp`,
                 category: `bo_pair_${left.id}_${right.id}`,
                 subcategory: 'soLeTheoCap'
             });
@@ -2130,6 +2130,40 @@ function populateSplitAlternatingOrderedOptions() {
     }
 }
 populateSplitAlternatingOrderedOptions();
+
+const BLOCK_ALTERNATION_SUBCATEGORIES = [
+    { subcategory: 'block2x1SoLe', label: 'Nhịp 2-1 so le block' },
+    { subcategory: 'block2x2SoLe', label: 'Nhịp 2-2 so le block' },
+    { subcategory: 'block3x2SoLe', label: 'Nhịp 3-2 so le block' },
+    { subcategory: 'block3x3SoLe', label: 'Nhịp 3-3 so le block' },
+    { subcategory: 'block4x2SoLe', label: 'Nhịp 4-2 so le block' },
+    { subcategory: 'block4x3SoLe', label: 'Nhịp 4-3 so le block' }
+];
+
+function populateBlockAlternationOptions() {
+    for (const groupName in STATS_OPTIONS) {
+        const additions = [];
+        const seenInGroup = new Set(STATS_OPTIONS[groupName].map(option =>
+            `${option.category}${option.subcategory ? ':' + option.subcategory : ''}`
+        ));
+        for (const option of STATS_OPTIONS[groupName]) {
+            if (!option || option.subcategory !== 'veSole') continue;
+            const prefix = stripStatsSuffix(option.text) || option.category;
+            for (const block of BLOCK_ALTERNATION_SUBCATEGORIES) {
+                const key = `${option.category}:${block.subcategory}`;
+                if (seenInGroup.has(key)) continue;
+                seenInGroup.add(key);
+                additions.push({
+                    text: `${prefix} - ${block.label}`,
+                    category: option.category,
+                    subcategory: block.subcategory
+                });
+            }
+        }
+        STATS_OPTIONS[groupName].push(...additions);
+    }
+}
+populateBlockAlternationOptions();
 
 
 for (const groupName in STATS_OPTIONS) {

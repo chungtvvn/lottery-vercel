@@ -23,6 +23,123 @@
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
+    let statsOptionTitleLookup = null;
+
+    function getStatsOptionTitleLookup() {
+        if (statsOptionTitleLookup) return statsOptionTitleLookup;
+        statsOptionTitleLookup = new Map();
+        try {
+            if (typeof STATS_OPTIONS !== 'undefined') {
+                Object.values(STATS_OPTIONS || {}).forEach(group => {
+                    (group || []).forEach(option => {
+                        if (!option || !option.category) return;
+                        const key = `${option.category}${option.subcategory ? `:${option.subcategory}` : ''}`;
+                        if (!statsOptionTitleLookup.has(key)) statsOptionTitleLookup.set(key, option.text || key);
+                    });
+                });
+            }
+        } catch (error) {
+            // Stats config is a best-effort display helper; keep fallback formatting below.
+        }
+        return statsOptionTitleLookup;
+    }
+
+    function looksLikeRawStatsTitle(value, key = '') {
+        const text = String(value || '').trim();
+        if (!text) return true;
+        if (key && text === String(key)) return true;
+        return /^[A-Za-z0-9_]+(?::[A-Za-z0-9_]+)?$/.test(text);
+    }
+
+    function splitStatsKey(key = '') {
+        const [category, subcategory = ''] = String(key || '').split(':');
+        return { category, subcategory };
+    }
+
+    function toVietnameseToken(value = '') {
+        const tokenMap = {
+            dau: 'Đầu',
+            dit: 'Đít',
+            tong: 'Tổng',
+            moi: 'Mới',
+            tt: 'TT',
+            hieu: 'Hiệu',
+            chan: 'chẵn',
+            le: 'lẻ',
+            nho: 'nhỏ',
+            lon: 'lớn',
+            to: 'to',
+            hon: 'hơn',
+            cach: 'cách'
+        };
+        return String(value)
+            .split('_')
+            .filter(Boolean)
+            .map(part => tokenMap[part] || part)
+            .join(' ');
+    }
+
+    function fallbackCategoryTitle(category = '') {
+        const boMatch = String(category).match(/^bo_(\d+)$/);
+        if (boMatch) return `Bộ ${boMatch[1]}`;
+
+        const dongMatch = String(category).match(/^dong_step_(\d+)_(\d+)$/);
+        if (dongMatch) return `Đồng cách ${dongMatch[1]} từ ${String(dongMatch[2]).padStart(2, '0')}`;
+
+        if (String(category).startsWith('tong_moi_')) {
+            return `Tổng Mới - ${toVietnameseToken(String(category).replace('tong_moi_', ''))}`;
+        }
+        if (String(category).startsWith('tong_tt_')) {
+            return `Tổng TT - ${toVietnameseToken(String(category).replace('tong_tt_', ''))}`;
+        }
+        if (String(category).startsWith('hieu_')) {
+            return `Hiệu - ${toVietnameseToken(String(category).replace('hieu_', ''))}`;
+        }
+        if (String(category).startsWith('dau_') || String(category).startsWith('dit_')) {
+            return toVietnameseToken(category);
+        }
+        return toVietnameseToken(category) || category;
+    }
+
+    function fallbackSubcategoryTitle(subcategory = '') {
+        const labels = {
+            veLienTiep: 'Về liên tiếp',
+            veSole: 'Về so le',
+            veSoleMoi: 'Về so le mới',
+            veTheoThuTu: 'Về theo thứ tự',
+            veSoLeTheoThuTu: 'Về so le theo thứ tự',
+            veSoLeTheoThuTuTien: 'Về so le theo thứ tự TIẾN',
+            veSoLeTheoThuTuLui: 'Về so le theo thứ tự LÙI',
+            soLeTheoCap: 'So le theo cặp',
+            tienLienTiep: 'Tiến liên tiếp',
+            tienDeuLienTiep: 'Tiến Đều',
+            luiLienTiep: 'Lùi liên tiếp',
+            luiDeuLienTiep: 'Lùi Đều',
+            tienLuiSoLe: 'Tiến-Lùi So Le',
+            luiTienSoLe: 'Lùi-Tiến So Le',
+            block2x1SoLe: 'Nhịp 2-1 so le block',
+            block2x2SoLe: 'Nhịp 2-2 so le block',
+            block3x2SoLe: 'Nhịp 3-2 so le block',
+            block3x3SoLe: 'Nhịp 3-3 so le block',
+            block4x2SoLe: 'Nhịp 4-2 so le block',
+            block4x3SoLe: 'Nhịp 4-3 so le block'
+        };
+        return labels[subcategory] || subcategory;
+    }
+
+    function formatChainTitle(chain = {}) {
+        const key = chain.key || chain.title || '';
+        const currentTitle = chain.title || key;
+        if (!looksLikeRawStatsTitle(currentTitle, key)) return currentTitle;
+
+        const lookupTitle = getStatsOptionTitleLookup().get(key);
+        if (lookupTitle && !looksLikeRawStatsTitle(lookupTitle, key)) return lookupTitle;
+
+        const { category, subcategory } = splitStatsKey(key);
+        const categoryTitle = fallbackCategoryTitle(category);
+        const subcategoryTitle = fallbackSubcategoryTitle(subcategory);
+        return subcategoryTitle ? `${categoryTitle} - ${subcategoryTitle}` : categoryTitle;
+    }
 
     function setLoading(isLoading) {
         el('refreshButton').disabled = isLoading;
@@ -174,7 +291,7 @@
         el('chainsTable').innerHTML = chains.map(chain => `
             <tr class="border-t border-slate-100 bg-white">
                 <td class="px-4 py-3 align-top">
-                    <div class="font-semibold text-slate-900">${escapeHtml(chain.title || chain.key)}</div>
+                    <div class="font-semibold text-slate-900">${escapeHtml(formatChainTitle(chain))}</div>
                     <div class="mt-1 text-xs text-slate-500">
                         ${chain.currentLen || '-'}d → ${chain.targetLen || '-'}d · KL ${chain.recordLen || '-'}d · mẫu ${fmt(chain.currentCount || 0)}
                     </div>
@@ -218,7 +335,7 @@
                     </div>
                 </div>
                 <div class="mt-2 text-xs leading-5 text-slate-500">
-                    ${(row.contributors || []).slice(0, 2).map(chain => escapeHtml(chain.title || chain.key)).join('<br>')}
+                    ${(row.contributors || []).slice(0, 2).map(chain => escapeHtml(formatChainTitle(chain))).join('<br>')}
                 </div>
             </div>
         `).join('');
