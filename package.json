@@ -12,6 +12,7 @@
     "supabase:seed:storage": "node scripts/seed-supabase-statistics-storage.js",
     "supabase:cleanup:legacy": "node scripts/cleanup-supabase-legacy-storage.js",
     "supabase:sync": "node scripts/sync-supabase.js",
+    "r2:sync:down": "node scripts/sync-from-r2.js",
     "stats:audit": "node scripts/audit-statistics-coverage.js",
     "analyze:exclusion-overlap": "node scripts/analyze-exclusion-number-overlap.js",
     "test:so-le-theo-cap": "node scripts/test-so-le-theo-cap.js",
