@@ -222,6 +222,73 @@
         return prediction;
     }
 
+    function normalizeNumber(value) {
+        return String(value).padStart(2, '0');
+    }
+
+    function buildDerivedExclusionRanking(prediction = {}) {
+        const excludedSet = new Set((prediction.excludedNumbers || []).map(normalizeNumber));
+        const targetCount = Number(prediction.targetExcluded || prediction.excludedNumbers?.length || state.target || 0);
+        const rows = [];
+        const seen = new Set();
+        const selectedChains = prediction.selectedChains || [];
+
+        selectedChains.forEach((chain, chainIndex) => {
+            const numbers = (chain.numbers || [])
+                .map(normalizeNumber)
+                .filter(number => excludedSet.has(number))
+                .sort((a, b) => Number(a) - Number(b));
+            numbers.forEach(number => {
+                if (seen.has(number) || rows.length >= targetCount) return;
+                seen.add(number);
+                rows.push({
+                    number,
+                    rank: rows.length + 1,
+                    chainRank: chainIndex + 1,
+                    sourceType: 'chain',
+                    scorePercent: chain.numberRiskScore || chain.riskPercent || chain.score || 0,
+                    supportCount: 1,
+                    tier: chain.tier,
+                    tierLabel: chain.tierLabel || `Tier ${chain.tier || '-'}`,
+                    riskPercent: chain.riskPercent,
+                    exposureFrequencyPerYear: chain.exposureFrequencyPerYear,
+                    currentCount: chain.currentCount,
+                    nextCount: chain.nextCount,
+                    contributors: [chain]
+                });
+            });
+        });
+
+        (prediction.excludedNumbers || []).map(normalizeNumber).forEach(number => {
+            if (seen.has(number)) return;
+            seen.add(number);
+            rows.push({
+                number,
+                rank: rows.length + 1,
+                sourceType: 'fallback',
+                scorePercent: 0,
+                supportCount: 0,
+                contributors: []
+            });
+        });
+
+        return rows.slice(0, Math.max(targetCount, rows.length));
+    }
+
+    function getDisplayedRanking(prediction = getPrediction()) {
+        if (!prediction) return [];
+        if (prediction.ranking && prediction.ranking.length) {
+            const excludedSet = new Set((prediction.excludedNumbers || []).map(normalizeNumber));
+            return prediction.ranking.map(row => ({
+                ...row,
+                number: normalizeNumber(row.number),
+                isExcluded: excludedSet.has(normalizeNumber(row.number)),
+                sourceType: 'number-score'
+            }));
+        }
+        return buildDerivedExclusionRanking(prediction).map(row => ({ ...row, isExcluded: true }));
+    }
+
     function getResultKey(strategy = state.strategy, target = state.target) {
         return `${strategy}:hold${target}`;
     }
@@ -234,7 +301,7 @@
     }
 
     function renderNumberGrid(numbers, mode, ranking = []) {
-        const rankingByNumber = new Map((ranking || []).map(row => [String(row.number).padStart(2, '0'), row]));
+        const rankingByNumber = new Map((ranking || []).map(row => [normalizeNumber(row.number), row]));
         const classes = mode === 'bet'
             ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
             : 'border-red-200 bg-red-50 text-red-700';
@@ -244,7 +311,9 @@
                     const text = numText(value);
                     const rank = rankingByNumber.get(text);
                     const title = rank
-                        ? `#${rank.rank} · điểm ${rank.scorePercent || 0}% · ${rank.supportCount || 0} chuỗi`
+                        ? rank.sourceType === 'chain'
+                            ? `#${rank.rank} · ${rank.tierLabel || 'Tier'} · ${formatChainTitle(rank.contributors?.[0] || {})}`
+                            : `#${rank.rank} · điểm ${rank.scorePercent || 0}% · ${rank.supportCount || 0} chuỗi`
                         : '';
                     return `
                         <span title="${escapeHtml(title)}" class="rounded-lg border px-2 py-2 text-center font-mono text-sm font-bold ${classes}">
@@ -315,8 +384,9 @@
         `).join('');
 
         el('predictionInfo').textContent = `${strategy?.name || state.strategy} · loại ${state.target} số, đánh ${100 - state.target} số.`;
-        el('excludedGrid').innerHTML = renderNumberGrid(prediction?.excludedNumbers || [], 'exclude', prediction?.ranking || []);
-        el('betGrid').innerHTML = renderNumberGrid(prediction?.betNumbers || [], 'bet', prediction?.ranking || []);
+        const displayedRanking = getDisplayedRanking(prediction);
+        el('excludedGrid').innerHTML = renderNumberGrid(prediction?.excludedNumbers || [], 'exclude', displayedRanking);
+        el('betGrid').innerHTML = renderNumberGrid(prediction?.betNumbers || [], 'bet', displayedRanking);
     }
 
     function presetIdForSelection() {
@@ -357,25 +427,39 @@
 
     function renderRanking() {
         const prediction = getPrediction();
-        const ranking = prediction?.ranking || [];
+        const ranking = getDisplayedRanking(prediction);
         if (!ranking.length) {
-            el('rankingList').innerHTML = '<div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">Phương pháp chuỗi trực tiếp không có bảng điểm từng số.</div>';
+            el('rankingList').innerHTML = '<div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">Chưa có dữ liệu giải thích từng số cho phương pháp này.</div>';
             return;
         }
         el('rankingList').innerHTML = ranking.slice(0, 100).map(row => `
-            <div class="mb-2 rounded-xl border border-slate-200 bg-white p-3">
+            <div class="mb-2 rounded-xl border ${row.isExcluded ? 'border-red-100 bg-red-50/40' : 'border-emerald-100 bg-emerald-50/35'} p-3">
                 <div class="flex items-center justify-between gap-3">
                     <div class="flex items-center gap-2">
                         <span class="w-9 rounded-lg bg-slate-900 py-1 text-center font-mono font-bold text-white">${numText(row.number)}</span>
                         <span class="text-xs font-semibold text-slate-500">#${row.rank}</span>
+                        <span class="rounded-full border px-2 py-0.5 text-[10px] font-bold ${row.isExcluded ? 'border-red-200 bg-red-50 text-red-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}">
+                            ${row.isExcluded ? 'Loại' : 'Giữ đánh'}
+                        </span>
                     </div>
                     <div class="text-right">
-                        <div class="text-sm font-bold text-slate-900">${fmt(row.scorePercent)}%</div>
-                        <div class="text-[11px] text-slate-500">${fmt(row.supportCount)} chuỗi</div>
+                        <div class="text-sm font-bold text-slate-900">${row.tierLabel ? escapeHtml(row.tierLabel) : `${fmt(row.scorePercent)}%`}</div>
+                        <div class="text-[11px] text-slate-500">
+                            ${row.sourceType === 'chain'
+                                ? `chuỗi #${fmt(row.chainRank || 0)}`
+                                : `${fmt(row.supportCount)} chuỗi`}
+                        </div>
                     </div>
                 </div>
                 <div class="mt-2 text-xs leading-5 text-slate-500">
-                    ${(row.contributors || []).slice(0, 2).map(chain => escapeHtml(formatChainTitle(chain))).join('<br>')}
+                    ${row.sourceType === 'fallback'
+                        ? 'Số này được thêm vào cuối để đủ mức loại, nhưng cache hiện tại chưa còn đủ chuỗi nguồn chi tiết. Hãy chạy lại action để sinh cache giải thích đầy đủ hơn.'
+                        : (row.contributors || []).slice(0, 3).map(chain => `
+                            <div>
+                                <span class="font-semibold text-slate-700">${escapeHtml(formatChainTitle(chain))}</span>
+                                <span class="text-slate-400"> · rủi ro ${fmt(chain.riskPercent)}% · tần suất ${fmt(chain.exposureFrequencyPerYear)}/năm · mẫu ${fmt(chain.currentCount)} → ${fmt(chain.nextCount)}</span>
+                            </div>
+                        `).join('')}
                 </div>
             </div>
         `).join('');
