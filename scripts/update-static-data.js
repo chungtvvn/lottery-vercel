@@ -20,7 +20,7 @@ const LOTO_STAKE_PER_NUMBER_K = 2300;
 const LOTO_PAYOUT_PER_HIT_K = 8000;
 const LOTO_METHOD_ID = process.env.LOTO_METHOD_ID || 'milestone20yChainSmallFirstHold65';
 const LOTO_BET_COUNTS = [3, 4, 5, 6, 7];
-const MILESTONE20Y_METHOD_VERSION = 'annual20y-2026-06-25';
+const MILESTONE20Y_METHOD_VERSION = 'annual20y-2026-06-26-number-ranking';
 const MILESTONE20Y_BASELINE_VERSION = 'annual20y-baseline-2026-06-25';
 const MILESTONE20Y_CACHE_FILES = [
     'cached_milestone20y_prediction.json',
