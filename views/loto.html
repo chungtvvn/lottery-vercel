@@ -51,13 +51,13 @@
             <p class="mt-2 max-w-4xl text-sm leading-6 text-slate-600">
                 Mỗi vị trí trong 27 giải tự chạy logic Mốc 20 năm theo phương án đang có lợi nhuận tốt nhất:
                 ưu tiên Tier, chọn chuỗi nhỏ trước, loại 65 số cho từng vị trí và giữ lại 35 số có thể về.
-                Hệ thống cộng đồng thuận theo số vị trí cùng giữ lại rồi chọn top 3, 4, 5, 6 hoặc 7 số để theo dõi thực tế.
+                Hệ thống dùng Two-hit Greedy để chọn top 3, 4, 5, 6 hoặc 7 số, ưu tiên vừa có nhiều vị trí ủng hộ vừa đa dạng đầu/đít/tổng để tăng khả năng đạt từ 2 hit/ngày.
             </p>
         </section>
 
         <div id="errorBox" class="mb-6 hidden rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"></div>
 
-        <section id="metaBox" class="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-5"></section>
+        <section id="metaBox" class="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-6"></section>
 
         <section class="mb-6 grid gap-4 lg:grid-cols-3" id="predictionCards"></section>
 
@@ -75,7 +75,7 @@
 
     </main>
 
-    <script src="/js/loto.js?v=20260626-milestone20y-loto"></script>
+    <script src="/js/loto.js?v=20260626-twohit-loto"></script>
 </body>
 
 </html>

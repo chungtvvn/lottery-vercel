@@ -32,6 +32,7 @@
             ['Ngày dự đoán', next.predictionDate || '-'],
             ['Vị trí', `${cfg.positionCount || 27} giải`],
             ['Phương pháp', methodLabel],
+            ['Bộ chọn', cfg.aggregationMode || next.aggregationMode || '-'],
             ['Công thức', `${nf.format(cfg.stakePerNumberK || 2300)}K ăn ${nf.format(cfg.payoutPerHitK || 8000)}K`]
         ].map(([label, value]) => `
             <div class="glass-card p-4">

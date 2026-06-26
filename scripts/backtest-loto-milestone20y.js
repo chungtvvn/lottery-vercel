@@ -24,10 +24,11 @@ const PRIZE_KEYS = [
 const ALL_NUMBERS = Array.from({ length: 100 }, (_, index) => index);
 const DEFAULT_STAKE_K = 2300;
 const DEFAULT_PAYOUT_K = 8000;
-const DEFAULT_METHOD_ID = 'milestone20yChainSmallFirstHold65';
+const DEFAULT_METHOD_ID = 'milestone20yChainSmallFirstHold65TwoHitGreedy';
 const DEFAULT_STRATEGY = 'chainSmallFirst';
 const DEFAULT_HOLD = 65;
-const LIVE_CACHE_NOTE = 'Mỗi vị trí dùng Mốc 20 năm chainSmallFirst Hold 65; cộng đồng thuận 27 vị trí rồi chọn top 3/4/5/6/7 số.';
+const DEFAULT_AGGREGATION_MODE = 'twoHitGreedy';
+const LIVE_CACHE_NOTE = 'Mỗi vị trí dùng Mốc 20 năm chainSmallFirst Hold 65; tổng hợp bằng Two-hit Greedy để ưu tiên dàn 3/4/5/6/7 số có xác suất đạt từ 2 hit/ngày cao hơn.';
 
 function parseArgs() {
     return new Map(process.argv.slice(2).map(arg => {
@@ -144,6 +145,11 @@ function emptySummary(methodId, betCount, meta = {}) {
         worstDayProfitK: null,
         longestWin: 0,
         longestLoss: 0,
+        atLeast2Days: 0,
+        atLeast3Days: 0,
+        under2Days: 0,
+        longestUnder2: 0,
+        currentUnder2: 0,
         currentStreakType: null,
         currentStreakLength: 0
     };
@@ -167,10 +173,13 @@ function updateWinLossStreak(summary, profitK) {
 }
 
 function finalizeSummary(summary) {
-    const { currentStreakType, currentStreakLength, ...rest } = summary;
+    const { currentStreakType, currentStreakLength, currentUnder2, ...rest } = summary;
     return {
         ...rest,
         hitRate: rest.days ? rest.hitDays / rest.days : 0,
+        atLeast2Rate: rest.days ? rest.atLeast2Days / rest.days : 0,
+        atLeast3Rate: rest.days ? rest.atLeast3Days / rest.days : 0,
+        under2Rate: rest.days ? rest.under2Days / rest.days : 0,
         winRate: rest.days ? rest.winDays / rest.days : 0,
         roi: rest.stakeK ? rest.profitK / rest.stakeK : 0,
         avgHitsPerDay: rest.days ? rest.totalHits / rest.days : 0
@@ -187,6 +196,15 @@ function addResultToSummary(summary, numbers, actualCounts, stakeK, payoutK) {
     if (profitK > 0) summary.winDays += 1;
     if (profitK < 0) summary.lossDays += 1;
     if (hits > 0) summary.hitDays += 1;
+    if (hits >= 2) summary.atLeast2Days += 1;
+    if (hits >= 3) summary.atLeast3Days += 1;
+    if (hits < 2) {
+        summary.under2Days += 1;
+        summary.currentUnder2 += 1;
+        summary.longestUnder2 = Math.max(summary.longestUnder2, summary.currentUnder2);
+    } else {
+        summary.currentUnder2 = 0;
+    }
     summary.totalHits += hits;
     summary.stakeK += dayStakeK;
     summary.payoutK += dayPayoutK;
@@ -221,6 +239,156 @@ function aggregateBySupport(positionPredictions) {
         });
 }
 
+function headOf(number) {
+    return Math.floor(normalizeNumber(number) / 10);
+}
+
+function tailOf(number) {
+    return normalizeNumber(number) % 10;
+}
+
+function sumOfDigits(number) {
+    const value = normalizeNumber(number);
+    return Math.floor(value / 10) + (value % 10);
+}
+
+function getPositionWeight(positionWeights, positionKey) {
+    if (!positionWeights || !positionWeights.has(positionKey)) return 1;
+    const value = Number(positionWeights.get(positionKey));
+    return Number.isFinite(value) && value > 0 ? value : 1;
+}
+
+function buildNumberItems(positionPredictions, positionWeights = null) {
+    const support = new Map();
+    const weighted = new Map();
+    for (const [positionKey, numbers] of Object.entries(positionPredictions || {})) {
+        const weight = getPositionWeight(positionWeights, positionKey);
+        for (const rawNumber of numbers || []) {
+            const number = normalizeNumber(rawNumber);
+            if (number === null) continue;
+            if (!support.has(number)) support.set(number, []);
+            support.get(number).push(positionKey);
+            weighted.set(number, (weighted.get(number) || 0) + weight);
+        }
+    }
+
+    return ALL_NUMBERS.map(number => ({
+        number,
+        positions: support.get(number) || [],
+        supportCount: (support.get(number) || []).length,
+        weightedScore: weighted.get(number) || 0
+    }));
+}
+
+function sortByBaseScore(items, scoreField = 'supportCount') {
+    return items.slice().sort((a, b) => {
+        const diff = Number(b[scoreField] || 0) - Number(a[scoreField] || 0);
+        if (diff !== 0) return diff;
+        if (b.supportCount !== a.supportCount) return b.supportCount - a.supportCount;
+        return a.number - b.number;
+    });
+}
+
+function overlapRatio(aPositions = [], bPositions = []) {
+    if (!aPositions.length || !bPositions.length) return 0;
+    const bSet = new Set(bPositions);
+    const overlap = aPositions.filter(position => bSet.has(position)).length;
+    return overlap / Math.max(aPositions.length, bPositions.length);
+}
+
+function diversityPenalty(candidate, selected) {
+    let penalty = 0;
+    for (const item of selected) {
+        if (headOf(candidate.number) === headOf(item.number)) penalty += 0.45;
+        if (tailOf(candidate.number) === tailOf(item.number)) penalty += 0.45;
+        if (sumOfDigits(candidate.number) === sumOfDigits(item.number)) penalty += 0.25;
+        if ((candidate.number % 2) === (item.number % 2)) penalty += 0.08;
+        penalty += overlapRatio(candidate.positions, item.positions) * 0.55;
+    }
+    return penalty;
+}
+
+function greedyRank(items, baseScoreFn, options = {}) {
+    const remaining = items.slice();
+    const selected = [];
+    const total = Number(options.total || 100);
+
+    while (remaining.length && selected.length < total) {
+        let bestIndex = 0;
+        let bestScore = -Infinity;
+        for (let i = 0; i < remaining.length; i++) {
+            const item = remaining[i];
+            const base = baseScoreFn(item, selected);
+            const penalty = options.diversify ? diversityPenalty(item, selected) : 0;
+            const score = base - penalty;
+            if (score > bestScore || (score === bestScore && item.number < remaining[bestIndex].number)) {
+                bestScore = score;
+                bestIndex = i;
+            }
+        }
+        selected.push(remaining.splice(bestIndex, 1)[0]);
+    }
+    return selected.concat(sortByBaseScore(remaining, 'weightedScore'));
+}
+
+function aggregatePositionPredictions(positionPredictions, options = {}) {
+    const mode = options.mode || 'support';
+    const items = buildNumberItems(positionPredictions, options.positionWeights);
+    if (mode === 'weightedSupport') return sortByBaseScore(items, 'weightedScore');
+    if (mode === 'diverseSupport') {
+        return greedyRank(items, item => item.supportCount, { diversify: true });
+    }
+    if (mode === 'weightedDiverse') {
+        return greedyRank(items, item => item.weightedScore, { diversify: true });
+    }
+    if (mode === 'twoHitGreedy') {
+        const maxScore = Math.max(1, ...items.map(item => item.supportCount));
+        return greedyRank(items, (item, selected) => {
+            const p = 0.02 + (item.supportCount / maxScore) * 0.5;
+            const needSecondHitBoost = selected.length === 0 ? 1 : Math.min(1.55, 1 + selected.length * 0.08);
+            return p * needSecondHitBoost + item.supportCount * 0.18;
+        }, { diversify: true });
+    }
+    if (mode === 'weightedTwoHit') {
+        const maxScore = Math.max(1, ...items.map(item => item.weightedScore));
+        return greedyRank(items, (item, selected) => {
+            const p = 0.02 + (item.weightedScore / maxScore) * 0.52;
+            const needSecondHitBoost = selected.length === 0 ? 1 : Math.min(1.6, 1 + selected.length * 0.09);
+            return p * needSecondHitBoost + item.weightedScore * 0.18;
+        }, { diversify: true });
+    }
+    return sortByBaseScore(items, 'supportCount');
+}
+
+function createPositionCalibration() {
+    return new Map(PRIZE_KEYS.map(positionKey => [positionKey, {
+        trials: 20,
+        hits: 5
+    }]));
+}
+
+function getCalibratedPositionWeights(calibration) {
+    const weights = new Map();
+    for (const [positionKey, stat] of calibration.entries()) {
+        const hitRate = stat.hits / Math.max(1, stat.trials);
+        const relative = hitRate / 0.25;
+        weights.set(positionKey, Math.max(0.55, Math.min(2.1, relative)));
+    }
+    return weights;
+}
+
+function updatePositionCalibration(calibration, positionPredictions, actualByPosition) {
+    for (const positionKey of PRIZE_KEYS) {
+        const actual = normalizeNumber(actualByPosition?.[positionKey]);
+        if (actual === null) continue;
+        const predicted = new Set((positionPredictions?.[positionKey] || []).map(normalizeNumber));
+        const stat = calibration.get(positionKey) || { trials: 20, hits: 5 };
+        stat.trials += 1;
+        if (predicted.has(actual)) stat.hits += 1;
+        calibration.set(positionKey, stat);
+    }
+}
+
 function getWindowRows(rawData, months) {
     const days = Math.round(Number(months) * 30.4375);
     return rawData.slice(-days);
@@ -245,7 +413,8 @@ function buildPredictionSetsFromRanked(ranked, betCounts) {
             numbers: selected.map(item => formatNumber(item.number)),
             support: selected.map(item => ({
                 number: formatNumber(item.number),
-                supportCount: item.positions.length,
+                supportCount: item.supportCount ?? item.positions.length,
+                weightedScore: Number(item.weightedScore || 0),
                 positions: item.positions
             }))
         };
@@ -446,6 +615,7 @@ async function buildPositionDailyPredictions(rawData, positionKey, targetRows, m
 }
 
 async function buildNextPrediction(rawData, methodConfig, betCounts, options) {
+    const aggregationMode = methodConfig.aggregationMode || options.aggregationMode || DEFAULT_AGGREGATION_MODE;
     const latest = rawData[rawData.length - 1];
     const latestDate = latest ? parseIsoDate(latest.date) : null;
     if (!latestDate) throw new Error('Không có ngày dữ liệu mới nhất để sinh dự đoán Lô.');
@@ -473,7 +643,7 @@ async function buildNextPrediction(rawData, methodConfig, betCounts, options) {
         });
     }
 
-    const ranked = aggregateBySupport(byPosition);
+    const ranked = aggregatePositionPredictions(byPosition, { mode: aggregationMode });
     return {
         generatedAt: new Date().toISOString(),
         dataDate: formatDisplayDate(latestDate),
@@ -483,12 +653,14 @@ async function buildNextPrediction(rawData, methodConfig, betCounts, options) {
         methodId: methodConfig.id,
         strategy: methodConfig.strategy,
         hold: methodConfig.target,
+        aggregationMode,
         positionCount: PRIZE_KEYS.length,
         positions: PRIZE_KEYS,
         positionPredictions,
         ranked: ranked.map(item => ({
             number: formatNumber(item.number),
-            supportCount: item.positions.length,
+            supportCount: item.supportCount ?? item.positions.length,
+            weightedScore: Number(item.weightedScore || 0),
             positions: item.positions
         })),
         predictions: buildPredictionSetsFromRanked(ranked, betCounts)
@@ -509,7 +681,8 @@ function writeLiveCaches(nextPrediction, rawData, betCounts, options) {
     livePayload.config = {
         ...(livePayload.config || {}),
         methodId: nextPrediction.methodId,
-        methodName: 'Mốc 20 năm - Chuỗi nhỏ trước Hold 65',
+        methodName: 'Mốc 20 năm - Chuỗi nhỏ trước Hold 65 - Two-hit Greedy',
+        aggregationMode: nextPrediction.aggregationMode || DEFAULT_AGGREGATION_MODE,
         positionCount: PRIZE_KEYS.length,
         positions: PRIZE_KEYS,
         stakePerNumberK: options.stakeK,
@@ -540,6 +713,7 @@ function writeLiveCaches(nextPrediction, rawData, betCounts, options) {
             logic: 'annualMilestone20y-per-position',
             strategy: nextPrediction.strategy,
             hold: nextPrediction.hold,
+            aggregationMode: nextPrediction.aggregationMode || DEFAULT_AGGREGATION_MODE,
             positionCount: PRIZE_KEYS.length,
             positions: PRIZE_KEYS,
             stakePerNumberK: options.stakeK,
@@ -605,12 +779,18 @@ async function main() {
         .split(',')
         .map(value => Math.max(1, Math.min(20, Number(value.trim()) || 0)))
         .filter(Boolean);
+    const aggregationModes = String(args.get('aggregationModes') || args.get('aggModes') || 'support')
+        .split(',')
+        .map(value => value.trim())
+        .filter(Boolean);
+    const predictionAggregationMode = args.get('aggregationMode') || args.get('aggregation') || DEFAULT_AGGREGATION_MODE;
     const stakeK = Number(args.get('stakeK') || DEFAULT_STAKE_K);
     const payoutK = Number(args.get('payoutK') || DEFAULT_PAYOUT_K);
     const historyYears = Number(args.get('historyYears') || 20);
     const methodConfigs = buildMethodConfigs(strategies, holdCounts);
     if (methodConfigs.length === 1 && predictionOnly) {
         methodConfigs[0].id = args.get('method') || DEFAULT_METHOD_ID;
+        methodConfigs[0].aggregationMode = predictionAggregationMode;
     }
 
     await lotteryService.loadRawData();
@@ -620,6 +800,7 @@ async function main() {
     if (predictionOnly) {
         const methodConfig = methodConfigs[0];
         const nextPrediction = await buildNextPrediction(rawData, methodConfig, betCounts, {
+            aggregationMode: predictionAggregationMode,
             historyYears,
             activeFrequencyLimit: Number(args.get('activeFrequencyLimit') || 0.5),
             recordFrequencyLimit: Number(args.get('recordFrequencyLimit') || 1.1),
@@ -643,6 +824,7 @@ async function main() {
     const byDate = new Map(targetRows.map(row => [formatIsoDate(row.date), {
         date: formatIsoDate(row.date),
         actualCounts: countActualOccurrences(row),
+        actualByPosition: Object.fromEntries(PRIZE_KEYS.map(positionKey => [positionKey, normalizeNumber(row[positionKey])])),
         positions: {}
     }]));
 
@@ -668,14 +850,19 @@ async function main() {
     for (const months of monthsList) {
         const windowRows = daily.slice(-Math.round(months * 30.4375));
         summariesByWindow[`${months}m`] = {};
+        const calibrationByConfigMode = new Map();
         for (const config of methodConfigs) {
-            for (const betCount of betCounts) {
-                const key = `${config.id}:top${betCount}`;
-                summariesByWindow[`${months}m`][key] = emptySummary(key, betCount, {
-                    strategy: config.strategy,
-                    hold: config.target,
-                    window: `${months}m`
-                });
+            for (const aggregationMode of aggregationModes) {
+                calibrationByConfigMode.set(`${config.id}:${aggregationMode}`, createPositionCalibration());
+                for (const betCount of betCounts) {
+                    const key = `${config.id}:${aggregationMode}:top${betCount}`;
+                    summariesByWindow[`${months}m`][key] = emptySummary(key, betCount, {
+                        strategy: config.strategy,
+                        hold: config.target,
+                        aggregationMode,
+                        window: `${months}m`
+                    });
+                }
             }
         }
 
@@ -685,11 +872,19 @@ async function main() {
                 for (const [positionKey, methods] of Object.entries(row.positions || {})) {
                     positionPredictions[positionKey] = methods?.[config.id] || [];
                 }
-                const ranked = aggregateBySupport(positionPredictions);
-                for (const betCount of betCounts) {
-                    const key = `${config.id}:top${betCount}`;
-                    const numbers = ranked.slice(0, betCount).map(item => item.number);
-                    addResultToSummary(summariesByWindow[`${months}m`][key], numbers, row.actualCounts, stakeK, payoutK);
+                for (const aggregationMode of aggregationModes) {
+                    const calibrationKey = `${config.id}:${aggregationMode}`;
+                    const positionWeights = getCalibratedPositionWeights(calibrationByConfigMode.get(calibrationKey));
+                    const ranked = aggregatePositionPredictions(positionPredictions, {
+                        mode: aggregationMode,
+                        positionWeights
+                    });
+                    for (const betCount of betCounts) {
+                        const key = `${config.id}:${aggregationMode}:top${betCount}`;
+                        const numbers = ranked.slice(0, betCount).map(item => item.number);
+                        addResultToSummary(summariesByWindow[`${months}m`][key], numbers, row.actualCounts, stakeK, payoutK);
+                    }
+                    updatePositionCalibration(calibrationByConfigMode.get(calibrationKey), positionPredictions, row.actualByPosition);
                 }
             }
         }
@@ -715,6 +910,7 @@ async function main() {
             strategies,
             holdCounts,
             betCounts,
+            aggregationModes,
             stakeK,
             payoutK
         },
@@ -733,15 +929,20 @@ async function main() {
         console.log(`\n=== Top ${months} tháng ===`);
         console.table(topRows.map(item => ({
             method: item.methodId,
+            agg: item.aggregationMode,
             days: item.days,
             bet: item.betCount,
             wins: item.winDays,
             hitRate: `${(item.hitRate * 100).toFixed(2)}%`,
+            hit2: `${(item.atLeast2Rate * 100).toFixed(2)}%`,
+            hit3: `${(item.atLeast3Rate * 100).toFixed(2)}%`,
             hits: item.totalHits,
+            avgHits: item.avgHitsPerDay.toFixed(2),
             profitK: item.profitK,
             roi: `${(item.roi * 100).toFixed(2)}%`,
             longestWin: item.longestWin,
-            longestLoss: item.longestLoss
+            longestLoss: item.longestLoss,
+            longestUnder2: item.longestUnder2
         })));
     }
 }

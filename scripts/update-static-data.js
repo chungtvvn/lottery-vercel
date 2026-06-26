@@ -18,7 +18,8 @@ const XOSO_MAX_WAIT_MINUTES = readNumberEnv('XOSO_MAX_WAIT_MINUTES', WAIT_FOR_NE
 const XOSO_RETRY_INTERVAL_SECONDS = readNumberEnv('XOSO_RETRY_INTERVAL_SECONDS', 60, 5);
 const LOTO_STAKE_PER_NUMBER_K = 2300;
 const LOTO_PAYOUT_PER_HIT_K = 8000;
-const LOTO_METHOD_ID = process.env.LOTO_METHOD_ID || 'milestone20yChainSmallFirstHold65';
+const LOTO_METHOD_ID = process.env.LOTO_METHOD_ID || 'milestone20yChainSmallFirstHold65TwoHitGreedy';
+const LOTO_AGGREGATION_MODE = process.env.LOTO_AGGREGATION_MODE || 'twoHitGreedy';
 const LOTO_BET_COUNTS = [3, 4, 5, 6, 7];
 const MILESTONE20Y_METHOD_VERSION = 'annual20y-2026-06-26-number-ranking';
 const MILESTONE20Y_BASELINE_VERSION = 'annual20y-baseline-2026-06-25';
@@ -158,12 +159,14 @@ function isLotoPredictionFormulaCurrent(cache) {
     const stake = Number(config.stakePerNumberK);
     const payout = Number(config.payoutPerHitK);
     const methodId = String(config.methodId || cache?.nextPrediction?.methodId || '');
+    const aggregationMode = String(config.aggregationMode || cache?.nextPrediction?.aggregationMode || '');
     const betCounts = Array.isArray(config.betCounts) ? config.betCounts.map(Number) : [];
     const betCountsOk = betCounts.length === LOTO_BET_COUNTS.length
         && LOTO_BET_COUNTS.every((count, index) => count === betCounts[index]);
     return stake === LOTO_STAKE_PER_NUMBER_K
         && payout === LOTO_PAYOUT_PER_HIT_K
         && methodId === LOTO_METHOD_ID
+        && aggregationMode === LOTO_AGGREGATION_MODE
         && betCountsOk;
 }
 
@@ -576,7 +579,7 @@ function hasLotoPredictionCache(expectedLatestDate = null) {
         if (latest === expectedLatestDate && isLotoPredictionFormulaCurrent(cache)) return true;
         if (!isLotoPredictionFormulaCurrent(cache)) {
             const config = cache?.config || {};
-            console.log(`[Cache Check] Local Lô cache stale config: method=${config.methodId || cache?.nextPrediction?.methodId || 'unknown'}, betCounts=${(config.betCounts || []).join(',') || 'unknown'}, stake=${config.stakePerNumberK || 'unknown'}, payout=${config.payoutPerHitK || 'unknown'}, expected=${LOTO_METHOD_ID}/${LOTO_BET_COUNTS.join(',')}/${LOTO_STAKE_PER_NUMBER_K}/${LOTO_PAYOUT_PER_HIT_K}.`);
+            console.log(`[Cache Check] Local Lô cache stale config: method=${config.methodId || cache?.nextPrediction?.methodId || 'unknown'}, aggregation=${config.aggregationMode || cache?.nextPrediction?.aggregationMode || 'unknown'}, betCounts=${(config.betCounts || []).join(',') || 'unknown'}, stake=${config.stakePerNumberK || 'unknown'}, payout=${config.payoutPerHitK || 'unknown'}, expected=${LOTO_METHOD_ID}/${LOTO_AGGREGATION_MODE}/${LOTO_BET_COUNTS.join(',')}/${LOTO_STAKE_PER_NUMBER_K}/${LOTO_PAYOUT_PER_HIT_K}.`);
             return false;
         }
         console.log(`[Cache Check] Local Lô cache stale: latest=${latest || 'unknown'}, expected=${expectedLatestDate}.`);
@@ -597,7 +600,7 @@ async function hasLotoPredictionCacheOnR2(expectedLatestDate = null) {
         if (!cache || !live) return false;
         if (!isLotoPredictionFormulaCurrent(cache)) {
             const config = cache?.config || {};
-            console.log(`[Cache Check] R2 Lô cache stale config: method=${config.methodId || cache?.nextPrediction?.methodId || 'unknown'}, betCounts=${(config.betCounts || []).join(',') || 'unknown'}, stake=${config.stakePerNumberK || 'unknown'}, payout=${config.payoutPerHitK || 'unknown'}, expected=${LOTO_METHOD_ID}/${LOTO_BET_COUNTS.join(',')}/${LOTO_STAKE_PER_NUMBER_K}/${LOTO_PAYOUT_PER_HIT_K}.`);
+            console.log(`[Cache Check] R2 Lô cache stale config: method=${config.methodId || cache?.nextPrediction?.methodId || 'unknown'}, aggregation=${config.aggregationMode || cache?.nextPrediction?.aggregationMode || 'unknown'}, betCounts=${(config.betCounts || []).join(',') || 'unknown'}, stake=${config.stakePerNumberK || 'unknown'}, payout=${config.payoutPerHitK || 'unknown'}, expected=${LOTO_METHOD_ID}/${LOTO_AGGREGATION_MODE}/${LOTO_BET_COUNTS.join(',')}/${LOTO_STAKE_PER_NUMBER_K}/${LOTO_PAYOUT_PER_HIT_K}.`);
             return false;
         }
         console.log(`[Cache Check] R2 Lô cache OK: cached_loto latest=${cacheLatest || 'unknown'}, live latest=${liveLatest || 'unknown'}.`);
@@ -690,6 +693,7 @@ function generateLotoPredictionCache() {
         `--method=${LOTO_METHOD_ID}`,
         `--strategies=${process.env.LOTO_MILESTONE_STRATEGY || 'chainSmallFirst'}`,
         `--holds=${process.env.LOTO_MILESTONE_HOLD || '65'}`,
+        `--aggregationMode=${LOTO_AGGREGATION_MODE}`,
         `--betCounts=${LOTO_BET_COUNTS.join(',')}`,
         `--stakeK=${LOTO_STAKE_PER_NUMBER_K}`,
         `--payoutK=${LOTO_PAYOUT_PER_HIT_K}`,
