@@ -2132,12 +2132,12 @@ function populateSplitAlternatingOrderedOptions() {
 populateSplitAlternatingOrderedOptions();
 
 const BLOCK_ALTERNATION_SUBCATEGORIES = [
-    { subcategory: 'block2x1SoLe', label: 'Nhịp 2-1 so le block' },
-    { subcategory: 'block2x2SoLe', label: 'Nhịp 2-2 so le block' },
-    { subcategory: 'block3x2SoLe', label: 'Nhịp 3-2 so le block' },
-    { subcategory: 'block3x3SoLe', label: 'Nhịp 3-3 so le block' },
-    { subcategory: 'block4x2SoLe', label: 'Nhịp 4-2 so le block' },
-    { subcategory: 'block4x3SoLe', label: 'Nhịp 4-3 so le block' }
+    { subcategory: 'block2x1SoLe', label: 'Nhịp 2-1 (AABAA)' },
+    { subcategory: 'block2x2SoLe', label: 'Nhịp 2-2 (AABBAA)' },
+    { subcategory: 'block3x2SoLe', label: 'Nhịp 3-2 (AAABBAAA)' },
+    { subcategory: 'block3x3SoLe', label: 'Nhịp 3-3 (AAABBBAAA)' },
+    { subcategory: 'block4x2SoLe', label: 'Nhịp 4-2 (AAAABBAAAA)' },
+    { subcategory: 'block4x3SoLe', label: 'Nhịp 4-3 (AAAABBBAAAA)' }
 ];
 
 function populateBlockAlternationOptions() {

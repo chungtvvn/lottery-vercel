@@ -71,6 +71,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (normalized.includes('về theo thứ tự')) {
             parts.push('Về theo thứ tự: các giá trị xuất hiện theo đúng thứ tự được ghi trong tên dạng, ví dụ A→B→C. Nếu thứ tự khác thì là một dạng khác.');
         }
+        if (normalized.includes('block') || normalized.includes('aabaa') || normalized.includes('aabbaa') ||
+            normalized.includes('aaabbaaa') || normalized.includes('aaabbbaaa')) {
+            parts.push('Nhịp block A/B: A là ngày thỏa điều kiện của dạng đang xét, B là ngày không thỏa điều kiện đó. Chuỗi chỉ tính khi các block A và B lặp đúng nhịp rồi quay lại A.');
+            parts.push('Ví dụ AABAA là 2 ngày thuộc dạng, 1 ngày khác dạng, rồi 2 ngày thuộc dạng. AAABBAAA là 3 ngày thuộc dạng, 2 ngày khác dạng, rồi 3 ngày thuộc dạng.');
+        }
         if (normalized.includes('về so le theo thứ tự tiến')) {
             parts.push('Về so le theo thứ tự TIẾN: các ngày thỏa điều kiện cách nhau 1 ngày xen kẽ, và giá trị đi theo chiều tăng trên trục của tập số/đầu/đít/tổng/hiệu.');
         } else if (normalized.includes('về so le theo thứ tự lùi')) {
@@ -231,6 +236,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const getSequenceRank = (key = '', text = '') => {
         const haystack = normalizeSearchText(`${key} ${text}`);
+        if (haystack.includes('block2x1sole') || haystack.includes('block2x2sole') ||
+            haystack.includes('block3x2sole') || haystack.includes('block3x3sole') ||
+            haystack.includes('block4x2sole') || haystack.includes('block4x3sole') ||
+            haystack.includes('aabaa') || haystack.includes('aabbaa') ||
+            haystack.includes('aaabbaaa') || haystack.includes('aaabbbaaa')) {
+            return { rank: 8, label: 'Nhịp block A/B' };
+        }
         if (haystack.includes('soletheocap') || haystack.includes('so le theo cap')) return { rank: 10, label: 'So le theo cặp' };
         if (haystack.includes('soletheothutu') || haystack.includes('so le theo thu tu')) return { rank: 20, label: 'So le theo thứ tự' };
         if (haystack.includes('vetheothutu') || haystack.includes('ve theo thu tu')) return { rank: 30, label: 'Về theo thứ tự' };

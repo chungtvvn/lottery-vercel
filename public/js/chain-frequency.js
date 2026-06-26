@@ -117,12 +117,12 @@
             luiDeuLienTiep: 'Lùi Đều',
             tienLuiSoLe: 'Tiến-Lùi So Le',
             luiTienSoLe: 'Lùi-Tiến So Le',
-            block2x1SoLe: 'Nhịp 2-1 so le block',
-            block2x2SoLe: 'Nhịp 2-2 so le block',
-            block3x2SoLe: 'Nhịp 3-2 so le block',
-            block3x3SoLe: 'Nhịp 3-3 so le block',
-            block4x2SoLe: 'Nhịp 4-2 so le block',
-            block4x3SoLe: 'Nhịp 4-3 so le block'
+            block2x1SoLe: 'Nhịp 2-1 (AABAA)',
+            block2x2SoLe: 'Nhịp 2-2 (AABBAA)',
+            block3x2SoLe: 'Nhịp 3-2 (AAABBAAA)',
+            block3x3SoLe: 'Nhịp 3-3 (AAABBBAAA)',
+            block4x2SoLe: 'Nhịp 4-2 (AAAABBAAAA)',
+            block4x3SoLe: 'Nhịp 4-3 (AAAABBBAAAA)'
         };
         return labels[subcategory] || subcategory;
     }
