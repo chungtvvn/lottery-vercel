@@ -79,26 +79,66 @@
             .join(' ');
     }
 
+    function describeParitySize(prefix, parity, size, threshold) {
+        const parityText = parity === 'le' ? 'lẻ' : parity === 'chan' ? 'chẵn' : parity;
+        const sizeText = size === 'nho' ? '<' : size === 'lon' ? '>' : size;
+        return `${prefix} ${parityText}${sizeText}${threshold}`;
+    }
+
+    function describeFixedDigit(prefix, value) {
+        return `${prefix} ${String(value).padStart(1, '0')}`;
+    }
+
     function fallbackCategoryTitle(category = '') {
-        const boMatch = String(category).match(/^bo_(\d+)$/);
+        const rawCategory = String(category || '');
+        const boMatch = rawCategory.match(/^bo_(\d+)$/);
         if (boMatch) return `Bộ ${boMatch[1]}`;
 
-        const dongMatch = String(category).match(/^dong_step_(\d+)_(\d+)$/);
+        const dongMatch = rawCategory.match(/^dong_step_(\d+)_(\d+)$/);
         if (dongMatch) return `Đồng cách ${dongMatch[1]} từ ${String(dongMatch[2]).padStart(2, '0')}`;
 
-        if (String(category).startsWith('tong_moi_')) {
-            return `Tổng Mới - ${toVietnameseToken(String(category).replace('tong_moi_', ''))}`;
+        const fixedHeadTailMatch = rawCategory.match(/^dau_(\d+)_dit_(le|chan)_(nho|lon)_(\d+)$/);
+        if (fixedHeadTailMatch) {
+            return `${describeFixedDigit('Đầu', fixedHeadTailMatch[1])} và ${describeParitySize('Đít', fixedHeadTailMatch[2], fixedHeadTailMatch[3], fixedHeadTailMatch[4])}`;
         }
-        if (String(category).startsWith('tong_tt_')) {
-            return `Tổng TT - ${toVietnameseToken(String(category).replace('tong_tt_', ''))}`;
+
+        const fixedTailHeadMatch = rawCategory.match(/^dit_(\d+)_dau_(le|chan)_(nho|lon)_(\d+)$/);
+        if (fixedTailHeadMatch) {
+            return `${describeFixedDigit('Đít', fixedTailHeadMatch[1])} và ${describeParitySize('Đầu', fixedTailHeadMatch[2], fixedTailHeadMatch[3], fixedTailHeadMatch[4])}`;
         }
-        if (String(category).startsWith('hieu_')) {
-            return `Hiệu - ${toVietnameseToken(String(category).replace('hieu_', ''))}`;
+
+        const paritySizeHeadTailMatch = rawCategory.match(/^dau_(le|chan)_(nho|lon)_(\d+)_dit_(le|chan)_(nho|lon)_(\d+)$/);
+        if (paritySizeHeadTailMatch) {
+            return `${describeParitySize('Đầu', paritySizeHeadTailMatch[1], paritySizeHeadTailMatch[2], paritySizeHeadTailMatch[3])} & ${describeParitySize('Đít', paritySizeHeadTailMatch[4], paritySizeHeadTailMatch[5], paritySizeHeadTailMatch[6])}`;
         }
-        if (String(category).startsWith('dau_') || String(category).startsWith('dit_')) {
-            return toVietnameseToken(category);
+
+        const paritySizeTailHeadMatch = rawCategory.match(/^dit_(le|chan)_(nho|lon)_(\d+)_dau_(le|chan)_(nho|lon)_(\d+)$/);
+        if (paritySizeTailHeadMatch) {
+            return `${describeParitySize('Đít', paritySizeTailHeadMatch[1], paritySizeTailHeadMatch[2], paritySizeTailHeadMatch[3])} & ${describeParitySize('Đầu', paritySizeTailHeadMatch[4], paritySizeTailHeadMatch[5], paritySizeTailHeadMatch[6])}`;
         }
-        return toVietnameseToken(category) || category;
+
+        if (rawCategory.startsWith('tong_moi_')) {
+            const suffix = rawCategory.replace('tong_moi_', '').replace(/_/g, ',');
+            return suffix.includes(',')
+                ? `Tổng Mới - Dạng tổng (${suffix})`
+                : `Cùng Tổng ${suffix}`;
+        }
+        if (rawCategory.startsWith('tong_tt_')) {
+            const suffix = rawCategory.replace('tong_tt_', '').replace(/_/g, ',');
+            return suffix.includes(',')
+                ? `Tổng TT - Dạng tổng (${suffix})`
+                : `Tổng TT ${suffix}`;
+        }
+        if (rawCategory.startsWith('hieu_')) {
+            const suffix = rawCategory.replace('hieu_', '').replace(/_/g, ',');
+            return suffix.includes(',')
+                ? `Hiệu - Dạng hiệu (${suffix})`
+                : `Cùng Hiệu ${suffix}`;
+        }
+        if (rawCategory.startsWith('dau_') || rawCategory.startsWith('dit_')) {
+            return toVietnameseToken(rawCategory);
+        }
+        return toVietnameseToken(rawCategory) || rawCategory;
     }
 
     function fallbackSubcategoryTitle(subcategory = '') {
