@@ -18,7 +18,7 @@ const XOSO_MAX_WAIT_MINUTES = readNumberEnv('XOSO_MAX_WAIT_MINUTES', WAIT_FOR_NE
 const XOSO_RETRY_INTERVAL_SECONDS = readNumberEnv('XOSO_RETRY_INTERVAL_SECONDS', 60, 5);
 const LOTO_STAKE_PER_NUMBER_K = 2300;
 const LOTO_PAYOUT_PER_HIT_K = 8000;
-const LOTO_METHOD_ID = process.env.LOTO_METHOD_ID || 'avgEdge50Hold70';
+const LOTO_METHOD_ID = process.env.LOTO_METHOD_ID || 'milestone20yChainSmallFirstHold65';
 const LOTO_BET_COUNTS = [3, 4, 5, 6, 7];
 const MILESTONE20Y_METHOD_VERSION = 'annual20y-2026-06-25';
 const MILESTONE20Y_BASELINE_VERSION = 'annual20y-baseline-2026-06-25';
@@ -684,17 +684,19 @@ function generateLotoPredictionCache() {
     const skipBacktest = process.env.LOTO_SKIP_BACKTEST !== '0';
     const timeoutMs = Math.max(60_000, Number(process.env.LOTO_PREDICTION_TIMEOUT_MS || (skipBacktest ? 1_800_000 : 0)) || 0);
     runNodeScript([
-        'scripts/backtest-loto-position-risk.js',
+        'scripts/backtest-loto-milestone20y.js',
         `--months=${process.env.LOTO_CACHE_MONTHS || '1,3,6'}`,
         `--method=${LOTO_METHOD_ID}`,
+        `--strategies=${process.env.LOTO_MILESTONE_STRATEGY || 'chainSmallFirst'}`,
+        `--holds=${process.env.LOTO_MILESTONE_HOLD || '65'}`,
         `--betCounts=${LOTO_BET_COUNTS.join(',')}`,
         `--stakeK=${LOTO_STAKE_PER_NUMBER_K}`,
         `--payoutK=${LOTO_PAYOUT_PER_HIT_K}`,
         '--writeCache=1',
-        skipBacktest ? '--skipBacktest=1' : '--skipBacktest=0'
+        skipBacktest ? '--predictionOnly=1' : '--predictionOnly=0'
     ], skipBacktest
-        ? 'Sinh/đối soát cache dự đoán Lô 27 vị trí cho API/tab Lô (không chạy backtest trong action).'
-        : 'Sinh/đối soát cache dự đoán Lô 27 vị trí cho API/tab Lô + backtest tham khảo.', {
+        ? 'Sinh/đối soát cache dự đoán Lô 27 vị trí theo Mốc 20 năm (không chạy backtest trong action).'
+        : 'Sinh/đối soát cache dự đoán Lô 27 vị trí theo Mốc 20 năm + backtest tham khảo.', {
         NODE_OPTIONS: process.env.NODE_OPTIONS || '--max-old-space-size=12288',
         BACKTEST_PROGRESS: process.env.BACKTEST_PROGRESS || '0'
     }, timeoutMs > 0 ? { timeoutMs } : {});

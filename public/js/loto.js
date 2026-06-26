@@ -26,11 +26,12 @@
         const metaBox = document.getElementById('metaBox');
         const cfg = data.config || {};
         const next = data.nextPrediction || {};
+        const methodLabel = cfg.methodName || data.livePredictions?.config?.methodName || next.methodName || next.methodId || cfg.methodId || '-';
         metaBox.innerHTML = [
             ['Ngày dữ liệu', data.latestDataDate || next.dataIsoDate || '-'],
             ['Ngày dự đoán', next.predictionDate || '-'],
             ['Vị trí', `${cfg.positionCount || 27} giải`],
-            ['Phương pháp', next.methodId || cfg.methodId || '-'],
+            ['Phương pháp', methodLabel],
             ['Công thức', `${nf.format(cfg.stakePerNumberK || 2300)}K ăn ${nf.format(cfg.payoutPerHitK || 8000)}K`]
         ].map(([label, value]) => `
             <div class="glass-card p-4">
@@ -85,6 +86,7 @@
         }).join('');
 
         const rows = (live.predictions || []).slice().reverse();
+        const methodName = live.config?.methodName || data.config?.methodName || '';
         listRoot.innerHTML = rows.map(row => {
             const statusLabel = row.status === 'settled' ? 'Đã kết toán' : 'Chờ kết quả';
             const statusClass = row.status === 'settled'
@@ -103,7 +105,7 @@
                                 <span class="rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-700">THỰC TẾ</span>
                             </div>
                             <div class="mt-1 text-xs text-slate-500">Dựa trên dữ liệu đến ${row.dataIsoDate || row.dataDate || '-'}</div>
-                            <div class="mt-1 text-xs font-semibold text-indigo-600">${row.methodId || '-'}</div>
+                            <div class="mt-1 text-xs font-semibold text-indigo-600">${methodName || row.methodId || '-'}</div>
                             <div class="mt-1 text-xs text-slate-500">KQ: ${actual}</div>
                         </div>
                         <div class="text-left lg:text-right">
