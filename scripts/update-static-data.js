@@ -537,6 +537,7 @@ async function readCurrentRawData() {
 }
 
 let didEarlyR2Upload = false;
+let didGenerateLotoCacheThisRun = false;
 
 function runNodeScript(script, label, extraEnv = {}, options = {}) {
     console.log(`[6] ${label}`);
@@ -700,6 +701,33 @@ function generateLotoPredictionCache() {
         NODE_OPTIONS: process.env.NODE_OPTIONS || '--max-old-space-size=12288',
         BACKTEST_PROGRESS: process.env.BACKTEST_PROGRESS || '0'
     }, timeoutMs > 0 ? { timeoutMs } : {});
+    didGenerateLotoCacheThisRun = true;
+}
+
+async function generateLotoPredictionCacheIfNeeded(expectedLatestDate = null, context = '') {
+    if (process.env.LOTO_GENERATE_CACHE === '0') {
+        console.log('[6] LOTO_GENERATE_CACHE=0, bỏ qua sinh cache Lô.');
+        return false;
+    }
+
+    await hydrateLotoLiveCacheFromR2();
+
+    if (process.env.LOTO_FORCE_GENERATE_CACHE !== '1') {
+        const trustR2 = Boolean(getR2PublicUrl() && process.env.UPDATE_CHECK_R2_LOTO !== '0');
+        const cacheReady = trustR2
+            ? await hasLotoPredictionCacheOnR2(expectedLatestDate)
+            : hasLotoPredictionCache(expectedLatestDate);
+        if (cacheReady) {
+            const suffix = context ? ` (${context})` : '';
+            console.log(`[Lô] Cache dự đoán đã mới nhất${expectedLatestDate ? ` cho ${expectedLatestDate}` : ''}${suffix}; bỏ qua tác vụ Lô 27 vị trí.`);
+            return false;
+        }
+    } else {
+        console.log('[Lô] LOTO_FORCE_GENERATE_CACHE=1, vẫn sinh lại cache Lô dù cache hiện tại có thể đã đủ.');
+    }
+
+    generateLotoPredictionCache();
+    return true;
 }
 
 function generateMilestone20yPredictionCache() {
@@ -768,9 +796,15 @@ function syncRemoteAfterStaticGeneration() {
     if (didEarlyR2Upload) {
         console.log('[6] Đã upload R2 trước bước Lô; upload lại để đồng bộ cache Lô nếu vừa sinh thành công.');
     }
+    const extraEnv = didEarlyR2Upload && !didGenerateLotoCacheThisRun
+        ? { R2_UPLOAD_EXCLUDE_STATS_FILES: 'cached_loto_prediction.json,cached_loto_live_predictions.json' }
+        : {};
+    if (didEarlyR2Upload && !didGenerateLotoCacheThisRun) {
+        console.log('[6] Cache Lô không sinh mới trong run này; giữ nguyên cached_loto_* hiện có trên R2 để tránh ghi đè stale local.');
+    }
     uploadR2StaticData(didEarlyR2Upload
         ? 'Upload lại raw data + statistics gzip lên Cloudflare R2 sau bước Lô.'
-        : 'Upload raw data + statistics gzip lên Cloudflare R2.');
+        : 'Upload raw data + statistics gzip lên Cloudflare R2.', extraEnv);
 
     if (process.env.SYNC_SUPABASE_AFTER_UPDATE !== '1') {
         console.log('[6] Không sync Supabase (mặc định tắt). Set SYNC_SUPABASE_AFTER_UPDATE=1 nếu cần.');
@@ -797,16 +831,22 @@ function uploadOnlyLotoCaches() {
     });
 }
 
-function uploadOnlyPredictionCaches() {
+function uploadOnlyPredictionCaches(options = {}) {
+    const includeLoto = options.includeLoto !== false;
     const fsSync = require('fs');
     const statsDir = path.join(DATA_DIR, 'statistics');
     const baselineFiles = fsSync.existsSync(statsDir)
         ? fsSync.readdirSync(statsDir).filter(file => /^cached_milestone20y_baseline_\d{4}\.json$/.test(file))
         : [];
+    const lotoFiles = includeLoto
+        ? ['cached_loto_prediction.json', 'cached_loto_live_predictions.json']
+        : [];
+    if (!includeLoto) {
+        console.log('[6] Upload riêng cache dự đoán nhưng giữ nguyên cached_loto_* trên R2 vì Lô không sinh mới trong run này.');
+    }
     uploadR2StaticData('Upload riêng cache dự đoán Lô + Mốc 20 năm lên Cloudflare R2.', {
         R2_UPLOAD_ONLY_STATS_FILES: [
-            'cached_loto_prediction.json',
-            'cached_loto_live_predictions.json',
+            ...lotoFiles,
             ...MILESTONE20Y_CACHE_FILES,
             ...baselineFiles
         ].join(',')
@@ -1118,13 +1158,12 @@ async function main() {
         }
         console.log('[3] Stats R2 đã mới, chỉ sinh/đối soát cache dự đoán và upload riêng các file cache.');
         try {
-            await hydrateLotoLiveCacheFromR2();
             await hydrateMilestone20yLiveCacheFromR2();
             await hydrateCoreStatsFromR2ForPredictionCache();
-            generateLotoPredictionCache();
+            const didGenerateLoto = await generateLotoPredictionCacheIfNeeded(latestRawDate, 'prediction-cache-only');
             generateMilestone20yPredictionCache();
             markRunStatus({ predictionCacheRefreshed: true, didWork: true, reason: 'prediction_cache_refresh_only' });
-            uploadOnlyPredictionCaches();
+            uploadOnlyPredictionCaches({ includeLoto: didGenerateLoto });
         } catch (predictionCacheErr) {
             console.error('⚠️ Lỗi khi sinh/upload cache dự đoán:', predictionCacheErr.message);
             process.exit(1);
@@ -1472,9 +1511,10 @@ async function main() {
             }
 
             try {
-                await hydrateLotoLiveCacheFromR2();
-                generateLotoPredictionCache();
-                markRunStatus({ predictionCacheRefreshed: true, didWork: true });
+                const didGenerateLoto = await generateLotoPredictionCacheIfNeeded(latestRawDate, 'db mode');
+                if (didGenerateLoto) {
+                    markRunStatus({ predictionCacheRefreshed: true, didWork: true });
+                }
             } catch (lotoErr) {
                 console.error('⚠️ Lỗi khi sinh cache Lô cho DB mode:', lotoErr.message);
             }
@@ -1667,9 +1707,10 @@ async function main() {
 
             if (process.env.LOTO_GENERATE_CACHE !== '0') {
                 try {
-                    await hydrateLotoLiveCacheFromR2();
-                    generateLotoPredictionCache();
-                    markRunStatus({ predictionCacheRefreshed: true, didWork: true });
+                    const didGenerateLoto = await generateLotoPredictionCacheIfNeeded(latestRawDate, 'static mode');
+                    if (didGenerateLoto) {
+                        markRunStatus({ predictionCacheRefreshed: true, didWork: true });
+                    }
                 } catch (lotoErr) {
                     console.error('⚠️ Lỗi khi sinh cache Lô (không ảnh hưởng các cache khác):', lotoErr.message);
                 }
