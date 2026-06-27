@@ -156,6 +156,12 @@ document.addEventListener('DOMContentLoaded', () => {
         return new Date(dateStr);
     };
 
+    const hasUsableRecordStat = (stat) => {
+        if (!stat || typeof stat !== 'object') return false;
+        if (Array.isArray(stat.longest) && stat.longest.length > 0) return true;
+        return Array.isArray(stat.secondLongest) && stat.secondLongest.length > 0;
+    };
+
     const fetchJSON = async (url) => {
         const CACHE_PREFIX = 'ls_cache_';
         const CACHE_EXPIRY = 2 * 60 * 60 * 1000; // 2 hours
@@ -193,10 +199,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const detectPatternType = (key) => {
         const lowerKey = String(key || '').toLowerCase();
+        const isBlockAlternation = lowerKey.includes('block2x1sole') ||
+            lowerKey.includes('block2x2sole') ||
+            lowerKey.includes('block3x2sole') ||
+            lowerKey.includes('block3x3sole') ||
+            lowerKey.includes('block4x2sole') ||
+            lowerKey.includes('block4x3sole');
+        if (isBlockAlternation) {
+            return 'block';
+        }
         if (lowerKey.includes('tienluisole') || lowerKey.includes('luitiensole')) {
             return 'tienLuiSoLe';
         } else if ((lowerKey.includes('vesole') || lowerKey.includes('solemoi')) &&
-            !lowerKey.includes('tienluisole') && !lowerKey.includes('luitiensole') && !lowerKey.includes('soletheocap')) {
+            !lowerKey.includes('tienluisole') &&
+            !lowerKey.includes('luitiensole') &&
+            !lowerKey.includes('soletheocap') &&
+            !isBlockAlternation) {
             return 'soLe';
         }
         return 'default';
@@ -483,8 +501,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const descriptionTooltip = explainPatternTitle(displayDescription, key);
         const longestInfo = stat.longest && stat.longest.length > 0 ? `${stat.longest[0].length} ngày (${stat.longest.length})` : 'N/A';
         const secondLongestInfo = stat.secondLongest && stat.secondLongest.length > 0 ? `${stat.secondLongest[0].length} ngày (${stat.secondLongest.length})` : 'N/A';
-        const avgIntervalInfo = stat.averageInterval !== null ? `${stat.averageInterval} ngày` : 'N/A';
-        const sinceLastInfo = stat.daysSinceLast !== null && stat.daysSinceLast !== 'N/A' ? `${stat.daysSinceLast} ngày` : 'N/A';
+        const avgIntervalInfo = Number.isFinite(Number(stat.averageInterval)) ? `${Number(stat.averageInterval)} ngày` : 'N/A';
+        const sinceLastInfo = Number.isFinite(Number(stat.daysSinceLast)) ? `${Number(stat.daysSinceLast)} ngày` : 'N/A';
         const sortMeta = pattern && pattern.sortMeta ? pattern.sortMeta : buildPatternSortMeta({
             key,
             text: stat.description || '',
@@ -660,22 +678,23 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const data = await fetchJSON(`${BASE_URL}/api/statistics/quick-stats?keys=${keysStr}`);
             
+            let renderedCount = 0;
             pageItems.forEach(pattern => {
                 const stat = data[pattern.key];
-                if (stat) {
+                if (hasUsableRecordStat(stat)) {
                     renderRecordAccordionItem(pattern.key, stat, pattern);
-                } else {
-                    // Fallback placeholder if API doesn't have it
-                    renderRecordAccordionItem(pattern.key, {
-                        description: pattern.text,
-                        longest: [],
-                        secondLongest: [],
-                        current: null,
-                        averageInterval: null,
-                        daysSinceLast: 'N/A'
-                    }, pattern);
+                    renderedCount += 1;
                 }
             });
+
+            if (renderedCount === 0) {
+                quickStatsContainer.innerHTML = `
+                    <div class="p-8 text-center text-slate-500">
+                        <i class="bi bi-database-exclamation text-3xl block mb-2"></i>
+                        Không có dữ liệu kỷ lục phù hợp cho trang này.
+                    </div>
+                `;
+            }
 
             // Hide Skeleton, Show Content
             recordsSkeleton.classList.add('hidden');
@@ -699,7 +718,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize Page
     const loadAvailablePatternKeys = async () => {
         try {
-            const data = await fetchJSON(`${BASE_URL}/api/statistics/quick-stats?keysOnly=true`);
+            const data = await fetchJSON(`${BASE_URL}/api/statistics/quick-stats?keysOnly=true&recordsOnly=true`);
             if (data && Array.isArray(data.keys)) {
                 availablePatternKeys = new Set(data.keys);
             }

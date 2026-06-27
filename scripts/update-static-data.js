@@ -21,8 +21,8 @@ const LOTO_PAYOUT_PER_HIT_K = 8000;
 const LOTO_METHOD_ID = process.env.LOTO_METHOD_ID || 'milestone20yChainSmallFirstHold65TwoHitGreedy';
 const LOTO_AGGREGATION_MODE = process.env.LOTO_AGGREGATION_MODE || 'twoHitGreedy';
 const LOTO_BET_COUNTS = [3, 4, 5, 6, 7];
-const MILESTONE20Y_METHOD_VERSION = 'annual20y-2026-06-26-number-ranking';
-const MILESTONE20Y_BASELINE_VERSION = 'annual20y-baseline-2026-06-25';
+const MILESTONE20Y_METHOD_VERSION = 'annual20y-2026-06-28-block-ab-hold70';
+const MILESTONE20Y_BASELINE_VERSION = 'annual20y-baseline-2026-06-28-block-ab';
 const MILESTONE20Y_CACHE_FILES = [
     'cached_milestone20y_prediction.json',
     'cached_milestone20y_live_predictions.json'
@@ -402,19 +402,44 @@ function hasRequiredLocalStatsCoverage() {
 
 function hasRequiredQuickStatsKeyCoverage(keys = []) {
     const keySet = keys instanceof Set ? keys : new Set(keys || []);
-    const required = [
-        'dau_le:block2x1SoLe',
-        'dit_chan:block2x1SoLe',
-        'tong_tt_chan:block2x2SoLe',
-        'tong_moi_chan:block2x2SoLe',
-        'hieu_0_1_3:block3x3SoLe'
-    ];
-    const missing = required.filter(key => !keySet.has(key));
-    if (missing.length > 0) {
-        console.log(`[Cache Check] quick_stats thiếu coverage Nhịp block A/B (${missing.join(', ')}). Forcing stats generation.`);
+    if (keySet.size < 1000) {
+        console.log(`[Cache Check] quick_stats_keys chỉ có ${keySet.size} keys, quá ít so với dữ liệu kỷ lục kỳ vọng. Forcing stats generation.`);
         return false;
     }
+
+    const hasCoreRecords = Array.from(keySet).some(key =>
+        key.includes(':veLienTiep') ||
+        key.includes(':tienLienTiep') ||
+        key.includes(':luiLienTiep') ||
+        key.includes(':veTheoThuTu') ||
+        key.includes(':veSoLeTheoThuTu')
+    );
+    if (!hasCoreRecords) {
+        console.log('[Cache Check] quick_stats_keys không có key kỷ lục lõi. Forcing stats generation.');
+        return false;
+    }
+
+    const staleNoRecordBlockKeys = [
+        'dau_5:block2x1SoLe',
+        'dau_5:block2x2SoLe',
+        'dau_5:block3x2SoLe',
+        'dau_5:block3x3SoLe',
+        'dau_5:block4x2SoLe',
+        'dau_5:block4x3SoLe'
+    ];
+    const staleBlockKey = staleNoRecordBlockKeys.find(key => keySet.has(key));
+    if (staleBlockKey) {
+        console.log(`[Cache Check] quick_stats_keys còn key Nhịp block không có kỷ lục thật (${staleBlockKey}). Forcing stats generation.`);
+        return false;
+    }
+
     return true;
+}
+
+function hasRecordQuickStatsData(stat) {
+    if (!stat || typeof stat !== 'object') return false;
+    if (Array.isArray(stat.longest) && stat.longest.length > 0) return true;
+    return Array.isArray(stat.secondLongest) && stat.secondLongest.length > 0;
 }
 
 function getVietnamTodayDate(date = new Date()) {
@@ -1463,7 +1488,9 @@ async function main() {
             await fs.writeFile(path.join(DATA_DIR, 'statistics', 'quick_stats.json'), JSON.stringify(minifiedQS, null, 0));
             console.log('✅ Đã lưu kết quả quick_stats.json (minified)');
 
-            const quickStatsKeys = Object.keys(minifiedQS || {}).sort();
+            const quickStatsKeys = Object.keys(minifiedQS || {})
+                .filter(key => key !== '_meta' && hasRecordQuickStatsData(minifiedQS[key]))
+                .sort();
             await fs.writeFile(path.join(DATA_DIR, 'statistics', 'quick_stats_keys.json'), JSON.stringify(quickStatsKeys, null, 0));
             console.log(`✅ Đã lưu kết quả quick_stats_keys.json (${quickStatsKeys.length} keys)`);
 

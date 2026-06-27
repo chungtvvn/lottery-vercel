@@ -2,7 +2,7 @@
     const state = {
         payload: null,
         strategy: 'chainSmallFirst',
-        target: 65
+        target: 70
     };
 
     const el = id => document.getElementById(id);

@@ -3,6 +3,21 @@ import { NextResponse } from 'next/server';
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
 
+function hasRecordStatEntry(stat) {
+    if (!stat || typeof stat !== 'object') return false;
+    if (Array.isArray(stat.longest) && stat.longest.length > 0) return true;
+    return Array.isArray(stat.secondLongest) && stat.secondLongest.length > 0;
+}
+
+const LEGACY_NO_RECORD_BLOCK_KEYS = [
+    'dau_5:block2x1SoLe',
+    'dau_5:block2x2SoLe',
+    'dau_5:block3x2SoLe',
+    'dau_5:block3x3SoLe',
+    'dau_5:block4x2SoLe',
+    'dau_5:block4x3SoLe'
+];
+
 export async function GET(request) {
     try {
         const { searchParams } = new URL(request.url);
@@ -24,6 +39,19 @@ export async function GET(request) {
         const { getQuickStatsFromCache, getPatternStatsByKeysFromDb, getQuickStatsKeysFromCache } = require('@/lib/data-access');
 
         if (keysOnly) {
+            const recordsOnly = searchParams.get('recordsOnly') === 'true';
+            if (recordsOnly) {
+                const cachedKeys = await getQuickStatsKeysFromCache().catch(() => null);
+                if (Array.isArray(cachedKeys) && !LEGACY_NO_RECORD_BLOCK_KEYS.some(key => cachedKeys.includes(key))) {
+                    return cachedResponse({ keys: cachedKeys }, 'DAILY');
+                }
+
+                const quickStats = await getQuickStatsFromCache();
+                const keys = Object.keys(quickStats || {})
+                    .filter(key => key !== '_meta' && hasRecordStatEntry(quickStats[key]))
+                    .sort();
+                return cachedResponse({ keys }, 'DAILY');
+            }
             const keys = await getQuickStatsKeysFromCache();
             return cachedResponse({ keys }, 'DAILY');
         }
