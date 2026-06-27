@@ -394,6 +394,20 @@ function getWindowRows(rawData, months) {
     return rawData.slice(-days);
 }
 
+function getDateRangeRows(rawData, startDateValue, endDateValue) {
+    const startDate = parseIsoDate(startDateValue);
+    const endDate = parseIsoDate(endDateValue);
+    if (!startDate || !endDate || startDate > endDate) {
+        throw new Error(`Khoảng ngày backtest không hợp lệ: ${startDateValue || '-'} -> ${endDateValue || '-'}.`);
+    }
+    const startIso = formatIsoDate(startDate);
+    const endIso = formatIsoDate(endDate);
+    return rawData.filter(row => {
+        const isoDate = formatIsoDate(row.date);
+        return isoDate >= startIso && isoDate <= endIso;
+    });
+}
+
 function readJsonIfExists(filePath, fallback) {
     try {
         if (!fs.existsSync(filePath)) return fallback;
@@ -765,6 +779,11 @@ async function main() {
         .map(value => Math.max(1, Number(value.trim()) || 0))
         .filter(Boolean);
     const maxMonths = Math.max(...monthsList);
+    const startDate = args.get('startDate') || null;
+    const endDate = args.get('endDate') || null;
+    if ((startDate && !endDate) || (!startDate && endDate)) {
+        throw new Error('Phải truyền đồng thời --startDate và --endDate.');
+    }
     const predictionOnly = args.get('predictionOnly') === '1' || args.get('skipBacktest') === '1';
     const writeCache = args.get('writeCache') === '1' || args.get('cache') === '1';
     const strategies = String(args.get('strategies') || (predictionOnly ? DEFAULT_STRATEGY : 'chainSmallFirst,chainFreqFirst,chainRiskFirst,numberAvgRisk,numberConsensusRisk,numberWeightedRisk,activeOnlyAvgRisk'))
@@ -817,7 +836,13 @@ async function main() {
         })));
         return;
     }
-    const targetRows = getWindowRows(rawData, maxMonths);
+    const targetRows = startDate
+        ? getDateRangeRows(rawData, startDate, endDate)
+        : getWindowRows(rawData, maxMonths);
+    if (targetRows.length === 0) {
+        const rawLatestDate = rawData.length ? formatIsoDate(rawData[rawData.length - 1].date) : '-';
+        throw new Error(`Không có dữ liệu trong khoảng ${startDate || `${maxMonths} tháng gần nhất`} -> ${endDate || rawLatestDate}.`);
+    }
     const targetDates = new Set(targetRows.map(row => formatIsoDate(row.date)));
     console.log(`[LotoMilestone20Y] ${targetRows.length} ngày, ${methodConfigs.length} cấu hình, ${PRIZE_KEYS.length} vị trí.`);
 
@@ -847,20 +872,27 @@ async function main() {
     const summariesByWindow = {};
     const daily = Array.from(byDate.values()).sort((a, b) => a.date.localeCompare(b.date));
 
-    for (const months of monthsList) {
-        const windowRows = daily.slice(-Math.round(months * 30.4375));
-        summariesByWindow[`${months}m`] = {};
+    const windowSpecs = startDate
+        ? [{ key: 'dateRange', rows: daily }]
+        : monthsList.map(months => ({
+            key: `${months}m`,
+            rows: daily.slice(-Math.round(months * 30.4375))
+        }));
+
+    for (const windowSpec of windowSpecs) {
+        const windowRows = windowSpec.rows;
+        summariesByWindow[windowSpec.key] = {};
         const calibrationByConfigMode = new Map();
         for (const config of methodConfigs) {
             for (const aggregationMode of aggregationModes) {
                 calibrationByConfigMode.set(`${config.id}:${aggregationMode}`, createPositionCalibration());
                 for (const betCount of betCounts) {
                     const key = `${config.id}:${aggregationMode}:top${betCount}`;
-                    summariesByWindow[`${months}m`][key] = emptySummary(key, betCount, {
+                    summariesByWindow[windowSpec.key][key] = emptySummary(key, betCount, {
                         strategy: config.strategy,
                         hold: config.target,
                         aggregationMode,
-                        window: `${months}m`
+                        window: windowSpec.key
                     });
                 }
             }
@@ -882,14 +914,14 @@ async function main() {
                     for (const betCount of betCounts) {
                         const key = `${config.id}:${aggregationMode}:top${betCount}`;
                         const numbers = ranked.slice(0, betCount).map(item => item.number);
-                        addResultToSummary(summariesByWindow[`${months}m`][key], numbers, row.actualCounts, stakeK, payoutK);
+                        addResultToSummary(summariesByWindow[windowSpec.key][key], numbers, row.actualCounts, stakeK, payoutK);
                     }
                     updatePositionCalibration(calibrationByConfigMode.get(calibrationKey), positionPredictions, row.actualByPosition);
                 }
             }
         }
 
-        summariesByWindow[`${months}m`] = Object.fromEntries(Object.entries(summariesByWindow[`${months}m`])
+        summariesByWindow[windowSpec.key] = Object.fromEntries(Object.entries(summariesByWindow[windowSpec.key])
             .map(([key, summary]) => [key, finalizeSummary(summary)])
             .sort((a, b) => {
                 if (b[1].profitK !== a[1].profitK) return b[1].profitK - a[1].profitK;
@@ -907,6 +939,8 @@ async function main() {
             historyYears,
             positions: PRIZE_KEYS,
             months: monthsList,
+            startDate,
+            endDate,
             strategies,
             holdCounts,
             betCounts,
@@ -924,9 +958,9 @@ async function main() {
     fs.writeFileSync(jsonPath, JSON.stringify(output, null, 2), 'utf8');
 
     console.log(`[LotoMilestone20Y] JSON: ${jsonPath}`);
-    for (const months of monthsList) {
-        const topRows = Object.values(summariesByWindow[`${months}m`] || {}).slice(0, 12);
-        console.log(`\n=== Top ${months} tháng ===`);
+    for (const windowSpec of windowSpecs) {
+        const topRows = Object.values(summariesByWindow[windowSpec.key] || {}).slice(0, 12);
+        console.log(`\n=== Top ${windowSpec.key} ===`);
         console.table(topRows.map(item => ({
             method: item.methodId,
             agg: item.aggregationMode,
