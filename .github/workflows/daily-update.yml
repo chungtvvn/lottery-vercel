@@ -59,6 +59,9 @@ jobs:
   generator:
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    # Bước xác minh cuối mới quyết định workflow thành công; runner core bị
+    # thu hồi sẽ được job Lô phía sau tiếp tục từ trạng thái R2 hiện có.
+    continue-on-error: true
     env:
       NODE_OPTIONS: --max-old-space-size=8192
     steps:
@@ -103,6 +106,8 @@ jobs:
           SYNC_SUPABASE_AFTER_UPDATE: '0'
           SIMULATION_CACHE_DAYS: '90'
           SIMULATION_CACHE_PLAY_MODES: 'both'
+          # Lô chạy ở job riêng để runner bị thu hồi không làm mất kết quả Đề.
+          LOTO_GENERATE_CACHE: '0'
           LOTO_SKIP_BACKTEST: '1'
           LOTO_POSITION_CONCURRENCY: '1'
           LOTO_CHILD_NODE_OPTIONS: '--max-old-space-size=4096'
@@ -195,18 +200,254 @@ jobs:
             echo "Không cấu hình VERCEL_DEPLOY_HOOK_URL; Vercel sẽ deploy qua Git integration khi workflow push commit."
           fi
 
-      # In R2 mode (COMMIT_STATIC_DATA=0), stats go directly to R2 without git commits.
-      # We must still redeploy Vercel to kill warm serverless instances that cache old data in memory.
-      - name: Force Vercel Redeploy (R2 mode)
-        if: steps.changes.outputs.changed != 'true' && steps.changes.outputs.redeploy == 'true'
+  loto_primary:
+    name: Lô prediction cache
+    needs: generator
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    continue-on-error: true
+    outputs:
+      cache_ready: ${{ steps.verify.outputs.cache_ready }}
+    env:
+      NODE_OPTIONS: --max-old-space-size=8192
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Resolve Lô target date
+        id: target
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            TARGET_DATE="$(TZ=Asia/Ho_Chi_Minh date -d '6 hours ago' +%F)"
+          elif [ -n "${{ inputs.xoso_target_date }}" ]; then
+            TARGET_DATE="${{ inputs.xoso_target_date }}"
+          else
+            TARGET_DATE="$(TZ=Asia/Ho_Chi_Minh date +%F)"
+          fi
+          echo "date=$TARGET_DATE" >> "$GITHUB_OUTPUT"
+          echo "Resolved Lô target date: $TARGET_DATE"
+
+      - name: Generate and upload Lô cache
+        env:
+          WAIT_FOR_NEW_XOSO: '0'
+          XOSO_TARGET_DATE: ${{ steps.target.outputs.date }}
+          LOTTERY_DATA_SOURCE: 'r2'
+          LOTTERY_STATS_SOURCE: 'local'
+          FORCE_REGENERATE_STATS: '0'
+          SYNC_R2_AFTER_UPDATE: '1'
+          SYNC_SUPABASE_AFTER_UPDATE: '0'
+          LOTO_GENERATE_CACHE: '1'
+          LOTO_SKIP_BACKTEST: '1'
+          LOTO_POSITION_CONCURRENCY: '1'
+          LOTO_CHILD_NODE_OPTIONS: '--max-old-space-size=4096'
+          LOTO_PREDICTION_TIMEOUT_MS: '1800000'
+          MILESTONE20Y_GENERATE_CACHE: '0'
+          CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
+          CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
+          CLOUDFLARE_R2_ENDPOINT: ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
+          CLOUDFLARE_R2_BUCKET: ${{ secrets.CLOUDFLARE_R2_BUCKET }}
+          NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL: ${{ secrets.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL }}
+        run: node scripts/update-static-data.js
+
+      - name: Verify Lô cache on R2
+        id: verify
+        env:
+          EXPECTED_DATE: ${{ steps.target.outputs.date }}
+          NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL: ${{ secrets.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL }}
+        run: |
+          node - <<'NODE'
+          const zlib = require('zlib');
+          const base = String(process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || '').replace(/\/$/, '');
+          const expected = process.env.EXPECTED_DATE;
+          async function read(file) {
+            const response = await fetch(`${base}/statistics/${file}.gz`, { cache: 'no-store' });
+            if (!response.ok) throw new Error(`${file}: HTTP ${response.status}`);
+            return JSON.parse(zlib.gunzipSync(Buffer.from(await response.arrayBuffer())));
+          }
+          (async () => {
+            const [cache, live] = await Promise.all([
+              read('cached_loto_prediction.json'),
+              read('cached_loto_live_predictions.json')
+            ]);
+            if (cache.latestDataDate !== expected || live.latestDataDate !== expected) {
+              throw new Error(`Lô cache stale: cache=${cache.latestDataDate}, live=${live.latestDataDate}, expected=${expected}`);
+            }
+            if (cache.config?.methodId !== 'milestone20yChainSmallFirstHold65TwoHitGreedy') {
+              throw new Error(`Lô method sai: ${cache.config?.methodId || 'missing'}`);
+            }
+            console.log(`cache_ready=true`);
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, 'cache_ready=true\n');
+            console.log(`✅ Lô R2 đã đủ cho ${expected}, dự đoán ${cache.nextPrediction?.predictionIsoDate || 'unknown'}.`);
+          })().catch(error => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+
+  loto_retry:
+    name: Lô prediction cache retry
+    needs: [generator, loto_primary]
+    if: always() && needs.loto_primary.outputs.cache_ready != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    outputs:
+      cache_ready: ${{ steps.verify.outputs.cache_ready }}
+    env:
+      NODE_OPTIONS: --max-old-space-size=8192
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Resolve Lô target date
+        id: target
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            TARGET_DATE="$(TZ=Asia/Ho_Chi_Minh date -d '6 hours ago' +%F)"
+          elif [ -n "${{ inputs.xoso_target_date }}" ]; then
+            TARGET_DATE="${{ inputs.xoso_target_date }}"
+          else
+            TARGET_DATE="$(TZ=Asia/Ho_Chi_Minh date +%F)"
+          fi
+          echo "date=$TARGET_DATE" >> "$GITHUB_OUTPUT"
+
+      - name: Retry generate and upload Lô cache
+        env:
+          WAIT_FOR_NEW_XOSO: '0'
+          XOSO_TARGET_DATE: ${{ steps.target.outputs.date }}
+          LOTTERY_DATA_SOURCE: 'r2'
+          LOTTERY_STATS_SOURCE: 'local'
+          FORCE_REGENERATE_STATS: '0'
+          SYNC_R2_AFTER_UPDATE: '1'
+          SYNC_SUPABASE_AFTER_UPDATE: '0'
+          LOTO_GENERATE_CACHE: '1'
+          LOTO_SKIP_BACKTEST: '1'
+          LOTO_POSITION_CONCURRENCY: '1'
+          LOTO_CHILD_NODE_OPTIONS: '--max-old-space-size=4096'
+          LOTO_PREDICTION_TIMEOUT_MS: '1800000'
+          MILESTONE20Y_GENERATE_CACHE: '0'
+          CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
+          CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
+          CLOUDFLARE_R2_ENDPOINT: ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
+          CLOUDFLARE_R2_BUCKET: ${{ secrets.CLOUDFLARE_R2_BUCKET }}
+          NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL: ${{ secrets.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL }}
+        run: node scripts/update-static-data.js
+
+      - name: Verify retried Lô cache on R2
+        id: verify
+        env:
+          EXPECTED_DATE: ${{ steps.target.outputs.date }}
+          NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL: ${{ secrets.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL }}
+        run: |
+          node - <<'NODE'
+          const zlib = require('zlib');
+          const base = String(process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || '').replace(/\/$/, '');
+          const expected = process.env.EXPECTED_DATE;
+          async function read(file) {
+            const response = await fetch(`${base}/statistics/${file}.gz`, { cache: 'no-store' });
+            if (!response.ok) throw new Error(`${file}: HTTP ${response.status}`);
+            return JSON.parse(zlib.gunzipSync(Buffer.from(await response.arrayBuffer())));
+          }
+          (async () => {
+            const [cache, live] = await Promise.all([
+              read('cached_loto_prediction.json'),
+              read('cached_loto_live_predictions.json')
+            ]);
+            if (cache.latestDataDate !== expected || live.latestDataDate !== expected) {
+              throw new Error(`Lô cache stale sau retry: cache=${cache.latestDataDate}, live=${live.latestDataDate}, expected=${expected}`);
+            }
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, 'cache_ready=true\n');
+            console.log(`✅ Retry Lô R2 thành công cho ${expected}.`);
+          })().catch(error => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+
+  verify_and_redeploy:
+    name: Verify Đề + Lô and redeploy
+    needs: [generator, loto_primary, loto_retry]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Resolve expected date
+        id: target
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            TARGET_DATE="$(TZ=Asia/Ho_Chi_Minh date -d '6 hours ago' +%F)"
+          elif [ -n "${{ inputs.xoso_target_date }}" ]; then
+            TARGET_DATE="${{ inputs.xoso_target_date }}"
+          else
+            TARGET_DATE="$(TZ=Asia/Ho_Chi_Minh date +%F)"
+          fi
+          echo "date=$TARGET_DATE" >> "$GITHUB_OUTPUT"
+
+      - name: Verify raw, Đề and Lô caches
+        env:
+          EXPECTED_DATE: ${{ steps.target.outputs.date }}
+          NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL: ${{ secrets.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL }}
+        run: |
+          node - <<'NODE'
+          const zlib = require('zlib');
+          const base = String(process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || '').replace(/\/$/, '');
+          const expected = process.env.EXPECTED_DATE;
+          async function readGzip(path) {
+            const response = await fetch(`${base}/${path}.gz`, { cache: 'no-store' });
+            if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`);
+            return JSON.parse(zlib.gunzipSync(Buffer.from(await response.arrayBuffer())));
+          }
+          (async () => {
+            const [raw, milestone, loto, lotoLive] = await Promise.all([
+              readGzip('data/xsmb-2-digits.json'),
+              readGzip('statistics/cached_milestone20y_prediction.json'),
+              readGzip('statistics/cached_loto_prediction.json'),
+              readGzip('statistics/cached_loto_live_predictions.json')
+            ]);
+            const latestRaw = raw.at(-1)?.date;
+            const dates = {
+              raw: latestRaw,
+              de: milestone.latestDataDate,
+              loto: loto.latestDataDate,
+              lotoLive: lotoLive.latestDataDate
+            };
+            const stale = Object.entries(dates).filter(([, date]) => date !== expected);
+            if (stale.length) {
+              throw new Error(`R2 chưa đồng bộ ${expected}: ${JSON.stringify(dates)}`);
+            }
+            console.log(`✅ Đề + Lô đồng bộ ${expected}. Dự đoán Lô: ${loto.nextPrediction?.predictionIsoDate || 'unknown'}.`);
+          })().catch(error => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+
+      - name: Force Vercel redeploy after both caches are ready
         env:
           VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
         run: |
           if [ -n "$VERCEL_DEPLOY_HOOK_URL" ]; then
-            echo "R2 mode: Triggering Vercel redeploy to clear warm function caches..."
             curl -fsS -X POST "$VERCEL_DEPLOY_HOOK_URL"
             echo ""
-            echo "✅ Vercel redeploy triggered."
+            echo "✅ Vercel redeploy triggered after Đề + Lô verification."
           else
-            echo "⚠️ VERCEL_DEPLOY_HOOK_URL not configured. Warm serverless functions may serve stale data for up to 10 minutes."
+            echo "⚠️ VERCEL_DEPLOY_HOOK_URL not configured."
           fi

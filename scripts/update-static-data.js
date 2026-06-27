@@ -837,9 +837,10 @@ function uploadOnlyLotoCaches() {
 
 function uploadOnlyPredictionCaches(options = {}) {
     const includeLoto = options.includeLoto !== false;
+    const includeMilestone = options.includeMilestone !== false;
     const fsSync = require('fs');
     const statsDir = path.join(DATA_DIR, 'statistics');
-    const baselineFiles = fsSync.existsSync(statsDir)
+    const baselineFiles = includeMilestone && fsSync.existsSync(statsDir)
         ? fsSync.readdirSync(statsDir).filter(file => /^cached_milestone20y_baseline_\d{4}\.json$/.test(file))
         : [];
     const lotoFiles = includeLoto
@@ -848,10 +849,15 @@ function uploadOnlyPredictionCaches(options = {}) {
     if (!includeLoto) {
         console.log('[6] Upload riêng cache dự đoán nhưng giữ nguyên cached_loto_* trên R2 vì Lô không sinh mới trong run này.');
     }
-    uploadR2StaticData('Upload riêng cache dự đoán Lô + Mốc 20 năm lên Cloudflare R2.', {
+    const uploadLabel = includeLoto && includeMilestone
+        ? 'Upload riêng cache dự đoán Lô + Mốc 20 năm lên Cloudflare R2.'
+        : includeLoto
+            ? 'Upload riêng cache dự đoán Lô lên Cloudflare R2.'
+            : 'Upload riêng cache dự đoán Mốc 20 năm lên Cloudflare R2.';
+    uploadR2StaticData(uploadLabel, {
         R2_UPLOAD_ONLY_STATS_FILES: [
             ...lotoFiles,
-            ...MILESTONE20Y_CACHE_FILES,
+            ...(includeMilestone ? MILESTONE20Y_CACHE_FILES : []),
             ...baselineFiles
         ].join(',')
     });
@@ -1165,9 +1171,17 @@ async function main() {
             await hydrateMilestone20yLiveCacheFromR2();
             await hydrateCoreStatsFromR2ForPredictionCache();
             const didGenerateLoto = await generateLotoPredictionCacheIfNeeded(latestRawDate, 'prediction-cache-only');
-            generateMilestone20yPredictionCache();
+            const didGenerateMilestone = process.env.MILESTONE20Y_GENERATE_CACHE !== '0';
+            if (didGenerateMilestone) {
+                generateMilestone20yPredictionCache();
+            } else {
+                console.log('[6] MILESTONE20Y_GENERATE_CACHE=0, giữ nguyên cache Mốc 20 năm trên R2.');
+            }
             markRunStatus({ predictionCacheRefreshed: true, didWork: true, reason: 'prediction_cache_refresh_only' });
-            uploadOnlyPredictionCaches({ includeLoto: didGenerateLoto });
+            uploadOnlyPredictionCaches({
+                includeLoto: didGenerateLoto,
+                includeMilestone: didGenerateMilestone
+            });
         } catch (predictionCacheErr) {
             console.error('⚠️ Lỗi khi sinh/upload cache dự đoán:', predictionCacheErr.message);
             process.exit(1);
