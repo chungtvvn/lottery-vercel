@@ -572,7 +572,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const applyFilters = () => {
         filteredPatterns = allPatterns.filter(pattern => {
-            const matchesGroup = selectedGroup === 'ALL' || pattern.groupName === selectedGroup;
+            const matchesGroup = selectedGroup === 'ALL' ||
+                pattern.groupName === selectedGroup ||
+                (selectedGroup === '__SEQ_BLOCK_AB__' && pattern.sortMeta && pattern.sortMeta.sequenceLabel === 'Nhịp block A/B');
             const matchesSearch = !searchQuery || 
                 pattern.text.toLowerCase().includes(searchQuery) ||
                 pattern.key.toLowerCase().includes(searchQuery) ||
@@ -753,6 +755,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         allPatterns.sort(comparePatterns);
         filteredPatterns = [...allPatterns];
+
+        if (allPatterns.some(pattern => pattern.sortMeta && pattern.sortMeta.sequenceLabel === 'Nhịp block A/B')) {
+            const opt = document.createElement('option');
+            opt.value = '__SEQ_BLOCK_AB__';
+            opt.textContent = 'Nhịp block A/B (AABAA, AAABBAAA...)';
+            recordGroup.appendChild(opt);
+        }
 
         // 2. Bind event listeners
         let searchTimeout;

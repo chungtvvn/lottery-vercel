@@ -331,8 +331,16 @@ function hasRequiredLocalStatsCoverage() {
             }
             return values;
         };
-        const digitSubs = ['veLienTiep', 'veSole', 'veSoleMoi', 'tienLuiSoLe', 'luiTienSoLe', 'tienLienTiep', 'tienDeuLienTiep', 'luiLienTiep', 'luiDeuLienTiep'];
-        const metricSubs = ['veLienTiep', 'veSole', 'veSoleMoi', 'tienLienTiep', 'tienDeuLienTiep', 'luiLienTiep', 'luiDeuLienTiep', 'tienLuiSoLe', 'luiTienSoLe'];
+        const blockSubs = [
+            'block2x1SoLe',
+            'block2x2SoLe',
+            'block3x2SoLe',
+            'block3x3SoLe',
+            'block4x2SoLe',
+            'block4x3SoLe'
+        ];
+        const digitSubs = ['veLienTiep', 'veSole', 'veSoleMoi', ...blockSubs, 'tienLuiSoLe', 'luiTienSoLe', 'tienLienTiep', 'tienDeuLienTiep', 'luiLienTiep', 'luiDeuLienTiep'];
+        const metricSubs = ['veLienTiep', 'veSole', 'veSoleMoi', ...blockSubs, 'tienLienTiep', 'tienDeuLienTiep', 'luiLienTiep', 'luiDeuLienTiep', 'tienLuiSoLe', 'luiTienSoLe'];
 
         for (const group of ALL_3_DIGIT_GROUPS) {
             const suffix = group.join('_');
@@ -390,6 +398,23 @@ function hasRequiredLocalStatsCoverage() {
         console.warn(`[Cache Check] Không kiểm tra được stats coverage, sẽ sinh lại để an toàn: ${error.message}`);
         return false;
     }
+}
+
+function hasRequiredQuickStatsKeyCoverage(keys = []) {
+    const keySet = keys instanceof Set ? keys : new Set(keys || []);
+    const required = [
+        'dau_le:block2x1SoLe',
+        'dit_chan:block2x1SoLe',
+        'tong_tt_chan:block2x2SoLe',
+        'tong_moi_chan:block2x2SoLe',
+        'hieu_0_1_3:block3x3SoLe'
+    ];
+    const missing = required.filter(key => !keySet.has(key));
+    if (missing.length > 0) {
+        console.log(`[Cache Check] quick_stats thiếu coverage Nhịp block A/B (${missing.join(', ')}). Forcing stats generation.`);
+        return false;
+    }
+    return true;
 }
 
 function getVietnamTodayDate(date = new Date()) {
@@ -1097,8 +1122,20 @@ async function main() {
                         const r2History = await readStatsJsonFromR2('quick_stats_history.json');
                         const latestStatsDate = Array.isArray(r2History) && r2History[0] ? r2History[0].date : null;
                         if (latestStatsDate === expectedDateStr) {
-                            console.log(`[Cache Check] R2 stats are up to date (both at ${expectedDateStr}).`);
-                            isStale = false;
+                            let r2KeysCovered = true;
+                            try {
+                                const r2Keys = await readStatsJsonFromR2('quick_stats_keys.json');
+                                r2KeysCovered = hasRequiredQuickStatsKeyCoverage(Array.isArray(r2Keys) ? r2Keys : []);
+                            } catch (r2KeysError) {
+                                console.warn(`[Cache Check] Không kiểm tra được R2 quick_stats_keys coverage, sẽ sinh lại để an toàn: ${r2KeysError.message}`);
+                                r2KeysCovered = false;
+                            }
+                            if (r2KeysCovered) {
+                                console.log(`[Cache Check] R2 stats are up to date and coverage is complete (both at ${expectedDateStr}).`);
+                                isStale = false;
+                            } else {
+                                isStale = true;
+                            }
                             checkedRemoteStats = true;
                         } else {
                             console.log(`[Cache Check] R2 stats are behind! Raw latest draw date is ${expectedDateStr}, but R2 stats latest date is ${latestStatsDate || 'none'}. Forcing stats generation.`);
