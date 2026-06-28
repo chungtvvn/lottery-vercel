@@ -101,6 +101,13 @@ function getPatternStep(key = '') {
     return isAlternatingGapPattern ? 2 : 1;
 }
 
+function isBlockPattern(candidateOrKey) {
+    const key = typeof candidateOrKey === 'string'
+        ? candidateOrKey
+        : candidateOrKey?.key;
+    return /block\d+x\d+sole/i.test(String(key || ''));
+}
+
 function flattenStats(allStats) {
     const rows = [];
     const add = (key, data) => {
@@ -291,7 +298,15 @@ function getCandidateRiskScore(candidate) {
 function compareCandidatesForStrategy(strategy) {
     return (a, b) => {
         if (a.tier !== b.tier) return a.tier - b.tier;
-        if (strategy === 'chainSmallFirst') {
+        if (strategy === 'chainBlockFirst') {
+            const blockDiff = Number(isBlockPattern(b)) - Number(isBlockPattern(a));
+            if (blockDiff) return blockDiff;
+            if (a.numbers.length !== b.numbers.length) return a.numbers.length - b.numbers.length;
+            if (a.exposureFrequencyPerYear !== b.exposureFrequencyPerYear) {
+                return a.exposureFrequencyPerYear - b.exposureFrequencyPerYear;
+            }
+            if (b.riskRate !== a.riskRate) return b.riskRate - a.riskRate;
+        } else if (strategy === 'chainSmallFirst') {
             if (a.numbers.length !== b.numbers.length) return a.numbers.length - b.numbers.length;
             if (b.riskRate !== a.riskRate) return b.riskRate - a.riskRate;
             if (a.exposureFrequencyPerYear !== b.exposureFrequencyPerYear) {
@@ -410,9 +425,14 @@ function buildPrediction(candidates, targetExcluded, strategy = 'chainTier') {
     const selectedChains = [];
 
     for (const candidate of orderedCandidates.filter(item => item.tier <= 3)) {
-        const before = excluded.size;
-        candidate.numbers.forEach(num => excluded.add(num));
-        if (excluded.size > before) selectedChains.push(candidate);
+        const additions = candidate.numbers
+            .filter(num => !excluded.has(num))
+            .sort((a, b) => a - b);
+        if (additions.length > 0) selectedChains.push(candidate);
+        for (const num of additions) {
+            excluded.add(num);
+            if (excluded.size >= targetExcluded) break;
+        }
         if (excluded.size >= targetExcluded) break;
     }
 

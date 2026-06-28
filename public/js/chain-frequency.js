@@ -1,8 +1,8 @@
 (function () {
     const state = {
         payload: null,
-        strategy: 'chainSmallFirst',
-        target: 70
+        strategy: '',
+        target: null
     };
 
     const el = id => document.getElementById(id);
