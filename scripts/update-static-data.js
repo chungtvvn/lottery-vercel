@@ -21,7 +21,7 @@ const LOTO_PAYOUT_PER_HIT_K = 8000;
 const LOTO_METHOD_ID = process.env.LOTO_METHOD_ID || 'milestone20yChainSmallFirstHold65TwoHitGreedy';
 const LOTO_AGGREGATION_MODE = process.env.LOTO_AGGREGATION_MODE || 'twoHitGreedy';
 const LOTO_BET_COUNTS = [3, 4, 5, 6, 7];
-const MILESTONE20Y_METHOD_VERSION = 'annual20y-2026-06-28-block-ab-hold70';
+const MILESTONE20Y_METHOD_VERSION = 'annual20y-2026-06-28-block-first-hold70';
 const MILESTONE20Y_BASELINE_VERSION = 'annual20y-baseline-2026-06-28-block-ab';
 const MILESTONE20Y_CACHE_FILES = [
     'cached_milestone20y_prediction.json',
@@ -176,6 +176,7 @@ function isMilestone20yFormulaCurrent(cache) {
     const strategies = Array.isArray(config.strategies) ? config.strategies.map(item => item && item.id).filter(Boolean) : [];
     const required = [
         'chainSmallFirst',
+        'chainBlockFirst',
         'chainFreqFirst',
         'chainRiskFirst',
         'numberAvgRisk',
