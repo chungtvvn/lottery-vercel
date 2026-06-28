@@ -433,6 +433,12 @@ function hasRequiredQuickStatsKeyCoverage(keys = []) {
         return false;
     }
 
+    const blockRecordKeyCount = Array.from(keySet).filter(key => /:block\d+x\d+SoLe$/.test(String(key))).length;
+    if (blockRecordKeyCount < 100) {
+        console.log(`[Cache Check] quick_stats_keys thiếu nhóm Nhịp block A/B mới (${blockRecordKeyCount} keys). Forcing stats generation.`);
+        return false;
+    }
+
     return true;
 }
 

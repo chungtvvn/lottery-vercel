@@ -262,32 +262,35 @@ jobs:
       - name: Verify Lô cache on R2
         id: verify
         env:
-          EXPECTED_DATE: ${{ steps.target.outputs.date }}
+          TARGET_DATE: ${{ steps.target.outputs.date }}
           NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL: ${{ secrets.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL }}
         run: |
           node - <<'NODE'
           const zlib = require('zlib');
           const base = String(process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || '').replace(/\/$/, '');
-          const expected = process.env.EXPECTED_DATE;
-          async function read(file) {
-            const response = await fetch(`${base}/statistics/${file}.gz`, { cache: 'no-store' });
-            if (!response.ok) throw new Error(`${file}: HTTP ${response.status}`);
+          const target = process.env.TARGET_DATE;
+          async function read(path) {
+            const response = await fetch(`${base}/${path}.gz`, { cache: 'no-store' });
+            if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`);
             return JSON.parse(zlib.gunzipSync(Buffer.from(await response.arrayBuffer())));
           }
           (async () => {
-            const [cache, live] = await Promise.all([
-              read('cached_loto_prediction.json'),
-              read('cached_loto_live_predictions.json')
+            const [raw, cache, live] = await Promise.all([
+              read('data/xsmb-2-digits.json'),
+              read('statistics/cached_loto_prediction.json'),
+              read('statistics/cached_loto_live_predictions.json')
             ]);
-            if (cache.latestDataDate !== expected || live.latestDataDate !== expected) {
-              throw new Error(`Lô cache stale: cache=${cache.latestDataDate}, live=${live.latestDataDate}, expected=${expected}`);
+            const latestRaw = raw.at(-1)?.date;
+            if (!latestRaw) throw new Error('Không đọc được latestRaw từ R2 raw data.');
+            if (cache.latestDataDate !== latestRaw || live.latestDataDate !== latestRaw) {
+              throw new Error(`Lô cache stale: cache=${cache.latestDataDate}, live=${live.latestDataDate}, latestRaw=${latestRaw}, target=${target}`);
             }
             if (cache.config?.methodId !== 'milestone20yChainSmallFirstHold65TwoHitGreedy') {
               throw new Error(`Lô method sai: ${cache.config?.methodId || 'missing'}`);
             }
             console.log(`cache_ready=true`);
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, 'cache_ready=true\n');
-            console.log(`✅ Lô R2 đã đủ cho ${expected}, dự đoán ${cache.nextPrediction?.predictionIsoDate || 'unknown'}.`);
+            console.log(`✅ Lô R2 đã đủ raw ${latestRaw}; target ${target}; dự đoán ${cache.nextPrediction?.predictionIsoDate || 'unknown'}.`);
           })().catch(error => {
             console.error(error);
             process.exit(1);
@@ -354,28 +357,31 @@ jobs:
       - name: Verify retried Lô cache on R2
         id: verify
         env:
-          EXPECTED_DATE: ${{ steps.target.outputs.date }}
+          TARGET_DATE: ${{ steps.target.outputs.date }}
           NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL: ${{ secrets.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL }}
         run: |
           node - <<'NODE'
           const zlib = require('zlib');
           const base = String(process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || '').replace(/\/$/, '');
-          const expected = process.env.EXPECTED_DATE;
-          async function read(file) {
-            const response = await fetch(`${base}/statistics/${file}.gz`, { cache: 'no-store' });
-            if (!response.ok) throw new Error(`${file}: HTTP ${response.status}`);
+          const target = process.env.TARGET_DATE;
+          async function read(path) {
+            const response = await fetch(`${base}/${path}.gz`, { cache: 'no-store' });
+            if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`);
             return JSON.parse(zlib.gunzipSync(Buffer.from(await response.arrayBuffer())));
           }
           (async () => {
-            const [cache, live] = await Promise.all([
-              read('cached_loto_prediction.json'),
-              read('cached_loto_live_predictions.json')
+            const [raw, cache, live] = await Promise.all([
+              read('data/xsmb-2-digits.json'),
+              read('statistics/cached_loto_prediction.json'),
+              read('statistics/cached_loto_live_predictions.json')
             ]);
-            if (cache.latestDataDate !== expected || live.latestDataDate !== expected) {
-              throw new Error(`Lô cache stale sau retry: cache=${cache.latestDataDate}, live=${live.latestDataDate}, expected=${expected}`);
+            const latestRaw = raw.at(-1)?.date;
+            if (!latestRaw) throw new Error('Không đọc được latestRaw từ R2 raw data.');
+            if (cache.latestDataDate !== latestRaw || live.latestDataDate !== latestRaw) {
+              throw new Error(`Lô cache stale sau retry: cache=${cache.latestDataDate}, live=${live.latestDataDate}, latestRaw=${latestRaw}, target=${target}`);
             }
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, 'cache_ready=true\n');
-            console.log(`✅ Retry Lô R2 thành công cho ${expected}.`);
+            console.log(`✅ Retry Lô R2 thành công cho raw ${latestRaw}; target ${target}.`);
           })().catch(error => {
             console.error(error);
             process.exit(1);
@@ -403,13 +409,13 @@ jobs:
 
       - name: Verify raw, Đề and Lô caches
         env:
-          EXPECTED_DATE: ${{ steps.target.outputs.date }}
+          TARGET_DATE: ${{ steps.target.outputs.date }}
           NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL: ${{ secrets.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL }}
         run: |
           node - <<'NODE'
           const zlib = require('zlib');
           const base = String(process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || '').replace(/\/$/, '');
-          const expected = process.env.EXPECTED_DATE;
+          const target = process.env.TARGET_DATE;
           async function readGzip(path) {
             const response = await fetch(`${base}/${path}.gz`, { cache: 'no-store' });
             if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`);
@@ -429,11 +435,12 @@ jobs:
               loto: loto.latestDataDate,
               lotoLive: lotoLive.latestDataDate
             };
-            const stale = Object.entries(dates).filter(([, date]) => date !== expected);
+            if (!latestRaw) throw new Error('Không đọc được latestRaw từ R2 raw data.');
+            const stale = Object.entries(dates).filter(([, date]) => date !== latestRaw);
             if (stale.length) {
-              throw new Error(`R2 chưa đồng bộ ${expected}: ${JSON.stringify(dates)}`);
+              throw new Error(`R2 chưa đồng bộ latestRaw=${latestRaw}, target=${target}: ${JSON.stringify(dates)}`);
             }
-            console.log(`✅ Đề + Lô đồng bộ ${expected}. Dự đoán Lô: ${loto.nextPrediction?.predictionIsoDate || 'unknown'}.`);
+            console.log(`✅ Đề + Lô đồng bộ raw ${latestRaw}; target ${target}. Dự đoán Lô: ${loto.nextPrediction?.predictionIsoDate || 'unknown'}.`);
           })().catch(error => {
             console.error(error);
             process.exit(1);
