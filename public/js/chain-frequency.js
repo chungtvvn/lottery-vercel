@@ -678,7 +678,23 @@
         }
         const section = state.performancePayload?.sections?.de;
         if (!section) {
-            root.innerHTML = '<div class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">Chưa có cache hiệu quả cho phương pháp này. Hãy chạy lại action để sinh báo cáo mới.</div>';
+            const requestedMethod = getResultKey();
+            const available = state.performancePayload?.availableMethods?.de || [];
+            root.innerHTML = `
+                <div class="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
+                    <div class="font-black text-slate-950">Chưa có báo cáo hiệu quả cho phương pháp đang chọn</div>
+                    <p class="mt-2 leading-6">
+                        Bạn đang chọn <span class="font-mono font-bold">${escapeHtml(requestedMethod)}</span>, nhưng cache report hiện chưa có phương pháp này.
+                        Hệ thống sẽ không tự đổi sang phương pháp khác để tránh nhầm với kết quả thực tế.
+                    </p>
+                    <p class="mt-2 leading-6">
+                        Phương pháp hiện có trong cache: ${available.length ? available.map(item => `<span class="font-mono font-bold">${escapeHtml(item)}</span>`).join(', ') : 'chưa có'}.
+                    </p>
+                    <p class="mt-2 leading-6 text-amber-800">
+                        Cần chạy backtest/report đa phương pháp để bổ sung cache cho tổ hợp này trước khi hiển thị biểu đồ ngày/tuần/tháng.
+                    </p>
+                </div>
+            `;
             return;
         }
         const summary = section.summary || {};
@@ -778,12 +794,8 @@
         try {
             const method = encodeURIComponent(getResultKey());
             const period = encodeURIComponent(state.performancePeriod);
-            let response = await fetch(`/api/performance-report?type=de&period=${period}&method=${method}`, { cache: 'no-store' });
-            let data = await response.json();
-            if (!data.sections?.de) {
-                response = await fetch(`/api/performance-report?type=de&period=${period}`, { cache: 'no-store' });
-                data = await response.json();
-            }
+            const response = await fetch(`/api/performance-report?type=de&period=${period}&method=${method}`, { cache: 'no-store' });
+            const data = await response.json();
             if (!response.ok || !data.success) throw new Error(data.error || 'Không tải được báo cáo hiệu quả.');
             state.performancePayload = data;
         } catch (error) {

@@ -18,9 +18,13 @@ function normalizePeriod(value) {
 
 function pickMethod(section, requestedMethodId) {
     const methods = section?.methods || {};
-    const methodId = requestedMethodId && methods[requestedMethodId]
-        ? requestedMethodId
-        : (section?.selectedMethodId || Object.keys(methods)[0] || '');
+    if (requestedMethodId) {
+        return {
+            methodId: requestedMethodId,
+            method: methods[requestedMethodId] || null
+        };
+    }
+    const methodId = section?.selectedMethodId || Object.keys(methods)[0] || '';
     return {
         methodId,
         method: methods[methodId] || null
@@ -110,6 +114,10 @@ function buildResponse(payload, url) {
         source: payload.source || {},
         selectedPeriod: period,
         availablePeriods: ['daily', 'weekly', 'monthly'],
+        availableMethods: Object.fromEntries(includeTypes.map(type => [
+            type,
+            Object.keys(payload[type]?.methods || {})
+        ])),
         sections
     };
 }
