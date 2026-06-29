@@ -5,7 +5,8 @@
         target: null,
         performancePeriod: 'monthly',
         performancePayload: null,
-        performanceLoading: false
+        performanceLoading: false,
+        performanceVisible: false
     };
 
     const el = id => document.getElementById(id);
@@ -546,6 +547,19 @@
     function renderPeriodTabs() {
         const root = el('performancePeriodTabs');
         if (!root) return;
+        if (!state.performanceVisible) {
+            root.innerHTML = `
+                <button type="button" id="showPerformanceReport"
+                    class="rounded-xl bg-white px-5 py-2 text-sm font-black text-indigo-700 shadow transition hover:bg-indigo-50">
+                    Xem thống kê
+                </button>
+            `;
+            root.querySelector('#showPerformanceReport')?.addEventListener('click', () => {
+                state.performanceVisible = true;
+                loadPerformanceReport();
+            });
+            return;
+        }
         root.innerHTML = ['daily', 'weekly', 'monthly'].map(period => `
             <button type="button" data-period="${period}"
                 class="performance-period-btn rounded-xl px-4 py-2 transition ${state.performancePeriod === period
@@ -553,12 +567,21 @@
                     : 'text-indigo-100 hover:bg-white/10'}">
                 ${getPeriodLabel(period)}
             </button>
-        `).join('');
+        `).join('') + `
+            <button type="button" id="hidePerformanceReport"
+                class="ml-1 rounded-xl px-4 py-2 text-indigo-100 transition hover:bg-white/10">
+                Ẩn
+            </button>
+        `;
         root.querySelectorAll('.performance-period-btn').forEach(button => {
             button.addEventListener('click', () => {
                 state.performancePeriod = button.dataset.period || 'monthly';
                 loadPerformanceReport();
             });
+        });
+        root.querySelector('#hidePerformanceReport')?.addEventListener('click', () => {
+            state.performanceVisible = false;
+            renderPerformanceReport();
         });
     }
 
@@ -626,6 +649,29 @@
         renderPeriodTabs();
         const root = el('performanceReport');
         if (!root) return;
+        if (!state.performanceVisible) {
+            root.innerHTML = `
+                <div class="rounded-2xl border border-dashed border-indigo-200 bg-indigo-50/60 p-5">
+                    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                        <div>
+                            <div class="text-sm font-black text-slate-950">Báo cáo hiệu quả chỉ hiển thị khi người dùng yêu cầu</div>
+                            <p class="mt-1 max-w-3xl text-sm leading-6 text-slate-600">
+                                Đây là thống kê tham khảo/backtest từ đầu năm theo cache đã sinh, không phải nhật ký đánh thực tế. Bấm “Xem thống kê” để mở KPI, biểu đồ và bảng ngày/tuần/tháng.
+                            </p>
+                        </div>
+                        <button type="button" id="showPerformanceReportInline"
+                            class="inline-flex h-11 items-center justify-center rounded-xl bg-indigo-600 px-5 text-sm font-black text-white shadow hover:bg-indigo-700">
+                            Xem thống kê
+                        </button>
+                    </div>
+                </div>
+            `;
+            root.querySelector('#showPerformanceReportInline')?.addEventListener('click', () => {
+                state.performanceVisible = true;
+                loadPerformanceReport();
+            });
+            return;
+        }
         if (state.performanceLoading) {
             root.innerHTML = '<div class="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm font-semibold text-slate-600"><span class="spinner"></span> Đang tải báo cáo hiệu quả...</div>';
             return;
@@ -723,6 +769,10 @@
     }
 
     async function loadPerformanceReport() {
+        if (!state.performanceVisible) {
+            renderPerformanceReport();
+            return;
+        }
         state.performanceLoading = true;
         renderPerformanceReport();
         try {
@@ -775,7 +825,6 @@
                 state.target = Number(strategy?.defaultTarget || profitPreset?.target || getTargets()[0] || 65);
             }
             render();
-            loadPerformanceReport();
         } catch (error) {
             showError(error.message || 'Không thể tải dữ liệu Mốc 20 năm.');
         } finally {
@@ -790,12 +839,12 @@
             const strategy = getStrategy();
             state.target = Number(strategy?.defaultTarget || state.target || 65);
             render();
-            loadPerformanceReport();
+            if (state.performanceVisible) loadPerformanceReport();
         });
         el('targetSelect')?.addEventListener('change', event => {
             state.target = Number(event.target.value || state.target);
             render();
-            loadPerformanceReport();
+            if (state.performanceVisible) loadPerformanceReport();
         });
         loadData();
     });

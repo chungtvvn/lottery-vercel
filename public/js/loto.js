@@ -3,7 +3,8 @@
     const state = {
         performancePeriod: 'monthly',
         performancePayload: null,
-        performanceLoading: false
+        performanceLoading: false,
+        performanceVisible: false
     };
 
     function money(value) {
@@ -162,6 +163,19 @@
     function renderPeriodTabs() {
         const root = document.getElementById('performancePeriodTabs');
         if (!root) return;
+        if (!state.performanceVisible) {
+            root.innerHTML = `
+                <button type="button" id="showPerformanceReport"
+                    class="rounded-xl bg-white px-5 py-2 text-sm font-black text-violet-700 shadow transition hover:bg-violet-50">
+                    Xem thống kê
+                </button>
+            `;
+            root.querySelector('#showPerformanceReport')?.addEventListener('click', () => {
+                state.performanceVisible = true;
+                loadPerformanceReport();
+            });
+            return;
+        }
         root.innerHTML = ['daily', 'weekly', 'monthly'].map(period => `
             <button type="button" data-period="${period}"
                 class="performance-period-btn rounded-xl px-4 py-2 transition ${state.performancePeriod === period
@@ -169,12 +183,21 @@
                     : 'text-violet-100 hover:bg-white/10'}">
                 ${getPeriodLabel(period)}
             </button>
-        `).join('');
+        `).join('') + `
+            <button type="button" id="hidePerformanceReport"
+                class="ml-1 rounded-xl px-4 py-2 text-violet-100 transition hover:bg-white/10">
+                Ẩn
+            </button>
+        `;
         root.querySelectorAll('.performance-period-btn').forEach(button => {
             button.addEventListener('click', () => {
                 state.performancePeriod = button.dataset.period || 'monthly';
                 loadPerformanceReport();
             });
+        });
+        root.querySelector('#hidePerformanceReport')?.addEventListener('click', () => {
+            state.performanceVisible = false;
+            renderPerformanceReport();
         });
     }
 
@@ -242,6 +265,29 @@
         renderPeriodTabs();
         const root = document.getElementById('performanceReport');
         if (!root) return;
+        if (!state.performanceVisible) {
+            root.innerHTML = `
+                <div class="rounded-2xl border border-dashed border-violet-200 bg-violet-50/60 p-5">
+                    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                        <div>
+                            <div class="text-sm font-black text-slate-950">Báo cáo hiệu quả Lô chỉ hiển thị khi người dùng yêu cầu</div>
+                            <p class="mt-1 max-w-3xl text-sm leading-6 text-slate-600">
+                                Đây là thống kê tham khảo/backtest theo cache đã sinh, tách biệt với nhật ký đánh thực tế. Bấm “Xem thống kê” để mở KPI, biểu đồ và bảng ngày/tuần/tháng.
+                            </p>
+                        </div>
+                        <button type="button" id="showPerformanceReportInline"
+                            class="inline-flex h-11 items-center justify-center rounded-xl bg-violet-600 px-5 text-sm font-black text-white shadow hover:bg-violet-700">
+                            Xem thống kê
+                        </button>
+                    </div>
+                </div>
+            `;
+            root.querySelector('#showPerformanceReportInline')?.addEventListener('click', () => {
+                state.performanceVisible = true;
+                loadPerformanceReport();
+            });
+            return;
+        }
         if (state.performanceLoading) {
             root.innerHTML = '<div class="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm font-semibold text-slate-600">Đang tải báo cáo hiệu quả...</div>';
             return;
@@ -340,6 +386,10 @@
     }
 
     async function loadPerformanceReport() {
+        if (!state.performanceVisible) {
+            renderPerformanceReport();
+            return;
+        }
         state.performanceLoading = true;
         renderPerformanceReport();
         try {
@@ -367,11 +417,11 @@
             renderMeta(data);
             renderPredictions(data);
             renderLive(data);
-            loadPerformanceReport();
+            renderPerformanceReport();
         } catch (error) {
             errorBox.textContent = error.message;
             errorBox.classList.remove('hidden');
-            loadPerformanceReport();
+            renderPerformanceReport();
         }
     }
 
