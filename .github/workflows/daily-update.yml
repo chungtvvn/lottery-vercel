@@ -288,6 +288,9 @@ jobs:
             if (cache.config?.methodId !== 'milestone20yChainSmallFirstHold65TwoHitGreedy') {
               throw new Error(`Lô method sai: ${cache.config?.methodId || 'missing'}`);
             }
+            if (Number(cache.config?.stakePerNumberK) !== 2200 || Number(cache.config?.payoutPerHitK) !== 8000) {
+              throw new Error(`Lô công thức sai: stake=${cache.config?.stakePerNumberK || 'missing'}, payout=${cache.config?.payoutPerHitK || 'missing'}`);
+            }
             console.log(`cache_ready=true`);
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, 'cache_ready=true\n');
             console.log(`✅ Lô R2 đã đủ raw ${latestRaw}; target ${target}; dự đoán ${cache.nextPrediction?.predictionIsoDate || 'unknown'}.`);
@@ -380,6 +383,9 @@ jobs:
             if (cache.latestDataDate !== latestRaw || live.latestDataDate !== latestRaw) {
               throw new Error(`Lô cache stale sau retry: cache=${cache.latestDataDate}, live=${live.latestDataDate}, latestRaw=${latestRaw}, target=${target}`);
             }
+            if (Number(cache.config?.stakePerNumberK) !== 2200 || Number(cache.config?.payoutPerHitK) !== 8000) {
+              throw new Error(`Lô công thức sai sau retry: stake=${cache.config?.stakePerNumberK || 'missing'}, payout=${cache.config?.payoutPerHitK || 'missing'}`);
+            }
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, 'cache_ready=true\n');
             console.log(`✅ Retry Lô R2 thành công cho raw ${latestRaw}; target ${target}.`);
           })().catch(error => {
@@ -439,6 +445,9 @@ jobs:
             const stale = Object.entries(dates).filter(([, date]) => date !== latestRaw);
             if (stale.length) {
               throw new Error(`R2 chưa đồng bộ latestRaw=${latestRaw}, target=${target}: ${JSON.stringify(dates)}`);
+            }
+            if (Number(loto.config?.stakePerNumberK) !== 2200 || Number(loto.config?.payoutPerHitK) !== 8000) {
+              throw new Error(`R2 Lô công thức sai: stake=${loto.config?.stakePerNumberK || 'missing'}, payout=${loto.config?.payoutPerHitK || 'missing'}`);
             }
             console.log(`✅ Đề + Lô đồng bộ raw ${latestRaw}; target ${target}. Dự đoán Lô: ${loto.nextPrediction?.predictionIsoDate || 'unknown'}.`);
           })().catch(error => {

@@ -3,11 +3,15 @@
         payload: null,
         strategy: '',
         target: null,
+        winMultiplier: 84,
         performancePeriod: 'monthly',
         performancePayload: null,
         performanceLoading: false,
         performanceVisible: false
     };
+    const DE_BET_PER_NUMBER_K = 1000;
+    const MIN_DE_WIN_MULTIPLIER = 70;
+    const MAX_DE_WIN_MULTIPLIER = 90;
 
     const el = id => document.getElementById(id);
     const numText = value => String(value).padStart(2, '0');
@@ -17,6 +21,11 @@
         const number = Number(value || 0);
         const sign = number > 0 ? '+' : '';
         return `${sign}${number.toLocaleString('vi-VN')}K`;
+    };
+    const normalizeWinMultiplier = value => {
+        const number = Number(value);
+        if (!Number.isFinite(number)) return 84;
+        return Math.max(MIN_DE_WIN_MULTIPLIER, Math.min(MAX_DE_WIN_MULTIPLIER, Math.round(number)));
     };
     const asRatio = value => {
         const number = Number(value || 0);
@@ -356,6 +365,13 @@
             <option value="${target}" ${Number(target) === Number(state.target) ? 'selected' : ''}>Loại ${target} · đánh ${100 - Number(target)}</option>
         `).join('');
 
+        const multiplierSelect = el('winMultiplierSelect');
+        if (multiplierSelect) {
+            multiplierSelect.innerHTML = Array.from({ length: MAX_DE_WIN_MULTIPLIER - MIN_DE_WIN_MULTIPLIER + 1 }, (_, index) => MIN_DE_WIN_MULTIPLIER + index)
+                .map(value => `<option value="${value}" ${value === state.winMultiplier ? 'selected' : ''}>1 ăn ${value}</option>`)
+                .join('');
+        }
+
         const presets = state.payload?.config?.presets || state.payload?.nextPrediction?.presets || [];
         el('presetButtons').innerHTML = presets.map(preset => `
             <button type="button" data-strategy="${escapeHtml(preset.strategy)}" data-target="${Number(preset.target)}"
@@ -385,7 +401,6 @@
         const next = payload?.nextPrediction || {};
         const prediction = getPrediction();
         const strategy = getStrategy();
-        const liveSummary = payload?.livePredictions?.summary?.[presetIdForSelection()];
         const cards = [
             ['Dữ liệu tới', payload?.latestDataDate || '-'],
             ['Ngày dự đoán', next.predictionIsoDate || '-'],
@@ -484,14 +499,12 @@
     }
 
     function renderLiveSummary() {
-        const summary = state.payload?.livePredictions?.summary || {};
-        const presets = state.payload?.config?.presets || [];
-        const rows = presets.map(preset => summary[preset.id]).filter(Boolean);
+        const rows = summarizeLiveByPreset();
         el('liveSummary').innerHTML = rows.map(item => `
             <div class="rounded-xl border ${Number(item.profitK || 0) >= 0 ? 'border-emerald-200 bg-emerald-50' : 'border-red-200 bg-red-50'} p-4">
                 <div class="text-xs font-semibold uppercase text-slate-500">${escapeHtml(item.label || item.id)}</div>
                 <div class="mt-1 text-2xl font-bold ${Number(item.profitK || 0) >= 0 ? 'text-emerald-700' : 'text-red-700'}">${fmtK(item.profitK)}</div>
-                <div class="mt-1 text-xs text-slate-600">${fmt(item.wins || 0)}/${fmt(item.days || 0)} ngày thắng · ROI ${fmtPercent(item.roi || 0)}</div>
+                <div class="mt-1 text-xs text-slate-600">${fmt(item.wins || 0)}/${fmt(item.days || 0)} ngày thắng · ROI ${fmtPercent(item.roi || 0)} · 1 ăn ${state.winMultiplier}</div>
             </div>
         `).join('') || '<div class="col-span-full rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">Chưa có dòng thực tế nào được kết toán.</div>';
     }
@@ -503,7 +516,8 @@
             .slice(0, 30);
         const key = getResultKey();
         el('liveRows').innerHTML = rows.map(row => {
-            const result = row.results?.[key];
+            const rawResult = row.results?.[key];
+            const result = rawResult ? adjustDeResult(rawResult, state.target) : null;
             const pending = row.status !== 'settled' || !result?.resolved;
             const prediction = row.strategies?.[state.strategy]?.holds?.[String(state.target)];
             const profit = result?.profitK || 0;
@@ -540,8 +554,98 @@
         return row.month || row.period || '-';
     }
 
+    function getDeBetCount(target = state.target) {
+        const count = 100 - Number(target || 0);
+        return Number.isFinite(count) && count > 0 ? count : 30;
+    }
+
+    function getRowWins(row = {}) {
+        if (Number.isFinite(Number(row.wins))) return Number(row.wins);
+        if (Number.isFinite(Number(row.winDays))) return Number(row.winDays);
+        if (Number.isFinite(Number(row.hitDays))) return Number(row.hitDays);
+        if (row.hit === true || row.result === 'win') return 1;
+        return 0;
+    }
+
+    function adjustDeResult(result = {}, target = state.target) {
+        const betCount = Number(result.betCount || getDeBetCount(target));
+        const hit = Boolean(result.hit || result.result === 'win');
+        const stakeK = betCount * DE_BET_PER_NUMBER_K;
+        const payoutK = hit ? normalizeWinMultiplier(state.winMultiplier) * DE_BET_PER_NUMBER_K : 0;
+        const profitK = payoutK - stakeK;
+        return {
+            ...result,
+            hit,
+            betCount,
+            stakeK,
+            payoutK,
+            profitK,
+            roi: stakeK ? profitK / stakeK : 0
+        };
+    }
+
+    function adjustDeRow(row = {}, target = state.target) {
+        const days = Number(row.days || (row.date || row.period || row.month || row.week ? 1 : 0)) || 0;
+        const wins = getRowWins(row);
+        const betCount = Number(row.betCount || getDeBetCount(target));
+        const stakeK = Number.isFinite(Number(row.stakeK)) && Number(row.stakeK) > 0
+            ? days > 1
+                ? days * betCount * DE_BET_PER_NUMBER_K
+                : betCount * DE_BET_PER_NUMBER_K
+            : days * betCount * DE_BET_PER_NUMBER_K;
+        const payoutK = wins * normalizeWinMultiplier(state.winMultiplier) * DE_BET_PER_NUMBER_K;
+        const profitK = payoutK - stakeK;
+        return {
+            ...row,
+            days,
+            wins,
+            winDays: wins,
+            betCount,
+            stakeK,
+            payoutK,
+            profitK,
+            winRate: days ? wins / days : 0,
+            roi: stakeK ? profitK / stakeK : 0
+        };
+    }
+
+    function summarizeLiveByPreset() {
+        const presets = state.payload?.config?.presets || [];
+        const liveRows = state.payload?.livePredictions?.predictions || [];
+        return presets.map(preset => {
+            const key = `${preset.strategy}:hold${preset.target}`;
+            const item = {
+                id: preset.id,
+                label: preset.label,
+                strategy: preset.strategy,
+                target: Number(preset.target),
+                days: 0,
+                wins: 0,
+                losses: 0,
+                stakeK: 0,
+                payoutK: 0,
+                profitK: 0
+            };
+            liveRows.forEach(row => {
+                const result = row.results?.[key];
+                if (row.status !== 'settled' || !result?.resolved) return;
+                const adjusted = adjustDeResult(result, preset.target);
+                item.days += 1;
+                item.wins += adjusted.hit ? 1 : 0;
+                item.losses += adjusted.hit ? 0 : 1;
+                item.stakeK += adjusted.stakeK;
+                item.payoutK += adjusted.payoutK;
+                item.profitK += adjusted.profitK;
+            });
+            item.hitRate = item.days ? item.wins / item.days : 0;
+            item.winRate = item.hitRate;
+            item.roi = item.stakeK ? item.profitK / item.stakeK : 0;
+            return item;
+        }).filter(item => item.days > 0);
+    }
+
     function getRowProfit(row = {}) {
-        return Number(row.profitK ?? row.netProfitK ?? 0);
+        return Number(adjustDeRow(row).profitK ?? row.netProfitK ?? 0);
     }
 
     function renderPeriodTabs() {
@@ -697,13 +801,14 @@
             `;
             return;
         }
-        const summary = section.summary || {};
+        const summary = adjustDeRow(section.summary || {}, state.target);
         const rows = section.rows || [];
         const positive = Number(summary.profitK || 0) >= 0;
         const cards = [
             ['Số ngày', `${fmt(summary.days || rows.length)} ngày`, 'Tổng số ngày đã kết toán trong năm.'],
             ['Tỷ lệ trúng', fmtRatioPercent(summary.winRate), 'Tỷ lệ ngày kết quả nằm trong dàn đánh.'],
-            ['Profit', fmtMoney(summary.profitK), 'Lãi/lỗ ròng theo công thức đang lưu.'],
+            ['Tỷ lệ ăn', `1 ăn ${state.winMultiplier}`, 'Có thể đổi từ 70 đến 90, hệ thống tự tính lại lãi/lỗ.'],
+            ['Profit', fmtMoney(summary.profitK), `Lãi/lỗ ròng theo mỗi số ${fmt(DE_BET_PER_NUMBER_K)}K, trúng ăn ${state.winMultiplier}.`],
             ['ROI', fmtRatioPercent(summary.roi), 'Profit chia cho tổng tiền đánh.'],
             ['Chuỗi thua dài nhất', `${fmt(summary.longestLoss || 0)} ngày`, 'Mốc rủi ro cần chuẩn bị khi áp dụng thực tế.']
         ];
@@ -721,7 +826,7 @@
                             <div class="mt-1 text-2xl font-black">${escapeHtml(section.assessment?.level || 'Theo dõi')}</div>
                         </div>
                     </div>
-                    <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+                    <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
                         ${cards.map(([label, value, hint]) => `
                             <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                                 <div class="text-xs font-bold uppercase text-slate-500">${escapeHtml(label)}</div>
@@ -764,17 +869,18 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100 bg-white">
                         ${rows.slice(-36).reverse().map(row => {
-                            const winRate = asRatio(row.winRatePercent ?? row.winRate ?? 0);
-                            const profit = getRowProfit(row);
+                            const adjusted = adjustDeRow(row, state.target);
+                            const winRate = asRatio(adjusted.winRatePercent ?? adjusted.winRate ?? 0);
+                            const profit = adjusted.profitK;
                             return `
                                 <tr>
                                     <td class="px-4 py-3 font-bold text-slate-900">${escapeHtml(rowLabel(row))}</td>
-                                    <td class="px-4 py-3 text-right text-slate-600">${fmt(row.days || 1)}</td>
-                                    <td class="px-4 py-3 text-right text-slate-600">${fmt(row.wins ?? row.winDays ?? row.hitDays ?? 0)}</td>
+                                    <td class="px-4 py-3 text-right text-slate-600">${fmt(adjusted.days || 1)}</td>
+                                    <td class="px-4 py-3 text-right text-slate-600">${fmt(adjusted.wins ?? adjusted.winDays ?? adjusted.hitDays ?? 0)}</td>
                                     <td class="px-4 py-3 text-right font-semibold text-slate-900">${fmtRatioPercent(winRate)}</td>
-                                    <td class="px-4 py-3 text-right text-slate-600">${fmtMoney(-(Math.abs(Number(row.stakeK || 0))))}</td>
+                                    <td class="px-4 py-3 text-right text-slate-600">${fmtMoney(-(Math.abs(Number(adjusted.stakeK || 0))))}</td>
                                     <td class="px-4 py-3 text-right font-black ${profit >= 0 ? 'text-emerald-600' : 'text-red-600'}">${fmtMoney(profit)}</td>
-                                    <td class="px-4 py-3 text-right font-semibold">${fmtRatioPercent(row.roiPercent ?? row.roi ?? 0)}</td>
+                                    <td class="px-4 py-3 text-right font-semibold">${fmtRatioPercent(adjusted.roi)}</td>
                                 </tr>
                             `;
                         }).join('')}
@@ -826,6 +932,7 @@
             const data = await response.json();
             if (!response.ok || data.error) throw new Error(data.error || 'Không thể tải dữ liệu Mốc 20 năm.');
             state.payload = data;
+            state.winMultiplier = normalizeWinMultiplier(state.winMultiplier || data.config?.winMultiplier || 84);
             const profitPreset = data.config?.presets?.[0];
             state.strategy = state.strategy || profitPreset?.strategy || 'chainSmallFirst';
             if (!data.nextPrediction?.strategies?.[state.strategy]) {
@@ -857,6 +964,10 @@
             state.target = Number(event.target.value || state.target);
             render();
             if (state.performanceVisible) loadPerformanceReport();
+        });
+        el('winMultiplierSelect')?.addEventListener('change', event => {
+            state.winMultiplier = normalizeWinMultiplier(event.target.value);
+            render();
         });
         loadData();
     });

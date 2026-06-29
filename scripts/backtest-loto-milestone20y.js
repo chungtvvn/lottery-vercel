@@ -22,13 +22,13 @@ const PRIZE_KEYS = [
 ];
 
 const ALL_NUMBERS = Array.from({ length: 100 }, (_, index) => index);
-const DEFAULT_STAKE_K = 2300;
+const DEFAULT_STAKE_K = 2200;
 const DEFAULT_PAYOUT_K = 8000;
 const DEFAULT_METHOD_ID = 'milestone20yChainSmallFirstHold65TwoHitGreedy';
 const DEFAULT_STRATEGY = 'chainSmallFirst';
 const DEFAULT_HOLD = 65;
 const DEFAULT_AGGREGATION_MODE = 'twoHitGreedy';
-const LIVE_CACHE_NOTE = 'Mỗi vị trí dùng Mốc 20 năm chainSmallFirst Hold 65; tổng hợp bằng Two-hit Greedy để ưu tiên dàn 3/4/5/6/7 số có xác suất đạt từ 2 hit/ngày cao hơn.';
+const LIVE_CACHE_NOTE = 'Mỗi vị trí dùng Mốc 20 năm chainSmallFirst Hold 65; tổng hợp bằng Two-hit Greedy. Top 6 là dàn mặc định vì đang có profit tốt nhất trong nhóm theo dõi.';
 
 function parseArgs() {
     return new Map(process.argv.slice(2).map(arg => {
@@ -695,7 +695,7 @@ function writeLiveCaches(nextPrediction, rawData, betCounts, options) {
     livePayload.config = {
         ...(livePayload.config || {}),
         methodId: nextPrediction.methodId,
-        methodName: 'Mốc 20 năm - Chuỗi nhỏ trước Hold 65 - Two-hit Greedy',
+        methodName: 'Mốc 20 năm - Chuỗi nhỏ trước Hold 65 - Two-hit Greedy Top 6',
         aggregationMode: nextPrediction.aggregationMode || DEFAULT_AGGREGATION_MODE,
         positionCount: PRIZE_KEYS.length,
         positions: PRIZE_KEYS,
@@ -715,7 +715,7 @@ function writeLiveCaches(nextPrediction, rawData, betCounts, options) {
     livePayload.notes = [
         LIVE_CACHE_NOTE,
         'Khi predictionIsoDate đã tồn tại, script không ghi đè dàn cũ; chỉ cập nhật kết quả khi có KQ thật.',
-        'Công thức Lô: 2300K mỗi số, mỗi hit nhận 8000K.'
+        'Công thức Lô: 2200K mỗi số, mỗi hit nhận 8000K.'
     ];
 
     const cachePayload = {

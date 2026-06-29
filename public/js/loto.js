@@ -1,5 +1,9 @@
 (function () {
     const nf = new Intl.NumberFormat('vi-VN');
+    const DEFAULT_LOTO_BET_COUNT = 6;
+    const DEFAULT_LOTO_STAKE_K = 2200;
+    const DEFAULT_LOTO_PAYOUT_K = 8000;
+    const LOTO_COUNT_ORDER = [6, 7, 5, 4, 3];
     const state = {
         performancePeriod: 'monthly',
         performancePayload: null,
@@ -57,7 +61,7 @@
             ['Vị trí', `${cfg.positionCount || 27} giải`],
             ['Phương pháp', methodLabel],
             ['Bộ chọn', cfg.aggregationMode || next.aggregationMode || '-'],
-            ['Công thức', `${nf.format(cfg.stakePerNumberK || 2300)}K ăn ${nf.format(cfg.payoutPerHitK || 8000)}K`]
+            ['Công thức', `${nf.format(DEFAULT_LOTO_STAKE_K)}K ăn ${nf.format(DEFAULT_LOTO_PAYOUT_K)}K`]
         ].map(([label, value]) => `
             <div class="glass-card p-4">
                 <div class="text-xs font-semibold uppercase text-slate-500">${label}</div>
@@ -69,7 +73,7 @@
     function renderPredictions(data) {
         const root = document.getElementById('predictionCards');
         const predictions = data.nextPrediction?.predictions || {};
-        root.innerHTML = [3, 4, 5, 6, 7].map(count => {
+        root.innerHTML = LOTO_COUNT_ORDER.map(count => {
             const item = predictions[`top${count}`] || {};
             const supportRows = (item.support || []).map(entry => `
                 <div class="flex items-center justify-between gap-3 rounded-lg bg-white/60 px-3 py-2 text-xs">
@@ -78,9 +82,12 @@
                 </div>
             `).join('');
             return `
-                <article class="glass-card overflow-hidden">
+                <article class="glass-card overflow-hidden ${count === DEFAULT_LOTO_BET_COUNT ? 'ring-2 ring-emerald-300' : ''}">
                     <div class="border-b border-slate-100 bg-gradient-to-r from-indigo-50 to-purple-50 px-4 py-3">
-                        <h2 class="text-lg font-bold text-slate-900">Top ${count} số đánh</h2>
+                        <h2 class="flex items-center gap-2 text-lg font-bold text-slate-900">
+                            Top ${count} số đánh
+                            ${count === DEFAULT_LOTO_BET_COUNT ? '<span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-black uppercase text-emerald-700">Mặc định</span>' : ''}
+                        </h2>
                     </div>
                     <div class="p-4">
                         <div class="flex flex-wrap gap-2">
@@ -97,14 +104,14 @@
         const live = data.livePredictions || {};
         const summaryRoot = document.getElementById('liveSummary');
         const listRoot = document.getElementById('liveList');
-        const summary = live.summary || {};
-        summaryRoot.innerHTML = [3, 4, 5, 6, 7].map(count => {
+        const summary = summarizeLiveAdjusted(live);
+        summaryRoot.innerHTML = LOTO_COUNT_ORDER.map(count => {
             const item = summary[`top${count}`] || {};
             return `
-                <div class="rounded-xl border border-amber-100 bg-white/70 p-4">
+                <div class="rounded-xl border ${count === DEFAULT_LOTO_BET_COUNT ? 'border-emerald-200 bg-emerald-50/80' : 'border-amber-100 bg-white/70'} p-4">
                     <div class="text-xs font-semibold uppercase text-slate-500">Top ${count} thực tế</div>
                     <div class="mt-2 text-2xl font-black text-slate-900">${item.days || 0} ngày</div>
-                    <div class="mt-1 text-sm text-slate-600">Thắng ${item.wins || 0}/${item.days || 0} · ${percent(item.hitRate)}</div>
+                    <div class="mt-1 text-sm text-slate-600">Lãi ${item.wins || 0}/${item.days || 0} · hit-day ${percent(item.hitRate)}</div>
                     <div class="mt-1 text-sm font-bold ${(item.profitK || 0) >= 0 ? 'text-emerald-600' : 'text-red-600'}">${money(item.profitK)}</div>
                 </div>
             `;
@@ -118,8 +125,9 @@
                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                 : 'bg-amber-50 text-amber-700 border-amber-200';
             const actual = row.actual ? Object.keys(row.actual).sort().join(', ') : '-';
-            const top7 = row.predictions?.top7 || row.predictions?.top6 || row.predictions?.top5 || row.predictions?.top4 || row.predictions?.top3 || {};
-            const method = row.methods?.top7 || row.methods?.top6 || row.methods?.top5 || row.methods?.top4 || row.methods?.top3 || {};
+            const topDefault = row.predictions?.[`top${DEFAULT_LOTO_BET_COUNT}`] || row.predictions?.top7 || row.predictions?.top5 || row.predictions?.top4 || row.predictions?.top3 || {};
+            const rawMethod = row.methods?.[`top${DEFAULT_LOTO_BET_COUNT}`] || row.methods?.top7 || row.methods?.top5 || row.methods?.top4 || row.methods?.top3 || {};
+            const method = adjustLiveMethod(rawMethod, topDefault.count || DEFAULT_LOTO_BET_COUNT);
             return `
                 <article class="p-4 ${row.status === 'pending' ? 'bg-amber-50/30' : 'bg-white/30'}">
                     <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -135,11 +143,11 @@
                         </div>
                         <div class="text-left lg:text-right">
                             <div class="text-sm font-bold ${(method.profitK || 0) >= 0 ? 'text-emerald-600' : 'text-red-600'}">${row.status === 'settled' ? money(method.profitK) : 'Chưa kết toán'}</div>
-                            <div class="text-xs text-slate-500">${row.status === 'settled' ? `${method.hits || 0} hit top7` : 'Sẽ tự đối soát khi có KQ'}</div>
+                            <div class="text-xs text-slate-500">${row.status === 'settled' ? `${method.hits || 0} hit top${topDefault.count || DEFAULT_LOTO_BET_COUNT}` : 'Sẽ tự đối soát khi có KQ'}</div>
                         </div>
                     </div>
                     <div class="mt-3 flex flex-wrap gap-2">
-                        ${(top7.numbers || []).map(number => numberBadge(number, row.status === 'pending' ? 'amber' : 'slate')).join('')}
+                        ${(topDefault.numbers || []).map(number => numberBadge(number, row.status === 'pending' ? 'amber' : 'slate')).join('')}
                     </div>
                 </article>
             `;
@@ -156,8 +164,92 @@
         return row.month || row.period || '-';
     }
 
+    function getRowHits(row = {}) {
+        return Number(row.totalHits ?? row.hits ?? row.hitCount ?? 0) || 0;
+    }
+
+    function getActivePerformanceBetCount() {
+        const section = state.performancePayload?.sections?.loto;
+        const fromSummary = Number(section?.summary?.betCount);
+        if (Number.isFinite(fromSummary) && fromSummary > 0) return fromSummary;
+        const match = String(section?.methodId || '').match(/top(\d+)/i);
+        return match ? Number(match[1]) : DEFAULT_LOTO_BET_COUNT;
+    }
+
+    function adjustLotoFinancialRow(row = {}, betCount = getActivePerformanceBetCount()) {
+        const days = Number(row.days || (row.date || row.period || row.month || row.week ? 1 : 0)) || 0;
+        const hits = getRowHits(row);
+        const selectedCount = Number(row.betCount || betCount || DEFAULT_LOTO_BET_COUNT);
+        const stakeK = days * selectedCount * DEFAULT_LOTO_STAKE_K;
+        const payoutK = hits * DEFAULT_LOTO_PAYOUT_K;
+        const profitK = payoutK - stakeK;
+        return {
+            ...row,
+            betCount: selectedCount,
+            stakeK,
+            payoutK,
+            profitK,
+            roi: stakeK ? profitK / stakeK : 0
+        };
+    }
+
+    function adjustLotoSummary(summary = {}) {
+        return adjustLotoFinancialRow(summary, Number(summary.betCount || getActivePerformanceBetCount()));
+    }
+
+    function adjustLiveMethod(method = {}, count = DEFAULT_LOTO_BET_COUNT) {
+        const hits = Number(method.hits || 0) || 0;
+        const stakeK = count * DEFAULT_LOTO_STAKE_K;
+        const payoutK = hits * DEFAULT_LOTO_PAYOUT_K;
+        const profitK = payoutK - stakeK;
+        return {
+            ...method,
+            hits,
+            stakeK,
+            payoutK,
+            profitK,
+            result: profitK > 0 ? 'win' : (profitK < 0 ? 'loss' : 'flat')
+        };
+    }
+
+    function summarizeLiveAdjusted(live = {}) {
+        const settledRows = (live.predictions || []).filter(row => row.status === 'settled');
+        const summary = {};
+        for (const count of [3, 4, 5, 6, 7]) {
+            const key = `top${count}`;
+            const item = {
+                days: 0,
+                wins: 0,
+                losses: 0,
+                hitDays: 0,
+                totalHits: 0,
+                stakeK: 0,
+                payoutK: 0,
+                profitK: 0
+            };
+            for (const row of settledRows) {
+                const method = row.methods?.[key];
+                if (!method) continue;
+                const adjusted = adjustLiveMethod(method, count);
+                item.days += 1;
+                item.totalHits += adjusted.hits;
+                item.stakeK += adjusted.stakeK;
+                item.payoutK += adjusted.payoutK;
+                item.profitK += adjusted.profitK;
+                if (adjusted.hits > 0) item.hitDays += 1;
+                if (adjusted.profitK > 0) item.wins += 1;
+                if (adjusted.profitK < 0) item.losses += 1;
+            }
+            item.hitRate = item.days ? item.hitDays / item.days : 0;
+            item.winRate = item.days ? item.wins / item.days : 0;
+            item.roi = item.stakeK ? item.profitK / item.stakeK : 0;
+            summary[key] = item;
+        }
+        return summary;
+    }
+
     function getRowProfit(row = {}) {
-        return Number(row.profitK ?? row.netProfitK ?? 0);
+        return Number(adjustLotoFinancialRow(row).profitK ?? row.netProfitK ?? 0);
     }
 
     function renderPeriodTabs() {
@@ -297,7 +389,7 @@
             root.innerHTML = '<div class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">Chưa có cache hiệu quả Lô. Hãy chạy lại action cập nhật dữ liệu để sinh báo cáo mới.</div>';
             return;
         }
-        const summary = section.summary || {};
+        const summary = adjustLotoSummary(section.summary || {});
         const rows = section.rows || [];
         const positive = Number(summary.profitK || 0) >= 0;
         const cards = [
@@ -305,7 +397,7 @@
             ['Hit-day', percent(summary.hitRate), 'Ngày có ít nhất 1 số xuất hiện trong 27 giải.'],
             ['Win-day', percent(summary.winRate), 'Ngày đạt ngưỡng thắng theo công thức Lô hiện tại.'],
             ['Hit TB/ngày', Number(summary.avgHitsPerDay || 0).toLocaleString('vi-VN', { maximumFractionDigits: 2 }), 'Số hit trung bình mỗi ngày.'],
-            ['Profit', money(summary.profitK), 'Lãi/lỗ ròng theo 2300K ăn 8000K.'],
+            ['Profit', money(summary.profitK), `Lãi/lỗ ròng theo ${nf.format(DEFAULT_LOTO_STAKE_K)}K ăn ${nf.format(DEFAULT_LOTO_PAYOUT_K)}K.`],
             ['ROI', percent(summary.roi), 'Profit chia cho tổng tiền đánh.']
         ];
         root.innerHTML = `
@@ -366,16 +458,17 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100 bg-white">
                         ${rows.slice(-36).reverse().map(row => {
-                            const profit = getRowProfit(row);
+                            const adjusted = adjustLotoFinancialRow(row, summary.betCount || DEFAULT_LOTO_BET_COUNT);
+                            const profit = adjusted.profitK;
                             return `
                                 <tr>
                                     <td class="px-4 py-3 font-bold text-slate-900">${escapeHtml(rowLabel(row))}</td>
                                     <td class="px-4 py-3 text-right text-slate-600">${nf.format(row.days || 1)}</td>
                                     <td class="px-4 py-3 text-right text-slate-600">${nf.format(row.hitDays ?? 0)}</td>
-                                    <td class="px-4 py-3 text-right text-slate-600">${nf.format(row.totalHits ?? row.hits ?? 0)}</td>
+                                    <td class="px-4 py-3 text-right text-slate-600">${nf.format(adjusted.totalHits ?? adjusted.hits ?? 0)}</td>
                                     <td class="px-4 py-3 text-right font-semibold text-slate-900">${nf.format(row.winDays ?? row.wins ?? 0)}</td>
                                     <td class="px-4 py-3 text-right font-black ${profit >= 0 ? 'text-emerald-600' : 'text-red-600'}">${money(profit)}</td>
-                                    <td class="px-4 py-3 text-right font-semibold">${percent(row.roiPercent ?? row.roi ?? 0)}</td>
+                                    <td class="px-4 py-3 text-right font-semibold">${percent(adjusted.roi)}</td>
                                 </tr>
                             `;
                         }).join('')}
