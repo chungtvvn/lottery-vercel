@@ -27,6 +27,7 @@ const MILESTONE20Y_CACHE_FILES = [
     'cached_milestone20y_prediction.json',
     'cached_milestone20y_live_predictions.json'
 ];
+const PERFORMANCE_REPORT_CACHE_FILE = 'cached_profit_report_2026.json';
 const ANALYSIS_CACHE_VERSION = 'hold70-edge-bo-v1';
 const ANALYSIS_CACHE_VERSION_FILE = 'analysis_cache_version.json';
 const runStatus = {
@@ -741,6 +742,23 @@ async function hasMilestone20yPredictionCacheOnR2(expectedLatestDate = null) {
     }
 }
 
+async function hasPerformanceReportCacheOnR2() {
+    if (!getR2PublicUrl() || process.env.UPDATE_CHECK_R2_PERFORMANCE_REPORT === '0') return true;
+    try {
+        const cache = await readStatsJsonFromR2(PERFORMANCE_REPORT_CACHE_FILE);
+        const hasSections = Boolean(cache?.de?.methods && cache?.loto?.methods);
+        if (!hasSections) {
+            console.log('[Cache Check] R2 performance report cache stale/malformed.');
+            return false;
+        }
+        console.log(`[Cache Check] R2 performance report cache OK: generatedAt=${cache.generatedAt || 'unknown'}.`);
+        return true;
+    } catch (error) {
+        console.log(`[Cache Check] R2 performance report cache missing/stale: ${error.message}`);
+        return false;
+    }
+}
+
 function generateLotoPredictionCache() {
     const skipBacktest = process.env.LOTO_SKIP_BACKTEST !== '0';
     const timeoutMs = Math.max(60_000, Number(process.env.LOTO_PREDICTION_TIMEOUT_MS || (skipBacktest ? 1_800_000 : 0)) || 0);
@@ -903,6 +921,9 @@ function uploadOnlyPredictionCaches(options = {}) {
     const lotoFiles = includeLoto
         ? ['cached_loto_prediction.json', 'cached_loto_live_predictions.json']
         : [];
+    const performanceReportFiles = fsSync.existsSync(path.join(statsDir, PERFORMANCE_REPORT_CACHE_FILE))
+        ? [PERFORMANCE_REPORT_CACHE_FILE]
+        : [];
     if (!includeLoto) {
         console.log('[6] Upload riêng cache dự đoán nhưng giữ nguyên cached_loto_* trên R2 vì Lô không sinh mới trong run này.');
     }
@@ -915,7 +936,8 @@ function uploadOnlyPredictionCaches(options = {}) {
         R2_UPLOAD_ONLY_STATS_FILES: [
             ...lotoFiles,
             ...(includeMilestone ? MILESTONE20Y_CACHE_FILES : []),
-            ...baselineFiles
+            ...baselineFiles,
+            ...performanceReportFiles
         ].join(',')
     });
 }
@@ -1225,10 +1247,11 @@ async function main() {
     const trustR2MilestoneCache = Boolean(getR2PublicUrl() && process.env.UPDATE_CHECK_R2_MILESTONE20Y !== '0');
     const milestoneCacheMissing = trustR2MilestoneCache ? false : !hasMilestone20yPredictionCache(latestRawDate);
     const r2MilestoneCacheMissing = !(await hasMilestone20yPredictionCacheOnR2(latestRawDate));
+    const r2PerformanceReportCacheMissing = !(await hasPerformanceReportCacheOnR2());
     const onlyPredictionCacheNeedsRefresh = !rawDataChanged
         && !forceRegenerateStats
         && !isStale
-        && (lotoCacheMissing || r2LotoCacheMissing || milestoneCacheMissing || r2MilestoneCacheMissing);
+        && (lotoCacheMissing || r2LotoCacheMissing || milestoneCacheMissing || r2MilestoneCacheMissing || r2PerformanceReportCacheMissing);
 
     if (onlyPredictionCacheNeedsRefresh) {
         if (localRawOutOfSync) {
