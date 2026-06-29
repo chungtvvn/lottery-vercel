@@ -21,6 +21,7 @@ const LOTO_PAYOUT_PER_HIT_K = 8000;
 const LOTO_METHOD_ID = process.env.LOTO_METHOD_ID || 'milestone20yChainSmallFirstHold65TwoHitGreedy';
 const LOTO_AGGREGATION_MODE = process.env.LOTO_AGGREGATION_MODE || 'twoHitGreedy';
 const LOTO_BET_COUNTS = [3, 4, 5, 6, 7];
+const LOTO_DEFAULT_BET_COUNT = 6;
 const MILESTONE20Y_METHOD_VERSION = 'annual20y-2026-06-28-block-first-hold70';
 const MILESTONE20Y_BASELINE_VERSION = 'annual20y-baseline-2026-06-28-block-ab';
 const MILESTONE20Y_CACHE_FILES = [
@@ -161,6 +162,7 @@ function isLotoPredictionFormulaCurrent(cache) {
     const payout = Number(config.payoutPerHitK);
     const methodId = String(config.methodId || cache?.nextPrediction?.methodId || '');
     const aggregationMode = String(config.aggregationMode || cache?.nextPrediction?.aggregationMode || '');
+    const defaultBetCount = Number(config.defaultBetCount || cache?.nextPrediction?.defaultBetCount || 0);
     const betCounts = Array.isArray(config.betCounts) ? config.betCounts.map(Number) : [];
     const betCountsOk = betCounts.length === LOTO_BET_COUNTS.length
         && LOTO_BET_COUNTS.every((count, index) => count === betCounts[index]);
@@ -168,6 +170,7 @@ function isLotoPredictionFormulaCurrent(cache) {
         && payout === LOTO_PAYOUT_PER_HIT_K
         && methodId === LOTO_METHOD_ID
         && aggregationMode === LOTO_AGGREGATION_MODE
+        && defaultBetCount === LOTO_DEFAULT_BET_COUNT
         && betCountsOk;
 }
 

@@ -28,6 +28,7 @@ const DEFAULT_METHOD_ID = 'milestone20yChainSmallFirstHold65TwoHitGreedy';
 const DEFAULT_STRATEGY = 'chainSmallFirst';
 const DEFAULT_HOLD = 65;
 const DEFAULT_AGGREGATION_MODE = 'twoHitGreedy';
+const DEFAULT_BET_COUNT = 6;
 const LIVE_CACHE_NOTE = 'Mỗi vị trí dùng Mốc 20 năm chainSmallFirst Hold 65; tổng hợp bằng Two-hit Greedy. Top 6 là dàn mặc định vì đang có profit tốt nhất trong nhóm theo dõi.';
 
 function parseArgs() {
@@ -701,6 +702,8 @@ function writeLiveCaches(nextPrediction, rawData, betCounts, options) {
         positions: PRIZE_KEYS,
         stakePerNumberK: options.stakeK,
         payoutPerHitK: options.payoutK,
+        defaultBetCount: DEFAULT_BET_COUNT,
+        defaultMethodKey: `top${DEFAULT_BET_COUNT}`,
         betCounts
     };
     const settledCount = settleLivePredictions(livePayload, rawData, {
@@ -732,6 +735,8 @@ function writeLiveCaches(nextPrediction, rawData, betCounts, options) {
             positions: PRIZE_KEYS,
             stakePerNumberK: options.stakeK,
             payoutPerHitK: options.payoutK,
+            defaultBetCount: DEFAULT_BET_COUNT,
+            defaultMethodKey: `top${DEFAULT_BET_COUNT}`,
             betCounts,
             historyMode: 'live-only'
         },
