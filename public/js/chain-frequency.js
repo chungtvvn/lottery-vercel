@@ -2,13 +2,30 @@
     const state = {
         payload: null,
         strategy: '',
-        target: null
+        target: null,
+        performancePeriod: 'monthly',
+        performancePayload: null,
+        performanceLoading: false
     };
 
     const el = id => document.getElementById(id);
     const numText = value => String(value).padStart(2, '0');
     const fmt = value => Number.isFinite(Number(value)) ? Number(value).toLocaleString('vi-VN') : '-';
     const fmtK = value => `${Number(value || 0).toLocaleString('vi-VN')}K`;
+    const fmtMoney = value => {
+        const number = Number(value || 0);
+        const sign = number > 0 ? '+' : '';
+        return `${sign}${number.toLocaleString('vi-VN')}K`;
+    };
+    const asRatio = value => {
+        const number = Number(value || 0);
+        if (!Number.isFinite(number)) return 0;
+        return Math.abs(number) > 1 ? number / 100 : number;
+    };
+    const fmtRatioPercent = value => `${(asRatio(value) * 100).toLocaleString('vi-VN', {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1
+    })}%`;
     const fmtPercent = value => {
         const number = Number(value);
         if (!Number.isFinite(number)) return '-';
@@ -512,12 +529,229 @@
         }).join('') || '<div class="px-4 py-8 text-center text-slate-500">Chưa có nhật ký thực tế.</div>';
     }
 
+    function getPeriodLabel(period) {
+        return { daily: 'Ngày', weekly: 'Tuần', monthly: 'Tháng' }[period] || period;
+    }
+
+    function rowLabel(row, period = state.performancePeriod) {
+        if (period === 'daily') return row.date || row.period || '-';
+        if (period === 'weekly') return row.week || row.period || '-';
+        return row.month || row.period || '-';
+    }
+
+    function getRowProfit(row = {}) {
+        return Number(row.profitK ?? row.netProfitK ?? 0);
+    }
+
+    function renderPeriodTabs() {
+        const root = el('performancePeriodTabs');
+        if (!root) return;
+        root.innerHTML = ['daily', 'weekly', 'monthly'].map(period => `
+            <button type="button" data-period="${period}"
+                class="performance-period-btn rounded-xl px-4 py-2 transition ${state.performancePeriod === period
+                    ? 'bg-white text-indigo-700 shadow'
+                    : 'text-indigo-100 hover:bg-white/10'}">
+                ${getPeriodLabel(period)}
+            </button>
+        `).join('');
+        root.querySelectorAll('.performance-period-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                state.performancePeriod = button.dataset.period || 'monthly';
+                loadPerformanceReport();
+            });
+        });
+    }
+
+    function renderProfitBars(rows = []) {
+        const visible = rows.slice(-18);
+        if (!visible.length) return '<div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">Chưa có dữ liệu biểu đồ.</div>';
+        const maxAbs = Math.max(1, ...visible.map(row => Math.abs(getRowProfit(row))));
+        return `
+            <div class="flex h-56 items-end gap-2 rounded-2xl border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-4">
+                ${visible.map(row => {
+                    const profit = getRowProfit(row);
+                    const height = Math.max(8, Math.round(Math.abs(profit) / maxAbs * 160));
+                    const positive = profit >= 0;
+                    return `
+                        <div class="group flex min-w-0 flex-1 flex-col items-center justify-end gap-2">
+                            <div title="${escapeHtml(rowLabel(row))}: ${fmtMoney(profit)}"
+                                class="w-full rounded-t-lg ${positive ? 'bg-emerald-500' : 'bg-red-500'} shadow-sm transition group-hover:opacity-80"
+                                style="height:${height}px"></div>
+                            <div class="w-full truncate text-center text-[10px] font-semibold text-slate-400">${escapeHtml(rowLabel(row).replace(/^2026-/, ''))}</div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }
+
+    function renderCumulativeLine(rows = []) {
+        if (!rows.length) return '<div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">Chưa có dữ liệu tích lũy.</div>';
+        let cumulative = 0;
+        const values = rows.map(row => {
+            cumulative += getRowProfit(row);
+            return cumulative;
+        });
+        const width = 720;
+        const height = 220;
+        const pad = 24;
+        const min = Math.min(0, ...values);
+        const max = Math.max(0, ...values);
+        const span = Math.max(1, max - min);
+        const points = values.map((value, index) => {
+            const x = pad + (index / Math.max(1, values.length - 1)) * (width - pad * 2);
+            const y = pad + ((max - value) / span) * (height - pad * 2);
+            return `${x.toFixed(1)},${y.toFixed(1)}`;
+        }).join(' ');
+        const zeroY = pad + ((max - 0) / span) * (height - pad * 2);
+        const last = points.split(' ').pop() || `${width - pad},${pad}`;
+        const [lastX, lastY] = last.split(',');
+        return `
+            <div class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 p-3">
+                <svg viewBox="0 0 ${width} ${height}" class="h-56 w-full" role="img" aria-label="Biểu đồ profit tích lũy">
+                    <line x1="${pad}" x2="${width - pad}" y1="${zeroY}" y2="${zeroY}" stroke="rgba(255,255,255,0.18)" stroke-width="2" />
+                    <polyline fill="none" stroke="#a78bfa" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" points="${points}" />
+                    <circle cx="${lastX}" cy="${lastY}" r="6" fill="#34d399" />
+                </svg>
+                <div class="flex justify-between px-2 text-xs font-semibold text-slate-300">
+                    <span>${escapeHtml(rowLabel(rows[0]))}</span>
+                    <span>Tích lũy: ${fmtMoney(cumulative)}</span>
+                    <span>${escapeHtml(rowLabel(rows[rows.length - 1]))}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderPerformanceReport() {
+        renderPeriodTabs();
+        const root = el('performanceReport');
+        if (!root) return;
+        if (state.performanceLoading) {
+            root.innerHTML = '<div class="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm font-semibold text-slate-600"><span class="spinner"></span> Đang tải báo cáo hiệu quả...</div>';
+            return;
+        }
+        const section = state.performancePayload?.sections?.de;
+        if (!section) {
+            root.innerHTML = '<div class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">Chưa có cache hiệu quả cho phương pháp này. Hãy chạy lại action để sinh báo cáo mới.</div>';
+            return;
+        }
+        const summary = section.summary || {};
+        const rows = section.rows || [];
+        const positive = Number(summary.profitK || 0) >= 0;
+        const cards = [
+            ['Số ngày', `${fmt(summary.days || rows.length)} ngày`, 'Tổng số ngày đã kết toán trong năm.'],
+            ['Tỷ lệ trúng', fmtRatioPercent(summary.winRate), 'Tỷ lệ ngày kết quả nằm trong dàn đánh.'],
+            ['Profit', fmtMoney(summary.profitK), 'Lãi/lỗ ròng theo công thức đang lưu.'],
+            ['ROI', fmtRatioPercent(summary.roi), 'Profit chia cho tổng tiền đánh.'],
+            ['Chuỗi thua dài nhất', `${fmt(summary.longestLoss || 0)} ngày`, 'Mốc rủi ro cần chuẩn bị khi áp dụng thực tế.']
+        ];
+        root.innerHTML = `
+            <div class="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+                <div>
+                    <div class="mb-4 flex flex-col gap-3 rounded-2xl border border-indigo-100 bg-indigo-50/70 p-4 lg:flex-row lg:items-start lg:justify-between">
+                        <div>
+                            <div class="text-xs font-bold uppercase tracking-wide text-indigo-600">Phương pháp đang đánh giá</div>
+                            <div class="mt-1 text-xl font-black text-slate-950">${escapeHtml(section.label || section.methodId)}</div>
+                            <p class="mt-2 text-sm leading-6 text-slate-600">${escapeHtml(section.explanation || '')}</p>
+                        </div>
+                        <div class="rounded-2xl border px-4 py-3 text-center ${section.assessment?.tone === 'emerald' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-amber-200 bg-amber-50 text-amber-700'}">
+                            <div class="text-xs font-bold uppercase">Đánh giá</div>
+                            <div class="mt-1 text-2xl font-black">${escapeHtml(section.assessment?.level || 'Theo dõi')}</div>
+                        </div>
+                    </div>
+                    <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+                        ${cards.map(([label, value, hint]) => `
+                            <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                                <div class="text-xs font-bold uppercase text-slate-500">${escapeHtml(label)}</div>
+                                <div class="mt-2 text-2xl font-black ${label === 'Profit' ? (positive ? 'text-emerald-600' : 'text-red-600') : 'text-slate-950'}">${escapeHtml(value)}</div>
+                                <div class="mt-1 text-xs leading-5 text-slate-500">${escapeHtml(hint)}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                        <div class="text-sm font-bold text-slate-900">Nhận định vận hành</div>
+                        <ul class="mt-2 space-y-1 text-sm leading-6 text-slate-600">
+                            ${(section.assessment?.notes || []).map(note => `<li>• ${escapeHtml(note)}</li>`).join('')}
+                            ${section.evaluation ? `<li>• ${escapeHtml(section.evaluation)}</li>` : ''}
+                        </ul>
+                    </div>
+                </div>
+                <div class="grid gap-4">
+                    <div>
+                        <div class="mb-2 text-sm font-bold text-slate-900">Lãi/lỗ theo ${getPeriodLabel(state.performancePeriod).toLowerCase()}</div>
+                        ${renderProfitBars(rows)}
+                    </div>
+                    <div>
+                        <div class="mb-2 text-sm font-bold text-slate-900">Đường profit tích lũy</div>
+                        ${renderCumulativeLine(rows)}
+                    </div>
+                </div>
+            </div>
+            <div class="mt-5 overflow-hidden rounded-2xl border border-slate-200">
+                <table class="min-w-full text-sm">
+                    <thead class="bg-slate-100 text-xs font-bold uppercase text-slate-500">
+                        <tr>
+                            <th class="px-4 py-3 text-left">Kỳ</th>
+                            <th class="px-4 py-3 text-right">Ngày</th>
+                            <th class="px-4 py-3 text-right">Thắng</th>
+                            <th class="px-4 py-3 text-right">Tỷ lệ</th>
+                            <th class="px-4 py-3 text-right">Tiền đánh</th>
+                            <th class="px-4 py-3 text-right">Profit</th>
+                            <th class="px-4 py-3 text-right">ROI</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 bg-white">
+                        ${rows.slice(-36).reverse().map(row => {
+                            const winRate = asRatio(row.winRatePercent ?? row.winRate ?? 0);
+                            const profit = getRowProfit(row);
+                            return `
+                                <tr>
+                                    <td class="px-4 py-3 font-bold text-slate-900">${escapeHtml(rowLabel(row))}</td>
+                                    <td class="px-4 py-3 text-right text-slate-600">${fmt(row.days || 1)}</td>
+                                    <td class="px-4 py-3 text-right text-slate-600">${fmt(row.wins ?? row.winDays ?? row.hitDays ?? 0)}</td>
+                                    <td class="px-4 py-3 text-right font-semibold text-slate-900">${fmtRatioPercent(winRate)}</td>
+                                    <td class="px-4 py-3 text-right text-slate-600">${fmtMoney(-(Math.abs(Number(row.stakeK || 0))))}</td>
+                                    <td class="px-4 py-3 text-right font-black ${profit >= 0 ? 'text-emerald-600' : 'text-red-600'}">${fmtMoney(profit)}</td>
+                                    <td class="px-4 py-3 text-right font-semibold">${fmtRatioPercent(row.roiPercent ?? row.roi ?? 0)}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+
+    async function loadPerformanceReport() {
+        state.performanceLoading = true;
+        renderPerformanceReport();
+        try {
+            const method = encodeURIComponent(getResultKey());
+            const period = encodeURIComponent(state.performancePeriod);
+            let response = await fetch(`/api/performance-report?type=de&period=${period}&method=${method}`, { cache: 'no-store' });
+            let data = await response.json();
+            if (!data.sections?.de) {
+                response = await fetch(`/api/performance-report?type=de&period=${period}`, { cache: 'no-store' });
+                data = await response.json();
+            }
+            if (!response.ok || !data.success) throw new Error(data.error || 'Không tải được báo cáo hiệu quả.');
+            state.performancePayload = data;
+        } catch (error) {
+            state.performancePayload = { sections: {} };
+            console.error('[PerformanceReport] Error:', error);
+        } finally {
+            state.performanceLoading = false;
+            renderPerformanceReport();
+        }
+    }
+
     function render() {
         if (!state.payload) return;
         renderControls();
         renderSummary();
         renderChains();
         renderRanking();
+        renderPerformanceReport();
         renderLiveSummary();
         renderLiveRows();
     }
@@ -541,6 +775,7 @@
                 state.target = Number(strategy?.defaultTarget || profitPreset?.target || getTargets()[0] || 65);
             }
             render();
+            loadPerformanceReport();
         } catch (error) {
             showError(error.message || 'Không thể tải dữ liệu Mốc 20 năm.');
         } finally {
@@ -555,10 +790,12 @@
             const strategy = getStrategy();
             state.target = Number(strategy?.defaultTarget || state.target || 65);
             render();
+            loadPerformanceReport();
         });
         el('targetSelect')?.addEventListener('change', event => {
             state.target = Number(event.target.value || state.target);
             render();
+            loadPerformanceReport();
         });
         loadData();
     });

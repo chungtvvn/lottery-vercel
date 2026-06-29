@@ -111,6 +111,22 @@
 
         <section id="summaryCards" class="mb-6 grid gap-3 grid-cols-2 md:grid-cols-4 xl:grid-cols-6"></section>
 
+        <section class="mb-6 overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-sm shadow-slate-200/60">
+            <div class="bg-gradient-to-r from-slate-950 via-indigo-950 to-purple-950 px-5 py-5 text-white">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-[0.25em] text-indigo-200">Hiệu quả thực chiến</p>
+                        <h2 class="mt-1 text-2xl font-black tracking-tight">Thống kê từ đầu năm đến hiện tại</h2>
+                        <p class="mt-2 max-w-3xl text-sm leading-6 text-indigo-100">
+                            Theo dõi profit, ROI, chuỗi thắng/thua và nhịp biến động của phương pháp đang dùng để chọn kế hoạch đánh thực tế.
+                        </p>
+                    </div>
+                    <div id="performancePeriodTabs" class="inline-flex rounded-2xl border border-white/15 bg-white/10 p-1 text-sm font-bold backdrop-blur"></div>
+                </div>
+            </div>
+            <div id="performanceReport" class="p-5"></div>
+        </section>
+
         <section class="mb-6 grid gap-6 xl:grid-cols-2">
             <div class="glass-card overflow-hidden border-t-2 border-red-500/50">
                 <div class="border-b border-slate-100 bg-red-500/5 px-4 py-3">
@@ -178,7 +194,7 @@
 
     <script src="/js/app-config.js"></script>
     <script src="/js/stats-config.js?v=20260626-title-fix"></script>
-    <script src="/js/chain-frequency.js?v=20260626-number-ranking"></script>
+    <script src="/js/chain-frequency.js?v=20260629-performance-report"></script>
 </body>
 
 </html>

@@ -61,6 +61,22 @@
 
         <section class="mb-6 grid gap-4 lg:grid-cols-3" id="predictionCards"></section>
 
+        <section class="mb-6 overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-sm shadow-slate-200/60">
+            <div class="bg-gradient-to-r from-slate-950 via-violet-950 to-fuchsia-950 px-5 py-5 text-white">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-[0.25em] text-violet-200">Hiệu quả Lô</p>
+                        <h2 class="mt-1 text-2xl font-black tracking-tight">Thống kê từ đầu năm đến hiện tại</h2>
+                        <p class="mt-2 max-w-3xl text-sm leading-6 text-violet-100">
+                            Quan sát hiệu quả phương pháp Lô đang áp dụng theo ngày, tuần hoặc tháng: hit-day, profit, ROI và nhịp rủi ro.
+                        </p>
+                    </div>
+                    <div id="performancePeriodTabs" class="inline-flex rounded-2xl border border-white/15 bg-white/10 p-1 text-sm font-bold backdrop-blur"></div>
+                </div>
+            </div>
+            <div id="performanceReport" class="p-5"></div>
+        </section>
+
         <section class="mb-6 glass-card overflow-hidden">
             <div class="border-b border-amber-100 bg-amber-50/70 px-4 py-3.5">
                 <h2 class="flex items-center gap-2 text-lg font-bold text-slate-900">
@@ -75,7 +91,7 @@
 
     </main>
 
-    <script src="/js/loto.js?v=20260626-twohit-loto"></script>
+    <script src="/js/loto.js?v=20260629-performance-report"></script>
 </body>
 
 </html>
