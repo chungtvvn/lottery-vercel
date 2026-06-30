@@ -753,7 +753,7 @@
                 ${headerStatusHtml}
                 ${methodExplanationHtml}
 
-                <div class="border-t border-slate-100 pt-3">
+                <div class="number-panel-bet rounded-2xl border p-3">
                     <div class="flex items-center justify-between mb-2">
                         <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Số Đánh (${sum.betCount || 0} số)</h4>
                         <span class="text-[10px] text-slate-500">Mỗi số 1000K (hệ số ${state.betWinFactor} × ăn ${state.betWinMultiplier})</span>
@@ -761,7 +761,7 @@
                     ${renderNumberGrid(sum.numbersToBet, 'border-emerald-200 bg-emerald-50/50 text-emerald-700')}
                 </div>
 
-                <div class="border-t border-slate-100 pt-3">
+                <div class="number-panel-exclude rounded-2xl border p-3">
                     <div class="flex items-center justify-between mb-2">
                         <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Số Ôm / Loại trừ (${sum.excludedCount || 0} số)</h4>
                         <span class="text-[10px] text-slate-500">Giữ tỷ lệ ${(state.holdWinMultiplier * 100).toFixed(1)}% (đền 70)</span>

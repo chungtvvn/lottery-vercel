@@ -91,7 +91,7 @@
                 </div>
             `).join('');
             return `
-                <article class="glass-card overflow-hidden ${count === DEFAULT_LOTO_BET_COUNT ? 'ring-2 ring-emerald-300' : ''}">
+                <article class="glass-card number-panel-bet overflow-hidden ${count === DEFAULT_LOTO_BET_COUNT ? 'ring-2 ring-emerald-300' : ''}">
                     <div class="border-b border-slate-100 bg-gradient-to-r from-indigo-50 to-purple-50 px-4 py-3">
                         <h2 class="flex items-center gap-2 text-lg font-bold text-slate-900">
                             Top ${count} số đánh
@@ -160,7 +160,7 @@
                             </div>
                             <div class="mt-1 text-xs text-slate-500">Dựa trên dữ liệu đến ${row.dataIsoDate || row.dataDate || '-'}</div>
                             <div class="mt-1 text-xs font-semibold text-indigo-600">${methodName || row.methodId || '-'}</div>
-                            <div class="mt-2">
+                            <div class="number-panel-live mt-3 rounded-2xl border p-3">
                                 <div class="mb-1 text-xs font-semibold uppercase text-slate-500">Kết quả thực tế</div>
                                 <div class="flex flex-wrap gap-1.5">${actualHtml}</div>
                             </div>
@@ -170,7 +170,9 @@
                             <div class="text-xs text-slate-500">${row.status === 'settled' ? `${method.hits || 0} hit top${topDefault.count || DEFAULT_LOTO_BET_COUNT}` : 'Sẽ tự đối soát khi có KQ'}</div>
                         </div>
                     </div>
-                    <div class="mt-3 flex flex-wrap gap-2">
+                    <div class="number-panel-bet mt-3 rounded-2xl border p-3">
+                        <div class="mb-2 text-xs font-semibold uppercase text-slate-500">Dàn đánh đã chốt</div>
+                        <div class="flex flex-wrap gap-2">
                         ${(topDefault.numbers || []).map(number => {
                             const text = String(number).padStart(2, '0');
                             const isHit = row.status === 'settled' && actualSet.has(text);
@@ -179,6 +181,7 @@
                                 title: isHit ? 'Số đánh đã trúng thực tế trong 27 giải' : ''
                             });
                         }).join('')}
+                        </div>
                     </div>
                 </article>
             `;

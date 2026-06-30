@@ -1072,6 +1072,43 @@ body .bg-slate-900 {
     letter-spacing: 0;
 }
 
+.number-panel-bet {
+    background:
+        linear-gradient(135deg, rgba(236, 253, 245, 0.96), rgba(209, 250, 229, 0.74)) !important;
+    border-color: rgba(5, 150, 105, 0.26) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.96), 0 18px 38px rgba(5, 150, 105, 0.09) !important;
+}
+
+.number-panel-bet .number-grid,
+.number-panel-bet .compact-number-grid {
+    background: rgba(255, 255, 255, 0.42);
+    border: 1px solid rgba(5, 150, 105, 0.10);
+    border-radius: 1rem;
+    padding: 0.75rem;
+}
+
+.number-panel-exclude {
+    background:
+        linear-gradient(135deg, rgba(255, 241, 242, 0.96), rgba(255, 228, 230, 0.76)) !important;
+    border-color: rgba(225, 29, 72, 0.24) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.96), 0 18px 38px rgba(225, 29, 72, 0.08) !important;
+}
+
+.number-panel-exclude .number-grid,
+.number-panel-exclude .compact-number-grid {
+    background: rgba(255, 255, 255, 0.44);
+    border: 1px solid rgba(225, 29, 72, 0.10);
+    border-radius: 1rem;
+    padding: 0.75rem;
+}
+
+.number-panel-live {
+    background:
+        linear-gradient(135deg, rgba(239, 246, 255, 0.96), rgba(219, 234, 254, 0.76)) !important;
+    border-color: rgba(37, 99, 235, 0.24) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.96), 0 18px 38px rgba(37, 99, 235, 0.08) !important;
+}
+
 .highlight {
     background: rgba(254, 243, 199, 0.92) !important;
     color: #92400e !important;

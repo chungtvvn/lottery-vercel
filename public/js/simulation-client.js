@@ -538,7 +538,7 @@
                 </div>
             </div>
 
-            <div class="mb-5">
+            <div class="number-panel-exclude mb-5 rounded-2xl border p-3">
                 <div class="mb-2 text-sm font-bold text-slate-900">Số ôm / loại trừ</div>
                 ${renderNumberGrid(method.excluded, 'border-red-200 bg-red-50 text-red-700')}
             </div>
@@ -550,7 +550,7 @@
                 <div class="rounded-md bg-slate-50 px-3 py-2">Lỗ ôm: <b>${formatMoney(method.holdLoss ?? 0)}</b></div>
             </div>
 
-            <div class="mb-5">
+            <div class="number-panel-bet mb-5 rounded-2xl border p-3">
                 <div class="mb-2 text-sm font-bold text-slate-900">Số đánh</div>
                 ${renderNumberGrid(method.betNumbers, 'border-emerald-200 bg-emerald-50 text-emerald-700')}
             </div>
