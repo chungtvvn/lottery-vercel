@@ -572,9 +572,20 @@
         history.forEach((run, idx) => {
             const sum = getDisplaySummary(run, state.selectedMethod) || {};
             const isPending = isPendingRun(run);
+            const actualNumber = run.summary?.resolved ? Number(run.summary.actualSpecial) : null;
+            const actualInBet = actualNumber !== null && (sum.numbersToBet || []).some(n => Number(n) === actualNumber);
+            const actualInExcluded = actualNumber !== null && (sum.excludedNumbers || []).some(n => Number(n) === actualNumber);
+            const actualBadgeClass = actualInBet
+                ? 'number-chip-hit'
+                : (actualInExcluded ? 'number-chip-wrong-exclude' : 'number-chip-actual');
+            const actualBadgeTitle = actualInBet
+                ? 'Kết quả thực tế trùng dàn đánh đã dự đoán'
+                : (actualInExcluded ? 'Kết quả thực tế rơi vào dàn loại trừ đã dự đoán' : 'Kết quả thực tế');
 
             const dateStr = formatDateToDMY(run.predictionDate);
-            const deStr = run.summary?.resolved && run.summary?.actualSpecial !== null ? String(run.summary.actualSpecial).padStart(2, '0') : '<span class="text-slate-450 font-bold animate-pulse">Chờ...</span>';
+            const deStr = run.summary?.resolved && run.summary?.actualSpecial !== null
+                ? `<span title="${escapeHtml(actualBadgeTitle)}" class="inline-flex min-w-10 justify-center rounded-lg border px-2.5 py-1 font-mono text-sm font-black ${actualBadgeClass}">${String(run.summary.actualSpecial).padStart(2, '0')}</span>`
+                : '<span class="text-slate-450 font-bold animate-pulse">Chờ...</span>';
             const profitHtml = sum.missingMethod
                 ? '<span class="text-slate-400 text-xs">Chưa có dữ liệu</span>'
                 : (run.summary?.resolved ? formatProfit(sum.profit) : '<span class="text-slate-450 font-medium">Chờ...</span>');
@@ -583,7 +594,7 @@
             row.className = `cursor-pointer hover:bg-indigo-50/40 transition border-b border-slate-100 ${getHistoryRowClass(state.selectedIndex === idx, isPending)}`;
             row.innerHTML = `
                 <td class="px-4 py-3.5 whitespace-nowrap font-medium text-slate-800">${dateStr} ${isPending ? '<span class="ml-1 text-[10px] bg-amber-500 text-white px-1.5 py-0.5 rounded-full font-bold">Dự báo</span>' : ''}</td>
-                <td class="px-4 py-3.5 text-center whitespace-nowrap"><span class="inline-block text-sm font-bold bg-slate-100 px-2.5 py-1 rounded-lg text-slate-900 border border-slate-200">${deStr}</span></td>
+                <td class="px-4 py-3.5 text-center whitespace-nowrap">${deStr}</td>
                 <td class="px-4 py-3.5 whitespace-nowrap">
                     <div class="flex items-center gap-2">
                         <span class="text-xs text-slate-500">${sum.betCount || 0} số</span>
@@ -676,12 +687,22 @@
         // Render Number grids
         const renderNumberGrid = (numbers, colorClass) => {
             if (!numbers || numbers.length === 0) return '<div class="text-xs text-slate-400 italic">Không có số nào</div>';
+            const isBetGrid = String(colorClass).includes('emerald');
+            const isExcludeGrid = String(colorClass).includes('red') || String(colorClass).includes('rose');
+            const baseClass = isBetGrid
+                ? 'number-chip-bet'
+                : (isExcludeGrid ? 'number-chip-exclude' : colorClass);
             return `
                 <div class="number-grid">
                     ${numbers.sort((a,b)=>a-b).map(n => {
                         const isHit = sum.resolved && Number(sum.actualSpecial) === Number(n);
-                        const hitClass = isHit ? 'ring-4 ring-offset-1 ring-indigo-500 scale-105 font-black z-10' : '';
-                        return `<span class="w-8.5 h-8.5 rounded-lg border text-center leading-8 text-[11px] font-bold shadow-sm transition ${colorClass} ${hitClass}">${String(n).padStart(2, '0')}</span>`;
+                        const hitClass = isHit
+                            ? (isBetGrid ? 'number-chip-hit' : (isExcludeGrid ? 'number-chip-wrong-exclude' : 'number-chip-actual'))
+                            : '';
+                        const title = isHit
+                            ? (isBetGrid ? 'Kết quả thực tế trùng dàn đánh' : (isExcludeGrid ? 'Kết quả thực tế rơi vào dàn loại trừ' : 'Kết quả thực tế'))
+                            : '';
+                        return `<span title="${escapeHtml(title)}" class="w-8.5 h-8.5 rounded-lg border text-center leading-8 text-[11px] font-bold shadow-sm transition ${baseClass} ${hitClass}">${String(n).padStart(2, '0')}</span>`;
                     }).join('')}
                 </div>
             `;
@@ -702,7 +723,10 @@
                         </div>
                         <p class="text-slate-650 leading-relaxed text-[11px]">${escapeHtml(exp.reason)}</p>
                         <div class="flex flex-wrap gap-1 mt-1">
-                            ${(exp.numbers || []).map(n => `<span class="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold">${String(n).padStart(2, '0')}</span>`).join('')}
+                            ${(exp.numbers || []).map(n => {
+                                const isActual = sum.resolved && Number(sum.actualSpecial) === Number(n);
+                                return `<span title="${isActual ? 'Kết quả thực tế nằm trong chuỗi loại trừ này' : ''}" class="border px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold ${isActual ? 'number-chip-wrong-exclude' : 'number-chip-exclude'}">${String(n).padStart(2, '0')}</span>`;
+                            }).join('')}
                         </div>
                     </div>
                 `;

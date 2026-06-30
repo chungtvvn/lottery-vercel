@@ -30,15 +30,24 @@
         })}%`;
     }
 
-    function numberBadge(number, tone = 'indigo') {
+    function numberBadge(number, tone = 'indigo', options = {}) {
         const tones = {
             indigo: 'border-indigo-200 bg-indigo-50 text-indigo-700',
             green: 'border-emerald-200 bg-emerald-50 text-emerald-700',
             amber: 'border-amber-200 bg-amber-50 text-amber-700',
             red: 'border-red-200 bg-red-50 text-red-700',
-            slate: 'border-slate-200 bg-slate-50 text-slate-700'
+            slate: 'border-slate-200 bg-slate-50 text-slate-700',
+            bet: 'number-chip-bet',
+            exclude: 'number-chip-exclude',
+            actual: 'number-chip-actual',
+            hit: 'number-chip-hit',
+            wrongExclude: 'number-chip-wrong-exclude'
         };
-        return `<span class="inline-flex h-10 min-w-10 items-center justify-center rounded-xl border px-3 text-sm font-bold ${tones[tone] || tones.indigo}">${number}</span>`;
+        const stateClass = options.hit
+            ? 'number-chip-hit'
+            : (options.wrongExclude ? 'number-chip-wrong-exclude' : '');
+        const title = options.title || (options.hit ? 'Số thực tế trùng dàn Lô đã dự đoán' : '');
+        return `<span title="${escapeHtml(title)}" class="inline-flex h-10 min-w-10 items-center justify-center rounded-xl border px-3 text-sm font-bold ${tones[tone] || tones.indigo} ${stateClass}">${number}</span>`;
     }
 
     function escapeHtml(value) {
@@ -91,7 +100,7 @@
                     </div>
                     <div class="p-4">
                         <div class="flex flex-wrap gap-2">
-                            ${(item.numbers || []).map(number => numberBadge(number, 'green')).join('')}
+                            ${(item.numbers || []).map(number => numberBadge(number, 'bet')).join('')}
                         </div>
                         <div class="mt-4 grid gap-2">${supportRows || '<div class="text-sm text-slate-500">Chưa có dữ liệu.</div>'}</div>
                     </div>
@@ -124,8 +133,20 @@
             const statusClass = row.status === 'settled'
                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                 : 'bg-amber-50 text-amber-700 border-amber-200';
-            const actual = row.actual ? Object.keys(row.actual).sort().join(', ') : '-';
+            const actualNumbers = row.actual ? Object.keys(row.actual).sort((a, b) => Number(a) - Number(b)) : [];
             const topDefault = row.predictions?.[`top${DEFAULT_LOTO_BET_COUNT}`] || row.predictions?.top7 || row.predictions?.top5 || row.predictions?.top4 || row.predictions?.top3 || {};
+            const predictedSet = new Set((topDefault.numbers || []).map(number => String(number).padStart(2, '0')));
+            const actualSet = new Set(actualNumbers.map(number => String(number).padStart(2, '0')));
+            const actualHtml = actualNumbers.length
+                ? actualNumbers.map(number => {
+                    const text = String(number).padStart(2, '0');
+                    const isHit = predictedSet.has(text);
+                    return numberBadge(text, isHit ? 'hit' : 'actual', {
+                        hit: isHit,
+                        title: isHit ? 'Kết quả thực tế trùng dàn Lô đã dự đoán' : 'Kết quả thực tế nhưng không nằm trong dàn đánh'
+                    });
+                }).join('')
+                : '<span class="text-xs text-slate-400">-</span>';
             const rawMethod = row.methods?.[`top${DEFAULT_LOTO_BET_COUNT}`] || row.methods?.top7 || row.methods?.top5 || row.methods?.top4 || row.methods?.top3 || {};
             const method = adjustLiveMethod(rawMethod, topDefault.count || DEFAULT_LOTO_BET_COUNT);
             return `
@@ -139,7 +160,10 @@
                             </div>
                             <div class="mt-1 text-xs text-slate-500">Dựa trên dữ liệu đến ${row.dataIsoDate || row.dataDate || '-'}</div>
                             <div class="mt-1 text-xs font-semibold text-indigo-600">${methodName || row.methodId || '-'}</div>
-                            <div class="mt-1 text-xs text-slate-500">KQ: ${actual}</div>
+                            <div class="mt-2">
+                                <div class="mb-1 text-xs font-semibold uppercase text-slate-500">Kết quả thực tế</div>
+                                <div class="flex flex-wrap gap-1.5">${actualHtml}</div>
+                            </div>
                         </div>
                         <div class="text-left lg:text-right">
                             <div class="text-sm font-bold ${(method.profitK || 0) >= 0 ? 'text-emerald-600' : 'text-red-600'}">${row.status === 'settled' ? money(method.profitK) : 'Chưa kết toán'}</div>
@@ -147,7 +171,14 @@
                         </div>
                     </div>
                     <div class="mt-3 flex flex-wrap gap-2">
-                        ${(topDefault.numbers || []).map(number => numberBadge(number, row.status === 'pending' ? 'amber' : 'slate')).join('')}
+                        ${(topDefault.numbers || []).map(number => {
+                            const text = String(number).padStart(2, '0');
+                            const isHit = row.status === 'settled' && actualSet.has(text);
+                            return numberBadge(text, row.status === 'pending' ? 'amber' : 'bet', {
+                                hit: isHit,
+                                title: isHit ? 'Số đánh đã trúng thực tế trong 27 giải' : ''
+                            });
+                        }).join('')}
                     </div>
                 </article>
             `;

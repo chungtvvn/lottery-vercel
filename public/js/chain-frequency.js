@@ -330,8 +330,8 @@
     function renderNumberGrid(numbers, mode, ranking = []) {
         const rankingByNumber = new Map((ranking || []).map(row => [normalizeNumber(row.number), row]));
         const classes = mode === 'bet'
-            ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-            : 'border-red-200 bg-red-50 text-red-700';
+            ? 'number-chip-bet'
+            : 'number-chip-exclude';
         return `
             <div class="number-grid">
                 ${(numbers || []).map(value => {
@@ -521,16 +521,30 @@
             const pending = row.status !== 'settled' || !result?.resolved;
             const prediction = row.strategies?.[state.strategy]?.holds?.[String(state.target)];
             const profit = result?.profitK || 0;
+            const actualNumber = !pending && (result?.actual || row.actualSpecial) !== undefined && (result?.actual || row.actualSpecial) !== null
+                ? numText(result?.actual || row.actualSpecial)
+                : null;
+            const betSet = new Set((prediction?.betNumbers || []).map(num => numText(num)));
             return `
                 <div class="grid gap-3 px-4 py-4 md:grid-cols-[150px_1fr_130px] md:items-start ${pending ? 'bg-amber-50/30' : 'bg-white'}">
                     <div>
                         <div class="font-bold text-slate-900">${escapeHtml(row.predictionIsoDate || row.predictionDate || '-')}</div>
-                        <div class="mt-1 text-xs text-slate-500">${pending ? 'Đang chờ kết quả' : `KQ ${escapeHtml(result.actual || row.actualSpecial || '-')}`}</div>
+                        <div class="mt-1 text-xs text-slate-500">${pending ? 'Đang chờ kết quả' : 'KQ thực tế'}</div>
+                        ${actualNumber ? `
+                            <span title="${betSet.has(actualNumber) ? 'Kết quả thực tế trùng dàn đánh đã dự đoán' : 'Kết quả thực tế không nằm trong dàn đánh'}"
+                                class="mt-2 inline-flex min-w-10 justify-center rounded-lg border px-2.5 py-1 font-mono text-sm font-black ${betSet.has(actualNumber) ? 'number-chip-hit' : 'number-chip-actual'}">
+                                ${actualNumber}
+                            </span>
+                        ` : ''}
                     </div>
                     <div>
                         <div class="text-xs font-semibold uppercase text-slate-500">Số đánh (${prediction?.betNumbers?.length || 0})</div>
                         <div class="mt-2 flex flex-wrap gap-1.5">
-                            ${(prediction?.betNumbers || []).slice(0, 45).map(num => `<span class="rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 font-mono text-xs font-bold text-emerald-700">${numText(num)}</span>`).join('')}
+                            ${(prediction?.betNumbers || []).slice(0, 45).map(num => {
+                                const text = numText(num);
+                                const isHit = actualNumber && text === actualNumber;
+                                return `<span title="${isHit ? 'Số đánh đã trúng thực tế' : ''}" class="rounded-md border px-2 py-1 font-mono text-xs font-bold ${isHit ? 'number-chip-hit' : 'number-chip-bet'}">${text}</span>`;
+                            }).join('')}
                         </div>
                     </div>
                     <div class="text-right">
