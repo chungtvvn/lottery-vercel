@@ -40,14 +40,14 @@ function parseArgs() {
         endDate: args.get('endDate') || null,
         activeFrequencyLimit: Number(args.get('activeFrequencyLimit') || 0.5),
         recordFrequencyLimit: Number(args.get('recordFrequencyLimit') || 1.1),
-        minPotentialCurrentLenForNeverFormed: Number(args.get('minPotentialCurrentLenForNeverFormed') || 1),
+        minPotentialCurrentLenForNeverFormed: Number(args.get('minPotentialCurrentLenForNeverFormed') || 4),
         strategies: String(args.get('strategies') || args.get('strategy') || DEFAULT_STRATEGIES.join(','))
             .split(',')
             .map(value => value.trim())
             .filter(Boolean),
         winMultiplier: Number(args.get('winMultiplier') || DEFAULT_WIN_MULTIPLIER),
         useFullHistoryStats: args.get('useFullHistoryStats') === '1',
-        activeOnly: args.get('activeOnly') !== '0',
+        activeOnly: args.get('activeOnly') === '1',
         includeDetails: args.get('includeDetails') === '1',
         progress: args.get('progress') === '1',
         compact: args.get('compact') !== '0'
