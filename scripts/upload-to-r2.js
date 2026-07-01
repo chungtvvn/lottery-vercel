@@ -216,13 +216,18 @@ async function uploadToR2() {
         return;
     }
 
-    await assertLocalRawIsNotOlderThanR2(s3);
+    const statsOnlyUpload = ONLY_STATS_FILES.length > 0;
+    if (!statsOnlyUpload) {
+        await assertLocalRawIsNotOlderThanR2(s3);
+    }
 
     if (CLEAR_STATS_PREFIX) {
         await clearPrefix(s3, STATS_PREFIX);
     }
 
-    if (fs.existsSync(DATA_FILE)) {
+    if (statsOnlyUpload) {
+        console.log('[R2 Upload] Chế độ chỉ upload cache thống kê: giữ nguyên raw data trên R2.');
+    } else if (fs.existsSync(DATA_FILE)) {
         await uploadJsonGzip(s3, DATA_FILE, `${DATA_PREFIX}/xsmb-2-digits.json.gz`);
     } else {
         console.warn(`[R2 Upload] Không tìm thấy raw data file: ${DATA_FILE}`);

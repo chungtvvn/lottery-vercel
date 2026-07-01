@@ -6,7 +6,11 @@
         selectedMethod: 'avgEdge50Hold70',
         betWinMultiplier: 84,
         betWinFactor: 1,
-        holdWinMultiplier: 0.705
+        holdWinMultiplier: 0.705,
+        performanceVisible: false,
+        performanceLoading: false,
+        performancePeriod: 'monthly',
+        performancePayload: null
     };
     const BET_PER_NUMBER_K = 1000;
     const HOLD_LOSS_MULTIPLIER = 70;
@@ -462,6 +466,318 @@
         return data;
     };
 
+    function asRatio(value) {
+        const number = Number(value || 0);
+        if (!Number.isFinite(number)) return 0;
+        return Math.abs(number) > 1 ? number / 100 : number;
+    }
+
+    function formatPercent(value) {
+        return `${(asRatio(value) * 100).toLocaleString('vi-VN', {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 2
+        })}%`;
+    }
+
+    function getPerformancePeriodLabel(period) {
+        return { daily: 'Ngày', weekly: 'Tuần', monthly: 'Tháng' }[period] || period;
+    }
+
+    function performanceRowLabel(row = {}) {
+        return row.date || row.week || row.month || row.period || '-';
+    }
+
+    function recalculatePerformanceRow(row = {}) {
+        const days = Number(row.days || 0);
+        const hitDays = Number(row.hitDays ?? row.wins ?? 0);
+        const holdLossDays = Number(row.holdLossDays ?? 0);
+        const betNumberDays = Number(row.betNumberDays ?? (days * Number(row.betCount || 30)));
+        const excludedNumberDays = Number(row.excludedNumberDays ?? (days * Number(row.excludedCount || 70)));
+        const betStakeK = betNumberDays * BET_PER_NUMBER_K;
+        const betPayoutK = hitDays * BET_PER_NUMBER_K * state.betWinMultiplier * state.betWinFactor;
+        const betProfitK = Math.round((betPayoutK - betStakeK) * 100) / 100;
+        const holdIncomeK = excludedNumberDays * BET_PER_NUMBER_K * state.holdWinMultiplier;
+        const holdLossK = holdLossDays * BET_PER_NUMBER_K * HOLD_LOSS_MULTIPLIER;
+        const holdProfitK = Math.round((holdIncomeK - holdLossK) * 100) / 100;
+        const profitK = Math.round((betProfitK + holdProfitK) * 100) / 100;
+        const capitalK = (betNumberDays + excludedNumberDays) * BET_PER_NUMBER_K;
+        return {
+            ...row,
+            days,
+            hitDays,
+            holdLossDays,
+            betNumberDays,
+            excludedNumberDays,
+            betStakeK,
+            betProfitK,
+            holdProfitK,
+            profitK,
+            hitRate: days ? hitDays / days : 0,
+            roi: capitalK ? profitK / capitalK : 0
+        };
+    }
+
+    function renderPerformancePeriodTabs() {
+        const root = el('performancePeriodTabs');
+        if (!root) return;
+        if (!state.performanceVisible) {
+            root.innerHTML = `
+                <button type="button" id="showHistoryPerformance"
+                    class="rounded-xl bg-white px-5 py-2 text-sm font-black text-indigo-700 shadow transition hover:bg-indigo-50">
+                    Xem thống kê
+                </button>
+            `;
+            root.querySelector('#showHistoryPerformance')?.addEventListener('click', () => {
+                state.performanceVisible = true;
+                loadPerformanceReport();
+            });
+            return;
+        }
+        root.innerHTML = ['daily', 'weekly', 'monthly'].map(period => `
+            <button type="button" data-period="${period}"
+                class="history-performance-period rounded-xl px-4 py-2 transition ${state.performancePeriod === period
+                    ? 'bg-white text-indigo-700 shadow'
+                    : 'text-white hover:bg-white/20'}">
+                ${getPerformancePeriodLabel(period)}
+            </button>
+        `).join('') + `
+            <button type="button" id="hideHistoryPerformance"
+                class="ml-1 rounded-xl px-4 py-2 text-white transition hover:bg-white/20">
+                Ẩn
+            </button>
+        `;
+        root.querySelectorAll('.history-performance-period').forEach(button => {
+            button.addEventListener('click', () => {
+                state.performancePeriod = button.dataset.period || 'monthly';
+                loadPerformanceReport();
+            });
+        });
+        root.querySelector('#hideHistoryPerformance')?.addEventListener('click', () => {
+            state.performanceVisible = false;
+            renderPerformanceReport();
+        });
+    }
+
+    function renderPerformanceBars(rows = []) {
+        const visible = rows.slice(-18).map(recalculatePerformanceRow);
+        if (!visible.length) {
+            return '<div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">Chưa có dữ liệu biểu đồ.</div>';
+        }
+        const maxAbs = Math.max(1, ...visible.map(row => Math.abs(row.profitK)));
+        return `
+            <div class="flex h-56 items-end gap-2 rounded-2xl border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-4">
+                ${visible.map(row => {
+                    const height = Math.max(8, Math.round(Math.abs(row.profitK) / maxAbs * 160));
+                    return `
+                        <div class="group flex min-w-0 flex-1 flex-col items-center justify-end gap-2">
+                            <div title="${escapeHtml(performanceRowLabel(row))}: ${escapeHtml(formatMoney(row.profitK))}"
+                                class="w-full rounded-t-lg ${row.profitK >= 0 ? 'bg-emerald-500' : 'bg-red-500'} shadow-sm transition group-hover:opacity-80"
+                                style="height:${height}px"></div>
+                            <div class="w-full truncate text-center text-[10px] font-semibold text-slate-400">${escapeHtml(performanceRowLabel(row).replace(/^2026-/, ''))}</div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }
+
+    function renderPerformanceCumulative(rows = []) {
+        if (!rows.length) {
+            return '<div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">Chưa có dữ liệu tích lũy.</div>';
+        }
+        let cumulative = 0;
+        const adjusted = rows.map(recalculatePerformanceRow);
+        const values = adjusted.map(row => {
+            cumulative += row.profitK;
+            return cumulative;
+        });
+        const width = 720;
+        const height = 220;
+        const pad = 24;
+        const min = Math.min(0, ...values);
+        const max = Math.max(0, ...values);
+        const span = Math.max(1, max - min);
+        const points = values.map((value, index) => {
+            const x = pad + (index / Math.max(1, values.length - 1)) * (width - pad * 2);
+            const y = pad + ((max - value) / span) * (height - pad * 2);
+            return `${x.toFixed(1)},${y.toFixed(1)}`;
+        }).join(' ');
+        const zeroY = pad + ((max - 0) / span) * (height - pad * 2);
+        const lastPoint = points.split(' ').pop() || `${width - pad},${pad}`;
+        const [lastX, lastY] = lastPoint.split(',');
+        return `
+            <div class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 p-3">
+                <svg viewBox="0 0 ${width} ${height}" class="h-56 w-full" role="img" aria-label="Biểu đồ lợi nhuận tích lũy">
+                    <line x1="${pad}" x2="${width - pad}" y1="${zeroY}" y2="${zeroY}" stroke="rgba(255,255,255,0.18)" stroke-width="2"></line>
+                    <polyline fill="none" stroke="#38bdf8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" points="${points}"></polyline>
+                    <circle cx="${lastX}" cy="${lastY}" r="6" fill="#34d399"></circle>
+                </svg>
+                <div class="flex justify-between px-2 text-xs font-semibold text-slate-300">
+                    <span>${escapeHtml(performanceRowLabel(adjusted[0]))}</span>
+                    <span>Tích lũy: ${escapeHtml(formatMoney(cumulative))}</span>
+                    <span>${escapeHtml(performanceRowLabel(adjusted[adjusted.length - 1]))}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderPerformanceReport() {
+        renderPerformancePeriodTabs();
+        const root = el('performanceReport');
+        if (!root) return;
+        if (!state.performanceVisible) {
+            root.innerHTML = `
+                <div class="rounded-2xl border border-dashed border-indigo-200 bg-indigo-50/60 p-5">
+                    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                        <div>
+                            <div class="text-sm font-black text-slate-950">Backtest chỉ tải khi người dùng yêu cầu</div>
+                            <p class="mt-1 max-w-3xl text-sm leading-6 text-slate-600">
+                                Nhật ký thực tế bên dưới luôn dùng snapshot đã khóa. Phần này là báo cáo point-in-time từ đầu năm, tách riêng để tránh nhầm dữ liệu mô phỏng với kết quả đánh thật.
+                            </p>
+                        </div>
+                        <button type="button" id="showHistoryPerformanceInline"
+                            class="inline-flex h-11 items-center justify-center rounded-xl bg-indigo-600 px-5 text-sm font-black text-white shadow hover:bg-indigo-700">
+                            Xem thống kê
+                        </button>
+                    </div>
+                </div>
+            `;
+            root.querySelector('#showHistoryPerformanceInline')?.addEventListener('click', () => {
+                state.performanceVisible = true;
+                loadPerformanceReport();
+            });
+            return;
+        }
+        if (state.performanceLoading) {
+            root.innerHTML = '<div class="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm font-semibold text-slate-600"><span class="spinner"></span> Đang tải backtest đầu năm...</div>';
+            return;
+        }
+        const section = state.performancePayload?.sections?.history;
+        if (!section) {
+            const available = state.performancePayload?.availableMethods?.history || [];
+            const errorMessage = state.performancePayload?.error;
+            root.innerHTML = `
+                <div class="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
+                    <div class="font-black text-slate-950">Chưa có backtest cho ${escapeHtml(getMethodLabel(state.selectedMethod))}</div>
+                    ${errorMessage ? `<p class="mt-2 font-semibold text-red-700">${escapeHtml(errorMessage)}</p>` : ''}
+                    <p class="mt-2 leading-6">Phương pháp có trong cache: ${available.length
+                        ? available.map(item => `<span class="font-mono font-bold">${escapeHtml(item)}</span>`).join(', ')
+                        : 'chưa có'}.</p>
+                </div>
+            `;
+            return;
+        }
+
+        const summary = recalculatePerformanceRow(section.summary || {});
+        const rows = section.rows || [];
+        const positive = summary.profitK >= 0;
+        const periodRange = state.performancePayload?.periodRange || {};
+        const assessmentLevel = positive && summary.hitRate >= 0.5
+            ? 'Tích cực'
+            : (positive ? 'Có lãi, cần theo dõi' : 'Rủi ro cao');
+        const cards = [
+            ['Số ngày', `${summary.days} ngày`, 'Số ngày point-in-time đã kết toán.'],
+            ['Tỷ lệ trúng đề', formatPercent(summary.hitRate), `${summary.hitDays}/${summary.days} ngày kết quả nằm trong dàn đánh.`],
+            ['Lợi nhuận Đánh', formatMoney(summary.betProfitK), `Mỗi số ${BET_PER_NUMBER_K.toLocaleString('vi-VN')}K, hệ số ${state.betWinFactor} × ăn ${state.betWinMultiplier}.`],
+            ['Lợi nhuận Ôm', formatMoney(summary.holdProfitK), `Hệ số ôm ${(state.holdWinMultiplier * 100).toFixed(1)}%, đền ${HOLD_LOSS_MULTIPLIER}.`],
+            ['Lợi nhuận ròng', formatMoney(summary.profitK), 'Tổng Đánh và Ôm theo hệ số đang chọn.'],
+            ['ROI quy đổi', formatPercent(summary.roi), 'Profit chia tổng đơn vị vốn Đánh + Ôm.']
+        ];
+        root.innerHTML = `
+            <div class="mb-4 flex flex-col gap-3 rounded-2xl border border-indigo-100 bg-indigo-50/70 p-4 lg:flex-row lg:items-start lg:justify-between">
+                <div>
+                    <div class="text-xs font-bold uppercase tracking-wide text-indigo-600">Phương pháp backtest</div>
+                    <div class="mt-1 text-xl font-black text-slate-950">${escapeHtml(section.label || section.methodId)}</div>
+                    <p class="mt-2 text-sm leading-6 text-slate-600">${escapeHtml(section.explanation || '')}</p>
+                    <p class="mt-1 text-xs font-semibold text-slate-500">Khoảng dữ liệu: ${escapeHtml(periodRange.startDate || '-')} → ${escapeHtml(periodRange.endDate || '-')}</p>
+                </div>
+                <div class="rounded-2xl border px-4 py-3 text-center ${positive ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-red-200 bg-red-50 text-red-700'}">
+                    <div class="text-xs font-bold uppercase">Đánh giá</div>
+                    <div class="mt-1 text-xl font-black">${escapeHtml(assessmentLevel)}</div>
+                </div>
+            </div>
+            <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+                ${cards.map(([label, value, hint]) => `
+                    <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                        <div class="text-xs font-bold uppercase text-slate-500">${escapeHtml(label)}</div>
+                        <div class="mt-2 text-2xl font-black ${label.includes('Lợi nhuận') ? (String(value).startsWith('-') ? 'text-red-600' : 'text-emerald-600') : 'text-slate-950'}">${escapeHtml(value)}</div>
+                        <div class="mt-1 text-xs leading-5 text-slate-500">${escapeHtml(hint)}</div>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="mt-5 grid gap-4 xl:grid-cols-2">
+                <div>
+                    <div class="mb-2 text-sm font-bold text-slate-900">Lãi/lỗ theo ${getPerformancePeriodLabel(state.performancePeriod).toLowerCase()}</div>
+                    ${renderPerformanceBars(rows)}
+                </div>
+                <div>
+                    <div class="mb-2 text-sm font-bold text-slate-900">Đường lợi nhuận tích lũy</div>
+                    ${renderPerformanceCumulative(rows)}
+                </div>
+            </div>
+            <div class="mt-5 overflow-x-auto rounded-2xl border border-slate-200">
+                <table class="min-w-[880px] w-full text-sm">
+                    <thead class="bg-slate-100 text-xs font-bold uppercase text-slate-500">
+                        <tr>
+                            <th class="px-4 py-3 text-left">Kỳ</th>
+                            <th class="px-4 py-3 text-right">Ngày</th>
+                            <th class="px-4 py-3 text-right">Trúng đề</th>
+                            <th class="px-4 py-3 text-right">Tỷ lệ</th>
+                            <th class="px-4 py-3 text-right">Lãi Đánh</th>
+                            <th class="px-4 py-3 text-right">Lãi Ôm</th>
+                            <th class="px-4 py-3 text-right">Ròng</th>
+                            <th class="px-4 py-3 text-right">ROI</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 bg-white">
+                        ${rows.slice(-36).reverse().map(rawRow => {
+                            const row = recalculatePerformanceRow(rawRow);
+                            return `
+                                <tr>
+                                    <td class="px-4 py-3 font-bold text-slate-900">${escapeHtml(performanceRowLabel(row))}</td>
+                                    <td class="px-4 py-3 text-right text-slate-600">${row.days}</td>
+                                    <td class="px-4 py-3 text-right text-slate-600">${row.hitDays}</td>
+                                    <td class="px-4 py-3 text-right font-semibold">${formatPercent(row.hitRate)}</td>
+                                    <td class="px-4 py-3 text-right ${row.betProfitK >= 0 ? 'text-emerald-600' : 'text-red-600'}">${escapeHtml(formatMoney(row.betProfitK))}</td>
+                                    <td class="px-4 py-3 text-right ${row.holdProfitK >= 0 ? 'text-emerald-600' : 'text-red-600'}">${escapeHtml(formatMoney(row.holdProfitK))}</td>
+                                    <td class="px-4 py-3 text-right font-black ${row.profitK >= 0 ? 'text-emerald-600' : 'text-red-600'}">${escapeHtml(formatMoney(row.profitK))}</td>
+                                    <td class="px-4 py-3 text-right font-semibold">${formatPercent(row.roi)}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+
+    async function loadPerformanceReport() {
+        if (!state.performanceVisible) {
+            renderPerformanceReport();
+            return;
+        }
+        state.performanceLoading = true;
+        renderPerformanceReport();
+        try {
+            const period = encodeURIComponent(state.performancePeriod);
+            const method = encodeURIComponent(state.selectedMethod);
+            const response = await fetch(`/api/performance-report?type=history&period=${period}&method=${method}`, {
+                cache: 'no-store'
+            });
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                throw new Error(data.error || 'Không tải được backtest Lịch sử.');
+            }
+            state.performancePayload = data;
+        } catch (error) {
+            state.performancePayload = { sections: {}, error: error.message };
+            console.error('[PredictionHistoryPerformance] Error:', error);
+        } finally {
+            state.performanceLoading = false;
+            renderPerformanceReport();
+        }
+    }
+
     async function loadHistory() {
         setLoading(true);
         cleanupExpiredCache();
@@ -498,6 +814,7 @@
 
     function renderDashboard() {
         showError('');
+        renderPerformanceReport();
         const history = state.history;
         if (history.length === 0) {
             el('summarySection').classList.add('hidden');
@@ -791,6 +1108,7 @@
                 state.selectedMethod = e.target.value;
                 renderMethodDescription();
                 renderDashboard();
+                if (state.performanceVisible) loadPerformanceReport();
             });
         }
         const betWinInput = el('betWinMultiplier');
@@ -826,6 +1144,7 @@
                 }
             });
         }
+        renderPerformanceReport();
         loadHistory();
     });
 })();

@@ -29,6 +29,7 @@ const MILESTONE20Y_CACHE_FILES = [
     'cached_milestone20y_live_predictions.json'
 ];
 const PERFORMANCE_REPORT_CACHE_FILE = 'cached_profit_report_2026.json';
+const HISTORY_PERFORMANCE_REPORT_CACHE_FILE = 'cached_prediction_history_performance_2026.json';
 const ANALYSIS_CACHE_VERSION = 'hold70-edge-bo-v1';
 const ANALYSIS_CACHE_VERSION_FILE = 'analysis_cache_version.json';
 const runStatus = {
@@ -748,13 +749,17 @@ async function hasMilestone20yPredictionCacheOnR2(expectedLatestDate = null) {
 async function hasPerformanceReportCacheOnR2() {
     if (!getR2PublicUrl() || process.env.UPDATE_CHECK_R2_PERFORMANCE_REPORT === '0') return true;
     try {
-        const cache = await readStatsJsonFromR2(PERFORMANCE_REPORT_CACHE_FILE);
+        const [cache, historyCache] = await Promise.all([
+            readStatsJsonFromR2(PERFORMANCE_REPORT_CACHE_FILE),
+            readStatsJsonFromR2(HISTORY_PERFORMANCE_REPORT_CACHE_FILE)
+        ]);
         const hasSections = Boolean(cache?.de?.methods && cache?.loto?.methods);
-        if (!hasSections) {
+        const hasHistory = Boolean(historyCache?.methods && historyCache?.period?.startDate);
+        if (!hasSections || !hasHistory) {
             console.log('[Cache Check] R2 performance report cache stale/malformed.');
             return false;
         }
-        console.log(`[Cache Check] R2 performance report cache OK: generatedAt=${cache.generatedAt || 'unknown'}.`);
+        console.log(`[Cache Check] R2 performance caches OK: main=${cache.generatedAt || 'unknown'}, history=${historyCache.generatedAt || 'unknown'}.`);
         return true;
     } catch (error) {
         console.log(`[Cache Check] R2 performance report cache missing/stale: ${error.message}`);
@@ -924,9 +929,10 @@ function uploadOnlyPredictionCaches(options = {}) {
     const lotoFiles = includeLoto
         ? ['cached_loto_prediction.json', 'cached_loto_live_predictions.json']
         : [];
-    const performanceReportFiles = fsSync.existsSync(path.join(statsDir, PERFORMANCE_REPORT_CACHE_FILE))
-        ? [PERFORMANCE_REPORT_CACHE_FILE]
-        : [];
+    const performanceReportFiles = [
+        PERFORMANCE_REPORT_CACHE_FILE,
+        HISTORY_PERFORMANCE_REPORT_CACHE_FILE
+    ].filter(file => fsSync.existsSync(path.join(statsDir, file)));
     if (!includeLoto) {
         console.log('[6] Upload riêng cache dự đoán nhưng giữ nguyên cached_loto_* trên R2 vì Lô không sinh mới trong run này.');
     }

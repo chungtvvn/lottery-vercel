@@ -17,6 +17,8 @@
     "analyze:exclusion-overlap": "node scripts/analyze-exclusion-number-overlap.js",
     "test:so-le-theo-cap": "node scripts/test-so-le-theo-cap.js",
     "test:prediction-history-immutability": "node scripts/test-prediction-history-immutability.js",
+    "generate:prediction-history-performance": "node scripts/generate-prediction-history-performance.js",
+    "test:prediction-history-performance": "node scripts/test-prediction-history-performance.js",
     "backtest:weekly-risk": "node scripts/backtest-weekly-risk-targets.js",
     "cf:cron:deploy": "npx wrangler deploy -c wrangler.daily-update.toml",
     "cf:cron:tail": "npx wrangler tail xsmb-daily-update-dispatcher",

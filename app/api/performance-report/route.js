@@ -81,11 +81,15 @@ function scoreAssessment(summary = {}, type = 'de') {
     };
 }
 
-function buildResponse(payload, url) {
+function buildResponse(payload, url, requestedType = null) {
     const typeParam = String(url.searchParams.get('type') || 'all').trim().toLowerCase();
     const period = normalizePeriod(url.searchParams.get('period'));
     const methodParam = url.searchParams.get('method') || '';
-    const includeTypes = typeParam === 'all' ? ['de', 'loto'] : [typeParam].filter(type => ['de', 'loto'].includes(type));
+    const includeTypes = requestedType
+        ? [requestedType]
+        : (typeParam === 'all'
+            ? ['de', 'loto']
+            : [typeParam].filter(type => ['de', 'loto'].includes(type)));
 
     const sections = {};
     for (const type of includeTypes) {
@@ -126,18 +130,37 @@ export async function GET(request) {
     try {
         const { loadJsonWithSupabaseFallback } = require('@/lib/data-access');
         const url = new URL(request.url);
-        const payload = await loadJsonWithSupabaseFallback('cached_profit_report_2026.json');
+        const typeParam = String(url.searchParams.get('type') || 'all').trim().toLowerCase();
+        const historyMode = typeParam === 'history';
+        const rawPayload = await loadJsonWithSupabaseFallback(historyMode
+            ? 'cached_prediction_history_performance_2026.json'
+            : 'cached_profit_report_2026.json');
+        const payload = historyMode && rawPayload
+            ? {
+                generatedAt: rawPayload.generatedAt,
+                latestDataDate: rawPayload.period?.endDate,
+                period: rawPayload.period,
+                source: rawPayload.source,
+                history: rawPayload
+            }
+            : rawPayload;
         if (!payload) {
+            const cacheName = historyMode
+                ? 'cached_prediction_history_performance_2026.json'
+                : 'cached_profit_report_2026.json';
             return NextResponse.json(
                 {
                     success: false,
-                    error: 'Chưa có cache báo cáo hiệu quả. Hãy chạy lại action cập nhật dữ liệu để sinh cached_profit_report_2026.json.'
+                    error: `Chưa có cache báo cáo hiệu quả. Hãy chạy lại action cập nhật dữ liệu để sinh ${cacheName}.`
                 },
                 { status: 404, headers: NO_STORE_HEADERS }
             );
         }
 
-        return NextResponse.json(buildResponse(payload, url), { headers: NO_STORE_HEADERS });
+        return NextResponse.json(
+            buildResponse(payload, url, historyMode ? 'history' : null),
+            { headers: NO_STORE_HEADERS }
+        );
     } catch (error) {
         console.error('[PerformanceReportAPI] Error:', error);
         return NextResponse.json(

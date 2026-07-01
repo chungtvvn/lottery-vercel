@@ -124,7 +124,33 @@
             </div>
         </div>
 
-        <!-- Stats summary cards -->
+        <section class="mb-6 overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-sm shadow-slate-200/60">
+            <div class="bg-gradient-to-r from-slate-950 via-indigo-950 to-cyan-950 px-5 py-5 text-white">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-[0.25em] text-cyan-200">Backtest point-in-time</p>
+                        <h2 class="mt-1 text-2xl font-black tracking-tight">Thống kê từ đầu năm đến hiện tại</h2>
+                        <p class="mt-2 max-w-3xl text-sm leading-6 text-indigo-100">
+                            Báo cáo mô phỏng theo đúng dữ liệu có trước ngày dự đoán. Các ngày đã phát hành thực tế được đối chiếu bằng snapshot bất biến.
+                        </p>
+                    </div>
+                    <div id="performancePeriodTabs" class="inline-flex rounded-2xl border border-white/25 bg-slate-950/30 p-1 text-sm font-bold shadow-inner backdrop-blur"></div>
+                </div>
+            </div>
+            <div id="performanceReport" class="p-5"></div>
+        </section>
+
+        <section class="mb-4 rounded-2xl border border-amber-200 bg-amber-50/70 px-5 py-4">
+            <h2 class="flex items-center gap-2 text-xl font-black text-slate-950">
+                <i class="bi bi-broadcast-pin text-amber-600"></i>
+                Nhật ký dự đoán thực tế
+            </h2>
+            <p class="mt-1 text-sm leading-6 text-slate-600">
+                Dàn số được cố định ngay khi phát hành. Sau khi có kết quả, hệ thống chỉ đối chiếu trúng/trượt và tính lãi/lỗ, không tính lại dàn cũ.
+            </p>
+        </section>
+
+        <!-- Actual journal summary cards -->
         <section id="summarySection" class="mb-6 grid gap-4 md:grid-cols-4 hidden animate-fade-in"></section>
 
         <div id="errorBox" class="mb-6 hidden rounded-xl border border-red-500/10 bg-red-50 p-4 text-sm text-red-650"></div>
@@ -134,7 +160,7 @@
             <div class="glass-card overflow-hidden">
                 <div class="border-b border-slate-100 bg-slate-50/50 px-4 py-3.5">
                     <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                        <i class="bi bi-clock-history text-indigo-600"></i> Nhật ký dự đoán (90 ngày gần nhất)
+                        <i class="bi bi-clock-history text-indigo-600"></i> Nhật ký thực tế (90 ngày gần nhất)
                     </h2>
                 </div>
                 <div class="table-wrap overflow-auto custom-scrollbar">
@@ -167,7 +193,7 @@
     </main>
 
     <script src="/js/app-config.js"></script>
-    <script src="/js/prediction-history.js?v=1.0.8"></script>
+    <script src="/js/prediction-history.js?v=1.1.0"></script>
 </body>
 
 </html>
