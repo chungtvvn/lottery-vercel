@@ -948,14 +948,16 @@
             state.payload = data;
             state.winMultiplier = normalizeWinMultiplier(state.winMultiplier || data.config?.winMultiplier || 84);
             const profitPreset = data.config?.presets?.[0];
-            state.strategy = state.strategy || profitPreset?.strategy || 'chainSmallFirst';
+            const defaultStrategy = data.config?.defaultBetStrategy || profitPreset?.strategy || 'chainBlockFirst';
+            const defaultTarget = Number(data.config?.defaultBetTarget || profitPreset?.target || 70);
+            state.strategy = state.strategy || defaultStrategy;
             if (!data.nextPrediction?.strategies?.[state.strategy]) {
-                state.strategy = profitPreset?.strategy || Object.keys(data.nextPrediction?.strategies || {})[0] || 'chainSmallFirst';
+                state.strategy = defaultStrategy || Object.keys(data.nextPrediction?.strategies || {})[0] || 'chainBlockFirst';
             }
             const strategy = getStrategy();
-            state.target = Number(state.target || strategy?.defaultTarget || profitPreset?.target || 65);
+            state.target = Number(state.target || defaultTarget || strategy?.defaultTarget || 70);
             if (!getPrediction(state.strategy, state.target)) {
-                state.target = Number(strategy?.defaultTarget || profitPreset?.target || getTargets()[0] || 65);
+                state.target = Number(defaultTarget || strategy?.defaultTarget || getTargets()[0] || 70);
             }
             render();
         } catch (error) {
