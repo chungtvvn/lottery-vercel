@@ -1,0 +1,93 @@
+const fs = require('fs');
+const path = require('path');
+const assert = require('assert');
+
+async function loadWorkerModule() {
+    const source = fs.readFileSync(
+        path.join(process.cwd(), 'workers', 'daily-update-dispatcher', 'src', 'index.js'),
+        'utf8'
+    );
+    return import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
+}
+
+async function main() {
+    const { buildTelegramReport } = await loadWorkerModule();
+    const deBetNumbers = Array.from({ length: 30 }, (_, value) => String(value).padStart(2, '0'));
+    const dePayload = {
+        latestDataDate: '2026-07-01',
+        config: { defaultBetStrategy: 'chainBlockFirst', defaultBetTarget: 70 },
+        nextPrediction: {
+            predictionIsoDate: '2026-07-02',
+            strategies: {
+                chainBlockFirst: {
+                    holds: {
+                        70: { betNumbers: deBetNumbers }
+                    }
+                }
+            }
+        },
+        livePredictions: {
+            predictions: [{
+                status: 'settled',
+                predictionIsoDate: '2026-07-01',
+                actualSpecial: '12',
+                strategies: {
+                    chainBlockFirst: {
+                        holds: {
+                            70: { betNumbers: deBetNumbers }
+                        }
+                    }
+                },
+                results: {
+                    'chainBlockFirst:hold70': {
+                        actual: '12',
+                        betCount: 30,
+                        hit: true,
+                        profitK: 54000
+                    }
+                }
+            }]
+        }
+    };
+    const lotoPayload = {
+        latestDataDate: '2026-07-01',
+        nextPrediction: {
+            predictionIsoDate: '2026-07-02',
+            methodId: 'testLotoMethod',
+            predictions: {
+                top6: {
+                    numbers: ['12', '34', '56', '78', '90', '01']
+                }
+            }
+        },
+        livePredictions: {
+            predictions: [{
+                status: 'settled',
+                predictionIsoDate: '2026-07-01',
+                actual: { '01': 1, 12: 2, 34: 1, 55: 23 },
+                methods: {
+                    top6: {
+                        betNumbers: ['12', '34', '56', '78', '90', '01'],
+                        betCount: 6,
+                        hits: 4,
+                        profitK: 18800
+                    }
+                }
+            }]
+        }
+    };
+
+    const report = buildTelegramReport(dePayload, lotoPayload);
+    assert.match(report.text, /Số đã đánh \(30\):/);
+    assert.match(report.text, /Kết quả thực tế: <b>12<\/b>/);
+    assert.match(report.text, /Số đã đánh \(6\): <code>12 34 56 78 90 01<\/code>/);
+    assert.match(report.text, /Kết quả thực tế \(27 vị trí\):/);
+    assert.match(report.text, /Trúng: <b>12×2 34 01<\/b>/);
+    assert.ok(report.text.length <= 4096, `Telegram report quá dài: ${report.text.length}`);
+    console.log('Telegram report tests passed.');
+}
+
+main().catch(error => {
+    console.error(error);
+    process.exit(1);
+});

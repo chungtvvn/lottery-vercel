@@ -126,9 +126,51 @@ function latestRow(rows, status) {
     .sort((a, b) => String(b.predictionIsoDate || '').localeCompare(String(a.predictionIsoDate || '')))[0] || null;
 }
 
-function intersectNumbers(left = [], right = []) {
-  const rightSet = new Set((right || []).map(String));
-  return (left || []).map(String).filter(value => rightSet.has(value));
+function formatLotoHits(betNumbers = [], actualNumbers = []) {
+  const frequencies = new Map();
+  for (const value of actualNumbers || []) {
+    const number = normalizeLotteryNumber(value);
+    if (!number) continue;
+    frequencies.set(number, (frequencies.get(number) || 0) + 1);
+  }
+  return Array.from(new Set((betNumbers || []).map(normalizeLotteryNumber)))
+    .filter(number => number && frequencies.has(number))
+    .map(number => {
+      const count = frequencies.get(number);
+      return count > 1 ? `${number}×${count}` : number;
+    });
+}
+
+function normalizeLotteryNumber(value) {
+  const text = String(value ?? '').trim();
+  if (!text) return '';
+  return /^\d+$/.test(text)
+    ? text.padStart(2, '0').slice(-2)
+    : text;
+}
+
+function formatNumberList(values = []) {
+  const numbers = (values || [])
+    .map(normalizeLotteryNumber)
+    .filter(Boolean);
+  return numbers.length ? numbers.join(' ') : '-';
+}
+
+function getLotoActualNumbers(row = {}) {
+  if (Array.isArray(row.actualNumbers) && row.actualNumbers.length) {
+    return row.actualNumbers
+      .map(normalizeLotteryNumber)
+      .filter(Boolean);
+  }
+
+  return Object.entries(row.actual || {})
+    .map(([number, count]) => ({
+      number: normalizeLotteryNumber(number),
+      count: Math.max(0, Number(count || 0))
+    }))
+    .filter(item => item.number && item.count > 0)
+    .sort((left, right) => Number(left.number) - Number(right.number))
+    .flatMap(item => Array.from({ length: item.count }, () => item.number));
 }
 
 function buildTelegramReport(dePayload, lotoPayload) {
@@ -149,9 +191,10 @@ function buildTelegramReport(dePayload, lotoPayload) {
     || lotoPending?.predictions?.[lotoMethodKey];
 
   const deResult = deSettled?.results?.[deKey];
+  const deSettledPrediction = deSettled?.strategies?.[deStrategy]?.holds?.[String(deTarget)];
   const lotoResult = lotoSettled?.methods?.[lotoMethodKey];
-  const lotoActual = lotoSettled?.actualNumbers || [];
-  const lotoHits = intersectNumbers(lotoResult?.betNumbers || [], lotoActual);
+  const lotoActual = getLotoActualNumbers(lotoSettled);
+  const lotoHits = formatLotoHits(lotoResult?.betNumbers || [], lotoActual);
   const predictionDate = dePayload.nextPrediction?.predictionIsoDate
     || dePending?.predictionIsoDate
     || lotoPayload.nextPrediction?.predictionIsoDate
@@ -169,7 +212,9 @@ function buildTelegramReport(dePayload, lotoPayload) {
 
   if (deSettled && deResult) {
     lines.push(
-      `• Đề ${escapeHtml(displayDate(deSettled.predictionIsoDate))}: về <b>${escapeHtml(deSettled.actualSpecial)}</b>`,
+      `• <b>Đề ${escapeHtml(displayDate(deSettled.predictionIsoDate))}</b>`,
+      `  Số đã đánh (${Number(deResult.betCount || deSettledPrediction?.betNumbers?.length || 0)}): <code>${escapeHtml(formatNumberList(deSettledPrediction?.betNumbers || []))}</code>`,
+      `  Kết quả thực tế: <b>${escapeHtml(normalizeLotteryNumber(deSettled.actualSpecial ?? deResult.actual))}</b>`,
       `  ${deResult.hit ? '✅ TRÚNG' : '❌ TRƯỢT'} · ${escapeHtml(formatMoneyK(deResult.profitK))}`
     );
   } else {
@@ -178,9 +223,12 @@ function buildTelegramReport(dePayload, lotoPayload) {
 
   if (lotoSettled && lotoResult) {
     lines.push(
-      `• Lô top 6 ${escapeHtml(displayDate(lotoSettled.predictionIsoDate))}: ${Number(lotoResult.hits || 0)} hit`,
+      `• <b>Lô top 6 ${escapeHtml(displayDate(lotoSettled.predictionIsoDate))}</b>`,
+      `  Số đã đánh (${Number(lotoResult.betCount || lotoResult.betNumbers?.length || 0)}): <code>${escapeHtml(formatNumberList(lotoResult.betNumbers || []))}</code>`,
+      `  Kết quả thực tế (${lotoActual.length} vị trí): <code>${escapeHtml(formatNumberList(lotoActual))}</code>`,
       `  ${Number(lotoResult.profitK || 0) > 0 ? '✅ CÓ LÃI' : '❌ LỖ'} · ${escapeHtml(formatMoneyK(lotoResult.profitK))}` +
-        `${lotoHits.length ? ` · Trúng: <b>${escapeHtml(lotoHits.join(' '))}</b>` : ''}`
+        ` · ${Number(lotoResult.hits || 0)} hit` +
+        `${lotoHits.length ? ` · Trúng: <b>${escapeHtml(formatNumberList(lotoHits))}</b>` : ''}`
     );
   } else {
     lines.push('• Lô: chưa có bản ghi đã kết toán.');
