@@ -748,6 +748,10 @@
                 <div>
                     <h3 class="text-base font-bold text-slate-900">Chi tiết ngày ${dateStr}${detailBadge}</h3>
                     <p class="text-xs ${isPending ? 'text-amber-800' : 'text-slate-500'} mt-0.5">Dựa trên kết quả thống kê của ngày trước đó${isPending ? ', chưa có kết quả thực tế để kết toán' : ''}</p>
+                    <p class="mt-1.5 inline-flex items-center gap-1 rounded-full border border-sky-200 bg-sky-50 px-2 py-1 text-[10px] font-bold text-sky-800">
+                        <i class="bi bi-lock-fill"></i>
+                        Snapshot đã khóa: dàn số không đổi sau khi có kết quả
+                    </p>
                 </div>
 
                 ${headerStatusHtml}

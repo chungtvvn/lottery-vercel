@@ -16,6 +16,7 @@
     "stats:audit": "node scripts/audit-statistics-coverage.js",
     "analyze:exclusion-overlap": "node scripts/analyze-exclusion-number-overlap.js",
     "test:so-le-theo-cap": "node scripts/test-so-le-theo-cap.js",
+    "test:prediction-history-immutability": "node scripts/test-prediction-history-immutability.js",
     "backtest:weekly-risk": "node scripts/backtest-weekly-risk-targets.js",
     "cf:cron:deploy": "npx wrangler deploy -c wrangler.daily-update.toml",
     "cf:cron:tail": "npx wrangler tail xsmb-daily-update-dispatcher",
