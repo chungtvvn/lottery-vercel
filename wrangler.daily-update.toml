@@ -2,6 +2,11 @@ name = "xsmb-daily-update-dispatcher"
 main = "workers/daily-update-dispatcher/src/index.js"
 compatibility_date = "2026-06-03"
 workers_dev = true
+preview_urls = false
+
+[[kv_namespaces]]
+binding = "TELEGRAM_STATE"
+id = "8851f5e6160b4e649753ff4df9232ced"
 
 [triggers]
 crons = [
@@ -19,3 +24,6 @@ GITHUB_WORKFLOW = "daily-update.yml"
 GITHUB_REF = "main"
 APP_BASE_URL = "https://lottery-stats-vercel.vercel.app"
 TELEGRAM_ALLOWED_USERNAME = "chungtvvn"
+
+[observability]
+enabled = true
