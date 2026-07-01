@@ -36,6 +36,8 @@ function parseArgs() {
         fixedBaselineYear: args.has('fixedBaselineYear') ? Number(args.get('fixedBaselineYear')) : null,
         startYear: args.has('startYear') ? Number(args.get('startYear')) : null,
         endYear: args.has('endYear') ? Number(args.get('endYear')) : null,
+        startDate: args.get('startDate') || null,
+        endDate: args.get('endDate') || null,
         activeFrequencyLimit: Number(args.get('activeFrequencyLimit') || 0.5),
         recordFrequencyLimit: Number(args.get('recordFrequencyLimit') || 1.1),
         minPotentialCurrentLenForNeverFormed: Number(args.get('minPotentialCurrentLenForNeverFormed') || 1),
@@ -572,6 +574,9 @@ async function main() {
         const targetRow = rawData[index];
         const targetDate = parseDate(targetRow.date);
         if (!targetDate) continue;
+        const targetIso = formatIso(targetDate);
+        if (options.startDate && targetIso < options.startDate) continue;
+        if (options.endDate && targetIso > options.endDate) continue;
         const year = targetDate.getFullYear();
         if (options.startYear && year < options.startYear) continue;
         if (options.endYear && year > options.endYear) continue;
@@ -604,7 +609,7 @@ async function main() {
 
         const day = options.includeDetails
             ? {
-                date: formatIso(targetDate),
+                date: targetIso,
                 year,
                 baselineYear,
                 actual: String(actual).padStart(2, '0'),

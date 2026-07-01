@@ -606,13 +606,14 @@ async function buildPositionDailyPredictions(rawData, positionKey, targetRows, m
         const date = parseIsoDate(rawDay.date);
         if (!date) continue;
         const year = date.getFullYear();
-        if (!baselineByYear.has(year)) {
-            baselineByYear.set(year, annualMilestoneService.buildAnnualBaseline(entries, year, {
+        const baselineYear = options.fixedBaselineYear || year;
+        if (!baselineByYear.has(baselineYear)) {
+            baselineByYear.set(baselineYear, annualMilestoneService.buildAnnualBaseline(entries, baselineYear, {
                 historyYears: options.historyYears,
                 writeBaseline: false
             }));
         }
-        const baseline = baselineByYear.get(year);
+        const baseline = baselineByYear.get(baselineYear);
         const candidates = annualMilestoneService.buildCandidatesForDate(formatDisplayDate(date), baseline, {
             historyYears: options.historyYears,
             activeFrequencyLimit: options.activeFrequencyLimit,
@@ -808,9 +809,11 @@ async function main() {
         .map(value => value.trim())
         .filter(Boolean);
     const predictionAggregationMode = args.get('aggregationMode') || args.get('aggregation') || DEFAULT_AGGREGATION_MODE;
+    const includeDetails = args.get('includeDetails') === '1';
     const stakeK = Number(args.get('stakeK') || DEFAULT_STAKE_K);
     const payoutK = Number(args.get('payoutK') || DEFAULT_PAYOUT_K);
     const historyYears = Number(args.get('historyYears') || 20);
+    const fixedBaselineYear = args.has('fixedBaselineYear') ? Number(args.get('fixedBaselineYear')) : null;
     const methodConfigs = buildMethodConfigs(strategies, holdCounts);
     if (methodConfigs.length === 1 && predictionOnly) {
         methodConfigs[0].id = args.get('method') || DEFAULT_METHOD_ID;
@@ -826,6 +829,7 @@ async function main() {
         const nextPrediction = await buildNextPrediction(rawData, methodConfig, betCounts, {
             aggregationMode: predictionAggregationMode,
             historyYears,
+            fixedBaselineYear,
             activeFrequencyLimit: Number(args.get('activeFrequencyLimit') || 0.5),
             recordFrequencyLimit: Number(args.get('recordFrequencyLimit') || 1.1),
             minPotentialCurrentLenForNeverFormed: Number(args.get('minPotentialLen') || 4)
@@ -864,6 +868,7 @@ async function main() {
         console.log(`[LotoMilestone20Y] ${positionKey} (${positionIndex}/${PRIZE_KEYS.length})...`);
         const positionRows = await buildPositionDailyPredictions(rawData, positionKey, targetRows, methodConfigs, {
             historyYears,
+            fixedBaselineYear,
             activeFrequencyLimit: Number(args.get('activeFrequencyLimit') || 0.5),
             recordFrequencyLimit: Number(args.get('recordFrequencyLimit') || 1.1),
             minPotentialCurrentLenForNeverFormed: Number(args.get('minPotentialLen') || 4)
@@ -875,6 +880,7 @@ async function main() {
     }
 
     const summariesByWindow = {};
+    const dailyDetailsByWindow = {};
     const daily = Array.from(byDate.values()).sort((a, b) => a.date.localeCompare(b.date));
 
     const windowSpecs = startDate
@@ -887,6 +893,7 @@ async function main() {
     for (const windowSpec of windowSpecs) {
         const windowRows = windowSpec.rows;
         summariesByWindow[windowSpec.key] = {};
+        if (includeDetails) dailyDetailsByWindow[windowSpec.key] = [];
         const calibrationByConfigMode = new Map();
         for (const config of methodConfigs) {
             for (const aggregationMode of aggregationModes) {
@@ -919,7 +926,24 @@ async function main() {
                     for (const betCount of betCounts) {
                         const key = `${config.id}:${aggregationMode}:top${betCount}`;
                         const numbers = ranked.slice(0, betCount).map(item => item.number);
-                        addResultToSummary(summariesByWindow[windowSpec.key][key], numbers, row.actualCounts, stakeK, payoutK);
+                        const result = addResultToSummary(summariesByWindow[windowSpec.key][key], numbers, row.actualCounts, stakeK, payoutK);
+                        if (includeDetails) {
+                            dailyDetailsByWindow[windowSpec.key].push({
+                                date: row.date,
+                                methodId: key,
+                                strategy: config.strategy,
+                                hold: config.target,
+                                aggregationMode,
+                                betCount,
+                                numbers: result.numbers,
+                                actualNumbers: [...row.actualCounts.keys()].sort((a, b) => a - b).map(formatNumber),
+                                hits: result.hits,
+                                stakeK: result.stakeK,
+                                payoutK: result.payoutK,
+                                profitK: result.profitK,
+                                result: result.profitK > 0 ? 'win' : (result.profitK < 0 ? 'loss' : 'flat')
+                            });
+                        }
                     }
                     updatePositionCalibration(calibrationByConfigMode.get(calibrationKey), positionPredictions, row.actualByPosition);
                 }
@@ -942,6 +966,7 @@ async function main() {
         config: {
             logic: 'annualMilestone20y-per-position',
             historyYears,
+            fixedBaselineYear,
             positions: PRIZE_KEYS,
             months: monthsList,
             startDate,
@@ -953,7 +978,8 @@ async function main() {
             stakeK,
             payoutK
         },
-        summariesByWindow
+        summariesByWindow,
+        ...(includeDetails ? { dailyDetailsByWindow } : {})
     };
 
     const outputDir = path.join(process.cwd(), 'reports');
