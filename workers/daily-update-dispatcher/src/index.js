@@ -7,12 +7,6 @@ const DEFAULT_INPUTS = {
 };
 
 const UPDATE_CRON = '40 11 * * *';
-const TELEGRAM_CRONS = new Set([
-  '0 12 * * *',
-  '20 12 * * *',
-  '40 12 * * *',
-  '0 13 * * *'
-]);
 const TELEGRAM_CHAT_KEY = 'telegram:chat_id';
 const TELEGRAM_LAST_SENT_KEY = 'telegram:last_sent_prediction_date';
 const DEFAULT_APP_BASE_URL = 'https://lottery-stats-vercel.vercel.app';
@@ -247,9 +241,6 @@ async function sendTelegramMessage(env, chatId, text) {
 }
 
 async function notifyTelegram(env, options = {}) {
-  if (options.source === 'cron' && !env.TELEGRAM_STATE) {
-    return { ok: false, skipped: true, reason: 'telegram-kv-not-configured' };
-  }
   const chatId = await resolveTelegramChatId(env);
   if (!chatId) {
     return { ok: false, skipped: true, reason: 'telegram-chat-not-registered' };
@@ -359,7 +350,7 @@ async function handleRequest(request, env) {
       service: 'xsmb-daily-update-dispatcher',
       updateCronUtc: UPDATE_CRON,
       updateTimeVietnam: '18:40',
-      telegramRetryTimesVietnam: ['19:00', '19:20', '19:40', '20:00'],
+      telegramDelivery: 'github-action-after-cache-verification',
       githubWorkflow: env.GITHUB_WORKFLOW || 'daily-update.yml',
       targetDateToday: getVietnamDate(),
       telegramConfigured: Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_WEBHOOK_SECRET),
@@ -406,12 +397,6 @@ export default {
     if (event.cron === UPDATE_CRON) {
       const inputs = buildInputs(getVietnamDate());
       ctx.waitUntil(dispatchGithubWorkflow(env, inputs, `cron:${event.cron}`));
-      return;
-    }
-    if (TELEGRAM_CRONS.has(event.cron)) {
-      ctx.waitUntil(notifyTelegram(env, { expectedDataDate: getVietnamDate(), source: 'cron' })
-        .then(result => console.log('Telegram notification result:', result))
-        .catch(error => console.error('Telegram notification failed:', error)));
     }
   }
 };

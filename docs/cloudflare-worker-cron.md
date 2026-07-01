@@ -1,16 +1,18 @@
 # Cloudflare Worker Cron for Daily XSMB Update
 
-This Worker dispatches `daily-update.yml` and sends the daily Telegram report after
-both Đề and Lô caches are ready. GitHub Actions still fetches XSMB, regenerates
-stats, uploads R2, and triggers the Vercel deploy hook.
+This Worker dispatches `daily-update.yml`. The workflow sends one daily Telegram
+report after both Đề and Lô caches are ready. GitHub Actions still fetches XSMB,
+regenerates stats, uploads R2, and triggers the Vercel deploy hook.
 
 ## Schedule
 
 - Cloudflare Cron: `40 11 * * *` UTC
 - Vietnam time: `18:40` GMT+7
-- GitHub Actions schedule remains enabled as a fallback with retry slots.
-- Telegram retry crons: `19:00`, `19:20`, `19:40`, `20:00` GMT+7.
-- KV deduplicates by prediction date, so at most one report is sent per day.
+- GitHub Actions schedule remains enabled as a fallback.
+- Telegram delivery has one source: the final verification job in
+  `daily-update.yml`.
+- KV deduplicates by prediction date, so fallback and repeated workflow runs do
+  not send the same report again.
 
 ## Required Cloudflare Worker Secrets
 
@@ -88,8 +90,8 @@ these GitHub repository secrets:
 - `TELEGRAM_WORKER_NOTIFY_URL`: Worker origin, without trailing slash.
 - `TELEGRAM_DISPATCH_SECRET`: same value as the Worker `DISPATCH_SECRET`.
 
-If these secrets are absent, Cloudflare cron remains the fallback. Scheduled
-Telegram retries require KV so they can deduplicate safely.
+KV is required for daily delivery so repeated workflow runs can deduplicate
+safely.
 
 Send a test report:
 

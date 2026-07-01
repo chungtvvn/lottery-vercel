@@ -9,13 +9,7 @@ binding = "TELEGRAM_STATE"
 id = "8851f5e6160b4e649753ff4df9232ced"
 
 [triggers]
-crons = [
-  "40 11 * * *",
-  "0 12 * * *",
-  "20 12 * * *",
-  "40 12 * * *",
-  "0 13 * * *"
-]
+crons = ["40 11 * * *"]
 
 [vars]
 GITHUB_OWNER = "chungtvvn"
