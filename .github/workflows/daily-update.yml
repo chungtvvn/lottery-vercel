@@ -465,6 +465,18 @@ jobs:
           });
           NODE
 
+      - name: Send Telegram daily report
+        env:
+          TELEGRAM_WORKER_NOTIFY_URL: ${{ secrets.TELEGRAM_WORKER_NOTIFY_URL }}
+          TELEGRAM_DISPATCH_SECRET: ${{ secrets.TELEGRAM_DISPATCH_SECRET }}
+        run: |
+          if [ -z "$TELEGRAM_WORKER_NOTIFY_URL" ] || [ -z "$TELEGRAM_DISPATCH_SECRET" ]; then
+            echo "Telegram Worker secrets chưa cấu hình; cron Cloudflare sẽ thử gửi nếu KV đã sẵn sàng."
+            exit 0
+          fi
+          curl -fsS -X POST "$TELEGRAM_WORKER_NOTIFY_URL/telegram/notify" \
+            -H "x-dispatch-secret: $TELEGRAM_DISPATCH_SECRET"
+
       - name: Force Vercel redeploy after both caches are ready
         env:
           VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}

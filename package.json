@@ -20,7 +20,11 @@
     "cf:cron:deploy": "npx wrangler deploy -c wrangler.daily-update.toml",
     "cf:cron:tail": "npx wrangler tail xsmb-daily-update-dispatcher",
     "cf:cron:secret:github": "npx wrangler secret put GITHUB_TOKEN -c wrangler.daily-update.toml",
-    "cf:cron:secret:dispatch": "npx wrangler secret put DISPATCH_SECRET -c wrangler.daily-update.toml"
+    "cf:cron:secret:dispatch": "npx wrangler secret put DISPATCH_SECRET -c wrangler.daily-update.toml",
+    "cf:cron:secret:telegram-token": "npx wrangler secret put TELEGRAM_BOT_TOKEN -c wrangler.daily-update.toml",
+    "cf:cron:secret:telegram-webhook": "npx wrangler secret put TELEGRAM_WEBHOOK_SECRET -c wrangler.daily-update.toml",
+    "cf:cron:secret:telegram-chat": "npx wrangler secret put TELEGRAM_CHAT_ID -c wrangler.daily-update.toml",
+    "cf:cron:kv:create": "npx wrangler kv namespace create TELEGRAM_STATE -c wrangler.daily-update.toml"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1057.0",

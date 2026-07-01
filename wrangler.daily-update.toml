@@ -4,10 +4,18 @@ compatibility_date = "2026-06-03"
 workers_dev = true
 
 [triggers]
-crons = ["40 11 * * *"]
+crons = [
+  "40 11 * * *",
+  "0 12 * * *",
+  "20 12 * * *",
+  "40 12 * * *",
+  "0 13 * * *"
+]
 
 [vars]
 GITHUB_OWNER = "chungtvvn"
 GITHUB_REPO = "lottery-vercel"
 GITHUB_WORKFLOW = "daily-update.yml"
 GITHUB_REF = "main"
+APP_BASE_URL = "https://lottery-stats-vercel.vercel.app"
+TELEGRAM_ALLOWED_USERNAME = "chungtvvn"
