@@ -21,6 +21,7 @@
     "test:prediction-history-performance": "node scripts/test-prediction-history-performance.js",
     "test:telegram-report": "node scripts/test-telegram-report.js",
     "test:posterior-diversity": "node scripts/test-posterior-diversity-strategy.js",
+    "test:loto-position-posterior": "node scripts/test-loto-position-posterior.js",
     "backtest:weekly-risk": "node scripts/backtest-weekly-risk-targets.js",
     "cf:cron:deploy": "npx wrangler deploy -c wrangler.daily-update.toml",
     "cf:cron:tail": "npx wrangler tail xsmb-daily-update-dispatcher",

@@ -68,5 +68,10 @@ assert.ok(
     annualMilestoneService.STRATEGIES.numberPosteriorDiversity,
     'Strategy phải được đăng ký trong service'
 );
+assert.equal(
+    annualMilestoneService.DEFAULT_BET_STRATEGY,
+    'numberPosteriorDiversity',
+    'Phương pháp đã vượt kiểm định phải là mặc định cho dự đoán mới'
+);
 
 console.log('Posterior diversity strategy tests passed.');

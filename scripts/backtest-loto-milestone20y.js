@@ -2,6 +2,9 @@
 const fs = require('fs');
 const path = require('path');
 
+require('dotenv').config({ path: path.join(__dirname, '..', '.env.local'), quiet: true });
+require('dotenv').config({ path: path.join(__dirname, '..', '.env'), quiet: true });
+
 const lotteryService = require('../lib/services/lotteryService');
 const historicalExclusionService = require('../lib/services/historicalExclusionService');
 const annualMilestoneService = require('../lib/services/annualMilestoneService');
@@ -320,7 +323,9 @@ function greedyRank(items, baseScoreFn, options = {}) {
         for (let i = 0; i < remaining.length; i++) {
             const item = remaining[i];
             const base = baseScoreFn(item, selected);
-            const penalty = options.diversify ? diversityPenalty(item, selected) : 0;
+            const penalty = options.diversify
+                ? diversityPenalty(item, selected) * Number(options.penaltyScale ?? 1)
+                : 0;
             const score = base - penalty;
             if (score > bestScore || (score === bestScore && item.number < remaining[bestIndex].number)) {
                 bestScore = score;
@@ -332,8 +337,84 @@ function greedyRank(items, baseScoreFn, options = {}) {
     return selected.concat(sortByBaseScore(remaining, 'weightedScore'));
 }
 
+function getPositionPosteriorItems(positionPredictions, calibrationState) {
+    const items = buildNumberItems(positionPredictions);
+    const positionSets = new Map(
+        Object.entries(positionPredictions || {}).map(([positionKey, numbers]) => [
+            positionKey,
+            new Set((numbers || []).map(normalizeNumber).filter(value => value !== null))
+        ])
+    );
+    const positionCalibration = calibrationState?.positions || new Map();
+    const supportBuckets = calibrationState?.supportBuckets || new Map();
+
+    return items.map(item => {
+        let expectedHits = 0;
+        let bestPositionProbability = 0;
+        for (const positionKey of PRIZE_KEYS) {
+            const survivorSet = positionSets.get(positionKey) || new Set();
+            const survivorCount = survivorSet.size;
+            const excludedCount = Math.max(1, 100 - survivorCount);
+            const stat = positionCalibration.get(positionKey) || {
+                trials: 40,
+                hits: 40 * (survivorCount / 100)
+            };
+            const survivorReliability = stat.hits / Math.max(1, stat.trials);
+            const probability = survivorSet.has(item.number)
+                ? survivorReliability / Math.max(1, survivorCount)
+                : (1 - survivorReliability) / excludedCount;
+            expectedHits += probability;
+            bestPositionProbability = Math.max(bestPositionProbability, probability);
+        }
+
+        const bucket = supportBuckets.get(item.supportCount);
+        const bucketExpectedHits = bucket
+            ? bucket.totalHits / Math.max(1, bucket.trials)
+            : 0.27;
+        return {
+            ...item,
+            expectedHits,
+            hitProbability: 1 - Math.exp(-expectedHits),
+            bestPositionProbability,
+            bucketExpectedHits,
+            posteriorScore: expectedHits * 0.78 + bucketExpectedHits * 0.22
+        };
+    });
+}
+
 function aggregatePositionPredictions(positionPredictions, options = {}) {
     const mode = options.mode || 'support';
+    if (
+        mode === 'positionPosterior' ||
+        mode === 'positionPosteriorPortfolio' ||
+        mode === 'bestPositionPosterior' ||
+        mode === 'positionBayesExpected'
+    ) {
+        const posteriorItems = getPositionPosteriorItems(
+            positionPredictions,
+            options.calibrationState
+        );
+        if (mode === 'positionPosteriorPortfolio') {
+            return greedyRank(
+                posteriorItems,
+                item => item.posteriorScore,
+                { diversify: true, penaltyScale: 0.025 }
+            );
+        }
+        if (mode === 'bestPositionPosterior') {
+            return posteriorItems.slice().sort((a, b) => {
+                const aScore = a.bestPositionProbability + a.expectedHits * 0.25;
+                const bScore = b.bestPositionProbability + b.expectedHits * 0.25;
+                if (bScore !== aScore) return bScore - aScore;
+                if (b.supportCount !== a.supportCount) return b.supportCount - a.supportCount;
+                return a.number - b.number;
+            });
+        }
+        const scoreField = mode === 'positionBayesExpected'
+            ? 'posteriorScore'
+            : 'expectedHits';
+        return sortByBaseScore(posteriorItems, scoreField);
+    }
     const items = buildNumberItems(positionPredictions, options.positionWeights);
     if (mode === 'weightedSupport') return sortByBaseScore(items, 'weightedScore');
     if (mode === 'diverseSupport') {
@@ -361,11 +442,20 @@ function aggregatePositionPredictions(positionPredictions, options = {}) {
     return sortByBaseScore(items, 'supportCount');
 }
 
-function createPositionCalibration() {
+function createPositionCalibration(survivorCount = 25) {
+    const priorTrials = 40;
+    const expectedHitRate = Math.max(0.01, Math.min(0.99, survivorCount / 100));
     return new Map(PRIZE_KEYS.map(positionKey => [positionKey, {
-        trials: 20,
-        hits: 5
+        trials: priorTrials,
+        hits: priorTrials * expectedHitRate
     }]));
+}
+
+function createAggregationCalibration(survivorCount) {
+    return {
+        positions: createPositionCalibration(survivorCount),
+        supportBuckets: new Map()
+    };
 }
 
 function getCalibratedPositionWeights(calibration) {
@@ -387,6 +477,29 @@ function updatePositionCalibration(calibration, positionPredictions, actualByPos
         stat.trials += 1;
         if (predicted.has(actual)) stat.hits += 1;
         calibration.set(positionKey, stat);
+    }
+}
+
+function updateAggregationCalibration(
+    calibrationState,
+    positionPredictions,
+    actualByPosition,
+    actualCounts
+) {
+    updatePositionCalibration(
+        calibrationState.positions,
+        positionPredictions,
+        actualByPosition
+    );
+    const items = buildNumberItems(positionPredictions);
+    for (const item of items) {
+        const current = calibrationState.supportBuckets.get(item.supportCount) || {
+            trials: 40,
+            totalHits: 40 * 0.27
+        };
+        current.trials += 1;
+        current.totalHits += actualCounts.get(item.number) || 0;
+        calibrationState.supportBuckets.set(item.supportCount, current);
     }
 }
 
@@ -897,7 +1010,10 @@ async function main() {
         const calibrationByConfigMode = new Map();
         for (const config of methodConfigs) {
             for (const aggregationMode of aggregationModes) {
-                calibrationByConfigMode.set(`${config.id}:${aggregationMode}`, createPositionCalibration());
+                calibrationByConfigMode.set(
+                    `${config.id}:${aggregationMode}`,
+                    createAggregationCalibration(100 - config.target)
+                );
                 for (const betCount of betCounts) {
                     const key = `${config.id}:${aggregationMode}:top${betCount}`;
                     summariesByWindow[windowSpec.key][key] = emptySummary(key, betCount, {
@@ -918,10 +1034,12 @@ async function main() {
                 }
                 for (const aggregationMode of aggregationModes) {
                     const calibrationKey = `${config.id}:${aggregationMode}`;
-                    const positionWeights = getCalibratedPositionWeights(calibrationByConfigMode.get(calibrationKey));
+                    const calibrationState = calibrationByConfigMode.get(calibrationKey);
+                    const positionWeights = getCalibratedPositionWeights(calibrationState.positions);
                     const ranked = aggregatePositionPredictions(positionPredictions, {
                         mode: aggregationMode,
-                        positionWeights
+                        positionWeights,
+                        calibrationState
                     });
                     for (const betCount of betCounts) {
                         const key = `${config.id}:${aggregationMode}:top${betCount}`;
@@ -945,7 +1063,12 @@ async function main() {
                             });
                         }
                     }
-                    updatePositionCalibration(calibrationByConfigMode.get(calibrationKey), positionPredictions, row.actualByPosition);
+                    updateAggregationCalibration(
+                        calibrationState,
+                        positionPredictions,
+                        row.actualByPosition,
+                        row.actualCounts
+                    );
                 }
             }
         }
@@ -1012,7 +1135,17 @@ async function main() {
     }
 }
 
-main().catch(error => {
-    console.error(error);
-    process.exit(1);
-});
+if (require.main === module) {
+    main().catch(error => {
+        console.error(error);
+        process.exit(1);
+    });
+}
+
+module.exports = {
+    aggregatePositionPredictions,
+    buildNumberItems,
+    createAggregationCalibration,
+    getPositionPosteriorItems,
+    updateAggregationCalibration
+};

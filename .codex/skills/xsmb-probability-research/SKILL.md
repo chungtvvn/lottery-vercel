@@ -20,6 +20,8 @@ Build research methods without contaminating future information or rewriting iss
 9. Use `.codex/skills/xsmb-probability-research/scripts/audit-backtest-report.js` to reject mismatched comparisons.
 10. Promote only when the candidate improves holdout performance without materially worsening loss streaks.
 
+Pass `allow-aggregation-change` as the final audit argument only when the aggregation algorithm itself is the tested variable; dates, Hold, bet count, and stake must still match.
+
 ## Statistical rules
 
 - Smooth small samples. Never rank raw `100%` from one or two observations as certainty.

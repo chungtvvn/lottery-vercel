@@ -6,9 +6,15 @@ function fail(message) {
     process.exit(1);
 }
 
-const [reportPath, baselineId, candidateId, windowKey = 'dateRange'] = process.argv.slice(2);
+const [
+    reportPath,
+    baselineId,
+    candidateId,
+    windowKey = 'dateRange',
+    comparisonMode = 'strict'
+] = process.argv.slice(2);
 if (!reportPath || !baselineId || !candidateId) {
-    fail('Usage: audit-backtest-report.js <report.json> <baselineId> <candidateId> [window]');
+    fail('Usage: audit-backtest-report.js <report.json> <baselineId> <candidateId> [window] [strict|allow-aggregation-change]');
 }
 
 const payload = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
@@ -48,7 +54,8 @@ if (
 if (
     baseline.aggregationMode !== undefined &&
     candidate.aggregationMode !== undefined &&
-    baseline.aggregationMode !== candidate.aggregationMode
+    baseline.aggregationMode !== candidate.aggregationMode &&
+    comparisonMode !== 'allow-aggregation-change'
 ) {
     fail(`Cách tổng hợp khác nhau: baseline=${baseline.aggregationMode}, candidate=${candidate.aggregationMode}`);
 }

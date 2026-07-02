@@ -383,6 +383,64 @@ function buildEnsemblePrediction(candidates, targetExcluded, name) {
     return finalizePrediction(new Set(rows.slice(0, targetExcluded).map(row => row.num)), []);
 }
 
+function buildPosteriorChainEnsemble(candidates, targetExcluded, name) {
+    const weightsByName = {
+        posteriorChainConservative: {
+            posterior: 0.75,
+            small: 0.15,
+            block: 0.1,
+            agreement: 0.04
+        },
+        posteriorChainBalanced: {
+            posterior: 0.6,
+            small: 0.25,
+            block: 0.15,
+            agreement: 0.08
+        },
+        posteriorChainAgreement: {
+            posterior: 0.55,
+            small: 0.25,
+            block: 0.2,
+            agreement: 0.16
+        }
+    };
+    const weights = weightsByName[name] || weightsByName.posteriorChainConservative;
+    const posterior = annualMilestoneService.buildPrediction(
+        candidates,
+        targetExcluded,
+        'numberPosteriorDiversity'
+    );
+    const small = annualMilestoneService.buildPrediction(candidates, targetExcluded, 'chainSmallFirst');
+    const block = annualMilestoneService.buildPrediction(candidates, targetExcluded, 'chainBlockFirst');
+    const smallExcluded = new Set((small.excludedNumbers || []).map(Number));
+    const blockExcluded = new Set((block.excludedNumbers || []).map(Number));
+    const posteriorByNumber = new Map(
+        (posterior.ranking || []).map(row => [
+            Number(row.number),
+            1 - ((Math.max(1, Number(row.rank || 100)) - 1) / 99)
+        ])
+    );
+    const rows = ALL_NUMBERS.map(num => {
+        const smallVote = smallExcluded.has(num) ? 1 : 0;
+        const blockVote = blockExcluded.has(num) ? 1 : 0;
+        const agreement = smallVote && blockVote ? 1 : 0;
+        return {
+            num,
+            score:
+                (posteriorByNumber.get(num) || 0) * weights.posterior +
+                smallVote * weights.small +
+                blockVote * weights.block +
+                agreement * weights.agreement,
+            votes: smallVote + blockVote
+        };
+    }).sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        if (b.votes !== a.votes) return b.votes - a.votes;
+        return a.num - b.num;
+    });
+    return finalizePrediction(new Set(rows.slice(0, targetExcluded).map(row => row.num)), []);
+}
+
 function finalizePrediction(excludedSet, selectedChains) {
     const excluded = [...excludedSet].sort((a, b) => a - b);
     const excludedLookup = new Set(excluded);
@@ -479,6 +537,9 @@ async function main() {
         'numberLogOddsActive',
         'numberRobustConsensus',
         'numberPosteriorDiversity',
+        'posteriorChainConservative',
+        'posteriorChainBalanced',
+        'posteriorChainAgreement',
         'ensembleProfitVote',
         'ensembleBalancedVote'
     ];
@@ -506,6 +567,8 @@ async function main() {
                     ? annualMilestoneService.buildPrediction(candidates, target, 'chainSmallFirst')
                     : variant === 'numberPosteriorDiversity'
                         ? annualMilestoneService.buildPrediction(candidates, target, 'numberPosteriorDiversity')
+                    : variant.startsWith('posteriorChain')
+                        ? buildPosteriorChainEnsemble(candidates, target, variant)
                     : variant.startsWith('ensemble')
                         ? buildEnsemblePrediction(candidates, target, variant)
                     : variant.startsWith('number')
