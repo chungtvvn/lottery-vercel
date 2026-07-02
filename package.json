@@ -25,6 +25,7 @@
     "test:online-expert-ensemble": "node scripts/test-online-expert-ensemble.js",
     "test:loto-adaptive-bet-count": "node scripts/test-loto-adaptive-bet-count.js",
     "test:posterior-calibrated-cutoff": "node scripts/test-posterior-calibrated-cutoff.js",
+    "test:milestone-snapshot-immutability": "node scripts/test-milestone-snapshot-immutability.js",
     "backtest:weekly-risk": "node scripts/backtest-weekly-risk-targets.js",
     "cf:cron:deploy": "npx wrangler deploy -c wrangler.daily-update.toml",
     "cf:cron:tail": "npx wrangler tail xsmb-daily-update-dispatcher",
