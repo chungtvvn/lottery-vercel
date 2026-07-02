@@ -70,8 +70,8 @@ assert.ok(
 );
 assert.equal(
     annualMilestoneService.DEFAULT_BET_STRATEGY,
-    'numberPosteriorDiversity',
-    'Phương pháp đã vượt kiểm định phải là mặc định cho dự đoán mới'
+    'chainBlockFirst',
+    'Nhịp block trước phải là mặc định để tiếp tục chuỗi theo dõi thực tế'
 );
 
 console.log('Posterior diversity strategy tests passed.');

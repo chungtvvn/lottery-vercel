@@ -69,10 +69,51 @@ const locked = annualMilestoneService.lockNextPredictionToPublished(
         strategies: issuedStrategy
     }
 );
-assert.deepStrictEqual(locked.strategies, issuedStrategy);
+assert.deepStrictEqual(
+    locked.strategies.chainBlockFirst.holds['70'].betNumbers,
+    issuedStrategy.chainBlockFirst.holds['70'].betNumbers
+);
+assert.deepStrictEqual(
+    locked.strategies.chainBlockFirst.holds['70'].excludedNumbers,
+    issuedStrategy.chainBlockFirst.holds['70'].excludedNumbers
+);
+assert.equal(
+    locked.strategies.chainBlockFirst.holds['70'].explanationIntegrity,
+    'unavailable-number-mismatch'
+);
 assert.deepStrictEqual(locked.chainRows, freshRecalculation.chainRows);
 assert.equal(locked.pointInTimeLocked, true);
 assert.equal(locked.publishedAt, pending.generatedAt);
+
+const matchingFresh = {
+    predictionIsoDate: '2026-07-02',
+    strategies: {
+        chainBlockFirst: {
+            holds: {
+                70: {
+                    ...issuedStrategy.chainBlockFirst.holds['70'],
+                    selectedChains: [{ key: 'block2x1SoLe', title: 'Nhịp 2-1' }]
+                }
+            }
+        }
+    }
+};
+const matchingLocked = annualMilestoneService.lockNextPredictionToPublished(
+    matchingFresh,
+    {
+        ...pending,
+        status: 'pending',
+        strategies: issuedStrategy
+    }
+);
+assert.deepStrictEqual(
+    matchingLocked.strategies.chainBlockFirst.holds['70'].selectedChains,
+    matchingFresh.strategies.chainBlockFirst.holds['70'].selectedChains
+);
+assert.equal(
+    matchingLocked.strategies.chainBlockFirst.holds['70'].explanationIntegrity,
+    'rehydrated-after-number-match'
+);
 
 const trustedWinningRow = {
     status: 'settled',

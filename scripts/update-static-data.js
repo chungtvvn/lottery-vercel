@@ -22,7 +22,7 @@ const LOTO_METHOD_ID = process.env.LOTO_METHOD_ID || 'milestone20yChainSmallFirs
 const LOTO_AGGREGATION_MODE = process.env.LOTO_AGGREGATION_MODE || 'twoHitGreedy';
 const LOTO_BET_COUNTS = [3, 4, 5, 6, 7];
 const LOTO_DEFAULT_BET_COUNT = 6;
-const MILESTONE20Y_METHOD_VERSION = 'annual20y-2026-07-02-posterior-diversity-hold70';
+const MILESTONE20Y_METHOD_VERSION = 'annual20y-2026-07-02-chain-block-hold70-immutable-details';
 const MILESTONE20Y_BASELINE_VERSION = 'annual20y-baseline-2026-06-28-block-ab';
 const MILESTONE20Y_CACHE_FILES = [
     'cached_milestone20y_prediction.json',
