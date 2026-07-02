@@ -31,7 +31,10 @@ function parseArgs() {
         winMultiplier: Number(args.get('winMultiplier') || DEFAULT_WIN_MULTIPLIER),
         activeFrequencyLimit: Number(args.get('activeFrequencyLimit') || 0.5),
         recordFrequencyLimit: Number(args.get('recordFrequencyLimit') || 1.1),
-        minPotentialCurrentLenForNeverFormed: Number(args.get('minPotentialLen') || 1)
+        minPotentialCurrentLenForNeverFormed: Number(args.get('minPotentialLen') || 1),
+        variants: args.get('variants')
+            ? String(args.get('variants')).split(',').map(value => value.trim()).filter(Boolean)
+            : null
     };
 }
 
@@ -462,7 +465,7 @@ async function main() {
     });
     const endDate = options.endDate ? parseDate(options.endDate) : parseDate(rawData[rawData.length - 1].date);
     const startDate = parseDate(options.startDate);
-    const variantNames = [
+    const defaultVariantNames = [
         'chainSmallFirst',
         'chainBlockFirst',
         'chainBlockScore',
@@ -475,9 +478,11 @@ async function main() {
         'numberBayesActive',
         'numberLogOddsActive',
         'numberRobustConsensus',
+        'numberPosteriorDiversity',
         'ensembleProfitVote',
         'ensembleBalancedVote'
     ];
+    const variantNames = options.variants || defaultVariantNames;
     const summaries = new Map();
     for (const variant of variantNames) {
         for (const target of options.targets) summaries.set(`${variant}|${target}`, emptySummary(variant, target));
@@ -499,6 +504,8 @@ async function main() {
             for (const target of options.targets) {
                 const prediction = variant === 'chainSmallFirst'
                     ? annualMilestoneService.buildPrediction(candidates, target, 'chainSmallFirst')
+                    : variant === 'numberPosteriorDiversity'
+                        ? annualMilestoneService.buildPrediction(candidates, target, 'numberPosteriorDiversity')
                     : variant.startsWith('ensemble')
                         ? buildEnsemblePrediction(candidates, target, variant)
                     : variant.startsWith('number')

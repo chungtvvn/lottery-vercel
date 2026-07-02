@@ -1,0 +1,4 @@
+interface:
+  display_name: "XSMB Probability Research"
+  short_description: "Backtest xác suất Đề và Lô chống leakage"
+  default_prompt: "Use $xsmb-probability-research to design and validate a new point-in-time XSMB probability method."
