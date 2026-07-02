@@ -30,6 +30,9 @@ Pass `allow-aggregation-change` as the final audit argument only when the aggreg
 - Evaluate Lô with hit-day rate, at-least-two-hit rate, average hits, profit, ROI, and longest under-two streak.
 - Keep selection count fixed when comparing methods.
 - Treat 2026 or another untouched period as holdout after weights are chosen.
+- For online ensembles, update weights only after settling the current day and freeze hyperparameter selection before holdout.
+- Calibrate probabilities with a proper score such as log-loss; do not select calibration temperature directly from holdout profit.
+- For adaptive Lô bet counts, compare against every fixed Top 3–7 baseline on the same dates.
 - Report negative and null results. Do not tune repeatedly on the reported holdout.
 - A profitable historical result is evidence, not a guarantee.
 
@@ -58,6 +61,16 @@ node scripts/backtest-loto-milestone20y.js \
   --holds=65,70 --betCounts=3,4,5,6,7 \
   --aggregationModes=twoHitGreedy \
   --stakeK=2200 --payoutK=8000
+
+# Online Đề ensemble, train through 2025 and freeze before 2026
+node scripts/research-online-expert-ensemble.js
+
+# Calibrated dynamic Đề cutoff
+node scripts/research-posterior-calibrated-cutoff.js
+
+# Adaptive Lô bet count from a detailed point-in-time report
+node scripts/research-loto-adaptive-bet-count.js \
+  --report=reports/backtest_loto_milestone20y_<timestamp>.json
 ```
 
 Keep generated research reports under `reports/`; do not commit them unless explicitly requested.
