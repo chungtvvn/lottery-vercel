@@ -13,6 +13,7 @@ const DEFAULT_APP_BASE_URL = 'https://lottery-stats-vercel.vercel.app';
 const DEFAULT_DE_STRATEGY = 'chainBlockFirst';
 const DEFAULT_DE_TARGET = 70;
 const DEFAULT_LOTO_COUNT = 14;
+const TELEGRAM_LOTO_COUNTS = [6, 14];
 
 function getVietnamDate(offsetDays = 0) {
   const date = new Date(Date.now() + offsetDays * 24 * 60 * 60 * 1000);
@@ -126,6 +127,12 @@ function latestRow(rows, status) {
     .sort((a, b) => String(b.predictionIsoDate || '').localeCompare(String(a.predictionIsoDate || '')))[0] || null;
 }
 
+function latestLotoRow(rows, methodKey, status) {
+  return (rows || [])
+    .filter(row => (!status || row.status === status) && row.methods?.[methodKey])
+    .sort((a, b) => String(b.predictionIsoDate || '').localeCompare(String(a.predictionIsoDate || '')))[0] || null;
+}
+
 function formatLotoHits(betNumbers = [], actualNumbers = []) {
   const frequencies = new Map();
   for (const value of actualNumbers || []) {
@@ -157,6 +164,7 @@ function formatNumberList(values = []) {
 }
 
 function getLotoActualNumbers(row = {}) {
+  row = row || {};
   if (Array.isArray(row.actualNumbers) && row.actualNumbers.length) {
     return row.actualNumbers
       .map(normalizeLotteryNumber)
@@ -184,23 +192,33 @@ function buildTelegramReport(dePayload, lotoPayload) {
     || dePending?.strategies?.[deStrategy]?.holds?.[String(deTarget)];
 
   const lotoRows = lotoPayload.livePredictions?.predictions || [];
-  const lotoSettled = latestRow(lotoRows, 'settled');
   const lotoPending = latestRow(lotoRows, 'pending');
-  const lotoMethodKey = `top${DEFAULT_LOTO_COUNT}`;
-  const lotoNext = lotoPayload.nextPrediction?.predictions?.[lotoMethodKey]
-    || lotoPending?.predictions?.[lotoMethodKey];
+  const lotoMethods = TELEGRAM_LOTO_COUNTS.map(count => {
+    const key = `top${count}`;
+    const settled = latestLotoRow(lotoRows, key, 'settled');
+    const result = settled?.methods?.[key];
+    const actual = getLotoActualNumbers(settled);
+    return {
+      count,
+      key,
+      settled,
+      result,
+      actual,
+      hits: formatLotoHits(result?.betNumbers || [], actual),
+      next: lotoPayload.nextPrediction?.predictions?.[key]
+        || lotoPending?.predictions?.[key],
+      summary: lotoPayload.livePredictions?.summary?.[key]
+    };
+  });
 
   const deResult = deSettled?.results?.[deKey];
   const deSettledPrediction = deSettled?.strategies?.[deStrategy]?.holds?.[String(deTarget)];
-  const lotoResult = lotoSettled?.methods?.[lotoMethodKey];
-  const lotoActual = getLotoActualNumbers(lotoSettled);
-  const lotoHits = formatLotoHits(lotoResult?.betNumbers || [], lotoActual);
   const predictionDate = dePayload.nextPrediction?.predictionIsoDate
     || dePending?.predictionIsoDate
     || lotoPayload.nextPrediction?.predictionIsoDate
     || lotoPending?.predictionIsoDate;
 
-  if (!predictionDate || !deNext || !lotoNext) {
+  if (!predictionDate || !deNext || lotoMethods.some(item => !item.next)) {
     throw new Error('Payload chưa có đủ dự đoán Đề/Lô cho ngày tiếp theo.');
   }
 
@@ -221,17 +239,25 @@ function buildTelegramReport(dePayload, lotoPayload) {
     lines.push('• Đề: chưa có bản ghi đã kết toán.');
   }
 
-  if (lotoSettled && lotoResult) {
-    lines.push(
-      `• <b>Lô Top ${DEFAULT_LOTO_COUNT} ${escapeHtml(displayDate(lotoSettled.predictionIsoDate))}</b>`,
-      `  Số đã đánh (${Number(lotoResult.betCount || lotoResult.betNumbers?.length || 0)}): <code>${escapeHtml(formatNumberList(lotoResult.betNumbers || []))}</code>`,
-      `  Kết quả thực tế (${lotoActual.length} vị trí): <code>${escapeHtml(formatNumberList(lotoActual))}</code>`,
-      `  ${Number(lotoResult.profitK || 0) > 0 ? '✅ CÓ LÃI' : '❌ LỖ'} · ${escapeHtml(formatMoneyK(lotoResult.profitK))}` +
-        ` · ${Number(lotoResult.hits || 0)} hit` +
-        `${lotoHits.length ? ` · Trúng: <b>${escapeHtml(formatNumberList(lotoHits))}</b>` : ''}`
-    );
-  } else {
-    lines.push('• Lô: chưa có bản ghi đã kết toán.');
+  for (const item of lotoMethods) {
+    if (item.settled && item.result) {
+      lines.push(
+        `• <b>Lô Top ${item.count} ${escapeHtml(displayDate(item.settled.predictionIsoDate))}</b>`,
+        `  Số đã đánh: <code>${escapeHtml(formatNumberList(item.result.betNumbers || []))}</code>`,
+        `  Kết quả (${item.actual.length} vị trí): <code>${escapeHtml(formatNumberList(item.actual))}</code>`,
+        `  ${Number(item.result.profitK || 0) > 0 ? '✅ CÓ LÃI' : '❌ LỖ'} · ${escapeHtml(formatMoneyK(item.result.profitK))}` +
+          ` · ${Number(item.result.hits || 0)} hit` +
+          `${item.hits.length ? ` · Trúng: <b>${escapeHtml(formatNumberList(item.hits))}</b>` : ''}`
+      );
+    } else {
+      lines.push(`• Lô Top ${item.count}: chưa có bản ghi đã kết toán.`);
+    }
+    if (item.summary?.days) {
+      lines.push(
+        `  Lũy kế: ${Number(item.summary.days)} ngày · hit-day ${Number(item.summary.hitDays || 0)}/${Number(item.summary.days)}` +
+          ` · ${escapeHtml(formatMoneyK(item.summary.profitK))}`
+      );
+    }
   }
 
   lines.push(
@@ -240,14 +266,17 @@ function buildTelegramReport(dePayload, lotoPayload) {
     `• Phương pháp: ${escapeHtml(deStrategy)} · Hold ${deTarget}`,
     `• 30 số đánh: <b>${escapeHtml((deNext.betNumbers || []).join(' '))}</b>`,
     '',
-    `<b>3. DỰ ĐOÁN LÔ TOP ${DEFAULT_LOTO_COUNT}</b>`,
-    `• Phương pháp: ${escapeHtml(lotoPayload.nextPrediction?.methodId || 'Mốc 20 năm 27 vị trí')}`,
-    `• Số đánh: <b>${escapeHtml((lotoNext.numbers || []).join(' '))}</b>`
+    '<b>3. DỰ ĐOÁN LÔ TOP 6 &amp; TOP 14</b>',
+    `• Phương pháp: ${escapeHtml(lotoPayload.nextPrediction?.methodId || 'Mốc 20 năm 27 vị trí')}`
   );
 
-  const support = (lotoNext.support || []).slice(0, DEFAULT_LOTO_COUNT)
+  for (const item of lotoMethods) {
+    lines.push(`• Top ${item.count}: <b>${escapeHtml((item.next.numbers || []).join(' '))}</b>`);
+  }
+  const defaultMethod = lotoMethods.find(item => item.count === DEFAULT_LOTO_COUNT);
+  const support = (defaultMethod?.next?.support || []).slice(0, DEFAULT_LOTO_COUNT)
     .map(item => `${item.number}(${item.supportCount})`);
-  if (support.length) lines.push(`• Đồng thuận 27 vị trí: ${escapeHtml(support.join(' · '))}`);
+  if (support.length) lines.push(`• Đồng thuận Top ${DEFAULT_LOTO_COUNT}: ${escapeHtml(support.join(' · '))}`);
   lines.push('', '<i>Dữ liệu tự động từ cache R2 sau khi kết quả ngày mới được cập nhật.</i>');
 
   return {
@@ -256,7 +285,7 @@ function buildTelegramReport(dePayload, lotoPayload) {
     text: lines.join('\n'),
     deStrategy,
     deTarget,
-    lotoMethodKey
+    lotoMethodKey: lotoMethods.map(item => item.key).join('+')
   };
 }
 
@@ -296,7 +325,7 @@ async function notifyTelegram(env, options = {}) {
 
   const [dePayload, lotoPayload] = await Promise.all([
     fetchPredictionJson(env, `/api/milestone-20y/prediction?strategy=${DEFAULT_DE_STRATEGY}&target=${DEFAULT_DE_TARGET}`),
-    fetchPredictionJson(env, `/api/loto/prediction?count=${DEFAULT_LOTO_COUNT}`)
+    fetchPredictionJson(env, '/api/loto/prediction?count=all')
   ]);
   const expectedDataDate = options.expectedDataDate || getVietnamDate();
   if (!options.force && (
