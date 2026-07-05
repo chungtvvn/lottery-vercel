@@ -8,7 +8,9 @@
         performancePeriod: 'monthly',
         performancePayload: null,
         performanceLoading: false,
-        performanceVisible: false
+        performanceVisible: false,
+        liveBetCount: DEFAULT_LOTO_BET_COUNT,
+        lotoPayload: null
     };
 
     function money(value) {
@@ -113,18 +115,45 @@
         const live = data.livePredictions || {};
         const summaryRoot = document.getElementById('liveSummary');
         const listRoot = document.getElementById('liveList');
+        const tabsRoot = document.getElementById('liveMethodTabs');
+        const selectedCount = state.liveBetCount;
+        const selectedKey = `top${selectedCount}`;
         const summary = summarizeLiveAdjusted(live);
+        tabsRoot.innerHTML = LOTO_COUNT_ORDER.map(count => `
+            <button type="button" data-live-count="${count}"
+                class="live-method-btn rounded-xl border px-3 py-2 text-xs font-black transition ${count === selectedCount
+                    ? 'border-violet-600 bg-violet-600 text-white shadow'
+                    : 'border-slate-200 bg-white text-slate-600 hover:border-violet-300 hover:text-violet-700'}">
+                Top ${count}
+            </button>
+        `).join('');
+        tabsRoot.querySelectorAll('.live-method-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                state.liveBetCount = Number(button.dataset.liveCount) || DEFAULT_LOTO_BET_COUNT;
+                renderLive(state.lotoPayload || data);
+            });
+        });
+
         summaryRoot.innerHTML = LOTO_COUNT_ORDER.map(count => {
             const item = summary[`top${count}`] || {};
             return `
-                <div class="rounded-xl border ${count === DEFAULT_LOTO_BET_COUNT ? 'border-emerald-200 bg-emerald-50/80' : 'border-amber-100 bg-white/70'} p-4">
+                <button type="button" data-summary-count="${count}"
+                    class="live-summary-btn min-h-32 rounded-xl border p-4 text-left transition ${count === selectedCount
+                        ? 'border-violet-400 bg-violet-50 ring-2 ring-violet-200'
+                        : (count === DEFAULT_LOTO_BET_COUNT ? 'border-emerald-200 bg-emerald-50/80' : 'border-amber-100 bg-white/70')}">
                     <div class="text-xs font-semibold uppercase text-slate-500">Top ${count} thực tế</div>
                     <div class="mt-2 text-2xl font-black text-slate-900">${item.days || 0} ngày</div>
                     <div class="mt-1 text-sm text-slate-600">Lãi ${item.wins || 0}/${item.days || 0} · hit-day ${percent(item.hitRate)}</div>
                     <div class="mt-1 text-sm font-bold ${(item.profitK || 0) >= 0 ? 'text-emerald-600' : 'text-red-600'}">${money(item.profitK)}</div>
-                </div>
+                </button>
             `;
         }).join('');
+        summaryRoot.querySelectorAll('.live-summary-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                state.liveBetCount = Number(button.dataset.summaryCount) || DEFAULT_LOTO_BET_COUNT;
+                renderLive(state.lotoPayload || data);
+            });
+        });
 
         const rows = (live.predictions || []).slice().reverse();
         const methodName = live.config?.methodName || data.config?.methodName || '';
@@ -134,12 +163,12 @@
                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                 : 'bg-amber-50 text-amber-700 border-amber-200';
             const actualNumbers = row.actual ? Object.keys(row.actual).sort((a, b) => Number(a) - Number(b)) : [];
-            const topDefault = row.predictions?.[`top${DEFAULT_LOTO_BET_COUNT}`] || {
-                count: DEFAULT_LOTO_BET_COUNT,
+            const selectedPrediction = row.predictions?.[selectedKey] || {
+                count: selectedCount,
                 numbers: []
             };
-            const hasDefaultPrediction = (topDefault.numbers || []).length > 0;
-            const predictedSet = new Set((topDefault.numbers || []).map(number => String(number).padStart(2, '0')));
+            const hasSelectedPrediction = (selectedPrediction.numbers || []).length > 0;
+            const predictedSet = new Set((selectedPrediction.numbers || []).map(number => String(number).padStart(2, '0')));
             const actualSet = new Set(actualNumbers.map(number => String(number).padStart(2, '0')));
             const actualHtml = actualNumbers.length
                 ? actualNumbers.map(number => {
@@ -151,8 +180,8 @@
                     });
                 }).join('')
                 : '<span class="text-xs text-slate-400">-</span>';
-            const rawMethod = row.methods?.[`top${DEFAULT_LOTO_BET_COUNT}`] || {};
-            const method = adjustLiveMethod(rawMethod, topDefault.count || DEFAULT_LOTO_BET_COUNT);
+            const rawMethod = row.methods?.[selectedKey] || {};
+            const method = adjustLiveMethod(rawMethod, selectedPrediction.count || selectedCount);
             return `
                 <article class="p-4 ${row.status === 'pending' ? 'bg-amber-50/30' : 'bg-white/30'}">
                     <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -170,21 +199,21 @@
                             </div>
                         </div>
                         <div class="text-left lg:text-right">
-                            <div class="text-sm font-bold ${(method.profitK || 0) >= 0 ? 'text-emerald-600' : 'text-red-600'}">${row.status === 'settled' && hasDefaultPrediction ? money(method.profitK) : (hasDefaultPrediction ? 'Chưa kết toán' : 'Chưa theo dõi Top 14')}</div>
-                            <div class="text-xs text-slate-500">${row.status === 'settled' && hasDefaultPrediction ? `${method.hits || 0} hit top${topDefault.count || DEFAULT_LOTO_BET_COUNT}` : (hasDefaultPrediction ? 'Sẽ tự đối soát khi có KQ' : 'Snapshot trước thời điểm triển khai Top 14')}</div>
+                            <div class="text-sm font-bold ${(method.profitK || 0) >= 0 ? 'text-emerald-600' : 'text-red-600'}">${row.status === 'settled' && hasSelectedPrediction ? money(method.profitK) : (hasSelectedPrediction ? 'Chưa kết toán' : `Chưa theo dõi Top ${selectedCount}`)}</div>
+                            <div class="text-xs text-slate-500">${row.status === 'settled' && hasSelectedPrediction ? `${method.hits || 0} hit top${selectedPrediction.count || selectedCount}` : (hasSelectedPrediction ? 'Sẽ tự đối soát khi có KQ' : `Snapshot chưa có dàn Top ${selectedCount}`)}</div>
                         </div>
                     </div>
                     <div class="number-panel-bet mt-3 rounded-2xl border p-3">
-                        <div class="mb-2 text-xs font-semibold uppercase text-slate-500">Dàn đánh đã chốt</div>
+                        <div class="mb-2 text-xs font-semibold uppercase text-slate-500">Dàn Top ${selectedCount} đã chốt</div>
                         <div class="flex flex-wrap gap-2">
-                        ${(topDefault.numbers || []).map(number => {
+                        ${(selectedPrediction.numbers || []).map(number => {
                             const text = String(number).padStart(2, '0');
                             const isHit = row.status === 'settled' && actualSet.has(text);
                             return numberBadge(text, row.status === 'pending' ? 'amber' : 'bet', {
                                 hit: isHit,
                                 title: isHit ? 'Số đánh đã trúng thực tế trong 27 giải' : ''
                             });
-                        }).join('') || '<span class="text-xs text-slate-400">Không có dàn Top 14 trong snapshot này.</span>'}
+                        }).join('') || `<span class="text-xs text-slate-400">Không có dàn Top ${selectedCount} trong snapshot này.</span>`}
                         </div>
                     </div>
                 </article>
@@ -545,6 +574,7 @@
             const data = await res.json();
             if (!res.ok || !data.success) throw new Error(data.error || 'Không tải được dữ liệu Lô.');
             errorBox.classList.add('hidden');
+            state.lotoPayload = data;
             renderMeta(data);
             renderPredictions(data);
             renderLive(data);

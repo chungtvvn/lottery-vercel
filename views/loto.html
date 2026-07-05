@@ -78,12 +78,15 @@
         </section>
 
         <section class="mb-6 glass-card overflow-hidden">
-            <div class="border-b border-amber-100 bg-amber-50/70 px-4 py-3.5">
-                <h2 class="flex items-center gap-2 text-lg font-bold text-slate-900">
-                    <i class="bi bi-broadcast-pin text-amber-600"></i>
-                    Nhật ký đánh thực tế
-                </h2>
-                <p class="mt-1 text-xs text-slate-600">Các dàn này được lưu cố định từ lúc chức năng Lô được triển khai; khi có kết quả chỉ cập nhật thắng/thua, không tính lại dàn cũ.</p>
+            <div class="flex flex-col gap-3 border-b border-amber-100 bg-amber-50/70 px-4 py-3.5 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                    <h2 class="flex items-center gap-2 text-lg font-bold text-slate-900">
+                        <i class="bi bi-broadcast-pin text-amber-600"></i>
+                        Nhật ký đánh thực tế
+                    </h2>
+                    <p class="mt-1 text-xs text-slate-600">Chọn từng dàn để xem đúng snapshot, hit và lãi/lỗ của riêng phương pháp đó. Dàn cũ không bị tính lại sau khi có kết quả.</p>
+                </div>
+                <div id="liveMethodTabs" class="flex flex-wrap gap-2" aria-label="Chọn phương pháp nhật ký Lô"></div>
             </div>
             <div id="liveSummary" class="grid gap-3 border-b border-slate-100 p-4 md:grid-cols-3 xl:grid-cols-6"></div>
             <div id="liveList" class="divide-y divide-slate-100"></div>
@@ -91,7 +94,7 @@
 
     </main>
 
-    <script src="/js/loto.js?v=20260705-top14-default"></script>
+    <script src="/js/loto.js?v=20260705-live-method-journals"></script>
 </body>
 
 </html>
