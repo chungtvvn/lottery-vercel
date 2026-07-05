@@ -10,7 +10,7 @@ const NO_STORE_HEADERS = {
 };
 const LOTO_STAKE_PER_NUMBER_K = 2200;
 const LOTO_PAYOUT_PER_HIT_K = 8000;
-const LOTO_BET_COUNTS = [3, 4, 5, 6, 7];
+const LOTO_BET_COUNTS = [3, 4, 5, 6, 7, 14];
 
 function isAuthorized(request) {
     const expected = process.env.PREDICTION_API_TOKEN || process.env.EXTERNAL_API_TOKEN || '';
@@ -30,10 +30,10 @@ function filterCount(payload, countParam) {
     if (!raw || raw === 'all') return payload;
 
     const count = Number(raw);
-    if (![3, 4, 5, 6, 7].includes(count)) {
+    if (!LOTO_BET_COUNTS.includes(count)) {
         return {
             ...payload,
-            error: 'count chỉ hỗ trợ 3, 4, 5, 6, 7 hoặc all.'
+            error: 'count chỉ hỗ trợ 3, 4, 5, 6, 7, 14 hoặc all.'
         };
     }
 
@@ -54,7 +54,7 @@ function withLotoConfig(config = {}) {
         ...config,
         stakePerNumberK: LOTO_STAKE_PER_NUMBER_K,
         payoutPerHitK: LOTO_PAYOUT_PER_HIT_K,
-        defaultBetCount: 6
+        defaultBetCount: 14
     };
 }
 

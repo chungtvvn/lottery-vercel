@@ -12,7 +12,7 @@ const TELEGRAM_LAST_SENT_KEY = 'telegram:last_sent_prediction_date';
 const DEFAULT_APP_BASE_URL = 'https://lottery-stats-vercel.vercel.app';
 const DEFAULT_DE_STRATEGY = 'chainBlockFirst';
 const DEFAULT_DE_TARGET = 70;
-const DEFAULT_LOTO_COUNT = 6;
+const DEFAULT_LOTO_COUNT = 14;
 
 function getVietnamDate(offsetDays = 0) {
   const date = new Date(Date.now() + offsetDays * 24 * 60 * 60 * 1000);
@@ -223,7 +223,7 @@ function buildTelegramReport(dePayload, lotoPayload) {
 
   if (lotoSettled && lotoResult) {
     lines.push(
-      `• <b>Lô top 6 ${escapeHtml(displayDate(lotoSettled.predictionIsoDate))}</b>`,
+      `• <b>Lô Top ${DEFAULT_LOTO_COUNT} ${escapeHtml(displayDate(lotoSettled.predictionIsoDate))}</b>`,
       `  Số đã đánh (${Number(lotoResult.betCount || lotoResult.betNumbers?.length || 0)}): <code>${escapeHtml(formatNumberList(lotoResult.betNumbers || []))}</code>`,
       `  Kết quả thực tế (${lotoActual.length} vị trí): <code>${escapeHtml(formatNumberList(lotoActual))}</code>`,
       `  ${Number(lotoResult.profitK || 0) > 0 ? '✅ CÓ LÃI' : '❌ LỖ'} · ${escapeHtml(formatMoneyK(lotoResult.profitK))}` +
@@ -240,7 +240,7 @@ function buildTelegramReport(dePayload, lotoPayload) {
     `• Phương pháp: ${escapeHtml(deStrategy)} · Hold ${deTarget}`,
     `• 30 số đánh: <b>${escapeHtml((deNext.betNumbers || []).join(' '))}</b>`,
     '',
-    '<b>3. DỰ ĐOÁN LÔ TOP 6</b>',
+    `<b>3. DỰ ĐOÁN LÔ TOP ${DEFAULT_LOTO_COUNT}</b>`,
     `• Phương pháp: ${escapeHtml(lotoPayload.nextPrediction?.methodId || 'Mốc 20 năm 27 vị trí')}`,
     `• Số đánh: <b>${escapeHtml((lotoNext.numbers || []).join(' '))}</b>`
   );

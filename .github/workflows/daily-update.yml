@@ -291,7 +291,7 @@ jobs:
             if (Number(cache.config?.stakePerNumberK) !== 2200 || Number(cache.config?.payoutPerHitK) !== 8000) {
               throw new Error(`Lô công thức sai: stake=${cache.config?.stakePerNumberK || 'missing'}, payout=${cache.config?.payoutPerHitK || 'missing'}`);
             }
-            if (Number(cache.config?.defaultBetCount) !== 6) {
+            if (Number(cache.config?.defaultBetCount) !== 14 || cache.nextPrediction?.predictions?.top14?.numbers?.length !== 14) {
               throw new Error(`Lô default sai: defaultBetCount=${cache.config?.defaultBetCount || 'missing'}`);
             }
             console.log(`cache_ready=true`);
@@ -389,7 +389,7 @@ jobs:
             if (Number(cache.config?.stakePerNumberK) !== 2200 || Number(cache.config?.payoutPerHitK) !== 8000) {
               throw new Error(`Lô công thức sai sau retry: stake=${cache.config?.stakePerNumberK || 'missing'}, payout=${cache.config?.payoutPerHitK || 'missing'}`);
             }
-            if (Number(cache.config?.defaultBetCount) !== 6) {
+            if (Number(cache.config?.defaultBetCount) !== 14 || cache.nextPrediction?.predictions?.top14?.numbers?.length !== 14) {
               throw new Error(`Lô default sai sau retry: defaultBetCount=${cache.config?.defaultBetCount || 'missing'}`);
             }
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, 'cache_ready=true\n');
@@ -455,7 +455,7 @@ jobs:
             if (Number(loto.config?.stakePerNumberK) !== 2200 || Number(loto.config?.payoutPerHitK) !== 8000) {
               throw new Error(`R2 Lô công thức sai: stake=${loto.config?.stakePerNumberK || 'missing'}, payout=${loto.config?.payoutPerHitK || 'missing'}`);
             }
-            if (Number(loto.config?.defaultBetCount) !== 6) {
+            if (Number(loto.config?.defaultBetCount) !== 14 || loto.nextPrediction?.predictions?.top14?.numbers?.length !== 14) {
               throw new Error(`R2 Lô default sai: defaultBetCount=${loto.config?.defaultBetCount || 'missing'}`);
             }
             console.log(`✅ Đề + Lô đồng bộ raw ${latestRaw}; target ${target}. Dự đoán Lô: ${loto.nextPrediction?.predictionIsoDate || 'unknown'}.`);

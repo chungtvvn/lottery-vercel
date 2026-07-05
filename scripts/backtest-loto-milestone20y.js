@@ -31,8 +31,10 @@ const DEFAULT_METHOD_ID = 'milestone20yChainSmallFirstHold65TwoHitGreedy';
 const DEFAULT_STRATEGY = 'chainSmallFirst';
 const DEFAULT_HOLD = 65;
 const DEFAULT_AGGREGATION_MODE = 'twoHitGreedy';
-const DEFAULT_BET_COUNT = 6;
-const LIVE_CACHE_NOTE = 'Mỗi vị trí dùng Mốc 20 năm chainSmallFirst Hold 65; tổng hợp bằng Two-hit Greedy. Top 6 là dàn mặc định vì đang có profit tốt nhất trong nhóm theo dõi.';
+const DEFAULT_BET_COUNT = 14;
+const DEFAULT_BET_COUNTS = [3, 4, 5, 6, 7, 14];
+const LIVE_TRACKING_VERSION = 'top14-live-v1';
+const LIVE_CACHE_NOTE = 'Mỗi vị trí dùng Mốc 20 năm chainSmallFirst Hold 65; tổng hợp bằng Two-hit Greedy. Top 14 là dàn mặc định và chỉ được kết toán từ snapshot phát hành sau khi triển khai.';
 
 function parseArgs() {
     return new Map(process.argv.slice(2).map(arg => {
@@ -600,8 +602,9 @@ function settleLivePredictions(livePayload, rawData, options) {
         item.methods = item.methods || {};
         for (const betCount of options.betCounts) {
             const key = `top${betCount}`;
+            if (!item.predictions?.[key]) continue;
             item.methods[key] = evaluateNumbers(
-                item.predictions?.[key]?.numbers || [],
+                item.predictions[key].numbers || [],
                 actual.counts,
                 options.stakeK,
                 options.payoutK
@@ -654,6 +657,7 @@ function buildLivePredictionRecord(nextPrediction, betCounts) {
         predictionDate: nextPrediction.predictionDate,
         predictionIsoDate: nextPrediction.predictionIsoDate,
         methodId: nextPrediction.methodId,
+        trackingVersion: LIVE_TRACKING_VERSION,
         positionCount: nextPrediction.positionCount,
         predictions: buildPredictionSetsFromRanked(nextPrediction.ranked || [], betCounts),
         positionPredictions: nextPrediction.positionPredictions || []
@@ -680,6 +684,25 @@ function upsertNextLivePrediction(livePayload, nextPrediction, betCounts) {
             replacedMethodId: existing.methodId || null
         };
         console.log(`[LotoMilestone20Y] Thay dàn pending ${record.predictionIsoDate}: ${existing.methodId || 'unknown'} -> ${record.methodId}.`);
+        return true;
+    }
+    const missingKeys = betCounts
+        .map(count => `top${count}`)
+        .filter(key => !existing.predictions?.[key] && record.predictions?.[key]);
+    if (missingKeys.length > 0) {
+        const addedPredictions = Object.fromEntries(
+            missingKeys.map(key => [key, record.predictions[key]])
+        );
+        livePayload.predictions[existingIndex] = {
+            ...existing,
+            predictions: {
+                ...(existing.predictions || {}),
+                ...addedPredictions
+            },
+            trackingVersion: LIVE_TRACKING_VERSION,
+            trackingStartedAt: existing.trackingStartedAt || new Date().toISOString()
+        };
+        console.log(`[LotoMilestone20Y] Bổ sung ${missingKeys.join(', ')} vào dàn pending ${record.predictionIsoDate} rồi khóa snapshot.`);
         return true;
     }
     console.log(`[LotoMilestone20Y] Giữ nguyên dàn point-in-time ${record.predictionIsoDate} (${existing.methodId || 'unknown'}, ${existing.status || 'pending'}).`);
@@ -810,7 +833,8 @@ function writeLiveCaches(nextPrediction, rawData, betCounts, options) {
     livePayload.config = {
         ...(livePayload.config || {}),
         methodId: nextPrediction.methodId,
-        methodName: 'Mốc 20 năm - Chuỗi nhỏ trước Hold 65 - Two-hit Greedy Top 6',
+        methodName: 'Mốc 20 năm - Chuỗi nhỏ trước Hold 65 - Two-hit Greedy Top 14',
+        trackingVersion: LIVE_TRACKING_VERSION,
         aggregationMode: nextPrediction.aggregationMode || DEFAULT_AGGREGATION_MODE,
         positionCount: PRIZE_KEYS.length,
         positions: PRIZE_KEYS,
@@ -831,7 +855,8 @@ function writeLiveCaches(nextPrediction, rawData, betCounts, options) {
     livePayload.summary = summarizeLivePredictions(livePayload, betCounts);
     livePayload.notes = [
         LIVE_CACHE_NOTE,
-        'Khi predictionIsoDate đã tồn tại, script không ghi đè dàn cũ; chỉ cập nhật kết quả khi có KQ thật.',
+        'Khi predictionIsoDate đã tồn tại, script không ghi đè dàn cũ; riêng snapshot pending chưa có Top 14 được bổ sung đúng một lần khi triển khai.',
+        'Các ngày cũ không có Top 14 không được tính vào hiệu quả Top 14.',
         'Công thức Lô: 2200K mỗi số, mỗi hit nhận 8000K.'
     ];
 
@@ -913,11 +938,20 @@ async function main() {
         .split(',')
         .map(value => Math.max(1, Math.min(95, Number(value.trim()) || 0)))
         .filter(Boolean);
-    const betCounts = String(args.get('betCounts') || '3,4,5,6,7')
+    const betCounts = String(args.get('betCounts') || DEFAULT_BET_COUNTS.join(','))
         .split(',')
-        .map(value => Math.max(1, Math.min(20, Number(value.trim()) || 0)))
+        .map(value => Math.max(1, Math.min(100, Number(value.trim()) || 0)))
         .filter(Boolean);
     const aggregationModes = String(args.get('aggregationModes') || args.get('aggModes') || 'support')
+        .split(',')
+        .map(value => value.trim())
+        .filter(Boolean);
+    const selectedPositions = String(args.get('positions') || PRIZE_KEYS.join(','))
+        .split(',')
+        .map(value => value.trim())
+        .filter(value => PRIZE_KEYS.includes(value));
+    const positionOutput = args.get('positionOutput') || null;
+    const positionInputFiles = String(args.get('positionInputFiles') || '')
         .split(',')
         .map(value => value.trim())
         .filter(Boolean);
@@ -975,21 +1009,66 @@ async function main() {
         positions: {}
     }]));
 
-    let positionIndex = 0;
-    for (const positionKey of PRIZE_KEYS) {
-        positionIndex += 1;
-        console.log(`[LotoMilestone20Y] ${positionKey} (${positionIndex}/${PRIZE_KEYS.length})...`);
-        const positionRows = await buildPositionDailyPredictions(rawData, positionKey, targetRows, methodConfigs, {
-            historyYears,
-            fixedBaselineYear,
-            activeFrequencyLimit: Number(args.get('activeFrequencyLimit') || 0.5),
-            recordFrequencyLimit: Number(args.get('recordFrequencyLimit') || 1.1),
-            minPotentialCurrentLenForNeverFormed: Number(args.get('minPotentialLen') || 4)
-        });
-        for (const [date, methods] of positionRows.entries()) {
-            if (!targetDates.has(date)) continue;
-            byDate.get(date).positions[positionKey] = methods;
+    if (positionInputFiles.length > 0) {
+        for (const inputFile of positionInputFiles) {
+            const payload = readJsonIfExists(path.resolve(inputFile), null);
+            if (!payload || !payload.rows) {
+                throw new Error(`Position cache không hợp lệ: ${inputFile}`);
+            }
+            if (
+                payload.startDate !== startDate ||
+                payload.endDate !== endDate ||
+                JSON.stringify(payload.methodConfigs || []) !== JSON.stringify(methodConfigs)
+            ) {
+                throw new Error(`Position cache không cùng cấu hình backtest: ${inputFile}`);
+            }
+            for (const [date, positions] of Object.entries(payload.rows)) {
+                if (!targetDates.has(date)) continue;
+                Object.assign(byDate.get(date).positions, positions || {});
+            }
         }
+        const missingPositions = PRIZE_KEYS.filter(positionKey =>
+            targetRows.some(row => !byDate.get(formatIsoDate(row.date))?.positions?.[positionKey])
+        );
+        if (missingPositions.length > 0) {
+            throw new Error(`Position cache thiếu dữ liệu: ${missingPositions.join(', ')}`);
+        }
+    } else {
+        let positionIndex = 0;
+        for (const positionKey of selectedPositions) {
+            positionIndex += 1;
+            console.log(`[LotoMilestone20Y] ${positionKey} (${positionIndex}/${selectedPositions.length})...`);
+            const positionRows = await buildPositionDailyPredictions(rawData, positionKey, targetRows, methodConfigs, {
+                historyYears,
+                fixedBaselineYear,
+                activeFrequencyLimit: Number(args.get('activeFrequencyLimit') || 0.5),
+                recordFrequencyLimit: Number(args.get('recordFrequencyLimit') || 1.1),
+                minPotentialCurrentLenForNeverFormed: Number(args.get('minPotentialLen') || 4)
+            });
+            for (const [date, methods] of positionRows.entries()) {
+                if (!targetDates.has(date)) continue;
+                byDate.get(date).positions[positionKey] = methods;
+            }
+        }
+    }
+
+    if (positionOutput) {
+        const outputPath = path.resolve(positionOutput);
+        const payload = {
+            generatedAt: new Date().toISOString(),
+            startDate,
+            endDate,
+            methodConfigs,
+            positions: positionInputFiles.length > 0 ? PRIZE_KEYS : selectedPositions,
+            rows: Object.fromEntries(Array.from(byDate.entries()).map(([date, row]) => [
+                date,
+                row.positions
+            ]))
+        };
+        fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+        fs.writeFileSync(outputPath, JSON.stringify(payload), 'utf8');
+        console.log(`[LotoMilestone20Y] Position cache: ${outputPath}`);
+        return;
     }
 
     const summariesByWindow = {};
@@ -1086,6 +1165,12 @@ async function main() {
     const output = {
         generatedAt: new Date().toISOString(),
         latestDataDate: latestDate,
+        methodology: {
+            annualBaseline: 'Mỗi năm dùng baseline kết thúc ngày 31/12 của năm trước.',
+            dailyState: 'fast-full-history-index',
+            strictPointInTime: false,
+            warning: 'Chỉ mục chuỗi được sinh từ toàn bộ lịch sử rồi truy vấn theo ngày. Dùng report này để thăm dò, không dùng để thay mặc định trước khi đối chiếu với snapshot/prefix point-in-time.'
+        },
         config: {
             logic: 'annualMilestone20y-per-position',
             historyYears,

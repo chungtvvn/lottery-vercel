@@ -55,8 +55,8 @@ async function main() {
             predictionIsoDate: '2026-07-02',
             methodId: 'testLotoMethod',
             predictions: {
-                top6: {
-                    numbers: ['12', '34', '56', '78', '90', '01']
+                top14: {
+                    numbers: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '34', '56']
                 }
             }
         },
@@ -66,11 +66,11 @@ async function main() {
                 predictionIsoDate: '2026-07-01',
                 actual: { '01': 1, 12: 2, 34: 1, 55: 23 },
                 methods: {
-                    top6: {
-                        betNumbers: ['12', '34', '56', '78', '90', '01'],
-                        betCount: 6,
+                    top14: {
+                        betNumbers: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '34', '56'],
+                        betCount: 14,
                         hits: 4,
-                        profitK: 18800
+                        profitK: 1200
                     }
                 }
             }]
@@ -80,9 +80,10 @@ async function main() {
     const report = buildTelegramReport(dePayload, lotoPayload);
     assert.match(report.text, /Số đã đánh \(30\):/);
     assert.match(report.text, /Kết quả thực tế: <b>12<\/b>/);
-    assert.match(report.text, /Số đã đánh \(6\): <code>12 34 56 78 90 01<\/code>/);
+    assert.match(report.text, /Lô Top 14/);
+    assert.match(report.text, /Số đã đánh \(14\): <code>01 02 03 04 05 06 07 08 09 10 11 12 34 56<\/code>/);
     assert.match(report.text, /Kết quả thực tế \(27 vị trí\):/);
-    assert.match(report.text, /Trúng: <b>12×2 34 01<\/b>/);
+    assert.match(report.text, /Trúng: <b>01 12×2 34<\/b>/);
     assert.ok(report.text.length <= 4096, `Telegram report quá dài: ${report.text.length}`);
     console.log('Telegram report tests passed.');
 }

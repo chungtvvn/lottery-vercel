@@ -20,8 +20,8 @@ const LOTO_STAKE_PER_NUMBER_K = 2200;
 const LOTO_PAYOUT_PER_HIT_K = 8000;
 const LOTO_METHOD_ID = process.env.LOTO_METHOD_ID || 'milestone20yChainSmallFirstHold65TwoHitGreedy';
 const LOTO_AGGREGATION_MODE = process.env.LOTO_AGGREGATION_MODE || 'twoHitGreedy';
-const LOTO_BET_COUNTS = [3, 4, 5, 6, 7];
-const LOTO_DEFAULT_BET_COUNT = 6;
+const LOTO_BET_COUNTS = [3, 4, 5, 6, 7, 14];
+const LOTO_DEFAULT_BET_COUNT = 14;
 const MILESTONE20Y_METHOD_VERSION = 'annual20y-2026-07-02-chain-block-hold70-immutable-details';
 const MILESTONE20Y_BASELINE_VERSION = 'annual20y-baseline-2026-06-28-block-ab';
 const MILESTONE20Y_CACHE_FILES = [
@@ -165,6 +165,7 @@ function isLotoPredictionFormulaCurrent(cache) {
     const aggregationMode = String(config.aggregationMode || cache?.nextPrediction?.aggregationMode || '');
     const defaultBetCount = Number(config.defaultBetCount || cache?.nextPrediction?.defaultBetCount || 0);
     const betCounts = Array.isArray(config.betCounts) ? config.betCounts.map(Number) : [];
+    const defaultNumbers = cache?.nextPrediction?.predictions?.[`top${LOTO_DEFAULT_BET_COUNT}`]?.numbers || [];
     const betCountsOk = betCounts.length === LOTO_BET_COUNTS.length
         && LOTO_BET_COUNTS.every((count, index) => count === betCounts[index]);
     return stake === LOTO_STAKE_PER_NUMBER_K
@@ -172,6 +173,7 @@ function isLotoPredictionFormulaCurrent(cache) {
         && methodId === LOTO_METHOD_ID
         && aggregationMode === LOTO_AGGREGATION_MODE
         && defaultBetCount === LOTO_DEFAULT_BET_COUNT
+        && defaultNumbers.length === LOTO_DEFAULT_BET_COUNT
         && betCountsOk;
 }
 
@@ -925,7 +927,22 @@ function uploadOnlyPredictionCaches(options = {}) {
     const fsSync = require('fs');
     const statsDir = path.join(DATA_DIR, 'statistics');
     const baselineFiles = includeMilestone && fsSync.existsSync(statsDir)
-        ? fsSync.readdirSync(statsDir).filter(file => /^cached_milestone20y_baseline_\d{4}\.json$/.test(file))
+        ? fsSync.readdirSync(statsDir)
+            .filter(file => /^cached_milestone20y_baseline_\d{4}\.json$/.test(file))
+            .filter(file => {
+                try {
+                    const year = Number(file.match(/(\d{4})/)?.[1]);
+                    const payload = JSON.parse(fsSync.readFileSync(path.join(statsDir, file), 'utf8'));
+                    const valid = isMilestone20yBaselineCurrent(payload, year);
+                    if (!valid) {
+                        console.warn(`[6] Không upload baseline Mốc 20 năm lỗi/rỗng: ${file}.`);
+                    }
+                    return valid;
+                } catch (error) {
+                    console.warn(`[6] Không đọc được baseline ${file}: ${error.message}`);
+                    return false;
+                }
+            })
         : [];
     const lotoFiles = includeLoto
         ? ['cached_loto_prediction.json', 'cached_loto_live_predictions.json']

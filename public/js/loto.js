@@ -1,9 +1,9 @@
 (function () {
     const nf = new Intl.NumberFormat('vi-VN');
-    const DEFAULT_LOTO_BET_COUNT = 6;
+    const DEFAULT_LOTO_BET_COUNT = 14;
     const DEFAULT_LOTO_STAKE_K = 2200;
     const DEFAULT_LOTO_PAYOUT_K = 8000;
-    const LOTO_COUNT_ORDER = [6, 7, 5, 4, 3];
+    const LOTO_COUNT_ORDER = [14, 6, 7, 5, 4, 3];
     const state = {
         performancePeriod: 'monthly',
         performancePayload: null,
@@ -134,7 +134,11 @@
                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                 : 'bg-amber-50 text-amber-700 border-amber-200';
             const actualNumbers = row.actual ? Object.keys(row.actual).sort((a, b) => Number(a) - Number(b)) : [];
-            const topDefault = row.predictions?.[`top${DEFAULT_LOTO_BET_COUNT}`] || row.predictions?.top7 || row.predictions?.top5 || row.predictions?.top4 || row.predictions?.top3 || {};
+            const topDefault = row.predictions?.[`top${DEFAULT_LOTO_BET_COUNT}`] || {
+                count: DEFAULT_LOTO_BET_COUNT,
+                numbers: []
+            };
+            const hasDefaultPrediction = (topDefault.numbers || []).length > 0;
             const predictedSet = new Set((topDefault.numbers || []).map(number => String(number).padStart(2, '0')));
             const actualSet = new Set(actualNumbers.map(number => String(number).padStart(2, '0')));
             const actualHtml = actualNumbers.length
@@ -147,7 +151,7 @@
                     });
                 }).join('')
                 : '<span class="text-xs text-slate-400">-</span>';
-            const rawMethod = row.methods?.[`top${DEFAULT_LOTO_BET_COUNT}`] || row.methods?.top7 || row.methods?.top5 || row.methods?.top4 || row.methods?.top3 || {};
+            const rawMethod = row.methods?.[`top${DEFAULT_LOTO_BET_COUNT}`] || {};
             const method = adjustLiveMethod(rawMethod, topDefault.count || DEFAULT_LOTO_BET_COUNT);
             return `
                 <article class="p-4 ${row.status === 'pending' ? 'bg-amber-50/30' : 'bg-white/30'}">
@@ -166,8 +170,8 @@
                             </div>
                         </div>
                         <div class="text-left lg:text-right">
-                            <div class="text-sm font-bold ${(method.profitK || 0) >= 0 ? 'text-emerald-600' : 'text-red-600'}">${row.status === 'settled' ? money(method.profitK) : 'Chưa kết toán'}</div>
-                            <div class="text-xs text-slate-500">${row.status === 'settled' ? `${method.hits || 0} hit top${topDefault.count || DEFAULT_LOTO_BET_COUNT}` : 'Sẽ tự đối soát khi có KQ'}</div>
+                            <div class="text-sm font-bold ${(method.profitK || 0) >= 0 ? 'text-emerald-600' : 'text-red-600'}">${row.status === 'settled' && hasDefaultPrediction ? money(method.profitK) : (hasDefaultPrediction ? 'Chưa kết toán' : 'Chưa theo dõi Top 14')}</div>
+                            <div class="text-xs text-slate-500">${row.status === 'settled' && hasDefaultPrediction ? `${method.hits || 0} hit top${topDefault.count || DEFAULT_LOTO_BET_COUNT}` : (hasDefaultPrediction ? 'Sẽ tự đối soát khi có KQ' : 'Snapshot trước thời điểm triển khai Top 14')}</div>
                         </div>
                     </div>
                     <div class="number-panel-bet mt-3 rounded-2xl border p-3">
@@ -180,7 +184,7 @@
                                 hit: isHit,
                                 title: isHit ? 'Số đánh đã trúng thực tế trong 27 giải' : ''
                             });
-                        }).join('')}
+                        }).join('') || '<span class="text-xs text-slate-400">Không có dàn Top 14 trong snapshot này.</span>'}
                         </div>
                     </div>
                 </article>
@@ -249,7 +253,7 @@
     function summarizeLiveAdjusted(live = {}) {
         const settledRows = (live.predictions || []).filter(row => row.status === 'settled');
         const summary = {};
-        for (const count of [3, 4, 5, 6, 7]) {
+        for (const count of LOTO_COUNT_ORDER) {
             const key = `top${count}`;
             const item = {
                 days: 0,
