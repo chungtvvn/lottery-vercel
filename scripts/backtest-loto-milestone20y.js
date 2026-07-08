@@ -12,6 +12,11 @@ const generateNumberStats = require('../lib/generators/statisticsGenerator');
 const generateHeadTailStats = require('../lib/generators/headTailStatsGenerator');
 const generateSumDiffStats = require('../lib/generators/sumDifferenceStatsGenerator');
 const { isInvalidStatsKey } = require('../lib/utils/statsOptionsManifest');
+const {
+    buildBacktestFingerprint,
+    hashCanonical,
+    readJsonSnapshot
+} = require('../lib/utils/backtestFingerprint');
 
 const PRIZE_KEYS = [
     'special',
@@ -25,8 +30,8 @@ const PRIZE_KEYS = [
 ];
 
 const ALL_NUMBERS = Array.from({ length: 100 }, (_, index) => index);
-const DEFAULT_STAKE_K = 2200;
-const DEFAULT_PAYOUT_K = 8000;
+const DEFAULT_STAKE_K = 220;
+const DEFAULT_PAYOUT_K = 800;
 const DEFAULT_METHOD_ID = 'milestone20yChainSmallFirstHold65TwoHitGreedy';
 const DEFAULT_STRATEGY = 'chainSmallFirst';
 const DEFAULT_HOLD = 65;
@@ -552,10 +557,21 @@ function buildPredictionSetsFromRanked(ranked, betCounts) {
     return sets;
 }
 
-function evaluateNumbers(numbers, actualCounts, stakeK, payoutK) {
+function evaluateNumbers(numbers, actualCounts, stakeK, payoutK, intersection = []) {
     const selected = (numbers || []).map(normalizeNumber).filter(value => value !== null);
-    const hits = selected.reduce((sum, number) => sum + (actualCounts.get(number) || 0), 0);
-    const stakeTotalK = selected.length * stakeK;
+    const intersectSet = new Set((intersection || []).map(normalizeNumber));
+    
+    let hits = 0;
+    let stakeTotalK = 0;
+    
+    for (const number of selected) {
+        const weight = intersectSet.has(number) ? 2 : 1;
+        const occurrences = actualCounts.get(number) || 0;
+        
+        hits += weight * occurrences;
+        stakeTotalK += weight * stakeK;
+    }
+    
     const payoutTotalK = hits * payoutK;
     const profitK = payoutTotalK - stakeTotalK;
     return {
@@ -607,7 +623,8 @@ function settleLivePredictions(livePayload, rawData, options) {
                 item.predictions[key].numbers || [],
                 actual.counts,
                 options.stakeK,
-                options.payoutK
+                options.payoutK,
+                item.predictions[key].intersection || []
             );
         }
         if (!wasSettled) settledCount += 1;
@@ -659,7 +676,7 @@ function buildLivePredictionRecord(nextPrediction, betCounts) {
         methodId: nextPrediction.methodId,
         trackingVersion: LIVE_TRACKING_VERSION,
         positionCount: nextPrediction.positionCount,
-        predictions: buildPredictionSetsFromRanked(nextPrediction.ranked || [], betCounts),
+        predictions: nextPrediction.predictions || buildPredictionSetsFromRanked(nextPrediction.ranked || [], betCounts),
         positionPredictions: nextPrediction.positionPredictions || []
     };
 }
@@ -961,34 +978,58 @@ async function main() {
     const payoutK = Number(args.get('payoutK') || DEFAULT_PAYOUT_K);
     const historyYears = Number(args.get('historyYears') || 20);
     const fixedBaselineYear = args.has('fixedBaselineYear') ? Number(args.get('fixedBaselineYear')) : null;
+    const rawFile = args.get('rawFile') ? path.resolve(args.get('rawFile')) : null;
     const methodConfigs = buildMethodConfigs(strategies, holdCounts);
     if (methodConfigs.length === 1 && predictionOnly) {
         methodConfigs[0].id = args.get('method') || DEFAULT_METHOD_ID;
         methodConfigs[0].aggregationMode = predictionAggregationMode;
     }
 
-    await lotteryService.loadRawData();
-    const rawData = (lotteryService.getRawData() || [])
+    let loadedRawData;
+    if (rawFile) {
+        loadedRawData = readJsonSnapshot(rawFile);
+    } else {
+        await lotteryService.loadRawData();
+        loadedRawData = lotteryService.getRawData() || [];
+    }
+    const rawData = loadedRawData
         .slice()
         .sort((a, b) => new Date(a.date) - new Date(b.date));
     if (predictionOnly) {
-        const methodConfig = methodConfigs[0];
-        const nextPrediction = await buildNextPrediction(rawData, methodConfig, betCounts, {
-            aggregationMode: predictionAggregationMode,
-            historyYears,
-            fixedBaselineYear,
-            activeFrequencyLimit: Number(args.get('activeFrequencyLimit') || 0.5),
-            recordFrequencyLimit: Number(args.get('recordFrequencyLimit') || 1.1),
-            minPotentialCurrentLenForNeverFormed: Number(args.get('minPotentialLen') || 4)
-        });
-        if (writeCache) {
-            writeLiveCaches(nextPrediction, rawData, betCounts, { stakeK, payoutK });
+        const nextPredictions = {};
+        for (const methodConfig of methodConfigs) {
+            console.log(`[LotoMilestone20Y] Generating prediction for strategy: ${methodConfig.id}...`);
+            const pred = await buildNextPrediction(rawData, methodConfig, betCounts, {
+                aggregationMode: predictionAggregationMode,
+                historyYears,
+                fixedBaselineYear,
+                activeFrequencyLimit: Number(args.get('activeFrequencyLimit') || 0.5),
+                recordFrequencyLimit: Number(args.get('recordFrequencyLimit') || 1.1),
+                minPotentialCurrentLenForNeverFormed: Number(args.get('minPotentialLen') || 4)
+            });
+            nextPredictions[methodConfig.strategy] = pred;
         }
-        console.log(`[LotoMilestone20Y] Next ${nextPrediction.predictionIsoDate}: ${nextPrediction.methodId}`);
-        console.table(Object.values(nextPrediction.predictions || {}).map(item => ({
-            method: `top${item.count}`,
+
+        // Now, if we have both chainSmallFirst and chainBlockFirst, build the parallelCombined prediction!
+        const pSmall = nextPredictions['chainSmallFirst'];
+        const pBlock = nextPredictions['chainBlockFirst'];
+        let mergedPrediction = null;
+        if (pSmall && pBlock) {
+            mergedPrediction = buildParallelCombinedPrediction(pSmall, pBlock, betCounts);
+            nextPredictions['parallelCombined'] = mergedPrediction;
+        }
+
+        // By default, write cache using the parallelCombined strategy (or first available)
+        const primaryPrediction = mergedPrediction || Object.values(nextPredictions)[0];
+        
+        if (writeCache) {
+            writeLiveCachesMulti(nextPredictions, primaryPrediction, rawData, betCounts, { stakeK, payoutK });
+        }
+        console.log(`[LotoMilestone20Y] Next ${primaryPrediction.predictionIsoDate}: ${primaryPrediction.methodId}`);
+        console.table(Object.values(primaryPrediction.predictions || {}).map(item => ({
+            method: `top${item.count || item.numbers?.length}`,
             numbers: (item.numbers || []).join(' '),
-            support: (item.support || []).map(row => `${row.number}:${row.supportCount}`).join(' ')
+            intersection: (item.intersection || []).join(' ')
         })));
         return;
     }
@@ -1162,30 +1203,59 @@ async function main() {
     }
 
     const latestDate = rawData.length ? formatIsoDate(rawData[rawData.length - 1].date) : null;
+    const baselineCutoffDate = fixedBaselineYear
+        ? `${fixedBaselineYear - 1}-12-31`
+        : 'annual:31/12-before-each-prediction-year';
+    const reportConfig = {
+        logic: 'annualMilestone20y-per-position',
+        historyYears,
+        fixedBaselineYear,
+        positions: PRIZE_KEYS,
+        months: monthsList,
+        startDate,
+        endDate,
+        strategies,
+        holdCounts,
+        betCounts,
+        aggregationModes,
+        stakeK,
+        payoutK
+    };
+    const fingerprint = buildBacktestFingerprint({
+        rawData,
+        config: reportConfig,
+        baselineCutoffDate,
+        methodologyVersion: 'fast-full-history-index-v1-unsafe',
+        sourceFiles: [
+            __filename,
+            path.join(__dirname, '..', 'lib', 'services', 'annualMilestoneService.js'),
+            path.join(__dirname, '..', 'lib', 'services', 'historicalExclusionService.js'),
+            path.join(__dirname, '..', 'lib', 'generators', 'statisticsGenerator.js'),
+            path.join(__dirname, '..', 'lib', 'generators', 'headTailStatsGenerator.js'),
+            path.join(__dirname, '..', 'lib', 'generators', 'sumDifferenceStatsGenerator.js')
+        ],
+        sourceLabel: rawFile
+            ? path.relative(process.cwd(), rawFile)
+            : 'lotteryService.loadRawData()'
+    });
+    const resultSha256 = hashCanonical({
+        summariesByWindow,
+        ...(includeDetails ? { dailyDetailsByWindow } : {})
+    });
     const output = {
         generatedAt: new Date().toISOString(),
         latestDataDate: latestDate,
+        baselineCutoffDate,
+        fingerprint,
+        resultSha256,
         methodology: {
             annualBaseline: 'Mỗi năm dùng baseline kết thúc ngày 31/12 của năm trước.',
             dailyState: 'fast-full-history-index',
             strictPointInTime: false,
+            eligibleForPromotion: false,
             warning: 'Chỉ mục chuỗi được sinh từ toàn bộ lịch sử rồi truy vấn theo ngày. Dùng report này để thăm dò, không dùng để thay mặc định trước khi đối chiếu với snapshot/prefix point-in-time.'
         },
-        config: {
-            logic: 'annualMilestone20y-per-position',
-            historyYears,
-            fixedBaselineYear,
-            positions: PRIZE_KEYS,
-            months: monthsList,
-            startDate,
-            endDate,
-            strategies,
-            holdCounts,
-            betCounts,
-            aggregationModes,
-            stakeK,
-            payoutK
-        },
+        config: reportConfig,
         summariesByWindow,
         ...(includeDetails ? { dailyDetailsByWindow } : {})
     };
@@ -1218,6 +1288,303 @@ async function main() {
             longestUnder2: item.longestUnder2
         })));
     }
+}
+
+function buildParallelCombinedPrediction(p1, p2, betCounts) {
+    const predictions = {};
+    for (const count of betCounts) {
+        const key = `top${count}`;
+        const l1 = p1.predictions[key]?.numbers || [];
+        const l2 = p2.predictions[key]?.numbers || [];
+        
+        const b1 = new Set(l1.map(Number));
+        const b2 = new Set(l2.map(Number));
+        const union = new Set([...b1, ...b2]);
+        const intersection = new Set([...b1].filter(n => b2.has(n)));
+        
+        const numbers = Array.from(union).sort((a,b)=>a-b).map(n => String(n).padStart(2, '0'));
+        const intersectionNums = Array.from(intersection).sort((a,b)=>a-b).map(n => String(n).padStart(2, '0'));
+        
+        const support1 = p1.predictions[key]?.support || [];
+        const support2 = p2.predictions[key]?.support || [];
+        const supportMap = new Map();
+        [...support1, ...support2].forEach(item => {
+            supportMap.set(item.number, Math.max(supportMap.get(item.number) || 0, item.supportCount));
+        });
+        const support = Array.from(supportMap.entries()).map(([num, count]) => ({
+            number: num,
+            supportCount: count
+        })).sort((a,b)=>b.supportCount - a.supportCount);
+        
+        predictions[key] = {
+            numbers,
+            intersection: intersectionNums,
+            support
+        };
+    }
+    return {
+        predictionDate: p1.predictionDate,
+        predictionIsoDate: p1.predictionIsoDate,
+        dataDate: p1.dataDate,
+        dataIsoDate: p1.dataIsoDate,
+        methodId: 'parallelCombinedHold65',
+        strategy: 'parallelCombined',
+        hold: 65,
+        aggregationMode: p1.aggregationMode,
+        positionCount: p1.positionCount,
+        positions: p1.positions,
+        predictions
+    };
+}
+
+function writeLiveCachesMulti(nextPredictions, primaryPrediction, rawData, betCounts, options) {
+    const statsDir = path.join(process.cwd(), 'lib', 'data', 'statistics');
+    const cachePath = path.join(statsDir, 'cached_loto_prediction.json');
+    const livePath = path.join(statsDir, 'cached_loto_live_predictions.json');
+    const livePayload = readJsonIfExists(livePath, {
+        generatedAt: null,
+        startedAt: new Date().toISOString(),
+        config: {},
+        predictions: []
+    });
+
+    livePayload.config = {
+        ...(livePayload.config || {}),
+        methodId: primaryPrediction.methodId,
+        methodName: 'Mốc 20 năm - Đánh Song Song Lô (x2 Trùng) - Top 5/7/14',
+        trackingVersion: LIVE_TRACKING_VERSION,
+        aggregationMode: primaryPrediction.aggregationMode || DEFAULT_AGGREGATION_MODE,
+        positionCount: PRIZE_KEYS.length,
+        positions: PRIZE_KEYS,
+        stakePerNumberK: options.stakeK,
+        payoutPerHitK: options.payoutK,
+        defaultBetCount: DEFAULT_BET_COUNT,
+        defaultMethodKey: `top${DEFAULT_BET_COUNT}`,
+        betCounts
+    };
+    const settledCount = settleLivePredictionsMulti(livePayload, rawData, {
+        betCounts,
+        stakeK: options.stakeK,
+        payoutK: options.payoutK
+    });
+    const inserted = upsertNextLivePredictionMulti(livePayload, nextPredictions, primaryPrediction, betCounts);
+    livePayload.generatedAt = new Date().toISOString();
+    livePayload.latestDataDate = primaryPrediction.dataIsoDate;
+    livePayload.summary = summarizeLivePredictionsMulti(livePayload, betCounts);
+    livePayload.notes = [
+        LIVE_CACHE_NOTE,
+        'Khi predictionIsoDate đã tồn tại, script không ghi đè dàn cũ; riêng snapshot pending được cập nhật multi-strategy.',
+        'Các ngày cũ không có Top 14 không được tính vào hiệu quả Top 14.',
+        'Công thức Lô: 2200K mỗi số, mỗi hit nhận 8000K.'
+    ];
+
+    const cachePayload = {
+        generatedAt: new Date().toISOString(),
+        latestDataDate: primaryPrediction.dataIsoDate,
+        config: {
+            methodId: primaryPrediction.methodId,
+            methodName: livePayload.config.methodName,
+            logic: 'annualMilestone20y-parallel-betting',
+            strategy: primaryPrediction.strategy,
+            hold: primaryPrediction.hold,
+            aggregationMode: primaryPrediction.aggregationMode || DEFAULT_AGGREGATION_MODE,
+            positionCount: PRIZE_KEYS.length,
+            positions: PRIZE_KEYS,
+            stakePerNumberK: options.stakeK,
+            payoutPerHitK: options.payoutK,
+            defaultBetCount: DEFAULT_BET_COUNT,
+            defaultMethodKey: `top${DEFAULT_BET_COUNT}`,
+            betCounts,
+            historyMode: 'live-only'
+        },
+        nextPrediction: {
+            predictionDate: primaryPrediction.predictionDate,
+            predictionIsoDate: primaryPrediction.predictionIsoDate,
+            dataDate: primaryPrediction.dataDate,
+            dataIsoDate: primaryPrediction.dataIsoDate,
+            strategies: Object.fromEntries(
+                Object.entries(nextPredictions).map(([stratId, pred]) => [
+                    stratId,
+                    {
+                        methodId: pred.methodId,
+                        strategy: pred.strategy,
+                        predictions: pred.predictions
+                    }
+                ])
+            )
+        },
+        livePredictions: {
+            generatedAt: livePayload.generatedAt,
+            startedAt: livePayload.startedAt,
+            latestDataDate: livePayload.latestDataDate,
+            config: livePayload.config,
+            summary: livePayload.summary,
+            predictions: (livePayload.predictions || []).slice(-90)
+        },
+        notes: [
+            LIVE_CACHE_NOTE,
+            'Action hằng ngày tự động kết toán và cập nhật dự đoán Lô song song.'
+        ]
+    };
+    fs.writeFileSync(livePath, JSON.stringify(livePayload, null, 0), 'utf8');
+    fs.writeFileSync(cachePath, JSON.stringify(cachePayload, null, 0), 'utf8');
+    console.log(`[LotoMilestone20Y] Parallel combined caches successfully written to: ${cachePath} & ${livePath}`);
+}
+
+function settleLivePredictionsMulti(livePayload, rawData, options) {
+    const actualByDate = buildActualLookup(rawData);
+    let settledCount = 0;
+    for (const item of livePayload.predictions || []) {
+        const predictionIsoDate = item.predictionIsoDate || formatIsoDate(item.predictionDate);
+        if (!predictionIsoDate) continue;
+        item.predictionIsoDate = predictionIsoDate;
+        const actual = actualByDate.get(predictionIsoDate);
+        if (!actual) {
+            item.status = item.status || 'pending';
+            continue;
+        }
+
+        const wasSettled = item.status === 'settled';
+        item.status = 'settled';
+        item.settledAt = item.settledAt || new Date().toISOString();
+        item.actual = actual.actualText;
+        
+        if (item.strategies) {
+            for (const [stratId, stratObj] of Object.entries(item.strategies)) {
+                stratObj.methods = stratObj.methods || {};
+                for (const betCount of options.betCounts) {
+                    const key = `top${betCount}`;
+                    if (!stratObj.predictions?.[key]) continue;
+                    stratObj.methods[key] = evaluateNumbers(
+                        stratObj.predictions[key].numbers || [],
+                        actual.counts,
+                        options.stakeK,
+                        options.payoutK,
+                        stratObj.predictions[key].intersection || []
+                    );
+                }
+            }
+        }
+        
+        item.methods = item.methods || {};
+        for (const betCount of options.betCounts) {
+            const key = `top${betCount}`;
+            if (item.strategies?.['parallelCombined']?.methods?.[key]) {
+                item.methods[key] = item.strategies['parallelCombined'].methods[key];
+            } else if (item.predictions?.[key]) {
+                item.methods[key] = evaluateNumbers(
+                    item.predictions[key].numbers || [],
+                    actual.counts,
+                    options.stakeK,
+                    options.payoutK,
+                    item.predictions[key].intersection || []
+                );
+            }
+        }
+        if (!wasSettled) settledCount += 1;
+    }
+    return settledCount;
+}
+
+function upsertNextLivePredictionMulti(livePayload, nextPredictions, primaryPrediction, betCounts) {
+    if (!primaryPrediction?.predictionIsoDate) return false;
+    const record = {
+        type: 'real',
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        dataDate: primaryPrediction.dataDate,
+        dataIsoDate: primaryPrediction.dataIsoDate,
+        predictionDate: primaryPrediction.predictionDate,
+        predictionIsoDate: primaryPrediction.predictionIsoDate,
+        methodId: primaryPrediction.methodId,
+        trackingVersion: LIVE_TRACKING_VERSION,
+        positionCount: primaryPrediction.positionCount,
+        predictions: primaryPrediction.predictions || buildPredictionSetsFromRanked(primaryPrediction.ranked || [], betCounts),
+        positionPredictions: primaryPrediction.positionPredictions || [],
+        strategies: Object.fromEntries(
+            Object.entries(nextPredictions).map(([stratId, pred]) => [
+                stratId,
+                {
+                    methodId: pred.methodId,
+                    strategy: pred.strategy,
+                    predictions: pred.predictions
+                }
+            ])
+        )
+    };
+
+    livePayload.predictions = Array.isArray(livePayload.predictions) ? livePayload.predictions : [];
+    const existingIndex = livePayload.predictions.findIndex(item => item.predictionIsoDate === record.predictionIsoDate);
+    if (existingIndex < 0) {
+        livePayload.predictions.push(record);
+        return true;
+    }
+
+    const existing = livePayload.predictions[existingIndex];
+    if (existing.status === 'settled') return false;
+
+    livePayload.predictions[existingIndex] = {
+        ...existing,
+        ...record,
+        replacedAt: new Date().toISOString(),
+        replacedMethodId: existing.methodId || null
+    };
+    console.log(`[LotoMilestone20Y] Replaced pending snapshot for ${record.predictionIsoDate}.`);
+    return true;
+}
+
+function summarizeLivePredictionsMulti(livePayload, betCounts) {
+    const summary = {};
+    const settled = (livePayload.predictions || []).filter(item => item.status === 'settled');
+    const strategyKeys = ['parallelCombined', 'chainSmallFirst', 'chainBlockFirst'];
+    
+    for (const stratId of strategyKeys) {
+        for (const betCount of betCounts) {
+            const key = `top${betCount}`;
+            const summaryKey = `${stratId}_${key}`;
+            const row = emptySummary(summaryKey, betCount);
+            
+            for (const item of settled) {
+                let method = null;
+                if (item.strategies?.[stratId]?.methods?.[key]) {
+                    method = item.strategies[stratId].methods[key];
+                } else if (stratId === 'parallelCombined' && item.methods?.[key]) {
+                    method = item.methods[key];
+                }
+                
+                if (!method) continue;
+                row.days += 1;
+                if (method.profitK > 0) row.winDays += 1;
+                if (method.profitK < 0) row.lossDays += 1;
+                if ((method.hits || 0) > 0) row.hitDays += 1;
+                row.totalHits += method.hits || 0;
+                row.stakeK += method.stakeK || 0;
+                row.payoutK += method.payoutK || 0;
+                row.profitK += method.profitK || 0;
+                row.bestDayProfitK = row.bestDayProfitK === null ? method.profitK : Math.max(row.bestDayProfitK, method.profitK);
+                row.worstDayProfitK = row.worstDayProfitK === null ? method.profitK : Math.min(row.worstDayProfitK, method.profitK);
+                updateWinLossStreak(row, method.profitK || 0);
+            }
+            
+            const finalized = finalizeSummary(row);
+            summary[summaryKey] = {
+                ...finalized,
+                wins: finalized.winDays,
+                losses: finalized.lossDays
+            };
+        }
+    }
+    
+    for (const betCount of betCounts) {
+        const key = `top${betCount}`;
+        if (summary[`parallelCombined_${key}`]) {
+            summary[key] = {
+                ...summary[`parallelCombined_${key}`],
+                methodId: key
+            };
+        }
+    }
+    return summary;
 }
 
 if (require.main === module) {

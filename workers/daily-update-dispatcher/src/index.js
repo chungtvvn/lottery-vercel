@@ -10,10 +10,15 @@ const UPDATE_CRON = '40 11 * * *';
 const TELEGRAM_CHAT_KEY = 'telegram:chat_id';
 const TELEGRAM_LAST_SENT_KEY = 'telegram:last_sent_prediction_date';
 const DEFAULT_APP_BASE_URL = 'https://lottery-stats-vercel.vercel.app';
-const DEFAULT_DE_STRATEGY = 'chainBlockFirst';
+const DEFAULT_DE_STRATEGY = 'dedupEdge50CombinedB40S05';
 const DEFAULT_DE_TARGET = 70;
 const DEFAULT_LOTO_COUNT = 14;
 const TELEGRAM_LOTO_COUNTS = [6, 14];
+const CUMULATIVE_START_DATE = '2026-07-08';
+const DE_BET_PER_NUMBER_K = 10;
+const DE_WIN_MULTIPLIER = 84;
+const LOTO_STAKE_PER_NUMBER_K = 220;
+const LOTO_PAYOUT_PER_HIT_K = 800;
 
 function getVietnamDate(offsetDays = 0) {
   const date = new Date(Date.now() + offsetDays * 24 * 60 * 60 * 1000);
@@ -264,7 +269,7 @@ function buildTelegramReport(dePayload, lotoPayload) {
     '',
     '<b>2. DỰ ĐOÁN ĐỀ</b>',
     `• Phương pháp: ${escapeHtml(deStrategy)} · Hold ${deTarget}`,
-    `• 30 số đánh: <b>${escapeHtml((deNext.betNumbers || []).join(' '))}</b>`,
+    `• ${Number(deNext.betNumbers?.length || 0)} số đánh: <b>${escapeHtml((deNext.betNumbers || []).join(' '))}</b>`,
     '',
     '<b>3. DỰ ĐOÁN LÔ TOP 6 &amp; TOP 14</b>',
     `• Phương pháp: ${escapeHtml(lotoPayload.nextPrediction?.methodId || 'Mốc 20 năm 27 vị trí')}`
@@ -277,6 +282,63 @@ function buildTelegramReport(dePayload, lotoPayload) {
   const support = (defaultMethod?.next?.support || []).slice(0, DEFAULT_LOTO_COUNT)
     .map(item => `${item.number}(${item.supportCount})`);
   if (support.length) lines.push(`• Đồng thuận Top ${DEFAULT_LOTO_COUNT}: ${escapeHtml(support.join(' · '))}`);
+
+  // --- Section 4: Cumulative P&L ---
+  const settledDe = deRows.filter(row =>
+    row.status === 'settled' && String(row.predictionIsoDate || '') >= CUMULATIVE_START_DATE
+  ).sort((a, b) => String(a.predictionIsoDate).localeCompare(String(b.predictionIsoDate)));
+
+  const settledLoto = lotoRows.filter(row =>
+    row.status === 'settled' && String(row.predictionIsoDate || '') >= CUMULATIVE_START_DATE
+  ).sort((a, b) => String(a.predictionIsoDate).localeCompare(String(b.predictionIsoDate)));
+
+  let cumulativeDeProfitK = 0;
+  let cumulativeLotoProfitK = 0;
+  let deDays = 0;
+  let deWins = 0;
+  const dailyLines = [];
+
+  for (const row of settledDe) {
+    const key = `${deStrategy}:hold${deTarget}`;
+    const result = row.results?.[key];
+    if (!result) continue;
+    const betCount = Number(result.betCount || 0);
+    const stakeK = betCount * DE_BET_PER_NUMBER_K;
+    const payoutK = result.hit ? DE_BET_PER_NUMBER_K * DE_WIN_MULTIPLIER : 0;
+    const profitK = payoutK - stakeK;
+    cumulativeDeProfitK += profitK;
+    deDays++;
+    if (result.hit) deWins++;
+  }
+
+  let lotoDays = 0;
+  let lotoWins = 0;
+  for (const row of settledLoto) {
+    const lotoKey = `top${DEFAULT_LOTO_COUNT}`;
+    const method = row.methods?.[lotoKey];
+    if (!method) continue;
+    const betCount = Number(method.betNumbers?.length || 0);
+    const hits = Number(method.hits || 0);
+    const stakeK = betCount * LOTO_STAKE_PER_NUMBER_K;
+    const payoutK = hits * LOTO_PAYOUT_PER_HIT_K;
+    const profitK = payoutK - stakeK;
+    cumulativeLotoProfitK += profitK;
+    lotoDays++;
+    if (profitK > 0) lotoWins++;
+  }
+
+  const totalCumulativeK = cumulativeDeProfitK + cumulativeLotoProfitK;
+
+  if (deDays > 0 || lotoDays > 0) {
+    lines.push(
+      '',
+      `<b>4. LỖ LÃI CỘNG DỒN (từ ${CUMULATIVE_START_DATE})</b>`,
+      `• Đề ${deDays} ngày (${deWins}W/${deDays - deWins}L · ${DE_BET_PER_NUMBER_K}K/số): <b>${escapeHtml(formatMoneyK(cumulativeDeProfitK))}</b>`,
+      `• Lô Top ${DEFAULT_LOTO_COUNT} ${lotoDays} ngày (${lotoWins}W/${lotoDays - lotoWins}L · ${LOTO_STAKE_PER_NUMBER_K}K/con): <b>${escapeHtml(formatMoneyK(cumulativeLotoProfitK))}</b>`,
+      `• <b>TỔNG: ${escapeHtml(formatMoneyK(totalCumulativeK))}</b>`
+    );
+  }
+
   lines.push('', '<i>Dữ liệu tự động từ cache R2 sau khi kết quả ngày mới được cập nhật.</i>');
 
   return {

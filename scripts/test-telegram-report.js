@@ -15,11 +15,11 @@ async function main() {
     const deBetNumbers = Array.from({ length: 30 }, (_, value) => String(value).padStart(2, '0'));
     const dePayload = {
         latestDataDate: '2026-07-01',
-        config: { defaultBetStrategy: 'chainBlockFirst', defaultBetTarget: 70 },
+        config: { defaultBetStrategy: 'dedupEdge50CombinedB40S05', defaultBetTarget: 70 },
         nextPrediction: {
             predictionIsoDate: '2026-07-02',
             strategies: {
-                chainBlockFirst: {
+                dedupEdge50CombinedB40S05: {
                     holds: {
                         70: { betNumbers: deBetNumbers }
                     }
@@ -32,18 +32,18 @@ async function main() {
                 predictionIsoDate: '2026-07-01',
                 actualSpecial: '12',
                 strategies: {
-                    chainBlockFirst: {
+                    dedupEdge50CombinedB40S05: {
                         holds: {
                             70: { betNumbers: deBetNumbers }
                         }
                     }
                 },
                 results: {
-                    'chainBlockFirst:hold70': {
+                    'dedupEdge50CombinedB40S05:hold70': {
                         actual: '12',
                         betCount: 30,
                         hit: true,
-                        profitK: 54000
+                        profitK: 540
                     }
                 }
             }]

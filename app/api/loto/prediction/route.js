@@ -8,8 +8,8 @@ const NO_STORE_HEADERS = {
     Pragma: 'no-cache',
     Expires: '0'
 };
-const LOTO_STAKE_PER_NUMBER_K = 2200;
-const LOTO_PAYOUT_PER_HIT_K = 8000;
+const LOTO_STAKE_PER_NUMBER_K = 220;
+const LOTO_PAYOUT_PER_HIT_K = 800;
 const LOTO_BET_COUNTS = [3, 4, 5, 6, 7, 14];
 
 function isAuthorized(request) {
@@ -145,25 +145,70 @@ function summarizeLiveRows(rows = []) {
     return summary;
 }
 
-function normalizeLotoPayload(payload = {}) {
-    const liveRows = normalizeLiveRows(payload.livePredictions?.predictions || []);
-    const livePredictions = payload.livePredictions
-        ? {
-            ...payload.livePredictions,
-            config: withLotoConfig(payload.livePredictions.config || {}),
-            predictions: liveRows,
-            summary: summarizeLiveRows(liveRows)
+function normalizeLotoPayload(payload = {}, strategy = 'parallelCombined') {
+    // Deep clone payload to avoid side-effects
+    const cloned = JSON.parse(JSON.stringify(payload));
+    
+    // If the cache uses the multi-strategy format, let's extract the requested strategy first!
+    if (cloned.nextPrediction?.strategies?.[strategy]) {
+        cloned.nextPrediction.predictions = cloned.nextPrediction.strategies[strategy].predictions;
+        cloned.nextPrediction.methodId = cloned.nextPrediction.strategies[strategy].methodId || cloned.nextPrediction.methodId;
+        cloned.nextPrediction.strategy = strategy;
+    }
+
+    let rawPredictions = cloned.livePredictions?.predictions || [];
+    // Extract the strategy-specific fields from each row if available
+    rawPredictions = rawPredictions.map(row => {
+        if (row.strategies?.[strategy]) {
+            return {
+                ...row,
+                predictions: row.strategies[strategy].predictions,
+                methods: row.strategies[strategy].methods || {}
+            };
         }
-        : payload.livePredictions;
-    return {
-        ...payload,
-        config: withLotoConfig(payload.config || {}),
-        nextPrediction: payload.nextPrediction
-            ? {
-                ...payload.nextPrediction,
-                config: withLotoConfig(payload.nextPrediction.config || payload.config || {})
+        return row;
+    });
+
+    const liveRows = normalizeLiveRows(rawPredictions);
+    
+    // For summary, if multi-strategy summary is available, let's extract it!
+    let liveSummary = {};
+    if (cloned.livePredictions?.summary) {
+        LOTO_BET_COUNTS.forEach(count => {
+            const key = `top${count}`;
+            const lookupKey = `${strategy}_${key}`;
+            if (cloned.livePredictions.summary[lookupKey]) {
+                liveSummary[key] = {
+                    ...cloned.livePredictions.summary[lookupKey],
+                    methodId: key
+                };
             }
-            : payload.nextPrediction,
+        });
+    }
+    
+    // Fallback/Legacy summary computation if not found
+    if (Object.keys(liveSummary).length === 0) {
+        liveSummary = summarizeLiveRows(liveRows);
+    }
+
+    const livePredictions = cloned.livePredictions
+        ? {
+            ...cloned.livePredictions,
+            config: withLotoConfig(cloned.livePredictions.config || {}),
+            predictions: liveRows,
+            summary: liveSummary
+        }
+        : cloned.livePredictions;
+        
+    return {
+        ...cloned,
+        config: withLotoConfig(cloned.config || {}),
+        nextPrediction: cloned.nextPrediction
+            ? {
+                ...cloned.nextPrediction,
+                config: withLotoConfig(cloned.nextPrediction.config || cloned.config || {})
+            }
+            : cloned.nextPrediction,
         livePredictions
     };
 }
@@ -207,7 +252,9 @@ export async function GET(request) {
                 }
             }
             : payload;
-        const normalizedPayload = normalizeLotoPayload(mergedPayload);
+            
+        const strategy = url.searchParams.get('strategy') || 'parallelCombined';
+        const normalizedPayload = normalizeLotoPayload(mergedPayload, strategy);
         const filtered = filterCount(normalizedPayload, url.searchParams.get('count'));
         if (filtered.error) {
             return NextResponse.json(

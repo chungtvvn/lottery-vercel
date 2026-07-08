@@ -10,6 +10,11 @@ const {
     buildPerformanceCache,
     writePerformanceCache
 } = require('../lib/services/predictionHistoryPerformanceService');
+const {
+    buildBacktestFingerprint,
+    hashCanonical,
+    readJsonSnapshot
+} = require('../lib/utils/backtestFingerprint');
 
 function parseArgs(argv = process.argv.slice(2)) {
     return new Map(argv.map(arg => {
@@ -23,7 +28,8 @@ function normalizeDate(value) {
     return match ? `${match[1]}-${match[2]}-${match[3]}` : null;
 }
 
-async function loadRawData() {
+async function loadRawData(rawFile = null) {
+    if (rawFile) return readJsonSnapshot(path.resolve(rawFile));
     const publicUrl = String(process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || '').replace(/\/$/, '');
     if (publicUrl) {
         const response = await fetch(`${publicUrl}/data/xsmb-2-digits.json.gz?ts=${Date.now()}`, {
@@ -40,7 +46,8 @@ async function loadRawData() {
 
 async function main() {
     const args = parseArgs();
-    const rawData = await loadRawData();
+    const rawFile = args.get('rawFile') || null;
+    const rawData = await loadRawData(rawFile);
     const latestDate = normalizeDate(rawData.at(-1)?.date);
     const year = Number(args.get('year') || latestDate?.slice(0, 4) || new Date().getFullYear());
     const startDate = args.get('start') || `${year}-01-01`;
@@ -77,6 +84,33 @@ async function main() {
         startDate,
         endDate,
         generatedAt: new Date().toISOString()
+    });
+    const fingerprintConfig = {
+        startDate,
+        endDate,
+        methodIds: Object.keys(METHOD_META),
+        rollingHistory: true,
+        playMode: 'both',
+        selectedStreakDetailLimit: 0,
+        compactDetails: true
+    };
+    cache.fingerprint = buildBacktestFingerprint({
+        rawData: rawData.filter(row => normalizeDate(row.date) <= endDate),
+        config: fingerprintConfig,
+        baselineCutoffDate: null,
+        methodologyVersion: 'rolling-fast-index-v1-unsafe',
+        sourceFiles: [
+            __filename,
+            path.join(process.cwd(), 'lib', 'services', 'simulationService.js'),
+            path.join(process.cwd(), 'lib', 'services', 'historicalExclusionService.js'),
+            path.join(process.cwd(), 'lib', 'services', 'predictionHistoryPerformanceService.js')
+        ],
+        sourceLabel: rawFile ? path.relative(process.cwd(), path.resolve(rawFile)) : 'R2-or-local-live'
+    });
+    cache.resultSha256 = hashCanonical({
+        period: cache.period,
+        selectedMethodId: cache.selectedMethodId,
+        methods: cache.methods
     });
     const outputPath = writePerformanceCache(cache);
     console.log(JSON.stringify({

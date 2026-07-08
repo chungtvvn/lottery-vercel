@@ -1,8 +1,8 @@
 (function () {
     const nf = new Intl.NumberFormat('vi-VN');
     const DEFAULT_LOTO_BET_COUNT = 14;
-    const DEFAULT_LOTO_STAKE_K = 2200;
-    const DEFAULT_LOTO_PAYOUT_K = 8000;
+    const DEFAULT_LOTO_STAKE_K = 220;
+    const DEFAULT_LOTO_PAYOUT_K = 800;
     const LOTO_COUNT_ORDER = [14, 6, 7, 5, 4, 3];
     const state = {
         performancePeriod: 'monthly',
@@ -102,7 +102,13 @@
                     </div>
                     <div class="p-4">
                         <div class="flex flex-wrap gap-2">
-                            ${(item.numbers || []).map(number => numberBadge(number, 'bet')).join('')}
+                            ${(item.numbers || []).map(number => {
+                                const isDouble = (item.intersection || []).includes(number);
+                                const badge = numberBadge(number, 'bet', isDouble ? { title: 'Trùng cả 2 phương án (Cược x2)' } : {});
+                                return isDouble
+                                    ? `<div class="relative flex items-center">${badge}<span class="absolute -top-1.5 -right-1.5 flex h-5 px-1.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-black text-white shadow-md ring-1 ring-white">x2</span></div>`
+                                    : badge;
+                            }).join('')}
                         </div>
                         <div class="mt-4 grid gap-2">${supportRows || '<div class="text-sm text-slate-500">Chưa có dữ liệu.</div>'}</div>
                     </div>
@@ -209,10 +215,14 @@
                         ${(selectedPrediction.numbers || []).map(number => {
                             const text = String(number).padStart(2, '0');
                             const isHit = row.status === 'settled' && actualSet.has(text);
-                            return numberBadge(text, row.status === 'pending' ? 'amber' : 'bet', {
+                            const isDouble = (selectedPrediction.intersection || []).includes(text);
+                            const badge = numberBadge(text, row.status === 'pending' ? (isHit ? 'hit' : 'amber') : 'bet', {
                                 hit: isHit,
                                 title: isHit ? 'Số đánh đã trúng thực tế trong 27 giải' : ''
                             });
+                            return isDouble
+                                ? `<div class="relative flex items-center">${badge}<span class="absolute -top-1.5 -right-1.5 flex h-5 px-1.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-black text-white shadow-md ring-1 ring-white">x2</span></div>`
+                                : badge;
                         }).join('') || `<span class="text-xs text-slate-400">Không có dàn Top ${selectedCount} trong snapshot này.</span>`}
                         </div>
                     </div>
@@ -570,7 +580,9 @@
     async function load() {
         const errorBox = document.getElementById('errorBox');
         try {
-            const res = await fetch('/api/loto/prediction', { cache: 'no-store' });
+            const selectEl = document.getElementById('lotoStrategySelect');
+            const strat = selectEl ? selectEl.value : 'parallelCombined';
+            const res = await fetch(`/api/loto/prediction?strategy=${strat}`, { cache: 'no-store' });
             const data = await res.json();
             if (!res.ok || !data.success) throw new Error(data.error || 'Không tải được dữ liệu Lô.');
             errorBox.classList.add('hidden');
@@ -586,5 +598,13 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', load);
+    document.addEventListener('DOMContentLoaded', () => {
+        load();
+        const selectEl = document.getElementById('lotoStrategySelect');
+        if (selectEl) {
+            selectEl.addEventListener('change', () => {
+                load();
+            });
+        }
+    });
 })();

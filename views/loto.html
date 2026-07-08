@@ -45,14 +45,24 @@
     </header>
 
     <main class="mx-auto max-w-7xl px-4 pb-12">
-        <section class="mb-6">
-            <p class="text-sm font-semibold uppercase tracking-wide text-indigo-600">Dự đoán Lô theo 27 vị trí</p>
-            <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-900">Lô Top 14 cho ngày tiếp theo</h1>
-            <p class="mt-2 max-w-4xl text-sm leading-6 text-slate-600">
-                Mỗi vị trí trong 27 giải tự chạy logic Mốc 20 năm theo phương án đang có lợi nhuận tốt nhất:
-                ưu tiên Tier, chọn chuỗi nhỏ trước, loại 65 số cho từng vị trí và giữ lại 35 số có thể về.
-                Hệ thống dùng Two-hit Greedy để chọn các dàn top 3, 4, 5, 6, 7 và 14 số. Dàn Top 14 được đặt làm mặc định; nhật ký thực tế bắt đầu từ snapshot sau lần triển khai này, với công thức 2200K ăn 8000K mỗi hit.
-            </p>
+        <section class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <p class="text-sm font-semibold uppercase tracking-wide text-indigo-600">Dự đoán Lô theo 27 vị trí</p>
+                <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-900">Dự đoán Lô cho ngày tiếp theo</h1>
+                <p class="mt-2 max-w-4xl text-sm leading-6 text-slate-600">
+                    Mỗi vị trí trong 27 giải tự chạy logic Mốc 20 năm theo phương án đang có lợi nhuận tốt nhất:
+                    giữ lại 35 số có thể về. Hệ thống chọn các dàn top 3, 4, 5, 6, 7 và 14 số.
+                    Đánh Song Song (x2 Trùng) kết hợp hai phương án tối ưu nhất.
+                </p>
+            </div>
+            <div class="flex items-center gap-3">
+                <label for="lotoStrategySelect" class="text-sm font-black text-slate-600 whitespace-nowrap">Phương pháp:</label>
+                <select id="lotoStrategySelect" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                    <option value="parallelCombined" selected>Đánh song song (Trùng x2)</option>
+                    <option value="chainSmallFirst">Chuỗi nhỏ trước (Hold 65)</option>
+                    <option value="chainBlockFirst">Nhịp block trước (Hold 65)</option>
+                </select>
+            </div>
         </section>
 
         <div id="errorBox" class="mb-6 hidden rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"></div>

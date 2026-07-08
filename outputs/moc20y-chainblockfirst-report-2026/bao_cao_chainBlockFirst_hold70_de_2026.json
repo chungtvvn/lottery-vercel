@@ -1,0 +1,34 @@
+{
+  "generatedAt": "2026-06-28T06:09:42.013Z",
+  "source": "R2 latest 2026-06-27, exact Hold70, baseline 20y fixed 2026",
+  "rows": [
+    {
+      "category": "De - ty le an 84",
+      "method": "chainBlockFirst Hold70",
+      "days": 174,
+      "wins": 97,
+      "losses": 77,
+      "hitRate": "55.75%",
+      "stakeK": 5220000,
+      "payoutK": 8148000,
+      "profitK": 2928000,
+      "roi": "56.09%",
+      "longestWin": 10,
+      "longestLoss": 12
+    },
+    {
+      "category": "De - ty le an 70",
+      "method": "chainBlockFirst Hold70",
+      "days": 174,
+      "wins": 97,
+      "losses": 77,
+      "hitRate": "55.75%",
+      "stakeK": 5220000,
+      "payoutK": 6790000,
+      "profitK": 1570000,
+      "roi": "30.08%",
+      "longestWin": 10,
+      "longestLoss": 12
+    }
+  ]
+}

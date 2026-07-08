@@ -17,6 +17,11 @@ Use fields emitted by `annualMilestoneService.buildCandidatesForDate`:
 
 The annual baseline must end before the evaluated prediction year. Daily chain state may only use draws before the prediction date.
 
+The precomputed streak files are unsafe for historical evaluation when their pattern identity or
+active-date membership was inferred using later draws. For strict evaluation, regenerate number,
+head-tail, and sum-difference statistics from the raw prefix before each prediction date. A
+full-history index filtered by `endDate` is not equivalent.
+
 ## Posterior chain risk
 
 For a chain with `n=currentCount`, `c=nextCount`, and `b=n-c` breaks:
@@ -46,5 +51,11 @@ Use untouched holdout dates and compare the same rows:
 - Lô baseline: current production per-position strategy, hold, aggregation mode, and top count.
 - Report both probability metrics and money metrics.
 - Reject a comparison if row counts, date range, stake, payout, hold, or bet count differ.
+- Report the break-even hit rate (`bet_count / payout_multiplier`) beside the observed hit rate.
+- Use multiple calendar years or rolling-origin folds. Do not select a method on the same year used
+  for the headline result.
+- Apply a multiple-testing correction or confirm the winner on a second untouched regime when many
+  strategies or hyperparameters were tried.
+- Treat a method as unstable when the winning strategy changes sharply across years.
 
 Do not interpret lottery draws as a conventional trend-following time series. Models may rank historical pattern evidence, but no method can establish guaranteed future profit.
