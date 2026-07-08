@@ -584,9 +584,17 @@
     function adjustDeResult(result = {}, target = state.target) {
         const betCount = Number(result.betCount || getDeBetCount(target));
         const hit = Boolean(result.hit || result.result === 'win');
-        const stakeK = betCount * DE_BET_PER_NUMBER_K;
-        const payoutK = hit ? normalizeWinMultiplier(state.winMultiplier) * DE_BET_PER_NUMBER_K : 0;
-        const profitK = payoutK - stakeK;
+        let stakeK, payoutK, profitK;
+        if (Number.isFinite(result.stakeK) && Number.isFinite(result.payoutK)) {
+            const scaleFactor = DE_BET_PER_NUMBER_K / 10;
+            stakeK = result.stakeK * scaleFactor;
+            payoutK = result.payoutK * scaleFactor * (normalizeWinMultiplier(state.winMultiplier) / 84);
+            profitK = payoutK - stakeK;
+        } else {
+            stakeK = betCount * DE_BET_PER_NUMBER_K;
+            payoutK = hit ? normalizeWinMultiplier(state.winMultiplier) * DE_BET_PER_NUMBER_K : 0;
+            profitK = payoutK - stakeK;
+        }
         return {
             ...result,
             hit,
@@ -602,13 +610,36 @@
         const days = Number(row.days || (row.date || row.period || row.month || row.week ? 1 : 0)) || 0;
         const wins = getRowWins(row);
         const betCount = Number(row.betCount || getDeBetCount(target));
-        const stakeK = Number.isFinite(Number(row.stakeK)) && Number(row.stakeK) > 0
-            ? days > 1
-                ? days * betCount * DE_BET_PER_NUMBER_K
-                : betCount * DE_BET_PER_NUMBER_K
-            : days * betCount * DE_BET_PER_NUMBER_K;
-        const payoutK = wins * normalizeWinMultiplier(state.winMultiplier) * DE_BET_PER_NUMBER_K;
-        const profitK = payoutK - stakeK;
+        let stakeK, payoutK, profitK;
+        if (Number.isFinite(row.stakeK) && Number.isFinite(row.payoutK)) {
+            const scaleFactor = DE_BET_PER_NUMBER_K / 10;
+            stakeK = row.stakeK * scaleFactor;
+            payoutK = row.payoutK * scaleFactor * (normalizeWinMultiplier(state.winMultiplier) / 84);
+            profitK = payoutK - stakeK;
+        } else if (Number.isFinite(row.betProfitK) || Number.isFinite(row.profitK)) {
+            // Read from compiled performance report
+            const scaleFactor = DE_BET_PER_NUMBER_K / 10;
+            const rawProfit = Number(row.profitK ?? (row.betProfitK + row.holdProfitK) ?? 0);
+            
+            // Recompute stake from average betCount or history
+            // Wait, for parallel strategy deParallelBlock85Small65, the bet numbers have custom stakes.
+            // In the performance report generator, totals.betNumberDays represents the sum of betCounts.
+            // But wait, totals.excludedNumberDays is also there.
+            // If the row already has stakeK (compiled in performance cache), we use it.
+            // Otherwise, estimate it.
+            const estimatedBetCount = Number(row.betCount || (row.betNumberDays / days) || getDeBetCount(target));
+            stakeK = days * estimatedBetCount * DE_BET_PER_NUMBER_K;
+            profitK = rawProfit * scaleFactor;
+            payoutK = stakeK + profitK;
+        } else {
+            stakeK = Number.isFinite(Number(row.stakeK)) && Number(row.stakeK) > 0
+                ? days > 1
+                    ? days * betCount * DE_BET_PER_NUMBER_K
+                    : betCount * DE_BET_PER_NUMBER_K
+                : days * betCount * DE_BET_PER_NUMBER_K;
+            payoutK = wins * normalizeWinMultiplier(state.winMultiplier) * DE_BET_PER_NUMBER_K;
+            profitK = payoutK - stakeK;
+        }
         return {
             ...row,
             days,

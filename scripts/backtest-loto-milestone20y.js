@@ -36,10 +36,10 @@ const DEFAULT_METHOD_ID = 'milestone20yChainSmallFirstHold65TwoHitGreedy';
 const DEFAULT_STRATEGY = 'chainSmallFirst';
 const DEFAULT_HOLD = 65;
 const DEFAULT_AGGREGATION_MODE = 'twoHitGreedy';
-const DEFAULT_BET_COUNT = 14;
+const DEFAULT_BET_COUNT = 5;
 const DEFAULT_BET_COUNTS = [3, 4, 5, 6, 7, 14];
-const LIVE_TRACKING_VERSION = 'top14-live-v1';
-const LIVE_CACHE_NOTE = 'Mỗi vị trí dùng Mốc 20 năm chainSmallFirst Hold 65; tổng hợp bằng Two-hit Greedy. Top 14 là dàn mặc định và chỉ được kết toán từ snapshot phát hành sau khi triển khai.';
+const LIVE_TRACKING_VERSION = 'top5-live-v1';
+const LIVE_CACHE_NOTE = 'Mỗi vị trí dùng Mốc 20 năm chainSmallFirst Hold 65; tổng hợp bằng Two-hit Greedy. Top 5 là dàn mặc định và chỉ được kết toán từ snapshot phát hành sau khi triển khai.';
 
 function parseArgs() {
     return new Map(process.argv.slice(2).map(arg => {

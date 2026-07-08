@@ -54,7 +54,7 @@ function withLotoConfig(config = {}) {
         ...config,
         stakePerNumberK: LOTO_STAKE_PER_NUMBER_K,
         payoutPerHitK: LOTO_PAYOUT_PER_HIT_K,
-        defaultBetCount: 14
+        defaultBetCount: 5
     };
 }
 

@@ -15,11 +15,11 @@ async function main() {
     const deBetNumbers = Array.from({ length: 30 }, (_, value) => String(value).padStart(2, '0'));
     const dePayload = {
         latestDataDate: '2026-07-01',
-        config: { defaultBetStrategy: 'dedupEdge50CombinedB40S05', defaultBetTarget: 70 },
+        config: { defaultBetStrategy: 'deParallelBlock85Small65', defaultBetTarget: 70 },
         nextPrediction: {
             predictionIsoDate: '2026-07-02',
             strategies: {
-                dedupEdge50CombinedB40S05: {
+                deParallelBlock85Small65: {
                     holds: {
                         70: { betNumbers: deBetNumbers }
                     }
@@ -32,14 +32,14 @@ async function main() {
                 predictionIsoDate: '2026-07-01',
                 actualSpecial: '12',
                 strategies: {
-                    dedupEdge50CombinedB40S05: {
+                    deParallelBlock85Small65: {
                         holds: {
                             70: { betNumbers: deBetNumbers }
                         }
                     }
                 },
                 results: {
-                    'dedupEdge50CombinedB40S05:hold70': {
+                    'deParallelBlock85Small65:hold70': {
                         actual: '12',
                         betCount: 30,
                         hit: true,
@@ -55,8 +55,8 @@ async function main() {
             predictionIsoDate: '2026-07-02',
             methodId: 'testLotoMethod',
             predictions: {
-                top6: {
-                    numbers: ['01', '02', '03', '04', '05', '06']
+                top5: {
+                    numbers: ['01', '02', '03', '04', '05']
                 },
                 top14: {
                     numbers: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '34', '56']
@@ -69,9 +69,9 @@ async function main() {
                 predictionIsoDate: '2026-07-01',
                 actual: { '01': 1, 12: 2, 34: 1, 55: 23 },
                 methods: {
-                    top6: {
-                        betNumbers: ['01', '02', '03', '04', '05', '06'],
-                        betCount: 6,
+                    top5: {
+                        betNumbers: ['01', '02', '03', '04', '05'],
+                        betCount: 5,
                         hits: 1,
                         profitK: -5200
                     },
@@ -84,7 +84,7 @@ async function main() {
                 }
             }],
             summary: {
-                top6: { days: 10, hitDays: 4, profitK: 12000 },
+                top5: { days: 10, hitDays: 4, profitK: 12000 },
                 top14: { days: 1, hitDays: 1, profitK: 1200 }
             }
         }
@@ -98,7 +98,7 @@ async function main() {
     assert.match(report.text, /Kết quả \(27 vị trí\):/);
     assert.match(report.text, /Trúng: <b>01 12×2 34<\/b>/);
     assert.match(report.text, /Lũy kế: 10 ngày · hit-day 4\/10 · \+12\.000K/);
-    assert.match(report.text, /DỰ ĐOÁN LÔ TOP 6 &amp; TOP 14/);
+    assert.match(report.text, /DỰ ĐOÁN LÔ TOP 5 &amp; TOP 14/);
     assert.ok(report.text.length <= 4096, `Telegram report quá dài: ${report.text.length}`);
     console.log('Telegram report tests passed.');
 }

@@ -288,10 +288,10 @@ jobs:
             if (cache.config?.methodId !== 'milestone20yChainSmallFirstHold65TwoHitGreedy') {
               throw new Error(`Lô method sai: ${cache.config?.methodId || 'missing'}`);
             }
-            if (Number(cache.config?.stakePerNumberK) !== 2200 || Number(cache.config?.payoutPerHitK) !== 8000) {
+            if (Number(cache.config?.stakePerNumberK) !== 220 || Number(cache.config?.payoutPerHitK) !== 800) {
               throw new Error(`Lô công thức sai: stake=${cache.config?.stakePerNumberK || 'missing'}, payout=${cache.config?.payoutPerHitK || 'missing'}`);
             }
-            if (Number(cache.config?.defaultBetCount) !== 14 || cache.nextPrediction?.predictions?.top14?.numbers?.length !== 14) {
+            if (Number(cache.config?.defaultBetCount) !== 5 || cache.nextPrediction?.predictions?.top5?.numbers?.length !== 5) {
               throw new Error(`Lô default sai: defaultBetCount=${cache.config?.defaultBetCount || 'missing'}`);
             }
             console.log(`cache_ready=true`);
@@ -386,10 +386,10 @@ jobs:
             if (cache.latestDataDate !== latestRaw || live.latestDataDate !== latestRaw) {
               throw new Error(`Lô cache stale sau retry: cache=${cache.latestDataDate}, live=${live.latestDataDate}, latestRaw=${latestRaw}, target=${target}`);
             }
-            if (Number(cache.config?.stakePerNumberK) !== 2200 || Number(cache.config?.payoutPerHitK) !== 8000) {
+            if (Number(cache.config?.stakePerNumberK) !== 220 || Number(cache.config?.payoutPerHitK) !== 800) {
               throw new Error(`Lô công thức sai sau retry: stake=${cache.config?.stakePerNumberK || 'missing'}, payout=${cache.config?.payoutPerHitK || 'missing'}`);
             }
-            if (Number(cache.config?.defaultBetCount) !== 14 || cache.nextPrediction?.predictions?.top14?.numbers?.length !== 14) {
+            if (Number(cache.config?.defaultBetCount) !== 5 || cache.nextPrediction?.predictions?.top5?.numbers?.length !== 5) {
               throw new Error(`Lô default sai sau retry: defaultBetCount=${cache.config?.defaultBetCount || 'missing'}`);
             }
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, 'cache_ready=true\n');
@@ -452,10 +452,10 @@ jobs:
             if (stale.length) {
               throw new Error(`R2 chưa đồng bộ latestRaw=${latestRaw}, target=${target}: ${JSON.stringify(dates)}`);
             }
-            if (Number(loto.config?.stakePerNumberK) !== 2200 || Number(loto.config?.payoutPerHitK) !== 8000) {
+            if (Number(loto.config?.stakePerNumberK) !== 220 || Number(loto.config?.payoutPerHitK) !== 800) {
               throw new Error(`R2 Lô công thức sai: stake=${loto.config?.stakePerNumberK || 'missing'}, payout=${loto.config?.payoutPerHitK || 'missing'}`);
             }
-            if (Number(loto.config?.defaultBetCount) !== 14 || loto.nextPrediction?.predictions?.top14?.numbers?.length !== 14) {
+            if (Number(loto.config?.defaultBetCount) !== 5 || loto.nextPrediction?.predictions?.top5?.numbers?.length !== 5) {
               throw new Error(`R2 Lô default sai: defaultBetCount=${loto.config?.defaultBetCount || 'missing'}`);
             }
             console.log(`✅ Đề + Lô đồng bộ raw ${latestRaw}; target ${target}. Dự đoán Lô: ${loto.nextPrediction?.predictionIsoDate || 'unknown'}.`);
