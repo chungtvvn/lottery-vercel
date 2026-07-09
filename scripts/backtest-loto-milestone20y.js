@@ -791,51 +791,6 @@ async function buildPositionDailyPredictions(rawData, positionKey, targetRows, m
     return rows;
 }
 
-function runPositionsInParallel(rawData, targetRows, methodConfigs, options, positions = PRIZE_KEYS) {
-    const maxConcurrency = Math.min(6, positions.length);
-    const queue = [...positions];
-    const results = new Map();
-    let activeWorkers = 0;
-
-    return new Promise((resolve, reject) => {
-        if (positions.length === 0) return resolve(results);
-
-        function spawnNext() {
-            if (queue.length === 0 && activeWorkers === 0) {
-                return resolve(results);
-            }
-            while (activeWorkers < maxConcurrency && queue.length > 0) {
-                const positionKey = queue.shift();
-                activeWorkers++;
-                const worker = new Worker(__filename, {
-                    workerData: {
-                        rawData,
-                        positionKey,
-                        targetRows,
-                        methodConfigs,
-                        options
-                    }
-                });
-                worker.on('message', (message) => {
-                    results.set(message.positionKey, message.rows);
-                });
-                worker.on('error', (err) => {
-                    reject(err);
-                });
-                worker.on('exit', (code) => {
-                    activeWorkers--;
-                    if (code !== 0) {
-                        reject(new Error(`Worker for position ${positionKey} exited with code ${code}`));
-                    } else {
-                        spawnNext();
-                    }
-                });
-            }
-        }
-        spawnNext();
-    });
-}
-
 async function buildNextPrediction(rawData, methodConfig, betCounts, options) {
     const aggregationMode = methodConfig.aggregationMode || options.aggregationMode || DEFAULT_AGGREGATION_MODE;
     const latest = rawData[rawData.length - 1];
@@ -846,13 +801,13 @@ async function buildNextPrediction(rawData, methodConfig, betCounts, options) {
     const positionPredictions = [];
     const byPosition = {};
 
-    console.log(`[LotoMilestone20Y] Spawning parallel workers for ${PRIZE_KEYS.length} positions...`);
-    const results = await runPositionsInParallel(rawData, targetRows, [methodConfig], options);
-
     let positionIndex = 0;
     for (const positionKey of PRIZE_KEYS) {
         positionIndex += 1;
-        const positionRows = new Map(results.get(positionKey) || []);
+        console.log(`[LotoMilestone20Y] next ${positionKey} (${positionIndex}/${PRIZE_KEYS.length})...`);
+        const positionRows = await buildPositionDailyPredictions(rawData, positionKey, targetRows, [methodConfig], options);
+        // Free stats cache immediately — prediction-only processes each position once
+        positionStatsCache.delete(positionKey);
         const methods = positionRows.get(formatIsoDate(predictionDate)) || {};
         const numbers = methods[methodConfig.id] || [];
         byPosition[positionKey] = numbers;
@@ -1130,16 +1085,18 @@ async function main() {
             throw new Error(`Position cache thiếu dữ liệu: ${missingPositions.join(', ')}`);
         }
     } else {
-        console.log(`[LotoMilestone20Y] Spawning parallel workers for ${selectedPositions.length} positions...`);
-        const results = await runPositionsInParallel(rawData, targetRows, methodConfigs, {
-            historyYears,
-            fixedBaselineYear,
-            activeFrequencyLimit: Number(args.get('activeFrequencyLimit') || 0.5),
-            recordFrequencyLimit: Number(args.get('recordFrequencyLimit') || 1.1),
-            minPotentialCurrentLenForNeverFormed: Number(args.get('minPotentialLen') || 4)
-        }, selectedPositions);
+        let positionIndex = 0;
         for (const positionKey of selectedPositions) {
-            const positionRows = new Map(results.get(positionKey) || []);
+            positionIndex += 1;
+            console.log(`[LotoMilestone20Y] ${positionKey} (${positionIndex}/${selectedPositions.length})...`);
+            const positionRows = await buildPositionDailyPredictions(rawData, positionKey, targetRows, methodConfigs, {
+                historyYears,
+                fixedBaselineYear,
+                activeFrequencyLimit: Number(args.get('activeFrequencyLimit') || 0.5),
+                recordFrequencyLimit: Number(args.get('recordFrequencyLimit') || 1.1),
+                minPotentialCurrentLenForNeverFormed: Number(args.get('minPotentialLen') || 4)
+            });
+            positionStatsCache.delete(positionKey);
             for (const [date, methods] of positionRows.entries()) {
                 if (!targetDates.has(date)) continue;
                 byDate.get(date).positions[positionKey] = methods;
@@ -1641,23 +1598,7 @@ function summarizeLivePredictionsMulti(livePayload, betCounts) {
     return summary;
 }
 
-const { Worker, isMainThread, parentPort, workerData } = require('worker_threads');
-
-if (!isMainThread) {
-    const { rawData, positionKey, targetRows, methodConfigs, options } = workerData;
-    (async () => {
-        // Set memory caches for this worker thread context
-        lotteryService.__setInMemoryCachesForBacktest({ rawData });
-        const positionRows = await buildPositionDailyPredictions(rawData, positionKey, targetRows, methodConfigs, options);
-        parentPort.postMessage({
-            positionKey,
-            rows: Array.from(positionRows.entries())
-        });
-    })().catch(err => {
-        console.error(`[Worker Error] Position: ${positionKey}:`, err);
-        process.exit(1);
-    });
-} else if (require.main === module) {
+if (require.main === module) {
     main().catch(error => {
         console.error(error);
         process.exit(1);
