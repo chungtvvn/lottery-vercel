@@ -257,10 +257,16 @@
         return (values || []).map(normalizeNumber).filter(Boolean);
     }
 
-    function getDoubleNumbers(value = {}) {
+    function getDoubleNumbers(value = {}, context = {}) {
         const betSet = new Set(normalizeNumberList(value.betNumbers || []));
-        return normalizeNumberList(value.intersectionNumbers || value.doubleNumbers || value.intersection || [])
+        const explicit = normalizeNumberList(value.intersectionNumbers || value.doubleNumbers || value.intersection || [])
             .filter(number => !betSet.size || betSet.has(number));
+        if (explicit.length || value.strategy !== 'deParallelBlock85Small65') return explicit;
+
+        const strategies = context.strategies || {};
+        const block = new Set(normalizeNumberList(strategies.chainBlockFirst?.holds?.['85']?.betNumbers || []));
+        const small = new Set(normalizeNumberList(strategies.chainSmallFirst?.holds?.['65']?.betNumbers || []));
+        return Array.from(block).filter(number => small.has(number) && (!betSet.size || betSet.has(number)));
     }
 
     function getUniqueCount(value = {}) {
@@ -277,8 +283,8 @@
         return getDeBetCount(target);
     }
 
-    function renderBetShape(value = {}, target = state.target) {
-        const doubleNumbers = getDoubleNumbers(value);
+    function renderBetShape(value = {}, target = state.target, context = {}) {
+        const doubleNumbers = getDoubleNumbers(value, context);
         return `${fmt(getUniqueCount(value))} số duy nhất · ${fmt(getUnitCount(value, target))} đơn vị cược${doubleNumbers.length ? ` · x2: ${doubleNumbers.join(' ')}` : ''}`;
     }
 
@@ -435,14 +441,17 @@
         const next = payload?.nextPrediction || {};
         const prediction = getPrediction();
         const strategy = getStrategy();
-        const doubleNumbers = getDoubleNumbers(prediction || {});
+        const doubleNumbers = getDoubleNumbers(prediction || {}, { strategies: next.strategies });
+        const displayPrediction = prediction
+            ? { ...prediction, intersectionNumbers: doubleNumbers }
+            : prediction;
         const cards = [
             ['Dữ liệu tới', payload?.latestDataDate || '-'],
             ['Ngày dự đoán', next.predictionIsoDate || '-'],
             ['Mốc dữ liệu', `${next.baseline?.startIso || '-'} → ${next.baseline?.cutoffIso || '-'}`],
             ['Ứng viên', fmt(next.summary?.candidatesCount || 0)],
             ['Số loại', fmt(prediction?.excludedNumbers?.length || 0)],
-            ['Số đánh', `${fmt(getUniqueCount(prediction || {}))} số / ${fmt(getUnitCount(prediction || {}))} đơn vị`]
+            ['Số đánh', `${fmt(getUniqueCount(displayPrediction || {}))} số / ${fmt(getUnitCount(displayPrediction || {}))} đơn vị`]
         ];
         el('summaryCards').innerHTML = cards.map(([label, value]) => `
             <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -451,7 +460,7 @@
             </div>
         `).join('');
 
-        el('predictionInfo').textContent = `${strategy?.name || state.strategy} · loại ${state.target} số, ${renderBetShape(prediction || {})}.`;
+        el('predictionInfo').textContent = `${strategy?.name || state.strategy} · loại ${state.target} số, ${renderBetShape(displayPrediction || {}, state.target, { strategies: next.strategies })}.`;
         const displayedRanking = getDisplayedRanking(prediction);
         el('excludedGrid').innerHTML = renderNumberGrid(prediction?.excludedNumbers || [], 'exclude', displayedRanking);
         el('betGrid').innerHTML = doubleNumbers.length
@@ -459,9 +468,9 @@
                 <div class="mb-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-bold text-red-700">
                     Số đánh gấp đôi: ${escapeHtml(doubleNumbers.join(' '))}
                 </div>
-                ${renderNumberGrid(prediction?.betNumbers || [], 'bet', displayedRanking, { doubleNumbers })}
+                ${renderNumberGrid(displayPrediction?.betNumbers || [], 'bet', displayedRanking, { doubleNumbers })}
             `
-            : renderNumberGrid(prediction?.betNumbers || [], 'bet', displayedRanking);
+            : renderNumberGrid(displayPrediction?.betNumbers || [], 'bet', displayedRanking);
     }
 
     function presetIdForSelection() {
@@ -559,25 +568,33 @@
         const key = getResultKey();
         el('liveRows').innerHTML = rows.map(row => {
             const rawResult = row.results?.[key];
-            const result = rawResult ? adjustDeResult(rawResult, state.target) : null;
-            const pending = row.status !== 'settled' || !result?.resolved;
             const prediction = row.strategies?.[state.strategy]?.holds?.[String(state.target)];
+            const snapshot = { ...(rawResult || {}), ...(prediction || {}) };
+            const doubleNumbers = getDoubleNumbers(snapshot, { strategies: row.strategies });
+            snapshot.intersectionNumbers = doubleNumbers;
+            const result = rawResult ? adjustDeResult({
+                ...rawResult,
+                betNumbers: snapshot.betNumbers || [],
+                intersectionNumbers: doubleNumbers,
+                unitCount: (snapshot.betNumbers || []).length + doubleNumbers.length
+            }, state.target) : null;
+            const pending = row.status !== 'settled' || !result?.resolved;
             const profit = result?.profitK || 0;
-            const doubleNumbers = getDoubleNumbers(prediction || rawResult || {});
-            const betShape = renderBetShape(prediction || rawResult || {}, state.target);
+            const betShape = renderBetShape(snapshot, state.target);
             const actualNumber = !pending && (result?.actual || row.actualSpecial) !== undefined && (result?.actual || row.actualSpecial) !== null
                 ? numText(result?.actual || row.actualSpecial)
                 : null;
             const betSet = new Set((prediction?.betNumbers || []).map(num => numText(num)));
+            const actualDouble = Boolean(actualNumber && doubleNumbers.includes(actualNumber));
             return `
                 <div class="grid gap-3 px-4 py-4 md:grid-cols-[150px_1fr_130px] md:items-start ${pending ? 'bg-amber-50/30' : 'bg-white'}">
                     <div>
                         <div class="font-bold text-slate-900">${escapeHtml(row.predictionIsoDate || row.predictionDate || '-')}</div>
                         <div class="mt-1 text-xs text-slate-500">${pending ? 'Đang chờ kết quả' : 'KQ thực tế'}</div>
                         ${actualNumber ? `
-                            <span title="${betSet.has(actualNumber) ? 'Kết quả thực tế trùng dàn đánh đã dự đoán' : 'Kết quả thực tế không nằm trong dàn đánh'}"
+                            <span title="${actualDouble ? 'Kết quả thực tế là số trùng hai phương pháp, đã tính cược x2' : (betSet.has(actualNumber) ? 'Kết quả thực tế trùng dàn đánh đã dự đoán' : 'Kết quả thực tế không nằm trong dàn đánh')}"
                                 class="mt-2 inline-flex min-w-10 justify-center rounded-lg border px-2.5 py-1 font-mono text-sm font-black ${betSet.has(actualNumber) ? 'number-chip-hit' : 'number-chip-actual'}">
-                                ${actualNumber}
+                                ${actualNumber}${actualDouble ? ' · x2' : ''}
                             </span>
                         ` : ''}
                     </div>
@@ -589,7 +606,7 @@
                             </div>
                         ` : ''}
                         <div class="mt-2 flex flex-wrap gap-1.5">
-                            ${(prediction?.betNumbers || []).slice(0, 45).map(num => {
+                            ${(snapshot.betNumbers || []).slice(0, 45).map(num => {
                                 const text = numText(num);
                                 const isHit = actualNumber && text === actualNumber;
                                 const isDouble = doubleNumbers.includes(text);
@@ -635,8 +652,17 @@
         const betCount = Number(result.betCount || getDeBetCount(target));
         const unitCount = Number(result.unitCount || getUnitCount(result, target) || betCount);
         const hit = Boolean(result.hit || result.result === 'win');
+        const snapshotBetNumbers = normalizeNumberList(result.betNumbers || []);
+        const snapshotDoubleNumbers = getDoubleNumbers(result);
         let stakeK, payoutK, profitK;
-        if (Number.isFinite(result.stakeK) && Number.isFinite(result.payoutK)) {
+        if (snapshotBetNumbers.length) {
+            const actual = result.actual == null ? null : normalizeNumber(result.actual);
+            const actualWeight = actual && snapshotDoubleNumbers.includes(actual) ? 2 : 1;
+            const effectiveUnits = snapshotBetNumbers.length + snapshotDoubleNumbers.length;
+            stakeK = effectiveUnits * DE_BET_PER_NUMBER_K;
+            payoutK = hit ? actualWeight * DE_BET_PER_NUMBER_K * normalizeWinMultiplier(state.winMultiplier) : 0;
+            profitK = payoutK - stakeK;
+        } else if (Number.isFinite(result.stakeK) && Number.isFinite(result.payoutK)) {
             const scaleFactor = DE_BET_PER_NUMBER_K / 10;
             stakeK = result.stakeK * scaleFactor;
             payoutK = result.payoutK * scaleFactor * (normalizeWinMultiplier(state.winMultiplier) / 84);
