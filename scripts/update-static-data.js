@@ -24,6 +24,7 @@ const LOTO_BET_COUNTS = [3, 4, 5, 6, 7, 14];
 const LOTO_DEFAULT_BET_COUNT = 5;
 const MILESTONE20Y_METHOD_VERSION = 'annual20y-2026-07-02-chain-block-hold70-immutable-details';
 const MILESTONE20Y_BASELINE_VERSION = 'annual20y-baseline-2026-06-28-block-ab';
+const MILESTONE20Y_LIVE_CACHE_VERSION = 'annual20y-live-compact-v3';
 const MILESTONE20Y_CACHE_FILES = [
     'cached_milestone20y_prediction.json',
     'cached_milestone20y_live_predictions.json'
@@ -195,7 +196,8 @@ function isMilestone20yFormulaCurrent(cache) {
         'numberConsensusRisk',
         'numberPosteriorDiversity',
         'numberWeightedRisk',
-        'activeOnlyAvgRisk'
+        'activeOnlyAvgRisk',
+        'deParallelBlock85Small65'
     ];
     return version === MILESTONE20Y_METHOD_VERSION && required.every(id => strategies.includes(id));
 }
@@ -740,6 +742,11 @@ async function hasMilestone20yPredictionCacheOnR2(expectedLatestDate = null) {
         if (!isMilestone20yFormulaCurrent(cache)) {
             const version = cache?.config?.methodVersion || 'unknown';
             console.log(`[Cache Check] R2 Mốc 20 năm cache stale schema: version=${version}, expected=${MILESTONE20Y_METHOD_VERSION}.`);
+            return false;
+        }
+        const liveCacheVersion = live?.config?.liveCacheVersion || live?.predictions?.[0]?.liveCacheVersion || '';
+        if (liveCacheVersion !== MILESTONE20Y_LIVE_CACHE_VERSION) {
+            console.log(`[Cache Check] R2 Mốc 20 năm live cache version stale: ${liveCacheVersion || 'missing'}, expected=${MILESTONE20Y_LIVE_CACHE_VERSION}.`);
             return false;
         }
         console.log(`[Cache Check] R2 Mốc 20 năm cache OK: cached latest=${cacheLatest || 'unknown'}, live latest=${liveLatest || 'unknown'}.`);
