@@ -1161,14 +1161,31 @@ async function main() {
                 }
             }
         }
+        const parallelEnabled = strategies.includes('chainSmallFirst') && strategies.includes('chainBlockFirst');
+        if (parallelEnabled) {
+            for (const hold of holdCounts) {
+                for (const aggregationMode of aggregationModes) {
+                    for (const betCount of betCounts) {
+                        const key = `parallelCombinedHold${hold}:${aggregationMode}:top${betCount}`;
+                        summariesByWindow[windowSpec.key][key] = emptySummary(key, betCount, {
+                            strategy: 'parallelCombined',
+                            hold,
+                            aggregationMode,
+                            window: windowSpec.key
+                        });
+                    }
+                }
+            }
+        }
 
         for (const row of windowRows) {
-            for (const config of methodConfigs) {
-                const positionPredictions = {};
-                for (const [positionKey, methods] of Object.entries(row.positions || {})) {
-                    positionPredictions[positionKey] = methods?.[config.id] || [];
-                }
-                for (const aggregationMode of aggregationModes) {
+            for (const aggregationMode of aggregationModes) {
+                const rankedByConfig = new Map();
+                for (const config of methodConfigs) {
+                    const positionPredictions = {};
+                    for (const [positionKey, methods] of Object.entries(row.positions || {})) {
+                        positionPredictions[positionKey] = methods?.[config.id] || [];
+                    }
                     const calibrationKey = `${config.id}:${aggregationMode}`;
                     const calibrationState = calibrationByConfigMode.get(calibrationKey);
                     const positionWeights = getCalibratedPositionWeights(calibrationState.positions);
@@ -1177,6 +1194,7 @@ async function main() {
                         positionWeights,
                         calibrationState
                     });
+                    rankedByConfig.set(config.id, ranked);
                     for (const betCount of betCounts) {
                         const key = `${config.id}:${aggregationMode}:top${betCount}`;
                         const numbers = ranked.slice(0, betCount).map(item => item.number);
@@ -1205,6 +1223,58 @@ async function main() {
                         row.actualByPosition,
                         row.actualCounts
                     );
+                }
+
+                if (parallelEnabled) {
+                    for (const hold of holdCounts) {
+                        const smallRanked = rankedByConfig.get(`chainSmallFirstHold${hold}`);
+                        const blockRanked = rankedByConfig.get(`chainBlockFirstHold${hold}`);
+                        if (!smallRanked || !blockRanked) continue;
+                        const smallPrediction = {
+                            strategy: 'chainSmallFirst',
+                            predictions: Object.fromEntries(betCounts.map(count => [`top${count}`, {
+                                numbers: smallRanked.slice(0, count).map(item => formatNumber(item.number)),
+                                support: smallRanked.slice(0, count).map(item => ({
+                                    number: formatNumber(item.number),
+                                    supportCount: Number(item.supportCount || item.weightedScore || 0)
+                                }))
+                            }]))
+                        };
+                        const blockPrediction = {
+                            strategy: 'chainBlockFirst',
+                            predictions: Object.fromEntries(betCounts.map(count => [`top${count}`, {
+                                numbers: blockRanked.slice(0, count).map(item => formatNumber(item.number)),
+                                support: blockRanked.slice(0, count).map(item => ({
+                                    number: formatNumber(item.number),
+                                    supportCount: Number(item.supportCount || item.weightedScore || 0)
+                                }))
+                            }]))
+                        };
+                        const merged = buildParallelCombinedPrediction(smallPrediction, blockPrediction, betCounts);
+                        for (const betCount of betCounts) {
+                            const key = `parallelCombinedHold${hold}:${aggregationMode}:top${betCount}`;
+                            const numbers = merged.predictions[`top${betCount}`]?.numbers || [];
+                            const result = addResultToSummary(summariesByWindow[windowSpec.key][key], numbers, row.actualCounts, stakeK, payoutK);
+                            if (includeDetails) {
+                                dailyDetailsByWindow[windowSpec.key].push({
+                                    date: row.date,
+                                    methodId: key,
+                                    strategy: 'parallelCombined',
+                                    hold,
+                                    aggregationMode,
+                                    betCount,
+                                    numbers: result.numbers,
+                                    overlapNumbers: merged.predictions[`top${betCount}`]?.overlapNumbers || [],
+                                    actualNumbers: [...row.actualCounts.keys()].sort((a, b) => a - b).map(formatNumber),
+                                    hits: result.hits,
+                                    stakeK: result.stakeK,
+                                    payoutK: result.payoutK,
+                                    profitK: result.profitK,
+                                    result: result.profitK > 0 ? 'win' : (result.profitK < 0 ? 'loss' : 'flat')
+                                });
+                            }
+                        }
+                    }
                 }
             }
         }
