@@ -8,8 +8,8 @@ const NO_STORE_HEADERS = {
     Pragma: 'no-cache',
     Expires: '0'
 };
-const LOTO_STAKE_PER_NUMBER_K = 220;
-const LOTO_PAYOUT_PER_HIT_K = 800;
+const FALLBACK_LOTO_STAKE_PER_NUMBER_K = 2200;
+const FALLBACK_LOTO_PAYOUT_PER_HIT_K = 8000;
 const LOTO_BET_COUNTS = [3, 4, 5, 6, 7, 14];
 
 function isAuthorized(request) {
@@ -49,23 +49,115 @@ function filterCount(payload, countParam) {
     };
 }
 
-function withLotoConfig(config = {}) {
+function normalizeLotteryNumber(value) {
+    const text = String(value ?? '').trim();
+    if (!text) return '';
+    return /^\d+$/.test(text)
+        ? text.padStart(2, '0').slice(-2)
+        : text;
+}
+
+function normalizeNumberList(values = []) {
+    return (values || [])
+        .map(normalizeLotteryNumber)
+        .filter(Boolean);
+}
+
+function finiteNumber(value, fallback = 0) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : fallback;
+}
+
+function readLotoEconomics(payload = {}) {
+    const config = payload.livePredictions?.config
+        || payload.nextPrediction?.config
+        || payload.config
+        || {};
     return {
-        ...config,
-        stakePerNumberK: LOTO_STAKE_PER_NUMBER_K,
-        payoutPerHitK: LOTO_PAYOUT_PER_HIT_K,
-        defaultBetCount: 5
+        stakePerNumberK: finiteNumber(config.stakePerNumberK, FALLBACK_LOTO_STAKE_PER_NUMBER_K) || FALLBACK_LOTO_STAKE_PER_NUMBER_K,
+        payoutPerHitK: finiteNumber(config.payoutPerHitK, FALLBACK_LOTO_PAYOUT_PER_HIT_K) || FALLBACK_LOTO_PAYOUT_PER_HIT_K,
+        defaultBetCount: finiteNumber(config.defaultBetCount, 5) || 5
     };
 }
 
-function normalizeLotoMethod(method = {}, count) {
+function withLotoConfig(config = {}, economics = {}) {
+    const stakePerNumberK = finiteNumber(config.stakePerNumberK, economics.stakePerNumberK || FALLBACK_LOTO_STAKE_PER_NUMBER_K)
+        || FALLBACK_LOTO_STAKE_PER_NUMBER_K;
+    const payoutPerHitK = finiteNumber(config.payoutPerHitK, economics.payoutPerHitK || FALLBACK_LOTO_PAYOUT_PER_HIT_K)
+        || FALLBACK_LOTO_PAYOUT_PER_HIT_K;
+    return {
+        ...config,
+        stakePerNumberK,
+        payoutPerHitK,
+        defaultBetCount: finiteNumber(config.defaultBetCount, economics.defaultBetCount || 5) || 5
+    };
+}
+
+function getDoubleNumbers(method = {}) {
+    return normalizeNumberList(method.doubleNumbers || method.x2Numbers || []);
+}
+
+function getOverlapNumbers(method = {}) {
+    return normalizeNumberList(method.overlapNumbers || method.intersection || []);
+}
+
+function getUnitCount(method = {}, fallbackCount = 0) {
+    const explicit = finiteNumber(method.unitCount ?? method.betUnitCount ?? method.weightedBetCount, 0);
+    if (explicit > 0) return explicit;
+    const betNumbers = normalizeNumberList(method.betNumbers || method.numbers || []);
+    const doubleNumbers = getDoubleNumbers(method);
+    if (betNumbers.length) return betNumbers.length + doubleNumbers.filter(number => betNumbers.includes(number)).length;
+    return finiteNumber(method.betCount, fallbackCount) || fallbackCount;
+}
+
+function normalizeLotoPrediction(prediction = {}, count) {
+    const numbers = normalizeNumberList(prediction.numbers || prediction.betNumbers || []);
+    const doubleNumbers = getDoubleNumbers(prediction).filter(number => numbers.includes(number));
+    const overlapNumbers = getOverlapNumbers(prediction).filter(number => numbers.includes(number));
+    const unitCount = finiteNumber(prediction.unitCount ?? prediction.betUnitCount ?? prediction.weightedBetCount, 0)
+        || (numbers.length + doubleNumbers.length);
+    return {
+        ...prediction,
+        count: finiteNumber(prediction.count, count) || count,
+        numbers,
+        intersection: doubleNumbers,
+        doubleNumbers,
+        overlapNumbers,
+        uniqueCount: numbers.length,
+        unitCount
+    };
+}
+
+function normalizePredictionMap(predictions = {}) {
+    const normalized = { ...(predictions || {}) };
+    LOTO_BET_COUNTS.forEach(count => {
+        const key = `top${count}`;
+        if (normalized[key]) normalized[key] = normalizeLotoPrediction(normalized[key], count);
+    });
+    return normalized;
+}
+
+function normalizeLotoMethod(method = {}, count, economics = {}) {
+    const stakePerNumberK = economics.stakePerNumberK || FALLBACK_LOTO_STAKE_PER_NUMBER_K;
+    const payoutPerHitK = economics.payoutPerHitK || FALLBACK_LOTO_PAYOUT_PER_HIT_K;
     const hits = Number(method.hits || 0) || 0;
-    const betCount = Number(method.betCount || count || 0) || count;
-    const stakeK = betCount * LOTO_STAKE_PER_NUMBER_K;
-    const payoutK = hits * LOTO_PAYOUT_PER_HIT_K;
-    const profitK = payoutK - stakeK;
+    const betNumbers = normalizeNumberList(method.betNumbers || []);
+    const doubleNumbers = getDoubleNumbers(method).filter(number => !betNumbers.length || betNumbers.includes(number));
+    const overlapNumbers = getOverlapNumbers(method).filter(number => !betNumbers.length || betNumbers.includes(number));
+    const uniqueCount = betNumbers.length || finiteNumber(method.uniqueCount, 0);
+    const unitCount = getUnitCount({ ...method, betNumbers, doubleNumbers }, count);
+    const betCount = uniqueCount || finiteNumber(method.betCount, count) || count;
+    const stakeK = Number.isFinite(Number(method.stakeK)) ? Number(method.stakeK) : unitCount * stakePerNumberK;
+    const payoutK = Number.isFinite(Number(method.payoutK)) ? Number(method.payoutK) : hits * payoutPerHitK;
+    const profitK = Number.isFinite(Number(method.profitK)) ? Number(method.profitK) : payoutK - stakeK;
     return {
         ...method,
+        betNumbers,
+        intersection: doubleNumbers,
+        doubleNumbers,
+        overlapNumbers,
+        uniqueCount,
+        unitCount,
         betCount,
         hits,
         stakeK,
@@ -75,14 +167,15 @@ function normalizeLotoMethod(method = {}, count) {
     };
 }
 
-function normalizeLiveRows(rows = []) {
+function normalizeLiveRows(rows = [], economics = {}) {
     return (rows || []).map(row => {
         const methods = { ...(row.methods || {}) };
+        const predictions = normalizePredictionMap(row.predictions || {});
         LOTO_BET_COUNTS.forEach(count => {
             const key = `top${count}`;
-            if (methods[key]) methods[key] = normalizeLotoMethod(methods[key], count);
+            if (methods[key]) methods[key] = normalizeLotoMethod(methods[key], count, economics);
         });
-        return { ...row, methods };
+        return { ...row, predictions, methods };
     });
 }
 
@@ -148,12 +241,15 @@ function summarizeLiveRows(rows = []) {
 function normalizeLotoPayload(payload = {}, strategy = 'parallelCombined') {
     // Deep clone payload to avoid side-effects
     const cloned = JSON.parse(JSON.stringify(payload));
+    const economics = readLotoEconomics(cloned);
     
     // If the cache uses the multi-strategy format, let's extract the requested strategy first!
     if (cloned.nextPrediction?.strategies?.[strategy]) {
-        cloned.nextPrediction.predictions = cloned.nextPrediction.strategies[strategy].predictions;
+        cloned.nextPrediction.predictions = normalizePredictionMap(cloned.nextPrediction.strategies[strategy].predictions || {});
         cloned.nextPrediction.methodId = cloned.nextPrediction.strategies[strategy].methodId || cloned.nextPrediction.methodId;
         cloned.nextPrediction.strategy = strategy;
+    } else if (cloned.nextPrediction?.predictions) {
+        cloned.nextPrediction.predictions = normalizePredictionMap(cloned.nextPrediction.predictions);
     }
 
     let rawPredictions = cloned.livePredictions?.predictions || [];
@@ -169,7 +265,7 @@ function normalizeLotoPayload(payload = {}, strategy = 'parallelCombined') {
         return row;
     });
 
-    const liveRows = normalizeLiveRows(rawPredictions);
+    const liveRows = normalizeLiveRows(rawPredictions, economics);
     
     // For summary, if multi-strategy summary is available, let's extract it!
     let liveSummary = {};
@@ -194,7 +290,7 @@ function normalizeLotoPayload(payload = {}, strategy = 'parallelCombined') {
     const livePredictions = cloned.livePredictions
         ? {
             ...cloned.livePredictions,
-            config: withLotoConfig(cloned.livePredictions.config || {}),
+            config: withLotoConfig(cloned.livePredictions.config || {}, economics),
             predictions: liveRows,
             summary: liveSummary
         }
@@ -202,11 +298,11 @@ function normalizeLotoPayload(payload = {}, strategy = 'parallelCombined') {
         
     return {
         ...cloned,
-        config: withLotoConfig(cloned.config || {}),
+        config: withLotoConfig(cloned.config || {}, economics),
         nextPrediction: cloned.nextPrediction
             ? {
                 ...cloned.nextPrediction,
-                config: withLotoConfig(cloned.nextPrediction.config || cloned.config || {})
+                config: withLotoConfig(cloned.nextPrediction.config || cloned.config || {}, economics)
             }
             : cloned.nextPrediction,
         livePredictions

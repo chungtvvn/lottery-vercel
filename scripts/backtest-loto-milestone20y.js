@@ -559,23 +559,28 @@ function buildPredictionSetsFromRanked(ranked, betCounts) {
 
 function evaluateNumbers(numbers, actualCounts, stakeK, payoutK, intersection = []) {
     const selected = (numbers || []).map(normalizeNumber).filter(value => value !== null);
-    const intersectSet = new Set((intersection || []).map(normalizeNumber));
+    const overlapNumbers = selected
+        .filter(number => (intersection || []).map(normalizeNumber).includes(number))
+        .map(formatNumber);
     
     let hits = 0;
     let stakeTotalK = 0;
     
     for (const number of selected) {
-        const weight = intersectSet.has(number) ? 2 : 1;
         const occurrences = actualCounts.get(number) || 0;
         
-        hits += weight * occurrences;
-        stakeTotalK += weight * stakeK;
+        hits += occurrences;
+        stakeTotalK += stakeK;
     }
     
     const payoutTotalK = hits * payoutK;
     const profitK = payoutTotalK - stakeTotalK;
     return {
         betNumbers: selected.map(formatNumber),
+        overlapNumbers,
+        uniqueCount: selected.length,
+        unitCount: selected.length,
+        betCount: selected.length,
         hits,
         stakeK: stakeTotalK,
         payoutK: payoutTotalK,
@@ -624,7 +629,7 @@ function settleLivePredictions(livePayload, rawData, options) {
                 actual.counts,
                 options.stakeK,
                 options.payoutK,
-                item.predictions[key].intersection || []
+                item.predictions[key].overlapNumbers || item.predictions[key].intersection || []
             );
         }
         if (!wasSettled) settledCount += 1;
@@ -1039,7 +1044,7 @@ async function main() {
         console.table(Object.values(primaryPrediction.predictions || {}).map(item => ({
             method: `top${item.count || item.numbers?.length}`,
             numbers: (item.numbers || []).join(' '),
-            intersection: (item.intersection || []).join(' ')
+            overlapNumbers: (item.overlapNumbers || item.intersection || []).join(' ')
         })));
         return;
     }
@@ -1310,26 +1315,60 @@ function buildParallelCombinedPrediction(p1, p2, betCounts) {
         
         const b1 = new Set(l1.map(Number));
         const b2 = new Set(l2.map(Number));
-        const union = new Set([...b1, ...b2]);
-        const intersection = new Set([...b1].filter(n => b2.has(n)));
-        
-        const numbers = Array.from(union).sort((a,b)=>a-b).map(n => String(n).padStart(2, '0'));
-        const intersectionNums = Array.from(intersection).sort((a,b)=>a-b).map(n => String(n).padStart(2, '0'));
         
         const support1 = p1.predictions[key]?.support || [];
         const support2 = p2.predictions[key]?.support || [];
         const supportMap = new Map();
-        [...support1, ...support2].forEach(item => {
-            supportMap.set(item.number, Math.max(supportMap.get(item.number) || 0, item.supportCount));
+        for (const item of support1) {
+            const number = Number(item.number);
+            if (!Number.isInteger(number)) continue;
+            supportMap.set(number, { number, support1: Number(item.supportCount || 0), support2: 0 });
+        }
+        for (const item of support2) {
+            const number = Number(item.number);
+            if (!Number.isInteger(number)) continue;
+            const current = supportMap.get(number) || { number, support1: 0, support2: 0 };
+            current.support2 = Number(item.supportCount || 0);
+            supportMap.set(number, current);
+        }
+        for (const number of new Set([...b1, ...b2])) {
+            if (!supportMap.has(number)) supportMap.set(number, { number, support1: 0, support2: 0 });
+        }
+
+        // The combined strategy still bets exactly N unique numbers. Numbers
+        // present in both source strategies are ranked first and are marked x2
+        // for stake/payout accounting; the remaining slots use combined support.
+        const rankedCandidates = Array.from(supportMap.values()).sort((left, right) => {
+            const leftBoth = b1.has(left.number) && b2.has(left.number) ? 1 : 0;
+            const rightBoth = b1.has(right.number) && b2.has(right.number) ? 1 : 0;
+            if (rightBoth !== leftBoth) return rightBoth - leftBoth;
+            const rightSupport = right.support1 + right.support2;
+            const leftSupport = left.support1 + left.support2;
+            if (rightSupport !== leftSupport) return rightSupport - leftSupport;
+            const rightMembership = Number(b1.has(right.number)) + Number(b2.has(right.number));
+            const leftMembership = Number(b1.has(left.number)) + Number(b2.has(left.number));
+            if (rightMembership !== leftMembership) return rightMembership - leftMembership;
+            return left.number - right.number;
         });
-        const support = Array.from(supportMap.entries()).map(([num, count]) => ({
-            number: num,
-            supportCount: count
-        })).sort((a,b)=>b.supportCount - a.supportCount);
+        const selected = rankedCandidates.slice(0, count);
+        const selectedSet = new Set(selected.map(item => item.number));
+        const intersection = new Set([...b1].filter(number => b2.has(number) && selectedSet.has(number)));
+        const numbers = selected.map(item => String(item.number).padStart(2, '0'));
+        const intersectionNums = Array.from(intersection).sort((a,b)=>a-b).map(n => String(n).padStart(2, '0'));
+        const support = selected.map(item => ({
+            number: String(item.number).padStart(2, '0'),
+            supportCount: item.support1 + item.support2,
+            sourceCount: Number(b1.has(item.number)) + Number(b2.has(item.number)),
+            sourceStrategies: [b1.has(item.number) ? p1.strategy : null, b2.has(item.number) ? p2.strategy : null].filter(Boolean)
+        }));
         
         predictions[key] = {
+            count,
             numbers,
-            intersection: intersectionNums,
+            overlapNumbers: intersectionNums,
+            uniqueCount: numbers.length,
+            unitCount: numbers.length,
+            selectionMode: 'topNCombinedSupport',
             support
         };
     }
@@ -1471,7 +1510,7 @@ function settleLivePredictionsMulti(livePayload, rawData, options) {
                         actual.counts,
                         options.stakeK,
                         options.payoutK,
-                        stratObj.predictions[key].intersection || []
+                        stratObj.predictions[key].overlapNumbers || stratObj.predictions[key].intersection || []
                     );
                 }
             }
@@ -1488,7 +1527,7 @@ function settleLivePredictionsMulti(livePayload, rawData, options) {
                     actual.counts,
                     options.stakeK,
                     options.payoutK,
-                    item.predictions[key].intersection || []
+                    item.predictions[key].overlapNumbers || item.predictions[key].intersection || []
                 );
             }
         }

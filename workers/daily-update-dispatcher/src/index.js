@@ -172,6 +172,56 @@ function formatNumberList(values = []) {
   return numbers.length ? numbers.join(' ') : '-';
 }
 
+function getLotoDoubleNumbers(value = {}) {
+  const betSet = new Set((value.betNumbers || value.numbers || [])
+    .map(normalizeLotteryNumber)
+    .filter(Boolean));
+  return (value.doubleNumbers || value.x2Numbers || [])
+    .map(normalizeLotteryNumber)
+    .filter(number => number && (!betSet.size || betSet.has(number)));
+}
+
+function getLotoOverlapNumbers(value = {}) {
+  const betSet = new Set((value.betNumbers || value.numbers || [])
+    .map(normalizeLotteryNumber)
+    .filter(Boolean));
+  return (value.overlapNumbers || value.intersection || [])
+    .map(normalizeLotteryNumber)
+    .filter(number => number && (!betSet.size || betSet.has(number)));
+}
+
+function getLotoUniqueCount(value = {}) {
+  const explicit = Number(value.uniqueCount || 0);
+  if (Number.isFinite(explicit) && explicit > 0) return explicit;
+  return (value.betNumbers || value.numbers || [])
+    .map(normalizeLotteryNumber)
+    .filter(Boolean).length;
+}
+
+function getLotoUnitCount(value = {}, fallbackCount = 0) {
+  const explicit = Number(value.unitCount || value.betUnitCount || value.weightedBetCount || 0);
+  if (Number.isFinite(explicit) && explicit > 0) return explicit;
+  const uniqueCount = getLotoUniqueCount(value);
+  if (uniqueCount > 0) return uniqueCount + getLotoDoubleNumbers(value).length;
+  const fallback = Number(value.betCount || value.count || fallbackCount || 0);
+  return Number.isFinite(fallback) ? fallback : 0;
+}
+
+function getTelegramLotoProfitK(result = {}, count = 0) {
+  const hits = Number(result.hits || 0);
+  const unitCount = getLotoUnitCount(result, count);
+  return (hits * LOTO_PAYOUT_PER_HIT_K) - (unitCount * LOTO_STAKE_PER_NUMBER_K);
+}
+
+function formatLotoBetShape(value = {}, count = 0) {
+  const doubleNumbers = getLotoDoubleNumbers(value);
+  const overlapNumbers = getLotoOverlapNumbers(value);
+  const uniqueCount = getLotoUniqueCount(value);
+  const unitCount = getLotoUnitCount(value, count);
+  const overlapText = overlapNumbers.length ? ` · trùng 2 phương pháp: ${formatNumberList(overlapNumbers)}` : '';
+  return `${uniqueCount} số duy nhất · ${unitCount} đơn vị cược${overlapText}${doubleNumbers.length ? ` · x2: ${formatNumberList(doubleNumbers)}` : ''}`;
+}
+
 function getLotoActualNumbers(row = {}) {
   row = row || {};
   if (Array.isArray(row.actualNumbers) && row.actualNumbers.length) {
@@ -260,11 +310,12 @@ function buildTelegramReport(dePayload, lotoPayload) {
 
   for (const item of lotoMethods) {
     if (item.settled && item.result) {
+      const telegramProfitK = getTelegramLotoProfitK(item.result, item.count);
       lines.push(
         `• <b>Lô Top ${item.count} ${escapeHtml(displayDate(item.settled.predictionIsoDate))}</b>`,
-        `  Số đã đánh: <code>${escapeHtml(formatNumberList(item.result.betNumbers || []))}</code>`,
+        `  Số đã đánh (${escapeHtml(formatLotoBetShape(item.result, item.count))}): <code>${escapeHtml(formatNumberList(item.result.betNumbers || []))}</code>`,
         `  Kết quả (${item.actual.length} vị trí): <code>${escapeHtml(formatNumberList(item.actual))}</code>`,
-        `  ${Number(item.result.profitK || 0) > 0 ? '✅ CÓ LÃI' : '❌ LỖ'} · ${escapeHtml(formatMoneyK(item.result.profitK))}` +
+        `  ${telegramProfitK > 0 ? '✅ CÓ LÃI' : '❌ LỖ'} · ${escapeHtml(formatMoneyK(telegramProfitK))}` +
           ` · ${Number(item.result.hits || 0)} hit` +
           `${item.hits.length ? ` · Trúng: <b>${escapeHtml(formatNumberList(item.hits))}</b>` : ''}`
       );
@@ -296,7 +347,7 @@ function buildTelegramReport(dePayload, lotoPayload) {
   );
 
   for (const item of lotoMethods) {
-    lines.push(`• Top ${item.count}: <b>${escapeHtml((item.next.numbers || []).join(' '))}</b>`);
+    lines.push(`• Top ${item.count} (${escapeHtml(formatLotoBetShape(item.next, item.count))}): <b>${escapeHtml((item.next.numbers || []).join(' '))}</b>`);
   }
   const defaultMethod = lotoMethods.find(item => item.count === DEFAULT_LOTO_COUNT);
   const support = (defaultMethod?.next?.support || []).slice(0, DEFAULT_LOTO_COUNT)
@@ -341,9 +392,7 @@ function buildTelegramReport(dePayload, lotoPayload) {
     for (const row of settledLoto) {
       const result = row.methods?.[method.key];
       if (!result) continue;
-      const profitKVal = (result.profitK !== undefined)
-        ? result.profitK
-        : (Number(result.hits || 0) * LOTO_PAYOUT_PER_HIT_K) - (Number(result.betNumbers?.length || 0) * LOTO_STAKE_PER_NUMBER_K);
+      const profitKVal = getTelegramLotoProfitK(result, method.count);
       profitK += profitKVal;
       days++;
       if (profitKVal > 0) wins++;

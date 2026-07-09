@@ -10,6 +10,7 @@
         performanceLoading: false,
         performanceVisible: false,
         liveBetCount: DEFAULT_LOTO_BET_COUNT,
+        defaultLotoBetCount: DEFAULT_LOTO_BET_COUNT,
         lotoPayload: null
     };
 
@@ -61,18 +62,92 @@
             .replace(/'/g, '&#039;');
     }
 
+    function normalizeNumbers(values = []) {
+        return (values || [])
+            .map(value => String(value ?? '').trim())
+            .filter(Boolean)
+            .map(value => /^\d+$/.test(value) ? value.padStart(2, '0').slice(-2) : value);
+    }
+
+    function finiteNumber(value, fallback = 0) {
+        const number = Number(value);
+        return Number.isFinite(number) ? number : fallback;
+    }
+
+    function getDoubleNumbers(item = {}) {
+        const numbers = new Set(normalizeNumbers(item.numbers || item.betNumbers || []));
+        return normalizeNumbers(item.doubleNumbers || item.x2Numbers || [])
+            .filter(number => !numbers.size || numbers.has(number));
+    }
+
+    function getOverlapNumbers(item = {}) {
+        const numbers = new Set(normalizeNumbers(item.numbers || item.betNumbers || []));
+        return normalizeNumbers(item.overlapNumbers || item.intersection || [])
+            .filter(number => !numbers.size || numbers.has(number));
+    }
+
+    function getUniqueCount(item = {}) {
+        const explicit = finiteNumber(item.uniqueCount, 0);
+        if (explicit > 0) return explicit;
+        return normalizeNumbers(item.numbers || item.betNumbers || []).length;
+    }
+
+    function getUnitCount(item = {}, fallbackCount = DEFAULT_LOTO_BET_COUNT) {
+        const explicit = finiteNumber(item.unitCount ?? item.betUnitCount ?? item.weightedBetCount, 0);
+        if (explicit > 0) return explicit;
+        const uniqueCount = getUniqueCount(item);
+        const doubleCount = getDoubleNumbers(item).length;
+        if (uniqueCount > 0) return uniqueCount + doubleCount;
+        return finiteNumber(item.betCount ?? item.count, fallbackCount) || fallbackCount;
+    }
+
+    function renderBetShape(item = {}, count = DEFAULT_LOTO_BET_COUNT) {
+        const uniqueCount = getUniqueCount(item);
+        const unitCount = getUnitCount(item, count);
+        const overlapNumbers = getOverlapNumbers(item);
+        const doubleNumbers = getDoubleNumbers(item);
+        const overlapText = overlapNumbers.length
+            ? ` · trùng 2 phương pháp: ${overlapNumbers.join(' ')}`
+            : '';
+        const doubleText = doubleNumbers.length
+            ? ` · x2: ${doubleNumbers.join(' ')}`
+            : '';
+        return `${nf.format(uniqueCount)} số duy nhất · ${nf.format(unitCount)} đơn vị cược${overlapText}${doubleText}`;
+    }
+
+    function getBestLotoBetCount(data = {}) {
+        const summary = data.livePredictions?.summary || {};
+        const candidates = LOTO_COUNT_ORDER
+            .map(count => ({ count, item: summary[`top${count}`] || {} }))
+            .filter(entry => Number(entry.item.days || 0) > 0 && Number.isFinite(Number(entry.item.profitK)));
+        if (!candidates.length) {
+            const configured = Number(data.config?.defaultBetCount || data.livePredictions?.config?.defaultBetCount);
+            return LOTO_COUNT_ORDER.includes(configured) ? configured : DEFAULT_LOTO_BET_COUNT;
+        }
+        candidates.sort((left, right) => {
+            const profitDelta = Number(right.item.profitK || 0) - Number(left.item.profitK || 0);
+            if (profitDelta !== 0) return profitDelta;
+            const roiDelta = Number(right.item.roi || 0) - Number(left.item.roi || 0);
+            if (roiDelta !== 0) return roiDelta;
+            return left.count - right.count;
+        });
+        return candidates[0].count;
+    }
+
     function renderMeta(data) {
         const metaBox = document.getElementById('metaBox');
         const cfg = data.config || {};
         const next = data.nextPrediction || {};
         const methodLabel = cfg.methodName || data.livePredictions?.config?.methodName || next.methodName || next.methodId || cfg.methodId || '-';
+        const stakeK = finiteNumber(cfg.stakePerNumberK || data.livePredictions?.config?.stakePerNumberK || next.config?.stakePerNumberK, DEFAULT_LOTO_STAKE_K);
+        const payoutK = finiteNumber(cfg.payoutPerHitK || data.livePredictions?.config?.payoutPerHitK || next.config?.payoutPerHitK, DEFAULT_LOTO_PAYOUT_K);
         metaBox.innerHTML = [
             ['Ngày dữ liệu', data.latestDataDate || next.dataIsoDate || '-'],
             ['Ngày dự đoán', next.predictionDate || '-'],
             ['Vị trí', `${cfg.positionCount || 27} giải`],
             ['Phương pháp', methodLabel],
             ['Bộ chọn', cfg.aggregationMode || next.aggregationMode || '-'],
-            ['Công thức', `${nf.format(DEFAULT_LOTO_STAKE_K)}K ăn ${nf.format(DEFAULT_LOTO_PAYOUT_K)}K`]
+            ['Công thức', `${nf.format(stakeK)}K ăn ${nf.format(payoutK)}K`]
         ].map(([label, value]) => `
             <div class="glass-card p-4">
                 <div class="text-xs font-semibold uppercase text-slate-500">${label}</div>
@@ -84,8 +159,12 @@
     function renderPredictions(data) {
         const root = document.getElementById('predictionCards');
         const predictions = data.nextPrediction?.predictions || {};
+        const recommendedCount = state.defaultLotoBetCount || DEFAULT_LOTO_BET_COUNT;
         root.innerHTML = LOTO_COUNT_ORDER.map(count => {
             const item = predictions[`top${count}`] || {};
+            const overlapNumbers = getOverlapNumbers(item);
+            const doubleNumbers = getDoubleNumbers(item);
+            const betShape = renderBetShape(item, count);
             const supportRows = (item.support || []).map(entry => `
                 <div class="flex items-center justify-between gap-3 rounded-lg bg-white/60 px-3 py-2 text-xs">
                     <span class="font-bold text-slate-900">${entry.number}</span>
@@ -93,20 +172,26 @@
                 </div>
             `).join('');
             return `
-                <article class="glass-card number-panel-bet overflow-hidden ${count === DEFAULT_LOTO_BET_COUNT ? 'ring-2 ring-emerald-300' : ''}">
+                <article class="glass-card number-panel-bet overflow-hidden ${count === recommendedCount ? 'ring-2 ring-emerald-300' : ''}">
                     <div class="border-b border-slate-100 bg-gradient-to-r from-indigo-50 to-purple-50 px-4 py-3">
                         <h2 class="flex items-center gap-2 text-lg font-bold text-slate-900">
-                            Top ${count} số đánh
-                            ${count === DEFAULT_LOTO_BET_COUNT ? '<span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-black uppercase text-emerald-700">Mặc định</span>' : ''}
+                            Top ${count} mỗi phương pháp
+                            ${count === recommendedCount ? '<span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-black uppercase text-emerald-700">Profit cao nhất</span>' : ''}
                         </h2>
+                        <div class="mt-1 text-xs font-semibold text-slate-500">${escapeHtml(betShape)}</div>
                     </div>
                     <div class="p-4">
+                        ${overlapNumbers.length ? `
+                            <div class="mb-3 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-700">
+                                Trùng cả 2 phương pháp, nhưng Lô vẫn chỉ tính 1 đơn vị: ${escapeHtml(overlapNumbers.join(' '))}
+                            </div>
+                        ` : ''}
                         <div class="flex flex-wrap gap-2">
                             ${(item.numbers || []).map(number => {
-                                const isDouble = (item.intersection || []).includes(number);
-                                const badge = numberBadge(number, 'bet', isDouble ? { title: 'Trùng cả 2 phương án (Cược x2)' } : {});
-                                return isDouble
-                                    ? `<div class="relative flex items-center">${badge}<span class="absolute -top-1.5 -right-1.5 flex h-5 px-1.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-black text-white shadow-md ring-1 ring-white">x2</span></div>`
+                                const isOverlap = overlapNumbers.includes(String(number).padStart(2, '0'));
+                                const badge = numberBadge(number, 'bet', isOverlap ? { title: 'Trùng cả 2 phương án, nhưng Lô chỉ cược 1 đơn vị' } : {});
+                                return isOverlap
+                                    ? `<div class="relative flex items-center">${badge}<span class="absolute -top-1.5 -right-1.5 flex h-5 px-1.5 items-center justify-center rounded-full bg-indigo-500 text-[9px] font-black text-white shadow-md ring-1 ring-white">2P</span></div>`
                                     : badge;
                             }).join('')}
                         </div>
@@ -174,20 +259,30 @@
                 numbers: []
             };
             const hasSelectedPrediction = (selectedPrediction.numbers || []).length > 0;
+            const selectedOverlapNumbers = getOverlapNumbers(selectedPrediction);
+            const selectedDoubleNumbers = getDoubleNumbers(selectedPrediction);
+            const selectedBetShape = renderBetShape(selectedPrediction, selectedCount);
             const predictedSet = new Set((selectedPrediction.numbers || []).map(number => String(number).padStart(2, '0')));
             const actualSet = new Set(actualNumbers.map(number => String(number).padStart(2, '0')));
             const actualHtml = actualNumbers.length
                 ? actualNumbers.map(number => {
                     const text = String(number).padStart(2, '0');
                     const isHit = predictedSet.has(text);
-                    return numberBadge(text, isHit ? 'hit' : 'actual', {
+                    const isOverlap = isHit && selectedOverlapNumbers.includes(text);
+                    const badge = numberBadge(text, isHit ? 'hit' : 'actual', {
                         hit: isHit,
-                        title: isHit ? 'Kết quả thực tế trùng dàn Lô đã dự đoán' : 'Kết quả thực tế nhưng không nằm trong dàn đánh'
+                        title: isOverlap
+                            ? 'Kết quả thực tế trúng số trùng cả 2 phương pháp Lô'
+                            : (isHit ? 'Kết quả thực tế trùng dàn Lô đã dự đoán' : 'Kết quả thực tế nhưng không nằm trong dàn đánh')
                     });
+                    return isOverlap
+                        ? `<span class="relative inline-flex">${badge}<span class="absolute -right-1.5 -top-1.5 rounded-full bg-indigo-500 px-1.5 py-0.5 text-[9px] font-black text-white shadow ring-1 ring-white">2P</span></span>`
+                        : badge;
                 }).join('')
                 : '<span class="text-xs text-slate-400">-</span>';
             const rawMethod = row.methods?.[selectedKey] || {};
             const method = adjustLiveMethod(rawMethod, selectedPrediction.count || selectedCount);
+            const methodUnitCount = getUnitCount(method, selectedCount);
             return `
                 <article class="p-4 ${row.status === 'pending' ? 'bg-amber-50/30' : 'bg-white/30'}">
                     <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -206,22 +301,30 @@
                         </div>
                         <div class="text-left lg:text-right">
                             <div class="text-sm font-bold ${(method.profitK || 0) >= 0 ? 'text-emerald-600' : 'text-red-600'}">${row.status === 'settled' && hasSelectedPrediction ? money(method.profitK) : (hasSelectedPrediction ? 'Chưa kết toán' : `Chưa theo dõi Top ${selectedCount}`)}</div>
-                            <div class="text-xs text-slate-500">${row.status === 'settled' && hasSelectedPrediction ? `${method.hits || 0} hit top${selectedPrediction.count || selectedCount}` : (hasSelectedPrediction ? 'Sẽ tự đối soát khi có KQ' : `Snapshot chưa có dàn Top ${selectedCount}`)}</div>
+                            <div class="text-xs text-slate-500">${row.status === 'settled' && hasSelectedPrediction ? `${method.hits || 0} hit · ${nf.format(methodUnitCount)} đơn vị cược · vốn ${money(method.stakeK).replace('+', '')}` : (hasSelectedPrediction ? 'Sẽ tự đối soát khi có KQ' : `Snapshot chưa có dàn Top ${selectedCount}`)}</div>
                         </div>
                     </div>
                     <div class="number-panel-bet mt-3 rounded-2xl border p-3">
-                        <div class="mb-2 text-xs font-semibold uppercase text-slate-500">Dàn Top ${selectedCount} đã chốt</div>
+                        <div class="mb-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="text-xs font-semibold uppercase text-slate-500">Dàn Top ${selectedCount} đã chốt</div>
+                            <div class="text-xs font-semibold text-slate-500">${escapeHtml(selectedBetShape)}</div>
+                        </div>
+                        ${selectedOverlapNumbers.length ? `
+                            <div class="mb-3 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-700">
+                                Trùng cả 2 phương pháp, không nhân tiền Lô: ${escapeHtml(selectedOverlapNumbers.join(' '))}
+                            </div>
+                        ` : ''}
                         <div class="flex flex-wrap gap-2">
                         ${(selectedPrediction.numbers || []).map(number => {
                             const text = String(number).padStart(2, '0');
                             const isHit = row.status === 'settled' && actualSet.has(text);
-                            const isDouble = (selectedPrediction.intersection || []).includes(text);
+                            const isOverlap = selectedOverlapNumbers.includes(text);
                             const badge = numberBadge(text, row.status === 'pending' ? (isHit ? 'hit' : 'amber') : 'bet', {
                                 hit: isHit,
-                                title: isHit ? 'Số đánh đã trúng thực tế trong 27 giải' : ''
+                                title: isHit ? (isOverlap ? 'Số trùng 2 phương pháp và trúng thực tế' : 'Số đánh đã trúng thực tế trong 27 giải') : ''
                             });
-                            return isDouble
-                                ? `<div class="relative flex items-center">${badge}<span class="absolute -top-1.5 -right-1.5 flex h-5 px-1.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-black text-white shadow-md ring-1 ring-white">x2</span></div>`
+                            return isOverlap
+                                ? `<div class="relative flex items-center">${badge}<span class="absolute -top-1.5 -right-1.5 flex h-5 px-1.5 items-center justify-center rounded-full bg-indigo-500 text-[9px] font-black text-white shadow-md ring-1 ring-white">2P</span></div>`
                                 : badge;
                         }).join('') || `<span class="text-xs text-slate-400">Không có dàn Top ${selectedCount} trong snapshot này.</span>`}
                         </div>
@@ -254,10 +357,23 @@
     }
 
     function adjustLotoFinancialRow(row = {}, betCount = getActivePerformanceBetCount()) {
+        const existingStakeK = Number(row.stakeK);
+        const existingPayoutK = Number(row.payoutK);
+        if (Number.isFinite(existingStakeK) && Number.isFinite(existingPayoutK)) {
+            const existingProfitK = Number.isFinite(Number(row.profitK)) ? Number(row.profitK) : existingPayoutK - existingStakeK;
+            return {
+                ...row,
+                stakeK: existingStakeK,
+                payoutK: existingPayoutK,
+                profitK: existingProfitK,
+                roi: existingStakeK ? existingProfitK / existingStakeK : 0
+            };
+        }
         const days = Number(row.days || (row.date || row.period || row.month || row.week ? 1 : 0)) || 0;
         const hits = getRowHits(row);
         const selectedCount = Number(row.betCount || betCount || DEFAULT_LOTO_BET_COUNT);
-        const stakeK = days * selectedCount * DEFAULT_LOTO_STAKE_K;
+        const unitCount = Number(row.unitCount || selectedCount) || selectedCount;
+        const stakeK = days * unitCount * DEFAULT_LOTO_STAKE_K;
         const payoutK = hits * DEFAULT_LOTO_PAYOUT_K;
         const profitK = payoutK - stakeK;
         return {
@@ -276,11 +392,15 @@
 
     function adjustLiveMethod(method = {}, count = DEFAULT_LOTO_BET_COUNT) {
         const hits = Number(method.hits || 0) || 0;
-        const stakeK = count * DEFAULT_LOTO_STAKE_K;
-        const payoutK = hits * DEFAULT_LOTO_PAYOUT_K;
-        const profitK = payoutK - stakeK;
+        const unitCount = getUnitCount(method, count);
+        const stakeK = Number.isFinite(Number(method.stakeK)) ? Number(method.stakeK) : unitCount * DEFAULT_LOTO_STAKE_K;
+        const payoutK = Number.isFinite(Number(method.payoutK)) ? Number(method.payoutK) : hits * DEFAULT_LOTO_PAYOUT_K;
+        const profitK = Number.isFinite(Number(method.profitK)) ? Number(method.profitK) : payoutK - stakeK;
         return {
             ...method,
+            unitCount,
+            uniqueCount: getUniqueCount(method),
+            doubleNumbers: getDoubleNumbers(method),
             hits,
             stakeK,
             payoutK,
@@ -587,6 +707,8 @@
             if (!res.ok || !data.success) throw new Error(data.error || 'Không tải được dữ liệu Lô.');
             errorBox.classList.add('hidden');
             state.lotoPayload = data;
+            state.defaultLotoBetCount = getBestLotoBetCount(data);
+            state.liveBetCount = state.defaultLotoBetCount;
             renderMeta(data);
             renderPredictions(data);
             renderLive(data);

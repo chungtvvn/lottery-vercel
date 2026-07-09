@@ -75,7 +75,8 @@ async function main() {
                     numbers: ['01', '02', '03', '04', '05']
                 },
                 top14: {
-                    numbers: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '34', '56']
+                    numbers: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '34', '56'],
+                    overlapNumbers: ['12']
                 }
             }
         },
@@ -93,7 +94,9 @@ async function main() {
                     },
                     top14: {
                         betNumbers: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '34', '56'],
+                        overlapNumbers: ['12'],
                         betCount: 14,
+                        unitCount: 14,
                         hits: 4,
                         profitK: 1200
                     }
@@ -112,9 +115,11 @@ async function main() {
     assert.match(report.text, /Đề Song Song Hold 70/);
     assert.match(report.text, /Đề Chuỗi Nhỏ Hold 80/);
     assert.match(report.text, /Lô Top 14/);
-    assert.match(report.text, /Số đã đánh: <code>01 02 03 04 05 06 07 08 09 10 11 12 34 56<\/code>/);
+    assert.match(report.text, /Số đã đánh \(14 số duy nhất · 14 đơn vị cược · trùng 2 phương pháp: 12\): <code>01 02 03 04 05 06 07 08 09 10 11 12 34 56<\/code>/);
     assert.match(report.text, /Kết quả \(27 vị trí\):/);
     assert.match(report.text, /Trúng: <b>01 12×2 34<\/b>/);
+    assert.match(report.text, /✅ CÓ LÃI · \+120K · 4 hit/);
+    assert.match(report.text, /Top 14 \(14 số duy nhất · 14 đơn vị cược · trùng 2 phương pháp: 12\):/);
     assert.match(report.text, /Lũy kế: 10 ngày · hit-day 4\/10 · \+12\.000K/);
     assert.match(report.text, /DỰ ĐOÁN LÔ TOP 5 &amp; TOP 14/);
     assert.ok(report.text.length <= 4096, `Telegram report quá dài: ${report.text.length}`);

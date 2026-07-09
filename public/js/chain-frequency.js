@@ -253,6 +253,35 @@
         return String(value).padStart(2, '0');
     }
 
+    function normalizeNumberList(values = []) {
+        return (values || []).map(normalizeNumber).filter(Boolean);
+    }
+
+    function getDoubleNumbers(value = {}) {
+        const betSet = new Set(normalizeNumberList(value.betNumbers || []));
+        return normalizeNumberList(value.intersectionNumbers || value.doubleNumbers || value.intersection || [])
+            .filter(number => !betSet.size || betSet.has(number));
+    }
+
+    function getUniqueCount(value = {}) {
+        const explicit = Number(value.uniqueCount || 0);
+        if (Number.isFinite(explicit) && explicit > 0) return explicit;
+        return normalizeNumberList(value.betNumbers || []).length;
+    }
+
+    function getUnitCount(value = {}, target = state.target) {
+        const explicit = Number(value.unitCount || value.betUnitCount || value.weightedBetCount || 0);
+        if (Number.isFinite(explicit) && explicit > 0) return explicit;
+        const uniqueCount = getUniqueCount(value);
+        if (uniqueCount > 0) return uniqueCount + getDoubleNumbers(value).length;
+        return getDeBetCount(target);
+    }
+
+    function renderBetShape(value = {}, target = state.target) {
+        const doubleNumbers = getDoubleNumbers(value);
+        return `${fmt(getUniqueCount(value))} số duy nhất · ${fmt(getUnitCount(value, target))} đơn vị cược${doubleNumbers.length ? ` · x2: ${doubleNumbers.join(' ')}` : ''}`;
+    }
+
     function buildDerivedExclusionRanking(prediction = {}) {
         const excludedSet = new Set((prediction.excludedNumbers || []).map(normalizeNumber));
         const targetCount = Number(prediction.targetExcluded || prediction.excludedNumbers?.length || state.target || 0);
@@ -327,8 +356,9 @@
         return 'border-slate-200 bg-slate-50 text-slate-600';
     }
 
-    function renderNumberGrid(numbers, mode, ranking = []) {
+    function renderNumberGrid(numbers, mode, ranking = [], options = {}) {
         const rankingByNumber = new Map((ranking || []).map(row => [normalizeNumber(row.number), row]));
+        const doubleSet = new Set(normalizeNumberList(options.doubleNumbers || []));
         const classes = mode === 'bet'
             ? 'number-chip-bet'
             : 'number-chip-exclude';
@@ -342,10 +372,14 @@
                             ? `#${rank.rank} · ${rank.tierLabel || 'Tier'} · ${formatChainTitle(rank.contributors?.[0] || {})}`
                             : `#${rank.rank} · điểm ${rank.scorePercent || 0}% · ${rank.supportCount || 0} chuỗi`
                         : '';
+                    const isDouble = doubleSet.has(text);
                     return `
-                        <span title="${escapeHtml(title)}" class="rounded-lg border px-2 py-2 text-center font-mono text-sm font-bold ${classes}">
-                            <span class="block">${text}</span>
-                            ${rank ? `<span class="mt-0.5 block text-[9px] font-sans font-semibold opacity-70">#${rank.rank}</span>` : ''}
+                        <span class="relative inline-flex">
+                        <span title="${escapeHtml(isDouble ? `${title ? `${title} · ` : ''}Số trùng cả 2 phương án, đánh x2` : title)}" class="rounded-lg border px-2 py-2 text-center font-mono text-sm font-bold ${classes}">
+                                <span class="block">${text}</span>
+                                ${rank ? `<span class="mt-0.5 block text-[9px] font-sans font-semibold opacity-70">#${rank.rank}</span>` : ''}
+                            </span>
+                            ${isDouble ? '<span class="absolute -right-1.5 -top-1.5 rounded-full bg-red-500 px-1.5 py-0.5 text-[9px] font-black text-white shadow ring-1 ring-white">x2</span>' : ''}
                         </span>
                     `;
                 }).join('')}
@@ -401,13 +435,14 @@
         const next = payload?.nextPrediction || {};
         const prediction = getPrediction();
         const strategy = getStrategy();
+        const doubleNumbers = getDoubleNumbers(prediction || {});
         const cards = [
             ['Dữ liệu tới', payload?.latestDataDate || '-'],
             ['Ngày dự đoán', next.predictionIsoDate || '-'],
             ['Mốc dữ liệu', `${next.baseline?.startIso || '-'} → ${next.baseline?.cutoffIso || '-'}`],
             ['Ứng viên', fmt(next.summary?.candidatesCount || 0)],
             ['Số loại', fmt(prediction?.excludedNumbers?.length || 0)],
-            ['Số đánh', fmt(prediction?.betNumbers?.length || 0)]
+            ['Số đánh', `${fmt(getUniqueCount(prediction || {}))} số / ${fmt(getUnitCount(prediction || {}))} đơn vị`]
         ];
         el('summaryCards').innerHTML = cards.map(([label, value]) => `
             <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -416,10 +451,17 @@
             </div>
         `).join('');
 
-        el('predictionInfo').textContent = `${strategy?.name || state.strategy} · loại ${state.target} số, đánh ${100 - state.target} số.`;
+        el('predictionInfo').textContent = `${strategy?.name || state.strategy} · loại ${state.target} số, ${renderBetShape(prediction || {})}.`;
         const displayedRanking = getDisplayedRanking(prediction);
         el('excludedGrid').innerHTML = renderNumberGrid(prediction?.excludedNumbers || [], 'exclude', displayedRanking);
-        el('betGrid').innerHTML = renderNumberGrid(prediction?.betNumbers || [], 'bet', displayedRanking);
+        el('betGrid').innerHTML = doubleNumbers.length
+            ? `
+                <div class="mb-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-bold text-red-700">
+                    Số đánh gấp đôi: ${escapeHtml(doubleNumbers.join(' '))}
+                </div>
+                ${renderNumberGrid(prediction?.betNumbers || [], 'bet', displayedRanking, { doubleNumbers })}
+            `
+            : renderNumberGrid(prediction?.betNumbers || [], 'bet', displayedRanking);
     }
 
     function presetIdForSelection() {
@@ -521,6 +563,8 @@
             const pending = row.status !== 'settled' || !result?.resolved;
             const prediction = row.strategies?.[state.strategy]?.holds?.[String(state.target)];
             const profit = result?.profitK || 0;
+            const doubleNumbers = getDoubleNumbers(prediction || rawResult || {});
+            const betShape = renderBetShape(prediction || rawResult || {}, state.target);
             const actualNumber = !pending && (result?.actual || row.actualSpecial) !== undefined && (result?.actual || row.actualSpecial) !== null
                 ? numText(result?.actual || row.actualSpecial)
                 : null;
@@ -538,12 +582,18 @@
                         ` : ''}
                     </div>
                     <div>
-                        <div class="text-xs font-semibold uppercase text-slate-500">Số đánh (${prediction?.betNumbers?.length || 0})</div>
+                        <div class="text-xs font-semibold uppercase text-slate-500">Số đánh (${escapeHtml(betShape)})</div>
+                        ${doubleNumbers.length ? `
+                            <div class="mt-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700">
+                                Số x2 trong snapshot: ${escapeHtml(doubleNumbers.join(' '))}
+                            </div>
+                        ` : ''}
                         <div class="mt-2 flex flex-wrap gap-1.5">
                             ${(prediction?.betNumbers || []).slice(0, 45).map(num => {
                                 const text = numText(num);
                                 const isHit = actualNumber && text === actualNumber;
-                                return `<span title="${isHit ? 'Số đánh đã trúng thực tế' : ''}" class="rounded-md border px-2 py-1 font-mono text-xs font-bold ${isHit ? 'number-chip-hit' : 'number-chip-bet'}">${text}</span>`;
+                                const isDouble = doubleNumbers.includes(text);
+                                return `<span class="relative inline-flex"><span title="${isHit ? 'Số đánh đã trúng thực tế' : (isDouble ? 'Số trùng cả 2 phương án, đánh x2' : '')}" class="rounded-md border px-2 py-1 font-mono text-xs font-bold ${isHit ? 'number-chip-hit' : 'number-chip-bet'}">${text}</span>${isDouble ? '<span class="absolute -right-1.5 -top-1.5 rounded-full bg-red-500 px-1 py-0.5 text-[8px] font-black text-white">x2</span>' : ''}</span>`;
                             }).join('')}
                         </div>
                     </div>
@@ -583,6 +633,7 @@
 
     function adjustDeResult(result = {}, target = state.target) {
         const betCount = Number(result.betCount || getDeBetCount(target));
+        const unitCount = Number(result.unitCount || getUnitCount(result, target) || betCount);
         const hit = Boolean(result.hit || result.result === 'win');
         let stakeK, payoutK, profitK;
         if (Number.isFinite(result.stakeK) && Number.isFinite(result.payoutK)) {
@@ -591,7 +642,7 @@
             payoutK = result.payoutK * scaleFactor * (normalizeWinMultiplier(state.winMultiplier) / 84);
             profitK = payoutK - stakeK;
         } else {
-            stakeK = betCount * DE_BET_PER_NUMBER_K;
+            stakeK = unitCount * DE_BET_PER_NUMBER_K;
             payoutK = hit ? normalizeWinMultiplier(state.winMultiplier) * DE_BET_PER_NUMBER_K : 0;
             profitK = payoutK - stakeK;
         }
@@ -599,6 +650,7 @@
             ...result,
             hit,
             betCount,
+            unitCount,
             stakeK,
             payoutK,
             profitK,
