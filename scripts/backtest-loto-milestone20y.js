@@ -30,8 +30,8 @@ const PRIZE_KEYS = [
 ];
 
 const ALL_NUMBERS = Array.from({ length: 100 }, (_, index) => index);
-const DEFAULT_STAKE_K = 220;
-const DEFAULT_PAYOUT_K = 800;
+const DEFAULT_STAKE_K = 2200;
+const DEFAULT_PAYOUT_K = 8000;
 const DEFAULT_METHOD_ID = 'milestone20yChainSmallFirstHold65TwoHitGreedy';
 const DEFAULT_STRATEGY = 'chainSmallFirst';
 const DEFAULT_HOLD = 65;

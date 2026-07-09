@@ -288,7 +288,7 @@ jobs:
             if (cache.config?.methodId !== 'parallelCombinedHold65') {
               throw new Error(`Lô method sai: ${cache.config?.methodId || 'missing'}`);
             }
-            if (Number(cache.config?.stakePerNumberK) !== 220 || Number(cache.config?.payoutPerHitK) !== 800) {
+            if (Number(cache.config?.stakePerNumberK) !== 2200 || Number(cache.config?.payoutPerHitK) !== 8000) {
               throw new Error(`Lô công thức sai: stake=${cache.config?.stakePerNumberK || 'missing'}, payout=${cache.config?.payoutPerHitK || 'missing'}`);
             }
             const strategy = cache.config?.strategy || 'parallelCombined';
@@ -389,7 +389,7 @@ jobs:
             if (cache.latestDataDate !== latestRaw || live.latestDataDate !== latestRaw) {
               throw new Error(`Lô cache stale sau retry: cache=${cache.latestDataDate}, live=${live.latestDataDate}, latestRaw=${latestRaw}, target=${target}`);
             }
-            if (Number(cache.config?.stakePerNumberK) !== 220 || Number(cache.config?.payoutPerHitK) !== 800) {
+            if (Number(cache.config?.stakePerNumberK) !== 2200 || Number(cache.config?.payoutPerHitK) !== 8000) {
               throw new Error(`Lô công thức sai sau retry: stake=${cache.config?.stakePerNumberK || 'missing'}, payout=${cache.config?.payoutPerHitK || 'missing'}`);
             }
             const strategy = cache.config?.strategy || 'parallelCombined';
@@ -458,7 +458,7 @@ jobs:
             if (stale.length) {
               throw new Error(`R2 chưa đồng bộ latestRaw=${latestRaw}, target=${target}: ${JSON.stringify(dates)}`);
             }
-            if (Number(loto.config?.stakePerNumberK) !== 220 || Number(loto.config?.payoutPerHitK) !== 800) {
+            if (Number(loto.config?.stakePerNumberK) !== 2200 || Number(loto.config?.payoutPerHitK) !== 8000) {
               throw new Error(`R2 Lô công thức sai: stake=${loto.config?.stakePerNumberK || 'missing'}, payout=${loto.config?.payoutPerHitK || 'missing'}`);
             }
             const strategy = loto.config?.strategy || 'parallelCombined';

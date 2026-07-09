@@ -16,9 +16,9 @@ const RUN_STATUS_FILE = path.join(__dirname, '..', '.update-static-data-result.j
 const WAIT_FOR_NEW_XOSO = process.env.WAIT_FOR_NEW_XOSO === '1';
 const XOSO_MAX_WAIT_MINUTES = readNumberEnv('XOSO_MAX_WAIT_MINUTES', WAIT_FOR_NEW_XOSO ? 90 : 0, 0);
 const XOSO_RETRY_INTERVAL_SECONDS = readNumberEnv('XOSO_RETRY_INTERVAL_SECONDS', 60, 5);
-const LOTO_STAKE_PER_NUMBER_K = 220;
-const LOTO_PAYOUT_PER_HIT_K = 800;
-const LOTO_METHOD_ID = process.env.LOTO_METHOD_ID || 'milestone20yChainSmallFirstHold65TwoHitGreedy';
+const LOTO_STAKE_PER_NUMBER_K = 2200;
+const LOTO_PAYOUT_PER_HIT_K = 8000;
+const LOTO_METHOD_ID = process.env.LOTO_METHOD_ID || 'parallelCombinedHold65';
 const LOTO_AGGREGATION_MODE = process.env.LOTO_AGGREGATION_MODE || 'twoHitGreedy';
 const LOTO_BET_COUNTS = [3, 4, 5, 6, 7, 14];
 const LOTO_DEFAULT_BET_COUNT = 5;
@@ -165,7 +165,12 @@ function isLotoPredictionFormulaCurrent(cache) {
     const aggregationMode = String(config.aggregationMode || cache?.nextPrediction?.aggregationMode || '');
     const defaultBetCount = Number(config.defaultBetCount || cache?.nextPrediction?.defaultBetCount || 0);
     const betCounts = Array.isArray(config.betCounts) ? config.betCounts.map(Number) : [];
-    const defaultNumbers = cache?.nextPrediction?.predictions?.[`top${LOTO_DEFAULT_BET_COUNT}`]?.numbers || [];
+    const strategy = String(config.strategy || cache?.nextPrediction?.strategy || '');
+    const predictions = cache?.nextPrediction?.predictions
+        || cache?.nextPrediction?.strategies?.[strategy]?.predictions
+        || cache?.nextPrediction?.strategies?.parallelCombined?.predictions
+        || {};
+    const defaultNumbers = predictions?.[`top${LOTO_DEFAULT_BET_COUNT}`]?.numbers || [];
     const betCountsOk = betCounts.length === LOTO_BET_COUNTS.length
         && LOTO_BET_COUNTS.every((count, index) => count === betCounts[index]);
     return stake === LOTO_STAKE_PER_NUMBER_K
