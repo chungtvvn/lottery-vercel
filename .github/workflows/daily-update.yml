@@ -291,7 +291,9 @@ jobs:
             if (Number(cache.config?.stakePerNumberK) !== 220 || Number(cache.config?.payoutPerHitK) !== 800) {
               throw new Error(`Lô công thức sai: stake=${cache.config?.stakePerNumberK || 'missing'}, payout=${cache.config?.payoutPerHitK || 'missing'}`);
             }
-            const defaultLen = cache.nextPrediction?.predictions?.top5?.numbers?.length;
+            const strategy = cache.config?.strategy || 'parallelCombined';
+            const predictions = cache.nextPrediction?.predictions || cache.nextPrediction?.strategies?.[strategy]?.predictions;
+            const defaultLen = predictions?.top5?.numbers?.length;
             if (Number(cache.config?.defaultBetCount) !== 5 || defaultLen < 5 || defaultLen > 10) {
               throw new Error(`Lô default sai: defaultBetCount=${cache.config?.defaultBetCount || 'missing'}, length=${defaultLen || 'missing'}`);
             }
@@ -390,7 +392,9 @@ jobs:
             if (Number(cache.config?.stakePerNumberK) !== 220 || Number(cache.config?.payoutPerHitK) !== 800) {
               throw new Error(`Lô công thức sai sau retry: stake=${cache.config?.stakePerNumberK || 'missing'}, payout=${cache.config?.payoutPerHitK || 'missing'}`);
             }
-            const defaultLen = cache.nextPrediction?.predictions?.top5?.numbers?.length;
+            const strategy = cache.config?.strategy || 'parallelCombined';
+            const predictions = cache.nextPrediction?.predictions || cache.nextPrediction?.strategies?.[strategy]?.predictions;
+            const defaultLen = predictions?.top5?.numbers?.length;
             if (Number(cache.config?.defaultBetCount) !== 5 || defaultLen < 5 || defaultLen > 10) {
               throw new Error(`Lô default sai sau retry: defaultBetCount=${cache.config?.defaultBetCount || 'missing'}, length=${defaultLen || 'missing'}`);
             }
@@ -457,7 +461,9 @@ jobs:
             if (Number(loto.config?.stakePerNumberK) !== 220 || Number(loto.config?.payoutPerHitK) !== 800) {
               throw new Error(`R2 Lô công thức sai: stake=${loto.config?.stakePerNumberK || 'missing'}, payout=${loto.config?.payoutPerHitK || 'missing'}`);
             }
-            const defaultLen = loto.nextPrediction?.predictions?.top5?.numbers?.length;
+            const strategy = loto.config?.strategy || 'parallelCombined';
+            const predictions = loto.nextPrediction?.predictions || loto.nextPrediction?.strategies?.[strategy]?.predictions;
+            const defaultLen = predictions?.top5?.numbers?.length;
             if (Number(loto.config?.defaultBetCount) !== 5 || defaultLen < 5 || defaultLen > 10) {
               throw new Error(`R2 Lô default sai: defaultBetCount=${loto.config?.defaultBetCount || 'missing'}, length=${defaultLen || 'missing'}`);
             }
