@@ -743,9 +743,17 @@ function preservePublishedNextPrediction(nextPrediction, livePayload) {
     };
 }
 
+const positionStatsCache = new Map();
+
 async function buildPositionDailyPredictions(rawData, positionKey, targetRows, methodConfigs, options) {
     const positionData = toPositionData(rawData, positionKey);
-    const stats = await buildStatsForPosition(positionData);
+    let stats;
+    if (positionStatsCache.has(positionKey)) {
+        stats = positionStatsCache.get(positionKey);
+    } else {
+        stats = await buildStatsForPosition(positionData);
+        positionStatsCache.set(positionKey, stats);
+    }
     lotteryService.__setInMemoryCachesForBacktest({
         rawData: positionData,
         ...stats

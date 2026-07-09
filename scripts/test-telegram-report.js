@@ -23,6 +23,11 @@ async function main() {
                     holds: {
                         70: { betNumbers: deBetNumbers }
                     }
+                },
+                chainSmallFirst: {
+                    holds: {
+                        80: { betNumbers: Array.from({ length: 20 }, (_, value) => String(value).padStart(2, '0')) }
+                    }
                 }
             }
         },
@@ -36,6 +41,11 @@ async function main() {
                         holds: {
                             70: { betNumbers: deBetNumbers }
                         }
+                    },
+                    chainSmallFirst: {
+                        holds: {
+                            80: { betNumbers: Array.from({ length: 20 }, (_, value) => String(value).padStart(2, '0')) }
+                        }
                     }
                 },
                 results: {
@@ -44,6 +54,12 @@ async function main() {
                         betCount: 30,
                         hit: true,
                         profitK: 540
+                    },
+                    'chainSmallFirst:hold80': {
+                        actual: '12',
+                        betCount: 20,
+                        hit: true,
+                        profitK: 640
                     }
                 }
             }]
@@ -93,6 +109,8 @@ async function main() {
     const report = buildTelegramReport(dePayload, lotoPayload);
     assert.match(report.text, /Số đã đánh \(30\):/);
     assert.match(report.text, /Kết quả thực tế: <b>12<\/b>/);
+    assert.match(report.text, /Đề Song Song Hold 70/);
+    assert.match(report.text, /Đề Chuỗi Nhỏ Hold 80/);
     assert.match(report.text, /Lô Top 14/);
     assert.match(report.text, /Số đã đánh: <code>01 02 03 04 05 06 07 08 09 10 11 12 34 56<\/code>/);
     assert.match(report.text, /Kết quả \(27 vị trí\):/);

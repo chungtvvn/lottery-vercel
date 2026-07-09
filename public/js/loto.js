@@ -1,9 +1,9 @@
 (function () {
     const nf = new Intl.NumberFormat('vi-VN');
-    const DEFAULT_LOTO_BET_COUNT = 14;
-    const DEFAULT_LOTO_STAKE_K = 220;
-    const DEFAULT_LOTO_PAYOUT_K = 800;
-    const LOTO_COUNT_ORDER = [14, 6, 7, 5, 4, 3];
+    const DEFAULT_LOTO_BET_COUNT = 5;
+    const DEFAULT_LOTO_STAKE_K = 2200;
+    const DEFAULT_LOTO_PAYOUT_K = 8000;
+    const LOTO_COUNT_ORDER = [5, 14, 6, 7, 4, 3];
     const state = {
         performancePeriod: 'monthly',
         performancePayload: null,

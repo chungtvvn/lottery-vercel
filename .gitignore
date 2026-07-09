@@ -63,3 +63,8 @@ reports/annual_20y_milestone_backtest_*.json
 reports/annual_20y_milestone_backtest_*.csv
 reports/exclusion_number_overlap*.json
 reports/exclusion_number_overlap*.csv
+reports/research_*.json
+reports/**/*.json
+reports/**/*.gz
+reports/**/*.xlsx
+reports/**/*.log
