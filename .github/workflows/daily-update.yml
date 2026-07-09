@@ -285,7 +285,7 @@ jobs:
             if (cache.latestDataDate !== latestRaw || live.latestDataDate !== latestRaw) {
               throw new Error(`Lô cache stale: cache=${cache.latestDataDate}, live=${live.latestDataDate}, latestRaw=${latestRaw}, target=${target}`);
             }
-            if (cache.config?.methodId !== 'milestone20yChainSmallFirstHold65TwoHitGreedy') {
+            if (cache.config?.methodId !== 'parallelCombinedHold65') {
               throw new Error(`Lô method sai: ${cache.config?.methodId || 'missing'}`);
             }
             if (Number(cache.config?.stakePerNumberK) !== 220 || Number(cache.config?.payoutPerHitK) !== 800) {
