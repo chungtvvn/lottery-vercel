@@ -3,7 +3,7 @@
     const state = {
         history: [],
         selectedIndex: -1,
-        selectedMethod: 'avgEdge50Hold70',
+        selectedMethod: '',
         betWinMultiplier: 84,
         betWinFactor: 1,
         holdWinMultiplier: 0.705,
@@ -15,6 +15,26 @@
     const BET_PER_NUMBER_K = 1000;
     const HOLD_LOSS_MULTIPLIER = 70;
     const METHOD_META = {
+        deParallelBlock85Small65Hold70: {
+            label: 'Đề Song Song (Block 85 · Small 65) - Hold 70 (Đánh 30)',
+            description: 'Đánh song song hai phương pháp Nhịp Block trước (Hold 85) và Chuỗi nhỏ trước (Hold 65). Số trùng được đánh gấp đôi tiền (2000K), còn lại 1000K. Phương án có lợi nhuận cao nhất đầu năm.'
+        },
+        dedupEdge50CombinedB40S05Hold70: {
+            label: 'Đề Boost B40S05 - Hold 70 (Đánh 30)',
+            description: 'Edge kết hợp cộng hưởng Nhịp Block (40%) và Chuỗi Nhỏ (5%), loại 70 số, giữ 30 số đánh.'
+        },
+        dedupEdge50CombinedB40S05Hold80: {
+            label: 'Đề Boost B40S05 - Hold 80 (Đánh 20)',
+            description: 'Edge kết hợp cộng hưởng Nhịp Block (40%) và Chuỗi Nhỏ (5%), loại 80 số, giữ 20 số đánh.'
+        },
+        dedupEdge50Hold70: {
+            label: 'Dự đoán Edge - Hold 70 (Đánh 30)',
+            description: 'Phương pháp loại 70 số bằng hiệu số rủi ro gãy thực tế so với 50% nền (Deduplicated Edge), giữ 30 số đánh.'
+        },
+        dedupEdge50Hold80: {
+            label: 'Dự đoán Edge - Hold 80 (Đánh 20)',
+            description: 'Phương pháp loại 80 số bằng hiệu số rủi ro gãy thực tế so với 50% nền (Deduplicated Edge), giữ 20 số đánh.'
+        },
         avgEdge50Hold70: {
             label: 'Dropoff TB hiệu chỉnh 50% nền - Hold 70 (Đánh 30)',
             description: 'Với mỗi chuỗi chứa một số, lấy dropoff trừ 50% xác suất gãy tự nhiên theo độ rộng tập số; sau đó lấy trung bình các bằng chứng. Loại 70 số có điểm cao nhất. Đây là phương án dẫn đầu backtest point-in-time 20 năm.'
