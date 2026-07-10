@@ -757,7 +757,15 @@
             liveRows.forEach(row => {
                 const result = row.results?.[key];
                 if (row.status !== 'settled' || !result?.resolved) return;
-                const adjusted = adjustDeResult(result, preset.target);
+                // Recompute from the immutable prediction snapshot. Older live rows
+                // stored accounting in Telegram's 10K unit; the web must always use
+                // its own 1000K/unit economics for every preset, not only the default.
+                const prediction = row.strategies?.[preset.strategy]?.holds?.[String(preset.target)] || {};
+                const adjusted = adjustDeResult({
+                    ...result,
+                    betNumbers: prediction.betNumbers || result.betNumbers || [],
+                    intersectionNumbers: prediction.intersectionNumbers || result.intersectionNumbers || []
+                }, preset.target, DE_BET_PER_NUMBER_K);
                 item.days += 1;
                 item.wins += adjusted.hit ? 1 : 0;
                 item.losses += adjusted.hit ? 0 : 1;
