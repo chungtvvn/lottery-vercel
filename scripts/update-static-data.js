@@ -22,6 +22,16 @@ const LOTO_METHOD_ID = process.env.LOTO_METHOD_ID || 'parallelCombinedHold65';
 const LOTO_AGGREGATION_MODE = process.env.LOTO_AGGREGATION_MODE || 'twoHitGreedy';
 const LOTO_BET_COUNTS = [3, 4, 5, 6, 7, 14];
 const LOTO_DEFAULT_BET_COUNT = 5;
+const PREDICTION_HISTORY_METHOD_IDS = [
+    'deParallelBlock85Small65Hold70',
+    'dedupEdge50CombinedB40S05Hold70',
+    'dedupEdge50CombinedB40S05Hold80',
+    'dedupEdge50Hold70',
+    'dedupEdge50Hold80',
+    'avgEdge50Hold70',
+    'dedupEdge75Hold70',
+    'dedupDropoffHold70'
+];
 const MILESTONE20Y_METHOD_VERSION = 'annual20y-2026-07-02-chain-block-hold70-immutable-details';
 const MILESTONE20Y_BASELINE_VERSION = 'annual20y-baseline-2026-06-28-block-ab';
 const MILESTONE20Y_LIVE_CACHE_VERSION = 'annual20y-live-compact-v3';
@@ -1715,26 +1725,34 @@ async function main() {
             console.log(' -> Tạo Cached Simulation Backtest cho tất cả khoảng thời gian...');
             try {
                 const simulationService = require('../lib/services/simulationService');
+                let predictionHistorySimulation = null;
                 const staticCacheDays = getSimulationCacheDays();
                 const staticCacheModes = getSimulationCachePlayModes();
                 console.log(`    Cache simulation: days=${staticCacheDays.join(',')}, modes=${staticCacheModes.join(',')}`);
                 for (const days of staticCacheDays) {
                     for (const playMode of staticCacheModes) {
-                        const simulationResult = await simulationService.runBacktest(days, null, {
+                        const simulationOptions = {
                             compactDetails: days > 90,
                             selectedStreakDetailLimit: days <= 90 ? 1000 : undefined,
                             playMode,
                             clearHistoryCacheInterval: Number(process.env.BACKTEST_CLEAR_HISTORY_CACHE_INTERVAL || 30)
-                        });
+                        };
+                        if (days === 90 && playMode === 'both') {
+                            simulationOptions.methodIds = PREDICTION_HISTORY_METHOD_IDS.join(',');
+                        }
+                        const simulationResult = await simulationService.runBacktest(days, null, simulationOptions);
                         const fileName = playMode === 'both' ? `cached_simulation_${days}.json` : `cached_simulation_${days}_${playMode}.json`;
                         await fs.writeFile(path.join(DATA_DIR, 'statistics', fileName), JSON.stringify(simulationResult, null, 0));
                         console.log(`✅ Đã lưu kết quả ${fileName}`);
+                        if (days === 90 && playMode === 'both') {
+                            predictionHistorySimulation = simulationResult;
+                        }
                         if (he.clearStaticHistoryCaches) he.clearStaticHistoryCaches();
                     }
                 }
 
                 const predictionHistoryService = require('../lib/services/predictionHistoryService');
-                await predictionHistoryService.generateLocalPredictionHistoryFromSimulation(90);
+                await predictionHistoryService.generateLocalPredictionHistoryFromSimulation(90, predictionHistorySimulation);
 
             } catch (simErr) {
                 console.error('⚠️ Lỗi khi tạo cached simulation (không ảnh hưởng các bước khác):', simErr.message);
