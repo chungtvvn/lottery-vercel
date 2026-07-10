@@ -1,9 +1,9 @@
 (function () {
     const nf = new Intl.NumberFormat('vi-VN');
-    const DEFAULT_LOTO_BET_COUNT = 5;
+    const DEFAULT_LOTO_BET_COUNT = 6;
     const DEFAULT_LOTO_STAKE_K = 2200;
     const DEFAULT_LOTO_PAYOUT_K = 8000;
-    const LOTO_COUNT_ORDER = [5, 14, 6, 7, 4, 3];
+    const LOTO_COUNT_ORDER = [6, 7];
     const state = {
         performancePeriod: 'monthly',
         performancePayload: null,
@@ -701,7 +701,7 @@
         const errorBox = document.getElementById('errorBox');
         try {
             const selectEl = document.getElementById('lotoStrategySelect');
-            const strat = selectEl ? selectEl.value : 'parallelCombined';
+            const strat = selectEl ? selectEl.value : 'rrfSmall65Block75';
             const res = await fetch(`/api/loto/prediction?strategy=${strat}`, { cache: 'no-store' });
             const data = await res.json();
             if (!res.ok || !data.success) throw new Error(data.error || 'Không tải được dữ liệu Lô.');

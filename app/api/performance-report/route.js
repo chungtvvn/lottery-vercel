@@ -104,6 +104,17 @@ function buildResponse(payload, url, requestedType = null) {
             explanation: method.explanation || '',
             evaluation: method.evaluation || '',
             summary: method.summary || {},
+            economics: method.economics || {
+                unit: 'K_VND',
+                stakePerNumberK: method.stakePerNumberK,
+                payoutPerHitK: type === 'de'
+                    ? Number(method.stakePerNumberK || 0) * Number(method.payoutMultiplier || 0)
+                    : Number(method.payoutMultiplier || 0)
+            },
+            stakePerNumberK: method.stakePerNumberK,
+            payoutPerHitK: type === 'de'
+                ? Number(method.stakePerNumberK || 0) * Number(method.payoutMultiplier || 0)
+                : Number(method.payoutMultiplier || 0),
             assessment: scoreAssessment(method.summary || {}, type),
             period,
             rows

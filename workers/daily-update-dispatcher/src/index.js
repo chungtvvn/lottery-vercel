@@ -13,11 +13,10 @@ const DEFAULT_APP_BASE_URL = 'https://lottery-stats-vercel.vercel.app';
 const DEFAULT_DE_STRATEGY = 'deParallelBlock85Small65';
 const DEFAULT_DE_TARGET = 70;
 const TELEGRAM_DE_METHODS = [
-  { strategy: 'deParallelBlock85Small65', target: 70, label: 'Song Song Hold 70' },
-  { strategy: 'chainSmallFirst', target: 80, label: 'Chuỗi Nhỏ Hold 80' }
+  { strategy: 'deParallelBlock85Small65', target: 70, label: 'Song Song Hold 70' }
 ];
-const DEFAULT_LOTO_COUNT = 5;
-const TELEGRAM_LOTO_COUNTS = [5, 14];
+const DEFAULT_LOTO_COUNT = 6;
+const TELEGRAM_LOTO_COUNTS = [6, 7];
 const CUMULATIVE_START_DATE = '2026-07-08';
 const DE_BET_PER_NUMBER_K = 10;
 const DE_WIN_MULTIPLIER = 84;
@@ -213,6 +212,30 @@ function getTelegramLotoProfitK(result = {}, count = 0) {
   return (hits * LOTO_PAYOUT_PER_HIT_K) - (unitCount * LOTO_STAKE_PER_NUMBER_K);
 }
 
+function getTelegramDeProfitK(result = {}, prediction = {}, actualValue = null) {
+  const betNumbers = (prediction.betNumbers || result.betNumbers || [])
+    .map(normalizeLotteryNumber)
+    .filter(Boolean);
+  const overlap = new Set((prediction.intersectionNumbers || result.intersectionNumbers || [])
+    .map(normalizeLotteryNumber)
+    .filter(Boolean));
+  const unitCount = new Set(betNumbers).size + [...overlap].filter(number => betNumbers.includes(number)).length;
+  const actual = normalizeLotteryNumber(actualValue ?? result.actual);
+  const hit = Boolean(result.hit) || (actual && betNumbers.includes(actual));
+  const hitWeight = actual && overlap.has(actual) ? 2 : 1;
+  const stakeK = unitCount * DE_BET_PER_NUMBER_K;
+  const payoutK = hit ? hitWeight * DE_BET_PER_NUMBER_K * DE_WIN_MULTIPLIER : 0;
+  return {
+    ...result,
+    betCount: new Set(betNumbers).size,
+    unitCount,
+    stakeK,
+    payoutK,
+    profitK: payoutK - stakeK,
+    hit
+  };
+}
+
 function formatLotoBetShape(value = {}, count = 0) {
   const doubleNumbers = getLotoDoubleNumbers(value);
   const overlapNumbers = getLotoOverlapNumbers(value);
@@ -255,6 +278,7 @@ function buildTelegramReport(dePayload, lotoPayload) {
       ...item,
       key,
       result,
+      telegramResult: result ? getTelegramDeProfitK(result, deSettledPrediction, deSettled?.actualSpecial) : null,
       deSettledPrediction,
       next
     };
@@ -291,6 +315,7 @@ function buildTelegramReport(dePayload, lotoPayload) {
 
   const lines = [
     `<b>XSMB - TỔNG HỢP ${escapeHtml(displayDate(predictionDate))}</b>`,
+    '<i>Telegram: 1K = 1.000 VND · Đề 10K/đơn vị · Lô 220K/đơn vị.</i>',
     '',
     '<b>1. KẾT TOÁN DỰ ĐOÁN TRƯỚC</b>'
   ];
@@ -301,7 +326,7 @@ function buildTelegramReport(dePayload, lotoPayload) {
         `• <b>Đề ${item.label} ${escapeHtml(displayDate(deSettled.predictionIsoDate))}</b>`,
         `  Số đã đánh (${Number(item.result.betCount || item.deSettledPrediction?.betNumbers?.length || 0)}): <code>${escapeHtml(formatNumberList(item.deSettledPrediction?.betNumbers || []))}</code>`,
         `  Kết quả thực tế: <b>${escapeHtml(normalizeLotteryNumber(deSettled.actualSpecial ?? item.result.actual))}</b>`,
-        `  ${item.result.hit ? '✅ TRÚNG' : '❌ TRƯỢT'} · ${escapeHtml(formatMoneyK(item.result.profitK))}`
+        `  ${item.telegramResult.hit ? '✅ TRÚNG' : '❌ TRƯỢT'} · ${escapeHtml(formatMoneyK(item.telegramResult.profitK))}`
       );
     } else {
       lines.push(`• Đề ${item.label}: chưa có bản ghi đã kết toán.`);
@@ -370,12 +395,12 @@ function buildTelegramReport(dePayload, lotoPayload) {
     for (const row of settledDe) {
       const result = row.results?.[method.key];
       if (!result) continue;
-      const profitKVal = (result.profitK !== undefined)
-        ? result.profitK
-        : (result.hit ? DE_BET_PER_NUMBER_K * DE_WIN_MULTIPLIER : 0) - (Number(result.betCount || 0) * DE_BET_PER_NUMBER_K);
+      const prediction = row.strategies?.[method.strategy]?.holds?.[String(method.target)] || {};
+      const telegramResult = getTelegramDeProfitK(result, prediction, row.actualSpecial);
+      const profitKVal = telegramResult.profitK;
       profitK += profitKVal;
       days++;
-      if (result.hit) wins++;
+      if (telegramResult.hit) wins++;
     }
     return {
       label: method.label,

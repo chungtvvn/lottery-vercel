@@ -18,10 +18,10 @@ const XOSO_MAX_WAIT_MINUTES = readNumberEnv('XOSO_MAX_WAIT_MINUTES', WAIT_FOR_NE
 const XOSO_RETRY_INTERVAL_SECONDS = readNumberEnv('XOSO_RETRY_INTERVAL_SECONDS', 60, 5);
 const LOTO_STAKE_PER_NUMBER_K = 2200;
 const LOTO_PAYOUT_PER_HIT_K = 8000;
-const LOTO_METHOD_ID = process.env.LOTO_METHOD_ID || 'parallelCombinedHold65';
-const LOTO_AGGREGATION_MODE = process.env.LOTO_AGGREGATION_MODE || 'twoHitGreedy';
-const LOTO_BET_COUNTS = [3, 4, 5, 6, 7, 14];
-const LOTO_DEFAULT_BET_COUNT = 5;
+const LOTO_METHOD_ID = process.env.LOTO_METHOD_ID || 'rrfSmall65Block75';
+const LOTO_AGGREGATION_MODE = process.env.LOTO_AGGREGATION_MODE || 'rrf';
+const LOTO_BET_COUNTS = [6, 7];
+const LOTO_DEFAULT_BET_COUNT = 6;
 const PREDICTION_HISTORY_METHOD_IDS = [
     'deParallelBlock85Small65Hold70',
     'dedupEdge50CombinedB40S05Hold70',
@@ -32,7 +32,7 @@ const PREDICTION_HISTORY_METHOD_IDS = [
     'dedupEdge75Hold70',
     'dedupDropoffHold70'
 ];
-const MILESTONE20Y_METHOD_VERSION = 'annual20y-2026-07-02-chain-block-hold70-immutable-details';
+const MILESTONE20Y_METHOD_VERSION = 'annual20y-2026-07-10-standard-web-k-units';
 const MILESTONE20Y_BASELINE_VERSION = 'annual20y-baseline-2026-06-28-block-ab';
 const MILESTONE20Y_LIVE_CACHE_VERSION = 'annual20y-live-compact-v3';
 const MILESTONE20Y_CACHE_FILES = [
@@ -176,9 +176,10 @@ function isLotoPredictionFormulaCurrent(cache) {
     const aggregationMode = String(config.aggregationMode || cache?.nextPrediction?.aggregationMode || '');
     const defaultBetCount = Number(config.defaultBetCount || cache?.nextPrediction?.defaultBetCount || 0);
     const betCounts = Array.isArray(config.betCounts) ? config.betCounts.map(Number) : [];
-    const strategy = String(config.strategy || cache?.nextPrediction?.strategy || '');
+    const strategy = String(config.strategy || cache?.nextPrediction?.strategy || LOTO_METHOD_ID);
     const predictions = cache?.nextPrediction?.predictions
         || cache?.nextPrediction?.strategies?.[strategy]?.predictions
+        || cache?.nextPrediction?.strategies?.[LOTO_METHOD_ID]?.predictions
         || cache?.nextPrediction?.strategies?.parallelCombined?.predictions
         || {};
     const defaultNumbers = predictions?.[`top${LOTO_DEFAULT_BET_COUNT}`]?.numbers || [];
@@ -800,7 +801,7 @@ function generateLotoPredictionCache() {
         `--months=${process.env.LOTO_CACHE_MONTHS || '1,3,6'}`,
         `--method=${LOTO_METHOD_ID}`,
         `--strategies=${process.env.LOTO_MILESTONE_STRATEGY || 'chainSmallFirst,chainBlockFirst'}`,
-        `--holds=${process.env.LOTO_MILESTONE_HOLD || '65'}`,
+        `--holds=${process.env.LOTO_MILESTONE_HOLD || '65,75'}`,
         `--aggregationMode=${LOTO_AGGREGATION_MODE}`,
         `--betCounts=${LOTO_BET_COUNTS.join(',')}`,
         `--stakeK=${LOTO_STAKE_PER_NUMBER_K}`,

@@ -10,7 +10,8 @@ const NO_STORE_HEADERS = {
 };
 const FALLBACK_LOTO_STAKE_PER_NUMBER_K = 2200;
 const FALLBACK_LOTO_PAYOUT_PER_HIT_K = 8000;
-const LOTO_BET_COUNTS = [3, 4, 5, 6, 7, 14];
+const LOTO_BET_COUNTS = [6, 7];
+const DEFAULT_LOTO_STRATEGY = 'rrfSmall65Block75';
 
 function isAuthorized(request) {
     const expected = process.env.PREDICTION_API_TOKEN || process.env.EXTERNAL_API_TOKEN || '';
@@ -33,7 +34,7 @@ function filterCount(payload, countParam) {
     if (!LOTO_BET_COUNTS.includes(count)) {
         return {
             ...payload,
-            error: 'count chỉ hỗ trợ 3, 4, 5, 6, 7, 14 hoặc all.'
+            error: 'count chỉ hỗ trợ 6, 7 hoặc all.'
         };
     }
 
@@ -76,7 +77,7 @@ function readLotoEconomics(payload = {}) {
     return {
         stakePerNumberK: finiteNumber(config.stakePerNumberK, FALLBACK_LOTO_STAKE_PER_NUMBER_K) || FALLBACK_LOTO_STAKE_PER_NUMBER_K,
         payoutPerHitK: finiteNumber(config.payoutPerHitK, FALLBACK_LOTO_PAYOUT_PER_HIT_K) || FALLBACK_LOTO_PAYOUT_PER_HIT_K,
-        defaultBetCount: finiteNumber(config.defaultBetCount, 5) || 5
+        defaultBetCount: finiteNumber(config.defaultBetCount, 6) || 6
     };
 }
 
@@ -89,7 +90,7 @@ function withLotoConfig(config = {}, economics = {}) {
         ...config,
         stakePerNumberK,
         payoutPerHitK,
-        defaultBetCount: finiteNumber(config.defaultBetCount, economics.defaultBetCount || 5) || 5
+        defaultBetCount: finiteNumber(config.defaultBetCount, economics.defaultBetCount || 6) || 6
     };
 }
 
@@ -238,7 +239,7 @@ function summarizeLiveRows(rows = []) {
     return summary;
 }
 
-function normalizeLotoPayload(payload = {}, strategy = 'parallelCombined') {
+function normalizeLotoPayload(payload = {}, strategy = DEFAULT_LOTO_STRATEGY) {
     // Deep clone payload to avoid side-effects
     const cloned = JSON.parse(JSON.stringify(payload));
     const economics = readLotoEconomics(cloned);
@@ -349,7 +350,7 @@ export async function GET(request) {
             }
             : payload;
             
-        const strategy = url.searchParams.get('strategy') || 'parallelCombined';
+        const strategy = url.searchParams.get('strategy') || DEFAULT_LOTO_STRATEGY;
         const normalizedPayload = normalizeLotoPayload(mergedPayload, strategy);
         const filtered = filterCount(normalizedPayload, url.searchParams.get('count'));
         if (filtered.error) {

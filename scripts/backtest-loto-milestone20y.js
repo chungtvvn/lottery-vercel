@@ -32,14 +32,14 @@ const PRIZE_KEYS = [
 const ALL_NUMBERS = Array.from({ length: 100 }, (_, index) => index);
 const DEFAULT_STAKE_K = 2200;
 const DEFAULT_PAYOUT_K = 8000;
-const DEFAULT_METHOD_ID = 'milestone20yChainSmallFirstHold65TwoHitGreedy';
+const DEFAULT_METHOD_ID = 'rrfSmall65Block75';
 const DEFAULT_STRATEGY = 'chainSmallFirst';
 const DEFAULT_HOLD = 65;
 const DEFAULT_AGGREGATION_MODE = 'twoHitGreedy';
-const DEFAULT_BET_COUNT = 5;
-const DEFAULT_BET_COUNTS = [3, 4, 5, 6, 7, 14];
-const LIVE_TRACKING_VERSION = 'top5-live-v1';
-const LIVE_CACHE_NOTE = 'Mỗi vị trí dùng Mốc 20 năm chainSmallFirst Hold 65; tổng hợp bằng Two-hit Greedy. Top 5 là dàn mặc định và chỉ được kết toán từ snapshot phát hành sau khi triển khai.';
+const DEFAULT_BET_COUNT = 6;
+const DEFAULT_BET_COUNTS = [6, 7];
+const LIVE_TRACKING_VERSION = 'rrf-top6-top7-live-v1';
+const LIVE_CACHE_NOTE = 'Lô dùng RRF 50/50: Chuỗi nhỏ Hold 65 + Nhịp block Hold 75. Mỗi vị trí được loại trừ riêng, sau đó xếp hạng RRF và chọn Top 6/Top 7; Lô không nhân tiền x2 cho số trùng.';
 
 function parseArgs() {
     return new Map(process.argv.slice(2).map(arg => {
@@ -851,6 +851,186 @@ async function buildNextPrediction(rawData, methodConfig, betCounts, options) {
     };
 }
 
+function buildRrfPrediction(pSmall, pBlock, betCounts, options = {}) {
+    const sourceDepth = Math.max(20, ...betCounts.map(Number));
+    const weightSmall = Number(options.weightSmall ?? 0.5);
+    const weightBlock = Number(options.weightBlock ?? 0.5);
+    const agreementBonus = Number(options.agreementBonus ?? 0.01);
+    const experts = [
+        { prediction: pSmall, weight: weightSmall },
+        { prediction: pBlock, weight: weightBlock }
+    ];
+    const scoreMap = new Map();
+
+    for (const expert of experts) {
+        const numbers = expert.prediction?.predictions?.[`top${sourceDepth}`]?.numbers || [];
+        numbers.forEach((rawNumber, index) => {
+            const number = normalizeNumber(rawNumber);
+            if (number === null) return;
+            const row = scoreMap.get(number) || {
+                number,
+                score: 0,
+                sourceCount: 0,
+                bestRank: Infinity,
+                sourceRanks: {}
+            };
+            row.score += expert.weight / (sourceDepth + index + 1);
+            row.sourceCount += 1;
+            row.bestRank = Math.min(row.bestRank, index + 1);
+            row.sourceRanks[expert.prediction.strategy] = index + 1;
+            scoreMap.set(number, row);
+        });
+    }
+
+    const ranked = Array.from(scoreMap.values())
+        .map(row => ({
+            ...row,
+            score: row.score + agreementBonus * Math.max(0, row.sourceCount - 1)
+        }))
+        .sort((left, right) =>
+            right.score - left.score
+            || right.sourceCount - left.sourceCount
+            || left.bestRank - right.bestRank
+            || left.number - right.number
+        );
+
+    const predictions = {};
+    for (const count of betCounts) {
+        const selected = ranked.slice(0, count);
+        const selectedNumbers = new Set(selected.map(item => item.number));
+        const smallNumbers = new Set((pSmall.predictions?.[`top${count}`]?.numbers || []).map(normalizeNumber));
+        const blockNumbers = new Set((pBlock.predictions?.[`top${count}`]?.numbers || []).map(normalizeNumber));
+        const overlapNumbers = Array.from(selectedNumbers)
+            .filter(number => smallNumbers.has(number) && blockNumbers.has(number))
+            .sort((a, b) => a - b)
+            .map(formatNumber);
+
+        predictions[`top${count}`] = {
+            count,
+            numbers: selected.map(item => formatNumber(item.number)),
+            uniqueCount: selected.length,
+            unitCount: selected.length,
+            selectionMode: 'rrf50_50',
+            overlapNumbers,
+            support: selected.map(item => ({
+                number: formatNumber(item.number),
+                score: Number(item.score.toFixed(8)),
+                weightedScore: Number(item.score.toFixed(8)),
+                sourceCount: item.sourceCount,
+                sourceStrategies: Object.keys(item.sourceRanks),
+                sourceRanks: item.sourceRanks
+            }))
+        };
+    }
+
+    return {
+        generatedAt: new Date().toISOString(),
+        dataDate: pSmall.dataDate,
+        dataIsoDate: pSmall.dataIsoDate,
+        predictionDate: pSmall.predictionDate,
+        predictionIsoDate: pSmall.predictionIsoDate,
+        methodId: 'rrfSmall65Block75',
+        strategy: 'rrfSmall65Block75',
+        hold: null,
+        aggregationMode: 'rrf',
+        sourceMethods: [
+            { strategy: pSmall.strategy, hold: pSmall.hold, aggregationMode: pSmall.aggregationMode, weight: weightSmall },
+            { strategy: pBlock.strategy, hold: pBlock.hold, aggregationMode: pBlock.aggregationMode, weight: weightBlock }
+        ],
+        positionCount: pSmall.positionCount,
+        positions: pSmall.positions,
+        predictions
+    };
+}
+
+async function buildNextRrfPrediction(rawData, betCounts, options) {
+    const latest = rawData[rawData.length - 1];
+    const latestDate = latest ? parseIsoDate(latest.date) : null;
+    if (!latestDate) throw new Error('Không có ngày dữ liệu mới nhất để sinh dự đoán Lô.');
+    const predictionDate = addDays(latestDate, 1);
+    const predictionIsoDate = formatIsoDate(predictionDate);
+    const sourceConfigs = [
+        { id: 'rrfSmallSource', strategy: 'chainSmallFirst', target: 65, aggregationMode: 'twoHitGreedy' },
+        { id: 'rrfBlockSource', strategy: 'chainBlockFirst', target: 75, aggregationMode: 'positionPosterior' }
+    ];
+    const bySource = Object.fromEntries(sourceConfigs.map(config => [config.id, {}]));
+    const byPosition = {};
+
+    for (let index = 0; index < PRIZE_KEYS.length; index += 1) {
+        const positionKey = PRIZE_KEYS[index];
+        console.log(`[LotoMilestone20Y] next RRF ${positionKey} (${index + 1}/${PRIZE_KEYS.length})...`);
+        const positionRows = await buildPositionDailyPredictions(
+            rawData,
+            positionKey,
+            [{ date: predictionIsoDate }],
+            sourceConfigs,
+            options
+        );
+        positionStatsCache.delete(positionKey);
+        const methods = positionRows.get(predictionIsoDate) || {};
+        byPosition[positionKey] = {};
+        for (const config of sourceConfigs) {
+            const numbers = (methods[config.id] || []).map(Number);
+            bySource[config.id][positionKey] = numbers;
+            byPosition[positionKey][config.id] = numbers.map(formatNumber);
+        }
+    }
+
+    const sourcePredictions = sourceConfigs.map(config => {
+        const ranked = aggregatePositionPredictions(bySource[config.id], { mode: config.aggregationMode });
+        return {
+            generatedAt: new Date().toISOString(),
+            dataDate: formatDisplayDate(latestDate),
+            dataIsoDate: formatIsoDate(latestDate),
+            predictionDate: formatDisplayDate(predictionDate),
+            predictionIsoDate,
+            methodId: config.id,
+            strategy: config.strategy,
+            hold: config.target,
+            aggregationMode: config.aggregationMode,
+            positionCount: PRIZE_KEYS.length,
+            positions: PRIZE_KEYS,
+            positionPredictions: PRIZE_KEYS.map(positionKey => ({
+                positionKey,
+                methodId: config.id,
+                dataIsoDate: formatIsoDate(latestDate),
+                predictionIsoDate,
+                numbers: (bySource[config.id][positionKey] || []).map(formatNumber),
+                betCount: (bySource[config.id][positionKey] || []).length,
+                excludedCount: 100 - (bySource[config.id][positionKey] || []).length
+            })),
+            ranked,
+            predictions: buildPredictionSetsFromRanked(ranked, [20, ...betCounts])
+        };
+    });
+
+    const rrf = buildRrfPrediction(sourcePredictions[0], sourcePredictions[1], betCounts);
+    rrf.positionPredictions = PRIZE_KEYS.map(positionKey => ({
+        positionKey,
+        methodId: rrf.methodId,
+        dataIsoDate: formatIsoDate(latestDate),
+        predictionIsoDate,
+        sourceNumbers: {
+            chainSmallFirst: byPosition[positionKey].rrfSmallSource || [],
+            chainBlockFirst: byPosition[positionKey].rrfBlockSource || []
+        },
+        numbers: Array.from(new Set([
+            ...(byPosition[positionKey].rrfSmallSource || []),
+            ...(byPosition[positionKey].rrfBlockSource || [])
+        ])).map(formatNumber),
+        betCount: betCounts[0] || DEFAULT_BET_COUNT,
+        excludedCount: 100 - (betCounts[0] || DEFAULT_BET_COUNT)
+    }));
+    rrf.sourcePredictions = Object.fromEntries(sourcePredictions.map(prediction => [prediction.strategy, {
+        methodId: prediction.methodId,
+        strategy: prediction.strategy,
+        hold: prediction.hold,
+        aggregationMode: prediction.aggregationMode,
+        predictions: prediction.predictions
+    }]));
+    return rrf;
+}
+
 function writeLiveCaches(nextPrediction, rawData, betCounts, options) {
     const statsDir = path.join(process.cwd(), 'lib', 'data', 'statistics');
     const cachePath = path.join(statsDir, 'cached_loto_prediction.json');
@@ -1011,6 +1191,27 @@ async function main() {
         .slice()
         .sort((a, b) => new Date(a.date) - new Date(b.date));
     if (predictionOnly) {
+        const requestedMethod = args.get('method') || '';
+        if (requestedMethod === 'rrfSmall65Block75') {
+            const rrfPrediction = await buildNextRrfPrediction(rawData, betCounts, {
+                historyYears,
+                fixedBaselineYear,
+                activeFrequencyLimit: Number(args.get('activeFrequencyLimit') || 0.5),
+                recordFrequencyLimit: Number(args.get('recordFrequencyLimit') || 1.1),
+                minPotentialCurrentLenForNeverFormed: Number(args.get('minPotentialLen') || 4)
+            });
+            const nextPredictions = { rrfSmall65Block75: rrfPrediction };
+            if (writeCache) {
+                writeLiveCachesMulti(nextPredictions, rrfPrediction, rawData, betCounts, { stakeK, payoutK });
+            }
+            console.log(`[LotoMilestone20Y] Next ${rrfPrediction.predictionIsoDate}: ${rrfPrediction.methodId}`);
+            console.table(Object.values(rrfPrediction.predictions || {}).map(item => ({
+                method: `top${item.count || item.numbers?.length}`,
+                numbers: (item.numbers || []).join(' '),
+                overlapNumbers: (item.overlapNumbers || []).join(' ')
+            })));
+            return;
+        }
         const nextPredictions = {};
         for (const methodConfig of methodConfigs) {
             console.log(`[LotoMilestone20Y] Generating prediction for strategy: ${methodConfig.id}...`);
@@ -1471,7 +1672,7 @@ function writeLiveCachesMulti(nextPredictions, primaryPrediction, rawData, betCo
     livePayload.config = {
         ...(livePayload.config || {}),
         methodId: primaryPrediction.methodId,
-        methodName: 'Mốc 20 năm - Đánh Song Song Lô (x2 Trùng) - Top 5/7/14',
+        methodName: 'Lô RRF 50/50 - Chuỗi nhỏ Hold 65 + Nhịp block Hold 75 - Top 6/7',
         trackingVersion: LIVE_TRACKING_VERSION,
         aggregationMode: primaryPrediction.aggregationMode || DEFAULT_AGGREGATION_MODE,
         positionCount: PRIZE_KEYS.length,
@@ -1494,7 +1695,7 @@ function writeLiveCachesMulti(nextPredictions, primaryPrediction, rawData, betCo
     livePayload.notes = [
         LIVE_CACHE_NOTE,
         'Khi predictionIsoDate đã tồn tại, script không ghi đè dàn cũ; riêng snapshot pending được cập nhật multi-strategy.',
-        'Các ngày cũ không có Top 14 không được tính vào hiệu quả Top 14.',
+        'Chỉ các snapshot RRF mới được tính vào hiệu quả Top 6/7; dàn Lô luôn tính một đơn vị cho mỗi số duy nhất.',
         'Công thức Lô: 2200K mỗi số, mỗi hit nhận 8000K.'
     ];
 
@@ -1504,7 +1705,7 @@ function writeLiveCachesMulti(nextPredictions, primaryPrediction, rawData, betCo
         config: {
             methodId: primaryPrediction.methodId,
             methodName: livePayload.config.methodName,
-            logic: 'annualMilestone20y-parallel-betting',
+            logic: 'annualMilestone20y-rrf-50-50-per-position',
             strategy: primaryPrediction.strategy,
             hold: primaryPrediction.hold,
             aggregationMode: primaryPrediction.aggregationMode || DEFAULT_AGGREGATION_MODE,
@@ -1543,12 +1744,12 @@ function writeLiveCachesMulti(nextPredictions, primaryPrediction, rawData, betCo
         },
         notes: [
             LIVE_CACHE_NOTE,
-            'Action hằng ngày tự động kết toán và cập nhật dự đoán Lô song song.'
+            'Action hằng ngày tự động kết toán và cập nhật dự đoán Lô RRF Top 6/7.'
         ]
     };
     fs.writeFileSync(livePath, JSON.stringify(livePayload, null, 0), 'utf8');
     fs.writeFileSync(cachePath, JSON.stringify(cachePayload, null, 0), 'utf8');
-    console.log(`[LotoMilestone20Y] Parallel combined caches successfully written to: ${cachePath} & ${livePath}`);
+    console.log(`[LotoMilestone20Y] RRF caches successfully written to: ${cachePath} & ${livePath}`);
 }
 
 function settleLivePredictionsMulti(livePayload, rawData, options) {
@@ -1589,8 +1790,8 @@ function settleLivePredictionsMulti(livePayload, rawData, options) {
         item.methods = item.methods || {};
         for (const betCount of options.betCounts) {
             const key = `top${betCount}`;
-            if (item.strategies?.['parallelCombined']?.methods?.[key]) {
-                item.methods[key] = item.strategies['parallelCombined'].methods[key];
+            if (item.strategies?.['rrfSmall65Block75']?.methods?.[key]) {
+                item.methods[key] = item.strategies['rrfSmall65Block75'].methods[key];
             } else if (item.predictions?.[key]) {
                 item.methods[key] = evaluateNumbers(
                     item.predictions[key].numbers || [],
@@ -1656,7 +1857,7 @@ function upsertNextLivePredictionMulti(livePayload, nextPredictions, primaryPred
 function summarizeLivePredictionsMulti(livePayload, betCounts) {
     const summary = {};
     const settled = (livePayload.predictions || []).filter(item => item.status === 'settled');
-    const strategyKeys = ['parallelCombined', 'chainSmallFirst', 'chainBlockFirst'];
+    const strategyKeys = ['rrfSmall65Block75'];
     
     for (const stratId of strategyKeys) {
         for (const betCount of betCounts) {
@@ -1668,7 +1869,7 @@ function summarizeLivePredictionsMulti(livePayload, betCounts) {
                 let method = null;
                 if (item.strategies?.[stratId]?.methods?.[key]) {
                     method = item.strategies[stratId].methods[key];
-                } else if (stratId === 'parallelCombined' && item.methods?.[key]) {
+                } else if (stratId === 'rrfSmall65Block75' && item.methods?.[key]) {
                     method = item.methods[key];
                 }
                 
@@ -1697,9 +1898,9 @@ function summarizeLivePredictionsMulti(livePayload, betCounts) {
     
     for (const betCount of betCounts) {
         const key = `top${betCount}`;
-        if (summary[`parallelCombined_${key}`]) {
+        if (summary[`rrfSmall65Block75_${key}`]) {
             summary[key] = {
-                ...summary[`parallelCombined_${key}`],
+                ...summary[`rrfSmall65Block75_${key}`],
                 methodId: key
             };
         }

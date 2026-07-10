@@ -151,6 +151,13 @@ function makeMethodReport({ id, label, explanation, rows, type, config = {} }) {
         excludedCount: config.excludedCount,
         stakePerNumberK: config.stakePerNumberK,
         payoutMultiplier: config.payoutMultiplier,
+        economics: {
+            unit: 'K_VND',
+            stakePerNumberK: config.stakePerNumberK,
+            payoutPerHitK: type === 'de'
+                ? Number(config.stakePerNumberK || DE_STAKE_K) * Number(config.payoutMultiplier || 84)
+                : Number(config.payoutMultiplier || LOTO_PAYOUT_K)
+        },
         explanation,
         evaluation: 'Báo cáo từ raw data trên R2; dữ liệu từng ngày được chốt point-in-time trước ngày dự đoán.',
         summary: summarizeRows(rows, type),

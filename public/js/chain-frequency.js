@@ -648,7 +648,12 @@
         return 0;
     }
 
-    function adjustDeResult(result = {}, target = state.target) {
+    function getReportStakeK(section = {}) {
+        const value = Number(section.stakePerNumberK ?? section.economics?.stakePerNumberK);
+        return Number.isFinite(value) && value > 0 ? value : DE_BET_PER_NUMBER_K;
+    }
+
+    function adjustDeResult(result = {}, target = state.target, reportStakeK = DE_BET_PER_NUMBER_K) {
         const betCount = Number(result.betCount || getDeBetCount(target));
         const unitCount = Number(result.unitCount || getUnitCount(result, target) || betCount);
         const hit = Boolean(result.hit || result.result === 'win');
@@ -663,7 +668,7 @@
             payoutK = hit ? actualWeight * DE_BET_PER_NUMBER_K * normalizeWinMultiplier(state.winMultiplier) : 0;
             profitK = payoutK - stakeK;
         } else if (Number.isFinite(result.stakeK) && Number.isFinite(result.payoutK)) {
-            const scaleFactor = DE_BET_PER_NUMBER_K / 10;
+            const scaleFactor = DE_BET_PER_NUMBER_K / Math.max(1, Number(reportStakeK) || DE_BET_PER_NUMBER_K);
             stakeK = result.stakeK * scaleFactor;
             payoutK = result.payoutK * scaleFactor * (normalizeWinMultiplier(state.winMultiplier) / 84);
             profitK = payoutK - stakeK;
@@ -684,19 +689,19 @@
         };
     }
 
-    function adjustDeRow(row = {}, target = state.target) {
+    function adjustDeRow(row = {}, target = state.target, reportStakeK = DE_BET_PER_NUMBER_K) {
         const days = Number(row.days || (row.date || row.period || row.month || row.week ? 1 : 0)) || 0;
         const wins = getRowWins(row);
         const betCount = Number(row.betCount || getDeBetCount(target));
         let stakeK, payoutK, profitK;
         if (Number.isFinite(row.stakeK) && Number.isFinite(row.payoutK)) {
-            const scaleFactor = DE_BET_PER_NUMBER_K / 10;
+            const scaleFactor = DE_BET_PER_NUMBER_K / Math.max(1, Number(reportStakeK) || DE_BET_PER_NUMBER_K);
             stakeK = row.stakeK * scaleFactor;
             payoutK = row.payoutK * scaleFactor * (normalizeWinMultiplier(state.winMultiplier) / 84);
             profitK = payoutK - stakeK;
         } else if (Number.isFinite(row.betProfitK) || Number.isFinite(row.profitK)) {
             // Read from compiled performance report
-            const scaleFactor = DE_BET_PER_NUMBER_K / 10;
+            const scaleFactor = DE_BET_PER_NUMBER_K / Math.max(1, Number(reportStakeK) || DE_BET_PER_NUMBER_K);
             const rawProfit = Number(row.profitK ?? (row.betProfitK + row.holdProfitK) ?? 0);
             
             // Recompute stake from average betCount or history
@@ -767,8 +772,8 @@
         }).filter(item => item.days > 0);
     }
 
-    function getRowProfit(row = {}) {
-        return Number(adjustDeRow(row).profitK ?? row.netProfitK ?? 0);
+    function getRowProfit(row = {}, section = {}) {
+        return Number(adjustDeRow(row, state.target, getReportStakeK(section)).profitK ?? row.netProfitK ?? 0);
     }
 
     function renderPeriodTabs() {
@@ -812,14 +817,14 @@
         });
     }
 
-    function renderProfitBars(rows = []) {
+    function renderProfitBars(rows = [], section = {}) {
         const visible = rows.slice(-18);
         if (!visible.length) return '<div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">Chưa có dữ liệu biểu đồ.</div>';
-        const maxAbs = Math.max(1, ...visible.map(row => Math.abs(getRowProfit(row))));
+        const maxAbs = Math.max(1, ...visible.map(row => Math.abs(getRowProfit(row, section))));
         return `
             <div class="flex h-56 items-end gap-2 rounded-2xl border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-4">
                 ${visible.map(row => {
-                    const profit = getRowProfit(row);
+                    const profit = getRowProfit(row, section);
                     const height = Math.max(8, Math.round(Math.abs(profit) / maxAbs * 160));
                     const positive = profit >= 0;
                     return `
@@ -835,11 +840,11 @@
         `;
     }
 
-    function renderCumulativeLine(rows = []) {
+    function renderCumulativeLine(rows = [], section = {}) {
         if (!rows.length) return '<div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">Chưa có dữ liệu tích lũy.</div>';
         let cumulative = 0;
         const values = rows.map(row => {
-            cumulative += getRowProfit(row);
+            cumulative += getRowProfit(row, section);
             return cumulative;
         });
         const width = 720;
@@ -924,14 +929,15 @@
             `;
             return;
         }
-        const summary = adjustDeRow(section.summary || {}, state.target);
+        const reportStakeK = getReportStakeK(section);
+        const summary = adjustDeRow(section.summary || {}, state.target, reportStakeK);
         const rows = section.rows || [];
         const positive = Number(summary.profitK || 0) >= 0;
         const cards = [
             ['Số ngày', `${fmt(summary.days || rows.length)} ngày`, 'Tổng số ngày đã kết toán trong năm.'],
             ['Tỷ lệ trúng', fmtRatioPercent(summary.winRate), 'Tỷ lệ ngày kết quả nằm trong dàn đánh.'],
             ['Tỷ lệ ăn', `1 ăn ${state.winMultiplier}`, 'Có thể đổi từ 70 đến 90, hệ thống tự tính lại lãi/lỗ.'],
-            ['Profit', fmtMoney(summary.profitK), `Lãi/lỗ ròng theo mỗi số ${fmt(DE_BET_PER_NUMBER_K)}K, trúng ăn ${state.winMultiplier}.`],
+            ['Profit', fmtMoney(summary.profitK), `Lãi/lỗ ròng theo mỗi số ${fmt(DE_BET_PER_NUMBER_K)}K (= ${fmt(DE_BET_PER_NUMBER_K * 1000)} VND), trúng ăn ${state.winMultiplier}.`],
             ['ROI', fmtRatioPercent(summary.roi), 'Profit chia cho tổng tiền đánh.'],
             ['Chuỗi thua dài nhất', `${fmt(summary.longestLoss || 0)} ngày`, 'Mốc rủi ro cần chuẩn bị khi áp dụng thực tế.']
         ];
@@ -969,11 +975,11 @@
                 <div class="grid gap-4">
                     <div>
                         <div class="mb-2 text-sm font-bold text-slate-900">Lãi/lỗ theo ${getPeriodLabel(state.performancePeriod).toLowerCase()}</div>
-                        ${renderProfitBars(rows)}
+                        ${renderProfitBars(rows, section)}
                     </div>
                     <div>
                         <div class="mb-2 text-sm font-bold text-slate-900">Đường profit tích lũy</div>
-                        ${renderCumulativeLine(rows)}
+                        ${renderCumulativeLine(rows, section)}
                     </div>
                 </div>
             </div>
@@ -992,7 +998,7 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100 bg-white">
                         ${rows.slice(-36).reverse().map(row => {
-                            const adjusted = adjustDeRow(row, state.target);
+                            const adjusted = adjustDeRow(row, state.target, reportStakeK);
                             const winRate = asRatio(adjusted.winRatePercent ?? adjusted.winRate ?? 0);
                             const profit = adjusted.profitK;
                             return `
