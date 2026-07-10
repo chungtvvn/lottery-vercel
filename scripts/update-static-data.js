@@ -806,6 +806,17 @@ function generateLotoPredictionCache() {
     didGenerateLotoCacheThisRun = true;
 }
 
+function generateProfitReportCache() {
+    const timeoutMs = Math.max(60_000, Number(process.env.PROFIT_REPORT_TIMEOUT_MS || 0) || 0);
+    runNodeScript('scripts/generate-profit-report-cache.js',
+        'Sinh cache báo cáo hiệu quả từ đầu năm cho Đề và Lô từ raw data R2.', {
+        NODE_OPTIONS: process.env.NODE_OPTIONS || '--max-old-space-size=12288',
+        LOTTERY_DATA_SOURCE: 'r2',
+        LOTTERY_STATS_SOURCE: 'r2'
+    }, timeoutMs > 0 ? { timeoutMs } : {});
+    console.log('[ProfitReport] Đã sinh cached_profit_report_2026.json từ R2.');
+}
+
 async function generateLotoPredictionCacheIfNeeded(expectedLatestDate = null, context = '') {
     if (process.env.LOTO_GENERATE_CACHE === '0') {
         console.log('[6] LOTO_GENERATE_CACHE=0, bỏ qua sinh cache Lô.');
@@ -1299,6 +1310,9 @@ async function main() {
         }
         console.log('[3] Stats R2 đã mới, chỉ sinh/đối soát cache dự đoán và upload riêng các file cache.');
         try {
+            if (process.env.GENERATE_PROFIT_REPORT_CACHE === '1') {
+                generateProfitReportCache();
+            }
             await hydrateMilestone20yLiveCacheFromR2();
             await hydrateCoreStatsFromR2ForPredictionCache();
             const didGenerateLoto = await generateLotoPredictionCacheIfNeeded(latestRawDate, 'prediction-cache-only');
@@ -1867,6 +1881,10 @@ async function main() {
                 }
             } else {
                 console.log('[6] LOTO_GENERATE_CACHE=0, bỏ qua sinh cache Lô.');
+            }
+
+            if (process.env.GENERATE_PROFIT_REPORT_CACHE === '1') {
+                generateProfitReportCache();
             }
         }
         

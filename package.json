@@ -14,6 +14,7 @@
     "supabase:sync": "node scripts/sync-supabase.js",
     "r2:sync:down": "node scripts/sync-from-r2.js",
     "stats:audit": "node scripts/audit-statistics-coverage.js",
+    "cache:profit-report": "node scripts/generate-profit-report-cache.js",
     "analyze:exclusion-overlap": "node scripts/analyze-exclusion-number-overlap.js",
     "test:so-le-theo-cap": "node scripts/test-so-le-theo-cap.js",
     "test:prediction-history-immutability": "node scripts/test-prediction-history-immutability.js",

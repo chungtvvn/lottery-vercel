@@ -39,6 +39,14 @@ on:
         options:
           - '0'
           - '1'
+      generate_profit_report_cache:
+        description: '1 = chạy backtest dài để sinh báo cáo Đề/Lô từ đầu năm lên R2'
+        required: true
+        default: '0'
+        type: choice
+        options:
+          - '0'
+          - '1'
       clear_r2_statistics:
         description: '1 = xoá toàn bộ object cũ trong R2 statistics/ trước khi upload'
         required: true
@@ -101,6 +109,7 @@ jobs:
           LOTTERY_DATA_SOURCE: 'r2'
           LOTTERY_STATS_SOURCE: 'local'
           FORCE_REGENERATE_STATS: ${{ github.event_name == 'workflow_dispatch' && inputs.force_regenerate_stats || vars.FORCE_REGENERATE_STATS || '0' }}
+          GENERATE_PROFIT_REPORT_CACHE: ${{ github.event_name == 'workflow_dispatch' && inputs.generate_profit_report_cache || '0' }}
           CLOUDFLARE_R2_CLEAR_STATS_PREFIX: ${{ github.event_name == 'workflow_dispatch' && inputs.clear_r2_statistics || '0' }}
           SYNC_R2_AFTER_UPDATE: '1'
           SYNC_SUPABASE_AFTER_UPDATE: '0'
