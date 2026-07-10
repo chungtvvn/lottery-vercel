@@ -101,6 +101,18 @@
         return finiteNumber(item.betCount ?? item.count, fallbackCount) || fallbackCount;
     }
 
+    function getSupportCount(entry = {}) {
+        const value = entry.supportCount ?? entry.sourceCount ?? entry.positions?.length;
+        return finiteNumber(value, 0);
+    }
+
+    function getSupportLabel(entry = {}) {
+        if (Array.isArray(entry.sourceStrategies) && entry.sourceStrategies.length > 0) {
+            return 'phương pháp';
+        }
+        return 'vị trí';
+    }
+
     function renderBetShape(item = {}, count = DEFAULT_LOTO_BET_COUNT) {
         const uniqueCount = getUniqueCount(item);
         const unitCount = getUnitCount(item, count);
@@ -168,7 +180,7 @@
             const supportRows = (item.support || []).map(entry => `
                 <div class="flex items-center justify-between gap-3 rounded-lg bg-white/60 px-3 py-2 text-xs">
                     <span class="font-bold text-slate-900">${entry.number}</span>
-                    <span class="text-slate-500">${entry.supportCount} vị trí</span>
+                    <span class="text-slate-500">${nf.format(getSupportCount(entry))} ${getSupportLabel(entry)}</span>
                 </div>
             `).join('');
             return `
