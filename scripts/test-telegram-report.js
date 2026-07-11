@@ -26,7 +26,7 @@ async function main() {
                 },
                 chainSmallFirst: {
                     holds: {
-                        80: { betNumbers: Array.from({ length: 20 }, (_, value) => String(value).padStart(2, '0')) }
+                        70: { betNumbers: Array.from({ length: 30 }, (_, value) => String(value).padStart(2, '0')) }
                     }
                 }
             }
@@ -44,7 +44,7 @@ async function main() {
                     },
                     chainSmallFirst: {
                         holds: {
-                            80: { betNumbers: Array.from({ length: 20 }, (_, value) => String(value).padStart(2, '0')) }
+                            70: { betNumbers: Array.from({ length: 30 }, (_, value) => String(value).padStart(2, '0')) }
                         }
                     }
                 },
@@ -55,11 +55,11 @@ async function main() {
                         hit: true,
                         profitK: 540
                     },
-                    'chainSmallFirst:hold80': {
+                    'chainSmallFirst:hold70': {
                         actual: '12',
-                        betCount: 20,
+                        betCount: 30,
                         hit: true,
-                        profitK: 640
+                        profitK: 540
                     }
                 }
             }]
@@ -71,12 +71,12 @@ async function main() {
             predictionIsoDate: '2026-07-02',
             methodId: 'testLotoMethod',
             predictions: {
-                top5: {
-                    numbers: ['01', '02', '03', '04', '05']
+                top6: {
+                    numbers: ['01', '02', '03', '04', '05', '06']
                 },
-                top14: {
-                    numbers: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '34', '56'],
-                    overlapNumbers: ['12']
+                top7: {
+                    numbers: ['01', '02', '03', '04', '05', '06', '07'],
+                    overlapNumbers: ['02']
                 }
             }
         },
@@ -86,25 +86,25 @@ async function main() {
                 predictionIsoDate: '2026-07-01',
                 actual: { '01': 1, 12: 2, 34: 1, 55: 23 },
                 methods: {
-                    top5: {
-                        betNumbers: ['01', '02', '03', '04', '05'],
-                        betCount: 5,
+                    top6: {
+                        betNumbers: ['01', '02', '03', '04', '05', '06'],
+                        betCount: 6,
                         hits: 1,
-                        profitK: -5200
+                        profitK: -520
                     },
-                    top14: {
-                        betNumbers: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '34', '56'],
-                        overlapNumbers: ['12'],
-                        betCount: 14,
-                        unitCount: 14,
-                        hits: 4,
-                        profitK: 1200
+                    top7: {
+                        betNumbers: ['01', '02', '03', '04', '05', '06', '07'],
+                        overlapNumbers: ['02'],
+                        betCount: 7,
+                        unitCount: 7,
+                        hits: 1,
+                        profitK: -740
                     }
                 }
             }],
             summary: {
-                top5: { days: 10, hitDays: 4, profitK: 12000 },
-                top14: { days: 1, hitDays: 1, profitK: 1200 }
+                top6: { days: 10, hitDays: 4, profitK: 12000 },
+                top7: { days: 1, hitDays: 1, profitK: 1200 }
             }
         }
     };
@@ -113,15 +113,15 @@ async function main() {
     assert.match(report.text, /Số đã đánh \(30\):/);
     assert.match(report.text, /Kết quả thực tế: <b>12<\/b>/);
     assert.match(report.text, /Đề Song Song Hold 70/);
-    assert.match(report.text, /Đề Chuỗi Nhỏ Hold 80/);
-    assert.match(report.text, /Lô Top 14/);
-    assert.match(report.text, /Số đã đánh \(14 số duy nhất · 14 đơn vị cược · trùng 2 phương pháp: 12\): <code>01 02 03 04 05 06 07 08 09 10 11 12 34 56<\/code>/);
+    assert.match(report.text, /Đề Chuỗi nhỏ trước Hold 70/);
+    assert.match(report.text, /Lô Top 7/);
+    assert.match(report.text, /Số đã đánh \(7 số duy nhất · 7 đơn vị cược · trùng 2 phương pháp: 02\): <code>01 02 03 04 05 06 07<\/code>/);
     assert.match(report.text, /Kết quả \(27 vị trí\):/);
-    assert.match(report.text, /Trúng: <b>01 12×2 34<\/b>/);
-    assert.match(report.text, /✅ CÓ LÃI · \+120K · 4 hit/);
-    assert.match(report.text, /Top 14 \(14 số duy nhất · 14 đơn vị cược · trùng 2 phương pháp: 12\):/);
+    assert.match(report.text, /Trúng: <b>01<\/b>/);
+    assert.match(report.text, /❌ LỖ · -740K · 1 hit/);
+    assert.match(report.text, /Top 7 \(7 số duy nhất · 7 đơn vị cược · trùng 2 phương pháp: 02\):/);
     assert.match(report.text, /Lũy kế: 10 ngày · hit-day 4\/10 · \+12\.000K/);
-    assert.match(report.text, /DỰ ĐOÁN LÔ TOP 5 &amp; TOP 14/);
+    assert.match(report.text, /DỰ ĐOÁN LÔ TOP 6 &amp; TOP 7/);
     assert.ok(report.text.length <= 4096, `Telegram report quá dài: ${report.text.length}`);
     console.log('Telegram report tests passed.');
 }

@@ -10,9 +10,10 @@ const UPDATE_CRON = '40 11 * * *';
 const TELEGRAM_CHAT_KEY = 'telegram:chat_id';
 const TELEGRAM_LAST_SENT_KEY = 'telegram:last_sent_prediction_date';
 const DEFAULT_APP_BASE_URL = 'https://lottery-stats-vercel.vercel.app';
-const DEFAULT_DE_STRATEGY = 'chainSmallFirst';
+const DEFAULT_DE_STRATEGY = 'deParallelBlock85Small65';
 const DEFAULT_DE_TARGET = 70;
 const TELEGRAM_DE_METHODS = [
+  { strategy: 'deParallelBlock85Small65', target: 70, label: 'Đề Song Song Hold 70' },
   { strategy: 'chainSmallFirst', target: 70, label: 'Chuỗi nhỏ trước Hold 70' }
 ];
 const DEFAULT_LOTO_COUNT = 6;

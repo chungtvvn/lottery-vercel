@@ -1071,9 +1071,12 @@
             state.payload = data;
             state.winMultiplier = normalizeWinMultiplier(state.winMultiplier || data.config?.winMultiplier || 84);
             const profitPreset = data.config?.presets?.[0];
-            const defaultStrategy = data.nextPrediction?.strategies?.chainSmallFirst
-                ? 'chainSmallFirst'
-                : (data.config?.defaultBetStrategy || profitPreset?.strategy || 'chainBlockFirst');
+            const configuredStrategy = data.config?.defaultBetStrategy || profitPreset?.strategy;
+            const defaultStrategy = data.nextPrediction?.strategies?.[configuredStrategy]
+                ? configuredStrategy
+                : (data.nextPrediction?.strategies?.deParallelBlock85Small65
+                    ? 'deParallelBlock85Small65'
+                    : (data.nextPrediction?.strategies?.chainSmallFirst ? 'chainSmallFirst' : 'chainBlockFirst'));
             const defaultTarget = Number(data.config?.defaultBetTarget || profitPreset?.target || 70);
             state.strategy = state.strategy || defaultStrategy;
             if (!data.nextPrediction?.strategies?.[state.strategy]) {

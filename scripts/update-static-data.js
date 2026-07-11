@@ -33,9 +33,9 @@ const PREDICTION_HISTORY_METHOD_IDS = [
     'dedupEdge75Hold70',
     'dedupDropoffHold70'
 ];
-const MILESTONE20Y_METHOD_VERSION = 'annual20y-2026-07-10-standard-web-k-units';
+const MILESTONE20Y_METHOD_VERSION = 'annual20y-2026-07-11-default-de-parallel-block85-small65';
 const MILESTONE20Y_BASELINE_VERSION = 'annual20y-baseline-2026-06-28-block-ab';
-const MILESTONE20Y_LIVE_CACHE_VERSION = 'annual20y-live-compact-v3';
+const MILESTONE20Y_LIVE_CACHE_VERSION = 'annual20y-live-compact-v4';
 const MILESTONE20Y_CACHE_FILES = [
     'cached_milestone20y_prediction.json',
     'cached_milestone20y_live_predictions.json'
