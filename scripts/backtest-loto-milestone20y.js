@@ -751,26 +751,44 @@ function preservePublishedNextPrediction(nextPrediction, livePayload) {
 const positionStatsCache = new Map();
 
 async function buildPositionDailyPredictions(rawData, positionKey, targetRows, methodConfigs, options) {
+    const strictPointInTime = options.strictPointInTime !== false;
     const positionData = toPositionData(rawData, positionKey);
-    let stats;
-    if (positionStatsCache.has(positionKey)) {
-        stats = positionStatsCache.get(positionKey);
-    } else {
-        stats = await buildStatsForPosition(positionData);
-        positionStatsCache.set(positionKey, stats);
+    let entries = null;
+    if (!strictPointInTime) {
+        let stats;
+        if (positionStatsCache.has(positionKey)) {
+            stats = positionStatsCache.get(positionKey);
+        } else {
+            stats = await buildStatsForPosition(positionData);
+            positionStatsCache.set(positionKey, stats);
+        }
+        lotteryService.__setInMemoryCachesForBacktest({
+            rawData: positionData,
+            ...stats
+        });
+        historicalExclusionService.clearCache();
+        entries = buildStatsIndexFromLoadedStats();
     }
-    lotteryService.__setInMemoryCachesForBacktest({
-        rawData: positionData,
-        ...stats
-    });
-    historicalExclusionService.clearCache();
-    const entries = buildStatsIndexFromLoadedStats();
     const baselineByYear = new Map();
     const rows = new Map();
 
     for (const rawDay of targetRows) {
         const date = parseIsoDate(rawDay.date);
         if (!date) continue;
+        if (strictPointInTime) {
+            // The position's pattern universe and active/potential state must
+            // both be generated from draws strictly before this prediction.
+            const predictionIso = formatIsoDate(date);
+            const prefixRaw = rawData.filter(row => formatIsoDate(row.date) < predictionIso);
+            const prefixPositionData = toPositionData(prefixRaw, positionKey);
+            const prefixStats = await buildStatsForPosition(prefixPositionData);
+            lotteryService.__setInMemoryCachesForBacktest({
+                rawData: prefixPositionData,
+                ...prefixStats
+            });
+            historicalExclusionService.clearCache();
+            entries = buildStatsIndexFromLoadedStats();
+        }
         const year = date.getFullYear();
         const baselineYear = options.fixedBaselineYear || year;
         if (!baselineByYear.has(baselineYear)) {
@@ -1173,8 +1191,15 @@ async function main() {
     const payoutK = Number(args.get('payoutK') || DEFAULT_PAYOUT_K);
     const historyYears = Number(args.get('historyYears') || 20);
     const fixedBaselineYear = args.has('fixedBaselineYear') ? Number(args.get('fixedBaselineYear')) : null;
+    const strictPointInTime = args.get('strictPointInTime') !== '0';
     const rawFile = args.get('rawFile') ? path.resolve(args.get('rawFile')) : null;
     const methodConfigs = buildMethodConfigs(strategies, holdCounts);
+    if (strictPointInTime && positionInputFiles.length > 0) {
+        throw new Error(
+            'Strict PIT không nhận positionInputFiles cũ vì cache vị trí có thể được sinh từ full-history. ' +
+            'Hãy để script tái sinh prefix theo từng ngày hoặc truyền --strictPointInTime=0 cho nghiên cứu legacy.'
+        );
+    }
     if (methodConfigs.length === 1 && predictionOnly) {
         methodConfigs[0].id = args.get('method') || DEFAULT_METHOD_ID;
         methodConfigs[0].aggregationMode = predictionAggregationMode;
@@ -1196,6 +1221,7 @@ async function main() {
             const rrfPrediction = await buildNextRrfPrediction(rawData, betCounts, {
                 historyYears,
                 fixedBaselineYear,
+                strictPointInTime,
                 activeFrequencyLimit: Number(args.get('activeFrequencyLimit') || 0.5),
                 recordFrequencyLimit: Number(args.get('recordFrequencyLimit') || 1.1),
                 minPotentialCurrentLenForNeverFormed: Number(args.get('minPotentialLen') || 4)
@@ -1219,6 +1245,7 @@ async function main() {
                 aggregationMode: predictionAggregationMode,
                 historyYears,
                 fixedBaselineYear,
+                strictPointInTime,
                 activeFrequencyLimit: Number(args.get('activeFrequencyLimit') || 0.5),
                 recordFrequencyLimit: Number(args.get('recordFrequencyLimit') || 1.1),
                 minPotentialCurrentLenForNeverFormed: Number(args.get('minPotentialLen') || 4)
@@ -1298,6 +1325,7 @@ async function main() {
             const positionRows = await buildPositionDailyPredictions(rawData, positionKey, targetRows, methodConfigs, {
                 historyYears,
                 fixedBaselineYear,
+                strictPointInTime,
                 activeFrequencyLimit: Number(args.get('activeFrequencyLimit') || 0.5),
                 recordFrequencyLimit: Number(args.get('recordFrequencyLimit') || 1.1),
                 minPotentialCurrentLenForNeverFormed: Number(args.get('minPotentialLen') || 4)
@@ -1506,13 +1534,16 @@ async function main() {
         betCounts,
         aggregationModes,
         stakeK,
-        payoutK
+        payoutK,
+        strictPointInTime
     };
     const fingerprint = buildBacktestFingerprint({
         rawData,
         config: reportConfig,
         baselineCutoffDate,
-        methodologyVersion: 'fast-full-history-index-v1-unsafe',
+        methodologyVersion: strictPointInTime
+            ? 'strict-prefix-point-in-time-loto-v1'
+            : 'fast-full-history-index-v1-unsafe',
         sourceFiles: [
             __filename,
             path.join(__dirname, '..', 'lib', 'services', 'annualMilestoneService.js'),
@@ -1537,10 +1568,14 @@ async function main() {
         resultSha256,
         methodology: {
             annualBaseline: 'Mỗi năm dùng baseline kết thúc ngày 31/12 của năm trước.',
-            dailyState: 'fast-full-history-index',
-            strictPointInTime: false,
+            dailyState: strictPointInTime
+                ? 'strict-prefix-regenerated-before-each-prediction-per-position'
+                : 'fast-full-history-index',
+            strictPointInTime,
             eligibleForPromotion: false,
-            warning: 'Chỉ mục chuỗi được sinh từ toàn bộ lịch sử rồi truy vấn theo ngày. Dùng report này để thăm dò, không dùng để thay mặc định trước khi đối chiếu với snapshot/prefix point-in-time.'
+            warning: strictPointInTime
+                ? 'Mỗi vị trí và mỗi ngày tái sinh stats/index chỉ từ dữ liệu trước ngày dự đoán.'
+                : 'Chỉ mục chuỗi được sinh từ toàn bộ lịch sử rồi truy vấn theo ngày; chỉ dùng report thăm dò.'
         },
         config: reportConfig,
         summariesByWindow,

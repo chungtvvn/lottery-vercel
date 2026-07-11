@@ -15,6 +15,10 @@
     const BET_PER_NUMBER_K = 1000;
     const HOLD_LOSS_MULTIPLIER = 70;
     const METHOD_META = {
+        chainSmallFirstHold70: {
+            label: 'Đề Chuỗi nhỏ trước - Hold 70 (Đánh 30)',
+            description: 'Giữ thứ tự Tier, sau đó ưu tiên các chuỗi có tập số nhỏ trước để giảm nhiễu; loại 70 số và đánh 30 số còn lại theo snapshot point-in-time.'
+        },
         deParallelBlock85Small65Hold70: {
             label: 'Đề Song Song (Block 85 · Small 65) - Hold 70 (Đánh 30)',
             description: 'Đánh song song hai phương pháp Nhịp Block trước (Hold 85) và Chuỗi nhỏ trước (Hold 65). Số trùng được đánh gấp đôi tiền (2000K), còn lại 1000K. Phương án có lợi nhuận cao nhất đầu năm.'
@@ -313,7 +317,10 @@
             : [...methodSelector.options].map(option => ({ methodId: option.value, days: 0, profit: 0, wins: 0, losses: 0 }));
         const currentExists = state.selectedMethod && available.some(item => item.methodId === state.selectedMethod);
         if (!currentExists && available.length > 0) {
-            state.selectedMethod = available[0].methodId;
+            const preferredMethod = 'chainSmallFirstHold70';
+            state.selectedMethod = available.some(item => item.methodId === preferredMethod)
+                ? preferredMethod
+                : available[0].methodId;
         }
         methodSelector.innerHTML = available.map(item => {
             const profitText = item.days > 0 ? ` · ${item.profit >= 0 ? '+' : ''}${Number(item.profit).toLocaleString('vi-VN')}K` : '';

@@ -1071,7 +1071,9 @@
             state.payload = data;
             state.winMultiplier = normalizeWinMultiplier(state.winMultiplier || data.config?.winMultiplier || 84);
             const profitPreset = data.config?.presets?.[0];
-            const defaultStrategy = data.config?.defaultBetStrategy || profitPreset?.strategy || 'chainBlockFirst';
+            const defaultStrategy = data.nextPrediction?.strategies?.chainSmallFirst
+                ? 'chainSmallFirst'
+                : (data.config?.defaultBetStrategy || profitPreset?.strategy || 'chainBlockFirst');
             const defaultTarget = Number(data.config?.defaultBetTarget || profitPreset?.target || 70);
             state.strategy = state.strategy || defaultStrategy;
             if (!data.nextPrediction?.strategies?.[state.strategy]) {

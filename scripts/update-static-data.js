@@ -23,6 +23,7 @@ const LOTO_AGGREGATION_MODE = process.env.LOTO_AGGREGATION_MODE || 'rrf';
 const LOTO_BET_COUNTS = [6, 7];
 const LOTO_DEFAULT_BET_COUNT = 6;
 const PREDICTION_HISTORY_METHOD_IDS = [
+    'chainSmallFirstHold70',
     'deParallelBlock85Small65Hold70',
     'dedupEdge50CombinedB40S05Hold70',
     'dedupEdge50CombinedB40S05Hold80',

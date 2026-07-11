@@ -62,11 +62,13 @@ export async function GET(request) {
         const canUseStaticCache = canReadPrecomputedCache
             && cachedPayload
             && cachedPayload.config?.methodVersion === simulationService.SIMULATION_METHOD_VERSION
+            && cachedPayload.config?.pointInTime?.strict === true
             && (cachedPayload.config?.playMode || 'both') === playMode;
         const canUseDbCache = dbStatsActive
             && canReadPrecomputedCache
             && cachedPayload
             && cachedPayload.config?.methodVersion === simulationService.SIMULATION_METHOD_VERSION
+            && cachedPayload.config?.pointInTime?.strict === true
             && cachedPayload.config?.playMode === playMode;
         if (canUseStaticCache || canUseDbCache) {
             return NextResponse.json(cachedPayload);
@@ -80,7 +82,8 @@ export async function GET(request) {
             betWinFactor,
             holdWinMultiplier,
             compactDetails: days > 90,
-            methodIds: url.searchParams.get('methods')
+            methodIds: url.searchParams.get('methods'),
+            strictPointInTime: true
         });
         if (results.error) return NextResponse.json({ error: results.error }, { status: 400 });
         return NextResponse.json(results);

@@ -268,11 +268,11 @@ async function main() {
 
     const simulationService = require('../lib/services/simulationService');
     const deResult = await simulationService.runBacktest(rows.length, rawData, {
-        rollingHistory: true, playMode: 'bet', methodIds: 'deParallelBlock85Small65Hold70',
+        rollingHistory: true, strictPointInTime: true, playMode: 'bet', methodIds: 'chainSmallFirstHold70',
         compactDetails: true, selectedStreakDetailLimit: 0,
         clearHistoryCacheInterval: Number(process.env.BACKTEST_CLEAR_HISTORY_CACHE_INTERVAL || 30)
     });
-    const deRows = normalizeDeRows(deResult, rawByDate, 'deParallelBlock85Small65Hold70');
+    const deRows = normalizeDeRows(deResult, rawByDate, 'chainSmallFirstHold70');
     const lotoReport = runLotoBacktest(endDate);
     const lotoRows = buildLotoRows(lotoReport, rawByDate, 'rrfSmall65Block75:top6');
     const lotoFallbackRows = buildLotoRows(lotoReport, rawByDate, 'parallelCombinedHold65:twoHitGreedy:top6');
@@ -287,14 +287,14 @@ async function main() {
             note: 'Sinh từ raw data R2. Đề dùng prefix rolling; phần Lô dùng generator Mốc 20 năm hiện tại, trong đó chỉ baseline năm được cố định còn chỉ mục trạng thái chuỗi chưa phải strict PIT. Dùng để quan sát hiệu quả, không coi là bằng chứng không thiên lệch.'
         },
         de: {
-            selectedMethodId: 'deParallelBlock85Small65:hold70',
-            label: 'Đề Song Song (Block 85 · Small 65) - Hold 70',
+            selectedMethodId: 'chainSmallFirst:hold70',
+            label: 'Đề Chuỗi nhỏ trước - Hold 70',
             methods: {
-                'deParallelBlock85Small65:hold70': makeMethodReport({
-                    id: 'deParallelBlock85Small65:hold70',
-                    label: 'Đề Song Song (Block 85 · Small 65) - Hold 70',
-                    explanation: 'Loại theo Đề Song Song: Nhịp Block Hold 85 kết hợp Chuỗi nhỏ Hold 65; các số còn lại là dàn đánh 30 số.',
-                    rows: deRows, type: 'de', config: { strategy: 'deParallelBlock85Small65', target: 70, betCount: 30, excludedCount: 70, stakePerNumberK: DE_STAKE_K, payoutMultiplier: 84 }
+                'chainSmallFirst:hold70': makeMethodReport({
+                    id: 'chainSmallFirst:hold70',
+                    label: 'Đề Chuỗi nhỏ trước - Hold 70',
+                    explanation: 'Giữ thứ tự Tier, sau đó ưu tiên các chuỗi có tập số nhỏ trước; loại 70 số và đánh 30 số còn lại theo point-in-time.',
+                    rows: deRows, type: 'de', config: { strategy: 'chainSmallFirst', target: 70, betCount: 30, excludedCount: 70, stakePerNumberK: DE_STAKE_K, payoutMultiplier: 84 }
                 })
             }
         },
@@ -317,7 +317,7 @@ async function main() {
     };
     fs.mkdirSync(DATA_DIR, { recursive: true });
     fs.writeFileSync(OUTPUT_FILE, JSON.stringify(payload), 'utf8');
-    console.log(JSON.stringify({ output: OUTPUT_FILE, latestDataDate: endDate, de: payload.de.methods['deParallelBlock85Small65:hold70'].summary, loto: payload.loto.methods['rrfSmall65Block75:top6'].summary }, null, 2));
+    console.log(JSON.stringify({ output: OUTPUT_FILE, latestDataDate: endDate, de: payload.de.methods['chainSmallFirst:hold70'].summary, loto: payload.loto.methods['rrfSmall65Block75:top6'].summary }, null, 2));
 }
 
 main().catch(error => { console.error(`[ProfitReport] ${error.stack || error.message}`); process.exit(1); });
