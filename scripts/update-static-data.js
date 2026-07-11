@@ -832,7 +832,13 @@ function generateLotoPredictionCache() {
 }
 
 function generateProfitReportCache() {
-    const timeoutMs = Math.max(60_000, Number(process.env.PROFIT_REPORT_TIMEOUT_MS || 0) || 0);
+    // This is an explicit/on-demand backtest, not part of the daily prediction
+    // path. Keep a generous ceiling because strict PIT can take longer than
+    // the normal cache refresh while the workflow itself has a longer limit.
+    const timeoutMs = Math.max(
+        3_600_000,
+        Number(process.env.PROFIT_REPORT_TIMEOUT_MS || 0) || 0
+    );
     runNodeScript('scripts/generate-profit-report-cache.js',
         'Sinh cache báo cáo hiệu quả từ đầu năm cho Đề và Lô từ raw data R2.', {
         NODE_OPTIONS: process.env.NODE_OPTIONS || '--max-old-space-size=12288',
@@ -1335,10 +1341,12 @@ async function main() {
         }
         console.log('[3] Stats R2 đã mới, chỉ sinh/đối soát cache dự đoán và upload riêng các file cache.');
         try {
-            if (process.env.GENERATE_PROFIT_REPORT_CACHE === '1' || r2PerformanceReportCacheMissing) {
+            if (process.env.GENERATE_PROFIT_REPORT_CACHE === '1') {
                 generateProfitReportCache();
             } else {
-                console.log('[6] Performance report cache đã đúng phương pháp; bỏ qua backtest report.');
+                console.log(r2PerformanceReportCacheMissing
+                    ? '[6] Performance report cache thiếu/sai phương pháp; giữ lại để chạy bằng workflow thủ công, không chặn daily refresh.'
+                    : '[6] Performance report cache đã đúng phương pháp; bỏ qua backtest report.');
             }
             await hydrateMilestone20yLiveCacheFromR2();
             await hydrateCoreStatsFromR2ForPredictionCache();
@@ -1918,10 +1926,12 @@ async function main() {
                 console.log('[6] LOTO_GENERATE_CACHE=0, bỏ qua sinh cache Lô.');
             }
 
-            if (process.env.GENERATE_PROFIT_REPORT_CACHE === '1' || r2PerformanceReportCacheMissing) {
+            if (process.env.GENERATE_PROFIT_REPORT_CACHE === '1') {
                 generateProfitReportCache();
             } else {
-                console.log('[6] Performance report cache đã đúng phương pháp; bỏ qua backtest report.');
+                console.log(r2PerformanceReportCacheMissing
+                    ? '[6] Performance report cache thiếu/sai phương pháp; giữ lại để chạy bằng workflow thủ công, không chặn daily refresh.'
+                    : '[6] Performance report cache đã đúng phương pháp; bỏ qua backtest report.');
             }
         }
         
