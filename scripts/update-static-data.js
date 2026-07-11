@@ -42,6 +42,7 @@ const MILESTONE20Y_CACHE_FILES = [
 ];
 const PERFORMANCE_REPORT_CACHE_FILE = 'cached_profit_report_2026.json';
 const HISTORY_PERFORMANCE_REPORT_CACHE_FILE = 'cached_prediction_history_performance_2026.json';
+const PERFORMANCE_REPORT_VERSION = 'profit-report-2026-chain-small-rff-top6-v1';
 const ANALYSIS_CACHE_VERSION = 'hold70-edge-bo-v1';
 const ANALYSIS_CACHE_VERSION_FILE = 'analysis_cache_version.json';
 const runStatus = {
@@ -781,10 +782,22 @@ async function hasPerformanceReportCacheOnR2() {
             readStatsJsonFromR2(HISTORY_PERFORMANCE_REPORT_CACHE_FILE)
         ]);
         const hasSections = Boolean(cache?.de?.methods && cache?.loto?.methods);
+        const hasCurrentMainMethod = cache?.reportVersion === PERFORMANCE_REPORT_VERSION
+            && cache?.de?.selectedMethodId === 'chainSmallFirst:hold70'
+            && Boolean(cache?.de?.methods?.['chainSmallFirst:hold70'])
+            && cache?.loto?.selectedMethodId === 'rrfSmall65Block75:top6'
+            && Boolean(cache?.loto?.methods?.['rrfSmall65Block75:top6']);
         const hasHistory = Boolean(historyCache?.methods && historyCache?.period?.startDate);
-        if (!hasSections || !hasHistory) {
-            console.log('[Cache Check] R2 performance report cache stale/malformed.');
+        // The main Mốc 20 năm report controls the daily report refresh. The
+        // separate Lịch sử performance artifact may be regenerated on demand;
+        // do not make an old history artifact force the expensive main report
+        // backtest on every daily run.
+        if (!hasSections || !hasCurrentMainMethod) {
+            console.log(`[Cache Check] R2 performance report cache stale/malformed (version=${cache?.reportVersion || 'missing'}, de=${cache?.de?.selectedMethodId || 'missing'}, loto=${cache?.loto?.selectedMethodId || 'missing'}).`);
             return false;
+        }
+        if (!hasHistory) {
+            console.log('[Cache Check] R2 Lịch sử performance artifact missing; giữ trạng thái main report hợp lệ.');
         }
         console.log(`[Cache Check] R2 performance caches OK: main=${cache.generatedAt || 'unknown'}, history=${historyCache.generatedAt || 'unknown'}.`);
         return true;
@@ -1322,8 +1335,10 @@ async function main() {
         }
         console.log('[3] Stats R2 đã mới, chỉ sinh/đối soát cache dự đoán và upload riêng các file cache.');
         try {
-            if (process.env.GENERATE_PROFIT_REPORT_CACHE === '1') {
+            if (process.env.GENERATE_PROFIT_REPORT_CACHE === '1' || r2PerformanceReportCacheMissing) {
                 generateProfitReportCache();
+            } else {
+                console.log('[6] Performance report cache đã đúng phương pháp; bỏ qua backtest report.');
             }
             await hydrateMilestone20yLiveCacheFromR2();
             await hydrateCoreStatsFromR2ForPredictionCache();
@@ -1903,8 +1918,10 @@ async function main() {
                 console.log('[6] LOTO_GENERATE_CACHE=0, bỏ qua sinh cache Lô.');
             }
 
-            if (process.env.GENERATE_PROFIT_REPORT_CACHE === '1') {
+            if (process.env.GENERATE_PROFIT_REPORT_CACHE === '1' || r2PerformanceReportCacheMissing) {
                 generateProfitReportCache();
+            } else {
+                console.log('[6] Performance report cache đã đúng phương pháp; bỏ qua backtest report.');
             }
         }
         

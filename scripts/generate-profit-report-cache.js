@@ -15,6 +15,7 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env'), quiet: true
 
 const DATA_DIR = path.join(process.cwd(), 'lib', 'data', 'statistics');
 const OUTPUT_FILE = path.join(DATA_DIR, 'cached_profit_report_2026.json');
+const REPORT_VERSION = 'profit-report-2026-chain-small-rff-top6-v1';
 const YEAR = Number(process.env.PROFIT_REPORT_YEAR || new Date().getFullYear());
 const DE_STAKE_K = Number(process.env.PROFIT_REPORT_DE_STAKE_K || 1000);
 const DE_PAYOUT_K = Number(process.env.PROFIT_REPORT_DE_PAYOUT_K || 84000);
@@ -278,7 +279,9 @@ async function main() {
     const lotoFallbackRows = buildLotoRows(lotoReport, rawByDate, 'parallelCombinedHold65:twoHitGreedy:top6');
 
     const payload = {
-        generatedAt: new Date().toISOString(), latestDataDate: endDate,
+        generatedAt: new Date().toISOString(),
+        reportVersion: REPORT_VERSION,
+        latestDataDate: endDate,
         period: { startDate: `${YEAR}-01-01`, endDate },
         source: {
             dataSource: 'R2', rawLatestDate: endDate,
