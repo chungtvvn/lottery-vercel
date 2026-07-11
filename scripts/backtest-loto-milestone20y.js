@@ -32,14 +32,14 @@ const PRIZE_KEYS = [
 const ALL_NUMBERS = Array.from({ length: 100 }, (_, index) => index);
 const DEFAULT_STAKE_K = 2200;
 const DEFAULT_PAYOUT_K = 8000;
-const DEFAULT_METHOD_ID = 'rrfSmall65Block75';
+const DEFAULT_METHOD_ID = 'rrfParallelBlock85Small65';
 const DEFAULT_STRATEGY = 'chainSmallFirst';
 const DEFAULT_HOLD = 65;
 const DEFAULT_AGGREGATION_MODE = 'twoHitGreedy';
 const DEFAULT_BET_COUNT = 6;
 const DEFAULT_BET_COUNTS = [6, 7];
-const LIVE_TRACKING_VERSION = 'rrf-top6-top7-live-v1';
-const LIVE_CACHE_NOTE = 'Lô dùng RRF 50/50: Chuỗi nhỏ Hold 65 + Nhịp block Hold 75. Mỗi vị trí được loại trừ riêng, sau đó xếp hạng RRF và chọn Top 6/Top 7; Lô không nhân tiền x2 cho số trùng.';
+const LIVE_TRACKING_VERSION = 'rrf-parallel-block85-small65-top6-top7-live-v1';
+const LIVE_CACHE_NOTE = 'Lô dùng phương án song song RRF 50/50: Chuỗi nhỏ Hold 65 + Nhịp block Hold 85. Mỗi vị trí được loại trừ riêng, sau đó xếp hạng RRF và chọn Top 6/Top 7; Lô không nhân tiền x2 cho số trùng.';
 
 function parseArgs() {
     return new Map(process.argv.slice(2).map(arg => {
@@ -947,8 +947,8 @@ function buildRrfPrediction(pSmall, pBlock, betCounts, options = {}) {
         dataIsoDate: pSmall.dataIsoDate,
         predictionDate: pSmall.predictionDate,
         predictionIsoDate: pSmall.predictionIsoDate,
-        methodId: 'rrfSmall65Block75',
-        strategy: 'rrfSmall65Block75',
+        methodId: options.methodId || DEFAULT_METHOD_ID,
+        strategy: options.strategy || options.methodId || DEFAULT_METHOD_ID,
         hold: null,
         aggregationMode: 'rrf',
         sourceMethods: [
@@ -969,7 +969,7 @@ async function buildNextRrfPrediction(rawData, betCounts, options) {
     const predictionIsoDate = formatIsoDate(predictionDate);
     const sourceConfigs = [
         { id: 'rrfSmallSource', strategy: 'chainSmallFirst', target: 65, aggregationMode: 'twoHitGreedy' },
-        { id: 'rrfBlockSource', strategy: 'chainBlockFirst', target: 75, aggregationMode: 'positionPosterior' }
+        { id: 'rrfBlockSource', strategy: 'chainBlockFirst', target: 85, aggregationMode: 'positionPosterior' }
     ];
     const bySource = Object.fromEntries(sourceConfigs.map(config => [config.id, {}]));
     const byPosition = {};
@@ -1022,7 +1022,11 @@ async function buildNextRrfPrediction(rawData, betCounts, options) {
         };
     });
 
-    const rrf = buildRrfPrediction(sourcePredictions[0], sourcePredictions[1], betCounts);
+    const methodId = options.methodId || DEFAULT_METHOD_ID;
+    const rrf = buildRrfPrediction(sourcePredictions[0], sourcePredictions[1], betCounts, {
+        methodId,
+        strategy: methodId
+    });
     rrf.positionPredictions = PRIZE_KEYS.map(positionKey => ({
         positionKey,
         methodId: rrf.methodId,
@@ -1216,9 +1220,10 @@ async function main() {
         .slice()
         .sort((a, b) => new Date(a.date) - new Date(b.date));
     if (predictionOnly) {
-        const requestedMethod = args.get('method') || '';
-        if (requestedMethod === 'rrfSmall65Block75') {
+        const requestedMethod = args.get('method') || DEFAULT_METHOD_ID;
+        if (requestedMethod === DEFAULT_METHOD_ID || requestedMethod === 'rrfSmall65Block75') {
             const rrfPrediction = await buildNextRrfPrediction(rawData, betCounts, {
+                methodId: requestedMethod,
                 historyYears,
                 fixedBaselineYear,
                 strictPointInTime,
@@ -1226,7 +1231,7 @@ async function main() {
                 recordFrequencyLimit: Number(args.get('recordFrequencyLimit') || 1.1),
                 minPotentialCurrentLenForNeverFormed: Number(args.get('minPotentialLen') || 4)
             });
-            const nextPredictions = { rrfSmall65Block75: rrfPrediction };
+            const nextPredictions = { [rrfPrediction.methodId]: rrfPrediction };
             if (writeCache) {
                 writeLiveCachesMulti(nextPredictions, rrfPrediction, rawData, betCounts, { stakeK, payoutK });
             }
@@ -1707,7 +1712,7 @@ function writeLiveCachesMulti(nextPredictions, primaryPrediction, rawData, betCo
     livePayload.config = {
         ...(livePayload.config || {}),
         methodId: primaryPrediction.methodId,
-        methodName: 'Lô RRF 50/50 - Chuỗi nhỏ Hold 65 + Nhịp block Hold 75 - Top 6/7',
+        methodName: 'Lô Song song RRF 50/50 - Chuỗi nhỏ Hold 65 + Nhịp block Hold 85 - Top 6/7',
         trackingVersion: LIVE_TRACKING_VERSION,
         aggregationMode: primaryPrediction.aggregationMode || DEFAULT_AGGREGATION_MODE,
         positionCount: PRIZE_KEYS.length,
@@ -1825,7 +1830,9 @@ function settleLivePredictionsMulti(livePayload, rawData, options) {
         item.methods = item.methods || {};
         for (const betCount of options.betCounts) {
             const key = `top${betCount}`;
-            if (item.strategies?.['rrfSmall65Block75']?.methods?.[key]) {
+            if (item.strategies?.[DEFAULT_METHOD_ID]?.methods?.[key]) {
+                item.methods[key] = item.strategies[DEFAULT_METHOD_ID].methods[key];
+            } else if (item.strategies?.['rrfSmall65Block75']?.methods?.[key]) {
                 item.methods[key] = item.strategies['rrfSmall65Block75'].methods[key];
             } else if (item.predictions?.[key]) {
                 item.methods[key] = evaluateNumbers(
@@ -1892,7 +1899,7 @@ function upsertNextLivePredictionMulti(livePayload, nextPredictions, primaryPred
 function summarizeLivePredictionsMulti(livePayload, betCounts) {
     const summary = {};
     const settled = (livePayload.predictions || []).filter(item => item.status === 'settled');
-    const strategyKeys = ['rrfSmall65Block75'];
+    const strategyKeys = [DEFAULT_METHOD_ID, 'rrfSmall65Block75'];
     
     for (const stratId of strategyKeys) {
         for (const betCount of betCounts) {
@@ -1933,9 +1940,9 @@ function summarizeLivePredictionsMulti(livePayload, betCounts) {
     
     for (const betCount of betCounts) {
         const key = `top${betCount}`;
-        if (summary[`rrfSmall65Block75_${key}`]) {
+        if (summary[`${DEFAULT_METHOD_ID}_${key}`]) {
             summary[key] = {
-                ...summary[`rrfSmall65Block75_${key}`],
+                ...summary[`${DEFAULT_METHOD_ID}_${key}`],
                 methodId: key
             };
         }

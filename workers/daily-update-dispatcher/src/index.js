@@ -317,6 +317,7 @@ function buildTelegramReport(dePayload, lotoPayload) {
   const lines = [
     `<b>XSMB - TỔNG HỢP ${escapeHtml(displayDate(predictionDate))}</b>`,
     '<i>Telegram: 1K = 1.000 VND · Đề 10K/đơn vị · Lô 220K/đơn vị.</i>',
+    `<i>Phương pháp Lô: ${escapeHtml(lotoPayload.config?.methodName || lotoPayload.livePredictions?.config?.methodName || 'RRF song song Block 85 + Chuỗi nhỏ 65')}</i>`,
     '',
     '<b>1. KẾT TOÁN DỰ ĐOÁN TRƯỚC</b>'
   ];

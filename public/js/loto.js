@@ -713,7 +713,7 @@
         const errorBox = document.getElementById('errorBox');
         try {
             const selectEl = document.getElementById('lotoStrategySelect');
-            const strat = selectEl ? selectEl.value : 'rrfSmall65Block75';
+            const strat = selectEl ? selectEl.value : 'rrfParallelBlock85Small65';
             const res = await fetch(`/api/loto/prediction?strategy=${strat}`, { cache: 'no-store' });
             const data = await res.json();
             if (!res.ok || !data.success) throw new Error(data.error || 'Không tải được dữ liệu Lô.');

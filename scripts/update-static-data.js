@@ -18,7 +18,7 @@ const XOSO_MAX_WAIT_MINUTES = readNumberEnv('XOSO_MAX_WAIT_MINUTES', WAIT_FOR_NE
 const XOSO_RETRY_INTERVAL_SECONDS = readNumberEnv('XOSO_RETRY_INTERVAL_SECONDS', 60, 5);
 const LOTO_STAKE_PER_NUMBER_K = 2200;
 const LOTO_PAYOUT_PER_HIT_K = 8000;
-const LOTO_METHOD_ID = process.env.LOTO_METHOD_ID || 'rrfSmall65Block75';
+const LOTO_METHOD_ID = process.env.LOTO_METHOD_ID || 'rrfParallelBlock85Small65';
 const LOTO_AGGREGATION_MODE = process.env.LOTO_AGGREGATION_MODE || 'rrf';
 const LOTO_BET_COUNTS = [6, 7];
 const LOTO_DEFAULT_BET_COUNT = 6;
@@ -42,7 +42,7 @@ const MILESTONE20Y_CACHE_FILES = [
 ];
 const PERFORMANCE_REPORT_CACHE_FILE = 'cached_profit_report_2026.json';
 const HISTORY_PERFORMANCE_REPORT_CACHE_FILE = 'cached_prediction_history_performance_2026.json';
-const PERFORMANCE_REPORT_VERSION = 'profit-report-2026-chain-small-rff-top6-v1';
+const PERFORMANCE_REPORT_VERSION = 'profit-report-2026-de-parallel-rrf-loto-v2';
 const ANALYSIS_CACHE_VERSION = 'hold70-edge-bo-v1';
 const ANALYSIS_CACHE_VERSION_FILE = 'analysis_cache_version.json';
 const runStatus = {
@@ -783,10 +783,10 @@ async function hasPerformanceReportCacheOnR2() {
         ]);
         const hasSections = Boolean(cache?.de?.methods && cache?.loto?.methods);
         const hasCurrentMainMethod = cache?.reportVersion === PERFORMANCE_REPORT_VERSION
-            && cache?.de?.selectedMethodId === 'chainSmallFirst:hold70'
-            && Boolean(cache?.de?.methods?.['chainSmallFirst:hold70'])
-            && cache?.loto?.selectedMethodId === 'rrfSmall65Block75:top6'
-            && Boolean(cache?.loto?.methods?.['rrfSmall65Block75:top6']);
+            && cache?.de?.selectedMethodId === 'deParallelBlock85Small65:hold70'
+            && Boolean(cache?.de?.methods?.['deParallelBlock85Small65:hold70'])
+            && cache?.loto?.selectedMethodId === 'rrfParallelBlock85Small65:top6'
+            && Boolean(cache?.loto?.methods?.['rrfParallelBlock85Small65:top6']);
         const hasHistory = Boolean(historyCache?.methods && historyCache?.period?.startDate);
         // The main Mốc 20 năm report controls the daily report refresh. The
         // separate Lịch sử performance artifact may be regenerated on demand;
@@ -815,7 +815,7 @@ function generateLotoPredictionCache() {
         `--months=${process.env.LOTO_CACHE_MONTHS || '1,3,6'}`,
         `--method=${LOTO_METHOD_ID}`,
         `--strategies=${process.env.LOTO_MILESTONE_STRATEGY || 'chainSmallFirst,chainBlockFirst'}`,
-        `--holds=${process.env.LOTO_MILESTONE_HOLD || '65,75'}`,
+        `--holds=${process.env.LOTO_MILESTONE_HOLD || '65,85'}`,
         `--aggregationMode=${LOTO_AGGREGATION_MODE}`,
         `--betCounts=${LOTO_BET_COUNTS.join(',')}`,
         `--stakeK=${LOTO_STAKE_PER_NUMBER_K}`,

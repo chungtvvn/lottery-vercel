@@ -15,7 +15,7 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env'), quiet: true
 
 const DATA_DIR = path.join(process.cwd(), 'lib', 'data', 'statistics');
 const OUTPUT_FILE = path.join(DATA_DIR, 'cached_profit_report_2026.json');
-const REPORT_VERSION = 'profit-report-2026-chain-small-rff-top6-v1';
+const REPORT_VERSION = 'profit-report-2026-de-parallel-rrf-loto-v2';
 const YEAR = Number(process.env.PROFIT_REPORT_YEAR || new Date().getFullYear());
 const DE_STAKE_K = Number(process.env.PROFIT_REPORT_DE_STAKE_K || 1000);
 const DE_PAYOUT_K = Number(process.env.PROFIT_REPORT_DE_PAYOUT_K || 84000);
@@ -200,9 +200,10 @@ function runLotoBacktest(endDate) {
     const args = [
         'scripts/backtest-loto-milestone20y.js',
         `--startDate=${YEAR}-01-01`, `--endDate=${endDate}`,
-        '--strategies=chainSmallFirst,chainBlockFirst', '--holds=65,75',
+        '--strategies=chainSmallFirst,chainBlockFirst', '--holds=65,85',
         '--betCounts=6,20', '--aggregationModes=twoHitGreedy,positionPosterior',
-        '--includeDetails=1', '--stakeK=' + LOTO_STAKE_K, '--payoutK=' + LOTO_PAYOUT_K
+        '--includeDetails=1', '--stakeK=' + LOTO_STAKE_K, '--payoutK=' + LOTO_PAYOUT_K,
+        '--strictPointInTime=1'
     ];
     const result = spawnSync(process.execPath, args, {
         cwd: process.cwd(), encoding: 'utf8', maxBuffer: 1024 * 1024 * 256,
@@ -237,9 +238,9 @@ function buildLotoRows(report, rawByDate, methodId) {
     }
     return [...byDate.entries()].map(([date, methods]) => {
         let numbers;
-        if (methodId === 'rrfSmall65Block75:top6') {
+        if (methodId === 'rrfParallelBlock85Small65:top6') {
             const small = methods.get('chainSmallFirstHold65:twoHitGreedy:top20')?.numbers || [];
-            const block = methods.get('chainBlockFirstHold75:positionPosterior:top20')?.numbers || [];
+            const block = methods.get('chainBlockFirstHold85:positionPosterior:top20')?.numbers || [];
             numbers = rrfRank(small, block).slice(0, 6).map(row => row.number);
         } else {
             numbers = methods.get(methodId)?.numbers || [];
@@ -269,13 +270,13 @@ async function main() {
 
     const simulationService = require('../lib/services/simulationService');
     const deResult = await simulationService.runBacktest(rows.length, rawData, {
-        rollingHistory: true, strictPointInTime: true, playMode: 'bet', methodIds: 'chainSmallFirstHold70',
+        rollingHistory: true, strictPointInTime: true, playMode: 'bet', methodIds: 'deParallelBlock85Small65Hold70',
         compactDetails: true, selectedStreakDetailLimit: 0,
         clearHistoryCacheInterval: Number(process.env.BACKTEST_CLEAR_HISTORY_CACHE_INTERVAL || 30)
     });
-    const deRows = normalizeDeRows(deResult, rawByDate, 'chainSmallFirstHold70');
+    const deRows = normalizeDeRows(deResult, rawByDate, 'deParallelBlock85Small65Hold70');
     const lotoReport = runLotoBacktest(endDate);
-    const lotoRows = buildLotoRows(lotoReport, rawByDate, 'rrfSmall65Block75:top6');
+    const lotoRows = buildLotoRows(lotoReport, rawByDate, 'rrfParallelBlock85Small65:top6');
     const lotoFallbackRows = buildLotoRows(lotoReport, rawByDate, 'parallelCombinedHold65:twoHitGreedy:top6');
 
     const payload = {
@@ -285,30 +286,30 @@ async function main() {
         period: { startDate: `${YEAR}-01-01`, endDate },
         source: {
             dataSource: 'R2', rawLatestDate: endDate,
-            strictPointInTime: false,
+            strictPointInTime: true,
             eligibleForPromotion: false,
-            note: 'Sinh từ raw data R2. Đề dùng prefix rolling; phần Lô dùng generator Mốc 20 năm hiện tại, trong đó chỉ baseline năm được cố định còn chỉ mục trạng thái chuỗi chưa phải strict PIT. Dùng để quan sát hiệu quả, không coi là bằng chứng không thiên lệch.'
+            note: 'Sinh từ raw data R2. Đề và Lô đều tái sinh trạng thái chuỗi theo raw prefix trước từng ngày dự đoán; baseline năm khóa tại 31/12 năm trước.'
         },
         de: {
-            selectedMethodId: 'chainSmallFirst:hold70',
-            label: 'Đề Chuỗi nhỏ trước - Hold 70',
+            selectedMethodId: 'deParallelBlock85Small65:hold70',
+            label: 'Đề Song Song - Block 85 + Chuỗi nhỏ 65 - Hold 70',
             methods: {
-                'chainSmallFirst:hold70': makeMethodReport({
-                    id: 'chainSmallFirst:hold70',
-                    label: 'Đề Chuỗi nhỏ trước - Hold 70',
-                    explanation: 'Giữ thứ tự Tier, sau đó ưu tiên các chuỗi có tập số nhỏ trước; loại 70 số và đánh 30 số còn lại theo point-in-time.',
-                    rows: deRows, type: 'de', config: { strategy: 'chainSmallFirst', target: 70, betCount: 30, excludedCount: 70, stakePerNumberK: DE_STAKE_K, payoutMultiplier: 84 }
+                'deParallelBlock85Small65:hold70': makeMethodReport({
+                    id: 'deParallelBlock85Small65:hold70',
+                    label: 'Đề Song Song - Block 85 + Chuỗi nhỏ 65 - Hold 70',
+                    explanation: 'Kết hợp hai dàn point-in-time: Nhịp block Hold 85 và Chuỗi nhỏ Hold 65. Số giao nhau được tính hai đơn vị cược.',
+                    rows: deRows, type: 'de', config: { strategy: 'deParallelBlock85Small65', target: 70, betCount: 50, excludedCount: 50, stakePerNumberK: DE_STAKE_K, payoutMultiplier: 84 }
                 })
             }
         },
         loto: {
-            selectedMethodId: 'rrfSmall65Block75:top6',
-            label: 'Lô RRF 50/50 - Top 6',
+            selectedMethodId: 'rrfParallelBlock85Small65:top6',
+            label: 'Lô Song song RRF - Block 85 + Chuỗi nhỏ 65 - Top 6',
             methods: {
-                'rrfSmall65Block75:top6': makeMethodReport({
-                    id: 'rrfSmall65Block75:top6', label: 'Lô RRF 50/50 - Chuỗi nhỏ Hold65 + Nhịp block Hold75 - Top 6',
-                    explanation: 'Xếp hạng RRF 50/50 từ hai dàn Top 20, sau đó chọn đúng 6 số duy nhất; không nhân tiền do trùng phương pháp.',
-                    rows: lotoRows, type: 'loto', config: { strategy: 'rrfSmall65Block75', target: 94, betCount: 6, excludedCount: 94, stakePerNumberK: LOTO_STAKE_K, payoutMultiplier: LOTO_PAYOUT_K }
+                'rrfParallelBlock85Small65:top6': makeMethodReport({
+                    id: 'rrfParallelBlock85Small65:top6', label: 'Lô Song song RRF - Chuỗi nhỏ Hold65 + Nhịp block Hold85 - Top 6',
+                    explanation: 'Mỗi vị trí chạy Block Hold85 và Chuỗi nhỏ Hold65, sau đó xếp hạng RRF 50/50 trên 27 vị trí và chọn đúng 6 số duy nhất.',
+                    rows: lotoRows, type: 'loto', config: { strategy: 'rrfParallelBlock85Small65', target: 94, betCount: 6, excludedCount: 94, stakePerNumberK: LOTO_STAKE_K, payoutMultiplier: LOTO_PAYOUT_K }
                 }),
                 'parallelCombinedHold65:twoHitGreedy:top6': makeMethodReport({
                     id: 'parallelCombinedHold65:twoHitGreedy:top6', label: 'Lô Song song Hold65 - Top 6',
@@ -320,7 +321,7 @@ async function main() {
     };
     fs.mkdirSync(DATA_DIR, { recursive: true });
     fs.writeFileSync(OUTPUT_FILE, JSON.stringify(payload), 'utf8');
-    console.log(JSON.stringify({ output: OUTPUT_FILE, latestDataDate: endDate, de: payload.de.methods['chainSmallFirst:hold70'].summary, loto: payload.loto.methods['rrfSmall65Block75:top6'].summary }, null, 2));
+    console.log(JSON.stringify({ output: OUTPUT_FILE, latestDataDate: endDate, de: payload.de.methods['deParallelBlock85Small65:hold70'].summary, loto: payload.loto.methods['rrfParallelBlock85Small65:top6'].summary }, null, 2));
 }
 
 main().catch(error => { console.error(`[ProfitReport] ${error.stack || error.message}`); process.exit(1); });

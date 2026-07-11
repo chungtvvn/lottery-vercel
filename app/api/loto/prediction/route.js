@@ -11,7 +11,7 @@ const NO_STORE_HEADERS = {
 const FALLBACK_LOTO_STAKE_PER_NUMBER_K = 2200;
 const FALLBACK_LOTO_PAYOUT_PER_HIT_K = 8000;
 const LOTO_BET_COUNTS = [6, 7];
-const DEFAULT_LOTO_STRATEGY = 'rrfSmall65Block75';
+const DEFAULT_LOTO_STRATEGY = 'rrfParallelBlock85Small65';
 
 function isAuthorized(request) {
     const expected = process.env.PREDICTION_API_TOKEN || process.env.EXTERNAL_API_TOKEN || '';
