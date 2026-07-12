@@ -1191,6 +1191,10 @@ async function main() {
         .filter(Boolean);
     const predictionAggregationMode = args.get('aggregationMode') || args.get('aggregation') || DEFAULT_AGGREGATION_MODE;
     const includeDetails = args.get('includeDetails') === '1';
+    const includeRrf = args.get('includeRrf') === '1' || args.get('rrf') === '1';
+    const rrfSmallHold = Math.max(1, Math.min(95, Number(args.get('rrfSmallHold') || 65)));
+    const rrfBlockHold = Math.max(1, Math.min(95, Number(args.get('rrfBlockHold') || 85)));
+    const rrfBetCounts = betCounts.filter(count => [6, 7, 10, 14, 20].includes(Number(count)));
     const stakeK = Number(args.get('stakeK') || DEFAULT_STAKE_K);
     const payoutK = Number(args.get('payoutK') || DEFAULT_PAYOUT_K);
     const historyYears = Number(args.get('historyYears') || 20);
@@ -1411,6 +1415,26 @@ async function main() {
                 }
             }
         }
+        const rrfEnabled = includeRrf
+            && strategies.includes('chainSmallFirst')
+            && strategies.includes('chainBlockFirst')
+            && methodConfigs.some(config => config.id === `chainSmallFirstHold${rrfSmallHold}`)
+            && methodConfigs.some(config => config.id === `chainBlockFirstHold${rrfBlockHold}`)
+            && rrfBetCounts.length > 0;
+        if (rrfEnabled) {
+            for (const betCount of rrfBetCounts) {
+                const key = `rrfParallelBlock${rrfBlockHold}Small${rrfSmallHold}:top${betCount}`;
+                summariesByWindow[windowSpec.key][key] = emptySummary(key, betCount, {
+                    strategy: 'rrfParallelBlock85Small65',
+                    smallHold: rrfSmallHold,
+                    blockHold: rrfBlockHold,
+                    smallAggregationMode: 'twoHitGreedy',
+                    blockAggregationMode: 'positionPosterior',
+                    aggregationMode: 'rrf50_50',
+                    window: windowSpec.key
+                });
+            }
+        }
 
         for (const row of windowRows) {
             for (const aggregationMode of aggregationModes) {
@@ -1510,6 +1534,74 @@ async function main() {
                         }
                     }
                 }
+
+                if (rrfEnabled && aggregationMode === aggregationModes[0]) {
+                    const smallPositionPredictions = {};
+                    const blockPositionPredictions = {};
+                    for (const [positionKey, methods] of Object.entries(row.positions || {})) {
+                        smallPositionPredictions[positionKey] = methods?.[`chainSmallFirstHold${rrfSmallHold}`] || [];
+                        blockPositionPredictions[positionKey] = methods?.[`chainBlockFirstHold${rrfBlockHold}`] || [];
+                    }
+                    const smallRanked = aggregatePositionPredictions(smallPositionPredictions, {
+                        mode: 'twoHitGreedy'
+                    });
+                    const blockRanked = aggregatePositionPredictions(blockPositionPredictions, {
+                        mode: 'positionPosterior'
+                    });
+                    const smallPrediction = {
+                        strategy: 'chainSmallFirst',
+                        hold: rrfSmallHold,
+                        predictions: {
+                            top20: { numbers: smallRanked.slice(0, 20).map(item => formatNumber(item.number)) }
+                        }
+                    };
+                    const blockPrediction = {
+                        strategy: 'chainBlockFirst',
+                        hold: rrfBlockHold,
+                        predictions: {
+                            top20: { numbers: blockRanked.slice(0, 20).map(item => formatNumber(item.number)) }
+                        }
+                    };
+                    const rrf = buildRrfPrediction(
+                        smallPrediction,
+                        blockPrediction,
+                        rrfBetCounts,
+                        {
+                            methodId: `rrfParallelBlock${rrfBlockHold}Small${rrfSmallHold}`,
+                            strategy: 'rrfParallelBlock85Small65'
+                        }
+                    );
+                    for (const betCount of rrfBetCounts) {
+                        const key = `rrfParallelBlock${rrfBlockHold}Small${rrfSmallHold}:top${betCount}`;
+                        const prediction = rrf.predictions[`top${betCount}`];
+                        const result = addResultToSummary(
+                            summariesByWindow[windowSpec.key][key],
+                            (prediction?.numbers || []).map(Number),
+                            row.actualCounts,
+                            stakeK,
+                            payoutK
+                        );
+                        if (includeDetails) {
+                            dailyDetailsByWindow[windowSpec.key].push({
+                                date: row.date,
+                                methodId: key,
+                                strategy: 'rrfParallelBlock85Small65',
+                                smallHold: rrfSmallHold,
+                                blockHold: rrfBlockHold,
+                                aggregationMode: 'rrf50_50',
+                                betCount,
+                                numbers: result.numbers,
+                                overlapNumbers: prediction?.overlapNumbers || [],
+                                actualNumbers: [...row.actualCounts.keys()].sort((a, b) => a - b).map(formatNumber),
+                                hits: result.hits,
+                                stakeK: result.stakeK,
+                                payoutK: result.payoutK,
+                                profitK: result.profitK,
+                                result: result.profitK > 0 ? 'win' : (result.profitK < 0 ? 'loss' : 'flat')
+                            });
+                        }
+                    }
+                }
             }
         }
 
@@ -1537,6 +1629,10 @@ async function main() {
         strategies,
         holdCounts,
         betCounts,
+        includeRrf,
+        rrfSmallHold,
+        rrfBlockHold,
+        rrfBetCounts,
         aggregationModes,
         stakeK,
         payoutK,
