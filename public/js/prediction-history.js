@@ -20,8 +20,8 @@
             description: 'Giữ thứ tự Tier, sau đó ưu tiên các chuỗi có tập số nhỏ trước để giảm nhiễu; loại 70 số và đánh 30 số còn lại theo snapshot point-in-time.'
         },
         deParallelBlock85Small65Hold70: {
-            label: 'Đề Song Song (Block 85 · Small 65) - Hold 70 (Đánh 30)',
-            description: 'Đánh song song hai phương pháp Nhịp Block trước (Hold 85) và Chuỗi nhỏ trước (Hold 65). Số trùng được đánh gấp đôi tiền (2000K), còn lại 1000K. Phương án có lợi nhuận cao nhất đầu năm.'
+            label: 'Đề Song Song Lịch sử (Block Hold 85 + Small Hold 65)',
+            description: 'Baseline được cập nhật point-in-time đến hết ngày trước mỗi dự đoán. Đánh đồng thời dàn còn lại của Nhịp Block trước (Hold 85) và Chuỗi nhỏ trước (Hold 65): hợp hai dàn tạo 35–50 số duy nhất, số giao nhau đánh x2 và tổng vốn luôn bằng 50 đơn vị. Vì mốc cập nhật hàng ngày nên dàn này có thể khác tab Mốc 20 năm.'
         },
         dedupEdge50CombinedB40S05Hold70: {
             label: 'Đề Boost B40S05 - Hold 70 (Đánh 30)',
@@ -171,6 +171,8 @@
                 numbersToBet: [],
                 explanations: [],
                 betCount: 0,
+                unitCount: 0,
+                intersectionNumbers: [],
                 excludedCount: 0,
                 betWin: null,
                 holdWin: null,
@@ -187,11 +189,18 @@
         if (!summary || !summary.resolved) return summary;
         const betNumbers = summary.numbersToBet || [];
         const excludedNumbers = summary.excludedNumbers || [];
+        const betSet = new Set(betNumbers.map(Number));
+        const intersectionNumbers = [...new Set((summary.intersectionNumbers || [])
+            .map(Number)
+            .filter(number => betSet.has(number)))];
+        const intersectionSet = new Set(intersectionNumbers);
         const actual = Number(summary.actualSpecial);
         const betWin = betNumbers.some(n => Number(n) === actual);
         const holdWin = !excludedNumbers.some(n => Number(n) === actual);
-        const betStake = betNumbers.length * BET_PER_NUMBER_K;
-        const betPayout = betWin ? BET_PER_NUMBER_K * state.betWinMultiplier * state.betWinFactor : 0;
+        const unitCount = betNumbers.length + intersectionNumbers.length;
+        const winningWeight = betWin && intersectionSet.has(actual) ? 2 : 1;
+        const betStake = unitCount * BET_PER_NUMBER_K;
+        const betPayout = betWin ? winningWeight * BET_PER_NUMBER_K * state.betWinMultiplier * state.betWinFactor : 0;
         const holdIncome = excludedNumbers.length * BET_PER_NUMBER_K * state.holdWinMultiplier;
         const holdLoss = holdWin ? 0 : BET_PER_NUMBER_K * HOLD_LOSS_MULTIPLIER;
         const betProfit = Math.round(betPayout - betStake);
@@ -200,6 +209,8 @@
             ...summary,
             betWin,
             holdWin,
+            intersectionNumbers,
+            unitCount,
             betProfit,
             holdProfit,
             profit: betProfit + holdProfit,
@@ -941,7 +952,7 @@
                 <td class="px-4 py-3.5 text-center whitespace-nowrap">${deStr}</td>
                 <td class="px-4 py-3.5 whitespace-nowrap">
                     <div class="flex items-center gap-2">
-                        <span class="text-xs text-slate-500">${sum.betCount || 0} số</span>
+                        <span class="text-xs text-slate-500">${sum.betCount || 0} số${Number(sum.unitCount || sum.betCount || 0) !== Number(sum.betCount || 0) ? ` · ${sum.unitCount} đơn vị` : ''}</span>
                         ${sum.resolved ? formatResultBadge(sum.betWin, 'Đánh') : '<span class="text-xs text-slate-400">—</span>'}
                     </div>
                 </td>
@@ -1103,10 +1114,16 @@
 
                 <div class="number-panel-bet rounded-2xl border p-3">
                     <div class="flex items-center justify-between mb-2">
-                        <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Số Đánh (${sum.betCount || 0} số)</h4>
+                        <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Số Đánh (${sum.betCount || 0} số · ${sum.unitCount || sum.betCount || 0} đơn vị)</h4>
                         <span class="text-[10px] text-slate-500">Mỗi số 1000K (hệ số ${state.betWinFactor} × ăn ${state.betWinMultiplier})</span>
                     </div>
                     ${renderNumberGrid(sum.numbersToBet, 'border-emerald-200 bg-emerald-50/50 text-emerald-700')}
+                    ${(sum.intersectionNumbers || []).length ? `
+                        <div class="mt-2 rounded-xl border border-rose-200 bg-rose-50 p-2">
+                            <div class="mb-1 text-[10px] font-extrabold uppercase tracking-wide text-rose-700">Số trùng đánh x2 (${sum.intersectionNumbers.length})</div>
+                            ${renderNumberGrid(sum.intersectionNumbers, 'border-rose-300 bg-rose-100 text-rose-800')}
+                        </div>
+                    ` : ''}
                 </div>
 
                 <div class="number-panel-exclude rounded-2xl border p-3">

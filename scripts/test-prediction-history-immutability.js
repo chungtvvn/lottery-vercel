@@ -95,3 +95,108 @@ assert.deepStrictEqual(
 assert.strictEqual(stillPending.summary.resolved, false);
 
 console.log('✅ Prediction history snapshots remain immutable after settlement.');
+
+const parallelPending = {
+    id: 'local-2026-07-10',
+    predictionDate: '2026-07-10',
+    sourceDrawDate: '2026-07-09',
+    generatedAt: '2026-07-09T12:00:00.000Z',
+    summary: {
+        ...method([7, 67], Array.from({ length: 98 }, (_, number) => number)),
+        methods: {
+            deParallelBlock85Small65Hold70: {
+                ...method([7, 67], Array.from({ length: 100 }, (_, number) => number)
+                    .filter(number => number !== 7 && number !== 67)),
+                intersectionNumbers: [67],
+                unitCount: 3
+            }
+        }
+    }
+};
+const parallelResolved = {
+    ...parallelPending,
+    generatedAt: '2026-07-10T12:00:00.000Z',
+    summary: {
+        ...parallelPending.summary,
+        resolved: true,
+        actualSpecial: 67,
+        methods: {
+            deParallelBlock85Small65Hold70: {
+                ...parallelPending.summary.methods.deParallelBlock85Small65Hold70,
+                resolved: true,
+                actualSpecial: 67
+            }
+        }
+    }
+};
+const [parallelSettled] = mergeImmutablePredictionHistory(
+    [parallelPending],
+    [parallelResolved],
+    90
+);
+const parallelMethod = parallelSettled.summary.methods.deParallelBlock85Small65Hold70;
+assert.deepStrictEqual(parallelMethod.numbersToBet, [7, 67]);
+assert.deepStrictEqual(parallelMethod.intersectionNumbers, [67]);
+assert.strictEqual(parallelMethod.unitCount, 3);
+assert.strictEqual(parallelMethod.betWin, true);
+assert.strictEqual(parallelMethod.betProfit, 165000);
+
+console.log('✅ Parallel history keeps its own immutable daily snapshot and x2 accounting.');
+
+const legacyFallbackBets = Array.from({ length: 35 }, (_, index) => index + 65);
+const legacyFallbackExcluded = Array.from({ length: 65 }, (_, index) => index);
+const legacyMalformedParallel = {
+    id: 'local-2026-07-11',
+    predictionDate: '2026-07-11',
+    sourceDrawDate: '2026-07-10',
+    generatedAt: '2026-07-10T12:00:00.000Z',
+    summary: {
+        ...method([1, 2], [3, 4]),
+        resolved: true,
+        actualSpecial: 67,
+        methods: {
+            avgEdge50Hold70: method([1, 2], [3, 4], true, 67),
+            deParallelBlock85Small65Hold70: {
+                ...method(legacyFallbackBets, legacyFallbackExcluded, true, 67),
+                unitCount: 35
+            }
+        }
+    }
+};
+const regeneratedStrictParallel = {
+    ...legacyMalformedParallel,
+    generatedAt: '2026-07-11T12:00:00.000Z',
+    summary: {
+        ...legacyMalformedParallel.summary,
+        methods: {
+            ...legacyMalformedParallel.summary.methods,
+            deParallelBlock85Small65Hold70: {
+                ...method([7, 17, 67], Array.from({ length: 100 }, (_, number) => number)
+                    .filter(number => number !== 7 && number !== 17 && number !== 67)),
+                intersectionNumbers: [67],
+                unitCount: 4
+            }
+        }
+    }
+};
+const [repairedLegacy] = mergeImmutablePredictionHistory(
+    [legacyMalformedParallel],
+    [regeneratedStrictParallel],
+    90
+);
+const repairedParallel = repairedLegacy.summary.methods.deParallelBlock85Small65Hold70;
+assert.deepStrictEqual(repairedParallel.numbersToBet, [7, 17, 67]);
+assert.deepStrictEqual(repairedParallel.intersectionNumbers, [67]);
+assert.strictEqual(repairedParallel.betWin, true);
+assert.strictEqual(repairedParallel.betProfit, 164000);
+assert.strictEqual(
+    repairedLegacy.parallelSnapshotRepairReason,
+    'legacy-date-less-parallel-fallback'
+);
+assert.deepStrictEqual(
+    repairedLegacy.summary.methods.avgEdge50Hold70.numbersToBet,
+    [1, 2],
+    'Migration must not rewrite valid immutable methods'
+);
+
+console.log('✅ Legacy 65-99 parallel fallback is repaired without touching valid snapshots.');
