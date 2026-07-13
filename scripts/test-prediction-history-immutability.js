@@ -200,3 +200,53 @@ assert.deepStrictEqual(
 );
 
 console.log('✅ Legacy 65-99 parallel fallback is repaired without touching valid snapshots.');
+
+const pendingOldLogic = {
+    id: 'local-2026-07-13',
+    predictionDate: '2026-07-13',
+    sourceDrawDate: '2026-07-12',
+    generatedAt: '2026-07-12T12:00:00.000Z',
+    summary: {
+        ...method([1, 2, 3], [4, 5, 6]),
+        resolved: false,
+        actualSpecial: null,
+        methods: {
+            deParallelBlock85Small65Hold70: method([1, 2, 3], [4, 5, 6])
+        }
+    }
+};
+const pendingStrictUpgrade = {
+    ...pendingOldLogic,
+    generatedAt: '2026-07-13T01:00:00.000Z',
+    summary: {
+        ...pendingOldLogic.summary,
+        methods: {
+            deParallelBlock85Small65Hold70: {
+                ...method([7, 17, 27], [8, 18, 28]),
+                intersectionNumbers: [17],
+                unitCount: 4,
+                methodVersion: '2026-07-13-parallel-history-v2'
+            }
+        }
+    }
+};
+const [pendingUpgraded] = mergeImmutablePredictionHistory(
+    [pendingOldLogic],
+    [pendingStrictUpgrade],
+    90
+);
+assert.deepStrictEqual(
+    pendingUpgraded.summary.methods.deParallelBlock85Small65Hold70.numbersToBet,
+    [7, 17, 27]
+);
+assert.deepStrictEqual(
+    pendingUpgraded.summary.methods.deParallelBlock85Small65Hold70.intersectionNumbers,
+    [17]
+);
+assert.strictEqual(pendingUpgraded.summary.resolved, false);
+assert.strictEqual(
+    pendingUpgraded.parallelSnapshotRepairReason,
+    'pending-parallel-logic-upgrade'
+);
+
+console.log('✅ Latest pending parallel snapshot follows the corrected daily PIT logic.');
