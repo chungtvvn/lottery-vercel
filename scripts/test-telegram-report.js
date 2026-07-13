@@ -108,12 +108,48 @@ async function main() {
             }
         }
     };
+    const historyPayload = {
+        history: [
+            {
+                predictionDate: '2026-07-02',
+                sourceDrawDate: '2026-07-01',
+                summary: {
+                    resolved: false,
+                    methods: {
+                        deParallelBlock85Small65Hold70: {
+                            numbersToBet: deBetNumbers,
+                            intersectionNumbers: ['12']
+                        }
+                    }
+                }
+            },
+            {
+                predictionDate: '2026-07-01',
+                sourceDrawDate: '2026-06-30',
+                summary: {
+                    resolved: true,
+                    actualSpecial: 12,
+                    methods: {
+                        deParallelBlock85Small65Hold70: {
+                            numbersToBet: deBetNumbers,
+                            intersectionNumbers: ['12'],
+                            betCount: 30,
+                            unitCount: 31,
+                            betWin: true,
+                            actualSpecial: 12
+                        }
+                    }
+                }
+            }
+        ]
+    };
 
-    const report = buildTelegramReport(dePayload, lotoPayload);
+    const report = buildTelegramReport(dePayload, lotoPayload, historyPayload);
     assert.match(report.text, /Số đã đánh \(30\):/);
     assert.match(report.text, /Kết quả thực tế: <b>12<\/b>/);
-    assert.match(report.text, /Đề Song Song Hold 70/);
-    assert.match(report.text, /Đề Chuỗi nhỏ trước Hold 70/);
+    assert.match(report.text, /Đề Song Song Mốc 20 năm Hold 70/);
+    assert.match(report.text, /Đề Song Song Lịch sử Hold 70/);
+    assert.doesNotMatch(report.text, /Chuỗi nhỏ trước Hold 70/);
     assert.match(report.text, /Lô Top 7/);
     assert.match(report.text, /Số đã đánh \(7 số duy nhất · 7 đơn vị cược · trùng 2 phương pháp: 02\): <code>01 02 03 04 05 06 07<\/code>/);
     assert.match(report.text, /Kết quả \(27 vị trí\):/);

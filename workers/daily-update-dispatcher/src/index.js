@@ -13,8 +13,19 @@ const DEFAULT_APP_BASE_URL = 'https://lottery-stats-vercel.vercel.app';
 const DEFAULT_DE_STRATEGY = 'deParallelBlock85Small65';
 const DEFAULT_DE_TARGET = 70;
 const TELEGRAM_DE_METHODS = [
-  { strategy: 'deParallelBlock85Small65', target: 70, label: 'Đề Song Song Hold 70' },
-  { strategy: 'chainSmallFirst', target: 70, label: 'Chuỗi nhỏ trước Hold 70' }
+  {
+    source: 'milestone',
+    strategy: 'deParallelBlock85Small65',
+    target: 70,
+    label: 'Song Song Mốc 20 năm Hold 70'
+  },
+  {
+    source: 'history',
+    methodId: 'deParallelBlock85Small65Hold70',
+    strategy: 'deParallelBlock85Small65',
+    target: 70,
+    label: 'Song Song Lịch sử Hold 70'
+  }
 ];
 const DEFAULT_LOTO_COUNT = 6;
 const TELEGRAM_LOTO_COUNTS = [6, 7];
@@ -237,6 +248,25 @@ function getTelegramDeProfitK(result = {}, prediction = {}, actualValue = null) 
   };
 }
 
+function historyMethodAsPrediction(method = {}) {
+  return {
+    betNumbers: method.numbersToBet || method.betNumbers || [],
+    intersectionNumbers: method.intersectionNumbers || []
+  };
+}
+
+function historyMethodAsResult(method = {}, row = {}) {
+  const prediction = historyMethodAsPrediction(method);
+  return {
+    actual: method.actualSpecial ?? row.summary?.actualSpecial,
+    hit: method.betWin,
+    betNumbers: prediction.betNumbers,
+    intersectionNumbers: prediction.intersectionNumbers,
+    betCount: method.betCount,
+    unitCount: method.unitCount
+  };
+}
+
 function formatLotoBetShape(value = {}, count = 0) {
   const doubleNumbers = getLotoDoubleNumbers(value);
   const overlapNumbers = getLotoOverlapNumbers(value);
@@ -264,12 +294,33 @@ function getLotoActualNumbers(row = {}) {
     .flatMap(item => Array.from({ length: item.count }, () => item.number));
 }
 
-function buildTelegramReport(dePayload, lotoPayload) {
+function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}) {
   const deRows = dePayload.livePredictions?.predictions || [];
   const deSettled = latestRow(deRows, 'settled');
   const dePending = latestRow(deRows, 'pending');
+  const historyRows = [...(historyPayload.history || [])]
+    .sort((left, right) => String(right.predictionDate || '').localeCompare(String(left.predictionDate || '')));
 
   const deMethods = TELEGRAM_DE_METHODS.map(item => {
+    if (item.source === 'history') {
+      const settled = historyRows.find(row => row?.summary?.resolved === true && row?.summary?.methods?.[item.methodId]);
+      const pending = historyRows.find(row => row?.summary?.resolved !== true && row?.summary?.methods?.[item.methodId]);
+      const settledMethod = settled?.summary?.methods?.[item.methodId];
+      const pendingMethod = pending?.summary?.methods?.[item.methodId];
+      const deSettledPrediction = settledMethod ? historyMethodAsPrediction(settledMethod) : null;
+      const result = settledMethod ? historyMethodAsResult(settledMethod, settled) : null;
+      return {
+        ...item,
+        key: item.methodId,
+        settled,
+        result,
+        telegramResult: result ? getTelegramDeProfitK(result, deSettledPrediction, settled?.summary?.actualSpecial) : null,
+        deSettledPrediction,
+        next: pendingMethod ? historyMethodAsPrediction(pendingMethod) : null,
+        nextPredictionDate: pending?.predictionDate || null
+      };
+    }
+
     const key = `${item.strategy}:hold${item.target}`;
     const result = deSettled?.results?.[key];
     const deSettledPrediction = deSettled?.strategies?.[item.strategy]?.holds?.[String(item.target)];
@@ -278,10 +329,12 @@ function buildTelegramReport(dePayload, lotoPayload) {
     return {
       ...item,
       key,
+      settled: deSettled,
       result,
       telegramResult: result ? getTelegramDeProfitK(result, deSettledPrediction, deSettled?.actualSpecial) : null,
       deSettledPrediction,
-      next
+      next,
+      nextPredictionDate: dePayload.nextPrediction?.predictionIsoDate || dePending?.predictionIsoDate || null
     };
   });
 
@@ -310,7 +363,11 @@ function buildTelegramReport(dePayload, lotoPayload) {
     || lotoPayload.nextPrediction?.predictionIsoDate
     || lotoPending?.predictionIsoDate;
 
-  if (!predictionDate || deMethods.some(item => !item.next) || lotoMethods.some(item => !item.next)) {
+  if (
+    !predictionDate
+    || deMethods.some(item => !item.next || item.nextPredictionDate !== predictionDate)
+    || lotoMethods.some(item => !item.next)
+  ) {
     throw new Error('Payload chưa có đủ dự đoán Đề/Lô cho ngày tiếp theo.');
   }
 
@@ -323,11 +380,11 @@ function buildTelegramReport(dePayload, lotoPayload) {
   ];
 
   for (const item of deMethods) {
-    if (deSettled && item.result) {
+    if (item.settled && item.result) {
       lines.push(
-        `• <b>Đề ${item.label} ${escapeHtml(displayDate(deSettled.predictionIsoDate))}</b>`,
+        `• <b>Đề ${item.label} ${escapeHtml(displayDate(item.settled.predictionIsoDate || item.settled.predictionDate))}</b>`,
         `  Số đã đánh (${Number(item.result.betCount || item.deSettledPrediction?.betNumbers?.length || 0)}): <code>${escapeHtml(formatNumberList(item.deSettledPrediction?.betNumbers || []))}</code>`,
-        `  Kết quả thực tế: <b>${escapeHtml(normalizeLotteryNumber(deSettled.actualSpecial ?? item.result.actual))}</b>`,
+        `  Kết quả thực tế: <b>${escapeHtml(normalizeLotteryNumber(item.settled.actualSpecial ?? item.settled.summary?.actualSpecial ?? item.result.actual))}</b>`,
         `  ${item.telegramResult.hit ? '✅ TRÚNG' : '❌ TRƯỢT'} · ${escapeHtml(formatMoneyK(item.telegramResult.profitK))}`
       );
     } else {
@@ -394,11 +451,20 @@ function buildTelegramReport(dePayload, lotoPayload) {
     let profitK = 0;
     let days = 0;
     let wins = 0;
-    for (const row of settledDe) {
-      const result = row.results?.[method.key];
+    const rows = method.source === 'history'
+      ? historyRows.filter(row => row?.summary?.resolved === true && String(row.predictionDate || '') >= CUMULATIVE_START_DATE)
+      : settledDe;
+    for (const row of rows) {
+      const historyMethod = method.source === 'history' ? row.summary?.methods?.[method.methodId] : null;
+      const result = historyMethod
+        ? historyMethodAsResult(historyMethod, row)
+        : row.results?.[method.key];
       if (!result) continue;
-      const prediction = row.strategies?.[method.strategy]?.holds?.[String(method.target)] || {};
-      const telegramResult = getTelegramDeProfitK(result, prediction, row.actualSpecial);
+      const prediction = historyMethod
+        ? historyMethodAsPrediction(historyMethod)
+        : row.strategies?.[method.strategy]?.holds?.[String(method.target)] || {};
+      const actual = historyMethod ? row.summary?.actualSpecial : row.actualSpecial;
+      const telegramResult = getTelegramDeProfitK(result, prediction, actual);
       const profitKVal = telegramResult.profitK;
       profitK += profitKVal;
       days++;
@@ -504,9 +570,10 @@ async function notifyTelegram(env, options = {}) {
     return { ok: false, skipped: true, reason: 'telegram-chat-not-registered' };
   }
 
-  const [dePayload, lotoPayload] = await Promise.all([
+  const [dePayload, lotoPayload, historyPayload] = await Promise.all([
     fetchPredictionJson(env, '/api/milestone-20y/prediction'),
-    fetchPredictionJson(env, '/api/loto/prediction?count=all')
+    fetchPredictionJson(env, '/api/loto/prediction?count=all'),
+    fetchPredictionJson(env, '/api/prediction/history?limit=90')
   ]);
   const expectedDataDate = options.expectedDataDate || getVietnamDate();
   if (!options.force && (
@@ -523,7 +590,7 @@ async function notifyTelegram(env, options = {}) {
     };
   }
 
-  const report = buildTelegramReport(dePayload, lotoPayload);
+  const report = buildTelegramReport(dePayload, lotoPayload, historyPayload);
   const lastSent = await env.TELEGRAM_STATE?.get(TELEGRAM_LAST_SENT_KEY);
   if (!options.force && lastSent === report.predictionDate) {
     return { ok: true, skipped: true, reason: 'already-sent', predictionDate: report.predictionDate };

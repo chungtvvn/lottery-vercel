@@ -223,6 +223,7 @@ jobs:
       cache_ready: ${{ steps.verify.outputs.cache_ready }}
     env:
       NODE_OPTIONS: --max-old-space-size=8192
+      LOTO_METHOD_ID: rrfParallelBlock85Small65
     steps:
       - name: Checkout repo
         uses: actions/checkout@v5
@@ -275,6 +276,7 @@ jobs:
         id: verify
         env:
           TARGET_DATE: ${{ steps.target.outputs.date }}
+          LOTO_METHOD_ID: ${{ env.LOTO_METHOD_ID }}
           NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL: ${{ secrets.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL }}
         run: |
           node - <<'NODE'
@@ -297,13 +299,14 @@ jobs:
             if (cache.latestDataDate !== latestRaw || live.latestDataDate !== latestRaw) {
               throw new Error(`Lô cache stale: cache=${cache.latestDataDate}, live=${live.latestDataDate}, latestRaw=${latestRaw}, target=${target}`);
             }
-            if (cache.config?.methodId !== 'rrfSmall65Block75') {
-              throw new Error(`Lô method sai: ${cache.config?.methodId || 'missing'}`);
+            const expectedMethod = process.env.LOTO_METHOD_ID;
+            if (cache.config?.methodId !== expectedMethod) {
+              throw new Error(`Lô method sai: ${cache.config?.methodId || 'missing'}, expected=${expectedMethod}`);
             }
             if (Number(cache.config?.stakePerNumberK) !== 2200 || Number(cache.config?.payoutPerHitK) !== 8000) {
               throw new Error(`Lô công thức sai: stake=${cache.config?.stakePerNumberK || 'missing'}, payout=${cache.config?.payoutPerHitK || 'missing'}`);
             }
-            const strategy = cache.config?.strategy || 'rrfSmall65Block75';
+            const strategy = cache.config?.strategy || expectedMethod;
             const predictions = cache.nextPrediction?.predictions || cache.nextPrediction?.strategies?.[strategy]?.predictions;
             const defaultLen = predictions?.top6?.numbers?.length;
             const top7Len = predictions?.top7?.numbers?.length;
@@ -329,6 +332,7 @@ jobs:
       cache_ready: ${{ steps.verify.outputs.cache_ready }}
     env:
       NODE_OPTIONS: --max-old-space-size=8192
+      LOTO_METHOD_ID: rrfParallelBlock85Small65
     steps:
       - name: Checkout repo
         uses: actions/checkout@v5
@@ -380,6 +384,7 @@ jobs:
         id: verify
         env:
           TARGET_DATE: ${{ steps.target.outputs.date }}
+          LOTO_METHOD_ID: ${{ env.LOTO_METHOD_ID }}
           NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL: ${{ secrets.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL }}
         run: |
           node - <<'NODE'
@@ -402,10 +407,14 @@ jobs:
             if (cache.latestDataDate !== latestRaw || live.latestDataDate !== latestRaw) {
               throw new Error(`Lô cache stale sau retry: cache=${cache.latestDataDate}, live=${live.latestDataDate}, latestRaw=${latestRaw}, target=${target}`);
             }
+            const expectedMethod = process.env.LOTO_METHOD_ID;
+            if (cache.config?.methodId !== expectedMethod) {
+              throw new Error(`Lô method sai sau retry: ${cache.config?.methodId || 'missing'}, expected=${expectedMethod}`);
+            }
             if (Number(cache.config?.stakePerNumberK) !== 2200 || Number(cache.config?.payoutPerHitK) !== 8000) {
               throw new Error(`Lô công thức sai sau retry: stake=${cache.config?.stakePerNumberK || 'missing'}, payout=${cache.config?.payoutPerHitK || 'missing'}`);
             }
-            const strategy = cache.config?.strategy || 'rrfSmall65Block75';
+            const strategy = cache.config?.strategy || expectedMethod;
             const predictions = cache.nextPrediction?.predictions || cache.nextPrediction?.strategies?.[strategy]?.predictions;
             const defaultLen = predictions?.top6?.numbers?.length;
             const top7Len = predictions?.top7?.numbers?.length;
@@ -426,6 +435,8 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      LOTO_METHOD_ID: rrfParallelBlock85Small65
     steps:
       - name: Resolve expected date
         id: target
@@ -442,6 +453,7 @@ jobs:
       - name: Verify raw, Đề and Lô caches
         env:
           TARGET_DATE: ${{ steps.target.outputs.date }}
+          LOTO_METHOD_ID: ${{ env.LOTO_METHOD_ID }}
           NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL: ${{ secrets.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL }}
         run: |
           node - <<'NODE'
@@ -493,7 +505,11 @@ jobs:
             if (Number(loto.config?.stakePerNumberK) !== 2200 || Number(loto.config?.payoutPerHitK) !== 8000) {
               throw new Error(`R2 Lô công thức sai: stake=${loto.config?.stakePerNumberK || 'missing'}, payout=${loto.config?.payoutPerHitK || 'missing'}`);
             }
-            const strategy = loto.config?.strategy || 'rrfSmall65Block75';
+            const expectedMethod = process.env.LOTO_METHOD_ID;
+            if (loto.config?.methodId !== expectedMethod) {
+              throw new Error(`R2 Lô method sai: ${loto.config?.methodId || 'missing'}, expected=${expectedMethod}`);
+            }
+            const strategy = loto.config?.strategy || expectedMethod;
             const predictions = loto.nextPrediction?.predictions || loto.nextPrediction?.strategies?.[strategy]?.predictions;
             const defaultLen = predictions?.top6?.numbers?.length;
             const top7Len = predictions?.top7?.numbers?.length;

@@ -10,8 +10,27 @@ const NO_STORE_HEADERS = {
     Expires: '0'
 };
 
+function isAuthorized(request) {
+    const expected = process.env.PREDICTION_API_TOKEN || process.env.EXTERNAL_API_TOKEN || '';
+    const url = new URL(request.url);
+    const provided = request.headers.get('x-api-key')
+        || request.headers.get('authorization')?.replace(/^Bearer\s+/i, '')
+        || url.searchParams.get('token')
+        || '';
+    const hasApiAccess = Boolean(expected) && provided === expected;
+    const hasSession = request.cookies.get('xsmb_session')?.value === 'authenticated';
+    return hasApiAccess || hasSession;
+}
+
 export async function GET(request) {
     try {
+        if (!isAuthorized(request)) {
+            return NextResponse.json(
+                { success: false, error: 'Unauthorized' },
+                { status: 401, headers: NO_STORE_HEADERS }
+            );
+        }
+
         const url = new URL(request.url);
         const limit = parseInt(url.searchParams.get('limit')) || 90;
         const history = await predictionHistoryService.getHistory(limit);
