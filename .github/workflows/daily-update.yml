@@ -451,9 +451,10 @@ jobs:
             return JSON.parse(zlib.gunzipSync(Buffer.from(await response.arrayBuffer())));
           }
           (async () => {
-            const [raw, milestone, loto, lotoLive] = await Promise.all([
+            const [raw, milestone, history, loto, lotoLive] = await Promise.all([
               readGzip('data/xsmb-2-digits.json'),
               readGzip('statistics/cached_milestone20y_prediction.json'),
+              readGzip('statistics/cached_prediction_history.json'),
               readGzip('statistics/cached_loto_prediction.json'),
               readGzip('statistics/cached_loto_live_predictions.json')
             ]);
@@ -465,6 +466,23 @@ jobs:
               lotoLive: lotoLive.latestDataDate
             };
             if (!latestRaw) throw new Error('Không đọc được latestRaw từ R2 raw data.');
+            const nextDate = new Date(`${latestRaw}T00:00:00Z`);
+            nextDate.setUTCDate(nextDate.getUTCDate() + 1);
+            const expectedPredictionDate = nextDate.toISOString().slice(0, 10);
+            const historyRun = history.find(item => String(item?.predictionDate || '').slice(0, 10) === expectedPredictionDate);
+            const historyMethod = historyRun?.summary?.methods?.deParallelBlock85Small65Hold70;
+            const historyBets = historyMethod?.numbersToBet || [];
+            const historyIntersections = historyMethod?.intersectionNumbers || [];
+            if (
+              historyRun?.sourceDrawDate !== latestRaw ||
+              historyRun?.summary?.resolved === true ||
+              historyMethod?.methodVersion !== '2026-07-13-parallel-history-v2' ||
+              historyBets.length < 35 || historyBets.length > 50 ||
+              Number(historyMethod?.unitCount) !== historyBets.length + historyIntersections.length ||
+              Number(historyMethod?.unitCount) !== 50
+            ) {
+              throw new Error(`R2 Lịch sử pending sai: prediction=${historyRun?.predictionDate || 'missing'}, source=${historyRun?.sourceDrawDate || 'missing'}, version=${historyMethod?.methodVersion || 'missing'}, bets=${historyBets.length}, units=${historyMethod?.unitCount || 'missing'}`);
+            }
             const stale = Object.entries(dates).filter(([, date]) => date !== latestRaw);
             if (stale.length) {
               throw new Error(`R2 chưa đồng bộ latestRaw=${latestRaw}, target=${target}: ${JSON.stringify(dates)}`);

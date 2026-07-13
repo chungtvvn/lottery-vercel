@@ -44,6 +44,7 @@ const PERFORMANCE_REPORT_CACHE_FILE = 'cached_profit_report_2026.json';
 const HISTORY_PERFORMANCE_REPORT_CACHE_FILE = 'cached_prediction_history_performance_2026.json';
 const PERFORMANCE_REPORT_VERSION = 'profit-report-2026-de-parallel-rrf-loto-v2';
 const ANALYSIS_CACHE_VERSION = 'hold70-edge-bo-v1';
+const PREDICTION_HISTORY_METHOD_VERSION = '2026-07-13-parallel-history-v2';
 const ANALYSIS_CACHE_VERSION_FILE = 'analysis_cache_version.json';
 const runStatus = {
     startedAt: new Date().toISOString(),
@@ -807,6 +808,48 @@ async function hasPerformanceReportCacheOnR2() {
     }
 }
 
+function nextIsoDate(value) {
+    const normalized = normalizeDateValue(value);
+    if (!normalized) return null;
+    const date = new Date(`${normalized}T00:00:00Z`);
+    date.setUTCDate(date.getUTCDate() + 1);
+    return date.toISOString().slice(0, 10);
+}
+
+async function hasPredictionHistoryCacheOnR2(expectedLatestDate = null) {
+    if (!getR2PublicUrl() || process.env.UPDATE_CHECK_R2_PREDICTION_HISTORY === '0') return true;
+    try {
+        const history = await readStatsJsonFromR2('cached_prediction_history.json');
+        const expectedPredictionDate = nextIsoDate(expectedLatestDate);
+        const run = Array.isArray(history)
+            ? history.find(item => normalizeDateValue(item?.predictionDate) === expectedPredictionDate)
+            : null;
+        const method = run?.summary?.methods?.deParallelBlock85Small65Hold70;
+        const betNumbers = Array.isArray(method?.numbersToBet) ? method.numbersToBet.map(Number) : [];
+        const intersections = Array.isArray(method?.intersectionNumbers)
+            ? method.intersectionNumbers.map(Number)
+            : [];
+        const expectedUnits = betNumbers.length + intersections.length;
+        const current = !!run
+            && run.summary?.resolved !== true
+            && normalizeDateValue(run.sourceDrawDate) === normalizeDateValue(expectedLatestDate)
+            && method?.methodVersion === PREDICTION_HISTORY_METHOD_VERSION
+            && betNumbers.length >= 35
+            && betNumbers.length <= 50
+            && Number(method.unitCount) === expectedUnits
+            && expectedUnits === 50;
+        console.log(
+            `[Cache Check] R2 Lịch sử pending=${run?.predictionDate || 'missing'}, ` +
+            `version=${method?.methodVersion || 'missing'}, bets=${betNumbers.length}, ` +
+            `units=${method?.unitCount || 0}, expected=${expectedPredictionDate || 'unknown'}.`
+        );
+        return current;
+    } catch (error) {
+        console.log(`[Cache Check] R2 Lịch sử cache missing/stale: ${error.message}`);
+        return false;
+    }
+}
+
 function generateLotoPredictionCache() {
     const skipBacktest = process.env.LOTO_SKIP_BACKTEST !== '0';
     const timeoutMs = Math.max(60_000, Number(process.env.LOTO_PREDICTION_TIMEOUT_MS || (skipBacktest ? 1_800_000 : 0)) || 0);
@@ -1005,6 +1048,8 @@ function uploadOnlyPredictionCaches(options = {}) {
         PERFORMANCE_REPORT_CACHE_FILE,
         HISTORY_PERFORMANCE_REPORT_CACHE_FILE
     ].filter(file => fsSync.existsSync(path.join(statsDir, file)));
+    const predictionHistoryFiles = ['cached_prediction_history.json']
+        .filter(file => fsSync.existsSync(path.join(statsDir, file)));
     if (!includeLoto) {
         console.log('[6] Upload riêng cache dự đoán nhưng giữ nguyên cached_loto_* trên R2 vì Lô không sinh mới trong run này.');
     }
@@ -1018,6 +1063,7 @@ function uploadOnlyPredictionCaches(options = {}) {
             ...lotoFiles,
             ...(includeMilestone ? MILESTONE20Y_CACHE_FILES : []),
             ...baselineFiles,
+            ...predictionHistoryFiles,
             ...performanceReportFiles
         ].join(',')
     });
@@ -1329,10 +1375,12 @@ async function main() {
     const milestoneCacheMissing = trustR2MilestoneCache ? false : !hasMilestone20yPredictionCache(latestRawDate);
     const r2MilestoneCacheMissing = !(await hasMilestone20yPredictionCacheOnR2(latestRawDate));
     const r2PerformanceReportCacheMissing = !(await hasPerformanceReportCacheOnR2());
+    const r2PredictionHistoryCacheMissing = !(await hasPredictionHistoryCacheOnR2(latestRawDate));
     const onlyPredictionCacheNeedsRefresh = !rawDataChanged
         && !forceRegenerateStats
         && !isStale
-        && (lotoCacheMissing || r2LotoCacheMissing || milestoneCacheMissing || r2MilestoneCacheMissing || r2PerformanceReportCacheMissing);
+        && (lotoCacheMissing || r2LotoCacheMissing || milestoneCacheMissing || r2MilestoneCacheMissing
+            || r2PerformanceReportCacheMissing || r2PredictionHistoryCacheMissing);
 
     if (onlyPredictionCacheNeedsRefresh) {
         if (localRawOutOfSync) {
@@ -1350,6 +1398,8 @@ async function main() {
             }
             await hydrateMilestone20yLiveCacheFromR2();
             await hydrateCoreStatsFromR2ForPredictionCache();
+            const predictionHistoryService = require('../lib/services/predictionHistoryService');
+            await predictionHistoryService.refreshLatestPendingPredictionHistory(90);
             const didGenerateLoto = await generateLotoPredictionCacheIfNeeded(latestRawDate, 'prediction-cache-only');
             const didGenerateMilestone = process.env.MILESTONE20Y_GENERATE_CACHE !== '0';
             if (didGenerateMilestone) {

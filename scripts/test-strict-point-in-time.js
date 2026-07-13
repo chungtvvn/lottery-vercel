@@ -65,6 +65,17 @@ async function main() {
     assert.strictEqual(strictBaselineBuilds, 0, 'Lịch sử song song must use daily point-in-time candidates, not the annual Mốc baseline.');
     assert.strictEqual(cachedBaselineReads, 0, 'Lịch sử song song must not read the annual Mốc baseline cache.');
 
+    const nextPrediction = await simulationService.buildNextPrediction(rows, {
+        methodIds: 'deParallelBlock85Small65Hold70',
+        playMode: 'both',
+        strictPointInTime: true
+    });
+    assert.strictEqual(
+        nextPrediction.methods.deParallelBlock85Small65Hold70.methodVersion,
+        simulationService.SIMULATION_METHOD_VERSION,
+        'Daily pending snapshots must retain the method version used by R2 cache invalidation.'
+    );
+
     const legacy = await simulationService.runBacktest(2, rows, {
         methodIds: 'chainBlockFirstHold70',
         playMode: 'bet',
