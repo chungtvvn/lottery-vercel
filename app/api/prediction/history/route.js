@@ -12,12 +12,14 @@ const NO_STORE_HEADERS = {
 
 function isAuthorized(request) {
     const expected = process.env.PREDICTION_API_TOKEN || process.env.EXTERNAL_API_TOKEN || '';
+    if (!expected) return true;
+
     const url = new URL(request.url);
     const provided = request.headers.get('x-api-key')
         || request.headers.get('authorization')?.replace(/^Bearer\s+/i, '')
         || url.searchParams.get('token')
         || '';
-    const hasApiAccess = Boolean(expected) && provided === expected;
+    const hasApiAccess = provided === expected;
     const hasSession = request.cookies.get('xsmb_session')?.value === 'authenticated';
     return hasApiAccess || hasSession;
 }
