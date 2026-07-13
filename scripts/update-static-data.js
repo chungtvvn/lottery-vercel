@@ -96,7 +96,9 @@ function readNumberEnv(name, fallback, minValue) {
 }
 
 function getSimulationCacheDays() {
-    const values = String(process.env.SIMULATION_CACHE_DAYS || '90')
+    const configured = String(process.env.SIMULATION_CACHE_DAYS || '90').trim().toLowerCase();
+    if (['0', 'off', 'none', 'disabled'].includes(configured)) return [];
+    const values = configured
         .split(',')
         .map(value => Number(value.trim()))
         .filter(value => Number.isFinite(value) && value >= 7 && value <= 365);
@@ -1827,7 +1829,12 @@ async function main() {
                 }
 
                 const predictionHistoryService = require('../lib/services/predictionHistoryService');
-                await predictionHistoryService.generateLocalPredictionHistoryFromSimulation(90, predictionHistorySimulation);
+                if (process.env.PREDICTION_HISTORY_INCREMENTAL === '1') {
+                    console.log('    Lịch sử: chỉ kết toán snapshot mới nhất và sinh dự đoán ngày kế tiếp.');
+                    await predictionHistoryService.refreshLatestPendingPredictionHistory(90);
+                } else {
+                    await predictionHistoryService.generateLocalPredictionHistoryFromSimulation(90, predictionHistorySimulation);
+                }
 
             } catch (simErr) {
                 console.error('⚠️ Lỗi khi tạo cached simulation (không ảnh hưởng các bước khác):', simErr.message);
