@@ -1123,6 +1123,40 @@ async function fetchLatestXsmbResultWithRetry(latestLocalDate) {
     }
 }
 
+async function runDailyLotoOnlyMode() {
+    // The daily Loto job must not enter the raw/statistics/simulation pipeline.
+    // It consumes the already-published R2 raw snapshot, updates the immutable
+    // live journal and uploads only the two Loto cache files.
+    process.env.LOTTERY_DATA_SOURCE = 'r2';
+    const rawData = await readCurrentRawData();
+    const latestRawDate = getLatestDateValue(rawData);
+    if (!latestRawDate) {
+        throw new Error('Daily Loto-only không đọc được raw data mới nhất từ R2.');
+    }
+
+    await fs.writeFile(JSON_FILE, JSON.stringify(rawData, null, 0), 'utf8');
+    process.env.LOTTERY_DATA_SOURCE = 'local';
+    process.env.LOTTERY_STATS_SOURCE = 'local';
+    process.env.LOTO_SKIP_BACKTEST = '1';
+    process.env.SIMULATION_CACHE_DAYS = '0';
+
+    const generated = await generateLotoPredictionCacheIfNeeded(
+        latestRawDate,
+        'daily-loto-only'
+    );
+    if (generated) {
+        uploadOnlyLotoCaches();
+    }
+
+    await writeRunStatus({
+        skipped: !generated,
+        didWork: generated,
+        predictionCacheRefreshed: generated,
+        latestRawDate,
+        reason: generated ? 'daily_loto_only_refreshed' : 'daily_loto_only_up_to_date'
+    });
+}
+
 function mergeRowsByDate(currentRows, incomingRows) {
     const byDate = new Map();
     for (const row of currentRows || []) {
@@ -1254,6 +1288,11 @@ async function buildRawDataFromSources(currentArray) {
 }
 
 async function main() {
+    if (process.env.DAILY_LOTO_ONLY === '1') {
+        await runDailyLotoOnlyMode();
+        return;
+    }
+
     // The generator must read the freshly written local JSON files.
     process.env.LOTTERY_DATA_SOURCE = 'local';
     if (!process.env.LOTTERY_STATS_SOURCE) {

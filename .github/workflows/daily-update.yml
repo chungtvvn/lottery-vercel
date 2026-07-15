@@ -217,7 +217,7 @@ jobs:
     needs: generator
     if: always()
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 55
     continue-on-error: true
     outputs:
       cache_ready: ${{ steps.verify.outputs.cache_ready }}
@@ -252,18 +252,17 @@ jobs:
 
       - name: Generate and upload Lô cache
         env:
-          WAIT_FOR_NEW_XOSO: '0'
-          XOSO_TARGET_DATE: ${{ steps.target.outputs.date }}
+          DAILY_LOTO_ONLY: '1'
           LOTTERY_DATA_SOURCE: 'r2'
           LOTTERY_STATS_SOURCE: 'local'
-          FORCE_REGENERATE_STATS: '0'
           SYNC_R2_AFTER_UPDATE: '1'
           SYNC_SUPABASE_AFTER_UPDATE: '0'
           LOTO_GENERATE_CACHE: '1'
           LOTO_SKIP_BACKTEST: '1'
+          SIMULATION_CACHE_DAYS: '0'
           LOTO_POSITION_CONCURRENCY: '1'
           LOTO_CHILD_NODE_OPTIONS: '--max-old-space-size=4096'
-          LOTO_PREDICTION_TIMEOUT_MS: '3600000'
+          LOTO_PREDICTION_TIMEOUT_MS: '3000000'
           MILESTONE20Y_GENERATE_CACHE: '0'
           CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
           CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
@@ -322,116 +321,9 @@ jobs:
           });
           NODE
 
-  loto_retry:
-    name: Lô prediction cache retry
-    needs: [generator, loto_primary]
-    if: always() && needs.loto_primary.outputs.cache_ready != 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    outputs:
-      cache_ready: ${{ steps.verify.outputs.cache_ready }}
-    env:
-      NODE_OPTIONS: --max-old-space-size=8192
-      LOTO_METHOD_ID: rrfParallelBlock85Small65
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v5
-
-      - name: Setup Node
-        uses: actions/setup-node@v5
-        with:
-          node-version: '22'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Resolve Lô target date
-        id: target
-        run: |
-          if [ "${{ github.event_name }}" = "schedule" ]; then
-            TARGET_DATE="$(TZ=Asia/Ho_Chi_Minh date -d '6 hours ago' +%F)"
-          elif [ -n "${{ inputs.xoso_target_date }}" ]; then
-            TARGET_DATE="${{ inputs.xoso_target_date }}"
-          else
-            TARGET_DATE="$(TZ=Asia/Ho_Chi_Minh date +%F)"
-          fi
-          echo "date=$TARGET_DATE" >> "$GITHUB_OUTPUT"
-
-      - name: Retry generate and upload Lô cache
-        env:
-          WAIT_FOR_NEW_XOSO: '0'
-          XOSO_TARGET_DATE: ${{ steps.target.outputs.date }}
-          LOTTERY_DATA_SOURCE: 'r2'
-          LOTTERY_STATS_SOURCE: 'local'
-          FORCE_REGENERATE_STATS: '0'
-          SYNC_R2_AFTER_UPDATE: '1'
-          SYNC_SUPABASE_AFTER_UPDATE: '0'
-          LOTO_GENERATE_CACHE: '1'
-          LOTO_SKIP_BACKTEST: '1'
-          LOTO_POSITION_CONCURRENCY: '1'
-          LOTO_CHILD_NODE_OPTIONS: '--max-old-space-size=4096'
-          LOTO_PREDICTION_TIMEOUT_MS: '3600000'
-          MILESTONE20Y_GENERATE_CACHE: '0'
-          CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
-          CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
-          CLOUDFLARE_R2_ENDPOINT: ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
-          CLOUDFLARE_R2_BUCKET: ${{ secrets.CLOUDFLARE_R2_BUCKET }}
-          NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL: ${{ secrets.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL }}
-        run: node scripts/update-static-data.js
-
-      - name: Verify retried Lô cache on R2
-        id: verify
-        env:
-          TARGET_DATE: ${{ steps.target.outputs.date }}
-          LOTO_METHOD_ID: ${{ env.LOTO_METHOD_ID }}
-          NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL: ${{ secrets.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL }}
-        run: |
-          node - <<'NODE'
-          const zlib = require('zlib');
-          const base = String(process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || '').replace(/\/$/, '');
-          const target = process.env.TARGET_DATE;
-          async function read(path) {
-            const response = await fetch(`${base}/${path}.gz`, { cache: 'no-store' });
-            if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`);
-            return JSON.parse(zlib.gunzipSync(Buffer.from(await response.arrayBuffer())));
-          }
-          (async () => {
-            const [raw, cache, live] = await Promise.all([
-              read('data/xsmb-2-digits.json'),
-              read('statistics/cached_loto_prediction.json'),
-              read('statistics/cached_loto_live_predictions.json')
-            ]);
-            const latestRaw = raw.at(-1)?.date;
-            if (!latestRaw) throw new Error('Không đọc được latestRaw từ R2 raw data.');
-            if (cache.latestDataDate !== latestRaw || live.latestDataDate !== latestRaw) {
-              throw new Error(`Lô cache stale sau retry: cache=${cache.latestDataDate}, live=${live.latestDataDate}, latestRaw=${latestRaw}, target=${target}`);
-            }
-            const expectedMethod = process.env.LOTO_METHOD_ID;
-            if (cache.config?.methodId !== expectedMethod) {
-              throw new Error(`Lô method sai sau retry: ${cache.config?.methodId || 'missing'}, expected=${expectedMethod}`);
-            }
-            if (Number(cache.config?.stakePerNumberK) !== 2200 || Number(cache.config?.payoutPerHitK) !== 8000) {
-              throw new Error(`Lô công thức sai sau retry: stake=${cache.config?.stakePerNumberK || 'missing'}, payout=${cache.config?.payoutPerHitK || 'missing'}`);
-            }
-            const strategy = cache.config?.strategy || expectedMethod;
-            const predictions = cache.nextPrediction?.predictions || cache.nextPrediction?.strategies?.[strategy]?.predictions;
-            const defaultLen = predictions?.top6?.numbers?.length;
-            const top7Len = predictions?.top7?.numbers?.length;
-            if (Number(cache.config?.defaultBetCount) !== 6 || defaultLen !== 6 || top7Len !== 7) {
-              throw new Error(`Lô default sai sau retry: defaultBetCount=${cache.config?.defaultBetCount || 'missing'}, length=${defaultLen || 'missing'}`);
-            }
-            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, 'cache_ready=true\n');
-            console.log(`✅ Retry Lô R2 thành công cho raw ${latestRaw}; target ${target}.`);
-          })().catch(error => {
-            console.error(error);
-            process.exit(1);
-          });
-          NODE
-
   verify_and_redeploy:
     name: Verify Đề + Lô and redeploy
-    needs: [generator, loto_primary, loto_retry]
+    needs: [generator, loto_primary]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 10
