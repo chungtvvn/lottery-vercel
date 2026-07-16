@@ -965,6 +965,31 @@ async function hydrateMilestone20yLiveCacheFromR2() {
     }
 }
 
+async function hydrateMilestone20yBaselineFromR2(expectedLatestDate) {
+    if (!getR2PublicUrl()) return false;
+
+    const predictionYear = getMilestone20yPredictionYear(null, expectedLatestDate);
+    if (!predictionYear) {
+        throw new Error(`Không xác định được năm baseline Mốc 20 năm từ latest=${expectedLatestDate || 'unknown'}.`);
+    }
+
+    const fileName = `cached_milestone20y_baseline_${predictionYear}.json`;
+    try {
+        const baseline = await readStatsJsonFromR2(fileName);
+        if (!isMilestone20yBaselineCurrent(baseline, predictionYear)) {
+            throw new Error(`baseline ${predictionYear} thiếu, rỗng hoặc sai version`);
+        }
+        const filePath = path.join(DATA_DIR, 'statistics', fileName);
+        await fs.mkdir(path.dirname(filePath), { recursive: true });
+        await fs.writeFile(filePath, JSON.stringify(baseline, null, 0), 'utf8');
+        console.log(`[Mốc 20 năm] Hydrate baseline ${predictionYear} từ R2; không tính lại mốc năm trong daily job.`);
+        return true;
+    } catch (error) {
+        console.warn(`[Mốc 20 năm] Không hydrate được baseline ${predictionYear} từ R2: ${error.message}`);
+        return false;
+    }
+}
+
 function uploadR2StaticData(label = 'Upload raw data + statistics gzip lên Cloudflare R2.', extraEnv = {}) {
     if (process.env.SYNC_R2_AFTER_UPDATE !== '0') {
         runNodeScript('scripts/upload-to-r2.js', label, extraEnv);
@@ -1017,6 +1042,32 @@ function syncRemoteAfterStaticGeneration() {
 function uploadOnlyLotoCaches() {
     uploadR2StaticData('Upload riêng cache Lô lên Cloudflare R2.', {
         R2_UPLOAD_ONLY_STATS_FILES: 'cached_loto_prediction.json,cached_loto_live_predictions.json'
+    });
+}
+
+function uploadOnlyMilestone20yCaches() {
+    const fsSync = require('fs');
+    const statsDir = path.join(DATA_DIR, 'statistics');
+    const baselineFiles = fsSync.existsSync(statsDir)
+        ? fsSync.readdirSync(statsDir)
+            .filter(file => /^cached_milestone20y_baseline_\d{4}\.json$/.test(file))
+            .filter(file => {
+                try {
+                    const year = Number(file.match(/(\d{4})/)?.[1]);
+                    const payload = JSON.parse(fsSync.readFileSync(path.join(statsDir, file), 'utf8'));
+                    return isMilestone20yBaselineCurrent(payload, year);
+                } catch (error) {
+                    console.warn(`[6] Bỏ qua baseline Mốc lỗi ${file}: ${error.message}`);
+                    return false;
+                }
+            })
+        : [];
+
+    uploadR2StaticData('Upload riêng cache Mốc 20 năm lên Cloudflare R2.', {
+        R2_UPLOAD_ONLY_STATS_FILES: [
+            ...MILESTONE20Y_CACHE_FILES,
+            ...baselineFiles
+        ].join(',')
     });
 }
 
@@ -1157,6 +1208,51 @@ async function runDailyLotoOnlyMode() {
     });
 }
 
+async function runDailyMilestone20yOnlyMode() {
+    // Mốc 20 năm có chi phí lớn hơn các cache ngày. Tách luồng này khỏi raw,
+    // statistics, Lịch sử và Lô để timeout của nó không hủy dữ liệu đã sinh.
+    process.env.LOTTERY_DATA_SOURCE = 'r2';
+    const rawData = await readCurrentRawData();
+    const latestRawDate = getLatestDateValue(rawData);
+    if (!latestRawDate) {
+        throw new Error('Daily Mốc-only không đọc được raw data mới nhất từ R2.');
+    }
+
+    const cacheReady = process.env.MILESTONE20Y_FORCE_GENERATE_CACHE !== '1'
+        && await hasMilestone20yPredictionCacheOnR2(latestRawDate);
+    if (cacheReady) {
+        console.log(`[Mốc 20 năm] Cache R2 đã đủ cho ${latestRawDate}; bỏ qua job nặng.`);
+        await writeRunStatus({
+            skipped: true,
+            didWork: false,
+            latestRawDate,
+            reason: 'daily_milestone20y_up_to_date'
+        });
+        return;
+    }
+
+    await fs.writeFile(JSON_FILE, JSON.stringify(rawData, null, 0), 'utf8');
+    process.env.LOTTERY_DATA_SOURCE = 'local';
+    process.env.LOTTERY_STATS_SOURCE = 'local';
+
+    await Promise.all([
+        hydrateCoreStatsFromR2ForPredictionCache(),
+        hydrateMilestone20yLiveCacheFromR2(),
+        hydrateMilestone20yBaselineFromR2(latestRawDate)
+    ]);
+    generateMilestone20yPredictionCache();
+    uploadOnlyMilestone20yCaches();
+
+    await writeRunStatus({
+        skipped: false,
+        didWork: true,
+        predictionCacheRefreshed: true,
+        r2Uploaded: true,
+        latestRawDate,
+        reason: 'daily_milestone20y_refreshed'
+    });
+}
+
 function mergeRowsByDate(currentRows, incomingRows) {
     const byDate = new Map();
     for (const row of currentRows || []) {
@@ -1288,6 +1384,10 @@ async function buildRawDataFromSources(currentArray) {
 }
 
 async function main() {
+    if (process.env.DAILY_MILESTONE20Y_ONLY === '1') {
+        await runDailyMilestone20yOnlyMode();
+        return;
+    }
     if (process.env.DAILY_LOTO_ONLY === '1') {
         await runDailyLotoOnlyMode();
         return;

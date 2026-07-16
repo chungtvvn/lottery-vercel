@@ -120,6 +120,9 @@ jobs:
           PREDICTION_HISTORY_INCREMENTAL: '1'
           # Lô chạy ở job riêng để runner bị thu hồi không làm mất kết quả Đề.
           LOTO_GENERATE_CACHE: '0'
+          # Mốc 20 năm cũng chạy ở job riêng. Không để phép tính nặng này giữ
+          # runner của raw/stats và làm mất toàn bộ kết quả cập nhật ngày.
+          MILESTONE20Y_GENERATE_CACHE: '0'
           LOTO_SKIP_BACKTEST: '1'
           LOTO_POSITION_CONCURRENCY: '1'
           LOTO_CHILD_NODE_OPTIONS: '--max-old-space-size=4096'
@@ -211,6 +214,48 @@ jobs:
           else
             echo "Không cấu hình VERCEL_DEPLOY_HOOK_URL; Vercel sẽ deploy qua Git integration khi workflow push commit."
           fi
+
+  milestone20y_primary:
+    name: Mốc 20 năm prediction cache
+    needs: generator
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    continue-on-error: true
+    env:
+      NODE_OPTIONS: --max-old-space-size=8192
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate and upload Mốc 20 năm cache
+        env:
+          DAILY_MILESTONE20Y_ONLY: '1'
+          LOTTERY_DATA_SOURCE: 'r2'
+          LOTTERY_STATS_SOURCE: 'local'
+          SYNC_R2_AFTER_UPDATE: '1'
+          SYNC_SUPABASE_AFTER_UPDATE: '0'
+          MILESTONE20Y_GENERATE_CACHE: '1'
+          # Chỉ job độc lập này được phép chờ lâu. Baseline năm được tải từ
+          # R2 nên thông thường chỉ còn tính snapshot ngày mới và kết toán.
+          MILESTONE20Y_PREDICTION_TIMEOUT_MS: '2700000'
+          LOTO_GENERATE_CACHE: '0'
+          SIMULATION_CACHE_DAYS: '0'
+          CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
+          CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
+          CLOUDFLARE_R2_ENDPOINT: ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
+          CLOUDFLARE_R2_BUCKET: ${{ secrets.CLOUDFLARE_R2_BUCKET }}
+          NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL: ${{ secrets.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL }}
+        run: node scripts/update-static-data.js
 
   loto_primary:
     name: Lô prediction cache
@@ -323,7 +368,7 @@ jobs:
 
   verify_and_redeploy:
     name: Verify Đề + Lô and redeploy
-    needs: [generator, loto_primary]
+    needs: [generator, milestone20y_primary, loto_primary]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 10
