@@ -11,7 +11,35 @@ async function loadWorkerModule() {
 }
 
 async function main() {
-    const { buildTelegramReport } = await loadWorkerModule();
+    const { buildTelegramReport, evaluatePredictionCacheReadiness } = await loadWorkerModule();
+    assert.deepStrictEqual(
+        evaluatePredictionCacheReadiness(
+            { latestDataDate: '2026-07-15' },
+            { latestDataDate: '2026-07-15' }
+        ),
+        {
+            ready: true,
+            dataDate: '2026-07-15',
+            expectedDataDate: null,
+            deLatestDataDate: '2026-07-15',
+            lotoLatestDataDate: '2026-07-15'
+        }
+    );
+    assert.strictEqual(
+        evaluatePredictionCacheReadiness(
+            { latestDataDate: '2026-07-15' },
+            { latestDataDate: '2026-07-14' }
+        ).ready,
+        false
+    );
+    assert.strictEqual(
+        evaluatePredictionCacheReadiness(
+            { latestDataDate: '2026-07-15' },
+            { latestDataDate: '2026-07-15' },
+            '2026-07-16'
+        ).ready,
+        false
+    );
     const deBetNumbers = Array.from({ length: 30 }, (_, value) => String(value).padStart(2, '0'));
     const dePayload = {
         latestDataDate: '2026-07-01',

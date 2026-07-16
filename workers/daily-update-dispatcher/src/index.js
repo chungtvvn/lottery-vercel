@@ -564,6 +564,24 @@ async function sendTelegramMessage(env, chatId, text) {
   });
 }
 
+function evaluatePredictionCacheReadiness(dePayload = {}, lotoPayload = {}, expectedDataDate = null) {
+  const deLatestDataDate = String(dePayload.latestDataDate || '');
+  const lotoLatestDataDate = String(lotoPayload.latestDataDate || '');
+  const requestedDataDate = expectedDataDate ? String(expectedDataDate) : null;
+  const cachesMatch = Boolean(deLatestDataDate)
+    && deLatestDataDate === lotoLatestDataDate;
+  const requestedDateMatches = !requestedDataDate
+    || (deLatestDataDate === requestedDataDate && lotoLatestDataDate === requestedDataDate);
+
+  return {
+    ready: cachesMatch && requestedDateMatches,
+    dataDate: cachesMatch ? deLatestDataDate : null,
+    expectedDataDate: requestedDataDate,
+    deLatestDataDate,
+    lotoLatestDataDate
+  };
+}
+
 async function notifyTelegram(env, options = {}) {
   const chatId = await resolveTelegramChatId(env);
   if (!chatId) {
@@ -575,18 +593,19 @@ async function notifyTelegram(env, options = {}) {
     fetchPredictionJson(env, '/api/loto/prediction?count=all'),
     fetchPredictionJson(env, '/api/prediction/history?limit=90')
   ]);
-  const expectedDataDate = options.expectedDataDate || getVietnamDate();
-  if (!options.force && (
-    dePayload.latestDataDate !== expectedDataDate
-    || lotoPayload.latestDataDate !== expectedDataDate
-  )) {
+  const readiness = evaluatePredictionCacheReadiness(
+    dePayload,
+    lotoPayload,
+    options.expectedDataDate || null
+  );
+  if (!options.force && !readiness.ready) {
     return {
       ok: false,
       skipped: true,
       reason: 'prediction-cache-not-ready',
-      expectedDataDate,
-      deLatestDataDate: dePayload.latestDataDate,
-      lotoLatestDataDate: lotoPayload.latestDataDate
+      expectedDataDate: readiness.expectedDataDate,
+      deLatestDataDate: readiness.deLatestDataDate,
+      lotoLatestDataDate: readiness.lotoLatestDataDate
     };
   }
 
@@ -728,6 +747,7 @@ export default {
 
 export {
   buildTelegramReport,
+  evaluatePredictionCacheReadiness,
   getVietnamDate,
   notifyTelegram
 };
