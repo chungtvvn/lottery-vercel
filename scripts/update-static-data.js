@@ -44,7 +44,7 @@ const PERFORMANCE_REPORT_CACHE_FILE = 'cached_profit_report_2026.json';
 const HISTORY_PERFORMANCE_REPORT_CACHE_FILE = 'cached_prediction_history_performance_2026.json';
 const PERFORMANCE_REPORT_VERSION = 'profit-report-2026-de-parallel-rrf-loto-v2';
 const ANALYSIS_CACHE_VERSION = 'hold70-edge-bo-v1';
-const PREDICTION_HISTORY_METHOD_VERSION = '2026-07-13-parallel-history-v2';
+const PREDICTION_HISTORY_METHOD_VERSION = '2026-07-15-parallel-shared-ranking-v3';
 const ANALYSIS_CACHE_VERSION_FILE = 'analysis_cache_version.json';
 const runStatus = {
     startedAt: new Date().toISOString(),

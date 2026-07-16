@@ -225,7 +225,7 @@ const pendingStrictUpgrade = {
                 ...method([7, 17, 27], [8, 18, 28]),
                 intersectionNumbers: [17],
                 unitCount: 4,
-                methodVersion: '2026-07-13-parallel-history-v2'
+                methodVersion: '2026-07-15-parallel-shared-ranking-v3'
             }
         }
     }
@@ -250,3 +250,38 @@ assert.strictEqual(
 );
 
 console.log('✅ Latest pending parallel snapshot follows the corrected daily PIT logic.');
+
+const simulationService = require('../lib/services/simulationService');
+const blockNumbers = Array.from({ length: 85 }, (_, number) => number);
+const smallNumbers = Array.from({ length: 65 }, (_, index) => index + 35);
+const variableParallel = simulationService.buildDeParallelBlock85Small65Method([
+    {
+        key: 'test_block:block2x1SoLe',
+        title: 'Test block',
+        numbers: blockNumbers,
+        tier: 'critical',
+        exclusionTierRank: 1,
+        exclusionPriority: 100,
+        dropOffRate: 1,
+        targetFrequencyPerYear: 0.1
+    },
+    {
+        key: 'test_small:lienTiep',
+        title: 'Test small',
+        numbers: smallNumbers,
+        tier: 'critical',
+        exclusionTierRank: 1,
+        exclusionPriority: 100,
+        dropOffRate: 1,
+        targetFrequencyPerYear: 0.1
+    }
+], 70);
+assert.strictEqual(variableParallel.betNumbers.length, 50);
+assert.strictEqual(variableParallel.intersectionNumbers.length, 0);
+assert.strictEqual(
+    variableParallel.betNumbers.length + variableParallel.intersectionNumbers.length,
+    50
+);
+assert.strictEqual(variableParallel.methodVersion, '2026-07-15-parallel-shared-ranking-v3');
+
+console.log('✅ Parallel history shares the annual ranker and is not fixed to 35 unique numbers.');

@@ -428,7 +428,7 @@ jobs:
             if (
               historyRun?.sourceDrawDate !== latestRaw ||
               historyRun?.summary?.resolved === true ||
-              historyMethod?.methodVersion !== '2026-07-13-parallel-history-v2' ||
+              historyMethod?.methodVersion !== '2026-07-15-parallel-shared-ranking-v3' ||
               historyBets.length < 35 || historyBets.length > 50 ||
               Number(historyMethod?.unitCount) !== historyBets.length + historyIntersections.length ||
               Number(historyMethod?.unitCount) !== 50
