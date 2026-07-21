@@ -221,7 +221,13 @@ function isMilestone20yFormulaCurrent(cache) {
         'dedupEdge75Pit',
         'deParallelBlock85Small65'
     ];
-    return version === MILESTONE20Y_METHOD_VERSION && required.every(id => strategies.includes(id));
+    const edge75Pit = cache?.nextPrediction?.strategies?.dedupEdge75Pit?.holds?.['70'];
+    return version === MILESTONE20Y_METHOD_VERSION
+        && required.every(id => strategies.includes(id))
+        && Array.isArray(edge75Pit?.betNumbers)
+        && edge75Pit.betNumbers.length === 30
+        && Array.isArray(edge75Pit?.excludedNumbers)
+        && edge75Pit.excludedNumbers.length === 70;
 }
 
 function getMilestone20yPredictionYear(cache, expectedLatestDate = null) {
