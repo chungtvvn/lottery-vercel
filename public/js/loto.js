@@ -11,6 +11,7 @@
         performanceVisible: false,
         liveBetCount: DEFAULT_LOTO_BET_COUNT,
         defaultLotoBetCount: DEFAULT_LOTO_BET_COUNT,
+        selectedStrategy: 'rrfParallelBlock85Small65',
         lotoPayload: null
     };
 
@@ -566,6 +567,15 @@
         renderPeriodTabs();
         const root = document.getElementById('performanceReport');
         if (!root) return;
+        if (state.selectedStrategy === 'dedupEdge75Pit') {
+            root.innerHTML = `
+                <div class="rounded-2xl border border-sky-200 bg-sky-50 p-5 text-sm leading-6 text-sky-900">
+                    <div class="font-black">Edge75 PIT đang ở chế độ theo dõi thực tế</div>
+                    <p class="mt-1">Nhật ký bên trên chỉ ghi các dàn được công bố từ ngày triển khai và giữ nguyên sau khi có kết quả. Báo cáo hiệu quả RRF hiện có không được gắn sang phương pháp này.</p>
+                </div>
+            `;
+            return;
+        }
         if (!state.performanceVisible) {
             root.innerHTML = `
                 <div class="rounded-2xl border border-dashed border-violet-200 bg-violet-50/60 p-5">
@@ -714,6 +724,7 @@
         try {
             const selectEl = document.getElementById('lotoStrategySelect');
             const strat = selectEl ? selectEl.value : 'rrfParallelBlock85Small65';
+            state.selectedStrategy = strat;
             const res = await fetch(`/api/loto/prediction?strategy=${strat}`, { cache: 'no-store' });
             const data = await res.json();
             if (!res.ok || !data.success) throw new Error(data.error || 'Không tải được dữ liệu Lô.');
@@ -737,6 +748,8 @@
         const selectEl = document.getElementById('lotoStrategySelect');
         if (selectEl) {
             selectEl.addEventListener('change', () => {
+                state.performanceVisible = false;
+                state.performancePayload = null;
                 load();
             });
         }

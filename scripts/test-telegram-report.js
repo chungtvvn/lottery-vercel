@@ -56,6 +56,11 @@ async function main() {
                     holds: {
                         70: { betNumbers: Array.from({ length: 30 }, (_, value) => String(value).padStart(2, '0')) }
                     }
+                },
+                dedupEdge75Pit: {
+                    holds: {
+                        70: { betNumbers: deBetNumbers }
+                    }
                 }
             }
         },
@@ -88,6 +93,17 @@ async function main() {
                         betCount: 30,
                         hit: true,
                         profitK: 540
+                    },
+                    'dedupEdge75Pit:hold70': {
+                        actual: '12',
+                        betCount: 30,
+                        hit: true,
+                        profitK: 540
+                    }
+                },
+                strategies: {
+                    dedupEdge75Pit: {
+                        holds: { 70: { betNumbers: deBetNumbers } }
                     }
                 }
             }]
@@ -105,6 +121,20 @@ async function main() {
                 top7: {
                     numbers: ['01', '02', '03', '04', '05', '06', '07'],
                     overlapNumbers: ['02']
+                }
+            },
+            strategies: {
+                rrfParallelBlock85Small65: {
+                    predictions: {
+                        top6: { numbers: ['01', '02', '03', '04', '05', '06'] },
+                        top7: { numbers: ['01', '02', '03', '04', '05', '06', '07'], overlapNumbers: ['02'] }
+                    }
+                },
+                dedupEdge75Pit: {
+                    predictions: {
+                        top6: { numbers: ['11', '12', '13', '14', '15', '16'] },
+                        top7: { numbers: ['11', '12', '13', '14', '15', '16', '17'] }
+                    }
                 }
             }
         },
@@ -128,11 +158,48 @@ async function main() {
                         hits: 1,
                         profitK: -740
                     }
+                },
+                strategies: {
+                    rrfParallelBlock85Small65: {
+                        methods: {
+                            top6: {
+                                betNumbers: ['01', '02', '03', '04', '05', '06'],
+                                betCount: 6,
+                                hits: 1,
+                                profitK: -520
+                            },
+                            top7: {
+                                betNumbers: ['01', '02', '03', '04', '05', '06', '07'],
+                                overlapNumbers: ['02'],
+                                betCount: 7,
+                                hits: 1,
+                                profitK: -740
+                            }
+                        }
+                    },
+                    dedupEdge75Pit: {
+                        methods: {
+                            top6: {
+                                betNumbers: ['11', '12', '13', '14', '15', '16'],
+                                betCount: 6,
+                                hits: 2,
+                                profitK: 2800
+                            },
+                            top7: {
+                                betNumbers: ['11', '12', '13', '14', '15', '16', '17'],
+                                betCount: 7,
+                                hits: 2,
+                                profitK: 2580
+                            }
+                        }
+                    }
                 }
             }],
             summary: {
                 top6: { days: 10, hitDays: 4, profitK: 12000 },
-                top7: { days: 1, hitDays: 1, profitK: 1200 }
+                top7: { days: 1, hitDays: 1, profitK: 1200 },
+                dedupEdge75Pit_top6: { days: 1, hitDays: 1, profitK: 2800 },
+                dedupEdge75Pit_top7: { days: 1, hitDays: 1, profitK: 2580 }
             }
         }
     };
@@ -178,14 +245,16 @@ async function main() {
     assert.match(report.text, /Đề Song Song Mốc 20 năm Hold 70/);
     assert.match(report.text, /Đề Song Song Lịch sử Hold 70/);
     assert.doesNotMatch(report.text, /Chuỗi nhỏ trước Hold 70/);
-    assert.match(report.text, /Lô Top 7/);
+    assert.match(report.text, /Lô RRF Top 7/);
+    assert.match(report.text, /Lô Edge75 PIT Top 6/);
     assert.match(report.text, /Số đã đánh \(7 số duy nhất · 7 đơn vị cược · trùng 2 phương pháp: 02\): <code>01 02 03 04 05 06 07<\/code>/);
     assert.match(report.text, /Kết quả \(27 vị trí\):/);
     assert.match(report.text, /Trúng: <b>01<\/b>/);
     assert.match(report.text, /❌ LỖ · -740K · 1 hit/);
     assert.match(report.text, /Top 7 \(7 số duy nhất · 7 đơn vị cược · trùng 2 phương pháp: 02\):/);
     assert.match(report.text, /Lũy kế: 10 ngày · hit-day 4\/10 · \+12\.000K/);
-    assert.match(report.text, /DỰ ĐOÁN LÔ TOP 6 &amp; TOP 7/);
+    assert.match(report.text, /DỰ ĐOÁN LÔ/);
+    assert.match(report.text, /Edge75 PIT Top 7/);
     assert.ok(report.text.length <= 4096, `Telegram report quá dài: ${report.text.length}`);
     console.log('Telegram report tests passed.');
 }

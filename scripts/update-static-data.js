@@ -33,7 +33,7 @@ const PREDICTION_HISTORY_METHOD_IDS = [
     'dedupEdge75Hold70',
     'dedupDropoffHold70'
 ];
-const MILESTONE20Y_METHOD_VERSION = 'annual20y-2026-07-11-default-de-parallel-block85-small65';
+const MILESTONE20Y_METHOD_VERSION = 'annual20y-2026-07-21-edge75-pit-tracking-v1';
 const MILESTONE20Y_BASELINE_VERSION = 'annual20y-baseline-2026-06-28-block-ab';
 const MILESTONE20Y_LIVE_CACHE_VERSION = 'annual20y-live-compact-v4';
 const MILESTONE20Y_CACHE_FILES = [
@@ -188,6 +188,9 @@ function isLotoPredictionFormulaCurrent(cache) {
         || cache?.nextPrediction?.strategies?.parallelCombined?.predictions
         || {};
     const defaultNumbers = predictions?.[`top${LOTO_DEFAULT_BET_COUNT}`]?.numbers || [];
+    const edge75PitPredictions = cache?.nextPrediction?.strategies?.dedupEdge75Pit?.predictions || {};
+    const edge75PitTop6 = edge75PitPredictions?.top6?.numbers || [];
+    const edge75PitTop7 = edge75PitPredictions?.top7?.numbers || [];
     const betCountsOk = betCounts.length === LOTO_BET_COUNTS.length
         && LOTO_BET_COUNTS.every((count, index) => count === betCounts[index]);
     return stake === LOTO_STAKE_PER_NUMBER_K
@@ -196,6 +199,8 @@ function isLotoPredictionFormulaCurrent(cache) {
         && aggregationMode === LOTO_AGGREGATION_MODE
         && defaultBetCount === LOTO_DEFAULT_BET_COUNT
         && defaultNumbers.length === LOTO_DEFAULT_BET_COUNT
+        && edge75PitTop6.length === 6
+        && edge75PitTop7.length === 7
         && betCountsOk;
 }
 
@@ -213,6 +218,7 @@ function isMilestone20yFormulaCurrent(cache) {
         'numberPosteriorDiversity',
         'numberWeightedRisk',
         'activeOnlyAvgRisk',
+        'dedupEdge75Pit',
         'deParallelBlock85Small65'
     ];
     return version === MILESTONE20Y_METHOD_VERSION && required.every(id => strategies.includes(id));

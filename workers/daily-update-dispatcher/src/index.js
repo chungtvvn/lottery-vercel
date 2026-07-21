@@ -12,6 +12,7 @@ const TELEGRAM_LAST_SENT_KEY = 'telegram:last_sent_prediction_date';
 const DEFAULT_APP_BASE_URL = 'https://lottery-stats-vercel.vercel.app';
 const DEFAULT_DE_STRATEGY = 'deParallelBlock85Small65';
 const DEFAULT_DE_TARGET = 70;
+const DEFAULT_LOTO_STRATEGY = 'rrfParallelBlock85Small65';
 const TELEGRAM_DE_METHODS = [
   {
     source: 'milestone',
@@ -25,10 +26,28 @@ const TELEGRAM_DE_METHODS = [
     strategy: 'deParallelBlock85Small65',
     target: 70,
     label: 'Song Song Lịch sử Hold 70'
+  },
+  {
+    source: 'milestone',
+    strategy: 'dedupEdge75Pit',
+    target: 70,
+    label: 'Edge75 PIT Hold 70'
   }
 ];
 const DEFAULT_LOTO_COUNT = 6;
 const TELEGRAM_LOTO_COUNTS = [6, 7];
+const TELEGRAM_LOTO_METHODS = [
+  ...TELEGRAM_LOTO_COUNTS.map(count => ({
+    strategy: DEFAULT_LOTO_STRATEGY,
+    label: 'RRF',
+    count
+  })),
+  ...TELEGRAM_LOTO_COUNTS.map(count => ({
+    strategy: 'dedupEdge75Pit',
+    label: 'Edge75 PIT',
+    count
+  }))
+];
 const CUMULATIVE_START_DATE = '2026-07-08';
 const DE_BET_PER_NUMBER_K = 10;
 const DE_WIN_MULTIPLIER = 84;
@@ -340,21 +359,33 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}) {
 
   const lotoRows = lotoPayload.livePredictions?.predictions || [];
   const lotoPending = latestRow(lotoRows, 'pending');
-  const lotoMethods = TELEGRAM_LOTO_COUNTS.map(count => {
+  const lotoMethods = TELEGRAM_LOTO_METHODS.map(config => {
+    const { count, strategy, label } = config;
     const key = `top${count}`;
-    const settled = latestLotoRow(lotoRows, key, 'settled');
-    const result = settled?.methods?.[key];
+    const settled = [...lotoRows]
+      .filter(row => row?.status === 'settled' && (
+        row?.strategies?.[strategy]?.methods?.[key]
+        || (strategy === DEFAULT_LOTO_STRATEGY && row?.methods?.[key])
+      ))
+      .sort((left, right) => String(right.predictionIsoDate || '').localeCompare(String(left.predictionIsoDate || '')))[0];
+    const result = settled?.strategies?.[strategy]?.methods?.[key]
+      || (strategy === DEFAULT_LOTO_STRATEGY ? settled?.methods?.[key] : null);
     const actual = getLotoActualNumbers(settled);
     return {
+      strategy,
+      label,
       count,
       key,
       settled,
       result,
       actual,
       hits: formatLotoHits(result?.betNumbers || [], actual),
-      next: lotoPayload.nextPrediction?.predictions?.[key]
-        || lotoPending?.predictions?.[key],
-      summary: lotoPayload.livePredictions?.summary?.[key]
+      next: lotoPayload.nextPrediction?.strategies?.[strategy]?.predictions?.[key]
+        || (strategy === DEFAULT_LOTO_STRATEGY ? lotoPayload.nextPrediction?.predictions?.[key] : null)
+        || lotoPending?.strategies?.[strategy]?.predictions?.[key]
+        || (strategy === DEFAULT_LOTO_STRATEGY ? lotoPending?.predictions?.[key] : null),
+      summary: lotoPayload.livePredictions?.summary?.[`${strategy}_${key}`]
+        || (strategy === DEFAULT_LOTO_STRATEGY ? lotoPayload.livePredictions?.summary?.[key] : null)
     };
   });
 
@@ -396,7 +427,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}) {
     if (item.settled && item.result) {
       const telegramProfitK = getTelegramLotoProfitK(item.result, item.count);
       lines.push(
-        `• <b>Lô Top ${item.count} ${escapeHtml(displayDate(item.settled.predictionIsoDate))}</b>`,
+        `• <b>Lô ${item.label} Top ${item.count} ${escapeHtml(displayDate(item.settled.predictionIsoDate))}</b>`,
         `  Số đã đánh (${escapeHtml(formatLotoBetShape(item.result, item.count))}): <code>${escapeHtml(formatNumberList(item.result.betNumbers || []))}</code>`,
         `  Kết quả (${item.actual.length} vị trí): <code>${escapeHtml(formatNumberList(item.actual))}</code>`,
         `  ${telegramProfitK > 0 ? '✅ CÓ LÃI' : '❌ LỖ'} · ${escapeHtml(formatMoneyK(telegramProfitK))}` +
@@ -404,7 +435,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}) {
           `${item.hits.length ? ` · Trúng: <b>${escapeHtml(formatNumberList(item.hits))}</b>` : ''}`
       );
     } else {
-      lines.push(`• Lô Top ${item.count}: chưa có bản ghi đã kết toán.`);
+      lines.push(`• Lô ${item.label} Top ${item.count}: chưa có bản ghi đã kết toán.`);
     }
     if (item.summary?.days) {
       lines.push(
@@ -426,14 +457,14 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}) {
 
   lines.push(
     '',
-    `<b>3. DỰ ĐOÁN LÔ TOP ${lotoMethods.map(item => item.count).join(' &amp; TOP ')}</b>`,
-    `• Phương pháp: ${escapeHtml(lotoPayload.nextPrediction?.methodId || 'Mốc 20 năm 27 vị trí')}`
+    '<b>3. DỰ ĐOÁN LÔ</b>',
+    '• Mỗi phương pháp được chốt độc lập trên 27 vị trí.'
   );
 
   for (const item of lotoMethods) {
-    lines.push(`• Top ${item.count} (${escapeHtml(formatLotoBetShape(item.next, item.count))}): <b>${escapeHtml((item.next.numbers || []).join(' '))}</b>`);
+    lines.push(`• ${item.label} Top ${item.count} (${escapeHtml(formatLotoBetShape(item.next, item.count))}): <b>${escapeHtml((item.next.numbers || []).join(' '))}</b>`);
   }
-  const defaultMethod = lotoMethods.find(item => item.count === DEFAULT_LOTO_COUNT);
+  const defaultMethod = lotoMethods.find(item => item.strategy === DEFAULT_LOTO_STRATEGY && item.count === DEFAULT_LOTO_COUNT);
   const support = (defaultMethod?.next?.support || []).slice(0, DEFAULT_LOTO_COUNT)
     .map(item => `${item.number}(${item.supportCount})`);
   if (support.length) lines.push(`• Đồng thuận Top ${DEFAULT_LOTO_COUNT}: ${escapeHtml(support.join(' · '))}`);
@@ -483,7 +514,8 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}) {
     let days = 0;
     let wins = 0;
     for (const row of settledLoto) {
-      const result = row.methods?.[method.key];
+      const result = row.strategies?.[method.strategy]?.methods?.[method.key]
+        || (method.strategy === DEFAULT_LOTO_STRATEGY ? row.methods?.[method.key] : null);
       if (!result) continue;
       const profitKVal = getTelegramLotoProfitK(result, method.count);
       profitK += profitKVal;
@@ -492,6 +524,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}) {
     }
     return {
       count: method.count,
+      label: method.label,
       profitK,
       days,
       wins
@@ -516,7 +549,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}) {
     }
     for (const item of lotoCumulativeStats) {
       lines.push(
-        `• Lô Top ${item.count} ${item.days} ngày (${item.wins}W/${item.days - item.wins}L · ${LOTO_STAKE_PER_NUMBER_K}K/con): <b>${escapeHtml(formatMoneyK(item.profitK))}</b>`
+        `• Lô ${item.label} Top ${item.count} ${item.days} ngày (${item.wins}W/${item.days - item.wins}L · ${LOTO_STAKE_PER_NUMBER_K}K/con): <b>${escapeHtml(formatMoneyK(item.profitK))}</b>`
       );
     }
     lines.push(

@@ -38,6 +38,7 @@ const DEFAULT_HOLD = 65;
 const DEFAULT_AGGREGATION_MODE = 'twoHitGreedy';
 const DEFAULT_BET_COUNT = 6;
 const DEFAULT_BET_COUNTS = [6, 7];
+const EDGE75_PIT_METHOD_ID = 'dedupEdge75Pit';
 const LIVE_TRACKING_VERSION = 'rrf-parallel-block85-small65-top6-top7-live-v1';
 const LIVE_CACHE_NOTE = 'Lô dùng phương án song song RRF 50/50: Chuỗi nhỏ Hold 65 + Nhịp block Hold 85. Mỗi vị trí được loại trừ riêng, sau đó xếp hạng RRF và chọn Top 6/Top 7; Lô không nhân tiền x2 cho số trùng.';
 
@@ -749,6 +750,7 @@ function preservePublishedNextPrediction(nextPrediction, livePayload) {
 }
 
 const positionStatsCache = new Map();
+const POSITION_CACHE_VERSION = 'position-pit-annual-baseline-v2';
 
 async function buildPositionDailyPredictions(rawData, positionKey, targetRows, methodConfigs, options) {
     const strictPointInTime = options.strictPointInTime !== false;
@@ -770,6 +772,36 @@ async function buildPositionDailyPredictions(rawData, positionKey, targetRows, m
         entries = buildStatsIndexFromLoadedStats();
     }
     const baselineByYear = new Map();
+    if (strictPointInTime) {
+        const targetYears = [...new Set(targetRows
+            .map(row => parseIsoDate(row.date))
+            .filter(Boolean)
+            .map(date => date.getFullYear()))];
+        for (const targetYear of targetYears) {
+            const baselineYear = options.fixedBaselineYear || targetYear;
+            if (baselineYear > targetYear) {
+                throw new Error(
+                    `Strict PIT không cho dùng baseline ${baselineYear} để dự đoán năm ${targetYear}.`
+                );
+            }
+            if (baselineByYear.has(baselineYear)) continue;
+            const cutoffIso = `${baselineYear - 1}-12-31`;
+            const baselineRaw = rawData.filter(row => formatIsoDate(row.date) <= cutoffIso);
+            const baselinePositionData = toPositionData(baselineRaw, positionKey);
+            const baselineStats = await buildStatsForPosition(baselinePositionData);
+            lotteryService.__setInMemoryCachesForBacktest({
+                rawData: baselinePositionData,
+                ...baselineStats
+            });
+            historicalExclusionService.clearCache();
+            const baselineEntries = buildStatsIndexFromLoadedStats();
+            baselineByYear.set(baselineYear, annualMilestoneService.buildAnnualBaseline(
+                baselineEntries,
+                baselineYear,
+                { historyYears: options.historyYears, writeBaseline: false }
+            ));
+        }
+    }
     const rows = new Map();
 
     for (const rawDay of targetRows) {
@@ -969,7 +1001,8 @@ async function buildNextRrfPrediction(rawData, betCounts, options) {
     const predictionIsoDate = formatIsoDate(predictionDate);
     const sourceConfigs = [
         { id: 'rrfSmallSource', strategy: 'chainSmallFirst', target: 65, aggregationMode: 'twoHitGreedy' },
-        { id: 'rrfBlockSource', strategy: 'chainBlockFirst', target: 85, aggregationMode: 'positionPosterior' }
+        { id: 'rrfBlockSource', strategy: 'chainBlockFirst', target: 85, aggregationMode: 'positionPosterior' },
+        { id: 'edge75PitSource', strategy: EDGE75_PIT_METHOD_ID, target: 70, aggregationMode: 'positionPosterior' }
     ];
     const bySource = Object.fromEntries(sourceConfigs.map(config => [config.id, {}]));
     const byPosition = {};
@@ -1050,6 +1083,21 @@ async function buildNextRrfPrediction(rawData, betCounts, options) {
         aggregationMode: prediction.aggregationMode,
         predictions: prediction.predictions
     }]));
+    const edge75PitPrediction = sourcePredictions[2];
+    edge75PitPrediction.methodId = EDGE75_PIT_METHOD_ID;
+    edge75PitPrediction.strategy = EDGE75_PIT_METHOD_ID;
+    edge75PitPrediction.positionPredictions = PRIZE_KEYS.map(positionKey => ({
+        positionKey,
+        methodId: EDGE75_PIT_METHOD_ID,
+        dataIsoDate: formatIsoDate(latestDate),
+        predictionIsoDate,
+        numbers: (bySource.edge75PitSource[positionKey] || []).map(formatNumber),
+        betCount: (bySource.edge75PitSource[positionKey] || []).length,
+        excludedCount: 100 - (bySource.edge75PitSource[positionKey] || []).length
+    }));
+    rrf.additionalPredictions = {
+        [EDGE75_PIT_METHOD_ID]: edge75PitPrediction
+    };
     return rrf;
 }
 
@@ -1195,19 +1243,26 @@ async function main() {
     const rrfSmallHold = Math.max(1, Math.min(95, Number(args.get('rrfSmallHold') || 65)));
     const rrfBlockHold = Math.max(1, Math.min(95, Number(args.get('rrfBlockHold') || 85)));
     const rrfBetCounts = betCounts.filter(count => [6, 7, 10, 14, 20].includes(Number(count)));
+    const rrfPairStrategies = String(args.get('rrfPairStrategies') || '')
+        .split(',')
+        .map(value => value.trim())
+        .filter(value => annualMilestoneService.STRATEGIES[value])
+        .slice(0, 2);
+    const rrfPairHold = Math.max(1, Math.min(95, Number(args.get('rrfPairHold') || 70)));
+    const rrfPairEnabledByArgs = rrfPairStrategies.length === 2;
+    const rrfPairMethodId = rrfPairEnabledByArgs
+        ? `rrfPair_${rrfPairStrategies.join('_')}_H${rrfPairHold}`
+        : null;
     const stakeK = Number(args.get('stakeK') || DEFAULT_STAKE_K);
     const payoutK = Number(args.get('payoutK') || DEFAULT_PAYOUT_K);
     const historyYears = Number(args.get('historyYears') || 20);
     const fixedBaselineYear = args.has('fixedBaselineYear') ? Number(args.get('fixedBaselineYear')) : null;
     const strictPointInTime = args.get('strictPointInTime') !== '0';
+    const activeFrequencyLimit = Number(args.get('activeFrequencyLimit') || 0.5);
+    const recordFrequencyLimit = Number(args.get('recordFrequencyLimit') || 1.1);
+    const minPotentialCurrentLenForNeverFormed = Number(args.get('minPotentialLen') || 4);
     const rawFile = args.get('rawFile') ? path.resolve(args.get('rawFile')) : null;
     const methodConfigs = buildMethodConfigs(strategies, holdCounts);
-    if (strictPointInTime && positionInputFiles.length > 0) {
-        throw new Error(
-            'Strict PIT không nhận positionInputFiles cũ vì cache vị trí có thể được sinh từ full-history. ' +
-            'Hãy để script tái sinh prefix theo từng ngày hoặc truyền --strictPointInTime=0 cho nghiên cứu legacy.'
-        );
-    }
     if (methodConfigs.length === 1 && predictionOnly) {
         methodConfigs[0].id = args.get('method') || DEFAULT_METHOD_ID;
         methodConfigs[0].aggregationMode = predictionAggregationMode;
@@ -1223,6 +1278,7 @@ async function main() {
     const rawData = loadedRawData
         .slice()
         .sort((a, b) => new Date(a.date) - new Date(b.date));
+    const rawDataLatestDate = rawData.length ? formatIsoDate(rawData[rawData.length - 1].date) : null;
     if (predictionOnly) {
         const requestedMethod = args.get('method') || DEFAULT_METHOD_ID;
         if (requestedMethod === DEFAULT_METHOD_ID || requestedMethod === 'rrfSmall65Block75') {
@@ -1231,11 +1287,14 @@ async function main() {
                 historyYears,
                 fixedBaselineYear,
                 strictPointInTime,
-                activeFrequencyLimit: Number(args.get('activeFrequencyLimit') || 0.5),
-                recordFrequencyLimit: Number(args.get('recordFrequencyLimit') || 1.1),
-                minPotentialCurrentLenForNeverFormed: Number(args.get('minPotentialLen') || 4)
+                activeFrequencyLimit,
+                recordFrequencyLimit,
+                minPotentialCurrentLenForNeverFormed
             });
-            const nextPredictions = { [rrfPrediction.methodId]: rrfPrediction };
+            const nextPredictions = {
+                [rrfPrediction.methodId]: rrfPrediction,
+                ...(rrfPrediction.additionalPredictions || {})
+            };
             if (writeCache) {
                 writeLiveCachesMulti(nextPredictions, rrfPrediction, rawData, betCounts, { stakeK, payoutK });
             }
@@ -1255,9 +1314,9 @@ async function main() {
                 historyYears,
                 fixedBaselineYear,
                 strictPointInTime,
-                activeFrequencyLimit: Number(args.get('activeFrequencyLimit') || 0.5),
-                recordFrequencyLimit: Number(args.get('recordFrequencyLimit') || 1.1),
-                minPotentialCurrentLenForNeverFormed: Number(args.get('minPotentialLen') || 4)
+                activeFrequencyLimit,
+                recordFrequencyLimit,
+                minPotentialCurrentLenForNeverFormed
             });
             nextPredictions[methodConfig.strategy] = pred;
         }
@@ -1311,7 +1370,16 @@ async function main() {
             if (
                 payload.startDate !== startDate ||
                 payload.endDate !== endDate ||
-                JSON.stringify(payload.methodConfigs || []) !== JSON.stringify(methodConfigs)
+                payload.positionCacheVersion !== POSITION_CACHE_VERSION ||
+                JSON.stringify(payload.methodConfigs || []) !== JSON.stringify(methodConfigs) ||
+                payload.strictPointInTime !== strictPointInTime ||
+                Number(payload.historyYears) !== historyYears ||
+                (payload.fixedBaselineYear ?? null) !== fixedBaselineYear ||
+                Number(payload.activeFrequencyLimit) !== activeFrequencyLimit ||
+                Number(payload.recordFrequencyLimit) !== recordFrequencyLimit ||
+                Number(payload.minPotentialCurrentLenForNeverFormed) !== minPotentialCurrentLenForNeverFormed ||
+                Number(payload.rawDataLength) !== rawData.length ||
+                payload.rawDataLatestDate !== rawDataLatestDate
             ) {
                 throw new Error(`Position cache không cùng cấu hình backtest: ${inputFile}`);
             }
@@ -1335,9 +1403,9 @@ async function main() {
                 historyYears,
                 fixedBaselineYear,
                 strictPointInTime,
-                activeFrequencyLimit: Number(args.get('activeFrequencyLimit') || 0.5),
-                recordFrequencyLimit: Number(args.get('recordFrequencyLimit') || 1.1),
-                minPotentialCurrentLenForNeverFormed: Number(args.get('minPotentialLen') || 4)
+                activeFrequencyLimit,
+                recordFrequencyLimit,
+                minPotentialCurrentLenForNeverFormed
             });
             positionStatsCache.delete(positionKey);
             for (const [date, methods] of positionRows.entries()) {
@@ -1351,9 +1419,18 @@ async function main() {
         const outputPath = path.resolve(positionOutput);
         const payload = {
             generatedAt: new Date().toISOString(),
+            positionCacheVersion: POSITION_CACHE_VERSION,
             startDate,
             endDate,
             methodConfigs,
+            strictPointInTime,
+            historyYears,
+            fixedBaselineYear,
+            activeFrequencyLimit,
+            recordFrequencyLimit,
+            minPotentialCurrentLenForNeverFormed,
+            rawDataLength: rawData.length,
+            rawDataLatestDate,
             positions: positionInputFiles.length > 0 ? PRIZE_KEYS : selectedPositions,
             rows: Object.fromEntries(Array.from(byDate.entries()).map(([date, row]) => [
                 date,
@@ -1435,6 +1512,24 @@ async function main() {
                 });
             }
         }
+        const rrfPairEnabled = rrfPairEnabledByArgs
+            && rrfPairStrategies.every(strategy =>
+                methodConfigs.some(config => config.id === `${strategy}Hold${rrfPairHold}`)
+            );
+        if (rrfPairEnabled) {
+            for (const aggregationMode of aggregationModes) {
+                for (const betCount of betCounts) {
+                    const key = `${rrfPairMethodId}:${aggregationMode}:top${betCount}`;
+                    summariesByWindow[windowSpec.key][key] = emptySummary(key, betCount, {
+                        strategy: 'rrfPair50_50',
+                        sourceStrategies: rrfPairStrategies,
+                        hold: rrfPairHold,
+                        aggregationMode,
+                        window: windowSpec.key
+                    });
+                }
+            }
+        }
 
         for (const row of windowRows) {
             for (const aggregationMode of aggregationModes) {
@@ -1481,6 +1576,65 @@ async function main() {
                         row.actualByPosition,
                         row.actualCounts
                     );
+                }
+
+                if (rrfPairEnabled) {
+                    const [firstStrategy, secondStrategy] = rrfPairStrategies;
+                    const firstRanked = rankedByConfig.get(`${firstStrategy}Hold${rrfPairHold}`);
+                    const secondRanked = rankedByConfig.get(`${secondStrategy}Hold${rrfPairHold}`);
+                    if (firstRanked && secondRanked) {
+                        const sourceDepth = Math.max(20, ...betCounts);
+                        const toSourcePrediction = (strategy, ranked) => {
+                            const counts = [...new Set([sourceDepth, ...betCounts])];
+                            return {
+                                strategy,
+                                hold: rrfPairHold,
+                                predictions: Object.fromEntries(counts.map(count => [
+                                    `top${count}`,
+                                    { numbers: ranked.slice(0, count).map(item => formatNumber(item.number)) }
+                                ]))
+                            };
+                        };
+                        const pairPrediction = buildRrfPrediction(
+                            toSourcePrediction(firstStrategy, firstRanked),
+                            toSourcePrediction(secondStrategy, secondRanked),
+                            betCounts,
+                            {
+                                methodId: rrfPairMethodId,
+                                strategy: 'rrfPair50_50'
+                            }
+                        );
+                        for (const betCount of betCounts) {
+                            const key = `${rrfPairMethodId}:${aggregationMode}:top${betCount}`;
+                            const prediction = pairPrediction.predictions[`top${betCount}`];
+                            const result = addResultToSummary(
+                                summariesByWindow[windowSpec.key][key],
+                                (prediction?.numbers || []).map(Number),
+                                row.actualCounts,
+                                stakeK,
+                                payoutK
+                            );
+                            if (includeDetails) {
+                                dailyDetailsByWindow[windowSpec.key].push({
+                                    date: row.date,
+                                    methodId: key,
+                                    strategy: 'rrfPair50_50',
+                                    sourceStrategies: rrfPairStrategies,
+                                    hold: rrfPairHold,
+                                    aggregationMode,
+                                    betCount,
+                                    numbers: result.numbers,
+                                    overlapNumbers: prediction?.overlapNumbers || [],
+                                    actualNumbers: [...row.actualCounts.keys()].sort((a, b) => a - b).map(formatNumber),
+                                    hits: result.hits,
+                                    stakeK: result.stakeK,
+                                    payoutK: result.payoutK,
+                                    profitK: result.profitK,
+                                    result: result.profitK > 0 ? 'win' : (result.profitK < 0 ? 'loss' : 'flat')
+                                });
+                            }
+                        }
+                    }
                 }
 
                 if (parallelEnabled) {
@@ -1633,6 +1787,9 @@ async function main() {
         rrfSmallHold,
         rrfBlockHold,
         rrfBetCounts,
+        rrfPairStrategies,
+        rrfPairHold,
+        rrfPairMethodId,
         aggregationModes,
         stakeK,
         payoutK,
@@ -1982,20 +2139,35 @@ function upsertNextLivePredictionMulti(livePayload, nextPredictions, primaryPred
     const existing = livePayload.predictions[existingIndex];
     if (existing.status === 'settled') return false;
 
+    // A published pending dàn is immutable. A newly deployed strategy may be
+    // appended once, but existing strategy predictions must never be rebuilt
+    // with fresher data before settlement.
+    const existingStrategies = existing.strategies || {};
+    const addedStrategies = {};
+    for (const [strategyId, strategy] of Object.entries(record.strategies || {})) {
+        if (!existingStrategies[strategyId]) addedStrategies[strategyId] = strategy;
+    }
+    if (Object.keys(addedStrategies).length === 0) return false;
     livePayload.predictions[existingIndex] = {
         ...existing,
-        ...record,
-        replacedAt: new Date().toISOString(),
-        replacedMethodId: existing.methodId || null
+        strategies: {
+            ...existingStrategies,
+            ...addedStrategies
+        },
+        strategyAddedAt: new Date().toISOString(),
+        addedStrategyIds: [
+            ...(existing.addedStrategyIds || []),
+            ...Object.keys(addedStrategies)
+        ]
     };
-    console.log(`[LotoMilestone20Y] Replaced pending snapshot for ${record.predictionIsoDate}.`);
+    console.log(`[LotoMilestone20Y] Added pending strategies for ${record.predictionIsoDate}: ${Object.keys(addedStrategies).join(', ')}.`);
     return true;
 }
 
 function summarizeLivePredictionsMulti(livePayload, betCounts) {
     const summary = {};
     const settled = (livePayload.predictions || []).filter(item => item.status === 'settled');
-    const strategyKeys = [DEFAULT_METHOD_ID, 'rrfSmall65Block75'];
+    const strategyKeys = [DEFAULT_METHOD_ID, 'rrfSmall65Block75', EDGE75_PIT_METHOD_ID];
     
     for (const stratId of strategyKeys) {
         for (const betCount of betCounts) {

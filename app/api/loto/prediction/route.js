@@ -12,6 +12,14 @@ const FALLBACK_LOTO_STAKE_PER_NUMBER_K = 2200;
 const FALLBACK_LOTO_PAYOUT_PER_HIT_K = 8000;
 const LOTO_BET_COUNTS = [6, 7];
 const DEFAULT_LOTO_STRATEGY = 'rrfParallelBlock85Small65';
+const LOTO_STRATEGY_META = {
+    rrfParallelBlock85Small65: {
+        methodName: 'Lô Song song RRF 50/50 - Chuỗi nhỏ Hold 65 + Nhịp block Hold 85'
+    },
+    dedupEdge75Pit: {
+        methodName: 'Lô Edge75 PIT có kiểm chứng - Hold 70'
+    }
+};
 
 function isAuthorized(request) {
     const expected = process.env.PREDICTION_API_TOKEN || process.env.EXTERNAL_API_TOKEN || '';
@@ -299,7 +307,14 @@ function normalizeLotoPayload(payload = {}, strategy = DEFAULT_LOTO_STRATEGY) {
         
     return {
         ...cloned,
-        config: withLotoConfig(cloned.config || {}, economics),
+        config: {
+            ...withLotoConfig(cloned.config || {}, economics),
+            ...(LOTO_STRATEGY_META[strategy] || {}),
+            strategy,
+            methodId: cloned.nextPrediction?.strategies?.[strategy]?.methodId
+                || cloned.config?.methodId
+                || strategy
+        },
         nextPrediction: cloned.nextPrediction
             ? {
                 ...cloned.nextPrediction,
@@ -351,6 +366,24 @@ export async function GET(request) {
             : payload;
             
         const strategy = url.searchParams.get('strategy') || DEFAULT_LOTO_STRATEGY;
+        if (!LOTO_STRATEGY_META[strategy]) {
+            return NextResponse.json(
+                { success: false, error: `Phương pháp Lô không hợp lệ: ${strategy}.` },
+                { status: 400, headers: NO_STORE_HEADERS }
+            );
+        }
+        if (
+            strategy !== DEFAULT_LOTO_STRATEGY
+            && !mergedPayload.nextPrediction?.strategies?.[strategy]
+        ) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: `R2 chưa có cache cho phương pháp ${LOTO_STRATEGY_META[strategy].methodName}. Hãy chạy action cập nhật dữ liệu.`
+                },
+                { status: 404, headers: NO_STORE_HEADERS }
+            );
+        }
         const normalizedPayload = normalizeLotoPayload(mergedPayload, strategy);
         const filtered = filterCount(normalizedPayload, url.searchParams.get('count'));
         if (filtered.error) {
