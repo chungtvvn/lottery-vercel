@@ -1352,7 +1352,8 @@ async function main() {
         throw new Error(`Không có dữ liệu trong khoảng ${startDate || `${maxMonths} tháng gần nhất`} -> ${endDate || rawLatestDate}.`);
     }
     const targetDates = new Set(targetRows.map(row => formatIsoDate(row.date)));
-    console.log(`[LotoMilestone20Y] ${targetRows.length} ngày, ${methodConfigs.length} cấu hình, ${PRIZE_KEYS.length} vị trí.`);
+    const reportPositions = positionInputFiles.length > 0 ? PRIZE_KEYS : selectedPositions;
+    console.log(`[LotoMilestone20Y] ${targetRows.length} ngày, ${methodConfigs.length} cấu hình, ${reportPositions.length} vị trí.`);
 
     const byDate = new Map(targetRows.map(row => [formatIsoDate(row.date), {
         date: formatIsoDate(row.date),
@@ -1776,7 +1777,7 @@ async function main() {
         logic: 'annualMilestone20y-per-position',
         historyYears,
         fixedBaselineYear,
-        positions: PRIZE_KEYS,
+        positions: reportPositions,
         months: monthsList,
         startDate,
         endDate,
