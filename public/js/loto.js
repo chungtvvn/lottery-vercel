@@ -261,7 +261,21 @@
 
         const rows = (live.predictions || []).slice().reverse();
         const methodName = live.config?.methodName || data.config?.methodName || '';
-        listRoot.innerHTML = rows.map(row => {
+        const tracking = live.tracking || {};
+        const strategyIsEdge = state.selectedStrategy === 'dedupEdge75Pit';
+        const settledCount = rows.filter(row => row.status === 'settled').length;
+        const trackingNotice = strategyIsEdge ? `
+            <div class="border-b border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900">
+                <div class="font-black">Nhật ký thực tế Edge75 PIT</div>
+                <div class="mt-1 text-xs leading-5 text-sky-800">
+                    Chỉ hiển thị snapshot Edge75 PIT đã được chốt khi phát hành, sau đó tự đối soát với 27 giải.
+                    ${tracking.firstPredictionDate ? `Bắt đầu theo dõi từ ${escapeHtml(tracking.firstPredictionDate)}.` : 'Chưa có snapshot Edge75 PIT để đối soát.'}
+                    ${tracking.hiddenLegacyRows ? ` Đã ẩn ${nf.format(tracking.hiddenLegacyRows)} nhật ký chiến lược cũ để không gán nhầm sang Edge.` : ''}
+                    ${settledCount ? ` Đã kết toán ${nf.format(settledCount)} ngày.` : ' Snapshot chờ kết quả vẫn sẽ hiển thị ở đây.'}
+                </div>
+            </div>
+        ` : '';
+        listRoot.innerHTML = trackingNotice + (rows.map(row => {
             const statusLabel = row.status === 'settled' ? 'Đã kết toán' : 'Chờ kết quả';
             const statusClass = row.status === 'settled'
                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
@@ -344,7 +358,9 @@
                     </div>
                 </article>
             `;
-        }).join('') || '<div class="p-4 text-sm text-slate-500">Chưa có dự đoán thực tế nào được lưu.</div>';
+        }).join('') || `<div class="p-4 text-sm text-slate-500">${strategyIsEdge
+            ? 'Chưa có snapshot Edge75 PIT nào được lưu. Action kế tiếp sẽ lưu dàn Edge trước khi có kết quả quay thưởng.'
+            : 'Chưa có dự đoán thực tế nào được lưu.'}</div>`);
     }
 
     function getPeriodLabel(period) {

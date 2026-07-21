@@ -261,9 +261,10 @@ function normalizeLotoPayload(payload = {}, strategy = DEFAULT_LOTO_STRATEGY) {
         cloned.nextPrediction.predictions = normalizePredictionMap(cloned.nextPrediction.predictions);
     }
 
-    let rawPredictions = cloned.livePredictions?.predictions || [];
-    // Extract the strategy-specific fields from each row if available
-    rawPredictions = rawPredictions.map(row => {
+    const sourceLiveRows = cloned.livePredictions?.predictions || [];
+    // A live row is an immutable snapshot. Never relabel a legacy RRF row as a
+    // different strategy merely because that strategy was added later.
+    const rawPredictions = sourceLiveRows.map(row => {
         if (row.strategies?.[strategy]) {
             return {
                 ...row,
@@ -271,8 +272,8 @@ function normalizeLotoPayload(payload = {}, strategy = DEFAULT_LOTO_STRATEGY) {
                 methods: row.strategies[strategy].methods || {}
             };
         }
-        return row;
-    });
+        return strategy === DEFAULT_LOTO_STRATEGY ? row : null;
+    }).filter(Boolean);
 
     const liveRows = normalizeLiveRows(rawPredictions, economics);
     
@@ -301,7 +302,16 @@ function normalizeLotoPayload(payload = {}, strategy = DEFAULT_LOTO_STRATEGY) {
             ...cloned.livePredictions,
             config: withLotoConfig(cloned.livePredictions.config || {}, economics),
             predictions: liveRows,
-            summary: liveSummary
+            summary: liveSummary,
+            tracking: {
+                strategy,
+                strategyRows: liveRows.length,
+                hiddenLegacyRows: Math.max(0, sourceLiveRows.length - liveRows.length),
+                firstPredictionDate: liveRows
+                    .map(row => row.predictionIsoDate || row.predictionDate)
+                    .filter(Boolean)
+                    .sort()[0] || null
+            }
         }
         : cloned.livePredictions;
         
