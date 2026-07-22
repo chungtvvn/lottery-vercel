@@ -1153,7 +1153,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
         const memberships = new Map();
-        selected.forEach(({ item }) => {
+        selected.forEach(item => {
+            if (!item?.streak) return;
             const title = item.streak.description || item.streak.key || 'Chuỗi';
             getPredictionNumbers({ streak: item.streak }).forEach(number => {
                 if (!memberships.has(number)) memberships.set(number, []);
@@ -1238,8 +1239,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const bindCurrentStreakControls = () => {
         const controls = ['current-streak-sort', 'current-streak-frequency-scope', 'current-streak-frequency-min', 'current-streak-frequency-max']
             .map(id => document.getElementById(id)).filter(Boolean);
+        let filterSyncTimer = null;
+        const scheduleFilterSync = () => {
+            window.clearTimeout(filterSyncTimer);
+            filterSyncTimer = window.setTimeout(syncCurrentStreakCards, 120);
+        };
         controls.forEach(control => {
-            control.oninput = syncCurrentStreakCards;
+            control.oninput = control.matches('input') ? scheduleFilterSync : syncCurrentStreakCards;
             control.onchange = syncCurrentStreakCards;
         });
         document.getElementById('current-streak-select-all')?.addEventListener('click', () => {
@@ -1309,13 +1315,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             const payload = await response.json();
             const frequencies = payload?.frequencies || {};
             annual20FrequencyByStreakId = new Map();
+            const cardsById = new Map([...currentStreaksContainer.querySelectorAll('[data-active-streak-id]')]
+                .map(card => [card.dataset.activeStreakId, card]));
             currentStreakItemsById.forEach((item, id) => {
                 const frequency = frequencies[id] || {};
                 const count = Number(frequency.frequencyCount || 0);
                 const targetCount = Number(frequency.targetCount || 0);
                 annual20FrequencyByStreakId.set(id, count / 20);
-                const card = [...currentStreaksContainer.querySelectorAll('[data-active-streak-id]')]
-                    .find(element => element.dataset.activeStreakId === id);
+                const card = cardsById.get(id);
                 if (!card) return;
                 card.dataset.frequency20 = String(count / 20);
                 const label = card.querySelector('[data-frequency-20-label]');
@@ -1841,7 +1848,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
 
                     finalHtml += `
-                                <div data-active-streak-id="${escapeHtml(cardId)}" data-chain-title="${escapeHtml(streak.description || streak.key || '')}" data-frequency-history="${fullFrequency}" data-frequency-20="${annual20FrequencyByStreakId.get(cardId) ?? fullFrequency}" class="${cardBgColor} rounded-lg shadow-sm border border-l-4 ${cardBorderColor} transition hover:shadow-lg hover:-translate-y-1 cursor-pointer">
+                                <div data-active-streak-id="${escapeHtml(cardId)}" data-chain-title="${escapeHtml(streak.description || streak.key || '')}" data-frequency-history="${fullFrequency}" data-frequency-20="${annual20FrequencyByStreakId.get(cardId) ?? fullFrequency}" style="content-visibility:auto;contain-intrinsic-size:auto 360px" class="${cardBgColor} rounded-lg shadow-sm border border-l-4 ${cardBorderColor} transition hover:shadow-lg hover:-translate-y-1 cursor-pointer">
                                     <div class="p-4 flex flex-col h-full">
                                         
                                         <div data-streak-info class="relative group cursor-pointer" onclick="this.querySelector('.group-hover\\:block').classList.toggle('hidden')">
