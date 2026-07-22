@@ -4,6 +4,7 @@
     const DEFAULT_LOTO_STAKE_K = 2200;
     const DEFAULT_LOTO_PAYOUT_K = 8000;
     const LOTO_COUNT_ORDER = [6, 7, 20, 25, 30];
+    const LOTO_STRATEGIES = ['rrfParallelBlock85Small65', 'dedupEdge75Pit'];
     const state = {
         performancePeriod: 'monthly',
         performancePayload: null,
@@ -474,6 +475,61 @@
         return summary;
     }
 
+    function renderStrategyComparison(payloads = {}) {
+        const root = document.getElementById('strategyComparison');
+        if (!root) return;
+        const available = LOTO_STRATEGIES
+            .map(strategy => ({ strategy, payload: payloads[strategy] }))
+            .filter(entry => entry.payload);
+        if (!available.length) {
+            root.innerHTML = '<div class="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500">Chưa có nhật ký thực tế để so sánh.</div>';
+            return;
+        }
+        const cell = (summary, count) => {
+            const item = summary[`top${count}`] || {};
+            if (!item.days) return '<span class="text-slate-400">Chưa có</span>';
+            const profit = Number(item.profitK || 0);
+            return `<div class="font-bold ${profit >= 0 ? 'text-emerald-700' : 'text-red-600'}">${money(profit)}</div>
+                <div class="mt-0.5 text-[11px] text-slate-500">${nf.format(item.hitDays || 0)}/${nf.format(item.days)} hit-day · ${percent(item.hitRate)}</div>`;
+        };
+        root.innerHTML = `
+            <div class="overflow-x-auto">
+                <table class="min-w-[900px] w-full text-left text-sm">
+                    <thead class="border-b border-slate-200 text-xs font-bold uppercase tracking-wide text-slate-500">
+                        <tr>
+                            <th class="px-3 py-3">Phương pháp</th>
+                            ${LOTO_COUNT_ORDER.map(count => `<th class="px-3 py-3 text-right">Top ${count}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        ${available.map(({ strategy, payload }) => {
+                            const summary = summarizeLiveAdjusted(payload.livePredictions || {});
+                            const label = payload.config?.methodName || strategy;
+                            return `<tr class="${strategy === state.selectedStrategy ? 'bg-violet-50/50' : ''}">
+                                <td class="px-3 py-4 font-bold text-slate-900">${escapeHtml(label)}</td>
+                                ${LOTO_COUNT_ORDER.map(count => `<td class="px-3 py-4 text-right align-top">${cell(summary, count)}</td>`).join('')}
+                            </tr>`;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+    }
+
+    async function loadStrategyComparison(currentData) {
+        const alternate = LOTO_STRATEGIES.find(strategy => strategy !== state.selectedStrategy);
+        const payloads = { [state.selectedStrategy]: currentData };
+        renderStrategyComparison(payloads);
+        if (!alternate) return;
+        try {
+            const response = await fetch(`/api/loto/prediction?strategy=${alternate}`, { cache: 'no-store' });
+            const data = await response.json();
+            if (response.ok && data.success) payloads[alternate] = data;
+        } catch (error) {
+            console.warn('[LotoComparison] Không tải được phương pháp còn lại:', error);
+        }
+        renderStrategyComparison(payloads);
+    }
+
     function getRowProfit(row = {}) {
         return Number(adjustLotoFinancialRow(row).profitK ?? row.netProfitK ?? 0);
     }
@@ -752,6 +808,7 @@
             renderPredictions(data);
             renderLive(data);
             renderPerformanceReport();
+            loadStrategyComparison(data);
         } catch (error) {
             errorBox.textContent = error.message;
             errorBox.classList.remove('hidden');
