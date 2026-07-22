@@ -11,7 +11,8 @@ const NO_STORE_HEADERS = {
 const FALLBACK_LOTO_STAKE_PER_NUMBER_K = 2200;
 const FALLBACK_LOTO_PAYOUT_PER_HIT_K = 8000;
 const LOTO_BET_COUNTS = [6, 7, 20, 25, 30];
-const DEFAULT_LOTO_STRATEGY = 'rrfParallelBlock85Small65';
+const LEGACY_RRF_LOTO_STRATEGY = 'rrfParallelBlock85Small65';
+const DEFAULT_LOTO_STRATEGY = 'dedupEdge75Pit';
 const LOTO_STRATEGY_META = {
     rrfParallelBlock85Small65: {
         methodName: 'Lô Song song RRF 50/50 - Chuỗi nhỏ Hold 65 + Nhịp block Hold 85'
@@ -275,7 +276,9 @@ function normalizeLotoPayload(payload = {}, strategy = DEFAULT_LOTO_STRATEGY) {
                 methods: row.strategies[strategy].methods || {}
             };
         }
-        return strategy === DEFAULT_LOTO_STRATEGY ? row : null;
+        // Only legacy RRF snapshots lack an explicit strategies object.  Do
+        // not ever reinterpret those rows as Edge75 PIT.
+        return strategy === LEGACY_RRF_LOTO_STRATEGY ? row : null;
     }).filter(Boolean);
 
     const liveRows = normalizeLiveRows(rawPredictions, economics);
@@ -394,7 +397,7 @@ export async function GET(request) {
             );
         }
         if (
-            strategy !== DEFAULT_LOTO_STRATEGY
+            strategy !== LEGACY_RRF_LOTO_STRATEGY
             && !mergedPayload.nextPrediction?.strategies?.[strategy]
         ) {
             return NextResponse.json(
