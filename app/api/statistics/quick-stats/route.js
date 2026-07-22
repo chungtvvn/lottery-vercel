@@ -60,6 +60,43 @@ async function getStatsForKeys(keys, scope) {
     return statisticsService.rehydrateCurrentStreaks(stats);
 }
 
+async function getAnnualFrequencySnapshot(candidates) {
+    const lotteryService = require('../../../../lib/services/lotteryService');
+    await lotteryService.loadAll();
+    const { startYear, endYear } = getAnnual20Window(lotteryService.getRawData() || []);
+    const uniqueKeys = [...new Set(candidates.map(candidate => candidate.key).filter(Boolean))];
+    const historicalExclusionService = require('../../../../lib/services/historicalExclusionService');
+    const stats = historicalExclusionService.getRecordStatsForKeysAtDate(uniqueKeys, {
+        fromDate: `01/01/${startYear}`,
+        untilDate: `31/12/${endYear}`,
+        totalYears: 20
+    });
+
+    const frequencies = {};
+    for (const candidate of candidates) {
+        const currentLength = Number(candidate.currentLength);
+        const targetLength = Number(candidate.targetLength);
+        const sampleLength = Number(candidate.sampleLength);
+        if (!candidate.id || !candidate.key || !Number.isFinite(currentLength) || !Number.isFinite(targetLength)) continue;
+        const gapStats = stats[candidate.key]?.gapStats || {};
+        frequencies[candidate.id] = {
+            currentCount: Number(gapStats[currentLength]?.count || 0),
+            targetCount: Number(gapStats[targetLength]?.count || 0),
+            frequencyCount: Number(gapStats[Number.isFinite(sampleLength) ? sampleLength : currentLength]?.count || 0)
+        };
+    }
+
+    return {
+        frequencies,
+        _scope: {
+            id: 'annual20',
+            startDate: `01/01/${startYear}`,
+            endDate: `31/12/${endYear}`,
+            totalYears: 20
+        }
+    };
+}
+
 export async function GET(request) {
     try {
         const { searchParams } = new URL(request.url);
@@ -168,6 +205,16 @@ export async function GET(request) {
 export async function POST(request) {
     try {
         const body = await request.json();
+        if (body?.mode === 'annual-frequency-snapshot') {
+            const candidates = Array.isArray(body?.candidates)
+                ? body.candidates.filter(candidate => candidate && typeof candidate.id === 'string' && typeof candidate.key === 'string').slice(0, 5000)
+                : [];
+            if (candidates.length === 0) {
+                return NextResponse.json({ error: 'Danh sách chuỗi không hợp lệ.' }, { status: 400 });
+            }
+            const { cachedResponse } = require('@/lib/cache-headers');
+            return cachedResponse(await getAnnualFrequencySnapshot(candidates), 'NO_CACHE');
+        }
         const keys = Array.isArray(body?.keys)
             ? [...new Set(body.keys.filter(key => typeof key === 'string' && key.length > 0))]
             : [];

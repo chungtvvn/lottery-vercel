@@ -1265,15 +1265,39 @@ document.addEventListener('DOMContentLoaded', async () => {
     const loadAnnual20CurrentStreakFrequencies = async () => {
         try {
             annual20FrequencyLoaded = false;
-            const payload = await fetchJSON(`${BASE_URL}/api/statistics/quick-stats?scope=annual20&activeOnly=true`);
-            const stats = payload?.stats || {};
+            const candidates = [];
+            currentStreakItemsById.forEach((item, id) => {
+                const key = item.streak?.key;
+                if (!key) return;
+                const lowerKey = String(key).toLowerCase();
+                const lowerDescription = String(item.streak?.description || '').toLowerCase();
+                const isSoLe = (lowerKey.includes('vesole') || lowerKey.includes('solemoi') || lowerDescription.includes('về so le'))
+                    && !lowerKey.includes('tienluisole') && !lowerKey.includes('luitiensole')
+                    && !lowerKey.includes('soletheocap') && !lowerDescription.includes('tiến-lùi') && !lowerDescription.includes('lùi-tiến');
+                const step = isSoLe ? 2 : 1;
+                const currentLength = Number(item.streakLen ?? item.currentLen ?? item.currentLength ?? item.streak?.length ?? 0);
+                const targetLength = currentLength + step;
+                candidates.push({
+                    id,
+                    key,
+                    currentLength,
+                    targetLength,
+                    sampleLength: item.streak?.isPotential ? targetLength : currentLength
+                });
+            });
+            const response = await fetch(`${BASE_URL}/api/statistics/quick-stats`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mode: 'annual-frequency-snapshot', candidates })
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const payload = await response.json();
+            const frequencies = payload?.frequencies || {};
             annual20FrequencyByStreakId = new Map();
             currentStreakItemsById.forEach((item, id) => {
-                const lowerKey = String(item.streak.key || '').toLowerCase();
-                const isSoLe = (lowerKey.includes('vesole') || lowerKey.includes('solemoi'))
-                    && !lowerKey.includes('tienluisole') && !lowerKey.includes('luitiensole') && !lowerKey.includes('soletheocap');
-                const sampleLength = item.streak.isPotential ? item.streakLen + (isSoLe ? 2 : 1) : item.streakLen;
-                const count = Number(stats?.[item.streak.key]?.gapStats?.[sampleLength]?.count || 0);
+                const frequency = frequencies[id] || {};
+                const count = Number(frequency.frequencyCount || 0);
+                const targetCount = Number(frequency.targetCount || 0);
                 annual20FrequencyByStreakId.set(id, count / 20);
                 const card = [...currentStreaksContainer.querySelectorAll('[data-active-streak-id]')]
                     .find(element => element.dataset.activeStreakId === id);
@@ -1281,10 +1305,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 card.dataset.frequency20 = String(count / 20);
                 const label = card.querySelector('[data-frequency-20-label]');
                 if (label) label.textContent = `Mốc 20 năm: ${formatExactFrequency(count, 20)}`;
+                const targetLabel = card.querySelector('[data-frequency-20-target-label]');
+                if (targetLabel) targetLabel.textContent = `Mốc 20 năm: ${formatExactFrequency(targetCount, 20)}`;
             });
             annual20FrequencyLoaded = true;
             syncCurrentStreakCards();
         } catch (error) {
+            currentStreaksContainer.querySelectorAll('[data-frequency-20-label]').forEach(label => {
+                label.textContent = 'Mốc 20 năm: không tải được';
+            });
+            currentStreaksContainer.querySelectorAll('[data-frequency-20-target-label]').forEach(label => {
+                label.textContent = 'Mốc 20 năm: không tải được';
+            });
             console.warn('Không tải được tần suất Mốc 20 năm của chuỗi đang diễn ra:', error);
         }
     };
@@ -1999,20 +2031,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                             const cardBg = isInnerRecord ? (isInnerSuperRecord ? 'bg-purple-50' : 'bg-red-50') : (streak.isPotential ? 'bg-orange-50' : 'bg-white');
 
 
-                            let freqHtml = '';
-                            if (targetCount > 0) {
-                                const actionText = streak.isPotential ? 'Hình thành' : 'Kéo dài';
-                                freqHtml = `<div class="text-[11px] mt-1 border-t border-gray-100 pt-2 text-center text-gray-700">
-                                    <div class="mb-1"><strong>Dự đoán ${actionText} (${nextLen} ngày)</strong></div>
-                                    <div class="flex justify-between px-2 bg-gray-100 rounded py-1">
-                                        <span>Số lần: <strong class="text-blue-600">${targetCount}</strong></span>
-                                        <span>Tần suất: <strong class="${isNextRecord ? (isNextSuperRecord ? 'text-purple-600' : 'text-red-600') : 'text-green-600'}">${targetFreqYear.toFixed(2)} lần/năm</strong></span>
-                                    </div>
-                                    <div class="text-[10px] text-gray-500 mt-1 italic leading-tight">
-                                        (Thống kê trong vòng ${totalYears.toFixed(1)} năm qua)
-                                    </div>
-                                </div>`;
-                            }
+                            const actionText = streak.isPotential ? 'Hình thành' : 'Kéo dài';
+                            const freqHtml = `<div class="text-[11px] mt-1 border-t border-gray-100 pt-2 text-center text-gray-700">
+                                <div class="mb-1"><strong>Dự đoán ${actionText} (${nextLen} ngày)</strong></div>
+                                <div class="flex justify-between px-2 bg-gray-100 rounded py-1">
+                                    <span>Số lần: <strong class="text-blue-600">${targetCount}</strong></span>
+                                    <span>Tần suất: <strong class="${isNextRecord ? (isNextSuperRecord ? 'text-purple-600' : 'text-red-600') : 'text-green-600'}">${formatExactFrequency(targetCount, totalYears)}</strong></span>
+                                </div>
+                                <div class="text-[10px] text-gray-500 mt-1 italic leading-tight">
+                                    (Lịch sử: ${totalYears.toFixed(1)} năm)
+                                </div>
+                                <div data-frequency-20-target-label class="mt-1 rounded bg-emerald-50 px-2 py-1 text-[10px] not-italic text-emerald-800">Mốc 20 năm: đang nạp...</div>
+                            </div>`;
 
                             if (freqHtml || gapInfoGE || gapInfoExact || extGapInfo) {
                                 return `
