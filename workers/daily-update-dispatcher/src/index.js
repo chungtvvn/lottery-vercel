@@ -28,10 +28,12 @@ const TELEGRAM_DE_METHODS = [
     label: 'Song Song Lịch sử Hold 70'
   },
   {
-    source: 'milestone',
-    strategy: 'dedupEdge75Pit',
+    // Must use the immutable Lich su snapshot, not the milestone strategy.
+    source: 'history',
+    methodId: 'dedupEdge75Hold70',
+    strategy: 'dedupEdge75Hold70',
     target: 70,
-    label: 'Edge75 PIT Hold 70'
+    label: 'Edge khử trùng 75% nền - Hold 70'
   }
 ];
 const DEFAULT_LOTO_COUNT = 6;

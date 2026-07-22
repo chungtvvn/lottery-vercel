@@ -59,18 +59,18 @@
     <div class="container mx-auto max-w-7xl px-4 pb-12">
         <!-- Title Section -->
         <div class="mb-8">
-            <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-3">
+            <h1 id="records-title" class="text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-3">
                 <i class="bi bi-trophy-fill text-yellow-500 glow-text-warning"></i>
                 <span>Thống Kê Kỷ Lục Chi Tiết</span>
             </h1>
-            <p class="text-slate-650 mt-2">Dữ liệu phân tích kỷ lục gan, chuỗi tiến/lùi, gap statistics chi tiết của hơn 2,400 dạng số trên toàn bộ lịch sử XSMB từ 2005.</p>
+            <p id="records-subtitle" class="text-slate-650 mt-2">Dữ liệu phân tích kỷ lục, chuỗi tiến/lùi và gap statistics chi tiết của hơn 2.400 dạng số trên toàn bộ lịch sử XSMB.</p>
         </div>
 
         <!-- Filter & Search Controls -->
         <div class="glass-card p-6 mb-8">
             <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
                 <!-- Search bar -->
-                <div class="md:col-span-5">
+                <div class="md:col-span-4">
                     <label for="recordSearch" class="block text-sm font-semibold text-slate-700">Tìm kiếm kỷ lục:</label>
                     <div class="relative mt-1">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
@@ -80,8 +80,16 @@
                     </div>
                 </div>
 
+                <div class="md:col-span-3">
+                    <label for="recordScope" class="block text-sm font-semibold text-slate-700">Mốc kỷ lục:</label>
+                    <select id="recordScope" class="glass-input mt-1 block w-full text-sm py-2">
+                        <option value="history">Toàn bộ lịch sử đến hiện tại</option>
+                        <option value="annual20">Mốc 20 năm, chốt cuối năm trước</option>
+                    </select>
+                </div>
+
                 <!-- Group filter -->
-                <div class="md:col-span-4">
+                <div class="md:col-span-3">
                     <label for="recordGroup" class="block text-sm font-semibold text-slate-700">Nhóm thống kê:</label>
                     <select id="recordGroup" class="glass-input mt-1 block w-full text-sm py-2">
                         <option value="ALL">-- Tất cả các nhóm --</option>
@@ -89,7 +97,7 @@
                 </div>
 
                 <!-- Items per page -->
-                <div class="md:col-span-3">
+                <div class="md:col-span-2">
                     <label for="pageSize" class="block text-sm font-semibold text-slate-700">Hiển thị mỗi trang:</label>
                     <select id="pageSize" class="glass-input mt-1 block w-full text-sm py-2">
                         <option value="25">25 kỷ lục</option>
@@ -97,6 +105,9 @@
                         <option value="100">100 kỷ lục</option>
                     </select>
                 </div>
+            </div>
+            <div id="recordScopeBanner" class="mt-5 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-900">
+                <span class="font-bold">Toàn bộ lịch sử:</span> kỷ lục được tính từ ngày dữ liệu đầu tiên đến hiện tại.
             </div>
         </div>
 

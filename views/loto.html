@@ -51,7 +51,7 @@
                 <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-900">Dự đoán Lô cho ngày tiếp theo</h1>
                 <p class="mt-2 max-w-4xl text-sm leading-6 text-slate-600">
                     Mỗi vị trí trong 27 giải tự chạy logic Mốc 20 năm, sau đó xếp hạng RRF 50/50
-                    giữa Chuỗi nhỏ Hold 65 và Nhịp block Hold 75. Hệ thống chỉ theo dõi Top 6 và Top 7;
+                    giữa Chuỗi nhỏ Hold 65 và Nhịp block Hold 85. Hệ thống theo dõi Top 6, 7, 20, 25 và 30;
                     số trùng nguồn vẫn chỉ tính một đơn vị cược đối với Lô. Đơn vị K = 1.000 VND;
                     web dùng 2200K/con, ăn 8000K/hit.
                 </p>
@@ -59,8 +59,8 @@
             <div class="flex items-center gap-3">
                 <label for="lotoStrategySelect" class="text-sm font-black text-slate-600 whitespace-nowrap">Phương pháp:</label>
                 <select id="lotoStrategySelect" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
-                    <option value="rrfParallelBlock85Small65" selected>RRF song song Block 85 + Chuỗi nhỏ 65 - Top 6/7</option>
-                    <option value="dedupEdge75Pit">Edge75 PIT có kiểm chứng - Hold 70 - Top 6/7</option>
+                    <option value="rrfParallelBlock85Small65" selected>RRF song song Block 85 + Chuỗi nhỏ 65 - Top 6/7/20/25/30</option>
+                    <option value="dedupEdge75Pit">Edge75 PIT có kiểm chứng - Hold 70 - Top 6/7/20/25/30</option>
                 </select>
             </div>
         </section>
@@ -104,7 +104,7 @@
 
     </main>
 
-    <script src="/js/loto.js?v=20260721-edge75-pit-tracking-v2"></script>
+    <script src="/js/loto.js?v=20260722-top20-top30-v1"></script>
 </body>
 
 </html>

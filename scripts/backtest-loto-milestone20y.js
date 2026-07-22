@@ -37,10 +37,10 @@ const DEFAULT_STRATEGY = 'chainSmallFirst';
 const DEFAULT_HOLD = 65;
 const DEFAULT_AGGREGATION_MODE = 'twoHitGreedy';
 const DEFAULT_BET_COUNT = 6;
-const DEFAULT_BET_COUNTS = [6, 7];
+const DEFAULT_BET_COUNTS = [6, 7, 20, 25, 30];
 const EDGE75_PIT_METHOD_ID = 'dedupEdge75Pit';
-const LIVE_TRACKING_VERSION = 'rrf-parallel-block85-small65-top6-top7-live-v1';
-const LIVE_CACHE_NOTE = 'Lô dùng phương án song song RRF 50/50: Chuỗi nhỏ Hold 65 + Nhịp block Hold 85. Mỗi vị trí được loại trừ riêng, sau đó xếp hạng RRF và chọn Top 6/Top 7; Lô không nhân tiền x2 cho số trùng.';
+const LIVE_TRACKING_VERSION = 'rrf-parallel-block85-small65-top6-top7-top20-top25-top30-live-v2';
+const LIVE_CACHE_NOTE = 'Lô dùng phương án song song RRF 50/50: Chuỗi nhỏ Hold 65 + Nhịp block Hold 85. Mỗi vị trí được loại trừ riêng, sau đó xếp hạng RRF và chọn Top 6/7/20/25/30; Lô không nhân tiền x2 cho số trùng.';
 
 function parseArgs() {
     return new Map(process.argv.slice(2).map(arg => {
@@ -1242,7 +1242,7 @@ async function main() {
     const includeRrf = args.get('includeRrf') === '1' || args.get('rrf') === '1';
     const rrfSmallHold = Math.max(1, Math.min(95, Number(args.get('rrfSmallHold') || 65)));
     const rrfBlockHold = Math.max(1, Math.min(95, Number(args.get('rrfBlockHold') || 85)));
-    const rrfBetCounts = betCounts.filter(count => [6, 7, 10, 14, 20].includes(Number(count)));
+    const rrfBetCounts = betCounts.filter(count => [6, 7, 10, 14, 20, 25, 30].includes(Number(count)));
     const rrfPairStrategies = String(args.get('rrfPairStrategies') || '')
         .split(',')
         .map(value => value.trim())
@@ -2145,12 +2145,30 @@ function upsertNextLivePredictionMulti(livePayload, nextPredictions, primaryPred
     // with fresher data before settlement.
     const existingStrategies = existing.strategies || {};
     const addedStrategies = {};
+    const extendedStrategyIds = [];
     for (const [strategyId, strategy] of Object.entries(record.strategies || {})) {
-        if (!existingStrategies[strategyId]) addedStrategies[strategyId] = strategy;
+        if (!existingStrategies[strategyId]) {
+            addedStrategies[strategyId] = strategy;
+            continue;
+        }
+        const existingPredictionSets = existingStrategies[strategyId]?.predictions || {};
+        const missingPredictionSets = Object.fromEntries(Object.entries(strategy.predictions || {})
+            .filter(([key]) => !existingPredictionSets[key]));
+        if (Object.keys(missingPredictionSets).length > 0) {
+            addedStrategies[strategyId] = {
+                ...existingStrategies[strategyId],
+                predictions: { ...existingPredictionSets, ...missingPredictionSets }
+            };
+            extendedStrategyIds.push(strategyId);
+        }
     }
-    if (Object.keys(addedStrategies).length === 0) return false;
+    const existingPrimarySets = existing.predictions || {};
+    const missingPrimarySets = Object.fromEntries(Object.entries(record.predictions || {})
+        .filter(([key]) => !existingPrimarySets[key]));
+    if (Object.keys(addedStrategies).length === 0 && Object.keys(missingPrimarySets).length === 0) return false;
     livePayload.predictions[existingIndex] = {
         ...existing,
+        predictions: { ...existingPrimarySets, ...missingPrimarySets },
         strategies: {
             ...existingStrategies,
             ...addedStrategies
@@ -2158,10 +2176,10 @@ function upsertNextLivePredictionMulti(livePayload, nextPredictions, primaryPred
         strategyAddedAt: new Date().toISOString(),
         addedStrategyIds: [
             ...(existing.addedStrategyIds || []),
-            ...Object.keys(addedStrategies)
+            ...Object.keys(addedStrategies).filter(id => !existingStrategies[id])
         ]
     };
-    console.log(`[LotoMilestone20Y] Added pending strategies for ${record.predictionIsoDate}: ${Object.keys(addedStrategies).join(', ')}.`);
+    console.log(`[LotoMilestone20Y] Extended pending snapshot ${record.predictionIsoDate}: new=${Object.keys(addedStrategies).filter(id => !existingStrategies[id]).join(', ') || '-'}, topSets=${Object.keys(missingPrimarySets).join(', ') || '-'}, strategySets=${extendedStrategyIds.join(', ') || '-'}.`);
     return true;
 }
 

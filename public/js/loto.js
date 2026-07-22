@@ -3,7 +3,7 @@
     const DEFAULT_LOTO_BET_COUNT = 6;
     const DEFAULT_LOTO_STAKE_K = 2200;
     const DEFAULT_LOTO_PAYOUT_K = 8000;
-    const LOTO_COUNT_ORDER = [6, 7];
+    const LOTO_COUNT_ORDER = [6, 7, 20, 25, 30];
     const state = {
         performancePeriod: 'monthly',
         performancePayload: null,

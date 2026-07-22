@@ -34,6 +34,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const recordsSkeleton = document.getElementById('recordsSkeleton');
     const recordsEmptyState = document.getElementById('recordsEmptyState');
     const quickStatsContainer = document.getElementById('quick-stats-container');
+    const recordScope = document.getElementById('recordScope');
+    const recordScopeBanner = document.getElementById('recordScopeBanner');
+    const recordsTitle = document.getElementById('records-title');
+    const recordsSubtitle = document.getElementById('records-subtitle');
 
     // State Variables
     let currentPage = 1;
@@ -42,6 +46,26 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedGroup = 'ALL';
     let allPatterns = [];
     let availablePatternKeys = null;
+    let activeRecordScope = 'history';
+
+    const getScopeQuery = () => activeRecordScope === 'annual20' ? '&scope=annual20' : '';
+    const renderScopePresentation = () => {
+        const isAnnual = activeRecordScope === 'annual20';
+        if (recordsTitle) recordsTitle.querySelector('span').textContent = isAnnual
+            ? 'Kỷ Lục Mốc 20 Năm'
+            : 'Thống Kê Kỷ Lục Chi Tiết';
+        if (recordsSubtitle) recordsSubtitle.textContent = isAnnual
+            ? 'Dữ liệu chỉ lấy đúng 20 năm đã chốt: từ 01/01 của năm cách 20 năm đến 31/12 năm trước. Mốc này chỉ thay đổi khi sang năm mới.'
+            : 'Dữ liệu phân tích kỷ lục, chuỗi tiến/lùi và gap statistics chi tiết của hơn 2.400 dạng số trên toàn bộ lịch sử XSMB.';
+        if (recordScopeBanner) {
+            recordScopeBanner.className = `mt-5 rounded-xl border px-4 py-3 text-sm ${isAnnual
+                ? 'border-emerald-200 bg-emerald-50 text-emerald-950'
+                : 'border-indigo-200 bg-indigo-50 text-indigo-900'}`;
+            recordScopeBanner.innerHTML = isAnnual
+                ? '<span class="font-bold">Mốc 20 năm:</span> mỗi năm chốt một lần tại 31/12 năm trước; chỉ thống kê các chuỗi kết thúc trong cửa sổ 20 năm đó.'
+                : '<span class="font-bold">Toàn bộ lịch sử:</span> kỷ lục được tính từ ngày dữ liệu đầu tiên đến hiện tại.';
+        }
+    };
     let filteredPatterns = [];
 
     // Helper functions
@@ -676,7 +700,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const keysStr = pageItems.map(p => p.key).join(',');
 
         try {
-            const data = await fetchJSON(`${BASE_URL}/api/statistics/quick-stats?keys=${keysStr}`);
+            const data = await fetchJSON(`${BASE_URL}/api/statistics/quick-stats?keys=${keysStr}${getScopeQuery()}`);
             
             let renderedCount = 0;
             pageItems.forEach(pattern => {
@@ -718,7 +742,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize Page
     const loadAvailablePatternKeys = async () => {
         try {
-            const data = await fetchJSON(`${BASE_URL}/api/statistics/quick-stats?keysOnly=true&recordsOnly=true`);
+            const data = await fetchJSON(`${BASE_URL}/api/statistics/quick-stats?keysOnly=true&recordsOnly=true${getScopeQuery()}`);
             if (data && Array.isArray(data.keys)) {
                 availablePatternKeys = new Set(data.keys);
             }
@@ -735,6 +759,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        renderScopePresentation();
         await loadAvailablePatternKeys();
 
         // 1. Populate category dropdown and compile allPatterns array
@@ -794,6 +819,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         recordGroup.addEventListener('change', (e) => {
             selectedGroup = e.target.value;
+            applyFilters();
+        });
+
+        recordScope?.addEventListener('change', async (e) => {
+            activeRecordScope = e.target.value === 'annual20' ? 'annual20' : 'history';
+            currentPage = 1;
+            availablePatternKeys = null;
+            renderScopePresentation();
+            await loadAvailablePatternKeys();
             applyFilters();
         });
 

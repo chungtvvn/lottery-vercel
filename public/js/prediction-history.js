@@ -328,7 +328,7 @@
             : [...methodSelector.options].map(option => ({ methodId: option.value, days: 0, profit: 0, wins: 0, losses: 0 }));
         const currentExists = state.selectedMethod && available.some(item => item.methodId === state.selectedMethod);
         if (!currentExists && available.length > 0) {
-            const preferredMethod = 'deParallelBlock85Small65Hold70';
+            const preferredMethod = 'dedupEdge75Hold70';
             state.selectedMethod = available.some(item => item.methodId === preferredMethod)
                 ? preferredMethod
                 : available[0].methodId;

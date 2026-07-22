@@ -41,6 +41,9 @@ async function main() {
         false
     );
     const deBetNumbers = Array.from({ length: 30 }, (_, value) => String(value).padStart(2, '0'));
+    // Keep Edge75 distinct from the parallel strategy so this test proves that
+    // Telegram reads the immutable History snapshot for the exact 30 numbers.
+    const edgeHistoryBetNumbers = Array.from({ length: 30 }, (_, value) => String(value + 70).padStart(2, '0'));
     const dePayload = {
         latestDataDate: '2026-07-01',
         config: { defaultBetStrategy: 'deParallelBlock85Small65', defaultBetTarget: 70 },
@@ -214,6 +217,10 @@ async function main() {
                         deParallelBlock85Small65Hold70: {
                             numbersToBet: deBetNumbers,
                             intersectionNumbers: ['12']
+                        },
+                        dedupEdge75Hold70: {
+                            numbersToBet: edgeHistoryBetNumbers,
+                            intersectionNumbers: []
                         }
                     }
                 }
@@ -232,6 +239,14 @@ async function main() {
                             unitCount: 31,
                             betWin: true,
                             actualSpecial: 12
+                        },
+                        dedupEdge75Hold70: {
+                            numbersToBet: edgeHistoryBetNumbers,
+                            intersectionNumbers: [],
+                            betCount: 30,
+                            unitCount: 30,
+                            betWin: false,
+                            actualSpecial: 12
                         }
                     }
                 }
@@ -244,6 +259,8 @@ async function main() {
     assert.match(report.text, /Kết quả thực tế: <b>12<\/b>/);
     assert.match(report.text, /Đề Song Song Mốc 20 năm Hold 70/);
     assert.match(report.text, /Đề Song Song Lịch sử Hold 70/);
+    assert.match(report.text, /Edge khử trùng 75% nền - Hold 70/);
+    assert.match(report.text, /Số đã đánh \(30\): <code>70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99<\/code>/);
     assert.doesNotMatch(report.text, /Chuỗi nhỏ trước Hold 70/);
     assert.match(report.text, /Lô RRF Top 7/);
     assert.match(report.text, /Lô Edge75 PIT Top 6/);

@@ -30,6 +30,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     const currentStreaksTitle = document.getElementById('current-streaks-title');
     const updateDataButton = document.getElementById('updateDataButton');
     const lastUpdateDateSpan = document.getElementById('lastUpdateDate');
+    const selectedCurrentStreaks = new Map();
+    let currentStreakItemsById = new Map();
+    let annual20FrequencyByStreakId = new Map();
+
+    const getCurrentStreakId = (streak, length) => `${streak.key || streak.description || 'streak'}|${length}|${streak.isPotential ? 'potential' : 'active'}`;
+    const formatExactFrequency = (count, years) => {
+        const safeCount = Number(count) || 0;
+        const safeYears = Number(years) || 0;
+        if (safeYears <= 0) return '0 lần/năm';
+        return `${safeCount}/${safeYears.toFixed(2)} = ${(safeCount / safeYears).toFixed(6)} lần/năm`;
+    };
 
     const parseDate = (dateString) => {
         if (!dateString) return null;
@@ -1132,6 +1143,145 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
+    const renderSelectedCurrentStreaks = () => {
+        const panel = document.getElementById('current-streak-selection-panel');
+        if (!panel) return;
+        const selected = [...selectedCurrentStreaks.values()];
+        if (selected.length === 0) {
+            panel.innerHTML = '<div class="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-4 text-sm text-slate-600">Chọn một hoặc nhiều thẻ chuỗi để xem dàn số có thể xuất hiện tiếp theo và phần số còn lại để đánh.</div>';
+            return;
+        }
+        const memberships = new Map();
+        selected.forEach(({ item }) => {
+            const title = item.streak.description || item.streak.key || 'Chuỗi';
+            getPredictionNumbers({ streak: item.streak }).forEach(number => {
+                if (!memberships.has(number)) memberships.set(number, []);
+                memberships.get(number).push(title);
+            });
+        });
+        const excluded = [...memberships.keys()].sort((a, b) => Number(a) - Number(b));
+        const remaining = Array.from({ length: 100 }, (_, number) => String(number).padStart(2, '0'))
+            .filter(number => !memberships.has(number));
+        const chips = (numbers, type) => numbers.map(number => {
+            const titles = memberships.get(number) || [];
+            const isOverlap = titles.length > 1;
+            const classes = type === 'bet'
+                ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
+                : (isOverlap ? 'border-violet-400 bg-violet-100 text-violet-900 ring-1 ring-violet-300' : 'border-red-200 bg-red-50 text-red-800');
+            const title = titles.length ? ` title="${escapeHtml(titles.join(' | '))}"` : '';
+            return `<span${title} class="inline-flex h-8 min-w-9 items-center justify-center rounded-md border px-2 font-mono text-xs font-bold ${classes}">${number}${isOverlap ? '<sup class="ml-0.5 text-[9px]">x' + titles.length + '</sup>' : ''}</span>`;
+        }).join('');
+        panel.innerHTML = `
+            <div class="grid gap-4 xl:grid-cols-2">
+                <div class="rounded-xl border border-red-200 bg-red-50/60 p-4">
+                    <div class="flex items-center justify-between gap-2"><h5 class="font-bold text-red-900">Số thuộc chuỗi đã chọn để loại (${excluded.length})</h5><span class="text-xs text-violet-700">Tím = trùng nhiều chuỗi</span></div>
+                    <div class="mt-3 flex flex-wrap gap-1.5">${chips(excluded, 'exclude') || '<span class="text-sm text-slate-500">Không có số.</span>'}</div>
+                </div>
+                <div class="rounded-xl border border-emerald-200 bg-emerald-50/60 p-4">
+                    <h5 class="font-bold text-emerald-900">Số còn lại để đánh (${remaining.length})</h5>
+                    <div class="mt-3 flex flex-wrap gap-1.5">${chips(remaining, 'bet')}</div>
+                </div>
+            </div>`;
+    };
+
+    const syncCurrentStreakCards = () => {
+        const sortSelect = document.getElementById('current-streak-sort');
+        const frequencyScope = document.getElementById('current-streak-frequency-scope');
+        const minInput = document.getElementById('current-streak-frequency-min');
+        const maxInput = document.getElementById('current-streak-frequency-max');
+        if (!sortSelect || !frequencyScope || !minInput || !maxInput) return;
+        const scope = frequencyScope.value === 'annual20' ? 'annual20' : 'history';
+        const min = minInput.value === '' ? -Infinity : Number(minInput.value);
+        const max = maxInput.value === '' ? Infinity : Number(maxInput.value);
+        const cards = [...currentStreaksContainer.querySelectorAll('[data-active-streak-id]')];
+        cards.forEach(card => {
+            const frequency = Number(card.dataset[scope === 'annual20' ? 'frequency20' : 'frequencyHistory']);
+            const visible = Number.isFinite(frequency) && frequency >= min && frequency <= max;
+            card.classList.toggle('hidden', !visible);
+        });
+        const byGrid = new Map();
+        cards.forEach(card => {
+            const grid = card.parentElement;
+            if (!byGrid.has(grid)) byGrid.set(grid, []);
+            byGrid.get(grid).push(card);
+        });
+        byGrid.forEach(groupCards => {
+            groupCards.sort((left, right) => {
+                const mode = sortSelect.value;
+                if (mode === 'chain-asc' || mode === 'chain-desc') {
+                    const compare = String(left.dataset.chainTitle || '').localeCompare(String(right.dataset.chainTitle || ''), 'vi');
+                    return mode === 'chain-asc' ? compare : -compare;
+                }
+                const useAnnual = mode.includes('20');
+                const compare = Number(left.dataset[useAnnual ? 'frequency20' : 'frequencyHistory']) - Number(right.dataset[useAnnual ? 'frequency20' : 'frequencyHistory']);
+                return mode.endsWith('asc') ? compare : -compare;
+            }).forEach(card => card.parentElement.appendChild(card));
+        });
+    };
+
+    const bindCurrentStreakControls = () => {
+        const controls = ['current-streak-sort', 'current-streak-frequency-scope', 'current-streak-frequency-min', 'current-streak-frequency-max']
+            .map(id => document.getElementById(id)).filter(Boolean);
+        controls.forEach(control => {
+            control.oninput = syncCurrentStreakCards;
+            control.onchange = syncCurrentStreakCards;
+        });
+        document.getElementById('current-streak-select-all')?.addEventListener('click', () => {
+            currentStreaksContainer.querySelectorAll('[data-active-streak-id]:not(.hidden)').forEach(card => {
+                const item = currentStreakItemsById.get(card.dataset.activeStreakId);
+                if (item) selectedCurrentStreaks.set(card.dataset.activeStreakId, item);
+                card.classList.add('ring-2', 'ring-indigo-400', 'bg-indigo-50');
+            });
+            renderSelectedCurrentStreaks();
+        });
+        document.getElementById('current-streak-clear-selection')?.addEventListener('click', () => {
+            selectedCurrentStreaks.clear();
+            currentStreaksContainer.querySelectorAll('[data-active-streak-id]').forEach(card => card.classList.remove('ring-2', 'ring-indigo-400', 'bg-indigo-50'));
+            renderSelectedCurrentStreaks();
+        });
+        currentStreaksContainer.onclick = (event) => {
+            const card = event.target.closest('[data-active-streak-id]');
+            if (!card || event.target.closest('[data-streak-info]')) return;
+            const item = currentStreakItemsById.get(card.dataset.activeStreakId);
+            if (!item) return;
+            if (selectedCurrentStreaks.has(card.dataset.activeStreakId)) {
+                selectedCurrentStreaks.delete(card.dataset.activeStreakId);
+                card.classList.remove('ring-2', 'ring-indigo-400', 'bg-indigo-50');
+            } else {
+                selectedCurrentStreaks.set(card.dataset.activeStreakId, item);
+                card.classList.add('ring-2', 'ring-indigo-400', 'bg-indigo-50');
+            }
+            renderSelectedCurrentStreaks();
+        };
+        syncCurrentStreakCards();
+        renderSelectedCurrentStreaks();
+    };
+
+    const loadAnnual20CurrentStreakFrequencies = async () => {
+        try {
+            const payload = await fetchJSON(`${BASE_URL}/api/statistics/quick-stats?scope=annual20&activeOnly=true`);
+            const stats = payload?.stats || {};
+            annual20FrequencyByStreakId = new Map();
+            currentStreakItemsById.forEach((item, id) => {
+                const lowerKey = String(item.streak.key || '').toLowerCase();
+                const isSoLe = (lowerKey.includes('vesole') || lowerKey.includes('solemoi'))
+                    && !lowerKey.includes('tienluisole') && !lowerKey.includes('luitiensole') && !lowerKey.includes('soletheocap');
+                const sampleLength = item.streak.isPotential ? item.streakLen + (isSoLe ? 2 : 1) : item.streakLen;
+                const count = Number(stats?.[item.streak.key]?.gapStats?.[sampleLength]?.count || 0);
+                annual20FrequencyByStreakId.set(id, count / 20);
+                const card = [...currentStreaksContainer.querySelectorAll('[data-active-streak-id]')]
+                    .find(element => element.dataset.activeStreakId === id);
+                if (!card) return;
+                card.dataset.frequency20 = String(count / 20);
+                const label = card.querySelector('[data-frequency-20-label]');
+                if (label) label.textContent = `Mốc 20 năm: ${formatExactFrequency(count, 20)}`;
+            });
+            syncCurrentStreakCards();
+        } catch (error) {
+            console.warn('Không tải được tần suất Mốc 20 năm của chuỗi đang diễn ra:', error);
+        }
+    };
+
     const renderCurrentStreaks = (streaksByLength, totalCount, totalYears = 20.41, forDate = '') => {
         console.log('[DEBUG] streaksByLength:', streaksByLength);
         const sortedLengths = Object.keys(streaksByLength).sort((a, b) => b - a);
@@ -1267,6 +1417,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             const skippedPotentialByFormation = allStreakDropOffs.filter(item => item.streak && item.streak.isPotential && !isPotentialFormationEligible(item)).length;
             // Một nguồn loại trừ duy nhất cho bảng tổng hợp, card highlight và grid số.
             const actionableStreakDropOffs = allStreakDropOffs.filter(isPotentialFormationEligible);
+            currentStreakItemsById = new Map(allStreakDropOffs.map(item => [getCurrentStreakId(item.streak, item.streakLen), item]));
+            [...selectedCurrentStreaks.keys()].forEach(id => {
+                if (!currentStreakItemsById.has(id)) selectedCurrentStreaks.delete(id);
+            });
 
             // === DỰ BÁO CHUỖI CÓ THỂ XẢY RA ===
             // Chuỗi đã hình thành: tỷ lệ gãy. Chuỗi tiềm năng: tỷ lệ không hình thành.
@@ -1479,7 +1633,39 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
-            let finalHtml = '';
+            let finalHtml = `
+                <div class="mb-5 rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+                    <div class="grid gap-3 lg:grid-cols-[1.3fr_1fr_0.7fr_0.7fr_auto] lg:items-end">
+                        <label class="text-xs font-bold uppercase tracking-wide text-slate-600">Sắp xếp
+                            <select id="current-streak-sort" class="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm normal-case font-medium text-slate-800">
+                                <option value="chain-asc">Tên chuỗi A → Z</option>
+                                <option value="chain-desc">Tên chuỗi Z → A</option>
+                                <option value="frequency20-asc">Tần suất Mốc 20 năm thấp → cao</option>
+                                <option value="frequency20-desc">Tần suất Mốc 20 năm cao → thấp</option>
+                                <option value="frequencyHistory-asc">Tần suất lịch sử thấp → cao</option>
+                                <option value="frequencyHistory-desc">Tần suất lịch sử cao → thấp</option>
+                            </select>
+                        </label>
+                        <label class="text-xs font-bold uppercase tracking-wide text-slate-600">Mốc lọc tần suất
+                            <select id="current-streak-frequency-scope" class="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm normal-case font-medium text-slate-800">
+                                <option value="annual20">Mốc 20 năm</option>
+                                <option value="history">Toàn bộ lịch sử</option>
+                            </select>
+                        </label>
+                        <label class="text-xs font-bold uppercase tracking-wide text-slate-600">Từ
+                            <input id="current-streak-frequency-min" type="number" min="0" step="0.000001" placeholder="0" class="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-800">
+                        </label>
+                        <label class="text-xs font-bold uppercase tracking-wide text-slate-600">Đến
+                            <input id="current-streak-frequency-max" type="number" min="0" step="0.000001" placeholder="Không giới hạn" class="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-800">
+                        </label>
+                        <div class="flex gap-2">
+                            <button id="current-streak-select-all" type="button" class="rounded-lg bg-indigo-600 px-3 py-2 text-xs font-bold text-white hover:bg-indigo-700">Chọn tất cả</button>
+                            <button id="current-streak-clear-selection" type="button" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100">Bỏ chọn</button>
+                        </div>
+                    </div>
+                    <p class="mt-3 text-xs leading-5 text-slate-500">Tần suất lịch sử dùng toàn bộ dữ liệu đến ngày đang xem. Mốc 20 năm dùng cửa sổ đã chốt tại 31/12 năm trước; các giá trị hiển thị dưới dạng số lần/năm chính xác, không làm tròn để lọc.</p>
+                </div>
+                <div id="current-streak-selection-panel" class="mb-6"></div>`;
             if (forecastCount > 0) {
                 finalHtml += `
                 <div class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm">
@@ -1562,6 +1748,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                         ? 'border-red-200 bg-red-50 text-red-700'
                         : 'border-gray-200 bg-gray-50 text-gray-600';
                     const cardPredictionNumbers = getPredictionNumbers({ streak });
+                    const cardId = getCurrentStreakId(streak, streakLen);
+                    const frequencySampleLength = streak.isPotential ? targetLenOuter : streakLen;
+                    const fullFrequencyCount = Number(streak.gapStats?.[frequencySampleLength]?.count || 0);
+                    const fullFrequency = totalYears > 0 ? fullFrequencyCount / totalYears : 0;
                     const isCardActualHit = latestActualPredictionNumber
                         && cardDropOffItem
                         && isActivePredictionExclusionItem(cardDropOffItem)
@@ -1588,10 +1778,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
 
                     finalHtml += `
-                                <div class="${cardBgColor} rounded-lg shadow-sm border border-l-4 ${cardBorderColor} transition hover:shadow-lg hover:-translate-y-1">
+                                <div data-active-streak-id="${escapeHtml(cardId)}" data-chain-title="${escapeHtml(streak.description || streak.key || '')}" data-frequency-history="${fullFrequency}" data-frequency-20="${annual20FrequencyByStreakId.get(cardId) ?? 0}" class="${cardBgColor} rounded-lg shadow-sm border border-l-4 ${cardBorderColor} transition hover:shadow-lg hover:-translate-y-1 cursor-pointer">
                                     <div class="p-4 flex flex-col h-full">
                                         
-                                        <div class="relative group cursor-pointer" onclick="this.querySelector('.group-hover\\:block').classList.toggle('hidden')">
+                                        <div data-streak-info class="relative group cursor-pointer" onclick="this.querySelector('.group-hover\\:block').classList.toggle('hidden')">
                                             <h6 class="${titleWeight} text-gray-800 hover:text-indigo-600 transition flex items-center gap-1">
                                                 ${escapeHtml(streak.description)}${badgeHtml} <i class="bi bi-info-circle text-xs text-gray-400"></i>
                                             </h6>
@@ -1615,6 +1805,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 	                                            <span class="text-gray-500">Hiện tại: ${streakLen}d</span>
 	                                        </div>
 	                                        <p class="text-xs text-gray-500 mb-1">Từ ngày: ${streak.startDate}</p>
+	                                        <div class="mb-2 rounded-md bg-slate-100 px-2 py-1 text-[10px] leading-4 text-slate-700">
+	                                            <div data-frequency-history-label><strong>Lịch sử:</strong> ${formatExactFrequency(fullFrequencyCount, totalYears)}</div>
+	                                            <div data-frequency-20-label><strong>Mốc 20 năm:</strong> đang nạp...</div>
+	                                        </div>
                                         <div class="mt-auto pt-2">
                                            <div class="flex flex-wrap gap-1">${renderFullSequence(streak, streak.description)}</div>
                                         </div>
@@ -1830,6 +2024,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 finalHtml += `</div></div>`;
             });
             currentStreaksContainer.innerHTML = finalHtml;
+            bindCurrentStreakControls();
+            loadAnnual20CurrentStreakFrequencies();
         } else {
             const dateSuffix = forDate ? ` (${forDate})` : '';
             currentStreaksTitle.innerHTML = `Chuỗi Đang Diễn Ra${dateSuffix} <span class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">0</span>`;

@@ -10,7 +10,7 @@ const NO_STORE_HEADERS = {
 };
 const FALLBACK_LOTO_STAKE_PER_NUMBER_K = 2200;
 const FALLBACK_LOTO_PAYOUT_PER_HIT_K = 8000;
-const LOTO_BET_COUNTS = [6, 7];
+const LOTO_BET_COUNTS = [6, 7, 20, 25, 30];
 const DEFAULT_LOTO_STRATEGY = 'rrfParallelBlock85Small65';
 const LOTO_STRATEGY_META = {
     rrfParallelBlock85Small65: {
@@ -42,7 +42,7 @@ function filterCount(payload, countParam) {
     if (!LOTO_BET_COUNTS.includes(count)) {
         return {
             ...payload,
-            error: 'count chỉ hỗ trợ 6, 7 hoặc all.'
+            error: 'count chỉ hỗ trợ 6, 7, 20, 25, 30 hoặc all.'
         };
     }
 
