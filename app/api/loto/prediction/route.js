@@ -251,6 +251,7 @@ function normalizeLotoPayload(payload = {}, strategy = DEFAULT_LOTO_STRATEGY) {
     // Deep clone payload to avoid side-effects
     const cloned = JSON.parse(JSON.stringify(payload));
     const economics = readLotoEconomics(cloned);
+    const strategyMeta = LOTO_STRATEGY_META[strategy] || {};
     
     // If the cache uses the multi-strategy format, let's extract the requested strategy first!
     if (cloned.nextPrediction?.strategies?.[strategy]) {
@@ -268,6 +269,8 @@ function normalizeLotoPayload(payload = {}, strategy = DEFAULT_LOTO_STRATEGY) {
         if (row.strategies?.[strategy]) {
             return {
                 ...row,
+                methodId: row.strategies[strategy].methodId || strategy,
+                strategy,
                 predictions: row.strategies[strategy].predictions,
                 methods: row.strategies[strategy].methods || {}
             };
@@ -300,7 +303,15 @@ function normalizeLotoPayload(payload = {}, strategy = DEFAULT_LOTO_STRATEGY) {
     const livePredictions = cloned.livePredictions
         ? {
             ...cloned.livePredictions,
-            config: withLotoConfig(cloned.livePredictions.config || {}, economics),
+            // cached_loto_live_predictions has one legacy/global config (RRF).
+            // Rows are already filtered by strategy above, so its label must
+            // be derived from the selected strategy as well.
+            config: {
+                ...withLotoConfig(cloned.livePredictions.config || {}, economics),
+                ...strategyMeta,
+                strategy,
+                methodId: strategy
+            },
             predictions: liveRows,
             summary: liveSummary,
             tracking: {
@@ -319,7 +330,7 @@ function normalizeLotoPayload(payload = {}, strategy = DEFAULT_LOTO_STRATEGY) {
         ...cloned,
         config: {
             ...withLotoConfig(cloned.config || {}, economics),
-            ...(LOTO_STRATEGY_META[strategy] || {}),
+            ...strategyMeta,
             strategy,
             methodId: cloned.nextPrediction?.strategies?.[strategy]?.methodId
                 || cloned.config?.methodId
