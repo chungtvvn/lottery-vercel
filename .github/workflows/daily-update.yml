@@ -352,14 +352,15 @@ jobs:
             }
             const strategy = cache.config?.strategy || expectedMethod;
             const predictions = cache.nextPrediction?.predictions || cache.nextPrediction?.strategies?.[strategy]?.predictions;
-            const defaultLen = predictions?.top6?.numbers?.length;
-            const top7Len = predictions?.top7?.numbers?.length;
-            if (Number(cache.config?.defaultBetCount) !== 6 || defaultLen !== 6 || top7Len !== 7) {
-              throw new Error(`Lô default sai: defaultBetCount=${cache.config?.defaultBetCount || 'missing'}, length=${defaultLen || 'missing'}`);
+            const lotoBetCounts = [6, 7, 20, 25, 30];
+            const missingPrimary = lotoBetCounts.filter(count => predictions?.[`top${count}`]?.numbers?.length !== count);
+            if (Number(cache.config?.defaultBetCount) !== 6 || missingPrimary.length) {
+              throw new Error(`Lô primary thiếu/sai: defaultBetCount=${cache.config?.defaultBetCount || 'missing'}, missing=${missingPrimary.join(',') || '-'}`);
             }
             const edge75Pit = cache.nextPrediction?.strategies?.dedupEdge75Pit?.predictions;
-            if (edge75Pit?.top6?.numbers?.length !== 6 || edge75Pit?.top7?.numbers?.length !== 7) {
-              throw new Error(`Lô Edge75 PIT thiếu: top6=${edge75Pit?.top6?.numbers?.length || 0}, top7=${edge75Pit?.top7?.numbers?.length || 0}`);
+            const missingEdge = lotoBetCounts.filter(count => edge75Pit?.[`top${count}`]?.numbers?.length !== count);
+            if (missingEdge.length) {
+              throw new Error(`Lô Edge75 PIT thiếu Top: ${missingEdge.join(',')}`);
             }
             console.log(`cache_ready=true`);
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, 'cache_ready=true\n');
@@ -429,6 +430,8 @@ jobs:
             const historyMethod = historyRun?.summary?.methods?.deParallelBlock85Small65Hold70;
             const historyBets = historyMethod?.numbersToBet || [];
             const historyIntersections = historyMethod?.intersectionNumbers || [];
+            const historyEdge75 = historyRun?.summary?.methods?.dedupEdge75Hold70;
+            const historyEdge75Bets = historyEdge75?.numbersToBet || [];
             if (
               historyRun?.sourceDrawDate !== latestRaw ||
               historyRun?.summary?.resolved === true ||
@@ -438,6 +441,9 @@ jobs:
               Number(historyMethod?.unitCount) !== 50
             ) {
               throw new Error(`R2 Lịch sử pending sai: prediction=${historyRun?.predictionDate || 'missing'}, source=${historyRun?.sourceDrawDate || 'missing'}, version=${historyMethod?.methodVersion || 'missing'}, bets=${historyBets.length}, units=${historyMethod?.unitCount || 'missing'}`);
+            }
+            if (historyEdge75Bets.length !== 30) {
+              throw new Error(`R2 Lịch sử Edge75 pending sai: bets=${historyEdge75Bets.length}, expected=30`);
             }
             const edge75PitDe = milestone.nextPrediction?.strategies?.dedupEdge75Pit?.holds?.['70'];
             if (edge75PitDe?.betNumbers?.length !== 30 || edge75PitDe?.excludedNumbers?.length !== 70) {
@@ -456,14 +462,15 @@ jobs:
             }
             const strategy = loto.config?.strategy || expectedMethod;
             const predictions = loto.nextPrediction?.predictions || loto.nextPrediction?.strategies?.[strategy]?.predictions;
-            const defaultLen = predictions?.top6?.numbers?.length;
-            const top7Len = predictions?.top7?.numbers?.length;
-            if (Number(loto.config?.defaultBetCount) !== 6 || defaultLen !== 6 || top7Len !== 7) {
-              throw new Error(`R2 Lô default sai: defaultBetCount=${loto.config?.defaultBetCount || 'missing'}, length=${defaultLen || 'missing'}`);
+            const lotoBetCounts = [6, 7, 20, 25, 30];
+            const missingPrimary = lotoBetCounts.filter(count => predictions?.[`top${count}`]?.numbers?.length !== count);
+            if (Number(loto.config?.defaultBetCount) !== 6 || missingPrimary.length) {
+              throw new Error(`R2 Lô primary thiếu/sai: defaultBetCount=${loto.config?.defaultBetCount || 'missing'}, missing=${missingPrimary.join(',') || '-'}`);
             }
             const edge75Pit = loto.nextPrediction?.strategies?.dedupEdge75Pit?.predictions;
-            if (edge75Pit?.top6?.numbers?.length !== 6 || edge75Pit?.top7?.numbers?.length !== 7) {
-              throw new Error(`R2 Lô Edge75 PIT thiếu: top6=${edge75Pit?.top6?.numbers?.length || 0}, top7=${edge75Pit?.top7?.numbers?.length || 0}`);
+            const missingEdge = lotoBetCounts.filter(count => edge75Pit?.[`top${count}`]?.numbers?.length !== count);
+            if (missingEdge.length) {
+              throw new Error(`R2 Lô Edge75 PIT thiếu Top: ${missingEdge.join(',')}`);
             }
             console.log(`✅ Đề + Lô đồng bộ raw ${latestRaw}; target ${target}. Dự đoán Lô: ${loto.nextPrediction?.predictionIsoDate || 'unknown'}.`);
           })().catch(error => {
