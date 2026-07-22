@@ -60,17 +60,18 @@ async function getStatsForKeys(keys, scope) {
     return statisticsService.rehydrateCurrentStreaks(stats);
 }
 
-async function getAnnualFrequencySnapshot(candidates) {
-    const lotteryService = require('../../../../lib/services/lotteryService');
-    await lotteryService.loadAll();
-    const { startYear, endYear } = getAnnual20Window(lotteryService.getRawData() || []);
-    const uniqueKeys = [...new Set(candidates.map(candidate => candidate.key).filter(Boolean))];
-    const historicalExclusionService = require('../../../../lib/services/historicalExclusionService');
-    const stats = historicalExclusionService.getRecordStatsForKeysAtDate(uniqueKeys, {
-        fromDate: `01/01/${startYear}`,
-        untilDate: `31/12/${endYear}`,
-        totalYears: 20
-    });
+async function getAnnualFrequencySnapshot(candidates, requestedYear) {
+    // The annual baseline is generated once and published to R2.  Loading it
+    // avoids rebuilding all 60k pattern statistics inside a Vercel request.
+    const predictionYear = Math.max(2006, Number(requestedYear) || new Date().getFullYear());
+    const { loadJsonWithSupabaseFallback } = require('@/lib/data-access');
+    const baselinePayload = await loadJsonWithSupabaseFallback(`cached_milestone20y_baseline_${predictionYear}.json`);
+    const baselineByKey = new Map((baselinePayload?.entries || [])
+        .filter(entry => entry && entry.key)
+        .map(entry => [entry.key, entry]));
+    if (baselineByKey.size === 0) {
+        throw new Error(`Không có baseline Mốc 20 năm cho năm ${predictionYear}.`);
+    }
 
     const frequencies = {};
     for (const candidate of candidates) {
@@ -78,21 +79,24 @@ async function getAnnualFrequencySnapshot(candidates) {
         const targetLength = Number(candidate.targetLength);
         const sampleLength = Number(candidate.sampleLength);
         if (!candidate.id || !candidate.key || !Number.isFinite(currentLength) || !Number.isFinite(targetLength)) continue;
-        const gapStats = stats[candidate.key]?.gapStats || {};
+        const cumulative = baselineByKey.get(candidate.key)?.cumulative || {};
         frequencies[candidate.id] = {
-            currentCount: Number(gapStats[currentLength]?.count || 0),
-            targetCount: Number(gapStats[targetLength]?.count || 0),
-            frequencyCount: Number(gapStats[Number.isFinite(sampleLength) ? sampleLength : currentLength]?.count || 0)
+            currentCount: Number(cumulative[currentLength] || 0),
+            targetCount: Number(cumulative[targetLength] || 0),
+            frequencyCount: Number(cumulative[Number.isFinite(sampleLength) ? sampleLength : currentLength] || 0)
         };
     }
 
+    const startIso = baselinePayload?.startIso || `${predictionYear - 20}-01-01`;
+    const cutoffIso = baselinePayload?.cutoffIso || `${predictionYear - 1}-12-31`;
     return {
         frequencies,
         _scope: {
             id: 'annual20',
-            startDate: `01/01/${startYear}`,
-            endDate: `31/12/${endYear}`,
-            totalYears: 20
+            startDate: startIso.split('-').reverse().join('/'),
+            endDate: cutoffIso.split('-').reverse().join('/'),
+            totalYears: Number(baselinePayload?.historyYears) || 20,
+            predictionYear
         }
     };
 }
@@ -213,7 +217,7 @@ export async function POST(request) {
                 return NextResponse.json({ error: 'Danh sách chuỗi không hợp lệ.' }, { status: 400 });
             }
             const { cachedResponse } = require('@/lib/cache-headers');
-            return cachedResponse(await getAnnualFrequencySnapshot(candidates), 'NO_CACHE');
+            return cachedResponse(await getAnnualFrequencySnapshot(candidates, body?.year), 'NO_CACHE');
         }
         const keys = Array.isArray(body?.keys)
             ? [...new Set(body.keys.filter(key => typeof key === 'string' && key.length > 0))]

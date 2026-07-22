@@ -1204,24 +1204,35 @@ document.addEventListener('DOMContentLoaded', async () => {
             const visible = annualScopePending || (Number.isFinite(frequency) && frequency >= min && frequency <= max);
             card.classList.toggle('hidden', !visible);
         });
-        const byGrid = new Map();
-        cards.forEach(card => {
-            const grid = card.parentElement;
-            if (!byGrid.has(grid)) byGrid.set(grid, []);
-            byGrid.get(grid).push(card);
+        const compareCards = (left, right) => {
+            const mode = sortSelect.value;
+            if (mode === 'chain-asc' || mode === 'chain-desc') {
+                const compare = String(left.dataset.chainTitle || '').localeCompare(String(right.dataset.chainTitle || ''), 'vi');
+                return mode === 'chain-asc' ? compare : -compare;
+            }
+            const useAnnual = mode.includes('20');
+            const compare = Number(left.dataset[useAnnual ? 'frequency20' : 'frequencyHistory']) - Number(right.dataset[useAnnual ? 'frequency20' : 'frequencyHistory']);
+            return mode.endsWith('asc') ? compare : -compare;
+        };
+        const groups = [...currentStreaksContainer.querySelectorAll('[data-current-streak-group]')]
+            .map(group => ({
+                group,
+                grid: group.querySelector('[data-current-streak-grid]'),
+                cards: [...group.querySelectorAll('[data-active-streak-id]')]
+            }));
+        groups.forEach(groupState => {
+            groupState.cards.sort(compareCards);
+            if (groupState.grid) groupState.grid.replaceChildren(...groupState.cards);
+            groupState.group.classList.toggle('hidden', !groupState.cards.some(card => !card.classList.contains('hidden')));
         });
-        byGrid.forEach(groupCards => {
-            groupCards.sort((left, right) => {
-                const mode = sortSelect.value;
-                if (mode === 'chain-asc' || mode === 'chain-desc') {
-                    const compare = String(left.dataset.chainTitle || '').localeCompare(String(right.dataset.chainTitle || ''), 'vi');
-                    return mode === 'chain-asc' ? compare : -compare;
-                }
-                const useAnnual = mode.includes('20');
-                const compare = Number(left.dataset[useAnnual ? 'frequency20' : 'frequencyHistory']) - Number(right.dataset[useAnnual ? 'frequency20' : 'frequencyHistory']);
-                return mode.endsWith('asc') ? compare : -compare;
-            }).forEach(card => card.parentElement.appendChild(card));
-        });
+        // Reorder groups too, otherwise sorting only changes cards inside a
+        // fixed length bucket and appears to do nothing on the page.
+        groups.sort((left, right) => {
+            const leftCard = left.cards.find(card => !card.classList.contains('hidden')) || left.cards[0];
+            const rightCard = right.cards.find(card => !card.classList.contains('hidden')) || right.cards[0];
+            if (!leftCard || !rightCard) return 0;
+            return compareCards(leftCard, rightCard);
+        }).forEach(groupState => currentStreaksContainer.appendChild(groupState.group));
     };
 
     const bindCurrentStreakControls = () => {
@@ -1288,7 +1299,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             const response = await fetch(`${BASE_URL}/api/statistics/quick-stats`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mode: 'annual-frequency-snapshot', candidates })
+                body: JSON.stringify({
+                    mode: 'annual-frequency-snapshot',
+                    year: Number(currentStreaksContainer.dataset.annualFrequencyYear) || new Date().getFullYear(),
+                    candidates
+                })
             });
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const payload = await response.json();
@@ -1311,6 +1326,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             annual20FrequencyLoaded = true;
             syncCurrentStreakCards();
         } catch (error) {
+            annual20FrequencyLoaded = true;
             currentStreaksContainer.querySelectorAll('[data-frequency-20-label]').forEach(label => {
                 label.textContent = 'Mốc 20 năm: không tải được';
             });
@@ -1325,6 +1341,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('[DEBUG] streaksByLength:', streaksByLength);
         const sortedLengths = Object.keys(streaksByLength).sort((a, b) => b - a);
         if (totalCount > 0) {
+            const displayedDate = parseDate(forDate);
+            currentStreaksContainer.dataset.annualFrequencyYear = String(displayedDate?.getFullYear() || new Date().getFullYear());
             currentStreaksSection.classList.remove('d-none');
             const dateSuffix = forDate ? ` (${forDate})` : '';
             currentStreaksTitle.innerHTML = `Chuỗi Đang Diễn Ra${dateSuffix} <span class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">${totalCount}</span>`;
@@ -1724,12 +1742,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             sortedLengths.forEach(length => {
                 const hasPotentialInGroup = streaksByLength[length].some(s => s.isPotential);
                 finalHtml += `
-                            <div class="mt-4">
+                            <div data-current-streak-group class="mt-4">
                                 <h4 class="text-sm font-semibold text-gray-600 uppercase tracking-wider flex justify-between items-center border-b pb-2 mb-4">
                                     <span><i class="bi bi-fire"></i> ${hasPotentialInGroup ? '🔮 Chuỗi tiềm năng (đang hình thành)' : 'Chuỗi'}</span>
                                     ${hasPotentialInGroup ? `<span class="font-bold text-lg text-orange-500">${length} Ngày</span>` : `<span class="font-bold text-lg text-red-500">${length} Ngày</span>`}
                                 </h4>
-                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">`;
+                                <div data-current-streak-grid class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">`;
 
                 streaksByLength[length].forEach(streak => {
                     const streakLen = parseInt(length);
