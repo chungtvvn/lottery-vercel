@@ -305,7 +305,7 @@
                             : (isHit ? 'Kết quả thực tế trùng dàn Lô đã dự đoán' : 'Kết quả thực tế nhưng không nằm trong dàn đánh')
                     });
                     const frequencyBadge = hitCount > 1
-                        ? `<span class="absolute -left-1.5 -top-1.5 rounded-full bg-amber-500 px-1.5 py-0.5 text-[9px] font-black text-white shadow ring-1 ring-white" title="Xuất hiện ${hitCount} lần trong 27 giải">x${hitCount}</span>`
+                        ? `<span class="absolute z-10 -left-1.5 -top-1.5 rounded-full bg-amber-500 px-1.5 py-0.5 text-[9px] font-black text-white shadow ring-1 ring-white" title="Xuất hiện ${hitCount} lần trong 27 giải">x${hitCount}</span>`
                         : '';
                     const overlapBadge = isOverlap
                         ? `<span class="absolute -right-1.5 -top-1.5 rounded-full bg-indigo-500 px-1.5 py-0.5 text-[9px] font-black text-white shadow ring-1 ring-white" title="Được cả 2 phương pháp đề xuất">2P</span>`
@@ -360,7 +360,7 @@
                                 title: isHit ? (isOverlap ? 'Số trùng 2 phương pháp và trúng thực tế' : 'Số đánh đã trúng thực tế trong 27 giải') : ''
                             });
                             const frequencyBadge = isHit && hitCount > 1
-                                ? `<span class="absolute -left-1.5 -top-1.5 flex h-5 px-1.5 items-center justify-center rounded-full bg-amber-500 text-[9px] font-black text-white shadow-md ring-1 ring-white" title="Trúng ${hitCount} lần trong 27 giải">x${hitCount}</span>`
+                                ? `<span class="absolute z-10 -left-1.5 -top-1.5 flex h-5 px-1.5 items-center justify-center rounded-full bg-amber-500 text-[9px] font-black text-white shadow-md ring-1 ring-white" title="Trúng ${hitCount} lần trong 27 giải">x${hitCount}</span>`
                                 : '';
                             const overlapBadge = isOverlap
                                 ? `<span class="absolute -top-1.5 -right-1.5 flex h-5 px-1.5 items-center justify-center rounded-full bg-indigo-500 text-[9px] font-black text-white shadow-md ring-1 ring-white" title="Được cả 2 phương pháp đề xuất">2P</span>`

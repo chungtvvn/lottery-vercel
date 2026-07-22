@@ -1056,22 +1056,6 @@ body .bg-slate-900 {
     transform: translateY(-1px) scale(1.05);
 }
 
-.number-chip-hit::after,
-.number-chip-wrong-exclude::after {
-    content: "KQ";
-    position: absolute;
-    right: -0.45rem;
-    top: -0.55rem;
-    border-radius: 9999px;
-    padding: 0.05rem 0.32rem;
-    background: #111827;
-    color: #fff;
-    font-size: 0.52rem;
-    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-    font-weight: 900;
-    letter-spacing: 0;
-}
-
 .number-panel-bet {
     background:
         linear-gradient(135deg, rgba(236, 253, 245, 0.96), rgba(209, 250, 229, 0.74)) !important;
