@@ -18,6 +18,48 @@ const LEGACY_NO_RECORD_BLOCK_KEYS = [
     'dau_5:block4x3SoLe'
 ];
 
+function getAnnual20Window(rawRows = []) {
+    const latestYear = rawRows.reduce((latest, row) => {
+        const year = Number(String(row?.date || '').match(/(\d{4})/)?.[1]);
+        return Number.isFinite(year) ? Math.max(latest, year) : latest;
+    }, 0);
+    const endYear = Math.max(2006, latestYear - 1);
+    return {
+        startYear: endYear - 19,
+        endYear
+    };
+}
+
+async function getStatsForKeys(keys, scope) {
+    const lotteryService = require('../../../../lib/services/lotteryService');
+    await lotteryService.loadRawData();
+
+    if (scope === 'annual20') {
+        await lotteryService.loadAll();
+        const historicalExclusionService = require('../../../../lib/services/historicalExclusionService');
+        const { startYear, endYear } = getAnnual20Window(lotteryService.getRawData() || []);
+        const stats = historicalExclusionService.getRecordStatsForKeysAtDate(keys, {
+            fromDate: `01/01/${startYear}`,
+            untilDate: `31/12/${endYear}`,
+            totalYears: 20
+        });
+        return {
+            ...stats,
+            _scope: {
+                id: 'annual20',
+                startDate: `01/01/${startYear}`,
+                endDate: `31/12/${endYear}`,
+                totalYears: 20
+            }
+        };
+    }
+
+    const { getPatternStatsByKeysFromDb } = require('@/lib/data-access');
+    const stats = await getPatternStatsByKeysFromDb(keys);
+    const statisticsService = require('../../../../lib/services/statisticsService');
+    return statisticsService.rehydrateCurrentStreaks(stats);
+}
+
 export async function GET(request) {
     try {
         const { searchParams } = new URL(request.url);
@@ -87,35 +129,7 @@ export async function GET(request) {
 
         if (keysStr) {
             const keys = keysStr.split(',').filter(Boolean);
-            if (scope === 'annual20') {
-                await lotteryService.loadAll();
-                const historicalExclusionService = require('../../../../lib/services/historicalExclusionService');
-                const rawRows = lotteryService.getRawData() || [];
-                const latestYear = rawRows.reduce((latest, row) => {
-                    const year = Number(String(row?.date || '').match(/(\d{4})/)?.[1]);
-                    return Number.isFinite(year) ? Math.max(latest, year) : latest;
-                }, 0);
-                const endYear = Math.max(2006, latestYear - 1);
-                const startYear = endYear - 19;
-                const stats = historicalExclusionService.getRecordStatsForKeysAtDate(keys, {
-                    fromDate: `01/01/${startYear}`,
-                    untilDate: `31/12/${endYear}`,
-                    totalYears: 20
-                });
-                return cachedResponse({
-                    ...stats,
-                    _scope: {
-                        id: 'annual20',
-                        startDate: `01/01/${startYear}`,
-                        endDate: `31/12/${endYear}`,
-                        totalYears: 20
-                    }
-                }, 'NO_CACHE');
-            }
-            const stats = await getPatternStatsByKeysFromDb(keys);
-            const statisticsService = require('../../../../lib/services/statisticsService');
-            const hydrated = statisticsService.rehydrateCurrentStreaks(stats);
-            return cachedResponse(hydrated, 'NO_CACHE');
+            return cachedResponse(await getStatsForKeys(keys, scope), 'NO_CACHE');
         }
 
         // Try cache first
@@ -145,5 +159,26 @@ export async function GET(request) {
         console.error('Error in quick-stats:', error);
         const { errorResponse } = require('@/lib/cache-headers');
         return errorResponse('Lỗi server: ' + error.message);
+    }
+}
+
+// Record pages can contain very long generated pattern keys.  Use a request
+// body rather than a query string so the selected 50 records are never lost
+// to a proxy/URL length limit.
+export async function POST(request) {
+    try {
+        const body = await request.json();
+        const keys = Array.isArray(body?.keys)
+            ? [...new Set(body.keys.filter(key => typeof key === 'string' && key.length > 0))]
+            : [];
+        if (keys.length === 0 || keys.length > 100) {
+            return NextResponse.json({ error: 'Danh sách chỉ số không hợp lệ.' }, { status: 400 });
+        }
+        const scope = body?.scope === 'annual20' ? 'annual20' : 'history';
+        const { cachedResponse } = require('@/lib/cache-headers');
+        return cachedResponse(await getStatsForKeys(keys, scope), 'NO_CACHE');
+    } catch (error) {
+        console.error('Error in quick-stats POST:', error);
+        return NextResponse.json({ error: 'Lỗi server: ' + error.message }, { status: 500 });
     }
 }

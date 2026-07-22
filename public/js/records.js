@@ -697,10 +697,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const endIndex = Math.min(startIndex + pageSize, totalItems);
         const pageItems = filteredPatterns.slice(startIndex, endIndex);
 
-        const keysStr = pageItems.map(p => p.key).join(',');
-
         try {
-            const data = await fetchJSON(`${BASE_URL}/api/statistics/quick-stats?keys=${keysStr}${getScopeQuery()}`);
+            // Pattern keys for the generated 3-value families can be long.
+            // Posting the page avoids query-string truncation by the CDN.
+            const response = await fetch(`${BASE_URL}/api/statistics/quick-stats`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    keys: pageItems.map(pattern => pattern.key),
+                    scope: activeRecordScope
+                })
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const data = await response.json();
             
             let renderedCount = 0;
             pageItems.forEach(pattern => {
@@ -742,7 +751,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize Page
     const loadAvailablePatternKeys = async () => {
         try {
-            const data = await fetchJSON(`${BASE_URL}/api/statistics/quick-stats?keysOnly=true&recordsOnly=true${getScopeQuery()}`);
+            const data = await fetchJSON(`${BASE_URL}/api/statistics/quick-stats?keysOnly=true&recordsOnly=true${getScopeQuery()}&schema=records-v2`);
             if (data && Array.isArray(data.keys)) {
                 availablePatternKeys = new Set(data.keys);
             }

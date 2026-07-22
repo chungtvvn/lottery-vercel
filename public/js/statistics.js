@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const selectedCurrentStreaks = new Map();
     let currentStreakItemsById = new Map();
     let annual20FrequencyByStreakId = new Map();
+    let annual20FrequencyLoaded = false;
 
     const getCurrentStreakId = (streak, length) => `${streak.key || streak.description || 'streak'}|${length}|${streak.isPotential ? 'potential' : 'active'}`;
     const formatExactFrequency = (count, years) => {
@@ -1194,9 +1195,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const min = minInput.value === '' ? -Infinity : Number(minInput.value);
         const max = maxInput.value === '' ? Infinity : Number(maxInput.value);
         const cards = [...currentStreaksContainer.querySelectorAll('[data-active-streak-id]')];
+        // Do not hide all cards while the annual window is still loading.
+        // This used to leave only the group headings visible whenever a user
+        // had an annual-frequency filter active during the async request.
+        const annualScopePending = scope === 'annual20' && !annual20FrequencyLoaded;
         cards.forEach(card => {
             const frequency = Number(card.dataset[scope === 'annual20' ? 'frequency20' : 'frequencyHistory']);
-            const visible = Number.isFinite(frequency) && frequency >= min && frequency <= max;
+            const visible = annualScopePending || (Number.isFinite(frequency) && frequency >= min && frequency <= max);
             card.classList.toggle('hidden', !visible);
         });
         const byGrid = new Map();
@@ -1259,6 +1264,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const loadAnnual20CurrentStreakFrequencies = async () => {
         try {
+            annual20FrequencyLoaded = false;
             const payload = await fetchJSON(`${BASE_URL}/api/statistics/quick-stats?scope=annual20&activeOnly=true`);
             const stats = payload?.stats || {};
             annual20FrequencyByStreakId = new Map();
@@ -1276,6 +1282,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const label = card.querySelector('[data-frequency-20-label]');
                 if (label) label.textContent = `Mốc 20 năm: ${formatExactFrequency(count, 20)}`;
             });
+            annual20FrequencyLoaded = true;
             syncCurrentStreakCards();
         } catch (error) {
             console.warn('Không tải được tần suất Mốc 20 năm của chuỗi đang diễn ra:', error);
@@ -1668,12 +1675,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div id="current-streak-selection-panel" class="mb-6"></div>`;
             if (forecastCount > 0) {
                 finalHtml += `
-                <div class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm">
-                    <h4 class="text-blue-800 font-bold mb-3 flex items-center"><i class="bi bi-stars mr-2"></i>Dự báo chuỗi có khả năng GÃY / KHÔNG HÌNH THÀNH ngày mai (sắp theo ưu tiên loại ↓)</h4>
-                    <ul class="text-sm space-y-2">
-                        ${forecastHtml}
-                    </ul>
-                </div>
+                <details class="mb-4 rounded-lg border border-blue-200 bg-blue-50 shadow-sm">
+                    <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-bold text-blue-800 hover:bg-blue-100/60">
+                        <span class="flex items-center"><i class="bi bi-stars mr-2"></i>Dự báo chuỗi có khả năng GÃY / KHÔNG HÌNH THÀNH</span>
+                        <span class="rounded-full bg-blue-100 px-2 py-1 text-xs text-blue-700">${forecastCount} cảnh báo · mở để xem</span>
+                    </summary>
+                    <div class="border-t border-blue-200 px-4 py-3">
+                        <p class="mb-3 text-xs text-blue-700">Sắp theo ưu tiên loại giảm dần. Danh sách được thu gọn mặc định để ưu tiên chọn các thẻ chuỗi bên dưới.</p>
+                        <ul class="max-h-[28rem] space-y-2 overflow-y-auto pr-1 text-sm">
+                            ${forecastHtml}
+                        </ul>
+                    </div>
+                </details>
                 `;
             }
             sortedLengths.forEach(length => {
@@ -1778,7 +1791,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
 
                     finalHtml += `
-                                <div data-active-streak-id="${escapeHtml(cardId)}" data-chain-title="${escapeHtml(streak.description || streak.key || '')}" data-frequency-history="${fullFrequency}" data-frequency-20="${annual20FrequencyByStreakId.get(cardId) ?? 0}" class="${cardBgColor} rounded-lg shadow-sm border border-l-4 ${cardBorderColor} transition hover:shadow-lg hover:-translate-y-1 cursor-pointer">
+                                <div data-active-streak-id="${escapeHtml(cardId)}" data-chain-title="${escapeHtml(streak.description || streak.key || '')}" data-frequency-history="${fullFrequency}" data-frequency-20="${annual20FrequencyByStreakId.get(cardId) ?? fullFrequency}" class="${cardBgColor} rounded-lg shadow-sm border border-l-4 ${cardBorderColor} transition hover:shadow-lg hover:-translate-y-1 cursor-pointer">
                                     <div class="p-4 flex flex-col h-full">
                                         
                                         <div data-streak-info class="relative group cursor-pointer" onclick="this.querySelector('.group-hover\\:block').classList.toggle('hidden')">
