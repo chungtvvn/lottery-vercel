@@ -186,36 +186,56 @@ document.addEventListener('DOMContentLoaded', () => {
         return Array.isArray(stat.secondLongest) && stat.secondLongest.length > 0;
     };
 
+    const memoryFetchCache = new Map();
+
     const fetchJSON = async (url) => {
         const CACHE_PREFIX = 'ls_cache_';
         const CACHE_EXPIRY = 2 * 60 * 60 * 1000; // 2 hours
+        const MAX_LOCAL_CACHE_BYTES = 200 * 1024;
         const cacheKey = `${CACHE_PREFIX}${url}`;
+        // The record key index contains tens of thousands of keys.  Keeping
+        // it in localStorage exceeds browser quota and is not needed after a
+        // page reload, so retain it only for this tab's lifetime.
+        const canUseLocalStorage = !url.includes('keysOnly=true');
+
+        if (memoryFetchCache.has(url)) {
+            return memoryFetchCache.get(url);
+        }
         
-        try {
-            const cached = localStorage.getItem(cacheKey);
-            if (cached) {
-                const item = JSON.parse(cached);
-                if (item && item.timestamp && (Date.now() - item.timestamp < CACHE_EXPIRY)) {
-                    return item.data;
-                } else {
-                    localStorage.removeItem(cacheKey);
+        if (canUseLocalStorage) {
+            try {
+                const cached = localStorage.getItem(cacheKey);
+                if (cached) {
+                    const item = JSON.parse(cached);
+                    if (item && item.timestamp && (Date.now() - item.timestamp < CACHE_EXPIRY)) {
+                        memoryFetchCache.set(url, item.data);
+                        return item.data;
+                    } else {
+                        localStorage.removeItem(cacheKey);
+                    }
                 }
+            } catch (e) {
+                // Ignore cache errors
             }
-        } catch (e) {
-            // Ignore cache errors
         }
 
         const res = await fetch(url);
         if (!res.ok) throw new Error('Network response was not ok');
         const data = await res.json();
+        memoryFetchCache.set(url, data);
         
-        try {
-            localStorage.setItem(cacheKey, JSON.stringify({
-                timestamp: Date.now(),
-                data: data
-            }));
-        } catch (e) {
-            console.warn('Failed to save to localStorage:', e);
+        if (canUseLocalStorage) {
+            try {
+                const payload = JSON.stringify({ timestamp: Date.now(), data });
+                if (payload.length <= MAX_LOCAL_CACHE_BYTES) {
+                    localStorage.setItem(cacheKey, payload);
+                } else {
+                    localStorage.removeItem(cacheKey);
+                }
+            } catch (e) {
+                // Storage may be unavailable or full. The memory cache is
+                // still valid for the active page and avoids noisy retries.
+            }
         }
         
         return data;
@@ -510,6 +530,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const renderStreakDetails = (title, streaks, description) => {
         if (!streaks || streaks.length === 0) return `<h6 class="font-semibold text-slate-600 text-xs">${title}: Không có dữ liệu</h6>`;
+        if (streaks[0]?.annualBaseline) {
+            return `<h6 class="font-semibold text-slate-800 text-sm mb-2"><i class="bi bi-clock-history"></i> ${title} (Dài ${streaks[0].length} ngày)</h6>
+                <p class="text-xs leading-5 text-slate-500">Mốc 20 năm lưu số lần và độ dài chuỗi đã chốt; không lưu ngày chi tiết của từng lần xuất hiện.</p>`;
+        }
         const sortedStreaks = [...streaks].sort((a, b) => parseDate(b.endDate) - parseDate(a.endDate));
         const streakLength = sortedStreaks[0].length;
         let detailsHtml = sortedStreaks.map(streak => `
@@ -540,6 +564,10 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
 
+        const annualBaselineNotice = stat.annualBaseline ? `
+            <div class="col-span-1 md:col-span-2 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-xs leading-5 text-emerald-800">
+                <strong>Mốc 20 năm đã chốt:</strong> ${stat.annualSummary?.sample || 0} lần xuất hiện trong ${stat.annualSummary?.actualYears || 20} năm. Chi tiết dưới đây đọc trực tiếp từ baseline R2, không tái tính toàn bộ dữ liệu trên Vercel.
+            </div>` : '';
         const gapStatsSection = (stat.gapStats) ? `
             <div class="col-span-1 md:col-span-2">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -576,6 +604,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="record-accordion-content hidden bg-slate-50/50 p-6 border-b border-slate-200/80">
                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        ${annualBaselineNotice}
                         ${gapStatsSection}
                         <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/50">${renderStreakDetails('Kỷ lục', stat.longest, displayDescription)}</div>
                         <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/50">${renderStreakDetails('Dài nhì', stat.secondLongest, displayDescription)}</div>

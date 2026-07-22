@@ -31,33 +31,95 @@ function getAnnual20Window(rawRows = []) {
 }
 
 async function getStatsForKeys(keys, scope) {
-    const lotteryService = require('../../../../lib/services/lotteryService');
-    await lotteryService.loadRawData();
-
     if (scope === 'annual20') {
-        await lotteryService.loadAll();
-        const historicalExclusionService = require('../../../../lib/services/historicalExclusionService');
-        const { startYear, endYear } = getAnnual20Window(lotteryService.getRawData() || []);
-        const stats = historicalExclusionService.getRecordStatsForKeysAtDate(keys, {
-            fromDate: `01/01/${startYear}`,
-            untilDate: `31/12/${endYear}`,
-            totalYears: 20
-        });
-        return {
-            ...stats,
-            _scope: {
-                id: 'annual20',
-                startDate: `01/01/${startYear}`,
-                endDate: `31/12/${endYear}`,
-                totalYears: 20
-            }
-        };
+        return getAnnualRecordSnapshot(keys);
     }
 
     const { getPatternStatsByKeysFromDb } = require('@/lib/data-access');
     const stats = await getPatternStatsByKeysFromDb(keys);
     const statisticsService = require('../../../../lib/services/statisticsService');
     return statisticsService.rehydrateCurrentStreaks(stats);
+}
+
+function makeAnnualRecordStreak(length) {
+    if (!Number.isFinite(length) || length < 1) return [];
+    // Baseline Mốc 20 năm deliberately stores aggregates only.  Mark these
+    // entries so the UI does not pretend that it has per-occurrence dates.
+    return [{
+        length,
+        annualBaseline: true,
+        dates: [],
+        values: []
+    }];
+}
+
+function makeAnnualGapStats(counts) {
+    return Object.fromEntries(Object.entries(counts || {})
+        .filter(([length, count]) => Number(length) > 0 && Number(count) > 0)
+        .map(([length, count]) => [String(length), {
+            count: Number(count),
+            pastCount: Number(count)
+        }]));
+}
+
+async function getAnnualRecordSnapshot(keys, requestedYear) {
+    // Rebuilding detailed record statistics loads every pattern/stat shard and
+    // regularly exceeds Vercel's function budget.  The annual baseline is
+    // generated once, stored in R2, and is the canonical data for this scope.
+    const predictionYear = Math.max(2006, Number(requestedYear) || new Date().getFullYear());
+    const { loadJsonWithSupabaseFallback } = require('@/lib/data-access');
+    const baselinePayload = await loadJsonWithSupabaseFallback(`cached_milestone20y_baseline_${predictionYear}.json`);
+    const baselineByKey = new Map((baselinePayload?.entries || [])
+        .filter(entry => entry && entry.key)
+        .map(entry => [entry.key, entry]));
+
+    if (baselineByKey.size === 0) {
+        throw new Error(`Không có baseline Mốc 20 năm cho năm ${predictionYear}.`);
+    }
+
+    const result = {};
+    for (const key of keys) {
+        const entry = baselineByKey.get(key);
+        if (!entry) continue;
+
+        const exactCounts = entry.exactCounts || {};
+        const cumulative = entry.cumulative || {};
+        const recordLength = Number(entry.recordLen) || 0;
+        const secondLength = Object.keys(exactCounts)
+            .map(Number)
+            .filter(length => Number.isFinite(length) && length > 0 && length < recordLength && Number(exactCounts[length]) > 0)
+            .reduce((largest, length) => Math.max(largest, length), 0);
+
+        result[key] = {
+            // The browser already owns the curated label from STATS_OPTIONS.
+            // Leaving this empty prevents an internal key from becoming the
+            // visible record title for generated pattern families.
+            description: '',
+            longest: makeAnnualRecordStreak(recordLength),
+            secondLongest: makeAnnualRecordStreak(secondLength),
+            averageInterval: null,
+            daysSinceLast: null,
+            gapStats: makeAnnualGapStats(cumulative),
+            exactGapStats: makeAnnualGapStats(exactCounts),
+            annualBaseline: true,
+            annualSummary: {
+                sample: Number(entry.sample) || 0,
+                recordLength,
+                actualYears: Number(entry.actualYears || baselinePayload?.historyYears) || 20
+            }
+        };
+    }
+
+    const startIso = baselinePayload?.startIso || `${predictionYear - 20}-01-01`;
+    const cutoffIso = baselinePayload?.cutoffIso || `${predictionYear - 1}-12-31`;
+    result._scope = {
+        id: 'annual20',
+        startDate: startIso.split('-').reverse().join('/'),
+        endDate: cutoffIso.split('-').reverse().join('/'),
+        totalYears: Number(baselinePayload?.historyYears) || 20,
+        predictionYear
+    };
+    return result;
 }
 
 async function getAnnualFrequencySnapshot(candidates, requestedYear) {
