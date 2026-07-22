@@ -11,7 +11,7 @@ async function loadWorkerModule() {
 }
 
 async function main() {
-    const { buildTelegramReport, evaluatePredictionCacheReadiness } = await loadWorkerModule();
+    const { buildTelegramReport, evaluatePredictionCacheReadiness, splitTelegramText } = await loadWorkerModule();
     assert.deepStrictEqual(
         evaluatePredictionCacheReadiness(
             { latestDataDate: '2026-07-15' },
@@ -206,6 +206,25 @@ async function main() {
             }
         }
     };
+    for (const count of [20, 25, 30]) {
+        const rrfNumbers = Array.from({ length: count }, (_, index) => String(index + 1).padStart(2, '0'));
+        const edgeNumbers = Array.from({ length: count }, (_, index) => String(index + 40).padStart(2, '0'));
+        const key = `top${count}`;
+        lotoPayload.nextPrediction.strategies.rrfParallelBlock85Small65.predictions[key] = { numbers: rrfNumbers };
+        lotoPayload.nextPrediction.strategies.dedupEdge75Pit.predictions[key] = { numbers: edgeNumbers };
+        lotoPayload.livePredictions.predictions[0].strategies.rrfParallelBlock85Small65.methods[key] = {
+            betNumbers: rrfNumbers, betCount: count, hits: 1
+        };
+        lotoPayload.livePredictions.predictions[0].strategies.dedupEdge75Pit.methods[key] = {
+            betNumbers: edgeNumbers, betCount: count, hits: 1
+        };
+        lotoPayload.livePredictions.summary[`rrfParallelBlock85Small65_${key}`] = {
+            days: 1, hitDays: 1, profitK: 800 - count * 220
+        };
+        lotoPayload.livePredictions.summary[`dedupEdge75Pit_${key}`] = {
+            days: 1, hitDays: 1, profitK: 800 - count * 220
+        };
+    }
     const historyPayload = {
         history: [
             {
@@ -255,24 +274,23 @@ async function main() {
     };
 
     const report = buildTelegramReport(dePayload, lotoPayload, historyPayload);
-    assert.match(report.text, /Số đã đánh \(30\):/);
-    assert.match(report.text, /Kết quả thực tế: <b>12<\/b>/);
-    assert.match(report.text, /Đề Song Song Mốc 20 năm Hold 70/);
-    assert.match(report.text, /Đề Song Song Lịch sử Hold 70/);
+    assert.match(report.text, /Đã đánh \(30 số\):/);
+    assert.match(report.text, /KQ thực tế: <b>12<\/b>/);
+    assert.match(report.text, /ĐỀ — Song Song Mốc 20 năm Hold 70/);
+    assert.match(report.text, /ĐỀ — Song Song Lịch sử Hold 70/);
     assert.match(report.text, /Edge khử trùng 75% nền - Hold 70/);
-    assert.match(report.text, /Số đã đánh \(30\): <code>70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99<\/code>/);
+    assert.match(report.text, /Đã đánh \(30 số\): <code>70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99<\/code>/);
     assert.doesNotMatch(report.text, /Chuỗi nhỏ trước Hold 70/);
-    assert.match(report.text, /Lô RRF Top 7/);
-    assert.match(report.text, /Lô Edge75 PIT Top 6/);
-    assert.match(report.text, /Số đã đánh \(7 số duy nhất · 7 đơn vị cược · trùng 2 phương pháp: 02\): <code>01 02 03 04 05 06 07<\/code>/);
-    assert.match(report.text, /Kết quả \(27 vị trí\):/);
+    assert.match(report.text, /LÔ — RRF Song song/);
+    assert.match(report.text, /LÔ — Edge75 PIT có kiểm chứng - Hold 70/);
+    assert.match(report.text, /Top 30 dự đoán/);
+    assert.match(report.text, /Top 7 đã chốt: <code>01 02 03 04 05 06 07<\/code>/);
+    assert.match(report.text, /KQ 01\/07\/2026 \(27 vị trí\):/);
     assert.match(report.text, /Trúng: <b>01<\/b>/);
     assert.match(report.text, /❌ LỖ · -740K · 1 hit/);
-    assert.match(report.text, /Top 7 \(7 số duy nhất · 7 đơn vị cược · trùng 2 phương pháp: 02\):/);
-    assert.match(report.text, /Lũy kế: 10 ngày · hit-day 4\/10 · \+12\.000K/);
-    assert.match(report.text, /DỰ ĐOÁN LÔ/);
-    assert.match(report.text, /Edge75 PIT Top 7/);
-    assert.ok(report.text.length <= 4096, `Telegram report quá dài: ${report.text.length}`);
+    assert.match(report.text, /Thống kê: 10 ngày · hit-day 4\/10 · \+12\.000K/);
+    assert.match(report.text, /______________________/);
+    assert.ok(splitTelegramText(report.text).every(chunk => chunk.length <= 3900), 'Telegram report phải được chia gói an toàn');
     console.log('Telegram report tests passed.');
 }
 

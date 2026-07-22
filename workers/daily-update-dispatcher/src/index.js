@@ -12,7 +12,11 @@ const TELEGRAM_LAST_SENT_KEY = 'telegram:last_sent_prediction_date';
 const DEFAULT_APP_BASE_URL = 'https://lottery-stats-vercel.vercel.app';
 const DEFAULT_DE_STRATEGY = 'deParallelBlock85Small65';
 const DEFAULT_DE_TARGET = 70;
-const DEFAULT_LOTO_STRATEGY = 'rrfParallelBlock85Small65';
+// Keep this legacy key only for the old flat cache shape. New cache rows are
+// always read from `strategies[method]`, so changing the production default
+// cannot accidentally fall back to another method's numbers.
+const LEGACY_RRF_LOTO_STRATEGY = 'rrfParallelBlock85Small65';
+const DEFAULT_LOTO_STRATEGY = 'dedupEdge75Pit';
 const TELEGRAM_DE_METHODS = [
   {
     source: 'milestone',
@@ -37,19 +41,20 @@ const TELEGRAM_DE_METHODS = [
   }
 ];
 const DEFAULT_LOTO_COUNT = 6;
-const TELEGRAM_LOTO_COUNTS = [6, 7];
-const TELEGRAM_LOTO_METHODS = [
-  ...TELEGRAM_LOTO_COUNTS.map(count => ({
-    strategy: DEFAULT_LOTO_STRATEGY,
-    label: 'RRF',
-    count
-  })),
-  ...TELEGRAM_LOTO_COUNTS.map(count => ({
+const TELEGRAM_LOTO_COUNTS = [6, 7, 20, 25, 30];
+const TELEGRAM_LOTO_STRATEGIES = [
+  {
+    strategy: LEGACY_RRF_LOTO_STRATEGY,
+    label: 'RRF Song song (Chuỗi nhỏ 65 + Nhịp block 85)'
+  },
+  {
     strategy: 'dedupEdge75Pit',
-    label: 'Edge75 PIT',
-    count
-  }))
+    label: 'Edge75 PIT có kiểm chứng - Hold 70'
+  }
 ];
+const TELEGRAM_LOTO_METHODS = TELEGRAM_LOTO_STRATEGIES.flatMap(method =>
+  TELEGRAM_LOTO_COUNTS.map(count => ({ ...method, count }))
+);
 const CUMULATIVE_START_DATE = '2026-07-08';
 const DE_BET_PER_NUMBER_K = 10;
 const DE_WIN_MULTIPLIER = 84;
@@ -367,11 +372,11 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}) {
     const settled = [...lotoRows]
       .filter(row => row?.status === 'settled' && (
         row?.strategies?.[strategy]?.methods?.[key]
-        || (strategy === DEFAULT_LOTO_STRATEGY && row?.methods?.[key])
+        || (strategy === LEGACY_RRF_LOTO_STRATEGY && row?.methods?.[key])
       ))
       .sort((left, right) => String(right.predictionIsoDate || '').localeCompare(String(left.predictionIsoDate || '')))[0];
     const result = settled?.strategies?.[strategy]?.methods?.[key]
-      || (strategy === DEFAULT_LOTO_STRATEGY ? settled?.methods?.[key] : null);
+      || (strategy === LEGACY_RRF_LOTO_STRATEGY ? settled?.methods?.[key] : null);
     const actual = getLotoActualNumbers(settled);
     return {
       strategy,
@@ -383,11 +388,11 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}) {
       actual,
       hits: formatLotoHits(result?.betNumbers || [], actual),
       next: lotoPayload.nextPrediction?.strategies?.[strategy]?.predictions?.[key]
-        || (strategy === DEFAULT_LOTO_STRATEGY ? lotoPayload.nextPrediction?.predictions?.[key] : null)
+        || (strategy === LEGACY_RRF_LOTO_STRATEGY ? lotoPayload.nextPrediction?.predictions?.[key] : null)
         || lotoPending?.strategies?.[strategy]?.predictions?.[key]
-        || (strategy === DEFAULT_LOTO_STRATEGY ? lotoPending?.predictions?.[key] : null),
+        || (strategy === LEGACY_RRF_LOTO_STRATEGY ? lotoPending?.predictions?.[key] : null),
       summary: lotoPayload.livePredictions?.summary?.[`${strategy}_${key}`]
-        || (strategy === DEFAULT_LOTO_STRATEGY ? lotoPayload.livePredictions?.summary?.[key] : null)
+        || (strategy === LEGACY_RRF_LOTO_STRATEGY ? lotoPayload.livePredictions?.summary?.[key] : null)
     };
   });
 
@@ -404,72 +409,60 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}) {
     throw new Error('Payload chưa có đủ dự đoán Đề/Lô cho ngày tiếp theo.');
   }
 
+  const divider = '______________________';
   const lines = [
     `<b>XSMB - TỔNG HỢP ${escapeHtml(displayDate(predictionDate))}</b>`,
     '<i>Telegram: 1K = 1.000 VND · Đề 10K/đơn vị · Lô 220K/đơn vị.</i>',
-    `<i>Phương pháp Lô: ${escapeHtml(lotoPayload.config?.methodName || lotoPayload.livePredictions?.config?.methodName || 'RRF song song Block 85 + Chuỗi nhỏ 65')}</i>`,
-    '',
-    '<b>1. KẾT TOÁN DỰ ĐOÁN TRƯỚC</b>'
+    ''
   ];
 
+  // Each strategy is a self-contained block: yesterday's immutable result,
+  // today's frozen prediction, then a visual divider for quick reading.
   for (const item of deMethods) {
+    lines.push(`<b>ĐỀ — ${escapeHtml(item.label)}</b>`);
     if (item.settled && item.result) {
       lines.push(
-        `• <b>Đề ${item.label} ${escapeHtml(displayDate(item.settled.predictionIsoDate || item.settled.predictionDate))}</b>`,
-        `  Số đã đánh (${Number(item.result.betCount || item.deSettledPrediction?.betNumbers?.length || 0)}): <code>${escapeHtml(formatNumberList(item.deSettledPrediction?.betNumbers || []))}</code>`,
-        `  Kết quả thực tế: <b>${escapeHtml(normalizeLotteryNumber(item.settled.actualSpecial ?? item.settled.summary?.actualSpecial ?? item.result.actual))}</b>`,
-        `  ${item.telegramResult.hit ? '✅ TRÚNG' : '❌ TRƯỢT'} · ${escapeHtml(formatMoneyK(item.telegramResult.profitK))}`
+        `Kết toán ${escapeHtml(displayDate(item.settled.predictionIsoDate || item.settled.predictionDate))}: <b>${item.telegramResult.hit ? '✅ TRÚNG' : '❌ TRƯỢT'}</b> · ${escapeHtml(formatMoneyK(item.telegramResult.profitK))}`,
+        `Đã đánh (${Number(item.result.betCount || item.deSettledPrediction?.betNumbers?.length || 0)} số): <code>${escapeHtml(formatNumberList(item.deSettledPrediction?.betNumbers || []))}</code>`,
+        `KQ thực tế: <b>${escapeHtml(normalizeLotteryNumber(item.settled.actualSpecial ?? item.settled.summary?.actualSpecial ?? item.result.actual))}</b>`
       );
     } else {
-      lines.push(`• Đề ${item.label}: chưa có bản ghi đã kết toán.`);
+      lines.push('Kết toán hôm qua: chưa có bản ghi đã kết toán.');
     }
-  }
-
-  for (const item of lotoMethods) {
-    if (item.settled && item.result) {
-      const telegramProfitK = getTelegramLotoProfitK(item.result, item.count);
-      lines.push(
-        `• <b>Lô ${item.label} Top ${item.count} ${escapeHtml(displayDate(item.settled.predictionIsoDate))}</b>`,
-        `  Số đã đánh (${escapeHtml(formatLotoBetShape(item.result, item.count))}): <code>${escapeHtml(formatNumberList(item.result.betNumbers || []))}</code>`,
-        `  Kết quả (${item.actual.length} vị trí): <code>${escapeHtml(formatNumberList(item.actual))}</code>`,
-        `  ${telegramProfitK > 0 ? '✅ CÓ LÃI' : '❌ LỖ'} · ${escapeHtml(formatMoneyK(telegramProfitK))}` +
-          ` · ${Number(item.result.hits || 0)} hit` +
-          `${item.hits.length ? ` · Trúng: <b>${escapeHtml(formatNumberList(item.hits))}</b>` : ''}`
-      );
-    } else {
-      lines.push(`• Lô ${item.label} Top ${item.count}: chưa có bản ghi đã kết toán.`);
-    }
-    if (item.summary?.days) {
-      lines.push(
-        `  Lũy kế: ${Number(item.summary.days)} ngày · hit-day ${Number(item.summary.hitDays || 0)}/${Number(item.summary.days)}` +
-          ` · ${escapeHtml(formatMoneyK(item.summary.profitK))}`
-      );
-    }
-  }
-
-  lines.push(
-    '',
-    '<b>2. DỰ ĐOÁN ĐỀ</b>'
-  );
-  for (const item of deMethods) {
     lines.push(
-      `• ${escapeHtml(item.label)} (${Number(item.next?.betNumbers?.length || 0)} số): <b>${escapeHtml((item.next?.betNumbers || []).join(' '))}</b>`
+      `Dự đoán ${escapeHtml(displayDate(item.nextPredictionDate))} (${Number(item.next?.betNumbers?.length || 0)} số): <b>${escapeHtml(formatNumberList(item.next?.betNumbers || []))}</b>`,
+      divider
     );
   }
 
-  lines.push(
-    '',
-    '<b>3. DỰ ĐOÁN LÔ</b>',
-    '• Mỗi phương pháp được chốt độc lập trên 27 vị trí.'
-  );
-
-  for (const item of lotoMethods) {
-    lines.push(`• ${item.label} Top ${item.count} (${escapeHtml(formatLotoBetShape(item.next, item.count))}): <b>${escapeHtml((item.next.numbers || []).join(' '))}</b>`);
+  for (const strategy of TELEGRAM_LOTO_STRATEGIES) {
+    const strategyMethods = lotoMethods.filter(item => item.strategy === strategy.strategy);
+    const representative = strategyMethods.find(item => item.settled && item.result);
+    lines.push(`<b>LÔ — ${escapeHtml(strategy.label)}</b>`);
+    if (representative) {
+      lines.push(
+        `KQ ${escapeHtml(displayDate(representative.settled.predictionIsoDate))} (${representative.actual.length} vị trí): <code>${escapeHtml(formatNumberList(representative.actual))}</code>`
+      );
+    } else {
+      lines.push('Kết toán hôm qua: chưa có bản ghi đã kết toán.');
+    }
+    for (const item of strategyMethods) {
+      if (item.settled && item.result) {
+        const telegramProfitK = getTelegramLotoProfitK(item.result, item.count);
+        lines.push(
+          `Top ${item.count} đã chốt: <code>${escapeHtml(formatNumberList(item.result.betNumbers || []))}</code>`,
+          `  ${telegramProfitK > 0 ? '✅ CÓ LÃI' : '❌ LỖ'} · ${escapeHtml(formatMoneyK(telegramProfitK))} · ${Number(item.result.hits || 0)} hit${item.hits.length ? ` · Trúng: <b>${escapeHtml(formatNumberList(item.hits))}</b>` : ''}`
+        );
+      }
+      lines.push(
+        `Top ${item.count} dự đoán (${escapeHtml(formatLotoBetShape(item.next, item.count))}): <b>${escapeHtml(formatNumberList(item.next?.numbers || item.next?.betNumbers || []))}</b>`
+      );
+      if (item.summary?.days) {
+        lines.push(`  Thống kê: ${Number(item.summary.days)} ngày · hit-day ${Number(item.summary.hitDays || 0)}/${Number(item.summary.days)} · ${escapeHtml(formatMoneyK(item.summary.profitK))}`);
+      }
+    }
+    lines.push(divider);
   }
-  const defaultMethod = lotoMethods.find(item => item.strategy === DEFAULT_LOTO_STRATEGY && item.count === DEFAULT_LOTO_COUNT);
-  const support = (defaultMethod?.next?.support || []).slice(0, DEFAULT_LOTO_COUNT)
-    .map(item => `${item.number}(${item.supportCount})`);
-  if (support.length) lines.push(`• Đồng thuận Top ${DEFAULT_LOTO_COUNT}: ${escapeHtml(support.join(' · '))}`);
 
   // --- Section 4: Cumulative P&L ---
   const settledDe = deRows.filter(row =>
@@ -517,7 +510,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}) {
     let wins = 0;
     for (const row of settledLoto) {
       const result = row.strategies?.[method.strategy]?.methods?.[method.key]
-        || (method.strategy === DEFAULT_LOTO_STRATEGY ? row.methods?.[method.key] : null);
+        || (method.strategy === LEGACY_RRF_LOTO_STRATEGY ? row.methods?.[method.key] : null);
       if (!result) continue;
       const profitKVal = getTelegramLotoProfitK(result, method.count);
       profitK += profitKVal;
@@ -590,13 +583,40 @@ async function resolveTelegramChatId(env) {
   return env.TELEGRAM_STATE?.get(TELEGRAM_CHAT_KEY) || null;
 }
 
+function splitTelegramText(text, maxLength = 3900) {
+  const lines = String(text || '').split('\n');
+  const chunks = [];
+  let current = '';
+  for (const line of lines) {
+    const next = current ? `${current}\n${line}` : line;
+    if (current && next.length > maxLength) {
+      chunks.push(current);
+      current = line;
+      continue;
+    }
+    if (!current && line.length > maxLength) {
+      for (let index = 0; index < line.length; index += maxLength) {
+        chunks.push(line.slice(index, index + maxLength));
+      }
+      continue;
+    }
+    current = next;
+  }
+  if (current) chunks.push(current);
+  return chunks.length ? chunks : [''];
+}
+
 async function sendTelegramMessage(env, chatId, text) {
-  return telegramApi(env, 'sendMessage', {
-    chat_id: chatId,
-    text,
-    parse_mode: 'HTML',
-    disable_web_page_preview: true
-  });
+  let lastMessage = null;
+  for (const chunk of splitTelegramText(text)) {
+    lastMessage = await telegramApi(env, 'sendMessage', {
+      chat_id: chatId,
+      text: chunk,
+      parse_mode: 'HTML',
+      disable_web_page_preview: true
+    });
+  }
+  return lastMessage;
 }
 
 function evaluatePredictionCacheReadiness(dePayload = {}, lotoPayload = {}, expectedDataDate = null) {
@@ -784,5 +804,6 @@ export {
   buildTelegramReport,
   evaluatePredictionCacheReadiness,
   getVietnamDate,
-  notifyTelegram
+  notifyTelegram,
+  splitTelegramText
 };
