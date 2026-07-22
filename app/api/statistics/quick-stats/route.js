@@ -142,10 +142,16 @@ async function getAnnualFrequencySnapshot(candidates, requestedYear) {
         const sampleLength = Number(candidate.sampleLength);
         if (!candidate.id || !candidate.key || !Number.isFinite(currentLength) || !Number.isFinite(targetLength)) continue;
         const cumulative = baselineByKey.get(candidate.key)?.cumulative || {};
+        const baselineEntry = baselineByKey.get(candidate.key) || {};
         frequencies[candidate.id] = {
             currentCount: Number(cumulative[currentLength] || 0),
             targetCount: Number(cumulative[targetLength] || 0),
-            frequencyCount: Number(cumulative[Number.isFinite(sampleLength) ? sampleLength : currentLength] || 0)
+            frequencyCount: Number(cumulative[Number.isFinite(sampleLength) ? sampleLength : currentLength] || 0),
+            // The active-chain cards need the same frozen record threshold as
+            // the Mốc 20 năm records page.  Returning it here avoids loading
+            // the entire 50k-entry baseline in the browser just to decorate
+            // a few currently active cards.
+            recordLength: Number(baselineEntry.recordLen) || 0
         };
     }
 

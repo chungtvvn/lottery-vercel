@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const selectedCurrentStreaks = new Map();
     let currentStreakItemsById = new Map();
     let annual20FrequencyByStreakId = new Map();
+    let annual20RecordByStreakId = new Map();
     let annual20FrequencyLoaded = false;
 
     const getCurrentStreakId = (streak, length) => `${streak.key || streak.description || 'streak'}|${length}|${streak.isPotential ? 'potential' : 'active'}`;
@@ -1191,10 +1192,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         const frequencyScope = document.getElementById('current-streak-frequency-scope');
         const minInput = document.getElementById('current-streak-frequency-min');
         const maxInput = document.getElementById('current-streak-frequency-max');
-        if (!sortSelect || !frequencyScope || !minInput || !maxInput) return;
+        const searchInput = document.getElementById('current-streak-search');
+        const typeSelect = document.getElementById('current-streak-type');
+        if (!sortSelect || !frequencyScope || !minInput || !maxInput || !searchInput || !typeSelect) return;
         const scope = frequencyScope.value === 'annual20' ? 'annual20' : 'history';
         const min = minInput.value === '' ? -Infinity : Number(minInput.value);
         const max = maxInput.value === '' ? Infinity : Number(maxInput.value);
+        const searchTerm = String(searchInput.value || '').trim().toLocaleLowerCase('vi');
+        const type = typeSelect.value;
         const cards = [...currentStreaksContainer.querySelectorAll('[data-active-streak-id]')];
         // Do not hide all cards while the annual window is still loading.
         // This used to leave only the group headings visible whenever a user
@@ -1202,7 +1207,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const annualScopePending = scope === 'annual20' && !annual20FrequencyLoaded;
         cards.forEach(card => {
             const frequency = Number(card.dataset[scope === 'annual20' ? 'frequency20' : 'frequencyHistory']);
-            const visible = annualScopePending || (Number.isFinite(frequency) && frequency >= min && frequency <= max);
+            const title = String(card.dataset.chainTitle || '').toLocaleLowerCase('vi');
+            const matchesSearch = !searchTerm || title.includes(searchTerm);
+            const matchesType = type === 'all' || card.dataset.chainType === type;
+            const matchesFrequency = annualScopePending || (Number.isFinite(frequency) && frequency >= min && frequency <= max);
+            const visible = matchesSearch && matchesType && matchesFrequency;
             card.classList.toggle('hidden', !visible);
         });
         const compareCards = (left, right) => {
@@ -1237,7 +1246,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     const bindCurrentStreakControls = () => {
-        const controls = ['current-streak-sort', 'current-streak-frequency-scope', 'current-streak-frequency-min', 'current-streak-frequency-max']
+        const controls = ['current-streak-search', 'current-streak-type', 'current-streak-sort', 'current-streak-frequency-scope', 'current-streak-frequency-min', 'current-streak-frequency-max']
             .map(id => document.getElementById(id)).filter(Boolean);
         let filterSyncTimer = null;
         const scheduleFilterSync = () => {
@@ -1315,18 +1324,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             const payload = await response.json();
             const frequencies = payload?.frequencies || {};
             annual20FrequencyByStreakId = new Map();
+            annual20RecordByStreakId = new Map();
             const cardsById = new Map([...currentStreaksContainer.querySelectorAll('[data-active-streak-id]')]
                 .map(card => [card.dataset.activeStreakId, card]));
             currentStreakItemsById.forEach((item, id) => {
                 const frequency = frequencies[id] || {};
                 const count = Number(frequency.frequencyCount || 0);
                 const targetCount = Number(frequency.targetCount || 0);
+                const recordLength = Number(frequency.recordLength || 0);
                 annual20FrequencyByStreakId.set(id, count / 20);
+                annual20RecordByStreakId.set(id, recordLength);
                 const card = cardsById.get(id);
                 if (!card) return;
                 card.dataset.frequency20 = String(count / 20);
+                card.dataset.annualRecordLength = String(recordLength);
                 const label = card.querySelector('[data-frequency-20-label]');
                 if (label) label.textContent = `Mốc 20 năm: ${formatExactFrequency(count, 20)}`;
+                const recordLabel = card.querySelector('[data-annual-record-label]');
+                if (recordLabel) recordLabel.textContent = `KL Mốc 20: ${recordLength ? `${recordLength}d` : '-'}`;
                 const targetLabel = card.querySelector('[data-frequency-20-target-label]');
                 if (targetLabel) targetLabel.textContent = `Mốc 20 năm: ${formatExactFrequency(targetCount, 20)}`;
             });
@@ -1336,6 +1351,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             annual20FrequencyLoaded = true;
             currentStreaksContainer.querySelectorAll('[data-frequency-20-label]').forEach(label => {
                 label.textContent = 'Mốc 20 năm: không tải được';
+            });
+            currentStreaksContainer.querySelectorAll('[data-annual-record-label]').forEach(label => {
+                label.textContent = 'KL Mốc 20: không tải được';
             });
             currentStreaksContainer.querySelectorAll('[data-frequency-20-target-label]').forEach(label => {
                 label.textContent = 'Mốc 20 năm: không tải được';
@@ -1699,7 +1717,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             let finalHtml = `
                 <div class="mb-5 rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-                    <div class="grid gap-3 lg:grid-cols-[1.3fr_1fr_0.7fr_0.7fr_auto] lg:items-end">
+                    <div class="grid gap-3 lg:grid-cols-[1.2fr_0.9fr_1.1fr_0.9fr_0.7fr_0.7fr_auto] lg:items-end">
+                        <label class="text-xs font-bold uppercase tracking-wide text-slate-600">Tìm chuỗi
+                            <input id="current-streak-search" type="search" placeholder="Tên, nhóm hoặc dạng chuỗi" class="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm normal-case font-medium text-slate-800" autocomplete="off">
+                        </label>
+                        <label class="text-xs font-bold uppercase tracking-wide text-slate-600">Loại chuỗi
+                            <select id="current-streak-type" class="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm normal-case font-medium text-slate-800">
+                                <option value="all">Tất cả</option>
+                                <option value="active">Đang diễn ra</option>
+                                <option value="potential">Tiềm năng</option>
+                            </select>
+                        </label>
                         <label class="text-xs font-bold uppercase tracking-wide text-slate-600">Sắp xếp
                             <select id="current-streak-sort" class="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm normal-case font-medium text-slate-800">
                                 <option value="chain-asc">Tên chuỗi A → Z</option>
@@ -1848,7 +1876,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
 
                     finalHtml += `
-                                <div data-active-streak-id="${escapeHtml(cardId)}" data-chain-title="${escapeHtml(streak.description || streak.key || '')}" data-frequency-history="${fullFrequency}" data-frequency-20="${annual20FrequencyByStreakId.get(cardId) ?? fullFrequency}" style="content-visibility:auto;contain-intrinsic-size:auto 360px" class="${cardBgColor} rounded-lg shadow-sm border border-l-4 ${cardBorderColor} transition hover:shadow-lg hover:-translate-y-1 cursor-pointer">
+                                <div data-active-streak-id="${escapeHtml(cardId)}" data-chain-title="${escapeHtml(streak.description || streak.key || '')}" data-chain-type="${streak.isPotential ? 'potential' : 'active'}" data-frequency-history="${fullFrequency}" data-frequency-20="${annual20FrequencyByStreakId.get(cardId) ?? fullFrequency}" data-annual-record-length="${annual20RecordByStreakId.get(cardId) || 0}" style="content-visibility:auto;contain-intrinsic-size:auto 360px" class="${cardBgColor} rounded-lg shadow-sm border border-l-4 ${cardBorderColor} transition hover:shadow-lg hover:-translate-y-1 cursor-pointer">
                                     <div class="p-4 flex flex-col h-full">
                                         
                                         <div data-streak-info class="relative group cursor-pointer" onclick="this.querySelector('.group-hover\\:block').classList.toggle('hidden')">
@@ -1872,6 +1900,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 	                                        <div class="mt-2 mb-1 flex flex-wrap items-center gap-1.5 text-[11px]">
 	                                            <span title="${escapeHtml(cardRecordDropOffState.label || 'Kỷ lục dài nhất trong lịch sử')}" class="inline-flex items-center rounded border px-2 py-0.5 font-semibold ${recordBadgeClass}">Kỷ lục: ${recordLength ? `${recordLength}d` : '-'}</span>
+	                                            <span data-annual-record-label title="Kỷ lục dài nhất trong cửa sổ Mốc 20 năm đã chốt tại 31/12 năm trước" class="inline-flex items-center rounded border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-800">KL Mốc 20: đang nạp...</span>
 	                                            <span class="text-gray-500">Hiện tại: ${streakLen}d</span>
 	                                        </div>
 	                                        <p class="text-xs text-gray-500 mb-1">Từ ngày: ${streak.startDate}</p>
