@@ -449,6 +449,14 @@ jobs:
             if (edge75PitDe?.betNumbers?.length !== 30 || edge75PitDe?.excludedNumbers?.length !== 70) {
               throw new Error(`R2 Đề Edge75 PIT thiếu: bet=${edge75PitDe?.betNumbers?.length || 0}, exclude=${edge75PitDe?.excludedNumbers?.length || 0}`);
             }
+            const historyEdgeUnion = milestone.nextPrediction?.strategies?.deMilestoneHistoryEdge75UnionX2?.holds?.['70'];
+            if (
+              !Array.isArray(historyEdgeUnion?.betNumbers) ||
+              !Array.isArray(historyEdgeUnion?.intersectionNumbers) ||
+              historyEdgeUnion?.components?.historyEdge75?.source !== 'history-snapshot'
+            ) {
+              throw new Error(`R2 Đề gộp Edge75 + Mốc 20 năm không dùng snapshot Lịch sử: source=${historyEdgeUnion?.components?.historyEdge75?.source || 'missing'}`);
+            }
             const stale = Object.entries(dates).filter(([, date]) => date !== latestRaw);
             if (stale.length) {
               throw new Error(`R2 chưa đồng bộ latestRaw=${latestRaw}, target=${target}: ${JSON.stringify(dates)}`);
