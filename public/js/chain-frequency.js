@@ -606,7 +606,7 @@
                             </div>
                         ` : ''}
                         <div class="mt-2 flex flex-wrap gap-1.5">
-                            ${(snapshot.betNumbers || []).slice(0, 45).map(num => {
+                            ${(snapshot.betNumbers || []).map(num => {
                                 const text = numText(num);
                                 const isHit = actualNumber && text === actualNumber;
                                 const isDouble = doubleNumbers.includes(text);
