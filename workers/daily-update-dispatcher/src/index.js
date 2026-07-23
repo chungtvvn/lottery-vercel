@@ -10,7 +10,7 @@ const UPDATE_CRON = '40 11 * * *';
 const TELEGRAM_CHAT_KEY = 'telegram:chat_id';
 const TELEGRAM_LAST_SENT_KEY = 'telegram:last_sent_prediction_date';
 const DEFAULT_APP_BASE_URL = 'https://lottery-stats-vercel.vercel.app';
-const DEFAULT_DE_STRATEGY = 'deParallelBlock85Small65';
+const DEFAULT_DE_STRATEGY = 'deMilestoneHistoryEdge75UnionX2';
 const DEFAULT_DE_TARGET = 70;
 // Keep this legacy key only for the old flat cache shape. New cache rows are
 // always read from `strategies[method]`, so changing the production default
@@ -18,6 +18,12 @@ const DEFAULT_DE_TARGET = 70;
 const LEGACY_RRF_LOTO_STRATEGY = 'rrfParallelBlock85Small65';
 const DEFAULT_LOTO_STRATEGY = 'dedupEdge75Pit';
 const TELEGRAM_DE_METHODS = [
+  {
+    source: 'milestone',
+    strategy: 'deMilestoneHistoryEdge75UnionX2',
+    target: 70,
+    label: 'Gộp Edge75 Lịch sử + Song Song Mốc 20 năm (x2 số trùng)'
+  },
   {
     source: 'milestone',
     strategy: 'deParallelBlock85Small65',
@@ -426,13 +432,17 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}) {
         `Đã đánh (${Number(item.result.betCount || item.deSettledPrediction?.betNumbers?.length || 0)} số): <code>${escapeHtml(formatNumberList(item.deSettledPrediction?.betNumbers || []))}</code>`,
         `KQ thực tế: <b>${escapeHtml(normalizeLotteryNumber(item.settled.actualSpecial ?? item.settled.summary?.actualSpecial ?? item.result.actual))}</b>`
       );
+      if (item.deSettledPrediction?.intersectionNumbers?.length) {
+        lines.push(`Số giao đánh x2: <b>${escapeHtml(formatNumberList(item.deSettledPrediction.intersectionNumbers))}</b>`);
+      }
     } else {
       lines.push('Kết toán hôm qua: chưa có bản ghi đã kết toán.');
     }
-    lines.push(
-      `Dự đoán ${escapeHtml(displayDate(item.nextPredictionDate))} (${Number(item.next?.betNumbers?.length || 0)} số): <b>${escapeHtml(formatNumberList(item.next?.betNumbers || []))}</b>`,
-      divider
-    );
+    lines.push(`Dự đoán ${escapeHtml(displayDate(item.nextPredictionDate))} (${Number(item.next?.betNumbers?.length || 0)} số): <b>${escapeHtml(formatNumberList(item.next?.betNumbers || []))}</b>`);
+    if (item.next?.intersectionNumbers?.length) {
+      lines.push(`Số giao đánh x2: <b>${escapeHtml(formatNumberList(item.next.intersectionNumbers))}</b>`);
+    }
+    lines.push(divider);
   }
 
   for (const strategy of TELEGRAM_LOTO_STRATEGIES) {

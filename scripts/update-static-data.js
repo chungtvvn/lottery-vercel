@@ -938,7 +938,29 @@ async function generateLotoPredictionCacheIfNeeded(expectedLatestDate = null, co
     return true;
 }
 
-function generateMilestone20yPredictionCache() {
+async function hydratePredictionHistoryFromR2() {
+    if (!getR2PublicUrl()) return false;
+
+    try {
+        const history = await readStatsJsonFromR2('cached_prediction_history.json');
+        if (!Array.isArray(history) || history.length === 0) {
+            throw new Error('cached_prediction_history.json rỗng hoặc sai định dạng');
+        }
+        const historyPath = path.join(DATA_DIR, 'statistics', 'cached_prediction_history.json');
+        await fs.mkdir(path.dirname(historyPath), { recursive: true });
+        await fs.writeFile(historyPath, JSON.stringify(history, null, 0), 'utf8');
+        console.log(`[Mốc 20 năm] Hydrate ${history.length} snapshot Lịch sử từ R2 trước khi gộp Edge75.`);
+        return true;
+    } catch (error) {
+        console.warn(`[Mốc 20 năm] Không hydrate được snapshot Edge75 Lịch sử từ R2: ${error.message}`);
+        return false;
+    }
+}
+
+async function generateMilestone20yPredictionCache() {
+    // The default strategy consumes the immutable D-1 Edge75 snapshot. Read it
+    // from R2 at generation time so an old local cache cannot silently fall back.
+    await hydratePredictionHistoryFromR2();
     const timeoutMs = Math.max(60_000, Number(process.env.MILESTONE20Y_PREDICTION_TIMEOUT_MS || 900_000) || 0);
     runNodeScript('scripts/generate-milestone-20y-cache.js',
         'Sinh/đối soát cache dự đoán Mốc 20 năm cho API/tab Mốc 20 năm.', {
@@ -1259,7 +1281,7 @@ async function runDailyMilestone20yOnlyMode() {
         hydrateMilestone20yLiveCacheFromR2(),
         hydrateMilestone20yBaselineFromR2(latestRawDate)
     ]);
-    generateMilestone20yPredictionCache();
+    await generateMilestone20yPredictionCache();
     uploadOnlyMilestone20yCaches();
 
     await writeRunStatus({
@@ -1563,7 +1585,7 @@ async function main() {
             const didGenerateLoto = await generateLotoPredictionCacheIfNeeded(latestRawDate, 'prediction-cache-only');
             const didGenerateMilestone = process.env.MILESTONE20Y_GENERATE_CACHE !== '0';
             if (didGenerateMilestone) {
-                generateMilestone20yPredictionCache();
+                await generateMilestone20yPredictionCache();
             } else {
                 console.log('[6] MILESTONE20Y_GENERATE_CACHE=0, giữ nguyên cache Mốc 20 năm trên R2.');
             }
@@ -1931,7 +1953,7 @@ async function main() {
 
             try {
                 await hydrateMilestone20yLiveCacheFromR2();
-                generateMilestone20yPredictionCache();
+                await generateMilestone20yPredictionCache();
                 markRunStatus({ predictionCacheRefreshed: true, didWork: true });
             } catch (milestoneErr) {
                 console.error('⚠️ Lỗi khi sinh cache Mốc 20 năm cho DB mode:', milestoneErr.message);
@@ -2031,7 +2053,7 @@ async function main() {
             if (process.env.MILESTONE20Y_GENERATE_CACHE !== '0') {
                 try {
                     await hydrateMilestone20yLiveCacheFromR2();
-                    generateMilestone20yPredictionCache();
+                    await generateMilestone20yPredictionCache();
                     markRunStatus({ predictionCacheRefreshed: true, didWork: true });
                 } catch (milestoneErr) {
                     console.error('⚠️ Lỗi khi sinh cache Mốc 20 năm (không ảnh hưởng các cache khác):', milestoneErr.message);

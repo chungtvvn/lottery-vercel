@@ -55,6 +55,11 @@ async function main() {
                         70: { betNumbers: deBetNumbers }
                     }
                 },
+                deMilestoneHistoryEdge75UnionX2: {
+                    holds: {
+                        70: { betNumbers: deBetNumbers, intersectionNumbers: ['12'] }
+                    }
+                },
                 chainSmallFirst: {
                     holds: {
                         70: { betNumbers: Array.from({ length: 30 }, (_, value) => String(value).padStart(2, '0')) }
@@ -91,6 +96,13 @@ async function main() {
                         hit: true,
                         profitK: 540
                     },
+                    'deMilestoneHistoryEdge75UnionX2:hold70': {
+                        actual: '12',
+                        betCount: 30,
+                        unitCount: 31,
+                        hit: true,
+                        profitK: 624
+                    },
                     'chainSmallFirst:hold70': {
                         actual: '12',
                         betCount: 30,
@@ -105,6 +117,9 @@ async function main() {
                     }
                 },
                 strategies: {
+                    deMilestoneHistoryEdge75UnionX2: {
+                        holds: { 70: { betNumbers: deBetNumbers, intersectionNumbers: ['12'] } }
+                    },
                     dedupEdge75Pit: {
                         holds: { 70: { betNumbers: deBetNumbers } }
                     }
@@ -276,6 +291,8 @@ async function main() {
     const report = buildTelegramReport(dePayload, lotoPayload, historyPayload);
     assert.match(report.text, /Đã đánh \(30 số\):/);
     assert.match(report.text, /KQ thực tế: <b>12<\/b>/);
+    assert.match(report.text, /ĐỀ — Gộp Edge75 Lịch sử \+ Song Song Mốc 20 năm \(x2 số trùng\)/);
+    assert.match(report.text, /Số giao đánh x2: <b>12<\/b>/);
     assert.match(report.text, /ĐỀ — Song Song Mốc 20 năm Hold 70/);
     assert.match(report.text, /ĐỀ — Song Song Lịch sử Hold 70/);
     assert.match(report.text, /Edge khử trùng 75% nền - Hold 70/);
