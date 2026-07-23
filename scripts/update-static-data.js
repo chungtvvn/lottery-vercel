@@ -189,6 +189,7 @@ function isLotoPredictionFormulaCurrent(cache) {
         || {};
     const defaultNumbers = predictions?.[`top${LOTO_DEFAULT_BET_COUNT}`]?.numbers || [];
     const edge75PitPredictions = cache?.nextPrediction?.strategies?.dedupEdge75Pit?.predictions || {};
+    const milestoneEdge75PitFusionPredictions = cache?.nextPrediction?.strategies?.milestoneEdge75PitFusion?.predictions || {};
     const hasPredictionSet = (predictionSets, count) => Array.isArray(predictionSets?.[`top${count}`]?.numbers)
         && predictionSets[`top${count}`].numbers.length === count;
     const betCountsOk = betCounts.length === LOTO_BET_COUNTS.length
@@ -201,6 +202,7 @@ function isLotoPredictionFormulaCurrent(cache) {
         && defaultNumbers.length === LOTO_DEFAULT_BET_COUNT
         && LOTO_BET_COUNTS.every(count => hasPredictionSet(predictions, count))
         && LOTO_BET_COUNTS.every(count => hasPredictionSet(edge75PitPredictions, count))
+        && LOTO_BET_COUNTS.every(count => hasPredictionSet(milestoneEdge75PitFusionPredictions, count))
         && betCountsOk;
 }
 

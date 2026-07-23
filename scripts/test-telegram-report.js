@@ -153,6 +153,12 @@ async function main() {
                         top6: { numbers: ['11', '12', '13', '14', '15', '16'] },
                         top7: { numbers: ['11', '12', '13', '14', '15', '16', '17'] }
                     }
+                },
+                milestoneEdge75PitFusion: {
+                    predictions: {
+                        top6: { numbers: ['01', '11', '12', '13', '14', '15'] },
+                        top7: { numbers: ['01', '11', '12', '13', '14', '15', '16'] }
+                    }
                 }
             }
         },
@@ -210,6 +216,22 @@ async function main() {
                                 profitK: 2580
                             }
                         }
+                    },
+                    milestoneEdge75PitFusion: {
+                        methods: {
+                            top6: {
+                                betNumbers: ['01', '11', '12', '13', '14', '15'],
+                                betCount: 6,
+                                hits: 2,
+                                profitK: 2800
+                            },
+                            top7: {
+                                betNumbers: ['01', '11', '12', '13', '14', '15', '16'],
+                                betCount: 7,
+                                hits: 2,
+                                profitK: 2580
+                            }
+                        }
                     }
                 }
             }],
@@ -227,16 +249,23 @@ async function main() {
         const key = `top${count}`;
         lotoPayload.nextPrediction.strategies.rrfParallelBlock85Small65.predictions[key] = { numbers: rrfNumbers };
         lotoPayload.nextPrediction.strategies.dedupEdge75Pit.predictions[key] = { numbers: edgeNumbers };
+        lotoPayload.nextPrediction.strategies.milestoneEdge75PitFusion.predictions[key] = { numbers: edgeNumbers };
         lotoPayload.livePredictions.predictions[0].strategies.rrfParallelBlock85Small65.methods[key] = {
             betNumbers: rrfNumbers, betCount: count, hits: 1
         };
         lotoPayload.livePredictions.predictions[0].strategies.dedupEdge75Pit.methods[key] = {
             betNumbers: edgeNumbers, betCount: count, hits: 1
         };
+        lotoPayload.livePredictions.predictions[0].strategies.milestoneEdge75PitFusion.methods[key] = {
+            betNumbers: edgeNumbers, betCount: count, hits: 1
+        };
         lotoPayload.livePredictions.summary[`rrfParallelBlock85Small65_${key}`] = {
             days: 1, hitDays: 1, profitK: 800 - count * 220
         };
         lotoPayload.livePredictions.summary[`dedupEdge75Pit_${key}`] = {
+            days: 1, hitDays: 1, profitK: 800 - count * 220
+        };
+        lotoPayload.livePredictions.summary[`milestoneEdge75PitFusion_${key}`] = {
             days: 1, hitDays: 1, profitK: 800 - count * 220
         };
     }
@@ -291,22 +320,23 @@ async function main() {
     const report = buildTelegramReport(dePayload, lotoPayload, historyPayload);
     assert.match(report.text, /Đã đánh \(30 số\):/);
     assert.match(report.text, /KQ thực tế: <b>12<\/b>/);
-    assert.match(report.text, /ĐỀ — Gộp Edge75 Lịch sử \+ Song Song Mốc 20 năm \(x2 số trùng\)/);
+    assert.match(report.text, /ĐỀ — GỘP EDGE75 LỊCH SỬ \+ SONG SONG MỐC 20 NĂM \(X2 SỐ TRÙNG\)/);
     assert.match(report.text, /Số giao đánh x2: <b>12<\/b>/);
-    assert.match(report.text, /ĐỀ — Song Song Mốc 20 năm Hold 70/);
-    assert.match(report.text, /ĐỀ — Song Song Lịch sử Hold 70/);
-    assert.match(report.text, /Edge khử trùng 75% nền - Hold 70/);
+    assert.match(report.text, /ĐỀ — SONG SONG MỐC 20 NĂM HOLD 70/);
+    assert.match(report.text, /ĐỀ — SONG SONG LỊCH SỬ HOLD 70/);
+    assert.match(report.text, /EDGE KHỬ TRÙNG 75% NỀN - HOLD 70/);
     assert.match(report.text, /Đã đánh \(30 số\): <code>70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99<\/code>/);
     assert.doesNotMatch(report.text, /Chuỗi nhỏ trước Hold 70/);
-    assert.match(report.text, /LÔ — RRF Song song/);
-    assert.match(report.text, /LÔ — Edge75 PIT có kiểm chứng - Hold 70/);
+    assert.match(report.text, /LÔ — RRF SONG SONG/);
+    assert.match(report.text, /LÔ — EDGE75 PIT CÓ KIỂM CHỨNG - HOLD 70/);
+    assert.match(report.text, /LÔ — GỘP MỐC 20 NĂM RRF \+ EDGE75 PIT \(RRF 50\/50\)/);
     assert.match(report.text, /Top 30 dự đoán/);
     assert.match(report.text, /Top 7 đã chốt: <code>01 02 03 04 05 06 07<\/code>/);
     assert.match(report.text, /KQ 01\/07\/2026 \(27 vị trí\):/);
-    assert.match(report.text, /Trúng: <b>01<\/b>/);
+    assert.match(report.text, /🟩 TRÚNG: <b>01<\/b>/);
     assert.match(report.text, /❌ LỖ · -740K · 1 hit/);
     assert.match(report.text, /Thống kê: 10 ngày · hit-day 4\/10 · \+12\.000K/);
-    assert.match(report.text, /______________________/);
+    assert.match(report.text, /━━━━━━━━━━━━━━━━━━━━/);
     assert.ok(splitTelegramText(report.text).every(chunk => chunk.length <= 3900), 'Telegram report phải được chia gói an toàn');
     console.log('Telegram report tests passed.');
 }

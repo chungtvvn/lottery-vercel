@@ -13,12 +13,16 @@ const FALLBACK_LOTO_PAYOUT_PER_HIT_K = 8000;
 const LOTO_BET_COUNTS = [6, 7, 20, 25, 30];
 const LEGACY_RRF_LOTO_STRATEGY = 'rrfParallelBlock85Small65';
 const DEFAULT_LOTO_STRATEGY = 'dedupEdge75Pit';
+const MILESTONE_EDGE75_PIT_FUSION_STRATEGY = 'milestoneEdge75PitFusion';
 const LOTO_STRATEGY_META = {
     rrfParallelBlock85Small65: {
         methodName: 'Lô Song song RRF 50/50 - Chuỗi nhỏ Hold 65 + Nhịp block Hold 85'
     },
     dedupEdge75Pit: {
         methodName: 'Lô Edge75 PIT có kiểm chứng - Hold 70'
+    },
+    [MILESTONE_EDGE75_PIT_FUSION_STRATEGY]: {
+        methodName: 'Lô gộp Mốc 20 năm RRF + Edge75 PIT (RRF 50/50)'
     }
 };
 

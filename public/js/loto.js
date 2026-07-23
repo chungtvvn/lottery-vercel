@@ -4,7 +4,11 @@
     const DEFAULT_LOTO_STAKE_K = 2200;
     const DEFAULT_LOTO_PAYOUT_K = 8000;
     const LOTO_COUNT_ORDER = [6, 7, 20, 25, 30];
-    const LOTO_STRATEGIES = ['rrfParallelBlock85Small65', 'dedupEdge75Pit'];
+    const LOTO_STRATEGIES = [
+        'rrfParallelBlock85Small65',
+        'dedupEdge75Pit',
+        'milestoneEdge75PitFusion'
+    ];
     const state = {
         performancePeriod: 'monthly',
         performancePayload: null,
@@ -530,17 +534,19 @@
     }
 
     async function loadStrategyComparison(currentData) {
-        const alternate = LOTO_STRATEGIES.find(strategy => strategy !== state.selectedStrategy);
         const payloads = { [state.selectedStrategy]: currentData };
         renderStrategyComparison(payloads);
-        if (!alternate) return;
-        try {
-            const response = await fetch(`/api/loto/prediction?strategy=${alternate}`, { cache: 'no-store' });
-            const data = await response.json();
-            if (response.ok && data.success) payloads[alternate] = data;
-        } catch (error) {
-            console.warn('[LotoComparison] Không tải được phương pháp còn lại:', error);
-        }
+        const alternatives = LOTO_STRATEGIES.filter(strategy => strategy !== state.selectedStrategy);
+        if (!alternatives.length) return;
+        await Promise.all(alternatives.map(async strategy => {
+            try {
+                const response = await fetch(`/api/loto/prediction?strategy=${strategy}`, { cache: 'no-store' });
+                const data = await response.json();
+                if (response.ok && data.success) payloads[strategy] = data;
+            } catch (error) {
+                console.warn(`[LotoComparison] Không tải được phương pháp ${strategy}:`, error);
+            }
+        }));
         renderStrategyComparison(payloads);
     }
 

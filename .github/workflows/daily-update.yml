@@ -362,6 +362,11 @@ jobs:
             if (missingEdge.length) {
               throw new Error(`Lô Edge75 PIT thiếu Top: ${missingEdge.join(',')}`);
             }
+            const fusion = cache.nextPrediction?.strategies?.milestoneEdge75PitFusion?.predictions;
+            const missingFusion = lotoBetCounts.filter(count => fusion?.[`top${count}`]?.numbers?.length !== count);
+            if (missingFusion.length) {
+              throw new Error(`Lô gộp Mốc 20 năm + Edge75 PIT thiếu Top: ${missingFusion.join(',')}`);
+            }
             console.log(`cache_ready=true`);
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, 'cache_ready=true\n');
             console.log(`✅ Lô R2 đã đủ raw ${latestRaw}; target ${target}; dự đoán ${cache.nextPrediction?.predictionIsoDate || 'unknown'}.`);
@@ -479,6 +484,11 @@ jobs:
             const missingEdge = lotoBetCounts.filter(count => edge75Pit?.[`top${count}`]?.numbers?.length !== count);
             if (missingEdge.length) {
               throw new Error(`R2 Lô Edge75 PIT thiếu Top: ${missingEdge.join(',')}`);
+            }
+            const fusion = loto.nextPrediction?.strategies?.milestoneEdge75PitFusion?.predictions;
+            const missingFusion = lotoBetCounts.filter(count => fusion?.[`top${count}`]?.numbers?.length !== count);
+            if (missingFusion.length) {
+              throw new Error(`R2 Lô gộp Mốc 20 năm + Edge75 PIT thiếu Top: ${missingFusion.join(',')}`);
             }
             console.log(`✅ Đề + Lô đồng bộ raw ${latestRaw}; target ${target}. Dự đoán Lô: ${loto.nextPrediction?.predictionIsoDate || 'unknown'}.`);
           })().catch(error => {

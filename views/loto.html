@@ -50,8 +50,8 @@
                 <p class="text-sm font-semibold uppercase tracking-wide text-indigo-600">Dự đoán Lô theo 27 vị trí</p>
                 <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-900">Dự đoán Lô cho ngày tiếp theo</h1>
                 <p class="mt-2 max-w-4xl text-sm leading-6 text-slate-600">
-                    Mỗi vị trí trong 27 giải tự chạy logic Mốc 20 năm, sau đó xếp hạng RRF 50/50
-                    giữa Chuỗi nhỏ Hold 65 và Nhịp block Hold 85. Hệ thống theo dõi Top 6, 7, 20, 25 và 30;
+                    Mỗi vị trí trong 27 giải tự chạy logic Mốc 20 năm. Ngoài RRF Chuỗi nhỏ 65 + Nhịp block 85
+                    và Edge75 PIT, hệ thống có phương án gộp RRF 50/50 của hai bảng xếp hạng. Hệ thống theo dõi Top 6, 7, 20, 25 và 30;
                     số trùng nguồn vẫn chỉ tính một đơn vị cược đối với Lô. Đơn vị K = 1.000 VND;
                     web dùng 2200K/con, ăn 8000K/hit.
                 </p>
@@ -61,6 +61,7 @@
                 <select id="lotoStrategySelect" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
                     <option value="rrfParallelBlock85Small65">RRF song song Block 85 + Chuỗi nhỏ 65 - Top 6/7/20/25/30</option>
                     <option value="dedupEdge75Pit" selected>Edge75 PIT có kiểm chứng - Hold 70 - Top 6/7/20/25/30</option>
+                    <option value="milestoneEdge75PitFusion">Gộp Mốc 20 năm RRF + Edge75 PIT (RRF 50/50) - Top 6/7/20/25/30</option>
                 </select>
             </div>
         </section>
@@ -73,8 +74,8 @@
 
         <section class="mb-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
             <div class="border-b border-slate-100 bg-slate-50 px-5 py-4">
-                <h2 class="text-lg font-black text-slate-900">So sánh nhật ký thực tế hai phương pháp</h2>
-                <p class="mt-1 text-sm text-slate-600">Đối chiếu riêng từng snapshot đã chốt của RRF Song song và Edge75 PIT; mỗi Top dùng đúng số con được chọn.</p>
+                <h2 class="text-lg font-black text-slate-900">So sánh nhật ký thực tế các phương pháp</h2>
+                <p class="mt-1 text-sm text-slate-600">Đối chiếu riêng từng snapshot đã chốt của RRF Mốc 20 năm, Edge75 PIT và phương án gộp; mỗi Top dùng đúng số con được chọn.</p>
             </div>
             <div id="strategyComparison" class="p-5"></div>
         </section>
@@ -112,7 +113,7 @@
 
     </main>
 
-    <script src="/js/loto.js?v=20260722-top20-top30-v1"></script>
+    <script src="/js/loto.js?v=20260723-milestone-edge75-fusion-v1"></script>
 </body>
 
 </html>

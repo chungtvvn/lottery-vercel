@@ -17,6 +17,7 @@ const DEFAULT_DE_TARGET = 70;
 // cannot accidentally fall back to another method's numbers.
 const LEGACY_RRF_LOTO_STRATEGY = 'rrfParallelBlock85Small65';
 const DEFAULT_LOTO_STRATEGY = 'dedupEdge75Pit';
+const MILESTONE_EDGE75_PIT_FUSION_LOTO_STRATEGY = 'milestoneEdge75PitFusion';
 const TELEGRAM_DE_METHODS = [
   {
     source: 'milestone',
@@ -56,6 +57,10 @@ const TELEGRAM_LOTO_STRATEGIES = [
   {
     strategy: 'dedupEdge75Pit',
     label: 'Edge75 PIT có kiểm chứng - Hold 70'
+  },
+  {
+    strategy: MILESTONE_EDGE75_PIT_FUSION_LOTO_STRATEGY,
+    label: 'Gộp Mốc 20 năm RRF + Edge75 PIT (RRF 50/50)'
   }
 ];
 const TELEGRAM_LOTO_METHODS = TELEGRAM_LOTO_STRATEGIES.flatMap(method =>
@@ -415,7 +420,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}) {
     throw new Error('Payload chưa có đủ dự đoán Đề/Lô cho ngày tiếp theo.');
   }
 
-  const divider = '______________________';
+  const divider = '━━━━━━━━━━━━━━━━━━━━';
   const lines = [
     `<b>XSMB - TỔNG HỢP ${escapeHtml(displayDate(predictionDate))}</b>`,
     '<i>Telegram: 1K = 1.000 VND · Đề 10K/đơn vị · Lô 220K/đơn vị.</i>',
@@ -425,7 +430,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}) {
   // Each strategy is a self-contained block: yesterday's immutable result,
   // today's frozen prediction, then a visual divider for quick reading.
   for (const item of deMethods) {
-    lines.push(`<b>ĐỀ — ${escapeHtml(item.label)}</b>`);
+    lines.push(`<b>ĐỀ — ${escapeHtml(String(item.label).toUpperCase())}</b>`);
     if (item.settled && item.result) {
       lines.push(
         `Kết toán ${escapeHtml(displayDate(item.settled.predictionIsoDate || item.settled.predictionDate))}: <b>${item.telegramResult.hit ? '✅ TRÚNG' : '❌ TRƯỢT'}</b> · ${escapeHtml(formatMoneyK(item.telegramResult.profitK))}`,
@@ -448,7 +453,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}) {
   for (const strategy of TELEGRAM_LOTO_STRATEGIES) {
     const strategyMethods = lotoMethods.filter(item => item.strategy === strategy.strategy);
     const representative = strategyMethods.find(item => item.settled && item.result);
-    lines.push(`<b>LÔ — ${escapeHtml(strategy.label)}</b>`);
+    lines.push(`<b>LÔ — ${escapeHtml(String(strategy.label).toUpperCase())}</b>`);
     if (representative) {
       lines.push(
         `KQ ${escapeHtml(displayDate(representative.settled.predictionIsoDate))} (${representative.actual.length} vị trí): <code>${escapeHtml(formatNumberList(representative.actual))}</code>`
@@ -461,7 +466,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}) {
         const telegramProfitK = getTelegramLotoProfitK(item.result, item.count);
         lines.push(
           `Top ${item.count} đã chốt: <code>${escapeHtml(formatNumberList(item.result.betNumbers || []))}</code>`,
-          `  ${telegramProfitK > 0 ? '✅ CÓ LÃI' : '❌ LỖ'} · ${escapeHtml(formatMoneyK(telegramProfitK))} · ${Number(item.result.hits || 0)} hit${item.hits.length ? ` · Trúng: <b>${escapeHtml(formatNumberList(item.hits))}</b>` : ''}`
+          `  ${telegramProfitK > 0 ? '✅ CÓ LÃI' : '❌ LỖ'} · ${escapeHtml(formatMoneyK(telegramProfitK))} · ${Number(item.result.hits || 0)} hit${item.hits.length ? ` · 🟩 TRÚNG: <b>${escapeHtml(formatNumberList(item.hits))}</b>` : ''}`
         );
       }
       lines.push(
