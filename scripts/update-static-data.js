@@ -33,9 +33,9 @@ const PREDICTION_HISTORY_METHOD_IDS = [
     'dedupEdge75Hold70',
     'dedupDropoffHold70'
 ];
-const MILESTONE20Y_METHOD_VERSION = 'annual20y-2026-07-21-edge75-pit-tracking-v1';
+const MILESTONE20Y_METHOD_VERSION = 'annual20y-2026-07-23-history-edge75-parallel-union-v1';
 const MILESTONE20Y_BASELINE_VERSION = 'annual20y-baseline-2026-06-28-block-ab';
-const MILESTONE20Y_LIVE_CACHE_VERSION = 'annual20y-live-compact-v4';
+const MILESTONE20Y_LIVE_CACHE_VERSION = 'annual20y-live-compact-v5';
 const MILESTONE20Y_CACHE_FILES = [
     'cached_milestone20y_prediction.json',
     'cached_milestone20y_live_predictions.json'
@@ -219,15 +219,21 @@ function isMilestone20yFormulaCurrent(cache) {
         'numberWeightedRisk',
         'activeOnlyAvgRisk',
         'dedupEdge75Pit',
-        'deParallelBlock85Small65'
+        'deParallelBlock85Small65',
+        'deMilestoneHistoryEdge75Union',
+        'deMilestoneHistoryEdge75UnionX2'
     ];
     const edge75Pit = cache?.nextPrediction?.strategies?.dedupEdge75Pit?.holds?.['70'];
+    const defaultPrediction = cache?.nextPrediction?.strategies?.deMilestoneHistoryEdge75UnionX2?.holds?.['70'];
     return version === MILESTONE20Y_METHOD_VERSION
         && required.every(id => strategies.includes(id))
         && Array.isArray(edge75Pit?.betNumbers)
         && edge75Pit.betNumbers.length === 30
         && Array.isArray(edge75Pit?.excludedNumbers)
-        && edge75Pit.excludedNumbers.length === 70;
+        && edge75Pit.excludedNumbers.length === 70
+        && Array.isArray(defaultPrediction?.betNumbers)
+        && Array.isArray(defaultPrediction?.intersectionNumbers)
+        && defaultPrediction?.components?.historyEdge75?.source === 'history-snapshot';
 }
 
 function getMilestone20yPredictionYear(cache, expectedLatestDate = null) {
@@ -797,11 +803,12 @@ async function hasPerformanceReportCacheOnR2() {
             readStatsJsonFromR2(HISTORY_PERFORMANCE_REPORT_CACHE_FILE)
         ]);
         const hasSections = Boolean(cache?.de?.methods && cache?.loto?.methods);
+        // Báo cáo hiệu quả đầy đủ được sinh theo yêu cầu vì backtest rất nặng.
+        // Daily job chỉ cần giữ cache báo cáo hiện có hợp lệ; strategy mặc định
+        // của Mốc 20 năm được xác định từ prediction snapshot, không từ report.
         const hasCurrentMainMethod = cache?.reportVersion === PERFORMANCE_REPORT_VERSION
-            && cache?.de?.selectedMethodId === 'deParallelBlock85Small65:hold70'
-            && Boolean(cache?.de?.methods?.['deParallelBlock85Small65:hold70'])
-            && cache?.loto?.selectedMethodId === 'rrfParallelBlock85Small65:top6'
-            && Boolean(cache?.loto?.methods?.['rrfParallelBlock85Small65:top6']);
+            && Object.keys(cache?.de?.methods || {}).length > 0
+            && Object.keys(cache?.loto?.methods || {}).length > 0;
         const hasHistory = Boolean(historyCache?.methods && historyCache?.period?.startDate);
         // The main Mốc 20 năm report controls the daily report refresh. The
         // separate Lịch sử performance artifact may be regenerated on demand;
