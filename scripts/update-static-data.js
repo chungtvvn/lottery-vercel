@@ -42,6 +42,7 @@ const MILESTONE20Y_CACHE_FILES = [
 ];
 const PERFORMANCE_REPORT_CACHE_FILE = 'cached_profit_report_2026.json';
 const HISTORY_PERFORMANCE_REPORT_CACHE_FILE = 'cached_prediction_history_performance_2026.json';
+const DAILY_METHOD_ADVISOR_CACHE_FILE = 'cached_daily_method_advisor.json';
 const PERFORMANCE_REPORT_VERSION = 'profit-report-2026-de-parallel-rrf-loto-v2';
 const ANALYSIS_CACHE_VERSION = 'hold70-edge-bo-v1';
 const PREDICTION_HISTORY_METHOD_VERSION = '2026-07-15-parallel-shared-ranking-v3';
@@ -873,6 +874,25 @@ async function hasPredictionHistoryCacheOnR2(expectedLatestDate = null) {
     }
 }
 
+async function hasDailyMethodAdvisorCacheOnR2(expectedLatestDate = null) {
+    if (!getR2PublicUrl() || process.env.UPDATE_CHECK_R2_DAILY_ADVISOR === '0') return true;
+    try {
+        const cache = await readStatsJsonFromR2(DAILY_METHOD_ADVISOR_CACHE_FILE);
+        const expectedPredictionDate = nextIsoDate(expectedLatestDate);
+        const record = Array.isArray(cache?.records)
+            ? cache.records.find(item => normalizeDateValue(item?.predictionDate) === expectedPredictionDate)
+            : null;
+        const valid = cache?.version === 'daily-advisor-zscore-v2'
+            && record?.main?.numbers?.length === 30
+            && record?.source?.strict;
+        console.log(`[Cache Check] R2 Gợi ý=${record?.predictionDate || 'missing'}, valid=${valid}.`);
+        return valid;
+    } catch (error) {
+        console.log(`[Cache Check] R2 Gợi ý cache missing/stale: ${error.message}`);
+        return false;
+    }
+}
+
 function generateLotoPredictionCache() {
     const skipBacktest = process.env.LOTO_SKIP_BACKTEST !== '0';
     const timeoutMs = Math.max(60_000, Number(process.env.LOTO_PREDICTION_TIMEOUT_MS || (skipBacktest ? 1_800_000 : 0)) || 0);
@@ -1144,7 +1164,7 @@ function uploadOnlyPredictionCaches(options = {}) {
         PERFORMANCE_REPORT_CACHE_FILE,
         HISTORY_PERFORMANCE_REPORT_CACHE_FILE
     ].filter(file => fsSync.existsSync(path.join(statsDir, file)));
-    const predictionHistoryFiles = ['cached_prediction_history.json']
+    const predictionHistoryFiles = ['cached_prediction_history.json', DAILY_METHOD_ADVISOR_CACHE_FILE]
         .filter(file => fsSync.existsSync(path.join(statsDir, file)));
     if (!includeLoto) {
         console.log('[6] Upload riêng cache dự đoán nhưng giữ nguyên cached_loto_* trên R2 vì Lô không sinh mới trong run này.');
@@ -1163,6 +1183,21 @@ function uploadOnlyPredictionCaches(options = {}) {
             ...performanceReportFiles
         ].join(',')
     });
+}
+
+function generateDailyMethodAdvisorCache(options = {}) {
+    runNodeScript(
+        'scripts/generate-daily-method-advisor-cache.js',
+        'Sinh cache Gợi ý phương pháp hàng ngày + Z-score từ snapshot/R2.',
+        {
+            LOTTERY_DATA_SOURCE: 'r2',
+            LOTTERY_STATS_SOURCE: 'r2',
+            // The prediction history was just refreshed locally in this action.
+            // Do not read its previous R2 copy before the upload stage completes.
+            DAILY_ADVISOR_USE_LOCAL_HISTORY: options.useLocalHistory ? '1' : '0'
+        },
+        { timeoutMs: 120_000 }
+    );
 }
 
 async function fetchLatestXsmbResultWithRetry(latestLocalDate) {
@@ -1560,11 +1595,12 @@ async function main() {
     const r2MilestoneCacheMissing = !(await hasMilestone20yPredictionCacheOnR2(latestRawDate));
     const r2PerformanceReportCacheMissing = !(await hasPerformanceReportCacheOnR2());
     const r2PredictionHistoryCacheMissing = !(await hasPredictionHistoryCacheOnR2(latestRawDate));
+    const r2DailyAdvisorCacheMissing = !(await hasDailyMethodAdvisorCacheOnR2(latestRawDate));
     const onlyPredictionCacheNeedsRefresh = !rawDataChanged
         && !forceRegenerateStats
         && !isStale
         && (lotoCacheMissing || r2LotoCacheMissing || milestoneCacheMissing || r2MilestoneCacheMissing
-            || r2PerformanceReportCacheMissing || r2PredictionHistoryCacheMissing);
+            || r2PerformanceReportCacheMissing || r2PredictionHistoryCacheMissing || r2DailyAdvisorCacheMissing);
 
     if (onlyPredictionCacheNeedsRefresh) {
         if (localRawOutOfSync) {
@@ -1584,6 +1620,7 @@ async function main() {
             await hydrateCoreStatsFromR2ForPredictionCache();
             const predictionHistoryService = require('../lib/services/predictionHistoryService');
             await predictionHistoryService.refreshLatestPendingPredictionHistory(90);
+            generateDailyMethodAdvisorCache({ useLocalHistory: true });
             const didGenerateLoto = await generateLotoPredictionCacheIfNeeded(latestRawDate, 'prediction-cache-only');
             const didGenerateMilestone = process.env.MILESTONE20Y_GENERATE_CACHE !== '0';
             if (didGenerateMilestone) {
@@ -1940,8 +1977,9 @@ async function main() {
                     const specialNumber = latestResult.special;
                     await predictionHistoryService.syncPredictionHistory(drawDateStr, specialNumber);
                 }
+                generateDailyMethodAdvisorCache({ useLocalHistory: true });
             } catch (histErr) {
-                console.error('⚠️ Lỗi khi đồng bộ lịch sử dự đoán:', histErr.message);
+                console.error('⚠️ Lỗi khi đồng bộ lịch sử/Gợi ý hằng ngày:', histErr.message);
             }
 
             try {
@@ -2017,6 +2055,7 @@ async function main() {
                 } else {
                     await predictionHistoryService.generateLocalPredictionHistoryFromSimulation(90, predictionHistorySimulation);
                 }
+                generateDailyMethodAdvisorCache({ useLocalHistory: true });
 
             } catch (simErr) {
                 console.error('⚠️ Lỗi khi tạo cached simulation (không ảnh hưởng các bước khác):', simErr.message);
