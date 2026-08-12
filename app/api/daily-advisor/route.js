@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { loadJsonWithSupabaseFallback } from '@/lib/data-access';
+import { getRawData, loadJsonWithSupabaseFallback } from '@/lib/data-access';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -21,6 +21,35 @@ function isAuthorized(request) {
     return provided === expected || request.cookies.get('xsmb_session')?.value === 'authenticated';
 }
 
+function normalizeDate(value) {
+    return String(value || '').slice(0, 10);
+}
+
+function readSpecial(row) {
+    const value = row?.special ?? row?.db ?? row?.giaiDb ?? row?.giai_dac_biet;
+    const number = Number(value);
+    return Number.isInteger(number) ? number : null;
+}
+
+function settleFromRaw(payload, rawRows) {
+    const actualByDate = new Map(
+        (rawRows || []).map(row => [normalizeDate(row?.date || row?.ngay), readSpecial(row)])
+            .filter(([date, actual]) => date && actual !== null)
+    );
+    const records = payload.records.map(record => {
+        const actual = actualByDate.get(normalizeDate(record?.predictionDate));
+        if (actual === undefined || record?.settled === true) return record;
+        return {
+            ...record,
+            settled: true,
+            actual,
+            main: { ...record.main, hit: Array.isArray(record.main?.numbers) && record.main.numbers.includes(actual) },
+            experimental: { ...record.experimental, hit: Array.isArray(record.experimental?.numbers) && record.experimental.numbers.includes(actual) }
+        };
+    });
+    return { ...payload, records, latestDataDate: rawRows?.at(-1)?.date || payload.latestDataDate };
+}
+
 export async function GET(request) {
     if (!isAuthorized(request)) {
         return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401, headers: NO_STORE_HEADERS });
@@ -30,7 +59,11 @@ export async function GET(request) {
         if (!payload || !Array.isArray(payload.records)) {
             throw new Error('Cache gợi ý chưa được sinh');
         }
-        return NextResponse.json({ success: true, ...payload }, { headers: NO_STORE_HEADERS });
+        // Raw R2 is the source of truth for a draw result. This keeps a just
+        // settled day accurate while the scheduled action is still writing its
+        // immutable cache snapshot and tomorrow's prediction.
+        const raw = await getRawData();
+        return NextResponse.json({ success: true, ...settleFromRaw(payload, raw) }, { headers: NO_STORE_HEADERS });
     } catch (error) {
         return NextResponse.json(
             { success: false, error: `Không tải được cache Gợi ý từ R2: ${error.message}` },
