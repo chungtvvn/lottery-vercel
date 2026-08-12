@@ -35,4 +35,6 @@ const pendingHistory = [...history, {
 }];
 const pendingCache = generateAdvisorCache({ history: pendingHistory, raw, limit: 90 });
 assert.equal(pendingCache.records[0].settled, false, 'null result must remain pending, not become number 00');
+assert.equal(pendingCache.records[0].predictionDate, '2026-04-01');
+assert.equal(pendingCache.records[0].main.numbers.length, BET_COUNT, 'pending next-day snapshot must have a fixed dàn');
 console.log('PASS daily advisor uses only strictly earlier settled snapshots and writes fixed 30-number main/Z-score support lanes.');

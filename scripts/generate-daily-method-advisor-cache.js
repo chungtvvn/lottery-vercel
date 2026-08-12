@@ -1,7 +1,18 @@
 #!/usr/bin/env node
 'use strict';
 
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '..', '.env.local'), quiet: true });
+require('dotenv').config({ path: path.join(__dirname, '..', '.env'), quiet: true });
+
 const service = require('../lib/services/dailyMethodAdvisorService');
+
+function nextIsoDate(value) {
+    const date = new Date(`${String(value || '').slice(0, 10)}T00:00:00Z`);
+    if (Number.isNaN(date.getTime())) return null;
+    date.setUTCDate(date.getUTCDate() + 1);
+    return date.toISOString().slice(0, 10);
+}
 
 async function main() {
     const { getRawData, loadJsonWithSupabaseFallback } = require('../lib/data-access');
@@ -23,10 +34,16 @@ async function main() {
     }
     const raw = await getRawData();
     const cache = await service.generateAndWriteCache({ history: history || undefined, raw, existing, limit: 90 });
+    const expectedPredictionDate = nextIsoDate(cache.latestDataDate);
+    const pendingSnapshot = cache.records.find(record => record?.predictionDate === expectedPredictionDate);
+    if (!pendingSnapshot || pendingSnapshot.settled || pendingSnapshot.main?.numbers?.length !== service.BET_COUNT) {
+        throw new Error(`Thiếu snapshot ngày kế tiếp ${expectedPredictionDate || 'unknown'} sau khi sinh Daily Advisor.`);
+    }
     console.log(JSON.stringify({
         file: 'lib/data/statistics/cached_daily_method_advisor.json',
         latestDataDate: cache.latestDataDate,
         records: cache.records.length,
+        pendingPredictionDate: pendingSnapshot.predictionDate,
         main: cache.summary.main,
         experimental: cache.summary.experimental
     }, null, 2));
