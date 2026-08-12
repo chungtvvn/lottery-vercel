@@ -20,21 +20,21 @@ const history = raw.slice(20, 50).map((row, index) => ({
     summary: { actualSpecial: row.special, methods: methods() }
 }));
 const cache = generateAdvisorCache({ history, raw, limit: 90 });
-assert.equal(cache.records.length, history.length);
-assert.equal(cache.records[0].main.numbers.length, BET_COUNT);
-assert.ok(cache.records.every(row => row.recommendation.ranking.every(rank => rank.observations <= history.filter(run => run.predictionDate < row.predictionDate && Number.isInteger(run.summary.actualSpecial)).length)));
-const first = cache.records.at(-1);
-assert.equal(first.recommendation.selected.observations, 0);
-assert.deepEqual(first.recommendation.methodPool, DAILY_METHOD_POOL.filter(id => first.recommendation.ranking.some(row => row.methodId === id)));
-assert.equal(first.experimental.numbers.length, BET_COUNT);
-assert.equal(first.experimental.replacedIn.length, 6);
+assert.equal(cache.records.length, 0, 'historical replays must not enter the real snapshot ledger');
 const pendingHistory = [...history, {
     predictionDate: '2026-04-01',
     sourceDrawDate: '2026-03-31',
     summary: { actualSpecial: null, methods: methods() }
 }];
 const pendingCache = generateAdvisorCache({ history: pendingHistory, raw, limit: 90 });
+assert.equal(pendingCache.records.length, 1, 'only the pending live snapshot belongs in the ledger');
 assert.equal(pendingCache.records[0].settled, false, 'null result must remain pending, not become number 00');
 assert.equal(pendingCache.records[0].predictionDate, '2026-04-01');
 assert.equal(pendingCache.records[0].main.numbers.length, BET_COUNT, 'pending next-day snapshot must have a fixed dàn');
+assert.equal(pendingCache.records[0].lifecycle.mode, 'live-issued');
+assert.deepEqual(pendingCache.records[0].recommendation.methodPool, DAILY_METHOD_POOL.filter(id => pendingCache.records[0].recommendation.ranking.some(row => row.methodId === id)));
+assert.equal(pendingCache.records[0].experimental.replacedIn.length, 6);
+const staleRecord = { ...pendingCache.records[0], predictionDate: '2026-03-01', settled: false };
+const staleFiltered = generateAdvisorCache({ history, raw, existing: [staleRecord], limit: 90 });
+assert.equal(staleFiltered.records.length, 0, 'expired unresolved snapshots must not remain in the live ledger');
 console.log('PASS daily advisor uses only strictly earlier settled snapshots and writes fixed 30-number main/Z-score support lanes.');

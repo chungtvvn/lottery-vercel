@@ -66,9 +66,8 @@
         const rows = (payload?.records || []).slice(0, limit);
         byId('historyLog').innerHTML = rows.map(record => {
             const selected = record.recommendation?.selected || {};
-            const lifecycle = record.lifecycle?.mode === 'live-issued' ? 'Snapshot thực tế' : 'Replay PIT';
             return `<article class="grid gap-3 px-5 py-4 md:grid-cols-[130px_1fr_auto] md:items-center">
-                <div><p class="font-black text-slate-900">${escapeHtml(record.predictionDate)}</p><p class="mt-1 text-xs font-semibold text-slate-500">${lifecycle}</p></div>
+                <div><p class="font-black text-slate-900">${escapeHtml(record.predictionDate)}</p><p class="mt-1 text-xs font-semibold text-slate-500">Snapshot thực tế đã chốt</p></div>
                 <div><p class="font-bold text-slate-800">${escapeHtml(record.main?.label || selected.label || '-')}</p><p class="mt-1 text-sm text-slate-600">30d ${selected.wins30 || 0}/${selected.observations30 || 0} · 90d ${selected.wins90 || 0}/${selected.observations || 0} · Wilson ${percent(selected.wilsonLower90)}</p><div class="mt-2 flex flex-wrap gap-1.5">${chips(record.main?.numbers, record.actual)}</div></div>
                 <div class="text-left md:text-right"><p class="text-sm font-black">Chính: ${laneOutcome(record, 'main')}</p><p class="mt-1 text-sm font-black">Z-score: ${laneOutcome(record, 'experimental')}</p>${record.settled ? `<p class="mt-1 text-sm text-slate-600">KQ ${number(record.actual)}</p>` : ''}</div>
             </article>`;
