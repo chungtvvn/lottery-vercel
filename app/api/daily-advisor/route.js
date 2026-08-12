@@ -47,7 +47,34 @@ function settleFromRaw(payload, rawRows) {
             experimental: { ...record.experimental, hit: Array.isArray(record.experimental?.numbers) && record.experimental.numbers.includes(actual) }
         };
     });
-    return { ...payload, records, latestDataDate: rawRows?.at(-1)?.date || payload.latestDataDate };
+    const summarize = key => {
+        const settled = records.filter(record => record.settled);
+        const wins = settled.filter(record => record[key]?.hit).length;
+        const losses = settled.length - wins;
+        const breakEvenHitRate = 30 / 84;
+        const hitRate = settled.length ? wins / settled.length : 0;
+        const stakeK = settled.length * 30 * 1000;
+        const profitK = wins * 84 * 1000 - stakeK;
+        return {
+            days: settled.length,
+            wins,
+            losses,
+            hitRate,
+            stakeK,
+            profitK,
+            roi: stakeK ? profitK / stakeK : 0,
+            breakEvenHitRate,
+            breakEvenWins: Math.ceil(settled.length * breakEvenHitRate),
+            isAboveBreakEven: settled.length > 0 && hitRate >= breakEvenHitRate,
+            marginToBreakEven: hitRate - breakEvenHitRate
+        };
+    };
+    return {
+        ...payload,
+        records,
+        latestDataDate: rawRows?.at(-1)?.date || payload.latestDataDate,
+        summary: { main: summarize('main'), experimental: summarize('experimental') }
+    };
 }
 
 export async function GET(request) {
