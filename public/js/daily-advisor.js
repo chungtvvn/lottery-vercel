@@ -19,6 +19,9 @@
         const passed = Boolean(summary?.isAboveBreakEven);
         return `${summary?.wins || 0} trúng · ${summary?.losses || 0} trượt · ${percent(summary?.hitRate)} · ${passed ? 'vượt' : 'chưa vượt'} hòa vốn ${percent(breakEven(summary))}`;
     };
+    const ledgerLabel = record => record?.lifecycle?.mode === 'reconstructed-after-draw'
+        ? 'Tái tạo từ snapshot đã phát hành'
+        : 'Snapshot thực tế đã chốt';
 
     let payload = null;
     const byId = id => document.getElementById(id);
@@ -35,7 +38,7 @@
         section.innerHTML = `
             <article class="overflow-hidden rounded-2xl border ${action ? 'border-emerald-300' : 'border-amber-300'} bg-white shadow-sm">
                 <div class="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div><p class="text-xs font-black uppercase tracking-[0.18em] text-indigo-600">Gợi ý ${isPending ? 'ngày tới' : 'đã chốt'}</p><h2 class="mt-1 text-xl font-black text-slate-900">${escapeHtml(record.predictionDate)}</h2><p class="mt-1 text-sm text-slate-600">Nguồn dữ liệu đến ${escapeHtml(record.sourceDrawDate || '-')}</p></div>
+                    <div><p class="text-xs font-black uppercase tracking-[0.18em] text-indigo-600">${escapeHtml(ledgerLabel(record))}</p><h2 class="mt-1 text-xl font-black text-slate-900">${escapeHtml(record.predictionDate)}</h2><p class="mt-1 text-sm text-slate-600">Nguồn dữ liệu đến ${escapeHtml(record.sourceDrawDate || '-')}</p>${record.lifecycle?.mode === 'reconstructed-after-draw' ? '<p class="mt-1 text-xs font-semibold text-amber-700">Dàn số lấy nguyên từ snapshot Lịch sử đã phát hành trước kỳ quay.</p>' : ''}</div>
                     <span class="rounded-full px-3 py-1.5 text-sm font-black ${action ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-800'}">${action ? 'Đủ điều kiện theo dõi cược' : 'Chỉ quan sát'}</span>
                 </div>
                 <div class="p-5">
@@ -67,7 +70,7 @@
         byId('historyLog').innerHTML = rows.map(record => {
             const selected = record.recommendation?.selected || {};
             return `<article class="grid gap-3 px-5 py-4 md:grid-cols-[130px_1fr_auto] md:items-center">
-                <div><p class="font-black text-slate-900">${escapeHtml(record.predictionDate)}</p><p class="mt-1 text-xs font-semibold text-slate-500">Snapshot thực tế đã chốt</p></div>
+                <div><p class="font-black text-slate-900">${escapeHtml(record.predictionDate)}</p><p class="mt-1 text-xs font-semibold ${record.lifecycle?.mode === 'reconstructed-after-draw' ? 'text-amber-700' : 'text-slate-500'}">${escapeHtml(ledgerLabel(record))}</p></div>
                 <div><p class="font-bold text-slate-800">${escapeHtml(record.main?.label || selected.label || '-')}</p><p class="mt-1 text-sm text-slate-600">30d ${selected.wins30 || 0}/${selected.observations30 || 0} · 90d ${selected.wins90 || 0}/${selected.observations || 0} · Wilson ${percent(selected.wilsonLower90)}</p><div class="mt-2"><p class="mb-1 text-xs font-black uppercase tracking-wide text-indigo-700">Dàn chính</p><div class="flex flex-wrap gap-1.5">${chips(record.main?.numbers, record.actual)}</div></div>${record.hybrid ? `<div class="mt-3 rounded-xl border border-violet-200 bg-violet-50 p-3"><p class="mb-2 text-xs font-black uppercase tracking-wide text-violet-700">Dàn kết hợp chính + Z-score</p><div class="flex flex-wrap gap-1.5">${chips(record.hybrid?.numbers, record.actual)}</div><p class="mt-2 text-xs font-semibold text-violet-700">Thêm: ${(record.hybrid?.replacedIn || []).map(item => number(item.number)).join(' · ') || '-'} · Thay ra: ${(record.hybrid?.replacedOut || []).map(item => number(item.number)).join(' · ') || '-'}</p></div>` : ''}</div>
                 <div class="text-left md:text-right"><p class="text-sm font-black">Chính: ${laneOutcome(record, 'main')}</p>${record.hybrid ? `<p class="mt-1 text-sm font-black">Kết hợp: ${laneOutcome(record, 'hybrid')}</p>` : '<p class="mt-1 text-sm text-slate-400">Kết hợp: chưa áp dụng</p>'}${record.settled ? `<p class="mt-1 text-sm text-slate-600">KQ ${number(record.actual)}</p>` : ''}</div>
             </article>`;

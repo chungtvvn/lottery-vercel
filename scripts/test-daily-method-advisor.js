@@ -38,5 +38,30 @@ assert.equal(pendingCache.records[0].hybrid.replacedIn.length, 6);
 assert.equal(pendingCache.records[0].hybrid.replacedOut.length, 6);
 const staleRecord = { ...pendingCache.records[0], predictionDate: '2026-03-01', settled: false };
 const staleFiltered = generateAdvisorCache({ history, raw, existing: [staleRecord], limit: 90 });
-assert.equal(staleFiltered.records.length, 0, 'expired unresolved snapshots must not remain in the live ledger');
+assert.equal(staleFiltered.records.length, 1, 'an old issued snapshot must be settled from raw when its result is available');
+assert.equal(staleFiltered.records[0].settled, true, 'raw results settle issued snapshots during cache generation');
+
+const issuedSnapshot = generateAdvisorCache({ history: pendingHistory, raw, limit: 90 }).records[0];
+const recoveryRaw = [...raw, { date: '2026-04-01', special: 42 }];
+const recovered = generateAdvisorCache({ history: pendingHistory.map(run => run.predictionDate === '2026-04-01'
+    ? { ...run, summary: { ...run.summary, actualSpecial: 42 } }
+    : run), raw: recoveryRaw, existing: [issuedSnapshot], limit: 90 });
+const recoveredRecord = recovered.records.find(record => record.predictionDate === '2026-04-01');
+assert.equal(recoveredRecord.lifecycle.mode, 'live-issued', 'an already issued snapshot must remain live-issued when settled');
+
+const priorIssued = {
+    ...issuedSnapshot,
+    predictionDate: '2026-03-31',
+    sourceDrawDate: '2026-03-30',
+    settled: true,
+    actual: 30,
+    main: { ...issuedSnapshot.main, hit: true },
+    lifecycle: { ...issuedSnapshot.lifecycle }
+};
+const missingRecordRecovery = generateAdvisorCache({ history: pendingHistory.map(run => run.predictionDate === '2026-04-01'
+    ? { ...run, summary: { ...run.summary, actualSpecial: 42 } }
+    : run), raw: recoveryRaw, existing: [priorIssued], limit: 90 });
+const reconstructed = missingRecordRecovery.records.find(record => record.predictionDate === '2026-04-01');
+assert.equal(reconstructed.lifecycle.mode, 'reconstructed-after-draw', 'a missing day may be recovered only from its persisted history snapshot');
+assert.equal(reconstructed.actual, 42, 'recovered snapshot must be settled with raw R2 result');
 console.log('PASS daily advisor uses only strictly earlier settled snapshots and writes fixed 30-number main/hybrid lanes.');
