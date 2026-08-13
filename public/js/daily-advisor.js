@@ -55,10 +55,10 @@
                     ${record.settled ? `<p class="mt-4 text-sm font-bold ${record.main?.hit ? 'text-emerald-700' : 'text-rose-700'}">Kết quả ${number(record.actual)}: ${record.main?.hit ? 'trúng dàn chính' : 'trượt dàn chính'}.</p>` : '<p class="mt-4 text-sm font-bold text-indigo-700">Snapshot đã chốt, đang chờ kết quả để đối soát.</p>'}
                 </div>
             </article>
-            <aside class="overflow-hidden rounded-2xl border border-violet-200 bg-violet-50 shadow-sm">
-                <div class="border-b border-violet-200 bg-violet-100/70 px-5 py-4"><p class="text-xs font-black uppercase tracking-[0.16em] text-violet-700">Làn thử nghiệm</p><h2 class="mt-1 text-lg font-black text-slate-900">Dàn chính + Z-score hỗ trợ</h2><p class="mt-1 text-sm leading-6 text-slate-600">Giữ 24 số có z-score cao hơn trong dàn phương pháp được chọn, thay 6 số thấp nhất bằng 6 số z-score cao ngoài dàn.</p></div>
-                <div class="p-5"><div class="flex flex-wrap gap-2">${chips(record.experimental?.numbers, record.actual)}</div>${record.settled ? `<p class="mt-4 text-sm font-bold ${record.experimental?.hit ? 'text-emerald-700' : 'text-rose-700'}">Kết quả ${number(record.actual)}: ${record.experimental?.hit ? 'trúng dàn Z-score' : 'trượt dàn Z-score'}.</p>` : '<p class="mt-4 text-sm font-bold text-violet-700">Dàn Z-score đã lưu, chờ đối soát cùng kết quả dàn chính.</p>'}<div class="mt-5 grid gap-3 sm:grid-cols-2"><div class="rounded-xl bg-white p-3"><p class="text-xs font-black uppercase tracking-wide text-emerald-700">Thêm từ Z-score</p><p class="mt-2 font-mono font-black text-slate-800">${(record.experimental?.replacedIn || []).map(item => number(item.number)).join(' · ') || '-'}</p></div><div class="rounded-xl bg-white p-3"><p class="text-xs font-black uppercase tracking-wide text-rose-700">Thay ra từ dàn chính</p><p class="mt-2 font-mono font-black text-slate-800">${(record.experimental?.replacedOut || []).map(item => number(item.number)).join(' · ') || '-'}</p></div></div></div>
-            </aside>`;
+            ${record.hybrid ? `<aside class="overflow-hidden rounded-2xl border border-violet-200 bg-violet-50 shadow-sm">
+                <div class="border-b border-violet-200 bg-violet-100/70 px-5 py-4"><p class="text-xs font-black uppercase tracking-[0.16em] text-violet-700">Phương pháp mới đang theo dõi</p><h2 class="mt-1 text-lg font-black text-slate-900">Kết hợp dàn chính + Z-score</h2><p class="mt-1 text-sm leading-6 text-slate-600">Giữ 24 số tín hiệu Z-score nhóm cao hơn trong dàn phương pháp tốt nhất, thay 6 số thấp nhất bằng 6 số Z-score cao ngoài dàn.</p></div>
+                <div class="p-5"><div class="flex flex-wrap gap-2">${chips(record.hybrid?.numbers, record.actual)}</div>${record.settled ? `<p class="mt-4 text-sm font-bold ${record.hybrid?.hit ? 'text-emerald-700' : 'text-rose-700'}">Kết quả ${number(record.actual)}: ${record.hybrid?.hit ? 'trúng dàn kết hợp' : 'trượt dàn kết hợp'}.</p>` : '<p class="mt-4 text-sm font-bold text-violet-700">Dàn kết hợp đã khóa, chờ đối soát cùng kết quả dàn chính.</p>'}<div class="mt-5 grid gap-3 sm:grid-cols-2"><div class="rounded-xl bg-white p-3"><p class="text-xs font-black uppercase tracking-wide text-emerald-700">Thêm từ Z-score</p><p class="mt-2 font-mono font-black text-slate-800">${(record.hybrid?.replacedIn || []).map(item => number(item.number)).join(' · ') || '-'}</p></div><div class="rounded-xl bg-white p-3"><p class="text-xs font-black uppercase tracking-wide text-rose-700">Thay ra từ dàn chính</p><p class="mt-2 font-mono font-black text-slate-800">${(record.hybrid?.replacedOut || []).map(item => number(item.number)).join(' · ') || '-'}</p></div></div></div>
+            </aside>` : `<aside class="rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-sm"><p class="text-xs font-black uppercase tracking-[0.16em] text-slate-500">Phương pháp mới</p><h2 class="mt-1 text-lg font-black text-slate-900">Kết hợp dàn chính + Z-score</h2><p class="mt-3 text-sm leading-6 text-slate-600">Snapshot này đã phát hành trước khi làn kết hợp được triển khai nên giữ nguyên để bảo toàn tính toàn vẹn. Dàn kết hợp sẽ bắt đầu được lưu từ snapshot phát hành kế tiếp.</p></aside>`}`;
     }
 
     function renderHistory() {
@@ -69,7 +69,7 @@
             return `<article class="grid gap-3 px-5 py-4 md:grid-cols-[130px_1fr_auto] md:items-center">
                 <div><p class="font-black text-slate-900">${escapeHtml(record.predictionDate)}</p><p class="mt-1 text-xs font-semibold text-slate-500">Snapshot thực tế đã chốt</p></div>
                 <div><p class="font-bold text-slate-800">${escapeHtml(record.main?.label || selected.label || '-')}</p><p class="mt-1 text-sm text-slate-600">30d ${selected.wins30 || 0}/${selected.observations30 || 0} · 90d ${selected.wins90 || 0}/${selected.observations || 0} · Wilson ${percent(selected.wilsonLower90)}</p><div class="mt-2 flex flex-wrap gap-1.5">${chips(record.main?.numbers, record.actual)}</div></div>
-                <div class="text-left md:text-right"><p class="text-sm font-black">Chính: ${laneOutcome(record, 'main')}</p><p class="mt-1 text-sm font-black">Z-score: ${laneOutcome(record, 'experimental')}</p>${record.settled ? `<p class="mt-1 text-sm text-slate-600">KQ ${number(record.actual)}</p>` : ''}</div>
+                <div class="text-left md:text-right"><p class="text-sm font-black">Chính: ${laneOutcome(record, 'main')}</p>${record.hybrid ? `<p class="mt-1 text-sm font-black">Kết hợp: ${laneOutcome(record, 'hybrid')}</p>` : '<p class="mt-1 text-sm text-slate-400">Kết hợp: chưa áp dụng</p>'}${record.settled ? `<p class="mt-1 text-sm text-slate-600">KQ ${number(record.actual)}</p>` : ''}</div>
             </article>`;
         }).join('') || '<p class="p-6 text-sm text-slate-500">Chưa có nhật ký.</p>';
     }
@@ -77,15 +77,15 @@
     function render(data) {
         payload = data;
         const summary = data.summary?.main || {};
-        const experimental = data.summary?.experimental || {};
+        const hybrid = data.summary?.hybrid || {};
         const mainPassed = Boolean(summary.isAboveBreakEven);
-        const experimentalPassed = Boolean(experimental.isAboveBreakEven);
+        const hybridPassed = Boolean(hybrid.isAboveBreakEven);
         byId('summaryCards').innerHTML = [
             stat('Dữ liệu R2', data.latestDataDate || '-', `Tạo cache: ${data.generatedAt ? new Date(data.generatedAt).toLocaleString('vi-VN') : '-'}`),
             stat('Dàn chính đã kết toán', `${summary.wins || 0}/${summary.days || 0}`, `${lanePerformance(summary)} · ${mainPassed ? 'lãi lý thuyết' : 'chưa đạt hòa vốn'}`),
-            stat('Dàn Z-score thử nghiệm', `${experimental.wins || 0}/${experimental.days || 0}`, `${lanePerformance(experimental)} · ${experimentalPassed ? 'lãi lý thuyết' : 'chưa đạt hòa vốn'}`),
+            stat('Dàn kết hợp đã kết toán', `${hybrid.wins || 0}/${hybrid.days || 0}`, `${lanePerformance(hybrid)} · ${hybridPassed ? 'lãi lý thuyết' : 'chưa đạt hòa vốn'}`),
             stat('Lãi/lỗ dàn chính', `${fmt(summary.profitK || 0)}K`, `ROI ${percent(summary.roi)} · chuỗi trượt dài nhất ${summary.longestLoss || 0}`),
-            stat('Lãi/lỗ Z-score', `${fmt(experimental.profitK || 0)}K`, `ROI ${percent(experimental.roi)} · chuỗi trượt dài nhất ${experimental.longestLoss || 0}`)
+            stat('Lãi/lỗ dàn kết hợp', `${fmt(hybrid.profitK || 0)}K`, `ROI ${percent(hybrid.roi)} · chuỗi trượt dài nhất ${hybrid.longestLoss || 0}`)
         ].join('');
         renderLatest((data.records || [])[0]);
         renderHistory();

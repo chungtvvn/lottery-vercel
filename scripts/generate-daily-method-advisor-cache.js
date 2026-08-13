@@ -45,7 +45,7 @@ async function main() {
         records: cache.records.length,
         pendingPredictionDate: pendingSnapshot.predictionDate,
         main: cache.summary.main,
-        experimental: cache.summary.experimental
+        hybrid: cache.summary.hybrid
     }, null, 2));
 }
 

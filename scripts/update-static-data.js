@@ -882,8 +882,9 @@ async function hasDailyMethodAdvisorCacheOnR2(expectedLatestDate = null) {
         const record = Array.isArray(cache?.records)
             ? cache.records.find(item => normalizeDateValue(item?.predictionDate) === expectedPredictionDate)
             : null;
-        const valid = cache?.version === 'daily-advisor-zscore-v2'
+        const valid = cache?.version === 'daily-advisor-hybrid-zscore-v3'
             && record?.main?.numbers?.length === 30
+            && record?.hybrid?.numbers?.length === 30
             && record?.source?.strict;
         console.log(`[Cache Check] R2 Gợi ý=${record?.predictionDate || 'missing'}, valid=${valid}.`);
         return valid;
@@ -1188,7 +1189,7 @@ function uploadOnlyPredictionCaches(options = {}) {
 function generateDailyMethodAdvisorCache(options = {}) {
     runNodeScript(
         'scripts/generate-daily-method-advisor-cache.js',
-        'Sinh cache Gợi ý phương pháp hàng ngày + Z-score từ snapshot/R2.',
+        'Sinh cache Gợi ý phương pháp hàng ngày + dàn Kết hợp Z-score từ snapshot/R2.',
         {
             LOTTERY_DATA_SOURCE: 'r2',
             LOTTERY_STATS_SOURCE: 'r2',

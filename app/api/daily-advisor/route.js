@@ -44,11 +44,11 @@ function settleFromRaw(payload, rawRows) {
             settled: true,
             actual,
             main: { ...record.main, hit: Array.isArray(record.main?.numbers) && record.main.numbers.includes(actual) },
-            experimental: { ...record.experimental, hit: Array.isArray(record.experimental?.numbers) && record.experimental.numbers.includes(actual) }
+            ...(record.hybrid ? { hybrid: { ...record.hybrid, hit: Array.isArray(record.hybrid?.numbers) && record.hybrid.numbers.includes(actual) } } : {})
         };
     });
     const summarize = key => {
-        const settled = records.filter(record => record.settled);
+        const settled = records.filter(record => record.settled && record[key]);
         const wins = settled.filter(record => record[key]?.hit).length;
         const losses = settled.length - wins;
         const breakEvenHitRate = 30 / 84;
@@ -73,7 +73,7 @@ function settleFromRaw(payload, rawRows) {
         ...payload,
         records,
         latestDataDate: rawRows?.at(-1)?.date || payload.latestDataDate,
-        summary: { main: summarize('main'), experimental: summarize('experimental') }
+        summary: { main: summarize('main'), hybrid: summarize('hybrid') }
     };
 }
 
