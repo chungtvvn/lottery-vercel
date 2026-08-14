@@ -20,6 +20,28 @@ function special(row) {
     return Number.isInteger(result) ? result : null;
 }
 
+function summarize(records) {
+    const settled = records.filter(record => record?.settled);
+    const wins = settled.filter(record => record?.hit).length;
+    const stakeK = settled.reduce((sum, record) => sum + (record?.topNumbers?.length || 30) * 1000, 0);
+    const payoutK = wins * 84 * 1000;
+    const profitK = payoutK - stakeK;
+    return {
+        trackedDays: records.length,
+        settledDays: settled.length,
+        pendingDays: records.length - settled.length,
+        wins,
+        losses: settled.length - wins,
+        hitRate: settled.length ? wins / settled.length : 0,
+        stakeK,
+        payoutK,
+        profitK,
+        roi: stakeK ? profitK / stakeK : 0,
+        breakEvenHitRate: 30 / 84,
+        isAboveBreakEven: settled.length > 0 && wins / settled.length >= 30 / 84
+    };
+}
+
 export async function GET(request) {
     if (!isAuthorized(request)) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401, headers: HEADERS });
     try {
@@ -32,7 +54,7 @@ export async function GET(request) {
             if (record?.settled || actual === null || actual === undefined) return record;
             return { ...record, settled: true, actual, hit: (record.topNumbers || []).some(item => Number(item.number) === actual) };
         });
-        return NextResponse.json({ success: true, ...payload, records }, { headers: HEADERS });
+        return NextResponse.json({ success: true, ...payload, records, summary: summarize(records) }, { headers: HEADERS });
     } catch (error) {
         return NextResponse.json({ success: false, error: `Không tải được Điểm xác suất từ R2: ${error.message}` }, { status: 503, headers: HEADERS });
     }
