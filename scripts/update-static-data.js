@@ -904,9 +904,11 @@ async function hasProbabilityScoreCacheOnR2(expectedLatestDate = null) {
             ? cache.records.find(item => normalizeDateValue(item?.predictionDate) === expectedPredictionDate)
             : null;
         const valid = cache?.version === 'probability-score-v1'
+            && normalizeDateValue(cache?.latestDataDate) === normalizeDateValue(expectedLatestDate)
             && record?.pointInTimeLocked === true
+            && record?.settled === false
             && record?.topNumbers?.length === 30;
-        console.log(`[Cache Check] R2 Điểm xác suất=${record?.predictionDate || 'missing'}, valid=${valid}.`);
+        console.log(`[Cache Check] R2 Điểm xác suất data=${cache?.latestDataDate || 'missing'}, dự báo=${record?.predictionDate || 'missing'}, valid=${valid}.`);
         return valid;
     } catch (error) {
         console.log(`[Cache Check] R2 Điểm xác suất cache missing/stale: ${error.message}`);

@@ -20,9 +20,10 @@ async function main() {
     }
     const raw = await getRawData();
     const cache = await service.generateAndWriteCache({ history: history || undefined, raw, existing, limit: 90 });
-    const pending = cache.records.find(record => !record.settled);
-    if (!pending || pending.topNumbers?.length !== service.BET_COUNT) {
-        throw new Error('Không sinh được snapshot Probability Score cho ngày kế tiếp.');
+    const expectedPredictionDate = service.nextIsoDate(cache.latestDataDate);
+    const pending = cache.records.find(record => record.predictionDate === expectedPredictionDate);
+    if (!pending || pending.settled || pending.pointInTimeLocked !== true || pending.topNumbers?.length !== service.BET_COUNT) {
+        throw new Error(`Không sinh được snapshot Probability Score bất biến cho ${expectedPredictionDate}.`);
     }
     console.log(JSON.stringify({
         file: 'lib/data/statistics/cached_probability_score.json',
