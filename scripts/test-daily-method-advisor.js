@@ -34,8 +34,19 @@ assert.equal(pendingCache.records[0].main.numbers.length, BET_COUNT, 'pending ne
 assert.equal(pendingCache.records[0].lifecycle.mode, 'live-issued');
 assert.deepEqual(pendingCache.records[0].recommendation.methodPool, DAILY_METHOD_POOL.filter(id => pendingCache.records[0].recommendation.ranking.some(row => row.methodId === id)));
 assert.equal(pendingCache.records[0].hybrid.numbers.length, BET_COUNT);
-assert.equal(pendingCache.records[0].hybrid.replacedIn.length, 6);
-assert.equal(pendingCache.records[0].hybrid.replacedOut.length, 6);
+assert.ok(pendingCache.records[0].hybrid.leaders.length > 0 && pendingCache.records[0].hybrid.leaders.length <= 3);
+assert.equal(pendingCache.records[0].hybrid.evidence.length, BET_COUNT);
+assert.ok(pendingCache.records[0].recommendation.ranking.every(row => Number.isFinite(row.posterior7) && Number.isFinite(row.trend)));
+const issuedForLeakTest = pendingCache.records[0];
+const settledLeakHistory = pendingHistory.map(run => run.predictionDate === '2026-04-01'
+    ? { ...run, summary: { ...run.summary, actualSpecial: 42 } }
+    : run);
+const settledLeakRaw = [...raw, { date: '2026-04-01', special: 42 }];
+const futureMutatedRaw = [...settledLeakRaw, { date: '2026-04-02', special: 99 }];
+const unaffectedByFuture = generateAdvisorCache({ history: settledLeakHistory, raw: futureMutatedRaw, existing: [issuedForLeakTest], limit: 90 })
+    .records.find(record => record.predictionDate === '2026-04-01');
+assert.deepEqual(unaffectedByFuture.main.numbers, issuedForLeakTest.main.numbers,
+    'a future draw must not change the advisor dàn issued for an earlier date');
 const staleRecord = { ...pendingCache.records[0], predictionDate: '2026-03-01', settled: false };
 const staleFiltered = generateAdvisorCache({ history, raw, existing: [staleRecord], limit: 90 });
 assert.equal(staleFiltered.records.length, 1, 'an old issued snapshot must be settled from raw when its result is available');
