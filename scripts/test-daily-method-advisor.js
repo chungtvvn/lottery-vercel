@@ -37,6 +37,9 @@ assert.equal(pendingCache.records[0].hybrid.numbers.length, BET_COUNT);
 assert.ok(pendingCache.records[0].hybrid.leaders.length > 0 && pendingCache.records[0].hybrid.leaders.length <= 3);
 assert.equal(pendingCache.records[0].hybrid.evidence.length, BET_COUNT);
 assert.ok(pendingCache.records[0].recommendation.ranking.every(row => Number.isFinite(row.posterior7) && Number.isFinite(row.trend)));
+assert.equal(pendingCache.records[0].recommendation.models.length, 3, 'three selection models must be available');
+assert.ok(pendingCache.records[0].recommendation.models.every(model => model.selected && Number.isFinite(model.selected.selectionScore)), 'each model ranks from prior snapshots');
+assert.ok(Array.isArray(pendingCache.decisionReport.models), 'walk-forward decision report must be emitted');
 const issuedForLeakTest = pendingCache.records[0];
 const settledLeakHistory = pendingHistory.map(run => run.predictionDate === '2026-04-01'
     ? { ...run, summary: { ...run.summary, actualSpecial: 42 } }

@@ -22,6 +22,7 @@
     const ledgerLabel = record => record?.lifecycle?.mode === 'reconstructed-after-draw'
         ? 'Tái tạo từ snapshot đã phát hành'
         : 'Snapshot thực tế đã chốt';
+    const signed = value => `${Number(value || 0) >= 0 ? '+' : ''}${fmt(value)}K`;
 
     let payload = null;
     const byId = id => document.getElementById(id);
@@ -55,6 +56,10 @@
                         <div class="bg-slate-50 px-3 py-2 text-xs font-black uppercase tracking-wide text-slate-600">Xếp hạng 5 phương pháp trước ngày ${escapeHtml(record.predictionDate)}</div>
                         <div class="divide-y divide-slate-100">${(record.recommendation?.ranking || []).map((item, index) => `<div class="grid grid-cols-[28px_1fr_auto] items-center gap-2 px-3 py-2 text-sm ${item.methodId === record.main?.methodId ? 'bg-indigo-50/70' : 'bg-white'}"><span class="font-black text-slate-400">${index + 1}</span><span class="font-semibold text-slate-800">${escapeHtml(item.label)}</span><span class="text-right text-slate-600">7d ${percent(item.rate7)} · 30d ${percent(item.rate30)} · W90 ${percent(item.wilsonLower90)}</span></div>`).join('')}</div>
                     </div>
+                    <div class="mt-4 rounded-xl border border-sky-200 bg-sky-50 p-3">
+                        <p class="text-xs font-black uppercase tracking-wide text-sky-700">Ba lựa chọn cho ngày này</p>
+                        <div class="mt-2 grid gap-2 sm:grid-cols-3">${(record.recommendation?.models || []).map(model => `<div class="rounded-lg bg-white p-2.5"><p class="text-xs font-bold text-slate-500">${escapeHtml(model.label)}</p><p class="mt-1 text-sm font-black text-slate-900">${escapeHtml(model.selected?.label || '-')}</p><p class="mt-1 text-xs text-slate-500">Điểm ${Number(model.selected?.selectionScore || 0).toFixed(3)} · Wilson ${percent(model.selected?.wilsonLower90)}</p></div>`).join('') || '<p class="text-sm text-slate-500">Snapshot cũ chưa có ba mô hình; giữ nguyên dàn đã phát hành.</p>'}</div>
+                    </div>
                     <div class="mt-5 flex flex-wrap gap-2">${chips(record.main?.numbers, record.actual)}</div>
                     ${record.settled ? `<p class="mt-4 text-sm font-bold ${record.main?.hit ? 'text-emerald-700' : 'text-rose-700'}">Kết quả ${number(record.actual)}: ${record.main?.hit ? 'trúng dàn chính' : 'trượt dàn chính'}.</p>` : '<p class="mt-4 text-sm font-bold text-indigo-700">Snapshot đã chốt, đang chờ kết quả để đối soát.</p>'}
                 </div>
@@ -78,6 +83,26 @@
         }).join('') || '<p class="p-6 text-sm text-slate-500">Chưa có nhật ký.</p>';
     }
 
+    function renderDecisionReport(report) {
+        const container = byId('decisionModelReport');
+        const models = report?.models || [];
+        if (!models.length) {
+            container.innerHTML = '<p class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">Chưa đủ snapshot đã kết toán để tạo report mô hình. Dữ liệu mới sẽ được cộng dần sau mỗi kỳ quay.</p>';
+            return;
+        }
+        container.innerHTML = models.map((model, index) => {
+            const summary = model.summary || {};
+            const above = Number(summary.hitRate || 0) >= Number(summary.breakEvenHitRate || (30 / 84));
+            const recent = (model.recent || []).slice(0, 7).map(item => item.hit ? 'T' : 'X').join(' · ') || '-';
+            return `<article class="rounded-xl border ${index === 0 ? 'border-indigo-300 bg-indigo-50/60' : 'border-slate-200 bg-white'} p-4 shadow-sm">
+                <div class="flex items-start justify-between gap-3"><div><p class="text-xs font-black uppercase tracking-wide ${index === 0 ? 'text-indigo-700' : 'text-slate-500'}">Mô hình ${index + 1}</p><h3 class="mt-1 font-black text-slate-900">${escapeHtml(model.label)}</h3></div><span class="rounded-full px-2.5 py-1 text-xs font-black ${above ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">${above ? 'Trên hòa vốn' : 'Chưa đủ bằng chứng'}</span></div>
+                <p class="mt-2 min-h-12 text-sm leading-5 text-slate-600">${escapeHtml(model.description || '')}</p>
+                <div class="mt-4 grid grid-cols-2 gap-2 text-sm"><div class="rounded-lg bg-white p-2"><p class="text-xs text-slate-500">Trúng / ngày</p><p class="font-black text-slate-900">${summary.wins || 0}/${summary.days || 0}</p></div><div class="rounded-lg bg-white p-2"><p class="text-xs text-slate-500">Tỷ lệ</p><p class="font-black text-slate-900">${percent(summary.hitRate)}</p></div><div class="rounded-lg bg-white p-2"><p class="text-xs text-slate-500">Lãi/lỗ mô phỏng</p><p class="font-black ${Number(summary.profitK || 0) >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${signed(summary.profitK)}</p></div><div class="rounded-lg bg-white p-2"><p class="text-xs text-slate-500">Trượt dài nhất</p><p class="font-black text-slate-900">${summary.longestLoss || 0} ngày</p></div></div>
+                <p class="mt-3 text-xs font-semibold text-slate-500">7 quyết định gần nhất: <span class="${recent.includes('T') ? 'text-indigo-700' : ''}">${recent}</span></p>
+            </article>`;
+        }).join('');
+    }
+
     function render(data) {
         payload = data;
         const summary = data.summary?.main || {};
@@ -92,6 +117,7 @@
             stat('Lãi/lỗ dàn kết hợp', `${fmt(hybrid.profitK || 0)}K`, `ROI ${percent(hybrid.roi)} · chuỗi trượt dài nhất ${hybrid.longestLoss || 0}`)
         ].join('');
         renderLatest((data.records || [])[0]);
+        renderDecisionReport(data.decisionReport);
         renderHistory();
     }
 

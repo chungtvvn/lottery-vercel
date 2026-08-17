@@ -883,7 +883,7 @@ async function hasDailyMethodAdvisorCacheOnR2(expectedLatestDate = null) {
         const record = Array.isArray(cache?.records)
             ? cache.records.find(item => normalizeDateValue(item?.predictionDate) === expectedPredictionDate)
             : null;
-        const valid = cache?.version === 'daily-advisor-adaptive-v4'
+        const valid = cache?.version === 'daily-advisor-model-selection-v5'
             && record?.main?.numbers?.length === 30
             && record?.hybrid?.numbers?.length === 30
             && record?.source?.strict;
