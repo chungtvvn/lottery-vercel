@@ -39,6 +39,8 @@ assert.equal(pendingCache.records[0].hybrid.evidence.length, BET_COUNT);
 assert.ok(pendingCache.records[0].recommendation.ranking.every(row => Number.isFinite(row.posterior7) && Number.isFinite(row.trend)));
 assert.equal(pendingCache.records[0].recommendation.models.length, 3, 'three selection models must be available');
 assert.ok(pendingCache.records[0].recommendation.models.every(model => model.selected && Number.isFinite(model.selected.selectionScore)), 'each model ranks from prior snapshots');
+assert.equal(pendingCache.records[0].recommendation.candidateMethods.length, 2, 'a pending snapshot keeps immutable dàn for every available candidate method');
+assert.ok(pendingCache.records[0].recommendation.candidateMethods.every(method => method.numbers.length === BET_COUNT), 'candidate dàn must remain fixed at 30 numbers');
 assert.ok(Array.isArray(pendingCache.decisionReport.models), 'walk-forward decision report must be emitted');
 const issuedForLeakTest = pendingCache.records[0];
 const settledLeakHistory = pendingHistory.map(run => run.predictionDate === '2026-04-01'

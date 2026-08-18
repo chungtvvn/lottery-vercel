@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phân tích Gợi ý | XSMB Stats</title>
+    <title>Phân tích lựa chọn | XSMB Stats</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="/css/styles.css">
@@ -12,32 +12,65 @@
     <header class="nav-glass-blur sticky top-0 z-50 mb-8 w-full">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="flex h-16 items-center justify-between gap-3">
-                <div class="flex items-center gap-3"><div class="flex h-9 w-9 items-center justify-center rounded-lg bg-sky-700 shadow-sm"><i class="bi bi-grid-1x2-fill text-lg text-white"></i></div><a href="/statistics" class="text-xl font-bold tracking-tight text-slate-900">XSMB <span class="font-extrabold text-sky-700">Stats</span></a></div>
+                <div class="flex items-center gap-3"><div class="flex h-9 w-9 items-center justify-center rounded-lg bg-sky-700 shadow-sm"><i class="bi bi-bezier2 text-lg text-white"></i></div><a href="/statistics" class="text-xl font-bold tracking-tight text-slate-900">XSMB <span class="font-extrabold text-sky-700">Stats</span></a></div>
                 <nav class="hidden space-x-1 md:flex"><a href="/statistics" class="nav-link-custom px-3 py-2 text-sm font-medium">Thống kê</a><a href="/records" class="nav-link-custom px-3 py-2 text-sm font-medium">Kỷ lục</a><a href="/chain-frequency" class="nav-link-custom px-3 py-2 text-sm font-medium">Mốc 20 năm</a><a href="/simulation" class="nav-link-custom px-3 py-2 text-sm font-medium">Lịch sử</a><a href="/loto" class="nav-link-custom px-3 py-2 text-sm font-medium">Lô</a><a href="/daily-advisor" class="nav-link-custom active px-3 py-2 text-sm font-semibold">Gợi ý</a><a href="/settings" class="nav-link-custom px-3 py-2 text-sm font-medium">⚙️</a></nav>
-                <nav class="flex max-w-[290px] space-x-1 overflow-x-auto py-1 md:hidden"><a href="/daily-advisor" class="nav-link-custom active px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap">Gợi ý</a><a href="/advisor-analysis" class="nav-link-custom px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap">Phân tích</a><a href="/probability-score" class="nav-link-custom px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap">Điểm</a></nav>
+                <nav class="flex max-w-[290px] space-x-1 overflow-x-auto py-1 md:hidden"><a href="/daily-advisor" class="nav-link-custom px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap">Gợi ý</a><a href="/advisor-analysis" class="nav-link-custom active px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap">Phân tích</a><a href="/probability-score" class="nav-link-custom px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap">Điểm</a></nav>
             </div>
         </div>
     </header>
+
     <main class="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
-        <div class="mb-5 inline-flex rounded-lg border border-slate-200 bg-white p-1 shadow-sm" aria-label="Tab Gợi ý"><a href="/daily-advisor" class="rounded-md px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100">Phương pháp gợi ý</a><a href="/advisor-analysis" class="rounded-md bg-sky-700 px-4 py-2 text-sm font-bold text-white">Phân tích lựa chọn</a><a href="/probability-score" class="rounded-md px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100">Điểm xác suất</a></div>
+        <div class="mb-5 inline-flex rounded-lg border border-slate-200 bg-white p-1 shadow-sm" aria-label="Tab Gợi ý">
+            <a href="/daily-advisor" class="rounded-md px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100">Gợi ý thực chiến</a>
+            <a href="/advisor-analysis" class="rounded-md bg-sky-700 px-4 py-2 text-sm font-bold text-white">Phân tích lựa chọn</a>
+            <a href="/probability-score" class="rounded-md px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100">Điểm xác suất</a>
+        </div>
 
-        <section class="mb-6 border border-sky-200 bg-white shadow-sm">
-            <div class="border-b border-sky-200 bg-sky-800 px-6 py-6 text-white"><p class="text-xs font-black uppercase tracking-[0.18em] text-sky-200">Phân tích quyết định</p><h1 class="mt-2 text-3xl font-black">Ma trận chọn phương pháp và tín hiệu số</h1><p class="mt-2 max-w-4xl text-sm leading-6 text-sky-100">So sánh đồng thời hiệu suất ngắn, trung và dài hạn của các phương pháp hiện có; đối chiếu dàn từng phương pháp với Điểm xác suất. Các dàn nghiên cứu được tách riêng, không sửa snapshot thực tế.</p></div>
-            <div id="sourceBar" class="grid gap-3 border-b border-slate-100 bg-slate-50 px-5 py-4 text-sm md:grid-cols-3"></div>
-            <div id="errorBox" class="m-5 hidden border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-700"></div>
-            <div id="overviewCards" class="grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-4"></div>
+        <section class="mb-6 overflow-hidden rounded-lg border border-sky-200 bg-white shadow-sm">
+            <div class="border-b border-sky-200 bg-sky-800 px-6 py-6 text-white">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div><p class="text-xs font-black uppercase tracking-[0.18em] text-sky-200">Phòng thí nghiệm quyết định</p><h1 class="mt-2 text-3xl font-black">Phân tích lựa chọn phương pháp</h1><p class="mt-2 max-w-4xl text-sm leading-6 text-sky-100">Đây không phải bản sao của Gợi ý. Hệ thống kiểm thử độc lập năm chính sách chọn dàn bằng từng snapshot immutable trước ngày dự đoán, rồi so sánh hit rate, cận Wilson, lãi/lỗ và chuỗi trượt.</p></div>
+                    <div class="grid grid-cols-2 gap-2 text-xs font-bold sm:grid-cols-3"><span class="rounded-md border border-sky-500 bg-sky-900/40 px-3 py-2 text-center">STRICT PIT</span><span class="rounded-md border border-sky-500 bg-sky-900/40 px-3 py-2 text-center">DÀN 30 SỐ</span><span class="rounded-md border border-sky-500 bg-sky-900/40 px-3 py-2 text-center">KHÔNG TỰ PROMOTE</span></div>
+                </div>
+            </div>
+            <div id="sourceBar" class="grid gap-3 border-b border-slate-100 bg-slate-50 px-5 py-4 text-sm md:grid-cols-4"></div>
+            <div id="errorBox" class="m-5 hidden rounded-md border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-700"></div>
+            <div id="researchOverview" class="grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-4"></div>
         </section>
 
-        <section class="mb-6 grid gap-6 lg:grid-cols-[1.45fr_1fr]">
-            <article class="overflow-hidden border border-slate-200 bg-white shadow-sm"><div class="border-b border-slate-200 bg-slate-50 px-5 py-4"><h2 class="text-lg font-black text-slate-900">Ma trận hiệu suất phương pháp</h2><p class="mt-1 text-sm text-slate-600">Mỗi hàng là một dàn đã có snapshot. Màu đậm thể hiện tỷ lệ cao hơn trong từng cột, không phải cam kết xác suất.</p></div><div class="overflow-x-auto"><table class="min-w-[900px] w-full text-sm"><thead class="bg-slate-100 text-left text-xs uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-3">Phương pháp</th><th class="px-3 py-3 text-center">7 ngày</th><th class="px-3 py-3 text-center">30 ngày</th><th class="px-3 py-3 text-center">90 ngày</th><th class="px-3 py-3 text-center">Wilson</th><th class="px-3 py-3 text-center">Xu hướng</th><th class="px-3 py-3 text-center">Trùng điểm</th><th class="px-3 py-3 text-center">Điểm TB</th></tr></thead><tbody id="methodMatrix" class="divide-y divide-slate-100"></tbody></table></div></article>
-            <aside class="border border-amber-200 bg-amber-50 shadow-sm"><div class="border-b border-amber-200 px-5 py-4"><h2 class="text-lg font-black text-slate-900">Cách đọc quyết định</h2></div><div id="explanation" class="space-y-4 p-5 text-sm leading-6 text-slate-700"></div></aside>
+        <section class="mb-6 overflow-hidden rounded-lg border border-cyan-200 bg-white shadow-sm">
+            <div class="border-b border-cyan-100 bg-cyan-50 px-5 py-4"><p class="text-xs font-black uppercase tracking-wide text-cyan-700">Tín hiệu cho ngày hiện tại</p><h2 class="mt-1 text-lg font-black text-slate-900">Đồng thuận mô hình và mức chứng cứ</h2><p class="mt-1 text-sm text-slate-600">Khối này giải thích mức thống nhất của các giả thuyết. Nó không tự thêm số hoặc ghi đè dàn production đã khóa.</p></div>
+            <div id="researchConsensus" class="grid gap-5 p-5 lg:grid-cols-[1.15fr_0.85fr]"></div>
         </section>
 
-        <section class="mb-6 overflow-hidden border border-indigo-200 bg-white shadow-sm"><div class="border-b border-indigo-200 bg-indigo-50 px-5 py-4"><p class="text-xs font-black uppercase tracking-wide text-indigo-700">Nhiều lựa chọn trong ngày</p><h2 class="mt-1 text-lg font-black text-slate-900">Ba mô hình chọn phương pháp</h2><p class="mt-1 text-sm text-slate-600">Mỗi mô hình chấm trọng số khác nhau trên cùng một tập dữ liệu trước ngày dự đoán.</p></div><div id="modelChoices" class="grid gap-4 p-5 lg:grid-cols-3"></div></section>
+        <section class="mb-6 grid gap-6 lg:grid-cols-[1.35fr_0.9fr]">
+            <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
+                <div class="border-b border-slate-200 bg-slate-50 px-5 py-4"><p class="text-xs font-black uppercase tracking-wide text-slate-500">Cách kiểm chứng</p><h2 class="mt-1 text-lg font-black text-slate-900">Quy trình tránh leak dữ liệu</h2></div>
+                <div id="explanation" class="grid gap-4 p-5 text-sm leading-6 text-slate-700 sm:grid-cols-2"></div>
+            </article>
+            <aside class="rounded-lg border border-amber-200 bg-amber-50 shadow-sm"><div class="border-b border-amber-200 px-5 py-4"><p class="text-xs font-black uppercase tracking-wide text-amber-700">Cổng nghiên cứu</p><h2 class="mt-1 text-lg font-black text-slate-900">Khi nào mới được cân nhắc áp dụng?</h2></div><div id="promotionGate" class="space-y-3 p-5 text-sm leading-6 text-slate-700"></div></aside>
+        </section>
 
-        <section class="mb-6 grid gap-6 lg:grid-cols-[1.1fr_1.3fr]">
-            <article class="overflow-hidden border border-violet-200 bg-white shadow-sm"><div class="border-b border-violet-200 bg-violet-50 px-5 py-4"><p class="text-xs font-black uppercase tracking-wide text-violet-700">Dàn nghiên cứu</p><h2 class="mt-1 text-lg font-black text-slate-900">Đồng thuận mô hình + Điểm xác suất</h2></div><div id="fusionPanel" class="p-5"></div></article>
-            <article class="overflow-hidden border border-emerald-200 bg-white shadow-sm"><div class="border-b border-emerald-200 bg-emerald-50 px-5 py-4"><h2 class="text-lg font-black text-slate-900">Ma trận số ưu tiên</h2><p class="mt-1 text-sm text-slate-600">Độ đậm: số phiếu từ mô hình. Viền tím: đồng thời nằm trong nhóm điểm xác suất cao.</p></div><div id="numberMatrix" class="grid grid-cols-5 gap-2 p-5 sm:grid-cols-10"></div></article>
+        <section class="mb-6 overflow-hidden rounded-lg border border-indigo-200 bg-white shadow-sm">
+            <div class="flex flex-col gap-4 border-b border-indigo-100 bg-indigo-50 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
+                <div><p class="text-xs font-black uppercase tracking-wide text-indigo-700">Backtest strict PIT</p><h2 class="mt-1 text-lg font-black text-slate-900">So sánh năm chính sách chọn dàn</h2><p class="mt-1 text-sm text-slate-600">Các kết quả được tạo lại theo ngày, nhưng dàn từng ngày lấy nguyên từ snapshot của ngày đó.</p></div>
+                <div class="flex flex-wrap items-center gap-2" aria-label="Khoảng xem báo cáo"><button data-window="overall" class="analysis-window rounded-md bg-indigo-700 px-3 py-2 text-sm font-bold text-white">Toàn bộ mẫu</button><button data-window="last30" class="analysis-window rounded-md border border-indigo-200 bg-white px-3 py-2 text-sm font-bold text-indigo-700">30 kỳ</button><button data-window="last14" class="analysis-window rounded-md border border-indigo-200 bg-white px-3 py-2 text-sm font-bold text-indigo-700">14 kỳ</button><label class="ml-1 text-sm font-semibold text-slate-600">Xếp theo <select id="researchSort" class="ml-1 rounded-md border border-slate-200 bg-white px-2 py-2 text-slate-800"><option value="profit">Lãi/lỗ</option><option value="hitRate">Tỷ lệ trúng</option><option value="wilson">Cận Wilson</option></select></label></div>
+            </div>
+            <div id="researchLeaderboard" class="grid gap-3 p-5 lg:grid-cols-2"></div>
+        </section>
+
+        <section class="mb-6 grid gap-6 lg:grid-cols-[1.3fr_0.95fr]">
+            <article class="overflow-hidden rounded-lg border border-emerald-200 bg-white shadow-sm"><div class="border-b border-emerald-100 bg-emerald-50 px-5 py-4"><p class="text-xs font-black uppercase tracking-wide text-emerald-700">Đường kiểm chứng</p><h2 class="mt-1 text-lg font-black text-slate-900">Nhịp thắng/trượt của chính sách đang chọn</h2><p class="mt-1 text-sm text-slate-600">Mỗi cột là một quyết định đã kết toán; màu xanh là trúng, đỏ là trượt. Thay đổi khoảng xem không tạo lại dàn cũ.</p></div><div id="performanceTrace" class="p-5"></div></article>
+            <aside class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm"><div class="border-b border-slate-200 bg-slate-50 px-5 py-4"><p class="text-xs font-black uppercase tracking-wide text-slate-500">Phân rã theo thời gian</p><h2 class="mt-1 text-lg font-black text-slate-900">Tuần và tháng</h2></div><div id="periodBreakdown" class="p-5"></div></aside>
+        </section>
+
+        <section class="mb-6 overflow-hidden rounded-lg border border-sky-200 bg-white shadow-sm">
+            <div class="border-b border-sky-100 bg-sky-50 px-5 py-4"><p class="text-xs font-black uppercase tracking-wide text-sky-700">Ngày dự đoán hiện tại</p><h2 class="mt-1 text-lg font-black text-slate-900">Năm giả thuyết để so sánh, không tự thay dàn chính</h2><p class="mt-1 text-sm text-slate-600">Dàn chính có nền xanh. Dàn phụ chỉ hiện số khi snapshot đã lưu đủ phương pháp cho đúng ngày dự đoán.</p></div><div id="currentCandidates" class="grid gap-4 p-5 lg:grid-cols-2"></div>
+        </section>
+
+        <section class="mb-6 grid gap-6 lg:grid-cols-[1.25fr_1fr]">
+            <details class="rounded-lg border border-slate-200 bg-white shadow-sm" open><summary class="cursor-pointer border-b border-slate-200 bg-slate-50 px-5 py-4 text-lg font-black text-slate-900">Ma trận phương pháp trong snapshot hiện tại</summary><div class="overflow-x-auto"><table class="min-w-[820px] w-full text-sm"><thead class="bg-slate-100 text-left text-xs uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-3">Phương pháp</th><th class="px-3 py-3 text-center">7 ngày</th><th class="px-3 py-3 text-center">30 ngày</th><th class="px-3 py-3 text-center">90 ngày</th><th class="px-3 py-3 text-center">Wilson</th><th class="px-3 py-3 text-center">Xu hướng</th><th class="px-3 py-3 text-center">Giao điểm</th></tr></thead><tbody id="methodMatrix" class="divide-y divide-slate-100"></tbody></table></div></details>
+            <details class="rounded-lg border border-violet-200 bg-white shadow-sm"><summary class="cursor-pointer border-b border-violet-100 bg-violet-50 px-5 py-4 text-lg font-black text-slate-900">Lớp giải thích Điểm xác suất</summary><div id="scoreOverlay" class="p-5"></div></details>
         </section>
     </main>
     <script src="/js/advisor-analysis.js"></script>

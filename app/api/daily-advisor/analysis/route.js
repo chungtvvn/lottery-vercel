@@ -18,13 +18,20 @@ function isAuthorized(request) {
 export async function GET(request) {
     if (!isAuthorized(request)) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401, headers: HEADERS });
     try {
-        const [advisorCache, probabilityCache, history] = await Promise.all([
+        const [advisorCache, history] = await Promise.all([
             loadJsonWithSupabaseFallback('cached_daily_method_advisor.json'),
-            loadJsonWithSupabaseFallback('cached_probability_score.json'),
             loadJsonWithSupabaseFallback('cached_prediction_history.json')
         ]);
+        // Probability-score snapshots are supporting evidence only. The
+        // strict selection laboratory remains available when that optional
+        // cache is delayed or intentionally absent.
+        let probabilityCache = null;
+        try {
+            probabilityCache = await loadJsonWithSupabaseFallback('cached_probability_score.json');
+        } catch (_) {
+            probabilityCache = null;
+        }
         if (!advisorCache?.records?.length) throw new Error('Chưa có cache Gợi ý');
-        if (!probabilityCache?.records?.length) throw new Error('Chưa có cache Điểm xác suất');
         return NextResponse.json({ success: true, ...buildAdvisorAnalysis({ advisorCache, probabilityCache, history }) }, { headers: HEADERS });
     } catch (error) {
         return NextResponse.json({ success: false, error: `Không tải được phân tích Gợi ý: ${error.message}` }, { status: 503, headers: HEADERS });

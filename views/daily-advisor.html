@@ -23,7 +23,6 @@
                     <a href="/simulation" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Lịch sử</a>
                     <a href="/loto" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Lô</a>
                     <a href="/daily-advisor" class="nav-link-custom active px-3 py-2 text-sm font-semibold whitespace-nowrap">Gợi ý</a>
-                    <a href="/scoring" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Tính điểm</a>
                     <a href="/settings" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">⚙️</a>
                 </nav>
                 <div class="flex md:hidden"><nav class="flex max-w-[290px] space-x-1 overflow-x-auto py-1 custom-scrollbar">
@@ -47,7 +46,7 @@
             <div class="bg-gradient-to-r from-indigo-700 via-violet-700 to-fuchsia-700 px-6 py-7 text-white">
                 <p class="text-xs font-bold uppercase tracking-[0.24em] text-indigo-100">Theo dõi kiểm chứng</p>
                 <h1 class="mt-2 text-3xl font-black tracking-tight">Gợi ý phương pháp và dàn đánh hàng ngày</h1>
-                <p class="mt-3 max-w-4xl text-sm leading-6 text-indigo-100">Mỗi ngày so sánh ba mô hình chọn một trong năm dàn Đề: cân bằng dài-ngắn, bám xu hướng và ổn định có kiểm chứng. Report walk-forward chỉ dùng dữ liệu trước từng ngày để đánh giá mô hình nào phù hợp.</p>
+                <p class="mt-3 max-w-4xl text-sm leading-6 text-indigo-100">Trang này chỉ theo dõi dàn Đề production đã được khóa trước kỳ quay và kết toán sau khi có kết quả. Phân tích các giả thuyết, lựa chọn chính sách và backtest strict PIT được tách sang tab Phân tích lựa chọn.</p>
             </div>
             <div class="grid gap-4 p-5 md:grid-cols-3" id="summaryCards"></div>
         </section>
@@ -57,12 +56,15 @@
         <section id="latestSection" class="mb-6 grid gap-6 lg:grid-cols-[1.45fr_1fr]"></section>
 
         <section class="mb-6 overflow-hidden rounded-2xl border border-sky-200 bg-white shadow-sm">
-            <div class="border-b border-sky-100 bg-sky-50 px-5 py-4">
-                <p class="text-xs font-black uppercase tracking-[0.16em] text-sky-700">Đánh giá mô hình</p>
-                <h2 class="mt-1 text-lg font-black text-slate-900">Report chọn phương pháp theo xu hướng</h2>
-                <p class="mt-1 text-sm text-slate-600">Mỗi mô hình được đối soát walk-forward từ các snapshot trước ngày dự đoán. Chỉ dùng để so sánh quyết định, không thay đổi các dàn đã phát hành.</p>
+            <div class="flex flex-col gap-4 border-b border-sky-100 bg-sky-50 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                    <p class="text-xs font-black uppercase tracking-[0.16em] text-sky-700">Quyết định thực chiến</p>
+                    <h2 class="mt-1 text-lg font-black text-slate-900">Trạng thái dàn đã khóa</h2>
+                    <p class="mt-1 text-sm text-slate-600">Chỉ một dàn chính được dùng để theo dõi thực tế. Các mô hình khác là tín hiệu đối chiếu, không tự thay số sau khi phát hành.</p>
+                </div>
+                <a href="/advisor-analysis" class="inline-flex items-center justify-center gap-2 rounded-lg bg-sky-700 px-4 py-2.5 text-sm font-black text-white shadow-sm hover:bg-sky-800"><i class="bi bi-flask"></i> Mở Phân tích lựa chọn</a>
             </div>
-            <div id="decisionModelReport" class="grid gap-4 p-5 lg:grid-cols-3"></div>
+            <div id="decisionGuide" class="grid gap-4 p-5 lg:grid-cols-3"></div>
         </section>
 
         <section class="mb-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
