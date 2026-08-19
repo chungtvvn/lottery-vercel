@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 const HEADERS = { 'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0', Pragma: 'no-cache', Expires: '0' };
+const CACHE_VERSION = 'probability-score-v2';
 
 function isAuthorized(request) {
     const expected = process.env.PREDICTION_API_TOKEN || process.env.EXTERNAL_API_TOKEN || '';
@@ -16,20 +17,23 @@ function isAuthorized(request) {
 
 function isoDate(value) { return String(value || '').slice(0, 10); }
 function special(row) {
-    const result = Number(row?.special ?? row?.db ?? row?.giaiDb ?? row?.giai_dac_biet);
+    const source = row?.special ?? row?.db ?? row?.giaiDb ?? row?.giai_dac_biet;
+    if (source === null || source === undefined || source === '') return null;
+    const result = Number(source);
     return Number.isInteger(result) ? result : null;
 }
 
 function summarize(records) {
-    const settled = records.filter(record => record?.settled);
+    const currentRecords = records.filter(record => record?.modelVersion === CACHE_VERSION);
+    const settled = currentRecords.filter(record => record?.settled);
     const wins = settled.filter(record => record?.hit).length;
     const stakeK = settled.reduce((sum, record) => sum + (record?.topNumbers?.length || 30) * 1000, 0);
     const payoutK = wins * 84 * 1000;
     const profitK = payoutK - stakeK;
     return {
-        trackedDays: records.length,
+        trackedDays: currentRecords.length,
         settledDays: settled.length,
-        pendingDays: records.length - settled.length,
+        pendingDays: currentRecords.length - settled.length,
         wins,
         losses: settled.length - wins,
         hitRate: settled.length ? wins / settled.length : 0,
@@ -38,7 +42,8 @@ function summarize(records) {
         profitK,
         roi: stakeK ? profitK / stakeK : 0,
         breakEvenHitRate: 30 / 84,
-        isAboveBreakEven: settled.length > 0 && wins / settled.length >= 30 / 84
+        isAboveBreakEven: settled.length > 0 && wins / settled.length >= 30 / 84,
+        legacyRecordsExcluded: records.length - currentRecords.length
     };
 }
 

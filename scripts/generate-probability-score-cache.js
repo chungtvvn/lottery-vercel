@@ -2,8 +2,22 @@
 'use strict';
 
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '..', '.env.local'), quiet: true });
-require('dotenv').config({ path: path.join(__dirname, '..', '.env'), quiet: true });
+
+function loadEnvironment(filePath) {
+    try {
+        if (typeof process.loadEnvFile === 'function') {
+            process.loadEnvFile(filePath);
+            return;
+        }
+        const dotenv = require('dotenv');
+        dotenv.config({ path: filePath, quiet: true });
+    } catch {
+        // CI supplies secrets directly. Missing local env files are expected.
+    }
+}
+
+loadEnvironment(path.join(__dirname, '..', '.env.local'));
+loadEnvironment(path.join(__dirname, '..', '.env'));
 
 const service = require('../lib/services/probabilityScoreService');
 

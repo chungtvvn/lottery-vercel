@@ -903,7 +903,7 @@ async function hasProbabilityScoreCacheOnR2(expectedLatestDate = null) {
         const record = Array.isArray(cache?.records)
             ? cache.records.find(item => normalizeDateValue(item?.predictionDate) === expectedPredictionDate)
             : null;
-        const valid = cache?.version === 'probability-score-v1'
+        const valid = cache?.version === 'probability-score-v2'
             && normalizeDateValue(cache?.latestDataDate) === normalizeDateValue(expectedLatestDate)
             && record?.pointInTimeLocked === true
             && record?.settled === false
