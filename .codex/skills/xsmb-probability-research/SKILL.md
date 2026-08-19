@@ -1,6 +1,6 @@
 ---
 name: xsmb-probability-research
-description: Design, implement, and validate probability-ranking methods for the XSMB project using active/potential chain evidence, annual 20-year baselines, immutable predictions, and point-in-time backtests. Use for new Đề or Lô strategies, Bayesian shrinkage, probability calibration, chain deduplication, walk-forward evaluation, leakage audits, or comparisons against current production methods.
+description: Design, implement, and validate probability-ranking or method-selection research for the XSMB project using active/potential chain evidence, annual 20-year baselines, immutable predictions, semantic number partitions, and point-in-time backtests. Use for new Đề or Lô strategies, Bayesian shrinkage, probability calibration, chain deduplication, method complementarity, abstention gates, walk-forward evaluation, leakage audits, or comparisons against current production methods.
 ---
 
 # XSMB Probability Research
@@ -10,17 +10,19 @@ Build research methods without contaminating future information or rewriting iss
 ## Required workflow
 
 1. Read `references/project-methodology.md`.
-2. Identify the exact baseline, date range, stake, payout, target hold, and Lô aggregation mode.
-3. Reuse `annualMilestoneService.buildCandidatesForDate`; do not create a second chain parser.
-4. Verify the chain-statistics index itself was generated only from draws before the prediction date.
-5. Derive scores only from candidate fields available before the prediction date.
-6. Deduplicate equivalent number sets and limit correlated evidence by pattern family.
-7. Add a named non-default strategy. Do not replace production defaults before validation.
-8. Run a deterministic unit test.
-9. Run point-in-time backtests with identical dates and economics for baseline and candidate.
-10. Run at least two calendar-regime checks before treating a profitable period as stable.
-11. Use `.codex/skills/xsmb-probability-research/scripts/audit-backtest-report.js` to reject mismatched comparisons.
-12. Promote only when the candidate improves holdout performance without materially worsening loss streaks.
+2. For number-distribution, daily-advisor, or method-fusion work, also read `references/selection-and-distribution.md`.
+3. Identify the exact baseline, date range, stake, payout, target hold, selection count, and Lô aggregation mode.
+4. Reuse `annualMilestoneService.buildCandidatesForDate`; do not create a second chain parser.
+5. Verify the chain-statistics index itself was generated only from draws before the prediction date.
+6. Derive scores only from candidate fields available before the prediction date.
+7. Deduplicate equivalent number sets and limit correlated evidence by pattern family.
+8. Treat `abstain` as a first-class decision. Do not synthesize a default dàn when evidence is absent.
+9. Add a named non-default strategy. Do not replace production defaults before validation.
+10. Run deterministic unit tests, including future-mutation and immutable-ledger checks.
+11. Run point-in-time backtests with identical dates and economics for baseline and candidate.
+12. Run at least two calendar-regime checks before treating a profitable period as stable.
+13. Use `.codex/skills/xsmb-probability-research/scripts/audit-backtest-report.js` to reject mismatched comparisons.
+14. Promote only when the candidate improves holdout performance without materially worsening loss streaks.
 
 ## Strict point-in-time rule
 
@@ -49,6 +51,9 @@ Pass `allow-aggregation-change` as the final audit argument only when the aggreg
 - Compute the break-even hit rate before model selection: `bet_count / payout_multiplier`.
 - For online ensembles, update weights only after settling the current day and freeze hyperparameter selection before holdout.
 - Calibrate probabilities with a proper score such as log-loss; do not select calibration temperature directly from holdout profit.
+- For semantic groups, use mutually exclusive partitions that cover `00..99` exactly once per axis. Do not sum overlapping large and nested groups as independent evidence.
+- For method selection, report pairwise same-hit, only-left, only-right, neither, and set overlap. A visually alternating short run is not evidence of a handoff rule.
+- For abstaining strategies, report candidate days, issued days, coverage, conditional hit rate, and total profit. An abstained day is neither a win nor a loss.
 - For adaptive Lô bet counts, compare against every fixed Top 3–7 baseline on the same dates.
 - Report negative and null results. Do not tune repeatedly on the reported holdout.
 - A profitable historical result is evidence, not a guarantee.
@@ -82,6 +87,11 @@ node scripts/backtest-loto-milestone20y.js \
 
 # Online Đề ensemble, train through 2025 and freeze before 2026
 node scripts/research-online-expert-ensemble.js
+
+# Semantic number-partition model and method-complementarity laboratory
+npm run test:probability-distribution
+npm run research:probability-distribution
+npm run test:advisor-analysis
 
 # Calibrated dynamic Đề cutoff
 node scripts/research-posterior-calibrated-cutoff.js

@@ -44,6 +44,7 @@ const PERFORMANCE_REPORT_CACHE_FILE = 'cached_profit_report_2026.json';
 const HISTORY_PERFORMANCE_REPORT_CACHE_FILE = 'cached_prediction_history_performance_2026.json';
 const DAILY_METHOD_ADVISOR_CACHE_FILE = 'cached_daily_method_advisor.json';
 const PROBABILITY_SCORE_CACHE_FILE = 'cached_probability_score.json';
+const PROBABILITY_DISTRIBUTION_CACHE_FILE = 'cached_probability_distribution.json';
 const PERFORMANCE_REPORT_VERSION = 'profit-report-2026-de-parallel-rrf-loto-v2';
 const ANALYSIS_CACHE_VERSION = 'hold70-edge-bo-v1';
 const PREDICTION_HISTORY_METHOD_VERSION = '2026-07-15-parallel-shared-ranking-v3';
@@ -883,7 +884,7 @@ async function hasDailyMethodAdvisorCacheOnR2(expectedLatestDate = null) {
         const record = Array.isArray(cache?.records)
             ? cache.records.find(item => normalizeDateValue(item?.predictionDate) === expectedPredictionDate)
             : null;
-        const valid = cache?.version === 'daily-advisor-model-selection-v6'
+        const valid = cache?.version === 'daily-advisor-model-selection-v7'
             && record?.main?.numbers?.length === 30
             && record?.hybrid?.numbers?.length === 30
             && record?.source?.strict;
@@ -912,6 +913,29 @@ async function hasProbabilityScoreCacheOnR2(expectedLatestDate = null) {
         return valid;
     } catch (error) {
         console.log(`[Cache Check] R2 Điểm xác suất cache missing/stale: ${error.message}`);
+        return false;
+    }
+}
+
+async function hasProbabilityDistributionCacheOnR2(expectedLatestDate = null) {
+    if (!getR2PublicUrl() || process.env.UPDATE_CHECK_R2_PROBABILITY_DISTRIBUTION === '0') return true;
+    try {
+        const cache = await readStatsJsonFromR2(PROBABILITY_DISTRIBUTION_CACHE_FILE);
+        const expectedPredictionDate = nextIsoDate(expectedLatestDate);
+        const record = Array.isArray(cache?.records)
+            ? cache.records.find(item => normalizeDateValue(item?.predictionDate) === expectedPredictionDate)
+            : null;
+        const valid = cache?.version === 'probability-distribution-v4'
+            && normalizeDateValue(cache?.latestDataDate) === normalizeDateValue(expectedLatestDate)
+            && record?.pointInTimeLocked === true
+            && record?.settled === false
+            && (record?.abstained === true || record?.topNumbers?.length === 30)
+            && Array.isArray(record?.partitionSignals)
+            && record.partitionSignals.length >= 8;
+        console.log(`[Cache Check] R2 Phân bổ nhóm data=${cache?.latestDataDate || 'missing'}, dự báo=${record?.predictionDate || 'missing'}, valid=${valid}.`);
+        return valid;
+    } catch (error) {
+        console.log(`[Cache Check] R2 cache Phân bổ nhóm missing/stale: ${error.message}`);
         return false;
     }
 }
@@ -1187,7 +1211,7 @@ function uploadOnlyPredictionCaches(options = {}) {
         PERFORMANCE_REPORT_CACHE_FILE,
         HISTORY_PERFORMANCE_REPORT_CACHE_FILE
     ].filter(file => fsSync.existsSync(path.join(statsDir, file)));
-    const predictionHistoryFiles = ['cached_prediction_history.json', DAILY_METHOD_ADVISOR_CACHE_FILE, PROBABILITY_SCORE_CACHE_FILE]
+    const predictionHistoryFiles = ['cached_prediction_history.json', DAILY_METHOD_ADVISOR_CACHE_FILE, PROBABILITY_SCORE_CACHE_FILE, PROBABILITY_DISTRIBUTION_CACHE_FILE]
         .filter(file => fsSync.existsSync(path.join(statsDir, file)));
     if (!includeLoto) {
         console.log('[6] Upload riêng cache dự đoán nhưng giữ nguyên cached_loto_* trên R2 vì Lô không sinh mới trong run này.');
@@ -1231,6 +1255,18 @@ function generateProbabilityScoreCache(options = {}) {
             LOTTERY_DATA_SOURCE: 'r2',
             LOTTERY_STATS_SOURCE: 'r2',
             PROBABILITY_SCORE_USE_LOCAL_HISTORY: options.useLocalHistory ? '1' : '0'
+        },
+        { timeoutMs: 90_000 }
+    );
+}
+
+function generateProbabilityDistributionCache() {
+    runNodeScript(
+        'scripts/generate-probability-distribution-cache.js',
+        'Sinh snapshot phân bổ nhóm số cho ngày kế tiếp từ R2.',
+        {
+            LOTTERY_DATA_SOURCE: 'r2',
+            LOTTERY_STATS_SOURCE: 'r2'
         },
         { timeoutMs: 90_000 }
     );
@@ -1633,11 +1669,12 @@ async function main() {
     const r2PredictionHistoryCacheMissing = !(await hasPredictionHistoryCacheOnR2(latestRawDate));
     const r2DailyAdvisorCacheMissing = !(await hasDailyMethodAdvisorCacheOnR2(latestRawDate));
     const r2ProbabilityScoreCacheMissing = !(await hasProbabilityScoreCacheOnR2(latestRawDate));
+    const r2ProbabilityDistributionCacheMissing = !(await hasProbabilityDistributionCacheOnR2(latestRawDate));
     const onlyPredictionCacheNeedsRefresh = !rawDataChanged
         && !forceRegenerateStats
         && !isStale
         && (lotoCacheMissing || r2LotoCacheMissing || milestoneCacheMissing || r2MilestoneCacheMissing
-            || r2PerformanceReportCacheMissing || r2PredictionHistoryCacheMissing || r2DailyAdvisorCacheMissing || r2ProbabilityScoreCacheMissing);
+            || r2PerformanceReportCacheMissing || r2PredictionHistoryCacheMissing || r2DailyAdvisorCacheMissing || r2ProbabilityScoreCacheMissing || r2ProbabilityDistributionCacheMissing);
 
     if (onlyPredictionCacheNeedsRefresh) {
         if (localRawOutOfSync) {
@@ -1659,6 +1696,7 @@ async function main() {
             await predictionHistoryService.refreshLatestPendingPredictionHistory(90);
             generateDailyMethodAdvisorCache({ useLocalHistory: true });
             generateProbabilityScoreCache({ useLocalHistory: true });
+            generateProbabilityDistributionCache();
             const didGenerateLoto = await generateLotoPredictionCacheIfNeeded(latestRawDate, 'prediction-cache-only');
             const didGenerateMilestone = process.env.MILESTONE20Y_GENERATE_CACHE !== '0';
             if (didGenerateMilestone) {
@@ -2017,6 +2055,7 @@ async function main() {
                 }
                 generateDailyMethodAdvisorCache({ useLocalHistory: true });
                 generateProbabilityScoreCache({ useLocalHistory: true });
+                generateProbabilityDistributionCache();
             } catch (histErr) {
                 console.error('⚠️ Lỗi khi đồng bộ lịch sử/Gợi ý hằng ngày:', histErr.message);
             }
@@ -2096,6 +2135,7 @@ async function main() {
                 }
                 generateDailyMethodAdvisorCache({ useLocalHistory: true });
                 generateProbabilityScoreCache({ useLocalHistory: true });
+                generateProbabilityDistributionCache();
 
             } catch (simErr) {
                 console.error('⚠️ Lỗi khi tạo cached simulation (không ảnh hưởng các bước khác):', simErr.message);

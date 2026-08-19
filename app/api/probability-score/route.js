@@ -47,19 +47,71 @@ function summarize(records) {
     };
 }
 
+function latestRecord(records) {
+    return (records || []).slice().sort((left, right) => isoDate(right?.predictionDate).localeCompare(isoDate(left?.predictionDate)))[0] || null;
+}
+
+// The detailed strict-PIT ledger remains on R2 for audit, while this endpoint
+// returns a compact form suitable for the browser.  The distribution lane is
+// research-only and must never alter the score v2 snapshot returned above.
+function compactDistributionCache(cache) {
+    if (!cache?.version) return null;
+    const research = cache?.research;
+    return {
+        version: cache.version,
+        generatedAt: cache.generatedAt || null,
+        latestDataDate: cache.latestDataDate || null,
+        summary: cache.summary || {},
+        record: latestRecord(cache.records),
+        research: research?.version ? {
+            version: research.version,
+            generatedAt: research.generatedAt || null,
+            status: research.status || 'research-only',
+            strictPointInTime: Boolean(research.strictPointInTime),
+            source: research.source || {},
+            economics: research.economics || {},
+            ranges: research.ranges || {},
+            recommendation: research.recommendation || {},
+            methods: (research.methods || []).map(method => ({
+                id: method.id,
+                label: method.label,
+                description: method.description,
+                status: method.status,
+                promoted: Boolean(method.promoted),
+                coverage: method.coverage || {},
+                total: method.total || {},
+                splits: method.splits || {},
+                yearly: (method.yearly || []).slice(-22),
+                monthly: (method.monthly || []).slice(-36),
+                recentRows: (method.recentRows || []).slice(-90)
+            })),
+            complementarity: (research.complementarity || []).slice(0, 10)
+        } : null
+    };
+}
+
 export async function GET(request) {
     if (!isAuthorized(request)) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401, headers: HEADERS });
     try {
-        const payload = await loadJsonWithSupabaseFallback('cached_probability_score.json');
+        const [payload, distributionCache, raw] = await Promise.all([
+            loadJsonWithSupabaseFallback('cached_probability_score.json'),
+            loadJsonWithSupabaseFallback('cached_probability_distribution.json').catch(() => null),
+            getRawData()
+        ]);
         if (!payload || !Array.isArray(payload.records)) throw new Error('Cache Điểm xác suất chưa được sinh');
-        const raw = await getRawData();
         const results = new Map(raw.map(row => [isoDate(row?.date || row?.ngay), special(row)]));
         const records = payload.records.map(record => {
             const actual = results.get(isoDate(record?.predictionDate));
             if (record?.settled || actual === null || actual === undefined) return record;
             return { ...record, settled: true, actual, hit: (record.topNumbers || []).some(item => Number(item.number) === actual) };
         });
-        return NextResponse.json({ success: true, ...payload, records, summary: summarize(records) }, { headers: HEADERS });
+        return NextResponse.json({
+            success: true,
+            ...payload,
+            records,
+            summary: summarize(records),
+            distribution: compactDistributionCache(distributionCache)
+        }, { headers: HEADERS });
     } catch (error) {
         return NextResponse.json({ success: false, error: `Không tải được Điểm xác suất từ R2: ${error.message}` }, { status: 503, headers: HEADERS });
     }

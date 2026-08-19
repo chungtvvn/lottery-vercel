@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 const assert = require('assert');
-const { generateAdvisorCache, BET_COUNT, DAILY_METHOD_POOL } = require('../lib/services/dailyMethodAdvisorService');
+const { generateAdvisorCache, buildAdaptiveFusion, BET_COUNT, DAILY_METHOD_POOL } = require('../lib/services/dailyMethodAdvisorService');
 
 const raw = Array.from({ length: 80 }, (_, index) => ({
     date: `2026-01-${String(index + 1).padStart(2, '0')}`.replace(/-0(3[2-9]|[4-9][0-9])$/, '-03'),
@@ -37,7 +37,12 @@ assert.equal(pendingCache.records[0].hybrid.numbers.length, BET_COUNT);
 assert.ok(pendingCache.records[0].hybrid.leaders.length > 0 && pendingCache.records[0].hybrid.leaders.length <= 3);
 assert.equal(pendingCache.records[0].hybrid.evidence.length, BET_COUNT);
 assert.ok(pendingCache.records[0].recommendation.ranking.every(row => Number.isFinite(row.posterior7) && Number.isFinite(row.trend)));
-assert.equal(pendingCache.records[0].recommendation.models.length, 3, 'three selection models must be available');
+assert.equal(pendingCache.records[0].recommendation.models.length, 5, 'five selection models must be available');
+assert.deepEqual(
+    pendingCache.records[0].recommendation.models.map(model => model.id),
+    ['balanced', 'momentum', 'stability', 'bayesGuard', 'hedge'],
+    'the immutable snapshot must retain every available selection lane'
+);
 assert.ok(pendingCache.records[0].recommendation.models.every(model => model.selected && Number.isFinite(model.selected.selectionScore)), 'each model ranks from prior snapshots');
 assert.equal(pendingCache.records[0].recommendation.candidateMethods.length, 2, 'a pending snapshot keeps immutable dàn for every available candidate method');
 assert.ok(pendingCache.records[0].recommendation.candidateMethods.every(method => method.numbers.length === BET_COUNT), 'candidate dàn must remain fixed at 30 numbers');
@@ -80,4 +85,13 @@ const missingRecordRecovery = generateAdvisorCache({ history: pendingHistory.map
 const reconstructed = missingRecordRecovery.records.find(record => record.predictionDate === '2026-04-01');
 assert.equal(reconstructed.lifecycle.mode, 'reconstructed-after-draw', 'a missing day may be recovered only from its persisted history snapshot');
 assert.equal(reconstructed.actual, 42, 'recovered snapshot must be settled with raw R2 result');
+
+const equalMembership = buildAdaptiveFusion({
+    methodA: { numbersToBet: [...Array.from({ length: 29 }, (_, number) => number), 99] }
+}, [{ methodId: 'methodA', label: 'A', score: 1 }], null);
+const membershipScores = equalMembership.evidence.map(row => row.fusionScore);
+assert.ok(
+    Math.max(...membershipScores) - Math.min(...membershipScores) < 1e-12,
+    'numeric serialization order must not be interpreted as a rank inside an immutable set'
+);
 console.log('PASS daily advisor uses only strictly earlier settled snapshots and writes fixed 30-number main/hybrid lanes.');
