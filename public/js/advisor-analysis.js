@@ -390,14 +390,26 @@
 
         const rows = (ledger.records || []).slice().reverse();
         const tableHtml = rows.map(r => {
+            const isAbstained = r.abstained || !r.isLocked;
             const isHit = Boolean(r.hit);
             const actualStr = Number.isInteger(r.actual) ? num(r.actual) : '--';
-            const statusClass = isHit ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-rose-100 text-rose-800 border-rose-300';
-            const statusText = isHit ? 'TRÚNG' : 'TRƯỢT';
-            const numbersHtml = (r.numbers || []).map(n => {
-                const match = isHit && Number(n) === Number(r.actual);
-                return `<span class="rounded px-1.5 py-0.5 font-mono text-xs font-bold ${match ? 'bg-amber-300 text-amber-950 ring-2 ring-amber-400' : 'bg-slate-100 text-slate-700'}">${num(n)}</span>`;
-            }).join(' ');
+            const statusClass = isAbstained
+                ? 'bg-slate-100 text-slate-600 border-slate-200'
+                : isHit
+                    ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                    : 'bg-rose-100 text-rose-800 border-rose-300';
+            const statusText = isAbstained ? 'Chưa chốt' : isHit ? 'TRÚNG' : 'TRƯỢT';
+
+            const numbersHtml = isAbstained
+                ? '<span class="italic text-slate-400 font-semibold text-[11px]">Chưa khóa dàn trước giờ quay · Không tự tính toán</span>'
+                : (r.numbers || []).map(n => {
+                    const match = isHit && Number(n) === Number(r.actual);
+                    return `<span class="rounded px-1.5 py-0.5 font-mono text-xs font-bold ${match ? 'bg-amber-300 text-amber-950 ring-2 ring-amber-400' : 'bg-slate-100 text-slate-700'}">${num(n)}</span>`;
+                }).join(' ');
+
+            const profitHtml = isAbstained
+                ? '<span class="text-slate-400 font-semibold">--</span>'
+                : `<span class="${Number(r.profitK) >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${signed(r.profitK)} (${pct(r.cumulativeHitRate)})</span>`;
 
             return `
                 <tr class="hover:bg-slate-50/80 transition-colors">
@@ -417,8 +429,8 @@
                     <td class="px-3 py-3 text-center">
                         <span class="rounded-lg border px-2.5 py-1 text-xs font-black ${statusClass}">${statusText}</span>
                     </td>
-                    <td class="px-3 py-3 text-right font-mono font-black ${Number(r.profitK) >= 0 ? 'text-emerald-700' : 'text-rose-700'}">
-                        ${signed(r.profitK)} (${pct(r.cumulativeHitRate)})
+                    <td class="px-3 py-3 text-right font-mono font-black">
+                        ${profitHtml}
                     </td>
                 </tr>
             `;

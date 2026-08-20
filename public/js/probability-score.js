@@ -602,23 +602,40 @@
       const numbers = (record.topNumbers || []).slice().sort((left, right) => Number(left.number) - Number(right.number));
       const abstained = Boolean(record.abstained) || numbers.length !== 30;
       const result = record.settled ? fmt(record.actual) : '--';
-      const resultStatus = abstained ? 'Không phát dàn' : record.settled ? (record.hit ? 'Trúng Dàn 30' : 'Trượt') : 'Chờ KQ';
-      const resultClass = abstained ? 'bg-slate-100 text-slate-700 border-slate-200' : record.hit ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : record.settled ? 'bg-rose-100 text-rose-800 border-rose-200' : 'bg-amber-100 text-amber-800 border-amber-200';
-      const tierBadge = record.settled ? `
+      const resultStatus = abstained
+        ? 'Chưa chốt (Bỏ ngày)'
+        : record.settled
+          ? (record.hit ? 'Trúng Dàn 30' : 'Trượt')
+          : 'Chờ KQ';
+      const resultClass = abstained
+        ? 'bg-slate-100 text-slate-700 border-slate-200'
+        : record.hit
+          ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+          : record.settled
+            ? 'bg-rose-100 text-rose-800 border-rose-200'
+            : 'bg-amber-100 text-amber-800 border-amber-200';
+
+      const tierBadge = (!abstained && record.settled) ? `
         <span class="rounded-lg border px-2 py-0.5 text-[10px] font-bold ${record.top10Hit ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-slate-50 text-slate-500 border-slate-200'}">Top 10: ${record.top10Hit ? '✓' : '✗'}</span>
         <span class="rounded-lg border px-2 py-0.5 text-[10px] font-bold ${record.top20Hit ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-slate-50 text-slate-500 border-slate-200'}">Top 20: ${record.top20Hit ? '✓' : '✗'}</span>
       ` : '';
 
-      const numberChips = numbers.map(item => {
-        const isActual = record.settled && Number(item.number) === Number(record.actual);
-        return `<span class="rounded-lg border px-2 py-1 text-xs font-mono font-bold ${isActual ? 'border-amber-400 bg-amber-300 text-amber-950 ring-2 ring-amber-400' : 'border-indigo-100 bg-indigo-50/60 text-indigo-900'}">${fmt(item.number)}</span>`;
-      }).join('');
+      const numberChips = abstained
+        ? '<p class="text-xs italic text-slate-400 font-semibold">Chưa khóa dàn trước giờ quay · Không tự tính toán sau khi có kết quả</p>'
+        : numbers.map(item => {
+            const isActual = record.settled && Number(item.number) === Number(record.actual);
+            return `<span class="rounded-lg border px-2 py-1 text-xs font-mono font-bold ${isActual ? 'border-amber-400 bg-amber-300 text-amber-950 ring-2 ring-amber-400' : 'border-indigo-100 bg-indigo-50/60 text-indigo-900'}">${fmt(item.number)}</span>`;
+          }).join('');
+
       return `
         <article class="p-4 transition-colors hover:bg-slate-50/80">
           <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <strong class="text-sm font-black text-slate-900">${record.predictionDate}</strong>
-              <p class="text-xs text-slate-500 mt-0.5">Dữ liệu đến ${record.sourceDataThrough || '-'} · ${numbers.length} số</p>
+              <div class="flex items-center gap-2">
+                <strong class="text-sm font-black text-slate-900">${record.predictionDate}</strong>
+                <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-600">${abstained ? 'Chưa chốt' : 'Đã khóa snapshot'}</span>
+              </div>
+              <p class="text-xs text-slate-500 mt-0.5">Dữ liệu đến ${record.sourceDataThrough || '-'} · ${abstained ? 0 : numbers.length} số</p>
             </div>
             <div class="flex items-center gap-2">
               ${tierBadge}
