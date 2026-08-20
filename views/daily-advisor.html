@@ -46,7 +46,7 @@
             <div class="bg-gradient-to-r from-indigo-700 via-violet-700 to-fuchsia-700 px-6 py-7 text-white">
                 <p class="text-xs font-bold uppercase tracking-[0.24em] text-indigo-100">Theo dõi kiểm chứng</p>
                 <h1 class="mt-2 text-3xl font-black tracking-tight">Gợi ý phương pháp và dàn đánh hàng ngày</h1>
-                <p class="mt-3 max-w-4xl text-sm leading-6 text-indigo-100">Trang này chỉ theo dõi dàn Đề production đã được khóa trước kỳ quay và kết toán sau khi có kết quả. Phân tích các giả thuyết, lựa chọn chính sách và backtest strict PIT được tách sang tab Phân tích lựa chọn.</p>
+                <p class="mt-3 max-w-4xl text-sm leading-6 text-indigo-100">Mỗi ngày hệ thống so sánh toàn bộ phương pháp có dàn đúng 30 số để khóa một dàn chính. Một dàn đồng thuận 30 số khác được sinh bằng khử trùng và kiểm soát tương quan để đối chứng, nhưng chỉ được nâng thành production nếu vượt hòa vốn trên holdout độc lập. Mọi trọng số chỉ học từ kết quả trước ngày dự đoán.</p>
             </div>
             <div class="grid gap-4 p-5 md:grid-cols-3" id="summaryCards"></div>
         </section>
@@ -60,7 +60,7 @@
                 <div>
                     <p class="text-xs font-black uppercase tracking-[0.16em] text-sky-700">Quyết định thực chiến</p>
                     <h2 class="mt-1 text-lg font-black text-slate-900">Trạng thái dàn đã khóa</h2>
-                    <p class="mt-1 text-sm text-slate-600">Chỉ một dàn chính được dùng để theo dõi thực tế. Các mô hình khác là tín hiệu đối chiếu, không tự thay số sau khi phát hành.</p>
+                    <p class="mt-1 text-sm text-slate-600">Dàn chính và dàn đối chứng đều được khóa trước kỳ quay. Các dàn nguồn chỉ là bằng chứng so sánh và không được tái tính sau khi phát hành.</p>
                 </div>
                 <a href="/advisor-analysis" class="inline-flex items-center justify-center gap-2 rounded-lg bg-sky-700 px-4 py-2.5 text-sm font-black text-white shadow-sm hover:bg-sky-800"><i class="bi bi-flask"></i> Mở Phân tích lựa chọn</a>
             </div>

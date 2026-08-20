@@ -45,6 +45,8 @@ const HISTORY_PERFORMANCE_REPORT_CACHE_FILE = 'cached_prediction_history_perform
 const DAILY_METHOD_ADVISOR_CACHE_FILE = 'cached_daily_method_advisor.json';
 const PROBABILITY_SCORE_CACHE_FILE = 'cached_probability_score.json';
 const PROBABILITY_DISTRIBUTION_CACHE_FILE = 'cached_probability_distribution.json';
+const DAILY_METHOD_ADVISOR_CACHE_VERSION = 'daily-advisor-model-selection-v9';
+const PROBABILITY_SCORE_HISTORY_VERSION = 'probability-score-history-v1';
 const PERFORMANCE_REPORT_VERSION = 'profit-report-2026-de-parallel-rrf-loto-v2';
 const ANALYSIS_CACHE_VERSION = 'hold70-edge-bo-v1';
 const PREDICTION_HISTORY_METHOD_VERSION = '2026-07-15-parallel-shared-ranking-v3';
@@ -884,9 +886,11 @@ async function hasDailyMethodAdvisorCacheOnR2(expectedLatestDate = null) {
         const record = Array.isArray(cache?.records)
             ? cache.records.find(item => normalizeDateValue(item?.predictionDate) === expectedPredictionDate)
             : null;
-        const valid = cache?.version === 'daily-advisor-model-selection-v7'
+        const valid = cache?.version === DAILY_METHOD_ADVISOR_CACHE_VERSION
             && record?.main?.numbers?.length === 30
             && record?.hybrid?.numbers?.length === 30
+            && record?.hybrid?.id === 'all-method-fixed30-consensus-v1'
+            && Number(record?.hybrid?.methodCount || 0) >= 1
             && record?.source?.strict;
         console.log(`[Cache Check] R2 Gợi ý=${record?.predictionDate || 'missing'}, valid=${valid}.`);
         return valid;
@@ -908,7 +912,10 @@ async function hasProbabilityScoreCacheOnR2(expectedLatestDate = null) {
             && normalizeDateValue(cache?.latestDataDate) === normalizeDateValue(expectedLatestDate)
             && record?.pointInTimeLocked === true
             && record?.settled === false
-            && record?.topNumbers?.length === 30;
+            && record?.topNumbers?.length === 30
+            && cache?.historicalAnalysis?.version === PROBABILITY_SCORE_HISTORY_VERSION
+            && cache?.historicalAnalysis?.strictPointInTime === true
+            && normalizeDateValue(cache?.historicalAnalysis?.source?.dataEnd) === normalizeDateValue(expectedLatestDate);
         console.log(`[Cache Check] R2 Điểm xác suất data=${cache?.latestDataDate || 'missing'}, dự báo=${record?.predictionDate || 'missing'}, valid=${valid}.`);
         return valid;
     } catch (error) {

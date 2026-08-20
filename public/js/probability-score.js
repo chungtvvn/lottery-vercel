@@ -127,6 +127,49 @@
     }).join('') || '<p class="p-5 text-slate-500">Chưa có tín hiệu nhóm độc lập đủ mạnh.</p>';
   }
 
+  function renderHistoricalAnalysis(analysis) {
+    const statusNode = el('historical-analysis-status');
+    const cardsNode = el('historical-analysis-cards');
+    const yearlyNode = el('historical-yearly');
+    const recentNode = el('historical-recent');
+    if (!statusNode || !cardsNode || !yearlyNode || !recentNode) return;
+
+    if (!analysis?.strictPointInTime || !analysis?.summary) {
+      statusNode.innerHTML = '<div class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-900"><strong>Cache hiện tại chưa có báo cáo toàn bộ lịch sử.</strong><p class="mt-1">Action kế tiếp sẽ chạy walk-forward từ raw R2 và lưu báo cáo compact. Nhật ký snapshot thực tế vẫn giữ nguyên.</p></div>';
+      cardsNode.innerHTML = '';
+      yearlyNode.innerHTML = '<p class="p-4 text-sm text-slate-500">Chưa có dữ liệu theo năm.</p>';
+      recentNode.innerHTML = '<p class="p-4 text-sm text-slate-500">Chưa có dữ liệu kỳ gần nhất.</p>';
+      return;
+    }
+
+    const source = analysis.source || {};
+    statusNode.innerHTML = `<div class="flex flex-wrap items-start justify-between gap-4"><div><strong class="text-blue-800">Strict point-in-time · toàn bộ raw ${escapeHtml(source.dataStart || '-')} → ${escapeHtml(source.dataEnd || '-')}</strong><p class="mt-1 leading-6 text-slate-600">${escapeHtml(source.trainingRule || 'Ngày D chỉ sử dụng dữ liệu trước D.')}</p><p class="mt-1 text-xs text-slate-500">${Number(source.rawRows || 0).toLocaleString('vi-VN')} kỳ raw · ${Number(source.evaluatedDays || 0).toLocaleString('vi-VN')} kỳ được đánh giá sau warm-up</p></div><span class="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-black text-blue-800">NGHIÊN CỨU · KHÔNG VIẾT LẠI SNAPSHOT</span></div>`;
+
+    const summaryCard = (label, summary, note) => {
+      const profit = Number(summary?.profitK || 0);
+      const hitRate = Number(summary?.hitRate || 0);
+      const lower = Number(summary?.wilsonLower || 0);
+      const breakEven = Number(summary?.breakEvenHitRate || analysis.economics?.breakEvenHitRate || 0);
+      return `<article class="rounded-xl border ${profit >= 0 ? 'border-emerald-200 bg-emerald-50/60' : 'border-rose-200 bg-rose-50/60'} p-4"><p class="text-xs font-black uppercase tracking-wide text-slate-500">${escapeHtml(label)}</p><div class="mt-2 flex items-end justify-between gap-2"><strong class="text-2xl text-slate-900">${percent(hitRate)}</strong><span class="text-xs font-bold ${profit >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${signedMoney(profit)}</span></div><p class="mt-2 text-sm text-slate-600">${summary?.wins || 0}/${summary?.days || 0} ngày trúng · Wilson ${percent(lower)}</p><p class="mt-1 text-xs text-slate-500">Hòa vốn ${percent(breakEven)} · ROI ${percent(summary?.roi)} · thua dài nhất ${summary?.longestLoss || 0} ngày</p><p class="mt-2 text-[11px] font-semibold text-slate-500">${escapeHtml(note)}</p></article>`;
+    };
+    cardsNode.innerHTML = [
+      summaryCard('Toàn bộ lịch sử', analysis.summary, `${analysis.summary?.startDate || '-'} → ${analysis.summary?.endDate || '-'}`),
+      summaryCard('365 kỳ gần nhất', analysis.windows?.last365, 'Cửa sổ ngắn hạn, vẫn được chạy tuần tự PIT'),
+      summaryCard('90 kỳ gần nhất', analysis.windows?.last90, 'Không thay thế kết luận toàn lịch sử'),
+      summaryCard('30 kỳ gần nhất', analysis.windows?.last30, 'Chỉ dùng để quan sát drift gần đây')
+    ].join('');
+
+    const yearlyRows = (analysis.yearly || []).slice().reverse();
+    yearlyNode.innerHTML = yearlyRows.length
+      ? `<div class="max-h-[520px] overflow-auto"><table class="w-full text-left text-sm"><thead class="sticky top-0 bg-slate-100 text-xs uppercase text-slate-500"><tr><th class="px-3 py-2">Năm</th><th class="px-3 py-2 text-right">Trúng</th><th class="px-3 py-2 text-right">Tỷ lệ</th><th class="px-3 py-2 text-right">Wilson</th><th class="px-3 py-2 text-right">Lãi/lỗ</th></tr></thead><tbody class="divide-y divide-slate-100">${yearlyRows.map(row => `<tr><td class="px-3 py-2 font-bold text-slate-900">${escapeHtml(row.period)}</td><td class="px-3 py-2 text-right">${row.wins || 0}/${row.days || 0}</td><td class="px-3 py-2 text-right font-semibold">${percent(row.hitRate)}</td><td class="px-3 py-2 text-right text-slate-500">${percent(row.wilsonLower)}</td><td class="px-3 py-2 text-right font-bold ${Number(row.profitK || 0) >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${signedMoney(row.profitK)}</td></tr>`).join('')}</tbody></table></div>`
+      : '<p class="p-4 text-sm text-slate-500">Chưa có dữ liệu theo năm.</p>';
+
+    const recentRows = (analysis.recentRows || []).slice(-14).reverse();
+    recentNode.innerHTML = recentRows.length
+      ? `<div class="divide-y divide-slate-100">${recentRows.map(row => `<div class="grid grid-cols-[1fr_auto] items-center gap-3 px-3 py-2 text-sm"><div><strong class="text-slate-900">${escapeHtml(row.date)}</strong><p class="mt-0.5 text-xs text-slate-500">KQ ${fmt(row.actual)} · confidence ${Number(row.meanRelativeConfidence || 0).toFixed(2)} · margin ${Number(row.cutoffMargin || 0).toFixed(5)}</p></div><span class="rounded-md px-2 py-1 text-xs font-black ${row.hit ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">${row.hit ? 'TRÚNG' : 'TRƯỢT'}</span></div>`).join('')}</div>`
+      : '<p class="p-4 text-sm text-slate-500">Chưa có dữ liệu kỳ gần nhất.</p>';
+  }
+
   function signed(value, digits = 3) {
     const number = Number(value || 0);
     return `${number >= 0 ? '+' : ''}${number.toFixed(digits)}`;
@@ -270,6 +313,7 @@
     el('top-numbers').querySelectorAll('button').forEach(button => button.addEventListener('click', () => showDetail((latest.rankedNumbers || []).find(row => row.number === Number(button.dataset.number)), latest)));
     el('weights').innerHTML = Object.entries(definition.weights || {}).filter(([, value]) => value > 0).map(([key, value]) => `<div class="flex items-center justify-between gap-3"><span>${labels[key] || key}</span><strong>${Math.round(value * 100)}%</strong></div>`).join('') || '<p class="text-slate-500">Snapshot này chưa có metadata trọng số.</p>';
     renderGroups(latest);
+    renderHistoricalAnalysis(recordPayload.historicalAnalysis);
     renderDistribution(recordPayload);
 
     const summary = recordPayload.summary || {};

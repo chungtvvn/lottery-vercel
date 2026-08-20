@@ -80,12 +80,28 @@ function main() {
         'Walk-forward thay đổi khi chỉ thêm dữ liệu sau cửa sổ đánh giá.'
     );
 
+    const historicalSource = rows.slice(0, Math.min(rows.length, 700));
+    const historical = probabilityScore.buildHistoricalAnalysis(historicalSource, { recentLimit: 30 });
+    assert.strictEqual(historical.version, probabilityScore.HISTORICAL_ANALYSIS_VERSION);
+    assert.strictEqual(historical.strictPointInTime, true);
+    assert.strictEqual(historical.source.rawRows, historicalSource.length);
+    assert.strictEqual(historical.source.dataEnd, historicalSource.at(-1).date);
+    assert.ok(historical.summary.days > 0, 'Báo cáo toàn lịch sử phải có kỳ được đánh giá sau warm-up.');
+    assert.ok(historical.yearly.length > 0, 'Báo cáo toàn lịch sử phải có tổng hợp theo năm.');
+    assert.ok(historical.recentRows.length <= 30, 'Payload trình duyệt phải giới hạn số dòng gần nhất.');
+    assert.strictEqual(
+        historical.summary.days,
+        historical.yearly.reduce((sum, row) => sum + row.days, 0),
+        'Tổng số ngày toàn lịch sử phải khớp tổng theo năm.'
+    );
+
     console.log(JSON.stringify({
         ok: true,
         targetDate,
         sourceDataThrough: issued.sourceDataThrough,
         groupCount: catalog.groups.length,
-        checkedWalkForwardDays: fullRun.days
+        checkedWalkForwardDays: fullRun.days,
+        historicalDays: historical.summary.days
     }, null, 2));
 }
 
