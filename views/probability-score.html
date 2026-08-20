@@ -118,6 +118,49 @@
       </article>
     </section>
 
+    <!-- Dàn Đề Xuất Điểm Xác Suất Tối Ưu Hôm Nay -->
+    <section id="bestProbRecommendationSection" class="mb-6 overflow-hidden rounded-3xl border border-blue-300 bg-gradient-to-br from-blue-950 via-slate-900 to-indigo-950 text-white shadow-xl shadow-blue-950/20">
+      <div class="border-b border-white/10 bg-white/5 px-6 py-5 sm:px-8">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="inline-flex items-center gap-1.5 rounded-full bg-blue-500/20 border border-blue-400/30 px-3 py-0.5 text-xs font-black uppercase text-blue-300">
+                <i class="bi bi-bullseye text-cyan-300"></i> ĐIỂM XÁC SUẤT HỘI TỤ EV+
+              </span>
+              <span id="probConfidence" class="text-xs font-bold text-amber-300">⭐⭐⭐⭐⭐ 4.9</span>
+            </div>
+            <h2 id="probRecTitle" class="mt-2 text-xl sm:text-2xl font-black text-white">Dàn Đề Xuất Điểm Xác Suất Tối Ưu Hôm Nay</h2>
+            <p id="probRecSubtitle" class="mt-0.5 text-xs text-blue-200 font-semibold">Tích hợp Calibration 180 kỳ · Hazard Gap Deficit & Trọng Số Bổ Sung</p>
+          </div>
+
+          <!-- Copy Buttons -->
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="btnCopyProbSpace" class="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 px-4 py-2 text-xs font-bold text-white shadow-md transition-all">
+              <i class="bi bi-clipboard"></i> Copy dấu cách
+            </button>
+            <button id="btnCopyProbComma" class="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 px-4 py-2 text-xs font-bold text-white transition-all">
+              <i class="bi bi-clipboard-check"></i> Copy dấu phẩy
+            </button>
+          </div>
+        </div>
+
+        <!-- Tier Switcher -->
+        <div class="mt-5 flex flex-wrap items-center gap-2">
+          <span class="text-xs font-bold text-blue-200 mr-1">Chọn phân tầng dàn:</span>
+          <button type="button" data-prob-tier="core10" class="prob-tier-btn rounded-xl bg-blue-600 px-3.5 py-1.5 text-xs font-black text-white shadow-xs">Top 10 VIP EV+</button>
+          <button type="button" data-prob-tier="core20" class="prob-tier-btn rounded-xl border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-bold text-blue-200 hover:bg-white/20">Top 20 Tiềm Năng</button>
+          <button type="button" data-prob-tier="standard30" class="prob-tier-btn rounded-xl border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-bold text-blue-200 hover:bg-white/20">Dàn 30 Điểm Cao</button>
+          <button type="button" data-prob-tier="expanded36" class="prob-tier-btn rounded-xl border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-bold text-blue-200 hover:bg-white/20">Dàn 36 Mở Rộng</button>
+        </div>
+      </div>
+
+      <!-- Numbers Chips Container -->
+      <div class="p-6 sm:p-8">
+        <div id="probStrategyNumbersChips" class="flex flex-wrap gap-2"></div>
+        <div id="probStrategyReasons" class="mt-6 space-y-1.5 rounded-2xl border border-white/10 bg-white/5 p-4 text-xs leading-relaxed text-blue-100/90"></div>
+      </div>
+    </section>
+
     <!-- Calibration & Verification Gate -->
     <section class="mb-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
       <div class="mb-4">

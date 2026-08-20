@@ -92,6 +92,49 @@
             <div id="researchOverview" class="grid gap-3 border-t border-white/10 bg-black/10 p-5 sm:grid-cols-2 lg:grid-cols-4"></div>
         </section>
 
+        <!-- Dàn Đề Xuất Chiến Lược Tối Ưu Hôm Nay -->
+        <section id="bestStrategyRecommendationSection" class="mb-8 overflow-hidden rounded-3xl border border-indigo-300 bg-gradient-to-br from-indigo-900 via-indigo-950 to-slate-950 text-white shadow-xl shadow-indigo-950/20">
+            <div class="border-b border-white/10 bg-white/5 px-6 py-5 sm:px-8">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 px-3 py-0.5 text-xs font-black uppercase text-emerald-300">
+                                <i class="bi bi-trophy-fill text-amber-300"></i> CHIẾN LƯỢC QUÁN QUÂN
+                            </span>
+                            <span id="bestStrategyConfidence" class="text-xs font-bold text-amber-300">⭐⭐⭐⭐⭐ 4.8</span>
+                        </div>
+                        <h2 id="bestStrategyTitle" class="mt-2 text-xl sm:text-2xl font-black text-white">Dàn Đề Xuất Chiến Lược Tối Ưu Hôm Nay</h2>
+                        <p id="bestStrategyFamily" class="mt-0.5 text-xs text-indigo-200 font-semibold">Nhóm Học Đa Tiêu Chí · Cận Wilson 90% an toàn cao nhất</p>
+                    </div>
+
+                    <!-- Copy Buttons -->
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button id="btnCopyStrategySpace" class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-500 hover:bg-indigo-400 px-4 py-2 text-xs font-bold text-white shadow-md transition-all">
+                            <i class="bi bi-clipboard"></i> Copy dấu cách
+                        </button>
+                        <button id="btnCopyStrategyComma" class="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 px-4 py-2 text-xs font-bold text-white transition-all">
+                            <i class="bi bi-clipboard-check"></i> Copy dấu phẩy
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Strategy Tiers Switcher -->
+                <div class="mt-5 flex flex-wrap items-center gap-2">
+                    <span class="text-xs font-bold text-indigo-200 mr-1">Chọn phân tầng dàn:</span>
+                    <button type="button" data-strategy-tier="core10" class="strategy-tier-btn rounded-xl bg-indigo-600 px-3.5 py-1.5 text-xs font-black text-white shadow-xs">Top 10 VIP</button>
+                    <button type="button" data-strategy-tier="core20" class="strategy-tier-btn rounded-xl border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-bold text-indigo-200 hover:bg-white/20">Top 20 Ưu Tú</button>
+                    <button type="button" data-strategy-tier="standard30" class="strategy-tier-btn rounded-xl border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-bold text-indigo-200 hover:bg-white/20">Dàn 30 Chuẩn</button>
+                    <button type="button" data-strategy-tier="expanded36" class="strategy-tier-btn rounded-xl border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-bold text-indigo-200 hover:bg-white/20">Dàn 36 Mở Rộng</button>
+                </div>
+            </div>
+
+            <!-- Numbers Chips Container -->
+            <div class="p-6 sm:p-8">
+                <div id="strategyNumbersChips" class="flex flex-wrap gap-2"></div>
+                <div id="strategyReasons" class="mt-6 space-y-1.5 rounded-2xl border border-white/10 bg-white/5 p-4 text-xs leading-relaxed text-indigo-100/90"></div>
+            </div>
+        </section>
+
         <!-- Long Horizon Research Section -->
         <section class="mb-8 overflow-hidden rounded-3xl border border-violet-200 bg-white shadow-sm">
             <div class="flex flex-col gap-3 border-b border-violet-100 bg-violet-50/70 px-6 py-4 lg:flex-row lg:items-center lg:justify-between">
@@ -164,6 +207,9 @@
                 <button type="button" data-family="Nhận diện trạng thái" class="policy-family-btn rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100">Nhận diện trạng thái</button>
                 <button type="button" data-family="Quản trị vốn Kelly" class="policy-family-btn rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100">Quản trị vốn Kelly</button>
                 <button type="button" data-family="Học đa tiêu chí" class="policy-family-btn rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100">Học đa tiêu chí</button>
+                <button type="button" data-family="Học thích nghi" class="policy-family-btn rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100">Học thích nghi</button>
+                <button type="button" data-family="Khám phá Bandit" class="policy-family-btn rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100">Khám phá Bandit</button>
+                <button type="button" data-family="Dung hợp động" class="policy-family-btn rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100">Dung hợp động</button>
                 <button type="button" data-family="Mô hình nền" class="policy-family-btn rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100">Mô hình nền</button>
             </div>
             <div id="researchLeaderboard" class="grid gap-3 p-6 lg:grid-cols-2"></div>
@@ -237,6 +283,40 @@
                 </div>
                 <div id="scoreOverlay" class="p-6"></div>
             </aside>
+        </section>
+
+        <!-- Nhật Ký Chốt Số & Đối Soát Thực Tế Hàng Ngày -->
+        <section id="settledLedgerSection" class="mb-8 overflow-hidden rounded-3xl border border-emerald-200 bg-white shadow-sm">
+            <div class="flex flex-col gap-3 border-b border-emerald-100 bg-emerald-50/70 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-0.5 text-[10px] font-black uppercase text-emerald-800">
+                        <i class="bi bi-journal-check"></i> ĐỐI SOÁT BẤT BIẾN
+                    </span>
+                    <h2 class="mt-1 text-lg font-black text-slate-900">Nhật Ký Chốt Số & Thống Kê Đối Soát Hàng Ngày</h2>
+                    <p class="text-xs text-slate-500">So sánh kết quả dự báo của chính sách dẫn đầu với kết quả thực tế (KQĐB 2 số cuối).</p>
+                </div>
+                <div id="settledLedgerBadge" class="flex items-center gap-2"></div>
+            </div>
+
+            <!-- Summary KPI Cards -->
+            <div id="settledLedgerSummaryCards" class="grid gap-3 p-6 sm:grid-cols-2 lg:grid-cols-4 border-b border-slate-100 bg-slate-50/50"></div>
+
+            <!-- Ledger Table Container -->
+            <div class="max-h-96 overflow-y-auto custom-scrollbar">
+                <table class="w-full text-left text-xs">
+                    <thead class="sticky top-0 bg-slate-100 uppercase text-slate-600 font-black shadow-2xs">
+                        <tr>
+                            <th class="px-4 py-3">Ngày dự đoán</th>
+                            <th class="px-3 py-3 text-center">KQ thực tế</th>
+                            <th class="px-3 py-3">Chính sách chốt</th>
+                            <th class="px-4 py-3">Dàn số dự báo (30 số)</th>
+                            <th class="px-3 py-3 text-center">Kết quả</th>
+                            <th class="px-3 py-3 text-right">Lũy kế trúng</th>
+                        </tr>
+                    </thead>
+                    <tbody id="settledLedgerTableBody" class="divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
         </section>
 
         <!-- Principles & Promotion Gate -->

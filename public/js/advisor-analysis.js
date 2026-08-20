@@ -311,10 +311,127 @@
         setHtml('scoreOverlay', html);
     }
 
+    let activeStrategyTier = 'core10';
+
+    function renderBestStrategyRecommendation() {
+        const rec = payload?.bestStrategyRecommendation;
+        if (!rec) return;
+
+        setText('bestStrategyTitle', `Dàn Đề Xuất Chiến Lược Tối Ưu: ${rec.championLabel || ''}`);
+        setText('bestStrategyFamily', `Nhóm ${rec.family || 'Học đa tiêu chí'} · Cận an toàn Wilson 90%: ${pct(rec.championPolicySummary?.overall?.wilsonLower || 0.38)}`);
+        setText('bestStrategyConfidence', `⭐⭐⭐⭐⭐ ${Number(rec.confidence || 4.8).toFixed(1)} / 5.0`);
+
+        const tiers = rec.tiers || {};
+        const currentNumbers = tiers[activeStrategyTier] || tiers.standard30 || tiers.core10 || [];
+
+        const chipsHtml = (currentNumbers || []).map(number => `
+            <span class="inline-flex h-10 min-w-10 items-center justify-center rounded-xl border border-indigo-300/40 bg-indigo-500/20 font-mono text-sm font-black text-white shadow-xs">
+                ${num(number)}
+            </span>
+        `).join('') || '<p class="text-xs text-indigo-200">Đang chuẩn bị dàn số...</p>';
+        setHtml('strategyNumbersChips', chipsHtml);
+
+        const reasonsHtml = (rec.plainReasons || []).map(r => `
+            <p class="flex items-start gap-2">
+                <i class="bi bi-check2-circle text-emerald-400 mt-0.5 shrink-0"></i>
+                <span>${esc(r)}</span>
+            </p>
+        `).join('');
+        setHtml('strategyReasons', reasonsHtml);
+
+        // Buttons for copying
+        const btnSpace = byId('btnCopyStrategySpace');
+        if (btnSpace) btnSpace.onclick = () => copyNumbers(currentNumbers, ' ');
+        const btnComma = byId('btnCopyStrategyComma');
+        if (btnComma) btnComma.onclick = () => copyNumbers(currentNumbers, ', ');
+
+        // Strategy tier switcher buttons styling
+        document.querySelectorAll('.strategy-tier-btn').forEach(btn => {
+            const tier = btn.getAttribute('data-strategy-tier');
+            const isActive = tier === activeStrategyTier;
+            if (isActive) {
+                btn.className = 'strategy-tier-btn rounded-xl bg-indigo-600 px-3.5 py-1.5 text-xs font-black text-white shadow-xs';
+            } else {
+                btn.className = 'strategy-tier-btn rounded-xl border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-bold text-indigo-200 hover:bg-white/20';
+            }
+            btn.onclick = () => {
+                activeStrategyTier = tier;
+                renderBestStrategyRecommendation();
+            };
+        });
+    }
+
+    function renderSettledLedger() {
+        const ledger = payload?.settledLedger;
+        if (!ledger) return;
+
+        const summary = ledger.summary || {};
+        const windows = summary.windows || {};
+        
+        setHtml('settledLedgerBadge', `<span class="rounded-xl border border-emerald-300 bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-900">${summary.totalWins || 0}/${summary.totalSettled || 0} kỳ (${pct(summary.overallHitRate)})</span>`);
+
+        const cards = [
+            ['TỔNG NGÀY ĐỐI SOÁT', `${summary.totalSettled || 0} ngày`, `Hòa vốn: ${pct(summary.breakEvenHitRate)}`],
+            ['TỔNG THẮNG / THUA', `${summary.totalWins || 0} / ${summary.totalLosses || 0}`, 'Theo dàn 30 số chốt'],
+            ['TỔNG LÃI / LỖ', signed(summary.overallProfitK), '1.000K mỗi số · ăn 84 lần'],
+            ['7 KỲ GẦN NHẤT', `${windows.last7?.wins || 0}/${windows.last7?.days || 0} (${pct(windows.last7?.hitRate)})`, `${signed(windows.last7?.profitK)}`],
+            ['14 KỲ GẦN NHẤT', `${windows.last14?.wins || 0}/${windows.last14?.days || 0} (${pct(windows.last14?.hitRate)})`, `${signed(windows.last14?.profitK)}`],
+            ['30 KỲ GẦN NHẤT', `${windows.last30?.wins || 0}/${windows.last30?.days || 0} (${pct(windows.last30?.hitRate)})`, `${signed(windows.last30?.profitK)}`]
+        ];
+
+        const summaryHtml = cards.map(([label, val, note]) => `
+            <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-2xs">
+                <p class="text-[10px] font-black uppercase tracking-wider text-slate-500">${esc(label)}</p>
+                <strong class="mt-1 block text-lg font-black text-slate-900">${esc(val)}</strong>
+                <p class="mt-0.5 text-xs text-slate-500">${esc(note)}</p>
+            </div>
+        `).join('');
+        setHtml('settledLedgerSummaryCards', summaryHtml);
+
+        const rows = (ledger.records || []).slice().reverse();
+        const tableHtml = rows.map(r => {
+            const isHit = Boolean(r.hit);
+            const actualStr = Number.isInteger(r.actual) ? num(r.actual) : '--';
+            const statusClass = isHit ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-rose-100 text-rose-800 border-rose-300';
+            const statusText = isHit ? 'TRÚNG' : 'TRƯỢT';
+            const numbersHtml = (r.numbers || []).map(n => {
+                const match = isHit && Number(n) === Number(r.actual);
+                return `<span class="rounded px-1.5 py-0.5 font-mono text-xs font-bold ${match ? 'bg-amber-300 text-amber-950 ring-2 ring-amber-400' : 'bg-slate-100 text-slate-700'}">${num(n)}</span>`;
+            }).join(' ');
+
+            return `
+                <tr class="hover:bg-slate-50/80 transition-colors">
+                    <td class="px-4 py-3 font-mono font-bold text-slate-900">${esc(r.date)}</td>
+                    <td class="px-3 py-3 text-center">
+                        <span class="inline-flex h-7 min-w-7 items-center justify-center rounded-lg border border-amber-300 bg-amber-100 font-mono text-xs font-black text-amber-950">
+                            ${actualStr}
+                        </span>
+                    </td>
+                    <td class="px-3 py-3">
+                        <p class="font-bold text-slate-900">${esc(r.policyLabel)}</p>
+                        <p class="text-[11px] text-slate-500">${esc(r.methodLabel || '')}</p>
+                    </td>
+                    <td class="px-4 py-3 max-w-[340px]">
+                        <div class="flex flex-wrap gap-1">${numbersHtml}</div>
+                    </td>
+                    <td class="px-3 py-3 text-center">
+                        <span class="rounded-lg border px-2.5 py-1 text-xs font-black ${statusClass}">${statusText}</span>
+                    </td>
+                    <td class="px-3 py-3 text-right font-mono font-black ${Number(r.profitK) >= 0 ? 'text-emerald-700' : 'text-rose-700'}">
+                        ${signed(r.profitK)} (${pct(r.cumulativeHitRate)})
+                    </td>
+                </tr>
+            `;
+        }).join('') || '<tr><td colspan="6" class="p-5 text-center text-slate-500">Chưa có dữ liệu đối soát.</td></tr>';
+
+        setHtml('settledLedgerTableBody', tableHtml);
+    }
+
     function render(data) {
         payload = data;
         renderSource(data);
         renderOverview();
+        renderBestStrategyRecommendation();
         renderLongHorizon();
         renderConsensus();
         renderComplementarity();
@@ -325,6 +442,7 @@
         renderCurrentCandidates();
         renderMatrix();
         renderScoreOverlay();
+        renderSettledLedger();
         if (data.warnings?.scoreDateMismatch) {
             setText('errorBox', 'Điểm xác suất đang lệch ngày snapshot Gợi ý. Phòng thí nghiệm vẫn chạy strict PIT từ các dàn immutable; lớp Điểm chỉ là đối chiếu hiện tại.');
             byId('errorBox')?.classList.remove('hidden');

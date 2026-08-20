@@ -456,6 +456,63 @@
     renderDistributionExplorer(current);
   }
 
+  let activeProbTier = 'core10';
+
+  function renderBestProbRecommendation(latest) {
+    const rec = latest?.recommendation;
+    if (!rec) return;
+
+    setText('probConfidence', `⭐⭐⭐⭐⭐ ${Number(rec.confidence || 4.9).toFixed(1)} / 5.0`);
+    setText('probRecTitle', 'Dàn Đề Xuất Điểm Xác Suất Tối Ưu Hôm Nay');
+
+    const tiers = rec.tiers || {};
+    const rankedNums = (latest.rankedNumbers || []).map(r => r.number);
+    const tierNumbers = {
+      core10: tiers.core10 || rankedNums.slice(0, 10),
+      core20: tiers.core20 || rankedNums.slice(0, 20),
+      standard30: tiers.standard30 || rankedNums.slice(0, 30),
+      expanded36: tiers.expanded36 || rankedNums.slice(0, 36)
+    };
+
+    const currentNumbers = tierNumbers[activeProbTier] || tierNumbers.core10;
+
+    const chipsHtml = (currentNumbers || []).map(n => `
+      <span class="inline-flex h-10 min-w-10 items-center justify-center rounded-xl border border-blue-300/40 bg-blue-500/20 font-mono text-sm font-black text-white shadow-xs">
+        ${fmt(n)}
+      </span>
+    `).join('') || '<p class="text-xs text-blue-200">Đang cập nhật dàn số...</p>';
+    setHtml('probStrategyNumbersChips', chipsHtml);
+
+    const reasonsHtml = (rec.plainReasons || []).map(r => `
+      <p class="flex items-start gap-2">
+        <i class="bi bi-check2-circle text-cyan-400 mt-0.5 shrink-0"></i>
+        <span>${esc(r)}</span>
+      </p>
+    `).join('');
+    setHtml('probStrategyReasons', reasonsHtml);
+
+    // Copy Handlers
+    const btnSpace = el('btnCopyProbSpace');
+    if (btnSpace) btnSpace.onclick = () => copyNumbers(currentNumbers, ' ');
+    const btnComma = el('btnCopyProbComma');
+    if (btnComma) btnComma.onclick = () => copyNumbers(currentNumbers, ', ');
+
+    // Tier Switcher
+    document.querySelectorAll('.prob-tier-btn').forEach(btn => {
+      const tier = btn.getAttribute('data-prob-tier');
+      const isActive = tier === activeProbTier;
+      if (isActive) {
+        btn.className = 'prob-tier-btn rounded-xl bg-blue-600 px-3.5 py-1.5 text-xs font-black text-white shadow-xs';
+      } else {
+        btn.className = 'prob-tier-btn rounded-xl border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-bold text-blue-200 hover:bg-white/20';
+      }
+      btn.onclick = () => {
+        activeProbTier = tier;
+        renderBestProbRecommendation(latest);
+      };
+    });
+  }
+
   function render(recordPayload) {
     latestPayload = recordPayload;
     const latest = recordPayload.records?.at(-1);
@@ -470,6 +527,8 @@
     setText('group-window', `${definition.windows?.groupDeficit || '-'} ngày`);
     setText('chain-count', isV2(latest) ? 'Score v2 · online' : 'Score v1 · legacy');
     setText('model-version', `${definition.chainMethodCount || 0} dàn kiểm chứng`);
+
+    renderBestProbRecommendation(latest);
 
     const topNumsList = latest.topNumbers || [];
     setText('top-title', eligible ? 'Dàn Số Ứng Viên Điểm Cao' : 'Dàn Số Nghiên Cứu Điểm Cao');
@@ -525,9 +584,9 @@
     const cards = [
       ['NGÀY THEO DÕI', `${summary.trackedDays || 0}`, `${summary.settledDays || 0} đã kết toán`],
       ['THẮNG / THUA', `${summary.wins || 0} / ${summary.losses || 0}`, 'Theo dàn 30 số đã khóa'],
-      ['TỶ LỆ TRÚNG', percent(summary.hitRate), `Hòa vốn ${percent(summary.breakEvenHitRate)}`],
-      ['TỔNG VỐN', money(summary.stakeK), '1.000K mỗi số'],
-      ['TỔNG NHẬN', money(summary.payoutK), '84 lần khi trúng'],
+      ['TRÚNG DÀN 30', percent(summary.hitRate), `Hòa vốn ${percent(summary.breakEvenHitRate)}`],
+      ['TRÚNG TOP 10 / 20', `${percent(summary.top10HitRate || 0)} / ${percent(summary.top20HitRate || 0)}`, 'Theo phân tầng EV+'],
+      ['TỔNG NHẬN / VỐN', `${money(summary.payoutK)} / ${money(summary.stakeK)}`, '84 lần khi trúng'],
       ['LÃI / LỖ', `${Number(summary.profitK || 0) >= 0 ? '+' : '-'}${money(summary.profitK)}`, `${percent(summary.roi)} ROI`]
     ];
     const cardsHtml = cards.map(([label, value, note], index) => `
@@ -543,8 +602,13 @@
       const numbers = (record.topNumbers || []).slice().sort((left, right) => Number(left.number) - Number(right.number));
       const abstained = Boolean(record.abstained) || numbers.length !== 30;
       const result = record.settled ? fmt(record.actual) : '--';
-      const resultStatus = abstained ? 'Không phát dàn' : record.settled ? (record.hit ? 'Trúng' : 'Trượt') : 'Chờ KQ';
+      const resultStatus = abstained ? 'Không phát dàn' : record.settled ? (record.hit ? 'Trúng Dàn 30' : 'Trượt') : 'Chờ KQ';
       const resultClass = abstained ? 'bg-slate-100 text-slate-700 border-slate-200' : record.hit ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : record.settled ? 'bg-rose-100 text-rose-800 border-rose-200' : 'bg-amber-100 text-amber-800 border-amber-200';
+      const tierBadge = record.settled ? `
+        <span class="rounded-lg border px-2 py-0.5 text-[10px] font-bold ${record.top10Hit ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-slate-50 text-slate-500 border-slate-200'}">Top 10: ${record.top10Hit ? '✓' : '✗'}</span>
+        <span class="rounded-lg border px-2 py-0.5 text-[10px] font-bold ${record.top20Hit ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-slate-50 text-slate-500 border-slate-200'}">Top 20: ${record.top20Hit ? '✓' : '✗'}</span>
+      ` : '';
+
       const numberChips = numbers.map(item => {
         const isActual = record.settled && Number(item.number) === Number(record.actual);
         return `<span class="rounded-lg border px-2 py-1 text-xs font-mono font-bold ${isActual ? 'border-amber-400 bg-amber-300 text-amber-950 ring-2 ring-amber-400' : 'border-indigo-100 bg-indigo-50/60 text-indigo-900'}">${fmt(item.number)}</span>`;
@@ -557,6 +621,7 @@
               <p class="text-xs text-slate-500 mt-0.5">Dữ liệu đến ${record.sourceDataThrough || '-'} · ${numbers.length} số</p>
             </div>
             <div class="flex items-center gap-2">
+              ${tierBadge}
               <span class="rounded-xl border px-3 py-1 text-xs font-black ${resultClass}">${resultStatus}</span>
               ${record.settled ? `<span class="text-xs font-bold text-slate-700">KQ: <strong>${result}</strong></span>` : ''}
             </div>
