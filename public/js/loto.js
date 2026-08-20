@@ -16,7 +16,7 @@
         performanceVisible: false,
         liveBetCount: DEFAULT_LOTO_BET_COUNT,
         defaultLotoBetCount: DEFAULT_LOTO_BET_COUNT,
-        selectedStrategy: 'dedupEdge75Pit',
+        selectedStrategy: null,
         lotoPayload: null
     };
 
@@ -811,15 +811,25 @@
         }
     }
 
-    async function load() {
+    async function load(options = {}) {
         const errorBox = document.getElementById('errorBox');
         try {
             const selectEl = document.getElementById('lotoStrategySelect');
-            const strat = selectEl ? selectEl.value : 'dedupEdge75Pit';
-            state.selectedStrategy = strat;
-            const res = await fetch(`/api/loto/prediction?strategy=${strat}`, { cache: 'no-store' });
+            const requestedStrategy = options.strategy || null;
+            const query = requestedStrategy
+                ? `?strategy=${encodeURIComponent(requestedStrategy)}`
+                : '';
+            const res = await fetch(`/api/loto/prediction${query}`, { cache: 'no-store' });
             const data = await res.json();
             if (!res.ok || !data.success) throw new Error(data.error || 'Không tải được dữ liệu Lô.');
+            const resolvedStrategy = data.config?.strategy
+                || data.defaultSelection?.strategy
+                || requestedStrategy
+                || 'dedupEdge75Pit';
+            state.selectedStrategy = resolvedStrategy;
+            if (selectEl && LOTO_STRATEGIES.includes(resolvedStrategy)) {
+                selectEl.value = resolvedStrategy;
+            }
             errorBox.classList.add('hidden');
             state.lotoPayload = data;
             state.defaultLotoBetCount = getBestLotoBetCount(data);
@@ -843,7 +853,7 @@
             selectEl.addEventListener('change', () => {
                 state.performanceVisible = false;
                 state.performancePayload = null;
-                load();
+                load({ strategy: selectEl.value });
             });
         }
     });

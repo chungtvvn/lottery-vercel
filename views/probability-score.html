@@ -1,54 +1,251 @@
 <!doctype html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Điểm xác suất | XSMB Stats</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>body{font-family:Inter,ui-sans-serif,system-ui;background:#f4f7fb;color:#172033}.num{min-width:48px}.grade-a{background:#e7f8ed;border-color:#72d69b;color:#076b42}.grade-b{background:#eef5ff;border-color:#94bff8;color:#1455a4}.grade-c{background:#fff8e8;border-color:#e9c36b;color:#8e5a06}.score-card{box-shadow:0 14px 32px rgba(31,54,87,.08)}.probability-matrix{display:grid;grid-template-columns:repeat(10,minmax(34px,1fr));gap:6px}.probability-cell{aspect-ratio:1;min-width:0}.distribution-bar{height:8px;border-radius:3px;overflow:hidden;background:#e8eef6}.distribution-bar>span{display:block;height:100%;border-radius:inherit;transition:width .35s ease}@media(max-width:640px){.probability-matrix{gap:3px}.probability-cell{font-size:11px}}</style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    body { font-family: Inter, ui-sans-serif, system-ui; background: #f8fafc; color: #1e293b; }
+    .probability-matrix { display: grid; grid-template-columns: repeat(10, minmax(32px, 1fr)); gap: 6px; }
+    .probability-cell { aspect-ratio: 1; min-width: 0; }
+    .distribution-bar { height: 8px; border-radius: 4px; overflow: hidden; background: #e2e8f0; }
+    .distribution-bar > span { display: block; height: 100%; border-radius: inherit; transition: width .35s ease; }
+    @media(max-width: 640px) {
+      .probability-matrix { gap: 3px; }
+      .probability-cell { font-size: 11px; }
+    }
+  </style>
 </head>
-<body class="min-h-screen">
-  <header class="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur"><div class="mx-auto flex max-w-[1500px] items-center justify-between px-5 py-4"><a href="/statistics" class="text-xl font-extrabold text-slate-900">XSMB <span class="text-blue-600">Stats</span></a><nav class="flex gap-4 text-sm font-semibold text-slate-600"><a href="/statistics">Thống kê</a><a href="/records">Kỷ lục</a><a href="/milestone-20y">Mốc 20 năm</a><a class="text-blue-700" href="/daily-advisor">Gợi ý</a></nav></div></header>
-  <main class="mx-auto max-w-[1500px] p-5 md:p-8">
-    <div class="mb-5 inline-flex rounded-xl border border-slate-200 bg-white p-1 shadow-sm" aria-label="Tab Gợi ý"><a href="/daily-advisor" class="rounded-lg px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100">Phương pháp gợi ý</a><a href="/advisor-analysis" class="rounded-lg px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100">Phân tích lựa chọn</a><a href="/probability-score" class="rounded-lg bg-blue-700 px-4 py-2 text-sm font-bold text-white">Điểm xác suất</a></div>
-    <section class="rounded-2xl bg-gradient-to-r from-blue-700 via-cyan-700 to-emerald-600 p-7 text-white score-card"><p class="text-xs font-bold tracking-[.24em] text-blue-100">TOÀN BỘ LỊCH SỬ · SNAPSHOT BẤT BIẾN</p><h1 class="mt-2 text-3xl font-extrabold">Điểm xác suất tương đối</h1><p class="mt-3 max-w-4xl text-blue-50">Score v2 học tuần tự từ toàn bộ raw lịch sử trước ngày dự đoán, rồi xếp hạng 00–99 bằng nhóm số khử tương quan, tần suất empirical-Bayes, hazard gap làm mượt và đồng thuận chuỗi đã kiểm chứng. Nhật ký snapshot chỉ dùng để kiểm toán dàn đã phát hành, không phải giới hạn dữ liệu huấn luyện.</p><span id="model-stage" class="mt-4 inline-flex rounded-full border border-white/30 bg-white/15 px-3 py-1 text-xs font-extrabold">Đang tải trạng thái kiểm định...</span></section>
-    <section id="status" class="mt-5 rounded-xl border border-slate-200 bg-white p-5 text-slate-600 score-card">Đang tải snapshot từ R2...</section>
-    <section class="mt-5 grid gap-4 lg:grid-cols-4"><article class="rounded-xl border border-slate-200 bg-white p-5 score-card"><p class="text-xs font-bold text-slate-500">NGÀY DỰ ĐOÁN</p><strong id="prediction-date" class="mt-2 block text-2xl">-</strong><p id="source-date" class="mt-1 text-sm text-slate-500"></p></article><article class="rounded-xl border border-slate-200 bg-white p-5 score-card"><p class="text-xs font-bold text-slate-500">DÀN NGHIÊN CỨU</p><strong id="bet-count" class="mt-2 block text-2xl">30 số</strong><p class="mt-1 text-sm text-slate-500">Chỉ theo dõi đến khi qua cổng calibration</p></article><article class="rounded-xl border border-slate-200 bg-white p-5 score-card"><p class="text-xs font-bold text-slate-500">CỬA SỔ NHÓM</p><strong id="group-window" class="mt-2 block text-2xl">-</strong><p class="mt-1 text-sm text-slate-500">Phiên quan sát trước ngày dự đoán</p></article><article class="rounded-xl border border-slate-200 bg-white p-5 score-card"><p class="text-xs font-bold text-slate-500">ĐỒNG THUẬN CHUỖI</p><strong id="chain-count" class="mt-2 block text-2xl">-</strong><p id="model-version" class="mt-1 text-sm text-slate-500">-</p></article></section>
-    <section class="mt-5 rounded-2xl border border-slate-200 bg-white p-5 score-card"><div class="mb-3"><h2 class="text-lg font-bold">Kiểm định calibration và cổng áp dụng</h2><p class="mt-1 text-sm text-slate-500">Cổng yêu cầu tối thiểu 90 ngày, Wilson lower không thấp hơn điểm hòa vốn và log loss không kém phân phối đều. Qua cổng này chưa đồng nghĩa được đưa vào vận hành; còn cần kiểm chứng ở các holdout độc lập.</p></div><div id="calibration-gate"></div></section>
-    <section class="mt-5 overflow-hidden rounded-2xl border border-blue-200 bg-white score-card">
-      <div class="border-b border-blue-100 bg-blue-50/70 p-5"><p class="text-xs font-bold uppercase tracking-[.18em] text-blue-700">Walk-forward trên toàn bộ raw</p><h2 class="mt-1 text-xl font-bold text-slate-900">Phân tích lịch sử Score v2</h2><p class="mt-2 max-w-5xl text-sm leading-6 text-slate-600">Mỗi kỳ D được dự báo bằng toàn bộ dữ liệu từ đầu lịch sử đến D-1. Kết quả chỉ được dùng để cập nhật mô hình sau khi dàn của D đã khóa. Phần này là báo cáo nghiên cứu dài hạn; nhật ký snapshot thực tế bên dưới vẫn bất biến.</p></div>
-      <div id="historical-analysis-status" class="border-b border-slate-100 p-5 text-sm text-slate-600">Đang tải phân tích toàn bộ lịch sử...</div>
-      <div id="historical-analysis-cards" class="grid gap-4 p-5 md:grid-cols-2 xl:grid-cols-4"></div>
-      <div class="grid gap-5 border-t border-blue-100 p-5 xl:grid-cols-[1.2fr_.8fr]"><article><h3 class="text-sm font-bold uppercase tracking-wide text-slate-600">Hiệu quả theo năm</h3><div id="historical-yearly" class="mt-3 overflow-hidden rounded-xl border border-slate-200"></div></article><article><h3 class="text-sm font-bold uppercase tracking-wide text-slate-600">Các kỳ gần nhất</h3><div id="historical-recent" class="mt-3 overflow-hidden rounded-xl border border-slate-200"></div></article></div>
-    </section>
-    <section class="mt-5 rounded-2xl border border-cyan-200 bg-white score-card">
-      <div class="border-b border-cyan-100 bg-cyan-50/70 p-5">
-        <p class="text-xs font-bold uppercase tracking-[.18em] text-cyan-700">Lớp nghiên cứu độc lập</p>
-        <h2 class="mt-1 text-xl font-bold text-slate-900">Phân bổ nhóm số theo trục ngữ nghĩa</h2>
-        <p class="mt-2 max-w-5xl text-sm leading-6 text-slate-600">Mỗi trục là một phân hoạch rời nhau phủ đủ 00–99: chẵn/lẻ, bốn khoảng 00–24 · 25–49 · 50–74 · 75–99, chẵn-lẻ đầu/đít, đầu-to/đít-nhỏ, đầu, đít, tổng, hiệu và loại số. Hệ thống so sánh chuyển tiếp một bước, ngữ cảnh hai trạng thái liên tiếp và độ lệch gần đây; mọi tín hiệu đều được kiểm định prequential trước ngày dự đoán. Các trục tương quan cùng họ chia sẻ ngân sách bằng chứng để không cộng lặp một hiện tượng dưới nhiều tên.</p>
-      </div>
-      <div id="distribution-status" class="border-b border-slate-100 p-5 text-sm text-slate-600">Đang tải lớp phân bổ nhóm...</div>
-      <div id="distribution-signals" class="grid gap-4 p-5 md:grid-cols-2 xl:grid-cols-3"></div>
-      <div id="distribution-explorer" class="border-t border-cyan-100 p-5">
-        <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-          <div><p class="text-xs font-bold uppercase tracking-[.16em] text-cyan-700">Biểu đồ phân bổ có co rút</p><h3 class="mt-1 text-lg font-bold text-slate-900">So sánh lịch sử, 90 ngày và dự báo nhóm kế tiếp</h3><p class="mt-1 max-w-4xl text-sm leading-6 text-slate-500">Dự báo là xác suất của nhóm trên từng trục, không phải xác suất trực tiếp của một số. Mỗi trục phủ 00–99 đúng một lần; các trục cùng họ được chia sẻ trọng số để hạn chế đếm lặp.</p></div>
-          <label class="text-sm font-bold text-slate-700">Trục phân bổ<select id="distribution-axis-select" class="mt-1 block min-w-64 rounded-lg border border-slate-300 bg-white px-3 py-2 font-semibold"></select></label>
+<body class="min-h-screen antialiased selection:bg-indigo-500 selection:text-white">
+  <!-- Header Navigation -->
+  <header class="nav-glass-blur sticky top-0 z-40 mb-8 w-full border-b border-slate-200/80 bg-white/90 backdrop-blur-md">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="flex h-16 items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 shadow-md shadow-indigo-500/20">
+            <i class="bi bi-stars text-xl text-white"></i>
+          </div>
+          <a href="/statistics" class="text-xl font-black tracking-tight text-slate-900">
+            XSMB <span class="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text font-extrabold text-transparent">Stats</span>
+          </a>
         </div>
-        <div class="mt-5 grid gap-5 xl:grid-cols-[1.15fr_.85fr]">
-          <article class="rounded-xl border border-slate-200 bg-slate-50/60 p-4"><div id="distribution-axis-detail"></div></article>
-          <article class="rounded-xl border border-slate-200 bg-white p-4"><div class="flex flex-wrap items-start justify-between gap-2"><div><h4 class="font-bold text-slate-900">Ma trận xác suất tương đối 00–99</h4><p class="mt-1 text-xs leading-5 text-slate-500">Màu đậm hơn là hạng cao hơn trong lane phân bổ; rê chuột để xem bằng chứng nhóm. Đây không phải xác suất tuyệt đối.</p></div><span class="rounded-md bg-slate-100 px-2 py-1 text-xs font-bold text-slate-600">10 × 10</span></div><div id="distribution-number-matrix" class="probability-matrix mt-4"></div><div class="mt-3 flex items-center gap-2 text-xs text-slate-500"><span>Thấp</span><span class="h-2 flex-1 rounded-full bg-gradient-to-r from-slate-100 via-cyan-200 to-emerald-600"></span><span>Cao</span></div></article>
+        <nav class="hidden space-x-1 md:flex">
+          <a href="/statistics" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Thống kê</a>
+          <a href="/records" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Kỷ lục</a>
+          <a href="/chain-frequency" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Mốc 20 năm</a>
+          <a href="/simulation" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Lịch sử</a>
+          <a href="/loto" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Lô</a>
+          <a href="/daily-advisor" class="nav-link-custom active px-3 py-2 text-sm font-semibold whitespace-nowrap">Gợi ý</a>
+          <a href="/settings" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">⚙️</a>
+        </nav>
+        <div class="flex md:hidden">
+          <nav class="flex max-w-[290px] space-x-1 overflow-x-auto py-1 custom-scrollbar">
+            <a href="/statistics" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Thống kê</a>
+            <a href="/chain-frequency" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Mốc 20 năm</a>
+            <a href="/simulation" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Lịch sử</a>
+            <a href="/loto" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Lô</a>
+            <a href="/daily-advisor" class="nav-link-custom active px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap">Gợi ý</a>
+          </nav>
         </div>
       </div>
-    </section>
-    <section class="mt-5 rounded-2xl border border-violet-200 bg-white score-card">
-      <div class="border-b border-violet-100 bg-violet-50/70 p-5">
-        <p class="text-xs font-bold uppercase tracking-[.18em] text-violet-700">So sánh strict point-in-time</p>
-        <h2 class="mt-1 text-xl font-bold text-slate-900">Kiểm định phân bổ, Score v2 và đồng thuận dàn</h2>
-        <p class="mt-2 max-w-5xl text-sm leading-6 text-slate-600">Báo cáo tách development, validation và holdout. Đồng thuận chỉ dùng rank của hai dàn đã sinh trước khi biết kết quả cùng ngày; tỷ lệ phủ chung dùng để đo tính bổ sung, không đồng nghĩa được gộp vốn hoặc tự đổi dàn production.</p>
+    </div>
+  </header>
+
+  <!-- Toast Notification Container -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-2xl border border-emerald-500/20 bg-slate-900/90 px-4 py-3 text-sm font-bold text-white shadow-2xl backdrop-blur-md transition-all duration-300 transform translate-y-10 opacity-0 pointer-events-none">
+    <i class="bi bi-check-circle-fill text-emerald-400 text-lg"></i>
+    <span id="toastMessage">Đã sao chép vào bộ nhớ đệm!</span>
+  </div>
+
+  <main class="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
+    <!-- Subtabs Navigation -->
+    <div class="mb-6 flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-sm" aria-label="Tab Gợi ý">
+      <a href="/daily-advisor" class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors">
+        <i class="bi bi-bullseye"></i> Gợi ý thực chiến
+      </a>
+      <a href="/advisor-analysis" class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors">
+        <i class="bi bi-graph-up-arrow"></i> Phân tích lựa chọn
+      </a>
+      <a href="/probability-score" class="flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm">
+        <i class="bi bi-grid-3x3-gap"></i> Điểm xác suất
+      </a>
+    </div>
+
+    <!-- Hero Banner -->
+    <section class="mb-6 overflow-hidden rounded-3xl border border-blue-200 bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 p-6 sm:p-8 text-white shadow-xl">
+      <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <span class="inline-flex items-center gap-1.5 rounded-full border border-blue-400/30 bg-blue-500/20 px-3.5 py-1 text-xs font-black uppercase tracking-wider text-blue-200">
+            <i class="bi bi-cpu-fill text-blue-300"></i> TOÀN BỘ LỊCH SỬ 20 NĂM · SCORE V2
+          </span>
+          <h1 class="mt-3 text-2xl sm:text-3xl font-black">Điểm Xác Suất Tương Đối 100 Số</h1>
+          <p class="mt-2 max-w-4xl text-sm leading-relaxed text-blue-100/90">
+            Mô hình Score v2 học tuần tự từ toàn bộ lịch sử trước ngày dự đoán, xếp hạng 00–99 bằng nhóm số khử tương quan, tần suất Empirical-Bayes, Hazard Gap làm mượt và đồng thuận chuỗi.
+          </p>
+        </div>
+        <span id="model-stage" class="inline-flex shrink-0 rounded-2xl border border-white/20 bg-white/10 px-4 py-2 text-xs font-black backdrop-blur-sm">
+          Đang tải trạng thái...
+        </span>
       </div>
-      <div id="distribution-research" class="p-5 text-sm text-slate-600">Báo cáo strict PIT đang tải...</div>
     </section>
-    <section class="mt-5 rounded-2xl border border-slate-200 bg-white score-card"><div class="border-b border-slate-100 px-5 py-4"><h2 class="text-lg font-bold">Tổng hợp kết quả snapshot thực tế</h2><p class="mt-1 text-sm text-slate-500">Chỉ bao gồm các snapshot đã phát hành; không tính lại dàn số sau quay.</p></div><div id="performance-summary" class="grid gap-4 p-5 md:grid-cols-3 xl:grid-cols-6"></div></section>
-    <section class="mt-5 grid gap-5 xl:grid-cols-[1.35fr_.65fr]"><article class="rounded-2xl border border-slate-200 bg-white score-card"><div class="border-b border-slate-100 p-5"><h2 id="top-title" class="text-xl font-bold">Dàn số nghiên cứu</h2><p id="top-description" class="mt-1 text-sm text-slate-500">Bấm vào số để xem thành phần điểm và bằng chứng point-in-time.</p></div><div id="top-numbers" class="flex flex-wrap gap-3 p-5"></div><div id="number-detail" class="mx-5 mb-5 hidden rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm"></div></article><article class="rounded-2xl border border-slate-200 bg-white score-card"><div class="border-b border-slate-100 p-5"><h2 class="text-xl font-bold">Trọng số tổng hợp</h2></div><div id="weights" class="space-y-3 p-5 text-sm"></div><div class="mx-5 mb-5 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">Snapshot bất biến chỉ được kết toán sau quay. Hệ thống không tính lại dàn cũ bằng dữ liệu tương lai và không tự cộng score v2 vào gợi ý khi chưa qua cổng kiểm định.</div></article></section>
-    <section class="mt-5 grid gap-5 xl:grid-cols-2"><article class="rounded-2xl border border-slate-200 bg-white score-card"><div class="border-b border-slate-100 p-5"><h2 class="text-xl font-bold">Nhóm dạng số có residual</h2><p class="mt-1 text-sm text-slate-500">Nhóm được khử trùng theo tập số để hạn chế đếm lặp bằng chứng; chỉ là tín hiệu hỗ trợ.</p></div><div id="groups" class="divide-y divide-slate-100"></div></article><article class="rounded-2xl border border-slate-200 bg-white score-card"><div class="border-b border-slate-100 p-5"><h2 class="text-xl font-bold">Nhật ký snapshot thực tế</h2><p class="mt-1 text-sm text-slate-500">Hiển thị toàn bộ dàn đã phát hành và kết quả Đề sau quay.</p></div><div id="history" class="divide-y divide-slate-100"></div></article></section>
-  </main><script src="/js/probability-score.js"></script>
-</body></html>
+
+    <div id="status" class="mb-6 hidden rounded-2xl border border-slate-200 bg-white p-4 text-xs font-bold text-slate-600 shadow-sm"></div>
+
+    <!-- Stats Overview Cards -->
+    <section class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+        <p class="text-[11px] font-black uppercase tracking-wider text-slate-500">NGÀY DỰ ĐOÁN</p>
+        <strong id="prediction-date" class="mt-1.5 block text-2xl font-black text-slate-900">-</strong>
+        <p id="source-date" class="mt-1 text-xs font-semibold text-slate-500"></p>
+      </article>
+      <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+        <p class="text-[11px] font-black uppercase tracking-wider text-slate-500">DÀN NGHIÊN CỨU</p>
+        <strong id="bet-count" class="mt-1.5 block text-2xl font-black text-slate-900">30 số</strong>
+        <p class="mt-1 text-xs font-semibold text-slate-500">Kiểm định walk-forward</p>
+      </article>
+      <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+        <p class="text-[11px] font-black uppercase tracking-wider text-slate-500">CỬA SỔ NHÓM</p>
+        <strong id="group-window" class="mt-1.5 block text-2xl font-black text-slate-900">-</strong>
+        <p class="mt-1 text-xs font-semibold text-slate-500">Phiên quan sát trước dự đoán</p>
+      </article>
+      <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+        <p class="text-[11px] font-black uppercase tracking-wider text-slate-500">PHIÊN BẢN MÔ HÌNH</p>
+        <strong id="chain-count" class="mt-1.5 block text-2xl font-black text-slate-900">-</strong>
+        <p id="model-version" class="mt-1 text-xs font-semibold text-slate-500">-</p>
+      </article>
+    </section>
+
+    <!-- Calibration & Verification Gate -->
+    <section class="mb-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div class="mb-4">
+        <h2 class="text-base font-black text-slate-900">Kiểm Định Calibration & Cổng Áp Dụng</h2>
+        <p class="mt-0.5 text-xs text-slate-500">Yêu cầu tối thiểu 90 ngày, Wilson lower không thấp hơn hòa vốn (35.7%) và log-loss tốt hơn phân phối đều.</p>
+      </div>
+      <div id="calibration-gate"></div>
+    </section>
+
+    <!-- Interactive 10x10 Matrix & Top Number Copy Section -->
+    <section class="mb-6 rounded-3xl border border-indigo-200 bg-white p-6 shadow-sm">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-5">
+        <div>
+          <span class="rounded-full bg-indigo-100 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-indigo-700">TRỰC QUAN HÓA MA TRẬN 10X10</span>
+          <h2 class="mt-2 text-xl font-black text-slate-900">Ma Trận Điểm Xác Suất 100 Số (00 - 99)</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Màu càng đậm thể hiện điểm số hội tụ càng cao. Bấm vào ô số để xem chi tiết bóc tách thành phần.</p>
+        </div>
+
+        <!-- Quick 1-Click Copy Buttons -->
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="btnCopyTop10" class="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 px-3.5 py-2 text-xs font-black text-slate-950 shadow-xs hover:from-amber-600 hover:to-yellow-600 transition-all">
+            <i class="bi bi-star-fill"></i> Copy Top 10 VIP
+          </button>
+          <button id="btnCopyTop20" class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-indigo-700 transition-all">
+            Copy Top 20
+          </button>
+          <button id="btnCopyTop30" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-xs hover:bg-slate-50 transition-all">
+            Copy Top 30
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Number Filter -->
+      <div class="mt-4 flex flex-wrap items-center gap-1.5 text-xs">
+        <span class="font-bold text-slate-500 mr-1">Lọc ma trận:</span>
+        <button data-mat-filter="all" class="mat-filter-btn rounded-lg border border-slate-200 bg-indigo-600 px-2.5 py-1 font-bold text-white">Tất cả</button>
+        <button data-mat-filter="top10" class="mat-filter-btn rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-semibold text-slate-700">Top 10</button>
+        <button data-mat-filter="top20" class="mat-filter-btn rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-semibold text-slate-700">Top 20</button>
+        <button data-mat-filter="top30" class="mat-filter-btn rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-semibold text-slate-700">Top 30</button>
+        <button data-mat-filter="even_even" class="mat-filter-btn rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-semibold text-slate-700">Chẵn-Chẵn</button>
+        <button data-mat-filter="odd_odd" class="mat-filter-btn rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-semibold text-slate-700">Lẻ-Lẻ</button>
+        <button data-mat-filter="sum_even" class="mat-filter-btn rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-semibold text-slate-700">Tổng Chẵn</button>
+        <button data-mat-filter="sum_odd" class="mat-filter-btn rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-semibold text-slate-700">Tổng Lẻ</button>
+      </div>
+
+      <!-- 10x10 Heatmap Grid -->
+      <div class="mt-5 rounded-2xl border border-slate-200/80 bg-slate-50/50 p-4">
+        <div id="distribution-number-matrix" class="probability-matrix"></div>
+        <div class="mt-4 flex items-center justify-between text-xs text-slate-500">
+          <span>0 Điểm (Thấp)</span>
+          <div class="mx-4 h-2.5 flex-1 rounded-full bg-gradient-to-r from-slate-100 via-indigo-200 to-indigo-700 border border-slate-200"></div>
+          <span>100 Điểm (Cao nhất)</span>
+        </div>
+      </div>
+
+      <!-- Number Click Detail Box -->
+      <div id="number-detail" class="mt-4 hidden rounded-2xl border border-indigo-200 bg-indigo-50/80 p-4 text-xs"></div>
+    </section>
+
+    <!-- Top Ranked Numbers List -->
+    <section class="mb-6 grid gap-6 xl:grid-cols-[1.35fr_.65fr]">
+      <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="border-b border-slate-100 pb-4">
+          <h2 id="top-title" class="text-lg font-black text-slate-900">Dàn Số Điểm Cao Nhất Hôm Nay</h2>
+          <p id="top-description" class="mt-0.5 text-xs text-slate-500">Bấm vào từng số để xem thành phần điểm chi tiết.</p>
+        </div>
+        <div id="top-numbers" class="mt-4 flex flex-wrap gap-2"></div>
+      </article>
+
+      <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="border-b border-slate-100 pb-4">
+          <h2 class="text-lg font-black text-slate-900">Trọng Số Thành Phần</h2>
+        </div>
+        <div id="weights" class="mt-4 space-y-2.5 text-xs"></div>
+      </article>
+    </section>
+
+    <!-- Historical Walk-Forward Analysis -->
+    <section class="mb-6 overflow-hidden rounded-3xl border border-blue-200 bg-white shadow-sm">
+      <div class="border-b border-blue-100 bg-blue-50/70 p-6">
+        <p class="text-xs font-black uppercase tracking-wider text-blue-700">WALK-FORWARD TRÊN TOÀN BỘ RAW</p>
+        <h2 class="mt-1 text-lg font-black text-slate-900">Hiệu Suất Lịch Sử Mô Hình Score v2</h2>
+        <p class="mt-1 text-xs text-slate-600">Mỗi kỳ D được dự báo chỉ bằng dữ liệu đến D-1.</p>
+      </div>
+      <div id="historical-analysis-status" class="border-b border-slate-100 p-4 text-xs text-slate-600">Đang tải phân tích lịch sử...</div>
+      <div id="historical-analysis-cards" class="grid gap-3 p-6 sm:grid-cols-2 lg:grid-cols-4"></div>
+      <div class="grid gap-6 border-t border-slate-100 p-6 lg:grid-cols-[1.2fr_.8fr]">
+        <article>
+          <h3 class="text-xs font-black uppercase tracking-wider text-slate-600">Hiệu quả theo năm</h3>
+          <div id="historical-yearly" class="mt-3 overflow-hidden rounded-2xl border border-slate-200"></div>
+        </article>
+        <article>
+          <h3 class="text-xs font-black uppercase tracking-wider text-slate-600">Các kỳ gần nhất</h3>
+          <div id="historical-recent" class="mt-3 overflow-hidden rounded-2xl border border-slate-200"></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Semantic Distribution Axis Explorer -->
+    <section class="mb-6 rounded-3xl border border-cyan-200 bg-white p-6 shadow-sm">
+      <div class="flex flex-col gap-3 border-b border-slate-100 pb-5 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <span class="rounded-full bg-cyan-100 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-cyan-800">TRỤC NGỮ NGHĨA</span>
+          <h2 class="mt-2 text-lg font-black text-slate-900">Phân Bổ Nhóm Số Theo Trục</h2>
+        </div>
+        <label class="text-xs font-bold text-slate-700 flex items-center gap-2">
+          Chọn trục:
+          <select id="distribution-axis-select" class="rounded-xl border border-slate-300 bg-white px-3 py-1.5 font-semibold text-xs shadow-xs"></select>
+        </label>
+      </div>
+      <div id="distribution-status" class="mt-3 text-xs text-slate-500"></div>
+      <div id="distribution-signals" class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3"></div>
+      <div class="mt-4 rounded-2xl border border-slate-200 bg-slate-50/50 p-4">
+        <div id="distribution-axis-detail"></div>
+      </div>
+    </section>
+
+    <!-- Actual Snapshot History -->
+    <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div class="border-b border-slate-100 pb-4">
+        <h2 class="text-lg font-black text-slate-900">Nhật Ký Snapshot Thực Tế Đã Kết Toán</h2>
+        <p class="mt-0.5 text-xs text-slate-500">Hiển thị kết quả đối soát thực tế sau giờ quay.</p>
+      </div>
+      <div id="performance-summary" class="mt-4 grid gap-3 sm:grid-cols-3 lg:grid-cols-6"></div>
+      <div id="history" class="mt-4 divide-y divide-slate-100"></div>
+    </section>
+  </main>
+
+  <script src="/js/probability-score.js"></script>
+</body>
+</html>

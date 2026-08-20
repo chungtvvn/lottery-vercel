@@ -17,6 +17,41 @@
     let activeSort = 'profit';
     let activePolicyId = null;
     let activeLongMethodId = null;
+    let activeFamily = 'all';
+
+    function showToast(msg) {
+        let toast = byId('advisorAnalysisToast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'advisorAnalysisToast';
+            toast.className = 'fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-2xl border border-emerald-300 bg-emerald-900 px-5 py-3.5 text-sm font-black text-white shadow-2xl transition-all duration-300 opacity-0 translate-y-4';
+            document.body.appendChild(toast);
+        }
+        toast.innerHTML = `<i class="bi bi-check-circle-fill text-emerald-300 text-lg"></i><span>${esc(msg)}</span>`;
+        toast.classList.remove('opacity-0', 'translate-y-4');
+        toast.classList.add('opacity-100', 'translate-y-0');
+        clearTimeout(toast._timeout);
+        toast._timeout = setTimeout(() => {
+            toast.classList.add('opacity-0', 'translate-y-4');
+            toast.classList.remove('opacity-100', 'translate-y-0');
+        }, 2200);
+    }
+
+    function copyNumbers(numbers, sep = ' ') {
+        if (!numbers || !numbers.length) return;
+        const text = numbers.map(num).join(sep);
+        navigator.clipboard.writeText(text).then(() => {
+            showToast(`Đã sao chép ${numbers.length} số thành công!`);
+        }).catch(() => {
+            const temp = document.createElement('textarea');
+            temp.value = text;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+            showToast(`Đã sao chép ${numbers.length} số!`);
+        });
+    }
 
     function reportFor(policy) {
         if (activeWindow === 'last14') return policy.windows?.last14 || {};
@@ -32,7 +67,10 @@
     }
 
     function sortedPolicies() {
-        const policies = [...(payload?.researchReport?.policies || [])];
+        let policies = [...(payload?.researchReport?.policies || [])];
+        if (activeFamily !== 'all') {
+            policies = policies.filter(p => p.family === activeFamily);
+        }
         return policies.sort((left, right) => {
             const a = reportFor(left);
             const b = reportFor(right);
@@ -212,8 +250,21 @@
             const missingMessage = candidate.abstained
                 ? 'Các điều kiện posterior, EWMA hoặc cận Wilson chưa đồng thời vượt hòa vốn nên chính sách không phát dàn cho ngày này.'
                 : 'Snapshot hiện tại chỉ lưu dàn chính. Action kế tiếp sẽ lưu đồng thời các dàn ứng viên, không tái tính số của ngày này để tránh thay đổi dự đoán đã phát hành.';
-            return `<article class="border ${candidate.isProduction ? 'border-emerald-400 bg-emerald-50/40' : 'border-slate-200 bg-white'} p-4 shadow-sm"><div class="flex items-start justify-between gap-3"><div><p class="text-xs font-black uppercase tracking-wide ${candidate.isProduction ? 'text-emerald-700' : 'text-slate-500'}">${candidate.isProduction ? 'Dàn production đã khóa' : esc(candidate.family)}</p><h3 class="mt-1 font-black text-slate-900">${esc(candidate.label)}</h3><p class="mt-1 text-sm text-slate-600">${esc(candidate.methodLabel)}</p></div><span class="rounded-md ${candidate.numbersAvailable ? 'bg-slate-100 text-slate-700' : candidate.abstained ? 'bg-sky-100 text-sky-800' : 'bg-amber-100 text-amber-800'} px-2 py-1 text-xs font-black">${badge}</span></div><p class="mt-2 text-xs text-slate-500">Nguồn: ${esc(candidate.source)} · điểm chọn ${Number(candidate.selectionScore || 0).toFixed(3)}</p>${candidate.numbersAvailable ? `<div class="mt-4 flex flex-wrap gap-1.5">${numberChips(candidate.numbers)}</div>` : `<p class="mt-4 rounded-md border ${candidate.abstained ? 'border-sky-200 bg-sky-50 text-sky-800' : 'border-amber-200 bg-amber-50 text-amber-800'} p-3 text-sm leading-5">${esc(missingMessage)}</p>`}</article>`;
+            const copyBtn = candidate.numbersAvailable && candidate.numbers?.length ? `
+                <button type="button" data-copy-candidate="${esc(candidate.id)}" class="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-700 hover:bg-indigo-100 shadow-xs">
+                    <i class="bi bi-clipboard"></i> Sao chép ${candidate.numbers.length} số
+                </button>
+            ` : '';
+            return `<article class="border ${candidate.isProduction ? 'border-emerald-400 bg-emerald-50/40' : 'border-slate-200 bg-white'} p-4 shadow-sm"><div class="flex items-start justify-between gap-3"><div><p class="text-xs font-black uppercase tracking-wide ${candidate.isProduction ? 'text-emerald-700' : 'text-slate-500'}">${candidate.isProduction ? 'Dàn production đã khóa' : esc(candidate.family)}</p><h3 class="mt-1 font-black text-slate-900">${esc(candidate.label)}</h3><p class="mt-1 text-sm text-slate-600">${esc(candidate.methodLabel)}</p></div><div class="flex flex-col items-end gap-1.5"><span class="rounded-md ${candidate.numbersAvailable ? 'bg-slate-100 text-slate-700' : candidate.abstained ? 'bg-sky-100 text-sky-800' : 'bg-amber-100 text-amber-800'} px-2 py-1 text-xs font-black">${badge}</span>${copyBtn}</div></div><p class="mt-2 text-xs text-slate-500">Nguồn: ${esc(candidate.source)} · điểm chọn ${Number(candidate.selectionScore || 0).toFixed(3)}</p>${candidate.numbersAvailable ? `<div class="mt-4 flex flex-wrap gap-1.5">${numberChips(candidate.numbers)}</div>` : `<p class="mt-4 rounded-md border ${candidate.abstained ? 'border-sky-200 bg-sky-50 text-sky-800' : 'border-amber-200 bg-amber-50 text-amber-800'} p-3 text-sm leading-5">${esc(missingMessage)}</p>`}</article>`;
         }).join('') || '<p class="text-sm text-slate-500">Chưa có ứng viên cho ngày dự đoán.</p>';
+
+        document.querySelectorAll('[data-copy-candidate]').forEach(btn => {
+            btn.onclick = () => {
+                const candId = btn.getAttribute('data-copy-candidate');
+                const cand = (payload.currentCandidates || []).find(c => c.id === candId);
+                if (cand && cand.numbers) copyNumbers(cand.numbers, ' ');
+            };
+        });
     }
 
     function renderMatrix() {
@@ -253,6 +304,20 @@
     }
 
     document.addEventListener('click', event => {
+        const familyBtn = event.target.closest('.policy-family-btn');
+        if (familyBtn) {
+            document.querySelectorAll('.policy-family-btn').forEach(btn => {
+                btn.className = 'policy-family-btn rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100';
+            });
+            familyBtn.className = 'policy-family-btn rounded-lg bg-indigo-600 px-3 py-1 text-xs font-bold text-white shadow-xs';
+            activeFamily = familyBtn.getAttribute('data-family') || 'all';
+            activePolicyId = null;
+            renderLeaderboard();
+            renderPerformanceTrace();
+            renderPeriods();
+            return;
+        }
+
         const button = event.target.closest('[data-window], [data-policy], [data-long-method]');
         if (!button || !payload) return;
         if (button.dataset.window) {

@@ -137,6 +137,7 @@ async function runRange(raw, startDate, endDate) {
     const result = await simulationService.runBacktest(end - startIndex, raw, {
         startIndex,
         endIndexExclusive: end,
+        strictPointInTime: true,
         rollingHistory: true,
         methodIds: METHOD_ID,
         playMode: 'bet',
@@ -146,6 +147,12 @@ async function runRange(raw, startDate, endDate) {
         selectedStreakDetailLimit: 0,
         clearHistoryCacheInterval: 30
     });
+    if (result.config?.pointInTime?.strict !== true) {
+        throw new Error(
+            `Backtest ${startDate} -> ${endDate} không chạy strict point-in-time; ` +
+            'từ chối sinh báo cáo để tránh gắn nhãn PIT sai.'
+        );
+    }
     return rowsFromResult(result, startDate, endDate);
 }
 

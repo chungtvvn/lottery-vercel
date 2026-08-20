@@ -44,7 +44,15 @@ function settleFromRaw(payload, rawRows) {
             settled: true,
             actual,
             main: { ...record.main, hit: Array.isArray(record.main?.numbers) && record.main.numbers.includes(actual) },
-            ...(record.hybrid ? { hybrid: { ...record.hybrid, hit: Array.isArray(record.hybrid?.numbers) && record.hybrid.numbers.includes(actual) } } : {})
+            ...(record.hybrid ? {
+                hybrid: {
+                    ...record.hybrid,
+                    hit: Array.isArray(record.hybrid?.numbers) && record.hybrid.numbers.includes(actual),
+                    core10Hit: Array.isArray(record.hybrid?.core10) ? record.hybrid.core10.includes(actual) : null,
+                    core20Hit: Array.isArray(record.hybrid?.core20) ? record.hybrid.core20.includes(actual) : null,
+                    expanded36Hit: Array.isArray(record.hybrid?.expanded36) ? record.hybrid.expanded36.includes(actual) : null
+                }
+            } : {})
         };
     });
     const summarize = key => {

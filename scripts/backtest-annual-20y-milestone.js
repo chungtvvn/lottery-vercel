@@ -183,27 +183,34 @@ function getAnnualMetric(baseline, key, baseLen, step, isPotential) {
     const row = baseline.get(key);
     const actualYears = row ? row.actualYears : 20;
     const recordLen = row ? Number(row.recordLen || 0) : 0;
+    const exactCounts = row ? row.exactCounts : new Map();
     const cumulative = row ? row.cumulative : new Map();
+    const exactLengthCount = exactCounts.get(baseLen) || 0;
     const currentCount = cumulative.get(baseLen) || 0;
     const nextCount = cumulative.get(baseLen + step) || 0;
+    const breakCount = Math.max(0, currentCount - nextCount);
     const upperLen = Math.max(recordLen, baseLen);
-    let exposureCount = 0;
+    let tailStateExposureCount = 0;
     for (let len = baseLen; len <= upperLen; len += step) {
-        exposureCount += cumulative.get(len) || 0;
+        tailStateExposureCount += cumulative.get(len) || 0;
     }
-    const exposureFrequencyPerYear = exposureCount / actualYears;
     const reachedFrequencyPerYear = currentCount / actualYears;
     const continuationFrequencyPerYear = nextCount / actualYears;
-    const riskRate = currentCount > 0 ? 1 - (nextCount / currentCount) : 1;
+    const riskRate = currentCount > 0 ? breakCount / currentCount : 1;
 
     return {
         recordLen,
         currentCount,
         nextCount,
-        exposureCount,
-        exposureFrequencyPerYear,
+        exactLengthCount,
+        breakCount,
+        tailStateExposureCount,
+        tailStateExposurePerYear: tailStateExposureCount / actualYears,
+        exposureCount: currentCount,
+        exposureFrequencyPerYear: reachedFrequencyPerYear,
         reachedFrequencyPerYear,
         continuationFrequencyPerYear,
+        exactFrequencyPerYear: exactLengthCount / actualYears,
         riskRate,
         actualYears,
         neverFormed: recordLen === 0 || currentCount === 0,

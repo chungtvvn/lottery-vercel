@@ -12,6 +12,7 @@ const generateNumberStats = require('../lib/generators/statisticsGenerator');
 const generateHeadTailStats = require('../lib/generators/headTailStatsGenerator');
 const generateSumDiffStats = require('../lib/generators/sumDifferenceStatsGenerator');
 const { isInvalidStatsKey } = require('../lib/utils/statsOptionsManifest');
+const { mergeHistoricalAndSuffixStats } = require('../lib/research/rollingStatsMerge');
 const {
     buildBacktestFingerprint,
     hashCanonical,
@@ -65,6 +66,157 @@ function formatDisplayDate(value) {
     const date = value instanceof Date ? value : parseIsoDate(value);
     if (!date) return '';
     return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+}
+
+function parseDisplayDate(value) {
+    const match = String(value || '').match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (!match) return null;
+    return new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]));
+}
+
+function sliceStatsAtDate(node, cutoffDate) {
+    if (!node || typeof node !== 'object') return node;
+    if (Array.isArray(node)) return node;
+    if (Array.isArray(node.streaks)) {
+        const cutoffTime = cutoffDate.getTime();
+        const minObservedLength = node.streaks.reduce((min, streak) => {
+            const length = Number(streak?.length || 0);
+            return length > 0 ? Math.min(min, length) : min;
+        }, Number.POSITIVE_INFINITY);
+        const streaks = [];
+        for (const streak of node.streaks) {
+            const start = parseDisplayDate(streak?.startDate);
+            const end = parseDisplayDate(streak?.endDate);
+            if (!start || !end || start.getTime() > cutoffTime) continue;
+            if (end.getTime() <= cutoffTime) {
+                streaks.push(streak);
+                continue;
+            }
+            const length = Math.floor((cutoffTime - start.getTime()) / 86400000) + 1;
+            if (length < minObservedLength) continue;
+            streaks.push({
+                ...streak,
+                endDate: formatDisplayDate(cutoffDate),
+                length,
+                ...(Array.isArray(streak.values) ? { values: streak.values.slice(0, length) } : {}),
+                ...(Array.isArray(streak.dates) ? { dates: streak.dates.slice(0, length) } : {}),
+                ...(Array.isArray(streak.patternLabels) ? { patternLabels: streak.patternLabels.slice(0, length) } : {}),
+                ...(Array.isArray(streak.fullSequence) ? { fullSequence: streak.fullSequence.slice(0, length) } : {})
+            });
+        }
+        return { ...node, streaks };
+    }
+    return Object.fromEntries(Object.entries(node).map(([key, value]) => [key, sliceStatsAtDate(value, cutoffDate)]));
+}
+
+function slicePositionStatsAtDate(stats, cutoffDate) {
+    return {
+        numberStats: sliceStatsAtDate(stats.numberStats, cutoffDate),
+        headTailStats: sliceStatsAtDate(stats.headTailStats, cutoffDate),
+        sumDiffStats: sliceStatsAtDate(stats.sumDiffStats, cutoffDate)
+    };
+}
+
+function buildIncrementalStatsReplay(stats, initialCutoffDate) {
+    const admissionEvents = new Map();
+    const active = new Set();
+    let currentDate = new Date(initialCutoffDate);
+
+    const addEvent = (date, event) => {
+        const iso = formatIsoDate(date);
+        if (!admissionEvents.has(iso)) admissionEvents.set(iso, []);
+        admissionEvents.get(iso).push(event);
+    };
+
+    const cloneNode = (node) => {
+        if (!node || typeof node !== 'object') return node;
+        if (Array.isArray(node)) return node;
+        if (Array.isArray(node.streaks)) {
+            const minObservedLength = node.streaks.reduce((min, streak) => {
+                const length = Number(streak?.length || 0);
+                return length > 0 ? Math.min(min, length) : min;
+            }, Number.POSITIVE_INFINITY);
+            const target = { ...node, streaks: [] };
+            for (const original of node.streaks) {
+                const start = parseDisplayDate(original?.startDate);
+                const end = parseDisplayDate(original?.endDate);
+                if (!start || !end) continue;
+                const admissionDate = addDays(start, Math.max(0, minObservedLength - 1));
+                const event = { target, original, start, end, minObservedLength, partial: null };
+                if (end <= currentDate) {
+                    target.streaks.push(original);
+                } else if (admissionDate <= currentDate) {
+                    const length = Math.floor((currentDate - start) / 86400000) + 1;
+                    event.partial = {
+                        ...original,
+                        endDate: formatDisplayDate(currentDate),
+                        length
+                    };
+                    target.streaks.push(event.partial);
+                    active.add(event);
+                } else {
+                    addEvent(admissionDate, event);
+                }
+            }
+            return target;
+        }
+        return Object.fromEntries(Object.entries(node).map(([key, value]) => [key, cloneNode(value)]));
+    };
+
+    const replayStats = {
+        numberStats: cloneNode(stats.numberStats),
+        headTailStats: cloneNode(stats.headTailStats),
+        sumDiffStats: cloneNode(stats.sumDiffStats)
+    };
+
+    const advanceOneDay = (date) => {
+        for (const event of [...active]) {
+            if (event.end <= date) {
+                Object.assign(event.partial, event.original);
+                active.delete(event);
+                continue;
+            }
+            const length = Math.floor((date - event.start) / 86400000) + 1;
+            event.partial.endDate = formatDisplayDate(date);
+            event.partial.length = length;
+            if (Array.isArray(event.original.values)) event.partial.values = event.original.values.slice(0, length);
+            if (Array.isArray(event.original.dates)) event.partial.dates = event.original.dates.slice(0, length);
+            if (Array.isArray(event.original.patternLabels)) event.partial.patternLabels = event.original.patternLabels.slice(0, length);
+            if (Array.isArray(event.original.fullSequence)) event.partial.fullSequence = event.original.fullSequence.slice(0, length);
+        }
+        for (const event of admissionEvents.get(formatIsoDate(date)) || []) {
+            if (event.end <= date) {
+                event.target.streaks.push(event.original);
+                continue;
+            }
+            const length = Math.floor((date - event.start) / 86400000) + 1;
+            event.partial = {
+                ...event.original,
+                endDate: formatDisplayDate(date),
+                length,
+                ...(Array.isArray(event.original.values) ? { values: event.original.values.slice(0, length) } : {}),
+                ...(Array.isArray(event.original.dates) ? { dates: event.original.dates.slice(0, length) } : {}),
+                ...(Array.isArray(event.original.patternLabels) ? { patternLabels: event.original.patternLabels.slice(0, length) } : {}),
+                ...(Array.isArray(event.original.fullSequence) ? { fullSequence: event.original.fullSequence.slice(0, length) } : {})
+            };
+            event.target.streaks.push(event.partial);
+            active.add(event);
+        }
+    };
+
+    return {
+        stats: replayStats,
+        advanceTo(cutoffDate) {
+            while (currentDate < cutoffDate) {
+                currentDate = addDays(currentDate, 1);
+                advanceOneDay(currentDate);
+            }
+            if (currentDate > cutoffDate) {
+                throw new Error('Incremental PIT replay chỉ hỗ trợ ngày tăng dần.');
+            }
+            return replayStats;
+        }
+    };
 }
 
 function addDays(value, days) {
@@ -756,6 +908,30 @@ const POSITION_CACHE_VERSION = 'position-pit-annual-baseline-v2';
 async function buildPositionDailyPredictions(rawData, positionKey, targetRows, methodConfigs, options) {
     const strictPointInTime = options.strictPointInTime !== false;
     const positionData = toPositionData(rawData, positionKey);
+    let strictFastEntries = null;
+    let strictFastStats = null;
+    if (strictPointInTime && options.strictFastReplay) {
+        strictFastStats = await buildStatsForPosition(positionData);
+        lotteryService.__setInMemoryCachesForBacktest({
+            rawData: positionData,
+            ...strictFastStats
+        });
+        historicalExclusionService.clearCache();
+        strictFastEntries = buildStatsIndexFromLoadedStats();
+        // Warm the immutable index once. Daily PIT iterations below only swap
+        // the known raw prefix, so this expensive index remains reusable.
+        historicalExclusionService.computeQuickStatsForDateFast(
+            formatDisplayDate(parseIsoDate(targetRows[0].date)),
+            lotteryService.getTotalYears()
+        );
+    }
+    const indexedReplayStats = strictPointInTime && options.strictIndexedReplay
+        ? await buildStatsForPosition(positionData)
+        : null;
+    const firstTargetDate = targetRows.map(row => parseIsoDate(row.date)).find(Boolean);
+    const indexedReplay = indexedReplayStats && firstTargetDate
+        ? buildIncrementalStatsReplay(indexedReplayStats, addDays(firstTargetDate, -1))
+        : null;
     let entries = null;
     if (!strictPointInTime) {
         let stats;
@@ -773,6 +949,7 @@ async function buildPositionDailyPredictions(rawData, positionKey, targetRows, m
         entries = buildStatsIndexFromLoadedStats();
     }
     const baselineByYear = new Map();
+    const rollingPrefixByYear = new Map();
     if (strictPointInTime) {
         const targetYears = [...new Set(targetRows
             .map(row => parseIsoDate(row.date))
@@ -789,18 +966,42 @@ async function buildPositionDailyPredictions(rawData, positionKey, targetRows, m
             const cutoffIso = `${baselineYear - 1}-12-31`;
             const baselineRaw = rawData.filter(row => formatIsoDate(row.date) <= cutoffIso);
             const baselinePositionData = toPositionData(baselineRaw, positionKey);
-            const baselineStats = await buildStatsForPosition(baselinePositionData);
-            lotteryService.__setInMemoryCachesForBacktest({
-                rawData: baselinePositionData,
-                ...baselineStats
-            });
-            historicalExclusionService.clearCache();
-            const baselineEntries = buildStatsIndexFromLoadedStats();
+            const baselineStats = indexedReplayStats
+                ? slicePositionStatsAtDate(indexedReplayStats, new Date(targetYear - 1, 11, 31))
+                : await buildStatsForPosition(baselinePositionData);
+            let baselineEntries;
+            if (options.strictFastReplay) {
+                lotteryService.__setInMemoryCachesForBacktest({
+                    rawData: baselinePositionData,
+                    ...baselineStats
+                });
+                historicalExclusionService.clearCache();
+                baselineEntries = buildStatsIndexFromLoadedStats();
+            } else {
+                lotteryService.__setInMemoryCachesForBacktest({
+                    rawData: baselinePositionData,
+                    ...baselineStats
+                });
+                historicalExclusionService.clearCache();
+                baselineEntries = buildStatsIndexFromLoadedStats();
+            }
             baselineByYear.set(baselineYear, annualMilestoneService.buildAnnualBaseline(
                 baselineEntries,
                 baselineYear,
                 { historyYears: options.historyYears, writeBaseline: false }
             ));
+            if (options.strictFastReplay) {
+                lotteryService.__setInMemoryCachesForBacktest({
+                    rawData: positionData,
+                    ...strictFastStats
+                });
+                historicalExclusionService.clearCache();
+                strictFastEntries = buildStatsIndexFromLoadedStats();
+                historicalExclusionService.computeQuickStatsForDateFast(
+                    formatDisplayDate(parseIsoDate(targetRows[0].date)),
+                    lotteryService.getTotalYears()
+                );
+            }
         }
     }
     const rows = new Map();
@@ -814,13 +1015,42 @@ async function buildPositionDailyPredictions(rawData, positionKey, targetRows, m
             const predictionIso = formatIsoDate(date);
             const prefixRaw = rawData.filter(row => formatIsoDate(row.date) < predictionIso);
             const prefixPositionData = toPositionData(prefixRaw, positionKey);
-            const prefixStats = await buildStatsForPosition(prefixPositionData);
-            lotteryService.__setInMemoryCachesForBacktest({
-                rawData: prefixPositionData,
-                ...prefixStats
-            });
-            historicalExclusionService.clearCache();
-            entries = buildStatsIndexFromLoadedStats();
+            let prefixStats;
+            if (options.strictFastReplay) {
+                lotteryService.__setRawDataForBacktest(prefixPositionData);
+                entries = strictFastEntries;
+            } else if (indexedReplay) {
+                const cutoffDate = addDays(date, -1);
+                prefixStats = indexedReplay.advanceTo(cutoffDate);
+            } else if (options.strictSuffixYears > 0) {
+                const targetYear = date.getFullYear();
+                const suffixStartYear = targetYear - options.strictSuffixYears;
+                const suffixStartIso = `${suffixStartYear}-01-01`;
+                if (!rollingPrefixByYear.has(targetYear)) {
+                    const historicalRaw = rawData.filter(row => formatIsoDate(row.date) < suffixStartIso);
+                    rollingPrefixByYear.set(
+                        targetYear,
+                        await buildStatsForPosition(toPositionData(historicalRaw, positionKey))
+                    );
+                }
+                const suffixRaw = prefixRaw.filter(row => formatIsoDate(row.date) >= suffixStartIso);
+                const suffixStats = await buildStatsForPosition(toPositionData(suffixRaw, positionKey));
+                prefixStats = mergeHistoricalAndSuffixStats(
+                    rollingPrefixByYear.get(targetYear),
+                    suffixStats,
+                    suffixStartIso
+                );
+            } else {
+                prefixStats = await buildStatsForPosition(prefixPositionData);
+            }
+            if (!options.strictFastReplay) {
+                lotteryService.__setInMemoryCachesForBacktest({
+                    rawData: prefixPositionData,
+                    ...prefixStats
+                });
+                historicalExclusionService.clearCache();
+                entries = buildStatsIndexFromLoadedStats();
+            }
         }
         const year = date.getFullYear();
         const baselineYear = options.fixedBaselineYear || year;
@@ -835,7 +1065,10 @@ async function buildPositionDailyPredictions(rawData, positionKey, targetRows, m
             historyYears: options.historyYears,
             activeFrequencyLimit: options.activeFrequencyLimit,
             recordFrequencyLimit: options.recordFrequencyLimit,
-            minPotentialCurrentLenForNeverFormed: options.minPotentialCurrentLenForNeverFormed
+            minPotentialCurrentLenForNeverFormed: options.minPotentialCurrentLenForNeverFormed,
+            requireCatalogAsOfDate: !!options.strictCatalogReplay,
+            useLegacyQuickStats: !!options.strictLegacyReplay,
+            useCandidateScan: !!options.strictCandidateScan
         });
         const byMethod = {};
         for (const config of methodConfigs) {
@@ -1231,6 +1464,13 @@ async function main() {
     const maxMonths = Math.max(...monthsList);
     const startDate = args.get('startDate') || null;
     const endDate = args.get('endDate') || null;
+    const dateStep = Math.max(1, Number(args.get('dateStep') || 1));
+    const strictSuffixYears = Math.max(0, Number(args.get('strictSuffixYears') || 0));
+    const strictIndexedReplay = args.get('strictIndexedReplay') === '1';
+    const strictCatalogReplay = args.get('strictCatalogReplay') === '1';
+    const strictFastReplay = args.get('strictFastReplay') === '1';
+    const strictLegacyReplay = args.get('strictLegacyReplay') === '1';
+    const strictCandidateScan = args.get('strictCandidateScan') === '1';
     if ((startDate && !endDate) || (!startDate && endDate)) {
         throw new Error('Phải truyền đồng thời --startDate và --endDate.');
     }
@@ -1266,7 +1506,7 @@ async function main() {
     const includeRrf = args.get('includeRrf') === '1' || args.get('rrf') === '1';
     const rrfSmallHold = Math.max(1, Math.min(95, Number(args.get('rrfSmallHold') || 65)));
     const rrfBlockHold = Math.max(1, Math.min(95, Number(args.get('rrfBlockHold') || 85)));
-    const rrfBetCounts = betCounts.filter(count => [6, 7, 10, 14, 20, 25, 30].includes(Number(count)));
+    const rrfBetCounts = betCounts.filter(count => [6, 7, 10, 14, 15, 20, 25, 30].includes(Number(count)));
     const rrfPairStrategies = String(args.get('rrfPairStrategies') || '')
         .split(',')
         .map(value => value.trim())
@@ -1311,6 +1551,12 @@ async function main() {
                 historyYears,
                 fixedBaselineYear,
                 strictPointInTime,
+                strictSuffixYears,
+                strictIndexedReplay,
+                strictCatalogReplay,
+                strictFastReplay,
+                strictLegacyReplay,
+                strictCandidateScan,
                 activeFrequencyLimit,
                 recordFrequencyLimit,
                 minPotentialCurrentLenForNeverFormed
@@ -1368,16 +1614,19 @@ async function main() {
         })));
         return;
     }
-    const targetRows = startDate
+    const allTargetRows = startDate
         ? getDateRangeRows(rawData, startDate, endDate)
         : getWindowRows(rawData, maxMonths);
+    const targetRows = dateStep > 1
+        ? allTargetRows.filter((row, index) => index % dateStep === 0 || index === allTargetRows.length - 1)
+        : allTargetRows;
     if (targetRows.length === 0) {
         const rawLatestDate = rawData.length ? formatIsoDate(rawData[rawData.length - 1].date) : '-';
         throw new Error(`Không có dữ liệu trong khoảng ${startDate || `${maxMonths} tháng gần nhất`} -> ${endDate || rawLatestDate}.`);
     }
     const targetDates = new Set(targetRows.map(row => formatIsoDate(row.date)));
     const reportPositions = positionInputFiles.length > 0 ? PRIZE_KEYS : selectedPositions;
-    console.log(`[LotoMilestone20Y] ${targetRows.length} ngày, ${methodConfigs.length} cấu hình, ${reportPositions.length} vị trí.`);
+    console.log(`[LotoMilestone20Y] ${targetRows.length}/${allTargetRows.length} ngày (dateStep=${dateStep}), ${methodConfigs.length} cấu hình, ${reportPositions.length} vị trí.`);
 
     const byDate = new Map(targetRows.map(row => [formatIsoDate(row.date), {
         date: formatIsoDate(row.date),
@@ -1395,9 +1644,16 @@ async function main() {
             if (
                 payload.startDate !== startDate ||
                 payload.endDate !== endDate ||
+                Number(payload.dateStep || 1) !== dateStep ||
                 payload.positionCacheVersion !== POSITION_CACHE_VERSION ||
                 JSON.stringify(payload.methodConfigs || []) !== JSON.stringify(methodConfigs) ||
                 payload.strictPointInTime !== strictPointInTime ||
+                Number(payload.strictSuffixYears || 0) !== strictSuffixYears ||
+                Boolean(payload.strictIndexedReplay) !== strictIndexedReplay ||
+                Boolean(payload.strictCatalogReplay) !== strictCatalogReplay ||
+                Boolean(payload.strictFastReplay) !== strictFastReplay ||
+                Boolean(payload.strictLegacyReplay) !== strictLegacyReplay ||
+                Boolean(payload.strictCandidateScan) !== strictCandidateScan ||
                 Number(payload.historyYears) !== historyYears ||
                 (payload.fixedBaselineYear ?? null) !== fixedBaselineYear ||
                 Number(payload.activeFrequencyLimit) !== activeFrequencyLimit ||
@@ -1428,6 +1684,12 @@ async function main() {
                 historyYears,
                 fixedBaselineYear,
                 strictPointInTime,
+                strictSuffixYears,
+                strictIndexedReplay,
+                strictCatalogReplay,
+                strictFastReplay,
+                strictLegacyReplay,
+                strictCandidateScan,
                 activeFrequencyLimit,
                 recordFrequencyLimit,
                 minPotentialCurrentLenForNeverFormed
@@ -1447,8 +1709,15 @@ async function main() {
             positionCacheVersion: POSITION_CACHE_VERSION,
             startDate,
             endDate,
+            dateStep,
             methodConfigs,
             strictPointInTime,
+            strictSuffixYears,
+            strictIndexedReplay,
+            strictCatalogReplay,
+            strictFastReplay,
+            strictLegacyReplay,
+            strictCandidateScan,
             historyYears,
             fixedBaselineYear,
             activeFrequencyLimit,
@@ -1727,19 +1996,24 @@ async function main() {
                     const blockRanked = aggregatePositionPredictions(blockPositionPredictions, {
                         mode: 'positionPosterior'
                     });
+                    const rrfSourceCounts = [...new Set([
+                        20,
+                        ...rrfBetCounts,
+                        Math.max(20, ...rrfBetCounts)
+                    ])];
+                    const buildRrfSources = ranked => Object.fromEntries(rrfSourceCounts.map(count => [
+                        `top${count}`,
+                        { numbers: ranked.slice(0, count).map(item => formatNumber(item.number)) }
+                    ]));
                     const smallPrediction = {
                         strategy: 'chainSmallFirst',
                         hold: rrfSmallHold,
-                        predictions: {
-                            top20: { numbers: smallRanked.slice(0, 20).map(item => formatNumber(item.number)) }
-                        }
+                        predictions: buildRrfSources(smallRanked)
                     };
                     const blockPrediction = {
                         strategy: 'chainBlockFirst',
                         hold: rrfBlockHold,
-                        predictions: {
-                            top20: { numbers: blockRanked.slice(0, 20).map(item => formatNumber(item.number)) }
-                        }
+                        predictions: buildRrfSources(blockRanked)
                     };
                     const rrf = buildRrfPrediction(
                         smallPrediction,
@@ -1805,6 +2079,13 @@ async function main() {
         months: monthsList,
         startDate,
         endDate,
+        dateStep,
+        strictSuffixYears,
+        strictIndexedReplay,
+        strictCatalogReplay,
+        strictFastReplay,
+        strictLegacyReplay,
+        strictCandidateScan,
         strategies,
         holdCounts,
         betCounts,

@@ -9,6 +9,7 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env'), quiet: true
 const lotteryService = require('../lib/services/lotteryService');
 const historicalExclusionService = require('../lib/services/historicalExclusionService');
 const annualMilestoneService = require('../lib/services/annualMilestoneService');
+const simulationService = require('../lib/services/simulationService');
 const generateNumberStats = require('../lib/generators/statisticsGenerator');
 const generateHeadTailStats = require('../lib/generators/headTailStatsGenerator');
 const generateSumDiffStats = require('../lib/generators/sumDifferenceStatsGenerator');
@@ -21,27 +22,79 @@ const {
 
 const STRATEGIES = annualMilestoneService.STRATEGY_IDS;
 const ALL_NUMBERS = Array.from({ length: 100 }, (_, index) => index);
+// These are the rolling (D-1) strategies that have an equivalent production
+// implementation.  They are kept explicit so research reports cannot silently
+// include an experimental method that is not available to users.
+const ROLLING_SMALL_DAN_METHODS = [
+    'chainSmallFirst',
+    'chainBlockFirst',
+    'dedupEdge75',
+    'deParallelBlock85Small65'
+];
 
 function parseArgs() {
     const args = new Map(process.argv.slice(2).map(arg => {
         const [key, value] = arg.replace(/^--/, '').split('=');
         return [key, value === undefined ? '1' : value];
     }));
+    const target = Number(args.get('target') || 70);
+    const targets = [...new Set(
+        String(args.get('targets') || target)
+            .split(',')
+            .map(value => Number(value.trim()))
+            .filter(value => Number.isInteger(value) && value > 0 && value < 100)
+    )];
+    if (!targets.includes(target)) targets.push(target);
+    targets.sort((a, b) => a - b);
+    const rollingTargets = [...new Set(
+        String(args.get('rollingTargets') || '')
+            .split(',')
+            .map(value => Number(value.trim()))
+            .filter(value => Number.isInteger(value) && value > 0 && value < 100)
+    )].sort((a, b) => a - b);
+    const rollingSmallDanMethods = args.get('rollingSmallDanMethods')
+        ? String(args.get('rollingSmallDanMethods'))
+            .split(',')
+            .map(value => value.trim())
+            .filter(value => ROLLING_SMALL_DAN_METHODS.includes(value))
+        : ROLLING_SMALL_DAN_METHODS.slice();
+    const strategyIds = args.get('strategies')
+        ? String(args.get('strategies'))
+            .split(',')
+            .map(value => value.trim())
+            .filter(value => STRATEGIES.includes(value))
+        : STRATEGIES.slice();
+    if (strategyIds.length === 0) {
+        throw new Error('Không có strategy hợp lệ trong --strategies.');
+    }
     return {
         startDate: args.get('startDate') || '2026-01-01',
         endDate: args.get('endDate') || '2026-07-02',
-        target: Number(args.get('target') || 70),
+        target,
+        targets,
+        strategyIds,
         historyYears: Number(args.get('historyYears') || 20),
         minPotentialLen: Number(args.get('minPotentialLen') || 4),
         dateStep: Math.max(1, Number(args.get('dateStep') || 3)),
         dateOffset: Math.max(0, Number(args.get('dateOffset') || 0)),
         workers: Math.max(1, Number(args.get('workers') || 8)),
+        // Inline mode trades throughput for a bounded memory footprint. It is
+        // useful for full daily strict-PIT research on machines with limited RAM.
+        inline: String(args.get('inline') || '0') === '1',
         betPerNumberK: Number(args.get('betPerNumberK') || 1000),
         winMultiplier: Number(args.get('winMultiplier') || 84),
         includeEvidence: String(args.get('includeEvidence') || '1') !== '0',
+        includeCandidateDiagnostics: String(args.get('includeCandidateDiagnostics') || '0') === '1',
+        includeRollingParallel: String(args.get('includeRollingParallel') || '0') === '1',
+        includeRollingEdge75: String(args.get('includeRollingEdge75') || '0') === '1',
+        includeRollingSmallDan: String(args.get('includeRollingSmallDan') || '0') === '1',
+        rollingTargets,
+        rollingSmallDanMethods,
         rawFile: args.get('rawFile') || null,
         baselineCutoffDate: args.get('baselineCutoffDate') || null,
-        checkpointFile: args.get('checkpointFile') || null
+        checkpointFile: args.get('checkpointFile') || null,
+        resumeRowsFile: args.get('resumeRowsFile') || null,
+        reportFile: args.get('reportFile') || null
     };
 }
 
@@ -102,11 +155,14 @@ async function generateStats(raw, quiet = true) {
     if (quiet) console.log = () => {};
     const startedAt = Date.now();
     try {
-        const [numberStats, headTailStats, sumDiffStats] = await Promise.all([
-            generateNumberStats(null, null, input),
-            generateHeadTailStats(null, null, input),
-            generateSumDiffStats(null, null, input)
-        ]);
+        // These generators each create a substantial transient object graph.
+        // Running them together is faster but exceeds the GitHub runner and
+        // local Node heap during 20-year strict-PIT baselines.
+        const numberStats = await generateNumberStats(null, null, input);
+        if (global.gc) global.gc();
+        const headTailStats = await generateHeadTailStats(null, null, input);
+        if (global.gc) global.gc();
+        const sumDiffStats = await generateSumDiffStats(null, null, input);
         return {
             numberStats,
             headTailStats,
@@ -207,6 +263,139 @@ function candidateStrength(candidate) {
         (0.58 + specificity * 0.42) * tierWeight;
 }
 
+function getCandidateTransition(candidate) {
+    // Potential opportunities are not represented by cumulative streak counts.
+    // They must be learned by replaying every historical day where the same
+    // precursor state was present. Until that table exists, keep them unknown.
+    const hasFormationTrials = candidate.formationTrials !== null
+        && candidate.formationTrials !== undefined
+        && Number.isFinite(Number(candidate.formationTrials));
+    if (candidate.isPotential && !hasFormationTrials) {
+        return {
+            trials: null,
+            successes: null,
+            failures: null,
+            failureRate: null,
+            opportunitySource: 'unavailable-requires-daily-replay'
+        };
+    }
+    const recordLen = Math.max(0, Number(candidate.maxStreak ?? candidate.recordLen ?? 0));
+    const testedLen = Math.max(0, Number(candidate.currentLen ?? candidate.baseLen ?? 0));
+    if (!candidate.isPotential && (recordLen <= 0 || testedLen >= recordLen)) {
+        return {
+            trials: null,
+            successes: null,
+            failures: null,
+            failureRate: null,
+            opportunitySource: 'unavailable-in-sample-record-boundary'
+        };
+    }
+    const trials = candidate.isPotential
+        ? Math.max(0, Number(candidate.formationTrials || 0))
+        : Math.max(0, Number(candidate.currentCount || 0));
+    const successes = candidate.isPotential
+        ? Math.min(trials, Math.max(0, Number(candidate.formationCount || 0)))
+        : Math.min(trials, Math.max(0, Number(candidate.nextCount || 0)));
+    const failures = Math.max(0, trials - successes);
+    return {
+        trials,
+        successes,
+        failures,
+        failureRate: trials > 0 ? failures / trials : null,
+        opportunitySource: candidate.isPotential ? 'daily-replay' : 'annual-streak-transition'
+    };
+}
+
+function getRecordState(candidate) {
+    const recordLen = Math.max(0, Number(candidate.maxStreak ?? candidate.recordLen ?? 0));
+    const testedLen = candidate.isPotential
+        ? Math.max(0, Number(candidate.baseLen || 0))
+        : Math.max(0, Number(candidate.currentLen ?? candidate.baseLen ?? 0));
+    if (recordLen <= 0) return 'never-pattern';
+    if (testedLen > recordLen) return 'super-record';
+    if (testedLen === recordLen) return 'at-record';
+    if (testedLen === recordLen - 1) return 'near-record';
+    if (Number(candidate.currentCount || 0) <= 0) return 'unseen-target';
+    return 'below-record';
+}
+
+function optionalNumber(value) {
+    if (value === null || value === undefined || value === '') return null;
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
+}
+
+function buildCandidateDiagnostics(candidates, actual) {
+    const deduplicated = new Map();
+    for (const candidate of candidates || []) {
+        if (!Array.isArray(candidate.numbers) || candidate.numbers.length === 0) continue;
+        const numbers = [...new Set(candidate.numbers.map(Number))]
+            .filter(number => Number.isInteger(number) && number >= 0 && number <= 99)
+            .sort((a, b) => a - b);
+        if (numbers.length === 0 || numbers.length >= 100) continue;
+        const transition = getCandidateTransition(candidate);
+        const family = evidenceFamily(candidate.key);
+        const pattern = evidencePattern(candidate.key);
+        const state = candidate.isPotential ? 'potential' : 'active';
+        const signature = [
+            state,
+            family,
+            numbers.join(','),
+            Number(candidate.baseLen || 0),
+            Number(candidate.targetLen || 0)
+        ].join('|');
+        const row = {
+            key: candidate.key,
+            family,
+            pattern,
+            state,
+            recordState: getRecordState(candidate),
+            tier: Number(candidate.tier || 4),
+            currentLen: Number(candidate.currentLen || 0),
+            baseLen: Number(candidate.baseLen || 0),
+            targetLen: Number(candidate.targetLen || 0),
+            recordLen: Number(candidate.maxStreak ?? candidate.recordLen ?? 0),
+            setSize: numbers.length,
+            numbers,
+            baseExclusionRate: 1 - (numbers.length / 100),
+            exposureFrequencyPerYear: Number(candidate.exposureFrequencyPerYear || 0),
+            baseOccurrenceCount: Number(candidate.baseOccurrenceCount || 0),
+            baseFrequencyPerYear: Number(candidate.baseFrequencyPerYear || 0),
+            baseAvgLength: optionalNumber(candidate.baseAvgLength),
+            baseAvgGapDays: optionalNumber(candidate.baseAvgGapDays),
+            baseDaysSinceLatestEnd: optionalNumber(candidate.baseDaysSinceLatestEnd),
+            baseGapRatio: optionalNumber(candidate.baseGapRatio),
+            targetOccurrenceCount: Number(candidate.targetOccurrenceCount || 0),
+            targetFrequencyPerYear: Number(candidate.targetFrequencyPerYear || 0),
+            targetAvgLength: optionalNumber(candidate.targetAvgLength),
+            targetAvgGapDays: optionalNumber(candidate.targetAvgGapDays),
+            targetDaysSinceLatestEnd: optionalNumber(candidate.targetDaysSinceLatestEnd),
+            targetGapRatio: optionalNumber(candidate.targetGapRatio),
+            formationTrials: candidate.formationTrials !== null
+                && candidate.formationTrials !== undefined
+                && Number.isFinite(Number(candidate.formationTrials))
+                ? Number(candidate.formationTrials)
+                : null,
+            formationCount: candidate.formationCount !== null
+                && candidate.formationCount !== undefined
+                && Number.isFinite(Number(candidate.formationCount))
+                ? Number(candidate.formationCount)
+                : null,
+            currentCount: Number(candidate.currentCount || 0),
+            nextCount: Number(candidate.nextCount || 0),
+            ...transition,
+            observedExcluded: !numbers.includes(Number(actual))
+        };
+        const existing = deduplicated.get(signature);
+        if (!existing || row.trials > existing.trials || (
+            row.trials === existing.trials && row.tier < existing.tier
+        )) {
+            deduplicated.set(signature, row);
+        }
+    }
+    return [...deduplicated.values()];
+}
+
 function buildNumberEvidence(candidates) {
     const evidenceByNumber = ALL_NUMBERS.map(() => new Map());
     for (const candidate of candidates) {
@@ -251,6 +440,10 @@ function buildNumberEvidence(candidates) {
         for (const [group, groupRows] of rowsByGroup) {
             const strengths = groupRows.map(row => row.strength);
             const setSizes = groupRows.map(row => Math.max(1, row.candidate.numbers?.length || 100));
+            const baseLengths = groupRows.map(row => Math.max(1, Number(
+                row.candidate.baseLen || row.candidate.currentLen || 1
+            )));
+            const recordStates = [...new Set(groupRows.map(row => getRecordState(row.candidate)))].sort();
             groupDetails[group] = {
                 maxStrength: Number(Math.max(...strengths).toFixed(6)),
                 combinedStrength: Number(combineIndependentStrengths(groupRows).toFixed(6)),
@@ -261,7 +454,13 @@ function buildNumberEvidence(candidates) {
                 minSetSize: Math.min(...setSizes),
                 meanSetSize: Number((
                     setSizes.reduce((sum, value) => sum + value, 0) / setSizes.length
-                ).toFixed(3))
+                ).toFixed(3)),
+                minBaseLen: Math.min(...baseLengths),
+                maxBaseLen: Math.max(...baseLengths),
+                meanBaseLen: Number((
+                    baseLengths.reduce((sum, value) => sum + value, 0) / baseLengths.length
+                ).toFixed(3)),
+                recordStates
             };
         }
         const rows = [...deduplicated.values()];
@@ -382,20 +581,106 @@ async function processDate(date, raw, baseline, options) {
         activeFrequencyLimit: 0.5,
         recordFrequencyLimit: 1.1
     });
-    const strategies = {};
-    for (const strategy of STRATEGIES) {
-        const prediction = annualMilestoneService.buildPrediction(candidates, options.target, strategy);
-        strategies[strategy] = (prediction.betNumbers || []).map(Number).sort((a, b) => a - b);
+    const strategiesByTarget = {};
+    for (const target of options.targets || [options.target]) {
+        const targetStrategies = {};
+        for (const strategy of options.strategyIds || STRATEGIES) {
+            const prediction = annualMilestoneService.buildPrediction(candidates, target, strategy);
+            targetStrategies[strategy] = (prediction.betNumbers || []).map(Number).sort((a, b) => a - b);
+        }
+        strategiesByTarget[String(target)] = targetStrategies;
     }
+    const strategies = strategiesByTarget[String(options.target)];
     const result = {
         date,
         actual,
         candidateCount: candidates.length,
         generationSeconds: Number((stats.elapsedMs / 1000).toFixed(2)),
-        strategies
+        strategies,
+        strategiesByTarget
     };
     if (options.includeEvidence) result.numberEvidence = buildNumberEvidence(candidates);
+    if (options.includeCandidateDiagnostics) {
+        result.candidateDiagnostics = buildCandidateDiagnostics(candidates, actual);
+    }
+    if (options.includeRollingParallel || options.includeRollingEdge75 || options.includeRollingSmallDan) {
+        // Stats and raw caches currently contain only the prefix ending at D-1.
+        // Build rolling-history methods without asking simulationService to
+        // regenerate that same prefix a second time.
+        const methodIds = [];
+        if (options.includeRollingParallel) methodIds.push('deParallelBlock85Small65Hold70');
+        if (options.includeRollingEdge75) methodIds.push('dedupEdge75Hold70');
+        if (options.includeRollingSmallDan) {
+            for (const target of options.rollingTargets || []) {
+                for (const method of options.rollingSmallDanMethods || []) {
+                    methodIds.push(`${method}Hold${target}`);
+                }
+            }
+        }
+        const rollingPrediction = await simulationService.buildNextPrediction(truncatedRaw, {
+            methodIds,
+            playMode: 'bet',
+            betWinMultiplier: options.winMultiplier,
+            betWinFactor: 1,
+            forceComputeQuickStats: true,
+            strictPointInTime: false,
+            compactDetails: true,
+            selectedStreakDetailLimit: 0,
+            predictionDate: formatDisplayDate(date)
+        });
+        if (options.includeRollingParallel) {
+            const rollingMethod = rollingPrediction?.methods?.deParallelBlock85Small65Hold70;
+            if (!rollingMethod) {
+                throw new Error(`Không sinh được dàn Song song Lịch sử D-1 cho ${date}.`);
+            }
+            result.rollingParallel = {
+                basisDate: rollingPrediction.basisIsoDate,
+                predictionDate: formatIsoDate(rollingPrediction.predictionDate),
+                betNumbers: (rollingMethod.betNumbers || []).map(Number).sort((a, b) => a - b),
+                intersectionNumbers: (rollingMethod.intersectionNumbers || []).map(Number).sort((a, b) => a - b)
+            };
+        }
+        if (options.includeRollingEdge75) {
+            const edgeMethod = rollingPrediction?.methods?.dedupEdge75Hold70;
+            if (!edgeMethod) {
+                throw new Error(`Không sinh được dàn Edge75 Lịch sử D-1 cho ${date}.`);
+            }
+            result.rollingEdge75 = {
+                basisDate: rollingPrediction.basisIsoDate,
+                predictionDate: formatIsoDate(rollingPrediction.predictionDate),
+                betNumbers: (edgeMethod.betNumbers || []).map(Number).sort((a, b) => a - b)
+            };
+        }
+        if (options.includeRollingSmallDan) {
+            result.rollingStrategiesByTarget = {};
+            for (const target of options.rollingTargets || []) {
+                const methods = {};
+                for (const method of options.rollingSmallDanMethods || []) {
+                    const id = `${method}Hold${target}`;
+                    const built = rollingPrediction?.methods?.[id];
+                    if (!built) {
+                        throw new Error(`Không sinh được dàn D-1 ${id} cho ${date}.`);
+                    }
+                    methods[method] = {
+                        id,
+                        betNumbers: (built.betNumbers || []).map(Number).sort((a, b) => a - b),
+                        excludedNumbers: (built.excludedNumbers || []).map(Number).sort((a, b) => a - b),
+                        intersectionNumbers: (built.intersectionNumbers || [])
+                            .map(Number)
+                            .sort((a, b) => a - b)
+                    };
+                }
+                result.rollingStrategiesByTarget[String(target)] = methods;
+            }
+        }
+    }
     return result;
+}
+
+function releaseBacktestDayCaches() {
+    lotteryService.clearCache();
+    historicalExclusionService.clearCache();
+    if (global.gc) global.gc();
 }
 
 async function runWorker() {
@@ -449,11 +734,19 @@ async function runMain() {
         startDate: options.startDate,
         endDate: options.endDate,
         target: options.target,
+        targets: options.targets,
+        strategyIds: options.strategyIds,
         historyYears: options.historyYears,
         minPotentialLen: options.minPotentialLen,
         dateStep: options.dateStep,
         dateOffset: options.dateOffset,
         includeEvidence: options.includeEvidence,
+        includeCandidateDiagnostics: options.includeCandidateDiagnostics,
+        includeRollingParallel: options.includeRollingParallel,
+        includeRollingEdge75: options.includeRollingEdge75,
+        includeRollingSmallDan: options.includeRollingSmallDan,
+        rollingTargets: options.rollingTargets,
+        rollingSmallDanMethods: options.rollingSmallDanMethods,
         baselineCutoffDate,
         source: fs.readFileSync(__filename, 'utf8')
     });
@@ -477,67 +770,137 @@ async function runMain() {
         );
     }
 
+    if (options.resumeRowsFile) {
+        const resumeRowsPath = path.resolve(options.resumeRowsFile);
+        const importedRows = fs.readFileSync(resumeRowsPath, 'utf8')
+            .split('\n')
+            .filter(Boolean)
+            .map(line => JSON.parse(line))
+            .filter(row => row && row.date && requestedDates.includes(row.date));
+        let imported = 0;
+        for (const row of importedRows) {
+            const hasRequiredPredictions = options.targets.every(target =>
+                options.strategyIds.every(strategy =>
+                    Array.isArray(row.strategiesByTarget?.[String(target)]?.[strategy])
+                )
+            );
+            if (!hasRequiredPredictions) {
+                throw new Error(`Resume row ${row.date} thiếu target/strategy cần thiết.`);
+            }
+            if (options.includeRollingParallel && !row.rollingParallel) {
+                throw new Error(`Resume row ${row.date} thiếu rollingParallel.`);
+            }
+            if (options.includeRollingEdge75 && !row.rollingEdge75) {
+                throw new Error(`Resume row ${row.date} thiếu rollingEdge75.`);
+            }
+            if (options.includeRollingSmallDan && !row.rollingStrategiesByTarget) {
+                throw new Error(`Resume row ${row.date} thiếu rollingStrategiesByTarget.`);
+            }
+            if (!resumedByDate.has(row.date)) {
+                resumedByDate.set(row.date, row);
+                if (checkpointPath) fs.appendFileSync(checkpointPath, `${JSON.stringify(row)}\n`);
+                imported++;
+            }
+        }
+        console.log(`[TruePIT] Nhập ${imported} ngày đã xác minh từ ${resumeRowsPath}.`);
+    }
+
     const dates = requestedDates.filter(date => !resumedByDate.has(date));
     const rows = [...resumedByDate.values()];
     const errors = [];
     if (dates.length > 0) {
-        const baselineRaw = raw.filter(row => row._iso <= baselineCutoffDate);
+        let baselineRaw = raw.filter(row => row._iso <= baselineCutoffDate);
         console.log(`[TruePIT] Sinh baseline ${year} từ ${baselineRaw.length} ngày...`);
-        const baselineStats = await generateStats(baselineRaw, false);
-        const baseline = annualMilestoneService.buildAnnualBaseline(
+        let baselineStats = await generateStats(baselineRaw, false);
+        let baseline = annualMilestoneService.buildAnnualBaseline(
             mergeEntries(baselineStats),
             year,
             { historyYears: options.historyYears, writeBaseline: false }
         );
         fs.writeFileSync(baselinePath, JSON.stringify(serializeBaseline(baseline)));
-        console.log(`[TruePIT] Baseline xong sau ${(baselineStats.elapsedMs / 1000).toFixed(1)}s; ` +
+        const baselineSeconds = baselineStats.elapsedMs / 1000;
+        // Worker chỉ cần baseline đã serialise. Giữ cả ba khối thống kê 20 năm
+        // trong process cha làm tăng đỉnh bộ nhớ trước khi tái sinh từng ngày.
+        baseline = null;
+        baselineStats = null;
+        baselineRaw = null;
+        if (global.gc) global.gc();
+        console.log(`[TruePIT] Baseline xong sau ${baselineSeconds.toFixed(1)}s; ` +
             `${dates.length} còn lại/${requestedDates.length} ngày, ` +
-            `${Math.min(options.workers, dates.length)} worker.`);
+            `${options.inline ? 'inline tuần tự' : `${Math.min(options.workers, dates.length)} worker`}.`);
 
-        const workerCount = Math.min(options.workers, dates.length);
-        const assignments = Array.from({ length: workerCount }, () => []);
-        dates.forEach((date, index) => assignments[index % workerCount].push(date));
-        let completedWorkers = 0;
-        let completedDates = 0;
-
-        await new Promise((resolve, reject) => {
-            assignments.forEach(workerDates => {
-                const worker = new Worker(__filename, {
-                    workerData: {
-                        rawPath,
-                        baselinePath,
-                        dates: workerDates,
-                        options
-                    }
-                });
-                worker.on('message', message => {
-                    if (message.type === 'row' && message.row) {
-                        rows.push(message.row);
+        if (options.inline) {
+            const inlineBaseline = deserializeBaseline(JSON.parse(fs.readFileSync(baselinePath, 'utf8')));
+            let completedDates = 0;
+            for (const date of dates) {
+                try {
+                    const row = await processDate(date, raw, inlineBaseline, options);
+                    if (row) {
+                        rows.push(row);
                         if (checkpointPath) {
-                            fs.appendFileSync(checkpointPath, `${JSON.stringify(message.row)}\n`);
+                            fs.appendFileSync(checkpointPath, `${JSON.stringify(row)}\n`);
                         }
                         completedDates++;
-                        console.log(`[TruePIT] ${completedDates}/${dates.length} ${message.row.date} ` +
-                            `(${message.row.generationSeconds}s, ${message.row.candidateCount} chuỗi)`);
-                    } else if (message.type === 'error') {
-                        errors.push(message);
-                        console.error(`[TruePIT] Lỗi ${message.date}: ${message.error}`);
-                    } else if (message.type === 'done') {
-                        completedWorkers++;
-                        if (completedWorkers === workerCount) resolve();
+                        console.log(`[TruePIT] ${completedDates}/${dates.length} ${row.date} ` +
+                            `(${row.generationSeconds}s, ${row.candidateCount} chuỗi)`);
                     }
-                });
-                worker.on('error', reject);
-                worker.on('exit', code => {
-                    if (code !== 0) reject(new Error(`Worker thoát với mã ${code}`));
+                } catch (error) {
+                    errors.push({
+                        date,
+                        error: error && error.stack ? error.stack : String(error)
+                    });
+                    console.error(`[TruePIT] Lỗi ${date}:`, error);
+                } finally {
+                    releaseBacktestDayCaches();
+                }
+            }
+        } else {
+
+            const workerCount = Math.min(options.workers, dates.length);
+            const assignments = Array.from({ length: workerCount }, () => []);
+            dates.forEach((date, index) => assignments[index % workerCount].push(date));
+            let completedWorkers = 0;
+            let completedDates = 0;
+
+            await new Promise((resolve, reject) => {
+                assignments.forEach(workerDates => {
+                    const worker = new Worker(__filename, {
+                        workerData: {
+                            rawPath,
+                            baselinePath,
+                            dates: workerDates,
+                            options
+                        }
+                    });
+                    worker.on('message', message => {
+                        if (message.type === 'row' && message.row) {
+                            rows.push(message.row);
+                            if (checkpointPath) {
+                                fs.appendFileSync(checkpointPath, `${JSON.stringify(message.row)}\n`);
+                            }
+                            completedDates++;
+                            console.log(`[TruePIT] ${completedDates}/${dates.length} ${message.row.date} ` +
+                                `(${message.row.generationSeconds}s, ${message.row.candidateCount} chuỗi)`);
+                        } else if (message.type === 'error') {
+                            errors.push(message);
+                            console.error(`[TruePIT] Lỗi ${message.date}: ${message.error}`);
+                        } else if (message.type === 'done') {
+                            completedWorkers++;
+                            if (completedWorkers === workerCount) resolve();
+                        }
+                    });
+                    worker.on('error', reject);
+                    worker.on('exit', code => {
+                        if (code !== 0) reject(new Error(`Worker thoát với mã ${code}`));
+                    });
                 });
             });
-        });
+        }
     }
 
     rows.sort((a, b) => a.date.localeCompare(b.date));
     const summaries = {};
-    for (const strategy of STRATEGIES) {
+    for (const strategy of options.strategyIds) {
         const summary = createSummary(strategy);
         rows.forEach(row => updateSummary(summary, row, options));
         summaries[strategy] = {
@@ -548,17 +911,45 @@ async function runMain() {
     const ranking = Object.values(summaries)
         .map(({ rows: ignoredRows, ...summary }) => summary)
         .sort((a, b) => b.profitK - a.profitK || b.hitRate - a.hitRate);
+    const targetSummaries = {};
+    const targetRankings = {};
+    for (const target of options.targets) {
+        const targetKey = String(target);
+        const perStrategy = {};
+        for (const strategy of options.strategyIds) {
+            const summary = createSummary(strategy);
+            rows.forEach(row => updateSummary(summary, {
+                ...row,
+                strategies: row.strategiesByTarget?.[targetKey] || row.strategies
+            }, options));
+            const finalized = finalizeSummary(summary);
+            delete finalized.rows;
+            perStrategy[strategy] = finalized;
+        }
+        targetSummaries[targetKey] = perStrategy;
+        targetRankings[targetKey] = Object.values(perStrategy)
+            .slice()
+            .sort((a, b) => b.profitK - a.profitK || b.hitRate - a.hitRate);
+    }
     const fingerprintConfig = {
         startDate: options.startDate,
         endDate: options.endDate,
         target: options.target,
+        targets: options.targets,
+        strategyIds: options.strategyIds,
         historyYears: options.historyYears,
         minPotentialLen: options.minPotentialLen,
         dateStep: options.dateStep,
         dateOffset: options.dateOffset,
         betPerNumberK: options.betPerNumberK,
         winMultiplier: options.winMultiplier,
-        includeEvidence: options.includeEvidence
+        includeEvidence: options.includeEvidence,
+        includeCandidateDiagnostics: options.includeCandidateDiagnostics,
+        includeRollingParallel: options.includeRollingParallel,
+        includeRollingEdge75: options.includeRollingEdge75,
+        includeRollingSmallDan: options.includeRollingSmallDan,
+        rollingTargets: options.rollingTargets,
+        rollingSmallDanMethods: options.rollingSmallDanMethods
     };
     const fingerprint = buildBacktestFingerprint({
         rawData: raw.filter(row => row._iso <= options.endDate),
@@ -568,6 +959,7 @@ async function runMain() {
         sourceFiles: [
             __filename,
             path.join(__dirname, '..', 'lib', 'services', 'annualMilestoneService.js'),
+            path.join(__dirname, '..', 'lib', 'services', 'simulationService.js'),
             path.join(__dirname, '..', 'lib', 'services', 'historicalExclusionService.js'),
             path.join(__dirname, '..', 'lib', 'generators', 'statisticsGenerator.js'),
             path.join(__dirname, '..', 'lib', 'generators', 'headTailStatsGenerator.js'),
@@ -577,6 +969,7 @@ async function runMain() {
     });
     const resultSha256 = hashCanonical({
         ranking,
+        targetRankings,
         rows: rows.map(({ generationSeconds, ...row }) => row)
     });
     const report = {
@@ -592,14 +985,19 @@ async function runMain() {
         errors,
         ranking,
         summaries,
+        targetRankings,
+        targetSummaries,
         rows
     };
-    const reportPath = path.join(
-        __dirname,
-        '..',
-        'reports',
-        `research_true_pit_strategies_${new Date().toISOString().replace(/[:.]/g, '-')}.json`
-    );
+    const reportPath = options.reportFile
+        ? path.resolve(options.reportFile)
+        : path.join(
+            __dirname,
+            '..',
+            'reports',
+            `research_true_pit_strategies_${new Date().toISOString().replace(/[:.]/g, '-')}.json`
+        );
+    fs.mkdirSync(path.dirname(reportPath), { recursive: true });
     fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
     fs.rmSync(baselinePath, { force: true });
     if (checkpointPath && errors.length === 0 && rows.length === requestedDates.length) {

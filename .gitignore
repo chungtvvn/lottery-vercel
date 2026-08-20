@@ -56,6 +56,9 @@ test_get_history.js
 scratch/
 
 # generated backtest/research output
+outputs/
+*.ndjson
+*.jsonl
 reports/chunks/
 reports/backtest_*.json
 reports/backtest_*.csv
@@ -65,6 +68,9 @@ reports/exclusion_number_overlap*.json
 reports/exclusion_number_overlap*.csv
 reports/research_*.json
 reports/**/*.json
+reports/**/*.jsonl
+reports/**/*.ndjson
 reports/**/*.gz
 reports/**/*.xlsx
 reports/**/*.log
+

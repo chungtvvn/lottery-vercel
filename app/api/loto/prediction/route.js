@@ -25,6 +25,7 @@ const LOTO_STRATEGY_META = {
         methodName: 'Lô gộp Mốc 20 năm RRF + Edge75 PIT (RRF 50/50)'
     }
 };
+const LOTO_STRATEGY_IDS = Object.keys(LOTO_STRATEGY_META);
 
 function isAuthorized(request) {
     const expected = process.env.PREDICTION_API_TOKEN || process.env.EXTERNAL_API_TOKEN || '';
@@ -392,8 +393,19 @@ export async function GET(request) {
                 }
             }
             : payload;
-            
-        const strategy = url.searchParams.get('strategy') || DEFAULT_LOTO_STRATEGY;
+
+        const { selectBestLotoDefault } = require('@/lib/utils/lotoDefaultSelection');
+        const requestedStrategy = url.searchParams.get('strategy');
+        const automaticDefault = selectBestLotoDefault(
+            mergedPayload.livePredictions?.summary || {},
+            {
+                strategies: LOTO_STRATEGY_IDS,
+                betCounts: LOTO_BET_COUNTS,
+                fallbackStrategy: DEFAULT_LOTO_STRATEGY,
+                fallbackBetCount: 6
+            }
+        );
+        const strategy = requestedStrategy || automaticDefault.strategy || DEFAULT_LOTO_STRATEGY;
         if (!LOTO_STRATEGY_META[strategy]) {
             return NextResponse.json(
                 { success: false, error: `Phương pháp Lô không hợp lệ: ${strategy}.` },
@@ -413,6 +425,34 @@ export async function GET(request) {
             );
         }
         const normalizedPayload = normalizeLotoPayload(mergedPayload, strategy);
+        const selectedDefault = selectBestLotoDefault(
+            mergedPayload.livePredictions?.summary || {},
+            {
+                strategies: [strategy],
+                betCounts: LOTO_BET_COUNTS,
+                fallbackStrategy: strategy,
+                fallbackBetCount: normalizedPayload.config?.defaultBetCount || 6
+            }
+        );
+        normalizedPayload.config = {
+            ...(normalizedPayload.config || {}),
+            defaultBetCount: selectedDefault.betCount
+        };
+        if (normalizedPayload.nextPrediction?.config) {
+            normalizedPayload.nextPrediction.config.defaultBetCount = selectedDefault.betCount;
+        }
+        if (normalizedPayload.livePredictions?.config) {
+            normalizedPayload.livePredictions.config.defaultBetCount = selectedDefault.betCount;
+        }
+        normalizedPayload.defaultSelection = {
+            automatic: !requestedStrategy,
+            strategy,
+            betCount: selectedDefault.betCount,
+            trackedDays: selectedDefault.days,
+            profitK: selectedDefault.profitK,
+            roi: selectedDefault.roi,
+            summaryKey: selectedDefault.key
+        };
         const filtered = filterCount(normalizedPayload, url.searchParams.get('count'));
         if (filtered.error) {
             return NextResponse.json(

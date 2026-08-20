@@ -50,6 +50,11 @@ assert.deepEqual(
     'Pool so sánh chính phải tự phát hiện mọi dàn đúng 30 số, kể cả thử nghiệm.'
 );
 assert.equal(pendingCache.records[0].hybrid.numbers.length, BET_COUNT);
+assert.equal(pendingCache.records[0].hybrid.core10.length, 10, 'core10 must contain top 10 consensus numbers');
+assert.equal(pendingCache.records[0].hybrid.core20.length, 20, 'core20 must contain top 20 consensus numbers');
+assert.equal(pendingCache.records[0].hybrid.expanded36.length, 36, 'expanded36 must contain top 36 numbers');
+assert.ok(Number.isFinite(pendingCache.records[0].recommendation.confidence?.score), 'confidence score must be computed');
+assert.ok(Array.isArray(pendingCache.records[0].recommendation.plainReasons) && pendingCache.records[0].recommendation.plainReasons.length > 0, 'plainReasons must be generated');
 assert.equal(pendingCache.records[0].hybrid.id, 'all-method-fixed30-consensus-v1');
 assert.equal(pendingCache.records[0].hybrid.methodCount, 4, 'all comparable 30-number methods must enter the fusion lane');
 assert.equal(pendingCache.records[0].hybrid.uniqueSetCount, 3, 'exact duplicate dàn must be collapsed before fusion');

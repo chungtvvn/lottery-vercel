@@ -57,14 +57,33 @@ async function main() {
         return date && date >= startDate && date <= endDate;
     });
     if (!rowsInRange.length) throw new Error(`Không có raw data trong ${startDate}..${endDate}`);
+    const startIndex = rawData.findIndex(row => normalizeDate(row.date) >= startDate);
+    const lastIndex = rawData.reduce((result, row, index) => (
+        normalizeDate(row.date) <= endDate ? index : result
+    ), -1);
+    if (startIndex < 1 || lastIndex < startIndex) {
+        throw new Error(`Không xác định được chỉ số backtest cho ${startDate}..${endDate}`);
+    }
+
+    const requestedMethodIds = String(args.get('methodIds') || 'dedupEdge75Hold70')
+        .split(',')
+        .map(value => value.trim())
+        .filter(value => METHOD_META[value]);
+    if (requestedMethodIds.length === 0) {
+        throw new Error('methodIds không hợp lệ hoặc không có phương pháp được hỗ trợ.');
+    }
 
     const result = await simulationService.runBacktest(rowsInRange.length, rawData, {
+        startIndex,
+        endIndexExclusive: lastIndex + 1,
         rollingHistory: true,
+        strictPointInTime: true,
         playMode: 'both',
-        methodIds: Object.keys(METHOD_META).join(','),
+        methodIds: requestedMethodIds.join(','),
         selectedStreakDetailLimit: 0,
         compactDetails: true,
-        clearHistoryCacheInterval: Number(process.env.BACKTEST_CLEAR_HISTORY_CACHE_INTERVAL || 20)
+        clearHistoryCacheInterval: Number(process.env.BACKTEST_CLEAR_HISTORY_CACHE_INTERVAL || 20),
+        progress: true
     });
     if (!result || result.error) throw new Error(result?.error || 'Backtest không trả dữ liệu');
 
@@ -83,13 +102,22 @@ async function main() {
         predictionHistory,
         startDate,
         endDate,
-        generatedAt: new Date().toISOString()
+        generatedAt: new Date().toISOString(),
+        methodIds: requestedMethodIds,
+        source: {
+            mode: 'strict-prefix-regenerated-before-each-prediction',
+            immutableLiveOverrides: true,
+            strictPointInTime: true,
+            eligibleForPromotion: true,
+            warning: 'Mỗi ngày tái sinh thống kê từ raw prefix kết thúc ở ngày trước dự đoán. Snapshot thực tế đã phát hành ghi đè backtest cùng ngày.'
+        }
     });
     const fingerprintConfig = {
         startDate,
         endDate,
-        methodIds: Object.keys(METHOD_META),
+        methodIds: requestedMethodIds,
         rollingHistory: true,
+        strictPointInTime: true,
         playMode: 'both',
         selectedStreakDetailLimit: 0,
         compactDetails: true
@@ -98,7 +126,7 @@ async function main() {
         rawData: rawData.filter(row => normalizeDate(row.date) <= endDate),
         config: fingerprintConfig,
         baselineCutoffDate: null,
-        methodologyVersion: 'rolling-fast-index-v1-unsafe',
+        methodologyVersion: 'strict-prefix-edge75-history-v1',
         sourceFiles: [
             __filename,
             path.join(process.cwd(), 'lib', 'services', 'simulationService.js'),
@@ -117,6 +145,8 @@ async function main() {
         outputPath,
         startDate,
         endDate,
+        strictPointInTime: true,
+        methodIds: requestedMethodIds,
         methods: Object.fromEntries(Object.entries(cache.methods).map(([methodId, method]) => [
             methodId,
             {
