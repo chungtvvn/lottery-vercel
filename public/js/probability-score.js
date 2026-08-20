@@ -4,6 +4,14 @@
   const money = value => `${new Intl.NumberFormat('vi-VN').format(Math.abs(Number(value || 0)))}K`;
   const signedMoney = value => `${Number(value || 0) >= 0 ? '+' : '-'}${money(value)}`;
   const el = id => document.getElementById(id);
+  const setHtml = (id, html) => {
+    const element = el(id);
+    if (element) element.innerHTML = html;
+  };
+  const setText = (id, text) => {
+    const element = el(id);
+    if (element) element.textContent = text;
+  };
   const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
 
   let activeDistributionAxisId = null;
@@ -169,39 +177,44 @@
     const node = el('calibration-gate');
     const stage = el('model-stage');
     const status = modelStatus(record);
-    stage.textContent = status.title;
-    stage.className = `mt-2 inline-flex rounded-2xl border px-3.5 py-1 text-xs font-black backdrop-blur-sm ${status.className}`;
+    if (stage) {
+      stage.textContent = status.title;
+      stage.className = `mt-2 inline-flex rounded-2xl border px-3.5 py-1 text-xs font-black backdrop-blur-sm ${status.className}`;
+    }
 
     if (!calibration) {
-      node.innerHTML = `<div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs font-semibold text-slate-700"><strong>${status.title}</strong><p class="mt-1">${status.detail}</p></div>`;
+      if (node) node.innerHTML = `<div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs font-semibold text-slate-700"><strong>${status.title}</strong><p class="mt-1">${status.detail}</p></div>`;
       return false;
     }
 
     const eligible = Boolean(calibration.eligible);
-    node.innerHTML = `
-      <div class="rounded-2xl border ${eligible ? 'border-emerald-200 bg-emerald-50/60' : 'border-amber-200 bg-amber-50/60'} p-4 text-xs ${eligible ? 'text-emerald-950' : 'text-amber-950'}">
-        <div class="flex flex-wrap items-center justify-between gap-2">
-          <strong class="text-sm">${status.title}</strong>
-          <span class="rounded-xl bg-white px-3 py-1 font-black shadow-xs">${calibration.days || 0} ngày calibration</span>
-        </div>
-        <p class="mt-1.5 leading-relaxed">${status.detail}</p>
-        <div class="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4 font-semibold">
-          <span>Hit rate: <strong>${percent(calibration.hitRate)}</strong></span>
-          <span>Wilson lower: <strong>${percent(calibration.wilsonLower)}</strong></span>
-          <span>Hòa vốn 30 số: <strong>${percent(calibration.breakEvenHitRate)}</strong></span>
-          <span>Log loss: <strong>${Number(calibration.logLoss || 0).toFixed(3)}</strong> / uniform ${Number(calibration.uniformLogLoss || 0).toFixed(3)}</span>
-        </div>
-      </div>`;
+    if (node) {
+      node.innerHTML = `
+        <div class="rounded-2xl border ${eligible ? 'border-emerald-200 bg-emerald-50/60' : 'border-amber-200 bg-amber-50/60'} p-4 text-xs ${eligible ? 'text-emerald-950' : 'text-amber-950'}">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <strong class="text-sm">${status.title}</strong>
+            <span class="rounded-xl bg-white px-3 py-1 font-black shadow-xs">${calibration.days || 0} ngày calibration</span>
+          </div>
+          <p class="mt-1.5 leading-relaxed">${status.detail}</p>
+          <div class="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4 font-semibold">
+            <span>Hit rate: <strong>${percent(calibration.hitRate)}</strong></span>
+            <span>Wilson lower: <strong>${percent(calibration.wilsonLower)}</strong></span>
+            <span>Hòa vốn 30 số: <strong>${percent(calibration.breakEvenHitRate)}</strong></span>
+            <span>Log loss: <strong>${Number(calibration.logLoss || 0).toFixed(3)}</strong> / uniform ${Number(calibration.uniformLogLoss || 0).toFixed(3)}</span>
+          </div>
+        </div>`;
+    }
     return eligible;
   }
 
   function renderGroups(record) {
-    const groups = record.groupSignals || [];
-    el('groups').innerHTML = groups.map(group => {
+    const groups = record?.groupSignals || [];
+    const html = groups.map(group => {
       const z = Number(group.residualZ ?? group.deficitZ ?? 0);
       const direction = group.direction || (z >= 0 ? 'cao hơn kỳ vọng' : 'thấp hơn kỳ vọng');
-      return `<div class="flex items-center justify-between gap-4 p-4"><div><strong class="text-sm font-bold text-slate-900">${group.label}</strong><p class="text-xs text-slate-500 mt-0.5">${group.size} số · ${direction}</p></div><strong class="font-mono text-sm ${z >= 0 ? 'text-indigo-700 font-black' : 'text-slate-600'}">z ${z.toFixed(3)}</strong></div>`;
-    }).join('') || '<p class="p-5 text-xs text-slate-500">Chưa có tín hiệu nhóm độc lập đủ mạnh.</p>';
+      return `<div class="flex items-center justify-between gap-4 p-3.5"><div class="min-w-0 flex-1"><strong class="text-xs font-bold text-slate-900 truncate block">${group.label}</strong><p class="text-[11px] text-slate-500 mt-0.5">${group.size} số · ${direction}</p></div><strong class="font-mono text-xs ${z >= 0 ? 'text-indigo-700 font-black' : 'text-slate-600'}">z ${z.toFixed(3)}</strong></div>`;
+    }).join('') || '<p class="p-4 text-xs text-slate-500">Chưa có tín hiệu nhóm độc lập đủ mạnh.</p>';
+    setHtml('groups', html);
   }
 
   function renderHistoricalAnalysis(analysis) {
@@ -451,31 +464,33 @@
     const eligible = renderCalibration(latest);
     const labels = isV2(latest) ? v2Labels : legacyLabels;
 
-    el('prediction-date').textContent = latest.predictionDate || '-';
-    el('source-date').textContent = `Dữ liệu đến ${latest.sourceDataThrough || '-'}`;
-    el('bet-count').textContent = `${latest.topNumbers?.length || 0} số`;
-    el('group-window').textContent = `${definition.windows?.groupDeficit || '-'} ngày`;
-    el('chain-count').textContent = isV2(latest) ? 'Score v2 · online' : 'Score v1 · legacy';
-    el('model-version').textContent = `${definition.chainMethodCount || 0} dàn kiểm chứng`;
+    setText('prediction-date', latest.predictionDate || '-');
+    setText('source-date', `Dữ liệu đến ${latest.sourceDataThrough || '-'}`);
+    setText('bet-count', `${latest.topNumbers?.length || 0} số`);
+    setText('group-window', `${definition.windows?.groupDeficit || '-'} ngày`);
+    setText('chain-count', isV2(latest) ? 'Score v2 · online' : 'Score v1 · legacy');
+    setText('model-version', `${definition.chainMethodCount || 0} dàn kiểm chứng`);
 
     const topNumsList = latest.topNumbers || [];
-    el('top-title').textContent = eligible ? 'Dàn Số Ứng Viên Điểm Cao' : 'Dàn Số Nghiên Cứu Điểm Cao';
-    el('top-numbers').innerHTML = topNumsList.map(row => `
+    setText('top-title', eligible ? 'Dàn Số Ứng Viên Điểm Cao' : 'Dàn Số Nghiên Cứu Điểm Cao');
+    const topNumsHtml = topNumsList.map(row => `
       <button data-number="${row.number}" class="inline-flex h-11 min-w-11 items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50/70 font-mono text-sm font-black text-indigo-900 shadow-xs transition-transform hover:scale-105">
         <span>${fmt(row.number)}</span>
       </button>
     `).join('');
+    setHtml('top-numbers', topNumsHtml);
 
-    el('top-numbers').querySelectorAll('button').forEach(button => {
+    el('top-numbers')?.querySelectorAll('button').forEach(button => {
       button.addEventListener('click', () => showDetail((latest.rankedNumbers || []).find(row => row.number === Number(button.dataset.number)), latest));
     });
 
-    el('weights').innerHTML = Object.entries(definition.weights || {}).filter(([, value]) => value > 0).map(([key, value]) => `
+    const weightsHtml = Object.entries(definition.weights || {}).filter(([, value]) => value > 0).map(([key, value]) => `
       <div class="flex items-center justify-between gap-3 border-b border-slate-100 pb-1.5 last:border-b-0">
         <span class="text-slate-600">${labels[key] || key}</span>
         <strong class="font-black text-indigo-700">${Math.round(value * 100)}%</strong>
       </div>
     `).join('') || '<p class="text-slate-500">Chưa có metadata trọng số.</p>';
+    setHtml('weights', weightsHtml);
 
     renderGroups(latest);
     renderHistoricalAnalysis(recordPayload.historicalAnalysis);
@@ -515,15 +530,16 @@
       ['TỔNG NHẬN', money(summary.payoutK), '84 lần khi trúng'],
       ['LÃI / LỖ', `${Number(summary.profitK || 0) >= 0 ? '+' : '-'}${money(summary.profitK)}`, `${percent(summary.roi)} ROI`]
     ];
-    el('performance-summary').innerHTML = cards.map(([label, value, note], index) => `
+    const cardsHtml = cards.map(([label, value, note], index) => `
       <div class="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
         <p class="text-[10px] font-black uppercase tracking-wider text-slate-500">${label}</p>
         <strong class="mt-1 block text-lg font-black ${index === 5 ? profitClass : 'text-slate-900'}">${value}</strong>
         <p class="mt-0.5 text-xs text-slate-500">${note}</p>
       </div>
     `).join('');
+    setHtml('performance-summary', cardsHtml);
 
-    el('history').innerHTML = (recordPayload.records || []).slice().reverse().map(record => {
+    const historyHtml = (recordPayload.records || []).slice().reverse().map(record => {
       const numbers = (record.topNumbers || []).slice().sort((left, right) => Number(left.number) - Number(right.number));
       const abstained = Boolean(record.abstained) || numbers.length !== 30;
       const result = record.settled ? fmt(record.actual) : '--';
@@ -549,6 +565,7 @@
         </article>
       `;
     }).join('') || '<p class="p-5 text-xs text-slate-500">Chưa có nhật ký.</p>';
+    setHtml('history', historyHtml);
   }
 
   el('distribution-axis-select')?.addEventListener('change', event => {

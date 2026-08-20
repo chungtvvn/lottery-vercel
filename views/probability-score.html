@@ -177,8 +177,8 @@
       <div id="number-detail" class="mt-4 hidden rounded-2xl border border-indigo-200 bg-indigo-50/80 p-4 text-xs"></div>
     </section>
 
-    <!-- Top Ranked Numbers List -->
-    <section class="mb-6 grid gap-6 xl:grid-cols-[1.35fr_.65fr]">
+    <!-- Top Ranked Numbers List & Weights & Residual Groups -->
+    <section class="mb-6 grid gap-6 xl:grid-cols-[1.25fr_.85fr_.9fr]">
       <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <div class="border-b border-slate-100 pb-4">
           <h2 id="top-title" class="text-lg font-black text-slate-900">Dàn Số Điểm Cao Nhất Hôm Nay</h2>
@@ -190,8 +190,17 @@
       <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <div class="border-b border-slate-100 pb-4">
           <h2 class="text-lg font-black text-slate-900">Trọng Số Thành Phần</h2>
+          <p class="mt-0.5 text-xs text-slate-500">Tỷ trọng các tính năng trong mô hình</p>
         </div>
         <div id="weights" class="mt-4 space-y-2.5 text-xs"></div>
+      </article>
+
+      <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="border-b border-slate-100 pb-4">
+          <h2 class="text-lg font-black text-slate-900">Tín Hiệu Nhóm (Residual)</h2>
+          <p class="mt-0.5 text-xs text-slate-500">Độ lệch z-score của các phân lớp dạng số</p>
+        </div>
+        <div id="groups" class="mt-4 divide-y divide-slate-100 max-h-72 overflow-y-auto custom-scrollbar"></div>
       </article>
     </section>
 

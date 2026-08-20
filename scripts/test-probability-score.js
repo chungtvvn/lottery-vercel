@@ -6,8 +6,8 @@ const service = require('../lib/services/probabilityScoreService');
 
 function row(date, special) { return { date, special }; }
 
-const rawBefore = Array.from({ length: 100 }, (_, index) => {
-    const date = new Date(Date.UTC(2026, 0, 1 + index)).toISOString().slice(0, 10);
+const rawBefore = Array.from({ length: 220 }, (_, index) => {
+    const date = new Date(Date.UTC(2025, 6, 1 + index)).toISOString().slice(0, 10);
     return row(date, (index * 17 + 9) % 100);
 });
 const targetDate = '2026-04-11';
