@@ -7,6 +7,7 @@
     let payload = null;
     let currentTier = 'main30';
     let currentFilter = 'all';
+    let currentStrategyId = 'balanced-selector-fixed30-v1';
     const byId = id => document.getElementById(id);
 
     // Toast helper
@@ -48,25 +49,84 @@
         </div>
     `;
 
-    const breakEven = summary => Number(summary?.breakEvenHitRate || (30 / 84));
-
-    const laneOutcome = (record, lane) => {
-        if (!record?.settled) return '<span class="inline-flex items-center gap-1 font-bold text-amber-600"><span class="h-2 w-2 rounded-full bg-amber-500 animate-pulse"></span> Chờ kết quả</span>';
-        return record?.[lane]?.hit
-            ? '<span class="inline-flex items-center gap-1 font-bold text-emerald-700"><i class="bi bi-check-circle-fill"></i> Trúng</span>'
-            : '<span class="inline-flex items-center gap-1 font-bold text-rose-600"><i class="bi bi-x-circle-fill"></i> Trượt</span>';
-    };
-
-    const lanePerformance = summary => {
-        const passed = Boolean(summary?.isAboveBreakEven);
-        return `${summary?.wins || 0} trúng · ${summary?.losses || 0} trượt · ${percent(summary?.hitRate)} · ${passed ? 'vượt' : 'chưa vượt'} hòa vốn ${percent(breakEven(summary))}`;
-    };
-
     const ledgerLabel = record => record?.lifecycle?.mode === 'reconstructed-after-draw'
         ? 'Tái tạo từ snapshot đã phát hành'
         : 'Snapshot thực tế đã chốt';
 
     const signed = value => `${Number(value || 0) >= 0 ? '+' : ''}${fmt(value)}K`;
+
+    function recordStrategies(record) {
+        const strategies = Array.isArray(record?.strategySnapshots)
+            ? record.strategySnapshots.slice()
+            : [];
+        if (!strategies.some(strategy => strategy.strategyId === 'balanced-selector-fixed30-v1') && record?.main) {
+            strategies.push({
+                strategyId: 'balanced-selector-fixed30-v1',
+                label: 'Bộ chọn cân bằng (dàn chính)',
+                description: 'Dàn chính đã phát hành trong snapshot cũ.',
+                status: 'production-tracked',
+                numbers: record.main.numbers || [],
+                betCount: record.main.numbers?.length || 0,
+                abstained: false,
+                hit: record.main.hit,
+                sourceMethodIds: record.main.methodId ? [record.main.methodId] : []
+            });
+        }
+        const hybridId = record?.hybrid?.id;
+        if (hybridId && !strategies.some(strategy => strategy.strategyId === hybridId)) {
+            strategies.push({
+                strategyId: hybridId,
+                label: record.hybrid.label || 'Đồng thuận toàn bộ dàn 30',
+                description: 'Lane đồng thuận đã phát hành trong snapshot cũ.',
+                status: 'research-only',
+                numbers: record.hybrid.numbers || [],
+                betCount: record.hybrid.numbers?.length || 0,
+                abstained: false,
+                hit: record.hybrid.hit,
+                sourceMethodIds: (record.hybrid.leaders || []).flatMap(row => row.methodIds || [row.methodId]).filter(Boolean)
+            });
+        }
+        return strategies;
+    }
+
+    const strategyForRecord = (record, strategyId = currentStrategyId) => recordStrategies(record)
+        .find(strategy => strategy.strategyId === strategyId) || null;
+
+    function strategyCatalog() {
+        const catalog = new Map((payload?.strategyCatalog || []).map(strategy => [strategy.id, strategy]));
+        (payload?.records || []).forEach(record => recordStrategies(record).forEach(strategy => {
+            if (!catalog.has(strategy.strategyId)) {
+                catalog.set(strategy.strategyId, {
+                    id: strategy.strategyId,
+                    label: strategy.label || strategy.strategyId,
+                    status: strategy.status || 'research-only',
+                    description: strategy.description || ''
+                });
+            }
+        }));
+        return [...catalog.values()];
+    }
+
+    function strategySummary(strategyId) {
+        const tracked = (payload?.strategySummaries || []).find(strategy => strategy.id === strategyId)?.summary;
+        if (tracked) return tracked;
+        if (strategyId === 'balanced-selector-fixed30-v1') return payload?.summary?.main || {};
+        if (strategyId === payload?.methodology?.fusionId) return payload?.summary?.hybrid || {};
+        return {};
+    }
+
+    function strategyResearchSummary(strategyId) {
+        return (payload?.decisionReport?.strategies || []).find(strategy => strategy.id === strategyId)?.summary || null;
+    }
+
+    function strategyOutcome(record, strategy) {
+        if (!strategy) return '<span class="font-bold text-slate-400">Chưa phát hành</span>';
+        if (strategy.abstained) return '<span class="inline-flex items-center gap-1 font-bold text-slate-600"><i class="bi bi-pause-circle-fill"></i> Bỏ ngày</span>';
+        if (!record?.settled) return '<span class="inline-flex items-center gap-1 font-bold text-amber-600"><span class="h-2 w-2 rounded-full bg-amber-500 animate-pulse"></span> Chờ kết quả</span>';
+        return strategy.hit
+            ? '<span class="inline-flex items-center gap-1 font-bold text-emerald-700"><i class="bi bi-check-circle-fill"></i> Trúng</span>'
+            : '<span class="inline-flex items-center gap-1 font-bold text-rose-600"><i class="bi bi-x-circle-fill"></i> Trượt</span>';
+    }
 
     const methodPerformance = method => {
         const recent = method?.performance?.recent30 || {};
@@ -414,28 +474,129 @@
         if (btnCopyHybrid) btnCopyHybrid.addEventListener('click', () => copyNumbers(hybridNumbers, ' '));
     }
 
+    function renderStrategySelector() {
+        const select = byId('strategySelect');
+        const catalog = strategyCatalog();
+        if (!catalog.some(strategy => strategy.id === currentStrategyId)) {
+            currentStrategyId = catalog.find(strategy => strategy.id === 'balanced-selector-fixed30-v1')?.id
+                || catalog[0]?.id
+                || '';
+        }
+        select.innerHTML = catalog.map(strategy => `
+            <option value="${escapeHtml(strategy.id)}" ${strategy.id === currentStrategyId ? 'selected' : ''}>
+                ${escapeHtml(strategy.label)}${strategy.status === 'research-only' ? ' · thử nghiệm' : ''}
+            </option>
+        `).join('');
+        select.onchange = event => {
+            currentStrategyId = event.target.value;
+            renderStrategyOverview();
+            renderHistory();
+        };
+    }
+
+    function renderStrategyOverview() {
+        const container = byId('strategyOverview');
+        const latest = (payload?.records || [])[0];
+        const metadata = strategyCatalog().find(strategy => strategy.id === currentStrategyId) || {};
+        const strategy = strategyForRecord(latest);
+        const summary = strategySummary(currentStrategyId);
+        const research = strategyResearchSummary(currentStrategyId);
+        const issuedDays = Number(summary.issuedDays ?? summary.days ?? 0);
+        const candidateDays = Number(summary.candidateDays ?? summary.days ?? 0);
+        const abstainedDays = Number(summary.abstainedDays || 0);
+        const coverage = Number(summary.coverage ?? (candidateDays ? issuedDays / candidateDays : 0));
+        const passed = Boolean(summary.isAboveBreakEven);
+        const statusClass = metadata.status === 'research-only'
+            ? 'border-amber-200 bg-amber-50 text-amber-800'
+            : 'border-emerald-200 bg-emerald-50 text-emerald-800';
+
+        const livePanel = !latest ? `
+            <div class="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm font-semibold text-amber-800">Chưa có snapshot mới nhất.</div>
+        ` : !strategy ? `
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                <p class="font-black text-slate-800">Phương pháp này chưa được phát hành trong snapshot ngày ${escapeHtml(latest.predictionDate)}.</p>
+                <p class="mt-1 text-xs leading-relaxed text-slate-600">Hệ thống không tái tạo dàn bằng dữ liệu hiện tại. Action tiếp theo sẽ bắt đầu chốt lane này cho ngày chưa quay.</p>
+            </div>
+        ` : strategy.abstained ? `
+            <div class="rounded-2xl border border-slate-300 bg-slate-50 p-5">
+                <div class="flex items-center gap-2 text-slate-800"><i class="bi bi-pause-circle-fill text-xl"></i><strong>Bỏ ngày ${escapeHtml(latest.predictionDate)}</strong></div>
+                <p class="mt-2 text-xs leading-relaxed text-slate-600">${escapeHtml(strategy.evidence?.reason || 'Chứng cứ trước ngày quay chưa vượt ngưỡng phát hành.')}</p>
+            </div>
+        ` : `
+            <div class="rounded-2xl border border-indigo-200 bg-indigo-50/40 p-5">
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-xs font-black uppercase tracking-wider text-indigo-700">Dàn khóa cho ${escapeHtml(latest.predictionDate)}</p>
+                        <p class="mt-1 text-xs text-slate-600">Nguồn: ${escapeHtml((strategy.sourceMethodIds || []).join(', ') || 'đồng thuận đa phương pháp')} · ${strategy.betCount || strategy.numbers?.length || 0} số</p>
+                    </div>
+                    <button id="btnCopyStrategy" class="inline-flex items-center justify-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-black text-white hover:bg-indigo-700">
+                        <i class="bi bi-clipboard-check"></i> Sao chép dàn
+                    </button>
+                </div>
+                <div class="mt-4 flex flex-wrap gap-2">${renderChips(strategy.numbers, latest.actual)}</div>
+            </div>
+        `;
+
+        container.innerHTML = `
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <h3 class="text-lg font-black text-slate-900">${escapeHtml(metadata.label || strategy?.label || currentStrategyId)}</h3>
+                        <span class="rounded-full border px-2.5 py-1 text-[10px] font-black uppercase ${statusClass}">${metadata.status === 'research-only' ? 'Đang nghiên cứu' : 'Đang theo dõi production'}</span>
+                    </div>
+                    <p class="mt-1 max-w-4xl text-xs leading-relaxed text-slate-600">${escapeHtml(metadata.description || strategy?.description || '')}</p>
+                </div>
+                <p class="text-xs font-semibold text-slate-500">${strategyOutcome(latest, strategy)}</p>
+            </div>
+            <div class="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-3"><p class="text-[10px] font-bold uppercase text-slate-500">Ngày có ứng viên</p><p class="mt-1 text-lg font-black text-slate-900">${candidateDays}</p></div>
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-3"><p class="text-[10px] font-bold uppercase text-slate-500">Ngày phát hành</p><p class="mt-1 text-lg font-black text-slate-900">${issuedDays}</p></div>
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-3"><p class="text-[10px] font-bold uppercase text-slate-500">Bỏ ngày</p><p class="mt-1 text-lg font-black text-slate-900">${abstainedDays}</p></div>
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-3"><p class="text-[10px] font-bold uppercase text-slate-500">Độ phủ</p><p class="mt-1 text-lg font-black text-slate-900">${percent(coverage)}</p></div>
+                <div class="rounded-xl border ${passed ? 'border-emerald-200 bg-emerald-50' : 'border-rose-200 bg-rose-50'} p-3"><p class="text-[10px] font-bold uppercase text-slate-500">Trúng / phát hành</p><p class="mt-1 text-lg font-black ${passed ? 'text-emerald-800' : 'text-rose-700'}">${summary.wins || 0}/${issuedDays}</p><p class="text-[10px] text-slate-500">${percent(summary.hitRate)}</p></div>
+                <div class="rounded-xl border ${Number(summary.profitK || 0) >= 0 ? 'border-emerald-200 bg-emerald-50' : 'border-rose-200 bg-rose-50'} p-3"><p class="text-[10px] font-bold uppercase text-slate-500">Lãi / lỗ snapshot</p><p class="mt-1 text-base font-black ${Number(summary.profitK || 0) >= 0 ? 'text-emerald-800' : 'text-rose-700'}">${signed(summary.profitK || 0)}</p><p class="text-[10px] text-slate-500">ROI ${percent(summary.roi)}</p></div>
+            </div>
+            <div class="mt-5 grid gap-4 lg:grid-cols-[1.5fr_1fr]">
+                ${livePanel}
+                <div class="rounded-2xl border border-violet-200 bg-violet-50/50 p-5">
+                    <p class="text-xs font-black uppercase tracking-wider text-violet-700">Replay PIT phục vụ nghiên cứu</p>
+                    ${research ? `
+                        <p class="mt-2 text-sm font-black text-slate-900">${research.wins || 0}/${research.issuedDays ?? research.days ?? 0} ngày phát hành trúng (${percent(research.hitRate)})</p>
+                        <p class="mt-1 text-xs leading-relaxed text-slate-600">Lãi/lỗ ${signed(research.profitK || 0)} · ROI ${percent(research.roi)} · chuỗi trượt dài nhất ${research.longestLoss || 0}. Đây là replay PIT, không phải nhật ký cược thực tế.</p>
+                    ` : '<p class="mt-2 text-xs text-slate-600">Chưa đủ replay cùng kỳ để đánh giá.</p>'}
+                </div>
+            </div>
+        `;
+        const copyButton = byId('btnCopyStrategy');
+        if (copyButton && strategy?.numbers?.length) copyButton.onclick = () => copyNumbers(strategy.numbers, ' ');
+    }
+
     function renderHistory() {
         const limit = Number(byId('logLimit').value || 30);
         const rows = (payload?.records || []).slice(0, limit);
         const container = byId('historyLog');
+        const metadata = strategyCatalog().find(strategy => strategy.id === currentStrategyId) || {};
 
         if (!rows.length) {
             container.innerHTML = '<p class="p-8 text-center text-sm font-semibold text-slate-500">Chưa có nhật ký đối soát.</p>';
             return;
         }
 
-        container.innerHTML = rows.map((record, index) => {
-            const selected = record.recommendation?.selected || {};
-            const isMainHit = record.settled && record.main?.hit;
-            const isHybridHit = record.settled && record.hybrid?.hit;
+        container.innerHTML = rows.map(record => {
+            const strategy = strategyForRecord(record);
+            const isHit = record.settled && strategy?.hit;
+            const isMissing = !strategy;
+            const isAbstained = Boolean(strategy?.abstained);
 
             return `
                 <article class="p-5 transition-colors hover:bg-slate-50/80">
                     <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                         <div class="flex items-center gap-3">
                             <span class="flex h-10 w-10 items-center justify-center rounded-2xl font-mono text-sm font-black ${
-                                record.settled
-                                    ? (isMainHit ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800')
+                                isMissing || isAbstained
+                                    ? 'bg-slate-100 text-slate-500'
+                                    : record.settled
+                                    ? (isHit ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800')
                                     : 'bg-amber-100 text-amber-800'
                             }">
                                 ${record.settled ? number(record.actual) : '??'}
@@ -446,28 +607,29 @@
                                     <span class="text-[11px] font-semibold text-slate-500">(${escapeHtml(ledgerLabel(record))})</span>
                                 </div>
                                 <p class="text-xs font-semibold text-slate-600 mt-0.5">
-                                    Phương pháp: <strong class="text-indigo-700">${escapeHtml(record.main?.label || selected.label || '-')}</strong>
+                                    Phương pháp: <strong class="text-indigo-700">${escapeHtml(strategy?.label || metadata.label || currentStrategyId)}</strong>
                                 </p>
+                                ${strategy?.sourceMethodIds?.length ? `<p class="mt-0.5 text-[11px] text-slate-500">Nguồn: ${escapeHtml(strategy.sourceMethodIds.join(', '))}</p>` : ''}
                             </div>
                         </div>
 
-                        <!-- Results Badges -->
                         <div class="flex flex-wrap items-center gap-3 text-xs">
                             <div class="rounded-xl border border-slate-200 bg-white px-3 py-1.5 font-bold shadow-xs">
-                                <span>Dàn Chính:</span> ${laneOutcome(record, 'main')}
+                                ${strategyOutcome(record, strategy)}
                             </div>
-                            ${record.hybrid ? `
-                                <div class="rounded-xl border border-slate-200 bg-white px-3 py-1.5 font-bold shadow-xs">
-                                    <span>Đồng Thuận:</span> ${laneOutcome(record, 'hybrid')}
-                                </div>
-                            ` : ''}
+                            ${strategy ? `<span class="rounded-lg bg-slate-100 px-2.5 py-1.5 font-bold text-slate-600">${strategy.betCount || strategy.numbers?.length || 0} số</span>` : ''}
                         </div>
                     </div>
 
-                    <!-- Number Chips in History -->
-                    <div class="mt-3 flex flex-wrap gap-1.5">
-                        ${renderChips(record.main?.numbers, record.actual)}
-                    </div>
+                    ${isMissing ? `
+                        <div class="mt-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-3 text-xs font-semibold text-slate-500">
+                            Lane này chưa được phát hành cho ngày trên; hệ thống không tính lại bằng dữ liệu mới.
+                        </div>
+                    ` : isAbstained ? `
+                        <div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">${escapeHtml(strategy.evidence?.reason || 'Bỏ ngày do chứng cứ chưa đủ.')}</div>
+                    ` : `
+                        <div class="mt-3 flex flex-wrap gap-1.5">${renderChips(strategy.numbers, record.actual)}</div>
+                    `}
                 </article>
             `;
         }).join('');
@@ -545,6 +707,8 @@
 
         renderLatest((data.records || [])[0]);
         renderDecisionGuide(data);
+        renderStrategySelector();
+        renderStrategyOverview();
         renderHistory();
     }
 

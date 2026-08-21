@@ -1,7 +1,15 @@
 #!/usr/bin/env node
 'use strict';
 const assert = require('assert');
-const { generateAdvisorCache, buildAdaptiveFusion, BET_COUNT, DAILY_METHOD_POOL } = require('../lib/services/dailyMethodAdvisorService');
+const {
+    generateAdvisorCache,
+    buildAdaptiveFusion,
+    BET_COUNT,
+    MAIN_STRATEGY_ID,
+    ROBUST_STRATEGY_ID,
+    INDEPENDENT_FUSION_ID,
+    WILSON_ABSTAIN_ID
+} = require('../lib/services/dailyMethodAdvisorService');
 
 const raw = Array.from({ length: 80 }, (_, index) => ({
     date: `2026-01-${String(index + 1).padStart(2, '0')}`.replace(/-0(3[2-9]|[4-9][0-9])$/, '-03'),
@@ -65,6 +73,32 @@ assert.deepEqual(
     'every comparable method must remain auditable even when exact dàn are deduplicated'
 );
 assert.equal(pendingCache.records[0].hybrid.evidence.length, BET_COUNT);
+assert.deepEqual(
+    pendingCache.records[0].strategySnapshots.map(strategy => strategy.strategyId),
+    [
+        MAIN_STRATEGY_ID,
+        'all-method-fixed30-consensus-v1',
+        ROBUST_STRATEGY_ID,
+        INDEPENDENT_FUSION_ID,
+        WILSON_ABSTAIN_ID
+    ],
+    'every tracked strategy must be frozen as an independent snapshot lane'
+);
+assert.equal(
+    pendingCache.records[0].strategySnapshots.find(strategy => strategy.strategyId === ROBUST_STRATEGY_ID).numbers.length,
+    BET_COUNT,
+    'robust multi-horizon selector must choose one immutable 30-number candidate dàn'
+);
+assert.equal(
+    pendingCache.records[0].strategySnapshots.find(strategy => strategy.strategyId === INDEPENDENT_FUSION_ID).numbers.length,
+    BET_COUNT,
+    'independent-family consensus must keep the comparison at exactly 30 numbers'
+);
+const abstainSnapshot = pendingCache.records[0].strategySnapshots.find(strategy => strategy.strategyId === WILSON_ABSTAIN_ID);
+assert.equal(abstainSnapshot.abstained, true, 'Wilson lane must abstain when the minimum sample gate is not met');
+assert.equal(abstainSnapshot.numbers.length, 0, 'an abstention must not synthesize fallback numbers');
+assert.ok(Array.isArray(pendingCache.strategyCatalog) && pendingCache.strategyCatalog.length === 5);
+assert.ok(Array.isArray(pendingCache.strategySummaries) && pendingCache.strategySummaries.length === 5);
 assert.ok(pendingCache.records[0].recommendation.ranking.every(row => Number.isFinite(row.posterior7) && Number.isFinite(row.trend)));
 assert.equal(pendingCache.records[0].recommendation.models.length, 5, 'five selection models must be available');
 assert.deepEqual(
@@ -107,6 +141,29 @@ assert.deepEqual(unaffectedByFuture.main.numbers, issuedForLeakTest.main.numbers
     'a future draw must not change the advisor dàn issued for an earlier date');
 assert.deepEqual(unaffectedByFuture.hybrid.numbers, issuedForLeakTest.hybrid.numbers,
     'a future draw must not change the all-method dàn issued for an earlier date');
+assert.deepEqual(
+    unaffectedByFuture.strategySnapshots.map(strategy => ({
+        strategyId: strategy.strategyId,
+        numbers: strategy.numbers,
+        abstained: strategy.abstained
+    })),
+    issuedForLeakTest.strategySnapshots.map(strategy => ({
+        strategyId: strategy.strategyId,
+        numbers: strategy.numbers,
+        abstained: strategy.abstained
+    })),
+    'a future draw must not change any independently issued strategy lane'
+);
+assert.equal(
+    unaffectedByFuture.strategySnapshots.find(strategy => strategy.strategyId === WILSON_ABSTAIN_ID).hit,
+    null,
+    'an abstained lane must remain neither win nor loss after settlement'
+);
+const abstainSummary = generateAdvisorCache({ history: settledLeakHistory, raw: futureMutatedRaw, existing: [issuedForLeakTest], limit: 90 })
+    .strategySummaries.find(strategy => strategy.id === WILSON_ABSTAIN_ID).summary;
+assert.equal(abstainSummary.candidateDays, 1);
+assert.equal(abstainSummary.issuedDays, 0);
+assert.equal(abstainSummary.stakeK, 0, 'an abstained day must not create stake');
 const staleRecord = { ...pendingCache.records[0], predictionDate: '2026-03-01', settled: false };
 const staleFiltered = generateAdvisorCache({ history, raw, existing: [staleRecord], limit: 90 });
 assert.equal(staleFiltered.records.length, 1, 'an old issued snapshot must be settled from raw when its result is available');
@@ -119,6 +176,34 @@ const recovered = generateAdvisorCache({ history: pendingHistory.map(run => run.
     : run), raw: recoveryRaw, existing: [issuedSnapshot], limit: 90 });
 const recoveredRecord = recovered.records.find(record => record.predictionDate === '2026-04-01');
 assert.equal(recoveredRecord.lifecycle.mode, 'live-issued', 'an already issued snapshot must remain live-issued when settled');
+assert.ok(
+    recoveredRecord.strategySnapshots.filter(strategy => !strategy.abstained).every(strategy => typeof strategy.hit === 'boolean'),
+    'every issued strategy lane must settle independently'
+);
+
+const legacyPending = { ...issuedSnapshot };
+delete legacyPending.strategySnapshots;
+const upgradedPending = generateAdvisorCache({ history: pendingHistory, raw, existing: [legacyPending], limit: 90 })
+    .records.find(record => record.predictionDate === '2026-04-01');
+assert.equal(upgradedPending.strategySnapshots.length, 5, 'new lanes may be appended while the draw is still pending');
+
+const legacySettled = {
+    ...legacyPending,
+    settled: true,
+    actual: 42,
+    main: { ...legacyPending.main, hit: false }
+};
+const settledMustStayLegacy = generateAdvisorCache({
+    history: settledLeakHistory,
+    raw: settledLeakRaw,
+    existing: [legacySettled],
+    limit: 90
+}).records.find(record => record.predictionDate === '2026-04-01');
+assert.equal(
+    settledMustStayLegacy.strategySnapshots,
+    undefined,
+    'a settled legacy snapshot must never be backfilled with newly invented strategy lanes'
+);
 
 const priorIssued = {
     ...issuedSnapshot,

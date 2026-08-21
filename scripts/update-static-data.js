@@ -8,6 +8,10 @@ const zlib = require('zlib');
 const { spawnSync } = require('child_process');
 const { fetchLatestXsmbResult, XOSO_HOME_URL, XOSO_SOURCE_URLS } = require('./sources/xoso-com-vn');
 const { isInvalidStatsKey } = require('../lib/utils/statsOptionsManifest');
+const {
+    CACHE_VERSION: DAILY_METHOD_ADVISOR_CACHE_VERSION,
+    STRATEGY_CATALOG: DAILY_METHOD_ADVISOR_STRATEGY_CATALOG
+} = require('../lib/services/dailyMethodAdvisorService');
 
 const LEGACY_DATA_URL = 'https://raw.githubusercontent.com/khiemdoan/vietnam-lottery-xsmb-analysis/refs/heads/main/data/xsmb-2-digits.json';
 const DATA_DIR = path.join(__dirname, '..', 'lib', 'data');
@@ -45,7 +49,6 @@ const HISTORY_PERFORMANCE_REPORT_CACHE_FILE = 'cached_prediction_history_perform
 const DAILY_METHOD_ADVISOR_CACHE_FILE = 'cached_daily_method_advisor.json';
 const PROBABILITY_SCORE_CACHE_FILE = 'cached_probability_score.json';
 const PROBABILITY_DISTRIBUTION_CACHE_FILE = 'cached_probability_distribution.json';
-const DAILY_METHOD_ADVISOR_CACHE_VERSION = 'daily-advisor-model-selection-v9';
 const PROBABILITY_SCORE_HISTORY_VERSION = 'probability-score-history-v1';
 const PERFORMANCE_REPORT_VERSION = 'profit-report-2026-de-parallel-rrf-loto-v2';
 const ANALYSIS_CACHE_VERSION = 'hold70-edge-bo-v1';
@@ -886,13 +889,20 @@ async function hasDailyMethodAdvisorCacheOnR2(expectedLatestDate = null) {
         const record = Array.isArray(cache?.records)
             ? cache.records.find(item => normalizeDateValue(item?.predictionDate) === expectedPredictionDate)
             : null;
+        const issuedStrategyIds = new Set((record?.strategySnapshots || []).map(strategy => strategy.strategyId));
+        const hasRequiredStrategies = DAILY_METHOD_ADVISOR_STRATEGY_CATALOG
+            .every(strategy => issuedStrategyIds.has(strategy.id));
         const valid = cache?.version === DAILY_METHOD_ADVISOR_CACHE_VERSION
             && record?.main?.numbers?.length === 30
             && record?.hybrid?.numbers?.length === 30
             && record?.hybrid?.id === 'all-method-fixed30-consensus-v1'
             && Number(record?.hybrid?.methodCount || 0) >= 1
+            && hasRequiredStrategies
             && record?.source?.strict;
-        console.log(`[Cache Check] R2 Gợi ý=${record?.predictionDate || 'missing'}, valid=${valid}.`);
+        console.log(
+            `[Cache Check] R2 Gợi ý=${record?.predictionDate || 'missing'}, ` +
+            `version=${cache?.version || 'missing'}, strategies=${issuedStrategyIds.size}, valid=${valid}.`
+        );
         return valid;
     } catch (error) {
         console.log(`[Cache Check] R2 Gợi ý cache missing/stale: ${error.message}`);

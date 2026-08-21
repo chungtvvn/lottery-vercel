@@ -141,12 +141,28 @@
             <div id="decisionGuide" class="grid gap-4 p-6 sm:grid-cols-2 lg:grid-cols-3"></div>
         </section>
 
+        <!-- Immutable Strategy Tracking -->
+        <section class="mb-8 overflow-hidden rounded-3xl border border-indigo-200 bg-white shadow-sm">
+            <div class="flex flex-col gap-4 border-b border-indigo-100 bg-indigo-50/60 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                    <p class="text-xs font-black uppercase tracking-wider text-indigo-600">THEO DÕI SNAPSHOT ĐA PHƯƠNG PHÁP</p>
+                    <h2 class="mt-1 text-lg font-black text-slate-900">Chọn Phương Pháp Để Đối Soát</h2>
+                    <p class="mt-1 max-w-3xl text-xs leading-relaxed text-slate-600">Mỗi dàn được khóa độc lập trước giờ quay. Phương pháp thử nghiệm chỉ dùng để theo dõi, không tự động thay dàn production.</p>
+                </div>
+                <label class="block min-w-0 lg:w-[390px]">
+                    <span class="mb-1.5 block text-[11px] font-black uppercase tracking-wider text-slate-500">Phương pháp đang xem</span>
+                    <select id="strategySelect" class="w-full rounded-xl border border-indigo-200 bg-white px-3.5 py-2.5 text-sm font-bold text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none"></select>
+                </label>
+            </div>
+            <div id="strategyOverview" class="p-6"></div>
+        </section>
+
         <!-- History Ledger Section -->
         <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
             <div class="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/80 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h2 class="text-lg font-black text-slate-900">Nhật Ký Chốt Số & Đối Soát Lịch Sử</h2>
-                    <p class="mt-0.5 text-xs text-slate-500">Toàn bộ dàn đã phát hành được lưu trữ bất biến và tự động đối chiếu kết quả sau 18:30 hàng ngày.</p>
+                    <p class="mt-0.5 text-xs text-slate-500">Nhật ký bên dưới đi theo phương pháp đang chọn; dàn chưa từng phát hành sẽ không được tính lại bằng dữ liệu mới.</p>
                 </div>
                 <div class="flex items-center gap-2 text-sm font-semibold text-slate-600">
                     <span>Xem:</span>
