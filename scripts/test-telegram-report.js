@@ -1,6 +1,11 @@
 const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
+const {
+    compactMilestoneTelegramPayload,
+    compactLotoTelegramPayload,
+    compactPredictionHistoryTelegramRows
+} = require('../lib/utils/telegramPayloadProjection');
 
 async function loadWorkerModule() {
     const source = fs.readFileSync(
@@ -317,7 +322,38 @@ async function main() {
         ]
     };
 
-    const report = buildTelegramReport(dePayload, lotoPayload, historyPayload);
+    // Production Worker must consume the compact API view. Add representative
+    // bulky fields here to guard against accidentally forwarding them again.
+    dePayload.baseline = { rows: Array.from({ length: 100 }, () => ({ evidence: 'unused' })) };
+    lotoPayload.positionPredictions = Array.from({ length: 27 }, () => ({ evidence: 'unused' }));
+    lotoPayload.livePredictions.predictions[0].positionPredictions = Array.from(
+        { length: 27 },
+        () => ({ evidence: 'unused' })
+    );
+    historyPayload.history[0].chainRows = Array.from({ length: 100 }, () => ({ evidence: 'unused' }));
+
+    const compactDe = compactMilestoneTelegramPayload(dePayload);
+    const compactLoto = compactLotoTelegramPayload(lotoPayload);
+    const compactHistory = {
+        history: compactPredictionHistoryTelegramRows(historyPayload.history)
+    };
+    assert.ok(
+        JSON.stringify(compactDe).length < JSON.stringify(dePayload).length,
+        'Payload Đề Telegram phải nhỏ hơn cache đầy đủ'
+    );
+    assert.ok(
+        JSON.stringify(compactLoto).length < JSON.stringify(lotoPayload).length,
+        'Payload Lô Telegram phải nhỏ hơn cache đầy đủ'
+    );
+    assert.ok(
+        JSON.stringify(compactHistory).length < JSON.stringify(historyPayload).length,
+        'Payload Lịch sử Telegram phải nhỏ hơn cache đầy đủ'
+    );
+    assert.strictEqual(compactLoto.positionPredictions, undefined);
+    assert.strictEqual(compactLoto.livePredictions.predictions[0].positionPredictions, undefined);
+    assert.strictEqual(compactHistory.history[0].chainRows, undefined);
+
+    const report = buildTelegramReport(compactDe, compactLoto, compactHistory);
     assert.match(report.text, /Đã đánh \(30 số\):/);
     assert.match(report.text, /KQ thực tế: <b>12<\/b>/);
     assert.match(report.text, /ĐỀ — GỘP EDGE75 LỊCH SỬ \+ SONG SONG MỐC 20 NĂM \(X2 SỐ TRÙNG\)/);

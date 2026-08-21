@@ -394,6 +394,16 @@ export async function GET(request) {
             }
             : payload;
 
+        if (url.searchParams.get('view') === 'telegram') {
+            const {
+                compactLotoTelegramPayload
+            } = require('@/lib/utils/telegramPayloadProjection');
+            return NextResponse.json(
+                { success: true, ...compactLotoTelegramPayload(mergedPayload) },
+                { headers: NO_STORE_HEADERS }
+            );
+        }
+
         const { selectBestLotoDefault } = require('@/lib/utils/lotoDefaultSelection');
         const requestedStrategy = url.searchParams.get('strategy');
         const automaticDefault = selectBestLotoDefault(

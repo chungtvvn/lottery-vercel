@@ -659,9 +659,9 @@ async function notifyTelegram(env, options = {}) {
   }
 
   const [dePayload, lotoPayload, historyPayload] = await Promise.all([
-    fetchPredictionJson(env, '/api/milestone-20y/prediction'),
-    fetchPredictionJson(env, '/api/loto/prediction?count=all'),
-    fetchPredictionJson(env, '/api/prediction/history?limit=90')
+    fetchPredictionJson(env, '/api/milestone-20y/prediction?view=telegram'),
+    fetchPredictionJson(env, '/api/loto/prediction?count=all&view=telegram'),
+    fetchPredictionJson(env, '/api/prediction/history?limit=90&view=telegram')
   ]);
   const readiness = evaluatePredictionCacheReadiness(
     dePayload,

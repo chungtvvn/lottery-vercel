@@ -36,6 +36,19 @@ export async function GET(request) {
         const url = new URL(request.url);
         const limit = parseInt(url.searchParams.get('limit')) || 90;
         const history = await predictionHistoryService.getHistory(limit);
+
+        if (url.searchParams.get('view') === 'telegram') {
+            const {
+                compactPredictionHistoryTelegramRows
+            } = require('@/lib/utils/telegramPayloadProjection');
+            return NextResponse.json(
+                {
+                    success: true,
+                    history: compactPredictionHistoryTelegramRows(history)
+                },
+                { headers: NO_STORE_HEADERS }
+            );
+        }
         
         return NextResponse.json({ success: true, history }, { headers: NO_STORE_HEADERS });
     } catch (e) {

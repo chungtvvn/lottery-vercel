@@ -88,6 +88,16 @@ export async function GET(request) {
             }
             : payload;
 
+        if (url.searchParams.get('view') === 'telegram') {
+            const {
+                compactMilestoneTelegramPayload
+            } = require('@/lib/utils/telegramPayloadProjection');
+            return NextResponse.json(
+                { success: true, ...compactMilestoneTelegramPayload(mergedPayload) },
+                { headers: NO_STORE_HEADERS }
+            );
+        }
+
         const filtered = pickPrediction(
             mergedPayload,
             url.searchParams.get('strategy'),

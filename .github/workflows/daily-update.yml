@@ -501,13 +501,17 @@ jobs:
         env:
           TELEGRAM_WORKER_NOTIFY_URL: ${{ secrets.TELEGRAM_WORKER_NOTIFY_URL }}
           TELEGRAM_DISPATCH_SECRET: ${{ secrets.TELEGRAM_DISPATCH_SECRET }}
+          TELEGRAM_DATA_DATE: ${{ steps.target.outputs.date }}
         run: |
           if [ -z "$TELEGRAM_WORKER_NOTIFY_URL" ] || [ -z "$TELEGRAM_DISPATCH_SECRET" ]; then
             echo "Telegram Worker secrets chưa cấu hình; cron Cloudflare sẽ thử gửi nếu KV đã sẵn sàng."
             exit 0
           fi
-          curl -fsS -X POST "$TELEGRAM_WORKER_NOTIFY_URL/telegram/notify" \
-            -H "x-dispatch-secret: $TELEGRAM_DISPATCH_SECRET"
+          if ! curl -fsS --retry 4 --retry-all-errors --retry-delay 5 --max-time 120 \
+            -X POST "$TELEGRAM_WORKER_NOTIFY_URL/telegram/notify?dataDate=$TELEGRAM_DATA_DATE" \
+            -H "x-dispatch-secret: $TELEGRAM_DISPATCH_SECRET"; then
+            echo "::warning::Telegram Worker tạm thời chưa gửi được báo cáo. Cache Đề/Lô đã xác minh và Vercel vẫn tiếp tục deploy; Worker cron sẽ thử lại."
+          fi
 
       - name: Force Vercel redeploy after both caches are ready
         env:
