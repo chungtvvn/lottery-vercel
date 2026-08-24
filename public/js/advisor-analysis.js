@@ -362,7 +362,10 @@
     }
 
     function renderSettledLedger() {
-        const ledger = payload?.settledLedger;
+        // This section must only show the dàn that was actually frozen by
+        // the daily selector.  PIT replay results remain in the research
+        // panels and must not be presented as live issued predictions.
+        const ledger = payload?.liveSelectorLedger || payload?.settledLedger;
         if (!ledger) return;
 
         const summary = ledger.summary || {};
@@ -372,7 +375,7 @@
 
         const cards = [
             ['TỔNG NGÀY ĐỐI SOÁT', `${summary.totalSettled || 0} ngày`, `Hòa vốn: ${pct(summary.breakEvenHitRate)}`],
-            ['TỔNG THẮNG / THUA', `${summary.totalWins || 0} / ${summary.totalLosses || 0}`, 'Theo dàn 30 số chốt'],
+            ['TỔNG THẮNG / THUA', `${summary.totalWins || 0} / ${summary.totalLosses || 0}`, 'Theo dàn 30 số đã khóa'],
             ['TỔNG LÃI / LỖ', signed(summary.overallProfitK), '1.000K mỗi số · ăn 84 lần'],
             ['7 KỲ GẦN NHẤT', `${windows.last7?.wins || 0}/${windows.last7?.days || 0} (${pct(windows.last7?.hitRate)})`, `${signed(windows.last7?.profitK)}`],
             ['14 KỲ GẦN NHẤT', `${windows.last14?.wins || 0}/${windows.last14?.days || 0} (${pct(windows.last14?.hitRate)})`, `${signed(windows.last14?.profitK)}`],
@@ -390,24 +393,27 @@
 
         const rows = (ledger.records || []).slice().reverse();
         const tableHtml = rows.map(r => {
-            const isAbstained = r.abstained || !r.isLocked;
+            const isPending = r.settled === false;
+            const isAbstained = !isPending && (r.abstained || !r.isLocked);
             const isHit = Boolean(r.hit);
             const actualStr = Number.isInteger(r.actual) ? num(r.actual) : '--';
-            const statusClass = isAbstained
+            const statusClass = isPending
+                ? 'bg-amber-100 text-amber-800 border-amber-300'
+                : isAbstained
                 ? 'bg-slate-100 text-slate-600 border-slate-200'
                 : isHit
                     ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
                     : 'bg-rose-100 text-rose-800 border-rose-300';
-            const statusText = isAbstained ? 'Chưa chốt' : isHit ? 'TRÚNG' : 'TRƯỢT';
+            const statusText = isPending ? 'CHỜ KẾT QUẢ' : isAbstained ? 'BỎ NGÀY' : isHit ? 'TRÚNG' : 'TRƯỢT';
 
             const numbersHtml = isAbstained
-                ? '<span class="italic text-slate-400 font-semibold text-[11px]">Chưa khóa dàn trước giờ quay · Không tự tính toán</span>'
+                ? '<span class="italic text-slate-400 font-semibold text-[11px]">Bộ chọn không phát hành dàn cho ngày này.</span>'
                 : (r.numbers || []).map(n => {
                     const match = isHit && Number(n) === Number(r.actual);
                     return `<span class="rounded px-1.5 py-0.5 font-mono text-xs font-bold ${match ? 'bg-amber-300 text-amber-950 ring-2 ring-amber-400' : 'bg-slate-100 text-slate-700'}">${num(n)}</span>`;
                 }).join(' ');
 
-            const profitHtml = isAbstained
+            const profitHtml = isPending || isAbstained
                 ? '<span class="text-slate-400 font-semibold">--</span>'
                 : `<span class="${Number(r.profitK) >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${signed(r.profitK)} (${pct(r.cumulativeHitRate)})</span>`;
 
@@ -420,7 +426,7 @@
                         </span>
                     </td>
                     <td class="px-3 py-3">
-                        <p class="font-bold text-slate-900">${esc(r.policyLabel)}</p>
+                        <p class="font-bold text-slate-900">${esc(r.policyLabel || 'Bộ chọn tự động')}</p>
                         <p class="text-[11px] text-slate-500">${esc(r.methodLabel || '')}</p>
                     </td>
                     <td class="px-4 py-3 max-w-[340px]">
@@ -508,4 +514,3 @@
             byId('errorBox')?.classList.remove('hidden');
         });
 })();
-

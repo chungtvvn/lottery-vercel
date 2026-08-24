@@ -58,15 +58,61 @@ const probabilityCache = {
 };
 
 const analysis = buildAdvisorAnalysis({ advisorCache, probabilityCache, history });
-assert.equal(analysis.version, 'advisor-analysis-v6');
+assert.equal(analysis.version, 'advisor-analysis-v7');
 assert.equal(analysis.researchReport.strictPointInTime, true);
 assert.equal(analysis.researchReport.policies.length, RESEARCH_POLICIES.length);
 assert.ok(analysis.researchReport.policies.every(policy => policy.coverage.candidateDays > 0), 'every policy should report its eligible PIT opportunities');
 assert.ok(analysis.researchReport.policies.every(policy => policy.coverage.issuedDays === policy.overall.days), 'coverage must count only days where a fixed 30-number dàn was issued');
 assert.ok(analysis.researchReport.policies.every(policy => policy.coverage.issuedDays <= policy.coverage.candidateDays), 'an abstaining policy cannot issue more dàn than eligible days');
 assert.ok(analysis.researchReport.policies.every(policy => policy.decisions.every(row => row.date !== history.at(-1).predictionDate)), 'unresolved snapshots must not become a fake 00 result');
+assert.ok(analysis.researchReport.policies.every(policy => policy.decisions.every(row => row.numbers.length === 30 && !row.abstained)), 'PIT decisions must retain their issued 30-number dàn for research inspection');
+assert.equal(analysis.replayLedger.kind, 'pit-replay', 'research decisions are exposed separately from live snapshots');
+assert.ok(analysis.replayLedger.summary.totalSettled > 0, 'PIT replay ledger must summarize retained dàn rather than rendering as unissued');
 assert.ok(analysis.currentCandidates.every(candidate => candidate.numbers.length === 30), 'current candidates use the snapshot candidate dàn');
 assert.equal(analysis.warnings.scoreDateMismatch, false);
+
+const liveAdvisorCache = {
+    records: [
+        {
+            predictionDate: '2026-03-08',
+            settled: true,
+            actual: 3,
+            lifecycle: { mode: 'live-issued', immutableNumbers: true },
+            recommendation: { selected: { methodId: methodIds[0], label: methodIds[0] } },
+            main: { methodId: methodIds[0], label: methodIds[0], numbers: methodSets[methodIds[0]].numbersToBet },
+            strategySnapshots: [{
+                strategyId: 'balanced-selector-fixed30-v1',
+                methodId: methodIds[0],
+                methodLabel: methodIds[0],
+                numbers: methodSets[methodIds[0]].numbersToBet,
+                abstained: false,
+                hit: true
+            }]
+        },
+        {
+            predictionDate: '2026-03-09',
+            settled: false,
+            actual: null,
+            lifecycle: { mode: 'live-issued', immutableNumbers: true },
+            recommendation: { selected: { methodId: methodIds[1], label: methodIds[1] } },
+            main: { methodId: methodIds[1], label: methodIds[1], numbers: methodSets[methodIds[1]].numbersToBet },
+            strategySnapshots: [{
+                strategyId: 'balanced-selector-fixed30-v1',
+                methodId: methodIds[1],
+                methodLabel: methodIds[1],
+                numbers: methodSets[methodIds[1]].numbersToBet,
+                abstained: false,
+                hit: null
+            }]
+        }
+    ]
+};
+const liveLedgerAnalysis = buildAdvisorAnalysis({ advisorCache: liveAdvisorCache, probabilityCache, history });
+assert.equal(liveLedgerAnalysis.liveSelectorLedger.kind, 'live-issued');
+assert.equal(liveLedgerAnalysis.liveSelectorLedger.summary.totalSettled, 1, 'only a settled, frozen strategy snapshot may enter the live result');
+assert.equal(liveLedgerAnalysis.liveSelectorLedger.summary.totalWins, 1);
+assert.equal(liveLedgerAnalysis.liveSelectorLedger.records[0].numbers.length, 30, 'the actual ledger must retain the frozen dàn');
+assert.equal(liveLedgerAnalysis.liveSelectorLedger.records[1].settled, false, 'a pending dàn remains pending instead of being treated as a loss');
 assert.equal(analysis.currentAdvice.agreement.availablePolicies, RESEARCH_POLICIES.length, 'advice reports the available fixed dàn policies');
 assert.ok(analysis.currentAdvice.recommendations.length >= 2, 'advice must explain the operational recommendation and its evidence');
 assert.ok(analysis.methodComplementarity.length > 0, 'analysis must expose pairwise method complementarity diagnostics');
