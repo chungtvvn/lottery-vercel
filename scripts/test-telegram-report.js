@@ -379,6 +379,8 @@ async function main() {
             liveLoto.nextPrediction = nextLoto.nextPrediction || nextLoto;
         }
 
+        const liveAdvisor = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'lib/data/statistics/cached_daily_method_advisor.json'), 'utf8'));
+
         const liveCompactDe = compactMilestoneTelegramPayload(liveDe);
         const liveCompactLoto = compactLotoTelegramPayload(liveLoto);
         const liveCompactHistory = {
@@ -386,7 +388,7 @@ async function main() {
             history: compactPredictionHistoryTelegramRows(liveHistory.history || [])
         };
 
-        const liveReport = buildTelegramReport(liveCompactDe, liveCompactLoto, liveCompactHistory);
+        const liveReport = buildTelegramReport(liveCompactDe, liveCompactLoto, liveCompactHistory, liveAdvisor);
         assert.match(liveReport.text, /XSMB — BÁO CÁO & DỰ ĐOÁN/);
         console.log('=== LIVE TELEGRAM REPORT PREVIEW ===\n' + liveReport.text + '\n===================================');
     } catch (e) {

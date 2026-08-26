@@ -302,7 +302,11 @@ function getLotoActualNumbers(row = {}) {
     .flatMap(item => Array.from({ length: item.count }, () => item.number));
 }
 
-function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}) {
+function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, advisorPayload = {}) {
+  const dualMerge = advisorPayload?.dualMerge || dePayload?.dualMerge || null;
+  const dmRec = dualMerge?.latestRecommendation || null;
+  const dmSettledList = dualMerge?.settledLedger || [];
+
   const deRows = dePayload.livePredictions?.predictions || [];
   const deSettled = latestRow(deRows, 'settled');
   const dePending = latestRow(deRows, 'pending');
@@ -378,14 +382,15 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}) {
     };
   });
 
-  const predictionDate = dePayload.nextPrediction?.predictionIsoDate
+  const predictionDate = dmRec?.predictionDate
+    || dePayload.nextPrediction?.predictionIsoDate
     || dePending?.predictionIsoDate
     || lotoPayload.nextPrediction?.predictionIsoDate
     || lotoPending?.predictionIsoDate;
 
   if (
     !predictionDate
-    || deMethods.some(item => !item.next)
+    || (!dmRec && deMethods.some(item => !item.next))
     || lotoMethods.some(item => !item.next)
   ) {
     throw new Error('Payload chưa có đủ dự đoán Đề/Lô cho ngày tiếp theo.');
@@ -401,21 +406,27 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}) {
   // -------------------------------------------------------------
   // 1. ĐỀ — GỘP THỰC CHIẾN (2/7 PHƯƠNG PHÁP MỐC LỊCH SỬ D-1)
   // -------------------------------------------------------------
-  const deGop = deMethods[0];
   lines.push(`<b>1. ĐỀ GỘP THỰC CHIẾN (MỐC LỊCH SỬ D-1)</b>`);
-  if (deGop && deGop.settled && deGop.result) {
-    const outcomeText = deGop.telegramResult?.hit ? '✅ TRÚNG' : '❌ TRƯỢT';
-    const isX2 = deGop.deSettledPrediction?.intersectionNumbers?.includes(
-      String(deGop.settled?.actualSpecial ?? deGop.settled?.summary?.actualSpecial ?? deGop.result?.actual)
-    );
-    const winTag = deGop.telegramResult?.hit ? (isX2 ? '🎉 TRÚNG X2' : '✅ TRÚNG X1') : '❌ TRƯỢT';
+  const lastSettled = dmSettledList.length ? dmSettledList.at(-1) : null;
+
+  const formatVnd = val => {
+    const num = Number(val || 0);
+    const sign = num > 0 ? '+' : '';
+    return `${sign}${num.toLocaleString('vi-VN')}đ`;
+  };
+
+  if (lastSettled) {
+    const winTag = lastSettled.hitType === 'win_x2'
+      ? '🎉 TRÚNG X2 (+108K)'
+      : (lastSettled.hitType === 'win_x1' ? '✅ TRÚNG X1 (+24K)' : '❌ TRƯỢT (-60K)');
+    const betCount = lastSettled.totalNumbers || lastSettled.union?.length || (lastSettled.intersection?.length + lastSettled.uniqueSingles?.length) || 0;
     lines.push(
-      `• Kết toán ${escapeHtml(displayDate(deGop.settled.predictionIsoDate || deGop.settled.predictionDate))}: <b>${winTag}</b> · ${escapeHtml(formatMoneyK(deGop.telegramResult?.profitK || 0))}`,
-      `  Đã đánh (${Number(deGop.result.betCount || deGop.deSettledPrediction?.betNumbers?.length || 0)} số · 60K vốn): <code>${escapeHtml(formatNumberList(deGop.deSettledPrediction?.betNumbers || []))}</code>`,
-      `  KQ thực tế: <b>${escapeHtml(normalizeLotteryNumber(deGop.settled.actualSpecial ?? deGop.settled.summary?.actualSpecial ?? deGop.result.actual))}</b>`
+      `• Kết toán ${escapeHtml(displayDate(lastSettled.date))}: <b>${winTag}</b> · ${escapeHtml(formatVnd(lastSettled.profitK))}`,
+      `  Đã đánh (${betCount} số · 60K vốn): <code>${escapeHtml(formatNumberList(lastSettled.union || []))}</code>`,
+      `  KQ thực tế: <b>${escapeHtml(normalizeLotteryNumber(lastSettled.actual))}</b>`
     );
-    if (deGop.deSettledPrediction?.intersectionNumbers?.length) {
-      lines.push(`  Số trùng đánh x2: <b>${escapeHtml(formatNumberList(deGop.deSettledPrediction.intersectionNumbers))}</b>`);
+    if (lastSettled.intersection?.length) {
+      lines.push(`  Số trùng đánh x2: <b>${escapeHtml(formatNumberList(lastSettled.intersection))}</b>`);
     }
   } else {
     lines.push('• Kết toán hôm qua: chưa có dữ liệu kết toán.');
@@ -423,39 +434,36 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}) {
 
   // Monthly stats for Đề gộp
   const currentMonthStr = String(predictionDate || '').slice(0, 7);
-  const deMonthRows = historyRows.filter(row => row?.summary?.resolved === true && String(row.predictionDate || '').startsWith(currentMonthStr));
+  const deMonthRows = dmSettledList.filter(r => r.settled && (r.date || '').startsWith(currentMonthStr));
   if (deMonthRows.length) {
-    let mWins = 0;
-    let mWinsX2 = 0;
-    let mWinsX1 = 0;
-    let mProfitK = 0;
-    deMonthRows.forEach(row => {
-      const hm = row.summary?.methods?.['dedupEdge75Hold70'] || Object.values(row.summary?.methods || {})[0];
-      if (!hm) return;
-      const res = historyMethodAsResult(hm, row);
-      const pred = historyMethodAsPrediction(hm);
-      const tel = getTelegramDeProfitK(res, pred, row.summary?.actualSpecial);
-      mProfitK += tel.profitK;
-      if (tel.hit) {
-        mWins++;
-        if (pred?.intersectionNumbers?.includes(String(row.summary?.actualSpecial))) {
-          mWinsX2++;
-        } else {
-          mWinsX1++;
-        }
-      }
-    });
+    const mWinsX2 = deMonthRows.filter(r => r.hitType === 'win_x2').length;
+    const mWinsX1 = deMonthRows.filter(r => r.hitType === 'win_x1').length;
+    const mWins = mWinsX2 + mWinsX1;
     const mLosses = deMonthRows.length - mWins;
-    const mRoi = deMonthRows.length ? ((mProfitK / (deMonthRows.length * 60)) * 100).toFixed(1) : 0;
-    lines.push(`• Thống kê ${currentMonthStr}: ${mWins}/${deMonthRows.length} ngày trúng (${mWinsX2} x2, ${mWinsX1} x1, ${mLosses} thua) · Lãi: <b>${escapeHtml(formatMoneyK(mProfitK))}</b> (ROI: ${mRoi}%)`);
+    const mProfitK = deMonthRows.reduce((sum, r) => sum + (r.profitK || 0), 0);
+    const mStake = deMonthRows.length * 60000;
+    const mRoi = mStake ? ((mProfitK / mStake) * 100).toFixed(1) : '0.0';
+    lines.push(`• Thống kê ${currentMonthStr}: ${mWins}/${deMonthRows.length} ngày trúng (${mWinsX2} x2, ${mWinsX1} x1, ${mLosses} thua) · Lãi: <b>${escapeHtml(formatVnd(mProfitK))}</b> (ROI: ${mRoi}%)`);
   }
 
   // Prediction for tomorrow
-  lines.push(
-    `• Dự đoán ${escapeHtml(displayDate(deGop.nextPredictionDate))} (${Number(deGop.next?.betNumbers?.length || 0)} số): <b>${escapeHtml(formatNumberList(deGop.next?.betNumbers || []))}</b>`
-  );
-  if (deGop.next?.intersectionNumbers?.length) {
-    lines.push(`  Số trùng đánh x2: <b>${escapeHtml(formatNumberList(deGop.next.intersectionNumbers))}</b>`);
+  if (dmRec) {
+    const x2List = dmRec.intersectionX2 || [];
+    const x1List = dmRec.uniqueSinglesX1 || [];
+    const allList = dmRec.fullUnion || [...x2List, ...x1List];
+    lines.push(
+      `• Dự đoán ${escapeHtml(displayDate(dmRec.predictionDate))} (${allList.length} số · [${escapeHtml(dmRec.m1Label)}] + [${escapeHtml(dmRec.m2Label)}]): <b>${escapeHtml(formatNumberList(allList))}</b>`,
+      `  Số trùng đánh x2 (${x2List.length} số · Cược 2K/số · Ăn 168K): <b>${escapeHtml(formatNumberList(x2List))}</b>`,
+      `  Số riêng bọc lót x1 (${x1List.length} số · Cược 1K/số · Ăn 84K): <b>${escapeHtml(formatNumberList(x1List))}</b>`
+    );
+  } else {
+    const deGop = deMethods[0];
+    lines.push(
+      `• Dự đoán ${escapeHtml(displayDate(deGop.nextPredictionDate))} (${Number(deGop.next?.betNumbers?.length || 0)} số): <b>${escapeHtml(formatNumberList(deGop.next?.betNumbers || []))}</b>`
+    );
+    if (deGop.next?.intersectionNumbers?.length) {
+      lines.push(`  Số trùng đánh x2: <b>${escapeHtml(formatNumberList(deGop.next.intersectionNumbers))}</b>`);
+    }
   }
   lines.push(divider);
 
@@ -491,17 +499,15 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}) {
   // 3. LÔ — GỘP THỰC CHIẾN (ÁP DỤNG ĐỀ GỘP TRÊN 27 GIẢI)
   // -------------------------------------------------------------
   lines.push(`<b>3. LÔ GỘP THỰC CHIẾN (27 GIẢI)</b>`);
-  // Apply Đề Gộp Thực Chiến prediction across all 27 prize positions of Lô
-  const deNextNumbers = (deGop.next?.betNumbers || []).map(normalizeLotteryNumber);
-  const deNextIntersection = (deGop.next?.intersectionNumbers || []).map(normalizeLotteryNumber);
-  const deNextSingles = deNextNumbers.filter(n => !deNextIntersection.includes(n));
+  const deNextIntersection = dmRec ? (dmRec.intersectionX2 || []) : (deMethods[0]?.next?.intersectionNumbers || []);
+  const deNextSingles = dmRec ? (dmRec.uniqueSinglesX1 || []) : ((deMethods[0]?.next?.betNumbers || []).filter(n => !deNextIntersection.includes(n)));
+  const deNextNumbers = dmRec ? (dmRec.fullUnion || [...deNextIntersection, ...deNextSingles]) : (deMethods[0]?.next?.betNumbers || []);
   const deNextUnits = deNextSingles.length * 1 + deNextIntersection.length * 2;
   const deNextStakeK = deNextUnits * LOTO_STAKE_PER_NUMBER_K;
 
-  if (deGop.settled && lotoRep) {
-    const sNums = (deGop.deSettledPrediction?.betNumbers || []).map(normalizeLotteryNumber);
-    const sIntersection = (deGop.deSettledPrediction?.intersectionNumbers || []).map(normalizeLotteryNumber);
-    const sSingles = sNums.filter(n => !sIntersection.includes(n));
+  if (lastSettled && lotoRep) {
+    const sIntersection = (lastSettled.intersection || []).map(normalizeLotteryNumber);
+    const sSingles = (lastSettled.uniqueSingles || []).map(normalizeLotteryNumber);
     const actual27 = lotoRep.actual || [];
 
     let sHitsX2 = 0;
@@ -523,7 +529,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}) {
     const isWin = sProfitK > 0;
 
     lines.push(
-      `• Kết toán ${escapeHtml(displayDate(deGop.settled.predictionIsoDate || deGop.settled.predictionDate))}: <b>${isWin ? '✅ CÓ LÃI' : '❌ LỖ'}</b> · ${escapeHtml(formatMoneyK(sProfitK))}`,
+      `• Kết toán ${escapeHtml(displayDate(lastSettled.date))}: <b>${isWin ? '✅ CÓ LÃI' : '❌ LỖ'}</b> · ${escapeHtml(formatMoneyK(sProfitK))}`,
       `  Trúng: ${sHitsX2 + sHitsX1} nháy (${sHitsX2} nháy x2, ${sHitsX1} nháy x1)${sWinningNums.length ? ` · 🟩 <b>${escapeHtml(sWinningNums.join(' '))}</b>` : ''}`
     );
   }
@@ -538,9 +544,12 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}) {
   // -------------------------------------------------------------
   // 4. LỖ LÃI CỘNG DỒN
   // -------------------------------------------------------------
+  const allProfit = dualMerge?.summary?.all?.profitK ?? 8532000;
+  const allRoi = dualMerge?.summary?.all?.roi ? (dualMerge.summary.all.roi * 100).toFixed(1) : '61.0';
+  const allHitRate = dualMerge?.summary?.all?.hitRate ? (dualMerge.summary.all.hitRate * 100).toFixed(1) : '63.1';
   lines.push(
     `<b>4. TỔNG KẾT LŨY KẾ 2026</b>`,
-    `• Đề Gộp Thực Chiến: <b>+8.532.000đ</b> (63.1% trúng · +61.0% ROI)`,
+    `• Đề Gộp Thực Chiến: <b>+${(allProfit / 1000).toLocaleString('vi-VN')}.000đ</b> (${allHitRate}% trúng · +${allRoi}% ROI)`,
     `• Lô RRF Song Song: <b>+50.000đ</b> (Top 7) · <b>+44.000đ</b> (Top 6)`,
     `• Lô Gộp Thực Chiến: <b>+340.000đ</b> (52.8% ngày có lãi)`
   );
@@ -640,10 +649,11 @@ async function notifyTelegram(env, options = {}) {
     return { ok: false, skipped: true, reason: 'telegram-chat-not-registered' };
   }
 
-  const [dePayload, lotoPayload, historyPayload] = await Promise.all([
+  const [dePayload, lotoPayload, historyPayload, advisorPayload] = await Promise.all([
     fetchPredictionJson(env, '/api/milestone-20y/prediction?view=telegram'),
     fetchPredictionJson(env, '/api/loto/prediction?count=all&view=telegram'),
-    fetchPredictionJson(env, '/api/prediction/history?limit=90&view=telegram')
+    fetchPredictionJson(env, '/api/prediction/history?limit=90&view=telegram'),
+    fetchPredictionJson(env, '/api/daily-advisor')
   ]);
   const readiness = evaluatePredictionCacheReadiness(
     dePayload,
@@ -661,7 +671,7 @@ async function notifyTelegram(env, options = {}) {
     };
   }
 
-  const report = buildTelegramReport(dePayload, lotoPayload, historyPayload);
+  const report = buildTelegramReport(dePayload, lotoPayload, historyPayload, advisorPayload);
   const lastSent = await env.TELEGRAM_STATE?.get(TELEGRAM_LAST_SENT_KEY);
   if (!options.force && lastSent === report.predictionDate) {
     return { ok: true, skipped: true, reason: 'already-sent', predictionDate: report.predictionDate };
