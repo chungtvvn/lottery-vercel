@@ -138,7 +138,7 @@ function settleFromRaw(payload, rawRows) {
         }
     }));
     const dualMergeService = require('@/lib/services/dualMergeAdvisorService');
-    const dualMerge = payload.dualMerge || dualMergeService.buildDualMergeAdvisor(payload.records, rawRows);
+    const dualMerge = dualMergeService.buildDualMergeAdvisor(null, rawRows, { existingAdvisorRecords: payload.records });
     return {
         ...payload,
         records,
