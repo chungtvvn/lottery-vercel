@@ -138,7 +138,7 @@ function settleFromRaw(payload, rawRows) {
         }
     }));
     let dualMerge = payload.dualMerge;
-    if (!dualMerge || !Array.isArray(dualMerge.settledLedger) || dualMerge.settledLedger.length < 200) {
+    if (!dualMerge || !Array.isArray(dualMerge.settledLedger) || dualMerge.settledLedger.length === 0) {
         const dualMergeService = require('@/lib/services/dualMergeAdvisorService');
         let historyPayload = null;
         try {
