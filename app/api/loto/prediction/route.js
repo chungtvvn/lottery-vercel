@@ -10,13 +10,13 @@ const NO_STORE_HEADERS = {
 };
 const FALLBACK_LOTO_STAKE_PER_NUMBER_K = 2200;
 const FALLBACK_LOTO_PAYOUT_PER_HIT_K = 8000;
-const LOTO_BET_COUNTS = [6, 7, 20, 25, 30];
+const LOTO_BET_COUNTS = [6, 7, 8, 10, 20, 25, 30];
 const LEGACY_RRF_LOTO_STRATEGY = 'rrfParallelBlock85Small65';
 const DEFAULT_LOTO_STRATEGY = 'loDualMerge';
 const MILESTONE_EDGE75_PIT_FUSION_STRATEGY = 'milestoneEdge75PitFusion';
 const LOTO_STRATEGY_META = {
     loDualMerge: {
-        methodName: '🎯 Lô Gộp Thực Chiến (27 Giải - X2 Số Trùng)'
+        methodName: '🎯 Lô Gộp Thực Chiến (27 Vị Trí - Top 6, 8, 10)'
     },
     rrfParallelBlock85Small65: {
         methodName: 'Lô Song song RRF 50/50 - Chuỗi nhỏ Hold 65 + Nhịp block Hold 85'
@@ -435,12 +435,16 @@ export async function GET(request) {
             const unionNumbers = latestRec.fullUnion || [];
             const x2Numbers = latestRec.intersectionX2 || [];
             const x1Numbers = latestRec.uniqueSinglesX1 || [];
+            const rankedNumbers = latestRec.rankedNumbers || [...x2Numbers, ...x1Numbers];
+            
             const predictions = {
-                top6: { numbers: unionNumbers.slice(0, 6), overlapNumbers: x2Numbers },
-                top7: { numbers: unionNumbers.slice(0, 7), overlapNumbers: x2Numbers },
-                top20: { numbers: unionNumbers.slice(0, 20), overlapNumbers: x2Numbers },
-                top25: { numbers: unionNumbers.slice(0, 25), overlapNumbers: x2Numbers },
-                top30: { numbers: unionNumbers.slice(0, 30), overlapNumbers: x2Numbers },
+                top6: { numbers: rankedNumbers.slice(0, 6), overlapNumbers: x2Numbers },
+                top7: { numbers: rankedNumbers.slice(0, 7), overlapNumbers: x2Numbers },
+                top8: { numbers: rankedNumbers.slice(0, 8), overlapNumbers: x2Numbers },
+                top10: { numbers: rankedNumbers.slice(0, 10), overlapNumbers: x2Numbers },
+                top20: { numbers: rankedNumbers.slice(0, 20), overlapNumbers: x2Numbers },
+                top25: { numbers: rankedNumbers.slice(0, 25), overlapNumbers: x2Numbers },
+                top30: { numbers: rankedNumbers.slice(0, 30), overlapNumbers: x2Numbers },
                 dualMerge: {
                     numbers: unionNumbers,
                     intersectionNumbers: x2Numbers,
@@ -459,12 +463,14 @@ export async function GET(request) {
                 hits: r.totalHits,
                 profitK: r.profitK,
                 methods: {
-                    top6: { betNumbers: r.intersection, hits: r.hitsX2, profitK: r.profitK },
-                    top7: { betNumbers: r.intersection, hits: r.hitsX2, profitK: r.profitK },
-                    top20: { betNumbers: r.intersection, hits: r.hitsX2, profitK: r.profitK },
-                    top25: { betNumbers: r.intersection, hits: r.hitsX2, profitK: r.profitK },
-                    top30: { betNumbers: r.intersection, hits: r.hitsX2, profitK: r.profitK },
-                    dualMerge: {
+                    top6: r.methods?.top6 || { betNumbers: (r.rankedNumbers || r.intersection || []).slice(0, 6), hits: r.hitsX2, profitK: r.profitK },
+                    top7: r.methods?.top7 || { betNumbers: (r.rankedNumbers || r.intersection || []).slice(0, 7), hits: r.hitsX2, profitK: r.profitK },
+                    top8: r.methods?.top8 || { betNumbers: (r.rankedNumbers || r.intersection || []).slice(0, 8), hits: r.hitsX2, profitK: r.profitK },
+                    top10: r.methods?.top10 || { betNumbers: (r.rankedNumbers || r.intersection || []).slice(0, 10), hits: r.hitsX2, profitK: r.profitK },
+                    top20: r.methods?.top20 || { betNumbers: (r.rankedNumbers || r.intersection || []).slice(0, 20), hits: r.hitsX2, profitK: r.profitK },
+                    top25: r.methods?.top25 || { betNumbers: (r.rankedNumbers || r.intersection || []).slice(0, 25), hits: r.hitsX2, profitK: r.profitK },
+                    top30: r.methods?.top30 || { betNumbers: (r.rankedNumbers || r.intersection || []).slice(0, 30), hits: r.hitsX2, profitK: r.profitK },
+                    dualMerge: r.methods?.dualMerge || {
                         intersection: r.intersection,
                         uniqueSingles: r.uniqueSingles,
                         hitsX2: r.hitsX2,
@@ -481,16 +487,16 @@ export async function GET(request) {
                 latestDataDate: advisorData?.latestDataDate || mergedPayload.latestDataDate,
                 config: {
                     methodId: 'loDualMerge',
-                    methodName: '🎯 Lô Gộp Thực Chiến (27 Giải - X2 Số Trùng)',
+                    methodName: '🎯 Lô Gộp Thực Chiến (27 Vị Trí - Top 6, 8, 10)',
                     positionCount: 27,
                     stakePerNumberK: 220,
                     payoutPerHitK: 800,
-                    defaultBetCount: 7
+                    defaultBetCount: 10
                 },
                 nextPrediction: {
                     predictionDate: latestRec.predictionDate,
                     dataIsoDate: advisorData?.latestDataDate,
-                    methodName: '🎯 Lô Gộp Thực Chiến (27 Giải - X2 Số Trùng)',
+                    methodName: '🎯 Lô Gộp Thực Chiến (27 Vị Trí - Top 6, 8, 10)',
                     m1Label: latestRec.m1Label,
                     m2Label: latestRec.m2Label,
                     predictions
@@ -498,15 +504,17 @@ export async function GET(request) {
                 livePredictions: {
                     config: {
                         methodId: 'loDualMerge',
-                        methodName: '🎯 Lô Gộp Thực Chiến (27 Giải - X2 Số Trùng)'
+                        methodName: '🎯 Lô Gộp Thực Chiến (27 Vị Trí - Top 6, 8, 10)'
                     },
                     summary: {
-                        top6: { days: summary.days, hitDays: summary.wins, profitK: summary.profitK, hitRate: summary.hitRate },
-                        top7: { days: summary.days, hitDays: summary.wins, profitK: summary.profitK, hitRate: summary.hitRate },
-                        top20: { days: summary.days, hitDays: summary.wins, profitK: summary.profitK, hitRate: summary.hitRate },
-                        top25: { days: summary.days, hitDays: summary.wins, profitK: summary.profitK, hitRate: summary.hitRate },
-                        top30: { days: summary.days, hitDays: summary.wins, profitK: summary.profitK, hitRate: summary.hitRate },
-                        dualMerge: summary
+                        top6: summary.top6 || { days: summary.days, hitDays: summary.wins, profitK: summary.profitK, hitRate: summary.hitRate },
+                        top7: summary.top7 || { days: summary.days, hitDays: summary.wins, profitK: summary.profitK, hitRate: summary.hitRate },
+                        top8: summary.top8 || { days: summary.days, hitDays: summary.wins, profitK: summary.profitK, hitRate: summary.hitRate },
+                        top10: summary.top10 || { days: summary.days, hitDays: summary.wins, profitK: summary.profitK, hitRate: summary.hitRate },
+                        top20: summary.top20 || { days: summary.days, hitDays: summary.wins, profitK: summary.profitK, hitRate: summary.hitRate },
+                        top25: summary.top25 || { days: summary.days, hitDays: summary.wins, profitK: summary.profitK, hitRate: summary.hitRate },
+                        top30: summary.top30 || { days: summary.days, hitDays: summary.wins, profitK: summary.profitK, hitRate: summary.hitRate },
+                        dualMerge: summary.dualMerge || summary
                     },
                     predictions: liveRecords
                 }

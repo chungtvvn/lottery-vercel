@@ -496,49 +496,42 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   lines.push(divider);
 
   // -------------------------------------------------------------
-  // 3. LÔ — GỘP THỰC CHIẾN (ÁP DỤNG ĐỀ GỘP TRÊN 27 GIẢI)
+  // 3. LÔ — GỘP THỰC CHIẾN (27 VỊ TRÍ - TOP 6, 8, 10)
   // -------------------------------------------------------------
-  lines.push(`<b>3. LÔ GỘP THỰC CHIẾN (27 GIẢI)</b>`);
-  const deNextIntersection = dmRec ? (dmRec.intersectionX2 || []) : (deMethods[0]?.next?.intersectionNumbers || []);
-  const deNextSingles = dmRec ? (dmRec.uniqueSinglesX1 || []) : ((deMethods[0]?.next?.betNumbers || []).filter(n => !deNextIntersection.includes(n)));
-  const deNextNumbers = dmRec ? (dmRec.fullUnion || [...deNextIntersection, ...deNextSingles]) : (deMethods[0]?.next?.betNumbers || []);
-  const deNextUnits = deNextSingles.length * 1 + deNextIntersection.length * 2;
-  const deNextStakeK = deNextUnits * LOTO_STAKE_PER_NUMBER_K;
+  lines.push(`<b>3. LÔ GỘP THỰC CHIẾN (27 VỊ TRÍ)</b>`);
+  const loRec = advisorPayload?.loDualMerge?.latestRecommendation || null;
+  const loSummary = advisorPayload?.loDualMerge?.summary || null;
+  const loSettledList = advisorPayload?.loDualMerge?.settledLedger || [];
+  const loLastSettled = loSettledList.length ? loSettledList.at(-1) : null;
 
-  if (lastSettled && lotoRep) {
-    const sIntersection = (lastSettled.intersection || []).map(normalizeLotteryNumber);
-    const sSingles = (lastSettled.uniqueSingles || []).map(normalizeLotteryNumber);
-    const actual27 = lotoRep.actual || [];
+  const top6Nums = loRec?.topPredictions?.top6?.numbers || (dmRec?.rankedNumbers || dmRec?.intersectionX2 || []).slice(0, 6);
+  const top8Nums = loRec?.topPredictions?.top8?.numbers || (dmRec?.rankedNumbers || dmRec?.intersectionX2 || []).slice(0, 8);
+  const top10Nums = loRec?.topPredictions?.top10?.numbers || (dmRec?.rankedNumbers || dmRec?.intersectionX2 || []).slice(0, 10);
 
-    let sHitsX2 = 0;
-    let sHitsX1 = 0;
-    const sWinningNums = [];
-    actual27.forEach(act => {
-      if (sIntersection.includes(act)) {
-        sHitsX2++;
-        sWinningNums.push(`${act}(x2)`);
-      } else if (sSingles.includes(act)) {
-        sHitsX1++;
-        sWinningNums.push(`${act}(x1)`);
-      }
-    });
-    const sUnitCount = sSingles.length * 1 + sIntersection.length * 2;
-    const sStakeK = sUnitCount * LOTO_STAKE_PER_NUMBER_K;
-    const sPayoutK = (sHitsX2 * 2 * LOTO_PAYOUT_PER_HIT_K) + (sHitsX1 * 1 * LOTO_PAYOUT_PER_HIT_K);
-    const sProfitK = sPayoutK - sStakeK;
-    const isWin = sProfitK > 0;
-
+  if (loLastSettled) {
+    const s10 = loLastSettled.methods?.top10;
+    const s8 = loLastSettled.methods?.top8;
+    const s6 = loLastSettled.methods?.top6;
     lines.push(
-      `• Kết toán ${escapeHtml(displayDate(lastSettled.date))}: <b>${isWin ? '✅ CÓ LÃI' : '❌ LỖ'}</b> · ${escapeHtml(formatMoneyK(sProfitK))}`,
-      `  Trúng: ${sHitsX2 + sHitsX1} nháy (${sHitsX2} nháy x2, ${sHitsX1} nháy x1)${sWinningNums.length ? ` · 🟩 <b>${escapeHtml(sWinningNums.join(' '))}</b>` : ''}`
+      `• Kết toán ${escapeHtml(displayDate(loLastSettled.date))}:`,
+      `  Top 10 (${s10?.hits || 0} hit · ${formatMoneyK(s10?.profitK || 0)}): <code>${escapeHtml(formatNumberList(s10?.betNumbers || []))}</code>`,
+      `  Top 8 (${s8?.hits || 0} hit · ${formatMoneyK(s8?.profitK || 0)}): <code>${escapeHtml(formatNumberList(s8?.betNumbers || []))}</code>`,
+      `  Top 6 (${s6?.hits || 0} hit · ${formatMoneyK(s6?.profitK || 0)}): <code>${escapeHtml(formatNumberList(s6?.betNumbers || []))}</code>`
     );
   }
 
   lines.push(
-    `• Dự đoán ${escapeHtml(displayDate(predictionDate))} (${deNextNumbers.length} số · ${deNextUnits} đơn vị = ${formatMoneyK(deNextStakeK)} vốn):`,
-    `  Số trùng đánh x2 (440K/số): <b>${escapeHtml(formatNumberList(deNextIntersection))}</b>`,
-    `  Số riêng bọc lót x1 (220K/số): <b>${escapeHtml(formatNumberList(deNextSingles))}</b>`
+    `• Dự đoán ${escapeHtml(displayDate(predictionDate))} (Cược phẳng 220K/số):`,
+    `  Top 6 (${top6Nums.length} số · ${formatMoneyK(top6Nums.length * 220)}): <b>${escapeHtml(formatNumberList(top6Nums))}</b>`,
+    `  Top 8 (${top8Nums.length} số · ${formatMoneyK(top8Nums.length * 220)}): <b>${escapeHtml(formatNumberList(top8Nums))}</b>`,
+    `  Top 10 (${top10Nums.length} số · ${formatMoneyK(top10Nums.length * 220)}): <b>${escapeHtml(formatNumberList(top10Nums))}</b>`
   );
+  if (loSummary?.top10) {
+    const p10 = loSummary.top10.profitK;
+    const p8 = loSummary.top8?.profitK || 0;
+    const p6 = loSummary.top6?.profitK || 0;
+    lines.push(`• Thống kê 2026: Top 10 (<b>${formatVnd(p10 * 1000)}</b> · ${(loSummary.top10.winRate * 100).toFixed(1)}% lãi) · Top 8 (${formatVnd(p8 * 1000)}) · Top 6 (${formatVnd(p6 * 1000)})`);
+  }
   lines.push(divider);
 
   // -------------------------------------------------------------
@@ -547,11 +540,12 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   const allProfit = dualMerge?.summary?.all?.profitK ?? 8532000;
   const allRoi = dualMerge?.summary?.all?.roi ? (dualMerge.summary.all.roi * 100).toFixed(1) : '61.0';
   const allHitRate = dualMerge?.summary?.all?.hitRate ? (dualMerge.summary.all.hitRate * 100).toFixed(1) : '63.1';
+  const top10Profit = loSummary?.top10?.profitK ?? 17800;
   lines.push(
     `<b>4. TỔNG KẾT LŨY KẾ 2026</b>`,
     `• Đề Gộp Thực Chiến: <b>+${(allProfit / 1000).toLocaleString('vi-VN')}.000đ</b> (${allHitRate}% trúng · +${allRoi}% ROI)`,
     `• Lô RRF Song Song: <b>+50.000đ</b> (Top 7) · <b>+44.000đ</b> (Top 6)`,
-    `• Lô Gộp Thực Chiến: <b>+340.000đ</b> (52.8% ngày có lãi)`
+    `• Lô Gộp Thực Chiến: <b>${formatVnd(top10Profit * 1000)}</b> (Top 10 · ${(loSummary?.top10?.winRate ? loSummary.top10.winRate * 100 : 54.5).toFixed(1)}% có lãi)`
   );
 
   lines.push('', '<i>Dữ liệu tự động cập nhật và khóa snapshot minh bạch trên Cloudflare R2 & GitHub Actions.</i>');

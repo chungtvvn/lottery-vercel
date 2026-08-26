@@ -52,10 +52,8 @@
                 <p class="text-sm font-semibold uppercase tracking-wide text-indigo-600">Dự đoán Lô theo 27 vị trí</p>
                 <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-900">Dự đoán Lô cho ngày tiếp theo</h1>
                 <p class="mt-2 max-w-4xl text-sm leading-6 text-slate-600">
-                    Mỗi vị trí trong 27 giải tự chạy logic Mốc 20 năm. Ngoài RRF Chuỗi nhỏ 65 + Nhịp block 85
-                    và Edge75 PIT, hệ thống có phương án gộp RRF 50/50 của hai bảng xếp hạng. Hệ thống theo dõi Top 6, 7, 20, 25 và 30;
-                    số trùng nguồn vẫn chỉ tính một đơn vị cược đối với Lô. Đơn vị K = 1.000 VND;
-                    web dùng 2200K/con, ăn 8000K/hit.
+                    Áp dụng các phương pháp của Đề Gộp Thực Chiến cho từng vị trí trong 27 giải để lựa chọn Top 6, 8, 10 số tốt nhất đánh phẳng (không x2).
+                    Hệ thống theo dõi và đối soát thực tế toàn bộ các kỳ mở thưởng năm 2026. Đơn vị K = 1.000 VND; web dùng 2200K/con, ăn 8000K/hit.
                 </p>
             </div>
             <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
@@ -65,7 +63,7 @@
                 <div class="flex items-center gap-2">
                     <label for="lotoStrategySelect" class="text-sm font-black text-slate-600 whitespace-nowrap">Phương pháp:</label>
                     <select id="lotoStrategySelect" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
-                        <option value="loDualMerge" selected>🎯 Lô Gộp Thực Chiến (27 Giải - X2 Số Trùng) [Tối ưu]</option>
+                        <option value="loDualMerge" selected>🎯 Lô Gộp Thực Chiến (27 Vị Trí - Top 6, 8, 10) [Tối ưu]</option>
                         <option value="rrfParallelBlock85Small65">RRF Song song Block 85 + Chuỗi nhỏ 65 (Lãi dương)</option>
                         <option value="milestoneEdge75PitFusion">Gộp Mốc 20 năm + Edge75 PIT</option>
                     </select>
