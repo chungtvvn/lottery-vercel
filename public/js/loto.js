@@ -1,12 +1,12 @@
 (function () {
     const nf = new Intl.NumberFormat('vi-VN');
-    const DEFAULT_LOTO_BET_COUNT = 6;
+    const DEFAULT_LOTO_BET_COUNT = 7;
     const DEFAULT_LOTO_STAKE_K = 2200;
     const DEFAULT_LOTO_PAYOUT_K = 8000;
     const LOTO_COUNT_ORDER = [6, 7, 20, 25, 30];
     const LOTO_STRATEGIES = [
+        'loDualMerge',
         'rrfParallelBlock85Small65',
-        'dedupEdge75Pit',
         'milestoneEdge75PitFusion'
     ];
     const state = {

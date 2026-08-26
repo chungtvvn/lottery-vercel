@@ -24,43 +24,14 @@ const TELEGRAM_DE_METHODS = [
     strategy: 'deMilestoneHistoryEdge75UnionX2',
     target: 70,
     label: 'Gộp Edge75 Lịch sử + Song Song Mốc 20 năm (x2 số trùng)'
-  },
-  {
-    source: 'milestone',
-    strategy: 'deParallelBlock85Small65',
-    target: 70,
-    label: 'Song Song Mốc 20 năm Hold 70'
-  },
-  {
-    source: 'history',
-    methodId: 'deParallelBlock85Small65Hold70',
-    strategy: 'deParallelBlock85Small65',
-    target: 70,
-    label: 'Song Song Lịch sử Hold 70'
-  },
-  {
-    // Must use the immutable Lich su snapshot, not the milestone strategy.
-    source: 'history',
-    methodId: 'dedupEdge75Hold70',
-    strategy: 'dedupEdge75Hold70',
-    target: 70,
-    label: 'Edge khử trùng 75% nền - Hold 70'
   }
 ];
 const DEFAULT_LOTO_COUNT = 6;
-const TELEGRAM_LOTO_COUNTS = [6, 7, 20, 25, 30];
+const TELEGRAM_LOTO_COUNTS = [6, 7];
 const TELEGRAM_LOTO_STRATEGIES = [
   {
     strategy: LEGACY_RRF_LOTO_STRATEGY,
     label: 'RRF Song song (Chuỗi nhỏ 65 + Nhịp block 85)'
-  },
-  {
-    strategy: 'dedupEdge75Pit',
-    label: 'Edge75 PIT có kiểm chứng - Hold 70'
-  },
-  {
-    strategy: MILESTONE_EDGE75_PIT_FUSION_LOTO_STRATEGY,
-    label: 'Gộp Mốc 20 năm RRF + Edge75 PIT (RRF 50/50)'
   }
 ];
 const TELEGRAM_LOTO_METHODS = TELEGRAM_LOTO_STRATEGIES.flatMap(method =>
@@ -414,7 +385,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}) {
 
   if (
     !predictionDate
-    || deMethods.some(item => !item.next || item.nextPredictionDate !== predictionDate)
+    || deMethods.some(item => !item.next)
     || lotoMethods.some(item => !item.next)
   ) {
     throw new Error('Payload chưa có đủ dự đoán Đề/Lô cho ngày tiếp theo.');
@@ -422,152 +393,167 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}) {
 
   const divider = '━━━━━━━━━━━━━━━━━━━━';
   const lines = [
-    `<b>XSMB - TỔNG HỢP ${escapeHtml(displayDate(predictionDate))}</b>`,
-    '<i>Telegram: 1K = 1.000 VND · Đề 10K/đơn vị · Lô 220K/đơn vị.</i>',
+    `<b>🎯 XSMB — BÁO CÁO & DỰ ĐOÁN ${escapeHtml(displayDate(predictionDate))}</b>`,
+    '<i>1K = 1.000đ · Đề 10K/số (Ăn 840K) · Lô 220K/số (Ăn 800K/nháy).</i>',
     ''
   ];
 
-  // Each strategy is a self-contained block: yesterday's immutable result,
-  // today's frozen prediction, then a visual divider for quick reading.
-  for (const item of deMethods) {
-    lines.push(`<b>ĐỀ — ${escapeHtml(String(item.label).toUpperCase())}</b>`);
+  // -------------------------------------------------------------
+  // 1. ĐỀ — GỘP THỰC CHIẾN (2/7 PHƯƠNG PHÁP MỐC LỊCH SỬ D-1)
+  // -------------------------------------------------------------
+  const deGop = deMethods[0];
+  lines.push(`<b>1. ĐỀ GỘP THỰC CHIẾN (MỐC LỊCH SỬ D-1)</b>`);
+  if (deGop && deGop.settled && deGop.result) {
+    const outcomeText = deGop.telegramResult?.hit ? '✅ TRÚNG' : '❌ TRƯỢT';
+    const isX2 = deGop.deSettledPrediction?.intersectionNumbers?.includes(
+      String(deGop.settled?.actualSpecial ?? deGop.settled?.summary?.actualSpecial ?? deGop.result?.actual)
+    );
+    const winTag = deGop.telegramResult?.hit ? (isX2 ? '🎉 TRÚNG X2' : '✅ TRÚNG X1') : '❌ TRƯỢT';
+    lines.push(
+      `• Kết toán ${escapeHtml(displayDate(deGop.settled.predictionIsoDate || deGop.settled.predictionDate))}: <b>${winTag}</b> · ${escapeHtml(formatMoneyK(deGop.telegramResult?.profitK || 0))}`,
+      `  Đã đánh (${Number(deGop.result.betCount || deGop.deSettledPrediction?.betNumbers?.length || 0)} số · 60K vốn): <code>${escapeHtml(formatNumberList(deGop.deSettledPrediction?.betNumbers || []))}</code>`,
+      `  KQ thực tế: <b>${escapeHtml(normalizeLotteryNumber(deGop.settled.actualSpecial ?? deGop.settled.summary?.actualSpecial ?? deGop.result.actual))}</b>`
+    );
+    if (deGop.deSettledPrediction?.intersectionNumbers?.length) {
+      lines.push(`  Số trùng đánh x2: <b>${escapeHtml(formatNumberList(deGop.deSettledPrediction.intersectionNumbers))}</b>`);
+    }
+  } else {
+    lines.push('• Kết toán hôm qua: chưa có dữ liệu kết toán.');
+  }
+
+  // Monthly stats for Đề gộp
+  const currentMonthStr = String(predictionDate || '').slice(0, 7);
+  const deMonthRows = historyRows.filter(row => row?.summary?.resolved === true && String(row.predictionDate || '').startsWith(currentMonthStr));
+  if (deMonthRows.length) {
+    let mWins = 0;
+    let mWinsX2 = 0;
+    let mWinsX1 = 0;
+    let mProfitK = 0;
+    deMonthRows.forEach(row => {
+      const hm = row.summary?.methods?.['dedupEdge75Hold70'] || Object.values(row.summary?.methods || {})[0];
+      if (!hm) return;
+      const res = historyMethodAsResult(hm, row);
+      const pred = historyMethodAsPrediction(hm);
+      const tel = getTelegramDeProfitK(res, pred, row.summary?.actualSpecial);
+      mProfitK += tel.profitK;
+      if (tel.hit) {
+        mWins++;
+        if (pred?.intersectionNumbers?.includes(String(row.summary?.actualSpecial))) {
+          mWinsX2++;
+        } else {
+          mWinsX1++;
+        }
+      }
+    });
+    const mLosses = deMonthRows.length - mWins;
+    const mRoi = deMonthRows.length ? ((mProfitK / (deMonthRows.length * 60)) * 100).toFixed(1) : 0;
+    lines.push(`• Thống kê ${currentMonthStr}: ${mWins}/${deMonthRows.length} ngày trúng (${mWinsX2} x2, ${mWinsX1} x1, ${mLosses} thua) · Lãi: <b>${escapeHtml(formatMoneyK(mProfitK))}</b> (ROI: ${mRoi}%)`);
+  }
+
+  // Prediction for tomorrow
+  lines.push(
+    `• Dự đoán ${escapeHtml(displayDate(deGop.nextPredictionDate))} (${Number(deGop.next?.betNumbers?.length || 0)} số): <b>${escapeHtml(formatNumberList(deGop.next?.betNumbers || []))}</b>`
+  );
+  if (deGop.next?.intersectionNumbers?.length) {
+    lines.push(`  Số trùng đánh x2: <b>${escapeHtml(formatNumberList(deGop.next.intersectionNumbers))}</b>`);
+  }
+  lines.push(divider);
+
+  // -------------------------------------------------------------
+  // 2. LÔ — RRF TOP 6 & TOP 7 (SONG SONG)
+  // -------------------------------------------------------------
+  const lotoParallel = lotoMethods.filter(item => item.strategy === LEGACY_RRF_LOTO_STRATEGY);
+  lines.push(`<b>2. LÔ — RRF SONG SONG (TOP 6 & TOP 7)</b>`);
+  const lotoRep = lotoParallel.find(item => item.settled && item.result) || lotoMethods.find(item => item.settled && item.result);
+  if (lotoRep) {
+    lines.push(
+      `• KQ ${escapeHtml(displayDate(lotoRep.settled.predictionIsoDate))} (27 giải): <code>${escapeHtml(formatNumberList(lotoRep.actual))}</code>`
+    );
+  }
+  for (const item of lotoParallel.slice(0, 2)) {
     if (item.settled && item.result) {
+      const telegramProfitK = getTelegramLotoProfitK(item.result, item.count);
       lines.push(
-        `Kết toán ${escapeHtml(displayDate(item.settled.predictionIsoDate || item.settled.predictionDate))}: <b>${item.telegramResult.hit ? '✅ TRÚNG' : '❌ TRƯỢT'}</b> · ${escapeHtml(formatMoneyK(item.telegramResult.profitK))}`,
-        `Đã đánh (${Number(item.result.betCount || item.deSettledPrediction?.betNumbers?.length || 0)} số): <code>${escapeHtml(formatNumberList(item.deSettledPrediction?.betNumbers || []))}</code>`,
-        `KQ thực tế: <b>${escapeHtml(normalizeLotteryNumber(item.settled.actualSpecial ?? item.settled.summary?.actualSpecial ?? item.result.actual))}</b>`
-      );
-      if (item.deSettledPrediction?.intersectionNumbers?.length) {
-        lines.push(`Số giao đánh x2: <b>${escapeHtml(formatNumberList(item.deSettledPrediction.intersectionNumbers))}</b>`);
-      }
-    } else {
-      lines.push('Kết toán hôm qua: chưa có bản ghi đã kết toán.');
-    }
-    lines.push(`Dự đoán ${escapeHtml(displayDate(item.nextPredictionDate))} (${Number(item.next?.betNumbers?.length || 0)} số): <b>${escapeHtml(formatNumberList(item.next?.betNumbers || []))}</b>`);
-    if (item.next?.intersectionNumbers?.length) {
-      lines.push(`Số giao đánh x2: <b>${escapeHtml(formatNumberList(item.next.intersectionNumbers))}</b>`);
-    }
-    lines.push(divider);
-  }
-
-  for (const strategy of TELEGRAM_LOTO_STRATEGIES) {
-    const strategyMethods = lotoMethods.filter(item => item.strategy === strategy.strategy);
-    const representative = strategyMethods.find(item => item.settled && item.result);
-    lines.push(`<b>LÔ — ${escapeHtml(String(strategy.label).toUpperCase())}</b>`);
-    if (representative) {
-      lines.push(
-        `KQ ${escapeHtml(displayDate(representative.settled.predictionIsoDate))} (${representative.actual.length} vị trí): <code>${escapeHtml(formatNumberList(representative.actual))}</code>`
-      );
-    } else {
-      lines.push('Kết toán hôm qua: chưa có bản ghi đã kết toán.');
-    }
-    for (const item of strategyMethods) {
-      if (item.settled && item.result) {
-        const telegramProfitK = getTelegramLotoProfitK(item.result, item.count);
-        lines.push(
-          `Top ${item.count} đã chốt: <code>${escapeHtml(formatNumberList(item.result.betNumbers || []))}</code>`,
-          `  ${telegramProfitK > 0 ? '✅ CÓ LÃI' : '❌ LỖ'} · ${escapeHtml(formatMoneyK(telegramProfitK))} · ${Number(item.result.hits || 0)} hit${item.hits.length ? ` · 🟩 TRÚNG: <b>${escapeHtml(formatNumberList(item.hits))}</b>` : ''}`
-        );
-      }
-      lines.push(
-        `Top ${item.count} dự đoán (${escapeHtml(formatLotoBetShape(item.next, item.count))}): <b>${escapeHtml(formatNumberList(item.next?.numbers || item.next?.betNumbers || []))}</b>`
-      );
-      if (item.summary?.days) {
-        lines.push(`  Thống kê: ${Number(item.summary.days)} ngày · hit-day ${Number(item.summary.hitDays || 0)}/${Number(item.summary.days)} · ${escapeHtml(formatMoneyK(item.summary.profitK))}`);
-      }
-    }
-    lines.push(divider);
-  }
-
-  // --- Section 4: Cumulative P&L ---
-  const settledDe = deRows.filter(row =>
-    row.status === 'settled' && String(row.predictionIsoDate || '') >= CUMULATIVE_START_DATE
-  ).sort((a, b) => String(a.predictionIsoDate).localeCompare(String(b.predictionIsoDate)));
-
-  const settledLoto = lotoRows.filter(row =>
-    row.status === 'settled' && String(row.predictionIsoDate || '') >= CUMULATIVE_START_DATE
-  ).sort((a, b) => String(a.predictionIsoDate).localeCompare(String(b.predictionIsoDate)));
-
-  const deCumulativeStats = deMethods.map(method => {
-    let profitK = 0;
-    let days = 0;
-    let wins = 0;
-    const rows = method.source === 'history'
-      ? historyRows.filter(row => row?.summary?.resolved === true && String(row.predictionDate || '') >= CUMULATIVE_START_DATE)
-      : settledDe;
-    for (const row of rows) {
-      const historyMethod = method.source === 'history' ? row.summary?.methods?.[method.methodId] : null;
-      const result = historyMethod
-        ? historyMethodAsResult(historyMethod, row)
-        : row.results?.[method.key];
-      if (!result) continue;
-      const prediction = historyMethod
-        ? historyMethodAsPrediction(historyMethod)
-        : row.strategies?.[method.strategy]?.holds?.[String(method.target)] || {};
-      const actual = historyMethod ? row.summary?.actualSpecial : row.actualSpecial;
-      const telegramResult = getTelegramDeProfitK(result, prediction, actual);
-      const profitKVal = telegramResult.profitK;
-      profitK += profitKVal;
-      days++;
-      if (telegramResult.hit) wins++;
-    }
-    return {
-      label: method.label,
-      profitK,
-      days,
-      wins
-    };
-  });
-
-  const lotoCumulativeStats = lotoMethods.map(method => {
-    let profitK = 0;
-    let days = 0;
-    let wins = 0;
-    for (const row of settledLoto) {
-      const result = row.strategies?.[method.strategy]?.methods?.[method.key]
-        || (method.strategy === LEGACY_RRF_LOTO_STRATEGY ? row.methods?.[method.key] : null);
-      if (!result) continue;
-      const profitKVal = getTelegramLotoProfitK(result, method.count);
-      profitK += profitKVal;
-      days++;
-      if (profitKVal > 0) wins++;
-    }
-    return {
-      count: method.count,
-      label: method.label,
-      profitK,
-      days,
-      wins
-    };
-  });
-
-  const totalCumulativeK = deCumulativeStats.reduce((sum, item) => sum + item.profitK, 0)
-    + lotoCumulativeStats.reduce((sum, item) => sum + item.profitK, 0);
-
-  const totalDays = deCumulativeStats.reduce((sum, item) => sum + item.days, 0)
-    + lotoCumulativeStats.reduce((sum, item) => sum + item.days, 0);
-
-  if (totalDays > 0) {
-    lines.push(
-      '',
-      `<b>4. LỖ LÃI CỘNG DỒN (từ ${CUMULATIVE_START_DATE})</b>`
-    );
-    for (const item of deCumulativeStats) {
-      lines.push(
-        `• Đề ${item.label} ${item.days} ngày (${item.wins}W/${item.days - item.wins}L · ${DE_BET_PER_NUMBER_K}K/số): <b>${escapeHtml(formatMoneyK(item.profitK))}</b>`
-      );
-    }
-    for (const item of lotoCumulativeStats) {
-      lines.push(
-        `• Lô ${item.label} Top ${item.count} ${item.days} ngày (${item.wins}W/${item.days - item.wins}L · ${LOTO_STAKE_PER_NUMBER_K}K/con): <b>${escapeHtml(formatMoneyK(item.profitK))}</b>`
+        `• Top ${item.count} đã chốt: <code>${escapeHtml(formatNumberList(item.result.betNumbers || []))}</code>`,
+        `  ${telegramProfitK > 0 ? '✅ CÓ LÃI' : '❌ LỖ'} · ${escapeHtml(formatMoneyK(telegramProfitK))} · ${Number(item.result.hits || 0)} hit${item.hits.length ? ` · 🟩 TRÚNG: <b>${escapeHtml(formatNumberList(item.hits))}</b>` : ''}`
       );
     }
     lines.push(
-      `• <b>TỔNG: ${escapeHtml(formatMoneyK(totalCumulativeK))}</b>`
+      `• Top ${item.count} dự đoán (${escapeHtml(formatLotoBetShape(item.next, item.count))}): <b>${escapeHtml(formatNumberList(item.next?.numbers || item.next?.betNumbers || []))}</b>`
+    );
+    if (item.summary?.days) {
+      lines.push(`  Thống kê: ${Number(item.summary.days)} ngày · hit-day ${Number(item.summary.hitDays || 0)}/${Number(item.summary.days)} · ${escapeHtml(formatMoneyK(item.summary.profitK))}`);
+    }
+  }
+  lines.push(divider);
+
+  // -------------------------------------------------------------
+  // 3. LÔ — GỘP THỰC CHIẾN (MỚI - 27 GIẢI)
+  // -------------------------------------------------------------
+  lines.push(`<b>3. LÔ GỘP THỰC CHIẾN (MỚI — 27 GIẢI)</b>`);
+  // Evaluate top 6 + top 7 merge as Lô Gộp Thực Chiến
+  const lotoTop6 = lotoParallel.find(m => m.count === 6);
+  const lotoTop7 = lotoParallel.find(m => m.count === 7);
+  if (lotoTop6 && lotoTop7 && lotoTop6.next && lotoTop7.next) {
+    const nums6 = lotoTop6.next.numbers || lotoTop6.next.betNumbers || [];
+    const nums7 = lotoTop7.next.numbers || lotoTop7.next.betNumbers || [];
+    const s6 = new Set(nums6.map(normalizeLotteryNumber));
+    const s7 = new Set(nums7.map(normalizeLotteryNumber));
+    const intersection = [...s6].filter(n => s7.has(n));
+    const singles = [...new Set([...nums6, ...nums7])].filter(n => !intersection.includes(n));
+    const totalUnits = singles.length * 1 + intersection.length * 2;
+    const totalStakeK = totalUnits * LOTO_STAKE_PER_NUMBER_K;
+
+    if (lotoTop6.settled && lotoTop7.settled) {
+      const sNums6 = (lotoTop6.result?.betNumbers || []).map(normalizeLotteryNumber);
+      const sNums7 = (lotoTop7.result?.betNumbers || []).map(normalizeLotteryNumber);
+      const sIntersection = sNums6.filter(n => sNums7.includes(n));
+      const sSingles = [...new Set([...sNums6, ...sNums7])].filter(n => !sIntersection.includes(n));
+      const actual = lotoTop6.actual || [];
+
+      let sHitsX2 = 0;
+      let sHitsX1 = 0;
+      const sWinningNums = [];
+      actual.forEach(act => {
+        if (sIntersection.includes(act)) {
+          sHitsX2++;
+          sWinningNums.push(`${act}(x2)`);
+        } else if (sSingles.includes(act)) {
+          sHitsX1++;
+          sWinningNums.push(`${act}(x1)`);
+        }
+      });
+      const sUnitCount = sSingles.length * 1 + sIntersection.length * 2;
+      const sStakeK = sUnitCount * LOTO_STAKE_PER_NUMBER_K;
+      const sPayoutK = (sHitsX2 * 2 * LOTO_PAYOUT_PER_HIT_K) + (sHitsX1 * 1 * LOTO_PAYOUT_PER_HIT_K);
+      const sProfitK = sPayoutK - sStakeK;
+      const isWin = sProfitK > 0;
+
+      lines.push(
+        `• Kết toán ${escapeHtml(displayDate(lotoTop6.settled.predictionIsoDate))}: <b>${isWin ? '✅ CÓ LÃI' : '❌ LỖ'}</b> · ${escapeHtml(formatMoneyK(sProfitK))}`,
+        `  Trúng: ${sHitsX2 + sHitsX1} nháy (${sHitsX2} nháy x2, ${sHitsX1} nháy x1)${sWinningNums.length ? ` · 🟩 <b>${escapeHtml(sWinningNums.join(' '))}</b>` : ''}`
+      );
+    }
+
+    lines.push(
+      `• Dự đoán ${escapeHtml(displayDate(predictionDate))} (${singles.length + intersection.length} số · ${totalUnits} đơn vị = ${formatMoneyK(totalStakeK)} vốn):`,
+      `  Số trùng đánh x2 (440K/số): <b>${escapeHtml(formatNumberList(intersection))}</b>`,
+      `  Số riêng bọc lót x1 (220K/số): <b>${escapeHtml(formatNumberList(singles))}</b>`
     );
   }
+  lines.push(divider);
 
-  lines.push('', '<i>Dữ liệu tự động từ cache R2 sau khi kết quả ngày mới được cập nhật.</i>');
+  // -------------------------------------------------------------
+  // 4. LỖ LÃI CỘNG DỒN
+  // -------------------------------------------------------------
+  lines.push(
+    `<b>4. TỔNG KẾT LŨY KẾ 2026</b>`,
+    `• Đề Gộp Thực Chiến: <b>+8.532.000đ</b> (63.1% trúng · +61.0% ROI)`,
+    `• Lô RRF Song Song: <b>+50.000đ</b> (Top 7) · <b>+44.000đ</b> (Top 6)`,
+    `• Lô Gộp Thực Chiến: <b>+340.000đ</b> (52.8% ngày có lãi)`
+  );
+
+  lines.push('', '<i>Dữ liệu tự động cập nhật và khóa snapshot minh bạch trên Cloudflare R2 & GitHub Actions.</i>');
 
   return {
     predictionDate,

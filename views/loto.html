@@ -58,13 +58,18 @@
                     web dùng 2200K/con, ăn 8000K/hit.
                 </p>
             </div>
-            <div class="flex items-center gap-3">
-                <label for="lotoStrategySelect" class="text-sm font-black text-slate-600 whitespace-nowrap">Phương pháp:</label>
-                <select id="lotoStrategySelect" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
-                    <option value="rrfParallelBlock85Small65">RRF song song Block 85 + Chuỗi nhỏ 65 - Top 6/7/20/25/30</option>
-                    <option value="dedupEdge75Pit">Edge75 PIT có kiểm chứng - Hold 70 - Top 6/7/20/25/30</option>
-                    <option value="milestoneEdge75PitFusion">Gộp Mốc 20 năm RRF + Edge75 PIT (RRF 50/50) - Top 6/7/20/25/30</option>
-                </select>
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <a href="/daily-advisor#lo-dual-merge" class="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-indigo-600 px-3.5 py-2 text-xs font-black text-white shadow-md hover:opacity-95 transition-all">
+                    <i class="bi bi-intersect"></i> Xem Lô Gộp Thực Chiến
+                </a>
+                <div class="flex items-center gap-2">
+                    <label for="lotoStrategySelect" class="text-sm font-black text-slate-600 whitespace-nowrap">Phương pháp:</label>
+                    <select id="lotoStrategySelect" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                        <option value="loDualMerge" selected>🎯 Lô Gộp Thực Chiến (27 Giải - X2 Số Trùng) [Tối ưu]</option>
+                        <option value="rrfParallelBlock85Small65">RRF Song song Block 85 + Chuỗi nhỏ 65 (Lãi dương)</option>
+                        <option value="milestoneEdge75PitFusion">Gộp Mốc 20 năm + Edge75 PIT</option>
+                    </select>
+                </div>
             </div>
         </section>
 

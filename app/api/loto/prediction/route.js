@@ -12,9 +12,12 @@ const FALLBACK_LOTO_STAKE_PER_NUMBER_K = 2200;
 const FALLBACK_LOTO_PAYOUT_PER_HIT_K = 8000;
 const LOTO_BET_COUNTS = [6, 7, 20, 25, 30];
 const LEGACY_RRF_LOTO_STRATEGY = 'rrfParallelBlock85Small65';
-const DEFAULT_LOTO_STRATEGY = 'dedupEdge75Pit';
+const DEFAULT_LOTO_STRATEGY = 'loDualMerge';
 const MILESTONE_EDGE75_PIT_FUSION_STRATEGY = 'milestoneEdge75PitFusion';
 const LOTO_STRATEGY_META = {
+    loDualMerge: {
+        methodName: '🎯 Lô Gộp Thực Chiến (27 Giải - X2 Số Trùng)'
+    },
     rrfParallelBlock85Small65: {
         methodName: 'Lô Song song RRF 50/50 - Chuỗi nhỏ Hold 65 + Nhịp block Hold 85'
     },
@@ -422,6 +425,94 @@ export async function GET(request) {
                 { status: 400, headers: NO_STORE_HEADERS }
             );
         }
+
+        if (strategy === 'loDualMerge') {
+            const advisorData = await loadJsonWithSupabaseFallback('cached_daily_method_advisor.json').catch(() => null);
+            const loDualMerge = advisorData?.loDualMerge || {};
+            const latestRec = loDualMerge.latestRecommendation || {};
+            const summary = loDualMerge.summary || {};
+            
+            const unionNumbers = latestRec.fullUnion || [];
+            const x2Numbers = latestRec.intersectionX2 || [];
+            const x1Numbers = latestRec.uniqueSinglesX1 || [];
+            const predictions = {
+                top6: { numbers: unionNumbers.slice(0, 6), overlapNumbers: x2Numbers },
+                top7: { numbers: unionNumbers.slice(0, 7), overlapNumbers: x2Numbers },
+                top20: { numbers: unionNumbers.slice(0, 20), overlapNumbers: x2Numbers },
+                top25: { numbers: unionNumbers.slice(0, 25), overlapNumbers: x2Numbers },
+                top30: { numbers: unionNumbers.slice(0, 30), overlapNumbers: x2Numbers },
+                dualMerge: {
+                    numbers: unionNumbers,
+                    intersectionNumbers: x2Numbers,
+                    uniqueSingles: x1Numbers,
+                    unitCount: latestRec.unitCount,
+                    stakeK: latestRec.stakeK,
+                    plainReasons: latestRec.plainReasons
+                }
+            };
+            
+            const liveRecords = (loDualMerge.records || []).map(r => ({
+                predictionIsoDate: r.date,
+                dataIsoDate: r.date,
+                status: 'settled',
+                isWin: r.isWin,
+                hits: r.totalHits,
+                profitK: r.profitK,
+                methods: {
+                    top6: { betNumbers: r.intersection, hits: r.hitsX2, profitK: r.profitK },
+                    top7: { betNumbers: r.intersection, hits: r.hitsX2, profitK: r.profitK },
+                    top20: { betNumbers: r.intersection, hits: r.hitsX2, profitK: r.profitK },
+                    top25: { betNumbers: r.intersection, hits: r.hitsX2, profitK: r.profitK },
+                    top30: { betNumbers: r.intersection, hits: r.hitsX2, profitK: r.profitK },
+                    dualMerge: {
+                        intersection: r.intersection,
+                        uniqueSingles: r.uniqueSingles,
+                        hitsX2: r.hitsX2,
+                        hitsX1: r.hitsX1,
+                        totalHits: r.totalHits,
+                        profitK: r.profitK
+                    }
+                }
+            }));
+
+            return NextResponse.json({
+                success: true,
+                strategy: 'loDualMerge',
+                latestDataDate: advisorData?.latestDataDate || mergedPayload.latestDataDate,
+                config: {
+                    methodId: 'loDualMerge',
+                    methodName: '🎯 Lô Gộp Thực Chiến (27 Giải - X2 Số Trùng)',
+                    positionCount: 27,
+                    stakePerNumberK: 220,
+                    payoutPerHitK: 800,
+                    defaultBetCount: 7
+                },
+                nextPrediction: {
+                    predictionDate: latestRec.predictionDate,
+                    dataIsoDate: advisorData?.latestDataDate,
+                    methodName: '🎯 Lô Gộp Thực Chiến (27 Giải - X2 Số Trùng)',
+                    m1Label: latestRec.m1Label,
+                    m2Label: latestRec.m2Label,
+                    predictions
+                },
+                livePredictions: {
+                    config: {
+                        methodId: 'loDualMerge',
+                        methodName: '🎯 Lô Gộp Thực Chiến (27 Giải - X2 Số Trùng)'
+                    },
+                    summary: {
+                        top6: { days: summary.days, hitDays: summary.wins, profitK: summary.profitK, hitRate: summary.hitRate },
+                        top7: { days: summary.days, hitDays: summary.wins, profitK: summary.profitK, hitRate: summary.hitRate },
+                        top20: { days: summary.days, hitDays: summary.wins, profitK: summary.profitK, hitRate: summary.hitRate },
+                        top25: { days: summary.days, hitDays: summary.wins, profitK: summary.profitK, hitRate: summary.hitRate },
+                        top30: { days: summary.days, hitDays: summary.wins, profitK: summary.profitK, hitRate: summary.hitRate },
+                        dualMerge: summary
+                    },
+                    predictions: liveRecords
+                }
+            }, { headers: NO_STORE_HEADERS });
+        }
+
         if (
             strategy !== LEGACY_RRF_LOTO_STRATEGY
             && !mergedPayload.nextPrediction?.strategies?.[strategy]
