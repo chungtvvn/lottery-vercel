@@ -137,8 +137,11 @@ function settleFromRaw(payload, rawRows) {
             });
         }
     }));
-    const dualMergeService = require('@/lib/services/dualMergeAdvisorService');
-    const dualMerge = dualMergeService.buildDualMergeAdvisor(null, rawRows, { existingAdvisorRecords: payload.records });
+    let dualMerge = payload.dualMerge;
+    if (!dualMerge || !Array.isArray(dualMerge.settledLedger) || dualMerge.settledLedger.length < 100) {
+        const dualMergeService = require('@/lib/services/dualMergeAdvisorService');
+        dualMerge = dualMergeService.buildDualMergeAdvisor(null, rawRows, { existingAdvisorRecords: payload.records });
+    }
     return {
         ...payload,
         records,
