@@ -137,9 +137,12 @@ function settleFromRaw(payload, rawRows) {
             });
         }
     }));
+    const dualMergeService = require('@/lib/services/dualMergeAdvisorService');
+    const dualMerge = payload.dualMerge || dualMergeService.buildDualMergeAdvisor(payload.records, rawRows);
     return {
         ...payload,
         records,
+        dualMerge,
         latestDataDate: rawRows?.at(-1)?.date || payload.latestDataDate,
         summary: { main: summarize('main'), hybrid: summarize('hybrid') },
         strategyCatalog: [...strategyMetadata.values()],
