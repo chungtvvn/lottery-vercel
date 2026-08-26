@@ -623,11 +623,15 @@ async function sendTelegramMessage(env, chatId, text) {
 function evaluatePredictionCacheReadiness(dePayload = {}, lotoPayload = {}, expectedDataDate = null) {
   const deLatestDataDate = String(dePayload.latestDataDate || '');
   const lotoLatestDataDate = String(lotoPayload.latestDataDate || '');
+  const dePredDate = String(dePayload.nextPrediction?.predictionIsoDate || '');
+  const lotoPredDate = String(lotoPayload.nextPrediction?.predictionIsoDate || '');
   const requestedDataDate = expectedDataDate ? String(expectedDataDate) : null;
   const cachesMatch = Boolean(deLatestDataDate)
     && deLatestDataDate === lotoLatestDataDate;
   const requestedDateMatches = !requestedDataDate
-    || (deLatestDataDate === requestedDataDate && lotoLatestDataDate === requestedDataDate);
+    || deLatestDataDate === requestedDataDate
+    || dePredDate === requestedDataDate
+    || lotoPredDate === requestedDataDate;
 
   return {
     ready: cachesMatch && requestedDateMatches,
