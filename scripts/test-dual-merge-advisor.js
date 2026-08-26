@@ -48,7 +48,7 @@ function runTests() {
         });
     }
 
-    const advisor = dualMergeAdvisorService.buildDualMergeAdvisor(mockRuns, []);
+    const advisor = dualMergeAdvisorService.buildDualMergeAdvisor(mockRuns, [], { synthesizeMissing: false });
 
     assert.ok(advisor, 'Advisor payload must be generated');
     assert.strictEqual(advisor.version, 'dual-merge-advisor-v1', 'Version must match');
