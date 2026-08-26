@@ -256,7 +256,8 @@
                 ['15 NGÀY GẦN NHẤT', wins.last15],
                 ['30 NGÀY GẦN NHẤT', wins.last30],
                 ['60 NGÀY GẦN NHẤT', wins.last60],
-                ['90 NGÀY GẦN NHẤT', wins.last90]
+                ['90 NGÀY GẦN NHẤT', wins.last90],
+                ['TOÀN BỘ SNAPSHOT THẬT', wins.liveTotal]
             ];
 
             windowsContainer.innerHTML = windowItems.map(([label, w]) => {
@@ -414,7 +415,7 @@
                         <span class="inline-flex rounded-lg border px-2.5 py-1 text-xs ${outcomeClass}">${outcomeText}</span>
                     </td>
                     <td class="px-4 py-3 text-right font-mono text-xs ${profitClass}">
-                        ${isSettled ? `${signed(r.profitK)} <span class="text-[10px] text-slate-500 block font-normal">Lũy kế: ${signed(r.cumulativeProfitK)}</span>` : '--'}
+                        ${isSettled ? `${signed(r.profitK)} ${r.cumulativeProfitK != null ? `<span class="text-[10px] text-slate-500 block font-normal">Lũy kế: ${signed(r.cumulativeProfitK)}</span>` : '<span class="text-[10px] text-slate-400 block font-normal">⚡ Strict PIT</span>'}` : '--'}
                     </td>
                 </tr>
             `;
