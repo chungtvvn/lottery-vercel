@@ -16,6 +16,7 @@ export function proxy(request) {
         pathname.startsWith('/api/prediction/history') ||
         pathname.startsWith('/api/loto/prediction') ||
         pathname.startsWith('/api/milestone-20y/prediction') ||
+        pathname.startsWith('/api/daily-advisor') ||
         pathname === '/logout' ||
         pathname === '/login'
     ) {
