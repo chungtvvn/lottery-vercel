@@ -254,7 +254,7 @@
                 ['30 NGÀY GẦN NHẤT', wins.last30],
                 ['60 NGÀY GẦN NHẤT', wins.last60],
                 ['90 NGÀY GẦN NHẤT', wins.last90],
-                ['TOÀN BỘ SNAPSHOT THẬT', wins.liveTotal]
+                ['TOÀN BỘ NĂM 2026', wins.all2026 || wins.all || wins.liveTotal]
             ];
 
             windowsContainer.innerHTML = windowItems.map(([label, w]) => {

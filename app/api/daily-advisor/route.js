@@ -138,9 +138,18 @@ function settleFromRaw(payload, rawRows) {
         }
     }));
     let dualMerge = payload.dualMerge;
-    if (!dualMerge || !Array.isArray(dualMerge.settledLedger) || dualMerge.settledLedger.length < 100) {
+    if (!dualMerge || !Array.isArray(dualMerge.settledLedger) || dualMerge.settledLedger.length < 200) {
         const dualMergeService = require('@/lib/services/dualMergeAdvisorService');
-        dualMerge = dualMergeService.buildDualMergeAdvisor(null, rawRows, { existingAdvisorRecords: payload.records });
+        let historyPayload = null;
+        try {
+            const fs = require('fs');
+            const path = require('path');
+            const localHist = path.join(process.cwd(), 'lib', 'data', 'statistics', 'cached_prediction_history.json');
+            if (fs.existsSync(localHist)) {
+                historyPayload = JSON.parse(fs.readFileSync(localHist, 'utf8'));
+            }
+        } catch (_) {}
+        dualMerge = dualMergeService.buildDualMergeAdvisor(historyPayload, rawRows, { existingAdvisorRecords: payload.records });
     }
     return {
         ...payload,
