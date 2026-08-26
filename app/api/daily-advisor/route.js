@@ -161,13 +161,39 @@ export async function GET(request) {
         return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401, headers: NO_STORE_HEADERS });
     }
     try {
-        const payload = await loadJsonWithSupabaseFallback('cached_daily_method_advisor.json');
+        let payload = null;
+        try {
+            payload = await loadJsonWithSupabaseFallback('cached_daily_method_advisor.json');
+        } catch (_) {}
+
+        if (!payload || !Array.isArray(payload.records)) {
+            const fs = require('fs');
+            const path = require('path');
+            const localFile = path.join(process.cwd(), 'lib', 'data', 'statistics', 'cached_daily_method_advisor.json');
+            if (fs.existsSync(localFile)) {
+                payload = JSON.parse(fs.readFileSync(localFile, 'utf8'));
+            }
+        }
+
         if (!payload || !Array.isArray(payload.records)) {
             throw new Error('Cache gợi ý chưa được sinh');
         }
-        // Raw R2 is the source of truth for a draw result. This keeps a just
-        // settled day accurate while the scheduled action is still writing its
-        // immutable cache snapshot and tomorrow's prediction.
+
+        // Guarantee that dualMerge is populated with the complete full-year 2026 backtest ledger
+        if (!payload.dualMerge || !Array.isArray(payload.dualMerge.settledLedger) || payload.dualMerge.settledLedger.length < 200) {
+            try {
+                const fs = require('fs');
+                const path = require('path');
+                const localFile = path.join(process.cwd(), 'lib', 'data', 'statistics', 'cached_daily_method_advisor.json');
+                if (fs.existsSync(localFile)) {
+                    const localPayload = JSON.parse(fs.readFileSync(localFile, 'utf8'));
+                    if (localPayload?.dualMerge?.settledLedger?.length > (payload.dualMerge?.settledLedger?.length || 0)) {
+                        payload.dualMerge = localPayload.dualMerge;
+                    }
+                }
+            } catch (_) {}
+        }
+
         const raw = await getRawData();
         return NextResponse.json({ success: true, ...settleFromRaw(payload, raw) }, { headers: NO_STORE_HEADERS });
     } catch (error) {
