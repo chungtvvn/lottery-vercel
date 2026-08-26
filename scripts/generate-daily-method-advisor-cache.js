@@ -22,15 +22,37 @@ async function main() {
     try {
         if (!useLocalHistory) {
             history = await loadJsonWithSupabaseFallback('cached_prediction_history.json');
-            if (!Array.isArray(history)) throw new Error('cached_prediction_history.json không hợp lệ');
+            if (!Array.isArray(history)) history = history?.history || history?.records || null;
+        } else {
+            const fs = require('fs');
+            const path = require('path');
+            const localHistFile = path.join(__dirname, '..', 'lib', 'data', 'statistics', 'cached_prediction_history.json');
+            if (fs.existsSync(localHistFile)) {
+                const loaded = JSON.parse(fs.readFileSync(localHistFile, 'utf8'));
+                history = loaded.history || loaded.records || loaded;
+            }
         }
+    } catch (error) {
+        console.log(`[DailyAdvisor] Chưa tải được history: ${error.message}`);
+    }
+
+    try {
         const remote = await loadJsonWithSupabaseFallback('cached_daily_method_advisor.json');
         existing = remote?.records || remote;
     } catch (error) {
-        console.log(`[DailyAdvisor] Chưa có cache R2 cũ hoặc lịch sử chưa tải được: ${error.message}`);
+        console.log(`[DailyAdvisor] Chưa có cache R2 cũ: ${error.message}`);
     }
-    if (useLocalHistory) {
-        console.log('[DailyAdvisor] Dùng cached_prediction_history.json vừa sinh cục bộ trong action.');
+
+    if (!existing || (Array.isArray(existing) && existing.length === 0)) {
+        try {
+            const fs = require('fs');
+            const path = require('path');
+            const localAdvFile = path.join(__dirname, '..', 'lib', 'data', 'statistics', 'cached_daily_method_advisor.json');
+            if (fs.existsSync(localAdvFile)) {
+                const localData = JSON.parse(fs.readFileSync(localAdvFile, 'utf8'));
+                existing = localData?.records || localData;
+            }
+        } catch (_) {}
     }
     const raw = await getRawData();
     const cache = await service.generateAndWriteCache({ history: history || undefined, raw, existing, limit: 90 });
