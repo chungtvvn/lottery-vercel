@@ -8,12 +8,73 @@
 
     let payload = null;
     let activeMainTab = 'dualMerge'; // 'dualMerge' | 'singleMethod'
-    let currentTier = 'main30';
-    let currentFilter = 'all';
     let currentStrategyId = 'balanced-selector-fixed30-v1';
-    let dualMergeLogLimit = '30';
+    let dualMergeLogLimit = 'all';
+    let dualMergeFilterStatus = 'all'; // 'all' | 'live' | 'pit' | 'win_x2' | 'win_x1' | 'loss'
+    let dualMergeSearchQuery = '';
 
     const byId = id => document.getElementById(id);
+
+    const METHOD_STYLE_MAP = {
+        dedupEdge75Hold70: {
+            shortName: 'Edge75 PIT',
+            icon: 'bi-stars',
+            badgeClass: 'border-amber-300 bg-amber-100/90 text-amber-950',
+            iconColor: 'text-amber-600'
+        },
+        dedupEdge50CombinedB40S05Hold70: {
+            shortName: 'Boost B40S05',
+            icon: 'bi-lightning-charge-fill',
+            badgeClass: 'border-cyan-300 bg-cyan-100/90 text-cyan-950',
+            iconColor: 'text-cyan-600'
+        },
+        dedupEdge50Hold70: {
+            shortName: 'Edge 50%',
+            icon: 'bi-graph-up-arrow',
+            badgeClass: 'border-teal-300 bg-teal-100/90 text-teal-950',
+            iconColor: 'text-teal-600'
+        },
+        dedupDropoffHold70: {
+            shortName: 'Dropoff Khử Trùng',
+            icon: 'bi-funnel-fill',
+            badgeClass: 'border-purple-300 bg-purple-100/90 text-purple-950',
+            iconColor: 'text-purple-600'
+        },
+        avgEdge50Hold70: {
+            shortName: 'Dropoff TB 50%',
+            icon: 'bi-bar-chart-fill',
+            badgeClass: 'border-indigo-300 bg-indigo-100/90 text-indigo-950',
+            iconColor: 'text-indigo-600'
+        },
+        chainSmallFirstHold70: {
+            shortName: 'Chuỗi Nhỏ Trước',
+            icon: 'bi-link-45deg',
+            badgeClass: 'border-emerald-300 bg-emerald-100/90 text-emerald-950',
+            iconColor: 'text-emerald-600'
+        },
+        edgeHold70: {
+            shortName: 'Edge Từng Số',
+            icon: 'bi-pie-chart-fill',
+            badgeClass: 'border-rose-300 bg-rose-100/90 text-rose-950',
+            iconColor: 'text-rose-600'
+        }
+    };
+
+    function renderMethodBadge(methodId, label) {
+        const style = METHOD_STYLE_MAP[methodId] || {
+            shortName: label || methodId,
+            icon: 'bi-tag-fill',
+            badgeClass: 'border-slate-300 bg-slate-100 text-slate-900',
+            iconColor: 'text-slate-600'
+        };
+        const titleText = label || methodId;
+        return `
+            <span class="inline-flex items-center gap-1 rounded-lg border px-2 py-0.5 text-[11px] font-black ${style.badgeClass} shadow-2xs" title="${escapeHtml(titleText)}">
+                <i class="bi ${style.icon} ${style.iconColor}"></i>
+                <span>${escapeHtml(style.shortName)}</span>
+            </span>
+        `;
+    }
 
     // Toast Notification Helper
     function showToast(message) {
@@ -90,7 +151,7 @@
         if (kpiContainer) {
             const profitClass = Number(summary.overallProfitK || 0) >= 0 ? 'text-emerald-400 font-black' : 'text-rose-400 font-black';
             const kpis = [
-                ['NGÀY ĐÃ ĐỐI SOÁT', `${summary.totalSettled || 0} kỳ`, 'Khóa snapshot Strict PIT'],
+                ['NGÀY ĐÃ ĐỐI SOÁT', `${summary.totalSettled || 0} kỳ`, 'Khóa snapshot & Strict PIT'],
                 ['TRÚNG X2 (CỰC VIP)', `${summary.winsX2 || 0} kỳ`, `${percent(summary.winX2Rate)} · Ăn 168K (+108K)`],
                 ['TRÚNG X1 (BỌC LÓT)', `${summary.winsX1 || 0} kỳ`, `${percent(summary.winX1Rate)} · Ăn 84K (+24K)`],
                 ['TỔNG TỶ LỆ TRÚNG', `${percent(summary.overallHitRate)}`, `${summary.totalWins || 0} thắng / ${summary.totalLosses || 0} trượt`],
@@ -220,15 +281,53 @@
         const container = byId('dualMergeLedgerBody');
         if (!container) return;
 
-        const limitVal = dualMergeLogLimit;
-        let rows = (records || []).slice().reverse();
-        if (limitVal !== 'all') {
-            const limitNum = Number(limitVal) || 30;
+        const allRecords = records || [];
+
+        // Calculate dynamic filter counts
+        const countAll = allRecords.length;
+        const countLive = allRecords.filter(r => r.isLiveSnapshot || r.sourceType === 'live-snapshot').length;
+        const countPit = allRecords.filter(r => !r.isLiveSnapshot && r.sourceType !== 'live-snapshot').length;
+        const countWinX2 = allRecords.filter(r => r.hitType === 'win_x2').length;
+        const countWinX1 = allRecords.filter(r => r.hitType === 'win_x1').length;
+        const countLoss = allRecords.filter(r => r.hitType === 'loss').length;
+
+        if (byId('countFilterAll')) byId('countFilterAll').textContent = String(countAll);
+        if (byId('countFilterLive')) byId('countFilterLive').textContent = String(countLive);
+        if (byId('countFilterPit')) byId('countFilterPit').textContent = String(countPit);
+        if (byId('countFilterWinX2')) byId('countFilterWinX2').textContent = String(countWinX2);
+        if (byId('countFilterWinX1')) byId('countFilterWinX1').textContent = String(countWinX1);
+        if (byId('countFilterLoss')) byId('countFilterLoss').textContent = String(countLoss);
+
+        // Filter and limit rows
+        let rows = allRecords.slice().reverse();
+
+        // 1. Status Filter
+        if (dualMergeFilterStatus === 'live') {
+            rows = rows.filter(r => r.isLiveSnapshot || r.sourceType === 'live-snapshot');
+        } else if (dualMergeFilterStatus === 'pit') {
+            rows = rows.filter(r => !r.isLiveSnapshot && r.sourceType !== 'live-snapshot');
+        } else if (dualMergeFilterStatus === 'win_x2') {
+            rows = rows.filter(r => r.hitType === 'win_x2');
+        } else if (dualMergeFilterStatus === 'win_x1') {
+            rows = rows.filter(r => r.hitType === 'win_x1');
+        } else if (dualMergeFilterStatus === 'loss') {
+            rows = rows.filter(r => r.hitType === 'loss');
+        }
+
+        // 2. Search Query Filter
+        if (dualMergeSearchQuery.trim()) {
+            const query = dualMergeSearchQuery.trim().toLowerCase();
+            rows = rows.filter(r => (r.date || '').toLowerCase().includes(query));
+        }
+
+        // 3. Limit Slice
+        if (dualMergeLogLimit !== 'all') {
+            const limitNum = Number(dualMergeLogLimit) || 30;
             rows = rows.slice(0, limitNum);
         }
 
         if (!rows.length) {
-            container.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-slate-500">Chưa có nhật ký đối soát.</td></tr>';
+            container.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-slate-500 font-semibold">Không tìm thấy dữ liệu đối soát phù hợp với bộ lọc.</td></tr>';
             return;
         }
 
@@ -236,11 +335,18 @@
             const isSettled = r.settled && Number.isInteger(r.actual);
             const actualStr = isSettled ? number(r.actual) : '??';
 
+            // Source Type Badge
+            const isLive = r.isLiveSnapshot || r.sourceType === 'live-snapshot';
+            const sourceBadge = isLive
+                ? `<span class="inline-flex items-center gap-1 rounded-md border border-emerald-300 bg-emerald-50 px-2 py-0.5 font-bold text-emerald-800 text-[10px] shadow-2xs" title="Snapshot thực tế đã chốt trước giờ quay"><i class="bi bi-lock-fill text-emerald-600"></i> Snapshot thật</span>`
+                : `<span class="inline-flex items-center gap-1 rounded-md border border-sky-200 bg-sky-50 px-2 py-0.5 font-bold text-sky-800 text-[10px] shadow-2xs" title="Tính toán độc lập theo Strict PIT từ đầu năm"><i class="bi bi-cpu text-sky-600"></i> Strict PIT</span>`;
+
+            // Outcome Badge
             let outcomeClass = 'bg-amber-100 text-amber-800 border-amber-200';
             let outcomeText = 'Chờ kết quả';
             if (isSettled) {
                 if (r.hitType === 'win_x2') {
-                    outcomeClass = 'bg-gradient-to-r from-amber-200 to-yellow-300 text-amber-950 border-amber-400 font-black shadow-xs';
+                    outcomeClass = 'bg-gradient-to-r from-amber-200 via-amber-300 to-yellow-200 text-amber-950 border-amber-400 font-black shadow-xs ring-1 ring-amber-400/50';
                     outcomeText = '🎉 TRÚNG X2 (+108K)';
                 } else if (r.hitType === 'win_x1') {
                     outcomeClass = 'bg-emerald-100 text-emerald-900 border-emerald-300 font-bold';
@@ -254,32 +360,52 @@
             const x2Nums = r.intersection || [];
             const x1Nums = r.uniqueSingles || [];
 
+            // Highlighted Chips for Numbers
             const chipsHtml = [
                 ...x2Nums.map(n => {
                     const match = isSettled && Number(n) === Number(r.actual);
-                    return `<span class="rounded px-1.5 py-0.5 font-mono text-xs font-black ${match ? 'bg-amber-300 text-amber-950 ring-2 ring-amber-400' : 'bg-amber-100/90 text-amber-950 border border-amber-300'}">${number(n)}<sup class="text-[9px] text-amber-700">x2</sup></span>`;
+                    return `<span class="inline-flex items-center justify-center rounded px-1.5 py-0.5 font-mono text-xs font-black transition-transform ${match ? 'bg-amber-300 text-amber-950 ring-2 ring-amber-500 scale-110 shadow-sm' : 'bg-amber-100/90 text-amber-950 border border-amber-300/80'}">${number(n)}<sup class="ml-0.5 text-[8px] text-amber-700">x2</sup></span>`;
                 }),
                 ...x1Nums.map(n => {
                     const match = isSettled && Number(n) === Number(r.actual);
-                    return `<span class="rounded px-1.5 py-0.5 font-mono text-xs font-bold ${match ? 'bg-amber-300 text-amber-950 ring-2 ring-amber-400' : 'bg-slate-100 text-slate-700 border border-slate-200'}">${number(n)}</span>`;
+                    return `<span class="inline-flex items-center justify-center rounded px-1.5 py-0.5 font-mono text-xs font-bold transition-transform ${match ? 'bg-amber-300 text-amber-950 ring-2 ring-amber-500 scale-110 shadow-sm' : 'bg-slate-100 text-slate-700 border border-slate-200'}">${number(n)}</span>`;
                 })
             ].join(' ');
 
             const profitClass = isSettled
-                ? (Number(r.profitK) >= 0 ? 'text-emerald-700' : 'text-rose-700')
+                ? (Number(r.profitK) >= 0 ? 'text-emerald-700 font-black' : 'text-rose-700 font-black')
                 : 'text-slate-400';
+
+            // Methods Highlight
+            const m1Badge = r.m1 ? renderMethodBadge(r.m1, r.m1Label) : '-';
+            const m2Badge = r.m2 ? renderMethodBadge(r.m2, r.m2Label) : '-';
 
             return `
                 <tr class="hover:bg-slate-50/80 transition-colors">
-                    <td class="px-4 py-3 font-mono font-bold text-slate-900">${escapeHtml(r.date)}</td>
+                    <td class="px-4 py-3">
+                        <div class="flex flex-col gap-1">
+                            <span class="font-mono font-black text-slate-900 text-xs">${escapeHtml(r.date)}</span>
+                            <div>${sourceBadge}</div>
+                        </div>
+                    </td>
                     <td class="px-3 py-3 text-center">
-                        <span class="inline-flex h-7 min-w-7 items-center justify-center rounded-lg border border-amber-300 bg-amber-100 font-mono text-xs font-black text-amber-950">
+                        <span class="inline-flex h-8 min-w-8 items-center justify-center rounded-xl border border-amber-300 bg-amber-100 font-mono text-xs font-black text-amber-950 shadow-xs">
                             ${actualStr}
                         </span>
                     </td>
-                    <td class="px-4 py-3 max-w-[200px]">
-                        <p class="font-bold text-slate-900 truncate">${escapeHtml(r.m1Label || r.m1 || '-')}</p>
-                        <p class="text-[11px] text-slate-500 truncate">${escapeHtml(r.m2Label || r.m2 || '-')}</p>
+                    <td class="px-4 py-3 max-w-[260px]">
+                        <div class="flex flex-col gap-1">
+                            <div class="flex flex-wrap items-center gap-1.5">
+                                ${m1Badge}
+                                <span class="text-[10px] font-black text-slate-400">+</span>
+                                ${m2Badge}
+                            </div>
+                            <div class="flex items-center gap-1 text-[10px] text-slate-500 font-bold">
+                                <span class="text-amber-700 font-black">🔥 ${r.overlapCount || x2Nums.length} trùng (x2)</span>
+                                <span class="text-slate-300">·</span>
+                                <span class="text-indigo-700 font-bold">⚡ ${x1Nums.length} riêng (x1)</span>
+                            </div>
+                        </div>
                     </td>
                     <td class="px-4 py-3 max-w-[340px]">
                         <div class="flex flex-wrap gap-1">${chipsHtml}</div>
@@ -287,12 +413,46 @@
                     <td class="px-3 py-3 text-center">
                         <span class="inline-flex rounded-lg border px-2.5 py-1 text-xs ${outcomeClass}">${outcomeText}</span>
                     </td>
-                    <td class="px-4 py-3 text-right font-mono font-black ${profitClass}">
-                        ${isSettled ? `${signed(r.profitK)} (${signed(r.cumulativeProfitK)})` : '--'}
+                    <td class="px-4 py-3 text-right font-mono text-xs ${profitClass}">
+                        ${isSettled ? `${signed(r.profitK)} <span class="text-[10px] text-slate-500 block font-normal">Lũy kế: ${signed(r.cumulativeProfitK)}</span>` : '--'}
                     </td>
                 </tr>
             `;
         }).join('');
+    }
+
+    function setupLedgerFilters() {
+        const filterGroup = byId('ledgerFilterGroup');
+        if (filterGroup) {
+            filterGroup.querySelectorAll('.ledger-filter-btn').forEach(btn => {
+                btn.onclick = () => {
+                    filterGroup.querySelectorAll('.ledger-filter-btn').forEach(b => {
+                        b.classList.remove('active', 'border-indigo-600', 'bg-indigo-600', 'text-white');
+                        b.classList.add('bg-white', 'text-slate-700');
+                    });
+                    btn.classList.add('active', 'border-indigo-600', 'bg-indigo-600', 'text-white');
+                    btn.classList.remove('bg-white', 'text-slate-700');
+                    dualMergeFilterStatus = btn.getAttribute('data-filter') || 'all';
+                    if (payload?.dualMerge) renderDualMergeLedger(payload.dualMerge.settledLedger);
+                };
+            });
+        }
+
+        const searchInput = byId('ledgerSearchInput');
+        if (searchInput) {
+            searchInput.oninput = e => {
+                dualMergeSearchQuery = e.target.value;
+                if (payload?.dualMerge) renderDualMergeLedger(payload.dualMerge.settledLedger);
+            };
+        }
+
+        const logLimitEl = byId('dualMergeLogLimit');
+        if (logLimitEl) {
+            logLimitEl.onchange = e => {
+                dualMergeLogLimit = e.target.value;
+                if (payload?.dualMerge) renderDualMergeLedger(payload.dualMerge.settledLedger);
+            };
+        }
     }
 
     // ==========================================
@@ -489,15 +649,7 @@
     // ==========================================
     async function init() {
         setupTabSwitching();
-
-        // Limit Selectors
-        const logLimitEl = byId('dualMergeLogLimit');
-        if (logLimitEl) {
-            logLimitEl.onchange = e => {
-                dualMergeLogLimit = e.target.value;
-                if (payload?.dualMerge) renderDualMergeLedger(payload.dualMerge.settledLedger);
-            };
-        }
+        setupLedgerFilters();
 
         try {
             const res = await fetch('/api/daily-advisor');
