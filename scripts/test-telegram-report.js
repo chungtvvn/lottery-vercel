@@ -363,6 +363,36 @@ async function main() {
     assert.match(report.text, /KQ 01\/07\/2026 \(27 giải\):/);
     assert.match(report.text, /━━━━━━━━━━━━━━━━━━━━/);
     assert.ok(splitTelegramText(report.text).every(chunk => chunk.length <= 3900), 'Telegram report phải được chia gói an toàn');
+
+    // Test with actual local disk caches
+    try {
+        const liveDe = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'lib/data/statistics/cached_milestone20y_live_predictions.json'), 'utf8'));
+        const nextDe = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'lib/data/statistics/cached_milestone20y_prediction.json'), 'utf8'));
+        const liveLoto = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'lib/data/statistics/cached_loto_live_predictions.json'), 'utf8'));
+        const nextLoto = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'lib/data/statistics/cached_loto_prediction.json'), 'utf8'));
+        const liveHistory = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'lib/data/statistics/cached_prediction_history.json'), 'utf8'));
+
+        if (!liveDe.nextPrediction && nextDe) {
+            liveDe.nextPrediction = nextDe.nextPrediction || nextDe;
+        }
+        if (!liveLoto.nextPrediction && nextLoto) {
+            liveLoto.nextPrediction = nextLoto.nextPrediction || nextLoto;
+        }
+
+        const liveCompactDe = compactMilestoneTelegramPayload(liveDe);
+        const liveCompactLoto = compactLotoTelegramPayload(liveLoto);
+        const liveCompactHistory = {
+            success: true,
+            history: compactPredictionHistoryTelegramRows(liveHistory.history || [])
+        };
+
+        const liveReport = buildTelegramReport(liveCompactDe, liveCompactLoto, liveCompactHistory);
+        assert.match(liveReport.text, /XSMB — BÁO CÁO & DỰ ĐOÁN/);
+        console.log('=== LIVE TELEGRAM REPORT PREVIEW ===\n' + liveReport.text + '\n===================================');
+    } catch (e) {
+        console.warn('Skipping live local file test:', e.message);
+    }
+
     console.log('Telegram report tests passed.');
 }
 

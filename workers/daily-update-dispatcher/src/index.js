@@ -488,59 +488,51 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}) {
   lines.push(divider);
 
   // -------------------------------------------------------------
-  // 3. LÔ — GỘP THỰC CHIẾN (MỚI - 27 GIẢI)
+  // 3. LÔ — GỘP THỰC CHIẾN (ÁP DỤNG ĐỀ GỘP TRÊN 27 GIẢI)
   // -------------------------------------------------------------
-  lines.push(`<b>3. LÔ GỘP THỰC CHIẾN (MỚI — 27 GIẢI)</b>`);
-  // Evaluate top 6 + top 7 merge as Lô Gộp Thực Chiến
-  const lotoTop6 = lotoParallel.find(m => m.count === 6);
-  const lotoTop7 = lotoParallel.find(m => m.count === 7);
-  if (lotoTop6 && lotoTop7 && lotoTop6.next && lotoTop7.next) {
-    const nums6 = lotoTop6.next.numbers || lotoTop6.next.betNumbers || [];
-    const nums7 = lotoTop7.next.numbers || lotoTop7.next.betNumbers || [];
-    const s6 = new Set(nums6.map(normalizeLotteryNumber));
-    const s7 = new Set(nums7.map(normalizeLotteryNumber));
-    const intersection = [...s6].filter(n => s7.has(n));
-    const singles = [...new Set([...nums6, ...nums7])].filter(n => !intersection.includes(n));
-    const totalUnits = singles.length * 1 + intersection.length * 2;
-    const totalStakeK = totalUnits * LOTO_STAKE_PER_NUMBER_K;
+  lines.push(`<b>3. LÔ GỘP THỰC CHIẾN (27 GIẢI)</b>`);
+  // Apply Đề Gộp Thực Chiến prediction across all 27 prize positions of Lô
+  const deNextNumbers = (deGop.next?.betNumbers || []).map(normalizeLotteryNumber);
+  const deNextIntersection = (deGop.next?.intersectionNumbers || []).map(normalizeLotteryNumber);
+  const deNextSingles = deNextNumbers.filter(n => !deNextIntersection.includes(n));
+  const deNextUnits = deNextSingles.length * 1 + deNextIntersection.length * 2;
+  const deNextStakeK = deNextUnits * LOTO_STAKE_PER_NUMBER_K;
 
-    if (lotoTop6.settled && lotoTop7.settled) {
-      const sNums6 = (lotoTop6.result?.betNumbers || []).map(normalizeLotteryNumber);
-      const sNums7 = (lotoTop7.result?.betNumbers || []).map(normalizeLotteryNumber);
-      const sIntersection = sNums6.filter(n => sNums7.includes(n));
-      const sSingles = [...new Set([...sNums6, ...sNums7])].filter(n => !sIntersection.includes(n));
-      const actual = lotoTop6.actual || [];
+  if (deGop.settled && lotoRep) {
+    const sNums = (deGop.deSettledPrediction?.betNumbers || []).map(normalizeLotteryNumber);
+    const sIntersection = (deGop.deSettledPrediction?.intersectionNumbers || []).map(normalizeLotteryNumber);
+    const sSingles = sNums.filter(n => !sIntersection.includes(n));
+    const actual27 = lotoRep.actual || [];
 
-      let sHitsX2 = 0;
-      let sHitsX1 = 0;
-      const sWinningNums = [];
-      actual.forEach(act => {
-        if (sIntersection.includes(act)) {
-          sHitsX2++;
-          sWinningNums.push(`${act}(x2)`);
-        } else if (sSingles.includes(act)) {
-          sHitsX1++;
-          sWinningNums.push(`${act}(x1)`);
-        }
-      });
-      const sUnitCount = sSingles.length * 1 + sIntersection.length * 2;
-      const sStakeK = sUnitCount * LOTO_STAKE_PER_NUMBER_K;
-      const sPayoutK = (sHitsX2 * 2 * LOTO_PAYOUT_PER_HIT_K) + (sHitsX1 * 1 * LOTO_PAYOUT_PER_HIT_K);
-      const sProfitK = sPayoutK - sStakeK;
-      const isWin = sProfitK > 0;
-
-      lines.push(
-        `• Kết toán ${escapeHtml(displayDate(lotoTop6.settled.predictionIsoDate))}: <b>${isWin ? '✅ CÓ LÃI' : '❌ LỖ'}</b> · ${escapeHtml(formatMoneyK(sProfitK))}`,
-        `  Trúng: ${sHitsX2 + sHitsX1} nháy (${sHitsX2} nháy x2, ${sHitsX1} nháy x1)${sWinningNums.length ? ` · 🟩 <b>${escapeHtml(sWinningNums.join(' '))}</b>` : ''}`
-      );
-    }
+    let sHitsX2 = 0;
+    let sHitsX1 = 0;
+    const sWinningNums = [];
+    actual27.forEach(act => {
+      if (sIntersection.includes(act)) {
+        sHitsX2++;
+        sWinningNums.push(`${act}(x2)`);
+      } else if (sSingles.includes(act)) {
+        sHitsX1++;
+        sWinningNums.push(`${act}(x1)`);
+      }
+    });
+    const sUnitCount = sSingles.length * 1 + sIntersection.length * 2;
+    const sStakeK = sUnitCount * LOTO_STAKE_PER_NUMBER_K;
+    const sPayoutK = (sHitsX2 * 2 * LOTO_PAYOUT_PER_HIT_K) + (sHitsX1 * 1 * LOTO_PAYOUT_PER_HIT_K);
+    const sProfitK = sPayoutK - sStakeK;
+    const isWin = sProfitK > 0;
 
     lines.push(
-      `• Dự đoán ${escapeHtml(displayDate(predictionDate))} (${singles.length + intersection.length} số · ${totalUnits} đơn vị = ${formatMoneyK(totalStakeK)} vốn):`,
-      `  Số trùng đánh x2 (440K/số): <b>${escapeHtml(formatNumberList(intersection))}</b>`,
-      `  Số riêng bọc lót x1 (220K/số): <b>${escapeHtml(formatNumberList(singles))}</b>`
+      `• Kết toán ${escapeHtml(displayDate(deGop.settled.predictionIsoDate || deGop.settled.predictionDate))}: <b>${isWin ? '✅ CÓ LÃI' : '❌ LỖ'}</b> · ${escapeHtml(formatMoneyK(sProfitK))}`,
+      `  Trúng: ${sHitsX2 + sHitsX1} nháy (${sHitsX2} nháy x2, ${sHitsX1} nháy x1)${sWinningNums.length ? ` · 🟩 <b>${escapeHtml(sWinningNums.join(' '))}</b>` : ''}`
     );
   }
+
+  lines.push(
+    `• Dự đoán ${escapeHtml(displayDate(predictionDate))} (${deNextNumbers.length} số · ${deNextUnits} đơn vị = ${formatMoneyK(deNextStakeK)} vốn):`,
+    `  Số trùng đánh x2 (440K/số): <b>${escapeHtml(formatNumberList(deNextIntersection))}</b>`,
+    `  Số riêng bọc lót x1 (220K/số): <b>${escapeHtml(formatNumberList(deNextSingles))}</b>`
+  );
   lines.push(divider);
 
   // -------------------------------------------------------------

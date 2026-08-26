@@ -115,10 +115,8 @@
     // ==========================================
     function setupTabSwitching() {
         const btnDualMerge = byId('tabBtnDualMerge');
-        const btnLoDualMerge = byId('tabBtnLoDualMerge');
         const btnSingle = byId('tabBtnSingleMethod');
         const viewDual = byId('dualMergeView');
-        const viewLoDual = byId('loDualMergeView');
         const viewSingle = byId('singleMethodView');
 
         const activeBtnClass = 'flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-indigo-600 px-4 py-2.5 text-sm font-black text-white shadow-md transition-all';
@@ -127,21 +125,14 @@
         function switchTab(tab) {
             activeMainTab = tab;
             if (btnDualMerge) btnDualMerge.className = tab === 'dualMerge' ? activeBtnClass : inactiveBtnClass;
-            if (btnLoDualMerge) btnLoDualMerge.className = tab === 'loDualMerge' ? activeBtnClass : inactiveBtnClass;
             if (btnSingle) btnSingle.className = tab === 'singleMethod' ? activeBtnClass : inactiveBtnClass;
 
             if (viewDual) viewDual.classList.toggle('hidden', tab !== 'dualMerge');
-            if (viewLoDual) viewLoDual.classList.toggle('hidden', tab !== 'loDualMerge');
             if (viewSingle) viewSingle.classList.toggle('hidden', tab !== 'singleMethod');
         }
 
         if (btnDualMerge) btnDualMerge.onclick = () => switchTab('dualMerge');
-        if (btnLoDualMerge) btnLoDualMerge.onclick = () => switchTab('loDualMerge');
         if (btnSingle) btnSingle.onclick = () => switchTab('singleMethod');
-
-        if (window.location.hash === '#lo-dual-merge') {
-            switchTab('loDualMerge');
-        }
     }
 
     // ==========================================
@@ -728,147 +719,6 @@
     }
 
     // ==========================================
-    // VIEW: LÔ GỘP THỰC CHIẾN (27 GIẢI)
-    // ==========================================
-    function renderLoDualMergeView(loData) {
-        if (!loData) return;
-        const rec = loData.latestRecommendation || {};
-        const summary = loData.summary || {};
-
-        // Summary KPI Cards
-        const kpiContainer = byId('loDualMergeSummaryCards');
-        if (kpiContainer) {
-            const kpiItems = [
-                ['NGÀY ĐỐI SOÁT', `${summary.totalSettled || summary.days || 0} kỳ`, 'Snapshot thực tế'],
-                ['NGÀY CÓ LÃI', `${summary.wins || 0} / ${summary.totalSettled || summary.days || 0}`, `${percent(summary.overallHitRate || summary.hitRate)} số kỳ có lãi`],
-                ['TỔNG NHÁY TRÚNG', `${summary.totalHits || 0} nháy`, 'Tính trên 27 giải'],
-                ['TỔNG VỐN CƯỢC', `${fmt(summary.totalStakeK || summary.stakeK)}K`, '220K/con đơn vị'],
-                ['TIỀN THƯỞNG', `${fmt(summary.totalPayoutK || summary.payoutK)}K`, '800K/nháy'],
-                ['LÃI RÒNG THỰC CHIẾN', signed(summary.overallProfitK || summary.profitK), `${percent(summary.roi)} ROI`]
-            ];
-            kpiContainer.innerHTML = kpiItems.map(([label, val, note]) => `
-                <div class="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
-                    <p class="text-[10px] font-black uppercase tracking-wider text-emerald-300">${escapeHtml(label)}</p>
-                    <p class="mt-1 text-xl font-black text-white">${escapeHtml(val)}</p>
-                    <p class="mt-0.5 text-xs text-emerald-200">${escapeHtml(note)}</p>
-                </div>
-            `).join('');
-        }
-
-        // Today recommendation
-        if (byId('loTargetPredictionDate')) byId('loTargetPredictionDate').textContent = rec.predictionDate ? rec.predictionDate.split('-').reverse().join('/') : '--/--/----';
-        if (byId('loDualMergeMethod1Badge')) byId('loDualMergeMethod1Badge').textContent = rec.m1Label || rec.m1 || '--';
-        if (byId('loDualMergeMethod2Badge')) byId('loDualMergeMethod2Badge').textContent = rec.m2Label || rec.m2 || '--';
-
-        if (byId('loCountX2Badge')) byId('loCountX2Badge').textContent = `${rec.intersectionX2?.length || 0} số`;
-        if (byId('loChipsContainerX2')) {
-            byId('loChipsContainerX2').innerHTML = (rec.intersectionX2 || []).map(n => `
-                <span class="inline-flex h-11 min-w-11 items-center justify-center rounded-2xl border-2 border-amber-400 bg-gradient-to-tr from-amber-200 via-amber-300 to-yellow-200 font-mono text-base font-black text-amber-950 shadow-md shadow-amber-500/20">
-                    ${number(n)}
-                </span>
-            `).join('') || '<p class="text-xs text-amber-800">Không có số trùng kép hôm nay.</p>';
-        }
-
-        if (byId('loCountX1Badge')) byId('loCountX1Badge').textContent = `${rec.uniqueSinglesX1?.length || 0} số`;
-        if (byId('loChipsContainerX1')) {
-            byId('loChipsContainerX1').innerHTML = (rec.uniqueSinglesX1 || []).map(n => `
-                <span class="inline-flex h-10 min-w-10 items-center justify-center rounded-xl border border-teal-200 bg-teal-50 font-mono text-sm font-black text-teal-900 shadow-xs">
-                    ${number(n)}
-                </span>
-            `).join('') || '<p class="text-xs text-teal-800">Không có số riêng.</p>';
-        }
-
-        if (byId('loTotalNumbersText')) byId('loTotalNumbersText').textContent = `${rec.totalNumbersCount || 0} số`;
-        if (byId('loTotalUnitsText')) byId('loTotalUnitsText').textContent = `${rec.unitCount || 0} đơn vị`;
-        if (byId('loTotalStakeText')) byId('loTotalStakeText').textContent = `${fmt(rec.stakeK || 0)}K`;
-
-        if (byId('loDualMergePlainReasons')) {
-            byId('loDualMergePlainReasons').innerHTML = (rec.plainReasons || []).map(r => `
-                <p class="flex items-start gap-2">
-                    <i class="bi bi-check-circle-fill text-emerald-500 mt-0.5 shrink-0 text-xs"></i>
-                    <span>${escapeHtml(r)}</span>
-                </p>
-            `).join('');
-        }
-
-        // Copy buttons
-        const btnCopyLoAll = byId('btnCopyLoAllSpace');
-        if (btnCopyLoAll) btnCopyLoAll.onclick = () => copyNumbers(rec.fullUnion, ' ');
-        const btnCopyLoX2 = byId('btnCopyLoX2Space');
-        if (btnCopyLoX2) btnCopyLoX2.onclick = () => copyNumbers(rec.intersectionX2, ' ');
-
-        // Windows
-        const windowsContainer = byId('loDualMergeWindowsTable');
-        if (windowsContainer && summary.windows) {
-            const wins = summary.windows;
-            const windowItems = [
-                ['7 NGÀY GẦN NHẤT', wins.last7],
-                ['15 NGÀY GẦN NHẤT', wins.last15],
-                ['30 NGÀY GẦN NHẤT', wins.last30],
-                ['TOÀN BỘ THEO DÕI', wins.liveTotal]
-            ];
-            windowsContainer.innerHTML = windowItems.map(([label, w]) => {
-                if (!w || !w.days) return '';
-                const profitClass = Number(w.profitK || 0) >= 0 ? 'text-emerald-700' : 'text-rose-700';
-                return `
-                    <div class="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 shadow-xs">
-                        <p class="text-[10px] font-black uppercase tracking-wider text-slate-500">${escapeHtml(label)}</p>
-                        <strong class="mt-1 block text-lg font-black text-slate-900">${percent(w.hitRate)} ngày có lãi</strong>
-                        <p class="text-xs text-slate-600 font-semibold mt-0.5">${w.wins} thắng · ${w.losses} thua · ${w.totalHits || 0} nháy</p>
-                        <p class="mt-1 font-mono font-black text-xs ${profitClass}">${signed(w.profitK)} (${percent(w.roi)} ROI)</p>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Settled Ledger Table
-        const ledgerBody = byId('loDualMergeLedgerBody');
-        if (ledgerBody) {
-            const records = (loData.records || []).slice().reverse();
-            if (!records.length) {
-                ledgerBody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-500 font-semibold">Chưa có dữ liệu đối soát Lô gộp.</td></tr>';
-                return;
-            }
-
-            ledgerBody.innerHTML = records.map(r => {
-                const isWin = r.isWin;
-                const hitBadgeClass = isWin
-                    ? 'bg-emerald-100 text-emerald-900 border-emerald-300 font-black'
-                    : 'bg-rose-50 text-rose-800 border-rose-200 font-bold';
-                const profitClass = Number(r.profitK || 0) >= 0 ? 'text-emerald-700' : 'text-rose-700';
-
-                return `
-                    <tr class="hover:bg-slate-50/80 transition-colors">
-                        <td class="px-4 py-3 font-bold text-slate-900">${escapeHtml(r.date)}</td>
-                        <td class="px-4 py-3">
-                            <div class="flex flex-col gap-1 text-xs">
-                                <span class="font-bold text-slate-800">${escapeHtml(r.m1Label || r.m1)}</span>
-                                <span class="text-slate-500">+ ${escapeHtml(r.m2Label || r.m2)}</span>
-                            </div>
-                        </td>
-                        <td class="px-4 py-3">
-                            <div class="flex flex-col gap-1 text-xs">
-                                ${r.intersection?.length ? `<div><span class="font-bold text-amber-800">x2:</span> <span class="font-mono text-slate-700">${r.intersection.map(number).join(' ')}</span></div>` : ''}
-                                ${r.uniqueSingles?.length ? `<div><span class="font-bold text-teal-800">x1:</span> <span class="font-mono text-slate-600">${r.uniqueSingles.map(number).join(' ')}</span></div>` : ''}
-                            </div>
-                        </td>
-                        <td class="px-3 py-3 text-center">
-                            <span class="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs ${hitBadgeClass}">
-                                ${isWin ? '<i class="bi bi-check-circle-fill text-emerald-600"></i>' : '<i class="bi bi-x-circle-fill text-rose-500"></i>'}
-                                ${r.totalHits || 0} nháy
-                            </span>
-                        </td>
-                        <td class="px-4 py-3 text-right">
-                            <div class="font-mono font-black ${profitClass}">${signed(r.profitK)}</div>
-                            <div class="font-mono text-[11px] text-slate-500">${signed(r.cumulativeProfitK)}</div>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-    }
-
-    // ==========================================
     // INITIALIZATION & DATA FETCHING
     // ==========================================
     async function init() {
@@ -883,7 +733,6 @@
 
             // Render all views
             renderDualMergeView(payload.dualMerge);
-            renderLoDualMergeView(payload.loDualMerge);
             renderSingleMethodView();
         } catch (error) {
             console.error('Lỗi khi tải dữ liệu daily advisor:', error);

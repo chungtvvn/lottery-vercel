@@ -178,6 +178,60 @@
         const root = document.getElementById('predictionCards');
         const predictions = data.nextPrediction?.predictions || {};
         const recommendedCount = state.defaultLotoBetCount || DEFAULT_LOTO_BET_COUNT;
+
+        if (data.strategy === 'loDualMerge' && predictions.dualMerge) {
+            const dm = predictions.dualMerge;
+            const x2Nums = dm.intersectionNumbers || [];
+            const x1Nums = dm.uniqueSingles || [];
+            root.innerHTML = `
+                <article class="glass-card number-panel-bet overflow-hidden col-span-full ring-2 ring-emerald-400 bg-gradient-to-br from-white via-emerald-50/20 to-teal-50/20">
+                    <div class="border-b border-emerald-100 bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-transparent px-6 py-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div>
+                                <span class="rounded-full bg-emerald-600 px-3 py-0.5 text-[10px] font-black uppercase text-white shadow-xs">CHIẾN THUẬT ĐỀ GỘP ĐÁNH 27 GIẢI LÔ</span>
+                                <h2 class="text-xl font-black text-slate-900 mt-1">Dàn Lô Gộp Thực Chiến (X2 Số Trùng)</h2>
+                                <p class="text-xs text-slate-600 mt-0.5">Áp dụng kết hợp 2 phương pháp Đề tối ưu; cược x2 số trùng (440K/số ăn 1.600K/nháy) & x1 số riêng (220K/số ăn 800K/nháy).</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs font-bold text-slate-500">Tổng vốn cược: <span class="font-mono font-black text-slate-900 text-sm">${nf.format(dm.stakeK || 0)}K</span></div>
+                                <div class="text-xs text-emerald-700 font-bold">${dm.numbers?.length || 0} con (${dm.unitCount || 0} đơn vị)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6 space-y-6">
+                        <!-- X2 Numbers -->
+                        <div class="rounded-2xl border-2 border-amber-300 bg-amber-50/50 p-4">
+                            <div class="flex items-center justify-between gap-2 mb-3">
+                                <div class="text-xs font-black uppercase text-amber-900 flex items-center gap-1.5">
+                                    <span class="inline-block h-2 w-2 rounded-full bg-amber-500"></span>
+                                    Số trùng khớp · Đánh Nhân Đôi X2 (440K/số · Ăn 1.600K/nháy)
+                                </div>
+                                <span class="rounded-full bg-amber-400 px-2.5 py-0.5 text-[11px] font-black text-amber-950 font-mono">${x2Nums.length} số</span>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                ${x2Nums.map(n => numberBadge(n, 'bet', { title: 'Đánh x2: 440K ăn 1.600K/nháy' })).join('') || '<span class="text-xs text-slate-500">Không có số trùng.</span>'}
+                            </div>
+                        </div>
+
+                        <!-- X1 Numbers -->
+                        <div class="rounded-2xl border border-teal-200 bg-teal-50/40 p-4">
+                            <div class="flex items-center justify-between gap-2 mb-3">
+                                <div class="text-xs font-black uppercase text-teal-900 flex items-center gap-1.5">
+                                    <span class="inline-block h-2 w-2 rounded-full bg-teal-500"></span>
+                                    Số riêng bọc lót · Đánh Đơn X1 (220K/số · Ăn 800K/nháy)
+                                </div>
+                                <span class="rounded-full bg-teal-200 px-2.5 py-0.5 text-[11px] font-black text-teal-950 font-mono">${x1Nums.length} số</span>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                ${x1Nums.map(n => numberBadge(n, 'bet', { title: 'Đánh x1: 220K ăn 800K/nháy' })).join('') || '<span class="text-xs text-slate-500">Không có số riêng.</span>'}
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            `;
+            return;
+        }
+
         root.innerHTML = LOTO_COUNT_ORDER.map(count => {
             const item = predictions[`top${count}`] || {};
             const overlapNumbers = getOverlapNumbers(item);
