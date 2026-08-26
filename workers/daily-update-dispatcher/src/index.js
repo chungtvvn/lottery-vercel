@@ -644,10 +644,22 @@ async function notifyTelegram(env, options = {}) {
   }
 
   const [dePayload, lotoPayload, historyPayload, advisorPayload] = await Promise.all([
-    fetchPredictionJson(env, '/api/milestone-20y/prediction?view=telegram'),
-    fetchPredictionJson(env, '/api/loto/prediction?count=all&view=telegram'),
-    fetchPredictionJson(env, '/api/prediction/history?limit=90&view=telegram'),
-    fetchPredictionJson(env, '/api/daily-advisor')
+    fetchPredictionJson(env, '/api/milestone-20y/prediction?view=telegram').catch(err => {
+      console.error('Failed to fetch /api/milestone-20y/prediction:', err);
+      return {};
+    }),
+    fetchPredictionJson(env, '/api/loto/prediction?count=all&view=telegram').catch(err => {
+      console.error('Failed to fetch /api/loto/prediction:', err);
+      return {};
+    }),
+    fetchPredictionJson(env, '/api/prediction/history?limit=90&view=telegram').catch(err => {
+      console.error('Failed to fetch /api/prediction/history:', err);
+      return {};
+    }),
+    fetchPredictionJson(env, '/api/daily-advisor').catch(err => {
+      console.error('Failed to fetch /api/daily-advisor:', err);
+      return {};
+    })
   ]);
   const readiness = evaluatePredictionCacheReadiness(
     dePayload,
@@ -702,17 +714,10 @@ async function handleTelegramWebhook(request, env) {
   const chatId = String(message.chat.id);
   await env.TELEGRAM_STATE?.put(TELEGRAM_CHAT_KEY, chatId);
   const command = String(message.text || '').trim().toLowerCase().split(/\s+/)[0];
-  if (command === '/send' || command === '/test') {
-    const result = await notifyTelegram(env, { force: true });
-    return json(result);
-  }
-
-  await sendTelegramMessage(
-    env,
-    chatId,
-    '✅ Bot XSMB đã kết nối với @chungtvvn. Sau khi dữ liệu Đề và Lô cập nhật mỗi ngày, bot sẽ tự gửi kết toán và dự đoán mới.\n\nDùng /send để gửi thử ngay.'
-  );
-  return json({ ok: true, registered: true });
+  
+  // Respond immediately with the full live report for any command or chat message
+  const result = await notifyTelegram(env, { force: true });
+  return json(result);
 }
 
 async function setupTelegramWebhook(request, env) {

@@ -151,10 +151,18 @@ function settleFromRaw(payload, rawRows) {
         } catch (_) {}
         dualMerge = dualMergeService.buildDualMergeAdvisor(historyPayload, rawRows, { existingAdvisorRecords: payload.records });
     }
+
+    let loDualMerge = payload.loDualMerge;
+    if (!loDualMerge || !Array.isArray(loDualMerge.settledLedger) || loDualMerge.settledLedger.length === 0) {
+        const { buildLoDualMergeAdvisor } = require('@/lib/services/loDualMergeAdvisorService');
+        loDualMerge = buildLoDualMergeAdvisor(dualMerge, rawRows);
+    }
+
     return {
         ...payload,
         records,
         dualMerge,
+        loDualMerge,
         latestDataDate: rawRows?.at(-1)?.date || payload.latestDataDate,
         summary: { main: summarize('main'), hybrid: summarize('hybrid') },
         strategyCatalog: [...strategyMetadata.values()],
