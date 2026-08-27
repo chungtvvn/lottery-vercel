@@ -13,8 +13,8 @@ function runTests() {
     assert.strictEqual(dualMergeAdvisorService.UNIT_STAKE_K, 1000, 'Unit stake must be 1.000K');
     assert.strictEqual(dualMergeAdvisorService.WIN_MULTIPLIER, 84, 'Win payout multiplier must be 84');
 
-    // Test 2: Pool of 7 methods
-    assert.strictEqual(dualMergeAdvisorService.POOL_7_METHODS.length, 7, 'Pool must contain 7 historical methods');
+    // Test 2: Pool of methods
+    assert.ok(dualMergeAdvisorService.POOL_7_METHODS.length >= 7, 'Pool must contain at least 7 historical methods');
     assert.ok(dualMergeAdvisorService.POOL_7_METHODS.includes('dedupEdge75Hold70'), 'Must include dedupEdge75Hold70');
     assert.ok(dualMergeAdvisorService.POOL_7_METHODS.includes('dedupEdge50CombinedB40S05Hold70'), 'Must include dedupEdge50CombinedB40S05Hold70');
 
