@@ -413,24 +413,38 @@ jobs:
             return JSON.parse(zlib.gunzipSync(Buffer.from(await response.arrayBuffer())));
           }
           (async () => {
-            const [raw, milestone, history, loto, lotoLive] = await Promise.all([
+            const [raw, milestone, history, loto, lotoLive, advisor] = await Promise.all([
               readGzip('data/xsmb-2-digits.json'),
               readGzip('statistics/cached_milestone20y_prediction.json'),
               readGzip('statistics/cached_prediction_history.json'),
               readGzip('statistics/cached_loto_prediction.json'),
-              readGzip('statistics/cached_loto_live_predictions.json')
+              readGzip('statistics/cached_loto_live_predictions.json'),
+              readGzip('statistics/cached_daily_method_advisor.json')
             ]);
             const latestRaw = raw.at(-1)?.date;
             const dates = {
               raw: latestRaw,
               de: milestone.latestDataDate,
               loto: loto.latestDataDate,
-              lotoLive: lotoLive.latestDataDate
+              lotoLive: lotoLive.latestDataDate,
+              advisor: advisor.latestDataDate
             };
             if (!latestRaw) throw new Error('Không đọc được latestRaw từ R2 raw data.');
             const nextDate = new Date(`${latestRaw}T00:00:00Z`);
             nextDate.setUTCDate(nextDate.getUTCDate() + 1);
             const expectedPredictionDate = nextDate.toISOString().slice(0, 10);
+            if (!advisor.dualMerge?.latestRecommendation?.predictionDate || !advisor.dualMerge.latestRecommendation.intersectionX2?.length) {
+              throw new Error('R2 Daily Advisor: thiếu hoặc sai Dual Merge recommendation');
+            }
+            if (!advisor.tripleMerge?.latestRecommendation?.predictionDate || !advisor.tripleMerge.latestRecommendation.tierX3?.length) {
+              throw new Error('R2 Daily Advisor: thiếu hoặc sai Triple Merge recommendation');
+            }
+            if (advisor.dualMerge.latestRecommendation.predictionDate !== expectedPredictionDate) {
+              throw new Error(`R2 Daily Advisor Dual Merge prediction date lệch: ${advisor.dualMerge.latestRecommendation.predictionDate}, expected=${expectedPredictionDate}`);
+            }
+            if (advisor.tripleMerge.latestRecommendation.predictionDate !== expectedPredictionDate) {
+              throw new Error(`R2 Daily Advisor Triple Merge prediction date lệch: ${advisor.tripleMerge.latestRecommendation.predictionDate}, expected=${expectedPredictionDate}`);
+            }
             const historyRun = history.find(item => String(item?.predictionDate || '').slice(0, 10) === expectedPredictionDate);
             const historyMethod = historyRun?.summary?.methods?.deParallelBlock85Small65Hold70;
             const historyBets = historyMethod?.numbersToBet || [];
