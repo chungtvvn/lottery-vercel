@@ -9,7 +9,7 @@
     let payload = null;
     let activeMainTab = 'dualMerge'; // 'dualMerge' | 'singleMethod'
     let currentStrategyId = 'balanced-selector-fixed30-v1';
-    let dualMergeLogLimit = 'all';
+    let dualMergeLogLimit = '30'; // Mặc định 30 ngày gần nhất
     let dualMergeFilterStatus = 'all'; // 'all' | 'live' | 'pit' | 'win_x2' | 'win_x1' | 'loss'
     let dualMergeSearchQuery = '';
 
@@ -218,14 +218,14 @@
                 `).join('') || '<p class="text-xs text-indigo-800">Đang cập nhật...</p>';
             }
 
-            // Plain Reasons
+            // Plain Reasons (Detailed Quantitative Insights)
             const reasonsContainer = byId('dualMergePlainReasons');
             if (reasonsContainer) {
-                reasonsContainer.innerHTML = (rec.plainReasons || []).map(r => `
-                    <p class="flex items-start gap-2">
-                        <i class="bi bi-check-circle-fill text-amber-500 mt-0.5 shrink-0 text-xs"></i>
-                        <span>${escapeHtml(r)}</span>
-                    </p>
+                reasonsContainer.innerHTML = (rec.plainReasons || []).map((r, i) => `
+                    <div class="flex items-start gap-3 rounded-2xl border border-amber-200/90 bg-gradient-to-r from-amber-50/80 via-yellow-50/50 to-white p-3.5 shadow-xs transition-all hover:border-amber-300">
+                        <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-amber-200/70 text-xs font-black text-amber-950 shadow-2xs">${i + 1}</span>
+                        <div class="text-xs text-slate-800 font-medium leading-relaxed pt-0.5">${escapeHtml(r)}</div>
+                    </div>
                 `).join('');
             }
 
@@ -271,11 +271,63 @@
             }).join('');
         }
 
-        // Settled Dual-Merge Ledger
-        renderDualMergeLedger(dualMergeData.settledLedger);
+        // Settled Dual-Merge Ledger (Pinned with latest locked snapshot)
+        renderDualMergeLedger(dualMergeData.settledLedger, dualMergeData.latestRecommendation);
 
         // Monthly Breakdown Table
         renderDualMergeMonthlyTable(dualMergeData.settledLedger);
+
+        // Triple-Consensus Experimental Module
+        if (payload?.tripleMerge) {
+            renderTripleMergeView(payload.tripleMerge);
+        }
+    }
+
+    function renderTripleMergeView(tripleMergeData) {
+        if (!tripleMergeData || !tripleMergeData.latestRecommendation) return;
+        const rec = tripleMergeData.latestRecommendation;
+
+        if (byId('tripleM1Label')) byId('tripleM1Label').textContent = rec.m1Label || 'Edge 50%';
+        if (byId('tripleM2Label')) byId('tripleM2Label').textContent = rec.m2Label || 'Edge 75% Hold';
+        if (byId('tripleM3Label')) byId('tripleM3Label').textContent = rec.m3Label || 'Dropoff Khử Trùng';
+
+        if (byId('tripleCountAll')) byId('tripleCountAll').textContent = String(rec.totalNumbersCount || 0);
+        if (byId('tripleCountX3')) byId('tripleCountX3').textContent = `${rec.countX3 || 0} số`;
+        if (byId('tripleCountX2')) byId('tripleCountX2').textContent = `${rec.countX2 || 0} số`;
+        if (byId('tripleCountX1')) byId('tripleCountX1').textContent = `${rec.countX1 || 0} số`;
+
+        // Render chips for X3, X2, X1
+        const cX3 = byId('tripleChipsX3');
+        if (cX3) {
+            cX3.innerHTML = (rec.tierX3 || []).map(n => `
+                <span class="inline-flex items-center justify-center rounded-lg bg-amber-400 font-mono text-xs font-black text-amber-950 px-2 py-1 shadow-sm">
+                    ${number(n)}<sup class="ml-0.5 text-[9px] text-amber-950 font-black">x3</sup>
+                </span>
+            `).join('');
+        }
+
+        const cX2 = byId('tripleChipsX2');
+        if (cX2) {
+            cX2.innerHTML = (rec.tierX2 || []).map(n => `
+                <span class="inline-flex items-center justify-center rounded-lg bg-cyan-400 font-mono text-xs font-black text-cyan-950 px-2 py-1 shadow-sm">
+                    ${number(n)}<sup class="ml-0.5 text-[9px] text-cyan-950 font-black">x2</sup>
+                </span>
+            `).join('');
+        }
+
+        const cX1 = byId('tripleChipsX1');
+        if (cX1) {
+            cX1.innerHTML = (rec.tierX1 || []).map(n => `
+                <span class="inline-flex items-center justify-center rounded-lg bg-indigo-900 border border-indigo-500/50 font-mono text-xs font-bold text-indigo-100 px-2 py-1 shadow-sm">
+                    ${number(n)}
+                </span>
+            `).join('');
+        }
+
+        const btnCopyTripleAll = byId('btnCopyTripleAll');
+        if (btnCopyTripleAll) {
+            btnCopyTripleAll.onclick = () => copyNumbers(rec.fullUnion, ' ');
+        }
     }
 
     function renderDualMergeMonthlyTable(records) {
@@ -370,11 +422,40 @@
         }
     }
 
-    function renderDualMergeLedger(records) {
+    function renderDualMergeLedger(records, latestRec = null) {
         const container = byId('dualMergeLedgerBody');
         if (!container) return;
 
-        const allRecords = records || [];
+        const allRecords = (records || []).slice();
+
+        // If today's recommendation is pending (not in settled ledger), pin it to the top
+        if (latestRec && latestRec.predictionDate) {
+            const isSettled = allRecords.some(r => r.date === latestRec.predictionDate && r.settled && Number.isInteger(r.actual));
+            if (!isSettled) {
+                allRecords.push({
+                    date: latestRec.predictionDate,
+                    actual: null,
+                    settled: false,
+                    isLocked: true,
+                    abstained: false,
+                    sourceType: 'live-snapshot',
+                    isLiveSnapshot: true,
+                    m1: latestRec.m1,
+                    m1Label: latestRec.m1Label,
+                    m2: latestRec.m2,
+                    m2Label: latestRec.m2Label,
+                    intersection: latestRec.intersectionX2,
+                    uniqueSingles: latestRec.uniqueSinglesX1,
+                    union: latestRec.fullUnion,
+                    overlapCount: latestRec.overlapCount,
+                    totalNumbers: latestRec.totalNumbersCount,
+                    hitType: 'pending',
+                    stakeK: 60,
+                    payoutK: 0,
+                    profitK: null
+                });
+            }
+        }
 
         // Calculate dynamic filter counts
         const countAll = allRecords.length;
@@ -426,17 +507,19 @@
 
         container.innerHTML = rows.map(r => {
             const isSettled = r.settled && Number.isInteger(r.actual);
-            const actualStr = isSettled ? number(r.actual) : '??';
+            const actualStr = isSettled 
+                ? number(r.actual) 
+                : `<span class="text-amber-700 font-black" title="Chờ mở thưởng 18h30">⏳</span>`;
 
             // Source Type Badge
             const isLive = r.isLiveSnapshot || r.sourceType === 'live-snapshot';
             const sourceBadge = isLive
-                ? `<span class="inline-flex items-center gap-1 rounded-md border border-emerald-300 bg-emerald-50 px-2 py-0.5 font-bold text-emerald-800 text-[10px] shadow-2xs" title="Snapshot thực tế đã chốt trước giờ quay"><i class="bi bi-lock-fill text-emerald-600"></i> Snapshot thật</span>`
+                ? `<span class="inline-flex items-center gap-1 rounded-md border border-emerald-300 bg-emerald-50 px-2 py-0.5 font-bold text-emerald-800 text-[10px] shadow-2xs" title="Snapshot thực tế đã chốt trước giờ quay"><i class="bi bi-lock-fill text-emerald-600"></i> ${isSettled ? 'Snapshot thật' : 'Snapshot Đã Khóa'}</span>`
                 : `<span class="inline-flex items-center gap-1 rounded-md border border-sky-200 bg-sky-50 px-2 py-0.5 font-bold text-sky-800 text-[10px] shadow-2xs" title="Tính toán độc lập theo Strict PIT từ đầu năm"><i class="bi bi-cpu text-sky-600"></i> Strict PIT</span>`;
 
             // Outcome Badge
-            let outcomeClass = 'bg-amber-100 text-amber-800 border-amber-200';
-            let outcomeText = 'Chờ kết quả';
+            let outcomeClass = 'bg-amber-50 text-amber-900 border-amber-300 border-dashed font-bold';
+            let outcomeText = '⏳ Chờ KQ 18h30';
             if (isSettled) {
                 if (r.hitType === 'win_x2') {
                     outcomeClass = 'bg-gradient-to-r from-amber-200 via-amber-300 to-yellow-200 text-amber-950 border-amber-400 font-black shadow-xs ring-1 ring-amber-400/50';
@@ -467,17 +550,17 @@
 
             const profitClass = isSettled
                 ? (Number(r.profitK) >= 0 ? 'text-emerald-700 font-black' : 'text-rose-700 font-black')
-                : 'text-slate-400';
+                : 'text-slate-400 font-medium';
 
             // Methods Highlight
             const m1Badge = r.m1 ? renderMethodBadge(r.m1, r.m1Label) : '-';
             const m2Badge = r.m2 ? renderMethodBadge(r.m2, r.m2Label) : '-';
 
             return `
-                <tr class="hover:bg-slate-50/80 transition-colors">
+                <tr class="hover:bg-slate-50/80 transition-colors ${!isSettled ? 'bg-amber-50/40 border-l-4 border-l-amber-500' : ''}">
                     <td class="px-4 py-3">
                         <div class="flex flex-col gap-1">
-                            <span class="font-mono font-black text-slate-900 text-xs">${escapeHtml(r.date)}</span>
+                            <span class="font-mono font-black text-slate-900 text-xs">${escapeHtml(r.date)} ${!isSettled ? '<span class="ml-1 text-[10px] text-amber-600 font-bold">(Hôm nay)</span>' : ''}</span>
                             <div>${sourceBadge}</div>
                         </div>
                     </td>
@@ -507,7 +590,10 @@
                         <span class="inline-flex rounded-lg border px-2.5 py-1 text-xs ${outcomeClass}">${outcomeText}</span>
                     </td>
                     <td class="px-4 py-3 text-right font-mono text-xs ${profitClass}">
-                        ${isSettled ? `${signed(r.profitK)} ${r.cumulativeProfitK != null ? `<span class="text-[10px] text-slate-500 block font-normal">Lũy kế: ${signed(r.cumulativeProfitK)}</span>` : '<span class="text-[10px] text-slate-400 block font-normal">⚡ Strict PIT</span>'}` : '--'}
+                        ${isSettled 
+                            ? `${signed(r.profitK)} ${r.cumulativeProfitK != null ? `<span class="text-[10px] text-slate-500 block font-normal">Lũy kế: ${signed(r.cumulativeProfitK)}</span>` : '<span class="text-[10px] text-slate-400 block font-normal">⚡ Strict PIT</span>'}` 
+                            : '<span class="text-amber-700 font-bold text-xs">Chờ 18h30</span>'
+                        }
                     </td>
                 </tr>
             `;
@@ -526,7 +612,7 @@
                     btn.classList.add('active', 'border-indigo-600', 'bg-indigo-600', 'text-white');
                     btn.classList.remove('bg-white', 'text-slate-700');
                     dualMergeFilterStatus = btn.getAttribute('data-filter') || 'all';
-                    if (payload?.dualMerge) renderDualMergeLedger(payload.dualMerge.settledLedger);
+                    if (payload?.dualMerge) renderDualMergeLedger(payload.dualMerge.settledLedger, payload.dualMerge.latestRecommendation);
                 };
             });
         }
@@ -535,7 +621,7 @@
         if (searchInput) {
             searchInput.oninput = e => {
                 dualMergeSearchQuery = e.target.value;
-                if (payload?.dualMerge) renderDualMergeLedger(payload.dualMerge.settledLedger);
+                if (payload?.dualMerge) renderDualMergeLedger(payload.dualMerge.settledLedger, payload.dualMerge.latestRecommendation);
             };
         }
 
@@ -543,7 +629,7 @@
         if (logLimitEl) {
             logLimitEl.onchange = e => {
                 dualMergeLogLimit = e.target.value;
-                if (payload?.dualMerge) renderDualMergeLedger(payload.dualMerge.settledLedger);
+                if (payload?.dualMerge) renderDualMergeLedger(payload.dualMerge.settledLedger, payload.dualMerge.latestRecommendation);
             };
         }
     }
