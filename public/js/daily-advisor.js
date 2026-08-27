@@ -283,51 +283,204 @@
         }
     }
 
+    let tripleLogLimitValue = '30';
+
     function renderTripleMergeView(tripleMergeData) {
-        if (!tripleMergeData || !tripleMergeData.latestRecommendation) return;
+        if (!tripleMergeData) return;
         const rec = tripleMergeData.latestRecommendation;
 
-        if (byId('tripleM1Label')) byId('tripleM1Label').textContent = rec.m1Label || 'Edge 50%';
-        if (byId('tripleM2Label')) byId('tripleM2Label').textContent = rec.m2Label || 'Edge 75% Hold';
-        if (byId('tripleM3Label')) byId('tripleM3Label').textContent = rec.m3Label || 'Dropoff Khử Trùng';
+        if (rec) {
+            if (byId('tripleM1Label')) byId('tripleM1Label').textContent = rec.m1Label || 'Edge 50%';
+            if (byId('tripleM2Label')) byId('tripleM2Label').textContent = rec.m2Label || 'Edge 75% Hold';
+            if (byId('tripleM3Label')) byId('tripleM3Label').textContent = rec.m3Label || 'Dropoff Khử Trùng';
 
-        if (byId('tripleCountAll')) byId('tripleCountAll').textContent = String(rec.totalNumbersCount || 0);
-        if (byId('tripleCountX3')) byId('tripleCountX3').textContent = `${rec.countX3 || 0} số`;
-        if (byId('tripleCountX2')) byId('tripleCountX2').textContent = `${rec.countX2 || 0} số`;
-        if (byId('tripleCountX1')) byId('tripleCountX1').textContent = `${rec.countX1 || 0} số`;
+            if (byId('tripleCountAll')) byId('tripleCountAll').textContent = String(rec.totalNumbersCount || 0);
+            if (byId('tripleCountX3')) byId('tripleCountX3').textContent = `${rec.countX3 || 0} số`;
+            if (byId('tripleCountX2')) byId('tripleCountX2').textContent = `${rec.countX2 || 0} số`;
+            if (byId('tripleCountX1')) byId('tripleCountX1').textContent = `${rec.countX1 || 0} số`;
 
-        // Render chips for X3, X2, X1
-        const cX3 = byId('tripleChipsX3');
-        if (cX3) {
-            cX3.innerHTML = (rec.tierX3 || []).map(n => `
-                <span class="inline-flex items-center justify-center rounded-lg bg-amber-400 font-mono text-xs font-black text-amber-950 px-2 py-1 shadow-sm">
-                    ${number(n)}<sup class="ml-0.5 text-[9px] text-amber-950 font-black">x3</sup>
-                </span>
-            `).join('');
+            // Render chips for X3, X2, X1
+            const cX3 = byId('tripleChipsX3');
+            if (cX3) {
+                cX3.innerHTML = (rec.tierX3 || []).map(n => `
+                    <span class="inline-flex items-center justify-center rounded-lg bg-amber-400 font-mono text-xs font-black text-amber-950 px-2 py-1 shadow-sm">
+                        ${number(n)}<sup class="ml-0.5 text-[9px] text-amber-950 font-black">x3</sup>
+                    </span>
+                `).join('');
+            }
+
+            const cX2 = byId('tripleChipsX2');
+            if (cX2) {
+                cX2.innerHTML = (rec.tierX2 || []).map(n => `
+                    <span class="inline-flex items-center justify-center rounded-lg bg-cyan-400 font-mono text-xs font-black text-cyan-950 px-2 py-1 shadow-sm">
+                        ${number(n)}<sup class="ml-0.5 text-[9px] text-cyan-950 font-black">x2</sup>
+                    </span>
+                `).join('');
+            }
+
+            const cX1 = byId('tripleChipsX1');
+            if (cX1) {
+                cX1.innerHTML = (rec.tierX1 || []).map(n => `
+                    <span class="inline-flex items-center justify-center rounded-lg bg-indigo-900 border border-indigo-500/50 font-mono text-xs font-bold text-indigo-100 px-2 py-1 shadow-sm">
+                        ${number(n)}
+                    </span>
+                `).join('');
+            }
+
+            const btnCopyTripleAll = byId('btnCopyTripleAll');
+            if (btnCopyTripleAll) {
+                btnCopyTripleAll.onclick = () => copyNumbers(rec.fullUnion, ' ');
+            }
         }
 
-        const cX2 = byId('tripleChipsX2');
-        if (cX2) {
-            cX2.innerHTML = (rec.tierX2 || []).map(n => `
-                <span class="inline-flex items-center justify-center rounded-lg bg-cyan-400 font-mono text-xs font-black text-cyan-950 px-2 py-1 shadow-sm">
-                    ${number(n)}<sup class="ml-0.5 text-[9px] text-cyan-950 font-black">x2</sup>
-                </span>
-            `).join('');
+        // Summary Stats
+        const summary = tripleMergeData.summary || {};
+        if (byId('tripleTotalDays')) byId('tripleTotalDays').textContent = `${summary.totalSettled || 0} ngày`;
+        if (byId('tripleHitRate')) byId('tripleHitRate').textContent = `${percent(summary.overallHitRate || 0)} trúng`;
+        if (byId('tripleWinsBreakdown')) byId('tripleWinsBreakdown').textContent = `${summary.winsX3 || 0} X3 · ${summary.winsX2 || 0} X2 · ${summary.winsX1 || 0} X1`;
+        if (byId('tripleLossesCount')) byId('tripleLossesCount').textContent = `${summary.totalLosses || 0} ngày trượt`;
+        if (byId('tripleProfitK')) byId('tripleProfitK').textContent = `${signed(summary.overallProfitK || 0)}`;
+        if (byId('tripleRoi')) byId('tripleRoi').textContent = `ROI ${percent(summary.roi || 0)}`;
+
+        // Render Monthly Table and Daily Ledger
+        renderTripleMonthlyTable(tripleMergeData.settledLedger || []);
+        renderTripleLedger(tripleMergeData.settledLedger || [], tripleLogLimitValue);
+
+        // Toggle Monthly Table
+        const btnToggle = byId('btnToggleTripleMonthly');
+        const monthlyWrapper = byId('tripleMonthlyWrapper');
+        if (btnToggle && monthlyWrapper) {
+            btnToggle.onclick = () => {
+                const isHidden = monthlyWrapper.classList.contains('hidden');
+                if (isHidden) {
+                    monthlyWrapper.classList.remove('hidden');
+                    btnToggle.innerHTML = '<i class="bi bi-chevron-up"></i> Đóng Bảng Tháng';
+                } else {
+                    monthlyWrapper.classList.add('hidden');
+                    btnToggle.innerHTML = '<i class="bi bi-calendar3"></i> Xem Bảng Tháng';
+                }
+            };
         }
 
-        const cX1 = byId('tripleChipsX1');
-        if (cX1) {
-            cX1.innerHTML = (rec.tierX1 || []).map(n => `
-                <span class="inline-flex items-center justify-center rounded-lg bg-indigo-900 border border-indigo-500/50 font-mono text-xs font-bold text-indigo-100 px-2 py-1 shadow-sm">
-                    ${number(n)}
-                </span>
-            `).join('');
+        // Limit Selector
+        const selectLimit = byId('tripleLogLimit');
+        if (selectLimit) {
+            selectLimit.value = tripleLogLimitValue;
+            selectLimit.onchange = (e) => {
+                tripleLogLimitValue = e.target.value;
+                renderTripleLedger(tripleMergeData.settledLedger || [], tripleLogLimitValue);
+            };
+        }
+    }
+
+    function renderTripleMonthlyTable(records) {
+        const container = byId('tripleMonthlyTableBody');
+        if (!container) return;
+        const allRecords = (records || []).filter(r => r.settled && Number.isInteger(r.actual));
+        if (!allRecords.length) {
+            container.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-indigo-300">Chưa có dữ liệu thống kê tháng Tam Trụ.</td></tr>';
+            return;
         }
 
-        const btnCopyTripleAll = byId('btnCopyTripleAll');
-        if (btnCopyTripleAll) {
-            btnCopyTripleAll.onclick = () => copyNumbers(rec.fullUnion, ' ');
+        const monthGroups = {};
+        allRecords.forEach(r => {
+            const ym = (r.date || '').slice(0, 7);
+            if (!ym) return;
+            if (!monthGroups[ym]) monthGroups[ym] = [];
+            monthGroups[ym].push(r);
+        });
+
+        const sortedMonths = Object.keys(monthGroups).sort();
+        container.innerHTML = sortedMonths.map(ym => {
+            const list = monthGroups[ym];
+            const days = list.length;
+            const x3 = list.filter(r => r.hitType === 'win_x3').length;
+            const x2 = list.filter(r => r.hitType === 'win_x2').length;
+            const x1 = list.filter(r => r.hitType === 'win_x1').length;
+            const totalWins = x3 + x2 + x1;
+            const losses = days - totalWins;
+            const hitRate = days > 0 ? totalWins / days : 0;
+            const stakeK = list.reduce((sum, r) => sum + (r.stakeK || 0), 0);
+            const payoutK = list.reduce((sum, r) => sum + (r.payoutK || 0), 0);
+            const profitK = payoutK - stakeK;
+            const roi = stakeK > 0 ? profitK / stakeK : 0;
+
+            const [year, month] = ym.split('-');
+            const monthLabel = `Tháng ${parseInt(month, 10)}/${year}`;
+            const profitClass = profitK >= 0 ? 'text-emerald-400 font-black' : 'text-rose-400 font-black';
+
+            return `
+                <tr class="hover:bg-white/5 transition-colors">
+                    <td class="p-2.5 pl-4 font-bold text-white">${monthLabel}</td>
+                    <td class="p-2.5 text-center text-indigo-200">${days}</td>
+                    <td class="p-2.5 text-center font-black text-amber-400">${x3}</td>
+                    <td class="p-2.5 text-center font-black text-cyan-400">${x2}</td>
+                    <td class="p-2.5 text-center font-bold text-indigo-200">${x1}</td>
+                    <td class="p-2.5 text-center font-bold text-rose-400">${losses}</td>
+                    <td class="p-2.5 text-center font-bold text-white">${percent(hitRate)}</td>
+                    <td class="p-2.5 text-right font-mono ${profitClass}">${signed(profitK)}</td>
+                    <td class="p-2.5 pr-4 text-center font-mono ${profitK >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}">${percent(roi)}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function renderTripleLedger(records, limit = '30') {
+        const container = byId('tripleLedgerBody');
+        if (!container) return;
+
+        let list = (records || []).slice().reverse();
+        if (limit !== 'all') {
+            const num = parseInt(limit, 10);
+            if (!Number.isNaN(num) && num > 0) {
+                list = list.slice(0, num);
+            }
         }
+
+        if (!list.length) {
+            container.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-indigo-300">Không có dữ liệu đối soát.</td></tr>';
+            return;
+        }
+
+        container.innerHTML = list.map(r => {
+            let hitBadge = '';
+            let profitClass = 'text-slate-400 font-mono';
+            if (r.hitType === 'win_x3') {
+                hitBadge = '<span class="inline-flex items-center gap-1 rounded-md bg-amber-400 font-mono text-[10px] font-black text-amber-950 px-2 py-0.5 shadow-xs"><i class="bi bi-trophy-fill"></i> TRÚNG X3</span>';
+                profitClass = 'text-amber-400 font-black font-mono';
+            } else if (r.hitType === 'win_x2') {
+                hitBadge = '<span class="inline-flex items-center gap-1 rounded-md bg-cyan-400 font-mono text-[10px] font-black text-cyan-950 px-2 py-0.5 shadow-xs"><i class="bi bi-check-circle-fill"></i> TRÚNG X2</span>';
+                profitClass = 'text-cyan-400 font-black font-mono';
+            } else if (r.hitType === 'win_x1') {
+                hitBadge = '<span class="inline-flex items-center gap-1 rounded-md bg-indigo-500/40 border border-indigo-400/40 font-mono text-[10px] font-bold text-indigo-200 px-2 py-0.5 shadow-xs">TRÚNG X1</span>';
+                profitClass = 'text-indigo-300 font-bold font-mono';
+            } else {
+                hitBadge = '<span class="inline-flex items-center rounded-md bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[10px] font-bold px-2 py-0.5">TRƯỢT</span>';
+                profitClass = 'text-rose-400 font-bold font-mono';
+            }
+
+            return `
+                <tr class="hover:bg-white/5 transition-colors text-xs">
+                    <td class="p-2.5 pl-4 font-mono font-bold text-white whitespace-nowrap">${r.date}</td>
+                    <td class="p-2.5 text-center">
+                        <span class="inline-block rounded-md bg-white/10 px-2 py-0.5 font-mono text-xs font-black text-amber-300">${number(r.actual)}</span>
+                    </td>
+                    <td class="p-2.5 text-indigo-200">
+                        <div class="font-bold text-white text-[11px]">${r.m1Label || 'Edge50'} + ${r.m2Label || 'Edge75'} + ${r.m3Label || 'Dropoff'}</div>
+                    </td>
+                    <td class="p-2.5 text-indigo-200">
+                        <span class="text-amber-300 font-bold">${r.countX3 || 0} số x3</span> · 
+                        <span class="text-cyan-300 font-bold">${r.countX2 || 0} số x2</span> · 
+                        <span class="text-indigo-300">${r.countX1 || 0} số x1</span>
+                    </td>
+                    <td class="p-2.5 text-center">${hitBadge}</td>
+                    <td class="p-2.5 pr-4 text-right ${profitClass}">
+                        <div>${signed(r.profitK)}</div>
+                        <div class="text-[10px] text-indigo-300/70 font-normal">Lũy kế: ${signed(r.cumulativeProfitK)}</div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
     }
 
     function renderDualMergeMonthlyTable(records) {
