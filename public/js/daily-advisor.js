@@ -366,14 +366,44 @@
         if (byId('tripleHitRate')) byId('tripleHitRate').textContent = `${percent(summary.overallHitRate || 0)} trúng`;
         if (byId('tripleWinsBreakdown')) byId('tripleWinsBreakdown').textContent = `${summary.winsX3 || 0} X3 · ${summary.winsX2 || 0} X2 · ${summary.winsX1 || 0} X1`;
         if (byId('tripleLossesCount')) byId('tripleLossesCount').textContent = `${summary.totalLosses || 0} ngày trượt`;
-        if (byId('tripleProfitK')) byId('tripleProfitK').textContent = `${signed(summary.overallProfitK || 0)}`;
+        if (byId('tripleProfitK')) byId('tripleProfitK').textContent = `${signedM(summary.overallProfitK || 0)}`;
         if (byId('tripleRoi')) byId('tripleRoi').textContent = `ROI ${percent(summary.roi || 0)}`;
 
         // Render Monthly Table and Daily Ledger
         renderTripleMonthlyTable(tripleMergeData.settledLedger || []);
         renderTripleLedger(tripleMergeData.settledLedger || [], tripleLogLimitValue);
 
-        // Toggle Monthly Table
+        // Toggle Triple History Section (Default Collapsed)
+        const btnToggleTripleSection = byId('btnToggleTripleSection');
+        const tripleHistoryContent = byId('tripleHistoryContent');
+        const tripleCollapseIcon = byId('tripleCollapseIcon');
+        const tripleToggleBadge = byId('tripleToggleBadge');
+        if (btnToggleTripleSection && tripleHistoryContent) {
+            btnToggleTripleSection.onclick = () => {
+                const isHidden = tripleHistoryContent.classList.contains('hidden');
+                if (isHidden) {
+                    tripleHistoryContent.classList.remove('hidden');
+                    if (tripleCollapseIcon) {
+                        tripleCollapseIcon.classList.remove('bi-chevron-down');
+                        tripleCollapseIcon.classList.add('bi-chevron-up');
+                    }
+                    if (tripleToggleBadge) {
+                        tripleToggleBadge.innerHTML = '<span>Thu gọn</span> <i class="bi bi-chevron-up"></i>';
+                    }
+                } else {
+                    tripleHistoryContent.classList.add('hidden');
+                    if (tripleCollapseIcon) {
+                        tripleCollapseIcon.classList.remove('bi-chevron-up');
+                        tripleCollapseIcon.classList.add('bi-chevron-down');
+                    }
+                    if (tripleToggleBadge) {
+                        tripleToggleBadge.innerHTML = '<span>Mở rộng xem chi tiết</span> <i class="bi bi-chevron-down"></i>';
+                    }
+                }
+            };
+        }
+
+        // Toggle Monthly Table inside Triple Section
         const btnToggle = byId('btnToggleTripleMonthly');
         const monthlyWrapper = byId('tripleMonthlyWrapper');
         if (btnToggle && monthlyWrapper) {
@@ -445,7 +475,7 @@
                     <td class="p-2.5 text-center font-bold text-indigo-200">${x1}</td>
                     <td class="p-2.5 text-center font-bold text-rose-400">${losses}</td>
                     <td class="p-2.5 text-center font-bold text-white">${percent(hitRate)}</td>
-                    <td class="p-2.5 text-right font-mono ${profitClass}">${signed(profitK)}</td>
+                    <td class="p-2.5 text-right font-mono ${profitClass}">${signedM(profitK)}</td>
                     <td class="p-2.5 pr-4 text-center font-mono ${profitK >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}">${percent(roi)}</td>
                 </tr>
             `;
@@ -502,8 +532,8 @@
                     </td>
                     <td class="p-2.5 text-center">${hitBadge}</td>
                     <td class="p-2.5 pr-4 text-right ${profitClass}">
-                        <div>${signed(r.profitK)}</div>
-                        <div class="text-[10px] text-indigo-300/70 font-normal">Lũy kế: ${signed(r.cumulativeProfitK)}</div>
+                        <div>${signedDailyK(r.profitK)}</div>
+                        <div class="text-[10px] text-indigo-300/70 font-normal">Lũy kế: ${signedM(r.cumulativeProfitK)}</div>
                     </td>
                 </tr>
             `;

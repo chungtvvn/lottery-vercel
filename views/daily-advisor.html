@@ -440,65 +440,81 @@
                         </div>
                     </div>
 
-                    <!-- Triple History & Monthly Breakdown Toggle Section -->
-                    <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
-                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-white/10 pb-3">
-                            <div>
-                                <h3 class="text-sm font-black text-white uppercase flex items-center gap-2">
-                                    <i class="bi bi-journal-text text-amber-400"></i> Nhật Ký Đối Soát & Thống Kê Tháng Tam Trụ (Triple-Consensus)
-                                </h3>
-                                <p class="text-[11px] text-indigo-200 font-medium mt-0.5">
-                                    Theo dõi chi tiết lịch sử từng ngày và từng tháng của mô hình gộp 3 phương pháp
-                                </p>
+                    <!-- Triple History & Monthly Breakdown Collapsible Section (Default Collapsed for Research) -->
+                    <div class="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
+                        <button id="btnToggleTripleSection" type="button" class="w-full flex items-center justify-between p-4.5 text-left bg-white/5 hover:bg-white/10 transition-all border-b border-transparent">
+                            <div class="flex items-center gap-2.5">
+                                <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-400/20 text-amber-300 border border-amber-400/40 text-sm">
+                                    <i class="bi bi-journal-text"></i>
+                                </span>
+                                <div>
+                                    <h3 class="text-sm font-black text-white uppercase tracking-wide flex items-center gap-2">
+                                        Nhật Ký Đối Soát & Thống Kê Tháng Tam Trụ (Phòng Thí Nghiệm)
+                                        <span class="rounded-full bg-indigo-500/30 text-indigo-200 text-[10px] font-bold px-2 py-0.5 border border-indigo-400/30">Nghiên cứu</span>
+                                    </h3>
+                                    <p class="text-[11px] text-indigo-200/70 font-medium mt-0.5">
+                                        Xem đối soát 234 ngày và bảng thống kê tháng của mô hình gộp 3 phương pháp
+                                    </p>
+                                </div>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <button id="btnToggleTripleMonthly" class="rounded-xl border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-bold text-white hover:bg-white/20 transition-all">
-                                    <i class="bi bi-calendar3"></i> Xem Bảng Tháng
-                                </button>
-                                <select id="tripleLogLimit" class="rounded-xl border border-white/20 bg-slate-800 px-3 py-1.5 text-xs font-bold text-white shadow-xs focus:outline-none">
-                                    <option value="30" selected>30 ngày gần nhất</option>
-                                    <option value="60">60 ngày gần nhất</option>
-                                    <option value="90">90 ngày gần nhất</option>
-                                    <option value="all">Toàn bộ 2026</option>
-                                </select>
+                            <span id="tripleToggleBadge" class="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-bold text-indigo-200">
+                                <span>Mở rộng xem chi tiết</span>
+                                <i id="tripleCollapseIcon" class="bi bi-chevron-down"></i>
+                            </span>
+                        </button>
+
+                        <div id="tripleHistoryContent" class="hidden p-4 space-y-4 border-t border-white/10 bg-black/20">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-white/10">
+                                <span class="text-xs font-bold text-indigo-200">Dữ liệu đối soát Strict Point-In-Time 2026</span>
+                                <div class="flex items-center gap-2">
+                                    <button id="btnToggleTripleMonthly" class="rounded-xl border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-bold text-white hover:bg-white/20 transition-all">
+                                        <i class="bi bi-calendar3"></i> Xem Bảng Tháng
+                                    </button>
+                                    <select id="tripleLogLimit" class="rounded-xl border border-white/20 bg-slate-800 px-3 py-1.5 text-xs font-bold text-white shadow-xs focus:outline-none">
+                                        <option value="30" selected>30 ngày gần nhất</option>
+                                        <option value="60">60 ngày gần nhất</option>
+                                        <option value="90">90 ngày gần nhất</option>
+                                        <option value="all">Toàn bộ 2026</option>
+                                    </select>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Triple Monthly Table (Collapsible) -->
-                        <div id="tripleMonthlyWrapper" class="mt-4 hidden overflow-x-auto custom-scrollbar">
-                            <table class="w-full text-left text-xs border-collapse">
-                                <thead>
-                                    <tr class="border-b border-white/10 bg-white/10 text-indigo-200 uppercase font-black text-[10px]">
-                                        <th class="p-2.5 pl-4">Tháng</th>
-                                        <th class="p-2.5 text-center">Số Ngày</th>
-                                        <th class="p-2.5 text-center">Trúng X3</th>
-                                        <th class="p-2.5 text-center">Trúng X2</th>
-                                        <th class="p-2.5 text-center">Trúng X1</th>
-                                        <th class="p-2.5 text-center">Thua</th>
-                                        <th class="p-2.5 text-center">Tỷ Lệ Trúng</th>
-                                        <th class="p-2.5 text-right">Lãi / Lỗ Tháng</th>
-                                        <th class="p-2.5 pr-4 text-center">ROI</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tripleMonthlyTableBody" class="divide-y divide-white/5 font-medium"></tbody>
-                            </table>
-                        </div>
+                            <!-- Triple Monthly Table (Collapsible) -->
+                            <div id="tripleMonthlyWrapper" class="hidden overflow-x-auto custom-scrollbar">
+                                <table class="w-full text-left text-xs border-collapse">
+                                    <thead>
+                                        <tr class="border-b border-white/10 bg-white/10 text-indigo-200 uppercase font-black text-[10px]">
+                                            <th class="p-2.5 pl-4">Tháng</th>
+                                            <th class="p-2.5 text-center">Số Ngày</th>
+                                            <th class="p-2.5 text-center">Trúng X3</th>
+                                            <th class="p-2.5 text-center">Trúng X2</th>
+                                            <th class="p-2.5 text-center">Trúng X1</th>
+                                            <th class="p-2.5 text-center">Thua</th>
+                                            <th class="p-2.5 text-center">Tỷ Lệ Trúng</th>
+                                            <th class="p-2.5 text-right">Lãi / Lỗ Tháng</th>
+                                            <th class="p-2.5 pr-4 text-center">ROI</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tripleMonthlyTableBody" class="divide-y divide-white/5 font-medium"></tbody>
+                                </table>
+                            </div>
 
-                        <!-- Triple Daily Ledger Table -->
-                        <div class="mt-4 overflow-x-auto custom-scrollbar">
-                            <table class="w-full text-left text-xs border-collapse">
-                                <thead>
-                                    <tr class="border-b border-white/10 bg-white/10 text-indigo-200 uppercase font-black text-[10px]">
-                                        <th class="p-2.5 pl-4">Ngày</th>
-                                        <th class="p-2.5 text-center">KQĐB</th>
-                                        <th class="p-2.5">3 Phương Pháp Gộp</th>
-                                        <th class="p-2.5">Dàn Đã Khóa (X3 / X2 / X1)</th>
-                                        <th class="p-2.5 text-center">Kết Quả</th>
-                                        <th class="p-2.5 pr-4 text-right">Lãi / Lỗ Ngày (Lũy kế)</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tripleLedgerBody" class="divide-y divide-white/5"></tbody>
-                            </table>
+                            <!-- Triple Daily Ledger Table -->
+                            <div class="overflow-x-auto custom-scrollbar">
+                                <table class="w-full text-left text-xs border-collapse">
+                                    <thead>
+                                        <tr class="border-b border-white/10 bg-white/10 text-indigo-200 uppercase font-black text-[10px]">
+                                            <th class="p-2.5 pl-4">Ngày</th>
+                                            <th class="p-2.5 text-center">KQĐB</th>
+                                            <th class="p-2.5">3 Phương Pháp Gộp</th>
+                                            <th class="p-2.5">Dàn Đã Khóa (X3 / X2 / X1)</th>
+                                            <th class="p-2.5 text-center">Kết Quả</th>
+                                            <th class="p-2.5 pr-4 text-right">Lãi / Lỗ Ngày (Lũy kế)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tripleLedgerBody" class="divide-y divide-white/5"></tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
