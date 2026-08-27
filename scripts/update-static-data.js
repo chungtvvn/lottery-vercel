@@ -1260,7 +1260,7 @@ function generateDailyMethodAdvisorCache(options = {}) {
             // Do not read its previous R2 copy before the upload stage completes.
             DAILY_ADVISOR_USE_LOCAL_HISTORY: options.useLocalHistory ? '1' : '0'
         },
-        { timeoutMs: 120_000 }
+        { timeoutMs: 300_000 }
     );
 }
 
