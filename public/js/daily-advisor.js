@@ -349,6 +349,25 @@
                 </tr>
             `;
         }).join('');
+
+        const yearlyBadge = byId('dualMergeYearlyBadge');
+        if (yearlyBadge) {
+            const totalStakeK = allRecords.reduce((sum, r) => sum + (r.stakeK || 60), 0);
+            const totalPayoutK = allRecords.reduce((sum, r) => sum + (r.payoutK || 0), 0);
+            const totalProfitK = totalPayoutK - totalStakeK;
+            const totalRoi = totalStakeK > 0 ? (totalProfitK / totalStakeK) : 0;
+            const isProfit = totalProfitK >= 0;
+
+            yearlyBadge.className = `inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1 text-xs font-black ${
+                isProfit
+                    ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
+                    : 'border-rose-300 bg-rose-50 text-rose-800'
+            }`;
+            yearlyBadge.innerHTML = `
+                <i class="bi ${isProfit ? 'bi-graph-up-arrow text-emerald-600' : 'bi-graph-down-arrow text-rose-600'}"></i> 
+                LŨY KẾ CẢ NĂM: ${signed(totalProfitK)} (${percent(totalRoi)} ROI)
+            `;
+        }
     }
 
     function renderDualMergeLedger(records) {
