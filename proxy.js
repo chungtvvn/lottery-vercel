@@ -11,12 +11,7 @@ export function proxy(request) {
         pathname.startsWith('/favicon.ico') ||
         pathname.startsWith('/css/') ||
         pathname.startsWith('/js/') ||
-        pathname.startsWith('/api/auth/') ||
-        pathname.startsWith('/api/prediction/numbers') ||
-        pathname.startsWith('/api/prediction/history') ||
-        pathname.startsWith('/api/loto/prediction') ||
-        pathname.startsWith('/api/milestone-20y/prediction') ||
-        pathname.startsWith('/api/daily-advisor') ||
+        pathname.startsWith('/api/') ||
         pathname === '/logout' ||
         pathname === '/login'
     ) {
