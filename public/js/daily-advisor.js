@@ -4,7 +4,34 @@
     const percent = value => `${(Number(value || 0) * 100).toFixed(1)}%`;
     const fmt = value => new Intl.NumberFormat('vi-VN').format(Number(value || 0));
     const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char]));
-    const signed = value => `${Number(value || 0) >= 0 ? '+' : ''}${fmt(value)}K`;
+
+    // Format large sums as M (1M = 1.000K = 1.000.000đ)
+    const moneyM = (val, options = {}) => {
+        let num = Number(val || 0);
+        if (Math.abs(num) >= 100000) {
+            num = num / 1000000;
+        } else if (Math.abs(num) >= 100) {
+            num = num / 1000;
+        }
+        const sign = (options.signed && num >= 0) ? '+' : '';
+        const formatted = new Intl.NumberFormat('vi-VN', {
+            minimumFractionDigits: options.minDigits ?? (Number.isInteger(num) ? 0 : 3),
+            maximumFractionDigits: options.maxDigits ?? 3
+        }).format(num);
+        return `${sign}${formatted}M`;
+    };
+    const signedM = val => moneyM(val, { signed: true });
+
+    // Format daily values as K (e.g. 60K, +108K, +24K, -60K)
+    const dailyK = (val, options = {}) => {
+        let num = Number(val || 0);
+        if (Math.abs(num) >= 1000) {
+            num = num / 1000;
+        }
+        const sign = (options.signed && num >= 0) ? '+' : '';
+        return `${sign}${new Intl.NumberFormat('vi-VN').format(num)}K`;
+    };
+    const signedDailyK = val => dailyK(val, { signed: true });
 
     let payload = null;
     let activeMainTab = 'dualMerge'; // 'dualMerge' | 'singleMethod'
@@ -152,8 +179,8 @@
                 ['TRÚNG X2 (CỰC VIP)', `${summary.winsX2 || 0} kỳ`, `${percent(summary.winX2Rate)} · Ăn 168K (+108K)`],
                 ['TRÚNG X1 (BỌC LÓT)', `${summary.winsX1 || 0} kỳ`, `${percent(summary.winX1Rate)} · Ăn 84K (+24K)`],
                 ['TỔNG TỶ LỆ TRÚNG', `${percent(summary.overallHitRate)}`, `${summary.totalWins || 0} thắng / ${summary.totalLosses || 0} trượt`],
-                ['TỔNG TIỀN VỐN', `${fmt(summary.totalStakeK)}K`, '60.000K mỗi ngày'],
-                ['LÃI / LỖ RÒNG', `${signed(summary.overallProfitK)}`, `${percent(summary.roi)} ROI`]
+                ['TỔNG TIỀN VỐN', `${moneyM(summary.totalStakeK)}`, '60K mỗi ngày'],
+                ['LÃI / LỖ RÒNG', `${signedM(summary.overallProfitK)}`, `${percent(summary.roi)} ROI`]
             ];
 
             kpiContainer.innerHTML = kpis.map(([label, val, note], idx) => `
@@ -200,8 +227,8 @@
             const chipsX2 = byId('chipsContainerX2');
             if (chipsX2) {
                 chipsX2.innerHTML = (rec.intersectionX2 || []).map(n => `
-                    <span class="inline-flex h-11 min-w-11 items-center justify-center rounded-2xl border-2 border-amber-400 bg-gradient-to-tr from-amber-200 via-amber-300 to-yellow-200 font-mono text-base font-black text-amber-950 shadow-md shadow-amber-500/20 transition-transform hover:scale-110">
-                        ${number(n)}
+                    <span class="inline-flex items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-500 font-mono text-xs font-black text-amber-950 px-2.5 py-1.5 shadow-sm ring-1 ring-amber-600/30">
+                        ${number(n)}<sup class="ml-0.5 text-[9px] text-amber-950 font-black">x2</sup>
                     </span>
                 `).join('') || '<p class="text-xs text-amber-800">Đang cập nhật...</p>';
             }
@@ -212,21 +239,10 @@
             const chipsX1 = byId('chipsContainerX1');
             if (chipsX1) {
                 chipsX1.innerHTML = (rec.uniqueSinglesX1 || []).map(n => `
-                    <span class="inline-flex h-10 min-w-10 items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 font-mono text-sm font-black text-indigo-900 shadow-xs transition-transform hover:scale-105">
+                    <span class="inline-flex items-center justify-center rounded-xl bg-slate-100 border border-slate-300 font-mono text-xs font-bold text-slate-700 px-2.5 py-1.5 shadow-2xs">
                         ${number(n)}
                     </span>
                 `).join('') || '<p class="text-xs text-indigo-800">Đang cập nhật...</p>';
-            }
-
-            // Plain Reasons (Detailed Quantitative Insights)
-            const reasonsContainer = byId('dualMergePlainReasons');
-            if (reasonsContainer) {
-                reasonsContainer.innerHTML = (rec.plainReasons || []).map((r, i) => `
-                    <div class="flex items-start gap-3 rounded-2xl border border-amber-200/90 bg-gradient-to-r from-amber-50/80 via-yellow-50/50 to-white p-3.5 shadow-xs transition-all hover:border-amber-300">
-                        <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-amber-200/70 text-xs font-black text-amber-950 shadow-2xs">${i + 1}</span>
-                        <div class="text-xs text-slate-800 font-medium leading-relaxed pt-0.5">${escapeHtml(r)}</div>
-                    </div>
-                `).join('');
             }
 
             // Copy Action Handlers
@@ -242,6 +258,17 @@
             if (btnCopyX1Space) btnCopyX1Space.onclick = () => copyNumbers(rec.uniqueSinglesX1, ' ');
             const btnCopyX1Comma = byId('btnCopyX1Comma');
             if (btnCopyX1Comma) btnCopyX1Comma.onclick = () => copyNumbers(rec.uniqueSinglesX1, ', ');
+
+            // Plain Reasons (Detailed Quantitative Insights)
+            const reasonsEl = byId('dualMergePlainReasons');
+            if (reasonsEl && rec.plainReasons && rec.plainReasons.length) {
+                reasonsEl.innerHTML = rec.plainReasons.map(r => `
+                    <div class="flex items-start gap-2.5 rounded-xl border border-slate-100 bg-slate-50/60 p-3 text-xs leading-relaxed text-slate-700">
+                        <i class="bi bi-check2-circle text-amber-600 mt-0.5 text-sm shrink-0"></i>
+                        <span>${escapeHtml(r)}</span>
+                    </div>
+                `).join('');
+            }
         }
 
         // Multi-Horizon Windows
@@ -265,7 +292,7 @@
                         <p class="text-[10px] font-black uppercase tracking-wider text-slate-500">${escapeHtml(label)}</p>
                         <strong class="mt-1 block text-lg font-black text-slate-900">${percent(w.hitRate)} trúng</strong>
                         <p class="text-xs text-slate-600 font-semibold mt-0.5">${w.winsX2} kỳ x2 · ${w.winsX1} kỳ x1 · ${w.days} ngày</p>
-                        <p class="mt-1 font-mono font-black text-xs ${profitClass}">${signed(w.profitK)} (${percent(w.roi)} ROI)</p>
+                        <p class="mt-1 font-mono font-black text-xs ${profitClass}">${signedM(w.profitK)} (${percent(w.roi)} ROI)</p>
                     </div>
                 `;
             }).join('');
@@ -547,10 +574,10 @@
                     </td>
                     <td class="p-3.5 text-center font-black text-slate-900">${percent(hitRate)}</td>
                     <td class="p-3.5 text-center font-bold ${longestLoss >= 4 ? 'text-rose-600' : 'text-slate-600'}">${longestLoss} ngày</td>
-                    <td class="p-3.5 text-right font-mono font-semibold text-slate-600">${fmt(stakeK)}K</td>
-                    <td class="p-3.5 text-right font-mono ${profitClass}">${signed(profitK)}</td>
+                    <td class="p-3.5 text-right font-mono font-semibold text-slate-600">${moneyM(stakeK)}</td>
+                    <td class="p-3.5 text-right font-mono ${profitClass}">${signedM(profitK)}</td>
                     <td class="p-3.5 text-center font-mono font-bold ${profitK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${percent(roi)}</td>
-                    <td class="p-3.5 pr-6 text-right font-mono ${cumClass}">${signed(cumulativeProfitK)}</td>
+                    <td class="p-3.5 pr-6 text-right font-mono ${cumClass}">${signedM(cumulativeProfitK)}</td>
                 </tr>
             `;
         }).join('');
@@ -570,7 +597,7 @@
             }`;
             yearlyBadge.innerHTML = `
                 <i class="bi ${isProfit ? 'bi-graph-up-arrow text-emerald-600' : 'bi-graph-down-arrow text-rose-600'}"></i> 
-                LŨY KẾ CẢ NĂM: ${signed(totalProfitK)} (${percent(totalRoi)} ROI)
+                LŨY KẾ CẢ NĂM: ${signedM(totalProfitK)} (${percent(totalRoi)} ROI)
             `;
         }
     }
@@ -744,7 +771,7 @@
                     </td>
                     <td class="px-4 py-3 text-right font-mono text-xs ${profitClass}">
                         ${isSettled 
-                            ? `${signed(r.profitK)} ${r.cumulativeProfitK != null ? `<span class="text-[10px] text-slate-500 block font-normal">Lũy kế: ${signed(r.cumulativeProfitK)}</span>` : '<span class="text-[10px] text-slate-400 block font-normal">⚡ Strict PIT</span>'}` 
+                            ? `${signedDailyK(r.profitK)} ${r.cumulativeProfitK != null ? `<span class="text-[10px] text-slate-500 block font-normal">Lũy kế: ${signedM(r.cumulativeProfitK)}</span>` : '<span class="text-[10px] text-slate-400 block font-normal">⚡ Strict PIT</span>'}` 
                             : '<span class="text-amber-700 font-bold text-xs">Chờ 18h30</span>'
                         }
                     </td>
@@ -893,8 +920,8 @@
                 ['NGÀY THEO DÕI', `${summary.days} kỳ`, `${summary.abstainedDays} kỳ bỏ`],
                 ['KẾT QUẢ ĐỐI SOÁT', `${summary.wins} trúng / ${summary.losses} trượt`, `Dàn bình quân ${Math.round(summary.averageBetCount || 30)} số`],
                 ['TỶ LỆ TRÚNG', percent(summary.hitRate), `Hòa vốn ${percent(summary.breakEvenHitRate)}`],
-                ['TỔNG VỐN', `${fmt(summary.stakeK)}K`, '1.000K mỗi số'],
-                ['LÃI / LỖ RÒNG', signed(summary.profitK), `${percent(summary.roi)} ROI`]
+                ['TỔNG VỐN', `${moneyM(summary.stakeK)}`, '30 số mỗi ngày'],
+                ['LÃI / LỖ RÒNG', signedM(summary.profitK), `${percent(summary.roi)} ROI`]
             ];
             cardsContainer.innerHTML = cards.map(([label, val, note]) => `
                 <div class="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
