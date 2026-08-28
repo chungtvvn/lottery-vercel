@@ -36,29 +36,31 @@ async function main() {
         console.log(`[DailyAdvisor] Chưa tải được history: ${error.message}`);
     }
 
+    let existingCache = null;
     try {
-        const remote = await loadJsonWithSupabaseFallback('cached_daily_method_advisor.json');
-        existing = remote?.records || remote;
+        existingCache = await loadJsonWithSupabaseFallback('cached_daily_method_advisor.json');
     } catch (error) {
         console.log(`[DailyAdvisor] Chưa có cache R2 cũ: ${error.message}`);
     }
 
-    if (!existing || (Array.isArray(existing) && existing.length === 0)) {
+    if (!existingCache || (typeof existingCache === 'object' && !existingCache.dualMerge && (!existingCache.records || existingCache.records.length === 0))) {
         try {
             const fs = require('fs');
             const path = require('path');
             const localAdvFile = path.join(__dirname, '..', 'lib', 'data', 'statistics', 'cached_daily_method_advisor.json');
             if (fs.existsSync(localAdvFile)) {
-                const localData = JSON.parse(fs.readFileSync(localAdvFile, 'utf8'));
-                existing = localData?.records || localData;
+                existingCache = JSON.parse(fs.readFileSync(localAdvFile, 'utf8'));
             }
         } catch (_) {}
     }
+
     const raw = await getRawData();
     const cache = await service.generateAndWriteCache({
         history: history || undefined,
         raw,
-        existing,
+        existing: existingCache?.records || (Array.isArray(existingCache) ? existingCache : []),
+        existingDualMerge: existingCache?.dualMerge || null,
+        existingTripleMerge: existingCache?.tripleMerge || null,
         limit: 90,
         forceSynthesize: process.env.FORCE_SYNTHESIZE === '1'
     });
