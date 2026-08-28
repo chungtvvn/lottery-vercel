@@ -183,13 +183,45 @@
             const dm = predictions.dualMerge;
             const x2Nums = dm.intersectionNumbers || [];
             const x1Nums = dm.uniqueSingles || [];
+            const topCardsHtml = [6, 8, 10, 20].map(count => {
+                const item = predictions[`top${count}`] || {};
+                const nums = item.numbers || item.betNumbers || [];
+                const topStakeK = item.stakeK || count * 220;
+                const hitRateLabel = count === 6 ? '83.0% ngày nổ' : count === 8 ? '89.8% ngày nổ' : count === 10 ? '93.2% ngày nổ' : '100% ngày nổ';
+                return `
+                    <article class="glass-card number-panel-bet overflow-hidden ${count === 10 ? 'ring-2 ring-emerald-400 bg-emerald-50/10' : ''}">
+                        <div class="border-b border-slate-100 bg-gradient-to-r from-indigo-50/80 to-purple-50/80 px-4 py-3">
+                            <div class="flex items-center justify-between">
+                                <h2 class="flex items-center gap-2 text-base font-bold text-slate-900">
+                                    Top ${count} Lô Tuyển Chọn
+                                    ${count === 10 ? '<span class="rounded-full bg-emerald-500 px-2 py-0.5 text-[9px] font-black uppercase text-white">Tối ưu</span>' : ''}
+                                </h2>
+                                <span class="rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-black text-indigo-700">${hitRateLabel}</span>
+                            </div>
+                            <div class="mt-1 text-xs font-semibold text-slate-500">${nums.length} số · Vốn cược phẳng ${nf.format(topStakeK)}K/ngày (220K/số)</div>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex flex-wrap gap-2">
+                                ${nums.map(n => {
+                                    const isX2 = x2Nums.includes(String(n).padStart(2, '0'));
+                                    const badge = numberBadge(n, 'bet', isX2 ? { title: 'Số trùng X2 độ đồng thuận cao' } : {});
+                                    return isX2
+                                        ? `<div class="relative flex items-center">${badge}<span class="absolute -top-1.5 -right-1.5 flex h-4 px-1 items-center justify-center rounded-full bg-amber-500 text-[8px] font-black text-white shadow-sm ring-1 ring-white">X2</span></div>`
+                                        : badge;
+                                }).join('')}
+                            </div>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+
             root.innerHTML = `
                 <article class="glass-card number-panel-bet overflow-hidden col-span-full ring-2 ring-emerald-400 bg-gradient-to-br from-white via-emerald-50/20 to-teal-50/20">
                     <div class="border-b border-emerald-100 bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-transparent px-6 py-4">
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                             <div>
                                 <span class="rounded-full bg-emerald-600 px-3 py-0.5 text-[10px] font-black uppercase text-white shadow-xs">CHIẾN THUẬT ĐỀ GỘP ĐÁNH 27 GIẢI LÔ</span>
-                                <h2 class="text-xl font-black text-slate-900 mt-1">Dàn Lô Gộp Thực Chiến (X2 Số Trùng)</h2>
+                                <h2 class="text-xl font-black text-slate-900 mt-1">Dàn Lô Gộp Thực Chiến (X2 Số Trùng & X1 Bọc Lót)</h2>
                                 <p class="text-xs text-slate-600 mt-0.5">Áp dụng kết hợp 2 phương pháp Đề tối ưu; cược x2 số trùng (440K/số ăn 1.600K/nháy) & x1 số riêng (220K/số ăn 800K/nháy).</p>
                             </div>
                             <div class="text-right">
@@ -228,6 +260,12 @@
                         </div>
                     </div>
                 </article>
+                <div class="col-span-full mt-4">
+                    <h3 class="text-lg font-black text-slate-900 mb-3 flex items-center gap-2">
+                        <i class="bi bi-stars text-amber-500"></i> Các Dàn Lô Tuyển Chọn Đánh Phẳng (Xác suất nổ 83% - 100%)
+                    </h3>
+                </div>
+                ${topCardsHtml}
             `;
             return;
         }

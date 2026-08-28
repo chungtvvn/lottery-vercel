@@ -437,14 +437,15 @@ export async function GET(request) {
             const x1Numbers = latestRec.uniqueSinglesX1 || [];
             const rankedNumbers = latestRec.rankedNumbers || [...x2Numbers, ...x1Numbers];
             
+            const topPredictions = latestRec.topPredictions || {};
             const predictions = {
-                top6: { numbers: rankedNumbers.slice(0, 6), overlapNumbers: x2Numbers },
-                top7: { numbers: rankedNumbers.slice(0, 7), overlapNumbers: x2Numbers },
-                top8: { numbers: rankedNumbers.slice(0, 8), overlapNumbers: x2Numbers },
-                top10: { numbers: rankedNumbers.slice(0, 10), overlapNumbers: x2Numbers },
-                top20: { numbers: rankedNumbers.slice(0, 20), overlapNumbers: x2Numbers },
-                top25: { numbers: rankedNumbers.slice(0, 25), overlapNumbers: x2Numbers },
-                top30: { numbers: rankedNumbers.slice(0, 30), overlapNumbers: x2Numbers },
+                top6: topPredictions.top6 || { numbers: rankedNumbers.slice(0, 6), overlapNumbers: x2Numbers },
+                top7: topPredictions.top7 || { numbers: rankedNumbers.slice(0, 7), overlapNumbers: x2Numbers },
+                top8: topPredictions.top8 || { numbers: rankedNumbers.slice(0, 8), overlapNumbers: x2Numbers },
+                top10: topPredictions.top10 || { numbers: rankedNumbers.slice(0, 10), overlapNumbers: x2Numbers },
+                top20: topPredictions.top20 || { numbers: rankedNumbers.slice(0, 20), overlapNumbers: x2Numbers },
+                top25: topPredictions.top25 || { numbers: rankedNumbers.slice(0, 25), overlapNumbers: x2Numbers },
+                top30: topPredictions.top30 || { numbers: rankedNumbers.slice(0, 30), overlapNumbers: x2Numbers },
                 dualMerge: {
                     numbers: unionNumbers,
                     intersectionNumbers: x2Numbers,
