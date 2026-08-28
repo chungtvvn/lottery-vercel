@@ -161,10 +161,10 @@
             const profitClass = Number(summary.overallProfitK || 0) >= 0 ? 'text-emerald-400 font-black' : 'text-rose-400 font-black';
             const kpis = [
                 ['NGÀY ĐÃ ĐỐI SOÁT', `${summary.totalSettled || 0} kỳ`, 'Khóa snapshot & Strict PIT'],
-                ['TRÚNG X2 (CỰC VIP)', `${summary.winsX2 || 0} kỳ`, `${percent(summary.winX2Rate)} · Ăn 168K (+108K)`],
-                ['TRÚNG X1 (BỌC LÓT)', `${summary.winsX1 || 0} kỳ`, `${percent(summary.winX1Rate)} · Ăn 84K (+24K)`],
+                ['TRÚNG X2 (CỰC VIP)', `${summary.winsX2 || 0} kỳ`, `${percent(summary.winX2Rate)} · Ăn 0.168M (+0.108M)`],
+                ['TRÚNG X1 (BỌC LÓT)', `${summary.winsX1 || 0} kỳ`, `${percent(summary.winX1Rate)} · Ăn 0.084M (+0.024M)`],
                 ['TỔNG TỶ LỆ TRÚNG', `${percent(summary.overallHitRate)}`, `${summary.totalWins || 0} thắng / ${summary.totalLosses || 0} trượt`],
-                ['TỔNG TIỀN VỐN', `${moneyM(summary.totalStakeK)}`, '60K mỗi ngày'],
+                ['TỔNG TIỀN VỐN', `${moneyM(summary.totalStakeK)}`, '0.060M mỗi ngày'],
                 ['LÃI / LỖ RÒNG', `${signedM(summary.overallProfitK)}`, `${percent(summary.roi)} ROI`]
             ];
 
