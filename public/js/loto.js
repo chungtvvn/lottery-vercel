@@ -421,7 +421,9 @@
                             <div class="flex flex-wrap items-center gap-2">
                                 <span class="text-base font-black text-slate-900">${row.predictionIsoDate || row.predictionDate}</span>
                                 <span class="rounded-full border px-2.5 py-1 text-xs font-bold ${statusClass}">${statusLabel}</span>
-                                <span class="rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-700">THỰC TẾ</span>
+                                ${row.isLiveSnapshot
+                                    ? '<span class="rounded-full border border-emerald-300 bg-emerald-100 px-2.5 py-1 text-xs font-black text-emerald-800 shadow-sm">🔒 Thực chiến Live</span>'
+                                    : '<span class="rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-700">⚡ Strict PIT</span>'}
                             </div>
                             <div class="mt-1 text-xs text-slate-500">Dựa trên dữ liệu đến ${row.dataIsoDate || row.dataDate || '-'}</div>
                             <div class="mt-1 text-xs font-semibold text-indigo-600">${methodName || row.methodId || '-'}</div>

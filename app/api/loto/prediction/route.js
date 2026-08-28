@@ -456,31 +456,105 @@ export async function GET(request) {
                 }
             };
             
-            const liveRecords = (loDualMerge.records || []).map(r => ({
-                predictionIsoDate: r.date,
-                dataIsoDate: r.date,
-                status: 'settled',
-                isWin: r.isWin,
-                hits: r.totalHits,
-                profitK: r.profitK,
-                methods: {
-                    top6: r.methods?.top6 || { betNumbers: (r.rankedNumbers || r.intersection || []).slice(0, 6), hits: r.hitsX2, profitK: r.profitK },
-                    top7: r.methods?.top7 || { betNumbers: (r.rankedNumbers || r.intersection || []).slice(0, 7), hits: r.hitsX2, profitK: r.profitK },
-                    top8: r.methods?.top8 || { betNumbers: (r.rankedNumbers || r.intersection || []).slice(0, 8), hits: r.hitsX2, profitK: r.profitK },
-                    top10: r.methods?.top10 || { betNumbers: (r.rankedNumbers || r.intersection || []).slice(0, 10), hits: r.hitsX2, profitK: r.profitK },
-                    top20: r.methods?.top20 || { betNumbers: (r.rankedNumbers || r.intersection || []).slice(0, 20), hits: r.hitsX2, profitK: r.profitK },
-                    top25: r.methods?.top25 || { betNumbers: (r.rankedNumbers || r.intersection || []).slice(0, 25), hits: r.hitsX2, profitK: r.profitK },
-                    top30: r.methods?.top30 || { betNumbers: (r.rankedNumbers || r.intersection || []).slice(0, 30), hits: r.hitsX2, profitK: r.profitK },
-                    dualMerge: r.methods?.dualMerge || {
-                        intersection: r.intersection,
-                        uniqueSingles: r.uniqueSingles,
-                        hitsX2: r.hitsX2,
-                        hitsX1: r.hitsX1,
-                        totalHits: r.totalHits,
-                        profitK: r.profitK
-                    }
-                }
-            }));
+            const countsList = [6, 7, 8, 10, 20, 25, 30];
+            const liveRecords = (loDualMerge.records || loDualMerge.settledLedger || []).map(r => {
+                const actualMap = {};
+                (r.actual27 || []).forEach(num => {
+                    const str = String(num).padStart(2, '0');
+                    actualMap[str] = (actualMap[str] || 0) + 1;
+                });
+
+                const rowPredictions = {};
+                const rowMethods = {};
+
+                countsList.forEach(c => {
+                    const key = `top${c}`;
+                    const m = r.methods?.[key];
+                    const betNumbers = m?.betNumbers || (r.rankedNumbers || []).slice(0, c);
+                    const hits = m?.hits || 0;
+                    const stakeK = c * 2200;
+                    const payoutK = hits * 8000;
+                    const profitK = payoutK - stakeK;
+                    const isWin = profitK > 0;
+
+                    rowPredictions[key] = {
+                        count: c,
+                        numbers: betNumbers,
+                        uniqueCount: betNumbers.length,
+                        unitCount: betNumbers.length,
+                        betCount: betNumbers.length
+                    };
+
+                    rowMethods[key] = {
+                        betNumbers,
+                        uniqueCount: betNumbers.length,
+                        unitCount: betNumbers.length,
+                        betCount: betNumbers.length,
+                        hits,
+                        stakeK,
+                        payoutK,
+                        profitK,
+                        isWin,
+                        result: isWin ? 'win' : (profitK < 0 ? 'loss' : 'flat')
+                    };
+                });
+
+                return {
+                    predictionIsoDate: r.date,
+                    dataIsoDate: r.date,
+                    status: 'settled',
+                    isWin: r.isWin,
+                    isLiveSnapshot: r.date >= '2026-08-28',
+                    sourceType: r.date >= '2026-08-28' ? 'live-snapshot' : 'strict-pit',
+                    actual: actualMap,
+                    predictions: rowPredictions,
+                    methods: rowMethods
+                };
+            });
+
+            const summaryObj = {};
+            countsList.forEach(c => {
+                const key = `top${c}`;
+                let days = 0, hitDays = 0, winDays = 0, totalHits = 0;
+                let stakeK = 0, payoutK = 0, profitK = 0;
+                let bestDay = null, worstDay = null;
+
+                liveRecords.forEach(rec => {
+                    const m = rec.methods?.[key];
+                    if (!m) return;
+                    days++;
+                    const hits = m.hits || 0;
+                    totalHits += hits;
+                    if (hits > 0) hitDays++;
+                    if (m.isWin) winDays++;
+                    stakeK += m.stakeK;
+                    payoutK += m.payoutK;
+                    profitK += m.profitK;
+                    bestDay = bestDay === null ? m.profitK : Math.max(bestDay, m.profitK);
+                    worstDay = worstDay === null ? m.profitK : Math.min(worstDay, m.profitK);
+                });
+
+                summaryObj[key] = {
+                    methodId: key,
+                    betCount: c,
+                    days,
+                    wins: winDays,
+                    winDays,
+                    losses: days - winDays,
+                    lossDays: days - winDays,
+                    hitDays,
+                    totalHits,
+                    stakeK,
+                    payoutK,
+                    profitK,
+                    bestDayProfitK: bestDay || 0,
+                    worstDayProfitK: worstDay || 0,
+                    hitRate: days > 0 ? Number((hitDays / days).toFixed(4)) : 0,
+                    winRate: days > 0 ? Number((winDays / days).toFixed(4)) : 0,
+                    roi: stakeK > 0 ? Number((profitK / stakeK).toFixed(4)) : 0,
+                    avgHitsPerDay: days > 0 ? Number((totalHits / days).toFixed(2)) : 0
+                };
+            });
 
             return NextResponse.json({
                 success: true,
@@ -490,8 +564,8 @@ export async function GET(request) {
                     methodId: 'loDualMerge',
                     methodName: '🎯 Lô Gộp Thực Chiến (27 Vị Trí - Top 6, 8, 10)',
                     positionCount: 27,
-                    stakePerNumberK: 220,
-                    payoutPerHitK: 800,
+                    stakePerNumberK: 2200,
+                    payoutPerHitK: 8000,
                     defaultBetCount: 10
                 },
                 nextPrediction: {
@@ -507,16 +581,7 @@ export async function GET(request) {
                         methodId: 'loDualMerge',
                         methodName: '🎯 Lô Gộp Thực Chiến (27 Vị Trí - Top 6, 8, 10)'
                     },
-                    summary: {
-                        top6: summary.top6 || { days: summary.days, hitDays: summary.wins, profitK: summary.profitK, hitRate: summary.hitRate },
-                        top7: summary.top7 || { days: summary.days, hitDays: summary.wins, profitK: summary.profitK, hitRate: summary.hitRate },
-                        top8: summary.top8 || { days: summary.days, hitDays: summary.wins, profitK: summary.profitK, hitRate: summary.hitRate },
-                        top10: summary.top10 || { days: summary.days, hitDays: summary.wins, profitK: summary.profitK, hitRate: summary.hitRate },
-                        top20: summary.top20 || { days: summary.days, hitDays: summary.wins, profitK: summary.profitK, hitRate: summary.hitRate },
-                        top25: summary.top25 || { days: summary.days, hitDays: summary.wins, profitK: summary.profitK, hitRate: summary.hitRate },
-                        top30: summary.top30 || { days: summary.days, hitDays: summary.wins, profitK: summary.profitK, hitRate: summary.hitRate },
-                        dualMerge: summary.dualMerge || summary
-                    },
+                    summary: summaryObj,
                     predictions: liveRecords
                 }
             }, { headers: NO_STORE_HEADERS });
