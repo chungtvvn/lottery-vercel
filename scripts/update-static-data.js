@@ -959,7 +959,7 @@ async function hasProbabilityDistributionCacheOnR2(expectedLatestDate = null) {
 
 function generateLotoPredictionCache() {
     const skipBacktest = process.env.LOTO_SKIP_BACKTEST !== '0';
-    const timeoutMs = Math.max(60_000, Number(process.env.LOTO_PREDICTION_TIMEOUT_MS || (skipBacktest ? 1_800_000 : 0)) || 0);
+    const timeoutMs = Math.max(60_000, Number(process.env.LOTO_PREDICTION_TIMEOUT_MS || (skipBacktest ? 3_000_000 : 0)) || 0);
     runNodeScript([
         'scripts/backtest-loto-milestone20y.js',
         `--months=${process.env.LOTO_CACHE_MONTHS || '1,3,6'}`,
