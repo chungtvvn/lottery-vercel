@@ -5,14 +5,14 @@
     const fmt = value => new Intl.NumberFormat('vi-VN').format(Number(value || 0));
     const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char]));
 
-    // Format all sums as M (1M = 1.000K = 1.000.000đ)
+    // Format all sums as M (Vốn cược ngày = 60M, 1M = 1.000.000đ)
     const moneyM = (val, options = {}) => {
         let num = Number(val || 0);
-        let inM = num / 1000000;
+        let inM = num / 1000;
         const sign = (options.signed && inM >= 0) ? '+' : '';
         const formatted = new Intl.NumberFormat('vi-VN', {
-            minimumFractionDigits: options.minDigits ?? (Number.isInteger(inM) ? 0 : 3),
-            maximumFractionDigits: options.maxDigits ?? 3
+            minimumFractionDigits: options.minDigits ?? (Number.isInteger(inM) ? 0 : 2),
+            maximumFractionDigits: options.maxDigits ?? 2
         }).format(inM);
         return `${sign}${formatted}M`;
     };
@@ -161,10 +161,10 @@
             const profitClass = Number(summary.overallProfitK || 0) >= 0 ? 'text-emerald-400 font-black' : 'text-rose-400 font-black';
             const kpis = [
                 ['NGÀY ĐÃ ĐỐI SOÁT', `${summary.totalSettled || 0} kỳ`, 'Khóa snapshot & Strict PIT'],
-                ['TRÚNG X2 (CỰC VIP)', `${summary.winsX2 || 0} kỳ`, `${percent(summary.winX2Rate)} · Ăn 0.168M (+0.108M)`],
-                ['TRÚNG X1 (BỌC LÓT)', `${summary.winsX1 || 0} kỳ`, `${percent(summary.winX1Rate)} · Ăn 0.084M (+0.024M)`],
+                ['TRÚNG X2 (CỰC VIP)', `${summary.winsX2 || 0} kỳ`, `${percent(summary.winX2Rate)} · Ăn 168M (+108M)`],
+                ['TRÚNG X1 (BỌC LÓT)', `${summary.winsX1 || 0} kỳ`, `${percent(summary.winX1Rate)} · Ăn 84M (+24M)`],
                 ['TỔNG TỶ LỆ TRÚNG', `${percent(summary.overallHitRate)}`, `${summary.totalWins || 0} thắng / ${summary.totalLosses || 0} trượt`],
-                ['TỔNG TIỀN VỐN', `${moneyM(summary.totalStakeK)}`, '0.060M mỗi ngày'],
+                ['TỔNG TIỀN VỐN', `${moneyM(summary.totalStakeK)}`, '60M mỗi ngày'],
                 ['LÃI / LỖ RÒNG', `${signedM(summary.overallProfitK)}`, `${percent(summary.roi)} ROI`]
             ];
 
@@ -718,13 +718,13 @@
             if (isSettled) {
                 if (r.hitType === 'win_x2') {
                     outcomeClass = 'bg-gradient-to-r from-amber-200 via-amber-300 to-yellow-200 text-amber-950 border-amber-400 font-black shadow-xs ring-1 ring-amber-400/50';
-                    outcomeText = '🎉 TRÚNG X2 (+0.108M)';
+                    outcomeText = '🎉 TRÚNG X2 (+108M)';
                 } else if (r.hitType === 'win_x1') {
                     outcomeClass = 'bg-emerald-100 text-emerald-900 border-emerald-300 font-bold';
-                    outcomeText = '✅ TRÚNG X1 (+0.024M)';
+                    outcomeText = '✅ TRÚNG X1 (+24M)';
                 } else {
                     outcomeClass = 'bg-rose-100 text-rose-800 border-rose-200 font-bold';
-                    outcomeText = '❌ TRƯỢT (-0.060M)';
+                    outcomeText = '❌ TRƯỢT (-60M)';
                 }
             }
 

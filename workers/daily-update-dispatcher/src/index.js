@@ -411,28 +411,21 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
 
   const formatM = val => {
     const num = Number(val || 0);
-    const sign = num > 0 ? '+' : (num < 0 ? '-' : '');
-    const abs = Math.abs(num);
-    if (abs >= 1000000) {
-      const m = abs / 1000000;
-      const formatted = m.toLocaleString('vi-VN', { minimumFractionDigits: m % 1 ? 3 : 0, maximumFractionDigits: 3 });
-      return `${sign}${formatted}M`;
-    }
-    if (abs >= 1000) {
-      const k = abs / 1000;
-      return `${sign}${k.toLocaleString('vi-VN')}K`;
-    }
-    return `${sign}${abs.toLocaleString('vi-VN')}đ`;
+    const inM = num / 1000;
+    const sign = inM > 0 ? '+' : (inM < 0 ? '-' : '');
+    const abs = Math.abs(inM);
+    const formatted = abs.toLocaleString('vi-VN', { minimumFractionDigits: abs % 1 ? 2 : 0, maximumFractionDigits: 2 });
+    return `${sign}${formatted}M`;
   };
 
   if (lastSettled) {
     const winTag = lastSettled.hitType === 'win_x2'
-      ? '🎉 TRÚNG X2 (+108K)'
-      : (lastSettled.hitType === 'win_x1' ? '✅ TRÚNG X1 (+24K)' : '❌ TRƯỢT (-60K)');
+      ? '🎉 TRÚNG X2 (+108M)'
+      : (lastSettled.hitType === 'win_x1' ? '✅ TRÚNG X1 (+24M)' : '❌ TRƯỢT (-60M)');
     const betCount = lastSettled.totalNumbers || lastSettled.union?.length || (lastSettled.intersection?.length + lastSettled.uniqueSingles?.length) || 0;
     lines.push(
       `• Kết toán ${escapeHtml(displayDate(lastSettled.date))}: <b>${winTag}</b> · ${escapeHtml(formatM(lastSettled.profitK))}`,
-      `  Đã đánh (${betCount} số · 60K vốn): <code>${escapeHtml(formatNumberList(lastSettled.union || []))}</code>`,
+      `  Đã đánh (${betCount} số · 60M vốn): <code>${escapeHtml(formatNumberList(lastSettled.union || []))}</code>`,
       `  KQ thực tế: <b>${escapeHtml(normalizeLotteryNumber(lastSettled.actual))}</b>`
     );
     if (lastSettled.intersection?.length) {
@@ -463,8 +456,8 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     const allList = dmRec.fullUnion || [...x2List, ...x1List];
     lines.push(
       `• Dự đoán ${escapeHtml(displayDate(dmRec.predictionDate))} (${allList.length} số · [${escapeHtml(dmRec.m1Label)}] + [${escapeHtml(dmRec.m2Label)}]): <b>${escapeHtml(formatNumberList(allList))}</b>`,
-      `  Số trùng đánh x2 (${x2List.length} số · Cược 2K/số · Ăn 168K): <b>${escapeHtml(formatNumberList(x2List))}</b>`,
-      `  Số riêng bọc lót x1 (${x1List.length} số · Cược 1K/số · Ăn 84K): <b>${escapeHtml(formatNumberList(x1List))}</b>`
+      `  Số trùng đánh x2 (${x2List.length} số · Cược 2M/số · Ăn 168M): <b>${escapeHtml(formatNumberList(x2List))}</b>`,
+      `  Số riêng bọc lót x1 (${x1List.length} số · Cược 1M/số · Ăn 84M): <b>${escapeHtml(formatNumberList(x1List))}</b>`
     );
   } else {
     const deGop = deMethods[0];
