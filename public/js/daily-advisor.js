@@ -501,9 +501,17 @@
                 profitClass = 'text-rose-400 font-bold font-mono';
             }
 
+            const isLive = r.isLiveSnapshot || r.sourceType === 'live-snapshot';
+            const sourceBadge = isLive
+                ? `<span class="inline-flex items-center gap-1 rounded-md border border-emerald-400/40 bg-emerald-500/20 px-1.5 py-0.5 font-bold text-emerald-300 text-[10px] shadow-2xs" title="Snapshot thực tế từ 28/08/2026"><i class="bi bi-lock-fill text-emerald-400"></i> Live</span>`
+                : `<span class="inline-flex items-center gap-1 rounded-md border border-sky-400/40 bg-sky-500/20 px-1.5 py-0.5 font-bold text-sky-300 text-[10px] shadow-2xs" title="Hồi quy độc lập Strict PIT"><i class="bi bi-cpu text-sky-400"></i> PIT</span>`;
+
             return `
                 <tr class="hover:bg-white/5 transition-colors text-xs">
-                    <td class="p-2.5 pl-4 font-mono font-bold text-white whitespace-nowrap">${r.date}</td>
+                    <td class="p-2.5 pl-4 font-mono font-bold text-white whitespace-nowrap">
+                        <div>${r.date}</div>
+                        <div class="mt-0.5">${sourceBadge}</div>
+                    </td>
                     <td class="p-2.5 text-center">
                         <span class="inline-block rounded-md bg-white/10 px-2 py-0.5 font-mono text-xs font-black text-amber-300">${number(r.actual)}</span>
                     </td>
@@ -709,8 +717,8 @@
             // Source Type Badge
             const isLive = r.isLiveSnapshot || r.sourceType === 'live-snapshot';
             const sourceBadge = isLive
-                ? `<span class="inline-flex items-center gap-1 rounded-md border border-emerald-300 bg-emerald-50 px-2 py-0.5 font-bold text-emerald-800 text-[10px] shadow-2xs" title="Snapshot thực tế đã chốt trước giờ quay"><i class="bi bi-lock-fill text-emerald-600"></i> ${isSettled ? 'Snapshot thật' : 'Snapshot Đã Khóa'}</span>`
-                : `<span class="inline-flex items-center gap-1 rounded-md border border-sky-200 bg-sky-50 px-2 py-0.5 font-bold text-sky-800 text-[10px] shadow-2xs" title="Tính toán độc lập theo Strict PIT từ đầu năm"><i class="bi bi-cpu text-sky-600"></i> Strict PIT</span>`;
+                ? `<span class="inline-flex items-center gap-1 rounded-md border border-emerald-300 bg-emerald-50 px-2 py-0.5 font-bold text-emerald-800 text-[10px] shadow-2xs" title="Snapshot thực tế đã chốt trước giờ quay từ 28/08/2026"><i class="bi bi-lock-fill text-emerald-600"></i> Thực chiến Live</span>`
+                : `<span class="inline-flex items-center gap-1 rounded-md border border-sky-200 bg-sky-50 px-2 py-0.5 font-bold text-sky-800 text-[10px] shadow-2xs" title="Hồi quy độc lập Strict PIT chuẩn xác suất thực tế (01/01 - 27/08/2026)"><i class="bi bi-cpu text-sky-600"></i> Strict PIT</span>`;
 
             // Outcome Badge
             let outcomeClass = 'bg-amber-50 text-amber-900 border-amber-300 border-dashed font-bold';

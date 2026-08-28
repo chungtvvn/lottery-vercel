@@ -55,7 +55,13 @@ async function main() {
         } catch (_) {}
     }
     const raw = await getRawData();
-    const cache = await service.generateAndWriteCache({ history: history || undefined, raw, existing, limit: 90 });
+    const cache = await service.generateAndWriteCache({
+        history: history || undefined,
+        raw,
+        existing,
+        limit: 90,
+        forceSynthesize: process.env.FORCE_SYNTHESIZE === '1'
+    });
     const expectedPredictionDate = nextIsoDate(cache.latestDataDate);
     const pendingSnapshot = cache.records.find(record => record?.predictionDate === expectedPredictionDate);
     if (!pendingSnapshot || pendingSnapshot.settled || pendingSnapshot.main?.numbers?.length !== service.BET_COUNT) {
