@@ -5,33 +5,18 @@
     const fmt = value => new Intl.NumberFormat('vi-VN').format(Number(value || 0));
     const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char]));
 
-    // Format large sums as M (1M = 1.000K = 1.000.000đ)
+    // Format all sums as M (1M = 1.000K = 1.000.000đ)
     const moneyM = (val, options = {}) => {
         let num = Number(val || 0);
-        if (Math.abs(num) >= 100000) {
-            num = num / 1000000;
-        } else if (Math.abs(num) >= 100) {
-            num = num / 1000;
-        }
-        const sign = (options.signed && num >= 0) ? '+' : '';
+        let inM = num / 1000000;
+        const sign = (options.signed && inM >= 0) ? '+' : '';
         const formatted = new Intl.NumberFormat('vi-VN', {
-            minimumFractionDigits: options.minDigits ?? (Number.isInteger(num) ? 0 : 3),
+            minimumFractionDigits: options.minDigits ?? (Number.isInteger(inM) ? 0 : 3),
             maximumFractionDigits: options.maxDigits ?? 3
-        }).format(num);
+        }).format(inM);
         return `${sign}${formatted}M`;
     };
-    const signedM = val => moneyM(val, { signed: true });
-
-    // Format daily values as K (e.g. 60K, +108K, +24K, -60K)
-    const dailyK = (val, options = {}) => {
-        let num = Number(val || 0);
-        if (Math.abs(num) >= 1000) {
-            num = num / 1000;
-        }
-        const sign = (options.signed && num >= 0) ? '+' : '';
-        return `${sign}${new Intl.NumberFormat('vi-VN').format(num)}K`;
-    };
-    const signedDailyK = val => dailyK(val, { signed: true });
+    const signedM = (val, options = {}) => moneyM(val, { ...options, signed: true });
 
     let payload = null;
     let activeMainTab = 'dualMerge'; // 'dualMerge' | 'singleMethod'
@@ -532,7 +517,7 @@
                     </td>
                     <td class="p-2.5 text-center">${hitBadge}</td>
                     <td class="p-2.5 pr-4 text-right ${profitClass}">
-                        <div>${signedDailyK(r.profitK)}</div>
+                        <div>${signedM(r.profitK)}</div>
                         <div class="text-[10px] text-indigo-300/70 font-normal">Lũy kế: ${signedM(r.cumulativeProfitK)}</div>
                     </td>
                 </tr>
@@ -733,13 +718,13 @@
             if (isSettled) {
                 if (r.hitType === 'win_x2') {
                     outcomeClass = 'bg-gradient-to-r from-amber-200 via-amber-300 to-yellow-200 text-amber-950 border-amber-400 font-black shadow-xs ring-1 ring-amber-400/50';
-                    outcomeText = '🎉 TRÚNG X2 (+108K)';
+                    outcomeText = '🎉 TRÚNG X2 (+0.108M)';
                 } else if (r.hitType === 'win_x1') {
                     outcomeClass = 'bg-emerald-100 text-emerald-900 border-emerald-300 font-bold';
-                    outcomeText = '✅ TRÚNG X1 (+24K)';
+                    outcomeText = '✅ TRÚNG X1 (+0.024M)';
                 } else {
                     outcomeClass = 'bg-rose-100 text-rose-800 border-rose-200 font-bold';
-                    outcomeText = '❌ TRƯỢT (-60K)';
+                    outcomeText = '❌ TRƯỢT (-0.060M)';
                 }
             }
 
@@ -801,7 +786,7 @@
                     </td>
                     <td class="px-4 py-3 text-right font-mono text-xs ${profitClass}">
                         ${isSettled 
-                            ? `${signedDailyK(r.profitK)} ${r.cumulativeProfitK != null ? `<span class="text-[10px] text-slate-500 block font-normal">Lũy kế: ${signedM(r.cumulativeProfitK)}</span>` : '<span class="text-[10px] text-slate-400 block font-normal">⚡ Strict PIT</span>'}` 
+                            ? `${signedM(r.profitK)} ${r.cumulativeProfitK != null ? `<span class="text-[10px] text-slate-500 block font-normal">Lũy kế: ${signedM(r.cumulativeProfitK)}</span>` : '<span class="text-[10px] text-slate-400 block font-normal">⚡ Strict PIT</span>'}` 
                             : '<span class="text-amber-700 font-bold text-xs">Chờ 18h30</span>'
                         }
                     </td>
