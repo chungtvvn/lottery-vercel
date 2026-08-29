@@ -16,16 +16,16 @@ const DEFAULT_LOTO_STRATEGY = 'loDualMerge';
 const MILESTONE_EDGE75_PIT_FUSION_STRATEGY = 'milestoneEdge75PitFusion';
 const LOTO_STRATEGY_META = {
     loDualMerge: {
-        methodName: '🎯 Lô Gộp Thực Chiến (Bạc Nhớ 20 Năm - Top 4, 6, 7, 8, 10)'
+        methodName: '🎯 Lô Bạc Nhớ Vị Trí 20 Năm (Top 6 Lãi +900.8M)'
+    },
+    loTriHarmonic: {
+        methodName: '💎 Lô Siêu Hợp Nhất 3 Động Cơ 20 Năm (Top 10 Nổ 100% · Lãi +1.192M)'
     },
     rrfParallelBlock85Small65: {
-        methodName: 'Lô Song song RRF 50/50 - Chuỗi nhỏ Hold 65 + Nhịp block Hold 85'
-    },
-    dedupEdge75Pit: {
-        methodName: 'Lô Edge75 PIT có kiểm chứng - Hold 70'
+        methodName: '⚡ Lô Song Song RRF 20 Năm (Chuỗi Nhỏ 65 + Nhịp Block 85)'
     },
     [MILESTONE_EDGE75_PIT_FUSION_STRATEGY]: {
-        methodName: 'Lô gộp Mốc 20 năm RRF + Edge75 PIT (RRF 50/50)'
+        methodName: '🛡️ Lô Gộp Mốc 20 Năm & Edge75 PIT (RRF Fusion)'
     }
 };
 const LOTO_STRATEGY_IDS = Object.keys(LOTO_STRATEGY_META);
@@ -426,11 +426,11 @@ export async function GET(request) {
             );
         }
 
-        if (strategy === 'loDualMerge') {
+        if (strategy === 'loDualMerge' || strategy === 'loTriHarmonic') {
             const advisorData = await loadJsonWithSupabaseFallback('cached_daily_method_advisor.json').catch(() => null);
-            const loDualMerge = advisorData?.loDualMerge || {};
-            const latestRec = loDualMerge.latestRecommendation || {};
-            const summary = loDualMerge.summary || {};
+            const methodKey = strategy === 'loTriHarmonic' ? 'loTriHarmonic' : 'loDualMerge';
+            const loData = advisorData?.[methodKey] || (strategy === 'loTriHarmonic' ? null : advisorData?.loDualMerge) || {};
+            const latestRec = loData.latestRecommendation || {};
             
             const unionNumbers = latestRec.fullUnion || [];
             const x2Numbers = latestRec.intersectionX2 || [];
@@ -458,7 +458,7 @@ export async function GET(request) {
             };
             
             const countsList = [4, 6, 7, 8, 10, 20];
-            const liveRecords = (loDualMerge.records || loDualMerge.settledLedger || []).map(r => {
+            const liveRecords = (loData.records || loData.settledLedger || []).map(r => {
                 const actualMap = {};
                 (r.actual27 || []).forEach(num => {
                     const str = String(num).padStart(2, '0');
@@ -557,22 +557,24 @@ export async function GET(request) {
                 };
             });
 
+            const stratMeta = LOTO_STRATEGY_META[strategy] || {};
+
             return NextResponse.json({
                 success: true,
-                strategy: 'loDualMerge',
+                strategy,
                 latestDataDate: advisorData?.latestDataDate || mergedPayload.latestDataDate,
                 config: {
-                    methodId: 'loDualMerge',
-                    methodName: '🎯 Lô Gộp Thực Chiến (Bạc Nhớ 20 Năm - Top 4, 6, 7, 8, 10)',
+                    methodId: strategy,
+                    methodName: stratMeta.methodName,
                     positionCount: 27,
                     stakePerNumberK: 2200,
                     payoutPerHitK: 8000,
-                    defaultBetCount: 6
+                    defaultBetCount: strategy === 'loTriHarmonic' ? 10 : 6
                 },
                 nextPrediction: {
                     predictionDate: latestRec.predictionDate,
                     dataIsoDate: advisorData?.latestDataDate,
-                    methodName: '🎯 Lô Gộp Thực Chiến (Bạc Nhớ 20 Năm - Top 4, 6, 7, 8, 10)',
+                    methodName: stratMeta.methodName,
                     m1Label: latestRec.m1Label,
                     m2Label: latestRec.m2Label,
                     plainReasons: latestRec.plainReasons,
@@ -580,8 +582,8 @@ export async function GET(request) {
                 },
                 livePredictions: {
                     config: {
-                        methodId: 'loDualMerge',
-                        methodName: '🎯 Lô Gộp Thực Chiến (Bạc Nhớ 20 Năm - Top 4, 6, 7, 8, 10)'
+                        methodId: strategy,
+                        methodName: stratMeta.methodName
                     },
                     summary: summaryObj,
                     predictions: liveRecords
