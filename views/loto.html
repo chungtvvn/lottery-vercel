@@ -49,11 +49,14 @@
     <main class="mx-auto max-w-7xl px-4 pb-12">
         <section class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-                <p class="text-sm font-semibold uppercase tracking-wide text-indigo-600">Dự đoán Lô theo 27 vị trí</p>
+                <p class="text-sm font-semibold uppercase tracking-wide text-indigo-600">Dự đoán Lô theo Bạc Nhớ Vị Trí 20 Năm</p>
                 <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-900">Dự đoán Lô cho ngày tiếp theo</h1>
                 <p class="mt-2 max-w-4xl text-sm leading-6 text-slate-600">
-                    Áp dụng các phương pháp của Đề Gộp Thực Chiến cho từng vị trí trong 27 giải để lựa chọn Top 6, 8, 10 số tốt nhất đánh phẳng (không x2).
-                    Hệ thống theo dõi và đối soát thực tế toàn bộ các kỳ mở thưởng năm 2026. Đơn vị K = 1.000 VND; web dùng 2200K/con, ăn 8000K/hit.
+                    Áp dụng Mô hình Bạc Nhớ Vị Trí Đa Tầng 20 Năm (Special 3.6x, Prize 1 2.6x, G7 2.0x, G6 1.5x) trên 27 giải để lựa chọn Top 4, 6, 7, 8, 10 số tốt nhất đánh phẳng.
+                    Đơn vị K = 1.000 VND; quy chuẩn 2.200K/con, ăn 8.000K/hit.
+                </p>
+                <p class="mt-1 text-xs text-indigo-700 font-semibold">
+                    📅 <strong>01/01/2026 – 27/08/2026:</strong> Hồi quy Strict PIT chuẩn xác suất thực tế 20 năm (Lãi +900.8M) · <strong>Từ 28/08/2026:</strong> Khóa Thực chiến Live hàng ngày.
                 </p>
             </div>
             <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
@@ -63,7 +66,7 @@
                 <div class="flex items-center gap-2">
                     <label for="lotoStrategySelect" class="text-sm font-black text-slate-600 whitespace-nowrap">Phương pháp:</label>
                     <select id="lotoStrategySelect" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
-                        <option value="loDualMerge" selected>🎯 Lô Gộp Thực Chiến (27 Vị Trí - Top 6, 8, 10) [Tối ưu]</option>
+                        <option value="loDualMerge" selected>🎯 Lô Gộp Thực Chiến (Bạc Nhớ 20 Năm - Top 4, 6, 7, 8, 10) [Tối ưu]</option>
                         <option value="rrfParallelBlock85Small65">RRF Song song Block 85 + Chuỗi nhỏ 65 (Lãi dương)</option>
                         <option value="milestoneEdge75PitFusion">Gộp Mốc 20 năm + Edge75 PIT</option>
                     </select>
@@ -79,8 +82,12 @@
 
         <section class="mb-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
             <div class="border-b border-slate-100 bg-slate-50 px-5 py-4">
-                <h2 class="text-lg font-black text-slate-900">So sánh nhật ký thực tế các phương pháp</h2>
-                <p class="mt-1 text-sm text-slate-600">Đối chiếu riêng từng snapshot đã chốt của RRF Mốc 20 năm, Edge75 PIT và phương án gộp; mỗi Top dùng đúng số con được chọn.</p>
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div>
+                        <h2 class="text-lg font-black text-slate-900">So sánh nhật ký thực tế các phương pháp</h2>
+                        <p class="mt-1 text-sm text-slate-600">Đối chiếu riêng từng snapshot đã chốt của Lô Gộp Bạc Nhớ 20 năm, RRF và Edge75 PIT; tự động đối soát theo Thực chiến Live và Strict PIT.</p>
+                    </div>
+                </div>
             </div>
             <div id="strategyComparison" class="p-5"></div>
         </section>

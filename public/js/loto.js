@@ -1,9 +1,9 @@
 (function () {
     const nf = new Intl.NumberFormat('vi-VN');
-    const DEFAULT_LOTO_BET_COUNT = 7;
+    const DEFAULT_LOTO_BET_COUNT = 6;
     const DEFAULT_LOTO_STAKE_K = 2200;
     const DEFAULT_LOTO_PAYOUT_K = 8000;
-    const LOTO_COUNT_ORDER = [6, 7, 8, 10, 20, 25, 30];
+    const LOTO_COUNT_ORDER = [4, 6, 7, 8, 10, 20];
     const LOTO_STRATEGIES = [
         'loDualMerge',
         'rrfParallelBlock85Small65',
@@ -376,7 +376,24 @@
             });
         });
 
-        const rows = (live.predictions || []).slice().reverse();
+        let rows = (live.predictions || []).slice();
+        const latestRec = data.nextPrediction;
+        if (latestRec?.predictionDate) {
+            const hasToday = rows.some(r => (r.predictionIsoDate || r.predictionDate || r.date) === latestRec.predictionDate);
+            if (!hasToday) {
+                rows.push({
+                    predictionIsoDate: latestRec.predictionDate,
+                    predictionDate: latestRec.predictionDate,
+                    dataIsoDate: latestRec.dataIsoDate || data.latestDataDate,
+                    status: 'pending',
+                    isLiveSnapshot: true,
+                    sourceType: 'live-snapshot',
+                    predictions: latestRec.predictions,
+                    methods: latestRec.predictions
+                });
+            }
+        }
+        rows = rows.reverse();
         const methodName = live.config?.methodName || data.config?.methodName || '';
         const tracking = live.tracking || {};
         const strategyIsEdge = state.selectedStrategy === 'dedupEdge75Pit';
@@ -393,10 +410,17 @@
             </div>
         ` : '';
         listRoot.innerHTML = trackingNotice + (rows.map(row => {
-            const statusLabel = row.status === 'settled' ? 'Đã kết toán' : 'Chờ kết quả';
-            const statusClass = row.status === 'settled'
-                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                : 'bg-amber-50 text-amber-700 border-amber-200';
+            const dateStr = row.predictionIsoDate || row.predictionDate || row.date || '';
+            const isLive = row.isLiveSnapshot || row.sourceType === 'live-snapshot' || dateStr >= '2026-08-28';
+            const isPending = row.status === 'pending';
+            const statusLabel = isPending ? '⏳ Chờ KQ 18h30' : 'Đã kết toán';
+            const statusClass = isPending
+                ? 'bg-amber-50 text-amber-900 border-amber-300 border-dashed font-bold'
+                : 'bg-emerald-50 text-emerald-800 border-emerald-300 font-bold';
+            const sourceBadge = isLive
+                ? `<span class="inline-flex items-center gap-1 rounded-md border border-emerald-300 bg-emerald-50 px-2 py-0.5 font-bold text-emerald-800 text-[10px] shadow-2xs" title="Snapshot thực tế đã chốt trước giờ quay từ 28/08/2026"><i class="bi bi-lock-fill text-emerald-600"></i> Thực chiến Live</span>`
+                : `<span class="inline-flex items-center gap-1 rounded-md border border-sky-200 bg-sky-50 px-2 py-0.5 font-bold text-sky-800 text-[10px] shadow-2xs" title="Hồi quy độc lập Strict PIT chuẩn xác suất thực tế (01/01 - 27/08/2026)"><i class="bi bi-cpu text-sky-600"></i> Strict PIT</span>`;
+
             const actualNumbers = row.actual ? Object.keys(row.actual).sort((a, b) => Number(a) - Number(b)) : [];
             const selectedPrediction = row.predictions?.[selectedKey] || {
                 count: selectedCount,
@@ -430,31 +454,35 @@
                         ? `<span class="relative inline-flex">${badge}${frequencyBadge}${overlapBadge}</span>`
                         : badge;
                 }).join('')
-                : '<span class="text-xs text-slate-400">-</span>';
+                : (isPending ? '<span class="text-xs text-amber-700 font-semibold">⏳ Chờ mở thưởng 18h30 để đối soát</span>' : '<span class="text-xs text-slate-400">-</span>');
             const rawMethod = row.methods?.[selectedKey] || {};
             const method = adjustLiveMethod(rawMethod, selectedPrediction.count || selectedCount);
             const methodUnitCount = getUnitCount(method, selectedCount);
             return `
-                <article class="p-4 ${row.status === 'pending' ? 'bg-amber-50/30' : 'bg-white/30'}">
+                <article class="p-4 ${isPending ? 'bg-amber-50/40 border-l-4 border-amber-400' : 'bg-white/30'}">
                     <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                         <div>
                             <div class="flex flex-wrap items-center gap-2">
-                                <span class="text-base font-black text-slate-900">${row.predictionIsoDate || row.predictionDate}</span>
-                                <span class="rounded-full border px-2.5 py-1 text-xs font-bold ${statusClass}">${statusLabel}</span>
-                                ${row.isLiveSnapshot
-                                    ? '<span class="rounded-full border border-emerald-300 bg-emerald-100 px-2.5 py-1 text-xs font-black text-emerald-800 shadow-sm">🔒 Thực chiến Live</span>'
-                                    : '<span class="rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-700">⚡ Strict PIT</span>'}
+                                <span class="text-base font-black text-slate-900">${dateStr}</span>
+                                <span class="rounded-full border px-2.5 py-1 text-xs ${statusClass}">${statusLabel}</span>
+                                ${sourceBadge}
                             </div>
                             <div class="mt-1 text-xs text-slate-500">Dựa trên dữ liệu đến ${row.dataIsoDate || row.dataDate || '-'}</div>
                             <div class="mt-1 text-xs font-semibold text-indigo-600">${methodName || row.methodId || '-'}</div>
                             <div class="number-panel-live mt-3 rounded-2xl border p-3">
-                                <div class="mb-1 text-xs font-semibold uppercase text-slate-500">Kết quả thực tế</div>
+                                <div class="mb-1 text-xs font-semibold uppercase text-slate-500">${isPending ? 'Trạng thái đối soát' : 'Kết quả thực tế'}</div>
                                 <div class="flex flex-wrap gap-1.5">${actualHtml}</div>
                             </div>
                         </div>
                         <div class="text-left lg:text-right">
-                            <div class="text-sm font-bold ${(method.profitK || 0) >= 0 ? 'text-emerald-600' : 'text-red-600'}">${row.status === 'settled' && hasSelectedPrediction ? money(method.profitK) : (hasSelectedPrediction ? 'Chưa kết toán' : `Chưa theo dõi Top ${selectedCount}`)}</div>
-                            <div class="text-xs text-slate-500">${row.status === 'settled' && hasSelectedPrediction ? `${method.hits || 0} hit · ${nf.format(methodUnitCount)} đơn vị cược · vốn ${money(method.stakeK).replace('+', '')}` : (hasSelectedPrediction ? 'Sẽ tự đối soát khi có KQ' : `Snapshot chưa có dàn Top ${selectedCount}`)}</div>
+                            <div class="text-sm font-bold ${isPending ? 'text-amber-700' : ((method.profitK || 0) >= 0 ? 'text-emerald-600' : 'text-red-600')}">
+                                ${isPending ? '⏳ Chưa kết toán' : (row.status === 'settled' && hasSelectedPrediction ? money(method.profitK) : `Chưa theo dõi Top ${selectedCount}`)}
+                            </div>
+                            <div class="text-xs text-slate-500">
+                                ${isPending 
+                                    ? `${selectedPrediction.numbers?.length || selectedCount} con · vốn ${money((selectedPrediction.numbers?.length || selectedCount) * 2200).replace('+', '')} · Sẽ tự đối soát lúc 18h30` 
+                                    : (row.status === 'settled' && hasSelectedPrediction ? `${method.hits || 0} hit · ${nf.format(methodUnitCount)} đơn vị cược · vốn ${money(method.stakeK).replace('+', '')}` : `Snapshot chưa có dàn Top ${selectedCount}`)}
+                            </div>
                         </div>
                     </div>
                     <div class="number-panel-bet mt-3 rounded-2xl border p-3">
@@ -473,9 +501,9 @@
                             const isHit = row.status === 'settled' && actualSet.has(text);
                             const isOverlap = selectedOverlapNumbers.includes(text);
                             const hitCount = Math.max(1, finiteNumber(row.actual?.[number] ?? row.actual?.[text], 1));
-                            const badge = numberBadge(text, row.status === 'pending' ? (isHit ? 'hit' : 'amber') : 'bet', {
+                            const badge = numberBadge(text, isPending ? 'bet' : (isHit ? 'hit' : 'amber'), {
                                 hit: isHit,
-                                title: isHit ? (isOverlap ? 'Số trùng 2 phương pháp và trúng thực tế' : 'Số đánh đã trúng thực tế trong 27 giải') : ''
+                                title: isPending ? 'Số đã chốt cho ngày tiếp theo' : (isHit ? (isOverlap ? 'Số trùng 2 phương pháp và trúng thực tế' : 'Số đánh đã trúng thực tế trong 27 giải') : '')
                             });
                             const frequencyBadge = isHit && hitCount > 1
                                 ? `<span class="absolute z-10 -left-1.5 -top-1.5 flex h-5 px-1.5 items-center justify-center rounded-full bg-amber-500 text-[9px] font-black text-white shadow-md ring-1 ring-white" title="Trúng ${hitCount} lần trong 27 giải">x${hitCount}</span>`
@@ -493,7 +521,7 @@
             `;
         }).join('') || `<div class="p-4 text-sm text-slate-500">${strategyIsEdge
             ? 'Chưa có snapshot Edge75 PIT nào được lưu. Action kế tiếp sẽ lưu dàn Edge trước khi có kết quả quay thưởng.'
-            : 'Chưa có dự đoán thực tế nào được lưu.'}</div>`);
+            : 'Chưa có dự đoán thực tế nào được lưu.'}</div>`;
     }
 
     function getPeriodLabel(period) {
@@ -571,8 +599,11 @@
         };
     }
 
-    function summarizeLiveAdjusted(live = {}) {
-        const settledRows = (live.predictions || []).filter(row => row.status === 'settled');
+    function summarizeLiveAdjusted(live = {}, filterFn = null) {
+        let settledRows = (live.predictions || []).filter(row => row.status === 'settled');
+        if (typeof filterFn === 'function') {
+            settledRows = settledRows.filter(filterFn);
+        }
         const summary = {};
         for (const count of LOTO_COUNT_ORDER) {
             const key = `top${count}`;
@@ -624,26 +655,72 @@
             return `<div class="font-bold ${profit >= 0 ? 'text-emerald-700' : 'text-red-600'}">${money(profit)}</div>
                 <div class="mt-0.5 text-[11px] text-slate-500">${nf.format(item.hitDays || 0)}/${nf.format(item.days)} hit-day · ${percent(item.hitRate)}</div>`;
         };
+
+        const isLiveRow = r => r.isLiveSnapshot || r.sourceType === 'live-snapshot' || (r.predictionIsoDate || r.predictionDate || r.date || '') >= '2026-08-28';
+
         root.innerHTML = `
-            <div class="overflow-x-auto">
-                <table class="min-w-[900px] w-full text-left text-sm">
-                    <thead class="border-b border-slate-200 text-xs font-bold uppercase tracking-wide text-slate-500">
-                        <tr>
-                            <th class="px-3 py-3">Phương pháp</th>
-                            ${LOTO_COUNT_ORDER.map(count => `<th class="px-3 py-3 text-right">Top ${count}</th>`).join('')}
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        ${available.map(({ strategy, payload }) => {
-                            const summary = summarizeLiveAdjusted(payload.livePredictions || {});
-                            const label = payload.config?.methodName || strategy;
-                            return `<tr class="${strategy === state.selectedStrategy ? 'bg-violet-50/50' : ''}">
-                                <td class="px-3 py-4 font-bold text-slate-900">${escapeHtml(label)}</td>
-                                ${LOTO_COUNT_ORDER.map(count => `<td class="px-3 py-4 text-right align-top">${cell(summary, count)}</td>`).join('')}
-                            </tr>`;
-                        }).join('')}
-                    </tbody>
-                </table>
+            <div class="space-y-6">
+                <!-- Table 1: THỰC CHIẾN LIVE (TỪ 28/08/2026) -->
+                <div class="rounded-2xl border border-emerald-200 bg-emerald-50/20 p-4">
+                    <div class="flex items-center justify-between gap-2 mb-3">
+                        <h3 class="text-sm font-black uppercase text-emerald-950 flex items-center gap-1.5">
+                            <span class="inline-block h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            🔒 Nhật ký đối soát THỰC CHIẾN LIVE (Khóa từ 28/08/2026)
+                        </h3>
+                        <span class="rounded-full bg-emerald-100 px-3 py-0.5 text-xs font-black text-emerald-800">Theo dõi thời gian thực</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-[900px] w-full text-left text-sm">
+                            <thead class="border-b border-emerald-200 text-xs font-bold uppercase tracking-wide text-emerald-800">
+                                <tr>
+                                    <th class="px-3 py-3">Phương pháp</th>
+                                    ${LOTO_COUNT_ORDER.map(count => `<th class="px-3 py-3 text-right">Top ${count}</th>`).join('')}
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-emerald-100">
+                                ${available.map(({ strategy, payload }) => {
+                                    const summary = summarizeLiveAdjusted(payload.livePredictions || {}, isLiveRow);
+                                    const label = payload.config?.methodName || strategy;
+                                    return `<tr class="${strategy === state.selectedStrategy ? 'bg-emerald-100/40' : ''}">
+                                        <td class="px-3 py-4 font-bold text-slate-900">${escapeHtml(label)}</td>
+                                        ${LOTO_COUNT_ORDER.map(count => `<td class="px-3 py-4 text-right align-top">${cell(summary, count)}</td>`).join('')}
+                                    </tr>`;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Table 2: TOÀN BỘ NĂM 2026 (STRICT PIT) -->
+                <div class="rounded-2xl border border-slate-200 bg-slate-50/50 p-4">
+                    <div class="flex items-center justify-between gap-2 mb-3">
+                        <h3 class="text-sm font-black uppercase text-slate-800 flex items-center gap-1.5">
+                            <i class="bi bi-cpu-fill text-indigo-600"></i>
+                            ⚡ Đối soát TOÀN BỘ NĂM 2026 (Hồi quy Strict PIT 20 Năm)
+                        </h3>
+                        <span class="rounded-full bg-slate-200 px-3 py-0.5 text-xs font-black text-slate-700">236 kỳ quay 2026</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-[900px] w-full text-left text-sm">
+                            <thead class="border-b border-slate-200 text-xs font-bold uppercase tracking-wide text-slate-500">
+                                <tr>
+                                    <th class="px-3 py-3">Phương pháp</th>
+                                    ${LOTO_COUNT_ORDER.map(count => `<th class="px-3 py-3 text-right">Top ${count}</th>`).join('')}
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                ${available.map(({ strategy, payload }) => {
+                                    const summary = summarizeLiveAdjusted(payload.livePredictions || {});
+                                    const label = payload.config?.methodName || strategy;
+                                    return `<tr class="${strategy === state.selectedStrategy ? 'bg-violet-50/50' : ''}">
+                                        <td class="px-3 py-4 font-bold text-slate-900">${escapeHtml(label)}</td>
+                                        ${LOTO_COUNT_ORDER.map(count => `<td class="px-3 py-4 text-right align-top">${cell(summary, count)}</td>`).join('')}
+                                    </tr>`;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>`;
     }
 
