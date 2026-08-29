@@ -1328,31 +1328,8 @@ async function buildNextRrfPrediction(rawData, betCounts, options) {
         betCount: (bySource.edge75PitSource[positionKey] || []).length,
         excludedCount: 100 - (bySource.edge75PitSource[positionKey] || []).length
     }));
-    // Combine the annual 20-year RRF ranking with the independently-built
-    // Edge75 PIT ranking. This remains a fixed-size Top-N Lô selection: an
-    // overlap is evidence only, never an extra stake.
-    const milestoneEdge75PitFusion = buildRrfPrediction(rrf, edge75PitPrediction, betCounts, {
-        methodId: MILESTONE_EDGE75_PIT_FUSION_METHOD_ID,
-        strategy: MILESTONE_EDGE75_PIT_FUSION_METHOD_ID,
-        weightSmall: 0.5,
-        weightBlock: 0.5,
-        agreementBonus: 0.01
-    });
-    milestoneEdge75PitFusion.sourceMethods = [
-        {
-            strategy: rrf.strategy,
-            label: 'Mốc 20 năm RRF (Chuỗi nhỏ 65 + Nhịp block 85)',
-            weight: 0.5
-        },
-        {
-            strategy: edge75PitPrediction.strategy,
-            label: 'Edge75 PIT có kiểm chứng',
-            weight: 0.5
-        }
-    ];
     rrf.additionalPredictions = {
-        [EDGE75_PIT_METHOD_ID]: edge75PitPrediction,
-        [MILESTONE_EDGE75_PIT_FUSION_METHOD_ID]: milestoneEdge75PitFusion
+        [EDGE75_PIT_METHOD_ID]: edge75PitPrediction
     };
     return rrf;
 }

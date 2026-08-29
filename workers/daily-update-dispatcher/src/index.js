@@ -17,7 +17,6 @@ const DEFAULT_DE_TARGET = 70;
 // cannot accidentally fall back to another method's numbers.
 const LEGACY_RRF_LOTO_STRATEGY = 'rrfParallelBlock85Small65';
 const DEFAULT_LOTO_STRATEGY = 'dedupEdge75Pit';
-const MILESTONE_EDGE75_PIT_FUSION_LOTO_STRATEGY = 'milestoneEdge75PitFusion';
 const TELEGRAM_DE_METHODS = [
   {
     source: 'milestone',
