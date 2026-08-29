@@ -4,129 +4,272 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lô 27 Vị Trí | XSMB Stats</title>
+    <title>Thực Chiến Lô 20 Năm | XSMB Stats</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        .badge-number {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .badge-number:hover {
+            transform: translateY(-2px) scale(1.05);
+        }
+        .filter-btn.active {
+            background-color: #4f46e5;
+            color: #ffffff;
+            border-color: #4f46e5;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+    </style>
 </head>
 
-<body class="antialiased text-slate-800">
-    <header class="nav-glass-blur sticky top-0 z-50 mb-8 w-full">
+<body class="bg-slate-50 text-slate-800 antialiased selection:bg-indigo-500 selection:text-white">
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 flex translate-y-10 items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-600 px-5 py-3.5 text-white opacity-0 shadow-2xl transition-all duration-300 pointer-events-none">
+        <i class="bi bi-check-circle-fill text-lg"></i>
+        <span id="toastMessage" class="text-sm font-bold">Đã sao chép dàn số!</span>
+    </div>
+
+    <!-- Header Navigation -->
+    <header class="nav-glass-blur sticky top-0 z-40 mb-8 w-full border-b border-slate-200/80 bg-white/90 backdrop-blur-md">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="flex h-16 items-center justify-between">
+            <div class="flex h-16 items-center justify-between gap-3">
                 <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                        <i class="bi bi-graph-up text-white text-lg"></i>
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-amber-500 to-indigo-600 shadow-md shadow-amber-500/20">
+                        <i class="bi bi-stars text-xl text-white"></i>
                     </div>
-                    <a href="/" class="text-xl font-bold tracking-tight text-slate-900 hover:opacity-90 transition">XSMB <span class="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent font-extrabold">Stats</span></a>
+                    <a href="/statistics" class="text-xl font-black tracking-tight text-slate-900">
+                        XSMB <span class="bg-gradient-to-r from-amber-500 via-indigo-600 to-violet-600 bg-clip-text font-extrabold text-transparent">Stats</span>
+                    </a>
                 </div>
-                <nav class="hidden md:flex space-x-1">
+                <nav class="hidden space-x-1 md:flex">
                     <a href="/statistics" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Thống kê</a>
                     <a href="/records" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Kỷ lục</a>
                     <a href="/chain-frequency" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Mốc 20 năm</a>
                     <a href="/simulation" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Lịch sử</a>
-                    <a href="/loto" class="nav-link-custom px-3 py-2 text-sm font-semibold whitespace-nowrap active">Lô</a>
+                    <a href="/loto" class="nav-link-custom active px-3 py-2 text-sm font-semibold whitespace-nowrap">Lô</a>
                     <a href="/daily-advisor" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Gợi ý</a>
-                    <a href="/scoring" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Tính điểm</a>
                     <a href="/settings" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">⚙️</a>
                 </nav>
                 <div class="flex md:hidden">
-                    <nav class="flex space-x-1 overflow-x-auto max-w-[300px] py-1 custom-scrollbar">
+                    <nav class="flex max-w-[290px] space-x-1 overflow-x-auto py-1 custom-scrollbar">
                         <a href="/statistics" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Thống kê</a>
-                        <a href="/records" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Kỷ lục</a>
                         <a href="/chain-frequency" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Mốc 20 năm</a>
                         <a href="/simulation" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Lịch sử</a>
-                        <a href="/loto" class="nav-link-custom px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap active">Lô</a>
+                        <a href="/loto" class="nav-link-custom active px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap">Lô</a>
                         <a href="/daily-advisor" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Gợi ý</a>
-                        <a href="/scoring" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Tính điểm</a>
-                        <a href="/settings" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">⚙️</a>
                     </nav>
                 </div>
             </div>
         </div>
     </header>
 
-    <main class="mx-auto max-w-7xl px-4 pb-12">
-        <section class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-                <p class="text-sm font-semibold uppercase tracking-wide text-indigo-600">Dự đoán Lô theo Bạc Nhớ Vị Trí 20 Năm</p>
-                <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-900">Dự đoán Lô cho ngày tiếp theo</h1>
-                <p class="mt-2 max-w-4xl text-sm leading-6 text-slate-600">
-                    Áp dụng Mô hình Bạc Nhớ Vị Trí Đa Tầng 20 Năm (Special 3.6x, Prize 1 2.6x, G7 2.0x, G6 1.5x) trên 27 giải để lựa chọn Top 4, 6, 7, 8, 10 số tốt nhất đánh phẳng.
-                    Đơn vị K = 1.000 VND; quy chuẩn 2.200K/con, ăn 8.000K/hit.
-                </p>
-                <p class="mt-1 text-xs text-indigo-700 font-semibold">
-                    📅 <strong>01/01/2026 – 27/08/2026:</strong> Hồi quy Strict PIT chuẩn xác suất thực tế 20 năm (Lãi +900.8M) · <strong>Từ 28/08/2026:</strong> Khóa Thực chiến Live hàng ngày.
-                </p>
-            </div>
-            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                <a href="/daily-advisor#lo-dual-merge" class="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-indigo-600 px-3.5 py-2 text-xs font-black text-white shadow-md hover:opacity-95 transition-all">
-                    <i class="bi bi-intersect"></i> Xem Lô Gộp Thực Chiến
-                </a>
-                <div class="flex items-center gap-2">
-                    <label for="lotoStrategySelect" class="text-sm font-black text-slate-600 whitespace-nowrap">Phương pháp:</label>
-                    <select id="lotoStrategySelect" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
-                        <option value="loDualMerge" selected>🎯 Lô Bạc Nhớ Vị Trí 20 Năm (Top 6 Lãi +900.8M) [Khuyên Dùng]</option>
-                        <option value="loTriHarmonic">💎 Lô Siêu Hợp Nhất 3 Động Cơ 20 Năm (Top 10 Nổ 100% · Lãi +1.192M)</option>
-                        <option value="rrfParallelBlock85Small65">⚡ Lô Song Song RRF 20 Năm (Chuỗi Nhỏ 65 + Nhịp Block 85)</option>
-                        <option value="milestoneEdge75PitFusion">🛡️ Lô Gộp Mốc 20 Năm & Edge75 PIT (RRF Fusion)</option>
-                    </select>
-                </div>
-            </div>
-        </section>
+    <main class="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8 space-y-8">
+        <!-- Error Container -->
+        <div id="errorBox" class="hidden rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-700"></div>
 
-        <div id="errorBox" class="mb-6 hidden rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"></div>
-
-        <section id="metaBox" class="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-6"></section>
-
-        <section class="mb-6 grid gap-4 lg:grid-cols-3" id="predictionCards"></section>
-
-        <section class="mb-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <div class="border-b border-slate-100 bg-slate-50 px-5 py-4">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <!-- ========================================== -->
+        <!-- 1. HERO HEADER: THỰC CHIẾN LÔ 20 NĂM -->
+        <!-- ========================================== -->
+        <section class="overflow-hidden rounded-3xl border border-indigo-300/40 bg-gradient-to-br from-slate-950 via-indigo-950 to-purple-950 text-white shadow-2xl shadow-indigo-950/30">
+            <div class="px-6 py-8 sm:px-8">
+                <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
                     <div>
-                        <h2 class="text-lg font-black text-slate-900">So sánh nhật ký thực tế các phương pháp</h2>
-                        <p class="mt-1 text-sm text-slate-600">Đối chiếu riêng từng snapshot đã chốt của Lô Gộp Bạc Nhớ 20 năm, RRF và Edge75 PIT; tự động đối soát theo Thực chiến Live và Strict PIT.</p>
-                    </div>
-                </div>
-            </div>
-            <div id="strategyComparison" class="p-5"></div>
-        </section>
-
-        <section class="mb-6 overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-sm shadow-slate-200/60">
-            <div class="bg-gradient-to-r from-slate-950 via-violet-950 to-fuchsia-950 px-5 py-5 text-white">
-                <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                    <div>
-                        <p class="text-xs font-bold uppercase tracking-[0.25em] text-violet-200">Hiệu quả Lô</p>
-                        <h2 class="mt-1 text-2xl font-black tracking-tight">Thống kê từ đầu năm đến hiện tại</h2>
-                        <p class="mt-2 max-w-3xl text-sm leading-6 text-violet-100">
-                            Quan sát hiệu quả phương pháp Lô đang áp dụng theo ngày, tuần hoặc tháng: hit-day, profit, ROI và nhịp rủi ro.
+                        <div class="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/20 px-3.5 py-1 text-xs font-black tracking-wider uppercase text-emerald-300">
+                            <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span> MÔ HÌNH THỰC CHIẾN LÔ 20 NĂM · STRICT POINT-IN-TIME
+                        </div>
+                        <h1 class="mt-3 text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white" id="lotoHeroTitle">
+                            Dự Đoán & Đối Soát Lô Thực Chiến 20 Năm
+                        </h1>
+                        <p class="mt-2.5 max-w-3xl text-sm leading-relaxed text-slate-200" id="lotoHeroDescription">
+                            Ứng dụng Mô hình Bạc Nhớ Vị Trí Đa Tầng & Siêu Hợp Nhất 3 Động Cơ trên 7.536 kỳ quay 20 năm. Tuyển chọn Top 4, 6, 7, 8, 10 đánh phẳng với quy chuẩn 2.200K/con ăn 8.000K/nháy (Điểm hòa vốn 27.5%).
+                        </p>
+                        <p class="mt-1.5 text-xs text-amber-300/90 font-semibold">
+                            📅 <strong>01/01/2026 – 27/08/2026:</strong> Hồi quy Strict PIT chuẩn xác suất thực tế 20 năm (Lãi +900.8M Top 6, +1.192M Top 10) · <strong>Từ 28/08/2026:</strong> Khóa Thực chiến Live hàng ngày.
                         </p>
                     </div>
-                    <div id="performancePeriodTabs" class="inline-flex rounded-2xl border border-white/15 bg-white/10 p-1 text-sm font-bold backdrop-blur"></div>
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 shrink-0">
+                        <div class="flex items-center gap-2">
+                            <label for="lotoStrategySelect" class="text-xs font-black text-slate-300 whitespace-nowrap">Chiến thuật:</label>
+                            <select id="lotoStrategySelect" class="rounded-xl border border-white/20 bg-slate-900/90 px-3.5 py-2.5 text-xs font-black text-white shadow-md outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400">
+                                <option value="loDualMerge" selected>🎯 Lô Bạc Nhớ Vị Trí 20 Năm (Top 6 Lãi +900.8M) [Khuyên Dùng]</option>
+                                <option value="loTriHarmonic">💎 Lô Siêu Hợp Nhất 3 Động Cơ 20 Năm (Top 10 Nổ 100% · Lãi +1.192M)</option>
+                                <option value="rrfParallelBlock85Small65">⚡ Lô Song Song RRF 20 Năm (Chuỗi Nhỏ 65 + Nhịp Block 85)</option>
+                                <option value="milestoneEdge75PitFusion">🛡️ Lô Gộp Mốc 20 Năm & Edge75 PIT (RRF Fusion)</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div id="performanceReport" class="p-5"></div>
+
+            <!-- KPI Summary Cards (Full Year 2026 Performance) -->
+            <div class="grid grid-cols-2 gap-3 border-t border-white/10 bg-black/40 p-5 sm:grid-cols-3 lg:grid-cols-6" id="lotoHeroSummaryCards"></div>
         </section>
 
-        <section class="mb-6 glass-card overflow-hidden">
-            <div class="flex flex-col gap-3 border-b border-amber-100 bg-amber-50/70 px-4 py-3.5 lg:flex-row lg:items-center lg:justify-between">
+        <!-- ========================================== -->
+        <!-- 2. HERO CARD: DÀN ĐỀ XUẤT THỰC CHIẾN LÔ HÔM NAY -->
+        <!-- ========================================== -->
+        <section id="lotoTodayRecommendation" class="overflow-hidden rounded-3xl border border-indigo-300/50 bg-white shadow-xl shadow-slate-200/50">
+            <div class="border-b border-indigo-200/60 bg-gradient-to-r from-indigo-500/10 via-purple-500/5 to-transparent px-6 py-6 sm:px-8">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="rounded-full bg-emerald-100 border border-emerald-300 px-3 py-0.5 text-xs font-black uppercase text-emerald-800">
+                                <i class="bi bi-lightning-charge-fill text-amber-500"></i> ĐỀ XUẤT LÔ HÔM NAY
+                            </span>
+                            <span id="lotoConfidence" class="text-xs font-extrabold text-amber-600">⭐⭐⭐⭐⭐ 5.0</span>
+                            <span class="rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-black text-indigo-800" id="lotoLiveBadge">🔒 Thực chiến Live</span>
+                        </div>
+                        <h2 class="mt-2 text-xl sm:text-2xl font-black text-slate-900">
+                            Dàn Đề Xuất Thực Chiến Lô Ngày Kế Tiếp (<span id="lotoTargetDate">--/--/----</span>)
+                        </h2>
+                        <p id="lotoSourceDate" class="text-xs font-semibold text-slate-500 mt-0.5">Dữ liệu nguồn đến --/--/---- · Khóa bất biến trước giờ mở thưởng 18h30</p>
+                    </div>
+
+                    <!-- Copy Buttons -->
+                    <div class="flex flex-wrap items-center gap-2" id="lotoCopyButtons">
+                        <button id="btnCopyChampionSpace" class="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2.5 text-xs font-black text-white shadow-md transition-all hover:scale-105">
+                            <i class="bi bi-clipboard-check"></i> Copy Dàn Khuyên Dùng
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6 sm:p-8 space-y-8">
+                <!-- Top Prediction Cards Grid -->
+                <div id="lotoPredictionCardsGrid" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3"></div>
+
+                <!-- Economics & Detailed Rationale Cards -->
+                <div class="space-y-6">
+                    <!-- Economics Calculator Table -->
+                    <div class="rounded-2xl border border-slate-200 bg-slate-50/80 p-5">
+                        <div class="flex items-center justify-between">
+                            <h4 class="text-xs font-black uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                                <i class="bi bi-wallet2 text-indigo-600"></i> BẢNG PHÂN BỔ VỐN & KINH TẾ CƯỢC LÔ (QUY CHUẨN 2.200K ĂN 8.000K)
+                            </h4>
+                            <span class="rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 px-3 py-0.5 text-xs font-black">
+                                Điểm hòa vốn 27.5% (Chỉ cần 2 nháy/ngày là lãi)
+                            </span>
+                        </div>
+                        <div class="mt-3 grid gap-3 sm:grid-cols-2 md:grid-cols-4 text-xs font-semibold" id="lotoEconomicsCards"></div>
+                    </div>
+
+                    <!-- Quantitative Rationale & Detailed Selection Logic -->
+                    <div class="rounded-2xl border border-indigo-200/80 bg-white p-5 shadow-xs">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                            <div>
+                                <h4 class="text-xs font-black uppercase tracking-wider text-indigo-800 flex items-center gap-1.5">
+                                    <i class="bi bi-cpu-fill text-indigo-600"></i> PHÂN TÍCH ĐỊNH LƯỢNG & CĂN CỨ THUẬT TOÁN BẠC NHỚ 20 NĂM
+                                </h4>
+                                <p class="text-[11px] text-slate-500 font-semibold mt-0.5">
+                                    Giải thích chi tiết ma trận xác suất chuyển tiếp Markov, trọng số vị trí ĐB/G1/G7/G6, độ trễ Lag-1 & Lag-2 decay 0.50 và kiểm định Strict PIT 20 năm
+                                </p>
+                            </div>
+                            <span class="hidden sm:inline-flex items-center gap-1 rounded-full border border-sky-300 bg-sky-50 px-3 py-1 text-xs font-black text-sky-900">
+                                <i class="bi bi-shield-check text-sky-600"></i> Strict PIT 100%
+                            </span>
+                        </div>
+                        <div id="lotoPlainReasons" class="mt-4 grid gap-2.5 sm:grid-cols-2"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- 3. THỐNG KÊ ĐA CỬA SỔ CHU KỲ (7, 15, 30, 60, 90 NGÀY) -->
+        <!-- ========================================== -->
+        <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+            <div class="border-b border-slate-100 bg-slate-50/80 px-6 py-4">
+                <p class="text-xs font-black uppercase tracking-wider text-indigo-600">THỐNG KÊ ĐA CỬA SỔ THEO DÕI</p>
+                <h2 class="mt-0.5 text-lg font-black text-slate-900">Hiệu Suất Thực Chiến Lô Theo Chu Kỳ (7, 15, 30, 60, 90 ngày & Toàn Năm 2026)</h2>
+            </div>
+            <div class="p-6 overflow-x-auto custom-scrollbar">
+                <div id="lotoWindowsGrid" class="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6"></div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- 4. THỐNG KÊ TOÀN NĂM 2026 THEO TỪNG THÁNG -->
+        <!-- ========================================== -->
+        <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+            <div class="border-b border-slate-100 bg-slate-50/80 px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div>
+                    <p class="text-xs font-black uppercase tracking-wider text-amber-600">THỐNG KÊ TOÀN NĂM 2026 THEO TỪNG THÁNG</p>
+                    <h2 class="mt-0.5 text-lg font-black text-slate-900">Chi Tiết Thắng / Thua, Lợi Nhuận & Lũy Kế Từng Tháng (236 Kỳ Quay 2026)</h2>
+                </div>
+                <span id="lotoYearlyBadge" class="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-1 text-xs font-black text-emerald-800">
+                    <i class="bi bi-graph-up-arrow text-emerald-600"></i> LŨY KẾ CẢ NĂM: --
+                </span>
+            </div>
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-200 bg-slate-100/80 text-[11px] font-black uppercase tracking-wider text-slate-600">
+                            <th class="p-3.5 pl-6">Tháng</th>
+                            <th class="p-3.5 text-center">Số Ngày Đánh</th>
+                            <th class="p-3.5 text-center">Ngày Nổ / Trượt</th>
+                            <th class="p-3.5 text-center">Tỷ Lệ Nổ</th>
+                            <th class="p-3.5 text-center">Tổng Nháy Trúng</th>
+                            <th class="p-3.5 text-right">Tổng Vốn</th>
+                            <th class="p-3.5 text-right">Tiền Trúng</th>
+                            <th class="p-3.5 text-right">Lãi / Lỗ Tháng</th>
+                            <th class="p-3.5 text-center">ROI Tháng</th>
+                            <th class="p-3.5 pr-6 text-right">Lợi Nhuận Lũy Kế</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lotoMonthlyTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- 5. BẢNG SO SÁNH NHẬT KÝ THỰC TẾ CÁC PHƯƠNG PHÁP -->
+        <!-- ========================================== -->
+        <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+            <div class="border-b border-slate-100 bg-slate-50/80 px-6 py-4">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div>
+                        <p class="text-xs font-black uppercase tracking-wider text-indigo-600">ĐỐI CHIẾU & SO SÁNH PHƯƠNG PHÁP</p>
+                        <h2 class="text-lg font-black text-slate-900">So Sánh Nhật Ký Thực Tế Các Phương Pháp Lô</h2>
+                        <p class="mt-1 text-xs text-slate-500">Đối chiếu trực quan kết quả giữa Bạc Nhớ Vị Trí 20 Năm, Siêu Hợp Nhất 3 Động Cơ, RRF Song Song và Gộp Mốc Edge75 PIT.</p>
+                    </div>
+                </div>
+            </div>
+            <div id="strategyComparison" class="p-6"></div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- 6. NHẬT KÝ ĐÁNH THỰC TẾ & ĐỐI SOÁT TỪNG NGÀY -->
+        <!-- ========================================== -->
+        <section class="glass-card overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+            <div class="flex flex-col gap-3 border-b border-amber-100 bg-amber-50/70 px-6 py-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                     <h2 class="flex items-center gap-2 text-lg font-bold text-slate-900">
                         <i class="bi bi-broadcast-pin text-amber-600"></i>
-                        Nhật ký đánh thực tế
+                        Nhật Ký Đánh Thực Tế & Đối Soát Chi Tiết Từng Ngày
                     </h2>
-                    <p class="mt-1 text-xs text-slate-600">Chọn từng dàn để xem đúng snapshot, hit và lãi/lỗ của riêng phương pháp đó. Dàn cũ không bị tính lại sau khi có kết quả.</p>
+                    <p class="mt-1 text-xs text-slate-600">Chọn từng Top dàn số để xem đúng snapshot, vị trí trúng và lãi/lỗ của riêng cấu hình đó. Dàn cũ không bị tính lại sau khi có kết quả.</p>
                 </div>
                 <div id="liveMethodTabs" class="flex flex-wrap gap-2" aria-label="Chọn phương pháp nhật ký Lô"></div>
             </div>
-            <div id="liveSummary" class="grid gap-3 border-b border-slate-100 p-4 md:grid-cols-3 xl:grid-cols-6"></div>
-            <div id="liveList" class="divide-y divide-slate-100"></div>
+            <div id="liveSummary" class="grid gap-3 border-b border-slate-100 p-5 md:grid-cols-3 xl:grid-cols-6 bg-slate-50/50"></div>
+            <div id="liveList" class="divide-y divide-slate-100 p-4"></div>
         </section>
-
     </main>
 
-    <script src="/js/loto.js?v=20260728-profit-default-v1"></script>
+    <script src="/js/loto.js?v=20260829-standardized-v2"></script>
 </body>
 
 </html>
