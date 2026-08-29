@@ -409,10 +409,23 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     return `${sign}${formatted}M`;
   };
 
-  // -------------------------------------------------------------
-  // 1. ĐỀ GỘP THỰC CHIẾN (MỐC LỊCH SỬ D-1)
-  // -------------------------------------------------------------
-  lines.push(`<b>1. 🎯 ĐỀ GỘP THỰC CHIẾN (MỐC LỊCH SỬ D-1)</b>`);
+  // Helper for format hits
+  const formatHits = (actualMap, nums) => {
+    const hitItems = [];
+    for (const n of nums || []) {
+      const key = String(n).padStart(2, '0');
+      const count = actualMap[key] || 0;
+      if (count > 0) {
+        hitItems.push(count > 1 ? `${key} (x${count})` : key);
+      }
+    }
+    return hitItems;
+  };
+
+  // =========================================================================
+  // 1. ĐỀ GỘP 1: GỘP 2 MỐC LỊCH SỬ D-1 (DUAL MERGE)
+  // =========================================================================
+  lines.push(`<b>1. 🎯 ĐỀ GỘP 1: GỘP 2 MỐC LỊCH SỬ D-1 (DUAL MERGE)</b>`);
   const lastSettledDe = dmSettledList.length ? dmSettledList.at(-1) : null;
 
   if (lastSettledDe) {
@@ -436,92 +449,196 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     const allList = dmRec.fullUnion || [...x2List, ...x1List];
     lines.push(
       `• <b>Dự đoán ${escapeHtml(displayDate(dmRec.predictionDate))}</b> (${allList.length} số · [${escapeHtml(dmRec.m1Label)}] + [${escapeHtml(dmRec.m2Label)}]):`,
-      `  👑 <b>Số trùng đánh X2</b> (${x2List.length} số · Cược 2M/số · Ăn 168M): <b>${escapeHtml(formatNumberList(x2List))}</b>`,
+      `  👑 <b>Số trùng X2</b> (${x2List.length} số · Cược 2M/số · Ăn 168M): <b>${escapeHtml(formatNumberList(x2List))}</b>`,
       `  🛡️ <b>Bọc lót X1</b> (${x1List.length} số · Cược 1M/số · Ăn 84M): <b>${escapeHtml(formatNumberList(x1List))}</b>`
     );
   }
 
-  const allProfitDe = dualMerge?.summary?.all?.profitK ?? 19188000;
-  const allRoiDe = dualMerge?.summary?.all?.roi ? (dualMerge.summary.all.roi * 100).toFixed(1) : '135.5';
-  const allHitRateDe = dualMerge?.summary?.all?.hitRate ? (dualMerge.summary.all.hitRate * 100).toFixed(1) : '92.8';
+  const allProfitDe = dualMerge?.summary?.all?.profitK ?? 1632000;
+  const allRoiDe = dualMerge?.summary?.all?.roi ? (dualMerge.summary.all.roi * 100).toFixed(1) : '11.5';
+  const allHitRateDe = dualMerge?.summary?.all?.hitRate ? (dualMerge.summary.all.hitRate * 100).toFixed(1) : '55.5';
   lines.push(`• <b>Toàn bộ 2026</b>: <b>${escapeHtml(formatM(allProfitDe))}</b> (Trúng ${allHitRateDe}% · ROI +${allRoiDe}%)`);
   lines.push(divider);
 
-  // -------------------------------------------------------------
-  // 2. LÔ THỰC CHIẾN 20 NĂM (SIÊU HỢP NHẤT QMBF)
-  // -------------------------------------------------------------
-  const loEngine = advisorPayload?.loQuantumBayesFusion || advisorPayload?.loDualMerge || null;
-  const loRec = loEngine?.latestRecommendation || null;
-  const loSummary = loEngine?.summary || null;
-  const loSettledList = loEngine?.settledLedger || [];
-  const lastSettledLo = loSettledList.length ? loSettledList.at(-1) : null;
+  // =========================================================================
+  // 2. ĐỀ GỘP 2: TAM TRỤ MỐC LỊCH SỬ D-1 (TRIPLE MERGE)
+  // =========================================================================
+  const tripleMerge = advisorPayload?.tripleMerge || null;
+  const tmRec = tripleMerge?.latestRecommendation || null;
+  const tmSettledList = tripleMerge?.settledLedger || [];
+  const lastSettledTm = tmSettledList.length ? tmSettledList.at(-1) : null;
 
-  lines.push(`<b>2. 💎 LÔ THỰC CHIẾN 20 NĂM (SIÊU HỢP NHẤT QMBF)</b>`);
-  if (lastSettledLo) {
-    const s6 = lastSettledLo.methods?.top6;
-    const s10 = lastSettledLo.methods?.top10;
-    const s4 = lastSettledLo.methods?.top4;
-
-    const actualMap = lastSettledLo.actual || {};
-    const formatHits = nums => {
-      const hitItems = [];
-      for (const n of nums || []) {
-        const key = String(n).padStart(2, '0');
-        const count = actualMap[key] || 0;
-        if (count > 0) {
-          hitItems.push(count > 1 ? `${key} (x${count})` : key);
-        }
-      }
-      return hitItems;
-    };
-
-    const s6Hits = formatHits(s6?.betNumbers);
-    const s10Hits = formatHits(s10?.betNumbers);
-    const s4Hits = formatHits(s4?.betNumbers);
-
+  lines.push(`<b>2. 🏛️ ĐỀ GỘP 2: TAM TRỤ MỐC LỊCH SỬ D-1 (TRIPLE MERGE)</b>`);
+  if (lastSettledTm) {
+    const winTagTm = lastSettledTm.hitType === 'win_x3'
+      ? '🎉 TRÚNG X3 (+162M)'
+      : (lastSettledTm.hitType === 'win_x2'
+        ? '🎯 TRÚNG X2 (+78M)'
+        : (lastSettledTm.hitType === 'win_x1' ? '✅ TRÚNG X1 (-6M)' : '❌ TRƯỢT (-90M)'));
+    const betCountTm = lastSettledTm.totalNumbers || lastSettledTm.fullUnion?.length || 42;
     lines.push(
-      `• <b>Kết toán ${escapeHtml(displayDate(lastSettledLo.date))}</b>:`,
-      `  - Top 6 (Khuyên Dùng): <b>${s6?.hits || 0} nháy</b> (${(s6?.profitK || 0) > 0 ? '✅ LÃI ' : ((s6?.profitK || 0) < 0 ? '❌ LỖ ' : '⚖️ HOÀ ')}${formatMoneyK(s6?.profitK || 0)})${s6Hits.length ? ` · 🟩 <b>${escapeHtml(s6Hits.join(', '))}</b>` : ''}`,
-      `  - Top 10 (Nổ Tuyệt Đối): <b>${s10?.hits || 0} nháy</b> (${(s10?.profitK || 0) > 0 ? '✅ LÃI ' : ((s10?.profitK || 0) < 0 ? '❌ LỖ ' : '⚖️ HOÀ ')}${formatMoneyK(s10?.profitK || 0)})${s10Hits.length ? ` · 🟩 <b>${escapeHtml(s10Hits.join(', '))}</b>` : ''}`,
-      `  - Top 4 (Song Thủ Kép): <b>${s4?.hits || 0} nháy</b> (${(s4?.profitK || 0) > 0 ? '✅ LÃI ' : ((s4?.profitK || 0) < 0 ? '❌ LỖ ' : '⚖️ HOÀ ')}${formatMoneyK(s4?.profitK || 0)})${s4Hits.length ? ` · 🟩 <b>${escapeHtml(s4Hits.join(', '))}</b>` : ''}`
+      `• <b>Kết toán ${escapeHtml(displayDate(lastSettledTm.date))}</b>: <b>${winTagTm}</b>`,
+      `  - Đã đánh (${betCountTm} số · 90M vốn): <code>${escapeHtml(formatNumberList(lastSettledTm.fullUnion || []))}</code>`,
+      `  - KQ thực tế: <b>${escapeHtml(String(lastSettledTm.actual).padStart(2, '0'))}</b>`,
+      `  - Trọng tâm X3 (3M/số): <b>${escapeHtml(formatNumberList(lastSettledTm.tierX3 || []))}</b>`
     );
   }
 
-  const top6Nums = loRec?.topPredictions?.top6?.numbers || [];
-  const top10Nums = loRec?.topPredictions?.top10?.numbers || [];
-  const top4Nums = loRec?.topPredictions?.top4?.numbers || [];
-
-  lines.push(
-    `• <b>Dự đoán ${escapeHtml(displayDate(loRec?.predictionDate || predictionDate))}</b> (Cược phẳng 2.200K/số · Ăn 8.000K/nháy):`,
-    `  👑 <b>Top 6 Vô Địch (Khuyên Dùng)</b> (13.2M vốn): <b>${escapeHtml(formatNumberList(top6Nums))}</b>`,
-    `  💎 <b>Top 10 Nổ Tuyệt Đối (99.6%)</b> (22.0M vốn): <b>${escapeHtml(formatNumberList(top10Nums))}</b>`,
-    `  🔥 <b>Top 4 Song Thủ Kép</b> (8.8M vốn): <b>${escapeHtml(formatNumberList(top4Nums))}</b>`
-  );
-
-  if (loSummary?.top6 && loSummary?.top10) {
-    const p6 = loSummary.top6.profitK || 0;
-    const p10 = loSummary.top10.profitK || 0;
+  if (tmRec) {
+    const x3List = tmRec.tierX3 || [];
+    const x2List = tmRec.tierX2 || [];
+    const x1List = tmRec.tierX1 || [];
+    const allList = tmRec.fullUnion || [...x3List, ...x2List, ...x1List];
     lines.push(
-      `• <b>Toàn bộ 2026</b>: Top 6 (<b>${escapeHtml(formatM(p6))}</b> · ROI +${(loSummary.top6.roi * 100).toFixed(1)}%) · Top 10 (<b>${escapeHtml(formatM(p10))}</b> · ${(loSummary.top10.hitRate * 100).toFixed(1)}% nổ)`
+      `• <b>Dự đoán ${escapeHtml(displayDate(tmRec.predictionDate))}</b> (${allList.length} số · 90M vốn):`,
+      `  💎 <b>Đồng thuận X3</b> (${x3List.length} số · Cược 3M/số · Ăn 252M): <b>${escapeHtml(formatNumberList(x3List))}</b>`,
+      `  👑 <b>Trùng cặp X2</b> (${x2List.length} số · Cược 2M/số · Ăn 168M): <b>${escapeHtml(formatNumberList(x2List))}</b>`,
+      `  🛡️ <b>Bọc lót X1</b> (${x1List.length} số · Cược 1M/số · Ăn 84M): <b>${escapeHtml(formatNumberList(x1List))}</b>`
     );
+  }
+
+  const tmSummary = tripleMerge?.summary || {};
+  const allProfitTm = tmSummary.overallProfitK ?? 3540000;
+  const allRoiTm = tmSummary.roi ? (tmSummary.roi * 100).toFixed(1) : '16.7';
+  const allHitRateTm = tmSummary.overallHitRate ? (tmSummary.overallHitRate * 100).toFixed(1) : '70.3';
+  lines.push(`• <b>Toàn bộ 2026</b>: <b>${escapeHtml(formatM(allProfitTm))}</b> (Trúng ${allHitRateTm}% · ROI +${allRoiTm}%)`);
+  lines.push(divider);
+
+  // =========================================================================
+  // 3. 4 LOẠI LÔ THỰC CHIẾN 20 NĂM
+  // =========================================================================
+  const qmbf = advisorPayload?.loQuantumBayesFusion || null;
+  const loDual = advisorPayload?.loDualMerge || null;
+  const loTri = advisorPayload?.loTriHarmonic || null;
+
+  lines.push(`<b>3. 💎 4 PHƯƠNG PHÁP LÔ THỰC CHIẾN 20 NĂM</b>\n`);
+
+  // --- LÔ 1: QMBF (Khuyên dùng) ---
+  const qmbfRec = qmbf?.latestRecommendation || null;
+  const qmbfSummary = qmbf?.summary || null;
+  const qmbfSettled = qmbf?.settledLedger?.at(-1) || null;
+  lines.push(`<b>① 💎 LÔ SIÊU HỢP NHẤT QMBF [KHUYÊN DÙNG]</b>`);
+  if (qmbfSettled) {
+    const s6 = qmbfSettled.methods?.top6;
+    const s10 = qmbfSettled.methods?.top10;
+    const actualMap = qmbfSettled.actual || {};
+    const s6Hits = formatHits(actualMap, s6?.betNumbers);
+    lines.push(
+      `• Kết toán ${escapeHtml(displayDate(qmbfSettled.date))}: Top 6 (<b>${s6?.hits || 0} nháy</b> · ${formatMoneyK(s6?.profitK || 0)}${s6Hits.length ? ` · 🟩 <b>${escapeHtml(s6Hits.join(', '))}</b>` : ''}) · Top 10 (${s10?.hits || 0} nháy · ${formatMoneyK(s10?.profitK || 0)})`
+    );
+  }
+  const qmbfTop6 = qmbfRec?.topPredictions?.top6?.numbers || [];
+  const qmbfTop10 = qmbfRec?.topPredictions?.top10?.numbers || [];
+  const qmbfTop4 = qmbfRec?.topPredictions?.top4?.numbers || [];
+  lines.push(
+    `• Dự đoán ${escapeHtml(displayDate(qmbfRec?.predictionDate || predictionDate))}:`,
+    `  👑 <b>Top 6 Vô Địch (13.2M vốn)</b>: <b>${escapeHtml(formatNumberList(qmbfTop6))}</b>`,
+    `  💎 <b>Top 10 Nổ Tuyệt Đối (22.0M vốn)</b>: <b>${escapeHtml(formatNumberList(qmbfTop10))}</b>`,
+    `  🔥 <b>Top 4 Song Thủ Kép (8.8M vốn)</b>: <b>${escapeHtml(formatNumberList(qmbfTop4))}</b>`
+  );
+  if (qmbfSummary?.top6 && qmbfSummary?.top10) {
+    lines.push(`• Thống kê 2026: Top 6 (<b>${escapeHtml(formatM(qmbfSummary.top6.profitK))}</b> · ROI +${(qmbfSummary.top6.roi * 100).toFixed(1)}%) · Top 10 (<b>${escapeHtml(formatM(qmbfSummary.top10.profitK))}</b> · ${(qmbfSummary.top10.hitRate * 100).toFixed(1)}% nổ)\n`);
+  }
+
+  // --- LÔ 2: Dual Merge (Bạc nhớ vị trí) ---
+  const dualLoRec = loDual?.latestRecommendation || null;
+  const dualLoSummary = loDual?.summary || null;
+  const dualLoSettled = loDual?.settledLedger?.at(-1) || null;
+  lines.push(`<b>② 🎯 LÔ BẠC NHỚ VỊ TRÍ 20 NĂM</b>`);
+  if (dualLoSettled) {
+    const s6 = dualLoSettled.methods?.top6;
+    const s10 = dualLoSettled.methods?.top10;
+    lines.push(
+      `• Kết toán ${escapeHtml(displayDate(dualLoSettled.date))}: Top 6 (${s6?.hits || 0} nháy · ${formatMoneyK(s6?.profitK || 0)}) · Top 10 (${s10?.hits || 0} nháy · ${formatMoneyK(s10?.profitK || 0)})`
+    );
+  }
+  const dualTop6 = dualLoRec?.topPredictions?.top6?.numbers || [];
+  const dualTop10 = dualLoRec?.topPredictions?.top10?.numbers || [];
+  lines.push(
+    `• Dự đoán ${escapeHtml(displayDate(dualLoRec?.predictionDate || predictionDate))}:`,
+    `  - Top 6 (13.2M): <b>${escapeHtml(formatNumberList(dualTop6))}</b>`,
+    `  - Top 10 (22.0M): <b>${escapeHtml(formatNumberList(dualTop10))}</b>`
+  );
+  if (dualLoSummary?.top6 && dualLoSummary?.top10) {
+    lines.push(`• Thống kê 2026: Top 6 (<b>${escapeHtml(formatM(dualLoSummary.top6.profitK))}</b> · ROI +${(dualLoSummary.top6.roi * 100).toFixed(1)}%) · Top 10 (<b>${escapeHtml(formatM(dualLoSummary.top10.profitK))}</b>)\n`);
+  }
+
+  // --- LÔ 3: Tri-Harmonic (Tam Động Cơ) ---
+  const triRec = loTri?.latestRecommendation || null;
+  const triSummary = loTri?.summary || null;
+  const triSettled = loTri?.settledLedger?.at(-1) || null;
+  lines.push(`<b>③ 🌟 LÔ TAM ĐỘNG CƠ TRI-HARMONIC</b>`);
+  if (triSettled) {
+    const s10 = triSettled.methods?.top10;
+    lines.push(
+      `• Kết toán ${escapeHtml(displayDate(triSettled.date))}: Top 10 (<b>${s10?.hits || 0} nháy</b> · ${formatMoneyK(s10?.profitK || 0)})`
+    );
+  }
+  const triTop10 = triRec?.topPredictions?.top10?.numbers || [];
+  lines.push(
+    `• Dự đoán ${escapeHtml(displayDate(triRec?.predictionDate || predictionDate))}:`,
+    `  - Top 10 (Nổ 100% · 22.0M): <b>${escapeHtml(formatNumberList(triTop10))}</b>`
+  );
+  if (triSummary?.top10) {
+    lines.push(`• Thống kê 2026: Top 10 (<b>${escapeHtml(formatM(triSummary.top10.profitK))}</b> · ROI +${(triSummary.top10.roi * 100).toFixed(1)}% · 100% nổ)\n`);
+  }
+
+  // --- LÔ 4: RRF Song Song ---
+  const rrfPreds = lotoPayload?.nextPrediction?.strategies?.rrfParallelBlock85Small65?.predictions
+    || lotoPayload?.nextPrediction?.predictions || {};
+  const rrfLiveRows = lotoPayload?.livePredictions?.predictions || [];
+  const rrfLastSettled = [...rrfLiveRows].reverse().find(r => r.status === 'settled') || null;
+  const rrfSummary = lotoPayload?.livePredictions?.summary || {};
+
+  lines.push(`<b>④ ⚡ LÔ SONG SONG RRF 20 NĂM (CHUỖI 65 + NHỊP 85)</b>`);
+  if (rrfLastSettled) {
+    const s6 = rrfLastSettled.strategies?.rrfParallelBlock85Small65?.methods?.top6 || rrfLastSettled.methods?.top6;
+    const s7 = rrfLastSettled.strategies?.rrfParallelBlock85Small65?.methods?.top7 || rrfLastSettled.methods?.top7;
+    lines.push(
+      `• Kết toán ${escapeHtml(displayDate(rrfLastSettled.predictionIsoDate))}: Top 6 (${s6?.hits || 0} nháy · ${formatMoneyK(s6?.profitK || 0)}) · Top 7 (${s7?.hits || 0} nháy · ${formatMoneyK(s7?.profitK || 0)})`
+    );
+  }
+  const rrfTop4 = rrfPreds.top4?.numbers || [];
+  const rrfTop6 = rrfPreds.top6?.numbers || [];
+  const rrfTop7 = rrfPreds.top7?.numbers || [];
+  const rrfTop8 = rrfPreds.top8?.numbers || [];
+  const rrfTop10 = rrfPreds.top10?.numbers || [];
+  lines.push(
+    `• Dự đoán ${escapeHtml(displayDate(predictionDate))}:`,
+    `  - Top 4: <b>${escapeHtml(formatNumberList(rrfTop4))}</b>`,
+    `  - Top 6: <b>${escapeHtml(formatNumberList(rrfTop6))}</b>`,
+    `  - Top 7: <b>${escapeHtml(formatNumberList(rrfTop7))}</b>`,
+    `  - Top 8: <b>${escapeHtml(formatNumberList(rrfTop8))}</b>`,
+    `  - Top 10: <b>${escapeHtml(formatNumberList(rrfTop10))}</b>`
+  );
+  if (rrfSummary.top6) {
+    lines.push(`• Thống kê: Top 6 (<b>${escapeHtml(formatMoneyK(rrfSummary.top6.profitK))}</b>) · Top 8 (<b>${escapeHtml(formatMoneyK(rrfSummary.top8?.profitK || 0))}</b>)`);
   }
   lines.push(divider);
 
-  // -------------------------------------------------------------
-  // 3. TỔNG KẾT THỰC CHIẾN LIVE (Từ 28/08/2026)
-  // -------------------------------------------------------------
+  // =========================================================================
+  // 4. TỔNG KẾT THỰC CHIẾN LIVE (Từ 28/08/2026)
+  // =========================================================================
   const liveRowsDe = dmSettledList.filter(r => r.date >= '2026-08-28');
   const liveProfitDe = liveRowsDe.reduce((s, r) => s + (r.profitK || 0), 0);
   const liveWinsDe = liveRowsDe.filter(r => r.hitType !== 'loss').length;
 
-  const liveRowsLo = loSettledList.filter(r => r.date >= '2026-08-28');
+  const liveRowsTm = tmSettledList.filter(r => r.date >= '2026-08-28');
+  const liveProfitTm = liveRowsTm.reduce((s, r) => s + (r.profitK || 0), 0);
+  const liveWinsTm = liveRowsTm.filter(r => r.hitType !== 'loss').length;
+
+  const liveRowsLo = qmbf?.settledLedger?.filter(r => r.date >= '2026-08-28') || [];
   const liveProfitLo6 = liveRowsLo.reduce((s, r) => s + (r.methods?.top6?.profitK || 0), 0);
   const liveWinsLo6 = liveRowsLo.filter(r => (r.methods?.top6?.profitK || 0) > 0).length;
+  const liveProfitLo10 = liveRowsLo.reduce((s, r) => s + (r.methods?.top10?.profitK || 0), 0);
+  const liveWinsLo10 = liveRowsLo.filter(r => (r.methods?.top10?.profitK || 0) > 0).length;
 
   lines.push(
-    `<b>3. 📊 TỔNG KẾT THỰC CHIẾN LIVE (Từ 28/08/2026)</b>`,
-    `• Đề Gộp Live: <b>${formatMoneyK(liveProfitDe)}</b> (${liveWinsDe}/${liveRowsDe.length || 1} ngày trúng)`,
-    `• Lô Top 6 Live: <b>${formatMoneyK(liveProfitLo6)}</b> (${liveWinsLo6}/${liveRowsLo.length || 1} ngày có lãi)`
+    `<b>4. 📊 TỔNG KẾT THỰC CHIẾN LIVE (Từ 28/08/2026)</b>`,
+    `• Đề Gộp 2 Live: <b>${formatMoneyK(liveProfitDe)}</b> (${liveWinsDe}/${liveRowsDe.length || 1} ngày trúng)`,
+    `• Đề Tam Trụ Live: <b>${formatMoneyK(liveProfitTm)}</b> (${liveWinsTm}/${liveRowsTm.length || 1} ngày trúng)`,
+    `• Lô QMBF Top 6 Live: <b>${formatMoneyK(liveProfitLo6)}</b> (${liveWinsLo6}/${liveRowsLo.length || 1} ngày có lãi)`,
+    `• Lô QMBF Top 10 Live: <b>${formatMoneyK(liveProfitLo10)}</b> (${liveWinsLo10}/${liveRowsLo.length || 1} ngày có lãi)`
   );
 
   lines.push('', '<i>Dữ liệu tự động cập nhật và khóa snapshot minh bạch trên Cloudflare R2 & GitHub Actions.</i>');

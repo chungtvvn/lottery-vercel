@@ -355,9 +355,10 @@ async function main() {
 
     const report = buildTelegramReport(compactDe, compactLoto, compactHistory);
     assert.match(report.text, /XSMB — THỰC CHIẾN LIVE & DỰ ĐOÁN/);
-    assert.match(report.text, /1\. 🎯 ĐỀ GỘP THỰC CHIẾN/);
-    assert.match(report.text, /2\. 💎 LÔ THỰC CHIẾN 20 NĂM/);
-    assert.match(report.text, /3\. 📊 TỔNG KẾT THỰC CHIẾN LIVE/);
+    assert.match(report.text, /1\. 🎯 ĐỀ GỘP 1: GỘP 2 MỐC LỊCH SỬ D-1/);
+    assert.match(report.text, /2\. 🏛️ ĐỀ GỘP 2: TAM TRỤ MỐC LỊCH SỬ D-1/);
+    assert.match(report.text, /3\. 💎 4 PHƯƠNG PHÁP LÔ THỰC CHIẾN 20 NĂM/);
+    assert.match(report.text, /4\. 📊 TỔNG KẾT THỰC CHIẾN LIVE/);
     assert.match(report.text, /━━━━━━━━━━━━━━━━━━━━/);
     assert.ok(splitTelegramText(report.text).every(chunk => chunk.length <= 3900), 'Telegram report phải được chia gói an toàn');
 
