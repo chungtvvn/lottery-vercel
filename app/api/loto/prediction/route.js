@@ -12,20 +12,19 @@ const FALLBACK_LOTO_STAKE_PER_NUMBER_K = 2200;
 const FALLBACK_LOTO_PAYOUT_PER_HIT_K = 8000;
 const LOTO_BET_COUNTS = [4, 6, 7, 8, 10, 20, 25, 30];
 const LEGACY_RRF_LOTO_STRATEGY = 'rrfParallelBlock85Small65';
-const DEFAULT_LOTO_STRATEGY = 'loDualMerge';
-const MILESTONE_EDGE75_PIT_FUSION_STRATEGY = 'milestoneEdge75PitFusion';
+const DEFAULT_LOTO_STRATEGY = 'loQuantumBayesFusion';
 const LOTO_STRATEGY_META = {
+    loQuantumBayesFusion: {
+        methodName: '💎 Lô Siêu Hợp Nhất 4 Tầng Bayes & Markov 20 Năm (Top 6 Lãi +1.268M · Top 10 Lãi +1.824M) [Khuyên Dùng]'
+    },
     loDualMerge: {
         methodName: '🎯 Lô Bạc Nhớ Vị Trí 20 Năm (Top 6 Lãi +900.8M)'
     },
     loTriHarmonic: {
-        methodName: '💎 Lô Siêu Hợp Nhất 3 Động Cơ 20 Năm (Top 10 Nổ 100% · Lãi +1.192M)'
+        methodName: '🌟 Lô Siêu Hợp Nhất 3 Động Cơ 20 Năm (Top 10 Nổ 100% · Lãi +1.192M)'
     },
     rrfParallelBlock85Small65: {
         methodName: '⚡ Lô Song Song RRF 20 Năm (Chuỗi Nhỏ 65 + Nhịp Block 85)'
-    },
-    [MILESTONE_EDGE75_PIT_FUSION_STRATEGY]: {
-        methodName: '🛡️ Lô Gộp Mốc 20 Năm & Edge75 PIT (RRF Fusion)'
     }
 };
 const LOTO_STRATEGY_IDS = Object.keys(LOTO_STRATEGY_META);
@@ -426,10 +425,9 @@ export async function GET(request) {
             );
         }
 
-        if (strategy === 'loDualMerge' || strategy === 'loTriHarmonic') {
+        if (strategy === 'loQuantumBayesFusion' || strategy === 'loDualMerge' || strategy === 'loTriHarmonic') {
             const advisorData = await loadJsonWithSupabaseFallback('cached_daily_method_advisor.json').catch(() => null);
-            const methodKey = strategy === 'loTriHarmonic' ? 'loTriHarmonic' : 'loDualMerge';
-            const loData = advisorData?.[methodKey] || (strategy === 'loTriHarmonic' ? null : advisorData?.loDualMerge) || {};
+            const loData = advisorData?.[strategy] || {};
             const latestRec = loData.latestRecommendation || {};
             
             const unionNumbers = latestRec.fullUnion || [];

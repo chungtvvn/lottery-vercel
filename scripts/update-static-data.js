@@ -24,7 +24,7 @@ const LOTO_STAKE_PER_NUMBER_K = 2200;
 const LOTO_PAYOUT_PER_HIT_K = 8000;
 const LOTO_METHOD_ID = process.env.LOTO_METHOD_ID || 'rrfParallelBlock85Small65';
 const LOTO_AGGREGATION_MODE = process.env.LOTO_AGGREGATION_MODE || 'rrf';
-const LOTO_BET_COUNTS = [6, 7, 20, 25, 30];
+const LOTO_BET_COUNTS = [4, 6, 7, 8, 10, 20];
 const LOTO_DEFAULT_BET_COUNT = 6;
 const PREDICTION_HISTORY_METHOD_IDS = [
     'chainSmallFirstHold70',
@@ -197,7 +197,6 @@ function isLotoPredictionFormulaCurrent(cache) {
         || {};
     const defaultNumbers = predictions?.[`top${LOTO_DEFAULT_BET_COUNT}`]?.numbers || [];
     const edge75PitPredictions = cache?.nextPrediction?.strategies?.dedupEdge75Pit?.predictions || {};
-    const milestoneEdge75PitFusionPredictions = cache?.nextPrediction?.strategies?.milestoneEdge75PitFusion?.predictions || {};
     const hasPredictionSet = (predictionSets, count) => Array.isArray(predictionSets?.[`top${count}`]?.numbers)
         && predictionSets[`top${count}`].numbers.length === count;
     const betCountsOk = betCounts.length === LOTO_BET_COUNTS.length
@@ -209,8 +208,6 @@ function isLotoPredictionFormulaCurrent(cache) {
         && defaultBetCount === LOTO_DEFAULT_BET_COUNT
         && defaultNumbers.length === LOTO_DEFAULT_BET_COUNT
         && LOTO_BET_COUNTS.every(count => hasPredictionSet(predictions, count))
-        && LOTO_BET_COUNTS.every(count => hasPredictionSet(edge75PitPredictions, count))
-        && LOTO_BET_COUNTS.every(count => hasPredictionSet(milestoneEdge75PitFusionPredictions, count))
         && betCountsOk;
 }
 

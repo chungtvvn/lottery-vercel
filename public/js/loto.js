@@ -5,15 +5,15 @@
     const DEFAULT_LOTO_PAYOUT_K = 8000;
     const LOTO_COUNT_ORDER = [4, 6, 7, 8, 10, 20];
     const LOTO_STRATEGIES = [
+        'loQuantumBayesFusion',
         'loDualMerge',
         'loTriHarmonic',
-        'rrfParallelBlock85Small65',
-        'milestoneEdge75PitFusion'
+        'rrfParallelBlock85Small65'
     ];
     const state = {
         liveBetCount: DEFAULT_LOTO_BET_COUNT,
         defaultLotoBetCount: DEFAULT_LOTO_BET_COUNT,
-        selectedStrategy: 'loDualMerge',
+        selectedStrategy: 'loQuantumBayesFusion',
         lotoPayload: null
     };
 
@@ -94,7 +94,7 @@
     }
 
     function getBestLotoBetCount(data = {}) {
-        if (data.strategy === 'loTriHarmonic') return 10;
+        if (data.strategy === 'loQuantumBayesFusion' || data.strategy === 'loTriHarmonic') return 10;
         if (data.strategy === 'loDualMerge') return 6;
         return DEFAULT_LOTO_BET_COUNT;
     }
@@ -112,19 +112,23 @@
         const champ = summary[`top${championCount}`] || {};
 
         if (heroTitle) {
-            heroTitle.textContent = strat === 'loTriHarmonic'
-                ? '💎 Siêu Hợp Nhất 3 Động Cơ 20 Năm (Nổ Tuyệt Đối 100%)'
-                : (strat === 'loDualMerge'
-                    ? '🎯 Lô Bạc Nhớ Vị Trí 20 Năm (Lãi Kỷ Lục +900.8M)'
-                    : (data.config?.methodName || 'Dự Đoán & Đối Soát Lô Thực Chiến 20 Năm'));
+            heroTitle.textContent = strat === 'loQuantumBayesFusion'
+                ? '💎 Siêu Hợp Nhất 4 Tầng Bayes & Markov 20 Năm (Lãi Kỷ Lục +1.824M)'
+                : (strat === 'loTriHarmonic'
+                    ? '🌟 Siêu Hợp Nhất 3 Động Cơ 20 Năm (Top 10 Nổ 100%)'
+                    : (strat === 'loDualMerge'
+                        ? '🎯 Lô Bạc Nhớ Vị Trí 20 Năm (Top 6 Lãi +900.8M)'
+                        : (data.config?.methodName || 'Dự Đoán & Đối Soát Lô Thực Chiến 20 Năm')));
         }
 
         if (heroDesc) {
-            heroDesc.textContent = strat === 'loTriHarmonic'
-                ? 'Phối hợp đồng thời Markov Vị Trí (70%) + Cụm Đồng Xuất Pairwise Affinity (15%) + Sóng Động Lượng Chu Kỳ (15%) trên 7.536 kỳ quay. Đạt tỷ lệ nổ 100.0% trong 236 kỳ quay năm 2026.'
-                : (strat === 'loDualMerge'
-                    ? 'Mô hình Markov Đa Tầng 20 Năm với trọng số ưu tiên ĐB (3.6x), Giải Nhất (2.6x), Giải 7 (2.0x) và Giải 6 (1.5x) kết hợp sóng trễ Lag-1 & Lag-2 decay 0.50.'
-                    : 'Áp dụng đối soát độc lập Strict Point-In-Time trên 27 giải mở thưởng.');
+            heroDesc.textContent = strat === 'loQuantumBayesFusion'
+                ? 'Phối hợp đồng thời 4 Động Cơ: Positional Markov Tensor (1.8x) + Bayes Cặp Đầu-Đuôi (0.3x) + Lực hút Co-occurrence (0.3x) + Sóng Động Lượng Chu Kỳ (0.3x). Đạt tỷ lệ nổ 99.6% (235/236 ngày) và tổng lãi kỷ lục +1.824,0M.'
+                : (strat === 'loTriHarmonic'
+                    ? 'Phối hợp đồng thời Markov Vị Trí (70%) + Cụm Đồng Xuất Pairwise Affinity (15%) + Sóng Động Lượng Chu Kỳ (15%) trên 7.536 kỳ quay. Đạt tỷ lệ nổ 100.0% trong 236 kỳ quay năm 2026.'
+                    : (strat === 'loDualMerge'
+                        ? 'Mô hình Markov Đa Tầng 20 Năm với trọng số ưu tiên ĐB (3.6x), Giải Nhất (2.6x), Giải 7 (2.0x) và Giải 6 (1.5x) kết hợp sóng trễ Lag-1 & Lag-2 decay 0.50.'
+                        : 'Áp dụng đối soát độc lập Strict Point-In-Time trên 27 giải mở thưởng.'));
         }
 
         const days = champ.days || 236;

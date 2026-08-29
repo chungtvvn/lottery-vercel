@@ -38,11 +38,10 @@ const DEFAULT_STRATEGY = 'chainSmallFirst';
 const DEFAULT_HOLD = 65;
 const DEFAULT_AGGREGATION_MODE = 'twoHitGreedy';
 const DEFAULT_BET_COUNT = 6;
-const DEFAULT_BET_COUNTS = [6, 7, 20, 25, 30];
+const DEFAULT_BET_COUNTS = [4, 6, 7, 8, 10, 20];
 const EDGE75_PIT_METHOD_ID = 'dedupEdge75Pit';
-const MILESTONE_EDGE75_PIT_FUSION_METHOD_ID = 'milestoneEdge75PitFusion';
-const LIVE_TRACKING_VERSION = 'rrf-parallel-block85-small65-edge75-fusion-top6-top7-top20-top25-top30-live-v3';
-const LIVE_CACHE_NOTE = 'Lô dùng phương án song song RRF 50/50: Chuỗi nhỏ Hold 65 + Nhịp block Hold 85. Mỗi vị trí được loại trừ riêng, sau đó xếp hạng RRF và chọn Top 6/7/20/25/30; Lô không nhân tiền x2 cho số trùng.';
+const LIVE_TRACKING_VERSION = 'rrf-parallel-block85-small65-top4-6-7-8-10-20-live-v4';
+const LIVE_CACHE_NOTE = 'Lô dùng phương án song song RRF 50/50: Chuỗi nhỏ Hold 65 + Nhịp block Hold 85. Mỗi vị trí được loại trừ riêng, sau đó xếp hạng RRF và chọn Top 4/6/7/8/10/20; Lô không nhân tiền x2 cho số trùng.';
 
 function parseArgs() {
     return new Map(process.argv.slice(2).map(arg => {
@@ -2494,8 +2493,7 @@ function summarizeLivePredictionsMulti(livePayload, betCounts) {
     const strategyKeys = [
         DEFAULT_METHOD_ID,
         'rrfSmall65Block75',
-        EDGE75_PIT_METHOD_ID,
-        MILESTONE_EDGE75_PIT_FUSION_METHOD_ID
+        EDGE75_PIT_METHOD_ID
     ];
     
     for (const stratId of strategyKeys) {
