@@ -505,13 +505,13 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   lines.push(divider);
 
   // =========================================================================
-  // 3. 4 LOẠI LÔ THỰC CHIẾN 20 NĂM
+  // 3. 4 LOẠI LÔ THỰC CHIẾN MỐC LỊCH SỬ (D-1) STRICT PIT
   // =========================================================================
   const qmbf = advisorPayload?.loQuantumBayesFusion || null;
   const loDual = advisorPayload?.loDualMerge || null;
   const loTri = advisorPayload?.loTriHarmonic || null;
 
-  lines.push(`<b>3. 💎 4 PHƯƠNG PHÁP LÔ THỰC CHIẾN 20 NĂM</b>\n`);
+  lines.push(`<b>3. 💎 4 PHƯƠNG PHÁP LÔ THỰC CHIẾN (MỐC LỊCH SỬ D-1 STRICT PIT)</b>\n`);
 
   // --- LÔ 1: QMBF (Khuyên dùng) ---
   const qmbfRec = qmbf?.latestRecommendation || null;
@@ -544,7 +544,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   const dualLoRec = loDual?.latestRecommendation || null;
   const dualLoSummary = loDual?.summary || null;
   const dualLoSettled = loDual?.settledLedger?.at(-1) || null;
-  lines.push(`<b>② 🎯 LÔ BẠC NHỚ VỊ TRÍ 20 NĂM</b>`);
+  lines.push(`<b>② 🎯 LÔ BẠC NHỚ VỊ TRÍ 27 GIẢI</b>`);
   if (dualLoSettled) {
     const s6 = dualLoSettled.methods?.top6;
     const s10 = dualLoSettled.methods?.top10;
@@ -590,7 +590,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   const rrfLastSettled = [...rrfLiveRows].reverse().find(r => r.status === 'settled') || null;
   const rrfSummary = lotoPayload?.livePredictions?.summary || {};
 
-  lines.push(`<b>④ ⚡ LÔ SONG SONG RRF 20 NĂM (CHUỖI 65 + NHỊP 85)</b>`);
+  lines.push(`<b>④ ⚡ LÔ SONG SONG RRF (CHUỖI 65 + NHỊP 85)</b>`);
   if (rrfLastSettled) {
     const s6 = rrfLastSettled.strategies?.rrfParallelBlock85Small65?.methods?.top6 || rrfLastSettled.methods?.top6;
     const s7 = rrfLastSettled.strategies?.rrfParallelBlock85Small65?.methods?.top7 || rrfLastSettled.methods?.top7;

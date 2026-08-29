@@ -15,16 +15,16 @@ const LEGACY_RRF_LOTO_STRATEGY = 'rrfParallelBlock85Small65';
 const DEFAULT_LOTO_STRATEGY = 'loQuantumBayesFusion';
 const LOTO_STRATEGY_META = {
     loQuantumBayesFusion: {
-        methodName: '💎 Lô Siêu Hợp Nhất 4 Tầng Bayes & Markov 20 Năm (Top 6 Lãi +1.268M · Top 10 Lãi +1.824M) [Khuyên Dùng]'
+        methodName: '💎 Lô Siêu Hợp Nhất 4 Tầng Bayes & Markov (Mốc Lịch Sử D-1 Strict PIT) [Khuyên Dùng]'
     },
     loDualMerge: {
-        methodName: '🎯 Lô Bạc Nhớ Vị Trí 20 Năm (Top 6 Lãi +900.8M)'
+        methodName: '🎯 Lô Bạc Nhớ Vị Trí 27 Giải (Mốc Lịch Sử D-1 Strict PIT)'
     },
     loTriHarmonic: {
-        methodName: '🌟 Lô Siêu Hợp Nhất 3 Động Cơ 20 Năm (Top 10 Nổ 100% · Lãi +1.192M)'
+        methodName: '🌟 Lô Siêu Hợp Nhất 3 Động Cơ (Mốc Lịch Sử D-1 Strict PIT)'
     },
     rrfParallelBlock85Small65: {
-        methodName: '⚡ Lô Song Song RRF 20 Năm (Chuỗi Nhỏ 65 + Nhịp Block 85)'
+        methodName: '⚡ Lô Song Song RRF (Mốc Lịch Sử D-1 Strict PIT)'
     }
 };
 const LOTO_STRATEGY_IDS = Object.keys(LOTO_STRATEGY_META);

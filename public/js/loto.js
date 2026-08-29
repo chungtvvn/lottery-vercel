@@ -530,7 +530,7 @@
                     <div class="flex items-center justify-between gap-2 mb-3">
                         <h3 class="text-sm font-black uppercase text-slate-800 flex items-center gap-1.5">
                             <i class="bi bi-cpu-fill text-indigo-600"></i>
-                            ⚡ Đối soát TOÀN BỘ NĂM 2026 (Hồi quy Strict PIT 20 Năm)
+                            ⚡ Đối soát TOÀN BỘ NĂM 2026 (Mốc Lịch Sử D-1 Strict PIT)
                         </h3>
                     </div>
                     <div class="overflow-x-auto">
