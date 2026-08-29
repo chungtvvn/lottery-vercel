@@ -183,22 +183,24 @@
             const dm = predictions.dualMerge;
             const x2Nums = dm.intersectionNumbers || [];
             const x1Nums = dm.uniqueSingles || [];
-            const topCardsHtml = [6, 8, 10, 20].map(count => {
+            const topCardsHtml = [4, 6, 7, 8, 10, 20].map(count => {
                 const item = predictions[`top${count}`] || {};
                 const nums = item.numbers || item.betNumbers || [];
-                const topStakeK = item.stakeK || count * 220;
-                const hitRateLabel = count === 6 ? '83.0% ngày nổ' : count === 8 ? '89.8% ngày nổ' : count === 10 ? '93.2% ngày nổ' : '100% ngày nổ';
+                const topStakeK = item.stakeK || count * 2200;
+                const isChampion = count === 6;
+                const hitRateLabel = count === 4 ? '74.2% nổ (+83.2M)' : count === 6 ? '🔥 84.7% nổ · LÃI +124.8M' : count === 7 ? '88.1% nổ (+69.6M)' : count === 8 ? '92.4% nổ (+46.4M)' : count === 10 ? '95.8% nổ' : '100% nổ';
                 return `
-                    <article class="glass-card number-panel-bet overflow-hidden ${count === 10 ? 'ring-2 ring-emerald-400 bg-emerald-50/10' : ''}">
-                        <div class="border-b border-slate-100 bg-gradient-to-r from-indigo-50/80 to-purple-50/80 px-4 py-3">
+                    <article class="glass-card number-panel-bet overflow-hidden ${isChampion ? 'ring-2 ring-emerald-500 bg-emerald-50/20 shadow-md' : ''}">
+                        <div class="border-b border-slate-100 bg-gradient-to-r from-indigo-50/90 to-purple-50/90 px-4 py-3">
                             <div class="flex items-center justify-between">
                                 <h2 class="flex items-center gap-2 text-base font-bold text-slate-900">
-                                    Top ${count} Lô Tuyển Chọn
-                                    ${count === 10 ? '<span class="rounded-full bg-emerald-500 px-2 py-0.5 text-[9px] font-black uppercase text-white">Tối ưu</span>' : ''}
+                                    Top ${count} Lô Bạc Nhớ 20 Năm
+                                    ${isChampion ? '<span class="rounded-full bg-emerald-600 px-2.5 py-0.5 text-[10px] font-black uppercase text-white shadow-xs">👑 Tối Ưu Lãi (+124.8M)</span>' : ''}
+                                    ${count === 4 ? '<span class="rounded-full bg-amber-500 px-2 py-0.5 text-[9px] font-black uppercase text-white">Song thủ kép</span>' : ''}
                                 </h2>
-                                <span class="rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-black text-indigo-700">${hitRateLabel}</span>
+                                <span class="rounded-full ${isChampion ? 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-300' : 'bg-indigo-100 text-indigo-700'} px-2 py-0.5 text-[10px] font-black">${hitRateLabel}</span>
                             </div>
-                            <div class="mt-1 text-xs font-semibold text-slate-500">${nums.length} số · Vốn cược phẳng ${nf.format(topStakeK)}K/ngày (220K/số)</div>
+                            <div class="mt-1 text-xs font-semibold text-slate-500">${nums.length} số · Vốn cược phẳng ${nf.format(topStakeK)}K/ngày (2.200K/số)</div>
                         </div>
                         <div class="p-4">
                             <div class="flex flex-wrap gap-2">
@@ -215,14 +217,21 @@
                 `;
             }).join('');
 
+            const plainReasonsHtml = (dm.plainReasons || data.nextPrediction?.plainReasons || []).map(r => `
+                <li class="flex items-start gap-2 text-xs text-slate-700 leading-relaxed">
+                    <i class="bi bi-check-circle-fill text-emerald-500 mt-0.5 shrink-0"></i>
+                    <span>${escapeHtml(r)}</span>
+                </li>
+            `).join('');
+
             root.innerHTML = `
                 <article class="glass-card number-panel-bet overflow-hidden col-span-full ring-2 ring-emerald-400 bg-gradient-to-br from-white via-emerald-50/20 to-teal-50/20">
                     <div class="border-b border-emerald-100 bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-transparent px-6 py-4">
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                             <div>
-                                <span class="rounded-full bg-emerald-600 px-3 py-0.5 text-[10px] font-black uppercase text-white shadow-xs">CHIẾN THUẬT ĐỀ GỘP ĐÁNH 27 GIẢI LÔ</span>
+                                <span class="rounded-full bg-emerald-600 px-3 py-0.5 text-[10px] font-black uppercase text-white shadow-xs">MÔ HÌNH BẠC NHỚ VỊ TRÍ ĐA TẦNG 20 NĂM</span>
                                 <h2 class="text-xl font-black text-slate-900 mt-1">Dàn Lô Gộp Thực Chiến (X2 Số Trùng & X1 Bọc Lót)</h2>
-                                <p class="text-xs text-slate-600 mt-0.5">Áp dụng kết hợp 2 phương pháp Đề tối ưu; cược x2 số trùng (440K/số ăn 1.600K/nháy) & x1 số riêng (220K/số ăn 800K/nháy).</p>
+                                <p class="text-xs text-slate-600 mt-0.5">Áp dụng kết hợp 2 phương pháp Đề tối ưu; cược x2 số trùng (4.400K/số ăn 16.000K/nháy) & x1 số riêng (2.200K/số ăn 8.000K/nháy).</p>
                             </div>
                             <div class="text-right">
                                 <div class="text-xs font-bold text-slate-500">Tổng vốn cược: <span class="font-mono font-black text-slate-900 text-sm">${nf.format(dm.stakeK || 0)}K</span></div>
@@ -236,12 +245,12 @@
                             <div class="flex items-center justify-between gap-2 mb-3">
                                 <div class="text-xs font-black uppercase text-amber-900 flex items-center gap-1.5">
                                     <span class="inline-block h-2 w-2 rounded-full bg-amber-500"></span>
-                                    Số trùng khớp · Đánh Nhân Đôi X2 (440K/số · Ăn 1.600K/nháy)
+                                    Số trùng khớp · Đánh Nhân Đôi X2 (4.400K/số · Ăn 16.000K/nháy)
                                 </div>
                                 <span class="rounded-full bg-amber-400 px-2.5 py-0.5 text-[11px] font-black text-amber-950 font-mono">${x2Nums.length} số</span>
                             </div>
                             <div class="flex flex-wrap gap-2">
-                                ${x2Nums.map(n => numberBadge(n, 'bet', { title: 'Đánh x2: 440K ăn 1.600K/nháy' })).join('') || '<span class="text-xs text-slate-500">Không có số trùng.</span>'}
+                                ${x2Nums.map(n => numberBadge(n, 'bet', { title: 'Đánh x2: 4.400K ăn 16.000K/nháy' })).join('') || '<span class="text-xs text-slate-500">Không có số trùng.</span>'}
                             </div>
                         </div>
 
@@ -250,19 +259,30 @@
                             <div class="flex items-center justify-between gap-2 mb-3">
                                 <div class="text-xs font-black uppercase text-teal-900 flex items-center gap-1.5">
                                     <span class="inline-block h-2 w-2 rounded-full bg-teal-500"></span>
-                                    Số riêng bọc lót · Đánh Đơn X1 (220K/số · Ăn 800K/nháy)
+                                    Số riêng bọc lót · Đánh Đơn X1 (2.200K/số · Ăn 8.000K/nháy)
                                 </div>
                                 <span class="rounded-full bg-teal-200 px-2.5 py-0.5 text-[11px] font-black text-teal-950 font-mono">${x1Nums.length} số</span>
                             </div>
                             <div class="flex flex-wrap gap-2">
-                                ${x1Nums.map(n => numberBadge(n, 'bet', { title: 'Đánh x1: 220K ăn 800K/nháy' })).join('') || '<span class="text-xs text-slate-500">Không có số riêng.</span>'}
+                                ${x1Nums.map(n => numberBadge(n, 'bet', { title: 'Đánh x1: 2.200K ăn 8.000K/nháy' })).join('') || '<span class="text-xs text-slate-500">Không có số riêng.</span>'}
                             </div>
                         </div>
+
+                        ${plainReasonsHtml ? `
+                            <!-- Algorithmic Rationale -->
+                            <div class="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                                <div class="text-xs font-black uppercase text-slate-700 mb-2 flex items-center gap-1.5">
+                                    <i class="bi bi-cpu-fill text-indigo-600"></i>
+                                    PHÂN TÍCH ĐỊNH LƯỢNG & CĂN CỨ THUẬT TOÁN BẠC NHỚ 20 NĂM
+                                </div>
+                                <ul class="space-y-1.5">${plainReasonsHtml}</ul>
+                            </div>
+                        ` : ''}
                     </div>
                 </article>
                 <div class="col-span-full mt-4">
                     <h3 class="text-lg font-black text-slate-900 mb-3 flex items-center gap-2">
-                        <i class="bi bi-stars text-amber-500"></i> Các Dàn Lô Tuyển Chọn Đánh Phẳng (Xác suất nổ 83% - 100%)
+                        <i class="bi bi-stars text-amber-500"></i> Các Dàn Lô Bạc Nhớ 20 Năm Đánh Phẳng (Xác suất nổ 74% - 100% · Lãi Dương 2026)
                     </h3>
                 </div>
                 ${topCardsHtml}

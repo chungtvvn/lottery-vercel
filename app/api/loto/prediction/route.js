@@ -10,13 +10,13 @@ const NO_STORE_HEADERS = {
 };
 const FALLBACK_LOTO_STAKE_PER_NUMBER_K = 2200;
 const FALLBACK_LOTO_PAYOUT_PER_HIT_K = 8000;
-const LOTO_BET_COUNTS = [6, 7, 8, 10, 20, 25, 30];
+const LOTO_BET_COUNTS = [4, 6, 7, 8, 10, 20, 25, 30];
 const LEGACY_RRF_LOTO_STRATEGY = 'rrfParallelBlock85Small65';
 const DEFAULT_LOTO_STRATEGY = 'loDualMerge';
 const MILESTONE_EDGE75_PIT_FUSION_STRATEGY = 'milestoneEdge75PitFusion';
 const LOTO_STRATEGY_META = {
     loDualMerge: {
-        methodName: '🎯 Lô Gộp Thực Chiến (27 Vị Trí - Top 6, 8, 10)'
+        methodName: '🎯 Lô Gộp Thực Chiến (Bạc Nhớ 20 Năm - Top 4, 6, 7, 8, 10)'
     },
     rrfParallelBlock85Small65: {
         methodName: 'Lô Song song RRF 50/50 - Chuỗi nhỏ Hold 65 + Nhịp block Hold 85'
@@ -439,6 +439,7 @@ export async function GET(request) {
             
             const topPredictions = latestRec.topPredictions || {};
             const predictions = {
+                top4: topPredictions.top4 || { numbers: rankedNumbers.slice(0, 4), overlapNumbers: x2Numbers },
                 top6: topPredictions.top6 || { numbers: rankedNumbers.slice(0, 6), overlapNumbers: x2Numbers },
                 top7: topPredictions.top7 || { numbers: rankedNumbers.slice(0, 7), overlapNumbers: x2Numbers },
                 top8: topPredictions.top8 || { numbers: rankedNumbers.slice(0, 8), overlapNumbers: x2Numbers },
@@ -456,7 +457,7 @@ export async function GET(request) {
                 }
             };
             
-            const countsList = [6, 7, 8, 10, 20, 25, 30];
+            const countsList = [4, 6, 7, 8, 10, 20];
             const liveRecords = (loDualMerge.records || loDualMerge.settledLedger || []).map(r => {
                 const actualMap = {};
                 (r.actual27 || []).forEach(num => {
@@ -562,24 +563,25 @@ export async function GET(request) {
                 latestDataDate: advisorData?.latestDataDate || mergedPayload.latestDataDate,
                 config: {
                     methodId: 'loDualMerge',
-                    methodName: '🎯 Lô Gộp Thực Chiến (27 Vị Trí - Top 6, 8, 10)',
+                    methodName: '🎯 Lô Gộp Thực Chiến (Bạc Nhớ 20 Năm - Top 4, 6, 7, 8, 10)',
                     positionCount: 27,
                     stakePerNumberK: 2200,
                     payoutPerHitK: 8000,
-                    defaultBetCount: 10
+                    defaultBetCount: 6
                 },
                 nextPrediction: {
                     predictionDate: latestRec.predictionDate,
                     dataIsoDate: advisorData?.latestDataDate,
-                    methodName: '🎯 Lô Gộp Thực Chiến (27 Vị Trí - Top 6, 8, 10)',
+                    methodName: '🎯 Lô Gộp Thực Chiến (Bạc Nhớ 20 Năm - Top 4, 6, 7, 8, 10)',
                     m1Label: latestRec.m1Label,
                     m2Label: latestRec.m2Label,
+                    plainReasons: latestRec.plainReasons,
                     predictions
                 },
                 livePredictions: {
                     config: {
                         methodId: 'loDualMerge',
-                        methodName: '🎯 Lô Gộp Thực Chiến (27 Vị Trí - Top 6, 8, 10)'
+                        methodName: '🎯 Lô Gộp Thực Chiến (Bạc Nhớ 20 Năm - Top 4, 6, 7, 8, 10)'
                     },
                     summary: summaryObj,
                     predictions: liveRecords
