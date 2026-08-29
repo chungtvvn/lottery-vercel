@@ -354,13 +354,10 @@ async function main() {
     assert.strictEqual(compactHistory.history[0].chainRows, undefined);
 
     const report = buildTelegramReport(compactDe, compactLoto, compactHistory);
-    assert.match(report.text, /XSMB — BÁO CÁO & DỰ ĐOÁN/);
-    assert.match(report.text, /1\. ĐỀ GỘP THỰC CHIẾN/);
-    assert.match(report.text, /2\. LÔ — RRF SONG SONG \(TOP 6 & TOP 7\)/);
-    assert.match(report.text, /3\. LÔ GỘP THỰC CHIẾN/);
-    assert.match(report.text, /4\. TỔNG KẾT LŨY KẾ 2026/);
-    assert.match(report.text, /Top 7 đã chốt: <code>01 02 03 04 05 06 07<\/code>/);
-    assert.match(report.text, /KQ 01\/07\/2026 \(27 giải\):/);
+    assert.match(report.text, /XSMB — THỰC CHIẾN LIVE & DỰ ĐOÁN/);
+    assert.match(report.text, /1\. 🎯 ĐỀ GỘP THỰC CHIẾN/);
+    assert.match(report.text, /2\. 💎 LÔ THỰC CHIẾN 20 NĂM/);
+    assert.match(report.text, /3\. 📊 TỔNG KẾT THỰC CHIẾN LIVE/);
     assert.match(report.text, /━━━━━━━━━━━━━━━━━━━━/);
     assert.ok(splitTelegramText(report.text).every(chunk => chunk.length <= 3900), 'Telegram report phải được chia gói an toàn');
 
@@ -389,7 +386,7 @@ async function main() {
         };
 
         const liveReport = buildTelegramReport(liveCompactDe, liveCompactLoto, liveCompactHistory, liveAdvisor);
-        assert.match(liveReport.text, /XSMB — BÁO CÁO & DỰ ĐOÁN/);
+        assert.match(liveReport.text, /XSMB — THỰC CHIẾN LIVE & DỰ ĐOÁN/);
         console.log('=== LIVE TELEGRAM REPORT PREVIEW ===\n' + liveReport.text + '\n===================================');
     } catch (e) {
         console.warn('Skipping live local file test:', e.message);
