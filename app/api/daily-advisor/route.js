@@ -152,16 +152,30 @@ function settleFromRaw(payload, rawRows) {
         dualMerge = dualMergeService.buildDualMergeAdvisor(historyPayload, rawRows, { existingAdvisorRecords: payload.records });
     }
 
+    let adaptiveDualMerge = payload.adaptiveDualMerge;
+    if (!adaptiveDualMerge || !Array.isArray(adaptiveDualMerge.settledLedger) || adaptiveDualMerge.settledLedger.length === 0) {
+        const { buildAdaptiveDualMergeAdvisor } = require('@/lib/services/adaptiveDualMergeAdvisorService');
+        adaptiveDualMerge = buildAdaptiveDualMergeAdvisor([], rawRows);
+    }
+
+    let tripleMerge = payload.tripleMerge;
+    if (!tripleMerge || !Array.isArray(tripleMerge.settledLedger) || tripleMerge.settledLedger.length === 0) {
+        const { buildTripleMergeAdvisor } = require('@/lib/services/tripleMergeAdvisorService');
+        tripleMerge = buildTripleMergeAdvisor([], rawRows);
+    }
+
     let loDualMerge = payload.loDualMerge;
     if (!loDualMerge || !Array.isArray(loDualMerge.settledLedger) || loDualMerge.settledLedger.length === 0) {
         const { buildLoDualMergeAdvisor } = require('@/lib/services/loDualMergeAdvisorService');
-        loDualMerge = buildLoDualMergeAdvisor(dualMerge, rawRows);
+        loDualMerge = buildLoDualMergeAdvisor(dualMerge, rawRows, tripleMerge);
     }
 
     return {
         ...payload,
         records,
         dualMerge,
+        tripleMerge,
+        adaptiveDualMerge,
         loDualMerge,
         latestDataDate: rawRows?.at(-1)?.date || payload.latestDataDate,
         summary: { main: summarize('main'), hybrid: summarize('hybrid') },
@@ -196,16 +210,26 @@ export async function GET(request) {
             throw new Error('Cache gợi ý chưa được sinh');
         }
 
-        // Guarantee that dualMerge is populated with the complete full-year 2026 backtest ledger
-        if (!payload.dualMerge || !Array.isArray(payload.dualMerge.settledLedger) || payload.dualMerge.settledLedger.length < 200) {
+        // Guarantee that dualMerge, tripleMerge, adaptiveDualMerge are populated with complete full-year backtest ledgers
+        const fs = require('fs');
+        const path = require('path');
+        const localFile = path.join(process.cwd(), 'lib', 'data', 'statistics', 'cached_daily_method_advisor.json');
+        if (fs.existsSync(localFile)) {
             try {
-                const fs = require('fs');
-                const path = require('path');
-                const localFile = path.join(process.cwd(), 'lib', 'data', 'statistics', 'cached_daily_method_advisor.json');
-                if (fs.existsSync(localFile)) {
-                    const localPayload = JSON.parse(fs.readFileSync(localFile, 'utf8'));
+                const localPayload = JSON.parse(fs.readFileSync(localFile, 'utf8'));
+                if (!payload.dualMerge || !Array.isArray(payload.dualMerge.settledLedger) || payload.dualMerge.settledLedger.length < 200) {
                     if (localPayload?.dualMerge?.settledLedger?.length > (payload.dualMerge?.settledLedger?.length || 0)) {
                         payload.dualMerge = localPayload.dualMerge;
+                    }
+                }
+                if (!payload.adaptiveDualMerge || !Array.isArray(payload.adaptiveDualMerge.settledLedger) || payload.adaptiveDualMerge.settledLedger.length < 200) {
+                    if (localPayload?.adaptiveDualMerge?.settledLedger?.length > (payload.adaptiveDualMerge?.settledLedger?.length || 0)) {
+                        payload.adaptiveDualMerge = localPayload.adaptiveDualMerge;
+                    }
+                }
+                if (!payload.tripleMerge || !Array.isArray(payload.tripleMerge.settledLedger) || payload.tripleMerge.settledLedger.length < 200) {
+                    if (localPayload?.tripleMerge?.settledLedger?.length > (payload.tripleMerge?.settledLedger?.length || 0)) {
+                        payload.tripleMerge = localPayload.tripleMerge;
                     }
                 }
             } catch (_) {}
