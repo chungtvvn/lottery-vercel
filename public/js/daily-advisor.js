@@ -545,7 +545,7 @@
         const rec = adaptiveData.latestRecommendation;
 
         if (rec) {
-            if (byId('adaptiveTargetDate')) byId('adaptiveTargetDate').textContent = dateDisplay(rec.predictionDate);
+            if (byId('adaptiveTargetDate')) byId('adaptiveTargetDate').textContent = rec.predictionDate || '--/--/----';
             if (byId('adaptiveM1Label')) byId('adaptiveM1Label').textContent = rec.m1Label || 'Edge 75% Hold';
             if (byId('adaptiveM2Label')) byId('adaptiveM2Label').textContent = rec.m2Label || 'Dropoff Khử Trùng';
 
@@ -1297,6 +1297,8 @@
 
             // Render all views
             renderDualMergeView(payload.dualMerge);
+            if (payload?.tripleMerge) renderTripleMergeView(payload.tripleMerge);
+            if (payload?.adaptiveDualMerge) renderAdaptiveDualMergeView(payload.adaptiveDualMerge);
             renderSingleMethodView();
         } catch (error) {
             console.error('Lỗi khi tải dữ liệu daily advisor:', error);
