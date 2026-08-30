@@ -137,31 +137,32 @@ function settleFromRaw(payload, rawRows) {
             });
         }
     }));
+    let historyPayload = null;
+    try {
+        const fs = require('fs');
+        const path = require('path');
+        const localHist = path.join(process.cwd(), 'lib', 'data', 'statistics', 'cached_prediction_history.json');
+        if (fs.existsSync(localHist)) {
+            historyPayload = JSON.parse(fs.readFileSync(localHist, 'utf8'));
+        }
+    } catch (_) {}
+
     let dualMerge = payload.dualMerge;
     if (!dualMerge || !Array.isArray(dualMerge.settledLedger) || dualMerge.settledLedger.length === 0) {
         const dualMergeService = require('@/lib/services/dualMergeAdvisorService');
-        let historyPayload = null;
-        try {
-            const fs = require('fs');
-            const path = require('path');
-            const localHist = path.join(process.cwd(), 'lib', 'data', 'statistics', 'cached_prediction_history.json');
-            if (fs.existsSync(localHist)) {
-                historyPayload = JSON.parse(fs.readFileSync(localHist, 'utf8'));
-            }
-        } catch (_) {}
-        dualMerge = dualMergeService.buildDualMergeAdvisor(historyPayload, rawRows, { existingAdvisorRecords: payload.records });
+        dualMerge = dualMergeService.buildDualMergeAdvisor(historyPayload, rawRows, { existingAdvisorRecords: payload.records, existingDualMerge: payload.dualMerge });
     }
 
     let adaptiveDualMerge = payload.adaptiveDualMerge;
-    if (!adaptiveDualMerge || !Array.isArray(adaptiveDualMerge.settledLedger) || adaptiveDualMerge.settledLedger.length === 0) {
+    if (!adaptiveDualMerge || !Array.isArray(adaptiveDualMerge.settledLedger) || adaptiveDualMerge.settledLedger.length === 0 || !adaptiveDualMerge.latestRecommendation?.overlapCount) {
         const { buildAdaptiveDualMergeAdvisor } = require('@/lib/services/adaptiveDualMergeAdvisorService');
-        adaptiveDualMerge = buildAdaptiveDualMergeAdvisor([], rawRows);
+        adaptiveDualMerge = buildAdaptiveDualMergeAdvisor(historyPayload, rawRows, { existingAdvisorRecords: payload.records, existingAdaptiveDualMerge: payload.adaptiveDualMerge });
     }
 
     let tripleMerge = payload.tripleMerge;
-    if (!tripleMerge || !Array.isArray(tripleMerge.settledLedger) || tripleMerge.settledLedger.length === 0) {
+    if (!tripleMerge || !Array.isArray(tripleMerge.settledLedger) || tripleMerge.settledLedger.length === 0 || !tripleMerge.latestRecommendation?.tierX3?.length) {
         const { buildTripleMergeAdvisor } = require('@/lib/services/tripleMergeAdvisorService');
-        tripleMerge = buildTripleMergeAdvisor([], rawRows);
+        tripleMerge = buildTripleMergeAdvisor(historyPayload, rawRows, { existingAdvisorRecords: payload.records, existingTripleMerge: payload.tripleMerge });
     }
 
     let loDualMerge = payload.loDualMerge;
@@ -222,13 +223,13 @@ export async function GET(request) {
                         payload.dualMerge = localPayload.dualMerge;
                     }
                 }
-                if (!payload.adaptiveDualMerge || !Array.isArray(payload.adaptiveDualMerge.settledLedger) || payload.adaptiveDualMerge.settledLedger.length < 200) {
-                    if (localPayload?.adaptiveDualMerge?.settledLedger?.length > (payload.adaptiveDualMerge?.settledLedger?.length || 0)) {
+                if (!payload.adaptiveDualMerge || !Array.isArray(payload.adaptiveDualMerge.settledLedger) || payload.adaptiveDualMerge.settledLedger.length < 200 || !payload.adaptiveDualMerge.latestRecommendation?.overlapCount) {
+                    if (localPayload?.adaptiveDualMerge) {
                         payload.adaptiveDualMerge = localPayload.adaptiveDualMerge;
                     }
                 }
-                if (!payload.tripleMerge || !Array.isArray(payload.tripleMerge.settledLedger) || payload.tripleMerge.settledLedger.length < 200) {
-                    if (localPayload?.tripleMerge?.settledLedger?.length > (payload.tripleMerge?.settledLedger?.length || 0)) {
+                if (!payload.tripleMerge || !Array.isArray(payload.tripleMerge.settledLedger) || payload.tripleMerge.settledLedger.length < 200 || !payload.tripleMerge.latestRecommendation?.tierX3?.length) {
+                    if (localPayload?.tripleMerge) {
                         payload.tripleMerge = localPayload.tripleMerge;
                     }
                 }
