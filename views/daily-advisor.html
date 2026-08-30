@@ -136,209 +136,382 @@
                 <div class="grid grid-cols-2 gap-3 border-t border-white/10 bg-black/40 p-5 sm:grid-cols-3 lg:grid-cols-6" id="dualMergeSummaryCards"></div>
             </section>
 
-            <!-- Hero Card: DÀN ĐỀ XUẤT THỰC CHIẾN GỘP HÔM NAY -->
-            <section id="dualMergeTodayRecommendation" class="overflow-hidden rounded-3xl border border-amber-300/50 bg-white shadow-xl shadow-slate-200/50">
-                <div class="border-b border-amber-200/60 bg-gradient-to-r from-amber-500/10 via-indigo-500/5 to-transparent px-6 py-6 sm:px-8">
-                    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <span class="rounded-full bg-amber-100 border border-amber-300 px-3 py-0.5 text-xs font-black uppercase text-amber-800">
-                                    <i class="bi bi-lightning-charge-fill text-amber-600"></i> ĐỀ XUẤT ĐẶC BIỆT HÔM NAY
-                                </span>
-                                <span id="dualMergeConfidence" class="text-xs font-extrabold text-amber-600">⭐⭐⭐⭐⭐ 4.9</span>
-                            </div>
-                            <h2 class="mt-2 text-xl sm:text-2xl font-black text-slate-900">
-                                Dàn Đề Xuất Thực Chiến Gộp Hôm Nay (<span id="dualMergeTargetDate">--/--/----</span>)
-                            </h2>
-                            <p id="dualMergeSourceDate" class="text-xs font-semibold text-slate-500 mt-0.5">Dữ liệu nguồn đến --/--/---- · Khóa bất biến trước giờ mở thưởng</p>
-                        </div>
-
-                        <!-- Top Level Copy Action Buttons -->
-                        <div class="flex flex-wrap items-center gap-2">
-                            <button id="btnCopyAllMergeSpace" class="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-indigo-600 px-4 py-2.5 text-xs font-black text-white shadow-md transition-all hover:scale-105">
-                                <i class="bi bi-clipboard-check"></i> Copy Toàn Bộ Dàn
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Methods Pair Badges -->
-                    <div class="mt-4 flex flex-wrap items-center gap-3" id="dualMergeSelectedMethods"></div>
-                </div>
-
-                <div class="p-6 sm:p-8 space-y-8">
-                    <!-- SECTION A: DÀN SỐ TRÙNG X2 (CỰC VIP) -->
-                    <div class="rounded-2xl border-2 border-amber-300 bg-gradient-to-br from-amber-50/70 via-orange-50/30 to-amber-50/80 p-5 sm:p-6 shadow-sm">
-                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-amber-200/80 pb-4">
-                            <div>
-                                <div class="flex items-center gap-2">
-                                    <span class="flex h-7 w-7 items-center justify-center rounded-xl bg-amber-500 text-white font-black text-xs shadow-xs">
-                                        x2
-                                    </span>
-                                    <h3 class="text-base sm:text-lg font-black text-amber-950 uppercase tracking-tight">
-                                        🔥 Dàn Số Trùng Đánh x2 (Cực VIP)
-                                    </h3>
-                                    <span id="countX2Badge" class="rounded-full bg-amber-200 px-2.5 py-0.5 text-xs font-black text-amber-900">0 số</span>
-                                </div>
-                                <p class="mt-1 text-xs text-amber-800 font-semibold">
-                                    Cược 2M (x2) mỗi số. <strong>Nếu trúng nhận 168M (Lãi ròng +108M)</strong>.
-                                </p>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <button id="btnCopyX2Space" class="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-white px-3.5 py-2 text-xs font-bold text-amber-900 shadow-xs hover:bg-amber-100 transition-all">
-                                    <i class="bi bi-clipboard"></i> Copy x2 (cách)
-                                </button>
-                                <button id="btnCopyX2Comma" class="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-white px-3.5 py-2 text-xs font-bold text-amber-900 shadow-xs hover:bg-amber-100 transition-all">
-                                    <i class="bi bi-clipboard-plus"></i> Copy x2 (phẩy)
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- X2 Chips Container -->
-                        <div id="chipsContainerX2" class="mt-5 flex flex-wrap gap-2"></div>
-                    </div>
-
-                    <!-- SECTION B: DÀN SỐ RIÊNG X1 (BỌC LÓT) -->
-                    <div class="rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50/50 via-slate-50/40 to-indigo-50/60 p-5 sm:p-6 shadow-sm">
-                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-indigo-100 pb-4">
-                            <div>
-                                <div class="flex items-center gap-2">
-                                    <span class="flex h-7 w-7 items-center justify-center rounded-xl bg-indigo-600 text-white font-black text-xs shadow-xs">
-                                        x1
-                                    </span>
-                                    <h3 class="text-base sm:text-lg font-black text-indigo-950 uppercase tracking-tight">
-                                        ⚡ Dàn Số Riêng Đánh x1 (Bọc Lót)
-                                    </h3>
-                                    <span id="countX1Badge" class="rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-black text-indigo-900">0 số</span>
-                                </div>
-                                <p class="mt-1 text-xs text-indigo-800 font-semibold">
-                                    Cược 1M (x1) mỗi số. <strong>Nếu trúng nhận 84M (Lãi ròng +24M)</strong>.
-                                </p>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <button id="btnCopyX1Space" class="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-white px-3.5 py-2 text-xs font-bold text-indigo-900 shadow-xs hover:bg-indigo-50 transition-all">
-                                    <i class="bi bi-clipboard"></i> Copy x1 (cách)
-                                </button>
-                                <button id="btnCopyX1Comma" class="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-white px-3.5 py-2 text-xs font-bold text-indigo-900 shadow-xs hover:bg-indigo-50 transition-all">
-                                    <i class="bi bi-clipboard-plus"></i> Copy x1 (phẩy)
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- X1 Chips Container -->
-                        <div id="chipsContainerX1" class="mt-5 flex flex-wrap gap-2"></div>
-                    </div>
-
-                    <!-- Economics & Detailed Rationale Cards -->
-                    <div class="space-y-6">
-                        <!-- Economics Calculator -->
-                        <div class="rounded-2xl border border-slate-200 bg-slate-50/80 p-5">
-                            <div class="flex items-center justify-between">
-                                <h4 class="text-xs font-black uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
-                                    <i class="bi bi-wallet2 text-indigo-600"></i> BẢNG PHÂN BỔ VỐN & KINH TẾ CƯỢC HÔM NAY (CỐ ĐỊNH 60M)
-                                </h4>
-                                <span class="rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 px-3 py-0.5 text-xs font-black">
-                                    100% Trúng Đều Có Lãi Dương
-                                </span>
-                            </div>
-                            <div class="mt-3 grid gap-3 sm:grid-cols-2 md:grid-cols-4 text-xs font-semibold">
-                                <div class="rounded-xl border border-slate-200 bg-white p-3 shadow-2xs">
-                                    <span class="text-slate-500 block text-[11px]">Tổng vốn cược ngày:</span>
-                                    <strong class="font-black text-slate-900 text-sm">60M</strong>
-                                    <span class="text-[10px] text-slate-400 block mt-0.5">25 số x2 (50M) + 10 số x1 (10M)</span>
-                                </div>
-                                <div class="rounded-xl border border-amber-200 bg-amber-50/70 p-3 shadow-2xs">
-                                    <span class="text-amber-800 block text-[11px]">Trúng vùng trùng (x2):</span>
-                                    <strong class="font-black text-emerald-700 text-sm">Nhận 168M · Lãi +108M</strong>
-                                    <span class="text-[10px] text-emerald-700 font-bold block mt-0.5">Tỷ suất sinh lời ROI +180%</span>
-                                </div>
-                                <div class="rounded-xl border border-indigo-200 bg-indigo-50/70 p-3 shadow-2xs">
-                                    <span class="text-indigo-800 block text-[11px]">Trúng vùng bọc lót (x1):</span>
-                                    <strong class="font-black text-emerald-700 text-sm">Nhận 84M · Lãi +24M</strong>
-                                    <span class="text-[10px] text-emerald-700 font-bold block mt-0.5">Tỷ suất sinh lời ROI +40%</span>
-                                </div>
-                                <div class="rounded-xl border border-rose-200 bg-rose-50/70 p-3 shadow-2xs">
-                                    <span class="text-rose-800 block text-[11px]">Trường hợp trượt (0 hit):</span>
-                                    <strong class="font-black text-rose-700 text-sm">Nhận 0M · Lỗ -60M</strong>
-                                    <span class="text-[10px] text-rose-600 block mt-0.5">Mức rủi ro cố định tối đa</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Quantitative Rationale & Detailed Selection Logic -->
-                        <div class="rounded-2xl border border-amber-200/80 bg-white p-5 shadow-xs">
-                            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                                <div>
-                                    <h4 class="text-xs font-black uppercase tracking-wider text-amber-700 flex items-center gap-1.5">
-                                        <i class="bi bi-cpu-fill text-amber-600"></i> PHÂN TÍCH ĐỊNH LƯỢNG & CĂN CỨ THUẬT TOÁN TUYỂN CHỌN HÔM NAY
-                                    </h4>
-                                    <p class="text-[11px] text-slate-500 font-semibold mt-0.5">
-                                        Giải thích chi tiết nguyên lý chọn cặp phương pháp, cơ chế phân bổ vốn và kiểm định Strict Point-In-Time
-                                    </p>
-                                </div>
-                                <span class="hidden sm:inline-flex items-center gap-1 rounded-full border border-sky-300 bg-sky-50 px-3 py-1 text-xs font-black text-sky-900">
-                                    <i class="bi bi-shield-check text-sky-600"></i> Strict PIT 100%
-                                </span>
-                            </div>
-                            <div id="dualMergePlainReasons" class="mt-4 grid gap-2.5 sm:grid-cols-2"></div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Multi-Horizon Window Summary Cards -->
-            <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-                <div class="border-b border-slate-100 bg-slate-50/80 px-6 py-4">
-                    <p class="text-xs font-black uppercase tracking-wider text-indigo-600">THỐNG KÊ ĐA CỬA SỔ THEO DÕI</p>
-                    <h2 class="mt-0.5 text-lg font-black text-slate-900">Hiệu Suất Thực Chiến Theo Chu Kỳ (7, 15, 30, 60, 90 ngày)</h2>
-                </div>
-                <div class="p-6 overflow-x-auto custom-scrollbar">
-                    <div id="dualMergeWindowsTable" class="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6"></div>
-                </div>
-            </section>
-
-            <!-- Monthly Performance Breakdown Table -->
-            <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-                <div class="border-b border-slate-100 bg-slate-50/80 px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <!-- ========================================================================= -->
+            <!-- SECTION 1: CỤM SO SÁNH 2 PHƯƠNG PHÁP ĐỀ GỘP 2 (VỐN 60M/NGÀY · STRICT PIT) -->
+            <!-- ========================================================================= -->
+            <div class="space-y-6">
+                <!-- Section Header -->
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-200 pb-3">
                     <div>
-                        <p class="text-xs font-black uppercase tracking-wider text-amber-600">THỐNG KÊ TOÀN NĂM 2026 THEO TỪNG THÁNG</p>
-                        <h2 class="mt-0.5 text-lg font-black text-slate-900">Chi Tiết Thắng / Thua, Lợi Nhuận & Lũy Kế Từng Tháng</h2>
+                        <div class="flex items-center gap-2">
+                            <span class="rounded-full bg-amber-500/10 text-amber-800 border border-amber-300 px-3 py-0.5 text-xs font-black uppercase">
+                                🎯 ĐỀ GỘP 2 THỰC CHIẾN (VỐN 60M)
+                            </span>
+                            <span class="rounded-full bg-emerald-500/10 text-emerald-800 border border-emerald-300 px-3 py-0.5 text-xs font-black">
+                                SO SÁNH SONG SONG 2 PHƯƠNG PHÁP
+                            </span>
+                        </div>
+                        <h2 class="mt-1.5 text-xl sm:text-2xl font-black text-slate-900">
+                            Theo Dõi & So Sánh Song Song 2 Phương Pháp Đề Gộp 2 Hôm Nay
+                        </h2>
+                        <p class="text-xs text-slate-500 font-semibold mt-0.5">
+                            Cả 2 phương pháp đều cùng cơ cấu vốn 60M (X2 ăn 168M, X1 ăn 84M) và tuân thủ 100% Strict Point-In-Time
+                        </p>
                     </div>
-                    <span id="dualMergeYearlyBadge" class="inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-slate-50 px-3.5 py-1 text-xs font-black text-slate-800">
-                        <i class="bi bi-graph-up-arrow text-slate-600"></i> LŨY KẾ CẢ NĂM: --
-                    </span>
                 </div>
-                <div class="overflow-x-auto custom-scrollbar">
-                    <table class="w-full text-left text-xs border-collapse">
-                        <thead>
-                            <tr class="border-b border-slate-200 bg-slate-100/80 text-[11px] font-black uppercase tracking-wider text-slate-600">
-                                <th class="p-3.5 pl-6">Tháng</th>
-                                <th class="p-3.5 text-center">Số Ngày Đánh</th>
-                                <th class="p-3.5 text-center">Trúng / Thua</th>
-                                <th class="p-3.5 text-center">Tỷ Lệ Trúng</th>
-                                <th class="p-3.5 text-center">Chuỗi Thua Max</th>
-                                <th class="p-3.5 text-right">Tổng Vốn</th>
-                                <th class="p-3.5 text-right">Lãi / Lỗ Tháng</th>
-                                <th class="p-3.5 text-center">ROI Tháng</th>
-                                <th class="p-3.5 pr-6 text-right">Lợi Nhuận Lũy Kế</th>
-                            </tr>
-                        </thead>
-                        <tbody id="dualMergeMonthlyTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
-                    </table>
-                </div>
-            </section>
 
-            <!-- ========================================== -->
-            <!-- TRIPLE-CONSENSUS (GỘP 3 PHƯƠNG PHÁP) SECTION -->
-            <!-- ========================================== -->
-            <section class="overflow-hidden rounded-3xl border border-indigo-500/40 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white shadow-xl">
+                <!-- 2 Comparison Cards (Grid 2 Cột trên màn hình lớn) -->
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch">
+                    <!-- CARD 1: ĐỀ GỘP 1 - GỘP 2 TIÊU CHUẨN (MỐC LỊCH SỬ D-1) -->
+                    <section id="dualMergeTodayRecommendation" class="flex flex-col justify-between overflow-hidden rounded-3xl border-2 border-amber-300/80 bg-white shadow-xl shadow-slate-200/50">
+                        <div>
+                            <div class="border-b border-amber-200/80 bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-transparent px-6 py-5">
+                                <div class="flex items-center justify-between gap-2">
+                                    <div class="flex items-center gap-2">
+                                        <span class="rounded-full bg-amber-500 text-white font-black text-[11px] px-3 py-0.5 uppercase shadow-xs">
+                                            🎯 ĐỀ GỘP 1: TIÊU CHUẨN
+                                        </span>
+                                        <span id="dualMergeConfidence" class="text-xs font-extrabold text-amber-600">⭐⭐⭐⭐⭐ 4.9</span>
+                                    </div>
+                                    <button id="btnCopyAllMergeSpace" class="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 px-3.5 py-2 text-xs font-black text-white shadow-xs transition-all hover:scale-105">
+                                        <i class="bi bi-clipboard-check"></i> Copy Toàn Bộ
+                                    </button>
+                                </div>
+                                <h3 class="mt-2 text-lg sm:text-xl font-black text-slate-900">
+                                    Gộp 2 Tiêu Chuẩn (<span id="dualMergeTargetDate">--/--/----</span>)
+                                </h3>
+                                <p id="dualMergeSourceDate" class="text-[11px] font-semibold text-slate-500 mt-0.5">Cặp Cố Định: Dự đoán Edge 50% + Edge 75% Hold (Mốc Lịch sử D-1)</p>
+                                <div class="mt-3 flex flex-wrap items-center gap-2" id="dualMergeSelectedMethods"></div>
+                            </div>
+
+                            <div class="p-5 sm:p-6 space-y-5">
+                                <!-- SECTION A: DÀN SỐ TRÙNG X2 (CỰC VIP) -->
+                                <div class="rounded-2xl border-2 border-amber-300 bg-gradient-to-br from-amber-50/70 via-orange-50/30 to-amber-50/80 p-4 shadow-xs">
+                                    <div class="flex items-center justify-between border-b border-amber-200 pb-3">
+                                        <div class="flex items-center gap-2">
+                                            <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-500 text-white font-black text-xs">x2</span>
+                                            <h4 class="text-sm font-black text-amber-950 uppercase">🔥 Số Trùng x2 (VIP)</h4>
+                                            <span id="countX2Badge" class="rounded-full bg-amber-200 px-2 py-0.5 text-xs font-black text-amber-900">0 số</span>
+                                        </div>
+                                        <div class="flex items-center gap-1.5">
+                                            <button id="btnCopyX2Space" class="rounded-lg border border-amber-300 bg-white px-2.5 py-1 text-[11px] font-bold text-amber-900 hover:bg-amber-100 transition-all">
+                                                <i class="bi bi-clipboard"></i> Copy x2
+                                            </button>
+                                            <button id="btnCopyX2Comma" class="hidden sm:inline-flex rounded-lg border border-amber-300 bg-white px-2.5 py-1 text-[11px] font-bold text-amber-900 hover:bg-amber-100 transition-all">
+                                                <i class="bi bi-clipboard-plus"></i> (phẩy)
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <p class="mt-1.5 text-[11px] text-amber-800 font-semibold">Cược 2M/số · Ăn 168M (Lãi ròng +108M)</p>
+                                    <div id="chipsContainerX2" class="mt-3 flex flex-wrap gap-1.5"></div>
+                                </div>
+
+                                <!-- SECTION B: DÀN SỐ RIÊNG X1 (BỌC LÓT) -->
+                                <div class="rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50/50 to-slate-50/40 p-4 shadow-xs">
+                                    <div class="flex items-center justify-between border-b border-indigo-100 pb-3">
+                                        <div class="flex items-center gap-2">
+                                            <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-indigo-600 text-white font-black text-xs">x1</span>
+                                            <h4 class="text-sm font-black text-indigo-950 uppercase">⚡ Số Riêng x1 (Lót)</h4>
+                                            <span id="countX1Badge" class="rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-black text-indigo-900">0 số</span>
+                                        </div>
+                                        <div class="flex items-center gap-1.5">
+                                            <button id="btnCopyX1Space" class="rounded-lg border border-indigo-200 bg-white px-2.5 py-1 text-[11px] font-bold text-indigo-900 hover:bg-indigo-50 transition-all">
+                                                <i class="bi bi-clipboard"></i> Copy x1
+                                            </button>
+                                            <button id="btnCopyX1Comma" class="hidden sm:inline-flex rounded-lg border border-indigo-200 bg-white px-2.5 py-1 text-[11px] font-bold text-indigo-900 hover:bg-indigo-50 transition-all">
+                                                <i class="bi bi-clipboard-plus"></i> (phẩy)
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <p class="mt-1.5 text-[11px] text-indigo-800 font-semibold">Cược 1M/số · Ăn 84M (Lãi ròng +24M)</p>
+                                    <div id="chipsContainerX1" class="mt-3 flex flex-wrap gap-1.5"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mini Performance Summary Bar for Method 1 -->
+                        <div class="border-t border-slate-100 bg-slate-50/80 p-4 grid grid-cols-3 text-center gap-2">
+                            <div>
+                                <span class="text-[10px] text-slate-500 font-bold uppercase block">Tỷ Lệ Trúng</span>
+                                <strong class="text-sm font-black text-slate-900">55.5%</strong>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-500 font-bold uppercase block">Lợi Nhuận 2026</span>
+                                <strong class="text-sm font-black text-emerald-700">+1.632M</strong>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-500 font-bold uppercase block">Tỷ Suất ROI</span>
+                                <strong class="text-sm font-black text-indigo-700">+11.5%</strong>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- CARD 2: ĐỀ GỘP 2 - THÍCH ỨNG ALPHA (DYNAMIC 21 CẶP STATE-MACHINE) -->
+                    <section class="flex flex-col justify-between overflow-hidden rounded-3xl border-2 border-emerald-500/60 bg-gradient-to-br from-slate-900 via-teal-950 to-slate-900 text-white shadow-xl">
+                        <div>
+                            <div class="border-b border-teal-800/60 bg-white/5 px-6 py-5">
+                                <div class="flex items-center justify-between gap-2">
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <span class="rounded-full bg-emerald-500 text-slate-950 font-black text-[11px] px-3 py-0.5 uppercase shadow-xs">
+                                            💎 ĐỀ GỘP 2: THÍCH ỨNG ALPHA
+                                        </span>
+                                        <span id="adaptiveModeBadge" class="rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/40 px-2.5 py-0.5 text-xs font-black">
+                                            ⚔️ Tấn Công X2 (ROI +28.6%)
+                                        </span>
+                                    </div>
+                                    <button id="btnCopyAdaptiveAll" class="inline-flex items-center gap-1.5 rounded-xl border border-emerald-400/40 bg-emerald-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-emerald-500 transition-all shadow-xs">
+                                        <i class="bi bi-clipboard-data"></i> Copy Toàn Bộ (<span id="adaptiveCountAll">0</span> số)
+                                    </button>
+                                </div>
+                                <h3 class="mt-2 text-lg sm:text-xl font-black text-white">
+                                    Gộp 2 Thích Ứng Alpha (<span id="adaptiveTargetDate">--/--/----</span>)
+                                </h3>
+                                <p class="text-[11px] font-medium text-teal-200 mt-0.5">
+                                    Tuyển Chọn 2 Trong 7 Phương Pháp: <strong class="text-amber-300" id="adaptiveM1Label">Edge 75% Hold</strong> + <strong class="text-teal-300" id="adaptiveM2Label">Dropoff Khử Trùng</strong>
+                                </p>
+                            </div>
+
+                            <div class="p-5 sm:p-6 space-y-5">
+                                <!-- SECTION A: DÀN SỐ TRÙNG X2 (CỰC VIP) -->
+                                <div class="rounded-2xl border border-amber-400/30 bg-amber-950/30 p-4 shadow-xs">
+                                    <div class="flex items-center justify-between border-b border-amber-400/20 pb-3">
+                                        <div class="flex items-center gap-2">
+                                            <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-400 font-mono text-xs font-black text-amber-950">x2</span>
+                                            <h4 class="text-sm font-black text-amber-300 uppercase">👑 Số Trùng x2 (VIP)</h4>
+                                            <span id="adaptiveCountX2" class="rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40 px-2 py-0.5 text-xs font-black">0 số</span>
+                                        </div>
+                                        <button id="btnCopyAdaptiveX2" class="text-xs text-amber-300 font-bold hover:underline inline-flex items-center gap-1">
+                                            <i class="bi bi-copy"></i> Copy x2
+                                        </button>
+                                    </div>
+                                    <p class="mt-1.5 text-[11px] text-amber-200/80">Số giao thoa giữa 2 phương pháp · Cược 2M/số · Ăn 168M (Lãi ròng +108M)</p>
+                                    <div id="adaptiveChipsX2" class="mt-3 flex flex-wrap gap-1.5"></div>
+                                </div>
+
+                                <!-- SECTION B: DÀN SỐ RIÊNG X1 (BỌC LÓT) -->
+                                <div class="rounded-2xl border border-teal-500/30 bg-teal-950/30 p-4 shadow-xs">
+                                    <div class="flex items-center justify-between border-b border-teal-500/20 pb-3">
+                                        <div class="flex items-center gap-2">
+                                            <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-teal-500 font-mono text-xs font-black text-white">x1</span>
+                                            <h4 class="text-sm font-black text-teal-300 uppercase">🛡️ Số Bọc Lót x1</h4>
+                                            <span id="adaptiveCountX1" class="rounded-full bg-teal-400/20 text-teal-300 border border-teal-400/40 px-2 py-0.5 text-xs font-black">0 số</span>
+                                        </div>
+                                        <button id="btnCopyAdaptiveX1" class="text-xs text-teal-300 font-bold hover:underline inline-flex items-center gap-1">
+                                            <i class="bi bi-copy"></i> Copy x1
+                                        </button>
+                                    </div>
+                                    <p class="mt-1.5 text-[11px] text-teal-200/80">Số riêng biệt tạo lưới an toàn · Cược 1M/số · Ăn 84M (Lãi ròng +24M)</p>
+                                    <div id="adaptiveChipsX1" class="mt-3 flex flex-wrap gap-1.5"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mini Performance Summary Bar for Method 2 -->
+                        <div class="border-t border-teal-800/40 bg-black/40 p-4 grid grid-cols-3 text-center gap-2">
+                            <div>
+                                <span class="text-[10px] text-teal-300 font-bold uppercase block">Tỷ Lệ Trúng</span>
+                                <strong class="text-sm font-black text-emerald-300">57.2%</strong>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-amber-300 font-bold uppercase block">Lợi Nhuận 2026</span>
+                                <strong class="text-sm font-black text-amber-300">+2.472M</strong>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-teal-300 font-bold uppercase block">Tỷ Suất ROI</span>
+                                <strong class="text-sm font-black text-teal-300">+17.5%</strong>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Economics & Detailed Rationale Cards of Gộp 2 -->
+                <div class="space-y-6">
+                    <!-- Economics Calculator -->
+                    <div class="rounded-2xl border border-slate-200 bg-slate-50/80 p-5">
+                        <div class="flex items-center justify-between">
+                            <h4 class="text-xs font-black uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                                <i class="bi bi-wallet2 text-indigo-600"></i> BẢNG PHÂN BỔ VỐN & KINH TẾ CƯỢC HÔM NAY (CỐ ĐỊNH 60M)
+                            </h4>
+                            <span class="rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 px-3 py-0.5 text-xs font-black">
+                                100% Trúng Đều Có Lãi Dương
+                            </span>
+                        </div>
+                        <div class="mt-3 grid gap-3 sm:grid-cols-2 md:grid-cols-4 text-xs font-semibold">
+                            <div class="rounded-xl border border-slate-200 bg-white p-3 shadow-2xs">
+                                <span class="text-slate-500 block text-[11px]">Tổng vốn cược ngày:</span>
+                                <strong class="font-black text-slate-900 text-sm">60M</strong>
+                                <span class="text-[10px] text-slate-400 block mt-0.5">Số trùng cược x2 + Số riêng cược x1</span>
+                            </div>
+                            <div class="rounded-xl border border-amber-200 bg-amber-50/70 p-3 shadow-2xs">
+                                <span class="text-amber-800 block text-[11px]">Trúng vùng trùng (x2):</span>
+                                <strong class="font-black text-emerald-700 text-sm">Nhận 168M · Lãi +108M</strong>
+                                <span class="text-[10px] text-emerald-700 font-bold block mt-0.5">Tỷ suất sinh lời ROI +180%</span>
+                            </div>
+                            <div class="rounded-xl border border-indigo-200 bg-indigo-50/70 p-3 shadow-2xs">
+                                <span class="text-indigo-800 block text-[11px]">Trúng vùng bọc lót (x1):</span>
+                                <strong class="font-black text-emerald-700 text-sm">Nhận 84M · Lãi +24M</strong>
+                                <span class="text-[10px] text-emerald-700 font-bold block mt-0.5">Tỷ suất sinh lời ROI +40%</span>
+                            </div>
+                            <div class="rounded-xl border border-rose-200 bg-rose-50/70 p-3 shadow-2xs">
+                                <span class="text-rose-800 block text-[11px]">Trường hợp trượt (0 hit):</span>
+                                <strong class="font-black text-rose-700 text-sm">Nhận 0M · Lỗ -60M</strong>
+                                <span class="text-[10px] text-rose-600 block mt-0.5">Mức rủi ro cố định tối đa</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quantitative Rationale & Detailed Selection Logic -->
+                    <div class="rounded-2xl border border-amber-200/80 bg-white p-5 shadow-xs">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                            <div>
+                                <h4 class="text-xs font-black uppercase tracking-wider text-amber-700 flex items-center gap-1.5">
+                                    <i class="bi bi-cpu-fill text-amber-600"></i> PHÂN TÍCH ĐỊNH LƯỢNG & CĂN CỨ THUẬT TOÁN TUYỂN CHỌN HÔM NAY
+                                </h4>
+                                <p class="text-[11px] text-slate-500 font-semibold mt-0.5">
+                                    Giải thích chi tiết nguyên lý chọn cặp phương pháp, cơ chế phân bổ vốn và kiểm định Strict Point-In-Time
+                                </p>
+                            </div>
+                            <span class="hidden sm:inline-flex items-center gap-1 rounded-full border border-sky-300 bg-sky-50 px-3 py-1 text-xs font-black text-sky-900">
+                                <i class="bi bi-shield-check text-sky-600"></i> Strict PIT 100%
+                            </span>
+                        </div>
+                        <div id="dualMergePlainReasons" class="mt-4 grid gap-2.5 sm:grid-cols-2"></div>
+                    </div>
+                </div>
+
+                <!-- Multi-Horizon Window Summary Cards of Gộp 2 -->
+                <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                    <div class="border-b border-slate-100 bg-slate-50/80 px-6 py-4">
+                        <p class="text-xs font-black uppercase tracking-wider text-indigo-600">THỐNG KÊ ĐA CỬA SỔ THEO DÕI</p>
+                        <h2 class="mt-0.5 text-lg font-black text-slate-900">Hiệu Suất Thực Chiến Đề Gộp 2 Theo Chu Kỳ (7, 15, 30, 60, 90 ngày)</h2>
+                    </div>
+                    <div class="p-6 overflow-x-auto custom-scrollbar">
+                        <div id="dualMergeWindowsTable" class="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6"></div>
+                    </div>
+                </section>
+
+                <!-- Monthly Performance Breakdown Table of Gộp 2 -->
+                <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                    <div class="border-b border-slate-100 bg-slate-50/80 px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <div>
+                            <p class="text-xs font-black uppercase tracking-wider text-amber-600">THỐNG KÊ TOÀN NĂM 2026 THEO TỪNG THÁNG</p>
+                            <h2 class="mt-0.5 text-lg font-black text-slate-900">Chi Tiết Thắng / Thua, Lợi Nhuận & Lũy Kế Từng Tháng (Đề Gộp 2)</h2>
+                        </div>
+                        <span id="dualMergeYearlyBadge" class="inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-slate-50 px-3.5 py-1 text-xs font-black text-slate-800">
+                            <i class="bi bi-graph-up-arrow text-slate-600"></i> LŨY KẾ CẢ NĂM: --
+                        </span>
+                    </div>
+                    <div class="overflow-x-auto custom-scrollbar">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-200 bg-slate-100/80 text-[11px] font-black uppercase tracking-wider text-slate-600">
+                                    <th class="p-3.5 pl-6">Tháng</th>
+                                    <th class="p-3.5 text-center">Số Ngày Đánh</th>
+                                    <th class="p-3.5 text-center">Trúng / Thua</th>
+                                    <th class="p-3.5 text-center">Tỷ Lệ Trúng</th>
+                                    <th class="p-3.5 text-center">Chuỗi Thua Max</th>
+                                    <th class="p-3.5 text-right">Tổng Vốn</th>
+                                    <th class="p-3.5 text-right">Lãi / Lỗ Tháng</th>
+                                    <th class="p-3.5 text-center">ROI Tháng</th>
+                                    <th class="p-3.5 pr-6 text-right">Lợi Nhuận Lũy Kế</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dualMergeMonthlyTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Adaptive Dual Alpha Collapsible Ledger & Monthly Section -->
+                <div class="rounded-3xl border border-emerald-500/30 bg-slate-900 text-white overflow-hidden shadow-lg">
+                    <button id="btnToggleAdaptiveSection" type="button" class="w-full flex items-center justify-between p-5 text-left bg-white/5 hover:bg-white/10 transition-all border-b border-transparent">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                <i class="bi bi-clock-history text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-sm sm:text-base font-black text-white flex items-center gap-2">
+                                    Nhật Ký Đối Soát & Bảng Tháng Gộp 2 Thích Ứng Alpha
+                                    <span class="rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-2 py-0.5 border border-emerald-400/30">21 Cặp Dynamic</span>
+                                </h3>
+                                <p class="text-xs text-teal-200/80 mt-0.5">Xem đối soát 236 ngày và lợi nhuận từng tháng của mô hình Thích Ứng Alpha (+2.472M Lãi ròng)</p>
+                            </div>
+                        </div>
+                        <span id="adaptiveToggleBadge" class="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-bold text-teal-200">
+                            <span>Mở rộng xem chi tiết</span>
+                            <i id="adaptiveCollapseIcon" class="bi bi-chevron-down"></i>
+                        </span>
+                    </button>
+
+                    <div id="adaptiveHistoryContent" class="hidden p-5 space-y-5 border-t border-white/10 bg-black/30">
+                        <!-- Action Bar -->
+                        <div class="flex flex-wrap items-center justify-between gap-3">
+                            <div class="flex items-center gap-2">
+                                <button id="btnToggleAdaptiveMonthly" class="rounded-xl border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-bold text-white hover:bg-white/20 transition-all">
+                                    <i class="bi bi-calendar3"></i> Xem Bảng Tháng
+                                </button>
+                                <select id="adaptiveLogLimit" class="rounded-xl border border-white/20 bg-slate-800 px-3 py-1.5 text-xs font-bold text-white shadow-xs focus:outline-none">
+                                    <option value="15">15 ngày gần nhất</option>
+                                    <option value="30" selected>30 ngày gần nhất</option>
+                                    <option value="60">60 ngày gần nhất</option>
+                                    <option value="90">90 ngày gần nhất</option>
+                                    <option value="all">Toàn bộ từ đầu năm</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Adaptive Monthly Table (Collapsible) -->
+                        <div id="adaptiveMonthlyWrapper" class="hidden overflow-x-auto custom-scrollbar">
+                            <table class="w-full text-left text-xs text-slate-300">
+                                <thead class="bg-white/5 text-[11px] font-black uppercase text-teal-200 border-b border-white/10">
+                                    <tr>
+                                        <th class="p-3">Tháng</th>
+                                        <th class="p-3 text-center">Số Ngày</th>
+                                        <th class="p-3 text-center">Thắng X2</th>
+                                        <th class="p-3 text-center">Thắng X1</th>
+                                        <th class="p-3 text-center">Trượt</th>
+                                        <th class="p-3 text-center">Tỷ Lệ Trúng</th>
+                                        <th class="p-3 text-right">Lãi / Lỗ</th>
+                                        <th class="p-3 text-center">ROI</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adaptiveMonthlyTableBody" class="divide-y divide-white/5 font-medium"></tbody>
+                            </table>
+                        </div>
+
+                        <!-- Adaptive Daily Ledger Table -->
+                        <div class="overflow-x-auto custom-scrollbar rounded-xl border border-white/10">
+                            <table class="w-full text-left text-xs text-slate-300">
+                                <thead class="bg-white/5 text-[11px] font-black uppercase text-teal-200 border-b border-white/10">
+                                    <tr>
+                                        <th class="p-3">Ngày Cược</th>
+                                        <th class="p-3">Cặp Phương Pháp & Trạng Thái</th>
+                                        <th class="p-3 text-center">Số Trùng (X2)</th>
+                                        <th class="p-3 text-center">Bọc Lót (X1)</th>
+                                        <th class="p-3 text-center">Đặc Biệt</th>
+                                        <th class="p-3 text-center">Kết Quả</th>
+                                        <th class="p-3 text-right">Lãi / Lỗ</th>
+                                        <th class="p-3 text-right">Lũy Kế</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adaptiveLedgerBody" class="divide-y divide-white/5"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================================================= -->
+            <!-- SECTION 2: KHU VỰC ĐỀ GỘP 3 TAM TRỤ (TRIPLE-CONSENSUS · 3 TẦNG VỐN · VỐN 90M) -->
+            <!-- ========================================================================= -->
+            <section class="overflow-hidden rounded-3xl border-2 border-indigo-500/40 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white shadow-xl">
                 <div class="border-b border-indigo-800/60 bg-white/5 px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                         <div class="flex items-center gap-2">
-                            <span class="rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40 px-3 py-0.5 text-xs font-black">
-                                💎 THỬ NGHIỆM ĐỘT PHÁ
+                            <span class="rounded-full bg-indigo-500 text-white font-black text-[11px] px-3 py-0.5 uppercase shadow-xs">
+                                🏛️ ĐỀ GỘP 3: TAM TRỤ
                             </span>
-                            <span class="rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 px-3 py-0.5 text-xs font-bold">
-                                3 Tầng Vốn X3 / X2 / X1
+                            <span class="rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40 px-3 py-0.5 text-xs font-black">
+                                💎 3 TẦNG VỐN X3 / X2 / X1
                             </span>
                         </div>
                         <h2 class="mt-2 text-xl font-black tracking-tight text-white sm:text-2xl">
@@ -430,7 +603,7 @@
                                 <span id="tripleProfitK" class="text-2xl font-black text-white">--M</span>
                                 <span id="tripleRoi" class="text-xs font-black text-teal-300">ROI --%</span>
                             </div>
-                            <span class="mt-1 text-[11px] text-indigo-200/80 block">Chiến thuật 3 tầng vốn linh hoạt</span>
+                            <span class="mt-1 text-[11px] text-indigo-200/80 block">Chiến thuật 3 tầng vốn linh hoạt (90M)</span>
                         </div>
                         <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
                             <span class="text-xs text-purple-300 font-bold uppercase block">Đánh Giá Tính Khả Thi</span>
@@ -516,202 +689,6 @@
                                         </tr>
                                     </thead>
                                     <tbody id="tripleLedgerBody" class="divide-y divide-white/5"></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ========================================== -->
-            <!-- ADAPTIVE DUAL ALPHA (GỘP 2 THÍCH ỨNG ALPHA) SECTION -->
-            <!-- ========================================== -->
-            <section class="overflow-hidden rounded-3xl border border-emerald-500/40 bg-gradient-to-br from-slate-900 via-teal-950 to-slate-900 text-white shadow-xl">
-                <div class="border-b border-teal-800/60 bg-white/5 px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <span class="rounded-full bg-emerald-400/20 text-emerald-300 border border-emerald-400/40 px-3 py-0.5 text-xs font-black">
-                                💎 GỘP 2 THÍCH ỨNG ALPHA
-                            </span>
-                            <span id="adaptiveModeBadge" class="rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/40 px-3 py-0.5 text-xs font-black">
-                                ⚔️ Tấn Công X2 (ROI +28.6%)
-                            </span>
-                            <span class="rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/40 px-3 py-0.5 text-xs font-bold">
-                                Vốn 60M · Strict PIT
-                            </span>
-                        </div>
-                        <h2 class="mt-2 text-xl font-black tracking-tight text-white sm:text-2xl">
-                            Đề Gộp 2 Thích Ứng Alpha (Adaptive Dual) Hôm Nay (<span id="adaptiveTargetDate">--/--/----</span>)
-                        </h2>
-                        <p class="mt-1 text-xs text-teal-200 font-medium">
-                            Tự động chuyển đổi giữa Cặp Tấn Công X2 và Cặp Phòng Thủ Cắt Chuỗi Thua: <strong class="text-amber-300" id="adaptiveM1Label">Edge 75% Hold</strong> + <strong class="text-teal-300" id="adaptiveM2Label">Dropoff Khử Trùng</strong>
-                        </p>
-                    </div>
-                    <div class="flex flex-wrap items-center gap-2">
-                        <button id="btnCopyAdaptiveAll" class="inline-flex items-center gap-1.5 rounded-xl border border-emerald-400/40 bg-emerald-600/60 px-3.5 py-2 text-xs font-bold text-white hover:bg-emerald-600 transition-all shadow-xs">
-                            <i class="bi bi-clipboard-data"></i> Copy toàn bộ (<span id="adaptiveCountAll">0</span> số)
-                        </button>
-                    </div>
-                </div>
-
-                <div class="p-6 space-y-6">
-                    <!-- 2 Tiers Grid (X2 VIP and X1 Backup) -->
-                    <div class="grid gap-4 md:grid-cols-2">
-                        <!-- TIER X2 -->
-                        <div class="rounded-2xl border border-amber-400/30 bg-amber-950/30 p-4.5 flex flex-col justify-between">
-                            <div>
-                                <div class="flex items-center justify-between border-b border-amber-400/20 pb-3">
-                                    <div class="flex items-center gap-2">
-                                        <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-400 font-mono text-xs font-black text-amber-950">
-                                            x2
-                                        </span>
-                                        <h3 class="text-sm font-black text-amber-300 uppercase tracking-wide">
-                                            👑 Dàn Số Trùng Đánh x2 (Cực VIP)
-                                        </h3>
-                                    </div>
-                                    <span id="adaptiveCountX2" class="rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40 px-2 py-0.5 text-xs font-black">0 số</span>
-                                </div>
-                                <p class="mt-2 text-[11px] text-amber-200/80">Số giao thoa giữa 2 phương pháp · Cược 2M/số · Ăn 168M · Lãi +108M/ngày</p>
-                                <div id="adaptiveChipsX2" class="mt-3 flex flex-wrap gap-1.5"></div>
-                            </div>
-                            <div class="mt-4 pt-3 border-t border-amber-400/15 flex justify-end">
-                                <button id="btnCopyAdaptiveX2" class="text-xs text-amber-300 font-bold hover:underline inline-flex items-center gap-1">
-                                    <i class="bi bi-copy"></i> Copy dàn x2
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- TIER X1 -->
-                        <div class="rounded-2xl border border-teal-500/30 bg-teal-950/30 p-4.5 flex flex-col justify-between">
-                            <div>
-                                <div class="flex items-center justify-between border-b border-teal-500/20 pb-3">
-                                    <div class="flex items-center gap-2">
-                                        <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-teal-500 font-mono text-xs font-black text-white">
-                                            x1
-                                        </span>
-                                        <h3 class="text-sm font-black text-teal-300 uppercase tracking-wide">
-                                            🛡️ Dàn Bọc Lót Đánh x1 (An Toàn)
-                                        </h3>
-                                    </div>
-                                    <span id="adaptiveCountX1" class="rounded-full bg-teal-400/20 text-teal-300 border border-teal-400/40 px-2 py-0.5 text-xs font-black">0 số</span>
-                                </div>
-                                <p class="mt-2 text-[11px] text-teal-200/80">Số riêng biệt tạo lưới an toàn · Cược 1M/số · Ăn 84M · Lãi +24M/ngày</p>
-                                <div id="adaptiveChipsX1" class="mt-3 flex flex-wrap gap-1.5"></div>
-                            </div>
-                            <div class="mt-4 pt-3 border-t border-teal-500/15 flex justify-end">
-                                <button id="btnCopyAdaptiveX1" class="text-xs text-teal-300 font-bold hover:underline inline-flex items-center gap-1">
-                                    <i class="bi bi-copy"></i> Copy dàn x1
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Adaptive Performance Summary -->
-                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6 rounded-2xl bg-black/40 border border-white/10 p-4">
-                        <div class="text-center p-2 rounded-xl bg-white/5">
-                            <span class="text-[10px] text-teal-300 font-bold uppercase tracking-wider block">Tổng Ngày Đối Soát</span>
-                            <span id="adaptiveTotalDays" class="text-2xl font-black text-white">-- ngày</span>
-                            <span id="adaptiveHitRate" class="text-xs font-black text-emerald-300 block">--% trúng</span>
-                        </div>
-                        <div class="text-center p-2 rounded-xl bg-white/5">
-                            <span class="text-[10px] text-amber-300 font-bold uppercase tracking-wider block">Thắng X2 / Thắng X1</span>
-                            <span id="adaptiveWinsBreakdown" class="text-sm font-black text-white">-- X2 · -- X1</span>
-                            <span id="adaptiveLossesCount" class="mt-1 text-[11px] text-rose-300 font-semibold block">-- ngày trượt</span>
-                        </div>
-                        <div class="text-center p-2 rounded-xl bg-white/5">
-                            <span class="text-[10px] text-emerald-300 font-bold uppercase tracking-wider block">Lợi Nhuận Lũy Kế</span>
-                            <span id="adaptiveProfitK" class="text-2xl font-black text-white">--M</span>
-                            <span id="adaptiveRoi" class="text-xs font-black text-teal-300">ROI --%</span>
-                        </div>
-                        <div class="text-center p-2 rounded-xl bg-white/5">
-                            <span class="text-[10px] text-amber-300 font-bold uppercase tracking-wider block">Tỷ Lệ Nổ X2 VIP</span>
-                            <span id="adaptiveX2Rate" class="text-2xl font-black text-amber-300">--%</span>
-                            <span class="text-[10px] text-slate-400 block font-medium">Ăn 168M/ngày</span>
-                        </div>
-                        <div class="text-center p-2 rounded-xl bg-white/5">
-                            <span class="text-[10px] text-teal-300 font-bold uppercase tracking-wider block">Chuỗi Thua Tối Đa</span>
-                            <span id="adaptiveLongestLoss" class="text-2xl font-black text-teal-300">6 ngày</span>
-                            <span class="text-[10px] text-slate-400 block font-medium">Cắt chuỗi cực nhanh</span>
-                        </div>
-                        <div class="text-center p-2 rounded-xl bg-white/5">
-                            <span class="text-[10px] text-emerald-300 font-bold uppercase tracking-wider block">Thực Chiến Live</span>
-                            <span id="adaptiveLiveStats" class="text-sm font-black text-emerald-300">Từ 28/08</span>
-                            <span id="adaptiveLiveProfit" class="text-[11px] font-bold text-white block">Khóa bất biến</span>
-                        </div>
-                    </div>
-
-                    <!-- Adaptive History & Monthly Breakdown Collapsible Section -->
-                    <div class="rounded-2xl border border-white/10 bg-slate-900/60 overflow-hidden">
-                        <button id="btnToggleAdaptiveSection" type="button" class="w-full flex items-center justify-between p-4.5 text-left bg-white/5 hover:bg-white/10 transition-all border-b border-transparent">
-                            <div class="flex items-center gap-3">
-                                <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                                    <i class="bi bi-clock-history text-base"></i>
-                                </div>
-                                <div>
-                                    <h3 class="text-sm font-black text-white">
-                                        Nhật Ký Đối Soát & Thống Kê Tháng Gộp 2 Thích Ứng Alpha
-                                    </h3>
-                                    <p class="text-xs text-teal-200">Xem chi tiết đối soát từng ngày và lợi nhuận từng tháng của mô hình Thích Ứng Alpha</p>
-                                </div>
-                            </div>
-                            <span id="adaptiveToggleBadge" class="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-bold text-teal-200">
-                                <span>Mở rộng xem chi tiết</span>
-                                <i id="adaptiveCollapseIcon" class="bi bi-chevron-down"></i>
-                            </span>
-                        </button>
-
-                        <div id="adaptiveHistoryContent" class="hidden p-4 space-y-4 border-t border-white/10 bg-black/20">
-                            <!-- Action Bar -->
-                            <div class="flex flex-wrap items-center justify-between gap-3">
-                                <div class="flex items-center gap-2">
-                                    <button id="btnToggleAdaptiveMonthly" class="rounded-xl border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-bold text-white hover:bg-white/20 transition-all">
-                                        <i class="bi bi-calendar3"></i> Xem Bảng Tháng
-                                    </button>
-                                    <select id="adaptiveLogLimit" class="rounded-xl border border-white/20 bg-slate-800 px-3 py-1.5 text-xs font-bold text-white shadow-xs focus:outline-none">
-                                        <option value="15">15 ngày gần nhất</option>
-                                        <option value="30" selected>30 ngày gần nhất</option>
-                                        <option value="60">60 ngày gần nhất</option>
-                                        <option value="90">90 ngày gần nhất</option>
-                                        <option value="all">Toàn bộ từ đầu năm</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- Adaptive Monthly Table (Collapsible) -->
-                            <div id="adaptiveMonthlyWrapper" class="hidden overflow-x-auto custom-scrollbar">
-                                <table class="w-full text-left text-xs text-slate-300">
-                                    <thead class="bg-white/5 text-[11px] font-black uppercase text-teal-200 border-b border-white/10">
-                                        <tr>
-                                            <th class="p-3">Tháng</th>
-                                            <th class="p-3 text-center">Số Ngày</th>
-                                            <th class="p-3 text-center">Thắng X2</th>
-                                            <th class="p-3 text-center">Thắng X1</th>
-                                            <th class="p-3 text-center">Trượt</th>
-                                            <th class="p-3 text-center">Tỷ Lệ Trúng</th>
-                                            <th class="p-3 text-right">Lãi / Lỗ</th>
-                                            <th class="p-3 text-center">ROI</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="adaptiveMonthlyTableBody" class="divide-y divide-white/5 font-medium"></tbody>
-                                </table>
-                            </div>
-
-                            <!-- Adaptive Daily Ledger Table -->
-                            <div class="overflow-x-auto custom-scrollbar rounded-xl border border-white/10">
-                                <table class="w-full text-left text-xs text-slate-300">
-                                    <thead class="bg-white/5 text-[11px] font-black uppercase text-teal-200 border-b border-white/10">
-                                        <tr>
-                                            <th class="p-3">Ngày Cược</th>
-                                            <th class="p-3">Cặp Phương Pháp & Trạng Thái</th>
-                                            <th class="p-3 text-center">Số Trùng (X2)</th>
-                                            <th class="p-3 text-center">Bọc Lót (X1)</th>
-                                            <th class="p-3 text-center">Đặc Biệt</th>
-                                            <th class="p-3 text-center">Kết Quả</th>
-                                            <th class="p-3 text-right">Lãi / Lỗ</th>
-                                            <th class="p-3 text-right">Lũy Kế</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="adaptiveLedgerBody" class="divide-y divide-white/5"></tbody>
                                 </table>
                             </div>
                         </div>
