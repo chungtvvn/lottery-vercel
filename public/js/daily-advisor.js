@@ -293,6 +293,11 @@
         if (payload?.tripleMerge) {
             renderTripleMergeView(payload.tripleMerge);
         }
+
+        // Adaptive Dual Alpha Module
+        if (payload?.adaptiveDualMerge) {
+            renderAdaptiveDualMergeView(payload.adaptiveDualMerge);
+        }
     }
 
     let tripleLogLimitValue = '30';
@@ -527,6 +532,257 @@
                     <td class="p-2.5 pr-4 text-right ${profitClass}">
                         <div>${signedM(r.profitK)}</div>
                         <div class="text-[10px] text-indigo-300/70 font-normal">Lũy kế: ${signedM(r.cumulativeProfitK)}</div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    let adaptiveLogLimitValue = '30';
+
+    function renderAdaptiveDualMergeView(adaptiveData) {
+        if (!adaptiveData) return;
+        const rec = adaptiveData.latestRecommendation;
+
+        if (rec) {
+            if (byId('adaptiveTargetDate')) byId('adaptiveTargetDate').textContent = dateDisplay(rec.predictionDate);
+            if (byId('adaptiveM1Label')) byId('adaptiveM1Label').textContent = rec.m1Label || 'Edge 75% Hold';
+            if (byId('adaptiveM2Label')) byId('adaptiveM2Label').textContent = rec.m2Label || 'Dropoff Khử Trùng';
+
+            const modeBadge = byId('adaptiveModeBadge');
+            if (modeBadge) {
+                if (rec.mode === 'defensive') {
+                    modeBadge.className = 'rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/40 px-3 py-0.5 text-xs font-black';
+                    modeBadge.textContent = '🛡️ Phòng Thủ Cắt Dây (61.2% trúng)';
+                } else {
+                    modeBadge.className = 'rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/40 px-3 py-0.5 text-xs font-black';
+                    modeBadge.textContent = '⚔️ Tấn Công X2 (ROI +28.6%)';
+                }
+            }
+
+            if (byId('adaptiveCountAll')) byId('adaptiveCountAll').textContent = String(rec.totalNumbersCount || 0);
+            if (byId('adaptiveCountX2')) byId('adaptiveCountX2').textContent = `${rec.overlapCount || (rec.intersectionX2?.length || 0)} số`;
+            if (byId('adaptiveCountX1')) byId('adaptiveCountX1').textContent = `${rec.uniqueSinglesCount || (rec.uniqueSinglesX1?.length || 0)} số`;
+
+            // Render chips for X2 and X1
+            const cX2 = byId('adaptiveChipsX2');
+            if (cX2) {
+                cX2.innerHTML = (rec.intersectionX2 || []).map(n => `
+                    <span class="inline-flex items-center justify-center rounded-lg bg-amber-400 font-mono text-xs font-black text-amber-950 px-2.5 py-1 shadow-sm">
+                        ${number(n)}<sup class="ml-0.5 text-[9px] text-amber-950 font-black">x2</sup>
+                    </span>
+                `).join('');
+            }
+
+            const cX1 = byId('adaptiveChipsX1');
+            if (cX1) {
+                cX1.innerHTML = (rec.uniqueSinglesX1 || []).map(n => `
+                    <span class="inline-flex items-center justify-center rounded-lg bg-teal-900 border border-teal-500/50 font-mono text-xs font-bold text-teal-100 px-2.5 py-1 shadow-sm">
+                        ${number(n)}
+                    </span>
+                `).join('');
+            }
+
+            const btnCopyAdaptiveAll = byId('btnCopyAdaptiveAll');
+            if (btnCopyAdaptiveAll) {
+                btnCopyAdaptiveAll.onclick = () => copyNumbers(rec.fullUnion, ' ');
+            }
+            const btnCopyAdaptiveX2 = byId('btnCopyAdaptiveX2');
+            if (btnCopyAdaptiveX2) {
+                btnCopyAdaptiveX2.onclick = () => copyNumbers(rec.intersectionX2, ' ');
+            }
+            const btnCopyAdaptiveX1 = byId('btnCopyAdaptiveX1');
+            if (btnCopyAdaptiveX1) {
+                btnCopyAdaptiveX1.onclick = () => copyNumbers(rec.uniqueSinglesX1, ' ');
+            }
+        }
+
+        // Summary Stats
+        const summary = adaptiveData.summary || {};
+        if (byId('adaptiveTotalDays')) byId('adaptiveTotalDays').textContent = `${summary.totalSettled || 0} ngày`;
+        if (byId('adaptiveHitRate')) byId('adaptiveHitRate').textContent = `${percent(summary.overallHitRate || 0)} trúng`;
+        if (byId('adaptiveWinsBreakdown')) byId('adaptiveWinsBreakdown').textContent = `${summary.winsX2 || 0} X2 · ${summary.winsX1 || 0} X1`;
+        if (byId('adaptiveLossesCount')) byId('adaptiveLossesCount').textContent = `${summary.totalLosses || 0} ngày trượt`;
+        if (byId('adaptiveProfitK')) byId('adaptiveProfitK').textContent = `${signedM(summary.overallProfitK || 0)}`;
+        if (byId('adaptiveRoi')) byId('adaptiveRoi').textContent = `ROI ${percent(summary.roi || 0)}`;
+        if (byId('adaptiveX2Rate')) byId('adaptiveX2Rate').textContent = `${percent(summary.winX2Rate || 0)}`;
+        if (byId('adaptiveLiveProfit') && summary.live) {
+            byId('adaptiveLiveProfit').textContent = `${signedM(summary.live.profitK || 0)} (${percent(summary.live.hitRate || 0)} trúng)`;
+        }
+
+        // Render Monthly Table and Daily Ledger
+        renderAdaptiveMonthlyTable(adaptiveData.settledLedger || []);
+        renderAdaptiveLedger(adaptiveData.settledLedger || [], adaptiveLogLimitValue);
+
+        // Toggle Adaptive History Section (Default Collapsed)
+        const btnToggleAdaptiveSection = byId('btnToggleAdaptiveSection');
+        const adaptiveHistoryContent = byId('adaptiveHistoryContent');
+        const adaptiveCollapseIcon = byId('adaptiveCollapseIcon');
+        const adaptiveToggleBadge = byId('adaptiveToggleBadge');
+        if (btnToggleAdaptiveSection && adaptiveHistoryContent) {
+            btnToggleAdaptiveSection.onclick = () => {
+                const isHidden = adaptiveHistoryContent.classList.contains('hidden');
+                if (isHidden) {
+                    adaptiveHistoryContent.classList.remove('hidden');
+                    if (adaptiveCollapseIcon) {
+                        adaptiveCollapseIcon.classList.remove('bi-chevron-down');
+                        adaptiveCollapseIcon.classList.add('bi-chevron-up');
+                    }
+                    if (adaptiveToggleBadge) {
+                        adaptiveToggleBadge.innerHTML = '<span>Thu gọn</span> <i class="bi bi-chevron-up"></i>';
+                    }
+                } else {
+                    adaptiveHistoryContent.classList.add('hidden');
+                    if (adaptiveCollapseIcon) {
+                        adaptiveCollapseIcon.classList.remove('bi-chevron-up');
+                        adaptiveCollapseIcon.classList.add('bi-chevron-down');
+                    }
+                    if (adaptiveToggleBadge) {
+                        adaptiveToggleBadge.innerHTML = '<span>Mở rộng xem chi tiết</span> <i class="bi bi-chevron-down"></i>';
+                    }
+                }
+            };
+        }
+
+        // Toggle Monthly Table inside Adaptive Section
+        const btnToggle = byId('btnToggleAdaptiveMonthly');
+        const monthlyWrapper = byId('adaptiveMonthlyWrapper');
+        if (btnToggle && monthlyWrapper) {
+            btnToggle.onclick = () => {
+                const isHidden = monthlyWrapper.classList.contains('hidden');
+                if (isHidden) {
+                    monthlyWrapper.classList.remove('hidden');
+                    btnToggle.innerHTML = '<i class="bi bi-chevron-up"></i> Đóng Bảng Tháng';
+                } else {
+                    monthlyWrapper.classList.add('hidden');
+                    btnToggle.innerHTML = '<i class="bi bi-calendar3"></i> Xem Bảng Tháng';
+                }
+            };
+        }
+
+        // Limit Selector
+        const selectLimit = byId('adaptiveLogLimit');
+        if (selectLimit) {
+            selectLimit.value = adaptiveLogLimitValue;
+            selectLimit.onchange = (e) => {
+                adaptiveLogLimitValue = e.target.value;
+                renderAdaptiveLedger(adaptiveData.settledLedger || [], adaptiveLogLimitValue);
+            };
+        }
+    }
+
+    function renderAdaptiveMonthlyTable(records) {
+        const container = byId('adaptiveMonthlyTableBody');
+        if (!container) return;
+        const allRecords = (records || []).filter(r => Number.isInteger(r.actualSpecial) || Number.isInteger(r.actual));
+        if (!allRecords.length) {
+            container.innerHTML = '<tr><td colspan="8" class="p-4 text-center text-teal-300">Chưa có dữ liệu thống kê tháng Thích Ứng Alpha.</td></tr>';
+            return;
+        }
+
+        const monthGroups = {};
+        allRecords.forEach(r => {
+            const ym = (r.predictionDate || r.date || '').slice(0, 7);
+            if (!ym) return;
+            if (!monthGroups[ym]) monthGroups[ym] = [];
+            monthGroups[ym].push(r);
+        });
+
+        const sortedMonths = Object.keys(monthGroups).sort();
+        container.innerHTML = sortedMonths.map(ym => {
+            const list = monthGroups[ym];
+            const days = list.length;
+            const x2 = list.filter(r => r.hitType === 'win_x2' || r.isX2).length;
+            const x1 = list.filter(r => r.hitType === 'win_x1' || (r.isHit && !r.isX2)).length;
+            const totalWins = x2 + x1;
+            const losses = days - totalWins;
+            const hitRate = days > 0 ? totalWins / days : 0;
+            const stakeK = list.reduce((sum, r) => sum + (r.stakeK || 60000), 0);
+            const payoutK = list.reduce((sum, r) => sum + (r.payoutK || 0), 0);
+            const profitK = payoutK - stakeK;
+            const roi = stakeK > 0 ? profitK / stakeK : 0;
+
+            const [year, month] = ym.split('-');
+            const profitClass = profitK > 0 ? 'text-emerald-400 font-bold' : (profitK < 0 ? 'text-rose-400 font-bold' : 'text-slate-400');
+
+            return `
+                <tr class="hover:bg-white/5 transition-colors">
+                    <td class="p-3 font-bold text-white whitespace-nowrap">Tháng ${month}/${year}</td>
+                    <td class="p-3 text-center font-bold text-slate-200">${days}</td>
+                    <td class="p-3 text-center font-black text-amber-300">${x2}</td>
+                    <td class="p-3 text-center font-bold text-teal-300">${x1}</td>
+                    <td class="p-3 text-center font-semibold text-rose-300">${losses}</td>
+                    <td class="p-3 text-center font-bold text-emerald-300">${percent(hitRate)}</td>
+                    <td class="p-3 text-right font-mono font-bold ${profitClass}">${signedM(profitK)}</td>
+                    <td class="p-3 text-center font-mono font-bold ${profitClass}">${percent(roi)}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function renderAdaptiveLedger(records, limitValue) {
+        const container = byId('adaptiveLedgerBody');
+        if (!container) return;
+
+        const allRecords = (records || []).filter(r => Number.isInteger(r.actualSpecial) || Number.isInteger(r.actual))
+            .slice().sort((a, b) => (b.predictionDate || b.date).localeCompare(a.predictionDate || a.date));
+
+        const displayRecords = limitValue === 'all' ? allRecords : allRecords.slice(0, parseInt(limitValue, 10) || 30);
+
+        if (!displayRecords.length) {
+            container.innerHTML = '<tr><td colspan="8" class="p-4 text-center text-teal-300">Chưa có dữ liệu đối soát Thích Ứng Alpha.</td></tr>';
+            return;
+        }
+
+        container.innerHTML = displayRecords.map(r => {
+            const isX2 = r.hitType === 'win_x2' || r.isX2;
+            const isX1 = r.hitType === 'win_x1' || (r.isHit && !r.isX2);
+            let hitBadge = '';
+            let profitClass = '';
+
+            if (isX2) {
+                hitBadge = '<span class="inline-flex items-center rounded-md bg-amber-400 font-mono text-[11px] font-black text-amber-950 px-2 py-0.5 shadow-xs">TRÚNG X2</span>';
+                profitClass = 'text-emerald-400 font-black font-mono';
+            } else if (isX1) {
+                hitBadge = '<span class="inline-flex items-center rounded-md bg-teal-500 font-mono text-[11px] font-bold text-white px-2 py-0.5 shadow-xs">TRÚNG X1</span>';
+                profitClass = 'text-emerald-400 font-bold font-mono';
+            } else {
+                hitBadge = '<span class="inline-flex items-center rounded-md bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[10px] font-bold px-2 py-0.5">TRƯỢT</span>';
+                profitClass = 'text-rose-400 font-bold font-mono';
+            }
+
+            const isLive = r.isLiveSnapshot || r.sourceType === 'live-snapshot';
+            const sourceBadge = isLive
+                ? `<span class="inline-flex items-center gap-1 rounded-md border border-emerald-400/40 bg-emerald-500/20 px-1.5 py-0.5 font-bold text-emerald-300 text-[10px] shadow-2xs" title="Snapshot thực tế từ 28/08/2026"><i class="bi bi-lock-fill text-emerald-400"></i> Live</span>`
+                : `<span class="inline-flex items-center gap-1 rounded-md border border-sky-400/40 bg-sky-500/20 px-1.5 py-0.5 font-bold text-sky-300 text-[10px] shadow-2xs" title="Hồi quy độc lập Strict PIT"><i class="bi bi-cpu text-sky-400"></i> PIT</span>`;
+
+            const modeLabel = r.mode === 'defensive'
+                ? '<span class="text-indigo-300 text-[10px] font-bold">🛡️ Phòng thủ</span>'
+                : '<span class="text-amber-300 text-[10px] font-bold">⚔️ Tấn công</span>';
+
+            const actualNum = Number.isInteger(r.actualSpecial) ? r.actualSpecial : r.actual;
+
+            return `
+                <tr class="hover:bg-white/5 transition-colors text-xs">
+                    <td class="p-2.5 pl-4 font-mono font-bold text-white whitespace-nowrap">
+                        <div>${r.predictionDate || r.date}</div>
+                        <div class="mt-0.5">${sourceBadge}</div>
+                    </td>
+                    <td class="p-2.5 text-teal-200">
+                        <div class="font-bold text-white text-[11px]">${r.m1Label || 'Edge75'} + ${r.m2Label || 'Dropoff'}</div>
+                        <div>${modeLabel}</div>
+                    </td>
+                    <td class="p-2.5 text-center text-amber-300 font-bold">${r.overlapCount || (r.intersectionX2?.length || 0)} số</td>
+                    <td class="p-2.5 text-center text-teal-300 font-medium">${r.uniqueSinglesCount || (r.uniqueSinglesX1?.length || 0)} số</td>
+                    <td class="p-2.5 text-center">
+                        <span class="inline-block rounded-md bg-white/10 px-2 py-0.5 font-mono text-xs font-black text-amber-300">${number(actualNum)}</span>
+                    </td>
+                    <td class="p-2.5 text-center">${hitBadge}</td>
+                    <td class="p-2.5 pr-4 text-right ${profitClass}">
+                        <div>${signedM(r.profitK)}</div>
+                    </td>
+                    <td class="p-2.5 pr-4 text-right font-mono font-bold text-slate-300">
+                        ${signedM(r.cumulativeProfitK || r.liveCumulativeProfitK)}
                     </td>
                 </tr>
             `;

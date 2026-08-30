@@ -61,6 +61,7 @@ async function main() {
         existing: existingCache?.records || (Array.isArray(existingCache) ? existingCache : []),
         existingDualMerge: existingCache?.dualMerge || null,
         existingTripleMerge: existingCache?.tripleMerge || null,
+        existingAdaptiveDualMerge: existingCache?.adaptiveDualMerge || null,
         limit: 90,
         forceSynthesize: process.env.FORCE_SYNTHESIZE === '1'
     });

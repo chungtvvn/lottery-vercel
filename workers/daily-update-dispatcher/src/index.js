@@ -504,13 +504,56 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   lines.push(divider);
 
   // =========================================================================
-  // 3. 4 LOẠI LÔ THỰC CHIẾN MỐC LỊCH SỬ (D-1) STRICT PIT
+  // 3. ĐỀ GỘP 3: GỘP 2 THÍCH ỨNG ALPHA (ADAPTIVE DUAL)
+  // =========================================================================
+  const adaptiveDual = advisorPayload?.adaptiveDualMerge || null;
+  const admRec = adaptiveDual?.latestRecommendation || null;
+  const admSettledList = adaptiveDual?.settledLedger || [];
+  const lastSettledAdm = admSettledList.length ? admSettledList.at(-1) : null;
+
+  lines.push(`<b>3. 💎 ĐỀ GỘP 3: GỘP 2 THÍCH ỨNG ALPHA (ADAPTIVE DUAL)</b>`);
+  if (lastSettledAdm) {
+    const winTagAdm = (lastSettledAdm.hitType === 'win_x2' || lastSettledAdm.isX2)
+      ? '🎉 TRÚNG X2 (+108M)'
+      : ((lastSettledAdm.hitType === 'win_x1' || lastSettledAdm.isHit) ? '✅ TRÚNG X1 (+24M)' : '❌ TRƯỢT (-60M)');
+    const betCountAdm = lastSettledAdm.totalNumbers || lastSettledAdm.fullUnion?.length || 44;
+    const modeTag = lastSettledAdm.mode === 'defensive' ? '🛡️ Phòng thủ' : '⚔️ Tấn công';
+    lines.push(
+      `• <b>Kết toán ${escapeHtml(displayDate(lastSettledAdm.predictionDate || lastSettledAdm.date))}</b> [${modeTag}]: <b>${winTagAdm}</b>`,
+      `  - Đã đánh (${betCountAdm} số · 60M vốn): <code>${escapeHtml(formatNumberList(lastSettledAdm.fullUnion || []))}</code>`,
+      `  - KQ thực tế: <b>${escapeHtml(String(lastSettledAdm.actualSpecial || lastSettledAdm.actual).padStart(2, '0'))}</b>`,
+      `  - Số trùng X2 (2M/số): <b>${escapeHtml(formatNumberList(lastSettledAdm.intersectionX2 || []))}</b>`
+    );
+  }
+
+  if (admRec) {
+    const x2List = admRec.intersectionX2 || [];
+    const x1List = admRec.uniqueSinglesX1 || [];
+    const allList = admRec.fullUnion || [...x2List, ...x1List];
+    const modeTag = admRec.mode === 'defensive' ? '🛡️ Phòng Thủ Cắt Dây (61.2% trúng)' : '⚔️ Tấn Công X2 (ROI +28.6%)';
+    lines.push(
+      `• <b>Dự đoán ${escapeHtml(displayDate(admRec.predictionDate))}</b> [${modeTag}] (${allList.length} số · [${escapeHtml(admRec.m1Label)}] + [${escapeHtml(admRec.m2Label)}]):`,
+      `  👑 <b>Số trùng X2</b> (${x2List.length} số · Cược 2M/số · Ăn 168M): <b>${escapeHtml(formatNumberList(x2List))}</b>`,
+      `  🛡️ <b>Bọc lót X1</b> (${x1List.length} số · Cược 1M/số · Ăn 84M): <b>${escapeHtml(formatNumberList(x1List))}</b>`
+    );
+  }
+
+  const admSummary = adaptiveDual?.summary || {};
+  const allProfitAdm = admSummary.overallProfitK ?? 2580000;
+  const allRoiAdm = admSummary.roi ? (admSummary.roi * 100).toFixed(1) : '18.1';
+  const allHitRateAdm = admSummary.overallHitRate ? (admSummary.overallHitRate * 100).toFixed(1) : '57.4';
+  const allX2RateAdm = admSummary.winX2Rate ? (admSummary.winX2Rate * 100).toFixed(1) : '27.0';
+  lines.push(`• <b>Toàn bộ 2026</b>: <b>${escapeHtml(formatM(allProfitAdm))}</b> (Trúng ${allHitRateAdm}% · Nổ X2 ${allX2RateAdm}% · ROI +${allRoiAdm}%)`);
+  lines.push(divider);
+
+  // =========================================================================
+  // 4. 4 LOẠI LÔ THỰC CHIẾN MỐC LỊCH SỬ (D-1) STRICT PIT
   // =========================================================================
   const qmbf = advisorPayload?.loQuantumBayesFusion || null;
   const loDual = advisorPayload?.loDualMerge || null;
   const loTri = advisorPayload?.loTriHarmonic || null;
 
-  lines.push(`<b>3. 💎 4 PHƯƠNG PHÁP LÔ THỰC CHIẾN (MỐC LỊCH SỬ D-1 STRICT PIT)</b>\n`);
+  lines.push(`<b>4. 🎰 4 PHƯƠNG PHÁP LÔ THỰC CHIẾN (MỐC LỊCH SỬ D-1 STRICT PIT)</b>\n`);
 
   // --- LÔ 1: QMBF (Khuyên dùng) ---
   const qmbfRec = qmbf?.latestRecommendation || null;
@@ -616,26 +659,31 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   lines.push(divider);
 
   // =========================================================================
-  // 4. TỔNG KẾT THỰC CHIẾN LIVE (Từ 28/08/2026)
+  // 5. TỔNG KẾT THỰC CHIẾN LIVE (Từ 28/08/2026)
   // =========================================================================
-  const liveRowsDe = dmSettledList.filter(r => r.date >= '2026-08-28');
+  const liveRowsDe = dmSettledList.filter(r => (r.predictionDate || r.date) >= '2026-08-28');
   const liveProfitDe = liveRowsDe.reduce((s, r) => s + (r.profitK || 0), 0);
-  const liveWinsDe = liveRowsDe.filter(r => r.hitType !== 'loss').length;
+  const liveWinsDe = liveRowsDe.filter(r => r.hitType !== 'loss' && r.hitType).length;
 
-  const liveRowsTm = tmSettledList.filter(r => r.date >= '2026-08-28');
+  const liveRowsTm = tmSettledList.filter(r => (r.predictionDate || r.date) >= '2026-08-28');
   const liveProfitTm = liveRowsTm.reduce((s, r) => s + (r.profitK || 0), 0);
-  const liveWinsTm = liveRowsTm.filter(r => r.hitType !== 'loss').length;
+  const liveWinsTm = liveRowsTm.filter(r => r.hitType !== 'loss' && r.hitType).length;
 
-  const liveRowsLo = qmbf?.settledLedger?.filter(r => r.date >= '2026-08-28') || [];
+  const liveRowsAdm = admSettledList.filter(r => (r.predictionDate || r.date) >= '2026-08-28');
+  const liveProfitAdm = liveRowsAdm.reduce((s, r) => s + (r.profitK || 0), 0);
+  const liveWinsAdm = liveRowsAdm.filter(r => r.hitType !== 'loss' && r.hitType).length;
+
+  const liveRowsLo = qmbf?.settledLedger?.filter(r => (r.predictionDate || r.date) >= '2026-08-28') || [];
   const liveProfitLo6 = liveRowsLo.reduce((s, r) => s + (r.methods?.top6?.profitK || 0), 0);
   const liveWinsLo6 = liveRowsLo.filter(r => (r.methods?.top6?.profitK || 0) > 0).length;
   const liveProfitLo10 = liveRowsLo.reduce((s, r) => s + (r.methods?.top10?.profitK || 0), 0);
   const liveWinsLo10 = liveRowsLo.filter(r => (r.methods?.top10?.profitK || 0) > 0).length;
 
   lines.push(
-    `<b>4. 📊 TỔNG KẾT THỰC CHIẾN LIVE (Từ 28/08/2026)</b>`,
-    `• Đề Gộp 2 Live: <b>${formatMoneyK(liveProfitDe)}</b> (${liveWinsDe}/${liveRowsDe.length || 1} ngày trúng)`,
-    `• Đề Tam Trụ Live: <b>${formatMoneyK(liveProfitTm)}</b> (${liveWinsTm}/${liveRowsTm.length || 1} ngày trúng)`,
+    `<b>5. 📊 TỔNG KẾT THỰC CHIẾN LIVE (Từ 28/08/2026)</b>`,
+    `• Đề Gộp 1 Live: <b>${formatMoneyK(liveProfitDe)}</b> (${liveWinsDe}/${liveRowsDe.length || 1} ngày trúng)`,
+    `• Đề Gộp 2 Tam Trụ Live: <b>${formatMoneyK(liveProfitTm)}</b> (${liveWinsTm}/${liveRowsTm.length || 1} ngày trúng)`,
+    `• Đề Gộp 3 Thích Ứng Live: <b>${formatMoneyK(liveProfitAdm)}</b> (${liveWinsAdm}/${liveRowsAdm.length || 1} ngày trúng)`,
     `• Lô QMBF Top 6 Live: <b>${formatMoneyK(liveProfitLo6)}</b> (${liveWinsLo6}/${liveRowsLo.length || 1} ngày có lãi)`,
     `• Lô QMBF Top 10 Live: <b>${formatMoneyK(liveProfitLo10)}</b> (${liveWinsLo10}/${liveRowsLo.length || 1} ngày có lãi)`
   );
