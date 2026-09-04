@@ -10,7 +10,7 @@ const NO_STORE_HEADERS = {
 };
 const FALLBACK_LOTO_STAKE_PER_NUMBER_K = 2200;
 const FALLBACK_LOTO_PAYOUT_PER_HIT_K = 8000;
-const LOTO_BET_COUNTS = [4, 6, 7, 8, 10, 20, 25, 30];
+const LOTO_BET_COUNTS = [2, 4, 6, 7, 8, 10, 20, 25, 30];
 const LEGACY_RRF_LOTO_STRATEGY = 'rrfParallelBlock85Small65';
 const DEFAULT_LOTO_STRATEGY = 'loQuantumBayesFusion';
 const LOTO_STRATEGY_META = {
@@ -50,7 +50,7 @@ function filterCount(payload, countParam) {
     if (!LOTO_BET_COUNTS.includes(count)) {
         return {
             ...payload,
-            error: 'count chỉ hỗ trợ 6, 7, 20, 25, 30 hoặc all.'
+            error: 'count chỉ hỗ trợ 2, 4, 6, 7, 8, 10, 20, 25, 30 hoặc all.'
         };
     }
 
@@ -437,6 +437,7 @@ export async function GET(request) {
             
             const topPredictions = latestRec.topPredictions || {};
             const predictions = {
+                top2: topPredictions.top2 || { numbers: rankedNumbers.slice(0, 2), overlapNumbers: x2Numbers },
                 top4: topPredictions.top4 || { numbers: rankedNumbers.slice(0, 4), overlapNumbers: x2Numbers },
                 top6: topPredictions.top6 || { numbers: rankedNumbers.slice(0, 6), overlapNumbers: x2Numbers },
                 top7: topPredictions.top7 || { numbers: rankedNumbers.slice(0, 7), overlapNumbers: x2Numbers },
@@ -455,7 +456,7 @@ export async function GET(request) {
                 }
             };
             
-            const countsList = [4, 6, 7, 8, 10, 20];
+            const countsList = [2, 4, 6, 7, 8, 10, 20];
             const liveRecords = (loData.records || loData.settledLedger || []).map(r => {
                 const actualMap = {};
                 (r.actual27 || []).forEach(num => {

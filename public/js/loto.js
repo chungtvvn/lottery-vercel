@@ -3,7 +3,7 @@
     const DEFAULT_LOTO_BET_COUNT = 6;
     const DEFAULT_LOTO_STAKE_K = 2200;
     const DEFAULT_LOTO_PAYOUT_K = 8000;
-    const LOTO_COUNT_ORDER = [4, 6, 7, 8, 10, 20];
+    const LOTO_COUNT_ORDER = [2, 4, 6, 7, 8, 10, 20];
     const LOTO_STRATEGIES = [
         'loQuantumBayesFusion',
         'loDualMerge',
@@ -225,8 +225,8 @@
                 const isChampion = count === championCount;
                 const topStakeK = item.stakeK || (count * DEFAULT_LOTO_STAKE_K);
                 const hitRateBadge = isTriHarmonic
-                    ? (count === 4 ? '78.0% nổ (+555M)' : count === 6 ? '89.8% nổ (+716M)' : count === 7 ? '92.4% nổ (+861M)' : count === 8 ? '95.3% nổ (+998M)' : count === 10 ? '👑 100% NỔ · LÃI +1.192M' : '100% nổ (+2.624M)')
-                    : (count === 4 ? '81.4% nổ (+611M)' : count === 6 ? '👑 92.4% NỔ · LÃI +900.8M' : count === 7 ? '94.1% nổ (+1.077M)' : count === 8 ? '95.8% nổ (+1.142M)' : count === 10 ? '99.6% nổ (+1.552M)' : '100% nổ (+2.536M)');
+                    ? (count === 2 ? '⚡ 61.9% nổ (+545M)' : count === 4 ? '78.0% nổ (+555M)' : count === 6 ? '89.8% nổ (+716M)' : count === 7 ? '92.4% nổ (+861M)' : count === 8 ? '95.3% nổ (+998M)' : count === 10 ? '👑 100% NỔ · LÃI +1.192M' : '100% nổ (+2.624M)')
+                    : (count === 2 ? '⚡ 61.9% NỔ · ROI +52.5%' : count === 4 ? '81.4% nổ (+611M)' : count === 6 ? '👑 92.4% NỔ · LÃI +900.8M' : count === 7 ? '94.1% nổ (+1.077M)' : count === 8 ? '95.8% nổ (+1.142M)' : count === 10 ? '99.6% nổ (+1.552M)' : '100% nổ (+2.536M)');
 
                 return `
                     <article class="glass-card number-panel-bet overflow-hidden rounded-2xl border ${isChampion ? 'border-emerald-400 ring-2 ring-emerald-500 bg-emerald-50/20 shadow-md' : 'border-slate-200 bg-white shadow-xs'}">
@@ -235,6 +235,7 @@
                                 <h3 class="flex items-center gap-1.5 text-sm font-black text-slate-900">
                                     Top ${count} Lô Tuyển Chọn
                                     ${isChampion ? `<span class="rounded-full bg-emerald-600 px-2 py-0.5 text-[9px] font-black uppercase text-white shadow-xs">${isTriHarmonic ? 'Nổ 100%' : 'Vô Địch Lãi'}</span>` : ''}
+                                    ${count === 2 ? '<span class="rounded-full bg-rose-500 px-2 py-0.5 text-[9px] font-black uppercase text-white">Song Thủ VIP</span>' : ''}
                                     ${count === 4 ? '<span class="rounded-full bg-amber-500 px-2 py-0.5 text-[9px] font-black uppercase text-white">Song thủ kép</span>' : ''}
                                 </h3>
                                 <span class="rounded-full ${isChampion ? 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-300' : 'bg-indigo-100 text-indigo-700'} px-2 py-0.5 text-[10px] font-black">${hitRateBadge}</span>
