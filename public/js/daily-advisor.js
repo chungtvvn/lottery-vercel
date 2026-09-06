@@ -457,7 +457,7 @@
             const profitClass = profitK >= 0 ? 'text-emerald-400 font-black' : 'text-rose-400 font-black';
 
             return `
-                <tr class="hover:bg-white/5 transition-colors">
+                <tr class="hover:bg-white/5 transition-colors fast-render-row table-row-contain">
                     <td class="p-2.5 pl-4 font-bold text-white">${monthLabel}</td>
                     <td class="p-2.5 text-center text-indigo-200">${days}</td>
                     <td class="p-2.5 text-center font-black text-amber-400">${x3}</td>
@@ -512,7 +512,7 @@
                 : `<span class="inline-flex items-center gap-1 rounded-md border border-sky-400/40 bg-sky-500/20 px-1.5 py-0.5 font-bold text-sky-300 text-[10px] shadow-2xs" title="Hồi quy độc lập Strict PIT"><i class="bi bi-cpu text-sky-400"></i> PIT</span>`;
 
             return `
-                <tr class="hover:bg-white/5 transition-colors text-xs">
+                <tr class="hover:bg-white/5 transition-colors text-xs fast-render-row table-row-contain">
                     <td class="p-2.5 pl-4 font-mono font-bold text-white whitespace-nowrap">
                         <div>${r.date}</div>
                         <div class="mt-0.5">${sourceBadge}</div>
@@ -706,7 +706,7 @@
             const profitClass = profitK > 0 ? 'text-emerald-400 font-bold' : (profitK < 0 ? 'text-rose-400 font-bold' : 'text-slate-400');
 
             return `
-                <tr class="hover:bg-white/5 transition-colors">
+                <tr class="hover:bg-white/5 transition-colors fast-render-row table-row-contain">
                     <td class="p-3 font-bold text-white whitespace-nowrap">Tháng ${month}/${year}</td>
                     <td class="p-3 text-center font-bold text-slate-200">${days}</td>
                     <td class="p-3 text-center font-black text-amber-300">${x2}</td>
@@ -763,7 +763,7 @@
             const actualNum = Number.isInteger(r.actualSpecial) ? r.actualSpecial : r.actual;
 
             return `
-                <tr class="hover:bg-white/5 transition-colors text-xs">
+                <tr class="hover:bg-white/5 transition-colors text-xs fast-render-row table-row-contain">
                     <td class="p-2.5 pl-4 font-mono font-bold text-white whitespace-nowrap">
                         <div>${r.predictionDate || r.date}</div>
                         <div class="mt-0.5">${sourceBadge}</div>
@@ -843,7 +843,7 @@
             const cumClass = cumulativeProfitK >= 0 ? 'text-emerald-800 font-black' : 'text-rose-800 font-black';
 
             return `
-                <tr class="hover:bg-slate-50/80 transition-colors">
+                <tr class="hover:bg-slate-50/80 transition-colors fast-render-row table-row-contain">
                     <td class="p-3.5 pl-6 font-bold text-slate-900">${monthLabel}</td>
                     <td class="p-3.5 text-center font-bold text-slate-700">${days} ngày</td>
                     <td class="p-3.5 text-center">
@@ -1016,7 +1016,7 @@
             const m2Badge = r.m2 ? renderMethodBadge(r.m2, r.m2Label) : '-';
 
             return `
-                <tr class="hover:bg-slate-50/80 transition-colors ${!isSettled ? 'bg-amber-50/40 border-l-4 border-l-amber-500' : ''}">
+                <tr class="hover:bg-slate-50/80 transition-colors fast-render-row table-row-contain ${!isSettled ? 'bg-amber-50/40 border-l-4 border-l-amber-500' : ''}">
                     <td class="px-4 py-3">
                         <div class="flex flex-col gap-1">
                             <span class="font-mono font-black text-slate-900 text-xs">${escapeHtml(r.date)} ${!isSettled ? '<span class="ml-1 text-[10px] text-amber-600 font-bold">(Hôm nay)</span>' : ''}</span>

@@ -14,7 +14,8 @@
         liveBetCount: DEFAULT_LOTO_BET_COUNT,
         defaultLotoBetCount: DEFAULT_LOTO_BET_COUNT,
         selectedStrategy: 'loQuantumBayesFusion',
-        lotoPayload: null
+        lotoPayload: null,
+        liveLimit: 30
     };
 
     function money(value) {
@@ -224,9 +225,12 @@
                 const nums = item.numbers || item.betNumbers || [];
                 const isChampion = count === championCount;
                 const topStakeK = item.stakeK || (count * DEFAULT_LOTO_STAKE_K);
-                const hitRateBadge = isTriHarmonic
-                    ? (count === 2 ? '⚡ 61.9% nổ (+545M)' : count === 4 ? '78.0% nổ (+555M)' : count === 6 ? '89.8% nổ (+716M)' : count === 7 ? '92.4% nổ (+861M)' : count === 8 ? '95.3% nổ (+998M)' : count === 10 ? '👑 100% NỔ · LÃI +1.192M' : '100% nổ (+2.624M)')
-                    : (count === 2 ? '⚡ 61.9% NỔ · ROI +52.5%' : count === 4 ? '81.4% nổ (+611M)' : count === 6 ? '👑 92.4% NỔ · LÃI +900.8M' : count === 7 ? '94.1% nổ (+1.077M)' : count === 8 ? '95.8% nổ (+1.142M)' : count === 10 ? '99.6% nổ (+1.552M)' : '100% nổ (+2.536M)');
+                const isQMBF = strat === 'loQuantumBayesFusion';
+                const hitRateBadge = isQMBF
+                    ? (count === 2 ? '⚡ 65.3% NỔ · LÃI +625.6M (ROI +60.2%)' : count === 4 ? '84.7% nổ · LÃI +963.2M (ROI +46.4%)' : count === 6 ? '👑 93.2% NỔ · LÃI +1.316,8M (ROI +42.3%)' : count === 7 ? '95.3% nổ · LÃI +1.493,6M (ROI +41.1%)' : count === 8 ? '97.5% nổ · LÃI +1.534,4M (ROI +36.9%)' : count === 10 ? '💎 99.2% NỔ · LÃI +1.848,0M (ROI +35.6%)' : '100% nổ · LÃI +2.672,0M')
+                    : (isTriHarmonic
+                        ? (count === 2 ? '⚡ 61.9% nổ (+545M)' : count === 4 ? '78.0% nổ (+555M)' : count === 6 ? '89.8% nổ (+716M)' : count === 7 ? '92.4% nổ (+861M)' : count === 8 ? '95.3% nổ (+998M)' : count === 10 ? '👑 100% NỔ · LÃI +1.192M' : '100% nổ (+2.624M)')
+                        : (count === 2 ? '⚡ 61.9% NỔ · ROI +52.5%' : count === 4 ? '81.4% nổ (+611M)' : count === 6 ? '👑 92.4% NỔ · LÃI +900.8M' : count === 7 ? '94.1% nổ (+1.077M)' : count === 8 ? '95.8% nổ (+1.142M)' : count === 10 ? '99.6% nổ (+1.552M)' : '100% nổ (+2.536M)'));
 
                 return `
                     <article class="glass-card number-panel-bet overflow-hidden rounded-2xl border ${isChampion ? 'border-emerald-400 ring-2 ring-emerald-500 bg-emerald-50/20 shadow-md' : 'border-slate-200 bg-white shadow-xs'}">
@@ -580,6 +584,7 @@
         const summaryRoot = document.getElementById('liveSummary');
         const listRoot = document.getElementById('liveList');
         const tabsRoot = document.getElementById('liveMethodTabs');
+        const paginationRoot = document.getElementById('livePagination');
         const selectedCount = state.liveBetCount;
         const selectedKey = `top${selectedCount}`;
         const summary = summarizeLiveAdjusted(live);
@@ -646,7 +651,11 @@
         }
         rows = rows.reverse();
 
-        listRoot.innerHTML = rows.map(row => {
+        const totalRowsCount = rows.length;
+        const limit = state.liveLimit || 30;
+        const displayRows = rows.slice(0, limit);
+
+        listRoot.innerHTML = displayRows.map(row => {
             const dateStr = row.predictionIsoDate || row.predictionDate || row.date || '';
             const isLive = row.isLiveSnapshot || row.sourceType === 'live-snapshot' || dateStr >= '2026-08-28';
             const isPending = row.status === 'pending';
@@ -686,7 +695,7 @@
                 : '<span class="text-xs text-slate-400">Đang chờ mở thưởng 18h30</span>';
 
             return `
-                <article class="p-5 hover:bg-slate-50/50 transition-colors">
+                <article class="p-5 hover:bg-slate-50/50 transition-colors fast-render-row">
                     <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between border-b border-slate-100 pb-3">
                         <div class="flex flex-wrap items-center gap-2">
                             <span class="font-mono text-base font-black text-slate-900">${dateStr}</span>
@@ -723,6 +732,44 @@
                 </article>
             `;
         }).join('') || '<div class="p-4 text-sm text-slate-500">Chưa có nhật ký nào được ghi nhận.</div>';
+
+        if (paginationRoot) {
+            const hasMore = displayRows.length < totalRowsCount;
+            paginationRoot.innerHTML = `
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                    <div class="text-slate-600 font-semibold">
+                        Hiển thị <strong class="text-slate-900 font-bold">${displayRows.length}</strong> / <strong class="text-slate-900 font-bold">${totalRowsCount}</strong> kỳ quay năm 2026
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        ${hasMore ? `
+                            <button type="button" id="btnLiveLoadMore" class="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3.5 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition-all shadow-2xs">
+                                <i class="bi bi-chevron-down"></i> Xem thêm 30 ngày
+                            </button>
+                            <button type="button" id="btnLiveLoadAll" class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-indigo-700 transition-all shadow-xs">
+                                <i class="bi bi-list-check"></i> Xem toàn bộ 2026 (${totalRowsCount} kỳ)
+                            </button>
+                        ` : (totalRowsCount > 30 ? `
+                            <button type="button" id="btnLiveCollapse" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all shadow-2xs">
+                                <i class="bi bi-chevron-up"></i> Thu gọn 30 ngày
+                            </button>
+                        ` : '')}
+                    </div>
+                </div>
+            `;
+            document.getElementById('btnLiveLoadMore')?.addEventListener('click', () => {
+                state.liveLimit = Math.min((state.liveLimit || 30) + 30, totalRowsCount);
+                renderLive(state.lotoPayload || data);
+            });
+            document.getElementById('btnLiveLoadAll')?.addEventListener('click', () => {
+                state.liveLimit = totalRowsCount;
+                renderLive(state.lotoPayload || data);
+            });
+            document.getElementById('btnLiveCollapse')?.addEventListener('click', () => {
+                state.liveLimit = 30;
+                renderLive(state.lotoPayload || data);
+                listRoot.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            });
+        }
     }
 
     async function load(options = {}) {
@@ -758,7 +805,7 @@
             renderWindows(data);
             renderMonthlyTable(data);
             renderLive(data);
-            loadStrategyComparison(data);
+            setTimeout(() => loadStrategyComparison(data), 50);
         } catch (error) {
             console.error('[LotoUI] Load Error:', error);
             if (errorBox) {

@@ -55,13 +55,26 @@ async function readR2StatsKeys() {
 
     const keys = new Set();
     for (const file of STAT_FILES) {
-        const response = await fetch(`${baseUrl}/statistics/${file}.gz`, { cache: 'no-store' });
-        if (!response.ok) {
-            throw new Error(`R2 ${file} HTTP ${response.status}`);
+        let lastError = null;
+        for (let attempt = 1; attempt <= 3; attempt++) {
+            try {
+                const response = await fetch(`${baseUrl}/statistics/${file}.gz`, { cache: 'no-store' });
+                if (!response.ok) {
+                    throw new Error(`R2 ${file} HTTP ${response.status}`);
+                }
+                const compressed = Buffer.from(await response.arrayBuffer());
+                const stats = JSON.parse(zlib.gunzipSync(compressed).toString('utf8'));
+                flattenStatsKeys(stats).forEach(key => keys.add(key));
+                lastError = null;
+                break;
+            } catch (error) {
+                lastError = error;
+                if (attempt < 3) {
+                    await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
+                }
+            }
         }
-        const compressed = Buffer.from(await response.arrayBuffer());
-        const stats = JSON.parse(zlib.gunzipSync(compressed).toString('utf8'));
-        flattenStatsKeys(stats).forEach(key => keys.add(key));
+        if (lastError) throw lastError;
     }
     return keys;
 }

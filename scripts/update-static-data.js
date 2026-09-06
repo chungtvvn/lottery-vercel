@@ -1251,8 +1251,8 @@ function generateDailyMethodAdvisorCache(options = {}) {
         'scripts/generate-daily-method-advisor-cache.js',
         'Sinh cache Gợi ý phương pháp hàng ngày + dàn Kết hợp Z-score từ snapshot/R2.',
         {
-            LOTTERY_DATA_SOURCE: 'r2',
-            LOTTERY_STATS_SOURCE: 'r2',
+            LOTTERY_DATA_SOURCE: options.useLocalHistory ? 'local' : (process.env.LOTTERY_DATA_SOURCE || 'r2'),
+            LOTTERY_STATS_SOURCE: options.useLocalHistory ? 'local' : (process.env.LOTTERY_STATS_SOURCE || 'r2'),
             // The prediction history was just refreshed locally in this action.
             // Do not read its previous R2 copy before the upload stage completes.
             DAILY_ADVISOR_USE_LOCAL_HISTORY: options.useLocalHistory ? '1' : '0'
@@ -1266,21 +1266,21 @@ function generateProbabilityScoreCache(options = {}) {
         'scripts/generate-probability-score-cache.js',
         'Sinh snapshot Điểm xác suất tương đối cho ngày kế tiếp từ R2.',
         {
-            LOTTERY_DATA_SOURCE: 'r2',
-            LOTTERY_STATS_SOURCE: 'r2',
+            LOTTERY_DATA_SOURCE: options.useLocalHistory ? 'local' : (process.env.LOTTERY_DATA_SOURCE || 'r2'),
+            LOTTERY_STATS_SOURCE: options.useLocalHistory ? 'local' : (process.env.LOTTERY_STATS_SOURCE || 'r2'),
             PROBABILITY_SCORE_USE_LOCAL_HISTORY: options.useLocalHistory ? '1' : '0'
         },
         { timeoutMs: 90_000 }
     );
 }
 
-function generateProbabilityDistributionCache() {
+function generateProbabilityDistributionCache(options = {}) {
     runNodeScript(
         'scripts/generate-probability-distribution-cache.js',
         'Sinh snapshot phân bổ nhóm số cho ngày kế tiếp từ R2.',
         {
-            LOTTERY_DATA_SOURCE: 'r2',
-            LOTTERY_STATS_SOURCE: 'r2'
+            LOTTERY_DATA_SOURCE: options.useLocalHistory ? 'local' : (process.env.LOTTERY_DATA_SOURCE || 'r2'),
+            LOTTERY_STATS_SOURCE: options.useLocalHistory ? 'local' : (process.env.LOTTERY_STATS_SOURCE || 'r2')
         },
         { timeoutMs: 90_000 }
     );

@@ -171,6 +171,18 @@ function settleFromRaw(payload, rawRows) {
         loDualMerge = buildLoDualMergeAdvisor(dualMerge, rawRows, tripleMerge);
     }
 
+    let loTriHarmonic = payload.loTriHarmonic;
+    if (!loTriHarmonic || !Array.isArray(loTriHarmonic.settledLedger) || loTriHarmonic.settledLedger.length === 0) {
+        const { buildLoTriHarmonicAdvisor } = require('@/lib/services/loDualMergeAdvisorService');
+        loTriHarmonic = buildLoTriHarmonicAdvisor(dualMerge, rawRows, tripleMerge);
+    }
+
+    let loQuantumBayesFusion = payload.loQuantumBayesFusion;
+    if (!loQuantumBayesFusion || !Array.isArray(loQuantumBayesFusion.settledLedger) || loQuantumBayesFusion.settledLedger.length === 0) {
+        const { buildLoQuantumBayesFusionAdvisor } = require('@/lib/services/loDualMergeAdvisorService');
+        loQuantumBayesFusion = buildLoQuantumBayesFusionAdvisor(dualMerge, rawRows, tripleMerge);
+    }
+
     return {
         ...payload,
         records,
@@ -178,6 +190,8 @@ function settleFromRaw(payload, rawRows) {
         tripleMerge,
         adaptiveDualMerge,
         loDualMerge,
+        loTriHarmonic,
+        loQuantumBayesFusion,
         latestDataDate: rawRows?.at(-1)?.date || payload.latestDataDate,
         summary: { main: summarize('main'), hybrid: summarize('hybrid') },
         strategyCatalog: [...strategyMetadata.values()],
@@ -231,6 +245,16 @@ export async function GET(request) {
                 if (!payload.tripleMerge || !Array.isArray(payload.tripleMerge.settledLedger) || payload.tripleMerge.settledLedger.length < 200 || !payload.tripleMerge.latestRecommendation?.tierX3?.length) {
                     if (localPayload?.tripleMerge) {
                         payload.tripleMerge = localPayload.tripleMerge;
+                    }
+                }
+                if (!payload.loQuantumBayesFusion || !Array.isArray(payload.loQuantumBayesFusion.settledLedger) || payload.loQuantumBayesFusion.settledLedger.length < 200) {
+                    if (localPayload?.loQuantumBayesFusion) {
+                        payload.loQuantumBayesFusion = localPayload.loQuantumBayesFusion;
+                    }
+                }
+                if (!payload.loTriHarmonic || !Array.isArray(payload.loTriHarmonic.settledLedger) || payload.loTriHarmonic.settledLedger.length < 200) {
+                    if (localPayload?.loTriHarmonic) {
+                        payload.loTriHarmonic = localPayload.loTriHarmonic;
                     }
                 }
             } catch (_) {}

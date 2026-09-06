@@ -1221,3 +1221,22 @@ body .bg-gradient-to-tr.bg-clip-text.text-transparent {
         background: rgba(255, 255, 255, 0.94) !important;
     }
 }
+
+/* High-Performance 60fps UI & Virtual Rendering Containment */
+.fast-render-row {
+    content-visibility: auto;
+    contain: layout style paint;
+    contain-intrinsic-size: 0 110px;
+}
+
+.table-row-contain {
+    content-visibility: auto;
+    contain: layout style paint;
+    contain-intrinsic-size: 0 54px;
+}
+
+.fast-gpu-scroll {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+

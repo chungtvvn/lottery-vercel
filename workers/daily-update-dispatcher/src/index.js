@@ -577,10 +577,10 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   const qmbfTop4 = qmbfRec?.topPredictions?.top4?.numbers || [];
   lines.push(
     `• Dự đoán ${escapeHtml(displayDate(qmbfRec?.predictionDate || predictionDate))}:`,
-    `  ⚡ <b>Top 2 Song Thủ VIP (4.4M vốn · ROI +52.5%)</b>: <b>${escapeHtml(formatNumberList(qmbfTop2))}</b>`,
-    `  👑 <b>Top 6 Vô Địch (13.2M vốn)</b>: <b>${escapeHtml(formatNumberList(qmbfTop6))}</b>`,
-    `  💎 <b>Top 10 Bất Bại 100% (22.0M vốn)</b>: <b>${escapeHtml(formatNumberList(qmbfTop10))}</b>`,
-    `  🔥 <b>Top 4 Xiên / Dàn VIP (8.8M vốn)</b>: <b>${escapeHtml(formatNumberList(qmbfTop4))}</b>`
+    `  ⚡ <b>Top 2 Song Thủ VIP (4.4M vốn · ROI +60.2% · 65.3% nổ)</b>: <b>${escapeHtml(formatNumberList(qmbfTop2))}</b>`,
+    `  👑 <b>Top 6 Vô Địch (13.2M vốn · ROI +42.3% · 93.2% nổ)</b>: <b>${escapeHtml(formatNumberList(qmbfTop6))}</b>`,
+    `  💎 <b>Top 10 Bất Bại (22.0M vốn · 99.2% nổ · Lãi +1.848M)</b>: <b>${escapeHtml(formatNumberList(qmbfTop10))}</b>`,
+    `  🔥 <b>Top 4 Xiên / Dàn VIP (8.8M vốn · ROI +46.4%)</b>: <b>${escapeHtml(formatNumberList(qmbfTop4))}</b>`
   );
   if (qmbfSummary?.top2 && qmbfSummary?.top6 && qmbfSummary?.top10) {
     lines.push(`• Thống kê 2026: Top 2 (<b>${escapeHtml(formatM(qmbfSummary.top2.profitK))}</b> · ROI +${(qmbfSummary.top2.roi * 100).toFixed(1)}% · ${(qmbfSummary.top2.hitRate * 100).toFixed(1)}% nổ) · Top 6 (<b>${escapeHtml(formatM(qmbfSummary.top6.profitK))}</b> · ROI +${(qmbfSummary.top6.roi * 100).toFixed(1)}%) · Top 10 (<b>${escapeHtml(formatM(qmbfSummary.top10.profitK))}</b> · ${(qmbfSummary.top10.hitRate * 100).toFixed(1)}% nổ)\n`);
