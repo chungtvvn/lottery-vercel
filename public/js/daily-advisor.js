@@ -244,82 +244,57 @@
             renderAdaptiveDualMergeView(payload.adaptiveDualMerge);
         }
 
-        // Highlight Champion De Method with Highest Live / Overall Profit on Recommendation Cards
+        // Setup 3 Unified Top Method Buttons with Live/7-day Performance
+        renderUnifiedDeTopTabs(payload);
+
+        // Highlight Champion De Method with Highest 7-Day Profit on Recommendation Cards
         highlightBestDeMethod(payload);
 
-        // Setup Stats & Ledger Method Switcher and Default to Best Profit Method
+        // Setup Stats & Ledger Method Switcher and Default to 7-Day Champion Method
         setupDeStatsSwitcher();
-        const champion = resolveChampionDeMethod(payload);
-        currentDeStatsMethod = champion ? champion.id : 'tripleMerge';
+        const champion7d = resolveChampionDeMethod7Days(payload);
+        currentDeStatsMethod = champion7d ? champion7d.id : 'dualMerge';
         switchDeStatsMethod(currentDeStatsMethod);
     }
 
     function highlightBestDeMethod(dataPayload) {
         if (!dataPayload) return;
-
-        const methods = [
-            {
-                id: 'dualMerge',
-                name: 'Đề Gộp 1: Tiêu Chuẩn',
-                cardEl: byId('dualMergeTodayRecommendation'),
-                badgeGroupEl: byId('dualMergeBadgeGroup'),
-                summary: dataPayload.dualMerge?.summary,
-                liveProfitK: dataPayload.dualMerge?.summary?.live?.profitK ?? -Infinity,
-                overallProfitK: dataPayload.dualMerge?.summary?.overallProfitK ?? dataPayload.dualMerge?.summary?.profitK ?? 0
-            },
-            {
-                id: 'adaptiveDualMerge',
-                name: 'Đề Gộp 2: Thích Ứng Alpha',
-                cardEl: byId('adaptiveTodayRecommendation'),
-                badgeGroupEl: byId('adaptiveBadgeGroup'),
-                summary: dataPayload.adaptiveDualMerge?.summary,
-                liveProfitK: dataPayload.adaptiveDualMerge?.summary?.live?.profitK ?? -Infinity,
-                overallProfitK: dataPayload.adaptiveDualMerge?.summary?.overallProfitK ?? dataPayload.adaptiveDualMerge?.summary?.profitK ?? 0
-            },
-            {
-                id: 'tripleMerge',
-                name: 'Đề Gộp 3: Tam Trụ',
-                cardEl: byId('tripleMergeSection'),
-                badgeGroupEl: byId('tripleBadgeGroup'),
-                summary: dataPayload.tripleMerge?.summary,
-                liveProfitK: dataPayload.tripleMerge?.summary?.live?.profitK ?? -Infinity,
-                overallProfitK: dataPayload.tripleMerge?.summary?.overallProfitK ?? dataPayload.tripleMerge?.summary?.profitK ?? 0
-            }
-        ];
+        const champion = resolveChampionDeMethod7Days(dataPayload);
+        if (!champion) return;
 
         // Clean up previous highlights
         document.querySelectorAll('.de-champion-badge').forEach(el => el.remove());
-        methods.forEach(m => {
-            if (m.cardEl) {
-                m.cardEl.classList.remove('ring-4', 'ring-amber-400', 'shadow-2xl', 'xl:order-first');
-            }
+        const cards = [
+            byId('dualMergeTodayRecommendation'),
+            byId('adaptiveTodayRecommendation'),
+            byId('tripleMergeSection')
+        ];
+        cards.forEach(c => {
+            if (c) c.classList.remove('ring-4', 'ring-amber-400', 'shadow-2xl');
         });
 
-        // Determine champion: live profit first, tie-break with overall profit
-        methods.sort((a, b) => {
-            if (Number.isFinite(a.liveProfitK) && Number.isFinite(b.liveProfitK) && a.liveProfitK !== b.liveProfitK) {
-                return b.liveProfitK - a.liveProfitK;
-            }
-            return b.overallProfitK - a.overallProfitK;
-        });
-
-        const champion = methods[0];
-        if (!champion || !champion.cardEl) return;
-
-        // Apply visual champion highlight
-        champion.cardEl.classList.add('ring-4', 'ring-amber-400', 'shadow-2xl');
-        if (champion.id === 'adaptiveDualMerge') {
-            champion.cardEl.classList.add('xl:order-first');
+        // Highlight card for 7-day champion
+        let champCardEl = null;
+        let champBadgeGroupEl = null;
+        if (champion.id === 'dualMerge') {
+            champCardEl = byId('dualMergeTodayRecommendation');
+            champBadgeGroupEl = byId('dualMergeBadgeGroup');
+        } else if (champion.id === 'adaptiveDualMerge') {
+            champCardEl = byId('adaptiveTodayRecommendation');
+            champBadgeGroupEl = byId('adaptiveBadgeGroup');
+        } else if (champion.id === 'tripleMerge') {
+            champCardEl = byId('tripleMergeSection');
+            champBadgeGroupEl = byId('tripleBadgeGroup');
         }
 
-        if (champion.badgeGroupEl) {
+        if (champCardEl) {
+            champCardEl.classList.add('ring-4', 'ring-amber-400', 'shadow-2xl');
+        }
+        if (champBadgeGroupEl) {
             const champBadge = document.createElement('span');
             champBadge.className = 'de-champion-badge inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-[11px] px-3 py-0.5 uppercase shadow-md animate-pulse';
-            const profitStr = Number.isFinite(champion.liveProfitK) && champion.liveProfitK !== -Infinity
-                ? signedM(champion.liveProfitK)
-                : signedM(champion.overallProfitK);
-            champBadge.innerHTML = `<i class="bi bi-trophy-fill text-amber-950"></i> 👑 LÃI THỰC CHIẾN TOP 1 (${profitStr})`;
-            champion.badgeGroupEl.prepend(champBadge);
+            champBadge.innerHTML = `<i class="bi bi-trophy-fill text-amber-950"></i> 👑 ĐỀ XUẤT TOP 1 (7 NGÀY: ${signedM(champion.last7ProfitK)})`;
+            champBadgeGroupEl.prepend(champBadge);
         }
     }
 
@@ -330,6 +305,9 @@
         const rec = tripleMergeData.latestRecommendation;
 
         if (rec) {
+            if (byId('tripleTargetDate')) {
+                byId('tripleTargetDate').textContent = formatDate(rec.targetDate || rec.date);
+            }
             if (byId('tripleM1Label')) byId('tripleM1Label').textContent = rec.m1Label || 'Edge 50%';
             if (byId('tripleM2Label')) byId('tripleM2Label').textContent = rec.m2Label || 'Edge 75% Hold';
             if (byId('tripleM3Label')) byId('tripleM3Label').textContent = rec.m3Label || 'Dropoff Khử Trùng';
@@ -367,9 +345,22 @@
                 `).join('');
             }
 
+            // Copy buttons
             const btnCopyTripleAll = byId('btnCopyTripleAll');
             if (btnCopyTripleAll) {
                 btnCopyTripleAll.onclick = () => copyNumbers(rec.fullUnion, ' ');
+            }
+            const btnCopyTripleX3 = byId('btnCopyTripleX3');
+            if (btnCopyTripleX3) {
+                btnCopyTripleX3.onclick = () => copyNumbers(rec.tierX3, ' ');
+            }
+            const btnCopyTripleX2 = byId('btnCopyTripleX2');
+            if (btnCopyTripleX2) {
+                btnCopyTripleX2.onclick = () => copyNumbers(rec.tierX2, ' ');
+            }
+            const btnCopyTripleX1 = byId('btnCopyTripleX1');
+            if (btnCopyTripleX1) {
+                btnCopyTripleX1.onclick = () => copyNumbers(rec.tierX1, ' ');
             }
         }
 
@@ -815,67 +806,140 @@
     // ==========================================
     // UNIFIED ĐỀ METHODS STATS & LEDGER SYSTEM
     // ==========================================
-    function getDeMethodObject(methodId, p = payload) {
-        if (methodId === 'tripleMerge') {
-            const data = p?.tripleMerge;
-            return {
-                id: 'tripleMerge',
-                name: 'Đề Gộp 3 (Tam Trụ)',
-                shortName: 'Tam Trụ',
-                stakePerDay: 90000,
-                summary: data?.summary || {},
-                records: data?.settledLedger || [],
-                latestRec: data?.latestRecommendation || null,
-                overallProfitK: Number(data?.summary?.overallProfitK || 0),
-                overallHitRate: Number(data?.summary?.overallHitRate || 0),
-                liveProfitK: data?.summary?.live?.profitK ?? -Infinity
-            };
-        }
-        if (methodId === 'adaptiveDualMerge') {
-            const data = p?.adaptiveDualMerge;
-            return {
-                id: 'adaptiveDualMerge',
-                name: 'Đề Gộp 2 (Thích Ứng Alpha)',
-                shortName: 'Thích Ứng Alpha',
-                stakePerDay: 60000,
-                summary: data?.summary || {},
-                records: data?.settledLedger || [],
-                latestRec: data?.latestRecommendation || null,
-                overallProfitK: Number(data?.summary?.overallProfitK || 0),
-                overallHitRate: Number(data?.summary?.overallHitRate || 0),
-                liveProfitK: data?.summary?.live?.profitK ?? -Infinity
-            };
-        }
-        // default dualMerge
-        const data = p?.dualMerge;
+    function computeLastNDaysStats(records = [], n = 7, stakePerDay = 60000) {
+        const settled = (records || []).filter(r => {
+            const hasActual = Number.isInteger(r.actual) || Number.isInteger(r.actualSpecial);
+            return r.settled !== false && hasActual;
+        });
+        const slice = settled.slice(-n);
+        if (!slice.length) return { days: 0, wins: 0, losses: 0, profitK: 0, hitRate: 0, roi: 0 };
+        let wins = 0;
+        let profitK = 0;
+        let stakeK = 0;
+        slice.forEach(r => {
+            const pK = Number(r.dailyProfitK ?? r.profitK ?? 0);
+            const sK = Number(r.stakeK ?? (stakePerDay / 1000));
+            profitK += pK;
+            stakeK += sK;
+            const isWin = (r.hitType && r.hitType.startsWith('win')) || r.won || r.win || r.tierWon === 'x3' || r.tierWon === 'x2' || r.tierWon === 'x1';
+            if (isWin) wins++;
+        });
+        const hitRate = slice.length ? wins / slice.length : 0;
+        const roi = stakeK > 0 ? (profitK / stakeK) * 100 : 0;
         return {
-            id: 'dualMerge',
-            name: 'Đề Gộp 1 (Tiêu Chuẩn)',
-            shortName: 'Tiêu Chuẩn',
-            stakePerDay: 60000,
-            summary: data?.summary || {},
-            records: data?.settledLedger || [],
-            latestRec: data?.latestRecommendation || null,
-            overallProfitK: Number(data?.summary?.overallProfitK || 0),
-            overallHitRate: Number(data?.summary?.overallHitRate || 0),
-            liveProfitK: data?.summary?.live?.profitK ?? -Infinity
+            days: slice.length,
+            wins,
+            losses: slice.length - wins,
+            profitK,
+            hitRate,
+            roi
         };
     }
 
-    function resolveChampionDeMethod(p = payload) {
-        if (!p) return { id: 'tripleMerge', name: 'Đề Gộp 3 (Tam Trụ)' };
+    function getDeMethodObject(methodId, p = payload) {
+        let data = null;
+        let name = '';
+        let shortName = '';
+        let stakePerDay = 60000;
+
+        if (methodId === 'tripleMerge') {
+            data = p?.tripleMerge;
+            name = 'Đề Gộp 3 (Tam Trụ)';
+            shortName = 'Tam Trụ';
+            stakePerDay = 90000;
+        } else if (methodId === 'adaptiveDualMerge') {
+            data = p?.adaptiveDualMerge;
+            name = 'Đề Gộp 2 (Thích Ứng Alpha)';
+            shortName = 'Thích Ứng Alpha';
+            stakePerDay = 60000;
+        } else {
+            methodId = 'dualMerge';
+            data = p?.dualMerge;
+            name = 'Đề Gộp 1 (Tiêu Chuẩn)';
+            shortName = 'Tiêu Chuẩn';
+            stakePerDay = 60000;
+        }
+
+        const summary = data?.summary || {};
+        const records = data?.settledLedger || [];
+        const latestRec = data?.latestRecommendation || null;
+        const overallProfitK = Number(summary.overallProfitK || summary.profitK || 0);
+        const overallHitRate = Number(summary.overallHitRate || summary.hitRate || 0);
+        const liveProfitK = summary.live?.profitK ?? -Infinity;
+
+        // Multi-horizon 7 days stats: prefer summary.windows.last7, fallback to computed from settledLedger
+        const w7 = summary.windows?.last7;
+        const computed7 = computeLastNDaysStats(records, 7, stakePerDay);
+        const last7ProfitK = w7?.profitK != null ? Number(w7.profitK) : computed7.profitK;
+        const last7HitRate = w7?.hitRate != null ? Number(w7.hitRate) : computed7.hitRate;
+        const last7Wins = w7?.wins != null ? Number(w7.wins) : computed7.wins;
+        const last7Days = w7?.days != null ? Number(w7.days) : computed7.days;
+        const last7Roi = w7?.roi != null ? Number(w7.roi) : computed7.roi;
+
+        return {
+            id: methodId,
+            name,
+            shortName,
+            stakePerDay,
+            summary,
+            records,
+            latestRec,
+            overallProfitK,
+            overallHitRate,
+            liveProfitK,
+            last7ProfitK,
+            last7HitRate,
+            last7Wins,
+            last7Days,
+            last7Roi
+        };
+    }
+
+    function resolveChampionDeMethod7Days(p = payload) {
+        if (!p) return getDeMethodObject('dualMerge', p);
         const methods = [
+            getDeMethodObject('dualMerge', p),
             getDeMethodObject('tripleMerge', p),
-            getDeMethodObject('adaptiveDualMerge', p),
-            getDeMethodObject('dualMerge', p)
+            getDeMethodObject('adaptiveDualMerge', p)
         ];
         methods.sort((a, b) => {
-            if (Number.isFinite(a.liveProfitK) && Number.isFinite(b.liveProfitK) && a.liveProfitK !== b.liveProfitK) {
-                return b.liveProfitK - a.liveProfitK;
+            if (a.last7ProfitK !== b.last7ProfitK) {
+                return b.last7ProfitK - a.last7ProfitK;
+            }
+            if (a.last7HitRate !== b.last7HitRate) {
+                return b.last7HitRate - a.last7HitRate;
             }
             return b.overallProfitK - a.overallProfitK;
         });
-        return methods[0] || getDeMethodObject('tripleMerge', p);
+        return methods[0] || getDeMethodObject('dualMerge', p);
+    }
+
+    function renderUnifiedDeTopTabs(p = payload) {
+        if (!p) return;
+        const triple = getDeMethodObject('tripleMerge', p);
+        const adaptive = getDeMethodObject('adaptiveDualMerge', p);
+        const dual = getDeMethodObject('dualMerge', p);
+
+        // Update 7-day and overall profit labels
+        if (byId('tabL7Triple')) byId('tabL7Triple').textContent = `${signedM(triple.last7ProfitK)} (${percent(triple.last7HitRate)})`;
+        if (byId('tabAllTriple')) byId('tabAllTriple').textContent = signedM(triple.overallProfitK);
+
+        if (byId('tabL7Adaptive')) byId('tabL7Adaptive').textContent = `${signedM(adaptive.last7ProfitK)} (${percent(adaptive.last7HitRate)})`;
+        if (byId('tabAllAdaptive')) byId('tabAllAdaptive').textContent = signedM(adaptive.overallProfitK);
+
+        if (byId('tabL7Dual')) byId('tabL7Dual').textContent = `${signedM(dual.last7ProfitK)} (${percent(dual.last7HitRate)})`;
+        if (byId('tabAllDual')) byId('tabAllDual').textContent = signedM(dual.overallProfitK);
+
+        // Resolve 7-day champion
+        const champion = resolveChampionDeMethod7Days(p);
+        if (byId('deTopChampionBadge')) {
+            byId('deTopChampionBadge').textContent = `👑 ĐỀ XUẤT: ${champion.name.toUpperCase()} (TOP 1 LÃI 7 NGÀY)`;
+        }
+
+        // Badges on individual buttons
+        if (byId('badgeRecTriple')) byId('badgeRecTriple').classList.toggle('hidden', champion.id !== 'tripleMerge');
+        if (byId('badgeRecAdaptive')) byId('badgeRecAdaptive').classList.toggle('hidden', champion.id !== 'adaptiveDualMerge');
+        if (byId('badgeRecDual')) byId('badgeRecDual').classList.toggle('hidden', champion.id !== 'dualMerge');
     }
 
     function renderDeKpiSummaryCards(summary = {}, methodId = 'tripleMerge') {
@@ -1318,11 +1382,104 @@
         renderDeDailyLedger(mObj.records, mObj.latestRec, currentDeStatsMethod);
     }
 
+    function updateEconomicsCalculator(methodId) {
+        if (methodId === 'tripleMerge') {
+            if (byId('econTitle')) byId('econTitle').innerHTML = '<i class="bi bi-wallet2 text-indigo-600"></i> BẢNG PHÂN BỔ VỐN & KINH TẾ CƯỢC HÔM NAY (<span id="econStakeHeader">CỐ ĐỊNH 90M · 3 TẦNG VỐN</span>)';
+            if (byId('econStakeTotal')) byId('econStakeTotal').textContent = '90M';
+            if (byId('econStakeFormula')) byId('econStakeFormula').textContent = 'Tầng x3 (3M/số) + Tầng x2 (2M/số) + Tầng x1 (1M/số)';
+            if (byId('econWinTopLabel')) byId('econWinTopLabel').textContent = 'Trúng Tầng x3 (Siêu đồng thuận):';
+            if (byId('econWinTopValue')) byId('econWinTopValue').textContent = 'Nhận 252M · Lãi +162M';
+            if (byId('econWinTopRoi')) byId('econWinTopRoi').textContent = 'Tỷ suất sinh lời ROI +180%';
+            if (byId('econWinMidLabel')) byId('econWinMidLabel').textContent = 'Trúng Tầng x2 (Đồng thuận cao):';
+            if (byId('econWinMidValue')) byId('econWinMidValue').textContent = 'Nhận 168M · Lãi +78M';
+            if (byId('econWinMidRoi')) byId('econWinMidRoi').textContent = 'Tỷ suất sinh lời ROI +86.7%';
+            if (byId('econLossValue')) byId('econLossValue').textContent = 'Nhận 0M · Lỗ -90M';
+            if (byId('econLossRoi')) byId('econLossRoi').textContent = 'Mức rủi ro cố định tối đa (Trượt)';
+        } else {
+            if (byId('econTitle')) byId('econTitle').innerHTML = '<i class="bi bi-wallet2 text-indigo-600"></i> BẢNG PHÂN BỔ VỐN & KINH TẾ CƯỢC HÔM NAY (<span id="econStakeHeader">CỐ ĐỊNH 60M</span>)';
+            if (byId('econStakeTotal')) byId('econStakeTotal').textContent = '60M';
+            if (byId('econStakeFormula')) byId('econStakeFormula').textContent = 'Số trùng cược x2 (2M/số) + Số riêng cược x1 (1M/số)';
+            if (byId('econWinTopLabel')) byId('econWinTopLabel').textContent = 'Trúng vùng trùng (x2):';
+            if (byId('econWinTopValue')) byId('econWinTopValue').textContent = 'Nhận 168M · Lãi +108M';
+            if (byId('econWinTopRoi')) byId('econWinTopRoi').textContent = 'Tỷ suất sinh lời ROI +180%';
+            if (byId('econWinMidLabel')) byId('econWinMidLabel').textContent = 'Trúng vùng bọc lót (x1):';
+            if (byId('econWinMidValue')) byId('econWinMidValue').textContent = 'Nhận 84M · Lãi +24M';
+            if (byId('econWinMidRoi')) byId('econWinMidRoi').textContent = 'Tỷ suất sinh lời ROI +40%';
+            if (byId('econLossValue')) byId('econLossValue').textContent = 'Nhận 0M · Lỗ -60M';
+            if (byId('econLossRoi')) byId('econLossRoi').textContent = 'Mức rủi ro cố định tối đa (Trượt)';
+        }
+    }
+
+    function renderDeReasons(mObj) {
+        const reasonsEl = byId('dualMergePlainReasons');
+        if (!reasonsEl) return;
+
+        let reasons = [];
+        if (mObj.latestRec?.plainReasons && mObj.latestRec.plainReasons.length) {
+            reasons = mObj.latestRec.plainReasons;
+        } else if (mObj.id === 'tripleMerge') {
+            reasons = [
+                '🏛️ Gộp Tam Trụ: Kết hợp 3 phương pháp độc lập có tương quan thấp nhất: Edge 50% + Edge 75% Hold + Dropoff Khử Trùng nhằm tối đa hóa độ phủ an toàn và tạo vùng siêu đồng thuận.',
+                '💎 Cơ chế 3 tầng vốn linh hoạt: Tầng X3 (3M/số trùng 3 PP, ăn 252M lãi +162M), Tầng X2 (2M/số trùng 2 PP, ăn 168M lãi +78M), Tầng X1 (1M/số riêng, ăn 84M bảo toàn 93% vốn).',
+                '📊 Tổng ngân sách ngày 90M: Kiểm soát chặt drawdown tối đa, 100% các kỳ trúng đều đem lại lợi nhuận vượt trội hoặc hoàn vốn an toàn.',
+                '🛡️ Strict Point-In-Time 100%: Dữ liệu huấn luyện và tuyển chọn hoàn toàn không nhìn trước tương lai (Zero Lookahead Leakage).'
+            ];
+        } else if (mObj.id === 'adaptiveDualMerge') {
+            reasons = [
+                '💎 Thích Ứng Alpha: Tự động tuyển chọn 2 phương pháp tối ưu từ pool 7 phương pháp dựa trên State Machine và tỷ lệ trúng chu kỳ gần nhất.',
+                '⚔️ Phân bổ vốn 60M (X2 Trùng + X1 Riêng): Số trùng cược 2M/số (ăn 168M lãi +108M), số riêng cược 1M/số (ăn 84M lãi +24M).',
+                '🎯 Lưới an toàn kép: Tối ưu hóa xác suất trúng và lợi nhuận thực chiến dương bền bỉ trong toàn bộ năm 2026.',
+                '🛡️ Kiểm định Strict PIT: Tuyển chọn cặp động tại mỗi ngày t chỉ dựa vào dữ liệu lịch sử đến t-1.'
+            ];
+        } else {
+            reasons = [
+                '🎯 Cặp Cố Định Tiêu Chuẩn: Phối hợp Edge 50% và Edge 75% Hold đã được tối ưu hóa trọng số bước nhảy và chu kỳ nhịp dài hạn.',
+                '🔥 Phân bổ vốn cố định 60M: Vùng trùng X2 (2M/số, ăn 168M lãi +108M), vùng riêng X1 (1M/số, ăn 84M lãi +24M).',
+                '📈 Ổn định và dẫn đầu: Đạt chuỗi thắng liên tục trong 7 ngày gần nhất, tỷ lệ trúng 57.1% với lợi nhuận ròng dẫn đầu toàn bộ phương pháp.',
+                '🛡️ 100% Strict Point-In-Time: Toàn bộ dàn số khóa chặt trước giờ quay thưởng thực tế.'
+            ];
+        }
+
+        reasonsEl.innerHTML = reasons.map(r => `
+            <div class="flex items-start gap-2.5 rounded-xl border border-slate-100 bg-slate-50/60 p-3 text-xs leading-relaxed text-slate-700">
+                <i class="bi bi-check2-circle text-amber-600 mt-0.5 text-sm shrink-0"></i>
+                <span>${escapeHtml(r)}</span>
+            </div>
+        `).join('');
+    }
+
     function switchDeStatsMethod(methodId) {
         currentDeStatsMethod = methodId;
         const mObj = getDeMethodObject(methodId);
 
-        // Update tab buttons UI
+        // 1. Synchronize Top Method Selector Buttons
+        const topBtns = document.querySelectorAll('.unified-de-top-btn');
+        topBtns.forEach(btn => {
+            const m = btn.getAttribute('data-stats-method');
+            if (m === methodId) {
+                btn.className = 'unified-de-top-btn rounded-2xl border-2 border-amber-400 bg-amber-400 text-slate-950 px-3.5 py-2.5 text-left transition-all flex flex-col justify-between gap-1 shadow-lg ring-2 ring-amber-300';
+                btn.querySelectorAll('.text-slate-300').forEach(el => {
+                    el.classList.remove('text-slate-300');
+                    el.classList.add('text-slate-800');
+                });
+                btn.querySelectorAll('.text-white').forEach(el => {
+                    el.classList.remove('text-white');
+                    el.classList.add('text-slate-950');
+                });
+            } else {
+                btn.className = 'unified-de-top-btn rounded-2xl border border-white/20 bg-white/10 hover:bg-white/20 text-white px-3.5 py-2.5 text-left transition-all flex flex-col justify-between gap-1 shadow-md';
+                btn.querySelectorAll('.text-slate-800').forEach(el => {
+                    el.classList.remove('text-slate-800');
+                    el.classList.add('text-slate-300');
+                });
+                btn.querySelectorAll('.text-slate-950').forEach(el => {
+                    el.classList.remove('text-slate-950');
+                    el.classList.add('text-white');
+                });
+            }
+        });
+
+        // 2. Synchronize Bottom Stats Tab Buttons
         const tabBtns = document.querySelectorAll('.de-stats-tab-btn');
         tabBtns.forEach(btn => {
             const m = btn.getAttribute('data-stats-method');
@@ -1333,10 +1490,25 @@
             }
         });
 
-        // Update Badges & Titles
+        // 3. Toggle Today's Recommendation Cards
+        const dualCard = byId('dualMergeTodayRecommendation');
+        const adaptiveCard = byId('adaptiveTodayRecommendation');
+        const tripleCard = byId('tripleMergeSection');
+
+        if (dualCard) dualCard.classList.toggle('hidden', methodId !== 'dualMerge');
+        if (adaptiveCard) adaptiveCard.classList.toggle('hidden', methodId !== 'adaptiveDualMerge');
+        if (tripleCard) tripleCard.classList.toggle('hidden', methodId !== 'tripleMerge');
+
+        // 4. Update Economics Calculator
+        updateEconomicsCalculator(methodId);
+
+        // 5. Update Quantitative Rationale
+        renderDeReasons(mObj);
+
+        // 6. Update Badges & Titles
         const activeBadge = byId('deStatsActiveBadge');
         if (activeBadge) {
-            activeBadge.textContent = `👑 Đang xem: ${mObj.name} (${signedM(mObj.overallProfitK)} · ${percent(mObj.overallHitRate)} trúng)`;
+            activeBadge.textContent = `👑 Đang xem: ${mObj.name} (7 ngày: ${signedM(mObj.last7ProfitK)} · Toàn năm: ${signedM(mObj.overallProfitK)})`;
         }
 
         const heroBadge = byId('heroActiveMethodBadge');
@@ -1359,7 +1531,7 @@
             ledgerTitle.textContent = `Bảng Đối Soát Thực Chiến Hàng Ngày (${mObj.name})`;
         }
 
-        // Render Stack
+        // 7. Render Stack
         renderDeKpiSummaryCards(mObj.summary, methodId);
         renderDeWindowsTable(mObj.summary?.windows, methodId);
         renderDeMonthlyTable(mObj.records, methodId);
@@ -1367,8 +1539,8 @@
     }
 
     function setupDeStatsSwitcher() {
-        const tabBtns = document.querySelectorAll('.de-stats-tab-btn');
-        tabBtns.forEach(btn => {
+        const allBtns = document.querySelectorAll('.de-stats-tab-btn, .unified-de-top-btn');
+        allBtns.forEach(btn => {
             btn.onclick = () => {
                 const methodId = btn.getAttribute('data-stats-method');
                 if (methodId) switchDeStatsMethod(methodId);

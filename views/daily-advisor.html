@@ -137,33 +137,72 @@
             </section>
 
             <!-- ========================================================================= -->
-            <!-- SECTION 1: CỤM SO SÁNH 2 PHƯƠNG PHÁP ĐỀ GỘP 2 (VỐN 60M/NGÀY · STRICT PIT) -->
+            <!-- BỘ ĐIỀU HƯỚNG 3 PHƯƠNG PHÁP ĐỀ GỘP HỢP NHẤT (MẶC ĐỊNH LÃI 7 NGÀY TOP 1) -->
             <!-- ========================================================================= -->
             <div class="space-y-6">
-                <!-- Section Header -->
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-200 pb-3">
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <span class="rounded-full bg-amber-500/10 text-amber-800 border border-amber-300 px-3 py-0.5 text-xs font-black uppercase">
-                                🎯 ĐỀ GỘP 2 THỰC CHIẾN (VỐN 60M)
-                            </span>
-                            <span class="rounded-full bg-emerald-500/10 text-emerald-800 border border-emerald-300 px-3 py-0.5 text-xs font-black">
-                                SO SÁNH SONG SONG 2 PHƯƠNG PHÁP
-                            </span>
+                <!-- Top Segmented Method Switcher Banner -->
+                <div class="rounded-3xl border-2 border-indigo-200 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-5 text-white shadow-xl">
+                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="rounded-full bg-amber-400 text-slate-950 font-black text-[10px] px-2.5 py-0.5 uppercase tracking-wide">
+                                    👑 TRUNG TÂM ĐỀ GỘP THỰC CHIẾN
+                                </span>
+                                <span id="deTopChampionBadge" class="rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-[10px] px-2.5 py-0.5 uppercase shadow-md animate-pulse">
+                                    👑 ĐỀ XUẤT: TOP 1 LÃI 7 NGÀY
+                                </span>
+                            </div>
+                            <h2 class="mt-2 text-xl sm:text-2xl font-black text-white">
+                                Lựa Chọn Phương Pháp Đề Để Xem Dự Đoán & Đối Soát
+                            </h2>
+                            <p class="text-xs text-indigo-200 mt-0.5">
+                                Hệ thống tự động đặt mặc định phương pháp có lợi nhuận 7 ngày gần nhất cao nhất. Bấm để chuyển đổi toàn bộ dàn số hôm nay, cơ cấu vốn và nhật ký đối soát:
+                            </p>
                         </div>
-                        <h2 class="mt-1.5 text-xl sm:text-2xl font-black text-slate-900">
-                            Theo Dõi & So Sánh Song Song 2 Phương Pháp Đề Gộp 2 Hôm Nay
-                        </h2>
-                        <p class="text-xs text-slate-500 font-semibold mt-0.5">
-                            Cả 2 phương pháp đều cùng cơ cấu vốn 60M (X2 ăn 168M, X1 ăn 84M) và tuân thủ 100% Strict Point-In-Time
-                        </p>
+
+                        <!-- 3 Big Method Selector Buttons -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5" id="unifiedDeTopTabs">
+                            <button type="button" data-stats-method="tripleMerge" class="unified-de-top-btn rounded-2xl border px-3.5 py-2.5 text-left transition-all flex flex-col justify-between gap-1 shadow-md border-white/20 bg-white/10 hover:bg-white/20 text-white">
+                                <div class="flex items-center justify-between gap-1">
+                                    <span class="font-black text-xs">🏛️ Gộp 3: Tam Trụ</span>
+                                    <span class="rounded bg-indigo-500/40 text-indigo-200 px-1.5 py-0.5 text-[9px] font-bold">Vốn 90M</span>
+                                </div>
+                                <div class="flex items-center justify-between text-[11px] font-semibold mt-0.5">
+                                    <span class="text-slate-300">7 ngày: <strong class="text-white" id="tabL7Triple">--</strong></span>
+                                    <span class="text-amber-300 font-bold" id="tabAllTriple">--</span>
+                                </div>
+                                <div id="badgeRecTriple" class="hidden mt-0.5 text-[9px] font-black text-amber-300 uppercase">⭐ Đề xuất 7 ngày</div>
+                            </button>
+                            <button type="button" data-stats-method="adaptiveDualMerge" class="unified-de-top-btn rounded-2xl border px-3.5 py-2.5 text-left transition-all flex flex-col justify-between gap-1 shadow-md border-white/20 bg-white/10 hover:bg-white/20 text-white">
+                                <div class="flex items-center justify-between gap-1">
+                                    <span class="font-black text-xs">💎 Gộp 2: Thích Ứng</span>
+                                    <span class="rounded bg-teal-500/40 text-teal-200 px-1.5 py-0.5 text-[9px] font-bold">Vốn 60M</span>
+                                </div>
+                                <div class="flex items-center justify-between text-[11px] font-semibold mt-0.5">
+                                    <span class="text-slate-300">7 ngày: <strong class="text-white" id="tabL7Adaptive">--</strong></span>
+                                    <span class="text-teal-300 font-bold" id="tabAllAdaptive">--</span>
+                                </div>
+                                <div id="badgeRecAdaptive" class="hidden mt-0.5 text-[9px] font-black text-amber-300 uppercase">⭐ Đề xuất 7 ngày</div>
+                            </button>
+                            <button type="button" data-stats-method="dualMerge" class="unified-de-top-btn rounded-2xl border px-3.5 py-2.5 text-left transition-all flex flex-col justify-between gap-1 shadow-md border-white/20 bg-white/10 hover:bg-white/20 text-white">
+                                <div class="flex items-center justify-between gap-1">
+                                    <span class="font-black text-xs">🎯 Gộp 1: Tiêu Chuẩn</span>
+                                    <span class="rounded bg-amber-500/40 text-amber-200 px-1.5 py-0.5 text-[9px] font-bold">Vốn 60M</span>
+                                </div>
+                                <div class="flex items-center justify-between text-[11px] font-semibold mt-0.5">
+                                    <span class="text-slate-300">7 ngày: <strong class="text-white" id="tabL7Dual">--</strong></span>
+                                    <span class="text-emerald-300 font-bold" id="tabAllDual">--</span>
+                                </div>
+                                <div id="badgeRecDual" class="hidden mt-0.5 text-[9px] font-black text-amber-300 uppercase">⭐ Đề xuất 7 ngày</div>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- 2 Comparison Cards (Grid 2 Cột trên màn hình lớn) -->
-                <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch">
-                    <!-- CARD 1: ĐỀ GỘP 1 - GỘP 2 TIÊU CHUẨN (MỐC LỊCH SỬ D-1) -->
-                    <section id="dualMergeTodayRecommendation" class="flex flex-col justify-between overflow-hidden rounded-3xl border-2 border-amber-300/80 bg-white shadow-xl shadow-slate-200/50">
+                <!-- Active Recommendation Cards Container (Only selected method card is displayed) -->
+                <div id="activeDeRecommendationContainer" class="w-full">
+                    <!-- CARD 1: ĐỀ GỘP 1 - TIÊU CHUẨN -->
+                    <section id="dualMergeTodayRecommendation" class="w-full flex flex-col justify-between overflow-hidden rounded-3xl border-2 border-amber-300/80 bg-white shadow-xl shadow-slate-200/50">
                         <div>
                             <div class="border-b border-amber-200/80 bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-transparent px-6 py-5">
                                 <div class="flex items-center justify-between gap-2">
@@ -322,15 +361,128 @@
                             </div>
                         </div>
                     </section>
+
+                    <!-- CARD 3: ĐỀ GỘP 3 - TAM TRỤ (TRIPLE-CONSENSUS · 3 TẦNG VỐN · VỐN 90M) -->
+                    <section id="tripleMergeSection" class="hidden w-full flex flex-col justify-between overflow-hidden rounded-3xl border-2 border-indigo-500/50 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white shadow-xl">
+                        <div>
+                            <div class="border-b border-indigo-800/60 bg-white/5 px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                <div>
+                                    <div id="tripleBadgeGroup" class="flex flex-wrap items-center gap-2">
+                                        <span class="rounded-full bg-indigo-500 text-white font-black text-[11px] px-3 py-0.5 uppercase shadow-xs">
+                                            🏛️ ĐỀ GỘP 3: TAM TRỤ
+                                        </span>
+                                        <span class="rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40 px-3 py-0.5 text-xs font-black">
+                                            💎 3 TẦNG VỐN X3 / X2 / X1
+                                        </span>
+                                    </div>
+                                    <h3 class="mt-2 text-lg sm:text-xl font-black text-white">
+                                        Gộp 3 Tam Trụ (<span id="tripleTargetDate">--/--/----</span>)
+                                    </h3>
+                                    <p class="mt-0.5 text-xs text-indigo-200 font-medium">
+                                        Gộp 3 phương pháp độc lập mạnh nhất: <strong class="text-amber-300" id="tripleM1Label">Edge 50%</strong> + <strong class="text-teal-300" id="tripleM2Label">Edge 75% Hold</strong> + <strong class="text-purple-300" id="tripleM3Label">Dropoff Khử Trùng</strong>
+                                    </p>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <button id="btnCopyTripleAll" class="inline-flex items-center gap-1.5 rounded-xl border border-indigo-400/40 bg-indigo-600 px-3.5 py-2 text-xs font-black text-white hover:bg-indigo-500 transition-all shadow-xs">
+                                        <i class="bi bi-clipboard-check"></i> Copy Toàn Bộ (<span id="tripleCountAll">0</span> số)
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="p-5 sm:p-6 space-y-5">
+                                <!-- 3 Tiers Grid -->
+                                <div class="grid gap-4 md:grid-cols-3">
+                                    <!-- Tier X3 -->
+                                    <div class="rounded-2xl border border-amber-400/40 bg-gradient-to-br from-amber-950/60 to-yellow-950/40 p-4 shadow-sm">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-2">
+                                                <span class="flex h-7 w-7 items-center justify-center rounded-xl bg-amber-400 text-amber-950 font-black text-xs shadow-xs">x3</span>
+                                                <div>
+                                                    <h4 class="text-sm font-black text-amber-300 uppercase">Tầng X3: Siêu Đồng Thuận</h4>
+                                                    <p class="text-[10px] text-amber-200/70 font-semibold">Trùng cả 3 PP · Cược 3M</p>
+                                                </div>
+                                            </div>
+                                            <span id="tripleCountX3" class="rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40 px-2 py-0.5 text-xs font-black">0 số</span>
+                                        </div>
+                                        <div class="mt-2 flex items-center justify-between">
+                                            <p class="text-[11px] text-amber-200 font-medium">Ăn 252M (+162M)</p>
+                                            <button id="btnCopyTripleX3" class="rounded-lg border border-amber-400/40 bg-white/10 px-2 py-0.5 text-[11px] font-bold text-amber-300 hover:bg-white/20 transition-all">
+                                                <i class="bi bi-clipboard"></i> Copy x3
+                                            </button>
+                                        </div>
+                                        <div id="tripleChipsX3" class="mt-3 flex flex-wrap gap-1.5"></div>
+                                    </div>
+
+                                    <!-- Tier X2 -->
+                                    <div class="rounded-2xl border border-cyan-400/40 bg-gradient-to-br from-cyan-950/60 to-sky-950/40 p-4 shadow-sm">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-2">
+                                                <span class="flex h-7 w-7 items-center justify-center rounded-xl bg-cyan-400 text-cyan-950 font-black text-xs shadow-xs">x2</span>
+                                                <div>
+                                                    <h4 class="text-sm font-black text-cyan-300 uppercase">Tầng X2: Trùng Khớp Cao</h4>
+                                                    <p class="text-[10px] text-cyan-200/70 font-semibold">Trùng 2/3 PP · Cược 2M</p>
+                                                </div>
+                                            </div>
+                                            <span id="tripleCountX2" class="rounded-full bg-cyan-400/20 text-cyan-300 border border-cyan-400/40 px-2 py-0.5 text-xs font-black">0 số</span>
+                                        </div>
+                                        <div class="mt-2 flex items-center justify-between">
+                                            <p class="text-[11px] text-cyan-200 font-medium">Ăn 168M (+78M)</p>
+                                            <button id="btnCopyTripleX2" class="rounded-lg border border-cyan-400/40 bg-white/10 px-2 py-0.5 text-[11px] font-bold text-cyan-300 hover:bg-white/20 transition-all">
+                                                <i class="bi bi-clipboard"></i> Copy x2
+                                            </button>
+                                        </div>
+                                        <div id="tripleChipsX2" class="mt-3 flex flex-wrap gap-1.5"></div>
+                                    </div>
+
+                                    <!-- Tier X1 -->
+                                    <div class="rounded-2xl border border-indigo-400/40 bg-gradient-to-br from-indigo-950/60 to-violet-950/40 p-4 shadow-sm">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-2">
+                                                <span class="flex h-7 w-7 items-center justify-center rounded-xl bg-indigo-400 text-indigo-950 font-black text-xs shadow-xs">x1</span>
+                                                <div>
+                                                    <h4 class="text-sm font-black text-indigo-300 uppercase">Tầng X1: Mạng Lưới Lót</h4>
+                                                    <p class="text-[10px] text-indigo-200/70 font-semibold">Số riêng 1 PP · Cược 1M</p>
+                                                </div>
+                                            </div>
+                                            <span id="tripleCountX1" class="rounded-full bg-indigo-400/20 text-indigo-300 border border-indigo-500/40 px-2 py-0.5 text-xs font-black">0 số</span>
+                                        </div>
+                                        <div class="mt-2 flex items-center justify-between">
+                                            <p class="text-[11px] text-indigo-200 font-medium">Ăn 84M (Bảo toàn vốn)</p>
+                                            <button id="btnCopyTripleX1" class="rounded-lg border border-indigo-400/40 bg-white/10 px-2 py-0.5 text-[11px] font-bold text-indigo-300 hover:bg-white/20 transition-all">
+                                                <i class="bi bi-clipboard"></i> Copy x1
+                                            </button>
+                                        </div>
+                                        <div id="tripleChipsX1" class="mt-3 flex flex-wrap gap-1.5"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Mini Performance Summary Bar for Method 3 -->
+                            <div class="border-t border-indigo-800/40 bg-black/40 p-4 grid grid-cols-3 text-center gap-2">
+                                <div>
+                                    <span class="text-[10px] text-indigo-300 font-bold uppercase block">Tỷ Lệ Trúng</span>
+                                    <strong class="text-sm font-black text-emerald-300" id="tripleHitRate">65.8%</strong>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] text-amber-300 font-bold uppercase block">Lợi Nhuận 2026</span>
+                                    <strong class="text-sm font-black text-amber-300" id="tripleProfitK">+3.318M</strong>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] text-indigo-300 font-bold uppercase block">Tỷ Suất ROI</span>
+                                    <strong class="text-sm font-black text-cyan-300" id="tripleRoi">+15.7%</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
                 </div>
 
-                <!-- Economics & Detailed Rationale Cards of Gộp 2 -->
+                <!-- Economics & Detailed Rationale Cards -->
                 <div class="space-y-6">
                     <!-- Economics Calculator -->
                     <div class="rounded-2xl border border-slate-200 bg-slate-50/80 p-5">
                         <div class="flex items-center justify-between">
-                            <h4 class="text-xs font-black uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
-                                <i class="bi bi-wallet2 text-indigo-600"></i> BẢNG PHÂN BỔ VỐN & KINH TẾ CƯỢC HÔM NAY (CỐ ĐỊNH 60M)
+                            <h4 id="econTitle" class="text-xs font-black uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                                <i class="bi bi-wallet2 text-indigo-600"></i> BẢNG PHÂN BỔ VỐN & KINH TẾ CƯỢC HÔM NAY (<span id="econStakeHeader">CỐ ĐỊNH 60M</span>)
                             </h4>
                             <span class="rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 px-3 py-0.5 text-xs font-black">
                                 100% Trúng Đều Có Lãi Dương
@@ -339,23 +491,23 @@
                         <div class="mt-3 grid gap-3 sm:grid-cols-2 md:grid-cols-4 text-xs font-semibold">
                             <div class="rounded-xl border border-slate-200 bg-white p-3 shadow-2xs">
                                 <span class="text-slate-500 block text-[11px]">Tổng vốn cược ngày:</span>
-                                <strong class="font-black text-slate-900 text-sm">60M</strong>
-                                <span class="text-[10px] text-slate-400 block mt-0.5">Số trùng cược x2 + Số riêng cược x1</span>
+                                <strong id="econStakeTotal" class="font-black text-slate-900 text-sm">60M</strong>
+                                <span id="econStakeFormula" class="text-[10px] text-slate-400 block mt-0.5">Số trùng cược x2 + Số riêng cược x1</span>
                             </div>
                             <div class="rounded-xl border border-amber-200 bg-amber-50/70 p-3 shadow-2xs">
-                                <span class="text-amber-800 block text-[11px]">Trúng vùng trùng (x2):</span>
-                                <strong class="font-black text-emerald-700 text-sm">Nhận 168M · Lãi +108M</strong>
-                                <span class="text-[10px] text-emerald-700 font-bold block mt-0.5">Tỷ suất sinh lời ROI +180%</span>
+                                <span id="econWinTopLabel" class="text-amber-800 block text-[11px]">Trúng vùng trùng (x2):</span>
+                                <strong id="econWinTopValue" class="font-black text-emerald-700 text-sm">Nhận 168M · Lãi +108M</strong>
+                                <span id="econWinTopRoi" class="text-[10px] text-emerald-700 font-bold block mt-0.5">Tỷ suất sinh lời ROI +180%</span>
                             </div>
                             <div class="rounded-xl border border-indigo-200 bg-indigo-50/70 p-3 shadow-2xs">
-                                <span class="text-indigo-800 block text-[11px]">Trúng vùng bọc lót (x1):</span>
-                                <strong class="font-black text-emerald-700 text-sm">Nhận 84M · Lãi +24M</strong>
-                                <span class="text-[10px] text-emerald-700 font-bold block mt-0.5">Tỷ suất sinh lời ROI +40%</span>
+                                <span id="econWinMidLabel" class="text-indigo-800 block text-[11px]">Trúng vùng bọc lót (x1):</span>
+                                <strong id="econWinMidValue" class="font-black text-emerald-700 text-sm">Nhận 84M · Lãi +24M</strong>
+                                <span id="econWinMidRoi" class="text-[10px] text-emerald-700 font-bold block mt-0.5">Tỷ suất sinh lời ROI +40%</span>
                             </div>
                             <div class="rounded-xl border border-rose-200 bg-rose-50/70 p-3 shadow-2xs">
                                 <span class="text-rose-800 block text-[11px]">Trường hợp trượt (0 hit):</span>
-                                <strong class="font-black text-rose-700 text-sm">Nhận 0M · Lỗ -60M</strong>
-                                <span class="text-[10px] text-rose-600 block mt-0.5">Mức rủi ro cố định tối đa</span>
+                                <strong id="econLossValue" class="font-black text-rose-700 text-sm">Nhận 0M · Lỗ -60M</strong>
+                                <span id="econLossRoi" class="text-[10px] text-rose-600 block mt-0.5">Mức rủi ro cố định tối đa</span>
                             </div>
                         </div>
                     </div>
@@ -458,281 +610,6 @@
                         </table>
                     </div>
                 </section>
-
-                <!-- Adaptive Dual Alpha Collapsible Ledger & Monthly Section -->
-                <div class="rounded-3xl border border-emerald-500/30 bg-slate-900 text-white overflow-hidden shadow-lg">
-                    <button id="btnToggleAdaptiveSection" type="button" class="w-full flex items-center justify-between p-5 text-left bg-white/5 hover:bg-white/10 transition-all border-b border-transparent">
-                        <div class="flex items-center gap-3">
-                            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                                <i class="bi bi-clock-history text-lg"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-sm sm:text-base font-black text-white flex items-center gap-2">
-                                    Nhật Ký Đối Soát & Bảng Tháng Gộp 2 Thích Ứng Alpha
-                                    <span class="rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-2 py-0.5 border border-emerald-400/30">21 Cặp Dynamic</span>
-                                </h3>
-                                <p class="text-xs text-teal-200/80 mt-0.5">Xem đối soát 236 ngày và lợi nhuận từng tháng của mô hình Thích Ứng Alpha (+2.472M Lãi ròng)</p>
-                            </div>
-                        </div>
-                        <span id="adaptiveToggleBadge" class="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-bold text-teal-200">
-                            <span>Mở rộng xem chi tiết</span>
-                            <i id="adaptiveCollapseIcon" class="bi bi-chevron-down"></i>
-                        </span>
-                    </button>
-
-                    <div id="adaptiveHistoryContent" class="hidden p-5 space-y-5 border-t border-white/10 bg-black/30">
-                        <!-- Action Bar -->
-                        <div class="flex flex-wrap items-center justify-between gap-3">
-                            <div class="flex items-center gap-2">
-                                <button id="btnToggleAdaptiveMonthly" class="rounded-xl border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-bold text-white hover:bg-white/20 transition-all">
-                                    <i class="bi bi-calendar3"></i> Xem Bảng Tháng
-                                </button>
-                                <select id="adaptiveLogLimit" class="rounded-xl border border-white/20 bg-slate-800 px-3 py-1.5 text-xs font-bold text-white shadow-xs focus:outline-none">
-                                    <option value="15">15 ngày gần nhất</option>
-                                    <option value="30" selected>30 ngày gần nhất</option>
-                                    <option value="60">60 ngày gần nhất</option>
-                                    <option value="90">90 ngày gần nhất</option>
-                                    <option value="all">Toàn bộ từ đầu năm</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Adaptive Monthly Table (Collapsible) -->
-                        <div id="adaptiveMonthlyWrapper" class="hidden overflow-x-auto custom-scrollbar">
-                            <table class="w-full text-left text-xs text-slate-300">
-                                <thead class="bg-white/5 text-[11px] font-black uppercase text-teal-200 border-b border-white/10">
-                                    <tr>
-                                        <th class="p-3">Tháng</th>
-                                        <th class="p-3 text-center">Số Ngày</th>
-                                        <th class="p-3 text-center">Thắng X2</th>
-                                        <th class="p-3 text-center">Thắng X1</th>
-                                        <th class="p-3 text-center">Trượt</th>
-                                        <th class="p-3 text-center">Tỷ Lệ Trúng</th>
-                                        <th class="p-3 text-right">Lãi / Lỗ</th>
-                                        <th class="p-3 text-center">ROI</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="adaptiveMonthlyTableBody" class="divide-y divide-white/5 font-medium"></tbody>
-                            </table>
-                        </div>
-
-                        <!-- Adaptive Daily Ledger Table -->
-                        <div class="overflow-x-auto custom-scrollbar rounded-xl border border-white/10">
-                            <table class="w-full text-left text-xs text-slate-300">
-                                <thead class="bg-white/5 text-[11px] font-black uppercase text-teal-200 border-b border-white/10">
-                                    <tr>
-                                        <th class="p-3">Ngày Cược</th>
-                                        <th class="p-3">Cặp Phương Pháp & Trạng Thái</th>
-                                        <th class="p-3 text-center">Số Trùng (X2)</th>
-                                        <th class="p-3 text-center">Bọc Lót (X1)</th>
-                                        <th class="p-3 text-center">Đặc Biệt</th>
-                                        <th class="p-3 text-center">Kết Quả</th>
-                                        <th class="p-3 text-right">Lãi / Lỗ</th>
-                                        <th class="p-3 text-right">Lũy Kế</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="adaptiveLedgerBody" class="divide-y divide-white/5"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ========================================================================= -->
-            <!-- SECTION 2: KHU VỰC ĐỀ GỘP 3 TAM TRỤ (TRIPLE-CONSENSUS · 3 TẦNG VỐN · VỐN 90M) -->
-            <!-- ========================================================================= -->
-            <section id="tripleMergeSection" class="overflow-hidden rounded-3xl border-2 border-indigo-500/40 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white shadow-xl">
-                <div class="border-b border-indigo-800/60 bg-white/5 px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                        <div id="tripleBadgeGroup" class="flex flex-wrap items-center gap-2">
-                            <span class="rounded-full bg-indigo-500 text-white font-black text-[11px] px-3 py-0.5 uppercase shadow-xs">
-                                🏛️ ĐỀ GỘP 3: TAM TRỤ
-                            </span>
-                            <span class="rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40 px-3 py-0.5 text-xs font-black">
-                                💎 3 TẦNG VỐN X3 / X2 / X1
-                            </span>
-                        </div>
-                        <h2 class="mt-2 text-xl font-black tracking-tight text-white sm:text-2xl">
-                            Đề Gộp Tam Trụ (Triple-Consensus) Hôm Nay
-                        </h2>
-                        <p class="mt-1 text-xs text-indigo-200 font-medium">
-                            Gộp 3 phương pháp độc lập mạnh nhất: <strong class="text-amber-300" id="tripleM1Label">Edge 50%</strong> + <strong class="text-teal-300" id="tripleM2Label">Edge 75% Hold</strong> + <strong class="text-purple-300" id="tripleM3Label">Dropoff Khử Trùng</strong>
-                        </p>
-                    </div>
-                    <div class="flex flex-wrap items-center gap-2">
-                        <button id="btnCopyTripleAll" class="inline-flex items-center gap-1.5 rounded-xl border border-indigo-400/40 bg-indigo-600/60 px-3.5 py-2 text-xs font-bold text-white hover:bg-indigo-600 transition-all shadow-xs">
-                            <i class="bi bi-clipboard-data"></i> Copy toàn bộ (<span id="tripleCountAll">0</span> số)
-                        </button>
-                    </div>
-                </div>
-
-                <div class="p-6 space-y-6">
-                    <!-- 3 Tiers Grid -->
-                    <div class="grid gap-4 md:grid-cols-3">
-                        <!-- Tier X3 -->
-                        <div class="rounded-2xl border border-amber-400/40 bg-gradient-to-br from-amber-950/60 to-yellow-950/40 p-4 shadow-sm">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <span class="flex h-7 w-7 items-center justify-center rounded-xl bg-amber-400 text-amber-950 font-black text-xs shadow-xs">x3</span>
-                                    <div>
-                                        <h3 class="text-sm font-black text-amber-300 uppercase">Tầng X3: Siêu Đồng Thuận</h3>
-                                        <p class="text-[10px] text-amber-200/70 font-semibold">Trùng cả 3 phương pháp · Cược 3M (x3)</p>
-                                    </div>
-                                </div>
-                                <span id="tripleCountX3" class="rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40 px-2 py-0.5 text-xs font-black">0 số</span>
-                            </div>
-                            <p class="mt-2 text-[11px] text-amber-200 font-medium">Trúng ăn 252M (Lãi cực đại +162M)</p>
-                            <div id="tripleChipsX3" class="mt-3 flex flex-wrap gap-1.5"></div>
-                        </div>
-
-                        <!-- Tier X2 -->
-                        <div class="rounded-2xl border border-cyan-400/40 bg-gradient-to-br from-cyan-950/60 to-sky-950/40 p-4 shadow-sm">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <span class="flex h-7 w-7 items-center justify-center rounded-xl bg-cyan-400 text-cyan-950 font-black text-xs shadow-xs">x2</span>
-                                    <div>
-                                        <h3 class="text-sm font-black text-cyan-300 uppercase">Tầng X2: Trùng Khớp Cao</h3>
-                                        <p class="text-[10px] text-cyan-200/70 font-semibold">Trùng 2/3 phương pháp · Cược 2M (x2)</p>
-                                    </div>
-                                </div>
-                                <span id="tripleCountX2" class="rounded-full bg-cyan-400/20 text-cyan-300 border border-cyan-400/40 px-2 py-0.5 text-xs font-black">0 số</span>
-                            </div>
-                            <p class="mt-2 text-[11px] text-cyan-200 font-medium">Trúng ăn 168M (Lãi lớn +78M)</p>
-                            <div id="tripleChipsX2" class="mt-3 flex flex-wrap gap-1.5"></div>
-                        </div>
-
-                        <!-- Tier X1 -->
-                        <div class="rounded-2xl border border-indigo-400/40 bg-gradient-to-br from-indigo-950/60 to-violet-950/40 p-4 shadow-sm">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <span class="flex h-7 w-7 items-center justify-center rounded-xl bg-indigo-400 text-indigo-950 font-black text-xs shadow-xs">x1</span>
-                                    <div>
-                                        <h3 class="text-sm font-black text-indigo-300 uppercase">Tầng X1: Mạng Lưới Bọc Lót</h3>
-                                        <p class="text-[10px] text-indigo-200/70 font-semibold">Số riêng 1 phương pháp · Cược 1M (x1)</p>
-                                    </div>
-                                </div>
-                                <span id="tripleCountX1" class="rounded-full bg-indigo-400/20 text-indigo-300 border border-indigo-500/40 px-2 py-0.5 text-xs font-black">0 số</span>
-                            </div>
-                            <p class="mt-2 text-[11px] text-indigo-200 font-medium">Trúng ăn 84M (Bảo toàn vốn)</p>
-                            <div id="tripleChipsX1" class="mt-3 flex flex-wrap gap-1.5"></div>
-                        </div>
-                    </div>
-
-                    <!-- Triple Performance & Feasibility Summary -->
-                    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 pt-2">
-                        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
-                            <span class="text-xs text-indigo-300 font-bold uppercase block">Tổng Ngày Đối Soát Tam Trụ</span>
-                            <div class="mt-1 flex items-baseline gap-2">
-                                <span id="tripleTotalDays" class="text-2xl font-black text-white">-- ngày</span>
-                                <span id="tripleHitRate" class="text-xs font-black text-amber-300">--% trúng</span>
-                            </div>
-                            <span class="mt-1 text-[11px] text-indigo-200/80 block">Strict Point-In-Time 100%</span>
-                        </div>
-                        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
-                            <span class="text-xs text-amber-300 font-bold uppercase block">Phân Bổ Thắng X3 / X2 / X1</span>
-                            <div class="mt-1 flex items-baseline gap-1.5">
-                                <span id="tripleWinsBreakdown" class="text-sm font-black text-white">-- X3 · -- X2 · -- X1</span>
-                            </div>
-                            <span id="tripleLossesCount" class="mt-1 text-[11px] text-rose-300 font-semibold block">-- ngày trượt</span>
-                        </div>
-                        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
-                            <span class="text-xs text-teal-300 font-bold uppercase block">Lợi Nhuận Tam Trụ 2026</span>
-                            <div class="mt-1 flex items-baseline gap-2">
-                                <span id="tripleProfitK" class="text-2xl font-black text-white">--M</span>
-                                <span id="tripleRoi" class="text-xs font-black text-teal-300">ROI --%</span>
-                            </div>
-                            <span class="mt-1 text-[11px] text-indigo-200/80 block">Chiến thuật 3 tầng vốn linh hoạt (90M)</span>
-                        </div>
-                        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
-                            <span class="text-xs text-purple-300 font-bold uppercase block">Đánh Giá Tính Khả Thi</span>
-                            <div class="mt-1">
-                                <span class="inline-flex items-center gap-1 rounded-lg bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 px-2 py-0.5 text-xs font-black">
-                                    🔬 Nghiên Cứu & Theo Dõi
-                                </span>
-                            </div>
-                            <span class="mt-1 text-[11px] text-indigo-200/80 block">So sánh hiệu quả với Đề Gộp 2 Phương Pháp</span>
-                        </div>
-                    </div>
-
-                    <!-- Triple History & Monthly Breakdown Collapsible Section (Default Collapsed for Research) -->
-                    <div class="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
-                        <button id="btnToggleTripleSection" type="button" class="w-full flex items-center justify-between p-4.5 text-left bg-white/5 hover:bg-white/10 transition-all border-b border-transparent">
-                            <div class="flex items-center gap-2.5">
-                                <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-400/20 text-amber-300 border border-amber-400/40 text-sm">
-                                    <i class="bi bi-journal-text"></i>
-                                </span>
-                                <div>
-                                    <h3 class="text-sm font-black text-white uppercase tracking-wide flex items-center gap-2">
-                                        Nhật Ký Đối Soát & Thống Kê Tháng Tam Trụ (Phòng Thí Nghiệm)
-                                        <span class="rounded-full bg-indigo-500/30 text-indigo-200 text-[10px] font-bold px-2 py-0.5 border border-indigo-400/30">Nghiên cứu</span>
-                                    </h3>
-                                    <p class="text-[11px] text-indigo-200/70 font-medium mt-0.5">
-                                        Xem đối soát 234 ngày và bảng thống kê tháng của mô hình gộp 3 phương pháp
-                                    </p>
-                                </div>
-                            </div>
-                            <span id="tripleToggleBadge" class="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-bold text-indigo-200">
-                                <span>Mở rộng xem chi tiết</span>
-                                <i id="tripleCollapseIcon" class="bi bi-chevron-down"></i>
-                            </span>
-                        </button>
-
-                        <div id="tripleHistoryContent" class="hidden p-4 space-y-4 border-t border-white/10 bg-black/20">
-                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-white/10">
-                                <span class="text-xs font-bold text-indigo-200">Dữ liệu đối soát Strict Point-In-Time 2026</span>
-                                <div class="flex items-center gap-2">
-                                    <button id="btnToggleTripleMonthly" class="rounded-xl border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-bold text-white hover:bg-white/20 transition-all">
-                                        <i class="bi bi-calendar3"></i> Xem Bảng Tháng
-                                    </button>
-                                    <select id="tripleLogLimit" class="rounded-xl border border-white/20 bg-slate-800 px-3 py-1.5 text-xs font-bold text-white shadow-xs focus:outline-none">
-                                        <option value="30" selected>30 ngày gần nhất</option>
-                                        <option value="60">60 ngày gần nhất</option>
-                                        <option value="90">90 ngày gần nhất</option>
-                                        <option value="all">Toàn bộ 2026</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- Triple Monthly Table (Collapsible) -->
-                            <div id="tripleMonthlyWrapper" class="hidden overflow-x-auto custom-scrollbar">
-                                <table class="w-full text-left text-xs border-collapse">
-                                    <thead>
-                                        <tr class="border-b border-white/10 bg-white/10 text-indigo-200 uppercase font-black text-[10px]">
-                                            <th class="p-2.5 pl-4">Tháng</th>
-                                            <th class="p-2.5 text-center">Số Ngày</th>
-                                            <th class="p-2.5 text-center">Trúng X3</th>
-                                            <th class="p-2.5 text-center">Trúng X2</th>
-                                            <th class="p-2.5 text-center">Trúng X1</th>
-                                            <th class="p-2.5 text-center">Thua</th>
-                                            <th class="p-2.5 text-center">Tỷ Lệ Trúng</th>
-                                            <th class="p-2.5 text-right">Lãi / Lỗ Tháng</th>
-                                            <th class="p-2.5 pr-4 text-center">ROI</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="tripleMonthlyTableBody" class="divide-y divide-white/5 font-medium"></tbody>
-                                </table>
-                            </div>
-
-                            <!-- Triple Daily Ledger Table -->
-                            <div class="overflow-x-auto custom-scrollbar">
-                                <table class="w-full text-left text-xs border-collapse">
-                                    <thead>
-                                        <tr class="border-b border-white/10 bg-white/10 text-indigo-200 uppercase font-black text-[10px]">
-                                            <th class="p-2.5 pl-4">Ngày</th>
-                                            <th class="p-2.5 text-center">KQĐB</th>
-                                            <th class="p-2.5">3 Phương Pháp Gộp</th>
-                                            <th class="p-2.5">Dàn Đã Khóa (X3 / X2 / X1)</th>
-                                            <th class="p-2.5 text-center">Kết Quả</th>
-                                            <th class="p-2.5 pr-4 text-right">Lãi / Lỗ Ngày (Lũy kế)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="tripleLedgerBody" class="divide-y divide-white/5"></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
 
             <!-- Settled Dual-Merge Ledger Table -->
             <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
