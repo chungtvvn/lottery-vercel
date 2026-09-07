@@ -298,6 +298,78 @@
         if (payload?.adaptiveDualMerge) {
             renderAdaptiveDualMergeView(payload.adaptiveDualMerge);
         }
+
+        // Highlight Champion De Method with Highest Live / Overall Profit
+        highlightBestDeMethod(payload);
+    }
+
+    function highlightBestDeMethod(dataPayload) {
+        if (!dataPayload) return;
+
+        const methods = [
+            {
+                id: 'dualMerge',
+                name: 'Đề Gộp 1: Tiêu Chuẩn',
+                cardEl: byId('dualMergeTodayRecommendation'),
+                badgeGroupEl: byId('dualMergeBadgeGroup'),
+                summary: dataPayload.dualMerge?.summary,
+                liveProfitK: dataPayload.dualMerge?.summary?.live?.profitK ?? -Infinity,
+                overallProfitK: dataPayload.dualMerge?.summary?.overallProfitK ?? dataPayload.dualMerge?.summary?.profitK ?? 0
+            },
+            {
+                id: 'adaptiveDualMerge',
+                name: 'Đề Gộp 2: Thích Ứng Alpha',
+                cardEl: byId('adaptiveTodayRecommendation'),
+                badgeGroupEl: byId('adaptiveBadgeGroup'),
+                summary: dataPayload.adaptiveDualMerge?.summary,
+                liveProfitK: dataPayload.adaptiveDualMerge?.summary?.live?.profitK ?? -Infinity,
+                overallProfitK: dataPayload.adaptiveDualMerge?.summary?.overallProfitK ?? dataPayload.adaptiveDualMerge?.summary?.profitK ?? 0
+            },
+            {
+                id: 'tripleMerge',
+                name: 'Đề Gộp 3: Tam Trụ',
+                cardEl: byId('tripleMergeSection'),
+                badgeGroupEl: byId('tripleBadgeGroup'),
+                summary: dataPayload.tripleMerge?.summary,
+                liveProfitK: dataPayload.tripleMerge?.summary?.live?.profitK ?? -Infinity,
+                overallProfitK: dataPayload.tripleMerge?.summary?.overallProfitK ?? dataPayload.tripleMerge?.summary?.profitK ?? 0
+            }
+        ];
+
+        // Clean up previous highlights
+        document.querySelectorAll('.de-champion-badge').forEach(el => el.remove());
+        methods.forEach(m => {
+            if (m.cardEl) {
+                m.cardEl.classList.remove('ring-4', 'ring-amber-400', 'shadow-2xl', 'xl:order-first');
+            }
+        });
+
+        // Determine champion: live profit first, tie-break with overall profit
+        methods.sort((a, b) => {
+            if (Number.isFinite(a.liveProfitK) && Number.isFinite(b.liveProfitK) && a.liveProfitK !== b.liveProfitK) {
+                return b.liveProfitK - a.liveProfitK;
+            }
+            return b.overallProfitK - a.overallProfitK;
+        });
+
+        const champion = methods[0];
+        if (!champion || !champion.cardEl) return;
+
+        // Apply visual champion highlight
+        champion.cardEl.classList.add('ring-4', 'ring-amber-400', 'shadow-2xl');
+        if (champion.id === 'adaptiveDualMerge') {
+            champion.cardEl.classList.add('xl:order-first');
+        }
+
+        if (champion.badgeGroupEl) {
+            const champBadge = document.createElement('span');
+            champBadge.className = 'de-champion-badge inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-[11px] px-3 py-0.5 uppercase shadow-md animate-pulse';
+            const profitStr = Number.isFinite(champion.liveProfitK) && champion.liveProfitK !== -Infinity
+                ? signedM(champion.liveProfitK)
+                : signedM(champion.overallProfitK);
+            champBadge.innerHTML = `<i class="bi bi-trophy-fill text-amber-950"></i> 👑 LÃI THỰC CHIẾN TOP 1 (${profitStr})`;
+            champion.badgeGroupEl.prepend(champBadge);
+        }
     }
 
     let tripleLogLimitValue = '30';
@@ -1300,6 +1372,7 @@
             if (payload?.tripleMerge) renderTripleMergeView(payload.tripleMerge);
             if (payload?.adaptiveDualMerge) renderAdaptiveDualMergeView(payload.adaptiveDualMerge);
             renderSingleMethodView();
+            highlightBestDeMethod(payload);
         } catch (error) {
             console.error('Lỗi khi tải dữ liệu daily advisor:', error);
             const errBox = byId('errorBox');

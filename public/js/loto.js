@@ -95,6 +95,20 @@
     }
 
     function getBestLotoBetCount(data = {}) {
+        const live = data.livePredictions || {};
+        const summary = live.summary || data.summary || {};
+        let bestCount = null;
+        let maxProfit = -Infinity;
+        LOTO_COUNT_ORDER.forEach(count => {
+            const s = summary[`top${count}`];
+            if (s && typeof s.profitK === 'number') {
+                if (s.profitK > maxProfit) {
+                    maxProfit = s.profitK;
+                    bestCount = count;
+                }
+            }
+        });
+        if (bestCount) return bestCount;
         if (data.strategy === 'loQuantumBayesFusion' || data.strategy === 'loTriHarmonic') return 10;
         if (data.strategy === 'loDualMerge') return 6;
         return DEFAULT_LOTO_BET_COUNT;
@@ -607,15 +621,21 @@
         }
 
         if (summaryRoot) {
+            const championCount = getBestLotoBetCount(data);
             summaryRoot.innerHTML = LOTO_COUNT_ORDER.map(count => {
                 const item = summary[`top${count}`] || {};
                 const isSelected = count === selectedCount;
+                const isChampion = count === championCount;
+                const ringClass = isSelected
+                    ? (isChampion ? 'border-amber-400 bg-amber-50/70 ring-2 ring-amber-400 shadow-md' : 'border-indigo-500 bg-indigo-50/80 ring-2 ring-indigo-300 shadow-xs')
+                    : (isChampion ? 'border-amber-300 bg-amber-50/30 hover:bg-amber-50/50' : 'border-slate-200 bg-white hover:bg-slate-50');
                 return `
                     <button type="button" data-summary-count="${count}"
-                        class="live-summary-btn rounded-2xl border p-4 text-left transition ${isSelected
-                            ? 'border-indigo-500 bg-indigo-50/80 ring-2 ring-indigo-300 shadow-xs'
-                            : 'border-slate-200 bg-white hover:bg-slate-50'}">
-                        <div class="text-[11px] font-bold uppercase text-slate-500">Top ${count} thực tế</div>
+                        class="live-summary-btn rounded-2xl border p-4 text-left transition ${ringClass}">
+                        <div class="flex items-center justify-between gap-1">
+                            <div class="text-[11px] font-bold uppercase text-slate-500">Top ${count} thực tế</div>
+                            ${isChampion ? '<span class="inline-flex items-center gap-0.5 rounded-full bg-amber-400 text-amber-950 px-1.5 py-0.5 text-[9px] font-black shadow-2xs">👑 LÃI TOP 1</span>' : ''}
+                        </div>
                         <div class="mt-1 text-2xl font-black text-slate-900">${item.days || 0} ngày</div>
                         <div class="mt-0.5 text-xs text-slate-600">Nổ: <strong class="text-slate-900">${item.hitDays || 0}</strong> · Thắng: ${item.wins || 0}</div>
                         <div class="mt-1 font-mono text-sm font-black ${(item.profitK || 0) >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${money(item.profitK)}</div>
@@ -776,8 +796,7 @@
         const errorBox = document.getElementById('errorBox');
         try {
             const selectEl = document.getElementById('lotoStrategySelect');
-            const requestedStrategy = options.strategy || state.selectedStrategy || 'loDualMerge';
-            const query = requestedStrategy ? `?strategy=${encodeURIComponent(requestedStrategy)}` : '';
+            const query = options.strategy ? `?strategy=${encodeURIComponent(options.strategy)}` : '';
             
             const res = await fetch(`/api/loto/prediction${query}`, { cache: 'no-store' });
             const data = await res.json();
@@ -786,8 +805,9 @@
             const resolvedStrategy = data.strategy
                 || data.config?.methodId
                 || data.config?.strategy
-                || requestedStrategy
-                || 'loDualMerge';
+                || options.strategy
+                || state.selectedStrategy
+                || 'loQuantumBayesFusion';
 
             state.selectedStrategy = resolvedStrategy;
             state.lotoPayload = data;
