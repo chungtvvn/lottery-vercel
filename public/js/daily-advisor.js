@@ -306,7 +306,7 @@
 
         if (rec) {
             if (byId('tripleTargetDate')) {
-                byId('tripleTargetDate').textContent = formatDate(rec.targetDate || rec.date);
+                byId('tripleTargetDate').textContent = rec.predictionDate || rec.targetDate || rec.date || '--/--/----';
             }
             if (byId('tripleM1Label')) byId('tripleM1Label').textContent = rec.m1Label || 'Edge 50%';
             if (byId('tripleM2Label')) byId('tripleM2Label').textContent = rec.m2Label || 'Edge 75% Hold';
