@@ -125,8 +125,8 @@
                             <span class="rounded-2xl border border-white/15 bg-white/10 px-4 py-2.5 backdrop-blur-sm shadow-sm">
                                 <i class="bi bi-shield-check text-emerald-400 mr-1"></i> STRICT PIT 100%
                             </span>
-                            <span class="rounded-2xl border border-amber-400/30 bg-amber-500/20 px-4 py-2.5 text-amber-300 backdrop-blur-sm shadow-sm">
-                                <i class="bi bi-cash-stack mr-1"></i> TỔNG VỐN 60K / NGÀY
+                            <span id="heroActiveMethodBadge" class="rounded-2xl border border-amber-400/30 bg-amber-500/20 px-4 py-2.5 text-amber-300 backdrop-blur-sm shadow-sm">
+                                <i class="bi bi-trophy-fill mr-1 text-amber-300"></i> ĐỀ GỘP 3 TAM TRỤ: +3.318M LÃI LŨY KẾ
                             </span>
                         </div>
                     </div>
@@ -379,23 +379,61 @@
                     </div>
                 </div>
 
-                <!-- Multi-Horizon Window Summary Cards of Gộp 2 -->
+                <!-- ========================================================================= -->
+                <!-- BỘ CHỌN PHƯƠNG PHÁP ĐỐI SOÁT & THỐNG KÊ (MẶC ĐỊNH PHƯƠNG PHÁP LÃI TOP 1) -->
+                <!-- ========================================================================= -->
+                <div class="rounded-3xl border-2 border-indigo-200 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-5 text-white shadow-xl">
+                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="rounded-full bg-amber-400 text-slate-950 font-black text-[10px] px-2.5 py-0.5 uppercase tracking-wide">
+                                    📊 ĐỐI SOÁT & THỐNG KÊ LŨY KẾ
+                                </span>
+                                <span id="deStatsActiveBadge" class="rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-2.5 py-0.5 text-xs font-bold">
+                                    👑 Mặc định: Đề Gộp 3 Tam Trụ (+3.318M)
+                                </span>
+                            </div>
+                            <h3 class="mt-2 text-lg sm:text-xl font-black text-white">
+                                Chọn Phương Pháp Đề Để Xem Đối Soát & Thống Kê Lũy Kế
+                            </h3>
+                            <p class="text-xs text-indigo-200 mt-0.5">
+                                Tự động đặt mặc định phương pháp có thắng thua lũy kế cao nhất. Bấm để chuyển đổi bảng tháng và nhật ký đối soát bên dưới:
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2.5" id="deStatsMethodTabs">
+                            <button type="button" data-stats-method="tripleMerge" id="btnStatsTripleMerge" class="de-stats-tab-btn rounded-xl border border-amber-400 bg-amber-400 text-slate-950 font-black px-3.5 py-2.5 text-xs transition-all shadow-md flex items-center gap-2 ring-2 ring-amber-300">
+                                <span>🏛️ Đề Gộp 3 (Tam Trụ)</span>
+                                <span class="rounded-md bg-amber-950 text-amber-300 px-1.5 py-0.5 text-[10px] font-black">+3.318M</span>
+                            </button>
+                            <button type="button" data-stats-method="adaptiveDualMerge" id="btnStatsAdaptive" class="de-stats-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2.5 text-xs hover:bg-white/20 transition-all flex items-center gap-2">
+                                <span>💎 Đề Gộp 2 (Thích Ứng Alpha)</span>
+                                <span class="rounded-md bg-teal-500/30 text-teal-300 px-1.5 py-0.5 text-[10px] font-black">+2.436M</span>
+                            </button>
+                            <button type="button" data-stats-method="dualMerge" id="btnStatsDualMerge" class="de-stats-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2.5 text-xs hover:bg-white/20 transition-all flex items-center gap-2">
+                                <span>🎯 Đề Gộp 1 (Tiêu Chuẩn)</span>
+                                <span class="rounded-md bg-slate-800 text-slate-300 px-1.5 py-0.5 text-[10px] font-black">+1.512M</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Multi-Horizon Window Summary Cards -->
                 <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
                     <div class="border-b border-slate-100 bg-slate-50/80 px-6 py-4">
                         <p class="text-xs font-black uppercase tracking-wider text-indigo-600">THỐNG KÊ ĐA CỬA SỔ THEO DÕI</p>
-                        <h2 class="mt-0.5 text-lg font-black text-slate-900">Hiệu Suất Thực Chiến Đề Gộp 2 Theo Chu Kỳ (7, 15, 30, 60, 90 ngày)</h2>
+                        <h2 id="deStatsWindowsTitle" class="mt-0.5 text-lg font-black text-slate-900">Hiệu Suất Thực Chiến Theo Chu Kỳ (7, 15, 30, 60, 90 ngày)</h2>
                     </div>
                     <div class="p-6 overflow-x-auto custom-scrollbar">
                         <div id="dualMergeWindowsTable" class="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6"></div>
                     </div>
                 </section>
 
-                <!-- Monthly Performance Breakdown Table of Gộp 2 -->
+                <!-- Monthly Performance Breakdown Table -->
                 <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
                     <div class="border-b border-slate-100 bg-slate-50/80 px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                         <div>
                             <p class="text-xs font-black uppercase tracking-wider text-amber-600">THỐNG KÊ TOÀN NĂM 2026 THEO TỪNG THÁNG</p>
-                            <h2 class="mt-0.5 text-lg font-black text-slate-900">Chi Tiết Thắng / Thua, Lợi Nhuận & Lũy Kế Từng Tháng (Đề Gộp 2)</h2>
+                            <h2 id="deStatsMonthlyTitle" class="mt-0.5 text-lg font-black text-slate-900">Chi Tiết Thắng / Thua, Lợi Nhuận & Lũy Kế Từng Tháng</h2>
                         </div>
                         <span id="dualMergeYearlyBadge" class="inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-slate-50 px-3.5 py-1 text-xs font-black text-slate-800">
                             <i class="bi bi-graph-up-arrow text-slate-600"></i> LŨY KẾ CẢ NĂM: --
@@ -703,9 +741,9 @@
                         <div>
                             <div class="flex items-center gap-2">
                                 <span class="rounded-full bg-gradient-to-r from-amber-500 to-indigo-600 px-3 py-0.5 text-[11px] font-black uppercase text-white shadow-xs">NHẬT KÝ ĐỐI SOÁT</span>
-                                <h2 class="text-lg font-black text-slate-900">Bảng Đối Soát Thực Chiến Gộp Hàng Ngày</h2>
+                                <h2 id="deStatsLedgerTitle" class="text-lg font-black text-slate-900">Bảng Đối Soát Thực Chiến Hàng Ngày</h2>
                             </div>
-                            <p class="mt-0.5 text-xs text-slate-500">Mỗi ngày tự động tuyển chọn 2 phương pháp tối ưu nhất theo Strict PIT; đối soát minh bạch với kết quả giải đặc biệt thực tế.</p>
+                            <p class="mt-0.5 text-xs text-slate-500">Mỗi ngày tuyển chọn theo Strict PIT; đối soát minh bạch với kết quả giải đặc biệt thực tế.</p>
                         </div>
                         <div class="flex flex-wrap items-center gap-3">
                             <label class="relative flex items-center text-xs text-slate-500">
@@ -736,6 +774,9 @@
                         <button type="button" data-filter="pit" class="ledger-filter-btn rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors">
                             ⚡ Strict PIT (<span id="countFilterPit">0</span>)
                         </button>
+                        <button type="button" data-filter="win_x3" id="btnFilterWinX3" class="ledger-filter-btn rounded-lg border border-amber-400 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-950 hover:bg-amber-100 transition-colors">
+                            👑 Trúng x3 (<span id="countFilterWinX3">0</span>)
+                        </button>
                         <button type="button" data-filter="win_x2" class="ledger-filter-btn rounded-lg border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-900 hover:bg-amber-100 transition-colors">
                             🎉 Trúng x2 (<span id="countFilterWinX2">0</span>)
                         </button>
@@ -754,8 +795,8 @@
                             <tr class="border-b border-slate-200 bg-slate-100/70 text-slate-600 uppercase font-black tracking-wider text-[10px]">
                                 <th class="px-4 py-3">Ngày & Nguồn</th>
                                 <th class="px-3 py-3 text-center">KQĐB</th>
-                                <th class="px-4 py-3">2 Phương Pháp Gộp Tuyển Chọn</th>
-                                <th class="px-4 py-3">Dàn Đã Khóa (x2 Trùng / x1 Riêng)</th>
+                                <th class="px-4 py-3">Phương Pháp Gộp Tuyển Chọn</th>
+                                <th class="px-4 py-3">Dàn Đã Khóa (Chi Tiết Phân Tầng)</th>
                                 <th class="px-3 py-3 text-center">Kết Quả</th>
                                 <th class="px-4 py-3 text-right">Lãi / Lỗ Ngày (Lũy kế)</th>
                             </tr>

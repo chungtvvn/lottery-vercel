@@ -22,8 +22,9 @@
     let activeMainTab = 'dualMerge'; // 'dualMerge' | 'singleMethod'
     let currentStrategyId = 'balanced-selector-fixed30-v1';
     let dualMergeLogLimit = '30'; // Mặc định 30 ngày gần nhất
-    let dualMergeFilterStatus = 'all'; // 'all' | 'live' | 'pit' | 'win_x2' | 'win_x1' | 'loss'
+    let dualMergeFilterStatus = 'all'; // 'all' | 'live' | 'pit' | 'win_x3' | 'win_x2' | 'win_x1' | 'loss'
     let dualMergeSearchQuery = '';
+    let currentDeStatsMethod = 'tripleMerge';
 
     const byId = id => document.getElementById(id);
 
@@ -152,30 +153,7 @@
     // ==========================================
     function renderDualMergeView(dualMergeData) {
         if (!dualMergeData) return;
-        const summary = dualMergeData.summary || {};
         const rec = dualMergeData.latestRecommendation;
-
-        // KPI Summary Cards
-        const kpiContainer = byId('dualMergeSummaryCards');
-        if (kpiContainer) {
-            const profitClass = Number(summary.overallProfitK || 0) >= 0 ? 'text-emerald-400 font-black' : 'text-rose-400 font-black';
-            const kpis = [
-                ['NGÀY ĐÃ ĐỐI SOÁT', `${summary.totalSettled || 0} kỳ`, 'Khóa snapshot & Strict PIT'],
-                ['TRÚNG X2 (CỰC VIP)', `${summary.winsX2 || 0} kỳ`, `${percent(summary.winX2Rate)} · Ăn 168M (+108M)`],
-                ['TRÚNG X1 (BỌC LÓT)', `${summary.winsX1 || 0} kỳ`, `${percent(summary.winX1Rate)} · Ăn 84M (+24M)`],
-                ['TỔNG TỶ LỆ TRÚNG', `${percent(summary.overallHitRate)}`, `${summary.totalWins || 0} thắng / ${summary.totalLosses || 0} trượt`],
-                ['TỔNG TIỀN VỐN', `${moneyM(summary.totalStakeK)}`, '60M mỗi ngày'],
-                ['LÃI / LỖ RÒNG', `${signedM(summary.overallProfitK)}`, `${percent(summary.roi)} ROI`]
-            ];
-
-            kpiContainer.innerHTML = kpis.map(([label, val, note], idx) => `
-                <div class="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
-                    <p class="text-[10px] font-black uppercase tracking-wider text-amber-300/90">${escapeHtml(label)}</p>
-                    <p class="mt-1 text-xl sm:text-2xl font-black ${idx === 5 ? profitClass : 'text-white'}">${escapeHtml(val)}</p>
-                    <p class="mt-0.5 text-xs text-slate-300">${escapeHtml(note)}</p>
-                </div>
-            `).join('');
-        }
 
         // Today's Recommendation Card
         if (rec) {
@@ -256,40 +234,7 @@
             }
         }
 
-        // Multi-Horizon Windows
-        const windowsContainer = byId('dualMergeWindowsTable');
-        if (windowsContainer && summary.windows) {
-            const wins = summary.windows;
-            const windowItems = [
-                ['7 NGÀY GẦN NHẤT', wins.last7],
-                ['15 NGÀY GẦN NHẤT', wins.last15],
-                ['30 NGÀY GẦN NHẤT', wins.last30],
-                ['60 NGÀY GẦN NHẤT', wins.last60],
-                ['90 NGÀY GẦN NHẤT', wins.last90],
-                ['TOÀN BỘ NĂM 2026', wins.all2026 || wins.all || wins.liveTotal]
-            ];
-
-            windowsContainer.innerHTML = windowItems.map(([label, w]) => {
-                if (!w || !w.days) return '';
-                const profitClass = Number(w.profitK || 0) >= 0 ? 'text-emerald-700' : 'text-rose-700';
-                return `
-                    <div class="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 shadow-xs">
-                        <p class="text-[10px] font-black uppercase tracking-wider text-slate-500">${escapeHtml(label)}</p>
-                        <strong class="mt-1 block text-lg font-black text-slate-900">${percent(w.hitRate)} trúng</strong>
-                        <p class="text-xs text-slate-600 font-semibold mt-0.5">${w.winsX2} kỳ x2 · ${w.winsX1} kỳ x1 · ${w.days} ngày</p>
-                        <p class="mt-1 font-mono font-black text-xs ${profitClass}">${signedM(w.profitK)} (${percent(w.roi)} ROI)</p>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Settled Dual-Merge Ledger (Pinned with latest locked snapshot)
-        renderDualMergeLedger(dualMergeData.settledLedger, dualMergeData.latestRecommendation);
-
-        // Monthly Breakdown Table
-        renderDualMergeMonthlyTable(dualMergeData.settledLedger);
-
-        // Triple-Consensus Experimental Module
+        // Triple-Consensus Module
         if (payload?.tripleMerge) {
             renderTripleMergeView(payload.tripleMerge);
         }
@@ -299,8 +244,14 @@
             renderAdaptiveDualMergeView(payload.adaptiveDualMerge);
         }
 
-        // Highlight Champion De Method with Highest Live / Overall Profit
+        // Highlight Champion De Method with Highest Live / Overall Profit on Recommendation Cards
         highlightBestDeMethod(payload);
+
+        // Setup Stats & Ledger Method Switcher and Default to Best Profit Method
+        setupDeStatsSwitcher();
+        const champion = resolveChampionDeMethod(payload);
+        currentDeStatsMethod = champion ? champion.id : 'tripleMerge';
+        switchDeStatsMethod(currentDeStatsMethod);
     }
 
     function highlightBestDeMethod(dataPayload) {
@@ -861,10 +812,150 @@
         }).join('');
     }
 
-    function renderDualMergeMonthlyTable(records) {
+    // ==========================================
+    // UNIFIED ĐỀ METHODS STATS & LEDGER SYSTEM
+    // ==========================================
+    function getDeMethodObject(methodId, p = payload) {
+        if (methodId === 'tripleMerge') {
+            const data = p?.tripleMerge;
+            return {
+                id: 'tripleMerge',
+                name: 'Đề Gộp 3 (Tam Trụ)',
+                shortName: 'Tam Trụ',
+                stakePerDay: 90000,
+                summary: data?.summary || {},
+                records: data?.settledLedger || [],
+                latestRec: data?.latestRecommendation || null,
+                overallProfitK: Number(data?.summary?.overallProfitK || 0),
+                overallHitRate: Number(data?.summary?.overallHitRate || 0),
+                liveProfitK: data?.summary?.live?.profitK ?? -Infinity
+            };
+        }
+        if (methodId === 'adaptiveDualMerge') {
+            const data = p?.adaptiveDualMerge;
+            return {
+                id: 'adaptiveDualMerge',
+                name: 'Đề Gộp 2 (Thích Ứng Alpha)',
+                shortName: 'Thích Ứng Alpha',
+                stakePerDay: 60000,
+                summary: data?.summary || {},
+                records: data?.settledLedger || [],
+                latestRec: data?.latestRecommendation || null,
+                overallProfitK: Number(data?.summary?.overallProfitK || 0),
+                overallHitRate: Number(data?.summary?.overallHitRate || 0),
+                liveProfitK: data?.summary?.live?.profitK ?? -Infinity
+            };
+        }
+        // default dualMerge
+        const data = p?.dualMerge;
+        return {
+            id: 'dualMerge',
+            name: 'Đề Gộp 1 (Tiêu Chuẩn)',
+            shortName: 'Tiêu Chuẩn',
+            stakePerDay: 60000,
+            summary: data?.summary || {},
+            records: data?.settledLedger || [],
+            latestRec: data?.latestRecommendation || null,
+            overallProfitK: Number(data?.summary?.overallProfitK || 0),
+            overallHitRate: Number(data?.summary?.overallHitRate || 0),
+            liveProfitK: data?.summary?.live?.profitK ?? -Infinity
+        };
+    }
+
+    function resolveChampionDeMethod(p = payload) {
+        if (!p) return { id: 'tripleMerge', name: 'Đề Gộp 3 (Tam Trụ)' };
+        const methods = [
+            getDeMethodObject('tripleMerge', p),
+            getDeMethodObject('adaptiveDualMerge', p),
+            getDeMethodObject('dualMerge', p)
+        ];
+        methods.sort((a, b) => {
+            if (Number.isFinite(a.liveProfitK) && Number.isFinite(b.liveProfitK) && a.liveProfitK !== b.liveProfitK) {
+                return b.liveProfitK - a.liveProfitK;
+            }
+            return b.overallProfitK - a.overallProfitK;
+        });
+        return methods[0] || getDeMethodObject('tripleMerge', p);
+    }
+
+    function renderDeKpiSummaryCards(summary = {}, methodId = 'tripleMerge') {
+        const kpiContainer = byId('dualMergeSummaryCards');
+        if (!kpiContainer) return;
+        const profitClass = Number(summary.overallProfitK || 0) >= 0 ? 'text-emerald-400 font-black' : 'text-rose-400 font-black';
+
+        let kpis = [];
+        if (methodId === 'tripleMerge') {
+            kpis = [
+                ['NGÀY ĐÃ ĐỐI SOÁT', `${summary.totalSettled || 0} kỳ`, 'Khóa snapshot & Strict PIT'],
+                ['TRÚNG X3 (SIÊU ĐỒNG THUẬN)', `${summary.winsX3 || 0} kỳ`, `${percent(summary.winX3Rate)} · Ăn 252M (+162M)`],
+                ['TRÚNG X2 (ĐỒNG THUẬN CAO)', `${summary.winsX2 || 0} kỳ`, `${percent(summary.winX2Rate)} · Ăn 168M (+78M)`],
+                ['TỔNG TỶ LỆ TRÚNG', `${percent(summary.overallHitRate)}`, `${summary.totalWins || 0} thắng / ${summary.totalLosses || 0} trượt`],
+                ['TỔNG TIỀN VỐN', `${moneyM(summary.totalStakeK)}`, '90M mỗi ngày (3 tầng vốn)'],
+                ['LÃI / LỖ RÒNG', `${signedM(summary.overallProfitK)}`, `${percent(summary.roi)} ROI`]
+            ];
+        } else {
+            kpis = [
+                ['NGÀY ĐÃ ĐỐI SOÁT', `${summary.totalSettled || 0} kỳ`, 'Khóa snapshot & Strict PIT'],
+                ['TRÚNG X2 (CỰC VIP)', `${summary.winsX2 || 0} kỳ`, `${percent(summary.winX2Rate)} · Ăn 168M (+108M)`],
+                ['TRÚNG X1 (BỌC LÓT)', `${summary.winsX1 || 0} kỳ`, `${percent(summary.winX1Rate)} · Ăn 84M (+24M)`],
+                ['TỔNG TỶ LỆ TRÚNG', `${percent(summary.overallHitRate)}`, `${summary.totalWins || 0} thắng / ${summary.totalLosses || 0} trượt`],
+                ['TỔNG TIỀN VỐN', `${moneyM(summary.totalStakeK)}`, '60M mỗi ngày (2 tầng vốn)'],
+                ['LÃI / LỖ RÒNG', `${signedM(summary.overallProfitK)}`, `${percent(summary.roi)} ROI`]
+            ];
+        }
+
+        kpiContainer.innerHTML = kpis.map(([label, val, note], idx) => `
+            <div class="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
+                <p class="text-[10px] font-black uppercase tracking-wider text-amber-300/90">${escapeHtml(label)}</p>
+                <p class="mt-1 text-xl sm:text-2xl font-black ${idx === 5 ? profitClass : 'text-white'}">${escapeHtml(val)}</p>
+                <p class="mt-0.5 text-xs text-slate-300">${escapeHtml(note)}</p>
+            </div>
+        `).join('');
+    }
+
+    function renderDeWindowsTable(windows = {}, methodId = 'tripleMerge') {
+        const windowsContainer = byId('dualMergeWindowsTable');
+        if (!windowsContainer) return;
+        if (!windows) {
+            windowsContainer.innerHTML = '<p class="text-xs text-slate-400 col-span-6 p-4 text-center">Chưa có dữ liệu chu kỳ.</p>';
+            return;
+        }
+
+        const windowItems = [
+            ['7 NGÀY GẦN NHẤT', windows.last7],
+            ['15 NGÀY GẦN NHẤT', windows.last15],
+            ['30 NGÀY GẦN NHẤT', windows.last30],
+            ['60 NGÀY GẦN NHẤT', windows.last60],
+            ['90 NGÀY GẦN NHẤT', windows.last90],
+            ['TOÀN BỘ NĂM 2026', windows.all2026 || windows.all || windows.liveTotal]
+        ];
+
+        windowsContainer.innerHTML = windowItems.map(([label, w]) => {
+            if (!w || !w.days) return '';
+            const profitClass = Number(w.profitK || 0) >= 0 ? 'text-emerald-700' : 'text-rose-700';
+            const detailStr = methodId === 'tripleMerge'
+                ? `${w.winsX3 || 0} x3 · ${w.winsX2 || 0} x2 · ${w.winsX1 || 0} x1 · ${w.days} ngày`
+                : `${w.winsX2 || 0} x2 · ${w.winsX1 || 0} x1 · ${w.days} ngày`;
+
+            return `
+                <div class="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 shadow-xs">
+                    <p class="text-[10px] font-black uppercase tracking-wider text-slate-500">${escapeHtml(label)}</p>
+                    <strong class="mt-1 block text-lg font-black text-slate-900">${percent(w.hitRate)} trúng</strong>
+                    <p class="text-xs text-slate-600 font-semibold mt-0.5">${detailStr}</p>
+                    <p class="mt-1 font-mono font-black text-xs ${profitClass}">${signedM(w.profitK)} (${percent(w.roi)} ROI)</p>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderDeMonthlyTable(records = [], methodId = 'tripleMerge') {
         const container = byId('dualMergeMonthlyTableBody');
         if (!container) return;
-        const allRecords = (records || []).filter(r => r.settled && Number.isInteger(r.actual));
+        const allRecords = (records || []).filter(r => {
+            const hasActual = Number.isInteger(r.actual) || Number.isInteger(r.actualSpecial);
+            return r.settled !== false && hasActual;
+        });
+
         if (!allRecords.length) {
             container.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-slate-500 font-semibold">Chưa có dữ liệu thống kê tháng.</td></tr>';
             return;
@@ -873,7 +964,8 @@
         // Group by Month (YYYY-MM)
         const monthGroups = {};
         allRecords.forEach(r => {
-            const ym = (r.date || '').slice(0, 7);
+            const dateStr = r.date || r.predictionDate || '';
+            const ym = dateStr.slice(0, 7);
             if (!ym) return;
             if (!monthGroups[ym]) monthGroups[ym] = [];
             monthGroups[ym].push(r);
@@ -881,13 +973,15 @@
 
         const sortedMonths = Object.keys(monthGroups).sort();
         let cumulativeProfitK = 0;
+        const defaultStakeK = methodId === 'tripleMerge' ? 90000 : 60000;
 
         container.innerHTML = sortedMonths.map(ym => {
             const monthRecords = monthGroups[ym];
             const days = monthRecords.length;
-            const winsX2 = monthRecords.filter(r => r.hitType === 'win_x2').length;
-            const winsX1 = monthRecords.filter(r => r.hitType === 'win_x1').length;
-            const totalWins = winsX2 + winsX1;
+            const winsX3 = monthRecords.filter(r => r.hitType === 'win_x3').length;
+            const winsX2 = monthRecords.filter(r => r.hitType === 'win_x2' || r.isX2).length;
+            const winsX1 = monthRecords.filter(r => r.hitType === 'win_x1' || (r.isHit && !r.isX2 && r.hitType !== 'win_x3')).length;
+            const totalWins = winsX3 + winsX2 + winsX1;
             const losses = days - totalWins;
             const hitRate = days > 0 ? (totalWins / days) : 0;
 
@@ -895,7 +989,8 @@
             let longestLoss = 0;
             let currentLoss = 0;
             monthRecords.forEach(r => {
-                if (r.hitType === 'win_x2' || r.hitType === 'win_x1') {
+                const isHit = r.hitType === 'win_x3' || r.hitType === 'win_x2' || r.hitType === 'win_x1' || r.isHit;
+                if (isHit) {
                     currentLoss = 0;
                 } else {
                     currentLoss++;
@@ -903,7 +998,7 @@
                 }
             });
 
-            const stakeK = monthRecords.reduce((sum, r) => sum + (r.stakeK || 60), 0);
+            const stakeK = monthRecords.reduce((sum, r) => sum + (r.stakeK || defaultStakeK), 0);
             const payoutK = monthRecords.reduce((sum, r) => sum + (r.payoutK || 0), 0);
             const profitK = payoutK - stakeK;
             const roi = stakeK > 0 ? (profitK / stakeK) : 0;
@@ -914,15 +1009,15 @@
             const profitClass = profitK >= 0 ? 'text-emerald-700 font-black' : 'text-rose-700 font-black';
             const cumClass = cumulativeProfitK >= 0 ? 'text-emerald-800 font-black' : 'text-rose-800 font-black';
 
+            const hitBreakdownHtml = methodId === 'tripleMerge'
+                ? `<span class="font-black text-amber-700">${winsX3} x3</span> · <span class="font-black text-cyan-700">${winsX2} x2</span> · <span class="font-black text-emerald-700">${winsX1} x1</span> / <span class="font-bold text-rose-600">${losses} thua</span>`
+                : `<span class="font-black text-amber-700">${winsX2} x2</span> · <span class="font-black text-emerald-700">${winsX1} x1</span> / <span class="font-bold text-rose-600">${losses} thua</span>`;
+
             return `
                 <tr class="hover:bg-slate-50/80 transition-colors fast-render-row table-row-contain">
                     <td class="p-3.5 pl-6 font-bold text-slate-900">${monthLabel}</td>
                     <td class="p-3.5 text-center font-bold text-slate-700">${days} ngày</td>
-                    <td class="p-3.5 text-center">
-                        <span class="font-black text-amber-700">${winsX2} x2</span> · 
-                        <span class="font-black text-emerald-700">${winsX1} x1</span> / 
-                        <span class="font-bold text-rose-600">${losses} thua</span>
-                    </td>
+                    <td class="p-3.5 text-center">${hitBreakdownHtml}</td>
                     <td class="p-3.5 text-center font-black text-slate-900">${percent(hitRate)}</td>
                     <td class="p-3.5 text-center font-bold ${longestLoss >= 4 ? 'text-rose-600' : 'text-slate-600'}">${longestLoss} ngày</td>
                     <td class="p-3.5 text-right font-mono font-semibold text-slate-600">${moneyM(stakeK)}</td>
@@ -935,7 +1030,7 @@
 
         const yearlyBadge = byId('dualMergeYearlyBadge');
         if (yearlyBadge) {
-            const totalStakeK = allRecords.reduce((sum, r) => sum + (r.stakeK || 60), 0);
+            const totalStakeK = allRecords.reduce((sum, r) => sum + (r.stakeK || defaultStakeK), 0);
             const totalPayoutK = allRecords.reduce((sum, r) => sum + (r.payoutK || 0), 0);
             const totalProfitK = totalPayoutK - totalStakeK;
             const totalRoi = totalStakeK > 0 ? (totalProfitK / totalStakeK) : 0;
@@ -953,18 +1048,25 @@
         }
     }
 
-    function renderDualMergeLedger(records, latestRec = null) {
+    function renderDeDailyLedger(records = [], latestRec = null, methodId = 'tripleMerge') {
         const container = byId('dualMergeLedgerBody');
         if (!container) return;
 
+        const defaultStakeK = methodId === 'tripleMerge' ? 90000 : 60000;
         const allRecords = (records || []).slice();
 
         // If today's recommendation is pending (not in settled ledger), pin it to the top
         if (latestRec && latestRec.predictionDate) {
-            const isSettled = allRecords.some(r => r.date === latestRec.predictionDate && r.settled && Number.isInteger(r.actual));
+            const isSettled = allRecords.some(r => {
+                const rDate = r.date || r.predictionDate;
+                const hasActual = Number.isInteger(r.actual) || Number.isInteger(r.actualSpecial);
+                return rDate === latestRec.predictionDate && (r.settled || hasActual);
+            });
+
             if (!isSettled) {
-                allRecords.push({
+                const pendingRow = {
                     date: latestRec.predictionDate,
+                    predictionDate: latestRec.predictionDate,
                     actual: null,
                     settled: false,
                     isLocked: true,
@@ -975,46 +1077,81 @@
                     m1Label: latestRec.m1Label,
                     m2: latestRec.m2,
                     m2Label: latestRec.m2Label,
+                    m3: latestRec.m3,
+                    m3Label: latestRec.m3Label,
+                    mode: latestRec.mode,
+                    modeLabel: latestRec.modeLabel,
                     intersection: latestRec.intersectionX2,
                     uniqueSingles: latestRec.uniqueSinglesX1,
-                    union: latestRec.fullUnion,
-                    overlapCount: latestRec.overlapCount,
-                    totalNumbers: latestRec.totalNumbersCount,
+                    tierX3: latestRec.tierX3,
+                    tierX2: latestRec.tierX2,
+                    tierX1: latestRec.tierX1,
+                    fullUnion: latestRec.fullUnion,
+                    countX3: latestRec.countX3 || (latestRec.tierX3?.length || 0),
+                    countX2: latestRec.countX2 || (latestRec.tierX2?.length || 0),
+                    countX1: latestRec.countX1 || (latestRec.tierX1?.length || 0),
+                    overlapCount: latestRec.overlapCount || (latestRec.intersectionX2?.length || 0),
+                    totalNumbers: latestRec.totalNumbersCount || (latestRec.fullUnion?.length || 0),
                     hitType: 'pending',
-                    stakeK: 60,
+                    stakeK: defaultStakeK,
                     payoutK: 0,
                     profitK: null
-                });
+                };
+                allRecords.push(pendingRow);
             }
         }
 
-        // Calculate dynamic filter counts
-        const countAll = allRecords.length;
-        const countLive = allRecords.filter(r => r.isLiveSnapshot || r.sourceType === 'live-snapshot').length;
-        const countPit = allRecords.filter(r => !r.isLiveSnapshot && r.sourceType !== 'live-snapshot').length;
-        const countWinX2 = allRecords.filter(r => r.hitType === 'win_x2').length;
-        const countWinX1 = allRecords.filter(r => r.hitType === 'win_x1').length;
-        const countLoss = allRecords.filter(r => r.hitType === 'loss').length;
+        // Sort chronologically ascending to accurately calculate running cumulative profit
+        allRecords.sort((a, b) => {
+            const da = a.date || a.predictionDate || '';
+            const db = b.date || b.predictionDate || '';
+            return da.localeCompare(db);
+        });
+
+        let runningCumulativeK = 0;
+        const recordsWithCumProfit = allRecords.map(r => {
+            const hasActual = Number.isInteger(r.actual) || Number.isInteger(r.actualSpecial);
+            const isSettled = r.settled !== false && hasActual;
+            if (isSettled) {
+                runningCumulativeK += Number(r.profitK || 0);
+            }
+            return {
+                ...r,
+                calcCumulativeProfitK: isSettled ? runningCumulativeK : null
+            };
+        });
+
+        // Dynamic Filter Counts
+        const countAll = recordsWithCumProfit.length;
+        const countLive = recordsWithCumProfit.filter(r => r.isLiveSnapshot || r.sourceType === 'live-snapshot').length;
+        const countPit = recordsWithCumProfit.filter(r => !r.isLiveSnapshot && r.sourceType !== 'live-snapshot').length;
+        const countWinX3 = recordsWithCumProfit.filter(r => r.hitType === 'win_x3').length;
+        const countWinX2 = recordsWithCumProfit.filter(r => r.hitType === 'win_x2' || r.isX2).length;
+        const countWinX1 = recordsWithCumProfit.filter(r => r.hitType === 'win_x1' || (r.isHit && !r.isX2 && r.hitType !== 'win_x3')).length;
+        const countLoss = recordsWithCumProfit.filter(r => r.hitType === 'loss').length;
 
         if (byId('countFilterAll')) byId('countFilterAll').textContent = String(countAll);
         if (byId('countFilterLive')) byId('countFilterLive').textContent = String(countLive);
         if (byId('countFilterPit')) byId('countFilterPit').textContent = String(countPit);
+        if (byId('countFilterWinX3')) byId('countFilterWinX3').textContent = String(countWinX3);
         if (byId('countFilterWinX2')) byId('countFilterWinX2').textContent = String(countWinX2);
         if (byId('countFilterWinX1')) byId('countFilterWinX1').textContent = String(countWinX1);
         if (byId('countFilterLoss')) byId('countFilterLoss').textContent = String(countLoss);
 
-        // Filter and limit rows
-        let rows = allRecords.slice().reverse();
+        // Filter and limit rows (descending for display)
+        let rows = recordsWithCumProfit.slice().reverse();
 
         // 1. Status Filter
         if (dualMergeFilterStatus === 'live') {
             rows = rows.filter(r => r.isLiveSnapshot || r.sourceType === 'live-snapshot');
         } else if (dualMergeFilterStatus === 'pit') {
             rows = rows.filter(r => !r.isLiveSnapshot && r.sourceType !== 'live-snapshot');
+        } else if (dualMergeFilterStatus === 'win_x3') {
+            rows = rows.filter(r => r.hitType === 'win_x3');
         } else if (dualMergeFilterStatus === 'win_x2') {
-            rows = rows.filter(r => r.hitType === 'win_x2');
+            rows = rows.filter(r => r.hitType === 'win_x2' || r.isX2);
         } else if (dualMergeFilterStatus === 'win_x1') {
-            rows = rows.filter(r => r.hitType === 'win_x1');
+            rows = rows.filter(r => r.hitType === 'win_x1' || (r.isHit && !r.isX2 && r.hitType !== 'win_x3'));
         } else if (dualMergeFilterStatus === 'loss') {
             rows = rows.filter(r => r.hitType === 'loss');
         }
@@ -1022,7 +1159,7 @@
         // 2. Search Query Filter
         if (dualMergeSearchQuery.trim()) {
             const query = dualMergeSearchQuery.trim().toLowerCase();
-            rows = rows.filter(r => (r.date || '').toLowerCase().includes(query));
+            rows = rows.filter(r => ((r.date || r.predictionDate) || '').toLowerCase().includes(query));
         }
 
         // 3. Limit Slice
@@ -1037,9 +1174,11 @@
         }
 
         container.innerHTML = rows.map(r => {
-            const isSettled = r.settled && Number.isInteger(r.actual);
-            const actualStr = isSettled 
-                ? number(r.actual) 
+            const rowDate = r.date || r.predictionDate || '';
+            const actualNum = Number.isInteger(r.actual) ? r.actual : (Number.isInteger(r.actualSpecial) ? r.actualSpecial : null);
+            const isSettled = r.settled !== false && actualNum !== null;
+            const actualStr = isSettled
+                ? number(actualNum)
                 : `<span class="text-amber-700 font-black" title="Chờ mở thưởng 18h30">⏳</span>`;
 
             // Source Type Badge
@@ -1052,46 +1191,90 @@
             let outcomeClass = 'bg-amber-50 text-amber-900 border-amber-300 border-dashed font-bold';
             let outcomeText = '⏳ Chờ KQ 18h30';
             if (isSettled) {
-                if (r.hitType === 'win_x2') {
+                if (r.hitType === 'win_x3') {
+                    outcomeClass = 'bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-300 text-amber-950 border-amber-500 font-black shadow-xs ring-1 ring-amber-400/50';
+                    outcomeText = '👑 TRÚNG X3 (+162M)';
+                } else if (r.hitType === 'win_x2' || r.isX2) {
                     outcomeClass = 'bg-gradient-to-r from-amber-200 via-amber-300 to-yellow-200 text-amber-950 border-amber-400 font-black shadow-xs ring-1 ring-amber-400/50';
-                    outcomeText = '🎉 TRÚNG X2 (+108M)';
-                } else if (r.hitType === 'win_x1') {
-                    outcomeClass = 'bg-emerald-100 text-emerald-900 border-emerald-300 font-bold';
-                    outcomeText = '✅ TRÚNG X1 (+24M)';
+                    outcomeText = methodId === 'tripleMerge' ? '⚡ TRÚNG X2 (+78M)' : '🎉 TRÚNG X2 (+108M)';
+                } else if (r.hitType === 'win_x1' || (r.isHit && !r.isX2)) {
+                    outcomeClass = methodId === 'tripleMerge'
+                        ? 'bg-indigo-100 text-indigo-900 border-indigo-300 font-bold'
+                        : 'bg-emerald-100 text-emerald-900 border-emerald-300 font-bold';
+                    outcomeText = methodId === 'tripleMerge' ? '🛡️ TRÚNG X1 (HÒA)' : '✅ TRÚNG X1 (+24M)';
                 } else {
                     outcomeClass = 'bg-rose-100 text-rose-800 border-rose-200 font-bold';
-                    outcomeText = '❌ TRƯỢT (-60M)';
+                    const lossAmount = methodId === 'tripleMerge' ? '-90M' : '-60M';
+                    outcomeText = `❌ TRƯỢT (${lossAmount})`;
                 }
             }
 
-            const x2Nums = r.intersection || [];
-            const x1Nums = r.uniqueSingles || [];
-
-            // Highlighted Chips for Numbers
-            const chipsHtml = [
-                ...x2Nums.map(n => {
-                    const match = isSettled && Number(n) === Number(r.actual);
-                    return `<span class="inline-flex items-center justify-center rounded px-1.5 py-0.5 font-mono text-xs font-black transition-transform ${match ? 'bg-amber-300 text-amber-950 ring-2 ring-amber-500 scale-110 shadow-sm' : 'bg-amber-100/90 text-amber-950 border border-amber-300/80'}">${number(n)}<sup class="ml-0.5 text-[8px] text-amber-700">x2</sup></span>`;
-                }),
-                ...x1Nums.map(n => {
-                    const match = isSettled && Number(n) === Number(r.actual);
-                    return `<span class="inline-flex items-center justify-center rounded px-1.5 py-0.5 font-mono text-xs font-bold transition-transform ${match ? 'bg-amber-300 text-amber-950 ring-2 ring-amber-500 scale-110 shadow-sm' : 'bg-slate-100 text-slate-700 border border-slate-200'}">${number(n)}</span>`;
-                })
-            ].join(' ');
+            // Chips Construction
+            let chipsHtml = '';
+            if (methodId === 'tripleMerge') {
+                const x3Nums = r.tierX3 || [];
+                const x2Nums = r.tierX2 || [];
+                const x1Nums = r.tierX1 || [];
+                chipsHtml = [
+                    ...x3Nums.map(n => {
+                        const match = isSettled && Number(n) === Number(actualNum);
+                        return `<span class="inline-flex items-center justify-center rounded px-1.5 py-0.5 font-mono text-xs font-black transition-transform ${match ? 'bg-amber-300 text-amber-950 ring-2 ring-amber-500 scale-110 shadow-sm' : 'bg-amber-100/90 text-amber-950 border border-amber-300/80'}">${number(n)}<sup class="ml-0.5 text-[8px] text-amber-700 font-black">x3</sup></span>`;
+                    }),
+                    ...x2Nums.map(n => {
+                        const match = isSettled && Number(n) === Number(actualNum);
+                        return `<span class="inline-flex items-center justify-center rounded px-1.5 py-0.5 font-mono text-xs font-black transition-transform ${match ? 'bg-cyan-300 text-cyan-950 ring-2 ring-cyan-500 scale-110 shadow-sm' : 'bg-cyan-100/90 text-cyan-950 border border-cyan-300/80'}">${number(n)}<sup class="ml-0.5 text-[8px] text-cyan-700 font-bold">x2</sup></span>`;
+                    }),
+                    ...x1Nums.map(n => {
+                        const match = isSettled && Number(n) === Number(actualNum);
+                        return `<span class="inline-flex items-center justify-center rounded px-1.5 py-0.5 font-mono text-xs font-bold transition-transform ${match ? 'bg-indigo-300 text-indigo-950 ring-2 ring-indigo-500 scale-110 shadow-sm' : 'bg-indigo-50 text-indigo-900 border border-indigo-200'}">${number(n)}<sup class="ml-0.5 text-[8px] text-indigo-600">x1</sup></span>`;
+                    })
+                ].join(' ');
+            } else {
+                const x2Nums = r.intersectionX2 || r.intersection || [];
+                const x1Nums = r.uniqueSinglesX1 || r.uniqueSingles || [];
+                chipsHtml = [
+                    ...x2Nums.map(n => {
+                        const match = isSettled && Number(n) === Number(actualNum);
+                        return `<span class="inline-flex items-center justify-center rounded px-1.5 py-0.5 font-mono text-xs font-black transition-transform ${match ? 'bg-amber-300 text-amber-950 ring-2 ring-amber-500 scale-110 shadow-sm' : 'bg-amber-100/90 text-amber-950 border border-amber-300/80'}">${number(n)}<sup class="ml-0.5 text-[8px] text-amber-700">x2</sup></span>`;
+                    }),
+                    ...x1Nums.map(n => {
+                        const match = isSettled && Number(n) === Number(actualNum);
+                        return `<span class="inline-flex items-center justify-center rounded px-1.5 py-0.5 font-mono text-xs font-bold transition-transform ${match ? 'bg-amber-300 text-amber-950 ring-2 ring-amber-500 scale-110 shadow-sm' : 'bg-slate-100 text-slate-700 border border-slate-200'}">${number(n)}</span>`;
+                    })
+                ].join(' ');
+            }
 
             const profitClass = isSettled
                 ? (Number(r.profitK) >= 0 ? 'text-emerald-700 font-black' : 'text-rose-700 font-black')
                 : 'text-slate-400 font-medium';
 
-            // Methods Highlight
+            // Methods Column Badges
             const m1Badge = r.m1 ? renderMethodBadge(r.m1, r.m1Label) : '-';
             const m2Badge = r.m2 ? renderMethodBadge(r.m2, r.m2Label) : '-';
+            const m3Badge = r.m3 ? renderMethodBadge(r.m3, r.m3Label) : '';
+
+            let methodsSubtext = '';
+            if (methodId === 'tripleMerge') {
+                const c3 = r.countX3 || (r.tierX3?.length || 0);
+                const c2 = r.countX2 || (r.tierX2?.length || 0);
+                const c1 = r.countX1 || (r.tierX1?.length || 0);
+                methodsSubtext = `<span class="text-amber-700 font-black">${c3} số x3</span> · <span class="text-cyan-700 font-bold">${c2} số x2</span> · <span class="text-indigo-700 font-bold">${c1} số x1</span>`;
+            } else {
+                const c2 = r.overlapCount || (r.intersectionX2?.length || r.intersection?.length || 0);
+                const c1 = r.uniqueSinglesCount || (r.uniqueSinglesX1?.length || r.uniqueSingles?.length || 0);
+                const modeLabel = r.mode === 'defensive'
+                    ? '<span class="text-indigo-600 text-[10px] font-bold">🛡️ Phòng thủ</span> · '
+                    : (r.mode === 'offensive' ? '<span class="text-amber-600 text-[10px] font-bold">⚔️ Tấn công</span> · ' : '');
+                methodsSubtext = `${modeLabel}<span class="text-amber-700 font-black">🔥 ${c2} trùng (x2)</span> · <span class="text-indigo-700 font-bold">⚡ ${c1} riêng (x1)</span>`;
+            }
+
+            const cumProfitVal = r.calcCumulativeProfitK ?? r.cumulativeProfitK;
 
             return `
                 <tr class="hover:bg-slate-50/80 transition-colors fast-render-row table-row-contain ${!isSettled ? 'bg-amber-50/40 border-l-4 border-l-amber-500' : ''}">
                     <td class="px-4 py-3">
                         <div class="flex flex-col gap-1">
-                            <span class="font-mono font-black text-slate-900 text-xs">${escapeHtml(r.date)} ${!isSettled ? '<span class="ml-1 text-[10px] text-amber-600 font-bold">(Hôm nay)</span>' : ''}</span>
+                            <span class="font-mono font-black text-slate-900 text-xs">${escapeHtml(rowDate)} ${!isSettled ? '<span class="ml-1 text-[10px] text-amber-600 font-bold">(Hôm nay)</span>' : ''}</span>
                             <div>${sourceBadge}</div>
                         </div>
                     </td>
@@ -1100,17 +1283,16 @@
                             ${actualStr}
                         </span>
                     </td>
-                    <td class="px-4 py-3 max-w-[260px]">
+                    <td class="px-4 py-3 max-w-[280px]">
                         <div class="flex flex-col gap-1">
                             <div class="flex flex-wrap items-center gap-1.5">
                                 ${m1Badge}
                                 <span class="text-[10px] font-black text-slate-400">+</span>
                                 ${m2Badge}
+                                ${m3Badge ? `<span class="text-[10px] font-black text-slate-400">+</span>${m3Badge}` : ''}
                             </div>
                             <div class="flex items-center gap-1 text-[10px] text-slate-500 font-bold">
-                                <span class="text-amber-700 font-black">🔥 ${r.overlapCount || x2Nums.length} trùng (x2)</span>
-                                <span class="text-slate-300">·</span>
-                                <span class="text-indigo-700 font-bold">⚡ ${x1Nums.length} riêng (x1)</span>
+                                ${methodsSubtext}
                             </div>
                         </div>
                     </td>
@@ -1122,13 +1304,76 @@
                     </td>
                     <td class="px-4 py-3 text-right font-mono text-xs ${profitClass}">
                         ${isSettled 
-                            ? `${signedM(r.profitK)} ${r.cumulativeProfitK != null ? `<span class="text-[10px] text-slate-500 block font-normal">Lũy kế: ${signedM(r.cumulativeProfitK)}</span>` : '<span class="text-[10px] text-slate-400 block font-normal">⚡ Strict PIT</span>'}` 
+                            ? `${signedM(r.profitK)} ${cumProfitVal != null ? `<span class="text-[10px] text-slate-500 block font-normal">Lũy kế: ${signedM(cumProfitVal)}</span>` : '<span class="text-[10px] text-slate-400 block font-normal">⚡ Strict PIT</span>'}` 
                             : '<span class="text-amber-700 font-bold text-xs">Chờ 18h30</span>'
                         }
                     </td>
                 </tr>
             `;
         }).join('');
+    }
+
+    function renderActiveDeLedger() {
+        const mObj = getDeMethodObject(currentDeStatsMethod);
+        renderDeDailyLedger(mObj.records, mObj.latestRec, currentDeStatsMethod);
+    }
+
+    function switchDeStatsMethod(methodId) {
+        currentDeStatsMethod = methodId;
+        const mObj = getDeMethodObject(methodId);
+
+        // Update tab buttons UI
+        const tabBtns = document.querySelectorAll('.de-stats-tab-btn');
+        tabBtns.forEach(btn => {
+            const m = btn.getAttribute('data-stats-method');
+            if (m === methodId) {
+                btn.className = 'de-stats-tab-btn rounded-xl border border-amber-400 bg-amber-400 text-slate-950 font-black px-3.5 py-2.5 text-xs transition-all shadow-md flex items-center gap-2 ring-2 ring-amber-300';
+            } else {
+                btn.className = 'de-stats-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2.5 text-xs hover:bg-white/20 transition-all flex items-center gap-2';
+            }
+        });
+
+        // Update Badges & Titles
+        const activeBadge = byId('deStatsActiveBadge');
+        if (activeBadge) {
+            activeBadge.textContent = `👑 Đang xem: ${mObj.name} (${signedM(mObj.overallProfitK)} · ${percent(mObj.overallHitRate)} trúng)`;
+        }
+
+        const heroBadge = byId('heroActiveMethodBadge');
+        if (heroBadge) {
+            heroBadge.innerHTML = `<i class="bi bi-trophy-fill mr-1 text-amber-300"></i> ${escapeHtml(mObj.name.toUpperCase())}: ${signedM(mObj.overallProfitK)} LÃI LŨY KẾ`;
+        }
+
+        const winTitle = byId('deStatsWindowsTitle');
+        if (winTitle) {
+            winTitle.textContent = `Hiệu Suất Thực Chiến ${mObj.name} Theo Chu Kỳ (7, 15, 30, 60, 90 ngày)`;
+        }
+
+        const monthTitle = byId('deStatsMonthlyTitle');
+        if (monthTitle) {
+            monthTitle.textContent = `Chi Tiết Thắng / Thua & Lũy Kế Từng Tháng (${mObj.name})`;
+        }
+
+        const ledgerTitle = byId('deStatsLedgerTitle');
+        if (ledgerTitle) {
+            ledgerTitle.textContent = `Bảng Đối Soát Thực Chiến Hàng Ngày (${mObj.name})`;
+        }
+
+        // Render Stack
+        renderDeKpiSummaryCards(mObj.summary, methodId);
+        renderDeWindowsTable(mObj.summary?.windows, methodId);
+        renderDeMonthlyTable(mObj.records, methodId);
+        renderActiveDeLedger();
+    }
+
+    function setupDeStatsSwitcher() {
+        const tabBtns = document.querySelectorAll('.de-stats-tab-btn');
+        tabBtns.forEach(btn => {
+            btn.onclick = () => {
+                const methodId = btn.getAttribute('data-stats-method');
+                if (methodId) switchDeStatsMethod(methodId);
+            };
+        });
     }
 
     function setupLedgerFilters() {
@@ -1143,7 +1388,7 @@
                     btn.classList.add('active', 'border-indigo-600', 'bg-indigo-600', 'text-white');
                     btn.classList.remove('bg-white', 'text-slate-700');
                     dualMergeFilterStatus = btn.getAttribute('data-filter') || 'all';
-                    if (payload?.dualMerge) renderDualMergeLedger(payload.dualMerge.settledLedger, payload.dualMerge.latestRecommendation);
+                    renderActiveDeLedger();
                 };
             });
         }
@@ -1152,7 +1397,7 @@
         if (searchInput) {
             searchInput.oninput = e => {
                 dualMergeSearchQuery = e.target.value;
-                if (payload?.dualMerge) renderDualMergeLedger(payload.dualMerge.settledLedger, payload.dualMerge.latestRecommendation);
+                renderActiveDeLedger();
             };
         }
 
@@ -1160,7 +1405,7 @@
         if (logLimitEl) {
             logLimitEl.onchange = e => {
                 dualMergeLogLimit = e.target.value;
-                if (payload?.dualMerge) renderDualMergeLedger(payload.dualMerge.settledLedger, payload.dualMerge.latestRecommendation);
+                renderActiveDeLedger();
             };
         }
     }
