@@ -147,40 +147,48 @@ function settleFromRaw(payload, rawRows) {
         }
     } catch (_) {}
 
+    const latestRawDate = normalizeDate(rawRows?.at(-1)?.date || rawRows?.at(-1)?.ngay);
+
     let dualMerge = payload.dualMerge;
-    if (!dualMerge || !Array.isArray(dualMerge.settledLedger) || dualMerge.settledLedger.length === 0) {
+    const lastDualMergeDate = normalizeDate(dualMerge?.settledLedger?.at(-1)?.date);
+    if (!dualMerge || !Array.isArray(dualMerge.settledLedger) || dualMerge.settledLedger.length === 0 || (latestRawDate && lastDualMergeDate && lastDualMergeDate < latestRawDate)) {
         const dualMergeService = require('@/lib/services/dualMergeAdvisorService');
         dualMerge = dualMergeService.buildDualMergeAdvisor(historyPayload, rawRows, { existingAdvisorRecords: payload.records, existingDualMerge: payload.dualMerge });
     }
 
     let adaptiveDualMerge = payload.adaptiveDualMerge;
-    if (!adaptiveDualMerge || !Array.isArray(adaptiveDualMerge.settledLedger) || adaptiveDualMerge.settledLedger.length === 0 || !adaptiveDualMerge.latestRecommendation?.overlapCount) {
+    const lastAdaptiveDate = normalizeDate(adaptiveDualMerge?.settledLedger?.at(-1)?.predictionDate || adaptiveDualMerge?.settledLedger?.at(-1)?.date);
+    if (!adaptiveDualMerge || !Array.isArray(adaptiveDualMerge.settledLedger) || adaptiveDualMerge.settledLedger.length === 0 || !adaptiveDualMerge.latestRecommendation?.overlapCount || (latestRawDate && lastAdaptiveDate && lastAdaptiveDate < latestRawDate)) {
         const { buildAdaptiveDualMergeAdvisor } = require('@/lib/services/adaptiveDualMergeAdvisorService');
         adaptiveDualMerge = buildAdaptiveDualMergeAdvisor(historyPayload, rawRows, { existingAdvisorRecords: payload.records, existingAdaptiveDualMerge: payload.adaptiveDualMerge });
     }
 
     let tripleMerge = payload.tripleMerge;
-    if (!tripleMerge || !Array.isArray(tripleMerge.settledLedger) || tripleMerge.settledLedger.length === 0 || !tripleMerge.latestRecommendation?.tierX3?.length) {
+    const lastTripleDate = normalizeDate(tripleMerge?.settledLedger?.at(-1)?.date);
+    if (!tripleMerge || !Array.isArray(tripleMerge.settledLedger) || tripleMerge.settledLedger.length === 0 || !tripleMerge.latestRecommendation?.tierX3?.length || (latestRawDate && lastTripleDate && lastTripleDate < latestRawDate)) {
         const { buildTripleMergeAdvisor } = require('@/lib/services/tripleMergeAdvisorService');
         tripleMerge = buildTripleMergeAdvisor(historyPayload, rawRows, { existingAdvisorRecords: payload.records, existingTripleMerge: payload.tripleMerge });
     }
 
     let loDualMerge = payload.loDualMerge;
-    if (!loDualMerge || !Array.isArray(loDualMerge.settledLedger) || loDualMerge.settledLedger.length === 0) {
+    const lastLoDualDate = normalizeDate(loDualMerge?.settledLedger?.at(-1)?.date);
+    if (!loDualMerge || !Array.isArray(loDualMerge.settledLedger) || loDualMerge.settledLedger.length === 0 || (latestRawDate && lastLoDualDate && lastLoDualDate < latestRawDate)) {
         const { buildLoDualMergeAdvisor } = require('@/lib/services/loDualMergeAdvisorService');
         loDualMerge = buildLoDualMergeAdvisor(dualMerge, rawRows, tripleMerge);
     }
 
     let loTriHarmonic = payload.loTriHarmonic;
-    if (!loTriHarmonic || !Array.isArray(loTriHarmonic.settledLedger) || loTriHarmonic.settledLedger.length === 0) {
+    const lastLoTriDate = normalizeDate(loTriHarmonic?.settledLedger?.at(-1)?.date);
+    if (!loTriHarmonic || !Array.isArray(loTriHarmonic.settledLedger) || loTriHarmonic.settledLedger.length === 0 || (latestRawDate && lastLoTriDate && lastLoTriDate < latestRawDate)) {
         const { buildLoTriHarmonicAdvisor } = require('@/lib/services/loDualMergeAdvisorService');
-        loTriHarmonic = buildLoTriHarmonicAdvisor(dualMerge, rawRows, tripleMerge);
+        loTriHarmonic = buildLoTriHarmonicAdvisor(rawRows);
     }
 
     let loQuantumBayesFusion = payload.loQuantumBayesFusion;
-    if (!loQuantumBayesFusion || !Array.isArray(loQuantumBayesFusion.settledLedger) || loQuantumBayesFusion.settledLedger.length === 0) {
+    const lastLoQmbDate = normalizeDate(loQuantumBayesFusion?.settledLedger?.at(-1)?.date);
+    if (!loQuantumBayesFusion || !Array.isArray(loQuantumBayesFusion.settledLedger) || loQuantumBayesFusion.settledLedger.length === 0 || (latestRawDate && lastLoQmbDate && lastLoQmbDate < latestRawDate)) {
         const { buildLoQuantumBayesFusionAdvisor } = require('@/lib/services/loDualMergeAdvisorService');
-        loQuantumBayesFusion = buildLoQuantumBayesFusionAdvisor(dualMerge, rawRows, tripleMerge);
+        loQuantumBayesFusion = buildLoQuantumBayesFusionAdvisor(rawRows);
     }
 
     return {
@@ -232,30 +240,23 @@ export async function GET(request) {
         if (fs.existsSync(localFile)) {
             try {
                 const localPayload = JSON.parse(fs.readFileSync(localFile, 'utf8'));
-                if (!payload.dualMerge || !Array.isArray(payload.dualMerge.settledLedger) || payload.dualMerge.settledLedger.length < 200) {
-                    if (localPayload?.dualMerge?.settledLedger?.length > (payload.dualMerge?.settledLedger?.length || 0)) {
-                        payload.dualMerge = localPayload.dualMerge;
-                    }
+                if ((localPayload?.dualMerge?.settledLedger?.length || 0) > (payload?.dualMerge?.settledLedger?.length || 0)) {
+                    payload.dualMerge = localPayload.dualMerge;
                 }
-                if (!payload.adaptiveDualMerge || !Array.isArray(payload.adaptiveDualMerge.settledLedger) || payload.adaptiveDualMerge.settledLedger.length < 200 || !payload.adaptiveDualMerge.latestRecommendation?.overlapCount) {
-                    if (localPayload?.adaptiveDualMerge) {
-                        payload.adaptiveDualMerge = localPayload.adaptiveDualMerge;
-                    }
+                if ((localPayload?.adaptiveDualMerge?.settledLedger?.length || 0) > (payload?.adaptiveDualMerge?.settledLedger?.length || 0)) {
+                    payload.adaptiveDualMerge = localPayload.adaptiveDualMerge;
                 }
-                if (!payload.tripleMerge || !Array.isArray(payload.tripleMerge.settledLedger) || payload.tripleMerge.settledLedger.length < 200 || !payload.tripleMerge.latestRecommendation?.tierX3?.length) {
-                    if (localPayload?.tripleMerge) {
-                        payload.tripleMerge = localPayload.tripleMerge;
-                    }
+                if ((localPayload?.tripleMerge?.settledLedger?.length || 0) > (payload?.tripleMerge?.settledLedger?.length || 0)) {
+                    payload.tripleMerge = localPayload.tripleMerge;
                 }
-                if (!payload.loQuantumBayesFusion || !Array.isArray(payload.loQuantumBayesFusion.settledLedger) || payload.loQuantumBayesFusion.settledLedger.length < 200) {
-                    if (localPayload?.loQuantumBayesFusion) {
-                        payload.loQuantumBayesFusion = localPayload.loQuantumBayesFusion;
-                    }
+                if ((localPayload?.loDualMerge?.settledLedger?.length || 0) > (payload?.loDualMerge?.settledLedger?.length || 0)) {
+                    payload.loDualMerge = localPayload.loDualMerge;
                 }
-                if (!payload.loTriHarmonic || !Array.isArray(payload.loTriHarmonic.settledLedger) || payload.loTriHarmonic.settledLedger.length < 200) {
-                    if (localPayload?.loTriHarmonic) {
-                        payload.loTriHarmonic = localPayload.loTriHarmonic;
-                    }
+                if ((localPayload?.loQuantumBayesFusion?.settledLedger?.length || 0) > (payload?.loQuantumBayesFusion?.settledLedger?.length || 0)) {
+                    payload.loQuantumBayesFusion = localPayload.loQuantumBayesFusion;
+                }
+                if ((localPayload?.loTriHarmonic?.settledLedger?.length || 0) > (payload?.loTriHarmonic?.settledLedger?.length || 0)) {
+                    payload.loTriHarmonic = localPayload.loTriHarmonic;
                 }
             } catch (_) {}
         }
