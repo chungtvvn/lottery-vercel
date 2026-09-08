@@ -457,6 +457,9 @@ export async function GET(request) {
             };
             
             const countsList = [2, 4, 6, 7, 8, 10, 20];
+            const liveCumProfitsMap = {};
+            countsList.forEach(c => { liveCumProfitsMap[`top${c}`] = 0; });
+
             const liveRecords = (loData.records || loData.settledLedger || []).map(r => {
                 const actualMap = {};
                 (r.actual27 || []).forEach(num => {
@@ -464,6 +467,7 @@ export async function GET(request) {
                     actualMap[str] = (actualMap[str] || 0) + 1;
                 });
 
+                const isLive = r.date >= '2026-08-28';
                 const rowPredictions = {};
                 const rowMethods = {};
 
@@ -476,6 +480,9 @@ export async function GET(request) {
                     const payoutK = hits * 8000;
                     const profitK = payoutK - stakeK;
                     const isWin = profitK > 0;
+                    if (isLive) {
+                        liveCumProfitsMap[key] += profitK;
+                    }
 
                     rowPredictions[key] = {
                         count: c,
@@ -495,6 +502,7 @@ export async function GET(request) {
                         payoutK,
                         profitK,
                         isWin,
+                        liveCumulativeProfitK: isLive ? liveCumProfitsMap[key] : null,
                         result: isWin ? 'win' : (profitK < 0 ? 'loss' : 'flat')
                     };
                 });
@@ -504,20 +512,25 @@ export async function GET(request) {
                     dataIsoDate: r.date,
                     status: 'settled',
                     isWin: r.isWin,
-                    isLiveSnapshot: r.date >= '2026-08-28',
-                    sourceType: r.date >= '2026-08-28' ? 'live-snapshot' : 'strict-pit',
+                    isLiveSnapshot: isLive,
+                    sourceType: isLive ? 'live-snapshot' : 'strict-pit',
                     actual: actualMap,
                     predictions: rowPredictions,
-                    methods: rowMethods
+                    methods: rowMethods,
+                    liveCumulativeProfitK: isLive ? liveCumProfitsMap.top10 : null
                 };
             });
 
             const summaryObj = {};
+            const liveSummaryObj = {};
             countsList.forEach(c => {
                 const key = `top${c}`;
                 let days = 0, hitDays = 0, winDays = 0, totalHits = 0;
                 let stakeK = 0, payoutK = 0, profitK = 0;
                 let bestDay = null, worstDay = null;
+
+                let lDays = 0, lHitDays = 0, lWinDays = 0, lTotalHits = 0;
+                let lStakeK = 0, lPayoutK = 0, lProfitK = 0;
 
                 liveRecords.forEach(rec => {
                     const m = rec.methods?.[key];
@@ -532,6 +545,16 @@ export async function GET(request) {
                     profitK += m.profitK;
                     bestDay = bestDay === null ? m.profitK : Math.max(bestDay, m.profitK);
                     worstDay = worstDay === null ? m.profitK : Math.min(worstDay, m.profitK);
+
+                    if (rec.isLiveSnapshot) {
+                        lDays++;
+                        lTotalHits += hits;
+                        if (hits > 0) lHitDays++;
+                        if (m.isWin) lWinDays++;
+                        lStakeK += m.stakeK;
+                        lPayoutK += m.payoutK;
+                        lProfitK += m.profitK;
+                    }
                 });
 
                 summaryObj[key] = {
@@ -553,6 +576,25 @@ export async function GET(request) {
                     winRate: days > 0 ? Number((winDays / days).toFixed(4)) : 0,
                     roi: stakeK > 0 ? Number((profitK / stakeK).toFixed(4)) : 0,
                     avgHitsPerDay: days > 0 ? Number((totalHits / days).toFixed(2)) : 0
+                };
+
+                liveSummaryObj[key] = {
+                    methodId: key,
+                    betCount: c,
+                    days: lDays,
+                    wins: lWinDays,
+                    winDays: lWinDays,
+                    losses: lDays - lWinDays,
+                    lossDays: lDays - lWinDays,
+                    hitDays: lHitDays,
+                    totalHits: lTotalHits,
+                    stakeK: lStakeK,
+                    payoutK: lPayoutK,
+                    profitK: lProfitK,
+                    hitRate: lDays > 0 ? Number((lHitDays / lDays).toFixed(4)) : 0,
+                    winRate: lDays > 0 ? Number((lWinDays / lDays).toFixed(4)) : 0,
+                    roi: lStakeK > 0 ? Number((lProfitK / lStakeK).toFixed(4)) : 0,
+                    avgHitsPerDay: lDays > 0 ? Number((lTotalHits / lDays).toFixed(2)) : 0
                 };
             });
 
@@ -585,6 +627,7 @@ export async function GET(request) {
                         methodName: stratMeta.methodName
                     },
                     summary: summaryObj,
+                    liveSummary: liveSummaryObj,
                     predictions: liveRecords
                 }
             }, { headers: NO_STORE_HEADERS });

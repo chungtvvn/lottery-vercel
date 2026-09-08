@@ -622,8 +622,10 @@
 
         if (summaryRoot) {
             const championCount = getBestLotoBetCount(data);
+            const liveSummary = summarizeLiveAdjusted(live, r => r.isLiveSnapshot || r.sourceType === 'live-snapshot' || (r.predictionIsoDate || r.predictionDate || r.date || '') >= '2026-08-28');
             summaryRoot.innerHTML = LOTO_COUNT_ORDER.map(count => {
                 const item = summary[`top${count}`] || {};
+                const liveItem = liveSummary[`top${count}`] || {};
                 const isSelected = count === selectedCount;
                 const isChampion = count === championCount;
                 const ringClass = isSelected
@@ -639,6 +641,12 @@
                         <div class="mt-1 text-2xl font-black text-slate-900">${item.days || 0} ngày</div>
                         <div class="mt-0.5 text-xs text-slate-600">Nổ: <strong class="text-slate-900">${item.hitDays || 0}</strong> · Thắng: ${item.wins || 0}</div>
                         <div class="mt-1 font-mono text-sm font-black ${(item.profitK || 0) >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${money(item.profitK)}</div>
+                        ${liveItem.days ? `
+                            <div class="mt-2 pt-2 border-t border-slate-200/80 flex items-center justify-between text-[11px]">
+                                <span class="font-bold text-emerald-800">Live (${liveItem.days}N):</span>
+                                <span class="font-mono font-black ${liveItem.profitK >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${money(liveItem.profitK)}</span>
+                            </div>
+                        ` : ''}
                     </button>
                 `;
             }).join('');
@@ -669,6 +677,32 @@
                 });
             }
         }
+
+        // Chronological map for running live cumulative profit
+        const settledChronological = rows
+            .filter(r => r.status !== 'pending')
+            .sort((a, b) => {
+                const da = a.predictionIsoDate || a.predictionDate || a.date || '';
+                const db = b.predictionIsoDate || b.predictionDate || b.date || '';
+                return da.localeCompare(db);
+            });
+
+        let runningLiveCumK = 0;
+        const liveCumMap = new Map();
+        for (const r of settledChronological) {
+            const dateStr = r.predictionIsoDate || r.predictionDate || r.date || '';
+            const isLive = r.isLiveSnapshot || r.sourceType === 'live-snapshot' || dateStr >= '2026-08-28';
+            const m = r.methods?.[selectedKey] || {};
+            const hits = Number(m.hits || 0);
+            const stakeK = Number(m.stakeK || (selectedCount * DEFAULT_LOTO_STAKE_K));
+            const payoutK = Number(m.payoutK || (hits * DEFAULT_LOTO_PAYOUT_K));
+            const profitK = Number(m.profitK ?? (payoutK - stakeK));
+            if (isLive) {
+                runningLiveCumK += profitK;
+                liveCumMap.set(dateStr, runningLiveCumK);
+            }
+        }
+
         rows = rows.reverse();
 
         const totalRowsCount = rows.length;
@@ -701,6 +735,7 @@
             const payoutK = Number(m.payoutK || (hits * DEFAULT_LOTO_PAYOUT_K));
             const profitK = Number(m.profitK ?? (payoutK - stakeK));
             const isWin = profitK > 0;
+            const liveCumK = liveCumMap.get(dateStr);
 
             const actualHtml = actualNumbers.length
                 ? actualNumbers.map(n => {
@@ -730,6 +765,11 @@
                                 <span class="font-mono font-black ${profitK >= 0 ? 'text-emerald-700 bg-emerald-50 border border-emerald-200' : 'text-rose-600 bg-rose-50 border border-rose-200'} rounded-lg px-2.5 py-1">
                                     ${money(profitK)}
                                 </span>
+                                ${isLive && liveCumK !== undefined ? `
+                                    <span class="font-mono text-xs font-black ${liveCumK >= 0 ? 'text-emerald-800 bg-emerald-100/80 border border-emerald-300' : 'text-rose-800 bg-rose-100/80 border border-rose-300'} rounded-lg px-2.5 py-1" title="Lũy kế thực chiến Live tính từ 28/08/2026">
+                                        Lũy kế Live: ${money(liveCumK)}
+                                    </span>
+                                ` : ''}
                             </div>
                         ` : ''}
                     </div>
