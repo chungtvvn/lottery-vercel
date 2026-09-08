@@ -83,10 +83,7 @@
         <!-- Subtabs Navigation -->
         <div class="mb-6 flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-sm" aria-label="Tab Gợi ý">
             <button type="button" id="tabBtnDualMerge" class="flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-indigo-600 px-4 py-2.5 text-sm font-black text-white shadow-md transition-all">
-                <i class="bi bi-intersect"></i> 🌟 Đề Gộp Thực Chiến
-            </button>
-            <button type="button" id="tabBtnSingleMethod" class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors">
-                <i class="bi bi-bullseye"></i> Gợi ý phương pháp đơn
+                <i class="bi bi-intersect"></i> 🌟 Gợi Ý Đề Thực Chiến
             </button>
             <a href="/advisor-analysis" class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors">
                 <i class="bi bi-graph-up-arrow"></i> Phân tích lựa chọn
@@ -160,18 +157,18 @@
                             </p>
                         </div>
 
-                        <!-- 3 Big Method Selector Buttons -->
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5" id="unifiedDeTopTabs">
-                            <button type="button" data-stats-method="tripleMerge" class="unified-de-top-btn rounded-2xl border px-3.5 py-2.5 text-left transition-all flex flex-col justify-between gap-1 shadow-md border-white/20 bg-white/10 hover:bg-white/20 text-white">
+                        <!-- 4 Big Method Selector Buttons -->
+                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5" id="unifiedDeTopTabs">
+                            <button type="button" data-stats-method="metaLearner" class="unified-de-top-btn rounded-2xl border-2 border-amber-400 bg-amber-400 text-slate-950 px-3.5 py-2.5 text-left transition-all flex flex-col justify-between gap-1 shadow-lg ring-2 ring-amber-300">
                                 <div class="flex items-center justify-between gap-1">
-                                    <span class="font-black text-xs">🏛️ Gộp 3: Tam Trụ</span>
-                                    <span class="rounded bg-indigo-500/40 text-indigo-200 px-1.5 py-0.5 text-[9px] font-bold">Vốn 90M</span>
+                                    <span class="font-black text-xs">💎 Đề Tinh Hoa</span>
+                                    <span class="rounded bg-slate-950 text-amber-300 px-1.5 py-0.5 text-[9px] font-black">Vốn 30M</span>
                                 </div>
                                 <div class="flex items-center justify-between text-[11px] font-semibold mt-0.5">
-                                    <span class="text-slate-300">7 ngày: <strong class="text-white" id="tabL7Triple">--</strong></span>
-                                    <span class="text-amber-300 font-bold" id="tabAllTriple">--</span>
+                                    <span class="text-slate-800">7 ngày: <strong class="text-slate-950 font-black" id="tabL7Meta">--</strong></span>
+                                    <span class="text-emerald-950 font-black" id="tabAllMeta">+36M</span>
                                 </div>
-                                <div id="badgeRecTriple" class="hidden mt-0.5 text-[9px] font-black text-amber-300 uppercase">⭐ Đề xuất 7 ngày</div>
+                                <div id="badgeRecMeta" class="mt-0.5 text-[9px] font-black text-slate-950 uppercase">👑 Quán quân Live</div>
                             </button>
                             <button type="button" data-stats-method="adaptiveDualMerge" class="unified-de-top-btn rounded-2xl border px-3.5 py-2.5 text-left transition-all flex flex-col justify-between gap-1 shadow-md border-white/20 bg-white/10 hover:bg-white/20 text-white">
                                 <div class="flex items-center justify-between gap-1">
@@ -195,12 +192,109 @@
                                 </div>
                                 <div id="badgeRecDual" class="hidden mt-0.5 text-[9px] font-black text-amber-300 uppercase">⭐ Đề xuất 7 ngày</div>
                             </button>
+                            <button type="button" data-stats-method="tripleMerge" class="unified-de-top-btn rounded-2xl border px-3.5 py-2.5 text-left transition-all flex flex-col justify-between gap-1 shadow-md border-white/20 bg-white/10 hover:bg-white/20 text-white">
+                                <div class="flex items-center justify-between gap-1">
+                                    <span class="font-black text-xs">🏛️ Gộp 3: Tam Trụ</span>
+                                    <span class="rounded bg-indigo-500/40 text-indigo-200 px-1.5 py-0.5 text-[9px] font-bold">Vốn 90M</span>
+                                </div>
+                                <div class="flex items-center justify-between text-[11px] font-semibold mt-0.5">
+                                    <span class="text-slate-300">7 ngày: <strong class="text-white" id="tabL7Triple">--</strong></span>
+                                    <span class="text-amber-300 font-bold" id="tabAllTriple">--</span>
+                                </div>
+                                <div id="badgeRecTriple" class="hidden mt-0.5 text-[9px] font-black text-amber-300 uppercase">⭐ Đề xuất 7 ngày</div>
+                            </button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Active Recommendation Cards Container (Only selected method card is displayed) -->
                 <div id="activeDeRecommendationContainer" class="w-full">
+                    <!-- CARD 0: ĐỀ TINH HOA - META-LEARNER (CHAMPION LIVE +36M) -->
+                    <section id="metaLearnerTodayRecommendation" class="w-full flex flex-col justify-between overflow-hidden rounded-3xl border-2 border-emerald-400 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white shadow-2xl">
+                        <div>
+                            <div class="border-b border-emerald-500/30 bg-white/5 px-6 py-5">
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                    <div id="metaLearnerBadgeGroup" class="flex flex-wrap items-center gap-2">
+                                        <span class="rounded-full bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 font-black text-[11px] px-3.5 py-1 uppercase shadow-md flex items-center gap-1.5">
+                                            <i class="bi bi-trophy-fill text-amber-900"></i> QUÁN QUÂN LIVE +36M · META-LEARNER
+                                        </span>
+                                        <span class="rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40 px-2.5 py-0.5 text-xs font-black">
+                                            💎 DUNG HỢP CẮT TỈA ĐỘNG (PRUNING)
+                                        </span>
+                                        <span id="metaLearnerConfidence" class="text-xs font-extrabold text-emerald-400">⭐⭐⭐⭐⭐ 5.0</span>
+                                    </div>
+                                    <button id="btnCopyMetaAll" class="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-4 py-2 text-xs font-black text-white shadow-md transition-all hover:scale-105">
+                                        <i class="bi bi-clipboard-check"></i> Copy Dàn (<span id="metaCountCurrent">30</span> số)
+                                    </button>
+                                </div>
+                                <h3 class="mt-3 text-lg sm:text-2xl font-black text-white flex items-center gap-2">
+                                    <span>Đề Tinh Hoa: Dung Hợp Cắt Tỉa Động</span>
+                                    <span class="text-xs sm:text-sm font-semibold text-emerald-300 font-mono">(Ngày <span id="metaLearnerTargetDate">--/--/----</span>)</span>
+                                </h3>
+                                <p class="text-xs text-slate-300 mt-1">
+                                    Chiến lược Quán quân tuyệt đối trong phân tích lựa chọn: <strong class="text-emerald-300">4W / 6L (40%)</strong> · Lãi ròng <strong class="text-amber-300">+36.000K (+36M)</strong> · ROI <strong class="text-cyan-300">+12.0%</strong> trên 10 ngày thực chiến live.
+                                </p>
+                                
+                                <!-- Multi-tier Buttons -->
+                                <div class="mt-4 flex flex-wrap items-center gap-2">
+                                    <span class="text-xs font-bold text-slate-400 mr-1">Phân tầng dàn số:</span>
+                                    <button type="button" id="btnTierCore10" data-tier="core10" class="meta-tier-btn rounded-xl border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-bold text-slate-200 hover:bg-white/20 transition-all">
+                                        🔥 VIP 10 Số
+                                    </button>
+                                    <button type="button" id="btnTierCore20" data-tier="core20" class="meta-tier-btn rounded-xl border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-bold text-slate-200 hover:bg-white/20 transition-all">
+                                        ⚡ Ưu Tú 20 Số
+                                    </button>
+                                    <button type="button" id="btnTierStandard30" data-tier="standard30" class="meta-tier-btn rounded-xl border border-emerald-400 bg-emerald-500 text-slate-950 font-black px-3.5 py-1.5 text-xs shadow-md transition-all">
+                                        ⭐ Dàn 30 Chuẩn (Mặc định)
+                                    </button>
+                                    <button type="button" id="btnTierExpanded36" data-tier="expanded36" class="meta-tier-btn rounded-xl border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-bold text-slate-200 hover:bg-white/20 transition-all">
+                                        🛡️ Mở Rộng 36 Số
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="p-5 sm:p-6 space-y-5">
+                                <div class="rounded-2xl border border-emerald-500/40 bg-gradient-to-br from-slate-900 via-emerald-950/40 to-slate-900 p-4 shadow-sm">
+                                    <div class="flex items-center justify-between border-b border-emerald-500/20 pb-3">
+                                        <div class="flex items-center gap-2">
+                                            <span id="metaTierBadgeIcon" class="flex h-7 w-7 items-center justify-center rounded-xl bg-emerald-400 text-slate-950 font-black text-xs shadow-xs">30</span>
+                                            <div>
+                                                <h4 id="metaTierHeaderTitle" class="text-sm font-black text-emerald-300 uppercase">Dàn 30 Số Chuẩn (Cơ Cấu Đánh Chính)</h4>
+                                                <p id="metaTierHeaderDesc" class="text-[10px] text-emerald-200/70 font-semibold">Cược cố định 1M/số (Tổng 30M/ngày) · Trúng nhận 84M (Lãi ròng +54M)</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-1.5">
+                                            <span id="metaTierCountBadge" class="rounded-full bg-emerald-400/20 text-emerald-300 border border-emerald-400/40 px-2.5 py-0.5 text-xs font-black">30 số</span>
+                                            <button id="btnCopyMetaCurrent" class="rounded-lg border border-emerald-400/40 bg-white/10 px-2.5 py-1 text-xs font-bold text-emerald-300 hover:bg-white/20 transition-all">
+                                                <i class="bi bi-clipboard"></i> Copy
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div id="metaLearnerChips" class="mt-4 flex flex-wrap gap-1.5"></div>
+                                </div>
+                            </div>
+
+                            <!-- Mini Performance Summary Bar for Meta-Learner -->
+                            <div class="border-t border-emerald-800/40 bg-black/40 p-4 grid grid-cols-2 sm:grid-cols-4 text-center gap-2">
+                                <div>
+                                    <span class="text-[10px] text-emerald-300 font-bold uppercase block">Tỷ Lệ Trúng Live</span>
+                                    <strong class="text-sm font-black text-emerald-300" id="metaHitRate">40.0% (4W / 6L)</strong>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] text-amber-300 font-bold uppercase block">Lợi Nhuận Live (28/08-07/09)</span>
+                                    <strong class="text-sm font-black text-amber-300" id="metaProfitK">+36.000K (+36M)</strong>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] text-cyan-300 font-bold uppercase block">Tỷ Suất ROI Live</span>
+                                    <strong class="text-sm font-black text-cyan-300" id="metaRoi">+12.0%</strong>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] text-slate-400 font-bold uppercase block">Vốn Cược Hàng Ngày</span>
+                                    <strong class="text-sm font-black text-white" id="metaStakeDay">30M / ngày</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
                     <!-- CARD 1: ĐỀ GỘP 1 - TIÊU CHUẨN -->
                     <section id="dualMergeTodayRecommendation" class="w-full flex flex-col justify-between overflow-hidden rounded-3xl border-2 border-amber-300/80 bg-white shadow-xl shadow-slate-200/50">
                         <div>
@@ -553,9 +647,13 @@
                             </p>
                         </div>
                         <div class="flex flex-wrap items-center gap-2.5" id="deStatsMethodTabs">
-                            <button type="button" data-stats-method="adaptiveDualMerge" id="btnStatsAdaptive" class="de-stats-tab-btn rounded-xl border border-amber-400 bg-amber-400 text-slate-950 font-black px-3.5 py-2.5 text-xs transition-all shadow-md flex items-center gap-2 ring-2 ring-amber-300">
+                            <button type="button" data-stats-method="metaLearner" id="btnStatsMetaLearner" class="de-stats-tab-btn rounded-xl border border-amber-400 bg-amber-400 text-slate-950 font-black px-3.5 py-2.5 text-xs transition-all shadow-md flex items-center gap-2 ring-2 ring-amber-300">
+                                <span>💎 Đề Tinh Hoa (Meta-Learner)</span>
+                                <span id="btnStatsMetaProfitBadge" class="rounded-md bg-amber-950 text-amber-300 px-1.5 py-0.5 text-[10px] font-black">+36M Live</span>
+                            </button>
+                            <button type="button" data-stats-method="adaptiveDualMerge" id="btnStatsAdaptive" class="de-stats-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2.5 text-xs hover:bg-white/20 transition-all flex items-center gap-2">
                                 <span>💎 Đề Gộp 2 (Thích Ứng Alpha)</span>
-                                <span id="btnStatsAdaptiveProfitBadge" class="rounded-md bg-amber-950 text-amber-300 px-1.5 py-0.5 text-[10px] font-black">+12M Live</span>
+                                <span id="btnStatsAdaptiveProfitBadge" class="rounded-md bg-teal-500/30 text-teal-200 px-1.5 py-0.5 text-[10px] font-black">+12M Live</span>
                             </button>
                             <button type="button" data-stats-method="dualMerge" id="btnStatsDualMerge" class="de-stats-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2.5 text-xs hover:bg-white/20 transition-all flex items-center gap-2">
                                 <span>🎯 Đề Gộp 1 (Tiêu Chuẩn)</span>
@@ -681,85 +779,6 @@
                         <tbody id="dualMergeLedgerBody" class="divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
-            </section>
-        </div>
-
-        <!-- ========================================== -->
-        <!-- ========================================== -->
-        <!-- VIEW 2: GỢI Ý PHƯƠNG PHÁP ĐƠN (LEGACY VIEW) -->
-        <!-- ========================================== -->
-        <div id="singleMethodView" class="hidden space-y-8">
-            <!-- Hero Header Phương Pháp Đơn -->
-            <section class="overflow-hidden rounded-3xl border border-indigo-100 bg-gradient-to-br from-indigo-900 via-indigo-800 to-violet-900 text-white shadow-xl shadow-indigo-950/10">
-                <div class="px-6 py-8 sm:px-8">
-                    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                        <div>
-                            <div class="inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/20 px-3.5 py-1 text-xs font-black tracking-wider uppercase text-indigo-200">
-                                <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span> GỢI Ý ĐƠN PHƯƠNG PHÁP
-                            </div>
-                            <h2 class="mt-3 text-2xl sm:text-3xl font-black tracking-tight text-white">
-                                Gợi Ý Dàn Đề Theo Từng Phương Pháp Độc Lập
-                            </h2>
-                            <p class="mt-2 max-w-3xl text-sm leading-relaxed text-indigo-100/90">
-                                Hệ thống tự động so sánh, tuyển chọn phương pháp có xác suất cao nhất và sinh dàn số đa phân tầng (10, 20, 30, 36 số).
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <!-- Performance Summary Cards -->
-                <div class="grid grid-cols-2 gap-3 border-t border-white/10 bg-black/20 p-5 sm:grid-cols-3 lg:grid-cols-5" id="summaryCards"></div>
-            </section>
-
-            <!-- Latest Prediction / Recommendation Section -->
-            <section id="latestSection" class="grid gap-6 lg:grid-cols-[1.5fr_1fr]"></section>
-
-            <!-- Decision Guide / Strategy Status Section -->
-            <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-                <div class="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/80 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <p class="text-xs font-black uppercase tracking-wider text-indigo-600">TRẠNG THÁI QUYẾT ĐỊNH</p>
-                        <h2 class="mt-0.5 text-lg font-black text-slate-900">Chi Tiết Đánh Giá & Bộ Chọn Chiến Lược</h2>
-                    </div>
-                    <a href="/advisor-analysis" class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-50 px-3.5 py-2 text-xs font-black text-indigo-700 hover:bg-indigo-100 transition-colors">
-                        <i class="bi bi-bar-chart-line"></i> Xem chi tiết phòng thí nghiệm <i class="bi bi-arrow-right"></i>
-                    </a>
-                </div>
-                <div id="decisionGuide" class="grid gap-4 p-6 sm:grid-cols-2 lg:grid-cols-3"></div>
-            </section>
-
-            <!-- Immutable Strategy Tracking -->
-            <section class="overflow-hidden rounded-3xl border border-indigo-200 bg-white shadow-sm">
-                <div class="flex flex-col gap-4 border-b border-indigo-100 bg-indigo-50/60 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
-                    <div>
-                        <p class="text-xs font-black uppercase tracking-wider text-indigo-600">THEO DÕI SNAPSHOT ĐA PHƯƠNG PHÁP</p>
-                        <h2 class="mt-1 text-lg font-black text-slate-900">Chọn Phương Pháp Để Đối Soát</h2>
-                        <p class="mt-1 max-w-3xl text-xs leading-relaxed text-slate-600">Mỗi dàn được khóa độc lập trước giờ quay. Phương pháp thử nghiệm chỉ dùng để theo dõi, không tự động thay dàn production.</p>
-                    </div>
-                    <label class="block min-w-0 lg:w-[390px]">
-                        <span class="mb-1.5 block text-[11px] font-black uppercase tracking-wider text-slate-500">Phương pháp đang xem</span>
-                        <select id="strategySelect" class="w-full rounded-xl border border-indigo-200 bg-white px-3.5 py-2.5 text-sm font-bold text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none"></select>
-                    </label>
-                </div>
-                <div id="strategyOverview" class="p-6"></div>
-            </section>
-
-            <!-- History Ledger Section -->
-            <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-                <div class="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/80 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h2 class="text-lg font-black text-slate-900">Nhật Ký Chốt Số & Đối Soát Lịch Sử Đơn Phương Pháp</h2>
-                        <p class="mt-0.5 text-xs text-slate-500">Nhật ký bên dưới đi theo phương pháp đang chọn; dàn chưa từng phát hành sẽ không được tính lại bằng dữ liệu mới.</p>
-                    </div>
-                    <div class="flex items-center gap-2 text-sm font-semibold text-slate-600">
-                        <span>Xem:</span>
-                        <select id="logLimit" class="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 shadow-sm focus:border-indigo-500 focus:outline-none">
-                            <option value="14">14 ngày gần nhất</option>
-                            <option value="30" selected>30 ngày gần nhất</option>
-                            <option value="90">90 ngày gần nhất</option>
-                        </select>
-                    </div>
-                </div>
-                <div id="historyLog" class="divide-y divide-slate-100"></div>
             </section>
         </div>
     </main>

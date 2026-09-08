@@ -6,11 +6,12 @@
  * Comprehensive benchmarking across ALL Lô and Đề methods on 2026 data (Strict Point-In-Time).
  * 
  * Evaluates:
- * 1. Đề Gộp 1: Tiêu Chuẩn (dualMerge)
- * 2. Đề Gộp 2: Thích Ứng Alpha (adaptiveDualMerge)
- * 3. Đề Gộp 3: Tam Trụ (tripleMerge)
- * 4. Đề Đơn Lẻ Nền Tảng (Pool 7 methods)
- * 5. Lô QMBF v5: Top 2, Top 4, Top 6, Top 7, Top 8, Top 10, Top 20
+ * 1. Đề Tinh Hoa (Meta-Learner / Dynamic Ensemble Pruning - Quán Quân Live)
+ * 2. Đề Gộp 1: Tiêu Chuẩn (dualMerge)
+ * 3. Đề Gộp 2: Thích Ứng Alpha (adaptiveDualMerge)
+ * 4. Đề Gộp 3: Tam Trụ (tripleMerge)
+ * 5. Đề Đơn Lẻ Nền Tảng (Pool 7 methods)
+ * 6. Lô QMBF v5: Top 2, Top 4, Top 6, Top 7, Top 8, Top 10, Top 20
  */
 
 const fs = require('fs');
@@ -76,6 +77,7 @@ function formatDeRow(name, ledger, dailyStakeK) {
     );
 }
 
+formatDeRow('👑 Đề Tinh Hoa (Meta-Learner)', cache.metaLearner?.settledLedger, 30000);
 formatDeRow('🏛️ Đề Tam Trụ (Gộp 3)', cache.tripleMerge?.settledLedger, 90000);
 formatDeRow('💎 Đề Thích Ứng (Gộp 2)', cache.adaptiveDualMerge?.settledLedger, 60000);
 formatDeRow('🎯 Đề Tiêu Chuẩn (Gộp 1)', cache.dualMerge?.settledLedger, 60000);

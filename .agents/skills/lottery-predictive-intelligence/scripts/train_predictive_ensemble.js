@@ -55,16 +55,18 @@ if (summary.top2) {
     console.log(`🎯 SONG THỦ 2: Trúng ${summary.top2.hitDays}/${summary.top2.days} ngày (${formatPct(summary.top2.hitRate)}) · Thắng lãi ${formatPct(summary.top2.winRate)} · Lãi +${formatM(summary.top2.profitK)} (ROI ${formatPct(summary.top2.roi)})`);
 }
 
-// 2. TỔNG HỢP HIỆU SUẤT ĐỀ TAM TRỤ & THÍCH ỨNG
-console.log('\n--- 2. HIỆU SUẤT ĐỀ TAM TRỤ (TRIPLE-CONSENSUS) & THÍCH ỨNG ALPHA ---');
+// 2. TỔNG HỢP HIỆU SUẤT CÁC PHƯƠNG PHÁP ĐỀ GỘP THỰC CHIẾN
+console.log('\n--- 2. HIỆU SUẤT ĐỀ THỰC CHIẾN (META-LEARNER, TAM TRỤ & THÍCH ỨNG) ---');
 const cacheFile = path.join(root, 'lib', 'data', 'statistics', 'cached_daily_method_advisor.json');
 if (fs.existsSync(cacheFile)) {
     const cache = JSON.parse(fs.readFileSync(cacheFile, 'utf8'));
+    const mSum = cache.metaLearner?.summary || {};
     const tSum = cache.tripleMerge?.summary || {};
     const aSum = cache.adaptiveDualMerge?.summary || {};
     const dSum = cache.dualMerge?.summary || {};
 
-    console.log(`🏛️ Đề Gộp 3 (Tam Trụ):         Trúng ${tSum.totalWins}/${tSum.totalSettled} kỳ (${formatPct(tSum.overallHitRate)}) · Lãi +${formatM(tSum.overallProfitK)} (ROI ${formatPct(tSum.roi)}) [👑 QUÁN QUÂN]`);
+    console.log(`👑 Đề Tinh Hoa (Meta-Learner): Trúng ${mSum.wins}/${mSum.days} kỳ (${formatPct(mSum.hitRate)}) · Lãi +${formatM(mSum.profitK)} (ROI ${formatPct(mSum.roi)}) [👑 QUÁN QUÂN LIVE: +${formatM(mSum.live?.profitK)}, ROI ${formatPct(mSum.live?.roi)}]`);
+    console.log(`🏛️ Đề Gộp 3 (Tam Trụ):         Trúng ${tSum.totalWins}/${tSum.totalSettled} kỳ (${formatPct(tSum.overallHitRate)}) · Lãi +${formatM(tSum.overallProfitK)} (ROI ${formatPct(tSum.roi)})`);
     console.log(`💎 Đề Gộp 2 (Thích Ứng Alpha): Trúng ${aSum.totalWins}/${aSum.totalSettled} kỳ (${formatPct(aSum.overallHitRate)}) · Lãi +${formatM(aSum.overallProfitK)} (ROI ${formatPct(aSum.roi)})`);
     console.log(`🎯 Đề Gộp 1 (Tiêu Chuẩn):      Trúng ${dSum.totalWins}/${dSum.totalSettled} kỳ (${formatPct(dSum.overallHitRate)}) · Lãi +${formatM(dSum.overallProfitK)} (ROI ${formatPct(dSum.roi)})`);
 }

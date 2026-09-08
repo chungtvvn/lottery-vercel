@@ -170,6 +170,13 @@ function settleFromRaw(payload, rawRows) {
         tripleMerge = buildTripleMergeAdvisor(historyPayload, rawRows, { existingAdvisorRecords: payload.records, existingTripleMerge: payload.tripleMerge });
     }
 
+    let metaLearner = payload.metaLearner;
+    const lastMetaLearnerDate = normalizeDate(metaLearner?.settledLedger?.at(-1)?.date);
+    if (!metaLearner || !Array.isArray(metaLearner.settledLedger) || metaLearner.settledLedger.length === 0 || (latestRawDate && lastMetaLearnerDate && lastMetaLearnerDate < latestRawDate)) {
+        const { buildMetaLearnerAdvisor } = require('@/lib/services/metaLearnerAdvisorService');
+        metaLearner = buildMetaLearnerAdvisor(historyPayload, rawRows, { existingAdvisorCache: payload });
+    }
+
     let loDualMerge = payload.loDualMerge;
     const lastLoDualDate = normalizeDate(loDualMerge?.settledLedger?.at(-1)?.date);
     if (!loDualMerge || !Array.isArray(loDualMerge.settledLedger) || loDualMerge.settledLedger.length === 0 || (latestRawDate && lastLoDualDate && lastLoDualDate < latestRawDate)) {
@@ -194,6 +201,7 @@ function settleFromRaw(payload, rawRows) {
     return {
         ...payload,
         records,
+        metaLearner,
         dualMerge,
         tripleMerge,
         adaptiveDualMerge,

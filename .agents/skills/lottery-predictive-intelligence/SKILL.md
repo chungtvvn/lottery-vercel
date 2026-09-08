@@ -32,21 +32,30 @@ Trước khi thực hiện bất kỳ nghiên cứu, huấn luyện hay sinh d�
    - [COMPREHENSIVE_LOTTERY_METHODS_CATALOG.md](./references/COMPREHENSIVE_LOTTERY_METHODS_CATALOG.md): Danh mục tra cứu toàn diện 7 phương pháp Đề đơn lẻ, 3 phương pháp Đề Gộp (Tiêu Chuẩn, Thích Ứng, Tam Trụ), 7 động cơ Lô QMBF v5, 7 mức cược Lô (Top 2 đến Top 20), Lô Cặp & Ghép Xiên.
 4. **Hướng Dẫn Tối Ưu Hóa & Quản Trị Vốn Thực Chiến**:
    - [ENSEMBLE_OPTIMIZATION_GUIDE.md](./references/ENSEMBLE_OPTIMIZATION_GUIDE.md): Chiến lược phân bổ vốn đa tầng thực chiến, kiểm soát sụt giảm tài khoản (Max drawdown) và tối đa hóa ROI.
+5. **Cẩm Nang Dung Hợp Đa Mục Tiêu Meta-Learner (Meta-Learner & Dynamic Pruning)**:
+   - [META_LEARNER_ENSEMBLE_GUIDE.md](./references/META_LEARNER_ENSEMBLE_GUIDE.md): Mô hình dung hợp cắt tỉa động (Pruning), Bayesian Model Averaging (BMA), Wilson Lower Bound 90%, Shannon Entropy và phục hồi Handoff Resilience.
 
 ---
 
 ## 3. Tổng Quan Hiệu Năng Các Phương Pháp Thực Chiến (Đối Soát 2026)
 
 ### A. Danh mục Phương pháp Đề (Vốn cố định, tỷ lệ trả thưởng 1 ăn 84)
-- **Đề Gộp 3: Tam Trụ (`tripleMerge`) [QUÁN QUÂN]**:
-  - Vốn 90M/ngày · Phân tầng 3 mức: X3 (3M), X2 (2M), X1 (1M).
-  - Tỷ lệ trúng: **69.4%** (170/245 ngày) · Lợi nhuận: **+3.228M** (ROI +14.6%).
-- **Đề Gộp 2: Thích Ứng Alpha (`adaptiveDualMerge`)**:
+- **💎 Đề Tinh Hoa: Meta-Learner / Dynamic Pruning (`metaLearner`) [QUÁN QUÂN LIVE 2026]**:
+  - Vốn 30M/ngày · Phân tầng: VIP 10, Ưu tú 20, Chuẩn 30 (cược chính 1M/số), Mở rộng 36.
+  - Hiệu suất Thực chiến Live (28/08 – 07/09): **4/10 ngày trúng (40.0%)** · Lãi ròng: **+36.000K (+36M)** · ROI: **+12.0%** (Quán quân tuyệt đối).
+  - Lũy kế 2026: **+2.592M** (ROI +12.3%).
+- **💎 Đề Gộp 2: Thích Ứng Alpha (`adaptiveDualMerge`)**:
   - Vốn 60M/ngày · Tự động chọn 2/21 cặp theo nhịp Tấn Công / Phòng Thủ.
-  - Tỷ lệ trúng: **56.3%** (138/245 ngày) · Lợi nhuận: **+2.544M** (ROI +17.3%).
-- **Đề Gộp 1: Tiêu Chuẩn (`dualMerge`)**:
+  - Hiệu suất Live: **4/10 ngày trúng (40.0%, 4 X2)** · Lãi ròng: **+12.000K (+12M)** · ROI: **+1.8%**.
+  - Lũy kế 2026: **56.3%** trúng (138/245 ngày) · Lợi nhuận: **+2.544M** (ROI +17.3%).
+- **🎯 Đề Gộp 1: Tiêu Chuẩn (`dualMerge`)**:
   - Vốn 60M/ngày · Sweet-Spot Overlap (22-26 số) + Form Resonance $D-1$.
-  - Tỷ lệ trúng: **55.1%** (135/245 ngày) · Lợi nhuận: **+1.452M** (ROI +9.9%).
+  - Hiệu suất Live: 5/10 ngày trúng (50.0%, 2 X2, 3 X1) · Lãi ròng: **-72.000K (-72M)**.
+  - Lũy kế 2026: **55.1%** trúng (135/245 ngày) · Lợi nhuận: **+1.452M** (ROI +9.9%).
+- **🏛️ Đề Gộp 3: Tam Trụ (`tripleMerge`)**:
+  - Vốn 90M/ngày · Phân tầng 3 mức: X3 (3M), X2 (2M), X1 (1M).
+  - Hiệu suất Live: 5/10 ngày trúng (50.0%, 2 X3, 1 X2, 2 X1) · Lãi ròng: **-150.000K (-150M)**.
+  - Lũy kế 2026: **69.4%** trúng (170/245 ngày) · Lợi nhuận: **+3.228M** (ROI +14.6%).
 - **Các Phương pháp Đơn Lẻ Nền Tảng (Pool 7)**:
   - 30 số/phương pháp: `dedupEdge50Hold70`, `dedupEdge75Hold70`, `dedupDropoffHold70`, `avgEdge50Hold70`, `chainSmallFirstHold70`, `edgeHold70`, `dedupEdge50CombinedB40S05Hold70`.
 
