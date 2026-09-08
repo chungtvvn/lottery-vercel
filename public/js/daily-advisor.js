@@ -22,7 +22,7 @@
     let activeMainTab = 'dualMerge'; // 'dualMerge' | 'singleMethod'
     let currentStrategyId = 'balanced-selector-fixed30-v1';
     let dualMergeLogLimit = '30'; // Mặc định 30 ngày gần nhất
-    let dualMergeFilterStatus = 'all'; // 'all' | 'live' | 'pit' | 'win_x3' | 'win_x2' | 'win_x1' | 'loss'
+    let dualMergeFilterStatus = 'live'; // 'live' | 'all' | 'pit' | 'win_x3' | 'win_x2' | 'win_x1' | 'loss'
     let dualMergeSearchQuery = '';
     let currentDeStatsMethod = 'tripleMerge';
 
@@ -896,22 +896,22 @@
     }
 
     function resolveChampionDeMethod7Days(p = payload) {
-        if (!p) return getDeMethodObject('dualMerge', p);
+        if (!p) return getDeMethodObject('adaptiveDualMerge', p);
         const methods = [
+            getDeMethodObject('adaptiveDualMerge', p),
             getDeMethodObject('dualMerge', p),
-            getDeMethodObject('tripleMerge', p),
-            getDeMethodObject('adaptiveDualMerge', p)
+            getDeMethodObject('tripleMerge', p)
         ];
         methods.sort((a, b) => {
+            if (a.liveProfitK !== b.liveProfitK) {
+                return b.liveProfitK - a.liveProfitK;
+            }
             if (a.last7ProfitK !== b.last7ProfitK) {
                 return b.last7ProfitK - a.last7ProfitK;
             }
-            if (a.last7HitRate !== b.last7HitRate) {
-                return b.last7HitRate - a.last7HitRate;
-            }
-            return b.overallProfitK - a.overallProfitK;
+            return b.last7HitRate - a.last7HitRate;
         });
-        return methods[0] || getDeMethodObject('dualMerge', p);
+        return methods[0] || getDeMethodObject('adaptiveDualMerge', p);
     }
 
     function renderUnifiedDeTopTabs(p = payload) {
@@ -920,20 +920,25 @@
         const adaptive = getDeMethodObject('adaptiveDualMerge', p);
         const dual = getDeMethodObject('dualMerge', p);
 
-        // Update 7-day and overall profit labels
+        // Update 7-day and Live profit labels
         if (byId('tabL7Triple')) byId('tabL7Triple').textContent = `${signedM(triple.last7ProfitK)} (${percent(triple.last7HitRate)})`;
-        if (byId('tabAllTriple')) byId('tabAllTriple').textContent = signedM(triple.overallProfitK);
+        if (byId('tabAllTriple')) byId('tabAllTriple').textContent = `Live: ${signedM(triple.liveProfitK)}`;
 
         if (byId('tabL7Adaptive')) byId('tabL7Adaptive').textContent = `${signedM(adaptive.last7ProfitK)} (${percent(adaptive.last7HitRate)})`;
-        if (byId('tabAllAdaptive')) byId('tabAllAdaptive').textContent = signedM(adaptive.overallProfitK);
+        if (byId('tabAllAdaptive')) byId('tabAllAdaptive').textContent = `Live: ${signedM(adaptive.liveProfitK)}`;
 
         if (byId('tabL7Dual')) byId('tabL7Dual').textContent = `${signedM(dual.last7ProfitK)} (${percent(dual.last7HitRate)})`;
-        if (byId('tabAllDual')) byId('tabAllDual').textContent = signedM(dual.overallProfitK);
+        if (byId('tabAllDual')) byId('tabAllDual').textContent = `Live: ${signedM(dual.liveProfitK)}`;
 
-        // Resolve 7-day champion
+        // Update Bottom Stats Tab Badges
+        if (byId('btnStatsAdaptiveProfitBadge')) byId('btnStatsAdaptiveProfitBadge').textContent = `${signedM(adaptive.liveProfitK)} Live`;
+        if (byId('btnStatsDualProfitBadge')) byId('btnStatsDualProfitBadge').textContent = `${signedM(dual.liveProfitK)} Live`;
+        if (byId('btnStatsTripleProfitBadge')) byId('btnStatsTripleProfitBadge').textContent = `${signedM(triple.liveProfitK)} Live`;
+
+        // Resolve champion
         const champion = resolveChampionDeMethod7Days(p);
         if (byId('deTopChampionBadge')) {
-            byId('deTopChampionBadge').textContent = `👑 ĐỀ XUẤT: ${champion.name.toUpperCase()} (TOP 1 LÃI 7 NGÀY)`;
+            byId('deTopChampionBadge').textContent = `👑 ĐỀ XUẤT: ${champion.name.toUpperCase()} (LÃI LIVE: ${signedM(champion.liveProfitK)})`;
         }
 
         // Badges on individual buttons
@@ -945,26 +950,27 @@
     function renderDeKpiSummaryCards(summary = {}, methodId = 'tripleMerge') {
         const kpiContainer = byId('dualMergeSummaryCards');
         if (!kpiContainer) return;
-        const profitClass = Number(summary.overallProfitK || 0) >= 0 ? 'text-emerald-400 font-black' : 'text-rose-400 font-black';
+        const live = summary.live || {};
+        const profitClass = Number(live.profitK || 0) >= 0 ? 'text-emerald-400 font-black' : 'text-rose-400 font-black';
 
         let kpis = [];
         if (methodId === 'tripleMerge') {
             kpis = [
-                ['NGÀY ĐÃ ĐỐI SOÁT', `${summary.totalSettled || 0} kỳ`, 'Khóa snapshot & Strict PIT'],
-                ['TRÚNG X3 (SIÊU ĐỒNG THUẬN)', `${summary.winsX3 || 0} kỳ`, `${percent(summary.winX3Rate)} · Ăn 252M (+162M)`],
-                ['TRÚNG X2 (ĐỒNG THUẬN CAO)', `${summary.winsX2 || 0} kỳ`, `${percent(summary.winX2Rate)} · Ăn 168M (+78M)`],
-                ['TỔNG TỶ LỆ TRÚNG', `${percent(summary.overallHitRate)}`, `${summary.totalWins || 0} thắng / ${summary.totalLosses || 0} trượt`],
-                ['TỔNG TIỀN VỐN', `${moneyM(summary.totalStakeK)}`, '90M mỗi ngày (3 tầng vốn)'],
-                ['LÃI / LỖ RÒNG', `${signedM(summary.overallProfitK)}`, `${percent(summary.roi)} ROI`]
+                ['THỰC CHIẾN LIVE (TỪ 28/08)', `${live.days || 0} kỳ`, 'Khóa snapshot chốt số thực tế'],
+                ['TRÚNG X3 (SIÊU ĐỒNG THUẬN)', `${live.winsX3 || 0} kỳ`, `${percent(live.winX3Rate)} · Ăn 252M (+162M)`],
+                ['TRÚNG X2 (ĐỒNG THUẬN CAO)', `${live.winsX2 || 0} kỳ`, `${percent(live.winX2Rate)} · Ăn 168M (+78M)`],
+                ['TỔNG TỶ LỆ TRÚNG', `${percent(live.hitRate)}`, `${live.wins || 0} thắng / ${live.losses || 0} trượt`],
+                ['TỔNG TIỀN VỐN LIVE', `${moneyM(live.stakeK || (live.days * 90000))}`, '90M mỗi ngày (3 tầng vốn)'],
+                ['LÃI LŨY KẾ LIVE', `${signedM(live.profitK || 0)}`, `${percent(live.roi)} ROI Thực Chiến`]
             ];
         } else {
             kpis = [
-                ['NGÀY ĐÃ ĐỐI SOÁT', `${summary.totalSettled || 0} kỳ`, 'Khóa snapshot & Strict PIT'],
-                ['TRÚNG X2 (CỰC VIP)', `${summary.winsX2 || 0} kỳ`, `${percent(summary.winX2Rate)} · Ăn 168M (+108M)`],
-                ['TRÚNG X1 (BỌC LÓT)', `${summary.winsX1 || 0} kỳ`, `${percent(summary.winX1Rate)} · Ăn 84M (+24M)`],
-                ['TỔNG TỶ LỆ TRÚNG', `${percent(summary.overallHitRate)}`, `${summary.totalWins || 0} thắng / ${summary.totalLosses || 0} trượt`],
-                ['TỔNG TIỀN VỐN', `${moneyM(summary.totalStakeK)}`, '60M mỗi ngày (2 tầng vốn)'],
-                ['LÃI / LỖ RÒNG', `${signedM(summary.overallProfitK)}`, `${percent(summary.roi)} ROI`]
+                ['THỰC CHIẾN LIVE (TỪ 28/08)', `${live.days || 0} kỳ`, 'Khóa snapshot chốt số thực tế'],
+                ['TRÚNG X2 (CỰC VIP)', `${live.winsX2 || 0} kỳ`, `${percent(live.winX2Rate)} · Ăn 168M (+108M)`],
+                ['TRÚNG X1 (BỌC LÓT)', `${live.winsX1 || 0} kỳ`, `${percent(live.winX1Rate)} · Ăn 84M (+24M)`],
+                ['TỔNG TỶ LỆ TRÚNG', `${percent(live.hitRate)}`, `${live.wins || 0} thắng / ${live.losses || 0} trượt`],
+                ['TỔNG TIỀN VỐN LIVE', `${moneyM(live.stakeK || (live.days * 60000))}`, '60M mỗi ngày (2 tầng vốn)'],
+                ['LÃI LŨY KẾ LIVE', `${signedM(live.profitK || 0)}`, `${percent(live.roi)} ROI Thực Chiến`]
             ];
         }
 
@@ -986,12 +992,12 @@
         }
 
         const windowItems = [
+            ['THỰC CHIẾN LIVE (TỪ 28/08)', windows.live || windows.liveTotal],
             ['7 NGÀY GẦN NHẤT', windows.last7],
             ['15 NGÀY GẦN NHẤT', windows.last15],
             ['30 NGÀY GẦN NHẤT', windows.last30],
             ['60 NGÀY GẦN NHẤT', windows.last60],
-            ['90 NGÀY GẦN NHẤT', windows.last90],
-            ['TOÀN BỘ NĂM 2026', windows.all2026 || windows.all || windows.liveTotal]
+            ['TOÀN BỘ NĂM 2026', windows.all2026 || windows.all]
         ];
 
         windowsContainer.innerHTML = windowItems.map(([label, w]) => {
@@ -1094,11 +1100,12 @@
 
         const yearlyBadge = byId('dualMergeYearlyBadge');
         if (yearlyBadge) {
-            const totalStakeK = allRecords.reduce((sum, r) => sum + (r.stakeK || defaultStakeK), 0);
-            const totalPayoutK = allRecords.reduce((sum, r) => sum + (r.payoutK || 0), 0);
-            const totalProfitK = totalPayoutK - totalStakeK;
-            const totalRoi = totalStakeK > 0 ? (totalProfitK / totalStakeK) : 0;
-            const isProfit = totalProfitK >= 0;
+            const liveRecords = allRecords.filter(r => r.isLiveSnapshot || r.sourceType === 'live-snapshot' || (r.date || r.predictionDate) >= '2026-08-28');
+            const liveStakeK = liveRecords.reduce((sum, r) => sum + (r.stakeK || defaultStakeK), 0);
+            const livePayoutK = liveRecords.reduce((sum, r) => sum + (r.payoutK || 0), 0);
+            const liveProfitK = livePayoutK - liveStakeK;
+            const liveRoi = liveStakeK > 0 ? (liveProfitK / liveStakeK) : 0;
+            const isProfit = liveProfitK >= 0;
 
             yearlyBadge.className = `inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1 text-xs font-black ${
                 isProfit
@@ -1107,7 +1114,7 @@
             }`;
             yearlyBadge.innerHTML = `
                 <i class="bi ${isProfit ? 'bi-graph-up-arrow text-emerald-600' : 'bi-graph-down-arrow text-rose-600'}"></i> 
-                LŨY KẾ CẢ NĂM: ${signedM(totalProfitK)} (${percent(totalRoi)} ROI)
+                LŨY KẾ THỰC CHIẾN LIVE (TỪ 28/08): ${signedM(liveProfitK)} (${percent(liveRoi)} ROI)
             `;
         }
     }
@@ -1172,23 +1179,30 @@
             return da.localeCompare(db);
         });
 
-        let runningCumulativeK = 0;
+        let runningLiveCumulativeK = 0;
         const recordsWithCumProfit = allRecords.map(r => {
             const hasActual = Number.isInteger(r.actual) || Number.isInteger(r.actualSpecial);
             const isSettled = r.settled !== false && hasActual;
-            if (isSettled) {
-                runningCumulativeK += Number(r.profitK || 0);
+            const rDate = r.date || r.predictionDate || '';
+            const isLive = r.isLiveSnapshot || r.sourceType === 'live-snapshot' || rDate >= '2026-08-28';
+            if (isSettled && isLive) {
+                runningLiveCumulativeK += Number(r.profitK || 0);
             }
             return {
                 ...r,
-                calcCumulativeProfitK: isSettled ? runningCumulativeK : null
+                date: rDate,
+                predictionDate: rDate,
+                isLiveSnapshot: isLive,
+                sourceType: isLive ? 'live-snapshot' : (r.sourceType || 'strict-pit-backtest'),
+                calcCumulativeProfitK: (isSettled && isLive) ? runningLiveCumulativeK : null,
+                calcLiveCumulativeProfitK: (isSettled && isLive) ? runningLiveCumulativeK : null
             };
         });
 
         // Dynamic Filter Counts
         const countAll = recordsWithCumProfit.length;
-        const countLive = recordsWithCumProfit.filter(r => r.isLiveSnapshot || r.sourceType === 'live-snapshot').length;
-        const countPit = recordsWithCumProfit.filter(r => !r.isLiveSnapshot && r.sourceType !== 'live-snapshot').length;
+        const countLive = recordsWithCumProfit.filter(r => r.isLiveSnapshot).length;
+        const countPit = recordsWithCumProfit.filter(r => !r.isLiveSnapshot).length;
         const countWinX3 = recordsWithCumProfit.filter(r => r.hitType === 'win_x3').length;
         const countWinX2 = recordsWithCumProfit.filter(r => r.hitType === 'win_x2' || r.isX2).length;
         const countWinX1 = recordsWithCumProfit.filter(r => r.hitType === 'win_x1' || (r.isHit && !r.isX2 && r.hitType !== 'win_x3')).length;
@@ -1246,7 +1260,7 @@
                 : `<span class="text-amber-700 font-black" title="Chờ mở thưởng 18h30">⏳</span>`;
 
             // Source Type Badge
-            const isLive = r.isLiveSnapshot || r.sourceType === 'live-snapshot';
+            const isLive = r.isLiveSnapshot || r.sourceType === 'live-snapshot' || rowDate >= '2026-08-28';
             const sourceBadge = isLive
                 ? `<span class="inline-flex items-center gap-1 rounded-md border border-emerald-300 bg-emerald-50 px-2 py-0.5 font-bold text-emerald-800 text-[10px] shadow-2xs" title="Snapshot thực tế đã chốt trước giờ quay từ 28/08/2026"><i class="bi bi-lock-fill text-emerald-600"></i> Thực chiến Live</span>`
                 : `<span class="inline-flex items-center gap-1 rounded-md border border-sky-200 bg-sky-50 px-2 py-0.5 font-bold text-sky-800 text-[10px] shadow-2xs" title="Hồi quy độc lập Strict PIT chuẩn xác suất thực tế (01/01 - 27/08/2026)"><i class="bi bi-cpu text-sky-600"></i> Strict PIT</span>`;
@@ -1257,19 +1271,23 @@
             if (isSettled) {
                 if (r.hitType === 'win_x3') {
                     outcomeClass = 'bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-300 text-amber-950 border-amber-500 font-black shadow-xs ring-1 ring-amber-400/50';
-                    outcomeText = '👑 TRÚNG X3 (+162M)';
+                    outcomeText = isLive ? '👑 TRÚNG X3 (+162M)' : '👑 TRÚNG X3';
                 } else if (r.hitType === 'win_x2' || r.isX2) {
                     outcomeClass = 'bg-gradient-to-r from-amber-200 via-amber-300 to-yellow-200 text-amber-950 border-amber-400 font-black shadow-xs ring-1 ring-amber-400/50';
-                    outcomeText = methodId === 'tripleMerge' ? '⚡ TRÚNG X2 (+78M)' : '🎉 TRÚNG X2 (+108M)';
+                    outcomeText = methodId === 'tripleMerge' 
+                        ? (isLive ? '⚡ TRÚNG X2 (+78M)' : '⚡ TRÚNG X2') 
+                        : (isLive ? '🎉 TRÚNG X2 (+108M)' : '🎉 TRÚNG X2');
                 } else if (r.hitType === 'win_x1' || (r.isHit && !r.isX2)) {
                     outcomeClass = methodId === 'tripleMerge'
                         ? 'bg-indigo-100 text-indigo-900 border-indigo-300 font-bold'
                         : 'bg-emerald-100 text-emerald-900 border-emerald-300 font-bold';
-                    outcomeText = methodId === 'tripleMerge' ? '🛡️ TRÚNG X1 (HÒA)' : '✅ TRÚNG X1 (+24M)';
+                    outcomeText = methodId === 'tripleMerge' 
+                        ? (isLive ? '🛡️ TRÚNG X1 (HÒA)' : '🛡️ TRÚNG X1') 
+                        : (isLive ? '✅ TRÚNG X1 (+24M)' : '✅ TRÚNG X1');
                 } else {
                     outcomeClass = 'bg-rose-100 text-rose-800 border-rose-200 font-bold';
                     const lossAmount = methodId === 'tripleMerge' ? '-90M' : '-60M';
-                    outcomeText = `❌ TRƯỢT (${lossAmount})`;
+                    outcomeText = isLive ? `❌ TRƯỢT (${lossAmount})` : '❌ TRƯỢT';
                 }
             }
 
@@ -1308,7 +1326,7 @@
                 ].join(' ');
             }
 
-            const profitClass = isSettled
+            const profitClass = isSettled && isLive
                 ? (Number(r.profitK) >= 0 ? 'text-emerald-700 font-black' : 'text-rose-700 font-black')
                 : 'text-slate-400 font-medium';
 
@@ -1331,8 +1349,6 @@
                     : (r.mode === 'offensive' ? '<span class="text-amber-600 text-[10px] font-bold">⚔️ Tấn công</span> · ' : '');
                 methodsSubtext = `${modeLabel}<span class="text-amber-700 font-black">🔥 ${c2} trùng (x2)</span> · <span class="text-indigo-700 font-bold">⚡ ${c1} riêng (x1)</span>`;
             }
-
-            const cumProfitVal = r.calcCumulativeProfitK ?? r.cumulativeProfitK;
 
             return `
                 <tr class="hover:bg-slate-50/80 transition-colors fast-render-row table-row-contain ${!isSettled ? 'bg-amber-50/40 border-l-4 border-l-amber-500' : ''}">
@@ -1367,9 +1383,12 @@
                         <span class="inline-flex rounded-lg border px-2.5 py-1 text-xs ${outcomeClass}">${outcomeText}</span>
                     </td>
                     <td class="px-4 py-3 text-right font-mono text-xs ${profitClass}">
-                        ${isSettled 
-                            ? `${signedM(r.profitK)} ${cumProfitVal != null ? `<span class="text-[10px] text-slate-500 block font-normal">Lũy kế: ${signedM(cumProfitVal)}</span>` : '<span class="text-[10px] text-slate-400 block font-normal">⚡ Strict PIT</span>'}` 
-                            : '<span class="text-amber-700 font-bold text-xs">Chờ 18h30</span>'
+                        ${!isSettled 
+                            ? '<span class="text-amber-700 font-bold text-xs">Chờ 18h30</span>'
+                            : (isLive 
+                                ? `${signedM(r.profitK)} <span class="text-[10px] text-emerald-700 font-bold block">Lũy kế Live: ${signedM(r.calcLiveCumulativeProfitK ?? r.liveCumulativeProfitK)}</span>` 
+                                : `<span class="text-slate-400 font-semibold text-xs">--</span><span class="text-[10px] text-slate-400 block font-normal">Chỉ tính thực chiến Live</span>`
+                              )
                         }
                     </td>
                 </tr>
