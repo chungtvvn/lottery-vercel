@@ -443,11 +443,17 @@ jobs:
             if (!advisor.tripleMerge?.latestRecommendation?.predictionDate || !advisor.tripleMerge.latestRecommendation.tierX3?.length) {
               throw new Error('R2 Daily Advisor: thiếu hoặc sai Triple Merge recommendation');
             }
+            if (!advisor.metaLearner?.latestRecommendation?.predictionDate || !advisor.metaLearner.latestRecommendation.standard30?.length) {
+              throw new Error('R2 Daily Advisor: thiếu hoặc sai Meta-Learner recommendation');
+            }
             if (advisor.dualMerge.latestRecommendation.predictionDate !== expectedPredictionDate) {
               throw new Error(`R2 Daily Advisor Dual Merge prediction date lệch: ${advisor.dualMerge.latestRecommendation.predictionDate}, expected=${expectedPredictionDate}`);
             }
             if (advisor.tripleMerge.latestRecommendation.predictionDate !== expectedPredictionDate) {
               throw new Error(`R2 Daily Advisor Triple Merge prediction date lệch: ${advisor.tripleMerge.latestRecommendation.predictionDate}, expected=${expectedPredictionDate}`);
+            }
+            if (advisor.metaLearner.latestRecommendation.predictionDate !== expectedPredictionDate) {
+              throw new Error(`R2 Daily Advisor Meta-Learner prediction date lệch: ${advisor.metaLearner.latestRecommendation.predictionDate}, expected=${expectedPredictionDate}`);
             }
             const historyRun = history.find(item => String(item?.predictionDate || '').slice(0, 10) === expectedPredictionDate);
             const historyMethod = historyRun?.summary?.methods?.deParallelBlock85Small65Hold70;

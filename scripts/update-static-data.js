@@ -2112,9 +2112,9 @@ async function main() {
             // PRE-COMPUTE: simulation backtests for all default periods and play modes
             // so Vercel does not have to run heavy loops inside serverless requests.
             console.log(' -> Tạo Cached Simulation Backtest cho tất cả khoảng thời gian...');
+            let predictionHistorySimulation = null;
             try {
                 const simulationService = require('../lib/services/simulationService');
-                let predictionHistorySimulation = null;
                 const staticCacheDays = getSimulationCacheDays();
                 const staticCacheModes = getSimulationCachePlayModes();
                 console.log(`    Cache simulation: days=${staticCacheDays.join(',')}, modes=${staticCacheModes.join(',')}`);
@@ -2139,7 +2139,12 @@ async function main() {
                         if (he.clearStaticHistoryCaches) he.clearStaticHistoryCaches();
                     }
                 }
+            } catch (simErr) {
+                console.error('⚠️ Lỗi khi tạo cached simulation (không ảnh hưởng các bước khác):', simErr.message);
+            }
 
+            console.log(' -> Đồng bộ lịch sử dự đoán & sinh Daily Advisor cache...');
+            try {
                 const predictionHistoryService = require('../lib/services/predictionHistoryService');
                 if (process.env.PREDICTION_HISTORY_INCREMENTAL === '1') {
                     console.log('    Lịch sử: chỉ kết toán snapshot mới nhất và sinh dự đoán ngày kế tiếp.');
@@ -2150,9 +2155,9 @@ async function main() {
                 generateDailyMethodAdvisorCache({ useLocalHistory: true });
                 generateProbabilityScoreCache({ useLocalHistory: true });
                 generateProbabilityDistributionCache();
-
-            } catch (simErr) {
-                console.error('⚠️ Lỗi khi tạo cached simulation (không ảnh hưởng các bước khác):', simErr.message);
+            } catch (predErr) {
+                console.error('⚠️ Lỗi khi sinh cache dự đoán:', predErr.message);
+                throw predErr;
             }
 
             console.log(' -> Tạo Cached Chain Frequency cho R2/static JSON...');
