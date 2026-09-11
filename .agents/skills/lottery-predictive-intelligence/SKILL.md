@@ -29,11 +29,15 @@ Trước khi thực hiện bất kỳ nghiên cứu, huấn luyện hay sinh d�
 2. **Cẩm Nang Chuyên Sâu Đề Gộp Tiêu Chuẩn (Standard Dual Merge Deep Dive)**:
    - [STANDARD_DUAL_MERGE_DEEP_DIVE.md](./references/STANDARD_DUAL_MERGE_DEEP_DIVE.md): Cấu trúc phân rã tập hợp, bất biến vốn 60M/ngày, lý thuyết vùng giao thoa vàng Sweet-Spot (22–26 số), ma trận cộng hưởng dạng số từ $D-1$ và cơ chế bọc lót an toàn.
 3. **Bách Khoa Toàn Thư Toàn Phổ Phương Pháp Lô & Đề**:
-   - [COMPREHENSIVE_LOTTERY_METHODS_CATALOG.md](./references/COMPREHENSIVE_LOTTERY_METHODS_CATALOG.md): Danh mục tra cứu toàn diện 7 phương pháp Đề đơn lẻ, 3 phương pháp Đề Gộp (Tiêu Chuẩn, Thích Ứng, Tam Trụ), 7 động cơ Lô QMBF v5, 7 mức cược Lô (Top 2 đến Top 20), Lô Cặp & Ghép Xiên.
+   - [COMPREHENSIVE_LOTTERY_METHODS_CATALOG.md](./references/COMPREHENSIVE_LOTTERY_METHODS_CATALOG.md): Danh mục tra cứu toàn diện 7 phương pháp Đề đơn lẻ, 3 phương pháp Đề Gộp (Tiêu Chuẩn, Thích Ứng, Tam Trụ), 7 động cơ Lô QMBF v6, 7 mức cược Lô (Top 2 đến Top 20), Lô Cặp & Ghép Xiên.
 4. **Hướng Dẫn Tối Ưu Hóa & Quản Trị Vốn Thực Chiến**:
    - [ENSEMBLE_OPTIMIZATION_GUIDE.md](./references/ENSEMBLE_OPTIMIZATION_GUIDE.md): Chiến lược phân bổ vốn đa tầng thực chiến, kiểm soát sụt giảm tài khoản (Max drawdown) và tối đa hóa ROI.
 5. **Cẩm Nang Dung Hợp Đa Mục Tiêu Meta-Learner (Meta-Learner & Dynamic Pruning)**:
    - [META_LEARNER_ENSEMBLE_GUIDE.md](./references/META_LEARNER_ENSEMBLE_GUIDE.md): Mô hình dung hợp cắt tỉa động (Pruning), Bayesian Model Averaging (BMA), Wilson Lower Bound 90%, Shannon Entropy và phục hồi Handoff Resilience.
+6. **Đặc Tả Động Cơ Lô QMBF v6 & Bộ Lọc Khử Lô Gan Nặng**:
+   - [LOTO_QMBF_V6_SPECIFICATION.md](./references/LOTO_QMBF_V6_SPECIFICATION.md): Kiến trúc 7 động cơ kết hợp Bộ lọc Khử Lô Gan Nặng (Soft Gan Damping), chứng minh toán học bác bỏ ngụy biện đầu câm 20 năm, và tối ưu hóa lợi nhuận thực chiến (+608M Lô 2026).
+7. **Trí Tuệ Loại Trừ V2 (Exclusion Intelligence V2)**:
+   - [EXCLUSION_INTELLIGENCE_V2.md](./references/EXCLUSION_INTELLIGENCE_V2.md): Công thức làm mịn Bayes-Laplace tại biên chuỗi kỷ lục (\nu=2.0), Set-Size Guarding (>25 số), và hạn ngạch Family Quota.
 
 ---
 
@@ -41,32 +45,33 @@ Trước khi thực hiện bất kỳ nghiên cứu, huấn luyện hay sinh d�
 
 ### A. Danh mục Phương pháp Đề (Vốn cố định, tỷ lệ trả thưởng 1 ăn 84)
 - **💎 Đề Tinh Hoa: Meta-Learner / Dynamic Pruning (`metaLearner`) [QUÁN QUÂN LIVE 2026]**:
-  - Vốn 30M/ngày · Phân tầng: VIP 10, Ưu tú 20, Chuẩn 30 (cược chính 1M/số), Mở rộng 36.
-  - Hiệu suất Thực chiến Live (28/08 – 07/09): **4/10 ngày trúng (40.0%)** · Lãi ròng: **+36.000K (+36M)** · ROI: **+12.0%** (Quán quân tuyệt đối).
-  - Lũy kế 2026: **+2.592M** (ROI +12.3%).
+   - Vốn 30M/ngày · Phân tầng: VIP 10, Ưu tú 20, Chuẩn 30 (cược chính 1M/số), Mở rộng 36.
+   - Hiệu suất Thực chiến Live: **Lãi ròng: +90.000K (+90M)** · ROI: **+27.3%** · 7 ngày gần nhất: **Trúng 4/7 (57.1%), Lãi +126M, ROI +60.0%**.
+   - Lũy kế 2026: **+822M** (ROI +34.7%).
 - **💎 Đề Gộp 2: Thích Ứng Alpha (`adaptiveDualMerge`)**:
-  - Vốn 60M/ngày · Tự động chọn 2/21 cặp theo nhịp Tấn Công / Phòng Thủ.
-  - Hiệu suất Live: **4/10 ngày trúng (40.0%, 4 X2)** · Lãi ròng: **+12.000K (+12M)** · ROI: **+1.8%**.
-  - Lũy kế 2026: **56.3%** trúng (138/245 ngày) · Lợi nhuận: **+2.544M** (ROI +17.3%).
+   - Vốn 60M/ngày · Tự động chọn 2/21 cặp theo nhịp Tấn Công / Phòng Thủ.
+   - Hiệu suất Live: **Trúng 5/12 ngày (100% trúng đều là VIP X2)** · Lãi ròng: **+120.000K (+120M)** · ROI: **+16.7%**.
+   - Lũy kế 2026: **56.7%** trúng (140/247 ngày) · Lợi nhuận: **+2.652M** (ROI +17.9%).
 - **🎯 Đề Gộp 1: Tiêu Chuẩn (`dualMerge`)**:
-  - Vốn 60M/ngày · Sweet-Spot Overlap (22-26 số) + Form Resonance $D-1$.
-  - Hiệu suất Live: 5/10 ngày trúng (50.0%, 2 X2, 3 X1) · Lãi ròng: **-72.000K (-72M)**.
-  - Lũy kế 2026: **55.1%** trúng (135/245 ngày) · Lợi nhuận: **+1.452M** (ROI +9.9%).
+   - Vốn 60M/ngày · Sweet-Spot Overlap (22-26 số) + Form Resonance $D-1$.
+   - 7 ngày gần nhất: **Trúng 5/7 (71.4%)**, Lãi ròng: **+84M** (ROI +20.0%).
+   - Lũy kế 2026: **55.1%** trúng (136/247 ngày) · Lợi nhuận: **+1.476M** (ROI +10.0%).
 - **🏛️ Đề Gộp 3: Tam Trụ (`tripleMerge`)**:
-  - Vốn 90M/ngày · Phân tầng 3 mức: X3 (3M), X2 (2M), X1 (1M).
-  - Hiệu suất Live: 5/10 ngày trúng (50.0%, 2 X3, 1 X2, 2 X1) · Lãi ròng: **-150.000K (-150M)**.
-  - Lũy kế 2026: **69.4%** trúng (170/245 ngày) · Lợi nhuận: **+3.228M** (ROI +14.6%).
+   - Vốn 90M/ngày · Phân tầng 3 mức: X3 (3M), X2 (2M), X1 (1M).
+   - Lũy kế 2026: **65.8%** trúng (162/247 ngày) · Lợi nhuận: **+3.318M** (ROI +15.7%).
 - **Các Phương pháp Đơn Lẻ Nền Tảng (Pool 7)**:
-  - 30 số/phương pháp: `dedupEdge50Hold70`, `dedupEdge75Hold70`, `dedupDropoffHold70`, `avgEdge50Hold70`, `chainSmallFirstHold70`, `edgeHold70`, `dedupEdge50CombinedB40S05Hold70`.
+   - 30 số/phương pháp: `dedupEdge50CombinedB40S05Hold70` đạt tỷ lệ trúng **80.08%** (197/246 kỳ sau khi làm mịn Bayes-Laplace biên kỷ lục).
 
-### B. Danh mục Phương pháp Lô (Động cơ Siêu Hợp Nhất QMBF v5)
-- **Lục Thủ Lô (Top 6) [TỐI ƯU HIỆU SUẤT]**:
-  - Vốn 13.2M/ngày · Tỷ lệ ngày nổ: **93.1%** (228/245 ngày) · Thắng lãi: **70.2%** · Lợi nhuận: **+1.422M** (ROI **+43.0%**).
-- **Thập Thủ Lô (Top 10) [ĐỘ BỀN KỶ LỤC]**:
-  - Vốn 22.0M/ngày · Tỷ lệ ngày nổ: **99.2%** (243/245 ngày) · Thắng lãi: **65.3%** · Lợi nhuận: **+2.016M** (ROI **+37.3%**).
+### B. Danh mục Phương pháp Lô (Động cơ Siêu Hợp Nhất QMBF v6)
+- **Lục Thủ Lô (Top 6) [TỐI ƯU HIỆU SUẤT & LÃI CAO NHẤT]**:
+   - Vốn 13.2M/ngày · Tỷ lệ ngày nổ: **93.1%** (230/247 ngày) · Thắng lãi: **75.7% (187/247 ngày)** · Lợi nhuận: **+1.572M** (ROI **+48.2%**).
+- **Thập Thủ Lô (Top 10) [ĐỘ BỀN KỶ LỤC & TỶ LỆ NỔ 99%]**:
+   - Vốn 22.0M/ngày · Tỷ lệ ngày nổ: **98.8%** (244/247 ngày) · Thắng lãi: **80.2% (198/247 ngày)** · Lợi nhuận: **+2.166M** (ROI **+39.9%**).
+- **Tứ Thủ Lô (Top 4) [ĐÒN BẨY TỐC ĐỘ CAO]**:
+   - Vốn 8.8M/ngày · Tỷ lệ ngày nổ: **85.4%** · Lợi nhuận: **+1.050M** (ROI **+48.3%**).
+- **Song Thủ Lô (Top 2)**: Vốn 4.4M/ngày · Nổ 59.5% · Lợi nhuận: **+561.2M** (ROI **+51.6%**).
 - **Lô Dàn 20 Số (Top 20) [BẤT KHẢ CHIẾN BẠI]**:
-  - Vốn 44.0M/ngày · Tỷ lệ ngày nổ: **100%** (245/245 ngày) · Lợi nhuận: **+2.852M** (ROI **+26.5%**).
-- **Song Thủ Lô (Top 2)**: Vốn 4.4M/ngày · Nổ 44.5% · Lãi +311.2M.
+   - Vốn 44.0M/ngày · Tỷ lệ ngày nổ: **100% (247/247 ngày)** · Lợi nhuận: **+2.924M** (ROI **+26.9%**).
 
 ---
 

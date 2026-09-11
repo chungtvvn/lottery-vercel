@@ -11,7 +11,7 @@
  * 3. Đề Gộp 2: Thích Ứng Alpha (adaptiveDualMerge)
  * 4. Đề Gộp 3: Tam Trụ (tripleMerge)
  * 5. Đề Đơn Lẻ Nền Tảng (Pool 7 methods)
- * 6. Lô QMBF v5: Top 2, Top 4, Top 6, Top 7, Top 8, Top 10, Top 20
+ * 6. Lô QMBF v6: Top 2, Top 4, Top 6, Top 7, Top 8, Top 10, Top 20
  */
 
 const fs = require('fs');
@@ -99,7 +99,7 @@ console.log(
 );
 console.log('-'.repeat(90));
 
-const lotoSummaries = cache.loDualMerge?.summary || cache.loQuantumBayesFusion?.summary || {};
+const lotoSummaries = cache.loQuantumBayesFusion?.summary || cache.loDualMerge?.summary || {};
 const topCounts = [2, 4, 6, 7, 8, 10, 20];
 const topLabels = {
     2: '⚡ Song Thủ (Top 2)',
@@ -136,9 +136,9 @@ topCounts.forEach(count => {
 console.log('-'.repeat(90));
 
 // -------------------------------------------------------------
-// 3. CHI TIẾT 7 ĐỘNG CƠ CỦA QMBF v5
+// 3. CHI TIẾT 7 ĐỘNG CƠ CỦA QMBF v6
 // -------------------------------------------------------------
-console.log('\n⚙️  [PHẦN 3] CẤU TRÚC 7 ĐỘNG CƠ DUNG HỢP TRONG QMBF v5:');
+console.log('\n⚙️  [PHẦN 3] CẤU TRÚC 7 ĐỘNG CƠ DUNG HỢP TRONG QMBF v6:');
 console.log('-'.repeat(90));
 const engines = [
     { id: 'E1', name: 'Positional Markov Tensor (3 Tầng Trễ)', weight: '1.90x', role: 'Dự báo chuyển tiếp xác suất vị trí giải GĐB, G1, G7' },
@@ -153,6 +153,7 @@ const engines = [
 engines.forEach(e => {
     console.log(`  [${e.id}] ${e.name.padEnd(42)} Trọng số: ${e.weight.padStart(6)} | ${e.role}`);
 });
-console.log('  * Kèm bộ lọc đa dạng hóa đuôi số: maxPerTail = 2 (chống dồn số vào cùng một đuôi).');
+console.log('  * Kèm Bộ Lọc Khử Lô Gan Nặng (Soft Gan Damping): Gan >= 15d (x0.75), Gan >= 22d (x0.50) loại trừ bẫy nhiễu.');
+console.log('  * Kèm bộ lọc đa dạng hóa đầu & đuôi số: maxPerHead = 2, maxPerTail = 2 (chống dồn số vào cùng một đầu/đuôi).');
 console.log('='.repeat(90));
 console.log('✅ Hoàn tất báo cáo benchmark.\n');
