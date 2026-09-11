@@ -294,8 +294,84 @@
     }
 
     function renderMatrix() {
+        const combatMethods = [
+            {
+                id: 'metaLearner',
+                title: '💎 Đề Tinh Hoa (Meta-Learner)',
+                desc: 'Vốn 30M/ngày · Dung hợp cắt tỉa động Bayes',
+                badge: '<span class="rounded bg-emerald-100 text-emerald-800 text-[10px] font-black px-1.5 py-0.5">⭐ Quán quân Live</span>',
+                data: payload?.metaLearner
+            },
+            {
+                id: 'adaptiveDualMerge',
+                title: '💎 Đề Gộp 2 (Thích Ứng Alpha)',
+                desc: 'Vốn 60M/ngày · State-machine 21 cặp',
+                badge: '<span class="rounded bg-amber-100 text-amber-800 text-[10px] font-black px-1.5 py-0.5">👑 Lãi +2.652M</span>',
+                data: payload?.adaptiveDualMerge
+            },
+            {
+                id: 'dualMerge',
+                title: '🎯 Đề Gộp 1 (Tiêu Chuẩn)',
+                desc: 'Vốn 60M/ngày · Dual Edge 50% + 75% Hold',
+                badge: '<span class="rounded bg-sky-100 text-sky-800 text-[10px] font-black px-1.5 py-0.5">Bền bỉ 55.1%</span>',
+                data: payload?.dualMerge
+            },
+            {
+                id: 'tripleMerge',
+                title: '🏛️ Đề Gộp 3 (Tam Trụ)',
+                desc: 'Vốn 90M/ngày · Siêu đồng thuận 3 tầng vốn',
+                badge: '<span class="rounded bg-purple-100 text-purple-800 text-[10px] font-black px-1.5 py-0.5">Trúng 65.8%</span>',
+                data: payload?.tripleMerge
+            }
+        ];
+
+        const hasCombatData = combatMethods.some(m => m.data?.summary);
+
+        if (hasCombatData) {
+            const html = combatMethods.map(m => {
+                const summary = m.data?.summary || {};
+                const windows = summary.windows || {};
+                const last7 = windows.last7 || {};
+                const last30 = windows.last30 || {};
+                const all = summary.all || windows.all2026 || summary;
+
+                const profitVal = Number(all.profitK ?? 0);
+                const profitColor = profitVal >= 0 ? 'text-emerald-700 font-black' : 'text-rose-700 font-bold';
+
+                return `<tr>
+                    <td class="max-w-[310px] px-4 py-3.5">
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-black text-slate-900">${m.title}</span>
+                            ${m.badge}
+                        </div>
+                        <p class="mt-0.5 text-xs text-slate-500">${m.desc}</p>
+                    </td>
+                    <td class="px-3 py-3.5 text-center font-black" style="${heat(last7.hitRate)}">
+                        <div>${pct(last7.hitRate)}</div>
+                        <div class="text-[10px] font-semibold text-slate-500">${last7.wins || 0}/${last7.days || 0} kỳ</div>
+                    </td>
+                    <td class="px-3 py-3.5 text-center font-black" style="${heat(last30.hitRate)}">
+                        <div>${pct(last30.hitRate)}</div>
+                        <div class="text-[10px] font-semibold text-slate-500">${last30.wins || 0}/${last30.days || 0} kỳ</div>
+                    </td>
+                    <td class="px-3 py-3.5 text-center font-black" style="${heat(all.hitRate)}">
+                        <div>${pct(all.hitRate)}</div>
+                        <div class="text-[10px] font-semibold text-slate-500">${all.wins || 0}/${all.days || 0} kỳ</div>
+                    </td>
+                    <td class="px-3 py-3.5 text-right font-mono ${profitColor}">
+                        ${signed(profitVal)}
+                    </td>
+                    <td class="px-3 py-3.5 text-center font-black text-indigo-700">
+                        ${pct(all.roi)}
+                    </td>
+                </tr>`;
+            }).join('');
+            setHtml('methodMatrix', html);
+            return;
+        }
+
         const methods = payload?.methods || [];
-        const html = methods.map(row => `<tr><td class="max-w-[310px] px-4 py-3"><p class="font-bold text-slate-900">#${row.rank} ${esc(row.label)}</p><p class="mt-1 text-xs text-slate-500">${row.betCount || 0} số · giao Top 30 điểm ${row.overlapCount || 0}</p></td><td class="px-3 py-3 text-center font-black" style="${heat(row.rate7)}">${pct(row.rate7)}</td><td class="px-3 py-3 text-center font-black" style="${heat(row.rate30)}">${pct(row.rate30)}</td><td class="px-3 py-3 text-center font-black" style="${heat(row.rate90)}">${pct(row.rate90)}</td><td class="px-3 py-3 text-center font-black" style="${heat(row.wilsonLower90)}">${pct(row.wilsonLower90)}</td><td class="px-3 py-3 text-center font-black ${row.trend >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${row.trend >= 0 ? '+' : ''}${pct(row.trend)}</td><td class="px-3 py-3 text-center font-black text-violet-700">${row.overlapCount}/${row.betCount || '-'}</td></tr>`).join('') || '<tr><td colspan="7" class="p-5 text-center text-slate-500">Snapshot hiện tại chưa lưu đủ dàn phương pháp.</td></tr>';
+        const html = methods.map(row => `<tr><td class="max-w-[310px] px-4 py-3"><p class="font-bold text-slate-900">#${row.rank} ${esc(row.label)}</p><p class="mt-1 text-xs text-slate-500">${row.betCount || 0} số · giao Top 30 điểm ${row.overlapCount || 0}</p></td><td class="px-3 py-3 text-center font-black" style="${heat(row.rate7)}">${pct(row.rate7)}</td><td class="px-3 py-3 text-center font-black" style="${heat(row.rate30)}">${pct(row.rate30)}</td><td class="px-3 py-3 text-center font-black" style="${heat(row.rate90)}">${pct(row.rate90)}</td><td class="px-3 py-3 text-right font-mono font-black">${signed(0)}</td><td class="px-3 py-3 text-center font-black ${row.trend >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${row.trend >= 0 ? '+' : ''}${pct(row.trend)}</td></tr>`).join('') || '<tr><td colspan="6" class="p-5 text-center text-slate-500">Chưa có dữ liệu phương pháp.</td></tr>';
         setHtml('methodMatrix', html);
     }
 
