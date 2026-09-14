@@ -38,6 +38,8 @@ Trước khi thực hiện bất kỳ nghiên cứu, huấn luyện hay sinh d�
    - [LOTO_QMBF_V6_SPECIFICATION.md](./references/LOTO_QMBF_V6_SPECIFICATION.md): Kiến trúc 7 động cơ kết hợp Bộ lọc Khử Lô Gan Nặng (Soft Gan Damping), chứng minh toán học bác bỏ ngụy biện đầu câm 20 năm, và tối ưu hóa lợi nhuận thực chiến (+608M Lô 2026).
 7. **Trí Tuệ Loại Trừ V2 (Exclusion Intelligence V2)**:
    - [EXCLUSION_INTELLIGENCE_V2.md](./references/EXCLUSION_INTELLIGENCE_V2.md): Công thức làm mịn Bayes-Laplace tại biên chuỗi kỷ lục (\nu=2.0), Set-Size Guarding (>25 số), và hạn ngạch Family Quota.
+8. **Xiên 2 Chiến Lược, Tự Động Lấp Khoảng Trống Dữ Liệu & Báo Cáo Telegram 7 Phần**:
+   - [GOLDEN_XIEN_AND_TELEGRAM_INTELLIGENCE.md](./references/GOLDEN_XIEN_AND_TELEGRAM_INTELLIGENCE.md): Mô hình ma trận Co-occurrence ghép cặp Golden Xiên 2 (+22.8% ROI), cơ chế quét đa kỳ `fetchAllRecentXsmbResults` và cấu trúc tin nhắn Telegram 7 phần toàn diện.
 
 ---
 
@@ -62,16 +64,21 @@ Trước khi thực hiện bất kỳ nghiên cứu, huấn luyện hay sinh d�
 - **Các Phương pháp Đơn Lẻ Nền Tảng (Pool 7)**:
    - 30 số/phương pháp: `dedupEdge50CombinedB40S05Hold70` đạt tỷ lệ trúng **80.08%** (197/246 kỳ sau khi làm mịn Bayes-Laplace biên kỷ lục).
 
-### B. Danh mục Phương pháp Lô (Động cơ Siêu Hợp Nhất QMBF v6)
-- **Lục Thủ Lô (Top 6) [TỐI ƯU HIỆU SUẤT & LÃI CAO NHẤT]**:
-   - Vốn 13.2M/ngày · Tỷ lệ ngày nổ: **93.1%** (230/247 ngày) · Thắng lãi: **75.7% (187/247 ngày)** · Lợi nhuận: **+1.572M** (ROI **+48.2%**).
-- **Thập Thủ Lô (Top 10) [ĐỘ BỀN KỶ LỤC & TỶ LỆ NỔ 99%]**:
-   - Vốn 22.0M/ngày · Tỷ lệ ngày nổ: **98.8%** (244/247 ngày) · Thắng lãi: **80.2% (198/247 ngày)** · Lợi nhuận: **+2.166M** (ROI **+39.9%**).
-- **Tứ Thủ Lô (Top 4) [ĐÒN BẨY TỐC ĐỘ CAO]**:
-   - Vốn 8.8M/ngày · Tỷ lệ ngày nổ: **85.4%** · Lợi nhuận: **+1.050M** (ROI **+48.3%**).
-- **Song Thủ Lô (Top 2)**: Vốn 4.4M/ngày · Nổ 59.5% · Lợi nhuận: **+561.2M** (ROI **+51.6%**).
-- **Lô Dàn 20 Số (Top 20) [BẤT KHẢ CHIẾN BẠI]**:
+### B. Danh mục Phương pháp Lô (Động cơ Siêu Hợp Nhất QMBF v6.1)
+- **👑 Bạch Thủ Lô (Top 1) [MỚI - ĐÒN BẨY HẠT NHÂN]**:
+   - Vốn 2.2M/ngày · Tỷ lệ ngày nổ: **32.8%** (81/247 ngày) · Nổ **88 nháy** · Lợi nhuận ròng: **+168.6M** (ROI **+31.0%**).
+- **🚀 Lục Thủ Lô (Top 6) [VUA HIỆU SUẤT & NỔ 96% NGÀY]**:
+   - Vốn 13.2M/ngày · Tỷ lệ ngày nổ: **96.0%** (237/247 ngày) · Thắng lãi: **76.5% (189/247 ngày)** · Lợi nhuận: **+1.571M** (ROI **+48.2%**).
+- **🛡️ Thập Thủ Lô (Top 10) [ĐỘ BỀN KỶ LỤC & NỔ 99.6% NGÀY]**:
+   - Vốn 22.0M/ngày · Tỷ lệ ngày nổ: **99.6%** (246/247 ngày, chỉ trượt 1 ngày cả năm 2026) · Thắng lãi: **81.0%** · Lợi nhuận: **+2.022M** (ROI **+37.2%**).
+- **🔥 Tứ Thủ Lô (Top 4) [ROI CAO NHẤT HỆ THỐNG]**:
+   - Vốn 8.8M/ngày · Tỷ lệ ngày nổ: **88.3%** (218/247 ngày) · Lợi nhuận: **+1.170M** (ROI **+53.8%**).
+- **⚡ Song Thủ Lô (Top 2)**:
+   - Vốn 4.4M/ngày · Tỷ lệ ngày nổ: **58.7%** (145/247 ngày) · Lợi nhuận: **+481.2M** (ROI **+44.3%**).
+- **🏆 Lô Dàn 20 Số (Top 20) [BẤT KHẢ CHIẾN BẠI]**:
    - Vốn 44.0M/ngày · Tỷ lệ ngày nổ: **100% (247/247 ngày)** · Lợi nhuận: **+2.924M** (ROI **+26.9%**).
+- **🎲 Golden Xiên 2 (Top 4)**:
+   - Vốn 600K/ngày (6 cặp x 100K) · Tỷ lệ ngày nổ: **48.2% (119/247 ngày)** · Tổng nổ: **187 cặp** (12.62% cặp, gấp 1.73x ngẫu nhiên) · Lợi nhuận: **+38.800K** (ROI **+26.2%**).
 
 ---
 

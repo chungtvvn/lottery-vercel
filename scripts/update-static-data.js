@@ -6,7 +6,7 @@ const path = require('path');
 const https = require('https');
 const zlib = require('zlib');
 const { spawnSync } = require('child_process');
-const { fetchLatestXsmbResult, XOSO_HOME_URL, XOSO_SOURCE_URLS } = require('./sources/xoso-com-vn');
+const { fetchLatestXsmbResult, fetchAllRecentXsmbResults, XOSO_HOME_URL, XOSO_SOURCE_URLS } = require('./sources/xoso-com-vn');
 const { isInvalidStatsKey } = require('../lib/utils/statsOptionsManifest');
 const {
     CACHE_VERSION: DAILY_METHOD_ADVISOR_CACHE_VERSION,
@@ -1521,12 +1521,22 @@ async function buildRawDataFromSources(currentArray) {
         const gapDays = daysBetweenDates(latestLocalDate, latestXosoRow.date);
 
         if (gapDays > 1) {
-            console.warn(`[1c] Phát hiện thiếu ${gapDays - 1} ngày giữa local=${latestLocalDate} và xoso=${latestXosoRow.date}. Thử fallback full data để lấp khoảng trống...`);
+            console.warn(`[1c] Phát hiện thiếu ${gapDays - 1} ngày giữa local=${latestLocalDate} và xoso=${latestXosoRow.date}. Quét tất cả các kỳ quay gần đây từ xoso.com.vn...`);
             try {
-                finalArray = mergeRowsByDate(finalArray, await getLegacyFormattedRows());
-                sourceLog.push(`legacy-gap-fill:${getLatestDateValue(finalArray)}`);
-            } catch (fallbackError) {
-                console.warn(`[1c] Fallback full data lỗi, vẫn upsert ngày mới nhất từ xoso.com.vn: ${fallbackError.message}`);
+                const recentRows = await fetchAllRecentXsmbResults();
+                if (recentRows.length > 0) {
+                    finalArray = mergeRowsByDate(finalArray, recentRows);
+                    sourceLog.push(`xoso-multi-gap-fill:${getLatestDateValue(finalArray)}`);
+                    console.log(`[1c] Đã tự động lấp đầy ${recentRows.length} kỳ quay từ xoso.com.vn (ngày mới nhất: ${getLatestDateValue(finalArray)})`);
+                }
+            } catch (xosoMultiErr) {
+                console.warn(`[1c] Quét multi-gap từ xoso.com.vn lỗi: ${xosoMultiErr.message}, thử fallback legacy...`);
+                try {
+                    finalArray = mergeRowsByDate(finalArray, await getLegacyFormattedRows());
+                    sourceLog.push(`legacy-gap-fill:${getLatestDateValue(finalArray)}`);
+                } catch (fallbackError) {
+                    console.warn(`[1c] Fallback full data lỗi, vẫn upsert ngày mới nhất từ xoso.com.vn: ${fallbackError.message}`);
+                }
             }
         }
 

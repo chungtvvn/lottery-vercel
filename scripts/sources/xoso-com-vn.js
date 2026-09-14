@@ -370,6 +370,34 @@ async function fetchLatestXsmbResult(options = {}) {
     throw new Error(`Không lấy được kết quả XSMB từ xoso.com.vn. ${errors.join(' | ')}`);
 }
 
+async function fetchAllRecentXsmbResults(options = {}) {
+    const url = options.url || XOSO_XSMB_URL;
+    const html = await fetchText(url, { timeoutMs: options.timeoutMs || 20000 });
+    const sectionRegex = /<section\b[^>]*\bid=(?:"|')?kqngay_(\d{8})(?:"|')?[^>]*>([\s\S]*?)(?=<section\b[^>]*\bid=|$)/gi;
+    const rows = [];
+    const seenDates = new Set();
+
+    for (const sectionMatch of html.matchAll(sectionRegex)) {
+        const fullMatch = sectionMatch[0];
+        try {
+            const row = parseLatestXsmbResultFromHtmlTable(fullMatch);
+            if (row && row.date && !seenDates.has(row.date)) {
+                seenDates.add(row.date);
+                Object.defineProperty(row, '_sourceUrl', {
+                    value: url,
+                    enumerable: false
+                });
+                rows.push(row);
+            }
+        } catch (_) {
+            // Bỏ qua kỳ chưa quay hoặc chưa hoàn tất
+        }
+    }
+
+    rows.sort((a, b) => String(a.date).localeCompare(String(b.date)));
+    return rows;
+}
+
 module.exports = {
     XOSO_HOME_URL,
     XOSO_XSMB_URL,
@@ -377,5 +405,6 @@ module.exports = {
     parseLatestXsmbResult,
     parseLatestXsmbResultFromHtmlTable,
     convertXosoResultToDataRow,
-    fetchLatestXsmbResult
+    fetchLatestXsmbResult,
+    fetchAllRecentXsmbResults
 };
