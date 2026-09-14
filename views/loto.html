@@ -188,6 +188,158 @@
         </section>
 
         <!-- ========================================== -->
+        <!-- 2.5. KHUNG ĐỀ XUẤT THÔNG MINH & BIỂU ĐỒ VÙNG 20 SỐ -->
+        <!-- ========================================== -->
+        <section id="lotoSmartSection" class="overflow-hidden rounded-3xl border border-indigo-200 bg-white shadow-sm">
+            <div class="border-b border-indigo-100 bg-gradient-to-r from-indigo-50/90 via-purple-50/50 to-slate-50 px-6 py-5">
+                <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                        <div class="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-100/70 px-3 py-0.5 text-xs font-black text-indigo-900 uppercase">
+                            <i class="bi bi-cpu-fill text-indigo-600"></i> ĐỀ XUẤT THÔNG MINH & BIỂU ĐỒ VÙNG 20 SỐ
+                        </div>
+                        <h2 class="mt-1.5 text-xl font-black text-slate-900">
+                            Biểu Đồ Vùng Trúng Thưởng 20 Số & Đề Xuất Đột Phá Lợi Nhuận
+                        </h2>
+                        <p class="text-xs text-slate-600 mt-1">
+                            Phân bổ tần suất nổ thực tế của 20 vị trí rank (từ Rank 1 đến Rank 20) qua các chu kỳ ngắn hạn và dài hạn, đề xuất chiến lược Đánh X2 và cụm Xiên 4 tối ưu nhất.
+                        </p>
+                    </div>
+                    <!-- Period toggles for Heatmap -->
+                    <div class="flex flex-wrap items-center gap-1.5" id="heatmapPeriodTabs">
+                        <button type="button" data-period="7" class="heatmap-tab rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition">7 Ngày</button>
+                        <button type="button" data-period="14" class="heatmap-tab rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition">14 Ngày</button>
+                        <button type="button" data-period="30" class="heatmap-tab active rounded-xl border border-indigo-600 bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white shadow-xs transition">30 Ngày</button>
+                        <button type="button" data-period="90" class="heatmap-tab rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition">90 Ngày</button>
+                        <button type="button" data-period="all" class="heatmap-tab rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition">Toàn 2026</button>
+                        <button type="button" data-period="live" class="heatmap-tab rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition">Thực Chiến Live</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6 space-y-6">
+                <!-- Rank Heatmap Container -->
+                <div>
+                    <div class="flex items-center justify-between mb-2.5">
+                        <h4 class="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                            <i class="bi bi-grid-3x3-gap-fill text-indigo-600"></i> PHÂN BỔ VÙNG NỔ TRONG 20 SỐ THEO THỨ TỰ RANK (1 ➔ 20)
+                        </h4>
+                        <span class="text-[11px] font-semibold text-slate-500" id="heatmapPeriodLabel">Dữ liệu chu kỳ: 30 ngày gần nhất</span>
+                    </div>
+                    <div id="lotoRankHeatmapGrid" class="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-10"></div>
+                </div>
+
+                <!-- Strategic Recommendations 2-Card Grid -->
+                <div class="grid gap-4 md:grid-cols-2">
+                    <!-- Card 1: Đề xuất đánh X2 -->
+                    <div id="cardRecommendX2" class="rounded-2xl border border-amber-300 bg-gradient-to-br from-amber-50/60 to-orange-50/40 p-5 shadow-xs">
+                        <div class="flex items-center justify-between">
+                            <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-500 text-white px-3 py-0.5 text-xs font-black uppercase shadow-xs">
+                                <i class="bi bi-rocket-takeoff-fill"></i> ĐỀ XUẤT ĐÁNH X2 (NHÂN ĐÔI CƯỢC)
+                            </span>
+                            <span id="recX2RoiBadge" class="font-mono text-xs font-black text-amber-800 bg-amber-100/90 border border-amber-300 rounded-lg px-2.5 py-0.5">ROI: +--%</span>
+                        </div>
+                        <h3 id="recX2Title" class="mt-3 text-lg font-black text-slate-900">Top 6 Tuyển Chọn (Đánh X2)</h3>
+                        <p id="recX2Rationale" class="text-xs leading-relaxed text-slate-700 mt-1">Đang tải phân tích phong độ...</p>
+                        <div class="mt-3 flex flex-wrap items-center gap-2" id="recX2Numbers"></div>
+                        <div class="mt-4 pt-3 border-t border-amber-200/80 flex items-center justify-between text-xs">
+                            <span class="text-slate-600 font-semibold" id="recX2StakeInfo">Vốn thường: --K ➔ <strong>Vốn X2: --K</strong></span>
+                            <button type="button" id="btnCopyX2" class="inline-flex items-center gap-1 rounded-lg bg-amber-600 hover:bg-amber-700 px-3 py-1.5 text-xs font-bold text-white shadow-2xs transition">
+                                <i class="bi bi-clipboard-check"></i> Copy dàn X2
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Đề xuất cụm Xiên 4 tối ưu -->
+                    <div id="cardRecommendXien4" class="rounded-2xl border border-emerald-300 bg-gradient-to-br from-emerald-50/60 to-teal-50/40 p-5 shadow-xs">
+                        <div class="flex items-center justify-between">
+                            <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 text-white px-3 py-0.5 text-xs font-black uppercase shadow-xs">
+                                <i class="bi bi-stars"></i> ĐỀ XUẤT CỤM LÔ XIÊN 4 TỐI ƯU
+                            </span>
+                            <span id="recXien4RoiBadge" class="font-mono text-xs font-black text-emerald-800 bg-emerald-100/90 border border-emerald-300 rounded-lg px-2.5 py-0.5">ROI: +--%</span>
+                        </div>
+                        <h3 id="recXien4Title" class="mt-3 text-lg font-black text-slate-900">Xiên X1 (Rank 1-4)</h3>
+                        <p id="recXien4Rationale" class="text-xs leading-relaxed text-slate-700 mt-1">Đang tải phân tích xác suất...</p>
+                        <div class="mt-3 flex flex-wrap items-center gap-2" id="recXien4Numbers"></div>
+                        <div class="mt-4 pt-3 border-t border-emerald-200/80 flex items-center justify-between text-xs">
+                            <span class="text-slate-600 font-semibold">Vốn 11M ➔ <strong>Ăn 12M / 84M / 384M</strong></span>
+                            <button type="button" id="btnCopyRecXien4" class="inline-flex items-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 text-xs font-bold text-white shadow-2xs transition">
+                                <i class="bi bi-clipboard-check"></i> Copy Xiên Đề Xuất
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Bảng chọn lọc toàn bộ phương án tốt nhất -->
+                <div class="rounded-2xl border border-slate-200 bg-slate-50/60 p-5">
+                    <h4 class="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5 mb-3">
+                        <i class="bi bi-shield-check text-emerald-600"></i> BẢNG CHỌN LỌC BỘ PHƯƠNG ÁN LÔ CÓ LỢI ÍCH TỐT NHẤT
+                    </h4>
+                    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 text-xs" id="lotoCuratedSuiteCards"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- 2.6. KHUNG LÔ XIÊN 4 (XIÊN X1 ĐẾN X5) -->
+        <!-- ========================================== -->
+        <section id="lotoXien4Section" class="overflow-hidden rounded-3xl border border-teal-300/80 bg-white shadow-sm">
+            <div class="border-b border-teal-100 bg-gradient-to-r from-teal-50/80 via-emerald-50/50 to-slate-50 px-6 py-5">
+                <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                        <div class="inline-flex items-center gap-1.5 rounded-full border border-teal-300 bg-teal-100 px-3 py-0.5 text-xs font-black text-teal-950 uppercase">
+                            <i class="bi bi-dice-4-fill text-teal-600"></i> LÔ XIÊN 4 THỰC CHIẾN (XIÊN X1 ĐẾN X5)
+                        </div>
+                        <h2 class="mt-1.5 text-xl font-black text-slate-900">
+                            Bảng Cụm Lô Xiên 4 & Thống Kê Hiệu Suất (Vốn 11M Ăn 12M / 84M / 384M)
+                        </h2>
+                        <p class="text-xs text-slate-600 mt-1">
+                            Lấy 20 số Top 20 chia thành 5 cụm 4 số liên tiếp (X1: 1-4, X2: 5-8, X3: 9-12, X4: 13-16, X5: 17-20). Trúng 2/4 số: ăn 12M (+1M lời); trúng 3/4 số: ăn 84M (+73M lời); trúng 4/4 số: ăn 384M (+373M lời); trúng 0-1 số: trượt mất gốc (-11M).
+                        </p>
+                    </div>
+                    <!-- Mode switch for Xien 4 table -->
+                    <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl" id="xien4ModeToggle">
+                        <button type="button" data-mode="all" class="xien4-mode-btn active rounded-lg bg-white px-3 py-1.5 text-xs font-black text-teal-950 shadow-2xs">Toàn 2026 (Strict PIT)</button>
+                        <button type="button" data-mode="live" class="xien4-mode-btn rounded-lg px-3 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900">Thực Chiến Live</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6 space-y-6">
+                <!-- 5 Clusters Today Cards -->
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="text-xs font-black uppercase tracking-wider text-slate-700">DÀN 5 CỤM LÔ XIÊN 4 HÔM NAY (NGÀY <span id="xien4TargetDate">--/--/----</span>)</h4>
+                        <span class="text-xs font-semibold text-slate-500">Vốn: 11.000K/cụm · 5 cụm: 55.000K</span>
+                    </div>
+                    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5" id="xien4TodayCards"></div>
+                </div>
+
+                <!-- Comprehensive Performance Table of X1..X5 -->
+                <div class="overflow-x-auto custom-scrollbar rounded-2xl border border-slate-200">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-200 bg-slate-100/90 text-[11px] font-black uppercase tracking-wider text-slate-600">
+                                <th class="p-3 pl-4">Loại Xiên 4</th>
+                                <th class="p-3 text-center">Số Ngày</th>
+                                <th class="p-3 text-center">Ngày Thắng ($\ge 2/4$)</th>
+                                <th class="p-3 text-center">Tỷ Lệ Ăn</th>
+                                <th class="p-3 text-center">Trúng 4/4 (384M)</th>
+                                <th class="p-3 text-center">Trúng 3/4 (84M)</th>
+                                <th class="p-3 text-center">Trúng 2/4 (12M)</th>
+                                <th class="p-3 text-center">Trượt (0-1)</th>
+                                <th class="p-3 text-right">Tổng Vốn</th>
+                                <th class="p-3 text-right">Tổng Tiền Ăn</th>
+                                <th class="p-3 text-right">Lợi Nhuận Ròng</th>
+                                <th class="p-3 pr-4 text-center">ROI</th>
+                            </tr>
+                        </thead>
+                        <tbody id="xien4TableBody" class="divide-y divide-slate-100 font-medium"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
         <!-- 3. THỐNG KÊ ĐA CỬA SỔ CHU KỲ (7, 15, 30, 60, 90 NGÀY) -->
         <!-- ========================================== -->
         <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
@@ -204,14 +356,30 @@
         <!-- 4. THỐNG KÊ TOÀN NĂM 2026 THEO TỪNG THÁNG -->
         <!-- ========================================== -->
         <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-            <div class="border-b border-slate-100 bg-slate-50/80 px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <div>
-                    <p class="text-xs font-black uppercase tracking-wider text-amber-600">THỐNG KÊ TOÀN NĂM 2026 THEO TỪNG THÁNG</p>
-                    <h2 class="mt-0.5 text-lg font-black text-slate-900">Chi Tiết Thắng / Thua, Lợi Nhuận & Lũy Kế Từng Tháng (236 Kỳ Quay 2026)</h2>
+            <div class="border-b border-slate-100 bg-slate-50/80 px-6 py-4 flex flex-col gap-3">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div>
+                        <p class="text-xs font-black uppercase tracking-wider text-amber-600">THỐNG KÊ TOÀN NĂM 2026 THEO TỪNG THÁNG</p>
+                        <h2 class="mt-0.5 text-lg font-black text-slate-900" id="lotoMonthlyTitle">Chi Tiết Thắng / Thua, Lợi Nhuận & Lũy Kế Từng Tháng (Top 6)</h2>
+                    </div>
+                    <span id="lotoYearlyBadge" class="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-1 text-xs font-black text-emerald-800">
+                        <i class="bi bi-graph-up-arrow text-emerald-600"></i> LŨY KẾ CẢ NĂM: --
+                    </span>
                 </div>
-                <span id="lotoYearlyBadge" class="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3.5 py-1 text-xs font-black text-emerald-800">
-                    <i class="bi bi-graph-up-arrow text-emerald-600"></i> LŨY KẾ CẢ NĂM: --
-                </span>
+                <!-- Top selector tabs for Monthly breakdown -->
+                <div class="flex flex-wrap items-center gap-1.5 pt-1 border-t border-slate-200/60" id="monthlyTopTabs">
+                    <span class="text-[11px] font-bold text-slate-500 mr-1">Xem theo dàn:</span>
+                    <button type="button" data-top="1" class="monthly-top-btn rounded-xl border border-slate-200 bg-white px-2.5 py-1 text-xs font-bold text-slate-700 hover:border-indigo-400 transition">Top 1 (Bạch thủ)</button>
+                    <button type="button" data-top="2" class="monthly-top-btn rounded-xl border border-slate-200 bg-white px-2.5 py-1 text-xs font-bold text-slate-700 hover:border-indigo-400 transition">Top 2 (Song thủ)</button>
+                    <button type="button" data-top="4" class="monthly-top-btn rounded-xl border border-slate-200 bg-white px-2.5 py-1 text-xs font-bold text-slate-700 hover:border-indigo-400 transition">Top 4</button>
+                    <button type="button" data-top="6" class="monthly-top-btn active rounded-xl border border-indigo-600 bg-indigo-600 px-2.5 py-1 text-xs font-bold text-white shadow-2xs transition">Top 6</button>
+                    <button type="button" data-top="7" class="monthly-top-btn rounded-xl border border-slate-200 bg-white px-2.5 py-1 text-xs font-bold text-slate-700 hover:border-indigo-400 transition">Top 7</button>
+                    <button type="button" data-top="8" class="monthly-top-btn rounded-xl border border-slate-200 bg-white px-2.5 py-1 text-xs font-bold text-slate-700 hover:border-indigo-400 transition">Top 8</button>
+                    <button type="button" data-top="10" class="monthly-top-btn rounded-xl border border-slate-200 bg-white px-2.5 py-1 text-xs font-bold text-slate-700 hover:border-indigo-400 transition">Top 10</button>
+                    <button type="button" data-top="20" class="monthly-top-btn rounded-xl border border-slate-200 bg-white px-2.5 py-1 text-xs font-bold text-slate-700 hover:border-indigo-400 transition">Top 20</button>
+                    <button type="button" data-top="xien4_x1" class="monthly-top-btn rounded-xl border border-teal-300 bg-teal-50 px-2.5 py-1 text-xs font-black text-teal-800 hover:bg-teal-100 transition">Xiên X1 (11M)</button>
+                    <button type="button" data-top="xien4_x2" class="monthly-top-btn rounded-xl border border-teal-300 bg-teal-50 px-2.5 py-1 text-xs font-black text-teal-800 hover:bg-teal-100 transition">Xiên X2 (11M)</button>
+                </div>
             </div>
             <div class="overflow-x-auto custom-scrollbar">
                 <table class="w-full text-left text-xs border-collapse">
@@ -270,7 +438,7 @@
         </section>
     </main>
 
-    <script src="/js/loto.js?v=20260906-qmbf-v3-ultra-smooth"></script>
+    <script src="/js/loto.js?v=20260915-xien4-heatmap-v1"></script>
 </body>
 
 </html>

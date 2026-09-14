@@ -437,6 +437,7 @@ export async function GET(request) {
             
             const topPredictions = latestRec.topPredictions || {};
             const predictions = {
+                top1: topPredictions.top1 || { numbers: rankedNumbers.slice(0, 1), overlapNumbers: x2Numbers },
                 top2: topPredictions.top2 || { numbers: rankedNumbers.slice(0, 2), overlapNumbers: x2Numbers },
                 top4: topPredictions.top4 || { numbers: rankedNumbers.slice(0, 4), overlapNumbers: x2Numbers },
                 top6: topPredictions.top6 || { numbers: rankedNumbers.slice(0, 6), overlapNumbers: x2Numbers },
@@ -456,7 +457,7 @@ export async function GET(request) {
                 }
             };
             
-            const countsList = [2, 4, 6, 7, 8, 10, 20];
+            const countsList = [1, 2, 4, 6, 7, 8, 10, 20];
             const liveCumProfitsMap = {};
             countsList.forEach(c => { liveCumProfitsMap[`top${c}`] = 0; });
 
@@ -517,6 +518,8 @@ export async function GET(request) {
                     actual: actualMap,
                     predictions: rowPredictions,
                     methods: rowMethods,
+                    xien4: r.xien4 || null,
+                    xien2: r.xien2 || null,
                     liveCumulativeProfitK: isLive ? liveCumProfitsMap.top10 : null
                 };
             });
@@ -599,6 +602,11 @@ export async function GET(request) {
             });
 
             const stratMeta = LOTO_STRATEGY_META[strategy] || {};
+            const xien4Data = loData.summary?.xien4 || latestRec.xien4 || null;
+            const xien4LiveData = loData.summary?.xien4Live || null;
+            const rankDistribution = loData.summary?.rankDistribution || latestRec.rankDistribution || null;
+            const monthlyBreakdown = loData.summary?.monthly || latestRec.monthly || null;
+            const smartRecommendation = loData.summary?.smartRecommendation || latestRec.smartRecommendation || null;
 
             return NextResponse.json({
                 success: true,
@@ -612,6 +620,11 @@ export async function GET(request) {
                     payoutPerHitK: 8000,
                     defaultBetCount: strategy === 'loTriHarmonic' ? 10 : 6
                 },
+                xien4: xien4Data,
+                xien4Live: xien4LiveData,
+                rankDistribution,
+                monthly: monthlyBreakdown,
+                smartRecommendation,
                 nextPrediction: {
                     predictionDate: latestRec.predictionDate,
                     dataIsoDate: advisorData?.latestDataDate,
@@ -619,7 +632,11 @@ export async function GET(request) {
                     m1Label: latestRec.m1Label,
                     m2Label: latestRec.m2Label,
                     plainReasons: latestRec.plainReasons,
-                    predictions
+                    predictions,
+                    xien4: latestRec.xien4 || xien4Data,
+                    goldenXien2: latestRec.goldenXien2 || null,
+                    smartRecommendation,
+                    rankDistribution
                 },
                 livePredictions: {
                     config: {
@@ -628,6 +645,11 @@ export async function GET(request) {
                     },
                     summary: summaryObj,
                     liveSummary: liveSummaryObj,
+                    xien4: xien4Data,
+                    xien4Live: xien4LiveData,
+                    rankDistribution,
+                    monthly: monthlyBreakdown,
+                    smartRecommendation,
                     predictions: liveRecords
                 }
             }, { headers: NO_STORE_HEADERS });
