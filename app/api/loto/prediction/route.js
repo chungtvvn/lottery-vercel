@@ -406,18 +406,8 @@ export async function GET(request) {
             );
         }
 
-        const { selectBestLotoDefault } = require('@/lib/utils/lotoDefaultSelection');
         const requestedStrategy = url.searchParams.get('strategy');
-        const automaticDefault = selectBestLotoDefault(
-            mergedPayload.livePredictions?.summary || {},
-            {
-                strategies: LOTO_STRATEGY_IDS,
-                betCounts: LOTO_BET_COUNTS,
-                fallbackStrategy: DEFAULT_LOTO_STRATEGY,
-                fallbackBetCount: 6
-            }
-        );
-        const strategy = requestedStrategy || automaticDefault.strategy || DEFAULT_LOTO_STRATEGY;
+        const strategy = requestedStrategy || DEFAULT_LOTO_STRATEGY;
         if (!LOTO_STRATEGY_META[strategy]) {
             return NextResponse.json(
                 { success: false, error: `Phương pháp Lô không hợp lệ: ${strategy}.` },
@@ -702,6 +692,21 @@ export async function GET(request) {
                 { success: false, error: filtered.error },
                 { status: 400, headers: NO_STORE_HEADERS }
             );
+        }
+
+        if (strategy === LEGACY_RRF_LOTO_STRATEGY) {
+            const advisorData = await loadJsonWithSupabaseFallback('cached_daily_method_advisor.json').catch(() => null);
+            const fallbackLo = advisorData?.loQuantumBayesFusion || {};
+            filtered.xien4 = fallbackLo.summary?.xien4 || null;
+            filtered.xien4Live = fallbackLo.summary?.xien4Live || null;
+            filtered.rankDistribution = fallbackLo.summary?.rankDistribution || null;
+            filtered.monthly = fallbackLo.summary?.monthly || null;
+            filtered.smartRecommendation = fallbackLo.summary?.smartRecommendation || null;
+            if (filtered.nextPrediction) {
+                filtered.nextPrediction.xien4 = fallbackLo.latestRecommendation?.xien4 || null;
+                filtered.nextPrediction.smartRecommendation = fallbackLo.latestRecommendation?.smartRecommendation || null;
+                filtered.nextPrediction.rankDistribution = fallbackLo.latestRecommendation?.rankDistribution || null;
+            }
         }
 
         return NextResponse.json(
