@@ -609,16 +609,11 @@ export async function GET(request) {
             } = require('@/lib/services/loDualMergeAdvisorService');
 
             const settledList = loData.records || loData.settledLedger || [];
-            let xien4Data = loData.summary?.xien4 || latestRec.xien4 || null;
-            if (!xien4Data || !xien4Data.x1) {
-                xien4Data = summarizeXien4(settledList);
-            }
-
-            let xien4LiveData = loData.summary?.xien4Live || null;
-            if (!xien4LiveData || !xien4LiveData.x1) {
-                const liveSettled = settledList.filter(r => r.isLiveSnapshot || (r.date || '') >= '2026-08-28');
-                xien4LiveData = summarizeXien4(liveSettled);
-            }
+            const liveSettled = settledList.filter(r => r.isLiveSnapshot || (r.predictionIsoDate || r.predictionDate || r.date || '') >= '2026-08-28');
+            const xien4Data = summarizeXien4(settledList);
+            const xien4LiveData = summarizeXien4(liveSettled);
+            const recommendedXien4Live = dynamicMetaAdvisor?.summary?.xien4 || loData.summary?.xien4Live || null;
+            const allMethodsXien4Live = loData.summary?.allMethodsXien4Live || null;
 
             let rankDistribution = loData.summary?.rankDistribution || latestRec.rankDistribution || null;
             if (!rankDistribution || !rankDistribution.all) {
@@ -672,6 +667,8 @@ export async function GET(request) {
                 },
                 xien4: xien4Data,
                 xien4Live: xien4LiveData,
+                recommendedXien4Live,
+                allMethodsXien4Live,
                 rankDistribution,
                 monthly: monthlyBreakdown,
                 smartRecommendation,
@@ -699,6 +696,8 @@ export async function GET(request) {
                     liveSummary: liveSummaryObj,
                     xien4: xien4Data,
                     xien4Live: xien4LiveData,
+                    recommendedXien4Live,
+                    allMethodsXien4Live,
                     rankDistribution,
                     monthly: monthlyBreakdown,
                     smartRecommendation,

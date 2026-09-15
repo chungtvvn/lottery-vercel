@@ -117,6 +117,19 @@
 
             <!-- KPI Summary Cards (Full Year 2026 Performance) -->
             <div class="grid grid-cols-2 gap-3 border-t border-white/10 bg-black/40 p-5 sm:grid-cols-3 lg:grid-cols-6" id="lotoHeroSummaryCards"></div>
+
+            <!-- Phân Tách Thống Kê Profit Riêng Biệt Từng Top & Xiên 4 -->
+            <div class="border-t border-white/10 bg-black/60 p-5">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-400/20 px-3 py-0.5 text-xs font-black text-amber-300 border border-amber-400/30">
+                            <i class="bi bi-bar-chart-fill"></i> THỐNG KÊ PHÂN TÁCH LÃI RÒNG RIÊNG TỪNG TOP & LÔ XIÊN
+                        </span>
+                        <span class="text-xs text-slate-300">Tách riêng Lợi Nhuận Thực Chiến Live (18 kỳ từ 28/08) & Toàn năm 2026 cho từng dàn số</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-9" id="lotoPerTopProfitCards"></div>
+            </div>
         </section>
 
         <!-- ========================================== -->
@@ -448,9 +461,12 @@
         <!-- 3. THỐNG KÊ ĐA CỬA SỔ CHU KỲ (7, 15, 30, 60, 90 NGÀY & THỰC CHIẾN LIVE) -->
         <!-- ========================================== -->
         <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-            <div class="border-b border-slate-100 bg-slate-50/80 px-6 py-4">
-                <p class="text-xs font-black uppercase tracking-wider text-indigo-600">THỐNG KÊ ĐA CỬA SỔ THEO DÕI</p>
-                <h2 class="mt-0.5 text-lg font-black text-slate-900">Hiệu Suất Thực Chiến Lô Theo Chu Kỳ (7, 15, 30, 60, 90 ngày, Toàn Năm & Thực Chiến Live)</h2>
+            <div class="border-b border-slate-100 bg-slate-50/80 px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                    <p class="text-xs font-black uppercase tracking-wider text-indigo-600">THỐNG KÊ ĐA CỬA SỔ THEO DÕI</p>
+                    <h2 class="mt-0.5 text-lg font-black text-slate-900">Hiệu Suất Thực Chiến Lô Theo Chu Kỳ (<span id="lotoWindowsSelectedTopText">Top 6</span>)</h2>
+                </div>
+                <div class="flex flex-wrap items-center gap-1.5" id="lotoWindowsTopFilter"></div>
             </div>
             <div class="p-6 overflow-x-auto custom-scrollbar">
                 <div id="lotoWindowsGrid" class="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7"></div>
@@ -465,13 +481,13 @@
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div>
                         <div class="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-100 px-3 py-0.5 text-xs font-black text-emerald-950 uppercase">
-                            <i class="bi bi-broadcast text-emerald-700"></i> THỰC CHIẾN LIVE CHÍNH THỨC (TỪ 28/08/2026 ĐẾN NAY - 17 KỲ)
+                            <i class="bi bi-broadcast text-emerald-700"></i> THỰC CHIẾN LIVE CHÍNH THỨC (TỪ 28/08/2026 ĐẾN NAY)
                         </div>
                         <h2 class="mt-1.5 text-xl font-black text-slate-900">
                             Bảng Phân Tách & Đối Soát Hiệu Suất Thực Chiến Live Từng Top Dàn & Cụm Xiên 4
                         </h2>
                         <p class="text-xs text-slate-600 mt-1">
-                            Đo lường độc lập và đối soát 100% minh bạch kết quả 17 kỳ quay thực tế đã mở thưởng cho từng Top dàn số (Top 1, 2, 4, 6, 7, 8, 10, 20) và 5 Cụm Lô Xiên 4 (X1 đến X5, Cả 5 Cụm) dựa trên 27 giải mở thưởng XSMB.
+                            Đo lường độc lập và đối soát 100% minh bạch kết quả các kỳ quay thực tế đã mở thưởng cho từng Top dàn số (Top 1, 2, 4, 6, 7, 8, 10, 20) và Cụm Lô Xiên 4 Đề Xuất & Các Cụm dựa trên 27 giải mở thưởng XSMB.
                         </p>
                     </div>
                     <span class="inline-flex items-center gap-1.5 rounded-2xl border border-emerald-300 bg-emerald-100/80 px-4 py-2 text-xs font-black text-emerald-950 shadow-2xs self-start sm:self-auto">
@@ -483,23 +499,23 @@
                 <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     <div class="rounded-2xl border border-slate-200/80 bg-white/90 p-3.5 shadow-2xs">
                         <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Số Kỳ Thực Chiến Live</div>
-                        <div class="mt-1 font-mono text-xl font-black text-slate-900">17 Kỳ Quay</div>
-                        <div class="text-[11px] text-slate-500 mt-0.5">Từ 28/08/2026 đến 13/09/2026</div>
+                        <div class="mt-1 font-mono text-xl font-black text-slate-900" id="lotoLiveKpiDays">18 Kỳ Quay</div>
+                        <div class="text-[11px] text-slate-500 mt-0.5" id="lotoLiveKpiDateRange">Từ 28/08/2026 đến nay</div>
                     </div>
                     <div class="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-3.5 shadow-2xs">
                         <div class="text-[11px] font-bold uppercase tracking-wider text-emerald-700">Lợi Nhuận Lô Cao Nhất</div>
-                        <div class="mt-1 font-mono text-xl font-black text-emerald-700">+116.0M <span class="text-xs font-bold">(Top 20)</span></div>
-                        <div class="text-[11px] text-emerald-800 mt-0.5">Top 2 Song Thủ VIP: <strong>+45.2M</strong> (ROI +60.4%)</div>
+                        <div class="mt-1 font-mono text-xl font-black text-emerald-700" id="lotoLiveKpiMaxProfit">+128.0M <span class="text-xs font-bold">(Top 20)</span></div>
+                        <div class="text-[11px] text-emerald-800 mt-0.5" id="lotoLiveKpiMaxRoi">Top 2 Song Thủ VIP: <strong>+48.8M</strong> (ROI +61.6%)</div>
                     </div>
                     <div class="rounded-2xl border border-indigo-200 bg-indigo-50/70 p-3.5 shadow-2xs">
                         <div class="text-[11px] font-bold uppercase tracking-wider text-indigo-700">Tỷ Lệ Nổ Tuyệt Đối 100%</div>
-                        <div class="mt-1 font-mono text-xl font-black text-indigo-700">Top 10 & Top 20</div>
-                        <div class="text-[11px] text-indigo-800 mt-0.5">Top 10: 17/17 nổ (51 nháy) · Top 20: 108 nháy</div>
+                        <div class="mt-1 font-mono text-xl font-black text-indigo-700" id="lotoLiveKpiHitRate">Top 10 & Top 20</div>
+                        <div class="text-[11px] text-indigo-800 mt-0.5" id="lotoLiveKpiHitDetail">Top 10: 18/18 nổ (54 nháy) · Top 20: 120 nháy</div>
                     </div>
                     <div class="rounded-2xl border border-teal-200 bg-teal-50/70 p-3.5 shadow-2xs">
                         <div class="text-[11px] font-bold uppercase tracking-wider text-teal-700">Xiên 4 Live Lãi Nhất</div>
-                        <div class="mt-1 font-mono text-xl font-black text-teal-700">+41.0M <span class="text-xs font-bold">(Xiên X4)</span></div>
-                        <div class="text-[11px] text-teal-800 mt-0.5">Xiên X2: <strong>+29.0M</strong> (ROI +15.5%)</div>
+                        <div class="mt-1 font-mono text-xl font-black text-teal-700" id="lotoLiveKpiXienMax">+390.0M <span class="text-xs font-bold">(Tam Động Cơ X3)</span></div>
+                        <div class="text-[11px] text-teal-800 mt-0.5" id="lotoLiveKpiXienDetail">Xiên 4 Đề Xuất: <strong>+18.0M</strong> (ROI +9.1%)</div>
                     </div>
                 </div>
             </div>

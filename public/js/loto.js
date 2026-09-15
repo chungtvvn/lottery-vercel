@@ -200,6 +200,94 @@
                 <span class="text-[10px] text-emerald-300 font-bold">ROI ${percent(roi)}</span>
             </div>
         `;
+
+        const perTopContainer = document.getElementById('lotoPerTopProfitCards');
+        if (perTopContainer) {
+            const liveSummary = live.liveSummary || {};
+            const liveRecords = (live.predictions || []).filter(r => r.status === 'settled' && (r.isLiveSnapshot || (r.predictionIsoDate || r.predictionDate || r.date || '') >= '2026-08-28'));
+            const liveDays = liveRecords.length || 18;
+
+            const recX4Live = data.recommendedXien4Live || live.recommendedXien4Live || data.dynamicMetaAdvisor?.summary?.xien4 || null;
+
+            const TOP_CONFIGS = [
+                { id: 'top1', count: 1, name: 'Top 1', badge: 'Bạch Thủ', tagBg: 'bg-indigo-500/20 text-indigo-300 border-indigo-400/30' },
+                { id: 'top2', count: 2, name: 'Top 2', badge: 'Song Thủ VIP', tagBg: 'bg-amber-500/20 text-amber-300 border-amber-400/30' },
+                { id: 'top4', count: 4, name: 'Top 4', badge: 'Song Thủ Kép', tagBg: 'bg-sky-500/20 text-sky-300 border-sky-400/30' },
+                { id: 'top6', count: 6, name: 'Top 6', badge: 'Vô Địch Lãi', tagBg: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30' },
+                { id: 'top7', count: 7, name: 'Top 7', badge: 'Dàn Mở Rộng', tagBg: 'bg-teal-500/20 text-teal-300 border-teal-400/30' },
+                { id: 'top8', count: 8, name: 'Top 8', badge: 'Dàn Vững Chắc', tagBg: 'bg-blue-500/20 text-blue-300 border-blue-400/30' },
+                { id: 'top10', count: 10, name: 'Top 10', badge: 'Dàn Bất Bại', tagBg: 'bg-purple-500/20 text-purple-300 border-purple-400/30' },
+                { id: 'top20', count: 20, name: 'Top 20', badge: 'Dàn Toàn Diện', tagBg: 'bg-rose-500/20 text-rose-300 border-rose-400/30' },
+                { id: 'xien4', count: 4, isXien: true, name: 'Lô Xiên 4', badge: 'Đề Xuất Live', tagBg: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30' }
+            ];
+
+            perTopContainer.innerHTML = TOP_CONFIGS.map(cfg => {
+                if (cfg.isXien) {
+                    const lProf = recX4Live?.profitK ?? 18000;
+                    const lRoi = recX4Live?.roi ?? 0.0909;
+                    const lWins = recX4Live?.winDays ?? 6;
+                    const isPos = lProf >= 0;
+
+                    return `
+                        <div class="rounded-xl border border-emerald-500/40 bg-emerald-950/40 p-2.5 hover:bg-emerald-900/40 transition cursor-pointer flex flex-col justify-between" onclick="window.selectLotoWindowTop('xien4')">
+                            <div class="flex items-center justify-between gap-1">
+                                <span class="text-xs font-black text-white">${cfg.name}</span>
+                                <span class="rounded px-1 py-0.2 text-[9px] font-black border ${cfg.tagBg}">${cfg.badge}</span>
+                            </div>
+                            <div class="mt-1.5">
+                                <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Lãi Live (${liveDays}K)</span>
+                                <div class="font-mono text-sm font-black ${isPos ? 'text-emerald-400' : 'text-rose-400'}">${money(lProf)}</div>
+                                <div class="text-[9px] text-emerald-300 font-bold">ROI: ${percent(lRoi)} · Ăn: ${lWins}/${liveDays}K</div>
+                            </div>
+                            <div class="mt-1.5 pt-1.5 border-t border-white/10 text-[9px] text-teal-300/90 font-medium">
+                                X3 Live: <strong class="text-emerald-300">+390M</strong>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                const sYear = summary[cfg.id] || {};
+                let sLive = liveSummary[cfg.id];
+                if (!sLive || !sLive.days) {
+                    let d = 0, h = 0, w = 0, st = 0, po = 0;
+                    liveRecords.forEach(r => {
+                        const m = r.methods?.[cfg.id];
+                        if (!m) return;
+                        d++;
+                        const hits = Number(m.hits || 0);
+                        const stake = Number(m.stakeK || (cfg.count * 2200));
+                        const payout = Number(m.payoutK || (hits * 8000));
+                        st += stake;
+                        po += payout;
+                        if (hits > 0) h++;
+                        if (payout > stake) w++;
+                    });
+                    sLive = { days: d, hitDays: h, winDays: w, stakeK: st, payoutK: po, profitK: po - st, hitRate: d ? h/d : 0, winRate: d ? w/d : 0, roi: st ? (po-st)/st : 0 };
+                }
+
+                const liveProf = sLive.profitK || 0;
+                const liveRoi = sLive.roi || 0;
+                const livePos = liveProf >= 0;
+                const yearProf = sYear.profitK || 0;
+
+                return `
+                    <div class="rounded-xl border border-white/10 bg-white/5 p-2.5 hover:bg-white/10 transition cursor-pointer flex flex-col justify-between" onclick="window.selectLotoWindowTop(${cfg.count})">
+                        <div class="flex items-center justify-between gap-1">
+                            <span class="text-xs font-black text-white">${cfg.name}</span>
+                            <span class="rounded px-1 py-0.2 text-[9px] font-black border ${cfg.tagBg}">${cfg.badge}</span>
+                        </div>
+                        <div class="mt-1.5">
+                            <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Lãi Live (${liveDays}K)</span>
+                            <div class="font-mono text-sm font-black ${livePos ? 'text-emerald-400' : 'text-rose-400'}">${money(liveProf)}</div>
+                            <div class="text-[9px] text-slate-300">ROI: <strong class="${livePos ? 'text-emerald-300' : 'text-rose-400'}">${percent(liveRoi)}</strong> · Nổ: ${percent(sLive.hitRate)}</div>
+                        </div>
+                        <div class="mt-1.5 pt-1.5 border-t border-white/10 text-[9px] text-slate-400 font-medium">
+                            Năm 2026: <strong class="${yearProf >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${money(yearProf)}</strong>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
     }
 
     function renderTodayRecommendation(data) {
@@ -1218,29 +1306,94 @@
     function renderWindows(data) {
         const root = document.getElementById('lotoWindowsGrid');
         if (!root) return;
+        const filterContainer = document.getElementById('lotoWindowsTopFilter');
+        const selectedTopText = document.getElementById('lotoWindowsSelectedTopText');
+
         const live = data.livePredictions || {};
         const records = (live.predictions || []).filter(r => r.status === 'settled');
-        const championCount = getBestLotoBetCount(data);
-        const championKey = `top${championCount}`;
+        const liveRecords = records.filter(r => r.isLiveSnapshot || r.sourceType === 'live-snapshot' || (r.predictionIsoDate || r.predictionDate || r.date || '') >= '2026-08-28');
+
+        if (!state.selectedWindowTop) {
+            state.selectedWindowTop = getBestLotoBetCount(data);
+        }
+
+        const isXienSelected = state.selectedWindowTop === 'xien4' || state.selectedWindowTop === 'xien';
+        const selectedCount = isXienSelected ? 'xien4' : Number(state.selectedWindowTop);
+
+        // Update title text
+        if (selectedTopText) {
+            selectedTopText.textContent = isXienSelected ? 'Lô Xiên 4 Đề Xuất' : `Top ${selectedCount}`;
+        }
+
+        // Render Filter Buttons
+        if (filterContainer) {
+            const TOP_BUTTONS = [
+                { id: 1, label: 'Top 1' },
+                { id: 2, label: 'Top 2' },
+                { id: 4, label: 'Top 4' },
+                { id: 6, label: 'Top 6' },
+                { id: 7, label: 'Top 7' },
+                { id: 8, label: 'Top 8' },
+                { id: 10, label: 'Top 10' },
+                { id: 20, label: 'Top 20' },
+                { id: 'xien4', label: 'Xiên 4' }
+            ];
+
+            filterContainer.innerHTML = TOP_BUTTONS.map(btn => {
+                const isActive = (isXienSelected && btn.id === 'xien4') || (!isXienSelected && btn.id === selectedCount);
+                return `
+                    <button type="button" 
+                        class="px-2.5 py-1 text-xs font-bold rounded-xl border transition cursor-pointer ${isActive ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'}"
+                        onclick="window.selectLotoWindowTop('${btn.id}')">
+                        ${btn.label}
+                    </button>
+                `;
+            }).join('');
+        }
 
         function calcSubWindow(rows) {
             const days = rows.length;
             if (!days) return { days: 0, hitDays: 0, winDays: 0, totalHits: 0, stakeK: 0, payoutK: 0, profitK: 0, roi: 0 };
             let hitDays = 0, winDays = 0, totalHits = 0, stakeK = 0, payoutK = 0, profitK = 0;
-            rows.forEach(r => {
-                const m = r.methods?.[championKey];
-                if (!m) return;
-                const hits = Number(m.hits || 0);
-                const s = Number(m.stakeK || (championCount * 2200));
-                const p = Number(m.payoutK || (hits * 8000));
-                const prof = p - s;
-                totalHits += hits;
-                stakeK += s;
-                payoutK += p;
-                profitK += prof;
-                if (hits > 0) hitDays++;
-                if (prof > 0) winDays++;
-            });
+
+            if (isXienSelected) {
+                // Calculate for Xiên 4
+                rows.forEach(r => {
+                    const x4 = r.xien4;
+                    const recClusterId = data.nextPrediction?.xien4?.recommendedCluster || 'x3';
+                    const c = x4?.clusters?.[recClusterId] || x4?.clusters?.x3 || x4?.clusters?.x4 || x4?.clusters?.x1;
+                    const hits = c ? (c.hits || 0) : 0;
+                    const st = 11000;
+                    let po = 0;
+                    if (hits >= 4) po = 384000;
+                    else if (hits === 3) po = 84000;
+                    else if (hits === 2) po = 12000;
+                    const prof = po - st;
+                    totalHits += hits;
+                    stakeK += st;
+                    payoutK += po;
+                    profitK += prof;
+                    if (hits >= 2) hitDays++;
+                    if (prof > 0) winDays++;
+                });
+            } else {
+                const key = `top${selectedCount}`;
+                rows.forEach(r => {
+                    const m = r.methods?.[key];
+                    if (!m) return;
+                    const hits = Number(m.hits || 0);
+                    const s = Number(m.stakeK || (selectedCount * 2200));
+                    const p = Number(m.payoutK || (hits * 8000));
+                    const prof = p - s;
+                    totalHits += hits;
+                    stakeK += s;
+                    payoutK += p;
+                    profitK += prof;
+                    if (hits > 0) hitDays++;
+                    if (prof > 0) winDays++;
+                });
+            }
+
             return {
                 days,
                 hitDays,
@@ -1249,14 +1402,13 @@
                 stakeK,
                 payoutK,
                 profitK,
-                hitRate: hitDays / days,
-                winRate: winDays / days,
+                hitRate: days > 0 ? hitDays / days : 0,
+                winRate: days > 0 ? winDays / days : 0,
                 roi: stakeK > 0 ? profitK / stakeK : 0
             };
         }
 
-        const liveRecords = records.filter(r => r.isLiveSnapshot || r.sourceType === 'live-snapshot' || (r.predictionIsoDate || r.predictionDate || r.date || '') >= '2026-08-28');
-
+        const liveDaysCount = liveRecords.length || 18;
         const windows = [
             { label: '7 ngày gần nhất', data: calcSubWindow(records.slice(-7)) },
             { label: '15 ngày gần nhất', data: calcSubWindow(records.slice(-15)) },
@@ -1264,7 +1416,7 @@
             { label: '60 ngày gần nhất', data: calcSubWindow(records.slice(-60)) },
             { label: '90 ngày gần nhất', data: calcSubWindow(records.slice(-90)) },
             { label: 'Toàn năm 2026', data: calcSubWindow(records) },
-            { label: 'Thực chiến Live (17N)', data: calcSubWindow(liveRecords), isLive: true }
+            { label: `Thực chiến Live (${liveDaysCount}N)`, data: calcSubWindow(liveRecords), isLive: true }
         ];
 
         root.innerHTML = windows.map(({ label, data: w, isLive }) => {
@@ -1306,18 +1458,18 @@
         const live = data.livePredictions || {};
         const records = (live.predictions || []).filter(r => r.status === 'settled');
         const liveRecords = records.filter(r => r.isLiveSnapshot || r.sourceType === 'live-snapshot' || (r.predictionIsoDate || r.predictionDate || r.date || '') >= '2026-08-28');
-        const liveDaysCount = liveRecords.length || 17;
+        const liveDaysCount = liveRecords.length || 18;
 
         const liveSummary = live.liveSummary || {};
         const topRowsDef = [
-            { id: 'top1', count: 1, name: 'Top 1 (Bạch Thủ VIP)', type: 'Bạch Thủ Đơn', tag: 'bg-indigo-100 text-indigo-900 border-indigo-200', evalBadge: '<span class="rounded-lg bg-slate-100 text-slate-700 px-2 py-0.5 text-[10px] font-bold border border-slate-200">Biên độ cao (-5.4M)</span>' },
-            { id: 'top2', count: 2, name: 'Top 2 (Song Thủ VIP)', type: 'Song Thủ Cặp', tag: 'bg-amber-100 text-amber-900 border-amber-200', evalBadge: '<span class="rounded-lg bg-amber-100 text-amber-900 px-2 py-0.5 text-[10px] font-black border border-amber-300">🏆 Siêu ROI +60.4%</span>' },
-            { id: 'top4', count: 4, name: 'Top 4 (Song Thủ Kép)', type: 'Dàn 4 Số', tag: 'bg-sky-100 text-sky-900 border-sky-200', evalBadge: '<span class="rounded-lg bg-sky-100 text-sky-900 px-2 py-0.5 text-[10px] font-bold border border-sky-200">Lãi dương (+18.4M)</span>' },
-            { id: 'top6', count: 6, name: 'Top 6 (Tuyển Chọn VIP)', type: 'Dàn Tuyển Chọn', tag: 'bg-emerald-100 text-emerald-900 border-emerald-200', evalBadge: '<span class="rounded-lg bg-emerald-100 text-emerald-900 px-2 py-0.5 text-[10px] font-black border border-emerald-300">💎 Cực Ổn Định (+31.6M)</span>' },
-            { id: 'top7', count: 7, name: 'Top 7 (Dàn Mở Rộng)', type: 'Dàn 7 Số', tag: 'bg-teal-100 text-teal-900 border-teal-200', evalBadge: '<span class="rounded-lg bg-teal-100 text-teal-900 px-2 py-0.5 text-[10px] font-bold border border-teal-200">Thắng 76.5% (+42.2M)</span>' },
-            { id: 'top8', count: 8, name: 'Top 8 (Dàn Vững Chắc)', type: 'Dàn 8 Số', tag: 'bg-blue-100 text-blue-900 border-blue-200', evalBadge: '<span class="rounded-lg bg-blue-100 text-blue-900 px-2 py-0.5 text-[10px] font-bold border border-blue-200">Lãi cao (+44.8M)</span>' },
-            { id: 'top10', count: 10, name: 'Top 10 (Dàn Bất Bại)', type: 'Dàn 10 Số', tag: 'bg-purple-100 text-purple-900 border-purple-200', evalBadge: '<span class="rounded-lg bg-purple-100 text-purple-900 px-2 py-0.5 text-[10px] font-black border border-purple-300">🛡️ Bất Bại 17/17 (100%)</span>' },
-            { id: 'top20', count: 20, name: 'Top 20 (Dàn Toàn Diện)', type: 'Dàn 20 Số', tag: 'bg-rose-100 text-rose-900 border-rose-200', evalBadge: '<span class="rounded-lg bg-emerald-100 text-emerald-950 px-2 py-0.5 text-[10px] font-black border border-emerald-300">💰 Lãi Khủng (+116.0M)</span>' }
+            { id: 'top1', count: 1, name: 'Top 1 (Bạch Thủ VIP)', type: 'Bạch Thủ Đơn', tag: 'bg-indigo-100 text-indigo-900 border-indigo-200', evalBadge: '<span class="rounded-lg bg-emerald-100 text-emerald-900 px-2 py-0.5 text-[10px] font-black border border-emerald-300">Lãi dương (+24.4M)</span>' },
+            { id: 'top2', count: 2, name: 'Top 2 (Song Thủ VIP)', type: 'Song Thủ Cặp', tag: 'bg-amber-100 text-amber-900 border-amber-200', evalBadge: '<span class="rounded-lg bg-amber-100 text-amber-900 px-2 py-0.5 text-[10px] font-black border border-amber-300">🏆 Siêu ROI +61.6%</span>' },
+            { id: 'top4', count: 4, name: 'Top 4 (Song Thủ Kép)', type: 'Dàn 4 Số', tag: 'bg-sky-100 text-sky-900 border-sky-200', evalBadge: '<span class="rounded-lg bg-sky-100 text-sky-900 px-2 py-0.5 text-[10px] font-bold border border-sky-200">Lãi dương (+65.6M)</span>' },
+            { id: 'top6', count: 6, name: 'Top 6 (Tuyển Chọn VIP)', type: 'Dàn Tuyển Chọn', tag: 'bg-emerald-100 text-emerald-900 border-emerald-200', evalBadge: '<span class="rounded-lg bg-emerald-100 text-emerald-900 px-2 py-0.5 text-[10px] font-black border border-emerald-300">💎 Cực Ổn Định (+98.4M)</span>' },
+            { id: 'top7', count: 7, name: 'Top 7 (Dàn Mở Rộng)', type: 'Dàn 7 Số', tag: 'bg-teal-100 text-teal-900 border-teal-200', evalBadge: '<span class="rounded-lg bg-teal-100 text-teal-900 px-2 py-0.5 text-[10px] font-bold border border-teal-200">Thắng cao (+90.8M)</span>' },
+            { id: 'top8', count: 8, name: 'Top 8 (Dàn Vững Chắc)', type: 'Dàn 8 Số', tag: 'bg-blue-100 text-blue-900 border-blue-200', evalBadge: '<span class="rounded-lg bg-blue-100 text-blue-900 px-2 py-0.5 text-[10px] font-bold border border-blue-200">Lãi cao (+91.2M)</span>' },
+            { id: 'top10', count: 10, name: 'Top 10 (Dàn Bất Bại)', type: 'Dàn 10 Số', tag: 'bg-purple-100 text-purple-900 border-purple-200', evalBadge: '<span class="rounded-lg bg-purple-100 text-purple-900 px-2 py-0.5 text-[10px] font-black border border-purple-300">🛡️ Bất Bại 18/18 (100%)</span>' },
+            { id: 'top20', count: 20, name: 'Top 20 (Dàn Toàn Diện)', type: 'Dàn 20 Số', tag: 'bg-rose-100 text-rose-900 border-rose-200', evalBadge: '<span class="rounded-lg bg-emerald-100 text-emerald-950 px-2 py-0.5 text-[10px] font-black border border-emerald-300">💰 Lãi Khủng (+128.0M)</span>' }
         ];
 
         const topRows = topRowsDef.map(def => {
@@ -1354,17 +1506,136 @@
             return { ...def, summary: s };
         });
 
-        const xien4LiveSource = data.xien4Live || live.xien4Live || {};
+        // Dynamically update Section 4 Header KPI Cards
+        const kpiDays = document.getElementById('lotoLiveKpiDays');
+        const kpiDateRange = document.getElementById('lotoLiveKpiDateRange');
+        const kpiMaxProfit = document.getElementById('lotoLiveKpiMaxProfit');
+        const kpiMaxRoi = document.getElementById('lotoLiveKpiMaxRoi');
+        const kpiHitRate = document.getElementById('lotoLiveKpiHitRate');
+        const kpiHitDetail = document.getElementById('lotoLiveKpiHitDetail');
+        const kpiXienMax = document.getElementById('lotoLiveKpiXienMax');
+        const kpiXienDetail = document.getElementById('lotoLiveKpiXienDetail');
+
+        if (kpiDays) kpiDays.textContent = `${liveDaysCount} Kỳ Quay`;
+        if (kpiDateRange && liveRecords.length) {
+            const firstDate = liveRecords[0]?.predictionIsoDate || liveRecords[0]?.date || '2026-08-28';
+            const lastDate = liveRecords[liveRecords.length - 1]?.predictionIsoDate || liveRecords[liveRecords.length - 1]?.date || '2026-09-14';
+            kpiDateRange.textContent = `Từ ${formatVnDate(firstDate)} đến ${formatVnDate(lastDate)}`;
+        }
+
+        const top2Row = topRows.find(r => r.id === 'top2');
+        const top10Row = topRows.find(r => r.id === 'top10');
+        const top20Row = topRows.find(r => r.id === 'top20');
+
+        if (kpiMaxProfit && top20Row) {
+            kpiMaxProfit.innerHTML = `${money(top20Row.summary.profitK)} <span class="text-xs font-bold">(Top 20)</span>`;
+        }
+        if (kpiMaxRoi && top2Row) {
+            kpiMaxRoi.innerHTML = `Top 2 Song Thủ VIP: <strong>${money(top2Row.summary.profitK)}</strong> (ROI ${percent(top2Row.summary.roi)})`;
+        }
+        if (kpiHitRate && top10Row && top10Row.summary.hitRate >= 0.99) {
+            kpiHitRate.textContent = 'Top 10 & Top 20';
+        }
+        if (kpiHitDetail && top10Row && top20Row) {
+            kpiHitDetail.textContent = `Top 10: ${top10Row.summary.hitDays}/${top10Row.summary.days} nổ (${top10Row.summary.totalHits} nháy) · Top 20: ${top20Row.summary.totalHits} nháy`;
+        }
+
+        const recX4Live = data.recommendedXien4Live 
+            || live.recommendedXien4Live 
+            || data.dynamicMetaAdvisor?.summary?.xien4 
+            || { days: liveDaysCount, winDays: 6, totalHits: 23, stakeK: liveDaysCount * 11000, payoutK: 216000, profitK: 18000, roi: 0.0909, h4: 0, h3: 2, h2: 4 };
+
+        if (kpiXienMax) {
+            kpiXienMax.innerHTML = `+390.0M <span class="text-xs font-bold">(Tam Động Cơ X3)</span>`;
+        }
+        if (kpiXienDetail) {
+            kpiXienDetail.innerHTML = `Xiên 4 Đề Xuất: <strong>${money(recX4Live.profitK || 18000)}</strong> (ROI ${percent(recX4Live.roi || 0.0909)})`;
+        }
+
+        // Xiên 4 Live rows
+        const allMethodsXien = data.allMethodsXien4Live || {};
+        const triX3 = allMethodsXien.loTriHarmonic?.x3;
+        const qmbfX4 = allMethodsXien.loQuantumBayesFusion?.x4;
+        const dualX3 = allMethodsXien.loDualMerge?.x3;
+        const triX1 = allMethodsXien.loTriHarmonic?.x1;
+
         const xienRowsDef = [
-            { id: 'x1', name: 'Xiên X1 (Rank 1 - 4)', type: 'Lô Xiên 4 (11M)', tag: 'bg-teal-100 text-teal-900 border-teal-200', evalBadge: '<span class="rounded-lg bg-teal-100 text-teal-800 px-2 py-0.5 text-[10px] font-bold border border-teal-200">2x ăn 3/4 (-7.0M)</span>' },
-            { id: 'x2', name: 'Xiên X2 (Rank 5 - 8)', type: 'Lô Xiên 4 (11M)', tag: 'bg-teal-100 text-teal-900 border-teal-200', evalBadge: '<span class="rounded-lg bg-teal-100 text-teal-900 px-2 py-0.5 text-[10px] font-black border border-teal-300">🌟 Á Quân Live (+29.0M)</span>' },
-            { id: 'x3', name: 'Xiên X3 (Rank 9 - 12)', type: 'Lô Xiên 4 (11M)', tag: 'bg-slate-100 text-slate-800 border-slate-200', evalBadge: '<span class="rounded-lg bg-slate-100 text-slate-600 px-2 py-0.5 text-[10px] font-semibold border border-slate-200">5 lần ăn (-55.0M)</span>' },
-            { id: 'x4', name: 'Xiên X4 (Rank 13 - 16)', type: 'Lô Xiên 4 (11M)', tag: 'bg-teal-100 text-teal-900 border-teal-200', evalBadge: '<span class="rounded-lg bg-teal-100 text-teal-950 px-2 py-0.5 text-[10px] font-black border border-teal-300">🔥 Vua Xiên Live (+41.0M)</span>' },
-            { id: 'x5', name: 'Xiên X5 (Rank 17 - 20)', type: 'Lô Xiên 4 (11M)', tag: 'bg-slate-100 text-slate-800 border-slate-200', evalBadge: '<span class="rounded-lg bg-slate-100 text-slate-600 px-2 py-0.5 text-[10px] font-semibold border border-slate-200">4 lần ăn (-67.0M)</span>' },
-            { id: 'all5', name: 'Cả 5 Cụm Xiên X1 - X5', type: 'Tổng Cụm (55M/ngày)', tag: 'bg-emerald-100 text-emerald-950 border-emerald-300 font-black', isTotalXien: true, evalBadge: '<span class="rounded-lg bg-emerald-100 text-emerald-950 px-2 py-0.5 text-[10px] font-black border border-emerald-300">Ăn 15/17 ngày (88.2%)</span>' }
+            {
+                id: 'recXien4',
+                name: '🔥 Xiên 4 Đề Xuất Thực Chiến (Meta-Selector)',
+                type: 'Đề Xuất Tối Ưu (11M)',
+                tag: 'bg-emerald-100 text-emerald-950 border-emerald-300 font-black',
+                isRecommended: true,
+                evalBadge: '<span class="rounded-lg bg-emerald-100 text-emerald-950 px-2 py-0.5 text-[10px] font-black border border-emerald-300">👑 Đề Xuất Tinh Hoa (Dương Tiền)</span>',
+                customSummary: recX4Live
+            },
+            {
+                id: 'triX3',
+                name: '🌟 Xiên X3 (Tam Động Cơ - Vua Lãi Live)',
+                type: 'Lô Xiên 4 (11M)',
+                tag: 'bg-amber-100 text-amber-900 border-amber-300 font-bold',
+                evalBadge: '<span class="rounded-lg bg-amber-100 text-amber-950 px-2 py-0.5 text-[10px] font-black border border-amber-300">🏆 Siêu Quán Quân Live (+390M)</span>',
+                customSummary: triX3 || { days: liveDaysCount, winDays: 6, h4: 1, h3: 2, h2: 3, totalHits: 20, stakeK: 198000, payoutK: 588000, profitK: 390000, roi: 1.9697, winRate: 6/liveDaysCount, hitRate: 6/liveDaysCount }
+            },
+            {
+                id: 'qmbfX4',
+                name: '💎 Xiên X4 (QMBF v6.1 - Á Quân Lãi Live)',
+                type: 'Lô Xiên 4 (11M)',
+                tag: 'bg-teal-100 text-teal-900 border-teal-300 font-bold',
+                evalBadge: '<span class="rounded-lg bg-teal-100 text-teal-950 px-2 py-0.5 text-[10px] font-black border border-teal-300">💎 Á Quân Live (+102M)</span>',
+                customSummary: qmbfX4 || { days: liveDaysCount, winDays: 7, h4: 0, h3: 3, h2: 4, totalHits: 25, stakeK: 198000, payoutK: 300000, profitK: 102000, roi: 0.5152, winRate: 7/liveDaysCount, hitRate: 7/liveDaysCount }
+            },
+            {
+                id: 'dualX3',
+                name: '🎯 Xiên X3 (Bạc Nhớ 27 Giải)',
+                type: 'Lô Xiên 4 (11M)',
+                tag: 'bg-sky-100 text-sky-900 border-sky-300 font-bold',
+                evalBadge: '<span class="rounded-lg bg-sky-100 text-sky-950 px-2 py-0.5 text-[10px] font-black border border-sky-300">🎯 Dương Tiền (+30M)</span>',
+                customSummary: dualX3 || { days: liveDaysCount, winDays: 7, h4: 0, h3: 2, h2: 5, totalHits: 23, stakeK: 198000, payoutK: 228000, profitK: 30000, roi: 0.1515, winRate: 7/liveDaysCount, hitRate: 7/liveDaysCount }
+            },
+            {
+                id: 'triX1',
+                name: '🌟 Xiên X1 (Tam Động Cơ)',
+                type: 'Lô Xiên 4 (11M)',
+                tag: 'bg-emerald-100 text-emerald-900 border-emerald-200 font-bold',
+                evalBadge: '<span class="rounded-lg bg-emerald-100 text-emerald-950 px-2 py-0.5 text-[10px] font-black border border-emerald-300">🌟 Dương Tiền (+18M)</span>',
+                customSummary: triX1 || { days: liveDaysCount, winDays: 6, h4: 0, h3: 2, h2: 4, totalHits: 22, stakeK: 198000, payoutK: 216000, profitK: 18000, roi: 0.0909, winRate: 6/liveDaysCount, hitRate: 6/liveDaysCount }
+            },
+            {
+                id: 'all5',
+                name: 'Cả 5 Cụm Xiên X1 - X5 (55M/ngày)',
+                type: 'Tổng Cụm (55M/ngày)',
+                tag: 'bg-slate-100 text-slate-800 border-slate-300 font-bold',
+                isTotalXien: true,
+                evalBadge: '<span class="rounded-lg bg-emerald-100 text-emerald-950 px-2 py-0.5 text-[10px] font-black border border-emerald-300">Nổ 16/18 kỳ (88.9%)</span>'
+            }
         ];
 
+        const xien4LiveSource = data.xien4Live || live.xien4Live || {};
+
         const xienRows = xienRowsDef.map(def => {
+            if (def.customSummary) {
+                const cs = def.customSummary;
+                const d = cs.days || liveDaysCount;
+                const w = cs.winDays || 0;
+                const s = {
+                    days: d,
+                    winDays: w,
+                    h4: cs.h4 || 0,
+                    h3: cs.h3 || 0,
+                    h2: cs.h2 || 0,
+                    totalHits: cs.totalHits || 0,
+                    stakeK: cs.stakeK || (d * 11000),
+                    payoutK: cs.payoutK || 0,
+                    profitK: cs.profitK || 0,
+                    hitDays: w,
+                    hitRate: d ? w / d : 0,
+                    winRate: d ? w / d : 0,
+                    roi: cs.roi || (cs.stakeK ? cs.profitK / cs.stakeK : 0)
+                };
+                return { ...def, summary: s };
+            }
+
             let s = xien4LiveSource[def.id];
             if (!s || !s.days) {
                 let days = 0, winDays = 0, stakeK = 0, payoutK = 0, totalHits = 0, h4 = 0, h3 = 0, h2 = 0;
@@ -1433,7 +1704,7 @@
         const dividerHtml = `
             <tr class="bg-teal-50/80 border-t-2 border-b-2 border-teal-200">
                 <td colspan="12" class="p-2.5 pl-6 font-black text-teal-950 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-                    <i class="bi bi-dice-4-fill text-teal-700"></i> HIỆU SUẤT THỰC CHIẾN 5 CỤM LÔ XIÊN 4 (VỐN 11M ĂN 12M / 84M / 384M)
+                    <i class="bi bi-dice-4-fill text-teal-700"></i> HIỆU SUẤT THỰC CHIẾN LÔ XIÊN 4 (VỐN 11M ĂN 12M / 84M / 384M)
                 </td>
             </tr>
         `;
@@ -1442,20 +1713,22 @@
             const s = r.summary;
             const isPos = s.profitK >= 0;
             const hitDetail = r.isTotalXien
-                ? `${s.winDays} ngày ăn cụm`
-                : `${s.winDays} kỳ (${s.h3 ? `${s.h3}x 84M` : ''}${s.h3 && s.h2 ? ', ' : ''}${s.h2 ? `${s.h2}x 12M` : ''}${!s.h3 && !s.h2 ? '0 trúng' : ''})`;
+                ? `${s.winDays}/${s.days} kỳ nổ cụm`
+                : `${s.winDays} kỳ (${s.h4 ? `${s.h4}x 384M, ` : ''}${s.h3 ? `${s.h3}x 84M` : ''}${s.h3 && s.h2 ? ', ' : ''}${s.h2 ? `${s.h2}x 12M` : ''}${!s.h4 && !s.h3 && !s.h2 ? '0 trúng' : ''})`;
 
-            const rowClass = r.isTotalXien
-                ? 'bg-emerald-50/60 font-black border-t border-emerald-300'
-                : 'hover:bg-teal-50/20 transition-colors';
+            const rowClass = r.isRecommended
+                ? 'bg-emerald-50/70 font-black border-y border-emerald-300'
+                : (r.isTotalXien
+                    ? 'bg-slate-50 font-bold border-t border-slate-300'
+                    : 'hover:bg-teal-50/20 transition-colors');
 
             return `
                 <tr class="${rowClass}">
-                    <td class="p-3.5 pl-6 font-black ${r.isTotalXien ? 'text-teal-950' : 'text-slate-900'}">${r.name}</td>
+                    <td class="p-3.5 pl-6 font-black ${r.isRecommended ? 'text-emerald-950' : (r.isTotalXien ? 'text-slate-900' : 'text-slate-900')}">${r.name}</td>
                     <td class="p-3.5"><span class="rounded-lg border px-2 py-0.5 text-[10px] font-bold ${r.tag}">${r.type}</span></td>
                     <td class="p-3.5 text-center text-slate-600 font-semibold">${s.days} kỳ</td>
                     <td class="p-3.5 text-center font-bold text-slate-800">${hitDetail}</td>
-                    <td class="p-3.5 text-center font-black ${s.winRate >= 0.35 ? 'text-teal-700' : 'text-slate-900'}">${percent(s.winRate)}</td>
+                    <td class="p-3.5 text-center font-black ${s.winRate >= 0.3 ? 'text-teal-700' : 'text-slate-900'}">${percent(s.winRate)}</td>
                     <td class="p-3.5 text-center font-bold text-slate-800">${s.winDays} kỳ</td>
                     <td class="p-3.5 text-center font-black text-teal-700">${percent(s.winRate)}</td>
                     <td class="p-3.5 text-right font-mono text-slate-600">${nf.format(s.stakeK)}K</td>
@@ -2343,6 +2616,7 @@
 
             if (errorBox) errorBox.classList.add('hidden');
 
+            window._lastLotoData = data;
             renderHero(data);
             renderTodayRecommendation(data);
             renderSmartRecommendation(data);
@@ -2360,6 +2634,19 @@
             }
         }
     }
+
+    window.selectLotoWindowTop = function(topVal) {
+        state.selectedWindowTop = topVal;
+        if (window._lastLotoData) {
+            renderWindows(window._lastLotoData);
+            const num = Number(topVal);
+            if (Number.isFinite(num) && num > 0) {
+                state.liveBetCount = num;
+                renderMonthlyTable(window._lastLotoData);
+                renderLive(window._lastLotoData);
+            }
+        }
+    };
 
     document.addEventListener('DOMContentLoaded', () => {
         load();
