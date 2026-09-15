@@ -451,19 +451,69 @@
             }).join('');
         }
 
-        // Card Recommend X2
-        let recX2 = smart.recommendedX2 || {};
+        // Dynamic Cross-Method Meta Advisor
+        const metaAdv = data.dynamicMetaAdvisor
+            || next.dynamicMetaAdvisor
+            || data.livePredictions?.dynamicMetaAdvisor
+            || smart.dynamicMetaAdvisor
+            || {};
+        const metaNext = metaAdv.nextPrediction || {};
+        let metaSummary = metaAdv.summary || null;
+        let metaDiary = metaAdv.liveDiary || null;
+
+        // Card 1: Recommend Standard Optimal
+        let recStd = metaNext.standard || {};
+        if (!recStd.numbers || !recStd.numbers.length) {
+            const top2 = preds.top2?.numbers || rankedNumbers.slice(0, 2);
+            recStd = {
+                title: '💎 QMBF v6.1 - Top 2 Song Thủ VIP',
+                numbers: top2,
+                stakeK: top2.length * 2200,
+                roi: 0.602,
+                l14Roi: 0.602,
+                streak: 2,
+                rationale: 'Chiến lược tối ưu đà thắng và lợi nhuận cao nhất toàn hệ thống.'
+            };
+        }
+
+        const recStdTitle = document.getElementById('recStdTitle');
+        const recStdRoi = document.getElementById('recStdRoiBadge');
+        const recStdRationale = document.getElementById('recStdRationale');
+        const recStdNumbers = document.getElementById('recStdNumbers');
+        const recStdStake = document.getElementById('recStdStakeInfo');
+        const btnCopyStd = document.getElementById('btnCopyStd');
+
+        if (recStdTitle) recStdTitle.textContent = recStd.title || 'Đề Xuất Chuẩn Tối Ưu';
+        if (recStdRoi) recStdRoi.textContent = `ROI: +${(((recStd.l14Roi ?? recStd.roi) || 0) * 100).toFixed(1)}%`;
+        if (recStdRationale) recStdRationale.textContent = recStd.rationale || 'Lợi nhuận vượt trội và tín hiệu đà thắng cao.';
+        if (recStdNumbers) {
+            recStdNumbers.innerHTML = (recStd.numbers || []).map(n => numberBadge(n, 'indigo')).join('');
+        }
+        if (recStdStake) {
+            recStdStake.innerHTML = `Vốn: ${nf.format(recStd.stakeK || (recStd.numbers?.length || 2) * 2200)}K ➔ <strong>Ăn: 8.000K/nháy</strong>`;
+        }
+        if (btnCopyStd) {
+            btnCopyStd.onclick = () => {
+                const nums = (recStd.numbers || []).join(' ');
+                copyToClipboard(nums, `Đã copy Dàn Chuẩn (${recStd.title || ''}): ${nums}`);
+            };
+        }
+
+        // Card 2: Recommend X2 (Safe High Hit-Rate)
+        let recX2 = metaNext.x2 || smart.recommendedX2 || {};
         if (!recX2.numbers || !recX2.numbers.length) {
             const top6 = preds.top6?.numbers || rankedNumbers.slice(0, 6);
             const top4 = preds.top4?.numbers || rankedNumbers.slice(0, 4);
             const useTop4 = (data.livePredictions?.summary?.top4?.roi || 0) >= (data.livePredictions?.summary?.top6?.roi || 0);
             recX2 = {
                 topCount: useTop4 ? 4 : 6,
+                title: useTop4 ? 'Top 4 Song Thủ Kép (Đánh X2)' : 'Top 6 Tuyển Chọn (Đánh X2)',
                 label: useTop4 ? 'Top 4 Song Thủ Kép' : 'Top 6 Tuyển Chọn',
                 numbers: useTop4 ? top4 : top6,
+                regularStakeK: (useTop4 ? 4 : 6) * 2200,
                 stakeK: (useTop4 ? 4 : 6) * 2200 * 2,
                 roi: useTop4 ? 0.464 : 0.423,
-                rationale: 'Chiến lược nhân đôi cược tăng tối đa lợi nhuận vào cụm số có mật độ nổ cao nhất.'
+                rationale: 'Chiến lược nhân đôi cược tăng tối đa lợi nhuận vào cụm số có độ an toàn cao nhất.'
             };
         }
 
@@ -474,30 +524,31 @@
         const recX2Stake = document.getElementById('recX2StakeInfo');
         const btnCopyX2 = document.getElementById('btnCopyX2');
 
-        if (recX2Title) recX2Title.textContent = `${recX2.label || 'Top 6 Tuyển Chọn'} (Đánh X2)`;
+        if (recX2Title) recX2Title.textContent = recX2.title || `${recX2.label || 'Top 6 Tuyển Chọn'} (Đánh X2)`;
         if (recX2Roi) recX2Roi.textContent = `ROI: +${((recX2.roi || 0) * 100).toFixed(1)}%`;
         if (recX2Rationale) recX2Rationale.textContent = recX2.rationale || 'Chiến lược nhân đôi cược tăng tối đa lợi nhuận.';
         if (recX2Numbers) {
             recX2Numbers.innerHTML = (recX2.numbers || []).map(n => numberBadge(n, 'amber')).join('');
         }
         if (recX2Stake) {
-            const regularK = (recX2.topCount || 6) * 2200;
-            const doubleK = (recX2.stakeK || regularK * 2);
+            const regularK = recX2.regularStakeK || (recX2.topCount || (recX2.numbers?.length || 6)) * 2200;
+            const doubleK = recX2.stakeK || regularK * 2;
             recX2Stake.innerHTML = `Vốn thường: ${nf.format(regularK)}K ➔ <strong>Vốn X2: ${nf.format(doubleK)}K</strong>`;
         }
         if (btnCopyX2) {
             btnCopyX2.onclick = () => {
                 const nums = (recX2.numbers || []).join(' ');
-                copyToClipboard(nums, `Đã copy Dàn X2 (${recX2.numbers?.length || 0} số): ${nums}`);
+                copyToClipboard(nums, `Đã copy Dàn X2 (${recX2.title || recX2.label || ''}): ${nums}`);
             };
         }
 
-        // Card Recommend Xiên 4
-        let recX4 = smart.recommendedXien4 || {};
+        // Card 3: Recommend Xiên 4
+        let recX4 = metaNext.xien4 || smart.recommendedXien4 || {};
         if (!recX4.numbers || !recX4.numbers.length) {
             const x1Nums = next.xien4?.x1?.numbers || rankedNumbers.slice(0, 4);
             recX4 = {
                 clusterId: 'x1',
+                title: 'Xiên X1 (Rank 1-4)',
                 label: 'Xiên X1 (Rank 1-4)',
                 numbers: x1Nums,
                 roi: 0.610,
@@ -511,7 +562,7 @@
         const recX4Numbers = document.getElementById('recXien4Numbers');
         const btnCopyRecX4 = document.getElementById('btnCopyRecXien4');
 
-        if (recX4Title) recX4Title.textContent = recX4.label || 'Xiên X1 (Rank 1-4)';
+        if (recX4Title) recX4Title.textContent = recX4.title || recX4.label || 'Xiên X1 (Rank 1-4)';
         if (recX4Roi) recX4Roi.textContent = `ROI: +${((recX4.roi || 0) * 100).toFixed(1)}%`;
         if (recX4Rationale) recX4Rationale.textContent = recX4.rationale || 'Cụm Xiên 4 có hiệu suất ăn cao nhất.';
         if (recX4Numbers) {
@@ -520,7 +571,7 @@
         if (btnCopyRecX4) {
             btnCopyRecX4.onclick = () => {
                 const nums = (recX4.numbers || []).join(' ');
-                copyToClipboard(nums, `Đã copy Xiên 4 (${recX4.label}): ${nums}`);
+                copyToClipboard(nums, `Đã copy Xiên 4 (${recX4.title || recX4.label || ''}): ${nums}`);
             };
         }
 
@@ -628,35 +679,48 @@
         // =========================================================================
         // Card 4: Đối Soát & Theo Dõi Thực Chiến Live Của Các Đề Xuất Hàng Ngày
         // =========================================================================
-        let liveTracking = smart.liveTracking || null;
-        if (!liveTracking || !liveTracking.diary?.length) {
+        if (!metaDiary || !metaDiary.length) {
             const rawRecords = data.livePredictions?.predictions || [];
             const liveRecords = rawRecords.filter(r => r.isLiveSnapshot || (r.predictionIsoDate || r.date || '') >= '2026-08-28');
             if (liveRecords.length) {
                 let runningCum = 0;
-                let x2Hits = 0, x2HitDays = 0, x2WinDays = 0, x2Stake = 0, x2Payout = 0;
+                let stdHits = 0, stdWinDays = 0, stdStake = 0, stdPayout = 0;
+                let x2Hits = 0, x2WinDays = 0, x2Stake = 0, x2Payout = 0;
                 let x4Hits = 0, x4WinDays = 0, x4Stake = 0, x4Payout = 0;
                 let h4 = 0, h3 = 0, h2 = 0;
                 let comboWins = 0, comboStake = 0, comboPayout = 0;
 
-                const diary = liveRecords.map(r => {
+                metaDiary = liveRecords.map(r => {
                     const dt = r.predictionIsoDate || r.date || '';
                     const actualMap = r.actual || {};
                     const isHit = num => (actualMap[String(num).padStart(2, '0')] || 0) > 0;
                     const countHits = list => (list || []).reduce((acc, num) => acc + (actualMap[String(num).padStart(2, '0')] || 0), 0);
 
+                    // 1. Standard Fallback (Top 2)
+                    const sNums = r.methods?.top2?.betNumbers || r.predictions?.top2?.numbers || [];
+                    const sDayHits = countHits(sNums);
+                    const sStd = sNums.length * 2200;
+                    const pStd = sDayHits * 8000;
+                    const profStd = pStd - sStd;
+                    const winStd = profStd > 0;
+                    if (winStd) stdWinDays++;
+                    stdHits += sDayHits;
+                    stdStake += sStd;
+                    stdPayout += pStd;
+
+                    // 2. X2 Fallback (Top 6 / Top 4)
                     const x2Nums = r.methods?.top6?.betNumbers || r.predictions?.top6?.numbers || [];
                     const x2DayHits = countHits(x2Nums);
                     const sX2 = x2Nums.length * 2200 * 2;
                     const pX2 = x2DayHits * 8000 * 2;
                     const profX2 = pX2 - sX2;
                     const winX2 = profX2 > 0;
-                    if (x2DayHits > 0) x2HitDays++;
                     if (winX2) x2WinDays++;
                     x2Hits += x2DayHits;
                     x2Stake += sX2;
                     x2Payout += pX2;
 
+                    // 3. Xiên 4 Fallback (X1)
                     const x4Nums = r.xien4?.x1?.numbers || (r.methods?.top20?.betNumbers || []).slice(0, 4);
                     const x4UniqueHits = (x4Nums || []).filter(isHit).length;
                     const sX4 = 11000;
@@ -671,9 +735,9 @@
                     x4Stake += sX4;
                     x4Payout += pX4;
 
-                    const dayStake = sX2 + sX4;
-                    const dayPayout = pX2 + pX4;
-                    const dayProf = profX2 + profX4;
+                    const dayStake = sStd + sX2 + sX4;
+                    const dayPayout = pStd + pX2 + pX4;
+                    const dayProf = profStd + profX2 + profX4;
                     if (dayProf > 0) comboWins++;
                     comboStake += dayStake;
                     comboPayout += dayPayout;
@@ -686,8 +750,9 @@
                     return {
                         date: dt,
                         db: dbVal,
-                        x2: { topCount: x2Nums.length, numbers: x2Nums, hits: x2DayHits, stakeK: sX2, payoutK: pX2, profitK: profX2, isWin: winX2 },
-                        xien4: { clusterId: 'x1', label: 'Xiên X1', numbers: x4Nums, hits: x4UniqueHits, stakeK: sX4, payoutK: pX4, profitK: profX4, isWin: winX4 },
+                        standard: { label: 'Top 2 Song Thủ VIP', numbers: sNums, hits: sDayHits, stakeK: sStd, payoutK: pStd, profitK: profStd, isWin: winStd },
+                        x2: { label: 'Top 6 Tuyển Chọn (Đánh X2)', numbers: x2Nums, hits: x2DayHits, stakeK: sX2, payoutK: pX2, profitK: profX2, isWin: winX2 },
+                        xien4: { label: 'Xiên X1 (Rank 1-4)', numbers: x4Nums, hits: x4UniqueHits, stakeK: sX4, payoutK: pX4, profitK: profX4, isWin: winX4 },
                         dayStakeK: dayStake,
                         dayPayoutK: dayPayout,
                         dayProfitK: dayProf,
@@ -697,28 +762,31 @@
                 });
 
                 const days = liveRecords.length;
-                liveTracking = {
+                metaSummary = {
                     days,
-                    x2: {
-                        topCount: 6,
-                        label: 'Top 6 Tuyển Chọn (X2)',
+                    standard: {
                         days,
-                        hitDays: x2HitDays,
+                        winDays: stdWinDays,
+                        totalHits: stdHits,
+                        stakeK: stdStake,
+                        payoutK: stdPayout,
+                        profitK: stdPayout - stdStake,
+                        winRate: days ? stdWinDays / days : 0,
+                        roi: stdStake ? (stdPayout - stdStake) / stdStake : 0
+                    },
+                    x2: {
+                        days,
                         winDays: x2WinDays,
                         totalHits: x2Hits,
                         stakeK: x2Stake,
                         payoutK: x2Payout,
                         profitK: x2Payout - x2Stake,
-                        hitRate: days ? x2HitDays / days : 0,
                         winRate: days ? x2WinDays / days : 0,
                         roi: x2Stake ? (x2Payout - x2Stake) / x2Stake : 0
                     },
                     xien4: {
-                        clusterId: 'x1',
-                        label: 'Xiên X1 (Rank 1-4)',
                         days,
                         winDays: x4WinDays,
-                        lossDays: days - x4WinDays,
                         totalHits: x4Hits,
                         stakeK: x4Stake,
                         payoutK: x4Payout,
@@ -735,13 +803,16 @@
                         profitK: comboPayout - comboStake,
                         winRate: days ? comboWins / days : 0,
                         roi: comboStake ? (comboPayout - comboStake) / comboStake : 0
-                    },
-                    diary
+                    }
                 };
             }
         }
 
         const recLiveDaysText = document.getElementById('recLiveDaysText');
+        const kpiRecStdRoi = document.getElementById('kpiRecStdRoi');
+        const kpiRecStdProfit = document.getElementById('kpiRecStdProfit');
+        const kpiRecStdStats = document.getElementById('kpiRecStdStats');
+
         const kpiRecX2Roi = document.getElementById('kpiRecX2Roi');
         const kpiRecX2Profit = document.getElementById('kpiRecX2Profit');
         const kpiRecX2Stats = document.getElementById('kpiRecX2Stats');
@@ -760,12 +831,25 @@
         const btnToggleRecDiaryText = document.getElementById('btnToggleRecDiaryText');
         const recDiaryChevron = document.getElementById('recDiaryChevron');
 
-        if (liveTracking) {
-            const daysCount = liveTracking.days || 18;
+        if (metaSummary) {
+            const daysCount = metaSummary.days || (metaDiary ? metaDiary.length : 18);
             if (recLiveDaysText) recLiveDaysText.textContent = `${daysCount} kỳ gần nhất (từ 28/08 đến nay)`;
 
+            // KPI Rec Standard
+            const std = metaSummary.standard || {};
+            const stdRoiSign = (std.roi || 0) >= 0 ? '+' : '';
+            if (kpiRecStdRoi) kpiRecStdRoi.textContent = `${stdRoiSign}${((std.roi || 0) * 100).toFixed(1)}%`;
+            if (kpiRecStdProfit) {
+                const isPos = (std.profitK || 0) >= 0;
+                kpiRecStdProfit.className = `mt-2 text-xl font-black ${isPos ? 'text-indigo-900' : 'text-rose-600'}`;
+                kpiRecStdProfit.textContent = money(std.profitK || 0);
+            }
+            if (kpiRecStdStats) {
+                kpiRecStdStats.textContent = `Thắng: ${std.winDays || 0}/${daysCount} ngày (${percent(std.winRate || 0)}) · Tổng ${std.totalHits || 0} nháy · Lãi: ${money(std.profitK || 0)}`;
+            }
+
             // KPI Rec X2
-            const x2 = liveTracking.x2 || {};
+            const x2 = metaSummary.x2 || {};
             const x2RoiSign = (x2.roi || 0) >= 0 ? '+' : '';
             if (kpiRecX2Roi) kpiRecX2Roi.textContent = `${x2RoiSign}${((x2.roi || 0) * 100).toFixed(1)}%`;
             if (kpiRecX2Profit) {
@@ -774,11 +858,11 @@
                 kpiRecX2Profit.textContent = money(x2.profitK || 0);
             }
             if (kpiRecX2Stats) {
-                kpiRecX2Stats.textContent = `Nổ: ${x2.hitDays || 0}/${daysCount} kỳ (${percent(x2.hitRate || 0)}) · Tổng ${x2.totalHits || 0} nháy · Ăn: ${nf.format(x2.payoutK || 0)}K`;
+                kpiRecX2Stats.textContent = `Nổ: ${x2.winDays || 0}/${daysCount} kỳ (${percent(x2.winRate || 0)}) · Tổng ${x2.totalHits || 0} nháy · Lãi: ${money(x2.profitK || 0)}`;
             }
 
             // KPI Rec Xiên 4
-            const x4 = liveTracking.xien4 || {};
+            const x4 = metaSummary.xien4 || {};
             const x4RoiSign = (x4.roi || 0) >= 0 ? '+' : '';
             if (kpiRecX4Roi) kpiRecX4Roi.textContent = `${x4RoiSign}${((x4.roi || 0) * 100).toFixed(1)}%`;
             if (kpiRecX4Profit) {
@@ -791,66 +875,82 @@
             }
 
             // KPI Rec Combo
-            const combo = liveTracking.combo || {};
+            const combo = metaSummary.combo || {};
             const comboRoiSign = (combo.roi || 0) >= 0 ? '+' : '';
             if (kpiRecComboRoi) kpiRecComboRoi.textContent = `${comboRoiSign}${((combo.roi || 0) * 100).toFixed(1)}%`;
             if (kpiRecComboProfit) {
                 const isPos = (combo.profitK || 0) >= 0;
-                kpiRecComboProfit.className = `mt-2 text-xl font-black ${isPos ? 'text-indigo-900' : 'text-rose-600'}`;
+                kpiRecComboProfit.className = `mt-2 text-xl font-black ${isPos ? 'text-teal-900' : 'text-rose-600'}`;
                 kpiRecComboProfit.textContent = money(combo.profitK || 0);
             }
             if (kpiRecComboStats) {
                 kpiRecComboStats.textContent = `Thắng: ${combo.winDays || 0}/${daysCount} ngày (${percent(combo.winRate || 0)}) · Vốn: ${nf.format(combo.stakeK || 0)}K · Ăn: ${nf.format(combo.payoutK || 0)}K`;
             }
 
-            // Diary Rows
-            if (diaryTbody && liveTracking.diary?.length) {
-                const diaryRows = [...liveTracking.diary].sort((a, b) => b.date.localeCompare(a.date));
+            // Diary Rows (13 columns matching views/loto.html)
+            if (diaryTbody && metaDiary?.length) {
+                const diaryRows = [...metaDiary].sort((a, b) => b.date.localeCompare(a.date));
                 diaryTbody.innerHTML = diaryRows.map(r => {
+                    const isStdWin = (r.standard?.profitK || 0) > 0;
                     const isX2Win = (r.x2?.profitK || 0) > 0;
                     const isX4Win = (r.xien4?.profitK || 0) > 0;
                     const isDayWin = (r.dayProfitK || 0) > 0;
                     const isDayLoss = (r.dayProfitK || 0) < 0;
 
                     let x4KqBadge = '';
-                    if (r.xien4?.hits >= 4) {
+                    const xHits = r.xien4?.hits ?? 0;
+                    if (xHits >= 4) {
                         x4KqBadge = '<span class="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-black text-amber-800">Trúng 4/4 (384M)</span>';
-                    } else if (r.xien4?.hits === 3) {
+                    } else if (xHits === 3) {
                         x4KqBadge = '<span class="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-black text-emerald-800">Trúng 3/4 (84M)</span>';
-                    } else if (r.xien4?.hits === 2) {
+                    } else if (xHits === 2) {
                         x4KqBadge = '<span class="rounded bg-teal-100 px-1.5 py-0.5 text-[10px] font-black text-teal-800">Trúng 2/4 (12M)</span>';
                     } else {
-                        x4KqBadge = `<span class="text-slate-400 text-[11px]">Trượt (${r.xien4?.hits || 0}/4)</span>`;
+                        x4KqBadge = `<span class="text-slate-400 text-[11px]">Trượt (${xHits}/4)</span>`;
                     }
 
                     return `
                         <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="p-2.5 pl-3 font-mono font-bold text-slate-800">${formatVnDate(r.date)}</td>
+                            <td class="p-2.5 pl-3 font-mono font-bold text-slate-800 whitespace-nowrap">${formatVnDate(r.date)}</td>
                             <td class="p-2.5 text-center font-mono font-black text-rose-600 bg-rose-50/50">${r.db || '--'}</td>
                             <td class="p-2.5">
-                                <div class="flex flex-wrap gap-1">
+                                <div class="font-bold text-[11px] text-indigo-700">${escapeHtml(r.standard?.label || 'Chuẩn')}</div>
+                                <div class="flex flex-wrap gap-1 mt-0.5">
+                                    ${(r.standard?.numbers || []).map(n => `<span class="font-mono text-xs px-1 rounded bg-indigo-50 text-indigo-900 border border-indigo-200 font-bold">${n}</span>`).join('')}
+                                </div>
+                            </td>
+                            <td class="p-2.5 text-center font-mono font-bold ${(r.standard?.hits || 0) > 0 ? 'text-indigo-700 bg-indigo-50/50' : 'text-slate-400'} whitespace-nowrap">
+                                ${r.standard?.hits || 0} nháy
+                            </td>
+                            <td class="p-2.5 text-right font-mono font-bold ${isStdWin ? 'text-emerald-700' : ((r.standard?.profitK || 0) < 0 ? 'text-rose-600' : 'text-slate-600')} whitespace-nowrap">
+                                ${money(r.standard?.profitK || 0)}
+                            </td>
+                            <td class="p-2.5">
+                                <div class="font-bold text-[11px] text-amber-700">${escapeHtml(r.x2?.label || 'X2')}</div>
+                                <div class="flex flex-wrap gap-1 mt-0.5">
                                     ${(r.x2?.numbers || []).map(n => `<span class="font-mono text-xs px-1 rounded bg-amber-50 text-amber-900 border border-amber-200 font-bold">${n}</span>`).join('')}
                                 </div>
                             </td>
-                            <td class="p-2.5 text-center font-mono font-bold ${r.x2?.hits > 0 ? 'text-amber-700 bg-amber-50/50' : 'text-slate-400'}">
+                            <td class="p-2.5 text-center font-mono font-bold ${(r.x2?.hits || 0) > 0 ? 'text-amber-700 bg-amber-50/50' : 'text-slate-400'} whitespace-nowrap">
                                 ${r.x2?.hits || 0} nháy
                             </td>
-                            <td class="p-2.5 text-right font-mono font-bold ${isX2Win ? 'text-emerald-700' : ((r.x2?.profitK || 0) < 0 ? 'text-rose-600' : 'text-slate-600')}">
+                            <td class="p-2.5 text-right font-mono font-bold ${isX2Win ? 'text-emerald-700' : ((r.x2?.profitK || 0) < 0 ? 'text-rose-600' : 'text-slate-600')} whitespace-nowrap">
                                 ${money(r.x2?.profitK || 0)}
                             </td>
                             <td class="p-2.5">
-                                <div class="flex flex-wrap gap-1">
+                                <div class="font-bold text-[11px] text-emerald-700">${escapeHtml(r.xien4?.label || 'Xiên 4')}</div>
+                                <div class="flex flex-wrap gap-1 mt-0.5">
                                     ${(r.xien4?.numbers || []).map(n => `<span class="font-mono text-xs px-1 rounded bg-emerald-50 text-emerald-900 border border-emerald-200 font-bold">${n}</span>`).join('')}
                                 </div>
                             </td>
-                            <td class="p-2.5 text-center">${x4KqBadge}</td>
-                            <td class="p-2.5 text-right font-mono font-bold ${isX4Win ? 'text-emerald-700' : 'text-rose-600'}">
+                            <td class="p-2.5 text-center whitespace-nowrap">${x4KqBadge}</td>
+                            <td class="p-2.5 text-right font-mono font-bold ${isX4Win ? 'text-emerald-700' : 'text-rose-600'} whitespace-nowrap">
                                 ${money(r.xien4?.profitK || 0)}
                             </td>
-                            <td class="p-2.5 text-right font-mono font-black ${isDayWin ? 'text-emerald-700' : (isDayLoss ? 'text-rose-600' : 'text-slate-700')}">
+                            <td class="p-2.5 text-right font-mono font-black ${isDayWin ? 'text-emerald-700' : (isDayLoss ? 'text-rose-600' : 'text-slate-700')} whitespace-nowrap">
                                 ${money(r.dayProfitK || 0)}
                             </td>
-                            <td class="p-2.5 pr-3 text-right font-mono font-black ${(r.cumulativeProfitK || 0) >= 0 ? 'text-indigo-700' : 'text-rose-600'}">
+                            <td class="p-2.5 pr-3 text-right font-mono font-black ${(r.cumulativeProfitK || 0) >= 0 ? 'text-indigo-700' : 'text-rose-600'} whitespace-nowrap">
                                 ${money(r.cumulativeProfitK || 0)}
                             </td>
                         </tr>

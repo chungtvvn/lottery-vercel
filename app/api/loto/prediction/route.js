@@ -597,7 +597,8 @@ export async function GET(request) {
                 summarizeXien4,
                 computeRankDistribution,
                 computeMonthlyBreakdown,
-                buildSmartRecommendation
+                buildSmartRecommendation,
+                buildDynamicCrossMethodAdvisor
             } = require('@/lib/services/loDualMergeAdvisorService');
 
             const settledList = loData.records || loData.settledLedger || [];
@@ -625,6 +626,15 @@ export async function GET(request) {
             let smartRecommendation = loData.summary?.smartRecommendation || latestRec.smartRecommendation || null;
             if (!smartRecommendation || !smartRecommendation.heatmap?.length || !smartRecommendation.liveTracking) {
                 smartRecommendation = buildSmartRecommendation(rankedNumbers, rankDistribution, summaryObj, xien4Data, settledList);
+            }
+
+            let dynamicMetaAdvisor = loData.dynamicMetaAdvisor || advisorData?.dynamicMetaAdvisor || null;
+            if (!dynamicMetaAdvisor && advisorData) {
+                dynamicMetaAdvisor = buildDynamicCrossMethodAdvisor({
+                    loQuantumBayesFusion: advisorData.loQuantumBayesFusion,
+                    loDualMerge: advisorData.loDualMerge,
+                    loTriHarmonic: advisorData.loTriHarmonic
+                });
             }
 
             let xien4Next = latestRec.xien4;
@@ -658,6 +668,7 @@ export async function GET(request) {
                 rankDistribution,
                 monthly: monthlyBreakdown,
                 smartRecommendation,
+                dynamicMetaAdvisor,
                 nextPrediction: {
                     predictionDate: latestRec.predictionDate,
                     dataIsoDate: advisorData?.latestDataDate,
@@ -669,6 +680,7 @@ export async function GET(request) {
                     xien4: xien4Next || latestRec.xien4 || xien4Data,
                     goldenXien2: latestRec.goldenXien2 || null,
                     smartRecommendation,
+                    dynamicMetaAdvisor,
                     rankDistribution
                 },
                 livePredictions: {
@@ -683,6 +695,7 @@ export async function GET(request) {
                     rankDistribution,
                     monthly: monthlyBreakdown,
                     smartRecommendation,
+                    dynamicMetaAdvisor,
                     predictions: liveRecords
                 }
             }, { headers: NO_STORE_HEADERS });
