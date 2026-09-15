@@ -454,6 +454,27 @@ export async function GET(request) {
                 }
             };
             
+            const {
+                summarizeXien4,
+                computeRankDistribution,
+                computeMonthlyBreakdown,
+                buildSmartRecommendation,
+                buildDynamicCrossMethodAdvisor
+            } = require('@/lib/services/loDualMergeAdvisorService');
+
+            let dynamicMetaAdvisor = loData.dynamicMetaAdvisor || advisorData?.dynamicMetaAdvisor || null;
+            if (!dynamicMetaAdvisor && advisorData) {
+                dynamicMetaAdvisor = buildDynamicCrossMethodAdvisor({
+                    loQuantumBayesFusion: advisorData.loQuantumBayesFusion,
+                    loDualMerge: advisorData.loDualMerge,
+                    loTriHarmonic: advisorData.loTriHarmonic
+                });
+            }
+
+            const diaryMap = new Map();
+            (dynamicMetaAdvisor?.allDiary || []).forEach(e => diaryMap.set(e.date, e));
+            (dynamicMetaAdvisor?.liveDiary || []).forEach(e => diaryMap.set(e.date, e));
+
             const countsList = [1, 2, 4, 6, 7, 8, 10, 20];
             const liveCumProfitsMap = {};
             countsList.forEach(c => { liveCumProfitsMap[`top${c}`] = 0; });
@@ -516,6 +537,7 @@ export async function GET(request) {
                     predictions: rowPredictions,
                     methods: rowMethods,
                     xien4: r.xien4 || null,
+                    recommendedXien4: diaryMap.get(r.date)?.xien4 || null,
                     xien2: r.xien2 || null,
                     liveCumulativeProfitK: isLive ? liveCumProfitsMap.top10 : null
                 };
@@ -600,23 +622,6 @@ export async function GET(request) {
 
             const stratMeta = LOTO_STRATEGY_META[strategy] || {};
 
-            const {
-                summarizeXien4,
-                computeRankDistribution,
-                computeMonthlyBreakdown,
-                buildSmartRecommendation,
-                buildDynamicCrossMethodAdvisor
-            } = require('@/lib/services/loDualMergeAdvisorService');
-
-            let dynamicMetaAdvisor = loData.dynamicMetaAdvisor || advisorData?.dynamicMetaAdvisor || null;
-            if (!dynamicMetaAdvisor && advisorData) {
-                dynamicMetaAdvisor = buildDynamicCrossMethodAdvisor({
-                    loQuantumBayesFusion: advisorData.loQuantumBayesFusion,
-                    loDualMerge: advisorData.loDualMerge,
-                    loTriHarmonic: advisorData.loTriHarmonic
-                });
-            }
-
             const settledList = loData.records || loData.settledLedger || [];
             const liveSettled = settledList.filter(r => r.isLiveSnapshot || (r.predictionIsoDate || r.predictionDate || r.date || '') >= '2026-08-28');
             const xien4Data = summarizeXien4(settledList);
@@ -682,6 +687,7 @@ export async function GET(request) {
                     plainReasons: latestRec.plainReasons,
                     predictions,
                     xien4: xien4Next || latestRec.xien4 || xien4Data,
+                    recommendedXien4: dynamicMetaAdvisor?.nextPrediction?.xien4 || null,
                     goldenXien2: latestRec.goldenXien2 || null,
                     smartRecommendation,
                     dynamicMetaAdvisor,

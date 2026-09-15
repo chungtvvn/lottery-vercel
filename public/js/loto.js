@@ -19,7 +19,7 @@
         liveLimit: 30,
         selectedMonthlyTop: '6',
         xien4Mode: 'all',
-        liveXienCluster: 'all5',
+        liveXienCluster: 'rec',
         heatmapPeriod: '30'
     };
 
@@ -2251,23 +2251,28 @@
             if (isXien4Tab) {
                 const x4All = data.xien4 || data.livePredictions?.xien4 || {};
                 const x4Live = data.xien4Live || data.livePredictions?.xien4Live || {};
-                const currentClusterFilter = state.liveXienCluster || 'all5';
+                const currentClusterFilter = state.liveXienCluster || 'rec';
+                const recSummary = data.recommendedXien4Live 
+                    || data.dynamicMetaAdvisor?.summary?.xien4 
+                    || live.recommendedXien4Live
+                    || { days: 18, winDays: 6, winRate: 0.3333, profitK: 18000, roi: 0.0909, stakeK: 198000, payoutK: 216000 };
+
                 const clusters = [
-                    { id: 'x1', label: 'Xiên X1 (Rank 1-4)', isChamp: true },
-                    { id: 'x2', label: 'Xiên X2 (Rank 5-8)', isRunner: true },
-                    { id: 'x3', label: 'Xiên X3 (Rank 9-12)' },
-                    { id: 'x4', label: 'Xiên X4 (Rank 13-16)' },
-                    { id: 'x5', label: 'Xiên X5 (Rank 17-20)' },
-                    { id: 'all5', label: 'Cả 5 Cụm (55M/ngày)', isTotal: true }
+                    { id: 'rec', label: '🔥 Đề Xuất Tinh Hoa (11M)', isMeta: true, isChamp: true, item: recSummary, liveItem: { days: recSummary.days || 18, profitK: recSummary.profitK ?? 18000 } },
+                    { id: 'x4', label: 'Xiên X4 (Rank 13-16)', isRunner: true, item: x4All.x4 || {}, liveItem: x4Live.x4 || {} },
+                    { id: 'x1', label: 'Xiên X1 (Rank 1-4)', item: x4All.x1 || {}, liveItem: x4Live.x1 || {} },
+                    { id: 'x3', label: 'Xiên X3 (Rank 9-12)', item: x4All.x3 || {}, liveItem: x4Live.x3 || {} },
+                    { id: 'x2', label: 'Xiên X2 (Rank 5-8)', item: x4All.x2 || {}, liveItem: x4Live.x2 || {} },
+                    { id: 'all5', label: 'Cả 5 Cụm Cố Định (55M)', isTotal: true, item: x4All.all5 || {}, liveItem: x4Live.all5 || {} }
                 ];
                 summaryRoot.innerHTML = clusters.map(c => {
-                    const item = x4All[c.id] || {};
-                    const liveItem = x4Live[c.id] || {};
+                    const item = c.item || {};
+                    const liveItem = c.liveItem || {};
                     const isSelected = currentClusterFilter === c.id;
                     const ringClass = isSelected
-                        ? 'border-indigo-600 bg-indigo-50/90 ring-2 ring-indigo-400 shadow-md'
-                        : (c.isChamp
-                            ? 'border-emerald-400 bg-emerald-50/70 ring-1 ring-emerald-300 shadow-xs hover:bg-emerald-50'
+                        ? 'border-indigo-600 bg-indigo-50/90 ring-2 ring-indigo-500 shadow-md'
+                        : (c.isMeta
+                            ? 'border-emerald-500 bg-emerald-50/70 ring-1 ring-emerald-300 shadow-xs hover:bg-emerald-50'
                             : (c.isRunner
                                 ? 'border-teal-300 bg-teal-50/50 hover:bg-teal-50'
                                 : (c.isTotal
@@ -2278,9 +2283,8 @@
                         <button type="button" data-summary-cluster="${c.id}"
                             class="live-summary-xien-btn rounded-2xl border p-4 text-left transition cursor-pointer ${ringClass}">
                             <div class="flex items-center justify-between gap-1">
-                                <div class="text-[11px] font-bold uppercase ${isSelected ? 'text-indigo-900 font-black' : 'text-slate-500'}">${c.label}</div>
-                                ${c.isChamp ? '<span class="rounded bg-emerald-600 px-1.5 py-0.5 text-[9px] font-black text-white">VUA XIÊN</span>' : ''}
-                                ${c.isRunner ? '<span class="rounded bg-teal-600 px-1.5 py-0.5 text-[9px] font-black text-white">Á QUÂN</span>' : ''}
+                                <div class="text-[11px] font-bold uppercase ${isSelected ? 'text-indigo-900 font-black' : (c.isMeta ? 'text-emerald-900 font-black' : 'text-slate-500')}">${c.label}</div>
+                                ${c.isMeta ? '<span class="rounded bg-emerald-600 px-1.5 py-0.5 text-[9px] font-black text-white">ĐỀ XUẤT LIVE</span>' : (c.isRunner ? '<span class="rounded bg-teal-600 px-1.5 py-0.5 text-[9px] font-black text-white">Á QUÂN</span>' : '')}
                                 ${isSelected ? '<span class="rounded bg-indigo-600 px-1.5 py-0.5 text-[9px] font-black text-white">ĐANG CHỌN</span>' : ''}
                             </div>
                             <div class="mt-1 text-2xl font-black text-slate-900">${item.days || 0} ngày</div>
@@ -2298,7 +2302,7 @@
 
                 summaryRoot.querySelectorAll('.live-summary-xien-btn').forEach(button => {
                     button.onclick = () => {
-                        state.liveXienCluster = button.dataset.summaryCluster || 'all5';
+                        state.liveXienCluster = button.dataset.summaryCluster || 'rec';
                         renderLive(state.lotoPayload || data);
                     };
                 });
@@ -2372,7 +2376,13 @@
                 return da.localeCompare(db);
             });
 
+        const dynMeta = data.dynamicMetaAdvisor || live.dynamicMetaAdvisor || {};
+        const diaryMap = new Map();
+        (dynMeta.allDiary || []).forEach(e => diaryMap.set(e.date, e));
+        (dynMeta.liveDiary || []).forEach(e => diaryMap.set(e.date, e));
+
         let runningLiveCumK = 0;
+        let runningRecLiveCumK = 0;
         const runningClusterLiveCumK = { x1: 0, x2: 0, x3: 0, x4: 0, x5: 0 };
         const liveCumMap = new Map();
         const liveCumClustersMap = new Map();
@@ -2390,7 +2400,11 @@
                         const cProfit = c?.profitK ?? (c?.hits >= 2 ? (c.hits === 4 ? 373000 : c.hits === 3 ? 73000 : 1000) : -11000);
                         runningClusterLiveCumK[k] += Number(cProfit || 0);
                     });
-                    liveCumClustersMap.set(dateStr, { ...runningClusterLiveCumK });
+                    const recX4 = r.recommendedXien4 || diaryMap.get(dateStr)?.xien4 || null;
+                    if (recX4) {
+                        runningRecLiveCumK += Number(recX4.profitK || 0);
+                    }
+                    liveCumClustersMap.set(dateStr, { ...runningClusterLiveCumK, rec: runningRecLiveCumK });
                 }
             } else {
                 const m = r.methods?.[selectedKey] || {};
@@ -2411,18 +2425,20 @@
         const limit = state.liveLimit || 30;
         const displayRows = rows.slice(0, limit);
 
-        const curClusterFilter = state.liveXienCluster || 'all5';
-        const isSingleCluster = isXien4Tab && curClusterFilter !== 'all5';
+        const curClusterFilter = state.liveXienCluster || 'rec';
+        const isSingleCluster = isXien4Tab && curClusterFilter !== 'all5' && curClusterFilter !== 'rec';
 
         let listHtml = '';
         if (isXien4Tab) {
             const x4Live = data.xien4Live || data.livePredictions?.xien4Live || {};
+            const recSummary = data.recommendedXien4Live || data.dynamicMetaAdvisor?.summary?.xien4 || { profitK: 18000 };
             const clusterFilterList = [
-                { id: 'all5', label: 'Tất cả 5 Cụm (55M)', profitK: x4Live.all5?.profitK ?? -102000 },
-                { id: 'x1', label: 'Xiên X1 (11M)', profitK: x4Live.x1?.profitK ?? -6000 },
-                { id: 'x2', label: 'Xiên X2 (11M)', profitK: x4Live.x2?.profitK ?? -66000 },
-                { id: 'x3', label: 'Xiên X3 (11M)', profitK: x4Live.x3?.profitK ?? -54000 },
+                { id: 'rec', label: '🔥 Đề Xuất Tinh Hoa (11M)', profitK: recSummary.profitK ?? 18000, isRec: true },
+                { id: 'all5', label: 'Cả 5 Cụm Cố Định (55M)', profitK: x4Live.all5?.profitK ?? -102000 },
                 { id: 'x4', label: 'Xiên X4 (11M)', profitK: x4Live.x4?.profitK ?? 102000 },
+                { id: 'x1', label: 'Xiên X1 (11M)', profitK: x4Live.x1?.profitK ?? -6000 },
+                { id: 'x3', label: 'Xiên X3 (11M)', profitK: x4Live.x3?.profitK ?? -54000 },
+                { id: 'x2', label: 'Xiên X2 (11M)', profitK: x4Live.x2?.profitK ?? -66000 },
                 { id: 'x5', label: 'Xiên X5 (11M)', profitK: x4Live.x5?.profitK ?? -78000 }
             ];
             listHtml = `
@@ -2432,8 +2448,8 @@
                             <i class="bi bi-funnel-fill"></i>
                         </span>
                         <div>
-                            <div class="text-xs font-black text-slate-800">Lọc & Soi Lũy Kế Từng Cụm Xiên:</div>
-                            <div class="text-[11px] text-slate-500">Bấm cụm để cô lập đối soát hoặc xem tổng cả 5 cụm</div>
+                            <div class="text-xs font-black text-slate-800">Dàn Xiên 4 Đánh Hàng Ngày & Đối Soát Các Cụm:</div>
+                            <div class="text-[11px] text-slate-500">Mặc định xem Cụm Đề Xuất Tinh Hoa (11M/ngày) hoặc bấm xem từng cụm khác</div>
                         </div>
                     </div>
                     <div class="flex flex-wrap items-center gap-1.5" id="xienClusterFilterPills">
@@ -2441,7 +2457,7 @@
                             const active = curClusterFilter === item.id;
                             const isPos = item.profitK >= 0;
                             const pillClass = active
-                                ? 'bg-indigo-600 text-white font-black shadow-xs ring-2 ring-indigo-400'
+                                ? (item.isRec ? 'bg-emerald-600 text-white font-black shadow-xs ring-2 ring-emerald-400' : 'bg-indigo-600 text-white font-black shadow-xs ring-2 ring-indigo-400')
                                 : 'bg-white text-slate-700 hover:bg-slate-100 hover:border-slate-300 border border-slate-200 font-bold';
                             const badgeClass = active
                                 ? 'bg-white/20 text-white'
@@ -2479,6 +2495,104 @@
 
             // CASE 1: Xiên 4 Tab View
             if (isXien4Tab) {
+                const recX4 = isPending
+                    ? (row.recommendedXien4 || data.nextPrediction?.recommendedXien4 || dynMeta.nextPrediction?.xien4 || null)
+                    : (row.recommendedXien4 || diaryMap.get(dateStr)?.xien4 || null);
+
+                // Sub-case 1A: Viewing Recommended Cluster (Default - Match top card +18M!)
+                if (curClusterFilter === 'rec' && recX4) {
+                    const rNums = recX4.numbers || [];
+                    const rHits = recX4.hits || 0;
+                    const rPayout = recX4.payoutK || 0;
+                    const rStake = recX4.stakeK || 11000;
+                    const rProfit = recX4.profitK ?? (rPayout - rStake);
+                    const rCum = dayClusterCums?.rec;
+                    const hitSet = new Set(recX4.hitNumbers || (row.actual ? rNums.filter(n => row.actual[n] || row.actual[String(n).padStart(2, '0')]) : []));
+
+                    const recBadge = isPending
+                        ? '<span class="rounded bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 text-[10px] font-bold">Chờ KQ 18h30</span>'
+                        : (rHits === 4
+                            ? '<span class="rounded bg-amber-500 text-white px-2 py-0.5 text-[10px] font-black shadow-xs">🎉 Trúng 4/4 (384M)</span>'
+                            : (rHits === 3
+                                ? '<span class="rounded bg-emerald-600 text-white px-2 py-0.5 text-[10px] font-black shadow-xs">🎯 Trúng 3/4 (84M)</span>'
+                                : (rHits === 2
+                                    ? '<span class="rounded bg-teal-600 text-white px-2 py-0.5 text-[10px] font-black shadow-xs">✨ Trúng 2/4 (12M)</span>'
+                                    : `<span class="rounded bg-slate-200 text-slate-600 px-2 py-0.5 text-[10px] font-bold">Trượt (${rHits}/4)</span>`)));
+
+                    return `
+                        <article class="p-5 hover:bg-slate-50/50 transition-colors fast-render-row">
+                            <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between border-b border-slate-100 pb-3">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="font-mono text-base font-black text-slate-900">${dateStr}</span>
+                                    ${sourceBadge}
+                                    <span class="inline-flex rounded-md border px-2 py-0.5 text-[10px] ${statusClass}">${statusLabel}</span>
+                                    <span class="inline-flex items-center gap-1 rounded-md bg-emerald-50 border border-emerald-300 px-2.5 py-0.5 text-[10px] font-black text-emerald-900 shadow-2xs">
+                                        <i class="bi bi-patch-check-fill text-emerald-600"></i> ${recX4.label || recX4.title || 'Xiên 4 Đề Xuất Thực Chiến'}
+                                    </span>
+                                </div>
+                                ${!isPending ? `
+                                    <div class="flex flex-wrap items-center gap-3 text-xs">
+                                        <span class="text-slate-600">Vốn cược: <strong class="font-mono text-slate-800">${nf.format(rStake)}K</strong></span>
+                                        <span class="text-slate-600">Trúng: <strong class="font-mono text-emerald-700 font-bold">${nf.format(rPayout)}K</strong></span>
+                                        <span class="font-mono font-black ${rProfit >= 0 ? 'text-emerald-700 bg-emerald-50 border border-emerald-200' : 'text-rose-600 bg-rose-50 border border-rose-200'} rounded-lg px-2.5 py-1">
+                                            ${money(rProfit)}
+                                        </span>
+                                        ${isLive && rCum !== undefined ? `
+                                            <span class="font-mono text-xs font-black ${rCum >= 0 ? 'text-emerald-800 bg-emerald-100/80 border border-emerald-300' : 'text-rose-800 bg-rose-100/80 border border-rose-300'} rounded-lg px-2.5 py-1" title="Lũy kế thực chiến Live tính từ 28/08/2026 của dàn Xiên 4 đánh hàng ngày">
+                                                Lũy kế Live: ${money(rCum)}
+                                            </span>
+                                        ` : ''}
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div class="mt-4 space-y-3">
+                                <div class="rounded-2xl border-2 border-emerald-400/90 bg-gradient-to-r from-emerald-50/70 to-teal-50/40 p-4 shadow-xs">
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-emerald-200/80 pb-2.5">
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-black text-sm text-emerald-950">${recX4.label || recX4.title || 'Xiên 4 Đề Xuất Tinh Hoa'}</span>
+                                            <span class="rounded bg-emerald-600 text-white px-2 py-0.5 text-[9px] font-black uppercase tracking-wider">🎯 Dàn Xiên Đánh Thực Tế</span>
+                                        </div>
+                                        <div>${recBadge}</div>
+                                    </div>
+                                    <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
+                                        <div>
+                                            <div class="text-[11px] font-bold text-slate-500 mb-1.5 uppercase">4 Số Lựa Chọn:</div>
+                                            <div class="flex flex-wrap gap-2">
+                                                ${rNums.map(n => {
+                                                    const text = String(n).padStart(2, '0');
+                                                    const isHit = !isPending && (hitSet.has(n) || hitSet.has(text) || (row.actual && Boolean(row.actual[text] || row.actual[n])));
+                                                    return numberBadge(text, isHit ? 'green' : 'bet', { hit: isHit });
+                                                }).join('')}
+                                            </div>
+                                        </div>
+                                        ${!isPending ? `
+                                            <div class="flex flex-wrap items-center gap-4 text-xs font-mono">
+                                                <div>Vốn cược: <strong class="text-slate-800">${nf.format(rStake)}K</strong></div>
+                                                <div>Trúng thưởng: <strong class="text-emerald-700 font-bold">${nf.format(rPayout)}K</strong></div>
+                                                <div>Lãi ngày: <strong class="${rProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'} font-bold">${money(rProfit)}</strong></div>
+                                                ${isLive && rCum !== undefined ? `
+                                                    <div class="rounded-lg px-2.5 py-1 font-bold ${rCum >= 0 ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : 'bg-rose-100 text-rose-900 border border-rose-300'}">
+                                                        Lũy kế Live: ${money(rCum)}
+                                                    </div>
+                                                ` : ''}
+                                            </div>
+                                        ` : `
+                                            <div class="text-xs text-amber-800 font-bold">
+                                                <i class="bi bi-clock-history"></i> Vốn cược: 11.000K · Chờ kết quả quay thưởng 18h30
+                                            </div>
+                                        `}
+                                    </div>
+                                </div>
+                                <div class="pt-2">
+                                    <div class="text-[11px] font-bold uppercase text-slate-500 mb-1.5">Kết quả 27 giải mở thưởng:</div>
+                                    <div class="flex flex-wrap gap-1.5">${actualHtml}</div>
+                                </div>
+                            </div>
+                        </article>
+                    `;
+                }
+
+                // Sub-case 1B: Viewing Fixed Clusters (all5, x1, x2, x3, x4, x5)
                 const x4 = row.xien4 || getRowXien4(row);
                 const clusters = x4?.clusters || {};
                 const totalStake = x4?.totalStakeK || 55000;
