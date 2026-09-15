@@ -208,6 +208,7 @@ function settleFromRaw(payload, rawRows) {
         loDualMerge,
         loTriHarmonic,
         loQuantumBayesFusion,
+        dynamicMetaAdvisor: payload.dynamicMetaAdvisor || loQuantumBayesFusion?.dynamicMetaAdvisor || null,
         latestDataDate: rawRows?.at(-1)?.date || payload.latestDataDate,
         summary: { main: summarize('main'), hybrid: summarize('hybrid') },
         strategyCatalog: [...strategyMetadata.values()],
@@ -265,6 +266,12 @@ export async function GET(request) {
                 }
                 if ((localPayload?.loTriHarmonic?.settledLedger?.length || 0) > (payload?.loTriHarmonic?.settledLedger?.length || 0)) {
                     payload.loTriHarmonic = localPayload.loTriHarmonic;
+                }
+                if (localPayload?.dynamicMetaAdvisor && (!payload?.dynamicMetaAdvisor || (localPayload.dynamicMetaAdvisor.liveDiary?.length || 0) >= (payload.dynamicMetaAdvisor.liveDiary?.length || 0))) {
+                    payload.dynamicMetaAdvisor = localPayload.dynamicMetaAdvisor;
+                }
+                if (localPayload?.metaLearner && (!payload?.metaLearner || (localPayload.metaLearner.settledLedger?.length || 0) > (payload.metaLearner.settledLedger?.length || 0))) {
+                    payload.metaLearner = localPayload.metaLearner;
                 }
             } catch (_) {}
         }

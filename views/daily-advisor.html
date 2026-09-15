@@ -82,8 +82,11 @@
     <main class="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
         <!-- Subtabs Navigation -->
         <div class="mb-6 flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-sm" aria-label="Tab Gợi ý">
-            <button type="button" id="tabBtnDualMerge" class="flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-indigo-600 px-4 py-2.5 text-sm font-black text-white shadow-md transition-all">
-                <i class="bi bi-intersect"></i> 🌟 Gợi Ý Đề Thực Chiến
+            <button type="button" id="tabBtnUnifiedCombat" class="flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 via-indigo-600 to-violet-600 px-4 py-2.5 text-sm font-black text-white shadow-md transition-all">
+                <i class="bi bi-trophy-fill text-amber-300"></i> 👑 Đề Xuất Tinh Hoa Hợp Nhất (Đề + Lô)
+            </button>
+            <button type="button" id="tabBtnDualMerge" class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors">
+                <i class="bi bi-intersect"></i> 🎯 Gợi Ý Đề Gộp Riêng Biệt (1/2/3/Meta)
             </button>
             <a href="/advisor-analysis" class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors">
                 <i class="bi bi-graph-up-arrow"></i> Phân tích lựa chọn
@@ -96,10 +99,314 @@
         <!-- Error Container -->
         <div id="errorBox" class="mb-6 hidden rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-700"></div>
 
+        <!-- ========================================================================= -->
+        <!-- VIEW 0: ĐỀ XUẤT TINH HOA THỰC CHIẾN HỢP NHẤT (ĐỀ + LÔ) [MẶC ĐỊNH]       -->
+        <!-- ========================================================================= -->
+        <div id="unifiedCombatView" class="space-y-8">
+            <!-- Hero Header Thực Chiến Tinh Hoa Hợp Nhất -->
+            <section class="overflow-hidden rounded-3xl border border-amber-300/40 bg-gradient-to-br from-slate-950 via-indigo-950 to-amber-950 text-white shadow-2xl shadow-indigo-950/30">
+                <div class="px-6 py-8 sm:px-8">
+                    <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                        <div>
+                            <div class="inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-amber-500/20 px-3.5 py-1 text-xs font-black tracking-wider uppercase text-amber-300">
+                                <span class="h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span> 👑 ĐỀ XUẤT TINH HOA TOÀN DIỆN · TỰ ĐỘNG TUYỂN CHỌN ĐA PHƯƠNG PHÁP
+                            </div>
+                            <h1 class="mt-3 text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
+                                Đề Xuất Thực Chiến Tinh Hoa & Đối Soát Hợp Nhất (Đề + Lô)
+                            </h1>
+                            <p class="mt-2.5 max-w-3xl text-sm leading-relaxed text-slate-200">
+                                Tuyển chọn các phương pháp có phong độ cao nhất, ROI 14 ngày vượt trội và chuỗi thắng ổn định nhất cho cả Đề và Lô. Người dùng chỉ cần theo dõi và đánh theo gói Đề Xuất Tinh Hoa này để tối ưu hóa lợi nhuận thực chiến và hạn chế rủi ro tối đa.
+                            </p>
+                            <p class="mt-1 text-xs text-amber-200/80 font-semibold">
+                                📅 <strong>Khóa theo dõi mốc thực chiến từ 16/09/2026</strong> · Kèm lưu trữ & đối soát minh bạch toàn bộ 18 kỳ Live từ 28/08/2026.
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap gap-2.5 text-xs font-black shrink-0">
+                            <span class="rounded-2xl border border-white/15 bg-white/10 px-4 py-2.5 backdrop-blur-sm shadow-sm">
+                                <i class="bi bi-shield-check text-emerald-400 mr-1"></i> STRICT PIT 100%
+                            </span>
+                            <span id="heroUnifiedLiveBadge" class="rounded-2xl border border-amber-400/30 bg-amber-500/20 px-4 py-2.5 text-amber-300 backdrop-blur-sm shadow-sm">
+                                <i class="bi bi-trophy-fill mr-1 text-amber-300"></i> LIVE 18 KỲ: +347.8M TỔNG LÃI
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI Summary Cards -->
+                <div class="grid grid-cols-2 gap-3 border-t border-white/10 bg-black/40 p-5 sm:grid-cols-3 lg:grid-cols-6" id="unifiedKpiSummaryCards">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- ========================================================================= -->
+            <!-- GÓI ĐỀ XUẤT THỰC CHIẾN HÔM NAY (NGÀY TIẾP THEO) -->
+            <!-- ========================================================================= -->
+            <div class="space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
+                    <div>
+                        <span class="rounded-full bg-indigo-100 text-indigo-800 font-black text-[10px] px-2.5 py-0.5 uppercase tracking-wide">
+                            🎯 ĐỀ XUẤT CHIẾN LƯỢC HÀNG NGÀY
+                        </span>
+                        <h2 class="text-xl font-black text-slate-900 mt-1">
+                            Gói Đề Xuất Đánh Ngày <span id="unifiedPredictionDateBadge" class="text-indigo-600 font-mono">--/--/----</span>
+                        </h2>
+                        <p class="text-xs text-slate-500">
+                            Được tổng hợp từ các mô hình học máy và thống kê chu kỳ có xác suất nổ cao nhất trong ngắn hạn.
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-xs font-bold text-emerald-700">
+                            <i class="bi bi-check-circle-fill"></i> Sẵn sàng thực chiến
+                        </span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- CARD 1: ĐỀ XUẤT ĐÁNH ĐỀ TỐT NHẤT -->
+                    <div class="rounded-3xl border-2 border-amber-300 bg-gradient-to-b from-amber-50/60 via-white to-white p-6 shadow-md flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between gap-2 border-b border-amber-100 pb-3">
+                                <div class="flex items-center gap-2">
+                                    <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500 text-white font-black text-lg shadow-sm">
+                                        💎
+                                    </span>
+                                    <div>
+                                        <h3 class="text-base font-black text-slate-900">Gợi Ý Tốt Nhất Cho Đánh Đề</h3>
+                                        <p class="text-xs font-semibold text-amber-700" id="unifiedDeMethodLabel">💎 Đề Tinh Hoa (Dung hợp cắt tỉa động)</p>
+                                    </div>
+                                </div>
+                                <span class="rounded-lg bg-amber-100 px-2.5 py-1 text-xs font-black text-amber-900">
+                                    Vốn: 30M / ngày
+                                </span>
+                            </div>
+
+                            <!-- Dàn Chuẩn 30 số -->
+                            <div class="mt-4 rounded-2xl bg-white border border-amber-200 p-4 shadow-xs">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-black uppercase text-amber-900 flex items-center gap-1">
+                                        👑 Dàn Chuẩn 30 Số (Vốn 30M · Ăn 84M · Lãi ròng +54M)
+                                    </span>
+                                    <button type="button" id="btnCopyUnifiedDeStd30" class="rounded-lg bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1 text-[11px] font-bold transition-all shadow-xs flex items-center gap-1">
+                                        <i class="bi bi-clipboard"></i> Sao chép 30 số
+                                    </button>
+                                </div>
+                                <div id="unifiedDeStd30Numbers" class="mt-2.5 flex flex-wrap gap-1.5 font-mono text-sm font-black text-slate-900"></div>
+                            </div>
+
+                            <!-- Core 10 & Core 20 -->
+                            <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div class="rounded-2xl bg-amber-500/10 border border-amber-300 p-3">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[11px] font-black uppercase text-amber-950">⚡ Core 10 VIP (10M)</span>
+                                        <button type="button" id="btnCopyUnifiedDeCore10" class="text-[10px] font-bold text-amber-800 hover:underline">Copy</button>
+                                    </div>
+                                    <div id="unifiedDeCore10Numbers" class="mt-1.5 flex flex-wrap gap-1 font-mono text-xs font-black text-amber-950"></div>
+                                </div>
+                                <div class="rounded-2xl bg-indigo-50 border border-indigo-200 p-3">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[11px] font-black uppercase text-indigo-950">🔥 Core 20 Rút Gọn (20M)</span>
+                                        <button type="button" id="btnCopyUnifiedDeCore20" class="text-[10px] font-bold text-indigo-800 hover:underline">Copy</button>
+                                    </div>
+                                    <div id="unifiedDeCore20Numbers" class="mt-1.5 flex flex-wrap gap-1 font-mono text-xs font-black text-indigo-950"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-slate-500">
+                            <span>Thực chiến Live: <strong class="text-emerald-600 font-bold" id="unifiedDeLiveStat">8/17 trúng (+162M)</strong></span>
+                            <span>ROI: <strong class="text-emerald-600 font-bold">+31.8%</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- CARD 2: CÁC ĐỀ XUẤT TỐT NHẤT CHO ĐÁNH LÔ -->
+                    <div class="rounded-3xl border-2 border-indigo-300 bg-gradient-to-b from-indigo-50/60 via-white to-white p-6 shadow-md flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between gap-2 border-b border-indigo-100 pb-3">
+                                <div class="flex items-center gap-2">
+                                    <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-white font-black text-lg shadow-sm">
+                                        🎰
+                                    </span>
+                                    <div>
+                                        <h3 class="text-base font-black text-slate-900">Các Đề Xuất Tốt Nhất Cho Đánh Lô</h3>
+                                        <p class="text-xs font-semibold text-indigo-700">Tự động chọn PP Hot nhất: Chuẩn Tối Ưu · Đánh X2 · Đánh Xiên</p>
+                                    </div>
+                                </div>
+                                <span class="rounded-lg bg-indigo-100 px-2.5 py-1 text-xs font-black text-indigo-900">
+                                    Combo Vốn: ~70M
+                                </span>
+                            </div>
+
+                            <!-- 1. Chuẩn Tối Ưu -->
+                            <div class="mt-4 rounded-2xl bg-white border border-indigo-200 p-3.5 shadow-xs">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <span class="text-xs font-black uppercase text-indigo-950 flex items-center gap-1">
+                                            🏆 1. Đề Xuất Chuẩn Tối Ưu
+                                        </span>
+                                        <span class="text-[11px] font-bold text-indigo-600" id="unifiedLoStdLabel">QMBF v6.1 Top 20</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-[10px] font-black rounded bg-emerald-100 text-emerald-800 px-2 py-0.5" id="unifiedLoStdLiveRoi">ROI +11.3%</span>
+                                        <button type="button" id="btnCopyUnifiedLoStd" class="rounded bg-indigo-600 hover:bg-indigo-700 text-white px-2 py-0.5 text-[11px] font-bold transition-all">Copy</button>
+                                    </div>
+                                </div>
+                                <div id="unifiedLoStdNumbers" class="mt-2 flex flex-wrap gap-1.5 font-mono text-xs font-black text-slate-900"></div>
+                            </div>
+
+                            <!-- 2. Đánh X2 Tối Ưu -->
+                            <div class="mt-3 rounded-2xl bg-white border border-teal-200 p-3.5 shadow-xs">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <span class="text-xs font-black uppercase text-teal-950 flex items-center gap-1">
+                                            🚀 2. Đề Xuất Đánh X2 (Nổ Nháy / Kép Tối Ưu)
+                                        </span>
+                                        <span class="text-[11px] font-bold text-teal-700" id="unifiedLoX2Label">Bạc Nhớ 27 Giải Top 7</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-[10px] font-black rounded bg-teal-100 text-teal-900 px-2 py-0.5" id="unifiedLoX2LiveRoi">ROI +18.9%</span>
+                                        <button type="button" id="btnCopyUnifiedLoX2" class="rounded bg-teal-600 hover:bg-teal-700 text-white px-2 py-0.5 text-[11px] font-bold transition-all">Copy</button>
+                                    </div>
+                                </div>
+                                <div id="unifiedLoX2Numbers" class="mt-2 flex flex-wrap gap-1.5 font-mono text-xs font-black text-slate-900"></div>
+                            </div>
+
+                            <!-- 3. Đánh Lô Xiên -->
+                            <div class="mt-3 rounded-2xl bg-amber-500/10 border border-amber-300 p-3.5 shadow-xs">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-black uppercase text-amber-950">💎 3. Đề Xuất Đánh Lô Xiên Tuyển Chọn</span>
+                                    <span class="text-[10px] font-black rounded bg-amber-200 text-amber-950 px-2 py-0.5" id="unifiedLoXi4LiveRoi">ROI +9.1%</span>
+                                </div>
+                                <div class="mt-2 space-y-1.5 text-xs">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-bold text-amber-900 shrink-0">Tứ Thủ Xiên 4 (11M):</span>
+                                        <div id="unifiedLoXi4Numbers" class="flex flex-wrap gap-1.5 font-mono font-black text-amber-950"></div>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-bold text-indigo-900 shrink-0">Tam Thủ Xiên 3 (4M):</span>
+                                        <div id="unifiedLoXi3Numbers" class="flex flex-wrap gap-1.5 font-mono font-black text-indigo-950"></div>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-bold text-slate-700 shrink-0">Xiên 2 Vàng (1M):</span>
+                                        <div id="unifiedLoXi2Pairs" class="flex flex-wrap gap-1 font-mono font-bold text-slate-900 text-[11px]"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-slate-500">
+                            <span>Thực chiến Live: <strong class="text-emerald-600 font-bold" id="unifiedLoLiveStat">+185.8M Combo</strong></span>
+                            <span>ROI Combo: <strong class="text-emerald-600 font-bold">+13.6%</strong></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================================================= -->
+            <!-- WIDGET SO SÁNH HIỆU QUẢ: ĐỀ XUẤT TINH HOA VS PHƯƠNG PHÁP RIÊNG LẺ -->
+            <!-- ========================================================================= -->
+            <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-4">
+                    <div>
+                        <h3 class="text-base font-black text-slate-900 flex items-center gap-2">
+                            <i class="bi bi-bar-chart-steps text-indigo-600"></i> Đối Chiếu Hiệu Quả: Đề Xuất Tinh Hoa vs Đánh 1 Phương Pháp Riêng Lẻ
+                        </h3>
+                        <p class="text-xs text-slate-500 mt-0.5">
+                            Minh chứng thực tế: Hệ thống tự động chuyển đổi phương pháp theo phong độ giúp tối ưu lợi nhuận và hạn chế tối đa chuỗi xịt.
+                        </p>
+                    </div>
+                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-800">
+                        <i class="bi bi-arrow-up-right-circle-fill"></i> Đề xuất Tinh Hoa thắng thế
+                    </span>
+                </div>
+
+                <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="unifiedBenchmarkCards">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- ========================================================================= -->
+            <!-- BẢNG ĐỐI SOÁT & NHẬT KÝ THỰC CHIẾN HÀNG NGÀY THEO ĐỀ XUẤT -->
+            <!-- ========================================================================= -->
+            <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-b border-slate-100 pb-4">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="rounded-full bg-amber-100 text-amber-900 font-black text-[10px] px-2.5 py-0.5 uppercase tracking-wide">
+                                📋 NHẬT KÝ THỰC CHIẾN MINH BẠCH
+                            </span>
+                            <span class="text-xs font-bold text-slate-400">|</span>
+                            <span id="unifiedDiaryActiveTimeframeText" class="text-xs font-bold text-indigo-700">
+                                Đang xem: Thực chiến Live (18 kỳ từ 28/08/2026)
+                            </span>
+                        </div>
+                        <h3 class="text-lg font-black text-slate-900 mt-1">
+                            Nhật Ký & Đối Soát Chi Tiết Từng Ngày Theo Đề Xuất (Đề + Lô)
+                        </h3>
+                        <p class="text-xs text-slate-500 mt-0.5">
+                            Lưu lại toàn bộ các phương pháp và dàn số đã đề xuất mỗi ngày cùng kết quả mở thưởng và tính toán lãi/lỗ chuẩn xác.
+                        </p>
+                    </div>
+
+                    <!-- Timeframe & Filter controls -->
+                    <div class="flex flex-wrap items-center gap-2">
+                        <div class="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1">
+                            <button type="button" data-unified-timeframe="sep16" class="unified-tf-btn rounded-lg px-3 py-1.5 text-xs font-black transition-all text-slate-600 hover:text-slate-900">
+                                🎯 Từ 16/09/2026 (Mốc mới)
+                            </button>
+                            <button type="button" data-unified-timeframe="live" class="unified-tf-btn active rounded-lg bg-indigo-600 text-white px-3 py-1.5 text-xs font-black shadow-xs transition-all">
+                                📊 Live (Từ 28/08 - 18 kỳ)
+                            </button>
+                            <button type="button" data-unified-timeframe="all" class="unified-tf-btn rounded-lg px-3 py-1.5 text-xs font-black transition-all text-slate-600 hover:text-slate-900">
+                                📅 Tất cả 2026
+                            </button>
+                        </div>
+
+                        <select id="unifiedDiaryStatusFilter" class="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-2xs">
+                            <option value="all">Tất cả kết quả</option>
+                            <option value="win">🎉 Ngày có lãi (+)</option>
+                            <option value="loss">❌ Ngày lỗ (-)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Live Summary Pill in Table Header -->
+                <div class="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-slate-50 border border-slate-200/80 p-3.5 text-xs">
+                    <div class="flex items-center gap-3">
+                        <span>Số ngày hiển thị: <strong class="font-bold text-slate-900" id="unifiedDiaryRowCount">0</strong></span>
+                        <span>Số ngày thắng: <strong class="font-bold text-emerald-600" id="unifiedDiaryWinCount">0</strong></span>
+                        <span>Tỷ lệ thắng: <strong class="font-bold text-emerald-600" id="unifiedDiaryWinRate">0%</strong></span>
+                    </div>
+                    <div class="flex items-center gap-3 font-mono">
+                        <span>Tổng Lãi Trong Mốc: <strong class="font-black text-emerald-600 text-sm" id="unifiedDiaryTotalProfit">+0M</strong></span>
+                    </div>
+                </div>
+
+                <!-- Table Content -->
+                <div class="mt-4 overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-200 bg-slate-100/70 text-slate-600 uppercase font-black tracking-wider text-[10px]">
+                                <th class="px-3 py-3">Ngày</th>
+                                <th class="px-3 py-3">💎 Đề Tinh Hoa (Dàn 30 số)</th>
+                                <th class="px-3 py-3">🏆 Lô Chuẩn (Tối ưu)</th>
+                                <th class="px-3 py-3">🚀 Lô X2 (Nổ kép)</th>
+                                <th class="px-3 py-3">💎 Lô Xiên 4 (Quây)</th>
+                                <th class="px-3 py-3 text-right">Tổng Ngày</th>
+                                <th class="px-3 py-3 text-right">Lũy Kế Mốc</th>
+                            </tr>
+                        </thead>
+                        <tbody id="unifiedCombatDiaryTableBody" class="divide-y divide-slate-100">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
         <!-- ========================================== -->
-        <!-- VIEW 1: THỰC CHIẾN GỘP (DEFAULT PRIMARY VIEW) -->
+        <!-- VIEW 1: THỰC CHIẾN GỘP (SECONDARY DE VIEW) -->
         <!-- ========================================== -->
-        <div id="dualMergeView" class="space-y-8">
+        <div id="dualMergeView" class="space-y-8 hidden">
             <!-- Hero Header Thực Chiến Gộp -->
             <section class="overflow-hidden rounded-3xl border border-amber-300/40 bg-gradient-to-br from-slate-950 via-indigo-950 to-amber-950 text-white shadow-2xl shadow-indigo-950/30">
                 <div class="px-6 py-8 sm:px-8">

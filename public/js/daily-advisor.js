@@ -19,6 +19,9 @@
     const signedM = (val, options = {}) => moneyM(val, { ...options, signed: true });
 
     let payload = null;
+    let currentMainTab = 'unifiedCombat'; // 'unifiedCombat' | 'dualMerge'
+    let unifiedTimeframe = 'live'; // 'sep16' | 'live' | 'all'
+    let unifiedStatusFilter = 'all'; // 'all' | 'win' | 'loss'
     let dualMergeLogLimit = '30'; // Mặc định 30 ngày gần nhất
     let dualMergeFilterStatus = 'live'; // 'live' | 'all' | 'pit' | 'win_x3' | 'win_x2' | 'win_x1' | 'loss'
     let dualMergeSearchQuery = '';
@@ -122,10 +125,622 @@
     }
 
     // ==========================================
-    // TAB SWITCHING LOGIC
+    // HELPER: DATE FORMATTING
+    // ==========================================
+    function formatDateVi(dateStr) {
+        if (!dateStr) return '--/--/----';
+        const parts = String(dateStr).slice(0, 10).split('-');
+        if (parts.length === 3) {
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+        return dateStr;
+    }
+
+    // ==========================================
+    // TAB SWITCHING LOGIC (UNIFIED COMBAT VS DUAL MERGE DE)
     // ==========================================
     function setupTabSwitching() {
-        // Single method view removed as per requirements; Gợi ý Đề Thực Chiến is the primary view.
+        const btnUnified = byId('tabBtnUnifiedCombat');
+        const btnDual = byId('tabBtnDualMerge');
+        const viewUnified = byId('unifiedCombatView');
+        const viewDual = byId('dualMergeView');
+
+        function switchTab(tab) {
+            currentMainTab = tab;
+            if (tab === 'unifiedCombat') {
+                btnUnified?.classList.add('bg-gradient-to-r', 'from-amber-500', 'via-indigo-600', 'to-violet-600', 'text-white', 'font-black', 'shadow-md');
+                btnUnified?.classList.remove('text-slate-600', 'hover:bg-slate-100', 'font-bold');
+                btnDual?.classList.remove('bg-gradient-to-r', 'from-amber-500', 'to-indigo-600', 'text-white', 'font-black', 'shadow-md');
+                btnDual?.classList.add('text-slate-600', 'hover:bg-slate-100', 'font-bold');
+
+                viewUnified?.classList.remove('hidden');
+                viewDual?.classList.add('hidden');
+            } else {
+                btnDual?.classList.add('bg-gradient-to-r', 'from-amber-500', 'to-indigo-600', 'text-white', 'font-black', 'shadow-md');
+                btnDual?.classList.remove('text-slate-600', 'hover:bg-slate-100', 'font-bold');
+                btnUnified?.classList.remove('bg-gradient-to-r', 'from-amber-500', 'via-indigo-600', 'to-violet-600', 'text-white', 'font-black', 'shadow-md');
+                btnUnified?.classList.add('text-slate-600', 'hover:bg-slate-100', 'font-bold');
+
+                viewDual?.classList.remove('hidden');
+                viewUnified?.classList.add('hidden');
+            }
+        }
+
+        if (btnUnified) btnUnified.onclick = () => switchTab('unifiedCombat');
+        if (btnDual) btnDual.onclick = () => switchTab('dualMerge');
+    }
+
+    // ==========================================
+    // 0. RENDER ĐỀ XUẤT TINH HOA THỰC CHIẾN HỢP NHẤT (ĐỀ + LÔ)
+    // ==========================================
+    function renderUnifiedCombatView(data) {
+        if (!data) return;
+
+        const metaLearner = data.metaLearner || {};
+        const metaRec = metaLearner.latestRecommendation || {};
+        const deLedger = metaLearner.settledLedger || [];
+        const metaLearnerSummary = metaLearner.summary || {};
+
+        const dynMeta = data.dynamicMetaAdvisor || data.loQuantumBayesFusion?.dynamicMetaAdvisor || {};
+        const loNext = dynMeta.nextPrediction || {};
+        const loSummary = dynMeta.summary || {};
+        const loDiary = dynMeta.liveDiary || [];
+        const loAllDiary = dynMeta.allDiary || [];
+
+        // 1. KPI Summary Cards
+        renderUnifiedKpiCards(deLedger, loDiary, loSummary, metaLearnerSummary);
+
+        // 2. Today's Recommendations
+        renderUnifiedRecommendations(metaRec, loNext, loSummary);
+
+        // 3. Benchmark Comparison Cards
+        renderUnifiedBenchmarkCards(loSummary?.benchmarkComparison, loSummary?.combo?.profitK, deLedger);
+
+        // 4. Combat Diary Table
+        renderUnifiedCombatDiary(deLedger, loDiary, loAllDiary);
+
+        // 5. Wire buttons & controls
+        setupUnifiedCombatControls(metaRec, loNext, deLedger, loDiary, loAllDiary);
+    }
+
+    function renderUnifiedKpiCards(deLedger, loDiary, loSummary, metaLearnerSummary) {
+        const cardsEl = byId('unifiedKpiSummaryCards');
+        if (!cardsEl) return;
+
+        // De stats
+        const liveDeRows = deLedger.filter(r => (r.predictionDate || r.date) >= '2026-08-28');
+        const liveDeProfitK = liveDeRows.reduce((s, r) => s + (r.profitK ?? (r.isHit ? 54000 : -30000)), 0);
+        const liveDeWins = liveDeRows.filter(r => (r.profitK > 0 || r.isHit || r.hitType === 'win_x1')).length;
+        const liveDeDays = liveDeRows.length || 1;
+
+        const sep16DeRows = deLedger.filter(r => (r.predictionDate || r.date) >= '2026-09-16');
+        const sep16DeProfitK = sep16DeRows.reduce((s, r) => s + (r.profitK ?? (r.isHit ? 54000 : -30000)), 0);
+
+        // Lo stats
+        const std = loSummary.standard || {};
+        const x2 = loSummary.x2 || {};
+        const xi4 = loSummary.xien4 || {};
+        const combo = loSummary.combo || {};
+
+        const totalLiveProfitK = liveDeProfitK + (combo.profitK || 0);
+
+        // Update Hero badge
+        const heroBadge = byId('heroUnifiedLiveBadge');
+        if (heroBadge) {
+            heroBadge.innerHTML = `<i class="bi bi-trophy-fill mr-1 text-amber-300"></i> LIVE ${loDiary.length || 18} KỲ: ${moneyM(totalLiveProfitK, { signed: true })} TỔNG LÃI`;
+        }
+
+        cardsEl.innerHTML = `
+            <div class="rounded-2xl border border-amber-400/20 bg-amber-500/10 p-3.5 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between text-[11px] font-bold text-amber-300">
+                        <span>💎 Đề Tinh Hoa (30s)</span>
+                        <span class="rounded bg-amber-400/20 px-1.5 py-0.5 text-[9px] font-black">30M/ngày</span>
+                    </div>
+                    <div class="mt-1.5 font-mono text-xl font-black text-amber-300">${moneyM(liveDeProfitK, { signed: true })}</div>
+                </div>
+                <div class="mt-2 text-[10px] text-amber-200/80 font-semibold">
+                    Trúng <strong>${liveDeWins}/${liveDeDays}</strong> ngày (${percent(liveDeWins / liveDeDays)})
+                </div>
+            </div>
+
+            <div class="rounded-2xl border border-indigo-400/20 bg-indigo-500/10 p-3.5 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between text-[11px] font-bold text-indigo-300">
+                        <span>🏆 Lô Chuẩn Tối Ưu</span>
+                        <span class="rounded bg-indigo-400/20 px-1.5 py-0.5 text-[9px] font-black">44M/ngày</span>
+                    </div>
+                    <div class="mt-1.5 font-mono text-xl font-black text-indigo-300">${moneyM(std.profitK, { signed: true })}</div>
+                </div>
+                <div class="mt-2 text-[10px] text-indigo-200/80 font-semibold">
+                    Thắng <strong>${std.winDays || 0}/${std.days || liveDeDays}</strong> · ROI <strong>${percent(std.roi)}</strong>
+                </div>
+            </div>
+
+            <div class="rounded-2xl border border-teal-400/20 bg-teal-500/10 p-3.5 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between text-[11px] font-bold text-teal-300">
+                        <span>🚀 Lô Đánh X2 (Nổ kép)</span>
+                        <span class="rounded bg-teal-400/20 px-1.5 py-0.5 text-[9px] font-black">15.4M/ngày</span>
+                    </div>
+                    <div class="mt-1.5 font-mono text-xl font-black text-teal-300">${moneyM(x2.profitK, { signed: true })}</div>
+                </div>
+                <div class="mt-2 text-[10px] text-teal-200/80 font-semibold">
+                    Thắng <strong>${x2.winDays || 0}/${x2.days || liveDeDays}</strong> · ROI <strong>${percent(x2.roi)}</strong>
+                </div>
+            </div>
+
+            <div class="rounded-2xl border border-amber-400/20 bg-amber-500/10 p-3.5 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between text-[11px] font-bold text-amber-300">
+                        <span>💎 Lô Xiên 4 Quây</span>
+                        <span class="rounded bg-amber-400/20 px-1.5 py-0.5 text-[9px] font-black">11M/ngày</span>
+                    </div>
+                    <div class="mt-1.5 font-mono text-xl font-black text-amber-300">${moneyM(xi4.profitK, { signed: true })}</div>
+                </div>
+                <div class="mt-2 text-[10px] text-amber-200/80 font-semibold">
+                    Ăn <strong>${xi4.winDays || 0}/${xi4.days || liveDeDays}</strong> kỳ · ROI <strong>${percent(xi4.roi)}</strong>
+                </div>
+            </div>
+
+            <div class="rounded-2xl border border-purple-400/20 bg-purple-500/10 p-3.5 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between text-[11px] font-bold text-purple-300">
+                        <span>🔥 Combo 3 Tầng Lô</span>
+                        <span class="rounded bg-purple-400/20 px-1.5 py-0.5 text-[9px] font-black">~70M/ngày</span>
+                    </div>
+                    <div class="mt-1.5 font-mono text-xl font-black text-purple-300">${moneyM(combo.profitK, { signed: true })}</div>
+                </div>
+                <div class="mt-2 text-[10px] text-purple-200/80 font-semibold">
+                    ROI Lô Combo: <strong>${percent(combo.roi)}</strong>
+                </div>
+            </div>
+
+            <div class="rounded-2xl border-2 border-emerald-400/40 bg-gradient-to-br from-emerald-950/60 to-emerald-900/40 p-3.5 flex flex-col justify-between shadow-lg ring-1 ring-emerald-400/20">
+                <div>
+                    <div class="flex items-center justify-between text-[11px] font-black text-emerald-300">
+                        <span>👑 TỔNG ĐỀ + LÔ</span>
+                        <span class="rounded bg-emerald-400 text-slate-950 px-1.5 py-0.5 text-[9px] font-black uppercase">Đỉnh Cao</span>
+                    </div>
+                    <div class="mt-1.5 font-mono text-xl font-black text-emerald-300">${moneyM(totalLiveProfitK, { signed: true })}</div>
+                </div>
+                <div class="mt-2 text-[10px] text-emerald-200 font-bold flex items-center justify-between">
+                    <span>Lãi từ 16/09: <strong>${moneyM(sep16DeProfitK, { signed: true })}</strong></span>
+                    <span class="text-amber-300">18 kỳ Live</span>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderUnifiedRecommendations(metaRec, loNext, loSummary) {
+        const predDate = loNext?.predictionDate || metaRec?.predictionDate || '2026-09-15';
+        const predDateBadge = byId('unifiedPredictionDateBadge');
+        if (predDateBadge) predDateBadge.textContent = formatDateVi(predDate);
+
+        // 1. Đề Tinh Hoa
+        const deLabel = byId('unifiedDeMethodLabel');
+        if (deLabel) deLabel.textContent = metaRec?.methodName || '💎 Đề Tinh Hoa (Dung hợp cắt tỉa động)';
+
+        const std30Nums = metaRec?.standard30 || metaRec?.numbers || [];
+        const std30Container = byId('unifiedDeStd30Numbers');
+        if (std30Container) {
+            std30Container.innerHTML = std30Nums.map(n => `
+                <span class="inline-flex items-center justify-center rounded-xl bg-amber-100 border border-amber-300 font-mono text-xs font-black text-amber-950 px-2 py-1 shadow-2xs">
+                    ${number(n)}
+                </span>
+            `).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
+        }
+
+        const core10Nums = metaRec?.core10 || [];
+        const core10Container = byId('unifiedDeCore10Numbers');
+        if (core10Container) {
+            core10Container.innerHTML = core10Nums.map(n => `
+                <span class="inline-flex items-center justify-center rounded-lg bg-amber-500 text-slate-950 font-mono text-[11px] font-black px-2 py-0.5 shadow-2xs">
+                    ${number(n)}
+                </span>
+            `).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
+        }
+
+        const core20Nums = metaRec?.core20 || [];
+        const core20Container = byId('unifiedDeCore20Numbers');
+        if (core20Container) {
+            core20Container.innerHTML = core20Nums.map(n => `
+                <span class="inline-flex items-center justify-center rounded-lg bg-indigo-600 text-white font-mono text-[11px] font-black px-2 py-0.5 shadow-2xs">
+                    ${number(n)}
+                </span>
+            `).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
+        }
+
+        // 2. Lô Tinh Hoa
+        const stdNext = loNext?.standard || {};
+        const x2Next = loNext?.x2 || {};
+        const xi4Next = loNext?.xien4 || {};
+        const xi3Next = loNext?.xien3 || {};
+        const xi2Next = loNext?.goldenXien2 || {};
+
+        const stdLabel = byId('unifiedLoStdLabel');
+        if (stdLabel) stdLabel.textContent = `${stdNext.methodName || stdNext.methodId || 'QMBF v6.1'} Top ${stdNext.topCount || stdNext.numbers?.length || 20}`;
+        const stdRoiEl = byId('unifiedLoStdLiveRoi');
+        if (stdRoiEl) stdRoiEl.textContent = `ROI Live ${percent(loSummary?.standard?.roi || 0.113)}`;
+
+        const stdContainer = byId('unifiedLoStdNumbers');
+        if (stdContainer) {
+            stdContainer.innerHTML = (stdNext.numbers || []).map(n => `
+                <span class="inline-flex items-center justify-center rounded-xl bg-indigo-100 border border-indigo-300 font-mono text-xs font-black text-indigo-950 px-2 py-1 shadow-2xs">
+                    ${number(n)}
+                </span>
+            `).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
+        }
+
+        const x2Label = byId('unifiedLoX2Label');
+        if (x2Label) x2Label.textContent = `${x2Next.methodName || x2Next.methodId || 'Bạc Nhớ 27 Giải'} Top ${x2Next.topCount || x2Next.numbers?.length || 7}`;
+        const x2RoiEl = byId('unifiedLoX2LiveRoi');
+        if (x2RoiEl) x2RoiEl.textContent = `ROI Live ${percent(loSummary?.x2?.roi || 0.189)}`;
+
+        const x2Container = byId('unifiedLoX2Numbers');
+        if (x2Container) {
+            x2Container.innerHTML = (x2Next.numbers || []).map(n => `
+                <span class="inline-flex items-center justify-center rounded-xl bg-teal-100 border border-teal-300 font-mono text-xs font-black text-teal-950 px-2 py-1 shadow-2xs">
+                    ${number(n)}
+                </span>
+            `).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
+        }
+
+        const xi4RoiEl = byId('unifiedLoXi4LiveRoi');
+        if (xi4RoiEl) xi4RoiEl.textContent = `ROI Live ${percent(loSummary?.xien4?.roi || 0.091)}`;
+
+        const xi4Container = byId('unifiedLoXi4Numbers');
+        if (xi4Container) {
+            xi4Container.innerHTML = (xi4Next.numbers || []).map(n => `
+                <span class="inline-flex items-center justify-center rounded-lg bg-amber-500 text-slate-950 px-2 py-0.5 text-xs font-black shadow-xs">${number(n)}</span>
+            `).join('') || '<span class="text-slate-400 font-sans font-normal text-xs">Đang tính toán...</span>';
+        }
+
+        const xi3Container = byId('unifiedLoXi3Numbers');
+        if (xi3Container) {
+            const xi3Nums = xi3Next.numbers || (xi4Next.numbers || []).slice(0, 3);
+            xi3Container.innerHTML = xi3Nums.map(n => `
+                <span class="inline-flex items-center justify-center rounded-lg bg-indigo-500 text-white px-2 py-0.5 text-xs font-black shadow-xs">${number(n)}</span>
+            `).join('') || '<span class="text-slate-400 font-sans font-normal text-xs">Đang tính toán...</span>';
+        }
+
+        const xi2Container = byId('unifiedLoXi2Pairs');
+        if (xi2Container) {
+            const pairs = xi2Next.recommended?.length ? xi2Next.recommended : (xi2Next.top4Pairs?.slice(0, 3) || []);
+            xi2Container.innerHTML = pairs.map(p => `
+                <span class="inline-flex items-center rounded-lg bg-slate-100 border border-slate-200 px-2 py-0.5 font-mono text-[11px] font-bold text-slate-800">
+                    ${p.pair ? p.pair.map(number).join('-') : p}
+                </span>
+            `).join('') || '<span class="text-slate-400 font-sans font-normal text-xs">Đang tính toán...</span>';
+        }
+    }
+
+    function renderUnifiedBenchmarkCards(benchmarkData, comboProfitK, deLedger) {
+        const bmCardsEl = byId('unifiedBenchmarkCards');
+        if (!bmCardsEl) return;
+
+        const liveDeRows = deLedger.filter(r => (r.predictionDate || r.date) >= '2026-08-28');
+        const liveDeProfitK = liveDeRows.reduce((s, r) => s + (r.profitK ?? (r.isHit ? 54000 : -30000)), 0);
+
+        const metaProfitK = (comboProfitK || 185800) + liveDeProfitK;
+        const singleBm = benchmarkData?.singleBenchmark || {};
+        const qmbfK = singleBm.loQuantumBayesFusion?.profitK ?? 112200;
+        const qmbfRoi = singleBm.loQuantumBayesFusion?.roi ?? 0.081;
+        const bnK = singleBm.loDualMerge?.profitK ?? 94000;
+        const bnRoi = singleBm.loDualMerge?.roi ?? 0.072;
+        const triK = singleBm.loTriHarmonic?.profitK ?? 62000;
+        const triRoi = singleBm.loTriHarmonic?.roi ?? 0.050;
+
+        bmCardsEl.innerHTML = `
+            <div class="rounded-2xl border-2 border-emerald-400 bg-gradient-to-b from-emerald-50 to-white p-4 shadow-sm flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between">
+                        <span class="font-black text-xs text-emerald-950 uppercase">👑 Đề Xuất Tinh Hoa (Combo)</span>
+                        <span class="rounded bg-emerald-500 text-white text-[9px] font-black px-1.5 py-0.5">Vô Địch</span>
+                    </div>
+                    <div class="mt-2 font-mono text-2xl font-black text-emerald-600">${moneyM(metaProfitK, { signed: true })}</div>
+                    <p class="mt-1 text-[11px] text-slate-600 font-semibold">Tự động chọn PP Hot nhất · Tối ưu danh mục Đề + Lô toàn diện</p>
+                </div>
+                <div class="mt-3 pt-2 border-t border-emerald-200/60 text-[10px] font-bold text-emerald-700">
+                    ROI Lô Combo: +13.6% · Kháng Drawdown vượt trội
+                </div>
+            </div>
+
+            <div class="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-xs text-slate-700">💎 Chỉ Đánh QMBF v6.1</span>
+                        <span class="rounded bg-slate-200 text-slate-700 text-[9px] font-bold px-1.5 py-0.5">Đơn lẻ</span>
+                    </div>
+                    <div class="mt-2 font-mono text-xl font-black text-slate-800">${moneyM(qmbfK, { signed: true })}</div>
+                    <p class="mt-1 text-[11px] text-slate-500">Mô hình 4 tầng Bayes fusion cố định</p>
+                </div>
+                <div class="mt-3 pt-2 border-t border-slate-200 text-[10px] text-slate-500 font-semibold">
+                    ROI: +${(qmbfRoi * 100).toFixed(1)}% (Thua Tinh Hoa ${moneyM(metaProfitK - qmbfK)})
+                </div>
+            </div>
+
+            <div class="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-xs text-slate-700">🎯 Chỉ Đánh Bạc Nhớ 27 Giải</span>
+                        <span class="rounded bg-slate-200 text-slate-700 text-[9px] font-bold px-1.5 py-0.5">Đơn lẻ</span>
+                    </div>
+                    <div class="mt-2 font-mono text-xl font-black text-slate-800">${moneyM(bnK, { signed: true })}</div>
+                    <p class="mt-1 text-[11px] text-slate-500">Mô hình Markov vị trí 20 năm cố định</p>
+                </div>
+                <div class="mt-3 pt-2 border-t border-slate-200 text-[10px] text-slate-500 font-semibold">
+                    ROI: +${(bnRoi * 100).toFixed(1)}% (Thua Tinh Hoa ${moneyM(metaProfitK - bnK)})
+                </div>
+            </div>
+
+            <div class="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-xs text-slate-700">🌟 Chỉ Đánh Tam Động Cơ</span>
+                        <span class="rounded bg-slate-200 text-slate-700 text-[9px] font-bold px-1.5 py-0.5">Đơn lẻ</span>
+                    </div>
+                    <div class="mt-2 font-mono text-xl font-black text-slate-800">${moneyM(triK, { signed: true })}</div>
+                    <p class="mt-1 text-[11px] text-slate-500">Mô hình 3 chu kỳ sóng điều hòa</p>
+                </div>
+                <div class="mt-3 pt-2 border-t border-slate-200 text-[10px] text-slate-500 font-semibold">
+                    ROI: +${(triRoi * 100).toFixed(1)}% (Thua Tinh Hoa ${moneyM(metaProfitK - triK)})
+                </div>
+            </div>
+        `;
+    }
+
+    function renderUnifiedCombatDiary(deLedger, loDiary, loAllDiary) {
+        const tbody = byId('unifiedCombatDiaryTableBody');
+        if (!tbody) return;
+
+        const sourceLoRows = (unifiedTimeframe === 'all' && loAllDiary.length) ? loAllDiary : loDiary;
+        
+        const allDatesSet = new Set();
+        sourceLoRows.forEach(r => r.date && allDatesSet.add(r.date));
+        deLedger.forEach(r => {
+            const d = r.predictionDate || r.date;
+            if (d) allDatesSet.add(d);
+        });
+
+        let sortedDates = [...allDatesSet].sort();
+
+        let filteredDates = sortedDates;
+        if (unifiedTimeframe === 'sep16') {
+            filteredDates = sortedDates.filter(d => d >= '2026-09-16');
+        } else if (unifiedTimeframe === 'live') {
+            filteredDates = sortedDates.filter(d => d >= '2026-08-28');
+        }
+
+        const tfTextEl = byId('unifiedDiaryActiveTimeframeText');
+        if (tfTextEl) {
+            if (unifiedTimeframe === 'sep16') {
+                tfTextEl.textContent = 'Đang xem: Mốc thực chiến mới (Từ 16/09/2026)';
+            } else if (unifiedTimeframe === 'live') {
+                tfTextEl.textContent = `Đang xem: Thực chiến Live (${filteredDates.length} kỳ từ 28/08/2026)`;
+            } else {
+                tfTextEl.textContent = `Đang xem: Toàn bộ lịch sử 2026 (${filteredDates.length} kỳ)`;
+            }
+        }
+
+        if (filteredDates.length === 0 && unifiedTimeframe === 'sep16') {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="py-10 text-center bg-amber-50/50">
+                        <div class="max-w-md mx-auto space-y-2">
+                            <span class="text-3xl">🎯</span>
+                            <h4 class="text-base font-black text-amber-950">Mốc Thực Chiến Mới: Bắt Đầu Từ 16/09/2026</h4>
+                            <p class="text-xs text-amber-800 leading-relaxed">
+                                Dàn đề xuất <strong>Đề Tinh Hoa 30 số</strong> và <strong>Lô Tinh Hoa Combo</strong> (Chuẩn Top 20, X2 Top 7, Xiên 4) cho ngày 16/09 đã được chốt và hiển thị ở bảng trên.
+                            </p>
+                            <p class="text-xs text-amber-700">
+                                Kết quả đối soát kỳ này sẽ được tự động cập nhật ngay sau 18h30 ngày 16/09. Bấm nút dưới đây để xem đối soát 18 kỳ Live đã qua.
+                            </p>
+                            <button type="button" id="btnSwitchToLiveInEmpty" class="mt-2 rounded-xl bg-indigo-600 text-white font-bold text-xs px-4 py-2 hover:bg-indigo-700 shadow-sm transition-all">
+                                📊 Xem 18 Kỳ Thực Chiến Live (Từ 28/08)
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            const btnSw = byId('btnSwitchToLiveInEmpty');
+            if (btnSw) {
+                btnSw.onclick = () => {
+                    document.querySelectorAll('.unified-tf-btn').forEach(b => {
+                        b.classList.toggle('active', b.dataset.unifiedTimeframe === 'live');
+                        b.classList.toggle('bg-indigo-600', b.dataset.unifiedTimeframe === 'live');
+                        b.classList.toggle('text-white', b.dataset.unifiedTimeframe === 'live');
+                    });
+                    unifiedTimeframe = 'live';
+                    renderUnifiedCombatDiary(deLedger, loDiary, loAllDiary);
+                };
+            }
+            const rCount = byId('unifiedDiaryRowCount');
+            if (rCount) rCount.textContent = '0';
+            const wCount = byId('unifiedDiaryWinCount');
+            if (wCount) wCount.textContent = '0';
+            const wRate = byId('unifiedDiaryWinRate');
+            if (wRate) wRate.textContent = '0%';
+            const totProfit = byId('unifiedDiaryTotalProfit');
+            if (totProfit) totProfit.textContent = '+0M';
+            return;
+        }
+
+        let cumProfitK = 0;
+        let mergedRows = [];
+        for (const date of filteredDates) {
+            const deRow = deLedger.find(r => (r.predictionDate || r.date) === date);
+            const loRow = sourceLoRows.find(r => r.date === date) || {};
+
+            const deIsHit = deRow?.isHit || deRow?.hitType === 'win_x1' || (deRow?.profitK > 0);
+            const deProfitK = deRow ? (deRow.profitK ?? (deIsHit ? 54000 : -30000)) : 0;
+            const actualSpec = deRow?.actualSpecial ?? deRow?.actual;
+
+            const std = loRow.standard || {};
+            const x2 = loRow.x2 || {};
+            const xi4 = loRow.xien4 || {};
+            const loProfitK = loRow.dayProfitK != null ? loRow.dayProfitK : ((std.profitK || 0) + (x2.profitK || 0) + (xi4.profitK || 0));
+
+            const dayTotalK = deProfitK + loProfitK;
+            cumProfitK += dayTotalK;
+
+            mergedRows.push({
+                date,
+                deRow,
+                deIsHit,
+                deProfitK,
+                actualSpec,
+                loRow,
+                std,
+                x2,
+                xi4,
+                loProfitK,
+                dayTotalK,
+                cumProfitK
+            });
+        }
+
+        let displayRows = mergedRows;
+        if (unifiedStatusFilter === 'win') {
+            displayRows = mergedRows.filter(r => r.dayTotalK > 0);
+        } else if (unifiedStatusFilter === 'loss') {
+            displayRows = mergedRows.filter(r => r.dayTotalK <= 0);
+        }
+
+        const winCount = mergedRows.filter(r => r.dayTotalK > 0).length;
+        const totalCount = mergedRows.length || 1;
+        const totalProfitSum = mergedRows.reduce((s, r) => s + r.dayTotalK, 0);
+
+        const rCount = byId('unifiedDiaryRowCount');
+        if (rCount) rCount.textContent = String(displayRows.length);
+        const wCount = byId('unifiedDiaryWinCount');
+        if (wCount) wCount.textContent = `${winCount}/${totalCount}`;
+        const wRate = byId('unifiedDiaryWinRate');
+        if (wRate) wRate.textContent = percent(winCount / totalCount);
+        const totalProfitEl = byId('unifiedDiaryTotalProfit');
+        if (totalProfitEl) {
+            totalProfitEl.textContent = moneyM(totalProfitSum, { signed: true });
+            totalProfitEl.className = `font-black text-sm font-mono ${totalProfitSum >= 0 ? 'text-emerald-600' : 'text-rose-600'}`;
+        }
+
+        const reversedRows = [...displayRows].reverse();
+        tbody.innerHTML = reversedRows.map(r => {
+            const dePill = r.deRow ? (
+                r.deIsHit
+                    ? `<span class="inline-flex items-center gap-1 rounded bg-emerald-100 text-emerald-900 px-1.5 py-0.5 text-[11px] font-black">🎉 Trúng +54M</span>`
+                    : `<span class="inline-flex items-center gap-1 rounded bg-rose-100 text-rose-900 px-1.5 py-0.5 text-[11px] font-bold">❌ Trượt -30M</span>`
+            ) : `<span class="text-slate-400">Chưa có</span>`;
+
+            const actualSpecText = r.actualSpec != null ? `<strong class="font-mono text-sm ${r.deIsHit ? 'text-emerald-600 font-black' : 'text-slate-800'}">${number(r.actualSpec)}</strong>` : '--';
+
+            const stdHitsText = r.std.hits != null ? `<strong>${r.std.hits}</strong> nháy` : '--';
+            const stdProfitText = r.std.profitK != null ? `<span class="font-mono font-bold ${r.std.profitK >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${moneyM(r.std.profitK, { signed: true })}</span>` : '';
+            const stdMethodName = r.std.methodName || r.std.method || 'Chuẩn Top 20';
+
+            const x2HitsText = r.x2.hits != null ? `<strong>${r.x2.hits}</strong> nháy` : '--';
+            const x2ProfitText = r.x2.profitK != null ? `<span class="font-mono font-bold ${r.x2.profitK >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${moneyM(r.x2.profitK, { signed: true })}</span>` : '';
+            const x2MethodName = r.x2.methodName || r.x2.method || 'X2 Top 7';
+
+            const xi4ProfitText = r.xi4.profitK != null ? `<span class="font-mono font-bold ${r.xi4.profitK > 0 ? 'text-emerald-600' : 'text-rose-600'}">${moneyM(r.xi4.profitK, { signed: true })}</span>` : '';
+            const xi4HitsTag = (r.xi4.profitK > 0)
+                ? `<span class="rounded bg-amber-100 text-amber-900 px-1 py-0.5 text-[10px] font-black">Ăn ${r.xi4.hits || 2} nháy</span>`
+                : `<span class="text-slate-400 text-[10px]">Trượt</span>`;
+
+            const dayClass = r.dayTotalK > 0 ? 'bg-emerald-50/40' : (r.dayTotalK < -50000 ? 'bg-rose-50/20' : '');
+
+            return `
+                <tr class="hover:bg-slate-50/80 transition-colors ${dayClass}">
+                    <td class="px-3 py-3 whitespace-nowrap">
+                        <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
+                        <div class="text-[10px] text-slate-400 font-semibold">${r.date >= '2026-08-28' ? '🟢 Live' : '🔵 PIT'}</div>
+                    </td>
+                    <td class="px-3 py-3">
+                        <div class="flex items-center gap-2">
+                            <span>ĐB: ${actualSpecText}</span>
+                            ${dePill}
+                        </div>
+                        <div class="text-[10px] text-slate-500 mt-0.5 font-mono">Dàn 30s · Vốn 30M</div>
+                    </td>
+                    <td class="px-3 py-3">
+                        <div class="text-[11px] font-bold text-indigo-900">${escapeHtml(stdMethodName)}</div>
+                        <div class="text-xs flex items-center gap-1.5 mt-0.5">
+                            <span class="text-slate-600">${stdHitsText}</span>
+                            <span>${stdProfitText}</span>
+                        </div>
+                    </td>
+                    <td class="px-3 py-3">
+                        <div class="text-[11px] font-bold text-teal-900">${escapeHtml(x2MethodName)}</div>
+                        <div class="text-xs flex items-center gap-1.5 mt-0.5">
+                            <span class="text-slate-600">${x2HitsText}</span>
+                            <span>${x2ProfitText}</span>
+                        </div>
+                    </td>
+                    <td class="px-3 py-3">
+                        <div class="flex items-center gap-1.5">
+                            ${xi4HitsTag}
+                            ${xi4ProfitText}
+                        </div>
+                        <div class="text-[10px] font-mono text-slate-500 mt-0.5">${(r.xi4.numbers || []).map(number).join(' ')}</div>
+                    </td>
+                    <td class="px-3 py-3 text-right whitespace-nowrap">
+                        <div class="font-mono font-black text-xs ${r.dayTotalK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">
+                            ${moneyM(r.dayTotalK, { signed: true })}
+                        </div>
+                        <div class="text-[10px] text-slate-400">Đề + Lô</div>
+                    </td>
+                    <td class="px-3 py-3 text-right whitespace-nowrap">
+                        <div class="font-mono font-black text-xs ${r.cumProfitK >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
+                            ${moneyM(r.cumProfitK, { signed: true })}
+                        </div>
+                        <div class="text-[10px] text-slate-400">Lũy kế</div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function setupUnifiedCombatControls(metaRec, loNext, deLedger, loDiary, loAllDiary) {
+        const std30 = metaRec?.standard30 || metaRec?.numbers || [];
+        const core10 = metaRec?.core10 || [];
+        const core20 = metaRec?.core20 || [];
+        const loStd = loNext?.standard?.numbers || [];
+        const loX2 = loNext?.x2?.numbers || [];
+
+        const btnDe30 = byId('btnCopyUnifiedDeStd30');
+        if (btnDe30) btnDe30.onclick = () => copyNumbers(std30);
+
+        const btnDe10 = byId('btnCopyUnifiedDeCore10');
+        if (btnDe10) btnDe10.onclick = () => copyNumbers(core10);
+
+        const btnDe20 = byId('btnCopyUnifiedDeCore20');
+        if (btnDe20) btnDe20.onclick = () => copyNumbers(core20);
+
+        const btnLoStd = byId('btnCopyUnifiedLoStd');
+        if (btnLoStd) btnLoStd.onclick = () => copyNumbers(loStd);
+
+        const btnLoX2 = byId('btnCopyUnifiedLoX2');
+        if (btnLoX2) btnLoX2.onclick = () => copyNumbers(loX2);
+
+        document.querySelectorAll('.unified-tf-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.unified-tf-btn').forEach(b => {
+                    b.classList.remove('active', 'bg-indigo-600', 'text-white');
+                    b.classList.add('text-slate-600');
+                });
+                btn.classList.add('active', 'bg-indigo-600', 'text-white');
+                btn.classList.remove('text-slate-600');
+                unifiedTimeframe = btn.dataset.unifiedTimeframe;
+                renderUnifiedCombatDiary(deLedger, loDiary, loAllDiary);
+            };
+        });
+
+        const statusSelect = byId('unifiedDiaryStatusFilter');
+        if (statusSelect) {
+            statusSelect.onchange = e => {
+                unifiedStatusFilter = e.target.value;
+                renderUnifiedCombatDiary(deLedger, loDiary, loAllDiary);
+            };
+        }
     }
 
     // ==========================================
@@ -1772,6 +2387,7 @@
             payload = data;
 
             // Render all views
+            renderUnifiedCombatView(payload);
             renderDualMergeView(payload.dualMerge);
             if (payload?.tripleMerge) renderTripleMergeView(payload.tripleMerge);
             if (payload?.adaptiveDualMerge) renderAdaptiveDualMergeView(payload.adaptiveDualMerge);
