@@ -592,11 +592,54 @@ export async function GET(request) {
             });
 
             const stratMeta = LOTO_STRATEGY_META[strategy] || {};
-            const xien4Data = loData.summary?.xien4 || latestRec.xien4 || null;
-            const xien4LiveData = loData.summary?.xien4Live || null;
-            const rankDistribution = loData.summary?.rankDistribution || latestRec.rankDistribution || null;
-            const monthlyBreakdown = loData.summary?.monthly || latestRec.monthly || null;
-            const smartRecommendation = loData.summary?.smartRecommendation || latestRec.smartRecommendation || null;
+
+            const {
+                summarizeXien4,
+                computeRankDistribution,
+                computeMonthlyBreakdown,
+                buildSmartRecommendation
+            } = require('@/lib/services/loDualMergeAdvisorService');
+
+            const settledList = loData.records || loData.settledLedger || [];
+            let xien4Data = loData.summary?.xien4 || latestRec.xien4 || null;
+            if (!xien4Data || !xien4Data.x1) {
+                xien4Data = summarizeXien4(settledList);
+            }
+
+            let xien4LiveData = loData.summary?.xien4Live || null;
+            if (!xien4LiveData || !xien4LiveData.x1) {
+                const liveSettled = settledList.filter(r => r.isLiveSnapshot || (r.date || '') >= '2026-08-28');
+                xien4LiveData = summarizeXien4(liveSettled);
+            }
+
+            let rankDistribution = loData.summary?.rankDistribution || latestRec.rankDistribution || null;
+            if (!rankDistribution || !rankDistribution.all) {
+                rankDistribution = computeRankDistribution(settledList);
+            }
+
+            let monthlyBreakdown = loData.summary?.monthly || latestRec.monthly || null;
+            if (!monthlyBreakdown || !monthlyBreakdown.byTop) {
+                monthlyBreakdown = computeMonthlyBreakdown(settledList);
+            }
+
+            let smartRecommendation = loData.summary?.smartRecommendation || latestRec.smartRecommendation || null;
+            if (!smartRecommendation || !smartRecommendation.heatmap?.length || !smartRecommendation.liveTracking) {
+                smartRecommendation = buildSmartRecommendation(rankedNumbers, rankDistribution, summaryObj, xien4Data, settledList);
+            }
+
+            let xien4Next = latestRec.xien4;
+            if (!xien4Next || !xien4Next.x1?.numbers?.length) {
+                const top20Nums = rankedNumbers.slice(0, 20);
+                xien4Next = {
+                    x1: { id: 'x1', label: 'Xiên X1 (Rank 1-4)', numbers: top20Nums.slice(0, 4), stakeK: 11000 },
+                    x2: { id: 'x2', label: 'Xiên X2 (Rank 5-8)', numbers: top20Nums.slice(4, 8), stakeK: 11000 },
+                    x3: { id: 'x3', label: 'Xiên X3 (Rank 9-12)', numbers: top20Nums.slice(8, 12), stakeK: 11000 },
+                    x4: { id: 'x4', label: 'Xiên X4 (Rank 13-16)', numbers: top20Nums.slice(12, 16), stakeK: 11000 },
+                    x5: { id: 'x5', label: 'Xiên X5 (Rank 17-20)', numbers: top20Nums.slice(16, 20), stakeK: 11000 },
+                    recommendedCluster: smartRecommendation?.recommendedXien4?.clusterId || 'x1',
+                    allClustersStakeK: 55000
+                };
+            }
 
             return NextResponse.json({
                 success: true,
@@ -623,7 +666,7 @@ export async function GET(request) {
                     m2Label: latestRec.m2Label,
                     plainReasons: latestRec.plainReasons,
                     predictions,
-                    xien4: latestRec.xien4 || xien4Data,
+                    xien4: xien4Next || latestRec.xien4 || xien4Data,
                     goldenXien2: latestRec.goldenXien2 || null,
                     smartRecommendation,
                     rankDistribution

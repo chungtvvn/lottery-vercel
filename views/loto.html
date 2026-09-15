@@ -276,6 +276,77 @@
                     </h4>
                     <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 text-xs" id="lotoCuratedSuiteCards"></div>
                 </div>
+
+                <!-- Card 4: Đối Soát & Theo Dõi Thực Chiến Live Của Các Đề Xuất Hàng Ngày -->
+                <div class="rounded-2xl border border-indigo-200/80 bg-gradient-to-br from-indigo-50/40 via-white to-sky-50/30 p-5 shadow-xs">
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4">
+                        <div>
+                            <div class="inline-flex items-center gap-1.5 rounded-full bg-indigo-600 text-white px-3 py-0.5 text-xs font-black uppercase shadow-xs">
+                                <i class="bi bi-clock-history"></i> ĐỐI SOÁT & THEO DÕI THỰC CHIẾN LIVE THEO ĐỀ XUẤT HÀNG NGÀY
+                            </div>
+                            <p class="text-xs text-slate-600 mt-1">
+                                Thống kê thực tế kết quả từng ngày của Đề xuất X2 & Đề xuất Xiên 4 trong giai đoạn Thực Chiến Live (<span id="recLiveDaysText" class="font-bold text-slate-800">18 kỳ gần nhất</span>).
+                            </p>
+                        </div>
+                        <button type="button" id="btnToggleRecDiary" class="inline-flex items-center gap-1.5 self-start sm:self-auto rounded-xl border border-indigo-200 bg-white px-3 py-1.5 text-xs font-bold text-indigo-900 shadow-2xs hover:bg-indigo-50 transition cursor-pointer">
+                            <i class="bi bi-journal-text text-indigo-600"></i> <span id="btnToggleRecDiaryText">Xem Nhật Ký Chi Tiết Hàng Ngày</span> <i class="bi bi-chevron-down transition-transform duration-200" id="recDiaryChevron"></i>
+                        </button>
+                    </div>
+
+                    <!-- 3 KPI Cards for Recommended Methods -->
+                    <div class="grid gap-3 sm:grid-cols-3 mb-4">
+                        <!-- KPI Rec X2 -->
+                        <div class="rounded-xl border border-amber-200/80 bg-white p-3.5 shadow-2xs">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[11px] font-black uppercase text-amber-800">Hiệu Quả Đề Xuất X2</span>
+                                <span id="kpiRecX2Roi" class="font-mono text-[11px] font-black text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">+0.0%</span>
+                            </div>
+                            <div class="mt-2 text-xl font-black text-amber-900" id="kpiRecX2Profit">+0 K</div>
+                            <div class="mt-1 text-[11px] text-slate-500 font-medium" id="kpiRecX2Stats">Nổ: 0/0 kỳ · Vốn: 0K · Ăn: 0K</div>
+                        </div>
+
+                        <!-- KPI Rec Xien 4 -->
+                        <div class="rounded-xl border border-emerald-200/80 bg-white p-3.5 shadow-2xs">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[11px] font-black uppercase text-emerald-800">Hiệu Quả Đề Xuất Xiên 4</span>
+                                <span id="kpiRecX4Roi" class="font-mono text-[11px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">+0.0%</span>
+                            </div>
+                            <div class="mt-2 text-xl font-black text-emerald-900" id="kpiRecX4Profit">+0 K</div>
+                            <div class="mt-1 text-[11px] text-slate-500 font-medium" id="kpiRecX4Stats">Ăn &ge; 2/4: 0/0 ngày · Vốn: 0K · Ăn: 0K</div>
+                        </div>
+
+                        <!-- KPI Rec Combo (Cả 2) -->
+                        <div class="rounded-xl border border-indigo-200/80 bg-white p-3.5 shadow-2xs">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[11px] font-black uppercase text-indigo-800">Đánh Kết Hợp Cả 2 (Combo)</span>
+                                <span id="kpiRecComboRoi" class="font-mono text-[11px] font-black text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">+0.0%</span>
+                            </div>
+                            <div class="mt-2 text-xl font-black text-indigo-900" id="kpiRecComboProfit">+0 K</div>
+                            <div class="mt-1 text-[11px] text-slate-500 font-medium" id="kpiRecComboStats">Thắng: 0/0 ngày · Vốn: 0K · Ăn: 0K</div>
+                        </div>
+                    </div>
+
+                    <!-- Collapsible Diary Table -->
+                    <div id="recLiveDiaryContainer" class="hidden overflow-x-auto custom-scrollbar rounded-xl border border-slate-200 bg-white">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-200 bg-slate-50 text-[11px] font-black uppercase tracking-wider text-slate-600">
+                                    <th class="p-2.5 pl-3">Ngày</th>
+                                    <th class="p-2.5 text-center">ĐB</th>
+                                    <th class="p-2.5">Dàn Đề Xuất X2</th>
+                                    <th class="p-2.5 text-center">Nháy X2</th>
+                                    <th class="p-2.5 text-right">Lãi X2</th>
+                                    <th class="p-2.5">Cụm Xiên 4 Đề Xuất</th>
+                                    <th class="p-2.5 text-center">KQ Xiên</th>
+                                    <th class="p-2.5 text-right">Lãi Xiên 4</th>
+                                    <th class="p-2.5 text-right font-black">Tổng Lãi Ngày</th>
+                                    <th class="p-2.5 pr-3 text-right font-black">Lũy Kế Live</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recLiveDiaryTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -514,7 +585,7 @@
         </section>
     </main>
 
-    <script src="/js/loto.js?v=20260915-live-split-v2"></script>
+    <script src="/js/loto.js?v=20260915-rec-tracking-v3"></script>
 </body>
 
 </html>
