@@ -447,15 +447,6 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
       lines.push(`  💎 <b>Tứ Thủ Xiên 4 · ${escapeHtml(xi4MethodName)}</b> (11M${escapeHtml(roi)})`);
       lines.push(`     <b>${escapeHtml(formatNumberList(xi4Next.numbers))}</b>`);
     }
-
-    if (xi3Next?.numbers?.length) {
-      lines.push(`  🌟 <b>Tam Thủ Xiên 3</b> (4M · 4 vé): <b>${escapeHtml(formatNumberList(xi3Next.numbers))}</b>`);
-    }
-
-    const xi2Pairs = xi2Next?.recommended?.length ? xi2Next.recommended : (xi2Next?.top4Pairs?.slice(0, 3) || []);
-    if (xi2Pairs.length) {
-      lines.push(`  🎲 <b>Xiên 2 Vàng</b> (1M/cặp): <b>${escapeHtml(xi2Pairs.map(p => p.pair || p).join(', '))}</b>`);
-    }
     lines.push('');
   }
 

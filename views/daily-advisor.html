@@ -270,25 +270,30 @@
                                 <div id="unifiedLoX2Numbers" class="mt-2 flex flex-wrap gap-1.5 font-mono text-xs font-black text-slate-900"></div>
                             </div>
 
-                            <!-- 3. Đánh Lô Xiên -->
-                            <div class="mt-3 rounded-2xl bg-amber-500/10 border border-amber-300 p-3.5 shadow-xs">
+                            <!-- 3. Đánh Lô Xiên (Chỉ chọn 4 số vàng tốt nhất) -->
+                            <div class="mt-3 rounded-2xl bg-amber-500/10 border-2 border-amber-400 p-4 shadow-xs">
                                 <div class="flex items-center justify-between">
-                                    <span class="text-xs font-black uppercase text-amber-950">💎 3. Đề Xuất Đánh Lô Xiên Tuyển Chọn</span>
-                                    <span class="text-[10px] font-black rounded bg-amber-200 text-amber-950 px-2 py-0.5" id="unifiedLoXi4LiveRoi">ROI +9.1%</span>
+                                    <div>
+                                        <span class="text-xs font-black uppercase text-amber-950 flex items-center gap-1.5">
+                                            💎 3. Đề Xuất Lô Xiên: Tứ Thủ Xiên 4 Tinh Hoa
+                                        </span>
+                                        <p class="text-[11px] font-semibold text-amber-900 mt-0.5">
+                                            4 số vàng hiệp đồng cao nhất · Đánh quây 11 vé (1 vé X4 + 4 vé X3 + 6 vé X2, vốn 11M)
+                                        </p>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-[10px] font-black rounded bg-amber-200 text-amber-950 px-2 py-0.5" id="unifiedLoXi4LiveRoi">ROI Live +9.1%</span>
+                                        <button type="button" id="btnCopyUnifiedLoXi4" class="rounded bg-amber-500 hover:bg-amber-600 text-slate-950 px-2.5 py-1 text-xs font-black transition-all shadow-xs">Copy 4 Số</button>
+                                    </div>
                                 </div>
-                                <div class="mt-2 space-y-1.5 text-xs">
-                                    <div class="flex items-center gap-2">
-                                        <span class="font-bold text-amber-900 shrink-0">Tứ Thủ Xiên 4 (11M):</span>
-                                        <div id="unifiedLoXi4Numbers" class="flex flex-wrap gap-1.5 font-mono font-black text-amber-950"></div>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="font-bold text-indigo-900 shrink-0">Tam Thủ Xiên 3 (4M):</span>
-                                        <div id="unifiedLoXi3Numbers" class="flex flex-wrap gap-1.5 font-mono font-black text-indigo-950"></div>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="font-bold text-slate-700 shrink-0">Xiên 2 Vàng (1M):</span>
-                                        <div id="unifiedLoXi2Pairs" class="flex flex-wrap gap-1 font-mono font-bold text-slate-900 text-[11px]"></div>
-                                    </div>
+                                <div class="mt-3 flex flex-wrap items-center gap-2.5">
+                                    <span class="text-xs font-black text-amber-950 uppercase tracking-wide">Bộ 4 Số Vàng:</span>
+                                    <div id="unifiedLoXi4Numbers" class="flex flex-wrap gap-2"></div>
+                                </div>
+                                <div class="mt-2.5 pt-2 border-t border-amber-300/60 flex flex-wrap items-center justify-between text-[11px] text-amber-900 font-medium">
+                                    <span>🎯 Ăn 2 con: Có lãi vé X2 (+1M)</span>
+                                    <span>🔥 Ăn 3 con: Nổ X3 + X2 (+29M)</span>
+                                    <span>💥 Ăn 4 con: Đại thắng (+250M)</span>
                                 </div>
                             </div>
                         </div>
@@ -336,10 +341,10 @@
                             </span>
                             <span class="text-xs font-bold text-slate-400">|</span>
                             <span id="unifiedDiaryActiveTimeframeText" class="text-xs font-bold text-indigo-700">
-                                Đang xem: Thực chiến Live (18 kỳ từ 28/08/2026)
+                                Đang xem: Mốc thực chiến mới (Từ 16/09/2026)
                             </span>
                         </div>
-                        <h3 class="text-lg font-black text-slate-900 mt-1">
+                        <h3 class="text-lg font-black text-slate-900 mt-1" id="unifiedDiaryHeadingTitle">
                             Nhật Ký & Đối Soát Chi Tiết Từng Ngày Theo Đề Xuất (Đề + Lô)
                         </h3>
                         <p class="text-xs text-slate-500 mt-0.5">
@@ -350,11 +355,11 @@
                     <!-- Timeframe & Filter controls -->
                     <div class="flex flex-wrap items-center gap-2">
                         <div class="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1">
-                            <button type="button" data-unified-timeframe="sep16" class="unified-tf-btn rounded-lg px-3 py-1.5 text-xs font-black transition-all text-slate-600 hover:text-slate-900">
+                            <button type="button" data-unified-timeframe="sep16" class="unified-tf-btn active rounded-lg bg-indigo-600 text-white px-3 py-1.5 text-xs font-black shadow-xs transition-all">
                                 🎯 Từ 16/09/2026 (Mốc mới)
                             </button>
-                            <button type="button" data-unified-timeframe="live" class="unified-tf-btn active rounded-lg bg-indigo-600 text-white px-3 py-1.5 text-xs font-black shadow-xs transition-all">
-                                📊 Live (Từ 28/08 - 18 kỳ)
+                            <button type="button" data-unified-timeframe="live" class="unified-tf-btn rounded-lg px-3 py-1.5 text-xs font-black transition-all text-slate-600 hover:text-slate-900">
+                                📊 Live (19 kỳ đến 15/09)
                             </button>
                             <button type="button" data-unified-timeframe="all" class="unified-tf-btn rounded-lg px-3 py-1.5 text-xs font-black transition-all text-slate-600 hover:text-slate-900">
                                 📅 Tất cả 2026
@@ -369,6 +374,25 @@
                     </div>
                 </div>
 
+                <!-- Category Sub-tabs: Phân tách theo từng loại -->
+                <div class="mt-4 flex flex-wrap items-center gap-1.5 border-b border-slate-100 pb-3.5" id="diaryCategoryTabs">
+                    <button type="button" data-diary-cat="all" class="diary-cat-btn active rounded-xl bg-slate-900 text-white font-black text-xs px-3.5 py-2 transition-all shadow-xs flex items-center gap-1.5">
+                        <i class="bi bi-layers-fill"></i> 📊 Tổng Hợp (Đề + Lô)
+                    </button>
+                    <button type="button" data-diary-cat="de" class="diary-cat-btn rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2 transition-all flex items-center gap-1.5">
+                        <i class="bi bi-gem"></i> 💎 Đề Tinh Hoa (Dàn 30s)
+                    </button>
+                    <button type="button" data-diary-cat="loStd" class="diary-cat-btn rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2 transition-all flex items-center gap-1.5">
+                        <i class="bi bi-trophy"></i> 🏆 Lô Chuẩn (Top 20)
+                    </button>
+                    <button type="button" data-diary-cat="loX2" class="diary-cat-btn rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2 transition-all flex items-center gap-1.5">
+                        <i class="bi bi-lightning-charge"></i> 🚀 Lô Đánh X2 (Top 7)
+                    </button>
+                    <button type="button" data-diary-cat="loXi4" class="diary-cat-btn rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2 transition-all flex items-center gap-1.5">
+                        <i class="bi bi-stars"></i> 💎 Lô Xiên 4 (Tứ Thủ Quây)
+                    </button>
+                </div>
+
                 <!-- Live Summary Pill in Table Header -->
                 <div class="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-slate-50 border border-slate-200/80 p-3.5 text-xs">
                     <div class="flex items-center gap-3">
@@ -377,14 +401,14 @@
                         <span>Tỷ lệ thắng: <strong class="font-bold text-emerald-600" id="unifiedDiaryWinRate">0%</strong></span>
                     </div>
                     <div class="flex items-center gap-3 font-mono">
-                        <span>Tổng Lãi Trong Mốc: <strong class="font-black text-emerald-600 text-sm" id="unifiedDiaryTotalProfit">+0M</strong></span>
+                        <span id="unifiedDiaryProfitLabel">Tổng Lãi Trong Mốc:</span> <strong class="font-black text-emerald-600 text-sm" id="unifiedDiaryTotalProfit">+0M</strong>
                     </div>
                 </div>
 
                 <!-- Table Content -->
                 <div class="mt-4 overflow-x-auto custom-scrollbar">
                     <table class="w-full text-left text-xs border-collapse">
-                        <thead>
+                        <thead id="unifiedCombatDiaryTableHead">
                             <tr class="border-b border-slate-200 bg-slate-100/70 text-slate-600 uppercase font-black tracking-wider text-[10px]">
                                 <th class="px-3 py-3">Ngày</th>
                                 <th class="px-3 py-3">💎 Đề Tinh Hoa (Dàn 30 số)</th>

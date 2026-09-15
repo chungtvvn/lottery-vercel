@@ -20,7 +20,8 @@
 
     let payload = null;
     let currentMainTab = 'unifiedCombat'; // 'unifiedCombat' | 'dualMerge'
-    let unifiedTimeframe = 'live'; // 'sep16' | 'live' | 'all'
+    let unifiedTimeframe = 'sep16'; // 'sep16' | 'live' | 'all'
+    let currentDiaryCategory = 'all'; // 'all' | 'de' | 'loStd' | 'loX2' | 'loXi4'
     let unifiedStatusFilter = 'all'; // 'all' | 'win' | 'loss'
     let dualMergeLogLimit = '30'; // Mặc định 30 ngày gần nhất
     let dualMergeFilterStatus = 'live'; // 'live' | 'all' | 'pit' | 'win_x3' | 'win_x2' | 'win_x1' | 'loss'
@@ -313,7 +314,7 @@
     }
 
     function renderUnifiedRecommendations(metaRec, loNext, loSummary) {
-        const predDate = loNext?.predictionDate || metaRec?.predictionDate || '2026-09-15';
+        const predDate = loNext?.predictionDate || metaRec?.predictionDate || '2026-09-16';
         const predDateBadge = byId('unifiedPredictionDateBadge');
         if (predDateBadge) predDateBadge.textContent = formatDateVi(predDate);
 
@@ -325,7 +326,7 @@
         const std30Container = byId('unifiedDeStd30Numbers');
         if (std30Container) {
             std30Container.innerHTML = std30Nums.map(n => `
-                <span class="inline-flex items-center justify-center rounded-xl bg-amber-100 border border-amber-300 font-mono text-xs font-black text-amber-950 px-2 py-1 shadow-2xs">
+                <span class="inline-flex items-center justify-center rounded-xl bg-amber-400 border border-amber-500 font-mono text-xs font-black text-slate-950 px-2.5 py-1.5 shadow-xs hover:scale-105 transition-all">
                     ${number(n)}
                 </span>
             `).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
@@ -335,7 +336,7 @@
         const core10Container = byId('unifiedDeCore10Numbers');
         if (core10Container) {
             core10Container.innerHTML = core10Nums.map(n => `
-                <span class="inline-flex items-center justify-center rounded-lg bg-amber-500 text-slate-950 font-mono text-[11px] font-black px-2 py-0.5 shadow-2xs">
+                <span class="inline-flex items-center justify-center rounded-lg bg-amber-500 text-slate-950 font-mono text-[11px] font-black px-2 py-0.5 shadow-xs hover:scale-105 transition-all">
                     ${number(n)}
                 </span>
             `).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
@@ -345,7 +346,7 @@
         const core20Container = byId('unifiedDeCore20Numbers');
         if (core20Container) {
             core20Container.innerHTML = core20Nums.map(n => `
-                <span class="inline-flex items-center justify-center rounded-lg bg-indigo-600 text-white font-mono text-[11px] font-black px-2 py-0.5 shadow-2xs">
+                <span class="inline-flex items-center justify-center rounded-lg bg-indigo-700 text-white font-mono text-[11px] font-black px-2 py-0.5 shadow-xs hover:scale-105 transition-all">
                     ${number(n)}
                 </span>
             `).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
@@ -355,8 +356,6 @@
         const stdNext = loNext?.standard || {};
         const x2Next = loNext?.x2 || {};
         const xi4Next = loNext?.xien4 || {};
-        const xi3Next = loNext?.xien3 || {};
-        const xi2Next = loNext?.goldenXien2 || {};
 
         const stdLabel = byId('unifiedLoStdLabel');
         if (stdLabel) stdLabel.textContent = `${stdNext.methodName || stdNext.methodId || 'QMBF v6.1'} Top ${stdNext.topCount || stdNext.numbers?.length || 20}`;
@@ -366,7 +365,7 @@
         const stdContainer = byId('unifiedLoStdNumbers');
         if (stdContainer) {
             stdContainer.innerHTML = (stdNext.numbers || []).map(n => `
-                <span class="inline-flex items-center justify-center rounded-xl bg-indigo-100 border border-indigo-300 font-mono text-xs font-black text-indigo-950 px-2 py-1 shadow-2xs">
+                <span class="inline-flex items-center justify-center rounded-xl bg-slate-900 border border-slate-700 font-mono text-xs font-black text-white px-2.5 py-1.5 shadow-sm hover:scale-105 transition-all">
                     ${number(n)}
                 </span>
             `).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
@@ -380,7 +379,7 @@
         const x2Container = byId('unifiedLoX2Numbers');
         if (x2Container) {
             x2Container.innerHTML = (x2Next.numbers || []).map(n => `
-                <span class="inline-flex items-center justify-center rounded-xl bg-teal-100 border border-teal-300 font-mono text-xs font-black text-teal-950 px-2 py-1 shadow-2xs">
+                <span class="inline-flex items-center justify-center rounded-xl bg-emerald-700 border border-emerald-600 font-mono text-xs font-black text-white px-2.5 py-1.5 shadow-sm hover:scale-105 transition-all">
                     ${number(n)}
                 </span>
             `).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
@@ -391,27 +390,23 @@
 
         const xi4Container = byId('unifiedLoXi4Numbers');
         if (xi4Container) {
-            xi4Container.innerHTML = (xi4Next.numbers || []).map(n => `
-                <span class="inline-flex items-center justify-center rounded-lg bg-amber-500 text-slate-950 px-2 py-0.5 text-xs font-black shadow-xs">${number(n)}</span>
-            `).join('') || '<span class="text-slate-400 font-sans font-normal text-xs">Đang tính toán...</span>';
-        }
-
-        const xi3Container = byId('unifiedLoXi3Numbers');
-        if (xi3Container) {
-            const xi3Nums = xi3Next.numbers || (xi4Next.numbers || []).slice(0, 3);
-            xi3Container.innerHTML = xi3Nums.map(n => `
-                <span class="inline-flex items-center justify-center rounded-lg bg-indigo-500 text-white px-2 py-0.5 text-xs font-black shadow-xs">${number(n)}</span>
-            `).join('') || '<span class="text-slate-400 font-sans font-normal text-xs">Đang tính toán...</span>';
-        }
-
-        const xi2Container = byId('unifiedLoXi2Pairs');
-        if (xi2Container) {
-            const pairs = xi2Next.recommended?.length ? xi2Next.recommended : (xi2Next.top4Pairs?.slice(0, 3) || []);
-            xi2Container.innerHTML = pairs.map(p => `
-                <span class="inline-flex items-center rounded-lg bg-slate-100 border border-slate-200 px-2 py-0.5 font-mono text-[11px] font-bold text-slate-800">
-                    ${p.pair ? p.pair.map(number).join('-') : p}
+            const xi4Nums = xi4Next.numbers || [];
+            xi4Container.innerHTML = xi4Nums.map(n => `
+                <span class="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-amber-500 to-amber-400 border-2 border-amber-600 text-slate-950 px-4 py-2 text-base font-mono font-black shadow-md hover:scale-110 transition-all">
+                    ${number(n)}
                 </span>
             `).join('') || '<span class="text-slate-400 font-sans font-normal text-xs">Đang tính toán...</span>';
+        }
+
+        const btnCopyXi4 = byId('btnCopyUnifiedLoXi4');
+        if (btnCopyXi4) {
+            btnCopyXi4.onclick = () => {
+                const nums = (xi4Next.numbers || []).map(number).join(', ');
+                if (nums) {
+                    navigator.clipboard.writeText(nums);
+                    showToast(`Đã copy 4 số Tứ Thủ Xiên 4: ${nums}`);
+                }
+            };
         }
     }
 
@@ -494,6 +489,88 @@
         const tbody = byId('unifiedCombatDiaryTableBody');
         if (!tbody) return;
 
+        const thead = byId('unifiedCombatDiaryTableHead');
+        const headingTitle = byId('unifiedDiaryHeadingTitle');
+        const profitLabel = byId('unifiedDiaryProfitLabel');
+
+        const TITLES_MAP = {
+            all: 'Nhật Ký & Đối Soát Chi Tiết Từng Ngày Theo Đề Xuất (Đề + Lô)',
+            de: 'Nhật Ký Đối Soát: 💎 Đề Tinh Hoa (Dàn 30 Số VIP)',
+            loStd: 'Nhật Ký Đối Soát: 🏆 Lô Chuẩn Tối Ưu (Top 20 Số Quán Quân)',
+            loX2: 'Nhật Ký Đối Soát: 🚀 Lô Đánh X2 (Top 7 Số Nhân Đôi Cược)',
+            loXi4: 'Nhật Ký Đối Soát: 💎 Lô Xiên 4 (Tứ Thủ Quây 11 Vé)'
+        };
+        const PROFIT_LABELS_MAP = {
+            all: 'Tổng Lãi Trong Mốc (Đề + Lô):',
+            de: 'Tổng Lãi Đề Tinh Hoa:',
+            loStd: 'Tổng Lãi Lô Chuẩn (Top 20):',
+            loX2: 'Tổng Lãi Lô Đánh X2 (Top 7):',
+            loXi4: 'Tổng Lãi Lô Xiên 4 (Quây):'
+        };
+
+        if (headingTitle) headingTitle.textContent = TITLES_MAP[currentDiaryCategory] || TITLES_MAP.all;
+        if (profitLabel) profitLabel.textContent = PROFIT_LABELS_MAP[currentDiaryCategory] || PROFIT_LABELS_MAP.all;
+
+        if (thead) {
+            if (currentDiaryCategory === 'de') {
+                thead.innerHTML = `
+                    <tr class="border-b border-amber-200 bg-amber-50/80 text-amber-950 uppercase font-black tracking-wider text-[10px]">
+                        <th class="px-3 py-3">Ngày</th>
+                        <th class="px-3 py-3">Giải ĐB Về</th>
+                        <th class="px-3 py-3">Dàn Đề Đề Xuất (30 số)</th>
+                        <th class="px-3 py-3">Kết Quả Đề</th>
+                        <th class="px-3 py-3 text-right">Lãi/Lỗ Đề (Vốn 30M)</th>
+                        <th class="px-3 py-3 text-right">Lũy Kế Đề</th>
+                    </tr>
+                `;
+            } else if (currentDiaryCategory === 'loStd') {
+                thead.innerHTML = `
+                    <tr class="border-b border-indigo-200 bg-indigo-50/80 text-indigo-950 uppercase font-black tracking-wider text-[10px]">
+                        <th class="px-3 py-3">Ngày</th>
+                        <th class="px-3 py-3">Phương Pháp Quán Quân</th>
+                        <th class="px-3 py-3">Dàn 20 Số Đề Xuất</th>
+                        <th class="px-3 py-3">Số Nháy Về</th>
+                        <th class="px-3 py-3 text-right">Lãi/Lỗ (Vốn 44M)</th>
+                        <th class="px-3 py-3 text-right">Lũy Kế Lô Chuẩn</th>
+                    </tr>
+                `;
+            } else if (currentDiaryCategory === 'loX2') {
+                thead.innerHTML = `
+                    <tr class="border-b border-teal-200 bg-teal-50/80 text-teal-950 uppercase font-black tracking-wider text-[10px]">
+                        <th class="px-3 py-3">Ngày</th>
+                        <th class="px-3 py-3">Phương Pháp Đánh X2</th>
+                        <th class="px-3 py-3">Dàn 7 Số Đề Xuất (Nhân Đôi)</th>
+                        <th class="px-3 py-3">Số Nháy Về</th>
+                        <th class="px-3 py-3 text-right">Lãi/Lỗ (Vốn 30.8M)</th>
+                        <th class="px-3 py-3 text-right">Lũy Kế Lô X2</th>
+                    </tr>
+                `;
+            } else if (currentDiaryCategory === 'loXi4') {
+                thead.innerHTML = `
+                    <tr class="border-b border-amber-200 bg-amber-50/80 text-amber-950 uppercase font-black tracking-wider text-[10px]">
+                        <th class="px-3 py-3">Ngày</th>
+                        <th class="px-3 py-3">Bộ 4 Số Vàng Tứ Thủ</th>
+                        <th class="px-3 py-3">Số Con Về Trong Bộ</th>
+                        <th class="px-3 py-3">Thể Thức Ăn Vé</th>
+                        <th class="px-3 py-3 text-right">Lãi/Lỗ (Vốn 11M)</th>
+                        <th class="px-3 py-3 text-right">Lũy Kế Xiên 4</th>
+                    </tr>
+                `;
+            } else {
+                thead.innerHTML = `
+                    <tr class="border-b border-slate-200 bg-slate-100/70 text-slate-600 uppercase font-black tracking-wider text-[10px]">
+                        <th class="px-3 py-3">Ngày</th>
+                        <th class="px-3 py-3">💎 Đề Tinh Hoa (Dàn 30 số)</th>
+                        <th class="px-3 py-3">🏆 Lô Chuẩn (Top 20)</th>
+                        <th class="px-3 py-3">🚀 Lô X2 (Top 7)</th>
+                        <th class="px-3 py-3">💎 Lô Xiên 4 (Quây)</th>
+                        <th class="px-3 py-3 text-right">Tổng Ngày</th>
+                        <th class="px-3 py-3 text-right">Lũy Kế Mốc</th>
+                    </tr>
+                `;
+            }
+        }
+
         const sourceLoRows = (unifiedTimeframe === 'all' && loAllDiary.length) ? loAllDiary : loDiary;
         
         const allDatesSet = new Set();
@@ -517,7 +594,7 @@
             if (unifiedTimeframe === 'sep16') {
                 tfTextEl.textContent = 'Đang xem: Mốc thực chiến mới (Từ 16/09/2026)';
             } else if (unifiedTimeframe === 'live') {
-                tfTextEl.textContent = `Đang xem: Thực chiến Live (${filteredDates.length} kỳ từ 28/08/2026)`;
+                tfTextEl.textContent = `Đang xem: Thực chiến Live (${filteredDates.length} kỳ từ 28/08 đến 15/09)`;
             } else {
                 tfTextEl.textContent = `Đang xem: Toàn bộ lịch sử 2026 (${filteredDates.length} kỳ)`;
             }
@@ -531,13 +608,13 @@
                             <span class="text-3xl">🎯</span>
                             <h4 class="text-base font-black text-amber-950">Mốc Thực Chiến Mới: Bắt Đầu Từ 16/09/2026</h4>
                             <p class="text-xs text-amber-800 leading-relaxed">
-                                Dàn đề xuất <strong>Đề Tinh Hoa 30 số</strong> và <strong>Lô Tinh Hoa Combo</strong> (Chuẩn Top 20, X2 Top 7, Xiên 4) cho ngày 16/09 đã được chốt và hiển thị ở bảng trên.
+                                Dàn đề xuất <strong>Đề Tinh Hoa 30 số</strong> và <strong>Lô Tinh Hoa Combo</strong> (Chuẩn Top 20, X2 Top 7, Xiên 4) cho ngày 16/09 đã được chốt và hiển thị ở bảng trên. Lũy kế khởi điểm tính từ <strong>0đ</strong>.
                             </p>
                             <p class="text-xs text-amber-700">
-                                Kết quả đối soát kỳ này sẽ được tự động cập nhật ngay sau 18h30 ngày 16/09. Bấm nút dưới đây để xem đối soát 18 kỳ Live đã qua.
+                                Kết quả đối soát kỳ này sẽ được tự động cập nhật ngay sau 18h30 ngày 16/09. Bấm nút dưới đây để xem đối soát 19 kỳ Live đã qua.
                             </p>
                             <button type="button" id="btnSwitchToLiveInEmpty" class="mt-2 rounded-xl bg-indigo-600 text-white font-bold text-xs px-4 py-2 hover:bg-indigo-700 shadow-sm transition-all">
-                                📊 Xem 18 Kỳ Thực Chiến Live (Từ 28/08)
+                                📊 Xem 19 Kỳ Thực Chiến Live (Từ 28/08 - 15/09)
                             </button>
                         </div>
                     </td>
@@ -558,7 +635,7 @@
             const rCount = byId('unifiedDiaryRowCount');
             if (rCount) rCount.textContent = '0';
             const wCount = byId('unifiedDiaryWinCount');
-            if (wCount) wCount.textContent = '0';
+            if (wCount) wCount.textContent = '0/0';
             const wRate = byId('unifiedDiaryWinRate');
             if (wRate) wRate.textContent = '0%';
             const totProfit = byId('unifiedDiaryTotalProfit');
@@ -567,6 +644,11 @@
         }
 
         let cumProfitK = 0;
+        let cumDeProfitK = 0;
+        let cumStdProfitK = 0;
+        let cumX2ProfitK = 0;
+        let cumXi4ProfitK = 0;
+
         let mergedRows = [];
         for (const date of filteredDates) {
             const deRow = deLedger.find(r => (r.predictionDate || r.date) === date);
@@ -579,52 +661,288 @@
             const std = loRow.standard || {};
             const x2 = loRow.x2 || {};
             const xi4 = loRow.xien4 || {};
-            const loProfitK = loRow.dayProfitK != null ? loRow.dayProfitK : ((std.profitK || 0) + (x2.profitK || 0) + (xi4.profitK || 0));
+            const stdProfitK = std.profitK || 0;
+            const x2ProfitK = x2.profitK || 0;
+            const xi4ProfitK = xi4.profitK || 0;
 
+            const loProfitK = loRow.dayProfitK != null ? loRow.dayProfitK : (stdProfitK + x2ProfitK + xi4ProfitK);
             const dayTotalK = deProfitK + loProfitK;
+
             cumProfitK += dayTotalK;
+            cumDeProfitK += deProfitK;
+            cumStdProfitK += stdProfitK;
+            cumX2ProfitK += x2ProfitK;
+            cumXi4ProfitK += xi4ProfitK;
 
             mergedRows.push({
                 date,
                 deRow,
                 deIsHit,
                 deProfitK,
+                cumDeProfitK,
                 actualSpec,
                 loRow,
                 std,
+                cumStdProfitK,
                 x2,
+                cumX2ProfitK,
                 xi4,
+                cumXi4ProfitK,
                 loProfitK,
                 dayTotalK,
                 cumProfitK
             });
         }
 
+        // Category-based filter evaluation
         let displayRows = mergedRows;
         if (unifiedStatusFilter === 'win') {
-            displayRows = mergedRows.filter(r => r.dayTotalK > 0);
+            displayRows = mergedRows.filter(r => {
+                if (currentDiaryCategory === 'de') return r.deProfitK > 0;
+                if (currentDiaryCategory === 'loStd') return (r.std.profitK || 0) > 0;
+                if (currentDiaryCategory === 'loX2') return (r.x2.profitK || 0) > 0;
+                if (currentDiaryCategory === 'loXi4') return (r.xi4.profitK || 0) > 0;
+                return r.dayTotalK > 0;
+            });
         } else if (unifiedStatusFilter === 'loss') {
-            displayRows = mergedRows.filter(r => r.dayTotalK <= 0);
+            displayRows = mergedRows.filter(r => {
+                if (currentDiaryCategory === 'de') return r.deProfitK <= 0;
+                if (currentDiaryCategory === 'loStd') return (r.std.profitK || 0) <= 0;
+                if (currentDiaryCategory === 'loX2') return (r.x2.profitK || 0) <= 0;
+                if (currentDiaryCategory === 'loXi4') return (r.xi4.profitK || 0) <= 0;
+                return r.dayTotalK <= 0;
+            });
         }
 
-        const winCount = mergedRows.filter(r => r.dayTotalK > 0).length;
+        // Compute category metrics for KPI header
+        let catWinCount = 0;
+        let catTotalProfit = 0;
         const totalCount = mergedRows.length || 1;
-        const totalProfitSum = mergedRows.reduce((s, r) => s + r.dayTotalK, 0);
+
+        mergedRows.forEach(r => {
+            if (currentDiaryCategory === 'de') {
+                if (r.deProfitK > 0) catWinCount++;
+                catTotalProfit += r.deProfitK;
+            } else if (currentDiaryCategory === 'loStd') {
+                if ((r.std.profitK || 0) > 0) catWinCount++;
+                catTotalProfit += (r.std.profitK || 0);
+            } else if (currentDiaryCategory === 'loX2') {
+                if ((r.x2.profitK || 0) > 0) catWinCount++;
+                catTotalProfit += (r.x2.profitK || 0);
+            } else if (currentDiaryCategory === 'loXi4') {
+                if ((r.xi4.profitK || 0) > 0) catWinCount++;
+                catTotalProfit += (r.xi4.profitK || 0);
+            } else {
+                if (r.dayTotalK > 0) catWinCount++;
+                catTotalProfit += r.dayTotalK;
+            }
+        });
 
         const rCount = byId('unifiedDiaryRowCount');
         if (rCount) rCount.textContent = String(displayRows.length);
         const wCount = byId('unifiedDiaryWinCount');
-        if (wCount) wCount.textContent = `${winCount}/${totalCount}`;
+        if (wCount) wCount.textContent = `${catWinCount}/${totalCount}`;
         const wRate = byId('unifiedDiaryWinRate');
-        if (wRate) wRate.textContent = percent(winCount / totalCount);
+        if (wRate) wRate.textContent = percent(catWinCount / totalCount);
         const totalProfitEl = byId('unifiedDiaryTotalProfit');
         if (totalProfitEl) {
-            totalProfitEl.textContent = moneyM(totalProfitSum, { signed: true });
-            totalProfitEl.className = `font-black text-sm font-mono ${totalProfitSum >= 0 ? 'text-emerald-600' : 'text-rose-600'}`;
+            totalProfitEl.textContent = moneyM(catTotalProfit, { signed: true });
+            totalProfitEl.className = `font-black text-sm font-mono ${catTotalProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`;
         }
 
         const reversedRows = [...displayRows].reverse();
+
         tbody.innerHTML = reversedRows.map(r => {
+            const isLiveBadge = r.date >= '2026-08-28' ? '🟢 Live' : '🔵 PIT';
+
+            // --- 1. VIEW ĐỀ TINH HOA ---
+            if (currentDiaryCategory === 'de') {
+                const dePill = r.deRow ? (
+                    r.deIsHit
+                        ? `<span class="inline-flex items-center gap-1 rounded bg-emerald-100 text-emerald-900 px-2 py-0.5 text-xs font-black">🎉 Trúng ĐB +54M</span>`
+                        : `<span class="inline-flex items-center gap-1 rounded bg-rose-100 text-rose-900 px-2 py-0.5 text-xs font-bold">❌ Trượt -30M</span>`
+                ) : `<span class="text-slate-400">Chưa có</span>`;
+
+                const deNums = r.deRow?.standard30 || r.deRow?.numbers || [];
+                const actualSpecVal = r.actualSpec;
+
+                const chipsHtml = deNums.map(n => {
+                    const isHitNum = (actualSpecVal != null && Number(n) === Number(actualSpecVal));
+                    return `<span class="inline-block px-1.5 py-0.5 rounded font-mono text-[11px] font-bold ${isHitNum ? 'bg-emerald-600 text-white font-black scale-110 shadow-xs ring-2 ring-emerald-400' : 'bg-slate-100 text-slate-700'}">${number(n)}</span>`;
+                }).join(' ');
+
+                return `
+                    <tr class="hover:bg-amber-50/30 transition-colors ${r.deIsHit ? 'bg-emerald-50/40' : ''}">
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
+                            <div class="text-[10px] text-slate-400 font-semibold">${isLiveBadge}</div>
+                        </td>
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <span class="inline-flex items-center justify-center font-mono text-base font-black px-2.5 py-1 rounded-xl ${r.deIsHit ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-900'}">
+                                ${r.actualSpec != null ? number(r.actualSpec) : '--'}
+                            </span>
+                        </td>
+                        <td class="px-3 py-3 max-w-md">
+                            <div class="flex flex-wrap gap-1">${chipsHtml || '<span class="text-slate-400">Dàn 30 số VIP</span>'}</div>
+                        </td>
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            ${dePill}
+                        </td>
+                        <td class="px-3 py-3 text-right whitespace-nowrap">
+                            <div class="font-mono font-black text-xs ${r.deProfitK >= 0 ? 'text-emerald-600' : 'text-rose-600'}">
+                                ${moneyM(r.deProfitK, { signed: true })}
+                            </div>
+                            <div class="text-[10px] text-slate-400">Vốn 30M</div>
+                        </td>
+                        <td class="px-3 py-3 text-right whitespace-nowrap">
+                            <div class="font-mono font-black text-xs ${r.cumDeProfitK >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
+                                ${moneyM(r.cumDeProfitK, { signed: true })}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            // --- 2. VIEW LÔ CHUẨN (TOP 20) ---
+            if (currentDiaryCategory === 'loStd') {
+                const stdMethodName = r.std.methodName || r.std.methodLabel || 'QMBF v6.1 Top 20';
+                const stdNums = r.std.numbers || [];
+                const stdProfit = r.std.profitK || 0;
+
+                const chipsHtml = stdNums.map(n => `
+                    <span class="inline-block px-1.5 py-0.5 rounded bg-slate-900 text-white font-mono text-[11px] font-bold">${number(n)}</span>
+                `).join(' ');
+
+                return `
+                    <tr class="hover:bg-indigo-50/30 transition-colors ${stdProfit > 0 ? 'bg-emerald-50/40' : ''}">
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
+                            <div class="text-[10px] text-slate-400 font-semibold">${isLiveBadge}</div>
+                        </td>
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <div class="font-bold text-xs text-indigo-950">${escapeHtml(stdMethodName)}</div>
+                            <div class="text-[10px] text-slate-500">Đề xuất 20 số chuẩn</div>
+                        </td>
+                        <td class="px-3 py-3 max-w-md">
+                            <div class="flex flex-wrap gap-1">${chipsHtml || '<span class="text-slate-400">20 số</span>'}</div>
+                        </td>
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <span class="font-bold text-xs ${r.std.hits >= 6 ? 'text-emerald-700 font-black' : 'text-slate-700'}">
+                                💥 ${r.std.hits != null ? r.std.hits : '--'} nháy
+                            </span>
+                            <div class="text-[10px] text-slate-400">Ăn ${moneyM(r.std.payoutK || (r.std.hits * 8000))}</div>
+                        </td>
+                        <td class="px-3 py-3 text-right whitespace-nowrap">
+                            <div class="font-mono font-black text-xs ${stdProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'}">
+                                ${moneyM(stdProfit, { signed: true })}
+                            </div>
+                            <div class="text-[10px] text-slate-400">Vốn 44M</div>
+                        </td>
+                        <td class="px-3 py-3 text-right whitespace-nowrap">
+                            <div class="font-mono font-black text-xs ${r.cumStdProfitK >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
+                                ${moneyM(r.cumStdProfitK, { signed: true })}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            // --- 3. VIEW LÔ ĐÁNH X2 (TOP 7) ---
+            if (currentDiaryCategory === 'loX2') {
+                const x2MethodName = r.x2.methodName || r.x2.methodLabel || 'Bạc Nhớ 27 Giải Top 7';
+                const x2Nums = r.x2.numbers || [];
+                const x2Profit = r.x2.profitK || 0;
+
+                const chipsHtml = x2Nums.map(n => `
+                    <span class="inline-block px-2 py-0.5 rounded bg-emerald-700 text-white font-mono text-[11px] font-black">${number(n)}</span>
+                `).join(' ');
+
+                return `
+                    <tr class="hover:bg-teal-50/30 transition-colors ${x2Profit > 0 ? 'bg-emerald-50/40' : ''}">
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
+                            <div class="text-[10px] text-slate-400 font-semibold">${isLiveBadge}</div>
+                        </td>
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <div class="font-bold text-xs text-teal-950">${escapeHtml(x2MethodName)}</div>
+                            <div class="text-[10px] text-teal-700 font-medium">Nhân đôi cược (460K/số)</div>
+                        </td>
+                        <td class="px-3 py-3">
+                            <div class="flex flex-wrap gap-1.5">${chipsHtml || '<span class="text-slate-400">7 số X2</span>'}</div>
+                        </td>
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <span class="font-bold text-xs ${r.x2.hits >= 2 ? 'text-emerald-700 font-black' : 'text-slate-700'}">
+                                🚀 ${r.x2.hits != null ? r.x2.hits : '--'} nháy
+                            </span>
+                            <div class="text-[10px] text-slate-400">Ăn ${moneyM(r.x2.payoutK || (r.x2.hits * 16000))}</div>
+                        </td>
+                        <td class="px-3 py-3 text-right whitespace-nowrap">
+                            <div class="font-mono font-black text-xs ${x2Profit >= 0 ? 'text-emerald-600' : 'text-rose-600'}">
+                                ${moneyM(x2Profit, { signed: true })}
+                            </div>
+                            <div class="text-[10px] text-slate-400">Vốn 30.8M</div>
+                        </td>
+                        <td class="px-3 py-3 text-right whitespace-nowrap">
+                            <div class="font-mono font-black text-xs ${r.cumX2ProfitK >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
+                                ${moneyM(r.cumX2ProfitK, { signed: true })}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            // --- 4. VIEW LÔ XIÊN 4 ---
+            if (currentDiaryCategory === 'loXi4') {
+                const xi4Nums = r.xi4.numbers || [];
+                const xi4Hits = r.xi4.hits || 0;
+                const xi4Profit = r.xi4.profitK || 0;
+
+                const chipsHtml = xi4Nums.map(n => `
+                    <span class="inline-block px-2.5 py-1 rounded-xl bg-amber-400 text-slate-950 font-mono text-xs font-black shadow-2xs">${number(n)}</span>
+                `).join(' ');
+
+                let ticketStatus = `<span class="inline-flex items-center gap-1 rounded bg-slate-100 text-slate-600 px-2 py-0.5 text-xs">❌ Trượt</span>`;
+                if (xi4Hits >= 4) {
+                    ticketStatus = `<span class="inline-flex items-center gap-1 rounded bg-emerald-500 text-white px-2 py-0.5 text-xs font-black shadow-xs">🎉 Ăn Xiên 4 (+373M)</span>`;
+                } else if (xi4Hits === 3) {
+                    ticketStatus = `<span class="inline-flex items-center gap-1 rounded bg-emerald-100 text-emerald-900 px-2 py-0.5 text-xs font-black">🔥 Ăn Xiên 3 + X2 (+29M)</span>`;
+                } else if (xi4Hits === 2) {
+                    ticketStatus = `<span class="inline-flex items-center gap-1 rounded bg-amber-100 text-amber-950 px-2 py-0.5 text-xs font-black">✨ Ăn Vé Xiên 2 (+1M)</span>`;
+                }
+
+                return `
+                    <tr class="hover:bg-amber-50/30 transition-colors ${xi4Profit > 0 ? 'bg-emerald-50/40' : ''}">
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
+                            <div class="text-[10px] text-slate-400 font-semibold">${isLiveBadge}</div>
+                        </td>
+                        <td class="px-3 py-3">
+                            <div class="flex flex-wrap gap-1.5">${chipsHtml || '<span class="text-slate-400">Bộ 4 số vàng</span>'}</div>
+                        </td>
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <span class="font-bold text-xs ${xi4Hits >= 2 ? 'text-emerald-700 font-black' : 'text-slate-700'}">
+                                ${xi4Hits} / 4 con
+                            </span>
+                        </td>
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            ${ticketStatus}
+                        </td>
+                        <td class="px-3 py-3 text-right whitespace-nowrap">
+                            <div class="font-mono font-black text-xs ${xi4Profit > 0 ? 'text-emerald-600' : 'text-rose-600'}">
+                                ${moneyM(xi4Profit, { signed: true })}
+                            </div>
+                            <div class="text-[10px] text-slate-400">Quây 11 vé (11M)</div>
+                        </td>
+                        <td class="px-3 py-3 text-right whitespace-nowrap">
+                            <div class="font-mono font-black text-xs ${r.cumXi4ProfitK >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
+                                ${moneyM(r.cumXi4ProfitK, { signed: true })}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            // --- 5. VIEW TỔNG HỢP (DEFAULT) ---
             const dePill = r.deRow ? (
                 r.deIsHit
                     ? `<span class="inline-flex items-center gap-1 rounded bg-emerald-100 text-emerald-900 px-1.5 py-0.5 text-[11px] font-black">🎉 Trúng +54M</span>`
@@ -652,7 +970,7 @@
                 <tr class="hover:bg-slate-50/80 transition-colors ${dayClass}">
                     <td class="px-3 py-3 whitespace-nowrap">
                         <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
-                        <div class="text-[10px] text-slate-400 font-semibold">${r.date >= '2026-08-28' ? '🟢 Live' : '🔵 PIT'}</div>
+                        <div class="text-[10px] text-slate-400 font-semibold">${isLiveBadge}</div>
                     </td>
                     <td class="px-3 py-3">
                         <div class="flex items-center gap-2">
@@ -721,6 +1039,21 @@
         const btnLoX2 = byId('btnCopyUnifiedLoX2');
         if (btnLoX2) btnLoX2.onclick = () => copyNumbers(loX2);
 
+        // Sub-tabs chuyển danh mục đối soát
+        document.querySelectorAll('.diary-cat-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.diary-cat-btn').forEach(b => {
+                    b.classList.remove('active', 'bg-slate-900', 'text-white', 'shadow-xs');
+                    b.classList.add('bg-slate-100', 'text-slate-700');
+                });
+                btn.classList.add('active', 'bg-slate-900', 'text-white', 'shadow-xs');
+                btn.classList.remove('bg-slate-100', 'text-slate-700');
+                currentDiaryCategory = btn.dataset.diaryCat || 'all';
+                renderUnifiedCombatDiary(deLedger, loDiary, loAllDiary);
+            };
+        });
+
+        // Timeframe buttons
         document.querySelectorAll('.unified-tf-btn').forEach(btn => {
             btn.onclick = () => {
                 document.querySelectorAll('.unified-tf-btn').forEach(b => {
