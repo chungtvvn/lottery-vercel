@@ -608,6 +608,15 @@ export async function GET(request) {
                 buildDynamicCrossMethodAdvisor
             } = require('@/lib/services/loDualMergeAdvisorService');
 
+            let dynamicMetaAdvisor = loData.dynamicMetaAdvisor || advisorData?.dynamicMetaAdvisor || null;
+            if (!dynamicMetaAdvisor && advisorData) {
+                dynamicMetaAdvisor = buildDynamicCrossMethodAdvisor({
+                    loQuantumBayesFusion: advisorData.loQuantumBayesFusion,
+                    loDualMerge: advisorData.loDualMerge,
+                    loTriHarmonic: advisorData.loTriHarmonic
+                });
+            }
+
             const settledList = loData.records || loData.settledLedger || [];
             const liveSettled = settledList.filter(r => r.isLiveSnapshot || (r.predictionIsoDate || r.predictionDate || r.date || '') >= '2026-08-28');
             const xien4Data = summarizeXien4(settledList);
@@ -628,15 +637,6 @@ export async function GET(request) {
             let smartRecommendation = loData.summary?.smartRecommendation || latestRec.smartRecommendation || null;
             if (!smartRecommendation || !smartRecommendation.heatmap?.length || !smartRecommendation.liveTracking) {
                 smartRecommendation = buildSmartRecommendation(rankedNumbers, rankDistribution, summaryObj, xien4Data, settledList);
-            }
-
-            let dynamicMetaAdvisor = loData.dynamicMetaAdvisor || advisorData?.dynamicMetaAdvisor || null;
-            if (!dynamicMetaAdvisor && advisorData) {
-                dynamicMetaAdvisor = buildDynamicCrossMethodAdvisor({
-                    loQuantumBayesFusion: advisorData.loQuantumBayesFusion,
-                    loDualMerge: advisorData.loDualMerge,
-                    loTriHarmonic: advisorData.loTriHarmonic
-                });
             }
 
             let xien4Next = latestRec.xien4;
@@ -720,6 +720,7 @@ export async function GET(request) {
             );
         }
         const normalizedPayload = normalizeLotoPayload(mergedPayload, strategy);
+        const { selectBestLotoDefault } = require('@/lib/utils/lotoDefaultSelection');
         const selectedDefault = selectBestLotoDefault(
             mergedPayload.livePredictions?.summary || {},
             {
