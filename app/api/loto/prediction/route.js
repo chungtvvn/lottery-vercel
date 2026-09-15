@@ -12,10 +12,13 @@ const FALLBACK_LOTO_STAKE_PER_NUMBER_K = 2200;
 const FALLBACK_LOTO_PAYOUT_PER_HIT_K = 8000;
 const LOTO_BET_COUNTS = [2, 4, 6, 7, 8, 10, 20, 25, 30];
 const LEGACY_RRF_LOTO_STRATEGY = 'rrfParallelBlock85Small65';
-const DEFAULT_LOTO_STRATEGY = 'loQuantumBayesFusion';
+const DEFAULT_LOTO_STRATEGY = 'metaCrossMethod';
 const LOTO_STRATEGY_META = {
+    metaCrossMethod: {
+        methodName: '🔥 Đề Xuất Thực Chiến Tinh Hoa Đa Phương Pháp (Meta-Selector Tối Ưu Lợi Nhuận & Phong Độ) [Khuyên Dùng]'
+    },
     loQuantumBayesFusion: {
-        methodName: '💎 Lô Siêu Hợp Nhất 4 Tầng Bayes & Markov (Mốc Lịch Sử D-1 Strict PIT) [Khuyên Dùng]'
+        methodName: '💎 Lô Siêu Hợp Nhất 4 Tầng Bayes & Markov (Mốc Lịch Sử D-1 Strict PIT)'
     },
     loDualMerge: {
         methodName: '🎯 Lô Bạc Nhớ Vị Trí 27 Giải (Mốc Lịch Sử D-1 Strict PIT)'
@@ -415,9 +418,13 @@ export async function GET(request) {
             );
         }
 
-        if (strategy === 'loQuantumBayesFusion' || strategy === 'loDualMerge' || strategy === 'loTriHarmonic') {
+        if (strategy === 'metaCrossMethod' || strategy === 'loQuantumBayesFusion' || strategy === 'loDualMerge' || strategy === 'loTriHarmonic') {
             const advisorData = await loadJsonWithSupabaseFallback('cached_daily_method_advisor.json').catch(() => null);
-            const loData = advisorData?.[strategy] || {};
+            let loData = advisorData?.[strategy] || {};
+            if (strategy === 'metaCrossMethod' && (!loData || !loData.latestRecommendation)) {
+                const { buildMetaCrossMethodStrategy } = require('@/lib/services/loDualMergeAdvisorService');
+                loData = buildMetaCrossMethodStrategy(advisorData);
+            }
             const latestRec = loData.latestRecommendation || {};
             
             const unionNumbers = latestRec.fullUnion || [];

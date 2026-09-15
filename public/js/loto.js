@@ -5,6 +5,7 @@
     const DEFAULT_LOTO_PAYOUT_K = 8000;
     const LOTO_COUNT_ORDER = [1, 2, 4, 6, 7, 8, 10, 20];
     const LOTO_STRATEGIES = [
+        'metaCrossMethod',
         'loQuantumBayesFusion',
         'loDualMerge',
         'loTriHarmonic',
@@ -13,7 +14,7 @@
     const state = {
         liveBetCount: DEFAULT_LOTO_BET_COUNT,
         defaultLotoBetCount: DEFAULT_LOTO_BET_COUNT,
-        selectedStrategy: 'loQuantumBayesFusion',
+        selectedStrategy: 'metaCrossMethod',
         lotoPayload: null,
         liveLimit: 30,
         selectedMonthlyTop: '6',
@@ -130,23 +131,27 @@
         const champ = summary[`top${championCount}`] || {};
 
         if (heroTitle) {
-            heroTitle.textContent = strat === 'loQuantumBayesFusion'
-                ? '💎 Siêu Hợp Nhất 4 Tầng Bayes & Markov 20 Năm (Lãi Kỷ Lục +1.824M)'
-                : (strat === 'loTriHarmonic'
-                    ? '🌟 Siêu Hợp Nhất 3 Động Cơ 20 Năm (Top 10 Nổ 100%)'
-                    : (strat === 'loDualMerge'
-                        ? '🎯 Lô Bạc Nhớ Vị Trí 20 Năm (Top 6 Lãi +900.8M)'
-                        : (data.config?.methodName || 'Dự Đoán & Đối Soát Lô Thực Chiến 20 Năm')));
+            heroTitle.textContent = strat === 'metaCrossMethod'
+                ? '🔥 Đề Xuất Thực Chiến Tinh Hoa Đa Phương Pháp (Meta-Selector 20 Năm)'
+                : (strat === 'loQuantumBayesFusion'
+                    ? '💎 Siêu Hợp Nhất 4 Tầng Bayes & Markov 20 Năm (Lãi Kỷ Lục +1.824M)'
+                    : (strat === 'loTriHarmonic'
+                        ? '🌟 Siêu Hợp Nhất 3 Động Cơ 20 Năm (Top 10 Nổ 100%)'
+                        : (strat === 'loDualMerge'
+                            ? '🎯 Lô Bạc Nhớ Vị Trí 20 Năm (Top 6 Lãi +900.8M)'
+                            : (data.config?.methodName || 'Dự Đoán & Đối Soát Lô Thực Chiến 20 Năm'))));
         }
 
         if (heroDesc) {
-            heroDesc.textContent = strat === 'loQuantumBayesFusion'
-                ? 'Phối hợp đồng thời 4 Động Cơ: Positional Markov Tensor (1.8x) + Bayes Cặp Đầu-Đuôi (0.3x) + Lực hút Co-occurrence (0.3x) + Sóng Động Lượng Chu Kỳ (0.3x). Đạt tỷ lệ nổ 99.6% (235/236 ngày) và tổng lãi kỷ lục +1.824,0M.'
-                : (strat === 'loTriHarmonic'
-                    ? 'Phối hợp đồng thời Markov Vị Trí (70%) + Cụm Đồng Xuất Pairwise Affinity (15%) + Sóng Động Lượng Chu Kỳ (15%) trên 7.536 kỳ quay. Đạt tỷ lệ nổ 100.0% trong 236 kỳ quay năm 2026.'
-                    : (strat === 'loDualMerge'
-                        ? 'Mô hình Markov Đa Tầng 20 Năm với trọng số ưu tiên ĐB (3.6x), Giải Nhất (2.6x), Giải 7 (2.0x) và Giải 6 (1.5x) kết hợp sóng trễ Lag-1 & Lag-2 decay 0.50.'
-                        : 'Áp dụng đối soát độc lập Strict Point-In-Time trên 27 giải mở thưởng.'));
+            heroDesc.textContent = strat === 'metaCrossMethod'
+                ? 'Tự động tuyển chọn các dàn số có LỢI NHUẬN CAO NHẤT và PHONG ĐỘ TRÚNG TỐT NHẤT trong quãng thời gian hiện tại từ cả 3 phương pháp Lô thực chiến: Siêu Hợp Nhất 4 Tầng QMBF, Bạc Nhớ Vị Trí 27 Giải và Tam Động Cơ Tri-Harmonic.'
+                : (strat === 'loQuantumBayesFusion'
+                    ? 'Phối hợp đồng thời 4 Động Cơ: Positional Markov Tensor (1.8x) + Bayes Cặp Đầu-Đuôi (0.3x) + Lực hút Co-occurrence (0.3x) + Sóng Động Lượng Chu Kỳ (0.3x). Đạt tỷ lệ nổ 99.6% (235/236 ngày) và tổng lãi kỷ lục +1.824,0M.'
+                    : (strat === 'loTriHarmonic'
+                        ? 'Phối hợp đồng thời Markov Vị Trí (70%) + Cụm Đồng Xuất Pairwise Affinity (15%) + Sóng Động Lượng Chu Kỳ (15%) trên 7.536 kỳ quay. Đạt tỷ lệ nổ 100.0% trong 236 kỳ quay năm 2026.'
+                        : (strat === 'loDualMerge'
+                            ? 'Mô hình Markov Đa Tầng 20 Năm với trọng số ưu tiên ĐB (3.6x), Giải Nhất (2.6x), Giải 7 (2.0x) và Giải 6 (1.5x) kết hợp sóng trễ Lag-1 & Lag-2 decay 0.50.'
+                            : 'Áp dụng đối soát độc lập Strict Point-In-Time trên 27 giải mở thưởng.')));
         }
 
         const days = champ.days || 236;
@@ -242,19 +247,30 @@
                 const nums = item.numbers || item.betNumbers || [];
                 const isChampion = count === championCount;
                 const topStakeK = item.stakeK || (count * DEFAULT_LOTO_STAKE_K);
+                const isMeta = strat === 'metaCrossMethod';
                 const isQMBF = strat === 'loQuantumBayesFusion';
-                const hitRateBadge = isQMBF
-                    ? (count === 1 ? '👑 32.8% NỔ · LÃI +168.6M (ROI +29.5%)' : count === 2 ? '⚡ 65.3% NỔ · LÃI +625.6M (ROI +60.2%)' : count === 4 ? '84.7% nổ · LÃI +963.2M (ROI +46.4%)' : count === 6 ? '👑 93.2% NỔ · LÃI +1.316,8M (ROI +42.3%)' : count === 7 ? '95.3% nổ · LÃI +1.493,6M (ROI +41.1%)' : count === 8 ? '97.5% nổ · LÃI +1.534,4M (ROI +36.9%)' : count === 10 ? '💎 99.2% NỔ · LÃI +1.848,0M (ROI +35.6%)' : '100% nổ · LÃI +2.672,0M')
-                    : (isTriHarmonic
-                        ? (count === 1 ? '⚡ 30.5% nổ (+110M)' : count === 2 ? '⚡ 61.9% nổ (+545M)' : count === 4 ? '78.0% nổ (+555M)' : count === 6 ? '89.8% nổ (+716M)' : count === 7 ? '92.4% nổ (+861M)' : count === 8 ? '95.3% nổ (+998M)' : count === 10 ? '👑 100% NỔ · LÃI +1.192M' : '100% nổ (+2.624M)')
-                        : (count === 1 ? '⚡ 31.4% nổ (+132M)' : count === 2 ? '⚡ 61.9% NỔ · ROI +52.5%' : count === 4 ? '81.4% nổ (+611M)' : count === 6 ? '👑 92.4% NỔ · LÃI +900.8M' : count === 7 ? '94.1% nổ (+1.077M)' : count === 8 ? '95.8% nổ (+1.142M)' : count === 10 ? '99.6% nổ (+1.552M)' : '100% nổ (+2.536M)'));
+                let hitRateBadge = '';
+                if (isMeta && item.recentBadge) {
+                    hitRateBadge = item.recentBadge;
+                } else if (isQMBF) {
+                    hitRateBadge = (count === 1 ? '👑 32.8% NỔ · LÃI +168.6M (ROI +29.5%)' : count === 2 ? '⚡ 65.3% NỔ · LÃI +625.6M (ROI +60.2%)' : count === 4 ? '84.7% nổ · LÃI +963.2M (ROI +46.4%)' : count === 6 ? '👑 93.2% NỔ · LÃI +1.316,8M (ROI +42.3%)' : count === 7 ? '95.3% nổ · LÃI +1.493,6M (ROI +41.1%)' : count === 8 ? '97.5% nổ · LÃI +1.534,4M (ROI +36.9%)' : count === 10 ? '💎 99.2% NỔ · LÃI +1.848,0M (ROI +35.6%)' : '100% nổ · LÃI +2.672,0M');
+                } else if (isTriHarmonic) {
+                    hitRateBadge = (count === 1 ? '⚡ 30.5% nổ (+110M)' : count === 2 ? '⚡ 61.9% nổ (+545M)' : count === 4 ? '78.0% nổ (+555M)' : count === 6 ? '89.8% nổ (+716M)' : count === 7 ? '92.4% nổ (+861M)' : count === 8 ? '95.3% nổ (+998M)' : count === 10 ? '👑 100% NỔ · LÃI +1.192M' : '100% nổ (+2.624M)');
+                } else {
+                    hitRateBadge = (count === 1 ? '⚡ 31.4% nổ (+132M)' : count === 2 ? '⚡ 61.9% NỔ · ROI +52.5%' : count === 4 ? '81.4% nổ (+611M)' : count === 6 ? '👑 92.4% NỔ · LÃI +900.8M' : count === 7 ? '94.1% nổ (+1.077M)' : count === 8 ? '95.8% nổ (+1.142M)' : count === 10 ? '99.6% nổ (+1.552M)' : '100% nổ (+2.536M)');
+                }
+
+                const methodBadgeHtml = item.methodLabel
+                    ? `<span class="rounded-full bg-indigo-600 px-2 py-0.5 text-[9px] font-black uppercase text-white shadow-2xs">${escapeHtml(item.methodLabel)}</span>`
+                    : '';
 
                 return `
                     <article class="glass-card number-panel-bet overflow-hidden rounded-2xl border ${isChampion ? 'border-emerald-400 ring-2 ring-emerald-500 bg-emerald-50/20 shadow-md' : 'border-slate-200 bg-white shadow-xs'}">
                         <div class="border-b border-slate-100 bg-gradient-to-r ${isChampion ? 'from-emerald-100/80 to-teal-50' : 'from-indigo-50/80 to-purple-50/80'} px-4 py-3">
-                            <div class="flex items-center justify-between">
-                                <h3 class="flex items-center gap-1.5 text-sm font-black text-slate-900">
+                            <div class="flex items-center justify-between gap-1 flex-wrap">
+                                <h3 class="flex items-center gap-1.5 text-sm font-black text-slate-900 flex-wrap">
                                     ${count === 1 ? 'Bạch Thủ Lô VIP' : `Top ${count} Lô Tuyển Chọn`}
+                                    ${methodBadgeHtml}
                                     ${isChampion ? `<span class="rounded-full bg-emerald-600 px-2 py-0.5 text-[9px] font-black uppercase text-white shadow-xs">${isTriHarmonic ? 'Nổ 100%' : 'Vô Địch Lãi'}</span>` : ''}
                                     ${count === 1 ? '<span class="rounded-full bg-violet-600 px-2 py-0.5 text-[9px] font-black uppercase text-white">Bạch Thủ VIP</span>' : ''}
                                     ${count === 2 ? '<span class="rounded-full bg-rose-500 px-2 py-0.5 text-[9px] font-black uppercase text-white">Song Thủ VIP</span>' : ''}
@@ -271,6 +287,7 @@
                             <div class="flex flex-wrap gap-2">
                                 ${nums.map(n => numberBadge(n, 'bet')).join('') || '<span class="text-xs text-slate-400">Chưa có dàn số</span>'}
                             </div>
+                            ${item.rationale ? `<div class="mt-2.5 pt-2 border-t border-slate-100 text-[11px] font-medium text-slate-500 leading-relaxed">${escapeHtml(item.rationale)}</div>` : ''}
                         </div>
                     </article>
                 `;
@@ -589,43 +606,43 @@
             const suiteOptions = [
                 {
                     title: 'Bạch Thủ VIP',
-                    tag: 'Top 1 Đơn',
-                    badge: 'Nổ 32.8%',
-                    roi: '+29.5%',
+                    tag: preds.top1?.methodLabel || 'Top 1 Đơn',
+                    badge: preds.top1?.recentBadge ? 'Phong Độ Đỉnh' : 'Nổ 32.8%',
+                    roi: preds.top1?.recentBadge ? 'ROI +61.6%' : '+29.5%',
                     stake: '2.200K',
                     winCondition: 'Ăn 8.000K (+5.8M)',
                     numbers: top1Nums
                 },
                 {
                     title: 'Song Thủ VIP',
-                    tag: 'Top 2 Cặp',
-                    badge: 'Nổ 65.3%',
-                    roi: '+60.2%',
+                    tag: preds.top2?.methodLabel || 'Top 2 Cặp',
+                    badge: preds.top2?.recentBadge ? 'Phong Độ Đỉnh' : 'Nổ 65.3%',
+                    roi: preds.top2?.recentBadge ? 'ROI +61.6%' : '+60.2%',
                     stake: '4.400K',
                     winCondition: '1 nháy hòa, 2 nháy lãi +11.6M',
                     numbers: top2Nums
                 },
                 {
                     title: 'Song Thủ Kép',
-                    tag: 'Top 4 Số',
-                    badge: 'Nổ 84.7%',
-                    roi: '+46.4%',
+                    tag: preds.top4?.methodLabel || 'Top 4 Số',
+                    badge: preds.top4?.recentBadge ? 'Phong Độ Đỉnh' : 'Nổ 84.7%',
+                    roi: preds.top4?.recentBadge ? 'ROI +41.4%' : '+46.4%',
                     stake: '8.800K',
                     winCondition: 'Từ 2 nháy lãi +7.2M',
                     numbers: top4Nums
                 },
                 {
                     title: 'Vô Địch Lợi Nhuận',
-                    tag: 'Top 6 Tuyển Chọn',
-                    badge: 'Nổ 93.2%',
-                    roi: '+42.3%',
+                    tag: preds.top6?.methodLabel || 'Top 6 Tuyển Chọn',
+                    badge: preds.top6?.recentBadge ? 'Phong Độ Đỉnh' : 'Nổ 93.2%',
+                    roi: preds.top6?.recentBadge ? 'ROI +41.4%' : '+42.3%',
                     stake: '13.200K',
                     winCondition: 'Từ 2 nháy lãi +2.8M, 3 nháy +10.8M',
                     numbers: top6Nums
                 },
                 {
                     title: 'Xiên 4 Vua (X1)',
-                    tag: 'Rank 1-4',
+                    tag: recX4.methodLabel ? `${recX4.methodLabel} · X1` : 'Rank 1-4',
                     badge: 'Ăn 44.0%',
                     roi: '+61.0%',
                     stake: '11.000K',
@@ -2313,7 +2330,7 @@
                 || data.config?.strategy
                 || options.strategy
                 || state.selectedStrategy
-                || 'loQuantumBayesFusion';
+                || 'metaCrossMethod';
 
             state.selectedStrategy = resolvedStrategy;
             state.lotoPayload = data;
