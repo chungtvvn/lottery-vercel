@@ -688,8 +688,8 @@ export async function GET(request) {
                     predictions,
                     xien4: xien4Next || latestRec.xien4 || xien4Data,
                     recommendedXien4: dynamicMetaAdvisor?.nextPrediction?.xien4 || null,
-                    goldenXien2: latestRec.goldenXien2 || null,
-                    smartRecommendation,
+                    goldenXien2: dynamicMetaAdvisor?.nextPrediction?.goldenXien2 || latestRec.goldenXien2 || null,
+                    xien3: dynamicMetaAdvisor?.nextPrediction?.xien3 || null,
                     dynamicMetaAdvisor,
                     rankDistribution
                 },

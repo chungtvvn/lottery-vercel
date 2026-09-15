@@ -655,38 +655,131 @@
             };
         }
 
-        // Card 3: Recommend Xiên 4
-        let recX4 = metaNext.xien4 || smart.recommendedXien4 || {};
+        // Card 3: Multi-Tier Strategic Xiên Recommendation (Xiên 4, Xiên 3, Xiên 2)
+        let recX4 = metaNext.xien4 || next.recommendedXien4 || smart.recommendedXien4 || {};
         if (!recX4.numbers || !recX4.numbers.length) {
-            const x1Nums = next.xien4?.x1?.numbers || rankedNumbers.slice(0, 4);
+            const x3Nums = next.xien4?.x3?.numbers || next.xien4?.x1?.numbers || rankedNumbers.slice(0, 4);
             recX4 = {
-                clusterId: 'x1',
-                title: 'Xiên X1 (Rank 1-4)',
-                label: 'Xiên X1 (Rank 1-4)',
-                numbers: x1Nums,
-                roi: 0.610,
-                rationale: 'Cụm Xiên 4 có tỷ lệ thắng 44.0% và ROI +61.0% cao nhất toàn bảng Strict PIT.'
+                clusterId: 'x3',
+                title: '🌟 Tam Động Cơ - Xiên X3',
+                label: '🌟 Tam Động Cơ - Xiên X3',
+                numbers: x3Nums,
+                roi: 0.354,
+                rationale: 'Cụm 4 số tối ưu được Meta-Selector chọn lọc, bảo hiểm 4 vé xiên 3 + 6 vé xiên 2 (Lãi Live +18M).'
             };
+        }
+
+        let recX3 = metaNext.xien3 || next.xien3 || {};
+        if (!recX3.numbers || !recX3.numbers.length) {
+            const top3 = (recStd.numbers || rankedNumbers).slice(0, 3);
+            recX3 = {
+                title: 'Tam Thủ Xiên Quây (3 Số - 4 Vé)',
+                numbers: top3.length === 3 ? top3 : ['36', '12', '49'],
+                stakeK: 4000,
+                rationale: 'Vốn chỉ 4.000K (giảm 64% vốn so với Xiên 4). Về 2 con lãi +4.000K, về đủ 3 con nổ lớn +60.000K (+60M)!'
+            };
+        }
+
+        let recX2List = metaNext.goldenXien2 || next.goldenXien2 || [];
+        if (!recX2List.length) {
+            const top4 = (recStd.numbers || rankedNumbers).slice(0, 4);
+            recX2List = [
+                { pair: [top4[0] || '36', top4[1] || '12'], label: 'Cặp Song Thủ Vàng (Rank 1-2)', stakeK: 1000 },
+                { pair: [top4[0] || '36', top4[2] || '49'], label: 'Cặp Đột Phá (Rank 1-3)', stakeK: 1000 }
+            ];
         }
 
         const recX4Title = document.getElementById('recXien4Title');
         const recX4Roi = document.getElementById('recXien4RoiBadge');
         const recX4Rationale = document.getElementById('recXien4Rationale');
         const recX4Numbers = document.getElementById('recXien4Numbers');
+        const recXienStakeInfo = document.getElementById('recXienStakeInfo');
         const btnCopyRecX4 = document.getElementById('btnCopyRecXien4');
 
-        if (recX4Title) recX4Title.textContent = recX4.title || recX4.label || 'Xiên X1 (Rank 1-4)';
-        if (recX4Roi) recX4Roi.textContent = `ROI: +${((recX4.roi || 0) * 100).toFixed(1)}%`;
-        if (recX4Rationale) recX4Rationale.textContent = recX4.rationale || 'Cụm Xiên 4 có hiệu suất ăn cao nhất.';
-        if (recX4Numbers) {
-            recX4Numbers.innerHTML = (recX4.numbers || []).map(n => numberBadge(n, 'green')).join('');
+        const tabXien4Mode = document.getElementById('tabXien4Mode');
+        const tabXien3Mode = document.getElementById('tabXien3Mode');
+        const tabXien2Mode = document.getElementById('tabXien2Mode');
+
+        let currentXienTier = 'x4'; // 'x4', 'x3', 'x2'
+
+        function updateXienCardUI() {
+            if (tabXien4Mode && tabXien3Mode && tabXien2Mode) {
+                tabXien4Mode.className = currentXienTier === 'x4'
+                    ? 'flex-1 py-1 rounded-lg bg-white text-emerald-900 shadow-2xs transition text-center cursor-pointer font-black text-[11px]'
+                    : 'flex-1 py-1 rounded-lg text-emerald-700 hover:text-emerald-900 transition text-center cursor-pointer font-bold text-[11px]';
+                tabXien3Mode.className = currentXienTier === 'x3'
+                    ? 'flex-1 py-1 rounded-lg bg-white text-emerald-900 shadow-2xs transition text-center cursor-pointer font-black text-[11px]'
+                    : 'flex-1 py-1 rounded-lg text-emerald-700 hover:text-emerald-900 transition text-center cursor-pointer font-bold text-[11px]';
+                tabXien2Mode.className = currentXienTier === 'x2'
+                    ? 'flex-1 py-1 rounded-lg bg-white text-emerald-900 shadow-2xs transition text-center cursor-pointer font-black text-[11px]'
+                    : 'flex-1 py-1 rounded-lg text-emerald-700 hover:text-emerald-900 transition text-center cursor-pointer font-bold text-[11px]';
+            }
+
+            if (currentXienTier === 'x4') {
+                if (recX4Title) recX4Title.textContent = recX4.title || recX4.label || 'Tứ Thủ Xiên 4 Tinh Hoa';
+                if (recX4Roi) recX4Roi.textContent = 'Live: +18M · Ăn 6/18K';
+                if (recX4Rationale) recX4Rationale.textContent = recX4.rationale || 'Cụm 4 số tối ưu tuyển chọn bởi Meta-Selector, bảo hiểm 4 vé xiên 3 + 6 vé xiên 2.';
+                if (recX4Numbers) {
+                    recX4Numbers.innerHTML = (recX4.numbers || []).map(n => numberBadge(n, 'green')).join('');
+                }
+                if (recXienStakeInfo) {
+                    recXienStakeInfo.innerHTML = 'Vốn: <strong>11.000K</strong> ➔ Ăn: <strong>12M / 84M / 384M</strong>';
+                }
+                if (btnCopyRecX4) {
+                    btnCopyRecX4.innerHTML = '<i class="bi bi-clipboard-check"></i> Copy Xiên 4 (11M)';
+                    btnCopyRecX4.onclick = () => {
+                        const nums = (recX4.numbers || []).join(' ');
+                        copyToClipboard(nums, `Đã copy Dàn Tứ Thủ Xiên 4: ${nums}`);
+                    };
+                }
+            } else if (currentXienTier === 'x3') {
+                if (recX4Title) recX4Title.textContent = recX3.title || 'Tam Thủ Xiên Quây (3 Số)';
+                if (recX4Roi) recX4Roi.textContent = 'Vốn 4M · 4 Vé';
+                if (recX4Rationale) recX4Rationale.textContent = recX3.rationale || '1 vé Xiên 3 (1M) + 3 vé Xiên 2 (mỗi vé 1M). Về 2 con ăn 8M (lãi +4M), về 3 con nổ 64M (lãi +60M)!';
+                if (recX4Numbers) {
+                    recX4Numbers.innerHTML = (recX3.numbers || []).map(n => numberBadge(n, 'amber')).join('');
+                }
+                if (recXienStakeInfo) {
+                    recXienStakeInfo.innerHTML = 'Vốn: <strong>4.000K</strong> ➔ 2 con lãi <strong>+4M</strong> · 3 con lãi <strong>+60M</strong>';
+                }
+                if (btnCopyRecX4) {
+                    btnCopyRecX4.innerHTML = '<i class="bi bi-clipboard-check"></i> Copy Xiên 3 (4M)';
+                    btnCopyRecX4.onclick = () => {
+                        const nums = (recX3.numbers || []).join(' ');
+                        copyToClipboard(nums, `Đã copy Dàn Tam Thủ Xiên 3: ${nums}`);
+                    };
+                }
+            } else if (currentXienTier === 'x2') {
+                if (recX4Title) recX4Title.textContent = '🌟 Golden Xiên 2 (Cặp Song Thủ Tương Quan)';
+                if (recX4Roi) recX4Roi.textContent = 'Nổ ~48.2% · Vốn 1M';
+                if (recX4Rationale) recX4Rationale.textContent = 'Tuyển chọn các cặp số có lực hút tương quan đồng xuất cao nhất từ Top 4 (vốn 1.000K/cặp, ăn 10M - 17M).';
+                if (recX4Numbers) {
+                    recX4Numbers.innerHTML = recX2List.map(pairItem => {
+                        const pairNums = pairItem.numbers || pairItem.pair || [];
+                        return `<span class="inline-flex items-center gap-1 rounded-lg bg-emerald-100/90 border border-emerald-300 px-2.5 py-1 text-xs font-black text-emerald-950 font-mono">${Array.isArray(pairNums) ? pairNums.join(' - ') : pairNums}</span>`;
+                    }).join(' ');
+                }
+                if (recXienStakeInfo) {
+                    recXienStakeInfo.innerHTML = 'Vốn: <strong>1.000K/cặp</strong> ➔ Ăn: <strong>10.000K ➔ 17.000K</strong>';
+                }
+                if (btnCopyRecX4) {
+                    btnCopyRecX4.innerHTML = '<i class="bi bi-clipboard-check"></i> Copy Cặp Xiên 2';
+                    btnCopyRecX4.onclick = () => {
+                        const allPairsText = recX2List.map(p => {
+                            const pairNums = p.numbers || p.pair || [];
+                            return Array.isArray(pairNums) ? pairNums.join('-') : pairNums;
+                        }).join(', ');
+                        copyToClipboard(allPairsText, `Đã copy Cặp Xiên 2 Vàng: ${allPairsText}`);
+                    };
+                }
+            }
         }
-        if (btnCopyRecX4) {
-            btnCopyRecX4.onclick = () => {
-                const nums = (recX4.numbers || []).join(' ');
-                copyToClipboard(nums, `Đã copy Xiên 4 (${recX4.title || recX4.label || ''}): ${nums}`);
-            };
-        }
+
+        if (tabXien4Mode) tabXien4Mode.onclick = () => { currentXienTier = 'x4'; updateXienCardUI(); };
+        if (tabXien3Mode) tabXien3Mode.onclick = () => { currentXienTier = 'x3'; updateXienCardUI(); };
+        if (tabXien2Mode) tabXien2Mode.onclick = () => { currentXienTier = 'x2'; updateXienCardUI(); };
+
+        updateXienCardUI();
 
         // Curated Suite Cards (6 Options)
         const curatedSuiteEl = document.getElementById('lotoCuratedSuiteCards');
@@ -737,22 +830,22 @@
                     numbers: top6Nums
                 },
                 {
-                    title: 'Xiên 4 Vua (X1)',
-                    tag: recX4.methodLabel ? `${recX4.methodLabel} · X1` : 'Rank 1-4',
-                    badge: 'Ăn 44.0%',
-                    roi: '+61.0%',
-                    stake: '11.000K',
-                    winCondition: 'Ăn 12M / 84M / 384M',
-                    numbers: x1Nums
+                    title: 'Tam Thủ Xiên Quây',
+                    tag: '3 Số (4 Vé)',
+                    badge: 'Vốn Nhẹ 4M',
+                    roi: 'Về 2 Ăn +4M',
+                    stake: '4.000K',
+                    winCondition: '1 Xiên 3 + 3 Xiên 2 · Nổ 3 số ăn +60M',
+                    numbers: recX3.numbers || (recStd.numbers || rankedNumbers).slice(0, 3)
                 },
                 {
-                    title: 'Xiên 4 Á Quân (X2)',
-                    tag: 'Rank 5-8',
-                    badge: 'Ăn 40.1%',
-                    roi: '+51.5%',
+                    title: 'Tứ Thủ Xiên Quây',
+                    tag: recX4.methodLabel ? `${recX4.methodLabel}` : 'Xiên Tinh Hoa',
+                    badge: 'Live: +18M',
+                    roi: '+9.1% Live',
                     stake: '11.000K',
-                    winCondition: 'Ăn 12M / 84M / 384M',
-                    numbers: x2Nums
+                    winCondition: 'Ăn 12M / 84M / 384M · Nổ 6/18 kỳ',
+                    numbers: recX4.numbers || ['36', '54', '32', '88']
                 }
             ];
 
