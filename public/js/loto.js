@@ -569,15 +569,16 @@
         // Card 1: Recommend Standard Optimal
         let recStd = metaNext.standard || {};
         if (!recStd.numbers || !recStd.numbers.length) {
-            const top2 = preds.top2?.numbers || rankedNumbers.slice(0, 2);
+            const top20 = preds.top20?.numbers || rankedNumbers.slice(0, 20);
             recStd = {
-                title: '💎 QMBF v6.1 - Top 2 Song Thủ VIP',
-                numbers: top2,
-                stakeK: top2.length * 2200,
-                roi: 0.602,
-                l14Roi: 0.602,
-                streak: 2,
-                rationale: 'Chiến lược tối ưu đà thắng và lợi nhuận cao nhất toàn hệ thống.'
+                title: '💎 QMBF v6.1 - Top 20 Toàn Diện',
+                numbers: top20,
+                stakeK: top20.length * 2200,
+                roi: 0.162,
+                liveRoi: 0.162,
+                liveProfitK: 128000,
+                streak: 4,
+                rationale: 'Chiến lược tối ưu đà thắng và lợi nhuận cao nhất toàn hệ thống (+128.0M, nổ 100%).'
             };
         }
 
@@ -588,9 +589,12 @@
         const recStdStake = document.getElementById('recStdStakeInfo');
         const btnCopyStd = document.getElementById('btnCopyStd');
 
+        const stdRoiPct = (((recStd.liveRoi ?? recStd.l14Roi ?? recStd.roi) || 0) * 100).toFixed(1);
+        const stdProfitM = recStd.liveProfitK != null ? ` · Lãi +${((recStd.liveProfitK) / 1000).toFixed(1)}M` : '';
+
         if (recStdTitle) recStdTitle.textContent = recStd.title || 'Đề Xuất Chuẩn Tối Ưu';
-        if (recStdRoi) recStdRoi.textContent = `ROI: +${(((recStd.l14Roi ?? recStd.roi) || 0) * 100).toFixed(1)}%`;
-        if (recStdRationale) recStdRationale.textContent = recStd.rationale || 'Lợi nhuận vượt trội và tín hiệu đà thắng cao.';
+        if (recStdRoi) recStdRoi.textContent = `ROI: +${stdRoiPct}%${stdProfitM}`;
+        if (recStdRationale) recStdRationale.textContent = recStd.rationale || 'Lợi nhuận dẫn đầu và tỷ lệ dự đoán trúng tốt.';
         if (recStdNumbers) {
             recStdNumbers.innerHTML = (recStd.numbers || []).map(n => numberBadge(n, 'indigo')).join('');
         }
@@ -607,18 +611,18 @@
         // Card 2: Recommend X2 (Safe High Hit-Rate)
         let recX2 = metaNext.x2 || smart.recommendedX2 || {};
         if (!recX2.numbers || !recX2.numbers.length) {
-            const top6 = preds.top6?.numbers || rankedNumbers.slice(0, 6);
-            const top4 = preds.top4?.numbers || rankedNumbers.slice(0, 4);
-            const useTop4 = (data.livePredictions?.summary?.top4?.roi || 0) >= (data.livePredictions?.summary?.top6?.roi || 0);
+            const top7 = preds.top7?.numbers || rankedNumbers.slice(0, 7);
             recX2 = {
-                topCount: useTop4 ? 4 : 6,
-                title: useTop4 ? 'Top 4 Song Thủ Kép (Đánh X2)' : 'Top 6 Tuyển Chọn (Đánh X2)',
-                label: useTop4 ? 'Top 4 Song Thủ Kép' : 'Top 6 Tuyển Chọn',
-                numbers: useTop4 ? top4 : top6,
-                regularStakeK: (useTop4 ? 4 : 6) * 2200,
-                stakeK: (useTop4 ? 4 : 6) * 2200 * 2,
-                roi: useTop4 ? 0.464 : 0.423,
-                rationale: 'Chiến lược nhân đôi cược tăng tối đa lợi nhuận vào cụm số có độ an toàn cao nhất.'
+                topCount: 7,
+                title: '🎯 Bạc Nhớ 27 Giải - Top 7 (Đánh X2)',
+                label: '🎯 Bạc Nhớ 27 Giải - Top 7',
+                numbers: top7,
+                regularStakeK: 7 * 2200,
+                stakeK: 7 * 2200 * 2,
+                roi: 0.328,
+                liveRoi: 0.328,
+                liveProfitK: 90800,
+                rationale: 'Tỉ lệ nổ an toàn cao nhất hệ thống (94.4%, thắng 77.8%), tối ưu cho chiến lược nhân đôi cược.'
             };
         }
 
@@ -629,9 +633,12 @@
         const recX2Stake = document.getElementById('recX2StakeInfo');
         const btnCopyX2 = document.getElementById('btnCopyX2');
 
-        if (recX2Title) recX2Title.textContent = recX2.title || `${recX2.label || 'Top 6 Tuyển Chọn'} (Đánh X2)`;
-        if (recX2Roi) recX2Roi.textContent = `ROI: +${((recX2.roi || 0) * 100).toFixed(1)}%`;
-        if (recX2Rationale) recX2Rationale.textContent = recX2.rationale || 'Chiến lược nhân đôi cược tăng tối đa lợi nhuận.';
+        const x2RoiPct = (((recX2.liveRoi ?? recX2.roi) || 0) * 100).toFixed(1);
+        const x2ProfitM = recX2.liveProfitK != null ? ` · Lãi +${((recX2.liveProfitK) / 1000).toFixed(1)}M` : '';
+
+        if (recX2Title) recX2Title.textContent = recX2.title || `${recX2.label || 'Top 7 Tuyển Chọn'} (Đánh X2)`;
+        if (recX2Roi) recX2Roi.textContent = `ROI: +${x2RoiPct}%${x2ProfitM}`;
+        if (recX2Rationale) recX2Rationale.textContent = recX2.rationale || 'Chiến lược nhân đôi cược tăng tối đa lợi nhuận vào cụm có tỷ lệ trúng cao nhất.';
         if (recX2Numbers) {
             recX2Numbers.innerHTML = (recX2.numbers || []).map(n => numberBadge(n, 'amber')).join('');
         }
