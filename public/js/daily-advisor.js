@@ -262,7 +262,7 @@
                 <div>
                     <div class="flex items-center justify-between text-[11px] font-bold text-teal-300">
                         <span>🚀 Lô Đánh X2 (Nổ kép)</span>
-                        <span class="rounded bg-teal-400/20 px-1.5 py-0.5 text-[9px] font-black">15.4M/ngày</span>
+                        <span class="rounded bg-teal-400/20 px-1.5 py-0.5 text-[9px] font-black">30.8M/ngày (X2)</span>
                     </div>
                     <div class="mt-1.5 font-mono text-xl font-black text-teal-300">${moneyM(x2.profitK, { signed: true })}</div>
                 </div>
@@ -405,7 +405,7 @@
         const overlapContainer = byId('unifiedLoOverlapNumbers');
         if (overlapContainer) {
             overlapContainer.innerHTML = overlapNums.map(n => `
-                <div class="relative group cursor-pointer" title="Số trùng cực VIP: cược X2 (460K)">
+                <div class="relative group cursor-pointer" title="Số trùng cực VIP: cược X2 (4.4M/số - 4400K)">
                     <span class="inline-flex items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-500 border-2 border-amber-300 text-slate-950 font-mono text-sm font-black px-3 py-1.5 shadow-md hover:scale-110 transition-all">
                         ${n}
                     </span>
@@ -417,7 +417,7 @@
         const singleContainer = byId('unifiedLoSingleNumbers');
         if (singleContainer) {
             singleContainer.innerHTML = singleNums.map(n => `
-                <div class="relative group cursor-pointer" title="Số đơn bọc lót: cược X1 (230K)">
+                <div class="relative group cursor-pointer" title="Số đơn bọc lót: cược X1 (2.2M/số - 2200K)">
                     <span class="inline-flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-slate-200 font-mono text-xs font-bold px-2 py-1 shadow-sm hover:scale-105 transition-all">
                         ${n}
                     </span>
@@ -928,7 +928,7 @@
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
                             <div class="font-bold text-xs text-teal-950">${escapeHtml(x2MethodName)}</div>
-                            <div class="text-[10px] text-teal-700 font-medium">Nhân đôi cược (460K/số)</div>
+                            <div class="text-[10px] text-teal-700 font-medium">Nhân đôi cược X2: 4.4M/số (4400K)</div>
                         </td>
                         <td class="px-3 py-3">
                             <div class="flex flex-wrap gap-1.5">${chipsHtml || '<span class="text-slate-400">7 số X2</span>'}</div>

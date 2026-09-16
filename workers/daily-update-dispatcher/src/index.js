@@ -451,8 +451,8 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
       const singleNums = allMerged.filter(n => !overlapNums.includes(n));
       if (overlapNums.length) {
         lines.push(`  ⚡ <b>Dàn Gộp Mục 1 & 2 (${allMerged.length}s · Trùng cược X2):</b>`);
-        lines.push(`     🔥 <b>Cực VIP X2 (${overlapNums.length}s · 460K):</b> <b>${escapeHtml(formatNumberList(overlapNums))}</b>`);
-        lines.push(`     🛡️ <b>Bọc Lót X1 (${singleNums.length}s · 230K):</b> <b>${escapeHtml(formatNumberList(singleNums))}</b>`);
+        lines.push(`     🔥 <b>Cực VIP X2 (${overlapNums.length}s · 4.4M/số):</b> <b>${escapeHtml(formatNumberList(overlapNums))}</b>`);
+        lines.push(`     🛡️ <b>Bọc Lót X1 (${singleNums.length}s · 2.2M/số):</b> <b>${escapeHtml(formatNumberList(singleNums))}</b>`);
       }
     }
 
@@ -503,8 +503,8 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   // =========================================================================
   lines.push(
     `<b>4. 💡 KHUYẾN NGHỊ VỐN THỰC CHIẾN</b>`,
-    `• 🛡️ <b>Phòng thủ (50%)</b>: <b>Đề Tinh Hoa 30 số</b> (30M/ngày · trúng ~49%)`,
-    `• ⚔️ <b>Tấn công (50%)</b>: <b>Lô Tinh Hoa</b> — Chuẩn Top 20 (44M) + X2 Top 7 (15.4M) + Xiên 4 (11M). Tự chọn PP tốt nhất mỗi ngày.`
+    `• 🛡️ <b>Phòng thủ (50%)</b>: <b>Đề Tinh Hoa 30 số</b> (1M/số · 30M/ngày · trúng ~49%)`,
+    `• ⚔️ <b>Tấn công (50%)</b>: <b>Lô Tinh Hoa</b> — Chuẩn Top 20 (2.2M/số · 44M) + X2 Top 7 (4.4M/số · 30.8M) + Xiên 4 (11M quây).`
   );
 
   lines.push('', `<i>Dữ liệu tự động cập nhật · Snapshot minh bạch trên R2 &amp; GitHub Actions.</i>`);
