@@ -270,6 +270,53 @@
                                 <div id="unifiedLoX2Numbers" class="mt-2 flex flex-wrap gap-1.5 font-mono text-xs font-black text-slate-900"></div>
                             </div>
 
+                            <!-- ⚡ BẢNG TỔNG HỢP GỘP MỤC 1 & 2: SỐ TRÙNG ĐÁNH X2 -->
+                            <div class="mt-3 rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 border-2 border-amber-400/80 p-4 text-white shadow-md">
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-white/10 pb-3">
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="inline-flex items-center gap-1 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black px-2.5 py-0.5 uppercase tracking-wide">
+                                                <i class="bi bi-lightning-charge-fill"></i> TỔNG HỢP GỘP MỤC 1 & 2
+                                            </span>
+                                            <span class="text-xs font-bold text-amber-300">SỐ TRÙNG CƯỢC X2</span>
+                                        </div>
+                                        <p class="text-[11px] text-slate-300 mt-1">
+                                            Tổng hợp <strong class="text-white font-bold" id="unifiedLoMergeTotalCount">21 số</strong>: Số nào trùng đánh <strong class="text-amber-400 font-black">X2 (460K)</strong>, số riêng đánh <strong class="text-slate-300 font-bold">X1 (230K)</strong> bọc lót.
+                                        </p>
+                                    </div>
+                                    <div class="flex items-center gap-2 shrink-0">
+                                        <button type="button" id="btnCopyUnifiedLoOverlapX2" class="rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 px-3 py-1.5 text-xs font-black transition-all shadow-sm flex items-center gap-1">
+                                            <i class="bi bi-copy"></i> Copy Dàn X2
+                                        </button>
+                                        <button type="button" id="btnCopyUnifiedLoMergeAll" class="rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 text-xs font-black transition-all shadow-sm flex items-center gap-1">
+                                            <i class="bi bi-clipboard-check"></i> Copy Toàn Bộ
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Nhóm số trùng cược X2 -->
+                                <div class="mt-3 rounded-xl bg-amber-500/15 border border-amber-400/40 p-3">
+                                    <div class="flex items-center justify-between text-xs font-bold text-amber-300 mb-2">
+                                        <span class="flex items-center gap-1.5 uppercase font-black tracking-wide">
+                                            <i class="bi bi-fire text-amber-400"></i> NHÓM SỐ TRÙNG (CƯỢC X2 · 460K/SỐ · CỰC VIP):
+                                        </span>
+                                        <span class="rounded bg-amber-400 text-slate-950 text-[10px] font-black px-2 py-0.5 uppercase" id="unifiedLoMergeOverlapBadge">6 số</span>
+                                    </div>
+                                    <div id="unifiedLoOverlapNumbers" class="flex flex-wrap gap-2"></div>
+                                </div>
+
+                                <!-- Nhóm số đơn cược X1 -->
+                                <div class="mt-2.5 rounded-xl bg-white/5 border border-white/10 p-3">
+                                    <div class="flex items-center justify-between text-xs font-bold text-slate-300 mb-2">
+                                        <span class="flex items-center gap-1.5 uppercase tracking-wide">
+                                            <i class="bi bi-shield-check text-indigo-400"></i> NHÓM SỐ ĐƠN (CƯỢC X1 · 230K/SỐ · BỌC LÓT):
+                                        </span>
+                                        <span class="rounded bg-white/10 text-slate-300 text-[10px] font-bold px-2 py-0.5" id="unifiedLoMergeSingleBadge">15 số</span>
+                                    </div>
+                                    <div id="unifiedLoSingleNumbers" class="flex flex-wrap gap-1.5"></div>
+                                </div>
+                            </div>
+
                             <!-- 3. Đánh Lô Xiên (Chỉ chọn 4 số vàng tốt nhất) -->
                             <div class="mt-3 rounded-2xl bg-amber-500/10 border-2 border-amber-400 p-4 shadow-xs">
                                 <div class="flex items-center justify-between">

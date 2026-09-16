@@ -385,6 +385,69 @@
             `).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
         }
 
+        // ⚡ TỔNG HỢP GỘP MỤC 1 & 2: SỐ TRÙNG ĐÁNH X2
+        const stdNums = (stdNext.numbers || []).map(v => String(v).padStart(2, '0'));
+        const x2Nums = (x2Next.numbers || []).map(v => String(v).padStart(2, '0'));
+        const stdSet = new Set(stdNums);
+        const overlapNums = x2Nums.filter(n => stdSet.has(n));
+        const allMerged = Array.from(new Set([...stdNums, ...x2Nums]));
+        const singleNums = allMerged.filter(n => !overlapNums.includes(n));
+
+        const totalMergeEl = byId('unifiedLoMergeTotalCount');
+        if (totalMergeEl) totalMergeEl.textContent = `${allMerged.length} số`;
+
+        const overlapBadge = byId('unifiedLoMergeOverlapBadge');
+        if (overlapBadge) overlapBadge.textContent = `${overlapNums.length} số`;
+
+        const singleBadge = byId('unifiedLoMergeSingleBadge');
+        if (singleBadge) singleBadge.textContent = `${singleNums.length} số`;
+
+        const overlapContainer = byId('unifiedLoOverlapNumbers');
+        if (overlapContainer) {
+            overlapContainer.innerHTML = overlapNums.map(n => `
+                <div class="relative group cursor-pointer" title="Số trùng cực VIP: cược X2 (460K)">
+                    <span class="inline-flex items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-500 border-2 border-amber-300 text-slate-950 font-mono text-sm font-black px-3 py-1.5 shadow-md hover:scale-110 transition-all">
+                        ${n}
+                    </span>
+                    <span class="absolute -top-2 -right-1 rounded-full bg-red-600 text-white font-black text-[9px] px-1.5 py-0.2 shadow">X2</span>
+                </div>
+            `).join('') || '<span class="text-slate-400 text-xs">Không có số trùng</span>';
+        }
+
+        const singleContainer = byId('unifiedLoSingleNumbers');
+        if (singleContainer) {
+            singleContainer.innerHTML = singleNums.map(n => `
+                <div class="relative group cursor-pointer" title="Số đơn bọc lót: cược X1 (230K)">
+                    <span class="inline-flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-slate-200 font-mono text-xs font-bold px-2 py-1 shadow-sm hover:scale-105 transition-all">
+                        ${n}
+                    </span>
+                    <span class="absolute -top-1.5 -right-1 rounded-full bg-slate-600 text-slate-200 text-[8px] font-bold px-1">X1</span>
+                </div>
+            `).join('') || '<span class="text-slate-400 text-xs">Không có số</span>';
+        }
+
+        const btnCopyOverlapX2 = byId('btnCopyUnifiedLoOverlapX2');
+        if (btnCopyOverlapX2) {
+            btnCopyOverlapX2.onclick = () => {
+                if (overlapNums.length) {
+                    copyNumbers(overlapNums, ', ');
+                } else {
+                    showToast('Không có số trùng nào!');
+                }
+            };
+        }
+
+        const btnCopyMergeAll = byId('btnCopyUnifiedLoMergeAll');
+        if (btnCopyMergeAll) {
+            btnCopyMergeAll.onclick = () => {
+                if (allMerged.length) {
+                    copyNumbers(allMerged, ', ');
+                } else {
+                    showToast('Không có số nào!');
+                }
+            };
+        }
+
         const xi4RoiEl = byId('unifiedLoXi4LiveRoi');
         if (xi4RoiEl) xi4RoiEl.textContent = `ROI Live ${percent(loSummary?.xien4?.roi || 0.091)}`;
 
@@ -1038,6 +1101,16 @@
 
         const btnLoX2 = byId('btnCopyUnifiedLoX2');
         if (btnLoX2) btnLoX2.onclick = () => copyNumbers(loX2);
+
+        const stdSet = new Set((loStd || []).map(v => String(v).padStart(2, '0')));
+        const overlapNums = (loX2 || []).map(v => String(v).padStart(2, '0')).filter(n => stdSet.has(n));
+        const allMerged = Array.from(new Set([...(loStd || []).map(v => String(v).padStart(2, '0')), ...(loX2 || []).map(v => String(v).padStart(2, '0'))]));
+
+        const btnOverlapX2 = byId('btnCopyUnifiedLoOverlapX2');
+        if (btnOverlapX2) btnOverlapX2.onclick = () => copyNumbers(overlapNums, ', ');
+
+        const btnMergeAll = byId('btnCopyUnifiedLoMergeAll');
+        if (btnMergeAll) btnMergeAll.onclick = () => copyNumbers(allMerged, ', ');
 
         // Sub-tabs chuyển danh mục đối soát
         document.querySelectorAll('.diary-cat-btn').forEach(btn => {

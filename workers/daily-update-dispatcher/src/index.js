@@ -441,6 +441,21 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
       lines.push(`     <b>${escapeHtml(formatNumberList(x2Next.numbers))}</b>`);
     }
 
+    // Dàn Gộp Mục 1 & 2 (Số trùng cược X2)
+    const stdNums = (stdNext.numbers || []).map(v => String(v).padStart(2, '0'));
+    const x2Nums = (x2Next.numbers || []).map(v => String(v).padStart(2, '0'));
+    if (stdNums.length && x2Nums.length) {
+      const stdSet = new Set(stdNums);
+      const overlapNums = x2Nums.filter(n => stdSet.has(n));
+      const allMerged = Array.from(new Set([...stdNums, ...x2Nums]));
+      const singleNums = allMerged.filter(n => !overlapNums.includes(n));
+      if (overlapNums.length) {
+        lines.push(`  ⚡ <b>Dàn Gộp Mục 1 & 2 (${allMerged.length}s · Trùng cược X2):</b>`);
+        lines.push(`     🔥 <b>Cực VIP X2 (${overlapNums.length}s · 460K):</b> <b>${escapeHtml(formatNumberList(overlapNums))}</b>`);
+        lines.push(`     🛡️ <b>Bọc Lót X1 (${singleNums.length}s · 230K):</b> <b>${escapeHtml(formatNumberList(singleNums))}</b>`);
+      }
+    }
+
     const xi4MethodName = xi4Next.methodName || xi4Next.methodId || xi4Next.method;
     if (xi4MethodName && xi4Next.numbers?.length) {
       const roi = metaAdvSummary?.xien4?.roi != null ? ` · ROI Live +${(metaAdvSummary.xien4.roi * 100).toFixed(1)}%` : '';
