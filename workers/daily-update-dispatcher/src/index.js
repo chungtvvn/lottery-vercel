@@ -347,6 +347,52 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   ];
 
   // =========================================================================
+  // 0. 🏆 BÁO CÁO KẾT QUẢ ĐỐI SOÁT HÔM NAY (NẾU ĐÃ CÓ KẾT QUẢ MỞ THƯỞNG)
+  // =========================================================================
+  const lastSettledDe = metaSettledList[metaSettledList.length - 1] || null;
+  const lastSettledLo = liveDiaryEntries.filter(r => r.settled !== false && (r.db || r.dayProfitK !== undefined)).pop() || null;
+  const settledDate = lastSettledDe?.predictionDate || lastSettledDe?.date || lastSettledLo?.date;
+
+  if (settledDate && (lastSettledDe?.actualSpecial != null || lastSettledLo?.db != null)) {
+    const actualSpecial = lastSettledDe?.actualSpecial ?? lastSettledDe?.actual ?? lastSettledLo?.db;
+    const specStr = String(actualSpecial).padStart(2, '0');
+    const deIsHit = Boolean(lastSettledDe?.isHit || (lastSettledDe?.profitK || 0) > 0 || lastSettledDe?.hitType === 'win_x1');
+    const deProfitK = Number(lastSettledDe?.profitK ?? (deIsHit ? 54000 : -30000));
+    const inCore10 = (lastSettledDe?.core10 || []).map(normalizeLotteryNumber).includes(specStr);
+
+    const dmRow = (advisorPayload?.loDualMerge?.settledLedger || []).find(r => r.date === settledDate);
+    const actual27List = (dmRow?.actual27 || []).map(normalizeLotteryNumber);
+
+    const stdHits = Number(lastSettledLo?.standard?.hits ?? 0);
+    const stdProfitK = Number(lastSettledLo?.standard?.profitK ?? (stdHits * 8000 - 44000));
+    const stdHitNums = (lastSettledLo?.standard?.numbers || []).map(normalizeLotteryNumber).filter(n => actual27List.includes(n));
+    const stdHitStr = stdHitNums.length ? ` (Nổ: <b>${stdHitNums.join(', ')}</b>)` : '';
+
+    const x2Hits = Number(lastSettledLo?.x2?.hits ?? 0);
+    const x2ProfitK = Number(lastSettledLo?.x2?.profitK ?? (x2Hits * 16000 - 30800));
+    const x2HitNums = (lastSettledLo?.x2?.numbers || []).map(normalizeLotteryNumber).filter(n => actual27List.includes(n));
+    const x2HitStr = x2HitNums.length ? ` (Nổ: <b>${x2HitNums.join(', ')}</b>)` : '';
+
+    const xi4Hits = Number(lastSettledLo?.xien4?.hits ?? 0);
+    const xi4ProfitK = Number(lastSettledLo?.xien4?.profitK ?? -11000);
+
+    const todayTotalProfitK = deProfitK + (lastSettledLo?.dayProfitK ?? (stdProfitK + x2ProfitK + xi4ProfitK));
+
+    lines.push(
+      `🏆 <b>BÁO CÁO KẾT QUẢ ĐỐI SOÁT HÔM NAY (${escapeHtml(displayDate(settledDate))})</b>`,
+      `🎯 <b>Giải Đặc Biệt (Đề):</b> <b>${escapeHtml(specStr)}</b>`,
+      `• 💎 <b>Đề Gợi Ý (Dàn 30)</b>: ${deIsHit ? `🎉 <b>TRÚNG ĐỀ ${escapeHtml(specStr)}</b> (+54M)` : '❌ <b>Trượt (-30M)</b>'}${inCore10 ? ' · <i>(Nổ ngay Core 10 VIP!)</i>' : ''}`,
+      `• 🏆 <b>Lô Chuẩn (Top 20)</b>: Nổ <b>${stdHits} nháy</b>${stdHitStr} · <b>${formatM(stdProfitK)}</b>`,
+      `• 🚀 <b>Lô X2 (Top 7)</b>: ${x2ProfitK > 0 ? '🚀 <b>THẮNG</b>' : '❌ Trượt'} nổ <b>${x2Hits} nháy</b>${x2HitStr} · <b>${formatM(x2ProfitK)}</b>`,
+      `• 💎 <b>Lô Xiên 4 (Quây)</b>: ${xi4Hits >= 2 ? `🎉 <b>Ăn ${xi4Hits}/4 con</b>` : `❌ Trượt (${xi4Hits}/4 con)`} · <b>${formatM(xi4ProfitK)}</b>`,
+      `💰 <b>TỔNG LÃI RÒNG HÔM NAY:</b> <b>${formatM(todayTotalProfitK)}</b> ${todayTotalProfitK > 0 ? '🎉 <b>(THẮNG LỢI RỰC RỠ)</b>' : ''}`,
+      divider,
+      `🔮 <b>GỢI Ý DÀN SỐ ĐÁNH TIẾP THEO (${escapeHtml(displayDate(predictionDate))})</b>`,
+      divider
+    );
+  }
+
+  // =========================================================================
   // 1. 💎 ĐỀ TINH HOA — DÀN 30 SỐ GỢI Ý
   // =========================================================================
   lines.push(`<b>1. 💎 ĐỀ TINH HOA — DÀN 30 SỐ GỢI Ý</b>`);
@@ -469,7 +515,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   // =========================================================================
   const NEW_BATTLE_START_DATE = '2026-09-16';
   const settledNewPeriodDe = metaSettledList.filter(r => (r.predictionDate || r.date) >= NEW_BATTLE_START_DATE);
-  const settledNewPeriodLo = liveDiaryEntries.filter(r => (r.date || r.predictionDate) >= NEW_BATTLE_START_DATE && !r.isLive);
+  const settledNewPeriodLo = liveDiaryEntries.filter(r => (r.date || r.predictionDate) >= NEW_BATTLE_START_DATE && r.settled !== false && (r.db || r.dayProfitK !== undefined));
 
   lines.push(`<b>7. 📊 BẢNG THEO DÕI THỰC CHIẾN THEO GỢI Ý (BẮT ĐẦU TỪ 16/09/2026)</b>`);
   lines.push(`<i>Thống kê thực tế hoàn toàn theo các dàn gợi ý ở trên — Mốc khởi điểm 0đ</i>`);

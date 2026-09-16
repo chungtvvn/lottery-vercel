@@ -475,6 +475,21 @@ export async function GET(request) {
             (dynamicMetaAdvisor?.allDiary || []).forEach(e => diaryMap.set(e.date, e));
             (dynamicMetaAdvisor?.liveDiary || []).forEach(e => diaryMap.set(e.date, e));
 
+            if (dynamicMetaAdvisor?.nextPrediction) {
+                if (dynamicMetaAdvisor.nextPrediction.standard?.numbers?.length) {
+                    predictions.top20 = {
+                        numbers: dynamicMetaAdvisor.nextPrediction.standard.numbers,
+                        overlapNumbers: dynamicMetaAdvisor.nextPrediction.x2?.numbers || []
+                    };
+                }
+                if (dynamicMetaAdvisor.nextPrediction.x2?.numbers?.length) {
+                    predictions.top7 = {
+                        numbers: dynamicMetaAdvisor.nextPrediction.x2.numbers,
+                        overlapNumbers: dynamicMetaAdvisor.nextPrediction.x2?.numbers || []
+                    };
+                }
+            }
+
             const countsList = [1, 2, 4, 6, 7, 8, 10, 20];
             const liveCumProfitsMap = {};
             countsList.forEach(c => { liveCumProfitsMap[`top${c}`] = 0; });
@@ -493,11 +508,29 @@ export async function GET(request) {
                 countsList.forEach(c => {
                     const key = `top${c}`;
                     const m = r.methods?.[key];
-                    const betNumbers = m?.betNumbers || (r.rankedNumbers || []).slice(0, c);
-                    const hits = m?.hits || 0;
-                    const stakeK = c * 2200;
-                    const payoutK = hits * 8000;
-                    const profitK = payoutK - stakeK;
+                    let betNumbers = m?.betNumbers || (r.rankedNumbers || []).slice(0, c);
+                    let hits = m?.hits || 0;
+                    let stakeK = c * 2200;
+                    let payoutK = hits * 8000;
+                    let profitK = payoutK - stakeK;
+
+                    const diaryEntry = diaryMap.get(r.date);
+                    if (diaryEntry) {
+                        if (c === 20 && diaryEntry.standard?.numbers?.length) {
+                            betNumbers = diaryEntry.standard.numbers;
+                            hits = diaryEntry.standard.hits ?? hits;
+                            stakeK = diaryEntry.standard.stakeK ?? stakeK;
+                            payoutK = diaryEntry.standard.payoutK ?? payoutK;
+                            profitK = diaryEntry.standard.profitK ?? (payoutK - stakeK);
+                        } else if (c === 7 && diaryEntry.x2?.numbers?.length) {
+                            betNumbers = diaryEntry.x2.numbers;
+                            hits = diaryEntry.x2.hits ?? hits;
+                            stakeK = diaryEntry.x2.stakeK ?? stakeK;
+                            payoutK = diaryEntry.x2.payoutK ?? payoutK;
+                            profitK = diaryEntry.x2.profitK ?? (payoutK - stakeK);
+                        }
+                    }
+
                     const isWin = profitK > 0;
                     if (isLive) {
                         liveCumProfitsMap[key] += profitK;

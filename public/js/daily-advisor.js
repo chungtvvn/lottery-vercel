@@ -211,7 +211,7 @@
         // Determine active slice based on unifiedTimeframe
         const isSep16Mode = (unifiedTimeframe === 'sep16');
         const activeDeRows = deLedger.filter(r => (r.predictionDate || r.date) >= '2026-09-16');
-        const activeLoDiary = loDiary.filter(r => (r.date || r.predictionDate) >= '2026-09-16' && !r.isLive);
+        const activeLoDiary = loDiary.filter(r => (r.date || r.predictionDate) >= '2026-09-16' && r.settled !== false);
 
         const liveDeRows = deLedger.filter(r => (r.predictionDate || r.date) >= '2026-08-28');
         const liveDeProfitK = liveDeRows.reduce((s, r) => s + (r.profitK ?? (r.isHit ? 54000 : -30000)), 0);
@@ -348,11 +348,11 @@
                         <span>👑 TỔNG ĐỀ + LÔ</span>
                         <span class="rounded bg-emerald-400 text-slate-950 px-1.5 py-0.5 text-[9px] font-black uppercase">Đỉnh Cao</span>
                     </div>
-                    <div class="mt-1.5 font-mono text-xl font-black text-emerald-300">${moneyM(totalLiveProfitK, { signed: true })}</div>
+                    <div class="mt-1.5 font-mono text-xl font-black text-emerald-300">${moneyM(displayTotalProfitK, { signed: true })}</div>
                 </div>
                 <div class="mt-2 text-[10px] text-emerald-200 font-bold flex items-center justify-between">
-                    <span>Lãi từ 16/09: <strong>${moneyM(sep16DeProfitK, { signed: true })}</strong></span>
-                    <span class="text-amber-300">18 kỳ Live</span>
+                    <span>${isSep16Mode ? 'Lãi từ 16/09:' : 'Lãi toàn bộ:'} <strong>${moneyM(displayTotalProfitK, { signed: true })}</strong></span>
+                    <span class="text-amber-300">${isSep16Mode ? (activeDeRows.length || 1) + ' kỳ' : (loDiary.length || 19) + ' kỳ Live'}</span>
                 </div>
             </div>
         `;
