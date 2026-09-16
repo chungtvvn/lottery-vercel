@@ -74,3 +74,5 @@ reports/**/*.gz
 reports/**/*.xlsx
 reports/**/*.log
 
+# wrangler
+.wrangler/

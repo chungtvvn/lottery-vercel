@@ -201,34 +201,79 @@
         renderUnifiedCombatDiary(deLedger, loDiary, loAllDiary);
 
         // 5. Wire buttons & controls
-        setupUnifiedCombatControls(metaRec, loNext, deLedger, loDiary, loAllDiary);
+        setupUnifiedCombatControls(metaRec, loNext, deLedger, loDiary, loAllDiary, loSummary, metaLearnerSummary);
     }
 
     function renderUnifiedKpiCards(deLedger, loDiary, loSummary, metaLearnerSummary) {
         const cardsEl = byId('unifiedKpiSummaryCards');
         if (!cardsEl) return;
 
-        // De stats
+        // Determine active slice based on unifiedTimeframe
+        const isSep16Mode = (unifiedTimeframe === 'sep16');
+        const activeDeRows = deLedger.filter(r => (r.predictionDate || r.date) >= '2026-09-16');
+        const activeLoDiary = loDiary.filter(r => (r.date || r.predictionDate) >= '2026-09-16' && !r.isLive);
+
         const liveDeRows = deLedger.filter(r => (r.predictionDate || r.date) >= '2026-08-28');
         const liveDeProfitK = liveDeRows.reduce((s, r) => s + (r.profitK ?? (r.isHit ? 54000 : -30000)), 0);
         const liveDeWins = liveDeRows.filter(r => (r.profitK > 0 || r.isHit || r.hitType === 'win_x1')).length;
         const liveDeDays = liveDeRows.length || 1;
 
-        const sep16DeRows = deLedger.filter(r => (r.predictionDate || r.date) >= '2026-09-16');
-        const sep16DeProfitK = sep16DeRows.reduce((s, r) => s + (r.profitK ?? (r.isHit ? 54000 : -30000)), 0);
-
-        // Lo stats
         const std = loSummary.standard || {};
         const x2 = loSummary.x2 || {};
         const xi4 = loSummary.xien4 || {};
         const combo = loSummary.combo || {};
 
-        const totalLiveProfitK = liveDeProfitK + (combo.profitK || 0);
+        let displayDeProfitK = liveDeProfitK;
+        let deSubText = `Trúng <strong>${liveDeWins}/${liveDeDays}</strong> ngày (${percent(liveDeWins / liveDeDays)})`;
+        let displayStdProfitK = std.profitK || 0;
+        let stdSubText = `Thắng <strong>${std.winDays || 0}/${std.days || liveDeDays}</strong> · ROI <strong>${percent(std.roi)}</strong>`;
+        let displayX2ProfitK = x2.profitK || 0;
+        let x2SubText = `Thắng <strong>${x2.winDays || 0}/${x2.days || liveDeDays}</strong> · ROI <strong>${percent(x2.roi)}</strong>`;
+        let displayXi4ProfitK = xi4.profitK || 0;
+        let xi4SubText = `Ăn <strong>${xi4.winDays || 0}/${xi4.days || liveDeDays}</strong> kỳ · ROI <strong>${percent(xi4.roi)}</strong>`;
+        let displayTotalProfitK = liveDeProfitK + (combo.profitK || 0);
+
+        let heroText = `LIVE ${loDiary.length || 19} KỲ (28/08→15/09): ${moneyM(displayTotalProfitK, { signed: true })} TỔNG LÃI`;
+
+        if (isSep16Mode) {
+            if (activeDeRows.length === 0 && activeLoDiary.length === 0) {
+                displayDeProfitK = 0;
+                deSubText = `⏳ Chờ mở thưởng 18:15 (Kỳ 1)`;
+                displayStdProfitK = 0;
+                stdSubText = `⏳ Chờ mở thưởng 18:15 (Kỳ 1)`;
+                displayX2ProfitK = 0;
+                x2SubText = `⏳ Chờ mở thưởng 18:15 (Kỳ 1)`;
+                displayXi4ProfitK = 0;
+                xi4SubText = `⏳ Chờ mở thưởng 18:15 (Kỳ 1)`;
+                displayTotalProfitK = 0;
+                heroText = `MỐC THỰC CHIẾN TỪ 16/09/2026: 0 VNĐ (CHỜ MỞ THƯỞNG 18:15)`;
+            } else {
+                displayDeProfitK = activeDeRows.reduce((s, r) => s + (r.profitK ?? (r.isHit ? 54000 : -30000)), 0);
+                const deWins = activeDeRows.filter(r => (r.profitK > 0 || r.isHit)).length;
+                const deDays = activeDeRows.length;
+                deSubText = `Trúng <strong>${deWins}/${deDays}</strong> ngày (${percent(deWins / (deDays || 1))})`;
+
+                displayStdProfitK = activeLoDiary.reduce((s, r) => s + (r.standard?.profitK || 0), 0);
+                const stdWins = activeLoDiary.filter(r => (r.standard?.hits || 0) > 0).length;
+                stdSubText = `Thắng <strong>${stdWins}/${activeLoDiary.length || 1}</strong>`;
+
+                displayX2ProfitK = activeLoDiary.reduce((s, r) => s + (r.x2?.profitK || 0), 0);
+                const x2Wins = activeLoDiary.filter(r => (r.x2?.hits || 0) > 0).length;
+                x2SubText = `Thắng <strong>${x2Wins}/${activeLoDiary.length || 1}</strong>`;
+
+                displayXi4ProfitK = activeLoDiary.reduce((s, r) => s + (r.xien4?.profitK || 0), 0);
+                const xi4Wins = activeLoDiary.filter(r => (r.xien4?.profitK || 0) > 0).length;
+                xi4SubText = `Ăn <strong>${xi4Wins}/${activeLoDiary.length || 1}</strong> kỳ`;
+
+                displayTotalProfitK = displayDeProfitK + displayStdProfitK + displayX2ProfitK + displayXi4ProfitK;
+                heroText = `MỐC MỚI TỪ 16/09/2026 (${deDays} KỲ): ${moneyM(displayTotalProfitK, { signed: true })} TỔNG LÃI`;
+            }
+        }
 
         // Update Hero badge
         const heroBadge = byId('heroUnifiedLiveBadge');
         if (heroBadge) {
-            heroBadge.innerHTML = `<i class="bi bi-trophy-fill mr-1 text-amber-300"></i> LIVE ${loDiary.length || 18} KỲ: ${moneyM(totalLiveProfitK, { signed: true })} TỔNG LÃI`;
+            heroBadge.innerHTML = `<i class="bi bi-trophy-fill mr-1 text-amber-300"></i> ${heroText}`;
         }
 
         cardsEl.innerHTML = `
@@ -238,10 +283,10 @@
                         <span>💎 Đề Tinh Hoa (30s)</span>
                         <span class="rounded bg-amber-400/20 px-1.5 py-0.5 text-[9px] font-black">30M/ngày</span>
                     </div>
-                    <div class="mt-1.5 font-mono text-xl font-black text-amber-300">${moneyM(liveDeProfitK, { signed: true })}</div>
+                    <div class="mt-1.5 font-mono text-xl font-black text-amber-300">${moneyM(displayDeProfitK, { signed: true })}</div>
                 </div>
                 <div class="mt-2 text-[10px] text-amber-200/80 font-semibold">
-                    Trúng <strong>${liveDeWins}/${liveDeDays}</strong> ngày (${percent(liveDeWins / liveDeDays)})
+                    ${deSubText}
                 </div>
             </div>
 
@@ -251,10 +296,10 @@
                         <span>🏆 Lô Chuẩn Tối Ưu</span>
                         <span class="rounded bg-indigo-400/20 px-1.5 py-0.5 text-[9px] font-black">44M/ngày</span>
                     </div>
-                    <div class="mt-1.5 font-mono text-xl font-black text-indigo-300">${moneyM(std.profitK, { signed: true })}</div>
+                    <div class="mt-1.5 font-mono text-xl font-black text-indigo-300">${moneyM(displayStdProfitK, { signed: true })}</div>
                 </div>
                 <div class="mt-2 text-[10px] text-indigo-200/80 font-semibold">
-                    Thắng <strong>${std.winDays || 0}/${std.days || liveDeDays}</strong> · ROI <strong>${percent(std.roi)}</strong>
+                    ${stdSubText}
                 </div>
             </div>
 
@@ -264,10 +309,10 @@
                         <span>🚀 Lô Đánh X2 (Nổ kép)</span>
                         <span class="rounded bg-teal-400/20 px-1.5 py-0.5 text-[9px] font-black">30.8M/ngày (X2)</span>
                     </div>
-                    <div class="mt-1.5 font-mono text-xl font-black text-teal-300">${moneyM(x2.profitK, { signed: true })}</div>
+                    <div class="mt-1.5 font-mono text-xl font-black text-teal-300">${moneyM(displayX2ProfitK, { signed: true })}</div>
                 </div>
                 <div class="mt-2 text-[10px] text-teal-200/80 font-semibold">
-                    Thắng <strong>${x2.winDays || 0}/${x2.days || liveDeDays}</strong> · ROI <strong>${percent(x2.roi)}</strong>
+                    ${x2SubText}
                 </div>
             </div>
 
@@ -277,10 +322,10 @@
                         <span>💎 Lô Xiên 4 Quây</span>
                         <span class="rounded bg-amber-400/20 px-1.5 py-0.5 text-[9px] font-black">11M/ngày</span>
                     </div>
-                    <div class="mt-1.5 font-mono text-xl font-black text-amber-300">${moneyM(xi4.profitK, { signed: true })}</div>
+                    <div class="mt-1.5 font-mono text-xl font-black text-amber-300">${moneyM(displayXi4ProfitK, { signed: true })}</div>
                 </div>
                 <div class="mt-2 text-[10px] text-amber-200/80 font-semibold">
-                    Ăn <strong>${xi4.winDays || 0}/${xi4.days || liveDeDays}</strong> kỳ · ROI <strong>${percent(xi4.roi)}</strong>
+                    ${xi4SubText}
                 </div>
             </div>
 
@@ -693,6 +738,7 @@
                     });
                     unifiedTimeframe = 'live';
                     renderUnifiedCombatDiary(deLedger, loDiary, loAllDiary);
+                    renderUnifiedKpiCards(deLedger, loDiary, globalLoSummary, globalMetaSummary);
                 };
             }
             const rCount = byId('unifiedDiaryRowCount');
@@ -1080,7 +1126,13 @@
         }).join('');
     }
 
-    function setupUnifiedCombatControls(metaRec, loNext, deLedger, loDiary, loAllDiary) {
+    let globalLoSummary = null;
+    let globalMetaSummary = null;
+
+    function setupUnifiedCombatControls(metaRec, loNext, deLedger, loDiary, loAllDiary, loSummary, metaLearnerSummary) {
+        globalLoSummary = loSummary;
+        globalMetaSummary = metaLearnerSummary;
+
         const std30 = metaRec?.standard30 || metaRec?.numbers || [];
         const core10 = metaRec?.core10 || [];
         const core20 = metaRec?.core20 || [];
@@ -1137,6 +1189,7 @@
                 btn.classList.remove('text-slate-600');
                 unifiedTimeframe = btn.dataset.unifiedTimeframe;
                 renderUnifiedCombatDiary(deLedger, loDiary, loAllDiary);
+                renderUnifiedKpiCards(deLedger, loDiary, globalLoSummary, globalMetaSummary);
             };
         });
 
