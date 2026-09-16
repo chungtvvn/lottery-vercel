@@ -174,7 +174,7 @@ function settleFromRaw(payload, rawRows) {
     const lastMetaLearnerDate = normalizeDate(metaLearner?.settledLedger?.at(-1)?.date);
     if (!metaLearner || !Array.isArray(metaLearner.settledLedger) || metaLearner.settledLedger.length === 0 || (latestRawDate && lastMetaLearnerDate && lastMetaLearnerDate < latestRawDate)) {
         const { buildMetaLearnerAdvisor } = require('@/lib/services/metaLearnerAdvisorService');
-        metaLearner = buildMetaLearnerAdvisor(historyPayload, rawRows, { existingAdvisorCache: payload });
+        metaLearner = buildMetaLearnerAdvisor(historyPayload, rawRows, { existingAdvisorCache: payload, existingMetaLearner: payload.metaLearner });
     }
 
     let loDualMerge = payload.loDualMerge;
@@ -198,6 +198,17 @@ function settleFromRaw(payload, rawRows) {
         loQuantumBayesFusion = buildLoQuantumBayesFusionAdvisor(rawRows);
     }
 
+    let dynamicMetaAdvisor = payload.dynamicMetaAdvisor;
+    const lastDynamicDate = normalizeDate(dynamicMetaAdvisor?.liveDiary?.at(-1)?.date);
+    if (!dynamicMetaAdvisor || !Array.isArray(dynamicMetaAdvisor.liveDiary) || dynamicMetaAdvisor.liveDiary.length === 0 || (latestRawDate && lastDynamicDate && lastDynamicDate < latestRawDate)) {
+        const { buildDynamicCrossMethodAdvisor } = require('@/lib/services/loDualMergeAdvisorService');
+        dynamicMetaAdvisor = buildDynamicCrossMethodAdvisor({
+            loQuantumBayesFusion,
+            loDualMerge,
+            loTriHarmonic
+        }, rawRows, { existingDynamicMetaAdvisor: payload.dynamicMetaAdvisor });
+    }
+
     return {
         ...payload,
         records,
@@ -208,7 +219,7 @@ function settleFromRaw(payload, rawRows) {
         loDualMerge,
         loTriHarmonic,
         loQuantumBayesFusion,
-        dynamicMetaAdvisor: payload.dynamicMetaAdvisor || loQuantumBayesFusion?.dynamicMetaAdvisor || null,
+        dynamicMetaAdvisor: dynamicMetaAdvisor || payload.dynamicMetaAdvisor || loQuantumBayesFusion?.dynamicMetaAdvisor || null,
         latestDataDate: rawRows?.at(-1)?.date || payload.latestDataDate,
         summary: { main: summarize('main'), hybrid: summarize('hybrid') },
         strategyCatalog: [...strategyMetadata.values()],

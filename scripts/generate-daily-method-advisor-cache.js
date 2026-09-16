@@ -62,6 +62,9 @@ async function main() {
         existingDualMerge: existingCache?.dualMerge || null,
         existingTripleMerge: existingCache?.tripleMerge || null,
         existingAdaptiveDualMerge: existingCache?.adaptiveDualMerge || null,
+        existingMetaLearner: existingCache?.metaLearner || null,
+        existingDynamicMetaAdvisor: existingCache?.dynamicMetaAdvisor || null,
+        existingMetaCrossMethod: existingCache?.metaCrossMethod || null,
         limit: 90,
         forceSynthesize: process.env.FORCE_SYNTHESIZE === '1'
     });
