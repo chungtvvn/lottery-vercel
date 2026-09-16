@@ -394,6 +394,15 @@ async function main() {
         assert.match(liveReport.text, /XSMB — GỢI Ý THỰC CHIẾN HÀNG NGÀY/);
         assert.match(liveReport.text, /BÁO CÁO KẾT QUẢ ĐỐI SOÁT HÔM NAY/);
         console.log('=== LIVE TELEGRAM REPORT PREVIEW ===\n' + liveReport.text + '\n===================================');
+
+        const { buildBetCalculationSheet, BETTING_TIERS } = await loadWorkerModule();
+        const sheet = buildBetCalculationSheet(BETTING_TIERS[2], liveReport.predictionDate, liveAdvisor);
+        assert.match(sheet, /BẢNG TÍNH TOÁN LỖ\/LÃI CHI TIẾT/);
+        assert.match(sheet, /ĐỀ TINH HOA \(DÀN 30 SỐ\)/);
+        assert.match(sheet, /LÔ CHUẨN TỐI ƯU \(DÀN 20 SỐ\)/);
+        assert.match(sheet, /LÔ ĐÁNH X2 AN TOÀN CAO/);
+        assert.match(sheet, /LÔ XIÊN 4 QUÂY \(11 VÉ\)/);
+        console.log('=== BET CALCULATION SHEET PREVIEW ===\n' + sheet + '\n====================================');
     } catch (e) {
         console.warn('Skipping live local file test:', e.message);
     }
