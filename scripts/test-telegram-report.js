@@ -355,14 +355,14 @@ async function main() {
 
     const report = buildTelegramReport(compactDe, compactLoto, compactHistory);
     assert.match(report.text, /XSMB — GỢI Ý THỰC CHIẾN HÀNG NGÀY/);
-    assert.match(report.text, /1\. 💎 ĐỀ TINH HOA/);
-    assert.match(report.text, /2\. 🏆 LÔ CHUẨN TỐI ƯU/);
-    assert.match(report.text, /3\. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO/);
-    assert.match(report.text, /4\. ⚡ DÀN GỘP MỤC 1 & 2/);
-    assert.match(report.text, /5\. 💎 LÔ XIÊN 4 TINH HOA/);
-    assert.match(report.text, /6\. 🎲 LÔ XIÊN 2 CHIẾN LƯỢC/);
-    assert.match(report.text, /7\. 📊 BẢNG THEO DÕI THỰC CHIẾN GỢI Ý HÀNG NGÀY/);
-    assert.match(report.text, /8\. 💡 KHUYẾN NGHỊ PHÂN BỔ VỐN THỰC CHIẾN/);
+    assert.match(report.text, /1\. 💎 ĐỀ TINH HOA — DÀN 30 SỐ GỢI Ý/);
+    assert.match(report.text, /2\. 🏆 LÔ CHUẨN TỐI ƯU \(DÀN 20 SỐ\)/);
+    assert.match(report.text, /3\. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO \(DÀN 7 SỐ TĂNG TỐC\)/);
+    assert.match(report.text, /4\. ⚡ BẢNG GỘP ĐÁNH LÔ TỔNG LỰC/);
+    assert.match(report.text, /5\. 💎 LÔ XIÊN 4 TINH HOA \(QUÂY 11 VÉ\)/);
+    assert.match(report.text, /6\. 🎲 LÔ XIÊN 2 CHIẾN LƯỢC \(3 CẶP VÀNG\)/);
+    assert.match(report.text, /7\. 📊 BẢNG THEO DÕI THỰC CHIẾN THEO GỢI Ý/);
+    assert.match(report.text, /8\. 💡 KHUYẾN NGHỊ PHÂN BỔ VỐN/);
     assert.match(report.text, /━━━━━━━━━━━━━━━━━━━━/);
     assert.ok(splitTelegramText(report.text).every(chunk => chunk.length <= 3900), 'Telegram report phải được chia gói an toàn');
 

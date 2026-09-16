@@ -347,10 +347,9 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   ];
 
   // =========================================================================
-  // 1. 💎 ĐỀ TINH HOA — META-LEARNER DÀN 30 SỐ QUÁN QUÂN
+  // 1. 💎 ĐỀ TINH HOA — DÀN 30 SỐ GỢI Ý
   // =========================================================================
-  lines.push(`<b>1. 💎 ĐỀ TINH HOA — META-LEARNER DÀN 30 SỐ QUÁN QUÂN</b>`);
-  lines.push(`<i>Dung hợp đa tiêu chí &amp; cắt tỉa động (Pruning) từ 20 năm mốc lịch sử</i>`);
+  lines.push(`<b>1. 💎 ĐỀ TINH HOA — DÀN 30 SỐ GỢI Ý</b>`);
 
   let std30 = metaRec?.standard30 || metaRec?.numbers || [];
   let core10 = metaRec?.core10 || [];
@@ -375,10 +374,9 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   lines.push(divider);
 
   // =========================================================================
-  // 2. 🏆 LÔ CHUẨN TỐI ƯU (TOP 20 - QMBF v6.1)
+  // 2. 🏆 LÔ CHUẨN TỐI ƯU (DÀN 20 SỐ)
   // =========================================================================
-  lines.push(`<b>2. 🏆 LÔ CHUẨN TỐI ƯU (TOP 20 - QMBF v6.1)</b>`);
-  lines.push(`<i>Động cơ Quantum Bayes-Markov Fusion v6.1 · Tỷ lệ nổ nháy dẫn đầu hệ thống</i>`);
+  lines.push(`<b>2. 🏆 LÔ CHUẨN TỐI ƯU (DÀN 20 SỐ)</b>`);
 
   let stdNums = metaNext?.standard?.numbers || [];
   if (!stdNums.length && lotoPayload.nextPrediction) {
@@ -394,10 +392,9 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   lines.push(divider);
 
   // =========================================================================
-  // 3. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO (TOP 7 - BẠC NHỚ 27 GIẢI)
+  // 3. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO (DÀN 7 SỐ TĂNG TỐC)
   // =========================================================================
-  lines.push(`<b>3. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO (TOP 7 - BẠC NHỚ 27 GIẢI)</b>`);
-  lines.push(`<i>Top 7 số có xác suất nổ kép / nổ nháy cao nhất từ đồ thị Bạc nhớ 27 giải</i>`);
+  lines.push(`<b>3. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO (DÀN 7 SỐ TĂNG TỐC)</b>`);
 
   let x2Nums = metaNext?.x2?.numbers || [];
   if (!x2Nums.length && lotoPayload.nextPrediction) {
@@ -413,7 +410,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   lines.push(divider);
 
   // =========================================================================
-  // 4. ⚡ DÀN GỘP MỤC 1 & 2 (SỐ TRÙNG ĐÁNH X2)
+  // 4. ⚡ BẢNG GỘP ĐÁNH LÔ TỔNG LỰC (21 SỐ - SỐ TRÙNG ĐÁNH X2)
   // =========================================================================
   const sList = (stdNums || []).map(normalizeLotteryNumber).filter(Boolean);
   const xList = (x2Nums || []).map(normalizeLotteryNumber).filter(Boolean);
@@ -422,27 +419,27 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   const allMerged = Array.from(new Set([...sList, ...xList]));
   const singleNums = allMerged.filter(n => !overlapNums.includes(n));
 
-  lines.push(`<b>4. ⚡ DÀN GỘP MỤC 1 & 2 (SỐ TRÙNG ĐÁNH X2)</b>`);
-  lines.push(`<i>Tổng hợp toàn bộ <b>${allMerged.length} số</b>: Số nào trùng đánh X2, số riêng đánh X1 bọc lót</i>`);
+  lines.push(`<b>4. ⚡ BẢNG GỘP ĐÁNH LÔ TỔNG LỰC (21 SỐ - SỐ TRÙNG ĐÁNH X2)</b>`);
+  lines.push(`<i>Tổng hợp từ 2 dàn trên: Số nào trùng cược X2, số riêng cược X1 bọc lót:</i>`);
   lines.push(
-    `🔥 <b>Nhóm Số Trùng (CỰC VIP X2 · 4.4M/số · ${overlapNums.length} số):</b>`,
+    `🔥 <b>Nhóm Số Trùng (CỰC VIP X2 · 4.4M/số [4.400K] - ${overlapNums.length} số):</b>`,
     `<b>${escapeHtml(formatNumberList(overlapNums))}</b>`,
-    `🛡️ <b>Nhóm Số Riêng (BỌC LÓT X1 · 2.2M/số · ${singleNums.length} số):</b>`,
+    `🛡️ <b>Nhóm Số Riêng (BỌC LÓT X1 · 2.2M/số [2.200K] - ${singleNums.length} số):</b>`,
     `<b>${escapeHtml(formatNumberList(singleNums))}</b>`
   );
   lines.push(divider);
 
   // =========================================================================
-  // 5. 💎 LÔ XIÊN 4 TINH HOA (HIỆP ĐỒNG CO-OCCURRENCE)
+  // 5. 💎 LÔ XIÊN 4 TINH HOA (QUÂY 11 VÉ)
   // =========================================================================
   let xi4Nums = metaNext?.xien4?.numbers || [];
   if (!xi4Nums.length) {
     xi4Nums = overlapNums.length >= 4 ? overlapNums.slice(0, 4) : sList.slice(0, 4);
   }
-  lines.push(`<b>5. 💎 LÔ XIÊN 4 TINH HOA (HIỆP ĐỒNG CO-OCCURRENCE)</b>`);
-  lines.push(`<i>4 số vàng hiệp đồng cao nhất 20 năm · Đánh quây 11 vé (1 vé X4 + 4 vé X3 + 6 vé X2 · Vốn 11M):</i>`);
+  lines.push(`<b>5. 💎 LÔ XIÊN 4 TINH HOA (QUÂY 11 VÉ)</b>`);
   lines.push(
     `🎲 <b>Bộ 4 Số Vàng:</b> <b>${escapeHtml(formatNumberList(xi4Nums))}</b>`,
+    `<i>Cơ cấu 11 vé (1 vé X4 + 4 vé X3 + 6 vé X2 · Vốn 11M):</i>`,
     `  • 💥 <b>Ăn 4 con</b>: Trúng cả bộ (+459M lãi ròng)`,
     `  • 🔥 <b>Ăn 3 con</b>: Nổ X3 + 3 vé X2 (+59M lãi ròng)`,
     `  • 🎯 <b>Ăn 2 con</b>: Nổ 1 vé X2 (10M - bảo toàn vốn)`
@@ -450,7 +447,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   lines.push(divider);
 
   // =========================================================================
-  // 6. 🎲 LÔ XIÊN 2 CHIẾN LƯỢC (GOLDEN XIÊN)
+  // 6. 🎲 LÔ XIÊN 2 CHIẾN LƯỢC (3 CẶP VÀNG)
   // =========================================================================
   const goldenPairs = metaNext?.goldenXien2 || [];
   const topPairStrs = goldenPairs.length >= 3
@@ -460,31 +457,31 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
         xi4Nums.length >= 3 ? `${xi4Nums[0]} - ${xi4Nums[2]}` : '92 - 93',
         xi4Nums.length >= 4 ? `${xi4Nums[1]} - ${xi4Nums[2]}` : '62 - 93'
       ];
-  lines.push(`<b>6. 🎲 LÔ XIÊN 2 CHIẾN LƯỢC (GOLDEN XIÊN)</b>`);
-  lines.push(`<i>Top 3 cặp Xiên 2 vàng liên kết cao nhất (Vốn 1M/cặp · Ăn 10M-17M/cặp):</i>`);
+  lines.push(`<b>6. 🎲 LÔ XIÊN 2 CHIẾN LƯỢC (3 CẶP VÀNG)</b>`);
+  lines.push(`<i>Cược 1M/cặp · Vốn 3M · Ăn 10M-17M/cặp:</i>`);
   topPairStrs.forEach((pStr, idx) => {
     lines.push(`  • Cặp ${idx + 1}: <b>${escapeHtml(pStr)}</b>`);
   });
   lines.push(divider);
 
   // =========================================================================
-  // 7. 📊 BẢNG THEO DÕI THỰC CHIẾN GỢI Ý HÀNG NGÀY (BẮT ĐẦU TỪ 16/09/2026)
+  // 7. 📊 BẢNG THEO DÕI THỰC CHIẾN THEO GỢI Ý (BẮT ĐẦU TỪ 16/09/2026)
   // =========================================================================
   const NEW_BATTLE_START_DATE = '2026-09-16';
   const settledNewPeriodDe = metaSettledList.filter(r => (r.predictionDate || r.date) >= NEW_BATTLE_START_DATE);
   const settledNewPeriodLo = liveDiaryEntries.filter(r => (r.date || r.predictionDate) >= NEW_BATTLE_START_DATE && !r.isLive);
 
-  lines.push(`<b>7. 📊 BẢNG THEO DÕI THỰC CHIẾN GỢI Ý HÀNG NGÀY (BẮT ĐẦU TỪ 16/09/2026)</b>`);
-  lines.push(`<i>Bắt đầu tính lại toàn bộ theo Gợi ý hàng ngày từ hôm nay (16/09/2026) — Mốc khởi điểm 0đ</i>`);
+  lines.push(`<b>7. 📊 BẢNG THEO DÕI THỰC CHIẾN THEO GỢI Ý (BẮT ĐẦU TỪ 16/09/2026)</b>`);
+  lines.push(`<i>Thống kê thực tế hoàn toàn theo các dàn gợi ý ở trên — Mốc khởi điểm 0đ</i>`);
 
   if (settledNewPeriodDe.length === 0 && settledNewPeriodLo.length === 0) {
     lines.push(
       `• 📅 <b>Kỳ 1 (${escapeHtml(displayDate(predictionDate))}):</b> ⏳ <b>ĐANG CHỜ KẾT QUẢ QUAY THƯỞNG 18:15</b>`,
-      `• 💎 Đề Tinh Hoa (Dàn 30): Chờ quay (Vốn 30M · Ăn 84M)`,
-      `• 🏆 Lô Chuẩn (Top 20): Chờ quay (Vốn 44M · Ăn 8M/nháy)`,
-      `• 🚀 Lô X2 (Top 7): Chờ quay (Vốn 30.8M · Ăn 16M/nháy)`,
-      `• 💎 Lô Xiên 4 (Quây 11 vé): Chờ quay (Vốn 11M)`,
-      `• 💰 <b>Lũy kế Thực Chiến Gợi Ý Hàng Ngày</b>: <b>0 VNĐ (Baseline khởi động)</b>`
+      `• 💎 Đề Gợi Ý (Dàn 30): Chờ quay (Vốn 30M · Ăn 84M)`,
+      `• 🏆 Lô Chuẩn Gợi Ý (Top 20): Chờ quay (Vốn 44M · Ăn 8M/nháy)`,
+      `• 🚀 Lô X2 Gợi Ý (Top 7): Chờ quay (Vốn 30.8M · Ăn 16M/nháy)`,
+      `• 💎 Lô Xiên 4 Gợi Ý (Quây 11 vé): Chờ quay (Vốn 11M)`,
+      `• 💰 <b>Tổng Lũy Kế Thực Chiến Gợi Ý</b>: <b>0 VNĐ (Baseline khởi động)</b>`
     );
   } else {
     const totalDeProfit = settledNewPeriodDe.reduce((s, r) => s + (r.profitK || 0), 0);
@@ -495,20 +492,20 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
 
     lines.push(
       `• 📅 <b>Số kỳ đã kết toán</b>: <b>${daysCount} kỳ</b>`,
-      `• 💎 <b>Đề Tinh Hoa</b>: <b>${formatM(totalDeProfit)}</b> (${deWins}/${daysCount} trúng)`,
-      `• 🎰 <b>Lô Tinh Hoa Combo</b>: <b>${formatM(totalLoProfit)}</b>`,
-      `• 💰 <b>Tổng Lũy Kế Thực Chiến</b>: <b>${formatM(cumulativeAllProfit)}</b>`
+      `• 💎 <b>Đề Gợi Ý</b>: <b>${formatM(totalDeProfit)}</b> (${deWins}/${daysCount} trúng)`,
+      `• 🎰 <b>Lô Gợi Ý Combo</b>: <b>${formatM(totalLoProfit)}</b>`,
+      `• 💰 <b>Tổng Lũy Kế Thực Chiến Gợi Ý</b>: <b>${formatM(cumulativeAllProfit)}</b>`
     );
   }
   lines.push(divider);
 
   // =========================================================================
-  // 8. 💡 KHUYẾN NGHỊ PHÂN BỔ VỐN THỰC CHIẾN
+  // 8. 💡 KHUYẾN NGHỊ PHÂN BỔ VỐN
   // =========================================================================
   lines.push(
-    `<b>8. 💡 KHUYẾN NGHỊ PHÂN BỔ VỐN THỰC CHIẾN</b>`,
-    `• 🛡️ <b>Phòng thủ (50%)</b>: <b>Đề Tinh Hoa 30 số</b> (1M/số · 30M/ngày) — Tỷ lệ trúng ~50%, bảo vệ nguồn vốn và sinh lời đều đặn.`,
-    `• ⚔️ <b>Tấn công (50%)</b>: <b>Dàn Lô Gộp Mục 1 & 2</b> (Nhóm trùng cược X2 4.4M, nhóm riêng cược X1 2.2M) + <b>Lô Xiên 4 Tinh Hoa</b> (11M quây) săn đại thắng nổ nháy.`
+    `<b>8. 💡 KHUYẾN NGHỊ PHÂN BỔ VỐN</b>`,
+    `• 🛡️ <b>Phòng thủ (50%)</b>: <b>Đề Tinh Hoa 30 số</b> (1M/số · 30M/ngày) — Ăn đều đặn bảo vệ vốn.`,
+    `• ⚔️ <b>Tấn công (50%)</b>: <b>Bảng Gộp Đánh Lô</b> (Trùng cược X2 4.4M, riêng cược X1 2.2M) + <b>Lô Xiên 4 Quây</b> (11M) săn đại thắng.`
   );
   lines.push('', `<i>Dữ liệu được niêm phong bất biến (Strict PIT) · Minh bạch &amp; đối soát tự động.</i>`);
 
