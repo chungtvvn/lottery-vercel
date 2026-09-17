@@ -397,21 +397,42 @@ async function main() {
         console.log('=== LIVE TELEGRAM REPORT PREVIEW ===\n' + liveReport.text + '\n===================================');
 
         const { buildBetCalculationSheet, BETTING_TIERS } = await loadWorkerModule();
+
+        // 1. Test fallback betting sheet (without advisor payload)
+        const sheetFallback = buildBetCalculationSheet(BETTING_TIERS[3], liveReport.predictionDate);
+        assert.match(sheetFallback, /BẢNG TÍNH TOÁN LỖ\/LÃI CHI TIẾT — MỨC 3: ĐỀ 200K\/SỐ · LÔ 25Đ\/SỐ/);
+        assert.match(sheetFallback, /1\. 💎 ĐỀ TINH HOA \(DÀN 30 SỐ\)/);
+        assert.match(sheetFallback, /200K \/ số/);
+        assert.match(sheetFallback, /2\. 🏆 LÔ CHUẨN/);
+        assert.match(sheetFallback, /25 điểm \/ số/);
+        assert.match(sheetFallback, /3\. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO/);
+        assert.match(sheetFallback, /50 điểm \/ số/);
+        assert.match(sheetFallback, /4\. 💎 LÔ XIÊN 4 TINH HOA \(QUÂY 11 VÉ\)/);
+        assert.match(sheetFallback, /200K \/ vé/);
+        assert.match(sheetFallback, /26\.900K VNĐ/);
+        assert.ok(!sheetFallback.includes('LÔ XIÊN 2 CHIẾN LƯỢC'), 'Fallback sheet không được chứa Lô Xiên 2');
+
+        // 2. Test live betting sheet (with dynamic advisor payload)
         const sheetM3 = buildBetCalculationSheet(BETTING_TIERS[3], liveReport.predictionDate, liveAdvisor);
         assert.match(sheetM3, /BẢNG TÍNH TOÁN LỖ\/LÃI CHI TIẾT — MỨC 3: ĐỀ 200K\/SỐ · LÔ 25Đ\/SỐ/);
-        assert.match(sheetM3, /1\. 💎 ĐỀ TINH HOA \(DÀN 30 SỐ\)/);
-        assert.match(sheetM3, /200K \/ số/);
-        assert.match(sheetM3, /2\. 🏆 LÔ CHUẨN TỐI ƯU \(DÀN 20 SỐ\)/);
+        assert.match(sheetM3, /1\. 💎 ĐỀ TINH HOA/);
+        assert.match(sheetM3, /VIP X2/);
+        assert.match(sheetM3, /Lót X1/);
+        assert.match(sheetM3, /2\. 🏆 LÔ CHUẨN/);
         assert.match(sheetM3, /25 điểm \/ số/);
         assert.match(sheetM3, /3\. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO/);
         assert.match(sheetM3, /50 điểm \/ số/);
         assert.match(sheetM3, /4\. 💎 LÔ XIÊN 4 TINH HOA \(QUÂY 11 VÉ\)/);
         assert.match(sheetM3, /200K \/ vé/);
-        assert.match(sheetM3, /26\.900K VNĐ/);
+        assert.match(sheetM3, /35\.900K VNĐ/);
         assert.ok(!sheetM3.includes('LÔ XIÊN 2 CHIẾN LƯỢC'), 'Bảng tính cược không được chứa Lô Xiên 2');
         console.log('=== BET CALCULATION SHEET (MỨC 3 MẶC ĐỊNH) PREVIEW ===\n' + sheetM3 + '\n====================================');
     } catch (e) {
-        console.warn('Skipping live local file test:', e.message);
+        if (e.code === 'ENOENT') {
+            console.warn('Skipping live local file test because cache file was not found:', e.message);
+        } else {
+            throw e;
+        }
     }
 
     console.log('Telegram report tests passed.');

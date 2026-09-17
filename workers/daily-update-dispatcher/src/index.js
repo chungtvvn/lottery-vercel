@@ -371,11 +371,46 @@ function formatM(profitK) {
 
 function buildBetCalculationSheet(tier, date, advisorPayload = {}) {
   const divider = '━━━━━━━━━━━━━━━━━━━━';
-  const deStakeK = 30 * tier.deK;
-  const deWinProfitK = tier.deK * 84 - deStakeK;
+  const streakDeAdv = advisorPayload?.streakAwareDeAdvisor?.latestRecommendation || null;
+  const sMethod = streakDeAdv?.selectedMethodLabel || 'Đề Thích Ứng Alpha';
+  const sNumbers = streakDeAdv?.numbers || [];
+  const sTierX2 = streakDeAdv?.tierX2 || [];
+  const sSingles = streakDeAdv?.singles || [];
+  const sizing = Number(streakDeAdv?.sizingMultiplier || 1.0);
+
+  const hasAdvancedDe = Boolean(sNumbers.length);
+  const sTierX2Count = sTierX2.length || 17;
+  const sSinglesCount = sSingles.length || 26;
+  const deUnits = hasAdvancedDe ? (sTierX2Count * 2 + sSinglesCount) : 30;
+  const deStakeK = Math.round(deUnits * tier.deK * sizing);
+
+  const deWinX2PayoutK = Math.round(tier.deK * 2 * 84 * sizing);
+  const deWinX2ProfitK = deWinX2PayoutK - deStakeK;
+
+  const deWinX1PayoutK = Math.round(tier.deK * 1 * 84 * sizing);
+  const deWinX1ProfitK = deWinX1PayoutK - deStakeK;
+
+  const loQuadAdv = advisorPayload?.loQuadHybrid?.latestRecommendation || null;
+  const loGovernor = loQuadAdv?.streakGovernor || {};
+  const activeLoEngineKey = loGovernor.selectedEngine || 'qmbf';
+  let engineData = loGovernor.engines?.[activeLoEngineKey] || {};
+  if (!engineData.rankedNumbers?.length) {
+    if (activeLoEngineKey === 'penta' && advisorPayload?.loPentaMatrix?.latestRecommendation) {
+      engineData = advisorPayload.loPentaMatrix.latestRecommendation;
+    } else if (activeLoEngineKey === 'bridge' && advisorPayload?.loPositionalBridgeFlow?.latestRecommendation) {
+      engineData = advisorPayload.loPositionalBridgeFlow.latestRecommendation;
+    } else if (activeLoEngineKey === 'hawkes' && advisorPayload?.loHawkesClustering?.latestRecommendation) {
+      engineData = advisorPayload.loHawkesClustering.latestRecommendation;
+    }
+  }
+
+  const selectedSubTier = loGovernor.selectedSubTier || 7;
+  const subTierData = engineData.subTiers?.[selectedSubTier] || loGovernor.subTiers?.[selectedSubTier] || {};
+  const subTierLabel = subTierData.label || `Top ${selectedSubTier}`;
+
   const loStdStakeK = 20 * tier.loDiem * 22;
   const loStdWinPerHitK = tier.loDiem * 80;
-  const loX2StakeK = 7 * tier.loX2Diem * 22;
+  const loX2StakeK = selectedSubTier * tier.loX2Diem * 22;
   const loX2WinPerHitK = tier.loX2Diem * 80;
   const xien4StakeK = 11 * tier.xien4K;
   const totalDailyStakeK = deStakeK + loStdStakeK + loX2StakeK + xien4StakeK;
@@ -392,23 +427,41 @@ function buildBetCalculationSheet(tier, date, advisorPayload = {}) {
   const lines = [
     `📊 <b>BẢNG TÍNH TOÁN LỖ/LÃI CHI TIẾT — ${escapeHtml(tier.name.toUpperCase())}</b>`,
     `<i>Áp dụng cho ngày: ${escapeHtml(displayDate(date))} · Tỷ lệ: Đề x84 · Lô 1đ = 22K ăn 80K · Xiên 4 quây 11 vé</i>`,
+    divider
+  ];
+
+  if (hasAdvancedDe) {
+    lines.push(
+      `<b>1. 💎 ĐỀ TINH HOA — ${escapeHtml(sMethod.toUpperCase())} (${sNumbers.length} SỐ · ĐỀ XUẤT)</b>`,
+      `  • Cơ cấu dàn: <b>${sTierX2Count} số VIP X2</b> (cược ${(tier.deK * 2 * sizing).toLocaleString('vi-VN')}K) · <b>${sSinglesCount} số Lót X1</b> (cược ${(tier.deK * 1 * sizing).toLocaleString('vi-VN')}K)`,
+      `  • Tổng vốn: <b>${deStakeK.toLocaleString('vi-VN')}K</b> (${deUnits} đơn vị cược${sizing !== 1.0 ? ` · Sizing ${sizing}x` : ''})`,
+      `  • ⚡ <b>Nổ VIP X2 (2 nháy):</b> Ăn <b>${deWinX2PayoutK.toLocaleString('vi-VN')}K</b> 👉 <b>Lãi ròng: +${deWinX2ProfitK.toLocaleString('vi-VN')}K</b>`,
+      `  • 🛡️ <b>Nổ Bọc Lót X1 (1 nháy):</b> Ăn <b>${deWinX1PayoutK.toLocaleString('vi-VN')}K</b> 👉 <b>Lãi ròng: +${deWinX1ProfitK.toLocaleString('vi-VN')}K</b>`,
+      `  • ❌ <b>Lỗ khi trượt:</b> <b>-${deStakeK.toLocaleString('vi-VN')}K</b>`
+    );
+  } else {
+    const deWinProfitK = tier.deK * 84 - deStakeK;
+    lines.push(
+      `<b>1. 💎 ĐỀ TINH HOA (DÀN 30 SỐ)</b>`,
+      `  • Mức cược: <b>${tier.deK.toLocaleString('vi-VN')}K / số</b>`,
+      `  • Tổng vốn: <b>${deStakeK.toLocaleString('vi-VN')}K</b> (30 số)`,
+      `  • Trúng ăn: <b>${(tier.deK * 84).toLocaleString('vi-VN')}K</b> (nhân 84 lần)`,
+      `  • 👉 <b>Lãi ròng khi trúng:</b> <b>+${deWinProfitK.toLocaleString('vi-VN')}K</b>`,
+      `  • 👉 <b>Lỗ khi trượt:</b> <b>-${deStakeK.toLocaleString('vi-VN')}K</b>`
+    );
+  }
+
+  lines.push(
     divider,
-    `<b>1. 💎 ĐỀ TINH HOA (DÀN 30 SỐ)</b>`,
-    `  • Mức cược: <b>${tier.deK.toLocaleString('vi-VN')}K / số</b>`,
-    `  • Tổng vốn: <b>${deStakeK.toLocaleString('vi-VN')}K</b> (30 số)`,
-    `  • Trúng ăn: <b>${(tier.deK * 84).toLocaleString('vi-VN')}K</b> (nhân 84 lần)`,
-    `  • 👉 <b>Lãi ròng khi trúng:</b> <b>+${deWinProfitK.toLocaleString('vi-VN')}K</b>`,
-    `  • 👉 <b>Lỗ khi trượt:</b> <b>-${deStakeK.toLocaleString('vi-VN')}K</b>`,
-    divider,
-    `<b>2. 🏆 LÔ CHUẨN TỐI ƯU (DÀN 20 SỐ)</b>`,
+    `<b>2. 🏆 LÔ CHUẨN NỀN TẢNG — ${escapeHtml(engineData.label || loGovernor.selectedEngineLabel || 'Quantum Bayes Fusion 7D')} (DÀN 20 SỐ)</b>`,
     `  • Mức cược: <b>${tier.loDiem} điểm / số</b> (Tổng: ${20 * tier.loDiem} điểm)`,
     `  • Tổng vốn: <b>${loStdStakeK.toLocaleString('vi-VN')}K</b> (1 điểm = 22K)`,
     `  • Tiền thưởng: <b>${loStdWinPerHitK.toLocaleString('vi-VN')}K / nháy nổ</b> (1 điểm = 80K)`,
     `  • Hòa vốn: cần <b>5.5 nháy</b> (từ 6 nháy là có lãi)`,
     `  • Ví dụ: Nổ 6 nháy lãi <b>${formatK(6 * loStdWinPerHitK - loStdStakeK)}</b> · Nổ 8 nháy lãi <b>${formatK(8 * loStdWinPerHitK - loStdStakeK)}</b>`,
     divider,
-    `<b>3. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO (DÀN 7 SỐ TĂNG TỐC)</b>`,
-    `  • Mức cược: <b>${tier.loX2Diem} điểm / số</b> (Tổng: ${7 * tier.loX2Diem} điểm)`,
+    `<b>3. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO — DÀN ${escapeHtml(subTierLabel.toUpperCase())} (${selectedSubTier} SỐ TĂNG TỐC)</b>`,
+    `  • Mức cược: <b>${tier.loX2Diem} điểm / số</b> (Tổng: ${selectedSubTier * tier.loX2Diem} điểm)`,
     `  • Tổng vốn: <b>${loX2StakeK.toLocaleString('vi-VN')}K</b>`,
     `  • Tiền thưởng: <b>${loX2WinPerHitK.toLocaleString('vi-VN')}K / nháy nổ</b>`,
     `  • Hòa vốn: cần <b>2 nháy</b> nổ là có lãi ngay (2 nháy ăn ${(2 * loX2WinPerHitK).toLocaleString('vi-VN')}K -> lãi <b>${formatK(2 * loX2WinPerHitK - loX2StakeK)}</b>)`,
@@ -421,7 +474,7 @@ function buildBetCalculationSheet(tier, date, advisorPayload = {}) {
     `  • 💥 Ăn 4 con: Ăn <b>${x4Win4K.toLocaleString('vi-VN')}K</b> -> Lãi ròng <b>${formatK(x4Profit4K)}</b>`,
     divider,
     `💰 <b>TỔNG VỐN ĐẦU TƯ TRỌN GÓI HÔM NAY:</b> <b>${totalDailyStakeK.toLocaleString('vi-VN')}K VNĐ</b> (~${(totalDailyStakeK / 1000).toFixed(2)} Triệu VNĐ)`
-  ];
+  );
   return lines.join('\n');
 }
 
@@ -531,18 +584,23 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   // =========================================================================
   // 1. 💎 ĐỀ TINH HOA — BỘ ĐIỀU PHỐI ĐA PHƯƠNG PHÁP BÙ TRỪ
   // =========================================================================
+  let sNumbers = [];
   if (streakDeAdv && Array.isArray(streakDeAdv.numbers) && streakDeAdv.numbers.length) {
-    const sBadge = streakDeAdv.confidenceBadge || '🟢 THEO ĐÀ THẮNG KHỎE ALPHA (80.8% WIN)';
+    const sBadge = streakDeAdv.activePhaseLabel || streakDeAdv.confidenceBadge || '🟢 THEO ĐÀ THẮNG KHỎE ALPHA (80.8% WIN)';
     const sMethod = streakDeAdv.selectedMethodLabel || 'Đề Thích Ứng Alpha';
-    const sNumbers = streakDeAdv.numbers;
-    const sTierX2 = streakDeAdv.tierX2 || [];
-    const sSingles = streakDeAdv.singles || [];
+    const sizing = Number(streakDeAdv.sizingMultiplier || 1.0);
+    const sizingText = sizing !== 1.0 ? ` · Sizing: ${sizing}x` : '';
+    sNumbers = streakDeAdv.numbers.map(normalizeLotteryNumber);
+    const sTierX2 = (streakDeAdv.tierX2 || []).map(normalizeLotteryNumber);
+    const sSingles = (streakDeAdv.singles || []).map(normalizeLotteryNumber);
+    const totalUnits = sTierX2.length * 2 + sSingles.length;
 
     lines.push(
       `<b>1. 💎 ĐỀ TINH HOA — BỘ ĐIỀU PHỐI ĐA PHƯƠNG PHÁP BÙ TRỪ</b>`,
-      `👑 <b>Phương pháp: ${escapeHtml(sMethod)}</b> · ${escapeHtml(sBadge)}`,
+      `👑 <b>Phương pháp: ${escapeHtml(sMethod)} ⭐ (Đề Xuất)</b>`,
+      `⚡ <b>Trạng thái:</b> <code>${escapeHtml(sBadge)}</code>${sizingText}`,
       `💡 <i>${escapeHtml(streakDeAdv.rationale || '')}</i>`,
-      `🎯 <b>Dàn Đề Tuyển Chọn (${sNumbers.length} số):</b>`,
+      `🎯 <b>Dàn Đề Tuyển Chọn (${sNumbers.length} số · ${totalUnits} đơn vị cược):</b>`,
       `<b>${escapeHtml(formatNumberList(sNumbers))}</b>`
     );
     if (sTierX2.length) {
@@ -552,17 +610,15 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     }
     if (sSingles.length) {
       lines.push(
-        `🛡️ <b>Dàn Bọc Lót X1 (${sSingles.length} số):</b> <b>${escapeHtml(formatNumberList(sSingles))}</b>`
+        `🛡️ <b>Dàn Bọc Lót X1 (${sSingles.length} số - Vào tiền chuẩn):</b> <b>${escapeHtml(formatNumberList(sSingles))}</b>`
       );
     }
     lines.push(
-      `  • <i>Mức 3 mặc định: 200K/số · Trúng ăn 16.8M (x84)</i>`,
-      `  • <i>Mức VIP: 1M/số · Trúng ăn 84M</i>`,
       `🎯 <b>Chi tiết cách vào tiền tối đa hóa lợi nhuận:</b>`,
-      `  • <b>VIP Trùng X2 (${sTierX2.length} số):</b> Cược gấp đôi (Mức 3 đánh 400K/số, Mức VIP đánh 2M/số). Khi nổ ăn 2 nháy đề (+168M VIP / +33.6M Mức 3).`,
-      `  • <b>Bọc Lót X1 (${sSingles.length} số):</b> Cược chuẩn (Mức 3 đánh 200K/số, Mức VIP đánh 1M/số) để bảo hiểm vốn hòa và có lãi (+24M VIP / +4.8M Mức 3).`,
-      `  • <i>Tổng vốn: ${sTierX2.length}*2 + ${sSingles.length}*1 = ${sTierX2.length * 2 + sSingles.length} đơn vị cược. Tối ưu hơn hẳn đánh cược đều ${sNumbers.length} số.</i>`,
-      `🔄 <b>Cơ chế Đảo pha Đa Phương Pháp Bù Trừ:</b> Tự động luân chuyển giữa Đề Thích Ứng Alpha, Đề Gộp Tiêu Chuẩn, Tam Trụ và Dạng Số Bayes để bù trừ chuỗi xịt khi chuỗi mốc 20 năm điều chỉnh.`,
+      `  • <b>VIP Trùng X2 (${sTierX2.length} số):</b> Cược gấp đôi (Mức 3 đánh 400K/số, Mức VIP đánh 2M/số). Khi nổ ăn 2 nháy đề (+33.6M Mức 3 / +168M VIP, lãi ròng +21.6M M3 / +108M VIP).`,
+      `  • <b>Bọc Lót X1 (${sSingles.length} số):</b> Cược chuẩn (Mức 3 đánh 200K/số, Mức VIP đánh 1M/số) để bảo hiểm vốn hòa và có lãi (+4.8M Mức 3 / +24M VIP).`,
+      `  • <i>Tổng vốn: Mức 3 là ${(totalUnits * 0.2 * sizing).toFixed(1)}M (${Math.round(totalUnits * 0.2 * sizing)}M) · Mức VIP là ${(totalUnits * sizing).toFixed(1)}M (${Math.round(totalUnits * sizing)}M). Tối ưu hơn hẳn đánh cược đều ${sNumbers.length} số.</i>`,
+      `🔄 <b>Cơ chế Đảo pha Đa Phương Pháp Bù Trừ:</b> Tự động luân chuyển giữa 7 phương pháp độc lập (Thích Ứng Alpha, Gộp Tiêu Chuẩn, Tam Trụ, Markov Gap, Cầu Đồ Thị, Ngũ Hành Bayes) để tối ưu đà thắng và kháng nhiễu.`,
       `📚 <b>Kelly Sizing & Strict PIT:</b> Tự động điều chỉnh vốn theo xác suất thực nghiệm; niêm phong dữ liệu 100% không rò rỉ tương lai.`
     );
   } else {
@@ -580,6 +636,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
       core10 = std30.slice(0, 10);
       core20 = std30.slice(0, 20);
     }
+    sNumbers = std30.map(normalizeLotteryNumber);
 
     lines.push(
       `👑 <b>Dàn Chuẩn 30 số</b> (Vốn 30M · Ăn 84M · Lãi ròng +54M):`,
@@ -597,17 +654,40 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   // =========================================================================
   lines.push(`<b>2. 🏆 LÔ CHUẨN TỐI ƯU (DÀN 20 SỐ)</b>`);
 
-  let stdNums = (loQuadAdv?.top20 || metaNext?.standard?.numbers || []).map(normalizeLotteryNumber);
-  if (!stdNums.length && lotoPayload.nextPrediction) {
+  const loGovernor = loQuadAdv?.streakGovernor || {};
+  const activeLoEngineKey = loGovernor.selectedEngine || 'qmbf';
+  let engineData = loGovernor.engines?.[activeLoEngineKey] || {};
+  if (!engineData.rankedNumbers?.length) {
+    if (activeLoEngineKey === 'penta' && advisorPayload?.loPentaMatrix?.latestRecommendation) {
+      engineData = advisorPayload.loPentaMatrix.latestRecommendation;
+    } else if (activeLoEngineKey === 'bridge' && advisorPayload?.loPositionalBridgeFlow?.latestRecommendation) {
+      engineData = advisorPayload.loPositionalBridgeFlow.latestRecommendation;
+    } else if (activeLoEngineKey === 'hawkes' && advisorPayload?.loHawkesClustering?.latestRecommendation) {
+      engineData = advisorPayload.loHawkesClustering.latestRecommendation;
+    }
+  }
+
+  let stdNums = [];
+  if (engineData.top20 && engineData.top20.length) {
+    stdNums = engineData.top20.map(normalizeLotteryNumber);
+  } else if (engineData.rankedNumbers && engineData.rankedNumbers.length) {
+    stdNums = engineData.rankedNumbers.slice(0, 20).map(normalizeLotteryNumber);
+  } else if (loQuadAdv?.top20 && loQuadAdv.top20.length) {
+    stdNums = loQuadAdv.top20.map(normalizeLotteryNumber);
+  } else if (lotoPayload.nextPrediction) {
     const strat = lotoPayload.nextPrediction?.strategies?.rrfParallelBlock85Small65
       || lotoPayload.nextPrediction?.strategies?.dedupEdge75Pit
       || Object.values(lotoPayload.nextPrediction?.strategies || {})[0];
     stdNums = (strat?.predictions?.top20?.numbers || lotoPayload.nextPrediction?.predictions?.top6?.numbers || []).map(normalizeLotteryNumber);
+  } else {
+    stdNums = (metaNext?.standard?.numbers || []).map(normalizeLotteryNumber);
   }
-  const loMethodTitle = loQuadAdv ? 'Super-Hybrid Quad-Fusion v7.0 Top 20' : 'Dàn 20 số';
-  const loMethodStat = loQuadAdv ? ' (3 Năm +10.32 TỶ · 6.669 Nháy)' : '';
+
+  const loEngineLabel = engineData.label || loGovernor.selectedEngineLabel || 'Quantum Bayes Fusion 7D';
+  const loMethodTitle = `${loEngineLabel} Top 20 (Đề Xuất Nền Tảng)`;
+  const loMethodStat = engineData.winRateTop20 ? ` · Win ${engineData.winRateTop20}` : (loQuadAdv ? ' · 3 Năm +10.32 TỶ · 6.669 Nháy' : '');
   lines.push(
-    `🎯 <b>${loMethodTitle}</b>${loMethodStat} (Vốn 44M · Cược 2.2M/số [2.200K / 100đ] · Ăn 8M/nháy):`,
+    `🎯 <b>${escapeHtml(loMethodTitle)}</b>${escapeHtml(loMethodStat)} (Vốn 44M · Cược 2.2M/số [2.200K / 100đ] · Ăn 8M/nháy):`,
     `  • <i>Mức chuẩn 10đ/số: Vốn 200 điểm (4.400K) · Ăn 800K/nháy (1đ = 22K ăn 80K)</i>`,
     `  • <i>Mức 3 mặc định: 25đ/số (500đ = 11M) · Ăn 2M/nháy</i>`,
     `  • <i>Mức VIP 100đ/số: Vốn 44M · Ăn 8M/nháy</i>`,
@@ -618,16 +698,12 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   // =========================================================================
   // 3. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO (DÀN 7 SỐ TĂNG TỐC - ĐỔI PHA)
   // =========================================================================
-  const loGovernor = loQuadAdv?.streakGovernor || {};
-  const selectedEngineLabel = loGovernor.selectedEngineLabel || 'Super-Hybrid Quad-Fusion v7.1';
+  const selectedEngineLabel = engineData.label || loGovernor.selectedEngineLabel || 'Quantum Bayes Fusion 7D';
   const selectedSubTier = loGovernor.selectedSubTier || 7;
-  const subTierData = loGovernor.subTiers?.[selectedSubTier] || {};
+  const subTierData = engineData.subTiers?.[selectedSubTier] || loGovernor.subTiers?.[selectedSubTier] || {};
   const subTierLabel = subTierData.label || `Top ${selectedSubTier}`;
-  const subWinRate = subTierData.winRate || '65.1%';
-  const subStreak = subTierData.streak ? subTierData.streak.replace('_', ' ').toUpperCase() : 'WIN';
-  const subCondition = subTierData.winCondition || 'Ăn 1-2 nháy';
 
-  lines.push(`<b>3. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO (DÀN 7 SỐ TĂNG TỐC - ĐỔI PHA)</b>`);
+  lines.push(`<b>3. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO (DÀN ${selectedSubTier} SỐ TĂNG TỐC)</b>`);
   if (loGovernor.confidenceBadge) {
     lines.push(
       `👑 <b>Động cơ: ${escapeHtml(selectedEngineLabel)}</b> · <b>Dàn ${escapeHtml(subTierLabel)} [${selectedSubTier} số]</b> · ${escapeHtml(loGovernor.confidenceBadge)}`,
@@ -635,16 +711,19 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     );
   }
 
-  let x2Nums = (subTierData.numbers || loQuadAdv?.rankedNumbers?.slice(0, selectedSubTier) || loQuadAdv?.top7 || metaNext?.x2?.numbers || []).map(normalizeLotteryNumber);
+  let x2Nums = (subTierData.numbers || engineData.rankedNumbers?.slice(0, selectedSubTier) || loGovernor.subTiers?.[selectedSubTier]?.numbers || loQuadAdv?.top7 || metaNext?.x2?.numbers || []).map(normalizeLotteryNumber);
   if (!x2Nums.length && lotoPayload.nextPrediction) {
     const strat = lotoPayload.nextPrediction?.strategies?.rrfParallelBlock85Small65
       || lotoPayload.nextPrediction?.strategies?.dedupEdge75Pit
       || Object.values(lotoPayload.nextPrediction?.strategies || {})[0];
     x2Nums = (strat?.predictions?.top7?.numbers || []).map(normalizeLotteryNumber);
   }
-  if (loQuadAdv?.top2?.length) {
+
+  const top2Nums = (engineData.subTiers?.[2]?.numbers || engineData.rankedNumbers?.slice(0, 2) || loGovernor.subTiers?.[2]?.numbers || loQuadAdv?.top2 || []).map(normalizeLotteryNumber);
+  const top1Num = top2Nums[0] || (loQuadAdv?.top1?.[0]);
+  if (top2Nums.length) {
     lines.push(
-      `🔥 <b>Song Thủ Siêu VIP: [${escapeHtml(formatNumberList(loQuadAdv.top2))}]</b> <i>(57.7% Nổ 3 Năm · +1.976 TỶ)</i> · Bạch Thủ: <b>[${loQuadAdv.top1?.[0] || loQuadAdv.top2[0]}]</b> <i>(+1.088 TỶ)</i>`
+      `🔥 <b>Song Thủ Siêu VIP: [${escapeHtml(formatNumberList(top2Nums))}]</b> <i>(57.7% Nổ 3 Năm · +1.976 TỶ)</i> · Bạch Thủ: <b>[${top1Num || top2Nums[0]}]</b> <i>(+1.088 TỶ)</i>`
     );
   }
   lines.push(
@@ -663,12 +742,12 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   const xList = (x2Nums || []).map(normalizeLotteryNumber).filter(Boolean);
   const sSet = new Set(sList);
   const overlapNums = xList.filter(n => sSet.has(n));
+  const singleNums = sList.filter(n => !overlapNums.includes(n));
   const allMerged = Array.from(new Set([...sList, ...xList]));
-  const singleNums = allMerged.filter(n => !overlapNums.includes(n));
 
   lines.push(`<b>4. ⚡ BẢNG GỘP ĐÁNH LÔ TỔNG LỰC (${allMerged.length} SỐ - SỐ TRÙNG ĐÁNH X2)</b>`);
   lines.push(
-    `<i>Tổng hợp từ 2 dàn trên: Mặc định giữ Top 20 nền tảng mỏ neo (+10.320 Tỷ 3 năm), dàn ${escapeHtml(subTierLabel)} làm mũi nhọn X2:</i>`,
+    `<i>Tổng hợp từ 2 dàn trên: Mặc định giữ Top 20 nền tảng mỏ neo (${escapeHtml(loEngineLabel)}), dàn ${escapeHtml(subTierLabel)} làm mũi nhọn X2:</i>`,
     `💡 <i>Cách chơi tối ưu hóa lợi nhuận: Cược X2 (4.4M/số) cho các số trùng nhau để nhân đôi profit; cược X1 (2.2M/số) cho các số còn lại trong Top 20 để bảo hiểm vốn hòa và có lãi.</i>`
   );
   lines.push(
@@ -748,10 +827,11 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   // =========================================================================
   // 7. 💡 KHUYẾN NGHỊ PHÂN BỔ VỐN
   // =========================================================================
+  const deMethodShort = streakDeAdv?.selectedMethodLabel || 'Đề Tuyển Chọn';
   lines.push(
     `<b>7. 💡 KHUYẾN NGHỊ PHÂN BỔ VỐN</b>`,
-    `• 🛡️ <b>Phòng thủ (50%)</b>: <b>Đề Tinh Hoa 30 số</b> — Ăn đều đặn bảo vệ vốn.`,
-    `• ⚔️ <b>Tấn công (50%)</b>: <b>Bảng Gộp Đánh Lô</b> (Trùng cược X2, riêng cược X1) + <b>Lô Xiên 4 Quây</b> săn đại thắng.`
+    `• 🛡️ <b>Phòng thủ (50%)</b>: <b>${escapeHtml(deMethodShort)}</b> (${sNumbers.length || 43} số) — Ăn đều đặn bảo vệ vốn.`,
+    `• ⚔️ <b>Tấn công (50%)</b>: <b>Bảng Gộp Đánh Lô</b> (${allMerged.length} số: Trùng cược X2, riêng cược X1) + <b>Lô Xiên 4 Quây</b> săn đại thắng.`
   );
   lines.push(
     '',
