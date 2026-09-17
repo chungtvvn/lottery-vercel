@@ -529,7 +529,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   }
 
   // =========================================================================
-  // 1. 💎 ĐỀ TINH HOA — TRI-GOVERNOR ĐA PHƯƠNG PHÁP GỢI Ý
+  // 1. 💎 ĐỀ TINH HOA — BỘ ĐIỀU PHỐI ĐA PHƯƠNG PHÁP BÙ TRỪ
   // =========================================================================
   if (streakDeAdv && Array.isArray(streakDeAdv.numbers) && streakDeAdv.numbers.length) {
     const sBadge = streakDeAdv.confidenceBadge || '🟢 THEO ĐÀ THẮNG KHỎE ALPHA (80.8% WIN)';
@@ -539,7 +539,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     const sSingles = streakDeAdv.singles || [];
 
     lines.push(
-      `<b>1. 💎 ĐỀ TINH HOA — TRI-GOVERNOR ĐA PHƯƠNG PHÁP GỢI Ý</b>`,
+      `<b>1. 💎 ĐỀ TINH HOA — BỘ ĐIỀU PHỐI ĐA PHƯƠNG PHÁP BÙ TRỪ</b>`,
       `👑 <b>Phương pháp: ${escapeHtml(sMethod)}</b> · ${escapeHtml(sBadge)}`,
       `💡 <i>${escapeHtml(streakDeAdv.rationale || '')}</i>`,
       `🎯 <b>Dàn Đề Tuyển Chọn (${sNumbers.length} số):</b>`,
@@ -562,7 +562,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
       `  • <b>VIP Trùng X2 (${sTierX2.length} số):</b> Cược gấp đôi (Mức 3 đánh 400K/số, Mức VIP đánh 2M/số). Khi nổ ăn 2 nháy đề (+168M VIP / +33.6M Mức 3).`,
       `  • <b>Bọc Lót X1 (${sSingles.length} số):</b> Cược chuẩn (Mức 3 đánh 200K/số, Mức VIP đánh 1M/số) để bảo hiểm vốn hòa và có lãi (+24M VIP / +4.8M Mức 3).`,
       `  • <i>Tổng vốn: ${sTierX2.length}*2 + ${sSingles.length}*1 = ${sTierX2.length * 2 + sSingles.length} đơn vị cược. Tối ưu hơn hẳn đánh cược đều ${sNumbers.length} số.</i>`,
-      `🔄 <b>Cơ chế Đảo pha Tri-Governor:</b> Tự động luân chuyển giữa Đề Tiêu Chuẩn, Tam Trụ và Thích Ứng Alpha theo chuỗi thắng/thua thực tế để né nhịp điều chỉnh và đón đầu chuỗi thắng mới.`,
+      `🔄 <b>Cơ chế Đảo pha Đa Phương Pháp Bù Trừ:</b> Tự động luân chuyển giữa Đề Thích Ứng Alpha, Đề Gộp Tiêu Chuẩn, Tam Trụ và Dạng Số Bayes để bù trừ chuỗi xịt khi chuỗi mốc 20 năm điều chỉnh.`,
       `📚 <b>Kelly Sizing & Strict PIT:</b> Tự động điều chỉnh vốn theo xác suất thực nghiệm; niêm phong dữ liệu 100% không rò rỉ tương lai.`
     );
   } else {
@@ -616,9 +616,10 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   lines.push(divider);
 
   // =========================================================================
-  // 3. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO (DÀN 7 SỐ TĂNG TỐC)
+  // 3. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO (DÀN 7 SỐ TĂNG TỐC - ĐỔI PHA)
   // =========================================================================
   const loGovernor = loQuadAdv?.streakGovernor || {};
+  const selectedEngineLabel = loGovernor.selectedEngineLabel || 'Super-Hybrid Quad-Fusion v7.1';
   const selectedSubTier = loGovernor.selectedSubTier || 7;
   const subTierData = loGovernor.subTiers?.[selectedSubTier] || {};
   const subTierLabel = subTierData.label || `Top ${selectedSubTier}`;
@@ -626,11 +627,11 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   const subStreak = subTierData.streak ? subTierData.streak.replace('_', ' ').toUpperCase() : 'WIN';
   const subCondition = subTierData.winCondition || 'Ăn 1-2 nháy';
 
-  lines.push(`<b>3. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO (DÀN 7 SỐ TĂNG TỐC)</b>`);
+  lines.push(`<b>3. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO (DÀN 7 SỐ TĂNG TỐC - ĐỔI PHA)</b>`);
   if (loGovernor.confidenceBadge) {
     lines.push(
-      `👑 <b>Chiến lược Đổi pha Lô: ${escapeHtml(subTierLabel)} [${selectedSubTier} số]</b> · ${escapeHtml(loGovernor.confidenceBadge)}`,
-      `💡 <i>Lý do chọn: Dàn ${escapeHtml(subTierLabel)} đang giữ chuỗi nổ ${escapeHtml(subStreak)}, xác suất thắng tiếp lịch sử ${escapeHtml(subWinRate)} (${subCondition}), chuỗi thua max thấp. Đề xuất cược X2 để bùng nổ lợi nhuận!</i>`
+      `👑 <b>Động cơ: ${escapeHtml(selectedEngineLabel)}</b> · <b>Dàn ${escapeHtml(subTierLabel)} [${selectedSubTier} số]</b> · ${escapeHtml(loGovernor.confidenceBadge)}`,
+      `💡 <i>Lý do chọn: ${escapeHtml(loGovernor.rationale || '')}</i>`
     );
   }
 

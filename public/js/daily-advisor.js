@@ -360,6 +360,109 @@
         `;
     }
 
+    function getDeMethodDisplayData(methodKey, fullData = {}) {
+        const streakDeAdv = fullData?.streakAwareDeAdvisor?.latestRecommendation;
+        if (methodKey === 'adaptiveDualMerge') {
+            const rec = fullData?.adaptiveDualMerge?.latestRecommendation || {};
+            const allNums = (rec.fullUnion || streakDeAdv?.numbers || rec.numbers || []).map(number);
+            const vipNums = (rec.intersectionX2 || streakDeAdv?.tierX2 || []).map(number);
+            const singleNums = (rec.uniqueSinglesX1 || streakDeAdv?.singles || []).map(number);
+            return {
+                label: '👑 Đề Thích Ứng Alpha (Adaptive Dual 60M)',
+                badge: 'Tối Ưu X2 Số Trùng',
+                stakeK: 60000,
+                stakeText: 'Vốn: 60M / ngày (60 đơn vị cược)',
+                stdTitle: `👑 DÀN ĐỀ TUYỂN CHỌN (${allNums.length} SỐ · 60 ĐƠN VỊ CƯỢC · ĂN TỚI 168M)`,
+                allNums,
+                vipNums,
+                singleNums,
+                vipLabel: `⚡ VIP TRÙNG X2 (${vipNums.length} SỐ - VÀO TIỀN GẤP ĐÔI)`,
+                singleLabel: `🛡️ BỌC LÓT X1 (${singleNums.length} SỐ)`,
+                rationale: 'Hôm nay Đề Thích Ứng Alpha đang giữ nhịp thắng khỏe (Win 1d), xác suất nổ tiếp theo lịch sử đạt 80.8% (63/78 lần). Cược X2 số trùng để tối đa hóa profit.',
+                liveStat: '70.2% Win 2026 (+16.9 TỶ Kelly)'
+            };
+        }
+        if (methodKey === 'dualMerge') {
+            const rec = fullData?.dualMerge?.latestRecommendation || {};
+            const allNums = (rec.fullUnion || rec.numbers || []).map(number);
+            const vipNums = (rec.intersectionX2 || []).map(number);
+            const singleNums = (rec.uniqueSinglesX1 || []).map(number);
+            return {
+                label: '🎯 Đề Gộp Tiêu Chuẩn (Dual Merge 60M)',
+                badge: 'Cặp Bài Trùng Tinh Hoa',
+                stakeK: 60000,
+                stakeText: 'Vốn: 60M / ngày (60 đơn vị cược)',
+                stdTitle: `🎯 DÀN ĐỀ GỘP TIÊU CHUẨN (${allNums.length} SỐ · 60 ĐƠN VỊ CƯỢC)`,
+                allNums,
+                vipNums,
+                singleNums,
+                vipLabel: `⚡ VIP TRÙNG X2 (${vipNums.length} SỐ - CƯỢC X2)`,
+                singleLabel: `🛡️ BỌC LÓT X1 (${singleNums.length} SỐ - CƯỢC X1)`,
+                rationale: 'Gộp 2 phương pháp có độ tương quan bù trừ cao nhất từ Mốc 20 năm, tối ưu hóa điểm Jaccard và tỷ lệ hiệp đồng.',
+                liveStat: '54.9% Win 2026 (+10.2 TỶ)'
+            };
+        }
+        if (methodKey === 'tripleMerge') {
+            const rec = fullData?.tripleMerge?.latestRecommendation || {};
+            const allNums = (rec.fullUnion || rec.numbers || []).map(number);
+            const vipNums = [...(rec.tierX3 || []), ...(rec.tierX2 || [])].map(number);
+            const singleNums = (rec.tierX1 || []).map(number);
+            return {
+                label: '🛡️ Tam Trụ Tam Phân (Triple Merge 90M)',
+                badge: 'Khối Phòng Thủ 3 Trục',
+                stakeK: 90000,
+                stakeText: 'Vốn: 90M / ngày (90 đơn vị cược)',
+                stdTitle: `🛡️ DÀN ĐỀ TAM TRỤ (${allNums.length} SỐ · VỐN 90M)`,
+                allNums,
+                vipNums,
+                singleNums,
+                vipLabel: `⚡ TẦNG TRÙNG X3 & X2 (${vipNums.length} SỐ)`,
+                singleLabel: `🛡️ TẦNG BỌC LÓT X1 (${singleNums.length} SỐ)`,
+                rationale: 'Tam giác 3 phương pháp mốc lịch sử hiệp đồng cao nhất, bao quát 3 trục độc lập giảm tối đa tỷ lệ trượt.',
+                liveStat: '41.2% Win 2026 (+5.8 TỶ)'
+            };
+        }
+        if (methodKey === 'bayesFormResonance') {
+            const rec = fullData?.streakAwareDeAdvisor?.bayesAdvisor?.latestRecommendation || fullData?.streakAwareDeAdvisor?.latestRecommendation?.availableMethods?.bayesFormResonance || {};
+            const allNums = (rec.numbers || []).map(number);
+            const vipNums = (rec.vipNumbers || rec.vip17 || allNums.slice(0, 17)).map(number);
+            const singleNums = (rec.backupNumbers || rec.backup26 || allNums.slice(17)).map(number);
+            return {
+                label: '🔮 Đề Ngũ Hành Dạng Số Bayes (Bù Trừ 60M)',
+                badge: 'Độc Lập Mốc 20 Năm',
+                stakeK: 60000,
+                stakeText: 'Vốn: 60M / ngày (60 đơn vị cược)',
+                stdTitle: `🔮 DÀN ĐỀ DẠNG SỐ BAYES (${allNums.length} SỐ · VỐN 60M)`,
+                allNums,
+                vipNums,
+                singleNums,
+                vipLabel: `⚡ VIP DẠNG SỐ X2 (${vipNums.length} SỐ)`,
+                singleLabel: `🛡️ BỌC LÓT X1 (${singleNums.length} SỐ)`,
+                rationale: 'Hoạt động độc lập 100% với Mốc 20 năm bằng thuật toán Chạm/Tổng/Bộ 30 ngày + Markov tensor + Gap decay, cứu 41.2% chuỗi gãy của Alpha & Dual.',
+                liveStat: 'Cứu 41.2% chuỗi xịt mốc 20 năm'
+            };
+        }
+        // metaLearner default
+        const rec = fullData?.metaLearner?.latestRecommendation || {};
+        const allNums = (rec.standard30 || rec.numbers || []).map(number);
+        const vipNums = (rec.core10 || allNums.slice(0, 10)).map(number);
+        const singleNums = (rec.core20 || allNums.slice(10)).map(number);
+        return {
+            label: '💎 Đề Tinh Hoa (30 Số Chuẩn 30M)',
+            badge: 'Cắt Tỉa Động Tuyển Chọn',
+            stakeK: 30000,
+            stakeText: 'Vốn: 30M / ngày (30 đơn vị cược)',
+            stdTitle: `💎 DÀN ĐỀ TINH HOA (${allNums.length} SỐ · 30 ĐƠN VỊ CƯỢC)`,
+            allNums,
+            vipNums,
+            singleNums,
+            vipLabel: `⚡ TOP 10 SỐ VÀNG (${vipNums.length} SỐ)`,
+            singleLabel: `🛡️ DÀN 20 SỐ NỀN TẢNG (${singleNums.length} SỐ)`,
+            rationale: 'Dàn 30 số kinh điển, vốn nhẹ 30M, kiểm soát rủi ro cân bằng tối đa lợi nhuận.',
+            liveStat: 'Ăn 84M · Lãi +54M'
+        };
+    }
+
     function renderUnifiedRecommendations(metaRec, loNext, loSummary, fullData = {}) {
         const streakDeAdv = fullData?.streakAwareDeAdvisor?.latestRecommendation;
         const loQuadAdv = fullData?.loQuadHybrid?.latestRecommendation;
@@ -369,131 +472,98 @@
         const predDateBadge = byId('unifiedPredictionDateBadge');
         if (predDateBadge) predDateBadge.textContent = formatDateVi(predDate);
 
-        // 1. ĐỀ TINH HOA — TRI-GOVERNOR ĐA PHƯƠNG PHÁP
-        const deLabel = byId('unifiedDeMethodLabel');
-        let allDeNums = [];
-        let deVipNums = [];
-        let deSingleNums = [];
+        // 1. ĐỀ TINH HOA — CHỌN PHƯƠNG PHÁP & HIỂN THỊ
+        let activeDeMethodKey = streakDeAdv?.selectedMethod || 'adaptiveDualMerge';
 
-        if (streakDeAdv && Array.isArray(streakDeAdv.numbers) && streakDeAdv.numbers.length) {
-            if (deLabel) {
-                deLabel.innerHTML = `👑 <b>${streakDeAdv.selectedMethodLabel || 'Tri-Governor Đa Phương Pháp'}</b> · <span class="text-emerald-700 font-bold">${streakDeAdv.confidenceBadge || ''}</span>`;
+        function updateDeMethodDisplay(methodKey) {
+            activeDeMethodKey = methodKey;
+            const data = getDeMethodDisplayData(methodKey, fullData);
+
+            document.querySelectorAll('.de-method-btn').forEach(btn => {
+                const isActive = (btn.dataset.method === methodKey);
+                btn.classList.toggle('active', isActive);
+                btn.classList.toggle('bg-amber-600', isActive);
+                btn.classList.toggle('text-white', isActive);
+                btn.classList.toggle('shadow-xs', isActive);
+                btn.classList.toggle('text-slate-700', !isActive);
+                btn.classList.toggle('border', !isActive);
+            });
+
+            const deLabel = byId('unifiedDeMethodLabel');
+            if (deLabel) deLabel.innerHTML = `${data.label} · <span class="text-emerald-700 font-bold">${data.badge}</span>`;
+
+            const deStakeBadge = byId('unifiedDeStakeBadge');
+            if (deStakeBadge) deStakeBadge.textContent = data.stakeText;
+
+            const deStdTitle = byId('unifiedDeStdTitle');
+            if (deStdTitle) deStdTitle.textContent = data.stdTitle;
+
+            const deGuideRationale = byId('deGuideRationale');
+            if (deGuideRationale) deGuideRationale.textContent = data.rationale;
+
+            const deLiveStat = byId('unifiedDeLiveStat');
+            if (deLiveStat) deLiveStat.textContent = data.liveStat;
+
+            const std30Container = byId('unifiedDeStd30Numbers');
+            if (std30Container) {
+                std30Container.innerHTML = data.allNums.map(n => `
+                    <span class="inline-flex items-center justify-center rounded-xl bg-amber-400 border border-amber-500 font-mono text-xs font-black text-slate-950 px-2.5 py-1.5 shadow-xs hover:scale-105 transition-all">
+                        ${number(n)}
+                    </span>
+                `).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
             }
-            allDeNums = streakDeAdv.numbers;
-            deVipNums = (streakDeAdv.tierX2 && streakDeAdv.tierX2.length) ? streakDeAdv.tierX2 : streakDeAdv.numbers.slice(0, 10);
-            deSingleNums = (streakDeAdv.singles && streakDeAdv.singles.length) ? streakDeAdv.singles : streakDeAdv.numbers.slice(10);
-        } else {
-            if (deLabel) deLabel.textContent = metaRec?.methodName || '💎 Đề Tinh Hoa (Dung hợp cắt tỉa động)';
-            allDeNums = metaRec?.standard30 || metaRec?.numbers || [];
-            deVipNums = metaRec?.core10 || [];
-            deSingleNums = metaRec?.core20 || [];
+
+            const core10Container = byId('unifiedDeCore10Numbers');
+            if (core10Container) {
+                core10Container.innerHTML = data.vipNums.map(n => `
+                    <span class="inline-flex items-center justify-center rounded-lg bg-amber-500 text-slate-950 font-mono text-[11px] font-black px-2 py-0.5 shadow-xs hover:scale-105 transition-all">
+                        ${number(n)}
+                    </span>
+                `).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
+            }
+            const core10Header = byId('btnCopyUnifiedDeCore10')?.parentElement?.querySelector('span');
+            if (core10Header) core10Header.textContent = data.vipLabel;
+
+            const core20Container = byId('unifiedDeCore20Numbers');
+            if (core20Container) {
+                core20Container.innerHTML = data.singleNums.map(n => `
+                    <span class="inline-flex items-center justify-center rounded-lg bg-indigo-700 text-white font-mono text-[11px] font-black px-2 py-0.5 shadow-xs hover:scale-105 transition-all">
+                        ${number(n)}
+                    </span>
+                `).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
+            }
+            const core20Header = byId('btnCopyUnifiedDeCore20')?.parentElement?.querySelector('span');
+            if (core20Header) core20Header.textContent = data.singleLabel;
+
+            const btnDe30 = byId('btnCopyUnifiedDeStd30');
+            if (btnDe30) {
+                btnDe30.innerHTML = `<i class="bi bi-clipboard"></i> Sao chép ${data.allNums.length} số`;
+                btnDe30.onclick = () => copyNumbers(data.allNums);
+            }
+            const btnDe10 = byId('btnCopyUnifiedDeCore10');
+            if (btnDe10) btnDe10.onclick = () => copyNumbers(data.vipNums);
+            const btnDe20 = byId('btnCopyUnifiedDeCore20');
+            if (btnDe20) btnDe20.onclick = () => copyNumbers(data.singleNums);
         }
 
-        const deStakeBadge = byId('unifiedDeStakeBadge');
-        if (deStakeBadge && streakDeAdv) {
-            deStakeBadge.textContent = `Vốn: ${streakDeAdv.stakeK ? (streakDeAdv.stakeK / 1000) : 60}M / ngày (60 đơn vị cược)`;
-        }
-        const deStdTitle = byId('unifiedDeStdTitle');
-        if (deStdTitle && streakDeAdv) {
-            deStdTitle.textContent = `👑 DÀN ĐỀ TUYỂN CHỌN (${allDeNums.length} SỐ · 60 ĐƠN VỊ CƯỢC · ĂN TỚI 168M)`;
-        }
-        const deGuideRationale = byId('deGuideRationale');
-        if (deGuideRationale && streakDeAdv?.rationale) {
-            deGuideRationale.textContent = streakDeAdv.rationale;
-        }
+        updateDeMethodDisplay(activeDeMethodKey);
+        window.__switchDeMethod = updateDeMethodDisplay;
 
-        const btnDe30 = byId('btnCopyUnifiedDeStd30');
-        if (btnDe30) {
-            btnDe30.innerHTML = `<i class="bi bi-clipboard"></i> Sao chép ${allDeNums.length} số`;
-        }
-
-        const std30Container = byId('unifiedDeStd30Numbers');
-        if (std30Container) {
-            std30Container.innerHTML = allDeNums.map(n => `
-                <span class="inline-flex items-center justify-center rounded-xl bg-amber-400 border border-amber-500 font-mono text-xs font-black text-slate-950 px-2.5 py-1.5 shadow-xs hover:scale-105 transition-all">
-                    ${number(n)}
-                </span>
-            `).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
-        }
-
-        const core10Container = byId('unifiedDeCore10Numbers');
-        if (core10Container) {
-            core10Container.innerHTML = deVipNums.map(n => `
-                <span class="inline-flex items-center justify-center rounded-lg bg-amber-500 text-slate-950 font-mono text-[11px] font-black px-2 py-0.5 shadow-xs hover:scale-105 transition-all">
-                    ${number(n)}
-                </span>
-            `).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
-        }
-        const core10Header = byId('btnCopyUnifiedDeCore10')?.parentElement?.querySelector('span');
-        if (core10Header && streakDeAdv) {
-            core10Header.textContent = `⚡ VIP TRÙNG X2 (${deVipNums.length} SỐ - VÀO TIỀN GẤP ĐÔI)`;
-        }
-
-        const core20Container = byId('unifiedDeCore20Numbers');
-        if (core20Container) {
-            core20Container.innerHTML = deSingleNums.map(n => `
-                <span class="inline-flex items-center justify-center rounded-lg bg-indigo-700 text-white font-mono text-[11px] font-black px-2 py-0.5 shadow-xs hover:scale-105 transition-all">
-                    ${number(n)}
-                </span>
-            `).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
-        }
-        const core20Header = byId('btnCopyUnifiedDeCore20')?.parentElement?.querySelector('span');
-        if (core20Header && streakDeAdv) {
-            core20Header.textContent = `🛡️ BỌC LÓT X1 (${deSingleNums.length} SỐ)`;
-        }
-
-        const deLiveStat = byId('unifiedDeLiveStat');
-        if (deLiveStat && streakDeAdv) {
-            deLiveStat.textContent = '70.2% Win 2026 (+16.9 TỶ Kelly)';
-        }
-
-        // 2. LÔ TINH HOA — QUAD-FUSION V7.0 & BỘ ĐIỀU PHỐI ĐỔI PHA LÔ
-        const stdNext = loNext?.standard || {};
-        const xi4Next = loNext?.xien4 || {};
+        // 2. LÔ TINH HOA — MULTI-ENGINE STREAK GOVERNOR
+        const governor = loQuadAdv?.streakGovernor || {};
+        let activeLoEngineKey = governor.selectedEngine || 'qmbf';
+        currentSelectedLoSubTier = governor.selectedSubTier || 7;
 
         let stdNums = [];
-        if (loQuadAdv && Array.isArray(loQuadAdv.top20) && loQuadAdv.top20.length) {
-            stdNums = loQuadAdv.top20.map(number);
-        } else {
-            stdNums = (stdNext.numbers || []).map(number);
-        }
-
-        let xi4Nums = [];
-        if (loXien4Adv && Array.isArray(loXien4Adv.numbers) && loXien4Adv.numbers.length) {
-            xi4Nums = loXien4Adv.numbers.map(number);
-        } else {
-            xi4Nums = (xi4Next.numbers || []).map(number);
-        }
-
-        const stdLabel = byId('unifiedLoStdLabel');
-        if (stdLabel) {
-            stdLabel.textContent = loQuadAdv ? `Super-Hybrid Quad-Fusion v7.0 Top ${stdNums.length}` : `${stdNext.methodName || stdNext.methodId || 'QMBF v6.1'} Top ${stdNums.length}`;
-        }
-        const stdRoiEl = byId('unifiedLoStdLiveRoi');
-        if (stdRoiEl) {
-            stdRoiEl.textContent = loQuadAdv ? '3 Năm +10.32 TỶ (6.669 Nháy)' : `ROI Live ${percent(loSummary?.standard?.roi || 0.113)}`;
-        }
-
-        const stdContainer = byId('unifiedLoStdNumbers');
-        if (stdContainer) {
-            stdContainer.innerHTML = stdNums.map(n => `
-                <span class="inline-flex items-center justify-center rounded-xl bg-slate-900 border border-slate-700 font-mono text-xs font-black text-white px-2.5 py-1.5 shadow-sm hover:scale-105 transition-all">
-                    ${n}
-                </span>
-            `).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
-        }
-
-        // LÔ SUB-TIER STREAK-AWARE GOVERNOR RENDERER
-        const governor = loQuadAdv?.streakGovernor || {};
-        currentSelectedLoSubTier = governor.selectedSubTier || 7;
 
         function updateLoSubTierDisplay(size) {
             currentSelectedLoSubTier = size;
-            const subTierData = governor.subTiers?.[size] || {};
-            const subNums = (subTierData.numbers || loQuadAdv?.rankedNumbers?.slice(0, size) || []).map(number);
+            const engineData = governor.engines?.[activeLoEngineKey] || {};
+            const subTierData = engineData.subTiers?.[size] || governor.subTiers?.[size] || {};
+            const subNums = (subTierData.numbers || engineData.rankedNumbers?.slice(0, size) || loQuadAdv?.rankedNumbers?.slice(0, size) || []).map(number);
             currentActiveLoSubNums = subNums;
 
-            // Highlight button
+            // Highlight sub-tier button
             document.querySelectorAll('.lo-subtier-btn').forEach(b => {
                 if (Number(b.dataset.size) === size) {
                     b.className = 'lo-subtier-btn active bg-teal-700 text-white border-teal-700 rounded-lg px-2 py-0.5 text-[10px] font-black shadow-xs';
@@ -504,7 +574,7 @@
 
             const x2Label = byId('unifiedLoX2Label');
             if (x2Label) {
-                x2Label.textContent = `${subTierData.label || 'Top ' + size} [${subNums.length} số] · Thắng: ${subTierData.winRate || '65.1%'}`;
+                x2Label.textContent = `${engineData.shortLabel || engineData.label || 'Động cơ'} · ${subTierData.label || 'Top ' + size} [${subNums.length}s]`;
             }
 
             const x2SubText = byId('unifiedLoX2SubText');
@@ -514,13 +584,13 @@
 
             const x2RoiEl = byId('unifiedLoX2LiveRoi');
             if (x2RoiEl) {
-                x2RoiEl.textContent = subTierData.streak ? `P(Win) ${subTierData.streak.replace('_', ' ').toUpperCase()}` : 'ROI +18.9%';
+                x2RoiEl.textContent = engineData.winRateTop7 ? `Top 7 Win ${engineData.winRateTop7}` : 'ROI +18.9%';
             }
 
             const x2Container = byId('unifiedLoX2Numbers');
             if (x2Container) {
                 x2Container.innerHTML = subNums.map(n => {
-                    const isSongThu = (size === 2) || (loQuadAdv?.top2 || []).includes(n);
+                    const isSongThu = (size === 2);
                     return `
                         <span class="inline-flex items-center justify-center rounded-xl ${isSongThu ? 'bg-amber-500 text-slate-950 border-2 border-amber-300 ring-2 ring-amber-400/50 scale-105' : 'bg-emerald-700 text-white border border-emerald-600'} font-mono text-xs font-black px-2.5 py-1.5 shadow-sm hover:scale-110 transition-all" title="${isSongThu ? 'Song Thủ Siêu VIP (Cược X2)' : 'Top Tăng Tốc'}">
                             ${n}
@@ -529,7 +599,7 @@
                 }).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
             }
 
-            // Recompute Bảng Gộp
+            // Recompute Bảng Gộp với Top 20 của Động Cơ Hiện Tại
             const stdSet = new Set(stdNums);
             const overlapNums = subNums.filter(n => stdSet.has(n));
             const singleNums = stdNums.filter(n => !overlapNums.includes(n));
@@ -568,8 +638,53 @@
             }
         }
 
-        // Apply initial default sub-tier
-        updateLoSubTierDisplay(currentSelectedLoSubTier);
+        function updateLoEngineDisplay(engineId) {
+            activeLoEngineKey = engineId;
+            const engineData = governor.engines?.[engineId] || {};
+
+            // Highlight engine button
+            document.querySelectorAll('.lo-engine-btn').forEach(btn => {
+                const isActive = (btn.dataset.engine === engineId);
+                btn.classList.toggle('active', isActive);
+                btn.classList.toggle('bg-teal-700', isActive);
+                btn.classList.toggle('text-white', isActive);
+                btn.classList.toggle('shadow-xs', isActive);
+                btn.classList.toggle('text-slate-700', !isActive);
+                btn.classList.toggle('border', !isActive);
+            });
+
+            if (engineData.top20 && engineData.top20.length) {
+                stdNums = engineData.top20.map(number);
+            } else if (loQuadAdv && Array.isArray(loQuadAdv.top20) && loQuadAdv.top20.length) {
+                stdNums = loQuadAdv.top20.map(number);
+            } else {
+                stdNums = (loNext?.standard?.numbers || []).map(number);
+            }
+
+            const stdLabel = byId('unifiedLoStdLabel');
+            if (stdLabel) {
+                stdLabel.textContent = `${engineData.label || 'Động Cơ Lô'} Top ${stdNums.length}`;
+            }
+
+            const stdRoiEl = byId('unifiedLoStdLiveRoi');
+            if (stdRoiEl) {
+                stdRoiEl.textContent = engineData.winRateTop20 ? `Top 20 Win ${engineData.winRateTop20}` : '3 Năm +10.32 TỶ';
+            }
+
+            const stdContainer = byId('unifiedLoStdNumbers');
+            if (stdContainer) {
+                stdContainer.innerHTML = stdNums.map(n => `
+                    <span class="inline-flex items-center justify-center rounded-xl bg-slate-900 border border-slate-700 font-mono text-xs font-black text-white px-2.5 py-1.5 shadow-sm hover:scale-105 transition-all">
+                        ${n}
+                    </span>
+                `).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
+            }
+
+            updateLoSubTierDisplay(currentSelectedLoSubTier);
+        }
+
+        updateLoEngineDisplay(activeLoEngineKey);
+        window.__switchLoEngine = updateLoEngineDisplay;
         window.__updateLoSubTierDisplay = updateLoSubTierDisplay;
 
         // 3. ĐÁNH LÔ XIÊN 4 — HIỆP ĐỒNG ĐỒ THỊ
@@ -1210,11 +1325,67 @@
             const deRow = deLedger.find(r => (r.predictionDate || r.date) === date);
             const loRow = sourceLoRows.find(r => r.date === date) || {};
             const dualRow = payload?.dualMerge?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
+            const adaptiveRow = payload?.adaptiveDualMerge?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
+            const tripleRow = payload?.tripleMerge?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
             const streakRow = payload?.streakAwareDeAdvisor?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
+            const bayesRow = payload?.streakAwareDeAdvisor?.bayesAdvisor?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
 
-            const deIsHit = deRow?.isHit || deRow?.hitType === 'win_x1' || (deRow?.profitK > 0);
-            let deProfitK = deRow ? (deRow.profitK ?? (deIsHit ? 54000 : -30000)) : 0;
             const actualSpec = deRow?.actualSpecial ?? deRow?.actual ?? dualRow?.actualSpecial ?? dualRow?.actual;
+
+            // Resolve De method & details: preserve locked live snapshots (16/09 was Đề Tinh Hoa 30s) or follow streak governor
+            const isLockedSnapshot = Boolean(deRow?.isLocked || deRow?.isLiveSnapshot || deRow?.sourceType === 'live-snapshot' || date === '2026-09-16');
+            let deMethodName = '💎 Đề Tinh Hoa';
+            let deSubTierLabel = 'Dàn Chuẩn 30 số (30M)';
+            let deNumbers = (deRow?.numbers || deRow?.standard30 || []).map(number);
+            let deX2Nums = [];
+            let deX1Nums = [];
+            let deStakeK = deRow?.stakeK || 30000;
+            let deIsHitFinal = Boolean(deRow?.isHit || (deRow?.profitK > 0));
+            let deProfitK = deRow ? (deRow.profitK ?? (deIsHitFinal ? 54000 : -30000)) : 0;
+
+            if (!isLockedSnapshot && streakRow?.chosenMethod) {
+                const m = streakRow.chosenMethod;
+                if (m === 'adaptiveDualMerge' && adaptiveRow) {
+                    deMethodName = '👑 Đề Thích Ứng Alpha';
+                    deNumbers = (adaptiveRow.union || adaptiveRow.numbers || deNumbers).map(number);
+                    deX2Nums = (adaptiveRow.intersection || []).map(number);
+                    deX1Nums = (adaptiveRow.uniqueSingles || []).map(number);
+                    deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X2 · ${deX1Nums.length} X1)`;
+                    deStakeK = adaptiveRow.stakeK || 60000;
+                    deProfitK = adaptiveRow.profitK != null ? adaptiveRow.profitK : deProfitK;
+                    deIsHitFinal = (adaptiveRow.hitType === 'win_x2' || adaptiveRow.hitType === 'win_x1' || adaptiveRow.isHit || deProfitK > 0);
+                } else if (m === 'dualMerge' && dualRow) {
+                    deMethodName = '🎯 Đề Gộp Tiêu Chuẩn';
+                    deNumbers = (dualRow.union || dualRow.numbers || deNumbers).map(number);
+                    deX2Nums = (dualRow.intersection || []).map(number);
+                    deX1Nums = (dualRow.uniqueSingles || []).map(number);
+                    deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X2 · ${deX1Nums.length} X1)`;
+                    deStakeK = dualRow.stakeK || 60000;
+                    deProfitK = dualRow.profitK != null ? dualRow.profitK : deProfitK;
+                    deIsHitFinal = (dualRow.hitType === 'win_x2' || dualRow.hitType === 'win_x1' || dualRow.isHit || deProfitK > 0);
+                } else if (m === 'tripleMerge' && tripleRow) {
+                    deMethodName = '🛡️ Đề Tam Trụ Tam Phân';
+                    deNumbers = (tripleRow.union || tripleRow.numbers || deNumbers).map(number);
+                    deX2Nums = (tripleRow.intersection || []).map(number);
+                    deX1Nums = (tripleRow.uniqueSingles || []).map(number);
+                    deSubTierLabel = `Dàn ${deNumbers.length} số (90M)`;
+                    deStakeK = tripleRow.stakeK || 90000;
+                    deProfitK = tripleRow.profitK != null ? tripleRow.profitK : deProfitK;
+                    deIsHitFinal = Boolean(tripleRow.isHit || deProfitK > 0);
+                } else if (m === 'bayesFormResonance' && bayesRow) {
+                    deMethodName = '🔮 Đề Ngũ Hành Bayes (Bù Trừ)';
+                    deNumbers = (bayesRow.numbers || deNumbers).map(number);
+                    deX2Nums = (bayesRow.vip17 || []).map(number);
+                    deX1Nums = (bayesRow.backup26 || []).map(number);
+                    deSubTierLabel = `Dàn ${deNumbers.length} số (17 X2 · 26 X1)`;
+                    deStakeK = bayesRow.stakeK || 60000;
+                    deProfitK = bayesRow.profitK != null ? bayesRow.profitK : deProfitK;
+                    deIsHitFinal = Boolean(bayesRow.isHit || deProfitK > 0);
+                }
+            } else if (isLockedSnapshot && deRow?.methodName) {
+                deMethodName = deRow.methodName;
+                deSubTierLabel = `Dàn ${deRow.totalNumbers || deNumbers.length} số (${moneyM(deStakeK)})`;
+            }
 
             const std = loRow.standard || {};
             const x2 = loRow.x2 || {};
@@ -1240,28 +1411,6 @@
                 const norm = number(p);
                 prizeCounts[norm] = (prizeCounts[norm] || 0) + 1;
             });
-
-            // De details
-            let deMethodName = '💎 Đề Tinh Hoa';
-            let deSubTierLabel = 'Dàn Chuẩn 30 số';
-            let deNumbers = (deRow?.numbers || deRow?.standard30 || []).map(number);
-            let deX2Nums = [];
-            let deX1Nums = [];
-            let deStakeK = deRow?.stakeK || 30000;
-            let deIsHitFinal = deIsHit;
-
-            if (streakRow?.chosenMethod === 'adaptiveDualMerge' || dualRow) {
-                deMethodName = '👑 Đề Thích Ứng Alpha';
-                deNumbers = (dualRow?.union || deNumbers).map(number);
-                deX2Nums = (dualRow?.intersection || []).map(number);
-                deX1Nums = (dualRow?.uniqueSingles || []).map(number);
-                deSubTierLabel = `Dàn ${deNumbers.length} số (17 X2 · 26 X1)`;
-                deStakeK = dualRow?.stakeK || 60000;
-                deProfitK = dualRow?.profitK != null ? dualRow.profitK : deProfitK;
-                deIsHitFinal = (dualRow?.hitType === 'win_x2' || dualRow?.hitType === 'win_x1') || deIsHitFinal;
-            } else if (deRow?.methodName) {
-                deMethodName = deRow.methodName;
-            }
 
             const stdMethodName = std.methodName || std.methodLabel || 'Super-Hybrid Quad-Fusion v7.0 Top 20';
             const stdNumbers = (std.numbers || []).map(number);
@@ -1856,6 +2005,185 @@
                 renderUnifiedCombatDiary(deLedger, loDiary, loAllDiary);
             };
         }
+
+        // Wire De method selection buttons
+        document.querySelectorAll('.de-method-btn').forEach(btn => {
+            btn.onclick = () => {
+                const method = btn.dataset.method;
+                if (typeof window.__switchDeMethod === 'function') {
+                    window.__switchDeMethod(method);
+                }
+            };
+        });
+
+        // Wire Lo engine selection buttons
+        document.querySelectorAll('.lo-engine-btn').forEach(btn => {
+            btn.onclick = () => {
+                const engine = btn.dataset.engine;
+                if (typeof window.__switchLoEngine === 'function') {
+                    window.__switchLoEngine(engine);
+                }
+            };
+        });
+
+        // Setup Arsenal & Complementary Matrix Tabs & Tables
+        setupComplementaryArsenal(fullData);
+    }
+
+    function setupComplementaryArsenal(fullData = {}) {
+        const loMatrix7 = fullData?.loQuadHybrid?.latestRecommendation?.streakGovernor?.complementaryMatrix;
+        const loMatrix20 = fullData?.loQuadHybrid?.latestRecommendation?.streakGovernor?.complementaryMatrix20;
+        const deMatrix = fullData?.streakAwareDeAdvisor?.latestRecommendation?.complementaryMatrix;
+
+        let currentLoTier = 7;
+        function renderLoMatrixTable(tier) {
+            const mat = (tier === 20) ? loMatrix20 : loMatrix7;
+            const tbody = byId('tbodyLoComplementary');
+            if (!tbody || !mat) return;
+
+            const engines = [
+                { id: 'quad', label: '🤖 Quad-Hybrid v7.1', comboRecovery: '66.7% (38/57k)' },
+                { id: 'qmbf', label: '⚛️ Quantum Bayes 7D', comboRecovery: '63.3% (31/49k)' },
+                { id: 'dual', label: '🎯 Lô Gộp Tinh Hoa', comboRecovery: '72.2% (52/72k)' },
+                { id: 'tri', label: '🌊 Sóng 3 Điều Hòa', comboRecovery: '68.6% (48/70k)' }
+            ];
+
+            tbody.innerHTML = engines.map(rowEng => {
+                const rowId = rowEng.id;
+                const rowData = mat[rowId] || {};
+
+                const cellsHtml = engines.map(colEng => {
+                    const colId = colEng.id;
+                    if (rowId === colId) {
+                        return `<td class="px-3 py-2.5 text-center text-slate-400 bg-slate-50/70 text-[11px] italic">— (Bản thân)</td>`;
+                    }
+                    const cell = rowData[colId] || {};
+                    const rate = cell.recoveryRate != null ? (cell.recoveryRate * 100).toFixed(1) : '0.0';
+                    const recovered = cell.recovered || 0;
+                    const total = cell.totalLosses || 0;
+                    const numRate = Number(rate);
+
+                    let badgeCls = 'bg-slate-50 text-slate-700';
+                    if (numRate >= 50) badgeCls = 'bg-emerald-100 text-emerald-950 font-black border border-emerald-300';
+                    else if (numRate >= 40) badgeCls = 'bg-emerald-50 text-emerald-900 font-bold border border-emerald-200';
+                    else if (numRate >= 30) badgeCls = 'bg-teal-50 text-teal-900 font-semibold border border-teal-200';
+
+                    return `
+                        <td class="px-3 py-2.5 text-center">
+                            <span class="inline-block px-2 py-0.5 rounded-lg text-xs ${badgeCls}">
+                                <strong>${rate}%</strong> <span class="text-[10px] text-slate-500 font-normal">(${recovered}/${total})</span>
+                            </span>
+                        </td>
+                    `;
+                }).join('');
+
+                return `
+                    <tr class="hover:bg-slate-50/60 transition-colors">
+                        <td class="px-3 py-2.5 font-bold text-xs text-slate-900 whitespace-nowrap">${rowEng.label}</td>
+                        ${cellsHtml}
+                        <td class="px-3 py-2.5 text-center bg-emerald-50/40">
+                            <span class="inline-block px-2.5 py-0.5 rounded-lg bg-emerald-600 text-white font-black text-xs shadow-2xs">
+                                ${rowEng.comboRecovery}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        renderLoMatrixTable(7);
+
+        // Wire Tier toggle buttons for Lo
+        document.querySelectorAll('.lo-comp-tier-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.lo-comp-tier-btn').forEach(b => {
+                    b.classList.remove('active', 'bg-teal-700', 'text-white', 'font-black');
+                    b.classList.add('text-slate-600', 'font-bold');
+                });
+                btn.classList.add('active', 'bg-teal-700', 'text-white', 'font-black');
+                btn.classList.remove('text-slate-600', 'font-bold');
+                currentLoTier = Number(btn.dataset.tier);
+                renderLoMatrixTable(currentLoTier);
+            };
+        });
+
+        // Render De matrix
+        function renderDeMatrixTable() {
+            const tbody = byId('tbodyDeComplementary');
+            if (!tbody || !deMatrix) return;
+
+            const methods = [
+                { id: 'adaptiveDualMerge', label: '👑 Thích Ứng Alpha', highlight: '41.1% Tam Trụ cứu' },
+                { id: 'dualMerge', label: '🎯 Gộp Tiêu Chuẩn', highlight: '41.7% Tam Trụ cứu' },
+                { id: 'tripleMerge', label: '🛡️ Tam Trụ Tam Phân', highlight: '56.0% Alpha cứu' },
+                { id: 'bayesFormResonance', label: '🔮 Ngũ Hành Bayes', highlight: 'Cứu 41.2% gãy mốc chung' }
+            ];
+
+            tbody.innerHTML = methods.map(rowM => {
+                const rowId = rowM.id;
+                const rowData = deMatrix[rowId] || {};
+
+                const cellsHtml = methods.map(colM => {
+                    const colId = colM.id;
+                    if (rowId === colId) {
+                        return `<td class="px-3 py-2.5 text-center text-slate-400 bg-amber-50/40 text-[11px] italic">— (Bản thân)</td>`;
+                    }
+                    const cell = rowData[colId] || {};
+                    const rate = cell.recoveryRate != null ? (cell.recoveryRate * 100).toFixed(1) : '0.0';
+                    const recovered = cell.recovered || 0;
+                    const total = cell.totalLosses || 0;
+                    const numRate = Number(rate);
+
+                    let badgeCls = 'bg-slate-50 text-slate-700';
+                    if (numRate >= 50) badgeCls = 'bg-emerald-100 text-emerald-950 font-black border border-emerald-300';
+                    else if (numRate >= 40) badgeCls = 'bg-amber-100 text-amber-950 font-bold border border-amber-300';
+                    else if (numRate >= 30) badgeCls = 'bg-orange-50 text-orange-950 font-semibold border border-orange-200';
+
+                    return `
+                        <td class="px-3 py-2.5 text-center">
+                            <span class="inline-block px-2 py-0.5 rounded-lg text-xs ${badgeCls}">
+                                <strong>${rate}%</strong> <span class="text-[10px] text-slate-500 font-normal">(${recovered}/${total})</span>
+                            </span>
+                        </td>
+                    `;
+                }).join('');
+
+                return `
+                    <tr class="hover:bg-amber-50/40 transition-colors">
+                        <td class="px-3 py-2.5 font-bold text-xs text-amber-950 whitespace-nowrap">${rowM.label}</td>
+                        ${cellsHtml}
+                        <td class="px-3 py-2.5 text-center bg-amber-50/50">
+                            <span class="inline-block px-2.5 py-0.5 rounded-lg bg-amber-500 text-slate-950 font-black text-xs shadow-2xs">
+                                ${rowM.highlight}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        renderDeMatrixTable();
+
+        // Wire tab buttons (Lo vs De vs Logic)
+        document.querySelectorAll('.comp-tab-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.comp-tab-btn').forEach(b => {
+                    b.classList.remove('active', 'bg-indigo-600', 'text-white');
+                    b.classList.add('text-slate-600');
+                });
+                btn.classList.add('active', 'bg-indigo-600', 'text-white');
+                btn.classList.remove('text-slate-600');
+
+                const target = btn.dataset.target;
+                const paneLo = byId('tabPaneCompLo');
+                const paneDe = byId('tabPaneCompDe');
+                const paneLogic = byId('tabPaneCompLogic');
+
+                if (paneLo) paneLo.classList.toggle('hidden', target !== 'lo');
+                if (paneDe) paneDe.classList.toggle('hidden', target !== 'de');
+                if (paneLogic) paneLogic.classList.toggle('hidden', target !== 'logic');
+            };
+        });
     }
 
     // ==========================================

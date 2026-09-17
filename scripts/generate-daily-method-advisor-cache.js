@@ -38,7 +38,9 @@ async function main() {
 
     let existingCache = null;
     try {
-        existingCache = await loadJsonWithSupabaseFallback('cached_daily_method_advisor.json');
+        if (!useLocalHistory) {
+            existingCache = await loadJsonWithSupabaseFallback('cached_daily_method_advisor.json');
+        }
     } catch (error) {
         console.log(`[DailyAdvisor] Chưa có cache R2 cũ: ${error.message}`);
     }

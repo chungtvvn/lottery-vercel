@@ -180,6 +180,16 @@
                                 </span>
                             </div>
 
+                            <!-- Bộ Chọn Phương Pháp Đề Thực Chiến & Bù Trừ -->
+                            <div class="mt-3 flex flex-wrap items-center gap-1.5" id="deMethodSelector">
+                                <span class="text-[10px] font-black uppercase text-slate-500 mr-0.5">Phương Pháp:</span>
+                                <button type="button" class="de-method-btn active bg-amber-600 text-white rounded-lg px-2 py-0.5 text-[10px] font-black shadow-xs" data-method="adaptiveDualMerge">👑 Thích Ứng Alpha ⭐</button>
+                                <button type="button" class="de-method-btn rounded-lg px-2 py-0.5 text-[10px] font-bold border border-slate-200 hover:bg-slate-100 transition-all text-slate-700" data-method="dualMerge">🎯 Gộp Tiêu Chuẩn</button>
+                                <button type="button" class="de-method-btn rounded-lg px-2 py-0.5 text-[10px] font-bold border border-slate-200 hover:bg-slate-100 transition-all text-slate-700" data-method="tripleMerge">🛡️ Tam Trụ (90M)</button>
+                                <button type="button" class="de-method-btn rounded-lg px-2 py-0.5 text-[10px] font-bold border border-slate-200 hover:bg-slate-100 transition-all text-slate-700" data-method="bayesFormResonance">🔮 Ngũ Hành Bayes (Bù Trừ)</button>
+                                <button type="button" class="de-method-btn rounded-lg px-2 py-0.5 text-[10px] font-bold border border-slate-200 hover:bg-slate-100 transition-all text-slate-700" data-method="metaLearner">💎 Tinh Hoa (30s)</button>
+                            </div>
+
                             <!-- Dàn Chuẩn / Tuyển chọn -->
                             <div class="mt-4 rounded-2xl bg-white border border-amber-200 p-4 shadow-xs">
                                 <div class="flex items-center justify-between">
@@ -327,8 +337,17 @@
                                     </div>
                                 </div>
 
+                                <!-- Engine Selector Pills (4 Động Cơ Độc Lập) -->
+                                <div class="mt-2.5 pt-2 border-t border-teal-100 flex flex-wrap items-center gap-1.5" id="loEngineSelector">
+                                    <span class="text-[10px] font-black uppercase text-slate-500 mr-0.5">Động Cơ:</span>
+                                    <button type="button" class="lo-engine-btn active bg-teal-700 text-white rounded-lg px-2 py-0.5 text-[10px] font-black shadow-xs" data-engine="qmbf">⚛️ QMBF 7D ⭐ (Governor Chọn)</button>
+                                    <button type="button" class="lo-engine-btn rounded-lg px-2 py-0.5 text-[10px] font-bold border border-slate-200 hover:bg-slate-100 transition-all text-slate-700" data-engine="quad">🤖 Quad-Hybrid v7.1</button>
+                                    <button type="button" class="lo-engine-btn rounded-lg px-2 py-0.5 text-[10px] font-bold border border-slate-200 hover:bg-slate-100 transition-all text-slate-700" data-engine="dual">🎯 Lô Gộp Tinh Hoa</button>
+                                    <button type="button" class="lo-engine-btn rounded-lg px-2 py-0.5 text-[10px] font-bold border border-slate-200 hover:bg-slate-100 transition-all text-slate-700" data-engine="tri">🌊 Sóng 3 Điều Hòa</button>
+                                </div>
+
                                 <!-- Sub-tier Selector Pills -->
-                                <div class="mt-2.5 pt-2 border-t border-teal-100 flex flex-wrap items-center gap-1.5" id="loSubTierSelector">
+                                <div class="mt-2 flex flex-wrap items-center gap-1.5" id="loSubTierSelector">
                                     <span class="text-[10px] font-black uppercase text-slate-500 mr-0.5">Đổi Dàn:</span>
                                     <button type="button" class="lo-subtier-btn rounded-lg px-2 py-0.5 text-[10px] font-bold border border-slate-200 hover:bg-slate-100 transition-all text-slate-700" data-size="2">Song Thủ [2s]</button>
                                     <button type="button" class="lo-subtier-btn rounded-lg px-2 py-0.5 text-[10px] font-bold border border-slate-200 hover:bg-slate-100 transition-all text-slate-700" data-size="4">Tứ Thủ [4s]</button>
@@ -455,6 +474,168 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ========================================================================= -->
+            <!-- MA TRẬN BÙ TRỪ & KHO VŨ KHÍ PHƯƠNG PHÁP ĐỔI PHA (STRICT PIT) -->
+            <!-- ========================================================================= -->
+            <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm relative" id="arsenalComplementarySection">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-b border-slate-100 pb-4">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="rounded-full bg-indigo-100 text-indigo-900 font-black text-[10px] px-2.5 py-0.5 uppercase tracking-wide">
+                                🛡️ MA TRẬN BÙ TRỪ THỰC CHIẾN · STRICT PIT
+                            </span>
+                            <span class="text-xs font-bold text-slate-400">|</span>
+                            <span class="text-xs font-bold text-emerald-700">
+                                Khảo sát xác suất cứu hộ thực nghiệm P(B | ¬A)
+                            </span>
+                        </div>
+                        <h3 class="text-lg font-black text-slate-900 mt-1">
+                            Kho Vũ Khí Phương Pháp Độc Lập & Ma Trận Bù Trừ Chuỗi Xịt
+                        </h3>
+                        <p class="text-xs text-slate-500 mt-0.5">
+                            Khi 1 phương pháp gãy nhịp, các phương pháp bù trừ độc lập sẽ tự động kích hoạt để cắt đứt chuỗi thua và phục hồi vốn tức thì.
+                        </p>
+                    </div>
+
+                    <!-- Tab Switcher (Lô vs Đề vs Cơ chế) -->
+                    <div class="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1">
+                        <button type="button" id="tabBtnCompLo" class="comp-tab-btn active rounded-lg bg-indigo-600 text-white px-3 py-1.5 text-xs font-black shadow-xs transition-all" data-target="lo">
+                            🎰 Ma Trận Lô (4 Động Cơ)
+                        </button>
+                        <button type="button" id="tabBtnCompDe" class="comp-tab-btn rounded-lg px-3 py-1.5 text-xs font-black transition-all text-slate-600 hover:text-slate-900" data-target="de">
+                            💎 Ma Trận Đề (4 Phương Pháp)
+                        </button>
+                        <button type="button" id="tabBtnCompLogic" class="comp-tab-btn rounded-lg px-3 py-1.5 text-xs font-black transition-all text-slate-600 hover:text-slate-900" data-target="logic">
+                            ⚙️ Cơ Chế Đổi Pha
+                        </button>
+                    </div>
+                </div>
+
+                <!-- PANE 1: MA TRẬN BÙ TRỪ LÔ (4 ĐỘNG CƠ ĐỘC LẬP) -->
+                <div id="tabPaneCompLo" class="comp-tab-pane mt-4 space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                        <div class="text-xs text-slate-600">
+                            <strong>Cách đọc bảng:</strong> Khi Động cơ ở <em>hàng ngang</em> TRƯỢT thì Động cơ ở <em>cột dọc</em> TRÚNG bao nhiêu % để cứu hộ.
+                        </div>
+                        <div class="inline-flex rounded-lg border border-slate-200 bg-white p-0.5" id="loCompTierToggle">
+                            <button type="button" class="lo-comp-tier-btn active bg-teal-700 text-white text-[11px] font-black rounded-md px-2.5 py-1 transition-all" data-tier="7">
+                                🚀 Top 7s Mũi Nhọn (Đánh X2)
+                            </button>
+                            <button type="button" class="lo-comp-tier-btn text-slate-600 hover:text-slate-900 text-[11px] font-bold rounded-md px-2.5 py-1 transition-all" data-tier="20">
+                                🏆 Top 20s Nền Tảng (Phòng Ngự)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Heatmap Table Lo -->
+                    <div class="overflow-x-auto custom-scrollbar">
+                        <table class="w-full text-left text-xs border-collapse" id="tableLoComplementary">
+                            <thead>
+                                <tr class="border-b border-slate-200 bg-slate-100/80 text-slate-700 uppercase font-black text-[10px]">
+                                    <th class="px-3 py-2.5">Khi Động Cơ Này Trượt ↓</th>
+                                    <th class="px-3 py-2.5 text-center">🤖 Quad-Hybrid v7.1</th>
+                                    <th class="px-3 py-2.5 text-center">⚛️ Quantum Bayes 7D</th>
+                                    <th class="px-3 py-2.5 text-center">🎯 Lô Gộp Tinh Hoa</th>
+                                    <th class="px-3 py-2.5 text-center">🌊 Sóng 3 Điều Hòa</th>
+                                    <th class="px-3 py-2.5 text-center bg-emerald-50 text-emerald-900">🛡️ Cứu Hộ Liên Hoàn</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyLoComplementary" class="divide-y divide-slate-100 font-mono">
+                                <!-- Populated dynamically by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Summary Callout Lo -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                        <div class="rounded-2xl bg-indigo-50/70 border border-indigo-200 p-3.5">
+                            <div class="font-black text-indigo-950 flex items-center gap-1.5">
+                                <span>⚛️ QMBF 7D - Cứu Tinh Số 1 Cho Quad-Hybrid</span>
+                            </div>
+                            <p class="text-slate-600 mt-1 text-[11px] leading-relaxed">
+                                Khi Quad-Hybrid Top 7 trượt (57 ngày), Quantum Bayes 7D nổ bù tới <strong>45.6% (26/57 ngày)</strong> với win rate toàn năm đạt <strong>80.8% (+1.665 Tỷ)</strong>. Hai động cơ bổ trợ nhịp nhàng cắt đứt mọi chuỗi rơi.
+                            </p>
+                        </div>
+                        <div class="rounded-2xl bg-emerald-50/70 border border-emerald-200 p-3.5">
+                            <div class="font-black text-emerald-950 flex items-center gap-1.5">
+                                <span>🛡️ Khả Năng Cứu Hộ Liên Hoàn Đạt 66.7%</span>
+                            </div>
+                            <p class="text-slate-600 mt-1 text-[11px] leading-relaxed">
+                                Khi Quad-Hybrid trượt, ít nhất 1 trong 3 động cơ còn lại thắng tới <strong>38/57 ngày (66.7%)</strong>, giảm tỷ lệ chuỗi ngày gãy đồng loạt của toàn hệ thống xuống chỉ còn <strong>7.5%</strong>!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANE 2: MA TRẬN BÙ TRỪ ĐỀ (4 PHƯƠNG PHÁP) -->
+                <div id="tabPaneCompDe" class="comp-tab-pane mt-4 space-y-4 hidden">
+                    <div class="bg-amber-50 p-3 rounded-2xl border border-amber-200 text-xs text-amber-900 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <span><strong>Đột phá Đề 2026:</strong> Bổ sung <strong>Đề Ngũ Hành Bayes</strong> độc lập hoàn toàn với Mốc 20 năm để hóa giải hiện tượng gãy cầu lịch sử đồng loạt.</span>
+                        <span class="font-black text-amber-950 bg-amber-200/80 px-2 py-0.5 rounded-lg text-[10px] uppercase shrink-0">Độc Lập Tuyệt Đối</span>
+                    </div>
+
+                    <!-- Heatmap Table De -->
+                    <div class="overflow-x-auto custom-scrollbar">
+                        <table class="w-full text-left text-xs border-collapse" id="tableDeComplementary">
+                            <thead>
+                                <tr class="border-b border-slate-200 bg-amber-100/60 text-amber-950 uppercase font-black text-[10px]">
+                                    <th class="px-3 py-2.5">Khi Phương Pháp Này Trượt ↓</th>
+                                    <th class="px-3 py-2.5 text-center">👑 Thích Ứng Alpha</th>
+                                    <th class="px-3 py-2.5 text-center">🎯 Gộp Tiêu Chuẩn</th>
+                                    <th class="px-3 py-2.5 text-center">🛡️ Tam Trụ Tam Phân</th>
+                                    <th class="px-3 py-2.5 text-center">🔮 Ngũ Hành Bayes</th>
+                                    <th class="px-3 py-2.5 text-center bg-amber-200/60 text-amber-950">🌟 Tỷ Lệ Cứu Hộ Tối Đa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyDeComplementary" class="divide-y divide-slate-100 font-mono">
+                                <!-- Populated dynamically by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Special De Recovery Card -->
+                    <div class="rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-300 p-4">
+                        <div class="flex items-center gap-2">
+                            <span class="flex h-7 w-7 items-center justify-center rounded-xl bg-amber-500 text-white font-black text-sm">🔮</span>
+                            <h4 class="text-xs font-black text-amber-950 uppercase tracking-wide">Giải Mã Hiệu Quả Bù Trừ Của Đề Ngũ Hành Bayes</h4>
+                        </div>
+                        <p class="text-xs text-slate-700 mt-2 leading-relaxed">
+                            Cả 3 phương pháp cũ (Thích Ứng Alpha, Gộp Tiêu Chuẩn, Tam Trụ) đều tuyển chọn từ Pool 7 dựa trên bộ lọc 70 số từ Mốc Lịch Sử 20 năm. Khi xuất hiện các dạng số bẻ cầu (kép bằng, số gan nổ đột ngột), cả 3 phương pháp có nguy cơ gãy cùng lúc. <strong>Đề Ngũ Hành Bayes</strong> tính toán trên <em>tần suất Chạm-Tổng-Bộ 30 ngày gần nhất + ma trận Markov + bước nhảy Gap + Lô rơi sang Đề</em> nên hoạt động hoàn toàn độc lập, đã cứu sống <strong>41.2% (28/68 ngày)</strong> những ngày mà cả Alpha và Dual đều gãy!
+                        </p>
+                    </div>
+                </div>
+
+                <!-- PANE 3: NGUYÊN LÝ ĐỔI PHA (SMART GOVERNOR) -->
+                <div id="tabPaneCompLogic" class="comp-tab-pane mt-4 space-y-4 hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                        <div class="rounded-2xl border-2 border-emerald-300 bg-emerald-50/50 p-4">
+                            <div class="font-black text-emerald-950 flex items-center gap-1.5 text-sm">
+                                <span>🚀 1. Bám Đà Thắng (Momentum Ride)</span>
+                            </div>
+                            <p class="text-slate-600 mt-2 text-[11px] leading-relaxed">
+                                Khi một phương pháp vừa bắt đầu chuỗi thắng (1-2 ngày liên tiếp), xác suất duy trì đà thắng trong ngắn hạn đạt trên <strong>75%-80%</strong>. Governor giữ nguyên phương pháp và kích hoạt lệnh <strong>CƯỢC X2 (hoặc 1.2x Kelly)</strong> để vét cạn lợi nhuận cao nhất.
+                            </p>
+                        </div>
+                        <div class="rounded-2xl border-2 border-amber-300 bg-amber-50/50 p-4">
+                            <div class="font-black text-amber-950 flex items-center gap-1.5 text-sm">
+                                <span>🛡️ 2. Tránh Bão Hòa Thắng (Win Exhaustion)</span>
+                            </div>
+                            <p class="text-slate-600 mt-2 text-[11px] leading-relaxed">
+                                Không có chuỗi thắng nào là vĩnh cửu. Khi một phương pháp đã thắng liên tục <strong>≥ 3 ngày</strong>, xác suất phân phối đảo chiều tăng vọt. Governor chủ động xoay trục sang động cơ bù trừ có tỷ lệ nổ cao nhất để phòng thủ trước khi nhịp điều chỉnh xảy ra.
+                            </p>
+                        </div>
+                        <div class="rounded-2xl border-2 border-rose-300 bg-rose-50/50 p-4">
+                            <div class="font-black text-rose-950 flex items-center gap-1.5 text-sm">
+                                <span>⚡ 3. Chặn Đứng Chuỗi Thua (Drawdown Interceptor)</span>
+                            </div>
+                            <p class="text-slate-600 mt-2 text-[11px] leading-relaxed">
+                                Ngay khi một phương pháp vừa dính 1 ngày trượt, Governor sẽ truy vấn <strong>Ma Trận Bù Trừ Thực Nghiệm</strong> để chuyển sang phương pháp có $P(B \mid \neg A)$ cao nhất. Nhờ đó, chuỗi thua không bị kéo dài quá 2 ngày và vốn được phục hồi ngay ngày hôm sau.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- ========================================================================= -->
             <!-- BẢNG ĐỐI SOÁT & NHẬT KÝ THỰC CHIẾN HÀNG NGÀY THEO ĐỀ XUẤT -->
