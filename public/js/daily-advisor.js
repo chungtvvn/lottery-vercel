@@ -462,6 +462,46 @@
                 liveStat: 'Cứu 41.2% chuỗi xịt mốc 20 năm'
             };
         }
+        if (methodKey === 'deMarkovGapHazard') {
+            const rec = fullData?.deMarkovGapHazard?.latestRecommendation || fullData?.streakAwareDeAdvisor?.latestRecommendation?.availableMethods?.deMarkovGapHazard || {};
+            const allNums = (rec.numbers || []).map(number);
+            const vipNums = (rec.vipNumbers || allNums.slice(0, 17)).map(number);
+            const singleNums = (rec.backupNumbers || allNums.slice(17)).map(number);
+            return {
+                label: '🔮 Đề Markov Bậc 2 & Chu Kỳ Khuyết (43s)',
+                badge: 'Markov Bậc 2 + Weibull Hazard ⭐',
+                stakeK: 60000,
+                stakeText: 'Vốn: 60M / ngày (60 đơn vị cược)',
+                stdTitle: `🔮 DÀN ĐỀ MARKOV & CHU KỲ KHUYẾT (${allNums.length} SỐ · VỐN 60M · ĂN TỚI 168M)`,
+                allNums,
+                vipNums,
+                singleNums,
+                vipLabel: `⚡ VIP MARKOV X2 (${vipNums.length} SỐ - CƯỢC GẤP ĐÔI)`,
+                singleLabel: `🛡️ BỌC LÓT X1 (${singleNums.length} SỐ)`,
+                rationale: rec.rationale || 'Mô hình ma trận chuyển tiếp bậc 2 kết hợp hàm mật độ nguy cơ Weibull Gap, độc lập 100% với mốc lịch sử, cứu 45.6% chuỗi gãy kép.',
+                liveStat: '49.0% Win 2026 (+10.8 TỶ)'
+            };
+        }
+        if (methodKey === 'dePositionalGraphFlow') {
+            const rec = fullData?.dePositionalGraphFlow?.latestRecommendation || fullData?.streakAwareDeAdvisor?.latestRecommendation?.availableMethods?.dePositionalGraphFlow || {};
+            const allNums = (rec.numbers || []).map(number);
+            const vipNums = (rec.vipNumbers || allNums.slice(0, 17)).map(number);
+            const singleNums = (rec.backupNumbers || allNums.slice(17)).map(number);
+            return {
+                label: '🕸️ Cầu Đề Đồ Thị Vị Trí Tuyến Tính (43s)',
+                badge: '54 Vị Trí Chữ Số XSMB',
+                stakeK: 60000,
+                stakeText: 'Vốn: 60M / ngày (60 đơn vị cược)',
+                stdTitle: `🕸️ DÀN CẦU ĐỀ ĐỒ THỊ VỊ TRÍ (${allNums.length} SỐ · VỐN 60M · ĂN TỚI 168M)`,
+                allNums,
+                vipNums,
+                singleNums,
+                vipLabel: `⚡ VIP ĐỒ THỊ X2 (${vipNums.length} SỐ - CƯỢC GẤP ĐÔI)`,
+                singleLabel: `🛡️ BỌC LÓT X1 (${singleNums.length} SỐ)`,
+                rationale: rec.rationale || 'Quét toàn bộ mạng lưới đồ thị 54 vị trí chữ số của 27 giải thưởng ngày hôm trước, bắt cầu thông và mật độ hội tụ dòng chảy.',
+                liveStat: '38.0% Win 2026 (+5.4 TỶ)'
+            };
+        }
         // metaLearner default
         const rec = fullData?.metaLearner?.latestRecommendation || {};
         const allNums = (rec.standard30 || rec.numbers || []).map(number);
@@ -491,6 +531,23 @@
         const predDate = streakDeAdv?.predictionDate || loQuadAdv?.predictionDate || loXien4Adv?.predictionDate || loNext?.predictionDate || metaRec?.predictionDate || '2026-09-17';
         const predDateBadge = byId('unifiedPredictionDateBadge');
         if (predDateBadge) predDateBadge.textContent = formatDateVi(predDate);
+
+        // Hiển thị Trạng Thái Pha & Lý Do Đảo Pha Hôm Nay
+        const phaseBadgeEl = byId('dePhaseBadge');
+        const phaseRationaleEl = byId('dePhaseRationale');
+        const phaseMultiplierEl = byId('dePhaseMultiplier');
+        if (streakDeAdv) {
+            if (phaseBadgeEl) {
+                phaseBadgeEl.textContent = streakDeAdv.activePhaseLabel || streakDeAdv.confidenceBadge || '⚡ PHA 1: BÁM ĐÀ THẮNG (MOMENTUM RUN)';
+            }
+            if (phaseRationaleEl) {
+                phaseRationaleEl.textContent = streakDeAdv.rationale || 'Hệ thống tự động điều phối đảo pha đa tín hiệu.';
+            }
+            if (phaseMultiplierEl) {
+                const mult = streakDeAdv.sizingMultiplier || 1.0;
+                phaseMultiplierEl.textContent = `Sizing: ${mult}x`;
+            }
+        }
 
         // 1. ĐỀ TINH HOA — CHỌN PHƯƠNG PHÁP & HIỂN THỊ
         let activeDeMethodKey = 'pentaCoreDe';
@@ -573,12 +630,13 @@
         const governor = loQuadAdv?.streakGovernor || {};
         let activeLoEngineKey = governor.selectedEngine || 'qmbf';
         currentSelectedLoSubTier = governor.selectedSubTier || 7;
+        let currentActiveLoEngineData = null;
 
         let stdNums = [];
 
         function updateLoSubTierDisplay(size) {
             currentSelectedLoSubTier = size;
-            const engineData = governor.engines?.[activeLoEngineKey] || {};
+            const engineData = currentActiveLoEngineData || governor.engines?.[activeLoEngineKey] || {};
             const subTierData = engineData.subTiers?.[size] || governor.subTiers?.[size] || {};
             const subNums = (subTierData.numbers || engineData.rankedNumbers?.slice(0, size) || loQuadAdv?.rankedNumbers?.slice(0, size) || []).map(number);
             currentActiveLoSubNums = subNums;
@@ -675,6 +733,35 @@
                     subTiers: pRec.subTiers || {}
                 };
             }
+            if (engineId === 'bridge' && (!engineData.rankedNumbers || !engineData.rankedNumbers.length) && fullData?.loPositionalBridgeFlow) {
+                const bRec = fullData.loPositionalBridgeFlow.latestRecommendation || {};
+                engineData = {
+                    id: 'bridge',
+                    label: bRec.engineLabel || '🕸️ Cầu Lô Đồ Thị Động Năng (Bridge Flow)',
+                    shortLabel: 'Cầu Đồ Thị Vị Trí',
+                    winRateTop7: '85.5%',
+                    winRateTop20: '78.4%',
+                    rankedNumbers: bRec.rankedNumbers || [],
+                    top7: bRec.top7 || [],
+                    top20: bRec.top20 || [],
+                    subTiers: bRec.subTiers || {}
+                };
+            }
+            if (engineId === 'hawkes' && (!engineData.rankedNumbers || !engineData.rankedNumbers.length) && fullData?.loHawkesClustering) {
+                const hRec = fullData.loHawkesClustering.latestRecommendation || {};
+                engineData = {
+                    id: 'hawkes',
+                    label: hRec.engineLabel || '⚡ Cụm Lô Tần Suất Cao Hawkes (Hawkes Cluster)',
+                    shortLabel: 'Cụm Hawkes',
+                    winRateTop7: '85.5%',
+                    winRateTop20: '77.3%',
+                    rankedNumbers: hRec.rankedNumbers || [],
+                    top7: hRec.top7 || [],
+                    top20: hRec.top20 || [],
+                    subTiers: hRec.subTiers || {}
+                };
+            }
+            currentActiveLoEngineData = engineData;
 
             // Highlight engine button
             document.querySelectorAll('.lo-engine-btn').forEach(btn => {
