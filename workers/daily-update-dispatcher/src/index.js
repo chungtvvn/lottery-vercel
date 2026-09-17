@@ -519,6 +519,34 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     ''
   ];
 
+  const snapshotLock = advisorPayload?.snapshotLock || streakDeAdv?.snapshotLock || loQuadAdv?.snapshotLock;
+  let isLocked = Boolean(snapshotLock?.isLocked);
+  if (!isLocked && predictionDate) {
+    try {
+      const now = new Date();
+      const vnFormatter = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Ho_Chi_Minh',
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', hour12: false
+      });
+      const parts = vnFormatter.formatToParts(now);
+      const m = {};
+      for (const p of parts) m[p.type] = p.value;
+      const vnDate = `${m.year}-${m.month}-${m.day}`;
+      const vnHour = parseInt(m.hour, 10);
+      if (vnDate === String(predictionDate).slice(0, 10) && vnHour >= 12) {
+        isLocked = true;
+      }
+    } catch (e) {}
+  }
+  if (isLocked) {
+    lines.push(
+      `🔒 <b>TRẠNG THÁI: ĐÃ NIÊM PHONG BẤT BIẾN (TỪ 12H TRƯA)</b>`,
+      `<i>Dàn số được bảo toàn 100% không đổi cho đến khi kết toán sau 18h40.</i>`,
+      ''
+    );
+  }
+
   // =========================================================================
   // 0. 🏆 BÁO CÁO KẾT QUẢ ĐỐI SOÁT HÔM NAY (NẾU ĐÃ CÓ KẾT QUẢ MỞ THƯỞNG)
   // =========================================================================

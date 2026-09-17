@@ -252,6 +252,15 @@ function settleFromRaw(payload, rawRows) {
         loXien4Synergy: loXien4Synergy || payload.loXien4Synergy || null,
         dynamicMetaAdvisor: dynamicMetaAdvisor || payload.dynamicMetaAdvisor || loQuantumBayesFusion?.dynamicMetaAdvisor || null,
         latestDataDate: rawRows?.at(-1)?.date || payload.latestDataDate,
+        snapshotLock: (() => {
+            try {
+                const { isPredictionLockActive } = require('@/lib/utils/predictionLockGuard');
+                const nextTargetDate = payload?.streakAwareDeAdvisor?.latestRecommendation?.predictionDate || payload?.pendingPredictionDate;
+                return isPredictionLockActive(nextTargetDate, rawRows);
+            } catch (_) {
+                return payload.snapshotLock || null;
+            }
+        })(),
         summary: { main: summarize('main'), hybrid: summarize('hybrid') },
         strategyCatalog: [...strategyMetadata.values()],
         strategySummaries: [...strategyMetadata.values()].map(strategy => ({

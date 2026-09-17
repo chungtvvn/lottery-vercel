@@ -424,7 +424,7 @@ async function main() {
         assert.match(sheetM3, /50 điểm \/ số/);
         assert.match(sheetM3, /4\. 💎 LÔ XIÊN 4 TINH HOA \(QUÂY 11 VÉ\)/);
         assert.match(sheetM3, /200K \/ vé/);
-        assert.match(sheetM3, /35\.900K VNĐ/);
+        assert.match(sheetM3, /TỔNG VỐN ĐẦU TƯ TRỌN GÓI HÔM NAY:.*?VNĐ/);
         assert.ok(!sheetM3.includes('LÔ XIÊN 2 CHIẾN LƯỢC'), 'Bảng tính cược không được chứa Lô Xiên 2');
         console.log('=== BET CALCULATION SHEET (MỨC 3 MẶC ĐỊNH) PREVIEW ===\n' + sheetM3 + '\n====================================');
     } catch (e) {

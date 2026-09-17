@@ -99,6 +99,33 @@
         <!-- Error Container -->
         <div id="errorBox" class="mb-6 hidden rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-700"></div>
 
+        <!-- Banner Niêm Phong Khóa Bất Biến (Từ 12:00 trưa đến sau 18:40 kết toán) -->
+        <div id="predictionLockBanner" class="mb-6 hidden rounded-2xl border border-emerald-500/40 bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 p-4 text-white shadow-xl shadow-emerald-950/20">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xl shadow-inner">
+                        <i class="bi bi-lock-fill"></i>
+                    </span>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-xs font-black uppercase tracking-wider text-emerald-300 border border-emerald-500/40">
+                                🔒 ĐÃ NIÊM PHONG BẤT BIẾN (TỪ 12:00 TRƯA)
+                            </span>
+                            <span class="text-xs text-emerald-300/80 font-bold">· Khóa cứng trước giờ quay</span>
+                        </div>
+                        <p id="lockBannerMessage" class="mt-1 text-xs leading-relaxed text-slate-200">
+                            Toàn bộ dàn số Lô & Đề đã được niêm phong bất biến từ 12:00 trưa đến sau 18:40. Tuyệt đối không thay đổi phương pháp hay dàn số đánh, bảo vệ 100% tiền cược của người chơi.
+                        </p>
+                    </div>
+                </div>
+                <div class="shrink-0 text-left sm:text-right">
+                    <span class="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1.5 text-xs font-bold text-emerald-300 backdrop-blur-sm">
+                        <i class="bi bi-clock-history"></i> Chờ kết toán sau 18h40
+                    </span>
+                </div>
+            </div>
+        </div>
+
         <!-- ========================================================================= -->
         <!-- VIEW 0: ĐỀ XUẤT TINH HOA THỰC CHIẾN HỢP NHẤT (ĐỀ + LÔ) [MẶC ĐỊNH]       -->
         <!-- ========================================================================= -->
@@ -155,7 +182,7 @@
                         </p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <span class="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-xs font-bold text-emerald-700">
+                        <span id="unifiedCombatReadyBadge" class="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-xs font-bold text-emerald-700">
                             <i class="bi bi-check-circle-fill"></i> Sẵn sàng thực chiến
                         </span>
                     </div>

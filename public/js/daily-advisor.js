@@ -179,6 +179,21 @@
     function renderUnifiedCombatView(data) {
         if (!data) return;
 
+        // 0. Prediction Lock Banner Handling (12:00 -> 18:40)
+        const lockBannerEl = byId('predictionLockBanner');
+        const lockMsgEl = byId('lockBannerMessage');
+        const lockStatus = data.snapshotLock || data.streakAwareDeAdvisor?.latestRecommendation?.snapshotLock;
+        if (lockBannerEl) {
+            if (lockStatus?.isLocked) {
+                lockBannerEl.classList.remove('hidden');
+                if (lockMsgEl && lockStatus.lockReason) {
+                    lockMsgEl.textContent = lockStatus.lockReason;
+                }
+            } else {
+                lockBannerEl.classList.add('hidden');
+            }
+        }
+
         const metaLearner = data.metaLearner || {};
         const metaRec = metaLearner.latestRecommendation || {};
         const deLedger = metaLearner.settledLedger || [];
@@ -539,6 +554,19 @@
         const predDate = streakDeAdv?.predictionDate || loQuadAdv?.predictionDate || loXien4Adv?.predictionDate || loNext?.predictionDate || metaRec?.predictionDate || '2026-09-17';
         const predDateBadge = byId('unifiedPredictionDateBadge');
         if (predDateBadge) predDateBadge.textContent = formatDateVi(predDate);
+
+        // Hiển thị trạng thái Niêm phong Snapshot Lock nếu có
+        const lockStatus = fullData?.snapshotLock || streakDeAdv?.snapshotLock || loQuadAdv?.snapshotLock;
+        const readyBadge = byId('unifiedCombatReadyBadge');
+        if (readyBadge) {
+            if (lockStatus?.isLocked) {
+                readyBadge.className = 'inline-flex items-center gap-1.5 rounded-xl bg-slate-900 border border-emerald-500/50 px-3.5 py-1.5 text-xs font-black text-emerald-300 shadow-md';
+                readyBadge.innerHTML = '<i class="bi bi-lock-fill text-emerald-400"></i> 🔒 ĐÃ NIÊM PHONG (TỪ 12:00 TRƯA)';
+            } else {
+                readyBadge.className = 'inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-xs font-bold text-emerald-700';
+                readyBadge.innerHTML = '<i class="bi bi-check-circle-fill"></i> Sẵn sàng thực chiến';
+            }
+        }
 
         // Hiển thị Trạng Thái Pha & Lý Do Đảo Pha Hôm Nay
         const phaseBadgeEl = byId('dePhaseBadge');
