@@ -960,13 +960,63 @@ function evaluatePredictionCacheReadiness(dePayload = {}, lotoPayload = {}, expe
   };
 }
 
+async function getLockedAdvisorPayload(env) {
+  const advisorPayload = await fetchPredictionJson(env, '/api/daily-advisor').catch(err => {
+    console.error('Failed to fetch /api/daily-advisor:', err);
+    return {};
+  });
+
+  const predictionDate = advisorPayload?.streakAwareDeAdvisor?.latestRecommendation?.predictionDate
+    || advisorPayload?.loQuadHybrid?.latestRecommendation?.predictionDate
+    || advisorPayload?.loQuantumBayesFusion?.latestRecommendation?.predictionDate
+    || getVietnamDate();
+
+  if (!env.TELEGRAM_STATE) {
+    return { advisorPayload, predictionDate };
+  }
+
+  // Check VN time to determine if we are in the lock window (>= 12h)
+  let inLockWindow = false;
+  try {
+    const vnFormatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Ho_Chi_Minh',
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', hour12: false
+    });
+    const parts = vnFormatter.formatToParts(new Date());
+    const m = {};
+    for (const p of parts) m[p.type] = p.value;
+    const vnDate = `${m.year}-${m.month}-${m.day}`;
+    const vnHour = parseInt(m.hour, 10);
+    if (vnDate === String(predictionDate).slice(0, 10) && vnHour >= 12) {
+      inLockWindow = true;
+    }
+  } catch (_) {}
+
+  const kvKey = `LOCKED_ADVISOR_${predictionDate}`;
+  try {
+    const saved = await env.TELEGRAM_STATE.get(kvKey, 'json');
+    if (saved && (saved.streakAwareDeAdvisor?.latestRecommendation || saved.dualMerge?.latestRecommendation)) {
+      // Use the locked snapshot from KV to ensure 100% immutability even across new deploys
+      return { advisorPayload: saved, predictionDate };
+    }
+    if (inLockWindow && (advisorPayload?.streakAwareDeAdvisor?.latestRecommendation || advisorPayload?.dualMerge?.latestRecommendation)) {
+      await env.TELEGRAM_STATE.put(kvKey, JSON.stringify(advisorPayload), { expirationTtl: 86400 });
+    }
+  } catch (err) {
+    console.warn('KV locked advisor read/write error:', err);
+  }
+
+  return { advisorPayload, predictionDate };
+}
+
 async function notifyTelegram(env, options = {}) {
   const chatId = await resolveTelegramChatId(env);
   if (!chatId) {
     return { ok: false, skipped: true, reason: 'telegram-chat-not-registered' };
   }
 
-  const [dePayload, lotoPayload, historyPayload, advisorPayload] = await Promise.all([
+  const [dePayload, lotoPayload, historyPayload, advisorResult] = await Promise.all([
     fetchPredictionJson(env, '/api/milestone-20y/prediction?view=telegram').catch(err => {
       console.error('Failed to fetch /api/milestone-20y/prediction:', err);
       return {};
@@ -979,11 +1029,9 @@ async function notifyTelegram(env, options = {}) {
       console.error('Failed to fetch /api/prediction/history:', err);
       return {};
     }),
-    fetchPredictionJson(env, '/api/daily-advisor').catch(err => {
-      console.error('Failed to fetch /api/daily-advisor:', err);
-      return {};
-    })
+    getLockedAdvisorPayload(env)
   ]);
+  const advisorPayload = advisorResult?.advisorPayload || {};
   const readiness = evaluatePredictionCacheReadiness(
     dePayload,
     lotoPayload,
@@ -1049,8 +1097,7 @@ async function handleTelegramWebhook(request, env) {
     else if (data === 'cuoc_vip') tierKey = 'vip';
 
     const tier = BETTING_TIERS[tierKey] || BETTING_TIERS[3];
-    const advisorPayload = await fetchPredictionJson(env, '/api/daily-advisor').catch(() => ({}));
-    const predictionDate = advisorPayload?.loQuantumBayesFusion?.latestRecommendation?.predictionDate || getVietnamDate();
+    const { advisorPayload, predictionDate } = await getLockedAdvisorPayload(env);
     const sheet = buildBetCalculationSheet(tier, predictionDate, advisorPayload);
     await sendTelegramMessage(env, chatId, sheet, BETTING_KEYBOARD);
     return json({ ok: true, callback: data, tier: tier.name });
@@ -1081,8 +1128,7 @@ async function handleTelegramWebhook(request, env) {
       };
     }
 
-    const advisorPayload = await fetchPredictionJson(env, '/api/daily-advisor').catch(() => ({}));
-    const predictionDate = advisorPayload?.loQuantumBayesFusion?.latestRecommendation?.predictionDate || getVietnamDate();
+    const { advisorPayload, predictionDate } = await getLockedAdvisorPayload(env);
     const sheet = buildBetCalculationSheet(chosenTier, predictionDate, advisorPayload);
     await sendTelegramMessage(env, chatId, sheet, BETTING_KEYBOARD);
     return json({ ok: true, command: cmd, tier: chosenTier.id });
@@ -1187,6 +1233,7 @@ export {
   evaluatePredictionCacheReadiness,
   formatK,
   formatM,
+  getLockedAdvisorPayload,
   getVietnamDate,
   notifyTelegram,
   splitTelegramText

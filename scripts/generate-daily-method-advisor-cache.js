@@ -68,7 +68,8 @@ async function main() {
         existingDynamicMetaAdvisor: existingCache?.dynamicMetaAdvisor || null,
         existingMetaCrossMethod: existingCache?.metaCrossMethod || null,
         limit: 90,
-        forceSynthesize: process.env.FORCE_SYNTHESIZE === '1'
+        forceSynthesize: process.env.FORCE_SYNTHESIZE === '1',
+        existingCache: existingCache
     });
     const expectedPredictionDate = nextIsoDate(cache.latestDataDate);
     const pendingSnapshot = cache.records.find(record => record?.predictionDate === expectedPredictionDate);

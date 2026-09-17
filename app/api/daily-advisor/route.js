@@ -324,34 +324,53 @@ export async function GET(request) {
                 if (localPayload?.metaLearner && (!payload?.metaLearner || (localPayload.metaLearner.settledLedger?.length || 0) > (payload.metaLearner.settledLedger?.length || 0))) {
                     payload.metaLearner = localPayload.metaLearner;
                 }
-                if (localPayload?.streakAwareDeAdvisor) {
+                if (!payload?.streakAwareDeAdvisor && localPayload?.streakAwareDeAdvisor) {
                     payload.streakAwareDeAdvisor = localPayload.streakAwareDeAdvisor;
                 }
-                if (localPayload?.deMarkovGapHazard) {
+                if (!payload?.deMarkovGapHazard && localPayload?.deMarkovGapHazard) {
                     payload.deMarkovGapHazard = localPayload.deMarkovGapHazard;
                 }
-                if (localPayload?.dePositionalGraphFlow) {
+                if (!payload?.dePositionalGraphFlow && localPayload?.dePositionalGraphFlow) {
                     payload.dePositionalGraphFlow = localPayload.dePositionalGraphFlow;
                 }
-                if (localPayload?.loQuadHybrid) {
+                if (!payload?.loQuadHybrid && localPayload?.loQuadHybrid) {
                     payload.loQuadHybrid = localPayload.loQuadHybrid;
                 }
-                if (localPayload?.loPentaMatrix) {
+                if (!payload?.loPentaMatrix && localPayload?.loPentaMatrix) {
                     payload.loPentaMatrix = localPayload.loPentaMatrix;
                 }
-                if (localPayload?.loPositionalBridgeFlow) {
+                if (!payload?.loPositionalBridgeFlow && localPayload?.loPositionalBridgeFlow) {
                     payload.loPositionalBridgeFlow = localPayload.loPositionalBridgeFlow;
                 }
-                if (localPayload?.loHawkesClustering) {
+                if (!payload?.loHawkesClustering && localPayload?.loHawkesClustering) {
                     payload.loHawkesClustering = localPayload.loHawkesClustering;
                 }
-                if (localPayload?.loXien4Synergy) {
+                if (!payload?.loXien4Synergy && localPayload?.loXien4Synergy) {
                     payload.loXien4Synergy = localPayload.loXien4Synergy;
                 }
             } catch (_) {}
         }
 
         const raw = await getRawData();
+        const { isPredictionLockActive } = require('@/lib/utils/predictionLockGuard');
+        const nextTargetDate = payload?.streakAwareDeAdvisor?.latestRecommendation?.predictionDate || payload?.pendingPredictionDate;
+        const lockStatus = isPredictionLockActive(nextTargetDate, raw);
+        if (lockStatus.isLocked) {
+            if (payload?.streakAwareDeAdvisor?.latestRecommendation) {
+                payload.streakAwareDeAdvisor.latestRecommendation.snapshotLock = lockStatus;
+            }
+            if (payload?.loQuadHybrid?.latestRecommendation) {
+                payload.loQuadHybrid.latestRecommendation.snapshotLock = lockStatus;
+            }
+            if (payload?.loQuadHybrid?.streakGovernor) {
+                payload.loQuadHybrid.streakGovernor.snapshotLock = lockStatus;
+            }
+            if (payload?.loXien4Synergy?.latestRecommendation) {
+                payload.loXien4Synergy.latestRecommendation.snapshotLock = lockStatus;
+            }
+            payload.snapshotLock = lockStatus;
+        }
+
         const settled = settleFromRaw(payload, raw);
         if (!settled.drawPrizesByDate) {
             const drawPrizesByDate = {};
