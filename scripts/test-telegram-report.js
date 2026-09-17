@@ -360,9 +360,9 @@ async function main() {
     assert.match(report.text, /3\. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO \(DÀN 7 SỐ TĂNG TỐC\)/);
     assert.match(report.text, /4\. ⚡ BẢNG GỘP ĐÁNH LÔ TỔNG LỰC/);
     assert.match(report.text, /5\. 💎 LÔ XIÊN 4 TINH HOA \(QUÂY 11 VÉ\)/);
-    assert.match(report.text, /6\. 🎲 LÔ XIÊN 2 CHIẾN LƯỢC \(3 CẶP VÀNG\)/);
-    assert.match(report.text, /7\. 📊 BẢNG THEO DÕI THỰC CHIẾN THEO GỢI Ý/);
-    assert.match(report.text, /8\. 💡 KHUYẾN NGHỊ PHÂN BỔ VỐN/);
+    assert.match(report.text, /6\. 📊 BẢNG THEO DÕI THỰC CHIẾN THEO GỢI Ý/);
+    assert.match(report.text, /7\. 💡 KHUYẾN NGHỊ PHÂN BỔ VỐN/);
+    assert.ok(!report.text.includes('LÔ XIÊN 2 CHIẾN LƯỢC'), 'Báo cáo không được chứa Lô Xiên 2');
     assert.match(report.text, /━━━━━━━━━━━━━━━━━━━━/);
     assert.ok(splitTelegramText(report.text).every(chunk => chunk.length <= 3900), 'Telegram report phải được chia gói an toàn');
 
@@ -393,16 +393,23 @@ async function main() {
         const liveReport = buildTelegramReport(liveCompactDe, liveCompactLoto, liveCompactHistory, liveAdvisor);
         assert.match(liveReport.text, /XSMB — GỢI Ý THỰC CHIẾN HÀNG NGÀY/);
         assert.match(liveReport.text, /BÁO CÁO KẾT QUẢ ĐỐI SOÁT HÔM NAY/);
+        assert.ok(!liveReport.text.includes('LÔ XIÊN 2 CHIẾN LƯỢC'), 'Live report không được chứa Lô Xiên 2');
         console.log('=== LIVE TELEGRAM REPORT PREVIEW ===\n' + liveReport.text + '\n===================================');
 
         const { buildBetCalculationSheet, BETTING_TIERS } = await loadWorkerModule();
-        const sheet = buildBetCalculationSheet(BETTING_TIERS[2], liveReport.predictionDate, liveAdvisor);
-        assert.match(sheet, /BẢNG TÍNH TOÁN LỖ\/LÃI CHI TIẾT/);
-        assert.match(sheet, /ĐỀ TINH HOA \(DÀN 30 SỐ\)/);
-        assert.match(sheet, /LÔ CHUẨN TỐI ƯU \(DÀN 20 SỐ\)/);
-        assert.match(sheet, /LÔ ĐÁNH X2 AN TOÀN CAO/);
-        assert.match(sheet, /LÔ XIÊN 4 QUÂY \(11 VÉ\)/);
-        console.log('=== BET CALCULATION SHEET PREVIEW ===\n' + sheet + '\n====================================');
+        const sheetM3 = buildBetCalculationSheet(BETTING_TIERS[3], liveReport.predictionDate, liveAdvisor);
+        assert.match(sheetM3, /BẢNG TÍNH TOÁN LỖ\/LÃI CHI TIẾT — MỨC 3: ĐỀ 200K\/SỐ · LÔ 25Đ\/SỐ/);
+        assert.match(sheetM3, /1\. 💎 ĐỀ TINH HOA \(DÀN 30 SỐ\)/);
+        assert.match(sheetM3, /200K \/ số/);
+        assert.match(sheetM3, /2\. 🏆 LÔ CHUẨN TỐI ƯU \(DÀN 20 SỐ\)/);
+        assert.match(sheetM3, /25 điểm \/ số/);
+        assert.match(sheetM3, /3\. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO/);
+        assert.match(sheetM3, /50 điểm \/ số/);
+        assert.match(sheetM3, /4\. 💎 LÔ XIÊN 4 TINH HOA \(QUÂY 11 VÉ\)/);
+        assert.match(sheetM3, /200K \/ vé/);
+        assert.match(sheetM3, /26\.900K VNĐ/);
+        assert.ok(!sheetM3.includes('LÔ XIÊN 2 CHIẾN LƯỢC'), 'Bảng tính cược không được chứa Lô Xiên 2');
+        console.log('=== BET CALCULATION SHEET (MỨC 3 MẶC ĐỊNH) PREVIEW ===\n' + sheetM3 + '\n====================================');
     } catch (e) {
         console.warn('Skipping live local file test:', e.message);
     }
