@@ -557,7 +557,13 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     }
     lines.push(
       `  • <i>Mức 3 mặc định: 200K/số · Trúng ăn 16.8M (x84)</i>`,
-      `  • <i>Mức VIP: 1M/số · Trúng ăn 84M</i>`
+      `  • <i>Mức VIP: 1M/số · Trúng ăn 84M</i>`,
+      `🎯 <b>Chi tiết cách vào tiền tối đa hóa lợi nhuận:</b>`,
+      `  • <b>VIP Trùng X2 (${sTierX2.length} số):</b> Cược gấp đôi (Mức 3 đánh 400K/số, Mức VIP đánh 2M/số). Khi nổ ăn 2 nháy đề (+168M VIP / +33.6M Mức 3).`,
+      `  • <b>Bọc Lót X1 (${sSingles.length} số):</b> Cược chuẩn (Mức 3 đánh 200K/số, Mức VIP đánh 1M/số) để bảo hiểm vốn hòa và có lãi (+24M VIP / +4.8M Mức 3).`,
+      `  • <i>Tổng vốn: ${sTierX2.length}*2 + ${sSingles.length}*1 = ${sTierX2.length * 2 + sSingles.length} đơn vị cược. Tối ưu hơn hẳn đánh cược đều ${sNumbers.length} số.</i>`,
+      `🔄 <b>Cơ chế Đảo pha Tri-Governor:</b> Tự động luân chuyển giữa Đề Tiêu Chuẩn, Tam Trụ và Thích Ứng Alpha theo chuỗi thắng/thua thực tế để né nhịp điều chỉnh và đón đầu chuỗi thắng mới.`,
+      `📚 <b>Kelly Sizing & Strict PIT:</b> Tự động điều chỉnh vốn theo xác suất thực nghiệm; niêm phong dữ liệu 100% không rò rỉ tương lai.`
     );
   } else {
     lines.push(`<b>1. 💎 ĐỀ TINH HOA — DÀN 30 SỐ GỢI Ý</b>`);
@@ -612,9 +618,23 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   // =========================================================================
   // 3. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO (DÀN 7 SỐ TĂNG TỐC)
   // =========================================================================
-  lines.push(`<b>3. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO (DÀN 7 SỐ TĂNG TỐC)</b>`);
+  const loGovernor = loQuadAdv?.streakGovernor || {};
+  const selectedSubTier = loGovernor.selectedSubTier || 7;
+  const subTierData = loGovernor.subTiers?.[selectedSubTier] || {};
+  const subTierLabel = subTierData.label || `Top ${selectedSubTier}`;
+  const subWinRate = subTierData.winRate || '65.1%';
+  const subStreak = subTierData.streak ? subTierData.streak.replace('_', ' ').toUpperCase() : 'WIN';
+  const subCondition = subTierData.winCondition || 'Ăn 1-2 nháy';
 
-  let x2Nums = (loQuadAdv?.top7 || metaNext?.x2?.numbers || []).map(normalizeLotteryNumber);
+  lines.push(`<b>3. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO (DÀN 7 SỐ TĂNG TỐC)</b>`);
+  if (loGovernor.confidenceBadge) {
+    lines.push(
+      `👑 <b>Chiến lược Đổi pha Lô: ${escapeHtml(subTierLabel)} [${selectedSubTier} số]</b> · ${escapeHtml(loGovernor.confidenceBadge)}`,
+      `💡 <i>Lý do chọn: Dàn ${escapeHtml(subTierLabel)} đang giữ chuỗi nổ ${escapeHtml(subStreak)}, xác suất thắng tiếp lịch sử ${escapeHtml(subWinRate)} (${subCondition}), chuỗi thua max thấp. Đề xuất cược X2 để bùng nổ lợi nhuận!</i>`
+    );
+  }
+
+  let x2Nums = (subTierData.numbers || loQuadAdv?.rankedNumbers?.slice(0, selectedSubTier) || loQuadAdv?.top7 || metaNext?.x2?.numbers || []).map(normalizeLotteryNumber);
   if (!x2Nums.length && lotoPayload.nextPrediction) {
     const strat = lotoPayload.nextPrediction?.strategies?.rrfParallelBlock85Small65
       || lotoPayload.nextPrediction?.strategies?.dedupEdge75Pit
@@ -627,10 +647,10 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     );
   }
   lines.push(
-    `🎯 <b>Dàn 7 số X2</b> (Vốn 30.8M · Cược 4.4M/số [4.400K / 200đ] · Ăn 16M/nháy):`,
-    `  • <i>Mức chuẩn 20đ/số: Vốn 140 điểm (3.080K) · Ăn 1.600K/nháy</i>`,
-    `  • <i>Mức 3 mặc định: 50đ/số (350đ = 7.7M) · Ăn 4M/nháy</i>`,
-    `  • <i>Mức VIP 200đ/số: Vốn 30.8M · Ăn 16M/nháy</i>`,
+    `🎯 <b>Dàn ${x2Nums.length} số X2</b> (Vốn ${(x2Nums.length * 4.4).toFixed(1)}M · Cược 4.4M/số [4.400K / 200đ] · Ăn 16M/nháy):`,
+    `  • <i>Mức chuẩn 20đ/số: Vốn ${x2Nums.length * 20} điểm (${(x2Nums.length * 20 * 22).toLocaleString('vi-VN')}K) · Ăn 1.600K/nháy</i>`,
+    `  • <i>Mức 3 mặc định: 50đ/số (${x2Nums.length * 50}đ = ${(x2Nums.length * 50 * 22 / 1000).toFixed(1)}M) · Ăn 4M/nháy</i>`,
+    `  • <i>Mức VIP 200đ/số: Vốn ${(x2Nums.length * 4.4).toFixed(1)}M · Ăn 16M/nháy</i>`,
     `<b>${escapeHtml(formatNumberList(x2Nums))}</b>`
   );
   lines.push(divider);
@@ -645,8 +665,11 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   const allMerged = Array.from(new Set([...sList, ...xList]));
   const singleNums = allMerged.filter(n => !overlapNums.includes(n));
 
-  lines.push(`<b>4. ⚡ BẢNG GỘP ĐÁNH LÔ TỔNG LỰC (21 SỐ - SỐ TRÙNG ĐÁNH X2)</b>`);
-  lines.push(`<i>Tổng hợp từ 2 dàn trên: Số nào trùng cược X2, số riêng cược X1 bọc lót:</i>`);
+  lines.push(`<b>4. ⚡ BẢNG GỘP ĐÁNH LÔ TỔNG LỰC (${allMerged.length} SỐ - SỐ TRÙNG ĐÁNH X2)</b>`);
+  lines.push(
+    `<i>Tổng hợp từ 2 dàn trên: Mặc định giữ Top 20 nền tảng mỏ neo (+10.320 Tỷ 3 năm), dàn ${escapeHtml(subTierLabel)} làm mũi nhọn X2:</i>`,
+    `💡 <i>Cách chơi tối ưu hóa lợi nhuận: Cược X2 (4.4M/số) cho các số trùng nhau để nhân đôi profit; cược X1 (2.2M/số) cho các số còn lại trong Top 20 để bảo hiểm vốn hòa và có lãi.</i>`
+  );
   lines.push(
     `🔥 <b>Nhóm Số Trùng (CỰC VIP X2 · 4.4M/số [4.400K] - ${overlapNums.length} số):</b>`,
     `  • <i>Mức chuẩn: 20đ/số (440K/số) · Mức 3: 50đ/số (1.1M/số) · Mức VIP: 4.4M/số</i>`,

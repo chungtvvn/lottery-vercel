@@ -175,39 +175,92 @@
                                         <p class="text-xs font-semibold text-amber-700" id="unifiedDeMethodLabel">💎 Đề Tinh Hoa (Dung hợp cắt tỉa động)</p>
                                     </div>
                                 </div>
-                                <span class="rounded-lg bg-amber-100 px-2.5 py-1 text-xs font-black text-amber-900">
-                                    Vốn: 30M / ngày
+                                <span class="rounded-lg bg-amber-100 px-2.5 py-1 text-xs font-black text-amber-900" id="unifiedDeStakeBadge">
+                                    Vốn: 60M / ngày
                                 </span>
                             </div>
 
-                            <!-- Dàn Chuẩn 30 số -->
+                            <!-- Dàn Chuẩn / Tuyển chọn -->
                             <div class="mt-4 rounded-2xl bg-white border border-amber-200 p-4 shadow-xs">
                                 <div class="flex items-center justify-between">
-                                    <span class="text-xs font-black uppercase text-amber-900 flex items-center gap-1">
-                                        👑 Dàn Chuẩn 30 Số (Vốn 30M · Ăn 84M · Lãi ròng +54M)
+                                    <span class="text-xs font-black uppercase text-amber-900 flex items-center gap-1" id="unifiedDeStdTitle">
+                                        👑 Dàn Đề Tuyển Chọn (43 Số · 60 Đơn Vị Cược)
                                     </span>
                                     <button type="button" id="btnCopyUnifiedDeStd30" class="rounded-lg bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1 text-[11px] font-bold transition-all shadow-xs flex items-center gap-1">
-                                        <i class="bi bi-clipboard"></i> Sao chép 30 số
+                                        <i class="bi bi-clipboard"></i> Sao chép dàn số
                                     </button>
                                 </div>
                                 <div id="unifiedDeStd30Numbers" class="mt-2.5 flex flex-wrap gap-1.5 font-mono text-sm font-black text-slate-900"></div>
                             </div>
 
-                            <!-- Core 10 & Core 20 -->
+                            <!-- Core 10 & Core 20 / VIP X2 & Bọc Lót X1 -->
                             <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div class="rounded-2xl bg-amber-500/10 border border-amber-300 p-3">
                                     <div class="flex items-center justify-between">
-                                        <span class="text-[11px] font-black uppercase text-amber-950">⚡ Core 10 VIP (10M)</span>
+                                        <span class="text-[11px] font-black uppercase text-amber-950">⚡ VIP TRÙNG X2</span>
                                         <button type="button" id="btnCopyUnifiedDeCore10" class="text-[10px] font-bold text-amber-800 hover:underline">Copy</button>
                                     </div>
                                     <div id="unifiedDeCore10Numbers" class="mt-1.5 flex flex-wrap gap-1 font-mono text-xs font-black text-amber-950"></div>
                                 </div>
                                 <div class="rounded-2xl bg-indigo-50 border border-indigo-200 p-3">
                                     <div class="flex items-center justify-between">
-                                        <span class="text-[11px] font-black uppercase text-indigo-950">🔥 Core 20 Rút Gọn (20M)</span>
+                                        <span class="text-[11px] font-black uppercase text-indigo-950">🛡️ BỌC LÓT X1</span>
                                         <button type="button" id="btnCopyUnifiedDeCore20" class="text-[10px] font-bold text-indigo-800 hover:underline">Copy</button>
                                     </div>
                                     <div id="unifiedDeCore20Numbers" class="mt-1.5 flex flex-wrap gap-1 font-mono text-xs font-black text-indigo-950"></div>
+                                </div>
+                            </div>
+
+                            <!-- GIẢI THÍCH CHI TIẾT & HƯỚNG DẪN CÁCH ĐÁNH ĐỀ -->
+                            <div class="mt-3 rounded-2xl bg-amber-500/5 border border-amber-300/80 p-3.5" id="unifiedDeGuideCard">
+                                <div class="flex items-center justify-between cursor-pointer" onclick="const el = document.getElementById('deGuideDetails'); if (el) el.classList.toggle('hidden');">
+                                    <div class="flex items-center gap-1.5 text-xs font-black text-amber-900 uppercase">
+                                        <i class="bi bi-info-circle-fill text-amber-600"></i> Hướng Dẫn Cách Đánh &amp; Lý Do Chọn Phương Pháp
+                                    </div>
+                                    <span class="text-[11px] font-bold text-amber-800 hover:underline flex items-center gap-0.5">
+                                        Chi tiết <i class="bi bi-chevron-down"></i>
+                                    </span>
+                                </div>
+                                <div id="deGuideDetails" class="mt-2.5 pt-2.5 border-t border-amber-200/60 space-y-2.5 text-xs text-slate-700">
+                                    <div>
+                                        <div class="font-black text-slate-900 flex items-center gap-1">
+                                            <span>💡 Vì Sao Chọn Phương Pháp Này Hôm Nay?</span>
+                                        </div>
+                                        <p class="mt-0.5 text-slate-600 text-[11px] leading-relaxed" id="deGuideRationale">
+                                            Hệ thống tự động phân tích chuỗi thắng/thua. Hôm nay Đề Thích Ứng Alpha đang giữ đà thắng khỏe (Win 1d) với xác suất thắng tiếp lịch sử đạt 80.8% (63/78 lần).
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <div class="font-black text-slate-900 flex items-center gap-1">
+                                            <span>🎯 Hướng Dẫn Vào Tiền Tối Đa Hóa Lợi Nhuận:</span>
+                                        </div>
+                                        <ul class="mt-1 text-[11px] text-slate-600 space-y-1 list-disc list-inside">
+                                            <li><strong>VIP Trùng X2 (17 số):</strong> Vào tiền gấp đôi (ví dụ Mức 3 đánh 400K/số, Mức VIP đánh 2M/số). Khi nổ ăn 2 nháy đề (+168M VIP / +33.6M Mức 3).</li>
+                                            <li><strong>Bọc Lót X1 (26 số):</strong> Vào tiền chuẩn (Mức 3 đánh 200K/số, Mức VIP đánh 1M/số) để bảo hiểm vốn hòa và có lãi (+24M VIP / +4.8M Mức 3).</li>
+                                            <li><strong>Tổng vốn:</strong> 17*2 + 26*1 = 60 đơn vị cược. Tối ưu hơn hẳn đánh cược đều 43 số.</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <div class="font-black text-slate-900 flex items-center gap-1">
+                                            <span>🔄 Cơ Chế Đảo Pha Chuỗi Thắng/Thua (Tri-Governor):</span>
+                                        </div>
+                                        <p class="mt-0.5 text-slate-600 text-[11px] leading-relaxed">
+                                            Không có phương pháp nào thắng mãi mãi. Khi 1 phương pháp thắng dài ngày, nguy cơ điều chỉnh tăng dần. Tri-Governor tự động chuyển đổi giữa <strong>Đề Tiêu Chuẩn</strong>, <strong>Tam Trụ</strong> và <strong>Thích Ứng Alpha</strong> nhằm né tránh chuỗi thua và đón đầu chuỗi thắng mới.
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <div class="font-black text-slate-900 flex items-center gap-1">
+                                            <span>📚 Giải Nghĩa Thuật Ngữ Chuyên Môn:</span>
+                                        </div>
+                                        <div class="mt-1 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                                            <div class="rounded-lg bg-white p-2 border border-amber-200">
+                                                <strong class="text-amber-950">Kelly Sizing:</strong> Công thức phân bổ vốn theo xác suất thực tế. Tự động nhân 1.2x khi đà thắng cao và giảm vốn khi chuỗi rủi ro.
+                                            </div>
+                                            <div class="rounded-lg bg-white p-2 border border-amber-200">
+                                                <strong class="text-amber-950">Strict PIT:</strong> 100% không rò rỉ dữ liệu tương lai, mọi dự đoán được chốt trước giờ quay thưởng 18:15.
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -236,12 +289,12 @@
                                 </span>
                             </div>
 
-                            <!-- 1. Chuẩn Tối Ưu -->
+                            <!-- 1. Chuẩn Tối Ưu (Top 20 Mặc Định) -->
                             <div class="mt-4 rounded-2xl bg-white border border-indigo-200 p-3.5 shadow-xs">
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <span class="text-xs font-black uppercase text-indigo-950 flex items-center gap-1">
-                                            🏆 1. Đề Xuất Chuẩn Tối Ưu
+                                            🏆 1. Đề Xuất Chuẩn Nền Tảng (Mặc Định Đánh)
                                         </span>
                                         <div class="flex items-center gap-1.5 mt-0.5">
                                             <span class="text-[11px] font-bold text-indigo-600" id="unifiedLoStdLabel">QMBF v6.1 Top 20</span>
@@ -256,16 +309,16 @@
                                 <div id="unifiedLoStdNumbers" class="mt-2 flex flex-wrap gap-1.5 font-mono text-xs font-black text-slate-900"></div>
                             </div>
 
-                            <!-- 2. Đánh X2 Tối Ưu -->
+                            <!-- 2. Đánh X2 Tối Ưu & Bộ Điều Phối Đổi Pha Chuỗi -->
                             <div class="mt-3 rounded-2xl bg-white border border-teal-200 p-3.5 shadow-xs">
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <span class="text-xs font-black uppercase text-teal-950 flex items-center gap-1">
-                                            🚀 2. Đề Xuất Đánh X2 (Nổ Nháy / Kép Tối Ưu)
+                                            🚀 2. Đề Xuất Đánh X2 (Bộ Điều Phối Đổi Pha Lô)
                                         </span>
                                         <div class="flex items-center gap-1.5 mt-0.5">
                                             <span class="text-[11px] font-bold text-teal-700" id="unifiedLoX2Label">Bạc Nhớ 27 Giải Top 7</span>
-                                            <span class="text-[10px] text-teal-800 font-semibold">· Cược nhân đôi X2: 4.4M/số (4400K) · Vốn 30.8M</span>
+                                            <span class="text-[10px] text-teal-800 font-semibold" id="unifiedLoX2SubText">· Cược nhân đôi X2: 4.4M/số (4400K)</span>
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-2">
@@ -273,6 +326,18 @@
                                         <button type="button" id="btnCopyUnifiedLoX2" class="rounded bg-teal-600 hover:bg-teal-700 text-white px-2 py-0.5 text-[11px] font-bold transition-all">Copy</button>
                                     </div>
                                 </div>
+
+                                <!-- Sub-tier Selector Pills -->
+                                <div class="mt-2.5 pt-2 border-t border-teal-100 flex flex-wrap items-center gap-1.5" id="loSubTierSelector">
+                                    <span class="text-[10px] font-black uppercase text-slate-500 mr-0.5">Đổi Dàn:</span>
+                                    <button type="button" class="lo-subtier-btn rounded-lg px-2 py-0.5 text-[10px] font-bold border border-slate-200 hover:bg-slate-100 transition-all text-slate-700" data-size="2">Song Thủ [2s]</button>
+                                    <button type="button" class="lo-subtier-btn rounded-lg px-2 py-0.5 text-[10px] font-bold border border-slate-200 hover:bg-slate-100 transition-all text-slate-700" data-size="4">Tứ Thủ [4s]</button>
+                                    <button type="button" class="lo-subtier-btn rounded-lg px-2 py-0.5 text-[10px] font-bold border border-slate-200 hover:bg-slate-100 transition-all text-slate-700" data-size="6">Lục Thủ [6s]</button>
+                                    <button type="button" class="lo-subtier-btn active bg-teal-700 text-white border-teal-700 rounded-lg px-2 py-0.5 text-[10px] font-black shadow-xs" data-size="7">Thất Thủ ⭐ [7s] (Đề Xuất)</button>
+                                    <button type="button" class="lo-subtier-btn rounded-lg px-2 py-0.5 text-[10px] font-bold border border-slate-200 hover:bg-slate-100 transition-all text-slate-700" data-size="8">Bát Thủ [8s]</button>
+                                    <button type="button" class="lo-subtier-btn rounded-lg px-2 py-0.5 text-[10px] font-bold border border-slate-200 hover:bg-slate-100 transition-all text-slate-700" data-size="10">Thập Thủ [10s] (+7.3B)</button>
+                                </div>
+
                                 <div id="unifiedLoX2Numbers" class="mt-2 flex flex-wrap gap-1.5 font-mono text-xs font-black text-slate-900"></div>
                             </div>
 
@@ -320,6 +385,38 @@
                                         <span class="rounded bg-white/10 text-slate-300 text-[10px] font-bold px-2 py-0.5" id="unifiedLoMergeSingleBadge">15 số</span>
                                     </div>
                                     <div id="unifiedLoSingleNumbers" class="flex flex-wrap gap-1.5"></div>
+                                </div>
+                            </div>
+
+                            <!-- GIẢI THÍCH CHI TIẾT & HƯỚNG DẪN CÁCH ĐÁNH LÔ -->
+                            <div class="mt-3 rounded-2xl bg-indigo-50/80 border border-indigo-200/80 p-3.5" id="unifiedLoGuideCard">
+                                <div class="flex items-center justify-between cursor-pointer" onclick="const el = document.getElementById('loGuideDetails'); if (el) el.classList.toggle('hidden');">
+                                    <div class="flex items-center gap-1.5 text-xs font-black text-indigo-950 uppercase">
+                                        <i class="bi bi-info-circle-fill text-indigo-600"></i> Cơ Chế Đổi Pha Lô &amp; Hướng Dẫn Đạt Profit Tối Đa
+                                    </div>
+                                    <span class="text-[11px] font-bold text-indigo-800 hover:underline flex items-center gap-0.5">
+                                        Chi tiết <i class="bi bi-chevron-down"></i>
+                                    </span>
+                                </div>
+                                <div id="loGuideDetails" class="mt-2.5 pt-2.5 border-t border-indigo-200/60 space-y-2 text-xs text-slate-700">
+                                    <div>
+                                        <div class="font-black text-slate-900">💡 Tại Sao Giữ Mặc Định Top 20 Làm Nền Tảng?</div>
+                                        <p class="mt-0.5 text-slate-600 text-[11px] leading-relaxed">
+                                            Top 20 là "chân đế phòng ngự vững chắc" với tỷ lệ nổ trung bình 6.82 nháy/ngày (3 năm nổ 6,669 nháy, lãi +10.320 Tỷ VNĐ), chuỗi thua tối đa chỉ 6 ngày. Đánh Top 20 giúp bảo đảm an toàn vốn hàng ngày.
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <div class="font-black text-slate-900">🚀 Cơ Chế Đổi Pha Dàn Tăng Tốc (Top 2, 4, 6, 7, 8, 10):</div>
+                                        <p class="mt-0.5 text-slate-600 text-[11px] leading-relaxed">
+                                            Bộ điều phối Lô theo dõi chuỗi thắng/thua của từng tập con. Khi <strong>Top 7</strong> hoặc <strong>Top 10</strong> đang có đà thắng khỏe (như chuỗi 4 ngày nổ liên tiếp), hệ thống kích hoạt lệnh <strong>CƯỢC X2</strong> để tối đa hóa profit. Bạn có thể bấm các nút ở trên để đổi sang Song Thủ, Tứ Thủ hoặc Thập Thủ tùy khẩu vị vốn.
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <div class="font-black text-slate-900">⚡ Cách Chơi Bảng Gộp Tổng Lực:</div>
+                                        <p class="mt-0.5 text-slate-600 text-[11px] leading-relaxed">
+                                            Đánh cược <strong>X2</strong> cho các số thuộc dàn tăng tốc (trùng cả 2 phương pháp), cược <strong>X1</strong> cho các số còn lại trong Top 20 để bọc lót. Vừa bảo hiểm an toàn toàn diện, vừa bùng nổ lợi nhuận khi dàn VIP nổ nháy.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
 

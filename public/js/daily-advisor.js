@@ -27,6 +27,8 @@
     let dualMergeFilterStatus = 'live'; // 'live' | 'all' | 'pit' | 'win_x3' | 'win_x2' | 'win_x1' | 'loss'
     let dualMergeSearchQuery = '';
     let currentDeStatsMethod = 'metaLearner';
+    let currentSelectedLoSubTier = 7;
+    let currentActiveLoSubNums = [];
 
     const byId = id => document.getElementById(id);
 
@@ -387,6 +389,19 @@
             deSingleNums = metaRec?.core20 || [];
         }
 
+        const deStakeBadge = byId('unifiedDeStakeBadge');
+        if (deStakeBadge && streakDeAdv) {
+            deStakeBadge.textContent = `Vốn: ${streakDeAdv.stakeK ? (streakDeAdv.stakeK / 1000) : 60}M / ngày (60 đơn vị cược)`;
+        }
+        const deStdTitle = byId('unifiedDeStdTitle');
+        if (deStdTitle && streakDeAdv) {
+            deStdTitle.textContent = `👑 DÀN ĐỀ TUYỂN CHỌN (${allDeNums.length} SỐ · 60 ĐƠN VỊ CƯỢC · ĂN TỚI 168M)`;
+        }
+        const deGuideRationale = byId('deGuideRationale');
+        if (deGuideRationale && streakDeAdv?.rationale) {
+            deGuideRationale.textContent = streakDeAdv.rationale;
+        }
+
         const btnDe30 = byId('btnCopyUnifiedDeStd30');
         if (btnDe30) {
             btnDe30.innerHTML = `<i class="bi bi-clipboard"></i> Sao chép ${allDeNums.length} số`;
@@ -432,23 +447,18 @@
             deLiveStat.textContent = '70.2% Win 2026 (+16.9 TỶ Kelly)';
         }
 
-        // 2. LÔ TINH HOA — QUAD-FUSION V7.0 & SONG THỦ VIP
+        // 2. LÔ TINH HOA — QUAD-FUSION V7.0 & BỘ ĐIỀU PHỐI ĐỔI PHA LÔ
         const stdNext = loNext?.standard || {};
-        const x2Next = loNext?.x2 || {};
         const xi4Next = loNext?.xien4 || {};
 
         let stdNums = [];
-        let x2Nums = [];
-        let xi4Nums = [];
-
         if (loQuadAdv && Array.isArray(loQuadAdv.top20) && loQuadAdv.top20.length) {
             stdNums = loQuadAdv.top20.map(number);
-            x2Nums = (Array.isArray(loQuadAdv.top7) && loQuadAdv.top7.length ? loQuadAdv.top7 : loQuadAdv.top2).map(number);
         } else {
             stdNums = (stdNext.numbers || []).map(number);
-            x2Nums = (x2Next.numbers || []).map(number);
         }
 
+        let xi4Nums = [];
         if (loXien4Adv && Array.isArray(loXien4Adv.numbers) && loXien4Adv.numbers.length) {
             xi4Nums = loXien4Adv.numbers.map(number);
         } else {
@@ -473,68 +483,94 @@
             `).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
         }
 
-        const x2Label = byId('unifiedLoX2Label');
-        if (x2Label) {
-            x2Label.textContent = loQuadAdv ? `Song Thủ Tinh Hoa X2 [${(loQuadAdv.top2 || []).join(', ')}] + Top 7` : `${x2Next.methodName || x2Next.methodId || 'Bạc Nhớ 27 Giải'} Top ${x2Nums.length}`;
-        }
-        const x2RoiEl = byId('unifiedLoX2LiveRoi');
-        if (x2RoiEl) {
-            x2RoiEl.textContent = loQuadAdv ? 'Song Thủ 57.7% Nổ (+1.976 TỶ)' : `ROI Live ${percent(loSummary?.x2?.roi || 0.189)}`;
-        }
+        // LÔ SUB-TIER STREAK-AWARE GOVERNOR RENDERER
+        const governor = loQuadAdv?.streakGovernor || {};
+        currentSelectedLoSubTier = governor.selectedSubTier || 7;
 
-        const x2Container = byId('unifiedLoX2Numbers');
-        if (x2Container) {
-            x2Container.innerHTML = x2Nums.map(n => {
-                const isSongThu = loQuadAdv?.top2?.includes(n);
-                return `
-                    <span class="inline-flex items-center justify-center rounded-xl ${isSongThu ? 'bg-amber-500 text-slate-950 border-2 border-amber-300 ring-2 ring-amber-400/50 scale-105' : 'bg-emerald-700 text-white border border-emerald-600'} font-mono text-xs font-black px-2.5 py-1.5 shadow-sm hover:scale-110 transition-all" title="${isSongThu ? 'Song Thủ Siêu VIP (Cược X2)' : 'Top Tăng Tốc'}">
-                        ${n}
-                    </span>
-                `;
-            }).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
-        }
+        function updateLoSubTierDisplay(size) {
+            currentSelectedLoSubTier = size;
+            const subTierData = governor.subTiers?.[size] || {};
+            const subNums = (subTierData.numbers || loQuadAdv?.rankedNumbers?.slice(0, size) || []).map(number);
+            currentActiveLoSubNums = subNums;
 
-        // ⚡ TỔNG HỢP GỘP MỤC 1 & 2: SỐ TRÙNG ĐÁNH X2
-        const stdSet = new Set(stdNums);
-        const overlapNums = x2Nums.filter(n => stdSet.has(n));
-        const allMerged = Array.from(new Set([...stdNums, ...x2Nums]));
-        const singleNums = allMerged.filter(n => !overlapNums.includes(n));
+            // Highlight button
+            document.querySelectorAll('.lo-subtier-btn').forEach(b => {
+                if (Number(b.dataset.size) === size) {
+                    b.className = 'lo-subtier-btn active bg-teal-700 text-white border-teal-700 rounded-lg px-2 py-0.5 text-[10px] font-black shadow-xs';
+                } else {
+                    b.className = 'lo-subtier-btn rounded-lg px-2 py-0.5 text-[10px] font-bold border border-slate-200 hover:bg-slate-100 transition-all text-slate-700';
+                }
+            });
 
-        const totalMergeEl = byId('unifiedLoMergeTotalCount');
-        if (totalMergeEl) totalMergeEl.textContent = `${allMerged.length} số`;
+            const x2Label = byId('unifiedLoX2Label');
+            if (x2Label) {
+                x2Label.textContent = `${subTierData.label || 'Top ' + size} [${subNums.length} số] · Thắng: ${subTierData.winRate || '65.1%'}`;
+            }
 
-        const overlapBadge = byId('unifiedLoMergeOverlapBadge');
-        if (overlapBadge) overlapBadge.textContent = `${overlapNums.length} số`;
+            const x2SubText = byId('unifiedLoX2SubText');
+            if (x2SubText) {
+                x2SubText.textContent = `· Cược X2: ${(size * 4.4).toFixed(1)}M (${subTierData.winCondition || 'Ăn nháy'})`;
+            }
 
-        const singleBadge = byId('unifiedLoMergeSingleBadge');
-        if (singleBadge) singleBadge.textContent = `${singleNums.length} số`;
+            const x2RoiEl = byId('unifiedLoX2LiveRoi');
+            if (x2RoiEl) {
+                x2RoiEl.textContent = subTierData.streak ? `P(Win) ${subTierData.streak.replace('_', ' ').toUpperCase()}` : 'ROI +18.9%';
+            }
 
-        const overlapContainer = byId('unifiedLoOverlapNumbers');
-        if (overlapContainer) {
-            overlapContainer.innerHTML = overlapNums.map(n => {
-                const isSongThu = loQuadAdv?.top2?.includes(n);
-                return `
-                    <div class="relative group cursor-pointer" title="${isSongThu ? 'Song Thủ Cực VIP: cược X2' : 'Số trùng VIP: cược X2 (4.4M/số - 4400K)'}">
-                        <span class="inline-flex items-center justify-center rounded-xl bg-gradient-to-br ${isSongThu ? 'from-amber-300 to-amber-500 border-2 border-white ring-2 ring-amber-400' : 'from-amber-400 to-amber-500 border-2 border-amber-300'} text-slate-950 font-mono text-sm font-black px-3 py-1.5 shadow-md hover:scale-110 transition-all">
+            const x2Container = byId('unifiedLoX2Numbers');
+            if (x2Container) {
+                x2Container.innerHTML = subNums.map(n => {
+                    const isSongThu = (size === 2) || (loQuadAdv?.top2 || []).includes(n);
+                    return `
+                        <span class="inline-flex items-center justify-center rounded-xl ${isSongThu ? 'bg-amber-500 text-slate-950 border-2 border-amber-300 ring-2 ring-amber-400/50 scale-105' : 'bg-emerald-700 text-white border border-emerald-600'} font-mono text-xs font-black px-2.5 py-1.5 shadow-sm hover:scale-110 transition-all" title="${isSongThu ? 'Song Thủ Siêu VIP (Cược X2)' : 'Top Tăng Tốc'}">
                             ${n}
                         </span>
-                        <span class="absolute -top-2 -right-1 rounded-full bg-red-600 text-white font-black text-[9px] px-1.5 py-0.2 shadow">${isSongThu ? 'VIP X2' : 'X2'}</span>
+                    `;
+                }).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
+            }
+
+            // Recompute Bảng Gộp
+            const stdSet = new Set(stdNums);
+            const overlapNums = subNums.filter(n => stdSet.has(n));
+            const singleNums = stdNums.filter(n => !overlapNums.includes(n));
+
+            const totalMergeEl = byId('unifiedLoMergeTotalCount');
+            if (totalMergeEl) totalMergeEl.textContent = `${stdNums.length} số`;
+
+            const overlapBadge = byId('unifiedLoMergeOverlapBadge');
+            if (overlapBadge) overlapBadge.textContent = `${overlapNums.length} số`;
+
+            const singleBadge = byId('unifiedLoMergeSingleBadge');
+            if (singleBadge) singleBadge.textContent = `${singleNums.length} số`;
+
+            const overlapContainer = byId('unifiedLoOverlapNumbers');
+            if (overlapContainer) {
+                overlapContainer.innerHTML = overlapNums.map(n => `
+                    <div class="relative group cursor-pointer" title="Số trùng cực VIP: cược X2">
+                        <span class="inline-flex items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-500 border-2 border-amber-300 text-slate-950 font-mono text-sm font-black px-3 py-1.5 shadow-md hover:scale-110 transition-all">
+                            ${n}
+                        </span>
+                        <span class="absolute -top-2 -right-1 rounded-full bg-red-600 text-white font-black text-[9px] px-1.5 py-0.2 shadow">X2</span>
                     </div>
-                `;
-            }).join('') || '<span class="text-slate-400 text-xs">Không có số trùng</span>';
+                `).join('') || '<span class="text-slate-400 text-xs">Không có số trùng</span>';
+            }
+
+            const singleContainer = byId('unifiedLoSingleNumbers');
+            if (singleContainer) {
+                singleContainer.innerHTML = singleNums.map(n => `
+                    <div class="relative group cursor-pointer" title="Số đơn bọc lót: cược X1">
+                        <span class="inline-flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-slate-200 font-mono text-xs font-bold px-2 py-1 shadow-sm hover:scale-105 transition-all">
+                            ${n}
+                        </span>
+                        <span class="absolute -top-1.5 -right-1 rounded-full bg-slate-600 text-slate-200 text-[8px] font-bold px-1">X1</span>
+                    </div>
+                `).join('') || '<span class="text-slate-400 text-xs">Không có số</span>';
+            }
         }
 
-        const singleContainer = byId('unifiedLoSingleNumbers');
-        if (singleContainer) {
-            singleContainer.innerHTML = singleNums.map(n => `
-                <div class="relative group cursor-pointer" title="Số đơn bọc lót: cược X1 (2.2M/số - 2200K)">
-                    <span class="inline-flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-slate-200 font-mono text-xs font-bold px-2 py-1 shadow-sm hover:scale-105 transition-all">
-                        ${n}
-                    </span>
-                    <span class="absolute -top-1.5 -right-1 rounded-full bg-slate-600 text-slate-200 text-[8px] font-bold px-1">X1</span>
-                </div>
-            `).join('') || '<span class="text-slate-400 text-xs">Không có số</span>';
-        }
+        // Apply initial default sub-tier
+        updateLoSubTierDisplay(currentSelectedLoSubTier);
+        window.__updateLoSubTierDisplay = updateLoSubTierDisplay;
 
         // 3. ĐÁNH LÔ XIÊN 4 — HIỆP ĐỒNG ĐỒ THỊ
         const xi4RoiEl = byId('unifiedLoXi4LiveRoi');
@@ -1211,27 +1247,47 @@
         const btnDe20 = byId('btnCopyUnifiedDeCore20');
         if (btnDe20) btnDe20.onclick = () => copyNumbers(core20);
 
+        // Lo sub-tier buttons dynamic handler
+        document.querySelectorAll('.lo-subtier-btn').forEach(btn => {
+            btn.onclick = () => {
+                const size = Number(btn.dataset.size);
+                if (typeof window.__updateLoSubTierDisplay === 'function') {
+                    window.__updateLoSubTierDisplay(size);
+                }
+            };
+        });
+
         const btnLoStd = byId('btnCopyUnifiedLoStd');
         if (btnLoStd) btnLoStd.onclick = () => copyNumbers(loStd);
 
         const btnLoX2 = byId('btnCopyUnifiedLoX2');
-        if (btnLoX2) btnLoX2.onclick = () => copyNumbers(loX2);
-
-        const stdSet = new Set(loStd);
-        const overlapNums = loX2.filter(n => stdSet.has(n));
-        const allMerged = Array.from(new Set([...loStd, ...loX2]));
+        if (btnLoX2) {
+            btnLoX2.onclick = () => {
+                const targets = (currentActiveLoSubNums && currentActiveLoSubNums.length) ? currentActiveLoSubNums : loX2;
+                copyNumbers(targets);
+            };
+        }
 
         const btnOverlapX2 = byId('btnCopyUnifiedLoOverlapX2');
-        if (btnOverlapX2) btnOverlapX2.onclick = () => {
-            if (overlapNums.length) copyNumbers(overlapNums, ', ');
-            else showToast('Không có số trùng nào!');
-        };
+        if (btnOverlapX2) {
+            btnOverlapX2.onclick = () => {
+                const targets = (currentActiveLoSubNums && currentActiveLoSubNums.length) ? currentActiveLoSubNums : loX2;
+                const stdSet = new Set(loStd);
+                const overlap = targets.filter(n => stdSet.has(n));
+                if (overlap.length) copyNumbers(overlap, ', ');
+                else showToast('Không có số trùng nào!');
+            };
+        }
 
         const btnMergeAll = byId('btnCopyUnifiedLoMergeAll');
-        if (btnMergeAll) btnMergeAll.onclick = () => {
-            if (allMerged.length) copyNumbers(allMerged, ', ');
-            else showToast('Không có số nào!');
-        };
+        if (btnMergeAll) {
+            btnMergeAll.onclick = () => {
+                const targets = (currentActiveLoSubNums && currentActiveLoSubNums.length) ? currentActiveLoSubNums : loX2;
+                const allMerged = Array.from(new Set([...loStd, ...targets]));
+                if (allMerged.length) copyNumbers(allMerged, ', ');
+                else showToast('Không có số nào!');
+            };
+        }
 
         const btnCopyXi4 = byId('btnCopyUnifiedLoXi4');
         if (btnCopyXi4) {
