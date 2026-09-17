@@ -367,18 +367,20 @@
             const allNums = (pentaAdv?.numbers || streakDeAdv?.numbers || []).map(number);
             const vipNums = (pentaAdv?.vipNumbers || (streakDeAdv?.tierX3 || []).concat(streakDeAdv?.tierX2 || [])).slice(0, 17).map(number);
             const singleNums = (pentaAdv?.backupNumbers || allNums.filter(n => !vipNums.includes(n))).slice(0, 26).map(number);
+            const chosenMethodLabel = streakDeAdv?.selectedMethodLabel || 'Đề Thích Ứng Alpha';
+            const sizing = streakDeAdv?.sizingMultiplier || 1.0;
             return {
-                label: '👑 Đề Ngũ Tinh Dung Hợp AI (Deep Consensus 60M)',
-                badge: 'Đổi Pha Toàn Năng · Win 67.5%',
-                stakeK: 60000,
-                stakeText: 'Vốn: 60M / ngày (60 đơn vị cược)',
-                stdTitle: `👑 DÀN ĐỀ NGŨ TINH AI (${allNums.length} SỐ · VỐN 60M · ĂN TỚI 168M)`,
+                label: `👑 Tự Động Đảo Pha (Ngũ Tinh AI) <span class="inline-flex items-center gap-1 rounded-md bg-amber-100 text-amber-900 px-2 py-0.5 text-xs font-black ml-1">👉 Đang chọn: <strong>${chosenMethodLabel}</strong></span>`,
+                badge: `Pha: ${streakDeAdv?.activePhaseLabel || 'Bám Đà Thắng'}`,
+                stakeK: Math.round(60000 * sizing),
+                stakeText: `Vốn: ${Math.round(60 * sizing)}M / ngày (Sizing: ${sizing}x)`,
+                stdTitle: `👑 DÀN ĐỀ ĐẢO PHA TỰ ĐỘNG (${allNums.length} SỐ · ĐANG CHỌN: ${chosenMethodLabel.toUpperCase()} · VỐN ${Math.round(60 * sizing)}M)`,
                 allNums,
                 vipNums,
                 singleNums,
                 vipLabel: `⚡ VIP X2 (${vipNums.length} SỐ - VÀO TIỀN GẤP ĐÔI)`,
                 singleLabel: `🛡️ BỌC LÓT X1 (${singleNums.length} SỐ)`,
-                rationale: pentaAdv?.rationale || 'Dung hợp 5 tầng dữ liệu AI mốc 20 năm và điểm rơi vàng phục hồi chuỗi thắng.',
+                rationale: streakDeAdv?.rationale || pentaAdv?.rationale || 'Hệ thống tự động điều phối đảo pha đa tín hiệu chọn phương pháp có xác suất thắng cao nhất hôm nay.',
                 liveStat: '67.5% Win 2026 (+16.2 TỶ Dynamic)'
             };
         }
