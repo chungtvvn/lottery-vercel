@@ -208,6 +208,29 @@ function settleFromRaw(payload, rawRows) {
             loTriHarmonic
         }, rawRows, { existingDynamicMetaAdvisor: payload.dynamicMetaAdvisor });
     }
+    let streakAwareDeAdvisor = payload.streakAwareDeAdvisor;
+    if (!streakAwareDeAdvisor && dualMerge && tripleMerge) {
+        try {
+            const { buildStreakAwareDeAdvisor } = require('@/lib/services/aiLotteryResearchService');
+            streakAwareDeAdvisor = buildStreakAwareDeAdvisor(dualMerge, tripleMerge, adaptiveDualMerge, rawRows);
+        } catch (_) {}
+    }
+
+    let loQuadHybrid = payload.loQuadHybrid;
+    if (!loQuadHybrid && loQuantumBayesFusion && loDualMerge) {
+        try {
+            const { buildLoQuadHybridAdvisor } = require('@/lib/services/aiLotteryResearchService');
+            loQuadHybrid = buildLoQuadHybridAdvisor(loQuantumBayesFusion, loDualMerge, rawRows);
+        } catch (_) {}
+    }
+
+    let loXien4Synergy = payload.loXien4Synergy;
+    if (!loXien4Synergy && loQuadHybrid) {
+        try {
+            const { buildLoXien4SynergyAdvisor } = require('@/lib/services/aiLotteryResearchService');
+            loXien4Synergy = buildLoXien4SynergyAdvisor(loQuadHybrid, rawRows);
+        } catch (_) {}
+    }
 
     return {
         ...payload,
@@ -216,9 +239,12 @@ function settleFromRaw(payload, rawRows) {
         dualMerge,
         tripleMerge,
         adaptiveDualMerge,
+        streakAwareDeAdvisor: streakAwareDeAdvisor || payload.streakAwareDeAdvisor || null,
         loDualMerge,
         loTriHarmonic,
         loQuantumBayesFusion,
+        loQuadHybrid: loQuadHybrid || payload.loQuadHybrid || null,
+        loXien4Synergy: loXien4Synergy || payload.loXien4Synergy || null,
         dynamicMetaAdvisor: dynamicMetaAdvisor || payload.dynamicMetaAdvisor || loQuantumBayesFusion?.dynamicMetaAdvisor || null,
         latestDataDate: rawRows?.at(-1)?.date || payload.latestDataDate,
         summary: { main: summarize('main'), hybrid: summarize('hybrid') },
@@ -283,6 +309,15 @@ export async function GET(request) {
                 }
                 if (localPayload?.metaLearner && (!payload?.metaLearner || (localPayload.metaLearner.settledLedger?.length || 0) > (payload.metaLearner.settledLedger?.length || 0))) {
                     payload.metaLearner = localPayload.metaLearner;
+                }
+                if (localPayload?.streakAwareDeAdvisor) {
+                    payload.streakAwareDeAdvisor = localPayload.streakAwareDeAdvisor;
+                }
+                if (localPayload?.loQuadHybrid) {
+                    payload.loQuadHybrid = localPayload.loQuadHybrid;
+                }
+                if (localPayload?.loXien4Synergy) {
+                    payload.loXien4Synergy = localPayload.loXien4Synergy;
                 }
             } catch (_) {}
         }
