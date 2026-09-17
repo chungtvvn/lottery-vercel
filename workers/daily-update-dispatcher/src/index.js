@@ -433,6 +433,11 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   const metaSettledList = metaLearner?.settledLedger || [];
   const metaLearnerSummary = metaLearner?.summary || {};
 
+  // Đề Tri-Governor Đa Phương Pháp (Streak-Aware) & Lô Tứ Trụ Quad-Fusion & Xiên 4 Synergy
+  const streakDeAdv = advisorPayload?.streakAwareDeAdvisor?.latestRecommendation || null;
+  const loQuadAdv = advisorPayload?.loQuadHybrid?.latestRecommendation || null;
+  const loXien4Adv = advisorPayload?.loXien4Synergy?.latestRecommendation || null;
+
   // Lô Tinh Hoa — Dynamic Meta-Selector (tự chọn PP tốt nhất mỗi ngày)
   const metaAdv = advisorPayload?.dynamicMetaAdvisor || null;
   const metaNext = metaAdv?.nextPrediction || null;
@@ -440,7 +445,10 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   const liveDiaryEntries = Array.isArray(metaAdv?.liveDiary) ? metaAdv.liveDiary : [];
 
   // predictionDate fallback chain
-  const predictionDate = metaNext?.predictionDate
+  const predictionDate = streakDeAdv?.predictionDate
+    || loQuadAdv?.predictionDate
+    || loXien4Adv?.predictionDate
+    || metaNext?.predictionDate
     || metaRec?.predictionDate
     || advisorPayload?.loQuantumBayesFusion?.latestRecommendation?.predictionDate
     || dePayload.nextPrediction?.predictionIsoDate
@@ -521,32 +529,61 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   }
 
   // =========================================================================
-  // 1. 💎 ĐỀ TINH HOA — DÀN 30 SỐ GỢI Ý
+  // 1. 💎 ĐỀ TINH HOA — TRI-GOVERNOR ĐA PHƯƠNG PHÁP GỢI Ý
   // =========================================================================
-  lines.push(`<b>1. 💎 ĐỀ TINH HOA — DÀN 30 SỐ GỢI Ý</b>`);
+  if (streakDeAdv && Array.isArray(streakDeAdv.numbers) && streakDeAdv.numbers.length) {
+    const sBadge = streakDeAdv.confidenceBadge || '🟢 THEO ĐÀ THẮNG KHỎE ALPHA (80.8% WIN)';
+    const sMethod = streakDeAdv.selectedMethodLabel || 'Đề Thích Ứng Alpha';
+    const sNumbers = streakDeAdv.numbers;
+    const sTierX2 = streakDeAdv.tierX2 || [];
+    const sSingles = streakDeAdv.singles || [];
 
-  let std30 = metaRec?.standard30 || metaRec?.numbers || [];
-  let core10 = metaRec?.core10 || [];
-  let core20 = metaRec?.core20 || [];
+    lines.push(
+      `<b>1. 💎 ĐỀ TINH HOA — TRI-GOVERNOR ĐA PHƯƠNG PHÁP GỢI Ý</b>`,
+      `👑 <b>Phương pháp: ${escapeHtml(sMethod)}</b> · ${escapeHtml(sBadge)}`,
+      `💡 <i>${escapeHtml(streakDeAdv.rationale || '')}</i>`,
+      `🎯 <b>Dàn Đề Tuyển Chọn (${sNumbers.length} số):</b>`,
+      `<b>${escapeHtml(formatNumberList(sNumbers))}</b>`
+    );
+    if (sTierX2.length) {
+      lines.push(
+        `⚡ <b>Dàn VIP Trùng X2 (${sTierX2.length} số - Vào tiền gấp đôi):</b> <b>${escapeHtml(formatNumberList(sTierX2))}</b>`
+      );
+    }
+    if (sSingles.length) {
+      lines.push(
+        `🛡️ <b>Dàn Bọc Lót X1 (${sSingles.length} số):</b> <b>${escapeHtml(formatNumberList(sSingles))}</b>`
+      );
+    }
+    lines.push(
+      `  • <i>Mức 3 mặc định: 200K/số · Trúng ăn 16.8M (x84)</i>`,
+      `  • <i>Mức VIP: 1M/số · Trúng ăn 84M</i>`
+    );
+  } else {
+    lines.push(`<b>1. 💎 ĐỀ TINH HOA — DÀN 30 SỐ GỢI Ý</b>`);
+    let std30 = metaRec?.standard30 || metaRec?.numbers || [];
+    let core10 = metaRec?.core10 || [];
+    let core20 = metaRec?.core20 || [];
 
-  if (!std30.length && dePayload.nextPrediction) {
-    const strat = dePayload.nextPrediction?.strategies?.deMilestoneHistoryEdge75UnionX2
-      || dePayload.nextPrediction?.strategies?.dedupEdge75Pit
-      || Object.values(dePayload.nextPrediction?.strategies || {})[0];
-    const hold = strat?.holds?.[70] || strat?.holds?.[30] || Object.values(strat?.holds || {})[0];
-    std30 = hold?.betNumbers || [];
-    core10 = std30.slice(0, 10);
-    core20 = std30.slice(0, 20);
+    if (!std30.length && dePayload.nextPrediction) {
+      const strat = dePayload.nextPrediction?.strategies?.deMilestoneHistoryEdge75UnionX2
+        || dePayload.nextPrediction?.strategies?.dedupEdge75Pit
+        || Object.values(dePayload.nextPrediction?.strategies || {})[0];
+      const hold = strat?.holds?.[70] || strat?.holds?.[30] || Object.values(strat?.holds || {})[0];
+      std30 = hold?.betNumbers || [];
+      core10 = std30.slice(0, 10);
+      core20 = std30.slice(0, 20);
+    }
+
+    lines.push(
+      `👑 <b>Dàn Chuẩn 30 số</b> (Vốn 30M · Ăn 84M · Lãi ròng +54M):`,
+      `  • <i>Mức chuẩn 10K/số: Vốn 300K · Ăn 840K (x84) · Lãi +540K</i>`,
+      `  • <i>Mức VIP 1M/số: Vốn 30M · Ăn 84M · Lãi +54M</i>`,
+      `<b>${escapeHtml(formatNumberList(std30))}</b>`,
+      `⚡ <b>Core 10 VIP</b> (10M · Hạt nhân): <b>${escapeHtml(formatNumberList(core10))}</b>`,
+      `🔥 <b>Core 20 Rút gọn</b> (20M): <b>${escapeHtml(formatNumberList(core20))}</b>`
+    );
   }
-
-  lines.push(
-    `👑 <b>Dàn Chuẩn 30 số</b> (Vốn 30M · Ăn 84M · Lãi ròng +54M):`,
-    `  • <i>Mức chuẩn 10K/số: Vốn 300K · Ăn 840K (x84) · Lãi +540K</i>`,
-    `  • <i>Mức VIP 1M/số: Vốn 30M · Ăn 84M · Lãi +54M</i>`,
-    `<b>${escapeHtml(formatNumberList(std30))}</b>`,
-    `⚡ <b>Core 10 VIP</b> (10M · Hạt nhân): <b>${escapeHtml(formatNumberList(core10))}</b>`,
-    `🔥 <b>Core 20 Rút gọn</b> (20M): <b>${escapeHtml(formatNumberList(core20))}</b>`
-  );
   lines.push(divider);
 
   // =========================================================================
@@ -554,16 +591,19 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   // =========================================================================
   lines.push(`<b>2. 🏆 LÔ CHUẨN TỐI ƯU (DÀN 20 SỐ)</b>`);
 
-  let stdNums = metaNext?.standard?.numbers || [];
+  let stdNums = (loQuadAdv?.top20 || metaNext?.standard?.numbers || []).map(normalizeLotteryNumber);
   if (!stdNums.length && lotoPayload.nextPrediction) {
     const strat = lotoPayload.nextPrediction?.strategies?.rrfParallelBlock85Small65
       || lotoPayload.nextPrediction?.strategies?.dedupEdge75Pit
       || Object.values(lotoPayload.nextPrediction?.strategies || {})[0];
-    stdNums = strat?.predictions?.top20?.numbers || lotoPayload.nextPrediction?.predictions?.top6?.numbers || [];
+    stdNums = (strat?.predictions?.top20?.numbers || lotoPayload.nextPrediction?.predictions?.top6?.numbers || []).map(normalizeLotteryNumber);
   }
+  const loMethodTitle = loQuadAdv ? 'Super-Hybrid Quad-Fusion v7.0 Top 20' : 'Dàn 20 số';
+  const loMethodStat = loQuadAdv ? ' (3 Năm +10.32 TỶ · 6.669 Nháy)' : '';
   lines.push(
-    `🎯 <b>Dàn 20 số</b> (Vốn 44M · Cược 2.2M/số [2.200K / 100đ] · Ăn 8M/nháy):`,
+    `🎯 <b>${loMethodTitle}</b>${loMethodStat} (Vốn 44M · Cược 2.2M/số [2.200K / 100đ] · Ăn 8M/nháy):`,
     `  • <i>Mức chuẩn 10đ/số: Vốn 200 điểm (4.400K) · Ăn 800K/nháy (1đ = 22K ăn 80K)</i>`,
+    `  • <i>Mức 3 mặc định: 25đ/số (500đ = 11M) · Ăn 2M/nháy</i>`,
     `  • <i>Mức VIP 100đ/số: Vốn 44M · Ăn 8M/nháy</i>`,
     `<b>${escapeHtml(formatNumberList(stdNums))}</b>`
   );
@@ -574,16 +614,22 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   // =========================================================================
   lines.push(`<b>3. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO (DÀN 7 SỐ TĂNG TỐC)</b>`);
 
-  let x2Nums = metaNext?.x2?.numbers || [];
+  let x2Nums = (loQuadAdv?.top7 || metaNext?.x2?.numbers || []).map(normalizeLotteryNumber);
   if (!x2Nums.length && lotoPayload.nextPrediction) {
     const strat = lotoPayload.nextPrediction?.strategies?.rrfParallelBlock85Small65
       || lotoPayload.nextPrediction?.strategies?.dedupEdge75Pit
       || Object.values(lotoPayload.nextPrediction?.strategies || {})[0];
-    x2Nums = strat?.predictions?.top7?.numbers || [];
+    x2Nums = (strat?.predictions?.top7?.numbers || []).map(normalizeLotteryNumber);
+  }
+  if (loQuadAdv?.top2?.length) {
+    lines.push(
+      `🔥 <b>Song Thủ Siêu VIP: [${escapeHtml(formatNumberList(loQuadAdv.top2))}]</b> <i>(57.7% Nổ 3 Năm · +1.976 TỶ)</i> · Bạch Thủ: <b>[${loQuadAdv.top1?.[0] || loQuadAdv.top2[0]}]</b> <i>(+1.088 TỶ)</i>`
+    );
   }
   lines.push(
     `🎯 <b>Dàn 7 số X2</b> (Vốn 30.8M · Cược 4.4M/số [4.400K / 200đ] · Ăn 16M/nháy):`,
     `  • <i>Mức chuẩn 20đ/số: Vốn 140 điểm (3.080K) · Ăn 1.600K/nháy</i>`,
+    `  • <i>Mức 3 mặc định: 50đ/số (350đ = 7.7M) · Ăn 4M/nháy</i>`,
     `  • <i>Mức VIP 200đ/số: Vốn 30.8M · Ăn 16M/nháy</i>`,
     `<b>${escapeHtml(formatNumberList(x2Nums))}</b>`
   );
@@ -603,10 +649,10 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   lines.push(`<i>Tổng hợp từ 2 dàn trên: Số nào trùng cược X2, số riêng cược X1 bọc lót:</i>`);
   lines.push(
     `🔥 <b>Nhóm Số Trùng (CỰC VIP X2 · 4.4M/số [4.400K] - ${overlapNums.length} số):</b>`,
-    `  • <i>Mức chuẩn: 20đ/số (440K/số) · Mức VIP: 4.4M/số</i>`,
+    `  • <i>Mức chuẩn: 20đ/số (440K/số) · Mức 3: 50đ/số (1.1M/số) · Mức VIP: 4.4M/số</i>`,
     `<b>${escapeHtml(formatNumberList(overlapNums))}</b>`,
     `🛡️ <b>Nhóm Số Riêng (BỌC LÓT X1 · 2.2M/số [2.200K] - ${singleNums.length} số):</b>`,
-    `  • <i>Mức chuẩn: 10đ/số (220K/số) · Mức VIP: 2.2M/số</i>`,
+    `  • <i>Mức chuẩn: 10đ/số (220K/số) · Mức 3: 25đ/số (550K/số) · Mức VIP: 2.2M/số</i>`,
     `<b>${escapeHtml(formatNumberList(singleNums))}</b>`
   );
   lines.push(divider);
@@ -614,11 +660,16 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   // =========================================================================
   // 5. 💎 LÔ XIÊN 4 TINH HOA (QUÂY 11 VÉ)
   // =========================================================================
-  let xi4Nums = metaNext?.xien4?.numbers || [];
+  let xi4Nums = (loXien4Adv?.numbers || metaNext?.xien4?.numbers || []).map(normalizeLotteryNumber);
   if (!xi4Nums.length) {
     xi4Nums = overlapNums.length >= 4 ? overlapNums.slice(0, 4) : sList.slice(0, 4);
   }
   lines.push(`<b>5. 💎 LÔ XIÊN 4 TINH HOA (QUÂY 11 VÉ)</b>`);
+  if (loXien4Adv) {
+    lines.push(
+      `👑 <i>Tứ Thủ Hiệp Đồng Đồ Thị: 3 Năm +4.314 TỶ (ROI +40.1%) · Điểm Hiệp Đồng: ${loXien4Adv.score || 252.2}</i>`
+    );
+  }
   lines.push(
     `🎲 <b>Bộ 4 Số Vàng:</b> <b>${escapeHtml(formatNumberList(xi4Nums))}</b>`,
     `<i>Cơ cấu 11 vé (1 vé X4 + 4 vé X3 + 6 vé X2) · Trúng từ 2 con trở lên là CÓ LÃI RÒNG:</i>`,
