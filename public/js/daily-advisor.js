@@ -362,6 +362,26 @@
 
     function getDeMethodDisplayData(methodKey, fullData = {}) {
         const streakDeAdv = fullData?.streakAwareDeAdvisor?.latestRecommendation;
+        if (methodKey === 'pentaCoreDe') {
+            const pentaAdv = fullData?.pentaCoreDe?.latestRecommendation || streakDeAdv;
+            const allNums = (pentaAdv?.numbers || streakDeAdv?.numbers || []).map(number);
+            const vipNums = (pentaAdv?.vipNumbers || (streakDeAdv?.tierX3 || []).concat(streakDeAdv?.tierX2 || [])).slice(0, 17).map(number);
+            const singleNums = (pentaAdv?.backupNumbers || allNums.filter(n => !vipNums.includes(n))).slice(0, 26).map(number);
+            return {
+                label: '👑 Đề Ngũ Tinh Dung Hợp AI (Deep Consensus 60M)',
+                badge: 'Đổi Pha Toàn Năng · Win 67.5%',
+                stakeK: 60000,
+                stakeText: 'Vốn: 60M / ngày (60 đơn vị cược)',
+                stdTitle: `👑 DÀN ĐỀ NGŨ TINH AI (${allNums.length} SỐ · VỐN 60M · ĂN TỚI 168M)`,
+                allNums,
+                vipNums,
+                singleNums,
+                vipLabel: `⚡ VIP X2 (${vipNums.length} SỐ - VÀO TIỀN GẤP ĐÔI)`,
+                singleLabel: `🛡️ BỌC LÓT X1 (${singleNums.length} SỐ)`,
+                rationale: pentaAdv?.rationale || 'Dung hợp 5 tầng dữ liệu AI mốc 20 năm và điểm rơi vàng phục hồi chuỗi thắng.',
+                liveStat: '67.5% Win 2026 (+16.2 TỶ Dynamic)'
+            };
+        }
         if (methodKey === 'adaptiveDualMerge') {
             const rec = fullData?.adaptiveDualMerge?.latestRecommendation || {};
             const allNums = (rec.fullUnion || streakDeAdv?.numbers || rec.numbers || []).map(number);
@@ -473,7 +493,7 @@
         if (predDateBadge) predDateBadge.textContent = formatDateVi(predDate);
 
         // 1. ĐỀ TINH HOA — CHỌN PHƯƠNG PHÁP & HIỂN THỊ
-        let activeDeMethodKey = streakDeAdv?.selectedMethod || 'adaptiveDualMerge';
+        let activeDeMethodKey = 'pentaCoreDe';
 
         function updateDeMethodDisplay(methodKey) {
             activeDeMethodKey = methodKey;
@@ -640,7 +660,21 @@
 
         function updateLoEngineDisplay(engineId) {
             activeLoEngineKey = engineId;
-            const engineData = governor.engines?.[engineId] || {};
+            let engineData = governor.engines?.[engineId] || {};
+            if (engineId === 'penta' && (!engineData.rankedNumbers || !engineData.rankedNumbers.length) && fullData?.loPentaMatrix) {
+                const pRec = fullData.loPentaMatrix.latestRecommendation || {};
+                engineData = {
+                    id: 'penta',
+                    label: pRec.engineLabel || '⚡ Siêu Động Cơ Ngũ Hợp Lô AI v8.0',
+                    shortLabel: 'Ngũ Hợp v8.0',
+                    winRateTop7: '77.3%',
+                    winRateTop20: '76.1%',
+                    rankedNumbers: pRec.rankedNumbers || [],
+                    top7: pRec.top7 || [],
+                    top20: pRec.top20 || [],
+                    subTiers: pRec.subTiers || {}
+                };
+            }
 
             // Highlight engine button
             document.querySelectorAll('.lo-engine-btn').forEach(btn => {
@@ -2046,6 +2080,7 @@
             if (!tbody || !mat) return;
 
             const engines = [
+                { id: 'penta', label: '⚡ Ngũ Hợp v8.0', comboRecovery: '70.7% (41/58k)' },
                 { id: 'quad', label: '🤖 Quad-Hybrid v7.1', comboRecovery: '66.7% (38/57k)' },
                 { id: 'qmbf', label: '⚛️ Quantum Bayes 7D', comboRecovery: '63.3% (31/49k)' },
                 { id: 'dual', label: '🎯 Lô Gộp Tinh Hoa', comboRecovery: '72.2% (52/72k)' },
@@ -2117,7 +2152,8 @@
             if (!tbody || !deMatrix) return;
 
             const methods = [
-                { id: 'adaptiveDualMerge', label: '👑 Thích Ứng Alpha', highlight: '41.1% Tam Trụ cứu' },
+                { id: 'pentaCoreDe', label: '👑 Ngũ Tinh AI ⭐', highlight: 'Đổi pha siêu lợi nhuận' },
+                { id: 'adaptiveDualMerge', label: '💎 Thích Ứng Alpha', highlight: '41.1% Tam Trụ cứu' },
                 { id: 'dualMerge', label: '🎯 Gộp Tiêu Chuẩn', highlight: '41.7% Tam Trụ cứu' },
                 { id: 'tripleMerge', label: '🛡️ Tam Trụ Tam Phân', highlight: '56.0% Alpha cứu' },
                 { id: 'bayesFormResonance', label: '🔮 Ngũ Hành Bayes', highlight: 'Cứu 41.2% gãy mốc chung' }
