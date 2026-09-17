@@ -663,6 +663,380 @@
         `;
     }
 
+    let diaryDetailsMap = {};
+    let popoverHideTimer = null;
+
+    function renderDiaryPopoverContent(info, type) {
+        if (!info) return '';
+        if (type === 'de') {
+            const isHit = info.isHit;
+            const actualSpec = info.actualSpecial;
+            let chipsHtml = '';
+            if (info.x2Nums && info.x2Nums.length) {
+                chipsHtml = `
+                    <div class="space-y-2.5">
+                        <div>
+                            <div class="flex items-center justify-between text-[10px] font-black uppercase text-amber-400 mb-1">
+                                <span>⚡ VIP TRÙNG X2 (${info.x2Nums.length} số):</span>
+                                <span class="text-amber-300">Cược X2 (400K / 2M)</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1">
+                                ${info.x2Nums.map(n => {
+                                    const hit = (actualSpec != null && Number(n) === Number(actualSpec));
+                                    return `<span class="inline-flex items-center justify-center px-2 py-1 rounded-lg font-mono text-xs ${hit ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 ring-2 ring-white scale-110 shadow-lg font-black animate-pulse' : 'bg-amber-950/60 border border-amber-500/40 text-amber-200 font-bold'}">${number(n)}${hit ? ' 🎉' : ''}</span>`;
+                                }).join('')}
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex items-center justify-between text-[10px] font-black uppercase text-indigo-300 mb-1">
+                                <span>🛡️ BỌC LÓT X1 (${info.x1Nums.length} số):</span>
+                                <span class="text-indigo-200">Cược X1 (200K / 1M)</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1">
+                                ${info.x1Nums.map(n => {
+                                    const hit = (actualSpec != null && Number(n) === Number(actualSpec));
+                                    return `<span class="inline-flex items-center justify-center px-2 py-1 rounded-lg font-mono text-xs ${hit ? 'bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 ring-2 ring-white scale-110 shadow-lg font-black' : 'bg-slate-800 border border-slate-700 text-slate-300 font-bold'}">${number(n)}${hit ? ' 🎉' : ''}</span>`;
+                                }).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                chipsHtml = `
+                    <div class="flex flex-wrap gap-1 max-h-44 overflow-y-auto pr-1 custom-scrollbar">
+                        ${(info.numbers || []).map(n => {
+                            const hit = (actualSpec != null && Number(n) === Number(actualSpec));
+                            return `<span class="inline-flex items-center justify-center px-2 py-1 rounded-lg font-mono text-xs ${hit ? 'bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 ring-2 ring-white scale-110 shadow-lg font-black' : 'bg-slate-800 border border-slate-700 text-slate-300 font-bold'}">${number(n)}${hit ? ' 🎉' : ''}</span>`;
+                        }).join('') || '<span class="text-xs text-slate-400">Dữ liệu dàn số lưu trữ lịch sử</span>'}
+                    </div>
+                `;
+            }
+
+            return `
+                <div>
+                    <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2 mb-2.5">
+                        <div>
+                            <div class="font-black text-amber-400 text-xs flex items-center gap-1.5">
+                                <i class="bi bi-gem-fill text-amber-500"></i> ${escapeHtml(info.methodName)}
+                            </div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">
+                                Ngày ${formatDateVi(info.date)} · ${escapeHtml(info.subTierLabel)}
+                            </div>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <span class="inline-flex items-center gap-1 rounded-lg ${isHit ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-black' : 'bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold'} px-2 py-0.5 text-[11px]">
+                                ${isHit ? '🎉 Trúng ĐB' : '❌ Trượt'}
+                            </span>
+                            <div class="text-[10px] font-mono text-slate-400 mt-0.5">ĐB: <strong class="text-white font-bold">${actualSpec != null ? number(actualSpec) : '--'}</strong></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide flex items-center justify-between">
+                            <span>Dàn số đã đánh (${info.numbers?.length || 0} số):</span>
+                            ${isHit ? '<span class="text-emerald-400 font-black">✓ Đã nổ số trúng!</span>' : ''}
+                        </div>
+                        ${chipsHtml}
+                    </div>
+                    <div class="pt-2 border-t border-slate-800/80 grid grid-cols-3 gap-2 text-[11px] font-mono">
+                        <div>
+                            <div class="text-[9px] text-slate-500 uppercase">Vốn Cược</div>
+                            <div class="font-bold text-slate-300">${moneyM(info.stakeK)}</div>
+                        </div>
+                        <div>
+                            <div class="text-[9px] text-slate-500 uppercase">Tiền Thưởng</div>
+                            <div class="font-bold ${info.payoutK > 0 ? 'text-emerald-400' : 'text-slate-400'}">${moneyM(info.payoutK)}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-[9px] text-slate-500 uppercase">Lãi/Lỗ Ròng</div>
+                            <div class="font-black ${info.profitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(info.profitK, { signed: true })}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (type === 'loStd' || type === 'loX2') {
+            const isX2 = (type === 'loX2');
+            const prizeCounts = info.prizeCounts || {};
+            const chipsHtml = `
+                <div class="flex flex-wrap gap-1 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
+                    ${(info.numbers || []).map(n => {
+                        const hits = prizeCounts[number(n)] || 0;
+                        const isHit = hits > 0;
+                        return `
+                            <span class="inline-flex items-center justify-center gap-1 px-2 py-1 rounded-lg font-mono text-xs ${isHit ? (isX2 ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 ring-2 ring-white scale-110 shadow-lg font-black' : 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 scale-110 shadow-lg font-black') : 'bg-slate-800 border border-slate-700 text-slate-300 font-medium'}">
+                                <span>${number(n)}</span>
+                                ${isHit ? `<span class="rounded bg-black/40 text-[9px] px-1 font-black leading-none">${hits > 1 ? hits + ' nháy' : '1n'}</span>` : ''}
+                            </span>
+                        `;
+                    }).join('') || '<span class="text-xs text-slate-400">Dữ liệu dàn số lưu trữ lịch sử</span>'}
+                </div>
+            `;
+
+            return `
+                <div>
+                    <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2 mb-2.5">
+                        <div>
+                            <div class="font-black ${isX2 ? 'text-teal-400' : 'text-indigo-400'} text-xs flex items-center gap-1.5">
+                                <i class="bi ${isX2 ? 'bi-lightning-charge-fill' : 'bi-trophy-fill'}"></i> ${escapeHtml(info.methodName)}
+                            </div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">
+                                Ngày ${formatDateVi(info.date)} · ${escapeHtml(info.subTierLabel)}
+                            </div>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <span class="inline-flex items-center gap-1 rounded-lg ${info.hits > 0 ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-black' : 'bg-slate-800 text-slate-400 font-bold'} px-2 py-0.5 text-[11px]">
+                                💥 Nổ ${info.hits || 0} nháy
+                            </span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide flex items-center justify-between">
+                            <span>Dàn số đã đánh (${info.numbers?.length || 0} số):</span>
+                            <span class="text-slate-400">${isX2 ? 'Cược X2 (4.4M/số)' : 'Cược 2.2M/số'}</span>
+                        </div>
+                        ${chipsHtml}
+                    </div>
+                    <div class="pt-2 border-t border-slate-800/80 grid grid-cols-3 gap-2 text-[11px] font-mono">
+                        <div>
+                            <div class="text-[9px] text-slate-500 uppercase">Vốn Cược</div>
+                            <div class="font-bold text-slate-300">${moneyM(info.stakeK)}</div>
+                        </div>
+                        <div>
+                            <div class="text-[9px] text-slate-500 uppercase">Tiền Thưởng</div>
+                            <div class="font-bold ${info.payoutK > 0 ? 'text-emerald-400' : 'text-slate-400'}">${moneyM(info.payoutK)}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-[9px] text-slate-500 uppercase">Lãi/Lỗ Ròng</div>
+                            <div class="font-black ${info.profitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(info.profitK, { signed: true })}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (type === 'loXi4') {
+            const prizeCounts = info.prizeCounts || {};
+            const chipsHtml = `
+                <div class="flex flex-wrap gap-2">
+                    ${(info.numbers || []).map(n => {
+                        const hits = prizeCounts[number(n)] || 0;
+                        const isHit = hits > 0;
+                        return `
+                            <span class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-xs ${isHit ? 'bg-amber-400 text-slate-950 font-black ring-2 ring-white scale-105 shadow-md' : 'bg-slate-800 border border-slate-700 text-slate-300 font-bold'}">
+                                <span>${number(n)}</span>
+                                ${isHit ? '<span class="text-[10px]">✓ Nổ</span>' : '<span class="text-[10px] text-slate-500">✗ Trượt</span>'}
+                            </span>
+                        `;
+                    }).join('') || '<span class="text-xs text-slate-400">4 số vàng</span>'}
+                </div>
+            `;
+
+            let ticketResult = '❌ Không trúng vé nào (-11M)';
+            if (info.hits >= 4) ticketResult = '🎉 Nổ Xiên 4 đại thắng (+373M VIP)';
+            else if (info.hits === 3) ticketResult = '🔥 Nổ Xiên 3 + Xiên 2 (+29M VIP)';
+            else if (info.hits === 2) ticketResult = '✨ Ăn vé Xiên 2 có lãi (+1M VIP)';
+
+            return `
+                <div>
+                    <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2 mb-2.5">
+                        <div>
+                            <div class="font-black text-amber-400 text-xs flex items-center gap-1.5">
+                                <i class="bi bi-stars"></i> ${escapeHtml(info.methodName)}
+                            </div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">
+                                Ngày ${formatDateVi(info.date)} · ${escapeHtml(info.subTierLabel)}
+                            </div>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <span class="inline-flex items-center gap-1 rounded-lg ${info.hits >= 2 ? 'bg-amber-400 text-slate-950 font-black' : 'bg-slate-800 text-slate-400'} px-2 py-0.5 text-[11px]">
+                                ${info.hits} / 4 con về
+                            </span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide">
+                            Bộ 4 Số Vàng Tinh Hoa:
+                        </div>
+                        ${chipsHtml}
+                        <div class="mt-2 text-[11px] font-semibold ${info.hits >= 2 ? 'text-amber-300' : 'text-slate-400'}">
+                            👉 ${ticketResult}
+                        </div>
+                    </div>
+                    <div class="pt-2 border-t border-slate-800/80 grid grid-cols-2 gap-2 text-[11px] font-mono">
+                        <div>
+                            <div class="text-[9px] text-slate-500 uppercase">Vốn Quây (11 Vé)</div>
+                            <div class="font-bold text-slate-300">${moneyM(info.stakeK)}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-[9px] text-slate-500 uppercase">Lãi/Lỗ Ròng</div>
+                            <div class="font-black ${info.profitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(info.profitK, { signed: true })}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (type === 'total') {
+            return `
+                <div>
+                    <div class="border-b border-slate-800 pb-2 mb-2.5">
+                        <div class="font-black text-white text-xs flex items-center gap-1.5">
+                            <i class="bi bi-wallet2 text-indigo-400"></i> Tổng Kết Ngày ${formatDateVi(info.date)}
+                        </div>
+                        <div class="text-[10px] text-slate-400 mt-0.5">
+                            Chi tiết lợi nhuận toàn bộ các phương pháp gợi ý
+                        </div>
+                    </div>
+                    <div class="space-y-1.5 text-xs font-mono">
+                        <div class="flex justify-between items-center py-0.5">
+                            <span class="text-slate-400">💎 Đề Gợi Ý:</span>
+                            <strong class="${info.deProfitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(info.deProfitK, { signed: true })}</strong>
+                        </div>
+                        <div class="flex justify-between items-center py-0.5">
+                            <span class="text-slate-400">🏆 Lô Chuẩn (Top 20):</span>
+                            <strong class="${info.stdProfitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(info.stdProfitK, { signed: true })}</strong>
+                        </div>
+                        <div class="flex justify-between items-center py-0.5">
+                            <span class="text-slate-400">🚀 Lô Tăng Tốc X2:</span>
+                            <strong class="${info.x2ProfitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(info.x2ProfitK, { signed: true })}</strong>
+                        </div>
+                        <div class="flex justify-between items-center py-0.5">
+                            <span class="text-slate-400">💎 Lô Xiên 4:</span>
+                            <strong class="${info.xi4ProfitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(info.xi4ProfitK, { signed: true })}</strong>
+                        </div>
+                    </div>
+                    <div class="mt-2.5 pt-2 border-t border-slate-800 flex justify-between items-center font-mono">
+                        <span class="text-xs font-bold text-slate-300">Tổng Lãi Ròng Ngày:</span>
+                        <strong class="text-sm font-black ${info.dayTotalK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(info.dayTotalK, { signed: true })}</strong>
+                    </div>
+                </div>
+            `;
+        }
+
+        return '';
+    }
+
+    function positionDiaryPopover(cell, e, popover) {
+        const rect = cell.getBoundingClientRect();
+        const popoverWidth = popover.offsetWidth || 340;
+        const popoverHeight = popover.offsetHeight || 260;
+        const padding = 12;
+
+        let left = rect.left + (rect.width / 2) - (popoverWidth / 2);
+        if (left < padding) left = padding;
+        if (left + popoverWidth > window.innerWidth - padding) {
+            left = window.innerWidth - popoverWidth - padding;
+        }
+
+        let top = rect.top - popoverHeight - 10;
+        if (top < padding) {
+            top = rect.bottom + 10;
+        }
+
+        popover.style.left = `${left}px`;
+        popover.style.top = `${top}px`;
+    }
+
+    function showDiaryCellPopover(cell, e) {
+        const popover = byId('diaryFloatingPopover');
+        if (!popover) return;
+        const date = cell.dataset.date;
+        const type = cell.dataset.diaryCell;
+        const info = diaryDetailsMap?.[date]?.[type];
+        if (!info) return;
+
+        popover.dataset.activeDate = date;
+        popover.dataset.activeType = type;
+        popover.innerHTML = renderDiaryPopoverContent(info, type);
+        popover.classList.remove('hidden');
+        requestAnimationFrame(() => {
+            positionDiaryPopover(cell, e, popover);
+            popover.classList.remove('opacity-0', 'scale-95');
+            popover.classList.add('opacity-100', 'scale-100');
+        });
+    }
+
+    function hideDiaryCellPopover() {
+        const popover = byId('diaryFloatingPopover');
+        if (!popover) return;
+        popover.classList.remove('opacity-100', 'scale-100');
+        popover.classList.add('opacity-0', 'scale-95');
+        setTimeout(() => {
+            if (popover.classList.contains('opacity-0')) {
+                popover.classList.add('hidden');
+                delete popover.dataset.activeDate;
+                delete popover.dataset.activeType;
+            }
+        }, 150);
+    }
+
+    function scheduleHidePopover() {
+        popoverHideTimer = setTimeout(hideDiaryCellPopover, 120);
+    }
+
+    function setupDiaryHoverPopovers() {
+        const popover = byId('diaryFloatingPopover');
+        const tbody = byId('unifiedCombatDiaryTableBody');
+        if (!popover || !tbody) return;
+
+        if (!tbody.__popoverBound) {
+            tbody.__popoverBound = true;
+
+            popover.addEventListener('mouseenter', () => {
+                if (popoverHideTimer) {
+                    clearTimeout(popoverHideTimer);
+                    popoverHideTimer = null;
+                }
+            });
+
+            popover.addEventListener('mouseleave', () => {
+                scheduleHidePopover();
+            });
+
+            tbody.addEventListener('mouseover', e => {
+                const cell = e.target.closest('.diary-cell-interactive');
+                if (!cell) return;
+                if (popoverHideTimer) {
+                    clearTimeout(popoverHideTimer);
+                    popoverHideTimer = null;
+                }
+                showDiaryCellPopover(cell, e);
+            });
+
+            tbody.addEventListener('mousemove', e => {
+                const cell = e.target.closest('.diary-cell-interactive');
+                if (cell && popover && !popover.classList.contains('hidden')) {
+                    positionDiaryPopover(cell, e, popover);
+                }
+            });
+
+            tbody.addEventListener('mouseout', e => {
+                const cell = e.target.closest('.diary-cell-interactive');
+                if (!cell) return;
+                const related = e.relatedTarget?.closest('.diary-cell-interactive');
+                if (related === cell) return;
+                scheduleHidePopover();
+            });
+
+            tbody.addEventListener('click', e => {
+                const cell = e.target.closest('.diary-cell-interactive');
+                if (!cell) return;
+                if (popover && !popover.classList.contains('hidden') && popover.dataset.activeDate === cell.dataset.date && popover.dataset.activeType === cell.dataset.diaryCell) {
+                    hideDiaryCellPopover();
+                } else {
+                    showDiaryCellPopover(cell, e);
+                }
+            });
+
+            document.addEventListener('click', e => {
+                if (!e.target.closest('.diary-cell-interactive') && !e.target.closest('#diaryFloatingPopover')) {
+                    hideDiaryCellPopover();
+                }
+            });
+        }
+    }
+
     function renderUnifiedCombatDiary(deLedger, loDiary, loAllDiary) {
         const tbody = byId('unifiedCombatDiaryTableBody');
         if (!tbody) return;
@@ -673,17 +1047,17 @@
 
         const TITLES_MAP = {
             all: 'Nhật Ký & Đối Soát Chi Tiết Từng Ngày Theo Đề Xuất (Đề + Lô)',
-            de: 'Nhật Ký Đối Soát: 💎 Đề Tinh Hoa (Dàn 30 Số VIP)',
-            loStd: 'Nhật Ký Đối Soát: 🏆 Lô Chuẩn Tối Ưu (Top 20 Số Quán Quân)',
-            loX2: 'Nhật Ký Đối Soát: 🚀 Lô Đánh X2 (Top 7 Số Nhân Đôi Cược)',
-            loXi4: 'Nhật Ký Đối Soát: 💎 Lô Xiên 4 (Tứ Thủ Quây 11 Vé)'
+            de: 'Nhật Ký Đối Soát: 💎 Đề Theo Gợi Ý (Dung Hợp & Đổi Pha)',
+            loStd: 'Nhật Ký Đối Soát: 🏆 Lô Chuẩn Nền Tảng (Top 20 Mặc Định)',
+            loX2: 'Nhật Ký Đối Soát: 🚀 Lô Tăng Tốc X2 (Bộ Điều Phối Đổi Pha)',
+            loXi4: 'Nhật Ký Đối Soát: 💎 Lô Xiên 4 Tinh Hoa (Quây 11 Vé)'
         };
         const PROFIT_LABELS_MAP = {
             all: 'Tổng Lãi Trong Mốc (Đề + Lô):',
-            de: 'Tổng Lãi Đề Tinh Hoa:',
+            de: 'Tổng Lãi Đề Theo Gợi Ý:',
             loStd: 'Tổng Lãi Lô Chuẩn (Top 20):',
-            loX2: 'Tổng Lãi Lô Đánh X2 (Top 7):',
-            loXi4: 'Tổng Lãi Lô Xiên 4 (Quây):'
+            loX2: 'Tổng Lãi Lô Tăng Tốc X2:',
+            loXi4: 'Tổng Lãi Lô Xiên 4:'
         };
 
         if (headingTitle) headingTitle.textContent = TITLES_MAP[currentDiaryCategory] || TITLES_MAP.all;
@@ -694,10 +1068,11 @@
                 thead.innerHTML = `
                     <tr class="border-b border-amber-200 bg-amber-50/80 text-amber-950 uppercase font-black tracking-wider text-[10px]">
                         <th class="px-3 py-3">Ngày</th>
+                        <th class="px-3 py-3">Phương Pháp Đề</th>
                         <th class="px-3 py-3">Giải ĐB Về</th>
-                        <th class="px-3 py-3">Dàn Đề Đề Xuất (30 số)</th>
+                        <th class="px-3 py-3">Dàn Đề Đã Đánh (Di chuột xem)</th>
                         <th class="px-3 py-3">Kết Quả Đề</th>
-                        <th class="px-3 py-3 text-right">Lãi/Lỗ Đề (Vốn 30M)</th>
+                        <th class="px-3 py-3 text-right">Lãi/Lỗ Đề</th>
                         <th class="px-3 py-3 text-right">Lũy Kế Đề</th>
                     </tr>
                 `;
@@ -705,8 +1080,8 @@
                 thead.innerHTML = `
                     <tr class="border-b border-indigo-200 bg-indigo-50/80 text-indigo-950 uppercase font-black tracking-wider text-[10px]">
                         <th class="px-3 py-3">Ngày</th>
-                        <th class="px-3 py-3">Phương Pháp Quán Quân</th>
-                        <th class="px-3 py-3">Dàn 20 Số Đề Xuất</th>
+                        <th class="px-3 py-3">Phương Pháp Lô Nền Tảng</th>
+                        <th class="px-3 py-3">Dàn 20 Số Đã Đánh (Di chuột xem)</th>
                         <th class="px-3 py-3">Số Nháy Về</th>
                         <th class="px-3 py-3 text-right">Lãi/Lỗ (Vốn 44M)</th>
                         <th class="px-3 py-3 text-right">Lũy Kế Lô Chuẩn</th>
@@ -716,10 +1091,10 @@
                 thead.innerHTML = `
                     <tr class="border-b border-teal-200 bg-teal-50/80 text-teal-950 uppercase font-black tracking-wider text-[10px]">
                         <th class="px-3 py-3">Ngày</th>
-                        <th class="px-3 py-3">Phương Pháp Đánh X2</th>
-                        <th class="px-3 py-3">Dàn 7 Số Đề Xuất (Nhân Đôi)</th>
+                        <th class="px-3 py-3">Dàn Đổi Pha Lô X2</th>
+                        <th class="px-3 py-3">Dàn Số Đã Đánh (Cược X2)</th>
                         <th class="px-3 py-3">Số Nháy Về</th>
-                        <th class="px-3 py-3 text-right">Lãi/Lỗ (Vốn 30.8M)</th>
+                        <th class="px-3 py-3 text-right">Lãi/Lỗ X2</th>
                         <th class="px-3 py-3 text-right">Lũy Kế Lô X2</th>
                     </tr>
                 `;
@@ -727,8 +1102,9 @@
                 thead.innerHTML = `
                     <tr class="border-b border-amber-200 bg-amber-50/80 text-amber-950 uppercase font-black tracking-wider text-[10px]">
                         <th class="px-3 py-3">Ngày</th>
+                        <th class="px-3 py-3">Phương Pháp Xiên</th>
                         <th class="px-3 py-3">Bộ 4 Số Vàng Tứ Thủ</th>
-                        <th class="px-3 py-3">Số Con Về Trong Bộ</th>
+                        <th class="px-3 py-3">Số Con Về</th>
                         <th class="px-3 py-3">Thể Thức Ăn Vé</th>
                         <th class="px-3 py-3 text-right">Lãi/Lỗ (Vốn 11M)</th>
                         <th class="px-3 py-3 text-right">Lũy Kế Xiên 4</th>
@@ -738,10 +1114,10 @@
                 thead.innerHTML = `
                     <tr class="border-b border-slate-200 bg-slate-100/70 text-slate-600 uppercase font-black tracking-wider text-[10px]">
                         <th class="px-3 py-3">Ngày</th>
-                        <th class="px-3 py-3">💎 Đề Tinh Hoa (Dàn 30 số)</th>
-                        <th class="px-3 py-3">🏆 Lô Chuẩn (Top 20)</th>
-                        <th class="px-3 py-3">🚀 Lô X2 (Top 7)</th>
-                        <th class="px-3 py-3">💎 Lô Xiên 4 (Quây)</th>
+                        <th class="px-3 py-3">💎 Đề Theo Gợi Ý</th>
+                        <th class="px-3 py-3">🏆 Lô Chuẩn Nền Tảng</th>
+                        <th class="px-3 py-3">🚀 Lô Tăng Tốc X2</th>
+                        <th class="px-3 py-3">💎 Lô Xiên 4 Tinh Hoa</th>
                         <th class="px-3 py-3 text-right">Tổng Ngày</th>
                         <th class="px-3 py-3 text-right">Lũy Kế Mốc</th>
                     </tr>
@@ -828,14 +1204,17 @@
         let cumX2ProfitK = 0;
         let cumXi4ProfitK = 0;
 
+        diaryDetailsMap = {};
         let mergedRows = [];
         for (const date of filteredDates) {
             const deRow = deLedger.find(r => (r.predictionDate || r.date) === date);
             const loRow = sourceLoRows.find(r => r.date === date) || {};
+            const dualRow = payload?.dualMerge?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
+            const streakRow = payload?.streakAwareDeAdvisor?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
 
             const deIsHit = deRow?.isHit || deRow?.hitType === 'win_x1' || (deRow?.profitK > 0);
-            const deProfitK = deRow ? (deRow.profitK ?? (deIsHit ? 54000 : -30000)) : 0;
-            const actualSpec = deRow?.actualSpecial ?? deRow?.actual;
+            let deProfitK = deRow ? (deRow.profitK ?? (deIsHit ? 54000 : -30000)) : 0;
+            const actualSpec = deRow?.actualSpecial ?? deRow?.actual ?? dualRow?.actualSpecial ?? dualRow?.actual;
 
             const std = loRow.standard || {};
             const x2 = loRow.x2 || {};
@@ -853,10 +1232,114 @@
             cumX2ProfitK += x2ProfitK;
             cumXi4ProfitK += xi4ProfitK;
 
+            // Prize breakdown for date
+            const drawInfo = payload?.drawPrizesByDate?.[date] || {};
+            const actualSpecialStr = drawInfo.special || (actualSpec != null ? number(actualSpec) : null);
+            const prizeCounts = {};
+            (drawInfo.prizes || []).forEach(p => {
+                const norm = number(p);
+                prizeCounts[norm] = (prizeCounts[norm] || 0) + 1;
+            });
+
+            // De details
+            let deMethodName = '💎 Đề Tinh Hoa';
+            let deSubTierLabel = 'Dàn Chuẩn 30 số';
+            let deNumbers = (deRow?.numbers || deRow?.standard30 || []).map(number);
+            let deX2Nums = [];
+            let deX1Nums = [];
+            let deStakeK = deRow?.stakeK || 30000;
+            let deIsHitFinal = deIsHit;
+
+            if (streakRow?.chosenMethod === 'adaptiveDualMerge' || dualRow) {
+                deMethodName = '👑 Đề Thích Ứng Alpha';
+                deNumbers = (dualRow?.union || deNumbers).map(number);
+                deX2Nums = (dualRow?.intersection || []).map(number);
+                deX1Nums = (dualRow?.uniqueSingles || []).map(number);
+                deSubTierLabel = `Dàn ${deNumbers.length} số (17 X2 · 26 X1)`;
+                deStakeK = dualRow?.stakeK || 60000;
+                deProfitK = dualRow?.profitK != null ? dualRow.profitK : deProfitK;
+                deIsHitFinal = (dualRow?.hitType === 'win_x2' || dualRow?.hitType === 'win_x1') || deIsHitFinal;
+            } else if (deRow?.methodName) {
+                deMethodName = deRow.methodName;
+            }
+
+            const stdMethodName = std.methodName || std.methodLabel || 'Super-Hybrid Quad-Fusion v7.0 Top 20';
+            const stdNumbers = (std.numbers || []).map(number);
+            const stdHits = std.hits != null ? std.hits : 0;
+            const stdStakeK = std.stakeK || 44000;
+
+            const x2MethodName = x2.methodName || x2.methodLabel || ('Lô X2 Top ' + (x2.topCount || 7));
+            const x2Numbers = (x2.numbers || []).map(number);
+            const x2Hits = x2.hits != null ? x2.hits : 0;
+            const x2StakeK = x2.stakeK || (x2Numbers.length * 4400);
+
+            const xi4MethodName = xi4.methodName || xi4.methodLabel || 'Tứ Thủ Xiên 4 Tinh Hoa';
+            const xi4Numbers = (xi4.numbers || []).map(number);
+            const xi4Hits = xi4.hits != null ? xi4.hits : 0;
+            const xi4StakeK = xi4.stakeK || 11000;
+
+            diaryDetailsMap[date] = {
+                de: {
+                    date,
+                    methodName: deMethodName,
+                    subTierLabel: deSubTierLabel,
+                    numbers: deNumbers,
+                    x2Nums: deX2Nums,
+                    x1Nums: deX1Nums,
+                    actualSpecial: actualSpecialStr,
+                    isHit: deIsHitFinal,
+                    stakeK: deStakeK,
+                    profitK: deProfitK,
+                    payoutK: deIsHitFinal ? (deStakeK + deProfitK) : 0
+                },
+                loStd: {
+                    date,
+                    methodName: stdMethodName,
+                    subTierLabel: `Top ${stdNumbers.length || 20} số nền tảng`,
+                    numbers: stdNumbers,
+                    prizeCounts,
+                    hits: stdHits,
+                    stakeK: stdStakeK,
+                    profitK: stdProfitK,
+                    payoutK: std.payoutK || (stdHits * 8000)
+                },
+                loX2: {
+                    date,
+                    methodName: x2MethodName,
+                    subTierLabel: `Dàn ${x2Numbers.length || 7} số cược X2`,
+                    numbers: x2Numbers,
+                    prizeCounts,
+                    hits: x2Hits,
+                    stakeK: x2StakeK,
+                    profitK: x2ProfitK,
+                    payoutK: x2.payoutK || (x2Hits * 16000)
+                },
+                loXi4: {
+                    date,
+                    methodName: xi4MethodName,
+                    subTierLabel: 'Quây 11 vé (1 X4 + 4 X3 + 6 X2)',
+                    numbers: xi4Numbers,
+                    prizeCounts,
+                    hits: xi4Hits,
+                    stakeK: xi4StakeK,
+                    profitK: xi4ProfitK,
+                    payoutK: (xi4ProfitK > 0) ? (xi4StakeK + xi4ProfitK) : 0
+                },
+                total: {
+                    date,
+                    deProfitK,
+                    stdProfitK,
+                    x2ProfitK,
+                    xi4ProfitK,
+                    dayTotalK,
+                    cumProfitK
+                }
+            };
+
             mergedRows.push({
                 date,
                 deRow,
-                deIsHit,
+                deIsHit: deIsHitFinal,
                 deProfitK,
                 cumDeProfitK,
                 actualSpec,
@@ -869,7 +1352,11 @@
                 cumXi4ProfitK,
                 loProfitK,
                 dayTotalK,
-                cumProfitK
+                cumProfitK,
+                deInfo: diaryDetailsMap[date].de,
+                stdInfo: diaryDetailsMap[date].loStd,
+                x2Info: diaryDetailsMap[date].loX2,
+                xi4Info: diaryDetailsMap[date].loXi4
             });
         }
 
@@ -933,48 +1420,54 @@
 
         tbody.innerHTML = reversedRows.map(r => {
             const isLiveBadge = r.date >= '2026-08-28' ? '🟢 Live' : '🔵 PIT';
+            const deInfo = r.deInfo;
+            const stdInfo = r.stdInfo;
+            const x2Info = r.x2Info;
+            const xi4Info = r.xi4Info;
 
-            // --- 1. VIEW ĐỀ TINH HOA ---
+            // --- 1. VIEW ĐỀ THEO GỢI Ý ---
             if (currentDiaryCategory === 'de') {
-                const dePill = r.deRow ? (
-                    r.deIsHit
-                        ? `<span class="inline-flex items-center gap-1 rounded bg-emerald-100 text-emerald-900 px-2 py-0.5 text-xs font-black">🎉 Trúng ĐB +54M</span>`
-                        : `<span class="inline-flex items-center gap-1 rounded bg-rose-100 text-rose-900 px-2 py-0.5 text-xs font-bold">❌ Trượt -30M</span>`
-                ) : `<span class="text-slate-400">Chưa có</span>`;
+                const dePill = deInfo.isHit
+                    ? `<span class="inline-flex items-center gap-1 rounded bg-emerald-100 text-emerald-900 px-2 py-0.5 text-xs font-black">🎉 Trúng ĐB ${moneyM(deInfo.profitK, { signed: true })}</span>`
+                    : `<span class="inline-flex items-center gap-1 rounded bg-rose-100 text-rose-900 px-2 py-0.5 text-xs font-bold">❌ Trượt ${moneyM(deInfo.profitK, { signed: true })}</span>`;
 
-                const deNums = r.deRow?.standard30 || r.deRow?.numbers || [];
-                const actualSpecVal = r.actualSpec;
-
-                const chipsHtml = deNums.map(n => {
-                    const isHitNum = (actualSpecVal != null && Number(n) === Number(actualSpecVal));
+                const chipsHtml = (deInfo.numbers || []).slice(0, 16).map(n => {
+                    const isHitNum = (deInfo.actualSpecial != null && Number(n) === Number(deInfo.actualSpecial));
                     return `<span class="inline-block px-1.5 py-0.5 rounded font-mono text-[11px] font-bold ${isHitNum ? 'bg-emerald-600 text-white font-black scale-110 shadow-xs ring-2 ring-emerald-400' : 'bg-slate-100 text-slate-700'}">${number(n)}</span>`;
-                }).join(' ');
+                }).join(' ') + (deInfo.numbers?.length > 16 ? ` <span class="text-[10px] text-slate-400 font-semibold">+${deInfo.numbers.length - 16} số...</span>` : '');
 
                 return `
-                    <tr class="hover:bg-amber-50/30 transition-colors ${r.deIsHit ? 'bg-emerald-50/40' : ''}">
+                    <tr class="hover:bg-amber-50/40 transition-colors ${deInfo.isHit ? 'bg-emerald-50/40' : ''}">
                         <td class="px-3 py-3 whitespace-nowrap">
                             <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
                             <div class="text-[10px] text-slate-400 font-semibold">${isLiveBadge}</div>
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
-                            <span class="inline-flex items-center justify-center font-mono text-base font-black px-2.5 py-1 rounded-xl ${r.deIsHit ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-900'}">
-                                ${r.actualSpec != null ? number(r.actualSpec) : '--'}
+                            <div class="font-black text-xs text-amber-950">${escapeHtml(deInfo.methodName)}</div>
+                            <div class="text-[10px] text-slate-500 font-medium">${escapeHtml(deInfo.subTierLabel)}</div>
+                        </td>
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <span class="inline-flex items-center justify-center font-mono text-base font-black px-2.5 py-1 rounded-xl ${deInfo.isHit ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-900'}">
+                                ${deInfo.actualSpecial != null ? number(deInfo.actualSpecial) : '--'}
                             </span>
                         </td>
-                        <td class="px-3 py-3 max-w-md">
-                            <div class="flex flex-wrap gap-1">${chipsHtml || '<span class="text-slate-400">Dàn 30 số VIP</span>'}</div>
+                        <td class="diary-cell-interactive px-3 py-3 max-w-md cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="de">
+                            <div class="flex flex-wrap items-center gap-1">${chipsHtml || '<span class="text-slate-400">Dàn số đề</span>'}</div>
+                            <div class="text-[9px] text-amber-700 font-bold mt-1 flex items-center gap-1">
+                                <i class="bi bi-cursor-fill text-[8px]"></i> Rê chuột xem toàn bộ dàn & phân nhóm X2
+                            </div>
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
                             ${dePill}
                         </td>
-                        <td class="px-3 py-3 text-right whitespace-nowrap">
-                            <div class="font-mono font-black text-xs ${r.deProfitK >= 0 ? 'text-emerald-600' : 'text-rose-600'}">
-                                ${moneyM(r.deProfitK, { signed: true })}
+                        <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
+                            <div class="font-black text-xs ${deInfo.profitK >= 0 ? 'text-emerald-600' : 'text-rose-600'}">
+                                ${moneyM(deInfo.profitK, { signed: true })}
                             </div>
-                            <div class="text-[10px] text-slate-400">Vốn 30M</div>
+                            <div class="text-[10px] text-slate-400 font-sans">Vốn ${moneyM(deInfo.stakeK)}</div>
                         </td>
-                        <td class="px-3 py-3 text-right whitespace-nowrap">
-                            <div class="font-mono font-black text-xs ${r.cumDeProfitK >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
+                        <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
+                            <div class="font-black text-xs ${r.cumDeProfitK >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
                                 ${moneyM(r.cumDeProfitK, { signed: true })}
                             </div>
                         </td>
@@ -982,43 +1475,43 @@
                 `;
             }
 
-            // --- 2. VIEW LÔ CHUẨN (TOP 20) ---
+            // --- 2. VIEW LÔ CHUẨN NỀN TẢNG (TOP 20) ---
             if (currentDiaryCategory === 'loStd') {
-                const stdMethodName = r.std.methodName || r.std.methodLabel || 'QMBF v6.1 Top 20';
-                const stdNums = r.std.numbers || [];
-                const stdProfit = r.std.profitK || 0;
-
-                const chipsHtml = stdNums.map(n => `
-                    <span class="inline-block px-1.5 py-0.5 rounded bg-slate-900 text-white font-mono text-[11px] font-bold">${number(n)}</span>
-                `).join(' ');
+                const chipsHtml = (stdInfo.numbers || []).slice(0, 12).map(n => {
+                    const hits = stdInfo.prizeCounts?.[number(n)] || 0;
+                    return `<span class="inline-block px-1.5 py-0.5 rounded font-mono text-[11px] font-bold ${hits > 0 ? 'bg-emerald-600 text-white font-black' : 'bg-slate-900 text-white'}">${number(n)}</span>`;
+                }).join(' ') + (stdInfo.numbers?.length > 12 ? ` <span class="text-[10px] text-slate-400 font-semibold">+${stdInfo.numbers.length - 12}s...</span>` : '');
 
                 return `
-                    <tr class="hover:bg-indigo-50/30 transition-colors ${stdProfit > 0 ? 'bg-emerald-50/40' : ''}">
+                    <tr class="hover:bg-indigo-50/40 transition-colors ${stdInfo.profitK > 0 ? 'bg-emerald-50/40' : ''}">
                         <td class="px-3 py-3 whitespace-nowrap">
                             <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
                             <div class="text-[10px] text-slate-400 font-semibold">${isLiveBadge}</div>
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
-                            <div class="font-bold text-xs text-indigo-950">${escapeHtml(stdMethodName)}</div>
-                            <div class="text-[10px] text-slate-500">Đề xuất 20 số chuẩn</div>
+                            <div class="font-bold text-xs text-indigo-950">${escapeHtml(stdInfo.methodName)}</div>
+                            <div class="text-[10px] text-slate-500">Dàn 20 số nền tảng</div>
                         </td>
-                        <td class="px-3 py-3 max-w-md">
-                            <div class="flex flex-wrap gap-1">${chipsHtml || '<span class="text-slate-400">20 số</span>'}</div>
+                        <td class="diary-cell-interactive px-3 py-3 max-w-md cursor-pointer hover:bg-indigo-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loStd">
+                            <div class="flex flex-wrap items-center gap-1">${chipsHtml}</div>
+                            <div class="text-[9px] text-indigo-700 font-bold mt-1 flex items-center gap-1">
+                                <i class="bi bi-cursor-fill text-[8px]"></i> Rê chuột xem 20 số & số nháy nổ
+                            </div>
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
-                            <span class="font-bold text-xs ${r.std.hits >= 6 ? 'text-emerald-700 font-black' : 'text-slate-700'}">
-                                💥 ${r.std.hits != null ? r.std.hits : '--'} nháy
+                            <span class="font-bold text-xs ${stdInfo.hits >= 6 ? 'text-emerald-700 font-black' : 'text-slate-700'}">
+                                💥 ${stdInfo.hits} nháy
                             </span>
-                            <div class="text-[10px] text-slate-400">Ăn ${moneyM(r.std.payoutK || (r.std.hits * 8000))}</div>
+                            <div class="text-[10px] text-slate-400 font-mono">Ăn ${moneyM(stdInfo.payoutK)}</div>
                         </td>
-                        <td class="px-3 py-3 text-right whitespace-nowrap">
-                            <div class="font-mono font-black text-xs ${stdProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'}">
-                                ${moneyM(stdProfit, { signed: true })}
+                        <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
+                            <div class="font-black text-xs ${stdInfo.profitK >= 0 ? 'text-emerald-600' : 'text-rose-600'}">
+                                ${moneyM(stdInfo.profitK, { signed: true })}
                             </div>
-                            <div class="text-[10px] text-slate-400">Vốn 44M</div>
+                            <div class="text-[10px] text-slate-400 font-sans">Vốn ${moneyM(stdInfo.stakeK)}</div>
                         </td>
-                        <td class="px-3 py-3 text-right whitespace-nowrap">
-                            <div class="font-mono font-black text-xs ${r.cumStdProfitK >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
+                        <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
+                            <div class="font-black text-xs ${r.cumStdProfitK >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
                                 ${moneyM(r.cumStdProfitK, { signed: true })}
                             </div>
                         </td>
@@ -1026,43 +1519,43 @@
                 `;
             }
 
-            // --- 3. VIEW LÔ ĐÁNH X2 (TOP 7) ---
+            // --- 3. VIEW LÔ TĂNG TỐC X2 ---
             if (currentDiaryCategory === 'loX2') {
-                const x2MethodName = r.x2.methodName || r.x2.methodLabel || 'Bạc Nhớ 27 Giải Top 7';
-                const x2Nums = r.x2.numbers || [];
-                const x2Profit = r.x2.profitK || 0;
-
-                const chipsHtml = x2Nums.map(n => `
-                    <span class="inline-block px-2 py-0.5 rounded bg-emerald-700 text-white font-mono text-[11px] font-black">${number(n)}</span>
-                `).join(' ');
+                const chipsHtml = (x2Info.numbers || []).map(n => {
+                    const hits = x2Info.prizeCounts?.[number(n)] || 0;
+                    return `<span class="inline-block px-2 py-0.5 rounded font-mono text-[11px] font-black ${hits > 0 ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 ring-1 ring-white' : 'bg-emerald-700 text-white'}">${number(n)}</span>`;
+                }).join(' ');
 
                 return `
-                    <tr class="hover:bg-teal-50/30 transition-colors ${x2Profit > 0 ? 'bg-emerald-50/40' : ''}">
+                    <tr class="hover:bg-teal-50/40 transition-colors ${x2Info.profitK > 0 ? 'bg-emerald-50/40' : ''}">
                         <td class="px-3 py-3 whitespace-nowrap">
                             <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
                             <div class="text-[10px] text-slate-400 font-semibold">${isLiveBadge}</div>
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
-                            <div class="font-bold text-xs text-teal-950">${escapeHtml(x2MethodName)}</div>
-                            <div class="text-[10px] text-teal-700 font-medium">Nhân đôi cược X2: 4.4M/số (4400K)</div>
+                            <div class="font-bold text-xs text-teal-950">${escapeHtml(x2Info.methodName)}</div>
+                            <div class="text-[10px] text-teal-700 font-medium">${escapeHtml(x2Info.subTierLabel)}</div>
                         </td>
-                        <td class="px-3 py-3">
-                            <div class="flex flex-wrap gap-1.5">${chipsHtml || '<span class="text-slate-400">7 số X2</span>'}</div>
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-teal-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loX2">
+                            <div class="flex flex-wrap items-center gap-1.5">${chipsHtml}</div>
+                            <div class="text-[9px] text-teal-700 font-bold mt-1 flex items-center gap-1">
+                                <i class="bi bi-cursor-fill text-[8px]"></i> Rê chuột xem dàn X2 & số nháy
+                            </div>
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
-                            <span class="font-bold text-xs ${r.x2.hits >= 2 ? 'text-emerald-700 font-black' : 'text-slate-700'}">
-                                🚀 ${r.x2.hits != null ? r.x2.hits : '--'} nháy
+                            <span class="font-bold text-xs ${x2Info.hits >= 2 ? 'text-emerald-700 font-black' : 'text-slate-700'}">
+                                🚀 ${x2Info.hits} nháy
                             </span>
-                            <div class="text-[10px] text-slate-400">Ăn ${moneyM(r.x2.payoutK || (r.x2.hits * 16000))}</div>
+                            <div class="text-[10px] text-slate-400 font-mono">Ăn ${moneyM(x2Info.payoutK)}</div>
                         </td>
-                        <td class="px-3 py-3 text-right whitespace-nowrap">
-                            <div class="font-mono font-black text-xs ${x2Profit >= 0 ? 'text-emerald-600' : 'text-rose-600'}">
-                                ${moneyM(x2Profit, { signed: true })}
+                        <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
+                            <div class="font-black text-xs ${x2Info.profitK >= 0 ? 'text-emerald-600' : 'text-rose-600'}">
+                                ${moneyM(x2Info.profitK, { signed: true })}
                             </div>
-                            <div class="text-[10px] text-slate-400">Vốn 30.8M</div>
+                            <div class="text-[10px] text-slate-400 font-sans">Vốn ${moneyM(x2Info.stakeK)}</div>
                         </td>
-                        <td class="px-3 py-3 text-right whitespace-nowrap">
-                            <div class="font-mono font-black text-xs ${r.cumX2ProfitK >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
+                        <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
+                            <div class="font-black text-xs ${r.cumX2ProfitK >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
                                 ${moneyM(r.cumX2ProfitK, { signed: true })}
                             </div>
                         </td>
@@ -1072,48 +1565,52 @@
 
             // --- 4. VIEW LÔ XIÊN 4 ---
             if (currentDiaryCategory === 'loXi4') {
-                const xi4Nums = r.xi4.numbers || [];
-                const xi4Hits = r.xi4.hits || 0;
-                const xi4Profit = r.xi4.profitK || 0;
-
-                const chipsHtml = xi4Nums.map(n => `
-                    <span class="inline-block px-2.5 py-1 rounded-xl bg-amber-400 text-slate-950 font-mono text-xs font-black shadow-2xs">${number(n)}</span>
-                `).join(' ');
+                const chipsHtml = (xi4Info.numbers || []).map(n => {
+                    const hits = xi4Info.prizeCounts?.[number(n)] || 0;
+                    return `<span class="inline-block px-2.5 py-1 rounded-xl font-mono text-xs font-black shadow-2xs ${hits > 0 ? 'bg-amber-400 text-slate-950 ring-2 ring-white' : 'bg-slate-800 text-slate-200'}">${number(n)}</span>`;
+                }).join(' ');
 
                 let ticketStatus = `<span class="inline-flex items-center gap-1 rounded bg-slate-100 text-slate-600 px-2 py-0.5 text-xs">❌ Trượt</span>`;
-                if (xi4Hits >= 4) {
+                if (xi4Info.hits >= 4) {
                     ticketStatus = `<span class="inline-flex items-center gap-1 rounded bg-emerald-500 text-white px-2 py-0.5 text-xs font-black shadow-xs">🎉 Ăn Xiên 4 (+373M)</span>`;
-                } else if (xi4Hits === 3) {
+                } else if (xi4Info.hits === 3) {
                     ticketStatus = `<span class="inline-flex items-center gap-1 rounded bg-emerald-100 text-emerald-900 px-2 py-0.5 text-xs font-black">🔥 Ăn Xiên 3 + X2 (+29M)</span>`;
-                } else if (xi4Hits === 2) {
+                } else if (xi4Info.hits === 2) {
                     ticketStatus = `<span class="inline-flex items-center gap-1 rounded bg-amber-100 text-amber-950 px-2 py-0.5 text-xs font-black">✨ Ăn Vé Xiên 2 (+1M)</span>`;
                 }
 
                 return `
-                    <tr class="hover:bg-amber-50/30 transition-colors ${xi4Profit > 0 ? 'bg-emerald-50/40' : ''}">
+                    <tr class="hover:bg-amber-50/40 transition-colors ${xi4Info.profitK > 0 ? 'bg-emerald-50/40' : ''}">
                         <td class="px-3 py-3 whitespace-nowrap">
                             <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
                             <div class="text-[10px] text-slate-400 font-semibold">${isLiveBadge}</div>
                         </td>
-                        <td class="px-3 py-3">
-                            <div class="flex flex-wrap gap-1.5">${chipsHtml || '<span class="text-slate-400">Bộ 4 số vàng</span>'}</div>
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <div class="font-bold text-xs text-amber-950">${escapeHtml(xi4Info.methodName)}</div>
+                            <div class="text-[10px] text-slate-500">Tứ Thủ Hiệp Đồng</div>
+                        </td>
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXi4">
+                            <div class="flex flex-wrap items-center gap-1.5">${chipsHtml}</div>
+                            <div class="text-[9px] text-amber-700 font-bold mt-1 flex items-center gap-1">
+                                <i class="bi bi-cursor-fill text-[8px]"></i> Rê chuột xem vé quây
+                            </div>
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
-                            <span class="font-bold text-xs ${xi4Hits >= 2 ? 'text-emerald-700 font-black' : 'text-slate-700'}">
-                                ${xi4Hits} / 4 con
+                            <span class="font-bold text-xs ${xi4Info.hits >= 2 ? 'text-emerald-700 font-black' : 'text-slate-700'}">
+                                ${xi4Info.hits} / 4 con
                             </span>
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
                             ${ticketStatus}
                         </td>
-                        <td class="px-3 py-3 text-right whitespace-nowrap">
-                            <div class="font-mono font-black text-xs ${xi4Profit > 0 ? 'text-emerald-600' : 'text-rose-600'}">
-                                ${moneyM(xi4Profit, { signed: true })}
+                        <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
+                            <div class="font-black text-xs ${xi4Info.profitK > 0 ? 'text-emerald-600' : 'text-rose-600'}">
+                                ${moneyM(xi4Info.profitK, { signed: true })}
                             </div>
-                            <div class="text-[10px] text-slate-400">Quây 11 vé (11M)</div>
+                            <div class="text-[10px] text-slate-400 font-sans">Quây 11 vé (11M)</div>
                         </td>
-                        <td class="px-3 py-3 text-right whitespace-nowrap">
-                            <div class="font-mono font-black text-xs ${r.cumXi4ProfitK >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
+                        <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
+                            <div class="font-black text-xs ${r.cumXi4ProfitK >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
                                 ${moneyM(r.cumXi4ProfitK, { signed: true })}
                             </div>
                         </td>
@@ -1121,26 +1618,22 @@
                 `;
             }
 
-            // --- 5. VIEW TỔNG HỢP (DEFAULT) ---
-            const dePill = r.deRow ? (
-                r.deIsHit
-                    ? `<span class="inline-flex items-center gap-1 rounded bg-emerald-100 text-emerald-900 px-1.5 py-0.5 text-[11px] font-black">🎉 Trúng +54M</span>`
-                    : `<span class="inline-flex items-center gap-1 rounded bg-rose-100 text-rose-900 px-1.5 py-0.5 text-[11px] font-bold">❌ Trượt -30M</span>`
-            ) : `<span class="text-slate-400">Chưa có</span>`;
+            // --- 5. VIEW TỔNG HỢP (MẶC ĐỊNH CHI TIẾT & TƯƠNG TÁC RÊ CHUỘT) ---
+            const dePill = deInfo.isHit
+                ? `<span class="inline-flex items-center gap-1 rounded bg-emerald-100 text-emerald-900 px-1.5 py-0.5 text-[11px] font-black">🎉 Trúng ${moneyM(deInfo.profitK, { signed: true })}</span>`
+                : `<span class="inline-flex items-center gap-1 rounded bg-rose-100 text-rose-900 px-1.5 py-0.5 text-[11px] font-bold">❌ Trượt ${moneyM(deInfo.profitK, { signed: true })}</span>`;
 
-            const actualSpecText = r.actualSpec != null ? `<strong class="font-mono text-sm ${r.deIsHit ? 'text-emerald-600 font-black' : 'text-slate-800'}">${number(r.actualSpec)}</strong>` : '--';
+            const actualSpecText = deInfo.actualSpecial != null ? `<strong class="font-mono text-sm ${deInfo.isHit ? 'text-emerald-600 font-black' : 'text-slate-800'}">${number(deInfo.actualSpecial)}</strong>` : '--';
 
-            const stdHitsText = r.std.hits != null ? `<strong>${r.std.hits}</strong> nháy` : '--';
-            const stdProfitText = r.std.profitK != null ? `<span class="font-mono font-bold ${r.std.profitK >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${moneyM(r.std.profitK, { signed: true })}</span>` : '';
-            const stdMethodName = r.std.methodName || r.std.method || 'Chuẩn Top 20';
+            const stdHitsText = `<strong>${stdInfo.hits}</strong> nháy`;
+            const stdProfitText = `<span class="font-mono font-bold ${stdInfo.profitK >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${moneyM(stdInfo.profitK, { signed: true })}</span>`;
 
-            const x2HitsText = r.x2.hits != null ? `<strong>${r.x2.hits}</strong> nháy` : '--';
-            const x2ProfitText = r.x2.profitK != null ? `<span class="font-mono font-bold ${r.x2.profitK >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${moneyM(r.x2.profitK, { signed: true })}</span>` : '';
-            const x2MethodName = r.x2.methodName || r.x2.method || 'X2 Top 7';
+            const x2HitsText = `<strong>${x2Info.hits}</strong> nháy`;
+            const x2ProfitText = `<span class="font-mono font-bold ${x2Info.profitK >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${moneyM(x2Info.profitK, { signed: true })}</span>`;
 
-            const xi4ProfitText = r.xi4.profitK != null ? `<span class="font-mono font-bold ${r.xi4.profitK > 0 ? 'text-emerald-600' : 'text-rose-600'}">${moneyM(r.xi4.profitK, { signed: true })}</span>` : '';
-            const xi4HitsTag = (r.xi4.profitK > 0)
-                ? `<span class="rounded bg-amber-100 text-amber-900 px-1 py-0.5 text-[10px] font-black">Ăn ${r.xi4.hits || 2} nháy</span>`
+            const xi4ProfitText = `<span class="font-mono font-bold ${xi4Info.profitK > 0 ? 'text-emerald-600' : 'text-rose-600'}">${moneyM(xi4Info.profitK, { signed: true })}</span>`;
+            const xi4HitsTag = (xi4Info.profitK > 0)
+                ? `<span class="rounded bg-amber-100 text-amber-900 px-1 py-0.5 text-[10px] font-black">Ăn ${xi4Info.hits || 2}n</span>`
                 : `<span class="text-slate-400 text-[10px]">Trượt</span>`;
 
             const dayClass = r.dayTotalK > 0 ? 'bg-emerald-50/40' : (r.dayTotalK < -50000 ? 'bg-rose-50/20' : '');
@@ -1151,49 +1644,76 @@
                         <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
                         <div class="text-[10px] text-slate-400 font-semibold">${isLiveBadge}</div>
                     </td>
-                    <td class="px-3 py-3">
-                        <div class="flex items-center gap-2">
-                            <span>ĐB: ${actualSpecText}</span>
+                    <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="de">
+                        <div class="text-[11px] font-bold text-amber-950 flex items-center gap-1">
+                            <i class="bi bi-gem-fill text-amber-500 text-[10px]"></i> ${escapeHtml(deInfo.methodName)}
+                        </div>
+                        <div class="flex items-center gap-1.5 mt-0.5">
+                            <span class="text-xs text-slate-700">ĐB: ${actualSpecText}</span>
                             ${dePill}
                         </div>
-                        <div class="text-[10px] text-slate-500 mt-0.5 font-mono">Dàn 30s · Vốn 30M</div>
+                        <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
+                            <span>${escapeHtml(deInfo.subTierLabel)}</span>
+                            <span class="text-amber-700 font-bold underline">Di chuột xem</span>
+                        </div>
                     </td>
-                    <td class="px-3 py-3">
-                        <div class="text-[11px] font-bold text-indigo-900">${escapeHtml(stdMethodName)}</div>
+                    <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-indigo-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loStd">
+                        <div class="text-[11px] font-bold text-indigo-900 flex items-center gap-1">
+                            <i class="bi bi-trophy-fill text-indigo-600 text-[10px]"></i> ${escapeHtml(stdInfo.methodName)}
+                        </div>
                         <div class="text-xs flex items-center gap-1.5 mt-0.5">
-                            <span class="text-slate-600">${stdHitsText}</span>
+                            <span class="text-slate-700">${stdHitsText}</span>
                             <span>${stdProfitText}</span>
                         </div>
-                    </td>
-                    <td class="px-3 py-3">
-                        <div class="text-[11px] font-bold text-teal-900">${escapeHtml(x2MethodName)}</div>
-                        <div class="text-xs flex items-center gap-1.5 mt-0.5">
-                            <span class="text-slate-600">${x2HitsText}</span>
-                            <span>${x2ProfitText}</span>
+                        <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
+                            <span>Top 20 số chuẩn</span>
+                            <span class="text-indigo-700 font-bold underline">Di chuột xem</span>
                         </div>
                     </td>
-                    <td class="px-3 py-3">
-                        <div class="flex items-center gap-1.5">
+                    <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-teal-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loX2">
+                        <div class="text-[11px] font-bold text-teal-900 flex items-center gap-1">
+                            <i class="bi bi-lightning-charge-fill text-teal-600 text-[10px]"></i> ${escapeHtml(x2Info.methodName)}
+                        </div>
+                        <div class="text-xs flex items-center gap-1.5 mt-0.5">
+                            <span class="text-slate-700">${x2HitsText}</span>
+                            <span>${x2ProfitText}</span>
+                        </div>
+                        <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
+                            <span>Top ${x2Info.numbers.length}s cược X2</span>
+                            <span class="text-teal-700 font-bold underline">Di chuột xem</span>
+                        </div>
+                    </td>
+                    <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXi4">
+                        <div class="text-[11px] font-bold text-amber-950 flex items-center gap-1">
+                            <i class="bi bi-stars text-amber-500 text-[10px]"></i> ${escapeHtml(xi4Info.methodName)}
+                        </div>
+                        <div class="flex items-center gap-1.5 mt-0.5 text-xs">
                             ${xi4HitsTag}
                             ${xi4ProfitText}
                         </div>
-                        <div class="text-[10px] font-mono text-slate-500 mt-0.5">${(r.xi4.numbers || []).map(number).join(' ')}</div>
+                        <div class="text-[10px] font-mono text-slate-600 mt-0.5 font-bold flex items-center justify-between">
+                            <span>${xi4Info.numbers.join(' ')}</span>
+                            <span class="text-amber-700 font-sans font-bold underline">Xem vé</span>
+                        </div>
                     </td>
-                    <td class="px-3 py-3 text-right whitespace-nowrap">
-                        <div class="font-mono font-black text-xs ${r.dayTotalK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">
+                    <td class="diary-cell-interactive px-3 py-3 text-right whitespace-nowrap font-mono cursor-pointer hover:bg-slate-100 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="total">
+                        <div class="font-black text-xs ${r.dayTotalK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">
                             ${moneyM(r.dayTotalK, { signed: true })}
                         </div>
-                        <div class="text-[10px] text-slate-400">Đề + Lô</div>
+                        <div class="text-[10px] text-slate-400 font-sans">Đề + Lô</div>
+                        <div class="text-[9px] text-indigo-600 font-bold font-sans underline mt-0.5">Chi tiết</div>
                     </td>
-                    <td class="px-3 py-3 text-right whitespace-nowrap">
-                        <div class="font-mono font-black text-xs ${r.cumProfitK >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
+                    <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
+                        <div class="font-black text-xs ${r.cumProfitK >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
                             ${moneyM(r.cumProfitK, { signed: true })}
                         </div>
-                        <div class="text-[10px] text-slate-400">Lũy kế</div>
+                        <div class="text-[10px] text-slate-400 font-sans">Lũy kế</div>
                     </td>
                 </tr>
             `;
         }).join('');
+
+        setupDiaryHoverPopovers();
     }
 
     let globalLoSummary = null;

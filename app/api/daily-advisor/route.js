@@ -323,7 +323,29 @@ export async function GET(request) {
         }
 
         const raw = await getRawData();
-        return NextResponse.json({ success: true, ...settleFromRaw(payload, raw) }, { headers: NO_STORE_HEADERS });
+        const settled = settleFromRaw(payload, raw);
+        if (!settled.drawPrizesByDate) {
+            const drawPrizesByDate = {};
+            for (const row of (raw || []).slice(-365)) {
+                const d = normalizeDate(row?.date || row?.ngay);
+                if (!d) continue;
+                const prizes = [
+                    row.special, row.prize1,
+                    row.prize2_1, row.prize2_2,
+                    row.prize3_1, row.prize3_2, row.prize3_3, row.prize3_4, row.prize3_5, row.prize3_6,
+                    row.prize4_1, row.prize4_2, row.prize4_3, row.prize4_4,
+                    row.prize5_1, row.prize5_2, row.prize5_3, row.prize5_4, row.prize5_5, row.prize5_6,
+                    row.prize6_1, row.prize6_2, row.prize6_3,
+                    row.prize7_1, row.prize7_2, row.prize7_3, row.prize7_4
+                ].filter(v => v != null).map(v => String(Number(v)).padStart(2, '0'));
+                drawPrizesByDate[d] = {
+                    special: row.special != null ? String(Number(row.special)).padStart(2, '0') : null,
+                    prizes
+                };
+            }
+            settled.drawPrizesByDate = drawPrizesByDate;
+        }
+        return NextResponse.json({ success: true, ...settled }, { headers: NO_STORE_HEADERS });
     } catch (error) {
         return NextResponse.json(
             { success: false, error: `Không tải được cache Gợi ý từ R2: ${error.message}` },

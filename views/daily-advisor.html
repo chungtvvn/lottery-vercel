@@ -457,32 +457,9 @@
             </div>
 
             <!-- ========================================================================= -->
-            <!-- WIDGET SO SÁNH HIỆU QUẢ: ĐỀ XUẤT TINH HOA VS PHƯƠNG PHÁP RIÊNG LẺ -->
-            <!-- ========================================================================= -->
-            <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-4">
-                    <div>
-                        <h3 class="text-base font-black text-slate-900 flex items-center gap-2">
-                            <i class="bi bi-bar-chart-steps text-indigo-600"></i> Đối Chiếu Hiệu Quả: Đề Xuất Tinh Hoa vs Đánh 1 Phương Pháp Riêng Lẻ
-                        </h3>
-                        <p class="text-xs text-slate-500 mt-0.5">
-                            Minh chứng thực tế: Hệ thống tự động chuyển đổi phương pháp theo phong độ giúp tối ưu lợi nhuận và hạn chế tối đa chuỗi xịt.
-                        </p>
-                    </div>
-                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-800">
-                        <i class="bi bi-arrow-up-right-circle-fill"></i> Đề xuất Tinh Hoa thắng thế
-                    </span>
-                </div>
-
-                <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="unifiedBenchmarkCards">
-                    <!-- Populated by JS -->
-                </div>
-            </section>
-
-            <!-- ========================================================================= -->
             <!-- BẢNG ĐỐI SOÁT & NHẬT KÝ THỰC CHIẾN HÀNG NGÀY THEO ĐỀ XUẤT -->
             <!-- ========================================================================= -->
-            <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm relative">
                 <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-b border-slate-100 pb-4">
                     <div>
                         <div class="flex items-center gap-2">
@@ -498,7 +475,7 @@
                             Nhật Ký & Đối Soát Chi Tiết Từng Ngày Theo Đề Xuất (Đề + Lô)
                         </h3>
                         <p class="text-xs text-slate-500 mt-0.5">
-                            Lưu lại toàn bộ các phương pháp và dàn số đã đề xuất mỗi ngày cùng kết quả mở thưởng và tính toán lãi/lỗ chuẩn xác.
+                            Lưu lại toàn bộ các phương pháp và dàn số đã đề xuất mỗi ngày cùng kết quả mở thưởng và tính toán lãi/lỗ chuẩn xác. Di chuột vào từng ô để xem chi tiết chuỗi số và phương pháp.
                         </p>
                     </div>
 
@@ -530,16 +507,16 @@
                         <i class="bi bi-layers-fill"></i> 📊 Tổng Hợp (Đề + Lô)
                     </button>
                     <button type="button" data-diary-cat="de" class="diary-cat-btn rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2 transition-all flex items-center gap-1.5">
-                        <i class="bi bi-gem"></i> 💎 Đề Tinh Hoa (Dàn 30s)
+                        <i class="bi bi-gem"></i> 💎 Đề Theo Gợi Ý
                     </button>
                     <button type="button" data-diary-cat="loStd" class="diary-cat-btn rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2 transition-all flex items-center gap-1.5">
-                        <i class="bi bi-trophy"></i> 🏆 Lô Chuẩn (Top 20)
+                        <i class="bi bi-trophy"></i> 🏆 Lô Chuẩn Nền Tảng (Top 20)
                     </button>
                     <button type="button" data-diary-cat="loX2" class="diary-cat-btn rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2 transition-all flex items-center gap-1.5">
-                        <i class="bi bi-lightning-charge"></i> 🚀 Lô Đánh X2 (Top 7)
+                        <i class="bi bi-lightning-charge"></i> 🚀 Lô Tăng Tốc X2 (Đổi Pha)
                     </button>
                     <button type="button" data-diary-cat="loXi4" class="diary-cat-btn rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2 transition-all flex items-center gap-1.5">
-                        <i class="bi bi-stars"></i> 💎 Lô Xiên 4 (Tứ Thủ Quây)
+                        <i class="bi bi-stars"></i> 💎 Lô Xiên 4 Tinh Hoa
                     </button>
                 </div>
 
@@ -561,10 +538,10 @@
                         <thead id="unifiedCombatDiaryTableHead">
                             <tr class="border-b border-slate-200 bg-slate-100/70 text-slate-600 uppercase font-black tracking-wider text-[10px]">
                                 <th class="px-3 py-3">Ngày</th>
-                                <th class="px-3 py-3">💎 Đề Tinh Hoa (Dàn 30 số)</th>
-                                <th class="px-3 py-3">🏆 Lô Chuẩn (Tối ưu)</th>
-                                <th class="px-3 py-3">🚀 Lô X2 (Nổ kép)</th>
-                                <th class="px-3 py-3">💎 Lô Xiên 4 (Quây)</th>
+                                <th class="px-3 py-3">💎 Đề Theo Gợi Ý</th>
+                                <th class="px-3 py-3">🏆 Lô Chuẩn Nền Tảng</th>
+                                <th class="px-3 py-3">🚀 Lô Tăng Tốc X2</th>
+                                <th class="px-3 py-3">💎 Lô Xiên 4 Tinh Hoa</th>
                                 <th class="px-3 py-3 text-right">Tổng Ngày</th>
                                 <th class="px-3 py-3 text-right">Lũy Kế Mốc</th>
                             </tr>
@@ -573,6 +550,11 @@
                             <!-- Populated by JS -->
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Floating Interactive Popover for Diary Hover -->
+                <div id="diaryFloatingPopover" class="fixed z-[9999] hidden pointer-events-none transition-all duration-150 transform scale-95 opacity-0 bg-slate-950/95 text-white border border-slate-700 shadow-2xl rounded-2xl p-4 max-w-sm sm:max-w-md w-80 sm:w-96 backdrop-blur-md">
+                    <!-- Populated dynamically on hover -->
                 </div>
             </section>
         </div>
