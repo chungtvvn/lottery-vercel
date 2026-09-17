@@ -240,10 +240,15 @@ function settleFromRaw(payload, rawRows) {
         tripleMerge,
         adaptiveDualMerge,
         streakAwareDeAdvisor: streakAwareDeAdvisor || payload.streakAwareDeAdvisor || null,
+        deMarkovGapHazard: payload.deMarkovGapHazard || streakAwareDeAdvisor?.markovAdvisor || null,
+        dePositionalGraphFlow: payload.dePositionalGraphFlow || streakAwareDeAdvisor?.graphAdvisor || null,
         loDualMerge,
         loTriHarmonic,
         loQuantumBayesFusion,
         loQuadHybrid: loQuadHybrid || payload.loQuadHybrid || null,
+        loPentaMatrix: payload.loPentaMatrix || null,
+        loPositionalBridgeFlow: payload.loPositionalBridgeFlow || null,
+        loHawkesClustering: payload.loHawkesClustering || null,
         loXien4Synergy: loXien4Synergy || payload.loXien4Synergy || null,
         dynamicMetaAdvisor: dynamicMetaAdvisor || payload.dynamicMetaAdvisor || loQuantumBayesFusion?.dynamicMetaAdvisor || null,
         latestDataDate: rawRows?.at(-1)?.date || payload.latestDataDate,
@@ -313,8 +318,23 @@ export async function GET(request) {
                 if (localPayload?.streakAwareDeAdvisor) {
                     payload.streakAwareDeAdvisor = localPayload.streakAwareDeAdvisor;
                 }
+                if (localPayload?.deMarkovGapHazard) {
+                    payload.deMarkovGapHazard = localPayload.deMarkovGapHazard;
+                }
+                if (localPayload?.dePositionalGraphFlow) {
+                    payload.dePositionalGraphFlow = localPayload.dePositionalGraphFlow;
+                }
                 if (localPayload?.loQuadHybrid) {
                     payload.loQuadHybrid = localPayload.loQuadHybrid;
+                }
+                if (localPayload?.loPentaMatrix) {
+                    payload.loPentaMatrix = localPayload.loPentaMatrix;
+                }
+                if (localPayload?.loPositionalBridgeFlow) {
+                    payload.loPositionalBridgeFlow = localPayload.loPositionalBridgeFlow;
+                }
+                if (localPayload?.loHawkesClustering) {
+                    payload.loHawkesClustering = localPayload.loHawkesClustering;
                 }
                 if (localPayload?.loXien4Synergy) {
                     payload.loXien4Synergy = localPayload.loXien4Synergy;

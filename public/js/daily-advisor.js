@@ -465,7 +465,10 @@
             };
         }
         if (methodKey === 'deMarkovGapHazard') {
-            const rec = fullData?.deMarkovGapHazard?.latestRecommendation || fullData?.streakAwareDeAdvisor?.latestRecommendation?.availableMethods?.deMarkovGapHazard || {};
+            const rec = fullData?.deMarkovGapHazard?.latestRecommendation 
+                || fullData?.streakAwareDeAdvisor?.latestRecommendation?.availableMethods?.deMarkovGapHazard
+                || fullData?.streakAwareDeAdvisor?.markovAdvisor?.latestRecommendation
+                || {};
             const allNums = (rec.numbers || []).map(number);
             const vipNums = (rec.vipNumbers || allNums.slice(0, 17)).map(number);
             const singleNums = (rec.backupNumbers || allNums.slice(17)).map(number);
@@ -485,7 +488,10 @@
             };
         }
         if (methodKey === 'dePositionalGraphFlow') {
-            const rec = fullData?.dePositionalGraphFlow?.latestRecommendation || fullData?.streakAwareDeAdvisor?.latestRecommendation?.availableMethods?.dePositionalGraphFlow || {};
+            const rec = fullData?.dePositionalGraphFlow?.latestRecommendation 
+                || fullData?.streakAwareDeAdvisor?.latestRecommendation?.availableMethods?.dePositionalGraphFlow
+                || fullData?.streakAwareDeAdvisor?.graphAdvisor?.latestRecommendation
+                || {};
             const allNums = (rec.numbers || []).map(number);
             const vipNums = (rec.vipNumbers || allNums.slice(0, 17)).map(number);
             const singleNums = (rec.backupNumbers || allNums.slice(17)).map(number);
@@ -552,7 +558,16 @@
         }
 
         // 1. ĐỀ TINH HOA — CHỌN PHƯƠNG PHÁP & HIỂN THỊ
-        let activeDeMethodKey = 'pentaCoreDe';
+        const recommendedDeMethod = streakDeAdv?.selectedMethod || 'adaptiveDualMerge';
+        let activeDeMethodKey = recommendedDeMethod;
+
+        // Đánh dấu huy hiệu (⭐ Đề Xuất) cho đúng phương pháp được bộ điều phối chọn hôm nay
+        document.querySelectorAll('.de-method-btn').forEach(btn => {
+            const isRec = (btn.dataset.method === recommendedDeMethod);
+            const baseText = btn.dataset.baseText || btn.textContent.replace('⭐ Đề Xuất', '').replace('(Đề Xuất)', '').trim();
+            btn.dataset.baseText = baseText;
+            btn.innerHTML = isRec ? `${baseText} <span class="rounded bg-amber-400 text-slate-950 px-1 py-0.2 text-[9px] font-black uppercase">⭐ Đề Xuất</span>` : baseText;
+        });
 
         function updateDeMethodDisplay(methodKey) {
             activeDeMethodKey = methodKey;
@@ -1456,6 +1471,10 @@
             const tripleRow = payload?.tripleMerge?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
             const streakRow = payload?.streakAwareDeAdvisor?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
             const bayesRow = payload?.streakAwareDeAdvisor?.bayesAdvisor?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
+            const markovRow = payload?.deMarkovGapHazard?.settledLedger?.find(r => (r.predictionDate || r.date) === date)
+                || payload?.streakAwareDeAdvisor?.markovAdvisor?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
+            const graphRow = payload?.dePositionalGraphFlow?.settledLedger?.find(r => (r.predictionDate || r.date) === date)
+                || payload?.streakAwareDeAdvisor?.graphAdvisor?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
 
             const actualSpec = deRow?.actualSpecial ?? deRow?.actual ?? dualRow?.actualSpecial ?? dualRow?.actual;
 
@@ -1508,6 +1527,24 @@
                     deStakeK = bayesRow.stakeK || 60000;
                     deProfitK = bayesRow.profitK != null ? bayesRow.profitK : deProfitK;
                     deIsHitFinal = Boolean(bayesRow.isHit || deProfitK > 0);
+                } else if (m === 'deMarkovGapHazard' && markovRow) {
+                    deMethodName = '🔮 Đề Markov Bậc 2';
+                    deNumbers = (markovRow.numbers || deNumbers).map(number);
+                    deX2Nums = (markovRow.vipNumbers || markovRow.numbers?.slice(0, 17) || []).map(number);
+                    deX1Nums = (markovRow.backupNumbers || markovRow.numbers?.slice(17) || []).map(number);
+                    deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X2 · ${deX1Nums.length} X1)`;
+                    deStakeK = markovRow.stakeK || 60000;
+                    deProfitK = markovRow.profitK != null ? markovRow.profitK : deProfitK;
+                    deIsHitFinal = (markovRow.hitType === 'win_x2' || markovRow.hitType === 'win_x1' || markovRow.isHit || deProfitK > 0);
+                } else if (m === 'dePositionalGraphFlow' && graphRow) {
+                    deMethodName = '🕸️ Cầu Đề Đồ Thị Vị Trí';
+                    deNumbers = (graphRow.numbers || deNumbers).map(number);
+                    deX2Nums = (graphRow.vipNumbers || graphRow.numbers?.slice(0, 17) || []).map(number);
+                    deX1Nums = (graphRow.backupNumbers || graphRow.numbers?.slice(17) || []).map(number);
+                    deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X2 · ${deX1Nums.length} X1)`;
+                    deStakeK = graphRow.stakeK || 60000;
+                    deProfitK = graphRow.profitK != null ? graphRow.profitK : deProfitK;
+                    deIsHitFinal = (graphRow.hitType === 'win_x2' || graphRow.hitType === 'win_x1' || graphRow.isHit || deProfitK > 0);
                 }
             } else if (isLockedSnapshot && deRow?.methodName) {
                 deMethodName = deRow.methodName;
@@ -2241,10 +2278,11 @@
             if (!tbody || !deMatrix) return;
 
             const methods = [
-                { id: 'pentaCoreDe', label: '👑 Ngũ Tinh AI ⭐', highlight: 'Đổi pha siêu lợi nhuận' },
                 { id: 'adaptiveDualMerge', label: '💎 Thích Ứng Alpha', highlight: '41.1% Tam Trụ cứu' },
                 { id: 'dualMerge', label: '🎯 Gộp Tiêu Chuẩn', highlight: '41.7% Tam Trụ cứu' },
                 { id: 'tripleMerge', label: '🛡️ Tam Trụ Tam Phân', highlight: '56.0% Alpha cứu' },
+                { id: 'deMarkovGapHazard', label: '🔮 Markov Gap ⭐', highlight: 'Cứu 45.6% chuỗi gãy kép' },
+                { id: 'dePositionalGraphFlow', label: '🕸️ Cầu Đồ Thị', highlight: 'Bắt cầu 54 vị trí' },
                 { id: 'bayesFormResonance', label: '🔮 Ngũ Hành Bayes', highlight: 'Cứu 41.2% gãy mốc chung' }
             ];
 
