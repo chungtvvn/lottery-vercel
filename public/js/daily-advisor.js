@@ -693,6 +693,10 @@
             xi4RoiEl.textContent = loXien4Adv ? '3 Năm +4.314 TỶ (ROI +40.1%)' : `ROI Live ${percent(loSummary?.xien4?.roi || 0.091)}`;
         }
 
+        const xi4Nums = (loXien4Adv && Array.isArray(loXien4Adv.numbers) && loXien4Adv.numbers.length)
+            ? loXien4Adv.numbers.map(number)
+            : (loNext?.xien4?.numbers || []).map(number);
+
         const xi4Container = byId('unifiedLoXi4Numbers');
         if (xi4Container) {
             xi4Container.innerHTML = xi4Nums.map(n => `
