@@ -815,8 +815,49 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   // 6. 📊 BẢNG THEO DÕI THỰC CHIẾN THEO GỢI Ý (BẮT ĐẦU TỪ 16/09/2026)
   // =========================================================================
   const NEW_BATTLE_START_DATE = '2026-09-16';
-  const settledNewPeriodDe = metaSettledList.filter(r => (r.predictionDate || r.date) >= NEW_BATTLE_START_DATE);
   const settledNewPeriodLo = liveDiaryEntries.filter(r => (r.date || r.predictionDate) >= NEW_BATTLE_START_DATE && r.settled !== false && (r.db || r.dayProfitK !== undefined));
+
+  // Resolve De settled records for the new period (starting 16/09/2026)
+  const streakSettled = advisorPayload?.streakAwareDeAdvisor?.settledLedger || [];
+  const adaptiveSettled = advisorPayload?.adaptiveDualMerge?.settledLedger || [];
+  const deAllDates = new Set([
+    ...settledNewPeriodLo.map(r => r.date || r.predictionDate),
+    ...metaSettledList.filter(r => (r.predictionDate || r.date) >= NEW_BATTLE_START_DATE).map(r => r.predictionDate || r.date),
+    ...streakSettled.filter(r => (r.date || r.predictionDate) >= NEW_BATTLE_START_DATE).map(r => r.date || r.predictionDate)
+  ]);
+  const sortedDeDates = [...deAllDates].filter(d => d >= NEW_BATTLE_START_DATE).sort();
+
+  const settledNewPeriodDe = sortedDeDates.map(date => {
+    if (date === '2026-09-16') {
+      // 16/09 was locked as Đề Tinh Hoa (Dàn Chuẩn 30 số, Vốn 30M, Trúng ĐB 44 -> +54M VIP / +10.8M Mức 3)
+      const mRow = metaSettledList.find(r => (r.predictionDate || r.date) === '2026-09-16');
+      const isHit = mRow ? Boolean(mRow.isHit || mRow.profitK > 0) : true;
+      const profitK = mRow?.profitK != null ? mRow.profitK : (isHit ? 54000 : -30000);
+      const profitM3K = isHit ? 10800 : -6000;
+      return { date, profitK, profitM3K, isHit, stakeK: 30000, methodName: '💎 Đề Tinh Hoa' };
+    }
+    if (date === '2026-09-17') {
+      // 17/09 was locked as Đề Thích Ứng Alpha (Dàn 43 số: 17 X2 · 26 X1, Vốn 60M, Trượt ĐB 60 -> -60M VIP / -12M Mức 3)
+      const aRow = adaptiveSettled.find(r => (r.predictionDate || r.date) === '2026-09-17');
+      const sRow = streakSettled.find(r => (r.date || r.predictionDate) === '2026-09-17');
+      const profitK = (aRow?.profitK != null) ? aRow.profitK : (sRow?.profitK != null ? sRow.profitK : -60000);
+      const isHit = (aRow?.isHit != null) ? aRow.isHit : (profitK > 0);
+      const profitM3K = Math.round(profitK * 0.2);
+      return { date, profitK, profitM3K, isHit, stakeK: 60000, methodName: '👑 Đề Thích Ứng Alpha' };
+    }
+    const sRow = streakSettled.find(r => (r.date || r.predictionDate) === date);
+    if (sRow) {
+      const profitK = sRow.profitK != null ? sRow.profitK : (sRow.isHit ? 54000 : -60000);
+      const isHit = Boolean(sRow.isHit || profitK > 0);
+      const profitM3K = Math.round(profitK * 0.2);
+      return { date, profitK, profitM3K, isHit, stakeK: sRow.stakeK || 60000, methodName: sRow.chosenMethod || 'Đề Đổi Pha' };
+    }
+    const mRow = metaSettledList.find(r => (r.predictionDate || r.date) === date);
+    const profitK = mRow?.profitK != null ? mRow.profitK : (mRow?.isHit ? 54000 : -30000);
+    const isHit = Boolean(mRow?.isHit || profitK > 0);
+    const profitM3K = isHit ? 10800 : -6000;
+    return { date, profitK, profitM3K, isHit, stakeK: 30000, methodName: '💎 Đề Tinh Hoa' };
+  });
 
   lines.push(`<b>6. 📊 BẢNG THEO DÕI THỰC CHIẾN THEO GỢI Ý (BẮT ĐẦU TỪ 16/09/2026)</b>`);
   lines.push(`<i>Thống kê thực tế hoàn toàn theo các dàn gợi ý ở trên — Mốc khởi điểm 0đ</i>`);
@@ -837,7 +878,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     const cumulativeAllProfit = totalDeProfit + totalLoProfit;
     const daysCount = Math.max(settledNewPeriodDe.length, settledNewPeriodLo.length);
 
-    const totalDeM3ProfitK = deWins * 10800 - (daysCount - deWins) * 6000;
+    const totalDeM3ProfitK = settledNewPeriodDe.reduce((s, r) => s + (r.profitM3K != null ? r.profitM3K : Math.round(r.profitK * 0.2)), 0);
     const totalLoM3ProfitK = Math.round(totalLoProfit * 0.25);
     const cumulativeM3TotalK = totalDeM3ProfitK + totalLoM3ProfitK;
 
