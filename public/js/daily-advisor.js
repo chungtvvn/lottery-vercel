@@ -954,6 +954,80 @@
     function renderDiaryPopoverContent(info, type) {
         if (!info) return '';
         if (type === 'de') {
+            if (info.isPending) {
+                let chipsHtml = '';
+                if (info.x2Nums && info.x2Nums.length) {
+                    chipsHtml = `
+                        <div class="space-y-2.5">
+                            <div>
+                                <div class="flex items-center justify-between text-[10px] font-black uppercase text-amber-400 mb-1">
+                                    <span>⚡ VIP TRÙNG X2 (${info.x2Nums.length} SỐ - CƯỢC GẤP ĐÔI):</span>
+                                    <span class="text-amber-300">Cược X2</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1">
+                                    ${info.x2Nums.map(n => `<span class="inline-flex items-center justify-center px-2 py-1 rounded-lg font-mono text-xs bg-amber-400 text-slate-950 font-black ring-1 ring-white shadow-xs">${number(n)}</span>`).join('')}
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex items-center justify-between text-[10px] font-black uppercase text-indigo-300 mb-1">
+                                    <span>🛡️ BỌC LÓT X1 (${info.x1Nums?.length || 0} SỐ - CƯỢC CHUẨN):</span>
+                                    <span class="text-indigo-200">Cược X1</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1">
+                                    ${(info.x1Nums || []).map(n => `<span class="inline-flex items-center justify-center px-2 py-1 rounded-lg font-mono text-xs bg-slate-800 border border-slate-700 text-slate-200 font-bold">${number(n)}</span>`).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    chipsHtml = `
+                        <div class="flex flex-wrap gap-1 max-h-44 overflow-y-auto pr-1 custom-scrollbar">
+                            ${(info.numbers || []).map(n => `<span class="inline-flex items-center justify-center px-2 py-1 rounded-lg font-mono text-xs bg-slate-800 border border-slate-700 text-slate-200 font-bold">${number(n)}</span>`).join('')}
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div>
+                        <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2 mb-2.5">
+                            <div>
+                                <div class="font-black text-amber-400 text-xs flex items-center gap-1.5">
+                                    <i class="bi bi-lock-fill text-amber-400"></i> 🔒 ${escapeHtml(info.methodName)}
+                                </div>
+                                <div class="text-[10px] text-slate-400 mt-0.5">
+                                    Ngày ${formatDateVi(info.date)} · ${escapeHtml(info.subTierLabel)}
+                                </div>
+                            </div>
+                            <div class="text-right shrink-0">
+                                <span class="inline-flex items-center gap-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 font-black px-2 py-0.5 text-[11px]">
+                                    🔒 ĐÃ KHÓA BẤT BIẾN
+                                </span>
+                                <div class="text-[10px] font-mono text-amber-400/90 mt-0.5">⏳ Chờ mở thưởng (18:15)</div>
+                            </div>
+                        </div>
+                        <div class="rounded-lg bg-amber-500/10 border border-amber-500/20 p-2 text-[10px] text-amber-200 leading-relaxed mb-2.5">
+                            🔒 <strong>Dàn số Đề đã được niêm phong bất biến trước giờ quay</strong>. Người dùng đánh theo dàn này sẽ được tự động đối soát ngay sau 18:40.
+                        </div>
+                        <div class="mb-3">
+                            <div class="text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide">
+                                Dàn số đã chốt đánh (${info.numbers?.length || 0} số):
+                            </div>
+                            ${chipsHtml}
+                        </div>
+                        <div class="pt-2 border-t border-slate-800/80 grid grid-cols-2 gap-2 text-[11px] font-mono">
+                            <div>
+                                <div class="text-[9px] text-slate-500 uppercase">Vốn Cược Khuyến Nghị</div>
+                                <div class="font-bold text-slate-300">${moneyM(info.stakeK)}</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-[9px] text-slate-500 uppercase">Trạng Thái Kết Toán</div>
+                                <div class="font-bold text-amber-400">⏳ Chờ mở thưởng</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
             const isHit = info.isHit;
             const actualSpec = info.actualSpecial;
             let chipsHtml = '';
@@ -1042,6 +1116,60 @@
 
         if (type === 'loStd' || type === 'loX2') {
             const isX2 = (type === 'loX2');
+            if (info.isPending) {
+                const chipsHtml = `
+                    <div class="flex flex-wrap gap-1 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
+                        ${(info.numbers || []).map(n => {
+                            return `
+                                <span class="inline-flex items-center justify-center gap-1 px-2 py-1 rounded-lg font-mono text-xs ${isX2 ? 'bg-gradient-to-r from-teal-500 to-teal-600 text-white font-black' : 'bg-slate-800 border border-slate-700 text-slate-200 font-bold'}">
+                                    <span>${number(n)}</span>
+                                </span>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+
+                return `
+                    <div>
+                        <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2 mb-2.5">
+                            <div>
+                                <div class="font-black ${isX2 ? 'text-teal-400' : 'text-indigo-400'} text-xs flex items-center gap-1.5">
+                                    <i class="bi bi-lock-fill"></i> 🔒 ${escapeHtml(info.methodName)}
+                                </div>
+                                <div class="text-[10px] text-slate-400 mt-0.5">
+                                    Ngày ${formatDateVi(info.date)} · ${escapeHtml(info.subTierLabel)}
+                                </div>
+                            </div>
+                            <div class="text-right shrink-0">
+                                <span class="inline-flex items-center gap-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 font-black px-2 py-0.5 text-[11px]">
+                                    🔒 ĐÃ KHÓA BẤT BIẾN
+                                </span>
+                            </div>
+                        </div>
+                        <div class="rounded-lg bg-amber-500/10 border border-amber-500/20 p-2 text-[10px] text-amber-200 leading-relaxed mb-2.5">
+                            🔒 <strong>Dàn Lô đã được niêm phong bất biến</strong>. Kết quả 27 giải mở thưởng sẽ được đếm nháy nổ tự động sau 18:40.
+                        </div>
+                        <div class="mb-3">
+                            <div class="text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide flex items-center justify-between">
+                                <span>Dàn số đã đánh (${info.numbers?.length || 0} số):</span>
+                                <span class="text-slate-400">${isX2 ? 'Cược X2' : 'Cược chuẩn'}</span>
+                            </div>
+                            ${chipsHtml}
+                        </div>
+                        <div class="pt-2 border-t border-slate-800/80 grid grid-cols-2 gap-2 text-[11px] font-mono">
+                            <div>
+                                <div class="text-[9px] text-slate-500 uppercase">Vốn Cược Khuyến Nghị</div>
+                                <div class="font-bold text-slate-300">${moneyM(info.stakeK)}</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-[9px] text-slate-500 uppercase">Trạng Thái Kết Toán</div>
+                                <div class="font-bold text-amber-400">⏳ Chờ mở thưởng</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
             const prizeCounts = info.prizeCounts || {};
             const chipsHtml = `
                 <div class="flex flex-wrap gap-1 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
@@ -1101,6 +1229,59 @@
         }
 
         if (type === 'loXi4') {
+            if (info.isPending) {
+                const chipsHtml = `
+                    <div class="flex flex-wrap gap-2">
+                        ${(info.numbers || []).map(n => {
+                            return `
+                                <span class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-xs bg-slate-900 border border-amber-400/40 text-amber-300 font-black">
+                                    <span>${number(n)}</span>
+                                </span>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+
+                return `
+                    <div>
+                        <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2 mb-2.5">
+                            <div>
+                                <div class="font-black text-amber-400 text-xs flex items-center gap-1.5">
+                                    <i class="bi bi-lock-fill"></i> 🔒 ${escapeHtml(info.methodName)}
+                                </div>
+                                <div class="text-[10px] text-slate-400 mt-0.5">
+                                    Ngày ${formatDateVi(info.date)} · ${escapeHtml(info.subTierLabel)}
+                                </div>
+                            </div>
+                            <div class="text-right shrink-0">
+                                <span class="inline-flex items-center gap-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 font-black px-2 py-0.5 text-[11px]">
+                                    🔒 ĐÃ KHÓA BẤT BIẾN
+                                </span>
+                            </div>
+                        </div>
+                        <div class="rounded-lg bg-amber-500/10 border border-amber-500/20 p-2 text-[10px] text-amber-200 leading-relaxed mb-2.5">
+                            🔒 <strong>Bộ 4 số vàng Tứ Thủ Xiên 4 đã được niêm phong bất biến</strong>. Hệ thống quây 11 vé (1 vé X4, 4 vé X3, 6 vé X2) để bảo đảm có lãi từ 2 con trở lên.
+                        </div>
+                        <div class="mb-3">
+                            <div class="text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide">
+                                Bộ 4 Số Vàng Tinh Hoa:
+                            </div>
+                            ${chipsHtml}
+                        </div>
+                        <div class="pt-2 border-t border-slate-800/80 grid grid-cols-2 gap-2 text-[11px] font-mono">
+                            <div>
+                                <div class="text-[9px] text-slate-500 uppercase">Vốn Quây (11 Vé)</div>
+                                <div class="font-bold text-slate-300">${moneyM(info.stakeK)}</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-[9px] text-slate-500 uppercase">Trạng Thái Kết Toán</div>
+                                <div class="font-bold text-amber-400">⏳ Chờ mở thưởng</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
             const prizeCounts = info.prizeCounts || {};
             const chipsHtml = `
                 <div class="flex flex-wrap gap-2">
@@ -1163,6 +1344,43 @@
         }
 
         if (type === 'total') {
+            if (info.isPending) {
+                return `
+                    <div>
+                        <div class="border-b border-slate-800 pb-2 mb-2.5">
+                            <div class="font-black text-white text-xs flex items-center gap-1.5">
+                                <i class="bi bi-lock-fill text-amber-400"></i> 🔒 Tổng Hợp Dự Đoán Ngày ${formatDateVi(info.date)}
+                            </div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">
+                                Dàn số Đề & Lô đã được niêm phong bất biến từ 12:00 trưa
+                            </div>
+                        </div>
+                        <div class="space-y-1.5 text-xs font-mono">
+                            <div class="flex justify-between items-center py-0.5">
+                                <span class="text-slate-400">💎 Đề Gợi Ý:</span>
+                                <strong class="text-amber-400 font-bold">⏳ Chờ KQ</strong>
+                            </div>
+                            <div class="flex justify-between items-center py-0.5">
+                                <span class="text-slate-400">🏆 Lô Chuẩn (Top 20):</span>
+                                <strong class="text-amber-400 font-bold">⏳ Chờ KQ</strong>
+                            </div>
+                            <div class="flex justify-between items-center py-0.5">
+                                <span class="text-slate-400">🚀 Lô Tăng Tốc X2:</span>
+                                <strong class="text-amber-400 font-bold">⏳ Chờ KQ</strong>
+                            </div>
+                            <div class="flex justify-between items-center py-0.5">
+                                <span class="text-slate-400">💎 Lô Xiên 4:</span>
+                                <strong class="text-amber-400 font-bold">⏳ Chờ KQ</strong>
+                            </div>
+                        </div>
+                        <div class="mt-2.5 pt-2 border-t border-slate-800 flex justify-between items-center font-mono">
+                            <span class="text-xs font-bold text-slate-300">Trạng Thái:</span>
+                            <strong class="text-sm font-black text-amber-400">⏳ Chờ Kết Quả 18:40</strong>
+                        </div>
+                    </div>
+                `;
+            }
+
             return `
                 <div>
                     <div class="border-b border-slate-800 pb-2 mb-2.5">
@@ -1419,6 +1637,17 @@
             if (d) allDatesSet.add(d);
         });
 
+        // Check if there is a pending locked prediction date waiting for settlement
+        const pendingDate = payload?.pendingPredictionDate 
+            || payload?.dynamicMetaAdvisor?.nextPrediction?.predictionDate 
+            || payload?.streakAwareDeAdvisor?.latestRecommendation?.predictionDate;
+        const isPendingSettled = Boolean(pendingDate && payload?.drawPrizesByDate?.[pendingDate]?.special);
+        const hasPendingUnsettled = Boolean(pendingDate && !isPendingSettled);
+
+        if (hasPendingUnsettled) {
+            allDatesSet.add(pendingDate);
+        }
+
         let sortedDates = [...allDatesSet].sort();
 
         let filteredDates = sortedDates;
@@ -1492,6 +1721,125 @@
         diaryDetailsMap = {};
         let mergedRows = [];
         for (const date of filteredDates) {
+            const isPendingRow = Boolean(date === pendingDate && hasPendingUnsettled);
+
+            if (isPendingRow) {
+                const pendingDe = payload?.streakAwareDeAdvisor?.latestRecommendation || {};
+                const deMethodName = pendingDe.selectedMethodLabel || '👑 Tự Động Đảo Pha';
+                const deNumbers = (pendingDe.numbers || []).map(number);
+                const deX2Nums = (pendingDe.tierX2 || []).map(number);
+                const deX1Nums = (pendingDe.singles || []).map(number);
+                const deStakeK = pendingDe.stakeK || 60000;
+                const deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X2 · ${deX1Nums.length} X1)`;
+
+                const pendingLo = payload?.dynamicMetaAdvisor?.nextPrediction || {};
+                const std = pendingLo.standard || {};
+                const x2 = pendingLo.x2 || {};
+                const xi4 = pendingLo.xien4 || {};
+
+                const stdMethodName = std.methodLabel || std.methodName || 'Super-Hybrid Quad-Fusion v7.0 Top 20';
+                const stdNumbers = (std.numbers || []).map(number);
+                const stdStakeK = std.stakeK || (stdNumbers.length * 2200);
+
+                const x2MethodName = x2.methodLabel || x2.methodName || ('Lô X2 Top ' + (x2.topCount || 7));
+                const x2Numbers = (x2.numbers || []).map(number);
+                const x2StakeK = x2.stakeK || (x2Numbers.length * 4400);
+
+                const xi4MethodName = xi4.methodLabel || xi4.methodName || 'Tứ Thủ Xiên 4 Tinh Hoa';
+                const xi4Numbers = (xi4.numbers || []).map(number);
+                const xi4StakeK = xi4.stakeK || 11000;
+
+                diaryDetailsMap[date] = {
+                    de: {
+                        date,
+                        isPending: true,
+                        methodName: deMethodName,
+                        subTierLabel: deSubTierLabel,
+                        numbers: deNumbers,
+                        x2Nums: deX2Nums,
+                        x1Nums: deX1Nums,
+                        actualSpecial: null,
+                        isHit: false,
+                        stakeK: deStakeK,
+                        profitK: 0,
+                        payoutK: 0,
+                        rationale: pendingDe.rationale,
+                        activePhaseLabel: pendingDe.activePhaseLabel
+                    },
+                    loStd: {
+                        date,
+                        isPending: true,
+                        methodName: stdMethodName,
+                        subTierLabel: `Top ${stdNumbers.length || 20} số nền tảng`,
+                        numbers: stdNumbers,
+                        prizeCounts: {},
+                        hits: 0,
+                        stakeK: stdStakeK,
+                        profitK: 0,
+                        payoutK: 0
+                    },
+                    loX2: {
+                        date,
+                        isPending: true,
+                        methodName: x2MethodName,
+                        subTierLabel: `Dàn ${x2Numbers.length || 7} số cược X2`,
+                        numbers: x2Numbers,
+                        prizeCounts: {},
+                        hits: 0,
+                        stakeK: x2StakeK,
+                        profitK: 0,
+                        payoutK: 0
+                    },
+                    loXi4: {
+                        date,
+                        isPending: true,
+                        methodName: xi4MethodName,
+                        subTierLabel: 'Quây 11 vé (1 X4 + 4 X3 + 6 X2)',
+                        numbers: xi4Numbers,
+                        prizeCounts: {},
+                        hits: 0,
+                        stakeK: xi4StakeK,
+                        profitK: 0,
+                        payoutK: 0
+                    },
+                    total: {
+                        date,
+                        isPending: true,
+                        deProfitK: 0,
+                        stdProfitK: 0,
+                        x2ProfitK: 0,
+                        xi4ProfitK: 0,
+                        dayTotalK: 0,
+                        cumProfitK
+                    }
+                };
+
+                mergedRows.push({
+                    date,
+                    isPending: true,
+                    deRow: null,
+                    deIsHit: false,
+                    deProfitK: 0,
+                    cumDeProfitK,
+                    actualSpec: null,
+                    loRow: null,
+                    std,
+                    cumStdProfitK,
+                    x2,
+                    cumX2ProfitK,
+                    xi4,
+                    cumXi4ProfitK,
+                    loProfitK: 0,
+                    dayTotalK: 0,
+                    cumProfitK,
+                    deInfo: diaryDetailsMap[date].de,
+                    stdInfo: diaryDetailsMap[date].loStd,
+                    x2Info: diaryDetailsMap[date].loX2,
+                    xi4Info: diaryDetailsMap[date].loXi4
+                });
+
+                continue;
+            }
             const deRow = deLedger.find(r => (r.predictionDate || r.date) === date);
             const loRow = sourceLoRows.find(r => r.date === date) || {};
             const dualRow = payload?.dualMerge?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
@@ -1705,6 +2053,7 @@
         let displayRows = mergedRows;
         if (unifiedStatusFilter === 'win') {
             displayRows = mergedRows.filter(r => {
+                if (r.isPending) return false;
                 if (currentDiaryCategory === 'de') return r.deProfitK > 0;
                 if (currentDiaryCategory === 'loStd') return (r.std.profitK || 0) > 0;
                 if (currentDiaryCategory === 'loX2') return (r.x2.profitK || 0) > 0;
@@ -1713,6 +2062,7 @@
             });
         } else if (unifiedStatusFilter === 'loss') {
             displayRows = mergedRows.filter(r => {
+                if (r.isPending) return false;
                 if (currentDiaryCategory === 'de') return r.deProfitK <= 0;
                 if (currentDiaryCategory === 'loStd') return (r.std.profitK || 0) <= 0;
                 if (currentDiaryCategory === 'loX2') return (r.x2.profitK || 0) <= 0;
@@ -1724,9 +2074,11 @@
         // Compute category metrics for KPI header
         let catWinCount = 0;
         let catTotalProfit = 0;
-        const totalCount = mergedRows.length || 1;
+        let settledDaysCount = 0;
 
         mergedRows.forEach(r => {
+            if (r.isPending) return;
+            settledDaysCount++;
             if (currentDiaryCategory === 'de') {
                 if (r.deProfitK > 0) catWinCount++;
                 catTotalProfit += r.deProfitK;
@@ -1745,6 +2097,7 @@
             }
         });
 
+        const totalCount = settledDaysCount || 1;
         const rCount = byId('unifiedDiaryRowCount');
         if (rCount) rCount.textContent = String(displayRows.length);
         const wCount = byId('unifiedDiaryWinCount');
@@ -1768,6 +2121,57 @@
 
             // --- 1. VIEW ĐỀ THEO GỢI Ý ---
             if (currentDiaryCategory === 'de') {
+                if (r.isPending) {
+                    const chipsHtml = (deInfo.numbers || []).slice(0, 16).map(n => {
+                        const isVip = (deInfo.x2Nums || []).includes(number(n));
+                        return `<span class="inline-block px-1.5 py-0.5 rounded font-mono text-[11px] font-bold ${isVip ? 'bg-amber-400 text-slate-950 font-black shadow-xs ring-1 ring-amber-500' : 'bg-slate-100 text-slate-700'}">${number(n)}</span>`;
+                    }).join(' ') + (deInfo.numbers?.length > 16 ? ` <span class="text-[10px] text-slate-400 font-semibold">+${deInfo.numbers.length - 16} số...</span>` : '');
+
+                    return `
+                        <tr class="hover:bg-amber-50/50 bg-amber-50/20 border-l-4 border-l-amber-500 transition-colors">
+                            <td class="px-3 py-3 whitespace-nowrap">
+                                <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
+                                <div class="text-[10px] text-amber-600 font-bold flex items-center gap-1">
+                                    <i class="bi bi-lock-fill text-[9px]"></i> 🔒 ĐÃ KHÓA
+                                </div>
+                            </td>
+                            <td class="px-3 py-3 whitespace-nowrap">
+                                <div class="font-black text-xs text-amber-950 flex items-center gap-1">
+                                    <span>${escapeHtml(deInfo.methodName)}</span>
+                                </div>
+                                <div class="text-[10px] text-slate-500 font-medium">${escapeHtml(deInfo.subTierLabel)}</div>
+                            </td>
+                            <td class="px-3 py-3 whitespace-nowrap">
+                                <span class="inline-flex items-center justify-center font-mono text-xs font-bold px-2.5 py-1 rounded-xl bg-amber-100/80 text-amber-900 border border-amber-300">
+                                    ⏳ Chờ 18:30
+                                </span>
+                            </td>
+                            <td class="diary-cell-interactive px-3 py-3 max-w-md cursor-pointer hover:bg-amber-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="de">
+                                <div class="flex flex-wrap items-center gap-1">${chipsHtml}</div>
+                                <div class="text-[9px] text-amber-700 font-bold mt-1 flex items-center gap-1">
+                                    <i class="bi bi-cursor-fill text-[8px]"></i> 🔒 Đã khóa bất biến · Rê chuột xem ${deInfo.numbers.length} số
+                                </div>
+                            </td>
+                            <td class="px-3 py-3 whitespace-nowrap">
+                                <span class="inline-flex items-center gap-1 rounded bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 text-xs font-black">
+                                    ⏳ Chờ mở thưởng
+                                </span>
+                            </td>
+                            <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
+                                <div class="font-bold text-xs text-amber-600">
+                                    ⏳ Chờ KQ
+                                </div>
+                                <div class="text-[10px] text-slate-400 font-sans">Vốn ${moneyM(deInfo.stakeK)}</div>
+                            </td>
+                            <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
+                                <div class="font-semibold text-xs text-slate-400">
+                                    --
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
+
                 const dePill = deInfo.isHit
                     ? `<span class="inline-flex items-center gap-1 rounded bg-emerald-100 text-emerald-900 px-2 py-0.5 text-xs font-black">🎉 Trúng ĐB ${moneyM(deInfo.profitK, { signed: true })}</span>`
                     : `<span class="inline-flex items-center gap-1 rounded bg-rose-100 text-rose-900 px-2 py-0.5 text-xs font-bold">❌ Trượt ${moneyM(deInfo.profitK, { signed: true })}</span>`;
@@ -1818,6 +2222,49 @@
 
             // --- 2. VIEW LÔ CHUẨN NỀN TẢNG (TOP 20) ---
             if (currentDiaryCategory === 'loStd') {
+                if (r.isPending) {
+                    const chipsHtml = (stdInfo.numbers || []).slice(0, 12).map(n => {
+                        return `<span class="inline-block px-1.5 py-0.5 rounded font-mono text-[11px] font-bold bg-slate-900 text-white">${number(n)}</span>`;
+                    }).join(' ') + (stdInfo.numbers?.length > 12 ? ` <span class="text-[10px] text-slate-400 font-semibold">+${stdInfo.numbers.length - 12}s...</span>` : '');
+
+                    return `
+                        <tr class="hover:bg-indigo-50/50 bg-indigo-50/20 border-l-4 border-l-indigo-500 transition-colors">
+                            <td class="px-3 py-3 whitespace-nowrap">
+                                <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
+                                <div class="text-[10px] text-indigo-600 font-bold flex items-center gap-1">
+                                    <i class="bi bi-lock-fill text-[9px]"></i> 🔒 ĐÃ KHÓA
+                                </div>
+                            </td>
+                            <td class="px-3 py-3 whitespace-nowrap">
+                                <div class="font-bold text-xs text-indigo-950">${escapeHtml(stdInfo.methodName)}</div>
+                                <div class="text-[10px] text-slate-500">Dàn 20 số nền tảng</div>
+                            </td>
+                            <td class="diary-cell-interactive px-3 py-3 max-w-md cursor-pointer hover:bg-indigo-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loStd">
+                                <div class="flex flex-wrap items-center gap-1">${chipsHtml}</div>
+                                <div class="text-[9px] text-indigo-700 font-bold mt-1 flex items-center gap-1">
+                                    <i class="bi bi-cursor-fill text-[8px]"></i> 🔒 Đã khóa 20 số · Rê chuột xem chi tiết
+                                </div>
+                            </td>
+                            <td class="px-3 py-3 whitespace-nowrap">
+                                <span class="font-bold text-xs text-amber-600">
+                                    ⏳ Chờ 27 giải
+                                </span>
+                            </td>
+                            <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
+                                <div class="font-bold text-xs text-amber-600">
+                                    ⏳ Chờ KQ
+                                </div>
+                                <div class="text-[10px] text-slate-400 font-sans">Vốn ${moneyM(stdInfo.stakeK)}</div>
+                            </td>
+                            <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
+                                <div class="font-semibold text-xs text-slate-400">
+                                    --
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
+
                 const chipsHtml = (stdInfo.numbers || []).slice(0, 12).map(n => {
                     const hits = stdInfo.prizeCounts?.[number(n)] || 0;
                     return `<span class="inline-block px-1.5 py-0.5 rounded font-mono text-[11px] font-bold ${hits > 0 ? 'bg-emerald-600 text-white font-black' : 'bg-slate-900 text-white'}">${number(n)}</span>`;
@@ -1862,6 +2309,49 @@
 
             // --- 3. VIEW LÔ TĂNG TỐC X2 ---
             if (currentDiaryCategory === 'loX2') {
+                if (r.isPending) {
+                    const chipsHtml = (x2Info.numbers || []).map(n => {
+                        return `<span class="inline-block px-2 py-0.5 rounded font-mono text-[11px] font-black bg-emerald-700 text-white">${number(n)}</span>`;
+                    }).join(' ');
+
+                    return `
+                        <tr class="hover:bg-teal-50/50 bg-teal-50/20 border-l-4 border-l-teal-500 transition-colors">
+                            <td class="px-3 py-3 whitespace-nowrap">
+                                <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
+                                <div class="text-[10px] text-teal-600 font-bold flex items-center gap-1">
+                                    <i class="bi bi-lock-fill text-[9px]"></i> 🔒 ĐÃ KHÓA
+                                </div>
+                            </td>
+                            <td class="px-3 py-3 whitespace-nowrap">
+                                <div class="font-bold text-xs text-teal-950">${escapeHtml(x2Info.methodName)}</div>
+                                <div class="text-[10px] text-teal-700 font-medium">${escapeHtml(x2Info.subTierLabel)}</div>
+                            </td>
+                            <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-teal-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loX2">
+                                <div class="flex flex-wrap items-center gap-1.5">${chipsHtml}</div>
+                                <div class="text-[9px] text-teal-700 font-bold mt-1 flex items-center gap-1">
+                                    <i class="bi bi-cursor-fill text-[8px]"></i> 🔒 Đã khóa ${x2Info.numbers.length} số X2 · Rê chuột xem dàn
+                                </div>
+                            </td>
+                            <td class="px-3 py-3 whitespace-nowrap">
+                                <span class="font-bold text-xs text-amber-600">
+                                    ⏳ Chờ 27 giải
+                                </span>
+                            </td>
+                            <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
+                                <div class="font-bold text-xs text-amber-600">
+                                    ⏳ Chờ KQ
+                                </div>
+                                <div class="text-[10px] text-slate-400 font-sans">Vốn ${moneyM(x2Info.stakeK)}</div>
+                            </td>
+                            <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
+                                <div class="font-semibold text-xs text-slate-400">
+                                    --
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
+
                 const chipsHtml = (x2Info.numbers || []).map(n => {
                     const hits = x2Info.prizeCounts?.[number(n)] || 0;
                     return `<span class="inline-block px-2 py-0.5 rounded font-mono text-[11px] font-black ${hits > 0 ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 ring-1 ring-white' : 'bg-emerald-700 text-white'}">${number(n)}</span>`;
@@ -1906,6 +2396,53 @@
 
             // --- 4. VIEW LÔ XIÊN 4 ---
             if (currentDiaryCategory === 'loXi4') {
+                if (r.isPending) {
+                    const chipsHtml = (xi4Info.numbers || []).map(n => {
+                        return `<span class="inline-block px-2.5 py-1 rounded-xl font-mono text-xs font-black shadow-2xs bg-slate-800 text-slate-200">${number(n)}</span>`;
+                    }).join(' ');
+
+                    return `
+                        <tr class="hover:bg-amber-50/50 bg-amber-50/20 border-l-4 border-l-amber-500 transition-colors">
+                            <td class="px-3 py-3 whitespace-nowrap">
+                                <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
+                                <div class="text-[10px] text-amber-600 font-bold flex items-center gap-1">
+                                    <i class="bi bi-lock-fill text-[9px]"></i> 🔒 ĐÃ KHÓA
+                                </div>
+                            </td>
+                            <td class="px-3 py-3 whitespace-nowrap">
+                                <div class="font-bold text-xs text-amber-950">${escapeHtml(xi4Info.methodName)}</div>
+                                <div class="text-[10px] text-slate-500">Tứ Thủ Hiệp Đồng</div>
+                            </td>
+                            <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXi4">
+                                <div class="flex flex-wrap items-center gap-1.5">${chipsHtml}</div>
+                                <div class="text-[9px] text-amber-700 font-bold mt-1 flex items-center gap-1">
+                                    <i class="bi bi-cursor-fill text-[8px]"></i> 🔒 Đã khóa bộ 4 số · Rê chuột xem vé quây
+                                </div>
+                            </td>
+                            <td class="px-3 py-3 whitespace-nowrap">
+                                <span class="font-bold text-xs text-amber-600">
+                                    ⏳ Chờ mở
+                                </span>
+                            </td>
+                            <td class="px-3 py-3 whitespace-nowrap">
+                                <span class="inline-flex items-center gap-1 rounded bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 text-xs font-bold">
+                                    ⏳ Chờ mở thưởng
+                                </span>
+                            </td>
+                            <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
+                                <div class="font-bold text-xs text-amber-600">
+                                    ⏳ Chờ KQ
+                                </div>
+                                <div class="text-[10px] text-slate-400 font-sans">Quây 11 vé (${moneyM(xi4Info.stakeK)})</div>
+                            </td>
+                            <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
+                                <div class="font-semibold text-xs text-slate-400">
+                                    --
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
                 const chipsHtml = (xi4Info.numbers || []).map(n => {
                     const hits = xi4Info.prizeCounts?.[number(n)] || 0;
                     return `<span class="inline-block px-2.5 py-1 rounded-xl font-mono text-xs font-black shadow-2xs ${hits > 0 ? 'bg-amber-400 text-slate-950 ring-2 ring-white' : 'bg-slate-800 text-slate-200'}">${number(n)}</span>`;
@@ -1960,6 +2497,84 @@
             }
 
             // --- 5. VIEW TỔNG HỢP (MẶC ĐỊNH CHI TIẾT & TƯƠNG TÁC RÊ CHUỘT) ---
+            if (r.isPending) {
+                return `
+                    <tr class="hover:bg-amber-50/50 bg-amber-50/20 border-l-4 border-l-amber-500 transition-colors">
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
+                            <div class="text-[10px] text-amber-600 font-bold flex items-center gap-1">
+                                <i class="bi bi-lock-fill text-[9px]"></i> 🔒 ĐÃ KHÓA
+                            </div>
+                        </td>
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="de">
+                            <div class="text-[11px] font-bold text-amber-950 flex items-center gap-1">
+                                <i class="bi bi-gem-fill text-amber-500 text-[10px]"></i> ${escapeHtml(deInfo.methodName)}
+                            </div>
+                            <div class="flex items-center gap-1.5 mt-0.5">
+                                <span class="text-xs text-slate-600">ĐB: <strong class="font-mono text-xs text-amber-600 font-bold">⏳ Chờ mở</strong></span>
+                                <span class="inline-flex items-center gap-1 rounded bg-amber-100 text-amber-900 border border-amber-300 px-1.5 py-0.5 text-[10px] font-black">🔒 Đã khóa</span>
+                            </div>
+                            <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
+                                <span>${escapeHtml(deInfo.subTierLabel)}</span>
+                                <span class="text-amber-700 font-bold underline">Di chuột xem</span>
+                            </div>
+                        </td>
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-indigo-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loStd">
+                            <div class="text-[11px] font-bold text-indigo-900 flex items-center gap-1">
+                                <i class="bi bi-trophy-fill text-indigo-600 text-[10px]"></i> ${escapeHtml(stdInfo.methodName)}
+                            </div>
+                            <div class="text-xs flex items-center gap-1.5 mt-0.5">
+                                <span class="text-amber-600 font-bold">⏳ Chờ 27 giải</span>
+                                <span class="font-mono text-slate-400">Vốn ${moneyM(stdInfo.stakeK)}</span>
+                            </div>
+                            <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
+                                <span>Top 20 số chuẩn</span>
+                                <span class="text-indigo-700 font-bold underline">Di chuột xem</span>
+                            </div>
+                        </td>
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-teal-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loX2">
+                            <div class="text-[11px] font-bold text-teal-900 flex items-center gap-1">
+                                <i class="bi bi-lightning-charge-fill text-teal-600 text-[10px]"></i> ${escapeHtml(x2Info.methodName)}
+                            </div>
+                            <div class="text-xs flex items-center gap-1.5 mt-0.5">
+                                <span class="text-amber-600 font-bold">⏳ Chờ 27 giải</span>
+                                <span class="font-mono text-slate-400">Vốn ${moneyM(x2Info.stakeK)}</span>
+                            </div>
+                            <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
+                                <span>Top ${x2Info.numbers.length}s cược X2</span>
+                                <span class="text-teal-700 font-bold underline">Di chuột xem</span>
+                            </div>
+                        </td>
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXi4">
+                            <div class="text-[11px] font-bold text-amber-950 flex items-center gap-1">
+                                <i class="bi bi-stars text-amber-500 text-[10px]"></i> ${escapeHtml(xi4Info.methodName)}
+                            </div>
+                            <div class="flex items-center gap-1.5 mt-0.5 text-xs">
+                                <span class="text-amber-600 font-bold">⏳ Chờ mở</span>
+                                <span class="font-mono text-slate-400">11 vé</span>
+                            </div>
+                            <div class="text-[10px] font-mono text-slate-600 mt-0.5 font-bold flex items-center justify-between">
+                                <span>${xi4Info.numbers.join(' ')}</span>
+                                <span class="text-amber-700 font-sans font-bold underline">Xem vé</span>
+                            </div>
+                        </td>
+                        <td class="diary-cell-interactive px-3 py-3 text-right whitespace-nowrap font-mono cursor-pointer hover:bg-amber-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="total">
+                            <div class="font-black text-xs text-amber-600">
+                                ⏳ Chờ KQ
+                            </div>
+                            <div class="text-[10px] text-slate-400 font-sans">Đề + Lô</div>
+                            <div class="text-[9px] text-amber-700 font-bold font-sans underline mt-0.5">Chi tiết</div>
+                        </td>
+                        <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
+                            <div class="font-semibold text-xs text-slate-400">
+                                --
+                            </div>
+                            <div class="text-[10px] text-slate-400 font-sans">Lũy kế</div>
+                        </td>
+                    </tr>
+                `;
+            }
+
             const dePill = deInfo.isHit
                 ? `<span class="inline-flex items-center gap-1 rounded bg-emerald-100 text-emerald-900 px-1.5 py-0.5 text-[11px] font-black">🎉 Trúng ${moneyM(deInfo.profitK, { signed: true })}</span>`
                 : `<span class="inline-flex items-center gap-1 rounded bg-rose-100 text-rose-900 px-1.5 py-0.5 text-[11px] font-bold">❌ Trượt ${moneyM(deInfo.profitK, { signed: true })}</span>`;
