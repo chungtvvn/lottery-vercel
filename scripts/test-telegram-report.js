@@ -406,10 +406,10 @@ async function main() {
         assert.match(sheetFallback, /2\. 🏆 LÔ CHUẨN/);
         assert.match(sheetFallback, /25 điểm \/ số/);
         assert.match(sheetFallback, /3\. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO/);
-        assert.match(sheetFallback, /50 điểm \/ số/);
+        assert.match(sheetFallback, /25 điểm \/ số/);
         assert.match(sheetFallback, /4\. 💎 LÔ XIÊN 4 TINH HOA \(QUÂY 11 VÉ\)/);
         assert.match(sheetFallback, /200K \/ vé/);
-        assert.match(sheetFallback, /26\.900K VNĐ/);
+        assert.match(sheetFallback, /23\.050K VNĐ/);
         assert.ok(!sheetFallback.includes('LÔ XIÊN 2 CHIẾN LƯỢC'), 'Fallback sheet không được chứa Lô Xiên 2');
 
         // 2. Test live betting sheet (with dynamic advisor payload)
@@ -421,7 +421,7 @@ async function main() {
         assert.match(sheetM3, /2\. 🏆 LÔ CHUẨN/);
         assert.match(sheetM3, /25 điểm \/ số/);
         assert.match(sheetM3, /3\. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO/);
-        assert.match(sheetM3, /50 điểm \/ số/);
+        assert.match(sheetM3, /25 điểm \/ số/);
         assert.match(sheetM3, /4\. 💎 LÔ XIÊN 4 TINH HOA \(QUÂY 11 VÉ\)/);
         assert.match(sheetM3, /200K \/ vé/);
         assert.match(sheetM3, /TỔNG VỐN ĐẦU TƯ TRỌN GÓI HÔM NAY:.*?VNĐ/);

@@ -311,7 +311,7 @@ const BETTING_TIERS = {
     name: 'Mức 1: Văn Nghệ / Thử Nghiệm',
     deK: 10,
     loDiem: 5,
-    loX2Diem: 10,
+    loX2Diem: 5,
     xien4K: 20
   },
   2: {
@@ -319,7 +319,7 @@ const BETTING_TIERS = {
     name: 'Mức 2: Tiêu Chuẩn Thực Chiến Hàng Ngày',
     deK: 20,
     loDiem: 10,
-    loX2Diem: 20,
+    loX2Diem: 10,
     xien4K: 50
   },
   3: {
@@ -327,7 +327,7 @@ const BETTING_TIERS = {
     name: 'Mức 3: Đề 200K/số · Lô 25đ/số (Đầu Tư Cao - Mặc Định)',
     deK: 200,
     loDiem: 25,
-    loX2Diem: 50,
+    loX2Diem: 25,
     xien4K: 200
   },
   vip: {
@@ -335,7 +335,7 @@ const BETTING_TIERS = {
     name: 'Mức VIP: Vốn Lớn Quy Chuẩn',
     deK: 1000,
     loDiem: 100,
-    loX2Diem: 200,
+    loX2Diem: 100,
     xien4K: 1000
   }
 };
@@ -614,10 +614,10 @@ function resolveUnifiedLoRowForDate(r) {
   if (!r) {
     return {
       stdHits: 0, stdStakeK: 44000, stdPayoutK: 0, stdProfitK: -44000, stdM3StakeK: 11000, stdM3PayoutK: 0, stdM3ProfitK: -11000,
-      x2Hits: 0, x2StakeK: 30800, x2PayoutK: 0, x2ProfitK: -30800, x2M3StakeK: 7700, x2M3PayoutK: 0, x2M3ProfitK: -7700,
+      x2Hits: 0, x2StakeK: 15400, x2PayoutK: 0, x2ProfitK: -15400, x2M3StakeK: 3850, x2M3PayoutK: 0, x2M3ProfitK: -3850,
       xi4Hits: 0, xi4StakeK: 11000, xi4PayoutK: 0, xi4ProfitK: -11000, xi4M3StakeK: 2200, xi4M3PayoutK: 0, xi4M3ProfitK: -2200,
-      dayStakeK: 85800, dayPayoutK: 0, dayProfitK: -85800,
-      dayM3StakeK: 20900, dayM3PayoutK: 0, dayM3ProfitK: -20900
+      dayStakeK: 70400, dayPayoutK: 0, dayProfitK: -70400,
+      dayM3StakeK: 17050, dayM3PayoutK: 0, dayM3ProfitK: -17050
     };
   }
 
@@ -630,11 +630,12 @@ function resolveUnifiedLoRowForDate(r) {
   const stdM3ProfitK = stdM3PayoutK - stdM3StakeK;
 
   const x2Hits = Number(r?.x2?.hits ?? 0);
-  const x2StakeK = 30800;
-  const x2PayoutK = x2Hits * 16000;
+  const x2Count = Number(r?.x2?.topCount ?? 7);
+  const x2StakeK = x2Count * 2200; // 7 con * 2.2M = 15.4M (VIP 100đ)
+  const x2PayoutK = x2Hits * 8000; // 100đ * 80K = 8.0M/nháy
   const x2ProfitK = x2PayoutK - x2StakeK;
-  const x2M3StakeK = 7700; // 7 con * 50đ * 22K
-  const x2M3PayoutK = x2Hits * 4000; // 50đ * 80K
+  const x2M3StakeK = x2Count * 25 * 22; // 7 con * 25đ * 22K = 3.850K (Đơn vị Bot 25đ)
+  const x2M3PayoutK = x2Hits * 25 * 80; // 25đ * 80K = 2.000K/nháy
   const x2M3ProfitK = x2M3PayoutK - x2M3StakeK;
 
   const xi4Hits = Number(r?.xien4?.hits ?? 0);
@@ -706,7 +707,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
 
   const lines = [
     `🎯 <b>XSMB — GỢI Ý THỰC CHIẾN HÀNG NGÀY ${escapeHtml(displayDate(predictionDate))}</b>`,
-    `<i>Cơ chế cược Mức 3 (Mặc định): Đề 200K/số (X2 400K) · Lô 25đ/số (X2 50đ) · Xiên 4 quây 200K/vé (hoặc Mức VIP: Đề 1M · Lô 100đ)</i>`,
+    `<i>Cơ chế cược Mức 3 (Mặc định): Đề 200K/số (X2 400K) · Lô 25đ/số · Xiên 4 quây 200K/vé (hoặc Mức VIP: Đề 1M · Lô 100đ)</i>`,
     ''
   ];
 
@@ -783,7 +784,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
         `• 🏆 <b>Lô Chuẩn Nền Tảng (Top 20 số)</b>: Nổ <b>${resLo.stdHits} nháy</b>${stdHitStr}`,
         `   └ Đơn vị Bot (25đ/số): <b>${formatK(resLo.stdM3ProfitK)}</b> (Vốn 500đ [11.000K] · Ăn ${(resLo.stdM3PayoutK).toLocaleString('vi-VN')}K) · Mức VIP: <b>${formatM(resLo.stdProfitK)}</b>`,
         `• 🚀 <b>Lô Tăng Tốc X2 (Top 7 số)</b>: ${resLo.x2ProfitK > 0 ? '🚀 <b>THẮNG</b>' : '❌ Trượt'} nổ <b>${resLo.x2Hits} nháy</b>${x2HitStr}`,
-        `   └ Đơn vị Bot (50đ/số): <b>${formatK(resLo.x2M3ProfitK)}</b> (Vốn 350đ [7.700K] · Ăn ${(resLo.x2M3PayoutK).toLocaleString('vi-VN')}K) · Mức VIP: <b>${formatM(resLo.x2ProfitK)}</b>`,
+        `   └ Đơn vị Bot (25đ/số): <b>${formatK(resLo.x2M3ProfitK)}</b> (Vốn 175đ [3.850K] · Ăn ${(resLo.x2M3PayoutK).toLocaleString('vi-VN')}K) · Mức VIP: <b>${formatM(resLo.x2ProfitK)}</b> (Vốn 15.4M · Ăn ${(resLo.x2PayoutK / 1000).toFixed(1)}M)`,
         `• 💎 <b>Lô Xiên 4 (Quây 11 vé)</b>: ${resLo.xi4Hits >= 2 ? `🎉 <b>Ăn ${resLo.xi4Hits}/4 con</b>` : `❌ Trượt (${resLo.xi4Hits}/4 con)`}`,
         `   └ Đơn vị Bot (200K/vé): <b>${formatK(resLo.xi4M3ProfitK)}</b> (11 vé · Vốn 2.200K · Ăn ${(resLo.xi4M3PayoutK).toLocaleString('vi-VN')}K) · Mức VIP: <b>${formatM(resLo.xi4ProfitK)}</b>`,
         `💰 <b>TỔNG LÃI RÒNG HÔM NAY (${escapeHtml(displayDate(settledDate))}):</b>`,
@@ -942,16 +943,16 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     );
   }
   lines.push(
-    `🎯 <b>Dàn ${x2Nums.length} số X2</b> (Vốn ${(x2Nums.length * 4.4).toFixed(1)}M · Cược 4.4M/số [4.400K / 200đ] · Ăn 16M/nháy):`,
-    `  • <i>Mức chuẩn 20đ/số: Vốn ${x2Nums.length * 20} điểm (${(x2Nums.length * 20 * 22).toLocaleString('vi-VN')}K) · Ăn 1.600K/nháy</i>`,
-    `  • <i>Mức 3 mặc định: 50đ/số (${x2Nums.length * 50}đ = ${(x2Nums.length * 50 * 22 / 1000).toFixed(1)}M) · Ăn 4M/nháy</i>`,
-    `  • <i>Mức VIP 200đ/số: Vốn ${(x2Nums.length * 4.4).toFixed(1)}M · Ăn 16M/nháy</i>`,
+    `🎯 <b>Dàn ${x2Nums.length} số Tăng Tốc</b> (Vốn ${(x2Nums.length * 2.2).toFixed(1)}M · Cược 2.2M/số [2.200K / 100đ] · Ăn 8M/nháy):`,
+    `  • <i>Mức chuẩn 10đ/số: Vốn ${x2Nums.length * 10} điểm (${(x2Nums.length * 10 * 22).toLocaleString('vi-VN')}K) · Ăn 800K/nháy</i>`,
+    `  • <i>Mức 3 mặc định: 25đ/số (${x2Nums.length * 25}đ = ${(x2Nums.length * 25 * 22 / 1000).toFixed(1)}M) · Ăn 2M/nháy (Cùng mức Top 20)</i>`,
+    `  • <i>Mức VIP 100đ/số: Vốn ${(x2Nums.length * 2.2).toFixed(1)}M · Ăn 8M/nháy</i>`,
     `<b>${escapeHtml(formatNumberList(x2Nums))}</b>`
   );
   lines.push(divider);
 
   // =========================================================================
-  // 4. ⚡ BẢNG GỘP ĐÁNH LÔ TỔNG LỰC (21 SỐ - SỐ TRÙNG ĐÁNH X2)
+  // 4. ⚡ BẢNG GỘP ĐÁNH LÔ TỔNG LỰC (21 SỐ - HỢP NHẤT TOP 20 & TOP 7)
   // =========================================================================
   const sList = (stdNums || []).map(normalizeLotteryNumber).filter(Boolean);
   const xList = (x2Nums || []).map(normalizeLotteryNumber).filter(Boolean);
@@ -960,16 +961,16 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   const singleNums = sList.filter(n => !overlapNums.includes(n));
   const allMerged = Array.from(new Set([...sList, ...xList]));
 
-  lines.push(`<b>4. ⚡ BẢNG GỘP ĐÁNH LÔ TỔNG LỰC (${allMerged.length} SỐ - SỐ TRÙNG ĐÁNH X2)</b>`);
+  lines.push(`<b>4. ⚡ BẢNG GỘP ĐÁNH LÔ TỔNG LỰC (${allMerged.length} SỐ - CÙNG MỨC CƯỢC 25Đ / 100Đ)</b>`);
   lines.push(
-    `<i>Tổng hợp từ 2 dàn trên: Mặc định giữ Top 20 nền tảng mỏ neo (${escapeHtml(loEngineLabel)}), dàn ${escapeHtml(subTierLabel)} làm mũi nhọn X2:</i>`,
-    `💡 <i>Cách chơi tối ưu hóa lợi nhuận: Cược X2 (4.4M/số) cho các số trùng nhau để nhân đôi profit; cược X1 (2.2M/số) cho các số còn lại trong Top 20 để bảo hiểm vốn hòa và có lãi.</i>`
+    `<i>Tổng hợp từ 2 dàn trên: Mặc định giữ Top 20 nền tảng mỏ neo (${escapeHtml(loEngineLabel)}), dàn ${escapeHtml(subTierLabel)} làm mũi nhọn:</i>`,
+    `💡 <i>Cách chơi đồng bộ: Cả nhóm số trùng và số riêng đều cược cùng đơn vị 25đ/số (550K/số) trên Bot Telegram (hoặc 100đ/số [2.2M/số] trên Web VIP).</i>`
   );
   lines.push(
-    `🔥 <b>Nhóm Số Trùng (CỰC VIP X2 · 4.4M/số [4.400K] - ${overlapNums.length} số):</b>`,
-    `  • <i>Mức chuẩn: 20đ/số (440K/số) · Mức 3: 50đ/số (1.1M/số) · Mức VIP: 4.4M/số</i>`,
+    `🔥 <b>Nhóm Số Trùng (MŨI NHỌN ĐỒNG THUẬN - ${overlapNums.length} số):</b>`,
+    `  • <i>Mức chuẩn: 10đ/số (220K/số) · Mức 3: 25đ/số (550K/số) · Mức VIP: 2.2M/số</i>`,
     `<b>${escapeHtml(formatNumberList(overlapNums))}</b>`,
-    `🛡️ <b>Nhóm Số Riêng (BỌC LÓT X1 · 2.2M/số [2.200K] - ${singleNums.length} số):</b>`,
+    `🛡️ <b>Nhóm Số Riêng (BỌC LÓT NỀN TẢNG - ${singleNums.length} số):</b>`,
     `  • <i>Mức chuẩn: 10đ/số (220K/số) · Mức 3: 25đ/số (550K/số) · Mức VIP: 2.2M/số</i>`,
     `<b>${escapeHtml(formatNumberList(singleNums))}</b>`
   );
@@ -1020,7 +1021,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
       `• 📅 <b>Kỳ 1 (${escapeHtml(displayDate(predictionDate))}):</b> ⏳ <b>ĐANG CHỜ KẾT QUẢ QUAY THƯỞNG 18:15</b>`,
       `• 💎 Đề Thực Chiến: Chờ quay (Đơn vị Bot: 200K/400K · VIP: Vốn 60M)`,
       `• 🏆 Lô Chuẩn Gợi Ý (Top 20): Chờ quay (Đơn vị Bot: 25đ/số [11.000K] · VIP: Vốn 44M)`,
-      `• 🚀 Lô X2 Gợi Ý (Top 7): Chờ quay (Đơn vị Bot: 50đ/số [7.700K] · VIP: Vốn 30.8M)`,
+      `• 🚀 Lô Tăng Tốc (Top 7): Chờ quay (Đơn vị Bot: 25đ/số [3.850K] · VIP: Vốn 15.4M)`,
       `• 💎 Lô Xiên 4 Gợi Ý (Quây 11 vé): Chờ quay (Đơn vị Bot: 200K/vé [2.200K] · VIP: Vốn 11M)`,
       `• 💰 <b>Tổng Lũy Kế Thực Chiến GỢI Ý</b>: <b>0 VNĐ (Baseline khởi động)</b>`
     );

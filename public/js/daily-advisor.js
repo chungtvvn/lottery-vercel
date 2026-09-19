@@ -457,7 +457,7 @@
                 <div>
                     <div class="flex items-center justify-between text-[11px] font-bold text-teal-300">
                         <span>🚀 Lô Đánh X2 (Nổ kép)</span>
-                        <span class="rounded bg-teal-400/20 px-1.5 py-0.5 text-[9px] font-black">30.8M/ngày (X2)</span>
+                        <span class="rounded bg-teal-400/20 px-1.5 py-0.5 text-[9px] font-black">15.4M/ngày</span>
                     </div>
                     <div class="mt-1.5 font-mono text-xl font-black text-teal-300">${moneyM(displayX2ProfitK, { signed: true })}</div>
                 </div>
@@ -1728,7 +1728,7 @@
                     <tr class="border-b border-teal-200 bg-teal-50/80 text-teal-950 uppercase font-black tracking-wider text-[10px]">
                         <th class="px-3 py-3">Ngày</th>
                         <th class="px-3 py-3">Dàn Đổi Pha Lô X2</th>
-                        <th class="px-3 py-3">Dàn Số Đã Đánh (Cược X2)</th>
+                        <th class="px-3 py-3">Dàn Số Đã Đánh (25đ / 100đ)</th>
                         <th class="px-3 py-3">Số Nháy Về</th>
                         <th class="px-3 py-3 text-right">Lãi/Lỗ X2</th>
                         <th class="px-3 py-3 text-right">Lũy Kế Lô X2</th>
@@ -1876,7 +1876,7 @@
 
                 const x2MethodName = x2.methodLabel || x2.methodName || ('Lô X2 Top ' + (x2.topCount || 7));
                 const x2Numbers = (x2.numbers || []).map(number);
-                const x2StakeK = x2.stakeK || (x2Numbers.length * 4400);
+                const x2StakeK = x2.stakeK || (x2Numbers.length * 2200);
 
                 const xi4MethodName = xi4.methodLabel || xi4.methodName || 'Tứ Thủ Xiên 4 Tinh Hoa';
                 const xi4Numbers = (xi4.numbers || []).map(number);
@@ -2031,7 +2031,7 @@
             const x2MethodName = x2.methodName || x2.methodLabel || ('Lô X2 Top ' + (x2.topCount || 7));
             const x2Numbers = (x2.numbers || []).map(number);
             const x2Hits = x2.hits != null ? x2.hits : 0;
-            const x2StakeK = x2.stakeK || (x2Numbers.length * 4400);
+            const x2StakeK = x2.stakeK || (x2Numbers.length * 2200);
 
             const xi4MethodName = xi4.methodName || xi4.methodLabel || 'Tứ Thủ Xiên 4 Tinh Hoa';
             const xi4Numbers = (xi4.numbers || []).map(number);
@@ -2066,13 +2066,13 @@
                 loX2: {
                     date,
                     methodName: x2MethodName,
-                    subTierLabel: `Dàn ${x2Numbers.length || 7} số cược X2`,
+                    subTierLabel: `Top ${x2Numbers.length || 7} số tăng tốc (25đ / 100đ)`,
                     numbers: x2Numbers,
                     prizeCounts,
                     hits: x2Hits,
                     stakeK: x2StakeK,
                     profitK: x2ProfitK,
-                    payoutK: x2.payoutK || (x2Hits * 16000)
+                    payoutK: x2.payoutK || (x2Hits * 8000)
                 },
                 loXi4: {
                     date,
