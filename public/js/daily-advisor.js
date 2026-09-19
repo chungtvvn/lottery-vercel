@@ -810,7 +810,34 @@
         currentSelectedLoSubTier = governor.selectedSubTier || 7;
         let currentActiveLoEngineData = null;
 
+        // Card 1: Chuẩn Nền Tảng (Mặc Định Đánh) — MỎ NEO NỀN TẢNG CỐ ĐỊNH (Tứ Trụ Quad-Fusion v7.2 Top 20)
         let stdNums = [];
+        if (loQuadAdv && Array.isArray(loQuadAdv.top20) && loQuadAdv.top20.length) {
+            stdNums = loQuadAdv.top20.map(number);
+        } else if (loNext?.standard?.numbers && Array.isArray(loNext.standard.numbers) && loNext.standard.numbers.length) {
+            stdNums = loNext.standard.numbers.map(number);
+        } else {
+            stdNums = (loNext?.numbers || []).slice(0, 20).map(number);
+        }
+
+        const stdLabel = byId('unifiedLoStdLabel');
+        if (stdLabel) {
+            stdLabel.textContent = loNext?.standard?.title || loNext?.standard?.methodLabel || '👑 Tứ Trụ Quad-Fusion v7.2 Top 20 (Mỏ Neo Nền Tảng)';
+        }
+
+        const stdRoiEl = byId('unifiedLoStdLiveRoi');
+        if (stdRoiEl) {
+            stdRoiEl.textContent = 'Top 20 Win 77.3% (Lãi +2.98 TỶ · 6.96 Nháy)';
+        }
+
+        const stdContainer = byId('unifiedLoStdNumbers');
+        if (stdContainer) {
+            stdContainer.innerHTML = stdNums.map(n => `
+                <span class="inline-flex items-center justify-center rounded-xl bg-slate-900 border border-slate-700 font-mono text-xs font-black text-white px-2.5 py-1.5 shadow-sm hover:scale-105 transition-all">
+                    ${n}
+                </span>
+            `).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
+        }
 
         function updateLoSubTierDisplay(size) {
             currentSelectedLoSubTier = size;
@@ -835,7 +862,7 @@
 
             const x2SubText = byId('unifiedLoX2SubText');
             if (x2SubText) {
-                x2SubText.textContent = `· Cược X2: ${(size * 4.4).toFixed(1)}M (${subTierData.winCondition || 'Ăn nháy'})`;
+                x2SubText.textContent = `· Đánh phẳng 100đ (25đ Bot): ${(size * 2.2).toFixed(1)}M (${size === 7 ? 'Ăn 2 nháy lãi +600K' : (subTierData.winCondition || 'Ăn nháy')})`;
             }
 
             const x2RoiEl = byId('unifiedLoX2LiveRoi');
@@ -855,7 +882,7 @@
                 }).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
             }
 
-            // Recompute Bảng Gộp với Top 20 của Động Cơ Hiện Tại
+            // Recompute Bảng Gộp với Top 20 của Động Cơ Mỏ Neo Nền Tảng (stdNums)
             const stdSet = new Set(stdNums);
             const overlapNums = subNums.filter(n => stdSet.has(n));
             const singleNums = stdNums.filter(n => !overlapNums.includes(n));
@@ -872,7 +899,7 @@
             const overlapContainer = byId('unifiedLoOverlapNumbers');
             if (overlapContainer) {
                 overlapContainer.innerHTML = overlapNums.map(n => `
-                    <div class="relative group cursor-pointer" title="Số trùng cực VIP: cược X2">
+                    <div class="relative group cursor-pointer" title="Số trùng 2 dàn: Cược cộng dồn 200đ (4.4M/số) / 50đ Bot">
                         <span class="inline-flex items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-500 border-2 border-amber-300 text-slate-950 font-mono text-sm font-black px-3 py-1.5 shadow-md hover:scale-110 transition-all">
                             ${n}
                         </span>
@@ -884,7 +911,7 @@
             const singleContainer = byId('unifiedLoSingleNumbers');
             if (singleContainer) {
                 singleContainer.innerHTML = singleNums.map(n => `
-                    <div class="relative group cursor-pointer" title="Số đơn bọc lót: cược X1">
+                    <div class="relative group cursor-pointer" title="Số riêng bọc lót: Cược phẳng 100đ (2.2M/số) / 25đ Bot">
                         <span class="inline-flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-slate-200 font-mono text-xs font-bold px-2 py-1 shadow-sm hover:scale-105 transition-all">
                             ${n}
                         </span>
@@ -952,33 +979,8 @@
                 btn.classList.toggle('border', !isActive);
             });
 
-            if (engineData.top20 && engineData.top20.length) {
-                stdNums = engineData.top20.map(number);
-            } else if (loQuadAdv && Array.isArray(loQuadAdv.top20) && loQuadAdv.top20.length) {
-                stdNums = loQuadAdv.top20.map(number);
-            } else {
-                stdNums = (loNext?.standard?.numbers || []).map(number);
-            }
-
-            const stdLabel = byId('unifiedLoStdLabel');
-            if (stdLabel) {
-                stdLabel.textContent = `${engineData.label || 'Động Cơ Lô'} Top ${stdNums.length}`;
-            }
-
-            const stdRoiEl = byId('unifiedLoStdLiveRoi');
-            if (stdRoiEl) {
-                stdRoiEl.textContent = engineData.winRateTop20 ? `Top 20 Win ${engineData.winRateTop20}` : '3 Năm +10.32 TỶ';
-            }
-
-            const stdContainer = byId('unifiedLoStdNumbers');
-            if (stdContainer) {
-                stdContainer.innerHTML = stdNums.map(n => `
-                    <span class="inline-flex items-center justify-center rounded-xl bg-slate-900 border border-slate-700 font-mono text-xs font-black text-white px-2.5 py-1.5 shadow-sm hover:scale-105 transition-all">
-                        ${n}
-                    </span>
-                `).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
-            }
-
+            // Card 1 (Chuẩn Nền Tảng) luôn giữ vững Mỏ Neo Tứ Trụ Quad-Fusion v7.2 Top 20.
+            // Cập nhật Card 2 (Lô Tăng Tốc) và Card 3 (Bảng Gộp) theo động cơ mới:
             updateLoSubTierDisplay(currentSelectedLoSubTier);
         }
 

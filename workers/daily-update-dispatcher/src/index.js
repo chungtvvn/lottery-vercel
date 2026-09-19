@@ -453,7 +453,7 @@ function buildBetCalculationSheet(tier, date, advisorPayload = {}) {
 
   lines.push(
     divider,
-    `<b>2. 🏆 LÔ CHUẨN NỀN TẢNG — ${escapeHtml(engineData.label || loGovernor.selectedEngineLabel || 'Quantum Bayes Fusion 7D')} (DÀN 20 SỐ)</b>`,
+    `<b>2. 🏆 LÔ CHUẨN NỀN TẢNG — 👑 Tứ Trụ Quad-Fusion v7.2 (DÀN 20 SỐ MỎ NEO NỀN TẢNG)</b>`,
     `  • Mức cược: <b>${tier.loDiem} điểm / số</b> (Tổng: ${20 * tier.loDiem} điểm)`,
     `  • Tổng vốn: <b>${loStdStakeK.toLocaleString('vi-VN')}K</b> (1 điểm = 22K)`,
     `  • Tiền thưởng: <b>${loStdWinPerHitK.toLocaleString('vi-VN')}K / nháy nổ</b> (1 điểm = 80K)`,
