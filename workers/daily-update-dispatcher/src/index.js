@@ -995,7 +995,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   lines.push(`<b>5. 💎 LÔ XIÊN 4 TINH HOA (QUÂY 11 VÉ)</b>`);
   if (loXien4Adv) {
     lines.push(
-      `👑 <i>Tứ Thủ Hiệp Đồng Đồ Thị: 3 Năm +4.314 TỶ (ROI +40.1%) · Điểm Hiệp Đồng: ${loXien4Adv.score || 252.2}</i>`
+      `👑 <i>Tứ Thủ PMI-Lift Synergy v7.2: Năm 2026 Lãi +1.847 TỶ (ROI +66.8%) · Thắng 41.0% · Điểm Hiệp Đồng: ${loXien4Adv.score || 252.2}</i>`
     );
   }
   lines.push(
