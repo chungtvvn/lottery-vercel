@@ -884,12 +884,16 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   }
 
   let stdNums = [];
-  if (engineData.top20 && engineData.top20.length) {
+  if (loQuadAdv?.top20 && loQuadAdv.top20.length) {
+    stdNums = loQuadAdv.top20.map(normalizeLotteryNumber);
+  } else if (loQuadAdv?.rankedNumbers && loQuadAdv.rankedNumbers.length) {
+    stdNums = loQuadAdv.rankedNumbers.slice(0, 20).map(normalizeLotteryNumber);
+  } else if (engineData.top20 && engineData.top20.length) {
     stdNums = engineData.top20.map(normalizeLotteryNumber);
   } else if (engineData.rankedNumbers && engineData.rankedNumbers.length) {
     stdNums = engineData.rankedNumbers.slice(0, 20).map(normalizeLotteryNumber);
-  } else if (loQuadAdv?.top20 && loQuadAdv.top20.length) {
-    stdNums = loQuadAdv.top20.map(normalizeLotteryNumber);
+  } else if (metaNext?.standard?.numbers?.length) {
+    stdNums = (metaNext.standard.numbers || []).map(normalizeLotteryNumber);
   } else if (lotoPayload.nextPrediction) {
     const strat = lotoPayload.nextPrediction?.strategies?.rrfParallelBlock85Small65
       || lotoPayload.nextPrediction?.strategies?.dedupEdge75Pit
@@ -899,9 +903,14 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     stdNums = (metaNext?.standard?.numbers || []).map(normalizeLotteryNumber);
   }
 
+  const isQuadMaster = Boolean(loQuadAdv);
   const loEngineLabel = engineData.label || loGovernor.selectedEngineLabel || 'Quantum Bayes Fusion 7D';
-  const loMethodTitle = `${loEngineLabel} Top 20 (Đề Xuất Nền Tảng)`;
-  const loMethodStat = engineData.winRateTop20 ? ` · Win ${engineData.winRateTop20}` : (loQuadAdv ? ' · 3 Năm +10.32 TỶ · 6.669 Nháy' : '');
+  const loMethodTitle = isQuadMaster
+    ? `👑 Tứ Trụ Quad-Fusion v7.2 Top 20 (Mỏ Neo Nền Tảng)`
+    : `${loEngineLabel} Top 20 (Đề Xuất Nền Tảng)`;
+  const loMethodStat = isQuadMaster
+    ? ` · Win 77.3% (Lãi 2026: +2.98 TỶ · 6.96 Nháy)`
+    : (engineData.winRateTop20 ? ` · Win ${engineData.winRateTop20}` : '');
   lines.push(
     `🎯 <b>${escapeHtml(loMethodTitle)}</b>${escapeHtml(loMethodStat)} (Vốn 44M · Cược 2.2M/số [2.200K / 100đ] · Ăn 8M/nháy):`,
     `  • <i>Mức chuẩn 10đ/số: Vốn 200 điểm (4.400K) · Ăn 800K/nháy (1đ = 22K ăn 80K)</i>`,
