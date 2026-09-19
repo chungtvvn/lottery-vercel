@@ -478,6 +478,197 @@ function buildBetCalculationSheet(tier, date, advisorPayload = {}) {
   return lines.join('\n');
 }
 
+function resolveUnifiedDeRowForDate(date, advisorPayload = {}) {
+  const metaSettledList = advisorPayload?.metaLearner?.settledLedger || [];
+  const streakSettled = advisorPayload?.streakAwareDeAdvisor?.settledLedger || [];
+  const adaptiveSettled = advisorPayload?.adaptiveDualMerge?.settledLedger || [];
+  const dualSettled = advisorPayload?.dualMerge?.settledLedger || [];
+  const tripleSettled = advisorPayload?.tripleMerge?.settledLedger || [];
+
+  const mRow = metaSettledList.find(r => (r.predictionDate || r.date) === date);
+  const sRow = streakSettled.find(r => (r.date || r.predictionDate) === date);
+  const aRow = adaptiveSettled.find(r => (r.predictionDate || r.date) === date);
+  const dRow = dualSettled.find(r => (r.predictionDate || r.date) === date);
+  const tRow = tripleSettled.find(r => (r.predictionDate || r.date) === date);
+
+  let chosenDeMethod = 'metaLearner';
+  if (date === '2026-09-16') {
+    chosenDeMethod = 'metaLearner';
+  } else if (date === '2026-09-17' || date === '2026-09-18' || date === '2026-09-19') {
+    chosenDeMethod = 'adaptiveDualMerge';
+  } else if (sRow?.chosenMethod) {
+    chosenDeMethod = sRow.chosenMethod;
+  } else {
+    chosenDeMethod = 'metaLearner';
+  }
+
+  let methodName = '💎 Đề Tinh Hoa';
+  let subTierLabel = 'Dàn Chuẩn 30 số';
+  let isHit = false;
+  let hitType = 'loss';
+  let profitK = -30000;
+  let stakeK = 30000;
+  let payoutK = 0;
+  let profitM3K = -6000;
+  let stakeM3K = 6000;
+  let payoutM3K = 0;
+  let actualSpecial = sRow?.actual ?? sRow?.actualSpecial ?? aRow?.actualSpecial ?? aRow?.actual ?? mRow?.actualSpecial ?? mRow?.actual ?? null;
+  let numbers = [];
+  let vipNumbers = [];
+  let singleNumbers = [];
+
+  if (chosenDeMethod === 'adaptiveDualMerge') {
+    methodName = '👑 Đề Thích Ứng Alpha';
+    const r = aRow || sRow;
+    const union = (r?.fullUnion || r?.union || r?.numbers || []).map(normalizeLotteryNumber);
+    const x2 = (r?.intersectionX2 || r?.intersection || r?.vipNumbers || []).map(normalizeLotteryNumber);
+    const x1 = (r?.uniqueSinglesX1 || r?.uniqueSingles || r?.backupNumbers || []).map(normalizeLotteryNumber);
+    numbers = union;
+    vipNumbers = x2;
+    singleNumbers = x1;
+    const numX2 = x2.length || 20;
+    const numX1 = x1.length || (union.length > numX2 ? union.length - numX2 : 20);
+    subTierLabel = `Dàn ${union.length || 40} số (${numX2} VIP X2 · ${numX1} Lót X1)`;
+
+    stakeK = 60000;
+    stakeM3K = numX2 * 400 + numX1 * 200;
+
+    if (r?.isHit != null) {
+      isHit = Boolean(r.isHit);
+      hitType = (r.isX2 || r.hitType === 'win_x2') ? 'win_x2' : (isHit ? 'win_x1' : 'loss');
+    } else if (actualSpecial != null) {
+      const specStr = String(actualSpecial).padStart(2, '0');
+      if (x2.includes(specStr)) {
+        isHit = true;
+        hitType = 'win_x2';
+      } else if (union.includes(specStr) || x1.includes(specStr)) {
+        isHit = true;
+        hitType = 'win_x1';
+      } else {
+        isHit = false;
+        hitType = 'loss';
+      }
+    }
+
+    if (hitType === 'win_x2') {
+      payoutK = 168000;
+      profitK = payoutK - stakeK;
+      payoutM3K = 400 * 84;
+      profitM3K = payoutM3K - stakeM3K;
+    } else if (hitType === 'win_x1') {
+      payoutK = 84000;
+      profitK = payoutK - stakeK;
+      payoutM3K = 200 * 84;
+      profitM3K = payoutM3K - stakeM3K;
+    } else {
+      payoutK = 0;
+      profitK = -stakeK;
+      payoutM3K = 0;
+      profitM3K = -stakeM3K;
+    }
+  } else {
+    // metaLearner default 30 numbers
+    methodName = '💎 Đề Tinh Hoa';
+    subTierLabel = 'Dàn Chuẩn 30 số';
+    numbers = (mRow?.numbers || mRow?.standard30 || []).map(normalizeLotteryNumber);
+    vipNumbers = (mRow?.core10 || numbers.slice(0, 10)).map(normalizeLotteryNumber);
+    singleNumbers = numbers.slice(10);
+    stakeK = 30000;
+    stakeM3K = 6000;
+    isHit = Boolean(mRow?.isHit || (mRow?.profitK || 0) > 0);
+    hitType = isHit ? 'win_x1' : 'loss';
+    if (isHit) {
+      payoutK = 84000;
+      profitK = 54000;
+      payoutM3K = 200 * 84;
+      profitM3K = payoutM3K - stakeM3K;
+    } else {
+      payoutK = 0;
+      profitK = -30000;
+      payoutM3K = 0;
+      profitM3K = -6000;
+    }
+  }
+
+  return {
+    date,
+    chosenDeMethod,
+    methodName,
+    subTierLabel,
+    numbers,
+    vipNumbers,
+    singleNumbers,
+    actualSpecial,
+    isHit,
+    hitType,
+    stakeK,
+    payoutK,
+    profitK,
+    stakeM3K,
+    payoutM3K,
+    profitM3K
+  };
+}
+
+function resolveUnifiedLoRowForDate(r) {
+  if (!r) {
+    return {
+      stdHits: 0, stdStakeK: 44000, stdPayoutK: 0, stdProfitK: -44000, stdM3StakeK: 11000, stdM3PayoutK: 0, stdM3ProfitK: -11000,
+      x2Hits: 0, x2StakeK: 30800, x2PayoutK: 0, x2ProfitK: -30800, x2M3StakeK: 7700, x2M3PayoutK: 0, x2M3ProfitK: -7700,
+      xi4Hits: 0, xi4StakeK: 11000, xi4PayoutK: 0, xi4ProfitK: -11000, xi4M3StakeK: 2200, xi4M3PayoutK: 0, xi4M3ProfitK: -2200,
+      dayStakeK: 85800, dayPayoutK: 0, dayProfitK: -85800,
+      dayM3StakeK: 20900, dayM3PayoutK: 0, dayM3ProfitK: -20900
+    };
+  }
+
+  const stdHits = Number(r?.standard?.hits ?? 0);
+  const stdStakeK = 44000;
+  const stdPayoutK = stdHits * 8000;
+  const stdProfitK = stdPayoutK - stdStakeK;
+  const stdM3StakeK = 11000; // 20 con * 25đ * 22K
+  const stdM3PayoutK = stdHits * 2000; // 25đ * 80K
+  const stdM3ProfitK = stdM3PayoutK - stdM3StakeK;
+
+  const x2Hits = Number(r?.x2?.hits ?? 0);
+  const x2StakeK = 30800;
+  const x2PayoutK = x2Hits * 16000;
+  const x2ProfitK = x2PayoutK - x2StakeK;
+  const x2M3StakeK = 7700; // 7 con * 50đ * 22K
+  const x2M3PayoutK = x2Hits * 4000; // 50đ * 80K
+  const x2M3ProfitK = x2M3PayoutK - x2M3StakeK;
+
+  const xi4Hits = Number(r?.xien4?.hits ?? 0);
+  const xi4StakeK = 11000;
+  let xi4PayoutK = 0;
+  if (xi4Hits >= 4) xi4PayoutK = 384000;
+  else if (xi4Hits === 3) xi4PayoutK = 84000;
+  else if (xi4Hits === 2) xi4PayoutK = 12000;
+  const xi4ProfitK = xi4PayoutK - xi4StakeK;
+
+  const xi4M3StakeK = 2200; // 11 vé * 200K
+  let xi4M3PayoutK = 0;
+  if (xi4Hits >= 4) xi4M3PayoutK = 76800;
+  else if (xi4Hits === 3) xi4M3PayoutK = 16800;
+  else if (xi4Hits === 2) xi4M3PayoutK = 2400;
+  const xi4M3ProfitK = xi4M3PayoutK - xi4M3StakeK;
+
+  const dayStakeK = stdStakeK + x2StakeK + xi4StakeK;
+  const dayPayoutK = stdPayoutK + x2PayoutK + xi4PayoutK;
+  const dayProfitK = dayPayoutK - dayStakeK;
+
+  const dayM3StakeK = stdM3StakeK + x2M3StakeK + xi4M3StakeK;
+  const dayM3PayoutK = stdM3PayoutK + x2M3PayoutK + xi4M3PayoutK;
+  const dayM3ProfitK = dayM3PayoutK - dayM3StakeK;
+
+  return {
+    stdHits, stdStakeK, stdPayoutK, stdProfitK, stdM3StakeK, stdM3PayoutK, stdM3ProfitK,
+    x2Hits, x2StakeK, x2PayoutK, x2ProfitK, x2M3StakeK, x2M3PayoutK, x2M3ProfitK,
+    xi4Hits, xi4StakeK, xi4PayoutK, xi4ProfitK, xi4M3StakeK, xi4M3PayoutK, xi4M3ProfitK,
+    dayStakeK, dayPayoutK, dayProfitK,
+    dayM3StakeK, dayM3PayoutK, dayM3ProfitK
+  };
+}
+
 function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, advisorPayload = {}) {
   // ── Data sources ──────────────────────────────────────────────────────────
   // Đề Tinh Hoa — MetaLearner (dàn 30 số quán quân)
@@ -515,7 +706,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
 
   const lines = [
     `🎯 <b>XSMB — GỢI Ý THỰC CHIẾN HÀNG NGÀY ${escapeHtml(displayDate(predictionDate))}</b>`,
-    `<i>Cơ chế cược Mức 3 (Mặc định): Đề 200K/số · Lô 25đ/số (X2 50đ) · Xiên 4 quây 200K/vé (hoặc Mức VIP: Đề 1M · Lô 100đ)</i>`,
+    `<i>Cơ chế cược Mức 3 (Mặc định): Đề 200K/số (X2 400K) · Lô 25đ/số (X2 50đ) · Xiên 4 quây 200K/vé (hoặc Mức VIP: Đề 1M · Lô 100đ)</i>`,
     ''
   ];
 
@@ -550,63 +741,59 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   // =========================================================================
   // 0. 🏆 BÁO CÁO KẾT QUẢ ĐỐI SOÁT HÔM NAY (NẾU ĐÃ CÓ KẾT QUẢ MỞ THƯỞNG)
   // =========================================================================
-  const lastSettledDe = metaSettledList[metaSettledList.length - 1] || null;
   const lastSettledLo = liveDiaryEntries.filter(r => r.settled !== false && (r.db || r.dayProfitK !== undefined)).pop() || null;
-  const settledDate = lastSettledDe?.predictionDate || lastSettledDe?.date || lastSettledLo?.date;
+  const streakSettled = advisorPayload?.streakAwareDeAdvisor?.settledLedger || [];
+  const lastStreakDe = streakSettled.slice().pop() || null;
+  const settledDate = lastStreakDe?.date || lastStreakDe?.predictionDate || lastSettledLo?.date || metaSettledList[metaSettledList.length - 1]?.date;
 
-  if (settledDate && (lastSettledDe?.actualSpecial != null || lastSettledLo?.db != null)) {
-    const actualSpecial = lastSettledDe?.actualSpecial ?? lastSettledDe?.actual ?? lastSettledLo?.db;
-    const specStr = String(actualSpecial).padStart(2, '0');
-    const deIsHit = Boolean(lastSettledDe?.isHit || (lastSettledDe?.profitK || 0) > 0 || lastSettledDe?.hitType === 'win_x1');
-    const deProfitK = Number(lastSettledDe?.profitK ?? (deIsHit ? 54000 : -30000));
-    const inCore10 = (lastSettledDe?.core10 || []).map(normalizeLotteryNumber).includes(specStr);
+  if (settledDate) {
+    const resDe = resolveUnifiedDeRowForDate(settledDate, advisorPayload);
+    const resLo = resolveUnifiedLoRowForDate(lastSettledLo);
 
-    const dmRow = (advisorPayload?.loDualMerge?.settledLedger || []).find(r => r.date === settledDate);
-    const actual27List = (dmRow?.actual27 || []).map(normalizeLotteryNumber);
+    const actualSpecial = resDe.actualSpecial ?? lastSettledLo?.db;
+    if (actualSpecial != null) {
+      const specStr = String(actualSpecial).padStart(2, '0');
 
-    const stdHits = Number(lastSettledLo?.standard?.hits ?? 0);
-    const stdProfitK = Number(lastSettledLo?.standard?.profitK ?? (stdHits * 8000 - 44000));
-    const stdHitNums = (lastSettledLo?.standard?.numbers || []).map(normalizeLotteryNumber).filter(n => actual27List.includes(n));
-    const stdHitStr = stdHitNums.length ? ` (Nổ: <b>${stdHitNums.join(', ')}</b>)` : '';
+      const dmRow = (advisorPayload?.loDualMerge?.settledLedger || []).find(r => r.date === settledDate);
+      const actual27List = (dmRow?.actual27 || []).map(normalizeLotteryNumber);
 
-    const x2Hits = Number(lastSettledLo?.x2?.hits ?? 0);
-    const x2ProfitK = Number(lastSettledLo?.x2?.profitK ?? (x2Hits * 16000 - 30800));
-    const x2HitNums = (lastSettledLo?.x2?.numbers || []).map(normalizeLotteryNumber).filter(n => actual27List.includes(n));
-    const x2HitStr = x2HitNums.length ? ` (Nổ: <b>${x2HitNums.join(', ')}</b>)` : '';
+      const stdHitNums = (lastSettledLo?.standard?.numbers || []).map(normalizeLotteryNumber).filter(n => actual27List.includes(n));
+      const stdHitStr = stdHitNums.length ? ` (Nổ: <b>${stdHitNums.join(', ')}</b>)` : '';
 
-    const xi4Hits = Number(lastSettledLo?.xien4?.hits ?? 0);
-    const xi4ProfitK = Number(lastSettledLo?.xien4?.profitK ?? -11000);
+      const x2HitNums = (lastSettledLo?.x2?.numbers || []).map(normalizeLotteryNumber).filter(n => actual27List.includes(n));
+      const x2HitStr = x2HitNums.length ? ` (Nổ: <b>${x2HitNums.join(', ')}</b>)` : '';
 
-    const todayTotalProfitK = deProfitK + (lastSettledLo?.dayProfitK ?? (stdProfitK + x2ProfitK + xi4ProfitK));
+      let deResultTitle = '';
+      if (resDe.hitType === 'win_x2') {
+        deResultTitle = `🎉 <b>TRÚNG ĐỀ ${escapeHtml(specStr)} VIP X2 (ĂN 2 NHÁY ĐỀ)!</b>`;
+      } else if (resDe.hitType === 'win_x1') {
+        deResultTitle = `🎉 <b>TRÚNG ĐỀ ${escapeHtml(specStr)} BỌC LÓT X1!</b>`;
+      } else {
+        deResultTitle = `❌ <b>Trượt (-${formatK(resDe.stakeM3K)} M3 / -${formatM(resDe.stakeK)} VIP)</b>`;
+      }
 
-    // Standard Units (10K / 10đ / 20đ / 100K)
-    const deStdProfitK = deIsHit ? 540 : -300;
-    const loStdProfitK = stdHits * 800 - 4400;
-    const loX2ProfitK = x2Hits * 1600 - 3080;
-    let xi4StdProfitK = -1100;
-    if (xi4Hits === 4) xi4StdProfitK = 38400 - 1100;
-    else if (xi4Hits === 3) xi4StdProfitK = 7000 - 1100;
-    else if (xi4Hits === 2) xi4StdProfitK = 1000 - 1100;
-    const todayStdTotalK = deStdProfitK + loStdProfitK + loX2ProfitK + xi4StdProfitK;
+      const todayM3TotalK = resDe.profitM3K + resLo.dayM3ProfitK;
+      const todayTotalProfitK = resDe.profitK + resLo.dayProfitK;
 
-    lines.push(
-      `🏆 <b>BÁO CÁO KẾT QUẢ ĐỐI SOÁT HÔM NAY (${escapeHtml(displayDate(settledDate))})</b>`,
-      `🎯 <b>Giải Đặc Biệt (Đề):</b> <b>${escapeHtml(specStr)}</b>`,
-      `• 💎 <b>Đề Gợi Ý (Dàn 30)</b>: ${deIsHit ? `🎉 <b>TRÚNG ĐỀ ${escapeHtml(specStr)}</b> (+54M)` : '❌ <b>Trượt (-30M)</b>'}${inCore10 ? ' · <i>(Nổ ngay Core 10 VIP!)</i>' : ''}`,
-      `   └ Mức chuẩn 10K: <b>${formatK(deStdProfitK)}</b> (Vốn 300K · Ăn ${deIsHit ? '840K' : '0K'}) · Mức VIP: <b>${formatM(deProfitK)}</b>`,
-      `• 🏆 <b>Lô Chuẩn (Top 20)</b>: Nổ <b>${stdHits} nháy</b>${stdHitStr}`,
-      `   └ Mức chuẩn 10đ/số: <b>${formatK(loStdProfitK)}</b> (Vốn 200đ [4.400K] · Ăn ${(stdHits * 800).toLocaleString('vi-VN')}K) · Mức VIP: <b>${formatM(stdProfitK)}</b>`,
-      `• 🚀 <b>Lô X2 (Top 7)</b>: ${x2ProfitK > 0 ? '🚀 <b>THẮNG</b>' : '❌ Trượt'} nổ <b>${x2Hits} nháy</b>${x2HitStr}`,
-      `   └ Mức chuẩn 20đ/số: <b>${formatK(loX2ProfitK)}</b> (Vốn 140đ [3.080K] · Ăn ${(x2Hits * 1600).toLocaleString('vi-VN')}K) · Mức VIP: <b>${formatM(x2ProfitK)}</b>`,
-      `• 💎 <b>Lô Xiên 4 (Quây)</b>: ${xi4Hits >= 2 ? `🎉 <b>Ăn ${xi4Hits}/4 con</b>` : `❌ Trượt (${xi4Hits}/4 con)`}`,
-      `   └ Mức chuẩn 100K/vé: <b>${formatK(xi4StdProfitK)}</b> (11 vé · Vốn 1.100K) · Mức VIP: <b>${formatM(xi4ProfitK)}</b>`,
-      `💰 <b>TỔNG LÃI RÒNG HÔM NAY:</b>`,
-      `   👉 <b>Mức Chuẩn Hàng Ngày:</b> <b>${formatK(todayStdTotalK)}</b> (${todayStdTotalK > 0 ? '+' : ''}${(todayStdTotalK / 1000).toFixed(2)} Triệu VNĐ)`,
-      `   👉 <b>Mức VIP Vốn Lớn:</b> <b>${formatM(todayTotalProfitK)}</b> ${todayTotalProfitK > 0 ? '🎉 <b>(THẮNG LỢI RỰC RỠ)</b>' : ''}`,
-      divider,
-      `🔮 <b>GỢI Ý DÀN SỐ ĐÁNH TIẾP THEO (${escapeHtml(displayDate(predictionDate))})</b>`,
-      divider
-    );
+      lines.push(
+        `🏆 <b>BÁO CÁO KẾT QUẢ ĐỐI SOÁT HÔM NAY (${escapeHtml(displayDate(settledDate))})</b>`,
+        `🎯 <b>Giải Đặc Biệt (Đề):</b> <b>${escapeHtml(specStr)}</b>`,
+        `• 💎 <b>Đề Thực Chiến (${escapeHtml(resDe.methodName)} - ${escapeHtml(resDe.subTierLabel)})</b>: ${deResultTitle}`,
+        `   └ Đơn vị Bot (200K/400K): <b>${formatK(resDe.profitM3K)}</b> (${resDe.profitM3K > 0 ? '+' : ''}${(resDe.profitM3K / 1000).toFixed(1)}M) · Mức VIP: <b>${formatM(resDe.profitK)}</b>`,
+        `• 🏆 <b>Lô Chuẩn Nền Tảng (Top 20 số)</b>: Nổ <b>${resLo.stdHits} nháy</b>${stdHitStr}`,
+        `   └ Đơn vị Bot (25đ/số): <b>${formatK(resLo.stdM3ProfitK)}</b> (Vốn 500đ [11.000K] · Ăn ${(resLo.stdM3PayoutK).toLocaleString('vi-VN')}K) · Mức VIP: <b>${formatM(resLo.stdProfitK)}</b>`,
+        `• 🚀 <b>Lô Tăng Tốc X2 (Top 7 số)</b>: ${resLo.x2ProfitK > 0 ? '🚀 <b>THẮNG</b>' : '❌ Trượt'} nổ <b>${resLo.x2Hits} nháy</b>${x2HitStr}`,
+        `   └ Đơn vị Bot (50đ/số): <b>${formatK(resLo.x2M3ProfitK)}</b> (Vốn 350đ [7.700K] · Ăn ${(resLo.x2M3PayoutK).toLocaleString('vi-VN')}K) · Mức VIP: <b>${formatM(resLo.x2ProfitK)}</b>`,
+        `• 💎 <b>Lô Xiên 4 (Quây 11 vé)</b>: ${resLo.xi4Hits >= 2 ? `🎉 <b>Ăn ${resLo.xi4Hits}/4 con</b>` : `❌ Trượt (${resLo.xi4Hits}/4 con)`}`,
+        `   └ Đơn vị Bot (200K/vé): <b>${formatK(resLo.xi4M3ProfitK)}</b> (11 vé · Vốn 2.200K · Ăn ${(resLo.xi4M3PayoutK).toLocaleString('vi-VN')}K) · Mức VIP: <b>${formatM(resLo.xi4ProfitK)}</b>`,
+        `💰 <b>TỔNG LÃI RÒNG HÔM NAY (${escapeHtml(displayDate(settledDate))}):</b>`,
+        `   👉 <b>Đơn Vị Bot Telegram:</b> <b>${formatK(todayM3TotalK)}</b> (${todayM3TotalK > 0 ? '+' : ''}${(todayM3TotalK / 1000).toFixed(2)} Triệu VNĐ) ${todayM3TotalK > 0 ? '🎉 <b>(THẮNG LỢI RỰC RỠ)</b>' : ''}`,
+        `   👉 <b>Mức VIP Web (Vốn Lớn):</b> <b>${formatM(todayTotalProfitK)}</b> ${todayTotalProfitK > 0 ? '🎉 <b>(THẮNG LỢI RỰC RỠ)</b>' : ''}`,
+        divider,
+        `🔮 <b>GỢI Ý DÀN SỐ ĐÁNH TIẾP THEO (${escapeHtml(displayDate(predictionDate))})</b>`,
+        divider
+      );
+    }
   }
 
   // =========================================================================
@@ -815,80 +1002,57 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   // 6. 📊 BẢNG THEO DÕI THỰC CHIẾN THEO GỢI Ý (BẮT ĐẦU TỪ 16/09/2026)
   // =========================================================================
   const NEW_BATTLE_START_DATE = '2026-09-16';
-  const settledNewPeriodLo = liveDiaryEntries.filter(r => (r.date || r.predictionDate) >= NEW_BATTLE_START_DATE && r.settled !== false && (r.db || r.dayProfitK !== undefined));
-
-  // Resolve De settled records for the new period (starting 16/09/2026)
-  const streakSettled = advisorPayload?.streakAwareDeAdvisor?.settledLedger || [];
-  const adaptiveSettled = advisorPayload?.adaptiveDualMerge?.settledLedger || [];
   const deAllDates = new Set([
-    ...settledNewPeriodLo.map(r => r.date || r.predictionDate),
-    ...metaSettledList.filter(r => (r.predictionDate || r.date) >= NEW_BATTLE_START_DATE).map(r => r.predictionDate || r.date),
-    ...streakSettled.filter(r => (r.date || r.predictionDate) >= NEW_BATTLE_START_DATE).map(r => r.date || r.predictionDate)
+    ...liveDiaryEntries.filter(r => (r.date || r.predictionDate) >= NEW_BATTLE_START_DATE && r.settled !== false && (r.db || r.dayProfitK !== undefined)).map(r => r.date || r.predictionDate),
+    ...advisorPayload?.streakAwareDeAdvisor?.settledLedger?.filter(r => (r.date || r.predictionDate) >= NEW_BATTLE_START_DATE).map(r => r.date || r.predictionDate) || [],
+    ...metaSettledList.filter(r => (r.predictionDate || r.date) >= NEW_BATTLE_START_DATE).map(r => r.predictionDate || r.date)
   ]);
-  const sortedDeDates = [...deAllDates].filter(d => d >= NEW_BATTLE_START_DATE).sort();
-
-  const settledNewPeriodDe = sortedDeDates.map(date => {
-    if (date === '2026-09-16') {
-      // 16/09 was locked as Đề Tinh Hoa (Dàn Chuẩn 30 số, Vốn 30M, Trúng ĐB 44 -> +54M VIP / +10.8M Mức 3)
-      const mRow = metaSettledList.find(r => (r.predictionDate || r.date) === '2026-09-16');
-      const isHit = mRow ? Boolean(mRow.isHit || mRow.profitK > 0) : true;
-      const profitK = mRow?.profitK != null ? mRow.profitK : (isHit ? 54000 : -30000);
-      const profitM3K = isHit ? 10800 : -6000;
-      return { date, profitK, profitM3K, isHit, stakeK: 30000, methodName: '💎 Đề Tinh Hoa' };
-    }
-    if (date === '2026-09-17') {
-      // 17/09 was locked as Đề Thích Ứng Alpha (Dàn 43 số: 17 X2 · 26 X1, Vốn 60M, Trượt ĐB 60 -> -60M VIP / -12M Mức 3)
-      const aRow = adaptiveSettled.find(r => (r.predictionDate || r.date) === '2026-09-17');
-      const sRow = streakSettled.find(r => (r.date || r.predictionDate) === '2026-09-17');
-      const profitK = (aRow?.profitK != null) ? aRow.profitK : (sRow?.profitK != null ? sRow.profitK : -60000);
-      const isHit = (aRow?.isHit != null) ? aRow.isHit : (profitK > 0);
-      const profitM3K = Math.round(profitK * 0.2);
-      return { date, profitK, profitM3K, isHit, stakeK: 60000, methodName: '👑 Đề Thích Ứng Alpha' };
-    }
-    const sRow = streakSettled.find(r => (r.date || r.predictionDate) === date);
-    if (sRow) {
-      const profitK = sRow.profitK != null ? sRow.profitK : (sRow.isHit ? 54000 : -60000);
-      const isHit = Boolean(sRow.isHit || profitK > 0);
-      const profitM3K = Math.round(profitK * 0.2);
-      return { date, profitK, profitM3K, isHit, stakeK: sRow.stakeK || 60000, methodName: sRow.chosenMethod || 'Đề Đổi Pha' };
-    }
-    const mRow = metaSettledList.find(r => (r.predictionDate || r.date) === date);
-    const profitK = mRow?.profitK != null ? mRow.profitK : (mRow?.isHit ? 54000 : -30000);
-    const isHit = Boolean(mRow?.isHit || profitK > 0);
-    const profitM3K = isHit ? 10800 : -6000;
-    return { date, profitK, profitM3K, isHit, stakeK: 30000, methodName: '💎 Đề Tinh Hoa' };
-  });
+  if (settledDate && settledDate >= NEW_BATTLE_START_DATE) {
+    deAllDates.add(settledDate);
+  }
+  const sortedBattleDates = [...deAllDates].filter(d => d >= NEW_BATTLE_START_DATE).sort();
 
   lines.push(`<b>6. 📊 BẢNG THEO DÕI THỰC CHIẾN THEO GỢI Ý (BẮT ĐẦU TỪ 16/09/2026)</b>`);
-  lines.push(`<i>Thống kê thực tế hoàn toàn theo các dàn gợi ý ở trên — Mốc khởi điểm 0đ</i>`);
+  lines.push(`<i>Thống kê thực tế hoàn toàn theo các dàn gợi ý thực chiến ở trên — Mốc khởi điểm 0đ</i>`);
 
-  if (settledNewPeriodDe.length === 0 && settledNewPeriodLo.length === 0) {
+  if (sortedBattleDates.length === 0) {
     lines.push(
       `• 📅 <b>Kỳ 1 (${escapeHtml(displayDate(predictionDate))}):</b> ⏳ <b>ĐANG CHỜ KẾT QUẢ QUAY THƯỞNG 18:15</b>`,
-      `• 💎 Đề Gợi Ý (Dàn 30): Chờ quay (Mức 3: Vốn 6.000K · VIP: Vốn 30M)`,
-      `• 🏆 Lô Chuẩn Gợi Ý (Top 20): Chờ quay (Mức 3: Vốn 11.000K · VIP: Vốn 44M)`,
-      `• 🚀 Lô X2 Gợi Ý (Top 7): Chờ quay (Mức 3: Vốn 7.700K · VIP: Vốn 30.8M)`,
-      `• 💎 Lô Xiên 4 Gợi Ý (Quây 11 vé): Chờ quay (Mức 3: Vốn 2.200K · VIP: Vốn 11M)`,
-      `• 💰 <b>Tổng Lũy Kế Thực Chiến Gợi Ý</b>: <b>0 VNĐ (Baseline khởi động)</b>`
+      `• 💎 Đề Thực Chiến: Chờ quay (Đơn vị Bot: 200K/400K · VIP: Vốn 60M)`,
+      `• 🏆 Lô Chuẩn Gợi Ý (Top 20): Chờ quay (Đơn vị Bot: 25đ/số [11.000K] · VIP: Vốn 44M)`,
+      `• 🚀 Lô X2 Gợi Ý (Top 7): Chờ quay (Đơn vị Bot: 50đ/số [7.700K] · VIP: Vốn 30.8M)`,
+      `• 💎 Lô Xiên 4 Gợi Ý (Quây 11 vé): Chờ quay (Đơn vị Bot: 200K/vé [2.200K] · VIP: Vốn 11M)`,
+      `• 💰 <b>Tổng Lũy Kế Thực Chiến GỢI Ý</b>: <b>0 VNĐ (Baseline khởi động)</b>`
     );
   } else {
-    const totalDeProfit = settledNewPeriodDe.reduce((s, r) => s + (r.profitK || 0), 0);
-    const deWins = settledNewPeriodDe.filter(r => (r.profitK || 0) > 0 || r.isHit).length;
-    const totalLoProfit = settledNewPeriodLo.reduce((s, r) => s + (r.dayProfitK || 0), 0);
-    const cumulativeAllProfit = totalDeProfit + totalLoProfit;
-    const daysCount = Math.max(settledNewPeriodDe.length, settledNewPeriodLo.length);
+    let cumDeM3K = 0, cumDeVipK = 0, deWinCount = 0;
+    let cumLoM3K = 0, cumLoVipK = 0;
 
-    const totalDeM3ProfitK = settledNewPeriodDe.reduce((s, r) => s + (r.profitM3K != null ? r.profitM3K : Math.round(r.profitK * 0.2)), 0);
-    const totalLoM3ProfitK = Math.round(totalLoProfit * 0.25);
-    const cumulativeM3TotalK = totalDeM3ProfitK + totalLoM3ProfitK;
+    for (const d of sortedBattleDates) {
+      const deRow = resolveUnifiedDeRowForDate(d, advisorPayload);
+      cumDeM3K += deRow.profitM3K;
+      cumDeVipK += deRow.profitK;
+      if (deRow.isHit) deWinCount++;
+
+      const loEntry = liveDiaryEntries.find(r => (r.date || r.predictionDate) === d && r.settled !== false);
+      if (loEntry) {
+        const loRow = resolveUnifiedLoRowForDate(loEntry);
+        cumLoM3K += loRow.dayM3ProfitK;
+        cumLoVipK += loRow.dayProfitK;
+      }
+    }
+
+    const daysCount = sortedBattleDates.length;
+    const cumM3TotalK = cumDeM3K + cumLoM3K;
+    const cumVipTotalK = cumDeVipK + cumLoVipK;
 
     lines.push(
       `• 📅 <b>Số kỳ đã kết toán</b>: <b>${daysCount} kỳ</b>`,
-      `• 💎 <b>Đề Gợi Ý</b>: <b>${formatK(totalDeM3ProfitK)}</b> (${formatM(totalDeProfit)} VIP · ${deWins}/${daysCount} trúng)`,
-      `• 🎰 <b>Lô Gợi Ý Combo</b>: <b>${formatK(totalLoM3ProfitK)}</b> (${formatM(totalLoProfit)} VIP)`,
+      `• 💎 <b>Đề Thực Chiến</b>: <b>${formatK(cumDeM3K)}</b> (${formatM(cumDeVipK)} VIP · ${deWinCount}/${daysCount} kỳ trúng)`,
+      `• 🎰 <b>Lô Gợi Ý Combo</b>: <b>${formatK(cumLoM3K)}</b> (${formatM(cumLoVipK)} VIP)`,
       `• 💰 <b>Tổng Lũy Kế Thực Chiến Gợi Ý:</b>`,
-      `   👉 <b>Mức 3 (Mặc Định)</b>: <b>${formatK(cumulativeM3TotalK)}</b> (${cumulativeM3TotalK > 0 ? '+' : ''}${(cumulativeM3TotalK / 1000).toFixed(2)} Triệu VNĐ)`,
-      `   👉 <b>Mức VIP Vốn Lớn</b>: <b>${formatM(cumulativeAllProfit)}</b>`
+      `   👉 <b>Đơn Vị Bot Telegram:</b> <b>${formatK(cumM3TotalK)}</b> (${cumM3TotalK > 0 ? '+' : ''}${(cumM3TotalK / 1000).toFixed(2)} Triệu VNĐ) ${cumM3TotalK > 0 ? '🎉 <b>(DƯƠNG LÃI RỰC RỠ)</b>' : ''}`,
+      `   👉 <b>Mức VIP Vốn Lớn:</b> <b>${formatM(cumVipTotalK)}</b>`
     );
   }
   lines.push(divider);
