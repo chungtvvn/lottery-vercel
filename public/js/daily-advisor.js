@@ -256,60 +256,66 @@
         let deIsHitFinal = Boolean(deRow?.isHit || (deRow?.profitK > 0));
         let deProfitK = deRow ? (deRow.profitK ?? (deIsHitFinal ? 54000 : -30000)) : 0;
 
-        if (chosenDeMethod === 'adaptiveDualMerge' && adaptiveRow) {
+        if (chosenDeMethod === 'adaptiveDualMerge') {
+            const r = adaptiveRow || streakRow;
             deMethodName = '👑 Đề Thích Ứng Alpha';
-            deNumbers = (adaptiveRow.fullUnion || adaptiveRow.union || adaptiveRow.numbers || deNumbers).map(number);
-            deX2Nums = (adaptiveRow.intersectionX2 || adaptiveRow.intersection || []).map(number);
-            deX1Nums = (adaptiveRow.uniqueSinglesX1 || adaptiveRow.uniqueSingles || []).map(number);
+            deNumbers = (r?.fullUnion || r?.union || r?.numbers || deNumbers).map(number);
+            deX2Nums = (r?.intersectionX2 || r?.intersection || r?.vipNumbers || []).map(number);
+            deX1Nums = (r?.uniqueSinglesX1 || r?.uniqueSingles || r?.backupNumbers || []).map(number);
             deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X2 · ${deX1Nums.length} X1)`;
-            deStakeK = adaptiveRow.stakeK || 60000;
-            deProfitK = adaptiveRow.profitK != null ? adaptiveRow.profitK : deProfitK;
-            deIsHitFinal = (adaptiveRow.hitType === 'win_x2' || adaptiveRow.hitType === 'win_x1' || adaptiveRow.isHit || deProfitK > 0);
-        } else if (chosenDeMethod === 'dualMerge' && dualRow) {
+            deStakeK = r?.stakeK || 60000;
+            deProfitK = r?.profitK != null ? r.profitK : deProfitK;
+            deIsHitFinal = Boolean(r?.hitType === 'win_x2' || r?.hitType === 'win_x1' || r?.isHit || deProfitK > 0);
+        } else if (chosenDeMethod === 'dualMerge') {
+            const r = dualRow || streakRow;
             deMethodName = '🎯 Đề Gộp Tiêu Chuẩn';
-            deNumbers = (dualRow.union || dualRow.fullUnion || dualRow.numbers || deNumbers).map(number);
-            deX2Nums = (dualRow.intersection || dualRow.intersectionX2 || []).map(number);
-            deX1Nums = (dualRow.uniqueSingles || dualRow.uniqueSinglesX1 || []).map(number);
+            deNumbers = (r?.union || r?.fullUnion || r?.numbers || deNumbers).map(number);
+            deX2Nums = (r?.intersection || r?.intersectionX2 || r?.vipNumbers || []).map(number);
+            deX1Nums = (r?.uniqueSingles || r?.uniqueSinglesX1 || r?.backupNumbers || []).map(number);
             deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X2 · ${deX1Nums.length} X1)`;
-            deStakeK = dualRow.stakeK || 60000;
-            deProfitK = dualRow.profitK != null ? dualRow.profitK : deProfitK;
-            deIsHitFinal = (dualRow.hitType === 'win_x2' || dualRow.hitType === 'win_x1' || dualRow.isHit || deProfitK > 0);
-        } else if (chosenDeMethod === 'tripleMerge' && tripleRow) {
+            deStakeK = r?.stakeK || 60000;
+            deProfitK = r?.profitK != null ? r.profitK : deProfitK;
+            deIsHitFinal = Boolean(r?.hitType === 'win_x2' || r?.hitType === 'win_x1' || r?.isHit || deProfitK > 0);
+        } else if (chosenDeMethod === 'tripleMerge') {
+            const r = tripleRow || streakRow;
             deMethodName = '🛡️ Đề Tam Trụ Tam Phân';
-            deNumbers = (tripleRow.fullUnion || tripleRow.union || tripleRow.numbers || deNumbers).map(number);
-            deX2Nums = (tripleRow.tierX2 || tripleRow.tierX3 || tripleRow.intersection || []).map(number);
-            deX1Nums = (tripleRow.tierX1 || tripleRow.uniqueSingles || []).map(number);
+            deNumbers = (r?.fullUnion || r?.union || r?.numbers || deNumbers).map(number);
+            deX2Nums = (r?.tierX2 || r?.tierX3 || r?.intersection || r?.vipNumbers || []).map(number);
+            deX1Nums = (r?.tierX1 || r?.uniqueSingles || r?.backupNumbers || []).map(number);
             deSubTierLabel = `Dàn ${deNumbers.length} số (90M)`;
-            deStakeK = tripleRow.stakeK || 90000;
-            deProfitK = tripleRow.profitK != null ? tripleRow.profitK : deProfitK;
-            deIsHitFinal = Boolean(tripleRow.isHit || deProfitK > 0);
-        } else if (chosenDeMethod === 'bayesFormResonance' && bayesRow) {
+            deStakeK = r?.stakeK || 90000;
+            deProfitK = r?.profitK != null ? r.profitK : deProfitK;
+            deIsHitFinal = Boolean(r?.isHit || deProfitK > 0);
+        } else if (chosenDeMethod === 'bayesFormResonance') {
+            const r = bayesRow || streakRow;
             deMethodName = '🔮 Đề Ngũ Hành Bayes (Bù Trừ)';
-            deNumbers = (bayesRow.numbers || deNumbers).map(number);
-            deX2Nums = (bayesRow.vip17 || bayesRow.vipNumbers || []).map(number);
-            deX1Nums = (bayesRow.backup26 || bayesRow.backupNumbers || []).map(number);
+            deNumbers = (r?.numbers || deNumbers).map(number);
+            deX2Nums = (r?.vip17 || r?.vipNumbers || []).map(number);
+            deX1Nums = (r?.backup26 || r?.backupNumbers || []).map(number);
             deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X2 · ${deX1Nums.length} X1)`;
-            deStakeK = bayesRow.stakeK || 60000;
-            deProfitK = bayesRow.profitK != null ? bayesRow.profitK : deProfitK;
-            deIsHitFinal = Boolean(bayesRow.isHit || deProfitK > 0);
-        } else if (chosenDeMethod === 'deMarkovGapHazard' && markovRow) {
-            deMethodName = '🔮 Đề Markov Bậc 2';
-            deNumbers = (markovRow.numbers || deNumbers).map(number);
-            deX2Nums = (markovRow.vipNumbers || markovRow.numbers?.slice(0, 17) || []).map(number);
-            deX1Nums = (markovRow.backupNumbers || markovRow.numbers?.slice(17) || []).map(number);
+            deStakeK = r?.stakeK || 60000;
+            deProfitK = r?.profitK != null ? r.profitK : deProfitK;
+            deIsHitFinal = Boolean(r?.isHit || deProfitK > 0);
+        } else if (chosenDeMethod === 'deMarkovGapHazard') {
+            const r = markovRow || streakRow;
+            deMethodName = '🔮 Đề Markov Bậc 2 & Gap Hazard';
+            deNumbers = (r?.numbers || deNumbers).map(number);
+            deX2Nums = (r?.vipNumbers || r?.numbers?.slice(0, 17) || []).map(number);
+            deX1Nums = (r?.backupNumbers || r?.numbers?.slice(17) || []).map(number);
             deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X2 · ${deX1Nums.length} X1)`;
-            deStakeK = markovRow.stakeK || 60000;
-            deProfitK = markovRow.profitK != null ? markovRow.profitK : deProfitK;
-            deIsHitFinal = (markovRow.hitType === 'win_x2' || markovRow.hitType === 'win_x1' || markovRow.isHit || deProfitK > 0);
-        } else if (chosenDeMethod === 'dePositionalGraphFlow' && graphRow) {
+            deStakeK = r?.stakeK || 60000;
+            deProfitK = r?.profitK != null ? r.profitK : deProfitK;
+            deIsHitFinal = Boolean(r?.hitType === 'win_x2' || r?.hitType === 'win_x1' || r?.isHit || deProfitK > 0);
+        } else if (chosenDeMethod === 'dePositionalGraphFlow') {
+            const r = graphRow || streakRow;
             deMethodName = '🕸️ Cầu Đề Đồ Thị Vị Trí';
-            deNumbers = (graphRow.numbers || deNumbers).map(number);
-            deX2Nums = (graphRow.vipNumbers || graphRow.numbers?.slice(0, 17) || []).map(number);
-            deX1Nums = (graphRow.backupNumbers || graphRow.numbers?.slice(17) || []).map(number);
+            deNumbers = (r?.numbers || deNumbers).map(number);
+            deX2Nums = (r?.vipNumbers || r?.numbers?.slice(0, 17) || []).map(number);
+            deX1Nums = (r?.backupNumbers || r?.numbers?.slice(17) || []).map(number);
             deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X2 · ${deX1Nums.length} X1)`;
-            deStakeK = graphRow.stakeK || 60000;
-            deProfitK = graphRow.profitK != null ? graphRow.profitK : deProfitK;
-            deIsHitFinal = (graphRow.hitType === 'win_x2' || graphRow.hitType === 'win_x1' || graphRow.isHit || deProfitK > 0);
+            deStakeK = r?.stakeK || 60000;
+            deProfitK = r?.profitK != null ? r.profitK : deProfitK;
+            deIsHitFinal = Boolean(r?.hitType === 'win_x2' || r?.hitType === 'win_x1' || r?.isHit || deProfitK > 0);
         } else if (chosenDeMethod === 'metaLearner') {
             deMethodName = '💎 Đề Tinh Hoa';
             deSubTierLabel = `Dàn 30 số (${moneyM(deStakeK)})`;
