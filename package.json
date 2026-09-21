@@ -66,6 +66,7 @@
     "test:daily-advisor": "node scripts/test-daily-method-advisor.js",
     "test:advisor-analysis": "node scripts/test-advisor-analysis.js",
     "research:scientific-methods": "node scripts/research-new-scientific-methods-backtest.js",
+    "research:combined-methods": "node scripts/research-combined-lab-methods-backtest.js",
     "cache:probability-distribution": "node scripts/generate-probability-distribution-cache.js",
     "research:probability-distribution": "node --max-old-space-size=4096 scripts/generate-probability-distribution-research-cache.js",
     "test:probability-distribution": "node scripts/test-probability-distribution-model.js",
