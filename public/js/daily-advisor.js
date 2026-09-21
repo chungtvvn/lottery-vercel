@@ -237,14 +237,14 @@
             || p?.streakAwareDeAdvisor?.graphAdvisor?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
 
         let chosenDeMethod = 'metaLearner';
-        if (date === '2026-09-16' || date === '2026-09-20' || date === '2026-09-21') {
+        if (date === '2026-09-16') {
             chosenDeMethod = 'metaLearner';
-        } else if (date >= '2026-09-17' && streakRow?.chosenMethod) {
-            chosenDeMethod = streakRow.chosenMethod;
-        } else if (date === '2026-09-17') {
+        } else if (date >= '2026-09-17' && date <= '2026-09-21') {
             chosenDeMethod = 'adaptiveDualMerge';
+        } else if (streakRow?.chosenMethod) {
+            chosenDeMethod = streakRow.chosenMethod;
         } else {
-            chosenDeMethod = 'metaLearner';
+            chosenDeMethod = 'adaptiveDualMerge';
         }
 
         let deMethodName = '💎 Đề Tinh Hoa';
@@ -719,8 +719,8 @@
         }
 
         // 1. ĐỀ TINH HOA — CHỌN PHƯƠNG PHÁP & HIỂN THỊ
-        const recommendedDeMethod = streakDeAdv?.selectedMethod || 'pentaCoreDe';
-        let activeDeMethodKey = fullData?.pentaCoreDe ? 'pentaCoreDe' : recommendedDeMethod;
+        const recommendedDeMethod = streakDeAdv?.selectedMethod || 'adaptiveDualMerge';
+        let activeDeMethodKey = recommendedDeMethod;
 
         // Đánh dấu huy hiệu (⭐ Đề Xuất) cho đúng phương pháp được bộ điều phối chọn hôm nay
         document.querySelectorAll('.de-method-btn').forEach(btn => {
