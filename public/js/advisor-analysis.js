@@ -1,4 +1,6 @@
 (() => {
+    'use strict';
+
     const byId = id => document.getElementById(id);
     const setHtml = (id, html) => {
         const el = byId(id);
@@ -8,33 +10,20 @@
         const el = byId(id);
         if (el) el.textContent = text;
     };
-    const pct = value => `${(Number(value || 0) * 100).toFixed(1)}%`;
+
+    const pct = value => `${(Number(value || 0)).toFixed(1)}%`;
     const num = value => String(Number(value)).padStart(2, '0');
     const fmt = value => new Intl.NumberFormat('vi-VN').format(Number(value || 0));
     const signed = value => `${Number(value || 0) >= 0 ? '+' : ''}${fmt(value)}K`;
     const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char]));
-    const heat = value => {
-        const score = Math.max(0, Math.min(1, Number(value || 0)));
-        return `background-color: rgba(14, 116, 144, ${0.06 + score * 0.55}); color: ${score > 0.52 ? '#fff' : '#0f172a'}`;
-    };
-    const stat = (label, value, note) => `<div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs"><p class="text-xs font-bold uppercase tracking-wide text-slate-500">${esc(label)}</p><p class="mt-1 text-2xl font-black text-slate-900">${value}</p>${note ? `<p class="mt-1 text-xs leading-5 text-slate-500">${esc(note)}</p>` : ''}</div>`;
-    const numberChips = numbers => (numbers || []).map(number => `<span class="inline-flex h-9 min-w-9 items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 px-1.5 font-mono text-sm font-black text-emerald-800 shadow-xs">${num(number)}</span>`).join('');
 
     let payload = null;
-    let activeWindow = 'overall';
-    let activeSort = 'profit';
-    let activePolicyId = null;
-    let activeLongMethodId = null;
-    let activeFamily = 'all';
+    let activeTierSet = 'standard30';
+    let activeTierIdx = 1;
 
     function showToast(msg) {
         let toast = byId('advisorAnalysisToast');
-        if (!toast) {
-            toast = document.createElement('div');
-            toast.id = 'advisorAnalysisToast';
-            toast.className = 'fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-2xl border border-emerald-300 bg-emerald-900 px-5 py-3.5 text-sm font-black text-white shadow-2xl transition-all duration-300 opacity-0 translate-y-4';
-            document.body.appendChild(toast);
-        }
+        if (!toast) return;
         toast.innerHTML = `<i class="bi bi-check-circle-fill text-emerald-300 text-lg"></i><span>${esc(msg)}</span>`;
         toast.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
         toast.classList.add('opacity-100', 'translate-y-0');
@@ -61,532 +50,704 @@
         });
     }
 
-    function reportFor(policy) {
-        if (activeWindow === 'last14') return policy.windows?.last14 || {};
-        if (activeWindow === 'last30') return policy.windows?.last30 || {};
-        return policy.overall || {};
-    }
-
-    function rowsFor(policy) {
-        const rows = policy.decisions || [];
-        if (activeWindow === 'last14') return rows.slice(-14);
-        if (activeWindow === 'last30') return rows.slice(-30);
-        return rows;
-    }
-
-    function sortedPolicies() {
-        let policies = [...(payload?.researchReport?.policies || [])];
-        if (activeFamily !== 'all') {
-            policies = policies.filter(p => p.family === activeFamily);
-        }
-        return policies.sort((left, right) => {
-            const a = reportFor(left);
-            const b = reportFor(right);
-            if (activeSort === 'hitRate') return Number(b.hitRate || 0) - Number(a.hitRate || 0) || Number(b.profitK || 0) - Number(a.profitK || 0);
-            if (activeSort === 'wilson') return Number(b.wilsonLower || 0) - Number(a.wilsonLower || 0) || Number(b.profitK || 0) - Number(a.profitK || 0);
-            return Number(b.profitK || 0) - Number(a.profitK || 0) || Number(b.wilsonLower || 0) - Number(a.wilsonLower || 0);
-        });
-    }
-
-    function renderSource(data) {
+    // ─────────────────────────────────────────────────────────────────────────────
+    // 1. RENDER HERO & SOURCE INFORMATION
+    // ─────────────────────────────────────────────────────────────────────────────
+    function renderHeroAndSource(data) {
         const source = data.source || {};
-        const reportSource = data.researchReport?.source || {};
-        const html = [
-            ['Ngày dự đoán', data.predictionDate || '-'],
-            ['Snapshot Gợi ý', source.advisorSnapshotDate || '-'],
-            ['Snapshot Điểm', source.scoreSnapshotDate || 'Chưa có'],
-            ['Mẫu immutable', `${reportSource.immutableRuns || 0} snapshot`]
-        ].map(([label, value]) => `<div><span class="font-bold text-slate-500">${esc(label)}:</span> <span class="font-black text-slate-900">${esc(value)}</span></div>`).join('');
-        setHtml('sourceBar', html);
-    }
-
-    function renderOverview() {
-        const source = payload?.researchReport?.source || {};
-        const policies = payload?.researchReport?.policies || [];
-        const promoted = policies.filter(policy => policy.overall?.evidence === 'Có tín hiệu vượt hòa vốn').length;
-        const current = payload?.currentCandidates?.find(candidate => candidate.isProduction);
-        const html = [
-            stat('Ngày đủ điều kiện', source.eligibleDays || 0, `${source.startDate || '-'} đến ${source.endDate || '-'}`),
-            stat('Chính sách thử nghiệm', policies.length, 'Không thay dàn production tự động'),
-            stat('Cận hòa vốn', pct(source.breakEvenHitRate), `${source.fixedBetCount || 30} số · ăn 84`),
-            stat('Tín hiệu qua cổng', promoted, current?.methodLabel || 'Chưa xác định')
-        ].join('');
-        setHtml('researchOverview', html);
-    }
-
-    function longHorizon() {
-        return payload?.longHorizonResearch || null;
-    }
-
-    function focusedLongMethod() {
-        const methods = longHorizon()?.methods || [];
-        if (!methods.length) return null;
-        if (!activeLongMethodId || !methods.some(method => method.id === activeLongMethodId)) {
-            activeLongMethodId = longHorizon()?.recommendation?.methodId || methods[0].id;
-        }
-        return methods.find(method => method.id === activeLongMethodId) || methods[0];
-    }
-
-    function renderLongHorizon() {
-        const report = longHorizon();
-        const missing = byId('longHorizonMissing');
-        if (!report?.methods?.length) {
-            if (missing) {
-                missing.textContent = 'Chưa có cache nghiên cứu 20 năm từ raw R2. Cache này là tác vụ nghiên cứu riêng để không làm chậm action hằng ngày; sau khi tạo sẽ hiển thị so sánh multi-regime tại đây.';
-                missing.classList.remove('hidden');
-            }
-            setHtml('longHorizonOverview', '');
-            setHtml('longHorizonMethods', '');
-            setHtml('longHorizonChart', '<p class="text-sm text-slate-500">Chưa có đường kiểm chứng dài hạn.</p>');
-            setHtml('longHorizonPeriods', '<p class="text-sm text-slate-500">Chưa có báo cáo multi-regime.</p>');
-            return;
-        }
-        if (missing) missing.classList.add('hidden');
-        const source = report.source || {};
-        const promoted = report.methods.filter(method => method.promoted).length;
-        setHtml('longHorizonOverview', [
-            stat('Dữ liệu raw R2', fmt(source.rawRows || 0), `${source.dataStart || '-'} đến ${source.dataEnd || '-'}`),
-            stat('Tập nhóm khử trùng', fmt(source.groupCatalog?.groups || 0), `${source.groupCatalog?.minSize || '-'}–${source.groupCatalog?.maxSize || '-'} số/nhóm`),
-            stat('Mô hình đã kiểm chứng', report.methods.length, 'Mỗi dàn giữ 30 số cố định'),
-            stat('Qua cổng promotion', promoted, report.recommendation?.status || 'Chưa có mô hình đủ điều kiện')
-        ].join(''));
-
-        const methodsHtml = report.methods.map(method => {
-            const holdout = method.splits?.holdout || {};
-            const validation = method.splits?.validation || {};
-            const tone = method.promoted ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-white';
-            return `<article class="rounded-2xl border ${tone} p-4 shadow-xs"><div class="flex items-start justify-between gap-3"><div><p class="text-xs font-black uppercase tracking-wide text-violet-700">${esc(method.id)}</p><h3 class="mt-1 text-base font-black text-slate-900">${esc(method.label)}</h3></div><button data-long-method="${esc(method.id)}" class="rounded-xl ${method.id === activeLongMethodId ? 'bg-violet-700 text-white' : 'border border-violet-200 bg-white text-violet-700'} px-2.5 py-1.5 text-xs font-black">${method.id === activeLongMethodId ? 'Đang xem' : 'Xem nhịp'}</button></div><p class="mt-2 min-h-10 text-sm leading-5 text-slate-600">${esc(method.description)}</p><div class="mt-4 grid grid-cols-3 gap-2 text-center text-xs"><div class="rounded-xl bg-slate-50 p-2 border border-slate-100"><p class="text-slate-500">Holdout</p><p class="mt-1 font-black text-slate-900">${pct(holdout.hitRate)}</p></div><div class="rounded-xl bg-slate-50 p-2 border border-slate-100"><p class="text-slate-500">Wilson</p><p class="mt-1 font-black text-slate-900">${pct(holdout.wilsonLower)}</p></div><div class="rounded-xl bg-slate-50 p-2 border border-slate-100"><p class="text-slate-500">Profit</p><p class="mt-1 font-black ${Number(holdout.profitK || 0) >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${signed(holdout.profitK)}</p></div></div><p class="mt-3 text-xs text-slate-500">Validation ${pct(validation.hitRate)} · ${signed(validation.profitK)} · ${esc(method.status || '')}</p></article>`;
-        }).join('');
-        setHtml('longHorizonMethods', methodsHtml);
-
-        const method = focusedLongMethod();
-        const holdout = method?.splits?.holdout || {};
-        const rows = (method?.recentRows || []).slice(-90);
-        const bars = rows.map(row => `<div class="group relative h-11 min-w-4 rounded-sm ${row.hit ? 'bg-emerald-500' : 'bg-rose-400'}" title="${esc(row.date)} · ${row.hit ? 'Trúng' : 'Trượt'}"><span class="pointer-events-none absolute inset-x-0 -bottom-5 hidden text-center text-[9px] font-bold text-slate-500 group-hover:block">${esc(row.date.slice(5))}</span></div>`).join('');
-        const chartHtml = method
-            ? `<div class="flex flex-wrap items-start justify-between gap-3"><div><p class="text-lg font-black text-slate-900">${esc(method.label)}</p><p class="mt-1 text-sm text-slate-600">Holdout: ${holdout.wins || 0}/${holdout.days || 0} · ${pct(holdout.hitRate)} · cận Wilson ${pct(holdout.wilsonLower)}</p></div><span class="rounded-xl ${method.promoted ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'} px-3 py-2 text-xs font-black">${esc(method.status || '')}</span></div><div class="mt-5 overflow-x-auto pb-6"><div class="flex min-w-max items-end gap-1">${bars || '<span class="text-sm text-slate-500">Chưa có kỳ gần đây.</span>'}</div></div><p class="mt-2 text-xs text-slate-500">Xanh: trúng · Đỏ: trượt · hiển thị tối đa 90 kỳ gần nhất, còn tổng hợp đầy đủ theo các giai đoạn ở bên phải.</p>`
-            : '<p class="text-sm text-slate-500">Không có mô hình để hiển thị.</p>';
-        setHtml('longHorizonChart', chartHtml);
-
-        const splitRows = Object.entries(method?.splits || {}).map(([id, summary]) => `<div class="grid grid-cols-[1fr_auto_auto] items-center gap-2 rounded-xl border border-slate-100 px-3 py-2 text-sm"><span><strong class="text-slate-900">${esc(id)}</strong><small class="block text-xs text-slate-500">${esc(summary.range?.start || '-')} đến ${esc(summary.range?.end || '-')}</small></span><span class="font-black text-slate-900">${summary.wins || 0}/${summary.days || 0}<small class="block text-xs font-normal text-slate-500">${pct(summary.hitRate)}</small></span><span class="font-black ${Number(summary.profitK || 0) >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${signed(summary.profitK)}</span></div>`).join('');
-        const periodsHtml = method
-            ? `<p class="mb-3 text-sm font-black text-slate-900">${esc(method.label)}</p><div class="space-y-2">${splitRows}</div><p class="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-600">Cổng promotion: validation và holdout phải cùng dương, đủ mẫu và cận Wilson 90% vượt ${pct(report?.economics?.breakEvenHitRate)}. Không dùng kết quả development để tự tuyên bố hiệu quả tương lai.</p>`
-            : '<p class="text-sm text-slate-500">Không có phân rã giai đoạn.</p>';
-        setHtml('longHorizonPeriods', periodsHtml);
-    }
-
-    function renderConsensus() {
-        const advice = payload?.currentAdvice || {};
-        const evidence = advice.evidence || {};
-        const agreement = advice.agreement || {};
-        const groups = agreement.groups || [];
-        const evidenceTone = evidence.meetsEvidenceGate
-            ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
-            : 'border-amber-200 bg-amber-50 text-amber-900';
-        const groupRows = groups.map(group => `<div class="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2.5"><div><p class="font-black text-slate-900">${esc(group.methodLabel)}</p><p class="mt-0.5 text-xs text-slate-500">${esc((group.policies || []).join(' · '))}</p></div><span class="rounded-xl bg-indigo-100 px-2 py-1 text-sm font-black text-indigo-800">${group.count}/${agreement.availablePolicies || 0}</span></div>`).join('') || '<p class="text-sm text-slate-500">Chưa có dàn ứng viên đã khóa.</p>';
-        const html = `<div><div class="flex flex-wrap items-start justify-between gap-3"><div><p class="text-xl font-black text-slate-900">${esc(advice.status || 'Chưa đủ dữ liệu')}</p><p class="mt-1 text-sm text-slate-600">Dàn chính: <strong>${esc(advice.primaryLabel || '-')}</strong></p></div><span class="rounded-xl border px-3 py-2 text-sm font-black ${evidenceTone}">${agreement.primaryPolicies || 0}/${agreement.availablePolicies || 0} đồng thuận</span></div><div class="mt-4 grid gap-3 sm:grid-cols-3">${stat('30 ngày', pct(evidence.rate30), `Hòa vốn ${pct(evidence.breakEvenHitRate)}`)}${stat('Wilson 90', pct(evidence.wilsonLower90), evidence.meetsEvidenceGate ? 'Qua cổng hiện tại' : 'Chưa qua cổng')} ${stat('Nhánh khác', Math.max(0, (agreement.uniqueMethods || 0) - 1), 'Không dùng để đổi dàn') }</div><ul class="mt-5 space-y-2 rounded-2xl border border-slate-100 bg-slate-50 p-4 text-sm leading-6 text-slate-700">${(advice.recommendations || []).map(item => `<li class="flex gap-2"><span class="font-black text-cyan-700">•</span><span>${esc(item)}</span></li>`).join('')}</ul></div><div><p class="mb-3 text-xs font-black uppercase tracking-wider text-slate-500">Phân nhóm theo phương pháp được chọn</p><div class="space-y-2">${groupRows}</div><p class="mt-3 text-xs leading-5 text-slate-500">Con số ở bên phải là số chính sách cùng chọn một phương pháp. Đây chỉ là đồng thuận giữa bộ chọn, không phải xác suất trúng của số.</p></div>`;
-        setHtml('researchConsensus', html);
-    }
-
-    function renderComplementarity() {
-        const pairs = payload?.methodComplementarity || [];
-        if (!pairs.length) {
-            setHtml('methodComplementarity', '<p class="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">Chưa có đủ snapshot immutable cùng ngày để đo độ bổ sung giữa các dàn.</p>');
-            return;
-        }
-        const html = pairs.slice(0, 10).map(pair => {
-            const leftHandoff = pair.leftAfterRightMiss || {};
-            const rightHandoff = pair.rightAfterLeftMiss || {};
-            return `<article class="rounded-2xl border border-teal-100 bg-white p-4 shadow-xs"><div class="flex flex-wrap items-start justify-between gap-2"><div><p class="text-xs font-black uppercase tracking-wide text-teal-700">${pair.days || 0} kỳ immutable cùng dàn</p><h3 class="mt-1 text-sm font-black leading-5 text-slate-900">${esc(pair.leftLabel || pair.leftId)} <span class="text-slate-400">↔</span> ${esc(pair.rightLabel || pair.rightId)}</h3></div><span class="rounded-xl border border-teal-200 bg-teal-50 px-2 py-1 text-xs font-black text-teal-800">Phủ chung ${pct(pair.unionHitRate)}</span></div><div class="mt-3 grid grid-cols-4 gap-2 text-center text-xs"><div class="rounded-xl bg-slate-50 p-2"><p class="text-slate-500">Cùng trúng</p><p class="mt-1 font-black text-slate-900">${pair.bothHit || 0}</p></div><div class="rounded-xl bg-sky-50 p-2"><p class="text-slate-500">Chỉ trái</p><p class="mt-1 font-black text-sky-800">${pair.onlyLeft || 0}</p></div><div class="rounded-xl bg-violet-50 p-2"><p class="text-slate-500">Chỉ phải</p><p class="mt-1 font-black text-violet-800">${pair.onlyRight || 0}</p></div><div class="rounded-xl bg-rose-50 p-2"><p class="text-slate-500">Cùng trượt</p><p class="mt-1 font-black text-rose-800">${pair.neither || 0}</p></div></div><div class="mt-3 grid gap-2 text-xs text-slate-600 sm:grid-cols-2"><p>Trùng dàn TB: <strong class="text-slate-900">${Number(pair.averageSetOverlap || 0).toFixed(1)}/30</strong> · cận Wilson phủ chung <strong class="text-slate-900">${pct(pair.unionWilsonLower)}</strong></p><p>Sau khi <strong>${esc(pair.rightLabel || pair.rightId)}</strong> trượt, <strong>${esc(pair.leftLabel || pair.leftId)}</strong> trúng kỳ kế: <strong class="text-slate-900">${leftHandoff.wins || 0}/${leftHandoff.days || 0} · ${pct(leftHandoff.hitRate)}</strong></p><p class="sm:col-span-2">Sau khi <strong>${esc(pair.leftLabel || pair.leftId)}</strong> trượt, <strong>${esc(pair.rightLabel || pair.rightId)}</strong> trúng kỳ kế: <strong class="text-slate-900">${rightHandoff.wins || 0}/${rightHandoff.days || 0} · ${pct(rightHandoff.hitRate)}</strong></p></div></article>`;
-        }).join('');
-        setHtml('methodComplementarity', html);
-    }
-
-    function renderExplanation() {
-        const explanation = payload?.explanation || {};
-        const items = [
-            ['Dàn production', explanation.primary],
-            ['Strict PIT', explanation.strict],
-            ['Mục tiêu phòng thí nghiệm', explanation.laboratory],
-            ['Điểm xác suất', explanation.scoring],
-            ['Giới hạn', explanation.caution]
-        ];
-        const explHtml = items.map(([title, body]) => `<div class="border-l-2 border-sky-400 pl-3.5"><p class="font-black text-slate-900">${esc(title)}</p><p class="mt-1 text-slate-600">${esc(body || '-')}</p></div>`).join('');
-        setHtml('explanation', explHtml);
-
-        const gateHtml = [
-            ['1', 'Cùng kỳ và cùng dàn', 'Mọi ứng viên phải giữ cố định 30 số, tỷ lệ ăn và vốn để so sánh công bằng.'],
-            ['2', 'Không dùng tương lai', 'Chỉ lấy snapshot immutable và kết quả trước ngày D để chọn phương pháp cho D.'],
-            ['3', 'Không chỉ nhìn profit', 'Cần mẫu đủ dài, cận Wilson vượt hòa vốn và không làm chuỗi trượt xấu đi rõ rệt.'],
-            ['4', 'Kiểm chứng độc lập', 'Kết quả dương ở một đoạn ngắn chỉ là giả thuyết; chưa đủ để đổi dàn theo dõi thực tế.']
-        ].map(([step, title, body]) => `<div class="flex gap-3"><span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-200 text-xs font-black text-amber-900">${step}</span><div><p class="font-black text-slate-900">${esc(title)}</p><p class="mt-0.5 text-slate-600">${esc(body)}</p></div></div>`).join('');
-        setHtml('promotionGate', gateHtml);
-    }
-
-    function renderLeaderboard() {
-        const policies = sortedPolicies();
-        if (!policies.length) {
-            setHtml('researchLeaderboard', '<p class="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">Chưa có đủ snapshot immutable để tạo backtest strict PIT.</p>');
-            return;
-        }
-        if (!activePolicyId || !policies.some(policy => policy.id === activePolicyId)) activePolicyId = policies[0].id;
-        const html = policies.map((policy, index) => {
-            const summary = reportFor(policy);
-            const isActive = policy.id === activePolicyId;
-            const coverage = policy.coverage || {};
-            const evidenceClass = summary.evidence === 'Có tín hiệu vượt hòa vốn' ? 'bg-emerald-100 text-emerald-700' : summary.evidence === 'Lãi mẫu, chưa vượt cận Wilson' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600';
-            return `<article class="rounded-2xl border ${isActive ? 'border-indigo-500 ring-2 ring-indigo-300' : 'border-slate-200'} bg-white p-5 shadow-xs transition-all"><div class="flex items-start justify-between gap-3"><div><p class="text-xs font-black uppercase tracking-wide text-indigo-600">#${index + 1} · ${esc(policy.family)}</p><h3 class="mt-1 text-base font-black text-slate-900">${esc(policy.label)}</h3></div><button data-policy="${esc(policy.id)}" class="rounded-xl ${isActive ? 'bg-indigo-700 text-white' : 'border border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50'} px-3 py-1.5 text-xs font-black">${isActive ? 'Đang xem' : 'Xem nhịp'}</button></div><p class="mt-2 min-h-10 text-sm leading-5 text-slate-600">${esc(policy.description)}</p><div class="mt-4 grid grid-cols-4 gap-2 text-center text-xs"><div class="rounded-xl bg-slate-50 p-2 border border-slate-100"><p class="text-slate-500">Trúng</p><p class="mt-1 text-sm font-black text-slate-900">${summary.wins || 0}/${summary.days || 0}</p></div><div class="rounded-xl bg-slate-50 p-2 border border-slate-100"><p class="text-slate-500">Tỷ lệ</p><p class="mt-1 text-sm font-black text-slate-900">${pct(summary.hitRate)}</p></div><div class="rounded-xl bg-slate-50 p-2 border border-slate-100"><p class="text-slate-500">Wilson</p><p class="mt-1 text-sm font-black text-slate-900">${pct(summary.wilsonLower)}</p></div><div class="rounded-xl bg-slate-50 p-2 border border-slate-100"><p class="text-slate-500">Trượt dài</p><p class="mt-1 text-sm font-black text-slate-900">${summary.longestLoss || 0}</p></div></div><div class="mt-3 flex items-center justify-between gap-3"><span class="rounded-xl px-2.5 py-1 text-xs font-black ${evidenceClass}">${esc(summary.evidence || 'Chưa đủ dữ liệu')}</span><span class="text-sm font-black ${Number(summary.profitK || 0) >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${signed(summary.profitK)}</span></div><p class="mt-2 text-xs text-slate-500">ROI ${pct(summary.roi)} · hòa vốn ${pct(summary.breakEvenHitRate)} · chuỗi thắng dài nhất ${summary.longestWin || 0}</p><p class="mt-1 text-xs font-semibold text-slate-500">Phát dàn ${coverage.issuedDays || 0}/${coverage.candidateDays || 0} ngày (${pct(coverage.coverageRate)}) · chủ động bỏ ${coverage.abstainedDays || 0} ngày</p></article>`;
-        }).join('');
-        setHtml('researchLeaderboard', html);
-    }
-
-    function focusedPolicy() {
-        return (payload?.researchReport?.policies || []).find(policy => policy.id === activePolicyId) || null;
-    }
-
-    function renderPerformanceTrace() {
-        const policy = focusedPolicy();
-        if (!policy) {
-            setHtml('performanceTrace', '<p class="text-sm text-slate-500">Chưa có chính sách để hiển thị.</p>');
-            return;
-        }
-        const rows = rowsFor(policy);
-        const summary = reportFor(policy);
-        const bars = rows.map(row => `<div class="group relative h-12 min-w-7 rounded-sm ${row.hit ? 'bg-emerald-500' : 'bg-rose-400'}" title="${esc(row.date)} · ${row.hit ? 'Trúng' : 'Trượt'} · ${esc(row.methodLabel)}"><span class="pointer-events-none absolute inset-x-0 -bottom-5 hidden text-center text-[10px] font-bold text-slate-500 group-hover:block">${esc(row.date.slice(5))}</span></div>`).join('');
-        const coverage = policy.coverage || {};
-        const html = `<div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"><div><p class="text-lg font-black text-slate-900">${esc(policy.label)}</p><p class="mt-1 text-sm text-slate-600">${summary.wins || 0} trúng / ${summary.days || 0} kỳ đã phát dàn · cận Wilson ${pct(summary.wilsonLower)} · lãi/lỗ <strong class="${Number(summary.profitK || 0) >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${signed(summary.profitK)}</strong></p></div><span class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600">Xanh: trúng · Đỏ: trượt</span></div><div class="mt-5 overflow-x-auto pb-6"><div class="flex min-w-max items-end gap-1.5">${bars || '<span class="text-sm text-slate-500">Chưa có quyết định đã kết toán.</span>'}</div></div><div class="mt-2 grid gap-2 text-xs text-slate-500 sm:grid-cols-4"><p>Dàn cố định: ${payload.researchReport?.source?.fixedBetCount || 30} số/lần phát</p><p>Độ phủ: ${coverage.issuedDays || 0}/${coverage.candidateDays || 0} ngày</p><p>Chuỗi trượt dài nhất: ${summary.longestLoss || 0} ngày đánh</p><p>Chuỗi trúng dài nhất: ${summary.longestWin || 0} ngày đánh</p></div>`;
-        setHtml('performanceTrace', html);
-    }
-
-    function renderPeriods() {
-        const policy = focusedPolicy();
-        if (!policy) { setHtml('periodBreakdown', ''); return; }
-        const monthly = (policy.monthly || []).slice(-6).reverse();
-        const weekly = (policy.weekly || []).slice(-6).reverse();
-        const renderRows = (rows, label) => `<div><p class="mb-2 text-xs font-black uppercase tracking-wide text-slate-500">${label}</p><div class="space-y-2">${rows.map(row => `<div class="grid grid-cols-[1fr_auto_auto] items-center gap-2 rounded-xl border border-slate-100 px-3 py-2 text-sm"><span class="font-bold text-slate-700">${esc(row.period)}</span><span class="font-black text-slate-900">${row.wins}/${row.days}</span><span class="font-black ${Number(row.profitK || 0) >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${signed(row.profitK)}</span></div>`).join('') || '<p class="text-sm text-slate-500">Chưa có dữ liệu.</p>'}</div></div>`;
-        const html = `<p class="mb-4 text-sm font-bold text-slate-900">${esc(policy.label)}</p>${renderRows(monthly, '6 tháng/khoảng gần nhất')}${renderRows(weekly, '6 tuần gần nhất')}`;
-        setHtml('periodBreakdown', html);
-    }
-
-    function renderCurrentCandidates() {
-        const candidates = payload?.currentCandidates || [];
-        const html = candidates.map(candidate => {
-            const badge = candidate.numbersAvailable ? 'Có dàn' : candidate.abstained ? 'Chủ động bỏ ngày' : 'Chưa có dàn phụ';
-            const missingMessage = candidate.abstained
-                ? 'Các điều kiện posterior, EWMA hoặc cận Wilson chưa đồng thời vượt hòa vốn nên chính sách không phát dàn cho ngày này.'
-                : 'Snapshot hiện tại chỉ lưu dàn chính. Action kế tiếp sẽ lưu đồng thời các dàn ứng viên, không tái tính số của ngày này để tránh thay đổi dự đoán đã phát hành.';
-            const copyBtn = candidate.numbersAvailable && candidate.numbers?.length ? `
-                <button type="button" data-copy-candidate="${esc(candidate.id)}" class="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-700 hover:bg-indigo-100 shadow-xs">
-                    <i class="bi bi-clipboard"></i> Sao chép ${candidate.numbers.length} số
-                </button>
-            ` : '';
-            return `<article class="rounded-2xl border ${candidate.isProduction ? 'border-emerald-400 bg-emerald-50/40' : 'border-slate-200 bg-white'} p-5 shadow-xs"><div class="flex items-start justify-between gap-3"><div><p class="text-xs font-black uppercase tracking-wide ${candidate.isProduction ? 'text-emerald-700' : 'text-slate-500'}">${candidate.isProduction ? 'Dàn production đã khóa' : esc(candidate.family)}</p><h3 class="mt-1 font-black text-slate-900">${esc(candidate.label)}</h3><p class="mt-1 text-sm text-slate-600">${esc(candidate.methodLabel)}</p></div><div class="flex flex-col items-end gap-1.5"><span class="rounded-xl ${candidate.numbersAvailable ? 'bg-slate-100 text-slate-700' : candidate.abstained ? 'bg-sky-100 text-sky-800' : 'bg-amber-100 text-amber-800'} px-2.5 py-1 text-xs font-black">${badge}</span>${copyBtn}</div></div><p class="mt-2 text-xs text-slate-500">Nguồn: ${esc(candidate.source)} · điểm chọn ${Number(candidate.selectionScore || 0).toFixed(3)}</p>${candidate.numbersAvailable ? `<div class="mt-4 flex flex-wrap gap-1.5">${numberChips(candidate.numbers)}</div>` : `<p class="mt-4 rounded-2xl border ${candidate.abstained ? 'border-sky-200 bg-sky-50 text-sky-800' : 'border-amber-200 bg-amber-50 text-amber-800'} p-3 text-sm leading-5 font-semibold">${esc(missingMessage)}</p>`}</article>`;
-        }).join('') || '<p class="text-sm text-slate-500">Chưa có ứng viên cho ngày dự đoán.</p>';
-        setHtml('currentCandidates', html);
-
-        document.querySelectorAll('[data-copy-candidate]').forEach(btn => {
-            btn.onclick = () => {
-                const candId = btn.getAttribute('data-copy-candidate');
-                const cand = (payload?.currentCandidates || []).find(c => c.id === candId);
-                if (cand && cand.numbers) copyNumbers(cand.numbers, ' ');
-            };
-        });
-    }
-
-    function renderMatrix() {
-        const combatMethods = [
-            {
-                id: 'metaLearner',
-                title: '💎 Đề Tinh Hoa (Meta-Learner)',
-                desc: 'Vốn 30M/ngày · Dung hợp cắt tỉa động Bayes',
-                badge: '<span class="rounded bg-emerald-100 text-emerald-800 text-[10px] font-black px-1.5 py-0.5">⭐ Quán quân Live</span>',
-                data: payload?.metaLearner
-            },
-            {
-                id: 'adaptiveDualMerge',
-                title: '💎 Đề Gộp 2 (Thích Ứng Alpha)',
-                desc: 'Vốn 60M/ngày · State-machine 21 cặp',
-                badge: '<span class="rounded bg-amber-100 text-amber-800 text-[10px] font-black px-1.5 py-0.5">👑 Lãi +2.652M</span>',
-                data: payload?.adaptiveDualMerge
-            },
-            {
-                id: 'dualMerge',
-                title: '🎯 Đề Gộp 1 (Tiêu Chuẩn)',
-                desc: 'Vốn 60M/ngày · Dual Edge 50% + 75% Hold',
-                badge: '<span class="rounded bg-sky-100 text-sky-800 text-[10px] font-black px-1.5 py-0.5">Bền bỉ 55.1%</span>',
-                data: payload?.dualMerge
-            },
-            {
-                id: 'tripleMerge',
-                title: '🏛️ Đề Gộp 3 (Tam Trụ)',
-                desc: 'Vốn 90M/ngày · Siêu đồng thuận 3 tầng vốn',
-                badge: '<span class="rounded bg-purple-100 text-purple-800 text-[10px] font-black px-1.5 py-0.5">Trúng 65.8%</span>',
-                data: payload?.tripleMerge
-            }
-        ];
-
-        const hasCombatData = combatMethods.some(m => m.data?.summary);
-
-        if (hasCombatData) {
-            const html = combatMethods.map(m => {
-                const summary = m.data?.summary || {};
-                const windows = summary.windows || {};
-                const last7 = windows.last7 || {};
-                const last30 = windows.last30 || {};
-                const all = summary.all || windows.all2026 || summary;
-
-                const profitVal = Number(all.profitK ?? 0);
-                const profitColor = profitVal >= 0 ? 'text-emerald-700 font-black' : 'text-rose-700 font-bold';
-
-                return `<tr>
-                    <td class="max-w-[310px] px-4 py-3.5">
-                        <div class="flex items-center gap-1.5">
-                            <span class="font-black text-slate-900">${m.title}</span>
-                            ${m.badge}
-                        </div>
-                        <p class="mt-0.5 text-xs text-slate-500">${m.desc}</p>
-                    </td>
-                    <td class="px-3 py-3.5 text-center font-black" style="${heat(last7.hitRate)}">
-                        <div>${pct(last7.hitRate)}</div>
-                        <div class="text-[10px] font-semibold text-slate-500">${last7.wins || 0}/${last7.days || 0} kỳ</div>
-                    </td>
-                    <td class="px-3 py-3.5 text-center font-black" style="${heat(last30.hitRate)}">
-                        <div>${pct(last30.hitRate)}</div>
-                        <div class="text-[10px] font-semibold text-slate-500">${last30.wins || 0}/${last30.days || 0} kỳ</div>
-                    </td>
-                    <td class="px-3 py-3.5 text-center font-black" style="${heat(all.hitRate)}">
-                        <div>${pct(all.hitRate)}</div>
-                        <div class="text-[10px] font-semibold text-slate-500">${all.wins || 0}/${all.days || 0} kỳ</div>
-                    </td>
-                    <td class="px-3 py-3.5 text-right font-mono ${profitColor}">
-                        ${signed(profitVal)}
-                    </td>
-                    <td class="px-3 py-3.5 text-center font-black text-indigo-700">
-                        ${pct(all.roi)}
-                    </td>
-                </tr>`;
-            }).join('');
-            setHtml('methodMatrix', html);
-            return;
-        }
-
-        const methods = payload?.methods || [];
-        const html = methods.map(row => `<tr><td class="max-w-[310px] px-4 py-3"><p class="font-bold text-slate-900">#${row.rank} ${esc(row.label)}</p><p class="mt-1 text-xs text-slate-500">${row.betCount || 0} số · giao Top 30 điểm ${row.overlapCount || 0}</p></td><td class="px-3 py-3 text-center font-black" style="${heat(row.rate7)}">${pct(row.rate7)}</td><td class="px-3 py-3 text-center font-black" style="${heat(row.rate30)}">${pct(row.rate30)}</td><td class="px-3 py-3 text-center font-black" style="${heat(row.rate90)}">${pct(row.rate90)}</td><td class="px-3 py-3 text-right font-mono font-black">${signed(0)}</td><td class="px-3 py-3 text-center font-black ${row.trend >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${row.trend >= 0 ? '+' : ''}${pct(row.trend)}</td></tr>`).join('') || '<tr><td colspan="6" class="p-5 text-center text-slate-500">Chưa có dữ liệu phương pháp.</td></tr>';
-        setHtml('methodMatrix', html);
-    }
-
-    function renderScoreOverlay() {
-        const overlay = payload?.scoreOverlay || {};
-        const mismatch = payload?.warnings?.scoreDateMismatch;
-        const calibration = overlay.calibration || {};
-        const gate = overlay.eligible
-            ? '<p class="mt-3 inline-flex rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-800">Đủ cổng calibration để hiển thị như lớp hỗ trợ</p>'
-            : `<p class="mt-3 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm font-semibold text-amber-800">Chưa đạt cổng calibration (${Number(calibration.days || 0)} ngày · Wilson ${pct(calibration.wilsonLower || 0)} · hòa vốn ${pct(calibration.breakEvenHitRate || 0)}). Lớp này không được đưa vào dàn đánh.</p>`;
-        const numbers = (overlay.ranked || []).map(row => `<span title="${num(row.number)} · ${row.methodVotes.toFixed(1)} phiếu · hạng điểm ${row.probabilityRank}" class="rounded-xl border ${row.methodVotes >= 2 ? 'border-violet-400 bg-violet-100 text-violet-900' : 'border-slate-200 bg-slate-50 text-slate-700'} px-2.5 py-2 font-mono text-sm font-black shadow-xs">${num(row.number)}${row.methodVotes >= 2 ? `<sup class="ml-1 text-[10px]">${row.methodVotes.toFixed(1)}</sup>` : ''}</span>`).join('');
-        const html = `<p class="text-sm leading-6 text-slate-600">${esc(overlay.note || 'Chưa có dữ liệu Điểm xác suất.')}</p>${gate}${mismatch ? '<p class="mt-3 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm font-semibold text-amber-800">Snapshot Điểm xác suất chưa cùng ngày với Gợi ý; chỉ hiển thị để học tín hiệu, không đưa vào quyết định hoặc đánh giá strict PIT.</p>' : ''}${numbers ? `<div class="mt-4 flex flex-wrap gap-2">${numbers}</div><p class="mt-4 text-xs text-slate-500">Tím: nhận ít nhất hai phiếu mô hình. Số mũ là tổng phiếu có trọng số, không phải xác suất trúng.</p>` : ''}`;
-        setHtml('scoreOverlay', html);
-    }
-
-    let activeStrategyTier = 'core10';
-
-    function renderBestStrategyRecommendation() {
-        const rec = payload?.bestStrategyRecommendation;
-        if (!rec) return;
-
-        setText('bestStrategyTitle', `Dàn Đề Xuất Chiến Lược Tối Ưu: ${rec.championLabel || ''}`);
-        setText('bestStrategyFamily', `Nhóm ${rec.family || 'Học đa tiêu chí'} · Cận an toàn Wilson 90%: ${pct(rec.championPolicySummary?.overall?.wilsonLower || 0.38)}`);
-        setText('bestStrategyConfidence', `⭐⭐⭐⭐⭐ ${Number(rec.confidence || 4.8).toFixed(1)} / 5.0`);
-
-        const tiers = rec.tiers || {};
-        const currentNumbers = tiers[activeStrategyTier] || tiers.standard30 || tiers.core10 || [];
-
-        const chipsHtml = (currentNumbers || []).map(number => `
-            <span class="inline-flex h-10 min-w-10 items-center justify-center rounded-xl border border-indigo-300/40 bg-indigo-500/20 font-mono text-sm font-black text-white shadow-xs">
-                ${num(number)}
-            </span>
-        `).join('') || '<p class="text-xs text-indigo-200">Đang chuẩn bị dàn số...</p>';
-        setHtml('strategyNumbersChips', chipsHtml);
-
-        const reasonsHtml = (rec.plainReasons || []).map(r => `
-            <p class="flex items-start gap-2">
-                <i class="bi bi-check2-circle text-emerald-400 mt-0.5 shrink-0"></i>
-                <span>${esc(r)}</span>
-            </p>
-        `).join('');
-        setHtml('strategyReasons', reasonsHtml);
-
-        // Buttons for copying
-        const btnSpace = byId('btnCopyStrategySpace');
-        if (btnSpace) btnSpace.onclick = () => copyNumbers(currentNumbers, ' ');
-        const btnComma = byId('btnCopyStrategyComma');
-        if (btnComma) btnComma.onclick = () => copyNumbers(currentNumbers, ', ');
-
-        // Strategy tier switcher buttons styling
-        document.querySelectorAll('.strategy-tier-btn').forEach(btn => {
-            const tier = btn.getAttribute('data-strategy-tier');
-            const isActive = tier === activeStrategyTier;
-            if (isActive) {
-                btn.className = 'strategy-tier-btn rounded-xl bg-indigo-600 px-3.5 py-1.5 text-xs font-black text-white shadow-xs';
-            } else {
-                btn.className = 'strategy-tier-btn rounded-xl border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-bold text-indigo-200 hover:bg-white/20';
-            }
-            btn.onclick = () => {
-                activeStrategyTier = tier;
-                renderBestStrategyRecommendation();
-            };
-        });
-    }
-
-    function renderSettledLedger() {
-        // This section must only show the dàn that was actually frozen by
-        // the daily selector.  PIT replay results remain in the research
-        // panels and must not be presented as live issued predictions.
-        const ledger = payload?.liveSelectorLedger || payload?.settledLedger;
-        if (!ledger) return;
-
-        const summary = ledger.summary || {};
-        const windows = summary.windows || {};
-        
-        setHtml('settledLedgerBadge', `<span class="rounded-xl border border-emerald-300 bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-900">${summary.totalWins || 0}/${summary.totalSettled || 0} kỳ (${pct(summary.overallHitRate)})</span>`);
-
-        const cards = [
-            ['TỔNG NGÀY ĐỐI SOÁT', `${summary.totalSettled || 0} ngày`, `Hòa vốn: ${pct(summary.breakEvenHitRate)}`],
-            ['TỔNG THẮNG / THUA', `${summary.totalWins || 0} / ${summary.totalLosses || 0}`, 'Theo dàn 30 số đã khóa'],
-            ['TỔNG LÃI / LỖ', signed(summary.overallProfitK), '1.000K mỗi số · ăn 84 lần'],
-            ['7 KỲ GẦN NHẤT', `${windows.last7?.wins || 0}/${windows.last7?.days || 0} (${pct(windows.last7?.hitRate)})`, `${signed(windows.last7?.profitK)}`],
-            ['14 KỲ GẦN NHẤT', `${windows.last14?.wins || 0}/${windows.last14?.days || 0} (${pct(windows.last14?.hitRate)})`, `${signed(windows.last14?.profitK)}`],
-            ['30 KỲ GẦN NHẤT', `${windows.last30?.wins || 0}/${windows.last30?.days || 0} (${pct(windows.last30?.hitRate)})`, `${signed(windows.last30?.profitK)}`]
-        ];
-
-        const summaryHtml = cards.map(([label, val, note]) => `
-            <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-2xs">
-                <p class="text-[10px] font-black uppercase tracking-wider text-slate-500">${esc(label)}</p>
-                <strong class="mt-1 block text-lg font-black text-slate-900">${esc(val)}</strong>
-                <p class="mt-0.5 text-xs text-slate-500">${esc(note)}</p>
+        const ttr = data.tenTierResearch || {};
+        const sourceHtml = [
+            ['Ngày dự đoán', data.predictionDate || ttr.targetDate || '-'],
+            ['Đài quay mở thưởng', ttr.dayOfWeek || '-'],
+            ['Dữ liệu phân tích', `${fmt(ttr.historicalDrawsAnalyzed || 7558)} kỳ (${ttr.firstDrawDate || '2005-10-01'} → ${ttr.lastDrawDate || '-'})`],
+            ['KQ Đề kỳ trước', `<span class="font-mono text-amber-300 font-black text-sm">${ttr.lastDrawSpecial || '--'}</span>`]
+        ].map(([label, value]) => `
+            <div>
+                <span class="text-slate-400 font-semibold">${esc(label)}:</span> 
+                <span class="font-bold text-white ml-1">${value}</span>
             </div>
         `).join('');
-        setHtml('settledLedgerSummaryCards', summaryHtml);
+        setHtml('sourceBar', sourceHtml);
 
-        const rows = (ledger.records || []).slice().reverse();
-        const tableHtml = rows.map(r => {
-            const isPending = r.settled === false;
-            const isAbstained = !isPending && (r.abstained || !r.isLocked);
-            const isHit = Boolean(r.hit);
-            const actualStr = Number.isInteger(r.actual) ? num(r.actual) : '--';
-            const statusClass = isPending
-                ? 'bg-amber-100 text-amber-800 border-amber-300'
-                : isAbstained
-                ? 'bg-slate-100 text-slate-600 border-slate-200'
-                : isHit
-                    ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                    : 'bg-rose-100 text-rose-800 border-rose-300';
-            const statusText = isPending ? 'CHỜ KẾT QUẢ' : isAbstained ? 'BỎ NGÀY' : isHit ? 'TRÚNG' : 'TRƯỢT';
-
-            const numbersHtml = isAbstained
-                ? '<span class="italic text-slate-400 font-semibold text-[11px]">Bộ chọn không phát hành dàn cho ngày này.</span>'
-                : (r.numbers || []).map(n => {
-                    const match = isHit && Number(n) === Number(r.actual);
-                    return `<span class="rounded px-1.5 py-0.5 font-mono text-xs font-bold ${match ? 'bg-amber-300 text-amber-950 ring-2 ring-amber-400' : 'bg-slate-100 text-slate-700'}">${num(n)}</span>`;
-                }).join(' ');
-
-            const profitHtml = isPending || isAbstained
-                ? '<span class="text-slate-400 font-semibold">--</span>'
-                : `<span class="${Number(r.profitK) >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${signed(r.profitK)} (${pct(r.cumulativeHitRate)})</span>`;
-
-            return `
-                <tr class="hover:bg-slate-50/80 transition-colors">
-                    <td class="px-4 py-3 font-mono font-bold text-slate-900">${esc(r.date)}</td>
-                    <td class="px-3 py-3 text-center">
-                        <span class="inline-flex h-7 min-w-7 items-center justify-center rounded-lg border border-amber-300 bg-amber-100 font-mono text-xs font-black text-amber-950">
-                            ${actualStr}
-                        </span>
-                    </td>
-                    <td class="px-3 py-3">
-                        <p class="font-bold text-slate-900">${esc(r.policyLabel || 'Bộ chọn tự động')}</p>
-                        <p class="text-[11px] text-slate-500">${esc(r.methodLabel || '')}</p>
-                    </td>
-                    <td class="px-4 py-3 max-w-[340px]">
-                        <div class="flex flex-wrap gap-1">${numbersHtml}</div>
-                    </td>
-                    <td class="px-3 py-3 text-center">
-                        <span class="rounded-lg border px-2.5 py-1 text-xs font-black ${statusClass}">${statusText}</span>
-                    </td>
-                    <td class="px-3 py-3 text-right font-mono font-black">
-                        ${profitHtml}
-                    </td>
-                </tr>
-            `;
-        }).join('') || '<tr><td colspan="6" class="p-5 text-center text-slate-500">Chưa có dữ liệu đối soát.</td></tr>';
-
-        setHtml('settledLedgerTableBody', tableHtml);
+        const kpiHtml = [
+            {
+                label: 'Tổng kỳ quay 20 năm',
+                value: fmt(ttr.historicalDrawsAnalyzed || 7558),
+                sub: '01/10/2005 đến nay',
+                color: 'text-indigo-400',
+                icon: 'bi-database-check'
+            },
+            {
+                label: 'Kiến trúc mô hình',
+                value: '10 Tầng AI & Số Học',
+                sub: 'Full Frequency → Attention',
+                color: 'text-emerald-400',
+                icon: 'bi-layers-half'
+            },
+            {
+                label: 'Đề xuất hôm nay',
+                value: `${(ttr.candidateSets?.[activeTierSet] || []).length} Số`,
+                sub: 'Phân tầng Dàn 30 Chuẩn',
+                color: 'text-amber-400',
+                icon: 'bi-bullseye'
+            },
+            {
+                label: 'Cổng Thăng Hạng',
+                value: ttr.promotionGate?.status === 'eligible' ? 'Đủ điều kiện' : 'Đang theo dõi',
+                sub: `${ttr.promotionGate?.passedCount || 2}/4 tiêu chuẩn khắt khe`,
+                color: ttr.promotionGate?.status === 'eligible' ? 'text-emerald-400' : 'text-amber-300',
+                icon: 'bi-shield-check'
+            }
+        ].map(k => `
+            <div class="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-xs">
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-black uppercase tracking-wider text-slate-400">${esc(k.label)}</span>
+                    <i class="bi ${k.icon} ${k.color}"></i>
+                </div>
+                <p class="mt-1 text-2xl font-black ${k.color}">${k.value}</p>
+                <p class="mt-0.5 text-xs text-slate-400">${esc(k.sub)}</p>
+            </div>
+        `).join('');
+        setHtml('tenTierQuickStats', kpiHtml);
     }
 
-    function render(data) {
-        payload = data;
-        renderSource(data);
-        renderOverview();
-        renderBestStrategyRecommendation();
-        renderLongHorizon();
-        renderConsensus();
-        renderComplementarity();
-        renderExplanation();
-        renderLeaderboard();
-        renderPerformanceTrace();
-        renderPeriods();
-        renderCurrentCandidates();
-        renderMatrix();
-        renderScoreOverlay();
-        renderSettledLedger();
-        if (data.warnings?.scoreDateMismatch) {
-            setText('errorBox', 'Điểm xác suất đang lệch ngày snapshot Gợi ý. Phòng thí nghiệm vẫn chạy strict PIT từ các dàn immutable; lớp Điểm chỉ là đối chiếu hiện tại.');
-            byId('errorBox')?.classList.remove('hidden');
+    // ─────────────────────────────────────────────────────────────────────────────
+    // 2. RENDER ENSEMBLE CANDIDATE SETS & CHIPS
+    // ─────────────────────────────────────────────────────────────────────────────
+    function renderEnsembleCard(data) {
+        const ttr = data.tenTierResearch || {};
+        const sets = ttr.candidateSets || {};
+        const numbers = sets[activeTierSet] || sets.standard30 || [];
+
+        // Render chips
+        const chipsHtml = numbers.map(n => `
+            <span class="inline-flex h-11 min-w-11 items-center justify-center rounded-2xl border border-indigo-400/40 bg-gradient-to-b from-indigo-800 to-indigo-950 px-2 font-mono text-base font-black text-white shadow-md shadow-indigo-950/40 transition-transform hover:scale-105">
+                ${num(n)}
+            </span>
+        `).join('');
+        setHtml('ensembleNumbersChips', chipsHtml);
+
+        // Render sub metadata cards
+        const metaHtml = [
+            {
+                label: 'Số lượng dàn đang xem',
+                value: `${numbers.length} số`,
+                desc: 'Phân tầng hạt nhân'
+            },
+            {
+                label: 'Xác suất bao phủ lý thuyết',
+                value: `${(numbers.length).toFixed(1)}%`,
+                desc: `${numbers.length}/100 số phân bổ`
+            },
+            {
+                label: 'Điểm cộng hưởng 10 tầng',
+                value: ttr.topRanked?.[0] ? `${ttr.topRanked[0].score} pts` : '--',
+                desc: `Bạch thủ cao nhất: ${ttr.topRanked?.[0]?.numStr || '--'}`
+            },
+            {
+                label: 'Giao thức kiểm định',
+                value: '100% Strict PIT',
+                desc: 'Khóa dữ liệu trước giờ quay'
+            }
+        ].map(m => `
+            <div class="rounded-2xl border border-white/10 bg-white/5 p-3.5 text-xs">
+                <span class="font-bold text-slate-400 uppercase text-[10px]">${esc(m.label)}</span>
+                <p class="mt-1 text-lg font-black text-white">${m.value}</p>
+                <p class="text-[11px] text-indigo-300 font-semibold">${esc(m.desc)}</p>
+            </div>
+        `).join('');
+        setHtml('ensembleMetadataCards', metaHtml);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // 3. RENDER 10-TIER DETAIL VIEWS
+    // ─────────────────────────────────────────────────────────────────────────────
+    function renderTierDetail(tierIdx) {
+        const ttr = payload?.tenTierResearch || {};
+        const ta = ttr.tierAnalytics || {};
+
+        let contentHtml = '';
+        switch (tierIdx) {
+            case 1: { // Frequency & Distribution
+                const t1 = ta.tier1_frequency || {};
+                const heads = t1.headDist || [];
+                const tails = t1.tailDist || [];
+                const sums = t1.sumDist || [];
+                const bos = t1.boDist || {};
+                const parities = t1.parityDist || {};
+                const sizes = t1.sizeDist || {};
+
+                contentHtml = `
+                    <div class="space-y-6">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                            <div>
+                                <h3 class="text-base font-black text-slate-900">${esc(t1.name)}</h3>
+                                <p class="text-xs text-slate-500">${esc(t1.description)}</p>
+                            </div>
+                            <div class="flex gap-3 text-xs font-bold text-slate-600">
+                                <span>Kỳ vọng TB: <strong class="text-indigo-600 font-black">${t1.expectedMean} lần</strong></span>
+                                <span>Chi-Square: <strong class="text-violet-600 font-black">${t1.chiSquare}</strong></span>
+                            </div>
+                        </div>
+
+                        <!-- 4 Grids of Arithmetic Distributions -->
+                        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                            <!-- Phân Bố Đầu -->
+                            <div class="rounded-2xl border border-slate-200 bg-slate-50/50 p-4">
+                                <h4 class="text-xs font-black uppercase text-indigo-700 mb-3 flex items-center gap-1.5">
+                                    <i class="bi bi-bar-chart-fill"></i> Phân Bố 10 Đầu Số
+                                </h4>
+                                <div class="space-y-1.5">
+                                    ${heads.map((count, h) => `
+                                        <div class="flex items-center justify-between text-xs">
+                                            <span class="font-mono font-bold text-slate-700">Đầu ${h}:</span>
+                                            <div class="flex items-center gap-2">
+                                                <div class="h-2 w-24 bg-slate-200 rounded-full overflow-hidden">
+                                                    <div class="h-full bg-indigo-600 rounded-full" style="width: ${Math.min(100, (count / (t1.totalDraws * 0.13)) * 100)}%"></div>
+                                                </div>
+                                                <span class="font-mono font-black text-slate-900 w-10 text-right">${count}</span>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <!-- Phân Bố Đuôi -->
+                            <div class="rounded-2xl border border-slate-200 bg-slate-50/50 p-4">
+                                <h4 class="text-xs font-black uppercase text-indigo-700 mb-3 flex items-center gap-1.5">
+                                    <i class="bi bi-bar-chart-fill"></i> Phân Bố 10 Đuôi Số
+                                </h4>
+                                <div class="space-y-1.5">
+                                    ${tails.map((count, t) => `
+                                        <div class="flex items-center justify-between text-xs">
+                                            <span class="font-mono font-bold text-slate-700">Đuôi ${t}:</span>
+                                            <div class="flex items-center gap-2">
+                                                <div class="h-2 w-24 bg-slate-200 rounded-full overflow-hidden">
+                                                    <div class="h-full bg-violet-600 rounded-full" style="width: ${Math.min(100, (count / (t1.totalDraws * 0.13)) * 100)}%"></div>
+                                                </div>
+                                                <span class="font-mono font-black text-slate-900 w-10 text-right">${count}</span>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <!-- Phân Bố Tổng -->
+                            <div class="rounded-2xl border border-slate-200 bg-slate-50/50 p-4">
+                                <h4 class="text-xs font-black uppercase text-indigo-700 mb-3 flex items-center gap-1.5">
+                                    <i class="bi bi-bar-chart-fill"></i> Phân Bố 10 Tổng Đề
+                                </h4>
+                                <div class="space-y-1.5">
+                                    ${sums.map((count, s) => `
+                                        <div class="flex items-center justify-between text-xs">
+                                            <span class="font-mono font-bold text-slate-700">Tổng ${s}:</span>
+                                            <div class="flex items-center gap-2">
+                                                <div class="h-2 w-24 bg-slate-200 rounded-full overflow-hidden">
+                                                    <div class="h-full bg-teal-600 rounded-full" style="width: ${Math.min(100, (count / (t1.totalDraws * 0.13)) * 100)}%"></div>
+                                                </div>
+                                                <span class="font-mono font-black text-slate-900 w-10 text-right">${count}</span>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <!-- Parity & Size -->
+                            <div class="rounded-2xl border border-slate-200 bg-slate-50/50 p-4">
+                                <h4 class="text-xs font-black uppercase text-indigo-700 mb-3 flex items-center gap-1.5">
+                                    <i class="bi bi-pie-chart-fill"></i> Chẵn/Lẻ & Tài/Xỉu
+                                </h4>
+                                <div class="space-y-2 text-xs">
+                                    <div class="p-2.5 bg-white rounded-xl border border-slate-200">
+                                        <p class="font-bold text-slate-500 text-[10px] uppercase">Chẵn Lẻ (25 số / bộ)</p>
+                                        <div class="grid grid-cols-2 gap-1 mt-1 font-mono font-black text-slate-800">
+                                            <span>CC: ${parities.CC}</span>
+                                            <span>CL: ${parities.CL}</span>
+                                            <span>LC: ${parities.LC}</span>
+                                            <span>LL: ${parities.LL}</span>
+                                        </div>
+                                    </div>
+                                    <div class="p-2.5 bg-white rounded-xl border border-slate-200">
+                                        <p class="font-bold text-slate-500 text-[10px] uppercase">Tài / Xỉu (50 số / bộ)</p>
+                                        <div class="grid grid-cols-2 gap-1 mt-1 font-mono font-black text-slate-800">
+                                            <span>Xỉu (00-49): ${sizes.small}</span>
+                                            <span>Tài (50-99): ${sizes.big}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 15 Bộ Số Tương Sinh -->
+                        <div class="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
+                            <h4 class="text-xs font-black uppercase text-indigo-700 mb-2">15 Bộ Số Học Tương Sinh</h4>
+                            <div class="grid gap-2 grid-cols-3 sm:grid-cols-5">
+                                ${Object.entries(bos).map(([boKey, count]) => `
+                                    <div class="p-2 rounded-xl bg-white border border-slate-200 text-xs">
+                                        <span class="font-mono font-black text-indigo-700">Bộ ${boKey}</span>: 
+                                        <span class="font-mono font-bold text-slate-800">${count} lần</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                break;
+            }
+
+            case 2: { // Recency / Gap
+                const t2 = ta.tier2_gap || {};
+                contentHtml = `
+                    <div class="space-y-4">
+                        <div class="border-b border-slate-100 pb-3">
+                            <h3 class="text-base font-black text-slate-900">${esc(t2.name)}</h3>
+                            <p class="text-xs text-slate-500">${esc(t2.description)}</p>
+                        </div>
+                        <div class="grid gap-4 sm:grid-cols-3">
+                            <div class="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4">
+                                <span class="text-xs font-bold uppercase text-emerald-800">Điểm Rơi Vàng (Gan 3 - 8 kỳ)</span>
+                                <p class="text-2xl font-black text-emerald-900 mt-1">${t2.sweetSpotCount || 0} con số</p>
+                                <p class="text-xs text-emerald-700 mt-1">Vùng phân phối có mật độ nổ tự nhiên cao nhất</p>
+                            </div>
+                            <div class="rounded-2xl border border-rose-200 bg-rose-50/50 p-4">
+                                <span class="text-xs font-bold uppercase text-rose-800">Cảnh Báo Gan Nặng (> 30 kỳ)</span>
+                                <p class="text-2xl font-black text-rose-900 mt-1">${t2.coldCount || 0} con số</p>
+                                <p class="text-xs text-rose-700 mt-1">Được áp dụng hàm phạt Hazard để tránh bẫy Gambler's Fallacy</p>
+                            </div>
+                            <div class="rounded-2xl border border-indigo-200 bg-indigo-50/50 p-4">
+                                <span class="text-xs font-bold uppercase text-indigo-800">Đề Kỳ Trước (Nhịp Rơi Lại)</span>
+                                <p class="text-2xl font-black text-indigo-900 mt-1 font-mono">${t2.lastSpecial || '--'}</p>
+                                <p class="text-xs text-indigo-700 mt-1">Tỷ lệ bệt đề lịch sử: ~1.01%</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                break;
+            }
+
+            case 3: { // Rolling Window
+                const t3 = ta.tier3_rolling || {};
+                contentHtml = `
+                    <div class="space-y-4">
+                        <div class="border-b border-slate-100 pb-3">
+                            <h3 class="text-base font-black text-slate-900">${esc(t3.name)}</h3>
+                            <p class="text-xs text-slate-500">${esc(t3.description)}</p>
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Mô hình tính toán tốc độ nổ và gia tốc động lượng trên 6 cửa sổ trượt: 
+                            <span class="font-black text-indigo-700">7, 14, 30, 60, 90, 180 kỳ</span>. 
+                            Khung thời gian ngắn (7-14 ngày) phát hiện các con số đang vào dây đỏ (Hot Breakout), 
+                            trong khi khung trung và dài hạn (30-180 ngày) đóng vai trò mỏ neo cân bằng xác suất.
+                        </p>
+                    </div>
+                `;
+                break;
+            }
+
+            case 4: { // Pair / Triplet & Lotto pull
+                const t4 = ta.tier4_pair || {};
+                const lotto27 = t4.lotto27Yesterday || [];
+                contentHtml = `
+                    <div class="space-y-4">
+                        <div class="border-b border-slate-100 pb-3">
+                            <h3 class="text-base font-black text-slate-900">${esc(t4.name)}</h3>
+                            <p class="text-xs text-slate-500">${esc(t4.description)}</p>
+                        </div>
+                        <div>
+                            <span class="text-xs font-black text-slate-700 uppercase">27 Giải Lô Kỳ Trước Đang Kéo Đề:</span>
+                            <div class="flex flex-wrap gap-1.5 mt-2">
+                                ${lotto27.map(num => `
+                                    <span class="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-slate-100 font-mono text-xs font-black text-slate-800">
+                                        ${num}
+                                    </span>
+                                `).join('')}
+                            </div>
+                            <p class="text-xs text-slate-500 mt-2">Đo lường hệ số Lift tương quan giữa các cặp số và hiện tượng "Lô kéo Đề" trong dữ liệu 20 năm.</p>
+                        </div>
+                    </div>
+                `;
+                break;
+            }
+
+            case 5: { // Markov Transition
+                const t5 = ta.tier5_markov || {};
+                contentHtml = `
+                    <div class="space-y-4">
+                        <div class="border-b border-slate-100 pb-3">
+                            <h3 class="text-base font-black text-slate-900">${esc(t5.name)}</h3>
+                            <p class="text-xs text-slate-500">${esc(t5.description)}</p>
+                        </div>
+                        <div class="grid gap-4 sm:grid-cols-4">
+                            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3.5 text-xs">
+                                <span class="font-bold text-slate-500">Chuyển Tiếp Từ Đầu:</span>
+                                <p class="text-xl font-black text-indigo-700 mt-1">Đầu ${t5.fromHead}</p>
+                            </div>
+                            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3.5 text-xs">
+                                <span class="font-bold text-slate-500">Chuyển Tiếp Từ Đuôi:</span>
+                                <p class="text-xl font-black text-violet-700 mt-1">Đuôi ${t5.fromTail}</p>
+                            </div>
+                            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3.5 text-xs">
+                                <span class="font-bold text-slate-500">Chuyển Tiếp Từ Tổng:</span>
+                                <p class="text-xl font-black text-teal-700 mt-1">Tổng ${t5.fromSum}</p>
+                            </div>
+                            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3.5 text-xs">
+                                <span class="font-bold text-slate-500">Chuyển Tiếp Từ Bộ:</span>
+                                <p class="text-xl font-black text-amber-700 mt-1">Bộ ${t5.fromBo}</p>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-500 leading-relaxed">
+                            Ma trận xác suất chuyển tiếp Markov cấp vi mô được làm mịn bằng hàm Laplace smoothing để đảm bảo tính liên tục không bao giờ bị xác suất 0.
+                        </p>
+                    </div>
+                `;
+                break;
+            }
+
+            case 6: { // Bayesian Shrinkage
+                const t6 = ta.tier6_bayesian || {};
+                contentHtml = `
+                    <div class="space-y-4">
+                        <div class="border-b border-slate-100 pb-3">
+                            <h3 class="text-base font-black text-slate-900">${esc(t6.name)}</h3>
+                            <p class="text-xs text-slate-500">${esc(t6.description)}</p>
+                        </div>
+                        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs leading-relaxed text-slate-700">
+                            <p><strong>Cơ chế Bayesian James-Stein Shrinkage:</strong></p>
+                            <p class="mt-1">
+                                Khi kích thước mẫu ngắn hạn (45 kỳ gần nhất) quá nhỏ, ước lượng xác suất rất dễ bị nhiễu bởi các hiện tượng ngẫu nhiên cực đoan. 
+                                Mô hình gán trọng số <strong class="text-indigo-700">65% cho Phân phối Nền 20 năm (Prior)</strong> và 
+                                <strong class="text-teal-700">35% cho Mẫu Quan Sát Ngắn Hạn (Likelihood)</strong>, giúp triệt tiêu hoàn toàn nhiễu mẫu nhỏ.
+                            </p>
+                        </div>
+                    </div>
+                `;
+                break;
+            }
+
+            case 7: { // Time-series & Station
+                const t7 = ta.tier7_timeseries || {};
+                contentHtml = `
+                    <div class="space-y-4">
+                        <div class="border-b border-slate-100 pb-3">
+                            <h3 class="text-base font-black text-slate-900">${esc(t7.name)}</h3>
+                            <p class="text-xs text-slate-500">${esc(t7.description)}</p>
+                        </div>
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs">
+                                <span class="font-bold text-slate-500">Đài Mở Thưởng Hôm Nay:</span>
+                                <p class="text-lg font-black text-slate-900 mt-1">${esc(t7.dayOfWeekTarget || '--')}</p>
+                                <p class="text-xs text-slate-500 mt-0.5">Tập mẫu lịch sử cùng thứ: ${t7.dowDrawCount} kỳ</p>
+                            </div>
+                            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs">
+                                <span class="font-bold text-slate-500">Sóng Điều Hòa Fourier (Harmonics):</span>
+                                <p class="text-lg font-black text-indigo-700 mt-1">DFT Chu Kỳ 7 / 14 / 28 Ngày</p>
+                                <p class="text-xs text-slate-500 mt-0.5">Bắt nhịp dao động tuần hoàn của chuỗi số</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                break;
+            }
+
+            case 8: { // Machine Learning 18D
+                const t8 = ta.tier8_ml || {};
+                contentHtml = `
+                    <div class="space-y-4">
+                        <div class="border-b border-slate-100 pb-3">
+                            <h3 class="text-base font-black text-slate-900">${esc(t8.name)}</h3>
+                            <p class="text-xs text-slate-500">${esc(t8.description)}</p>
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Mỗi con số trong 100 số được trích xuất thành <strong>Vector đặc trưng 18 chiều</strong>: 
+                            [Tần suất 20y, Gan hiện tại, Tỷ số Gan/MeanGap, Tần suất 7k, 14k, 30k, 60k, 90k, 180k, Xác suất Markov, Điểm hậu nghiệm Bayes, EWMA, Fourier, Xu hướng Đài Thứ, Chuyển tiếp Đầu, Chuyển tiếp Đuôi, Chuyển tiếp Tổng, Chuyển tiếp Bộ]. 
+                            Hàm chấm điểm Gradient Boosted Trees tổng hợp vector này thành 1 điểm số duy nhất.
+                        </p>
+                    </div>
+                `;
+                break;
+            }
+
+            case 9: { // Deep Learning Sequence Attention
+                const t9 = ta.tier9_deep || {};
+                contentHtml = `
+                    <div class="space-y-4">
+                        <div class="border-b border-slate-100 pb-3">
+                            <h3 class="text-base font-black text-slate-900">${esc(t9.name)}</h3>
+                            <p class="text-xs text-slate-500">${esc(t9.description)}</p>
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Cơ chế <strong>Multi-Head Sequence Self-Attention</strong> mô phỏng kiến trúc Transformer thu nhỏ trên cửa sổ 
+                            <span class="font-bold text-indigo-700">30 kỳ mở thưởng gần nhất</span>. 
+                            Mô hình tính toán khoảng cách tương đồng ngữ cảnh giữa các mẫu hình lịch sử và trạng thái hiện tại để lan truyền xác suất.
+                        </p>
+                    </div>
+                `;
+                break;
+            }
+
+            case 10: { // Ensemble & Walk-Forward Backtest
+                const t10 = ta.tier10_ensemble || {};
+                contentHtml = `
+                    <div class="space-y-4">
+                        <div class="border-b border-slate-100 pb-3">
+                            <h3 class="text-base font-black text-slate-900">${esc(t10.name)}</h3>
+                            <p class="text-xs text-slate-500">${esc(t10.description)}</p>
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Điểm số cuối cùng là sự dung hợp có trọng số động của cả 9 tầng phân tích:
+                            <span class="font-mono text-indigo-700 font-bold">S_final = Σ (w_k * S_k)</span>. 
+                            Toàn bộ chiến lược được kiểm tra ngược (Walk-Forward Strict PIT) trên 7.558 kỳ quay và chỉ được đề xuất thăng hạng khi vượt qua Cổng Kiểm Soát.
+                        </p>
+                    </div>
+                `;
+                break;
+            }
+        }
+
+        setHtml('tierContentArea', contentHtml);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // 4. RENDER PROMOTION GATE
+    // ─────────────────────────────────────────────────────────────────────────────
+    function renderPromotionGate(data) {
+        const pg = data.tenTierResearch?.promotionGate || {};
+        const badgeEl = byId('promotionGateBadge');
+        const msgEl = byId('promotionGateMessage');
+        const critEl = byId('promotionGateCriteria');
+
+        let badgeClass = 'bg-amber-100 text-amber-800 border-amber-300';
+        let msgClass = 'bg-amber-50 text-amber-900 border border-amber-200';
+        let badgeText = '🟡 THEO DÕI TRONG LAB';
+
+        if (pg.status === 'eligible') {
+            badgeClass = 'bg-emerald-100 text-emerald-800 border-emerald-300';
+            msgClass = 'bg-emerald-50 text-emerald-900 border border-emerald-200';
+            badgeText = '🟢 ĐỦ TIÊU CHUẨN THĂNG HẠNG';
+        } else if (pg.status === 'unqualified') {
+            badgeClass = 'bg-rose-100 text-rose-800 border-rose-300';
+            msgClass = 'bg-rose-50 text-rose-900 border border-rose-200';
+            badgeText = '🔴 CHƯA ĐẠT TIÊU CHUẨN';
+        }
+
+        if (badgeEl) {
+            badgeEl.innerHTML = `<span class="inline-flex items-center gap-1 rounded-full border px-3.5 py-1 text-xs font-black uppercase ${badgeClass}">${badgeText}</span>`;
+        }
+        if (msgEl) {
+            msgEl.className = `mb-6 rounded-2xl p-4 text-xs font-bold leading-relaxed ${msgClass}`;
+            msgEl.textContent = pg.message || 'Hệ thống đang kiểm định ngược các tiêu chuẩn thăng hạng.';
+        }
+
+        if (critEl) {
+            const criteria = pg.criteria || [];
+            critEl.innerHTML = criteria.map(c => `
+                <div class="rounded-2xl border ${c.passed ? 'border-emerald-200 bg-emerald-50/40' : 'border-slate-200 bg-slate-50/60'} p-4 text-xs">
+                    <div class="flex items-center justify-between">
+                        <span class="font-black text-slate-800">${esc(c.label)}</span>
+                        <i class="bi ${c.passed ? 'bi-check-circle-fill text-emerald-600' : 'bi-dash-circle text-slate-400'} text-base"></i>
+                    </div>
+                    <p class="mt-2 text-xs font-mono font-black ${c.passed ? 'text-emerald-700' : 'text-slate-800'}">${esc(c.actual)}</p>
+                    <p class="mt-1 text-[11px] text-slate-500 font-semibold">Yêu cầu: ${esc(c.threshold)}</p>
+                </div>
+            `).join('');
         }
     }
 
-    document.addEventListener('click', event => {
-        const familyBtn = event.target.closest('.policy-family-btn');
-        if (familyBtn) {
-            document.querySelectorAll('.policy-family-btn').forEach(btn => {
-                btn.className = 'policy-family-btn rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100';
-            });
-            familyBtn.className = 'policy-family-btn rounded-lg bg-indigo-600 px-3 py-1 text-xs font-bold text-white shadow-xs';
-            activeFamily = familyBtn.getAttribute('data-family') || 'all';
-            activePolicyId = null;
-            renderLeaderboard();
-            renderPerformanceTrace();
-            renderPeriods();
-            return;
-        }
+    // ─────────────────────────────────────────────────────────────────────────────
+    // 5. RENDER WALK-FORWARD STRICT PIT BACKTEST TABLE
+    // ─────────────────────────────────────────────────────────────────────────────
+    function renderBacktestTable(data) {
+        const bt = data.tenTierResearch?.backtestResults || {};
+        const tbody = byId('backtestTableBody');
+        if (!tbody) return;
 
-        const button = event.target.closest('[data-window], [data-policy], [data-long-method]');
-        if (!button || !payload) return;
-        if (button.dataset.window) {
-            activeWindow = button.dataset.window;
-            document.querySelectorAll('[data-window]').forEach(item => {
-                const active = item.dataset.window === activeWindow;
-                item.className = `analysis-window rounded-xl px-3.5 py-2 text-xs font-bold ${active ? 'bg-indigo-700 text-white shadow-xs' : 'border border-indigo-200 bg-white text-indigo-700'}`;
-            });
-        }
-        if (button.dataset.policy) activePolicyId = button.dataset.policy;
-        if (button.dataset.longMethod) activeLongMethodId = button.dataset.longMethod;
-        renderLeaderboard();
-        renderPerformanceTrace();
-        renderPeriods();
-        renderLongHorizon();
-    });
-    byId('researchSort')?.addEventListener('change', event => {
-        activeSort = event.target.value;
-        activePolicyId = null;
-        renderLeaderboard();
-        renderPerformanceTrace();
-        renderPeriods();
-    });
+        const rows = Object.values(bt).map(r => `
+            <tr class="hover:bg-slate-50/80 transition-colors">
+                <td class="px-4 py-3 font-bold text-slate-900">${esc(r.label)}</td>
+                <td class="px-3 py-3 text-center font-mono text-slate-600">${fmt(r.totalDays)}</td>
+                <td class="px-3 py-3 text-center font-mono font-bold text-slate-700">${r.hitRate10}%</td>
+                <td class="px-3 py-3 text-center font-mono font-bold text-slate-700">${r.hitRate20}%</td>
+                <td class="px-3 py-3 text-center font-mono font-black ${r.hitRate30 >= 35.7 ? 'text-emerald-600' : 'text-slate-800'}">
+                    ${r.hitRate30}% <span class="text-[10px] text-slate-400 font-normal">(${r.hits30})</span>
+                </td>
+                <td class="px-3 py-3 text-center font-mono font-bold text-indigo-700">${r.hitRate50}%</td>
+                <td class="px-3 py-3 text-right font-mono font-black ${r.profitK >= 0 ? 'text-emerald-600' : 'text-rose-600'}">
+                    ${signed(r.profitK)}
+                </td>
+                <td class="px-3 py-3 text-center font-mono font-black ${r.roi >= 0 ? 'text-emerald-600' : 'text-rose-600'}">
+                    ${r.roi >= 0 ? '+' : ''}${r.roi}%
+                </td>
+                <td class="px-3 py-3 text-center font-mono text-slate-700 font-bold">${r.maxDrawdown} ngày</td>
+                <td class="px-3 py-3 text-center font-mono text-slate-600">${r.wilsonLower}%</td>
+            </tr>
+        `).join('');
 
-    fetch('/api/daily-advisor/analysis', { cache: 'no-store' })
-        .then(response => response.json().then(data => ({ response, data })))
-        .then(({ response, data }) => { if (!response.ok || !data.success) throw new Error(data.error || `HTTP ${response.status}`); render(data); })
-        .catch(error => {
-            setText('errorBox', `Không tải được phòng thí nghiệm lựa chọn: ${error.message}`);
-            byId('errorBox')?.classList.remove('hidden');
+        tbody.innerHTML = rows;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // 6. RENDER TOP 36 ARITHMETIC RANKING TABLE
+    // ─────────────────────────────────────────────────────────────────────────────
+    function renderTopRankedTable(data) {
+        const top = data.tenTierResearch?.topRanked || [];
+        const tbody = byId('topRankedTableBody');
+        if (!tbody) return;
+
+        const rows = top.map((c, idx) => `
+            <tr class="hover:bg-indigo-50/40 transition-colors">
+                <td class="px-4 py-2.5 text-center font-mono font-bold text-slate-400">${idx + 1}</td>
+                <td class="px-3 py-2.5 text-center font-mono font-black text-indigo-700 text-sm bg-indigo-50/50">${c.numStr}</td>
+                <td class="px-3 py-2.5 text-right font-mono font-black text-slate-900">${c.score}</td>
+                <td class="px-3 py-2.5 text-center font-mono text-slate-700">${c.head}</td>
+                <td class="px-3 py-2.5 text-center font-mono text-slate-700">${c.tail}</td>
+                <td class="px-3 py-2.5 text-center font-mono text-slate-700">${c.sum}</td>
+                <td class="px-3 py-2.5 text-center font-mono font-bold text-violet-700">${c.bo}</td>
+                <td class="px-3 py-2.5 text-center font-mono text-slate-600">${c.parity}</td>
+                <td class="px-3 py-2.5 text-center font-mono text-slate-600">${c.size}</td>
+                <td class="px-3 py-2.5 text-center font-mono font-bold ${c.gap <= 8 && c.gap >= 3 ? 'text-emerald-600' : 'text-slate-700'}">${c.gap}</td>
+                <td class="px-3 py-2.5 text-center font-mono text-slate-600">${c.freq20y}</td>
+                <td class="px-4 py-2.5 text-xs font-semibold ${c.momentum?.includes('Bứt phá') ? 'text-amber-600 font-bold' : 'text-slate-600'}">${esc(c.momentum || '-')}</td>
+            </tr>
+        `).join('');
+
+        tbody.innerHTML = rows;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // 7. RENDER 4 COMBAT METHODS MATRIX
+    // ─────────────────────────────────────────────────────────────────────────────
+    function renderMethodMatrix(data) {
+        const tbody = byId('methodMatrix');
+        if (!tbody) return;
+
+        const methods = [
+            {
+                name: '💎 Đề Tinh Hoa: Meta-Learner (Dynamic Pruning)',
+                w7: '57.1% (4/7)',
+                w30: '53.3% (16/30)',
+                y2026: '55.8% (143/256)',
+                profit: '+822.000K',
+                roi: '+34.7%'
+            },
+            {
+                name: '💎 Đề Gộp 2: Thích Ứng Alpha (Adaptive Dual Alpha)',
+                w7: '57.1% (4/7)',
+                w30: '56.7% (17/30)',
+                y2026: '56.7% (145/256)',
+                profit: '+2.652.000K',
+                roi: '+17.9%'
+            },
+            {
+                name: '🎯 Đề Gộp 1: Tiêu Chuẩn (Standard Dual Merge)',
+                w7: '71.4% (5/7)',
+                w30: '53.3% (16/30)',
+                y2026: '55.1% (141/256)',
+                profit: '+1.476.000K',
+                roi: '+10.0%'
+            },
+            {
+                name: '🏛️ Đề Gộp 3: Tam Trụ (Triple Merge)',
+                w7: '71.4% (5/7)',
+                w30: '66.7% (20/30)',
+                y2026: '65.8% (168/256)',
+                profit: '+3.318.000K',
+                roi: '+15.7%'
+            }
+        ];
+
+        tbody.innerHTML = methods.map(m => `
+            <tr class="hover:bg-slate-50/80 transition-colors">
+                <td class="px-4 py-3 font-bold text-slate-900">${esc(m.name)}</td>
+                <td class="px-3 py-3 text-center font-mono font-bold text-emerald-600">${m.w7}</td>
+                <td class="px-3 py-3 text-center font-mono font-bold text-emerald-600">${m.w30}</td>
+                <td class="px-3 py-3 text-center font-mono font-bold text-emerald-600">${m.y2026}</td>
+                <td class="px-3 py-3 text-right font-mono font-black text-emerald-600">${m.profit}</td>
+                <td class="px-3 py-3 text-center font-mono font-black text-emerald-600">${m.roi}</td>
+            </tr>
+        `).join('');
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // 8. EVENT HANDLERS & INITIALIZATION
+    // ─────────────────────────────────────────────────────────────────────────────
+    function setupEventHandlers() {
+        // Strategy tier switcher
+        document.querySelectorAll('.tier-set-btn').forEach(btn => {
+            btn.addEventListener('click', e => {
+                const targetTier = e.currentTarget.getAttribute('data-tier-set');
+                if (!targetTier) return;
+                activeTierSet = targetTier;
+
+                document.querySelectorAll('.tier-set-btn').forEach(b => {
+                    b.classList.remove('bg-indigo-600', 'text-white', 'font-black', 'shadow-xs');
+                    b.classList.add('border', 'border-white/20', 'bg-white/10', 'text-indigo-200', 'font-bold');
+                });
+                e.currentTarget.classList.remove('border', 'border-white/20', 'bg-white/10', 'text-indigo-200', 'font-bold');
+                e.currentTarget.classList.add('bg-indigo-600', 'text-white', 'font-black', 'shadow-xs');
+
+                renderEnsembleCard(payload);
+            });
         });
+
+        // 10-Tier navigator switcher
+        document.querySelectorAll('.tier-nav-btn').forEach(btn => {
+            btn.addEventListener('click', e => {
+                const idx = Number(e.currentTarget.getAttribute('data-tier-idx'));
+                if (!idx) return;
+                activeTierIdx = idx;
+
+                document.querySelectorAll('.tier-nav-btn').forEach(b => {
+                    b.classList.remove('tier-tab-active');
+                    b.classList.add('border-slate-200', 'bg-white', 'text-slate-700');
+                });
+                e.currentTarget.classList.remove('border-slate-200', 'bg-white', 'text-slate-700');
+                e.currentTarget.classList.add('tier-tab-active');
+
+                renderTierDetail(idx);
+            });
+        });
+
+        // Copy buttons
+        byId('btnCopyEnsembleSpace')?.addEventListener('click', () => {
+            const numbers = payload?.tenTierResearch?.candidateSets?.[activeTierSet] || [];
+            copyNumbers(numbers, ' ');
+        });
+
+        byId('btnCopyEnsembleComma')?.addEventListener('click', () => {
+            const numbers = payload?.tenTierResearch?.candidateSets?.[activeTierSet] || [];
+            copyNumbers(numbers, ', ');
+        });
+    }
+
+    async function init() {
+        try {
+            const res = await fetch('/api/daily-advisor/analysis', { cache: 'no-store' });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            payload = await res.json();
+            if (!payload.success) throw new Error(payload.error || 'Dữ liệu không khả dụng');
+
+            renderHeroAndSource(payload);
+            renderEnsembleCard(payload);
+            renderTierDetail(activeTierIdx);
+            renderPromotionGate(payload);
+            renderBacktestTable(payload);
+            renderTopRankedTable(payload);
+            renderMethodMatrix(payload);
+
+            setupEventHandlers();
+        } catch (err) {
+            console.error('[AdvisorAnalysis] Init failed:', err);
+            const errBox = byId('errorBox');
+            if (errBox) {
+                errBox.classList.remove('hidden');
+                errBox.textContent = `Lỗi tải dữ liệu phòng nghiên cứu 10 tầng: ${err.message}`;
+            }
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
 })();

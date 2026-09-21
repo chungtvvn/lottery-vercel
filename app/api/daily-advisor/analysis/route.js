@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { loadJsonWithSupabaseFallback } from '@/lib/data-access';
+import { getRawData, loadJsonWithSupabaseFallback } from '@/lib/data-access';
 import { buildAdvisorAnalysis } from '@/lib/services/advisorAnalysisService';
 
 export const dynamic = 'force-dynamic';
@@ -18,10 +18,11 @@ function isAuthorized(request) {
 export async function GET(request) {
     if (!isAuthorized(request)) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401, headers: HEADERS });
     try {
-        const [advisorCache, history, longHorizonCache] = await Promise.all([
+        const [advisorCache, history, longHorizonCache, rawData] = await Promise.all([
             loadJsonWithSupabaseFallback('cached_daily_method_advisor.json'),
             loadJsonWithSupabaseFallback('cached_prediction_history.json'),
-            loadJsonWithSupabaseFallback('cached_advisor_long_horizon_research.json').catch(() => null)
+            loadJsonWithSupabaseFallback('cached_advisor_long_horizon_research.json').catch(() => null),
+            getRawData().catch(() => null)
         ]);
         // Probability-score snapshots are supporting evidence only. The
         // strict selection laboratory remains available when that optional
@@ -33,7 +34,7 @@ export async function GET(request) {
             probabilityCache = null;
         }
         if (!advisorCache?.records?.length) throw new Error('Chưa có cache Gợi ý');
-        return NextResponse.json({ success: true, ...buildAdvisorAnalysis({ advisorCache, probabilityCache, longHorizonCache, history }) }, { headers: HEADERS });
+        return NextResponse.json({ success: true, ...buildAdvisorAnalysis({ advisorCache, probabilityCache, longHorizonCache, history, rawData }) }, { headers: HEADERS });
     } catch (error) {
         return NextResponse.json({ success: false, error: `Không tải được phân tích Gợi ý: ${error.message}` }, { status: 503, headers: HEADERS });
     }
