@@ -3018,11 +3018,11 @@
                 id: 'smartAlternating',
                 name: 'Gói 2: Điều Phối Luân Phiên Thông Minh (AI)',
                 deMethod: fullData?.pentaCoreDe ? 'pentaCoreDe' : 'adaptiveDualMerge',
-                loEngine: 'qmbf',
+                loEngine: fullData?.loPentaMatrix ? 'penta' : 'qmbf',
                 loSubTier: 7,
                 badge: '👑 AI Governor (Né Bão Hòa)',
                 roiLabel: 'Win 78.5%',
-                rationale: 'Né bẫy quá nhiệt sau thắng lớn X2 Đề (xác suất trượt 55.6%), ưu tiên Quantum Bayes Top 7 có tỷ lệ thắng nền tảng 82.3%.'
+                rationale: 'Né bẫy quá nhiệt sau thắng lớn X2 Đề (xác suất trượt 55.6%), chuyển sang Ngũ Trụ AI Đại Đồng Thuận kết hợp Ngũ Hợp Lô AI Top 7 nổ bù.'
             },
             steadyAccumulator: {
                 id: 'steadyAccumulator',
