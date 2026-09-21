@@ -3046,34 +3046,36 @@
             }
         };
 
-        let currentActivePortfolio = 'maxProfit';
+        let currentActivePortfolio = 'smartAlternating';
 
-        function selectStrategicPortfolio(key) {
+        function selectStrategicPortfolio(key, isInitial = false) {
             currentActivePortfolio = key;
-            const cfg = PORTFOLIOS_CONFIG[key] || PORTFOLIOS_CONFIG.maxProfit;
+            const cfg = PORTFOLIOS_CONFIG[key] || PORTFOLIOS_CONFIG.smartAlternating;
 
             // Update portfolio cards visual state
             document.querySelectorAll('.portfolio-card').forEach(card => {
                 const isSelected = (card.dataset.portfolio === key);
                 card.classList.toggle('active', isSelected);
                 card.classList.toggle('border-2', isSelected);
-                card.classList.toggle('border-amber-400', isSelected);
-                card.classList.toggle('from-amber-500/15', isSelected);
+                card.classList.toggle('border-indigo-400', isSelected && key === 'smartAlternating');
+                card.classList.toggle('border-amber-400', isSelected && key !== 'smartAlternating');
+                card.classList.toggle('ring-2', isSelected && key === 'smartAlternating');
+                card.classList.toggle('ring-indigo-400/30', isSelected && key === 'smartAlternating');
                 card.classList.toggle('border-white/15', !isSelected);
 
                 const indicator = card.querySelector('.portfolio-active-indicator');
                 if (indicator) {
                     indicator.innerHTML = isSelected 
-                        ? '<i class="bi bi-check-circle-fill"></i> Đang chọn' 
+                        ? (key === 'smartAlternating' ? '<i class="bi bi-check-circle-fill"></i> Đang chọn (Mặc định)' : '<i class="bi bi-check-circle-fill"></i> Đang chọn')
                         : 'Chưa chọn';
-                    indicator.className = `portfolio-active-indicator inline-flex items-center gap-1 text-[11px] ${isSelected ? 'font-black text-amber-400' : 'font-bold text-slate-400'}`;
+                    indicator.className = `portfolio-active-indicator inline-flex items-center gap-1 text-[11px] ${isSelected ? (key === 'smartAlternating' ? 'font-black text-indigo-300' : 'font-black text-amber-400') : 'font-bold text-slate-400'}`;
                 }
 
                 const selectBtn = card.querySelector('.btn-select-portfolio');
                 if (selectBtn) {
                     selectBtn.textContent = isSelected ? 'Đang Chọn' : 'Chọn Gói';
                     selectBtn.className = isSelected
-                        ? 'btn-select-portfolio rounded-lg bg-amber-400 text-slate-950 font-black text-xs px-2.5 py-1 transition-all shadow-xs'
+                        ? (key === 'smartAlternating' ? 'btn-select-portfolio rounded-lg bg-indigo-500 text-white font-black text-xs px-2.5 py-1 transition-all shadow-xs' : 'btn-select-portfolio rounded-lg bg-amber-400 text-slate-950 font-black text-xs px-2.5 py-1 transition-all shadow-xs')
                         : 'btn-select-portfolio rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold text-xs px-2.5 py-1 transition-all border border-white/20';
                 }
             });
@@ -3089,7 +3091,9 @@
                 window.__updateLoSubTierDisplay(cfg.loSubTier);
             }
 
-            showToast(`🎯 Đã kích hoạt ${cfg.name}! Tự động đồng bộ dàn số Đề & Lô.`);
+            if (!isInitial) {
+                showToast(`🎯 Đã kích hoạt ${cfg.name}! Tự động đồng bộ dàn số Đề & Lô.`);
+            }
         }
 
         // Click listeners on portfolio cards
@@ -3107,6 +3111,9 @@
                 if (key) selectStrategicPortfolio(key);
             });
         });
+
+        // LUÔN TỰ ĐỘNG CHỌN GÓI AN TOÀN VÀ ĐẢM BẢO PROFIT LÀM MẶC ĐỊNH KHI TẢI TRANG
+        selectStrategicPortfolio('smartAlternating', true);
 
         // Global Copy Buttons for Active Strategic Portfolio
         const btnCopyPortZalo = byId('btnCopyActivePortfolioZalo');
