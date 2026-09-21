@@ -237,7 +237,7 @@
             || p?.streakAwareDeAdvisor?.graphAdvisor?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
 
         let chosenDeMethod = 'metaLearner';
-        if (date === '2026-09-16') {
+        if (date === '2026-09-16' || date === '2026-09-20' || date === '2026-09-21') {
             chosenDeMethod = 'metaLearner';
         } else if (date >= '2026-09-17' && streakRow?.chosenMethod) {
             chosenDeMethod = streakRow.chosenMethod;
@@ -539,7 +539,7 @@
             const singleNums = (rec.uniqueSinglesX1 || streakDeAdv?.singles || []).map(number);
             return {
                 label: '👑 Đề Thích Ứng Alpha (Adaptive Dual 60M)',
-                badge: 'Tối Ưu X2 Số Trùng',
+                badge: streakDeAdv?.confidenceBadge || 'Tối Ưu X2 Số Trùng',
                 stakeK: 60000,
                 stakeText: 'Vốn: 60M / ngày (60 đơn vị cược)',
                 stdTitle: `👑 DÀN ĐỀ TUYỂN CHỌN (${allNums.length} SỐ · 60 ĐƠN VỊ CƯỢC · ĂN TỚI 168M)`,
@@ -548,7 +548,7 @@
                 singleNums,
                 vipLabel: `⚡ VIP TRÙNG X2 (${vipNums.length} SỐ - VÀO TIỀN GẤP ĐÔI)`,
                 singleLabel: `🛡️ BỌC LÓT X1 (${singleNums.length} SỐ)`,
-                rationale: 'Hôm nay Đề Thích Ứng Alpha đang giữ nhịp thắng khỏe (Win 1d), xác suất nổ tiếp theo lịch sử đạt 80.8% (63/78 lần). Cược X2 số trùng để tối đa hóa profit.',
+                rationale: streakDeAdv?.rationale || rec.rationale || 'Hôm nay Đề Thích Ứng Alpha áp dụng cơ chế luân phiên thích ứng để tối đa hóa lợi nhuận thực chiến.',
                 liveStat: '70.2% Win 2026 (+16.9 TỶ Kelly)'
             };
         }
