@@ -561,25 +561,39 @@
         let isX1 = false;
         let hitType = deIsHitFinal ? 'win' : 'loss';
 
-        if (actualSpec != null) {
-            const actStr = number(actualSpec);
-            if (deX2Nums.some(n => number(n) === actStr)) {
+        if (chosenDeMethod === 'metaLearner' || deMethodName.includes('Tinh Hoa')) {
+            // Đề Tinh Hoa: Dàn 30 số cược phẳng (1M/số, 30M), TUYỆT ĐỐI KHÔNG cược X2
+            isX2 = false;
+            isX1 = false;
+            if (actualSpec != null) {
+                const actStr = number(actualSpec);
+                if (deNumbers.some(n => number(n) === actStr)) {
+                    deIsHitFinal = true;
+                    deProfitK = 54000;
+                }
+            }
+            hitType = deIsHitFinal ? 'win' : 'loss';
+        } else {
+            if (actualSpec != null) {
+                const actStr = number(actualSpec);
+                if (deX2Nums.some(n => number(n) === actStr)) {
+                    isX2 = true;
+                    deIsHitFinal = true;
+                    hitType = 'win_x2';
+                } else if (deX1Nums.some(n => number(n) === actStr)) {
+                    isX1 = true;
+                    deIsHitFinal = true;
+                    hitType = 'win_x1';
+                } else if (deNumbers.some(n => number(n) === actStr)) {
+                    deIsHitFinal = true;
+                    hitType = 'win';
+                }
+            }
+            if (deProfitK >= 108000 || (chosenDeMethod === 'adaptiveDualMerge' && adaptiveRow?.hitType === 'win_x2') || (chosenDeMethod === 'dualMerge' && dualRow?.hitType === 'win_x2')) {
                 isX2 = true;
                 deIsHitFinal = true;
                 hitType = 'win_x2';
-            } else if (deX1Nums.some(n => number(n) === actStr)) {
-                isX1 = true;
-                deIsHitFinal = true;
-                hitType = 'win_x1';
-            } else if (deNumbers.some(n => number(n) === actStr)) {
-                deIsHitFinal = true;
-                hitType = 'win';
             }
-        }
-        if (deProfitK >= 108000 || adaptiveRow?.hitType === 'win_x2' || streakRow?.hitType === 'win_x2') {
-            isX2 = true;
-            deIsHitFinal = true;
-            hitType = 'win_x2';
         }
 
         return {
@@ -1572,7 +1586,7 @@
                         </div>
                         <div class="text-right shrink-0">
                             <span class="inline-flex items-center gap-1 rounded-lg ${isHit ? (info.isX2 ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black shadow-xs ring-1 ring-white' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-black') : 'bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold'} px-2 py-0.5 text-[11px]">
-                                ${isHit ? (info.isX2 ? '🎉 Trúng VIP X2 (+108M)' : '🎉 Trúng ĐB (+24M)') : '❌ Trượt'}
+                                ${isHit ? (info.isX2 ? `🎉 Trúng VIP X2 (${moneyM(info.profitK, { signed: true })})` : `🎉 Trúng ĐB (${moneyM(info.profitK, { signed: true })})`) : '❌ Trượt'}
                             </span>
                             <div class="text-[10px] font-mono text-slate-400 mt-0.5">ĐB: <strong class="text-white font-bold">${actualSpec != null ? number(actualSpec) : '--'}</strong></div>
                         </div>
