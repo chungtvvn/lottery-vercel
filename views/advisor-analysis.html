@@ -181,6 +181,147 @@
         </section>
 
         <!-- ═══════════════════════════════════════════════════════════════════════ -->
+        <!-- 📊 HỆ THỐNG ĐỐI SOÁT & THỐNG KÊ LŨY KẾ PHÒNG LAB (CHUẨN THỰC CHIẾN) -->
+        <!-- ═══════════════════════════════════════════════════════════════════════ -->
+        <section id="labTrackingSection" class="mb-8 overflow-hidden rounded-3xl border border-indigo-200 bg-white shadow-sm">
+            <!-- Header & Method Switcher -->
+            <div class="border-b border-slate-100 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 sm:p-8 text-white">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-400/20 border border-amber-400/40 px-3 py-0.5 text-xs font-black uppercase text-amber-300">
+                                <i class="bi bi-calendar-check-fill"></i> ĐỐI SOÁT & THỐNG KÊ LŨY KẾ LAB (CHUẨN THỰC CHIẾN)
+                            </span>
+                            <span id="labTrackingActiveBadge" class="rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-2.5 py-0.5 text-xs font-bold">
+                                👑 1. Đề Gộp Lab Golden Overlap
+                            </span>
+                        </div>
+                        <h2 class="mt-2 text-xl sm:text-2xl font-black text-white">
+                            Theo Dõi Hiệu Suất Đa Cửa Sổ, Thống Kê Tháng & Nhật Ký Hàng Ngày
+                        </h2>
+                        <p class="mt-1 text-xs text-indigo-200 font-semibold">
+                            Toàn bộ lịch sử đối soát năm 2026 tuân thủ 100% nguyên tắc Strict Point-In-Time (Strict PIT). Bấm chọn phương pháp để đổi bảng theo dõi:
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 3 Lab Tracking Tabs -->
+                <div class="mt-5 flex flex-wrap items-center gap-2.5" id="labTrackingTabs">
+                    <button type="button" data-lab-track-method="goldenDualMerge" class="lab-track-tab-btn rounded-xl border border-amber-400 bg-amber-400 text-slate-950 font-black px-3.5 py-2 text-xs transition-all shadow-md flex items-center gap-2 ring-2 ring-amber-300">
+                        <i class="bi bi-intersect"></i>
+                        <span>1. Đề Gộp Lab Golden Overlap (Vốn 60K)</span>
+                        <span id="labBadgeProfitGolden" class="rounded-md bg-slate-950 text-amber-300 px-1.5 py-0.5 text-[10px] font-black">--</span>
+                    </button>
+                    <button type="button" data-lab-track-method="metaLearner" class="lab-track-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2 text-xs hover:bg-white/20 transition-all flex items-center gap-2">
+                        <i class="bi bi-award"></i>
+                        <span>2. Lab Meta-Learner Tinh Hoa (Vốn 35K)</span>
+                        <span id="labBadgeProfitMeta" class="rounded-md bg-purple-500/30 text-purple-200 px-1.5 py-0.5 text-[10px] font-black">--</span>
+                    </button>
+                    <button type="button" data-lab-track-method="adaptiveController" class="lab-track-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2 text-xs hover:bg-white/20 transition-all flex items-center gap-2">
+                        <i class="bi bi-shield-check"></i>
+                        <span>3. Bộ Điều Khiển Thích Ứng (3 Trạng Thái)</span>
+                        <span id="labBadgeProfitAdaptive" class="rounded-md bg-sky-500/30 text-sky-200 px-1.5 py-0.5 text-[10px] font-black">--</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 1. Multi-Horizon Windows Cards -->
+            <div class="p-6 border-b border-slate-100 bg-slate-50/50">
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <span class="text-[11px] font-black uppercase tracking-wider text-indigo-600">THỐNG KÊ ĐA CỬA SỔ THEO DÕI CHU KỲ</span>
+                        <h3 id="labWindowsTitle" class="text-base font-black text-slate-900 mt-0.5">Hiệu Suất Theo Chu Kỳ (Live, 7, 15, 30, 60, 90 ngày, Toàn năm 2026)</h3>
+                    </div>
+                </div>
+                <div id="labWindowsContainer" class="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6"></div>
+            </div>
+
+            <!-- 2. Monthly Performance Breakdown Table -->
+            <div class="p-6 border-b border-slate-100">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                    <div>
+                        <span class="text-[11px] font-black uppercase tracking-wider text-amber-600">THỐNG KÊ TOÀN NĂM 2026 THEO TỪNG THÁNG</span>
+                        <h3 id="labMonthlyTitle" class="text-base font-black text-slate-900 mt-0.5">Chi Tiết Thắng / Thua, Lợi Nhuận & Lũy Kế Từng Tháng</h3>
+                    </div>
+                    <div id="labMonthlyLiveBadge" class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-black border-slate-200 bg-slate-50 text-slate-700">
+                        Đang đồng bộ dữ liệu...
+                    </div>
+                </div>
+                <div class="overflow-x-auto custom-scrollbar rounded-2xl border border-slate-200 bg-white">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-200 bg-slate-100/80 font-black text-slate-700">
+                                <th class="p-3 pl-5">Tháng</th>
+                                <th class="p-3 text-center">Số ngày</th>
+                                <th class="p-3 text-center">Thắng / Thua</th>
+                                <th class="p-3 text-center">Tỷ lệ trúng</th>
+                                <th class="p-3 text-center">Chuỗi trượt max</th>
+                                <th class="p-3 text-right">Tổng vốn</th>
+                                <th class="p-3 text-right">Lợi nhuận</th>
+                                <th class="p-3 text-center">ROI %</th>
+                                <th class="p-3 pr-5 text-right">Lũy kế</th>
+                            </tr>
+                        </thead>
+                        <tbody id="labMonthlyTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 3. Daily Settled Ledger Table -->
+            <div class="p-6">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-4">
+                    <div>
+                        <span class="text-[11px] font-black uppercase tracking-wider text-emerald-600">NHẬT KÝ ĐỐI SOÁT HÀNG NGÀY (STRICT PIT)</span>
+                        <h3 id="labLedgerTitle" class="text-base font-black text-slate-900 mt-0.5">Bảng Đối Soát Chi Tiết Từng Ngày Năm 2026</h3>
+                    </div>
+
+                    <!-- Controls: Filter, Search, Limit -->
+                    <div class="flex flex-wrap items-center gap-2 text-xs">
+                        <!-- Filter Status -->
+                        <div class="inline-flex rounded-xl border border-slate-200 bg-slate-100 p-0.5" id="labLedgerFilterGroup">
+                            <button type="button" data-lab-filter="all" class="lab-ledger-filter-btn rounded-lg bg-indigo-600 px-3 py-1 text-xs font-black text-white shadow-xs">Tất cả</button>
+                            <button type="button" data-lab-filter="win" class="lab-ledger-filter-btn rounded-lg bg-transparent px-3 py-1 text-xs font-bold text-slate-600 hover:text-slate-900">Chỉ Thắng</button>
+                            <button type="button" data-lab-filter="loss" class="lab-ledger-filter-btn rounded-lg bg-transparent px-3 py-1 text-xs font-bold text-slate-600 hover:text-slate-900">Chỉ Thua</button>
+                        </div>
+
+                        <!-- Search Input -->
+                        <div class="relative">
+                            <input type="text" id="labLedgerSearchInput" placeholder="Tìm ngày (YYYY-MM-DD) hoặc số..." class="w-48 sm:w-56 rounded-xl border border-slate-200 bg-white px-3 py-1.5 pl-8 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:border-indigo-500 focus:outline-hidden focus:ring-1 focus:ring-indigo-500">
+                            <i class="bi bi-search absolute left-2.5 top-2 text-slate-400 text-xs"></i>
+                        </div>
+
+                        <!-- Limit Selector -->
+                        <select id="labLedgerLimitSelect" class="rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 focus:border-indigo-500 focus:outline-hidden">
+                            <option value="15">15 ngày gần nhất</option>
+                            <option value="30" selected>30 ngày gần nhất</option>
+                            <option value="60">60 ngày gần nhất</option>
+                            <option value="all">Toàn bộ năm 2026</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Ledger Table Container -->
+                <div class="overflow-x-auto custom-scrollbar rounded-2xl border border-slate-200 bg-white">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-200 bg-slate-100/80 font-black text-slate-700">
+                                <th class="p-3 pl-5">Ngày</th>
+                                <th class="p-3">Dàn số đề xuất</th>
+                                <th class="p-3 text-center">KQ Đề</th>
+                                <th class="p-3 text-center">Trạng thái</th>
+                                <th class="p-3 text-right">Tiền cược</th>
+                                <th class="p-3 text-right">Tiền ăn</th>
+                                <th class="p-3 text-right">Lãi/Lỗ ngày</th>
+                                <th class="p-3 pr-5 text-right">Lũy kế</th>
+                            </tr>
+                        </thead>
+                        <tbody id="labLedgerTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════════ -->
         <!-- 🧭 THANH ĐIỀU HƯỚNG 5 LỚP KHOA HỌC (5-LAYER SCIENTIFIC NAVIGATOR) -->
         <!-- ═══════════════════════════════════════════════════════════════════════ -->
         <section class="mb-8 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
