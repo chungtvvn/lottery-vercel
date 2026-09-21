@@ -317,18 +317,18 @@
         const x2Raw = pendingLo.x2 || {};
         const xi4Raw = pendingLo.xien4 || {};
 
-        let stdMethodName = '⚡ Siêu Động Cơ Ngũ Hợp Lô AI v8.0 Top 20';
-        let stdNumbers = (pentaLo.top20 && pentaLo.top20.length ? pentaLo.top20 : (stdRaw.numbers || [])).map(number);
+        let stdMethodName = stdRaw.title || stdRaw.methodLabel || '👑 Tam Trụ Tri-Consensus Fusion Top 20';
+        let stdNumbers = (stdRaw.numbers && stdRaw.numbers.length ? stdRaw.numbers : (pentaLo.top20 && pentaLo.top20.length ? pentaLo.top20 : [])).map(number);
         let stdStakeK = stdNumbers.length * 2200 || 44000;
-        let stdSubTierLabel = `Top ${stdNumbers.length || 20} số nền tảng (Ngũ Hợp v8.0)`;
+        let stdSubTierLabel = stdRaw.topCount ? `Top ${stdRaw.topCount} số nền tảng (Tri-Consensus)` : `Top ${stdNumbers.length || 20} số nền tảng (Tri-Consensus)`;
 
-        let x2MethodName = '⚡ Ngũ Hợp Lô AI v8.0 Top 7 (Nổ Bù)';
-        let x2Numbers = (pentaLo.top7 && pentaLo.top7.length ? pentaLo.top7 : (x2Raw.numbers || [])).map(number);
+        let x2MethodName = x2Raw.title || x2Raw.methodLabel || '⚡ Thất Thủ Nổ Bù Tri-Consensus Top 7';
+        let x2Numbers = (currentSelectedLoSubTier === 2 ? (x2Raw.songThuVip || x2Raw.numbers?.slice(0, 2) || pentaLo.top2 || []) : (x2Raw.numbers && x2Raw.numbers.length ? x2Raw.numbers : (pentaLo.top7 || []))).map(number);
         let x2StakeK = x2Numbers.length * 2200 || 15400;
-        let x2SubTierLabel = `Dàn ${x2Numbers.length || 7} số cược X2 (Nổ bù 5 tầng)`;
+        let x2SubTierLabel = currentSelectedLoSubTier === 2 ? 'Song thủ Lô VIP (Cược X2)' : `Dàn ${x2Numbers.length || 7} số cược X2 (Nổ bù Tri-Consensus)`;
 
         if (loEngineKey === 'bridge') {
-            stdMethodName = bridgeLo.engineLabel ? '🕸️ Cầu Lô Đồ Thị Động Năng Top 20' : (stdRaw.methodLabel || 'Super-Hybrid Quad-Fusion v7.0 Top 20');
+            stdMethodName = bridgeLo.engineLabel ? '🕸️ Cầu Lô Đồ Thị Động Năng Top 20' : (stdRaw.methodLabel || 'Cầu Lô Đồ Thị Top 20');
             stdNumbers = (bridgeLo.top20 && bridgeLo.top20.length ? bridgeLo.top20 : (stdRaw.numbers || [])).map(number);
             stdStakeK = stdNumbers.length * 2200 || 44000;
             stdSubTierLabel = 'Top 20 số đồ thị bẻ cầu';
@@ -338,7 +338,7 @@
             x2StakeK = x2Numbers.length * 2200 || 15400;
             x2SubTierLabel = `Dàn ${x2Numbers.length} số bắt nhịp bẻ cầu`;
         } else if (loEngineKey === 'hawkes') {
-            stdMethodName = hawkesLo.engineLabel ? '⚡ Cụm Lô Tần Suất Cao Hawkes Top 20' : (stdRaw.methodLabel || 'Super-Hybrid Quad-Fusion v7.0 Top 20');
+            stdMethodName = hawkesLo.engineLabel ? '⚡ Cụm Lô Tần Suất Cao Hawkes Top 20' : (stdRaw.methodLabel || 'Cụm Hawkes Top 20');
             stdNumbers = (hawkesLo.top20 && hawkesLo.top20.length ? hawkesLo.top20 : (stdRaw.numbers || [])).map(number);
             stdStakeK = 44000;
             stdSubTierLabel = 'Top 20 số cụm tự kích hoạt';
@@ -347,31 +347,24 @@
             x2Numbers = (currentSelectedLoSubTier === 2 ? (hawkesLo.top2 || hawkesLo.rankedNumbers?.slice(0, 2) || hawkesLo.top7?.slice(0, 2)) : (hawkesLo.top7 && hawkesLo.top7.length ? hawkesLo.top7 : (x2Raw.numbers || []))).map(number);
             x2StakeK = x2Numbers.length * 2200 || 15400;
             x2SubTierLabel = `Dàn ${x2Numbers.length} số cụm Hawkes`;
-        } else if (loEngineKey === 'quad') {
-            stdMethodName = stdRaw.methodLabel || stdRaw.methodName || 'Super-Hybrid Quad-Fusion v7.0 Top 20';
-            stdNumbers = (stdRaw.numbers || []).map(number);
-            stdStakeK = stdRaw.stakeK || 44000;
-            stdSubTierLabel = 'Dàn 20 số nền tảng (Quad-Fusion)';
+        } else if (loEngineKey === 'penta') {
+            stdMethodName = pentaLo.engineLabel ? '⚡ Siêu Động Cơ Ngũ Hợp Lô AI v8.0 Top 20' : (stdRaw.methodLabel || 'Ngũ Hợp v8.0 Top 20');
+            stdNumbers = (pentaLo.top20 && pentaLo.top20.length ? pentaLo.top20 : (stdRaw.numbers || [])).map(number);
+            stdStakeK = stdNumbers.length * 2200 || 44000;
+            stdSubTierLabel = 'Top 20 số nền tảng (Ngũ Hợp v8.0)';
 
-            if (currentSelectedLoSubTier === 2) {
-                const songThu = (x2Raw.numbers || []).slice(0, 2);
-                x2MethodName = '🛡️ Song Thủ Lô VIP An Toàn (Top 2)';
-                x2Numbers = songThu.map(number);
-                x2StakeK = x2Numbers.length * 2200 || 4400;
-                x2SubTierLabel = 'Song thủ Lô VIP vào tiền x2';
-            } else {
-                x2MethodName = x2Raw.methodLabel || 'Lô Quad-Fusion Top 7 (Nổ Bù)';
-                x2Numbers = (x2Raw.numbers || []).map(number);
-                x2StakeK = x2Numbers.length * 2200 || 15400;
-                x2SubTierLabel = `Top ${x2Numbers.length} số tăng tốc (25đ / 100đ)`;
-            }
+            x2MethodName = '⚡ Ngũ Hợp Lô AI v8.0 Top 7 (Nổ Bù)';
+            x2Numbers = (currentSelectedLoSubTier === 2 ? (pentaLo.top2 || pentaLo.rankedNumbers?.slice(0, 2) || pentaLo.top7?.slice(0, 2)) : (pentaLo.top7 && pentaLo.top7.length ? pentaLo.top7 : (x2Raw.numbers || []))).map(number);
+            x2StakeK = x2Numbers.length * 2200 || 15400;
+            x2SubTierLabel = `Dàn ${x2Numbers.length} số cược X2 (Nổ bù 5 tầng)`;
         }
 
-        // Xiên 4
-        const xi4MethodName = xi4Raw.methodLabel || xi4Raw.methodName || 'Tứ Thủ Xiên 4 Tinh Hoa';
+        // Xiên & Golden Xiên 2
+        const xi4MethodName = xi4Raw.title || xi4Raw.methodLabel || xi4Raw.methodName || '💎 Tứ Thủ Xiên 4 Tinh Hoa';
         const xi4Numbers = (xi4Raw.numbers || []).map(number);
-        const xi4StakeK = xi4Raw.stakeK || 11000;
-        const xi4SubTierLabel = 'Quây 11 vé (1 X4 + 4 X3 + 6 X2)';
+        const xi4StakeK = xi4Raw.stakeK !== undefined ? xi4Raw.stakeK : 1000;
+        const xi4SubTierLabel = xi4StakeK <= 1500 ? 'Jackpot săn thưởng (Vốn nhẹ 1M)' : 'Quây 11 vé (1 X4 + 4 X3 + 6 X2)';
+        const goldenXien2 = pendingLo.goldenXien2 || [];
 
         return {
             de: {
@@ -401,7 +394,8 @@
                 numbers: xi4Numbers,
                 stakeK: xi4StakeK,
                 subTierLabel: xi4SubTierLabel
-            }
+            },
+            goldenXien2
         };
     }
 
@@ -1258,20 +1252,34 @@
         window.__switchLoEngine = updateLoEngineDisplay;
         window.__updateLoSubTierDisplay = updateLoSubTierDisplay;
 
-        // 3. ĐÁNH LÔ XIÊN 4 — HIỆP ĐỒNG ĐỒ THỊ
+        // 3. ĐÁNH LÔ XIÊN — GOLDEN XIÊN 2 KHUYÊN DÙNG & TỨ THỦ TÙY CHỌN
         const xi4RoiEl = byId('unifiedLoXi4LiveRoi');
         if (xi4RoiEl) {
-            xi4RoiEl.textContent = loXien4Adv ? '3 Năm +4.314 TỶ (ROI +40.1%)' : `ROI Live ${percent(loSummary?.xien4?.roi || 0.091)}`;
+            xi4RoiEl.textContent = 'Xiên 2 ROI +20.5%';
         }
 
         const xi4Nums = (loXien4Adv && Array.isArray(loXien4Adv.numbers) && loXien4Adv.numbers.length)
             ? loXien4Adv.numbers.map(number)
             : (loNext?.xien4?.numbers || []).map(number);
 
+        const goldenContainer = byId('unifiedLoGoldenXien2');
+        if (goldenContainer) {
+            const pairs = loNext?.goldenXien2 || [
+                { pair: [xi4Nums[0] || '64', xi4Nums[1] || '24'] },
+                { pair: [xi4Nums[0] || '64', xi4Nums[2] || '94'] },
+                { pair: [xi4Nums[1] || '24', xi4Nums[2] || '94'] }
+            ];
+            goldenContainer.innerHTML = pairs.map((p, idx) => `
+                <span class="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 border border-amber-600 text-slate-950 px-2.5 py-1 text-xs font-mono font-black shadow-xs hover:scale-105 transition-all" title="Cặp Xiên Vàng ${idx + 1}: Vốn 500K · Ăn 5M (1 ăn 10)">
+                    ${p.pair[0]} - ${p.pair[1]}
+                </span>
+            `).join('') || '<span class="text-slate-400 text-xs">Đang cập nhật...</span>';
+        }
+
         const xi4Container = byId('unifiedLoXi4Numbers');
         if (xi4Container) {
             xi4Container.innerHTML = xi4Nums.map(n => `
-                <span class="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-amber-500 to-amber-400 border-2 border-amber-600 text-slate-950 px-4 py-2 text-base font-mono font-black shadow-md hover:scale-110 transition-all">
+                <span class="inline-flex items-center justify-center rounded-xl bg-slate-900 border border-slate-700 text-amber-400 px-2 py-1 text-xs font-mono font-bold shadow-xs hover:scale-105 transition-all">
                     ${n}
                 </span>
             `).join('') || '<span class="text-slate-400 font-sans font-normal text-xs">Đang tính toán...</span>';
@@ -3153,9 +3161,11 @@
         if (btnCopyXi4) {
             btnCopyXi4.onclick = () => {
                 const nums = xi4Nums.join(', ');
-                if (nums) {
-                    navigator.clipboard.writeText(nums);
-                    showToast(`Đã copy 4 số Tứ Thủ Xiên 4: ${nums}`);
+                const pairs = (loNext?.goldenXien2 || []).map(p => p.pair.join('-')).join(', ');
+                const copyText = pairs ? `Golden Xiên 2: ${pairs} | Tứ Thủ: ${nums}` : nums;
+                if (copyText) {
+                    navigator.clipboard.writeText(copyText);
+                    showToast(`Đã copy dàn Xiên: ${copyText}`);
                 }
             };
         }
