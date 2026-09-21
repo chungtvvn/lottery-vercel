@@ -323,40 +323,25 @@
         let stdStakeK = stdNumbers.length * 2200 || 44000;
         let stdSubTierLabel = stdRaw.topCount ? `Top ${stdRaw.topCount} số nền tảng (Tri-Consensus)` : `Top ${stdNumbers.length || 20} số nền tảng (Tri-Consensus)`;
 
-        // Resolve active engine numbers and sub-tier numbers dynamically
+        // Resolve active engine numbers and sub-tier numbers dynamically for Lô Tăng Tốc (Card 2)
+        // Dàn Tăng Tốc (Top 6, 7, 8, 10...) hoàn toàn độc lập với Dàn Chuẩn Top 20 (Card 1)
         let activeRanked = [];
         let activeEngineLabel = '';
         if (loEngineKey === 'penta') {
             activeRanked = pentaLo.rankedNumbers || pentaLo.top20 || [];
             activeEngineLabel = 'Ngũ Hợp v8.0';
-            stdMethodName = pentaLo.engineLabel || '⚡ Siêu Động Cơ Ngũ Hợp Lô AI v8.0 Top 20';
-            stdNumbers = (pentaLo.top20 && pentaLo.top20.length ? pentaLo.top20 : stdNumbers).map(number);
-            stdStakeK = stdNumbers.length * 2200 || 44000;
-            stdSubTierLabel = 'Top 20 số nền tảng (Ngũ Hợp v8.0)';
         } else if (loEngineKey === 'quad') {
             activeRanked = quadLo.rankedNumbers || quadLo.top20 || [];
             activeEngineLabel = 'Tứ Trụ Quad-Fusion v7.2';
-            stdMethodName = quadLo.engineLabel || '🚀 Tứ Trụ Quad-Fusion v7.2 Top 20';
-            stdNumbers = (quadLo.top20 && quadLo.top20.length ? quadLo.top20 : stdNumbers).map(number);
-            stdStakeK = stdNumbers.length * 2200 || 44000;
-            stdSubTierLabel = 'Top 20 số nền tảng (Quad-Fusion v7.2)';
         } else if (loEngineKey === 'bridge') {
             activeRanked = bridgeLo.rankedNumbers || bridgeLo.top20 || [];
             activeEngineLabel = 'Cầu Lô Đồ Thị';
-            stdMethodName = bridgeLo.engineLabel || '🕸️ Cầu Lô Đồ Thị Động Năng Top 20';
-            stdNumbers = (bridgeLo.top20 && bridgeLo.top20.length ? bridgeLo.top20 : stdNumbers).map(number);
-            stdStakeK = stdNumbers.length * 2200 || 44000;
-            stdSubTierLabel = 'Top 20 số đồ thị bẻ cầu';
         } else if (loEngineKey === 'hawkes') {
             activeRanked = hawkesLo.rankedNumbers || hawkesLo.top20 || [];
             activeEngineLabel = 'Cụm Hawkes';
-            stdMethodName = hawkesLo.engineLabel || '⚡ Cụm Lô Tần Suất Cao Hawkes Top 20';
-            stdNumbers = (hawkesLo.top20 && hawkesLo.top20.length ? hawkesLo.top20 : stdNumbers).map(number);
-            stdStakeK = stdNumbers.length * 2200 || 44000;
-            stdSubTierLabel = 'Top 20 số cụm tự kích hoạt';
         } else {
             // Default: Tri-Consensus Fusion
-            activeRanked = stdRaw.numbers || [];
+            activeRanked = x2Raw.numbers && x2Raw.numbers.length ? x2Raw.numbers : (stdRaw.numbers || []);
             activeEngineLabel = 'Tri-Consensus';
         }
 
@@ -1218,24 +1203,27 @@
                 }).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
             }
 
-            // Recompute Bảng Gộp với Top 20 của Động Cơ Mỏ Neo Nền Tảng (stdNums)
+            // Recompute Bảng Gộp: Hỗ trợ linh hoạt khi 2 dàn đến từ 2 PHƯƠNG PHÁP KHÁC NHAU
             const stdSet = new Set(stdNums);
-            const overlapNums = subNums.filter(n => stdSet.has(n));
-            const singleNums = stdNums.filter(n => !overlapNums.includes(n));
+            const subSet = new Set(subNums);
+            const overlapNums = subNums.filter(n => stdSet.has(n)); // Số trùng cả 2 phương pháp -> CỰC VIP X2
+            const subOnlyNums = subNums.filter(n => !stdSet.has(n)); // Số riêng Dàn Tăng Tốc (thuộc phương pháp riêng)
+            const stdOnlyNums = stdNums.filter(n => !subSet.has(n)); // Số riêng Dàn Chuẩn 20s
+            const allMergedNums = Array.from(new Set([...subNums, ...stdNums]));
 
             const totalMergeEl = byId('unifiedLoMergeTotalCount');
-            if (totalMergeEl) totalMergeEl.textContent = `${stdNums.length} số`;
+            if (totalMergeEl) totalMergeEl.textContent = `${allMergedNums.length} số`;
 
             const overlapBadge = byId('unifiedLoMergeOverlapBadge');
             if (overlapBadge) overlapBadge.textContent = `${overlapNums.length} số`;
 
             const singleBadge = byId('unifiedLoMergeSingleBadge');
-            if (singleBadge) singleBadge.textContent = `${singleNums.length} số`;
+            if (singleBadge) singleBadge.textContent = `${subOnlyNums.length + stdOnlyNums.length} số`;
 
             const overlapContainer = byId('unifiedLoOverlapNumbers');
             if (overlapContainer) {
                 overlapContainer.innerHTML = overlapNums.map(n => `
-                    <div class="relative group cursor-pointer" title="Số trùng 2 dàn: Cược cộng dồn 200đ (4.4M/số) / 50đ Bot">
+                    <div class="relative group cursor-pointer" title="Số trùng 2 phương pháp độc lập: Cược cộng dồn 200đ (4.4M/số) / 50đ Bot">
                         <span class="inline-flex items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-500 border-2 border-amber-300 text-slate-950 font-mono text-sm font-black px-3 py-1.5 shadow-md hover:scale-110 transition-all">
                             ${n}
                         </span>
@@ -1246,12 +1234,16 @@
 
             const singleContainer = byId('unifiedLoSingleNumbers');
             if (singleContainer) {
-                singleContainer.innerHTML = singleNums.map(n => `
-                    <div class="relative group cursor-pointer" title="Số riêng bọc lót: Cược phẳng 100đ (2.2M/số) / 25đ Bot">
-                        <span class="inline-flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-slate-200 font-mono text-xs font-bold px-2 py-1 shadow-sm hover:scale-105 transition-all">
-                            ${n}
+                const singleList = [
+                    ...subOnlyNums.map(n => ({ num: n, tag: 'Tốc', isSub: true, title: 'Số riêng Dàn Tăng Tốc: Cược phẳng 100đ (2.2M/số)' })),
+                    ...stdOnlyNums.map(n => ({ num: n, tag: 'Chuẩn', isSub: false, title: 'Số riêng Dàn Chuẩn 20s: Cược phẳng 100đ (2.2M/số)' }))
+                ];
+                singleContainer.innerHTML = singleList.map(item => `
+                    <div class="relative group cursor-pointer" title="${item.title}">
+                        <span class="inline-flex items-center justify-center rounded-lg ${item.isSub ? 'bg-teal-900/80 border border-teal-500/60 text-teal-200' : 'bg-slate-800 border border-slate-700 text-slate-200'} font-mono text-xs font-bold px-2 py-1 shadow-sm hover:scale-105 transition-all">
+                            ${item.num}
                         </span>
-                        <span class="absolute -top-1.5 -right-1 rounded-full bg-slate-600 text-slate-200 text-[8px] font-bold px-1">X1</span>
+                        <span class="absolute -top-1.5 -right-1 rounded-full ${item.isSub ? 'bg-teal-600 text-white' : 'bg-slate-600 text-slate-200'} text-[8px] font-bold px-1">${item.tag}</span>
                     </div>
                 `).join('') || '<span class="text-slate-400 text-xs">Không có số</span>';
             }
