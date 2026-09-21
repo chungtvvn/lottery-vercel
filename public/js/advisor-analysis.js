@@ -37,6 +37,10 @@
     let labLedgerFilterStatus = 'all';
     let labLedgerSearchQuery = '';
     let labLedgerLimit = '30';
+    let activeCombinedMethod = 'highProbabilityCoverage64';
+    let combinedLedgerFilterStatus = 'all';
+    let combinedLedgerSearchQuery = '';
+    let combinedLedgerLimit = '30';
 
     function showToast(msg) {
         let toast = byId('advisorAnalysisToast');
@@ -793,6 +797,94 @@
                 `;
                 break;
             }
+            case 'liveAugmentedLab': {
+                const live = ensembles.liveAugmentedLab || {};
+                const x2 = live.intersectionX2 || [];
+                const x1 = live.uniqueSinglesX1 || [];
+                const full = live.fullUnion || [];
+                contentHtml = `
+                    <div class="space-y-6">
+                        <div class="rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-indigo-500/10 p-5">
+                            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500 px-2.5 py-0.5 text-[11px] font-black uppercase text-slate-950">
+                                            <i class="bi bi-stars"></i> LAI GHÉP THỰC CHIẾN
+                                        </span>
+                                        <h3 class="text-base font-black text-emerald-200">Dàn Thực Chiến Mở Rộng + Lab Booster (Lãi +2.66M)</h3>
+                                    </div>
+                                    <p class="mt-1 text-xs text-slate-300 font-semibold">Tích hợp dàn thực chiến mạnh nhất (Adaptive Dual Merge) với bộ lọc khử triệt để số gan sâu >20 ngày và boost số Sweet-Spot của Lab.</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="rounded-xl border border-emerald-400/40 bg-emerald-500/20 px-3 py-1.5 text-xs font-black text-emerald-300">
+                                        Vốn 60.000đ / ngày · Ăn X2: 168K · Ăn X1: 84K
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Vùng Giao Thoa Vàng X2 -->
+                        <div class="rounded-2xl border border-amber-400/50 bg-gradient-to-br from-amber-500/15 to-yellow-600/5 p-5">
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-amber-400/20 pb-4 mb-4">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-amber-500 px-2.5 py-0.5 text-[11px] font-black uppercase text-slate-950">
+                                            <i class="bi bi-gem"></i> VÙNG VÀNG X2
+                                        </span>
+                                        <h3 class="text-base font-black text-amber-200">${x2.length} Số Hạt Nhân Giao Thoa (Cược 2.000đ/số)</h3>
+                                    </div>
+                                    <p class="mt-1 text-xs text-slate-300 font-semibold">Khi nổ thu về 168.000đ (Lãi ròng +108.000đ · ROI +180%).</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" data-copy-profit="live_x2" data-copy-sep="space" class="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3.5 py-1.5 text-xs shadow-md transition-all">
+                                        <i class="bi bi-clipboard"></i> Dấu cách (${x2.length}s)
+                                    </button>
+                                    <button type="button" data-copy-profit="live_x2" data-copy-sep="comma" class="inline-flex items-center gap-1.5 rounded-xl border border-amber-400/40 bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 font-bold px-3 py-1.5 text-xs transition-all">
+                                        <i class="bi bi-clipboard"></i> Dấu phẩy
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                ${x2.map(n => `
+                                    <span class="inline-flex h-11 min-w-11 items-center justify-center rounded-2xl border-2 border-amber-300 bg-gradient-to-b from-amber-500 to-amber-900 px-2 font-mono text-base font-black text-white shadow-md shadow-amber-500/30 transition-transform hover:scale-110">
+                                        ${num(n)}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Vùng Bọc Lót X1 -->
+                        <div class="rounded-2xl border border-indigo-400/30 bg-indigo-950/40 p-5">
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-indigo-400/20 pb-3 mb-3">
+                                <span class="text-xs font-black text-indigo-300 uppercase flex items-center gap-1.5">
+                                    <i class="bi bi-shield-shaded"></i> ${x1.length} Số Bọc Lót An Toàn (Cược 1.000đ/số · Ăn 84K)
+                                </span>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" data-copy-profit="live_x1" data-copy-sep="space" class="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-white font-bold px-3 py-1.5 text-xs transition-all">
+                                        <i class="bi bi-clipboard"></i> Copy X1 (${x1.length}s)
+                                    </button>
+                                    <button type="button" data-copy-profit="live_all" data-copy-sep="space" class="inline-flex items-center gap-1.5 rounded-xl border border-indigo-400/50 bg-indigo-600/30 hover:bg-indigo-600/40 text-indigo-200 font-bold px-3.5 py-1.5 text-xs transition-all">
+                                        <i class="bi bi-clipboard-check"></i> Copy Toàn Dàn (${full.length}s)
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5">
+                                ${x1.map(n => `
+                                    <span class="inline-flex h-9 min-w-9 items-center justify-center rounded-xl border border-indigo-400/40 bg-indigo-900/60 px-1.5 font-mono text-sm font-bold text-indigo-200">
+                                        ${num(n)}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div class="rounded-2xl border border-white/10 bg-white/5 p-4 text-xs text-slate-300">
+                            <span class="font-bold text-emerald-300"><i class="bi bi-info-circle-fill"></i> Nguyên lý lai ghép:</span>
+                            <p class="text-slate-400 leading-relaxed mt-1">${esc(live.note)}</p>
+                        </div>
+                    </div>
+                `;
+                break;
+            }
             default:
                 contentHtml = `<div class="p-6 text-center text-slate-400 font-semibold">Vui lòng chọn một chiến lược phía trên.</div>`;
         }
@@ -818,13 +910,14 @@
         const actNum = latestSettled.actualSpecial;
         const actStr = String(actNum).padStart(2, '0');
 
-        // Lấy kết quả của cả 5 phương pháp trong kỳ quay gần nhất
+        // Lấy kết quả của cả 6 phương pháp trong kỳ quay gần nhất
         const methods = [
             { id: 'goldenDualMerge', name: '1. Đề Gộp Lab Golden Overlap', obj: ensembles.goldenDualMerge },
             { id: 'metaLearner', name: '2. Lab Meta-Learner Tinh Hoa', obj: ensembles.metaLearner },
             { id: 'adaptiveController', name: '3. Bộ Điều Khiển Thích Ứng', obj: ensembles.adaptiveController },
             { id: 'tamTruConsensus', name: '4. Dàn Tam Trụ Hợp Lực Lab', obj: ensembles.tamTruConsensus },
-            { id: 'highProbabilityCoverage64', name: '5. Dàn Bao Phủ 64 Số (Trúng 69%)', obj: ensembles.highProbabilityCoverage64 }
+            { id: 'highProbabilityCoverage64', name: '5. Dàn Bao Phủ 64 Số (Trúng 69%)', obj: ensembles.highProbabilityCoverage64 },
+            { id: 'liveAugmentedLab', name: '6. Lai Ghép Thực Chiến (Lãi +2.66M)', obj: ensembles.liveAugmentedLab }
         ];
 
         const cardsHtml = methods.map(m => {
@@ -913,7 +1006,7 @@
                             <span class="text-xs font-bold text-slate-600">Kỳ quay: <strong class="font-mono text-slate-900 font-black">${esc(settledDate)}</strong></span>
                         </div>
                         <h3 class="text-base font-black text-slate-900 mt-0.5 flex items-center gap-1.5">
-                            Giải Đặc Biệt nổ số <strong class="font-mono text-indigo-700 text-lg underline decoration-amber-400 decoration-2">${esc(actStr)}</strong> — Đối Chiếu Tức Thì 5 Phương Pháp Lab:
+                            Giải Đặc Biệt nổ số <strong class="font-mono text-indigo-700 text-lg underline decoration-amber-400 decoration-2">${esc(actStr)}</strong> — Đối Chiếu Tức Thì 6 Phương Pháp Lab:
                         </h3>
                     </div>
                 </div>
@@ -922,7 +1015,7 @@
                 </div>
             </div>
 
-            <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
                 ${cardsHtml}
             </div>
         `;
@@ -933,12 +1026,13 @@
         const ensembles = ttr.profitEnsembles || {};
         const activeObj = ensembles[activeLabTrackMethod] || ensembles.goldenDualMerge || {};
 
-        // 1. Update Badges on Tab Buttons (5 Methods)
+        // 1. Update Badges on Tab Buttons (6 Methods)
         const pG = ensembles.goldenDualMerge?.summary?.overallProfitK || 0;
         const pM = ensembles.metaLearner?.summary?.overallProfitK || 0;
         const pA = ensembles.adaptiveController?.summary?.overallProfitK || 0;
         const pTT = ensembles.tamTruConsensus?.summary?.overallProfitK || 0;
         const pCov = ensembles.highProbabilityCoverage64?.summary?.overallProfitK || 0;
+        const pLiveAug = ensembles.liveAugmentedLab?.summary?.overallProfitK || 0;
 
         const badgeG = byId('labBadgeProfitGolden');
         if (badgeG) badgeG.textContent = `${signedM(pG)} 2026`;
@@ -950,6 +1044,8 @@
         if (badgeTT) badgeTT.textContent = `${signedM(pTT)} 2026`;
         const badgeCov = byId('labBadgeProfitCoverage');
         if (badgeCov) badgeCov.textContent = `${signedM(pCov)} 2026`;
+        const badgeLiveAug = byId('labBadgeProfitLiveAug');
+        if (badgeLiveAug) badgeLiveAug.textContent = `${signedM(pLiveAug)} 2026`;
 
         // 2. Update Active Method Title & Header Badge
         const activeBadge = byId('labTrackingActiveBadge');
@@ -959,7 +1055,8 @@
                 metaLearner: '👑 2. Lab Meta-Learner Tinh Hoa',
                 adaptiveController: '👑 3. Bộ Điều Khiển Thích Ứng',
                 tamTruConsensus: '👑 4. Dàn Tam Trụ Hợp Lực Lab',
-                highProbabilityCoverage64: '👑 5. Dàn Bao Phủ Xác Suất Cao 64 Số'
+                highProbabilityCoverage64: '👑 5. Dàn Bao Phủ Xác Suất Cao 64 Số',
+                liveAugmentedLab: '👑 6. Lai Ghép Thực Chiến Mở Rộng'
             };
             activeBadge.textContent = `${labels[activeLabTrackMethod] || activeLabTrackMethod} (${signedM(activeObj.summary?.overallProfitK || 0)} Lũy Kế 2026)`;
         }
@@ -1021,6 +1118,8 @@
             let detailStr = '';
             if (methodId === 'goldenDualMerge') {
                 detailStr = `${w.winsX2 || 0} nổ X2 · ${w.winsX1 || 0} nổ X1 · ${w.losses || 0} trượt`;
+            } else if (methodId === 'liveAugmentedLab') {
+                detailStr = `${w.winsX2 || 0} nổ X2 · ${w.winsX1 || 0} nổ X1 · ${w.losses || 0} trượt`;
             } else if (methodId === 'metaLearner') {
                 detailStr = `${w.winsVip || 0} VIP · ${w.winsX1 || 0} Elite · ${w.losses || 0} trượt`;
             } else if (methodId === 'tamTruConsensus') {
@@ -1076,6 +1175,8 @@
             let hitBreakdownHtml = '';
             if (methodId === 'goldenDualMerge') {
                 hitBreakdownHtml = `<span class="font-black text-amber-700">${m.winsX2 || 0} X2</span> · <span class="font-bold text-sky-700">${m.winsX1 || 0} X1</span> / <span class="font-bold text-rose-600">${m.losses} thua</span>`;
+            } else if (methodId === 'liveAugmentedLab') {
+                hitBreakdownHtml = `<span class="font-black text-amber-700">${m.winsX2 || 0} X2</span> · <span class="font-bold text-emerald-700">${m.winsX1 || 0} X1</span> / <span class="font-bold text-rose-600">${m.losses} thua</span>`;
             } else if (methodId === 'metaLearner') {
                 hitBreakdownHtml = `<span class="font-black text-fuchsia-700">${m.winsVip || 0} VIP</span> · <span class="font-bold text-indigo-700">${m.winsX1 || 0} Elite</span> / <span class="font-bold text-rose-600">${m.losses} thua</span>`;
             } else if (methodId === 'tamTruConsensus') {
@@ -1193,7 +1294,7 @@
 
             // Numbers Display with Winning Number Highlighted
             let numbersHtml = '';
-            if (methodId === 'goldenDualMerge') {
+            if (methodId === 'goldenDualMerge' || methodId === 'liveAugmentedLab') {
                 const x2 = r.intersectionX2 || [];
                 const x1 = r.uniqueSinglesX1 || [];
                 numbersHtml = `
@@ -1267,6 +1368,485 @@
                             <div class="flex flex-wrap gap-1 items-center">
                                 ${formatNumbersWithHighlight(m24, actStr, 'Mid', 8)}
                                 ${formatNumbersWithHighlight(m20, actStr, 'Mesh', 6)}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                const nums = r.numbers || [];
+                numbersHtml = `
+                    <div class="flex items-center gap-1.5 flex-wrap max-w-md">
+                        <span class="rounded-md bg-sky-100 text-sky-900 border border-sky-300 px-1.5 py-0.5 text-[10px] font-black">${esc(r.stateLabel || `${r.size || nums.length} số`)}</span>
+                        <div class="flex flex-wrap gap-1 items-center">
+                            ${formatNumbersWithHighlight(nums, actStr, 'TRÚNG', 14)}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Status Badge
+            let badgeHtml = '';
+            if (r.hitType === 'win_x2' || r.isX2) {
+                badgeHtml = `<span class="inline-flex items-center gap-1 rounded-full bg-amber-100 border border-amber-300 px-2.5 py-0.5 text-[11px] font-black text-amber-950 shadow-xs"><i class="bi bi-star-fill text-amber-600"></i> NỔ VÙNG VÀNG X2</span>`;
+            } else if (r.hitType === 'win_x1') {
+                badgeHtml = `<span class="inline-flex items-center gap-1 rounded-full bg-sky-100 border border-sky-300 px-2.5 py-0.5 text-[11px] font-black text-sky-950 shadow-xs"><i class="bi bi-shield-check text-sky-600"></i> NỔ BỌC LÓT X1</span>`;
+            } else if (r.hitType === 'win_vip' || r.isVip) {
+                badgeHtml = `<span class="inline-flex items-center gap-1 rounded-full bg-fuchsia-100 border border-fuchsia-300 px-2.5 py-0.5 text-[11px] font-black text-fuchsia-950 shadow-xs"><i class="bi bi-award-fill text-fuchsia-600"></i> NỔ HẠT NHÂN VIP</span>`;
+            } else if (r.hitType === 'win_elite') {
+                badgeHtml = `<span class="inline-flex items-center gap-1 rounded-full bg-indigo-100 border border-indigo-300 px-2.5 py-0.5 text-[11px] font-black text-indigo-950 shadow-xs"><i class="bi bi-check-circle-fill text-indigo-600"></i> NỔ BỌC LÓT ELITE</span>`;
+            } else if (r.hitType === 'win_tier3' || r.isTier3) {
+                badgeHtml = `<span class="inline-flex items-center gap-1 rounded-full bg-teal-100 border border-teal-300 px-2.5 py-0.5 text-[11px] font-black text-teal-950 shadow-xs"><i class="bi bi-diagram-3-fill text-teal-600"></i> NỔ TAM TRỤ (3 ĐỘNG CƠ)</span>`;
+            } else if (r.hitType === 'win_tier2' || r.isTier2) {
+                badgeHtml = `<span class="inline-flex items-center gap-1 rounded-full bg-sky-100 border border-sky-300 px-2.5 py-0.5 text-[11px] font-black text-sky-950 shadow-xs"><i class="bi bi-check2-circle text-sky-600"></i> NỔ SONG TRỤ (2 ĐỘNG CƠ)</span>`;
+            } else if (r.hitType === 'win_tier1' || r.isTier1) {
+                badgeHtml = `<span class="inline-flex items-center gap-1 rounded-full bg-slate-100 border border-slate-300 px-2.5 py-0.5 text-[11px] font-bold text-slate-800"><i class="bi bi-shield text-slate-500"></i> NỔ BỌC LÓT</span>`;
+            } else if (r.hitType === 'win_core' || r.isCore) {
+                badgeHtml = `<span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 border border-emerald-300 px-2.5 py-0.5 text-[11px] font-black text-emerald-950 shadow-xs"><i class="bi bi-trophy-fill text-emerald-600"></i> NỔ CORE 20 TINH HOA</span>`;
+            } else if (r.hitType === 'win_mid' || r.isMid) {
+                badgeHtml = `<span class="inline-flex items-center gap-1 rounded-full bg-indigo-100 border border-indigo-300 px-2.5 py-0.5 text-[11px] font-black text-indigo-950 shadow-xs"><i class="bi bi-check-circle text-indigo-600"></i> NỔ MID 24</span>`;
+            } else if (r.hitType === 'win_mesh' || r.isMesh) {
+                badgeHtml = `<span class="inline-flex items-center gap-1 rounded-full bg-slate-100 border border-slate-300 px-2.5 py-0.5 text-[11px] font-bold text-slate-800"><i class="bi bi-shield-check text-slate-500"></i> NỔ MESH 20 BỌC LÓT</span>`;
+            } else if (isHit) {
+                badgeHtml = `<span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 border border-emerald-300 px-2.5 py-0.5 text-[11px] font-black text-emerald-950 shadow-xs"><i class="bi bi-check2-circle text-emerald-600"></i> TRÚNG THƯỞNG</span>`;
+            } else {
+                badgeHtml = `<span class="inline-flex items-center gap-1 rounded-full bg-rose-50 border border-rose-200 px-2.5 py-0.5 text-[11px] font-bold text-rose-700"><i class="bi bi-x-circle text-rose-500"></i> TRƯỢT</span>`;
+            }
+
+            // Highlighted KQ Đề
+            let actBadgeHtml = '';
+            if (isHit) {
+                actBadgeHtml = `<span class="inline-flex h-8 min-w-8 px-1 items-center justify-center rounded-xl bg-amber-400 font-mono text-sm font-black text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">${esc(actStr)} 🎯</span>`;
+            } else {
+                actBadgeHtml = `<span class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 font-mono text-sm font-black text-slate-400 shadow-xs">${esc(actStr)}</span>`;
+            }
+
+            return `
+                <tr class="hover:bg-slate-50/80 transition-colors">
+                    <td class="p-3 pl-5 font-mono font-bold text-slate-800 whitespace-nowrap">${esc(dateStr)}</td>
+                    <td class="p-3">${numbersHtml}</td>
+                    <td class="p-3 text-center whitespace-nowrap">
+                        ${actBadgeHtml}
+                    </td>
+                    <td class="p-3 text-center whitespace-nowrap">${badgeHtml}</td>
+                    <td class="p-3 text-right font-mono text-slate-600 whitespace-nowrap">${fmt(r.stakeK)}đ</td>
+                    <td class="p-3 text-right font-mono font-semibold ${r.payoutK > 0 ? 'text-emerald-700' : 'text-slate-500'} whitespace-nowrap">${fmt(r.payoutK)}đ</td>
+                    <td class="p-3 text-right font-mono ${profitClass} whitespace-nowrap">${signedM(profitK)}</td>
+                    <td class="p-3 pr-5 text-right font-mono ${cumClass} whitespace-nowrap">${signedM(r.cumulativeProfitK)}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // 2.8. RENDER COMBINED RESEARCH METHODS SECTION (BREAKTHROUGH ENSEMBLES)
+    // ─────────────────────────────────────────────────────────────────────────────
+    function renderCombinedResearchMethodsSection(data) {
+        const ttr = data?.tenTierResearch || {};
+        const ensembles = ttr.profitEnsembles || {};
+
+        // 1. Render Overview Comparison Table (6 Methods)
+        renderCombinedMethodsOverviewTable(ensembles);
+
+        // 2. Render Latest Real Result Widget
+        renderCombinedLatestRealResultWidget(ensembles, data?.predictionDate, ttr.lastSpecial);
+
+        // 3. Render Daily Settled Ledger for Active Combined Method
+        const activeObj = ensembles[activeCombinedMethod] || ensembles.highProbabilityCoverage64 || {};
+        const ledgerTitle = byId('combinedLedgerTitle');
+        if (ledgerTitle) {
+            const methodNames = {
+                highProbabilityCoverage64: '1. RRF Mega 6 Động Cơ (Bao phủ 64 số)',
+                liveAugmentedLab: '2. Lai Ghép Thực Chiến Mở Rộng (Adaptive Dual + Lab Booster)',
+                tamTruConsensus: '3. Tam Trụ Hợp Lực Thế Hệ Mới (~50 số)',
+                goldenDualMerge: '4. Gộp Đôi Sweet-Spot x Graph (Vốn 60K)',
+                metaLearner: '5. Phân Tầng Vốn Bất Đối Xứng (VIP 10 + Elite 20)',
+                adaptiveController: '6. Bộ Điều Khiển Thích Ứng 3 Trạng Thái'
+            };
+            ledgerTitle.textContent = `Chi Tiết Nổ Đề Từng Ngày Năm 2026 — ${methodNames[activeCombinedMethod] || activeCombinedMethod}`;
+        }
+        renderCombinedDailyLedger(activeObj.settledLedger || [], activeCombinedMethod);
+    }
+
+    function renderCombinedMethodsOverviewTable(ensembles = {}) {
+        const tbody = byId('combinedMethodsOverviewTableBody');
+        if (!tbody) return;
+
+        const methods = [
+            {
+                id: 'highProbabilityCoverage64',
+                name: '1. RRF Mega 6 Động Cơ (Bao Phủ 64 Số)',
+                sub: 'Cầu Động + Fourier 7D + Markov 2 + RRF k=60',
+                size: '64 số (Core + Mid + Mesh)',
+                badge: 'border-emerald-300 bg-emerald-50 text-emerald-800',
+                obj: ensembles.highProbabilityCoverage64
+            },
+            {
+                id: 'liveAugmentedLab',
+                name: '2. Lai Ghép Thực Chiến Mở Rộng (Lãi +2.66M)',
+                sub: 'Adaptive Dual + Lab Booster + Khử Gan Sâu >20D',
+                size: '44 - 55 số (X2 Giao Thoa + X1 Bọc Lót)',
+                badge: 'border-teal-300 bg-teal-50 text-teal-800 ring-1 ring-teal-400',
+                obj: ensembles.liveAugmentedLab
+            },
+            {
+                id: 'tamTruConsensus',
+                name: '3. Tam Trụ Hợp Lực Thế Hệ Mới (~50 Số)',
+                sub: 'Đồng thuận 3 Động Cơ Độc Lập (Ngưỡng 2/3 & 3/3)',
+                size: '~50 số (Tam trụ 2K + Song trụ 1K)',
+                badge: 'border-indigo-300 bg-indigo-50 text-indigo-800',
+                obj: ensembles.tamTruConsensus
+            },
+            {
+                id: 'goldenDualMerge',
+                name: '4. Gộp Đôi Sweet-Spot x Louvain Graph',
+                sub: 'Đồ thị cụm cộng đồng x Lọc số Sweet-Spot',
+                size: '44 số (16s Vàng X2 + 28s X1)',
+                badge: 'border-amber-300 bg-amber-50 text-amber-900',
+                obj: ensembles.goldenDualMerge
+            },
+            {
+                id: 'metaLearner',
+                name: '5. Phân Tầng Vốn Bất Đối Xứng Alpha',
+                sub: 'Tối ưu Kelly: VIP 10 cược 1.5K + Elite 20 cược 1K',
+                size: '30 số (VIP 10 + Elite 20)',
+                badge: 'border-fuchsia-300 bg-fuchsia-50 text-fuchsia-900',
+                obj: ensembles.metaLearner
+            },
+            {
+                id: 'adaptiveController',
+                name: '6. Bộ Điều Khiển Thích Ứng 3 Trạng Thái',
+                sub: 'Chuyển mạch động theo chuỗi thắng/thua (Cắt dây)',
+                size: '24 / 36 / 50 số linh hoạt',
+                badge: 'border-sky-300 bg-sky-50 text-sky-900',
+                obj: ensembles.adaptiveController
+            }
+        ];
+
+        function computeMaxLoss(ledger = []) {
+            let max = 0, cur = 0;
+            for (const r of ledger) {
+                if (r.isHit) cur = 0;
+                else { cur++; if (cur > max) max = cur; }
+            }
+            return max;
+        }
+
+        function computeWilson(wins, total, z = 1.645) {
+            if (!total) return { lower: '0', upper: '0' };
+            const p = wins / total, z2 = z * z;
+            const denom = 1 + z2 / total;
+            const center = p + z2 / (2 * total);
+            const rad = z * Math.sqrt((p * (1 - p) + z2 / (4 * total)) / total);
+            return {
+                lower: (Math.max(0, (center - rad) / denom) * 100).toFixed(1),
+                upper: (Math.min(1, (center + rad) / denom) * 100).toFixed(1)
+            };
+        }
+
+        tbody.innerHTML = methods.map(m => {
+            const w = m.obj?.summary?.windows?.all2026 || {};
+            const days = w.days || 258;
+            const wins = w.wins || 0;
+            const hitRate = w.hitRate || (days > 0 ? (wins / days * 100).toFixed(1) : 0);
+            const stakeK = w.stakeK || 0;
+            const profitK = Number(m.obj?.summary?.overallProfitK ?? w.profitK ?? 0);
+            const roi = Number(w.roi || 0);
+            const maxLoss = computeMaxLoss(m.obj?.settledLedger || []);
+            const ci = computeWilson(wins, days);
+
+            const isProf = profitK >= 0;
+            const profColor = isProf ? 'text-emerald-700 font-black' : 'text-rose-700 font-black';
+            const isHighlight = m.id === activeCombinedMethod;
+
+            return `
+                <tr class="transition-colors ${isHighlight ? 'bg-indigo-50/70 ring-1 ring-indigo-300' : 'hover:bg-slate-50/80'}">
+                    <td class="p-3 pl-5">
+                        <div class="flex flex-col">
+                            <div class="flex items-center gap-2">
+                                <span class="font-black text-slate-900">${esc(m.name)}</span>
+                                ${m.id === 'liveAugmentedLab' ? `<span class="inline-flex items-center gap-0.5 rounded-full bg-emerald-100 text-emerald-950 font-black px-2 py-0.5 text-[10px] ring-1 ring-emerald-400">LÃI CAO NHẤT</span>` : ''}
+                                ${m.id === 'highProbabilityCoverage64' ? `<span class="inline-flex items-center gap-0.5 rounded-full bg-amber-100 text-amber-950 font-black px-2 py-0.5 text-[10px] ring-1 ring-amber-400">TRÚNG 69% 🏆</span>` : ''}
+                            </div>
+                            <span class="text-[11px] text-slate-500 font-medium">${esc(m.sub)}</span>
+                        </div>
+                    </td>
+                    <td class="p-3 text-center">
+                        <span class="inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-bold ${m.badge}">
+                            ${esc(m.size)}
+                        </span>
+                    </td>
+                    <td class="p-3 text-center font-bold text-slate-700">${days} kỳ</td>
+                    <td class="p-3 text-center font-bold text-slate-900">${wins} kỳ</td>
+                    <td class="p-3 text-center">
+                        <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-black ${Number(hitRate) >= 60 ? 'bg-emerald-100 text-emerald-950 ring-1 ring-emerald-400' : (Number(hitRate) >= 50 ? 'bg-teal-100 text-teal-950 ring-1 ring-teal-400' : 'bg-slate-100 text-slate-900')}">
+                            ${pct(hitRate)}
+                        </span>
+                    </td>
+                    <td class="p-3 text-right font-mono text-slate-600 font-semibold">${fmt(stakeK)}đ</td>
+                    <td class="p-3 text-right font-mono ${profColor}">${signedM(profitK)}</td>
+                    <td class="p-3 text-center font-mono font-black ${isProf ? 'text-emerald-700' : 'text-rose-700'}">${roi >= 0 ? '+' : ''}${roi}%</td>
+                    <td class="p-3 text-center font-bold ${maxLoss <= 5 ? 'text-emerald-700' : (maxLoss <= 8 ? 'text-slate-700' : 'text-rose-600')}">${maxLoss} ngày</td>
+                    <td class="p-3 pr-5 text-center font-mono text-[11px] text-slate-600 font-bold">${ci.lower}% - ${ci.upper}%</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function renderCombinedLatestRealResultWidget(ensembles = {}, targetDate = null, lastSpecial = null) {
+        const container = byId('combinedLatestRealResultWidget');
+        if (!container) return;
+
+        const gLedger = ensembles.goldenDualMerge?.settledLedger || [];
+        const latestSettled = gLedger[gLedger.length - 1];
+        if (!latestSettled) {
+            container.innerHTML = `<div class="text-center text-xs text-slate-500 font-semibold py-2">Đang đồng bộ dữ liệu đối chiếu kết quả thực tế...</div>`;
+            return;
+        }
+
+        const settledDate = latestSettled.date || latestSettled.predictionDate;
+        const actNum = latestSettled.actualSpecial;
+        const actStr = String(actNum).padStart(2, '0');
+
+        const methods = [
+            { id: 'highProbabilityCoverage64', name: '1. RRF Mega 6 Động Cơ (64 số)', obj: ensembles.highProbabilityCoverage64 },
+            { id: 'liveAugmentedLab', name: '2. Lai Ghép Thực Chiến (Lãi +2.66M)', obj: ensembles.liveAugmentedLab },
+            { id: 'tamTruConsensus', name: '3. Tam Trụ Hợp Lực (~50 số)', obj: ensembles.tamTruConsensus },
+            { id: 'goldenDualMerge', name: '4. Gộp Đôi Sweet-Spot x Graph (60K)', obj: ensembles.goldenDualMerge },
+            { id: 'metaLearner', name: '5. Phân Tầng Bất Đối Xứng (35K)', obj: ensembles.metaLearner },
+            { id: 'adaptiveController', name: '6. Thích Ứng 3 Trạng Thái', obj: ensembles.adaptiveController }
+        ];
+
+        const cardsHtml = methods.map(m => {
+            const row = (m.obj?.settledLedger || []).find(r => (r.date || r.predictionDate) === settledDate);
+            if (!row) return '';
+            const isHit = row.isHit === true;
+            const profit = Number(row.profitK || 0);
+            const isProf = profit >= 0;
+
+            let hitDetail = 'Trượt kỳ này';
+            let badgeColor = 'bg-rose-50 text-rose-700 border-rose-200';
+            let badgeText = 'TRƯỢT';
+            let icon = 'bi-x-circle text-rose-500';
+
+            if (isHit) {
+                badgeColor = 'bg-emerald-100 text-emerald-900 border-emerald-300';
+                badgeText = 'TRÚNG';
+                icon = 'bi-check-circle-fill text-emerald-600';
+
+                if (row.hitType === 'win_x2' || row.isX2) {
+                    hitDetail = `Nổ VÙNG VÀNG X2 (${actStr})`;
+                    badgeColor = 'bg-amber-100 text-amber-950 border-amber-300 ring-1 ring-amber-400';
+                    badgeText = 'NỔ X2 🎯';
+                } else if (row.hitType === 'win_x1') {
+                    hitDetail = `Nổ BỌC LÓT X1 (${actStr})`;
+                    badgeText = 'NỔ X1 🎯';
+                } else if (row.hitType === 'win_vip' || row.isVip) {
+                    hitDetail = `Nổ HẠT NHÂN VIP (${actStr})`;
+                    badgeColor = 'bg-fuchsia-100 text-fuchsia-950 border-fuchsia-300';
+                    badgeText = 'NỔ VIP 🎯';
+                } else if (row.hitType === 'win_elite') {
+                    hitDetail = `Nổ BỌC LÓT ELITE (${actStr})`;
+                    badgeText = 'NỔ ELITE 🎯';
+                } else if (row.hitType === 'win_tier3' || row.isTier3) {
+                    hitDetail = `Nổ TAM TRỤ (${actStr})`;
+                    badgeColor = 'bg-teal-100 text-teal-950 border-teal-300';
+                    badgeText = 'NỔ TAM TRỤ 🎯';
+                } else if (row.hitType === 'win_tier2' || row.isTier2) {
+                    hitDetail = `Nổ SONG TRỤ (${actStr})`;
+                    badgeText = 'NỔ SONG TRỤ 🎯';
+                } else if (row.hitType === 'win_core' || row.isCore) {
+                    hitDetail = `Nổ CORE 20 (${actStr})`;
+                    badgeColor = 'bg-emerald-100 text-emerald-950 border-emerald-300';
+                    badgeText = 'NỔ CORE 🎯';
+                } else if (row.hitType === 'win_mid' || row.isMid) {
+                    hitDetail = `Nổ MID 24 (${actStr})`;
+                    badgeText = 'NỔ MID 🎯';
+                } else if (row.hitType === 'win_mesh' || row.isMesh) {
+                    hitDetail = `Nổ MESH 20 (${actStr})`;
+                    badgeText = 'NỔ MESH 🎯';
+                } else {
+                    hitDetail = `Nổ trong dàn (${actStr})`;
+                }
+            }
+
+            return `
+                <div class="rounded-2xl border ${isHit ? 'border-emerald-300 bg-emerald-50/60 shadow-sm ring-1 ring-emerald-300/60' : 'border-slate-200 bg-white/90'} p-3.5 flex flex-col justify-between transition-all hover:shadow-md">
+                    <div>
+                        <div class="flex items-center justify-between gap-1 mb-1.5">
+                            <span class="text-[11px] font-black text-slate-800 truncate">${esc(m.name)}</span>
+                            <span class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-black uppercase ${badgeColor}">
+                                <i class="bi ${icon}"></i> ${badgeText}
+                            </span>
+                        </div>
+                        <p class="text-xs font-bold ${isHit ? 'text-emerald-800' : 'text-slate-500'} flex items-center gap-1">
+                            ${isHit ? `<span class="inline-flex h-5 w-5 items-center justify-center rounded-md bg-amber-400 font-mono text-xs font-black text-slate-950 shadow-xs">${actStr}</span>` : ''}
+                            <span>${esc(hitDetail)}</span>
+                        </p>
+                    </div>
+                    <div class="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px] font-mono">
+                        <span class="text-slate-500">Cược: ${fmt(row.stakeK)}đ</span>
+                        <span class="${isProf ? 'text-emerald-700 font-black' : 'text-rose-700 font-black'}">${signedM(profit)}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = `
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 shadow-md ring-4 ring-amber-300/40">
+                        <span class="font-mono text-2xl font-black">${esc(actStr)}</span>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="inline-flex items-center gap-1 rounded-full bg-slate-900 text-amber-300 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider">
+                                <i class="bi bi-patch-check-fill text-amber-400"></i> KẾT QUẢ THỰC TẾ ĐÃ VỀ
+                            </span>
+                            <span class="text-xs font-bold text-slate-600">Kỳ quay: <strong class="font-mono text-slate-900 font-black">${esc(settledDate)}</strong></span>
+                        </div>
+                        <h3 class="text-base font-black text-slate-900 mt-0.5 flex items-center gap-1.5">
+                            Giải Đặc Biệt nổ số <strong class="font-mono text-indigo-700 text-lg underline decoration-amber-400 decoration-2">${esc(actStr)}</strong> — Đối Chiếu Tức Thì 6 Kiến Trúc Kết Hợp Nghiên Cứu:
+                        </h3>
+                    </div>
+                </div>
+                <div class="text-xs text-slate-500 font-medium shrink-0 lg:text-right">
+                    <span>Dữ liệu thực tế 100% Strict Point-In-Time</span>
+                </div>
+            </div>
+
+            <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                ${cardsHtml}
+            </div>
+        `;
+    }
+
+    function renderCombinedDailyLedger(records = [], methodId = 'highProbabilityCoverage64') {
+        const tbody = byId('combinedLedgerTableBody');
+        if (!tbody) return;
+
+        let filtered = (records || []).slice();
+
+        // 1. Filter by Status
+        if (combinedLedgerFilterStatus === 'win') {
+            filtered = filtered.filter(r => r.isHit === true);
+        } else if (combinedLedgerFilterStatus === 'loss') {
+            filtered = filtered.filter(r => r.isHit === false);
+        }
+
+        // 2. Filter by Search
+        if (combinedLedgerSearchQuery) {
+            const q = combinedLedgerSearchQuery.trim().toLowerCase();
+            filtered = filtered.filter(r => {
+                const d = String(r.date || r.predictionDate || '').toLowerCase();
+                const act = String(r.actualSpecial ?? r.actual ?? '').padStart(2, '0');
+                return d.includes(q) || act.includes(q);
+            });
+        }
+
+        // 3. Sort Chronological Descending (newest first)
+        filtered.sort((a, b) => {
+            const da = a.date || a.predictionDate || '';
+            const db = b.date || b.predictionDate || '';
+            return db.localeCompare(da);
+        });
+
+        // 4. Apply Limit
+        if (combinedLedgerLimit !== 'all') {
+            const limitNum = parseInt(combinedLedgerLimit, 10) || 30;
+            filtered = filtered.slice(0, limitNum);
+        }
+
+        if (!filtered.length) {
+            tbody.innerHTML = '<tr><td colspan="8" class="p-8 text-center text-slate-400 font-semibold">Không tìm thấy bản ghi nào thỏa mãn điều kiện lọc.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = filtered.map(r => {
+            const dateStr = r.date || r.predictionDate || '-';
+            const actNum = r.actualSpecial ?? r.actual ?? '--';
+            const actStr = String(actNum).padStart(2, '0');
+            const isHit = r.isHit === true;
+            const profitK = Number(r.profitK || 0);
+            const isProfit = profitK >= 0;
+            const profitClass = isProfit ? 'text-emerald-700 font-black' : 'text-rose-700 font-black';
+            const cumClass = Number(r.cumulativeProfitK || 0) >= 0 ? 'text-emerald-800 font-black' : 'text-rose-800 font-black';
+
+            // Numbers Display with Winning Number Highlighted
+            let numbersHtml = '';
+            if (methodId === 'highProbabilityCoverage64') {
+                const c20 = r.core20 || [];
+                const m24 = r.mid24 || [];
+                const m20 = r.mesh20 || [];
+                numbersHtml = `
+                    <div class="flex flex-col gap-1 max-w-md">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="rounded-md bg-emerald-100 text-emerald-900 border border-emerald-300 px-1.5 py-0.5 text-[10px] font-black">Core 20 (1.5K)</span>
+                            <div class="flex flex-wrap gap-1 items-center">
+                                ${formatNumbersWithHighlight(c20, actStr, 'Core', 12)}
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="rounded-md bg-slate-100 text-slate-700 border border-slate-300 px-1.5 py-0.5 text-[10px] font-bold">Mid 24 + Mesh 20</span>
+                            <div class="flex flex-wrap gap-1 items-center">
+                                ${formatNumbersWithHighlight(m24, actStr, 'Mid', 8)}
+                                ${formatNumbersWithHighlight(m20, actStr, 'Mesh', 6)}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (methodId === 'liveAugmentedLab' || methodId === 'goldenDualMerge') {
+                const x2 = r.intersectionX2 || [];
+                const x1 = r.uniqueSinglesX1 || [];
+                numbersHtml = `
+                    <div class="flex flex-col gap-1 max-w-md">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="rounded-md bg-amber-100 text-amber-900 border border-amber-300 px-1.5 py-0.5 text-[10px] font-black">X2 (${x2.length}s)</span>
+                            <div class="flex flex-wrap gap-1 items-center">
+                                ${formatNumbersWithHighlight(x2, actStr, 'X2', 12)}
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="rounded-md bg-slate-100 text-slate-700 border border-slate-300 px-1.5 py-0.5 text-[10px] font-bold">X1 (${x1.length}s)</span>
+                            <div class="flex flex-wrap gap-1 items-center">
+                                ${formatNumbersWithHighlight(x1, actStr, 'X1', 10)}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (methodId === 'metaLearner') {
+                const vip = r.vip10 || [];
+                const elite = r.elite20 || [];
+                numbersHtml = `
+                    <div class="flex flex-col gap-1 max-w-md">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="rounded-md bg-fuchsia-100 text-fuchsia-900 border border-fuchsia-300 px-1.5 py-0.5 text-[10px] font-black">VIP 10 (1.5K)</span>
+                            <div class="flex flex-wrap gap-1 items-center">
+                                ${formatNumbersWithHighlight(vip, actStr, 'VIP', 10)}
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="rounded-md bg-indigo-50 text-indigo-800 border border-indigo-200 px-1.5 py-0.5 text-[10px] font-bold">Elite 20 (1.0K)</span>
+                            <div class="flex flex-wrap gap-1 items-center">
+                                ${formatNumbersWithHighlight(elite, actStr, 'ELITE', 12)}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (methodId === 'tamTruConsensus') {
+                const t3 = r.tier3Numbers || [];
+                const t2 = r.tier2Numbers || [];
+                numbersHtml = `
+                    <div class="flex flex-col gap-1 max-w-md">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="rounded-md bg-teal-100 text-teal-900 border border-teal-300 px-1.5 py-0.5 text-[10px] font-black">Tam Trụ (${t3.length}s · 2K)</span>
+                            <div class="flex flex-wrap gap-1 items-center">
+                                ${formatNumbersWithHighlight(t3, actStr, 'Tam Trụ', 10)}
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="rounded-md bg-sky-50 text-sky-800 border border-sky-200 px-1.5 py-0.5 text-[10px] font-bold">Song Trụ (${t2.length}s · 1K)</span>
+                            <div class="flex flex-wrap gap-1 items-center">
+                                ${formatNumbersWithHighlight(t2, actStr, 'Song Trụ', 10)}
                             </div>
                         </div>
                     </div>
@@ -2110,8 +2690,82 @@
                 numbers = ensembles.highProbabilityCoverage64?.core20 || [];
             } else if (targetKey === 'cov_all') {
                 numbers = ensembles.highProbabilityCoverage64?.fullUnion || [];
+            } else if (targetKey === 'live_x2') {
+                numbers = ensembles.liveAugmentedLab?.intersectionX2 || [];
+            } else if (targetKey === 'live_x1') {
+                numbers = ensembles.liveAugmentedLab?.uniqueSinglesX1 || [];
+            } else if (targetKey === 'live_all') {
+                numbers = ensembles.liveAugmentedLab?.fullUnion || [];
             }
             copyNumbers(numbers, sep);
+        });
+
+        // Combined Research Methods tab switcher
+        document.querySelectorAll('.comb-tab-btn').forEach(btn => {
+            btn.addEventListener('click', e => {
+                const methodId = e.currentTarget.getAttribute('data-comb-tab');
+                if (!methodId) return;
+                activeCombinedMethod = methodId;
+
+                document.querySelectorAll('.comb-tab-btn').forEach(b => {
+                    b.classList.remove('border-amber-400', 'bg-amber-400', 'text-slate-950', 'font-black', 'ring-2', 'ring-amber-300');
+                    b.classList.add('border-white/20', 'bg-white/10', 'text-white', 'font-bold');
+                });
+                e.currentTarget.classList.remove('border-white/20', 'bg-white/10', 'text-white', 'font-bold');
+                e.currentTarget.classList.add('border-amber-400', 'bg-amber-400', 'text-slate-950', 'font-black', 'ring-2', 'ring-amber-300');
+
+                const ensembles = payload?.tenTierResearch?.profitEnsembles || {};
+                const activeObj = ensembles[activeCombinedMethod] || ensembles.highProbabilityCoverage64 || {};
+                const ledgerTitle = byId('combinedLedgerTitle');
+                if (ledgerTitle) {
+                    const methodNames = {
+                        highProbabilityCoverage64: '1. RRF Mega 6 Động Cơ (Bao phủ 64 số)',
+                        liveAugmentedLab: '2. Lai Ghép Thực Chiến Mở Rộng (Adaptive Dual + Lab Booster)',
+                        tamTruConsensus: '3. Tam Trụ Hợp Lực Thế Hệ Mới (~50 số)',
+                        goldenDualMerge: '4. Gộp Đôi Sweet-Spot x Graph (Vốn 60K)',
+                        metaLearner: '5. Phân Tầng Vốn Bất Đối Xứng (VIP 10 + Elite 20)',
+                        adaptiveController: '6. Bộ Điều Khiển Thích Ứng 3 Trạng Thái'
+                    };
+                    ledgerTitle.textContent = `Chi Tiết Nổ Đề Từng Ngày Năm 2026 — ${methodNames[activeCombinedMethod] || activeCombinedMethod}`;
+                }
+                renderCombinedDailyLedger(activeObj.settledLedger || [], activeCombinedMethod);
+            });
+        });
+
+        // Combined Ledger Filter status switcher
+        document.querySelectorAll('.comb-ledger-filter-btn').forEach(btn => {
+            btn.addEventListener('click', e => {
+                const filter = e.currentTarget.getAttribute('data-comb-filter');
+                if (!filter) return;
+                combinedLedgerFilterStatus = filter;
+
+                document.querySelectorAll('.comb-ledger-filter-btn').forEach(b => {
+                    b.classList.remove('bg-indigo-600', 'text-white', 'font-black', 'shadow-xs');
+                    b.classList.add('bg-transparent', 'text-slate-600', 'font-bold');
+                });
+                e.currentTarget.classList.remove('bg-transparent', 'text-slate-600', 'font-bold');
+                e.currentTarget.classList.add('bg-indigo-600', 'text-white', 'font-black', 'shadow-xs');
+
+                const ensembles = payload?.tenTierResearch?.profitEnsembles || {};
+                const activeObj = ensembles[activeCombinedMethod] || ensembles.highProbabilityCoverage64 || {};
+                renderCombinedDailyLedger(activeObj.settledLedger || [], activeCombinedMethod);
+            });
+        });
+
+        // Combined Ledger Search input
+        byId('combinedLedgerSearchInput')?.addEventListener('input', e => {
+            combinedLedgerSearchQuery = e.target.value;
+            const ensembles = payload?.tenTierResearch?.profitEnsembles || {};
+            const activeObj = ensembles[activeCombinedMethod] || ensembles.highProbabilityCoverage64 || {};
+            renderCombinedDailyLedger(activeObj.settledLedger || [], activeCombinedMethod);
+        });
+
+        // Combined Ledger Limit select
+        byId('combinedLedgerLimitSelect')?.addEventListener('change', e => {
+            combinedLedgerLimit = e.target.value;
+            const ensembles = payload?.tenTierResearch?.profitEnsembles || {};
+            const activeObj = ensembles[activeCombinedMethod] || ensembles.highProbabilityCoverage64 || {};
+            renderCombinedDailyLedger(activeObj.settledLedger || [], activeCombinedMethod);
         });
 
         // Lab Tracking tab switcher
@@ -2190,6 +2844,7 @@
             renderHeroAndSource(payload);
             renderEnsembleCard(payload);
             renderProfitOptimizedCard(payload);
+            renderCombinedResearchMethodsSection(payload);
             renderLabTrackingSection(payload);
             renderScientificLayer(activeLayerKey);
             renderPromotionGate(payload);

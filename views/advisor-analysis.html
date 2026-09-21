@@ -179,6 +179,9 @@
                     <button type="button" data-profit-tab="highProbabilityCoverage64" class="profit-tab-btn rounded-xl border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-bold text-slate-300 hover:bg-white/20 transition-all">
                         <i class="bi bi-grid-3x3-gap mr-1"></i> 5. Dàn Bao Phủ Xác Suất Cao 64 Số (Trúng 69%)
                     </button>
+                    <button type="button" data-profit-tab="liveAugmentedLab" class="profit-tab-btn rounded-xl border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-bold text-slate-300 hover:bg-white/20 transition-all">
+                        <i class="bi bi-stars mr-1"></i> 6. Lai Ghép Thực Chiến Mở Rộng (Lãi +2.66M)
+                    </button>
                 </div>
             </div>
 
@@ -237,6 +240,11 @@
                         <i class="bi bi-grid-3x3-gap-fill"></i>
                         <span>5. Bao Phủ 64 Số (Trúng 69%)</span>
                         <span id="labBadgeProfitCoverage" class="rounded-md bg-emerald-500/30 text-emerald-200 px-1.5 py-0.5 text-[10px] font-black">--</span>
+                    </button>
+                    <button type="button" data-lab-track-method="liveAugmentedLab" class="lab-track-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2 text-xs hover:bg-white/20 transition-all flex items-center gap-2">
+                        <i class="bi bi-stars"></i>
+                        <span>6. Lai Ghép Thực Chiến</span>
+                        <span id="labBadgeProfitLiveAug" class="rounded-md bg-emerald-500/30 text-emerald-200 px-1.5 py-0.5 text-[10px] font-black">--</span>
                     </button>
                 </div>
             </div>
@@ -379,6 +387,145 @@
 
             <!-- Layer Content Display Area -->
             <div id="scientificLayerContentArea" class="p-6"></div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════════ -->
+        <!-- 🔬 CÁC PHƯƠNG PHÁP KẾT HỢP TRONG PHÒNG NGHIÊN CỨU & ĐỐI CHIẾU THỰC TẾ -->
+        <!-- ═══════════════════════════════════════════════════════════════════════ -->
+        <section id="combinedResearchMethodsSection" class="mb-8 overflow-hidden rounded-3xl border border-indigo-300 bg-white shadow-lg shadow-indigo-950/5">
+            <!-- Header Section -->
+            <div class="border-b border-indigo-100 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 sm:p-8 text-white">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-400/20 border border-amber-400/40 px-3 py-0.5 text-xs font-black uppercase text-amber-300">
+                                <i class="bi bi-diagram-3-fill"></i> PHÒNG NGHIÊN CỨU: CÁC PHƯƠNG PHÁP KẾT HỢP ĐỘT PHÁ
+                            </span>
+                            <span class="rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-2.5 py-0.5 text-xs font-bold">
+                                🎯 100% Strict Point-In-Time (Strict PIT)
+                            </span>
+                        </div>
+                        <h2 class="mt-2 text-xl sm:text-2xl font-black text-white">
+                            Đối Chiếu Các Kiến Trúc Kết Hợp Đa Phương Pháp Với Kết Quả Thực Tế
+                        </h2>
+                        <p class="mt-1 text-xs text-indigo-200 font-semibold leading-relaxed max-w-4xl">
+                            Dung hợp đa động cơ: <strong class="text-white">Cầu Vị Trí Động GĐB x G7</strong>, <strong class="text-white">Sóng Hài Fourier 7 Ngày Theo Đài</strong>, <strong class="text-white">Markov Bậc 2 & 15 Bộ Số</strong>, <strong class="text-white">Reciprocal Rank Fusion (RRF k=60)</strong>, <strong class="text-white">Phân Tầng Vốn Bất Đối Xứng</strong>, và <strong class="text-emerald-300">Lai Ghép Thực Chiến Mở Rộng</strong> nhằm bứt phá xác suất trúng lên tới 70.5% và mang lại lợi nhuận dương.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 6 Research Combination Tabs -->
+                <div class="mt-5 flex flex-wrap items-center gap-2" id="combinedMethodTabs">
+                    <button type="button" data-comb-tab="highProbabilityCoverage64" class="comb-tab-btn rounded-xl border border-amber-400 bg-amber-400 text-slate-950 font-black px-3.5 py-2 text-xs transition-all shadow-md flex items-center gap-2 ring-2 ring-amber-300">
+                        <i class="bi bi-trophy-fill"></i>
+                        <span>1. RRF Mega 6 Động Cơ (Trúng 69-70%)</span>
+                    </button>
+                    <button type="button" data-comb-tab="liveAugmentedLab" class="comb-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2 text-xs hover:bg-white/20 transition-all flex items-center gap-2">
+                        <i class="bi bi-stars"></i>
+                        <span>2. Lai Ghép Thực Chiến (Lãi +2.66M)</span>
+                    </button>
+                    <button type="button" data-comb-tab="tamTruConsensus" class="comb-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2 text-xs hover:bg-white/20 transition-all flex items-center gap-2">
+                        <i class="bi bi-diagram-3"></i>
+                        <span>3. Tam Trụ Hợp Lực (Trúng 51.2%)</span>
+                    </button>
+                    <button type="button" data-comb-tab="goldenDualMerge" class="comb-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2 text-xs hover:bg-white/20 transition-all flex items-center gap-2">
+                        <i class="bi bi-intersect"></i>
+                        <span>4. Gộp Đôi Sweet-Spot x Graph (Vốn 60K)</span>
+                    </button>
+                    <button type="button" data-comb-tab="metaLearner" class="comb-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2 text-xs hover:bg-white/20 transition-all flex items-center gap-2">
+                        <i class="bi bi-award"></i>
+                        <span>5. Phân Tầng Bất Đối Xứng (Vốn 35K)</span>
+                    </button>
+                    <button type="button" data-comb-tab="adaptiveController" class="comb-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2 text-xs hover:bg-white/20 transition-all flex items-center gap-2">
+                        <i class="bi bi-shield-check"></i>
+                        <span>6. Thích Ứng 3 Trạng Thái (Cắt Dây)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 🎯 Thẻ Đối Chiếu Nhanh Kỳ Mới Nhất Với Kết Quả Thực Tế (Combined Methods Real-Result Widget) -->
+            <div id="combinedLatestRealResultWidget" class="border-b border-indigo-100 bg-gradient-to-r from-amber-50/80 via-indigo-50/80 to-emerald-50/80 p-5 sm:p-6">
+                <!-- Sẽ được render tự động qua JS -->
+            </div>
+
+            <!-- 📊 BẢNG SO SÁNH TỔNG QUAN HIỆU SUẤT CÁC PHƯƠNG PHÁP KẾT HỢP -->
+            <div class="p-6 border-b border-slate-100 bg-slate-50/60">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                    <div>
+                        <span class="text-[11px] font-black uppercase tracking-wider text-indigo-600">BẢNG ĐỐI CHIẾU HIỆU SUẤT TỔNG THỂ (NĂM 2026)</span>
+                        <h3 class="text-base font-black text-slate-900 mt-0.5">So Sánh Trực Diện 6 Kiến Trúc Kết Hợp Nghiên Cứu Với Kết Quả Thực Tế</h3>
+                    </div>
+                    <span class="text-xs font-semibold text-slate-500">Dữ liệu kiểm định Walk-forward Strict PIT</span>
+                </div>
+                <div class="overflow-x-auto custom-scrollbar rounded-2xl border border-slate-200 bg-white">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-200 bg-slate-100/80 font-black text-slate-700">
+                                <th class="p-3 pl-5">Phương pháp kết hợp</th>
+                                <th class="p-3 text-center">Quy mô</th>
+                                <th class="p-3 text-center">Số kỳ</th>
+                                <th class="p-3 text-center">Số trúng</th>
+                                <th class="p-3 text-center">Tỷ lệ trúng</th>
+                                <th class="p-3 text-right">Tổng vốn</th>
+                                <th class="p-3 text-right">Lợi nhuận ròng</th>
+                                <th class="p-3 text-center">ROI %</th>
+                                <th class="p-3 text-center">Max Drawdown</th>
+                                <th class="p-3 pr-5 text-center">Wilson 90%</th>
+                            </tr>
+                        </thead>
+                        <tbody id="combinedMethodsOverviewTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 📋 BẢNG NHẬT KÝ ĐỐI SOÁT HÀNG NGÀY CHO PHƯƠNG PHÁP KẾT HỢP ĐANG CHỌN -->
+            <div class="p-6">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-4">
+                    <div>
+                        <span class="text-[11px] font-black uppercase tracking-wider text-emerald-600">NHẬT KÝ ĐỐI SOÁT TỪNG KỲ VỚI KẾT QUẢ THỰC TẾ</span>
+                        <h3 id="combinedLedgerTitle" class="text-base font-black text-slate-900 mt-0.5">Chi Tiết Nổ Đề Từng Ngày Năm 2026</h3>
+                    </div>
+
+                    <!-- Filter Controls -->
+                    <div class="flex flex-wrap items-center gap-2 text-xs">
+                        <div class="inline-flex rounded-xl border border-slate-200 bg-slate-100 p-0.5" id="combinedLedgerFilterGroup">
+                            <button type="button" data-comb-filter="all" class="comb-ledger-filter-btn rounded-lg bg-indigo-600 px-3 py-1 text-xs font-black text-white shadow-xs">Tất cả</button>
+                            <button type="button" data-comb-filter="win" class="comb-ledger-filter-btn rounded-lg bg-transparent px-3 py-1 text-xs font-bold text-slate-600 hover:text-slate-900">Chỉ Thắng</button>
+                            <button type="button" data-comb-filter="loss" class="comb-ledger-filter-btn rounded-lg bg-transparent px-3 py-1 text-xs font-bold text-slate-600 hover:text-slate-900">Chỉ Thua</button>
+                        </div>
+
+                        <div class="relative">
+                            <input type="text" id="combinedLedgerSearchInput" placeholder="Tìm ngày hoặc số..." class="w-44 sm:w-52 rounded-xl border border-slate-200 bg-white px-3 py-1.5 pl-8 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:border-indigo-500 focus:outline-hidden focus:ring-1 focus:ring-indigo-500">
+                            <i class="bi bi-search absolute left-2.5 top-2 text-slate-400 text-xs"></i>
+                        </div>
+
+                        <select id="combinedLedgerLimitSelect" class="rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 focus:border-indigo-500 focus:outline-hidden">
+                            <option value="15">15 ngày gần nhất</option>
+                            <option value="30" selected>30 ngày gần nhất</option>
+                            <option value="60">60 ngày gần nhất</option>
+                            <option value="all">Toàn bộ năm 2026</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto custom-scrollbar rounded-2xl border border-slate-200 bg-white">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-200 bg-slate-100/80 font-black text-slate-700">
+                                <th class="p-3 pl-5">Ngày</th>
+                                <th class="p-3">Dàn số đề xuất (Highlight số trúng)</th>
+                                <th class="p-3 text-center">KQ Đề</th>
+                                <th class="p-3 text-center">Trạng thái nổ</th>
+                                <th class="p-3 text-right">Tiền cược</th>
+                                <th class="p-3 text-right">Tiền ăn</th>
+                                <th class="p-3 text-right">Lãi/Lỗ ngày</th>
+                                <th class="p-3 pr-5 text-right">Lũy kế</th>
+                            </tr>
+                        </thead>
+                        <tbody id="combinedLedgerTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
+                    </table>
+                </div>
+            </div>
         </section>
 
         <!-- ═══════════════════════════════════════════════════════════════════════ -->
