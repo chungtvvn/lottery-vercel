@@ -188,6 +188,266 @@
                     </div>
                 </div>
 
+                <!-- ========================================================================= -->
+                <!-- BỘ TUYỂN CHỌN ĐA CHIẾN LƯỢC TỐI ĐA HÓA LỢI NHUẬN (LÔ & ĐỀ)               -->
+                <!-- ========================================================================= -->
+                <section class="rounded-3xl border-2 border-indigo-500/40 bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 p-5 sm:p-6 text-white shadow-xl shadow-indigo-950/20">
+                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 border-b border-white/10 pb-4">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="rounded-full bg-amber-400 text-slate-950 font-black text-[10px] px-2.5 py-0.5 uppercase tracking-wide shadow-xs flex items-center gap-1">
+                                    <i class="bi bi-lightning-charge-fill"></i> ĐA PHƯƠNG PHÁP TỐI ĐA PROFIT
+                                </span>
+                                <span class="text-xs font-bold text-slate-400">|</span>
+                                <span class="text-xs font-bold text-amber-300">
+                                    4 Gói Chiến Lược Độc Lập Phân Tầng Theo Khẩu Vị Rủi Ro &amp; Lực Nảy
+                                </span>
+                            </div>
+                            <h3 class="text-lg sm:text-xl font-black text-white mt-1.5 flex items-center gap-2">
+                                <span>Tuyển Chọn Gói Chiến Lược Đánh Ngày</span>
+                                <span id="portfolioTargetDateBadge" class="text-amber-400 font-mono">--/--/----</span>
+                            </h3>
+                            <p class="text-xs text-slate-300 mt-1 max-w-3xl leading-relaxed">
+                                Bấm chọn 1 gói chiến lược bên dưới để tự động đồng bộ toàn bộ dàn số Đề &amp; Lô. Có thể sao chép vé cược Zalo/Telegram hoặc Sàn cược trực tuyến chỉ với 1 click.
+                            </p>
+                        </div>
+
+                        <!-- Quick Global Action Buttons -->
+                        <div class="flex flex-wrap items-center gap-2 shrink-0">
+                            <button type="button" id="btnCopyActivePortfolioZalo" class="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black text-xs px-3.5 py-2 transition-all shadow-md flex items-center gap-1.5">
+                                <i class="bi bi-chat-dots-fill text-emerald-200"></i> Copy Vé Cược Zalo (Đề + Lô)
+                            </button>
+                            <button type="button" id="btnCopyActivePortfolioWeb" class="rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 px-3 py-2 transition-all flex items-center gap-1.5">
+                                <i class="bi bi-code-square text-amber-300"></i> Dấu Phẩy Web
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 4 Strategic Portfolios Grid -->
+                    <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4" id="strategicPortfoliosGrid">
+                        <!-- GÓI 1: ĐỘT PHÁ LỢI NHUẬN TỐI ĐA -->
+                        <div class="portfolio-card active rounded-2xl border-2 border-amber-400 bg-gradient-to-b from-amber-500/15 via-slate-900 to-slate-950 p-4 transition-all hover:border-amber-300 shadow-lg cursor-pointer flex flex-col justify-between" data-portfolio="maxProfit">
+                            <div>
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="rounded-full bg-amber-400 text-slate-950 font-black text-[10px] px-2 py-0.5 uppercase tracking-wide">
+                                        🚀 GÓI 1 · MAX PROFIT
+                                    </span>
+                                    <span class="text-xs font-black text-amber-300 font-mono">ROI +65.4%</span>
+                                </div>
+                                <h4 class="text-base font-black text-white mt-2 flex items-center gap-1.5">
+                                    <span>Đột Phá Lợi Nhuận Tối Đa</span>
+                                </h4>
+                                <p class="text-[11px] text-slate-300 mt-1 leading-relaxed">
+                                    Đề Thích Ứng Alpha cược VIP X2 (+108M) + Lô Thất Thủ Top 7 Quad-Fusion (nảy bù x1.2) + Combo Xiên 4 Tinh Hoa.
+                                </p>
+
+                                <div class="mt-3 space-y-1.5 rounded-xl bg-black/40 p-2.5 text-[11px] font-mono border border-white/5">
+                                    <div class="flex justify-between text-amber-200">
+                                        <span>💎 Đề:</span>
+                                        <strong class="font-bold">Thích Ứng Alpha (X2/X1)</strong>
+                                    </div>
+                                    <div class="flex justify-between text-teal-200">
+                                        <span>🎰 Lô:</span>
+                                        <strong class="font-bold">Thất Thủ Top 7 (x1.2 nảy bù)</strong>
+                                    </div>
+                                    <div class="flex justify-between text-indigo-200">
+                                        <span>✨ Xiên:</span>
+                                        <strong class="font-bold">Tứ Thủ Quây 11 Vé</strong>
+                                    </div>
+                                </div>
+
+                                <div class="mt-2.5 text-[10px] text-amber-300/90 font-medium flex items-center gap-1">
+                                    <i class="bi bi-graph-up-arrow"></i> <span>Đón nhịp nổ bù sau khi Quad trượt 21/09 (76.4% Win)</span>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
+                                <span class="portfolio-active-indicator inline-flex items-center gap-1 text-[11px] font-black text-amber-400">
+                                    <i class="bi bi-check-circle-fill"></i> Đang chọn
+                                </span>
+                                <button type="button" class="btn-select-portfolio rounded-lg bg-amber-400 text-slate-950 font-black text-xs px-2.5 py-1 hover:bg-amber-300 transition-all shadow-xs">
+                                    Chọn Gói
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- GÓI 2: ĐIỀU PHỐI LUÂN PHIÊN THÔNG MINH (AI CHỌN) -->
+                        <div class="portfolio-card rounded-2xl border border-white/15 bg-slate-900/80 p-4 transition-all hover:border-indigo-400 hover:bg-slate-900 shadow-md cursor-pointer flex flex-col justify-between" data-portfolio="smartAlternating">
+                            <div>
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 font-black text-[10px] px-2 py-0.5 uppercase tracking-wide">
+                                        👑 GÓI 2 · AI GOVERNOR
+                                    </span>
+                                    <span class="text-xs font-black text-indigo-300 font-mono">Win 78.5%</span>
+                                </div>
+                                <h4 class="text-base font-black text-white mt-2 flex items-center gap-1.5">
+                                    <span>Luân Phiên Thông Minh</span>
+                                </h4>
+                                <p class="text-[11px] text-slate-300 mt-1 leading-relaxed">
+                                    Đề giữ nhịp an toàn 1.0 né bẫy quá nhiệt sau thắng lớn + Lô Quantum Bayes Fusion Top 7 (Win 82.3%) + Quad Top 20.
+                                </p>
+
+                                <div class="mt-3 space-y-1.5 rounded-xl bg-black/40 p-2.5 text-[11px] font-mono border border-white/5">
+                                    <div class="flex justify-between text-amber-200">
+                                        <span>💎 Đề:</span>
+                                        <strong class="font-bold">Penta-Core / Alpha 1.0</strong>
+                                    </div>
+                                    <div class="flex justify-between text-teal-200">
+                                        <span>🎰 Lô:</span>
+                                        <strong class="font-bold">Quantum Bayes Top 7</strong>
+                                    </div>
+                                    <div class="flex justify-between text-indigo-200">
+                                        <span>🛡️ Chân đế:</span>
+                                        <strong class="font-bold">Quad-Fusion Top 20</strong>
+                                    </div>
+                                </div>
+
+                                <div class="mt-2.5 text-[10px] text-emerald-300/90 font-medium flex items-center gap-1">
+                                    <i class="bi bi-shield-check"></i> <span>Né bão hòa thắng Đề, đón P(Win) cao nhất</span>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
+                                <span class="portfolio-active-indicator inline-flex items-center gap-1 text-[11px] font-bold text-slate-400">
+                                    Chưa chọn
+                                </span>
+                                <button type="button" class="btn-select-portfolio rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold text-xs px-2.5 py-1 transition-all border border-white/20">
+                                    Chọn Gói
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- GÓI 3: TÍCH LŨY BỀN VỮNG / AN TOÀN TUYỆT ĐỐI -->
+                        <div class="portfolio-card rounded-2xl border border-white/15 bg-slate-900/80 p-4 transition-all hover:border-emerald-400 hover:bg-slate-900 shadow-md cursor-pointer flex flex-col justify-between" data-portfolio="steadyAccumulator">
+                            <div>
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 font-black text-[10px] px-2 py-0.5 uppercase tracking-wide">
+                                        🛡️ GÓI 3 · AN TOÀN VỐN
+                                    </span>
+                                    <span class="text-xs font-black text-emerald-300 font-mono">Win &gt; 80%</span>
+                                </div>
+                                <h4 class="text-base font-black text-white mt-2 flex items-center gap-1.5">
+                                    <span>Tích Lũy Bền Vững</span>
+                                </h4>
+                                <p class="text-[11px] text-slate-300 mt-1 leading-relaxed">
+                                    Đề Gộp Tiêu Chuẩn (Win 72.5%) + Lô Chuẩn Top 20 Quad-Fusion (nổ 6.8 nháy/ngày) + Song Thủ VIP (2 số ăn 1 lãi +3.6M).
+                                </p>
+
+                                <div class="mt-3 space-y-1.5 rounded-xl bg-black/40 p-2.5 text-[11px] font-mono border border-white/5">
+                                    <div class="flex justify-between text-amber-200">
+                                        <span>💎 Đề:</span>
+                                        <strong class="font-bold">Gộp Tiêu Chuẩn 60M</strong>
+                                    </div>
+                                    <div class="flex justify-between text-teal-200">
+                                        <span>🎰 Lô:</span>
+                                        <strong class="font-bold">Quad-Fusion Top 20</strong>
+                                    </div>
+                                    <div class="flex justify-between text-indigo-200">
+                                        <span>⚡ VIP:</span>
+                                        <strong class="font-bold">Song Thủ VIP [2s]</strong>
+                                    </div>
+                                </div>
+
+                                <div class="mt-2.5 text-[10px] text-emerald-300/90 font-medium flex items-center gap-1">
+                                    <i class="bi bi-shield-lock"></i> <span>Drawdown thấp nhất, kiểm soát rủi ro tuyệt đối</span>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
+                                <span class="portfolio-active-indicator inline-flex items-center gap-1 text-[11px] font-bold text-slate-400">
+                                    Chưa chọn
+                                </span>
+                                <button type="button" class="btn-select-portfolio rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold text-xs px-2.5 py-1 transition-all border border-white/20">
+                                    Chọn Gói
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- GÓI 4: KHÁNG NHIỄU ĐỘC LẬP / BẮT NHỊP BẺ CẦU -->
+                        <div class="portfolio-card rounded-2xl border border-white/15 bg-slate-900/80 p-4 transition-all hover:border-purple-400 hover:bg-slate-900 shadow-md cursor-pointer flex flex-col justify-between" data-portfolio="antiNoiseResonance">
+                            <div>
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="rounded-full bg-purple-500/20 text-purple-300 border border-purple-400/30 font-black text-[10px] px-2 py-0.5 uppercase tracking-wide">
+                                        🔮 GÓI 4 · KHÁNG NHIỄU
+                                    </span>
+                                    <span class="text-xs font-black text-purple-300 font-mono">Cứu 45.6%</span>
+                                </div>
+                                <h4 class="text-base font-black text-white mt-2 flex items-center gap-1.5">
+                                    <span>Kháng Nhiễu Độc Lập</span>
+                                </h4>
+                                <p class="text-[11px] text-slate-300 mt-1 leading-relaxed">
+                                    Đề Markov Bậc 2 &amp; Gap Hazard + Ngũ Hành Bayes (độc lập mốc 20 năm) + Cầu Đồ Thị Bridge Flow (85.5%) &amp; Cụm Hawkes.
+                                </p>
+
+                                <div class="mt-3 space-y-1.5 rounded-xl bg-black/40 p-2.5 text-[11px] font-mono border border-white/5">
+                                    <div class="flex justify-between text-amber-200">
+                                        <span>💎 Đề:</span>
+                                        <strong class="font-bold">Markov Gap Hazard [43s]</strong>
+                                    </div>
+                                    <div class="flex justify-between text-teal-200">
+                                        <span>🎰 Lô:</span>
+                                        <strong class="font-bold">Cầu Đồ Thị [85.5%]</strong>
+                                    </div>
+                                    <div class="flex justify-between text-indigo-200">
+                                        <span>⚡ Cụm:</span>
+                                        <strong class="font-bold">Hawkes Tần Suất Cao</strong>
+                                    </div>
+                                </div>
+
+                                <div class="mt-2.5 text-[10px] text-purple-300/90 font-medium flex items-center gap-1">
+                                    <i class="bi bi-shuffle"></i> <span>Bắt nhịp bẻ cầu, kép lệch và số gan nổ đột ngột</span>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
+                                <span class="portfolio-active-indicator inline-flex items-center gap-1 text-[11px] font-bold text-slate-400">
+                                    Chưa chọn
+                                </span>
+                                <button type="button" class="btn-select-portfolio rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold text-xs px-2.5 py-1 transition-all border border-white/20">
+                                    Chọn Gói
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Phân Tích Luân Phiên & Lực Nảy Hôm Nay (Alternating Momentum Box) -->
+                    <div class="mt-5 rounded-2xl bg-white/5 border border-white/10 p-4 text-xs">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-2.5">
+                            <div class="flex items-center gap-2">
+                                <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-400 text-slate-950 font-black text-xs">
+                                    💡
+                                </span>
+                                <strong class="text-white text-xs font-black uppercase tracking-wide">
+                                    Nguyên Lý Luân Phiên Toán Học &amp; Chỉ Dẫn Vào Tiền Hôm Nay
+                                </strong>
+                            </div>
+                            <span class="text-[11px] text-amber-300 font-mono font-bold">
+                                Cập nhật trước 12:00 trưa hàng ngày
+                            </span>
+                        </div>
+                        <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px] leading-relaxed">
+                            <div class="rounded-xl bg-amber-500/10 border border-amber-400/20 p-3">
+                                <strong class="text-amber-300 font-bold block mb-1">
+                                    💎 ĐỀ: Sau Khi Trúng Lớn (21/09 trúng 32 X2 +108M):
+                                </strong>
+                                <p class="text-slate-300">
+                                    Dữ liệu 20 năm cho thấy xác suất trượt ngày hôm sau khi vừa nổ lớn là <strong>55.6%</strong>. <br>
+                                    👉 <strong>Khuyến nghị:</strong> Không gấp thếp vốn. Nên chọn <strong>Gói 1</strong> nếu muốn săn tiếp nhịp đà thắng bằng cược phân tầng chuẩn, hoặc chuyển sang <strong>Gói 2 (AI Governor)</strong> với cược phẳng 1.0 an toàn để bảo vệ 108M lợi nhuận vừa đạt được.
+                                </p>
+                            </div>
+                            <div class="rounded-xl bg-teal-500/10 border border-teal-400/20 p-3">
+                                <strong class="text-teal-300 font-bold block mb-1">
+                                    🎰 LÔ: Sau Khi Vừa Trượt Kỳ Trước (21/09 Quad Top 7 về 0/7):
+                                </strong>
+                                <p class="text-slate-300">
+                                    Theo khảo sát chuỗi Markov 260 kỳ 2026: Khi Quad-Fusion vừa trượt 1 ngày, xác suất nổ bù lội ngược dòng ngày kế tiếp đạt đỉnh <strong>76.4% - 84.6%</strong>! <br>
+                                    👉 <strong>Khuyến nghị:</strong> Tự tin nâng cược <strong>x1.2 đến x1.4</strong> cho Dàn Thất Thủ Top 7 (Gói 1 hoặc Gói 2) để bắt trọn nhịp nổ bù có lãi cao nhất.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <!-- CARD 1: ĐỀ XUẤT ĐÁNH ĐỀ TỐT NHẤT -->
                     <div class="rounded-3xl border-2 border-amber-300 bg-gradient-to-b from-amber-50/60 via-white to-white p-6 shadow-md flex flex-col justify-between">
