@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🧪 Nghiên cứu Hệ Thống 10 Tầng (AI & Số Học) | XSMB Stats</title>
+    <title>🧪 Nghiên Cứu XSMB: Kiến Trúc 5 Lớp Khoa Học | XSMB Stats</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="/css/styles.css">
@@ -12,7 +12,7 @@
         .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 9999px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
-        .tier-tab-active { background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #fff; box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.35); border-color: transparent; }
+        .layer-tab-active { background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #fff; box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.35); border-color: transparent; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased selection:bg-indigo-500 selection:text-white min-h-screen">
@@ -67,37 +67,37 @@
             </a>
         </div>
 
-        <!-- Hero Section: Phòng Nghiên Cứu Hệ Thống 10 Tầng -->
+        <!-- Hero Section: Hệ Thống Nghiên Cứu Chuẩn 5 Lớp Khoa Học -->
         <section class="mb-6 overflow-hidden rounded-3xl border border-sky-200 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white shadow-xl shadow-indigo-950/20">
             <div class="px-6 py-8 sm:px-8">
                 <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     <div>
                         <div class="inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-500/20 px-3.5 py-1 text-xs font-black tracking-wider uppercase text-sky-300">
-                            <i class="bi bi-flask-fill text-sky-300"></i> PHÒNG THÍ NGHIỆM NGHIÊN CỨU ĐỘC LẬP · 100% STRICT POINT-IN-TIME
+                            <i class="bi bi-shield-shaded text-sky-300"></i> KIẾN TRÚC 5 LỚP KHOA HỌC · PHÒNG VỆ ẢO GIÁC PATTERN
                         </div>
                         <h1 class="mt-3 text-2xl sm:text-3xl font-black tracking-tight text-white">
-                            Hệ Thống 10 Tầng Nghiên Cứu Đề (Số Học & AI)
+                            Hệ Thống Nghiên Cứu Đề XSMB Chuẩn 5 Lớp
                         </h1>
                         <p class="mt-2 max-w-3xl text-sm leading-relaxed text-slate-300">
-                            Phân tích chuyên sâu trên <strong class="text-white">toàn bộ lịch sử 20+ năm (7.558 kỳ quay)</strong> từ 2005 đến nay. Mọi phương pháp được thử nghiệm và đối soát ngược độc lập tại đây; chỉ khi đạt hiệu năng vượt trội và vượt qua <strong class="text-emerald-300">Cổng Thăng Hạng</strong> mới được đề xuất áp dụng vào Thực Chiến.
+                            Phân tích toàn diện 20+ năm lịch sử (7.558 kỳ quay). Tích hợp <strong class="text-white">Mô phỏng Monte Carlo (100.000 chuỗi H0)</strong>, <strong class="text-white">Hazard Rate & Phân tích sống sót</strong>, <strong class="text-white">CUSUM Change-Point</strong>, <strong class="text-white">Mutual Information</strong>, <strong class="text-white">Mạng lưới đồ thị Louvain</strong>, và <strong class="text-emerald-300">Kiểm tra tráo nhãn ngẫu nhiên (Shuffled Adversarial Test)</strong> để chống học vẹt nhiễu.
                         </p>
                     </div>
                     <div class="flex flex-wrap gap-2 text-xs font-bold shrink-0">
                         <span class="rounded-xl border border-white/15 bg-white/10 px-3.5 py-2 backdrop-blur-sm">7.558 KỲ QUAY</span>
-                        <span class="rounded-xl border border-white/15 bg-white/10 px-3.5 py-2 backdrop-blur-sm">10 TẦNG PHÂN TÍCH</span>
-                        <span class="rounded-xl border border-white/15 bg-white/10 px-3.5 py-2 backdrop-blur-sm">STRICT PIT 100%</span>
+                        <span class="rounded-xl border border-white/15 bg-white/10 px-3.5 py-2 backdrop-blur-sm">100.000 MONTE CARLO</span>
+                        <span class="rounded-xl border border-white/15 bg-white/10 px-3.5 py-2 backdrop-blur-sm">FDR CONTROL (BH)</span>
                     </div>
                 </div>
             </div>
             <!-- Source & Target Date Info Bar -->
             <div id="sourceBar" class="grid gap-3 border-t border-white/10 bg-black/30 px-6 py-4 text-xs font-semibold sm:grid-cols-4"></div>
             <!-- Quick KPI Cards -->
-            <div id="tenTierQuickStats" class="grid gap-3 border-t border-white/10 bg-black/20 p-5 sm:grid-cols-2 lg:grid-cols-4"></div>
+            <div id="scientificQuickStats" class="grid gap-3 border-t border-white/10 bg-black/20 p-5 sm:grid-cols-2 lg:grid-cols-4"></div>
             <div id="errorBox" class="m-5 hidden rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-700"></div>
         </section>
 
         <!-- ═══════════════════════════════════════════════════════════════════════ -->
-        <!-- 🎯 DÀN ĐỀ XUẤT NGHIÊN CỨU HÔM NAY (10 TẦNG DUNG HỢP ENSEMBLE) -->
+        <!-- 🎯 DÀN ĐỀ XUẤT NGHIÊN CỨU HÔM NAY (ĐÃ QUA LỌC KHÁNG ẢO GIÁC) -->
         <!-- ═══════════════════════════════════════════════════════════════════════ -->
         <section id="ensembleRecommendationSection" class="mb-8 overflow-hidden rounded-3xl border border-indigo-300 bg-gradient-to-br from-indigo-900 via-indigo-950 to-slate-950 text-white shadow-xl shadow-indigo-950/20">
             <div class="border-b border-white/10 bg-white/5 px-6 py-5 sm:px-8">
@@ -105,12 +105,12 @@
                     <div>
                         <div class="flex items-center gap-2">
                             <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 px-3 py-0.5 text-xs font-black uppercase text-emerald-300">
-                                <i class="bi bi-cpu-fill text-amber-300"></i> DÀN DUNG HỢP 10 TẦNG TỐI ƯU
+                                <i class="bi bi-cpu-fill text-amber-300"></i> DÀN DUNG HỢP 5 LỚP KHÁNG OVERFIT
                             </span>
-                            <span id="ensembleConfidenceBadge" class="text-xs font-bold text-amber-300">⭐⭐⭐⭐⭐ AI Rank 10-Tier</span>
+                            <span id="ensembleConfidenceBadge" class="text-xs font-bold text-amber-300">⭐⭐⭐⭐⭐ Calibrated Ranks 00-99</span>
                         </div>
                         <h2 id="ensembleTitle" class="mt-2 text-xl sm:text-2xl font-black text-white">Dàn Số Nghiên Cứu Đề Xuất Cho Ngày Kế Tiếp</h2>
-                        <p id="ensembleSubtitle" class="mt-0.5 text-xs text-indigo-200 font-semibold">Tích hợp xác suất 10 tầng: Tần suất 20y + Gan Gaussian Hazard + Rolling + Markov + Bayes + Fourier + ML + Attention</p>
+                        <p id="ensembleSubtitle" class="mt-0.5 text-xs text-indigo-200 font-semibold">Tích hợp xác suất 5 Lớp: Gap Hazard + CUSUM + Monte Carlo H0 + Mutual Info + Louvain Network + Attention</p>
                     </div>
 
                     <!-- Copy Buttons -->
@@ -145,57 +145,42 @@
         </section>
 
         <!-- ═══════════════════════════════════════════════════════════════════════ -->
-        <!-- 🧭 THANH ĐIỀU HƯỚNG TƯƠNG TÁC 10 TẦNG (INTERACTIVE 10-TIER NAVIGATOR) -->
+        <!-- 🧭 THANH ĐIỀU HƯỚNG 5 LỚP KHOA HỌC (5-LAYER SCIENTIFIC NAVIGATOR) -->
         <!-- ═══════════════════════════════════════════════════════════════════════ -->
         <section class="mb-8 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
             <div class="border-b border-slate-100 bg-slate-50/80 px-6 py-4">
                 <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <span class="inline-flex items-center gap-1.5 rounded-full bg-indigo-100 px-3 py-0.5 text-xs font-black uppercase text-indigo-800">
-                            <i class="bi bi-layers-fill"></i> BỘ ĐIỀU PHỐI 10 TẦNG
+                            <i class="bi bi-diagram-3-fill"></i> KIẾN TRÚC 5 LỚP TOÀN DIỆN
                         </span>
-                        <h2 class="mt-1 text-lg font-black text-slate-900">Chi Tiết Từng Tầng Trong Kiến Trúc AI & Số Học</h2>
+                        <h2 class="mt-1 text-lg font-black text-slate-900">Chi Tiết Các Lớp Phương Pháp & Kiểm Định Thống Kê</h2>
                     </div>
-                    <p class="text-xs font-semibold text-slate-500">Click chọn từng tầng bên dưới để soi chiếu chi tiết chỉ số</p>
+                    <p class="text-xs font-semibold text-slate-500">Click chọn từng lớp bên dưới để soi chiếu chi tiết dữ liệu toán học</p>
                 </div>
 
-                <!-- 10 Tiers Selector Buttons -->
-                <div class="mt-4 flex flex-wrap gap-1.5" id="tenTierNavButtons">
-                    <button type="button" data-tier-idx="1" class="tier-nav-btn tier-tab-active rounded-xl border border-slate-200 px-3 py-2 text-xs font-black transition-all">
-                        T1: Tần Suất & Phân Bố
+                <!-- 5 Layer Selector Buttons -->
+                <div class="mt-4 flex flex-wrap gap-2" id="scientificLayerNavButtons">
+                    <button type="button" data-layer-key="layerB_Statistics" class="layer-nav-btn layer-tab-active rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-black transition-all">
+                        <i class="bi bi-graph-up text-amber-300 mr-1.5"></i> Lớp B — Thống Kê & Kiểm Định (Hazard / ACF / CUSUM / Monte Carlo)
                     </button>
-                    <button type="button" data-tier-idx="2" class="tier-nav-btn rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all">
-                        T2: Gan & Điểm Rơi Vàng
+                    <button type="button" data-layer-key="layerC_Pattern" class="layer-nav-btn rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all">
+                        <i class="bi bi-share-fill text-indigo-600 mr-1.5"></i> Lớp C — Mạng Lưới & Khai Phá Pattern (Apriori / Louvain / Entropy)
                     </button>
-                    <button type="button" data-tier-idx="3" class="tier-nav-btn rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all">
-                        T3: Đa Khung Thời Gian
+                    <button type="button" data-layer-key="layerD_AI_ML" class="layer-nav-btn rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all">
+                        <i class="bi bi-cpu text-violet-600 mr-1.5"></i> Lớp D — AI & Machine Learning (Feature Importance / Attention)
                     </button>
-                    <button type="button" data-tier-idx="4" class="tier-nav-btn rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all">
-                        T4: Cặp Số & Kéo Lô
+                    <button type="button" data-layer-key="layerE_Validation" class="layer-nav-btn rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all">
+                        <i class="bi bi-shield-check text-emerald-600 mr-1.5"></i> Lớp E — Kháng Overfit & Thẩm Định (Shuffled Test / BH-FDR / Gate)
                     </button>
-                    <button type="button" data-tier-idx="5" class="tier-nav-btn rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all">
-                        T5: Chuyển Tiếp Markov
-                    </button>
-                    <button type="button" data-tier-idx="6" class="tier-nav-btn rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all">
-                        T6: Ước Lượng Bayes
-                    </button>
-                    <button type="button" data-tier-idx="7" class="tier-nav-btn rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all">
-                        T7: Chuỗi & Đài Quay
-                    </button>
-                    <button type="button" data-tier-idx="8" class="tier-nav-btn rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all">
-                        T8: Học Máy 18 Chiều
-                    </button>
-                    <button type="button" data-tier-idx="9" class="tier-nav-btn rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all">
-                        T9: Sequence Attention
-                    </button>
-                    <button type="button" data-tier-idx="10" class="tier-nav-btn rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all">
-                        T10: Dung Hợp & Backtest
+                    <button type="button" data-layer-key="layerA_Data" class="layer-nav-btn rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all">
+                        <i class="bi bi-database text-teal-600 mr-1.5"></i> Lớp A — Toàn Vẹn Dữ Liệu (7.558 Kỳ Quay Lịch Sử)
                     </button>
                 </div>
             </div>
 
-            <!-- Tier Content Display Area -->
-            <div id="tierContentArea" class="p-6"></div>
+            <!-- Layer Content Display Area -->
+            <div id="scientificLayerContentArea" class="p-6"></div>
         </section>
 
         <!-- ═══════════════════════════════════════════════════════════════════════ -->
@@ -249,12 +234,12 @@
         </section>
 
         <!-- ═══════════════════════════════════════════════════════════════════════ -->
-        <!-- 📋 BẢNG TOP 36 ỨNG VIÊN ĐỀ TỐI ƯU CÙNG THUỘC TÍNH SỐ HỌC -->
+        <!-- 📋 BẢNG TOP 36 ỨNG VIÊN ĐỀ TỐI ƯU CÙNG THUỘC TÍNH SỐ HỌC & KIỂM ĐỊNH -->
         <!-- ═══════════════════════════════════════════════════════════════════════ -->
         <section class="mb-8 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
             <div class="border-b border-slate-100 bg-slate-50/80 px-6 py-4">
-                <p class="text-xs font-black uppercase tracking-wider text-indigo-700">BẢNG XẾP HẠNG SỐ HỌC CHI TIẾT</p>
-                <h2 class="mt-0.5 text-lg font-black text-slate-900">Thuộc Tính Số Học & Điểm Thành Phần 10 Tầng Của Top Ứng Viên</h2>
+                <p class="text-xs font-black uppercase tracking-wider text-indigo-700">BẢNG XẾP HẠNG SỐ HỌC & KIỂM ĐỊNH CHI TIẾT</p>
+                <h2 class="mt-0.5 text-lg font-black text-slate-900">Thuộc Tính Số Học, Trạng Thái FDR & P-Value Của Top Ứng Viên</h2>
             </div>
             <div class="max-h-96 overflow-y-auto custom-scrollbar">
                 <table class="w-full text-left text-xs">
@@ -262,7 +247,7 @@
                         <tr>
                             <th class="px-4 py-3 text-center">Hạng</th>
                             <th class="px-3 py-3 text-center">Số Đề</th>
-                            <th class="px-3 py-3 text-right">Điểm 10 Tầng</th>
+                            <th class="px-3 py-3 text-right">Điểm 5 Lớp</th>
                             <th class="px-3 py-3 text-center">Đầu</th>
                             <th class="px-3 py-3 text-center">Đuôi</th>
                             <th class="px-3 py-3 text-center">Tổng</th>
@@ -271,7 +256,8 @@
                             <th class="px-3 py-3 text-center">Tài/Xỉu</th>
                             <th class="px-3 py-3 text-center">Gan Hiện Tại</th>
                             <th class="px-3 py-3 text-center">Tần Suất 20y</th>
-                            <th class="px-4 py-3">Động Lượng</th>
+                            <th class="px-3 py-3 text-center">P-Value H0</th>
+                            <th class="px-4 py-3 text-center">Kiểm Định FDR</th>
                         </tr>
                     </thead>
                     <tbody id="topRankedTableBody" class="divide-y divide-slate-100"></tbody>
