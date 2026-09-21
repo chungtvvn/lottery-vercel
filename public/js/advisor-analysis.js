@@ -32,15 +32,19 @@
     let payload = null;
     let activeTierSet = 'standard30';
     let activeLayerKey = 'layerB_Statistics';
-    let activeProfitTab = 'goldenDualMerge';
-    let activeLabTrackMethod = 'goldenDualMerge';
-    let labLedgerFilterStatus = 'all';
+    let activeProfitTab = 'pentaCoreLab';
+    let activeLabTrackMethod = 'pentaCoreLab';
+    let labLedgerFilterStatus = 'live';
     let labLedgerSearchQuery = '';
     let labLedgerLimit = '30';
-    let activeCombinedMethod = 'highProbabilityCoverage64';
-    let combinedLedgerFilterStatus = 'all';
+    let activeCombinedMethod = 'pentaCoreLab';
+    let combinedLedgerFilterStatus = 'live';
     let combinedLedgerSearchQuery = '';
     let combinedLedgerLimit = '30';
+    let calcStake = 60000;
+    let calcOdds = 84;
+    let currentSlipFormat = 'web';
+    let currentSlipData = null;
 
     function showToast(msg) {
         let toast = byId('advisorAnalysisToast');
@@ -69,6 +73,31 @@
             document.body.removeChild(temp);
             showToast(`Đã sao chép ${numbers.length} số!`);
         });
+    }
+
+    function copyText(text, successMsg = 'Đã sao chép thành công!') {
+        if (!text) return;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(successMsg);
+            }).catch(() => {
+                const temp = document.createElement('textarea');
+                temp.value = text;
+                document.body.appendChild(temp);
+                temp.select();
+                document.execCommand('copy');
+                document.body.removeChild(temp);
+                showToast(successMsg);
+            });
+        } else {
+            const temp = document.createElement('textarea');
+            temp.value = text;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+            showToast(successMsg);
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────────
@@ -191,6 +220,331 @@
     }
 
     // ─────────────────────────────────────────────────────────────────────────────
+    // 2.4. BỘ QUẢN LÝ VỐN & MÔ PHỎNG CƯỢC TƯƠNG TÁC (BET SLIP CALCULATOR)
+    // ─────────────────────────────────────────────────────────────────────────────
+    function renderBetSlipCalculator(ensembles = {}) {
+        const grid = byId('calcResultsGrid');
+        const nameEl = byId('calcActiveMethodName');
+        if (!grid) return;
+
+        const methodNames = {
+            pentaCoreLab: '1. Ngũ Trụ AI Dung Hợp',
+            tripleMergeLiveLab: '2. Tam Trụ Thực Chiến Live',
+            highProbabilityCoverage64: '3. RRF Mega 6 Động Cơ',
+            liveAugmentedLab: '4. Lai Ghép Thực Chiến Mở Rộng',
+            tamTruConsensus: '5. Dàn Tam Trụ Hợp Lực Lab',
+            goldenDualMerge: '6. Đề Gộp Lab Golden Overlap',
+            metaLearner: '7. Lab Meta-Learner Tinh Hoa',
+            adaptiveController: '8. Bộ Điều Khiển Thích Ứng'
+        };
+        if (nameEl) nameEl.textContent = methodNames[activeProfitTab] || activeProfitTab;
+
+        const obj = ensembles[activeProfitTab] || {};
+        const stake = Math.max(10000, Number(calcStake) || 60000);
+        const odds = Number(calcOdds) || 84;
+
+        let tierTopName = 'Vùng VIP / X2';
+        let tierTopCount = 0;
+        let tierTopWeight = 2;
+        let tierTopStakePerNum = 0;
+
+        let tierMidName = 'Vùng Bọc Lót X1';
+        let tierMidCount = 0;
+        let tierMidWeight = 1;
+        let tierMidStakePerNum = 0;
+
+        let tierLowName = '';
+        let tierLowCount = 0;
+        let tierLowWeight = 0;
+        let tierLowStakePerNum = 0;
+
+        let tierTopNumbers = [];
+        let tierMidNumbers = [];
+        let tierLowNumbers = [];
+        let allNumbers = [];
+
+        if (activeProfitTab === 'pentaCoreLab') {
+            tierTopName = 'Hạt Nhân VIP (X2)';
+            tierTopNumbers = (obj.vipNumbers || []).map(num);
+            tierTopCount = tierTopNumbers.length || 11;
+            tierTopWeight = 2;
+            tierMidName = 'Bọc Lót An Toàn (X1)';
+            tierMidNumbers = (obj.backupNumbers || []).map(num);
+            tierMidCount = tierMidNumbers.length || 26;
+            tierMidWeight = 1;
+            allNumbers = (obj.fullUnion || obj.allNumbers || [...tierTopNumbers, ...tierMidNumbers]).map(num);
+        } else if (activeProfitTab === 'tripleMergeLiveLab') {
+            tierTopName = 'Siêu Đồng Thuận (X3)';
+            tierTopNumbers = (obj.tierX3 || []).map(num);
+            tierTopCount = tierTopNumbers.length || 18;
+            tierTopWeight = 3;
+            tierMidName = 'Đồng Thuận Cao (X2)';
+            tierMidNumbers = (obj.tierX2 || []).map(num);
+            tierMidCount = tierMidNumbers.length || 12;
+            tierMidWeight = 2;
+            tierLowName = 'Bọc Lót (X1)';
+            tierLowNumbers = (obj.tierX1 || []).map(num);
+            tierLowCount = tierLowNumbers.length || 12;
+            tierLowWeight = 1;
+            allNumbers = (obj.fullUnion || obj.allNumbers || [...tierTopNumbers, ...tierMidNumbers, ...tierLowNumbers]).map(num);
+        } else if (activeProfitTab === 'highProbabilityCoverage64') {
+            tierTopName = 'Core 20 Tinh Hoa';
+            tierTopNumbers = (obj.core20 || []).map(num);
+            tierTopCount = tierTopNumbers.length || 20;
+            tierTopWeight = 1.5;
+            tierMidName = 'Mid 24 Bọc Lót';
+            tierMidNumbers = (obj.mid24 || []).map(num);
+            tierMidCount = tierMidNumbers.length || 24;
+            tierMidWeight = 1.0;
+            tierLowName = 'Mesh 20 Lưới';
+            tierLowNumbers = (obj.mesh20 || []).map(num);
+            tierLowCount = tierLowNumbers.length || 20;
+            tierLowWeight = 0.5;
+            allNumbers = (obj.fullUnion || obj.allNumbers || [...tierTopNumbers, ...tierMidNumbers, ...tierLowNumbers]).map(num);
+        } else if (activeProfitTab === 'tamTruConsensus') {
+            tierTopName = 'Tam Trụ Đồng Thuận 3';
+            tierTopNumbers = (obj.tier3Numbers || []).map(num);
+            tierTopCount = tierTopNumbers.length || 12;
+            tierTopWeight = 2;
+            tierMidName = 'Song Trụ Đồng Thuận 2';
+            tierMidNumbers = (obj.tier2Numbers || []).map(num);
+            tierMidCount = tierMidNumbers.length || 22;
+            tierMidWeight = 1;
+            tierLowName = 'Bọc Lót Bổ Sung';
+            tierLowNumbers = (obj.tier1Numbers || []).map(num);
+            tierLowCount = tierLowNumbers.length || 16;
+            tierLowWeight = 0.5;
+            allNumbers = (obj.fullUnion || [...tierTopNumbers, ...tierMidNumbers, ...tierLowNumbers]).map(num);
+        } else if (activeProfitTab === 'metaLearner') {
+            tierTopName = 'Hạt Nhân VIP 10';
+            tierTopNumbers = (obj.vip10 || []).map(num);
+            tierTopCount = tierTopNumbers.length || 10;
+            tierTopWeight = 1.5;
+            tierMidName = 'Bọc Lót Elite 20';
+            tierMidNumbers = (obj.elite20 || []).map(num);
+            tierMidCount = tierMidNumbers.length || 20;
+            tierMidWeight = 1.0;
+            allNumbers = (obj.fullUnion || obj.standard30 || [...tierTopNumbers, ...tierMidNumbers]).map(num);
+        } else if (activeProfitTab === 'adaptiveController') {
+            tierTopName = 'Vùng Giao Thoa Vàng (X2)';
+            tierTopNumbers = (obj.activeMethod?.intersectionX2 || obj.intersectionX2 || []).map(num);
+            tierTopCount = tierTopNumbers.length || 16;
+            tierTopWeight = 2;
+            tierMidName = 'Vùng Bọc Lót (X1)';
+            tierMidNumbers = (obj.activeMethod?.uniqueSinglesX1 || obj.uniqueSinglesX1 || []).map(num);
+            tierMidCount = tierMidNumbers.length || 28;
+            tierMidWeight = 1;
+            allNumbers = (obj.activeMethod?.fullUnion || obj.fullUnion || [...tierTopNumbers, ...tierMidNumbers]).map(num);
+        } else {
+            tierTopName = 'Vùng Giao Thoa Vàng (X2)';
+            tierTopNumbers = (obj.intersectionX2 || []).map(num);
+            tierTopCount = tierTopNumbers.length || 16;
+            tierTopWeight = 2;
+            tierMidName = 'Vùng Bọc Lót (X1)';
+            tierMidNumbers = (obj.uniqueSinglesX1 || []).map(num);
+            tierMidCount = tierMidNumbers.length || 28;
+            tierMidWeight = 1;
+            allNumbers = (obj.fullUnion || obj.allNumbers || [...tierTopNumbers, ...tierMidNumbers]).map(num);
+        }
+
+        const totalWeightPoints = (tierTopCount * tierTopWeight) + (tierMidCount * tierMidWeight) + (tierLowCount * tierLowWeight);
+        const unitBase = totalWeightPoints > 0 ? (stake / totalWeightPoints) : 1000;
+
+        tierTopStakePerNum = Math.max(100, Math.round((unitBase * tierTopWeight) / 100) * 100);
+        tierMidStakePerNum = Math.max(100, Math.round((unitBase * tierMidWeight) / 100) * 100);
+        tierLowStakePerNum = tierLowCount > 0 ? Math.max(100, Math.round((unitBase * tierLowWeight) / 100) * 100) : 0;
+
+        const actualTotalStake = (tierTopStakePerNum * tierTopCount) + (tierMidStakePerNum * tierMidCount) + (tierLowStakePerNum * tierLowCount);
+        const totalNumsCount = tierTopCount + tierMidCount + tierLowCount;
+
+        const winTopPayout = Math.round(tierTopStakePerNum * odds);
+        const winTopProfit = winTopPayout - actualTotalStake;
+        const winTopRoi = actualTotalStake > 0 ? ((winTopProfit / actualTotalStake) * 100).toFixed(1) : 0;
+
+        const winMidPayout = Math.round(tierMidStakePerNum * odds);
+        const winMidProfit = winMidPayout - actualTotalStake;
+        const winMidRoi = actualTotalStake > 0 ? ((winMidProfit / actualTotalStake) * 100).toFixed(1) : 0;
+
+        const winLowPayout = tierLowCount > 0 ? Math.round(tierLowStakePerNum * odds) : 0;
+        const winLowProfit = winLowPayout - actualTotalStake;
+        const winLowRoi = actualTotalStake > 0 ? ((winLowProfit / actualTotalStake) * 100).toFixed(1) : 0;
+
+        grid.innerHTML = `
+            <div class="rounded-xl border border-white/15 bg-white/5 p-3.5 shadow-sm">
+                <div class="flex items-center justify-between text-slate-400">
+                    <span class="text-[11px] font-bold uppercase tracking-wider">Tổng Vốn Cược Thực Tế</span>
+                    <i class="bi bi-wallet2 text-amber-400"></i>
+                </div>
+                <div class="mt-1 text-xl font-black text-white font-mono">${fmt(actualTotalStake)}đ</div>
+                <div class="mt-1 text-[11px] text-slate-300 leading-snug">
+                    ${totalNumsCount} số · Tỷ lệ ăn 1:${odds}
+                </div>
+                <div class="mt-2 pt-2 border-t border-white/10 text-[10px] text-slate-400">
+                    Top: ${fmt(tierTopStakePerNum)}đ/s · Bọc: ${fmt(tierMidStakePerNum)}đ/s
+                </div>
+            </div>
+
+            <div class="rounded-xl border border-amber-400/30 bg-amber-500/10 p-3.5 shadow-sm">
+                <div class="flex items-center justify-between text-amber-300">
+                    <span class="text-[11px] font-black uppercase tracking-wider">Nổ ${tierTopName}</span>
+                    <i class="bi bi-trophy-fill text-amber-400"></i>
+                </div>
+                <div class="mt-1 text-xl font-black text-amber-300 font-mono">+${fmt(winTopProfit)}đ</div>
+                <div class="mt-1 text-[11px] text-emerald-300 font-bold leading-snug">
+                    Thu về: ${fmt(winTopPayout)}đ (ROI +${winTopRoi}%)
+                </div>
+                <div class="mt-2 pt-2 border-t border-amber-400/20 text-[10px] text-amber-200/80">
+                    Bao phủ ${tierTopCount} con số ưu tiên cao nhất
+                </div>
+            </div>
+
+            <div class="rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-3.5 shadow-sm">
+                <div class="flex items-center justify-between text-emerald-300">
+                    <span class="text-[11px] font-black uppercase tracking-wider">Nổ ${tierMidName}</span>
+                    <i class="bi bi-shield-check text-emerald-400"></i>
+                </div>
+                <div class="mt-1 text-xl font-black ${winMidProfit >= 0 ? 'text-emerald-300' : 'text-amber-300'} font-mono">${winMidProfit >= 0 ? '+' : ''}${fmt(winMidProfit)}đ</div>
+                <div class="mt-1 text-[11px] ${winMidProfit >= 0 ? 'text-emerald-300' : 'text-amber-300'} font-bold leading-snug">
+                    Thu về: ${fmt(winMidPayout)}đ (${winMidProfit >= 0 ? `ROI +${winMidRoi}%` : `Bảo toàn ${Math.round((winMidPayout / actualTotalStake) * 100)}% vốn`})
+                </div>
+                <div class="mt-2 pt-2 border-t border-emerald-400/20 text-[10px] text-emerald-200/80">
+                    ${tierLowCount > 0 ? `Lưới bổ sung: ${tierLowCount}s (Thu ${fmt(winLowPayout)}đ)` : `Bao phủ ${tierMidCount} con số bọc lót an toàn`}
+                </div>
+            </div>
+
+            <div class="rounded-xl border border-rose-400/30 bg-rose-500/10 p-3.5 shadow-sm">
+                <div class="flex items-center justify-between text-rose-300">
+                    <span class="text-[11px] font-black uppercase tracking-wider">Kịch Bản Trượt (0 Hit)</span>
+                    <i class="bi bi-shield-x text-rose-400"></i>
+                </div>
+                <div class="mt-1 text-xl font-black text-rose-300 font-mono">-${fmt(actualTotalStake)}đ</div>
+                <div class="mt-1 text-[11px] text-rose-200/80 font-bold leading-snug">
+                    Drawdown kiểm định: ≤ 4-5 ngày
+                </div>
+                <div class="mt-2 pt-2 border-t border-rose-400/20 text-[10px] text-rose-300/80">
+                    Khống chế rủi ro trong ngân sách ngày
+                </div>
+            </div>
+        `;
+
+        currentSlipData = {
+            methodKey: activeProfitTab,
+            methodName: methodNames[activeProfitTab] || activeProfitTab,
+            odds,
+            actualTotalStake,
+            totalNumsCount,
+            tierTop: {
+                name: tierTopName,
+                numbers: tierTopNumbers,
+                count: tierTopCount,
+                stakePerNum: tierTopStakePerNum,
+                payout: winTopPayout,
+                profit: winTopProfit,
+                roi: winTopRoi
+            },
+            tierMid: {
+                name: tierMidName,
+                numbers: tierMidNumbers,
+                count: tierMidCount,
+                stakePerNum: tierMidStakePerNum,
+                payout: winMidPayout,
+                profit: winMidProfit,
+                roi: winMidRoi
+            },
+            tierLow: tierLowCount > 0 ? {
+                name: tierLowName,
+                numbers: tierLowNumbers,
+                count: tierLowCount,
+                stakePerNum: tierLowStakePerNum,
+                payout: winLowPayout,
+                profit: winLowProfit,
+                roi: winLowRoi
+            } : null,
+            allNumbers
+        };
+
+        updateBetSlipExportDisplay();
+    }
+
+    function updateBetSlipExportDisplay() {
+        if (!currentSlipData) return;
+        const d = currentSlipData;
+        const format = currentSlipFormat;
+
+        // Cập nhật trạng thái các nút chọn định dạng
+        document.querySelectorAll('.slip-format-btn').forEach(b => {
+            const isActive = (b.dataset.slipFormat === format);
+            b.classList.toggle('active', isActive);
+            b.classList.toggle('bg-indigo-600', isActive);
+            b.classList.toggle('text-white', isActive);
+            b.classList.toggle('shadow-xs', isActive);
+            b.classList.toggle('font-black', isActive);
+            b.classList.toggle('text-slate-300', !isActive);
+            b.classList.toggle('bg-transparent', !isActive);
+            b.classList.toggle('font-bold', !isActive);
+        });
+
+        // Cập nhật nhãn nút sao chép nhanh
+        const lblVip = byId('labelCopySlipVip');
+        if (lblVip) {
+            lblVip.textContent = `Dàn VIP (${d.tierTop.count}s · ${fmt(d.tierTop.stakePerNum)}đ/s)`;
+        }
+        const lblBackup = byId('labelCopySlipBackup');
+        if (lblBackup) {
+            lblBackup.textContent = `Dàn Bọc Lót (${d.tierMid.count}s · ${fmt(d.tierMid.stakePerNum)}đ/s)`;
+        }
+        const lblAll = byId('labelCopySlipAll');
+        if (lblAll) {
+            lblAll.textContent = `Toàn Bộ Dàn (${d.allNumbers.length} số)`;
+        }
+
+        // Sinh văn bản hiển thị trong khung xem trước (Preview)
+        const previewEl = byId('betSlipPreviewText');
+        if (!previewEl) return;
+
+        if (format === 'web') {
+            previewEl.value = d.allNumbers.map(n => String(num(n)).padStart(2, '0')).join(', ');
+        } else if (format === 'app') {
+            previewEl.value = d.allNumbers.map(n => String(num(n)).padStart(2, '0')).join(' ');
+        } else {
+            const lines = [
+                `🎯 VÉ CƯỢC THỰC CHIẾN XSMB — ${d.methodName.toUpperCase()}`,
+                `💰 Mức Vốn: ${fmt(d.actualTotalStake)}đ · Tỷ lệ ăn 1:${d.odds}`,
+                ``,
+                `⚡ ${d.tierTop.name.toUpperCase()} (${d.tierTop.count} số x ${fmt(d.tierTop.stakePerNum)}đ):`,
+                d.tierTop.numbers.map(n => String(num(n)).padStart(2, '0')).join(' '),
+                ``,
+                `🛡️ ${d.tierMid.name.toUpperCase()} (${d.tierMid.count} số x ${fmt(d.tierMid.stakePerNum)}đ):`,
+                d.tierMid.numbers.map(n => String(num(n)).padStart(2, '0')).join(' ')
+            ];
+
+            if (d.tierLow && d.tierLow.count > 0) {
+                lines.push(
+                    ``,
+                    `🌐 ${d.tierLow.name.toUpperCase()} (${d.tierLow.count} số x ${fmt(d.tierLow.stakePerNum)}đ):`,
+                    d.tierLow.numbers.map(n => String(num(n)).padStart(2, '0')).join(' ')
+                );
+            }
+
+            lines.push(
+                ``,
+                `📋 TỔNG HỢP TOÀN BỘ ${d.allNumbers.length} SỐ (DẤU PHẨY WEB):`,
+                d.allNumbers.map(n => String(num(n)).padStart(2, '0')).join(', '),
+                ``,
+                `🏆 KỲ VỌNG CHIẾN THẮNG:`,
+                `• Nổ ${d.tierTop.name}: Ăn ${fmt(d.tierTop.payout)}đ ➔ Lãi ròng +${fmt(d.tierTop.profit)}đ (ROI +${d.tierTop.roi}%)`,
+                `• Nổ ${d.tierMid.name}: Ăn ${fmt(d.tierMid.payout)}đ ➔ Lãi ròng ${d.tierMid.profit >= 0 ? '+' : ''}${fmt(d.tierMid.profit)}đ`
+            );
+
+            if (d.tierLow && d.tierLow.count > 0) {
+                lines.push(`• Nổ ${d.tierLow.name}: Ăn ${fmt(d.tierLow.payout)}đ ➔ Lãi ròng ${d.tierLow.profit >= 0 ? '+' : ''}${fmt(d.tierLow.profit)}đ`);
+            }
+
+            previewEl.value = lines.join('\n');
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
     // 2.5. RENDER PROFIT-OPTIMIZED LAB ENSEMBLES
     // ─────────────────────────────────────────────────────────────────────────────
     function renderProfitOptimizedCard(data) {
@@ -199,8 +553,300 @@
         const container = byId('profitStrategyContent');
         if (!container) return;
 
+        // Render interactive bet slip calculator with current ensembles
+        renderBetSlipCalculator(ensembles);
+
         let contentHtml = '';
         switch (activeProfitTab) {
+            case 'pentaCoreLab': {
+                const p = ensembles.pentaCoreLab;
+                if (!p) {
+                    contentHtml = `<div class="p-6 text-center text-slate-400 font-semibold">Đang cập nhật siêu động cơ Dung Hợp Ngũ Trụ AI...</div>`;
+                    break;
+                }
+                const vip = p.vipNumbers || [];
+                const backup = p.backupNumbers || [];
+                const full = p.fullUnion || [...vip, ...backup];
+                contentHtml = `
+                    <div class="space-y-6">
+                        <!-- Top Banner / Flagship Badge -->
+                        <div class="rounded-2xl border border-amber-400/50 bg-gradient-to-r from-amber-500/20 via-yellow-500/10 to-indigo-500/20 p-5">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-amber-400 px-3 py-0.5 text-xs font-black uppercase text-slate-950 shadow-sm">
+                                            <i class="bi bi-crown-fill text-amber-900"></i> QUÁN QUÂN LAB NĂM 2026
+                                        </span>
+                                        <span class="rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-2.5 py-0.5 text-xs font-bold">
+                                            🏆 Tỷ Lệ Trúng 72.5% (187/258 Ngày)
+                                        </span>
+                                    </div>
+                                    <h3 class="text-lg font-black text-white mt-1.5">Ngũ Trụ Tinh Hoa AI (Penta-Core Deep Consensus)</h3>
+                                    <p class="text-xs text-slate-300 font-medium mt-0.5">${esc(p.note)}</p>
+                                </div>
+                                <div class="shrink-0 flex items-center gap-2">
+                                    <span class="rounded-xl border border-amber-400/40 bg-amber-500/20 px-3 py-2 text-xs font-mono font-black text-amber-200">
+                                        Lợi nhuận: +8.886.000đ (Dynamic: +11.74M)
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4 KPI Cards -->
+                        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                            <div class="rounded-2xl border border-amber-400/30 bg-amber-500/10 p-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-black uppercase tracking-wider text-amber-300">Vốn Hàng Ngày</span>
+                                    <i class="bi bi-wallet2 text-amber-400 text-lg"></i>
+                                </div>
+                                <p class="mt-1 text-2xl font-black text-white">60.000đ</p>
+                                <p class="mt-0.5 text-xs text-amber-200/80">VIP X2 (2K/số) + Bọc X1 (1K/số)</p>
+                            </div>
+                            <div class="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-black uppercase tracking-wider text-emerald-300">Lãi Nổ Hạt Nhân VIP</span>
+                                    <i class="bi bi-graph-up-arrow text-emerald-400 text-lg"></i>
+                                </div>
+                                <p class="mt-1 text-2xl font-black text-emerald-300">+108.000đ</p>
+                                <p class="mt-0.5 text-xs text-emerald-200/80">Thu 168K (ROI +180.0%)</p>
+                            </div>
+                            <div class="rounded-2xl border border-sky-400/30 bg-sky-500/10 p-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-black uppercase tracking-wider text-sky-300">Lãi Nổ Bọc Lót An Toàn</span>
+                                    <i class="bi bi-shield-fill-check text-sky-400 text-lg"></i>
+                                </div>
+                                <p class="mt-1 text-2xl font-black text-sky-300">+24.000đ</p>
+                                <p class="mt-0.5 text-xs text-sky-200/80">Thu 84K (ROI +40.0%)</p>
+                            </div>
+                            <div class="rounded-2xl border border-purple-400/30 bg-purple-500/10 p-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-black uppercase tracking-wider text-purple-300">Tỷ Lệ Trúng Kỷ Lục</span>
+                                    <i class="bi bi-trophy-fill text-purple-400 text-lg"></i>
+                                </div>
+                                <p class="mt-1 text-2xl font-black text-purple-300">72.5% (187/258 kỳ)</p>
+                                <p class="mt-0.5 text-xs text-purple-200/80">Max trượt: 5 ngày</p>
+                            </div>
+                        </div>
+
+                        <!-- Vùng Hạt Nhân VIP (Cược X2) -->
+                        <div class="rounded-2xl border border-amber-400/50 bg-gradient-to-br from-amber-500/15 to-yellow-600/5 p-5">
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-amber-400/20 pb-4 mb-4">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-0.5 text-[11px] font-black uppercase text-slate-950">
+                                            <i class="bi bi-star-fill"></i> HẠT NHÂN VIP (CƯỢC GẤP ĐÔI X2)
+                                        </span>
+                                        <h3 class="text-base font-black text-amber-200">Vùng Số VIP (${vip.length} số · Cược 2.000đ/số · Vốn ${fmt(vip.length * 2000)}đ)</h3>
+                                    </div>
+                                    <p class="mt-1 text-xs text-slate-300 font-semibold">Được 5 động cơ AI chấm điểm cao nhất hôm nay. Khi nổ thu về 168.000đ (Lãi ròng +108.000đ · ROI +180%).</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" data-copy-profit="penta_vip" data-copy-sep="space" class="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3.5 py-1.5 text-xs shadow-md transition-all">
+                                        <i class="bi bi-clipboard"></i> Copy VIP (Cách)
+                                    </button>
+                                    <button type="button" data-copy-profit="penta_vip" data-copy-sep="comma" class="inline-flex items-center gap-1.5 rounded-xl border border-amber-400/40 bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 font-bold px-3 py-1.5 text-xs transition-all">
+                                        <i class="bi bi-clipboard-check"></i> Copy VIP (Phẩy)
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                ${vip.map(n => `
+                                    <span class="inline-flex h-11 min-w-11 items-center justify-center rounded-2xl border-2 border-amber-300 bg-gradient-to-b from-amber-400 to-amber-600 px-2 font-mono text-base font-black text-slate-950 shadow-md shadow-amber-500/30 transition-transform hover:scale-110">
+                                        ${num(n)}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Vùng Bọc Lót Tinh Hoa (Cược X1) -->
+                        <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-white/10 pb-4 mb-4">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-slate-700 border border-slate-500 px-2.5 py-0.5 text-[11px] font-bold text-slate-200">
+                                            BỌC LÓT AN TOÀN (CƯỢC X1)
+                                        </span>
+                                        <h3 class="text-base font-black text-white">Vùng Bọc Lót (${backup.length} số · Cược 1.000đ/số · Vốn ${fmt(backup.length * 1000)}đ)</h3>
+                                    </div>
+                                    <p class="mt-1 text-xs text-slate-400 font-semibold">Tầng bảo vệ thứ hai. Khi nổ thu về 84.000đ (Lãi ròng +24.000đ · ROI +40%).</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" data-copy-profit="penta_backup" data-copy-sep="space" class="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-white font-bold px-3 py-1.5 text-xs transition-all">
+                                        <i class="bi bi-clipboard"></i> Copy Bọc Lót
+                                    </button>
+                                    <button type="button" data-copy-profit="penta_all" data-copy-sep="space" class="inline-flex items-center gap-1.5 rounded-xl border border-indigo-400/50 bg-indigo-600/30 hover:bg-indigo-600/40 text-indigo-200 font-bold px-3 py-1.5 text-xs transition-all">
+                                        <i class="bi bi-collection"></i> Copy Toàn Dàn (${full.length} số)
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                ${backup.map(n => `
+                                    <span class="inline-flex h-10 min-w-10 items-center justify-center rounded-xl border border-indigo-400/30 bg-gradient-to-b from-slate-800 to-slate-900 px-2 font-mono text-sm font-bold text-indigo-200 shadow-xs transition-transform hover:scale-105">
+                                        ${num(n)}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Cơ Chế Đảo Pha & Thuyết Minh -->
+                        <div class="rounded-2xl border border-white/10 bg-slate-900/60 p-4 text-xs text-slate-300">
+                            <span class="font-bold text-amber-300 mr-1"><i class="bi bi-cpu-fill"></i> Nguyên lý vận hành Ngũ Trụ Tinh Hoa AI:</span>
+                            ${esc(p.rationale || 'Hệ thống tự động điều phối đảo pha đa tín hiệu từ 5 động cơ độc lập để đạt tỷ lệ thắng và lợi nhuận cao nhất.')}
+                        </div>
+                    </div>
+                `;
+                break;
+            }
+            case 'tripleMergeLiveLab': {
+                const tr = ensembles.tripleMergeLiveLab;
+                if (!tr) {
+                    contentHtml = `<div class="p-6 text-center text-slate-400 font-semibold">Đang cập nhật mô hình Tam Trụ Thực Chiến Live...</div>`;
+                    break;
+                }
+                const x3 = tr.tierX3 || [];
+                const x2 = tr.tierX2 || [];
+                const x1 = tr.tierX1 || [];
+                const full = tr.fullUnion || [...x3, ...x2, ...x1];
+                contentHtml = `
+                    <div class="space-y-6">
+                        <!-- Top Banner -->
+                        <div class="rounded-2xl border border-sky-400/40 bg-gradient-to-r from-sky-500/15 via-indigo-950/40 to-slate-900/60 p-5">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-sky-400 text-slate-950 px-2.5 py-0.5 text-xs font-black uppercase shadow-sm">
+                                            <i class="bi bi-shield-shaded"></i> TAM TRỤ THỰC CHIẾN LIVE
+                                        </span>
+                                        <span class="rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-2.5 py-0.5 text-xs font-bold">
+                                            Trúng 68.2% (176/258 Ngày) · Lãi +3.41M
+                                        </span>
+                                    </div>
+                                    <h3 class="text-lg font-black text-white mt-1.5">Mô Hình Tam Trụ Tam Phân Chuẩn Thực Chiến (3 Tầng Cược)</h3>
+                                    <p class="text-xs text-slate-300 font-medium mt-0.5">${esc(tr.note)}</p>
+                                </div>
+                                <div class="shrink-0 flex items-center gap-2">
+                                    <span class="rounded-xl border border-sky-400/40 bg-sky-500/20 px-3 py-2 text-xs font-mono font-black text-sky-200">
+                                        Vốn: 90.000đ / ngày (3 Tầng Cược)
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4 KPI Cards -->
+                        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                            <div class="rounded-2xl border border-sky-400/30 bg-sky-500/10 p-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-black uppercase tracking-wider text-sky-300">Vốn 3 Tầng Ngày</span>
+                                    <i class="bi bi-wallet2 text-sky-400 text-lg"></i>
+                                </div>
+                                <p class="mt-1 text-2xl font-black text-white">90.000đ</p>
+                                <p class="mt-0.5 text-xs text-sky-200/80">X3 (3K) + X2 (2K) + X1 (1K)</p>
+                            </div>
+                            <div class="rounded-2xl border border-amber-400/30 bg-amber-500/10 p-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-black uppercase tracking-wider text-amber-300">Nổ Siêu Đồng Thuận X3</span>
+                                    <i class="bi bi-stars text-amber-400 text-lg"></i>
+                                </div>
+                                <p class="mt-1 text-2xl font-black text-amber-300">+162.000đ</p>
+                                <p class="mt-0.5 text-xs text-amber-200/80">Thu 252K (ROI +180.0%)</p>
+                            </div>
+                            <div class="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-black uppercase tracking-wider text-emerald-300">Nổ Đồng Thuận X2</span>
+                                    <i class="bi bi-check2-circle text-emerald-400 text-lg"></i>
+                                </div>
+                                <p class="mt-1 text-2xl font-black text-emerald-300">+78.000đ</p>
+                                <p class="mt-0.5 text-xs text-emerald-200/80">Thu 168K (ROI +86.7%)</p>
+                            </div>
+                            <div class="rounded-2xl border border-indigo-400/30 bg-indigo-500/10 p-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-black uppercase tracking-wider text-indigo-300">Tỷ Lệ Thắng Năm 2026</span>
+                                    <i class="bi bi-trophy-fill text-indigo-400 text-lg"></i>
+                                </div>
+                                <p class="mt-1 text-2xl font-black text-indigo-300">68.2% (176/258 kỳ)</p>
+                                <p class="mt-0.5 text-xs text-indigo-200/80">Lãi ròng: +3.408.000đ</p>
+                            </div>
+                        </div>
+
+                        <!-- Tầng X3: Siêu Đồng Thuận -->
+                        <div class="rounded-2xl border border-amber-400/50 bg-gradient-to-br from-amber-500/15 to-yellow-600/5 p-5">
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-amber-400/20 pb-4 mb-4">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-0.5 text-[11px] font-black uppercase text-slate-950">
+                                            <i class="bi bi-star-fill"></i> TẦNG X3 · SIÊU ĐỒNG THUẬN
+                                        </span>
+                                        <h3 class="text-base font-black text-amber-200">${x3.length} Số Trùng 3 Động Cơ (Cược 3.000đ/số · Vốn ${fmt(x3.length * 3000)}đ)</h3>
+                                    </div>
+                                    <p class="mt-1 text-xs text-slate-300 font-semibold">Cả 3 phương pháp độc lập cùng xếp hạng cao nhất. Khi nổ nhận 252.000đ (Lãi ròng +162.000đ · ROI +180%).</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" data-copy-profit="triple_x3" data-copy-sep="space" class="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3.5 py-1.5 text-xs shadow-md transition-all">
+                                        <i class="bi bi-clipboard"></i> Copy X3 (Cách)
+                                    </button>
+                                    <button type="button" data-copy-profit="triple_x3" data-copy-sep="comma" class="inline-flex items-center gap-1.5 rounded-xl border border-amber-400/40 bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 font-bold px-3 py-1.5 text-xs transition-all">
+                                        <i class="bi bi-clipboard-check"></i> Copy X3 (Phẩy)
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                ${x3.map(n => `
+                                    <span class="inline-flex h-11 min-w-11 items-center justify-center rounded-2xl border-2 border-amber-300 bg-gradient-to-b from-amber-400 to-amber-600 px-2 font-mono text-base font-black text-slate-950 shadow-md shadow-amber-500/30 transition-transform hover:scale-110">
+                                        ${num(n)}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Tầng X2 & Tầng X1 -->
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <div class="rounded-2xl border border-emerald-400/40 bg-emerald-950/30 p-5">
+                                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-emerald-400/20 pb-3 mb-3">
+                                    <span class="text-xs font-black text-emerald-300 uppercase flex items-center gap-1.5">
+                                        <i class="bi bi-layers-fill"></i> Tầng X2 Đồng Thuận 2 ĐC (${x2.length} số · Cược 2K · Ăn 168K)
+                                    </span>
+                                    <button type="button" data-copy-profit="triple_x2" data-copy-sep="space" class="inline-flex items-center gap-1 rounded-lg border border-emerald-400/30 bg-emerald-500/20 px-2 py-1 text-xs font-bold text-emerald-200">
+                                        <i class="bi bi-clipboard"></i> Copy X2
+                                    </button>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${x2.map(n => `
+                                        <span class="inline-flex h-9 min-w-9 items-center justify-center rounded-xl border border-emerald-400/40 bg-emerald-900/60 px-1.5 font-mono text-sm font-bold text-emerald-200">
+                                            ${num(n)}
+                                        </span>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            <div class="rounded-2xl border border-white/10 bg-slate-900/40 p-5">
+                                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-white/10 pb-3 mb-3">
+                                    <span class="text-xs font-black text-slate-300 uppercase flex items-center gap-1.5">
+                                        <i class="bi bi-shield"></i> Tầng X1 Bọc Lót (${x1.length} số · Cược 1K · Ăn 84K)
+                                    </span>
+                                    <button type="button" data-copy-profit="triple_x1" data-copy-sep="space" class="inline-flex items-center gap-1 rounded-lg border border-white/20 bg-white/10 px-2 py-1 text-xs font-bold text-slate-300">
+                                        <i class="bi bi-clipboard"></i> Copy X1
+                                    </button>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${x1.map(n => `
+                                        <span class="inline-flex h-9 min-w-9 items-center justify-center rounded-xl border border-slate-700 bg-slate-800/80 px-1.5 font-mono text-sm font-semibold text-slate-300">
+                                            ${num(n)}
+                                        </span>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Copy Toàn Dàn -->
+                        <div class="flex items-center justify-between flex-wrap gap-2 rounded-2xl border border-white/10 bg-white/5 p-4 text-xs">
+                            <span class="text-slate-400 font-medium">Toàn bộ dàn Tam Trụ hợp nhất: <strong class="text-white font-mono">${full.length} con số</strong>.</span>
+                            <button type="button" data-copy-profit="triple_all" data-copy-sep="space" class="inline-flex items-center gap-1.5 rounded-xl border border-sky-400/40 bg-sky-500/20 hover:bg-sky-500/30 text-sky-200 font-bold px-3 py-1.5 text-xs transition-all">
+                                <i class="bi bi-collection"></i> Copy Toàn Dàn Tam Trụ (${full.length} số)
+                            </button>
+                        </div>
+                    </div>
+                `;
+                break;
+            }
             case 'goldenDualMerge': {
                 const g = ensembles.goldenDualMerge;
                 if (!g) {
@@ -910,14 +1556,16 @@
         const actNum = latestSettled.actualSpecial;
         const actStr = String(actNum).padStart(2, '0');
 
-        // Lấy kết quả của cả 6 phương pháp trong kỳ quay gần nhất
+        // Lấy kết quả của cả 8 phương pháp trong kỳ quay gần nhất
         const methods = [
-            { id: 'goldenDualMerge', name: '1. Đề Gộp Lab Golden Overlap', obj: ensembles.goldenDualMerge },
-            { id: 'metaLearner', name: '2. Lab Meta-Learner Tinh Hoa', obj: ensembles.metaLearner },
-            { id: 'adaptiveController', name: '3. Bộ Điều Khiển Thích Ứng', obj: ensembles.adaptiveController },
-            { id: 'tamTruConsensus', name: '4. Dàn Tam Trụ Hợp Lực Lab', obj: ensembles.tamTruConsensus },
-            { id: 'highProbabilityCoverage64', name: '5. Dàn Bao Phủ 64 Số (Trúng 69%)', obj: ensembles.highProbabilityCoverage64 },
-            { id: 'liveAugmentedLab', name: '6. Lai Ghép Thực Chiến (Lãi +2.66M)', obj: ensembles.liveAugmentedLab }
+            { id: 'pentaCoreLab', name: '1. Ngũ Trụ AI Dung Hợp', obj: ensembles.pentaCoreLab },
+            { id: 'tripleMergeLiveLab', name: '2. Tam Trụ Thực Chiến Live', obj: ensembles.tripleMergeLiveLab },
+            { id: 'highProbabilityCoverage64', name: '3. RRF Mega 6 Động Cơ', obj: ensembles.highProbabilityCoverage64 },
+            { id: 'liveAugmentedLab', name: '4. Lai Ghép Thực Chiến', obj: ensembles.liveAugmentedLab },
+            { id: 'tamTruConsensus', name: '5. Tam Trụ Hợp Lực Lab', obj: ensembles.tamTruConsensus },
+            { id: 'goldenDualMerge', name: '6. Đề Gộp Lab Golden Overlap', obj: ensembles.goldenDualMerge },
+            { id: 'metaLearner', name: '7. Lab Meta-Learner Tinh Hoa', obj: ensembles.metaLearner },
+            { id: 'adaptiveController', name: '8. Bộ Điều Khiển Thích Ứng', obj: ensembles.adaptiveController }
         ];
 
         const cardsHtml = methods.map(m => {
@@ -937,32 +1585,36 @@
                 badgeText = 'TRÚNG';
                 icon = 'bi-check-circle-fill text-emerald-600';
 
-                if (row.hitType === 'win_x2') {
+                if (row.hitType === 'win_x3') {
+                    hitDetail = `Nổ TẦNG X3 (${actStr})`;
+                    badgeColor = 'bg-amber-100 text-amber-950 border-amber-300 ring-1 ring-amber-400';
+                    badgeText = 'NỔ X3 🎯';
+                } else if (row.hitType === 'win_x2' || row.isX2) {
                     hitDetail = `Nổ VÙNG VÀNG X2 (${actStr})`;
                     badgeColor = 'bg-amber-100 text-amber-950 border-amber-300 ring-1 ring-amber-400';
                     badgeText = 'NỔ X2 🎯';
                 } else if (row.hitType === 'win_x1') {
                     hitDetail = `Nổ BỌC LÓT X1 (${actStr})`;
                     badgeText = 'NỔ X1 🎯';
-                } else if (row.hitType === 'win_vip') {
+                } else if (row.hitType === 'win_vip' || row.isVip) {
                     hitDetail = `Nổ HẠT NHÂN VIP (${actStr})`;
                     badgeColor = 'bg-fuchsia-100 text-fuchsia-950 border-fuchsia-300';
                     badgeText = 'NỔ VIP 🎯';
                 } else if (row.hitType === 'win_elite') {
                     hitDetail = `Nổ BỌC LÓT ELITE (${actStr})`;
                     badgeText = 'NỔ ELITE 🎯';
-                } else if (row.hitType === 'win_tier3') {
+                } else if (row.hitType === 'win_tier3' || row.isTier3) {
                     hitDetail = `Nổ TAM TRỤ (${actStr})`;
                     badgeColor = 'bg-teal-100 text-teal-950 border-teal-300';
                     badgeText = 'NỔ TAM TRỤ 🎯';
-                } else if (row.hitType === 'win_tier2') {
+                } else if (row.hitType === 'win_tier2' || row.isTier2) {
                     hitDetail = `Nổ SONG TRỤ (${actStr})`;
                     badgeText = 'NỔ SONG TRỤ 🎯';
-                } else if (row.hitType === 'win_core') {
+                } else if (row.hitType === 'win_core' || row.isCore) {
                     hitDetail = `Nổ CORE 20 (${actStr})`;
                     badgeColor = 'bg-emerald-100 text-emerald-950 border-emerald-300';
                     badgeText = 'NỔ CORE 🎯';
-                } else if (row.hitType === 'win_mid') {
+                } else if (row.hitType === 'win_mid' || row.isMid) {
                     hitDetail = `Nổ MID 24 (${actStr})`;
                     badgeText = 'NỔ MID 🎯';
                 } else {
@@ -971,17 +1623,17 @@
             }
 
             return `
-                <div class="rounded-2xl border ${isHit ? 'border-emerald-300 bg-emerald-50/50 shadow-sm' : 'border-slate-200 bg-white/80'} p-3.5 flex flex-col justify-between transition-all hover:shadow-md">
+                <div class="rounded-2xl border ${isHit ? 'border-emerald-300 bg-emerald-50/50 shadow-sm ring-1 ring-emerald-300/50' : 'border-slate-200 bg-white/80'} p-3 flex flex-col justify-between transition-all hover:shadow-md">
                     <div>
                         <div class="flex items-center justify-between gap-1 mb-1.5">
                             <span class="text-[11px] font-black text-slate-800 truncate">${esc(m.name)}</span>
-                            <span class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-black uppercase ${badgeColor}">
+                            <span class="inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[9px] font-black uppercase ${badgeColor}">
                                 <i class="bi ${icon}"></i> ${badgeText}
                             </span>
                         </div>
                         <p class="text-xs font-bold ${isHit ? 'text-emerald-800' : 'text-slate-500'} flex items-center gap-1">
                             ${isHit ? `<span class="inline-flex h-5 w-5 items-center justify-center rounded-md bg-amber-400 font-mono text-xs font-black text-slate-950 shadow-xs">${actStr}</span>` : ''}
-                            <span>${esc(hitDetail)}</span>
+                            <span class="truncate">${esc(hitDetail)}</span>
                         </p>
                     </div>
                     <div class="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px] font-mono">
@@ -1006,7 +1658,7 @@
                             <span class="text-xs font-bold text-slate-600">Kỳ quay: <strong class="font-mono text-slate-900 font-black">${esc(settledDate)}</strong></span>
                         </div>
                         <h3 class="text-base font-black text-slate-900 mt-0.5 flex items-center gap-1.5">
-                            Giải Đặc Biệt nổ số <strong class="font-mono text-indigo-700 text-lg underline decoration-amber-400 decoration-2">${esc(actStr)}</strong> — Đối Chiếu Tức Thì 6 Phương Pháp Lab:
+                            Giải Đặc Biệt nổ số <strong class="font-mono text-indigo-700 text-lg underline decoration-amber-400 decoration-2">${esc(actStr)}</strong> — Đối Chiếu Tức Thì Bộ 8 Phương Pháp Lab:
                         </h3>
                     </div>
                 </div>
@@ -1015,7 +1667,7 @@
                 </div>
             </div>
 
-            <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            <div class="mt-4 grid gap-2.5 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-8">
                 ${cardsHtml}
             </div>
         `;
@@ -1024,39 +1676,47 @@
     function renderLabTrackingSection(data) {
         const ttr = data?.tenTierResearch || {};
         const ensembles = ttr.profitEnsembles || {};
-        const activeObj = ensembles[activeLabTrackMethod] || ensembles.goldenDualMerge || {};
+        const activeObj = ensembles[activeLabTrackMethod] || ensembles.pentaCoreLab || {};
 
-        // 1. Update Badges on Tab Buttons (6 Methods)
+        // 1. Update Badges on Tab Buttons (8 Methods)
+        const pPenta = ensembles.pentaCoreLab?.summary?.overallProfitK || 0;
+        const pTriple = ensembles.tripleMergeLiveLab?.summary?.overallProfitK || 0;
+        const pCov = ensembles.highProbabilityCoverage64?.summary?.overallProfitK || 0;
+        const pLiveAug = ensembles.liveAugmentedLab?.summary?.overallProfitK || 0;
+        const pTT = ensembles.tamTruConsensus?.summary?.overallProfitK || 0;
         const pG = ensembles.goldenDualMerge?.summary?.overallProfitK || 0;
         const pM = ensembles.metaLearner?.summary?.overallProfitK || 0;
         const pA = ensembles.adaptiveController?.summary?.overallProfitK || 0;
-        const pTT = ensembles.tamTruConsensus?.summary?.overallProfitK || 0;
-        const pCov = ensembles.highProbabilityCoverage64?.summary?.overallProfitK || 0;
-        const pLiveAug = ensembles.liveAugmentedLab?.summary?.overallProfitK || 0;
 
+        const badgePenta = byId('labBadgeProfitPenta');
+        if (badgePenta) badgePenta.textContent = `${signedM(pPenta)} 2026`;
+        const badgeTriple = byId('labBadgeProfitTripleLive');
+        if (badgeTriple) badgeTriple.textContent = `${signedM(pTriple)} 2026`;
+        const badgeCov = byId('labBadgeProfitCoverage');
+        if (badgeCov) badgeCov.textContent = `${signedM(pCov)} 2026`;
+        const badgeLiveAug = byId('labBadgeProfitLiveAug');
+        if (badgeLiveAug) badgeLiveAug.textContent = `${signedM(pLiveAug)} 2026`;
+        const badgeTT = byId('labBadgeProfitTamTru');
+        if (badgeTT) badgeTT.textContent = `${signedM(pTT)} 2026`;
         const badgeG = byId('labBadgeProfitGolden');
         if (badgeG) badgeG.textContent = `${signedM(pG)} 2026`;
         const badgeM = byId('labBadgeProfitMeta');
         if (badgeM) badgeM.textContent = `${signedM(pM)} 2026`;
         const badgeA = byId('labBadgeProfitAdaptive');
         if (badgeA) badgeA.textContent = `${signedM(pA)} 2026`;
-        const badgeTT = byId('labBadgeProfitTamTru');
-        if (badgeTT) badgeTT.textContent = `${signedM(pTT)} 2026`;
-        const badgeCov = byId('labBadgeProfitCoverage');
-        if (badgeCov) badgeCov.textContent = `${signedM(pCov)} 2026`;
-        const badgeLiveAug = byId('labBadgeProfitLiveAug');
-        if (badgeLiveAug) badgeLiveAug.textContent = `${signedM(pLiveAug)} 2026`;
 
         // 2. Update Active Method Title & Header Badge
         const activeBadge = byId('labTrackingActiveBadge');
         if (activeBadge) {
             const labels = {
-                goldenDualMerge: '👑 1. Đề Gộp Lab Golden Overlap',
-                metaLearner: '👑 2. Lab Meta-Learner Tinh Hoa',
-                adaptiveController: '👑 3. Bộ Điều Khiển Thích Ứng',
-                tamTruConsensus: '👑 4. Dàn Tam Trụ Hợp Lực Lab',
-                highProbabilityCoverage64: '👑 5. Dàn Bao Phủ Xác Suất Cao 64 Số',
-                liveAugmentedLab: '👑 6. Lai Ghép Thực Chiến Mở Rộng'
+                pentaCoreLab: '👑 1. Ngũ Trụ AI Dung Hợp',
+                tripleMergeLiveLab: '🏛️ 2. Tam Trụ Thực Chiến Live',
+                highProbabilityCoverage64: '🏆 3. Dàn Bao Phủ Xác Suất Cao 64 Số',
+                liveAugmentedLab: '⚡ 4. Lai Ghép Thực Chiến Mở Rộng',
+                tamTruConsensus: '🛡️ 5. Dàn Tam Trụ Hợp Lực Lab',
+                goldenDualMerge: '💎 6. Đề Gộp Lab Golden Overlap',
+                metaLearner: '🔮 7. Lab Meta-Learner Tinh Hoa',
+                adaptiveController: '⚖️ 8. Bộ Điều Khiển Thích Ứng'
             };
             activeBadge.textContent = `${labels[activeLabTrackMethod] || activeLabTrackMethod} (${signedM(activeObj.summary?.overallProfitK || 0)} Lũy Kế 2026)`;
         }
@@ -1116,7 +1776,11 @@
             const profitClass = isPos ? 'text-emerald-600 font-black' : 'text-rose-600 font-black';
 
             let detailStr = '';
-            if (methodId === 'goldenDualMerge') {
+            if (methodId === 'pentaCoreLab') {
+                detailStr = `${w.winsVip || 0} VIP · ${w.winsX1 || Math.max(0, (w.wins || 0) - (w.winsVip || 0))} Bọc lót · ${w.losses || 0} trượt`;
+            } else if (methodId === 'tripleMergeLiveLab') {
+                detailStr = `${w.winsX3 || 0} X3 · ${w.winsX2 || 0} X2 · ${w.winsX1 || 0} X1 · ${w.losses || 0} trượt`;
+            } else if (methodId === 'goldenDualMerge') {
                 detailStr = `${w.winsX2 || 0} nổ X2 · ${w.winsX1 || 0} nổ X1 · ${w.losses || 0} trượt`;
             } else if (methodId === 'liveAugmentedLab') {
                 detailStr = `${w.winsX2 || 0} nổ X2 · ${w.winsX1 || 0} nổ X1 · ${w.losses || 0} trượt`;
@@ -1173,7 +1837,11 @@
             const cumClass = isCumProfit ? 'text-emerald-800 font-black' : 'text-rose-800 font-black';
 
             let hitBreakdownHtml = '';
-            if (methodId === 'goldenDualMerge') {
+            if (methodId === 'pentaCoreLab') {
+                hitBreakdownHtml = `<span class="font-black text-amber-700">${m.winsVip || 0} VIP</span> · <span class="font-bold text-sky-700">${m.winsBackup || m.winsX1 || 0} Bọc Lót</span> / <span class="font-bold text-rose-600">${m.losses} thua</span>`;
+            } else if (methodId === 'tripleMergeLiveLab') {
+                hitBreakdownHtml = `<span class="font-black text-amber-700">${m.winsX3 || 0} X3</span> · <span class="font-black text-amber-600">${m.winsX2 || 0} X2</span> · <span class="font-bold text-sky-700">${m.winsX1 || 0} X1</span> / <span class="font-bold text-rose-600">${m.losses} thua</span>`;
+            } else if (methodId === 'goldenDualMerge') {
                 hitBreakdownHtml = `<span class="font-black text-amber-700">${m.winsX2 || 0} X2</span> · <span class="font-bold text-sky-700">${m.winsX1 || 0} X1</span> / <span class="font-bold text-rose-600">${m.losses} thua</span>`;
             } else if (methodId === 'liveAugmentedLab') {
                 hitBreakdownHtml = `<span class="font-black text-amber-700">${m.winsX2 || 0} X2</span> · <span class="font-bold text-emerald-700">${m.winsX1 || 0} X1</span> / <span class="font-bold text-rose-600">${m.losses} thua</span>`;
@@ -1252,6 +1920,8 @@
             filtered = filtered.filter(r => r.isHit === true);
         } else if (labLedgerFilterStatus === 'loss') {
             filtered = filtered.filter(r => r.isHit === false);
+        } else if (labLedgerFilterStatus === 'live') {
+            filtered = filtered.filter(r => (r.date || r.predictionDate || '') >= '2026-08-28');
         }
 
         // 2. Filter by Search
@@ -1294,7 +1964,52 @@
 
             // Numbers Display with Winning Number Highlighted
             let numbersHtml = '';
-            if (methodId === 'goldenDualMerge' || methodId === 'liveAugmentedLab') {
+            if (methodId === 'pentaCoreLab') {
+                const vip = r.vipNumbers || [];
+                const backup = r.backupNumbers || [];
+                numbersHtml = `
+                    <div class="flex flex-col gap-1 max-w-md">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="rounded-md bg-amber-100 text-amber-900 border border-amber-300 px-1.5 py-0.5 text-[10px] font-black">Hạt Nhân VIP (${vip.length}s · 2K)</span>
+                            <div class="flex flex-wrap gap-1 items-center">
+                                ${formatNumbersWithHighlight(vip, actStr, 'VIP', 12)}
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="rounded-md bg-slate-100 text-slate-700 border border-slate-300 px-1.5 py-0.5 text-[10px] font-bold">Bọc Lót (${backup.length}s · 1K)</span>
+                            <div class="flex flex-wrap gap-1 items-center">
+                                ${formatNumbersWithHighlight(backup, actStr, 'Bọc Lót', 10)}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (methodId === 'tripleMergeLiveLab') {
+                const x3 = r.tierX3 || [];
+                const x2 = r.tierX2 || [];
+                const x1 = r.tierX1 || [];
+                numbersHtml = `
+                    <div class="flex flex-col gap-1 max-w-md">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="rounded-md bg-amber-100 text-amber-900 border border-amber-300 px-1.5 py-0.5 text-[10px] font-black">Tầng X3 (${x3.length}s · 3K)</span>
+                            <div class="flex flex-wrap gap-1 items-center">
+                                ${formatNumbersWithHighlight(x3, actStr, 'X3', 10)}
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="rounded-md bg-sky-100 text-sky-900 border border-sky-300 px-1.5 py-0.5 text-[10px] font-bold">Tầng X2 (${x2.length}s · 2K)</span>
+                            <div class="flex flex-wrap gap-1 items-center">
+                                ${formatNumbersWithHighlight(x2, actStr, 'X2', 10)}
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="rounded-md bg-slate-100 text-slate-700 border border-slate-300 px-1.5 py-0.5 text-[10px] font-bold">Tầng X1 (${x1.length}s · 1K)</span>
+                            <div class="flex flex-wrap gap-1 items-center">
+                                ${formatNumbersWithHighlight(x1, actStr, 'X1', 10)}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (methodId === 'goldenDualMerge' || methodId === 'liveAugmentedLab') {
                 const x2 = r.intersectionX2 || [];
                 const x1 = r.uniqueSinglesX1 || [];
                 numbersHtml = `
@@ -1386,14 +2101,16 @@
 
             // Status Badge
             let badgeHtml = '';
-            if (r.hitType === 'win_x2' || r.isX2) {
+            if (r.hitType === 'win_x3' || r.isX3) {
+                badgeHtml = `<span class="inline-flex items-center gap-1 rounded-full bg-amber-100 border border-amber-300 px-2.5 py-0.5 text-[11px] font-black text-amber-950 shadow-xs"><i class="bi bi-stars text-amber-600"></i> NỔ TẦNG X3 (SIÊU ĐỒNG THUẬN)</span>`;
+            } else if (r.hitType === 'win_x2' || r.isX2) {
                 badgeHtml = `<span class="inline-flex items-center gap-1 rounded-full bg-amber-100 border border-amber-300 px-2.5 py-0.5 text-[11px] font-black text-amber-950 shadow-xs"><i class="bi bi-star-fill text-amber-600"></i> NỔ VÙNG VÀNG X2</span>`;
             } else if (r.hitType === 'win_x1') {
                 badgeHtml = `<span class="inline-flex items-center gap-1 rounded-full bg-sky-100 border border-sky-300 px-2.5 py-0.5 text-[11px] font-black text-sky-950 shadow-xs"><i class="bi bi-shield-check text-sky-600"></i> NỔ BỌC LÓT X1</span>`;
             } else if (r.hitType === 'win_vip' || r.isVip) {
-                badgeHtml = `<span class="inline-flex items-center gap-1 rounded-full bg-fuchsia-100 border border-fuchsia-300 px-2.5 py-0.5 text-[11px] font-black text-fuchsia-950 shadow-xs"><i class="bi bi-award-fill text-fuchsia-600"></i> NỔ HẠT NHÂN VIP</span>`;
+                badgeHtml = `<span class="inline-flex items-center gap-1 rounded-full bg-amber-100 border border-amber-300 px-2.5 py-0.5 text-[11px] font-black text-amber-950 shadow-xs"><i class="bi bi-crown-fill text-amber-600"></i> NỔ HẠT NHÂN VIP (X2)</span>`;
             } else if (r.hitType === 'win_elite') {
-                badgeHtml = `<span class="inline-flex items-center gap-1 rounded-full bg-indigo-100 border border-indigo-300 px-2.5 py-0.5 text-[11px] font-black text-indigo-950 shadow-xs"><i class="bi bi-check-circle-fill text-indigo-600"></i> NỔ BỌC LÓT ELITE</span>`;
+                badgeHtml = `<span class="inline-flex items-center gap-1 rounded-full bg-indigo-100 border border-indigo-300 px-2.5 py-0.5 text-[11px] font-black text-indigo-950 shadow-xs"><i class="bi bi-shield-check text-indigo-600"></i> NỔ BỌC LÓT AN TOÀN (X1)</span>`;
             } else if (r.hitType === 'win_tier3' || r.isTier3) {
                 badgeHtml = `<span class="inline-flex items-center gap-1 rounded-full bg-teal-100 border border-teal-300 px-2.5 py-0.5 text-[11px] font-black text-teal-950 shadow-xs"><i class="bi bi-diagram-3-fill text-teal-600"></i> NỔ TAM TRỤ (3 ĐỘNG CƠ)</span>`;
             } else if (r.hitType === 'win_tier2' || r.isTier2) {
@@ -1444,23 +2161,25 @@
         const ttr = data?.tenTierResearch || {};
         const ensembles = ttr.profitEnsembles || {};
 
-        // 1. Render Overview Comparison Table (6 Methods)
+        // 1. Render Overview Comparison Table (8 Methods)
         renderCombinedMethodsOverviewTable(ensembles);
 
-        // 2. Render Latest Real Result Widget
+        // 2. Render Latest Real Result Widget (8 Methods)
         renderCombinedLatestRealResultWidget(ensembles, data?.predictionDate, ttr.lastSpecial);
 
         // 3. Render Daily Settled Ledger for Active Combined Method
-        const activeObj = ensembles[activeCombinedMethod] || ensembles.highProbabilityCoverage64 || {};
+        const activeObj = ensembles[activeCombinedMethod] || ensembles.pentaCoreLab || ensembles.highProbabilityCoverage64 || {};
         const ledgerTitle = byId('combinedLedgerTitle');
         if (ledgerTitle) {
             const methodNames = {
-                highProbabilityCoverage64: '1. RRF Mega 6 Động Cơ (Bao phủ 64 số)',
-                liveAugmentedLab: '2. Lai Ghép Thực Chiến Mở Rộng (Adaptive Dual + Lab Booster)',
-                tamTruConsensus: '3. Tam Trụ Hợp Lực Thế Hệ Mới (~50 số)',
-                goldenDualMerge: '4. Gộp Đôi Sweet-Spot x Graph (Vốn 60K)',
-                metaLearner: '5. Phân Tầng Vốn Bất Đối Xứng (VIP 10 + Elite 20)',
-                adaptiveController: '6. Bộ Điều Khiển Thích Ứng 3 Trạng Thái'
+                pentaCoreLab: '1. 👑 Ngũ Trụ Tinh Hoa AI (Quán Quân Lab · Trúng 72.5% · Lãi +8.88M)',
+                tripleMergeLiveLab: '2. 🏛️ Tam Trụ Thực Chiến Live (Trúng 68.2% · Lãi +3.41M)',
+                highProbabilityCoverage64: '3. 🏆 RRF Mega 6 Động Cơ (Bao phủ 64 số · Trúng 69.0%)',
+                liveAugmentedLab: '4. ⚡ Lai Ghép Thực Chiến Mở Rộng (Adaptive Dual + Lab Booster)',
+                tamTruConsensus: '5. 🛡️ Tam Trụ Hợp Lực Lab (~50 số)',
+                goldenDualMerge: '6. 💎 Gộp Đôi Sweet-Spot x Graph (Vốn 60K)',
+                metaLearner: '7. 🔮 Phân Tầng Vốn Bất Đối Xứng (VIP 10 + Elite 20)',
+                adaptiveController: '8. ⚖️ Bộ Điều Khiển Thích Ứng 3 Trạng Thái'
             };
             ledgerTitle.textContent = `Chi Tiết Nổ Đề Từng Ngày Năm 2026 — ${methodNames[activeCombinedMethod] || activeCombinedMethod}`;
         }
@@ -1473,8 +2192,24 @@
 
         const methods = [
             {
+                id: 'pentaCoreLab',
+                name: '1. 👑 Ngũ Trụ Tinh Hoa AI (Quán Quân Lab)',
+                sub: 'Dung hợp 5 Động cơ AI đỉnh cao · Đảo pha đa tín hiệu',
+                size: '~37 số (VIP X2 + Bọc X1)',
+                badge: 'border-amber-300 bg-amber-50 text-amber-900 ring-1 ring-amber-400',
+                obj: ensembles.pentaCoreLab
+            },
+            {
+                id: 'tripleMergeLiveLab',
+                name: '2. 🏛️ Tam Trụ Thực Chiến Live (3 Tầng Cược)',
+                sub: 'Mô hình chuẩn Live · Tam phân hội tụ X3-X2-X1',
+                size: '~42-50 số (X3 + X2 + X1)',
+                badge: 'border-sky-300 bg-sky-50 text-sky-900 ring-1 ring-sky-400',
+                obj: ensembles.tripleMergeLiveLab
+            },
+            {
                 id: 'highProbabilityCoverage64',
-                name: '1. RRF Mega 6 Động Cơ (Bao Phủ 64 Số)',
+                name: '3. 🏆 RRF Mega 6 Động Cơ (Bao Phủ 64 Số)',
                 sub: 'Cầu Động + Fourier 7D + Markov 2 + RRF k=60',
                 size: '64 số (Core + Mid + Mesh)',
                 badge: 'border-emerald-300 bg-emerald-50 text-emerald-800',
@@ -1482,15 +2217,15 @@
             },
             {
                 id: 'liveAugmentedLab',
-                name: '2. Lai Ghép Thực Chiến Mở Rộng (Lãi +2.66M)',
+                name: '4. ⚡ Lai Ghép Thực Chiến Mở Rộng',
                 sub: 'Adaptive Dual + Lab Booster + Khử Gan Sâu >20D',
                 size: '44 - 55 số (X2 Giao Thoa + X1 Bọc Lót)',
-                badge: 'border-teal-300 bg-teal-50 text-teal-800 ring-1 ring-teal-400',
+                badge: 'border-teal-300 bg-teal-50 text-teal-800',
                 obj: ensembles.liveAugmentedLab
             },
             {
                 id: 'tamTruConsensus',
-                name: '3. Tam Trụ Hợp Lực Thế Hệ Mới (~50 Số)',
+                name: '5. 🛡️ Tam Trụ Hợp Lực Lab (~50 Số)',
                 sub: 'Đồng thuận 3 Động Cơ Độc Lập (Ngưỡng 2/3 & 3/3)',
                 size: '~50 số (Tam trụ 2K + Song trụ 1K)',
                 badge: 'border-indigo-300 bg-indigo-50 text-indigo-800',
@@ -1498,7 +2233,7 @@
             },
             {
                 id: 'goldenDualMerge',
-                name: '4. Gộp Đôi Sweet-Spot x Louvain Graph',
+                name: '6. 💎 Gộp Đôi Sweet-Spot x Louvain Graph',
                 sub: 'Đồ thị cụm cộng đồng x Lọc số Sweet-Spot',
                 size: '44 số (16s Vàng X2 + 28s X1)',
                 badge: 'border-amber-300 bg-amber-50 text-amber-900',
@@ -1506,7 +2241,7 @@
             },
             {
                 id: 'metaLearner',
-                name: '5. Phân Tầng Vốn Bất Đối Xứng Alpha',
+                name: '7. 🔮 Phân Tầng Vốn Bất Đối Xứng Alpha',
                 sub: 'Tối ưu Kelly: VIP 10 cược 1.5K + Elite 20 cược 1K',
                 size: '30 số (VIP 10 + Elite 20)',
                 badge: 'border-fuchsia-300 bg-fuchsia-50 text-fuchsia-900',
@@ -1514,7 +2249,7 @@
             },
             {
                 id: 'adaptiveController',
-                name: '6. Bộ Điều Khiển Thích Ứng 3 Trạng Thái',
+                name: '8. ⚖️ Bộ Điều Khiển Thích Ứng 3 Trạng Thái',
                 sub: 'Chuyển mạch động theo chuỗi thắng/thua (Cắt dây)',
                 size: '24 / 36 / 50 số linh hoạt',
                 badge: 'border-sky-300 bg-sky-50 text-sky-900',
@@ -1564,8 +2299,10 @@
                         <div class="flex flex-col">
                             <div class="flex items-center gap-2">
                                 <span class="font-black text-slate-900">${esc(m.name)}</span>
-                                ${m.id === 'liveAugmentedLab' ? `<span class="inline-flex items-center gap-0.5 rounded-full bg-emerald-100 text-emerald-950 font-black px-2 py-0.5 text-[10px] ring-1 ring-emerald-400">LÃI CAO NHẤT</span>` : ''}
-                                ${m.id === 'highProbabilityCoverage64' ? `<span class="inline-flex items-center gap-0.5 rounded-full bg-amber-100 text-amber-950 font-black px-2 py-0.5 text-[10px] ring-1 ring-amber-400">TRÚNG 69% 🏆</span>` : ''}
+                                ${m.id === 'pentaCoreLab' ? `<span class="inline-flex items-center gap-0.5 rounded-full bg-amber-100 text-amber-950 font-black px-2 py-0.5 text-[10px] ring-1 ring-amber-400">QUÁN QUÂN LAB (+8.88M) 👑</span>` : ''}
+                                ${m.id === 'tripleMergeLiveLab' ? `<span class="inline-flex items-center gap-0.5 rounded-full bg-sky-100 text-sky-950 font-black px-2 py-0.5 text-[10px] ring-1 ring-sky-400">CHUẨN LIVE 🏛️</span>` : ''}
+                                ${m.id === 'liveAugmentedLab' ? `<span class="inline-flex items-center gap-0.5 rounded-full bg-emerald-100 text-emerald-950 font-black px-2 py-0.5 text-[10px] ring-1 ring-emerald-400">LÃI CAO (+2.66M)</span>` : ''}
+                                ${m.id === 'highProbabilityCoverage64' ? `<span class="inline-flex items-center gap-0.5 rounded-full bg-purple-100 text-purple-950 font-black px-2 py-0.5 text-[10px] ring-1 ring-purple-400">TRÚNG 69% 🏆</span>` : ''}
                             </div>
                             <span class="text-[11px] text-slate-500 font-medium">${esc(m.sub)}</span>
                         </div>
@@ -1578,7 +2315,7 @@
                     <td class="p-3 text-center font-bold text-slate-700">${days} kỳ</td>
                     <td class="p-3 text-center font-bold text-slate-900">${wins} kỳ</td>
                     <td class="p-3 text-center">
-                        <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-black ${Number(hitRate) >= 60 ? 'bg-emerald-100 text-emerald-950 ring-1 ring-emerald-400' : (Number(hitRate) >= 50 ? 'bg-teal-100 text-teal-950 ring-1 ring-teal-400' : 'bg-slate-100 text-slate-900')}">
+                        <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-black ${Number(hitRate) >= 70 ? 'bg-amber-100 text-amber-950 ring-1 ring-amber-400' : (Number(hitRate) >= 60 ? 'bg-emerald-100 text-emerald-950 ring-1 ring-emerald-400' : (Number(hitRate) >= 50 ? 'bg-teal-100 text-teal-950 ring-1 ring-teal-400' : 'bg-slate-100 text-slate-900'))}">
                             ${pct(hitRate)}
                         </span>
                     </td>
@@ -1608,12 +2345,14 @@
         const actStr = String(actNum).padStart(2, '0');
 
         const methods = [
-            { id: 'highProbabilityCoverage64', name: '1. RRF Mega 6 Động Cơ (64 số)', obj: ensembles.highProbabilityCoverage64 },
-            { id: 'liveAugmentedLab', name: '2. Lai Ghép Thực Chiến (Lãi +2.66M)', obj: ensembles.liveAugmentedLab },
-            { id: 'tamTruConsensus', name: '3. Tam Trụ Hợp Lực (~50 số)', obj: ensembles.tamTruConsensus },
-            { id: 'goldenDualMerge', name: '4. Gộp Đôi Sweet-Spot x Graph (60K)', obj: ensembles.goldenDualMerge },
-            { id: 'metaLearner', name: '5. Phân Tầng Bất Đối Xứng (35K)', obj: ensembles.metaLearner },
-            { id: 'adaptiveController', name: '6. Thích Ứng 3 Trạng Thái', obj: ensembles.adaptiveController }
+            { id: 'pentaCoreLab', name: '1. Ngũ Trụ AI (+8.88M)', obj: ensembles.pentaCoreLab },
+            { id: 'tripleMergeLiveLab', name: '2. Tam Trụ Live (+3.41M)', obj: ensembles.tripleMergeLiveLab },
+            { id: 'highProbabilityCoverage64', name: '3. RRF Mega 6 Động Cơ (64s)', obj: ensembles.highProbabilityCoverage64 },
+            { id: 'liveAugmentedLab', name: '4. Lai Ghép Thực Chiến (+2.66M)', obj: ensembles.liveAugmentedLab },
+            { id: 'tamTruConsensus', name: '5. Tam Trụ Hợp Lực (~50s)', obj: ensembles.tamTruConsensus },
+            { id: 'goldenDualMerge', name: '6. Gộp Đôi Sweet-Spot (60K)', obj: ensembles.goldenDualMerge },
+            { id: 'metaLearner', name: '7. Phân Tầng Alpha (35K)', obj: ensembles.metaLearner },
+            { id: 'adaptiveController', name: '8. Thích Ứng 3 Trạng Thái', obj: ensembles.adaptiveController }
         ];
 
         const cardsHtml = methods.map(m => {
@@ -1633,7 +2372,11 @@
                 badgeText = 'TRÚNG';
                 icon = 'bi-check-circle-fill text-emerald-600';
 
-                if (row.hitType === 'win_x2' || row.isX2) {
+                if (row.hitType === 'win_x3' || row.isX3) {
+                    hitDetail = `Nổ TẦNG X3 (${actStr})`;
+                    badgeColor = 'bg-amber-100 text-amber-950 border-amber-300 ring-1 ring-amber-400';
+                    badgeText = 'NỔ X3 🎯';
+                } else if (row.hitType === 'win_x2' || row.isX2) {
                     hitDetail = `Nổ VÙNG VÀNG X2 (${actStr})`;
                     badgeColor = 'bg-amber-100 text-amber-950 border-amber-300 ring-1 ring-amber-400';
                     badgeText = 'NỔ X2 🎯';
@@ -1642,11 +2385,12 @@
                     badgeText = 'NỔ X1 🎯';
                 } else if (row.hitType === 'win_vip' || row.isVip) {
                     hitDetail = `Nổ HẠT NHÂN VIP (${actStr})`;
-                    badgeColor = 'bg-fuchsia-100 text-fuchsia-950 border-fuchsia-300';
+                    badgeColor = 'bg-amber-100 text-amber-950 border-amber-300 ring-1 ring-amber-400';
                     badgeText = 'NỔ VIP 🎯';
                 } else if (row.hitType === 'win_elite') {
-                    hitDetail = `Nổ BỌC LÓT ELITE (${actStr})`;
-                    badgeText = 'NỔ ELITE 🎯';
+                    hitDetail = `Nổ BỌC LÓT AN TOÀN (${actStr})`;
+                    badgeColor = 'bg-indigo-100 text-indigo-950 border-indigo-300';
+                    badgeText = 'NỔ BỌC LÓT 🎯';
                 } else if (row.hitType === 'win_tier3' || row.isTier3) {
                     hitDetail = `Nổ TAM TRỤ (${actStr})`;
                     badgeColor = 'bg-teal-100 text-teal-950 border-teal-300';
@@ -1705,7 +2449,7 @@
                             <span class="text-xs font-bold text-slate-600">Kỳ quay: <strong class="font-mono text-slate-900 font-black">${esc(settledDate)}</strong></span>
                         </div>
                         <h3 class="text-base font-black text-slate-900 mt-0.5 flex items-center gap-1.5">
-                            Giải Đặc Biệt nổ số <strong class="font-mono text-indigo-700 text-lg underline decoration-amber-400 decoration-2">${esc(actStr)}</strong> — Đối Chiếu Tức Thì 6 Kiến Trúc Kết Hợp Nghiên Cứu:
+                            Giải Đặc Biệt nổ số <strong class="font-mono text-indigo-700 text-lg underline decoration-amber-400 decoration-2">${esc(actStr)}</strong> — Đối Chiếu Tức Thì 8 Kiến Trúc Kết Hợp Nghiên Cứu Lab:
                         </h3>
                     </div>
                 </div>
@@ -1714,7 +2458,7 @@
                 </div>
             </div>
 
-            <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            <div class="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-8">
                 ${cardsHtml}
             </div>
         `;
@@ -1731,6 +2475,8 @@
             filtered = filtered.filter(r => r.isHit === true);
         } else if (combinedLedgerFilterStatus === 'loss') {
             filtered = filtered.filter(r => r.isHit === false);
+        } else if (combinedLedgerFilterStatus === 'live') {
+            filtered = filtered.filter(r => (r.date || r.predictionDate || '') >= '2026-08-28');
         }
 
         // 2. Filter by Search
@@ -1773,7 +2519,52 @@
 
             // Numbers Display with Winning Number Highlighted
             let numbersHtml = '';
-            if (methodId === 'highProbabilityCoverage64') {
+            if (methodId === 'pentaCoreLab') {
+                const vip = r.vipNumbers || [];
+                const backup = r.backupNumbers || [];
+                numbersHtml = `
+                    <div class="flex flex-col gap-1 max-w-md">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="rounded-md bg-amber-100 text-amber-900 border border-amber-300 px-1.5 py-0.5 text-[10px] font-black">Hạt Nhân VIP (${vip.length}s · 2K)</span>
+                            <div class="flex flex-wrap gap-1 items-center">
+                                ${formatNumbersWithHighlight(vip, actStr, 'VIP', 12)}
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="rounded-md bg-slate-100 text-slate-700 border border-slate-300 px-1.5 py-0.5 text-[10px] font-bold">Bọc Lót (${backup.length}s · 1K)</span>
+                            <div class="flex flex-wrap gap-1 items-center">
+                                ${formatNumbersWithHighlight(backup, actStr, 'Bọc Lót', 10)}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (methodId === 'tripleMergeLiveLab') {
+                const x3 = r.tierX3 || [];
+                const x2 = r.tierX2 || [];
+                const x1 = r.tierX1 || [];
+                numbersHtml = `
+                    <div class="flex flex-col gap-1 max-w-md">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="rounded-md bg-amber-100 text-amber-900 border border-amber-300 px-1.5 py-0.5 text-[10px] font-black">Tầng X3 (${x3.length}s · 3K)</span>
+                            <div class="flex flex-wrap gap-1 items-center">
+                                ${formatNumbersWithHighlight(x3, actStr, 'X3', 10)}
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="rounded-md bg-sky-100 text-sky-900 border border-sky-300 px-1.5 py-0.5 text-[10px] font-bold">Tầng X2 (${x2.length}s · 2K)</span>
+                            <div class="flex flex-wrap gap-1 items-center">
+                                ${formatNumbersWithHighlight(x2, actStr, 'X2', 10)}
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="rounded-md bg-slate-100 text-slate-700 border border-slate-300 px-1.5 py-0.5 text-[10px] font-bold">Tầng X1 (${x1.length}s · 1K)</span>
+                            <div class="flex flex-wrap gap-1 items-center">
+                                ${formatNumbersWithHighlight(x1, actStr, 'X1', 10)}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (methodId === 'highProbabilityCoverage64') {
                 const c20 = r.core20 || [];
                 const m24 = r.mid24 || [];
                 const m20 = r.mesh20 || [];
@@ -1865,14 +2656,16 @@
 
             // Status Badge
             let badgeHtml = '';
-            if (r.hitType === 'win_x2' || r.isX2) {
+            if (r.hitType === 'win_x3' || r.isX3) {
+                badgeHtml = `<span class="inline-flex items-center gap-1 rounded-full bg-amber-100 border border-amber-300 px-2.5 py-0.5 text-[11px] font-black text-amber-950 shadow-xs"><i class="bi bi-stars text-amber-600"></i> NỔ TẦNG X3 (SIÊU ĐỒNG THUẬN)</span>`;
+            } else if (r.hitType === 'win_x2' || r.isX2) {
                 badgeHtml = `<span class="inline-flex items-center gap-1 rounded-full bg-amber-100 border border-amber-300 px-2.5 py-0.5 text-[11px] font-black text-amber-950 shadow-xs"><i class="bi bi-star-fill text-amber-600"></i> NỔ VÙNG VÀNG X2</span>`;
             } else if (r.hitType === 'win_x1') {
                 badgeHtml = `<span class="inline-flex items-center gap-1 rounded-full bg-sky-100 border border-sky-300 px-2.5 py-0.5 text-[11px] font-black text-sky-950 shadow-xs"><i class="bi bi-shield-check text-sky-600"></i> NỔ BỌC LÓT X1</span>`;
             } else if (r.hitType === 'win_vip' || r.isVip) {
-                badgeHtml = `<span class="inline-flex items-center gap-1 rounded-full bg-fuchsia-100 border border-fuchsia-300 px-2.5 py-0.5 text-[11px] font-black text-fuchsia-950 shadow-xs"><i class="bi bi-award-fill text-fuchsia-600"></i> NỔ HẠT NHÂN VIP</span>`;
+                badgeHtml = `<span class="inline-flex items-center gap-1 rounded-full bg-amber-100 border border-amber-300 px-2.5 py-0.5 text-[11px] font-black text-amber-950 shadow-xs"><i class="bi bi-crown-fill text-amber-600"></i> NỔ HẠT NHÂN VIP (X2)</span>`;
             } else if (r.hitType === 'win_elite') {
-                badgeHtml = `<span class="inline-flex items-center gap-1 rounded-full bg-indigo-100 border border-indigo-300 px-2.5 py-0.5 text-[11px] font-black text-indigo-950 shadow-xs"><i class="bi bi-check-circle-fill text-indigo-600"></i> NỔ BỌC LÓT ELITE</span>`;
+                badgeHtml = `<span class="inline-flex items-center gap-1 rounded-full bg-indigo-100 border border-indigo-300 px-2.5 py-0.5 text-[11px] font-black text-indigo-950 shadow-xs"><i class="bi bi-shield-check text-indigo-600"></i> NỔ BỌC LÓT AN TOÀN (X1)</span>`;
             } else if (r.hitType === 'win_tier3' || r.isTier3) {
                 badgeHtml = `<span class="inline-flex items-center gap-1 rounded-full bg-teal-100 border border-teal-300 px-2.5 py-0.5 text-[11px] font-black text-teal-950 shadow-xs"><i class="bi bi-diagram-3-fill text-teal-600"></i> NỔ TAM TRỤ (3 ĐỘNG CƠ)</span>`;
             } else if (r.hitType === 'win_tier2' || r.isTier2) {
@@ -2668,7 +3461,21 @@
             const sep = copyBtn.getAttribute('data-copy-sep') === 'comma' ? ', ' : ' ';
             const ensembles = payload?.tenTierResearch?.profitEnsembles || {};
             let numbers = [];
-            if (targetKey === 'golden_x2') {
+            if (targetKey === 'penta_vip') {
+                numbers = ensembles.pentaCoreLab?.vipNumbers || [];
+            } else if (targetKey === 'penta_backup') {
+                numbers = ensembles.pentaCoreLab?.backupNumbers || [];
+            } else if (targetKey === 'penta_all') {
+                numbers = ensembles.pentaCoreLab?.fullUnion || [];
+            } else if (targetKey === 'triple_x3') {
+                numbers = ensembles.tripleMergeLiveLab?.tierX3 || [];
+            } else if (targetKey === 'triple_x2') {
+                numbers = ensembles.tripleMergeLiveLab?.tierX2 || [];
+            } else if (targetKey === 'triple_x1') {
+                numbers = ensembles.tripleMergeLiveLab?.tierX1 || [];
+            } else if (targetKey === 'triple_all') {
+                numbers = ensembles.tripleMergeLiveLab?.fullUnion || [];
+            } else if (targetKey === 'golden_x2') {
                 numbers = ensembles.goldenDualMerge?.intersectionX2 || [];
             } else if (targetKey === 'golden_x1') {
                 numbers = ensembles.goldenDualMerge?.uniqueSinglesX1 || [];
@@ -2700,6 +3507,83 @@
             copyNumbers(numbers, sep);
         });
 
+        // Bet Slip Calculator Stake Input
+        byId('calcStakeInput')?.addEventListener('input', e => {
+            const rawVal = e.target.value.replace(/\D/g, '');
+            const val = parseInt(rawVal, 10) || 0;
+            calcStake = val;
+            renderBetSlipCalculator(payload?.tenTierResearch?.profitEnsembles || {});
+        });
+
+        // Bet Slip Calculator Quick Stake Buttons
+        document.querySelectorAll('.calc-quick-stake-btn').forEach(btn => {
+            btn.addEventListener('click', e => {
+                const val = parseInt(e.currentTarget.getAttribute('data-quick-stake'), 10);
+                if (!val) return;
+                calcStake = val;
+                const input = byId('calcStakeInput');
+                if (input) input.value = val;
+                document.querySelectorAll('.calc-quick-stake-btn').forEach(b => {
+                    b.classList.remove('active', 'border-amber-400/60', 'bg-amber-500/25', 'text-amber-300', 'font-black', 'ring-1', 'ring-amber-400/40');
+                    b.classList.add('border-white/15', 'bg-white/5', 'text-slate-200', 'font-bold');
+                });
+                e.currentTarget.classList.remove('border-white/15', 'bg-white/5', 'text-slate-200', 'font-bold');
+                e.currentTarget.classList.add('active', 'border-amber-400/60', 'bg-amber-500/25', 'text-amber-300', 'font-black', 'ring-1', 'ring-amber-400/40');
+                renderBetSlipCalculator(payload?.tenTierResearch?.profitEnsembles || {});
+            });
+        });
+
+        // Bet Slip Calculator Odds Buttons (1:84 vs 1:99.5)
+        document.querySelectorAll('.calc-odds-btn').forEach(btn => {
+            btn.addEventListener('click', e => {
+                const odds = parseFloat(e.currentTarget.getAttribute('data-calc-odds'));
+                if (!odds) return;
+                calcOdds = odds;
+                document.querySelectorAll('.calc-odds-btn').forEach(b => {
+                    b.classList.remove('bg-amber-500', 'text-slate-950', 'font-black', 'shadow-xs');
+                    b.classList.add('bg-transparent', 'text-slate-300', 'font-bold');
+                });
+                e.currentTarget.classList.remove('bg-transparent', 'text-slate-300', 'font-bold');
+                e.currentTarget.classList.add('bg-amber-500', 'text-slate-950', 'font-black', 'shadow-xs');
+                renderBetSlipCalculator(payload?.tenTierResearch?.profitEnsembles || {});
+            });
+        });
+
+        // Bet Slip Format Switcher buttons
+        document.querySelectorAll('.slip-format-btn').forEach(btn => {
+            btn.addEventListener('click', e => {
+                const fmt = e.currentTarget.getAttribute('data-slip-format');
+                if (!fmt) return;
+                currentSlipFormat = fmt;
+                updateBetSlipExportDisplay();
+            });
+        });
+
+        // 1-Click Bet Slip Copy Buttons
+        byId('btnCopySlipVip')?.addEventListener('click', () => {
+            if (!currentSlipData?.tierTop?.numbers?.length) return;
+            const sep = currentSlipFormat === 'web' ? ', ' : ' ';
+            copyNumbers(currentSlipData.tierTop.numbers, sep);
+        });
+
+        byId('btnCopySlipBackup')?.addEventListener('click', () => {
+            if (!currentSlipData?.tierMid?.numbers?.length) return;
+            const sep = currentSlipFormat === 'web' ? ', ' : ' ';
+            copyNumbers(currentSlipData.tierMid.numbers, sep);
+        });
+
+        byId('btnCopySlipAll')?.addEventListener('click', () => {
+            if (!currentSlipData?.allNumbers?.length) return;
+            const sep = currentSlipFormat === 'web' ? ', ' : ' ';
+            copyNumbers(currentSlipData.allNumbers, sep);
+        });
+
+        byId('btnCopySlipFullText')?.addEventListener('click', () => {
+            const text = byId('betSlipPreviewText')?.value;
+            if (!text) return;
+            copyText(text, 'Đã sao chép toàn bộ vé cược thực chiến thành công!');
+        });
+
         // Combined Research Methods tab switcher
         document.querySelectorAll('.comb-tab-btn').forEach(btn => {
             btn.addEventListener('click', e => {
@@ -2715,16 +3599,18 @@
                 e.currentTarget.classList.add('border-amber-400', 'bg-amber-400', 'text-slate-950', 'font-black', 'ring-2', 'ring-amber-300');
 
                 const ensembles = payload?.tenTierResearch?.profitEnsembles || {};
-                const activeObj = ensembles[activeCombinedMethod] || ensembles.highProbabilityCoverage64 || {};
+                const activeObj = ensembles[activeCombinedMethod] || ensembles.pentaCoreLab || ensembles.highProbabilityCoverage64 || {};
                 const ledgerTitle = byId('combinedLedgerTitle');
                 if (ledgerTitle) {
                     const methodNames = {
-                        highProbabilityCoverage64: '1. RRF Mega 6 Động Cơ (Bao phủ 64 số)',
-                        liveAugmentedLab: '2. Lai Ghép Thực Chiến Mở Rộng (Adaptive Dual + Lab Booster)',
-                        tamTruConsensus: '3. Tam Trụ Hợp Lực Thế Hệ Mới (~50 số)',
-                        goldenDualMerge: '4. Gộp Đôi Sweet-Spot x Graph (Vốn 60K)',
-                        metaLearner: '5. Phân Tầng Vốn Bất Đối Xứng (VIP 10 + Elite 20)',
-                        adaptiveController: '6. Bộ Điều Khiển Thích Ứng 3 Trạng Thái'
+                        pentaCoreLab: '1. 👑 Ngũ Trụ Tinh Hoa AI (Quán Quân Lab · Trúng 72.5% · Lãi +8.88M)',
+                        tripleMergeLiveLab: '2. 🏛️ Tam Trụ Thực Chiến Live (Trúng 68.2% · Lãi +3.41M)',
+                        highProbabilityCoverage64: '3. 🏆 RRF Mega 6 Động Cơ (Bao phủ 64 số · Trúng 69.0%)',
+                        liveAugmentedLab: '4. ⚡ Lai Ghép Thực Chiến Mở Rộng (Adaptive Dual + Lab Booster)',
+                        tamTruConsensus: '5. 🛡️ Tam Trụ Hợp Lực Lab (~50 số)',
+                        goldenDualMerge: '6. 💎 Gộp Đôi Sweet-Spot x Graph (Vốn 60K)',
+                        metaLearner: '7. 🔮 Phân Tầng Vốn Bất Đối Xứng (VIP 10 + Elite 20)',
+                        adaptiveController: '8. ⚖️ Bộ Điều Khiển Thích Ứng 3 Trạng Thái'
                     };
                     ledgerTitle.textContent = `Chi Tiết Nổ Đề Từng Ngày Năm 2026 — ${methodNames[activeCombinedMethod] || activeCombinedMethod}`;
                 }
@@ -2740,14 +3626,14 @@
                 combinedLedgerFilterStatus = filter;
 
                 document.querySelectorAll('.comb-ledger-filter-btn').forEach(b => {
-                    b.classList.remove('bg-indigo-600', 'text-white', 'font-black', 'shadow-xs');
+                    b.classList.remove('bg-emerald-600', 'bg-indigo-600', 'text-white', 'font-black', 'shadow-xs');
                     b.classList.add('bg-transparent', 'text-slate-600', 'font-bold');
                 });
                 e.currentTarget.classList.remove('bg-transparent', 'text-slate-600', 'font-bold');
-                e.currentTarget.classList.add('bg-indigo-600', 'text-white', 'font-black', 'shadow-xs');
+                e.currentTarget.classList.add('bg-emerald-600', 'text-white', 'font-black', 'shadow-xs');
 
                 const ensembles = payload?.tenTierResearch?.profitEnsembles || {};
-                const activeObj = ensembles[activeCombinedMethod] || ensembles.highProbabilityCoverage64 || {};
+                const activeObj = ensembles[activeCombinedMethod] || ensembles.pentaCoreLab || ensembles.highProbabilityCoverage64 || {};
                 renderCombinedDailyLedger(activeObj.settledLedger || [], activeCombinedMethod);
             });
         });
@@ -2756,7 +3642,7 @@
         byId('combinedLedgerSearchInput')?.addEventListener('input', e => {
             combinedLedgerSearchQuery = e.target.value;
             const ensembles = payload?.tenTierResearch?.profitEnsembles || {};
-            const activeObj = ensembles[activeCombinedMethod] || ensembles.highProbabilityCoverage64 || {};
+            const activeObj = ensembles[activeCombinedMethod] || ensembles.pentaCoreLab || ensembles.highProbabilityCoverage64 || {};
             renderCombinedDailyLedger(activeObj.settledLedger || [], activeCombinedMethod);
         });
 
@@ -2764,7 +3650,7 @@
         byId('combinedLedgerLimitSelect')?.addEventListener('change', e => {
             combinedLedgerLimit = e.target.value;
             const ensembles = payload?.tenTierResearch?.profitEnsembles || {};
-            const activeObj = ensembles[activeCombinedMethod] || ensembles.highProbabilityCoverage64 || {};
+            const activeObj = ensembles[activeCombinedMethod] || ensembles.pentaCoreLab || ensembles.highProbabilityCoverage64 || {};
             renderCombinedDailyLedger(activeObj.settledLedger || [], activeCombinedMethod);
         });
 
@@ -2794,14 +3680,14 @@
                 labLedgerFilterStatus = filter;
 
                 document.querySelectorAll('.lab-ledger-filter-btn').forEach(b => {
-                    b.classList.remove('bg-indigo-600', 'text-white', 'font-black', 'shadow-xs');
+                    b.classList.remove('bg-emerald-600', 'bg-indigo-600', 'text-white', 'font-black', 'shadow-xs');
                     b.classList.add('bg-transparent', 'text-slate-600', 'font-bold');
                 });
                 e.currentTarget.classList.remove('bg-transparent', 'text-slate-600', 'font-bold');
-                e.currentTarget.classList.add('bg-indigo-600', 'text-white', 'font-black', 'shadow-xs');
+                e.currentTarget.classList.add('bg-emerald-600', 'text-white', 'font-black', 'shadow-xs');
 
                 const ensembles = payload?.tenTierResearch?.profitEnsembles || {};
-                const activeObj = ensembles[activeLabTrackMethod] || ensembles.goldenDualMerge || {};
+                const activeObj = ensembles[activeLabTrackMethod] || ensembles.pentaCoreLab || ensembles.goldenDualMerge || {};
                 renderLabDailyLedger(activeObj.settledLedger || [], activeLabTrackMethod);
             });
         });
@@ -2810,7 +3696,7 @@
         byId('labLedgerSearchInput')?.addEventListener('input', e => {
             labLedgerSearchQuery = e.target.value;
             const ensembles = payload?.tenTierResearch?.profitEnsembles || {};
-            const activeObj = ensembles[activeLabTrackMethod] || ensembles.goldenDualMerge || {};
+            const activeObj = ensembles[activeLabTrackMethod] || ensembles.pentaCoreLab || ensembles.goldenDualMerge || {};
             renderLabDailyLedger(activeObj.settledLedger || [], activeLabTrackMethod);
         });
 
@@ -2818,7 +3704,7 @@
         byId('labLedgerLimitSelect')?.addEventListener('change', e => {
             labLedgerLimit = e.target.value;
             const ensembles = payload?.tenTierResearch?.profitEnsembles || {};
-            const activeObj = ensembles[activeLabTrackMethod] || ensembles.goldenDualMerge || {};
+            const activeObj = ensembles[activeLabTrackMethod] || ensembles.pentaCoreLab || ensembles.goldenDualMerge || {};
             renderLabDailyLedger(activeObj.settledLedger || [], activeLabTrackMethod);
         });
 

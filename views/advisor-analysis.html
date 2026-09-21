@@ -162,26 +162,149 @@
                     </div>
                 </div>
 
-                <!-- Strategy Tab Switcher (5 Lab Methods) -->
+                <!-- Strategy Tab Switcher (8 Lab Methods) -->
                 <div class="mt-5 flex flex-wrap items-center gap-2" id="profitStrategyTabs">
-                    <button type="button" data-profit-tab="goldenDualMerge" class="profit-tab-btn rounded-xl bg-amber-500 px-3.5 py-2 text-xs font-black text-slate-950 shadow-md transition-all">
-                        <i class="bi bi-intersect mr-1"></i> 1. Đề Gộp Lab Golden Overlap (Vốn 60K)
+                    <button type="button" data-profit-tab="pentaCoreLab" class="profit-tab-btn rounded-xl bg-amber-500 px-3.5 py-2 text-xs font-black text-slate-950 shadow-md transition-all">
+                        <i class="bi bi-trophy-fill mr-1"></i> 1. Ngũ Trụ AI Dung Hợp (Trúng 72.5% · Lãi +8.88M)
                     </button>
-                    <button type="button" data-profit-tab="metaLearner" class="profit-tab-btn rounded-xl border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-bold text-slate-300 hover:bg-white/20 transition-all">
-                        <i class="bi bi-award mr-1"></i> 2. Lab Meta-Learner Tinh Hoa (Vốn 35K)
-                    </button>
-                    <button type="button" data-profit-tab="adaptiveController" class="profit-tab-btn rounded-xl border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-bold text-slate-300 hover:bg-white/20 transition-all">
-                        <i class="bi bi-shield-check mr-1"></i> 3. Bộ Điều Khiển Thích Ứng (3 Trạng Thái)
-                    </button>
-                    <button type="button" data-profit-tab="tamTruConsensus" class="profit-tab-btn rounded-xl border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-bold text-slate-300 hover:bg-white/20 transition-all">
-                        <i class="bi bi-diagram-3 mr-1"></i> 4. Dàn Tam Trụ Hợp Lực Lab (Vốn 50K · Trúng ~55%)
+                    <button type="button" data-profit-tab="tripleMergeLiveLab" class="profit-tab-btn rounded-xl border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-bold text-slate-300 hover:bg-white/20 transition-all">
+                        <i class="bi bi-shield-shaded mr-1"></i> 2. Tam Trụ Thực Chiến Live (Trúng 68.2% · Lãi +3.41M)
                     </button>
                     <button type="button" data-profit-tab="highProbabilityCoverage64" class="profit-tab-btn rounded-xl border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-bold text-slate-300 hover:bg-white/20 transition-all">
-                        <i class="bi bi-grid-3x3-gap mr-1"></i> 5. Dàn Bao Phủ Xác Suất Cao 64 Số (Trúng 69%)
+                        <i class="bi bi-grid-3x3-gap mr-1"></i> 3. RRF Mega 6 Động Cơ (Trúng 69% · 64 số)
                     </button>
                     <button type="button" data-profit-tab="liveAugmentedLab" class="profit-tab-btn rounded-xl border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-bold text-slate-300 hover:bg-white/20 transition-all">
-                        <i class="bi bi-stars mr-1"></i> 6. Lai Ghép Thực Chiến Mở Rộng (Lãi +2.66M)
+                        <i class="bi bi-stars mr-1"></i> 4. Lai Ghép Thực Chiến Mở Rộng (Lãi +2.66M)
                     </button>
+                    <button type="button" data-profit-tab="tamTruConsensus" class="profit-tab-btn rounded-xl border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-bold text-slate-300 hover:bg-white/20 transition-all">
+                        <i class="bi bi-diagram-3 mr-1"></i> 5. Dàn Tam Trụ Hợp Lực Lab (Vốn 50K)
+                    </button>
+                    <button type="button" data-profit-tab="goldenDualMerge" class="profit-tab-btn rounded-xl border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-bold text-slate-300 hover:bg-white/20 transition-all">
+                        <i class="bi bi-intersect mr-1"></i> 6. Đề Gộp Lab Golden Overlap (Vốn 60K)
+                    </button>
+                    <button type="button" data-profit-tab="metaLearner" class="profit-tab-btn rounded-xl border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-bold text-slate-300 hover:bg-white/20 transition-all">
+                        <i class="bi bi-award mr-1"></i> 7. Lab Meta-Learner Tinh Hoa (Vốn 35K)
+                    </button>
+                    <button type="button" data-profit-tab="adaptiveController" class="profit-tab-btn rounded-xl border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-bold text-slate-300 hover:bg-white/20 transition-all">
+                        <i class="bi bi-shield-check mr-1"></i> 8. Bộ Điều Khiển Thích Ứng (3 Trạng Thái)
+                    </button>
+                </div>
+            </div>
+
+            <!-- 💰 BỘ QUẢN LÝ VỐN & MÔ PHỎNG CƯỢC TƯƠNG TÁC (INTERACTIVE BET SLIP CALCULATOR) -->
+            <div id="betSlipCalculatorContainer" class="border-b border-white/10 bg-slate-950/70 p-5 sm:p-7">
+                <div class="rounded-2xl border border-amber-400/40 bg-gradient-to-br from-amber-500/10 via-slate-900/90 to-indigo-950/60 p-5 shadow-lg">
+                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 border-b border-white/10 pb-4">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-400 text-slate-950 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider">
+                                    <i class="bi bi-calculator-fill"></i> QUẢN LÝ VỐN & MÔ PHỎNG CƯỢC TƯƠNG TÁC
+                                </span>
+                                <span class="rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-2 py-0.5 text-[11px] font-bold">
+                                    🛡️ Chuẩn Tỷ Lệ Thực Chiến Live
+                                </span>
+                            </div>
+                            <h3 class="text-base sm:text-lg font-black text-white mt-1">
+                                Phân Bổ Vốn & Lợi Nhuận Kỳ Vọng — <span id="calcActiveMethodName" class="text-amber-300 font-bold">1. Ngũ Trụ AI Dung Hợp</span>
+                            </h3>
+                            <p class="text-xs text-slate-300 font-medium mt-0.5">
+                                Nhập mức vốn mong muốn hoặc bấm chọn nhanh, đổi tỷ lệ ăn (1:84 hoặc 1:99.5) để hệ thống tự động chia cược và tính ngay tiền lãi khi nổ từng vùng.
+                            </p>
+                        </div>
+                        
+                        <!-- Controls: Capital Input + Odds Toggle -->
+                        <div class="flex flex-wrap items-center gap-3 shrink-0">
+                            <div class="flex items-center gap-2 bg-slate-900 border border-white/20 rounded-xl px-3 py-1.5 shadow-inner">
+                                <span class="text-xs font-bold text-slate-400">Mức vốn ngày:</span>
+                                <input type="number" id="calcStakeInput" value="60000" step="1000" min="10000" max="10000000" class="w-24 bg-transparent text-sm font-mono font-black text-amber-300 outline-none text-right">
+                                <span class="text-xs font-black text-amber-300">đ</span>
+                            </div>
+
+                            <div class="inline-flex rounded-xl border border-white/20 bg-slate-900 p-0.5" id="calcOddsToggleGroup">
+                                <button type="button" data-calc-odds="84" class="calc-odds-btn rounded-lg bg-amber-500 px-3 py-1 text-xs font-black text-slate-950 shadow-xs">1 ăn 84</button>
+                                <button type="button" data-calc-odds="99.5" class="calc-odds-btn rounded-lg bg-transparent px-3 py-1 text-xs font-bold text-slate-300 hover:text-white">1 ăn 99.5</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Capital Buttons -->
+                    <div class="flex flex-wrap items-center gap-2 pt-3.5 pb-4 border-b border-white/10 text-xs">
+                        <span class="text-[11px] font-bold text-slate-400 mr-1 flex items-center gap-1">
+                            <i class="bi bi-lightning-charge-fill text-amber-400"></i> Chọn nhanh:
+                        </span>
+                        <button type="button" data-quick-stake="35000" class="calc-quick-stake-btn rounded-lg border border-white/15 bg-white/5 hover:bg-white/20 px-2.5 py-1 text-xs font-bold text-slate-200 transition-colors">35K</button>
+                        <button type="button" data-quick-stake="50000" class="calc-quick-stake-btn rounded-lg border border-white/15 bg-white/5 hover:bg-white/20 px-2.5 py-1 text-xs font-bold text-slate-200 transition-colors">50K</button>
+                        <button type="button" data-quick-stake="60000" class="calc-quick-stake-btn active rounded-lg border border-amber-400/60 bg-amber-500/25 text-amber-300 px-3 py-1 text-xs font-black transition-colors ring-1 ring-amber-400/40">60K (Chuẩn)</button>
+                        <button type="button" data-quick-stake="90000" class="calc-quick-stake-btn rounded-lg border border-white/15 bg-white/5 hover:bg-white/20 px-2.5 py-1 text-xs font-bold text-slate-200 transition-colors">90K</button>
+                        <button type="button" data-quick-stake="100000" class="calc-quick-stake-btn rounded-lg border border-white/15 bg-white/5 hover:bg-white/20 px-2.5 py-1 text-xs font-bold text-slate-200 transition-colors">100K</button>
+                        <button type="button" data-quick-stake="150000" class="calc-quick-stake-btn rounded-lg border border-white/15 bg-white/5 hover:bg-white/20 px-2.5 py-1 text-xs font-bold text-slate-200 transition-colors">150K</button>
+                        <button type="button" data-quick-stake="200000" class="calc-quick-stake-btn rounded-lg border border-white/15 bg-white/5 hover:bg-white/20 px-2.5 py-1 text-xs font-bold text-slate-200 transition-colors">200K</button>
+                    </div>
+
+                    <!-- Dynamic Bet Simulation Results Grid -->
+                    <div id="calcResultsGrid" class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 text-xs font-semibold">
+                        <!-- Rendered dynamically by JS -->
+                    </div>
+
+                    <!-- 🚀 BỘ TẠO & XUẤT VÉ CƯỢC THỰC CHIẾN 1-CHẠM (LIVE BET SLIP EXPORTER) -->
+                    <div id="betSlipExportContainer" class="mt-5 rounded-2xl border border-white/15 bg-slate-900/90 p-4 sm:p-5 shadow-inner">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-white/10 pb-3.5">
+                            <div class="flex items-center gap-2.5">
+                                <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-700 text-white font-black text-sm shadow-sm">
+                                    <i class="bi bi-receipt-cutoff"></i>
+                                </span>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <h4 class="text-sm font-black text-white">Xuất Vé Cược Thực Chiến 1-Chạm</h4>
+                                        <span class="rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-2 py-0.2 text-[10px] font-bold">
+                                            Live Ready
+                                        </span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-400 font-medium">Chuẩn định dạng Web Cược (dấu phẩy), App / SMS (dấu cách) và Cú pháp cược chi tiết gửi Zalo / Telegram</p>
+                                </div>
+                            </div>
+
+                            <!-- Format Switcher -->
+                            <div class="inline-flex rounded-xl border border-white/20 bg-slate-950 p-0.5 text-xs shrink-0" id="betSlipFormatGroup">
+                                <button type="button" data-slip-format="web" class="slip-format-btn active rounded-lg bg-indigo-600 px-3 py-1 font-black text-white shadow-xs transition-all">
+                                    <i class="bi bi-code-square mr-1"></i> Web Cược (Phẩy)
+                                </button>
+                                <button type="button" data-slip-format="app" class="slip-format-btn rounded-lg bg-transparent px-3 py-1 font-bold text-slate-300 hover:text-white transition-all">
+                                    <i class="bi bi-phone mr-1"></i> App / SMS (Cách)
+                                </button>
+                                <button type="button" data-slip-format="full" class="slip-format-btn rounded-lg bg-transparent px-3 py-1 font-bold text-slate-300 hover:text-white transition-all">
+                                    <i class="bi bi-chat-quote mr-1"></i> Cú Pháp Đầy Đủ
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 1-Click Action Buttons -->
+                        <div class="mt-3.5 flex flex-wrap items-center gap-2 text-xs">
+                            <span class="text-[11px] font-bold text-slate-400 mr-1 flex items-center gap-1">
+                                <i class="bi bi-lightning-charge-fill text-amber-400"></i> Sao chép nhanh:
+                            </span>
+                            <button type="button" id="btnCopySlipVip" class="rounded-xl border border-amber-400/40 bg-amber-500/15 hover:bg-amber-500/30 text-amber-300 px-3 py-1.5 font-bold transition-all flex items-center gap-1.5 shadow-2xs">
+                                <i class="bi bi-clipboard-check"></i> <span id="labelCopySlipVip">Copy Dàn VIP</span>
+                            </button>
+                            <button type="button" id="btnCopySlipBackup" class="rounded-xl border border-emerald-400/40 bg-emerald-500/15 hover:bg-emerald-500/30 text-emerald-300 px-3 py-1.5 font-bold transition-all flex items-center gap-1.5 shadow-2xs">
+                                <i class="bi bi-clipboard-check"></i> <span id="labelCopySlipBackup">Copy Dàn Bọc Lót</span>
+                            </button>
+                            <button type="button" id="btnCopySlipAll" class="rounded-xl border border-indigo-400/40 bg-indigo-500/15 hover:bg-indigo-500/30 text-indigo-300 px-3 py-1.5 font-bold transition-all flex items-center gap-1.5 shadow-2xs">
+                                <i class="bi bi-clipboard-check"></i> <span id="labelCopySlipAll">Copy Toàn Bộ Dàn</span>
+                            </button>
+                            <button type="button" id="btnCopySlipFullText" class="sm:ml-auto rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:from-emerald-500 hover:to-teal-500 text-white px-4 py-1.5 font-black transition-all flex items-center gap-1.5 shadow-md">
+                                <i class="bi bi-send-check-fill"></i> Sao Chép Toàn Bộ Vé Cược
+                            </button>
+                        </div>
+
+                        <!-- Bet Slip Preview Box -->
+                        <div class="mt-3.5 relative">
+                            <textarea id="betSlipPreviewText" readonly rows="4" class="w-full rounded-xl border border-white/15 bg-slate-950/90 p-3.5 font-mono text-xs text-amber-200/90 focus:outline-none custom-scrollbar select-all resize-none shadow-inner leading-relaxed" placeholder="Đang tạo nội dung vé cược..."></textarea>
+                            <div class="absolute right-3 bottom-2 text-[10px] text-slate-500 font-mono pointer-events-none">
+                                Tự động tính theo mức vốn & tỷ lệ chọn
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -214,37 +337,47 @@
                     </div>
                 </div>
 
-                <!-- 5 Lab Tracking Tabs -->
+                <!-- 8 Lab Tracking Tabs -->
                 <div class="mt-5 flex flex-wrap items-center gap-2.5" id="labTrackingTabs">
-                    <button type="button" data-lab-track-method="goldenDualMerge" class="lab-track-tab-btn rounded-xl border border-amber-400 bg-amber-400 text-slate-950 font-black px-3.5 py-2 text-xs transition-all shadow-md flex items-center gap-2 ring-2 ring-amber-300">
-                        <i class="bi bi-intersect"></i>
-                        <span>1. Đề Gộp Lab Golden Overlap (Vốn 60K)</span>
-                        <span id="labBadgeProfitGolden" class="rounded-md bg-slate-950 text-amber-300 px-1.5 py-0.5 text-[10px] font-black">--</span>
+                    <button type="button" data-lab-track-method="pentaCoreLab" class="lab-track-tab-btn rounded-xl border border-amber-400 bg-amber-400 text-slate-950 font-black px-3.5 py-2 text-xs transition-all shadow-md flex items-center gap-2 ring-2 ring-amber-300">
+                        <i class="bi bi-trophy-fill"></i>
+                        <span>1. Ngũ Trụ AI Dung Hợp</span>
+                        <span id="labBadgeProfitPenta" class="rounded-md bg-slate-950 text-amber-300 px-1.5 py-0.5 text-[10px] font-black">--</span>
                     </button>
-                    <button type="button" data-lab-track-method="metaLearner" class="lab-track-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2 text-xs hover:bg-white/20 transition-all flex items-center gap-2">
-                        <i class="bi bi-award"></i>
-                        <span>2. Lab Meta-Learner (Vốn 35K)</span>
-                        <span id="labBadgeProfitMeta" class="rounded-md bg-purple-500/30 text-purple-200 px-1.5 py-0.5 text-[10px] font-black">--</span>
-                    </button>
-                    <button type="button" data-lab-track-method="adaptiveController" class="lab-track-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2 text-xs hover:bg-white/20 transition-all flex items-center gap-2">
-                        <i class="bi bi-shield-check"></i>
-                        <span>3. Thích Ứng (3 Trạng Thái)</span>
-                        <span id="labBadgeProfitAdaptive" class="rounded-md bg-sky-500/30 text-sky-200 px-1.5 py-0.5 text-[10px] font-black">--</span>
-                    </button>
-                    <button type="button" data-lab-track-method="tamTruConsensus" class="lab-track-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2 text-xs hover:bg-white/20 transition-all flex items-center gap-2">
-                        <i class="bi bi-diagram-3-fill"></i>
-                        <span>4. Tam Trụ Hợp Lực (~50s)</span>
-                        <span id="labBadgeProfitTamTru" class="rounded-md bg-teal-500/30 text-teal-200 px-1.5 py-0.5 text-[10px] font-black">--</span>
+                    <button type="button" data-lab-track-method="tripleMergeLiveLab" class="lab-track-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2 text-xs hover:bg-white/20 transition-all flex items-center gap-2">
+                        <i class="bi bi-shield-shaded"></i>
+                        <span>2. Tam Trụ Thực Chiến Live</span>
+                        <span id="labBadgeProfitTripleLive" class="rounded-md bg-sky-500/30 text-sky-200 px-1.5 py-0.5 text-[10px] font-black">--</span>
                     </button>
                     <button type="button" data-lab-track-method="highProbabilityCoverage64" class="lab-track-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2 text-xs hover:bg-white/20 transition-all flex items-center gap-2">
                         <i class="bi bi-grid-3x3-gap-fill"></i>
-                        <span>5. Bao Phủ 64 Số (Trúng 69%)</span>
+                        <span>3. Bao Phủ 64 Số (Trúng 69%)</span>
                         <span id="labBadgeProfitCoverage" class="rounded-md bg-emerald-500/30 text-emerald-200 px-1.5 py-0.5 text-[10px] font-black">--</span>
                     </button>
                     <button type="button" data-lab-track-method="liveAugmentedLab" class="lab-track-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2 text-xs hover:bg-white/20 transition-all flex items-center gap-2">
                         <i class="bi bi-stars"></i>
-                        <span>6. Lai Ghép Thực Chiến</span>
+                        <span>4. Lai Ghép Thực Chiến</span>
                         <span id="labBadgeProfitLiveAug" class="rounded-md bg-emerald-500/30 text-emerald-200 px-1.5 py-0.5 text-[10px] font-black">--</span>
+                    </button>
+                    <button type="button" data-lab-track-method="tamTruConsensus" class="lab-track-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2 text-xs hover:bg-white/20 transition-all flex items-center gap-2">
+                        <i class="bi bi-diagram-3-fill"></i>
+                        <span>5. Tam Trụ Hợp Lực (~50s)</span>
+                        <span id="labBadgeProfitTamTru" class="rounded-md bg-teal-500/30 text-teal-200 px-1.5 py-0.5 text-[10px] font-black">--</span>
+                    </button>
+                    <button type="button" data-lab-track-method="goldenDualMerge" class="lab-track-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2 text-xs hover:bg-white/20 transition-all flex items-center gap-2">
+                        <i class="bi bi-intersect"></i>
+                        <span>6. Đề Gộp Lab Golden Overlap (Vốn 60K)</span>
+                        <span id="labBadgeProfitGolden" class="rounded-md bg-amber-500/30 text-amber-200 px-1.5 py-0.5 text-[10px] font-black">--</span>
+                    </button>
+                    <button type="button" data-lab-track-method="metaLearner" class="lab-track-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2 text-xs hover:bg-white/20 transition-all flex items-center gap-2">
+                        <i class="bi bi-award"></i>
+                        <span>7. Lab Meta-Learner (Vốn 35K)</span>
+                        <span id="labBadgeProfitMeta" class="rounded-md bg-purple-500/30 text-purple-200 px-1.5 py-0.5 text-[10px] font-black">--</span>
+                    </button>
+                    <button type="button" data-lab-track-method="adaptiveController" class="lab-track-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2 text-xs hover:bg-white/20 transition-all flex items-center gap-2">
+                        <i class="bi bi-shield-check"></i>
+                        <span>8. Thích Ứng (3 Trạng Thái)</span>
+                        <span id="labBadgeProfitAdaptive" class="rounded-md bg-sky-500/30 text-sky-200 px-1.5 py-0.5 text-[10px] font-black">--</span>
                     </button>
                 </div>
             </div>
@@ -308,7 +441,8 @@
                     <div class="flex flex-wrap items-center gap-2 text-xs">
                         <!-- Filter Status -->
                         <div class="inline-flex rounded-xl border border-slate-200 bg-slate-100 p-0.5" id="labLedgerFilterGroup">
-                            <button type="button" data-lab-filter="all" class="lab-ledger-filter-btn rounded-lg bg-indigo-600 px-3 py-1 text-xs font-black text-white shadow-xs">Tất cả</button>
+                            <button type="button" data-lab-filter="live" class="lab-ledger-filter-btn rounded-lg bg-emerald-600 px-3 py-1 text-xs font-black text-white shadow-xs">🔒 Mốc Live (Từ 28/08)</button>
+                            <button type="button" data-lab-filter="all" class="lab-ledger-filter-btn rounded-lg bg-transparent px-3 py-1 text-xs font-bold text-slate-600 hover:text-slate-900">Tất cả (2026)</button>
                             <button type="button" data-lab-filter="win" class="lab-ledger-filter-btn rounded-lg bg-transparent px-3 py-1 text-xs font-bold text-slate-600 hover:text-slate-900">Chỉ Thắng</button>
                             <button type="button" data-lab-filter="loss" class="lab-ledger-filter-btn rounded-lg bg-transparent px-3 py-1 text-xs font-bold text-slate-600 hover:text-slate-900">Chỉ Thua</button>
                         </div>
@@ -414,31 +548,39 @@
                     </div>
                 </div>
 
-                <!-- 6 Research Combination Tabs -->
+                <!-- 8 Research Combination Tabs -->
                 <div class="mt-5 flex flex-wrap items-center gap-2" id="combinedMethodTabs">
-                    <button type="button" data-comb-tab="highProbabilityCoverage64" class="comb-tab-btn rounded-xl border border-amber-400 bg-amber-400 text-slate-950 font-black px-3.5 py-2 text-xs transition-all shadow-md flex items-center gap-2 ring-2 ring-amber-300">
+                    <button type="button" data-comb-tab="pentaCoreLab" class="comb-tab-btn rounded-xl border border-amber-400 bg-amber-400 text-slate-950 font-black px-3.5 py-2 text-xs transition-all shadow-md flex items-center gap-2 ring-2 ring-amber-300">
                         <i class="bi bi-trophy-fill"></i>
-                        <span>1. RRF Mega 6 Động Cơ (Trúng 69-70%)</span>
+                        <span>1. Ngũ Trụ AI Dung Hợp (Trúng 72.5% · Lãi +8.88M)</span>
+                    </button>
+                    <button type="button" data-comb-tab="tripleMergeLiveLab" class="comb-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2 text-xs hover:bg-white/20 transition-all flex items-center gap-2">
+                        <i class="bi bi-shield-shaded"></i>
+                        <span>2. Tam Trụ Thực Chiến Live (Trúng 68.2% · Lãi +3.41M)</span>
+                    </button>
+                    <button type="button" data-comb-tab="highProbabilityCoverage64" class="comb-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2 text-xs hover:bg-white/20 transition-all flex items-center gap-2">
+                        <i class="bi bi-grid-3x3-gap"></i>
+                        <span>3. RRF Mega 6 Động Cơ (Trúng 69%)</span>
                     </button>
                     <button type="button" data-comb-tab="liveAugmentedLab" class="comb-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2 text-xs hover:bg-white/20 transition-all flex items-center gap-2">
                         <i class="bi bi-stars"></i>
-                        <span>2. Lai Ghép Thực Chiến (Lãi +2.66M)</span>
+                        <span>4. Lai Ghép Thực Chiến (Lãi +2.66M)</span>
                     </button>
                     <button type="button" data-comb-tab="tamTruConsensus" class="comb-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2 text-xs hover:bg-white/20 transition-all flex items-center gap-2">
                         <i class="bi bi-diagram-3"></i>
-                        <span>3. Tam Trụ Hợp Lực (Trúng 51.2%)</span>
+                        <span>5. Tam Trụ Hợp Lực (Trúng 51.2%)</span>
                     </button>
                     <button type="button" data-comb-tab="goldenDualMerge" class="comb-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2 text-xs hover:bg-white/20 transition-all flex items-center gap-2">
                         <i class="bi bi-intersect"></i>
-                        <span>4. Gộp Đôi Sweet-Spot x Graph (Vốn 60K)</span>
+                        <span>6. Gộp Đôi Sweet-Spot x Graph (60K)</span>
                     </button>
                     <button type="button" data-comb-tab="metaLearner" class="comb-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2 text-xs hover:bg-white/20 transition-all flex items-center gap-2">
                         <i class="bi bi-award"></i>
-                        <span>5. Phân Tầng Bất Đối Xứng (Vốn 35K)</span>
+                        <span>7. Phân Tầng Bất Đối Xứng (35K)</span>
                     </button>
                     <button type="button" data-comb-tab="adaptiveController" class="comb-tab-btn rounded-xl border border-white/20 bg-white/10 text-white font-bold px-3.5 py-2 text-xs hover:bg-white/20 transition-all flex items-center gap-2">
                         <i class="bi bi-shield-check"></i>
-                        <span>6. Thích Ứng 3 Trạng Thái (Cắt Dây)</span>
+                        <span>8. Thích Ứng 3 Trạng Thái (Cắt Dây)</span>
                     </button>
                 </div>
             </div>
@@ -489,7 +631,8 @@
                     <!-- Filter Controls -->
                     <div class="flex flex-wrap items-center gap-2 text-xs">
                         <div class="inline-flex rounded-xl border border-slate-200 bg-slate-100 p-0.5" id="combinedLedgerFilterGroup">
-                            <button type="button" data-comb-filter="all" class="comb-ledger-filter-btn rounded-lg bg-indigo-600 px-3 py-1 text-xs font-black text-white shadow-xs">Tất cả</button>
+                            <button type="button" data-comb-filter="live" class="comb-ledger-filter-btn rounded-lg bg-emerald-600 px-3 py-1 text-xs font-black text-white shadow-xs">🔒 Mốc Live (Từ 28/08)</button>
+                            <button type="button" data-comb-filter="all" class="comb-ledger-filter-btn rounded-lg bg-transparent px-3 py-1 text-xs font-bold text-slate-600 hover:text-slate-900">Tất cả (2026)</button>
                             <button type="button" data-comb-filter="win" class="comb-ledger-filter-btn rounded-lg bg-transparent px-3 py-1 text-xs font-bold text-slate-600 hover:text-slate-900">Chỉ Thắng</button>
                             <button type="button" data-comb-filter="loss" class="comb-ledger-filter-btn rounded-lg bg-transparent px-3 py-1 text-xs font-bold text-slate-600 hover:text-slate-900">Chỉ Thua</button>
                         </div>

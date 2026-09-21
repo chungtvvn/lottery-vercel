@@ -1252,7 +1252,7 @@ function generateDailyMethodAdvisorCache(options = {}) {
         'Sinh cache Gợi ý phương pháp hàng ngày + dàn Kết hợp Z-score từ snapshot/R2.',
         {
             LOTTERY_DATA_SOURCE: options.useLocalHistory ? 'local' : (process.env.LOTTERY_DATA_SOURCE || 'r2'),
-            LOTTERY_STATS_SOURCE: options.useLocalHistory ? 'local' : (process.env.LOTTERY_STATS_SOURCE || 'r2'),
+            LOTTERY_STATS_SOURCE: process.env.LOTTERY_STATS_SOURCE || 'r2',
             // The prediction history was just refreshed locally in this action.
             // Do not read its previous R2 copy before the upload stage completes.
             DAILY_ADVISOR_USE_LOCAL_HISTORY: options.useLocalHistory ? '1' : '0'
