@@ -311,6 +311,7 @@
         // 2. Resolve Lô
         const pendingLo = payloadData.dynamicMetaAdvisor?.nextPrediction || {};
         const pentaLo = payloadData.loPentaMatrix?.latestRecommendation || {};
+        const quadLo = payloadData.loQuadHybrid?.latestRecommendation || {};
         const bridgeLo = payloadData.loPositionalBridgeFlow?.latestRecommendation || {};
         const hawkesLo = payloadData.loHawkesClustering?.latestRecommendation || {};
         const stdRaw = pendingLo.standard || {};
@@ -318,46 +319,84 @@
         const xi4Raw = pendingLo.xien4 || {};
 
         let stdMethodName = stdRaw.title || stdRaw.methodLabel || '👑 Tam Trụ Tri-Consensus Fusion Top 20';
-        let stdNumbers = (stdRaw.numbers && stdRaw.numbers.length ? stdRaw.numbers : (pentaLo.top20 && pentaLo.top20.length ? pentaLo.top20 : [])).map(number);
+        let stdNumbers = (stdRaw.numbers && stdRaw.numbers.length ? stdRaw.numbers : (pentaLo.top20 && pentaLo.top20.length ? pentaLo.top20 : (quadLo.top20 || []))).map(number);
         let stdStakeK = stdNumbers.length * 2200 || 44000;
         let stdSubTierLabel = stdRaw.topCount ? `Top ${stdRaw.topCount} số nền tảng (Tri-Consensus)` : `Top ${stdNumbers.length || 20} số nền tảng (Tri-Consensus)`;
 
-        let x2MethodName = x2Raw.title || x2Raw.methodLabel || '⚡ Thất Thủ Nổ Bù Tri-Consensus Top 7';
-        let x2Numbers = (currentSelectedLoSubTier === 2 ? (x2Raw.songThuVip || x2Raw.numbers?.slice(0, 2) || pentaLo.top2 || []) : (x2Raw.numbers && x2Raw.numbers.length ? x2Raw.numbers : (pentaLo.top7 || []))).map(number);
-        let x2StakeK = x2Numbers.length * 2200 || 15400;
-        let x2SubTierLabel = currentSelectedLoSubTier === 2 ? 'Song thủ Lô VIP (Cược X2)' : `Dàn ${x2Numbers.length || 7} số cược X2 (Nổ bù Tri-Consensus)`;
-
-        if (loEngineKey === 'bridge') {
-            stdMethodName = bridgeLo.engineLabel ? '🕸️ Cầu Lô Đồ Thị Động Năng Top 20' : (stdRaw.methodLabel || 'Cầu Lô Đồ Thị Top 20');
-            stdNumbers = (bridgeLo.top20 && bridgeLo.top20.length ? bridgeLo.top20 : (stdRaw.numbers || [])).map(number);
-            stdStakeK = stdNumbers.length * 2200 || 44000;
-            stdSubTierLabel = 'Top 20 số đồ thị bẻ cầu';
-
-            x2MethodName = bridgeLo.engineLabel ? '🕸️ Cầu Lô Đồ Thị Động Năng Top 7' : (x2Raw.methodLabel || 'Lô X2 Top 7');
-            x2Numbers = (currentSelectedLoSubTier === 2 ? (bridgeLo.top2 || bridgeLo.rankedNumbers?.slice(0, 2) || bridgeLo.top7?.slice(0, 2)) : (bridgeLo.top7 && bridgeLo.top7.length ? bridgeLo.top7 : (x2Raw.numbers || []))).map(number);
-            x2StakeK = x2Numbers.length * 2200 || 15400;
-            x2SubTierLabel = `Dàn ${x2Numbers.length} số bắt nhịp bẻ cầu`;
-        } else if (loEngineKey === 'hawkes') {
-            stdMethodName = hawkesLo.engineLabel ? '⚡ Cụm Lô Tần Suất Cao Hawkes Top 20' : (stdRaw.methodLabel || 'Cụm Hawkes Top 20');
-            stdNumbers = (hawkesLo.top20 && hawkesLo.top20.length ? hawkesLo.top20 : (stdRaw.numbers || [])).map(number);
-            stdStakeK = 44000;
-            stdSubTierLabel = 'Top 20 số cụm tự kích hoạt';
-
-            x2MethodName = '⚡ Cụm Hawkes Top 7';
-            x2Numbers = (currentSelectedLoSubTier === 2 ? (hawkesLo.top2 || hawkesLo.rankedNumbers?.slice(0, 2) || hawkesLo.top7?.slice(0, 2)) : (hawkesLo.top7 && hawkesLo.top7.length ? hawkesLo.top7 : (x2Raw.numbers || []))).map(number);
-            x2StakeK = x2Numbers.length * 2200 || 15400;
-            x2SubTierLabel = `Dàn ${x2Numbers.length} số cụm Hawkes`;
-        } else if (loEngineKey === 'penta') {
-            stdMethodName = pentaLo.engineLabel ? '⚡ Siêu Động Cơ Ngũ Hợp Lô AI v8.0 Top 20' : (stdRaw.methodLabel || 'Ngũ Hợp v8.0 Top 20');
-            stdNumbers = (pentaLo.top20 && pentaLo.top20.length ? pentaLo.top20 : (stdRaw.numbers || [])).map(number);
+        // Resolve active engine numbers and sub-tier numbers dynamically
+        let activeRanked = [];
+        let activeEngineLabel = '';
+        if (loEngineKey === 'penta') {
+            activeRanked = pentaLo.rankedNumbers || pentaLo.top20 || [];
+            activeEngineLabel = 'Ngũ Hợp v8.0';
+            stdMethodName = pentaLo.engineLabel || '⚡ Siêu Động Cơ Ngũ Hợp Lô AI v8.0 Top 20';
+            stdNumbers = (pentaLo.top20 && pentaLo.top20.length ? pentaLo.top20 : stdNumbers).map(number);
             stdStakeK = stdNumbers.length * 2200 || 44000;
             stdSubTierLabel = 'Top 20 số nền tảng (Ngũ Hợp v8.0)';
-
-            x2MethodName = '⚡ Ngũ Hợp Lô AI v8.0 Top 7 (Nổ Bù)';
-            x2Numbers = (currentSelectedLoSubTier === 2 ? (pentaLo.top2 || pentaLo.rankedNumbers?.slice(0, 2) || pentaLo.top7?.slice(0, 2)) : (pentaLo.top7 && pentaLo.top7.length ? pentaLo.top7 : (x2Raw.numbers || []))).map(number);
-            x2StakeK = x2Numbers.length * 2200 || 15400;
-            x2SubTierLabel = `Dàn ${x2Numbers.length} số cược X2 (Nổ bù 5 tầng)`;
+        } else if (loEngineKey === 'quad') {
+            activeRanked = quadLo.rankedNumbers || quadLo.top20 || [];
+            activeEngineLabel = 'Tứ Trụ Quad-Fusion v7.2';
+            stdMethodName = quadLo.engineLabel || '🚀 Tứ Trụ Quad-Fusion v7.2 Top 20';
+            stdNumbers = (quadLo.top20 && quadLo.top20.length ? quadLo.top20 : stdNumbers).map(number);
+            stdStakeK = stdNumbers.length * 2200 || 44000;
+            stdSubTierLabel = 'Top 20 số nền tảng (Quad-Fusion v7.2)';
+        } else if (loEngineKey === 'bridge') {
+            activeRanked = bridgeLo.rankedNumbers || bridgeLo.top20 || [];
+            activeEngineLabel = 'Cầu Lô Đồ Thị';
+            stdMethodName = bridgeLo.engineLabel || '🕸️ Cầu Lô Đồ Thị Động Năng Top 20';
+            stdNumbers = (bridgeLo.top20 && bridgeLo.top20.length ? bridgeLo.top20 : stdNumbers).map(number);
+            stdStakeK = stdNumbers.length * 2200 || 44000;
+            stdSubTierLabel = 'Top 20 số đồ thị bẻ cầu';
+        } else if (loEngineKey === 'hawkes') {
+            activeRanked = hawkesLo.rankedNumbers || hawkesLo.top20 || [];
+            activeEngineLabel = 'Cụm Hawkes';
+            stdMethodName = hawkesLo.engineLabel || '⚡ Cụm Lô Tần Suất Cao Hawkes Top 20';
+            stdNumbers = (hawkesLo.top20 && hawkesLo.top20.length ? hawkesLo.top20 : stdNumbers).map(number);
+            stdStakeK = stdNumbers.length * 2200 || 44000;
+            stdSubTierLabel = 'Top 20 số cụm tự kích hoạt';
+        } else {
+            // Default: Tri-Consensus Fusion
+            activeRanked = stdRaw.numbers || [];
+            activeEngineLabel = 'Tri-Consensus';
         }
+
+        let x2Numbers = [];
+        if (currentActiveLoSubNums && currentActiveLoSubNums.length === currentSelectedLoSubTier) {
+            x2Numbers = currentActiveLoSubNums.map(number);
+        } else if (currentSelectedLoSubTier === 2) {
+            x2Numbers = (x2Raw.songThuVip || activeRanked.slice(0, 2) || pentaLo.top2 || quadLo.top2 || []).map(number);
+        } else if (currentSelectedLoSubTier === 4) {
+            x2Numbers = (activeRanked.slice(0, 4) || pentaLo.top4 || quadLo.top4 || []).map(number);
+        } else if (currentSelectedLoSubTier === 7) {
+            x2Numbers = (activeRanked.slice(0, 7) || x2Raw.numbers || pentaLo.top7 || quadLo.top7 || []).map(number);
+        } else if (currentSelectedLoSubTier === 10) {
+            x2Numbers = (activeRanked.slice(0, 10) || pentaLo.top10 || quadLo.top10 || []).map(number);
+        } else if (currentSelectedLoSubTier === 20) {
+            x2Numbers = stdNumbers;
+        } else {
+            x2Numbers = (activeRanked.slice(0, currentSelectedLoSubTier) || x2Raw.numbers || []).map(number);
+        }
+
+        let x2MethodName = '';
+        let x2SubTierLabel = '';
+        if (currentSelectedLoSubTier === 2) {
+            x2MethodName = `👑 Song Thủ VIP ${activeEngineLabel}`;
+            x2SubTierLabel = 'Song Thủ Lô Siêu VIP (Cược X2)';
+        } else if (currentSelectedLoSubTier === 4) {
+            x2MethodName = `💎 Tứ Thủ Tinh Tuyển ${activeEngineLabel}`;
+            x2SubTierLabel = 'Tứ Thủ Lô Tinh Tuyển (Top 4)';
+        } else if (currentSelectedLoSubTier === 7) {
+            x2MethodName = `⚡ Thất Thủ Nổ Bù ${activeEngineLabel}`;
+            x2SubTierLabel = 'Thất Thủ Nổ Bù (Top 7 Điểm Rơi Vàng)';
+        } else if (currentSelectedLoSubTier === 10) {
+            x2MethodName = `🔥 Thập Thủ Toàn Năng ${activeEngineLabel}`;
+            x2SubTierLabel = 'Thập Thủ Lô Độ Phủ Cao (Top 10)';
+        } else {
+            x2MethodName = `⚡ Dàn Lô Top ${x2Numbers.length} ${activeEngineLabel}`;
+            x2SubTierLabel = `Dàn ${x2Numbers.length} số cược X2`;
+        }
+
+        let x2StakeK = x2Numbers.length * 2200 || 15400;
 
         // Xiên & Golden Xiên 2
         const xi4MethodName = xi4Raw.title || xi4Raw.methodLabel || xi4Raw.methodName || '💎 Tứ Thủ Xiên 4 Tinh Hoa';
@@ -1062,6 +1101,10 @@
                     }
                 };
             }
+
+            if (typeof window.__refreshCombatDiary === 'function') {
+                window.__refreshCombatDiary();
+            }
         }
 
         updateDeMethodDisplay(activeDeMethodKey);
@@ -1073,24 +1116,24 @@
         currentSelectedLoSubTier = governor.selectedSubTier || 7;
         let currentActiveLoEngineData = null;
 
-        // Card 1: Chuẩn Nền Tảng (Mặc Định Đánh) — MỎ NEO NỀN TẢNG CỐ ĐỊNH (Tứ Trụ Quad-Fusion v7.2 Top 20)
+        // Card 1: Chuẩn Nền Tảng (Mặc Định Đánh) — MỎ NEO NỀN TẢNG CỐ ĐỊNH (Tam Trụ Tri-Consensus Fusion Top 20)
         let stdNums = [];
-        if (loQuadAdv && Array.isArray(loQuadAdv.top20) && loQuadAdv.top20.length) {
-            stdNums = loQuadAdv.top20.map(number);
-        } else if (loNext?.standard?.numbers && Array.isArray(loNext.standard.numbers) && loNext.standard.numbers.length) {
+        if (loNext?.standard?.numbers && Array.isArray(loNext.standard.numbers) && loNext.standard.numbers.length) {
             stdNums = loNext.standard.numbers.map(number);
+        } else if (loQuadAdv && Array.isArray(loQuadAdv.top20) && loQuadAdv.top20.length) {
+            stdNums = loQuadAdv.top20.map(number);
         } else {
             stdNums = (loNext?.numbers || []).slice(0, 20).map(number);
         }
 
         const stdLabel = byId('unifiedLoStdLabel');
         if (stdLabel) {
-            stdLabel.textContent = loNext?.standard?.title || loNext?.standard?.methodLabel || '👑 Tứ Trụ Quad-Fusion v7.2 Top 20 (Mỏ Neo Nền Tảng)';
+            stdLabel.textContent = loNext?.standard?.title || loNext?.standard?.methodLabel || '👑 Tam Trụ Tri-Consensus Fusion Top 20 (Mỏ Neo Nền Tảng)';
         }
 
         const stdRoiEl = byId('unifiedLoStdLiveRoi');
         if (stdRoiEl) {
-            stdRoiEl.textContent = 'Top 20 Win 77.3% (Lãi +2.98 TỶ · 6.96 Nháy)';
+            stdRoiEl.textContent = 'Top 20 Win 76.9% (Lãi +2.98 TỶ · 6.93 Nháy)';
         }
 
         const stdContainer = byId('unifiedLoStdNumbers');
@@ -1181,6 +1224,10 @@
                         <span class="absolute -top-1.5 -right-1 rounded-full bg-slate-600 text-slate-200 text-[8px] font-bold px-1">X1</span>
                     </div>
                 `).join('') || '<span class="text-slate-400 text-xs">Không có số</span>';
+            }
+
+            if (typeof window.__refreshCombatDiary === 'function') {
+                window.__refreshCombatDiary();
             }
         }
 
