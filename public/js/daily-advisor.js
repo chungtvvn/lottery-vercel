@@ -21,7 +21,7 @@
     let payload = null;
     let currentMainTab = 'unifiedCombat'; // 'unifiedCombat' | 'dualMerge'
     let unifiedTimeframe = 'sep16'; // 'sep16' | 'live' | 'all'
-    let currentDiaryCategory = 'all'; // 'all' | 'de' | 'loStd' | 'loX2' | 'loXi4'
+    let currentDiaryCategory = 'all'; // 'all' | 'de' | 'loStd' | 'loX2' | 'loXi3' | 'loXi4'
     let unifiedStatusFilter = 'all'; // 'all' | 'win' | 'loss'
     let dualMergeLogLimit = '30'; // Mặc định 30 ngày gần nhất
     let dualMergeFilterStatus = 'live'; // 'live' | 'all' | 'pit' | 'win_x3' | 'win_x2' | 'win_x1' | 'loss'
@@ -402,8 +402,15 @@
         const xi4MethodName = xi4Raw.title || xi4Raw.methodLabel || xi4Raw.methodName || '💎 Tứ Thủ Xiên 4 Tinh Hoa';
         const xi4Numbers = (xi4Raw.numbers || []).map(number);
         const xi4StakeK = xi4Raw.stakeK !== undefined ? xi4Raw.stakeK : 1000;
-        const xi4SubTierLabel = xi4StakeK <= 1500 ? 'Jackpot săn thưởng (Vốn nhẹ 1M)' : 'Quây 11 vé (1 X4 + 4 X3 + 6 X2)';
+        const xi4SubTierLabel = xi4StakeK <= 1500 ? 'Jackpot săn thưởng (Vốn nhẹ 1M - Quan sát)' : 'Quây 11 vé (1 X4 + 4 X3 + 6 X2 - Quan sát)';
         const goldenXien2 = pendingLo.goldenXien2 || [];
+
+        // Xiên 3 (Tam Thủ Xiên 3 - Chỉ quan sát)
+        const xi3Raw = pendingLo.xien3 || {};
+        const xi3MethodName = xi3Raw.title || xi3Raw.methodLabel || xi3Raw.methodName || '🌟 Tam Thủ Xiên 3 Đột Phá';
+        const xi3Numbers = (xi3Raw.numbers && xi3Raw.numbers.length ? xi3Raw.numbers : (xi4Numbers.slice(0, 3))).map(number);
+        const xi3StakeK = xi3Raw.stakeK !== undefined ? xi3Raw.stakeK : 500;
+        const xi3SubTierLabel = 'Tam Thủ Xiên 3 (Chỉ quan sát)';
 
         return {
             de: {
@@ -427,6 +434,12 @@
                 numbers: x2Numbers,
                 stakeK: x2StakeK,
                 subTierLabel: x2SubTierLabel
+            },
+            loXi3: {
+                methodName: xi3MethodName,
+                numbers: xi3Numbers,
+                stakeK: xi3StakeK,
+                subTierLabel: xi3SubTierLabel
             },
             loXi4: {
                 methodName: xi4MethodName,
@@ -660,8 +673,9 @@
                 const xi4Wins = activeLoDiary.filter(r => (r.xien4?.profitK || 0) > 0).length;
                 xi4SubText = `Ăn <strong>${xi4Wins}/${activeLoDiary.length || 1}</strong> kỳ`;
 
-                displayTotalProfitK = displayDeProfitK + displayStdProfitK + displayX2ProfitK + displayXi4ProfitK;
-                heroText = `MỐC MỚI TỪ 16/09/2026 (${deDays} KỲ): ${moneyM(displayTotalProfitK, { signed: true })} TỔNG LÃI`;
+                // Xiên 3 và Xiên 4 chỉ để quan sát, KHÔNG tính vào Tổng Lãi Lũy Kế Thực Chiến
+                displayTotalProfitK = displayDeProfitK + displayStdProfitK + displayX2ProfitK;
+                heroText = `MỐC MỚI TỪ 16/09/2026 (${deDays} KỲ): ${moneyM(displayTotalProfitK, { signed: true })} TỔNG LÃI (ĐỀ + LÔ)`;
             }
         }
 
@@ -670,6 +684,8 @@
         if (heroBadge) {
             heroBadge.innerHTML = `<i class="bi bi-trophy-fill mr-1 text-amber-300"></i> ${heroText}`;
         }
+
+        const displayCoreLoProfitK = displayStdProfitK + displayX2ProfitK;
 
         cardsEl.innerHTML = `
             <div class="rounded-2xl border border-amber-400/20 bg-amber-500/10 p-3.5 flex flex-col justify-between">
@@ -714,33 +730,33 @@
             <div class="rounded-2xl border border-amber-400/20 bg-amber-500/10 p-3.5 flex flex-col justify-between">
                 <div>
                     <div class="flex items-center justify-between text-[11px] font-bold text-amber-300">
-                        <span>💎 Lô Xiên 4 Quây</span>
-                        <span class="rounded bg-amber-400/20 px-1.5 py-0.5 text-[9px] font-black">11M/ngày</span>
+                        <span>💎 Lô Xiên (Quan Sát)</span>
+                        <span class="rounded bg-amber-400/20 px-1.5 py-0.5 text-[9px] font-black text-amber-300">Chỉ quan sát</span>
                     </div>
                     <div class="mt-1.5 font-mono text-xl font-black text-amber-300">${moneyM(displayXi4ProfitK, { signed: true })}</div>
                 </div>
                 <div class="mt-2 text-[10px] text-amber-200/80 font-semibold">
-                    ${xi4SubText}
+                    ${xi4SubText} · <span class="italic text-slate-400">Độc lập</span>
                 </div>
             </div>
 
             <div class="rounded-2xl border border-purple-400/20 bg-purple-500/10 p-3.5 flex flex-col justify-between">
                 <div>
                     <div class="flex items-center justify-between text-[11px] font-bold text-purple-300">
-                        <span>🔥 Combo 3 Tầng Lô</span>
-                        <span class="rounded bg-purple-400/20 px-1.5 py-0.5 text-[9px] font-black">~70M/ngày</span>
+                        <span>🔥 Lô Cốt Lõi (Chuẩn+X2)</span>
+                        <span class="rounded bg-purple-400/20 px-1.5 py-0.5 text-[9px] font-black">${isSep16Mode ? '~59.4M/ngày' : '~70M/ngày'}</span>
                     </div>
-                    <div class="mt-1.5 font-mono text-xl font-black text-purple-300">${moneyM(combo.profitK, { signed: true })}</div>
+                    <div class="mt-1.5 font-mono text-xl font-black text-purple-300">${moneyM(isSep16Mode ? displayCoreLoProfitK : combo.profitK, { signed: true })}</div>
                 </div>
                 <div class="mt-2 text-[10px] text-purple-200/80 font-semibold">
-                    ROI Lô Combo: <strong>${percent(combo.roi)}</strong>
+                    ${isSep16Mode ? `Lãi Lô thực chiến: <strong>${moneyM(displayCoreLoProfitK, { signed: true })}</strong>` : `ROI Lô Combo: <strong>${percent(combo.roi)}</strong>`}
                 </div>
             </div>
 
             <div class="rounded-2xl border-2 border-emerald-400/40 bg-gradient-to-br from-emerald-950/60 to-emerald-900/40 p-3.5 flex flex-col justify-between shadow-lg ring-1 ring-emerald-400/20">
                 <div>
                     <div class="flex items-center justify-between text-[11px] font-black text-emerald-300">
-                        <span>👑 TỔNG ĐỀ + LÔ</span>
+                        <span>👑 TỔNG ĐỀ + LÔ THỰC CHIẾN</span>
                         <span class="rounded bg-emerald-400 text-slate-950 px-1.5 py-0.5 text-[9px] font-black uppercase">Đỉnh Cao</span>
                     </div>
                     <div class="mt-1.5 font-mono text-xl font-black text-emerald-300">${moneyM(displayTotalProfitK, { signed: true })}</div>
@@ -1700,6 +1716,123 @@
             `;
         }
 
+        if (type === 'loXi3') {
+            if (info.isPending) {
+                const chipsHtml = `
+                    <div class="flex flex-wrap gap-2">
+                        ${(info.numbers || []).map(n => {
+                            return `
+                                <span class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-xs bg-slate-900 border border-amber-400/40 text-amber-300 font-black">
+                                    <span>${number(n)}</span>
+                                </span>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+
+                return `
+                    <div>
+                        <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2 mb-2.5">
+                            <div>
+                                <div class="font-black text-amber-400 text-xs flex items-center gap-1.5">
+                                    <i class="bi bi-lock-fill"></i> 🔒 ${escapeHtml(info.methodName)}
+                                </div>
+                                <div class="text-[10px] text-slate-400 mt-0.5">
+                                    Ngày ${formatDateVi(info.date)} · ${escapeHtml(info.subTierLabel)}
+                                </div>
+                            </div>
+                            <div class="text-right shrink-0">
+                                <span class="inline-flex items-center gap-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 font-black px-2 py-0.5 text-[11px]">
+                                    🔒 ĐÃ KHÓA BẤT BIẾN
+                                </span>
+                            </div>
+                        </div>
+                        <div class="rounded-lg bg-amber-500/10 border border-amber-500/20 p-2 text-[10px] text-amber-200 leading-relaxed mb-2.5">
+                            🌟 <strong>Tam Thủ Xiên 3 (Chế độ quan sát độc lập)</strong>. Tỷ lệ 1 ăn 40 (cược 500K ăn 20M). Không tính vào Lũy Kế Mốc thực chiến.
+                        </div>
+                        <div class="mb-3">
+                            <div class="text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide">
+                                Bộ 3 Số Vàng Tam Thủ:
+                            </div>
+                            ${chipsHtml}
+                        </div>
+                        <div class="pt-2 border-t border-slate-800/80 grid grid-cols-2 gap-2 text-[11px] font-mono">
+                            <div>
+                                <div class="text-[9px] text-slate-500 uppercase">Vốn Cược (Quan sát)</div>
+                                <div class="font-bold text-slate-300">${moneyM(info.stakeK || 500)}</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-[9px] text-slate-500 uppercase">Trạng Thái</div>
+                                <div class="font-bold text-amber-400">⏳ Chờ mở thưởng</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const prizeCounts = info.prizeCounts || {};
+            const chipsHtml = `
+                <div class="flex flex-wrap gap-2">
+                    ${(info.numbers || []).map(n => {
+                        const hits = prizeCounts[number(n)] || 0;
+                        const isHit = hits > 0;
+                        return `
+                            <span class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-xs ${isHit ? 'bg-amber-400 text-slate-950 font-black ring-2 ring-white scale-105 shadow-md' : 'bg-slate-800 border border-slate-700 text-slate-300 font-bold'}">
+                                <span>${number(n)}</span>
+                                ${isHit ? '<span class="text-[10px]">✓ Nổ</span>' : '<span class="text-[10px] text-slate-500">✗ Trượt</span>'}
+                            </span>
+                        `;
+                    }).join('') || '<span class="text-xs text-slate-400">3 số vàng</span>'}
+                </div>
+            `;
+
+            const isXi3Win = info.hits === 3;
+            let ticketResult = `❌ Không trúng (về ${info.hits || 0}/3 con)`;
+            if (isXi3Win) ticketResult = '🎉 Nổ trọn vẹn Xiên 3 (Tỷ lệ 1:40, +19.5M VIP)';
+
+            return `
+                <div>
+                    <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2 mb-2.5">
+                        <div>
+                            <div class="font-black text-amber-400 text-xs flex items-center gap-1.5">
+                                <i class="bi bi-triangle"></i> ${escapeHtml(info.methodName)}
+                            </div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">
+                                Ngày ${formatDateVi(info.date)} · ${escapeHtml(info.subTierLabel)}
+                            </div>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <span class="inline-flex items-center gap-1 rounded-lg ${isXi3Win ? 'bg-amber-400 text-slate-950 font-black' : 'bg-slate-800 text-slate-400'} px-2 py-0.5 text-[11px]">
+                                ${info.hits || 0} / 3 con về
+                            </span>
+                        </div>
+                    </div>
+                    <div class="rounded bg-slate-800/60 p-1.5 text-[10px] text-slate-400 mb-2">
+                        <em>* Chế độ quan sát, không tính vào Lũy Kế Mốc</em>
+                    </div>
+                    <div class="mb-3">
+                        <div class="text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide">
+                            Bộ 3 Số Vàng Tam Thủ:
+                        </div>
+                        ${chipsHtml}
+                        <div class="mt-2 text-[11px] font-semibold ${isXi3Win ? 'text-amber-300 font-bold' : 'text-slate-400'}">
+                            👉 ${ticketResult}
+                        </div>
+                    </div>
+                    <div class="pt-2 border-t border-slate-800/80 grid grid-cols-2 gap-2 text-[11px] font-mono">
+                        <div>
+                            <div class="text-[9px] text-slate-500 uppercase">Vốn Cược (Quan sát)</div>
+                            <div class="font-bold text-slate-300">${moneyM(info.stakeK || 500)}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-[9px] text-slate-500 uppercase">Lãi/Lỗ Riêng</div>
+                            <div class="font-black ${info.profitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(info.profitK, { signed: true })}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         if (type === 'loXi4') {
             if (info.isPending) {
                 const chipsHtml = `
@@ -1732,7 +1865,7 @@
                             </div>
                         </div>
                         <div class="rounded-lg bg-amber-500/10 border border-amber-500/20 p-2 text-[10px] text-amber-200 leading-relaxed mb-2.5">
-                            🔒 <strong>Bộ 4 số vàng Tứ Thủ Xiên 4 đã được niêm phong bất biến</strong>. Hệ thống quây 11 vé (1 vé X4, 4 vé X3, 6 vé X2) để bảo đảm có lãi từ 2 con trở lên.
+                            🔒 <strong>Bộ 4 số vàng Tứ Thủ Xiên 4 (Chế độ quan sát độc lập)</strong>. Hệ thống quây 11 vé (1 vé X4, 4 vé X3, 6 vé X2) để theo dõi hiệu suất. Không tính tiền vào Lũy Kế thực chiến.
                         </div>
                         <div class="mb-3">
                             <div class="text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide">
@@ -1742,11 +1875,11 @@
                         </div>
                         <div class="pt-2 border-t border-slate-800/80 grid grid-cols-2 gap-2 text-[11px] font-mono">
                             <div>
-                                <div class="text-[9px] text-slate-500 uppercase">Vốn Quây (11 Vé)</div>
+                                <div class="text-[9px] text-slate-500 uppercase">Vốn Quây (Quan sát)</div>
                                 <div class="font-bold text-slate-300">${moneyM(info.stakeK)}</div>
                             </div>
                             <div class="text-right">
-                                <div class="text-[9px] text-slate-500 uppercase">Trạng Thái Kết Toán</div>
+                                <div class="text-[9px] text-slate-500 uppercase">Trạng Thái</div>
                                 <div class="font-bold text-amber-400">⏳ Chờ mở thưởng</div>
                             </div>
                         </div>
@@ -1792,6 +1925,9 @@
                             </span>
                         </div>
                     </div>
+                    <div class="rounded bg-slate-800/60 p-1.5 text-[10px] text-slate-400 mb-2">
+                        <em>* Chế độ quan sát, không tính vào Lũy Kế Mốc</em>
+                    </div>
                     <div class="mb-3">
                         <div class="text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide">
                             Bộ 4 Số Vàng Tinh Hoa:
@@ -1803,11 +1939,11 @@
                     </div>
                     <div class="pt-2 border-t border-slate-800/80 grid grid-cols-2 gap-2 text-[11px] font-mono">
                         <div>
-                            <div class="text-[9px] text-slate-500 uppercase">Vốn Quây (11 Vé)</div>
+                            <div class="text-[9px] text-slate-500 uppercase">Vốn Quây (Quan sát)</div>
                             <div class="font-bold text-slate-300">${moneyM(info.stakeK)}</div>
                         </div>
                         <div class="text-right">
-                            <div class="text-[9px] text-slate-500 uppercase">Lãi/Lỗ Ròng</div>
+                            <div class="text-[9px] text-slate-500 uppercase">Lãi/Lỗ Riêng</div>
                             <div class="font-black ${info.profitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(info.profitK, { signed: true })}</div>
                         </div>
                     </div>
@@ -1840,10 +1976,17 @@
                                 <span class="text-slate-400">🚀 Lô Tăng Tốc X2:</span>
                                 <strong class="text-amber-400 font-bold">⏳ Chờ KQ</strong>
                             </div>
-                            <div class="flex justify-between items-center py-0.5">
-                                <span class="text-slate-400">💎 Lô Xiên 4:</span>
-                                <strong class="text-amber-400 font-bold">⏳ Chờ KQ</strong>
+                            <div class="flex justify-between items-center py-0.5 text-slate-500">
+                                <span>🌟 Tam Thủ Xiên 3:</span>
+                                <span class="text-slate-400 italic">⏳ Chờ (Quan sát)</span>
                             </div>
+                            <div class="flex justify-between items-center py-0.5 text-slate-500">
+                                <span>💎 Lô Xiên 4:</span>
+                                <span class="text-slate-400 italic">⏳ Chờ (Quan sát)</span>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-[10px] text-slate-400 italic">
+                            * Xiên 3 & Xiên 4 chỉ quan sát, không tính vào Lũy Kế
                         </div>
                         <div class="mt-2.5 pt-2 border-t border-slate-800 flex justify-between items-center font-mono">
                             <span class="text-xs font-bold text-slate-300">Trạng Thái:</span>
@@ -1860,7 +2003,7 @@
                             <i class="bi bi-wallet2 text-indigo-400"></i> Tổng Kết Ngày ${formatDateVi(info.date)}
                         </div>
                         <div class="text-[10px] text-slate-400 mt-0.5">
-                            Chi tiết lợi nhuận toàn bộ các phương pháp gợi ý
+                            Chi tiết lợi nhuận các phương pháp thực chiến
                         </div>
                     </div>
                     <div class="space-y-1.5 text-xs font-mono">
@@ -1876,13 +2019,20 @@
                             <span class="text-slate-400">🚀 Lô Tăng Tốc X2:</span>
                             <strong class="${info.x2ProfitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(info.x2ProfitK, { signed: true })}</strong>
                         </div>
-                        <div class="flex justify-between items-center py-0.5">
-                            <span class="text-slate-400">💎 Lô Xiên 4:</span>
-                            <strong class="${info.xi4ProfitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(info.xi4ProfitK, { signed: true })}</strong>
+                        <div class="flex justify-between items-center py-0.5 text-slate-500">
+                            <span>🌟 Tam Thủ Xiên 3:</span>
+                            <span class="${info.xi3ProfitK > 0 ? 'text-amber-300 font-bold' : 'text-slate-400'}">${moneyM(info.xi3ProfitK, { signed: true })} <span class="text-[9px]">(quan sát)</span></span>
+                        </div>
+                        <div class="flex justify-between items-center py-0.5 text-slate-500">
+                            <span>💎 Lô Xiên 4:</span>
+                            <span class="${info.xi4ProfitK > 0 ? 'text-amber-300 font-bold' : 'text-slate-400'}">${moneyM(info.xi4ProfitK, { signed: true })} <span class="text-[9px]">(quan sát)</span></span>
                         </div>
                     </div>
+                    <div class="mt-2 text-[10px] text-slate-400 italic">
+                        * Xiên 3 & Xiên 4 chỉ quan sát, không cộng/trừ vào Tổng Lãi Ngày & Lũy Kế
+                    </div>
                     <div class="mt-2.5 pt-2 border-t border-slate-800 flex justify-between items-center font-mono">
-                        <span class="text-xs font-bold text-slate-300">Tổng Lãi Ròng Ngày:</span>
+                        <span class="text-xs font-bold text-slate-300">Tổng Lãi Ròng Thực Chiến:</span>
                         <strong class="text-sm font-black ${info.dayTotalK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(info.dayTotalK, { signed: true })}</strong>
                     </div>
                 </div>
@@ -2025,14 +2175,16 @@
             de: 'Nhật Ký Đối Soát: 💎 Đề Theo Gợi Ý (Dung Hợp & Đổi Pha)',
             loStd: 'Nhật Ký Đối Soát: 🏆 Lô Chuẩn Nền Tảng (Top 20 Mặc Định)',
             loX2: 'Nhật Ký Đối Soát: 🚀 Lô Tăng Tốc X2 (Bộ Điều Phối Đổi Pha)',
-            loXi4: 'Nhật Ký Đối Soát: 💎 Lô Xiên 4 Tinh Hoa (Quây 11 Vé)'
+            loXi3: 'Nhật Ký Đối Soát: 🌟 Tam Thủ Xiên 3 (Chế Độ Quan Sát Độc Lập)',
+            loXi4: 'Nhật Ký Đối Soát: 💎 Lô Xiên 4 Tinh Hoa (Chế Độ Quan Sát Độc Lập)'
         };
         const PROFIT_LABELS_MAP = {
             all: 'Tổng Lãi Trong Mốc (Đề + Lô):',
             de: 'Tổng Lãi Đề Theo Gợi Ý:',
             loStd: 'Tổng Lãi Lô Chuẩn (Top 20):',
             loX2: 'Tổng Lãi Lô Tăng Tốc X2:',
-            loXi4: 'Tổng Lãi Lô Xiên 4:'
+            loXi3: 'Tổng Lãi Riêng Xiên 3 (Quan sát):',
+            loXi4: 'Tổng Lãi Riêng Xiên 4 (Quan sát):'
         };
 
         if (headingTitle) headingTitle.textContent = TITLES_MAP[currentDiaryCategory] || TITLES_MAP.all;
@@ -2073,11 +2225,23 @@
                         <th class="px-3 py-3 text-right">Lũy Kế Lô X2</th>
                     </tr>
                 `;
+            } else if (currentDiaryCategory === 'loXi3') {
+                thead.innerHTML = `
+                    <tr class="border-b border-amber-200 bg-amber-50/80 text-amber-950 uppercase font-black tracking-wider text-[10px]">
+                        <th class="px-3 py-3">Ngày</th>
+                        <th class="px-3 py-3">Phương Pháp Xiên 3</th>
+                        <th class="px-3 py-3">Bộ 3 Số Tam Thủ</th>
+                        <th class="px-3 py-3">Số Con Về</th>
+                        <th class="px-3 py-3">Kết Quả Vé</th>
+                        <th class="px-3 py-3 text-right">Lãi/Lỗ Riêng (Vốn 500K)</th>
+                        <th class="px-3 py-3 text-right">Lũy Kế Xiên 3</th>
+                    </tr>
+                `;
             } else if (currentDiaryCategory === 'loXi4') {
                 thead.innerHTML = `
                     <tr class="border-b border-amber-200 bg-amber-50/80 text-amber-950 uppercase font-black tracking-wider text-[10px]">
                         <th class="px-3 py-3">Ngày</th>
-                        <th class="px-3 py-3">Phương Pháp Xiên</th>
+                        <th class="px-3 py-3">Phương Pháp Xiên 4</th>
                         <th class="px-3 py-3">Bộ 4 Số Vàng Tứ Thủ</th>
                         <th class="px-3 py-3">Số Con Về</th>
                         <th class="px-3 py-3">Thể Thức Ăn Vé</th>
@@ -2092,7 +2256,8 @@
                         <th class="px-3 py-3">💎 Đề Theo Gợi Ý</th>
                         <th class="px-3 py-3">🏆 Lô Chuẩn Nền Tảng</th>
                         <th class="px-3 py-3">🚀 Lô Tăng Tốc X2</th>
-                        <th class="px-3 py-3">💎 Lô Xiên 4 Tinh Hoa</th>
+                        <th class="px-3 py-3">🌟 Tam Thủ Xiên 3 <span class="text-[9px] text-slate-400 font-normal lowercase">(quan sát)</span></th>
+                        <th class="px-3 py-3">💎 Lô Xiên 4 Tinh Hoa <span class="text-[9px] text-slate-400 font-normal lowercase">(quan sát)</span></th>
                         <th class="px-3 py-3 text-right">Tổng Ngày</th>
                         <th class="px-3 py-3 text-right">Lũy Kế Mốc</th>
                     </tr>
@@ -2143,7 +2308,7 @@
         if (filteredDates.length === 0 && unifiedTimeframe === 'sep16') {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="7" class="py-10 text-center bg-amber-50/50">
+                    <td colspan="8" class="py-10 text-center bg-amber-50/50">
                         <div class="max-w-md mx-auto space-y-2">
                             <span class="text-3xl">🎯</span>
                             <h4 class="text-base font-black text-amber-950">Mốc Thực Chiến Mới: Bắt Đầu Từ 16/09/2026</h4>
@@ -2188,6 +2353,7 @@
         let cumDeProfitK = 0;
         let cumStdProfitK = 0;
         let cumX2ProfitK = 0;
+        let cumXi3ProfitK = 0;
         let cumXi4ProfitK = 0;
 
         diaryDetailsMap = {};
@@ -2200,6 +2366,7 @@
                 const deInfoData = pendingRec.de;
                 const stdInfoData = pendingRec.loStd;
                 const x2InfoData = pendingRec.loX2;
+                const xi3InfoData = pendingRec.loXi3 || {};
                 const xi4InfoData = pendingRec.loXi4;
 
                 const deMethodName = deInfoData.methodName;
@@ -2216,6 +2383,10 @@
                 const x2MethodName = x2InfoData.methodName;
                 const x2Numbers = x2InfoData.numbers;
                 const x2StakeK = x2InfoData.stakeK;
+
+                const xi3MethodName = xi3InfoData.methodName || '🌟 Tam Thủ Xiên 3 Đột Phá';
+                const xi3Numbers = xi3InfoData.numbers || [];
+                const xi3StakeK = xi3InfoData.stakeK || 500;
 
                 const xi4MethodName = xi4InfoData.methodName;
                 const xi4Numbers = xi4InfoData.numbers;
@@ -2262,6 +2433,18 @@
                         profitK: 0,
                         payoutK: 0
                     },
+                    loXi3: {
+                        date,
+                        isPending: true,
+                        methodName: xi3MethodName,
+                        subTierLabel: xi3InfoData.subTierLabel || 'Tam Thủ Xiên 3 (Chỉ quan sát)',
+                        numbers: xi3Numbers,
+                        prizeCounts: {},
+                        hits: 0,
+                        stakeK: xi3StakeK,
+                        profitK: 0,
+                        payoutK: 0
+                    },
                     loXi4: {
                         date,
                         isPending: true,
@@ -2280,6 +2463,7 @@
                         deProfitK: 0,
                         stdProfitK: 0,
                         x2ProfitK: 0,
+                        xi3ProfitK: 0,
                         xi4ProfitK: 0,
                         dayTotalK: 0,
                         cumProfitK
@@ -2309,6 +2493,13 @@
                         profitK: 0
                     },
                     cumX2ProfitK,
+                    xi3: {
+                        methodName: xi3MethodName,
+                        numbers: xi3Numbers,
+                        stakeK: xi3StakeK,
+                        profitK: 0
+                    },
+                    cumXi3ProfitK,
                     xi4: {
                         methodName: xi4MethodName,
                         numbers: xi4Numbers,
@@ -2322,6 +2513,7 @@
                     deInfo: diaryDetailsMap[date].de,
                     stdInfo: diaryDetailsMap[date].loStd,
                     x2Info: diaryDetailsMap[date].loX2,
+                    xi3Info: diaryDetailsMap[date].loXi3,
                     xi4Info: diaryDetailsMap[date].loXi4
                 });
 
@@ -2359,15 +2551,6 @@
             const x2ProfitK = x2.profitK || 0;
             const xi4ProfitK = xi4.profitK || 0;
 
-            const loProfitK = loRow.dayProfitK != null ? loRow.dayProfitK : (stdProfitK + x2ProfitK + xi4ProfitK);
-            const dayTotalK = deProfitK + loProfitK;
-
-            cumProfitK += dayTotalK;
-            cumDeProfitK += deProfitK;
-            cumStdProfitK += stdProfitK;
-            cumX2ProfitK += x2ProfitK;
-            cumXi4ProfitK += xi4ProfitK;
-
             // Prize breakdown for date
             const drawInfo = payload?.drawPrizesByDate?.[date] || {};
             const actualSpecialStr = drawInfo.special || (actualSpec != null ? number(actualSpec) : null);
@@ -2376,6 +2559,28 @@
                 const norm = number(p);
                 prizeCounts[norm] = (prizeCounts[norm] || 0) + 1;
             });
+
+            // Xiên 3 (Tam Thủ Xiên 3): trích từ loRow.xien3 hoặc lấy 3 con đầu của Xiên 4
+            const xi4Numbers = (xi4.numbers || []).map(number);
+            const xi3Numbers = (loRow.xien3?.numbers && loRow.xien3.numbers.length ? loRow.xien3.numbers : xi4Numbers.slice(0, 3)).map(number);
+            const xi3StakeK = loRow.xien3?.stakeK || 500;
+            let xi3Hits = 0;
+            xi3Numbers.forEach(n => {
+                if ((prizeCounts[number(n)] || 0) > 0) xi3Hits++;
+            });
+            const xi3IsHit = (xi3Numbers.length === 3 && xi3Hits === 3);
+            const xi3ProfitK = loRow.xien3?.profitK != null ? loRow.xien3.profitK : (xi3IsHit ? (xi3StakeK * 40 - xi3StakeK) : -xi3StakeK);
+
+            // QUAN TRỌNG: Xiên 3 và Xiên 4 chỉ để quan sát, KHÔNG tính tiền vào Lũy Kế Mốc và Tổng Lãi Ngày!
+            const loProfitK = stdProfitK + x2ProfitK;
+            const dayTotalK = deProfitK + loProfitK;
+
+            cumProfitK += dayTotalK;
+            cumDeProfitK += deProfitK;
+            cumStdProfitK += stdProfitK;
+            cumX2ProfitK += x2ProfitK;
+            cumXi3ProfitK += xi3ProfitK;
+            cumXi4ProfitK += xi4ProfitK;
 
             const stdMethodName = std.methodName || std.methodLabel || 'Super-Hybrid Quad-Fusion v7.0 Top 20';
             const stdNumbers = (std.numbers || []).map(number);
@@ -2387,8 +2592,9 @@
             const x2Hits = x2.hits != null ? x2.hits : 0;
             const x2StakeK = x2.stakeK || (x2Numbers.length * 2200);
 
+            const xi3MethodName = loRow.xien3?.methodName || 'Tam Thủ Xiên 3 Đột Phá';
+
             const xi4MethodName = xi4.methodName || xi4.methodLabel || 'Tứ Thủ Xiên 4 Tinh Hoa';
-            const xi4Numbers = (xi4.numbers || []).map(number);
             const xi4Hits = xi4.hits != null ? xi4.hits : 0;
             const xi4StakeK = xi4.stakeK || 11000;
 
@@ -2431,6 +2637,17 @@
                     profitK: x2ProfitK,
                     payoutK: x2.payoutK || (x2Hits * 8000)
                 },
+                loXi3: {
+                    date,
+                    methodName: xi3MethodName,
+                    subTierLabel: 'Tam Thủ Xiên 3 (Chỉ quan sát)',
+                    numbers: xi3Numbers,
+                    prizeCounts,
+                    hits: xi3Hits,
+                    stakeK: xi3StakeK,
+                    profitK: xi3ProfitK,
+                    payoutK: (xi3ProfitK > 0) ? (xi3StakeK * 40) : 0
+                },
                 loXi4: {
                     date,
                     methodName: xi4MethodName,
@@ -2447,6 +2664,7 @@
                     deProfitK,
                     stdProfitK,
                     x2ProfitK,
+                    xi3ProfitK,
                     xi4ProfitK,
                     dayTotalK,
                     cumProfitK
@@ -2467,6 +2685,14 @@
                 cumStdProfitK,
                 x2,
                 cumX2ProfitK,
+                xi3: {
+                    methodName: xi3MethodName,
+                    numbers: xi3Numbers,
+                    hits: xi3Hits,
+                    stakeK: xi3StakeK,
+                    profitK: xi3ProfitK
+                },
+                cumXi3ProfitK,
                 xi4,
                 cumXi4ProfitK,
                 loProfitK,
@@ -2475,6 +2701,7 @@
                 deInfo: diaryDetailsMap[date].de,
                 stdInfo: diaryDetailsMap[date].loStd,
                 x2Info: diaryDetailsMap[date].loX2,
+                xi3Info: diaryDetailsMap[date].loXi3,
                 xi4Info: diaryDetailsMap[date].loXi4
             });
         }
@@ -2487,6 +2714,7 @@
                 if (currentDiaryCategory === 'de') return r.deProfitK > 0;
                 if (currentDiaryCategory === 'loStd') return (r.std.profitK || 0) > 0;
                 if (currentDiaryCategory === 'loX2') return (r.x2.profitK || 0) > 0;
+                if (currentDiaryCategory === 'loXi3') return (r.xi3.profitK || 0) > 0;
                 if (currentDiaryCategory === 'loXi4') return (r.xi4.profitK || 0) > 0;
                 return r.dayTotalK > 0;
             });
@@ -2496,6 +2724,7 @@
                 if (currentDiaryCategory === 'de') return r.deProfitK <= 0;
                 if (currentDiaryCategory === 'loStd') return (r.std.profitK || 0) <= 0;
                 if (currentDiaryCategory === 'loX2') return (r.x2.profitK || 0) <= 0;
+                if (currentDiaryCategory === 'loXi3') return (r.xi3.profitK || 0) <= 0;
                 if (currentDiaryCategory === 'loXi4') return (r.xi4.profitK || 0) <= 0;
                 return r.dayTotalK <= 0;
             });
@@ -2518,6 +2747,9 @@
             } else if (currentDiaryCategory === 'loX2') {
                 if ((r.x2.profitK || 0) > 0) catWinCount++;
                 catTotalProfit += (r.x2.profitK || 0);
+            } else if (currentDiaryCategory === 'loXi3') {
+                if ((r.xi3.profitK || 0) > 0) catWinCount++;
+                catTotalProfit += (r.xi3.profitK || 0);
             } else if (currentDiaryCategory === 'loXi4') {
                 if ((r.xi4.profitK || 0) > 0) catWinCount++;
                 catTotalProfit += (r.xi4.profitK || 0);
@@ -2547,6 +2779,7 @@
             const deInfo = r.deInfo;
             const stdInfo = r.stdInfo;
             const x2Info = r.x2Info;
+            const xi3Info = r.xi3Info;
             const xi4Info = r.xi4Info;
 
             // --- 1. VIEW ĐỀ THEO GỢI Ý ---
@@ -2828,7 +3061,107 @@
                 `;
             }
 
-            // --- 4. VIEW LÔ XIÊN 4 ---
+            // --- 4. VIEW TAM THỦ XIÊN 3 (QUAN SÁT) ---
+            if (currentDiaryCategory === 'loXi3') {
+                if (r.isPending) {
+                    const chipsHtml = (xi3Info.numbers || []).map(n => {
+                        return `<span class="inline-block px-2.5 py-1 rounded-xl font-mono text-xs font-black shadow-2xs bg-amber-500/20 text-amber-300 border border-amber-500/30">${number(n)}</span>`;
+                    }).join(' ');
+
+                    return `
+                        <tr class="hover:bg-amber-50/50 bg-amber-50/20 border-l-4 border-l-amber-500 transition-colors">
+                            <td class="px-3 py-3 whitespace-nowrap">
+                                <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
+                                <div class="text-[10px] text-amber-600 font-bold flex items-center gap-1">
+                                    <i class="bi bi-lock-fill text-[9px]"></i> 🔒 ĐÃ KHÓA
+                                </div>
+                            </td>
+                            <td class="px-3 py-3 whitespace-nowrap">
+                                <div class="font-bold text-xs text-amber-950">${escapeHtml(xi3Info.methodName)}</div>
+                                <div class="text-[10px] text-amber-600 font-semibold">🌟 Chế độ quan sát (1:40)</div>
+                            </td>
+                            <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXi3">
+                                <div class="flex flex-wrap items-center gap-1.5">${chipsHtml}</div>
+                                <div class="text-[9px] text-amber-700 font-bold mt-1 flex items-center gap-1">
+                                    <i class="bi bi-cursor-fill text-[8px]"></i> 🔒 Đã khóa 3 số · Rê chuột xem chi tiết
+                                </div>
+                            </td>
+                            <td class="px-3 py-3 whitespace-nowrap">
+                                <span class="font-bold text-xs text-amber-600">
+                                    ⏳ Chờ mở
+                                </span>
+                            </td>
+                            <td class="px-3 py-3 whitespace-nowrap">
+                                <span class="inline-flex items-center gap-1 rounded bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 text-xs font-bold">
+                                    ⏳ Chờ mở thưởng
+                                </span>
+                            </td>
+                            <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
+                                <div class="font-bold text-xs text-amber-600">
+                                    ⏳ Chờ KQ
+                                </div>
+                                <div class="text-[10px] text-slate-400 font-sans">Vốn quan sát ${moneyM(xi3Info.stakeK || 500)}</div>
+                            </td>
+                            <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
+                                <div class="font-semibold text-xs text-slate-400">
+                                    --
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
+
+                const chipsHtml = (xi3Info.numbers || []).map(n => {
+                    const hits = xi3Info.prizeCounts?.[number(n)] || 0;
+                    return `<span class="inline-block px-2.5 py-1 rounded-xl font-mono text-xs font-black shadow-2xs ${hits > 0 ? 'bg-amber-400 text-slate-950 ring-2 ring-white' : 'bg-slate-800 text-slate-200'}">${number(n)}</span>`;
+                }).join(' ');
+
+                const isXi3Win = xi3Info.hits === 3;
+                let ticketStatus = `<span class="inline-flex items-center gap-1 rounded bg-slate-100 text-slate-600 px-2 py-0.5 text-xs">❌ Trượt (${xi3Info.hits || 0}/3)</span>`;
+                if (isXi3Win) {
+                    ticketStatus = `<span class="inline-flex items-center gap-1 rounded bg-emerald-500 text-white px-2 py-0.5 text-xs font-black shadow-xs">🎉 Ăn Xiên 3 (+19.5M)</span>`;
+                }
+
+                return `
+                    <tr class="hover:bg-amber-50/40 transition-colors ${xi3Info.profitK > 0 ? 'bg-emerald-50/40' : ''}">
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
+                            <div class="text-[10px] text-slate-400 font-semibold">${isLiveBadge}</div>
+                        </td>
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <div class="font-bold text-xs text-amber-950">${escapeHtml(xi3Info.methodName)}</div>
+                            <div class="text-[10px] text-slate-500">Tam Thủ Đột Phá · 1:40</div>
+                        </td>
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXi3">
+                            <div class="flex flex-wrap items-center gap-1.5">${chipsHtml}</div>
+                            <div class="text-[9px] text-amber-700 font-bold mt-1 flex items-center gap-1">
+                                <i class="bi bi-cursor-fill text-[8px]"></i> Rê chuột xem chi tiết
+                            </div>
+                        </td>
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <span class="font-bold text-xs ${isXi3Win ? 'text-emerald-700 font-black' : 'text-slate-700'}">
+                                ${xi3Info.hits || 0} / 3 con
+                            </span>
+                        </td>
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            ${ticketStatus}
+                        </td>
+                        <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
+                            <div class="font-black text-xs ${xi3Info.profitK > 0 ? 'text-emerald-600' : 'text-rose-600'}">
+                                ${moneyM(xi3Info.profitK, { signed: true })}
+                            </div>
+                            <div class="text-[10px] text-slate-400 font-sans">Vốn ${moneyM(xi3Info.stakeK || 500)}</div>
+                        </td>
+                        <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
+                            <div class="font-black text-xs ${r.cumXi3ProfitK >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
+                                ${moneyM(r.cumXi3ProfitK, { signed: true })}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            // --- 5. VIEW LÔ XIÊN 4 ---
             if (currentDiaryCategory === 'loXi4') {
                 if (r.isPending) {
                     const chipsHtml = (xi4Info.numbers || []).map(n => {
@@ -2979,6 +3312,19 @@
                                 <span class="text-teal-700 font-bold underline">Di chuột xem</span>
                             </div>
                         </td>
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXi3">
+                            <div class="text-[11px] font-bold text-amber-950 flex items-center gap-1">
+                                <i class="bi bi-triangle text-amber-500 text-[10px]"></i> ${escapeHtml(xi3Info.methodName)}
+                            </div>
+                            <div class="flex items-center gap-1.5 mt-0.5 text-xs">
+                                <span class="text-amber-600 font-bold">⏳ Chờ mở</span>
+                                <span class="font-mono text-slate-400">1:40 (500K)</span>
+                            </div>
+                            <div class="text-[10px] font-mono text-slate-600 mt-0.5 font-bold flex items-center justify-between">
+                                <span>${(xi3Info.numbers || []).join(' ')}</span>
+                                <span class="text-amber-700 font-sans font-bold underline">Xem</span>
+                            </div>
+                        </td>
                         <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXi4">
                             <div class="text-[11px] font-bold text-amber-950 flex items-center gap-1">
                                 <i class="bi bi-stars text-amber-500 text-[10px]"></i> ${escapeHtml(xi4Info.methodName)}
@@ -2996,7 +3342,7 @@
                             <div class="font-black text-xs text-amber-600">
                                 ⏳ Chờ KQ
                             </div>
-                            <div class="text-[10px] text-slate-400 font-sans">Đề + Lô</div>
+                            <div class="text-[10px] text-slate-400 font-sans">Đề + Lô (Chuẩn+X2)</div>
                             <div class="text-[9px] text-amber-700 font-bold font-sans underline mt-0.5">Chi tiết</div>
                         </td>
                         <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
@@ -3023,7 +3369,7 @@
             const x2HitsText = `<strong>${x2Info.hits}</strong> nháy`;
             const x2ProfitText = `<span class="font-mono font-bold ${x2Info.profitK >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${moneyM(x2Info.profitK, { signed: true })}</span>`;
 
-            const xi4ProfitText = `<span class="font-mono font-bold ${xi4Info.profitK > 0 ? 'text-emerald-600' : 'text-rose-600'}">${moneyM(xi4Info.profitK, { signed: true })}</span>`;
+            const xi4ProfitText = `<span class="font-mono font-bold ${xi4Info.profitK > 0 ? 'text-emerald-600' : 'text-slate-400'}">${moneyM(xi4Info.profitK, { signed: true })}</span>`;
             const xi4HitsTag = (xi4Info.profitK > 0)
                 ? `<span class="rounded bg-amber-100 text-amber-900 px-1 py-0.5 text-[10px] font-black">Ăn ${xi4Info.hits || 2}n</span>`
                 : `<span class="text-slate-400 text-[10px]">Trượt</span>`;
@@ -3075,6 +3421,19 @@
                             <span class="text-teal-700 font-bold underline">Di chuột xem</span>
                         </div>
                     </td>
+                    <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXi3">
+                        <div class="text-[11px] font-bold text-amber-950 flex items-center gap-1">
+                            <i class="bi bi-triangle text-amber-500 text-[10px]"></i> ${escapeHtml(xi3Info.methodName)}
+                        </div>
+                        <div class="flex items-center gap-1.5 mt-0.5 text-xs">
+                            ${xi3Info.hits === 3 ? '<span class="rounded bg-emerald-500 text-white px-1 py-0.5 text-[10px] font-black">Ăn 3/3</span>' : `<span class="text-slate-400 text-[10px]">${xi3Info.hits || 0}/3 con</span>`}
+                            <span class="font-mono font-bold ${xi3Info.profitK > 0 ? 'text-emerald-600' : 'text-slate-400'}">${moneyM(xi3Info.profitK, { signed: true })}</span>
+                        </div>
+                        <div class="text-[10px] font-mono text-slate-600 mt-0.5 font-bold flex items-center justify-between">
+                            <span>${(xi3Info.numbers || []).join(' ')}</span>
+                            <span class="text-amber-700 font-sans font-bold underline">Xem</span>
+                        </div>
+                    </td>
                     <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXi4">
                         <div class="text-[11px] font-bold text-amber-950 flex items-center gap-1">
                             <i class="bi bi-stars text-amber-500 text-[10px]"></i> ${escapeHtml(xi4Info.methodName)}
@@ -3092,7 +3451,7 @@
                         <div class="font-black text-xs ${r.dayTotalK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">
                             ${moneyM(r.dayTotalK, { signed: true })}
                         </div>
-                        <div class="text-[10px] text-slate-400 font-sans">Đề + Lô</div>
+                        <div class="text-[10px] text-slate-400 font-sans">Đề + Lô (Chuẩn+X2)</div>
                         <div class="text-[9px] text-indigo-600 font-bold font-sans underline mt-0.5">Chi tiết</div>
                     </td>
                     <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
