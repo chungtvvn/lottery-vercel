@@ -20,6 +20,7 @@
     let payload = null;
     let activeTierSet = 'standard30';
     let activeLayerKey = 'layerB_Statistics';
+    let activeProfitTab = 'goldenDualMerge';
 
     function showToast(msg) {
         let toast = byId('advisorAnalysisToast');
@@ -167,6 +168,364 @@
             </div>
         `).join('');
         setHtml('ensembleMetadataCards', metaHtml);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // 2.5. RENDER PROFIT-OPTIMIZED LAB ENSEMBLES
+    // ─────────────────────────────────────────────────────────────────────────────
+    function renderProfitOptimizedCard(data) {
+        const ttr = data?.tenTierResearch || {};
+        const ensembles = ttr.profitEnsembles || {};
+        const container = byId('profitStrategyContent');
+        if (!container) return;
+
+        let contentHtml = '';
+        switch (activeProfitTab) {
+            case 'goldenDualMerge': {
+                const g = ensembles.goldenDualMerge;
+                if (!g) {
+                    contentHtml = `<div class="p-6 text-center text-slate-400 font-semibold">Đang cập nhật chiến lược Đề Gộp Lab Golden Overlap...</div>`;
+                    break;
+                }
+                contentHtml = `
+                    <div class="space-y-6">
+                        <!-- 4 KPI Cards -->
+                        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                            <div class="rounded-2xl border border-amber-400/30 bg-amber-500/10 p-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-black uppercase tracking-wider text-amber-300">Vốn Hàng Ngày</span>
+                                    <i class="bi bi-wallet2 text-amber-400 text-lg"></i>
+                                </div>
+                                <p class="mt-1 text-2xl font-black text-white">60.000đ</p>
+                                <p class="mt-0.5 text-xs text-amber-200/80">X2 (2K/số) + X1 (1K/số)</p>
+                            </div>
+                            <div class="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-black uppercase tracking-wider text-emerald-300">Lãi Nổ Vùng Vàng X2</span>
+                                    <i class="bi bi-graph-up-arrow text-emerald-400 text-lg"></i>
+                                </div>
+                                <p class="mt-1 text-2xl font-black text-emerald-300">+108.000đ</p>
+                                <p class="mt-0.5 text-xs text-emerald-200/80">Thu 168K (ROI +180.0%)</p>
+                            </div>
+                            <div class="rounded-2xl border border-sky-400/30 bg-sky-500/10 p-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-black uppercase tracking-wider text-sky-300">Lãi Nổ Bọc Lót X1</span>
+                                    <i class="bi bi-shield-fill-check text-sky-400 text-lg"></i>
+                                </div>
+                                <p class="mt-1 text-2xl font-black text-sky-300">+24.000đ</p>
+                                <p class="mt-0.5 text-xs text-sky-200/80">Thu 84K (ROI +40.0%)</p>
+                            </div>
+                            <div class="rounded-2xl border border-purple-400/30 bg-purple-500/10 p-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-black uppercase tracking-wider text-purple-300">Tỷ Lệ Thắng 2026</span>
+                                    <i class="bi bi-trophy-fill text-purple-400 text-lg"></i>
+                                </div>
+                                <p class="mt-1 text-2xl font-black text-purple-300">39.13% (9/23 kỳ)</p>
+                                <p class="mt-0.5 text-xs text-purple-200/80">100% Nổ Vùng Vàng X2</p>
+                            </div>
+                        </div>
+
+                        <!-- Vùng Giao Thoa Vàng X2 -->
+                        <div class="rounded-2xl border border-amber-400/50 bg-gradient-to-br from-amber-500/15 to-amber-600/5 p-5">
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-amber-400/20 pb-4 mb-4">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-0.5 text-[11px] font-black uppercase text-slate-950">
+                                            <i class="bi bi-star-fill"></i> CƯỢC GẤP ĐÔI X2
+                                        </span>
+                                        <h3 class="text-base font-black text-amber-200">Vùng Giao Thoa Vàng (${g.overlapCount} số · Cược 2.000đ/số)</h3>
+                                    </div>
+                                    <p class="mt-1 text-xs text-slate-300 font-semibold">2 động cơ đồng thuận xếp hạng cao. Trúng thưởng nhận ngay 168.000đ (Lãi ròng +108.000đ).</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" data-copy-profit="golden_x2" data-copy-sep="space" class="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3.5 py-1.5 text-xs shadow-md transition-all">
+                                        <i class="bi bi-clipboard"></i> Copy X2 (Cách)
+                                    </button>
+                                    <button type="button" data-copy-profit="golden_x2" data-copy-sep="comma" class="inline-flex items-center gap-1.5 rounded-xl border border-amber-400/40 bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 font-bold px-3 py-1.5 text-xs transition-all">
+                                        <i class="bi bi-clipboard-check"></i> Copy X2 (Phẩy)
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                ${(g.intersectionX2 || []).map(n => `
+                                    <span class="inline-flex h-11 min-w-11 items-center justify-center rounded-2xl border-2 border-amber-300 bg-gradient-to-b from-amber-400 to-amber-600 px-2 font-mono text-base font-black text-slate-950 shadow-md shadow-amber-500/30 transition-transform hover:scale-110">
+                                        ${num(n)}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Vùng Bọc Lót X1 -->
+                        <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-white/10 pb-4 mb-4">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-slate-700 border border-slate-500 px-2.5 py-0.5 text-[11px] font-bold text-slate-200">
+                                            BỌC LÓT X1
+                                        </span>
+                                        <h3 class="text-base font-black text-white">Vùng Bọc Lót An Toàn (${(g.uniqueSinglesX1 || []).length} số · Cược 1.000đ/số)</h3>
+                                    </div>
+                                    <p class="mt-1 text-xs text-slate-400 font-semibold">Bảo toàn vốn và thu lãi ròng +24.000đ khi kết quả rơi vào nhánh độc lập của từng động cơ.</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" data-copy-profit="golden_x1" data-copy-sep="space" class="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-white font-bold px-3 py-1.5 text-xs transition-all">
+                                        <i class="bi bi-clipboard"></i> Copy X1
+                                    </button>
+                                    <button type="button" data-copy-profit="golden_all" data-copy-sep="space" class="inline-flex items-center gap-1.5 rounded-xl border border-indigo-400/50 bg-indigo-600/30 hover:bg-indigo-600/40 text-indigo-200 font-bold px-3.5 py-1.5 text-xs transition-all">
+                                        <i class="bi bi-collection"></i> Copy Toàn Dàn (${g.totalNumbersCount || 0} số)
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                ${(g.uniqueSinglesX1 || []).map(n => `
+                                    <span class="inline-flex h-10 min-w-10 items-center justify-center rounded-xl border border-indigo-400/30 bg-gradient-to-b from-slate-800 to-slate-900 px-2 font-mono text-sm font-bold text-indigo-200 shadow-xs transition-transform hover:scale-105">
+                                        ${num(n)}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- 2 Động Cơ Nguồn -->
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <div class="rounded-2xl border border-white/10 bg-slate-900/60 p-4">
+                                <div class="flex items-center gap-2 text-xs font-black text-amber-300 mb-2">
+                                    <i class="bi bi-lightning-charge-fill"></i> ${esc(g.engineA?.name || 'Động cơ A')}
+                                </div>
+                                <p class="text-xs text-slate-400 mb-3 font-mono leading-relaxed">${(g.engineA?.numbers || []).slice(0, 15).join(' ')} ... (${g.engineA?.numbers?.length || 30} số)</p>
+                                <div class="text-[11px] text-slate-400">Trọng số: Hazard rate đỉnh nhịp 3-5 kỳ + Ma trận dịch chuyển Markov.</div>
+                            </div>
+                            <div class="rounded-2xl border border-white/10 bg-slate-900/60 p-4">
+                                <div class="flex items-center gap-2 text-xs font-black text-sky-300 mb-2">
+                                    <i class="bi bi-soundwave"></i> ${esc(g.engineB?.name || 'Động cơ B')}
+                                </div>
+                                <p class="text-xs text-slate-400 mb-3 font-mono leading-relaxed">${(g.engineB?.numbers || []).slice(0, 15).join(' ')} ... (${g.engineB?.numbers?.length || 30} số)</p>
+                                <div class="text-[11px] text-slate-400">Trọng số: Hazard rate đỉnh nhịp + Cộng hưởng Bộ/Chạm + Lô rơi 27 giải.</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                break;
+            }
+            case 'metaLearner': {
+                const m = ensembles.metaLearner;
+                if (!m) {
+                    contentHtml = `<div class="p-6 text-center text-slate-400 font-semibold">Đang cập nhật mô hình Lab Meta-Learner Tinh Hoa...</div>`;
+                    break;
+                }
+                contentHtml = `
+                    <div class="space-y-6">
+                        <!-- 4 KPI Cards -->
+                        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                            <div class="rounded-2xl border border-fuchsia-400/30 bg-fuchsia-500/10 p-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-black uppercase tracking-wider text-fuchsia-300">Vốn Nhẹ Hàng Ngày</span>
+                                    <i class="bi bi-piggy-bank text-fuchsia-400 text-lg"></i>
+                                </div>
+                                <p class="mt-1 text-2xl font-black text-white">35.000đ</p>
+                                <p class="mt-0.5 text-xs text-fuchsia-200/80">Tiết kiệm 41.7% so với dàn 60K</p>
+                            </div>
+                            <div class="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-black uppercase tracking-wider text-emerald-300">Thưởng Nổ VIP 10</span>
+                                    <i class="bi bi-stars text-emerald-400 text-lg"></i>
+                                </div>
+                                <p class="mt-1 text-2xl font-black text-emerald-300">+91.000đ</p>
+                                <p class="mt-0.5 text-xs text-emerald-200/80">Thu 126K (ROI +260.0%)</p>
+                            </div>
+                            <div class="rounded-2xl border border-indigo-400/30 bg-indigo-500/10 p-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-black uppercase tracking-wider text-indigo-300">Thưởng Nổ Elite 20</span>
+                                    <i class="bi bi-shield-check text-indigo-400 text-lg"></i>
+                                </div>
+                                <p class="mt-1 text-2xl font-black text-indigo-300">+49.000đ</p>
+                                <p class="mt-0.5 text-xs text-indigo-200/80">Thu 84K (ROI +140.0%)</p>
+                            </div>
+                            <div class="rounded-2xl border border-rose-400/30 bg-rose-500/10 p-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-black uppercase tracking-wider text-rose-300">Khống Chế Drawdown</span>
+                                    <i class="bi bi-graph-down text-rose-400 text-lg"></i>
+                                </div>
+                                <p class="mt-1 text-2xl font-black text-rose-300">-35.000đ</p>
+                                <p class="mt-0.5 text-xs text-rose-200/80">Mất tối đa khi gãy nhịp</p>
+                            </div>
+                        </div>
+
+                        <!-- Dàn VIP 10 Hạt Nhân -->
+                        <div class="rounded-2xl border border-fuchsia-400/50 bg-gradient-to-br from-fuchsia-500/15 to-purple-600/5 p-5">
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-fuchsia-400/20 pb-4 mb-4">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-fuchsia-500 px-2.5 py-0.5 text-[11px] font-black uppercase text-white">
+                                            <i class="bi bi-award-fill"></i> HẠT NHÂN VIP 10
+                                        </span>
+                                        <h3 class="text-base font-black text-fuchsia-200">10 Số Tinh Hoa (Cược 1.500đ/số · Vốn 15K)</h3>
+                                    </div>
+                                    <p class="mt-1 text-xs text-slate-300 font-semibold">10 số có điểm xếp hạng meta cao nhất. Khi nổ thu về 126.000đ (Lãi ròng +91.000đ, ROI +260%).</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" data-copy-profit="meta_vip" data-copy-sep="space" class="inline-flex items-center gap-1.5 rounded-xl bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-black px-3.5 py-1.5 text-xs shadow-md transition-all">
+                                        <i class="bi bi-clipboard"></i> Copy VIP 10 (Cách)
+                                    </button>
+                                    <button type="button" data-copy-profit="meta_vip" data-copy-sep="comma" class="inline-flex items-center gap-1.5 rounded-xl border border-fuchsia-400/40 bg-fuchsia-500/20 hover:bg-fuchsia-500/30 text-fuchsia-200 font-bold px-3 py-1.5 text-xs transition-all">
+                                        <i class="bi bi-clipboard-check"></i> Copy VIP 10 (Phẩy)
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                ${(m.vip10 || []).map(n => `
+                                    <span class="inline-flex h-11 min-w-11 items-center justify-center rounded-2xl border-2 border-fuchsia-300 bg-gradient-to-b from-fuchsia-500 to-purple-700 px-2 font-mono text-base font-black text-white shadow-md shadow-fuchsia-500/30 transition-transform hover:scale-110">
+                                        ${num(n)}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Dàn Bọc Lót Elite 20 -->
+                        <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-white/10 pb-4 mb-4">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-indigo-600/40 border border-indigo-400/40 px-2.5 py-0.5 text-[11px] font-bold text-indigo-300">
+                                            BỌC LÓT ELITE 20
+                                        </span>
+                                        <h3 class="text-base font-black text-white">20 Số Kế Tiếp (Cược 1.000đ/số · Vốn 20K)</h3>
+                                    </div>
+                                    <p class="mt-1 text-xs text-slate-400 font-semibold">Tầng bảo vệ thứ 2, khi nổ thu về 84.000đ (Lãi ròng +49.000đ, ROI +140%).</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" data-copy-profit="meta_elite" data-copy-sep="space" class="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-white font-bold px-3 py-1.5 text-xs transition-all">
+                                        <i class="bi bi-clipboard"></i> Copy Elite 20
+                                    </button>
+                                    <button type="button" data-copy-profit="meta_all" data-copy-sep="space" class="inline-flex items-center gap-1.5 rounded-xl border border-indigo-400/50 bg-indigo-600/30 hover:bg-indigo-600/40 text-indigo-200 font-bold px-3.5 py-1.5 text-xs transition-all">
+                                        <i class="bi bi-collection"></i> Copy Toàn Dàn 30 Số
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                ${(m.elite20 || []).map(n => `
+                                    <span class="inline-flex h-10 min-w-10 items-center justify-center rounded-xl border border-indigo-400/30 bg-gradient-to-b from-indigo-900 to-indigo-950 px-2 font-mono text-sm font-bold text-indigo-200 shadow-xs transition-transform hover:scale-105">
+                                        ${num(n)}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div class="rounded-2xl border border-white/10 bg-white/5 p-4 text-xs text-slate-300 font-medium">
+                            <span class="font-bold text-fuchsia-300 mr-1"><i class="bi bi-info-circle-fill"></i> Nguyên lý phân tầng vốn:</span>
+                            ${esc(m.note || 'Tập trung trọng số vốn vào hạt nhân VIP giúp tối ưu hóa lợi nhuận kỳ vọng khi bẻ gãy rào cản phí nhà cái.')}
+                        </div>
+                    </div>
+                `;
+                break;
+            }
+            case 'adaptiveController': {
+                const a = ensembles.adaptiveController;
+                if (!a) {
+                    contentHtml = `<div class="p-6 text-center text-slate-400 font-semibold">Đang cập nhật Bộ Điều Khiển Thích Ứng...</div>`;
+                    break;
+                }
+                const isOffensive = a.currentState === 'offensive';
+                const isBalanced = a.currentState === 'balanced';
+                const isDefensive = a.currentState === 'defensive';
+
+                contentHtml = `
+                    <div class="space-y-6">
+                        <!-- 4 KPI Cards -->
+                        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                            <div class="rounded-2xl border border-sky-400/30 bg-sky-500/10 p-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-black uppercase tracking-wider text-sky-300">Trạng Thái Kích Hoạt</span>
+                                    <i class="bi bi-speedometer text-sky-400 text-lg"></i>
+                                </div>
+                                <p class="mt-1 text-lg font-black text-white">${a.currentState === 'offensive' ? '⚡ TẤN CÔNG' : (a.currentState === 'balanced' ? '⚖️ CÂN BẰNG' : '🛡️ PHÒNG THỦ')}</p>
+                                <p class="mt-0.5 text-xs text-sky-200/80">${esc(a.stateLabel)}</p>
+                            </div>
+                            <div class="rounded-2xl border border-amber-400/30 bg-amber-500/10 p-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-black uppercase tracking-wider text-amber-300">Chuỗi Trượt Gần Nhất</span>
+                                    <i class="bi bi-clock-history text-amber-400 text-lg"></i>
+                                </div>
+                                <p class="mt-1 text-2xl font-black text-amber-300">${a.recentLossStreak} kỳ</p>
+                                <p class="mt-0.5 text-xs text-amber-200/80">${a.recentLossStreak === 0 ? 'Vừa nổ kỳ trước' : (a.recentLossStreak === 1 ? 'Chạm ngưỡng cân bằng' : 'Kích hoạt van phòng thủ')}</p>
+                            </div>
+                            <div class="rounded-2xl border border-indigo-400/30 bg-indigo-500/10 p-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-black uppercase tracking-wider text-indigo-300">Vốn Đặt Cược</span>
+                                    <i class="bi bi-cash-stack text-indigo-400 text-lg"></i>
+                                </div>
+                                <p class="mt-1 text-2xl font-black text-indigo-300">${fmt(a.dailyStakeK)}đ</p>
+                                <p class="mt-0.5 text-xs text-indigo-200/80">${a.size} số (${fmt(a.unitStakeK)}đ/số)</p>
+                            </div>
+                            <div class="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-black uppercase tracking-wider text-emerald-300">Lãi Ròng Khi Nổ</span>
+                                    <i class="bi bi-graph-up text-emerald-400 text-lg"></i>
+                                </div>
+                                <p class="mt-1 text-2xl font-black text-emerald-300">+${fmt(a.profitOnWinK)}đ</p>
+                                <p class="mt-0.5 text-xs text-emerald-200/80">Thu ${fmt(a.payoutOnWinK)}đ</p>
+                            </div>
+                        </div>
+
+                        <!-- 3 States Visual Matrix -->
+                        <div class="grid gap-3 sm:grid-cols-3">
+                            <div class="rounded-2xl border ${isOffensive ? 'border-amber-400 bg-amber-500/20 ring-2 ring-amber-400/50' : 'border-white/10 bg-white/5 opacity-70'} p-4 transition-all">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-black text-amber-300">1. Trạng Thái Tấn Công</span>
+                                    ${isOffensive ? '<span class="rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-black text-slate-950">ĐANG CHẠY</span>' : ''}
+                                </div>
+                                <p class="mt-2 text-sm font-black text-white">⚡ Dàn 24 số cược 1.5K</p>
+                                <p class="mt-1 text-xs text-slate-300">Kích hoạt: Vừa trúng (trượt 0 kỳ). Vốn 36K, nổ thu lãi +90.000đ.</p>
+                            </div>
+                            <div class="rounded-2xl border ${isBalanced ? 'border-sky-400 bg-sky-500/20 ring-2 ring-sky-400/50' : 'border-white/10 bg-white/5 opacity-70'} p-4 transition-all">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-black text-sky-300">2. Trạng Thái Cân Bằng</span>
+                                    ${isBalanced ? '<span class="rounded-full bg-sky-400 px-2 py-0.5 text-[10px] font-black text-slate-950">ĐANG CHẠY</span>' : ''}
+                                </div>
+                                <p class="mt-2 text-sm font-black text-white">⚖️ Dàn 36 số cược 1.0K</p>
+                                <p class="mt-1 text-xs text-slate-300">Kích hoạt: Trượt 1 kỳ. Vốn 36K, nổ thu lãi +48.000đ.</p>
+                            </div>
+                            <div class="rounded-2xl border ${isDefensive ? 'border-emerald-400 bg-emerald-500/20 ring-2 ring-emerald-400/50' : 'border-white/10 bg-white/5 opacity-70'} p-4 transition-all">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-black text-emerald-300">3. Trạng Thái Phòng Thủ</span>
+                                    ${isDefensive ? '<span class="rounded-full bg-emerald-400 px-2 py-0.5 text-[10px] font-black text-slate-950">ĐANG CHẠY</span>' : ''}
+                                </div>
+                                <p class="mt-2 text-sm font-black text-white">🛡️ Dàn 50 số cược 1.0K</p>
+                                <p class="mt-1 text-xs text-slate-300">Kích hoạt: Trượt ≥ 2 kỳ. Cắt dây trượt tức thì, vốn 50K, nổ thu lãi +34.000đ.</p>
+                            </div>
+                        </div>
+
+                        <!-- Dàn số của Trạng Thái Kích Hoạt -->
+                        <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-white/10 pb-4 mb-4">
+                                <div>
+                                    <h3 class="text-base font-black text-white">Dàn Số Kích Hoạt Theo Nhịp (${a.numbers.length} số)</h3>
+                                    <p class="mt-1 text-xs text-slate-400 font-semibold">${esc(a.note)}</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" data-copy-profit="adaptive_active" data-copy-sep="space" class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3.5 py-1.5 text-xs shadow-md transition-all">
+                                        <i class="bi bi-clipboard"></i> Copy Dàn (${a.numbers.length} số)
+                                    </button>
+                                    <button type="button" data-copy-profit="adaptive_active" data-copy-sep="comma" class="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-white font-bold px-3 py-1.5 text-xs transition-all">
+                                        <i class="bi bi-clipboard-check"></i> Copy Dấu Phẩy
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                ${(a.numbers || []).map(n => `
+                                    <span class="inline-flex h-11 min-w-11 items-center justify-center rounded-2xl border border-indigo-400/40 bg-gradient-to-b from-indigo-800 to-indigo-950 px-2 font-mono text-base font-black text-white shadow-md shadow-indigo-950/40 transition-transform hover:scale-105">
+                                        ${num(n)}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                break;
+            }
+            default:
+                contentHtml = `<div class="p-6 text-center text-slate-400 font-semibold">Vui lòng chọn một chiến lược phía trên.</div>`;
+        }
+        setHtml('profitStrategyContent', contentHtml);
     }
 
     // ─────────────────────────────────────────────────────────────────────────────
@@ -895,6 +1254,50 @@
             });
         });
 
+        // Profit Strategy tab switcher
+        document.querySelectorAll('.profit-tab-btn').forEach(btn => {
+            btn.addEventListener('click', e => {
+                const tabKey = e.currentTarget.getAttribute('data-profit-tab');
+                if (!tabKey) return;
+                activeProfitTab = tabKey;
+
+                document.querySelectorAll('.profit-tab-btn').forEach(b => {
+                    b.classList.remove('bg-amber-500', 'text-slate-950', 'font-black', 'shadow-md');
+                    b.classList.add('border', 'border-white/20', 'bg-white/10', 'text-slate-300', 'font-bold');
+                });
+                e.currentTarget.classList.remove('border', 'border-white/20', 'bg-white/10', 'text-slate-300', 'font-bold');
+                e.currentTarget.classList.add('bg-amber-500', 'text-slate-950', 'font-black', 'shadow-md');
+
+                renderProfitOptimizedCard(payload);
+            });
+        });
+
+        // Event delegation for profit copy buttons
+        byId('profitStrategyContent')?.addEventListener('click', e => {
+            const copyBtn = e.target.closest('[data-copy-profit]');
+            if (!copyBtn) return;
+            const targetKey = copyBtn.getAttribute('data-copy-profit');
+            const sep = copyBtn.getAttribute('data-copy-sep') === 'comma' ? ', ' : ' ';
+            const ensembles = payload?.tenTierResearch?.profitEnsembles || {};
+            let numbers = [];
+            if (targetKey === 'golden_x2') {
+                numbers = ensembles.goldenDualMerge?.intersectionX2 || [];
+            } else if (targetKey === 'golden_x1') {
+                numbers = ensembles.goldenDualMerge?.uniqueSinglesX1 || [];
+            } else if (targetKey === 'golden_all') {
+                numbers = ensembles.goldenDualMerge?.fullUnion || [];
+            } else if (targetKey === 'meta_vip') {
+                numbers = ensembles.metaLearner?.vip10 || [];
+            } else if (targetKey === 'meta_elite') {
+                numbers = ensembles.metaLearner?.elite20 || [];
+            } else if (targetKey === 'meta_all') {
+                numbers = ensembles.metaLearner?.standard30 || [];
+            } else if (targetKey === 'adaptive_active') {
+                numbers = ensembles.adaptiveController?.numbers || [];
+            }
+            copyNumbers(numbers, sep);
+        });
+
         // Copy buttons
         byId('btnCopyEnsembleSpace')?.addEventListener('click', () => {
             const numbers = payload?.tenTierResearch?.candidateSets?.[activeTierSet] || [];
@@ -916,6 +1319,7 @@
 
             renderHeroAndSource(payload);
             renderEnsembleCard(payload);
+            renderProfitOptimizedCard(payload);
             renderScientificLayer(activeLayerKey);
             renderPromotionGate(payload);
             renderBacktestTable(payload);
