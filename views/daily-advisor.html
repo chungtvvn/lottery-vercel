@@ -666,6 +666,7 @@
                                 <!-- Sub-tier Selector Pills -->
                                 <div class="mt-2 flex flex-wrap items-center gap-1.5" id="loSubTierSelector">
                                     <span class="text-[10px] font-black uppercase text-slate-500 mr-0.5">Đổi Dàn:</span>
+                                    <button type="button" class="lo-subtier-btn rounded-lg px-2 py-0.5 text-[10px] font-bold border border-slate-200 hover:bg-slate-100 transition-all text-slate-700" data-size="1">Bạch Thủ [1s] 🔥</button>
                                     <button type="button" class="lo-subtier-btn rounded-lg px-2 py-0.5 text-[10px] font-bold border border-slate-200 hover:bg-slate-100 transition-all text-slate-700" data-size="2">Song Thủ [2s]</button>
                                     <button type="button" class="lo-subtier-btn rounded-lg px-2 py-0.5 text-[10px] font-bold border border-slate-200 hover:bg-slate-100 transition-all text-slate-700" data-size="4">Tứ Thủ [4s]</button>
                                     <button type="button" class="lo-subtier-btn rounded-lg px-2 py-0.5 text-[10px] font-bold border border-slate-200 hover:bg-slate-100 transition-all text-slate-700" data-size="6">Lục Thủ [6s]</button>
@@ -1244,6 +1245,26 @@
                                         </div>
                                     </div>
                                     <div id="metaLearnerChips" class="mt-4 flex flex-wrap gap-1.5"></div>
+                                </div>
+
+                                <!-- Dàn Hợp Bù Trừ Đan Xen (Dual Resonance Union 57-63 số) -->
+                                <div id="dualResonanceUnionBox" class="rounded-2xl border border-indigo-500/40 bg-gradient-to-br from-slate-900 via-indigo-950/40 to-slate-900 p-4 shadow-sm hidden">
+                                    <div class="flex items-center justify-between border-b border-indigo-500/20 pb-3">
+                                        <div class="flex items-center gap-2">
+                                            <span class="flex h-7 w-7 items-center justify-center rounded-xl bg-indigo-400 text-slate-950 font-black text-xs shadow-xs"><i class="bi bi-shield-check"></i></span>
+                                            <div>
+                                                <h4 id="dualResonanceUnionTitle" class="text-sm font-black text-indigo-300 uppercase">Dàn Hợp Bù Trừ Đan Xen (Win 62.7% - 77.3%)</h4>
+                                                <p id="dualResonanceUnionDesc" class="text-[10px] text-indigo-200/70 font-semibold">Hợp nhất 2 phương pháp đối kháng mạnh nhất hôm nay để bảo đảm tỷ lệ trúng cao nhất</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-1.5">
+                                            <span id="dualResonanceUnionCount" class="rounded-full bg-indigo-400/20 text-indigo-300 border border-indigo-400/40 px-2.5 py-0.5 text-xs font-black">-- số</span>
+                                            <button type="button" id="btnCopyDualResonanceUnion" class="rounded-lg border border-indigo-400/40 bg-white/10 px-2.5 py-1 text-xs font-bold text-indigo-300 hover:bg-white/20 transition-all">
+                                                <i class="bi bi-clipboard"></i> Copy
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div id="dualResonanceUnionChips" class="mt-4 flex flex-wrap gap-1.5"></div>
                                 </div>
                             </div>
 

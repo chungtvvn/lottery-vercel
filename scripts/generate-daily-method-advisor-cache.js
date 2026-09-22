@@ -43,7 +43,7 @@ async function main() {
         console.log(`[DailyAdvisor] Chưa có cache R2 cũ: ${error.message}`);
     }
 
-    if (!existingCache || (typeof existingCache === 'object' && !existingCache.dualMerge && (!existingCache.records || existingCache.records.length === 0))) {
+    if (!existingCache || !existingCache.dualMerge || !existingCache.streakAwareDeAdvisor) {
         try {
             const fs = require('fs');
             const path = require('path');

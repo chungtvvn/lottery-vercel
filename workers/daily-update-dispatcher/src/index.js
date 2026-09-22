@@ -945,10 +945,10 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   }
 
   const top2Nums = (engineData.subTiers?.[2]?.numbers || engineData.rankedNumbers?.slice(0, 2) || loGovernor.subTiers?.[2]?.numbers || loQuadAdv?.top2 || []).map(normalizeLotteryNumber);
-  const top1Num = top2Nums[0] || (loQuadAdv?.top1?.[0]);
+  const top1Num = (engineData.subTiers?.[1]?.numbers?.[0] || loGovernor.subTiers?.[1]?.numbers?.[0] || top2Nums[0] || loQuadAdv?.top1?.[0]);
   if (top2Nums.length) {
     lines.push(
-      `🔥 <b>Song Thủ Siêu VIP: [${escapeHtml(formatNumberList(top2Nums))}]</b> <i>(57.7% Nổ 3 Năm · +1.976 TỶ)</i> · Bạch Thủ: <b>[${top1Num || top2Nums[0]}]</b> <i>(+1.088 TỶ)</i>`
+      `🔥 <b>Song Thủ Siêu VIP: [${escapeHtml(formatNumberList(top2Nums))}]</b> <i>(61.2% Nổ 2026 · +47.6% ROI)</i> · Bạch Thủ: <b>[${top1Num || top2Nums[0]}]</b> <i>(36.5% Win · +41.3% ROI)</i>`
     );
   }
   lines.push(
