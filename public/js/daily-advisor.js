@@ -18,6 +18,24 @@
     };
     const signedM = (val, options = {}) => moneyM(val, { ...options, signed: true });
 
+    function getSwitchPhaseBadgeHtml(phase, reason) {
+        if (!phase) return '';
+        const titleAttr = reason ? `title="${escapeHtml(reason)}"` : '';
+        if (phase === 'REBOUND') {
+            return `<span class="inline-flex items-center gap-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300 text-[9px] font-black px-1.5 py-0.5" ${titleAttr}>⚡ Nổ Bù</span>`;
+        }
+        if (phase === 'MOMENTUM') {
+            return `<span class="inline-flex items-center gap-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300 text-[9px] font-black px-1.5 py-0.5" ${titleAttr}>🚀 Lướt Sóng</span>`;
+        }
+        if (phase === 'RESCUE') {
+            return `<span class="inline-flex items-center gap-0.5 rounded bg-purple-100 text-purple-800 border border-purple-300 text-[9px] font-black px-1.5 py-0.5" ${titleAttr}>🛡️ Bù Trừ</span>`;
+        }
+        if (phase === 'FATIGUE_DODGE') {
+            return `<span class="inline-flex items-center gap-0.5 rounded bg-blue-100 text-blue-800 border border-blue-300 text-[9px] font-black px-1.5 py-0.5" ${titleAttr}>🔄 Né Kiệt Sức</span>`;
+        }
+        return '';
+    }
+
     let payload = null;
     let currentMainTab = 'unifiedCombat'; // 'unifiedCombat' | 'dualMerge'
     let unifiedTimeframe = 'sep16'; // 'sep16' | 'live' | 'all'
@@ -232,7 +250,7 @@
     function resolvePendingRecommendation(p, forcedPortfolioKey) {
         const payloadData = p || payload || {};
         const key = forcedPortfolioKey || currentActivePortfolio || 'smartAlternating';
-        const deMethodKey = currentActiveDeMethod || (key === 'smartAlternating' ? 'pentaCoreDe' : (key === 'steadyAccumulator' ? 'dualMerge' : (key === 'antiNoiseResonance' ? 'deMarkovGapHazard' : 'adaptiveDualMerge')));
+        const deMethodKey = currentActiveDeMethod || (key === 'smartAlternating' ? (payloadData.streakAwareDeAdvisor?.latestRecommendation?.selectedMethod || 'metaLearner') : (key === 'steadyAccumulator' ? 'dualMerge' : (key === 'antiNoiseResonance' ? 'deMarkovGapHazard' : 'adaptiveDualMerge')));
         const loEngineKey = currentActiveLoEngine || (key === 'smartAlternating' ? 'penta' : (key === 'antiNoiseResonance' ? 'bridge' : 'quad'));
 
         // 1. Resolve Đề
@@ -245,7 +263,18 @@
         let deRationale = '';
         let deBadge = '';
 
-        if (deMethodKey === 'pentaCoreDe') {
+        if (deMethodKey === 'metaLearner') {
+            const streakRec = payloadData.streakAwareDeAdvisor?.latestRecommendation || {};
+            const metaRec = payloadData.metaLearner?.latestRecommendation || {};
+            deMethodName = '💎 Đề Tinh Hoa (30 Số Chuẩn)';
+            deX2Nums = [];
+            deX1Nums = [];
+            deNumbers = (metaRec.standard30 || metaRec.numbers || streakRec.numbers || []).map(number);
+            deStakeK = 30000;
+            deSubTierLabel = `Dàn 30 số (${moneyM(deStakeK)} cược phẳng)`;
+            deRationale = streakRec.switchReason || streakRec.rationale || metaRec.rationale || 'Dàn 30 số tinh hoa học máy đa mô hình cược phẳng 30M (không đánh X2).';
+            deBadge = streakRec.confidenceBadge || 'Đề Tinh Hoa 30M Phẳng';
+        } else if (deMethodKey === 'pentaCoreDe') {
             const pentaDe = payloadData.pentaCoreDe?.latestRecommendation || payloadData.streakAwareDeAdvisor?.latestRecommendation || {};
             deMethodName = '👑 Ngũ Trụ Tinh Hoa AI (Penta-Core 60M)';
             deX2Nums = (pentaDe.vipNumbers || (payloadData.streakAwareDeAdvisor?.latestRecommendation?.tierX2 || [])).map(number);
@@ -406,7 +435,9 @@
                 stakeK: deStakeK,
                 subTierLabel: deSubTierLabel,
                 rationale: deRationale,
-                activePhaseLabel: deBadge
+                activePhaseLabel: deBadge,
+                switchPhase: (deMethodKey === payloadData.streakAwareDeAdvisor?.latestRecommendation?.selectedMethod) ? payloadData.streakAwareDeAdvisor?.latestRecommendation?.switchPhase : null,
+                switchReason: (deMethodKey === payloadData.streakAwareDeAdvisor?.latestRecommendation?.selectedMethod) ? payloadData.streakAwareDeAdvisor?.latestRecommendation?.switchReason : null
             },
             loStd: {
                 methodName: stdMethodName,
@@ -594,7 +625,9 @@
             isHit: deIsHitFinal,
             isX2,
             isX1,
-            hitType
+            hitType,
+            switchPhase: streakRow?.switchPhase || null,
+            switchReason: streakRow?.switchReason || null
         };
     }
 
@@ -2414,7 +2447,9 @@
                         profitK: 0,
                         payoutK: 0,
                         rationale: deInfoData.rationale,
-                        activePhaseLabel: deInfoData.activePhaseLabel
+                        activePhaseLabel: deInfoData.activePhaseLabel,
+                        switchPhase: deInfoData.switchPhase || null,
+                        switchReason: deInfoData.switchReason || null
                     },
                     loStd: {
                         date,
@@ -2620,7 +2655,9 @@
                     hitType: resolvedDe.hitType,
                     stakeK: deStakeK,
                     profitK: deProfitK,
-                    payoutK: deIsHitFinal ? (deStakeK + deProfitK) : 0
+                    payoutK: deIsHitFinal ? (deStakeK + deProfitK) : 0,
+                    switchPhase: resolvedDe.switchPhase || null,
+                    switchReason: resolvedDe.switchReason || null
                 },
                 loStd: {
                     date,
@@ -2808,8 +2845,9 @@
                                 </div>
                             </td>
                             <td class="px-3 py-3 whitespace-nowrap">
-                                <div class="font-black text-xs text-amber-950 flex items-center gap-1">
+                                <div class="font-black text-xs text-amber-950 flex items-center gap-1.5 flex-wrap">
                                     <span>${escapeHtml(deInfo.methodName)}</span>
+                                    ${getSwitchPhaseBadgeHtml(deInfo.switchPhase, deInfo.switchReason)}
                                 </div>
                                 <div class="text-[10px] text-slate-500 font-medium">${escapeHtml(deInfo.subTierLabel)}</div>
                             </td>
@@ -2862,7 +2900,10 @@
                             <div class="text-[10px] text-slate-400 font-semibold">${isLiveBadge}</div>
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
-                            <div class="font-black text-xs text-amber-950">${escapeHtml(deInfo.methodName)}</div>
+                            <div class="font-black text-xs text-amber-950 flex items-center gap-1.5 flex-wrap">
+                                <span>${escapeHtml(deInfo.methodName)}</span>
+                                ${getSwitchPhaseBadgeHtml(deInfo.switchPhase, deInfo.switchReason)}
+                            </div>
                             <div class="text-[10px] text-slate-500 font-medium">${escapeHtml(deInfo.subTierLabel)}</div>
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
@@ -3281,8 +3322,9 @@
                             </div>
                         </td>
                         <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="de">
-                            <div class="text-[11px] font-bold text-amber-950 flex items-center gap-1">
-                                <i class="bi bi-gem-fill text-amber-500 text-[10px]"></i> ${escapeHtml(deInfo.methodName)}
+                            <div class="text-[11px] font-bold text-amber-950 flex items-center gap-1 flex-wrap">
+                                <i class="bi bi-gem-fill text-amber-500 text-[10px]"></i> <span>${escapeHtml(deInfo.methodName)}</span>
+                                ${getSwitchPhaseBadgeHtml(deInfo.switchPhase, deInfo.switchReason)}
                             </div>
                             <div class="flex items-center gap-1.5 mt-0.5">
                                 <span class="text-xs text-slate-600">ĐB: <strong class="font-mono text-xs text-amber-600 font-bold">⏳ Chờ mở</strong></span>
@@ -3390,8 +3432,9 @@
                         <div class="text-[10px] text-slate-400 font-semibold">${isLiveBadge}</div>
                     </td>
                     <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="de">
-                        <div class="text-[11px] font-bold text-amber-950 flex items-center gap-1">
-                            <i class="bi bi-gem-fill text-amber-500 text-[10px]"></i> ${escapeHtml(deInfo.methodName)}
+                        <div class="text-[11px] font-bold text-amber-950 flex items-center gap-1 flex-wrap">
+                            <i class="bi bi-gem-fill text-amber-500 text-[10px]"></i> <span>${escapeHtml(deInfo.methodName)}</span>
+                            ${getSwitchPhaseBadgeHtml(deInfo.switchPhase, deInfo.switchReason)}
                         </div>
                         <div class="flex items-center gap-1.5 mt-0.5">
                             <span class="text-xs text-slate-700">ĐB: ${actualSpecText}</span>
