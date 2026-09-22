@@ -785,8 +785,10 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
         deResultTitle = `❌ <b>Trượt (${formatK(-resDe.stakeM3K)} M3 / ${formatM(-resDe.stakeK)} VIP)</b>`;
       }
 
-      const todayM3TotalK = resDe.profitM3K + resLo.dayM3ProfitK;
-      const todayTotalProfitK = resDe.profitK + resLo.dayProfitK;
+      const coreM3TotalK = resDe.profitM3K + resLo.stdM3ProfitK + resLo.x2M3ProfitK;
+      const coreTotalProfitK = resDe.profitK + resLo.stdProfitK + resLo.x2ProfitK;
+      const todayM3TotalK = coreM3TotalK + resLo.xi4M3ProfitK;
+      const todayTotalProfitK = coreTotalProfitK + resLo.xi4ProfitK;
 
       lines.push(
         `🏆 <b>BÁO CÁO KẾT QUẢ ĐỐI SOÁT HÔM NAY (${escapeHtml(displayDate(settledDate))})</b>`,
@@ -800,8 +802,8 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
         `• 💎 <b>Lô Xiên 4 (Quây 11 vé)</b>: ${resLo.xi4Hits >= 2 ? `🎉 <b>Ăn ${resLo.xi4Hits}/4 con</b>` : `❌ Trượt (${resLo.xi4Hits}/4 con)`}`,
         `   └ Đơn vị Bot (200K/vé): <b>${formatK(resLo.xi4M3ProfitK)}</b> (11 vé · Vốn 2.200K · Ăn ${(resLo.xi4M3PayoutK).toLocaleString('vi-VN')}K) · Mức VIP: <b>${formatM(resLo.xi4ProfitK)}</b>`,
         `💰 <b>TỔNG LÃI RÒNG HÔM NAY (${escapeHtml(displayDate(settledDate))}):</b>`,
-        `   👉 <b>Đơn Vị Bot Telegram:</b> <b>${formatK(todayM3TotalK)}</b> (${todayM3TotalK > 0 ? '+' : ''}${(todayM3TotalK / 1000).toFixed(2)} Triệu VNĐ) ${todayM3TotalK > 0 ? '🎉 <b>(THẮNG LỢI RỰC RỠ)</b>' : ''}`,
-        `   👉 <b>Mức VIP Web (Vốn Lớn):</b> <b>${formatM(todayTotalProfitK)}</b> ${todayTotalProfitK > 0 ? '🎉 <b>(THẮNG LỢI RỰC RỠ)</b>' : ''}`,
+        `   👉 <b>Thực Chiến Chính (Đề + Lô Chuẩn + Lô X2 · Khớp Web):</b> <b>${formatK(coreM3TotalK)}</b> (${coreM3TotalK > 0 ? '+' : ''}${(coreM3TotalK / 1000).toFixed(2)}M) · Mức VIP: <b>${formatM(coreTotalProfitK)}</b> ${coreTotalProfitK > 0 ? '🎉 <b>(THẮNG LỢI RỰC RỠ)</b>' : ''}`,
+        `   👉 <b>Tổng Kèm Xiên 4 Quây (Đơn Vị Bot Telegram):</b> <b>${formatK(todayM3TotalK)}</b> (${todayM3TotalK > 0 ? '+' : ''}${(todayM3TotalK / 1000).toFixed(2)} Triệu VNĐ) · Mức VIP: <b>${formatM(todayTotalProfitK)}</b> ${todayTotalProfitK > 0 ? '🎉' : ''}`,
         divider,
         `🔮 <b>GỢI Ý DÀN SỐ ĐÁNH TIẾP THEO (${escapeHtml(displayDate(predictionDate))})</b>`,
         divider

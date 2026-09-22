@@ -48,8 +48,8 @@
     let currentSelectedLoSubTier = 7;
     let currentActiveLoSubNums = [];
     let currentActivePortfolio = 'smartAlternating';
-    let currentActiveDeMethod = 'pentaCoreDe';
-    let currentActiveLoEngine = 'penta';
+    let currentActiveDeMethod = '';
+    let currentActiveLoEngine = '';
 
     const byId = id => document.getElementById(id);
 
@@ -484,7 +484,7 @@
         let chosenDeMethod = 'metaLearner';
         if (date === '2026-09-16') {
             chosenDeMethod = 'metaLearner';
-        } else if (date >= '2026-09-17' && date <= '2026-09-21') {
+        } else if (date >= '2026-09-17' && date <= '2026-09-22') {
             chosenDeMethod = 'adaptiveDualMerge';
         } else if (streakRow?.chosenMethod) {
             chosenDeMethod = streakRow.chosenMethod;
@@ -3716,12 +3716,12 @@
             smartAlternating: {
                 id: 'smartAlternating',
                 name: 'Gói 2: Điều Phối Luân Phiên Thông Minh (AI)',
-                deMethod: fullData?.pentaCoreDe ? 'pentaCoreDe' : 'adaptiveDualMerge',
-                loEngine: fullData?.loPentaMatrix ? 'penta' : 'qmbf',
-                loSubTier: 7,
-                badge: '👑 AI Governor (Né Bão Hòa)',
+                deMethod: fullData?.streakAwareDeAdvisor?.latestRecommendation?.selectedMethod || (fullData?.pentaCoreDe ? 'pentaCoreDe' : 'adaptiveDualMerge'),
+                loEngine: fullData?.loQuadHybrid?.latestRecommendation?.streakGovernor?.selectedEngine || (fullData?.loPentaMatrix ? 'penta' : 'qmbf'),
+                loSubTier: fullData?.loQuadHybrid?.latestRecommendation?.streakGovernor?.selectedSubTier || 7,
+                badge: fullData?.streakAwareDeAdvisor?.latestRecommendation?.confidenceBadge || '👑 AI Governor (Né Bão Hòa)',
                 roiLabel: 'Win 78.5%',
-                rationale: 'Né bẫy quá nhiệt sau thắng lớn X2 Đề (xác suất trượt 55.6%), chuyển sang Ngũ Trụ AI Đại Đồng Thuận kết hợp Ngũ Hợp Lô AI Top 7 nổ bù.'
+                rationale: fullData?.streakAwareDeAdvisor?.latestRecommendation?.rationale || 'Né bẫy quá nhiệt sau thắng lớn X2 Đề (xác suất trượt 55.6%), luân chuyển phương pháp tối ưu đà nổ.'
             },
             steadyAccumulator: {
                 id: 'steadyAccumulator',
