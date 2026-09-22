@@ -533,21 +533,27 @@ function resolveUnifiedDeRowForDate(date, advisorPayload = {}) {
     stakeK = 60000;
     stakeM3K = numX2 * 400 + numX1 * 200;
 
-    if (r?.isHit != null) {
-      isHit = Boolean(r.isHit);
-      hitType = (r.isX2 || r.hitType === 'win_x2') ? 'win_x2' : (isHit ? 'win_x1' : 'loss');
-    } else if (actualSpecial != null) {
+    if (actualSpecial != null) {
       const specStr = String(actualSpecial).padStart(2, '0');
-      if (x2.includes(specStr)) {
+      const specNum = Number(actualSpecial);
+      const inX2 = x2.includes(specStr) || (Array.isArray(r?.intersectionX2) && r.intersectionX2.includes(specNum));
+      const inX1 = union.includes(specStr) || x1.includes(specStr)
+        || (Array.isArray(r?.fullUnion) && r.fullUnion.includes(specNum))
+        || (Array.isArray(r?.uniqueSinglesX1) && r.uniqueSinglesX1.includes(specNum))
+        || (Array.isArray(r?.numbers) && r.numbers.includes(specNum));
+      if (inX2) {
         isHit = true;
         hitType = 'win_x2';
-      } else if (union.includes(specStr) || x1.includes(specStr)) {
+      } else if (inX1) {
         isHit = true;
         hitType = 'win_x1';
       } else {
         isHit = false;
         hitType = 'loss';
       }
+    } else if (r?.isHit != null) {
+      isHit = Boolean(r.isHit);
+      hitType = (r.isX2 || r.hitType === 'win_x2') ? 'win_x2' : (isHit ? 'win_x1' : 'loss');
     }
 
     if (hitType === 'win_x2') {
@@ -575,7 +581,13 @@ function resolveUnifiedDeRowForDate(date, advisorPayload = {}) {
     singleNumbers = numbers.slice(10);
     stakeK = 30000;
     stakeM3K = 6000;
-    isHit = Boolean(mRow?.isHit || (mRow?.profitK || 0) > 0);
+    if (actualSpecial != null) {
+      const specStr = String(actualSpecial).padStart(2, '0');
+      const specNum = Number(actualSpecial);
+      isHit = numbers.includes(specStr) || (Array.isArray(mRow?.numbers) && mRow.numbers.includes(specNum));
+    } else {
+      isHit = Boolean(mRow?.isHit || (mRow?.profitK || 0) > 0);
+    }
     hitType = isHit ? 'win_x1' : 'loss';
     if (isHit) {
       payoutK = 84000;
@@ -770,7 +782,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
       } else if (resDe.hitType === 'win_x1') {
         deResultTitle = `🎉 <b>TRÚNG ĐỀ ${escapeHtml(specStr)} BỌC LÓT X1!</b>`;
       } else {
-        deResultTitle = `❌ <b>Trượt (-${formatK(resDe.stakeM3K)} M3 / -${formatM(resDe.stakeK)} VIP)</b>`;
+        deResultTitle = `❌ <b>Trượt (${formatK(-resDe.stakeM3K)} M3 / ${formatM(-resDe.stakeK)} VIP)</b>`;
       }
 
       const todayM3TotalK = resDe.profitM3K + resLo.dayM3ProfitK;
