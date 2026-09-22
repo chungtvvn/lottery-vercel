@@ -1126,7 +1126,7 @@
         window.__switchDeMethod = updateDeMethodDisplay;
 
         // 2. LÔ TINH HOA — MULTI-ENGINE STREAK GOVERNOR
-        const governor = loQuadAdv?.streakGovernor || {};
+        const governor = loQuadAdv?.streakGovernor || loQuadAdv?.latestRecommendation?.streakGovernor || {};
         let activeLoEngineKey = governor.selectedEngine || 'qmbf';
         currentSelectedLoSubTier = governor.selectedSubTier || 7;
         let currentActiveLoEngineData = null;
@@ -1163,7 +1163,7 @@
         function updateLoSubTierDisplay(size) {
             currentSelectedLoSubTier = size;
             const engineData = currentActiveLoEngineData || governor.engines?.[activeLoEngineKey] || {};
-            const subTierData = engineData.subTiers?.[size] || governor.subTiers?.[size] || {};
+            const subTierData = loNext?.subTiers?.[size] || engineData.subTiers?.[size] || governor.subTiers?.[size] || {};
             const subNums = (subTierData.numbers || engineData.rankedNumbers?.slice(0, size) || loQuadAdv?.rankedNumbers?.slice(0, size) || []).map(number);
             currentActiveLoSubNums = subNums;
 
@@ -1176,19 +1176,20 @@
                 }
             });
 
+            const methodPrefix = subTierData.methodName ? `${subTierData.methodName} · ` : (engineData.shortLabel || engineData.label ? `${engineData.shortLabel || engineData.label} · ` : '');
             const x2Label = byId('unifiedLoX2Label');
             if (x2Label) {
-                x2Label.textContent = `${engineData.shortLabel || engineData.label || 'Động cơ'} · ${subTierData.label || 'Top ' + size} [${subNums.length}s]`;
+                x2Label.textContent = `${methodPrefix}${subTierData.label || 'Top ' + size} [${subNums.length}s]`;
             }
 
             const x2SubText = byId('unifiedLoX2SubText');
             if (x2SubText) {
-                x2SubText.textContent = `· Đánh phẳng 100đ (25đ Bot): ${(size * 2.2).toFixed(1)}M (${size === 7 ? 'Ăn 2 nháy lãi +600K' : (subTierData.winCondition || 'Ăn nháy')})`;
+                x2SubText.textContent = `· Đánh phẳng 100đ (25đ Bot): ${(size * 2.2).toFixed(1)}M (${subTierData.winCondition || (size === 7 ? 'Ăn 2 nháy lãi +600K' : 'Ăn nháy')})`;
             }
 
             const x2RoiEl = byId('unifiedLoX2LiveRoi');
             if (x2RoiEl) {
-                x2RoiEl.textContent = engineData.winRateTop7 ? `Top 7 Win ${engineData.winRateTop7}` : 'ROI +18.9%';
+                x2RoiEl.textContent = subTierData.roi ? `ROI ${subTierData.roi}` : (engineData.winRateTop7 ? `Top 7 Win ${engineData.winRateTop7}` : 'ROI +18.9%');
             }
 
             const x2Container = byId('unifiedLoX2Numbers');

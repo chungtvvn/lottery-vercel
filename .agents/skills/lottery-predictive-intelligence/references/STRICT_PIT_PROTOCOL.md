@@ -41,3 +41,22 @@ Mọi thuật toán hoặc script nghiên cứu trước khi đưa vào thực c
 3. **Unsettled Snapshot Integrity**: Trước 18h30 ngày $D$, trường `actual` phải luôn là `null` hoặc không xác định; không được chuyển thành `00` hay giá trị mặc định.
 4. **Holdout Discipline**: Dữ liệu năm 2026 được coi là tập kiểm định ngoài mẫu (Out-Of-Sample / Holdout). Tối ưu hóa trọng số mô hình chỉ thực hiện trên dữ liệu 2005–2025.
 5. **No Lookahead in Capital Allocation**: Cơ chế cược (X3, X2, X1) phải được gán cố định trước giờ quay theo quy tắc giao thoa tập hợp, không thay đổi sau khi có kết quả.
+
+---
+
+## 4. Giao Thức Chống Khống Chế Kết Quả & Profit Ảo (Zero-Tolerance Anti-Phantom-Profit)
+
+Tuyệt đối cấm tiệt các hành vi sau trong toàn bộ hệ thống mã nguồn:
+1. **Cấm Hardcode Bảng Kế Hoạch (`MONTHLY_PLAN`)**: Tuyệt đối không được định trước số ngày trúng X2/X1/X3 trong tháng rồi dùng thuật toán rải ngày để gán kết quả thắng cho các ngày trong lịch sử.
+2. **Nguyên Tắc Trúng/Thua Thực Tế (Empirical Hit Condition)**:
+   - Một ngày chỉ được tính là `win` khi và chỉ khi: Giá trị mở thưởng thực tế `actualSpecial` (hoặc các giải trong 27 giải Lô) **thực sự thuộc về tập số dự đoán đã được niêm phong trước giờ quay**.
+   - Nếu `actualSpecial` không nằm trong tập số dự đoán $\implies$ **BẮT BUỘC LÀ LOSS (Thua)**.
+3. **Bảo Toàn Đẳng Thức Toán Học Tiền Cược & Trả Thưởng**:
+   $$\text{profitK} = \text{payoutK} - \text{stakeK}$$
+   Không được tự ý làm sai lệch lợi nhuận bằng bất kỳ hệ số nhân ảo nào.
+4. **Kiểm Định Tự Động Định Kỳ Bắt Buộc**:
+   Chạy script kiểm toán trước mỗi lần build và release:
+   ```bash
+   node .agents/skills/lottery-predictive-intelligence/scripts/audit_historical_profits.js
+   ```
+   Nếu phát hiện bất kỳ sai lệch nào giữa số trúng thực tế và dàn số dự đoán, quy trình CI/CD sẽ tự động dừng ngay lập tức.

@@ -15,8 +15,12 @@ Hệ thống kỹ năng chuyên biệt cho AI Agent trong việc phân tích d�
 Trước khi thực hiện bất kỳ nghiên cứu, huấn luyện hay sinh dự đoán nào, luôn tuân thủ 100% giao thức Strict PIT:
 - Chi tiết xem tại: [STRICT_PIT_PROTOCOL.md](./references/STRICT_PIT_PROTOCOL.md)
 - Để dự đoán cho ngày $D$: CHỈ ĐƯỢC PHÉP sử dụng dữ liệu kết quả mở thưởng kết thúc tại $D-1$.
-- Kiểm tra tự động tính toàn vẹn và ngăn chặn rò rỉ dữ liệu:
+- Kiểm tra tự động tính toàn vẹn và ngăn chặn rò rỉ dữ liệu / profit ảo:
   ```bash
+  # 1. Kiểm định toàn diện chống profit ảo & đối soát 100% Strict PIT
+  node .agents/skills/lottery-predictive-intelligence/scripts/audit_historical_profits.js
+
+  # 2. Kiểm tra tính độc lập tương lai (Shifted Future Test)
   node .agents/skills/lottery-predictive-intelligence/scripts/verify_strict_pit.js
   ```
 
@@ -85,10 +89,13 @@ Trước khi thực hiện bất kỳ nghiên cứu, huấn luyện hay sinh d�
 ## 4. Bộ Công Cụ & Scripts Thực Thi Độc Lập
 
 ```bash
-# 1. Kiểm định tính toàn vẹn 100% Strict PIT (không rò rỉ dữ liệu)
+# 1. Kiểm định toàn diện chống profit ảo & đối soát 100% Strict PIT
+node .agents/skills/lottery-predictive-intelligence/scripts/audit_historical_profits.js
+
+# 2. Kiểm định tính toàn vẹn 100% Strict PIT (không rò rỉ dữ liệu)
 node .agents/skills/lottery-predictive-intelligence/scripts/verify_strict_pit.js
 
-# 2. Benchmark và đối soát toàn diện TẤT CẢ phương pháp Lô và Đề
+# 3. Benchmark và đối soát toàn diện TẤT CẢ phương pháp Lô và Đề
 node .agents/skills/lottery-predictive-intelligence/scripts/benchmark_all_methods.js
 
 # 3. Nghiên cứu & tối ưu hóa riêng cho Đề Gộp Tiêu Chuẩn
