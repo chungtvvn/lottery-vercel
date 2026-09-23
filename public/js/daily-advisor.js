@@ -3717,33 +3717,33 @@
         const PORTFOLIOS_CONFIG = {
             maxProfit: {
                 id: 'maxProfit',
-                name: 'Gói 1: Lô Ghép Tầng (+3.0 TỶ) & Đề Nổ Bù',
+                name: 'Gói 1: Lô Ghép Tầng X2 & Đề Alpha Nổ Bù (Đòn Bẩy Gỡ Lỗ)',
                 deMethod: 'adaptiveDualMerge',
                 loEngine: 'qmbf',
                 loSubTier: 7,
-                badge: '🚀 Lô Ghép Tầng +3.001 TỶ · Nổ 98.5%',
-                roiLabel: 'Lãi +3.0 TỶ · ROI +37.3%',
-                rationale: 'Tổ hợp Lô ghép tầng QMBF(Top 7) + QUAD(Top 7) nổ 98.5% ngày, lãi kỷ lục +3.001 TỶ (chuỗi trượt tối đa chỉ 3 ngày) kết hợp Đề Thích Ứng Alpha nổ bù sau trượt 23/09.'
+                badge: '🚀 Đòn Bẩy X2 Gỡ Lỗ · Lãi +3.7 TỶ Cả Lô & Đề',
+                roiLabel: 'Lãi +3.7 TỶ · Nổ 98.5%',
+                rationale: 'Chiến lược tối đa hóa profit toàn diện: Dồn đòn bẩy X2 vào nhóm số trùng của Lô (QMBF Top 7 + QUAD Top 7 lãi +2.9 TỶ, nổ 98.5% ngày) và Đề Thích Ứng Alpha nổ bù sau trượt (ăn 168M, lãi +108M gỡ sạch drawdown). Chỉ chuyển sang chế độ an toàn khi tích lũy lãi lớn.'
             },
             smartAlternating: {
                 id: 'smartAlternating',
-                name: 'Gói 2: Đề Cược Phẳng (+111M) & Lô Ghép 7s (+2.57 TỶ)',
-                deMethod: 'deMarkovGapHazard',
+                name: 'Gói 2: Đề Tinh Tuyển X2 (+1.17 TỶ) & Lô Ghép 7s (+2.18 TỶ)',
+                deMethod: 'adaptiveDualMerge',
                 loEngine: 'penta',
                 loSubTier: 7,
-                badge: '👑 Đề Cược Phẳng 25s (+111M) · Lô 7s (+2.57T)',
-                roiLabel: 'Win 96.9%',
-                rationale: 'Cắt hoàn toàn bẫy gánh vốn X2 của Đề, chuyển sang Đề Markov Gap 25 số cược phẳng (vốn 25M, trúng ăn 84M, lãi ròng +59M/kỳ, tổng 261 ngày lãi +111M) + Lô ghép ba tinh gọn QMBF(T2)+QUAD(T4)+PENTA(T7) lãi +2.567 TỶ.'
+                badge: '👑 Đề Tinh Tuyển X2 (+1.17T) · Lô 7s (+2.18T)',
+                roiLabel: 'Lãi +3.35 TỶ · Nổ 96.9%',
+                rationale: 'Chiến thuật Đề 15 số Core VIP cược X2 (ăn 168M, lãi +123M/kỳ) + Lô ghép ba tinh gọn QMBF(T2)+QUAD(T4)+PENTA(T7) cược X2. Đạt tổng lãi +3.35 TỶ, tự động kích hoạt chế độ an toàn khi đã tích lũy lãi lớn > 500M.'
             },
             steadyAccumulator: {
                 id: 'steadyAccumulator',
-                name: 'Gói 3: Tích Lũy Bền Vững / An Toàn Tuyệt Đối',
+                name: 'Gói 3: Bảo Toàn Vốn An Toàn (Kích Hoạt Khi Đã Lãi Nhiều)',
                 deMethod: 'dualMerge',
                 loEngine: 'quad',
                 loSubTier: 2,
-                badge: '🛡️ An Toàn Vốn (Win > 80%)',
-                roiLabel: 'Drawdown ≤ 2d',
-                rationale: 'Chiến lược phòng thủ vững chắc, giữ vững Đề Gộp Tiêu Chuẩn kết hợp Lô Top 20 và Song Thủ VIP.'
+                badge: '🛡️ Bảo Toàn Lãi (An Toàn Tuyệt Đối)',
+                roiLabel: 'Khóa Lãi · Drawdown ≤ 2d',
+                rationale: 'Chế độ phòng thủ bảo vệ thành quả: Khi tài khoản đã đạt mốc lãi lớn từ đòn bẩy X2 (> 2.0 TỶ Lô / > 500M Đề), hạ cược đòn bẩy về cược phẳng an toàn để triệt tiêu drawdown, giữ chặt vốn.'
             },
             antiNoiseResonance: {
                 id: 'antiNoiseResonance',
@@ -3757,7 +3757,7 @@
             }
         };
 
-        currentActivePortfolio = 'smartAlternating';
+        currentActivePortfolio = 'maxProfit';
 
         function selectStrategicPortfolio(key, isInitial = false) {
             currentActivePortfolio = key;

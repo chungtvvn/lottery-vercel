@@ -225,30 +225,31 @@
 
                     <!-- 4 Strategic Portfolios Grid -->
                     <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4" id="strategicPortfoliosGrid">
-                        <!-- GÓI 1: ĐỘT PHÁ LỢI NHUẬN TỐI ĐA -->
-                        <div class="portfolio-card rounded-2xl border border-white/15 bg-slate-900/80 p-4 transition-all hover:border-amber-300 shadow-md cursor-pointer flex flex-col justify-between" data-portfolio="maxProfit">
+                        <!-- GÓI 1: ĐỘT PHÁ LỢI NHUẬN TỐI ĐA & ĐÒN BẨY X2 GỠ LỖ (MẶC ĐỊNH) -->
+                        <div class="portfolio-card active rounded-2xl border-2 border-amber-400 bg-gradient-to-b from-amber-500/20 via-slate-900 to-slate-950 p-4 transition-all hover:border-amber-300 shadow-xl cursor-pointer flex flex-col justify-between ring-2 ring-amber-400/30" data-portfolio="maxProfit">
                             <div>
                                 <div class="flex items-center justify-between gap-2">
-                                    <span class="rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 font-black text-[10px] px-2 py-0.5 uppercase tracking-wide">
-                                        🚀 GÓI 1 · LÔ GHÉP TẦNG +3.0 TỶ
+                                    <span class="rounded-full bg-amber-400 text-slate-950 font-black text-[10px] px-2.5 py-0.5 uppercase tracking-wide shadow-xs flex items-center gap-1">
+                                        🚀 GÓI 1 · TỔNG LỰC X2 GỠ LỖ (+3.7 TỶ)
                                     </span>
-                                    <span class="text-xs font-black text-amber-300 font-mono">+3.001 TỶ · ROI +37.3%</span>
+                                    <span class="text-xs font-black text-amber-300 font-mono">Lãi +3.7 TỶ · Nổ 98.5%</span>
                                 </div>
                                 <h4 class="text-base font-black text-white mt-2 flex items-center gap-1.5">
-                                    <span>Lô Ghép Tầng &amp; Đề Nổ Bù</span>
+                                    <span>Lô Ghép Tầng X2 &amp; Đề Alpha Nổ Bù</span>
+                                    <span class="rounded bg-amber-400 text-slate-950 px-1.5 py-0.2 text-[9px] font-black uppercase">⭐ Tối Ưu Nhất</span>
                                 </h4>
                                 <p class="text-[11px] text-slate-300 mt-1 leading-relaxed">
-                                    Lô Ghép Tầng QMBF(T7) + QUAD(T7) (số trùng cược X2, số riêng cược X1, max trượt chỉ 3 ngày, nổ 98.5%) + Đề Thích Ứng Alpha nổ bù sau trượt 23/09.
+                                    Dồn toàn lực đòn bẩy X2 vào nhóm số trùng của Lô (QMBF Top 7 + QUAD Top 7 lãi +2.9 TỶ, nổ 98.5% ngày) và Đề Thích Ứng Alpha nổ bù sau trượt (ăn 168M, lãi +108M gỡ sạch drawdown). Chỉ chuyển an toàn khi đã tích lũy lãi lớn > 2.0 TỶ.
                                 </p>
 
                                 <div class="mt-3 space-y-1.5 rounded-xl bg-black/40 p-2.5 text-[11px] font-mono border border-white/5">
                                     <div class="flex justify-between text-amber-200">
                                         <span>💎 Đề:</span>
-                                        <strong class="font-bold">Thích Ứng Alpha (Điểm Rơi Nổ Bù)</strong>
+                                        <strong class="font-bold">Alpha Nổ Bù (23 VIP X2 + 14 Lót)</strong>
                                     </div>
                                     <div class="flex justify-between text-teal-200">
                                         <span>🎰 Lô:</span>
-                                        <strong class="font-bold">🔥 QMBF(T7) + QUAD(T7) [X2/X1]</strong>
+                                        <strong class="font-bold">🔥 QMBF(T7) + QUAD(T7) [Số trùng X2]</strong>
                                     </div>
                                     <div class="flex justify-between text-indigo-200">
                                         <span>✨ Xiên:</span>
@@ -256,8 +257,54 @@
                                     </div>
                                 </div>
 
-                                <div class="mt-2.5 text-[10px] text-amber-300/90 font-medium flex items-center gap-1">
-                                    <i class="bi bi-graph-up-arrow"></i> <span>Tổ hợp Lô số 1 cả năm 2026: Nổ 98.5% ngày (257/261 ngày)</span>
+                                <div class="mt-2.5 text-[10px] text-amber-300 font-semibold flex items-center gap-1">
+                                    <i class="bi bi-lightning-charge-fill text-amber-400"></i> <span>Đòn bẩy X2 gỡ bù mọi khoản thua lỗ và bứt phá profit</span>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
+                                <span class="portfolio-active-indicator inline-flex items-center gap-1 text-[11px] font-black text-amber-300">
+                                    <i class="bi bi-check-circle-fill"></i> Đang chọn (Mặc định)
+                                </span>
+                                <button type="button" class="btn-select-portfolio rounded-lg bg-amber-400 text-slate-950 font-black text-xs px-2.5 py-1 transition-all shadow-xs">
+                                    Đang Chọn
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- GÓI 2: ĐỀ TINH TUYỂN X2 & LÔ GHÉP TINH GỌN 7S -->
+                        <div class="portfolio-card rounded-2xl border border-white/15 bg-slate-900/80 p-4 transition-all hover:border-indigo-300 shadow-md cursor-pointer flex flex-col justify-between" data-portfolio="smartAlternating">
+                            <div>
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 font-black text-[10px] px-2 py-0.5 uppercase tracking-wide">
+                                        👑 GÓI 2 · ĐỀ TINH TUYỂN X2 (+1.17T)
+                                    </span>
+                                    <span class="text-xs font-black text-indigo-300 font-mono">Lãi +3.35 TỶ</span>
+                                </div>
+                                <h4 class="text-base font-black text-white mt-2 flex items-center gap-1.5">
+                                    <span>Đề Tinh Tuyển X2 &amp; Lô 7s</span>
+                                </h4>
+                                <p class="text-[11px] text-slate-300 mt-1 leading-relaxed">
+                                    Chiến thuật Đề 15 số Core VIP cược X2 (ăn 168M, lãi +123M/kỳ) + Lô ghép ba tinh gọn QMBF2+QUAD4+PENTA7 cược X2 (+2.18 TỶ). Tự động kích hoạt bảo toàn khi đã lãi > 500M.
+                                </p>
+
+                                <div class="mt-3 space-y-1.5 rounded-xl bg-black/40 p-2.5 text-[11px] font-mono border border-white/5">
+                                    <div class="flex justify-between text-amber-200">
+                                        <span>💎 Đề:</span>
+                                        <strong class="font-bold">Đề Tinh Tuyển (15 VIP X2 + 15 Lót)</strong>
+                                    </div>
+                                    <div class="flex justify-between text-teal-200">
+                                        <span>🎰 Lô:</span>
+                                        <strong class="font-bold">⚡ Ghép Ba QMBF2+QUAD4+PENTA7</strong>
+                                    </div>
+                                    <div class="flex justify-between text-indigo-200">
+                                        <span>🛡️ Chuỗi thua:</span>
+                                        <strong class="font-bold">Max chỉ 3 ngày · Nổ 96.9%</strong>
+                                    </div>
+                                </div>
+
+                                <div class="mt-2.5 text-[10px] text-emerald-300 font-semibold flex items-center gap-1">
+                                    <i class="bi bi-shield-check"></i> <span>Tập trung X2 vào Core VIP, triệt tiêu tối đa chi phí dàn loãng</span>
                                 </div>
                             </div>
 
@@ -271,86 +318,39 @@
                             </div>
                         </div>
 
-                        <!-- GÓI 2: ĐIỀU PHỐI LUÂN PHIÊN THÔNG MINH (AI CHỌN MẶC ĐỊNH AN TOÀN & PROFIT) -->
-                        <div class="portfolio-card active rounded-2xl border-2 border-indigo-400 bg-gradient-to-b from-indigo-500/20 via-slate-900 to-slate-950 p-4 transition-all hover:border-indigo-300 shadow-lg cursor-pointer flex flex-col justify-between ring-2 ring-indigo-400/30" data-portfolio="smartAlternating">
-                            <div>
-                                <div class="flex items-center justify-between gap-2">
-                                    <span class="rounded-full bg-indigo-500 text-white font-black text-[10px] px-2.5 py-0.5 uppercase tracking-wide shadow-xs">
-                                        👑 GÓI 2 · ĐỀ CƯỢC PHẲNG +111M &amp; LÔ 7S
-                                    </span>
-                                    <span class="text-xs font-black text-indigo-300 font-mono">Dương Lãi Bền Vững</span>
-                                </div>
-                                <h4 class="text-base font-black text-white mt-2 flex items-center gap-1.5">
-                                    <span>Đề Cược Phẳng &amp; Lô Tinh Gọn</span>
-                                    <span class="rounded bg-amber-400 text-slate-950 px-1.5 py-0.2 text-[9px] font-black uppercase">⭐ Tối Ưu Nhất</span>
-                                </h4>
-                                <p class="text-[11px] text-slate-300 mt-1 leading-relaxed">
-                                    Cắt bỏ bẫy vốn X2 của Đề, chuyển sang Markov Gap 25 số cược phẳng (vốn 25M, trúng ăn 84M, lãi ròng +59M, tổng 261 ngày lãi +111M) + Lô ghép ba tinh gọn 7 số (+2.567 TỶ).
-                                </p>
-
-                                <div class="mt-3 space-y-1.5 rounded-xl bg-black/40 p-2.5 text-[11px] font-mono border border-white/5">
-                                    <div class="flex justify-between text-amber-200">
-                                        <span>💎 Đề:</span>
-                                        <strong class="font-bold">🔮 Markov Gap 25s (25M Phẳng)</strong>
-                                    </div>
-                                    <div class="flex justify-between text-teal-200">
-                                        <span>🎰 Lô:</span>
-                                        <strong class="font-bold">⚡ Ghép Ba QMBF2+QUAD4+PENTA7</strong>
-                                    </div>
-                                    <div class="flex justify-between text-indigo-200">
-                                        <span>🛡️ Chuỗi thua:</span>
-                                        <strong class="font-bold">Max chỉ 3 ngày · Nổ 96.9%</strong>
-                                    </div>
-                                </div>
-
-                                <div class="mt-2.5 text-[10px] text-emerald-300 font-semibold flex items-center gap-1">
-                                    <i class="bi bi-shield-check"></i> <span>Chuyển từ âm sâu sang dương bền vững, bảo toàn vốn 100%</span>
-                                </div>
-                            </div>
-
-                            <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
-                                <span class="portfolio-active-indicator inline-flex items-center gap-1 text-[11px] font-black text-indigo-300">
-                                    <i class="bi bi-check-circle-fill"></i> Đang chọn (Mặc định)
-                                </span>
-                                <button type="button" class="btn-select-portfolio rounded-lg bg-indigo-500 text-white font-black text-xs px-2.5 py-1 transition-all shadow-xs">
-                                    Đang Chọn
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- GÓI 3: TÍCH LŨY BỀN VỮNG / AN TOÀN TUYỆT ĐỐI -->
-                        <div class="portfolio-card rounded-2xl border border-white/15 bg-slate-900/80 p-4 transition-all hover:border-emerald-400 hover:bg-slate-900 shadow-md cursor-pointer flex flex-col justify-between" data-portfolio="steadyAccumulator">
+                        <!-- GÓI 3: BẢO TOÀN VỐN AN TOÀN (KÍCH HOẠT KHI ĐÃ LÃI NHIỀU) -->
+                        <div class="portfolio-card rounded-2xl border border-white/15 bg-slate-900/80 p-4 transition-all hover:border-emerald-300 shadow-md cursor-pointer flex flex-col justify-between" data-portfolio="steadyAccumulator">
                             <div>
                                 <div class="flex items-center justify-between gap-2">
                                     <span class="rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 font-black text-[10px] px-2 py-0.5 uppercase tracking-wide">
-                                        🛡️ GÓI 3 · AN TOÀN VỐN
+                                        🛡️ GÓI 3 · BẢO TOÀN VỐN AN TOÀN
                                     </span>
-                                    <span class="text-xs font-black text-emerald-300 font-mono">Win &gt; 80%</span>
+                                    <span class="text-xs font-black text-emerald-300 font-mono">Khóa Lãi Thành Quả</span>
                                 </div>
                                 <h4 class="text-base font-black text-white mt-2 flex items-center gap-1.5">
-                                    <span>Tích Lũy Bền Vững</span>
+                                    <span>Khóa Lãi &amp; Triệt Tiêu Drawdown</span>
                                 </h4>
                                 <p class="text-[11px] text-slate-300 mt-1 leading-relaxed">
-                                    Đề Gộp Tiêu Chuẩn (Win 72.5%) + Lô Chuẩn Top 20 Quad-Fusion (nổ 6.8 nháy/ngày) + Song Thủ VIP (2 số ăn 1 lãi +3.6M).
+                                    Chế độ an toàn tuyệt đối: Kích hoạt khi tài khoản đã đạt mốc lãi lớn từ đòn bẩy X2 (> 2.0 TỶ Lô / > 500M Đề). Hạ đòn bẩy về cược phẳng để triệt tiêu rủi ro drawdown, giữ chặt thành quả.
                                 </p>
 
                                 <div class="mt-3 space-y-1.5 rounded-xl bg-black/40 p-2.5 text-[11px] font-mono border border-white/5">
                                     <div class="flex justify-between text-amber-200">
                                         <span>💎 Đề:</span>
-                                        <strong class="font-bold">Gộp Tiêu Chuẩn 60M</strong>
+                                        <strong class="font-bold">Đề Gộp Tiêu Chuẩn (Cược Phẳng 1M)</strong>
                                     </div>
                                     <div class="flex justify-between text-teal-200">
                                         <span>🎰 Lô:</span>
-                                        <strong class="font-bold">Quad-Fusion Top 20</strong>
+                                        <strong class="font-bold">🛡️ Tứ Trụ Quad Top 20 (Cược Phẳng 25đ)</strong>
                                     </div>
                                     <div class="flex justify-between text-indigo-200">
-                                        <span>⚡ VIP:</span>
-                                        <strong class="font-bold">Song Thủ VIP [2s]</strong>
+                                        <span>🔒 Drawdown:</span>
+                                        <strong class="font-bold">≤ 2 ngày · Giữ Chắc Lợi Nhuận</strong>
                                     </div>
                                 </div>
 
-                                <div class="mt-2.5 text-[10px] text-emerald-300/90 font-medium flex items-center gap-1">
-                                    <i class="bi bi-shield-lock"></i> <span>Drawdown thấp nhất, kiểm soát rủi ro tuyệt đối</span>
+                                <div class="mt-2.5 text-[10px] text-slate-300 font-medium flex items-center gap-1">
+                                    <i class="bi bi-lock-fill text-emerald-400"></i> <span>Chỉ kích hoạt khi đã có khoản lãi tích lũy an toàn</span>
                                 </div>
                             </div>
 
@@ -365,38 +365,38 @@
                         </div>
 
                         <!-- GÓI 4: KHÁNG NHIỄU ĐỘC LẬP / BẮT NHỊP BẺ CẦU -->
-                        <div class="portfolio-card rounded-2xl border border-white/15 bg-slate-900/80 p-4 transition-all hover:border-purple-400 hover:bg-slate-900 shadow-md cursor-pointer flex flex-col justify-between" data-portfolio="antiNoiseResonance">
+                        <div class="portfolio-card rounded-2xl border border-white/15 bg-slate-900/80 p-4 transition-all hover:border-purple-300 shadow-md cursor-pointer flex flex-col justify-between" data-portfolio="antiNoiseResonance">
                             <div>
                                 <div class="flex items-center justify-between gap-2">
                                     <span class="rounded-full bg-purple-500/20 text-purple-300 border border-purple-400/30 font-black text-[10px] px-2 py-0.5 uppercase tracking-wide">
-                                        🔮 GÓI 4 · KHÁNG NHIỄU
+                                        🔮 GÓI 4 · KHÁNG NHIỄU BẺ CẦU
                                     </span>
-                                    <span class="text-xs font-black text-purple-300 font-mono">Cứu 45.6%</span>
+                                    <span class="text-xs font-black text-purple-300 font-mono">Bắt Nhịp Gan</span>
                                 </div>
                                 <h4 class="text-base font-black text-white mt-2 flex items-center gap-1.5">
-                                    <span>Kháng Nhiễu Độc Lập</span>
+                                    <span>Cầu Đồ Thị Vị Trí &amp; Gan Đảo</span>
                                 </h4>
                                 <p class="text-[11px] text-slate-300 mt-1 leading-relaxed">
-                                    Đề Markov Bậc 2 &amp; Gap Hazard + Ngũ Hành Bayes (Mốc Lịch Sử hiện tại) + Cầu Đồ Thị Bridge Flow (85.5%) &amp; Cụm Hawkes.
+                                    Bắt các nhịp số gan, kép lệch và bẻ cầu theo Mốc Lịch Sử hiện tại. Giải cứu tỷ lệ thắng trong các giai đoạn hội đồng quay biến động dị biệt.
                                 </p>
 
                                 <div class="mt-3 space-y-1.5 rounded-xl bg-black/40 p-2.5 text-[11px] font-mono border border-white/5">
                                     <div class="flex justify-between text-amber-200">
                                         <span>💎 Đề:</span>
-                                        <strong class="font-bold">Markov Gap Hazard [43s]</strong>
+                                        <strong class="font-bold">Markov Gap Hazard (Dạng Số Độc Lập)</strong>
                                     </div>
                                     <div class="flex justify-between text-teal-200">
                                         <span>🎰 Lô:</span>
-                                        <strong class="font-bold">Cầu Đồ Thị [85.5%]</strong>
+                                        <strong class="font-bold">🕸️ Cầu Đồ Thị Vị Trí (Bridge Flow)</strong>
                                     </div>
                                     <div class="flex justify-between text-indigo-200">
-                                        <span>⚡ Cụm:</span>
-                                        <strong class="font-bold">Hawkes Tần Suất Cao</strong>
+                                        <span>🔮 Lợi thế:</span>
+                                        <strong class="font-bold">Bắt chạm gan &amp; bẻ cầu ảo</strong>
                                     </div>
                                 </div>
 
-                                <div class="mt-2.5 text-[10px] text-purple-300/90 font-medium flex items-center gap-1">
-                                    <i class="bi bi-shuffle"></i> <span>Bắt nhịp bẻ cầu, kép lệch và số gan nổ đột ngột</span>
+                                <div class="mt-2.5 text-[10px] text-purple-300 font-medium flex items-center gap-1">
+                                    <i class="bi bi-radar"></i> <span>Dành cho các ngày nhịp quay có biến động bất thường</span>
                                 </div>
                             </div>
 

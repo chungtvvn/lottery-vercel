@@ -848,6 +848,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
       `  • <b>VIP Trùng X2 (${sTierX2.length} số):</b> Cược gấp đôi (Mức 3 đánh 400K/số, Mức VIP đánh 2M/số). Khi nổ ăn 2 nháy đề (+33.6M Mức 3 / +168M VIP, lãi ròng +21.6M M3 / +108M VIP).`,
       `  • <b>Bọc Lót X1 (${sSingles.length} số):</b> Cược chuẩn (Mức 3 đánh 200K/số, Mức VIP đánh 1M/số) để bảo hiểm vốn hòa và có lãi (+4.8M Mức 3 / +24M VIP).`,
       `  • <i>Tổng vốn: Mức 3 là ${(totalUnits * 0.2 * sizing).toFixed(1)}M (${Math.round(totalUnits * 0.2 * sizing)}M) · Mức VIP là ${(totalUnits * sizing).toFixed(1)}M (${Math.round(totalUnits * sizing)}M). Tối ưu hơn hẳn đánh cược đều ${sNumbers.length} số.</i>`,
+      `🔥 <b>Nguyên lý Đòn Bẩy X2 Gỡ Lỗ:</b> Duy trì đòn bẩy X2 ở nhóm số hạt nhân/trùng lặp để tối đa hóa profit và gỡ bù mọi khoản thua lỗ. Chỉ chuyển sang chế độ an toàn cược phẳng khi tài khoản đã tích lũy khoản lãi lớn (Lô > 2.0 TỶ, Đề > 500M).`,
       `🔄 <b>Cơ chế Đảo pha Mốc Lịch Sử:</b> Tự động luân chuyển khoa học giữa các phương pháp Mốc Lịch Sử D-1 (Thích Ứng Alpha, Gộp Tiêu Chuẩn, Tam Trụ, Đề Tinh Hoa) để tối ưu đà thắng và né bẫy quá nhiệt.`,
       `📚 <b>Kelly Sizing & Strict PIT:</b> Tự động điều chỉnh vốn theo xác suất thực nghiệm; 100% Mốc Lịch Sử không sử dụng Mốc 20 năm.`
     );
