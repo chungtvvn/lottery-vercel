@@ -19,18 +19,18 @@ const LEGACY_RRF_LOTO_STRATEGY = 'rrfParallelBlock85Small65';
 const DEFAULT_LOTO_STRATEGY = 'dedupEdge75Pit';
 const TELEGRAM_DE_METHODS = [
   {
-    source: 'milestone',
-    strategy: 'deMilestoneHistoryEdge75UnionX2',
+    source: 'advisor',
+    strategy: 'adaptiveDualMerge',
     target: 70,
-    label: 'Gộp Edge75 Lịch sử + Song Song Mốc 20 năm (x2 số trùng)'
+    label: 'Đề Thích Ứng Alpha Mốc Lịch Sử (x2 số trùng)'
   }
 ];
 const DEFAULT_LOTO_COUNT = 6;
 const TELEGRAM_LOTO_COUNTS = [6, 7];
 const TELEGRAM_LOTO_STRATEGIES = [
   {
-    strategy: LEGACY_RRF_LOTO_STRATEGY,
-    label: 'RRF Song song (Chuỗi nhỏ 65 + Nhịp block 85)'
+    strategy: 'loQuadHybrid',
+    label: 'Tứ Trụ Quad-Fusion v7.2 (Mốc Lịch Sử)'
   }
 ];
 const TELEGRAM_LOTO_METHODS = TELEGRAM_LOTO_STRATEGIES.flatMap(method =>
@@ -517,20 +517,20 @@ function resolveUnifiedDeRowForDate(date, advisorPayload = {}) {
   let vipNumbers = [];
   let singleNumbers = [];
 
-  if (chosenDeMethod === 'adaptiveDualMerge') {
-    methodName = '👑 Đề Thích Ứng Alpha';
-    const r = aRow || sRow;
+  if (chosenDeMethod === 'adaptiveDualMerge' || chosenDeMethod === 'dualMerge') {
+    methodName = chosenDeMethod === 'dualMerge' ? '🎯 Đề Gộp Tiêu Chuẩn' : '👑 Đề Thích Ứng Alpha';
+    const r = (chosenDeMethod === 'dualMerge' ? dRow : aRow) || sRow;
     const union = (r?.fullUnion || r?.union || r?.numbers || []).map(normalizeLotteryNumber);
     const x2 = (r?.intersectionX2 || r?.intersection || r?.vipNumbers || []).map(normalizeLotteryNumber);
     const x1 = (r?.uniqueSinglesX1 || r?.uniqueSingles || r?.backupNumbers || []).map(normalizeLotteryNumber);
     numbers = union;
     vipNumbers = x2;
     singleNumbers = x1;
-    const numX2 = x2.length || 20;
-    const numX1 = x1.length || (union.length > numX2 ? union.length - numX2 : 20);
-    subTierLabel = `Dàn ${union.length || 40} số (${numX2} VIP X2 · ${numX1} Lót X1)`;
+    const numX2 = x2.length || (chosenDeMethod === 'dualMerge' ? 22 : 24);
+    const numX1 = x1.length || (union.length > numX2 ? union.length - numX2 : (chosenDeMethod === 'dualMerge' ? 16 : 12));
+    subTierLabel = `Dàn ${union.length || 38} số (${numX2} VIP X2 · ${numX1} Lót X1)`;
 
-    stakeK = 60000;
+    stakeK = r?.stakeK || 60000;
     stakeM3K = numX2 * 400 + numX1 * 200;
 
     if (actualSpecial != null) {
@@ -829,7 +829,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
       `<b>1. 💎 ĐỀ TINH HOA — BỘ ĐIỀU PHỐI ĐA PHƯƠNG PHÁP BÙ TRỪ</b>`,
       `👑 <b>Phương pháp: ${escapeHtml(sMethod)} ⭐ (Đề Xuất)</b>`,
       `⚡ <b>Trạng thái:</b> <code>${escapeHtml(sBadge)}</code>${sizingText}`,
-      `💡 <i>${escapeHtml(streakDeAdv.rationale || '')}</i>`,
+      `💡 <i>${escapeHtml(streakDeAdv.rationale || streakDeAdv.phaseRationale || '')}</i>`,
       `🎯 <b>Dàn Đề Tuyển Chọn (${sNumbers.length} số · ${totalUnits} đơn vị cược):</b>`,
       `<b>${escapeHtml(formatNumberList(sNumbers))}</b>`
     );
@@ -848,8 +848,8 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
       `  • <b>VIP Trùng X2 (${sTierX2.length} số):</b> Cược gấp đôi (Mức 3 đánh 400K/số, Mức VIP đánh 2M/số). Khi nổ ăn 2 nháy đề (+33.6M Mức 3 / +168M VIP, lãi ròng +21.6M M3 / +108M VIP).`,
       `  • <b>Bọc Lót X1 (${sSingles.length} số):</b> Cược chuẩn (Mức 3 đánh 200K/số, Mức VIP đánh 1M/số) để bảo hiểm vốn hòa và có lãi (+4.8M Mức 3 / +24M VIP).`,
       `  • <i>Tổng vốn: Mức 3 là ${(totalUnits * 0.2 * sizing).toFixed(1)}M (${Math.round(totalUnits * 0.2 * sizing)}M) · Mức VIP là ${(totalUnits * sizing).toFixed(1)}M (${Math.round(totalUnits * sizing)}M). Tối ưu hơn hẳn đánh cược đều ${sNumbers.length} số.</i>`,
-      `🔄 <b>Cơ chế Đảo pha Đa Phương Pháp Bù Trừ:</b> Tự động luân chuyển giữa 7 phương pháp độc lập (Thích Ứng Alpha, Gộp Tiêu Chuẩn, Tam Trụ, Markov Gap, Cầu Đồ Thị, Ngũ Hành Bayes) để tối ưu đà thắng và kháng nhiễu.`,
-      `📚 <b>Kelly Sizing & Strict PIT:</b> Tự động điều chỉnh vốn theo xác suất thực nghiệm; niêm phong dữ liệu 100% không rò rỉ tương lai.`
+      `🔄 <b>Cơ chế Đảo pha Mốc Lịch Sử:</b> Tự động luân chuyển khoa học giữa các phương pháp Mốc Lịch Sử D-1 (Thích Ứng Alpha, Gộp Tiêu Chuẩn, Tam Trụ, Đề Tinh Hoa) để tối ưu đà thắng và né bẫy quá nhiệt.`,
+      `📚 <b>Kelly Sizing & Strict PIT:</b> Tự động điều chỉnh vốn theo xác suất thực nghiệm; 100% Mốc Lịch Sử không sử dụng Mốc 20 năm.`
     );
   } else {
     lines.push(`<b>1. 💎 ĐỀ TINH HOA — DÀN 30 SỐ GỢI Ý</b>`);
@@ -857,12 +857,10 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     let core10 = metaRec?.core10 || [];
     let core20 = metaRec?.core20 || [];
 
-    if (!std30.length && dePayload.nextPrediction) {
-      const strat = dePayload.nextPrediction?.strategies?.deMilestoneHistoryEdge75UnionX2
-        || dePayload.nextPrediction?.strategies?.dedupEdge75Pit
-        || Object.values(dePayload.nextPrediction?.strategies || {})[0];
-      const hold = strat?.holds?.[70] || strat?.holds?.[30] || Object.values(strat?.holds || {})[0];
-      std30 = hold?.betNumbers || [];
+    if (!std30.length) {
+      std30 = advisorPayload?.dualMerge?.latestRecommendation?.fullUnion
+        || advisorPayload?.adaptiveDualMerge?.latestRecommendation?.fullUnion
+        || [];
       core10 = std30.slice(0, 10);
       core20 = std30.slice(0, 20);
     }
@@ -908,11 +906,8 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     stdNums = engineData.rankedNumbers.slice(0, 20).map(normalizeLotteryNumber);
   } else if (metaNext?.standard?.numbers?.length) {
     stdNums = (metaNext.standard.numbers || []).map(normalizeLotteryNumber);
-  } else if (lotoPayload.nextPrediction) {
-    const strat = lotoPayload.nextPrediction?.strategies?.rrfParallelBlock85Small65
-      || lotoPayload.nextPrediction?.strategies?.dedupEdge75Pit
-      || Object.values(lotoPayload.nextPrediction?.strategies || {})[0];
-    stdNums = (strat?.predictions?.top20?.numbers || lotoPayload.nextPrediction?.predictions?.top6?.numbers || []).map(normalizeLotteryNumber);
+  } else if (advisorPayload?.loQuantumBayesFusion?.latestRecommendation?.rankedNumbers?.length) {
+    stdNums = advisorPayload.loQuantumBayesFusion.latestRecommendation.rankedNumbers.slice(0, 20).map(normalizeLotteryNumber);
   } else {
     stdNums = (metaNext?.standard?.numbers || []).map(normalizeLotteryNumber);
   }
@@ -951,11 +946,8 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   }
 
   let x2Nums = (subTierData.numbers || engineData.rankedNumbers?.slice(0, selectedSubTier) || loGovernor.subTiers?.[selectedSubTier]?.numbers || loQuadAdv?.top7 || metaNext?.x2?.numbers || []).map(normalizeLotteryNumber);
-  if (!x2Nums.length && lotoPayload.nextPrediction) {
-    const strat = lotoPayload.nextPrediction?.strategies?.rrfParallelBlock85Small65
-      || lotoPayload.nextPrediction?.strategies?.dedupEdge75Pit
-      || Object.values(lotoPayload.nextPrediction?.strategies || {})[0];
-    x2Nums = (strat?.predictions?.top7?.numbers || []).map(normalizeLotteryNumber);
+  if (!x2Nums.length && advisorPayload?.loQuantumBayesFusion?.latestRecommendation?.rankedNumbers?.length) {
+    x2Nums = advisorPayload.loQuantumBayesFusion.latestRecommendation.rankedNumbers.slice(0, selectedSubTier).map(normalizeLotteryNumber);
   }
 
   const top2Nums = (engineData.subTiers?.[2]?.numbers || engineData.rankedNumbers?.slice(0, 2) || loGovernor.subTiers?.[2]?.numbers || loQuadAdv?.top2 || []).map(normalizeLotteryNumber);

@@ -861,7 +861,7 @@
                 singleNums,
                 vipLabel: `⚡ VIP TRÙNG X2 (${vipNums.length} SỐ - CƯỢC X2)`,
                 singleLabel: `🛡️ BỌC LÓT X1 (${singleNums.length} SỐ - CƯỢC X1)`,
-                rationale: 'Gộp 2 phương pháp có độ tương quan bù trừ cao nhất từ Mốc 20 năm, tối ưu hóa điểm Jaccard và tỷ lệ hiệp đồng.',
+                rationale: 'Gộp 2 phương pháp có độ tương quan bù trừ cao nhất từ Mốc Lịch Sử D-1, tối ưu hóa điểm Jaccard và tỷ lệ hiệp đồng.',
                 liveStat: '54.9% Win 2026 (+10.2 TỶ)'
             };
         }
@@ -892,7 +892,7 @@
             const singleNums = (rec.backupNumbers || rec.backup26 || allNums.slice(17)).map(number);
             return {
                 label: '🔮 Đề Ngũ Hành Dạng Số Bayes (Bù Trừ 60M)',
-                badge: 'Độc Lập Mốc 20 Năm',
+                badge: 'Mô hình Dạng Số Bayes',
                 stakeK: 60000,
                 stakeText: 'Vốn: 60M / ngày (60 đơn vị cược)',
                 stdTitle: `🔮 DÀN ĐỀ DẠNG SỐ BAYES (${allNums.length} SỐ · VỐN 60M)`,
@@ -901,8 +901,8 @@
                 singleNums,
                 vipLabel: `⚡ VIP DẠNG SỐ X2 (${vipNums.length} SỐ)`,
                 singleLabel: `🛡️ BỌC LÓT X1 (${singleNums.length} SỐ)`,
-                rationale: 'Hoạt động độc lập 100% với Mốc 20 năm bằng thuật toán Chạm/Tổng/Bộ 30 ngày + Markov tensor + Gap decay, cứu 41.2% chuỗi gãy của Alpha & Dual.',
-                liveStat: 'Cứu 41.2% chuỗi xịt mốc 20 năm'
+                rationale: 'Hoạt động độc lập bằng thuật toán Chạm/Tổng/Bộ 30 ngày + Markov tensor + Gap decay từ chuỗi dữ liệu lịch sử.',
+                liveStat: 'Bù trừ nhịp sóng độc lập'
             };
         }
         if (methodKey === 'deMarkovGapHazard') {
