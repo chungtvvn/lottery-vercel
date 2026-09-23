@@ -312,7 +312,7 @@
             deNumbers = (rec.numbers || [...deX2Nums, ...deX1Nums]).map(number);
             deStakeK = rec.stakeK || 60000;
             deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X2 · ${deX1Nums.length} X1)`;
-            deRationale = rec.rationale || 'Bắt các nhịp số gan, kép lệch và bẻ cầu, hoàn toàn độc lập với mốc lịch sử 20 năm.';
+            deRationale = rec.rationale || 'Bắt các nhịp số gan, kép lệch và bẻ cầu, sử dụng Mốc Lịch Sử hiện tại.';
             deBadge = 'Kháng Nhiễu Độc Lập';
         } else if (deMethodKey === 'dePositionalGraphFlow') {
             const rec = payloadData.dePositionalGraphFlow?.latestRecommendation || payloadData.streakAwareDeAdvisor?.graphAdvisor?.latestRecommendation || {};
@@ -1451,7 +1451,7 @@
                         <span class="rounded bg-slate-200 text-slate-700 text-[9px] font-bold px-1.5 py-0.5">Đơn lẻ</span>
                     </div>
                     <div class="mt-2 font-mono text-xl font-black text-slate-800">${moneyM(bnK, { signed: true })}</div>
-                    <p class="mt-1 text-[11px] text-slate-500">Mô hình Markov vị trí 20 năm cố định</p>
+                    <p class="mt-1 text-[11px] text-slate-500">Mô hình Markov vị trí Mốc Lịch Sử hiện tại</p>
                 </div>
                 <div class="mt-3 pt-2 border-t border-slate-200 text-[10px] text-slate-500 font-semibold">
                     ROI: +${(bnRoi * 100).toFixed(1)}% (Thua Tinh Hoa ${moneyM(metaProfitK - bnK)})
@@ -3741,7 +3741,7 @@
                 loSubTier: 7,
                 badge: '🔮 Kháng Nhiễu (Cứu 45.6%)',
                 roiLabel: 'Cầu Đồ Thị 85.5%',
-                rationale: 'Bắt các nhịp số gan, kép lệch và bẻ cầu, hoàn toàn độc lập với mốc lịch sử 20 năm.'
+                rationale: 'Bắt các nhịp số gan, kép lệch và bẻ cầu, sử dụng Mốc Lịch Sử hiện tại.'
             }
         };
 

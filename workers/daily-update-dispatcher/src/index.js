@@ -851,6 +851,69 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
       `🔄 <b>Cơ chế Đảo pha Mốc Lịch Sử:</b> Tự động luân chuyển khoa học giữa các phương pháp Mốc Lịch Sử D-1 (Thích Ứng Alpha, Gộp Tiêu Chuẩn, Tam Trụ, Đề Tinh Hoa) để tối ưu đà thắng và né bẫy quá nhiệt.`,
       `📚 <b>Kelly Sizing & Strict PIT:</b> Tự động điều chỉnh vốn theo xác suất thực nghiệm; 100% Mốc Lịch Sử không sử dụng Mốc 20 năm.`
     );
+
+    // =========================================================================
+    // CÁC PHƯƠNG PHÁP THỰC CHIẾN LỰA CHỌN THÊM (MỐC LỊCH SỬ HIỆN TẠI)
+    // =========================================================================
+    const altMethods = [];
+    const chosenKey = streakDeAdv.selectedMethod;
+
+    if (chosenKey !== 'adaptiveDualMerge' && advisorPayload?.adaptiveDualMerge?.latestRecommendation) {
+      const aRec = advisorPayload.adaptiveDualMerge.latestRecommendation;
+      const aUnion = (aRec.fullUnion || []).map(normalizeLotteryNumber);
+      const aX2 = (aRec.intersectionX2 || []).map(normalizeLotteryNumber);
+      const aX1 = (aRec.uniqueSinglesX1 || []).map(normalizeLotteryNumber);
+      if (aUnion.length) {
+        altMethods.push(
+          `• 👑 <b>Lựa chọn 2 — Đề Thích Ứng Alpha (Dàn ${aUnion.length} số · Vốn 60M · X2/X1):</b>`,
+          `   └ ⚡ <b>VIP Trùng X2 (${aX2.length} số):</b> <b>${escapeHtml(formatNumberList(aX2))}</b>`,
+          `   └ 🛡️ <b>Bọc Lót X1 (${aX1.length} số):</b> <b>${escapeHtml(formatNumberList(aX1))}</b>`
+        );
+      }
+    }
+
+    if (chosenKey !== 'dualMerge' && advisorPayload?.dualMerge?.latestRecommendation) {
+      const dRec = advisorPayload.dualMerge.latestRecommendation;
+      const dUnion = (dRec.fullUnion || []).map(normalizeLotteryNumber);
+      const dX2 = (dRec.intersectionX2 || []).map(normalizeLotteryNumber);
+      const dX1 = (dRec.uniqueSinglesX1 || []).map(normalizeLotteryNumber);
+      if (dUnion.length) {
+        altMethods.push(
+          `• 🎯 <b>Lựa chọn — Đề Gộp Tiêu Chuẩn (Dàn ${dUnion.length} số · Vốn 60M · X2/X1):</b>`,
+          `   └ ⚡ <b>VIP Trùng X2 (${dX2.length} số):</b> <b>${escapeHtml(formatNumberList(dX2))}</b>`,
+          `   └ 🛡️ <b>Bọc Lót X1 (${dX1.length} số):</b> <b>${escapeHtml(formatNumberList(dX1))}</b>`
+        );
+      }
+    }
+
+    if (chosenKey !== 'metaLearner' && (metaRec || advisorPayload?.metaLearner?.latestRecommendation)) {
+      const mRec = metaRec || advisorPayload.metaLearner.latestRecommendation;
+      const m30 = (mRec.standard30 || mRec.numbers || []).map(normalizeLotteryNumber);
+      const mCore10 = (mRec.core10 || m30.slice(0, 10)).map(normalizeLotteryNumber);
+      if (m30.length) {
+        altMethods.push(
+          `• 💎 <b>Lựa chọn 3 — Đề Tinh Hoa (Dàn 30 số · Vốn 30M cược phẳng · Không X2):</b>`,
+          `   └ <b>${escapeHtml(formatNumberList(m30))}</b>`,
+          `   └ ⚡ Core 10 VIP: <b>${escapeHtml(formatNumberList(mCore10))}</b>`
+        );
+      }
+    }
+
+    const resonance = streakDeAdv.dualResonanceUnion;
+    if (resonance && Array.isArray(resonance.numbers) && resonance.numbers.length) {
+      const rNums = resonance.numbers.map(normalizeLotteryNumber);
+      altMethods.push(
+        `• 🛡️ <b>Lựa chọn 4 — Dàn Hợp Bù Trừ Đối Kháng (${rNums.length} số · Win 63% - 77%):</b>`,
+        `   └ <b>${escapeHtml(formatNumberList(rNums))}</b>`
+      );
+    }
+
+    if (altMethods.length) {
+      lines.push(
+        `⭐️ <b>CÁC PHƯƠNG PHÁP THỰC CHIẾN LỰA CHỌN THÊM (MỐC LỊCH SỬ HIỆN TẠI):</b>`,
+        ...altMethods
+      );
+    }
   } else {
     lines.push(`<b>1. 💎 ĐỀ TINH HOA — DÀN 30 SỐ GỢI Ý</b>`);
     let std30 = metaRec?.standard30 || metaRec?.numbers || [];
