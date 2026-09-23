@@ -3717,23 +3717,23 @@
         const PORTFOLIOS_CONFIG = {
             maxProfit: {
                 id: 'maxProfit',
-                name: 'Gói 1: Đột Phá Lợi Nhuận Tối Đa',
+                name: 'Gói 1: Lô Ghép Tầng (+3.0 TỶ) & Đề Nổ Bù',
                 deMethod: 'adaptiveDualMerge',
-                loEngine: 'quad',
+                loEngine: 'qmbf',
                 loSubTier: 7,
-                badge: '🚀 Max Profit (Nảy Bù x1.2)',
-                roiLabel: 'ROI +65.4%',
-                rationale: 'Săn đón nhịp nổ bù sau ngày 21/09 trượt với Lô Top 7 Quad-Fusion (nâng cược x1.2) kết hợp Đề Thích Ứng Alpha cược X2/X1 (+108M).'
+                badge: '🚀 Lô Ghép Tầng +3.001 TỶ · Nổ 98.5%',
+                roiLabel: 'Lãi +3.0 TỶ · ROI +37.3%',
+                rationale: 'Tổ hợp Lô ghép tầng QMBF(Top 7) + QUAD(Top 7) nổ 98.5% ngày, lãi kỷ lục +3.001 TỶ (chuỗi trượt tối đa chỉ 3 ngày) kết hợp Đề Thích Ứng Alpha nổ bù sau trượt 23/09.'
             },
             smartAlternating: {
                 id: 'smartAlternating',
-                name: 'Gói 2: Điều Phối Luân Phiên Thông Minh (AI)',
-                deMethod: fullData?.streakAwareDeAdvisor?.latestRecommendation?.selectedMethod || (fullData?.pentaCoreDe ? 'pentaCoreDe' : 'adaptiveDualMerge'),
-                loEngine: fullData?.loQuadHybrid?.latestRecommendation?.streakGovernor?.selectedEngine || (fullData?.loPentaMatrix ? 'penta' : 'qmbf'),
-                loSubTier: fullData?.loQuadHybrid?.latestRecommendation?.streakGovernor?.selectedSubTier || 7,
-                badge: fullData?.streakAwareDeAdvisor?.latestRecommendation?.confidenceBadge || '👑 AI Governor (Né Bão Hòa)',
-                roiLabel: 'Win 78.5%',
-                rationale: fullData?.streakAwareDeAdvisor?.latestRecommendation?.rationale || 'Né bẫy quá nhiệt sau thắng lớn X2 Đề (xác suất trượt 55.6%), luân chuyển phương pháp tối ưu đà nổ.'
+                name: 'Gói 2: Đề Cược Phẳng (+111M) & Lô Ghép 7s (+2.57 TỶ)',
+                deMethod: 'deMarkovGapHazard',
+                loEngine: 'penta',
+                loSubTier: 7,
+                badge: '👑 Đề Cược Phẳng 25s (+111M) · Lô 7s (+2.57T)',
+                roiLabel: 'Win 96.9%',
+                rationale: 'Cắt hoàn toàn bẫy gánh vốn X2 của Đề, chuyển sang Đề Markov Gap 25 số cược phẳng (vốn 25M, trúng ăn 84M, lãi ròng +59M/kỳ, tổng 261 ngày lãi +111M) + Lô ghép ba tinh gọn QMBF(T2)+QUAD(T4)+PENTA(T7) lãi +2.567 TỶ.'
             },
             steadyAccumulator: {
                 id: 'steadyAccumulator',

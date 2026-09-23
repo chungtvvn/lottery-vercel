@@ -1030,28 +1030,50 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   lines.push(divider);
 
   // =========================================================================
-  // 4. ⚡ BẢNG GỘP ĐÁNH LÔ TỔNG LỰC (21 SỐ - HỢP NHẤT TOP 20 & TOP 7)
+  // 4. ⚡ BẢNG GỘP ĐÁNH LÔ TỔNG LỰC / LÔ GHÉP TẦNG ĐA PHƯƠNG PHÁP (+3.0 TỶ)
   // =========================================================================
+  const crossOpt = metaNext?.optimalCrossTierEnsemble?.primary;
   const sList = (stdNums || []).map(normalizeLotteryNumber).filter(Boolean);
   const xList = (x2Nums || []).map(normalizeLotteryNumber).filter(Boolean);
   const sSet = new Set(sList);
   const overlapNums = xList.filter(n => sSet.has(n));
   const singleNums = sList.filter(n => !overlapNums.includes(n));
-  const allMerged = Array.from(new Set([...sList, ...xList]));
+  const allMerged = crossOpt?.distinctNumbers?.length
+    ? crossOpt.distinctNumbers
+    : Array.from(new Set([...sList, ...xList]));
 
-  lines.push(`<b>4. ⚡ BẢNG GỘP ĐÁNH LÔ TỔNG LỰC (${allMerged.length} SỐ - CÙNG MỨC CƯỢC 25Đ / 100Đ)</b>`);
-  lines.push(
-    `<i>Tổng hợp từ 2 dàn trên: Mặc định giữ Top 20 nền tảng mỏ neo (${escapeHtml(loEngineLabel)}), dàn ${escapeHtml(subTierLabel)} làm mũi nhọn:</i>`,
-    `💡 <i>Cách chơi đồng bộ: Cả nhóm số trùng và số riêng đều cược cùng đơn vị 25đ/số (550K/số) trên Bot Telegram (hoặc 100đ/số [2.2M/số] trên Web VIP).</i>`
-  );
-  lines.push(
-    `🔥 <b>Nhóm Số Trùng (MŨI NHỌN ĐỒNG THUẬN - ${overlapNums.length} số):</b>`,
-    `  • <i>Mức chuẩn: 10đ/số (220K/số) · Mức 3: 25đ/số (550K/số) · Mức VIP: 2.2M/số</i>`,
-    `<b>${escapeHtml(formatNumberList(overlapNums))}</b>`,
-    `🛡️ <b>Nhóm Số Riêng (BỌC LÓT NỀN TẢNG - ${singleNums.length} số):</b>`,
-    `  • <i>Mức chuẩn: 10đ/số (220K/số) · Mức 3: 25đ/số (550K/số) · Mức VIP: 2.2M/số</i>`,
-    `<b>${escapeHtml(formatNumberList(singleNums))}</b>`
-  );
+  if (crossOpt && crossOpt.overlapX2 && crossOpt.singlesX1) {
+    lines.push(`<b>4. ⚡ LÔ GHÉP TẦNG ĐA PHƯƠNG PHÁP (${crossOpt.totalNumbers} SỐ · ${escapeHtml(crossOpt.badge)})</b>`);
+    lines.push(
+      `<i>${escapeHtml(crossOpt.description)}</i>`,
+      `🔥 <b>Số Trùng Cược X2 (ĐÒN BẨY BÙNG NỔ - ${crossOpt.overlapX2.length} số):</b>`,
+      `  • <i>Mức chuẩn: 20đ/số (440K) · Mức 3: 50đ/số (1.100K) · Mức VIP: 4.4M/số [200đ]</i>`,
+      `<b>${escapeHtml(formatNumberList(crossOpt.overlapX2))}</b>`
+    );
+    if (crossOpt.singlesX1.length > 0) {
+      lines.push(
+        `🛡️ <b>Số Riêng Cược X1 (BẢO HIỂM BỌC LÓT - ${crossOpt.singlesX1.length} số):</b>`,
+        `  • <i>Mức chuẩn: 10đ/số (220K) · Mức 3: 25đ/số (550K) · Mức VIP: 2.2M/số [100đ]</i>`,
+        `<b>${escapeHtml(formatNumberList(crossOpt.singlesX1))}</b>`
+      );
+    } else {
+      lines.push(`<i>🎯 Tuyệt đối đồng thuận: Cả 2 siêu động cơ cùng chung 100% dàn số, toàn bộ đánh cược mức X2!</i>`);
+    }
+  } else {
+    lines.push(`<b>4. ⚡ BẢNG GỘP ĐÁNH LÔ TỔNG LỰC (${allMerged.length} SỐ - CÙNG MỨC CƯỢC 25Đ / 100Đ)</b>`);
+    lines.push(
+      `<i>Tổng hợp từ 2 dàn trên: Mặc định giữ Top 20 nền tảng mỏ neo (${escapeHtml(loEngineLabel)}), dàn ${escapeHtml(subTierLabel)} làm mũi nhọn:</i>`,
+      `💡 <i>Cách chơi đồng bộ: Cả nhóm số trùng và số riêng đều cược cùng đơn vị 25đ/số (550K/số) trên Bot Telegram (hoặc 100đ/số [2.2M/số] trên Web VIP).</i>`
+    );
+    lines.push(
+      `🔥 <b>Nhóm Số Trùng (MŨI NHỌN ĐỒNG THUẬN - ${overlapNums.length} số):</b>`,
+      `  • <i>Mức chuẩn: 10đ/số (220K/số) · Mức 3: 25đ/số (550K/số) · Mức VIP: 2.2M/số</i>`,
+      `<b>${escapeHtml(formatNumberList(overlapNums))}</b>`,
+      `🛡️ <b>Nhóm Số Riêng (BỌC LÓT NỀN TẢNG - ${singleNums.length} số):</b>`,
+      `  • <i>Mức chuẩn: 10đ/số (220K/số) · Mức 3: 25đ/số (550K/số) · Mức VIP: 2.2M/số</i>`,
+      `<b>${escapeHtml(formatNumberList(singleNums))}</b>`
+    );
+  }
   lines.push(divider);
 
   // =========================================================================

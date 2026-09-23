@@ -61,7 +61,8 @@ async function testAllMethodsLockedAfter12h() {
         existingMetaLearner: existingCache.metaLearner,
         existingDynamicMetaAdvisor: existingCache.dynamicMetaAdvisor,
         forceSynthesize: false,
-        limit: 90
+        limit: 90,
+        now: simulatedNow
     });
 
     // KIỂM TRA ĐỀ:
