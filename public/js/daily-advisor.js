@@ -249,9 +249,9 @@
 
     function resolvePendingRecommendation(p, forcedPortfolioKey) {
         const payloadData = p || payload || {};
-        const key = forcedPortfolioKey || currentActivePortfolio || 'smartAlternating';
-        const deMethodKey = currentActiveDeMethod || (key === 'smartAlternating' ? (payloadData.streakAwareDeAdvisor?.latestRecommendation?.selectedMethod || 'metaLearner') : (key === 'steadyAccumulator' ? 'dualMerge' : (key === 'antiNoiseResonance' ? 'deMarkovGapHazard' : 'adaptiveDualMerge')));
-        const loEngineKey = currentActiveLoEngine || (key === 'smartAlternating' ? 'penta' : (key === 'antiNoiseResonance' ? 'bridge' : 'quad'));
+        const key = forcedPortfolioKey || currentActivePortfolio || 'maxProfit';
+        const deMethodKey = currentActiveDeMethod || (key === 'maxProfit' ? 'adaptiveDualMerge' : (key === 'smartAlternating' ? (payloadData.streakAwareDeAdvisor?.latestRecommendation?.selectedMethod || 'metaLearner') : (key === 'steadyAccumulator' ? 'dualMerge' : (key === 'antiNoiseResonance' ? 'deMarkovGapHazard' : 'adaptiveDualMerge'))));
+        const loEngineKey = currentActiveLoEngine || (key === 'maxProfit' ? 'qmbf' : (key === 'smartAlternating' ? 'penta' : (key === 'antiNoiseResonance' ? 'bridge' : 'quad')));
 
         // 1. Resolve Đề
         let deMethodName = '👑 Ngũ Trụ Tinh Hoa AI (Penta-Core 60M)';
@@ -368,7 +368,11 @@
         // Dàn Tăng Tốc (Top 6, 7, 8, 10...) hoàn toàn độc lập với Dàn Chuẩn Top 20 (Card 1)
         let activeRanked = [];
         let activeEngineLabel = '';
-        if (loEngineKey === 'penta') {
+        if (loEngineKey === 'qmbf') {
+            const qmbfLo = payloadData.loQuantumBayesFusion?.latestRecommendation || {};
+            activeRanked = qmbfLo.rankedNumbers || qmbfLo.top20 || [];
+            activeEngineLabel = 'QMBF v5.0';
+        } else if (loEngineKey === 'penta') {
             activeRanked = pentaLo.rankedNumbers || pentaLo.top20 || [];
             activeEngineLabel = 'Ngũ Hợp v8.0';
         } else if (loEngineKey === 'quad') {
@@ -1313,6 +1317,20 @@
             activeLoEngineKey = engineId;
             currentActiveLoEngine = engineId;
             let engineData = governor.engines?.[engineId] || {};
+            if (engineId === 'qmbf' && (!engineData.rankedNumbers || !engineData.rankedNumbers.length) && fullData?.loQuantumBayesFusion) {
+                const qRec = fullData.loQuantumBayesFusion.latestRecommendation || {};
+                engineData = {
+                    id: 'qmbf',
+                    label: qRec.methodName || '⚡ Siêu Động Cơ QMBF v5.0',
+                    shortLabel: 'QMBF v5.0',
+                    winRateTop7: '82.3%',
+                    winRateTop20: '73.7%',
+                    rankedNumbers: qRec.rankedNumbers || [],
+                    top7: (qRec.rankedNumbers || []).slice(0, 7),
+                    top20: (qRec.rankedNumbers || []).slice(0, 20),
+                    subTiers: qRec.subTiers || {}
+                };
+            }
             if (engineId === 'penta' && (!engineData.rankedNumbers || !engineData.rankedNumbers.length) && fullData?.loPentaMatrix) {
                 const pRec = fullData.loPentaMatrix.latestRecommendation || {};
                 engineData = {
@@ -3761,7 +3779,7 @@
 
         function selectStrategicPortfolio(key, isInitial = false) {
             currentActivePortfolio = key;
-            const cfg = PORTFOLIOS_CONFIG[key] || PORTFOLIOS_CONFIG.smartAlternating;
+            const cfg = PORTFOLIOS_CONFIG[key] || PORTFOLIOS_CONFIG.maxProfit;
             currentActiveDeMethod = cfg.deMethod;
             currentActiveLoEngine = cfg.loEngine;
             currentSelectedLoSubTier = cfg.loSubTier || 7;
@@ -3771,25 +3789,25 @@
                 const isSelected = (card.dataset.portfolio === key);
                 card.classList.toggle('active', isSelected);
                 card.classList.toggle('border-2', isSelected);
-                card.classList.toggle('border-indigo-400', isSelected && key === 'smartAlternating');
-                card.classList.toggle('border-amber-400', isSelected && key !== 'smartAlternating');
-                card.classList.toggle('ring-2', isSelected && key === 'smartAlternating');
-                card.classList.toggle('ring-indigo-400/30', isSelected && key === 'smartAlternating');
+                card.classList.toggle('border-amber-400', isSelected && key === 'maxProfit');
+                card.classList.toggle('border-indigo-400', isSelected && key !== 'maxProfit');
+                card.classList.toggle('ring-2', isSelected && key === 'maxProfit');
+                card.classList.toggle('ring-amber-400/30', isSelected && key === 'maxProfit');
                 card.classList.toggle('border-white/15', !isSelected);
 
                 const indicator = card.querySelector('.portfolio-active-indicator');
                 if (indicator) {
                     indicator.innerHTML = isSelected 
-                        ? (key === 'smartAlternating' ? '<i class="bi bi-check-circle-fill"></i> Đang chọn (Mặc định)' : '<i class="bi bi-check-circle-fill"></i> Đang chọn')
+                        ? (key === 'maxProfit' ? '<i class="bi bi-check-circle-fill"></i> Đang chọn (Mặc định)' : '<i class="bi bi-check-circle-fill"></i> Đang chọn')
                         : 'Chưa chọn';
-                    indicator.className = `portfolio-active-indicator inline-flex items-center gap-1 text-[11px] ${isSelected ? (key === 'smartAlternating' ? 'font-black text-indigo-300' : 'font-black text-amber-400') : 'font-bold text-slate-400'}`;
+                    indicator.className = `portfolio-active-indicator inline-flex items-center gap-1 text-[11px] ${isSelected ? (key === 'maxProfit' ? 'font-black text-amber-300' : 'font-black text-indigo-300') : 'font-bold text-slate-400'}`;
                 }
 
                 const selectBtn = card.querySelector('.btn-select-portfolio');
                 if (selectBtn) {
                     selectBtn.textContent = isSelected ? 'Đang Chọn' : 'Chọn Gói';
                     selectBtn.className = isSelected
-                        ? (key === 'smartAlternating' ? 'btn-select-portfolio rounded-lg bg-indigo-500 text-white font-black text-xs px-2.5 py-1 transition-all shadow-xs' : 'btn-select-portfolio rounded-lg bg-amber-400 text-slate-950 font-black text-xs px-2.5 py-1 transition-all shadow-xs')
+                        ? (key === 'maxProfit' ? 'btn-select-portfolio rounded-lg bg-amber-400 text-slate-950 font-black text-xs px-2.5 py-1 transition-all shadow-xs' : 'btn-select-portfolio rounded-lg bg-indigo-500 text-white font-black text-xs px-2.5 py-1 transition-all shadow-xs')
                         : 'btn-select-portfolio rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold text-xs px-2.5 py-1 transition-all border border-white/20';
                 }
             });
@@ -3830,8 +3848,8 @@
             });
         });
 
-        // LUÔN TỰ ĐỘNG CHỌN GÓI AN TOÀN VÀ ĐẢM BẢO PROFIT LÀM MẶC ĐỊNH KHI TẢI TRANG
-        selectStrategicPortfolio('smartAlternating', true);
+        // LUÔN TỰ ĐỘNG CHỌN GÓI AN TOÀN VÀ ĐẢM BẢO PROFIT CAO NHẤT LÀM MẶC ĐỊNH KHI TẢI TRANG
+        selectStrategicPortfolio('maxProfit', true);
 
         // Global Copy Buttons for Active Strategic Portfolio
         const btnCopyPortZalo = byId('btnCopyActivePortfolioZalo');
@@ -3839,8 +3857,16 @@
             btnCopyPortZalo.onclick = () => {
                 const cfg = PORTFOLIOS_CONFIG[currentActivePortfolio] || PORTFOLIOS_CONFIG.maxProfit;
                 const deData = getDeMethodDisplayData(cfg.deMethod, fullData);
-                const predDateStr = streakDeAdv?.predictionDate || loQuadAdv?.predictionDate || '2026-09-22';
+                const predDateStr = streakDeAdv?.predictionDate || loQuadAdv?.predictionDate || fullData?.dynamicMetaAdvisor?.nextPrediction?.predictionDate || '2026-09-24';
                 const dateFormatted = formatDateVi(predDateStr);
+
+                const crossOpt = fullData?.dynamicMetaAdvisor?.nextPrediction?.optimalCrossTierEnsemble?.primary
+                    || fullData?.loQuantumBayesFusion?.dynamicMetaAdvisor?.nextPrediction?.optimalCrossTierEnsemble?.primary
+                    || fullData?.loDualMerge?.nextPrediction?.optimalCrossTierEnsemble?.primary
+                    || loNext?.optimalCrossTierEnsemble?.primary;
+
+                const compactOpt = fullData?.dynamicMetaAdvisor?.nextPrediction?.optimalCrossTierEnsemble?.compact
+                    || fullData?.loQuantumBayesFusion?.dynamicMetaAdvisor?.nextPrediction?.optimalCrossTierEnsemble?.compact;
 
                 const currentLoNums = (currentActiveLoSubNums && currentActiveLoSubNums.length) ? currentActiveLoSubNums : loX2;
                 const stdSet = new Set(loStd);
@@ -3861,21 +3887,84 @@
                     ``,
                     `📋 Toàn bộ dàn Đề (${deData.allNums.length}s):`,
                     deData.allNums.map(n => String(number(n)).padStart(2, '0')).join(' '),
-                    `━━━━━━━━━━━━━━━━━━━━━━━━━━`,
-                    `🎰 2. LÔ CHUẨN NỀN TẢNG (Top 20 · 44M · Cược 100đ / 2.2M mỗi số):`,
-                    loStd.map(n => String(number(n)).padStart(2, '0')).join(' '),
-                    ``,
-                    `🚀 3. LÔ TĂNG TỐC (Top ${currentLoNums.length} · ${(currentLoNums.length * 2.2).toFixed(1)}M):`,
-                    currentLoNums.map(n => String(number(n)).padStart(2, '0')).join(' '),
-                    ``,
-                    `⚡ SỐ TRÙNG ĐÁNH X2 (Cộng dồn 200đ / 4.4M mỗi số):`,
-                    overlapNums.length ? overlapNums.map(n => String(number(n)).padStart(2, '0')).join(' ') : '(Không có số trùng)',
-                    `━━━━━━━━━━━━━━━━━━━━━━━━━━`,
-                    `✨ 4. TỨ THỦ LÔ XIÊN 4 TINH HOA (Quây 11 Vé · 11M):`,
-                    xi4Nums.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                    `━━━━━━━━━━━━━━━━━━━━━━━━━━`
+                ];
+
+                if (cfg.id === 'maxProfit' && crossOpt && (crossOpt.overlapX3 || crossOpt.overlapX2)) {
+                    const x3List = crossOpt.overlapX3 || [];
+                    const x2List = crossOpt.overlapX2 || [];
+                    const x1List = crossOpt.singlesX1 || [];
+                    const distinctLo = crossOpt.distinctNumbers || [];
+                    const btcLo = x3List[0] || distinctLo[0] || '22';
+                    const stcLo = (x3List.length >= 2 ? [x3List[0], x3List[1]] : distinctLo.slice(0, 2)).join(' - ');
+
+                    slipLines.push(
+                        `🎰 2. LÔ TAM TRỤ ĐA TẦNG X3/X2/X1 (${distinctLo.length} số · Vốn M3 11.55M / VIP 46.2M):`,
+                        `👑 BẠCH THỦ: ${btcLo} · SONG THỦ VIP: ${stcLo}`,
+                        ``,
+                        `⚡ HẠT NHÂN CƯỢC X3 (Tam Động Cơ Đồng Thuận - ${x3List.length} số · M3 75đ [1.65M] / VIP 300đ [6.6M]):`,
+                        x3List.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                        ``
+                    );
+                    if (x2List.length > 0) {
+                        slipLines.push(
+                            `🔥 MŨI NHỌN CƯỢC X2 (Song Động Cơ Đồng Thuận - ${x2List.length} số · M3 50đ [1.1M] / VIP 200đ [4.4M]):`,
+                            x2List.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                            ``
+                        );
+                    }
+                    if (x1List.length > 0) {
+                        slipLines.push(
+                            `🛡️ BẢO HIỂM CƯỢC X1 (${x1List.length} số · M3 25đ [550K] / VIP 100đ [2.2M]):`,
+                            x1List.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                            ``
+                        );
+                    }
+                    slipLines.push(
+                        `📋 Toàn bộ dàn Lô Tam Trụ (${distinctLo.length}s):`,
+                        distinctLo.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                        `━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+                        `✨ 3. TỨ THỦ LÔ XIÊN 4 TINH HOA (Quây 11 Vé · 11M VIP / 2.75M M3):`,
+                        xi4Nums.map(n => String(number(n)).padStart(2, '0')).join(' ')
+                    );
+                } else if (cfg.id === 'smartAlternating' && compactOpt && compactOpt.overlapX2) {
+                    const x2List = compactOpt.overlapX2 || [];
+                    const x1List = compactOpt.singlesX1 || [];
+                    const distinctLo = compactOpt.distinctNumbers || [];
+                    slipLines.push(
+                        `🎰 2. LÔ GHÉP BA TINH GỌN (${distinctLo.length} số · Vốn M3 6.05M / VIP 24.2M):`,
+                        `🔥 MŨI NHỌN CƯỢC X2 (${x2List.length} số · M3 50đ [1.1M] / VIP 200đ [4.4M]):`,
+                        x2List.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                        ``,
+                        `🛡️ BẢO HIỂM CƯỢC X1 (${x1List.length} số · M3 25đ [550K] / VIP 100đ [2.2M]):`,
+                        x1List.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                        ``,
+                        `📋 Toàn bộ dàn Lô (${distinctLo.length}s):`,
+                        distinctLo.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                        `━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+                        `✨ 3. TỨ THỦ LÔ XIÊN 4 TINH HOA (Quây 11 Vé · 11M VIP / 2.75M M3):`,
+                        xi4Nums.map(n => String(number(n)).padStart(2, '0')).join(' ')
+                    );
+                } else {
+                    slipLines.push(
+                        `🎰 2. LÔ CHUẨN NỀN TẢNG (Top 20 · 44M · Cược 100đ / 2.2M mỗi số):`,
+                        loStd.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                        ``,
+                        `🚀 3. LÔ TĂNG TỐC (Top ${currentLoNums.length} · ${(currentLoNums.length * 2.2).toFixed(1)}M):`,
+                        currentLoNums.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                        ``,
+                        `⚡ SỐ TRÙNG ĐÁNH X2 (Cộng dồn 200đ / 4.4M mỗi số):`,
+                        overlapNums.length ? overlapNums.map(n => String(number(n)).padStart(2, '0')).join(' ') : '(Không có số trùng)',
+                        `━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+                        `✨ 4. TỨ THỦ LÔ XIÊN 4 TINH HOA (Quây 11 Vé · 11M):`,
+                        xi4Nums.map(n => String(number(n)).padStart(2, '0')).join(' ')
+                    );
+                }
+
+                slipLines.push(
                     `━━━━━━━━━━━━━━━━━━━━━━━━━━`,
                     `📊 Hiệu suất dự kiến: ${cfg.roiLabel} · 100% Strict PIT`
-                ];
+                );
 
                 const fullText = slipLines.join('\n');
                 if (navigator.clipboard) {
@@ -3901,8 +3990,25 @@
             btnCopyPortWeb.onclick = () => {
                 const cfg = PORTFOLIOS_CONFIG[currentActivePortfolio] || PORTFOLIOS_CONFIG.maxProfit;
                 const deData = getDeMethodDisplayData(cfg.deMethod, fullData);
+
+                const crossOpt = fullData?.dynamicMetaAdvisor?.nextPrediction?.optimalCrossTierEnsemble?.primary
+                    || fullData?.loQuantumBayesFusion?.dynamicMetaAdvisor?.nextPrediction?.optimalCrossTierEnsemble?.primary
+                    || fullData?.loDualMerge?.nextPrediction?.optimalCrossTierEnsemble?.primary
+                    || loNext?.optimalCrossTierEnsemble?.primary;
+
+                const compactOpt = fullData?.dynamicMetaAdvisor?.nextPrediction?.optimalCrossTierEnsemble?.compact
+                    || fullData?.loQuantumBayesFusion?.dynamicMetaAdvisor?.nextPrediction?.optimalCrossTierEnsemble?.compact;
+
                 const currentLoNums = (currentActiveLoSubNums && currentActiveLoSubNums.length) ? currentActiveLoSubNums : loX2;
-                const allMergedLo = Array.from(new Set([...loStd, ...currentLoNums]));
+
+                let allMergedLo = [];
+                if (cfg.id === 'maxProfit' && crossOpt?.distinctNumbers?.length) {
+                    allMergedLo = crossOpt.distinctNumbers;
+                } else if (cfg.id === 'smartAlternating' && compactOpt?.distinctNumbers?.length) {
+                    allMergedLo = compactOpt.distinctNumbers;
+                } else {
+                    allMergedLo = Array.from(new Set([...loStd, ...currentLoNums]));
+                }
 
                 const deFormatted = deData.allNums.map(n => String(number(n)).padStart(2, '0')).join(', ');
                 const loFormatted = allMergedLo.map(n => String(number(n)).padStart(2, '0')).join(', ');
