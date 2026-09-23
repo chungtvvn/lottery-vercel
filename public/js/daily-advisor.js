@@ -3717,13 +3717,13 @@
         const PORTFOLIOS_CONFIG = {
             maxProfit: {
                 id: 'maxProfit',
-                name: 'Gói 1: Lô Ghép Tầng X2 & Đề Alpha Nổ Bù (Đòn Bẩy Gỡ Lỗ)',
+                name: 'Gói 1: Lô Tam Trụ X3/X2/X1 (+4.17T) & Đề Alpha Nổ Bù (+1.17T)',
                 deMethod: 'adaptiveDualMerge',
                 loEngine: 'qmbf',
                 loSubTier: 7,
-                badge: '🚀 Đòn Bẩy X2 Gỡ Lỗ · Lãi +3.7 TỶ Cả Lô & Đề',
-                roiLabel: 'Lãi +3.7 TỶ · Nổ 98.5%',
-                rationale: 'Chiến lược tối đa hóa profit toàn diện: Dồn đòn bẩy X2 vào nhóm số trùng của Lô (QMBF Top 7 + QUAD Top 7 lãi +2.9 TỶ, nổ 98.5% ngày) và Đề Thích Ứng Alpha nổ bù sau trượt (ăn 168M, lãi +108M gỡ sạch drawdown). Chỉ chuyển sang chế độ an toàn khi tích lũy lãi lớn.'
+                badge: '👑 Kỷ Lục +5.334 TỶ Cả Lô & Đề · Nổ 98.5%',
+                roiLabel: 'Lãi +5.334 TỶ · ROI +34.4%',
+                rationale: 'Tổ hợp đòn bẩy đa tầng tối ưu profit cao nhất toàn hệ thống năm 2026: Tam Trụ Lô X3/X2/X1 (QMBF Top 7 + QUAD Top 7 + PENTA Top 7 lãi kỷ lục +4.167 TỶ, nổ 98.5% ngày) và Đề Thích Ứng Alpha nổ bù sau trượt (ăn 168M, lãi +108M gỡ sạch drawdown). Chỉ chuyển sang chế độ an toàn khi đã tích lũy lãi nhiều.'
             },
             smartAlternating: {
                 id: 'smartAlternating',
