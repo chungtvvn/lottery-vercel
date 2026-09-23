@@ -287,13 +287,25 @@
         } else if (deMethodKey === 'dualMerge') {
             const rec = payloadData.dualMerge?.latestRecommendation || {};
             deMethodName = '🎯 Đề Gộp Tiêu Chuẩn (Dual Merge 60M)';
-            deX2Nums = (rec.intersection || []).map(number);
-            deX1Nums = (rec.uniqueSingles || []).map(number);
-            deNumbers = (rec.union || rec.numbers || [...deX2Nums, ...deX1Nums]).map(number);
+            deX2Nums = (rec.intersectionX2 || rec.intersection || []).map(number);
+            deX1Nums = (rec.uniqueSinglesX1 || rec.uniqueSingles || []).map(number);
+            deNumbers = (rec.fullUnion || rec.union || rec.numbers || [...deX2Nums, ...deX1Nums]).map(number);
             deStakeK = rec.stakeK || 60000;
             deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X2 · ${deX1Nums.length} X1)`;
             deRationale = rec.rationale || 'Chiến lược phòng thủ vững chắc với Đề Gộp Tiêu Chuẩn 60M.';
             deBadge = 'An Toàn Tuyệt Đối';
+        } else if (deMethodKey === 'bayesFormResonance') {
+            const rec = payloadData.streakAwareDeAdvisor?.bayesAdvisor?.latestRecommendation 
+                || payloadData.streakAwareDeAdvisor?.latestRecommendation?.availableMethods?.bayesFormResonance
+                || {};
+            deMethodName = '🔮 Đề Ngũ Hành Dạng Số Bayes (60M)';
+            deX2Nums = (rec.vipNumbers || (rec.numbers || []).slice(0, 17)).map(number);
+            deX1Nums = (rec.backupNumbers || (rec.numbers || []).slice(17)).map(number);
+            deNumbers = (rec.numbers || [...deX2Nums, ...deX1Nums]).map(number);
+            deStakeK = rec.stakeK || 60000;
+            deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X2 · ${deX1Nums.length} X1)`;
+            deRationale = rec.rationale || 'Hoạt động độc lập bằng thuật toán Chạm/Tổng/Bộ 30 ngày + Markov tensor + Gap decay.';
+            deBadge = 'Mô hình Dạng Số Bayes';
         } else if (deMethodKey === 'tripleMerge') {
             const rec = payloadData.tripleMerge?.latestRecommendation || {};
             deMethodName = '🛡️ Đề Tam Trụ Tam Phân (Triple Merge 90M)';
