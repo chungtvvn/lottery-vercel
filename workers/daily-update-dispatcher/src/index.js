@@ -494,7 +494,7 @@ function resolveUnifiedDeRowForDate(date, advisorPayload = {}) {
   let chosenDeMethod = 'metaLearner';
   if (date === '2026-09-16') {
     chosenDeMethod = 'metaLearner';
-  } else if (date === '2026-09-17' || date === '2026-09-18' || date === '2026-09-19') {
+  } else if (date >= '2026-09-17' && date <= '2026-09-22') {
     chosenDeMethod = 'adaptiveDualMerge';
   } else if (sRow?.chosenMethod) {
     chosenDeMethod = sRow.chosenMethod;
