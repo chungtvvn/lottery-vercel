@@ -6267,7 +6267,7 @@
     // ==========================================
     // SYSTEM UPDATES & CHANGELOG MODAL CONTROLLER
     // ==========================================
-    const CURRENT_DEPLOY_VERSION = '2026.09.24-v2-lot-khe-contrarian';
+    const CURRENT_DEPLOY_VERSION = '2026.09.24-v3-multi-method-slip';
     const DISMISSED_DEPLOY_KEY = 'xsmb_dismissed_deploy_version';
 
     function initSystemUpdatesModal() {
