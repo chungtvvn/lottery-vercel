@@ -3960,6 +3960,10 @@
                 window.__refreshCombatDiary();
             }
 
+            if (typeof renderFinalOptimalCombinedSlip === 'function') {
+                renderFinalOptimalCombinedSlip();
+            }
+
             if (!isInitial) {
                 showToast(`🎯 Đã kích hoạt ${cfg.name}! Tự động đồng bộ dàn số Đề & Lô.`);
             }
@@ -4169,6 +4173,272 @@
                 }
             };
         }
+
+        // =========================================================================
+        // 👑 DÀN SỐ ĐÁNH CUỐI CÙNG — SIÊU HỘI TỤ ĐA PHƯƠNG PHÁP CONTROLLER
+        // =========================================================================
+        function renderFinalOptimalCombinedSlip() {
+            const cfg = PORTFOLIOS_CONFIG[currentActivePortfolio] || PORTFOLIOS_CONFIG.maxProfit;
+            const deData = getDeMethodDisplayData(cfg.deMethod, fullData);
+
+            const crossOpt = fullData?.dynamicMetaAdvisor?.nextPrediction?.optimalCrossTierEnsemble?.primary
+                || fullData?.loQuantumBayesFusion?.dynamicMetaAdvisor?.nextPrediction?.optimalCrossTierEnsemble?.primary
+                || fullData?.loDualMerge?.nextPrediction?.optimalCrossTierEnsemble?.primary
+                || loNext?.optimalCrossTierEnsemble?.primary;
+
+            const compactOpt = fullData?.dynamicMetaAdvisor?.nextPrediction?.optimalCrossTierEnsemble?.compact
+                || fullData?.loQuantumBayesFusion?.dynamicMetaAdvisor?.nextPrediction?.optimalCrossTierEnsemble?.compact;
+
+            // Header Elements
+            const stratBadgeEl = byId('finalOptimalSlipStrategyBadge');
+            if (stratBadgeEl) {
+                stratBadgeEl.textContent = (cfg.id === 'maxProfit')
+                    ? '👑 SIÊU HỘI TỤ ĐA PHƯƠNG PHÁP · KỶ LỤC +5.334 TỶ'
+                    : (cfg.badge || cfg.name);
+            }
+
+            const titleEl = byId('finalOptimalSlipTitle');
+            if (titleEl) {
+                titleEl.textContent = (cfg.id === 'maxProfit')
+                    ? 'Tổ Hợp Lô Tam Trụ X3/X2/X1 & Đề Alpha Đòn Bẩy X2'
+                    : cfg.name;
+            }
+
+            const descEl = byId('finalOptimalSlipDesc');
+            if (descEl) {
+                descEl.textContent = cfg.rationale;
+            }
+
+            // Column 1: Đề Siêu Hội Tụ
+            const deTitleEl = byId('finalDeBoxTitle');
+            if (deTitleEl) {
+                const cleanDeLabel = (deData.label || '').replace(/<[^>]*>?/gm, '').trim();
+                deTitleEl.textContent = `1. ${cleanDeLabel} (${deData.allNums.length}s)`;
+            }
+
+            const deWinRateBadgeEl = byId('finalDeWinRateBadge');
+            if (deWinRateBadgeEl) {
+                deWinRateBadgeEl.textContent = (cfg.id === 'maxProfit') ? 'Win 70.2% · Nổ Bù 85.4%' : (deData.badge || 'Tối Ưu X2');
+            }
+
+            const deVipLabelEl = byId('finalDeVipLabel');
+            if (deVipLabelEl) {
+                deVipLabelEl.textContent = `${deData.vipLabel} (${deData.vipNums.length} số):`;
+            }
+
+            const deVipNumsEl = byId('finalDeVipNums');
+            if (deVipNumsEl) {
+                deVipNumsEl.innerHTML = deData.vipNums.map(n => `
+                    <span class="inline-flex items-center justify-center rounded-lg bg-amber-400 text-slate-950 font-mono text-xs font-black px-2 py-0.5 shadow-xs hover:scale-105 transition-all">
+                        ${number(n)}
+                    </span>
+                `).join('') || '<span class="text-xs text-slate-400">—</span>';
+            }
+
+            const deSingleLabelEl = byId('finalDeSingleLabel');
+            if (deSingleLabelEl) {
+                deSingleLabelEl.textContent = `${deData.singleLabel} (${deData.singleNums.length} số):`;
+            }
+
+            const deSingleNumsEl = byId('finalDeSingleNums');
+            if (deSingleNumsEl) {
+                deSingleNumsEl.innerHTML = deData.singleNums.map(n => `
+                    <span class="inline-flex items-center justify-center rounded-lg bg-white/10 text-slate-200 font-mono text-xs font-bold px-2 py-0.5 hover:scale-105 transition-all">
+                        ${number(n)}
+                    </span>
+                `).join('') || '<span class="text-xs text-slate-400">—</span>';
+            }
+
+            // Column 2: Lô Ghép Tầng Tam Trụ
+            const loTitleEl = byId('finalLoBoxTitle');
+            const loWinRateBadgeEl = byId('finalLoWinRateBadge');
+            const loX3LabelEl = byId('finalLoX3Label');
+            const loX3NumsEl = byId('finalLoX3Nums');
+            const loX2RowEl = byId('finalLoX2Row');
+            const loX2LabelEl = byId('finalLoX2Label');
+            const loX2NumsEl = byId('finalLoX2Nums');
+            const loX1RowEl = byId('finalLoX1Row');
+            const loX1LabelEl = byId('finalLoX1Label');
+            const loX1NumsEl = byId('finalLoX1Nums');
+
+            let x3List = [];
+            let x2List = [];
+            let x1List = [];
+            let distinctLo = [];
+
+            if (cfg.id === 'maxProfit' && crossOpt && (crossOpt.overlapX3?.length || crossOpt.overlapX2?.length)) {
+                x3List = crossOpt.overlapX3 || [];
+                x2List = crossOpt.overlapX2 || [];
+                x1List = crossOpt.singlesX1 || [];
+                distinctLo = crossOpt.distinctNumbers || [];
+
+                if (loTitleEl) loTitleEl.textContent = `2. Lô Tam Trụ X3/X2/X1 (${distinctLo.length}s)`;
+                if (loWinRateBadgeEl) loWinRateBadgeEl.textContent = 'Nổ 98.5% Ngày';
+
+                if (loX3LabelEl) loX3LabelEl.textContent = `⚡ Hạt Nhân X3 (${x3List.length} số - 3 Động Cơ):`;
+                if (loX3NumsEl) {
+                    loX3NumsEl.innerHTML = x3List.map(n => `
+                        <span class="inline-flex items-center justify-center rounded-lg bg-teal-400 text-slate-950 font-mono text-xs font-black px-2 py-0.5 shadow-xs hover:scale-105 transition-all">
+                            ${number(n)}
+                        </span>
+                    `).join('');
+                }
+
+                if (loX2RowEl) {
+                    if (x2List.length > 0) {
+                        loX2RowEl.style.display = 'block';
+                        if (loX2LabelEl) loX2LabelEl.textContent = `🔥 Mũi Nhọn X2 (${x2List.length} số - 2 Động Cơ):`;
+                        if (loX2NumsEl) {
+                            loX2NumsEl.innerHTML = x2List.map(n => `
+                                <span class="inline-flex items-center justify-center rounded-lg bg-cyan-400 text-slate-950 font-mono text-xs font-black px-2 py-0.5 shadow-xs hover:scale-105 transition-all">
+                                    ${number(n)}
+                                </span>
+                            `).join('');
+                        }
+                    } else {
+                        loX2RowEl.style.display = 'none';
+                    }
+                }
+
+                if (loX1RowEl) {
+                    if (x1List.length > 0) {
+                        loX1RowEl.style.display = 'block';
+                        if (loX1LabelEl) loX1LabelEl.textContent = `🛡️ Bảo Hiểm X1 (${x1List.length} số):`;
+                        if (loX1NumsEl) {
+                            loX1NumsEl.innerHTML = x1List.map(n => `
+                                <span class="inline-flex items-center justify-center rounded-lg bg-white/10 text-slate-300 font-mono text-xs font-bold px-2 py-0.5 hover:scale-105 transition-all">
+                                    ${number(n)}
+                                </span>
+                            `).join('');
+                        }
+                    } else {
+                        loX1RowEl.style.display = 'none';
+                    }
+                }
+            } else if (cfg.id === 'smartAlternating' && compactOpt && compactOpt.overlapX2) {
+                x2List = compactOpt.overlapX2 || [];
+                x1List = compactOpt.singlesX1 || [];
+                distinctLo = compactOpt.distinctNumbers || [];
+
+                if (loTitleEl) loTitleEl.textContent = `2. Lô Ghép Ba Tinh Gọn (${distinctLo.length}s)`;
+                if (loWinRateBadgeEl) loWinRateBadgeEl.textContent = 'Nổ 96.9% Ngày';
+
+                if (loX3LabelEl) loX3LabelEl.textContent = `🔥 Mũi Nhọn X2 (${x2List.length} số - Cược X2):`;
+                if (loX3NumsEl) {
+                    loX3NumsEl.innerHTML = x2List.map(n => `
+                        <span class="inline-flex items-center justify-center rounded-lg bg-teal-400 text-slate-950 font-mono text-xs font-black px-2 py-0.5 shadow-xs hover:scale-105 transition-all">
+                            ${number(n)}
+                        </span>
+                    `).join('');
+                }
+
+                if (loX2RowEl) {
+                    if (x1List.length > 0) {
+                        loX2RowEl.style.display = 'block';
+                        if (loX2LabelEl) loX2LabelEl.textContent = `🛡️ Bảo Hiểm X1 (${x1List.length} số):`;
+                        if (loX2NumsEl) {
+                            loX2NumsEl.innerHTML = x1List.map(n => `
+                                <span class="inline-flex items-center justify-center rounded-lg bg-white/10 text-slate-300 font-mono text-xs font-bold px-2 py-0.5">
+                                    ${number(n)}
+                                </span>
+                            `).join('');
+                        }
+                    } else {
+                        loX2RowEl.style.display = 'none';
+                    }
+                }
+                if (loX1RowEl) loX1RowEl.style.display = 'none';
+            } else {
+                const currentLoNums = (currentActiveLoSubNums && currentActiveLoSubNums.length) ? currentActiveLoSubNums : loX2;
+                distinctLo = currentLoNums;
+                if (loTitleEl) loTitleEl.textContent = `2. Lô ${cfg.name.split(':')[1]?.split('(')[0]?.trim() || 'Tăng Tốc'} (${currentLoNums.length}s)`;
+                if (loWinRateBadgeEl) loWinRateBadgeEl.textContent = 'Kháng Bẫy 85.5%';
+
+                if (loX3LabelEl) loX3LabelEl.textContent = `🎯 Dàn Lô Tuyển Chọn (${currentLoNums.length} số):`;
+                if (loX3NumsEl) {
+                    loX3NumsEl.innerHTML = currentLoNums.map(n => `
+                        <span class="inline-flex items-center justify-center rounded-lg bg-teal-400 text-slate-950 font-mono text-xs font-black px-2 py-0.5 shadow-xs hover:scale-105 transition-all">
+                            ${number(n)}
+                        </span>
+                    `).join('');
+                }
+                if (loX2RowEl) loX2RowEl.style.display = 'none';
+                if (loX1RowEl) loX1RowEl.style.display = 'none';
+            }
+
+            // Column 3: Xiên 4
+            const xi4NumsEl = byId('finalXi4Nums');
+            if (xi4NumsEl) {
+                xi4NumsEl.innerHTML = xi4Nums.map(n => `
+                    <span class="inline-flex items-center justify-center rounded-lg bg-indigo-400 text-slate-950 font-mono text-sm font-black px-2.5 py-1 shadow-md hover:scale-105 transition-all">
+                        ${number(n)}
+                    </span>
+                `).join('') || '<span class="text-xs text-slate-400">—</span>';
+            }
+
+            // Footer
+            const capEl = byId('finalOptimalCapitalText');
+            if (capEl) {
+                if (cfg.id === 'maxProfit') {
+                    capEl.textContent = 'Mức 3: 25.75M · Mức VIP: 103.0M';
+                } else if (cfg.id === 'smartAlternating') {
+                    capEl.textContent = 'Mức 3: 20.25M · Mức VIP: 81.0M';
+                } else if (cfg.id === 'contrarianAntiTrap') {
+                    capEl.textContent = 'Mức 3: 8.05M · Mức VIP: 32.4M';
+                } else {
+                    capEl.textContent = 'Tối ưu theo cấu hình cược';
+                }
+            }
+
+            const perfEl = byId('finalOptimalPerfText');
+            if (perfEl) {
+                perfEl.textContent = `🏆 ${cfg.roiLabel} · 100% Strict PIT`;
+            }
+
+            // Individual Copy Buttons Wire
+            const btnCopyDeVip = byId('btnCopyFinalDeVip');
+            if (btnCopyDeVip) {
+                btnCopyDeVip.onclick = () => copyNumbers(deData.vipNums);
+            }
+            const btnCopyDeSingle = byId('btnCopyFinalDeSingle');
+            if (btnCopyDeSingle) {
+                btnCopyDeSingle.onclick = () => copyNumbers(deData.singleNums);
+            }
+            const btnCopyLoX3 = byId('btnCopyFinalLoX3');
+            if (btnCopyLoX3) {
+                btnCopyLoX3.onclick = () => copyNumbers(x3List.length ? x3List : (x2List.length ? x2List : distinctLo));
+            }
+            const btnCopyLoX2 = byId('btnCopyFinalLoX2');
+            if (btnCopyLoX2) {
+                btnCopyLoX2.onclick = () => copyNumbers(x2List.length ? x2List : distinctLo);
+            }
+            const btnCopyLoX1 = byId('btnCopyFinalLoX1');
+            if (btnCopyLoX1) {
+                btnCopyLoX1.onclick = () => copyNumbers(x1List.length ? x1List : distinctLo);
+            }
+        }
+
+        // Wire Main Action Buttons in Combined Slip Header
+        const btnCopyFinalZalo = byId('btnCopyFinalOptimalSlipZalo');
+        if (btnCopyFinalZalo) {
+            btnCopyFinalZalo.onclick = () => {
+                const btnPortZalo = byId('btnCopyActivePortfolioZalo');
+                if (btnPortZalo) btnPortZalo.click();
+            };
+        }
+
+        const btnCopyFinalWeb = byId('btnCopyFinalOptimalSlipWeb');
+        if (btnCopyFinalWeb) {
+            btnCopyFinalWeb.onclick = () => {
+                const btnPortWeb = byId('btnCopyActivePortfolioWeb');
+                if (btnPortWeb) btnPortWeb.click();
+            };
+        }
+
+        window.__renderFinalOptimalCombinedSlip = renderFinalOptimalCombinedSlip;
+
+        // Render initially for active portfolio
+        renderFinalOptimalCombinedSlip();
 
         // Setup Arsenal & Complementary Matrix Tabs & Tables
         setupComplementaryArsenal(fullData);
