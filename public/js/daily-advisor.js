@@ -5995,11 +5995,96 @@
     }
 
     // ==========================================
+    // SYSTEM UPDATES & CHANGELOG MODAL CONTROLLER
+    // ==========================================
+    const CURRENT_DEPLOY_VERSION = '2026.09.24-v2-lot-khe-contrarian';
+    const DISMISSED_DEPLOY_KEY = 'xsmb_dismissed_deploy_version';
+
+    function initSystemUpdatesModal() {
+        const modal = byId('systemUpdatesModal');
+        if (!modal) return;
+
+        const deployVersion = modal.dataset.deployVersion || CURRENT_DEPLOY_VERSION;
+        const btnOpen = byId('btnOpenSystemUpdatesModal');
+        const btnClose = byId('btnCloseSystemUpdatesModal');
+        const btnDismiss = byId('btnDismissSystemUpdatesModal');
+        const btnAccept = byId('btnAcceptSystemUpdatesModal');
+        const chkDoNotShow = byId('chkDoNotShowAgainSystemUpdates');
+
+        function openModal() {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeModal(savePreference = false) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.classList.remove('overflow-hidden');
+
+            if (savePreference && chkDoNotShow && chkDoNotShow.checked) {
+                try {
+                    localStorage.setItem(DISMISSED_DEPLOY_KEY, deployVersion);
+                } catch (e) {
+                    console.warn('Cannot write to localStorage', e);
+                }
+            }
+        }
+
+        if (btnOpen) {
+            btnOpen.onclick = () => openModal();
+        }
+
+        if (btnClose) {
+            btnClose.onclick = () => closeModal(false);
+        }
+
+        if (btnDismiss) {
+            btnDismiss.onclick = () => closeModal(chkDoNotShow ? chkDoNotShow.checked : false);
+        }
+
+        if (btnAccept) {
+            btnAccept.onclick = () => {
+                closeModal(true);
+                showToast('Đã lưu lựa chọn! Chúc bạn gặt hái thắng lợi lớn 🚀');
+            };
+        }
+
+        // Close on backdrop click
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                closeModal(chkDoNotShow ? chkDoNotShow.checked : false);
+            }
+        };
+
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                closeModal(chkDoNotShow ? chkDoNotShow.checked : false);
+            }
+        });
+
+        // Automatically show modal on deploy version update if not dismissed
+        try {
+            const dismissedVer = localStorage.getItem(DISMISSED_DEPLOY_KEY);
+            if (dismissedVer !== deployVersion) {
+                // Auto popup after 500ms for smooth entrance animation
+                setTimeout(() => {
+                    openModal();
+                }, 500);
+            }
+        } catch (e) {
+            console.warn('Cannot read localStorage', e);
+        }
+    }
+
+    // ==========================================
     // INITIALIZATION & DATA FETCHING
     // ==========================================
     async function init() {
         setupTabSwitching();
         setupLedgerFilters();
+        initSystemUpdatesModal();
 
         try {
             const res = await fetch('/api/daily-advisor');
