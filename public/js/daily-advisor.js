@@ -250,8 +250,8 @@
     function resolvePendingRecommendation(p, forcedPortfolioKey) {
         const payloadData = p || payload || {};
         const key = forcedPortfolioKey || currentActivePortfolio || 'maxProfit';
-        const deMethodKey = currentActiveDeMethod || (key === 'maxProfit' ? 'adaptiveDualMerge' : (key === 'smartAlternating' ? (payloadData.streakAwareDeAdvisor?.latestRecommendation?.selectedMethod || 'metaLearner') : (key === 'steadyAccumulator' ? 'dualMerge' : (key === 'antiNoiseResonance' ? 'deMarkovGapHazard' : 'adaptiveDualMerge'))));
-        const loEngineKey = currentActiveLoEngine || (key === 'maxProfit' ? 'qmbf' : (key === 'smartAlternating' ? 'penta' : (key === 'antiNoiseResonance' ? 'bridge' : 'quad')));
+        const deMethodKey = currentActiveDeMethod || (key === 'contrarianAntiTrap' ? 'contrarianLotKhe' : (key === 'maxProfit' ? 'adaptiveDualMerge' : (key === 'smartAlternating' ? (payloadData.streakAwareDeAdvisor?.latestRecommendation?.selectedMethod || 'metaLearner') : (key === 'steadyAccumulator' ? 'dualMerge' : (key === 'antiNoiseResonance' ? 'deMarkovGapHazard' : 'adaptiveDualMerge')))));
+        const loEngineKey = currentActiveLoEngine || (key === 'contrarianAntiTrap' ? 'bridge' : (key === 'maxProfit' ? 'qmbf' : (key === 'smartAlternating' ? 'penta' : (key === 'antiNoiseResonance' ? 'bridge' : 'quad'))));
 
         // 1. Resolve Đề
         let deMethodName = '👑 Ngũ Trụ Tinh Hoa AI (Penta-Core 60M)';
@@ -336,6 +336,40 @@
             deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X2 · ${deX1Nums.length} X1)`;
             deRationale = rec.rationale || 'Cầu đồ thị Markov liên kết vị trí giải thưởng.';
             deBadge = 'Đồ Thị Động Năng';
+        } else if (deMethodKey === 'contrarianLotKhe') {
+            const dePools = [
+                payloadData.pentaCoreDe?.latestRecommendation?.numbers,
+                payloadData.adaptiveDualMerge?.latestRecommendation?.fullUnion,
+                payloadData.dualMerge?.latestRecommendation?.fullUnion,
+                payloadData.tripleMerge?.latestRecommendation?.fullUnion,
+                payloadData.metaLearner?.latestRecommendation?.standard30 || payloadData.metaLearner?.latestRecommendation?.numbers,
+                payloadData.deMarkovGapHazard?.latestRecommendation?.numbers,
+                payloadData.dePositionalGraphFlow?.latestRecommendation?.numbers
+            ].filter(Boolean);
+
+            const vCounts = Array.from({ length: 100 }, () => 0);
+            dePools.forEach(pool => {
+                (pool || []).forEach(n => {
+                    const idx = Number(n);
+                    if (Number.isInteger(idx) && idx >= 0 && idx < 100) vCounts[idx]++;
+                });
+            });
+
+            const l0 = [];
+            const l1 = [];
+            for (let i = 0; i < 100; i++) {
+                if (vCounts[i] === 0) l0.push(i);
+                else if (vCounts[i] === 1) l1.push(i);
+            }
+
+            deMethodName = `🎯 Dàn Kháng Bẫy Lọt Khe (${l0.length + (l0.length < 15 ? 15 - l0.length : 10)}s · 1 Ăn 84)`;
+            deX2Nums = l0.map(number);
+            deX1Nums = (l0.length < 15 ? l1.slice(0, 15 - l0.length) : l1.slice(0, 10)).map(number);
+            deNumbers = [...deX2Nums, ...deX1Nums];
+            deStakeK = deNumbers.length * 1000;
+            deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} Hạt nhân 0-Vote · ${deX1Nums.length} Ngoại vi)`;
+            deRationale = 'Chiến thuật săn điểm rơi ngoài vùng phủ sóng của toàn bộ AI: Tập hợp các số 0-vote bị 100% các phương pháp bỏ qua. Vốn siêu nhẹ nhưng khi nhà cái bẻ cầu nổ vào khe khuyết thì ăn trọn x84 lần.';
+            deBadge = 'Bắt Điểm Rơi Outlier 🎯';
         } else {
             // Default: adaptiveDualMerge
             const rec = payloadData.adaptiveDualMerge?.latestRecommendation || payloadData.streakAwareDeAdvisor?.latestRecommendation || {};
@@ -967,6 +1001,51 @@
                 liveStat: '38.0% Win 2026 (+5.4 TỶ)'
             };
         }
+        if (methodKey === 'contrarianLotKhe') {
+            const dePools = [
+                fullData?.pentaCoreDe?.latestRecommendation?.numbers,
+                fullData?.adaptiveDualMerge?.latestRecommendation?.fullUnion,
+                fullData?.dualMerge?.latestRecommendation?.fullUnion,
+                fullData?.tripleMerge?.latestRecommendation?.fullUnion,
+                fullData?.metaLearner?.latestRecommendation?.standard30 || fullData?.metaLearner?.latestRecommendation?.numbers,
+                fullData?.deMarkovGapHazard?.latestRecommendation?.numbers,
+                fullData?.dePositionalGraphFlow?.latestRecommendation?.numbers
+            ].filter(Boolean);
+
+            const vCounts = Array.from({ length: 100 }, () => 0);
+            dePools.forEach(pool => {
+                (pool || []).forEach(n => {
+                    const idx = Number(n);
+                    if (Number.isInteger(idx) && idx >= 0 && idx < 100) vCounts[idx]++;
+                });
+            });
+
+            const l0 = [];
+            const l1 = [];
+            for (let i = 0; i < 100; i++) {
+                if (vCounts[i] === 0) l0.push(i);
+                else if (vCounts[i] === 1) l1.push(i);
+            }
+
+            const vipNums = l0.map(number);
+            const singleNums = (l0.length < 15 ? l1.slice(0, 15 - l0.length) : l1.slice(0, 10)).map(number);
+            const allNums = [...vipNums, ...singleNums];
+            const stakeUnits = allNums.length;
+            return {
+                label: `🎯 Dàn Kháng Bẫy Lọt Khe (${allNums.length}s · 1 Ăn 84)`,
+                badge: 'Kháng Bẫy Outlier 🎯',
+                stakeK: stakeUnits * 1000,
+                stakeText: `Vốn: ${stakeUnits}M / ngày (${stakeUnits} đơn vị cược)`,
+                stdTitle: `🎯 DÀN KHÁNG BẪY LỌT KHE (${allNums.length} SỐ · ${vipNums.length} HẠT NHÂN 0-VOTE · 1 ĂN 84)`,
+                allNums,
+                vipNums,
+                singleNums,
+                vipLabel: `⚡ HẠT NHÂN 0-VOTE (${vipNums.length} SỐ - 100% AI BỎ QUA)`,
+                singleLabel: `🛡️ NGOẠI VI 1-VOTE BỌC LÓT (${singleNums.length} SỐ)`,
+                rationale: 'Chiến thuật săn điểm rơi ngoài vùng phủ sóng của toàn bộ AI: Tập hợp các số 0-vote bị 100% các phương pháp bỏ qua. Vốn siêu nhẹ nhưng khi nhà cái bẻ cầu nổ vào khe khuyết thì ăn trọn x84 lần.',
+                liveStat: `Bảo hiểm kháng bẫy (${vipNums.length} số 0-vote)`
+            };
+        }
         // metaLearner default
         const rec = fullData?.metaLearner?.latestRecommendation || {};
         const allNums = (rec.standard30 || rec.numbers || []).map(number);
@@ -998,6 +1077,44 @@
         if (predDateBadge) predDateBadge.textContent = formatDateVi(predDate);
         const portDateBadge = byId('portfolioTargetDateBadge');
         if (portDateBadge) portDateBadge.textContent = formatDateVi(predDate);
+
+        // Cập nhật Radar Dàn Số Lọt Khe Hôm Nay (Unchosen Pool Radar)
+        const dePoolsForRadar = [
+            fullData?.pentaCoreDe?.latestRecommendation?.numbers,
+            fullData?.adaptiveDualMerge?.latestRecommendation?.fullUnion,
+            fullData?.dualMerge?.latestRecommendation?.fullUnion,
+            fullData?.tripleMerge?.latestRecommendation?.fullUnion,
+            fullData?.metaLearner?.latestRecommendation?.standard30 || fullData?.metaLearner?.latestRecommendation?.numbers,
+            fullData?.deMarkovGapHazard?.latestRecommendation?.numbers,
+            fullData?.dePositionalGraphFlow?.latestRecommendation?.numbers
+        ].filter(Boolean);
+
+        const radarVotes = Array.from({ length: 100 }, () => 0);
+        dePoolsForRadar.forEach(pool => {
+            (pool || []).forEach(n => {
+                const idx = Number(n);
+                if (Number.isInteger(idx) && idx >= 0 && idx < 100) radarVotes[idx]++;
+            });
+        });
+
+        const radarLotKhe0 = [];
+        for (let i = 0; i < 100; i++) {
+            if (radarVotes[i] === 0) radarLotKhe0.push(number(i));
+        }
+        const aiCoverage = 100 - radarLotKhe0.length;
+
+        const lotKheSummaryTextEl = byId('lotKheSummaryText');
+        if (lotKheSummaryTextEl) {
+            lotKheSummaryTextEl.innerHTML = `Toàn bộ 7 động cơ AI phủ <strong class="text-emerald-400 font-bold">${aiCoverage}/100</strong> số. Chỉ có <strong class="text-amber-300 font-bold">${radarLotKhe0.length} số Lọt Khe tuyệt đối (0-vote)</strong>.`;
+        }
+        const lotKheNumbersDisplayEl = byId('lotKheNumbersDisplay');
+        if (lotKheNumbersDisplayEl) {
+            lotKheNumbersDisplayEl.textContent = radarLotKhe0.join(' ') || 'Không có';
+        }
+        const lotKheSafetyBadgeEl = byId('lotKheSafetyBadge');
+        if (lotKheSafetyBadgeEl) {
+            lotKheSafetyBadgeEl.innerHTML = `<i class="bi bi-shield-check"></i> An toàn AI: ${aiCoverage}%`;
+        }
 
         // Hiển thị trạng thái Niêm phong Snapshot Lock nếu có
         const lockStatus = fullData?.snapshotLock || streakDeAdv?.snapshotLock || loQuadAdv?.snapshotLock;
@@ -3772,6 +3889,16 @@
                 badge: '🔮 Kháng Nhiễu (Cứu 45.6%)',
                 roiLabel: 'Cầu Đồ Thị 85.5%',
                 rationale: 'Bắt các nhịp số gan, kép lệch và bẻ cầu, sử dụng Mốc Lịch Sử hiện tại.'
+            },
+            contrarianAntiTrap: {
+                id: 'contrarianAntiTrap',
+                name: 'Gói 5: Kháng Bẫy Lọt Khe (1 Ăn 84) & Lô Cầu Đồ Thị (+5.4T)',
+                deMethod: 'contrarianLotKhe',
+                loEngine: 'bridge',
+                loSubTier: 7,
+                badge: '🎯 Kháng Bẫy Lọt Khe (1 Ăn 84 · Drawdown 0)',
+                roiLabel: '1 Ăn 84 Lần Vốn · Kháng Bẫy',
+                rationale: 'Chiến thuật săn điểm rơi ngoài vùng phủ sóng của toàn bộ AI: Đề tự động gom các số 0-vote (bị 100% thuật toán bỏ qua) + dàn ngoại vi dị biệt (10-20 số, cược nhẹ ăn x84 lần). Lô kết hợp Cầu Đồ Thị Vị Trí Bridge Flow Top 7 (kháng bẫy 85.5%). Bảo hiểm tối đa tài khoản khi AI gặp bẫy đồng thuận.'
             }
         };
 
@@ -3790,24 +3917,30 @@
                 card.classList.toggle('active', isSelected);
                 card.classList.toggle('border-2', isSelected);
                 card.classList.toggle('border-amber-400', isSelected && key === 'maxProfit');
-                card.classList.toggle('border-indigo-400', isSelected && key !== 'maxProfit');
-                card.classList.toggle('ring-2', isSelected && key === 'maxProfit');
+                card.classList.toggle('border-indigo-400', isSelected && key !== 'maxProfit' && key !== 'contrarianAntiTrap');
+                card.classList.toggle('border-red-500', isSelected && key === 'contrarianAntiTrap');
+                card.classList.toggle('ring-2', isSelected && (key === 'maxProfit' || key === 'contrarianAntiTrap'));
                 card.classList.toggle('ring-amber-400/30', isSelected && key === 'maxProfit');
+                card.classList.toggle('ring-red-500/30', isSelected && key === 'contrarianAntiTrap');
                 card.classList.toggle('border-white/15', !isSelected);
 
                 const indicator = card.querySelector('.portfolio-active-indicator');
                 if (indicator) {
                     indicator.innerHTML = isSelected 
-                        ? (key === 'maxProfit' ? '<i class="bi bi-check-circle-fill"></i> Đang chọn (Mặc định)' : '<i class="bi bi-check-circle-fill"></i> Đang chọn')
+                        ? (key === 'maxProfit' ? '<i class="bi bi-check-circle-fill"></i> Đang chọn (Mặc định)' : (key === 'contrarianAntiTrap' ? '<i class="bi bi-shield-check"></i> Đang chọn (Kháng Bẫy)' : '<i class="bi bi-check-circle-fill"></i> Đang chọn'))
                         : 'Chưa chọn';
-                    indicator.className = `portfolio-active-indicator inline-flex items-center gap-1 text-[11px] ${isSelected ? (key === 'maxProfit' ? 'font-black text-amber-300' : 'font-black text-indigo-300') : 'font-bold text-slate-400'}`;
+                    const textColor = key === 'maxProfit' ? 'text-amber-300' : (key === 'contrarianAntiTrap' ? 'text-red-400' : 'text-indigo-300');
+                    indicator.className = `portfolio-active-indicator inline-flex items-center gap-1 text-[11px] ${isSelected ? 'font-black ' + textColor : 'font-bold text-slate-400'}`;
                 }
 
                 const selectBtn = card.querySelector('.btn-select-portfolio');
                 if (selectBtn) {
                     selectBtn.textContent = isSelected ? 'Đang Chọn' : 'Chọn Gói';
+                    const btnClass = key === 'maxProfit' 
+                        ? 'bg-amber-400 text-slate-950 font-black' 
+                        : (key === 'contrarianAntiTrap' ? 'bg-red-600 text-white font-black' : 'bg-indigo-500 text-white font-black');
                     selectBtn.className = isSelected
-                        ? (key === 'maxProfit' ? 'btn-select-portfolio rounded-lg bg-amber-400 text-slate-950 font-black text-xs px-2.5 py-1 transition-all shadow-xs' : 'btn-select-portfolio rounded-lg bg-indigo-500 text-white font-black text-xs px-2.5 py-1 transition-all shadow-xs')
+                        ? `btn-select-portfolio rounded-lg ${btnClass} text-xs px-2.5 py-1 transition-all shadow-xs`
                         : 'btn-select-portfolio rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold text-xs px-2.5 py-1 transition-all border border-white/20';
                 }
             });
@@ -3941,6 +4074,17 @@
                         ``,
                         `📋 Toàn bộ dàn Lô (${distinctLo.length}s):`,
                         distinctLo.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                        `━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+                        `✨ 3. TỨ THỦ LÔ XIÊN 4 TINH HOA (Quây 11 Vé · 11M VIP / 2.75M M3):`,
+                        xi4Nums.map(n => String(number(n)).padStart(2, '0')).join(' ')
+                    );
+                } else if (cfg.id === 'contrarianAntiTrap') {
+                    slipLines.push(
+                        `🎰 2. LÔ CẦU ĐỒ THỊ KHÁNG BẪY (Top 7s · Vốn M3 3.85M / VIP 15.4M):`,
+                        `🕸️ CẦU LIÊN KẾT 54 VỊ TRÍ CHỮ SỐ XSMB:`,
+                        currentLoNums.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                        ``,
+                        `🛡️ BẢO HIỂM LỌT KHE: Đề vào nhẹ 1-2M/số hạt nhân 0-vote, nổ ăn x84 lần bù toàn bộ chi phí!`,
                         `━━━━━━━━━━━━━━━━━━━━━━━━━━`,
                         `✨ 3. TỨ THỦ LÔ XIÊN 4 TINH HOA (Quây 11 Vé · 11M VIP / 2.75M M3):`,
                         xi4Nums.map(n => String(number(n)).padStart(2, '0')).join(' ')

@@ -1312,15 +1312,50 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   lines.push(divider);
 
   // =========================================================================
-  // 7. 💡 KHUYẾN NGHỊ PHÂN BỔ VỐN
+  // 7. 💡 KHUYẾN NGHỊ PHÂN BỔ VỐN & RADAR LỌT KHE
   // =========================================================================
   const deMethodShort = streakDeAdv?.selectedMethodLabel || 'Đề Tuyển Chọn';
   const loTargetNums = crossOpt ? crossOpt.totalNumbers : allMerged.length;
   lines.push(
-    `<b>7. 💡 KHUYẾN NGHỊ PHÂN BỔ VỐN</b>`,
+    `<b>7. 💡 KHUYẾN NGHỊ PHÂN BỔ VỐN & RADAR KHÁNG BẪY</b>`,
     `• 🛡️ <b>Phòng thủ (50%)</b>: <b>${escapeHtml(deMethodShort)}</b> (${sNumbers.length || 43} số · Đòn bẩy X2 gỡ lỗ sau trượt) — Ăn đều đặn bảo vệ vốn.`,
     `• ⚔️ <b>Tấn công (50%)</b>: <b>Lô Ghép Tầng Đa Phương Pháp</b> (${loTargetNums} số: Hạt nhân X3, mũi nhọn X2, bảo hiểm X1) + <b>Lô Xiên 4 Quây</b> săn đại thắng.`
   );
+
+  // Radar Lọt Khe (Unchosen Pool Radar)
+  const dePoolsForRadar = [
+    advisorPayload?.pentaCoreDe?.latestRecommendation?.numbers,
+    advisorPayload?.adaptiveDualMerge?.latestRecommendation?.fullUnion,
+    advisorPayload?.dualMerge?.latestRecommendation?.fullUnion,
+    advisorPayload?.tripleMerge?.latestRecommendation?.fullUnion,
+    advisorPayload?.metaLearner?.latestRecommendation?.standard30 || advisorPayload?.metaLearner?.latestRecommendation?.numbers,
+    advisorPayload?.deMarkovGapHazard?.latestRecommendation?.numbers,
+    advisorPayload?.dePositionalGraphFlow?.latestRecommendation?.numbers
+  ].filter(Boolean);
+
+  if (dePoolsForRadar.length > 0) {
+    const voteCounts = Array.from({ length: 100 }, () => 0);
+    dePoolsForRadar.forEach(pool => {
+      (pool || []).forEach(n => {
+        const idx = Number(n);
+        if (Number.isInteger(idx) && idx >= 0 && idx < 100) voteCounts[idx]++;
+      });
+    });
+
+    const lotKhe0 = [];
+    for (let i = 0; i < 100; i++) {
+      if (voteCounts[i] === 0) lotKhe0.push(String(i).padStart(2, '0'));
+    }
+    const aiCoverage = 100 - lotKhe0.length;
+
+    if (lotKhe0.length > 0 && lotKhe0.length < 100) {
+      lines.push(
+        `• 🎯 <b>Radar Lọt Khe Hôm Nay (An toàn AI: ${aiCoverage}%)</b>: 7 siêu động cơ AI phủ <b>${aiCoverage}/100</b> số. Chỉ còn <b>${lotKhe0.length} số Lọt Khe tuyệt đối (0-vote)</b>:`,
+        `   └ <code>${lotKhe0.join(' ')}</code> <i>(Gói 5: Kháng Bẫy Lọt Khe 1 Ăn 84 khi thị trường bẻ cầu)</i>`
+      );
+    }
+  }
+
   lines.push(
     '',
     `💬 <i>Gõ <b>/cuoc</b> để xem Bảng Tính Lỗ/Lãi Tự Động theo Mức 3 (Mặc định) hoặc chọn mức khác!</i>`,

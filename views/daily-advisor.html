@@ -200,7 +200,7 @@
                                 </span>
                                 <span class="text-xs font-bold text-slate-400">|</span>
                                 <span class="text-xs font-bold text-amber-300">
-                                    4 Gói Chiến Lược Độc Lập Phân Tầng Theo Khẩu Vị Rủi Ro &amp; Lực Nảy
+                                    5 Gói Chiến Lược Độc Lập Phân Tầng Theo Khẩu Vị Rủi Ro, Lực Nảy &amp; Kháng Bẫy Lọt Khe
                                 </span>
                             </div>
                             <h3 class="text-lg sm:text-xl font-black text-white mt-1.5 flex items-center gap-2">
@@ -223,8 +223,27 @@
                         </div>
                     </div>
 
-                    <!-- 4 Strategic Portfolios Grid -->
-                    <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4" id="strategicPortfoliosGrid">
+                    <!-- Radar Dàn Số Lọt Khe Hôm Nay (Unchosen Pool Radar) -->
+                    <div class="mt-4 rounded-2xl bg-gradient-to-r from-red-950/40 via-slate-900 to-slate-950 border border-red-500/30 p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-md" id="lotKheRadarBox">
+                        <div class="flex items-center gap-2.5">
+                            <span class="rounded-xl bg-red-500/20 text-red-300 border border-red-500/40 font-black text-xs px-2.5 py-1 flex items-center gap-1.5 shadow-xs">
+                                <i class="bi bi-radar text-red-400 animate-pulse"></i> Radar Lọt Khe Hôm Nay
+                            </span>
+                            <span class="text-xs text-slate-200" id="lotKheSummaryText">
+                                Toàn bộ 7 động cơ AI phủ <strong class="text-emerald-400">90/100</strong> số. Chỉ có <strong class="text-amber-300">10 số Lọt Khe tuyệt đối (0-vote)</strong>.
+                            </span>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2 font-mono text-xs">
+                            <span class="text-slate-400 text-[11px]">Dàn 0-Vote:</span>
+                            <span class="bg-red-950/80 border border-red-600/60 text-red-200 px-2.5 py-0.5 rounded-lg font-black tracking-wider shadow-xs" id="lotKheNumbersDisplay">39 43 44 51 62 80 81 83 85 86</span>
+                            <span class="rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold px-2 py-0.5" id="lotKheSafetyBadge">
+                                <i class="bi bi-shield-check"></i> An toàn AI: 90%
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- 5 Strategic Portfolios Grid -->
+                    <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4" id="strategicPortfoliosGrid">
                         <!-- GÓI 1: ĐỘT PHÁ LỢI NHUẬN TỐI ĐA & ĐÒN BẨY X2 GỠ LỖ (MẶC ĐỊNH) -->
                         <div class="portfolio-card active rounded-2xl border-2 border-amber-400 bg-gradient-to-b from-amber-500/20 via-slate-900 to-slate-950 p-4 transition-all hover:border-amber-300 shadow-xl cursor-pointer flex flex-col justify-between ring-2 ring-amber-400/30" data-portfolio="maxProfit">
                             <div>
@@ -409,6 +428,52 @@
                                 </button>
                             </div>
                         </div>
+
+                        <!-- GÓI 5: KHÁNG BẪY LỌT KHE & OUTLIER NGƯỢC DÒNG -->
+                        <div class="portfolio-card rounded-2xl border border-white/15 bg-slate-900/80 p-4 transition-all hover:border-red-400 shadow-md cursor-pointer flex flex-col justify-between" data-portfolio="contrarianAntiTrap">
+                            <div>
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="rounded-full bg-red-500/20 text-red-300 border border-red-400/30 font-black text-[10px] px-2 py-0.5 uppercase tracking-wide">
+                                        🎯 GÓI 5 · KHÁNG BẪY LỌT KHE
+                                    </span>
+                                    <span class="text-xs font-black text-red-300 font-mono">1 Ăn 84 · Vốn Nhẹ</span>
+                                </div>
+                                <h4 class="text-base font-black text-white mt-2 flex items-center gap-1.5">
+                                    <span>Kháng Bẫy Lọt Khe &amp; Outlier</span>
+                                </h4>
+                                <p class="text-[11px] text-slate-300 mt-1 leading-relaxed">
+                                    Chiến thuật săn điểm rơi ngoài vùng phủ sóng của AI: Tự động gom các số 0-vote (bị 100% thuật toán bỏ qua) + dàn ngoại vi dị biệt. Vốn siêu nhẹ 10-20M nhưng nổ ăn x84 lần, bảo hiểm tối đa tài khoản khi AI gặp bẫy đồng thuận.
+                                </p>
+
+                                <div class="mt-3 space-y-1.5 rounded-xl bg-black/40 p-2.5 text-[11px] font-mono border border-white/5">
+                                    <div class="flex justify-between text-amber-200">
+                                        <span>💎 Đề:</span>
+                                        <strong class="font-bold">Dàn Lọt Khe (10 Hạt Nhân 0-Vote)</strong>
+                                    </div>
+                                    <div class="flex justify-between text-teal-200">
+                                        <span>🎰 Lô:</span>
+                                        <strong class="font-bold">🕸️ Cầu Đồ Thị Bridge Flow (Top 7s)</strong>
+                                    </div>
+                                    <div class="flex justify-between text-indigo-200">
+                                        <span>🛡️ Bảo hiểm:</span>
+                                        <strong class="font-bold">Kháng Bẫy Đồng Thuận Quá Mức</strong>
+                                    </div>
+                                </div>
+
+                                <div class="mt-2.5 text-[10px] text-rose-300 font-semibold flex items-center gap-1">
+                                    <i class="bi bi-shield-exclamation text-rose-400"></i> <span>Kích hoạt bảo hiểm khi AI thắng dài hoặc thị trường đảo chiều</span>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
+                                <span class="portfolio-active-indicator inline-flex items-center gap-1 text-[11px] font-bold text-slate-400">
+                                    Chưa chọn
+                                </span>
+                                <button type="button" class="btn-select-portfolio rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold text-xs px-2.5 py-1 transition-all border border-white/20">
+                                    Chọn Gói
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Phân Tích Luân Phiên & Lực Nảy Hôm Nay (Alternating Momentum Box) -->
@@ -494,6 +559,7 @@
                                 <button type="button" class="de-method-btn rounded-lg px-2 py-0.5 text-[10px] font-bold border border-slate-200 hover:bg-slate-100 transition-all text-slate-700" data-method="dePositionalGraphFlow">🕸️ Cầu Đồ Thị</button>
                                 <button type="button" class="de-method-btn rounded-lg px-2 py-0.5 text-[10px] font-bold border border-slate-200 hover:bg-slate-100 transition-all text-slate-700" data-method="bayesFormResonance">🔮 Ngũ Hành Bayes</button>
                                 <button type="button" class="de-method-btn rounded-lg px-2 py-0.5 text-[10px] font-bold border border-slate-200 hover:bg-slate-100 transition-all text-slate-700" data-method="metaLearner">💎 Tinh Hoa (30s)</button>
+                                <button type="button" class="de-method-btn rounded-lg px-2 py-0.5 text-[10px] font-bold border border-red-300 hover:bg-red-50 transition-all text-red-700" data-method="contrarianLotKhe">🎯 Kháng Bẫy Lọt Khe</button>
                             </div>
 
                             <!-- Dàn Chuẩn / Tuyển chọn -->
