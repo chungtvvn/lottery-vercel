@@ -3905,7 +3905,11 @@
             }
         };
 
-        currentActivePortfolio = 'maxProfit';
+        const recommendedPortfolioId = fullData?.strategicPortfolioGovernor?.recommendedPortfolioId
+            || fullData?.streakAwareDeAdvisor?.latestRecommendation?.strategicPortfolio?.id
+            || 'maxProfit';
+
+        currentActivePortfolio = recommendedPortfolioId;
 
         function selectStrategicPortfolio(key, isInitial = false) {
             currentActivePortfolio = key;
@@ -3916,35 +3920,69 @@
 
             // Update portfolio cards visual state
             document.querySelectorAll('.portfolio-card').forEach(card => {
-                const isSelected = (card.dataset.portfolio === key);
+                const cardKey = card.dataset.portfolio;
+                const isSelected = (cardKey === key);
+                const isRecommended = (cardKey === recommendedPortfolioId);
+
                 card.classList.toggle('active', isSelected);
                 card.classList.toggle('border-2', isSelected);
-                card.classList.toggle('border-amber-400', isSelected && key === 'maxProfit');
-                card.classList.toggle('border-indigo-400', isSelected && key !== 'maxProfit' && key !== 'contrarianAntiTrap');
+                card.classList.toggle('border-amber-400', isSelected && (key === 'maxProfit' || isRecommended));
+                card.classList.toggle('border-indigo-400', isSelected && key !== 'maxProfit' && key !== 'contrarianAntiTrap' && !isRecommended);
                 card.classList.toggle('border-red-500', isSelected && key === 'contrarianAntiTrap');
-                card.classList.toggle('ring-2', isSelected && (key === 'maxProfit' || key === 'contrarianAntiTrap'));
-                card.classList.toggle('ring-amber-400/30', isSelected && key === 'maxProfit');
+                card.classList.toggle('ring-2', isSelected && (key === 'maxProfit' || key === 'contrarianAntiTrap' || isRecommended));
+                card.classList.toggle('ring-amber-400/30', isSelected && (key === 'maxProfit' || isRecommended));
                 card.classList.toggle('ring-red-500/30', isSelected && key === 'contrarianAntiTrap');
                 card.classList.toggle('border-white/15', !isSelected);
 
+                // Add or update dynamic AI recommended badge
+                let recBadge = card.querySelector('.ai-rec-badge');
+                if (isRecommended) {
+                    if (!recBadge) {
+                        recBadge = document.createElement('div');
+                        recBadge.className = 'ai-rec-badge mb-2 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 text-slate-950 font-black text-[9px] px-2 py-0.5 uppercase tracking-wide shadow-xs';
+                        recBadge.innerHTML = '<i class="bi bi-stars"></i> ⭐ AI ĐỀ XUẤT HÔM NAY';
+                        const firstChild = card.firstElementChild;
+                        if (firstChild) firstChild.insertBefore(recBadge, firstChild.firstChild);
+                    }
+                } else if (recBadge) {
+                    recBadge.remove();
+                }
+
                 const indicator = card.querySelector('.portfolio-active-indicator');
                 if (indicator) {
-                    indicator.innerHTML = isSelected 
-                        ? (key === 'maxProfit' ? '<i class="bi bi-check-circle-fill"></i> Đang chọn (Mặc định)' : (key === 'contrarianAntiTrap' ? '<i class="bi bi-shield-check"></i> Đang chọn (Kháng Bẫy)' : '<i class="bi bi-check-circle-fill"></i> Đang chọn'))
-                        : 'Chưa chọn';
-                    const textColor = key === 'maxProfit' ? 'text-amber-300' : (key === 'contrarianAntiTrap' ? 'text-red-400' : 'text-indigo-300');
-                    indicator.className = `portfolio-active-indicator inline-flex items-center gap-1 text-[11px] ${isSelected ? 'font-black ' + textColor : 'font-bold text-slate-400'}`;
+                    if (isSelected) {
+                        if (isRecommended) {
+                            indicator.innerHTML = '<i class="bi bi-stars"></i> Đang chọn (⭐ AI Đề Xuất Hôm Nay)';
+                            indicator.className = 'portfolio-active-indicator inline-flex items-center gap-1 text-[11px] font-black text-amber-300';
+                        } else if (key === 'maxProfit') {
+                            indicator.innerHTML = '<i class="bi bi-check-circle-fill"></i> Đang chọn (Kỷ Lục Profit)';
+                            indicator.className = 'portfolio-active-indicator inline-flex items-center gap-1 text-[11px] font-black text-amber-300';
+                        } else if (key === 'contrarianAntiTrap') {
+                            indicator.innerHTML = '<i class="bi bi-shield-check"></i> Đang chọn (Kháng Bẫy)';
+                            indicator.className = 'portfolio-active-indicator inline-flex items-center gap-1 text-[11px] font-black text-red-400';
+                        } else {
+                            indicator.innerHTML = '<i class="bi bi-check-circle-fill"></i> Đang chọn';
+                            indicator.className = 'portfolio-active-indicator inline-flex items-center gap-1 text-[11px] font-black text-indigo-300';
+                        }
+                    } else {
+                        indicator.innerHTML = isRecommended ? '<span class="text-amber-400 font-bold">⭐ AI Đề xuất hôm nay</span>' : 'Chưa chọn';
+                        indicator.className = `portfolio-active-indicator inline-flex items-center gap-1 text-[11px] ${isRecommended ? 'font-black text-amber-400' : 'font-bold text-slate-400'}`;
+                    }
                 }
 
                 const selectBtn = card.querySelector('.btn-select-portfolio');
                 if (selectBtn) {
-                    selectBtn.textContent = isSelected ? 'Đang Chọn' : 'Chọn Gói';
-                    const btnClass = key === 'maxProfit' 
-                        ? 'bg-amber-400 text-slate-950 font-black' 
-                        : (key === 'contrarianAntiTrap' ? 'bg-red-600 text-white font-black' : 'bg-indigo-500 text-white font-black');
+                    selectBtn.textContent = isSelected ? (isRecommended ? 'Đang Chọn (Đề Xuất)' : 'Đang Chọn') : (isRecommended ? 'Chọn Gói ⭐' : 'Chọn Gói');
+                    const btnClass = isRecommended 
+                        ? 'bg-gradient-to-r from-amber-400 to-orange-400 text-slate-950 font-black ring-1 ring-amber-300'
+                        : (key === 'maxProfit' 
+                            ? 'bg-amber-400 text-slate-950 font-black' 
+                            : (key === 'contrarianAntiTrap' ? 'bg-red-600 text-white font-black' : 'bg-indigo-500 text-white font-black'));
                     selectBtn.className = isSelected
                         ? `btn-select-portfolio rounded-lg ${btnClass} text-xs px-2.5 py-1 transition-all shadow-xs`
-                        : 'btn-select-portfolio rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold text-xs px-2.5 py-1 transition-all border border-white/20';
+                        : (isRecommended 
+                            ? 'btn-select-portfolio rounded-lg bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 font-black text-xs px-2.5 py-1 transition-all border border-amber-400/40' 
+                            : 'btn-select-portfolio rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold text-xs px-2.5 py-1 transition-all border border-white/20');
                 }
             });
 
@@ -3988,8 +4026,8 @@
             });
         });
 
-        // LUÔN TỰ ĐỘNG CHỌN GÓI AN TOÀN VÀ ĐẢM BẢO PROFIT CAO NHẤT LÀM MẶC ĐỊNH KHI TẢI TRANG
-        selectStrategicPortfolio('maxProfit', true);
+        // TỰ ĐỘNG CHỌN GÓI CHIẾN LƯỢC TỐI ƯU ĐƯỢC AI GOVERNOR KHUYÊN DÙNG HÔM NAY
+        selectStrategicPortfolio(recommendedPortfolioId, true);
 
         // Global Copy Buttons for Active Strategic Portfolio
         const btnCopyPortZalo = byId('btnCopyActivePortfolioZalo');
@@ -4007,6 +4045,12 @@
 
                 const compactOpt = fullData?.dynamicMetaAdvisor?.nextPrediction?.optimalCrossTierEnsemble?.compact
                     || fullData?.loQuantumBayesFusion?.dynamicMetaAdvisor?.nextPrediction?.optimalCrossTierEnsemble?.compact;
+
+                const top20Anchor = fullData?.strategicPortfolioGovernor?.recommendedPortfolio?.loStructure?.top20Anchor
+                    || fullData?.strategicPortfolioGovernor?.portfolios?.[cfg.id]?.loStructure?.top20Anchor
+                    || fullData?.loQuadHybrid?.latestRecommendation?.rankedNumbers?.slice(0, 20)
+                    || fullData?.loQuadHybrid?.streakGovernor?.rankedNumbers?.slice(0, 20)
+                    || loStd;
 
                 const currentLoNums = (currentActiveLoSubNums && currentActiveLoSubNums.length) ? currentActiveLoSubNums : loX2;
                 const stdSet = new Set(loStd);
@@ -4076,10 +4120,7 @@
                     }
                     slipLines.push(
                         `📋 Toàn bộ dàn Lô Tam Trụ (${distinctLo.length}s):`,
-                        distinctLo.map(n => String(number(n)).padStart(2, '0')).join(' '),
-                        `━━━━━━━━━━━━━━━━━━━━━━━━━━`,
-                        `✨ 3. TỨ THỦ LÔ XIÊN 4 TINH HOA (Quây 11 Vé · 11M VIP / 2.75M M3):`,
-                        xi4Nums.map(n => String(number(n)).padStart(2, '0')).join(' ')
+                        distinctLo.map(n => String(number(n)).padStart(2, '0')).join(' ')
                     );
                 } else if (cfg.id === 'smartAlternating' && compactOpt && compactOpt.overlapX2) {
                     const x2List = compactOpt.overlapX2 || [];
@@ -4094,39 +4135,37 @@
                         x1List.map(n => String(number(n)).padStart(2, '0')).join(' '),
                         ``,
                         `📋 Toàn bộ dàn Lô (${distinctLo.length}s):`,
-                        distinctLo.map(n => String(number(n)).padStart(2, '0')).join(' '),
-                        `━━━━━━━━━━━━━━━━━━━━━━━━━━`,
-                        `✨ 3. TỨ THỦ LÔ XIÊN 4 TINH HOA (Quây 11 Vé · 11M VIP / 2.75M M3):`,
-                        xi4Nums.map(n => String(number(n)).padStart(2, '0')).join(' ')
+                        distinctLo.map(n => String(number(n)).padStart(2, '0')).join(' ')
                     );
-                } else if (cfg.id === 'contrarianAntiTrap') {
+                } else if (cfg.id === 'contrarianAntiTrap' || cfg.id === 'antiNoiseResonance') {
                     slipLines.push(
-                        `🎰 2. LÔ CẦU ĐỒ THỊ KHÁNG BẪY (Top 7s · Vốn M3 3.85M / VIP 15.4M):`,
+                        `🎰 2. LÔ CẦU ĐỒ THỊ KHÁNG BẪY (Top ${currentLoNums.length}s · Vốn M3 3.85M / VIP 15.4M):`,
                         `🕸️ CẦU LIÊN KẾT 54 VỊ TRÍ CHỮ SỐ XSMB:`,
-                        currentLoNums.map(n => String(number(n)).padStart(2, '0')).join(' '),
-                        ``,
-                        `🛡️ BẢO HIỂM LỌT KHE: Đề vào nhẹ 1-2M/số hạt nhân 0-vote, nổ ăn x84 lần bù toàn bộ chi phí!`,
-                        `━━━━━━━━━━━━━━━━━━━━━━━━━━`,
-                        `✨ 3. TỨ THỦ LÔ XIÊN 4 TINH HOA (Quây 11 Vé · 11M VIP / 2.75M M3):`,
-                        xi4Nums.map(n => String(number(n)).padStart(2, '0')).join(' ')
+                        currentLoNums.map(n => String(number(n)).padStart(2, '0')).join(' ')
                     );
                 } else {
                     slipLines.push(
-                        `🎰 2. LÔ CHUẨN NỀN TẢNG (Top 20 · 44M · Cược 100đ / 2.2M mỗi số):`,
-                        loStd.map(n => String(number(n)).padStart(2, '0')).join(' '),
-                        ``,
-                        `🚀 3. LÔ TĂNG TỐC (Top ${currentLoNums.length} · ${(currentLoNums.length * 2.2).toFixed(1)}M):`,
+                        `🎰 2. LÔ TĂNG TỐC (Top ${currentLoNums.length} · ${(currentLoNums.length * 2.2).toFixed(1)}M):`,
                         currentLoNums.map(n => String(number(n)).padStart(2, '0')).join(' '),
                         ``,
                         `⚡ SỐ TRÙNG ĐÁNH X2 (Cộng dồn 200đ / 4.4M mỗi số):`,
-                        overlapNums.length ? overlapNums.map(n => String(number(n)).padStart(2, '0')).join(' ') : '(Không có số trùng)',
-                        `━━━━━━━━━━━━━━━━━━━━━━━━━━`,
-                        `✨ 4. TỨ THỦ LÔ XIÊN 4 TINH HOA (Quây 11 Vé · 11M):`,
-                        xi4Nums.map(n => String(number(n)).padStart(2, '0')).join(' ')
+                        overlapNums.length ? overlapNums.map(n => String(number(n)).padStart(2, '0')).join(' ') : '(Không có số trùng)'
+                    );
+                }
+
+                // Dàn Mỏ Neo Nền Tảng (Top 20 số - Nổ 100% các ngày 2026)
+                if (top20Anchor && top20Anchor.length > 0) {
+                    slipLines.push(
+                        ``,
+                        `⚓ 3. LÔ MỎ NEO NỀN TẢNG (Top ${top20Anchor.length} · Nổ 100% Ngày 2026 · ≥ 5 Nháy 87.8%):`,
+                        top20Anchor.map(n => String(number(n)).padStart(2, '0')).join(' ')
                     );
                 }
 
                 slipLines.push(
+                    `━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+                    `✨ 4. TỨ THỦ LÔ XIÊN 4 TINH HOA (Quây 11 Vé · 11M VIP / 2.75M M3):`,
+                    xi4Nums.map(n => String(number(n)).padStart(2, '0')).join(' '),
                     `━━━━━━━━━━━━━━━━━━━━━━━━━━`,
                     `📊 Hiệu suất dự kiến: ${cfg.roiLabel} · 100% Strict PIT`
                 );
@@ -4164,6 +4203,12 @@
                 const compactOpt = fullData?.dynamicMetaAdvisor?.nextPrediction?.optimalCrossTierEnsemble?.compact
                     || fullData?.loQuantumBayesFusion?.dynamicMetaAdvisor?.nextPrediction?.optimalCrossTierEnsemble?.compact;
 
+                const top20Anchor = fullData?.strategicPortfolioGovernor?.recommendedPortfolio?.loStructure?.top20Anchor
+                    || fullData?.strategicPortfolioGovernor?.portfolios?.[cfg.id]?.loStructure?.top20Anchor
+                    || fullData?.loQuadHybrid?.latestRecommendation?.rankedNumbers?.slice(0, 20)
+                    || fullData?.loQuadHybrid?.streakGovernor?.rankedNumbers?.slice(0, 20)
+                    || loStd;
+
                 const currentLoNums = (currentActiveLoSubNums && currentActiveLoSubNums.length) ? currentActiveLoSubNums : loX2;
 
                 let allMergedLo = [];
@@ -4172,7 +4217,7 @@
                 } else if (cfg.id === 'smartAlternating' && compactOpt?.distinctNumbers?.length) {
                     allMergedLo = compactOpt.distinctNumbers;
                 } else {
-                    allMergedLo = Array.from(new Set([...loStd, ...currentLoNums]));
+                    allMergedLo = currentLoNums;
                 }
 
                 const hedge = fullData?.streakAwareDeAdvisor?.latestRecommendation?.lotKheHedge || fullData?.lotKheHedge;
@@ -4188,7 +4233,10 @@
 
                 const deFormatted = deData.allNums.map(n => String(number(n)).padStart(2, '0')).join(', ');
                 const loFormatted = allMergedLo.map(n => String(number(n)).padStart(2, '0')).join(', ');
-                const webText = `--- DÀN ĐỀ (${deData.allNums.length} số) ---\n${deFormatted}${hedgeText}\n\n--- DÀN LÔ (${allMergedLo.length} số) ---\n${loFormatted}`;
+                const top20Formatted = top20Anchor.map(n => String(number(n)).padStart(2, '0')).join(', ');
+                const xi4Formatted = xi4Nums.map(n => String(number(n)).padStart(2, '0')).join(', ');
+
+                const webText = `--- DÀN ĐỀ (${deData.allNums.length} số) ---\n${deFormatted}${hedgeText}\n\n--- DÀN LÔ ĐỀ XUẤT RIÊNG (${allMergedLo.length} số) ---\n${loFormatted}\n\n--- DÀN LÔ MỎ NEO NỀN TẢNG TOP 20 (${top20Anchor.length} số) ---\n${top20Formatted}\n\n--- TỨ THỦ LÔ XIÊN 4 (4 số) ---\n${xi4Formatted}`;
 
                 if (navigator.clipboard) {
                     navigator.clipboard.writeText(webText).then(() => {
@@ -4216,6 +4264,12 @@
 
             const compactOpt = fullData?.dynamicMetaAdvisor?.nextPrediction?.optimalCrossTierEnsemble?.compact
                 || fullData?.loQuantumBayesFusion?.dynamicMetaAdvisor?.nextPrediction?.optimalCrossTierEnsemble?.compact;
+
+            const top20Anchor = fullData?.strategicPortfolioGovernor?.recommendedPortfolio?.loStructure?.top20Anchor
+                || fullData?.strategicPortfolioGovernor?.portfolios?.[cfg.id]?.loStructure?.top20Anchor
+                || fullData?.loQuadHybrid?.latestRecommendation?.rankedNumbers?.slice(0, 20)
+                || fullData?.loQuadHybrid?.streakGovernor?.rankedNumbers?.slice(0, 20)
+                || loStd;
 
             // Header Elements
             const stratBadgeEl = byId('finalOptimalSlipStrategyBadge');
@@ -4426,6 +4480,33 @@
                 }
                 if (loX2RowEl) loX2RowEl.style.display = 'none';
                 if (loX1RowEl) loX1RowEl.style.display = 'none';
+            }
+
+            // Render Dàn Mỏ Neo Nền Tảng (Top 20 Số)
+            const loTop20RowEl = byId('finalLoTop20Row');
+            const loTop20LabelEl = byId('finalLoTop20Label');
+            const loTop20NumsEl = byId('finalLoTop20Nums');
+            const btnCopyLoTop20 = byId('btnCopyFinalLoTop20');
+
+            if (loTop20RowEl) {
+                if (top20Anchor && top20Anchor.length > 0) {
+                    loTop20RowEl.style.display = 'block';
+                    if (loTop20LabelEl) {
+                        loTop20LabelEl.textContent = `⚓ Mỏ Neo Nền Tảng (Top ${top20Anchor.length} · Nổ 100% Ngày · ≥ 5 Nháy 87.8%):`;
+                    }
+                    if (loTop20NumsEl) {
+                        loTop20NumsEl.innerHTML = top20Anchor.map(n => `
+                            <span class="inline-flex items-center justify-center rounded-lg bg-blue-500/20 text-blue-200 border border-blue-400/30 font-mono text-[11px] font-bold px-1.5 py-0.5 hover:scale-105 transition-all">
+                                ${number(n)}
+                            </span>
+                        `).join('');
+                    }
+                    if (btnCopyLoTop20) {
+                        btnCopyLoTop20.onclick = () => copyNumbers(top20Anchor);
+                    }
+                } else {
+                    loTop20RowEl.style.display = 'none';
+                }
             }
 
             // Column 3: Xiên 4
@@ -6329,7 +6410,7 @@
     // ==========================================
     // SYSTEM UPDATES & CHANGELOG MODAL CONTROLLER
     // ==========================================
-    const CURRENT_DEPLOY_VERSION = '2026.09.25-v1-phase-switcher-v3';
+    const CURRENT_DEPLOY_VERSION = '2026.09.26-v1-strategic-portfolio-governor';
     const DISMISSED_DEPLOY_KEY = 'xsmb_dismissed_deploy_version';
 
     function initSystemUpdatesModal() {

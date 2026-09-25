@@ -630,6 +630,15 @@
                                         </div>
                                         <div id="finalLoX1Nums" class="flex flex-wrap gap-1 font-mono text-xs font-bold text-slate-300"></div>
                                     </div>
+
+                                    <!-- DÀN NỀN TẢNG: TOP 20 MỎ NEO (NỔ 100% CÁC NGÀY 2026) -->
+                                    <div class="rounded-xl bg-blue-950/40 border border-blue-400/30 p-2.5" id="finalLoTop20Row">
+                                        <div class="flex items-center justify-between text-xs font-bold text-blue-300 mb-1.5">
+                                            <span id="finalLoTop20Label">⚓ Mỏ Neo Nền Tảng (Top 20 Số · Nổ 100% Ngày · ≥ 5 Nháy 87.8%):</span>
+                                            <button type="button" id="btnCopyFinalLoTop20" class="text-[10px] font-bold text-blue-400 hover:underline">Copy</button>
+                                        </div>
+                                        <div id="finalLoTop20Nums" class="flex flex-wrap gap-1 font-mono text-[11px] font-bold text-blue-200"></div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -2024,27 +2033,27 @@
     </main>
 
     <!-- System Updates & Changelog Modal (Tự động hiển thị khi deploy phiên bản mới) -->
-    <div id="systemUpdatesModal" data-deploy-version="2026.09.25-v1-phase-switcher-v3" class="fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-sm transition-all duration-300">
+    <div id="systemUpdatesModal" data-deploy-version="2026.09.26-v1-strategic-portfolio-governor" class="fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-sm transition-all duration-300">
         <div class="relative w-full max-w-4xl max-h-[92vh] flex flex-col rounded-3xl bg-slate-900 border border-amber-500/40 text-white shadow-2xl overflow-hidden animate-in fade-in zoom-in-95">
             <!-- Modal Header -->
             <div class="relative flex items-start justify-between border-b border-white/10 bg-gradient-to-r from-amber-950/70 via-slate-900 to-indigo-950/70 p-5 sm:p-6">
                 <div>
                     <div class="flex flex-wrap items-center gap-2 mb-2">
                         <span class="rounded-full bg-gradient-to-r from-amber-500 to-rose-500 text-slate-950 font-black text-[11px] px-2.5 py-0.5 uppercase tracking-wider shadow-sm">
-                            🚀 BẢN NÂNG CẤP HỆ THỐNG V3
+                            🚀 BẢN NÂNG CẤP HỆ THỐNG
                         </span>
                         <span class="rounded-full bg-white/10 border border-white/15 text-amber-300 font-mono text-[11px] font-bold px-2 py-0.5" id="systemUpdatesVersionBadge">
-                            v2026.09.25 · ĐẢO PHA V3 &amp; KHIÊN BẢO HIỂM LỌT KHE
+                            v2026.09.26 · ĐIỀU PHỐI CHỌN GÓI THÔNG MINH &amp; PHÂN TẦNG DÀN SỐ
                         </span>
                         <span class="rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold px-2 py-0.5">
                             <i class="bi bi-shield-check"></i> Đã Triển Khai Live
                         </span>
                     </div>
                     <h3 class="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
-                        <span>Hệ Thống Đảo Pha Thông Minh Đa Tín Hiệu v3 &amp; Khiên Bảo Hiểm Lọt Khe</span>
+                        <span>Bộ Điều Phối Chọn Gói Chiến Lược Thông Minh &amp; Phân Định Dàn Đề Xuất Riêng / Mỏ Neo Top 20</span>
                     </h3>
                     <p class="text-xs sm:text-sm text-slate-300 mt-1">
-                        Tự động điều phối 5 pha động lực học, nhận thức thời gian thực về trạng thái dàn 0-vote và bọc lót bảo hiểm 1 ăn 84 khi thị trường bẻ cầu.
+                        Học toàn bộ 20+ năm lịch sử XSMB và 263 ngày năm 2026: Tự động đảo pha, tự động luân chuyển và chọn gói chiến lược tối ưu mỗi ngày, kết hợp phân tầng Dàn Đề Xuất Riêng, Mỏ Neo Nền Tảng Top 20 và Khiên Bảo Hiểm Lọt Khe 1 ăn 84 nhằm tối đa hóa profit dài ngày.
                     </p>
                 </div>
                 <button type="button" id="btnCloseSystemUpdatesModal" class="rounded-xl bg-white/10 p-2 text-slate-400 hover:bg-white/20 hover:text-white transition-all border border-white/10 shrink-0 ml-3" aria-label="Đóng">
@@ -2056,133 +2065,126 @@
             <div class="overflow-y-auto custom-scrollbar p-5 sm:p-6 space-y-6 text-sm text-slate-200">
                 <!-- Highlights Badge Strip -->
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 text-center text-xs">
+                    <div class="rounded-xl bg-slate-800/80 border border-amber-500/30 p-2.5">
+                        <div class="text-amber-400 font-black text-sm">⭐ Chọn Gói AI</div>
+                        <div class="text-[11px] text-slate-300 mt-0.5">Tự Động 5 Gói Chiến Lược</div>
+                    </div>
                     <div class="rounded-xl bg-slate-800/80 border border-indigo-500/30 p-2.5">
-                        <div class="text-indigo-400 font-black text-sm">⚡ Đảo Pha v3</div>
-                        <div class="text-[11px] text-slate-300 mt-0.5">5 Pha Đa Tín Hiệu</div>
+                        <div class="text-indigo-400 font-black text-sm">🎯 Phân Tầng Dàn</div>
+                        <div class="text-[11px] text-slate-300 mt-0.5">Đề Xuất Riêng &amp; Top 20</div>
                     </div>
                     <div class="rounded-xl bg-slate-800/80 border border-red-500/30 p-2.5">
                         <div class="text-red-400 font-black text-sm">🛡️ Khiên 1 Ăn 84</div>
-                        <div class="text-[11px] text-slate-300 mt-0.5">Cứu 57 lần bẻ cầu</div>
+                        <div class="text-[11px] text-slate-300 mt-0.5">Bảo Hiểm Bẻ Cầu Lọt Khe</div>
                     </div>
                     <div class="rounded-xl bg-slate-800/80 border border-emerald-500/30 p-2.5">
-                        <div class="text-emerald-400 font-black text-sm">🎯 Win Rate 62.2%</div>
-                        <div class="text-[11px] text-slate-300 mt-0.5">Toàn diện năm 2026</div>
-                    </div>
-                    <div class="rounded-xl bg-slate-800/80 border border-amber-500/30 p-2.5">
-                        <div class="text-amber-400 font-black text-sm">👑 Gói 1 Chủ Lực</div>
-                        <div class="text-[11px] text-slate-300 mt-0.5">+5.334 TỶ Kỷ Lục</div>
+                        <div class="text-emerald-400 font-black text-sm">👑 Lãi Bền Vững</div>
+                        <div class="text-[11px] text-slate-300 mt-0.5">Tối Ưu Profit Dài Ngày</div>
                     </div>
                     <div class="rounded-xl bg-slate-800/80 border border-teal-500/30 p-2.5 col-span-2 sm:col-span-1">
                         <div class="text-teal-400 font-black text-sm">🔒 Khóa 12:00 PM</div>
-                        <div class="text-[11px] text-slate-300 mt-0.5">Strict PIT 100%</div>
+                        <div class="text-[11px] text-slate-300 mt-0.5">Strict PIT 100% Bất Biến</div>
                     </div>
                 </div>
 
-                <!-- Section 1: Hệ Thống Đảo Pha Đa Tín Hiệu v3 -->
+                <!-- Section 1: Bộ Điều Phối Chọn Gói Chiến Lược Thông Minh -->
                 <div class="rounded-2xl bg-gradient-to-b from-slate-800/90 to-slate-800/40 border border-white/10 p-4 sm:p-5">
                     <h4 class="text-base font-black text-amber-300 flex items-center gap-2 mb-3">
-                        <span class="rounded-lg bg-amber-500/20 text-amber-300 p-1 border border-amber-500/30"><i class="bi bi-arrow-repeat"></i></span>
-                        <span>1. Hệ Thống Đảo Pha Thông Minh Đa Tín Hiệu v3 (Multi-Signal Phase Switcher v3)</span>
+                        <span class="rounded-lg bg-amber-500/20 text-amber-300 p-1 border border-amber-500/30"><i class="bi bi-cpu-fill"></i></span>
+                        <span>1. Bộ Điều Phối Chọn Gói Chiến Lược Thông Minh Hàng Ngày (Dynamic Strategic Portfolio Governor)</span>
                     </h4>
                     <p class="text-xs text-slate-300 leading-relaxed mb-3">
-                        Bộ điều phối luân chuyển phương pháp đã được nâng cấp toàn diện lên <strong>v3</strong> với khả năng đo lường đồng thời 4 chỉ số Point-In-Time: chuỗi thắng/thua AI, chuỗi nổ Lọt Khe, khoảng cách ngày bẻ cầu và chỉ số co cụm đồng thuận. Tự động luân chuyển giữa <strong>5 Pha Động Lực Học</strong>:
-                    </p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                        <div class="rounded-xl bg-black/40 border border-cyan-500/20 p-3 space-y-1">
-                            <div class="font-bold text-cyan-300 flex items-center gap-1.5">
-                                <i class="bi bi-tsunami text-cyan-400"></i> Pha 1: Sóng Thần Hồi Quy Cực Đại
-                            </div>
-                            <p class="text-slate-300 text-[11px] leading-relaxed">
-                                Kích hoạt khi Lọt Khe nổ liên tiếp $\ge 2$ ngày. Xác suất nổ lọt khe ngày thứ 3 lịch sử $&lt; 3\%$, dồn lực 100% vào Ngũ Trụ AI (Penta-Core VIP X2) đạt ROI <strong>+65.6%</strong> mà không tốn chi phí bọc lót.
-                            </p>
-                        </div>
-                        <div class="rounded-xl bg-black/40 border border-yellow-500/20 p-3 space-y-1">
-                            <div class="font-bold text-yellow-300 flex items-center gap-1.5">
-                                <i class="bi bi-lightning-charge-fill text-yellow-400"></i> Pha 2: Điểm Rơi Vàng Phục Hồi Hậu Lọt Khe
-                            </div>
-                            <p class="text-slate-300 text-[11px] leading-relaxed">
-                                Kích hoạt khi hôm trước vừa nổ Lọt Khe / Outlier. Thống kê 2026 xác nhận <strong>79.7%</strong> xác suất nổ lại vào vùng AI phủ sóng (Siêu VIP nổ 32.2%). Dồn VIP X2 + Bọc lót nhẹ bảo hiểm.
-                            </p>
-                        </div>
-                        <div class="rounded-xl bg-black/40 border border-red-500/20 p-3 space-y-1">
-                            <div class="font-bold text-red-300 flex items-center gap-1.5">
-                                <i class="bi bi-shield-shaded text-red-400"></i> Pha 3: Khiên Phòng Vệ Kháng Bẫy Đồng Thuận
-                            </div>
-                            <p class="text-slate-300 text-[11px] leading-relaxed">
-                                Kích hoạt khi AI ăn thông $\ge 3$ kỳ hoặc chuỗi chưa lọt khe kéo dài $\ge 6$ ngày (nguy cơ bẻ cầu). Chuyển sang Đề Markov Bậc 2 (kháng bẫy 52.9% win) + Tự động bọc lót 0-vote (1 ăn 84), đưa win rate toàn diện lên <strong>75.8%</strong>!
-                            </p>
-                        </div>
-                        <div class="rounded-xl bg-black/40 border border-emerald-500/20 p-3 space-y-1">
-                            <div class="font-bold text-emerald-300 flex items-center gap-1.5">
-                                <i class="bi bi-rocket-takeoff-fill text-emerald-400"></i> Pha 4 &amp; 5: Lướt Quán Tính &amp; Cân Bằng Động Lực
-                            </div>
-                            <p class="text-slate-300 text-[11px] leading-relaxed">
-                                Tận dụng quán tính đà thắng của Đề Thích Ứng Alpha đòn bẩy X2 (56.1% win) kết hợp phân bổ cược tối ưu hóa lợi nhuận ROI.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Section 2: Lưới Bọc Hai Đầu & Khiên Bảo Hiểm Lọt Khe -->
-                <div class="rounded-2xl bg-gradient-to-b from-slate-800/90 to-slate-800/40 border border-white/10 p-4 sm:p-5">
-                    <h4 class="text-base font-black text-rose-300 flex items-center gap-2 mb-3">
-                        <span class="rounded-lg bg-rose-500/20 text-rose-300 p-1 border border-rose-500/30"><i class="bi bi-shield-check"></i></span>
-                        <span>2. Cơ Chế Lưới Bọc Hai Đầu (Dual-End Resonance Strategy)</span>
-                    </h4>
-                    <p class="text-xs text-slate-300 leading-relaxed mb-3">
-                        Khác với cách đánh truyền thống chỉ cược 1 dàn duy nhất, hệ thống triển khai chiến lược Lưới Bọc Hai Đầu:
+                        Hệ thống không cố định một phương pháp duy nhất mà tự động học toàn bộ dữ liệu lịch sử để chọn gói chiến lược thích ứng nhất cho từng ngày:
                     </p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                         <div class="rounded-xl bg-black/40 border border-amber-500/20 p-3 space-y-1">
                             <div class="font-bold text-amber-300 flex items-center gap-1.5">
-                                <i class="bi bi-bullseye text-amber-400"></i> Đầu 1: Tấn Công Trọng Điểm (VIP X2/X3)
+                                <i class="bi bi-trophy-fill text-amber-400"></i> Gói 1: Lô Tam Trụ X3/X2/X1 &amp; Đề Alpha (+5.3 TỶ)
                             </div>
                             <p class="text-slate-300 text-[11px] leading-relaxed">
-                                Đánh mạnh vào nhóm số đạt đồng thuận AI cao nhất ($\ge 3-4$ động cơ phê duyệt). Khi nổ mang lại lợi nhuận bứt phá (+108M VIP / +24M M3).
+                                Tổ hợp đòn bẩy đa tầng tối ưu hóa profit kỷ lục. Kích hoạt khi thị trường có đà thắng ổn định, sau khi vừa có kỳ lọt khe (sóng thần hồi quy AI) hoặc khi Alpha đạt điểm rơi kim cương nổ bù.
                             </p>
                         </div>
-                        <div class="rounded-xl bg-black/40 border border-rose-500/20 p-3 space-y-1">
-                            <div class="font-bold text-rose-300 flex items-center gap-1.5">
-                                <i class="bi bi-shield-fill text-rose-400"></i> Đầu 2: Khiên Phòng Ngự Bẻ Cầu (1 Ăn 84)
+                        <div class="rounded-xl bg-black/40 border border-indigo-500/20 p-3 space-y-1">
+                            <div class="font-bold text-indigo-300 flex items-center gap-1.5">
+                                <i class="bi bi-lightning-charge-fill text-indigo-400"></i> Gói 2: Đề Tinh Tuyển 15s Core X2 &amp; Lô Ghép Ba 7s
                             </div>
                             <p class="text-slate-300 text-[11px] leading-relaxed">
-                                Tự động trích $5 - 10\%$ vốn bọc lót nhẹ dàn Lọt Khe 0-vote (chỉ 8-12 số). Nếu nhà cái bẻ cầu ra ngoài tầm phủ sóng AI, vé bảo hiểm nổ <strong>x84 lần vốn</strong>, bù đắp sạch chi phí cả ngày và vẫn có lãi!
+                                Tinh gọn danh mục, dồn tỷ trọng vào dàn hạt nhân đồng thuận cao nhằm tối ưu vốn và bảo toàn nhịp tăng trưởng.
+                            </p>
+                        </div>
+                        <div class="rounded-xl bg-black/40 border border-emerald-500/20 p-3 space-y-1">
+                            <div class="font-bold text-emerald-300 flex items-center gap-1.5">
+                                <i class="bi bi-shield-check text-emerald-400"></i> Gói 3: Bảo Toàn Vốn An Toàn (Khóa Lãi)
+                            </div>
+                            <p class="text-slate-300 text-[11px] leading-relaxed">
+                                Kích hoạt khi tài khoản đã tích lũy mức lãi lớn, hạ tỷ trọng đòn bẩy về cược phẳng an toàn để khóa chặt lợi nhuận.
+                            </p>
+                        </div>
+                        <div class="rounded-xl bg-black/40 border border-purple-500/20 p-3 space-y-1">
+                            <div class="font-bold text-purple-300 flex items-center gap-1.5">
+                                <i class="bi bi-magic text-purple-400"></i> Gói 4: Kháng Nhiễu Độc Lập / Bắt Nhịp Bẻ Cầu
+                            </div>
+                            <p class="text-slate-300 text-[11px] leading-relaxed">
+                                Sử dụng mô hình Markov Bậc 2 &amp; Gap Hazard (độc lập 100% mốc lịch sử) kết hợp Lô Cầu Đồ Thị Vị Trí Bridge Flow Top 7 khi Alpha vừa trượt nhịp và thị trường có tín hiệu bẻ cầu.
+                            </p>
+                        </div>
+                        <div class="rounded-xl bg-black/40 border border-red-500/20 p-3 space-y-1 col-span-1 md:col-span-2">
+                            <div class="font-bold text-red-400 flex items-center gap-1.5">
+                                <i class="bi bi-shield-shaded text-red-400"></i> Gói 5: Kháng Bẫy Lọt Khe (0-Vote 1 Ăn 84) &amp; Lô Cầu Đồ Thị
+                            </div>
+                            <p class="text-slate-300 text-[11px] leading-relaxed">
+                                Kích hoạt khi AI ăn thông kéo dài hoặc chuỗi chưa lọt khe $\ge 6-7$ ngày. Gom toàn bộ dàn ngoại vi 0-vote cược nhẹ ăn x84 lần bù toàn bộ chi phí, kết hợp Lô Cầu Đồ Thị Bridge Flow (nổ 84.7% vào ngày lọt khe).
                             </p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Section 3: Tương Quan Lô - Đề -->
+                <!-- Section 2: Phân Tầng Rõ Rệt: Đề Xuất Riêng & Mỏ Neo Top 20 -->
                 <div class="rounded-2xl bg-gradient-to-b from-slate-800/90 to-slate-800/40 border border-white/10 p-4 sm:p-5">
                     <h4 class="text-base font-black text-teal-300 flex items-center gap-2 mb-3">
-                        <span class="rounded-lg bg-teal-500/20 text-teal-300 p-1 border border-teal-500/30"><i class="bi bi-link-45deg"></i></span>
-                        <span>3. Tương Quan Lô - Đề: Bảo Hiểm Chéo Toàn Bộ Danh Mục</span>
+                        <span class="rounded-lg bg-teal-500/20 text-teal-300 p-1 border border-teal-500/30"><i class="bi bi-layers-fill"></i></span>
+                        <span>2. Phân Tầng Dàn Số: Dàn Đề Xuất Riêng &amp; Dàn Mỏ Neo Nền Tảng Top 20</span>
                     </h4>
-                    <p class="text-xs text-slate-300 leading-relaxed mb-2">
-                        Nghiên cứu trên 262 kỳ năm 2026 phát hiện 27 giải Lô nổ trung bình <strong>6.31 nháy/ngày</strong> vào dàn Đề Lọt Khe (tỷ lệ xuất hiện 23.4% bảng lô).
+                    <p class="text-xs text-slate-300 leading-relaxed mb-3">
+                        Để đạt profit lớn và duy trì ổn định dài ngày, hệ thống cấu trúc danh mục cược thành 2 tầng vững chắc:
                     </p>
-                    <ul class="list-disc list-inside space-y-1 text-xs text-slate-300 ml-1">
-                        <li>Vào các ngày Đề bị bẻ cầu lọt khe, <strong>Lô Cầu Đồ Thị Động Năng (Bridge Flow)</strong> vẫn đạt tỷ lệ nổ kỷ lục <strong>84.7% (50/59 ngày)</strong>!</li>
-                        <li>Sự kết hợp giữa Lô Tam Trụ và Đề Đảo Pha v3 tạo thành thế trận bảo hiểm chéo hai đầu: Đề trượt thì Lô gỡ lãi lớn (+4.17 TỶ), Lô điều chỉnh thì Đề ăn VIP X2 nổ bù (+1.17 TỶ).</li>
-                    </ul>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                        <div class="rounded-xl bg-black/40 border border-blue-500/20 p-3 space-y-1">
+                            <div class="font-bold text-blue-300 flex items-center gap-1.5">
+                                <i class="bi bi-anchor text-blue-400"></i> Dàn Mỏ Neo Nền Tảng (Top 20 Số)
+                            </div>
+                            <p class="text-slate-300 text-[11px] leading-relaxed">
+                                Khảo sát 263 ngày năm 2026: Nổ ít nhất 1 con <strong>263/263 ngày (100%)</strong>, nổ $\ge 5$ nháy (có lãi cược phẳng) tới <strong>87.8% các ngày</strong>. Giữ vai trò bảo hiểm nguồn vốn, đảm bảo ngày nào cũng có tiền thưởng về tài khoản.
+                            </p>
+                        </div>
+                        <div class="rounded-xl bg-black/40 border border-teal-500/20 p-3 space-y-1">
+                            <div class="font-bold text-teal-300 flex items-center gap-1.5">
+                                <i class="bi bi-rocket-takeoff-fill text-teal-400"></i> Dàn Đề Xuất Riêng (Tăng Tốc &amp; Bứt Phá Lợi Nhuận)
+                            </div>
+                            <p class="text-slate-300 text-[11px] leading-relaxed">
+                                Áp dụng đòn bẩy đa tầng Tam Trụ (Hạt nhân X3, Mũi nhọn X2, Bảo hiểm X1) hoặc Cầu Đồ Thị Vị Trí Top 7 cho Lô; phân tách VIP X2 và Lót X1 cho Đề. Đây là động cơ tạo đột phá lợi nhuận dài ngày.
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Section 4: Dàn Số Đánh Cuối Cùng & Khóa Bất Biến 12:00 Trưa -->
+                <!-- Section 3: Khiên Bảo Hiểm Lọt Khe 1 Ăn 84 & Dàn Số Đánh Cuối Cùng -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                    <div class="rounded-2xl bg-slate-800/60 border border-amber-500/30 p-4 space-y-2">
-                        <div class="font-black text-amber-300 flex items-center gap-1.5 text-sm">
-                            <i class="bi bi-trophy-fill text-amber-400"></i> 4. Dàn Số Đánh Cuối Cùng — Siêu Hội Tụ
+                    <div class="rounded-2xl bg-slate-800/60 border border-red-500/30 p-4 space-y-2">
+                        <div class="font-black text-red-300 flex items-center gap-1.5 text-sm">
+                            <i class="bi bi-shield-fill text-red-400"></i> 3. Khiên Bảo Hiểm Lọt Khe (1 Ăn 84)
                         </div>
                         <p class="text-slate-300 text-[11px] leading-relaxed">
-                            Bảng chốt trên đầu trang tích hợp tự động 3 tầng: Đề Siêu Hội Tụ (kèm tầng Khiên Bảo Hiểm khi pha yêu cầu), Lô Tam Trụ Đa Tầng X3/X2/X1 và Tứ Thủ Xiên 4 Quây 11 vé, sẵn sàng 1-chạm sao chép cho Zalo và Web cược.
+                            Bảo hiểm thông minh cho dàn 0-vote ngoại vi. Khi nhà cái bẻ cầu ra ngoài vùng phủ sóng AI, vé bảo hiểm nổ ăn gấp 84 lần vốn, bù đắp toàn bộ chi phí cả ngày.
                         </p>
                     </div>
-                    <div class="rounded-2xl bg-slate-800/60 border border-white/10 p-4 space-y-2">
+                    <div class="rounded-2xl bg-slate-800/60 border border-emerald-500/30 p-4 space-y-2">
                         <div class="font-black text-emerald-400 flex items-center gap-1.5 text-sm">
-                            <i class="bi bi-lock-fill text-emerald-400"></i> 5. Khóa Bất Biến 12:00 Trưa (Strict PIT)
+                            <i class="bi bi-lock-fill text-emerald-400"></i> 4. Khóa Bất Biến 12:00 Trưa (Strict PIT)
                         </div>
                         <p class="text-slate-300 text-[11px] leading-relaxed">
-                            Toàn bộ dự đoán và đề xuất tự động niêm phong bất biến từ 12:00 trưa đến sau 18:40 kết toán. Đảm bảo 100% tính minh bạch, không đổi số giữa giờ, chuẩn mực kiểm định không rò rỉ tương lai.
+                            Toàn bộ dự đoán và đề xuất được tự động niêm phong bất biến từ 12:00 trưa đến sau 18:40 kết toán. Đảm bảo 100% tính minh bạch, không đổi số giữa giờ, không rò rỉ tương lai.
                         </p>
                     </div>
                 </div>
@@ -2192,7 +2194,7 @@
             <div class="border-t border-white/10 bg-slate-950/90 p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-3">
                 <label class="flex items-center gap-2.5 cursor-pointer text-xs sm:text-sm text-slate-300 hover:text-white select-none">
                     <input type="checkbox" id="chkDoNotShowAgainSystemUpdates" checked class="h-4 w-4 rounded border-slate-700 bg-slate-800 text-amber-500 focus:ring-amber-400 focus:ring-offset-slate-900 cursor-pointer">
-                    <span class="font-medium">Lần sau không hiển thị lại cho phiên bản hiện tại (<span class="font-mono text-amber-300">v2026.09.25</span>)</span>
+                    <span class="font-medium">Lần sau không hiển thị lại cho phiên bản hiện tại (<span class="font-mono text-amber-300">v2026.09.26</span>)</span>
                 </label>
                 <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
                     <button type="button" id="btnDismissSystemUpdatesModal" class="rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 px-4 py-2 text-xs font-bold text-slate-300 hover:text-white transition-all">

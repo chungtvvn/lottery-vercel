@@ -512,11 +512,14 @@ function buildBetCalculationSheet(tier, date, advisorPayload = {}) {
 
 function buildOptimalBetSlipMessage(date, advisorPayload = {}) {
   const divider = '━━━━━━━━━━━━━━━━━━━━';
+  const stratGov = advisorPayload?.strategicPortfolioGovernor || null;
+  const recPort = stratGov?.recommendedPortfolio || null;
+
   const streakDeAdv = advisorPayload?.streakAwareDeAdvisor?.latestRecommendation || null;
-  const sMethod = streakDeAdv?.selectedMethodLabel || 'Đề Thích Ứng Alpha';
-  const sNumbers = (streakDeAdv?.numbers || []).map(normalizeLotteryNumber);
-  const sTierX2 = (streakDeAdv?.tierX2 || []).map(normalizeLotteryNumber);
-  const sSingles = (streakDeAdv?.singles || []).map(normalizeLotteryNumber);
+  const sMethod = recPort?.deStructure?.label || streakDeAdv?.selectedMethodLabel || 'Đề Thích Ứng Alpha';
+  const sNumbers = (recPort?.deStructure?.allNums || streakDeAdv?.numbers || []).map(normalizeLotteryNumber);
+  const sTierX2 = (recPort?.deStructure?.vipNums || streakDeAdv?.tierX2 || []).map(normalizeLotteryNumber);
+  const sSingles = (recPort?.deStructure?.singleNums || streakDeAdv?.singles || []).map(normalizeLotteryNumber);
 
   const crossOpt = advisorPayload?.loQuantumBayesFusion?.dynamicMetaAdvisor?.nextPrediction?.optimalCrossTierEnsemble?.primary
     || advisorPayload?.dynamicMetaAdvisor?.nextPrediction?.optimalCrossTierEnsemble?.primary
@@ -524,19 +527,34 @@ function buildOptimalBetSlipMessage(date, advisorPayload = {}) {
     || null;
 
   const loXien4Adv = advisorPayload?.loXien4Synergy?.latestRecommendation || null;
-  const xi4Nums = (loXien4Adv?.numbers || advisorPayload?.dynamicMetaAdvisor?.nextPrediction?.xien4?.numbers || []).map(normalizeLotteryNumber);
+  const xi4Nums = (recPort?.xien4 || loXien4Adv?.numbers || advisorPayload?.dynamicMetaAdvisor?.nextPrediction?.xien4?.numbers || []).map(normalizeLotteryNumber);
+
+  const top20Anchor = (recPort?.loStructure?.top20Anchor
+    || advisorPayload?.loQuadHybrid?.latestRecommendation?.rankedNumbers?.slice(0, 20)
+    || advisorPayload?.loQuadHybrid?.streakGovernor?.rankedNumbers?.slice(0, 20)
+    || []).map(normalizeLotteryNumber);
+
+  const title = recPort ? recPort.name.toUpperCase() : 'SIÊU HỘI TỤ ĐA PHƯƠNG PHÁP';
+  const badge = recPort ? recPort.badge : 'Kỷ lục +5.334 TỶ VNĐ · Nổ 98.5% · 100% Strict PIT';
+  const rationale = stratGov?.decisionRationale || recPort?.rationale || 'Tự động phối hợp các thuật toán mạnh nhất toàn diện.';
 
   const lines = [
-    `👑 <b>VÉ CƯỢC CUỐI CÙNG — SIÊU HỘI TỤ ĐA PHƯƠNG PHÁP (${escapeHtml(displayDate(date))})</b>`,
-    `<i>Tổ hợp đạt Win Rate & Profit cao nhất hệ thống năm 2026: Kỷ lục +5.334 TỶ VNĐ · Nổ 98.5% · 100% Strict PIT</i>`,
+    `👑 <b>VÉ CƯỢC CUỐI CÙNG — ${escapeHtml(title)} (${escapeHtml(displayDate(date))})</b>`,
+    `<i>${escapeHtml(badge)}</i>`,
+    `💡 <i>Lý do AI lựa chọn: ${escapeHtml(rationale)}</i>`,
     divider,
-    `💎 <b>1. ĐỀ ${escapeHtml(sMethod.toUpperCase())} (${sNumbers.length} SỐ · ĐÒN BẨY X2):</b>`,
-    `⚡ <b>VIP X2 (${sTierX2.length} số):</b> <code>${escapeHtml(formatNumberList(sTierX2))}</code>`,
-    `🛡️ <b>Bọc Lót X1 (${sSingles.length} số):</b> <code>${escapeHtml(formatNumberList(sSingles))}</code>`,
-    `💰 <i>Vốn: Mức 3 = 12.0M · Mức VIP = 60M (Nổ VIP ăn 33.6M M3 / 168M VIP 👉 Lãi ròng +21.6M M3 / +108M VIP)</i>`
+    `💎 <b>1. ĐỀ ${escapeHtml(sMethod.toUpperCase())} (${sNumbers.length} SỐ · ĐÒN BẨY X2):</b>`
   ];
 
-  const slipHedge = streakDeAdv?.lotKheHedge;
+  if (sTierX2.length > 0) {
+    lines.push(`⚡ <b>VIP X2 (${sTierX2.length} số):</b> <code>${escapeHtml(formatNumberList(sTierX2))}</code>`);
+  }
+  if (sSingles.length > 0) {
+    lines.push(`🛡️ <b>Bọc Lót X1 (${sSingles.length} số):</b> <code>${escapeHtml(formatNumberList(sSingles))}</code>`);
+  }
+  lines.push(`💰 <i>Vốn: Mức 3 = 12.0M · Mức VIP = 60M (Nổ VIP ăn 33.6M M3 / 168M VIP 👉 Lãi ròng +21.6M M3 / +108M VIP)</i>`);
+
+  const slipHedge = streakDeAdv?.lotKheHedge || (recPort?.deStructure?.isHedgeActive ? { isHedgeActive: true, numbers: recPort.deStructure.hedgeNums } : null);
   if (slipHedge && slipHedge.isHedgeActive && slipHedge.numbers?.length) {
     const shNums = slipHedge.numbers.map(normalizeLotteryNumber);
     const shStake = slipHedge.recommendedStakePerNumK || 100;
@@ -546,30 +564,38 @@ function buildOptimalBetSlipMessage(date, advisorPayload = {}) {
   }
   lines.push(divider);
 
-  if (crossOpt && (crossOpt.overlapX3?.length || crossOpt.overlapX2?.length)) {
+  const x3List = (recPort?.loStructure?.tierX3 || crossOpt?.overlapX3 || []).map(normalizeLotteryNumber);
+  const x2List = (recPort?.loStructure?.tierX2 || crossOpt?.overlapX2 || []).map(normalizeLotteryNumber);
+  const x1List = (recPort?.loStructure?.singlesX1 || crossOpt?.singlesX1 || []).map(normalizeLotteryNumber);
+  const distinctLo = (recPort?.loStructure?.distinctLo || crossOpt?.distinctNumbers || []).map(normalizeLotteryNumber);
+
+  if (x3List.length || x2List.length) {
     lines.push(
-      `🎰 <b>2. LÔ TAM TRỤ ĐA TẦNG X3/X2/X1 (${crossOpt.totalNumbers} SỐ · 👑 KỶ LỤC +4.167 TỶ · NỔ 98.5% NGÀY):</b>`
+      `🎰 <b>2. LÔ ĐỀ XUẤT RIÊNG (${distinctLo.length} SỐ · ĐA TẦNG X3/X2/X1):</b>`
     );
-    if (crossOpt.overlapX3?.length) {
-      lines.push(
-        `⚡ <b>Hạt Nhân X3 (${crossOpt.overlapX3.length} số - 3 Động Cơ Đồng Thuận):</b> <code>${escapeHtml(formatNumberList(crossOpt.overlapX3))}</code>`
-      );
+    if (x3List.length) {
+      lines.push(`⚡ <b>Hạt Nhân X3 (${x3List.length} số):</b> <code>${escapeHtml(formatNumberList(x3List))}</code>`);
     }
-    if (crossOpt.overlapX2?.length) {
-      lines.push(
-        `🔥 <b>Mũi Nhọn X2 (${crossOpt.overlapX2.length} số - 2 Động Cơ):</b> <code>${escapeHtml(formatNumberList(crossOpt.overlapX2))}</code>`
-      );
+    if (x2List.length) {
+      lines.push(`🔥 <b>Mũi Nhọn X2 (${x2List.length} số):</b> <code>${escapeHtml(formatNumberList(x2List))}</code>`);
     }
-    if (crossOpt.singlesX1?.length) {
-      lines.push(
-        `🛡️ <b>Bảo Hiểm X1 (${crossOpt.singlesX1.length} số):</b> <code>${escapeHtml(formatNumberList(crossOpt.singlesX1))}</code>`
-      );
+    if (x1List.length) {
+      lines.push(`🛡️ <b>Bảo Hiểm X1 (${x1List.length} số):</b> <code>${escapeHtml(formatNumberList(x1List))}</code>`);
     }
+  } else if (distinctLo.length) {
     lines.push(
-      `💰 <i>Vốn: Mức 3 = 11.55M (75đ/50đ/25đ) · Mức VIP = 46.2M (300đ/200đ/100đ) · Ăn 2M/nháy M3 (8M/nháy VIP)</i>`,
-      divider
+      `🎰 <b>2. LÔ ĐỀ XUẤT RIÊNG (${distinctLo.length} SỐ):</b> <code>${escapeHtml(formatNumberList(distinctLo))}</code>`
     );
   }
+
+  if (top20Anchor.length) {
+    lines.push(
+      ``,
+      `⚓ <b>LÔ MỎ NEO NỀN TẢNG (${top20Anchor.length} SỐ · NỔ 100% CÁC NGÀY 2026 · ≥ 5 NHÁY 87.8%):</b>`,
+      `<code>${escapeHtml(formatNumberList(top20Anchor))}</code>`
+    );
+  }
+  lines.push(divider);
 
   lines.push(
     `✨ <b>3. TỨ THỦ LÔ XIÊN 4 TINH HOA (QUÂY 11 VÉ · LÃI +1.847 TỶ · THẮNG 41%):</b>`,
@@ -588,10 +614,13 @@ function buildOptimalBetSlipMessage(date, advisorPayload = {}) {
     lines.push(`• <b>Khiên Lọt Khe (1:84):</b> <code>${slipHedge.numbers.map(normalizeLotteryNumber).join(', ')}</code>`);
   }
 
-  lines.push(
-    `• <b>Lô:</b> <code>${(crossOpt?.distinctNumbers || []).join(', ')}</code>`,
-    `• <b>Xiên:</b> <code>${xi4Nums.join(', ')}</code>`
-  );
+  if (distinctLo.length) {
+    lines.push(`• <b>Lô Đề Xuất Riêng:</b> <code>${distinctLo.join(', ')}</code>`);
+  }
+  if (top20Anchor.length) {
+    lines.push(`• <b>Lô Mỏ Neo Top 20:</b> <code>${top20Anchor.join(', ')}</code>`);
+  }
+  lines.push(`• <b>Xiên:</b> <code>${xi4Nums.join(', ')}</code>`);
 
   return lines.join('\n');
 }
@@ -1344,31 +1373,41 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   lines.push(divider);
 
   // =========================================================================
-  // 👑 BẢNG CHỐT DÀN SỐ ĐÁNH CUỐI CÙNG — SIÊU HỘI TỤ ĐA PHƯƠNG PHÁP (MAX PROFIT & WIN RATE)
+  // 👑 BẢNG CHỐT DÀN SỐ ĐÁNH CUỐI CÙNG — BỘ ĐIỀU PHỐI GÓI CHIẾN LƯỢC THÔNG MINH
   // =========================================================================
+  const stratGov = advisorPayload?.strategicPortfolioGovernor || null;
+  const recPort = stratGov?.recommendedPortfolio || null;
+  const slipTitle = recPort ? recPort.name.toUpperCase() : 'SIÊU HỘI TỤ ĐA PHƯƠNG PHÁP';
+  const slipBadge = recPort ? recPort.badge : 'MAX PROFIT & WIN RATE';
+  const slipRationale = stratGov?.decisionRationale || recPort?.rationale || 'Tự động phối hợp các thuật toán đỉnh cao nhất để tối đa hóa xác suất nổ & lợi nhuận.';
+
   lines.push(
-    `👑 <b>BẢNG CHỐT DÀN SỐ ĐÁNH CUỐI CÙNG — SIÊU HỘI TỤ ĐA PHƯƠNG PHÁP (MAX PROFIT & WIN RATE)</b>`,
-    `<i>Tự động phối hợp các thuật toán đỉnh cao nhất để tối đa hóa xác suất nổ & lợi nhuận:</i>`,
+    `👑 <b>BẢNG CHỐT DÀN SỐ ĐÁNH CUỐI CÙNG — ${escapeHtml(slipTitle)}</b>`,
+    `<i>${escapeHtml(slipBadge)}</i>`,
+    `💡 <i>Lý do AI lựa chọn: ${escapeHtml(slipRationale)}</i>`,
     ``
   );
 
-  // 1. Đề Thích Ứng Alpha đòn bẩy X2
-  const deFinalTitle = sMethod || 'Đề Thích Ứng Alpha';
-  const deTotalCount = sNumbers.length || 37;
+  // 1. Đề
+  const deFinalTitle = recPort?.deStructure?.label || sMethod || 'Đề Thích Ứng Alpha';
+  const deFinalNums = (recPort?.deStructure?.allNums || sNumbers || []).map(normalizeLotteryNumber);
+  const deFinalVip = (recPort?.deStructure?.vipNums || sTierX2 || []).map(normalizeLotteryNumber);
+  const deFinalSingles = (recPort?.deStructure?.singleNums || sSingles || []).map(normalizeLotteryNumber);
+
   lines.push(
-    `💎 <b>1. ĐỀ ${escapeHtml(deFinalTitle.toUpperCase())} (${deTotalCount} SỐ · ĐÒN BẨY X2):</b>`
+    `💎 <b>1. ĐỀ ${escapeHtml(deFinalTitle.toUpperCase())} (${deFinalNums.length} SỐ · ĐÒN BẨY X2):</b>`
   );
-  if (sTierX2.length > 0) {
+  if (deFinalVip.length > 0) {
     lines.push(
-      `  • ⚡ <b>VIP X2 (${sTierX2.length} số - Vào tiền gấp đôi):</b> <code>${escapeHtml(formatNumberList(sTierX2))}</code>`
+      `  • ⚡ <b>VIP X2 (${deFinalVip.length} số - Vào tiền gấp đôi):</b> <code>${escapeHtml(formatNumberList(deFinalVip))}</code>`
     );
   }
-  if (sSingles.length > 0) {
+  if (deFinalSingles.length > 0) {
     lines.push(
-      `  • 🛡️ <b>Bọc Lót X1 (${sSingles.length} số - Vào tiền chuẩn):</b> <code>${escapeHtml(formatNumberList(sSingles))}</code>`
+      `  • 🛡️ <b>Bọc Lót X1 (${deFinalSingles.length} số - Vào tiền chuẩn):</b> <code>${escapeHtml(formatNumberList(deFinalSingles))}</code>`
     );
   }
-  const finalHedge = streakDeAdv?.lotKheHedge;
+  const finalHedge = streakDeAdv?.lotKheHedge || (recPort?.deStructure?.isHedgeActive ? { isHedgeActive: true, numbers: recPort.deStructure.hedgeNums } : null);
   if (finalHedge && finalHedge.isHedgeActive && finalHedge.numbers?.length) {
     const fhNums = finalHedge.numbers.map(normalizeLotteryNumber);
     const fhStake = finalHedge.recommendedStakePerNumK || 100;
@@ -1381,37 +1420,49 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     ``
   );
 
-  // 2. Lô Tam Trụ Đa Tầng X3/X2/X1
-  if (crossOpt && (crossOpt.overlapX3?.length || crossOpt.overlapX2?.length)) {
+  // 2. Lô
+  const rLo = recPort?.loStructure || {};
+  const rx3 = (rLo.tierX3 || crossOpt?.overlapX3 || []).map(normalizeLotteryNumber);
+  const rx2 = (rLo.tierX2 || crossOpt?.overlapX2 || []).map(normalizeLotteryNumber);
+  const rx1 = (rLo.singlesX1 || crossOpt?.singlesX1 || []).map(normalizeLotteryNumber);
+  const rDistinct = (rLo.distinctLo || crossOpt?.distinctNumbers || x2Nums || []).map(normalizeLotteryNumber);
+  const rTop20 = (rLo.top20Anchor || stdNums || []).map(normalizeLotteryNumber);
+
+  if (rx3.length || rx2.length) {
     lines.push(
-      `🎰 <b>2. LÔ TAM TRỤ ĐA TẦNG X3/X2/X1 (${crossOpt.totalNumbers} SỐ · 👑 KỶ LỤC +4.167 TỶ · NỔ 98.5% NGÀY):</b>`
+      `🎰 <b>2. LÔ ĐỀ XUẤT RIÊNG (${rDistinct.length} SỐ · ĐA TẦNG X3/X2/X1):</b>`
     );
-    if (crossOpt.overlapX3?.length) {
+    if (rx3.length) {
       lines.push(
-        `  • ⚡ <b>Hạt Nhân X3 (${crossOpt.overlapX3.length} số - 3 Động Cơ Đồng Thuận):</b> <code>${escapeHtml(formatNumberList(crossOpt.overlapX3))}</code>`
+        `  • ⚡ <b>Hạt Nhân X3 (${rx3.length} số - 3 Động Cơ Đồng Thuận):</b> <code>${escapeHtml(formatNumberList(rx3))}</code>`
       );
     }
-    if (crossOpt.overlapX2?.length) {
+    if (rx2.length) {
       lines.push(
-        `  • 🔥 <b>Mũi Nhọn X2 (${crossOpt.overlapX2.length} số - 2 Động Cơ):</b> <code>${escapeHtml(formatNumberList(crossOpt.overlapX2))}</code>`
+        `  • 🔥 <b>Mũi Nhọn X2 (${rx2.length} số - 2 Động Cơ):</b> <code>${escapeHtml(formatNumberList(rx2))}</code>`
       );
     }
-    if (crossOpt.singlesX1?.length) {
+    if (rx1.length) {
       lines.push(
-        `  • 🛡️ <b>Bảo Hiểm X1 (${crossOpt.singlesX1.length} số):</b> <code>${escapeHtml(formatNumberList(crossOpt.singlesX1))}</code>`
+        `  • 🛡️ <b>Bảo Hiểm X1 (${rx1.length} số):</b> <code>${escapeHtml(formatNumberList(rx1))}</code>`
       );
     }
     lines.push(
-      `  • <i>Vốn: Mức 3 = 11.55M (75đ/50đ/25đ) · Mức VIP = 46.2M (300đ/200đ/100đ) · Ăn 2M/nháy M3 (8M/nháy VIP)</i>`,
-      ``
+      `  • <i>Vốn: Mức 3 = 11.55M (75đ/50đ/25đ) · Mức VIP = 46.2M (300đ/200đ/100đ) · Ăn 2M/nháy M3 (8M/nháy VIP)</i>`
     );
-  } else {
+  } else if (rDistinct.length) {
     lines.push(
-      `🎰 <b>2. LÔ TUYỂN CHỌN TĂNG TỐC (${x2Nums.length} SỐ):</b> <code>${escapeHtml(formatNumberList(x2Nums))}</code>`,
-      `  • <i>Vốn: Mức 3 = ${(x2Nums.length * 25 * 22 / 1000).toFixed(1)}M · Mức VIP = ${(x2Nums.length * 2.2).toFixed(1)}M</i>`,
-      ``
+      `🎰 <b>2. LÔ ĐỀ XUẤT RIÊNG (${rDistinct.length} SỐ):</b> <code>${escapeHtml(formatNumberList(rDistinct))}</code>`,
+      `  • <i>Vốn: Mức 3 = ${(rDistinct.length * 25 * 22 / 1000).toFixed(1)}M · Mức VIP = ${(rDistinct.length * 2.2).toFixed(1)}M</i>`
     );
   }
+
+  if (rTop20.length) {
+    lines.push(
+      `  • ⚓ <b>Mỏ Neo Nền Tảng (${rTop20.length} số · Nổ 100% Ngày 2026 · ≥ 5 Nháy 87.8%):</b> <code>${escapeHtml(formatNumberList(rTop20))}</code>`
+    );
+  }
+  lines.push(``);
 
   // 3. Tứ Thủ Lô Xiên 4
   lines.push(
