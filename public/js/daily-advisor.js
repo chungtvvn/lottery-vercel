@@ -50,9 +50,62 @@
     let currentDeStatsMethod = 'metaLearner';
     let currentSelectedLoSubTier = 7;
     let currentActiveLoSubNums = [];
-    let currentActivePortfolio = 'smartAlternating';
+    let currentActivePortfolio = '';
     let currentActiveDeMethod = '';
     let currentActiveLoEngine = '';
+
+    const PORTFOLIOS_CONFIG = {
+        maxProfit: {
+            id: 'maxProfit',
+            name: 'Gói 1: Lô Tam Trụ X3/X2/X1 (+4.17T) & Đề Alpha Nổ Bù (+1.17T)',
+            deMethod: 'adaptiveDualMerge',
+            loEngine: 'qmbf',
+            loSubTier: 7,
+            badge: '👑 Kỷ Lục +5.334 TỶ Cả Lô & Đề · Nổ 98.5%',
+            roiLabel: 'Lãi +5.334 TỶ · ROI +34.4%',
+            rationale: 'Tổ hợp đòn bẩy đa tầng tối ưu profit cao nhất toàn hệ thống năm 2026: Tam Trụ Lô X3/X2/X1 (QMBF Top 7 + QUAD Top 7 + PENTA Top 7 lãi kỷ lục +4.167 TỶ, nổ 98.5% ngày) và Đề Thích Ứng Alpha nổ bù sau trượt (ăn 168M, lãi +108M gỡ sạch drawdown). Chỉ chuyển sang chế độ an toàn khi đã tích lũy lãi nhiều.'
+        },
+        smartAlternating: {
+            id: 'smartAlternating',
+            name: 'Gói 2: Đề Tinh Tuyển X2 (+1.17 TỶ) & Lô Ghép 7s (+2.18 TỶ)',
+            deMethod: 'adaptiveDualMerge',
+            loEngine: 'penta',
+            loSubTier: 7,
+            badge: '👑 Đề Tinh Tuyển X2 (+1.17T) · Lô 7s (+2.18T)',
+            roiLabel: 'Lãi +3.35 TỶ · Nổ 96.9%',
+            rationale: 'Chiến thuật Đề 15 số Core VIP cược X2 (ăn 168M, lãi +123M/kỳ) + Lô ghép ba tinh gọn QMBF(T2)+QUAD(T4)+PENTA(T7) cược X2. Đạt tổng lãi +3.35 TỶ, tự động kích hoạt chế độ an toàn khi đã tích lũy lãi lớn > 500M.'
+        },
+        steadyAccumulator: {
+            id: 'steadyAccumulator',
+            name: 'Gói 3: An Toàn Hậu Thắng (Win 65-75% · Khóa Lãi & Triệt Tiêu Drawdown)',
+            deMethod: 'pentaCoreDe',
+            loEngine: 'quad',
+            loSubTier: 7,
+            badge: '🛡️ An Toàn Hậu Thắng (Win 65-75% · Khóa Lãi)',
+            roiLabel: 'Win 65-75% · Khóa Lãi Bền Vững',
+            rationale: 'Chiến thuật An Toàn Hậu Thắng: Sau khi vừa trúng, nâng độ phủ Đề lên Dàn Ngũ Tinh Dung Hợp / Hợp Bù Trừ (43 số, xác suất trúng 67.5% - 75%, xác suất thua chỉ ~25-32%), cược phẳng/cân bằng an toàn ăn 84M (lãi ròng +41M). Kết hợp Lô Top 20 Mỏ Neo nền tảng (nổ 100% các ngày 2026) để triệt tiêu chuỗi thua, bảo vệ vững chắc lợi nhuận tích lũy.'
+        },
+        antiNoiseResonance: {
+            id: 'antiNoiseResonance',
+            name: 'Gói 4: Kháng Nhiễu Độc Lập / Bắt Nhịp Bẻ Cầu',
+            deMethod: 'deMarkovGapHazard',
+            loEngine: 'bridge',
+            loSubTier: 7,
+            badge: '🔮 Kháng Nhiễu (Cứu 45.6%)',
+            roiLabel: 'Cầu Đồ Thị 85.5%',
+            rationale: 'Bắt các nhịp số gan, kép lệch và bẻ cầu, sử dụng Mốc Lịch Sử hiện tại.'
+        },
+        contrarianAntiTrap: {
+            id: 'contrarianAntiTrap',
+            name: 'Gói 5: Kháng Bẫy Lọt Khe (1 Ăn 84) & Lô Cầu Đồ Thị (+5.4T)',
+            deMethod: 'contrarianLotKhe',
+            loEngine: 'bridge',
+            loSubTier: 7,
+            badge: '🎯 Kháng Bẫy Lọt Khe (1 Ăn 84 · Drawdown 0)',
+            roiLabel: '1 Ăn 84 Lần Vốn · Kháng Bẫy',
+            rationale: 'Chiến thuật săn điểm rơi ngoài vùng phủ sóng của toàn bộ AI: Đề tự động gom các số 0-vote (bị 100% thuật toán bỏ qua) + dàn ngoại vi dị biệt (10-20 số, cược nhẹ ăn x84 lần). Lô kết hợp Cầu Đồ Thị Vị Trí Bridge Flow Top 7 (kháng bẫy 85.5%). Bảo hiểm tối đa tài khoản khi AI gặp bẫy đồng thuận.'
+        }
+    };
 
     const byId = id => document.getElementById(id);
 
@@ -204,6 +257,17 @@
         if (!data) return;
         payload = data;
 
+        // Tự động mặc định kích hoạt Gói Chiến Lược được AI Governor Đề Xuất Hôm Nay
+        const recommendedPortId = data?.strategicPortfolioGovernor?.recommendedPortfolioId
+            || data?.streakAwareDeAdvisor?.latestRecommendation?.strategicPortfolio?.id
+            || 'steadyAccumulator';
+
+        currentActivePortfolio = recommendedPortId;
+        const initialCfg = PORTFOLIOS_CONFIG[currentActivePortfolio] || PORTFOLIOS_CONFIG.steadyAccumulator;
+        currentActiveDeMethod = initialCfg.deMethod;
+        currentActiveLoEngine = initialCfg.loEngine;
+        currentSelectedLoSubTier = initialCfg.loSubTier || 7;
+
         // 0. Prediction Lock Banner Handling (12:00 -> 18:40)
         const lockBannerEl = byId('predictionLockBanner');
         const lockMsgEl = byId('lockBannerMessage');
@@ -252,9 +316,10 @@
 
     function resolvePendingRecommendation(p, forcedPortfolioKey) {
         const payloadData = p || payload || {};
-        const key = forcedPortfolioKey || currentActivePortfolio || 'maxProfit';
-        const deMethodKey = currentActiveDeMethod || (key === 'contrarianAntiTrap' ? 'contrarianLotKhe' : (key === 'maxProfit' ? 'adaptiveDualMerge' : (key === 'smartAlternating' ? (payloadData.streakAwareDeAdvisor?.latestRecommendation?.selectedMethod || 'metaLearner') : (key === 'steadyAccumulator' ? 'dualMerge' : (key === 'antiNoiseResonance' ? 'deMarkovGapHazard' : 'adaptiveDualMerge')))));
-        const loEngineKey = currentActiveLoEngine || (key === 'contrarianAntiTrap' ? 'bridge' : (key === 'maxProfit' ? 'qmbf' : (key === 'smartAlternating' ? 'penta' : (key === 'antiNoiseResonance' ? 'bridge' : 'quad'))));
+        const key = forcedPortfolioKey || currentActivePortfolio || payloadData?.strategicPortfolioGovernor?.recommendedPortfolioId || 'steadyAccumulator';
+        const cfg = PORTFOLIOS_CONFIG[key] || PORTFOLIOS_CONFIG.steadyAccumulator;
+        const deMethodKey = currentActiveDeMethod || cfg.deMethod || 'pentaCoreDe';
+        const loEngineKey = currentActiveLoEngine || cfg.loEngine || 'quad';
 
         // 1. Resolve Đề
         let deMethodName = '👑 Ngũ Trụ Tinh Hoa AI (Penta-Core 60M)';
@@ -1150,7 +1215,10 @@
         }
 
         // 1. ĐỀ TINH HOA — CHỌN PHƯƠNG PHÁP & HIỂN THỊ
-        const recommendedDeMethod = streakDeAdv?.selectedMethod || 'adaptiveDualMerge';
+        const recommendedDeMethod = currentActiveDeMethod
+            || fullData?.strategicPortfolioGovernor?.recommendedPortfolio?.deMethod
+            || streakDeAdv?.selectedMethod
+            || 'pentaCoreDe';
         let activeDeMethodKey = recommendedDeMethod;
 
         // Đánh dấu huy hiệu (⭐ Đề Xuất) cho đúng phương pháp được bộ điều phối chọn hôm nay
@@ -1296,8 +1364,14 @@
 
         // 2. LÔ TINH HOA — MULTI-ENGINE STREAK GOVERNOR
         const governor = loQuadAdv?.streakGovernor || loQuadAdv?.latestRecommendation?.streakGovernor || {};
-        let activeLoEngineKey = governor.selectedEngine || 'qmbf';
-        currentSelectedLoSubTier = governor.selectedSubTier || 7;
+        let activeLoEngineKey = currentActiveLoEngine
+            || fullData?.strategicPortfolioGovernor?.recommendedPortfolio?.loEngine
+            || governor.selectedEngine
+            || 'quad';
+        currentSelectedLoSubTier = currentSelectedLoSubTier
+            || fullData?.strategicPortfolioGovernor?.recommendedPortfolio?.loSubTier
+            || governor.selectedSubTier
+            || 7;
         let currentActiveLoEngineData = null;
 
         // Card 1: Chuẩn Nền Tảng (Mặc Định Đánh) — MỎ NEO NỀN TẢNG CỐ ĐỊNH (Tam Trụ Tri-Consensus Fusion Top 20)
@@ -3850,70 +3924,18 @@
         });
 
         // =========================================================================
-        // 4 CHIẾN LƯỢC TỐI ĐA HÓA LỢI NHUẬN (STRATEGIC PORTFOLIOS CONTROLLER)
+        // 5 CHIẾN LƯỢC TỐI ĐA HÓA LỢI NHUẬN (STRATEGIC PORTFOLIOS CONTROLLER)
         // =========================================================================
-        const PORTFOLIOS_CONFIG = {
-            maxProfit: {
-                id: 'maxProfit',
-                name: 'Gói 1: Lô Tam Trụ X3/X2/X1 (+4.17T) & Đề Alpha Nổ Bù (+1.17T)',
-                deMethod: 'adaptiveDualMerge',
-                loEngine: 'qmbf',
-                loSubTier: 7,
-                badge: '👑 Kỷ Lục +5.334 TỶ Cả Lô & Đề · Nổ 98.5%',
-                roiLabel: 'Lãi +5.334 TỶ · ROI +34.4%',
-                rationale: 'Tổ hợp đòn bẩy đa tầng tối ưu profit cao nhất toàn hệ thống năm 2026: Tam Trụ Lô X3/X2/X1 (QMBF Top 7 + QUAD Top 7 + PENTA Top 7 lãi kỷ lục +4.167 TỶ, nổ 98.5% ngày) và Đề Thích Ứng Alpha nổ bù sau trượt (ăn 168M, lãi +108M gỡ sạch drawdown). Chỉ chuyển sang chế độ an toàn khi đã tích lũy lãi nhiều.'
-            },
-            smartAlternating: {
-                id: 'smartAlternating',
-                name: 'Gói 2: Đề Tinh Tuyển X2 (+1.17 TỶ) & Lô Ghép 7s (+2.18 TỶ)',
-                deMethod: 'adaptiveDualMerge',
-                loEngine: 'penta',
-                loSubTier: 7,
-                badge: '👑 Đề Tinh Tuyển X2 (+1.17T) · Lô 7s (+2.18T)',
-                roiLabel: 'Lãi +3.35 TỶ · Nổ 96.9%',
-                rationale: 'Chiến thuật Đề 15 số Core VIP cược X2 (ăn 168M, lãi +123M/kỳ) + Lô ghép ba tinh gọn QMBF(T2)+QUAD(T4)+PENTA(T7) cược X2. Đạt tổng lãi +3.35 TỶ, tự động kích hoạt chế độ an toàn khi đã tích lũy lãi lớn > 500M.'
-            },
-            steadyAccumulator: {
-                id: 'steadyAccumulator',
-                name: 'Gói 3: An Toàn Hậu Thắng (Win 65-75% · Khóa Lãi & Triệt Tiêu Drawdown)',
-                deMethod: 'pentaCoreDe',
-                loEngine: 'quad',
-                loSubTier: 7,
-                badge: '🛡️ An Toàn Hậu Thắng (Win 65-75% · Khóa Lãi)',
-                roiLabel: 'Win 65-75% · Khóa Lãi Bền Vững',
-                rationale: 'Chiến thuật An Toàn Hậu Thắng: Sau khi vừa trúng, nâng độ phủ Đề lên Dàn Ngũ Tinh Dung Hợp / Hợp Bù Trừ (43 số, xác suất trúng 67.5% - 75%, xác suất thua chỉ ~25-32%), cược phẳng/cân bằng an toàn ăn 84M (lãi ròng +41M). Kết hợp Lô Top 20 Mỏ Neo nền tảng (nổ 100% các ngày 2026) để triệt tiêu chuỗi thua, bảo vệ vững chắc lợi nhuận tích lũy.'
-            },
-            antiNoiseResonance: {
-                id: 'antiNoiseResonance',
-                name: 'Gói 4: Kháng Nhiễu Độc Lập / Bắt Nhịp Bẻ Cầu',
-                deMethod: 'deMarkovGapHazard',
-                loEngine: 'bridge',
-                loSubTier: 7,
-                badge: '🔮 Kháng Nhiễu (Cứu 45.6%)',
-                roiLabel: 'Cầu Đồ Thị 85.5%',
-                rationale: 'Bắt các nhịp số gan, kép lệch và bẻ cầu, sử dụng Mốc Lịch Sử hiện tại.'
-            },
-            contrarianAntiTrap: {
-                id: 'contrarianAntiTrap',
-                name: 'Gói 5: Kháng Bẫy Lọt Khe (1 Ăn 84) & Lô Cầu Đồ Thị (+5.4T)',
-                deMethod: 'contrarianLotKhe',
-                loEngine: 'bridge',
-                loSubTier: 7,
-                badge: '🎯 Kháng Bẫy Lọt Khe (1 Ăn 84 · Drawdown 0)',
-                roiLabel: '1 Ăn 84 Lần Vốn · Kháng Bẫy',
-                rationale: 'Chiến thuật săn điểm rơi ngoài vùng phủ sóng của toàn bộ AI: Đề tự động gom các số 0-vote (bị 100% thuật toán bỏ qua) + dàn ngoại vi dị biệt (10-20 số, cược nhẹ ăn x84 lần). Lô kết hợp Cầu Đồ Thị Vị Trí Bridge Flow Top 7 (kháng bẫy 85.5%). Bảo hiểm tối đa tài khoản khi AI gặp bẫy đồng thuận.'
-            }
-        };
-
         const recommendedPortfolioId = fullData?.strategicPortfolioGovernor?.recommendedPortfolioId
             || fullData?.streakAwareDeAdvisor?.latestRecommendation?.strategicPortfolio?.id
-            || 'maxProfit';
+            || currentActivePortfolio
+            || 'steadyAccumulator';
 
         currentActivePortfolio = recommendedPortfolioId;
 
         function selectStrategicPortfolio(key, isInitial = false) {
             currentActivePortfolio = key;
-            const cfg = PORTFOLIOS_CONFIG[key] || PORTFOLIOS_CONFIG.maxProfit;
+            const cfg = PORTFOLIOS_CONFIG[key] || PORTFOLIOS_CONFIG.steadyAccumulator;
             currentActiveDeMethod = cfg.deMethod;
             currentActiveLoEngine = cfg.loEngine;
             currentSelectedLoSubTier = cfg.loSubTier || 7;
@@ -4536,6 +4558,8 @@
                     capEl.textContent = 'Mức 3: 25.75M · Mức VIP: 103.0M';
                 } else if (cfg.id === 'smartAlternating') {
                     capEl.textContent = 'Mức 3: 20.25M · Mức VIP: 81.0M';
+                } else if (cfg.id === 'steadyAccumulator') {
+                    capEl.textContent = 'Mức 3: 21.0M (Lãi +8.2M) · Mức VIP: 84.0M (Lãi +41.0M)';
                 } else if (cfg.id === 'contrarianAntiTrap') {
                     capEl.textContent = 'Mức 3: 8.05M · Mức VIP: 32.4M';
                 } else {
