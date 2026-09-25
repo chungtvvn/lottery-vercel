@@ -538,12 +538,13 @@ function buildOptimalBetSlipMessage(date, advisorPayload = {}) {
   const badge = recPort ? recPort.badge : 'Kỷ lục +5.334 TỶ VNĐ · Nổ 98.5% · 100% Strict PIT';
   const rationale = stratGov?.decisionRationale || recPort?.rationale || 'Tự động phối hợp các thuật toán mạnh nhất toàn diện.';
 
+  const deModeSuffix = (recPort?.id === 'steadyAccumulator') ? 'CƯỢC PHẲNG / CÂN BẰNG AN TOÀN' : 'ĐÒN BẨY X2';
   const lines = [
     `👑 <b>VÉ CƯỢC CUỐI CÙNG — ${escapeHtml(title)} (${escapeHtml(displayDate(date))})</b>`,
     `<i>${escapeHtml(badge)}</i>`,
     `💡 <i>Lý do AI lựa chọn: ${escapeHtml(rationale)}</i>`,
     divider,
-    `💎 <b>1. ĐỀ ${escapeHtml(sMethod.toUpperCase())} (${sNumbers.length} SỐ · ĐÒN BẨY X2):</b>`
+    `💎 <b>1. ĐỀ ${escapeHtml(sMethod.toUpperCase())} (${sNumbers.length} SỐ · ${deModeSuffix}):</b>`
   ];
 
   if (sTierX2.length > 0) {
@@ -552,7 +553,11 @@ function buildOptimalBetSlipMessage(date, advisorPayload = {}) {
   if (sSingles.length > 0) {
     lines.push(`🛡️ <b>Bọc Lót X1 (${sSingles.length} số):</b> <code>${escapeHtml(formatNumberList(sSingles))}</code>`);
   }
-  lines.push(`💰 <i>Vốn: Mức 3 = 12.0M · Mức VIP = 60M (Nổ VIP ăn 33.6M M3 / 168M VIP 👉 Lãi ròng +21.6M M3 / +108M VIP)</i>`);
+  if (recPort?.id === 'steadyAccumulator') {
+    lines.push(`💰 <i>Vốn: Mức 3 = 8.6M (200K/số) · Mức VIP = 43M (1M/số) 👉 Nổ ăn 16.8M M3 / 84M VIP (Lãi ròng +8.2M M3 / +41M VIP · Triệt tiêu chuỗi thua)</i>`);
+  } else {
+    lines.push(`💰 <i>Vốn: Mức 3 = 12.0M · Mức VIP = 60M (Nổ VIP ăn 33.6M M3 / 168M VIP 👉 Lãi ròng +21.6M M3 / +108M VIP)</i>`);
+  }
 
   const slipHedge = streakDeAdv?.lotKheHedge || (recPort?.deStructure?.isHedgeActive ? { isHedgeActive: true, numbers: recPort.deStructure.hedgeNums } : null);
   if (slipHedge && slipHedge.isHedgeActive && slipHedge.numbers?.length) {
@@ -1394,8 +1399,9 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   const deFinalVip = (recPort?.deStructure?.vipNums || sTierX2 || []).map(normalizeLotteryNumber);
   const deFinalSingles = (recPort?.deStructure?.singleNums || sSingles || []).map(normalizeLotteryNumber);
 
+  const deFinalModeSuffix = (recPort?.id === 'steadyAccumulator') ? 'CƯỢC PHẲNG / CÂN BẰNG AN TOÀN' : 'ĐÒN BẨY X2';
   lines.push(
-    `💎 <b>1. ĐỀ ${escapeHtml(deFinalTitle.toUpperCase())} (${deFinalNums.length} SỐ · ĐÒN BẨY X2):</b>`
+    `💎 <b>1. ĐỀ ${escapeHtml(deFinalTitle.toUpperCase())} (${deFinalNums.length} SỐ · ${deFinalModeSuffix}):</b>`
   );
   if (deFinalVip.length > 0) {
     lines.push(
@@ -1415,10 +1421,17 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
       `  • 🛡️ <b>Khiên Bảo Hiểm Lọt Khe (${fhNums.length} số · ${fhStake}K/số · Ăn 1:84):</b> <code>${escapeHtml(formatNumberList(fhNums))}</code>`
     );
   }
-  lines.push(
-    `  • <i>Vốn: Mức 3 = 12M · Mức VIP = 60M (Nổ VIP ăn 33.6M M3 / 168M VIP 👉 Lãi ròng +21.6M M3 / +108M VIP gỡ sạch drawdown)</i>`,
-    ``
-  );
+  if (recPort?.id === 'steadyAccumulator') {
+    lines.push(
+      `  • <i>Vốn: Mức 3 = 8.6M · Mức VIP = 43M (Nổ ăn 16.8M M3 / 84M VIP 👉 Lãi ròng +8.2M M3 / +41M VIP · Triệt tiêu chuỗi thua)</i>`,
+      ``
+    );
+  } else {
+    lines.push(
+      `  • <i>Vốn: Mức 3 = 12M · Mức VIP = 60M (Nổ VIP ăn 33.6M M3 / 168M VIP 👉 Lãi ròng +21.6M M3 / +108M VIP gỡ sạch drawdown)</i>`,
+      ``
+    );
+  }
 
   // 2. Lô
   const rLo = recPort?.loStructure || {};

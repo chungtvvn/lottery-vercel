@@ -3875,13 +3875,13 @@
             },
             steadyAccumulator: {
                 id: 'steadyAccumulator',
-                name: 'Gói 3: Bảo Toàn Vốn An Toàn (Kích Hoạt Khi Đã Lãi Nhiều)',
-                deMethod: 'dualMerge',
+                name: 'Gói 3: An Toàn Hậu Thắng (Win 65-75% · Khóa Lãi & Triệt Tiêu Drawdown)',
+                deMethod: 'pentaCoreDe',
                 loEngine: 'quad',
-                loSubTier: 2,
-                badge: '🛡️ Bảo Toàn Lãi (An Toàn Tuyệt Đối)',
-                roiLabel: 'Khóa Lãi · Drawdown ≤ 2d',
-                rationale: 'Chế độ phòng thủ bảo vệ thành quả: Khi tài khoản đã đạt mốc lãi lớn từ đòn bẩy X2 (> 2.0 TỶ Lô / > 500M Đề), hạ cược đòn bẩy về cược phẳng an toàn để triệt tiêu drawdown, giữ chặt vốn.'
+                loSubTier: 7,
+                badge: '🛡️ An Toàn Hậu Thắng (Win 65-75% · Khóa Lãi)',
+                roiLabel: 'Win 65-75% · Khóa Lãi Bền Vững',
+                rationale: 'Chiến thuật An Toàn Hậu Thắng: Sau khi vừa trúng, nâng độ phủ Đề lên Dàn Ngũ Tinh Dung Hợp / Hợp Bù Trừ (43 số, xác suất trúng 67.5% - 75%, xác suất thua chỉ ~25-32%), cược phẳng/cân bằng an toàn ăn 84M (lãi ròng +41M). Kết hợp Lô Top 20 Mỏ Neo nền tảng (nổ 100% các ngày 2026) để triệt tiêu chuỗi thua, bảo vệ vững chắc lợi nhuận tích lũy.'
             },
             antiNoiseResonance: {
                 id: 'antiNoiseResonance',
@@ -3927,10 +3927,12 @@
                 card.classList.toggle('active', isSelected);
                 card.classList.toggle('border-2', isSelected);
                 card.classList.toggle('border-amber-400', isSelected && (key === 'maxProfit' || isRecommended));
-                card.classList.toggle('border-indigo-400', isSelected && key !== 'maxProfit' && key !== 'contrarianAntiTrap' && !isRecommended);
+                card.classList.toggle('border-emerald-400', isSelected && key === 'steadyAccumulator' && !isRecommended);
+                card.classList.toggle('border-indigo-400', isSelected && key !== 'maxProfit' && key !== 'steadyAccumulator' && key !== 'contrarianAntiTrap' && !isRecommended);
                 card.classList.toggle('border-red-500', isSelected && key === 'contrarianAntiTrap');
                 card.classList.toggle('ring-2', isSelected && (key === 'maxProfit' || key === 'contrarianAntiTrap' || isRecommended));
                 card.classList.toggle('ring-amber-400/30', isSelected && (key === 'maxProfit' || isRecommended));
+                card.classList.toggle('ring-emerald-400/30', isSelected && key === 'steadyAccumulator' && !isRecommended);
                 card.classList.toggle('ring-red-500/30', isSelected && key === 'contrarianAntiTrap');
                 card.classList.toggle('border-white/15', !isSelected);
 
@@ -3957,6 +3959,9 @@
                         } else if (key === 'maxProfit') {
                             indicator.innerHTML = '<i class="bi bi-check-circle-fill"></i> Đang chọn (Kỷ Lục Profit)';
                             indicator.className = 'portfolio-active-indicator inline-flex items-center gap-1 text-[11px] font-black text-amber-300';
+                        } else if (key === 'steadyAccumulator') {
+                            indicator.innerHTML = '<i class="bi bi-shield-check"></i> Đang chọn (An Toàn Hậu Thắng)';
+                            indicator.className = 'portfolio-active-indicator inline-flex items-center gap-1 text-[11px] font-black text-emerald-400';
                         } else if (key === 'contrarianAntiTrap') {
                             indicator.innerHTML = '<i class="bi bi-shield-check"></i> Đang chọn (Kháng Bẫy)';
                             indicator.className = 'portfolio-active-indicator inline-flex items-center gap-1 text-[11px] font-black text-red-400';
@@ -3977,7 +3982,7 @@
                         ? 'bg-gradient-to-r from-amber-400 to-orange-400 text-slate-950 font-black ring-1 ring-amber-300'
                         : (key === 'maxProfit' 
                             ? 'bg-amber-400 text-slate-950 font-black' 
-                            : (key === 'contrarianAntiTrap' ? 'bg-red-600 text-white font-black' : 'bg-indigo-500 text-white font-black'));
+                            : (key === 'contrarianAntiTrap' ? 'bg-red-600 text-white font-black' : (key === 'steadyAccumulator' ? 'bg-emerald-500 text-slate-950 font-black' : 'bg-indigo-500 text-white font-black')));
                     selectBtn.className = isSelected
                         ? `btn-select-portfolio rounded-lg ${btnClass} text-xs px-2.5 py-1 transition-all shadow-xs`
                         : (isRecommended 
@@ -4141,6 +4146,11 @@
                     slipLines.push(
                         `🎰 2. LÔ CẦU ĐỒ THỊ KHÁNG BẪY (Top ${currentLoNums.length}s · Vốn M3 3.85M / VIP 15.4M):`,
                         `🕸️ CẦU LIÊN KẾT 54 VỊ TRÍ CHỮ SỐ XSMB:`,
+                        currentLoNums.map(n => String(number(n)).padStart(2, '0')).join(' ')
+                    );
+                } else if (cfg.id === 'steadyAccumulator') {
+                    slipLines.push(
+                        `🎰 2. LÔ THẤT THỦ AN TOÀN (Top ${currentLoNums.length}s cược phẳng 25đ · Vốn M3 3.85M / VIP 15.4M · Win 79.1%):`,
                         currentLoNums.map(n => String(number(n)).padStart(2, '0')).join(' ')
                     );
                 } else {
