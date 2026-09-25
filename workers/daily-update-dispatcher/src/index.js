@@ -533,9 +533,18 @@ function buildOptimalBetSlipMessage(date, advisorPayload = {}) {
     `💎 <b>1. ĐỀ ${escapeHtml(sMethod.toUpperCase())} (${sNumbers.length} SỐ · ĐÒN BẨY X2):</b>`,
     `⚡ <b>VIP X2 (${sTierX2.length} số):</b> <code>${escapeHtml(formatNumberList(sTierX2))}</code>`,
     `🛡️ <b>Bọc Lót X1 (${sSingles.length} số):</b> <code>${escapeHtml(formatNumberList(sSingles))}</code>`,
-    `💰 <i>Vốn: Mức 3 = 12.0M · Mức VIP = 60M (Nổ VIP ăn 33.6M M3 / 168M VIP 👉 Lãi ròng +21.6M M3 / +108M VIP)</i>`,
-    divider
+    `💰 <i>Vốn: Mức 3 = 12.0M · Mức VIP = 60M (Nổ VIP ăn 33.6M M3 / 168M VIP 👉 Lãi ròng +21.6M M3 / +108M VIP)</i>`
   ];
+
+  const slipHedge = streakDeAdv?.lotKheHedge;
+  if (slipHedge && slipHedge.isHedgeActive && slipHedge.numbers?.length) {
+    const shNums = slipHedge.numbers.map(normalizeLotteryNumber);
+    const shStake = slipHedge.recommendedStakePerNumK || 100;
+    lines.push(
+      `🛡️ <b>Khiên Bảo Hiểm Lọt Khe (${shNums.length} số · ${shStake}K/số · Ăn 1:84):</b> <code>${escapeHtml(formatNumberList(shNums))}</code>`
+    );
+  }
+  lines.push(divider);
 
   if (crossOpt && (crossOpt.overlapX3?.length || crossOpt.overlapX2?.length)) {
     lines.push(
@@ -572,7 +581,14 @@ function buildOptimalBetSlipMessage(date, advisorPayload = {}) {
     `👉 <b>Mức VIP:</b> <b>103.0M VNĐ</b> (Đề 60M + Lô 46.2M + Xiên 11M)`,
     ``,
     `🌐 <b>DÀN PHẨY WEB ĐỂ COPY VÀO TRANG CƯỢC:</b>`,
-    `• <b>Đề:</b> <code>${sNumbers.join(', ')}</code>`,
+    `• <b>Đề:</b> <code>${sNumbers.join(', ')}</code>`
+  );
+
+  if (slipHedge && slipHedge.isHedgeActive && slipHedge.numbers?.length) {
+    lines.push(`• <b>Khiên Lọt Khe (1:84):</b> <code>${slipHedge.numbers.map(normalizeLotteryNumber).join(', ')}</code>`);
+  }
+
+  lines.push(
     `• <b>Lô:</b> <code>${(crossOpt?.distinctNumbers || []).join(', ')}</code>`,
     `• <b>Xiên:</b> <code>${xi4Nums.join(', ')}</code>`
   );
@@ -1047,6 +1063,15 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
         `🛡️ <b>Dàn Bọc Lót X1 (${sSingles.length} số - Vào tiền chuẩn):</b> <b>${escapeHtml(formatNumberList(sSingles))}</b>`
       );
     }
+    const hedge = streakDeAdv.lotKheHedge;
+    if (hedge && hedge.isHedgeActive && hedge.numbers?.length) {
+      const hNums = hedge.numbers.map(normalizeLotteryNumber);
+      const stakeK = hedge.recommendedStakePerNumK || 100;
+      lines.push(
+        `🛡️ <b>Khiên Bảo Hiểm Lọt Khe 0-Vote (${hNums.length} số · ${stakeK}K/số · Ăn 1:84):</b> <b>${escapeHtml(formatNumberList(hNums))}</b>`,
+        `  • <i>${escapeHtml(hedge.rationale || 'Bọc lót nhẹ phòng khi nhà cái bẻ cầu lọt khe, nổ ăn x84 lần bù đắp rủi ro!')}</i>`
+      );
+    }
     lines.push(
       `🎯 <b>Chi tiết cách vào tiền tối đa hóa lợi nhuận:</b>`,
       `  • <b>VIP Trùng X2 (${sTierX2.length} số):</b> Cược gấp đôi (Mức 3 đánh 400K/số, Mức VIP đánh 2M/số). Khi nổ ăn 2 nháy đề (+33.6M Mức 3 / +168M VIP, lãi ròng +21.6M M3 / +108M VIP).`,
@@ -1343,6 +1368,14 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
       `  • 🛡️ <b>Bọc Lót X1 (${sSingles.length} số - Vào tiền chuẩn):</b> <code>${escapeHtml(formatNumberList(sSingles))}</code>`
     );
   }
+  const finalHedge = streakDeAdv?.lotKheHedge;
+  if (finalHedge && finalHedge.isHedgeActive && finalHedge.numbers?.length) {
+    const fhNums = finalHedge.numbers.map(normalizeLotteryNumber);
+    const fhStake = finalHedge.recommendedStakePerNumK || 100;
+    lines.push(
+      `  • 🛡️ <b>Khiên Bảo Hiểm Lọt Khe (${fhNums.length} số · ${fhStake}K/số · Ăn 1:84):</b> <code>${escapeHtml(formatNumberList(fhNums))}</code>`
+    );
+  }
   lines.push(
     `  • <i>Vốn: Mức 3 = 12M · Mức VIP = 60M (Nổ VIP ăn 33.6M M3 / 168M VIP 👉 Lãi ròng +21.6M M3 / +108M VIP gỡ sạch drawdown)</i>`,
     ``
@@ -1498,9 +1531,13 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     const aiCoverage = 100 - lotKhe0.length;
 
     if (lotKhe0.length > 0 && lotKhe0.length < 100) {
+      const isHedgeActive = Boolean(streakDeAdv?.lotKheHedge?.isHedgeActive);
+      const hedgeNote = isHedgeActive
+        ? ` 👉 <b>HỆ THỐNG ĐÃ TỰ ĐỘNG KÍCH HOẠT KHIÊN BẢO HIỂM LỌT KHE (1 Ăn 84)!</b>`
+        : ` <i>(Độ an toàn AI rất cao, không cần bọc lót hoặc chơi Gói 5 Kháng Bẫy Outlier)</i>`;
       lines.push(
-        `• 🎯 <b>Radar Lọt Khe Hôm Nay (An toàn AI: ${aiCoverage}%)</b>: 7 siêu động cơ AI phủ <b>${aiCoverage}/100</b> số. Chỉ còn <b>${lotKhe0.length} số Lọt Khe tuyệt đối (0-vote)</b>:`,
-        `   └ <code>${lotKhe0.join(' ')}</code> <i>(Gói 5: Kháng Bẫy Lọt Khe 1 Ăn 84 khi thị trường bẻ cầu)</i>`
+        `• 🎯 <b>Radar Lọt Khe Hôm Nay (An toàn AI: ${aiCoverage}%)</b>: 7 siêu động cơ AI phủ <b>${aiCoverage}/100</b> số. Còn <b>${lotKhe0.length} số Lọt Khe tuyệt đối (0-vote)</b>:`,
+        `   └ <code>${lotKhe0.join(' ')}</code>${hedgeNote}`
       );
     }
   }

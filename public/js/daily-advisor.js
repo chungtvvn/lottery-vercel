@@ -33,6 +33,9 @@
         if (phase === 'FATIGUE_DODGE') {
             return `<span class="inline-flex items-center gap-0.5 rounded bg-blue-100 text-blue-800 border border-blue-300 text-[9px] font-black px-1.5 py-0.5" ${titleAttr}>🔄 Né Kiệt Sức</span>`;
         }
+        if (phase === 'REVERSION') {
+            return `<span class="inline-flex items-center gap-0.5 rounded bg-cyan-100 text-cyan-800 border border-cyan-300 text-[9px] font-black px-1.5 py-0.5" ${titleAttr}>🌊 Hồi Quy</span>`;
+        }
         return '';
     }
 
@@ -4023,9 +4026,23 @@
                     deData.singleNums.map(n => String(number(n)).padStart(2, '0')).join(' '),
                     ``,
                     `📋 Toàn bộ dàn Đề (${deData.allNums.length}s):`,
-                    deData.allNums.map(n => String(number(n)).padStart(2, '0')).join(' '),
-                    `━━━━━━━━━━━━━━━━━━━━━━━━━━`
+                    deData.allNums.map(n => String(number(n)).padStart(2, '0')).join(' ')
                 ];
+
+                const hedge = fullData?.streakAwareDeAdvisor?.latestRecommendation?.lotKheHedge || fullData?.lotKheHedge;
+                const isHedgeActive = (cfg.id === 'contrarianAntiTrap') || (hedge && hedge.isHedgeActive);
+                const hedgeNums = (hedge?.numbers && hedge.numbers.length > 0)
+                    ? hedge.numbers
+                    : (fullData?.streakAwareDeAdvisor?.latestRecommendation?.availableMethods?.contrarianLotKhe?.numbers || []);
+                if (isHedgeActive && hedgeNums && hedgeNums.length > 0 && cfg.id !== 'contrarianAntiTrap') {
+                    const stakeText = hedge?.recommendedStakePerNumK ? `${hedge.recommendedStakePerNumK}K/số` : '100K/số';
+                    slipLines.push(
+                        ``,
+                        `🛡️ KHIÊN BẢO HIỂM LỌT KHE (${hedgeNums.length} số · ${stakeText} · 1 Ăn 84):`,
+                        hedgeNums.map(n => String(number(n)).padStart(2, '0')).join(' ')
+                    );
+                }
+                slipLines.push(`━━━━━━━━━━━━━━━━━━━━━━━━━━`);
 
                 if (cfg.id === 'maxProfit' && crossOpt && (crossOpt.overlapX3 || crossOpt.overlapX2)) {
                     const x3List = crossOpt.overlapX3 || [];
@@ -4158,9 +4175,20 @@
                     allMergedLo = Array.from(new Set([...loStd, ...currentLoNums]));
                 }
 
+                const hedge = fullData?.streakAwareDeAdvisor?.latestRecommendation?.lotKheHedge || fullData?.lotKheHedge;
+                const isHedgeActive = (cfg.id === 'contrarianAntiTrap') || (hedge && hedge.isHedgeActive);
+                const hedgeNums = (hedge?.numbers && hedge.numbers.length > 0)
+                    ? hedge.numbers
+                    : (fullData?.streakAwareDeAdvisor?.latestRecommendation?.availableMethods?.contrarianLotKhe?.numbers || []);
+                let hedgeText = '';
+                if (isHedgeActive && hedgeNums && hedgeNums.length > 0 && cfg.id !== 'contrarianAntiTrap') {
+                    const hedgeFormatted = hedgeNums.map(n => String(number(n)).padStart(2, '0')).join(', ');
+                    hedgeText = `\n\n--- KHIÊN BẢO HIỂM LỌT KHE (1 Ăn 84 - ${hedgeNums.length} số) ---\n${hedgeFormatted}`;
+                }
+
                 const deFormatted = deData.allNums.map(n => String(number(n)).padStart(2, '0')).join(', ');
                 const loFormatted = allMergedLo.map(n => String(number(n)).padStart(2, '0')).join(', ');
-                const webText = `--- DÀN ĐỀ (${deData.allNums.length} số) ---\n${deFormatted}\n\n--- DÀN LÔ (${allMergedLo.length} số) ---\n${loFormatted}`;
+                const webText = `--- DÀN ĐỀ (${deData.allNums.length} số) ---\n${deFormatted}${hedgeText}\n\n--- DÀN LÔ (${allMergedLo.length} số) ---\n${loFormatted}`;
 
                 if (navigator.clipboard) {
                     navigator.clipboard.writeText(webText).then(() => {
@@ -4247,6 +4275,40 @@
                         ${number(n)}
                     </span>
                 `).join('') || '<span class="text-xs text-slate-400">—</span>';
+            }
+
+            // Dàn Khiên Bảo Hiểm Lọt Khe (1 Ăn 84)
+            const hedge = fullData?.streakAwareDeAdvisor?.latestRecommendation?.lotKheHedge || fullData?.lotKheHedge;
+            const isHedgeActive = (cfg.id === 'contrarianAntiTrap') || (hedge && hedge.isHedgeActive);
+            const hedgeNums = (hedge?.numbers && hedge.numbers.length > 0)
+                ? hedge.numbers
+                : (fullData?.streakAwareDeAdvisor?.latestRecommendation?.availableMethods?.contrarianLotKhe?.numbers || []);
+
+            const deHedgeRowEl = byId('finalDeHedgeRow');
+            const deHedgeLabelEl = byId('finalDeHedgeLabel');
+            const deHedgeNumsEl = byId('finalDeHedgeNums');
+            const btnCopyDeHedge = byId('btnCopyFinalDeHedge');
+
+            if (deHedgeRowEl) {
+                if (isHedgeActive && hedgeNums && hedgeNums.length > 0) {
+                    deHedgeRowEl.style.display = 'block';
+                    if (deHedgeLabelEl) {
+                        const stakeText = hedge?.recommendedStakePerNumK ? `${hedge.recommendedStakePerNumK}K/số` : 'Nhẹ 100K/số';
+                        deHedgeLabelEl.textContent = `🛡️ Khiên Bảo Hiểm Lọt Khe (${hedgeNums.length} số · ${stakeText} · 1 Ăn 84):`;
+                    }
+                    if (deHedgeNumsEl) {
+                        deHedgeNumsEl.innerHTML = hedgeNums.map(n => `
+                            <span class="inline-flex items-center justify-center rounded-lg bg-red-500 text-white font-mono text-xs font-black px-2 py-0.5 shadow-xs hover:scale-105 transition-all">
+                                ${number(n)}
+                            </span>
+                        `).join('');
+                    }
+                    if (btnCopyDeHedge) {
+                        btnCopyDeHedge.onclick = () => copyNumbers(hedgeNums);
+                    }
+                } else {
+                    deHedgeRowEl.style.display = 'none';
+                }
             }
 
             // Column 2: Lô Ghép Tầng Tam Trụ
@@ -6267,7 +6329,7 @@
     // ==========================================
     // SYSTEM UPDATES & CHANGELOG MODAL CONTROLLER
     // ==========================================
-    const CURRENT_DEPLOY_VERSION = '2026.09.24-v3-multi-method-slip';
+    const CURRENT_DEPLOY_VERSION = '2026.09.25-v1-phase-switcher-v3';
     const DISMISSED_DEPLOY_KEY = 'xsmb_dismissed_deploy_version';
 
     function initSystemUpdatesModal() {
