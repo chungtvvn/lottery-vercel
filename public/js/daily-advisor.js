@@ -3935,7 +3935,10 @@
 
         function selectStrategicPortfolio(key, isInitial = false) {
             currentActivePortfolio = key;
-            const cfg = PORTFOLIOS_CONFIG[key] || PORTFOLIOS_CONFIG.steadyAccumulator;
+            const cfg = {
+                ...(PORTFOLIOS_CONFIG[key] || PORTFOLIOS_CONFIG.steadyAccumulator),
+                ...(fullData?.strategicPortfolioGovernor?.portfolios?.[key] || {})
+            };
             currentActiveDeMethod = cfg.deMethod;
             currentActiveLoEngine = cfg.loEngine;
             currentSelectedLoSubTier = cfg.loSubTier || 7;
@@ -3945,6 +3948,17 @@
                 const cardKey = card.dataset.portfolio;
                 const isSelected = (cardKey === key);
                 const isRecommended = (cardKey === recommendedPortfolioId);
+
+                // Dynamically sync badge, title, and rationale from daily governor
+                const portData = fullData?.strategicPortfolioGovernor?.portfolios?.[cardKey];
+                if (portData) {
+                    const badgeEl = card.querySelector('span.rounded-full');
+                    if (badgeEl && portData.badge) badgeEl.textContent = portData.badge;
+                    const titleEl = card.querySelector('h4 span');
+                    if (titleEl && portData.name) titleEl.textContent = portData.name;
+                    const descEl = card.querySelector('p');
+                    if (descEl && portData.rationale) descEl.textContent = portData.rationale;
+                }
 
                 card.classList.toggle('active', isSelected);
                 card.classList.toggle('border-2', isSelected);
@@ -4060,7 +4074,10 @@
         const btnCopyPortZalo = byId('btnCopyActivePortfolioZalo');
         if (btnCopyPortZalo) {
             btnCopyPortZalo.onclick = () => {
-                const cfg = PORTFOLIOS_CONFIG[currentActivePortfolio] || PORTFOLIOS_CONFIG.maxProfit;
+                const cfg = {
+                    ...(PORTFOLIOS_CONFIG[currentActivePortfolio] || PORTFOLIOS_CONFIG.maxProfit),
+                    ...(fullData?.strategicPortfolioGovernor?.portfolios?.[currentActivePortfolio] || {})
+                };
                 const deData = getDeMethodDisplayData(cfg.deMethod, fullData);
                 const predDateStr = streakDeAdv?.predictionDate || loQuadAdv?.predictionDate || fullData?.dynamicMetaAdvisor?.nextPrediction?.predictionDate || '2026-09-24';
                 const dateFormatted = formatDateVi(predDateStr);
@@ -4101,10 +4118,12 @@
                 ];
 
                 const hedge = fullData?.streakAwareDeAdvisor?.latestRecommendation?.lotKheHedge || fullData?.lotKheHedge;
-                const isHedgeActive = (cfg.id === 'contrarianAntiTrap') || (hedge && hedge.isHedgeActive);
-                const hedgeNums = (hedge?.numbers && hedge.numbers.length > 0)
-                    ? hedge.numbers
-                    : (fullData?.streakAwareDeAdvisor?.latestRecommendation?.availableMethods?.contrarianLotKhe?.numbers || []);
+                const hedgeNums = (cfg.deStructure?.hedgeNums && cfg.deStructure.hedgeNums.length > 0)
+                    ? cfg.deStructure.hedgeNums
+                    : ((hedge?.numbers && hedge.numbers.length > 0)
+                        ? hedge.numbers
+                        : (fullData?.streakAwareDeAdvisor?.latestRecommendation?.availableMethods?.contrarianLotKhe?.numbers || []));
+                const isHedgeActive = (cfg.id === 'contrarianAntiTrap') || Boolean(cfg.deStructure?.isHedgeActive) || Boolean(hedge && hedge.isHedgeActive) || (hedgeNums.length > 0 && hedgeNums.length <= 15);
                 if (isHedgeActive && hedgeNums && hedgeNums.length > 0 && cfg.id !== 'contrarianAntiTrap') {
                     const stakeText = hedge?.recommendedStakePerNumK ? `${hedge.recommendedStakePerNumK}K/số` : '100K/số';
                     slipLines.push(
@@ -4224,7 +4243,10 @@
         const btnCopyPortWeb = byId('btnCopyActivePortfolioWeb');
         if (btnCopyPortWeb) {
             btnCopyPortWeb.onclick = () => {
-                const cfg = PORTFOLIOS_CONFIG[currentActivePortfolio] || PORTFOLIOS_CONFIG.maxProfit;
+                const cfg = {
+                    ...(PORTFOLIOS_CONFIG[currentActivePortfolio] || PORTFOLIOS_CONFIG.maxProfit),
+                    ...(fullData?.strategicPortfolioGovernor?.portfolios?.[currentActivePortfolio] || {})
+                };
                 const deData = getDeMethodDisplayData(cfg.deMethod, fullData);
 
                 const crossOpt = fullData?.dynamicMetaAdvisor?.nextPrediction?.optimalCrossTierEnsemble?.primary
@@ -4253,10 +4275,12 @@
                 }
 
                 const hedge = fullData?.streakAwareDeAdvisor?.latestRecommendation?.lotKheHedge || fullData?.lotKheHedge;
-                const isHedgeActive = (cfg.id === 'contrarianAntiTrap') || (hedge && hedge.isHedgeActive);
-                const hedgeNums = (hedge?.numbers && hedge.numbers.length > 0)
-                    ? hedge.numbers
-                    : (fullData?.streakAwareDeAdvisor?.latestRecommendation?.availableMethods?.contrarianLotKhe?.numbers || []);
+                const hedgeNums = (cfg.deStructure?.hedgeNums && cfg.deStructure.hedgeNums.length > 0)
+                    ? cfg.deStructure.hedgeNums
+                    : ((hedge?.numbers && hedge.numbers.length > 0)
+                        ? hedge.numbers
+                        : (fullData?.streakAwareDeAdvisor?.latestRecommendation?.availableMethods?.contrarianLotKhe?.numbers || []));
+                const isHedgeActive = (cfg.id === 'contrarianAntiTrap') || Boolean(cfg.deStructure?.isHedgeActive) || Boolean(hedge && hedge.isHedgeActive) || (hedgeNums.length > 0 && hedgeNums.length <= 15);
                 let hedgeText = '';
                 if (isHedgeActive && hedgeNums && hedgeNums.length > 0 && cfg.id !== 'contrarianAntiTrap') {
                     const hedgeFormatted = hedgeNums.map(n => String(number(n)).padStart(2, '0')).join(', ');
@@ -4286,7 +4310,10 @@
         // 👑 DÀN SỐ ĐÁNH CUỐI CÙNG — SIÊU HỘI TỤ ĐA PHƯƠNG PHÁP CONTROLLER
         // =========================================================================
         function renderFinalOptimalCombinedSlip() {
-            const cfg = PORTFOLIOS_CONFIG[currentActivePortfolio] || PORTFOLIOS_CONFIG.maxProfit;
+            const cfg = {
+                ...(PORTFOLIOS_CONFIG[currentActivePortfolio] || PORTFOLIOS_CONFIG.maxProfit),
+                ...(fullData?.strategicPortfolioGovernor?.portfolios?.[currentActivePortfolio] || {})
+            };
             const deData = getDeMethodDisplayData(cfg.deMethod, fullData);
 
             const crossOpt = fullData?.dynamicMetaAdvisor?.nextPrediction?.optimalCrossTierEnsemble?.primary
@@ -4365,10 +4392,12 @@
 
             // Dàn Khiên Bảo Hiểm Lọt Khe (1 Ăn 84)
             const hedge = fullData?.streakAwareDeAdvisor?.latestRecommendation?.lotKheHedge || fullData?.lotKheHedge;
-            const isHedgeActive = (cfg.id === 'contrarianAntiTrap') || (hedge && hedge.isHedgeActive);
-            const hedgeNums = (hedge?.numbers && hedge.numbers.length > 0)
-                ? hedge.numbers
-                : (fullData?.streakAwareDeAdvisor?.latestRecommendation?.availableMethods?.contrarianLotKhe?.numbers || []);
+            const hedgeNums = (cfg.deStructure?.hedgeNums && cfg.deStructure.hedgeNums.length > 0)
+                ? cfg.deStructure.hedgeNums
+                : ((hedge?.numbers && hedge.numbers.length > 0)
+                    ? hedge.numbers
+                    : (fullData?.streakAwareDeAdvisor?.latestRecommendation?.availableMethods?.contrarianLotKhe?.numbers || []));
+            const isHedgeActive = (cfg.id === 'contrarianAntiTrap') || Boolean(cfg.deStructure?.isHedgeActive) || Boolean(hedge && hedge.isHedgeActive) || (hedgeNums.length > 0 && hedgeNums.length <= 15);
 
             const deHedgeRowEl = byId('finalDeHedgeRow');
             const deHedgeLabelEl = byId('finalDeHedgeLabel');

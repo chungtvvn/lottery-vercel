@@ -371,11 +371,13 @@ function formatM(profitK) {
 
 function buildBetCalculationSheet(tier, date, advisorPayload = {}) {
   const divider = '━━━━━━━━━━━━━━━━━━━━';
+  const stratGov = advisorPayload?.strategicPortfolioGovernor || null;
+  const recPort = stratGov?.recommendedPortfolio || null;
   const streakDeAdv = advisorPayload?.streakAwareDeAdvisor?.latestRecommendation || null;
-  const sMethod = streakDeAdv?.selectedMethodLabel || 'Đề Thích Ứng Alpha';
-  const sNumbers = streakDeAdv?.numbers || [];
-  const sTierX2 = streakDeAdv?.tierX2 || [];
-  const sSingles = streakDeAdv?.singles || [];
+  const sMethod = recPort?.deStructure?.label || streakDeAdv?.selectedMethodLabel || 'Đề Thích Ứng Alpha';
+  const sNumbers = (recPort?.deStructure?.allNums || streakDeAdv?.numbers || []).map(normalizeLotteryNumber);
+  const sTierX2 = (recPort?.deStructure?.vipNums || streakDeAdv?.tierX2 || []).map(normalizeLotteryNumber);
+  const sSingles = (recPort?.deStructure?.singleNums || streakDeAdv?.singles || []).map(normalizeLotteryNumber);
   const sizing = Number(streakDeAdv?.sizingMultiplier || 1.0);
 
   const hasAdvancedDe = Boolean(sNumbers.length);
@@ -559,8 +561,12 @@ function buildOptimalBetSlipMessage(date, advisorPayload = {}) {
     lines.push(`💰 <i>Vốn: Mức 3 = 12.0M · Mức VIP = 60M (Nổ VIP ăn 33.6M M3 / 168M VIP 👉 Lãi ròng +21.6M M3 / +108M VIP)</i>`);
   }
 
-  const slipHedge = streakDeAdv?.lotKheHedge || (recPort?.deStructure?.isHedgeActive ? { isHedgeActive: true, numbers: recPort.deStructure.hedgeNums } : null);
-  if (slipHedge && slipHedge.isHedgeActive && slipHedge.numbers?.length) {
+  const slipHedge = (recPort?.deStructure?.isHedgeActive && recPort.deStructure.hedgeNums?.length)
+    ? { isHedgeActive: true, numbers: recPort.deStructure.hedgeNums, recommendedStakePerNumK: 100 }
+    : (streakDeAdv?.lotKheHedge?.isHedgeActive && streakDeAdv.lotKheHedge.numbers?.length)
+      ? streakDeAdv.lotKheHedge
+      : (recPort?.deStructure?.hedgeNums?.length ? { isHedgeActive: true, numbers: recPort.deStructure.hedgeNums, recommendedStakePerNumK: 100 } : null);
+  if (slipHedge && slipHedge.numbers?.length && (slipHedge.isHedgeActive || recPort?.deStructure?.isHedgeActive)) {
     const shNums = slipHedge.numbers.map(normalizeLotteryNumber);
     const shStake = slipHedge.recommendedStakePerNumK || 100;
     lines.push(
@@ -1413,8 +1419,12 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
       `  • 🛡️ <b>Bọc Lót X1 (${deFinalSingles.length} số - Vào tiền chuẩn):</b> <code>${escapeHtml(formatNumberList(deFinalSingles))}</code>`
     );
   }
-  const finalHedge = streakDeAdv?.lotKheHedge || (recPort?.deStructure?.isHedgeActive ? { isHedgeActive: true, numbers: recPort.deStructure.hedgeNums } : null);
-  if (finalHedge && finalHedge.isHedgeActive && finalHedge.numbers?.length) {
+  const finalHedge = (recPort?.deStructure?.isHedgeActive && recPort.deStructure.hedgeNums?.length)
+    ? { isHedgeActive: true, numbers: recPort.deStructure.hedgeNums, recommendedStakePerNumK: 100 }
+    : (streakDeAdv?.lotKheHedge?.isHedgeActive && streakDeAdv.lotKheHedge.numbers?.length)
+      ? streakDeAdv.lotKheHedge
+      : (recPort?.deStructure?.hedgeNums?.length ? { isHedgeActive: true, numbers: recPort.deStructure.hedgeNums, recommendedStakePerNumK: 100 } : null);
+  if (finalHedge && finalHedge.numbers?.length && (finalHedge.isHedgeActive || recPort?.deStructure?.isHedgeActive)) {
     const fhNums = finalHedge.numbers.map(normalizeLotteryNumber);
     const fhStake = finalHedge.recommendedStakePerNumK || 100;
     lines.push(
@@ -1595,7 +1605,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     const aiCoverage = 100 - lotKhe0.length;
 
     if (lotKhe0.length > 0 && lotKhe0.length < 100) {
-      const isHedgeActive = Boolean(streakDeAdv?.lotKheHedge?.isHedgeActive);
+      const isHedgeActive = Boolean(recPort?.deStructure?.isHedgeActive || streakDeAdv?.lotKheHedge?.isHedgeActive || (lotKhe0.length > 0 && lotKhe0.length <= 15));
       const hedgeNote = isHedgeActive
         ? ` 👉 <b>HỆ THỐNG ĐÃ TỰ ĐỘNG KÍCH HOẠT KHIÊN BẢO HIỂM LỌT KHE (1 Ăn 84)!</b>`
         : ` <i>(Độ an toàn AI rất cao, không cần bọc lót hoặc chơi Gói 5 Kháng Bẫy Outlier)</i>`;
