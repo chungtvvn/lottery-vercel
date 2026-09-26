@@ -3972,6 +3972,18 @@
                 card.classList.toggle('ring-red-500/30', isSelected && key === 'contrarianAntiTrap');
                 card.classList.toggle('border-white/15', !isSelected);
 
+                // Background Gradients
+                card.classList.toggle('bg-gradient-to-b', isSelected);
+                card.classList.toggle('from-amber-500/20', isSelected && isRecommended);
+                card.classList.toggle('from-emerald-500/20', isSelected && !isRecommended && key === 'steadyAccumulator');
+                card.classList.toggle('from-indigo-500/20', isSelected && !isRecommended && (key === 'smartAlternating' || key === 'antiNoiseResonance'));
+                card.classList.toggle('from-red-500/20', isSelected && key === 'contrarianAntiTrap');
+                card.classList.toggle('via-slate-900', isSelected);
+                card.classList.toggle('to-slate-950', isSelected);
+                card.classList.toggle('shadow-xl', isSelected);
+                card.classList.toggle('bg-slate-900/80', !isSelected);
+                card.classList.toggle('shadow-md', !isSelected);
+
                 // Add or update dynamic AI recommended badge
                 let recBadge = card.querySelector('.ai-rec-badge');
                 if (isRecommended) {
@@ -3996,7 +4008,8 @@
                             indicator.innerHTML = '<i class="bi bi-check-circle-fill"></i> Đang chọn (Kỷ Lục Profit)';
                             indicator.className = 'portfolio-active-indicator inline-flex items-center gap-1 text-[11px] font-black text-amber-300';
                         } else if (key === 'steadyAccumulator') {
-                            indicator.innerHTML = '<i class="bi bi-shield-check"></i> Đang chọn (An Toàn Hậu Thắng)';
+                            const isRecovery = !fullData?.streakAwareDeAdvisor?.latestRecommendation?.strategicPortfolioGovernor?.wasYesterdayWinning;
+                            indicator.innerHTML = `<i class="bi bi-shield-check"></i> Đang chọn (${isRecovery ? 'An Toàn Cao Nhất' : 'An Toàn Hậu Thắng'})`;
                             indicator.className = 'portfolio-active-indicator inline-flex items-center gap-1 text-[11px] font-black text-emerald-400';
                         } else if (key === 'contrarianAntiTrap') {
                             indicator.innerHTML = '<i class="bi bi-shield-check"></i> Đang chọn (Kháng Bẫy)';
