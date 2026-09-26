@@ -2108,6 +2108,76 @@
             `;
         }
 
+        if (type === 'lo4Xien4') {
+            const isPending = info.isPending;
+            const status = info.status || info.xien4Status;
+            const reason = info.reason || info.xien4Reason;
+            const combinations = info.combinations || info.xien4Combinations || [];
+            const stakeK = info.stakeK || info.xien4StakeK || 0;
+            const profitK = info.profitK || info.dayXien4ProfitK || 0;
+            const isWin = info.isWin || info.isXien4Win;
+
+            let combinationsHtml = '';
+            if (combinations.length > 0) {
+                combinationsHtml = `
+                    <div class="mb-2">
+                        <div class="text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wide">
+                            Các bộ Xiên 4 (${combinations.length} vé):
+                        </div>
+                        <div class="space-y-1 max-h-36 overflow-y-auto pr-1 custom-scrollbar">
+                            ${combinations.map(comb => `
+                                <div class="rounded-lg bg-teal-500/20 border border-teal-400/30 text-teal-200 font-mono text-xs font-black px-2 py-1 text-center">
+                                    ${comb.map(number).join(' - ')}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="space-y-3 p-1">
+                    <div class="flex items-start justify-between gap-2 border-b border-white/10 pb-2">
+                        <div>
+                            <span class="rounded ${isPending ? 'bg-amber-400 text-slate-950 font-black' : (info.isLive ? 'bg-red-500/20 text-red-300 border border-red-500/40' : 'bg-slate-700 text-slate-300')} font-black text-[10px] px-2 py-0.5 uppercase">
+                                ${isPending ? '🔒 ĐÃ KHÓA KỲ TỚI' : (info.isLive ? '🔴 THỰC CHIẾN LIVE' : '🛡️ STRICT PIT D-1')}
+                            </span>
+                            <h4 class="font-black text-sm text-white mt-1">Lô Xiên 4 (Ghép 4 Mới) — ${formatDateVi(info.date)}</h4>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-black text-xs ${profitK > 0 ? 'text-emerald-400' : (profitK < 0 ? 'text-rose-400' : 'text-slate-400')} font-mono">
+                                ${moneyM(profitK, { signed: true })}
+                            </div>
+                            <div class="text-[10px] text-slate-400 font-sans">Vốn ${moneyM(stakeK)}</div>
+                        </div>
+                    </div>
+
+                    <div class="rounded-xl ${status === 'SKIPPED_TOO_MANY' ? 'bg-amber-500/10 border border-amber-400/40 text-amber-200' : (isWin ? 'bg-emerald-500/20 border border-emerald-400/40 text-emerald-200' : 'bg-slate-800 text-slate-300')} p-2.5 text-xs">
+                        <div class="font-bold flex items-center gap-1.5">
+                            <i class="bi ${status === 'SKIPPED_TOO_MANY' ? 'bi-shield-check text-amber-400' : (isWin ? 'bi-check-circle-fill text-emerald-400' : 'bi-info-circle')}"></i>
+                            ${status === 'SKIPPED_TOO_MANY' ? 'Chế độ Bảo Toàn Vốn (Tự Động Bỏ Qua Xiên 4)' : (isPending ? 'Kế Hoạch Cược Xiên 4' : (isWin ? '🎉 Ăn Xiên 4 Thành Công!' : 'Trượt Xiên 4'))}
+                        </div>
+                        <div class="text-[11px] mt-1 text-slate-300 leading-relaxed">
+                            ${escapeHtml(reason || (status === 'SKIPPED_TOO_MANY' ? 'Có > 5 số trùng giữa 4 phương pháp -> Dừng cược Xiên 4 để không phân tán vốn.' : 'Theo dõi hiệu suất thuật toán ghép 4.'))}
+                        </div>
+                    </div>
+
+                    ${combinationsHtml}
+
+                    <div class="pt-2 border-t border-white/10 grid grid-cols-2 gap-2 text-[11px] font-mono">
+                        <div>
+                            <div class="text-[9px] text-slate-400 uppercase">Trạng Thái</div>
+                            <div class="font-bold text-white">${status === 'SKIPPED_TOO_MANY' ? '🛡️ Bỏ qua không đánh' : (isPending ? '⏳ Chờ mở thưởng' : (isWin ? '🎉 Thắng cược' : '❌ Trượt'))}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-[9px] text-slate-400 uppercase">Quy Tắc An Toàn</div>
+                            <div class="font-bold text-amber-400">Chỉ đánh khi 4-5 số trùng</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         if (type === 'loStd' || type === 'loX2') {
             const isX2 = (type === 'loX2');
             if (info.isPending) {
@@ -2680,19 +2750,21 @@
             all: 'Nhật Ký & Đối Soát Chi Tiết Từng Ngày Theo Đề Xuất (Đề + Lô)',
             de: 'Nhật Ký Đối Soát: 💎 Đề Theo Gợi Ý (Dung Hợp & Đổi Pha)',
             lo4Engine: 'Nhật Ký Đối Soát: 🔥 Lô Ghép 4 Động Cơ (Top 6/7 Live: QMBF + Bạc Nhớ + 3 Động Cơ + RRF)',
+            lo4Xien4: 'Nhật Ký Đối Soát: 🎲 Lô Xiên 4 (Phương Pháp Ghép 4 Mới)',
             loStd: 'Nhật Ký Đối Soát: 🏆 Lô Chuẩn Nền Tảng (Top 20 Mặc Định)',
             loX2: 'Nhật Ký Đối Soát: 🚀 Lô Tăng Tốc X2 (Bộ Điều Phối Đổi Pha)',
             loXi3: 'Nhật Ký Đối Soát: 🌟 Tam Thủ Xiên 3 (Chế Độ Quan Sát Độc Lập)',
-            loXi4: 'Nhật Ký Đối Soát: 💎 Lô Xiên 4 Tinh Hoa (Chế Độ Quan Sát Độc Lập)'
+            loXi4: 'Nhật Ký Đối Soát: 🎲 Lô Xiên 4 (Phương Pháp Ghép 4 Mới)'
         };
         const PROFIT_LABELS_MAP = {
             all: 'Tổng Lãi Trong Mốc (Đề + Lô):',
             de: 'Tổng Lãi Đề Theo Gợi Ý:',
             lo4Engine: 'Tổng Lãi Lô Ghép 4 Động Cơ:',
+            lo4Xien4: 'Tổng Lãi Lô Xiên 4 (Ghép 4):',
             loStd: 'Tổng Lãi Lô Chuẩn (Top 20):',
             loX2: 'Tổng Lãi Lô Tăng Tốc X2:',
             loXi3: 'Tổng Lãi Riêng Xiên 3 (Quan sát):',
-            loXi4: 'Tổng Lãi Riêng Xiên 4 (Quan sát):'
+            loXi4: 'Tổng Lãi Lô Xiên 4 (Ghép 4):'
         };
 
         if (headingTitle) headingTitle.textContent = TITLES_MAP[currentDiaryCategory] || TITLES_MAP.all;
@@ -2757,15 +2829,15 @@
                         <th class="px-3 py-3 text-right">Lũy Kế Xiên 3</th>
                     </tr>
                 `;
-            } else if (currentDiaryCategory === 'loXi4') {
+            } else if (currentDiaryCategory === 'loXi4' || currentDiaryCategory === 'lo4Xien4') {
                 thead.innerHTML = `
                     <tr class="border-b border-amber-200 bg-amber-50/80 text-amber-950 uppercase font-black tracking-wider text-[10px]">
                         <th class="px-3 py-3">Ngày</th>
-                        <th class="px-3 py-3">Phương Pháp Xiên 4</th>
-                        <th class="px-3 py-3">Bộ 4 Số Vàng Tứ Thủ</th>
-                        <th class="px-3 py-3">Số Con Về</th>
-                        <th class="px-3 py-3">Thể Thức Ăn Vé</th>
-                        <th class="px-3 py-3 text-right">Lãi/Lỗ (Vốn 11M)</th>
+                        <th class="px-3 py-3">Phương Pháp</th>
+                        <th class="px-3 py-3">Số Lô Trùng &ge; 2 Động Cơ</th>
+                        <th class="px-3 py-3">Trạng Thái Xiên 4</th>
+                        <th class="px-3 py-3">Bộ Số / Vé Quây</th>
+                        <th class="px-3 py-3 text-right">Lãi/Lỗ Xiên 4 (Vốn)</th>
                         <th class="px-3 py-3 text-right">Lũy Kế Xiên 4</th>
                     </tr>
                 `;
@@ -2776,8 +2848,8 @@
                         <th class="px-3 py-3">💎 Đề Theo Gợi Ý</th>
                         <th class="px-3 py-3">🏆 Lô Chuẩn Nền Tảng</th>
                         <th class="px-3 py-3">🚀 Lô Tăng Tốc X2</th>
-                        <th class="px-3 py-3">🌟 Tam Thủ Xiên 3 <span class="text-[9px] text-slate-400 font-normal lowercase">(quan sát)</span></th>
-                        <th class="px-3 py-3">💎 Lô Xiên 4 Tinh Hoa <span class="text-[9px] text-slate-400 font-normal lowercase">(quan sát)</span></th>
+                        <th class="px-3 py-3">🔥 Lô Ghép 4 Động Cơ <span class="text-[9px] text-slate-400 font-normal lowercase">(Live)</span></th>
+                        <th class="px-3 py-3">🎲 Lô Xiên 4 Ghép Mới <span class="text-[9px] text-slate-400 font-normal lowercase">(quan sát)</span></th>
                         <th class="px-3 py-3 text-right">Tổng Ngày</th>
                         <th class="px-3 py-3 text-right">Lũy Kế Mốc</th>
                     </tr>
@@ -2885,6 +2957,7 @@
         let cumXi3ProfitK = 0;
         let cumXi4ProfitK = 0;
         let cumLo4ProfitK = 0;
+        let cumLo4Xien4ProfitK = 0;
 
         diaryDetailsMap = {};
         let mergedRows = [];
@@ -2944,8 +3017,13 @@
                     lo4Engine: {
                         date,
                         isPending: true,
+                        countTotal: payload?.lo4EngineFusion?.latestRecommendation?.allNumbers?.length || 17,
                         countOver2: payload?.lo4EngineFusion?.latestRecommendation?.numbersOver2?.length || 0,
+                        countX1: payload?.lo4EngineFusion?.latestRecommendation?.tierX1?.length || 0,
                         numbersOver2: payload?.lo4EngineFusion?.latestRecommendation?.numbersOver2 || [],
+                        tierX4: payload?.lo4EngineFusion?.latestRecommendation?.tierX4 || [],
+                        tierX3: payload?.lo4EngineFusion?.latestRecommendation?.tierX3 || [],
+                        tierX1: payload?.lo4EngineFusion?.latestRecommendation?.tierX1 || [],
                         betNumbers: payload?.lo4EngineFusion?.latestRecommendation?.betNumbers || [],
                         dayLotoStakeK: payload?.lo4EngineFusion?.latestRecommendation?.totalLotoStakeK || 0,
                         dayLotoPayoutK: 0,
@@ -2957,6 +3035,25 @@
                         xien4Combinations: payload?.lo4EngineFusion?.latestRecommendation?.xien4?.combinations || [],
                         totalDayProfitK: 0,
                         cumLotoProfitK: cumLo4ProfitK
+                    },
+                    lo4Xien4: {
+                        date,
+                        isPending: true,
+                        isLive: true,
+                        status: payload?.lo4EngineFusion?.latestRecommendation?.xien4?.status || 'SKIPPED_TOO_MANY',
+                        xien4Status: payload?.lo4EngineFusion?.latestRecommendation?.xien4?.status || 'SKIPPED_TOO_MANY',
+                        reason: payload?.lo4EngineFusion?.latestRecommendation?.xien4?.reason || '',
+                        xien4Reason: payload?.lo4EngineFusion?.latestRecommendation?.xien4?.reason || '',
+                        combinations: payload?.lo4EngineFusion?.latestRecommendation?.xien4?.combinations || [],
+                        xien4Combinations: payload?.lo4EngineFusion?.latestRecommendation?.xien4?.combinations || [],
+                        countOver2: payload?.lo4EngineFusion?.latestRecommendation?.numbersOver2?.length || 0,
+                        stakeK: payload?.lo4EngineFusion?.latestRecommendation?.xien4?.stakeK || 0,
+                        profitK: 0,
+                        dayXien4ProfitK: 0,
+                        payoutK: 0,
+                        isWin: false,
+                        isXien4Win: false,
+                        cumXien4ProfitK: cumLo4Xien4ProfitK
                     },
                     loStd: {
                         date,
@@ -3030,6 +3127,8 @@
                     loRow: null,
                     lo4Engine: diaryDetailsMap[date].lo4Engine,
                     cumLo4ProfitK,
+                    lo4Xien4: diaryDetailsMap[date].lo4Xien4,
+                    cumLo4Xien4ProfitK,
                     std: {
                         methodName: stdMethodName,
                         numbers: stdNumbers,
@@ -3063,6 +3162,7 @@
                     cumProfitK,
                     deInfo: diaryDetailsMap[date].de,
                     lo4Info: diaryDetailsMap[date].lo4Engine,
+                    lo4Xien4Info: diaryDetailsMap[date].lo4Xien4,
                     stdInfo: diaryDetailsMap[date].loStd,
                     x2Info: diaryDetailsMap[date].loX2,
                     xi3Info: diaryDetailsMap[date].loXi3,
@@ -3137,6 +3237,8 @@
             const lo4Row = lo4Map[date] || null;
             const lo4ProfitK = lo4Row ? (lo4Row.dayLotoProfitK || 0) : 0;
             cumLo4ProfitK += lo4ProfitK;
+            const lo4Xien4ProfitK = lo4Row ? (lo4Row.dayXien4ProfitK || 0) : 0;
+            cumLo4Xien4ProfitK += lo4Xien4ProfitK;
 
             const stdMethodName = std.methodName || std.methodLabel || 'Super-Hybrid Quad-Fusion v7.0 Top 20';
             const stdNumbers = (std.numbers || []).map(number);
@@ -3176,6 +3278,25 @@
                 lo4Engine: lo4Row ? {
                     ...lo4Row,
                     cumLotoProfitK: cumLo4ProfitK
+                } : null,
+                lo4Xien4: lo4Row ? {
+                    date,
+                    isPending: false,
+                    isLive: lo4Row.isLive,
+                    status: lo4Row.xien4Status || 'SKIPPED_TOO_MANY',
+                    xien4Status: lo4Row.xien4Status || 'SKIPPED_TOO_MANY',
+                    reason: lo4Row.xien4Reason || '',
+                    xien4Reason: lo4Row.xien4Reason || '',
+                    combinations: lo4Row.xien4Combinations || [],
+                    xien4Combinations: lo4Row.xien4Combinations || [],
+                    countOver2: lo4Row.countOver2 || 0,
+                    stakeK: lo4Row.xien4StakeK || 0,
+                    profitK: lo4Row.dayXien4ProfitK || 0,
+                    dayXien4ProfitK: lo4Row.dayXien4ProfitK || 0,
+                    payoutK: lo4Row.xien4PayoutK || 0,
+                    isWin: Boolean(lo4Row.isXien4Win),
+                    isXien4Win: Boolean(lo4Row.isXien4Win),
+                    cumXien4ProfitK: cumLo4Xien4ProfitK
                 } : null,
                 loStd: {
                     date,
@@ -3245,6 +3366,8 @@
                 loRow,
                 lo4Engine: diaryDetailsMap[date].lo4Engine,
                 cumLo4ProfitK,
+                lo4Xien4: diaryDetailsMap[date].lo4Xien4,
+                cumLo4Xien4ProfitK,
                 std,
                 cumStdProfitK,
                 x2,
@@ -3264,6 +3387,7 @@
                 cumProfitK,
                 deInfo: diaryDetailsMap[date].de,
                 lo4Info: diaryDetailsMap[date].lo4Engine,
+                lo4Xien4Info: diaryDetailsMap[date].lo4Xien4,
                 stdInfo: diaryDetailsMap[date].loStd,
                 x2Info: diaryDetailsMap[date].loX2,
                 xi3Info: diaryDetailsMap[date].loXi3,
@@ -3281,7 +3405,7 @@
                 if (currentDiaryCategory === 'loStd') return (r.std.profitK || 0) > 0;
                 if (currentDiaryCategory === 'loX2') return (r.x2.profitK || 0) > 0;
                 if (currentDiaryCategory === 'loXi3') return (r.xi3.profitK || 0) > 0;
-                if (currentDiaryCategory === 'loXi4') return (r.xi4.profitK || 0) > 0;
+                if (currentDiaryCategory === 'loXi4' || currentDiaryCategory === 'lo4Xien4') return (r.lo4Xien4?.profitK || 0) > 0;
                 return r.dayTotalK > 0;
             });
         } else if (unifiedStatusFilter === 'loss') {
@@ -3292,7 +3416,7 @@
                 if (currentDiaryCategory === 'loStd') return (r.std.profitK || 0) <= 0;
                 if (currentDiaryCategory === 'loX2') return (r.x2.profitK || 0) <= 0;
                 if (currentDiaryCategory === 'loXi3') return (r.xi3.profitK || 0) <= 0;
-                if (currentDiaryCategory === 'loXi4') return (r.xi4.profitK || 0) <= 0;
+                if (currentDiaryCategory === 'loXi4' || currentDiaryCategory === 'lo4Xien4') return (r.lo4Xien4?.profitK || 0) <= 0;
                 return r.dayTotalK <= 0;
             });
         }
@@ -3320,9 +3444,9 @@
             } else if (currentDiaryCategory === 'loXi3') {
                 if ((r.xi3.profitK || 0) > 0) catWinCount++;
                 catTotalProfit += (r.xi3.profitK || 0);
-            } else if (currentDiaryCategory === 'loXi4') {
-                if ((r.xi4.profitK || 0) > 0) catWinCount++;
-                catTotalProfit += (r.xi4.profitK || 0);
+            } else if (currentDiaryCategory === 'loXi4' || currentDiaryCategory === 'lo4Xien4') {
+                if ((r.lo4Xien4?.profitK || 0) > 0) catWinCount++;
+                catTotalProfit += (r.lo4Xien4?.profitK || 0);
             } else {
                 if (r.dayTotalK > 0) catWinCount++;
                 catTotalProfit += r.dayTotalK;
@@ -3351,6 +3475,8 @@
             const x2Info = r.x2Info;
             const xi3Info = r.xi3Info;
             const xi4Info = r.xi4Info;
+            const lo4Info = r.lo4Info || r.lo4Engine || {};
+            const lo4Xien4Info = r.lo4Xien4Info || r.lo4Xien4 || {};
 
             // --- 1. VIEW ĐỀ THEO GỢI Ý ---
             if (currentDiaryCategory === 'de') {
@@ -3858,12 +3984,15 @@
                 `;
             }
 
-            // --- 5. VIEW LÔ XIÊN 4 ---
-            if (currentDiaryCategory === 'loXi4') {
+            // --- 5. VIEW LÔ XIÊN 4 (PHƯƠNG PHÁP GHÉP 4 MỚI) ---
+            if (currentDiaryCategory === 'loXi4' || currentDiaryCategory === 'lo4Xien4') {
+                const isSkipped = (lo4Xien4Info.status === 'SKIPPED_TOO_MANY');
+                const combs = lo4Xien4Info.combinations || lo4Xien4Info.xien4Combinations || [];
+
                 if (r.isPending) {
-                    const chipsHtml = (xi4Info.numbers || []).map(n => {
-                        return `<span class="inline-block px-2.5 py-1 rounded-xl font-mono text-xs font-black shadow-2xs bg-slate-800 text-slate-200">${number(n)}</span>`;
-                    }).join(' ');
+                    const chipsHtml = isSkipped
+                        ? `<span class="inline-block px-2.5 py-1 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">🛡️ Bỏ qua không đánh (${lo4Xien4Info.countOver2 || 8} số trùng &ge; 2) — Bảo toàn vốn</span>`
+                        : combs.map((c, idx) => `<span class="inline-block px-2 py-0.5 rounded-lg font-mono text-[11px] font-bold bg-purple-100 text-purple-900 border border-purple-300">Vé ${idx + 1}: ${(c.numbers || c).join('-')}</span>`).join(' ');
 
                     return `
                         <tr class="hover:bg-amber-50/50 bg-amber-50/20 border-l-4 border-l-amber-500 transition-colors">
@@ -3874,30 +4003,30 @@
                                 </div>
                             </td>
                             <td class="px-3 py-3 whitespace-nowrap">
-                                <div class="font-bold text-xs text-amber-950">${escapeHtml(xi4Info.methodName)}</div>
-                                <div class="text-[10px] text-slate-500">Tứ Thủ Hiệp Đồng</div>
+                                <div class="font-bold text-xs ${isSkipped ? 'text-slate-700' : 'text-purple-950'}">${isSkipped ? '🛡️ Bỏ qua (>5s trùng)' : '🎲 Đánh 5 vé quây'}</div>
+                                <div class="text-[10px] text-slate-500">${lo4Xien4Info.countOver2 || 0} số trùng ghép 4</div>
                             </td>
-                            <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXi4">
+                            <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Xien4">
                                 <div class="flex flex-wrap items-center gap-1.5">${chipsHtml}</div>
                                 <div class="text-[9px] text-amber-700 font-bold mt-1 flex items-center gap-1">
-                                    <i class="bi bi-cursor-fill text-[8px]"></i> 🔒 Đã khóa bộ 4 số · Rê chuột xem vé quây
+                                    <i class="bi bi-cursor-fill text-[8px]"></i> 🔒 Rê chuột xem chi tiết lý do & tổ hợp
                                 </div>
                             </td>
                             <td class="px-3 py-3 whitespace-nowrap">
                                 <span class="font-bold text-xs text-amber-600">
-                                    ⏳ Chờ mở
+                                    ⏳ Chờ mở 18:30
                                 </span>
                             </td>
                             <td class="px-3 py-3 whitespace-nowrap">
-                                <span class="inline-flex items-center gap-1 rounded bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 text-xs font-bold">
-                                    ⏳ Chờ mở thưởng
-                                </span>
+                                ${isSkipped
+                                    ? `<span class="inline-flex items-center gap-1 rounded bg-slate-100 text-slate-700 border border-slate-200 px-2 py-0.5 text-xs font-bold">🛡️ Bảo toàn vốn</span>`
+                                    : `<span class="inline-flex items-center gap-1 rounded bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 text-xs font-bold">⏳ Chờ mở thưởng</span>`}
                             </td>
                             <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
-                                <div class="font-bold text-xs text-amber-600">
-                                    ⏳ Chờ KQ
+                                <div class="font-bold text-xs ${isSkipped ? 'text-slate-500' : 'text-amber-600'}">
+                                    ${isSkipped ? '0đ' : '⏳ Chờ KQ'}
                                 </div>
-                                <div class="text-[10px] text-slate-400 font-sans">Quây 11 vé (${moneyM(xi4Info.stakeK)})</div>
+                                <div class="text-[10px] text-slate-400 font-sans">${isSkipped ? '0 vé (bảo toàn)' : `Quây 5 vé (${moneyM(lo4Xien4Info.stakeK)})`}</div>
                             </td>
                             <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
                                 <div class="font-semibold text-xs text-slate-400">
@@ -3907,53 +4036,53 @@
                         </tr>
                     `;
                 }
-                const chipsHtml = (xi4Info.numbers || []).map(n => {
-                    const hits = xi4Info.prizeCounts?.[number(n)] || 0;
-                    return `<span class="inline-block px-2.5 py-1 rounded-xl font-mono text-xs font-black shadow-2xs ${hits > 0 ? 'bg-amber-400 text-slate-950 ring-2 ring-white' : 'bg-slate-800 text-slate-200'}">${number(n)}</span>`;
-                }).join(' ');
 
-                let ticketStatus = `<span class="inline-flex items-center gap-1 rounded bg-slate-100 text-slate-600 px-2 py-0.5 text-xs">❌ Trượt</span>`;
-                if (xi4Info.hits >= 4) {
-                    ticketStatus = `<span class="inline-flex items-center gap-1 rounded bg-emerald-500 text-white px-2 py-0.5 text-xs font-black shadow-xs">🎉 Ăn Xiên 4 (+373M)</span>`;
-                } else if (xi4Info.hits === 3) {
-                    ticketStatus = `<span class="inline-flex items-center gap-1 rounded bg-emerald-100 text-emerald-900 px-2 py-0.5 text-xs font-black">🔥 Ăn Xiên 3 + X2 (+29M)</span>`;
-                } else if (xi4Info.hits === 2) {
-                    ticketStatus = `<span class="inline-flex items-center gap-1 rounded bg-amber-100 text-amber-950 px-2 py-0.5 text-xs font-black">✨ Ăn Vé Xiên 2 (+1M)</span>`;
+                const chipsHtml = isSkipped
+                    ? `<span class="inline-block px-2.5 py-1 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">🛡️ Bỏ qua không đánh (${lo4Xien4Info.countOver2 || 0} số trùng &ge; 2) — Bảo toàn vốn</span>`
+                    : combs.map((c, idx) => `<span class="inline-block px-2 py-0.5 rounded-lg font-mono text-[11px] font-bold bg-purple-100 text-purple-900 border border-purple-300">Vé ${idx + 1}: ${(c.numbers || c).join('-')}</span>`).join(' ');
+
+                let ticketStatus = `<span class="inline-flex items-center gap-1 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 text-xs font-bold">🛡️ Bảo toàn vốn</span>`;
+                if (!isSkipped) {
+                    if (lo4Xien4Info.isWin || lo4Xien4Info.isXien4Win) {
+                        ticketStatus = `<span class="inline-flex items-center gap-1 rounded bg-emerald-500 text-white px-2 py-0.5 text-xs font-black shadow-xs">🎉 Ăn Xiên 4 (${moneyM(lo4Xien4Info.profitK || 0, { signed: true })})</span>`;
+                    } else {
+                        ticketStatus = `<span class="inline-flex items-center gap-1 rounded bg-rose-100 text-rose-800 px-2 py-0.5 text-xs font-semibold">❌ Trượt 5 vé</span>`;
+                    }
                 }
 
                 return `
-                    <tr class="hover:bg-amber-50/40 transition-colors ${xi4Info.profitK > 0 ? 'bg-emerald-50/40' : ''}">
+                    <tr class="hover:bg-amber-50/40 transition-colors ${(lo4Xien4Info.profitK || 0) > 0 ? 'bg-emerald-50/40' : ''}">
                         <td class="px-3 py-3 whitespace-nowrap">
                             <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
                             <div class="text-[10px] text-slate-400 font-semibold">${isLiveBadge}</div>
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
-                            <div class="font-bold text-xs text-amber-950">${escapeHtml(xi4Info.methodName)}</div>
-                            <div class="text-[10px] text-slate-500">Tứ Thủ Hiệp Đồng</div>
+                            <div class="font-bold text-xs ${isSkipped ? 'text-slate-700' : 'text-purple-950'}">${isSkipped ? '🛡️ Bỏ qua (>5s trùng)' : '🎲 Đánh 5 vé quây'}</div>
+                            <div class="text-[10px] text-slate-500">${lo4Xien4Info.countOver2 || 0} số trùng ghép 4</div>
                         </td>
-                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXi4">
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Xien4">
                             <div class="flex flex-wrap items-center gap-1.5">${chipsHtml}</div>
-                            <div class="text-[9px] text-amber-700 font-bold mt-1 flex items-center gap-1">
-                                <i class="bi bi-cursor-fill text-[8px]"></i> Rê chuột xem vé quây
+                            <div class="text-[9px] text-purple-700 font-bold mt-1 flex items-center gap-1">
+                                <i class="bi bi-cursor-fill text-[8px]"></i> Rê chuột xem chi tiết đối soát
                             </div>
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
-                            <span class="font-bold text-xs ${xi4Info.hits >= 2 ? 'text-emerald-700 font-black' : 'text-slate-700'}">
-                                ${xi4Info.hits} / 4 con
+                            <span class="font-bold text-xs ${isSkipped ? 'text-slate-500' : ((lo4Xien4Info.isWin || lo4Xien4Info.isXien4Win) ? 'text-emerald-700 font-black' : 'text-slate-700')}">
+                                ${isSkipped ? 'Không vào tiền' : ((lo4Xien4Info.isWin || lo4Xien4Info.isXien4Win) ? '🎉 Ăn Xiên 4' : 'Trượt 5 vé')}
                             </span>
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
                             ${ticketStatus}
                         </td>
                         <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
-                            <div class="font-black text-xs ${xi4Info.profitK > 0 ? 'text-emerald-600' : 'text-rose-600'}">
-                                ${moneyM(xi4Info.profitK, { signed: true })}
+                            <div class="font-black text-xs ${(lo4Xien4Info.profitK || 0) > 0 ? 'text-emerald-600' : ((lo4Xien4Info.profitK || 0) < 0 ? 'text-rose-600' : 'text-slate-500')}">
+                                ${isSkipped ? '0đ' : moneyM(lo4Xien4Info.profitK || 0, { signed: true })}
                             </div>
-                            <div class="text-[10px] text-slate-400 font-sans">Quây 11 vé (11M)</div>
+                            <div class="text-[10px] text-slate-400 font-sans">${isSkipped ? '0 vé (bảo toàn)' : `Quây 5 vé (${moneyM(lo4Xien4Info.stakeK || 0)})`}</div>
                         </td>
                         <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
-                            <div class="font-black text-xs ${r.cumXi4ProfitK >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
-                                ${moneyM(r.cumXi4ProfitK, { signed: true })}
+                            <div class="font-black text-xs ${(r.cumLo4Xien4ProfitK || 0) >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
+                                ${moneyM(r.cumLo4Xien4ProfitK || 0, { signed: true })}
                             </div>
                         </td>
                     </tr>
@@ -4010,30 +4139,32 @@
                                 <span class="text-teal-700 font-bold underline">Di chuột xem</span>
                             </div>
                         </td>
-                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXi3">
-                            <div class="text-[11px] font-bold text-amber-950 flex items-center gap-1">
-                                <i class="bi bi-triangle text-amber-500 text-[10px]"></i> ${escapeHtml(xi3Info.methodName)}
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-rose-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Engine">
+                            <div class="text-[11px] font-bold text-rose-950 flex items-center gap-1">
+                                <i class="bi bi-fire text-rose-600 text-[10px]"></i> Ghép 4 Động Cơ Live
                             </div>
                             <div class="flex items-center gap-1.5 mt-0.5 text-xs">
-                                <span class="text-amber-600 font-bold">⏳ Chờ mở</span>
-                                <span class="font-mono text-slate-400">1:40 (500K)</span>
+                                <span class="text-amber-600 font-bold">⏳ Chờ 27 giải</span>
+                                <span class="font-mono text-slate-400">Vốn ${moneyM(lo4Info.dayLotoStakeK || 0)}</span>
                             </div>
-                            <div class="text-[10px] font-mono text-slate-600 mt-0.5 font-bold flex items-center justify-between">
-                                <span>${(xi3Info.numbers || []).join(' ')}</span>
-                                <span class="text-amber-700 font-sans font-bold underline">Xem</span>
+                            <div class="text-[10px] text-slate-600 mt-0.5 font-bold flex items-center justify-between">
+                                <span>${lo4Info.countTotal || 17}s tổng hợp (${lo4Info.countOver2 || 0} trùng)</span>
+                                <span class="text-rose-700 font-sans font-bold underline">Di chuột xem</span>
                             </div>
                         </td>
-                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXi4">
-                            <div class="text-[11px] font-bold text-amber-950 flex items-center gap-1">
-                                <i class="bi bi-stars text-amber-500 text-[10px]"></i> ${escapeHtml(xi4Info.methodName)}
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-purple-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Xien4">
+                            <div class="text-[11px] font-bold text-purple-950 flex items-center gap-1">
+                                <i class="bi bi-dice-4-fill text-purple-600 text-[10px]"></i> Xiên 4 Ghép Mới
                             </div>
                             <div class="flex items-center gap-1.5 mt-0.5 text-xs">
-                                <span class="text-amber-600 font-bold">⏳ Chờ mở</span>
-                                <span class="font-mono text-slate-400">11 vé</span>
+                                ${lo4Xien4Info.status === 'ACTIVE'
+                                    ? `<span class="text-amber-600 font-bold">⏳ Chờ mở (${lo4Xien4Info.combinations?.length || 5} vé)</span>`
+                                    : `<span class="inline-flex items-center gap-1 rounded bg-slate-100 text-slate-700 px-1.5 py-0.5 text-[10px] font-bold">🛡️ Bỏ qua (>5s)</span>`}
+                                <span class="font-mono text-slate-400 font-semibold">${lo4Xien4Info.status === 'ACTIVE' ? moneyM(lo4Xien4Info.stakeK) : '0đ'}</span>
                             </div>
-                            <div class="text-[10px] font-mono text-slate-600 mt-0.5 font-bold flex items-center justify-between">
-                                <span>${xi4Info.numbers.join(' ')}</span>
-                                <span class="text-amber-700 font-sans font-bold underline">Xem vé</span>
+                            <div class="text-[10px] text-slate-600 mt-0.5 font-medium flex items-center justify-between">
+                                <span class="text-slate-500">${lo4Xien4Info.status === 'ACTIVE' ? 'Quây 4-5 số' : 'Bảo toàn vốn'}</span>
+                                <span class="text-purple-700 font-sans font-bold underline">Di chuột xem</span>
                             </div>
                         </td>
                         <td class="diary-cell-interactive px-3 py-3 text-right whitespace-nowrap font-mono cursor-pointer hover:bg-amber-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="total">
@@ -4067,10 +4198,16 @@
             const x2HitsText = `<strong>${x2Info.hits}</strong> nháy`;
             const x2ProfitText = `<span class="font-mono font-bold ${x2Info.profitK >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${moneyM(x2Info.profitK, { signed: true })}</span>`;
 
-            const xi4ProfitText = `<span class="font-mono font-bold ${xi4Info.profitK > 0 ? 'text-emerald-600' : 'text-slate-400'}">${moneyM(xi4Info.profitK, { signed: true })}</span>`;
-            const xi4HitsTag = (xi4Info.profitK > 0)
-                ? `<span class="rounded bg-amber-100 text-amber-900 px-1 py-0.5 text-[10px] font-black">Ăn ${xi4Info.hits || 2}n</span>`
-                : `<span class="text-slate-400 text-[10px]">Trượt</span>`;
+            const lo4HitsText = `<strong>${lo4Info.dayLotoHits ?? 0}</strong> nháy`;
+            const lo4ProfitText = `<span class="font-mono font-bold ${(lo4Info.dayLotoProfitK ?? 0) >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${moneyM(lo4Info.dayLotoProfitK ?? 0, { signed: true })}</span>`;
+
+            const lo4Xien4ProfitText = `<span class="font-mono font-bold ${(lo4Xien4Info.profitK ?? 0) > 0 ? 'text-emerald-600' : ((lo4Xien4Info.profitK ?? 0) < 0 ? 'text-rose-600' : 'text-slate-400')}">${moneyM(lo4Xien4Info.profitK ?? 0, { signed: true })}</span>`;
+            let lo4Xien4Tag = `<span class="inline-flex items-center gap-1 rounded bg-slate-100 text-slate-600 px-1 py-0.5 text-[10px] font-semibold">🛡️ Bỏ qua</span>`;
+            if (lo4Xien4Info.status === 'ACTIVE') {
+                lo4Xien4Tag = (lo4Xien4Info.isWin || lo4Xien4Info.isXien4Win)
+                    ? `<span class="rounded bg-emerald-500 text-white px-1.5 py-0.5 text-[10px] font-black shadow-xs">🎉 Ăn X4</span>`
+                    : `<span class="text-slate-500 text-[10px] font-semibold">Trượt</span>`;
+            }
 
             const dayClass = r.dayTotalK > 0 ? 'bg-emerald-50/40' : (r.dayTotalK < -50000 ? 'bg-rose-50/20' : '');
 
@@ -4120,30 +4257,30 @@
                             <span class="text-teal-700 font-bold underline">Di chuột xem</span>
                         </div>
                     </td>
-                    <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXi3">
-                        <div class="text-[11px] font-bold text-amber-950 flex items-center gap-1">
-                            <i class="bi bi-triangle text-amber-500 text-[10px]"></i> ${escapeHtml(xi3Info.methodName)}
+                    <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-rose-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Engine">
+                        <div class="text-[11px] font-bold text-rose-950 flex items-center gap-1">
+                            <i class="bi bi-fire text-rose-600 text-[10px]"></i> Ghép 4 Động Cơ Live
                         </div>
                         <div class="flex items-center gap-1.5 mt-0.5 text-xs">
-                            ${xi3Info.hits === 3 ? '<span class="rounded bg-emerald-500 text-white px-1 py-0.5 text-[10px] font-black">Ăn 3/3</span>' : `<span class="text-slate-400 text-[10px]">${xi3Info.hits || 0}/3 con</span>`}
-                            <span class="font-mono font-bold ${xi3Info.profitK > 0 ? 'text-emerald-600' : 'text-slate-400'}">${moneyM(xi3Info.profitK, { signed: true })}</span>
+                            <span class="text-slate-700">${lo4HitsText}</span>
+                            <span>${lo4ProfitText}</span>
                         </div>
-                        <div class="text-[10px] font-mono text-slate-600 mt-0.5 font-bold flex items-center justify-between">
-                            <span>${(xi3Info.numbers || []).join(' ')}</span>
-                            <span class="text-amber-700 font-sans font-bold underline">Xem</span>
+                        <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
+                            <span>${lo4Info.countTotal || 17}s tổng hợp (${lo4Info.countOver2 || 0} trùng)</span>
+                            <span class="text-rose-700 font-bold underline">Di chuột xem</span>
                         </div>
                     </td>
-                    <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXi4">
-                        <div class="text-[11px] font-bold text-amber-950 flex items-center gap-1">
-                            <i class="bi bi-stars text-amber-500 text-[10px]"></i> ${escapeHtml(xi4Info.methodName)}
+                    <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-purple-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Xien4">
+                        <div class="text-[11px] font-bold text-purple-950 flex items-center gap-1">
+                            <i class="bi bi-dice-4-fill text-purple-600 text-[10px]"></i> Xiên 4 Ghép Mới
                         </div>
                         <div class="flex items-center gap-1.5 mt-0.5 text-xs">
-                            ${xi4HitsTag}
-                            ${xi4ProfitText}
+                            ${lo4Xien4Tag}
+                            ${lo4Xien4ProfitText}
                         </div>
-                        <div class="text-[10px] font-mono text-slate-600 mt-0.5 font-bold flex items-center justify-between">
-                            <span>${xi4Info.numbers.join(' ')}</span>
-                            <span class="text-amber-700 font-sans font-bold underline">Xem vé</span>
+                        <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
+                            <span>${lo4Xien4Info.status === 'ACTIVE' ? `${lo4Xien4Info.countOver2 || 4} số trùng` : 'Bảo toàn vốn'}</span>
+                            <span class="text-purple-700 font-bold underline">Di chuột xem</span>
                         </div>
                     </td>
                     <td class="diary-cell-interactive px-3 py-3 text-right whitespace-nowrap font-mono cursor-pointer hover:bg-slate-100 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="total">
