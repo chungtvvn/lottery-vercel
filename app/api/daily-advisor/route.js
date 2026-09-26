@@ -250,6 +250,7 @@ function settleFromRaw(payload, rawRows) {
         loPositionalBridgeFlow: payload.loPositionalBridgeFlow || null,
         loHawkesClustering: payload.loHawkesClustering || null,
         loXien4Synergy: loXien4Synergy || payload.loXien4Synergy || null,
+        lo4EngineFusion: payload.lo4EngineFusion || null,
         dynamicMetaAdvisor: dynamicMetaAdvisor || payload.dynamicMetaAdvisor || loQuantumBayesFusion?.dynamicMetaAdvisor || null,
         latestDataDate: rawRows?.at(-1)?.date || payload.latestDataDate,
         snapshotLock: (() => {
@@ -348,6 +349,9 @@ export async function GET(request) {
                 if (!payload?.loXien4Synergy && localPayload?.loXien4Synergy) {
                     payload.loXien4Synergy = localPayload.loXien4Synergy;
                 }
+                if (!payload?.lo4EngineFusion || (localPayload?.lo4EngineFusion?.settledLedger?.length || 0) > (payload?.lo4EngineFusion?.settledLedger?.length || 0)) {
+                    payload.lo4EngineFusion = localPayload.lo4EngineFusion;
+                }
             } catch (_) {}
         }
 
@@ -367,6 +371,9 @@ export async function GET(request) {
             }
             if (payload?.loXien4Synergy?.latestRecommendation) {
                 payload.loXien4Synergy.latestRecommendation.snapshotLock = lockStatus;
+            }
+            if (payload?.lo4EngineFusion?.latestRecommendation) {
+                payload.lo4EngineFusion.latestRecommendation.snapshotLock = lockStatus;
             }
             payload.snapshotLock = lockStatus;
         }

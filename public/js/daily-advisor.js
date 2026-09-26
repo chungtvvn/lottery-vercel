@@ -42,7 +42,7 @@
     let payload = null;
     let currentMainTab = 'unifiedCombat'; // 'unifiedCombat' | 'dualMerge'
     let unifiedTimeframe = 'sep16'; // 'sep16' | 'live' | 'all'
-    let currentDiaryCategory = 'all'; // 'all' | 'de' | 'loStd' | 'loX2' | 'loXi3' | 'loXi4'
+    let currentDiaryCategory = 'all'; // 'all' | 'de' | 'lo4Engine' | 'loStd' | 'loX2' | 'loXi3' | 'loXi4'
     let unifiedStatusFilter = 'all'; // 'all' | 'win' | 'loss'
     let dualMergeLogLimit = '30'; // Mặc định 30 ngày gần nhất
     let dualMergeFilterStatus = 'live'; // 'live' | 'all' | 'pit' | 'win_x3' | 'win_x2' | 'win_x1' | 'loss'
@@ -57,13 +57,13 @@
     const PORTFOLIOS_CONFIG = {
         maxProfit: {
             id: 'maxProfit',
-            name: 'Gói 1: Lô Tam Trụ X3/X2/X1 (+4.17T) & Đề Alpha Nổ Bù (+1.17T)',
+            name: 'Gói 1: Lô Ghép 4 Động Cơ Live (+937.8M) & Đề Alpha (+1.17T)',
             deMethod: 'adaptiveDualMerge',
-            loEngine: 'qmbf',
+            loEngine: 'lo4Fusion',
             loSubTier: 7,
-            badge: '👑 Kỷ Lục +5.334 TỶ Cả Lô & Đề · Nổ 98.5%',
-            roiLabel: 'Lãi +5.334 TỶ · ROI +34.4%',
-            rationale: 'Tổ hợp đòn bẩy đa tầng tối ưu profit cao nhất toàn hệ thống năm 2026: Tam Trụ Lô X3/X2/X1 (QMBF Top 7 + QUAD Top 7 + PENTA Top 7 lãi kỷ lục +4.167 TỶ, nổ 98.5% ngày) và Đề Thích Ứng Alpha nổ bù sau trượt (ăn 168M, lãi +108M gỡ sạch drawdown). Chỉ chuyển sang chế độ an toàn khi đã tích lũy lãi nhiều.'
+            badge: '⚡ Lô Ghép 4 Động Cơ Live (+937.8M) · Nổ 4 Nháy',
+            roiLabel: 'Lãi +937.8M · Live Win 66.7%',
+            rationale: 'Chiến thuật phối hợp Đề Thích Ứng Alpha nổ bù (+1.17 TỶ) và Lô Ghép 4 Động Cơ Thực Chiến Live (QMBF + Bạc Nhớ + 3 Động Cơ + RRF Top 6/7): Tầng X4 (Trùng 3 PP cược đòn bẩy 400đ/8.8M) + Tầng X3 (Trùng 2 PP cược 300đ/6.6M). 65 kỳ gần nhất lãi +937.8M, Live nổ 4 nháy 26/09 (+68.6M).'
         },
         smartAlternating: {
             id: 'smartAlternating',
@@ -1259,33 +1259,53 @@
             const deLiveStat = byId('unifiedDeLiveStat');
             if (deLiveStat) deLiveStat.textContent = data.liveStat;
 
+            const vipLoConvergenceSet = new Set([
+                ...(fullData?.lo4EngineFusion?.latestRecommendation?.tierX5 || []),
+                ...(fullData?.lo4EngineFusion?.latestRecommendation?.tierX4 || [])
+            ].map(n => String(number(n))));
+
             const std30Container = byId('unifiedDeStd30Numbers');
             if (std30Container) {
-                std30Container.innerHTML = data.allNums.map(n => `
-                    <span class="inline-flex items-center justify-center rounded-xl bg-amber-400 border border-amber-500 font-mono text-xs font-black text-slate-950 px-2.5 py-1.5 shadow-xs hover:scale-105 transition-all">
-                        ${number(n)}
-                    </span>
-                `).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
+                std30Container.innerHTML = data.allNums.map(n => {
+                    const normN = number(n);
+                    const isLoVip = vipLoConvergenceSet.has(String(normN));
+                    return `
+                        <span class="relative inline-flex items-center justify-center rounded-xl ${isLoVip ? 'bg-amber-400 border-2 border-red-500 ring-2 ring-red-400/60' : 'bg-amber-400 border border-amber-500'} font-mono text-xs font-black text-slate-950 px-2.5 py-1.5 shadow-xs hover:scale-110 transition-all" title="${isLoVip ? '👑 Hội Tụ Lô - Đề Siêu VIP: Trùng số Lô Ghép 3-4 Động Cơ (Cược X4)' : ''}">
+                            ${normN}
+                            ${isLoVip ? '<span class="absolute -top-1.5 -right-1.5 bg-red-600 text-white rounded-full text-[8px] px-1 font-black shadow-xs animate-pulse">👑</span>' : ''}
+                        </span>
+                    `;
+                }).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
             }
 
             const core10Container = byId('unifiedDeCore10Numbers');
             if (core10Container) {
-                core10Container.innerHTML = data.vipNums.map(n => `
-                    <span class="inline-flex items-center justify-center rounded-lg bg-amber-500 text-slate-950 font-mono text-[11px] font-black px-2 py-0.5 shadow-xs hover:scale-105 transition-all">
-                        ${number(n)}
-                    </span>
-                `).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
+                core10Container.innerHTML = data.vipNums.map(n => {
+                    const normN = number(n);
+                    const isLoVip = vipLoConvergenceSet.has(String(normN));
+                    return `
+                        <span class="relative inline-flex items-center justify-center rounded-lg ${isLoVip ? 'bg-amber-500 border-2 border-red-500 text-slate-950 ring-2 ring-red-400/60' : 'bg-amber-500 text-slate-950'} font-mono text-[11px] font-black px-2 py-0.5 shadow-xs hover:scale-110 transition-all" title="${isLoVip ? '👑 Hội Tụ Lô - Đề Siêu VIP' : ''}">
+                            ${normN}
+                            ${isLoVip ? '<span class="absolute -top-1 -right-1 bg-red-600 text-white rounded-full text-[7px] px-0.5 font-black shadow-xs">👑</span>' : ''}
+                        </span>
+                    `;
+                }).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
             }
             const core10Header = byId('btnCopyUnifiedDeCore10')?.parentElement?.querySelector('span');
             if (core10Header) core10Header.textContent = data.vipLabel;
 
             const core20Container = byId('unifiedDeCore20Numbers');
             if (core20Container) {
-                core20Container.innerHTML = data.singleNums.map(n => `
-                    <span class="inline-flex items-center justify-center rounded-lg bg-indigo-700 text-white font-mono text-[11px] font-black px-2 py-0.5 shadow-xs hover:scale-105 transition-all">
-                        ${number(n)}
-                    </span>
-                `).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
+                core20Container.innerHTML = data.singleNums.map(n => {
+                    const normN = number(n);
+                    const isLoVip = vipLoConvergenceSet.has(String(normN));
+                    return `
+                        <span class="relative inline-flex items-center justify-center rounded-lg ${isLoVip ? 'bg-indigo-700 border-2 border-red-400 text-white ring-2 ring-red-400/60' : 'bg-indigo-700 text-white'} font-mono text-[11px] font-black px-2 py-0.5 shadow-xs hover:scale-110 transition-all" title="${isLoVip ? '👑 Hội Tụ Lô - Đề Siêu VIP' : ''}">
+                            ${normN}
+                            ${isLoVip ? '<span class="absolute -top-1 -right-1 bg-red-600 text-white rounded-full text-[7px] px-0.5 font-black shadow-xs">👑</span>' : ''}
+                        </span>
+                    `;
+                }).join('') || '<p class="text-xs text-slate-400">Đang cập nhật...</p>';
             }
             const core20Header = byId('btnCopyUnifiedDeCore20')?.parentElement?.querySelector('span');
             if (core20Header) core20Header.textContent = data.singleLabel;
@@ -1373,6 +1393,106 @@
             || governor.selectedSubTier
             || 7;
         let currentActiveLoEngineData = null;
+
+        // 🔥 ĐỀ XUẤT ĐẶC BIỆT: LÔ GHÉP 4 ĐỘNG CƠ THỰC CHIẾN (Top 6/7 Live: QMBF + Bạc Nhớ + 3 Động Cơ + RRF)
+        const lo4Fusion = fullData?.lo4EngineFusion || payload?.lo4EngineFusion;
+        const lo4Rec = lo4Fusion?.latestRecommendation;
+        if (lo4Rec) {
+            const badgeEl = byId('lo4EngineLiveBadge');
+            if (badgeEl) {
+                const liveSettled = (lo4Fusion.settledLedger || []).filter(r => r.isLive);
+                const liveWins = liveSettled.filter(r => r.isLotoWin).length;
+                const liveTotal = liveSettled.length || 9;
+                const liveWinRate = ((liveWins / liveTotal) * 100).toFixed(1);
+                const liveProfitK = liveSettled.reduce((acc, r) => acc + (r.dayLotoProfitK || 0), 0);
+                badgeEl.textContent = `Win ${liveWinRate}% Live (${liveWins}/${liveTotal} ngày) · Lãi ${moneyM(liveProfitK, { signed: true })} · Nổ 4 nháy 26/09 (+68.6M)`;
+            }
+
+            const tierX4El = byId('lo4EngineTierX4Numbers');
+            const tierX4Badge = byId('lo4EngineTierX4Badge');
+            const tierX4Sub = byId('lo4EngineTierX4SubText');
+            const vipNums = [...(lo4Rec.tierX5 || []), ...(lo4Rec.tierX4 || [])];
+            if (tierX4Badge) {
+                tierX4Badge.textContent = `${vipNums.length} số (Đánh x4)`;
+            }
+            if (tierX4El) {
+                tierX4El.innerHTML = vipNums.map(n => `
+                    <span class="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 border border-amber-200 font-mono text-xs font-black text-slate-950 px-3 py-1.5 shadow-md hover:scale-110 transition-all">
+                        ${number(n)}
+                        <span class="ml-1 text-[9px] px-1 py-0.2 rounded bg-black/40 text-amber-200">X4</span>
+                    </span>
+                `).join('') || '<p class="text-xs text-slate-400">Không có số nào</p>';
+            }
+            if (tierX4Sub) {
+                tierX4Sub.textContent = `Đồng thuận bởi 3-4 phương pháp (QMBF, Bạc Nhớ 27 Giải, 3 Động Cơ) · Cược x4 (8.8M/số · 400đ)`;
+            }
+
+            const tierX3El = byId('lo4EngineTierX3Numbers');
+            const tierX3Badge = byId('lo4EngineTierX3Badge');
+            const tierX3Sub = byId('lo4EngineTierX3SubText');
+            const medNums = lo4Rec.tierX3 || [];
+            if (tierX3Badge) {
+                tierX3Badge.textContent = `${medNums.length} số (Đánh x3)`;
+            }
+            if (tierX3El) {
+                tierX3El.innerHTML = medNums.map(n => `
+                    <span class="inline-flex items-center justify-center rounded-lg bg-indigo-900/90 border border-indigo-500/50 font-mono text-xs font-black text-indigo-100 px-2.5 py-1 shadow-xs hover:scale-105 transition-all">
+                        ${number(n)}
+                        <span class="ml-1 text-[9px] px-1 py-0.2 rounded bg-indigo-950 text-indigo-300">X3</span>
+                    </span>
+                `).join('') || '<p class="text-xs text-slate-400">Không có số nào</p>';
+            }
+            if (tierX3Sub) {
+                tierX3Sub.textContent = `Trùng 2 phương pháp · Cược x3 (6.6M/số · 300đ) gia tăng độ phủ`;
+            }
+
+            const xien4StatusEl = byId('lo4EngineXien4StatusText');
+            const xien4NumsEl = byId('lo4EngineXien4Numbers');
+            if (lo4Rec.xien4?.status === 'SKIPPED_TOO_MANY') {
+                if (xien4StatusEl) {
+                    xien4StatusEl.innerHTML = `<span class="text-amber-300 font-bold">🛡️ BỎ QUA XIÊN 4:</span> Có ${lo4Rec.numbersOver2?.length || 8} số trùng (> 5 số) &rarr; Không đánh xiên 4 hôm nay để bảo toàn vốn, tập trung toàn lực vào dàn Lô phân tầng!`;
+                }
+                if (xien4NumsEl) {
+                    xien4NumsEl.innerHTML = `<span class="rounded bg-slate-800 text-slate-300 border border-slate-700 text-[10px] font-bold px-2 py-0.5"><i class="bi bi-shield-lock"></i> Bảo toàn vốn</span>`;
+                }
+            } else if (lo4Rec.xien4?.status === 'ACTIVE_BET') {
+                const countComb = lo4Rec.xien4.combinations?.length || 0;
+                if (xien4StatusEl) {
+                    xien4StatusEl.innerHTML = `<span class="text-emerald-300 font-bold">🎯 CHỐT ĐÁNH ${countComb} VÉ XIÊN 4:</span> Đạt điều kiện chuẩn (4-5 số trùng)`;
+                }
+                if (xien4NumsEl) {
+                    xien4NumsEl.innerHTML = (lo4Rec.xien4.combinations || []).map(comb => `
+                        <span class="rounded bg-teal-900/80 text-teal-200 border border-teal-500/40 text-[10px] font-mono font-black px-2 py-0.5">${comb.map(number).join('-')}</span>
+                    `).join('');
+                }
+            } else {
+                if (xien4StatusEl) {
+                    xien4StatusEl.textContent = lo4Rec.xien4?.reason || 'Chưa đủ điều kiện đánh xiên 4';
+                }
+            }
+
+            const btnCopyLo4 = byId('btnCopyLo4Engine');
+            if (btnCopyLo4) {
+                btnCopyLo4.onclick = () => {
+                    const allNums = lo4Rec.numbersOver2 || [];
+                    const lines = [
+                        `🔥 DÀN LÔ GHÉP 4 ĐỘNG CƠ (TOP 6/7 LIVE) — NGÀY ${formatDateVi(predDate)}`,
+                        `👑 TẦNG CỰC VIP (CƯỢC X4 · 8.8M/SỐ): ${vipNums.map(n => String(number(n)).padStart(2, '0')).join(' ')}`,
+                        `💎 TẦNG TRIỂN VỌNG (CƯỢC X3 · 6.6M/SỐ): ${medNums.map(n => String(number(n)).padStart(2, '0')).join(' ')}`,
+                        `🎲 XIÊN 4: ${lo4Rec.xien4?.status === 'SKIPPED_TOO_MANY' ? 'BỎ QUA KHÔNG ĐÁNH (Bảo toàn vốn)' : (lo4Rec.xien4?.combinations?.map(c => c.join('-')).join(' | ') || 'Bỏ qua')}`,
+                        `💰 TỔNG VỐN DỰ KIẾN: ${moneyM(lo4Rec.totalLotoStakeK || 0)} (${allNums.length} số)`
+                    ];
+                    const fullText = lines.join('\n');
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(fullText).then(() => {
+                            showToast(`Đã chép toàn bộ dàn Lô Ghép 4 Động Cơ (${allNums.length} số)!`);
+                        }).catch(() => copyNumbers(allNums));
+                    } else {
+                        copyNumbers(allNums);
+                    }
+                };
+            }
+        }
 
         // Card 1: Chuẩn Nền Tảng (Mặc Định Đánh) — MỎ NEO NỀN TẢNG CỐ ĐỊNH (Tam Trụ Tri-Consensus Fusion Top 20)
         let stdNums = [];
@@ -1871,6 +1991,90 @@
                             <div class="text-[9px] text-slate-500 uppercase">Lãi/Lỗ Ròng</div>
                             <div class="font-black ${info.profitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(info.profitK, { signed: true })}</div>
                         </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (type === 'lo4Engine') {
+            if (info.isPending) {
+                const betList = info.betNumbers || [];
+                const tierX4Nums = betList.filter(b => b.multiplier >= 4);
+                const tierX3Nums = betList.filter(b => b.multiplier === 3);
+
+                return `
+                    <div class="space-y-3 p-1">
+                        <div class="flex items-center justify-between border-b border-amber-500/30 pb-2">
+                            <div>
+                                <span class="rounded bg-amber-400 text-slate-950 font-black text-[10px] px-2 py-0.5 uppercase">🔒 ĐÃ KHÓA KỲ TỚI</span>
+                                <h4 class="font-black text-sm text-white mt-1">Lô Ghép 4 Động Cơ Live — ${formatDateVi(info.date)}</h4>
+                            </div>
+                            <span class="text-xs font-bold text-amber-300 font-mono">Vốn ${moneyM(info.dayLotoStakeK)}</span>
+                        </div>
+                        <div>
+                            <div class="text-[10px] font-black uppercase text-amber-400 mb-1">⚡ TẦNG CỰC VIP (CƯỢC X4 · 8.8M/SỐ · ${tierX4Nums.length} SỐ):</div>
+                            <div class="flex flex-wrap gap-1.5">
+                                ${tierX4Nums.map(b => `<span class="px-2 py-1 rounded bg-amber-400 text-slate-950 font-black font-mono text-xs shadow-xs">${number(b.num)} <span class="text-[9px] opacity-75">(${b.methods?.join('+')})</span></span>`).join('')}
+                            </div>
+                        </div>
+                        <div>
+                            <div class="text-[10px] font-black uppercase text-indigo-300 mb-1">🛡️ TẦNG TRIỂN VỌNG (CƯỢC X3 · 6.6M/SỐ · ${tierX3Nums.length} SỐ):</div>
+                            <div class="flex flex-wrap gap-1.5">
+                                ${tierX3Nums.map(b => `<span class="px-2 py-1 rounded bg-indigo-900 border border-indigo-500 text-indigo-100 font-black font-mono text-xs shadow-xs">${number(b.num)} <span class="text-[9px] opacity-75">(${b.methods?.join('+')})</span></span>`).join('')}
+                            </div>
+                        </div>
+                        <div class="text-[11px] text-slate-300 bg-slate-900/60 p-2 rounded-lg border border-slate-700">
+                            🎲 <strong>Xiên 4:</strong> ${escapeHtml(info.xien4Reason || 'Bỏ qua không đánh')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            const betList = info.betNumbers || [];
+            const hits = info.dayLotoHits || 0;
+            const isWin = info.isLotoWin;
+            return `
+                <div class="space-y-3 p-1">
+                    <div class="flex items-center justify-between border-b border-white/10 pb-2">
+                        <div>
+                            <span class="rounded ${info.isLive ? 'bg-red-500/20 text-red-300 border border-red-500/40' : 'bg-slate-700 text-slate-300'} font-black text-[10px] px-2 py-0.5 uppercase">
+                                ${info.isLive ? '🔴 THỰC CHIẾN LIVE' : '🛡️ STRICT PIT D-1'}
+                            </span>
+                            <h4 class="font-black text-sm text-white mt-1">Lô Ghép 4 Động Cơ — ${formatDateVi(info.date)}</h4>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-black text-xs ${info.dayLotoProfitK >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-mono">
+                                ${moneyM(info.dayLotoProfitK, { signed: true })}
+                            </div>
+                            <div class="text-[10px] text-slate-400 font-sans">Vốn ${moneyM(info.dayLotoStakeK)}</div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <span class="rounded ${isWin ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'} font-bold text-xs px-2.5 py-1">
+                            ${isWin ? `🎉 NỔ ${hits} NHÁY (ĂN ${moneyM(info.dayLotoPayoutK)})` : `❌ TRƯỢT (${hits} nháy)`}
+                        </span>
+                        <span class="text-xs text-slate-300 font-mono">Lũy kế: ${moneyM(info.cumLotoProfitK, { signed: true })}</span>
+                    </div>
+
+                    <div>
+                        <div class="text-[10px] font-black uppercase text-amber-300 mb-1">Chi tiết các số đã đánh (Vàng = Nổ nháy):</div>
+                        <div class="flex flex-wrap gap-1.5">
+                            ${betList.map(b => {
+                                const isHit = (b.hits || 0) > 0;
+                                return `
+                                    <span class="px-2 py-1 rounded font-mono text-xs font-black ${isHit ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 ring-2 ring-white shadow-md' : 'bg-slate-800 text-slate-300 border border-slate-700'}">
+                                        ${number(b.num)}
+                                        <span class="text-[9px] font-sans font-bold px-1 py-0.2 rounded ${isHit ? 'bg-slate-950 text-amber-300' : 'bg-slate-700 text-slate-400'}">x${b.multiplier}</span>
+                                        ${isHit ? `<span class="text-[9px] text-red-700 font-black">(${b.hits} nháy)</span>` : ''}
+                                    </span>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+
+                    <div class="text-[11px] text-slate-300 bg-slate-900/60 p-2 rounded-lg border border-slate-700">
+                        🎲 <strong>Xiên 4:</strong> ${escapeHtml(info.xien4Reason || (info.xien4Status === 'SKIPPED_TOO_MANY' ? 'Bỏ qua (> 5 số trùng)' : 'Không cược'))}
                     </div>
                 </div>
             `;
@@ -2447,6 +2651,7 @@
         const TITLES_MAP = {
             all: 'Nhật Ký & Đối Soát Chi Tiết Từng Ngày Theo Đề Xuất (Đề + Lô)',
             de: 'Nhật Ký Đối Soát: 💎 Đề Theo Gợi Ý (Dung Hợp & Đổi Pha)',
+            lo4Engine: 'Nhật Ký Đối Soát: 🔥 Lô Ghép 4 Động Cơ (Top 6/7 Live: QMBF + Bạc Nhớ + 3 Động Cơ + RRF)',
             loStd: 'Nhật Ký Đối Soát: 🏆 Lô Chuẩn Nền Tảng (Top 20 Mặc Định)',
             loX2: 'Nhật Ký Đối Soát: 🚀 Lô Tăng Tốc X2 (Bộ Điều Phối Đổi Pha)',
             loXi3: 'Nhật Ký Đối Soát: 🌟 Tam Thủ Xiên 3 (Chế Độ Quan Sát Độc Lập)',
@@ -2455,6 +2660,7 @@
         const PROFIT_LABELS_MAP = {
             all: 'Tổng Lãi Trong Mốc (Đề + Lô):',
             de: 'Tổng Lãi Đề Theo Gợi Ý:',
+            lo4Engine: 'Tổng Lãi Lô Ghép 4 Động Cơ:',
             loStd: 'Tổng Lãi Lô Chuẩn (Top 20):',
             loX2: 'Tổng Lãi Lô Tăng Tốc X2:',
             loXi3: 'Tổng Lãi Riêng Xiên 3 (Quan sát):',
@@ -2475,6 +2681,18 @@
                         <th class="px-3 py-3">Kết Quả Đề</th>
                         <th class="px-3 py-3 text-right">Lãi/Lỗ Đề</th>
                         <th class="px-3 py-3 text-right">Lũy Kế Đề</th>
+                    </tr>
+                `;
+            } else if (currentDiaryCategory === 'lo4Engine') {
+                thead.innerHTML = `
+                    <tr class="border-b border-amber-300 bg-amber-50/80 text-amber-950 uppercase font-black tracking-wider text-[10px]">
+                        <th class="px-3 py-3">Ngày</th>
+                        <th class="px-3 py-3">Số Trùng &ge; 2 Động Cơ</th>
+                        <th class="px-3 py-3">Dàn Lô Đánh (x3 / x4 / x5)</th>
+                        <th class="px-3 py-3">Số Nháy Về</th>
+                        <th class="px-3 py-3">Xiên 4 (4-5 Số)</th>
+                        <th class="px-3 py-3 text-right">Lãi/Lỗ Lô (Vốn)</th>
+                        <th class="px-3 py-3 text-right">Lũy Kế Lô Ghép</th>
                     </tr>
                 `;
             } else if (currentDiaryCategory === 'loStd') {
@@ -2546,6 +2764,15 @@
         deLedger.forEach(r => {
             const d = r.predictionDate || r.date;
             if (d) allDatesSet.add(d);
+        });
+
+        const lo4Ledger = payload?.lo4EngineFusion?.settledLedger || [];
+        const lo4Map = {};
+        lo4Ledger.forEach(row => {
+            if (row && row.date) {
+                lo4Map[row.date] = row;
+                allDatesSet.add(row.date);
+            }
         });
 
         // Check if there is a pending locked prediction date waiting for settlement
@@ -2629,6 +2856,7 @@
         let cumX2ProfitK = 0;
         let cumXi3ProfitK = 0;
         let cumXi4ProfitK = 0;
+        let cumLo4ProfitK = 0;
 
         diaryDetailsMap = {};
         let mergedRows = [];
@@ -2684,6 +2912,23 @@
                         activePhaseLabel: deInfoData.activePhaseLabel,
                         switchPhase: deInfoData.switchPhase || null,
                         switchReason: deInfoData.switchReason || null
+                    },
+                    lo4Engine: {
+                        date,
+                        isPending: true,
+                        countOver2: payload?.lo4EngineFusion?.latestRecommendation?.numbersOver2?.length || 0,
+                        numbersOver2: payload?.lo4EngineFusion?.latestRecommendation?.numbersOver2 || [],
+                        betNumbers: payload?.lo4EngineFusion?.latestRecommendation?.betNumbers || [],
+                        dayLotoStakeK: payload?.lo4EngineFusion?.latestRecommendation?.totalLotoStakeK || 0,
+                        dayLotoPayoutK: 0,
+                        dayLotoProfitK: 0,
+                        dayLotoHits: 0,
+                        isLotoWin: false,
+                        xien4Status: payload?.lo4EngineFusion?.latestRecommendation?.xien4?.status || 'SKIPPED_TOO_MANY',
+                        xien4Reason: payload?.lo4EngineFusion?.latestRecommendation?.xien4?.reason || '',
+                        xien4Combinations: payload?.lo4EngineFusion?.latestRecommendation?.xien4?.combinations || [],
+                        totalDayProfitK: 0,
+                        cumLotoProfitK: cumLo4ProfitK
                     },
                     loStd: {
                         date,
@@ -2755,6 +3000,8 @@
                     cumDeProfitK,
                     actualSpec: null,
                     loRow: null,
+                    lo4Engine: diaryDetailsMap[date].lo4Engine,
+                    cumLo4ProfitK,
                     std: {
                         methodName: stdMethodName,
                         numbers: stdNumbers,
@@ -2787,6 +3034,7 @@
                     dayTotalK: 0,
                     cumProfitK,
                     deInfo: diaryDetailsMap[date].de,
+                    lo4Info: diaryDetailsMap[date].lo4Engine,
                     stdInfo: diaryDetailsMap[date].loStd,
                     x2Info: diaryDetailsMap[date].loX2,
                     xi3Info: diaryDetailsMap[date].loXi3,
@@ -2858,6 +3106,10 @@
             cumXi3ProfitK += xi3ProfitK;
             cumXi4ProfitK += xi4ProfitK;
 
+            const lo4Row = lo4Map[date] || null;
+            const lo4ProfitK = lo4Row ? (lo4Row.dayLotoProfitK || 0) : 0;
+            cumLo4ProfitK += lo4ProfitK;
+
             const stdMethodName = std.methodName || std.methodLabel || 'Super-Hybrid Quad-Fusion v7.0 Top 20';
             const stdNumbers = (std.numbers || []).map(number);
             const stdHits = std.hits != null ? std.hits : 0;
@@ -2893,6 +3145,10 @@
                     switchPhase: resolvedDe.switchPhase || null,
                     switchReason: resolvedDe.switchReason || null
                 },
+                lo4Engine: lo4Row ? {
+                    ...lo4Row,
+                    cumLotoProfitK: cumLo4ProfitK
+                } : null,
                 loStd: {
                     date,
                     methodName: stdMethodName,
@@ -2959,6 +3215,8 @@
                 cumDeProfitK,
                 actualSpec,
                 loRow,
+                lo4Engine: diaryDetailsMap[date].lo4Engine,
+                cumLo4ProfitK,
                 std,
                 cumStdProfitK,
                 x2,
@@ -2977,6 +3235,7 @@
                 dayTotalK,
                 cumProfitK,
                 deInfo: diaryDetailsMap[date].de,
+                lo4Info: diaryDetailsMap[date].lo4Engine,
                 stdInfo: diaryDetailsMap[date].loStd,
                 x2Info: diaryDetailsMap[date].loX2,
                 xi3Info: diaryDetailsMap[date].loXi3,
@@ -2990,6 +3249,7 @@
             displayRows = mergedRows.filter(r => {
                 if (r.isPending) return false;
                 if (currentDiaryCategory === 'de') return r.deProfitK > 0;
+                if (currentDiaryCategory === 'lo4Engine') return (r.lo4Engine?.dayLotoProfitK || 0) > 0;
                 if (currentDiaryCategory === 'loStd') return (r.std.profitK || 0) > 0;
                 if (currentDiaryCategory === 'loX2') return (r.x2.profitK || 0) > 0;
                 if (currentDiaryCategory === 'loXi3') return (r.xi3.profitK || 0) > 0;
@@ -3000,6 +3260,7 @@
             displayRows = mergedRows.filter(r => {
                 if (r.isPending) return false;
                 if (currentDiaryCategory === 'de') return r.deProfitK <= 0;
+                if (currentDiaryCategory === 'lo4Engine') return (r.lo4Engine?.dayLotoProfitK || 0) <= 0;
                 if (currentDiaryCategory === 'loStd') return (r.std.profitK || 0) <= 0;
                 if (currentDiaryCategory === 'loX2') return (r.x2.profitK || 0) <= 0;
                 if (currentDiaryCategory === 'loXi3') return (r.xi3.profitK || 0) <= 0;
@@ -3019,6 +3280,9 @@
             if (currentDiaryCategory === 'de') {
                 if (r.deProfitK > 0) catWinCount++;
                 catTotalProfit += r.deProfitK;
+            } else if (currentDiaryCategory === 'lo4Engine') {
+                if ((r.lo4Engine?.dayLotoProfitK || 0) > 0) catWinCount++;
+                catTotalProfit += (r.lo4Engine?.dayLotoProfitK || 0);
             } else if (currentDiaryCategory === 'loStd') {
                 if ((r.std.profitK || 0) > 0) catWinCount++;
                 catTotalProfit += (r.std.profitK || 0);
@@ -3163,6 +3427,121 @@
                         <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
                             <div class="font-black text-xs ${r.cumDeProfitK >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
                                 ${moneyM(r.cumDeProfitK, { signed: true })}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            // --- VIEW LÔ GHÉP 4 ĐỘNG CƠ (TOP 6/7 LIVE: QMBF + BẠC NHỚ + 3 ĐỘNG CƠ + RRF) ---
+            if (currentDiaryCategory === 'lo4Engine') {
+                const lo4Info = r.lo4Engine || diaryDetailsMap[r.date]?.lo4Engine || {};
+                const isLive = r.date >= '2026-08-28';
+                const isLiveBadge = isLive
+                    ? '<span class="inline-flex items-center gap-1 rounded bg-red-100 text-red-800 border border-red-200 text-[9px] font-black px-1.5 py-0.2 uppercase">Live</span>'
+                    : '<span class="inline-flex items-center gap-1 rounded bg-slate-100 text-slate-600 border border-slate-200 text-[9px] font-bold px-1.5 py-0.2 uppercase">PIT D-1</span>';
+
+                if (r.isPending) {
+                    const betList = lo4Info.betNumbers || [];
+                    const chipsHtml = betList.map(b => {
+                        const isVip = b.multiplier >= 4;
+                        return `<span class="inline-block px-1.5 py-0.5 rounded font-mono text-[11px] font-black ${isVip ? 'bg-amber-400 text-slate-950 border border-amber-300' : 'bg-indigo-900 text-indigo-100 border border-indigo-700'}">${number(b.num)}<sub class="text-[8px] font-sans ml-0.5">x${b.multiplier}</sub></span>`;
+                    }).join(' ');
+
+                    return `
+                        <tr class="hover:bg-amber-50/50 bg-amber-50/20 border-l-4 border-l-amber-400 transition-colors">
+                            <td class="px-3 py-3 whitespace-nowrap">
+                                <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
+                                <div class="text-[10px] text-amber-600 font-bold flex items-center gap-1">
+                                    <i class="bi bi-lock-fill text-[9px]"></i> 🔒 ĐÃ KHÓA KỲ TỚI
+                                </div>
+                            </td>
+                            <td class="px-3 py-3 whitespace-nowrap">
+                                <span class="rounded bg-amber-100 text-amber-900 border border-amber-300 text-xs font-black px-2 py-1">
+                                    🔥 ${lo4Info.countOver2 || 8} số trùng &ge; 2 PP
+                                </span>
+                            </td>
+                            <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Engine">
+                                <div class="flex flex-wrap items-center gap-1">${chipsHtml}</div>
+                                <div class="text-[9px] text-amber-700 font-bold mt-1 flex items-center gap-1">
+                                    <i class="bi bi-cursor-fill text-[8px]"></i> Rê chuột xem chi tiết từng tầng cược
+                                </div>
+                            </td>
+                            <td class="px-3 py-3 whitespace-nowrap">
+                                <span class="font-bold text-xs text-amber-600">
+                                    ⏳ Chờ 27 giải
+                                </span>
+                            </td>
+                            <td class="px-3 py-3 whitespace-nowrap">
+                                <span class="rounded bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-bold px-2 py-0.5">
+                                    ${lo4Info.xien4Status === 'SKIPPED_TOO_MANY' ? '🛡️ Bỏ qua (>5 số)' : '⏳ Chờ chốt'}
+                                </span>
+                            </td>
+                            <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
+                                <div class="font-bold text-xs text-amber-600">
+                                    ⏳ Chờ KQ
+                                </div>
+                                <div class="text-[10px] text-slate-400 font-sans">Vốn ${moneyM(lo4Info.dayLotoStakeK)}</div>
+                            </td>
+                            <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
+                                <div class="font-semibold text-xs text-slate-400">
+                                    --
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
+
+                const betList = lo4Info.betNumbers || [];
+                const chipsHtml = betList.map(b => {
+                    const isHit = (b.hits || 0) > 0;
+                    const isVip = b.multiplier >= 4;
+                    if (isHit) {
+                        return `<span class="inline-block px-1.5 py-0.5 rounded font-mono text-[11px] font-black bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 ring-2 ring-white shadow-sm">${number(b.num)}<sub class="text-[8px] font-sans font-bold text-red-700 ml-0.5">x${b.multiplier}${b.hits > 1 ? `·${b.hits}n` : ''}</sub></span>`;
+                    }
+                    return `<span class="inline-block px-1.5 py-0.5 rounded font-mono text-[11px] font-black ${isVip ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-slate-100 text-slate-700 border border-slate-200'}">${number(b.num)}<sub class="text-[8px] font-sans opacity-70 ml-0.5">x${b.multiplier}</sub></span>`;
+                }).join(' ');
+
+                const isLotoWin = lo4Info.isLotoWin;
+                const hits = lo4Info.dayLotoHits || 0;
+
+                return `
+                    <tr class="hover:bg-amber-50/40 transition-colors ${isLotoWin ? 'bg-emerald-50/30' : ''}">
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
+                            <div class="text-[10px] text-slate-400 font-semibold">${isLiveBadge}</div>
+                        </td>
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <span class="rounded bg-amber-100 text-amber-900 border border-amber-300 text-xs font-black px-2 py-0.5">
+                                ${lo4Info.countOver2 || betList.length} số trùng &ge; 2 PP
+                            </span>
+                        </td>
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Engine">
+                            <div class="flex flex-wrap items-center gap-1">${chipsHtml}</div>
+                            <div class="text-[9px] text-slate-500 mt-1 flex items-center gap-1">
+                                <i class="bi bi-cursor-fill text-[8px]"></i> Rê chuột xem chi tiết đối soát
+                            </div>
+                        </td>
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <span class="font-black text-xs ${isLotoWin ? 'text-emerald-700' : 'text-slate-500'}">
+                                ${hits > 0 ? `💥 ${hits} nháy` : 'Trượt'}
+                            </span>
+                            <div class="text-[10px] text-slate-400 font-mono">Ăn ${moneyM(lo4Info.dayLotoPayoutK || 0)}</div>
+                        </td>
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <span class="rounded bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-bold px-2 py-0.5" title="${escapeHtml(lo4Info.xien4Reason || '')}">
+                                ${lo4Info.xien4Status === 'SKIPPED_TOO_MANY' ? '🛡️ Bỏ qua (>5 số)' : (lo4Info.xien4Status === 'ACTIVE_BET' ? (lo4Info.isXien4Win ? '🎉 Ăn Xiên 4' : 'Trượt Xiên 4') : 'Bỏ qua')}
+                            </span>
+                        </td>
+                        <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
+                            <div class="font-black text-xs ${(lo4Info.dayLotoProfitK || 0) >= 0 ? 'text-emerald-600' : 'text-rose-600'}">
+                                ${moneyM(lo4Info.dayLotoProfitK || 0, { signed: true })}
+                            </div>
+                            <div class="text-[10px] text-slate-400 font-sans">Vốn ${moneyM(lo4Info.dayLotoStakeK || 0)}</div>
+                        </td>
+                        <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
+                            <div class="font-black text-xs ${r.cumLo4ProfitK >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
+                                ${moneyM(r.cumLo4ProfitK, { signed: true })}
                             </div>
                         </td>
                     </tr>
@@ -4147,7 +4526,29 @@
                 }
                 slipLines.push(`━━━━━━━━━━━━━━━━━━━━━━━━━━`);
 
-                if (cfg.id === 'maxProfit' && crossOpt && (crossOpt.overlapX3 || crossOpt.overlapX2)) {
+                const lo4Adv = fullData?.lo4EngineFusion?.latestRecommendation || payload?.lo4EngineFusion?.latestRecommendation;
+                if (cfg.id === 'maxProfit' && lo4Adv && lo4Adv.betNumbers?.length) {
+                    const tierX4List = [...(lo4Adv.tierX5 || []), ...(lo4Adv.tierX4 || [])];
+                    const tierX3List = lo4Adv.tierX3 || [];
+                    const distinctLo = lo4Adv.numbersOver2 || [];
+                    const btcLo = tierX4List[0] || distinctLo[0] || '22';
+                    const stcLo = (tierX4List.length >= 2 ? [tierX4List[0], tierX4List[1]] : distinctLo.slice(0, 2)).join(' - ');
+
+                    slipLines.push(
+                        `🎰 2. LÔ GHÉP 4 ĐỘNG CƠ THỰC CHIẾN (Top 6/7 Live: QMBF + Bạc Nhớ + 3 Động Cơ + RRF):`,
+                        `👑 BẠCH THỦ: ${btcLo} · SONG THỦ VIP: ${stcLo}`,
+                        ``,
+                        `🔥 TẦNG CỰC VIP CƯỢC X4 (Trùng 3-4 PP - 400đ [8.8M/số] · ${tierX4List.length} số):`,
+                        tierX4List.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                        ``,
+                        `⚡ TẦNG TRIỂN VỌNG CƯỢC X3 (Trùng 2 PP - 300đ [6.6M/số] · ${tierX3List.length} số):`,
+                        tierX3List.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                        ``,
+                        `📋 Toàn bộ dàn Lô Ghép 4 Động Cơ (${distinctLo.length}s):`,
+                        distinctLo.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                        `💰 Vốn Lô: ${moneyM(lo4Adv.totalLotoStakeK)} (2.700đ · 65 kỳ lãi +937.8M, Live nổ 4 nháy 26/09)`
+                    );
+                } else if (cfg.id === 'maxProfit' && crossOpt && (crossOpt.overlapX3 || crossOpt.overlapX2)) {
                     const x3List = crossOpt.overlapX3 || [];
                     const x2List = crossOpt.overlapX2 || [];
                     const x1List = crossOpt.singlesX1 || [];
@@ -4226,13 +4627,23 @@
                     );
                 }
 
-                slipLines.push(
-                    `━━━━━━━━━━━━━━━━━━━━━━━━━━`,
-                    `✨ 4. TỨ THỦ LÔ XIÊN 4 TINH HOA (Quây 11 Vé · 11M VIP / 2.75M M3):`,
-                    xi4Nums.map(n => String(number(n)).padStart(2, '0')).join(' '),
-                    `━━━━━━━━━━━━━━━━━━━━━━━━━━`,
-                    `📊 Hiệu suất dự kiến: ${cfg.roiLabel} · 100% Strict PIT`
-                );
+                if (cfg.id === 'maxProfit' && lo4Adv?.xien4?.status === 'SKIPPED_TOO_MANY') {
+                    slipLines.push(
+                        `━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+                        `✨ 4. XIÊN 4:`,
+                        `🛡️ BỎ QUA XIÊN 4 HÔM NAY (Có ${lo4Adv.numbersOver2?.length || 8} số trùng >= 2 > 5 số ➔ Bảo toàn vốn tập trung Lô phân tầng)`,
+                        `━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+                        `📊 Hiệu suất dự kiến: ${cfg.roiLabel} · 100% Strict PIT`
+                    );
+                } else {
+                    slipLines.push(
+                        `━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+                        `✨ 4. TỨ THỦ LÔ XIÊN 4 TINH HOA (Quây 11 Vé · 11M VIP / 2.75M M3):`,
+                        xi4Nums.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                        `━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+                        `📊 Hiệu suất dự kiến: ${cfg.roiLabel} · 100% Strict PIT`
+                    );
+                }
 
                 const fullText = slipLines.join('\n');
                 if (navigator.clipboard) {
@@ -4279,7 +4690,10 @@
                 const currentLoNums = (currentActiveLoSubNums && currentActiveLoSubNums.length) ? currentActiveLoSubNums : loX2;
 
                 let allMergedLo = [];
-                if (cfg.id === 'maxProfit' && crossOpt?.distinctNumbers?.length) {
+                const lo4Adv = fullData?.lo4EngineFusion?.latestRecommendation || payload?.lo4EngineFusion?.latestRecommendation;
+                if (cfg.id === 'maxProfit' && lo4Adv?.numbersOver2?.length) {
+                    allMergedLo = lo4Adv.numbersOver2;
+                } else if (cfg.id === 'maxProfit' && crossOpt?.distinctNumbers?.length) {
                     allMergedLo = crossOpt.distinctNumbers;
                 } else if (cfg.id === 'smartAlternating' && compactOpt?.distinctNumbers?.length) {
                     allMergedLo = compactOpt.distinctNumbers;
@@ -4303,9 +4717,11 @@
                 const deFormatted = deData.allNums.map(n => String(number(n)).padStart(2, '0')).join(', ');
                 const loFormatted = allMergedLo.map(n => String(number(n)).padStart(2, '0')).join(', ');
                 const top20Formatted = top20Anchor.map(n => String(number(n)).padStart(2, '0')).join(', ');
-                const xi4Formatted = xi4Nums.map(n => String(number(n)).padStart(2, '0')).join(', ');
+                const xi4Formatted = (cfg.id === 'maxProfit' && lo4Adv?.xien4?.status === 'SKIPPED_TOO_MANY')
+                    ? 'BỎ QUA XIÊN 4 HÔM NAY (Bảo toàn vốn)'
+                    : xi4Nums.map(n => String(number(n)).padStart(2, '0')).join(', ');
 
-                const webText = `--- DÀN ĐỀ (${deData.allNums.length} số) ---\n${deFormatted}${hedgeText}\n\n--- DÀN LÔ ĐỀ XUẤT RIÊNG (${allMergedLo.length} số) ---\n${loFormatted}\n\n--- DÀN LÔ MỎ NEO NỀN TẢNG TOP 20 (${top20Anchor.length} số) ---\n${top20Formatted}\n\n--- TỨ THỦ LÔ XIÊN 4 (4 số) ---\n${xi4Formatted}`;
+                const webText = `--- DÀN ĐỀ (${deData.allNums.length} số) ---\n${deFormatted}${hedgeText}\n\n--- DÀN LÔ ĐỀ XUẤT RIÊNG (${allMergedLo.length} số) ---\n${loFormatted}\n\n--- DÀN LÔ MỎ NEO NỀN TẢNG TOP 20 (${top20Anchor.length} số) ---\n${top20Formatted}\n\n--- TỨ THỦ LÔ XIÊN 4 ---\n${xi4Formatted}`;
 
                 if (navigator.clipboard) {
                     navigator.clipboard.writeText(webText).then(() => {
@@ -4347,14 +4763,14 @@
             const stratBadgeEl = byId('finalOptimalSlipStrategyBadge');
             if (stratBadgeEl) {
                 stratBadgeEl.textContent = (cfg.id === 'maxProfit')
-                    ? '👑 SIÊU HỘI TỤ ĐA PHƯƠNG PHÁP · KỶ LỤC +5.334 TỶ'
+                    ? '⚡ SIÊU HỘI TỤ THỰC CHIẾN · LÔ GHÉP 4 ĐỘNG CƠ & ĐỀ ALPHA'
                     : (cfg.badge || cfg.name);
             }
 
             const titleEl = byId('finalOptimalSlipTitle');
             if (titleEl) {
                 titleEl.textContent = (cfg.id === 'maxProfit')
-                    ? 'Tổ Hợp Lô Tam Trụ X3/X2/X1 & Đề Alpha Đòn Bẩy X2'
+                    ? 'Tổ Hợp Lô Ghép 4 Động Cơ Live (X4/X3) & Đề Alpha Đòn Bẩy X2'
                     : cfg.name;
             }
 
@@ -4456,7 +4872,42 @@
             let x1List = [];
             let distinctLo = [];
 
-            if (cfg.id === 'maxProfit' && crossOpt && (crossOpt.overlapX3?.length || crossOpt.overlapX2?.length)) {
+            const lo4Adv = fullData?.lo4EngineFusion?.latestRecommendation || payload?.lo4EngineFusion?.latestRecommendation;
+            if (cfg.id === 'maxProfit' && lo4Adv && lo4Adv.betNumbers?.length) {
+                const tierX4List = [...(lo4Adv.tierX5 || []), ...(lo4Adv.tierX4 || [])];
+                const tierX3List = lo4Adv.tierX3 || [];
+                distinctLo = lo4Adv.numbersOver2 || [];
+
+                if (loTitleEl) loTitleEl.textContent = `2. Lô Ghép 4 Động Cơ Live (${distinctLo.length}s)`;
+                if (loWinRateBadgeEl) loWinRateBadgeEl.textContent = 'Live Win 66.7% · Nổ 4 Nháy';
+
+                if (loX3LabelEl) loX3LabelEl.textContent = `🔥 Tầng Cực VIP X4 (Trùng 3-4 PP - ${tierX4List.length} số · Cược 400đ/8.8M):`;
+                if (loX3NumsEl) {
+                    loX3NumsEl.innerHTML = tierX4List.map(n => `
+                        <span class="inline-flex items-center justify-center rounded-lg bg-amber-400 text-slate-950 font-mono text-xs font-black px-2.5 py-1 shadow-xs hover:scale-105 transition-all">
+                            ${number(n)} <sub class="ml-0.5 text-[8px] font-sans">x4</sub>
+                        </span>
+                    `).join('');
+                }
+
+                if (loX2RowEl) {
+                    if (tierX3List.length > 0) {
+                        loX2RowEl.style.display = 'block';
+                        if (loX2LabelEl) loX2LabelEl.textContent = `⚡ Tầng Triển Vọng X3 (Trùng 2 PP - ${tierX3List.length} số · Cược 300đ/6.6M):`;
+                        if (loX2NumsEl) {
+                            loX2NumsEl.innerHTML = tierX3List.map(n => `
+                                <span class="inline-flex items-center justify-center rounded-lg bg-indigo-900 border border-indigo-500/50 text-indigo-100 font-mono text-xs font-black px-2 py-0.5 shadow-xs hover:scale-105 transition-all">
+                                    ${number(n)} <sub class="ml-0.5 text-[8px] font-sans">x3</sub>
+                                </span>
+                            `).join('');
+                        }
+                    } else {
+                        loX2RowEl.style.display = 'none';
+                    }
+                }
+
+                if (loX1RowEl) loX1RowEl.style.display = 'none';
+            } else if (cfg.id === 'maxProfit' && crossOpt && (crossOpt.overlapX3?.length || crossOpt.overlapX2?.length)) {
                 x3List = crossOpt.overlapX3 || [];
                 x2List = crossOpt.overlapX2 || [];
                 x1List = crossOpt.singlesX1 || [];
@@ -4586,18 +5037,33 @@
             // Column 3: Xiên 4
             const xi4NumsEl = byId('finalXi4Nums');
             if (xi4NumsEl) {
-                xi4NumsEl.innerHTML = xi4Nums.map(n => `
-                    <span class="inline-flex items-center justify-center rounded-lg bg-indigo-400 text-slate-950 font-mono text-sm font-black px-2.5 py-1 shadow-md hover:scale-105 transition-all">
-                        ${number(n)}
-                    </span>
-                `).join('') || '<span class="text-xs text-slate-400">—</span>';
+                if (cfg.id === 'maxProfit' && lo4Adv?.xien4?.status === 'SKIPPED_TOO_MANY') {
+                    xi4NumsEl.innerHTML = `
+                        <div class="rounded-xl bg-amber-500/10 border border-amber-400/40 p-2 text-center w-full">
+                            <div class="text-xs font-black text-amber-300">🛡️ BỎ QUA XIÊN 4 HÔM NAY</div>
+                            <div class="text-[10px] text-slate-300 mt-1">Có ${lo4Adv.numbersOver2?.length || 8} số trùng &ge; 2 (> 5 số) &rarr; Bảo toàn vốn</div>
+                        </div>
+                    `;
+                } else if (cfg.id === 'maxProfit' && lo4Adv?.xien4?.status === 'ACTIVE_BET' && lo4Adv.xien4.combinations?.length) {
+                    xi4NumsEl.innerHTML = lo4Adv.xien4.combinations.map(comb => `
+                        <div class="rounded-lg bg-teal-500/20 border border-teal-400/30 text-teal-200 font-mono text-xs font-black px-2 py-1 mb-1 text-center">
+                            ${comb.map(number).join(' - ')}
+                        </div>
+                    `).join('');
+                } else {
+                    xi4NumsEl.innerHTML = xi4Nums.map(n => `
+                        <span class="inline-flex items-center justify-center rounded-lg bg-indigo-400 text-slate-950 font-mono text-sm font-black px-2.5 py-1 shadow-md hover:scale-105 transition-all">
+                            ${number(n)}
+                        </span>
+                    `).join('') || '<span class="text-xs text-slate-400">—</span>';
+                }
             }
 
             // Footer
             const capEl = byId('finalOptimalCapitalText');
             if (capEl) {
                 if (cfg.id === 'maxProfit') {
-                    capEl.textContent = 'Mức 3: 25.75M · Mức VIP: 103.0M';
+                    capEl.textContent = 'Vốn Lô: 59.4M (2.700đ) · Vốn Đề: 4.8M · Tổng vốn: 64.2M (26/09 nổ 4 nháy: +68.6M)';
                 } else if (cfg.id === 'smartAlternating') {
                     capEl.textContent = 'Mức 3: 20.25M · Mức VIP: 81.0M';
                 } else if (cfg.id === 'steadyAccumulator') {
