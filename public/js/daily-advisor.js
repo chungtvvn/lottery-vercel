@@ -53,6 +53,7 @@
     let currentActivePortfolio = '';
     let currentActiveDeMethod = '';
     let currentActiveLoEngine = '';
+    let currentLo4EngineMode = 'top6'; // 'top6' | 'top7'
 
     const PORTFOLIOS_CONFIG = {
         maxProfit: {
@@ -1394,18 +1395,26 @@
             || 7;
         let currentActiveLoEngineData = null;
 
-        // 🔥 ĐỀ XUẤT ĐẶC BIỆT: LÔ GHÉP 4 ĐỘNG CƠ THỰC CHIẾN (Top 6/7 Live: QMBF + Bạc Nhớ + 3 Động Cơ + RRF)
-        const lo4Fusion = fullData?.lo4EngineFusion || payload?.lo4EngineFusion;
-        const lo4Rec = lo4Fusion?.latestRecommendation;
-        if (lo4Rec) {
+        // 🔥 ĐỀ XUẤT ĐẶC BIỆT: LÔ GHÉP 4 ĐỘNG CƠ THỰC CHIẾN (Top 6 hoặc Top 7 Live: QMBF + Bạc Nhớ + 3 Động Cơ + RRF)
+        function renderLo4EngineCard(mode) {
+            const lo4Fusion = fullData?.lo4EngineFusion || payload?.lo4EngineFusion;
+            if (!lo4Fusion) return;
+            const modeData = lo4Fusion.modes?.[mode] || lo4Fusion;
+            const lo4Rec = modeData.latestRecommendation || lo4Fusion.latestRecommendation;
+            if (!lo4Rec) return;
+
             const badgeEl = byId('lo4EngineLiveBadge');
             if (badgeEl) {
-                const liveSettled = (lo4Fusion.settledLedger || []).filter(r => r.isLive);
-                const liveWins = liveSettled.filter(r => r.isLotoWin).length;
-                const liveTotal = liveSettled.length || 9;
-                const liveWinRate = ((liveWins / liveTotal) * 100).toFixed(1);
-                const liveProfitK = liveSettled.reduce((acc, r) => acc + (r.dayLotoProfitK || 0), 0);
-                badgeEl.textContent = `Win ${liveWinRate}% Live (${liveWins}/${liveTotal} ngày) · Lãi ${moneyM(liveProfitK, { signed: true })} · 5.89 nháy/ngày (Toàn bộ 65 kỳ lãi +1.094 TỶ)`;
+                const liveSum = modeData.summary?.live;
+                const allSum = modeData.summary?.all;
+                if (liveSum) {
+                    badgeEl.textContent = `Win ${(liveSum.winRate * 100).toFixed(1)}% Live (${liveSum.wins}/${liveSum.days} ngày) · Lãi ${moneyM(liveSum.profitK, { signed: true })} · ${liveSum.avgHitsPerDay} nháy/ngày (Toàn bộ 65 kỳ lãi ${moneyM(allSum?.profitK || 0, { signed: true })} · ROI ${((allSum?.roi || 0) * 100).toFixed(1)}%)`;
+                }
+            }
+
+            const headingTitleEl = byId('lo4EngineHeadingTitle');
+            if (headingTitleEl) {
+                headingTitleEl.textContent = `Lô Tổng Hợp Đa Tầng 4 Động Cơ (${mode === 'top6' ? 'Top 6' : 'Top 7'} Live: QMBF + Bạc Nhớ + 3 Động Cơ + RRF)`;
             }
 
             const tierX4El = byId('lo4EngineTierX4Numbers');
@@ -1469,12 +1478,12 @@
             const xien4NumsEl = byId('lo4EngineXien4Numbers');
             if (lo4Rec.xien4?.status === 'SKIPPED_TOO_MANY') {
                 if (xien4StatusEl) {
-                    xien4StatusEl.innerHTML = `<span class="text-amber-300 font-bold">🛡️ BỎ QUA XIÊN 4:</span> Có ${lo4Rec.numbersOver2?.length || 8} số trùng (> 5 số) &rarr; Không đánh xiên 4 hôm nay để bảo toàn vốn, tập trung toàn lực vào dàn Lô phân tầng!`;
+                    xien4StatusEl.innerHTML = `<span class="text-amber-300 font-bold">🛡️ BỎ QUA XIÊN 4:</span> Có ${lo4Rec.numbersOver2?.length || 7} số trùng (> 5 số) &rarr; Không đánh xiên 4 hôm nay để bảo toàn vốn, tập trung toàn lực vào dàn Lô phân tầng!`;
                 }
                 if (xien4NumsEl) {
                     xien4NumsEl.innerHTML = `<span class="rounded bg-slate-800 text-slate-300 border border-slate-700 text-[10px] font-bold px-2 py-0.5"><i class="bi bi-shield-lock"></i> Bảo toàn vốn</span>`;
                 }
-            } else if (lo4Rec.xien4?.status === 'ACTIVE_BET') {
+            } else if (lo4Rec.xien4?.status === 'ACTIVE_BET' || lo4Rec.xien4?.status === 'ACTIVE') {
                 const countComb = lo4Rec.xien4.combinations?.length || 0;
                 if (xien4StatusEl) {
                     xien4StatusEl.innerHTML = `<span class="text-emerald-300 font-bold">🎯 CHỐT ĐÁNH ${countComb} VÉ XIÊN 4:</span> Đạt điều kiện chuẩn (4-5 số trùng)`;
@@ -1495,18 +1504,18 @@
                 btnCopyLo4.onclick = () => {
                     const allNums = lo4Rec.allNumbers || lo4Rec.distinctNumbers || lo4Rec.numbersOver2 || [];
                     const lines = [
-                        `🔥 DÀN LÔ TỔNG HỢP 4 ĐỘNG CƠ (TOP 6/7 LIVE) — NGÀY ${formatDateVi(predDate)}`,
+                        `🔥 DÀN LÔ TỔNG HỢP 4 ĐỘNG CƠ (${mode === 'top6' ? 'TOP 6' : 'TOP 7'} LIVE) — NGÀY ${formatDateVi(predDate)}`,
                         `👑 TẦNG CỰC VIP (CƯỢC X4 · 8.8M/SỐ · ${vipNums.length}s): ${vipNums.map(n => String(number(n)).padStart(2, '0')).join(' ')}`,
                         `💎 TẦNG TRIỂN VỌNG (CƯỢC X3 · 6.6M/SỐ · ${medNums.length}s): ${medNums.map(n => String(number(n)).padStart(2, '0')).join(' ')}`,
                         `🛡️ TẦNG BẢO HIỂM (CƯỢC X1 · 2.2M/SỐ · ${x1Nums.length}s): ${x1Nums.map(n => String(number(n)).padStart(2, '0')).join(' ')}`,
                         `📋 TOÀN BỘ DÀN LÔ (${allNums.length} số): ${allNums.map(n => String(number(n)).padStart(2, '0')).join(' ')}`,
                         `🎲 XIÊN 4: ${lo4Rec.xien4?.status === 'SKIPPED_TOO_MANY' ? 'BỎ QUA KHÔNG ĐÁNH (Bảo toàn vốn)' : (lo4Rec.xien4?.combinations?.map(c => c.join('-')).join(' | ') || 'Bỏ qua')}`,
-                        `💰 TỔNG VỐN DỰ KIẾN: ${moneyM(lo4Rec.totalLotoStakeK || 0)} (${allNums.length} số · 3.600đ)`
+                        `💰 TỔNG VỐN DỰ KIẾN: ${moneyM(lo4Rec.totalLotoStakeK || 0)} (${allNums.length} số · ${mode === 'top6' ? '3.100đ' : '3.600đ'})`
                     ];
                     const fullText = lines.join('\n');
                     if (navigator.clipboard) {
                         navigator.clipboard.writeText(fullText).then(() => {
-                            showToast(`Đã chép toàn bộ dàn Lô Tổng Hợp 4 Động Cơ (${allNums.length} số)!`);
+                            showToast(`Đã chép dàn Lô Tổng Hợp 4 Động Cơ (${allNums.length} số)!`);
                         }).catch(() => copyNumbers(allNums));
                     } else {
                         copyNumbers(allNums);
@@ -1514,6 +1523,25 @@
                 };
             }
         }
+
+        renderLo4EngineCard(currentLo4EngineMode);
+
+        // Nút chuyển đổi chế độ Top 6 / Top 7
+        document.querySelectorAll('.lo4-mode-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.lo4-mode-btn').forEach(b => {
+                    b.classList.remove('active', 'bg-amber-400', 'text-slate-950', 'shadow-xs');
+                    b.classList.add('bg-white/10', 'text-slate-300');
+                });
+                btn.classList.add('active', 'bg-amber-400', 'text-slate-950', 'shadow-xs');
+                btn.classList.remove('bg-white/10', 'text-slate-300');
+                currentLo4EngineMode = btn.dataset.lo4Mode || 'top6';
+                renderLo4EngineCard(currentLo4EngineMode);
+                if (typeof window.__refreshCombatDiary === 'function') {
+                    window.__refreshCombatDiary();
+                }
+            };
+        });
 
         // Card 1: Chuẩn Nền Tảng (Mặc Định Đánh) — MỎ NEO NỀN TẢNG CỐ ĐỊNH (Tam Trụ Tri-Consensus Fusion Top 20)
         let stdNums = [];
@@ -2866,7 +2894,8 @@
             if (d) allDatesSet.add(d);
         });
 
-        const lo4Ledger = payload?.lo4EngineFusion?.settledLedger || [];
+        const lo4ModeData = payload?.lo4EngineFusion?.modes?.[currentLo4EngineMode] || payload?.lo4EngineFusion;
+        const lo4Ledger = lo4ModeData?.settledLedger || [];
         const lo4Map = {};
         lo4Ledger.forEach(row => {
             if (row && row.date) {
@@ -3017,22 +3046,22 @@
                     lo4Engine: {
                         date,
                         isPending: true,
-                        countTotal: payload?.lo4EngineFusion?.latestRecommendation?.allNumbers?.length || 17,
-                        countOver2: payload?.lo4EngineFusion?.latestRecommendation?.numbersOver2?.length || 0,
-                        countX1: payload?.lo4EngineFusion?.latestRecommendation?.tierX1?.length || 0,
-                        numbersOver2: payload?.lo4EngineFusion?.latestRecommendation?.numbersOver2 || [],
-                        tierX4: payload?.lo4EngineFusion?.latestRecommendation?.tierX4 || [],
-                        tierX3: payload?.lo4EngineFusion?.latestRecommendation?.tierX3 || [],
-                        tierX1: payload?.lo4EngineFusion?.latestRecommendation?.tierX1 || [],
-                        betNumbers: payload?.lo4EngineFusion?.latestRecommendation?.betNumbers || [],
-                        dayLotoStakeK: payload?.lo4EngineFusion?.latestRecommendation?.totalLotoStakeK || 0,
+                        countTotal: (lo4ModeData?.latestRecommendation?.allNumbers || payload?.lo4EngineFusion?.latestRecommendation?.allNumbers)?.length || 14,
+                        countOver2: (lo4ModeData?.latestRecommendation?.numbersOver2 || payload?.lo4EngineFusion?.latestRecommendation?.numbersOver2)?.length || 0,
+                        countX1: (lo4ModeData?.latestRecommendation?.tierX1 || payload?.lo4EngineFusion?.latestRecommendation?.tierX1)?.length || 0,
+                        numbersOver2: lo4ModeData?.latestRecommendation?.numbersOver2 || payload?.lo4EngineFusion?.latestRecommendation?.numbersOver2 || [],
+                        tierX4: lo4ModeData?.latestRecommendation?.tierX4 || payload?.lo4EngineFusion?.latestRecommendation?.tierX4 || [],
+                        tierX3: lo4ModeData?.latestRecommendation?.tierX3 || payload?.lo4EngineFusion?.latestRecommendation?.tierX3 || [],
+                        tierX1: lo4ModeData?.latestRecommendation?.tierX1 || payload?.lo4EngineFusion?.latestRecommendation?.tierX1 || [],
+                        betNumbers: lo4ModeData?.latestRecommendation?.betNumbers || payload?.lo4EngineFusion?.latestRecommendation?.betNumbers || [],
+                        dayLotoStakeK: lo4ModeData?.latestRecommendation?.totalLotoStakeK || payload?.lo4EngineFusion?.latestRecommendation?.totalLotoStakeK || 0,
                         dayLotoPayoutK: 0,
                         dayLotoProfitK: 0,
                         dayLotoHits: 0,
                         isLotoWin: false,
-                        xien4Status: payload?.lo4EngineFusion?.latestRecommendation?.xien4?.status || 'SKIPPED_TOO_MANY',
-                        xien4Reason: payload?.lo4EngineFusion?.latestRecommendation?.xien4?.reason || '',
-                        xien4Combinations: payload?.lo4EngineFusion?.latestRecommendation?.xien4?.combinations || [],
+                        xien4Status: lo4ModeData?.latestRecommendation?.xien4?.status || payload?.lo4EngineFusion?.latestRecommendation?.xien4?.status || 'SKIPPED_TOO_MANY',
+                        xien4Reason: lo4ModeData?.latestRecommendation?.xien4?.reason || payload?.lo4EngineFusion?.latestRecommendation?.xien4?.reason || '',
+                        xien4Combinations: lo4ModeData?.latestRecommendation?.xien4?.combinations || payload?.lo4EngineFusion?.latestRecommendation?.xien4?.combinations || [],
                         totalDayProfitK: 0,
                         cumLotoProfitK: cumLo4ProfitK
                     },
@@ -3040,14 +3069,14 @@
                         date,
                         isPending: true,
                         isLive: true,
-                        status: payload?.lo4EngineFusion?.latestRecommendation?.xien4?.status || 'SKIPPED_TOO_MANY',
-                        xien4Status: payload?.lo4EngineFusion?.latestRecommendation?.xien4?.status || 'SKIPPED_TOO_MANY',
-                        reason: payload?.lo4EngineFusion?.latestRecommendation?.xien4?.reason || '',
-                        xien4Reason: payload?.lo4EngineFusion?.latestRecommendation?.xien4?.reason || '',
-                        combinations: payload?.lo4EngineFusion?.latestRecommendation?.xien4?.combinations || [],
-                        xien4Combinations: payload?.lo4EngineFusion?.latestRecommendation?.xien4?.combinations || [],
-                        countOver2: payload?.lo4EngineFusion?.latestRecommendation?.numbersOver2?.length || 0,
-                        stakeK: payload?.lo4EngineFusion?.latestRecommendation?.xien4?.stakeK || 0,
+                        status: lo4ModeData?.latestRecommendation?.xien4?.status || payload?.lo4EngineFusion?.latestRecommendation?.xien4?.status || 'SKIPPED_TOO_MANY',
+                        xien4Status: lo4ModeData?.latestRecommendation?.xien4?.status || payload?.lo4EngineFusion?.latestRecommendation?.xien4?.status || 'SKIPPED_TOO_MANY',
+                        reason: lo4ModeData?.latestRecommendation?.xien4?.reason || payload?.lo4EngineFusion?.latestRecommendation?.xien4?.reason || '',
+                        xien4Reason: lo4ModeData?.latestRecommendation?.xien4?.reason || payload?.lo4EngineFusion?.latestRecommendation?.xien4?.reason || '',
+                        combinations: lo4ModeData?.latestRecommendation?.xien4?.combinations || payload?.lo4EngineFusion?.latestRecommendation?.xien4?.combinations || [],
+                        xien4Combinations: lo4ModeData?.latestRecommendation?.xien4?.combinations || payload?.lo4EngineFusion?.latestRecommendation?.xien4?.combinations || [],
+                        countOver2: (lo4ModeData?.latestRecommendation?.numbersOver2 || payload?.lo4EngineFusion?.latestRecommendation?.numbersOver2)?.length || 0,
+                        stakeK: lo4ModeData?.latestRecommendation?.xien4?.stakeK || payload?.lo4EngineFusion?.latestRecommendation?.xien4?.stakeK || 0,
                         profitK: 0,
                         dayXien4ProfitK: 0,
                         payoutK: 0,
