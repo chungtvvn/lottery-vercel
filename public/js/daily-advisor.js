@@ -205,6 +205,31 @@
         });
     }
 
+    function copyRawText(text, successMsg = 'Đã sao chép thành công!') {
+        if (!text) return;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(successMsg);
+            }).catch(() => {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showToast(successMsg);
+            });
+        } else {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showToast(successMsg);
+        }
+    }
+
     // ==========================================
     // HELPER: DATE FORMATTING
     // ==========================================
@@ -1378,6 +1403,14 @@
             if (typeof window.__refreshCombatDiary === 'function') {
                 window.__refreshCombatDiary();
             }
+
+            if (typeof renderCoordinatedDeLoHub === 'function') {
+                renderCoordinatedDeLoHub(activeDeMethodKey, currentLo4EngineMode);
+            }
+
+            if (typeof window.__renderFinalOptimalCombinedSlip === 'function') {
+                window.__renderFinalOptimalCombinedSlip();
+            }
         }
 
         updateDeMethodDisplay(activeDeMethodKey);
@@ -1537,8 +1570,268 @@
                 btn.classList.remove('bg-white/10', 'text-slate-300');
                 currentLo4EngineMode = btn.dataset.lo4Mode || 'top6';
                 renderLo4EngineCard(currentLo4EngineMode);
+                if (typeof renderCoordinatedDeLoHub === 'function') {
+                    renderCoordinatedDeLoHub(activeDeMethodKey, currentLo4EngineMode);
+                }
                 if (typeof window.__refreshCombatDiary === 'function') {
                     window.__refreshCombatDiary();
+                }
+                if (typeof window.__renderFinalOptimalCombinedSlip === 'function') {
+                    window.__renderFinalOptimalCombinedSlip();
+                }
+            };
+        });
+
+        // =========================================================================
+        // 👑 HUB PHỐI HỢP CHIẾN THUẬT: ĐỀ TUYỂN CHỌN & LÔ GHÉP 4 ĐỘNG CƠ
+        // =========================================================================
+        function renderCoordinatedDeLoHub(deMethodKey, loMode) {
+            const deKey = deMethodKey || activeDeMethodKey || currentActiveDeMethod || 'pentaCoreDe';
+            const mode = loMode || currentLo4EngineMode || 'top6';
+
+            const deData = getDeMethodDisplayData(deKey, fullData);
+            const lo4Fusion = fullData?.lo4EngineFusion || payload?.lo4EngineFusion;
+            const modeData = lo4Fusion?.modes?.[mode] || lo4Fusion || {};
+            const lo4Rec = modeData?.latestRecommendation || lo4Fusion?.latestRecommendation || {};
+
+            // 1. Cập nhật trạng thái nút Track Đề
+            document.querySelectorAll('.coord-de-btn').forEach(btn => {
+                const isSelected = (btn.dataset.coordDe === deKey);
+                btn.classList.toggle('active', isSelected);
+                btn.classList.toggle('bg-amber-500', isSelected);
+                btn.classList.toggle('text-slate-950', isSelected);
+                btn.classList.toggle('font-black', isSelected);
+                btn.classList.toggle('shadow-xs', isSelected);
+                btn.classList.toggle('bg-white/10', !isSelected);
+                btn.classList.toggle('text-slate-300', !isSelected);
+                btn.classList.toggle('font-bold', !isSelected);
+            });
+
+            // 2. Cập nhật trạng thái nút Track Lô
+            document.querySelectorAll('.coord-lo-btn').forEach(btn => {
+                const isSelected = (btn.dataset.coordLo === mode);
+                btn.classList.toggle('active', isSelected);
+                btn.classList.toggle('bg-amber-400', isSelected);
+                btn.classList.toggle('text-slate-950', isSelected);
+                btn.classList.toggle('font-black', isSelected);
+                btn.classList.toggle('shadow-xs', isSelected);
+                btn.classList.toggle('bg-white/10', !isSelected);
+                btn.classList.toggle('text-slate-300', !isSelected);
+                btn.classList.toggle('font-bold', !isSelected);
+            });
+
+            // 3. Cập nhật Labels Stat
+            const deStatEl = byId('coordinatedDeSelectedStat');
+            if (deStatEl) {
+                deStatEl.textContent = `${deData.allNums.length} số · ${deData.badge}`;
+            }
+
+            const loStatEl = byId('coordinatedLoSelectedStat');
+            if (loStatEl) {
+                const isTop6 = (mode === 'top6');
+                loStatEl.textContent = isTop6
+                    ? '14 số · Vốn 68.2M · Win 77.8%'
+                    : '17 số · Vốn 79.2M · Win 88.9%';
+            }
+
+            const liveBadgeEl = byId('coordinatedLiveBadge');
+            if (liveBadgeEl) {
+                const isTop6 = (mode === 'top6');
+                liveBadgeEl.textContent = isTop6
+                    ? 'Live Win 77.8% · +185M (Top 6)'
+                    : 'Live Win 88.9% · Lãi +1.094 TỶ (Top 7)';
+            }
+
+            // 4. Tìm số Hội Tụ Vàng (Giao thoa giữa Đề và Lô Ghép 4)
+            const deVipNums = (deData.vipNums || []).map(number);
+            const deAllNums = (deData.allNums || []).map(number);
+            const loTierX4 = [...(lo4Rec?.tierX5 || []), ...(lo4Rec?.tierX4 || [])].map(number);
+            const loTierX3 = (lo4Rec?.tierX3 || []).map(number);
+            const loTierX1 = (lo4Rec?.tierX1 || []).map(number);
+            const loAllNums = (lo4Rec?.allNumbers || lo4Rec?.distinctNumbers || [...loTierX4, ...loTierX3, ...loTierX1]).map(number);
+
+            const deVipSet = new Set(deVipNums.map(String));
+            const deAllSet = new Set(deAllNums.map(String));
+            const loCoreSet = new Set([...loTierX4, ...loTierX3].map(String));
+            const loAllSet = new Set(loAllNums.map(String));
+
+            // Số Cực VIP: Vừa nằm trong Đề VIP vừa nằm trong Lô Trùng >= 2 PP (Tầng X4 hoặc X3)
+            const goldenVip = [...deVipSet].filter(n => loCoreSet.has(n));
+            // Số Hội Tụ Mức 2: Nằm trong Dàn Đề và Lô Ghép 4
+            const goldenSecondary = [...deAllSet].filter(n => loAllSet.has(n) && !goldenVip.includes(n));
+
+            const goldenBadge = byId('coordinatedGoldenBadge');
+            if (goldenBadge) {
+                const totalGolden = goldenVip.length + goldenSecondary.length;
+                goldenBadge.textContent = `${totalGolden} số hội tụ Đề & Lô`;
+            }
+
+            const goldenContainer = byId('coordinatedGoldenNumbers');
+            if (goldenContainer) {
+                if (goldenVip.length === 0 && goldenSecondary.length === 0) {
+                    goldenContainer.innerHTML = `
+                        <div class="text-xs text-slate-300 italic flex items-center gap-2">
+                            <i class="bi bi-info-circle text-amber-400"></i>
+                            Hôm nay không có số trùng chéo giữa 2 dàn. Đây là tín hiệu độ phủ độc lập cao giúp phân tán rủi ro. Khuyên đánh song song cả 2 dàn!
+                        </div>
+                    `;
+                } else {
+                    let html = '';
+                    goldenVip.forEach(n => {
+                        html += `
+                            <div class="relative group inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-slate-950 font-mono text-xs font-black px-3 py-1.5 shadow-md ring-2 ring-red-500/80 animate-pulse hover:scale-105 transition-all" title="Bạch Thủ / Song Thủ Siêu VIP: Vừa nằm trong Đề VIP X2 vừa nằm trong Lô Ghép 4 Trùng >= 2 Động Cơ">
+                                <span class="text-sm">${number(n)}</span>
+                                <span class="rounded bg-red-600 text-white font-sans text-[8px] font-black px-1 py-0.2 uppercase shadow-xs">👑 CỰC VIP ĐỀ+LÔ</span>
+                            </div>
+                        `;
+                    });
+                    goldenSecondary.forEach(n => {
+                        const inLoCore = loCoreSet.has(String(n));
+                        html += `
+                            <div class="inline-flex items-center gap-1.5 rounded-xl bg-amber-500/20 border border-amber-400/50 text-amber-200 font-mono text-xs font-black px-2.5 py-1 hover:scale-105 transition-all" title="Hội Tụ Kép: Có mặt trong cả dàn Đề và dàn Lô Ghép 4">
+                                <span>${number(n)}</span>
+                                <span class="text-[9px] font-sans text-amber-300/80">(${inLoCore ? 'Lô Trùng' : 'Lô+Đề'})</span>
+                            </div>
+                        `;
+                    });
+                    goldenContainer.innerHTML = html;
+                }
+            }
+
+            // 5. Cập nhật Bảng Ngân Sách 3 Mức
+            const isTop6 = (mode === 'top6');
+            const loStakeM = isTop6 ? 68.2 : 79.2;
+            const loStakePoints = isTop6 ? 3100 : 3600;
+
+            const deStakeM = (deData.vipNums.length * 2) + (deData.singleNums.length * 1) || 60.0;
+            const deLevel1Str = `${moneyM(deStakeM * 1000)} (${deData.allNums.length}s)`;
+            const loLevel1Str = `${moneyM(loStakeM * 1000)} (${loStakePoints.toLocaleString('vi-VN')}đ)`;
+            const totalLevel1Str = `~${moneyM((deStakeM + loStakeM) * 1000)}`;
+
+            const deLevel2Str = `~${Math.round(deStakeM * 10)}K (${deData.vipNums.length} VIP x 20K + ${deData.singleNums.length} Lót x 10K)`;
+            const loLevel2Str = `${moneyM(loStakeM * 100)} (${Math.round(loStakePoints / 10)}đ)`;
+            const totalLevel2Str = `~${moneyM((deStakeM + loStakeM) * 100)}`;
+
+            const deLevel3Str = `~${Math.round(deStakeM * 1)}K (${deData.vipNums.length} VIP x 2K + ${deData.singleNums.length} Lót x 1K)`;
+            const loLevel3Str = `${moneyM(loStakeM * 10)} (${Math.round(loStakePoints / 100)}đ)`;
+            const totalLevel3Str = `~${moneyM((deStakeM + loStakeM) * 10)}`;
+
+            if (byId('capitalDeLevel1')) byId('capitalDeLevel1').textContent = deLevel1Str;
+            if (byId('capitalLoLevel1')) byId('capitalLoLevel1').textContent = loLevel1Str;
+            if (byId('capitalTotalLevel1')) byId('capitalTotalLevel1').textContent = totalLevel1Str;
+
+            if (byId('capitalDeLevel2')) byId('capitalDeLevel2').textContent = deLevel2Str;
+            if (byId('capitalLoLevel2')) byId('capitalLoLevel2').textContent = loLevel2Str;
+            if (byId('capitalTotalLevel2')) byId('capitalTotalLevel2').textContent = totalLevel2Str;
+
+            if (byId('capitalDeLevel3')) byId('capitalDeLevel3').textContent = deLevel3Str;
+            if (byId('capitalLoLevel3')) byId('capitalLoLevel3').textContent = loLevel3Str;
+            if (byId('capitalTotalLevel3')) byId('capitalTotalLevel3').textContent = totalLevel3Str;
+
+            // 6. Gán sự kiện cho Nút Copy Trọn Gói Cược Ngày
+            const btnCopyCombo = byId('btnCopyCoordinatedCombo');
+            if (btnCopyCombo) {
+                btnCopyCombo.onclick = () => {
+                    const dateFormatted = formatDateVi(predDate);
+                    const cleanDeLabel = (deData.label || '').replace(/<[^>]*>?/gm, '').trim();
+                    const loModeLabel = isTop6 ? 'Top 6 Live (14 số · Khuyên Dùng)' : 'Top 7 Live (17 số · Lãi 65 kỳ +1.094 TỶ)';
+
+                    const slipLines = [
+                        `🎯 VÉ CƯỢC THỰC CHIẾN XSMB — NGÀY ${dateFormatted}`,
+                        `👑 COMBO CHIẾN THUẬT: ĐỀ TUYỂN CHỌN & LÔ GHÉP 4 ĐỘNG CƠ`,
+                        `----------------------------------------`,
+                        `⭐ TÂM ĐIỂM HỘI TỤ ĐỒNG THUẬN (ĐỀ VIP ∩ LÔ GHÉP 4):`,
+                        goldenVip.length > 0
+                            ? `👑 SIÊU VIP (Đánh cả Đề X2 & Bao Lô Đậm): ${goldenVip.map(n => String(number(n)).padStart(2, '0')).join(' ')}`
+                            : `(Không có số trùng chéo, đánh song song 2 dàn tối ưu độ phủ)`,
+                        goldenSecondary.length > 0
+                            ? `⚡ HỘI TỤ BỔ TRỢ: ${goldenSecondary.map(n => String(number(n)).padStart(2, '0')).join(' ')}`
+                            : ``,
+                        ``,
+                        `💎 PHẦN 1: DÀN ĐỀ TUYỂN CHỌN (${deData.allNums.length} SỐ)`,
+                        `🏷️ Phương pháp: ${cleanDeLabel}`,
+                        `⚡ ${deData.vipLabel} (Cược X2):`,
+                        deData.vipNums.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                        `🛡️ ${deData.singleLabel} (Cược X1):`,
+                        deData.singleNums.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                        `🌐 Toàn bộ dàn Đề (Dấu phẩy web cược):`,
+                        deData.allNums.map(n => String(number(n)).padStart(2, '0')).join(', '),
+                        ``,
+                        `🔥 PHẦN 2: LÔ TỔNG HỢP 4 ĐỘNG CƠ (${loModeLabel})`,
+                        `⚡ TẦNG CỰC VIP (TRÙNG 3-4 PP · X4/X5 · 400đ-500đ):`,
+                        loTierX4.length > 0 ? loTierX4.map(n => String(number(n)).padStart(2, '0')).join(' ') : 'Không có',
+                        `⚡ TẦNG TRIỂN VỌNG (TRÙNG 2 PP · X3 · 300đ):`,
+                        loTierX3.length > 0 ? loTierX3.map(n => String(number(n)).padStart(2, '0')).join(' ') : 'Không có',
+                        `🛡️ TẦNG BẢO HIỂM (KHÔNG TRÙNG · X1 · 100đ):`,
+                        loTierX1.length > 0 ? loTierX1.map(n => String(number(n)).padStart(2, '0')).join(' ') : 'Không có',
+                        lo4Rec?.xien4Status === 'PLAYING' && lo4Rec?.xien4Combinations?.length > 0
+                            ? `🎲 XIÊN 4 QUÂY (${lo4Rec.xien4Combinations.length} vé): ${lo4Rec.xien4Combinations.map(c => c.map(n => String(number(n)).padStart(2, '0')).join('-')).join(' | ')}`
+                            : `🎲 XIÊN 4: ${lo4Rec?.xien4Reason || 'Bảo toàn vốn (không cược)'}`,
+                        `🌐 Toàn bộ dàn Lô (Dấu phẩy web cược):`,
+                        loAllNums.map(n => String(number(n)).padStart(2, '0')).join(', '),
+                        ``,
+                        `💰 BẢNG VỐN KHUYẾN NGHỊ:`,
+                        `👉 Mức 1 (1:1): ${totalLevel1Str} (Đề: ${deLevel1Str} | Lô: ${loLevel1Str})`,
+                        `👉 Mức 2 (1/10 - Phổ Thông): ${totalLevel2Str} (Đề: ${deLevel2Str} | Lô: ${loLevel2Str})`,
+                        `👉 Mức 3 (1/100 - Trải Nghiệm): ${totalLevel3Str} (Đề: ${deLevel3Str} | Lô: ${loLevel3Str})`
+                    ].filter(Boolean).join('\n');
+
+                    copyRawText(slipLines, 'Đã sao chép Trọn Gói Cược Ngày (Đề + Lô 4 Động Cơ) đầy đủ!');
+                };
+            }
+
+            // Nút Copy Phẩy Đề Web
+            const btnCopyDeWeb = byId('btnCopyCoordinatedDeWeb');
+            if (btnCopyDeWeb) {
+                btnCopyDeWeb.onclick = () => {
+                    const commaStr = deData.allNums.map(n => String(number(n)).padStart(2, '0')).join(', ');
+                    copyRawText(commaStr, `Đã chép ${deData.allNums.length} số Đề (dấu phẩy) cho web cược!`);
+                };
+            }
+
+            // Nút Copy Phẩy Lô Web
+            const btnCopyLoWeb = byId('btnCopyCoordinatedLoWeb');
+            if (btnCopyLoWeb) {
+                btnCopyLoWeb.onclick = () => {
+                    const commaStr = loAllNums.map(n => String(number(n)).padStart(2, '0')).join(', ');
+                    copyRawText(commaStr, `Đã chép ${loAllNums.length} số Lô Ghép 4 (dấu phẩy) cho web cược!`);
+                };
+            }
+        }
+
+        // Khởi tạo Hub phối hợp
+        renderCoordinatedDeLoHub(activeDeMethodKey, currentLo4EngineMode);
+
+        // Gán sự kiện click cho các nút chọn Đề trên Hub
+        document.querySelectorAll('.coord-de-btn').forEach(btn => {
+            btn.onclick = () => {
+                const targetMethod = btn.dataset.coordDe;
+                if (targetMethod && typeof updateDeMethodDisplay === 'function') {
+                    updateDeMethodDisplay(targetMethod);
+                }
+            };
+        });
+
+        // Gán sự kiện click cho các nút chọn Lô trên Hub
+        document.querySelectorAll('.coord-lo-btn').forEach(btn => {
+            btn.onclick = () => {
+                const targetMode = btn.dataset.coordLo || 'top6';
+                currentLo4EngineMode = targetMode;
+                document.querySelectorAll('.lo4-mode-btn').forEach(b => {
+                    const isActive = (b.dataset.lo4Mode === targetMode);
+                    b.classList.toggle('active', isActive);
+                    b.classList.toggle('bg-amber-400', isActive);
+                    b.classList.toggle('text-slate-950', isActive);
+                    b.classList.toggle('shadow-xs', isActive);
+                    b.classList.toggle('bg-white/10', !isActive);
+                    b.classList.toggle('text-slate-300', !isActive);
+                });
+                renderLo4EngineCard(targetMode);
+                if (typeof window.__refreshCombatDiary === 'function') {
+                    window.__refreshCombatDiary();
+                }
+                if (typeof window.__renderFinalOptimalCombinedSlip === 'function') {
+                    window.__renderFinalOptimalCombinedSlip();
                 }
             };
         });
@@ -2623,17 +2916,17 @@
                             <span class="text-slate-400">🚀 Lô Tăng Tốc X2:</span>
                             <strong class="${info.x2ProfitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(info.x2ProfitK, { signed: true })}</strong>
                         </div>
-                        <div class="flex justify-between items-center py-0.5 text-slate-500">
-                            <span>🌟 Tam Thủ Xiên 3:</span>
-                            <span class="${info.xi3ProfitK > 0 ? 'text-amber-300 font-bold' : 'text-slate-400'}">${moneyM(info.xi3ProfitK, { signed: true })} <span class="text-[9px]">(quan sát)</span></span>
+                        <div class="flex justify-between items-center py-0.5 text-slate-400">
+                            <span>🔥 Lô Ghép 4 Động Cơ:</span>
+                            <span class="${info.lo4ProfitK >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400'}">${moneyM(info.lo4ProfitK, { signed: true })} <span class="text-[9px] text-teal-300 font-bold">(Live)</span></span>
                         </div>
                         <div class="flex justify-between items-center py-0.5 text-slate-500">
-                            <span>💎 Lô Xiên 4:</span>
+                            <span>🎲 Lô Xiên 4 (Ghép Mới):</span>
                             <span class="${info.xi4ProfitK > 0 ? 'text-amber-300 font-bold' : 'text-slate-400'}">${moneyM(info.xi4ProfitK, { signed: true })} <span class="text-[9px]">(quan sát)</span></span>
                         </div>
                     </div>
                     <div class="mt-2 text-[10px] text-slate-400 italic">
-                        * Xiên 3 & Xiên 4 chỉ quan sát, không cộng/trừ vào Tổng Lãi Ngày & Lũy Kế
+                        * Lô Xiên 4 chỉ ở chế độ quan sát, không cộng/trừ vào Tổng Lãi Ngày & Lũy Kế
                     </div>
                     <div class="mt-2.5 pt-2 border-t border-slate-800 flex justify-between items-center font-mono">
                         <span class="text-xs font-bold text-slate-300">Tổng Lãi Ròng Thực Chiến:</span>
@@ -2647,24 +2940,59 @@
     }
 
     function positionDiaryPopover(cell, e, popover) {
+        if (!cell || !popover) return;
         const rect = cell.getBoundingClientRect();
-        const popoverWidth = popover.offsetWidth || 340;
-        const popoverHeight = popover.offsetHeight || 260;
+        const vh = window.innerHeight;
+        const vw = window.innerWidth;
         const padding = 12;
+
+        popover.style.maxHeight = `${Math.min(540, vh - 24)}px`;
+        popover.style.overflowY = 'auto';
+
+        const popoverWidth = Math.min(popover.offsetWidth || 380, vw - 24);
+        const popoverHeight = popover.offsetHeight || 300;
 
         let left = rect.left + (rect.width / 2) - (popoverWidth / 2);
         if (left < padding) left = padding;
-        if (left + popoverWidth > window.innerWidth - padding) {
-            left = window.innerWidth - popoverWidth - padding;
+        if (left + popoverWidth > vw - padding) {
+            left = vw - popoverWidth - padding;
         }
 
-        let top = rect.top - popoverHeight - 10;
-        if (top < padding) {
-            top = rect.bottom + 10;
+        const spaceAbove = rect.top;
+        const spaceBelow = vh - rect.bottom;
+
+        let top;
+        if (rect.top > vh / 2) {
+            if (spaceAbove >= popoverHeight + 10) {
+                top = rect.top - popoverHeight - 8;
+            } else if (spaceBelow >= popoverHeight + 10) {
+                top = rect.bottom + 8;
+            } else {
+                if (spaceAbove >= spaceBelow) {
+                    top = Math.max(padding, rect.top - popoverHeight - 8);
+                } else {
+                    top = Math.min(vh - popoverHeight - padding, rect.bottom + 8);
+                }
+            }
+        } else {
+            if (spaceBelow >= popoverHeight + 10) {
+                top = rect.bottom + 8;
+            } else if (spaceAbove >= popoverHeight + 10) {
+                top = rect.top - popoverHeight - 8;
+            } else {
+                if (spaceBelow >= spaceAbove) {
+                    top = Math.min(vh - popoverHeight - padding, rect.bottom + 8);
+                } else {
+                    top = Math.max(padding, rect.top - popoverHeight - 8);
+                }
+            }
         }
 
-        popover.style.left = `${left}px`;
-        popover.style.top = `${top}px`;
+        // Clamp an toàn tuyệt đối, không bao giờ vượt qua mép trên hoặc mép dưới viewport
+        top = Math.max(padding, Math.min(top, vh - popoverHeight - padding));
+
+        popover.style.left = `${Math.round(left)}px`;
+        popover.style.top = `${Math.round(top)}px`;
     }
 
     function showDiaryCellPopover(cell, e) {
@@ -2675,14 +3003,22 @@
         const info = diaryDetailsMap?.[date]?.[type];
         if (!info) return;
 
+        popover.__activeCell = cell;
         popover.dataset.activeDate = date;
         popover.dataset.activeType = type;
         popover.innerHTML = renderDiaryPopoverContent(info, type);
         popover.classList.remove('hidden');
+
+        // Định vị bước đầu
+        positionDiaryPopover(cell, e, popover);
+        popover.classList.remove('opacity-0', 'scale-95');
+        popover.classList.add('opacity-100', 'scale-100');
+
+        // Tinh chỉnh toạ độ sau khi layout trình duyệt hoàn tất để đo chính xác offsetHeight
         requestAnimationFrame(() => {
-            positionDiaryPopover(cell, e, popover);
-            popover.classList.remove('opacity-0', 'scale-95');
-            popover.classList.add('opacity-100', 'scale-100');
+            if (popover.__activeCell === cell) {
+                positionDiaryPopover(cell, e, popover);
+            }
         });
     }
 
@@ -2696,6 +3032,7 @@
                 popover.classList.add('hidden');
                 delete popover.dataset.activeDate;
                 delete popover.dataset.activeType;
+                delete popover.__activeCell;
             }
         }, 150);
     }
@@ -2735,16 +3072,16 @@
 
             tbody.addEventListener('mousemove', e => {
                 const cell = e.target.closest('.diary-cell-interactive');
-                if (cell && popover && !popover.classList.contains('hidden')) {
-                    positionDiaryPopover(cell, e, popover);
+                if (cell && popover && !popover.classList.contains('hidden') && popover.__activeCell === cell) {
+                    // Tránh giật: chỉ update nếu cần thiết
                 }
             });
 
             tbody.addEventListener('mouseout', e => {
                 const cell = e.target.closest('.diary-cell-interactive');
                 if (!cell) return;
-                const related = e.relatedTarget?.closest('.diary-cell-interactive');
-                if (related === cell) return;
+                const related = e.relatedTarget?.closest('.diary-cell-interactive') || e.relatedTarget?.closest('#diaryFloatingPopover');
+                if (related === cell || related === popover) return;
                 scheduleHidePopover();
             });
 
@@ -2763,6 +3100,24 @@
                     hideDiaryCellPopover();
                 }
             });
+
+            // Xử lý khi người dùng cuộn chuột: Tự động bám theo ô cell hoặc ẩn popover nếu cell ra khỏi màn hình
+            const onDiaryScroll = () => {
+                if (!popover || popover.classList.contains('hidden') || !popover.__activeCell) return;
+                const cell = popover.__activeCell;
+                const rect = cell.getBoundingClientRect();
+                if (rect.bottom < 0 || rect.top > window.innerHeight) {
+                    hideDiaryCellPopover();
+                } else {
+                    positionDiaryPopover(cell, null, popover);
+                }
+            };
+
+            window.addEventListener('scroll', onDiaryScroll, { passive: true });
+            const scrollWrapper = tbody.closest('.overflow-x-auto');
+            if (scrollWrapper) {
+                scrollWrapper.addEventListener('scroll', onDiaryScroll, { passive: true });
+            }
         }
     }
 
@@ -4949,7 +5304,8 @@
                 ...(PORTFOLIOS_CONFIG[currentActivePortfolio] || PORTFOLIOS_CONFIG.maxProfit),
                 ...(fullData?.strategicPortfolioGovernor?.portfolios?.[currentActivePortfolio] || {})
             };
-            const deData = getDeMethodDisplayData(cfg.deMethod, fullData);
+            const activeDeMethodToUse = (cfg.id === 'maxProfit' && currentActiveDeMethod) ? currentActiveDeMethod : cfg.deMethod;
+            const deData = getDeMethodDisplayData(activeDeMethodToUse, fullData);
 
             const crossOpt = fullData?.dynamicMetaAdvisor?.nextPrediction?.optimalCrossTierEnsemble?.primary
                 || fullData?.loQuantumBayesFusion?.dynamicMetaAdvisor?.nextPrediction?.optimalCrossTierEnsemble?.primary
@@ -4969,14 +5325,14 @@
             const stratBadgeEl = byId('finalOptimalSlipStrategyBadge');
             if (stratBadgeEl) {
                 stratBadgeEl.textContent = (cfg.id === 'maxProfit')
-                    ? '⚡ SIÊU HỘI TỤ THỰC CHIẾN · LÔ GHÉP 4 ĐỘNG CƠ & ĐỀ ALPHA'
+                    ? '⚡ SIÊU HỘI TỤ THỰC CHIẾN · LÔ GHÉP 4 ĐỘNG CƠ & ĐỀ TUYỂN CHỌN'
                     : (cfg.badge || cfg.name);
             }
 
             const titleEl = byId('finalOptimalSlipTitle');
             if (titleEl) {
                 titleEl.textContent = (cfg.id === 'maxProfit')
-                    ? 'Tổ Hợp Lô Ghép 4 Động Cơ Live (X4/X3) & Đề Alpha Đòn Bẩy X2'
+                    ? 'Tổ Hợp Lô Ghép 4 Động Cơ Live & Đề Tuyển Chọn Tinh Hoa'
                     : cfg.name;
             }
 
@@ -4994,7 +5350,7 @@
 
             const deWinRateBadgeEl = byId('finalDeWinRateBadge');
             if (deWinRateBadgeEl) {
-                deWinRateBadgeEl.textContent = (cfg.id === 'maxProfit') ? 'Win 70.2% · Nổ Bù 85.4%' : (deData.badge || 'Tối Ưu X2');
+                deWinRateBadgeEl.textContent = (cfg.id === 'maxProfit') ? `${deData.badge || 'Tối Ưu X2'}` : (deData.badge || 'Tối Ưu X2');
             }
 
             const deVipLabelEl = byId('finalDeVipLabel');
@@ -5078,7 +5434,9 @@
             let x1List = [];
             let distinctLo = [];
 
-            const lo4Adv = fullData?.lo4EngineFusion?.latestRecommendation || payload?.lo4EngineFusion?.latestRecommendation;
+            const lo4Fusion = fullData?.lo4EngineFusion || payload?.lo4EngineFusion;
+            const lo4ModeData = lo4Fusion?.modes?.[currentLo4EngineMode] || lo4Fusion;
+            const lo4Adv = lo4ModeData?.latestRecommendation || lo4Fusion?.latestRecommendation;
             if (cfg.id === 'maxProfit' && lo4Adv && lo4Adv.betNumbers?.length) {
                 const tierX4List = [...(lo4Adv.tierX5 || []), ...(lo4Adv.tierX4 || [])];
                 const tierX3List = lo4Adv.tierX3 || [];
@@ -5088,8 +5446,9 @@
                 x2List = tierX3List;
                 x1List = tierX1List;
 
-                if (loTitleEl) loTitleEl.textContent = `2. Lô Ghép 4 Động Cơ Live (${distinctLo.length}s)`;
-                if (loWinRateBadgeEl) loWinRateBadgeEl.textContent = 'Live Win 66.7% · 5.89 Nháy/Ngày';
+                const isTop6 = (currentLo4EngineMode === 'top6');
+                if (loTitleEl) loTitleEl.textContent = `2. Lô Ghép 4 Động Cơ Live (${isTop6 ? 'Top 6' : 'Top 7'} · ${distinctLo.length}s)`;
+                if (loWinRateBadgeEl) loWinRateBadgeEl.textContent = isTop6 ? 'Live Win 77.8% · +185M' : 'Live Win 88.9% · Lãi +1.094 TỶ';
 
                 if (loX3LabelEl) loX3LabelEl.textContent = `🔥 Tầng Cực VIP X4 (Trùng 3-4 PP - ${tierX4List.length} số · Cược 400đ/8.8M):`;
                 if (loX3NumsEl) {
@@ -5287,7 +5646,10 @@
             const capEl = byId('finalOptimalCapitalText');
             if (capEl) {
                 if (cfg.id === 'maxProfit') {
-                    capEl.textContent = 'Vốn Lô Tổng Hợp: 79.2M (3.600đ) · Vốn Đề: 4.8M · Tổng vốn: 84.0M (Lãi 65k: +1.094 TỶ, Live: +150M)';
+                    const isTop6 = (currentLo4EngineMode === 'top6');
+                    capEl.textContent = isTop6
+                        ? 'Vốn Lô Ghép 4 Top 6: 68.2M (3.100đ) · Đề: 60.0M · Tổng vốn: 128.2M (Live Win 77.8% · +185M)'
+                        : 'Vốn Lô Ghép 4 Top 7: 79.2M (3.600đ) · Đề: 60.0M · Tổng vốn: 139.2M (Lãi 65 kỳ: +1.094 TỶ)';
                 } else if (cfg.id === 'smartAlternating') {
                     capEl.textContent = 'Mức 3: 20.25M · Mức VIP: 81.0M';
                 } else if (cfg.id === 'steadyAccumulator') {
