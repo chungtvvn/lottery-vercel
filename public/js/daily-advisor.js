@@ -3406,141 +3406,237 @@
         return null;
     }
 
-    function showDiaryCellPopover(cell, e) {
-        const popover = byId('diaryFloatingPopover');
-        if (!popover) return;
-        const date = cell.dataset.date;
-        const type = cell.dataset.diaryCell;
+    let currentExpandedDate = null;
+    let currentExpandedType = null;
+
+    function getDiaryInfo(date, type) {
+        if (!date || !type) return null;
         let info = diaryDetailsMap?.[date]?.[type];
         if (!info && date && type) {
             info = synthesizeFallbackDiaryInfo(date, type, payload);
         }
-        if (!info) return;
+        return info;
+    }
 
-        popover.__activeCell = cell;
-        if (e && typeof e.clientX === 'number') {
-            popover.__lastMousePos = { x: e.clientX, y: e.clientY };
-        } else {
-            popover.__lastMousePos = null;
+    function collapseDiaryExpandedRow(date) {
+        const targetDate = date || currentExpandedDate;
+        if (!targetDate) return;
+        const expandedRow = document.getElementById(`diaryExpandedRow-${targetDate}`);
+        if (expandedRow) {
+            expandedRow.remove();
         }
-        popover.dataset.activeDate = date;
-        popover.dataset.activeType = type;
-        popover.innerHTML = renderDiaryPopoverContent(info, type);
-        popover.classList.remove('hidden');
+        document.querySelectorAll(`.diary-cell-interactive[data-date="${targetDate}"]`).forEach(c => {
+            const badge = c.querySelector('.diary-expand-indicator');
+            if (badge) {
+                badge.innerHTML = 'Bấm xem dàn số <i class="bi bi-chevron-down text-[8px]"></i>';
+                badge.classList.remove('bg-amber-400', 'text-slate-950', 'ring-1', 'ring-white', 'font-black');
+            }
+        });
+        if (currentExpandedDate === targetDate) {
+            currentExpandedDate = null;
+            currentExpandedType = null;
+        }
+    }
 
-        // Định vị bước đầu
-        positionDiaryPopover(cell, e, popover);
-        popover.classList.remove('opacity-0', 'scale-95');
-        popover.classList.add('opacity-100', 'scale-100');
+    function switchDiaryExpandedTab(date, tabId) {
+        const container = document.getElementById(`diaryExpandedContent-${date}`);
+        if (!container) return;
+        currentExpandedType = tabId;
+        container.innerHTML = renderDiaryExpandedCard(date, tabId);
+        updateDiaryCellIndicators(date, tabId);
+    }
 
-        // Tinh chỉnh toạ độ sau khi layout trình duyệt hoàn tất để đo chính xác offsetHeight
-        requestAnimationFrame(() => {
-            if (popover.__activeCell === cell) {
-                const mousePos = popover.__lastMousePos;
-                const fakeEvent = mousePos ? { clientX: mousePos.x, clientY: mousePos.y } : null;
-                positionDiaryPopover(cell, fakeEvent, popover);
+    function updateDiaryCellIndicators(date, activeType) {
+        document.querySelectorAll(`.diary-cell-interactive[data-date="${date}"]`).forEach(c => {
+            const cellType = c.dataset.diaryCell;
+            const isThisActive = (cellType === activeType);
+            const badge = c.querySelector('.diary-expand-indicator');
+            if (badge) {
+                if (isThisActive) {
+                    badge.innerHTML = 'Thu gọn <i class="bi bi-chevron-up text-[8px]"></i>';
+                    badge.className = 'diary-expand-indicator font-black underline flex items-center gap-0.5 bg-amber-400 text-slate-950 px-1.5 py-0.5 rounded shadow-xs ring-1 ring-white';
+                } else {
+                    badge.innerHTML = 'Bấm xem dàn số <i class="bi bi-chevron-down text-[8px]"></i>';
+                    badge.className = 'diary-expand-indicator font-bold underline flex items-center gap-0.5 opacity-80 hover:opacity-100';
+                }
             }
         });
     }
 
-    function hideDiaryCellPopover() {
-        const popover = byId('diaryFloatingPopover');
-        if (!popover) return;
-        popover.classList.remove('opacity-100', 'scale-100');
-        popover.classList.add('opacity-0', 'scale-95');
-        setTimeout(() => {
-            if (popover.classList.contains('opacity-0')) {
-                popover.classList.add('hidden');
-                delete popover.dataset.activeDate;
-                delete popover.dataset.activeType;
-                delete popover.__activeCell;
-                delete popover.__lastMousePos;
+    function renderDiaryExpandedCard(date, activeType = 'de') {
+        const totalInfo = getDiaryInfo(date, 'total') || {};
+        const deInfo = getDiaryInfo(date, 'de');
+        const actualSpec = deInfo?.actualSpecial;
+        const dayTotalK = totalInfo.dayTotalK ?? (deInfo?.profitK || 0);
+
+        const TABS = [
+            { id: 'de', label: '⚡ Đề Tuyển Chọn', icon: 'bi-gem-fill' },
+            { id: 'loStd', label: '🎯 Lô Chuẩn (Top 20)', icon: 'bi-trophy-fill' },
+            { id: 'loX2', label: '🚀 Lô Tăng Tốc (X2)', icon: 'bi-lightning-charge-fill' },
+            { id: 'lo4Engine', label: '🔥 Lô Ghép 4 Động Cơ', icon: 'bi-fire' },
+            { id: 'lo4Xien4', label: '🎲 Lô Xiên 4', icon: 'bi-dice-4-fill' },
+            { id: 'total', label: '📊 Dòng Tiền Ngày', icon: 'bi-cash-coin' }
+        ];
+
+        const currentTab = TABS.some(t => t.id === activeType) ? activeType : 'de';
+        const activeInfo = getDiaryInfo(date, currentTab);
+        const contentHtml = renderDiaryPopoverContent(activeInfo, currentTab);
+
+        return `
+            <div class="rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 border-2 border-amber-400/50 p-4 sm:p-5 text-white shadow-2xl space-y-4">
+                <!-- Header bar -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
+                    <div class="flex items-center gap-2.5 flex-wrap">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400 text-slate-950 font-black text-xs shadow-sm">
+                            <i class="bi bi-calendar-check-fill"></i> Ngày ${formatDateVi(date)}
+                        </span>
+                        <span class="text-xs text-slate-300 font-medium">
+                            Giải Đặc Biệt: <strong class="text-amber-300 font-mono text-sm px-1.5 py-0.5 bg-white/10 rounded">${actualSpec != null ? number(actualSpec) : '--'}</strong>
+                        </span>
+                        <span class="text-xs font-mono font-bold ${dayTotalK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
+                            Lãi ròng ngày: <strong class="text-sm">${moneyM(dayTotalK, { signed: true })}</strong>
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button type="button" class="btn-copy-expanded-numbers text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-all shadow-sm flex items-center gap-1.5 font-sans" data-date="${date}" data-tab="${currentTab}">
+                            <i class="bi bi-clipboard-check"></i> Sao chép dàn ${currentTab === 'de' ? 'Đề' : (currentTab === 'loStd' ? 'Top 20' : (currentTab === 'loX2' ? 'Top 7' : (currentTab === 'lo4Engine' ? 'Ghép 4' : 'số')))}
+                        </button>
+                        <button type="button" class="btn-diary-collapse-row text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 transition-all flex items-center gap-1" data-date="${date}">
+                            <i class="bi bi-chevron-up"></i> Thu gọn
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tab Pills Selector -->
+                <div class="flex flex-wrap items-center gap-1.5 border-b border-white/10 pb-2.5">
+                    <span class="text-[10px] font-black uppercase text-slate-400 mr-1">Xem dàn:</span>
+                    ${TABS.map(tab => {
+                        const isActive = (tab.id === currentTab);
+                        return `
+                            <button type="button" 
+                                    class="diary-exp-tab-btn rounded-lg px-2.5 py-1 text-xs font-bold transition-all flex items-center gap-1.5 ${isActive ? 'bg-amber-400 text-slate-950 font-black shadow-md ring-2 ring-white/20' : 'bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700'}" 
+                                    data-date="${date}" 
+                                    data-tab="${tab.id}">
+                                <i class="bi ${tab.icon}"></i> ${tab.label}
+                            </button>
+                        `;
+                    }).join('')}
+                </div>
+
+                <!-- Tab Content Body -->
+                <div class="diary-exp-content-body max-h-[600px] overflow-y-auto pr-1 custom-scrollbar">
+                    ${contentHtml}
+                </div>
+            </div>
+        `;
+    }
+
+    function toggleDiaryExpandedRow(cell, date, type) {
+        if (!cell || !date) return;
+        const existingExpandedRow = document.getElementById(`diaryExpandedRow-${date}`);
+
+        // Nếu ngày này đang mở
+        if (existingExpandedRow) {
+            // Nếu bấm đúng tab đang mở -> Thu gọn
+            if (currentExpandedType === type) {
+                collapseDiaryExpandedRow(date);
+                return;
+            } else {
+                // Bấm tab khác của cùng một ngày -> Đổi tab
+                switchDiaryExpandedTab(date, type);
+                return;
             }
-        }, 150);
+        }
+
+        // Nếu ngày khác đang mở -> Thu gọn ngày cũ
+        if (currentExpandedDate && currentExpandedDate !== date) {
+            collapseDiaryExpandedRow(currentExpandedDate);
+        }
+
+        // Chèn hàng mở rộng ngay bên dưới hàng được bấm
+        const tr = cell.closest('tr');
+        if (!tr) return;
+
+        const colCount = tr.children.length;
+        currentExpandedDate = date;
+        currentExpandedType = type;
+
+        const newRow = document.createElement('tr');
+        newRow.id = `diaryExpandedRow-${date}`;
+        newRow.className = 'diary-expanded-row transition-all';
+        newRow.innerHTML = `
+            <td colspan="${colCount}" class="p-2 sm:p-4 bg-slate-950/95 border-y-2 border-amber-400/50" id="diaryExpandedContent-${date}">
+                ${renderDiaryExpandedCard(date, type)}
+            </td>
+        `;
+
+        tr.parentNode.insertBefore(newRow, tr.nextSibling);
+        updateDiaryCellIndicators(date, type);
+
+        // Cuộn nhẹ để hàng mở rộng vừa vặn tầm mắt
+        setTimeout(() => {
+            newRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 50);
     }
 
-    function scheduleHidePopover() {
-        if (popoverHideTimer) clearTimeout(popoverHideTimer);
-        popoverHideTimer = setTimeout(hideDiaryCellPopover, 200);
-    }
-
-    function setupDiaryHoverPopovers() {
-        const popover = byId('diaryFloatingPopover');
+    function setupDiaryExpansionRows() {
         const tbody = byId('unifiedCombatDiaryTableBody');
-        if (!popover || !tbody) return;
+        if (!tbody) return;
 
-        if (!tbody.__popoverBound) {
-            tbody.__popoverBound = true;
-
-            popover.addEventListener('mouseenter', () => {
-                if (popoverHideTimer) {
-                    clearTimeout(popoverHideTimer);
-                    popoverHideTimer = null;
-                }
-            });
-
-            popover.addEventListener('mouseleave', () => {
-                scheduleHidePopover();
-            });
-
-            tbody.addEventListener('mouseover', e => {
-                const cell = e.target.closest('.diary-cell-interactive');
-                if (!cell) return;
-                if (popoverHideTimer) {
-                    clearTimeout(popoverHideTimer);
-                    popoverHideTimer = null;
-                }
-                showDiaryCellPopover(cell, e);
-            });
-
-            tbody.addEventListener('mousemove', e => {
-                const cell = e.target.closest('.diary-cell-interactive');
-                if (cell && popover && !popover.classList.contains('hidden') && popover.__activeCell === cell) {
-                    // Tránh giật: chỉ update nếu cần thiết
-                }
-            });
-
-            tbody.addEventListener('mouseout', e => {
-                const cell = e.target.closest('.diary-cell-interactive');
-                if (!cell) return;
-                const related = e.relatedTarget?.closest('.diary-cell-interactive') || e.relatedTarget?.closest('#diaryFloatingPopover');
-                if (related === cell || related === popover) return;
-                scheduleHidePopover();
-            });
+        if (!tbody.__diaryExpansionBound) {
+            tbody.__diaryExpansionBound = true;
 
             tbody.addEventListener('click', e => {
+                // 1. Nút sao chép dàn số bên trong card mở rộng
+                const copyBtn = e.target.closest('.btn-copy-expanded-numbers');
+                if (copyBtn) {
+                    e.stopPropagation();
+                    const date = copyBtn.dataset.date;
+                    const tab = copyBtn.dataset.tab;
+                    const info = getDiaryInfo(date, tab);
+                    if (info) {
+                        if (tab === 'lo4Engine' && info.betNumbers?.length) {
+                            copyNumbers(info.betNumbers.map(b => b.num));
+                        } else if (tab === 'lo4Xien4' && info.combinations?.length) {
+                            copyRawText(info.combinations.map(c => c.join('-')).join('\n'), 'Đã sao chép bộ số Xiên 4!');
+                        } else if (Array.isArray(info.numbers) && info.numbers.length) {
+                            copyNumbers(info.numbers);
+                        } else if (Array.isArray(info.betNumbers) && info.betNumbers.length) {
+                            copyNumbers(info.betNumbers.map(b => b.num));
+                        } else {
+                            showToast('Không có danh sách số để sao chép!');
+                        }
+                    }
+                    return;
+                }
+
+                // 2. Nút Thu gọn bên trong card mở rộng
+                const collapseBtn = e.target.closest('.btn-diary-collapse-row');
+                if (collapseBtn) {
+                    e.stopPropagation();
+                    const date = collapseBtn.dataset.date;
+                    collapseDiaryExpandedRow(date);
+                    return;
+                }
+
+                // 3. Nút chuyển Tab bên trong card mở rộng
+                const tabBtn = e.target.closest('.diary-exp-tab-btn');
+                if (tabBtn) {
+                    e.stopPropagation();
+                    const date = tabBtn.dataset.date;
+                    const tab = tabBtn.dataset.tab;
+                    switchDiaryExpandedTab(date, tab);
+                    return;
+                }
+
+                // 4. Bấm vào bất kỳ ô interactive cell nào trong bảng
                 const cell = e.target.closest('.diary-cell-interactive');
-                if (!cell) return;
-                if (popover && !popover.classList.contains('hidden') && popover.dataset.activeDate === cell.dataset.date && popover.dataset.activeType === cell.dataset.diaryCell) {
-                    hideDiaryCellPopover();
-                } else {
-                    showDiaryCellPopover(cell, e);
+                if (cell) {
+                    const date = cell.dataset.date;
+                    const type = cell.dataset.diaryCell || 'de';
+                    toggleDiaryExpandedRow(cell, date, type);
                 }
             });
-
-            document.addEventListener('click', e => {
-                if (!e.target.closest('.diary-cell-interactive') && !e.target.closest('#diaryFloatingPopover')) {
-                    hideDiaryCellPopover();
-                }
-            });
-
-            // Xử lý khi người dùng cuộn chuột: Tự động bám theo ô cell hoặc ẩn popover nếu cell ra khỏi màn hình
-            const onDiaryScroll = () => {
-                if (!popover || popover.classList.contains('hidden') || !popover.__activeCell) return;
-                const cell = popover.__activeCell;
-                const rect = cell.getBoundingClientRect();
-                if (rect.bottom < 0 || rect.top > window.innerHeight) {
-                    hideDiaryCellPopover();
-                } else {
-                    positionDiaryPopover(cell, null, popover);
-                }
-            };
-
-            window.addEventListener('scroll', onDiaryScroll, { passive: true });
-            const scrollWrapper = tbody.closest('.overflow-x-auto');
-            if (scrollWrapper) {
-                scrollWrapper.addEventListener('scroll', onDiaryScroll, { passive: true });
-            }
         }
     }
 
@@ -3583,7 +3679,7 @@
                         <th class="px-3 py-3">Ngày</th>
                         <th class="px-3 py-3">Phương Pháp Đề</th>
                         <th class="px-3 py-3">Giải ĐB Về</th>
-                        <th class="px-3 py-3">Dàn Đề Đã Đánh (Di chuột xem)</th>
+                        <th class="px-3 py-3">Dàn Đề Đã Đánh (Bấm xem dàn số)</th>
                         <th class="px-3 py-3">Kết Quả Đề</th>
                         <th class="px-3 py-3 text-right">Lãi/Lỗ Đề</th>
                         <th class="px-3 py-3 text-right">Lũy Kế Đề</th>
@@ -3606,7 +3702,7 @@
                     <tr class="border-b border-indigo-200 bg-indigo-50/80 text-indigo-950 uppercase font-black tracking-wider text-[10px]">
                         <th class="px-3 py-3">Ngày</th>
                         <th class="px-3 py-3">Phương Pháp Lô Nền Tảng</th>
-                        <th class="px-3 py-3">Dàn 20 Số Đã Đánh (Di chuột xem)</th>
+                        <th class="px-3 py-3">Dàn 20 Số Đã Đánh (Bấm xem dàn số)</th>
                         <th class="px-3 py-3">Số Nháy Về</th>
                         <th class="px-3 py-3 text-right">Lãi/Lỗ (Vốn 44M)</th>
                         <th class="px-3 py-3 text-right">Lũy Kế Lô Chuẩn</th>
@@ -4360,7 +4456,7 @@
                             <td class="diary-cell-interactive px-3 py-3 max-w-md cursor-pointer hover:bg-amber-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="de">
                                 <div class="flex flex-wrap items-center gap-1">${chipsHtml}</div>
                                 <div class="text-[9px] text-amber-700 font-bold mt-1 flex items-center gap-1">
-                                    <i class="bi bi-cursor-fill text-[8px]"></i> 🔒 Đã khóa bất biến · Rê chuột xem ${deInfo.numbers.length} số (${deInfo.x2Nums?.length || 0} VIP + ${deInfo.x1Nums?.length || 0} Lót)
+                                    <i class="bi bi-cursor-fill text-[8px]"></i> 🔒 Đã khóa bất biến · <span class="diary-expand-indicator underline text-amber-800 font-bold">Bấm xem dàn số (${deInfo.numbers.length}s) <i class="bi bi-chevron-down text-[8px]"></i></span>
                                 </div>
                             </td>
                             <td class="px-3 py-3 whitespace-nowrap">
@@ -4415,7 +4511,7 @@
                         <td class="diary-cell-interactive px-3 py-3 max-w-md cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="de">
                             <div class="flex flex-wrap items-center gap-1">${chipsHtml || '<span class="text-slate-400">Dàn số đề</span>'}</div>
                             <div class="text-[9px] text-amber-700 font-bold mt-1 flex items-center gap-1">
-                                <i class="bi bi-cursor-fill text-[8px]"></i> Rê chuột xem toàn bộ dàn & phân nhóm X2
+                                <i class="bi bi-cursor-fill text-[8px]"></i> <span class="diary-expand-indicator underline text-amber-800 font-bold">Bấm xem toàn bộ dàn & phân nhóm X2 <i class="bi bi-chevron-down text-[8px]"></i></span>
                             </div>
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
@@ -4471,7 +4567,7 @@
                             <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Engine">
                                 <div class="flex flex-wrap items-center gap-1">${chipsHtml}</div>
                                 <div class="text-[9px] text-amber-700 font-bold mt-1 flex items-center gap-1">
-                                    <i class="bi bi-cursor-fill text-[8px]"></i> Rê chuột xem chi tiết từng tầng cược
+                                    <i class="bi bi-cursor-fill text-[8px]"></i> <span class="diary-expand-indicator underline text-amber-800 font-bold">Bấm xem chi tiết từng tầng cược <i class="bi bi-chevron-down text-[8px]"></i></span>
                                 </div>
                             </td>
                             <td class="px-3 py-3 whitespace-nowrap">
@@ -4530,7 +4626,7 @@
                         <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Engine">
                             <div class="flex flex-wrap items-center gap-1">${chipsHtml}</div>
                             <div class="text-[9px] text-slate-500 mt-1 flex items-center gap-1">
-                                <i class="bi bi-cursor-fill text-[8px]"></i> Rê chuột xem chi tiết đối soát
+                                <i class="bi bi-cursor-fill text-[8px]"></i> <span class="diary-expand-indicator underline text-rose-800 font-bold">Bấm xem đối soát chi tiết <i class="bi bi-chevron-down text-[8px]"></i></span>
                             </div>
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
@@ -4581,7 +4677,7 @@
                             <td class="diary-cell-interactive px-3 py-3 max-w-md cursor-pointer hover:bg-indigo-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loStd">
                                 <div class="flex flex-wrap items-center gap-1">${chipsHtml}</div>
                                 <div class="text-[9px] text-indigo-700 font-bold mt-1 flex items-center gap-1">
-                                    <i class="bi bi-cursor-fill text-[8px]"></i> 🔒 Đã khóa 20 số · Rê chuột xem chi tiết
+                                    <i class="bi bi-cursor-fill text-[8px]"></i> 🔒 Đã khóa 20 số · <span class="diary-expand-indicator underline text-indigo-800 font-bold">Bấm xem chi tiết <i class="bi bi-chevron-down text-[8px]"></i></span>
                                 </div>
                             </td>
                             <td class="px-3 py-3 whitespace-nowrap">
@@ -4622,7 +4718,7 @@
                         <td class="diary-cell-interactive px-3 py-3 max-w-md cursor-pointer hover:bg-indigo-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loStd">
                             <div class="flex flex-wrap items-center gap-1">${chipsHtml}</div>
                             <div class="text-[9px] text-indigo-700 font-bold mt-1 flex items-center gap-1">
-                                <i class="bi bi-cursor-fill text-[8px]"></i> Rê chuột xem 20 số & số nháy nổ
+                                <i class="bi bi-cursor-fill text-[8px]"></i> <span class="diary-expand-indicator underline text-indigo-800 font-bold">Bấm xem 20 số & số nháy nổ <i class="bi bi-chevron-down text-[8px]"></i></span>
                             </div>
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
@@ -4668,7 +4764,7 @@
                             <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-teal-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loX2">
                                 <div class="flex flex-wrap items-center gap-1.5">${chipsHtml}</div>
                                 <div class="text-[9px] text-teal-700 font-bold mt-1 flex items-center gap-1">
-                                    <i class="bi bi-cursor-fill text-[8px]"></i> 🔒 Đã khóa ${x2Info.numbers.length} số X2 · Rê chuột xem dàn
+                                    <i class="bi bi-cursor-fill text-[8px]"></i> 🔒 Đã khóa · <span class="diary-expand-indicator underline text-teal-800 font-bold">Bấm xem dàn X2 (${x2Info.numbers.length}s) <i class="bi bi-chevron-down text-[8px]"></i></span>
                                 </div>
                             </td>
                             <td class="px-3 py-3 whitespace-nowrap">
@@ -4709,7 +4805,7 @@
                         <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-teal-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loX2">
                             <div class="flex flex-wrap items-center gap-1.5">${chipsHtml}</div>
                             <div class="text-[9px] text-teal-700 font-bold mt-1 flex items-center gap-1">
-                                <i class="bi bi-cursor-fill text-[8px]"></i> Rê chuột xem dàn X2 & số nháy
+                                <i class="bi bi-cursor-fill text-[8px]"></i> <span class="diary-expand-indicator underline text-teal-800 font-bold">Bấm xem dàn X2 & số nháy <i class="bi bi-chevron-down text-[8px]"></i></span>
                             </div>
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
@@ -4755,7 +4851,7 @@
                             <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXi3">
                                 <div class="flex flex-wrap items-center gap-1.5">${chipsHtml}</div>
                                 <div class="text-[9px] text-amber-700 font-bold mt-1 flex items-center gap-1">
-                                    <i class="bi bi-cursor-fill text-[8px]"></i> 🔒 Đã khóa 3 số · Rê chuột xem chi tiết
+                                    <i class="bi bi-cursor-fill text-[8px]"></i> 🔒 Đã khóa 3 số · <span class="diary-expand-indicator underline text-amber-800 font-bold">Bấm xem chi tiết <i class="bi bi-chevron-down text-[8px]"></i></span>
                                 </div>
                             </td>
                             <td class="px-3 py-3 whitespace-nowrap">
@@ -4807,7 +4903,7 @@
                         <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXi3">
                             <div class="flex flex-wrap items-center gap-1.5">${chipsHtml}</div>
                             <div class="text-[9px] text-amber-700 font-bold mt-1 flex items-center gap-1">
-                                <i class="bi bi-cursor-fill text-[8px]"></i> Rê chuột xem chi tiết
+                                <i class="bi bi-cursor-fill text-[8px]"></i> <span class="diary-expand-indicator underline text-amber-800 font-bold">Bấm xem chi tiết <i class="bi bi-chevron-down text-[8px]"></i></span>
                             </div>
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
@@ -4858,7 +4954,7 @@
                             <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Xien4">
                                 <div class="flex flex-wrap items-center gap-1.5">${chipsHtml}</div>
                                 <div class="text-[9px] text-amber-700 font-bold mt-1 flex items-center gap-1">
-                                    <i class="bi bi-cursor-fill text-[8px]"></i> 🔒 Rê chuột xem chi tiết lý do & tổ hợp
+                                    <i class="bi bi-cursor-fill text-[8px]"></i> 🔒 <span class="diary-expand-indicator underline text-amber-800 font-bold">Bấm xem chi tiết lý do & tổ hợp <i class="bi bi-chevron-down text-[8px]"></i></span>
                                 </div>
                             </td>
                             <td class="px-3 py-3 whitespace-nowrap">
@@ -4912,7 +5008,7 @@
                         <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Xien4">
                             <div class="flex flex-wrap items-center gap-1.5">${chipsHtml}</div>
                             <div class="text-[9px] text-purple-700 font-bold mt-1 flex items-center gap-1">
-                                <i class="bi bi-cursor-fill text-[8px]"></i> Rê chuột xem chi tiết đối soát
+                                <i class="bi bi-cursor-fill text-[8px]"></i> <span class="diary-expand-indicator underline text-purple-800 font-bold">Bấm xem chi tiết đối soát <i class="bi bi-chevron-down text-[8px]"></i></span>
                             </div>
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
@@ -4959,7 +5055,7 @@
                             </div>
                             <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
                                 <span>${escapeHtml(deInfo.subTierLabel)}</span>
-                                <span class="text-amber-700 font-bold underline">Di chuột xem</span>
+                                <span class="diary-expand-indicator text-amber-700 font-bold underline flex items-center gap-0.5">Bấm xem dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
                             </div>
                         </td>
                         <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-indigo-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loStd">
@@ -4972,7 +5068,7 @@
                             </div>
                             <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
                                 <span>${escapeHtml(stdInfo.subTierLabel || 'Top 20 số chuẩn')}</span>
-                                <span class="text-indigo-700 font-bold underline">Di chuột xem</span>
+                                <span class="diary-expand-indicator text-indigo-700 font-bold underline flex items-center gap-0.5">Bấm xem dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
                             </div>
                         </td>
                         <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-teal-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loX2">
@@ -4985,7 +5081,7 @@
                             </div>
                             <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
                                 <span>${escapeHtml(x2Info.subTierLabel || `Top ${x2Info.numbers.length}s cược X2`)}</span>
-                                <span class="text-teal-700 font-bold underline">Di chuột xem</span>
+                                <span class="diary-expand-indicator text-teal-700 font-bold underline flex items-center gap-0.5">Bấm xem dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
                             </div>
                         </td>
                         <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-rose-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Engine">
@@ -4998,7 +5094,7 @@
                             </div>
                             <div class="text-[10px] text-slate-600 mt-0.5 font-bold flex items-center justify-between">
                                 <span>${lo4Info.countTotal || 17}s tổng hợp (${lo4Info.countOver2 || 0} trùng)</span>
-                                <span class="text-rose-700 font-sans font-bold underline">Di chuột xem</span>
+                                <span class="diary-expand-indicator text-rose-700 font-sans font-bold underline flex items-center gap-0.5">Bấm xem dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
                             </div>
                         </td>
                         <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-purple-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Xien4">
@@ -5013,7 +5109,7 @@
                             </div>
                             <div class="text-[10px] text-slate-600 mt-0.5 font-medium flex items-center justify-between">
                                 <span class="text-slate-500">${lo4Xien4Info.status === 'ACTIVE' ? 'Quây 4-5 số' : 'Bảo toàn vốn'}</span>
-                                <span class="text-purple-700 font-sans font-bold underline">Di chuột xem</span>
+                                <span class="diary-expand-indicator text-purple-700 font-sans font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
                             </div>
                         </td>
                         <td class="diary-cell-interactive px-3 py-3 text-right whitespace-nowrap font-mono cursor-pointer hover:bg-amber-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="total">
@@ -5021,7 +5117,7 @@
                                 ⏳ Chờ KQ
                             </div>
                             <div class="text-[10px] text-slate-400 font-sans">Đề + Lô (Chuẩn+X2)</div>
-                            <div class="text-[9px] text-amber-700 font-bold font-sans underline mt-0.5">Chi tiết</div>
+                            <div class="diary-expand-indicator text-[9px] text-amber-700 font-bold font-sans underline mt-0.5 flex items-center gap-0.5 justify-end">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></div>
                         </td>
                         <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
                             <div class="font-semibold text-xs text-slate-400">
@@ -5077,7 +5173,7 @@
                         </div>
                         <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
                             <span>${escapeHtml(deInfo.subTierLabel)}</span>
-                            <span class="text-amber-700 font-bold underline">Di chuột xem</span>
+                            <span class="diary-expand-indicator text-amber-700 font-bold underline flex items-center gap-0.5">Bấm xem dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
                         </div>
                     </td>
                     <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-indigo-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loStd">
@@ -5090,7 +5186,7 @@
                         </div>
                         <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
                             <span>Top 20 số chuẩn</span>
-                            <span class="text-indigo-700 font-bold underline">Di chuột xem</span>
+                            <span class="diary-expand-indicator text-indigo-700 font-bold underline flex items-center gap-0.5">Bấm xem dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
                         </div>
                     </td>
                     <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-teal-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loX2">
@@ -5103,7 +5199,7 @@
                         </div>
                         <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
                             <span>Top ${x2Info.numbers.length}s cược X2</span>
-                            <span class="text-teal-700 font-bold underline">Di chuột xem</span>
+                            <span class="diary-expand-indicator text-teal-700 font-bold underline flex items-center gap-0.5">Bấm xem dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
                         </div>
                     </td>
                     <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-rose-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Engine">
@@ -5116,7 +5212,7 @@
                         </div>
                         <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
                             <span>${lo4Info.isHistoricalBaseline ? 'Mô hình tiền đề Quad+QMBF' : `${lo4Info.countTotal || 17}s tổng hợp (${lo4Info.countOver2 || 0} trùng)`}</span>
-                            <span class="text-rose-700 font-bold underline">Di chuột xem</span>
+                            <span class="diary-expand-indicator text-rose-700 font-bold underline flex items-center gap-0.5">Bấm xem dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
                         </div>
                     </td>
                     <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-purple-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Xien4">
@@ -5129,7 +5225,7 @@
                         </div>
                         <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
                             <span>${lo4Info.isHistoricalBaseline ? 'Giai đoạn trước 02/06' : (lo4Xien4Info.status === 'ACTIVE' ? `${lo4Xien4Info.countOver2 || 4} số trùng` : 'Bảo toàn vốn')}</span>
-                            <span class="text-purple-700 font-bold underline">Di chuột xem</span>
+                            <span class="diary-expand-indicator text-purple-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
                         </div>
                     </td>
                     <td class="diary-cell-interactive px-3 py-3 text-right whitespace-nowrap font-mono cursor-pointer hover:bg-slate-100 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="total">
@@ -5137,7 +5233,7 @@
                             ${moneyM(r.dayTotalK, { signed: true })}
                         </div>
                         <div class="text-[10px] text-slate-400 font-sans">Đề + Lô (Chuẩn+X2)</div>
-                        <div class="text-[9px] text-indigo-600 font-bold font-sans underline mt-0.5">Chi tiết</div>
+                        <div class="diary-expand-indicator text-[9px] text-indigo-600 font-bold font-sans underline mt-0.5 flex items-center gap-0.5 justify-end">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></div>
                     </td>
                     <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
                         <div class="font-black text-xs ${r.cumProfitK >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
@@ -5149,7 +5245,7 @@
             `;
         }).join('');
 
-        setupDiaryHoverPopovers();
+        setupDiaryExpansionRows();
     }
 
     let globalLoSummary = null;
