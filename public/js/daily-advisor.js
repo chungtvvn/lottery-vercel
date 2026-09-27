@@ -3219,43 +3219,46 @@
         const popoverWidth = Math.min(popover.offsetWidth || 380, vw - 24);
         const popoverHeight = popover.offsetHeight || 300;
 
-        let left = rect.left + (rect.width / 2) - (popoverWidth / 2);
-        if (left < padding) left = padding;
-        if (left + popoverWidth > vw - padding) {
-            left = vw - popoverWidth - padding;
-        }
+        const hasMouse = Boolean(e && typeof e.clientX === 'number' && typeof e.clientY === 'number');
+        const mouseX = hasMouse ? e.clientX : (rect.left + rect.width / 2);
+        const mouseY = hasMouse ? e.clientY : (rect.top + rect.height / 2);
 
-        const spaceAbove = rect.top;
-        const spaceBelow = vh - rect.bottom;
+        // Khoảng cách an toàn tới ô cell và con trỏ chuột
+        const gap = 10;
 
-        let top;
-        if (rect.top > vh / 2) {
-            if (spaceAbove >= popoverHeight + 10) {
-                top = rect.top - popoverHeight - 8;
-            } else if (spaceBelow >= popoverHeight + 10) {
-                top = rect.bottom + 8;
-            } else {
-                if (spaceAbove >= spaceBelow) {
-                    top = Math.max(padding, rect.top - popoverHeight - 8);
-                } else {
-                    top = Math.min(vh - popoverHeight - padding, rect.bottom + 8);
-                }
-            }
+        // Tính khoảng trống 2 bên trái / phải để đặt popover "ngay bên cạnh chỗ di chuột"
+        const spaceRight = vw - Math.max(rect.right, mouseX);
+        const spaceLeft = Math.min(rect.left, mouseX);
+
+        let left;
+        // Ưu tiên hiển thị ngay bên phải (bên cạnh) của ô và con trỏ chuột
+        if (spaceRight >= popoverWidth + gap) {
+            left = Math.max(rect.right + 8, mouseX + gap);
+        } else if (spaceLeft >= popoverWidth + gap) {
+            // Nếu bên phải không đủ chỗ, hiển thị ngay bên trái (bên cạnh)
+            left = Math.min(rect.left - popoverWidth - 8, mouseX - popoverWidth - gap);
         } else {
-            if (spaceBelow >= popoverHeight + 10) {
+            // Màn hình hẹp (mobile): Căn giữa viewport
+            left = (vw - popoverWidth) / 2;
+        }
+
+        // Clamp an toàn trục ngang
+        left = Math.max(padding, Math.min(left, vw - popoverWidth - padding));
+
+        // Trục dọc: Đặt ngang tầm con trỏ chuột (ngay bên cạnh chỗ di chuột)
+        // Nhích nhẹ lên 24px để tiêu đề popover ngang tầm mắt, phần thân dàn số ngay cạnh con trỏ
+        let top = mouseY - 24;
+
+        // Nếu trên mobile màn hình nhỏ và popover không thể đặt 2 bên cạnh
+        if (vw < 768 && spaceRight < popoverWidth + gap && spaceLeft < popoverWidth + gap) {
+            if (rect.bottom + popoverHeight + 8 <= vh - padding) {
                 top = rect.bottom + 8;
-            } else if (spaceAbove >= popoverHeight + 10) {
+            } else if (rect.top - popoverHeight - 8 >= padding) {
                 top = rect.top - popoverHeight - 8;
-            } else {
-                if (spaceBelow >= spaceAbove) {
-                    top = Math.min(vh - popoverHeight - padding, rect.bottom + 8);
-                } else {
-                    top = Math.max(padding, rect.top - popoverHeight - 8);
-                }
             }
         }
 
-        // Clamp an toàn tuyệt đối, không bao giờ vượt qua mép trên hoặc mép dưới viewport
+        // Clamp an toàn tuyệt đối trục dọc viewport
         top = Math.max(padding, Math.min(top, vh - popoverHeight - padding));
 
         popover.style.left = `${Math.round(left)}px`;
@@ -3415,6 +3418,11 @@
         if (!info) return;
 
         popover.__activeCell = cell;
+        if (e && typeof e.clientX === 'number') {
+            popover.__lastMousePos = { x: e.clientX, y: e.clientY };
+        } else {
+            popover.__lastMousePos = null;
+        }
         popover.dataset.activeDate = date;
         popover.dataset.activeType = type;
         popover.innerHTML = renderDiaryPopoverContent(info, type);
@@ -3428,7 +3436,9 @@
         // Tinh chỉnh toạ độ sau khi layout trình duyệt hoàn tất để đo chính xác offsetHeight
         requestAnimationFrame(() => {
             if (popover.__activeCell === cell) {
-                positionDiaryPopover(cell, e, popover);
+                const mousePos = popover.__lastMousePos;
+                const fakeEvent = mousePos ? { clientX: mousePos.x, clientY: mousePos.y } : null;
+                positionDiaryPopover(cell, fakeEvent, popover);
             }
         });
     }
@@ -3444,12 +3454,14 @@
                 delete popover.dataset.activeDate;
                 delete popover.dataset.activeType;
                 delete popover.__activeCell;
+                delete popover.__lastMousePos;
             }
         }, 150);
     }
 
     function scheduleHidePopover() {
-        popoverHideTimer = setTimeout(hideDiaryCellPopover, 120);
+        if (popoverHideTimer) clearTimeout(popoverHideTimer);
+        popoverHideTimer = setTimeout(hideDiaryCellPopover, 200);
     }
 
     function setupDiaryHoverPopovers() {
