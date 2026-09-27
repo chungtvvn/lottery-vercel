@@ -619,6 +619,7 @@
         const adaptiveRow = p?.adaptiveDualMerge?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
         const tripleRow = p?.tripleMerge?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
         const streakRow = p?.streakAwareDeAdvisor?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
+        const pentaRow = p?.pentaCoreDe?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
         const bayesRow = p?.streakAwareDeAdvisor?.bayesAdvisor?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
         const markovRow = p?.deMarkovGapHazard?.settledLedger?.find(r => (r.predictionDate || r.date) === date)
             || p?.streakAwareDeAdvisor?.markovAdvisor?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
@@ -645,7 +646,17 @@
         let deIsHitFinal = Boolean(deRow?.isHit || (deRow?.profitK > 0));
         let deProfitK = deRow ? (deRow.profitK ?? (deIsHitFinal ? 54000 : -30000)) : 0;
 
-        if (chosenDeMethod === 'adaptiveDualMerge') {
+        if (chosenDeMethod === 'pentaCoreDe') {
+            const r = pentaRow || streakRow;
+            deMethodName = '👑 Đề Ngũ Trụ Tinh Hoa AI';
+            deNumbers = (r?.numbers || []).map(number);
+            deX2Nums = (r?.vipNumbers || r?.vip || []).map(number);
+            deX1Nums = (r?.backupNumbers || deNumbers.filter(n => !deX2Nums.includes(n))).map(number);
+            deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X2 · ${deX1Nums.length} X1)`;
+            deStakeK = r?.stakeK || 60000;
+            deProfitK = r?.profitK != null ? r.profitK : deProfitK;
+            deIsHitFinal = Boolean(r?.hitType === 'win_x2' || r?.hitType === 'win_x1' || r?.isHit || deProfitK > 0);
+        } else if (chosenDeMethod === 'adaptiveDualMerge') {
             const r = adaptiveRow || streakRow;
             deMethodName = '👑 Đề Thích Ứng Alpha';
             deNumbers = (r?.fullUnion || r?.union || r?.numbers || deNumbers).map(number);
@@ -716,7 +727,23 @@
             deIsHitFinal = Boolean(deRow?.isHit || (deProfitK > 0));
         }
 
-        const actualSpec = deRow?.actualSpecial ?? deRow?.actual ?? dualRow?.actualSpecial ?? dualRow?.actual ?? adaptiveRow?.actualSpecial ?? adaptiveRow?.actual;
+        // Cứu hộ an toàn tuyệt đối: Không bao giờ để dàn số deNumbers rỗng
+        if (!deNumbers || deNumbers.length === 0) {
+            const fbRow = adaptiveRow || dualRow || pentaRow || tripleRow || streakRow || deRow;
+            if (fbRow) {
+                deNumbers = (fbRow.fullUnion || fbRow.union || fbRow.numbers || []).map(number);
+                deX2Nums = (fbRow.intersectionX2 || fbRow.intersection || fbRow.vipNumbers || fbRow.tierX2 || []).map(number);
+                deX1Nums = (fbRow.uniqueSinglesX1 || fbRow.uniqueSingles || fbRow.backupNumbers || fbRow.tierX1 || deNumbers.filter(n => !deX2Nums.includes(n))).map(number);
+                if (deNumbers.length > 0) {
+                    deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X2 · ${deX1Nums.length} X1)`;
+                    deStakeK = fbRow.stakeK || deStakeK || 60000;
+                    deProfitK = fbRow.profitK != null ? fbRow.profitK : deProfitK;
+                    deIsHitFinal = Boolean(fbRow.hitType === 'win_x2' || fbRow.hitType === 'win_x1' || fbRow.isHit || deProfitK > 0);
+                }
+            }
+        }
+
+        const actualSpec = deRow?.actualSpecial ?? deRow?.actual ?? dualRow?.actualSpecial ?? dualRow?.actual ?? adaptiveRow?.actualSpecial ?? adaptiveRow?.actual ?? pentaRow?.actual;
         let isX2 = false;
         let isX1 = false;
         let hitType = deIsHitFinal ? 'win' : 'loss';
@@ -749,7 +776,7 @@
                     hitType = 'win';
                 }
             }
-            if (deProfitK >= 108000 || (chosenDeMethod === 'adaptiveDualMerge' && adaptiveRow?.hitType === 'win_x2') || (chosenDeMethod === 'dualMerge' && dualRow?.hitType === 'win_x2')) {
+            if (deProfitK >= 108000 || (chosenDeMethod === 'adaptiveDualMerge' && adaptiveRow?.hitType === 'win_x2') || (chosenDeMethod === 'dualMerge' && dualRow?.hitType === 'win_x2') || (chosenDeMethod === 'pentaCoreDe' && pentaRow?.hitType === 'win_x2')) {
                 isX2 = true;
                 deIsHitFinal = true;
                 hitType = 'win_x2';
@@ -772,6 +799,172 @@
             hitType,
             switchPhase: streakRow?.switchPhase || null,
             switchReason: streakRow?.switchReason || null
+        };
+    }
+
+    function resolveUnifiedLoRowForDate(date, dataPayload, sourceLoRow, drawInfo) {
+        const p = dataPayload || payload || {};
+        const lo = sourceLoRow || {};
+        const dInfo = drawInfo || p?.drawPrizesByDate?.[date] || {};
+        const prizeCounts = {};
+        (dInfo.prizes || []).forEach(pr => {
+            const norm = number(pr);
+            prizeCounts[norm] = (prizeCounts[norm] || 0) + 1;
+        });
+
+        const quadRow = p?.loQuadHybrid?.settledLedger?.find(r => r.date === date);
+        const qmbfRow = p?.loQuantumBayesFusion?.settledLedger?.find(r => r.date === date);
+
+        // 1. Standard (Lô Chuẩn Top 20)
+        const stdRaw = lo.standard || {};
+        let stdMethodName = stdRaw.methodName || stdRaw.methodLabel;
+        let stdNumbers = (stdRaw.numbers && stdRaw.numbers.length) ? stdRaw.numbers.map(number) : null;
+        let stdHits = stdRaw.hits;
+        let stdStakeK = stdRaw.stakeK;
+        let stdPayoutK = stdRaw.payoutK;
+        let stdProfitK = stdRaw.profitK;
+
+        if (!stdNumbers || !stdNumbers.length) {
+            if (quadRow?.top20 && quadRow.top20.length) {
+                stdNumbers = quadRow.top20.map(number);
+                stdMethodName = stdMethodName || 'Mỏ Neo Tứ Trụ Quad-Fusion v7.2 Top 20';
+                stdHits = quadRow.t20Hits != null ? quadRow.t20Hits : (quadRow.methods?.top20?.hits ?? 0);
+                stdStakeK = quadRow.methods?.top20?.stakeK || 44000;
+                stdPayoutK = quadRow.methods?.top20?.payoutK || (stdHits * 8000);
+                stdProfitK = quadRow.methods?.top20?.profitK != null ? quadRow.methods.top20.profitK : (quadRow.profitTop20K ?? (stdPayoutK - stdStakeK));
+            } else if (qmbfRow?.rankedNumbers && qmbfRow.rankedNumbers.length) {
+                stdNumbers = qmbfRow.rankedNumbers.slice(0, 20).map(number);
+                stdMethodName = stdMethodName || 'QMBF v6.1 Tinh Hoa Top 20';
+                stdHits = qmbfRow.methods?.top20?.hits || 0;
+                stdStakeK = qmbfRow.methods?.top20?.stakeK || 44000;
+                stdPayoutK = qmbfRow.methods?.top20?.payoutK || (stdHits * 8000);
+                stdProfitK = qmbfRow.methods?.top20?.profitK != null ? qmbfRow.methods.top20.profitK : (stdPayoutK - stdStakeK);
+            } else {
+                stdNumbers = [];
+                stdMethodName = stdMethodName || 'Super-Hybrid Quad-Fusion v7.0 Top 20';
+                stdHits = 0;
+                stdStakeK = 44000;
+                stdPayoutK = 0;
+                stdProfitK = -44000;
+            }
+        }
+        stdMethodName = stdMethodName || 'Super-Hybrid Quad-Fusion v7.0 Top 20';
+        if (stdHits == null) {
+            stdHits = stdNumbers.reduce((acc, n) => acc + (prizeCounts[number(n)] || 0), 0);
+        }
+        stdStakeK = stdStakeK || (stdNumbers.length * 2200) || 44000;
+        stdPayoutK = stdPayoutK != null ? stdPayoutK : (stdHits * 8000);
+        stdProfitK = stdProfitK != null ? stdProfitK : (stdPayoutK - stdStakeK);
+
+        // 2. X2 (Lô Tăng Tốc X2 Top 7)
+        const x2Raw = lo.x2 || {};
+        let x2MethodName = x2Raw.methodName || x2Raw.methodLabel;
+        let x2Numbers = (x2Raw.numbers && x2Raw.numbers.length) ? x2Raw.numbers.map(number) : null;
+        let x2Hits = x2Raw.hits;
+        let x2StakeK = x2Raw.stakeK;
+        let x2PayoutK = x2Raw.payoutK;
+        let x2ProfitK = x2Raw.profitK;
+
+        if (!x2Numbers || !x2Numbers.length) {
+            if (quadRow?.top7 && quadRow.top7.length) {
+                x2Numbers = quadRow.top7.map(number);
+                x2MethodName = x2MethodName || 'Lô X2 Quad-Fusion Top 7 (Đổi Pha)';
+                x2Hits = quadRow.t7Hits != null ? quadRow.t7Hits : (quadRow.methods?.top7?.hits ?? 0);
+                x2StakeK = quadRow.methods?.top7?.stakeK || (x2Numbers.length * 2200);
+                x2PayoutK = quadRow.methods?.top7?.payoutK || (x2Hits * 8000);
+                x2ProfitK = quadRow.methods?.top7?.profitK != null ? quadRow.methods.top7.profitK : (x2PayoutK - x2StakeK);
+            } else if (qmbfRow?.rankedNumbers && qmbfRow.rankedNumbers.length) {
+                x2Numbers = qmbfRow.rankedNumbers.slice(0, 7).map(number);
+                x2MethodName = x2MethodName || 'Lô X2 QMBF Top 7 (Đổi Pha)';
+                x2Hits = qmbfRow.methods?.top7?.hits || 0;
+                x2StakeK = qmbfRow.methods?.top7?.stakeK || (x2Numbers.length * 2200);
+                x2PayoutK = qmbfRow.methods?.top7?.payoutK || (x2Hits * 8000);
+                x2ProfitK = qmbfRow.methods?.top7?.profitK != null ? qmbfRow.methods.top7.profitK : (x2PayoutK - x2StakeK);
+            } else {
+                x2Numbers = [];
+                x2MethodName = x2MethodName || 'Lô X2 Top 7';
+                x2Hits = 0;
+                x2StakeK = 15400;
+                x2PayoutK = 0;
+                x2ProfitK = -15400;
+            }
+        }
+        x2MethodName = x2MethodName || ('Lô X2 Top ' + (x2Numbers.length || 7));
+        if (x2Hits == null) {
+            x2Hits = x2Numbers.reduce((acc, n) => acc + (prizeCounts[number(n)] || 0), 0);
+        }
+        x2StakeK = x2StakeK || (x2Numbers.length * 2200);
+        x2PayoutK = x2PayoutK != null ? x2PayoutK : (x2Hits * 8000);
+        x2ProfitK = x2ProfitK != null ? x2ProfitK : (x2PayoutK - x2StakeK);
+
+        // 3. Xiên 4 (Tứ Thủ Xiên 4)
+        const xi4Raw = lo.xien4 || {};
+        let xi4MethodName = xi4Raw.methodName || xi4Raw.methodLabel || 'Tứ Thủ Xiên 4 Tinh Hoa';
+        let xi4Numbers = (xi4Raw.numbers && xi4Raw.numbers.length) ? xi4Raw.numbers.map(number) : null;
+        if (!xi4Numbers || !xi4Numbers.length) {
+            xi4Numbers = (quadRow?.top4 || qmbfRow?.rankedNumbers?.slice(0, 4) || x2Numbers.slice(0, 4)).map(number);
+        }
+        let xi4Hits = xi4Raw.hits;
+        if (xi4Hits == null) {
+            xi4Hits = 0;
+            xi4Numbers.forEach(n => {
+                if ((prizeCounts[number(n)] || 0) > 0) xi4Hits++;
+            });
+        }
+        let xi4StakeK = xi4Raw.stakeK || 11000;
+        let xi4ProfitK = xi4Raw.profitK;
+        if (xi4ProfitK == null) {
+            if (xi4Hits >= 4) xi4ProfitK = 373000;
+            else if (xi4Hits === 3) xi4ProfitK = 29000;
+            else if (xi4Hits === 2) xi4ProfitK = 1000;
+            else xi4ProfitK = -xi4StakeK;
+        }
+
+        // 4. Xiên 3 (Tam Thủ Xiên 3)
+        const xi3Raw = lo.xien3 || {};
+        let xi3MethodName = xi3Raw.methodName || 'Tam Thủ Xiên 3 Đột Phá';
+        let xi3Numbers = (xi3Raw.numbers && xi3Raw.numbers.length) ? xi3Raw.numbers.map(number) : xi4Numbers.slice(0, 3);
+        let xi3Hits = 0;
+        xi3Numbers.forEach(n => {
+            if ((prizeCounts[number(n)] || 0) > 0) xi3Hits++;
+        });
+        let xi3StakeK = xi3Raw.stakeK || 500;
+        let xi3IsHit = (xi3Numbers.length === 3 && xi3Hits === 3);
+        let xi3ProfitK = xi3Raw.profitK != null ? xi3Raw.profitK : (xi3IsHit ? (xi3StakeK * 40 - xi3StakeK) : -xi3StakeK);
+
+        return {
+            std: {
+                methodName: stdMethodName,
+                numbers: stdNumbers,
+                hits: stdHits,
+                stakeK: stdStakeK,
+                payoutK: stdPayoutK,
+                profitK: stdProfitK
+            },
+            x2: {
+                methodName: x2MethodName,
+                numbers: x2Numbers,
+                hits: x2Hits,
+                stakeK: x2StakeK,
+                payoutK: x2PayoutK,
+                profitK: x2ProfitK
+            },
+            xi3: {
+                methodName: xi3MethodName,
+                numbers: xi3Numbers,
+                hits: xi3Hits,
+                stakeK: xi3StakeK,
+                profitK: xi3ProfitK,
+                isHit: xi3IsHit
+            },
+            xi4: {
+                methodName: xi4MethodName,
+                numbers: xi4Numbers,
+                hits: xi4Hits,
+                stakeK: xi4StakeK,
+                profitK: xi4ProfitK
+            },
+            prizeCounts
         };
     }
 
@@ -2379,6 +2572,46 @@
                 `;
             }
 
+            if (info.isHistoricalBaseline) {
+                const betList = info.betNumbers || [];
+                return `
+                    <div class="space-y-3 p-1">
+                        <div class="flex items-center justify-between border-b border-amber-500/30 pb-2">
+                            <div>
+                                <span class="rounded bg-slate-800 text-amber-300 border border-amber-500/30 font-black text-[10px] px-2 py-0.5 uppercase">
+                                    🛡️ MỐC ĐỐI SOÁT NỀN TẢNG (TRƯỚC 02/06)
+                                </span>
+                                <h4 class="font-black text-sm text-white mt-1">Lô Ghép 4 Động Cơ — ${formatDateVi(info.date)}</h4>
+                            </div>
+                            <span class="text-xs font-bold text-slate-400 font-mono">Tiền đề phát triển</span>
+                        </div>
+                        <div class="rounded-lg bg-amber-500/10 border border-amber-500/20 p-2 text-[11px] text-amber-200/90 leading-relaxed">
+                            💡 <strong>Giai đoạn chuẩn hóa dữ liệu:</strong> Phương pháp Tổng Hợp Ghép 4 Động Cơ (QMBF + Bạc Nhớ + 3 Động Cơ + RRF) bắt đầu lưu trữ và chốt vé Live chính thức từ ngày <strong>02/06/2026</strong>. Các kỳ trước đó chạy đối soát độc lập theo động cơ nền tảng Quad-Fusion v7.2 & QMBF.
+                        </div>
+                        <div>
+                            <div class="text-[10px] font-black uppercase text-amber-300 mb-1 flex items-center justify-between">
+                                <span>Dàn Lô nền tảng đối soát (${betList.length} số):</span>
+                                <span class="text-emerald-400 font-bold">Nổ ${info.dayLotoHits || 0} nháy</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5">
+                                ${betList.map(b => {
+                                    const isHit = (b.hits || 0) > 0;
+                                    return `
+                                        <span class="px-2 py-1 rounded font-mono text-xs font-black ${isHit ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 ring-2 ring-white shadow-md' : 'bg-slate-800 text-slate-300 border border-slate-700'}">
+                                            ${number(b.num)}
+                                            ${isHit ? `<span class="text-[9px] text-red-700 font-black">(${b.hits}n)</span>` : ''}
+                                        </span>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                        <div class="text-[11px] text-slate-300 bg-slate-900/60 p-2 rounded-lg border border-slate-700">
+                            🎲 <strong>Xiên 4:</strong> Bắt đầu chốt vé và theo dõi từ 02/06/2026.
+                        </div>
+                    </div>
+                `;
+            }
+
             const betList = info.betNumbers || [];
             const hits = info.dayLotoHits || 0;
             const isWin = info.isLotoWin;
@@ -2437,6 +2670,40 @@
             const stakeK = info.stakeK || info.xien4StakeK || 0;
             const profitK = info.profitK || info.dayXien4ProfitK || 0;
             const isWin = info.isWin || info.isXien4Win;
+
+            if (info.isHistoricalBaseline) {
+                return `
+                    <div class="space-y-3 p-1">
+                        <div class="flex items-start justify-between gap-2 border-b border-white/10 pb-2">
+                            <div>
+                                <span class="rounded bg-slate-800 text-amber-300 border border-amber-500/30 font-black text-[10px] px-2 py-0.5 uppercase">
+                                    🛡️ MỐC ĐỐI SOÁT NỀN TẢNG (TRƯỚC 02/06)
+                                </span>
+                                <h4 class="font-black text-sm text-white mt-1">Lô Xiên 4 Ghép Mới — ${formatDateVi(info.date)}</h4>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold text-xs text-slate-400 font-mono">Quan sát</div>
+                            </div>
+                        </div>
+                        <div class="rounded-xl bg-amber-500/10 border border-amber-400/30 text-amber-200 p-2.5 text-xs leading-relaxed">
+                            <div class="font-bold flex items-center gap-1.5 mb-1 text-amber-300">
+                                <i class="bi bi-info-circle-fill"></i> Giai đoạn khởi động mô hình Ghép 4
+                            </div>
+                            Thuật toán Xiên 4 Ghép 4 Động Cơ (lọc tổ hợp từ &ge; 2 động cơ trùng nhau) được triển khai và ghi nhật ký tự động từ <strong>02/06/2026</strong>. Các kỳ trước đó theo dõi theo mô hình Tứ Thủ Xiên 4 nền tảng.
+                        </div>
+                        <div class="pt-2 border-t border-white/10 grid grid-cols-2 gap-2 text-[11px] font-mono">
+                            <div>
+                                <div class="text-[9px] text-slate-400 uppercase">Trạng Thái</div>
+                                <div class="font-bold text-slate-300">🛡️ Tiền đề phát triển</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-[9px] text-slate-400 uppercase">Khởi Chạy Live</div>
+                                <div class="font-bold text-amber-400">Từ 02/06/2026</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
 
             let combinationsHtml = '';
             if (combinations.length > 0) {
@@ -2995,12 +3262,156 @@
         popover.style.top = `${Math.round(top)}px`;
     }
 
+    function synthesizeFallbackDiaryInfo(date, type, p) {
+        if (!date || !type) return null;
+        const drawInfo = p?.drawPrizesByDate?.[date] || {};
+        if (type === 'de') {
+            const resolvedDe = resolveUnifiedDeRowForDate(date, p);
+            return {
+                date,
+                methodName: resolvedDe.methodName,
+                subTierLabel: resolvedDe.subTierLabel,
+                numbers: resolvedDe.numbers,
+                x2Nums: resolvedDe.x2Nums,
+                x1Nums: resolvedDe.x1Nums,
+                actualSpecial: drawInfo.special || null,
+                isHit: resolvedDe.isHit,
+                isX2: resolvedDe.isX2,
+                isX1: resolvedDe.isX1,
+                stakeK: resolvedDe.stakeK,
+                profitK: resolvedDe.profitK,
+                payoutK: resolvedDe.isHit ? (resolvedDe.stakeK + resolvedDe.profitK) : 0,
+                switchPhase: resolvedDe.switchPhase || null,
+                switchReason: resolvedDe.switchReason || null
+            };
+        }
+        if (type === 'loStd' || type === 'loX2' || type === 'loXi3' || type === 'loXi4') {
+            const resolvedLo = resolveUnifiedLoRowForDate(date, p, null, drawInfo);
+            if (type === 'loStd') {
+                return {
+                    date,
+                    methodName: resolvedLo.std.methodName,
+                    subTierLabel: `Top ${resolvedLo.std.numbers.length} số nền tảng`,
+                    numbers: resolvedLo.std.numbers,
+                    prizeCounts: resolvedLo.prizeCounts,
+                    hits: resolvedLo.std.hits,
+                    stakeK: resolvedLo.std.stakeK,
+                    profitK: resolvedLo.std.profitK,
+                    payoutK: resolvedLo.std.payoutK
+                };
+            }
+            if (type === 'loX2') {
+                return {
+                    date,
+                    methodName: resolvedLo.x2.methodName,
+                    subTierLabel: `Top ${resolvedLo.x2.numbers.length} số tăng tốc`,
+                    numbers: resolvedLo.x2.numbers,
+                    prizeCounts: resolvedLo.prizeCounts,
+                    hits: resolvedLo.x2.hits,
+                    stakeK: resolvedLo.x2.stakeK,
+                    profitK: resolvedLo.x2.profitK,
+                    payoutK: resolvedLo.x2.payoutK
+                };
+            }
+            if (type === 'loXi3') {
+                return {
+                    date,
+                    methodName: resolvedLo.xi3.methodName,
+                    subTierLabel: 'Tam Thủ Xiên 3 (Chỉ quan sát)',
+                    numbers: resolvedLo.xi3.numbers,
+                    prizeCounts: resolvedLo.prizeCounts,
+                    hits: resolvedLo.xi3.hits,
+                    stakeK: resolvedLo.xi3.stakeK,
+                    profitK: resolvedLo.xi3.profitK,
+                    payoutK: resolvedLo.xi3.isHit ? (resolvedLo.xi3.stakeK * 40) : 0
+                };
+            }
+            if (type === 'loXi4') {
+                return {
+                    date,
+                    methodName: resolvedLo.xi4.methodName,
+                    subTierLabel: 'Quây 11 vé (1 X4 + 4 X3 + 6 X2)',
+                    numbers: resolvedLo.xi4.numbers,
+                    prizeCounts: resolvedLo.prizeCounts,
+                    hits: resolvedLo.xi4.hits,
+                    stakeK: resolvedLo.xi4.stakeK,
+                    profitK: resolvedLo.xi4.profitK,
+                    payoutK: (resolvedLo.xi4.profitK > 0) ? (resolvedLo.xi4.stakeK + resolvedLo.xi4.profitK) : 0
+                };
+            }
+        }
+        if (type === 'lo4Engine') {
+            const quadRow = p?.loQuadHybrid?.settledLedger?.find(r => r.date === date);
+            const prizeCounts = {};
+            (drawInfo.prizes || []).forEach(pr => {
+                const norm = number(pr);
+                prizeCounts[norm] = (prizeCounts[norm] || 0) + 1;
+            });
+            const betList = (quadRow?.top7 || []).map((n, idx) => ({
+                num: n,
+                multiplier: idx < 2 ? 4 : (idx < 4 ? 3 : 1),
+                hits: (prizeCounts[number(n)] || 0)
+            }));
+            return {
+                date,
+                isHistoricalBaseline: true,
+                methodName: 'Lô Ghép 4 Động Cơ (QMBF + Bạc Nhớ + 3 Động Cơ + RRF)',
+                betNumbers: betList,
+                dayLotoHits: quadRow?.t7Hits || 0,
+                dayLotoStakeK: 0,
+                dayLotoPayoutK: 0,
+                dayLotoProfitK: 0,
+                isLotoWin: (quadRow?.t7Hits || 0) > 0,
+                xien4Status: 'BASELINE_PHASE',
+                xien4Reason: 'Giai đoạn đối soát độc lập trước khởi chạy Live Ghép 4'
+            };
+        }
+        if (type === 'lo4Xien4') {
+            const quadRow = p?.loQuadHybrid?.settledLedger?.find(r => r.date === date);
+            return {
+                date,
+                isHistoricalBaseline: true,
+                status: 'BASELINE_PHASE',
+                reason: 'Thuật toán Xiên 4 Ghép 4 lưu vết & chốt thực chiến từ 02/06/2026.',
+                combinations: [ (quadRow?.top4 || ['01', '02', '03', '04']) ],
+                countOver2: 4,
+                stakeK: 0,
+                profitK: 0,
+                payoutK: 0,
+                isWin: false
+            };
+        }
+        if (type === 'total') {
+            const resolvedDe = resolveUnifiedDeRowForDate(date, p);
+            const resolvedLo = resolveUnifiedLoRowForDate(date, p, null, drawInfo);
+            const deProfitK = resolvedDe.profitK || 0;
+            const stdProfitK = resolvedLo.std.profitK || 0;
+            const x2ProfitK = resolvedLo.x2.profitK || 0;
+            const dayTotalK = deProfitK + stdProfitK + x2ProfitK;
+            return {
+                date,
+                deProfitK,
+                stdProfitK,
+                x2ProfitK,
+                lo4ProfitK: 0,
+                xi3ProfitK: resolvedLo.xi3.profitK || 0,
+                xi4ProfitK: resolvedLo.xi4.profitK || 0,
+                dayTotalK,
+                cumProfitK: 0
+            };
+        }
+        return null;
+    }
+
     function showDiaryCellPopover(cell, e) {
         const popover = byId('diaryFloatingPopover');
         if (!popover) return;
         const date = cell.dataset.date;
         const type = cell.dataset.diaryCell;
-        const info = diaryDetailsMap?.[date]?.[type];
+        let info = diaryDetailsMap?.[date]?.[type];
+        if (!info && date && type) {
+            info = synthesizeFallbackDiaryInfo(date, type, payload);
+        }
         if (!info) return;
 
         popover.__activeCell = cell;
@@ -3561,13 +3972,14 @@
             const adaptiveRow = payload?.adaptiveDualMerge?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
             const tripleRow = payload?.tripleMerge?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
             const streakRow = payload?.streakAwareDeAdvisor?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
+            const pentaRow = payload?.pentaCoreDe?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
             const bayesRow = payload?.streakAwareDeAdvisor?.bayesAdvisor?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
             const markovRow = payload?.deMarkovGapHazard?.settledLedger?.find(r => (r.predictionDate || r.date) === date)
                 || payload?.streakAwareDeAdvisor?.markovAdvisor?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
             const graphRow = payload?.dePositionalGraphFlow?.settledLedger?.find(r => (r.predictionDate || r.date) === date)
                 || payload?.streakAwareDeAdvisor?.graphAdvisor?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
 
-            const actualSpec = deRow?.actualSpecial ?? deRow?.actual ?? dualRow?.actualSpecial ?? dualRow?.actual;
+            const actualSpec = deRow?.actualSpecial ?? deRow?.actual ?? dualRow?.actualSpecial ?? dualRow?.actual ?? pentaRow?.actual;
 
             // Resolve De method & details using unified resolver
             const resolvedDe = resolveUnifiedDeRowForDate(date, payload);
@@ -3580,13 +3992,6 @@
             const deProfitK = resolvedDe.profitK;
             const deIsHitFinal = resolvedDe.isHit;
 
-            const std = loRow.standard || {};
-            const x2 = loRow.x2 || {};
-            const xi4 = loRow.xien4 || {};
-            const stdProfitK = std.profitK || 0;
-            const x2ProfitK = x2.profitK || 0;
-            const xi4ProfitK = xi4.profitK || 0;
-
             // Prize breakdown for date
             const drawInfo = payload?.drawPrizesByDate?.[date] || {};
             const actualSpecialStr = drawInfo.special || (actualSpec != null ? number(actualSpec) : null);
@@ -3596,16 +4001,37 @@
                 prizeCounts[norm] = (prizeCounts[norm] || 0) + 1;
             });
 
-            // Xiên 3 (Tam Thủ Xiên 3): trích từ loRow.xien3 hoặc lấy 3 con đầu của Xiên 4
-            const xi4Numbers = (xi4.numbers || []).map(number);
-            const xi3Numbers = (loRow.xien3?.numbers && loRow.xien3.numbers.length ? loRow.xien3.numbers : xi4Numbers.slice(0, 3)).map(number);
-            const xi3StakeK = loRow.xien3?.stakeK || 500;
-            let xi3Hits = 0;
-            xi3Numbers.forEach(n => {
-                if ((prizeCounts[number(n)] || 0) > 0) xi3Hits++;
-            });
-            const xi3IsHit = (xi3Numbers.length === 3 && xi3Hits === 3);
-            const xi3ProfitK = loRow.xien3?.profitK != null ? loRow.xien3.profitK : (xi3IsHit ? (xi3StakeK * 40 - xi3StakeK) : -xi3StakeK);
+            // Unified Lo resolver for complete coverage across all 2026 dates
+            const resolvedLo = resolveUnifiedLoRowForDate(date, payload, loRow, drawInfo);
+            const std = resolvedLo.std;
+            const x2 = resolvedLo.x2;
+            const xi3 = resolvedLo.xi3;
+            const xi4 = resolvedLo.xi4;
+
+            const stdProfitK = std.profitK || 0;
+            const x2ProfitK = x2.profitK || 0;
+            const xi3ProfitK = xi3.profitK || 0;
+            const xi4ProfitK = xi4.profitK || 0;
+
+            const stdMethodName = std.methodName;
+            const stdNumbers = std.numbers;
+            const stdHits = std.hits;
+            const stdStakeK = std.stakeK;
+
+            const x2MethodName = x2.methodName;
+            const x2Numbers = x2.numbers;
+            const x2Hits = x2.hits;
+            const x2StakeK = x2.stakeK;
+
+            const xi3MethodName = xi3.methodName;
+            const xi3Numbers = xi3.numbers;
+            const xi3Hits = xi3.hits;
+            const xi3StakeK = xi3.stakeK;
+
+            const xi4MethodName = xi4.methodName;
+            const xi4Numbers = xi4.numbers;
+            const xi4Hits = xi4.hits;
+            const xi4StakeK = xi4.stakeK;
 
             // QUAN TRỌNG: Xiên 3 và Xiên 4 chỉ để quan sát, KHÔNG tính tiền vào Lũy Kế Mốc và Tổng Lãi Ngày!
             const loProfitK = stdProfitK + x2ProfitK;
@@ -3624,21 +4050,68 @@
             const lo4Xien4ProfitK = lo4Row ? (lo4Row.dayXien4ProfitK || 0) : 0;
             cumLo4Xien4ProfitK += lo4Xien4ProfitK;
 
-            const stdMethodName = std.methodName || std.methodLabel || 'Super-Hybrid Quad-Fusion v7.0 Top 20';
-            const stdNumbers = (std.numbers || []).map(number);
-            const stdHits = std.hits != null ? std.hits : 0;
-            const stdStakeK = std.stakeK || 44000;
+            const lo4EngineDetails = lo4Row ? {
+                ...lo4Row,
+                cumLotoProfitK: cumLo4ProfitK
+            } : {
+                date,
+                isHistoricalBaseline: true,
+                isPending: false,
+                isLive: false,
+                methodName: 'Lô Ghép 4 Động Cơ (QMBF + Bạc Nhớ + 3 Động Cơ + RRF)',
+                betNumbers: x2Numbers.map((n, idx) => ({
+                    num: n,
+                    multiplier: idx < 2 ? 4 : (idx < 4 ? 3 : 1),
+                    hits: (prizeCounts[number(n)] || 0)
+                })),
+                dayLotoHits: x2Hits,
+                dayLotoStakeK: 0,
+                dayLotoPayoutK: 0,
+                dayLotoProfitK: 0,
+                isLotoWin: x2Hits > 0,
+                xien4Status: 'BASELINE_PHASE',
+                xien4Reason: 'Giai đoạn đối soát độc lập trước khởi chạy Live Ghép 4 (Từ 02/06/2026)',
+                cumLotoProfitK: cumLo4ProfitK
+            };
 
-            const x2MethodName = x2.methodName || x2.methodLabel || ('Lô X2 Top ' + (x2.topCount || 7));
-            const x2Numbers = (x2.numbers || []).map(number);
-            const x2Hits = x2.hits != null ? x2.hits : 0;
-            const x2StakeK = x2.stakeK || (x2Numbers.length * 2200);
-
-            const xi3MethodName = loRow.xien3?.methodName || 'Tam Thủ Xiên 3 Đột Phá';
-
-            const xi4MethodName = xi4.methodName || xi4.methodLabel || 'Tứ Thủ Xiên 4 Tinh Hoa';
-            const xi4Hits = xi4.hits != null ? xi4.hits : 0;
-            const xi4StakeK = xi4.stakeK || 11000;
+            const lo4Xien4Details = lo4Row ? {
+                date,
+                isPending: false,
+                isLive: lo4Row.isLive,
+                status: lo4Row.xien4Status || 'SKIPPED_TOO_MANY',
+                xien4Status: lo4Row.xien4Status || 'SKIPPED_TOO_MANY',
+                reason: lo4Row.xien4Reason || '',
+                xien4Reason: lo4Row.xien4Reason || '',
+                combinations: lo4Row.xien4Combinations || [],
+                xien4Combinations: lo4Row.xien4Combinations || [],
+                countOver2: lo4Row.countOver2 || 0,
+                stakeK: lo4Row.xien4StakeK || 0,
+                profitK: lo4Row.dayXien4ProfitK || 0,
+                dayXien4ProfitK: lo4Row.dayXien4ProfitK || 0,
+                payoutK: lo4Row.xien4PayoutK || 0,
+                isWin: Boolean(lo4Row.isXien4Win),
+                isXien4Win: Boolean(lo4Row.isXien4Win),
+                cumXien4ProfitK: cumLo4Xien4ProfitK
+            } : {
+                date,
+                isHistoricalBaseline: true,
+                isPending: false,
+                isLive: false,
+                status: 'BASELINE_PHASE',
+                xien4Status: 'BASELINE_PHASE',
+                reason: 'Thuật toán Xiên 4 Ghép 4 lưu vết & chốt thực chiến từ 02/06/2026.',
+                xien4Reason: 'Thuật toán Xiên 4 Ghép 4 lưu vết & chốt thực chiến từ 02/06/2026.',
+                combinations: [ xi4Numbers ],
+                xien4Combinations: [ xi4Numbers ],
+                countOver2: 4,
+                stakeK: 0,
+                profitK: 0,
+                dayXien4ProfitK: 0,
+                payoutK: 0,
+                isWin: false,
+                isXien4Win: false,
+                cumXien4ProfitK: cumLo4Xien4ProfitK
+            };
 
             diaryDetailsMap[date] = {
                 de: {
@@ -3659,29 +4132,8 @@
                     switchPhase: resolvedDe.switchPhase || null,
                     switchReason: resolvedDe.switchReason || null
                 },
-                lo4Engine: lo4Row ? {
-                    ...lo4Row,
-                    cumLotoProfitK: cumLo4ProfitK
-                } : null,
-                lo4Xien4: lo4Row ? {
-                    date,
-                    isPending: false,
-                    isLive: lo4Row.isLive,
-                    status: lo4Row.xien4Status || 'SKIPPED_TOO_MANY',
-                    xien4Status: lo4Row.xien4Status || 'SKIPPED_TOO_MANY',
-                    reason: lo4Row.xien4Reason || '',
-                    xien4Reason: lo4Row.xien4Reason || '',
-                    combinations: lo4Row.xien4Combinations || [],
-                    xien4Combinations: lo4Row.xien4Combinations || [],
-                    countOver2: lo4Row.countOver2 || 0,
-                    stakeK: lo4Row.xien4StakeK || 0,
-                    profitK: lo4Row.dayXien4ProfitK || 0,
-                    dayXien4ProfitK: lo4Row.dayXien4ProfitK || 0,
-                    payoutK: lo4Row.xien4PayoutK || 0,
-                    isWin: Boolean(lo4Row.isXien4Win),
-                    isXien4Win: Boolean(lo4Row.isXien4Win),
-                    cumXien4ProfitK: cumLo4Xien4ProfitK
-                } : null,
+                lo4Engine: lo4EngineDetails,
+                lo4Xien4: lo4Xien4Details,
                 loStd: {
                     date,
                     methodName: stdMethodName,
@@ -3731,6 +4183,7 @@
                     deProfitK,
                     stdProfitK,
                     x2ProfitK,
+                    lo4ProfitK,
                     xi3ProfitK,
                     xi4ProfitK,
                     dayTotalK,
@@ -4643,14 +5096,14 @@
                     </td>
                     <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-rose-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Engine">
                         <div class="text-[11px] font-bold text-rose-950 flex items-center gap-1">
-                            <i class="bi bi-fire text-rose-600 text-[10px]"></i> Ghép 4 Động Cơ Live
+                            <i class="bi bi-fire text-rose-600 text-[10px]"></i> ${lo4Info.isHistoricalBaseline ? 'Lô Ghép 4 (Nền tảng)' : 'Ghép 4 Động Cơ Live'}
                         </div>
                         <div class="flex items-center gap-1.5 mt-0.5 text-xs">
-                            <span class="text-slate-700">${lo4HitsText}</span>
-                            <span>${lo4ProfitText}</span>
+                            <span class="text-slate-700">${lo4Info.isHistoricalBaseline ? `Nổ <strong>${lo4Info.dayLotoHits || 0}</strong> nháy` : lo4HitsText}</span>
+                            <span>${lo4Info.isHistoricalBaseline ? '<span class="text-[10px] text-slate-400 font-semibold font-mono">(Tiền đề)</span>' : lo4ProfitText}</span>
                         </div>
                         <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
-                            <span>${lo4Info.countTotal || 17}s tổng hợp (${lo4Info.countOver2 || 0} trùng)</span>
+                            <span>${lo4Info.isHistoricalBaseline ? 'Mô hình tiền đề Quad+QMBF' : `${lo4Info.countTotal || 17}s tổng hợp (${lo4Info.countOver2 || 0} trùng)`}</span>
                             <span class="text-rose-700 font-bold underline">Di chuột xem</span>
                         </div>
                     </td>
@@ -4659,11 +5112,11 @@
                             <i class="bi bi-dice-4-fill text-purple-600 text-[10px]"></i> Xiên 4 Ghép Mới
                         </div>
                         <div class="flex items-center gap-1.5 mt-0.5 text-xs">
-                            ${lo4Xien4Tag}
-                            ${lo4Xien4ProfitText}
+                            ${lo4Info.isHistoricalBaseline ? '<span class="text-[10px] text-slate-400 font-semibold">Chế độ quan sát</span>' : lo4Xien4Tag}
+                            ${lo4Info.isHistoricalBaseline ? '' : lo4Xien4ProfitText}
                         </div>
                         <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
-                            <span>${lo4Xien4Info.status === 'ACTIVE' ? `${lo4Xien4Info.countOver2 || 4} số trùng` : 'Bảo toàn vốn'}</span>
+                            <span>${lo4Info.isHistoricalBaseline ? 'Giai đoạn trước 02/06' : (lo4Xien4Info.status === 'ACTIVE' ? `${lo4Xien4Info.countOver2 || 4} số trùng` : 'Bảo toàn vốn')}</span>
                             <span class="text-purple-700 font-bold underline">Di chuột xem</span>
                         </div>
                     </td>
