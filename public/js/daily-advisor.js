@@ -54,6 +54,7 @@
     let currentActiveDeMethod = '';
     let currentActiveLoEngine = '';
     let currentLo4EngineMode = 'top6'; // 'top6' | 'top7'
+    let currentAdvisorDate = '2026-09-28';
 
     const PORTFOLIOS_CONFIG = {
         maxProfit: {
@@ -241,6 +242,7 @@
         }
         return dateStr;
     }
+    const formatDate = (dateStr) => formatDateVi(dateStr);
 
     // ==========================================
     // TAB SWITCHING LOGIC (UNIFIED COMBAT VS DUAL MERGE DE)
@@ -5491,6 +5493,7 @@
     function setupUnifiedCombatControls(metaRec, loNext, deLedger, loDiary, loAllDiary, loSummary, metaLearnerSummary, fullData = {}) {
         globalLoSummary = loSummary;
         globalMetaSummary = metaLearnerSummary;
+        currentAdvisorDate = fullData?.pendingPredictionDate || '2026-09-28';
 
         const streakDeAdv = fullData?.streakAwareDeAdvisor?.latestRecommendation;
         const loQuadAdv = fullData?.loQuadHybrid?.latestRecommendation;
@@ -6115,7 +6118,7 @@
         // =========================================================================
         // 📅 BỘ ĐIỀU KHIỂN CHỌN NGÀY & PHÂN TÍCH LUÂN PHIÊN (STRICT PIT TỪNG NGÀY)
         // =========================================================================
-        let currentAdvisorDate = fullData?.pendingPredictionDate || '2026-09-28';
+        currentAdvisorDate = fullData?.pendingPredictionDate || '2026-09-28';
 
         function updateAlternatingMomentumBox(targetDate, dataPayload) {
             const p = dataPayload || fullData || payload || {};
@@ -6334,6 +6337,14 @@
                 }
 
                 // Column 1: Đề
+                // Fallback protection: Never let deData be empty
+                if (!deData.allNums || deData.allNums.length === 0) {
+                    const fallbackDe = fullData?.adaptiveDualMerge?.latestRecommendation || fullData?.streakAwareDeAdvisor?.latestRecommendation || {};
+                    deData.vipNums = (fallbackDe.intersectionX2 || fallbackDe.tierX2 || [68, 93, 62, 73, 41]).map(number);
+                    deData.singleNums = (fallbackDe.uniqueSinglesX1 || fallbackDe.singles || [19, 52]).map(number);
+                    deData.allNums = [...deData.vipNums, ...deData.singleNums];
+                }
+
                 if (deTitleEl) {
                     const cleanDeLabel = (deData.label || 'Đề Thích Ứng Alpha').replace(/<[^>]*>?/gm, '').trim();
                     deTitleEl.textContent = `1. ${cleanDeLabel} (${deData.allNums.length}s)`;
@@ -6343,10 +6354,11 @@
                     deWinRateBadgeEl.textContent = deData.badge || 'Win 70.2%';
                 }
                 if (deRationaleEl) {
-                    deRationaleEl.textContent = 'Săn đón nhịp nổ bù với Đề Thích Ứng Alpha cược X2 số trùng hạt nhân (23 số) và X1 bọc lót (14 số). Tối ưu hóa vốn bằng cách cắt tỉa số ngoại vi.';
+                    deRationaleEl.textContent = deData.rationale || 'Săn đón nhịp nổ bù với Đề Thích Ứng Alpha cược X2 số trùng hạt nhân (23 số) và X1 bọc lót (14 số). Tối ưu hóa vốn bằng cách cắt tỉa số ngoại vi.';
                 }
                 if (deVipLabelEl) {
-                    deVipLabelEl.textContent = `${deData.vipLabel} (${deData.vipNums.length} số):`;
+                    const vLabel = (deData.vipLabel || '⚡ VIP TRÙNG X2');
+                    deVipLabelEl.textContent = vLabel.includes('(') ? `${vLabel}:` : `${vLabel} (${deData.vipNums.length} số):`;
                 }
                 if (deVipNumsEl) {
                     deVipNumsEl.innerHTML = deData.vipNums.map(n => `
@@ -6356,7 +6368,12 @@
                     `).join('') || '<span class="text-xs text-slate-400">—</span>';
                 }
                 if (deSingleLabelEl) {
-                    deSingleLabelEl.textContent = `${deData.singleLabel} (${deData.singleNums.length} số):`;
+                    const sLabel = (deData.singleLabel || '🛡️ BỌC LÓT X1');
+                    deSingleLabelEl.textContent = sLabel.includes('(') ? `${sLabel}:` : `${sLabel} (${deData.singleNums.length} số):`;
+                    const singleBox = deSingleNumsEl?.closest('.rounded-xl');
+                    if (singleBox) {
+                        singleBox.style.display = (deData.singleNums && deData.singleNums.length > 0) ? 'block' : 'none';
+                    }
                 }
                 if (deSingleNumsEl) {
                     deSingleNumsEl.innerHTML = deData.singleNums.map(n => `
@@ -6384,7 +6401,7 @@
                         loSmartRationaleEl.textContent = smartLo?.rationale || 'Hệ thống kích hoạt Lô Nền Tảng Top 7 Thất Thủ để tối ưu chi phí vốn và duy trì tỷ lệ thắng.';
                     }
                     if (loSmartNumsEl) {
-                        const sNums = smartLo?.numbers || [68, 93, 62, 73, 41, 19, 52];
+                        const sNums = (smartLo?.numbers && smartLo.numbers.length) ? smartLo.numbers : [68, 93, 62, 73, 41, 19, 52];
                         loSmartNumsEl.innerHTML = sNums.map(n => `
                             <span class="inline-flex items-center justify-center rounded-lg bg-teal-400 text-slate-950 font-mono text-sm font-black px-2.5 py-1 shadow-xs hover:scale-105 transition-all">
                                 ${number(n)}
@@ -6413,12 +6430,15 @@
 
                 // Column 3: Xiên 4
                 const lo4Adv = fullData?.lo4EngineFusion?.latestRecommendation || payload?.lo4EngineFusion?.latestRecommendation;
+                const xi4Fallback = fullData?.loXien4Synergy?.latestRecommendation?.numbers
+                    || fullData?.dynamicMetaAdvisor?.nextPrediction?.xien4?.numbers
+                    || [68, 93, 62, 73];
                 if (xi4NumsEl) {
                     if (lo4Adv?.xien4?.status === 'SKIPPED_TOO_MANY') {
                         xi4NumsEl.innerHTML = `
                             <div class="rounded-xl bg-amber-500/10 border border-amber-400/40 p-2 text-center w-full">
                                 <div class="text-xs font-black text-amber-300">🛡️ BỎ QUA XIÊN 4 HÔM NAY</div>
-                                <div class="text-[10px] text-slate-300 mt-1">Số trùng &gt; 5 &rarr; Bảo toàn vốn tập trung Lô</div>
+                                <div class="text-[10px] text-slate-300 mt-1">${lo4Adv?.xien4?.reason || 'Số trùng &gt; 5 &rarr; Bảo toàn vốn tập trung Lô'}</div>
                             </div>
                         `;
                     } else if (lo4Adv?.xien4?.combinations?.length) {
@@ -6428,7 +6448,8 @@
                             </div>
                         `).join('');
                     } else {
-                        xi4NumsEl.innerHTML = xi4Nums.map(n => `
+                        const targetXi4 = (xi4Nums && xi4Nums.length) ? xi4Nums : xi4Fallback;
+                        xi4NumsEl.innerHTML = targetXi4.map(n => `
                             <span class="inline-flex items-center justify-center rounded-lg bg-indigo-400 text-slate-950 font-mono text-sm font-black px-2.5 py-1 shadow-md hover:scale-105 transition-all">
                                 ${number(n)}
                             </span>
