@@ -1056,6 +1056,37 @@
 
         const displayCoreLoProfitK = displayStdProfitK + displayX2ProfitK;
 
+        const lo4ModeData = payload?.lo4EngineFusion?.modes?.[currentLo4EngineMode] || payload?.lo4EngineFusion;
+        const lo4Ledger = lo4ModeData?.settledLedger || [];
+        let lo4Slice = lo4Ledger;
+        if (isSep16Mode) {
+            lo4Slice = lo4Ledger.filter(r => r.date >= '2026-09-16');
+        } else if (unifiedTimeframe === 'live') {
+            lo4Slice = lo4Ledger.filter(r => r.date >= '2026-08-28');
+        } else {
+            lo4Slice = lo4Ledger.filter(r => r.date >= '2026-06-02');
+        }
+
+        let displayLo4ProfitK = 0;
+        let lo4Wins = 0;
+        let lo4Days = lo4Slice.length;
+        let displayLo4Xien4ProfitK = 0;
+        let lo4Xien4Wins = 0;
+        let lo4Xien4Skips = 0;
+
+        lo4Slice.forEach(r => {
+            if (r.isLotoWin || (r.dayLotoProfitK || 0) > 0) lo4Wins++;
+            displayLo4ProfitK += (r.dayLotoProfitK || 0);
+
+            if (r.isXien4Win || (r.dayXien4ProfitK || 0) > 0) lo4Xien4Wins++;
+            else if (r.xien4Status === 'SKIPPED_TOO_MANY') lo4Xien4Skips++;
+            displayLo4Xien4ProfitK += (r.dayXien4ProfitK || 0);
+        });
+
+        const lo4WinRateText = lo4Days > 0 ? percent(lo4Wins / lo4Days) : '0%';
+        const lo4SubText = `Thắng <strong>${lo4Wins}/${lo4Days}</strong> ngày (${lo4WinRateText})`;
+        const lo4Xien4SubText = `Ăn <strong>${lo4Xien4Wins}</strong> kỳ · <strong>${lo4Xien4Skips}</strong> kỳ bảo toàn`;
+
         cardsEl.innerHTML = `
             <div class="rounded-2xl border border-amber-400/20 bg-amber-500/10 p-3.5 flex flex-col justify-between">
                 <div>
@@ -1096,29 +1127,42 @@
                 </div>
             </div>
 
-            <div class="rounded-2xl border border-amber-400/20 bg-amber-500/10 p-3.5 flex flex-col justify-between">
+            <div class="rounded-2xl border border-rose-400/20 bg-rose-500/10 p-3.5 flex flex-col justify-between">
                 <div>
-                    <div class="flex items-center justify-between text-[11px] font-bold text-amber-300">
-                        <span>💎 Lô Xiên (Quan Sát)</span>
-                        <span class="rounded bg-amber-400/20 px-1.5 py-0.5 text-[9px] font-black text-amber-300">Chỉ quan sát</span>
+                    <div class="flex items-center justify-between text-[11px] font-bold text-rose-300">
+                        <span>🔥 Lô Cốt Lõi (Chuẩn+X2)</span>
+                        <span class="rounded bg-rose-400/20 px-1.5 py-0.5 text-[9px] font-black">${isSep16Mode ? '~59.4M/ngày' : '~70M/ngày'}</span>
                     </div>
-                    <div class="mt-1.5 font-mono text-xl font-black text-amber-300">${moneyM(displayXi4ProfitK, { signed: true })}</div>
+                    <div class="mt-1.5 font-mono text-xl font-black text-rose-300">${moneyM(isSep16Mode ? displayCoreLoProfitK : combo.profitK, { signed: true })}</div>
                 </div>
-                <div class="mt-2 text-[10px] text-amber-200/80 font-semibold">
-                    ${xi4SubText} · <span class="italic text-slate-400">Độc lập</span>
+                <div class="mt-2 text-[10px] text-rose-200/80 font-semibold">
+                    ${isSep16Mode ? `Lãi Lô thực chiến: <strong>${moneyM(displayCoreLoProfitK, { signed: true })}</strong>` : `ROI Lô Combo: <strong>${percent(combo.roi)}</strong>`}
                 </div>
             </div>
 
-            <div class="rounded-2xl border border-purple-400/20 bg-purple-500/10 p-3.5 flex flex-col justify-between">
+            <div class="rounded-2xl border border-amber-400/30 bg-amber-500/15 p-3.5 flex flex-col justify-between ring-1 ring-amber-400/30">
                 <div>
-                    <div class="flex items-center justify-between text-[11px] font-bold text-purple-300">
-                        <span>🔥 Lô Cốt Lõi (Chuẩn+X2)</span>
-                        <span class="rounded bg-purple-400/20 px-1.5 py-0.5 text-[9px] font-black">${isSep16Mode ? '~59.4M/ngày' : '~70M/ngày'}</span>
+                    <div class="flex items-center justify-between text-[11px] font-black text-amber-300">
+                        <span>⚡ Lô Ghép 4 Động Cơ</span>
+                        <span class="rounded bg-amber-400 text-slate-950 px-1.5 py-0.5 text-[9px] font-black">Top 6/7 Live</span>
                     </div>
-                    <div class="mt-1.5 font-mono text-xl font-black text-purple-300">${moneyM(isSep16Mode ? displayCoreLoProfitK : combo.profitK, { signed: true })}</div>
+                    <div class="mt-1.5 font-mono text-xl font-black text-amber-300">${moneyM(displayLo4ProfitK, { signed: true })}</div>
                 </div>
-                <div class="mt-2 text-[10px] text-purple-200/80 font-semibold">
-                    ${isSep16Mode ? `Lãi Lô thực chiến: <strong>${moneyM(displayCoreLoProfitK, { signed: true })}</strong>` : `ROI Lô Combo: <strong>${percent(combo.roi)}</strong>`}
+                <div class="mt-2 text-[10px] text-amber-200/90 font-semibold">
+                    ${lo4SubText}
+                </div>
+            </div>
+
+            <div class="rounded-2xl border border-purple-400/30 bg-purple-500/15 p-3.5 flex flex-col justify-between ring-1 ring-purple-400/30">
+                <div>
+                    <div class="flex items-center justify-between text-[11px] font-black text-purple-300">
+                        <span>🎲 Lô Xiên 4 Ghép Mới</span>
+                        <span class="rounded bg-purple-400/30 text-purple-200 px-1.5 py-0.5 text-[9px] font-black">Bảo Toàn</span>
+                    </div>
+                    <div class="mt-1.5 font-mono text-xl font-black text-purple-300">${moneyM(displayLo4Xien4ProfitK, { signed: true })}</div>
+                </div>
+                <div class="mt-2 text-[10px] text-purple-200/90 font-semibold">
+                    ${lo4Xien4SubText}
                 </div>
             </div>
 
@@ -2632,11 +2676,13 @@
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 flex-wrap">
                         <span class="rounded ${isWin ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'} font-bold text-xs px-2.5 py-1">
                             ${isWin ? `🎉 NỔ ${hits} NHÁY (ĂN ${moneyM(info.dayLotoPayoutK)})` : `❌ TRƯỢT (${hits} nháy)`}
                         </span>
-                        <span class="text-xs text-slate-300 font-mono">Lũy kế: ${moneyM(info.cumLotoProfitK, { signed: true })}</span>
+                        <span class="rounded-lg bg-indigo-950/80 border border-indigo-500/40 text-xs px-2.5 py-1 text-indigo-200 font-mono">
+                            🔥 Lũy Kế Lô Ghép 4: <strong class="${(info.cumLotoProfitK ?? 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-black">${moneyM(info.cumLotoProfitK ?? 0, { signed: true })}</strong>
+                        </span>
                     </div>
 
                     <div>
@@ -2741,9 +2787,14 @@
                     </div>
 
                     <div class="rounded-xl ${status === 'SKIPPED_TOO_MANY' ? 'bg-amber-500/10 border border-amber-400/40 text-amber-200' : (isWin ? 'bg-emerald-500/20 border border-emerald-400/40 text-emerald-200' : 'bg-slate-800 text-slate-300')} p-2.5 text-xs">
-                        <div class="font-bold flex items-center gap-1.5">
-                            <i class="bi ${status === 'SKIPPED_TOO_MANY' ? 'bi-shield-check text-amber-400' : (isWin ? 'bi-check-circle-fill text-emerald-400' : 'bi-info-circle')}"></i>
-                            ${status === 'SKIPPED_TOO_MANY' ? 'Chế độ Bảo Toàn Vốn (Tự Động Bỏ Qua Xiên 4)' : (isPending ? 'Kế Hoạch Cược Xiên 4' : (isWin ? '🎉 Ăn Xiên 4 Thành Công!' : 'Trượt Xiên 4'))}
+                        <div class="font-bold flex items-center justify-between gap-1.5 flex-wrap">
+                            <span class="flex items-center gap-1.5">
+                                <i class="bi ${status === 'SKIPPED_TOO_MANY' ? 'bi-shield-check text-amber-400' : (isWin ? 'bi-check-circle-fill text-emerald-400' : 'bi-info-circle')}"></i>
+                                ${status === 'SKIPPED_TOO_MANY' ? 'Chế độ Bảo Toàn Vốn (Tự Động Bỏ Qua Xiên 4)' : (isPending ? 'Kế Hoạch Cược Xiên 4' : (isWin ? '🎉 Ăn Xiên 4 Thành Công!' : 'Trượt Xiên 4'))}
+                            </span>
+                            <span class="rounded bg-black/40 px-2 py-0.5 text-[10px] font-mono font-black ${(info.cumXien4ProfitK ?? 0) >= 0 ? 'text-purple-300' : 'text-rose-400'}">
+                                Lũy kế Xiên 4: ${moneyM(info.cumXien4ProfitK ?? 0, { signed: true })}
+                            </span>
                         </div>
                         <div class="text-[11px] mt-1 text-slate-300 leading-relaxed">
                             ${escapeHtml(reason || (status === 'SKIPPED_TOO_MANY' ? 'Có > 5 số trùng giữa 4 phương pháp -> Dừng cược Xiên 4 để không phân tán vốn.' : 'Theo dõi hiệu suất thuật toán ghép 4.'))}
@@ -3185,11 +3236,11 @@
                         </div>
                         <div class="flex justify-between items-center py-0.5 text-slate-400">
                             <span>🔥 Lô Ghép 4 Động Cơ:</span>
-                            <span class="${info.lo4ProfitK >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400'}">${moneyM(info.lo4ProfitK, { signed: true })} <span class="text-[9px] text-teal-300 font-bold">(Live)</span></span>
+                            <span class="${info.lo4ProfitK >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400'}">${moneyM(info.lo4ProfitK, { signed: true })} <span class="text-[9px] text-teal-300 font-bold">(LK: ${moneyM(info.cumLo4ProfitK ?? info.lo4ProfitK, { signed: true })})</span></span>
                         </div>
                         <div class="flex justify-between items-center py-0.5 text-slate-500">
                             <span>🎲 Lô Xiên 4 (Ghép Mới):</span>
-                            <span class="${info.xi4ProfitK > 0 ? 'text-amber-300 font-bold' : 'text-slate-400'}">${moneyM(info.xi4ProfitK, { signed: true })} <span class="text-[9px]">(quan sát)</span></span>
+                            <span class="${info.xi4ProfitK > 0 ? 'text-amber-300 font-bold' : 'text-slate-400'}">${moneyM(info.xi4ProfitK, { signed: true })} <span class="text-[9px] text-purple-300 font-bold">(LK: ${moneyM(info.cumLo4Xien4ProfitK ?? info.xi4ProfitK, { signed: true })})</span></span>
                         </div>
                     </div>
                     <div class="mt-2 text-[10px] text-slate-400 italic">
@@ -4521,10 +4572,23 @@
         let catWinCount = 0;
         let catTotalProfit = 0;
         let settledDaysCount = 0;
+        let lo4WinCount = 0;
+        let lo4TotalProfit = 0;
+        let lo4Xien4WinCount = 0;
+        let lo4Xien4SkipCount = 0;
+        let lo4Xien4TotalProfit = 0;
 
         mergedRows.forEach(r => {
             if (r.isPending) return;
             settledDaysCount++;
+
+            if ((r.lo4Engine?.dayLotoProfitK || 0) > 0) lo4WinCount++;
+            lo4TotalProfit += (r.lo4Engine?.dayLotoProfitK || 0);
+
+            if ((r.lo4Xien4?.profitK || 0) > 0) lo4Xien4WinCount++;
+            else if (r.lo4Xien4?.status === 'SKIPPED_TOO_MANY') lo4Xien4SkipCount++;
+            lo4Xien4TotalProfit += (r.lo4Xien4?.profitK || 0);
+
             if (currentDiaryCategory === 'de') {
                 if (r.deProfitK > 0) catWinCount++;
                 catTotalProfit += r.deProfitK;
@@ -4560,6 +4624,26 @@
         if (totalProfitEl) {
             totalProfitEl.textContent = moneyM(catTotalProfit, { signed: true });
             totalProfitEl.className = `font-black text-sm font-mono ${catTotalProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`;
+        }
+
+        const lo4ProfitEl = byId('unifiedDiaryLo4Profit');
+        if (lo4ProfitEl) {
+            lo4ProfitEl.textContent = moneyM(lo4TotalProfit, { signed: true });
+            lo4ProfitEl.className = `font-black text-sm font-mono ${lo4TotalProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'}`;
+        }
+        const lo4SubEl = byId('unifiedDiaryLo4Subtext');
+        if (lo4SubEl) {
+            lo4SubEl.innerHTML = `Thắng <strong>${lo4WinCount}/${totalCount}</strong> ngày (${percent(lo4WinCount / totalCount)}) · Đa tầng x3/x4/x5`;
+        }
+
+        const xien4ProfitEl = byId('unifiedDiaryXien4Profit');
+        if (xien4ProfitEl) {
+            xien4ProfitEl.textContent = moneyM(lo4Xien4TotalProfit, { signed: true });
+            xien4ProfitEl.className = `font-black text-sm font-mono ${lo4Xien4TotalProfit >= 0 ? 'text-purple-700' : 'text-rose-600'}`;
+        }
+        const xien4SubEl = byId('unifiedDiaryXien4Subtext');
+        if (xien4SubEl) {
+            xien4SubEl.innerHTML = `Ăn <strong>${lo4Xien4WinCount}</strong> kỳ · <strong>${lo4Xien4SkipCount}</strong> kỳ bảo toàn vốn (0đ)`;
         }
 
         const reversedRows = [...displayRows].reverse();
@@ -5354,10 +5438,11 @@
                         </div>
                     </td>
                     <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-rose-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Engine">
-                        <div class="text-[11px] font-bold text-rose-950 flex items-center gap-1">
-                            <i class="bi bi-fire text-rose-600 text-[10px]"></i> ${lo4Info.isHistoricalBaseline ? 'Lô Ghép 4 (Nền tảng)' : 'Ghép 4 Động Cơ Live'}
+                        <div class="flex items-center justify-between text-[11px] font-bold text-rose-950 gap-1">
+                            <span class="flex items-center gap-1"><i class="bi bi-fire text-rose-600 text-[10px]"></i> ${lo4Info.isHistoricalBaseline ? 'Lô Ghép 4 (Nền tảng)' : 'Ghép 4 Động Cơ Live'}</span>
+                            ${!lo4Info.isHistoricalBaseline ? `<span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${r.cumLo4ProfitK >= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">LK: ${moneyM(r.cumLo4ProfitK, { signed: true })}</span>` : ''}
                         </div>
-                        <div class="flex items-center gap-1.5 mt-0.5 text-xs">
+                        <div class="flex items-center justify-between gap-1.5 mt-0.5 text-xs">
                             <span class="text-slate-700">${lo4Info.isHistoricalBaseline ? `Nổ <strong>${lo4Info.dayLotoHits || 0}</strong> nháy` : lo4HitsText}</span>
                             <span>${lo4Info.isHistoricalBaseline ? '<span class="text-[10px] text-slate-400 font-semibold font-mono">(Tiền đề)</span>' : lo4ProfitText}</span>
                         </div>
@@ -5367,10 +5452,11 @@
                         </div>
                     </td>
                     <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-purple-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Xien4">
-                        <div class="text-[11px] font-bold text-purple-950 flex items-center gap-1">
-                            <i class="bi bi-dice-4-fill text-purple-600 text-[10px]"></i> Xiên 4 Ghép Mới
+                        <div class="flex items-center justify-between text-[11px] font-bold text-purple-950 gap-1">
+                            <span class="flex items-center gap-1"><i class="bi bi-dice-4-fill text-purple-600 text-[10px]"></i> Xiên 4 Ghép Mới</span>
+                            ${!lo4Info.isHistoricalBaseline ? `<span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${r.cumLo4Xien4ProfitK >= 0 ? 'bg-purple-100 text-purple-800' : 'bg-rose-100 text-rose-800'}">LK: ${moneyM(r.cumLo4Xien4ProfitK, { signed: true })}</span>` : ''}
                         </div>
-                        <div class="flex items-center gap-1.5 mt-0.5 text-xs">
+                        <div class="flex items-center justify-between gap-1.5 mt-0.5 text-xs">
                             ${lo4Info.isHistoricalBaseline ? '<span class="text-[10px] text-slate-400 font-semibold">Chế độ quan sát</span>' : lo4Xien4Tag}
                             ${lo4Info.isHistoricalBaseline ? '' : lo4Xien4ProfitText}
                         </div>
