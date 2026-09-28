@@ -917,9 +917,9 @@
         let xi4StakeK = top5XienRow ? top5XienRow.q11StakeVIP_K : (xi4Raw.stakeK || 11000);
         let xi4ProfitK = top5XienRow ? top5XienRow.q11ProfitVIP_K : xi4Raw.profitK;
         if (xi4ProfitK == null) {
-            if (xi4Hits >= 4) xi4ProfitK = 598000;
-            else if (xi4Hits === 3) xi4ProfitK = 103500;
-            else if (xi4Hits === 2) xi4ProfitK = 5500;
+            if (xi4Hits >= 4) xi4ProfitK = 373000;
+            else if (xi4Hits === 3) xi4ProfitK = 73000;
+            else if (xi4Hits === 2) xi4ProfitK = 1000;
             else xi4ProfitK = -xi4StakeK;
         }
 
@@ -1755,7 +1755,7 @@
 
             if (top4Rec.length >= 4) {
                 if (xien4StatusEl) {
-                    xien4StatusEl.innerHTML = `<span class="text-emerald-300 font-bold">🎯 CHỐT ĐÁNH BỘ 4 QUÂY 11 VÉ (LÃI +1.005 TỶ · WIN 40.1%):</span> 1 X4 + 4 X3 + 6 X2 · Ăn từ 2 con có lãi ròng!`;
+                    xien4StatusEl.innerHTML = `<span class="text-emerald-300 font-bold">🎯 CHỐT ĐÁNH BỘ 4 QUÂY 11 VÉ (LÃI +2.523 TỶ VIP · WIN 40.1%):</span> Ăn 4 con +373M · Ăn 3 con +73M · Ăn 2 con +1M!`;
                 }
                 if (xien4NumsEl) {
                     xien4NumsEl.innerHTML = `
@@ -2315,7 +2315,7 @@
 
         const xi4RoiEl = byId('unifiedLoXi4LiveRoi');
         if (xi4RoiEl) {
-            xi4RoiEl.textContent = 'Quây 11 vé ROI +171.2% (+1.005 TỶ) · Quây X3 ROI +124.0%';
+            xi4RoiEl.textContent = 'Quây 11 vé (+2.523 TỶ VIP / +504M M3) · Quây X3 (+331M)';
         }
 
         const xi4Nums = (top4XienNums.length >= 4) ? top4XienNums : ((loXien4Adv && Array.isArray(loXien4Adv.numbers) && loXien4Adv.numbers.length)
@@ -3156,9 +3156,9 @@
             `;
 
             let ticketResult = '❌ Không trúng vé nào (-11M VIP / -2.2M M3)';
-            if (info.hits >= 4) ticketResult = '👑 ĐẠI THẮNG 4/4 CON: Ăn trọn 11 vé (1 X4 + 4 X3 + 6 X2) ➔ Lãi +598M VIP (+119.6M M3)';
-            else if (info.hits === 3) ticketResult = '🔥 NỔ 3/4 CON: Ăn 1 vé X3 + 3 vé X2 ➔ Lãi +103.5M VIP (+20.7M M3)';
-            else if (info.hits === 2) ticketResult = '✨ NỔ 2/4 CON: Ăn 1 vé X2 có lãi ➔ Lãi +5.5M VIP (+1.1M M3)';
+            if (info.hits >= 4) ticketResult = '👑 Ăn 4 con: Ăn 384M (Lãi +373M VIP / +74.6M M3)';
+            else if (info.hits === 3) ticketResult = '🔥 Ăn 3 con: Ăn 84M (Lãi +73M VIP / +14.6M M3)';
+            else if (info.hits === 2) ticketResult = '✨ Ăn 2 con: Ăn 12M (Lãi +1M VIP / +200K M3)';
 
             return `
                 <div>
@@ -3837,9 +3837,9 @@
             xien4Combinations = [top4Fallback];
             const uniqueHits = top4Fallback.filter(n => (actualMap[n] || 0) > 0).length;
             xien4StakeK = 11000;
-            if (uniqueHits >= 4) xien4PayoutK = 609000;
-            else if (uniqueHits === 3) xien4PayoutK = 114500;
-            else if (uniqueHits === 2) xien4PayoutK = 16500;
+            if (uniqueHits >= 4) xien4PayoutK = 384000;
+            else if (uniqueHits === 3) xien4PayoutK = 84000;
+            else if (uniqueHits === 2) xien4PayoutK = 12000;
             dayXien4ProfitK = xien4PayoutK - xien4StakeK;
             if (dayXien4ProfitK > 0) isXien4Win = true;
         }
@@ -5313,11 +5313,11 @@
 
                 let ticketStatus = `<span class="inline-flex items-center gap-1 rounded bg-rose-100 text-rose-800 px-2 py-0.5 text-xs font-semibold">❌ Trượt (${h4Hits}/4 con)</span>`;
                 if (h4Hits === 4) {
-                    ticketStatus = `<span class="inline-flex items-center gap-1 rounded bg-amber-400 text-slate-950 px-2.5 py-1 text-xs font-black shadow-xs ring-1 ring-amber-500">👑 ĐẠI THẮNG 4/4 · ĂN TRỌN 11 VÉ (${moneyM(lo4Xien4Info.profitK || 0, { signed: true })})</span>`;
+                    ticketStatus = `<span class="inline-flex items-center gap-1 rounded bg-amber-400 text-slate-950 px-2.5 py-1 text-xs font-black shadow-xs ring-1 ring-amber-500">👑 ĂN 4 CON · ĂN 384M (LÃI +373M VIP)</span>`;
                 } else if (h4Hits === 3) {
-                    ticketStatus = `<span class="inline-flex items-center gap-1 rounded bg-purple-600 text-white px-2 py-0.5 text-xs font-black shadow-xs">🔥 NỔ 3/4 · 1 X3 + 3 X2 (${moneyM(lo4Xien4Info.profitK || 0, { signed: true })})</span>`;
+                    ticketStatus = `<span class="inline-flex items-center gap-1 rounded bg-purple-600 text-white px-2 py-0.5 text-xs font-black shadow-xs">🔥 ĂN 3 CON · ĂN 84M (LÃI +73M VIP)</span>`;
                 } else if (h4Hits === 2) {
-                    ticketStatus = `<span class="inline-flex items-center gap-1 rounded bg-emerald-600 text-white px-2 py-0.5 text-xs font-black shadow-xs">✨ NỔ 2/4 · 1 VÉ X2 (${moneyM(lo4Xien4Info.profitK || 0, { signed: true })})</span>`;
+                    ticketStatus = `<span class="inline-flex items-center gap-1 rounded bg-emerald-600 text-white px-2 py-0.5 text-xs font-black shadow-xs">✨ ĂN 2 CON · ĂN 12M (LÃI +1M VIP)</span>`;
                 }
                 if (lo4Xien4Info.x3Tickets > 0) {
                     ticketStatus += `<div class="text-[10px] text-purple-700 font-bold mt-0.5">🎯 Nổ ${lo4Xien4Info.x3Tickets} vé Quây X3 (+${moneyM(lo4Xien4Info.x3ProfitK || 0)})</div>`;
@@ -5479,11 +5479,11 @@
             let lo4Xien4Tag = `<span class="inline-flex items-center gap-1 rounded bg-slate-100 text-slate-600 px-1 py-0.5 text-[10px] font-semibold">🛡️ Bỏ qua</span>`;
             if (lo4Xien4Info.status === 'ACTIVE') {
                 if (h4HitsUnified === 4) {
-                    lo4Xien4Tag = `<span class="rounded bg-amber-400 text-slate-950 px-1.5 py-0.5 text-[10px] font-black shadow-xs ring-1 ring-amber-500">👑 Nổ 4/4 (11 vé)</span>`;
+                    lo4Xien4Tag = `<span class="rounded bg-amber-400 text-slate-950 px-1.5 py-0.5 text-[10px] font-black shadow-xs ring-1 ring-amber-500">👑 Nổ 4 con</span>`;
                 } else if (h4HitsUnified === 3) {
-                    lo4Xien4Tag = `<span class="rounded bg-purple-600 text-white px-1.5 py-0.5 text-[10px] font-black shadow-xs">🔥 Nổ 3/4 (X3+X2)</span>`;
+                    lo4Xien4Tag = `<span class="rounded bg-purple-600 text-white px-1.5 py-0.5 text-[10px] font-black shadow-xs">🔥 Nổ 3 con</span>`;
                 } else if (h4HitsUnified === 2) {
-                    lo4Xien4Tag = `<span class="rounded bg-emerald-600 text-white px-1.5 py-0.5 text-[10px] font-black shadow-xs">✨ Nổ 2/4 (X2)</span>`;
+                    lo4Xien4Tag = `<span class="rounded bg-emerald-600 text-white px-1.5 py-0.5 text-[10px] font-black shadow-xs">✨ Nổ 2 con</span>`;
                 } else {
                     lo4Xien4Tag = `<span class="text-slate-500 text-[10px] font-semibold">Trượt (${h4HitsUnified}/4)</span>`;
                 }
@@ -5493,13 +5493,13 @@
             if (lo4Info.isHistoricalBaseline) {
                 xien4DetailSubtext = 'Giai đoạn trước 02/06';
             } else if (h4HitsUnified === 4) {
-                xien4DetailSubtext = '<span class="text-amber-700 font-bold">Ăn 1 X4 + 4 X3 + 6 X2</span>';
+                xien4DetailSubtext = '<span class="text-amber-700 font-bold">Ăn 384M (Lãi +373M)</span>';
             } else if (h4HitsUnified === 3) {
-                xien4DetailSubtext = '<span class="text-purple-700 font-bold">Ăn 1 vé X3 + 3 vé X2</span>';
+                xien4DetailSubtext = '<span class="text-purple-700 font-bold">Ăn 84M (Lãi +73M)</span>';
             } else if (h4HitsUnified === 2) {
-                xien4DetailSubtext = '<span class="text-emerald-700 font-bold">Ăn 1 vé X2 có lãi</span>';
+                xien4DetailSubtext = '<span class="text-emerald-700 font-bold">Ăn 12M (Lãi +1M)</span>';
             } else {
-                xien4DetailSubtext = `Về ${h4HitsUnified}/4 con · Trượt quây`;
+                xien4DetailSubtext = `Về ${h4HitsUnified}/4 con · Trượt (-11M)`;
             }
 
             const dayClass = r.dayTotalK > 0 ? 'bg-emerald-50/40' : (r.dayTotalK < -50000 ? 'bg-rose-50/20' : '');
@@ -6120,8 +6120,8 @@
                 if (top4ConsensusList.length >= 4) {
                     slipLines.push(
                         `━━━━━━━━━━━━━━━━━━━━━━━━━━`,
-                        `✨ 4. LÔ XIÊN QUÂY TINH HOA (Top 5 Đồng Thuận · Lãi +1.005 TỶ · Win 40.1%):`,
-                        `🎲 Bộ 4 Quây 11 Vé: ${top4ConsensusList.map(n => String(number(n)).padStart(2, '0')).join(' ')} (Vốn M3 2.2M / VIP 11M · Ăn từ 2 con)`,
+                        `✨ 4. LÔ XIÊN QUÂY TINH HOA (Top 5 Đồng Thuận · Lãi +2.523 TỶ VIP · Win 40.1%):`,
+                        `🎲 Bộ 4 Quây 11 Vé: ${top4ConsensusList.map(n => String(number(n)).padStart(2, '0')).join(' ')} (Vốn VIP 11M / M3 2.2M · Ăn 4: +373M · Ăn 3: +73M · Ăn 2: +1M)`,
                         top5ConsensusList.length >= 5 ? `🎯 Bộ 5 Quây 10 Vé X3: ${top5ConsensusList.map(n => String(number(n)).padStart(2, '0')).join(' ')} (Vốn 1.0M · Nổ X3 17.6%)` : '',
                         `━━━━━━━━━━━━━━━━━━━━━━━━━━`,
                         `📊 Hiệu suất dự kiến: ${cfg.roiLabel} · 100% Strict PIT`
@@ -6563,7 +6563,7 @@
                         xi4NumsEl.innerHTML = `
                             <div class="flex flex-col gap-2 w-full">
                                 <div class="rounded-xl bg-amber-500/15 border border-amber-400/40 p-2 text-center w-full">
-                                    <div class="text-[11px] font-black text-amber-300">🎲 BỘ 4 QUÂY 11 VÉ (LÃI +1.005 TỶ · WIN 40.1%)</div>
+                                    <div class="text-[11px] font-black text-amber-300">🎲 BỘ 4 QUÂY 11 VÉ (LÃI +2.523 TỶ VIP · WIN 40.1%)</div>
                                     <div class="flex items-center justify-center gap-1.5 mt-1.5">
                                         ${top4Nums.map(n => `
                                             <span class="inline-flex items-center justify-center rounded-lg bg-amber-400 text-slate-950 font-mono text-sm font-black px-2.5 py-1 shadow-md hover:scale-105 transition-all">
@@ -6571,7 +6571,7 @@
                                             </span>
                                         `).join('')}
                                     </div>
-                                    <div class="text-[10px] text-slate-300 mt-1">1 X4 + 4 X3 + 6 X2 · Ăn từ 2 con có lãi!</div>
+                                    <div class="text-[10px] text-slate-300 mt-1">Ăn 4 con: +373M · Ăn 3 con: +73M · Ăn 2 con: +1M VIP!</div>
                                 </div>
                                 ${top5Nums.length >= 5 ? `
                                 <div class="rounded-xl bg-purple-500/15 border border-purple-400/40 p-1.5 text-center w-full">
@@ -6720,7 +6720,13 @@
                             <div class="flex flex-col gap-1.5 w-full">
                                 <div class="rounded-xl ${h4Win ? 'bg-emerald-500/20 border-emerald-400/50' : 'bg-slate-800/60 border-slate-700'} border p-2 text-center w-full">
                                     <div class="text-[11px] font-black ${h4Win ? 'text-emerald-300' : 'text-slate-300'}">
-                                        ${h4Win ? `🎉 NỔ ${top5XienPastRow.h4}/4 CON (+${(top5XienPastRow.q11ProfitM3K/1000).toFixed(1)}M M3)` : `❌ Trượt (${top5XienPastRow.h4}/4 con)`}
+                                        ${top5XienPastRow.h4 === 4
+                                            ? `👑 ĂN 4 CON: ĂN 384M (LÃI +373M VIP)`
+                                            : (top5XienPastRow.h4 === 3
+                                                ? `🔥 ĂN 3 CON: ĂN 84M (LÃI +73M VIP)`
+                                                : (top5XienPastRow.h4 === 2
+                                                    ? `✨ ĂN 2 CON: ĂN 12M (LÃI +1M VIP)`
+                                                    : `❌ Trượt (${top5XienPastRow.h4}/4 con)`))}
                                     </div>
                                     <div class="flex items-center justify-center gap-1 mt-1">
                                         ${top5XienPastRow.top4.map(n => `
