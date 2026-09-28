@@ -480,41 +480,73 @@
                         </div>
                     </div>
 
-                    <!-- Phân Tích Luân Phiên & Lực Nảy Hôm Nay (Alternating Momentum Box) -->
-                    <div class="mt-5 rounded-2xl bg-white/5 border border-white/10 p-4 text-xs">
+                    <!-- Phân Tích Luân Phiên & Lực Nảy Toán Học (Alternating Momentum Box) -->
+                    <div class="mt-5 rounded-2xl bg-white/5 border border-white/10 p-4 text-xs" id="alternatingMomentumBox">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-2.5">
                             <div class="flex items-center gap-2">
                                 <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-400 text-slate-950 font-black text-xs">
                                     💡
                                 </span>
                                 <strong class="text-white text-xs font-black uppercase tracking-wide">
-                                    Nguyên Lý Luân Phiên Toán Học &amp; Chỉ Dẫn Vào Tiền Hôm Nay
+                                    Nguyên Lý Luân Phiên Toán Học &amp; Chỉ Dẫn Vào Tiền <span id="momentumBoxTargetDate">Hôm Nay</span>
                                 </strong>
                             </div>
-                            <span class="text-[11px] text-amber-300 font-mono font-bold">
-                                Cập nhật trước 12:00 trưa hàng ngày
+                            <span class="text-[11px] text-amber-300 font-mono font-bold" id="momentumBoxUpdateBadge">
+                                Cập nhật tự động theo chuỗi thắng/thua từng ngày
                             </span>
                         </div>
                         <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px] leading-relaxed">
                             <div class="rounded-xl bg-amber-500/10 border border-amber-400/20 p-3">
-                                <strong class="text-amber-300 font-bold block mb-1">
-                                    💎 ĐỀ: Sau Khi Trúng Lớn (21/09 trúng 32 X2 +108M):
+                                <strong class="text-amber-300 font-bold block mb-1" id="momentumBoxDeTitle">
+                                    💎 ĐỀ: Phân Tích Xung Lực &amp; Điểm Rơi:
                                 </strong>
-                                <p class="text-slate-300">
-                                    Dữ liệu lịch sử cho thấy xác suất trượt ngày hôm sau khi vừa nổ lớn là <strong>55.6%</strong>. <br>
-                                    👉 <strong>Khuyến nghị:</strong> Không gấp thếp vốn. Nên chọn <strong>Gói 1</strong> nếu muốn săn tiếp nhịp đà thắng bằng cược phân tầng chuẩn, hoặc chuyển sang <strong>Gói 2 (AI Governor)</strong> với cược phẳng 1.0 an toàn để bảo vệ 108M lợi nhuận vừa đạt được.
+                                <p class="text-slate-300" id="momentumBoxDeText">
+                                    Đang phân tích chuỗi đà nổ và xác suất duy trì...
                                 </p>
                             </div>
                             <div class="rounded-xl bg-teal-500/10 border border-teal-400/20 p-3">
-                                <strong class="text-teal-300 font-bold block mb-1">
-                                    🎰 LÔ: Sau Khi Vừa Trượt Kỳ Trước (21/09 Quad Top 7 về 0/7):
+                                <strong class="text-teal-300 font-bold block mb-1" id="momentumBoxLoTitle">
+                                    🎰 LÔ: Phân Tích Độ Phủ &amp; Xác Suất Nổ Bù:
                                 </strong>
-                                <p class="text-slate-300">
-                                    Theo khảo sát chuỗi Markov 260 kỳ 2026: Khi Quad-Fusion vừa trượt 1 ngày, xác suất nổ bù lội ngược dòng ngày kế tiếp đạt đỉnh <strong>76.4% - 84.6%</strong>! <br>
-                                    👉 <strong>Khuyến nghị:</strong> Tự tin nâng cược <strong>x1.2 đến x1.4</strong> cho Dàn Thất Thủ Top 7 (Gói 1 hoặc Gói 2) để bắt trọn nhịp nổ bù có lãi cao nhất.
+                                <p class="text-slate-300" id="momentumBoxLoText">
+                                    Đang phân tích nhịp nảy và trạng thái đồng thuận...
                                 </p>
                             </div>
                         </div>
+                    </div>
+                </section>
+
+                <!-- ========================================================================= -->
+                <!-- BỘ CHỌN NGÀY XEM ĐỀ XUẤT, GIẢI THÍCH & DÀN SỐ ĐÁNH (CẬP NHẬT TỪNG NGÀY)     -->
+                <!-- ========================================================================= -->
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border-2 border-amber-400/50 p-4 rounded-3xl shadow-xl" id="dailyAdvisorDateSwitcherBox">
+                    <div class="flex items-center gap-3">
+                        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-amber-400 to-amber-500 text-slate-950 font-black text-lg shadow-md">
+                            📅
+                        </span>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[10px] font-black px-2.5 py-0.5 uppercase tracking-wide">
+                                    CHỌN NGÀY XEM ĐỀ XUẤT &amp; GIẢI THÍCH
+                                </span>
+                                <span class="text-xs text-emerald-300 font-bold" id="selectedDateStatusBadge">
+                                    🔒 Ngày mới nhất (Chờ mở thưởng)
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-300 mt-0.5">
+                                Cập nhật giải thích lý do AI chọn, phương pháp đề xuất và dàn số đánh chuẩn xác theo từng ngày.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <label for="dailyAdvisorDateSelect" class="text-xs font-bold text-amber-300">Kỳ ngày:</label>
+                        <select id="dailyAdvisorDateSelect" class="rounded-xl bg-slate-950 border-2 border-amber-400 text-amber-300 font-mono text-xs font-black px-3.5 py-2 transition-all focus:ring-2 focus:ring-amber-300 shadow-md">
+                        </select>
+                        <button type="button" id="btnResetToLatestDate" class="rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs px-3 py-2 transition-all shadow-md flex items-center gap-1">
+                            <i class="bi bi-clock-history"></i> Mới nhất
+                        </button>
+                    </div>
+                </div>
                 <!-- ========================================================================= -->
                 <!-- 👑 DÀN SỐ ĐÁNH CUỐI CÙNG — SIÊU HỘI TỤ ĐA PHƯƠNG PHÁP TỐI ƯU NHẤT HÔM NAY  -->
                 <!-- ========================================================================= -->
@@ -564,6 +596,9 @@
                                 </div>
                                 
                                 <div class="mt-3 space-y-2.5">
+                                    <p id="finalDeRationale" class="text-[11px] text-amber-200/90 italic mb-2 leading-relaxed">
+                                        Đang tải lý do AI chọn...
+                                    </p>
                                     <div class="rounded-xl bg-black/40 border border-amber-400/30 p-2.5">
                                         <div class="flex items-center justify-between text-xs font-bold text-amber-300 mb-1.5">
                                             <span id="finalDeVipLabel">⚡ VIP X2 (23 số - Cược Gấp Đôi):</span>
@@ -596,45 +631,60 @@
                             </div>
                         </div>
 
-                        <!-- Column 2: Lô Ghép Tầng Tam Trụ -->
+                        <!-- Column 2: Lô Chủ Lực Đề Xuất Duy Nhất -->
                         <div class="rounded-2xl bg-teal-950/30 border border-teal-400/40 p-4 flex flex-col justify-between">
                             <div>
                                 <div class="flex items-center justify-between border-b border-teal-400/20 pb-2.5">
                                     <span class="text-xs font-black text-teal-300 uppercase flex items-center gap-1.5">
-                                        <i class="bi bi-dice-5-fill"></i> <span id="finalLoBoxTitle">2. Lô Tam Trụ X3/X2/X1 (8s)</span>
+                                        <i class="bi bi-dice-5-fill"></i> <span id="finalLoBoxTitle">2. Lô Chủ Lực Đề Xuất Duy Nhất</span>
                                     </span>
-                                    <span class="rounded bg-teal-400/20 text-teal-200 border border-teal-400/30 text-[10px] font-bold px-1.5 py-0.5" id="finalLoWinRateBadge">Nổ 98.5% Ngày</span>
+                                    <span class="rounded bg-teal-400/20 text-teal-200 border border-teal-400/30 text-[10px] font-bold px-1.5 py-0.5" id="finalLoWinRateBadge">Win 79.7%</span>
                                 </div>
 
                                 <div class="mt-3 space-y-2">
-                                    <div class="rounded-xl bg-black/40 border border-teal-400/30 p-2.5">
+                                    <!-- Dàn Lô Duy Nhất của Bộ Điều Phối Thông Minh (Smart Selective Router) -->
+                                    <div class="rounded-xl bg-teal-500/15 border border-teal-400/50 p-3" id="finalLoSmartRouterBox">
                                         <div class="flex items-center justify-between text-xs font-bold text-teal-300 mb-1.5">
-                                            <span id="finalLoX3Label">⚡ Hạt Nhân X3 (6 số - 3 Động Cơ Đồng Thuận):</span>
+                                            <span id="finalLoSmartBadge" class="uppercase font-black tracking-wide">🛡️ LÔ NỀN TẢNG TOP 7 THẤT THỦ</span>
+                                            <button type="button" id="btnCopyFinalLoSmart" class="text-[10px] font-bold text-teal-200 bg-teal-900/60 border border-teal-400/40 px-2 py-0.5 rounded hover:bg-teal-800 transition-all">Copy</button>
+                                        </div>
+                                        <p id="finalLoSmartRationale" class="text-[11px] text-teal-200/90 italic mb-2 leading-relaxed">
+                                            Đang tải lý do AI chọn...
+                                        </p>
+                                        <div id="finalLoSmartNums" class="flex flex-wrap gap-1.5 font-mono text-sm font-black text-teal-200"></div>
+                                        <div class="mt-2.5 pt-1.5 border-t border-teal-400/30 flex items-center justify-between text-[11px] text-teal-200" id="finalLoSmartMeta">
+                                            <span>Vốn M3: <strong class="text-white">3.85M</strong> (25đ)</span>
+                                            <span>Hòa vốn: <strong class="text-amber-300">2 nháy</strong></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="rounded-xl bg-black/40 border border-teal-400/30 p-2.5" id="finalLoX3Row" style="display: none;">
+                                        <div class="flex items-center justify-between text-xs font-bold text-teal-300 mb-1.5">
+                                            <span id="finalLoX3Label">⚡ Hạt Nhân X3:</span>
                                             <button type="button" id="btnCopyFinalLoX3" class="text-[10px] font-bold text-teal-400 hover:underline">Copy</button>
                                         </div>
                                         <div id="finalLoX3Nums" class="flex flex-wrap gap-1 font-mono text-xs font-black text-teal-200"></div>
                                     </div>
 
-                                    <div class="rounded-xl bg-white/5 border border-white/10 p-2.5" id="finalLoX2Row">
+                                    <div class="rounded-xl bg-white/5 border border-white/10 p-2.5" id="finalLoX2Row" style="display: none;">
                                         <div class="flex items-center justify-between text-xs font-bold text-cyan-300 mb-1.5">
-                                            <span id="finalLoX2Label">🔥 Mũi Nhọn X2 (1 số):</span>
+                                            <span id="finalLoX2Label">🔥 Mũi Nhọn X2:</span>
                                             <button type="button" id="btnCopyFinalLoX2" class="text-[10px] font-bold text-cyan-400 hover:underline">Copy</button>
                                         </div>
                                         <div id="finalLoX2Nums" class="flex flex-wrap gap-1 font-mono text-xs font-bold text-cyan-200"></div>
                                     </div>
 
-                                    <div class="rounded-xl bg-white/5 border border-white/10 p-2.5" id="finalLoX1Row">
+                                    <div class="rounded-xl bg-white/5 border border-white/10 p-2.5" id="finalLoX1Row" style="display: none;">
                                         <div class="flex items-center justify-between text-xs font-bold text-slate-300 mb-1.5">
-                                            <span id="finalLoX1Label">🛡️ Bảo Hiểm X1 (1 số):</span>
+                                            <span id="finalLoX1Label">🛡️ Bảo Hiểm X1:</span>
                                             <button type="button" id="btnCopyFinalLoX1" class="text-[10px] font-bold text-slate-300 hover:underline">Copy</button>
                                         </div>
                                         <div id="finalLoX1Nums" class="flex flex-wrap gap-1 font-mono text-xs font-bold text-slate-300"></div>
                                     </div>
 
-                                    <!-- DÀN NỀN TẢNG: TOP 20 MỎ NEO (NỔ 100% CÁC NGÀY 2026) -->
-                                    <div class="rounded-xl bg-blue-950/40 border border-blue-400/30 p-2.5" id="finalLoTop20Row">
+                                    <div class="rounded-xl bg-blue-950/40 border border-blue-400/30 p-2.5" id="finalLoTop20Row" style="display: none;">
                                         <div class="flex items-center justify-between text-xs font-bold text-blue-300 mb-1.5">
-                                            <span id="finalLoTop20Label">⚓ Mỏ Neo Nền Tảng (Top 20 Số · Nổ 100% Ngày · ≥ 5 Nháy 87.8%):</span>
+                                            <span id="finalLoTop20Label">⚓ Mỏ Neo Nền Tảng (Top 20 Số):</span>
                                             <button type="button" id="btnCopyFinalLoTop20" class="text-[10px] font-bold text-blue-400 hover:underline">Copy</button>
                                         </div>
                                         <div id="finalLoTop20Nums" class="flex flex-wrap gap-1 font-mono text-[11px] font-bold text-blue-200"></div>
@@ -643,8 +693,8 @@
                             </div>
 
                             <div class="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between text-[11px] text-teal-200/80">
-                                <span>Lãi 2026: <strong class="text-teal-300 font-bold">+4.167 TỶ VNĐ</strong></span>
-                                <span>Ăn 8M/nháy VIP</span>
+                                <span>Lãi 2026: <strong class="text-teal-300 font-bold" id="finalLoProfitSummary">+415.9M M3 / +1.663 TỶ VIP</strong></span>
+                                <span id="finalLoHitRule">Ăn từ 2 nháy có lãi</span>
                             </div>
                         </div>
 
@@ -703,6 +753,8 @@
                     </div>
                 </section>
 
+                <!-- Legacy Exploratory Sections (Card 1, Card 2, Coordinated Hub) - Hidden to keep only Final Optimal Recommendation -->
+                <div id="legacyExploratorySections" class="hidden" style="display: none;">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <!-- CARD 1: ĐỀ XUẤT ĐÁNH ĐỀ TỐT NHẤT -->
                     <div class="rounded-3xl border-2 border-amber-300 bg-gradient-to-b from-amber-50/60 via-white to-white p-6 shadow-md flex flex-col justify-between">
@@ -1343,6 +1395,7 @@
                     </div>
                 </div>
             </section>
+            </div><!-- /#legacyExploratorySections -->
 
             <!-- ========================================================================= -->
             <!-- MA TRẬN BÙ TRỪ & KHO VŨ KHÍ PHƯƠNG PHÁP ĐỔI PHA (STRICT PIT) -->
