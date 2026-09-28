@@ -417,12 +417,9 @@ async function main() {
         assert.match(sheetM3, /BẢNG TÍNH TOÁN LỖ\/LÃI CHI TIẾT — MỨC 3: ĐỀ 200K\/SỐ · LÔ 25Đ\/SỐ/);
         assert.match(sheetM3, /1\. 💎 ĐỀ TINH HOA/);
         assert.match(sheetM3, /VIP X2/);
-        assert.match(sheetM3, /Lót X1/);
         assert.match(sheetM3, /2\. 🏆 LÔ CHUẨN/);
         assert.match(sheetM3, /25 điểm \/ số/);
-        assert.match(sheetM3, /3\. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO/);
-        assert.match(sheetM3, /25 điểm \/ số/);
-        assert.match(sheetM3, /4\. 💎 LÔ XIÊN 4 TINH HOA \(QUÂY 11 VÉ\)/);
+        assert.match(sheetM3, /💎 LÔ XIÊN 4 TINH HOA \(QUÂY 11 VÉ\)/);
         assert.match(sheetM3, /200K \/ vé/);
         assert.match(sheetM3, /TỔNG VỐN ĐẦU TƯ TRỌN GÓI HÔM NAY:.*?VNĐ/);
         assert.ok(!sheetM3.includes('LÔ XIÊN 2 CHIẾN LƯỢC'), 'Bảng tính cược không được chứa Lô Xiên 2');

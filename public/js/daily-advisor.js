@@ -5881,109 +5881,123 @@
                 }
                 slipLines.push(`━━━━━━━━━━━━━━━━━━━━━━━━━━`);
 
-                const lo4Adv = fullData?.lo4EngineFusion?.latestRecommendation || payload?.lo4EngineFusion?.latestRecommendation;
-                if (cfg.id === 'maxProfit' && lo4Adv && lo4Adv.betNumbers?.length) {
-                    const tierX4List = [...(lo4Adv.tierX5 || []), ...(lo4Adv.tierX4 || [])];
-                    const tierX3List = lo4Adv.tierX3 || [];
-                    const tierX1List = lo4Adv.tierX1 || [];
-                    const distinctLo = lo4Adv.allNumbers || lo4Adv.distinctNumbers || lo4Adv.numbersOver2 || [];
-                    const btcLo = tierX4List[0] || distinctLo[0] || '22';
-                    const stcLo = (tierX4List.length >= 2 ? [tierX4List[0], tierX4List[1]] : distinctLo.slice(0, 2)).join(' - ');
-
+                const smartLo = cfg.loStructure?.selectedLo || fullData?.strategicPortfolioGovernor?.smartSelectedLo;
+                if (smartLo) {
                     slipLines.push(
-                        `🎰 2. LÔ TỔNG HỢP 4 ĐỘNG CƠ THỰC CHIẾN (Top 6/7 Live: QMBF + Bạc Nhớ + 3 Động Cơ + RRF):`,
-                        `👑 BẠCH THỦ: ${btcLo} · SONG THỦ VIP: ${stcLo}`,
+                        `🎰 2. LÔ CHỦ LỰC ĐỀ XUẤT DUY NHẤT — ${smartLo.name.toUpperCase()}:`,
+                        `🎯 ${smartLo.badge}`,
+                        `💡 Lý do AI lựa chọn: ${smartLo.rationale}`,
                         ``,
-                        `🔥 TẦNG CỰC VIP CƯỢC X4 (Trùng 3-4 PP - 400đ [8.8M/số] · ${tierX4List.length} số):`,
-                        tierX4List.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                        `📋 Dàn Lô Đánh (${smartLo.numbers.length} số · Chi Phí Siêu Thấp):`,
+                        smartLo.numbers.map(n => String(number(n)).padStart(2, '0')).join(' '),
                         ``,
-                        `⚡ TẦNG TRIỂN VỌNG CƯỢC X3 (Trùng 2 PP - 300đ [6.6M/số] · ${tierX3List.length} số):`,
-                        tierX3List.map(n => String(number(n)).padStart(2, '0')).join(' '),
-                        ``,
-                        `🛡️ TẦNG BẢO HIỂM CƯỢC X1 (Các số không trùng - 100đ [2.2M/số] · ${tierX1List.length} số):`,
-                        tierX1List.map(n => String(number(n)).padStart(2, '0')).join(' '),
-                        ``,
-                        `📋 Toàn bộ dàn Lô Tổng Hợp 4 Động Cơ (${distinctLo.length}s):`,
-                        distinctLo.map(n => String(number(n)).padStart(2, '0')).join(' '),
-                        `💰 Vốn Lô: ${moneyM(lo4Adv.totalLotoStakeK)} (3.600đ · 65 kỳ lãi +1.094 TỶ, Live +150M)`
-                    );
-                } else if (cfg.id === 'maxProfit' && crossOpt && (crossOpt.overlapX3 || crossOpt.overlapX2)) {
-                    const x3List = crossOpt.overlapX3 || [];
-                    const x2List = crossOpt.overlapX2 || [];
-                    const x1List = crossOpt.singlesX1 || [];
-                    const distinctLo = crossOpt.distinctNumbers || [];
-                    const btcLo = x3List[0] || distinctLo[0] || '22';
-                    const stcLo = (x3List.length >= 2 ? [x3List[0], x3List[1]] : distinctLo.slice(0, 2)).join(' - ');
-
-                    slipLines.push(
-                        `🎰 2. LÔ TAM TRỤ ĐA TẦNG X3/X2/X1 (${distinctLo.length} số · Vốn M3 11.55M / VIP 46.2M):`,
-                        `👑 BẠCH THỦ: ${btcLo} · SONG THỦ VIP: ${stcLo}`,
-                        ``,
-                        `⚡ HẠT NHÂN CƯỢC X3 (Tam Động Cơ Đồng Thuận - ${x3List.length} số · M3 75đ [1.65M] / VIP 300đ [6.6M]):`,
-                        x3List.map(n => String(number(n)).padStart(2, '0')).join(' '),
-                        ``
-                    );
-                    if (x2List.length > 0) {
-                        slipLines.push(
-                            `🔥 MŨI NHỌN CƯỢC X2 (Song Động Cơ Đồng Thuận - ${x2List.length} số · M3 50đ [1.1M] / VIP 200đ [4.4M]):`,
-                            x2List.map(n => String(number(n)).padStart(2, '0')).join(' '),
-                            ``
-                        );
-                    }
-                    if (x1List.length > 0) {
-                        slipLines.push(
-                            `🛡️ BẢO HIỂM CƯỢC X1 (${x1List.length} số · M3 25đ [550K] / VIP 100đ [2.2M]):`,
-                            x1List.map(n => String(number(n)).padStart(2, '0')).join(' '),
-                            ``
-                        );
-                    }
-                    slipLines.push(
-                        `📋 Toàn bộ dàn Lô Tam Trụ (${distinctLo.length}s):`,
-                        distinctLo.map(n => String(number(n)).padStart(2, '0')).join(' ')
-                    );
-                } else if (cfg.id === 'smartAlternating' && compactOpt && compactOpt.overlapX2) {
-                    const x2List = compactOpt.overlapX2 || [];
-                    const x1List = compactOpt.singlesX1 || [];
-                    const distinctLo = compactOpt.distinctNumbers || [];
-                    slipLines.push(
-                        `🎰 2. LÔ GHÉP BA TINH GỌN (${distinctLo.length} số · Vốn M3 6.05M / VIP 24.2M):`,
-                        `🔥 MŨI NHỌN CƯỢC X2 (${x2List.length} số · M3 50đ [1.1M] / VIP 200đ [4.4M]):`,
-                        x2List.map(n => String(number(n)).padStart(2, '0')).join(' '),
-                        ``,
-                        `🛡️ BẢO HIỂM CƯỢC X1 (${x1List.length} số · M3 25đ [550K] / VIP 100đ [2.2M]):`,
-                        x1List.map(n => String(number(n)).padStart(2, '0')).join(' '),
-                        ``,
-                        `📋 Toàn bộ dàn Lô (${distinctLo.length}s):`,
-                        distinctLo.map(n => String(number(n)).padStart(2, '0')).join(' ')
-                    );
-                } else if (cfg.id === 'contrarianAntiTrap' || cfg.id === 'antiNoiseResonance') {
-                    slipLines.push(
-                        `🎰 2. LÔ CẦU ĐỒ THỊ KHÁNG BẪY (Top ${currentLoNums.length}s · Vốn M3 3.85M / VIP 15.4M):`,
-                        `🕸️ CẦU LIÊN KẾT 54 VỊ TRÍ CHỮ SỐ XSMB:`,
-                        currentLoNums.map(n => String(number(n)).padStart(2, '0')).join(' ')
-                    );
-                } else if (cfg.id === 'steadyAccumulator') {
-                    slipLines.push(
-                        `🎰 2. LÔ THẤT THỦ AN TOÀN (Top ${currentLoNums.length}s cược phẳng 25đ · Vốn M3 3.85M / VIP 15.4M · Win 79.1%):`,
-                        currentLoNums.map(n => String(number(n)).padStart(2, '0')).join(' ')
+                        `💰 Vốn Lô: Mức 3 (25đ) = ${(smartLo.stakeDailyK_M3 / 1000).toFixed(2)}M · Mức VIP (100đ) = ${(smartLo.stakeDailyK_VIP / 1000).toFixed(1)}M (Ăn ${smartLo.hitsToProfit} nháy có lãi ròng)`
                     );
                 } else {
-                    slipLines.push(
-                        `🎰 2. LÔ TĂNG TỐC (Top ${currentLoNums.length} · ${(currentLoNums.length * 2.2).toFixed(1)}M):`,
-                        currentLoNums.map(n => String(number(n)).padStart(2, '0')).join(' '),
-                        ``,
-                        `⚡ SỐ TRÙNG ĐÁNH X2 (Cộng dồn 200đ / 4.4M mỗi số):`,
-                        overlapNums.length ? overlapNums.map(n => String(number(n)).padStart(2, '0')).join(' ') : '(Không có số trùng)'
-                    );
-                }
+                    const lo4Adv = fullData?.lo4EngineFusion?.latestRecommendation || payload?.lo4EngineFusion?.latestRecommendation;
+                    if (cfg.id === 'maxProfit' && lo4Adv && lo4Adv.betNumbers?.length) {
+                        const tierX4List = [...(lo4Adv.tierX5 || []), ...(lo4Adv.tierX4 || [])];
+                        const tierX3List = lo4Adv.tierX3 || [];
+                        const tierX1List = lo4Adv.tierX1 || [];
+                        const distinctLo = lo4Adv.allNumbers || lo4Adv.distinctNumbers || lo4Adv.numbersOver2 || [];
+                        const btcLo = tierX4List[0] || distinctLo[0] || '22';
+                        const stcLo = (tierX4List.length >= 2 ? [tierX4List[0], tierX4List[1]] : distinctLo.slice(0, 2)).join(' - ');
 
-                // Dàn Mỏ Neo Nền Tảng (Top 20 số - Nổ 100% các ngày 2026)
-                if (top20Anchor && top20Anchor.length > 0) {
-                    slipLines.push(
-                        ``,
-                        `⚓ 3. LÔ MỎ NEO NỀN TẢNG (Top ${top20Anchor.length} · Nổ 100% Ngày 2026 · ≥ 5 Nháy 87.8%):`,
-                        top20Anchor.map(n => String(number(n)).padStart(2, '0')).join(' ')
-                    );
+                        slipLines.push(
+                            `🎰 2. LÔ TỔNG HỢP 4 ĐỘNG CƠ THỰC CHIẾN (Top 6/7 Live: QMBF + Bạc Nhớ + 3 Động Cơ + RRF):`,
+                            `👑 BẠCH THỦ: ${btcLo} · SONG THỦ VIP: ${stcLo}`,
+                            ``,
+                            `🔥 TẦNG CỰC VIP CƯỢC X4 (Trùng 3-4 PP - 400đ [8.8M/số] · ${tierX4List.length} số):`,
+                            tierX4List.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                            ``,
+                            `⚡ TẦNG TRIỂN VỌNG CƯỢC X3 (Trùng 2 PP - 300đ [6.6M/số] · ${tierX3List.length} số):`,
+                            tierX3List.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                            ``,
+                            `🛡️ TẦNG BẢO HIỂM CƯỢC X1 (Các số không trùng - 100đ [2.2M/số] · ${tierX1List.length} số):`,
+                            tierX1List.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                            ``,
+                            `📋 Toàn bộ dàn Lô Tổng Hợp 4 Động Cơ (${distinctLo.length}s):`,
+                            distinctLo.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                            `💰 Vốn Lô: ${moneyM(lo4Adv.totalLotoStakeK)} (3.600đ · 65 kỳ lãi +1.094 TỶ, Live +150M)`
+                        );
+                    } else if (cfg.id === 'maxProfit' && crossOpt && (crossOpt.overlapX3 || crossOpt.overlapX2)) {
+                        const x3List = crossOpt.overlapX3 || [];
+                        const x2List = crossOpt.overlapX2 || [];
+                        const x1List = crossOpt.singlesX1 || [];
+                        const distinctLo = crossOpt.distinctNumbers || [];
+                        const btcLo = x3List[0] || distinctLo[0] || '22';
+                        const stcLo = (x3List.length >= 2 ? [x3List[0], x3List[1]] : distinctLo.slice(0, 2)).join(' - ');
+
+                        slipLines.push(
+                            `🎰 2. LÔ TAM TRỤ ĐA TẦNG X3/X2/X1 (${distinctLo.length} số · Vốn M3 11.55M / VIP 46.2M):`,
+                            `👑 BẠCH THỦ: ${btcLo} · SONG THỦ VIP: ${stcLo}`,
+                            ``,
+                            `⚡ HẠT NHÂN CƯỢC X3 (Tam Động Cơ Đồng Thuận - ${x3List.length} số · M3 75đ [1.65M] / VIP 300đ [6.6M]):`,
+                            x3List.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                            ``
+                        );
+                        if (x2List.length > 0) {
+                            slipLines.push(
+                                `🔥 MŨI NHỌN CƯỢC X2 (Song Động Cơ Đồng Thuận - ${x2List.length} số · M3 50đ [1.1M] / VIP 200đ [4.4M]):`,
+                                x2List.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                                ``
+                            );
+                        }
+                        if (x1List.length > 0) {
+                            slipLines.push(
+                                `🛡️ BẢO HIỂM CƯỢC X1 (${x1List.length} số · M3 25đ [550K] / VIP 100đ [2.2M]):`,
+                                x1List.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                                ``
+                            );
+                        }
+                        slipLines.push(
+                            `📋 Toàn bộ dàn Lô Tam Trụ (${distinctLo.length}s):`,
+                            distinctLo.map(n => String(number(n)).padStart(2, '0')).join(' ')
+                        );
+                    } else if (cfg.id === 'smartAlternating' && compactOpt && compactOpt.overlapX2) {
+                        const x2List = compactOpt.overlapX2 || [];
+                        const x1List = compactOpt.singlesX1 || [];
+                        const distinctLo = compactOpt.distinctNumbers || [];
+                        slipLines.push(
+                            `🎰 2. LÔ GHÉP BA TINH GỌN (${distinctLo.length} số · Vốn M3 6.05M / VIP 24.2M):`,
+                            `🔥 MŨI NHỌN CƯỢC X2 (${x2List.length} số · M3 50đ [1.1M] / VIP 200đ [4.4M]):`,
+                            x2List.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                            ``,
+                            `🛡️ BẢO HIỂM CƯỢC X1 (${x1List.length} số · M3 25đ [550K] / VIP 100đ [2.2M]):`,
+                            x1List.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                            ``,
+                            `📋 Toàn bộ dàn Lô (${distinctLo.length}s):`,
+                            distinctLo.map(n => String(number(n)).padStart(2, '0')).join(' ')
+                        );
+                    } else if (cfg.id === 'contrarianAntiTrap' || cfg.id === 'antiNoiseResonance') {
+                        slipLines.push(
+                            `🎰 2. LÔ CẦU ĐỒ THỊ KHÁNG BẪY (Top ${currentLoNums.length}s · Vốn M3 3.85M / VIP 15.4M):`,
+                            `🕸️ CẦU LIÊN KẾT 54 VỊ TRÍ CHỮ SỐ XSMB:`,
+                            currentLoNums.map(n => String(number(n)).padStart(2, '0')).join(' ')
+                        );
+                    } else if (cfg.id === 'steadyAccumulator') {
+                        slipLines.push(
+                            `🎰 2. LÔ THẤT THỦ AN TOÀN (Top ${currentLoNums.length}s cược phẳng 25đ · Vốn M3 3.85M / VIP 15.4M · Win 79.1%):`,
+                            currentLoNums.map(n => String(number(n)).padStart(2, '0')).join(' ')
+                        );
+                    } else {
+                        slipLines.push(
+                            `🎰 2. LÔ TĂNG TỐC (Top ${currentLoNums.length} · ${(currentLoNums.length * 2.2).toFixed(1)}M):`,
+                            currentLoNums.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                            ``,
+                            `⚡ SỐ TRÙNG ĐÁNH X2 (Cộng dồn 200đ / 4.4M mỗi số):`,
+                            overlapNums.length ? overlapNums.map(n => String(number(n)).padStart(2, '0')).join(' ') : '(Không có số trùng)'
+                        );
+                    }
+
+                    // Dàn Mỏ Neo Nền Tảng (Top 20 số - Nổ 100% các ngày 2026)
+                    if (top20Anchor && top20Anchor.length > 0) {
+                        slipLines.push(
+                            ``,
+                            `⚓ 3. LÔ MỎ NEO NỀN TẢNG (Top ${top20Anchor.length} · Nổ 100% Ngày 2026 · ≥ 5 Nháy 87.8%):`,
+                            top20Anchor.map(n => String(number(n)).padStart(2, '0')).join(' ')
+                        );
+                    }
                 }
 
                 if (cfg.id === 'maxProfit' && lo4Adv?.xien4?.status === 'SKIPPED_TOO_MANY') {
