@@ -2201,11 +2201,20 @@ async function handleRequest(request, env) {
   }
   if (request.method === 'GET' && url.pathname === '/telegram/status') {
     if (!isAuthorizedRequest(request, env)) return json({ ok: false, error: 'Unauthorized' }, 401);
+    const me = await telegramApi(env, 'getMe').catch(err => ({ error: err.message }));
+    const webhookInfo = await telegramApi(env, 'getWebhookInfo').catch(err => ({ error: err.message }));
+    const chatId = await resolveTelegramChatId(env);
+    const chatInfo = chatId ? await telegramApi(env, 'getChat', { chat_id: chatId }).catch(err => ({ error: err.message })) : null;
+    const lastSent = await env.TELEGRAM_STATE?.get(TELEGRAM_LAST_SENT_KEY).catch(err => err.message);
     return json({
       ok: true,
       configured: Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_WEBHOOK_SECRET),
-      chatRegistered: Boolean(await resolveTelegramChatId(env)),
-      lastSentPredictionDate: await env.TELEGRAM_STATE?.get(TELEGRAM_LAST_SENT_KEY) || null
+      chatRegistered: Boolean(chatId),
+      chatId: chatId,
+      chatInfo: chatInfo,
+      botMe: me,
+      webhookInfo: webhookInfo,
+      lastSentPredictionDate: lastSent || null
     });
   }
   return json({ ok: false, error: 'Not found' }, 404);
