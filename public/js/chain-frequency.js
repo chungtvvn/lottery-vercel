@@ -561,10 +561,17 @@
     }
 
     function renderLiveRows() {
-        const rows = (state.payload?.livePredictions?.predictions || [])
+        const allPredictions = state.payload?.livePredictions?.predictions || [];
+        const limit = state.liveLimit || 90;
+        const rows = allPredictions
             .slice()
             .sort((a, b) => String(b.predictionIsoDate).localeCompare(String(a.predictionIsoDate)))
-            .slice(0, 30);
+            .slice(0, limit);
+
+        const countEl = el('liveDaysCount');
+        if (countEl) {
+            countEl.textContent = limit >= allPredictions.length ? `${rows.length} ngày (tất cả)` : `${rows.length} ngày`;
+        }
         const key = getResultKey();
         el('liveRows').innerHTML = rows.map(row => {
             const rawResult = row.results?.[key];
@@ -739,7 +746,12 @@
 
     function summarizeLiveByPreset() {
         const presets = state.payload?.config?.presets || [];
-        const liveRows = state.payload?.livePredictions?.predictions || [];
+        const allLiveRows = state.payload?.livePredictions?.predictions || [];
+        const limit = state.liveLimit || 90;
+        const liveRows = allLiveRows
+            .slice()
+            .sort((a, b) => String(b.predictionIsoDate).localeCompare(String(a.predictionIsoDate)))
+            .slice(0, limit);
         return presets.map(preset => {
             const key = `${preset.strategy}:hold${preset.target}`;
             const item = {
@@ -1112,6 +1124,20 @@
         el('winMultiplierSelect')?.addEventListener('change', event => {
             state.winMultiplier = normalizeWinMultiplier(event.target.value);
             render();
+        });
+        document.querySelectorAll('.live-limit-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                state.liveLimit = Number(btn.dataset.limit) || 90;
+                document.querySelectorAll('.live-limit-btn').forEach(b => {
+                    if (Number(b.dataset.limit) === state.liveLimit) {
+                        b.className = 'live-limit-btn px-3 py-1.5 rounded-lg transition bg-amber-500 text-white shadow-xs';
+                    } else {
+                        b.className = 'live-limit-btn px-3 py-1.5 rounded-lg transition text-slate-600 hover:bg-slate-100';
+                    }
+                });
+                renderLiveSummary();
+                renderLiveRows();
+            });
         });
         loadData();
     });

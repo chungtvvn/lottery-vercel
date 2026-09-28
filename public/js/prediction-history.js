@@ -823,7 +823,7 @@
             if (window.AppConfig && typeof window.AppConfig.checkAndClearCacheOnNewData === 'function') {
                 await window.AppConfig.checkAndClearCacheOnNewData();
             }
-            const historyRes = await fetch(`/api/prediction/history?limit=90&v=5&_t=${Date.now()}`, { cache: 'no-store' });
+            const historyRes = await fetch(`/api/prediction/history?limit=120&v=6&_t=${Date.now()}`, { cache: 'no-store' });
             const data = await historyRes.json();
             if (!historyRes.ok) throw new Error(data?.error || 'Không thể tải cache Lịch sử từ R2.');
             if (data && data.success && Array.isArray(data.history)) {
@@ -853,7 +853,12 @@
     function renderDashboard() {
         showError('');
         renderPerformanceReport();
-        const history = state.history;
+        const historyLimit = state.historyLimit || 90;
+        const history = (state.history || []).slice(0, historyLimit);
+        const countEl = el('historyDaysCount');
+        if (countEl) {
+            countEl.textContent = historyLimit >= (state.history || []).length ? `${history.length} ngày (tất cả)` : `${history.length} ngày`;
+        }
         if (history.length === 0) {
             el('summarySection').classList.add('hidden');
             el('detailsSection').classList.add('hidden');
@@ -979,17 +984,19 @@
     }
 
     function selectRow(index) {
-        if (index < 0 || index >= state.history.length) return;
+        const historyLimit = state.historyLimit || 90;
+        const history = (state.history || []).slice(0, historyLimit);
+        if (index < 0 || index >= history.length) return;
         state.selectedIndex = index;
         
         // Update table row styling
         const rows = el('detailsTable').children;
         for (let i = 0; i < rows.length; i++) {
-            const isPending = isPendingRun(state.history[i]);
+            const isPending = isPendingRun(history[i]);
             rows[i].className = `cursor-pointer hover:bg-indigo-50/40 transition border-b border-slate-100 ${getHistoryRowClass(i === index, isPending)}`;
         }
 
-        const run = state.history[index];
+        const run = history[index];
         const sum = getDisplaySummary(run, state.selectedMethod) || {};
         const dateStr = formatDateToDMY(run.predictionDate);
         const isPending = isPendingRun(run);
@@ -1188,6 +1195,21 @@
                 }
             });
         }
+        document.querySelectorAll('.history-limit-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                state.historyLimit = Number(btn.dataset.limit) || 90;
+                document.querySelectorAll('.history-limit-btn').forEach(b => {
+                    if (Number(b.dataset.limit) === state.historyLimit) {
+                        b.className = 'history-limit-btn px-3 py-1.5 rounded-lg transition bg-indigo-600 text-white shadow-xs';
+                    } else {
+                        b.className = 'history-limit-btn px-3 py-1.5 rounded-lg transition text-slate-600 hover:bg-slate-100';
+                    }
+                });
+                state.selectedIndex = 0;
+                renderDashboard();
+            });
+        });
+
         renderPerformanceReport();
         loadHistory();
     });

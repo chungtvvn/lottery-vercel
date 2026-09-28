@@ -83,7 +83,7 @@ export async function GET(request) {
                     latestDataDate: livePayload.latestDataDate,
                     config: livePayload.config,
                     summary: livePayload.summary,
-                    predictions: (livePayload.predictions || []).slice(-90)
+                    predictions: (livePayload.predictions || []).slice(-120)
                 }
             }
             : payload;

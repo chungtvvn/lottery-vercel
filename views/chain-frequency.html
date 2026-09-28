@@ -188,10 +188,20 @@
 
         <section class="glass-card overflow-hidden">
             <div class="border-b border-amber-200 bg-amber-50/70 px-4 py-4">
-                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                    <i class="bi bi-broadcast text-amber-600"></i> Nhật ký thực tế
-                </h2>
-                <p class="mt-1 text-sm text-slate-600">Dàn dự đoán được lưu từ khi action chạy. Các dòng đã có kết quả được đối soát theo đúng dàn point-in-time.</p>
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <i class="bi bi-broadcast text-amber-600"></i> Nhật ký thực tế (<span id="liveDaysCount">90 ngày</span>)
+                        </h2>
+                        <p class="mt-1 text-sm text-slate-600">Dàn dự đoán được lưu từ khi action chạy. Các dòng đã có kết quả được đối soát theo đúng dàn point-in-time.</p>
+                    </div>
+                    <div id="liveLimitTabs" class="inline-flex rounded-xl border border-amber-300 bg-white p-1 text-xs font-bold text-slate-600 shadow-xs">
+                        <button type="button" class="live-limit-btn px-3 py-1.5 rounded-lg transition" data-limit="30">30 ngày</button>
+                        <button type="button" class="live-limit-btn px-3 py-1.5 rounded-lg transition" data-limit="60">60 ngày</button>
+                        <button type="button" class="live-limit-btn px-3 py-1.5 rounded-lg transition bg-amber-500 text-white shadow-xs" data-limit="90">90 ngày</button>
+                        <button type="button" class="live-limit-btn px-3 py-1.5 rounded-lg transition" data-limit="120">Tất cả</button>
+                    </div>
+                </div>
             </div>
             <div id="liveSummary" class="grid gap-3 p-4 md:grid-cols-4"></div>
             <div id="liveRows" class="divide-y divide-slate-100"></div>
