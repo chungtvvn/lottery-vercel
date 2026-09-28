@@ -3344,6 +3344,8 @@
             }
         }
         if (type === 'lo4Engine') {
+            const synth = synthesizeLo4RowFallback(date, p);
+            if (synth) return synth;
             const quadRow = p?.loQuadHybrid?.settledLedger?.find(r => r.date === date);
             const prizeCounts = {};
             (drawInfo.prizes || []).forEach(pr => {
@@ -3370,6 +3372,26 @@
             };
         }
         if (type === 'lo4Xien4') {
+            const synth = synthesizeLo4RowFallback(date, p);
+            if (synth) {
+                return {
+                    date,
+                    isLive: synth.isLive,
+                    status: synth.xien4Status || 'SKIPPED_TOO_MANY',
+                    xien4Status: synth.xien4Status || 'SKIPPED_TOO_MANY',
+                    reason: synth.xien4Reason || '',
+                    xien4Reason: synth.xien4Reason || '',
+                    combinations: synth.xien4Combinations || [],
+                    xien4Combinations: synth.xien4Combinations || [],
+                    countOver2: synth.countOver2 || 0,
+                    stakeK: synth.xien4StakeK || 0,
+                    profitK: synth.dayXien4ProfitK || 0,
+                    dayXien4ProfitK: synth.dayXien4ProfitK || 0,
+                    payoutK: synth.xien4PayoutK || 0,
+                    isWin: Boolean(synth.isXien4Win),
+                    isXien4Win: Boolean(synth.isXien4Win)
+                };
+            }
             const quadRow = p?.loQuadHybrid?.settledLedger?.find(r => r.date === date);
             return {
                 date,
@@ -3638,6 +3660,132 @@
                 }
             });
         }
+    }
+
+    function synthesizeLo4RowFallback(date, p, mode = 'top7') {
+        const topN = mode === 'top6' ? 6 : 7;
+        const qmbf = (p?.loQuantumBayesFusion?.settledLedger || []).find(r => r.date === date);
+        const dual = (p?.loDualMerge?.settledLedger || []).find(r => r.date === date);
+        const tri = (p?.loTriHarmonic?.settledLedger || []).find(r => r.date === date);
+        const quad = (p?.loQuadHybrid?.settledLedger || []).find(r => r.date === date);
+
+        if (!qmbf && !dual && !tri && !quad) return null;
+
+        const drawInfo = p?.drawPrizesByDate?.[date] || {};
+        const actual27 = (drawInfo.prizes || qmbf?.actual27 || quad?.actual27 || []).map(n => String(n).padStart(2, '0'));
+        const actualMap = {};
+        actual27.forEach(n => {
+            actualMap[n] = (actualMap[n] || 0) + 1;
+        });
+
+        const qNums = (qmbf?.rankedNumbers || []).slice(0, topN);
+        const dNums = (dual?.rankedNumbers || []).slice(0, topN);
+        const tNums = (tri?.rankedNumbers || []).slice(0, topN);
+        const quadNums = (quad?.top7Numbers || quad?.rankedNumbers || []).slice(0, topN);
+
+        const votes = {};
+        const methodVotes = {};
+        [
+            { id: 'QMBF', nums: qNums },
+            { id: 'Dual', nums: dNums },
+            { id: 'Tri', nums: tNums },
+            { id: 'Quad', nums: quadNums }
+        ].forEach(m => {
+            m.nums.forEach(num => {
+                const s = String(num).padStart(2, '0');
+                votes[s] = (votes[s] || 0) + 1;
+                if (!methodVotes[s]) methodVotes[s] = [];
+                methodVotes[s].push(m.id);
+            });
+        });
+
+        const numbersOver2 = Object.keys(votes).filter(n => votes[n] >= 2).sort((a, b) => votes[b] - votes[a] || a.localeCompare(b));
+        const numbersAll = Object.keys(votes).filter(n => votes[n] >= 1).sort((a, b) => votes[b] - votes[a] || a.localeCompare(b));
+
+        const BASE_STAKE = 2200;
+        const BASE_PAYOUT = 8000;
+        let dayLotoStakeK = 0, dayLotoPayoutK = 0, dayLotoHits = 0;
+        const betNumbers = [];
+
+        numbersAll.forEach(num => {
+            const v = votes[num];
+            let multiplier = 1;
+            if (v >= 4) multiplier = 5;
+            else if (v === 3) multiplier = 4;
+            else if (v === 2) multiplier = 3;
+            else multiplier = 1;
+
+            const hits = actualMap[num] || 0;
+            const stake = multiplier * BASE_STAKE;
+            const payout = hits * multiplier * BASE_PAYOUT;
+            dayLotoStakeK += stake;
+            dayLotoPayoutK += payout;
+            dayLotoHits += hits;
+            betNumbers.push({ num, votes: v, multiplier, hits, methods: methodVotes[num] });
+        });
+
+        const dayLotoProfitK = dayLotoPayoutK - dayLotoStakeK;
+        const countOver2 = numbersOver2.length;
+        let xien4Status = 'SKIPPED', xien4Reason = '', xien4StakeK = 0, xien4PayoutK = 0, dayXien4ProfitK = 0, isXien4Win = false;
+        let xien4Combinations = [];
+
+        function getCombs(arr, k) {
+            if (k === 1) return arr.map(e => [e]);
+            const res = [];
+            arr.forEach((e, idx) => {
+                const rest = arr.slice(idx + 1);
+                getCombs(rest, k - 1).forEach(c => res.push([e, ...c]));
+            });
+            return res;
+        }
+
+        if (countOver2 < 4) {
+            xien4Status = 'TOO_FEW';
+            xien4Reason = `< 4 số (${countOver2} số) -> Không đủ ghép Xiên 4`;
+        } else if (countOver2 > 5) {
+            xien4Status = 'SKIPPED_TOO_MANY';
+            xien4Reason = `${countOver2} số trùng > 5 -> BỎ QUA KHÔNG ĐÁNH XIÊN 4 (Bảo toàn vốn)`;
+        } else {
+            xien4Status = 'ACTIVE';
+            xien4Reason = `${countOver2} số trùng -> Đánh ${countOver2 === 4 ? 1 : 5} vé Xiên 4 quây`;
+            xien4Combinations = getCombs(numbersOver2, 4);
+            xien4Combinations.forEach(comb => {
+                const uniqueHits = comb.filter(n => (actualMap[n] || 0) > 0).length;
+                const s = 11000;
+                let p = 0;
+                if (uniqueHits >= 4) p = 384000;
+                else if (uniqueHits === 3) p = 84000;
+                else if (uniqueHits === 2) p = 12000;
+                xien4StakeK += s;
+                xien4PayoutK += p;
+                if (p > s) isXien4Win = true;
+            });
+            dayXien4ProfitK = xien4PayoutK - xien4StakeK;
+        }
+
+        return {
+            date,
+            isLive: true,
+            topN,
+            countTotal: numbersAll.length,
+            countOver2,
+            countX1: numbersAll.length - countOver2,
+            numbersOver2,
+            allNumbers: numbersAll,
+            betNumbers,
+            dayLotoStakeK,
+            dayLotoPayoutK,
+            dayLotoProfitK,
+            dayLotoHits,
+            isLotoWin: dayLotoProfitK > 0,
+            xien4Status,
+            xien4Reason,
+            xien4Combinations,
+            xien4StakeK,
+            xien4PayoutK,
+            dayXien4ProfitK,
+            isXien4Win
+        };
     }
 
     function renderUnifiedCombatDiary(deLedger, loDiary, loAllDiary) {
@@ -4152,7 +4300,10 @@
             cumXi3ProfitK += xi3ProfitK;
             cumXi4ProfitK += xi4ProfitK;
 
-            const lo4Row = lo4Map[date] || null;
+            let lo4Row = lo4Map[date] || null;
+            if (!lo4Row && date >= '2026-06-02') {
+                lo4Row = synthesizeLo4RowFallback(date, payload, currentLo4EngineMode);
+            }
             const lo4ProfitK = lo4Row ? (lo4Row.dayLotoProfitK || 0) : 0;
             cumLo4ProfitK += lo4ProfitK;
             const lo4Xien4ProfitK = lo4Row ? (lo4Row.dayXien4ProfitK || 0) : 0;
