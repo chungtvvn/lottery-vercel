@@ -1749,17 +1749,30 @@
 
             const xien4StatusEl = byId('lo4EngineXien4StatusText');
             const xien4NumsEl = byId('lo4EngineXien4Numbers');
-            if (lo4Rec.xien4?.status === 'SKIPPED_TOO_MANY') {
+            const top5Cons = fullData?.loTop5ConsensusXien;
+            const top4Rec = (top5Cons?.top4Xien || lo4Rec.xien4?.top4 || lo4Rec.xien4?.numbers || []).map(number);
+            const top5Rec = (top5Cons?.top5Xien || lo4Rec.xien4?.top5 || []).map(number);
+
+            if (top4Rec.length >= 4) {
                 if (xien4StatusEl) {
-                    xien4StatusEl.innerHTML = `<span class="text-amber-300 font-bold">🛡️ BỎ QUA XIÊN 4:</span> Có ${lo4Rec.numbersOver2?.length || 7} số trùng (> 5 số) &rarr; Không đánh xiên 4 hôm nay để bảo toàn vốn, tập trung toàn lực vào dàn Lô phân tầng!`;
+                    xien4StatusEl.innerHTML = `<span class="text-emerald-300 font-bold">🎯 CHỐT ĐÁNH BỘ 4 QUÂY 11 VÉ (LÃI +1.005 TỶ · WIN 40.1%):</span> 1 X4 + 4 X3 + 6 X2 · Ăn từ 2 con có lãi ròng!`;
                 }
                 if (xien4NumsEl) {
-                    xien4NumsEl.innerHTML = `<span class="rounded bg-slate-800 text-slate-300 border border-slate-700 text-[10px] font-bold px-2 py-0.5"><i class="bi bi-shield-lock"></i> Bảo toàn vốn</span>`;
+                    xien4NumsEl.innerHTML = `
+                        <div class="flex flex-wrap items-center gap-1.5">
+                            ${top4Rec.map(n => `
+                                <span class="rounded-lg bg-amber-400 text-slate-950 font-mono text-xs font-black px-2 py-0.5 shadow-sm">${n}</span>
+                            `).join('')}
+                            ${top5Rec.length >= 5 ? `
+                                <span class="text-[10px] text-purple-300 bg-purple-950/80 border border-purple-700/60 px-2 py-0.5 rounded-lg ml-1" title="Bộ 5 Quây 10 Vé Xiên 3 (Vốn 1.0M)">Quây X3: [${top5Rec.join('-')}]</span>
+                            ` : ''}
+                        </div>
+                    `;
                 }
             } else if (lo4Rec.xien4?.status === 'ACTIVE_BET' || lo4Rec.xien4?.status === 'ACTIVE') {
                 const countComb = lo4Rec.xien4.combinations?.length || 0;
                 if (xien4StatusEl) {
-                    xien4StatusEl.innerHTML = `<span class="text-emerald-300 font-bold">🎯 CHỐT ĐÁNH ${countComb} VÉ XIÊN 4:</span> Đạt điều kiện chuẩn (4-5 số trùng)`;
+                    xien4StatusEl.innerHTML = `<span class="text-emerald-300 font-bold">🎯 CHỐT ĐÁNH ${countComb} VÉ XIÊN 4:</span> Đạt điều kiện chuẩn`;
                 }
                 if (xien4NumsEl) {
                     xien4NumsEl.innerHTML = (lo4Rec.xien4.combinations || []).map(comb => `
@@ -1776,13 +1789,16 @@
             if (btnCopyLo4) {
                 btnCopyLo4.onclick = () => {
                     const allNums = lo4Rec.allNumbers || lo4Rec.distinctNumbers || lo4Rec.numbersOver2 || [];
+                    const xienText = top4Rec.length >= 4
+                        ? `Bộ 4 Quây 11 vé: [${top4Rec.join(' ')}]${top5Rec.length >= 5 ? ` · Bộ 5 Quây X3: [${top5Rec.join(' ')}]` : ''}`
+                        : (lo4Rec.xien4?.combinations?.map(c => c.join('-')).join(' | ') || 'Bỏ qua');
                     const lines = [
                         `🔥 DÀN LÔ TỔNG HỢP 4 ĐỘNG CƠ (${mode === 'top6' ? 'TOP 6' : 'TOP 7'} LIVE) — NGÀY ${formatDateVi(predDate)}`,
                         `👑 TẦNG CỰC VIP (CƯỢC X4 · 8.8M/SỐ · ${vipNums.length}s): ${vipNums.map(n => String(number(n)).padStart(2, '0')).join(' ')}`,
                         `💎 TẦNG TRIỂN VỌNG (CƯỢC X3 · 6.6M/SỐ · ${medNums.length}s): ${medNums.map(n => String(number(n)).padStart(2, '0')).join(' ')}`,
                         `🛡️ TẦNG BẢO HIỂM (CƯỢC X1 · 2.2M/SỐ · ${x1Nums.length}s): ${x1Nums.map(n => String(number(n)).padStart(2, '0')).join(' ')}`,
                         `📋 TOÀN BỘ DÀN LÔ (${allNums.length} số): ${allNums.map(n => String(number(n)).padStart(2, '0')).join(' ')}`,
-                        `🎲 XIÊN 4: ${lo4Rec.xien4?.status === 'SKIPPED_TOO_MANY' ? 'BỎ QUA KHÔNG ĐÁNH (Bảo toàn vốn)' : (lo4Rec.xien4?.combinations?.map(c => c.join('-')).join(' | ') || 'Bỏ qua')}`,
+                        `🎲 XIÊN QUÂY TINH HOA: ${xienText}`,
                         `💰 TỔNG VỐN DỰ KIẾN: ${moneyM(lo4Rec.totalLotoStakeK || 0)} (${allNums.length} số · ${mode === 'top6' ? '3.100đ' : '3.600đ'})`
                     ];
                     const fullText = lines.join('\n');
@@ -3811,28 +3827,21 @@
             return res;
         }
 
-        if (countOver2 < 4) {
+        const top4Fallback = numbersOver2.slice(0, 4);
+        if (top4Fallback.length < 4) {
             xien4Status = 'TOO_FEW';
             xien4Reason = `< 4 số (${countOver2} số) -> Không đủ ghép Xiên 4`;
-        } else if (countOver2 > 5) {
-            xien4Status = 'SKIPPED_TOO_MANY';
-            xien4Reason = `${countOver2} số trùng > 5 -> BỎ QUA KHÔNG ĐÁNH XIÊN 4 (Bảo toàn vốn)`;
         } else {
             xien4Status = 'ACTIVE';
-            xien4Reason = `${countOver2} số trùng -> Đánh ${countOver2 === 4 ? 1 : 5} vé Xiên 4 quây`;
-            xien4Combinations = getCombs(numbersOver2, 4);
-            xien4Combinations.forEach(comb => {
-                const uniqueHits = comb.filter(n => (actualMap[n] || 0) > 0).length;
-                const s = 11000;
-                let p = 0;
-                if (uniqueHits >= 4) p = 384000;
-                else if (uniqueHits === 3) p = 84000;
-                else if (uniqueHits === 2) p = 12000;
-                xien4StakeK += s;
-                xien4PayoutK += p;
-                if (p > s) isXien4Win = true;
-            });
+            xien4Reason = `Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé [${top4Fallback.join('-')}]`;
+            xien4Combinations = [top4Fallback];
+            const uniqueHits = top4Fallback.filter(n => (actualMap[n] || 0) > 0).length;
+            xien4StakeK = 11000;
+            if (uniqueHits >= 4) xien4PayoutK = 384000;
+            else if (uniqueHits === 3) xien4PayoutK = 84000;
+            else if (uniqueHits === 2) xien4PayoutK = 12000;
             dayXien4ProfitK = xien4PayoutK - xien4StakeK;
+            if (dayXien4ProfitK > 0) isXien4Win = true;
         }
 
         return {
