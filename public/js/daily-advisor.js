@@ -917,9 +917,9 @@
         let xi4StakeK = top5XienRow ? top5XienRow.q11StakeVIP_K : (xi4Raw.stakeK || 11000);
         let xi4ProfitK = top5XienRow ? top5XienRow.q11ProfitVIP_K : xi4Raw.profitK;
         if (xi4ProfitK == null) {
-            if (xi4Hits >= 4) xi4ProfitK = 373000;
-            else if (xi4Hits === 3) xi4ProfitK = 29000;
-            else if (xi4Hits === 2) xi4ProfitK = 1000;
+            if (xi4Hits >= 4) xi4ProfitK = 598000;
+            else if (xi4Hits === 3) xi4ProfitK = 103500;
+            else if (xi4Hits === 2) xi4ProfitK = 5500;
             else xi4ProfitK = -xi4StakeK;
         }
 
@@ -3155,10 +3155,10 @@
                 </div>
             `;
 
-            let ticketResult = '❌ Không trúng vé nào (-11M)';
-            if (info.hits >= 4) ticketResult = '🎉 Nổ Xiên 4 đại thắng (+373M VIP)';
-            else if (info.hits === 3) ticketResult = '🔥 Nổ Xiên 3 + Xiên 2 (+29M VIP)';
-            else if (info.hits === 2) ticketResult = '✨ Ăn vé Xiên 2 có lãi (+1M VIP)';
+            let ticketResult = '❌ Không trúng vé nào (-11M VIP / -2.2M M3)';
+            if (info.hits >= 4) ticketResult = '👑 ĐẠI THẮNG 4/4 CON: Ăn trọn 11 vé (1 X4 + 4 X3 + 6 X2) ➔ Lãi +598M VIP (+119.6M M3)';
+            else if (info.hits === 3) ticketResult = '🔥 NỔ 3/4 CON: Ăn 1 vé X3 + 3 vé X2 ➔ Lãi +103.5M VIP (+20.7M M3)';
+            else if (info.hits === 2) ticketResult = '✨ NỔ 2/4 CON: Ăn 1 vé X2 có lãi ➔ Lãi +5.5M VIP (+1.1M M3)';
 
             return `
                 <div>
@@ -3837,9 +3837,9 @@
             xien4Combinations = [top4Fallback];
             const uniqueHits = top4Fallback.filter(n => (actualMap[n] || 0) > 0).length;
             xien4StakeK = 11000;
-            if (uniqueHits >= 4) xien4PayoutK = 384000;
-            else if (uniqueHits === 3) xien4PayoutK = 84000;
-            else if (uniqueHits === 2) xien4PayoutK = 12000;
+            if (uniqueHits >= 4) xien4PayoutK = 609000;
+            else if (uniqueHits === 3) xien4PayoutK = 114500;
+            else if (uniqueHits === 2) xien4PayoutK = 16500;
             dayXien4ProfitK = xien4PayoutK - xien4StakeK;
             if (dayXien4ProfitK > 0) isXien4Win = true;
         }
@@ -3848,6 +3848,7 @@
             date,
             isLive: true,
             topN,
+            h4: uniqueHits,
             countTotal: numbersAll.length,
             countOver2,
             countX1: numbersAll.length - countOver2,
@@ -5311,11 +5312,15 @@
                     : combs.map((c, idx) => `<span class="inline-block px-2 py-0.5 rounded-lg font-mono text-[11px] font-bold bg-purple-100 text-purple-900 border border-purple-300">Vé ${idx + 1}: ${(c.numbers || c).join('-')}</span>`).join(' '));
 
                 let ticketStatus = `<span class="inline-flex items-center gap-1 rounded bg-rose-100 text-rose-800 px-2 py-0.5 text-xs font-semibold">❌ Trượt (${h4Hits}/4 con)</span>`;
-                if (isXienWin) {
-                    ticketStatus = `<span class="inline-flex items-center gap-1 rounded bg-emerald-500 text-white px-2 py-0.5 text-xs font-black shadow-xs">🎉 Ăn ${h4Hits}/4 con (${moneyM(lo4Xien4Info.profitK || 0, { signed: true })})</span>`;
+                if (h4Hits === 4) {
+                    ticketStatus = `<span class="inline-flex items-center gap-1 rounded bg-amber-400 text-slate-950 px-2.5 py-1 text-xs font-black shadow-xs ring-1 ring-amber-500">👑 ĐẠI THẮNG 4/4 · ĂN TRỌN 11 VÉ (${moneyM(lo4Xien4Info.profitK || 0, { signed: true })})</span>`;
+                } else if (h4Hits === 3) {
+                    ticketStatus = `<span class="inline-flex items-center gap-1 rounded bg-purple-600 text-white px-2 py-0.5 text-xs font-black shadow-xs">🔥 NỔ 3/4 · 1 X3 + 3 X2 (${moneyM(lo4Xien4Info.profitK || 0, { signed: true })})</span>`;
+                } else if (h4Hits === 2) {
+                    ticketStatus = `<span class="inline-flex items-center gap-1 rounded bg-emerald-600 text-white px-2 py-0.5 text-xs font-black shadow-xs">✨ NỔ 2/4 · 1 VÉ X2 (${moneyM(lo4Xien4Info.profitK || 0, { signed: true })})</span>`;
                 }
                 if (lo4Xien4Info.x3Tickets > 0) {
-                    ticketStatus += `<div class="text-[10px] text-purple-700 font-bold mt-0.5">🎯 Nổ ${lo4Xien4Info.x3Tickets} vé X3 (+${moneyM(lo4Xien4Info.x3ProfitK || 0)})</div>`;
+                    ticketStatus += `<div class="text-[10px] text-purple-700 font-bold mt-0.5">🎯 Nổ ${lo4Xien4Info.x3Tickets} vé Quây X3 (+${moneyM(lo4Xien4Info.x3ProfitK || 0)})</div>`;
                 }
 
                 return `
@@ -5469,12 +5474,32 @@
             const lo4HitsText = `<strong>${lo4Info.dayLotoHits ?? 0}</strong> nháy`;
             const lo4ProfitText = `<span class="font-mono font-bold ${(lo4Info.dayLotoProfitK ?? 0) >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${moneyM(lo4Info.dayLotoProfitK ?? 0, { signed: true })}</span>`;
 
-            const lo4Xien4ProfitText = `<span class="font-mono font-bold ${(lo4Xien4Info.profitK ?? 0) > 0 ? 'text-emerald-600' : ((lo4Xien4Info.profitK ?? 0) < 0 ? 'text-rose-600' : 'text-slate-400')}">${moneyM(lo4Xien4Info.profitK ?? 0, { signed: true })}</span>`;
+            const h4HitsUnified = lo4Xien4Info.h4 != null ? lo4Xien4Info.h4 : (lo4Xien4Info.dayLotoHits || 0);
+            const lo4Xien4ProfitText = `<span class="font-mono font-bold ${(lo4Xien4Info.profitK ?? 0) > 0 ? 'text-emerald-600' : ((lo4Xien4Info.profitK ?? 0) < 0 ? 'text-rose-600' : 'text-slate-400')}">${moneyM(lo4Xien4Info.profitK ?? 0, { signed: true })} <span class="text-[9px] font-normal text-slate-400 font-sans">VIP</span></span>`;
             let lo4Xien4Tag = `<span class="inline-flex items-center gap-1 rounded bg-slate-100 text-slate-600 px-1 py-0.5 text-[10px] font-semibold">🛡️ Bỏ qua</span>`;
             if (lo4Xien4Info.status === 'ACTIVE') {
-                lo4Xien4Tag = (lo4Xien4Info.isWin || lo4Xien4Info.isXien4Win)
-                    ? `<span class="rounded bg-emerald-500 text-white px-1.5 py-0.5 text-[10px] font-black shadow-xs">🎉 Ăn X4</span>`
-                    : `<span class="text-slate-500 text-[10px] font-semibold">Trượt</span>`;
+                if (h4HitsUnified === 4) {
+                    lo4Xien4Tag = `<span class="rounded bg-amber-400 text-slate-950 px-1.5 py-0.5 text-[10px] font-black shadow-xs ring-1 ring-amber-500">👑 Nổ 4/4 (11 vé)</span>`;
+                } else if (h4HitsUnified === 3) {
+                    lo4Xien4Tag = `<span class="rounded bg-purple-600 text-white px-1.5 py-0.5 text-[10px] font-black shadow-xs">🔥 Nổ 3/4 (X3+X2)</span>`;
+                } else if (h4HitsUnified === 2) {
+                    lo4Xien4Tag = `<span class="rounded bg-emerald-600 text-white px-1.5 py-0.5 text-[10px] font-black shadow-xs">✨ Nổ 2/4 (X2)</span>`;
+                } else {
+                    lo4Xien4Tag = `<span class="text-slate-500 text-[10px] font-semibold">Trượt (${h4HitsUnified}/4)</span>`;
+                }
+            }
+
+            let xien4DetailSubtext = '';
+            if (lo4Info.isHistoricalBaseline) {
+                xien4DetailSubtext = 'Giai đoạn trước 02/06';
+            } else if (h4HitsUnified === 4) {
+                xien4DetailSubtext = '<span class="text-amber-700 font-bold">Ăn 1 X4 + 4 X3 + 6 X2</span>';
+            } else if (h4HitsUnified === 3) {
+                xien4DetailSubtext = '<span class="text-purple-700 font-bold">Ăn 1 vé X3 + 3 vé X2</span>';
+            } else if (h4HitsUnified === 2) {
+                xien4DetailSubtext = '<span class="text-emerald-700 font-bold">Ăn 1 vé X2 có lãi</span>';
+            } else {
+                xien4DetailSubtext = `Về ${h4HitsUnified}/4 con · Trượt quây`;
             }
 
             const dayClass = r.dayTotalK > 0 ? 'bg-emerald-50/40' : (r.dayTotalK < -50000 ? 'bg-rose-50/20' : '');
@@ -5549,7 +5574,7 @@
                             ${lo4Info.isHistoricalBaseline ? '' : lo4Xien4ProfitText}
                         </div>
                         <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
-                            <span>${lo4Info.isHistoricalBaseline ? 'Giai đoạn trước 02/06' : (lo4Xien4Info.status === 'ACTIVE' ? `${lo4Xien4Info.countOver2 || 4} số trùng` : 'Bảo toàn vốn')}</span>
+                            <span>${xien4DetailSubtext}</span>
                             <span class="diary-expand-indicator text-purple-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
                         </div>
                     </td>
