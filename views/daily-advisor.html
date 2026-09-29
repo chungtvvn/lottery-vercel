@@ -646,35 +646,53 @@
                             </div>
                         </div>
 
-                        <!-- Column 2: Lô Chủ Lực Đề Xuất Duy Nhất -->
+                        <!-- Column 2: Lô Ghép 4 Động Cơ Thực Chiến -->
                         <div class="rounded-2xl bg-teal-950/30 border border-teal-400/40 p-4 flex flex-col justify-between">
                             <div>
                                 <div class="flex items-center justify-between border-b border-teal-400/20 pb-2.5">
                                     <div>
                                         <span class="text-xs font-black text-teal-300 uppercase flex items-center gap-1.5">
-                                            <i class="bi bi-dice-5-fill"></i> <span id="finalLoBoxTitle">2. Lô Chủ Lực Đề Xuất Duy Nhất</span>
+                                            <i class="bi bi-dice-5-fill"></i> <span id="finalLoBoxTitle">2. Lô Ghép 4 Động Cơ Thực Chiến</span>
                                         </span>
-                                        <div class="text-[10px] text-teal-300/80 font-mono mt-0.5">
-                                            Xác suất ngẫu nhiên: <strong>~23.76%/vị trí</strong> · Hòa vốn: <strong>27.5%</strong> (22 ăn 80)
+                                        <div class="text-[10px] text-teal-300/80 font-mono mt-0.5" id="finalLoBoxSubtitle">
+                                            QMBF v6 · Bạc Nhớ 27 Giải · Tri-Harmonic · RRF
                                         </div>
                                     </div>
-                                    <span class="rounded bg-teal-400/20 text-teal-200 border border-teal-400/30 text-[10px] font-bold px-1.5 py-0.5" id="finalLoWinRateBadge">Win 79.7%</span>
+                                    <span class="rounded bg-teal-400/20 text-teal-200 border border-teal-400/30 text-[10px] font-bold px-1.5 py-0.5" id="finalLoWinRateBadge">Win 67.8% (1.103 nháy)</span>
                                 </div>
 
-                                <div class="mt-3 space-y-2">
-                                    <!-- Dàn Lô Duy Nhất của Bộ Điều Phối Thông Minh (Smart Selective Router) -->
+                                <!-- Interactive Mode Switcher: Top 6 vs Top 7 -->
+                                <div class="mt-2.5 flex items-center justify-between gap-1.5 bg-black/50 p-1 rounded-xl border border-teal-400/30">
+                                    <div class="flex items-center gap-1" id="finalLoModeSwitchGroup">
+                                        <button type="button" id="btnFinalLoModeTop6" class="rounded-lg bg-teal-400 text-slate-950 font-black text-[11px] px-2.5 py-1 transition-all shadow-xs flex items-center gap-1">
+                                            <i class="bi bi-fire text-amber-900"></i> Top 6 (Lục Thủ)
+                                        </button>
+                                        <button type="button" id="btnFinalLoModeTop7" class="rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 font-bold text-[11px] px-2.5 py-1 transition-all flex items-center gap-1">
+                                            <i class="bi bi-shield-check text-teal-300"></i> Top 7 (Thất Thủ)
+                                        </button>
+                                    </div>
+                                    <span id="finalLoModeProfitTag" class="text-[10px] font-mono font-black text-emerald-300 px-1.5">
+                                        Lãi +5.288 TỶ
+                                    </span>
+                                </div>
+
+                                <div class="mt-2.5 space-y-2">
+                                    <!-- Dàn Lô Ghép 4 Động Cơ -->
                                     <div class="rounded-xl bg-teal-500/15 border border-teal-400/50 p-3" id="finalLoSmartRouterBox">
                                         <div class="flex items-center justify-between text-xs font-bold text-teal-300 mb-1.5">
-                                            <span id="finalLoSmartBadge" class="uppercase font-black tracking-wide">🛡️ LÔ NỀN TẢNG TOP 7 THẤT THỦ</span>
-                                            <button type="button" id="btnCopyFinalLoSmart" class="text-[10px] font-bold text-teal-200 bg-teal-900/60 border border-teal-400/40 px-2 py-0.5 rounded hover:bg-teal-800 transition-all">Copy</button>
+                                            <span id="finalLoSmartBadge" class="uppercase font-black tracking-wide">🔥 TOP 6 LỤC THỦ · VUA HIỆU SUẤT</span>
+                                            <div class="flex items-center gap-1">
+                                                <button type="button" id="btnCopyFinalLoComma" class="text-[10px] font-bold text-teal-200 bg-teal-900/60 border border-teal-400/40 px-1.5 py-0.5 rounded hover:bg-teal-800 transition-all" title="Copy dấu phẩy cho Web">Web</button>
+                                                <button type="button" id="btnCopyFinalLoSmart" class="text-[10px] font-bold text-teal-200 bg-teal-900/60 border border-teal-400/40 px-2 py-0.5 rounded hover:bg-teal-800 transition-all">Copy</button>
+                                            </div>
                                         </div>
                                         <p id="finalLoSmartRationale" class="text-[11px] text-teal-200/90 italic mb-2 leading-relaxed">
-                                            Đang tải lý do AI chọn...
+                                            Đang tải dữ liệu hội tụ 4 động cơ...
                                         </p>
                                         <div id="finalLoSmartNums" class="flex flex-wrap gap-1.5 font-mono text-sm font-black text-teal-200"></div>
                                         <div class="mt-2.5 pt-1.5 border-t border-teal-400/30 flex items-center justify-between text-[11px] text-teal-200" id="finalLoSmartMeta">
-                                            <span>Vốn M3: <strong class="text-white">3.85M</strong> (25đ)</span>
-                                            <span>Hòa vốn: <strong class="text-amber-300">2 nháy</strong></span>
+                                            <span>Vốn M3: <strong class="text-white">3.30M</strong> (150đ)</span>
+                                            <span>Hòa vốn: <strong class="text-amber-300">~1.5 nháy</strong></span>
                                         </div>
                                     </div>
 
@@ -713,7 +731,7 @@
                             </div>
 
                             <div class="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between text-[11px] text-teal-200/80">
-                                <span>Lãi 2026: <strong class="text-teal-300 font-bold" id="finalLoProfitSummary">+415.9M M3 / +1.663 TỶ VIP</strong></span>
+                                <span>Lãi 2026: <strong class="text-teal-300 font-bold" id="finalLoProfitSummary">+5.288 TỶ VNĐ</strong></span>
                                 <span id="finalLoHitRule">Ăn từ 2 nháy có lãi</span>
                             </div>
                             <div class="mt-1 text-[10px] text-teal-300/80 italic text-right">

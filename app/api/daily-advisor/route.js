@@ -434,8 +434,11 @@ export async function GET(request) {
                 if (!payload?.loXien4Synergy && localPayload?.loXien4Synergy) {
                     payload.loXien4Synergy = localPayload.loXien4Synergy;
                 }
-                if (!payload?.lo4EngineFusion || (localPayload?.lo4EngineFusion?.settledLedger?.length || 0) > (payload?.lo4EngineFusion?.settledLedger?.length || 0)) {
+                if (!payload?.lo4EngineFusion?.modes || (localPayload?.lo4EngineFusion?.settledLedger?.length || 0) > (payload?.lo4EngineFusion?.settledLedger?.length || 0)) {
                     payload.lo4EngineFusion = localPayload.lo4EngineFusion;
+                }
+                if (!payload?.loTop5ConsensusXien && localPayload?.loTop5ConsensusXien) {
+                    payload.loTop5ConsensusXien = localPayload.loTop5ConsensusXien;
                 }
             } catch (_) {}
         }
