@@ -1656,6 +1656,119 @@
         updateDeMethodDisplay(activeDeMethodKey);
         window.__switchDeMethod = updateDeMethodDisplay;
 
+        // Render Ma Trận Đón Đầu Xác Suất Chuyển Trạng Thái (Strict PIT)
+        function renderAnticipatoryDeMatrix(data = {}) {
+            const tbody = byId('anticipatoryDeMatrixBody');
+            if (!tbody) return;
+
+            const streakAdv = data?.streakAwareDeAdvisor?.latestRecommendation;
+            const matrix = streakAdv?.anticipatoryMatrix || [];
+
+            if (!Array.isArray(matrix) || matrix.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="py-4 text-center text-slate-400">
+                            Chưa có dữ liệu ma trận chuyển trạng thái đón đầu.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            const rowsHtml = matrix.map(cand => {
+                const isChosen = cand.isChosen || (cand.methodId === activeDeMethodKey);
+                const streak = cand.curStreak;
+                const isWinStreak = streak > 0;
+                const streakBadgeClass = isWinStreak
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/40'
+                    : 'bg-rose-500/20 text-rose-300 border border-rose-400/40';
+                const streakText = isWinStreak ? `+${streak} (Thắng)` : `${streak} (Trượt)`;
+
+                const probPct = (cand.condProb * 100).toFixed(1);
+                let probColor = 'text-slate-300';
+                let barColor = 'bg-slate-500';
+                if (cand.condProb >= 0.55) {
+                    probColor = 'text-emerald-300 font-black';
+                    barColor = 'bg-emerald-400';
+                } else if (cand.condProb >= 0.40) {
+                    probColor = 'text-amber-300 font-bold';
+                    barColor = 'bg-amber-400';
+                }
+
+                let actionBadge = '';
+                if (isChosen) {
+                    if (streak < 0) {
+                        actionBadge = `<span class="inline-flex items-center gap-1 rounded bg-amber-400 text-slate-950 px-1.5 py-0.5 text-[9px] font-black uppercase shadow-xs animate-pulse">🛡️ ĐÓN ĐẦU NỔ BÙ (${probPct}%)</span>`;
+                    } else {
+                        actionBadge = `<span class="inline-flex items-center gap-1 rounded bg-emerald-400 text-slate-950 px-1.5 py-0.5 text-[9px] font-black uppercase shadow-xs">🚀 BÁM QUÁN TÍNH (${probPct}%)</span>`;
+                    }
+                } else if (cand.curStreak >= 2) {
+                    actionBadge = `<span class="inline-flex items-center gap-1 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40 px-1.5 py-0.5 text-[9px] font-bold">⚠️ Vùng Quá Nhiệt (Né Đu Đỉnh)</span>`;
+                } else if (cand.curStreak < 0 && cand.condProb >= 0.45) {
+                    actionBadge = `<span class="inline-flex items-center gap-1 rounded bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 px-1.5 py-0.5 text-[9px] font-bold">🎯 Điểm Rơi Nổ Bù Tiềm Năng</span>`;
+                } else {
+                    actionBadge = `<span class="inline-flex items-center gap-1 rounded bg-slate-800 text-slate-400 px-1.5 py-0.5 text-[9px]">Dự phòng cân bằng</span>`;
+                }
+
+                const sampleText = cand.sampleTotal > 0 
+                    ? `${cand.sampleWins}/${cand.sampleTotal} kỳ (${(cand.rawRate * 100).toFixed(1)}%)`
+                    : 'Đang tích lũy';
+
+                const rowHighlight = isChosen
+                    ? 'bg-amber-500/10 border-l-4 border-l-amber-400'
+                    : 'hover:bg-white/5 transition-colors';
+
+                return `
+                    <tr class="${rowHighlight}">
+                        <td class="py-2.5 px-2">
+                            <div class="flex items-center gap-1.5">
+                                <span class="font-bold text-slate-100">${cand.methodLabel || cand.methodId}</span>
+                                ${isChosen ? '<span class="text-[9px] bg-amber-500 text-slate-950 font-black px-1 rounded">⭐ Đang Chọn</span>' : ''}
+                            </div>
+                        </td>
+                        <td class="py-2.5 px-2 text-center">
+                            <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-black ${streakBadgeClass}">
+                                ${streakText}
+                            </span>
+                        </td>
+                        <td class="py-2.5 px-2 text-center font-mono">
+                            <span class="rounded bg-slate-800/80 px-1.5 py-0.5 font-bold text-amber-300 border border-slate-700">
+                                ${cand.stateTag}
+                            </span>
+                            <div class="text-[9px] text-slate-400 mt-0.5 max-w-[120px] mx-auto truncate" title="${cand.stateSemanticLabel}">
+                                ${cand.stateSemanticLabel}
+                            </div>
+                        </td>
+                        <td class="py-2.5 px-2 text-center">
+                            <div class="flex flex-col items-center">
+                                <span class="font-mono ${probColor}">${probPct}%</span>
+                                <div class="w-12 h-1 bg-slate-700 rounded-full mt-1 overflow-hidden">
+                                    <div class="h-full ${barColor}" style="width: ${Math.min(100, Math.max(0, cand.condProb * 100))}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-2.5 px-2 text-center hidden md:table-cell text-slate-300 font-mono text-[10px]">
+                            ${sampleText}
+                        </td>
+                        <td class="py-2.5 px-2">
+                            <div class="flex items-center justify-between gap-1">
+                                <div>${actionBadge}</div>
+                                ${!isChosen ? `
+                                    <button type="button" onclick="if(window.__switchDeMethod) window.__switchDeMethod('${cand.methodId}');" class="text-[10px] text-indigo-300 hover:text-white underline font-bold transition-colors">
+                                        Chọn
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            tbody.innerHTML = rowsHtml;
+        }
+
+        renderAnticipatoryDeMatrix(fullData);
+
         // 2. LÔ TINH HOA — MULTI-ENGINE STREAK GOVERNOR
         const governor = loQuadAdv?.streakGovernor || loQuadAdv?.latestRecommendation?.streakGovernor || {};
         let activeLoEngineKey = currentActiveLoEngine
