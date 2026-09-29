@@ -271,6 +271,10 @@
 
                 viewDual?.classList.remove('hidden');
                 viewUnified?.classList.add('hidden');
+
+                if (payload && typeof switchDeStatsMethod === 'function') {
+                    switchDeStatsMethod(currentDeStatsMethod || 'metaLearner');
+                }
             }
         }
 
@@ -8181,16 +8185,13 @@
 
     function resolveChampionDeMethod7Days(p = payload) {
         if (!p) return getDeMethodObject('metaLearner', p);
-        if (p.streakAwareDeAdvisor?.latestRecommendation?.selectedMethod) {
-            const chosen = getDeMethodObject(p.streakAwareDeAdvisor.latestRecommendation.selectedMethod, p);
+        const validMethodIds = ['metaLearner', 'adaptiveDualMerge', 'dualMerge', 'tripleMerge'];
+        const selected = p.streakAwareDeAdvisor?.latestRecommendation?.selectedMethod;
+        if (selected && validMethodIds.includes(selected)) {
+            const chosen = getDeMethodObject(selected, p);
             if (chosen) return chosen;
         }
-        const methods = [
-            getDeMethodObject('metaLearner', p),
-            getDeMethodObject('adaptiveDualMerge', p),
-            getDeMethodObject('dualMerge', p),
-            getDeMethodObject('tripleMerge', p)
-        ];
+        const methods = validMethodIds.map(m => getDeMethodObject(m, p));
         methods.sort((a, b) => {
             if (a.liveProfitK !== b.liveProfitK) {
                 return b.liveProfitK - a.liveProfitK;
