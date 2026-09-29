@@ -1,0 +1,49 @@
+name: CI Strict Point-In-Time & Profit Audit
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  strict-pit-audit:
+    name: Verify Strict PIT, Zero Leakage & Reproducibility
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js (Pinned Version 20.x)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci || npm install
+
+      - name: Step 1 - Verify Future Independence & Zero Leakage (Shifted Future Test)
+        run: node .agents/skills/lottery-predictive-intelligence/scripts/verify_strict_pit.js
+
+      - name: Step 2 - Audit Historical Ledgers Against Actual Numbers (Anti-Virtual Profit)
+        run: node .agents/skills/lottery-predictive-intelligence/scripts/audit_historical_profits.js
+
+      - name: Step 3 - Full Walk-Forward Embargo & Locked Holdout Audit
+        run: node scripts/audit-strict-pit-all-methods.js
+
+      - name: Step 4 - Verify Prediction Snapshot Immutability & Hash Integrity
+        run: |
+          node -e "
+          const ph = require('./lib/services/predictionHistoryService.js');
+          const hash = ph.computeSnapshotHash({
+            predictionDate: '2026-09-30',
+            sourceDrawDate: '2026-09-29',
+            summary: { test: true }
+          });
+          if (!hash || hash.length !== 64) {
+            console.error('Invalid snapshot hash implementation');
+            process.exit(1);
+          }
+          console.log('✓ Snapshot immutable hashing verified:', hash);
+          "

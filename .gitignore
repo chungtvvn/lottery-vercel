@@ -68,6 +68,7 @@ reports/exclusion_number_overlap*.json
 reports/exclusion_number_overlap*.csv
 reports/research_*.json
 reports/**/*.json
+!reports/audit_strict_pit_all_methods.json
 reports/**/*.jsonl
 reports/**/*.ndjson
 reports/**/*.gz

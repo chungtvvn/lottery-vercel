@@ -570,6 +570,13 @@
                             <p class="text-xs text-slate-300 mt-1 max-w-3xl leading-relaxed" id="finalOptimalSlipDesc">
                                 Hệ thống tự động phối hợp các thuật toán mạnh nhất: Đề Thích Ứng Alpha đòn bẩy X2 gỡ drawdown sau trượt + Lô Ghép Tầng Tam Trụ (QMBF + QUAD + PENTA) lãi kỷ lục +4.167 TỶ.
                             </p>
+                            <div class="mt-2.5 rounded-xl bg-rose-500/15 border border-rose-500/30 p-2.5 flex items-start gap-2 text-xs text-rose-200">
+                                <i class="bi bi-exclamation-triangle-fill text-amber-400 mt-0.5 shrink-0"></i>
+                                <div>
+                                    <strong class="text-rose-300 font-bold uppercase tracking-wide">Cảnh báo kỳ vọng toán học âm sau phí (-EV):</strong>
+                                    <span class="text-slate-300 ml-1">Mọi thể loại xổ số đều có lợi thế nhà cái (House Edge). Mọi phân tích, mô hình xác suất Bayes hay ma trận luân phiên chỉ nhằm tối ưu hóa phương sai thực nghiệm trong ngắn hạn, không thể đảo ngược quy luật xác suất dài hạn. Tuyệt đối cược có trách nhiệm!</span>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Action Buttons -->
@@ -589,9 +596,14 @@
                         <div class="rounded-2xl bg-amber-950/30 border border-amber-400/40 p-4 flex flex-col justify-between">
                             <div>
                                 <div class="flex items-center justify-between border-b border-amber-400/20 pb-2.5">
-                                    <span class="text-xs font-black text-amber-300 uppercase flex items-center gap-1.5">
-                                        <i class="bi bi-gem"></i> <span id="finalDeBoxTitle">1. Đề Thích Ứng Alpha (37s)</span>
-                                    </span>
+                                    <div>
+                                        <span class="text-xs font-black text-amber-300 uppercase flex items-center gap-1.5">
+                                            <i class="bi bi-gem"></i> <span id="finalDeBoxTitle">1. Đề Thích Ứng Alpha (37s)</span>
+                                        </span>
+                                        <div class="text-[10px] text-amber-300/80 font-mono mt-0.5">
+                                            Xác suất ngẫu nhiên: <strong>30/100 (30.0%)</strong> · Hòa vốn: <strong>35.7%</strong> (1 ăn 84)
+                                        </div>
+                                    </div>
                                     <span class="rounded bg-amber-400/20 text-amber-200 border border-amber-400/30 text-[10px] font-bold px-1.5 py-0.5" id="finalDeWinRateBadge">Win 70.2%</span>
                                 </div>
                                 
@@ -629,15 +641,23 @@
                                 <span>Ăn VIP X2: <strong class="text-amber-300 font-bold">+168M VIP / +33.6M M3</strong></span>
                                 <span>Gỡ Drawdown</span>
                             </div>
+                            <div class="mt-1 text-[10px] text-amber-300/80 italic text-right">
+                                ⚠️ Kỳ vọng toán học âm (-EV) sau phí
+                            </div>
                         </div>
 
                         <!-- Column 2: Lô Chủ Lực Đề Xuất Duy Nhất -->
                         <div class="rounded-2xl bg-teal-950/30 border border-teal-400/40 p-4 flex flex-col justify-between">
                             <div>
                                 <div class="flex items-center justify-between border-b border-teal-400/20 pb-2.5">
-                                    <span class="text-xs font-black text-teal-300 uppercase flex items-center gap-1.5">
-                                        <i class="bi bi-dice-5-fill"></i> <span id="finalLoBoxTitle">2. Lô Chủ Lực Đề Xuất Duy Nhất</span>
-                                    </span>
+                                    <div>
+                                        <span class="text-xs font-black text-teal-300 uppercase flex items-center gap-1.5">
+                                            <i class="bi bi-dice-5-fill"></i> <span id="finalLoBoxTitle">2. Lô Chủ Lực Đề Xuất Duy Nhất</span>
+                                        </span>
+                                        <div class="text-[10px] text-teal-300/80 font-mono mt-0.5">
+                                            Xác suất ngẫu nhiên: <strong>~23.76%/vị trí</strong> · Hòa vốn: <strong>27.5%</strong> (22 ăn 80)
+                                        </div>
+                                    </div>
                                     <span class="rounded bg-teal-400/20 text-teal-200 border border-teal-400/30 text-[10px] font-bold px-1.5 py-0.5" id="finalLoWinRateBadge">Win 79.7%</span>
                                 </div>
 
@@ -696,15 +716,23 @@
                                 <span>Lãi 2026: <strong class="text-teal-300 font-bold" id="finalLoProfitSummary">+415.9M M3 / +1.663 TỶ VIP</strong></span>
                                 <span id="finalLoHitRule">Ăn từ 2 nháy có lãi</span>
                             </div>
+                            <div class="mt-1 text-[10px] text-teal-300/80 italic text-right">
+                                ⚠️ Cược có trách nhiệm · Kỷ luật quản lý vốn
+                            </div>
                         </div>
 
                         <!-- Column 3: Xiên 4 Tinh Hoa -->
                         <div class="rounded-2xl bg-indigo-950/30 border border-indigo-400/40 p-4 flex flex-col justify-between">
                             <div>
                                 <div class="flex items-center justify-between border-b border-indigo-400/20 pb-2.5">
-                                    <span class="text-xs font-black text-indigo-300 uppercase flex items-center gap-1.5">
-                                        <i class="bi bi-stars"></i> <span>3. Tứ Thủ Lô Xiên 4 (11 Vé)</span>
-                                    </span>
+                                    <div>
+                                        <span class="text-xs font-black text-indigo-300 uppercase flex items-center gap-1.5">
+                                            <i class="bi bi-stars"></i> <span>3. Tứ Thủ Lô Xiên 4 (11 Vé)</span>
+                                        </span>
+                                        <div class="text-[10px] text-indigo-300/80 font-mono mt-0.5">
+                                            Xác suất ngẫu nhiên ăn 4: <strong>~0.32%</strong> · Ăn 2: <strong>~11.5%</strong>
+                                        </div>
+                                    </div>
                                     <span class="rounded bg-indigo-400/20 text-indigo-200 border border-indigo-400/30 text-[10px] font-bold px-1.5 py-0.5">PMI-Lift Synergy</span>
                                 </div>
 
@@ -732,6 +760,9 @@
                             <div class="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between text-[11px] text-indigo-200/80">
                                 <span>Thắng 41.0% · Lãi +1.847 TỶ</span>
                                 <span>Ăn từ 2 con có lãi</span>
+                            </div>
+                            <div class="mt-1 text-[10px] text-indigo-300/80 italic text-right">
+                                ⚠️ Rủi ro cao · Dành riêng cho vốn dự phòng
                             </div>
                         </div>
                     </div>

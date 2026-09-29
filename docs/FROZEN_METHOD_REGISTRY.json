@@ -1,0 +1,133 @@
+{
+  "protocol": "METHOD_PRE_REGISTRATION_V1",
+  "frozenDate": "2026-09-29T12:00:00.000Z",
+  "policy": "STRICT_FROZEN_NO_POST_HOC_ADDITION",
+  "splits": {
+    "trainEnd": "2023-12-31",
+    "embargoDays": 7,
+    "validationStart": "2024-01-08",
+    "validationEnd": "2025-12-31",
+    "strictHoldoutStart": "2026-01-01",
+    "strictHoldoutStatus": "LOCKED_UNTOUCHED_FOR_TUNING"
+  },
+  "methods": [
+    {
+      "id": "metaLearner",
+      "name": "💎 Đề Tinh Hoa (Dynamic Pruning)",
+      "type": "de_ensemble",
+      "fixedNumberCount": 30,
+      "payoutRatio": 84,
+      "theoreticalUniformProbability": 0.30,
+      "breakEvenHitRate": 0.35714,
+      "frozenStatus": "FROZEN",
+      "hypothesis": "Dynamic pruning with Bayesian Model Averaging and Shannon entropy filtering removes uninformative tail numbers to achieve higher empirical hit rate than 30% baseline.",
+      "parameterBounds": {
+        "vipCount": 10,
+        "eliteCount": 20,
+        "confidenceCutoff": [0.65, 0.75]
+      }
+    },
+    {
+      "id": "adaptiveDualMerge",
+      "name": "👑 Đề Thích Ứng Alpha",
+      "type": "de_adaptive_merge",
+      "fixedNumberCount": 43,
+      "payoutRatio": 84,
+      "theoreticalUniformProbability": 0.43,
+      "breakEvenHitRate": 0.44047,
+      "frozenStatus": "FROZEN",
+      "hypothesis": "Dynamic phase-shifting between attack and defensive pairs based on empirical transition hazard avoids prolonged drawdown runs.",
+      "parameterBounds": {
+        "candidatePairs": 21,
+        "sweetSpotMin": 22,
+        "sweetSpotMax": 26
+      }
+    },
+    {
+      "id": "dualMerge",
+      "name": "🎯 Đề Gộp Tiêu Chuẩn",
+      "type": "de_dual_merge",
+      "fixedNumberCount": 43,
+      "payoutRatio": 84,
+      "theoreticalUniformProbability": 0.43,
+      "breakEvenHitRate": 0.44047,
+      "frozenStatus": "FROZEN",
+      "hypothesis": "Merging two diverse single-model sets at sweet-spot overlap produces a consolidated 43-number ticket with 2x weighting on consensus numbers.",
+      "parameterBounds": {
+        "singleSetSize": 30,
+        "stakeK": 60000
+      }
+    },
+    {
+      "id": "tripleMerge",
+      "name": "🛡️ Đề Tam Trụ",
+      "type": "de_triple_merge",
+      "fixedNumberCount": 50,
+      "payoutRatio": 84,
+      "theoreticalUniformProbability": 0.50,
+      "breakEvenHitRate": 0.53571,
+      "frozenStatus": "FROZEN",
+      "hypothesis": "3-tier consensus weighting (X3/X2/X1) across 3 orthogonal models provides maximum resilience during non-stationary regime shifts.",
+      "parameterBounds": {
+        "tierWeights": [3, 2, 1],
+        "stakeK": 90000
+      }
+    },
+    {
+      "id": "deMarkovGapHazard",
+      "name": "🔮 Đề Markov Bậc 2 & Gap Hazard",
+      "type": "de_single",
+      "fixedNumberCount": 30,
+      "payoutRatio": 84,
+      "theoreticalUniformProbability": 0.30,
+      "breakEvenHitRate": 0.35714,
+      "frozenStatus": "FROZEN",
+      "hypothesis": "Order-2 Markov state transitions combined with survival hazard decay model the rebound points of cold digits after 2-3 consecutive losses.",
+      "parameterBounds": {
+        "hazardDecayAlpha": [0.95, 0.99]
+      }
+    },
+    {
+      "id": "dePositionalGraphFlow",
+      "name": "🕸️ Cầu Đồ Thị Vị Trí",
+      "type": "de_single",
+      "fixedNumberCount": 30,
+      "payoutRatio": 84,
+      "theoreticalUniformProbability": 0.30,
+      "breakEvenHitRate": 0.35714,
+      "frozenStatus": "FROZEN",
+      "hypothesis": "Graph correlation across positional nodes in previous day draw generates structural flow indicators for prize numbers.",
+      "parameterBounds": {
+        "depthLimit": 3
+      }
+    },
+    {
+      "id": "loQuantumBayesFusion",
+      "name": "⚛️ Lô Quantum Bayes 7D (QMBF)",
+      "type": "lo_engine",
+      "fixedNumberCount": 6,
+      "payoutRatio": 3.636,
+      "theoreticalUniformProbability": 0.2376,
+      "breakEvenHitRate": 0.2750,
+      "frozenStatus": "FROZEN",
+      "hypothesis": "7-dimensional Bayesian posterior estimation with Fourier rhythm harmonics models recurring clusters in 27 lottery prize slots.",
+      "parameterBounds": {
+        "topCounts": [2, 4, 6, 10, 20]
+      }
+    },
+    {
+      "id": "loQuadHybrid",
+      "name": "🤖 Lô Quad-Hybrid v7.1",
+      "type": "lo_engine",
+      "fixedNumberCount": 6,
+      "payoutRatio": 3.636,
+      "theoreticalUniformProbability": 0.2376,
+      "breakEvenHitRate": 0.2750,
+      "frozenStatus": "FROZEN",
+      "hypothesis": "Hybrid fusion of frequency, bridge flow, and anti-saturation filters eliminates cold traps and preserves positive expectation streaks.",
+      "parameterBounds": {
+        "engineCount": 4
+      }
+    }
+  ]
+}
