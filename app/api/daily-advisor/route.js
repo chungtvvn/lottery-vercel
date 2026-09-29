@@ -11,14 +11,71 @@ const NO_STORE_HEADERS = {
 };
 
 function isAuthorized(request) {
+    if (request.cookies?.get('xsmb_session')?.value === 'authenticated') {
+        return true;
+    }
     const expected = process.env.PREDICTION_API_TOKEN || process.env.EXTERNAL_API_TOKEN || '';
-    if (!expected) return true;
+    const isProd = process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production';
+    if (isProd) {
+        if (!expected) return false;
+    } else {
+        if (!expected) return true;
+    }
     const url = new URL(request.url);
     const provided = request.headers.get('x-api-key')
         || request.headers.get('authorization')?.replace(/^Bearer\s+/i, '')
         || url.searchParams.get('token')
         || '';
-    return provided === expected || request.cookies.get('xsmb_session')?.value === 'authenticated';
+    return Boolean(expected && provided === expected);
+}
+
+function computeWilsonCI95(wins, n) {
+    if (!n || n <= 0) return { low: 0, high: 0, formatted: '0.0% – 0.0%' };
+    const p = wins / n;
+    const z = 1.96;
+    const z2 = z * z;
+    const denom = 1 + z2 / n;
+    const center = p + z2 / (2 * n);
+    const margin = z * Math.sqrt((p * (1 - p) + z2 / (4 * n)) / n);
+    const low = Math.max(0, (center - margin) / denom);
+    const high = Math.min(1, (center + margin) / denom);
+    return {
+        low: Number(low.toFixed(4)),
+        high: Number(high.toFixed(4)),
+        formatted: `${(low * 100).toFixed(1)}% – ${(high * 100).toFixed(1)}%`
+    };
+}
+
+function computeDrawdown(rows, payoutPerWinK = 84 * 1000) {
+    let peak = 0;
+    let equity = 0;
+    let maxDrawdownK = 0;
+    let currentDrawdownDays = 0;
+    let maxDrawdownDays = 0;
+
+    rows.forEach(row => {
+        const isHit = Boolean(row.hit ?? row.strategy?.hit);
+        const dayStakeK = Number(row.strategy?.betCount || row.betCount || 30) * 1000;
+        const dayPayoutK = isHit ? payoutPerWinK : 0;
+        const dayProfitK = dayPayoutK - dayStakeK;
+
+        equity += dayProfitK;
+        if (equity > peak) {
+            peak = equity;
+            currentDrawdownDays = 0;
+        } else {
+            currentDrawdownDays += 1;
+            const ddK = peak - equity;
+            if (ddK > maxDrawdownK) {
+                maxDrawdownK = ddK;
+            }
+            if (currentDrawdownDays > maxDrawdownDays) {
+                maxDrawdownDays = currentDrawdownDays;
+            }
+        }
+    });
+
+    return { maxDrawdownK, maxDrawdownDays };
 }
 
 function normalizeDate(value) {
@@ -71,18 +128,32 @@ function settleFromRaw(payload, rawRows) {
         const hitRate = settled.length ? wins / settled.length : 0;
         const stakeK = settled.length * 30 * 1000;
         const profitK = wins * 84 * 1000 - stakeK;
+        const confidenceInterval95 = computeWilsonCI95(wins, settled.length);
+        const { maxDrawdownK, maxDrawdownDays } = computeDrawdown(settled.map(r => ({ hit: r[key]?.hit, betCount: 30 })));
+        const realisticPayoutMultiplier = 81.5;
+        const realisticBreakEvenHitRate = 30 / realisticPayoutMultiplier;
+        const realisticProfitK = wins * realisticPayoutMultiplier * 1000 - stakeK;
         return {
             days: settled.length,
             wins,
             losses,
             hitRate,
+            confidenceInterval95,
+            maxDrawdownK,
+            maxDrawdownDays,
             stakeK,
             profitK,
             roi: stakeK ? profitK / stakeK : 0,
             breakEvenHitRate,
             breakEvenWins: Math.ceil(settled.length * breakEvenHitRate),
             isAboveBreakEven: settled.length > 0 && hitRate >= breakEvenHitRate,
-            marginToBreakEven: hitRate - breakEvenHitRate
+            marginToBreakEven: hitRate - breakEvenHitRate,
+            realisticPayoutMultiplier,
+            realisticBreakEvenHitRate,
+            realisticProfitK,
+            realisticRoi: stakeK ? realisticProfitK / stakeK : 0,
+            isAboveRealisticBreakEven: settled.length > 0 && hitRate >= realisticBreakEvenHitRate,
+            marginToRealisticBreakEven: hitRate - realisticBreakEvenHitRate
         };
     };
     const summarizeStrategy = strategyId => {
@@ -106,6 +177,11 @@ function settleFromRaw(payload, rawRows) {
             : 0;
         const hitRate = issuedRows.length ? wins / issuedRows.length : 0;
         const breakEvenHitRate = averageBetCount / 84;
+        const confidenceInterval95 = computeWilsonCI95(wins, issuedRows.length);
+        const { maxDrawdownK, maxDrawdownDays } = computeDrawdown(issuedRows);
+        const realisticPayoutMultiplier = 81.5;
+        const realisticBreakEvenHitRate = averageBetCount ? averageBetCount / realisticPayoutMultiplier : 0;
+        const realisticProfitK = wins * realisticPayoutMultiplier * 1000 - stakeK;
         return {
             candidateDays: candidateRows.length,
             issuedDays: issuedRows.length,
@@ -115,6 +191,9 @@ function settleFromRaw(payload, rawRows) {
             wins,
             losses,
             hitRate,
+            confidenceInterval95,
+            maxDrawdownK,
+            maxDrawdownDays,
             averageBetCount,
             stakeK,
             profitK,
@@ -123,7 +202,13 @@ function settleFromRaw(payload, rawRows) {
             breakEvenHitRate,
             breakEvenWins: Math.ceil(issuedRows.length * breakEvenHitRate),
             isAboveBreakEven: issuedRows.length > 0 && hitRate >= breakEvenHitRate,
-            marginToBreakEven: hitRate - breakEvenHitRate
+            marginToBreakEven: hitRate - breakEvenHitRate,
+            realisticPayoutMultiplier,
+            realisticBreakEvenHitRate,
+            realisticProfitK,
+            realisticRoi: stakeK ? realisticProfitK / stakeK : 0,
+            isAboveRealisticBreakEven: issuedRows.length > 0 && hitRate >= realisticBreakEvenHitRate,
+            marginToRealisticBreakEven: hitRate - realisticBreakEvenHitRate
         };
     };
     const strategyMetadata = new Map((payload.strategyCatalog || []).map(strategy => [strategy.id, strategy]));

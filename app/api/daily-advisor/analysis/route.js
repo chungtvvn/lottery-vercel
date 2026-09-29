@@ -8,11 +8,19 @@ export const revalidate = 0;
 const HEADERS = { 'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0', Pragma: 'no-cache', Expires: '0' };
 
 function isAuthorized(request) {
+    if (request.cookies?.get('xsmb_session')?.value === 'authenticated') {
+        return true;
+    }
     const expected = process.env.PREDICTION_API_TOKEN || process.env.EXTERNAL_API_TOKEN || '';
-    if (!expected) return true;
+    const isProd = process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production';
+    if (isProd) {
+        if (!expected) return false;
+    } else {
+        if (!expected) return true;
+    }
     const url = new URL(request.url);
     const provided = request.headers.get('x-api-key') || request.headers.get('authorization')?.replace(/^Bearer\s+/i, '') || url.searchParams.get('token') || '';
-    return provided === expected || request.cookies.get('xsmb_session')?.value === 'authenticated';
+    return Boolean(expected && provided === expected);
 }
 
 export async function GET(request) {

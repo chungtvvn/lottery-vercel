@@ -1,6 +1,6 @@
 # Báo Cáo Kiểm Toán Toàn Diện Strict PIT & Hiệu Năng Xác Suất (2016–2026)
 
-> **Thời gian tạo:** 2026-09-29T06:53:57.813Z  
+> **Thời gian tạo:** 2026-09-29T07:28:40.645Z  
 > **Node Version:** `v25.8.1` · **RNG Seed:** `20260929` (Deterministic)  
 > **Raw Data SHA-256:** `8be01c6782a68458b71dbc55a2af4b83f3982ab009e9c52e99c274bd21100404` (7567 kỳ quay, 2005-10-01 → 2026-09-28)  
 

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đề Xuất Tinh Hoa Hợp Nhất | Shadow Monitor (Bản Theo Dõi Nghiêm Ngặt)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0f172a;
+            border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased selection:bg-amber-500 selection:text-slate-950 min-h-screen">
+    <!-- Toast Notification -->
+    <div id="shadowToast" class="fixed bottom-5 right-5 z-50 flex translate-y-10 items-center gap-3 rounded-xl border border-emerald-500/40 bg-emerald-950/90 px-5 py-3.5 text-emerald-200 opacity-0 shadow-2xl transition-all duration-300 pointer-events-none backdrop-blur-md">
+        <i class="bi bi-check-circle-fill text-lg text-emerald-400"></i>
+        <span id="shadowToastText" class="text-sm font-bold">Đã sao chép!</span>
+    </div>
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-40 w-full border-b border-white/10 bg-slate-950/90 backdrop-blur-md">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="flex h-16 items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-amber-500 to-indigo-600 shadow-md shadow-amber-500/20">
+                        <i class="bi bi-shield-check text-xl text-white"></i>
+                    </div>
+                    <div>
+                        <a href="/daily-advisor" class="text-base sm:text-lg font-black tracking-tight text-white flex items-center gap-2">
+                            XSMB <span class="bg-gradient-to-r from-amber-400 via-amber-300 to-indigo-400 bg-clip-text font-extrabold text-transparent">Shadow Monitor</span>
+                            <span class="rounded-md bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[10px] font-bold px-1.5 py-0.5">Bản Nghiêm Ngặt</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a href="/daily-advisor" class="rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 px-3 py-1.5 text-xs font-bold text-slate-300 transition-all flex items-center gap-1.5">
+                        <i class="bi bi-arrow-left"></i> Về Gợi Ý Thường
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-6">
+        <!-- Error Alert -->
+        <div id="shadowErrorBox" class="hidden rounded-2xl border border-rose-500/40 bg-rose-950/40 p-4 text-xs font-bold text-rose-300"></div>
+
+        <!-- ⚠️ Permanent Mathematical EV Disclaimer Banner -->
+        <div class="rounded-2xl border-2 border-amber-500/50 bg-gradient-to-r from-amber-950/50 via-slate-900 to-slate-900 p-5 shadow-2xl ring-1 ring-amber-500/30">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                            <i class="bi bi-exclamation-triangle-fill"></i> NGUYÊN TẮC TOÁN HỌC BẤT BIẾN
+                        </span>
+                        <span class="text-xs text-slate-400">100% Strict Point-in-time</span>
+                    </div>
+                    <h2 class="text-base sm:text-lg font-black text-white">
+                        Xác suất ngẫu nhiên lý thuyết 30/100 (30.0%) · Kỳ vọng toán học âm (-EV) sau phí
+                    </h2>
+                    <p class="text-xs text-slate-300 leading-relaxed max-w-4xl">
+                        Mọi thể loại xổ số đều có biên lợi thế của nhà cái (House Edge). Tỷ lệ trả thưởng 1 ăn 84 tương ứng ngưỡng hòa vốn lý thuyết là <strong>35.7%</strong>, và tỷ lệ trả thưởng thực tế sau phí sàn/nạp rút (~1 ăn 81.5) là <strong>36.8%</strong>.
+                        Bản Shadow Monitor chỉ duy trì <strong>1 Strategy Production duy nhất</strong> với <strong>công tắc ngắt cược (ABSTAIN) làm mặc định</strong> khi bằng chứng thực nghiệm chưa đủ tin cậy. Tuyệt đối không cược theo cảm xúc!
+                    </p>
+                </div>
+                <div class="shrink-0 text-right sm:border-l sm:border-white/10 sm:pl-4">
+                    <div class="text-[11px] text-slate-400">Mã băm dữ liệu</div>
+                    <div class="font-mono text-xs font-bold text-emerald-400">SHA-256 Verified</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 👑 NEXT DAY RECOMMENDATION: SINGLE PRODUCTION STRATEGY WITH ABSTAIN GATE -->
+        <section class="rounded-3xl border border-white/15 bg-slate-900/80 p-6 shadow-2xl backdrop-blur-md space-y-5">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-white/10 pb-4">
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-black text-[10px] px-2.5 py-0.5 uppercase tracking-wide">
+                            👑 PRODUCTION STRATEGY DUY NHẤT
+                        </span>
+                        <span class="rounded-full bg-white/10 text-slate-300 font-mono text-[10px] px-2 py-0.5">
+                            Balanced Selector · Dàn 30 Số Chuẩn
+                        </span>
+                    </div>
+                    <h3 class="text-xl sm:text-2xl font-black text-white">
+                        Quyết Định Cược Ngày Mục Tiêu: <span id="shadowTargetDate" class="text-amber-400 font-mono">Đang tải...</span>
+                    </h3>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-400">Cơ chế quản lý vốn:</span>
+                    <span class="rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 text-xs font-bold px-2.5 py-1">Cược Phẳng 30M/ngày (1M/số)</span>
+                </div>
+            </div>
+
+            <!-- Action Status Banner (BET or ABSTAIN) -->
+            <div id="shadowActionBanner" class="rounded-2xl border-2 border-slate-700 bg-slate-800/40 p-5 shadow-xl transition-all">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+                    <div id="shadowActionStatusText" class="text-base font-black text-white">
+                        Đang đối soát trạng thái công tắc an toàn...
+                    </div>
+                </div>
+                <p id="shadowActionDesc" class="text-xs text-slate-300 leading-relaxed"></p>
+
+                <!-- 30 Numbers Box (Only shown if BET) -->
+                <div id="shadowNumbersBox" class="mt-4 pt-4 border-t border-white/10 hidden space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-emerald-300 uppercase tracking-wide">🎯 Dàn 30 Số Tinh Hoa (Cược Phẳng 1M/Số):</span>
+                        <button type="button" id="btnCopyShadowNumbers" class="rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs px-3 py-1.5 transition-all shadow-md flex items-center gap-1.5">
+                            <i class="bi bi-clipboard-check-fill"></i> Copy 30 Số
+                        </button>
+                    </div>
+                    <div id="shadowNumbersContainer" class="flex flex-wrap gap-1.5 p-3 rounded-xl bg-black/40 border border-white/10"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 📊 RIGOROUS SCIENTIFIC METRICS (CONFIDENCE INTERVAL, DRAWDOWN, REALISTIC PAYOUT) -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Metric 1: Hit Rate & 95% Confidence Interval -->
+            <div class="rounded-2xl border border-white/10 bg-slate-900/60 p-4 space-y-2">
+                <div class="text-xs font-semibold text-slate-400 flex items-center justify-between">
+                    <span>Tỷ Lệ Trúng Thực Nghiệm</span>
+                    <i class="bi bi-bullseye text-amber-400"></i>
+                </div>
+                <div class="flex items-baseline gap-2">
+                    <span id="metricHitRate" class="text-2xl font-black text-white font-mono">—%</span>
+                    <span id="metricWinsTotal" class="text-xs text-slate-400">— ngày</span>
+                </div>
+                <div class="pt-2 border-t border-white/5 space-y-0.5 text-[11px]">
+                    <div class="text-amber-300 font-bold">Khoảng tin cậy 95% (Wilson):</div>
+                    <div id="metricCI95" class="font-mono text-slate-300">—% – —%</div>
+                    <div id="metricBreakEvenReq" class="text-slate-400 italic">Cần hòa vốn sau phí: 36.8%</div>
+                </div>
+            </div>
+
+            <!-- Metric 2: Max Drawdown & Losing Streak -->
+            <div class="rounded-2xl border border-white/10 bg-slate-900/60 p-4 space-y-2">
+                <div class="text-xs font-semibold text-slate-400 flex items-center justify-between">
+                    <span>Max Drawdown (Sụt Giảm Vốn)</span>
+                    <i class="bi bi-graph-down-arrow text-rose-400"></i>
+                </div>
+                <div class="flex items-baseline gap-2">
+                    <span id="metricMaxDrawdown" class="text-2xl font-black text-rose-400 font-mono">—M</span>
+                </div>
+                <div class="pt-2 border-t border-white/5 space-y-0.5 text-[11px]">
+                    <div class="text-slate-300 font-semibold">Thời gian sụt giảm:</div>
+                    <div id="metricMaxDrawdownDays" class="text-slate-400">— kỳ</div>
+                    <div class="text-amber-300 font-semibold">Chuỗi thua dài nhất: <strong id="metricLongestLoss" class="text-rose-400">— kỳ</strong></div>
+                </div>
+            </div>
+
+            <!-- Metric 3: Realistic ROI After Fees -->
+            <div class="rounded-2xl border border-white/10 bg-slate-900/60 p-4 space-y-2">
+                <div class="text-xs font-semibold text-slate-400 flex items-center justify-between">
+                    <span>Lợi Nhuận Sau Phí Sàn</span>
+                    <i class="bi bi-cash-stack text-emerald-400"></i>
+                </div>
+                <div class="flex items-baseline gap-2">
+                    <span id="metricRealisticProfit" class="text-2xl font-black text-emerald-400 font-mono">—M</span>
+                    <span id="metricRealisticRoi" class="text-xs text-emerald-300 font-bold">—%</span>
+                </div>
+                <div class="pt-2 border-t border-white/5 space-y-0.5 text-[11px] text-slate-400">
+                    <div>Giả định tỷ lệ ăn thực: <strong>1 ăn 81.5</strong></div>
+                    <div>(Đã trừ trượt giá &amp; phí phế sàn)</div>
+                </div>
+            </div>
+
+            <!-- Metric 4: Capital Preservation (Abstain Rate) -->
+            <div class="rounded-2xl border border-white/10 bg-slate-900/60 p-4 space-y-2">
+                <div class="text-xs font-semibold text-slate-400 flex items-center justify-between">
+                    <span>Bảo Toàn Vốn (Abstain)</span>
+                    <i class="bi bi-shield-check text-indigo-400"></i>
+                </div>
+                <div class="flex items-baseline gap-2">
+                    <span id="metricAbstainCount" class="text-xl font-black text-indigo-300 font-mono">— ngày</span>
+                </div>
+                <div class="pt-2 border-t border-white/5 space-y-0.5 text-[11px] text-slate-400">
+                    <div>Số ngày né cược bảo vệ vốn</div>
+                    <div class="text-indigo-200">Giảm phương sai rủi ro đáng kể</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 🔍 EXPLAINABLE AI: VÌ SAO CHỌN DÀN NÀY & CẢNH BÁO RỦI RO -->
+        <section class="rounded-3xl border border-white/10 bg-slate-900/60 p-6 space-y-4">
+            <div class="border-b border-white/10 pb-3 flex items-center justify-between">
+                <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                    <i class="bi bi-mortarboard-fill text-amber-400"></i>
+                    Vì Sao Chọn Dàn Này &amp; Báo Cáo Rủi Ro Thực Tế
+                </h3>
+                <span class="rounded bg-white/10 text-slate-300 text-[10px] font-mono px-2 py-0.5">XAI Transparency</span>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Left: 3 Main Quantitative Evidences -->
+                <div class="space-y-2.5">
+                    <h4 class="text-xs font-black text-amber-300 uppercase tracking-wide flex items-center gap-1.5">
+                        <i class="bi bi-check2-all"></i> 3 Bằng Chứng Định Lượng Chính (Strict PIT):
+                    </h4>
+                    <ul id="shadowEvidenceList" class="space-y-2 text-xs text-slate-300 leading-relaxed">
+                        <li class="flex items-start gap-2">
+                            <i class="bi bi-check2-circle text-amber-400 mt-0.5 shrink-0"></i>
+                            <span>Đang tổng hợp bằng chứng từ dữ liệu kiểm toán...</span>
+                        </li>
+                    </ul>
+                    <div class="pt-2">
+                        <div class="text-[11px] text-slate-400 font-semibold mb-1">Kiểm định chống rung lắc (Anti-Churn Guard):</div>
+                        <p id="shadowChurnGuardText" class="text-[11px] text-slate-400 italic leading-relaxed"></p>
+                    </div>
+                </div>
+
+                <!-- Right: Major Risk & Caution -->
+                <div class="space-y-2.5 bg-rose-950/20 border border-rose-500/30 rounded-2xl p-4">
+                    <h4 class="text-xs font-black text-rose-300 uppercase tracking-wide flex items-center gap-1.5">
+                        <i class="bi bi-shield-exclamation text-rose-400"></i> Rủi Ro Lớn Nhất Cần Lưu Ý:
+                    </h4>
+                    <p id="shadowMajorRiskText" class="text-xs text-rose-200/90 leading-relaxed"></p>
+                    <div class="mt-3 pt-2.5 border-t border-rose-500/20 text-[11px] text-slate-400 space-y-1">
+                        <div>⚠️ <strong>Không có phương pháp nào bất bại:</strong> Ngay cả dàn số có chỉ số lịch sử tốt nhất vẫn có thể trượt 5-7 kỳ liên tiếp.</div>
+                        <div>⚠️ <strong>Quản lý vốn là sống còn:</strong> Tuyệt đối không bao giờ gấp thếp (Martingale) sau khi thua.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 📑 SETTLED LEDGER TABLE: 100% STRICT PIT AUDIT TRAIL 2026 -->
+        <section class="rounded-3xl border border-white/10 bg-slate-900/60 p-6 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-white/10 pb-4">
+                <div>
+                    <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                        <i class="bi bi-journal-bookmark-fill text-indigo-400"></i>
+                        Nhật Ký Đối Soát Thực Chiến 2026 (100% Strict PIT)
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-0.5">
+                        Mỗi dòng được chốt niêm phong trước giờ quay và đối soát tự động với giải đặc biệt thực tế sau 18:30.
+                    </p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold px-2.5 py-1">
+                        Zero Data Leakage
+                    </span>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-white/10 text-[11px] font-bold text-slate-400 uppercase tracking-wide">
+                            <th class="py-2.5 px-3">Ngày Quay</th>
+                            <th class="py-2.5 px-3">Phương Pháp Chọn</th>
+                            <th class="py-2.5 px-3 text-center">Hành Động</th>
+                            <th class="py-2.5 px-3">Dàn 30 Số</th>
+                            <th class="py-2.5 px-3 text-center">Đặc Biệt</th>
+                            <th class="py-2.5 px-3 text-right">Lãi/Lỗ Ngày</th>
+                            <th class="py-2.5 px-3 text-right">Lũy Kế Lợi Nhuận</th>
+                        </tr>
+                    </thead>
+                    <tbody id="shadowLedgerTbody" class="divide-y divide-white/5">
+                        <tr>
+                            <td colspan="7" class="py-8 text-center text-xs text-slate-400">
+                                Đang tải nhật ký kiểm toán...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer class="border-t border-white/10 py-6 text-center text-xs text-slate-500">
+        XSMB Scientific Predictive Intelligence · Strict PIT Walk-Forward Validation · Shadow Monitor Mode
+    </footer>
+
+    <script src="/js/daily-advisor-shadow.js"></script>
+</body>
+</html>

@@ -129,5 +129,27 @@
         "engineCount": 4
       }
     }
-  ]
+  ],
+  "dailyMethodAdvisorPool": {
+    "status": "STRICTLY_FROZEN",
+    "rationale": "Frozen 5 candidate methods for Daily Method Advisor. Zero post-hoc additions allowed based on lucky runs.",
+    "methods": [
+      { "id": "dedupEdge75Hold70", "label": "Edge75 PIT có kiểm chứng - Hold 70" },
+      { "id": "dedupEdge50CombinedB40S05Hold70", "label": "Edge khử trùng 75% nền - Hold 70" },
+      { "id": "dedupDropoffHold70", "label": "Dropoff khử trùng tập số - Hold 70" },
+      { "id": "avgEdge50Hold70", "label": "Dropoff TB từng số - Hold 70" },
+      { "id": "chainSmallFirstHold70", "label": "Chuỗi nhỏ trước - Hold 70" }
+    ]
+  },
+  "selectionModelsPool": {
+    "status": "STRICTLY_FROZEN",
+    "rationale": "5 frozen selection models. Momentum model is flagged as noise-prone (7-day recency) and restricted from primary production recommendation.",
+    "models": [
+      { "id": "balanced", "label": "Cân bằng dài-ngắn (Production Standard)", "status": "PRODUCTION" },
+      { "id": "stability", "label": "Ổn định có kiểm chứng", "status": "RESEARCH_ONLY" },
+      { "id": "bayesGuard", "label": "Bayes/Wilson có phạt chuỗi trượt", "status": "RESEARCH_ONLY" },
+      { "id": "hedge", "label": "Hedge online giữa các dàn", "status": "RESEARCH_ONLY" },
+      { "id": "momentum", "label": "Bám xu hướng ngắn hạn", "status": "RESEARCH_RESTRICTED", "warning": "High risk of chasing noise in 7-day windows" }
+    ]
+  }
 }

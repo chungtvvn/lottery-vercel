@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-29T06:53:57.813Z",
+  "generatedAt": "2026-09-29T07:28:40.645Z",
   "auditVersion": "2026.09.29-STRICT-PIT-COMPREHENSIVE-V1",
   "nodeVersion": "v25.8.1",
   "deterministicSeed": 20260929,
@@ -9,7 +9,7 @@
     "totalRawRecords": 7567,
     "rawFirstDate": "2005-10-01",
     "rawLastDate": "2026-09-28",
-    "frozenRegistrySha256": "5b00ecc9d849323575fa606e9367c9ee2443585cde015956337a4610afe08f28"
+    "frozenRegistrySha256": "f3b5927c678cf7872961d6892e15064ab8e090313f857cc81bfa2fc9f3801ad6"
   },
   "splits": {
     "trainEnd": "2023-12-31",

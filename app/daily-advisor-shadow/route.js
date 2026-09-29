@@ -1,0 +1,17 @@
+import fs from 'fs';
+import path from 'path';
+import { NextResponse } from 'next/server';
+
+export async function GET() {
+    const htmlPath = path.join(process.cwd(), 'views', 'daily-advisor-shadow.html');
+    if (!fs.existsSync(htmlPath)) {
+        return new NextResponse('Shadow view template not found', { status: 404 });
+    }
+    const html = fs.readFileSync(htmlPath, 'utf-8');
+    return new NextResponse(html, {
+        headers: {
+            'Content-Type': 'text/html; charset=utf-8',
+            'Cache-Control': 'no-store, no-cache, must-revalidate'
+        }
+    });
+}
