@@ -126,6 +126,26 @@
             </div>
         </section>
 
+        <!-- Mode Switcher: Balanced (All Days) vs Wilson-Abstain (Selective Filter) -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-2xl bg-white/5 border border-white/10">
+            <div>
+                <span class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                    <i class="bi bi-toggles text-amber-400"></i> SO SÁNH CHẾ ĐỘ CƯỢC THỰC NGHIỆM:
+                </span>
+                <p class="text-[11px] text-slate-400 mt-0.5">
+                    So sánh đối soát giữa cược đều mọi ngày vs. Bật công tắc ngắt an toàn (Abstain) khi tín hiệu dưới hòa vốn.
+                </p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <button type="button" id="btnModeBalanced" class="rounded-xl bg-amber-500 text-slate-950 font-black text-xs px-3.5 py-2 transition-all shadow-md">
+                    ⚖️ Cân Bằng (Đánh Đều: +42M)
+                </button>
+                <button type="button" id="btnModeWilson" class="rounded-xl bg-white/10 hover:bg-white/15 text-slate-300 font-bold text-xs px-3.5 py-2 transition-all">
+                    🛡️ Lọc Kèo Khắt Khe (Wilson-Abstain: +162M)
+                </button>
+            </div>
+        </div>
+
         <!-- 📊 RIGOROUS SCIENTIFIC METRICS (CONFIDENCE INTERVAL, DRAWDOWN, REALISTIC PAYOUT) -->
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <!-- Metric 1: Hit Rate & 95% Confidence Interval -->
@@ -230,6 +250,54 @@
                     <div class="mt-3 pt-2.5 border-t border-rose-500/20 text-[11px] text-slate-400 space-y-1">
                         <div>⚠️ <strong>Không có phương pháp nào bất bại:</strong> Ngay cả dàn số có chỉ số lịch sử tốt nhất vẫn có thể trượt 5-7 kỳ liên tiếp.</div>
                         <div>⚠️ <strong>Quản lý vốn là sống còn:</strong> Tuyệt đối không bao giờ gấp thếp (Martingale) sau khi thua.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 💡 3 CHIẾN LƯỢC TOÁN HỌC CỐT LÕI ĐỂ CẢI THIỆN LỢI NHUẬN & CHỐNG DRAWDOWN -->
+        <section class="rounded-3xl border border-amber-500/30 bg-gradient-to-br from-slate-900 via-amber-950/20 to-slate-900 p-6 space-y-4">
+            <div class="border-b border-white/10 pb-3 flex flex-wrap items-center justify-between gap-2">
+                <h3 class="text-base sm:text-lg font-bold text-amber-300 flex items-center gap-2">
+                    <i class="bi bi-lightbulb-fill text-amber-400"></i>
+                    3 Giải Pháp Khoa Học Cốt Lõi Để Cải Thiện Lợi Nhuận &amp; Chấm Dứt Drawdown
+                </h3>
+                <span class="rounded bg-amber-500/20 text-amber-300 border border-amber-400/40 text-[10px] font-bold px-2 py-0.5">
+                    Toán Học Thực Chiến
+                </span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Giải pháp 1: Bật Lọc Kèo Khắt Khe (Wilson Abstain) -->
+                <div class="rounded-2xl border border-white/10 bg-black/40 p-4 space-y-2">
+                    <div class="text-xs font-black text-amber-300 flex items-center gap-1.5 uppercase">
+                        <span>1. Bật Lọc Kèo Khắt Khe (Abstain)</span>
+                    </div>
+                    <div class="text-xs text-slate-300 leading-relaxed space-y-1.5">
+                        <p>Đánh đều 49 ngày chỉ lãi <strong class="text-white">+42M</strong> vì vướng các chuỗi trượt sâu (như chuỗi trượt 8 ngày tháng 8).</p>
+                        <p>Khi bật <strong class="text-amber-400">Wilson-Abstain</strong>, hệ thống tự động né 18 ngày thị trường nhiễu. Số ngày cược giảm còn 31 ngày nhưng tỷ lệ trúng tăng vọt lên <strong class="text-emerald-400 font-bold">41.9%</strong>, lãi ròng tăng lên <strong class="text-emerald-300 font-bold">+162.0M</strong> (gấp gần 4 lần)!</p>
+                    </div>
+                </div>
+
+                <!-- Giải pháp 2: Kết Hợp Lô QMBF v6 (Động Cơ Gánh Lợi Nhuận) -->
+                <div class="rounded-2xl border border-white/10 bg-black/40 p-4 space-y-2">
+                    <div class="text-xs font-black text-teal-300 flex items-center gap-1.5 uppercase">
+                        <span>2. Ghép Tầng Lô QMBF (27 Giải)</span>
+                    </div>
+                    <div class="text-xs text-slate-300 leading-relaxed space-y-1.5">
+                        <p>Đề chỉ có 1 giải mở thưởng (xác suất ngẫu nhiên 30%), rất dễ bị tổn thương ngắn hạn.</p>
+                        <p>Trong khi đó, Lô có 27 giải mở thưởng. Lô QMBF Top 7 năm 2026 trúng <strong class="text-teal-300 font-bold">79.8% ngày</strong> (213/267 ngày), lãi ròng <strong class="text-emerald-400 font-bold">+2.278 TỶ VNĐ</strong>. Kẹp Lô tạo dòng tiền dương ổn định gánh toàn bộ chi phí của Đề.</p>
+                    </div>
+                </div>
+
+                <!-- Giải pháp 3: Quản Lý Vốn Phân Số Kelly (Anti-Martingale) -->
+                <div class="rounded-2xl border border-white/10 bg-black/40 p-4 space-y-2">
+                    <div class="text-xs font-black text-indigo-300 flex items-center gap-1.5 uppercase">
+                        <span>3. Quản Trị Vốn Phân Số Kelly</span>
+                    </div>
+                    <div class="text-xs text-slate-300 leading-relaxed space-y-1.5">
+                        <p>Tuyệt đối không bao giờ gấp thếp (Martingale) sau khi thua vì gặp chuỗi thua 5-7 ngày sẽ phá sản.</p>
+                        <p>Áp dụng <strong class="text-indigo-300">Fractional Kelly</strong>: Chỉ cược đủ khi Wilson &gt; 38%. Khi thị trường đang sụt giảm (drawdown &ge; 2 kỳ), tự động giảm 50% vốn hoặc tạm dừng 1 ngày để bảo vệ tài khoản.</p>
                     </div>
                 </div>
             </div>

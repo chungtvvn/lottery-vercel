@@ -100,80 +100,139 @@
             };
         }
 
-        // 2. Compute Performance Summary for Main Strategy
-        const settledRecords = records.filter(r => r.settled);
-        const settledStrategies = settledRecords.map(r => ({
-            date: r.predictionDate,
-            actual: r.actual,
-            strategy: (r.strategySnapshots || []).find(s => s.strategyId === 'balanced-selector-fixed30-v1') || {}
-        }));
+        // Mode tracking: 'balanced' or 'wilsonAbstain'
+        let currentStrategyMode = window.shadowSelectedStrategy || 'balanced';
 
-        const issuedDays = settledStrategies.filter(r => !r.strategy.abstained && r.strategy.numbers?.length);
-        const abstainedDays = settledStrategies.filter(r => r.strategy.abstained || !r.strategy.numbers?.length);
-        const wins = issuedDays.filter(r => r.strategy.hit).length;
-        const totalIssued = issuedDays.length;
-        const hitRate = totalIssued > 0 ? wins / totalIssued : 0;
+        function computeAndRenderMetrics(mode) {
+            currentStrategyMode = mode;
+            window.shadowSelectedStrategy = mode;
 
-        // Confidence interval 95%
-        const z = 1.96;
-        const p = hitRate;
-        const n = Math.max(1, totalIssued);
-        const denom = 1 + (z * z) / n;
-        const center = p + (z * z) / (2 * n);
-        const margin = z * Math.sqrt((p * (1 - p) + (z * z) / (4 * n)) / n);
-        const ciLow = Math.max(0, (center - margin) / denom);
-        const ciHigh = Math.min(1, (center + margin) / denom);
+            const settledRecords = records.filter(r => r.settled)
+                .slice().sort((a, b) => (a.predictionDate || '').localeCompare(b.predictionDate || ''));
 
-        // Drawdown & Streak
-        let peakEquity = 0;
-        let equity = 0;
-        let maxDrawdownK = 0;
-        let maxDrawdownDays = 0;
-        let currentDrawdownDays = 0;
-        let longestLoss = 0;
-        let currentLoss = 0;
+            const settledStrategies = settledRecords.map(r => {
+                let strategy = (r.strategySnapshots || []).find(s => s.strategyId === (mode === 'wilsonAbstain' ? 'wilson-abstain-selector-v1' : 'balanced-selector-fixed30-v1'));
+                if (!strategy || !Array.isArray(strategy.numbers) || !strategy.numbers.length) {
+                    strategy = {
+                        strategyId: mode === 'wilsonAbstain' ? 'wilson-abstain-selector-v1' : 'balanced-selector-fixed30-v1',
+                        numbers: r.main?.numbers || [],
+                        betCount: r.main?.numbers?.length || 30,
+                        hit: r.main?.hit !== undefined ? r.main.hit : (Array.isArray(r.main?.numbers) && r.actual !== null && r.actual !== undefined ? r.main.numbers.includes(Number(r.actual)) : false),
+                        abstained: false,
+                        sourceMethodIds: r.main?.methodId ? [r.main.methodId] : ['balanced']
+                    };
+                } else if (strategy.hit === null || strategy.hit === undefined) {
+                    strategy = {
+                        ...strategy,
+                        hit: r.main?.hit !== undefined ? r.main.hit : (Array.isArray(strategy.numbers) && r.actual !== null && r.actual !== undefined ? strategy.numbers.includes(Number(r.actual)) : false)
+                    };
+                }
+                return {
+                    date: r.predictionDate,
+                    actual: r.actual,
+                    strategy
+                };
+            });
 
-        settledStrategies.forEach(r => {
-            if (r.strategy.abstained) return;
-            const hit = Boolean(r.strategy.hit);
-            const stake = 30 * 1000;
-            const winPay = hit ? 84 * 1000 : 0;
-            const dayProfit = winPay - stake;
+            // Forward Chronological Accumulation
+            let peakEquity = 0;
+            let equity = 0;
+            let maxDrawdownK = 0;
+            let maxDrawdownDays = 0;
+            let currentDrawdownDays = 0;
+            let longestLoss = 0;
+            let currentLoss = 0;
+            let accumProfitK = 0;
 
-            currentLoss = hit ? 0 : currentLoss + 1;
-            longestLoss = Math.max(longestLoss, currentLoss);
+            settledStrategies.forEach(r => {
+                const isAbstain = Boolean(r.strategy.abstained);
+                const isHit = Boolean(r.strategy.hit);
+                const dayStakeK = isAbstain ? 0 : (r.strategy.betCount || 30) * 1000;
+                const dayWinK = isHit ? 84 * 1000 : 0;
+                const dayProfitK = dayWinK - dayStakeK;
 
-            equity += dayProfit;
-            if (equity > peakEquity) {
-                peakEquity = equity;
-                currentDrawdownDays = 0;
-            } else {
-                currentDrawdownDays += 1;
-                const dd = peakEquity - equity;
-                if (dd > maxDrawdownK) maxDrawdownK = dd;
-                if (currentDrawdownDays > maxDrawdownDays) maxDrawdownDays = currentDrawdownDays;
-            }
-        });
+                r.dayProfitK = dayProfitK;
 
-        // Realistic Payout After Fee
-        const realisticPayout = 81.5;
-        const realisticBreakEven = 30 / realisticPayout;
-        const realisticProfitK = wins * realisticPayout * 1000 - totalIssued * 30 * 1000;
-        const realisticRoi = (totalIssued * 30 * 1000) > 0 ? realisticProfitK / (totalIssued * 30 * 1000) : 0;
+                if (!isAbstain) {
+                    currentLoss = isHit ? 0 : currentLoss + 1;
+                    longestLoss = Math.max(longestLoss, currentLoss);
 
-        // Render Metric Cards
-        byId('metricHitRate').textContent = `${(hitRate * 100).toFixed(1)}%`;
-        byId('metricWinsTotal').textContent = `${wins}/${totalIssued} ngày`;
-        byId('metricCI95').textContent = `${(ciLow * 100).toFixed(1)}% – ${(ciHigh * 100).toFixed(1)}%`;
-        byId('metricBreakEvenReq').textContent = `Cần: ${(realisticBreakEven * 100).toFixed(1)}%`;
+                    equity += dayProfitK;
+                    if (equity > peakEquity) {
+                        peakEquity = equity;
+                        currentDrawdownDays = 0;
+                    } else {
+                        currentDrawdownDays += 1;
+                        const dd = peakEquity - equity;
+                        if (dd > maxDrawdownK) maxDrawdownK = dd;
+                        if (currentDrawdownDays > maxDrawdownDays) maxDrawdownDays = currentDrawdownDays;
+                    }
+                    accumProfitK += dayProfitK;
+                }
+                r.accumProfitK = accumProfitK;
+            });
 
-        byId('metricMaxDrawdown').textContent = `-${moneyAbsM(maxDrawdownK)}`;
-        byId('metricMaxDrawdownDays').textContent = `Kéo dài tối đa ${maxDrawdownDays} kỳ`;
-        byId('metricLongestLoss').textContent = `${longestLoss} kỳ`;
+            const issuedDays = settledStrategies.filter(r => !r.strategy.abstained && r.strategy.numbers?.length);
+            const abstainedDays = settledStrategies.filter(r => r.strategy.abstained || !r.strategy.numbers?.length);
+            const wins = issuedDays.filter(r => r.strategy.hit).length;
+            const totalIssued = issuedDays.length;
+            const hitRate = totalIssued > 0 ? wins / totalIssued : 0;
 
-        byId('metricRealisticProfit').textContent = moneyM(realisticProfitK);
-        byId('metricRealisticRoi').textContent = `${(realisticRoi * 100).toFixed(1)}%`;
-        byId('metricAbstainCount').textContent = `${abstainedDays.length}/${settledStrategies.length} ngày (${((abstainedDays.length / Math.max(1, settledStrategies.length)) * 100).toFixed(1)}%)`;
+            // Confidence interval 95%
+            const z = 1.96;
+            const p = hitRate;
+            const n = Math.max(1, totalIssued);
+            const denom = 1 + (z * z) / n;
+            const center = p + (z * z) / (2 * n);
+            const margin = z * Math.sqrt((p * (1 - p) + (z * z) / (4 * n)) / n);
+            const ciLow = Math.max(0, (center - margin) / denom);
+            const ciHigh = Math.min(1, (center + margin) / denom);
+
+            // Realistic Payout After Fee (1 ăn 81.5)
+            const realisticPayout = 81.5;
+            const realisticBreakEven = 30 / realisticPayout;
+            const realisticProfitK = wins * realisticPayout * 1000 - totalIssued * 30 * 1000;
+            const realisticRoi = (totalIssued * 30 * 1000) > 0 ? realisticProfitK / (totalIssued * 30 * 1000) : 0;
+
+            // Update UI Metric Cards
+            byId('metricHitRate').textContent = `${(hitRate * 100).toFixed(1)}%`;
+            byId('metricWinsTotal').textContent = `${wins}/${totalIssued} ngày phát hành`;
+            byId('metricCI95').textContent = `${(ciLow * 100).toFixed(1)}% – ${(ciHigh * 100).toFixed(1)}%`;
+            byId('metricBreakEvenReq').textContent = `Cần hòa vốn sau phí: ${(realisticBreakEven * 100).toFixed(1)}%`;
+
+            byId('metricMaxDrawdown').textContent = `-${moneyAbsM(maxDrawdownK)}`;
+            byId('metricMaxDrawdownDays').textContent = `Kéo dài tối đa ${maxDrawdownDays} kỳ`;
+            byId('metricLongestLoss').textContent = `${longestLoss} kỳ`;
+
+            const profitEl = byId('metricRealisticProfit');
+            profitEl.textContent = moneyM(equity);
+            profitEl.className = `text-2xl font-black font-mono ${equity >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+
+            byId('metricRealisticRoi').textContent = `${(totalIssued > 0 ? (equity / (totalIssued * 30000) * 100).toFixed(1) : '0.0')}% (ROI sau phí: ${(realisticRoi * 100).toFixed(1)}%)`;
+            byId('metricAbstainCount').textContent = `${abstainedDays.length}/${settledStrategies.length} ngày (${((abstainedDays.length / Math.max(1, settledStrategies.length)) * 100).toFixed(1)}%)`;
+
+            // Render Settled Ledger Table
+            renderShadowSettledTable(settledStrategies);
+        }
+
+        // Toggle buttons
+        const btnModeBalanced = byId('btnModeBalanced');
+        const btnModeWilson = byId('btnModeWilson');
+        if (btnModeBalanced && btnModeWilson) {
+            btnModeBalanced.onclick = () => {
+                btnModeBalanced.className = 'rounded-xl bg-amber-500 text-slate-950 font-black text-xs px-3.5 py-2 transition-all shadow-md';
+                btnModeWilson.className = 'rounded-xl bg-white/10 hover:bg-white/15 text-slate-300 font-bold text-xs px-3.5 py-2 transition-all';
+                computeAndRenderMetrics('balanced');
+            };
+            btnModeWilson.onclick = () => {
+                btnModeWilson.className = 'rounded-xl bg-indigo-500 text-white font-black text-xs px-3.5 py-2 transition-all shadow-md';
+                btnModeBalanced.className = 'rounded-xl bg-white/10 hover:bg-white/15 text-slate-300 font-bold text-xs px-3.5 py-2 transition-all';
+                computeAndRenderMetrics('wilsonAbstain');
+            };
+        }
+
+        // Run default computation
+        computeAndRenderMetrics('balanced');
 
         // 3. Render Explainable AI Block ("Vì sao chọn dàn này")
         const advice = analysisData?.analysis?.currentAdvice || analysisData?.currentAdvice || {};
@@ -199,23 +258,18 @@
         if (churnEl) {
             churnEl.textContent = 'Đã áp dụng kiểm định ý nghĩa thống kê (Z-test / Wilson Lower margin). Hệ thống giữ nguyên phương pháp cũ để chống nhiễu ngắn hạn trừ khi phương pháp mới vượt trội có ý nghĩa thống kê (p < 0.05).';
         }
-
-        // 4. Render Settled Ledger Table
-        renderShadowSettledTable(settledStrategies);
     }
 
     function renderShadowSettledTable(settledList) {
         const tbody = byId('shadowLedgerTbody');
         if (!tbody) return;
 
-        let accumProfitK = 0;
+        // Display newest day at top
         const rows = [...settledList].reverse().map(row => {
             const isAbstain = Boolean(row.strategy?.abstained);
             const isHit = Boolean(row.strategy?.hit);
-            const dayStakeK = isAbstain ? 0 : 30 * 1000;
-            const dayWinK = isHit ? 84 * 1000 : 0;
-            const dayProfitK = isAbstain ? 0 : dayWinK - dayStakeK;
-            accumProfitK += dayProfitK;
+            const dayProfitK = row.dayProfitK ?? 0;
+            const accumProfitK = row.accumProfitK ?? 0;
 
             let statusBadge = '';
             if (isAbstain) {
