@@ -68,12 +68,44 @@ assert(diverseTen.score > baseTen.score);
 assert.strictEqual(diverseRanking.length, 100);
 assert.strictEqual(new Set(diverseRanking.map(row => row.num)).size, 100);
 
-const guardedRanking = annualMilestoneService.rankNumbersBySmallCalibratedV2([
-    active,
-    duplicate,
-    independent
-]);
-assert.strictEqual(guardedRanking.length, 100);
-assert.strictEqual(new Set(guardedRanking.map(row => row.num)).size, 100);
+const {
+    filterCandidatesByBenjaminiHochberg,
+    getCalibratedExclusionSet
+} = require('../lib/research/calibratedExclusionScoreV2');
 
-console.log('✓ calibrated exclusion score V2 tests passed');
+// 1. Test minTrials: 10 trials should be rejected by default (requires >= 20)
+const smallSample = candidate('dau_1:small', range(10, 10), {
+    currentCount: 10,
+    breakCount: 9
+});
+assert.strictEqual(scoreCandidateEvidence(smallSample), null, 'Candidate với mẫu < 20 phải bị từ chối');
+
+// 2. Test split-stability: candidate unstable across splits must be rejected
+const unstableCandidate = candidate('dit_2:unstable', range(20, 10), {
+    currentCount: 30,
+    breakCount: 28,
+    isStableAcrossSplits: false
+});
+assert.strictEqual(scoreCandidateEvidence(unstableCandidate), null, 'Candidate không ổn định giữa 2 giai đoạn phải bị từ chối');
+
+// 3. Test Benjamini-Hochberg FDR filtering
+const fdrFiltered = filterCandidatesByBenjaminiHochberg([active, duplicate, independent], { fdrAlpha: 0.10 });
+assert(Array.isArray(fdrFiltered));
+
+// 4. Test getCalibratedExclusionSet (Point 4: không ép số lượng, evidence tới đâu loại tới đó)
+const result = getCalibratedExclusionSet([active, independent], { applyFDR: false });
+assert(result.excluded.length > 0);
+assert(result.excluded.length <= 40, 'Chỉ loại những số có evidence thực tế, không ép 70-80 số');
+assert.strictEqual(result.excludedCount + result.toBetCount, 100);
+
+// Test strict abstain when evidence count < minRequiredExclusions
+const abstainResult = getCalibratedExclusionSet([active], {
+    applyFDR: false,
+    strictAbstain: true,
+    minRequiredExclusions: 50 // active chỉ có 30 số, nhỏ hơn 50 nên phải abstain
+});
+assert.strictEqual(abstainResult.abstained, true, 'Thiếu evidence phải kích hoạt Abstain thay vì ép loại');
+assert.strictEqual(abstainResult.excluded.length, 0);
+assert.strictEqual(abstainResult.toBet.length, 100);
+
+console.log('✓ calibrated exclusion score V2 tests passed (including MinTrials>=20, BH FDR, Split-Stability & No-Forced-Filling)');

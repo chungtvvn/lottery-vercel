@@ -51,4 +51,21 @@ assert.strictEqual(summary.wrongDays, 2);
 assert.strictEqual(summary.wrongWithRecordBreakEvidence, 1);
 assert.strictEqual(summary.wrongWithFirstFormationEvidence, 1);
 assert.strictEqual(summary.wrongWithNoAssociatedEvidence, 1);
-console.log('✅ exclusionFailureAudit tests passed');
+
+// Test auditTierEffectiveness
+assert(summary.tierEffectiveness);
+assert(summary.tierEffectiveness.tier_1, 'Tier 1 effectiveness must be present');
+const tier1 = summary.tierEffectiveness.tier_1;
+assert.strictEqual(tier1.daysActive, 1);
+assert(tier1.falseExclusionDays >= 0);
+assert(Number.isFinite(tier1.falseExclusionRate));
+assert(Number.isFinite(tier1.baselineFalseRate));
+assert(['VALID_EDGE', 'DROP_OR_REDUCE'].includes(tier1.verdict));
+
+// Test continuous pruning
+const { auditContinuousPruning } = require('../lib/research/exclusionFailureAudit');
+const pruning = auditContinuousPruning([row, noEvidence], { minActiveDays: 1 });
+assert(pruning.dynamicWeights);
+assert('tier_1' in pruning.dynamicWeights);
+
+console.log('✅ exclusionFailureAudit tests passed (including Tier Precision & Continuous Pruning)');
