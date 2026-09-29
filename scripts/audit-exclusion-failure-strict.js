@@ -63,6 +63,28 @@ function runAudit() {
         console.log(`\n✅ Tất cả các tier đang hoạt động đều vượt qua kiểm định baseline.`);
     }
 
+    const outputPath = path.join(ROOT, 'lib/data/statistics/cached_exclusion_tier_audit.json');
+    const payload = {
+        updatedAt: new Date().toISOString(),
+        drawsCount: rows.length,
+        tierAudit,
+        continuousPruning,
+        summaryTable: Object.entries(tierAudit).map(([tier, stats]) => ({
+            tier,
+            daysActive: stats.daysActive,
+            meanExclusionSize: stats.meanExclusionSize,
+            falseExclusionDays: stats.falseExclusionDays,
+            falseExclusionRate: stats.falseExclusionRate,
+            baselineFalseRate: stats.baselineFalseRate,
+            edgeVsBaseline: stats.edgeVsBaseline,
+            precision: stats.precision,
+            verdict: stats.verdict,
+            recommendedWeight: stats.recommendedWeight
+        }))
+    };
+    fs.writeFileSync(outputPath, JSON.stringify(payload, null, 2), 'utf8');
+    console.log(`\n💾 Đã lưu cache kiểm toán vào: ${outputPath}`);
+
     console.log(`\n========================================================================================\n`);
 }
 

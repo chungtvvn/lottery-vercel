@@ -1,0 +1,179 @@
+{
+  "updatedAt": "2026-09-29T08:41:10.929Z",
+  "drawsCount": 191,
+  "tierAudit": {
+    "tier_1": {
+      "tier": "tier_1",
+      "daysActive": 191,
+      "totalExclusions": 13281,
+      "meanExclusionSize": 69.53,
+      "falseExclusionDays": 122,
+      "falseExclusionRate": 0.6387,
+      "baselineFalseRate": 0.6953,
+      "edgeVsBaseline": 0.0566,
+      "precision": 0.9908,
+      "verdict": "VALID_EDGE",
+      "recommendedWeight": 0.081,
+      "auditMessage": "Tier tier_1 bớt sai hơn ngẫu nhiên (Edge: +5.66%)"
+    },
+    "tier_4": {
+      "tier": "tier_4",
+      "daysActive": 191,
+      "totalExclusions": 13370,
+      "meanExclusionSize": 70,
+      "falseExclusionDays": 123,
+      "falseExclusionRate": 0.644,
+      "baselineFalseRate": 0.7,
+      "edgeVsBaseline": 0.056,
+      "precision": 0.9908,
+      "verdict": "VALID_EDGE",
+      "recommendedWeight": 0.08,
+      "auditMessage": "Tier tier_4 bớt sai hơn ngẫu nhiên (Edge: +5.60%)"
+    },
+    "tier_2": {
+      "tier": "tier_2",
+      "daysActive": 154,
+      "totalExclusions": 3522,
+      "meanExclusionSize": 22.87,
+      "falseExclusionDays": 30,
+      "falseExclusionRate": 0.1948,
+      "baselineFalseRate": 0.2287,
+      "edgeVsBaseline": 0.0339,
+      "precision": 0.9915,
+      "verdict": "VALID_EDGE",
+      "recommendedWeight": 0.148,
+      "auditMessage": "Tier tier_2 bớt sai hơn ngẫu nhiên (Edge: +3.39%)"
+    },
+    "tier_3": {
+      "tier": "tier_3",
+      "daysActive": 191,
+      "totalExclusions": 13370,
+      "meanExclusionSize": 70,
+      "falseExclusionDays": 123,
+      "falseExclusionRate": 0.644,
+      "baselineFalseRate": 0.7,
+      "edgeVsBaseline": 0.056,
+      "precision": 0.9908,
+      "verdict": "VALID_EDGE",
+      "recommendedWeight": 0.08,
+      "auditMessage": "Tier tier_3 bớt sai hơn ngẫu nhiên (Edge: +5.60%)"
+    }
+  },
+  "continuousPruning": {
+    "tierAudit": {
+      "tier_1": {
+        "tier": "tier_1",
+        "daysActive": 191,
+        "totalExclusions": 13281,
+        "meanExclusionSize": 69.53,
+        "falseExclusionDays": 122,
+        "falseExclusionRate": 0.6387,
+        "baselineFalseRate": 0.6953,
+        "edgeVsBaseline": 0.0566,
+        "precision": 0.9908,
+        "verdict": "VALID_EDGE",
+        "recommendedWeight": 0.081,
+        "auditMessage": "Tier tier_1 bớt sai hơn ngẫu nhiên (Edge: +5.66%)"
+      },
+      "tier_4": {
+        "tier": "tier_4",
+        "daysActive": 191,
+        "totalExclusions": 13370,
+        "meanExclusionSize": 70,
+        "falseExclusionDays": 123,
+        "falseExclusionRate": 0.644,
+        "baselineFalseRate": 0.7,
+        "edgeVsBaseline": 0.056,
+        "precision": 0.9908,
+        "verdict": "VALID_EDGE",
+        "recommendedWeight": 0.08,
+        "auditMessage": "Tier tier_4 bớt sai hơn ngẫu nhiên (Edge: +5.60%)"
+      },
+      "tier_2": {
+        "tier": "tier_2",
+        "daysActive": 154,
+        "totalExclusions": 3522,
+        "meanExclusionSize": 22.87,
+        "falseExclusionDays": 30,
+        "falseExclusionRate": 0.1948,
+        "baselineFalseRate": 0.2287,
+        "edgeVsBaseline": 0.0339,
+        "precision": 0.9915,
+        "verdict": "VALID_EDGE",
+        "recommendedWeight": 0.148,
+        "auditMessage": "Tier tier_2 bớt sai hơn ngẫu nhiên (Edge: +3.39%)"
+      },
+      "tier_3": {
+        "tier": "tier_3",
+        "daysActive": 191,
+        "totalExclusions": 13370,
+        "meanExclusionSize": 70,
+        "falseExclusionDays": 123,
+        "falseExclusionRate": 0.644,
+        "baselineFalseRate": 0.7,
+        "edgeVsBaseline": 0.056,
+        "precision": 0.9908,
+        "verdict": "VALID_EDGE",
+        "recommendedWeight": 0.08,
+        "auditMessage": "Tier tier_3 bớt sai hơn ngẫu nhiên (Edge: +5.60%)"
+      }
+    },
+    "dynamicWeights": {
+      "tier_1": 0.081,
+      "tier_4": 0.08,
+      "tier_2": 0.148,
+      "tier_3": 0.08
+    },
+    "prunedTiers": []
+  },
+  "summaryTable": [
+    {
+      "tier": "tier_1",
+      "daysActive": 191,
+      "meanExclusionSize": 69.53,
+      "falseExclusionDays": 122,
+      "falseExclusionRate": 0.6387,
+      "baselineFalseRate": 0.6953,
+      "edgeVsBaseline": 0.0566,
+      "precision": 0.9908,
+      "verdict": "VALID_EDGE",
+      "recommendedWeight": 0.081
+    },
+    {
+      "tier": "tier_4",
+      "daysActive": 191,
+      "meanExclusionSize": 70,
+      "falseExclusionDays": 123,
+      "falseExclusionRate": 0.644,
+      "baselineFalseRate": 0.7,
+      "edgeVsBaseline": 0.056,
+      "precision": 0.9908,
+      "verdict": "VALID_EDGE",
+      "recommendedWeight": 0.08
+    },
+    {
+      "tier": "tier_2",
+      "daysActive": 154,
+      "meanExclusionSize": 22.87,
+      "falseExclusionDays": 30,
+      "falseExclusionRate": 0.1948,
+      "baselineFalseRate": 0.2287,
+      "edgeVsBaseline": 0.0339,
+      "precision": 0.9915,
+      "verdict": "VALID_EDGE",
+      "recommendedWeight": 0.148
+    },
+    {
+      "tier": "tier_3",
+      "daysActive": 191,
+      "meanExclusionSize": 70,
+      "falseExclusionDays": 123,
+      "falseExclusionRate": 0.644,
+      "baselineFalseRate": 0.7,
+      "edgeVsBaseline": 0.056,
+      "precision": 0.9908,
+      "verdict": "VALID_EDGE",
+      "recommendedWeight": 0.08
+    }
+  ]
+}

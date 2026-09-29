@@ -122,18 +122,60 @@
                     </div>
                 </div>
 
-                <!-- Gap Strategy Setting -->
+                <!-- 🛡️ HỆ THỐNG LOẠI TRỪ HIỆU CHUẨN (CALIBRATED EXCLUSION V2) -->
                 <div class="border-b border-slate-100 pb-6">
-                    <h2 class="text-xl font-semibold text-slate-900 mb-2">Chiến lược Gap</h2>
+                    <div class="p-5 rounded-2xl bg-gradient-to-br from-indigo-50/80 via-white to-slate-50 border border-indigo-100 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-base font-bold text-indigo-950 flex items-center gap-2">
+                                <i class="bi bi-shield-check text-indigo-600"></i>
+                                Mô Hình Loại Trừ Hiệu Chuẩn V2 (Calibrated Exclusion V2)
+                            </h2>
+                            <span class="rounded bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5">Strict PIT 2026</span>
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Hệ thống đã nâng cấp toàn diện sang chuẩn toán học nghiêm ngặt:
+                        </p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-700">
+                            <div class="p-3 rounded-xl bg-white border border-indigo-50 shadow-sm space-y-1">
+                                <div class="font-bold text-indigo-900 flex items-center gap-1.5">
+                                    <i class="bi bi-check-circle-fill text-emerald-500"></i> Bỏ ngưỡng cứng minGap:
+                                </div>
+                                <div class="text-[11px] text-slate-500">Chỉ loại khi <code>CredibleEdge &gt; 0</code> sau khi co về Bayesian Prior (weight=30) và lấy cận dưới Wilson Lower Bound.</div>
+                            </div>
+                            <div class="p-3 rounded-xl bg-white border border-indigo-50 shadow-sm space-y-1">
+                                <div class="font-bold text-indigo-900 flex items-center gap-1.5">
+                                    <i class="bi bi-check-circle-fill text-emerald-500"></i> Cỡ mẫu tối thiểu &ge; 20:
+                                </div>
+                                <div class="text-[11px] text-slate-500">Loại bỏ hoàn toàn các pattern rác có số lần xuất hiện dưới 20 mẫu để chống bẫy may rủi ngẫu nhiên.</div>
+                            </div>
+                            <div class="p-3 rounded-xl bg-white border border-indigo-50 shadow-sm space-y-1">
+                                <div class="font-bold text-indigo-900 flex items-center gap-1.5">
+                                    <i class="bi bi-check-circle-fill text-emerald-500"></i> Không ép đủ số lượng:
+                                </div>
+                                <div class="text-[11px] text-slate-500">Tắt cơ chế ép nới lỏng 500%. Evidence tới đâu loại tới đó; thiếu thì cược 0đ (Abstain) để bảo vệ vốn.</div>
+                            </div>
+                            <div class="p-3 rounded-xl bg-white border border-indigo-50 shadow-sm space-y-1">
+                                <div class="font-bold text-indigo-900 flex items-center gap-1.5">
+                                    <i class="bi bi-check-circle-fill text-emerald-500"></i> Lọc False Discovery (BH FDR):
+                                </div>
+                                <div class="text-[11px] text-slate-500">Kiểm soát tỷ lệ phát hiện sai &alpha; = 0.10 và yêu cầu ổn định trên 2 giai đoạn lịch sử độc lập.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gap Strategy Setting (Legacy Compatibility) -->
+                <div class="border-b border-slate-100 pb-6 opacity-80">
+                    <h2 class="text-xl font-semibold text-slate-900 mb-2">Chiến lược Gap Thống Kê (Tham khảo thêm)</h2>
                     <p class="text-sm text-slate-600 mb-4">
-                        Chọn cách thức tính toán khoảng cách để so sánh và thiết lập phần trăm đệm cho minGap.
+                        Dùng để lọc nhanh chế độ hiển thị trên bảng thống kê chi tiết.
                     </p>
 
                     <div class="space-y-6">
                         <div class="flex items-center gap-4">
                             <label class="text-sm font-semibold text-slate-700 w-40">Chiến lược:</label>
                             <select id="gap-strategy" class="glass-input flex-1 px-4 py-2 text-sm">
-                                <option value="GE">Lớn hơn hoặc bằng (>=)</option>
+                                <option value="GE">Lớn hơn hoặc bằng (&gt;=)</option>
                                 <option value="EXACT">Chính xác (==)</option>
                                 <option value="COMBINED">Kết hợp (Cả hai)</option>
                             </select>
@@ -146,7 +188,7 @@
                                 <span id="gap-buffer-value" class="text-2xl font-bold text-indigo-600 w-20 text-right glow-text-primary"></span>
                             </div>
                             <p class="text-xs text-slate-500 ml-0 md:ml-40">
-                                Công thức loại trừ: <code>lastGap < minGap * (1 + Buffer%)</code>
+                                Ngưỡng đệm trực quan cho các thẻ thống kê chuỗi.
                             </p>
                         </div>
                     </div>
