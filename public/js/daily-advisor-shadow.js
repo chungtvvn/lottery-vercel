@@ -34,7 +34,14 @@
 
             const advisorData = await advisorRes.json();
             if (!advisorData.success) throw new Error(advisorData.error || 'Lỗi nạp dữ liệu');
-            const analysisData = analysisRes ? await analysisRes.json() : null;
+            let analysisData = null;
+            if (analysisRes && analysisRes.ok) {
+                try {
+                    analysisData = await analysisRes.json();
+                } catch (_) {
+                    analysisData = null;
+                }
+            }
 
             renderShadowDashboard(advisorData, analysisData);
         } catch (err) {
@@ -47,7 +54,7 @@
         }
     }
 
-    function renderShadowDashboard(data, analysis) {
+    function renderShadowDashboard(data, analysisData) {
         // 1. Identify primary production strategy: MAIN_STRATEGY_ID ('balanced-selector-fixed30-v1')
         const records = Array.isArray(data.records) ? data.records : [];
         const latestRecord = records.at(-1) || {};
@@ -169,7 +176,7 @@
         byId('metricAbstainCount').textContent = `${abstainedDays.length}/${settledStrategies.length} ngày (${((abstainedDays.length / Math.max(1, settledStrategies.length)) * 100).toFixed(1)}%)`;
 
         // 3. Render Explainable AI Block ("Vì sao chọn dàn này")
-        const advice = analysisData?.analysis?.currentAdvice || {};
+        const advice = analysisData?.analysis?.currentAdvice || analysisData?.currentAdvice || {};
         const whyThis = advice.whyThisSelection || {};
         const evidences = whyThis.mainEvidences || [
             'Posterior 90 kỳ & Cận Wilson 90% vượt ngưỡng hòa vốn thực nghiệm.',
