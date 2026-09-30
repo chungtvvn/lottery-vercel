@@ -434,34 +434,34 @@
             deBadge = streakRec.confidenceBadge || 'Đề Tinh Hoa 30M Phẳng';
         } else if (deMethodKey === 'pentaCoreDe') {
             const pentaDe = payloadData.pentaCoreDe?.latestRecommendation || payloadData.streakAwareDeAdvisor?.latestRecommendation || {};
-            deMethodName = '👑 Ngũ Trụ Tinh Hoa AI (Penta-Core 60M)';
+            deMethodName = '👑 Ngũ Trụ Tinh Hoa AI (Penta-Core)';
             deX2Nums = (pentaDe.vipNumbers || (payloadData.streakAwareDeAdvisor?.latestRecommendation?.tierX2 || [])).map(number);
             deX1Nums = (pentaDe.backupNumbers || (payloadData.streakAwareDeAdvisor?.latestRecommendation?.singles || [])).map(number);
             deNumbers = (pentaDe.numbers && pentaDe.numbers.length ? pentaDe.numbers : [...deX2Nums, ...deX1Nums]).map(number);
-            deStakeK = pentaDe.stakeK || 60000;
-            deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} Siêu VIP X2 · ${deX1Nums.length} Lót X1)`;
+            deStakeK = (deX2Nums.length * 3 + deX1Nums.length * 1) * 1000;
+            deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} Siêu VIP X3 · ${deX1Nums.length} Lót X1) (Vốn ${moneyM(deStakeK)})`;
             deRationale = pentaDe.rationale || 'Hệ thống Ngũ Trụ AI đại đồng thuận 5 động cơ lớn (Thích Ứng Alpha, Đề Gộp Tiêu Chuẩn, Tam Trụ, Markov Gap và Bayes Dạng Số). 16 số Siêu VIP được từ 4 đến 5 động cơ cùng chọn (số 46 đạt tuyệt đối 5/5 động cơ).';
             deBadge = pentaDe.confidenceBadge || 'Đại Đồng Thuận 5 Động Cơ · 16 Siêu VIP 👑';
         } else if (deMethodKey === 'dualMerge') {
             const rec = payloadData.dualMerge?.latestRecommendation || {};
-            deMethodName = '🎯 Đề Gộp Tiêu Chuẩn (Dual Merge 60M)';
+            deMethodName = '🎯 Đề Gộp Tiêu Chuẩn (Dual Merge)';
             deX2Nums = (rec.intersectionX2 || rec.intersection || []).map(number);
             deX1Nums = (rec.uniqueSinglesX1 || rec.uniqueSingles || []).map(number);
             deNumbers = (rec.fullUnion || rec.union || rec.numbers || [...deX2Nums, ...deX1Nums]).map(number);
-            deStakeK = rec.stakeK || 60000;
-            deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X2 · ${deX1Nums.length} X1)`;
-            deRationale = rec.rationale || 'Chiến lược phòng thủ vững chắc với Đề Gộp Tiêu Chuẩn 60M.';
+            deStakeK = (deX2Nums.length * 3 + deX1Nums.length * 1) * 1000;
+            deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} VIP X3 · ${deX1Nums.length} Lót X1) (Vốn ${moneyM(deStakeK)})`;
+            deRationale = rec.rationale || 'Chiến lược phòng thủ vững chắc với Đề Gộp Tiêu Chuẩn cược VIP X3 và Lót X1.';
             deBadge = 'An Toàn Tuyệt Đối';
         } else if (deMethodKey === 'bayesFormResonance') {
             const rec = payloadData.streakAwareDeAdvisor?.bayesAdvisor?.latestRecommendation 
                 || payloadData.streakAwareDeAdvisor?.latestRecommendation?.availableMethods?.bayesFormResonance
                 || {};
-            deMethodName = '🔮 Đề Ngũ Hành Dạng Số Bayes (60M)';
+            deMethodName = '🔮 Đề Ngũ Hành Dạng Số Bayes (Bù Trừ)';
             deX2Nums = (rec.vipNumbers || (rec.numbers || []).slice(0, 17)).map(number);
             deX1Nums = (rec.backupNumbers || (rec.numbers || []).slice(17)).map(number);
             deNumbers = (rec.numbers || [...deX2Nums, ...deX1Nums]).map(number);
-            deStakeK = rec.stakeK || 60000;
-            deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X2 · ${deX1Nums.length} X1)`;
+            deStakeK = (deX2Nums.length * 3 + deX1Nums.length * 1) * 1000;
+            deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} VIP X3 · ${deX1Nums.length} Lót X1) (Vốn ${moneyM(deStakeK)})`;
             deRationale = rec.rationale || 'Hoạt động độc lập bằng thuật toán Chạm/Tổng/Bộ 30 ngày + Markov tensor + Gap decay.';
             deBadge = 'Mô hình Dạng Số Bayes';
         } else if (deMethodKey === 'tripleMerge') {
@@ -476,22 +476,22 @@
             deBadge = 'Tam Trụ Đồng Quy';
         } else if (deMethodKey === 'deMarkovGapHazard') {
             const rec = payloadData.deMarkovGapHazard?.latestRecommendation || payloadData.streakAwareDeAdvisor?.markovAdvisor?.latestRecommendation || {};
-            deMethodName = '🔮 Đề Markov Bậc 2 & Gap Hazard (60M)';
-            deX2Nums = (rec.vipNumbers || (rec.numbers || []).slice(0, 16)).map(number);
-            deX1Nums = (rec.backupNumbers || (rec.numbers || []).slice(16)).map(number);
+            deMethodName = '🔮 Đề Markov Bậc 2 & Gap Hazard';
+            deX2Nums = (rec.vipNumbers || (rec.numbers || []).slice(0, 17)).map(number);
+            deX1Nums = (rec.backupNumbers || (rec.numbers || []).slice(17)).map(number);
             deNumbers = (rec.numbers || [...deX2Nums, ...deX1Nums]).map(number);
-            deStakeK = rec.stakeK || 60000;
-            deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X2 · ${deX1Nums.length} X1)`;
+            deStakeK = (deX2Nums.length * 3 + deX1Nums.length * 1) * 1000;
+            deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} VIP X3 · ${deX1Nums.length} Lót X1) (Vốn ${moneyM(deStakeK)})`;
             deRationale = rec.rationale || 'Bắt các nhịp số gan, kép lệch và bẻ cầu, sử dụng Mốc Lịch Sử hiện tại.';
             deBadge = 'Kháng Nhiễu Độc Lập';
         } else if (deMethodKey === 'dePositionalGraphFlow') {
             const rec = payloadData.dePositionalGraphFlow?.latestRecommendation || payloadData.streakAwareDeAdvisor?.graphAdvisor?.latestRecommendation || {};
-            deMethodName = '🕸️ Cầu Đề Đồ Thị Vị Trí (Graph Flow 60M)';
-            deX2Nums = (rec.vipNumbers || (rec.numbers || []).slice(0, 16)).map(number);
-            deX1Nums = (rec.backupNumbers || (rec.numbers || []).slice(16)).map(number);
+            deMethodName = '🕸️ Cầu Đề Đồ Thị Vị Trí (Graph Flow)';
+            deX2Nums = (rec.vipNumbers || (rec.numbers || []).slice(0, 17)).map(number);
+            deX1Nums = (rec.backupNumbers || (rec.numbers || []).slice(17)).map(number);
             deNumbers = (rec.numbers || [...deX2Nums, ...deX1Nums]).map(number);
-            deStakeK = rec.stakeK || 60000;
-            deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X2 · ${deX1Nums.length} X1)`;
+            deStakeK = (deX2Nums.length * 3 + deX1Nums.length * 1) * 1000;
+            deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} VIP X3 · ${deX1Nums.length} Lót X1) (Vốn ${moneyM(deStakeK)})`;
             deRationale = rec.rationale || 'Cầu đồ thị Markov liên kết vị trí giải thưởng.';
             deBadge = 'Đồ Thị Động Năng';
         } else if (deMethodKey === 'contrarianLotKhe') {
@@ -531,14 +531,14 @@
         } else {
             // Default: adaptiveDualMerge
             const rec = payloadData.adaptiveDualMerge?.latestRecommendation || payloadData.streakAwareDeAdvisor?.latestRecommendation || {};
-            deMethodName = '👑 Đề Thích Ứng Alpha (Adaptive Dual 60M)';
+            deMethodName = '👑 Đề Thích Ứng Alpha (Adaptive Dual)';
             deX2Nums = (rec.intersectionX2 || rec.tierX2 || []).map(number);
             deX1Nums = (rec.uniqueSinglesX1 || rec.singles || []).map(number);
             deNumbers = (rec.fullUnion || rec.numbers || [...deX2Nums, ...deX1Nums]).map(number);
-            deStakeK = rec.stakeK || 60000;
-            deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X2 · ${deX1Nums.length} X1)`;
-            deRationale = rec.rationale || 'Săn đón nhịp nổ bù với Đề Thích Ứng Alpha cược X2 số trùng hạt nhân và X1 bọc lót tối ưu hóa vốn.';
-            deBadge = rec.confidenceBadge || 'Tối Ưu X2 Số Trùng';
+            deStakeK = (deX2Nums.length * 3 + deX1Nums.length * 1) * 1000;
+            deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} VIP X3 · ${deX1Nums.length} Lót X1) (Vốn ${moneyM(deStakeK)})`;
+            deRationale = rec.rationale || 'Săn đón nhịp nổ bù với Đề Thích Ứng Alpha cược X3 số trùng hạt nhân và X1 bọc lót tối ưu hóa vốn.';
+            deBadge = rec.confidenceBadge || 'Tối Ưu X3 Số Trùng';
         }
 
         // 2. Resolve Lô
@@ -716,8 +716,8 @@
             deNumbers = (r?.numbers || []).map(number);
             deX2Nums = (r?.vipNumbers || r?.vip || []).map(number);
             deX1Nums = (r?.backupNumbers || deNumbers.filter(n => !deX2Nums.includes(n))).map(number);
+            deStakeK = (deX2Nums.length * 3 + deX1Nums.length * 1) * 1000;
             deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X3 · ${deX1Nums.length} X1)`;
-            deStakeK = r?.stakeK || 60000;
             deProfitK = r?.profitK != null ? r.profitK : deProfitK;
             deIsHitFinal = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || r?.hitType === 'win_x1' || r?.isHit || deProfitK > 0);
         } else if (chosenDeMethod === 'adaptiveDualMerge') {
@@ -726,8 +726,8 @@
             deNumbers = (r?.fullUnion || r?.union || r?.numbers || deNumbers).map(number);
             deX2Nums = (r?.intersectionX2 || r?.intersection || r?.vipNumbers || []).map(number);
             deX1Nums = (r?.uniqueSinglesX1 || r?.uniqueSingles || r?.backupNumbers || []).map(number);
+            deStakeK = (deX2Nums.length * 3 + deX1Nums.length * 1) * 1000;
             deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X3 · ${deX1Nums.length} X1)`;
-            deStakeK = r?.stakeK || 60000;
             deProfitK = r?.profitK != null ? r.profitK : deProfitK;
             deIsHitFinal = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || r?.hitType === 'win_x1' || r?.isHit || deProfitK > 0);
         } else if (chosenDeMethod === 'dualMerge') {
@@ -736,8 +736,8 @@
             deNumbers = (r?.union || r?.fullUnion || r?.numbers || deNumbers).map(number);
             deX2Nums = (r?.intersection || r?.intersectionX2 || r?.vipNumbers || []).map(number);
             deX1Nums = (r?.uniqueSingles || r?.uniqueSinglesX1 || r?.backupNumbers || []).map(number);
+            deStakeK = (deX2Nums.length * 3 + deX1Nums.length * 1) * 1000;
             deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X3 · ${deX1Nums.length} X1)`;
-            deStakeK = r?.stakeK || 60000;
             deProfitK = r?.profitK != null ? r.profitK : deProfitK;
             deIsHitFinal = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || r?.hitType === 'win_x1' || r?.isHit || deProfitK > 0);
         } else if (chosenDeMethod === 'tripleMerge') {
@@ -746,8 +746,8 @@
             deNumbers = (r?.fullUnion || r?.union || r?.numbers || deNumbers).map(number);
             deX2Nums = (r?.tierX2 || r?.tierX3 || r?.intersection || r?.vipNumbers || []).map(number);
             deX1Nums = (r?.tierX1 || r?.uniqueSingles || r?.backupNumbers || []).map(number);
-            deSubTierLabel = `Dàn ${deNumbers.length} số (90M)`;
             deStakeK = r?.stakeK || 90000;
+            deSubTierLabel = `Dàn ${deNumbers.length} số (90M)`;
             deProfitK = r?.profitK != null ? r.profitK : deProfitK;
             deIsHitFinal = Boolean(r?.isHit || deProfitK > 0);
         } else if (chosenDeMethod === 'bayesFormResonance') {
@@ -756,8 +756,8 @@
             deNumbers = (r?.numbers || deNumbers).map(number);
             deX2Nums = (r?.vip17 || r?.vipNumbers || []).map(number);
             deX1Nums = (r?.backup26 || r?.backupNumbers || []).map(number);
+            deStakeK = (deX2Nums.length * 3 + deX1Nums.length * 1) * 1000;
             deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X3 · ${deX1Nums.length} X1)`;
-            deStakeK = r?.stakeK || 60000;
             deProfitK = r?.profitK != null ? r.profitK : deProfitK;
             deIsHitFinal = Boolean(r?.isHit || deProfitK > 0);
         } else if (chosenDeMethod === 'deMarkovGapHazard') {
@@ -766,8 +766,8 @@
             deNumbers = (r?.numbers || deNumbers).map(number);
             deX2Nums = (r?.vipNumbers || r?.numbers?.slice(0, 17) || []).map(number);
             deX1Nums = (r?.backupNumbers || r?.numbers?.slice(17) || []).map(number);
+            deStakeK = (deX2Nums.length * 3 + deX1Nums.length * 1) * 1000;
             deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X3 · ${deX1Nums.length} X1)`;
-            deStakeK = r?.stakeK || 60000;
             deProfitK = r?.profitK != null ? r.profitK : deProfitK;
             deIsHitFinal = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || r?.hitType === 'win_x1' || r?.isHit || deProfitK > 0);
         } else if (chosenDeMethod === 'dePositionalGraphFlow') {
@@ -776,17 +776,17 @@
             deNumbers = (r?.numbers || deNumbers).map(number);
             deX2Nums = (r?.vipNumbers || r?.numbers?.slice(0, 17) || []).map(number);
             deX1Nums = (r?.backupNumbers || r?.numbers?.slice(17) || []).map(number);
+            deStakeK = (deX2Nums.length * 3 + deX1Nums.length * 1) * 1000;
             deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X3 · ${deX1Nums.length} X1)`;
-            deStakeK = r?.stakeK || 60000;
             deProfitK = r?.profitK != null ? r.profitK : deProfitK;
             deIsHitFinal = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || r?.hitType === 'win_x1' || r?.isHit || deProfitK > 0);
         } else if (chosenDeMethod === 'metaLearner') {
             deMethodName = '💎 Đề Tinh Hoa';
-            deSubTierLabel = `Dàn 30 số (${moneyM(deStakeK)})`;
             deNumbers = (deRow?.numbers || deRow?.standard30 || []).map(number);
             deX2Nums = [];
             deX1Nums = [];
-            deStakeK = deRow?.stakeK || 30000;
+            deStakeK = (deNumbers.length || 30) * 1000;
+            deSubTierLabel = `Dàn 30 số (${moneyM(deStakeK)})`;
             deProfitK = deRow ? (deRow.profitK ?? (deRow.isHit ? 54000 : -30000)) : 0;
             deIsHitFinal = Boolean(deRow?.isHit || (deProfitK > 0));
         }
@@ -799,8 +799,8 @@
                 deX2Nums = (fbRow.intersectionX2 || fbRow.intersection || fbRow.vipNumbers || fbRow.tierX2 || []).map(number);
                 deX1Nums = (fbRow.uniqueSinglesX1 || fbRow.uniqueSingles || fbRow.backupNumbers || fbRow.tierX1 || deNumbers.filter(n => !deX2Nums.includes(n))).map(number);
                 if (deNumbers.length > 0) {
+                    deStakeK = (deX2Nums.length * 3 + deX1Nums.length * 1) * 1000;
                     deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X3 · ${deX1Nums.length} X1)`;
-                    deStakeK = fbRow.stakeK || deStakeK || 60000;
                     deProfitK = fbRow.profitK != null ? fbRow.profitK : deProfitK;
                     deIsHitFinal = Boolean(fbRow.hitType === 'win_x3' || fbRow.hitType === 'win_x2' || fbRow.hitType === 'win_x1' || fbRow.isHit || deProfitK > 0);
                 }
@@ -822,13 +822,34 @@
                 const actStr = number(actualSpec);
                 if (deNumbers.some(n => number(n) === actStr)) {
                     deIsHitFinal = true;
-                    deProfitK = 54000;
+                    deProfitK = 84000 - deStakeK;
                 } else {
                     deIsHitFinal = false;
-                    deProfitK = -30000;
+                    deProfitK = -deStakeK;
                 }
             }
             hitType = deIsHitFinal ? 'win' : 'loss';
+        } else if (chosenDeMethod === 'tripleMerge') {
+            if (actualSpec != null) {
+                const actStr = number(actualSpec);
+                const r = tripleRow || streakRow;
+                const x3 = (r?.tierX3 || []).map(number);
+                const x2 = (r?.tierX2 || []).map(number);
+                const x1 = (r?.tierX1 || []).map(number);
+                if (x3.some(n => number(n) === actStr)) {
+                    isX3 = true; isX2 = true; deIsHitFinal = true; hitType = 'win_x3';
+                    deProfitK = 252000 - deStakeK;
+                } else if (x2.some(n => number(n) === actStr)) {
+                    isX2 = true; deIsHitFinal = true; hitType = 'win_x2';
+                    deProfitK = 168000 - deStakeK;
+                } else if (x1.some(n => number(n) === actStr)) {
+                    isX1 = true; deIsHitFinal = true; hitType = 'win_x1';
+                    deProfitK = 84000 - deStakeK;
+                } else {
+                    deIsHitFinal = false; hitType = 'loss';
+                    deProfitK = -deStakeK;
+                }
+            }
         } else {
             if (actualSpec != null) {
                 const actStr = number(actualSpec);
@@ -837,20 +858,20 @@
                     isX2 = true;
                     deIsHitFinal = true;
                     hitType = 'win_x3';
-                    deProfitK = 192000;
+                    deProfitK = 252000 - deStakeK;
                 } else if (deX1Nums.some(n => number(n) === actStr)) {
                     isX1 = true;
                     deIsHitFinal = true;
                     hitType = 'win_x1';
-                    deProfitK = 24000;
+                    deProfitK = 84000 - deStakeK;
                 } else if (deNumbers.some(n => number(n) === actStr)) {
                     deIsHitFinal = true;
                     hitType = 'win_x1';
-                    deProfitK = 24000;
+                    deProfitK = 84000 - deStakeK;
                 } else {
                     deIsHitFinal = false;
                     hitType = 'loss';
-                    deProfitK = -(deStakeK || 60000);
+                    deProfitK = -deStakeK;
                 }
             } else {
                 if (deProfitK >= 108000 || (chosenDeMethod === 'adaptiveDualMerge' && (adaptiveRow?.hitType === 'win_x3' || adaptiveRow?.hitType === 'win_x2')) || (chosenDeMethod === 'dualMerge' && (dualRow?.hitType === 'win_x3' || dualRow?.hitType === 'win_x2')) || (chosenDeMethod === 'pentaCoreDe' && (pentaRow?.hitType === 'win_x3' || pentaRow?.hitType === 'win_x2'))) {
@@ -858,7 +879,7 @@
                     isX2 = true;
                     deIsHitFinal = true;
                     hitType = 'win_x3';
-                    deProfitK = 192000;
+                    deProfitK = 252000 - deStakeK;
                 }
             }
         }
@@ -1272,18 +1293,18 @@
             const vipNums = (pentaAdv?.vipNumbers || (streakDeAdv?.tierX3 || []).concat(streakDeAdv?.tierX2 || [])).map(number);
             const singleNums = (pentaAdv?.backupNumbers || (streakDeAdv?.singles || [])).map(number);
             const allNums = (pentaAdv?.numbers && pentaAdv.numbers.length ? pentaAdv.numbers : [...vipNums, ...singleNums]).map(number);
-            const sizing = pentaAdv?.sizingMultiplier || streakDeAdv?.sizingMultiplier || 1.25;
-            const sizingStake = Math.round(60 * (sizing >= 1 ? sizing : 1));
+            const dynStake = (vipNums.length * 3 + singleNums.length * 1) * 1000;
+            const stakeM = Math.round(dynStake / 1000);
             return {
-                label: `👑 Ngũ Trụ Tinh Hoa AI (Penta-Core 60M)`,
+                label: `👑 Ngũ Trụ Tinh Hoa AI (Penta-Core)`,
                 badge: pentaAdv?.confidenceBadge || `Đại Đồng Thuận 5 Động Cơ · 16 Siêu VIP 👑`,
-                stakeK: Math.round((pentaAdv?.stakeK || 60000) * (sizing >= 1 ? sizing : 1)),
-                stakeText: `Vốn: ${sizingStake}M / ngày (60 đơn vị cược · Sizing: ${sizing}x)`,
-                stdTitle: `👑 DÀN ĐỀ NGŨ TRỤ AI TỔNG HỢP (${allNums.length} SỐ · ĐẠI ĐỒNG THUẬN 5 TẦNG · ${vipNums.length} SIÊU VIP X2)`,
+                stakeK: dynStake,
+                stakeText: `Vốn: ${stakeM}M / ngày (${vipNums.length} VIP X3 + ${singleNums.length} Lót X1 · ${stakeM} đơn vị cược)`,
+                stdTitle: `👑 DÀN ĐỀ NGŨ TRỤ AI TỔNG HỢP (${allNums.length} SỐ · ĐẠI ĐỒNG THUẬN 5 TẦNG · ${vipNums.length} SIÊU VIP X3)`,
                 allNums,
                 vipNums,
                 singleNums,
-                vipLabel: `⚡ SIÊU VIP ĐỒNG THUẬN X2 (${vipNums.length} SỐ - 4 ĐẾN 5 ĐỘNG CƠ CÙNG CHỌN)`,
+                vipLabel: `⚡ SIÊU VIP ĐỒNG THUẬN X3 (${vipNums.length} SỐ - 4 ĐẾN 5 ĐỘNG CƠ CÙNG CHỌN)`,
                 singleLabel: `🛡️ BỌC LÓT ĐA TẦNG X1 (${singleNums.length} SỐ - 2 ĐẾN 3 ĐỘNG CƠ BẢO CHỨNG)`,
                 rationale: pentaAdv?.rationale || 'Hệ thống Ngũ Trụ AI đại đồng thuận 5 động cơ lớn (Thích Ứng Alpha, Đề Gộp Tiêu Chuẩn, Tam Trụ, Markov Gap và Bayes Dạng Số). 16 số Siêu VIP được từ 4 đến 5 động cơ cùng chọn (số 46 đạt tuyệt đối 5/5 động cơ).',
                 liveStat: 'Đại Đồng Thuận 5 Động Cơ Độc Lập (Win 69.6% · +8.73 TỶ)'
@@ -1294,12 +1315,14 @@
             const allNums = (rec.fullUnion || streakDeAdv?.numbers || rec.numbers || []).map(number);
             const vipNums = (rec.intersectionX2 || streakDeAdv?.tierX2 || []).map(number);
             const singleNums = (rec.uniqueSinglesX1 || streakDeAdv?.singles || []).map(number);
+            const dynStake = (vipNums.length * 3 + singleNums.length * 1) * 1000;
+            const stakeM = Math.round(dynStake / 1000);
             return {
-                label: '👑 Đề Thích Ứng Alpha (Adaptive Dual 60M)',
+                label: '👑 Đề Thích Ứng Alpha (VIP X3 + X1)',
                 badge: streakDeAdv?.confidenceBadge || 'Tối Ưu X3 Số Trùng',
-                stakeK: 60000,
-                stakeText: 'Vốn: 60M / ngày (60 đơn vị cược)',
-                stdTitle: `👑 DÀN ĐỀ TUYỂN CHỌN (${allNums.length} SỐ · 60 ĐƠN VỊ CƯỢC · ĂN TỚI 252M)`,
+                stakeK: dynStake,
+                stakeText: `Vốn: ${stakeM}M / ngày (${vipNums.length} VIP X3 + ${singleNums.length} Lót X1 · ${stakeM} đơn vị cược)`,
+                stdTitle: `👑 DÀN ĐỀ TUYỂN CHỌN (${allNums.length} SỐ · ${stakeM} ĐƠN VỊ CƯỢC · ĂN TỚI 252M)`,
                 allNums,
                 vipNums,
                 singleNums,
@@ -1314,12 +1337,14 @@
             const allNums = (rec.fullUnion || rec.numbers || []).map(number);
             const vipNums = (rec.intersectionX2 || []).map(number);
             const singleNums = (rec.uniqueSinglesX1 || []).map(number);
+            const dynStake = (vipNums.length * 3 + singleNums.length * 1) * 1000;
+            const stakeM = Math.round(dynStake / 1000);
             return {
-                label: '🎯 Đề Gộp Tiêu Chuẩn (Dual Merge 60M)',
+                label: '🎯 Đề Gộp Tiêu Chuẩn (Dual Merge)',
                 badge: 'Cặp Bài Trùng Tinh Hoa',
-                stakeK: 60000,
-                stakeText: 'Vốn: 60M / ngày (60 đơn vị cược)',
-                stdTitle: `🎯 DÀN ĐỀ GỘP TIÊU CHUẨN (${allNums.length} SỐ · 60 ĐƠN VỊ CƯỢC)`,
+                stakeK: dynStake,
+                stakeText: `Vốn: ${stakeM}M / ngày (${vipNums.length} VIP X3 + ${singleNums.length} Lót X1 · ${stakeM} đơn vị cược)`,
+                stdTitle: `🎯 DÀN ĐỀ GỘP TIÊU CHUẨN (${allNums.length} SỐ · ${stakeM} ĐƠN VỊ CƯỢC)`,
                 allNums,
                 vipNums,
                 singleNums,
@@ -1354,12 +1379,14 @@
             const allNums = (rec.numbers || []).map(number);
             const vipNums = (rec.vipNumbers || rec.vip17 || allNums.slice(0, 17)).map(number);
             const singleNums = (rec.backupNumbers || rec.backup26 || allNums.slice(17)).map(number);
+            const dynStake = (vipNums.length * 3 + singleNums.length * 1) * 1000;
+            const stakeM = Math.round(dynStake / 1000);
             return {
-                label: '🔮 Đề Ngũ Hành Dạng Số Bayes (Bù Trừ 60M)',
+                label: '🔮 Đề Ngũ Hành Dạng Số Bayes (Bù Trừ)',
                 badge: 'Mô hình Dạng Số Bayes',
-                stakeK: 60000,
-                stakeText: 'Vốn: 60M / ngày (60 đơn vị cược)',
-                stdTitle: `🔮 DÀN ĐỀ DẠNG SỐ BAYES (${allNums.length} SỐ · VỐN 60M)`,
+                stakeK: dynStake,
+                stakeText: `Vốn: ${stakeM}M / ngày (${vipNums.length} VIP X3 + ${singleNums.length} Lót X1 · ${stakeM} đơn vị cược)`,
+                stdTitle: `🔮 DÀN ĐỀ DẠNG SỐ BAYES (${allNums.length} SỐ · VỐN ${stakeM}M)`,
                 allNums,
                 vipNums,
                 singleNums,
@@ -1377,12 +1404,14 @@
             const allNums = (rec.numbers || []).map(number);
             const vipNums = (rec.vipNumbers || allNums.slice(0, 17)).map(number);
             const singleNums = (rec.backupNumbers || allNums.slice(17)).map(number);
+            const dynStake = (vipNums.length * 3 + singleNums.length * 1) * 1000;
+            const stakeM = Math.round(dynStake / 1000);
             return {
                 label: '🔮 Đề Markov Bậc 2 & Chu Kỳ Khuyết (43s)',
                 badge: 'Markov Bậc 2 + Weibull Hazard ⭐',
-                stakeK: 60000,
-                stakeText: 'Vốn: 60M / ngày (60 đơn vị cược)',
-                stdTitle: `🔮 DÀN ĐỀ MARKOV & CHU KỲ KHUYẾT (${allNums.length} SỐ · VỐN 60M · ĂN TỚI 252M)`,
+                stakeK: dynStake,
+                stakeText: `Vốn: ${stakeM}M / ngày (${vipNums.length} VIP X3 + ${singleNums.length} Lót X1 · ${stakeM} đơn vị cược)`,
+                stdTitle: `🔮 DÀN ĐỀ MARKOV & CHU KỲ KHUYẾT (${allNums.length} SỐ · VỐN ${stakeM}M · ĂN TỚI 252M)`,
                 allNums,
                 vipNums,
                 singleNums,
@@ -1400,12 +1429,14 @@
             const allNums = (rec.numbers || []).map(number);
             const vipNums = (rec.vipNumbers || allNums.slice(0, 17)).map(number);
             const singleNums = (rec.backupNumbers || allNums.slice(17)).map(number);
+            const dynStake = (vipNums.length * 3 + singleNums.length * 1) * 1000;
+            const stakeM = Math.round(dynStake / 1000);
             return {
                 label: '🕸️ Cầu Đề Đồ Thị Vị Trí Tuyến Tính (43s)',
                 badge: '54 Vị Trí Chữ Số XSMB',
-                stakeK: 60000,
-                stakeText: 'Vốn: 60M / ngày (60 đơn vị cược)',
-                stdTitle: `🕸️ DÀN CẦU ĐỀ ĐỒ THỊ VỊ TRÍ (${allNums.length} SỐ · VỐN 60M · ĂN TỚI 252M)`,
+                stakeK: dynStake,
+                stakeText: `Vốn: ${stakeM}M / ngày (${vipNums.length} VIP X3 + ${singleNums.length} Lót X1 · ${stakeM} đơn vị cược)`,
+                stdTitle: `🕸️ DÀN CẦU ĐỀ ĐỒ THỊ VỊ TRÍ (${allNums.length} SỐ · VỐN ${stakeM}M · ĂN TỚI 252M)`,
                 allNums,
                 vipNums,
                 singleNums,
@@ -6927,9 +6958,11 @@
             if (isLatest) {
                 if (prevDe?.isHit) {
                     const isPrevVip = prevDe.isX3 || prevDe.isX2;
+                    const prevProfitM = Math.round((prevDe.profitK || 0) / 1000);
+                    const prevProfitText = prevProfitM >= 0 ? `+${prevProfitM}M` : `${prevProfitM}M`;
                     if (deTitleEl) deTitleEl.textContent = `💎 ĐỀ: Phân Tích Xung Lực Bám Đà Thắng Kỳ ${formatDate(targetDate)}:`;
                     if (deTextEl) {
-                        deTextEl.innerHTML = `Kỳ trước ngày ${formatDate(prevDate)} nổ rực rỡ Đề <strong class="text-amber-300 font-bold">${prevDraw?.special || ''}</strong> (${isPrevVip ? 'ăn VIP X3 +192M' : 'ăn bọc lót +24M'}). Theo nguyên lý đà quán tính (Momentum Run), chuỗi thắng ngắn hạn có xác suất duy trì cao. AI đề xuất tiếp tục giữ <strong class="text-white">Đề Thích Ứng Alpha</strong> cược X3 số trùng hạt nhân (23 số) và X1 bọc lót (14 số) để bám sóng lợi nhuận mà vẫn bảo toàn vốn.`;
+                        deTextEl.innerHTML = `Kỳ trước ngày ${formatDate(prevDate)} nổ rực rỡ Đề <strong class="text-amber-300 font-bold">${prevDraw?.special || ''}</strong> (${isPrevVip ? `ăn VIP X3 ${prevProfitText}` : `ăn bọc lót ${prevProfitText}`}). Theo nguyên lý đà quán tính (Momentum Run), chuỗi thắng ngắn hạn có xác suất duy trì cao. AI đề xuất tiếp tục giữ <strong class="text-white">Đề Thích Ứng Alpha</strong> cược X3 số trùng hạt nhân (${prevDe.x2Nums?.length || 23} số) và X1 bọc lót (${prevDe.x1Nums?.length || 14} số) để bám sóng lợi nhuận mà vẫn bảo toàn vốn.`;
                     }
                 } else {
                     if (deTitleEl) deTitleEl.textContent = `💎 ĐỀ: Phân Tích Lực Nảy Toán Học & Nổ Bù Kỳ ${formatDate(targetDate)}:`;
@@ -6952,7 +6985,10 @@
                 if (deTitleEl) deTitleEl.textContent = `💎 ĐỀ: Diễn Biến & Đề Xuất Thực Tế Kỳ ${formatDate(targetDate)}:`;
                 if (deTextEl) {
                     const isCurVip = curDe.isX3 || curDe.isX2 || (curDe.profitK != null && curDe.profitK >= 108000);
-                    deTextEl.innerHTML = `Giải đặc biệt kỳ này về <strong class="text-amber-300 font-bold">[${curDraw?.special || '--'}]</strong>. Dàn Đề ${curDe.methodName} (${curDe.numbers.length} số) đã ${curDe.isHit ? (isCurVip ? '<strong class="text-emerald-400 font-bold">NỔ TRÚNG VIP X3 (+192M VNĐ)</strong>' : '<strong class="text-teal-400 font-bold">NỔ TRÚNG DÀN BỌC LÓT (+24M VNĐ)</strong>') : '<strong class="text-rose-400 font-bold">chưa nổ nhịp này (-' + ((curDe.stakeK || 60000)/1000).toFixed(0) + 'M)</strong>'}. Lực nảy điều phối duy trì nhịp chuẩn xác.`;
+                    const curProfM = Math.round((curDe.profitK || 0) / 1000);
+                    const curProfText = curProfM >= 0 ? `+${curProfM}M` : `${curProfM}M`;
+                    const curStakeM = Math.round((curDe.stakeK || 60000) / 1000);
+                    deTextEl.innerHTML = `Giải đặc biệt kỳ này về <strong class="text-amber-300 font-bold">[${curDraw?.special || '--'}]</strong>. Dàn Đề ${curDe.methodName} (${curDe.numbers.length} số) đã ${curDe.isHit ? (isCurVip ? `<strong class="text-emerald-400 font-bold">NỔ TRÚNG VIP X3 (${curProfText} VNĐ)</strong>` : `<strong class="text-teal-400 font-bold">NỔ TRÚNG DÀN BỌC LÓT (${curProfText} VNĐ)</strong>`) : `<strong class="text-rose-400 font-bold">chưa nổ nhịp này (-${curStakeM}M)</strong>`}. Lực nảy điều phối duy trì nhịp chuẩn xác.`;
                 }
 
                 if (loTitleEl) loTitleEl.textContent = `🎰 LÔ: Kết Quả Mở Thưởng Kỳ ${formatDate(targetDate)}:`;
@@ -7367,10 +7403,13 @@
                 }
                 if (descEl) {
                     const deProf = deRow.profitK || 0;
+                    const deProfM = Math.round(deProf / 1000);
+                    const deProfText = deProfM >= 0 ? `+${deProfM}M` : `${deProfM}M`;
+                    const deStakeM = Math.round((deRow.stakeK || 60000) / 1000);
                     const loProf = loRow?.dayLotoProfitK || 0;
                     const totProf = deProf + loProf;
                     const isVipDeHit = deRow.isX3 || deRow.isX2 || (deRow.profitK != null && deRow.profitK >= 108000);
-                    descEl.innerHTML = `Tổng kết quả ngày: Đề <strong class="${deRow.isHit ? 'text-emerald-400' : 'text-rose-400'}">${deRow.isHit ? (isVipDeHit ? 'TRÚNG VIP X3 (+192M)' : 'TRÚNG BỌC LÓT (+24M)') : 'XỊT (-' + ((deRow.stakeK || 60000)/1000).toFixed(0) + 'M)'}</strong> · Lô <strong class="${(loRow?.dayLotoProfitK ?? 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${loRow?.dayLotoHits ?? 0} nháy (${loProf >= 0 ? '+' : ''}${(loProf/1000).toFixed(1)}M)</strong> · Tổng lãi ngày: <strong class="${totProf >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-mono">${totProf >= 0 ? '+' : ''}${(totProf/1000).toFixed(1)}M VNĐ</strong>.`;
+                    descEl.innerHTML = `Tổng kết quả ngày: Đề <strong class="${deRow.isHit ? 'text-emerald-400' : 'text-rose-400'}">${deRow.isHit ? (isVipDeHit ? `TRÚNG VIP X3 (${deProfText})` : `TRÚNG BỌC LÓT (${deProfText})`) : `XỊT (-${deStakeM}M)`}</strong> · Lô <strong class="${(loRow?.dayLotoProfitK ?? 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${loRow?.dayLotoHits ?? 0} nháy (${loProf >= 0 ? '+' : ''}${(loProf/1000).toFixed(1)}M)</strong> · Tổng lãi ngày: <strong class="${totProf >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-mono">${totProf >= 0 ? '+' : ''}${(totProf/1000).toFixed(1)}M VNĐ</strong>.`;
                 }
 
                 // Column 1: Đề ngày quá khứ
@@ -7383,8 +7422,10 @@
                     deWinRateBadgeEl.textContent = deRow.isHit ? (isPastVip ? '🎉 TRÚNG VIP X3' : '✅ TRÚNG X1') : '❌ XỊT ĐỀ';
                 }
                 if (deRationaleEl) {
+                    const pastProfM = Math.round((deRow.profitK || 0) / 1000);
+                    const pastProfText = pastProfM >= 0 ? `+${pastProfM}M` : `${pastProfM}M`;
                     deRationaleEl.innerHTML = actualSpecial
-                        ? `Giải đặc biệt về số <strong class="text-amber-300 font-bold font-mono">[${actualSpecial}]</strong>. ${deRow.isHit ? (isPastVip ? '<strong class="text-emerald-300">TRÚNG VIP X3</strong> ăn 252M (+192M lãi) rực rỡ!' : '<strong class="text-teal-300">TRÚNG dàn bọc lót X1</strong> (+24M lãi)!') : 'Kỳ này không trúng nhịp đề, AI tự động kích hoạt nổ bù kỳ kế tiếp.'}`
+                        ? `Giải đặc biệt về số <strong class="text-amber-300 font-bold font-mono">[${actualSpecial}]</strong>. ${deRow.isHit ? (isPastVip ? `<strong class="text-emerald-300">TRÚNG VIP X3</strong> ăn 252M (${pastProfText} lãi) rực rỡ!` : `<strong class="text-teal-300">TRÚNG dàn bọc lót X1</strong> (${pastProfText} lãi)!`) : 'Kỳ này không trúng nhịp đề, AI tự động kích hoạt nổ bù kỳ kế tiếp.'}`
                         : `Dàn Đề ${deRow.methodName} với ${deRow.numbers.length} số.`;
                 }
                 if (deVipLabelEl) {
@@ -8935,10 +8976,10 @@
         } else {
             kpis = [
                 ['THỰC CHIẾN LIVE (TỪ 28/08)', `${live.days || 0} kỳ`, 'Khóa snapshot chốt số thực tế'],
-                ['TRÚNG X3 (CỰC VIP)', `${live.winsX3 || live.winsX2 || 0} kỳ`, `${percent(live.winX3Rate || live.winX2Rate)} · Ăn 252M (+192M)`],
-                ['TRÚNG X1 (BỌC LÓT)', `${live.winsX1 || 0} kỳ`, `${percent(live.winX1Rate)} · Ăn 84M (+24M)`],
+                ['TRÚNG X3 (CỰC VIP)', `${live.winsX3 || live.winsX2 || 0} kỳ`, `${percent(live.winX3Rate || live.winX2Rate)} · Ăn 252M (Cược 3M/số)`],
+                ['TRÚNG X1 (BỌC LÓT)', `${live.winsX1 || 0} kỳ`, `${percent(live.winX1Rate)} · Ăn 84M (Cược 1M/số)`],
                 ['TỔNG TỶ LỆ TRÚNG', `${percent(live.hitRate)}`, `${live.wins || 0} thắng / ${live.losses || 0} trượt`],
-                ['TỔNG TIỀN VỐN LIVE', `${moneyM(live.stakeK || (live.days * 60000))}`, '60M mỗi ngày (2 tầng vốn X3 + X1)'],
+                ['TỔNG TIỀN VỐN LIVE', `${moneyM(live.stakeK || 0)}`, 'Vốn linh hoạt theo từng kỳ (Tầng X3 + X1)'],
                 ['LÃI LŨY KẾ LIVE', `${signedM(live.profitK || 0)}`, `${percent(live.roi)} ROI Thực Chiến`]
             ];
         }
@@ -9255,24 +9296,28 @@
                     }
                 } else if (r.hitType === 'win_x3' || (methodId !== 'tripleMerge' && (r.hitType === 'win_x2' || r.isX2 || r.isX3))) {
                     outcomeClass = 'bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-300 text-amber-950 border-amber-500 font-black shadow-xs ring-1 ring-amber-400/50';
+                    const winProfitM = Math.round((r.profitK != null ? r.profitK : (252000 - (r.stakeK || 60000))) / 1000);
                     outcomeText = methodId === 'tripleMerge'
                         ? (isLive ? '👑 TRÚNG X3 (+162M)' : '👑 TRÚNG X3')
-                        : (isLive ? '🎉 TRÚNG X3 (+192M)' : '🎉 TRÚNG X3');
+                        : (isLive ? `🎉 TRÚNG X3 (+${winProfitM}M)` : '🎉 TRÚNG X3');
                 } else if (r.hitType === 'win_x2' || r.isX2) {
                     outcomeClass = 'bg-gradient-to-r from-amber-200 via-amber-300 to-yellow-200 text-amber-950 border-amber-400 font-black shadow-xs ring-1 ring-amber-400/50';
+                    const winProfitM = Math.round((r.profitK != null ? r.profitK : (252000 - (r.stakeK || 60000))) / 1000);
                     outcomeText = methodId === 'tripleMerge' 
                         ? (isLive ? '⚡ TRÚNG X2 (+78M)' : '⚡ TRÚNG X2') 
-                        : (isLive ? '🎉 TRÚNG X3 (+192M)' : '🎉 TRÚNG X3');
+                        : (isLive ? `🎉 TRÚNG X3 (+${winProfitM}M)` : '🎉 TRÚNG X3');
                 } else if (r.hitType === 'win_x1' || (r.isHit && !r.isX2)) {
                     outcomeClass = methodId === 'tripleMerge'
                         ? 'bg-indigo-100 text-indigo-900 border-indigo-300 font-bold'
                         : 'bg-emerald-100 text-emerald-900 border-emerald-300 font-bold';
+                    const x1ProfitM = Math.round((r.profitK != null ? r.profitK : (84000 - (r.stakeK || 60000))) / 1000);
                     outcomeText = methodId === 'tripleMerge' 
                         ? (isLive ? '🛡️ TRÚNG X1 (HÒA)' : '🛡️ TRÚNG X1') 
-                        : (isLive ? '✅ TRÚNG X1 (+24M)' : '✅ TRÚNG X1');
+                        : (isLive ? `✅ TRÚNG X1 (${x1ProfitM >= 0 ? '+' : ''}${x1ProfitM}M)` : '✅ TRÚNG X1');
                 } else {
                     outcomeClass = 'bg-rose-100 text-rose-800 border-rose-200 font-bold';
-                    const lossAmount = methodId === 'tripleMerge' ? '-90M' : (methodId === 'metaLearner' ? '-30M' : '-60M');
+                    const actualStakeK = r.stakeK || (methodId === 'tripleMerge' ? 90000 : (methodId === 'metaLearner' ? 30000 : 60000));
+                    const lossAmount = `-${Math.round(actualStakeK / 1000)}M`;
                     outcomeText = isLive ? `❌ TRƯỢT (${lossAmount})` : '❌ TRƯỢT';
                 }
             }
@@ -9423,17 +9468,27 @@
             if (byId('econLossValue')) byId('econLossValue').textContent = 'Nhận 0M · Lỗ -90M';
             if (byId('econLossRoi')) byId('econLossRoi').textContent = 'Mức rủi ro cố định tối đa (Trượt)';
         } else {
-            if (byId('econTitle')) byId('econTitle').innerHTML = '<i class="bi bi-wallet2 text-indigo-600"></i> BẢNG PHÂN BỔ VỐN & KINH TẾ CƯỢC HÔM NAY (<span id="econStakeHeader">CỐ ĐỊNH 60M</span>)';
-            if (byId('econStakeTotal')) byId('econStakeTotal').textContent = '60M';
-            if (byId('econStakeFormula')) byId('econStakeFormula').textContent = 'Số trùng cược x3 (3M/số) + Số riêng cược x1 (1M/số)';
+            const mObj = getDeMethodObject(methodId);
+            const rec = mObj.latestRec || {};
+            const vipCount = (rec.intersectionX2 || rec.vipNumbers || rec.tierX3 || []).length || 23;
+            const singleCount = (rec.uniqueSinglesX1 || rec.backupNumbers || rec.singles || []).length || 14;
+            const stakeM = (vipCount * 3 + singleCount * 1);
+            const winTopProfitM = 252 - stakeM;
+            const winMidProfitM = 84 - stakeM;
+            const winTopRoi = Math.round((winTopProfitM / stakeM) * 100);
+            const winMidRoi = Math.round((winMidProfitM / stakeM) * 100);
+
+            if (byId('econTitle')) byId('econTitle').innerHTML = `<i class="bi bi-wallet2 text-indigo-600"></i> BẢNG PHÂN BỔ VỐN & KINH TẾ CƯỢC HÔM NAY (<span id="econStakeHeader">VỐN THỰC TẾ ${stakeM}M · ${vipCount} SỐ X3 + ${singleCount} SỐ X1</span>)`;
+            if (byId('econStakeTotal')) byId('econStakeTotal').textContent = `${stakeM}M`;
+            if (byId('econStakeFormula')) byId('econStakeFormula').textContent = `${vipCount} số trùng cược x3 (3M/số = ${vipCount * 3}M) + ${singleCount} số riêng cược x1 (1M/số = ${singleCount}M)`;
             if (byId('econWinTopLabel')) byId('econWinTopLabel').textContent = 'Trúng vùng trùng (x3):';
-            if (byId('econWinTopValue')) byId('econWinTopValue').textContent = 'Nhận 252M · Lãi +192M';
-            if (byId('econWinTopRoi')) byId('econWinTopRoi').textContent = 'Tỷ suất sinh lời ROI +320%';
+            if (byId('econWinTopValue')) byId('econWinTopValue').textContent = `Nhận 252M · Lãi +${winTopProfitM}M`;
+            if (byId('econWinTopRoi')) byId('econWinTopRoi').textContent = `Tỷ suất sinh lời ROI +${winTopRoi}% (1 ăn 84)`;
             if (byId('econWinMidLabel')) byId('econWinMidLabel').textContent = 'Trúng vùng bọc lót (x1):';
-            if (byId('econWinMidValue')) byId('econWinMidValue').textContent = 'Nhận 84M · Lãi +24M';
-            if (byId('econWinMidRoi')) byId('econWinMidRoi').textContent = 'Tỷ suất sinh lời ROI +40%';
-            if (byId('econLossValue')) byId('econLossValue').textContent = 'Nhận 0M · Lỗ -60M';
-            if (byId('econLossRoi')) byId('econLossRoi').textContent = 'Mức rủi ro cố định tối đa (Trượt)';
+            if (byId('econWinMidValue')) byId('econWinMidValue').textContent = `Nhận 84M · ${winMidProfitM >= 0 ? 'Lãi +' + winMidProfitM + 'M' : 'Lỗ ' + winMidProfitM + 'M'}`;
+            if (byId('econWinMidRoi')) byId('econWinMidRoi').textContent = `Tỷ suất sinh lời ROI ${winMidRoi >= 0 ? '+' : ''}${winMidRoi}%`;
+            if (byId('econLossValue')) byId('econLossValue').textContent = `Nhận 0M · Lỗ -${stakeM}M`;
+            if (byId('econLossRoi')) byId('econLossRoi').textContent = 'Mức rủi ro thực tế khi trượt';
         }
     }
 
@@ -9461,14 +9516,14 @@
         } else if (mObj.id === 'adaptiveDualMerge') {
             reasons = [
                 '💎 Thích Ứng Alpha: Tự động tuyển chọn 2 phương pháp tối ưu từ pool 7 phương pháp dựa trên State Machine và tỷ lệ trúng chu kỳ gần nhất.',
-                '⚔️ Phân bổ vốn 60M (X3 Trùng + X1 Riêng): Số trùng cược 3M/số (ăn 252M lãi +192M), số riêng cược 1M/số (ăn 84M lãi +24M).',
+                '⚔️ Phân bổ vốn linh hoạt (X3 Trùng + X1 Riêng): Số trùng cược 3M/số (ăn 252M), số riêng cược 1M/số (ăn 84M). Tổng vốn và mức rủi ro trượt được tính toán chính xác theo từng kỳ.',
                 '🎯 Lưới an toàn kép: Tối ưu hóa xác suất trúng và lợi nhuận thực chiến dương bền bỉ trong toàn bộ năm 2026.',
                 '🛡️ Kiểm định Strict PIT: Tuyển chọn cặp động tại mỗi ngày t chỉ dựa vào dữ liệu lịch sử đến t-1.'
             ];
         } else {
             reasons = [
                 '🎯 Cặp Cố Định Tiêu Chuẩn: Phối hợp Edge 50% và Edge 75% Hold đã được tối ưu hóa trọng số bước nhảy và chu kỳ nhịp dài hạn.',
-                '🔥 Phân bổ vốn cố định 60M: Vùng trùng X3 (3M/số, ăn 252M lãi +192M), vùng riêng X1 (1M/số, ăn 84M lãi +24M).',
+                '🔥 Phân bổ vốn linh hoạt (X3 Trùng + X1 Riêng): Vùng trùng X3 (3M/số, ăn 252M), vùng riêng X1 (1M/số, ăn 84M). Bảo toàn và phát triển vốn thực chiến.',
                 '📈 Ổn định và dẫn đầu: Đạt chuỗi thắng liên tục trong 7 ngày gần nhất, tỷ lệ trúng 57.1% với lợi nhuận ròng dẫn đầu toàn bộ phương pháp.',
                 '🛡️ 100% Strict Point-In-Time: Toàn bộ dàn số khóa chặt trước giờ quay thưởng thực tế.'
             ];
@@ -10137,10 +10192,10 @@
                     numbers = (fallbackRow.fullUnion || [...vipNumbers, ...singleNumbers]).map(number);
                     isHit = Boolean(fallbackRow.isHit);
                     isX2 = Boolean(fallbackRow.isX3 || fallbackRow.isX2 || fallbackRow.hitType === 'win_x3' || fallbackRow.hitType === 'win_x2');
-                    stakeK = fallbackRow.stakeK || 60000;
-                    profitK = fallbackRow.profitK != null ? fallbackRow.profitK : (isHit ? (isX2 ? 192000 : 24000) : -60000);
+                    stakeK = (vipNumbers.length * 3 + singleNumbers.length * 1) * 1000;
+                    profitK = fallbackRow.profitK != null ? fallbackRow.profitK : (isHit ? (isX2 ? (252000 - stakeK) : (84000 - stakeK)) : -stakeK);
                     payoutK = fallbackRow.payoutK || (isHit ? (stakeK + profitK) : 0);
-                    hitBadge = isHit ? (isX2 ? '🎉 TRÚNG VIP X3 (+192M)' : '🎉 TRÚNG BỌC LÓT (+24M)') : '❌ TRƯỢT (-60M)';
+                    hitBadge = isHit ? (isX2 ? `🎉 TRÚNG VIP X3 (+${Math.round(profitK/1000)}M)` : `🎉 TRÚNG BỌC LÓT (${profitK >= 0 ? '+' : ''}${Math.round(profitK/1000)}M)`) : `❌ TRƯỢT (-${Math.round(stakeK/1000)}M)`;
                     detailDesc = 'Kế thừa từ Đề Thích Ứng Alpha (do Meta-Learner chưa khởi tạo giai đoạn này)';
                 }
             }
@@ -10151,11 +10206,11 @@
                 vipNumbers = (rec.intersectionX2 || []).map(number);
                 singleNumbers = (rec.uniqueSinglesX1 || []).map(number);
                 numbers = (rec.fullUnion || [...vipNumbers, ...singleNumbers]).map(number);
-                stakeK = 60000;
+                stakeK = (vipNumbers.length * 3 + singleNumbers.length * 1) * 1000;
                 profitK = 0;
                 payoutK = 0;
                 hitBadge = '⏳ Chờ mở thưởng 18h15';
-                detailDesc = `Cặp: ${rec.m1Label || 'M1'} + ${rec.m2Label || 'M2'} (${vipNumbers.length}s VIP X3 · ${singleNumbers.length}s X1)`;
+                detailDesc = `Cặp: ${rec.m1Label || 'M1'} + ${rec.m2Label || 'M2'} (${vipNumbers.length}s VIP X3 · ${singleNumbers.length}s X1 · Vốn ${moneyM(stakeK)})`;
             } else {
                 const r = payloadData.adaptiveDualMerge?.settledLedger?.find(x => (x.predictionDate || x.date) === date);
                 vipNumbers = (r?.intersectionX2 || []).map(number);
@@ -10163,10 +10218,10 @@
                 numbers = (r?.fullUnion || [...vipNumbers, ...singleNumbers]).map(number);
                 isHit = Boolean(r?.isHit);
                 isX2 = Boolean(r?.isX3 || r?.isX2 || r?.hitType === 'win_x3' || r?.hitType === 'win_x2');
-                stakeK = r?.stakeK || 60000;
-                profitK = (r?.profitK != null && r.profitK >= 108000) ? 192000 : (r?.profitK != null ? r.profitK : (isHit ? (isX2 ? 192000 : 24000) : -60000));
+                stakeK = (vipNumbers.length * 3 + singleNumbers.length * 1) * 1000;
+                profitK = isHit ? (isX2 ? (252000 - stakeK) : (84000 - stakeK)) : -stakeK;
                 payoutK = r?.payoutK || (isHit ? (stakeK + profitK) : 0);
-                hitBadge = isHit ? (isX2 ? '🎉 TRÚNG VIP X3 (+192M)' : '🎉 TRÚNG BỌC LÓT (+24M)') : '❌ TRƯỢT (-60M)';
+                hitBadge = isHit ? (isX2 ? `🎉 TRÚNG VIP X3 (+${Math.round(profitK/1000)}M)` : `🎉 TRÚNG BỌC LÓT (${profitK >= 0 ? '+' : ''}${Math.round(profitK/1000)}M)`) : `❌ TRƯỢT (-${Math.round(stakeK/1000)}M)`;
                 detailDesc = `Cặp: ${r?.m1Label || 'M1'} + ${r?.m2Label || 'M2'} (${r?.modeLabel || 'Thích ứng Alpha'})`;
             }
         } else if (effectiveKey === 'dualMerge') {
@@ -10176,21 +10231,22 @@
                 vipNumbers = (rec.intersectionX2 || rec.intersection || []).map(number);
                 singleNumbers = (rec.uniqueSinglesX1 || rec.uniqueSingles || []).map(number);
                 numbers = (rec.fullUnion || rec.union || [...vipNumbers, ...singleNumbers]).map(number);
-                stakeK = 60000;
+                stakeK = (vipNumbers.length * 3 + singleNumbers.length * 1) * 1000;
                 profitK = 0;
                 payoutK = 0;
                 hitBadge = '⏳ Chờ mở thưởng 18h15';
-                detailDesc = `Cặp: ${rec.m1Label || 'M1'} + ${rec.m2Label || 'M2'}`;
+                detailDesc = `Cặp: ${rec.m1Label || 'M1'} + ${rec.m2Label || 'M2'} (Vốn ${moneyM(stakeK)})`;
             } else {
                 const r = payloadData.dualMerge?.settledLedger?.find(x => (x.predictionDate || x.date) === date);
                 vipNumbers = (r?.intersectionX2 || r?.intersection || []).map(number);
                 singleNumbers = (r?.uniqueSinglesX1 || r?.uniqueSingles || []).map(number);
                 numbers = (r?.fullUnion || r?.union || [...vipNumbers, ...singleNumbers]).map(number);
                 isHit = Boolean(r?.isHit);
-                stakeK = r?.stakeK || 60000;
-                profitK = r?.profitK != null ? r.profitK : (isHit ? 24000 : -60000);
-                payoutK = r?.payoutK || (isHit ? 84000 : 0);
-                hitBadge = isHit ? '🎉 TRÚNG ĐỀ (+24M)' : '❌ TRƯỢT (-60M)';
+                isX2 = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || (actualSpecial != null && vipNumbers.includes(actualSpecial)));
+                stakeK = (vipNumbers.length * 3 + singleNumbers.length * 1) * 1000;
+                profitK = isHit ? (isX2 ? (252000 - stakeK) : (84000 - stakeK)) : -stakeK;
+                payoutK = r?.payoutK || (isHit ? (stakeK + profitK) : 0);
+                hitBadge = isHit ? (isX2 ? `🎉 TRÚNG VIP X3 (+${Math.round(profitK/1000)}M)` : `🎉 TRÚNG ĐỀ (${profitK >= 0 ? '+' : ''}${Math.round(profitK/1000)}M)`) : `❌ TRƯỢT (-${Math.round(stakeK/1000)}M)`;
                 detailDesc = `Cặp: ${r?.m1Label || 'M1'} + ${r?.m2Label || 'M2'} · Trùng: ${vipNumbers.length}s`;
             }
         } else if (effectiveKey === 'tripleMerge') {
@@ -10224,11 +10280,11 @@
                 vipNumbers = (rec.vipNums || rec.vipNumbers || rec.numbers?.slice(0, 17) || []).map(number);
                 singleNumbers = (rec.singleNums || rec.backupNumbers || rec.singles || rec.numbers?.slice(17) || []).map(number);
                 numbers = (rec.allNums || rec.numbers || [...vipNumbers, ...singleNumbers]).map(number);
-                stakeK = 60000;
+                stakeK = (vipNumbers.length * 3 + singleNumbers.length * 1) * 1000;
                 profitK = 0;
                 payoutK = 0;
                 hitBadge = '⏳ Chờ mở thưởng 18h15';
-                detailDesc = `Đề Markov Bậc 2 & Gap Hazard (${vipNumbers.length}s VIP X3 · ${singleNumbers.length}s X1)`;
+                detailDesc = `Đề Markov Bậc 2 & Gap Hazard (${vipNumbers.length}s VIP X3 · ${singleNumbers.length}s X1 · Vốn ${moneyM(stakeK)})`;
             } else {
                 const r = payloadData.deMarkovGapHazard?.settledLedger?.find(x => (x.predictionDate || x.date) === date)
                     || payloadData.streakAwareDeAdvisor?.markovAdvisor?.settledLedger?.find(x => (x.predictionDate || x.date) === date);
@@ -10237,10 +10293,10 @@
                 numbers = (r?.numbers || [...vipNumbers, ...singleNumbers]).map(number);
                 isHit = Boolean(r?.isHit || (actualSpecial != null && numbers.includes(actualSpecial)));
                 isX2 = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || (actualSpecial != null && vipNumbers.includes(actualSpecial)));
-                stakeK = r?.stakeK || 60000;
-                profitK = r?.profitK != null ? r.profitK : (isHit ? (isX2 ? 192000 : 24000) : -60000);
+                stakeK = (vipNumbers.length * 3 + singleNumbers.length * 1) * 1000;
+                profitK = isHit ? (isX2 ? (252000 - stakeK) : (84000 - stakeK)) : -stakeK;
                 payoutK = r?.payoutK || (isHit ? (stakeK + profitK) : 0);
-                hitBadge = isHit ? (isX2 ? '🎉 TRÚNG VIP X3 (+192M)' : '🎉 TRÚNG BỌC LÓT (+24M)') : '❌ TRƯỢT (-60M)';
+                hitBadge = isHit ? (isX2 ? `🎉 TRÚNG VIP X3 (+${Math.round(profitK/1000)}M)` : `🎉 TRÚNG BỌC LÓT (${profitK >= 0 ? '+' : ''}${Math.round(profitK/1000)}M)`) : `❌ TRƯỢT (-${Math.round(stakeK/1000)}M)`;
                 detailDesc = `Đề Markov Bậc 2 & Gap Hazard (${vipNumbers.length}s VIP X3 · ${singleNumbers.length}s X1)`;
             }
         } else if (effectiveKey === 'bayesFormResonance') {
@@ -10250,11 +10306,11 @@
                 vipNumbers = (rec.vip17 || rec.vipNumbers || rec.numbers?.slice(0, 17) || []).map(number);
                 singleNumbers = (rec.backup26 || rec.backupNumbers || rec.numbers?.slice(17) || []).map(number);
                 numbers = (rec.numbers || [...vipNumbers, ...singleNumbers]).map(number);
-                stakeK = 60000;
+                stakeK = (vipNumbers.length * 3 + singleNumbers.length * 1) * 1000;
                 profitK = 0;
                 payoutK = 0;
                 hitBadge = '⏳ Chờ mở thưởng 18h15';
-                detailDesc = `Đề Ngũ Hành Bayes Bù Trừ (${vipNumbers.length}s VIP X3 · ${singleNumbers.length}s X1)`;
+                detailDesc = `Đề Ngũ Hành Bayes Bù Trừ (${vipNumbers.length}s VIP X3 · ${singleNumbers.length}s X1 · Vốn ${moneyM(stakeK)})`;
             } else {
                 const r = payloadData.streakAwareDeAdvisor?.bayesAdvisor?.settledLedger?.find(x => (x.predictionDate || x.date) === date);
                 vipNumbers = (r?.vip17 || r?.vipNumbers || r?.numbers?.slice(0, 17) || []).map(number);
@@ -10262,10 +10318,10 @@
                 numbers = (r?.numbers || [...vipNumbers, ...singleNumbers]).map(number);
                 isHit = Boolean(r?.isHit || (actualSpecial != null && numbers.includes(actualSpecial)));
                 isX2 = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || (actualSpecial != null && vipNumbers.includes(actualSpecial)));
-                stakeK = r?.stakeK || 60000;
-                profitK = r?.profitK != null ? r.profitK : (isHit ? (isX2 ? 192000 : 24000) : -60000);
+                stakeK = (vipNumbers.length * 3 + singleNumbers.length * 1) * 1000;
+                profitK = isHit ? (isX2 ? (252000 - stakeK) : (84000 - stakeK)) : -stakeK;
                 payoutK = r?.payoutK || (isHit ? (stakeK + profitK) : 0);
-                hitBadge = isHit ? (isX2 ? '🎉 TRÚNG VIP X3 (+192M)' : '🎉 TRÚNG BỌC LÓT (+24M)') : '❌ TRƯỢT (-60M)';
+                hitBadge = isHit ? (isX2 ? `🎉 TRÚNG VIP X3 (+${Math.round(profitK/1000)}M)` : `🎉 TRÚNG BỌC LÓT (${profitK >= 0 ? '+' : ''}${Math.round(profitK/1000)}M)`) : `❌ TRƯỢT (-${Math.round(stakeK/1000)}M)`;
                 detailDesc = `Đề Ngũ Hành Bayes Bù Trừ (${vipNumbers.length}s VIP X3 · ${singleNumbers.length}s X1)`;
             }
         } else if (effectiveKey === 'dePositionalGraphFlow') {
@@ -10275,11 +10331,11 @@
                 vipNumbers = (rec.vipNumbers || rec.numbers?.slice(0, 17) || []).map(number);
                 singleNumbers = (rec.backupNumbers || rec.numbers?.slice(17) || []).map(number);
                 numbers = (rec.numbers || [...vipNumbers, ...singleNumbers]).map(number);
-                stakeK = 60000;
+                stakeK = (vipNumbers.length * 3 + singleNumbers.length * 1) * 1000;
                 profitK = 0;
                 payoutK = 0;
                 hitBadge = '⏳ Chờ mở thưởng 18h15';
-                detailDesc = `Cầu Đề Đồ Thị Vị Trí (${vipNumbers.length}s VIP X3 · ${singleNumbers.length}s X1)`;
+                detailDesc = `Cầu Đề Đồ Thị Vị Trí (${vipNumbers.length}s VIP X3 · ${singleNumbers.length}s X1 · Vốn ${moneyM(stakeK)})`;
             } else {
                 const r = payloadData.dePositionalGraphFlow?.settledLedger?.find(x => (x.predictionDate || x.date) === date)
                     || payloadData.streakAwareDeAdvisor?.graphAdvisor?.settledLedger?.find(x => (x.predictionDate || x.date) === date);
@@ -10288,10 +10344,10 @@
                 numbers = (r?.numbers || [...vipNumbers, ...singleNumbers]).map(number);
                 isHit = Boolean(r?.isHit || (actualSpecial != null && numbers.includes(actualSpecial)));
                 isX2 = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || (actualSpecial != null && vipNumbers.includes(actualSpecial)));
-                stakeK = r?.stakeK || 60000;
-                profitK = r?.profitK != null ? r.profitK : (isHit ? (isX2 ? 192000 : 24000) : -60000);
+                stakeK = (vipNumbers.length * 3 + singleNumbers.length * 1) * 1000;
+                profitK = isHit ? (isX2 ? (252000 - stakeK) : (84000 - stakeK)) : -stakeK;
                 payoutK = r?.payoutK || (isHit ? (stakeK + profitK) : 0);
-                hitBadge = isHit ? (isX2 ? '🎉 TRÚNG VIP X3 (+192M)' : '🎉 TRÚNG BỌC LÓT (+24M)') : '❌ TRƯỢT (-60M)';
+                hitBadge = isHit ? (isX2 ? `🎉 TRÚNG VIP X3 (+${Math.round(profitK/1000)}M)` : `🎉 TRÚNG BỌC LÓT (${profitK >= 0 ? '+' : ''}${Math.round(profitK/1000)}M)`) : `❌ TRƯỢT (-${Math.round(stakeK/1000)}M)`;
                 detailDesc = `Cầu Đề Đồ Thị Vị Trí (${vipNumbers.length}s VIP X3 · ${singleNumbers.length}s X1)`;
             }
         } else if (effectiveKey === 'pentaCoreDe') {
@@ -10301,11 +10357,11 @@
                 vipNumbers = (rec.vipNumbers || rec.vip || rec.numbers?.slice(0, 15) || []).map(number);
                 singleNumbers = (rec.backupNumbers || rec.numbers?.slice(15) || []).map(number);
                 numbers = (rec.numbers || [...vipNumbers, ...singleNumbers]).map(number);
-                stakeK = 60000;
+                stakeK = (vipNumbers.length * 3 + singleNumbers.length * 1) * 1000;
                 profitK = 0;
                 payoutK = 0;
                 hitBadge = '⏳ Chờ mở thưởng 18h15';
-                detailDesc = `Đề Ngũ Trụ Tinh Hoa AI (${vipNumbers.length}s VIP X3 · ${singleNumbers.length}s X1)`;
+                detailDesc = `Đề Ngũ Trụ Tinh Hoa AI (${vipNumbers.length}s VIP X3 · ${singleNumbers.length}s X1 · Vốn ${moneyM(stakeK)})`;
             } else {
                 const r = payloadData.pentaCoreDe?.settledLedger?.find(x => (x.predictionDate || x.date) === date);
                 vipNumbers = (r?.vipNumbers || r?.vip || r?.numbers?.slice(0, 15) || []).map(number);
@@ -10313,10 +10369,10 @@
                 numbers = (r?.numbers || [...vipNumbers, ...singleNumbers]).map(number);
                 isHit = Boolean(r?.isHit || (actualSpecial != null && numbers.includes(actualSpecial)));
                 isX2 = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || (actualSpecial != null && vipNumbers.includes(actualSpecial)));
-                stakeK = r?.stakeK || 60000;
-                profitK = r?.profitK != null ? r.profitK : (isHit ? (isX2 ? 192000 : 24000) : -60000);
+                stakeK = (vipNumbers.length * 3 + singleNumbers.length * 1) * 1000;
+                profitK = isHit ? (isX2 ? (252000 - stakeK) : (84000 - stakeK)) : -stakeK;
                 payoutK = r?.payoutK || (isHit ? (stakeK + profitK) : 0);
-                hitBadge = isHit ? (isX2 ? '🎉 TRÚNG VIP X3 (+192M)' : '🎉 TRÚNG BỌC LÓT (+24M)') : '❌ TRƯỢT (-60M)';
+                hitBadge = isHit ? (isX2 ? `🎉 TRÚNG VIP X3 (+${Math.round(profitK/1000)}M)` : `🎉 TRÚNG BỌC LÓT (${profitK >= 0 ? '+' : ''}${Math.round(profitK/1000)}M)`) : `❌ TRƯỢT (-${Math.round(stakeK/1000)}M)`;
                 detailDesc = `Đề Ngũ Trụ Tinh Hoa AI (${vipNumbers.length}s VIP X3 · ${singleNumbers.length}s X1)`;
             }
         } else if (effectiveKey === 'lo4Engine') {
@@ -10470,10 +10526,13 @@
                     singleNumbers = (fb.x1Nums || fb.deX1Nums || fbNums.filter(n => !vipNumbers.includes(n))).map(number);
                     isHit = Boolean(fb.isHit);
                     isX2 = Boolean(fb.isX3 || fb.isX2);
-                    stakeK = fb.stakeK || fb.deStakeK || 60000;
-                    profitK = fb.profitK != null ? fb.profitK : (isHit ? (isX2 ? 192000 : 24000) : -60000);
+                    const dynFbStakeK = (vipNumbers.length * 3 + singleNumbers.length * 1) * 1000;
+                    stakeK = fb.stakeK || fb.deStakeK || dynFbStakeK || 60000;
+                    profitK = fb.profitK != null ? fb.profitK : (isHit ? (isX2 ? (252000 - stakeK) : (84000 - stakeK)) : -stakeK);
                     payoutK = isHit ? (stakeK + profitK) : 0;
-                    hitBadge = isHit ? (isX2 ? '🎉 TRÚNG VIP X3 (+192M)' : '🎉 TRÚNG ĐỀ (+24M)') : '❌ TRƯỢT';
+                    const profitM = Math.round(profitK / 1000);
+                    const profitSign = profitM >= 0 ? `+${profitM}M` : `${profitM}M`;
+                    hitBadge = isHit ? (isX2 ? `🎉 TRÚNG VIP X3 (${profitSign})` : `🎉 TRÚNG ĐỀ (${profitSign})`) : `❌ TRƯỢT (-${Math.round(stakeK / 1000)}M)`;
                     detailDesc = `${methodTitle || 'Đề'} · Kế thừa từ ${fb.methodName || fb.deMethodName || 'Đề Chuẩn'}`;
                 }
             }
