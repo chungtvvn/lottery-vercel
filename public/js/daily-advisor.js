@@ -715,30 +715,30 @@
             deNumbers = (r?.numbers || []).map(number);
             deX2Nums = (r?.vipNumbers || r?.vip || []).map(number);
             deX1Nums = (r?.backupNumbers || deNumbers.filter(n => !deX2Nums.includes(n))).map(number);
-            deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X2 · ${deX1Nums.length} X1)`;
+            deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X3 · ${deX1Nums.length} X1)`;
             deStakeK = r?.stakeK || 60000;
             deProfitK = r?.profitK != null ? r.profitK : deProfitK;
-            deIsHitFinal = Boolean(r?.hitType === 'win_x2' || r?.hitType === 'win_x1' || r?.isHit || deProfitK > 0);
+            deIsHitFinal = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || r?.hitType === 'win_x1' || r?.isHit || deProfitK > 0);
         } else if (chosenDeMethod === 'adaptiveDualMerge') {
             const r = adaptiveRow || streakRow;
             deMethodName = '👑 Đề Thích Ứng Alpha';
             deNumbers = (r?.fullUnion || r?.union || r?.numbers || deNumbers).map(number);
             deX2Nums = (r?.intersectionX2 || r?.intersection || r?.vipNumbers || []).map(number);
             deX1Nums = (r?.uniqueSinglesX1 || r?.uniqueSingles || r?.backupNumbers || []).map(number);
-            deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X2 · ${deX1Nums.length} X1)`;
+            deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X3 · ${deX1Nums.length} X1)`;
             deStakeK = r?.stakeK || 60000;
             deProfitK = r?.profitK != null ? r.profitK : deProfitK;
-            deIsHitFinal = Boolean(r?.hitType === 'win_x2' || r?.hitType === 'win_x1' || r?.isHit || deProfitK > 0);
+            deIsHitFinal = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || r?.hitType === 'win_x1' || r?.isHit || deProfitK > 0);
         } else if (chosenDeMethod === 'dualMerge') {
             const r = dualRow || streakRow;
             deMethodName = '🎯 Đề Gộp Tiêu Chuẩn';
             deNumbers = (r?.union || r?.fullUnion || r?.numbers || deNumbers).map(number);
             deX2Nums = (r?.intersection || r?.intersectionX2 || r?.vipNumbers || []).map(number);
             deX1Nums = (r?.uniqueSingles || r?.uniqueSinglesX1 || r?.backupNumbers || []).map(number);
-            deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X2 · ${deX1Nums.length} X1)`;
+            deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X3 · ${deX1Nums.length} X1)`;
             deStakeK = r?.stakeK || 60000;
             deProfitK = r?.profitK != null ? r.profitK : deProfitK;
-            deIsHitFinal = Boolean(r?.hitType === 'win_x2' || r?.hitType === 'win_x1' || r?.isHit || deProfitK > 0);
+            deIsHitFinal = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || r?.hitType === 'win_x1' || r?.isHit || deProfitK > 0);
         } else if (chosenDeMethod === 'tripleMerge') {
             const r = tripleRow || streakRow;
             deMethodName = '🛡️ Đề Tam Trụ Tam Phân';
@@ -755,7 +755,7 @@
             deNumbers = (r?.numbers || deNumbers).map(number);
             deX2Nums = (r?.vip17 || r?.vipNumbers || []).map(number);
             deX1Nums = (r?.backup26 || r?.backupNumbers || []).map(number);
-            deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X2 · ${deX1Nums.length} X1)`;
+            deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X3 · ${deX1Nums.length} X1)`;
             deStakeK = r?.stakeK || 60000;
             deProfitK = r?.profitK != null ? r.profitK : deProfitK;
             deIsHitFinal = Boolean(r?.isHit || deProfitK > 0);
@@ -765,20 +765,20 @@
             deNumbers = (r?.numbers || deNumbers).map(number);
             deX2Nums = (r?.vipNumbers || r?.numbers?.slice(0, 17) || []).map(number);
             deX1Nums = (r?.backupNumbers || r?.numbers?.slice(17) || []).map(number);
-            deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X2 · ${deX1Nums.length} X1)`;
+            deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X3 · ${deX1Nums.length} X1)`;
             deStakeK = r?.stakeK || 60000;
             deProfitK = r?.profitK != null ? r.profitK : deProfitK;
-            deIsHitFinal = Boolean(r?.hitType === 'win_x2' || r?.hitType === 'win_x1' || r?.isHit || deProfitK > 0);
+            deIsHitFinal = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || r?.hitType === 'win_x1' || r?.isHit || deProfitK > 0);
         } else if (chosenDeMethod === 'dePositionalGraphFlow') {
             const r = graphRow || streakRow;
             deMethodName = '🕸️ Cầu Đề Đồ Thị Vị Trí';
             deNumbers = (r?.numbers || deNumbers).map(number);
             deX2Nums = (r?.vipNumbers || r?.numbers?.slice(0, 17) || []).map(number);
             deX1Nums = (r?.backupNumbers || r?.numbers?.slice(17) || []).map(number);
-            deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X2 · ${deX1Nums.length} X1)`;
+            deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X3 · ${deX1Nums.length} X1)`;
             deStakeK = r?.stakeK || 60000;
             deProfitK = r?.profitK != null ? r.profitK : deProfitK;
-            deIsHitFinal = Boolean(r?.hitType === 'win_x2' || r?.hitType === 'win_x1' || r?.isHit || deProfitK > 0);
+            deIsHitFinal = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || r?.hitType === 'win_x1' || r?.isHit || deProfitK > 0);
         } else if (chosenDeMethod === 'metaLearner') {
             deMethodName = '💎 Đề Tinh Hoa';
             deSubTierLabel = `Dàn 30 số (${moneyM(deStakeK)})`;
@@ -798,21 +798,23 @@
                 deX2Nums = (fbRow.intersectionX2 || fbRow.intersection || fbRow.vipNumbers || fbRow.tierX2 || []).map(number);
                 deX1Nums = (fbRow.uniqueSinglesX1 || fbRow.uniqueSingles || fbRow.backupNumbers || fbRow.tierX1 || deNumbers.filter(n => !deX2Nums.includes(n))).map(number);
                 if (deNumbers.length > 0) {
-                    deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X2 · ${deX1Nums.length} X1)`;
+                    deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X3 · ${deX1Nums.length} X1)`;
                     deStakeK = fbRow.stakeK || deStakeK || 60000;
                     deProfitK = fbRow.profitK != null ? fbRow.profitK : deProfitK;
-                    deIsHitFinal = Boolean(fbRow.hitType === 'win_x2' || fbRow.hitType === 'win_x1' || fbRow.isHit || deProfitK > 0);
+                    deIsHitFinal = Boolean(fbRow.hitType === 'win_x3' || fbRow.hitType === 'win_x2' || fbRow.hitType === 'win_x1' || fbRow.isHit || deProfitK > 0);
                 }
             }
         }
 
         const actualSpec = deRow?.actualSpecial ?? deRow?.actual ?? dualRow?.actualSpecial ?? dualRow?.actual ?? adaptiveRow?.actualSpecial ?? adaptiveRow?.actual ?? pentaRow?.actual;
+        let isX3 = false;
         let isX2 = false;
         let isX1 = false;
         let hitType = deIsHitFinal ? 'win' : 'loss';
 
         if (chosenDeMethod === 'metaLearner' || deMethodName.includes('Tinh Hoa')) {
-            // Đề Tinh Hoa: Dàn 30 số cược phẳng (1M/số, 30M), TUYỆT ĐỐI KHÔNG cược X2
+            // Đề Tinh Hoa: Dàn 30 số cược phẳng (1M/số, 30M), TUYỆT ĐỐI KHÔNG cược X2/X3
+            isX3 = false;
             isX2 = false;
             isX1 = false;
             if (actualSpec != null) {
@@ -820,6 +822,9 @@
                 if (deNumbers.some(n => number(n) === actStr)) {
                     deIsHitFinal = true;
                     deProfitK = 54000;
+                } else {
+                    deIsHitFinal = false;
+                    deProfitK = -30000;
                 }
             }
             hitType = deIsHitFinal ? 'win' : 'loss';
@@ -827,22 +832,33 @@
             if (actualSpec != null) {
                 const actStr = number(actualSpec);
                 if (deX2Nums.some(n => number(n) === actStr)) {
+                    isX3 = true;
                     isX2 = true;
                     deIsHitFinal = true;
-                    hitType = 'win_x2';
+                    hitType = 'win_x3';
+                    deProfitK = 192000;
                 } else if (deX1Nums.some(n => number(n) === actStr)) {
                     isX1 = true;
                     deIsHitFinal = true;
                     hitType = 'win_x1';
+                    deProfitK = 24000;
                 } else if (deNumbers.some(n => number(n) === actStr)) {
                     deIsHitFinal = true;
-                    hitType = 'win';
+                    hitType = 'win_x1';
+                    deProfitK = 24000;
+                } else {
+                    deIsHitFinal = false;
+                    hitType = 'loss';
+                    deProfitK = -(deStakeK || 60000);
                 }
-            }
-            if (deProfitK >= 108000 || (chosenDeMethod === 'adaptiveDualMerge' && adaptiveRow?.hitType === 'win_x2') || (chosenDeMethod === 'dualMerge' && dualRow?.hitType === 'win_x2') || (chosenDeMethod === 'pentaCoreDe' && pentaRow?.hitType === 'win_x2')) {
-                isX2 = true;
-                deIsHitFinal = true;
-                hitType = 'win_x2';
+            } else {
+                if (deProfitK >= 108000 || (chosenDeMethod === 'adaptiveDualMerge' && (adaptiveRow?.hitType === 'win_x3' || adaptiveRow?.hitType === 'win_x2')) || (chosenDeMethod === 'dualMerge' && (dualRow?.hitType === 'win_x3' || dualRow?.hitType === 'win_x2')) || (chosenDeMethod === 'pentaCoreDe' && (pentaRow?.hitType === 'win_x3' || pentaRow?.hitType === 'win_x2'))) {
+                    isX3 = true;
+                    isX2 = true;
+                    deIsHitFinal = true;
+                    hitType = 'win_x3';
+                    deProfitK = 192000;
+                }
             }
         }
 
@@ -852,13 +868,15 @@
             methodName: deMethodName,
             subTierLabel: deSubTierLabel,
             numbers: deNumbers,
+            x3Nums: deX2Nums,
             x2Nums: deX2Nums,
             x1Nums: deX1Nums,
             stakeK: deStakeK,
             profitK: deProfitK,
             isHit: deIsHitFinal,
-            isX2,
-            isX1,
+            isX3: Boolean(isX3),
+            isX2: Boolean(isX3 || isX2),
+            isX1: Boolean(isX1),
             hitType,
             switchPhase: streakRow?.switchPhase || null,
             switchReason: streakRow?.switchReason || null
@@ -1277,14 +1295,14 @@
             const singleNums = (rec.uniqueSinglesX1 || streakDeAdv?.singles || []).map(number);
             return {
                 label: '👑 Đề Thích Ứng Alpha (Adaptive Dual 60M)',
-                badge: streakDeAdv?.confidenceBadge || 'Tối Ưu X2 Số Trùng',
+                badge: streakDeAdv?.confidenceBadge || 'Tối Ưu X3 Số Trùng',
                 stakeK: 60000,
                 stakeText: 'Vốn: 60M / ngày (60 đơn vị cược)',
-                stdTitle: `👑 DÀN ĐỀ TUYỂN CHỌN (${allNums.length} SỐ · 60 ĐƠN VỊ CƯỢC · ĂN TỚI 168M)`,
+                stdTitle: `👑 DÀN ĐỀ TUYỂN CHỌN (${allNums.length} SỐ · 60 ĐƠN VỊ CƯỢC · ĂN TỚI 252M)`,
                 allNums,
                 vipNums,
                 singleNums,
-                vipLabel: `⚡ VIP TRÙNG X2 (${vipNums.length} SỐ - VÀO TIỀN GẤP ĐÔI)`,
+                vipLabel: `⚡ VIP TRÙNG X3 (${vipNums.length} SỐ - CƯỢC X3)`,
                 singleLabel: `🛡️ BỌC LÓT X1 (${singleNums.length} SỐ)`,
                 rationale: streakDeAdv?.rationale || rec.rationale || 'Hôm nay Đề Thích Ứng Alpha áp dụng cơ chế luân phiên thích ứng để tối đa hóa lợi nhuận thực chiến.',
                 liveStat: '70.2% Win 2026 (+16.9 TỶ Kelly)'
@@ -1304,7 +1322,7 @@
                 allNums,
                 vipNums,
                 singleNums,
-                vipLabel: `⚡ VIP TRÙNG X2 (${vipNums.length} SỐ - CƯỢC X2)`,
+                vipLabel: `⚡ VIP TRÙNG X3 (${vipNums.length} SỐ - CƯỢC X3)`,
                 singleLabel: `🛡️ BỌC LÓT X1 (${singleNums.length} SỐ - CƯỢC X1)`,
                 rationale: 'Gộp 2 phương pháp có độ tương quan bù trừ cao nhất từ Mốc Lịch Sử D-1, tối ưu hóa điểm Jaccard và tỷ lệ hiệp đồng.',
                 liveStat: '54.9% Win 2026 (+10.2 TỶ)'
@@ -1344,7 +1362,7 @@
                 allNums,
                 vipNums,
                 singleNums,
-                vipLabel: `⚡ VIP DẠNG SỐ X2 (${vipNums.length} SỐ)`,
+                vipLabel: `⚡ VIP DẠNG SỐ X3 (${vipNums.length} SỐ - CƯỢC X3)`,
                 singleLabel: `🛡️ BỌC LÓT X1 (${singleNums.length} SỐ)`,
                 rationale: 'Hoạt động độc lập bằng thuật toán Chạm/Tổng/Bộ 30 ngày + Markov tensor + Gap decay từ chuỗi dữ liệu lịch sử.',
                 liveStat: 'Bù trừ nhịp sóng độc lập'
@@ -1363,11 +1381,11 @@
                 badge: 'Markov Bậc 2 + Weibull Hazard ⭐',
                 stakeK: 60000,
                 stakeText: 'Vốn: 60M / ngày (60 đơn vị cược)',
-                stdTitle: `🔮 DÀN ĐỀ MARKOV & CHU KỲ KHUYẾT (${allNums.length} SỐ · VỐN 60M · ĂN TỚI 168M)`,
+                stdTitle: `🔮 DÀN ĐỀ MARKOV & CHU KỲ KHUYẾT (${allNums.length} SỐ · VỐN 60M · ĂN TỚI 252M)`,
                 allNums,
                 vipNums,
                 singleNums,
-                vipLabel: `⚡ VIP MARKOV X2 (${vipNums.length} SỐ - CƯỢC GẤP ĐÔI)`,
+                vipLabel: `⚡ VIP MARKOV X3 (${vipNums.length} SỐ - CƯỢC X3)`,
                 singleLabel: `🛡️ BỌC LÓT X1 (${singleNums.length} SỐ)`,
                 rationale: rec.rationale || 'Mô hình ma trận chuyển tiếp bậc 2 kết hợp hàm mật độ nguy cơ Weibull Gap, độc lập 100% với mốc lịch sử, cứu 45.6% chuỗi gãy kép.',
                 liveStat: '49.0% Win 2026 (+10.8 TỶ)'
@@ -1386,11 +1404,11 @@
                 badge: '54 Vị Trí Chữ Số XSMB',
                 stakeK: 60000,
                 stakeText: 'Vốn: 60M / ngày (60 đơn vị cược)',
-                stdTitle: `🕸️ DÀN CẦU ĐỀ ĐỒ THỊ VỊ TRÍ (${allNums.length} SỐ · VỐN 60M · ĂN TỚI 168M)`,
+                stdTitle: `🕸️ DÀN CẦU ĐỀ ĐỒ THỊ VỊ TRÍ (${allNums.length} SỐ · VỐN 60M · ĂN TỚI 252M)`,
                 allNums,
                 vipNums,
                 singleNums,
-                vipLabel: `⚡ VIP ĐỒ THỊ X2 (${vipNums.length} SỐ - CƯỢC GẤP ĐÔI)`,
+                vipLabel: `⚡ VIP ĐỒ THỊ X3 (${vipNums.length} SỐ - CƯỢC X3)`,
                 singleLabel: `🛡️ BỌC LÓT X1 (${singleNums.length} SỐ)`,
                 rationale: rec.rationale || 'Quét toàn bộ mạng lưới đồ thị 54 vị trí chữ số của 27 giải thưởng ngày hôm trước, bắt cầu thông và mật độ hội tụ dòng chảy.',
                 liveStat: '38.0% Win 2026 (+5.4 TỶ)'
@@ -2109,7 +2127,7 @@
                     let html = '';
                     goldenVip.forEach(n => {
                         html += `
-                            <div class="relative group inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-slate-950 font-mono text-xs font-black px-3 py-1.5 shadow-md ring-2 ring-red-500/80 animate-pulse hover:scale-105 transition-all" title="Bạch Thủ / Song Thủ Siêu VIP: Vừa nằm trong Đề VIP X2 vừa nằm trong Lô Ghép 4 Trùng >= 2 Động Cơ">
+                            <div class="relative group inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-slate-950 font-mono text-xs font-black px-3 py-1.5 shadow-md ring-2 ring-red-500/80 animate-pulse hover:scale-105 transition-all" title="Bạch Thủ / Song Thủ Siêu VIP: Vừa nằm trong Đề VIP X3 vừa nằm trong Lô Ghép 4 Trùng >= 2 Động Cơ">
                                 <span class="text-sm">${number(n)}</span>
                                 <span class="rounded bg-red-600 text-white font-sans text-[8px] font-black px-1 py-0.2 uppercase shadow-xs">👑 CỰC VIP ĐỀ+LÔ</span>
                             </div>
@@ -2133,16 +2151,16 @@
             const loStakeM = isTop6 ? 68.2 : 79.2;
             const loStakePoints = isTop6 ? 3100 : 3600;
 
-            const deStakeM = (deData.vipNums.length * 2) + (deData.singleNums.length * 1) || 60.0;
+            const deStakeM = (deData.vipNums.length * 3) + (deData.singleNums.length * 1) || 60.0;
             const deLevel1Str = `${moneyM(deStakeM * 1000)} (${deData.allNums.length}s)`;
             const loLevel1Str = `${moneyM(loStakeM * 1000)} (${loStakePoints.toLocaleString('vi-VN')}đ)`;
             const totalLevel1Str = `~${moneyM((deStakeM + loStakeM) * 1000)}`;
 
-            const deLevel2Str = `~${Math.round(deStakeM * 10)}K (${deData.vipNums.length} VIP x 20K + ${deData.singleNums.length} Lót x 10K)`;
+            const deLevel2Str = `~${Math.round(deStakeM * 10)}K (${deData.vipNums.length} VIP x 30K + ${deData.singleNums.length} Lót x 10K)`;
             const loLevel2Str = `${moneyM(loStakeM * 100)} (${Math.round(loStakePoints / 10)}đ)`;
             const totalLevel2Str = `~${moneyM((deStakeM + loStakeM) * 100)}`;
 
-            const deLevel3Str = `~${Math.round(deStakeM * 1)}K (${deData.vipNums.length} VIP x 2K + ${deData.singleNums.length} Lót x 1K)`;
+            const deLevel3Str = `~${Math.round(deStakeM * 1)}K (${deData.vipNums.length} VIP x 3K + ${deData.singleNums.length} Lót x 1K)`;
             const loLevel3Str = `${moneyM(loStakeM * 10)} (${Math.round(loStakePoints / 100)}đ)`;
             const totalLevel3Str = `~${moneyM((deStakeM + loStakeM) * 10)}`;
 
@@ -2172,7 +2190,7 @@
                         `----------------------------------------`,
                         `⭐ TÂM ĐIỂM HỘI TỤ ĐỒNG THUẬN (ĐỀ VIP ∩ LÔ GHÉP 4):`,
                         goldenVip.length > 0
-                            ? `👑 SIÊU VIP (Đánh cả Đề X2 & Bao Lô Đậm): ${goldenVip.map(n => String(number(n)).padStart(2, '0')).join(' ')}`
+                            ? `👑 SIÊU VIP (Đánh cả Đề X3 & Bao Lô Đậm): ${goldenVip.map(n => String(number(n)).padStart(2, '0')).join(' ')}`
                             : `(Không có số trùng chéo, đánh song song 2 dàn tối ưu độ phủ)`,
                         goldenSecondary.length > 0
                             ? `⚡ HỘI TỤ BỔ TRỢ: ${goldenSecondary.map(n => String(number(n)).padStart(2, '0')).join(' ')}`
@@ -2180,7 +2198,7 @@
                         ``,
                         `💎 PHẦN 1: DÀN ĐỀ TUYỂN CHỌN (${deData.allNums.length} SỐ)`,
                         `🏷️ Phương pháp: ${cleanDeLabel}`,
-                        `⚡ ${deData.vipLabel} (Cược X2):`,
+                        `⚡ ${deData.vipLabel} (Cược X3):`,
                         deData.vipNums.map(n => String(number(n)).padStart(2, '0')).join(' '),
                         `🛡️ ${deData.singleLabel} (Cược X1):`,
                         deData.singleNums.map(n => String(number(n)).padStart(2, '0')).join(' '),
@@ -2619,8 +2637,8 @@
                 if (info.x2Nums && info.x2Nums.length) {
                     const isPenta = info.methodName && (info.methodName.includes('Ngũ Trụ') || info.methodName.includes('Ngũ Tinh') || info.methodName.includes('Penta'));
                     const vipHeader = isPenta
-                        ? `⚡ SIÊU VIP ĐỒNG THUẬN X2 (${info.x2Nums.length} SỐ - 4 ĐẾN 5 ĐỘNG CƠ CÙNG CHỌN):`
-                        : `⚡ VIP TRÙNG X2 (${info.x2Nums.length} SỐ - CƯỢC GẤP ĐÔI):`;
+                        ? `⚡ SIÊU VIP ĐỒNG THUẬN X3 (${(info.x3Nums || info.x2Nums).length} SỐ - 4 ĐẾN 5 ĐỘNG CƠ CÙNG CHỌN):`
+                        : `⚡ VIP TRÙNG X3 (${(info.x3Nums || info.x2Nums).length} SỐ - CƯỢC GẤP BA):`;
                     const backupHeader = isPenta
                         ? `🛡️ BỌC LÓT ĐA TẦNG X1 (${info.x1Nums?.length || 0} SỐ - 2 ĐẾN 3 ĐỘNG CƠ BẢO CHỨNG):`
                         : `🛡️ BỌC LÓT X1 (${info.x1Nums?.length || 0} SỐ - CƯỢC CHUẨN):`;
@@ -2630,7 +2648,7 @@
                             <div>
                                 <div class="flex items-center justify-between text-[10px] font-black uppercase text-amber-400 mb-1">
                                     <span>${vipHeader}</span>
-                                    <span class="text-amber-300">Cược X2</span>
+                                    <span class="text-amber-300">Cược X3</span>
                                 </div>
                                 <div class="flex flex-wrap gap-1">
                                     ${info.x2Nums.map(n => {
@@ -2708,11 +2726,11 @@
                     <div class="space-y-2.5">
                         <div>
                             <div class="flex items-center justify-between text-[10px] font-black uppercase text-amber-400 mb-1">
-                                <span>⚡ VIP TRÙNG X2 (${info.x2Nums.length} số):</span>
-                                <span class="text-amber-300">Cược X2 (400K / 2M)</span>
+                                <span>⚡ VIP TRÙNG X3 (${(info.x3Nums || info.x2Nums).length} số):</span>
+                                <span class="text-amber-300">Cược X3 (3M/số · Ăn 252M)</span>
                             </div>
                             <div class="flex flex-wrap gap-1">
-                                ${info.x2Nums.map(n => {
+                                ${(info.x3Nums || info.x2Nums).map(n => {
                                     const hit = (actualSpec != null && Number(n) === Number(actualSpec));
                                     return `<span class="inline-flex items-center justify-center px-2 py-1 rounded-lg font-mono text-xs ${hit ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 ring-2 ring-white scale-110 shadow-lg font-black animate-pulse' : 'bg-amber-950/60 border border-amber-500/40 text-amber-200 font-bold'}">${number(n)}${hit ? ' 🎉' : ''}</span>`;
                                 }).join('')}
@@ -2721,7 +2739,7 @@
                         <div>
                             <div class="flex items-center justify-between text-[10px] font-black uppercase text-indigo-300 mb-1">
                                 <span>🛡️ BỌC LÓT X1 (${info.x1Nums.length} số):</span>
-                                <span class="text-indigo-200">Cược X1 (200K / 1M)</span>
+                                <span class="text-indigo-200">Cược X1 (1M/số · Ăn 84M)</span>
                             </div>
                             <div class="flex flex-wrap gap-1">
                                 ${info.x1Nums.map(n => {
@@ -2755,8 +2773,8 @@
                             </div>
                         </div>
                         <div class="text-right shrink-0">
-                            <span class="inline-flex items-center gap-1 rounded-lg ${isHit ? (info.isX2 ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black shadow-xs ring-1 ring-white' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-black') : 'bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold'} px-2 py-0.5 text-[11px]">
-                                ${isHit ? (info.isX2 ? `🎉 Trúng VIP X2 (${moneyM(info.profitK, { signed: true })})` : `🎉 Trúng ĐB (${moneyM(info.profitK, { signed: true })})`) : '❌ Trượt'}
+                            <span class="inline-flex items-center gap-1 rounded-lg ${isHit ? (info.isX3 || info.isX2 ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black shadow-xs ring-1 ring-white' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-black') : 'bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold'} px-2 py-0.5 text-[11px]">
+                                ${isHit ? (info.isX3 || info.isX2 ? `🎉 Trúng VIP X3 (${moneyM(info.profitK, { signed: true })})` : `🎉 Trúng ĐB (${moneyM(info.profitK, { signed: true })})`) : '❌ Trượt'}
                             </span>
                             <div class="text-[10px] font-mono text-slate-400 mt-0.5">ĐB: <strong class="text-white font-bold">${actualSpec != null ? number(actualSpec) : '--'}</strong></div>
                         </div>
@@ -3557,31 +3575,38 @@
                     <div class="space-y-1.5 text-xs font-mono">
                         <div class="flex justify-between items-center py-0.5">
                             <span class="text-slate-400">💎 Đề Gợi Ý:</span>
-                            <strong class="${info.deProfitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(info.deProfitK, { signed: true })}</strong>
+                            <span class="${info.deProfitK >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400'}">${moneyM(info.deProfitK, { signed: true })} <span class="text-[9px] text-amber-300 font-bold">(LK: ${moneyM(info.cumDeProfitK ?? info.deProfitK, { signed: true })})</span></span>
                         </div>
                         <div class="flex justify-between items-center py-0.5">
                             <span class="text-slate-400">🏆 Lô Chuẩn (Top 20):</span>
-                            <strong class="${info.stdProfitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(info.stdProfitK, { signed: true })}</strong>
+                            <span class="${info.stdProfitK >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400'}">${moneyM(info.stdProfitK, { signed: true })} <span class="text-[9px] text-indigo-300 font-bold">(LK: ${moneyM(info.cumStdProfitK ?? info.stdProfitK, { signed: true })})</span></span>
                         </div>
                         <div class="flex justify-between items-center py-0.5">
                             <span class="text-slate-400">🚀 Lô Tăng Tốc X2:</span>
-                            <strong class="${info.x2ProfitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(info.x2ProfitK, { signed: true })}</strong>
+                            <span class="${info.x2ProfitK >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400'}">${moneyM(info.x2ProfitK, { signed: true })} <span class="text-[9px] text-teal-300 font-bold">(LK: ${moneyM(info.cumX2ProfitK ?? info.x2ProfitK, { signed: true })})</span></span>
                         </div>
-                        <div class="flex justify-between items-center py-0.5 text-slate-400">
-                            <span>🔥 Lô Ghép 4 Động Cơ:</span>
-                            <span class="${info.lo4ProfitK >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400'}">${moneyM(info.lo4ProfitK, { signed: true })} <span class="text-[9px] text-teal-300 font-bold">(LK: ${moneyM(info.cumLo4ProfitK ?? info.lo4ProfitK, { signed: true })})</span></span>
+                        <div class="flex justify-between items-center py-0.5">
+                            <span class="text-slate-400">🔥 Lô Ghép 4 Động Cơ:</span>
+                            <span class="${info.lo4ProfitK >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400'}">${moneyM(info.lo4ProfitK, { signed: true })} <span class="text-[9px] text-rose-300 font-bold">(LK: ${moneyM(info.cumLo4ProfitK ?? info.lo4ProfitK, { signed: true })})</span></span>
                         </div>
-                        <div class="flex justify-between items-center py-0.5 text-slate-500">
-                            <span>🎲 Lô Xiên 4 (Ghép Mới):</span>
-                            <span class="${info.xi4ProfitK > 0 ? 'text-amber-300 font-bold' : 'text-slate-400'}">${moneyM(info.xi4ProfitK, { signed: true })} <span class="text-[9px] text-purple-300 font-bold">(LK: ${moneyM(info.cumLo4Xien4ProfitK ?? info.xi4ProfitK, { signed: true })})</span></span>
+                        <div class="flex justify-between items-center py-0.5">
+                            <span class="text-slate-400">⚡ Lô Xiên 4 (Ghép Mới):</span>
+                            <span class="${(info.lo4Xien4ProfitK != null ? info.lo4Xien4ProfitK : info.xi4ProfitK) >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400'}">${moneyM(info.lo4Xien4ProfitK != null ? info.lo4Xien4ProfitK : info.xi4ProfitK, { signed: true })} <span class="text-[9px] text-purple-300 font-bold">(LK: ${moneyM(info.cumLo4Xien4ProfitK ?? info.xi4ProfitK, { signed: true })})</span></span>
+                        </div>
+                        <div class="flex justify-between items-center py-0.5">
+                            <span class="text-slate-400">🎲 Dàn Xiên 5 (5 Dàn X4):</span>
+                            <span class="${(info.loXien5ProfitK || 0) >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400'}">${moneyM(info.loXien5ProfitK || 0, { signed: true })} <span class="text-[9px] text-indigo-300 font-bold">(LK: ${moneyM(info.cumLoXien5ProfitK ?? (info.loXien5ProfitK || 0), { signed: true })})</span></span>
                         </div>
                     </div>
-                    <div class="mt-2 text-[10px] text-slate-400 italic">
-                        * Lô Xiên 4 chỉ ở chế độ quan sát, không cộng/trừ vào Tổng Lãi Ngày & Lũy Kế
-                    </div>
-                    <div class="mt-2.5 pt-2 border-t border-slate-800 flex justify-between items-center font-mono">
-                        <span class="text-xs font-bold text-slate-300">Tổng Lãi Ròng Thực Chiến:</span>
-                        <strong class="text-sm font-black ${info.dayTotalK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(info.dayTotalK, { signed: true })}</strong>
+                    <div class="mt-2.5 pt-2 border-t border-slate-800 space-y-1 font-mono">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-slate-300">Tổng Lãi Ròng Ngày (6 PP):</span>
+                            <strong class="text-sm font-black ${info.dayTotalK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(info.dayTotalK, { signed: true })}</strong>
+                        </div>
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-400">Lũy Kế Toàn Bộ Mốc:</span>
+                            <strong class="font-bold ${(info.cumProfitK || 0) >= 0 ? 'text-indigo-400' : 'text-rose-400'}">${moneyM(info.cumProfitK || 0, { signed: true })}</strong>
+                        </div>
                     </div>
                 </div>
             `;
@@ -4745,26 +4770,13 @@
             const xi4Hits = xi4.hits;
             const xi4StakeK = xi4.stakeK;
 
-            // QUAN TRỌNG: Xiên 3 và Xiên 4 chỉ để quan sát, KHÔNG tính tiền vào Lũy Kế Mốc và Tổng Lãi Ngày!
-            const loProfitK = stdProfitK + x2ProfitK;
-            const dayTotalK = deProfitK + loProfitK;
-
-            cumProfitK += dayTotalK;
-            cumDeProfitK += deProfitK;
-            cumStdProfitK += stdProfitK;
-            cumX2ProfitK += x2ProfitK;
-            cumXi3ProfitK += xi3ProfitK;
-            cumXi4ProfitK += xi4ProfitK;
-
             let lo4Row = lo4Map[date] || null;
             if (!lo4Row && date >= '2026-06-02') {
                 lo4Row = synthesizeLo4RowFallback(date, payload, currentLo4EngineMode);
             }
             const lo4ProfitK = lo4Row ? (lo4Row.dayLotoProfitK || 0) : 0;
-            cumLo4ProfitK += lo4ProfitK;
             const top5XienDay = payload?.loTop5ConsensusXien?.settledLedger?.find(r => r.date === date);
             const lo4Xien4ProfitK = top5XienDay ? top5XienDay.q11ProfitVIP_K : (lo4Row ? (lo4Row.dayXien4ProfitK || 0) : 0);
-            cumLo4Xien4ProfitK += lo4Xien4ProfitK;
             let loXien5ProfitK = 0;
             let loXien5PayoutK = 0;
             let loXien5H5 = 0;
@@ -4776,7 +4788,21 @@
             } else {
                 loXien5ProfitK = -55000;
             }
+
+            // TỔNG LÃI NGÀY & LŨY KẾ: Tổng hợp toàn bộ tất cả Lô, Đề, Xiên có trong bảng đối soát
+            // (Đề + Lô Chuẩn + Lô X2 + Lô Ghép 4 + Lô Xiên 4 + Dàn Xiên 5)
+            const loProfitK = stdProfitK + x2ProfitK;
+            const dayTotalK = deProfitK + stdProfitK + x2ProfitK + lo4ProfitK + lo4Xien4ProfitK + loXien5ProfitK;
+
+            cumProfitK += dayTotalK;
+            cumDeProfitK += deProfitK;
+            cumStdProfitK += stdProfitK;
+            cumX2ProfitK += x2ProfitK;
+            cumLo4ProfitK += lo4ProfitK;
+            cumLo4Xien4ProfitK += lo4Xien4ProfitK;
             cumLoXien5ProfitK += loXien5ProfitK;
+            cumXi3ProfitK += xi3ProfitK;
+            cumXi4ProfitK += xi4ProfitK;
 
             const lo4EngineDetails = lo4Row ? {
                 ...lo4Row,
@@ -4963,10 +4989,18 @@
                     stdProfitK,
                     x2ProfitK,
                     lo4ProfitK,
+                    lo4Xien4ProfitK,
+                    loXien5ProfitK,
                     xi3ProfitK,
                     xi4ProfitK,
                     dayTotalK,
-                    cumProfitK
+                    cumProfitK,
+                    cumDeProfitK,
+                    cumStdProfitK,
+                    cumX2ProfitK,
+                    cumLo4ProfitK,
+                    cumLo4Xien4ProfitK,
+                    cumLoXien5ProfitK
                 }
             };
 
@@ -6015,22 +6049,22 @@
                             <div class="font-black text-xs text-amber-600">
                                 ⏳ Chờ KQ
                             </div>
-                            <div class="text-[10px] text-slate-400 font-sans">Đề + Lô (Chuẩn+X2)</div>
+                            <div class="text-[10px] text-slate-400 font-sans">Tổng Lô, Đề, Xiên</div>
                             <div class="diary-expand-indicator text-[9px] text-amber-700 font-bold font-sans underline mt-0.5 flex items-center gap-0.5 justify-end">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></div>
                         </td>
                         <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
                             <div class="font-semibold text-xs text-slate-400">
                                 --
                             </div>
-                            <div class="text-[10px] text-slate-400 font-sans">Lũy kế</div>
+                            <div class="text-[10px] text-slate-400 font-sans">Lũy kế toàn bộ</div>
                         </td>
                     </tr>
                 `;
             }
 
             const dePill = deInfo.isHit
-                ? (deInfo.isX2
-                    ? `<span class="inline-flex items-center gap-1 rounded bg-amber-400 text-slate-950 font-black px-2 py-0.5 text-xs shadow-xs ring-1 ring-amber-500">🎉 Trúng X2 ${moneyM(deInfo.profitK, { signed: true })}</span>`
+                ? (deInfo.isX3 || deInfo.isX2
+                    ? `<span class="inline-flex items-center gap-1 rounded bg-amber-400 text-slate-950 font-black px-2 py-0.5 text-xs shadow-xs ring-1 ring-amber-500">🎉 Trúng X3 ${moneyM(deInfo.profitK, { signed: true })}</span>`
                     : `<span class="inline-flex items-center gap-1 rounded bg-emerald-100 text-emerald-900 px-1.5 py-0.5 text-[11px] font-black">🎉 Trúng ${moneyM(deInfo.profitK, { signed: true })}</span>`)
                 : `<span class="inline-flex items-center gap-1 rounded bg-rose-100 text-rose-900 px-1.5 py-0.5 text-[11px] font-bold">❌ Trượt ${moneyM(deInfo.profitK, { signed: true })}</span>`;
 
@@ -6105,9 +6139,12 @@
                         <div class="text-[10px] text-slate-400 font-semibold">${isLiveBadge}</div>
                     </td>
                     <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="de">
-                        <div class="text-[11px] font-bold text-amber-950 flex items-center gap-1 flex-wrap">
-                            <i class="bi bi-gem-fill text-amber-500 text-[10px]"></i> <span>${escapeHtml(deInfo.methodName)}</span>
-                            ${getSwitchPhaseBadgeHtml(deInfo.switchPhase, deInfo.switchReason)}
+                        <div class="flex items-center justify-between text-[11px] font-bold text-amber-950 gap-1 flex-wrap">
+                            <span class="flex items-center gap-1">
+                                <i class="bi bi-gem-fill text-amber-500 text-[10px]"></i> <span>${escapeHtml(deInfo.methodName)}</span>
+                                ${getSwitchPhaseBadgeHtml(deInfo.switchPhase, deInfo.switchReason)}
+                            </span>
+                            <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${r.cumDeProfitK >= 0 ? 'bg-amber-100 text-amber-900 ring-1 ring-amber-300' : 'bg-rose-100 text-rose-800'}">LK: ${moneyM(r.cumDeProfitK, { signed: true })}</span>
                         </div>
                         <div class="flex items-center gap-1.5 mt-0.5">
                             <span class="text-xs text-slate-700">ĐB: ${actualSpecText}</span>
@@ -6119,8 +6156,9 @@
                         </div>
                     </td>
                     <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-indigo-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loStd">
-                        <div class="text-[11px] font-bold text-indigo-900 flex items-center gap-1">
-                            <i class="bi bi-trophy-fill text-indigo-600 text-[10px]"></i> ${escapeHtml(stdInfo.methodName)}
+                        <div class="flex items-center justify-between text-[11px] font-bold text-indigo-900 gap-1">
+                            <span class="flex items-center gap-1"><i class="bi bi-trophy-fill text-indigo-600 text-[10px]"></i> ${escapeHtml(stdInfo.methodName)}</span>
+                            <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${r.cumStdProfitK >= 0 ? 'bg-indigo-100 text-indigo-800 ring-1 ring-indigo-300' : 'bg-rose-100 text-rose-800'}">LK: ${moneyM(r.cumStdProfitK, { signed: true })}</span>
                         </div>
                         <div class="text-xs flex items-center gap-1.5 mt-0.5">
                             <span class="text-slate-700">${stdHitsText}</span>
@@ -6132,8 +6170,9 @@
                         </div>
                     </td>
                     <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-teal-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loX2">
-                        <div class="text-[11px] font-bold text-teal-900 flex items-center gap-1">
-                            <i class="bi bi-lightning-charge-fill text-teal-600 text-[10px]"></i> ${escapeHtml(x2Info.methodName)}
+                        <div class="flex items-center justify-between text-[11px] font-bold text-teal-900 gap-1">
+                            <span class="flex items-center gap-1"><i class="bi bi-lightning-charge-fill text-teal-600 text-[10px]"></i> ${escapeHtml(x2Info.methodName)}</span>
+                            <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${r.cumX2ProfitK >= 0 ? 'bg-teal-100 text-teal-800 ring-1 ring-teal-300' : 'bg-rose-100 text-rose-800'}">LK: ${moneyM(r.cumX2ProfitK, { signed: true })}</span>
                         </div>
                         <div class="text-xs flex items-center gap-1.5 mt-0.5">
                             <span class="text-slate-700">${x2HitsText}</span>
@@ -6190,14 +6229,14 @@
                         <div class="font-black text-xs ${r.dayTotalK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">
                             ${moneyM(r.dayTotalK, { signed: true })}
                         </div>
-                        <div class="text-[10px] text-slate-400 font-sans">Đề + Lô (Chuẩn+X2)</div>
+                        <div class="text-[10px] text-slate-400 font-sans">Tổng Lô, Đề, Xiên</div>
                         <div class="diary-expand-indicator text-[9px] text-indigo-600 font-bold font-sans underline mt-0.5 flex items-center gap-0.5 justify-end">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></div>
                     </td>
                     <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
                         <div class="font-black text-xs ${r.cumProfitK >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
                             ${moneyM(r.cumProfitK, { signed: true })}
                         </div>
-                        <div class="text-[10px] text-slate-400 font-sans">Lũy kế</div>
+                        <div class="text-[10px] text-slate-400 font-sans">Lũy kế toàn bộ</div>
                     </td>
                 </tr>
             `;
@@ -6886,14 +6925,15 @@
 
             if (isLatest) {
                 if (prevDe?.isHit) {
+                    const isPrevVip = prevDe.isX3 || prevDe.isX2;
                     if (deTitleEl) deTitleEl.textContent = `💎 ĐỀ: Phân Tích Xung Lực Bám Đà Thắng Kỳ ${formatDate(targetDate)}:`;
                     if (deTextEl) {
-                        deTextEl.innerHTML = `Kỳ trước ngày ${formatDate(prevDate)} nổ rực rỡ Đề <strong class="text-amber-300 font-bold">${prevDraw?.special || ''}</strong> (${prevDe.isX2 ? 'ăn VIP X2 +108M' : 'ăn bọc lót +24M'}). Theo nguyên lý đà quán tính (Momentum Run), chuỗi thắng ngắn hạn có xác suất duy trì cao. AI đề xuất tiếp tục giữ <strong class="text-white">Đề Thích Ứng Alpha</strong> cược X2 số trùng hạt nhân (23 số) và X1 bọc lót (14 số) để bám sóng lợi nhuận mà vẫn bảo toàn vốn.`;
+                        deTextEl.innerHTML = `Kỳ trước ngày ${formatDate(prevDate)} nổ rực rỡ Đề <strong class="text-amber-300 font-bold">${prevDraw?.special || ''}</strong> (${isPrevVip ? 'ăn VIP X3 +192M' : 'ăn bọc lót +24M'}). Theo nguyên lý đà quán tính (Momentum Run), chuỗi thắng ngắn hạn có xác suất duy trì cao. AI đề xuất tiếp tục giữ <strong class="text-white">Đề Thích Ứng Alpha</strong> cược X3 số trùng hạt nhân (23 số) và X1 bọc lót (14 số) để bám sóng lợi nhuận mà vẫn bảo toàn vốn.`;
                     }
                 } else {
                     if (deTitleEl) deTitleEl.textContent = `💎 ĐỀ: Phân Tích Lực Nảy Toán Học & Nổ Bù Kỳ ${formatDate(targetDate)}:`;
                     if (deTextEl) {
-                        deTextEl.innerHTML = `Kỳ trước ngày ${formatDate(prevDate)} đảo nhịp (Đề về <strong class="text-amber-300 font-bold">${prevDraw?.special || ''}</strong>). Thống kê phân phối Poisson và chuỗi Markov qua 20 năm cho thấy sau 1 ngày trượt, xác suất nổ bù ngày kế tiếp của thuật toán đạt 84.6%. <strong class="text-white">Đề Thích Ứng Alpha</strong> tự động cơ cấu vốn X2 tập trung vào 23 số hạt nhân có độ bù trừ cao nhất để gỡ drawdown và bứt phá lợi nhuận.`;
+                        deTextEl.innerHTML = `Kỳ trước ngày ${formatDate(prevDate)} đảo nhịp (Đề về <strong class="text-amber-300 font-bold">${prevDraw?.special || ''}</strong>). Thống kê phân phối Poisson và chuỗi Markov qua 20 năm cho thấy sau 1 ngày trượt, xác suất nổ bù ngày kế tiếp của thuật toán đạt 84.6%. <strong class="text-white">Đề Thích Ứng Alpha</strong> tự động cơ cấu vốn X3 tập trung vào 23 số hạt nhân có độ bù trừ cao nhất để gỡ drawdown và bứt phá lợi nhuận.`;
                     }
                 }
 
@@ -6910,7 +6950,8 @@
 
                 if (deTitleEl) deTitleEl.textContent = `💎 ĐỀ: Diễn Biến & Đề Xuất Thực Tế Kỳ ${formatDate(targetDate)}:`;
                 if (deTextEl) {
-                    deTextEl.innerHTML = `Giải đặc biệt kỳ này về <strong class="text-amber-300 font-bold">[${curDraw?.special || '--'}]</strong>. Dàn Đề ${curDe.methodName} (${curDe.numbers.length} số) đã ${curDe.isHit ? (curDe.isX2 ? '<strong class="text-emerald-400 font-bold">NỔ TRÚNG VIP X2 (+108M VNĐ)</strong>' : '<strong class="text-teal-400 font-bold">NỔ TRÚNG DÀN BỌC LÓT (+24M VNĐ)</strong>') : '<strong class="text-rose-400 font-bold">chưa nổ nhịp này (-' + ((curDe.stakeK || 60000)/1000).toFixed(0) + 'M)</strong>'}. Lực nảy điều phối duy trì nhịp chuẩn xác.`;
+                    const isCurVip = curDe.isX3 || curDe.isX2 || (curDe.profitK != null && curDe.profitK >= 108000);
+                    deTextEl.innerHTML = `Giải đặc biệt kỳ này về <strong class="text-amber-300 font-bold">[${curDraw?.special || '--'}]</strong>. Dàn Đề ${curDe.methodName} (${curDe.numbers.length} số) đã ${curDe.isHit ? (isCurVip ? '<strong class="text-emerald-400 font-bold">NỔ TRÚNG VIP X3 (+192M VNĐ)</strong>' : '<strong class="text-teal-400 font-bold">NỔ TRÚNG DÀN BỌC LÓT (+24M VNĐ)</strong>') : '<strong class="text-rose-400 font-bold">chưa nổ nhịp này (-' + ((curDe.stakeK || 60000)/1000).toFixed(0) + 'M)</strong>'}. Lực nảy điều phối duy trì nhịp chuẩn xác.`;
                 }
 
                 if (loTitleEl) loTitleEl.textContent = `🎰 LÔ: Kết Quả Mở Thưởng Kỳ ${formatDate(targetDate)}:`;
@@ -7069,7 +7110,7 @@
                     titleEl.textContent = 'Đề Tinh Hoa & Lô Chủ Lực Duy Nhất (Smart Selective Router)';
                 }
                 if (descEl) {
-                    descEl.textContent = 'Dàn số đề xuất tối ưu cuối cùng: Kết hợp Đề Tinh Hoa cược X2/X1 và Lô Chủ Lực duy nhất được tuyển chọn thông minh (vốn thấp, Win Rate 79.7%), loại bỏ hoàn toàn các dàn cược trung gian rườm rà.';
+                    descEl.textContent = 'Dàn số đề xuất tối ưu cuối cùng: Kết hợp Đề Tinh Hoa cược X3/X1 và Lô Chủ Lực duy nhất được tuyển chọn thông minh (vốn thấp, Win Rate 79.7%), loại bỏ hoàn toàn các dàn cược trung gian rườm rà.';
                 }
 
                 // Column 1: Đề
@@ -7090,10 +7131,10 @@
                     deWinRateBadgeEl.textContent = deData.badge || 'Win 70.2%';
                 }
                 if (deRationaleEl) {
-                    deRationaleEl.textContent = deData.rationale || 'Săn đón nhịp nổ bù với Đề Thích Ứng Alpha cược X2 số trùng hạt nhân (23 số) và X1 bọc lót (14 số). Tối ưu hóa vốn bằng cách cắt tỉa số ngoại vi.';
+                    deRationaleEl.textContent = deData.rationale || 'Săn đón nhịp nổ bù với Đề Thích Ứng Alpha cược X3 số trùng hạt nhân (23 số) và X1 bọc lót (14 số). Tối ưu hóa vốn bằng cách cắt tỉa số ngoại vi.';
                 }
                 if (deVipLabelEl) {
-                    const vLabel = (deData.vipLabel || '⚡ VIP TRÙNG X2');
+                    const vLabel = (deData.vipLabel || '⚡ VIP TRÙNG X3');
                     deVipLabelEl.textContent = vLabel.includes('(') ? `${vLabel}:` : `${vLabel} (${deData.vipNums.length} số):`;
                 }
                 if (deVipNumsEl) {
@@ -7287,24 +7328,26 @@
                     const deProf = deRow.profitK || 0;
                     const loProf = loRow?.dayLotoProfitK || 0;
                     const totProf = deProf + loProf;
-                    descEl.innerHTML = `Tổng kết quả ngày: Đề <strong class="${deRow.isHit ? 'text-emerald-400' : 'text-rose-400'}">${deRow.isHit ? (deRow.isX2 ? 'TRÚNG VIP X2 (+108M)' : 'TRÚNG BỌC LÓT (+24M)') : 'XỊT (-' + ((deRow.stakeK || 60000)/1000).toFixed(0) + 'M)'}</strong> · Lô <strong class="${(loRow?.dayLotoProfitK ?? 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${loRow?.dayLotoHits ?? 0} nháy (${loProf >= 0 ? '+' : ''}${(loProf/1000).toFixed(1)}M)</strong> · Tổng lãi ngày: <strong class="${totProf >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-mono">${totProf >= 0 ? '+' : ''}${(totProf/1000).toFixed(1)}M VNĐ</strong>.`;
+                    const isVipDeHit = deRow.isX3 || deRow.isX2 || (deRow.profitK != null && deRow.profitK >= 108000);
+                    descEl.innerHTML = `Tổng kết quả ngày: Đề <strong class="${deRow.isHit ? 'text-emerald-400' : 'text-rose-400'}">${deRow.isHit ? (isVipDeHit ? 'TRÚNG VIP X3 (+192M)' : 'TRÚNG BỌC LÓT (+24M)') : 'XỊT (-' + ((deRow.stakeK || 60000)/1000).toFixed(0) + 'M)'}</strong> · Lô <strong class="${(loRow?.dayLotoProfitK ?? 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${loRow?.dayLotoHits ?? 0} nháy (${loProf >= 0 ? '+' : ''}${(loProf/1000).toFixed(1)}M)</strong> · Tổng lãi ngày: <strong class="${totProf >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-mono">${totProf >= 0 ? '+' : ''}${(totProf/1000).toFixed(1)}M VNĐ</strong>.`;
                 }
 
                 // Column 1: Đề ngày quá khứ
                 if (deTitleEl) {
                     deTitleEl.textContent = `1. ${deRow.methodName} (${deRow.numbers.length}s)`;
                 }
+                const isPastVip = deRow.isX3 || deRow.isX2 || (deRow.profitK != null && deRow.profitK >= 108000);
                 if (deWinRateBadgeEl) {
                     deWinRateBadgeEl.className = `rounded text-[10px] font-bold px-2 py-0.5 ${deRow.isHit ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/40' : 'bg-rose-500/20 text-rose-300 border border-rose-400/40'}`;
-                    deWinRateBadgeEl.textContent = deRow.isHit ? (deRow.isX2 ? '🎉 TRÚNG VIP X2' : '✅ TRÚNG X1') : '❌ XỊT ĐỀ';
+                    deWinRateBadgeEl.textContent = deRow.isHit ? (isPastVip ? '🎉 TRÚNG VIP X3' : '✅ TRÚNG X1') : '❌ XỊT ĐỀ';
                 }
                 if (deRationaleEl) {
                     deRationaleEl.innerHTML = actualSpecial
-                        ? `Giải đặc biệt về số <strong class="text-amber-300 font-bold font-mono">[${actualSpecial}]</strong>. ${deRow.isHit ? (deRow.isX2 ? '<strong class="text-emerald-300">TRÚNG VIP X2</strong> ăn 168M (+108M lãi) rực rỡ!' : '<strong class="text-teal-300">TRÚNG dàn bọc lót X1</strong> (+24M lãi)!') : 'Kỳ này không trúng nhịp đề, AI tự động kích hoạt nổ bù kỳ kế tiếp.'}`
+                        ? `Giải đặc biệt về số <strong class="text-amber-300 font-bold font-mono">[${actualSpecial}]</strong>. ${deRow.isHit ? (isPastVip ? '<strong class="text-emerald-300">TRÚNG VIP X3</strong> ăn 252M (+192M lãi) rực rỡ!' : '<strong class="text-teal-300">TRÚNG dàn bọc lót X1</strong> (+24M lãi)!') : 'Kỳ này không trúng nhịp đề, AI tự động kích hoạt nổ bù kỳ kế tiếp.'}`
                         : `Dàn Đề ${deRow.methodName} với ${deRow.numbers.length} số.`;
                 }
                 if (deVipLabelEl) {
-                    deVipLabelEl.textContent = `⚡ VIP X2 (${deRow.x2Nums.length} số):`;
+                    deVipLabelEl.textContent = `⚡ VIP X3 (${(deRow.x3Nums || deRow.x2Nums).length} số):`;
                 }
                 if (deVipNumsEl) {
                     deVipNumsEl.innerHTML = deRow.x2Nums.map(n => {
@@ -7625,7 +7668,7 @@
                         `Giải đặc biệt: [${draw?.special || '--'}]`,
                         `━━━━━━━━━━━━━━━━━━━━━━━━━━`,
                         `💎 1. ĐỀ ${deRow.methodName} (${deRow.numbers.length} số):`,
-                        `Kết quả: ${deRow.isHit ? (deRow.isX2 ? 'TRÚNG VIP X2' : 'TRÚNG BỌC LÓT') : 'XỊT'} (${deRow.profitK >= 0 ? '+' : ''}${((deRow.profitK || 0)/1000).toFixed(0)}M)`,
+                        `Kết quả: ${deRow.isHit ? ((deRow.isX3 || deRow.isX2 || (deRow.profitK != null && deRow.profitK >= 108000)) ? 'TRÚNG VIP X3' : 'TRÚNG BỌC LÓT') : 'XỊT'} (${deRow.profitK >= 0 ? '+' : ''}${((deRow.profitK || 0)/1000).toFixed(0)}M)`,
                         deNumsStr,
                         ``,
                         `🎰 2. LÔ CHỦ LỰC (${(loRow?.allNumbers || []).length} số):`,
@@ -8813,10 +8856,10 @@
         } else {
             kpis = [
                 ['THỰC CHIẾN LIVE (TỪ 28/08)', `${live.days || 0} kỳ`, 'Khóa snapshot chốt số thực tế'],
-                ['TRÚNG X2 (CỰC VIP)', `${live.winsX2 || 0} kỳ`, `${percent(live.winX2Rate)} · Ăn 168M (+108M)`],
+                ['TRÚNG X3 (CỰC VIP)', `${live.winsX3 || live.winsX2 || 0} kỳ`, `${percent(live.winX3Rate || live.winX2Rate)} · Ăn 252M (+192M)`],
                 ['TRÚNG X1 (BỌC LÓT)', `${live.winsX1 || 0} kỳ`, `${percent(live.winX1Rate)} · Ăn 84M (+24M)`],
                 ['TỔNG TỶ LỆ TRÚNG', `${percent(live.hitRate)}`, `${live.wins || 0} thắng / ${live.losses || 0} trượt`],
-                ['TỔNG TIỀN VỐN LIVE', `${moneyM(live.stakeK || (live.days * 60000))}`, '60M mỗi ngày (2 tầng vốn)'],
+                ['TỔNG TIỀN VỐN LIVE', `${moneyM(live.stakeK || (live.days * 60000))}`, '60M mỗi ngày (2 tầng vốn X3 + X1)'],
                 ['LÃI LŨY KẾ LIVE', `${signedM(live.profitK || 0)}`, `${percent(live.roi)} ROI Thực Chiến`]
             ];
         }
@@ -9131,14 +9174,16 @@
                         outcomeClass = 'bg-rose-100 text-rose-800 border-rose-200 font-bold';
                         outcomeText = isLive ? '❌ TRƯỢT (-30M)' : '❌ TRƯỢT';
                     }
-                } else if (r.hitType === 'win_x3') {
+                } else if (r.hitType === 'win_x3' || (methodId !== 'tripleMerge' && (r.hitType === 'win_x2' || r.isX2 || r.isX3))) {
                     outcomeClass = 'bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-300 text-amber-950 border-amber-500 font-black shadow-xs ring-1 ring-amber-400/50';
-                    outcomeText = isLive ? '👑 TRÚNG X3 (+162M)' : '👑 TRÚNG X3';
+                    outcomeText = methodId === 'tripleMerge'
+                        ? (isLive ? '👑 TRÚNG X3 (+162M)' : '👑 TRÚNG X3')
+                        : (isLive ? '🎉 TRÚNG X3 (+192M)' : '🎉 TRÚNG X3');
                 } else if (r.hitType === 'win_x2' || r.isX2) {
                     outcomeClass = 'bg-gradient-to-r from-amber-200 via-amber-300 to-yellow-200 text-amber-950 border-amber-400 font-black shadow-xs ring-1 ring-amber-400/50';
                     outcomeText = methodId === 'tripleMerge' 
                         ? (isLive ? '⚡ TRÚNG X2 (+78M)' : '⚡ TRÚNG X2') 
-                        : (isLive ? '🎉 TRÚNG X2 (+108M)' : '🎉 TRÚNG X2');
+                        : (isLive ? '🎉 TRÚNG X3 (+192M)' : '🎉 TRÚNG X3');
                 } else if (r.hitType === 'win_x1' || (r.isHit && !r.isX2)) {
                     outcomeClass = methodId === 'tripleMerge'
                         ? 'bg-indigo-100 text-indigo-900 border-indigo-300 font-bold'
@@ -9301,10 +9346,10 @@
         } else {
             if (byId('econTitle')) byId('econTitle').innerHTML = '<i class="bi bi-wallet2 text-indigo-600"></i> BẢNG PHÂN BỔ VỐN & KINH TẾ CƯỢC HÔM NAY (<span id="econStakeHeader">CỐ ĐỊNH 60M</span>)';
             if (byId('econStakeTotal')) byId('econStakeTotal').textContent = '60M';
-            if (byId('econStakeFormula')) byId('econStakeFormula').textContent = 'Số trùng cược x2 (2M/số) + Số riêng cược x1 (1M/số)';
-            if (byId('econWinTopLabel')) byId('econWinTopLabel').textContent = 'Trúng vùng trùng (x2):';
-            if (byId('econWinTopValue')) byId('econWinTopValue').textContent = 'Nhận 168M · Lãi +108M';
-            if (byId('econWinTopRoi')) byId('econWinTopRoi').textContent = 'Tỷ suất sinh lời ROI +180%';
+            if (byId('econStakeFormula')) byId('econStakeFormula').textContent = 'Số trùng cược x3 (3M/số) + Số riêng cược x1 (1M/số)';
+            if (byId('econWinTopLabel')) byId('econWinTopLabel').textContent = 'Trúng vùng trùng (x3):';
+            if (byId('econWinTopValue')) byId('econWinTopValue').textContent = 'Nhận 252M · Lãi +192M';
+            if (byId('econWinTopRoi')) byId('econWinTopRoi').textContent = 'Tỷ suất sinh lời ROI +320%';
             if (byId('econWinMidLabel')) byId('econWinMidLabel').textContent = 'Trúng vùng bọc lót (x1):';
             if (byId('econWinMidValue')) byId('econWinMidValue').textContent = 'Nhận 84M · Lãi +24M';
             if (byId('econWinMidRoi')) byId('econWinMidRoi').textContent = 'Tỷ suất sinh lời ROI +40%';
@@ -9337,14 +9382,14 @@
         } else if (mObj.id === 'adaptiveDualMerge') {
             reasons = [
                 '💎 Thích Ứng Alpha: Tự động tuyển chọn 2 phương pháp tối ưu từ pool 7 phương pháp dựa trên State Machine và tỷ lệ trúng chu kỳ gần nhất.',
-                '⚔️ Phân bổ vốn 60M (X2 Trùng + X1 Riêng): Số trùng cược 2M/số (ăn 168M lãi +108M), số riêng cược 1M/số (ăn 84M lãi +24M).',
+                '⚔️ Phân bổ vốn 60M (X3 Trùng + X1 Riêng): Số trùng cược 3M/số (ăn 252M lãi +192M), số riêng cược 1M/số (ăn 84M lãi +24M).',
                 '🎯 Lưới an toàn kép: Tối ưu hóa xác suất trúng và lợi nhuận thực chiến dương bền bỉ trong toàn bộ năm 2026.',
                 '🛡️ Kiểm định Strict PIT: Tuyển chọn cặp động tại mỗi ngày t chỉ dựa vào dữ liệu lịch sử đến t-1.'
             ];
         } else {
             reasons = [
                 '🎯 Cặp Cố Định Tiêu Chuẩn: Phối hợp Edge 50% và Edge 75% Hold đã được tối ưu hóa trọng số bước nhảy và chu kỳ nhịp dài hạn.',
-                '🔥 Phân bổ vốn cố định 60M: Vùng trùng X2 (2M/số, ăn 168M lãi +108M), vùng riêng X1 (1M/số, ăn 84M lãi +24M).',
+                '🔥 Phân bổ vốn cố định 60M: Vùng trùng X3 (3M/số, ăn 252M lãi +192M), vùng riêng X1 (1M/số, ăn 84M lãi +24M).',
                 '📈 Ổn định và dẫn đầu: Đạt chuỗi thắng liên tục trong 7 ngày gần nhất, tỷ lệ trúng 57.1% với lợi nhuận ròng dẫn đầu toàn bộ phương pháp.',
                 '🛡️ 100% Strict Point-In-Time: Toàn bộ dàn số khóa chặt trước giờ quay thưởng thực tế.'
             ];
@@ -9728,11 +9773,12 @@
                 singleNumbers = (r.uniqueSinglesX1 || []).map(number);
                 numbers = (r.fullUnion || [...vipNumbers, ...singleNumbers]).map(number);
                 isHit = Boolean(r.isHit);
+                const isVipWin = r.isX3 || r.isX2 || r.hitType === 'win_x3' || r.hitType === 'win_x2';
                 stakeK = r.stakeK || 60000;
-                profitK = r.profitK || (isHit ? (r.isX2 ? 108000 : 24000) : -60000);
+                profitK = (r.profitK != null && r.profitK >= 108000) ? 192000 : (r.profitK != null ? r.profitK : (isHit ? (isVipWin ? 192000 : 24000) : -60000));
                 payoutK = r.payoutK || (isHit ? (stakeK + profitK) : 0);
                 hitBadge = isHit
-                    ? (r.isX2 ? '🎉 TRÚNG VIP X2 (+108M)' : '🎉 TRÚNG BỌC LÓT (+24M)')
+                    ? (isVipWin ? '🎉 TRÚNG VIP X3 (+192M)' : '🎉 TRÚNG BỌC LÓT (+24M)')
                     : '❌ TRƯỢT (-60M)';
                 detailDesc = `Cặp: ${r.m1Label || r.m1 || 'M1'} + ${r.m2Label || r.m2 || 'M2'} (${r.modeLabel || 'Thích ứng'})`;
             } else if (methodKey === 'metaLearner') {
@@ -9924,8 +9970,8 @@
                     <div class="space-y-2">
                         <div>
                             <div class="flex items-center justify-between text-[10px] font-black uppercase text-amber-400 mb-1">
-                                <span>⚡ VIP TRÙNG X2 (${r.vipNumbers.length} số):</span>
-                                <span class="text-amber-300">Cược X2</span>
+                                <span>⚡ VIP TRÙNG X3 (${r.vipNumbers.length} số):</span>
+                                <span class="text-amber-300">Cược X3</span>
                             </div>
                             <div class="flex flex-wrap gap-1">
                                 ${r.vipNumbers.map(n => {
@@ -10080,7 +10126,7 @@
                 detailDesc = r?.switchPhase ? `Pha: ${r.switchPhase}` : 'Dàn 30 số tinh hoa';
             }
         } else if (methodKey === 'adaptiveDualMerge') {
-            methodTitle = '👑 Đề Thích Ứng Alpha (VIP X2 + X1)';
+            methodTitle = '👑 Đề Thích Ứng Alpha (VIP X3 + X1)';
             if (isPending) {
                 const rec = payloadData.adaptiveDualMerge?.latestRecommendation || {};
                 vipNumbers = (rec.intersectionX2 || []).map(number);
@@ -10090,18 +10136,18 @@
                 profitK = 0;
                 payoutK = 0;
                 hitBadge = '⏳ Chờ mở thưởng 18h15';
-                detailDesc = `Cặp: ${rec.m1Label || 'M1'} + ${rec.m2Label || 'M2'} (${vipNumbers.length}s VIP X2 · ${singleNumbers.length}s X1)`;
+                detailDesc = `Cặp: ${rec.m1Label || 'M1'} + ${rec.m2Label || 'M2'} (${vipNumbers.length}s VIP X3 · ${singleNumbers.length}s X1)`;
             } else {
                 const r = payloadData.adaptiveDualMerge?.settledLedger?.find(x => (x.predictionDate || x.date) === date);
                 vipNumbers = (r?.intersectionX2 || []).map(number);
                 singleNumbers = (r?.uniqueSinglesX1 || []).map(number);
                 numbers = (r?.fullUnion || [...vipNumbers, ...singleNumbers]).map(number);
                 isHit = Boolean(r?.isHit);
-                isX2 = Boolean(r?.isX2);
+                isX2 = Boolean(r?.isX3 || r?.isX2 || r?.hitType === 'win_x3' || r?.hitType === 'win_x2');
                 stakeK = r?.stakeK || 60000;
-                profitK = r?.profitK != null ? r.profitK : (isHit ? (isX2 ? 108000 : 24000) : -60000);
+                profitK = (r?.profitK != null && r.profitK >= 108000) ? 192000 : (r?.profitK != null ? r.profitK : (isHit ? (isX2 ? 192000 : 24000) : -60000));
                 payoutK = r?.payoutK || (isHit ? (stakeK + profitK) : 0);
-                hitBadge = isHit ? (isX2 ? '🎉 TRÚNG VIP X2 (+108M)' : '🎉 TRÚNG BỌC LÓT (+24M)') : '❌ TRƯỢT (-60M)';
+                hitBadge = isHit ? (isX2 ? '🎉 TRÚNG VIP X3 (+192M)' : '🎉 TRÚNG BỌC LÓT (+24M)') : '❌ TRƯỢT (-60M)';
                 detailDesc = `Cặp: ${r?.m1Label || 'M1'} + ${r?.m2Label || 'M2'} (${r?.modeLabel || 'Thích ứng'})`;
             }
         } else if (methodKey === 'dualMerge') {
@@ -10559,8 +10605,8 @@
                     <div class="space-y-2.5">
                         <div>
                             <div class="text-[10px] font-black uppercase text-amber-400 mb-1 flex items-center justify-between">
-                                <span>⚡ VIP TRÙNG X2 (${deData.vipNumbers.length} số):</span>
-                                <span class="text-amber-300">Cược X2</span>
+                                <span>⚡ VIP TRÙNG X3 (${deData.vipNumbers.length} số):</span>
+                                <span class="text-amber-300">Cược X3</span>
                             </div>
                             <div class="flex flex-wrap gap-1">
                                 ${deData.vipNumbers.map(n => {
