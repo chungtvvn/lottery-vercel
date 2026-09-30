@@ -4554,8 +4554,8 @@
                         date,
                         isPending: true,
                         isLive: true,
-                        status: 'ACTIVE_BET',
-                        xien4Status: 'ACTIVE_BET',
+                        status: 'ACTIVE',
+                        xien4Status: 'ACTIVE',
                         reason: 'Dung hợp Top 5 Đồng Thuận 4 Động Cơ AI (Quây 11 vé Top 4 + Quây 10 vé X3)',
                         xien4Reason: 'Dung hợp Top 5 Đồng Thuận 4 Động Cơ AI (Quây 11 vé Top 4 + Quây 10 vé X3)',
                         combinations: [ (payload?.loTop5ConsensusXien?.top4Xien || []).map(number) ],
@@ -5340,7 +5340,7 @@
                             </td>
                             <td class="px-3 py-3 whitespace-nowrap">
                                 <span class="rounded bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-bold px-2 py-0.5">
-                                    ${lo4Info.xien4Status === 'SKIPPED_TOO_MANY' ? '🛡️ Bỏ qua (>5 số)' : '⏳ Chờ chốt'}
+                                    ${(lo4Info.xien4Status === 'SKIPPED_TOO_MANY' && !r.isPending) ? '🛡️ Bỏ qua (>5 số)' : '⏳ Chờ mở (Quây 11 vé)'}
                                 </span>
                             </td>
                             <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
@@ -6023,13 +6023,13 @@
                                 <i class="bi bi-dice-4-fill text-purple-600 text-[10px]"></i> Xiên 4 Ghép Mới
                             </div>
                             <div class="flex items-center gap-1.5 mt-0.5 text-xs">
-                                ${lo4Xien4Info.status === 'ACTIVE'
-                                    ? `<span class="text-amber-600 font-bold">⏳ Chờ mở (${lo4Xien4Info.combinations?.length || 5} vé)</span>`
+                                ${(lo4Xien4Info.status === 'ACTIVE' || lo4Xien4Info.status === 'ACTIVE_BET' || (r.isPending && (lo4Xien4Info.top4?.length > 0 || lo4Xien4Info.combinations?.length > 0)))
+                                    ? `<span class="text-amber-600 font-bold">⏳ Chờ mở (11 vé Quây Top 4)</span>`
                                     : `<span class="inline-flex items-center gap-1 rounded bg-slate-100 text-slate-700 px-1.5 py-0.5 text-[10px] font-bold">🛡️ Bỏ qua (>5s)</span>`}
-                                <span class="font-mono text-slate-400 font-semibold">${lo4Xien4Info.status === 'ACTIVE' ? moneyM(lo4Xien4Info.stakeK) : '0đ'}</span>
+                                <span class="font-mono text-slate-400 font-semibold">${(lo4Xien4Info.status === 'ACTIVE' || lo4Xien4Info.status === 'ACTIVE_BET' || r.isPending) ? moneyM(lo4Xien4Info.stakeK || 11000) : '0đ'}</span>
                             </div>
                             <div class="text-[10px] text-slate-600 mt-0.5 font-medium flex items-center justify-between">
-                                <span class="text-slate-500">${lo4Xien4Info.status === 'ACTIVE' ? 'Quây 4-5 số' : 'Bảo toàn vốn'}</span>
+                                <span class="text-purple-700 font-semibold">${(lo4Xien4Info.status === 'ACTIVE' || lo4Xien4Info.status === 'ACTIVE_BET' || r.isPending) ? 'Bộ 4 Quây 11 vé VIP' : 'Bảo toàn vốn'}</span>
                                 <span class="diary-expand-indicator text-purple-700 font-sans font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
                             </div>
                         </td>
@@ -7020,6 +7020,8 @@
 
         setActiveAdvisorDate = function(targetDate) {
             currentAdvisorDate = targetDate;
+            isUserOverridingDeMethod = false;
+            isUserOverridingLoMethod = false;
             const selectEl = byId('dailyAdvisorDateSelect');
             if (selectEl && selectEl.value !== targetDate) {
                 selectEl.value = targetDate;
@@ -7115,11 +7117,12 @@
                 if (stratBadgeEl) {
                     stratBadgeEl.textContent = '⚡ DÀN SỐ ĐÁNH CUỐI CÙNG · KHUYÊN DÙNG HÔM NAY';
                 }
+                const cleanDeLabel = (deData.label || 'Đề Markov Bậc 2 & Gap Hazard').replace(/<[^>]*>?/gm, '').trim();
                 if (titleEl) {
-                    titleEl.textContent = 'Đề Tinh Hoa & Lô Chủ Lực Duy Nhất (Smart Selective Router)';
+                    titleEl.textContent = `${cleanDeLabel} & Lô Chủ Lực Duy Nhất (Smart Selective Router)`;
                 }
                 if (descEl) {
-                    descEl.textContent = 'Dàn số đề xuất tối ưu cuối cùng: Kết hợp Đề Tinh Hoa cược X3/X1 và Lô Chủ Lực duy nhất được tuyển chọn thông minh (vốn thấp, Win Rate 79.7%), loại bỏ hoàn toàn các dàn cược trung gian rườm rà.';
+                    descEl.textContent = `Dàn số đề xuất tối ưu cuối cùng: Kết hợp ${cleanDeLabel} cược VIP X3/X1 và Lô Chủ Lực duy nhất được tuyển chọn thông minh (vốn thấp, Win Rate 79.7%), loại bỏ hoàn toàn các dàn cược trung gian rườm rà.`;
                 }
 
                 // Column 1: Đề
@@ -7258,11 +7261,40 @@
                     }
                 }
 
-                // Hide legacy sub-rows and Top 20 Anchor
+                // Sub-rows handling
                 if (loX3RowEl) loX3RowEl.style.display = 'none';
                 if (loX2RowEl) loX2RowEl.style.display = 'none';
-                if (loX1RowEl) loX1RowEl.style.display = 'none';
                 if (loTop20RowEl) loTop20RowEl.style.display = 'none';
+
+                const tierX1Numbers = (lo4Rec.tierX1 && lo4Rec.tierX1.length)
+                    ? lo4Rec.tierX1.map(number)
+                    : (lo4Rec.betNumbers ? lo4Rec.betNumbers.filter(b => b.multiplier === 1 || b.votes === 1).map(b => number(b.num)) : []);
+
+                if (loX1RowEl) {
+                    if (tierX1Numbers && tierX1Numbers.length > 0) {
+                        loX1RowEl.style.display = 'block';
+                        const loX1LabelEl = byId('finalLoX1Label');
+                        if (loX1LabelEl) {
+                            loX1LabelEl.innerHTML = `<span class="text-teal-300 font-bold">🛡️ TẦNG X1 BỌC LÓT</span> <span class="text-[10px] text-slate-400 font-normal">(Không trùng · Cược X1 100đ - ${tierX1Numbers.length} số):</span>`;
+                        }
+                        const loX1NumsEl = byId('finalLoX1Nums');
+                        if (loX1NumsEl) {
+                            loX1NumsEl.innerHTML = tierX1Numbers.map(n => `
+                                <span class="inline-flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 font-mono text-xs font-bold px-2 py-0.5 hover:scale-105 transition-all">
+                                    ${n}
+                                </span>
+                            `).join('');
+                        }
+                        const btnCopyLoX1 = byId('btnCopyFinalLoX1');
+                        if (btnCopyLoX1) {
+                            btnCopyLoX1.onclick = () => {
+                                copyNumbers(tierX1Numbers);
+                            };
+                        }
+                    } else {
+                        loX1RowEl.style.display = 'none';
+                    }
+                }
 
                 if (loProfitSummaryEl) {
                     const profAll = isTop6 ? '+5.288 TỶ' : '+6.058 TỶ';
@@ -7438,10 +7470,44 @@
                     }
                 }
 
+                // Sub-rows handling past days
                 if (loX3RowEl) loX3RowEl.style.display = 'none';
                 if (loX2RowEl) loX2RowEl.style.display = 'none';
-                if (loX1RowEl) loX1RowEl.style.display = 'none';
                 if (loTop20RowEl) loTop20RowEl.style.display = 'none';
+
+                const pastTierX1 = (loRow?.tierX1 && loRow.tierX1.length)
+                    ? loRow.tierX1.map(number)
+                    : (loRow?.betNumbers ? loRow.betNumbers.filter(b => b.multiplier === 1 || b.votes === 1).map(b => number(b.num)) : []);
+
+                if (loX1RowEl) {
+                    if (pastTierX1 && pastTierX1.length > 0) {
+                        loX1RowEl.style.display = 'block';
+                        const loX1LabelEl = byId('finalLoX1Label');
+                        if (loX1LabelEl) {
+                            loX1LabelEl.innerHTML = `<span class="text-teal-300 font-bold">🛡️ TẦNG X1 BỌC LÓT</span> <span class="text-[10px] text-slate-400 font-normal">(Không trùng · 100đ - ${pastTierX1.length} số):</span>`;
+                        }
+                        const prizesSet = new Set((draw?.prizes || []).map(number));
+                        const loX1NumsEl = byId('finalLoX1Nums');
+                        if (loX1NumsEl) {
+                            loX1NumsEl.innerHTML = pastTierX1.map(n => {
+                                const isHit = prizesSet.has(n);
+                                return `
+                                    <span class="inline-flex items-center justify-center rounded-lg ${isHit ? 'bg-emerald-400 text-slate-950 font-black ring-2 ring-emerald-300 scale-105 shadow-md' : 'bg-white/10 text-slate-300'} font-mono text-xs px-2 py-0.5 transition-all">
+                                        ${n}${isHit ? ' ⭐' : ''}
+                                    </span>
+                                `;
+                            }).join('');
+                        }
+                        const btnCopyLoX1 = byId('btnCopyFinalLoX1');
+                        if (btnCopyLoX1) {
+                            btnCopyLoX1.onclick = () => {
+                                copyNumbers(pastTierX1);
+                            };
+                        }
+                    } else {
+                        loX1RowEl.style.display = 'none';
+                    }
+                }
 
                 if (loProfitSummaryEl) {
                     const loProf = loRow?.dayLotoProfitK ?? 0;
@@ -7562,15 +7628,19 @@
                     const lo4Fusion = fullData?.lo4EngineFusion || payload?.lo4EngineFusion;
                     const lo4ModeData = lo4Fusion?.modes?.[loMode] || lo4Fusion;
                     const lo4Rec = lo4ModeData?.latestRecommendation || lo4Fusion?.latestRecommendation || {};
-                    return (lo4Rec.numbersOver2 && lo4Rec.numbersOver2.length)
-                        ? lo4Rec.numbersOver2.map(number)
-                        : (loMode === 'top6' ? [62, 38, 44, 66, 93, 22] : [62, 93, 38, 44, 66, 22, 57]);
+                    return (lo4Rec.allNumbers && lo4Rec.allNumbers.length)
+                        ? lo4Rec.allNumbers.map(number)
+                        : ((lo4Rec.numbersOver2 && lo4Rec.numbersOver2.length)
+                            ? lo4Rec.numbersOver2.map(number)
+                            : (loMode === 'top6' ? [62, 38, 44, 66, 93, 22] : [62, 93, 38, 44, 66, 22, 57]));
                 } else {
                     const loRow = fullData?.lo4EngineFusion?.modes?.[loMode]?.settledLedger?.find(r => r.date === targetDate);
-                    const list = (loRow?.numbersOver2 && loRow.numbersOver2.length)
-                        ? loRow.numbersOver2
-                        : (loRow?.betNumbers ? loRow.betNumbers.map(b => b.num) : (loRow?.allNumbers || []));
-                    return list.slice(0, loMode === 'top6' ? 6 : 7).map(number);
+                    const list = (loRow?.allNumbers && loRow.allNumbers.length)
+                        ? loRow.allNumbers
+                        : ((loRow?.numbersOver2 && loRow.numbersOver2.length)
+                            ? loRow.numbersOver2
+                            : (loRow?.betNumbers ? loRow.betNumbers.map(b => b.num) : []));
+                    return (list.length ? list : (isTop6 ? [62, 38, 44, 66, 93, 22] : [62, 93, 38, 44, 66, 22, 57])).map(number);
                 }
             }
 
@@ -9727,6 +9797,18 @@
         } else if (methodKey === 'tripleMerge') {
             rawLedger = payload?.tripleMerge?.settledLedger || [];
             isDe = true;
+        } else if (methodKey === 'deMarkovGapHazard') {
+            rawLedger = payload?.deMarkovGapHazard?.settledLedger || payload?.streakAwareDeAdvisor?.markovAdvisor?.settledLedger || [];
+            isDe = true;
+        } else if (methodKey === 'bayesFormResonance') {
+            rawLedger = payload?.streakAwareDeAdvisor?.bayesAdvisor?.settledLedger || [];
+            isDe = true;
+        } else if (methodKey === 'dePositionalGraphFlow') {
+            rawLedger = payload?.dePositionalGraphFlow?.settledLedger || payload?.streakAwareDeAdvisor?.graphAdvisor?.settledLedger || [];
+            isDe = true;
+        } else if (methodKey === 'pentaCoreDe') {
+            rawLedger = payload?.pentaCoreDe?.settledLedger || [];
+            isDe = true;
         } else if (methodKey === 'lo4Engine') {
             rawLedger = payload?.lo4EngineFusion?.modes?.[currentLo4EngineMode]?.settledLedger || payload?.lo4EngineFusion?.modes?.top6?.settledLedger || [];
         } else if (methodKey === 'loXien5') {
@@ -9761,143 +9843,27 @@
 
         const normalizedRows = filtered.map(r => {
             const date = r.predictionDate || r.date;
-            const draw = payload?.drawPrizesByDate?.[date] || {};
-            const actualSpecial = draw.special || (r.actualSpecial ?? r.actual);
-            const drawPrizes = (draw.prizes || []).map(number);
-            const drawPrizesSet = new Set(drawPrizes);
+            const res = resolveMethodPlaySlipData(methodKey, date, payload);
 
-            let numbers = [];
-            let vipNumbers = [];
-            let singleNumbers = [];
-            let tickets = [];
-            let isHit = false;
-            let profitK = 0;
-            let stakeK = 0;
-            let payoutK = 0;
-            let hitBadge = '';
-            let detailDesc = '';
-
-            if (methodKey === 'adaptiveDualMerge') {
-                vipNumbers = (r.intersectionX2 || []).map(number);
-                singleNumbers = (r.uniqueSinglesX1 || []).map(number);
-                numbers = (r.fullUnion || [...vipNumbers, ...singleNumbers]).map(number);
-                isHit = Boolean(r.isHit);
-                const isVipWin = r.isX3 || r.isX2 || r.hitType === 'win_x3' || r.hitType === 'win_x2';
-                stakeK = r.stakeK || 60000;
-                profitK = (r.profitK != null && r.profitK >= 108000) ? 192000 : (r.profitK != null ? r.profitK : (isHit ? (isVipWin ? 192000 : 24000) : -60000));
-                payoutK = r.payoutK || (isHit ? (stakeK + profitK) : 0);
-                hitBadge = isHit
-                    ? (isVipWin ? '🎉 TRÚNG VIP X3 (+192M)' : '🎉 TRÚNG BỌC LÓT (+24M)')
-                    : '❌ TRƯỢT (-60M)';
-                detailDesc = `Cặp: ${r.m1Label || r.m1 || 'M1'} + ${r.m2Label || r.m2 || 'M2'} (${r.modeLabel || 'Thích ứng'})`;
-            } else if (methodKey === 'metaLearner') {
-                numbers = (r.numbers || r.standard30 || []).map(number);
-                vipNumbers = (r.vipNumbers || r.core10 || []).map(number);
-                isHit = Boolean(r.isHit);
-                stakeK = r.stakeK || 60000;
-                profitK = r.profitK != null ? r.profitK : (isHit ? 24000 : -60000);
-                payoutK = r.payoutK || (isHit ? 84000 : 0);
-                hitBadge = isHit ? '🎉 TRÚNG ĐỀ (+24M)' : '❌ TRƯỢT (-60M)';
-                detailDesc = r.switchPhase ? `Pha: ${r.switchPhase} ${r.switchReason ? '— ' + r.switchReason : ''}` : 'Dàn 30 số tinh hoa';
-            } else if (methodKey === 'dualMerge') {
-                vipNumbers = (r.intersection || []).map(number);
-                singleNumbers = (r.uniqueSingles || []).map(number);
-                numbers = (r.union || [...vipNumbers, ...singleNumbers]).map(number);
-                isHit = Boolean(r.isHit);
-                stakeK = r.stakeK || 60000;
-                profitK = r.profitK != null ? r.profitK : (isHit ? 24000 : -60000);
-                payoutK = r.payoutK || (isHit ? 84000 : 0);
-                hitBadge = isHit ? '🎉 TRÚNG ĐỀ (+24M)' : '❌ TRƯỢT (-60M)';
-                detailDesc = `Cặp: ${r.m1Label || 'M1'} + ${r.m2Label || 'M2'} · Trùng: ${vipNumbers.length}s`;
-            } else if (methodKey === 'tripleMerge') {
-                vipNumbers = (r.tierX3 || []).map(number);
-                singleNumbers = [...(r.tierX2 || []), ...(r.tierX1 || [])].map(number);
-                numbers = (r.fullUnion || [...vipNumbers, ...singleNumbers]).map(number);
-                isHit = Boolean(r.isHit);
-                stakeK = r.stakeK || 90000;
-                profitK = r.profitK != null ? r.profitK : (isHit ? 44000 : -90000);
-                payoutK = r.payoutK || (isHit ? (stakeK + profitK) : 0);
-                hitBadge = isHit ? `🎉 TRÚNG ${r.hitType || 'ĐB'} (+${moneyM(profitK)})` : '❌ TRƯỢT (-90M)';
-                detailDesc = `Tam Trụ: ${r.m1Label || 'M1'} + ${r.m2Label || 'M2'} + ${r.m3Label || 'M3'}`;
-            } else if (methodKey === 'lo4Engine') {
-                const betList = r.betNumbers || [];
-                numbers = betList.map(b => number(b.num));
-                const hits = r.dayLotoHits || 0;
-                isHit = hits >= 2;
-                stakeK = r.dayLotoStakeK || 0;
-                profitK = r.dayLotoProfitK || 0;
-                payoutK = r.dayLotoPayoutK || 0;
-                hitBadge = hits > 0 ? `🎉 NỔ ${hits} NHÁY (${moneyM(profitK, { signed: true })})` : '❌ TRƯỢT';
-                detailDesc = `Hội tụ 4 động cơ: ${r.countOver2 || 0} số trùng &ge; 2 ĐC`;
-            } else if (methodKey === 'loXien5') {
-                numbers = (r.top5 || []).map(number);
-                tickets = r.x5Tickets && r.x5Tickets.length ? r.x5Tickets : getXi5Tickets(numbers);
-                const evalX5 = evaluateXien5_5DanX4(r.h5 != null ? r.h5 : (r.hitCount5 ?? 0));
-                stakeK = 55000;
-                payoutK = r.x5Payout55K != null ? r.x5Payout55K : (r.x5PayoutK != null ? r.x5PayoutK : evalX5.payoutK);
-                profitK = r.x5Profit55K != null ? r.x5Profit55K : (r.x5ProfitK != null ? r.x5ProfitK : evalX5.profitK);
-                isHit = profitK > 0;
-                const h5Hits = evalX5.h5;
-                if (h5Hits >= 5) {
-                    hitBadge = '👑 ĂN 5 DÀN (+1.865M)';
-                } else if (h5Hits === 4) {
-                    hitBadge = '🔥 ĂN 4 DÀN (+665M)';
-                } else if (h5Hits === 3) {
-                    hitBadge = '🎉 ĂN 3 DÀN (+149M)';
-                } else if (h5Hits === 2) {
-                    hitBadge = '🛡️ THU HỒI 36M (-19M)';
-                } else {
-                    hitBadge = `❌ TRƯỢT (${h5Hits}/5 con)`;
-                }
-                detailDesc = `Top 5 Đồng Thuận ghép 5 Dàn Xiên 4 (11M/dàn · 55M/ngày)`;
-            } else if (methodKey === 'lo4Xien4') {
-                numbers = (r.top4 || []).map(number);
-                const hits = r.h4 || 0;
-                isHit = hits >= 2;
-                stakeK = r.q11StakeVIP_K || 11000;
-                profitK = r.q11ProfitVIP_K || 0;
-                payoutK = r.q11PayoutVIP_K || 0;
-                hitBadge = hits >= 4 ? '👑 ĂN 4 CON (+373M)' : (hits === 3 ? '🔥 ĂN 3 CON (+73M)' : (hits === 2 ? '✨ ĂN 2 CON (+1M)' : `❌ TRƯỢT (${hits}/4 con)`));
-                detailDesc = `Quây 11 vé Top 4 (Vốn VIP 11M)`;
-            } else if (methodKey === 'loStd') {
-                numbers = (r.top20 || []).map(number);
-                const hits = r.t20Hits || 0;
-                isHit = hits >= 6;
-                stakeK = 44000;
-                payoutK = hits * 8000;
-                profitK = payoutK - stakeK;
-                hitBadge = hits >= 6 ? `🎉 LÃI ${moneyM(profitK, { signed: true })} (${hits} nháy)` : `LỖ (${hits} nháy)`;
-                detailDesc = `Dàn 20 số nền tảng (Vốn 44M)`;
-            } else if (methodKey === 'loX2') {
-                numbers = (r.top7 || r.top2 || []).map(number);
-                const hits = r.t7Hits || r.t2Hits || 0;
-                isHit = hits >= 2;
-                stakeK = numbers.length * 2200;
-                payoutK = hits * 8000;
-                profitK = payoutK - stakeK;
-                hitBadge = hits >= 2 ? `🎉 LÃI ${moneyM(profitK, { signed: true })} (${hits} nháy)` : `LỖ (${hits} nháy)`;
-                detailDesc = `Dàn ${numbers.length} số tăng tốc`;
-            }
-
-            totalStakeK += stakeK;
-            totalPayoutK += payoutK;
-            totalProfitK += profitK;
-            if (isHit) winCount++;
+            totalStakeK += res.stakeK || 0;
+            totalPayoutK += res.payoutK || 0;
+            totalProfitK += res.profitK || 0;
+            if (res.isHit) winCount++;
 
             return {
                 date,
-                numbers,
-                vipNumbers,
-                singleNumbers,
-                tickets,
-                isHit,
-                profitK,
-                stakeK,
-                payoutK,
-                hitBadge,
-                detailDesc,
-                actualSpecial,
-                drawPrizesSet
+                numbers: res.numbers || [],
+                vipNumbers: res.vipNumbers || [],
+                singleNumbers: res.singleNumbers || [],
+                tickets: res.tickets || [],
+                isHit: Boolean(res.isHit),
+                profitK: res.profitK || 0,
+                stakeK: res.stakeK || 0,
+                payoutK: res.payoutK || 0,
+                hitBadge: res.hitBadge || '',
+                detailDesc: res.detailDesc || '',
+                actualSpecial: res.actualSpecial,
+                drawPrizesSet: res.drawPrizesSet || new Set()
             };
         });
 
@@ -10206,10 +10172,10 @@
         } else if (effectiveKey === 'dualMerge') {
             methodTitle = '🎯 Đề Gộp Tiêu Chuẩn (22-26s)';
             if (isPending) {
-                const rec = payloadData.dualMerge?.latestRecommendation || {};
-                vipNumbers = (rec.intersection || []).map(number);
-                singleNumbers = (rec.uniqueSingles || []).map(number);
-                numbers = (rec.union || [...vipNumbers, ...singleNumbers]).map(number);
+                const rec = payloadData.dualMerge?.latestRecommendation?.topPair || payloadData.dualMerge?.latestRecommendation || {};
+                vipNumbers = (rec.intersectionX2 || rec.intersection || []).map(number);
+                singleNumbers = (rec.uniqueSinglesX1 || rec.uniqueSingles || []).map(number);
+                numbers = (rec.fullUnion || rec.union || [...vipNumbers, ...singleNumbers]).map(number);
                 stakeK = 60000;
                 profitK = 0;
                 payoutK = 0;
@@ -10217,9 +10183,9 @@
                 detailDesc = `Cặp: ${rec.m1Label || 'M1'} + ${rec.m2Label || 'M2'}`;
             } else {
                 const r = payloadData.dualMerge?.settledLedger?.find(x => (x.predictionDate || x.date) === date);
-                vipNumbers = (r?.intersection || []).map(number);
-                singleNumbers = (r?.uniqueSingles || []).map(number);
-                numbers = (r?.union || [...vipNumbers, ...singleNumbers]).map(number);
+                vipNumbers = (r?.intersectionX2 || r?.intersection || []).map(number);
+                singleNumbers = (r?.uniqueSinglesX1 || r?.uniqueSingles || []).map(number);
+                numbers = (r?.fullUnion || r?.union || [...vipNumbers, ...singleNumbers]).map(number);
                 isHit = Boolean(r?.isHit);
                 stakeK = r?.stakeK || 60000;
                 profitK = r?.profitK != null ? r.profitK : (isHit ? 24000 : -60000);
@@ -10497,17 +10463,18 @@
                 }
             } else {
                 const fb = resolveUnifiedDeRowForDate(date, payloadData);
-                if (fb && fb.deNumbers && fb.deNumbers.length > 0) {
-                    numbers = fb.deNumbers;
-                    vipNumbers = fb.deX2Nums || [];
-                    singleNumbers = fb.deX1Nums || [];
+                const fbNums = (fb?.numbers || fb?.deNumbers || []).map(number);
+                if (fbNums.length > 0) {
+                    numbers = fbNums;
+                    vipNumbers = (fb.x2Nums || fb.x3Nums || fb.deX2Nums || []).map(number);
+                    singleNumbers = (fb.x1Nums || fb.deX1Nums || fbNums.filter(n => !vipNumbers.includes(n))).map(number);
                     isHit = Boolean(fb.isHit);
-                    isX2 = Boolean(fb.isX3);
-                    stakeK = fb.deStakeK || 60000;
-                    profitK = fb.deProfitK != null ? fb.deProfitK : (isHit ? 24000 : -60000);
+                    isX2 = Boolean(fb.isX3 || fb.isX2);
+                    stakeK = fb.stakeK || fb.deStakeK || 60000;
+                    profitK = fb.profitK != null ? fb.profitK : (isHit ? (isX2 ? 192000 : 24000) : -60000);
                     payoutK = isHit ? (stakeK + profitK) : 0;
                     hitBadge = isHit ? (isX2 ? '🎉 TRÚNG VIP X3 (+192M)' : '🎉 TRÚNG ĐỀ (+24M)') : '❌ TRƯỢT';
-                    detailDesc = `Kế thừa từ ${fb.deMethodName}`;
+                    detailDesc = `${methodTitle || 'Đề'} · Kế thừa từ ${fb.methodName || fb.deMethodName || 'Đề Chuẩn'}`;
                 }
             }
         }
