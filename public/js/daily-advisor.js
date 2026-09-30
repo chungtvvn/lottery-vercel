@@ -111,7 +111,8 @@
     let currentActiveDeMethod = '';
     let currentActiveLoEngine = '';
     let currentLo4EngineMode = 'top6'; // 'top6' | 'top7'
-    let currentAdvisorDate = '2026-09-28';
+    let currentAdvisorDate = '2026-09-30';
+    let setActiveAdvisorDate = null;
 
     const PORTFOLIOS_CONFIG = {
         maxProfit: {
@@ -6969,20 +6970,22 @@
             const resetBtn = byId('btnResetToLatestDate');
             if (!selectEl) return;
 
-            const pendingDate = fullData?.pendingPredictionDate || '2026-09-28';
+            const pendingDate = fullData?.pendingPredictionDate || '2026-09-30';
             
-            // Gather all available dates from drawPrizesByDate and settledLedgers
+            // Gather all available dates from drawPrizesByDate and settledLedgers (chỉ lấy >= 2026-01-01 có dữ liệu dự đoán)
             const dateSet = new Set();
             if (fullData?.drawPrizesByDate) {
-                Object.keys(fullData.drawPrizesByDate).forEach(d => dateSet.add(d));
+                Object.keys(fullData.drawPrizesByDate).forEach(d => {
+                    if (d >= '2026-01-01') dateSet.add(d);
+                });
             }
             (fullData?.adaptiveDualMerge?.settledLedger || []).forEach(r => {
                 const d = r.predictionDate || r.date;
-                if (d) dateSet.add(d);
+                if (d && d >= '2026-01-01') dateSet.add(d);
             });
             (fullData?.lo4EngineFusion?.modes?.top7?.settledLedger || []).forEach(r => {
                 const d = r.date;
-                if (d) dateSet.add(d);
+                if (d && d >= '2026-01-01') dateSet.add(d);
             });
 
             // Sort past dates descending
@@ -7015,14 +7018,19 @@
             }
         }
 
-        function setActiveAdvisorDate(targetDate) {
+        setActiveAdvisorDate = function(targetDate) {
             currentAdvisorDate = targetDate;
             const selectEl = byId('dailyAdvisorDateSelect');
             if (selectEl && selectEl.value !== targetDate) {
                 selectEl.value = targetDate;
             }
 
-            const pendingDate = fullData?.pendingPredictionDate || '2026-09-28';
+            const selSectionDate = byId('selPlaySlipSectionDate');
+            if (selSectionDate && selSectionDate.value !== targetDate) {
+                selSectionDate.value = targetDate;
+            }
+
+            const pendingDate = fullData?.pendingPredictionDate || '2026-09-30';
             const isLatest = (targetDate === pendingDate);
             const statusBadge = byId('selectedDateStatusBadge');
             if (statusBadge) {
@@ -7041,7 +7049,8 @@
             if (typeof renderInPageHistoricalPlaySlips === 'function') {
                 renderInPageHistoricalPlaySlips(targetDate);
             }
-        }
+        };
+        window.setActiveAdvisorDate = setActiveAdvisorDate;
 
         window.selectDailyAdvisorDate = function(targetDate) {
             setActiveAdvisorDate(targetDate);
@@ -10063,16 +10072,38 @@
     let isUserOverridingLoMethod = false;
 
     function getOfficialMethodsForDate(targetDate) {
-        let deMethod = 'metaLearner';
-        if (targetDate >= '2026-09-17' && targetDate <= '2026-09-22') {
-            deMethod = 'adaptiveDualMerge';
-        } else if (targetDate < '2026-08-28') {
+        const payloadData = payload || {};
+        const pendingDate = payloadData.pendingPredictionDate || '2026-09-30';
+        
+        let deMethod = 'adaptiveDualMerge';
+        let loMethod = 'lo4Engine';
+
+        if (targetDate === pendingDate) {
+            deMethod = payloadData.streakAwareDeAdvisor?.latestRecommendation?.strategicPortfolio?.deMethod
+                || payloadData.streakAwareDeAdvisor?.latestRecommendation?.chosenMethod
+                || 'deMarkovGapHazard';
+            loMethod = 'lo4Engine';
+        } else if (targetDate === '2026-09-16') {
+            deMethod = 'metaLearner';
+        } else if (targetDate >= '2026-09-17' && targetDate <= '2026-09-22') {
             deMethod = 'adaptiveDualMerge';
         } else {
-            deMethod = 'metaLearner';
+            const streakRow = payloadData.streakAwareDeAdvisor?.settledLedger?.find(r => (r.predictionDate || r.date) === targetDate);
+            if (streakRow?.chosenMethod) {
+                deMethod = streakRow.chosenMethod;
+            } else {
+                deMethod = 'adaptiveDualMerge';
+            }
         }
 
-        let loMethod = 'lo4Engine';
+        // An toàn: Nếu metaLearner không có dữ liệu số trong kỳ này, fallback sang adaptiveDualMerge
+        if (deMethod === 'metaLearner' && targetDate !== pendingDate) {
+            const metaRow = payloadData.metaLearner?.settledLedger?.find(r => (r.predictionDate || r.date) === targetDate);
+            if (!metaRow || !metaRow.numbers || metaRow.numbers.length === 0) {
+                deMethod = 'adaptiveDualMerge';
+            }
+        }
+
         if (targetDate < '2026-06-02') {
             loMethod = 'loStd';
         }
@@ -10101,7 +10132,14 @@
         let hitBadge = '';
         let detailDesc = '';
 
-        if (methodKey === 'metaLearner') {
+        // Tự động phân giải nếu người dùng chọn 'official'
+        let effectiveKey = methodKey;
+        if (effectiveKey === 'official') {
+            const off = getOfficialMethodsForDate(date);
+            effectiveKey = off.deMethod;
+        }
+
+        if (effectiveKey === 'metaLearner') {
             methodTitle = '💎 Đề Tinh Hoa (Dàn 30s)';
             if (isPending) {
                 const rec = payloadData.metaLearner?.latestRecommendation || payloadData.streakAwareDeAdvisor?.latestRecommendation || {};
@@ -10125,7 +10163,22 @@
                 hitBadge = isHit ? '🎉 TRÚNG ĐỀ (+54M)' : '❌ TRƯỢT (-30M)';
                 detailDesc = r?.switchPhase ? `Pha: ${r.switchPhase}` : 'Dàn 30 số tinh hoa';
             }
-        } else if (methodKey === 'adaptiveDualMerge') {
+            if (!numbers || numbers.length === 0) {
+                const fallbackRow = payloadData.adaptiveDualMerge?.settledLedger?.find(x => (x.predictionDate || x.date) === date);
+                if (fallbackRow) {
+                    vipNumbers = (fallbackRow.intersectionX2 || []).map(number);
+                    singleNumbers = (fallbackRow.uniqueSinglesX1 || []).map(number);
+                    numbers = (fallbackRow.fullUnion || [...vipNumbers, ...singleNumbers]).map(number);
+                    isHit = Boolean(fallbackRow.isHit);
+                    isX2 = Boolean(fallbackRow.isX3 || fallbackRow.isX2 || fallbackRow.hitType === 'win_x3' || fallbackRow.hitType === 'win_x2');
+                    stakeK = fallbackRow.stakeK || 60000;
+                    profitK = fallbackRow.profitK != null ? fallbackRow.profitK : (isHit ? (isX2 ? 192000 : 24000) : -60000);
+                    payoutK = fallbackRow.payoutK || (isHit ? (stakeK + profitK) : 0);
+                    hitBadge = isHit ? (isX2 ? '🎉 TRÚNG VIP X3 (+192M)' : '🎉 TRÚNG BỌC LÓT (+24M)') : '❌ TRƯỢT (-60M)';
+                    detailDesc = 'Kế thừa từ Đề Thích Ứng Alpha (do Meta-Learner chưa khởi tạo giai đoạn này)';
+                }
+            }
+        } else if (effectiveKey === 'adaptiveDualMerge') {
             methodTitle = '👑 Đề Thích Ứng Alpha (VIP X3 + X1)';
             if (isPending) {
                 const rec = payloadData.adaptiveDualMerge?.latestRecommendation || {};
@@ -10148,9 +10201,9 @@
                 profitK = (r?.profitK != null && r.profitK >= 108000) ? 192000 : (r?.profitK != null ? r.profitK : (isHit ? (isX2 ? 192000 : 24000) : -60000));
                 payoutK = r?.payoutK || (isHit ? (stakeK + profitK) : 0);
                 hitBadge = isHit ? (isX2 ? '🎉 TRÚNG VIP X3 (+192M)' : '🎉 TRÚNG BỌC LÓT (+24M)') : '❌ TRƯỢT (-60M)';
-                detailDesc = `Cặp: ${r?.m1Label || 'M1'} + ${r?.m2Label || 'M2'} (${r?.modeLabel || 'Thích ứng'})`;
+                detailDesc = `Cặp: ${r?.m1Label || 'M1'} + ${r?.m2Label || 'M2'} (${r?.modeLabel || 'Thích ứng Alpha'})`;
             }
-        } else if (methodKey === 'dualMerge') {
+        } else if (effectiveKey === 'dualMerge') {
             methodTitle = '🎯 Đề Gộp Tiêu Chuẩn (22-26s)';
             if (isPending) {
                 const rec = payloadData.dualMerge?.latestRecommendation || {};
@@ -10174,7 +10227,7 @@
                 hitBadge = isHit ? '🎉 TRÚNG ĐỀ (+24M)' : '❌ TRƯỢT (-60M)';
                 detailDesc = `Cặp: ${r?.m1Label || 'M1'} + ${r?.m2Label || 'M2'} · Trùng: ${vipNumbers.length}s`;
             }
-        } else if (methodKey === 'tripleMerge') {
+        } else if (effectiveKey === 'tripleMerge') {
             methodTitle = '🏛️ Đề Tam Trụ (Tầng cược X3 / X2 / X1)';
             if (isPending) {
                 const rec = payloadData.tripleMerge?.latestRecommendation || {};
@@ -10198,7 +10251,109 @@
                 hitBadge = isHit ? `🎉 TRÚNG TAM TRỤ (+${moneyM(profitK)})` : '❌ TRƯỢT (-90M)';
                 detailDesc = `Tam Trụ: ${r?.m1Label || 'M1'} + ${r?.m2Label || 'M2'} + ${r?.m3Label || 'M3'}`;
             }
-        } else if (methodKey === 'lo4Engine') {
+        } else if (effectiveKey === 'deMarkovGapHazard') {
+            methodTitle = '🔮 Đề Markov Bậc 2 & Gap Hazard (VIP X3 + X1)';
+            if (isPending) {
+                const rec = payloadData.deMarkovGapHazard?.latestRecommendation || payloadData.streakAwareDeAdvisor?.latestRecommendation?.strategicPortfolio?.deStructure || payloadData.streakAwareDeAdvisor?.latestRecommendation || {};
+                vipNumbers = (rec.vipNums || rec.vipNumbers || rec.numbers?.slice(0, 17) || []).map(number);
+                singleNumbers = (rec.singleNums || rec.backupNumbers || rec.singles || rec.numbers?.slice(17) || []).map(number);
+                numbers = (rec.allNums || rec.numbers || [...vipNumbers, ...singleNumbers]).map(number);
+                stakeK = 60000;
+                profitK = 0;
+                payoutK = 0;
+                hitBadge = '⏳ Chờ mở thưởng 18h15';
+                detailDesc = `Đề Markov Bậc 2 & Gap Hazard (${vipNumbers.length}s VIP X3 · ${singleNumbers.length}s X1)`;
+            } else {
+                const r = payloadData.deMarkovGapHazard?.settledLedger?.find(x => (x.predictionDate || x.date) === date)
+                    || payloadData.streakAwareDeAdvisor?.markovAdvisor?.settledLedger?.find(x => (x.predictionDate || x.date) === date);
+                vipNumbers = (r?.vipNumbers || r?.numbers?.slice(0, 17) || []).map(number);
+                singleNumbers = (r?.backupNumbers || r?.numbers?.slice(17) || []).map(number);
+                numbers = (r?.numbers || [...vipNumbers, ...singleNumbers]).map(number);
+                isHit = Boolean(r?.isHit || (actualSpecial != null && numbers.includes(actualSpecial)));
+                isX2 = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || (actualSpecial != null && vipNumbers.includes(actualSpecial)));
+                stakeK = r?.stakeK || 60000;
+                profitK = r?.profitK != null ? r.profitK : (isHit ? (isX2 ? 192000 : 24000) : -60000);
+                payoutK = r?.payoutK || (isHit ? (stakeK + profitK) : 0);
+                hitBadge = isHit ? (isX2 ? '🎉 TRÚNG VIP X3 (+192M)' : '🎉 TRÚNG BỌC LÓT (+24M)') : '❌ TRƯỢT (-60M)';
+                detailDesc = `Đề Markov Bậc 2 & Gap Hazard (${vipNumbers.length}s VIP X3 · ${singleNumbers.length}s X1)`;
+            }
+        } else if (effectiveKey === 'bayesFormResonance') {
+            methodTitle = '🔮 Đề Ngũ Hành Bayes Bù Trừ (VIP X3 + X1)';
+            if (isPending) {
+                const rec = payloadData.streakAwareDeAdvisor?.bayesAdvisor?.latestRecommendation || {};
+                vipNumbers = (rec.vip17 || rec.vipNumbers || rec.numbers?.slice(0, 17) || []).map(number);
+                singleNumbers = (rec.backup26 || rec.backupNumbers || rec.numbers?.slice(17) || []).map(number);
+                numbers = (rec.numbers || [...vipNumbers, ...singleNumbers]).map(number);
+                stakeK = 60000;
+                profitK = 0;
+                payoutK = 0;
+                hitBadge = '⏳ Chờ mở thưởng 18h15';
+                detailDesc = `Đề Ngũ Hành Bayes Bù Trừ (${vipNumbers.length}s VIP X3 · ${singleNumbers.length}s X1)`;
+            } else {
+                const r = payloadData.streakAwareDeAdvisor?.bayesAdvisor?.settledLedger?.find(x => (x.predictionDate || x.date) === date);
+                vipNumbers = (r?.vip17 || r?.vipNumbers || r?.numbers?.slice(0, 17) || []).map(number);
+                singleNumbers = (r?.backup26 || r?.backupNumbers || r?.numbers?.slice(17) || []).map(number);
+                numbers = (r?.numbers || [...vipNumbers, ...singleNumbers]).map(number);
+                isHit = Boolean(r?.isHit || (actualSpecial != null && numbers.includes(actualSpecial)));
+                isX2 = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || (actualSpecial != null && vipNumbers.includes(actualSpecial)));
+                stakeK = r?.stakeK || 60000;
+                profitK = r?.profitK != null ? r.profitK : (isHit ? (isX2 ? 192000 : 24000) : -60000);
+                payoutK = r?.payoutK || (isHit ? (stakeK + profitK) : 0);
+                hitBadge = isHit ? (isX2 ? '🎉 TRÚNG VIP X3 (+192M)' : '🎉 TRÚNG BỌC LÓT (+24M)') : '❌ TRƯỢT (-60M)';
+                detailDesc = `Đề Ngũ Hành Bayes Bù Trừ (${vipNumbers.length}s VIP X3 · ${singleNumbers.length}s X1)`;
+            }
+        } else if (effectiveKey === 'dePositionalGraphFlow') {
+            methodTitle = '🕸️ Cầu Đề Đồ Thị Vị Trí (VIP X3 + X1)';
+            if (isPending) {
+                const rec = payloadData.dePositionalGraphFlow?.latestRecommendation || payloadData.streakAwareDeAdvisor?.graphAdvisor?.latestRecommendation || {};
+                vipNumbers = (rec.vipNumbers || rec.numbers?.slice(0, 17) || []).map(number);
+                singleNumbers = (rec.backupNumbers || rec.numbers?.slice(17) || []).map(number);
+                numbers = (rec.numbers || [...vipNumbers, ...singleNumbers]).map(number);
+                stakeK = 60000;
+                profitK = 0;
+                payoutK = 0;
+                hitBadge = '⏳ Chờ mở thưởng 18h15';
+                detailDesc = `Cầu Đề Đồ Thị Vị Trí (${vipNumbers.length}s VIP X3 · ${singleNumbers.length}s X1)`;
+            } else {
+                const r = payloadData.dePositionalGraphFlow?.settledLedger?.find(x => (x.predictionDate || x.date) === date)
+                    || payloadData.streakAwareDeAdvisor?.graphAdvisor?.settledLedger?.find(x => (x.predictionDate || x.date) === date);
+                vipNumbers = (r?.vipNumbers || r?.numbers?.slice(0, 17) || []).map(number);
+                singleNumbers = (r?.backupNumbers || r?.numbers?.slice(17) || []).map(number);
+                numbers = (r?.numbers || [...vipNumbers, ...singleNumbers]).map(number);
+                isHit = Boolean(r?.isHit || (actualSpecial != null && numbers.includes(actualSpecial)));
+                isX2 = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || (actualSpecial != null && vipNumbers.includes(actualSpecial)));
+                stakeK = r?.stakeK || 60000;
+                profitK = r?.profitK != null ? r.profitK : (isHit ? (isX2 ? 192000 : 24000) : -60000);
+                payoutK = r?.payoutK || (isHit ? (stakeK + profitK) : 0);
+                hitBadge = isHit ? (isX2 ? '🎉 TRÚNG VIP X3 (+192M)' : '🎉 TRÚNG BỌC LÓT (+24M)') : '❌ TRƯỢT (-60M)';
+                detailDesc = `Cầu Đề Đồ Thị Vị Trí (${vipNumbers.length}s VIP X3 · ${singleNumbers.length}s X1)`;
+            }
+        } else if (effectiveKey === 'pentaCoreDe') {
+            methodTitle = '👑 Đề Ngũ Trụ Tinh Hoa AI (VIP X3 + X1)';
+            if (isPending) {
+                const rec = payloadData.pentaCoreDe?.latestRecommendation || payloadData.streakAwareDeAdvisor?.pentaAdvisor?.latestRecommendation || {};
+                vipNumbers = (rec.vipNumbers || rec.vip || rec.numbers?.slice(0, 15) || []).map(number);
+                singleNumbers = (rec.backupNumbers || rec.numbers?.slice(15) || []).map(number);
+                numbers = (rec.numbers || [...vipNumbers, ...singleNumbers]).map(number);
+                stakeK = 60000;
+                profitK = 0;
+                payoutK = 0;
+                hitBadge = '⏳ Chờ mở thưởng 18h15';
+                detailDesc = `Đề Ngũ Trụ Tinh Hoa AI (${vipNumbers.length}s VIP X3 · ${singleNumbers.length}s X1)`;
+            } else {
+                const r = payloadData.pentaCoreDe?.settledLedger?.find(x => (x.predictionDate || x.date) === date);
+                vipNumbers = (r?.vipNumbers || r?.vip || r?.numbers?.slice(0, 15) || []).map(number);
+                singleNumbers = (r?.backupNumbers || r?.numbers?.slice(15) || []).map(number);
+                numbers = (r?.numbers || [...vipNumbers, ...singleNumbers]).map(number);
+                isHit = Boolean(r?.isHit || (actualSpecial != null && numbers.includes(actualSpecial)));
+                isX2 = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || (actualSpecial != null && vipNumbers.includes(actualSpecial)));
+                stakeK = r?.stakeK || 60000;
+                profitK = r?.profitK != null ? r.profitK : (isHit ? (isX2 ? 192000 : 24000) : -60000);
+                payoutK = r?.payoutK || (isHit ? (stakeK + profitK) : 0);
+                hitBadge = isHit ? (isX2 ? '🎉 TRÚNG VIP X3 (+192M)' : '🎉 TRÚNG BỌC LÓT (+24M)') : '❌ TRƯỢT (-60M)';
+                detailDesc = `Đề Ngũ Trụ Tinh Hoa AI (${vipNumbers.length}s VIP X3 · ${singleNumbers.length}s X1)`;
+            }
+        } else if (effectiveKey === 'lo4Engine') {
             methodTitle = '🔥 Lô Ghép 4 Động Cơ (Top 6/7 Live)';
             if (isPending) {
                 const rec = payloadData.lo4EngineFusion?.latestRecommendation || {};
@@ -10221,7 +10376,7 @@
                 hitBadge = hits > 0 ? `🎉 NỔ ${hits} NHÁY (${moneyM(profitK, { signed: true })})` : '❌ TRƯỢT';
                 detailDesc = `Hội tụ 4 động cơ: ${r?.countOver2 || 0} số trùng ≥ 2 ĐC`;
             }
-        } else if (methodKey === 'loXien5') {
+        } else if (effectiveKey === 'loXien5') {
             methodTitle = '👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)';
             if (isPending) {
                 numbers = (payloadData.loTop5ConsensusXien?.top5Consensus || payloadData.loTop5ConsensusXien?.top5Xien || []).map(number);
@@ -10254,7 +10409,7 @@
                 }
                 detailDesc = 'Top 5 Đồng Thuận ghép 5 Dàn Xiên 4 (11M/dàn · Trúng 2: 12M, 3: 84M, 4: 384M)';
             }
-        } else if (methodKey === 'loStd') {
+        } else if (effectiveKey === 'loStd') {
             methodTitle = '🏆 Lô Chuẩn Nền Tảng (Top 20)';
             if (isPending) {
                 numbers = (payloadData.pendingRecommendations?.lo?.standard?.numbers || payloadData.loQuadHybrid?.latestRecommendation?.top20 || []).map(number);
@@ -10274,7 +10429,7 @@
                 hitBadge = hits >= 6 ? `🎉 LÃI ${moneyM(profitK, { signed: true })} (${hits} nháy)` : `LỖ (${hits} nháy)`;
                 detailDesc = 'Dàn 20 số nền tảng (Vốn 44M)';
             }
-        } else if (methodKey === 'loX2') {
+        } else if (effectiveKey === 'loX2') {
             methodTitle = '🚀 Lô Tăng Tốc X2 (Song / Tứ / Thất Thủ)';
             if (isPending) {
                 numbers = (payloadData.pendingRecommendations?.lo?.x2?.numbers || payloadData.loQuadHybrid?.latestRecommendation?.top7 || []).map(number);
@@ -10294,7 +10449,7 @@
                 hitBadge = hits >= 2 ? `🎉 LÃI ${moneyM(profitK, { signed: true })} (${hits} nháy)` : `LỖ (${hits} nháy)`;
                 detailDesc = `Dàn ${numbers.length} số tăng tốc`;
             }
-        } else if (methodKey === 'lo4Xien4') {
+        } else if (effectiveKey === 'lo4Xien4') {
             methodTitle = '🎲 Lô Xiên 4 (Quây 11 Vé Top 4)';
             if (isPending) {
                 numbers = (payloadData.loTop5ConsensusXien?.top4Xien || []).map(number);
@@ -10316,8 +10471,49 @@
             }
         }
 
+        // CỨU HỘ AN TOÀN TUYỆT ĐỐI: Không bao giờ để dàn số rỗng trên giao diện
+        if (!numbers || numbers.length === 0) {
+            if (effectiveKey.startsWith('lo')) {
+                const loTop7Row = payloadData.lo4EngineFusion?.modes?.top7?.settledLedger?.find(x => x.date === date);
+                const loStdRow = payloadData.loQuadHybrid?.settledLedger?.find(x => x.date === date);
+                if (loTop7Row && loTop7Row.betNumbers && loTop7Row.betNumbers.length > 0) {
+                    numbers = loTop7Row.betNumbers.map(b => number(b.num));
+                    const hits = loTop7Row.dayLotoHits || 0;
+                    isHit = hits >= 2;
+                    stakeK = loTop7Row.dayLotoStakeK || (numbers.length * 2200);
+                    profitK = loTop7Row.dayLotoProfitK || 0;
+                    payoutK = loTop7Row.dayLotoPayoutK || 0;
+                    hitBadge = hits > 0 ? `🎉 NỔ ${hits} NHÁY (${moneyM(profitK, { signed: true })})` : '❌ TRƯỢT';
+                    detailDesc = 'Kế thừa từ Lô Ghép 4 Động Cơ';
+                } else if (loStdRow && loStdRow.top20 && loStdRow.top20.length > 0) {
+                    numbers = loStdRow.top20.map(number);
+                    const hits = loStdRow.t20Hits || numbers.filter(n => drawPrizesSet.has(n)).length;
+                    isHit = hits >= 6;
+                    stakeK = 44000;
+                    payoutK = hits * 8000;
+                    profitK = payoutK - stakeK;
+                    hitBadge = hits >= 6 ? `🎉 LÃI ${moneyM(profitK, { signed: true })} (${hits} nháy)` : `LỖ (${hits} nháy)`;
+                    detailDesc = 'Kế thừa từ Lô Chuẩn Nền Tảng (Top 20)';
+                }
+            } else {
+                const fb = resolveUnifiedDeRowForDate(date, payloadData);
+                if (fb && fb.deNumbers && fb.deNumbers.length > 0) {
+                    numbers = fb.deNumbers;
+                    vipNumbers = fb.deX2Nums || [];
+                    singleNumbers = fb.deX1Nums || [];
+                    isHit = Boolean(fb.isHit);
+                    isX2 = Boolean(fb.isX3);
+                    stakeK = fb.deStakeK || 60000;
+                    profitK = fb.deProfitK != null ? fb.deProfitK : (isHit ? 24000 : -60000);
+                    payoutK = isHit ? (stakeK + profitK) : 0;
+                    hitBadge = isHit ? (isX2 ? '🎉 TRÚNG VIP X3 (+192M)' : '🎉 TRÚNG ĐỀ (+24M)') : '❌ TRƯỢT';
+                    detailDesc = `Kế thừa từ ${fb.deMethodName}`;
+                }
+            }
+        }
+
         return {
-            methodKey,
+            methodKey: effectiveKey,
             methodTitle,
             targetDate: date,
             isPending,
@@ -10343,23 +10539,33 @@
         const p = payload;
         const pendingDate = p.pendingPredictionDate || '2026-09-30';
 
-        // Gather all dates
+        // Gather all dates >= 2026-01-01 (Loại bỏ các ngày năm 2025 không có dự đoán)
         const dateSet = new Set();
-        if (p.drawPrizesByDate) {
-            Object.keys(p.drawPrizesByDate).forEach(d => dateSet.add(d));
-        }
         (p.adaptiveDualMerge?.settledLedger || []).forEach(r => {
             const d = r.predictionDate || r.date;
-            if (d) dateSet.add(d);
+            if (d && d >= '2026-01-01') dateSet.add(d);
+        });
+        (p.dualMerge?.settledLedger || []).forEach(r => {
+            const d = r.predictionDate || r.date;
+            if (d && d >= '2026-01-01') dateSet.add(d);
+        });
+        (p.tripleMerge?.settledLedger || []).forEach(r => {
+            const d = r.predictionDate || r.date;
+            if (d && d >= '2026-01-01') dateSet.add(d);
         });
         (p.metaLearner?.settledLedger || []).forEach(r => {
             const d = r.predictionDate || r.date;
-            if (d) dateSet.add(d);
+            if (d && d >= '2026-01-01') dateSet.add(d);
         });
         (p.lo4EngineFusion?.modes?.top7?.settledLedger || []).forEach(r => {
             const d = r.date;
-            if (d) dateSet.add(d);
+            if (d && d >= '2026-01-01') dateSet.add(d);
         });
+        if (p.drawPrizesByDate) {
+            Object.keys(p.drawPrizesByDate).forEach(d => {
+                if (d >= '2026-01-01') dateSet.add(d);
+            });
+        }
         dateSet.add(pendingDate);
 
         // Sort descending (newest first)
@@ -10380,57 +10586,70 @@
             selDate.onchange = () => {
                 isUserOverridingDeMethod = false;
                 isUserOverridingLoMethod = false;
-                setActiveAdvisorDate(selDate.value);
+                if (typeof setActiveAdvisorDate === 'function') {
+                    setActiveAdvisorDate(selDate.value);
+                }
             };
         }
 
         const btnPrev = byId('btnPlaySlipPrevDate');
-        if (btnPrev) {
+        if (btnPrev && !btnPrev.__bound) {
+            btnPrev.__bound = true;
             btnPrev.onclick = () => {
                 const cur = currentAdvisorDate || pendingDate;
                 const idx = allAvailableAdvisorDates.indexOf(cur);
                 if (idx < allAvailableAdvisorDates.length - 1) {
                     isUserOverridingDeMethod = false;
                     isUserOverridingLoMethod = false;
-                    setActiveAdvisorDate(allAvailableAdvisorDates[idx + 1]);
+                    if (typeof setActiveAdvisorDate === 'function') {
+                        setActiveAdvisorDate(allAvailableAdvisorDates[idx + 1]);
+                    }
                 }
             };
         }
 
         const btnNext = byId('btnPlaySlipNextDate');
-        if (btnNext) {
+        if (btnNext && !btnNext.__bound) {
+            btnNext.__bound = true;
             btnNext.onclick = () => {
                 const cur = currentAdvisorDate || pendingDate;
                 const idx = allAvailableAdvisorDates.indexOf(cur);
                 if (idx > 0) {
                     isUserOverridingDeMethod = false;
                     isUserOverridingLoMethod = false;
-                    setActiveAdvisorDate(allAvailableAdvisorDates[idx - 1]);
+                    if (typeof setActiveAdvisorDate === 'function') {
+                        setActiveAdvisorDate(allAvailableAdvisorDates[idx - 1]);
+                    }
                 }
             };
         }
 
         const btnLatest = byId('btnPlaySlipLatestDate');
-        if (btnLatest) {
+        if (btnLatest && !btnLatest.__bound) {
+            btnLatest.__bound = true;
             btnLatest.onclick = () => {
                 isUserOverridingDeMethod = false;
                 isUserOverridingLoMethod = false;
-                setActiveAdvisorDate(pendingDate);
+                if (typeof setActiveAdvisorDate === 'function') {
+                    setActiveAdvisorDate(pendingDate);
+                }
             };
         }
 
         const selDe = byId('selInPageDeMethod');
-        if (selDe) {
+        if (selDe && !selDe.__bound) {
+            selDe.__bound = true;
             selDe.onchange = () => {
-                isUserOverridingDeMethod = true;
+                isUserOverridingDeMethod = (selDe.value !== 'official');
                 renderInPageHistoricalPlaySlips(currentAdvisorDate || pendingDate);
             };
         }
 
         const selLo = byId('selInPageLoMethod');
-        if (selLo) {
+        if (selLo && !selLo.__bound) {
+            selLo.__bound = true;
             selLo.onchange = () => {
-                isUserOverridingLoMethod = true;
+                isUserOverridingLoMethod = (selLo.value !== 'official');
                 renderInPageHistoricalPlaySlips(currentAdvisorDate || pendingDate);
             };
         }
@@ -10545,13 +10764,16 @@
             selLo.value = official.loMethod;
         }
 
-        const chosenDeMethod = selDe?.value || official.deMethod;
-        const chosenLoMethod = selLo?.value || official.loMethod;
+        let chosenDeMethod = selDe?.value || official.deMethod;
+        if (chosenDeMethod === 'official') chosenDeMethod = official.deMethod;
+
+        let chosenLoMethod = selLo?.value || official.loMethod;
+        if (chosenLoMethod === 'official') chosenLoMethod = official.loMethod;
 
         // Update official badges
         const deOfficialBadge = byId('deOfficialBadge');
         if (deOfficialBadge) {
-            if (chosenDeMethod === official.deMethod) {
+            if (!isUserOverridingDeMethod || chosenDeMethod === official.deMethod || selDe?.value === 'official') {
                 deOfficialBadge.className = 'rounded bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[9px] font-black px-2 py-0.5 uppercase';
                 deOfficialBadge.innerHTML = '🌟 Đề Xuất Ngày Này';
             } else {
@@ -10562,7 +10784,7 @@
 
         const loOfficialBadge = byId('loOfficialBadge');
         if (loOfficialBadge) {
-            if (chosenLoMethod === official.loMethod) {
+            if (!isUserOverridingLoMethod || chosenLoMethod === official.loMethod || selLo?.value === 'official') {
                 loOfficialBadge.className = 'rounded bg-teal-400/20 text-teal-300 border border-teal-400/40 text-[9px] font-black px-2 py-0.5 uppercase';
                 loOfficialBadge.innerHTML = '🌟 Đề Xuất Ngày Này';
             } else {
