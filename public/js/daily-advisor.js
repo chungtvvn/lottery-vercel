@@ -51,6 +51,51 @@
         ];
     }
 
+    function evaluateXien5_5DanX4(h5) {
+        const hits = Number(h5) || 0;
+        const stakeK = 55000; // 5 dàn xiên 4 x 11M = 55M
+        let payoutK = 0;
+        let danHit4 = 0;
+        let danHit3 = 0;
+        let danHit2 = 0;
+        let danMiss = 0;
+
+        if (hits >= 5) {
+            danHit4 = 5;
+            payoutK = 5 * 384000;
+        } else if (hits === 4) {
+            danHit4 = 1;
+            danHit3 = 4;
+            payoutK = 384000 + 4 * 84000;
+        } else if (hits === 3) {
+            danHit3 = 2;
+            danHit2 = 3;
+            payoutK = 2 * 84000 + 3 * 12000;
+        } else if (hits === 2) {
+            danHit2 = 3;
+            danMiss = 2;
+            payoutK = 3 * 12000;
+        } else {
+            danMiss = 5;
+            payoutK = 0;
+        }
+
+        const profitK = payoutK - stakeK;
+        return {
+            h5: hits,
+            stakeK,
+            payoutK,
+            profitK,
+            isWin: profitK > 0,
+            hasAnyHit: payoutK > 0,
+            danHit4,
+            danHit3,
+            danHit2,
+            danMiss,
+            winningDansCount: danHit4 + danHit3 + danHit2
+        };
+    }
+
     let payload = null;
     let currentMainTab = 'unifiedCombat'; // 'unifiedCombat' | 'dualMerge'
     let unifiedTimeframe = 'sep16'; // 'sep16' | 'live' | 'all'
@@ -3344,30 +3389,30 @@
                         <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2 mb-2.5">
                             <div>
                                 <div class="font-black text-amber-400 text-xs flex items-center gap-1.5">
-                                    <i class="bi bi-stars text-amber-400"></i> 👑 Dàn Xiên 5 (5 Quả Xiên 4)
+                                    <i class="bi bi-stars text-amber-400"></i> 👑 Dàn Xiên 5 (5 Dàn Xiên 4)
                                 </div>
-                                <div class="text-[10px] text-slate-400 mt-0.5">Ngày ${formatDateVi(info.date)} · Cược độc lập 100K/vé</div>
+                                <div class="text-[10px] text-slate-400 mt-0.5">Ngày ${formatDateVi(info.date)} · Cược 11M/dàn (Tổng vốn 55M)</div>
                             </div>
                             <span class="rounded bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[11px] font-black px-2 py-0.5">🔒 ĐÃ KHÓA</span>
                         </div>
                         <div class="mb-3">
-                            <div class="text-[10px] font-bold text-slate-400 mb-1 uppercase">Bộ 5 Số Vàng (Đồng thuận cao nhất):</div>
+                            <div class="text-[10px] font-bold text-slate-400 mb-1 uppercase">Bộ 5 Số Vàng (Đồng thuận 4 ĐC):</div>
                             <div class="flex items-center gap-1.5 mb-2.5">
                                 ${top5Nums.map(n => `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg font-mono text-sm bg-amber-400 text-slate-950 font-black shadow-xs">${n}</span>`).join('')}
                             </div>
-                            <div class="text-[10px] font-bold text-slate-400 mb-1 uppercase">5 Vé Xiên 4 Tổ Hợp C(5,4):</div>
-                            <div class="space-y-1 font-mono text-xs">
+                            <div class="text-[10px] font-bold text-slate-400 mb-1 uppercase">5 Dàn Xiên 4 Tổ Hợp C(5,4):</div>
+                            <div class="space-y-1.5 font-mono text-xs">
                                 ${tkList.map((t, idx) => `
-                                    <div class="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1">
-                                        <span class="text-amber-400 font-bold">Vé ${idx + 1}:</span>
+                                    <div class="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5">
+                                        <span class="text-amber-400 font-bold">Dàn ${idx + 1}:</span>
                                         <span class="text-white font-bold">${t.join(' - ')}</span>
-                                        <span class="text-[10px] text-emerald-400 font-semibold">100K &rarr; 17M</span>
+                                        <span class="text-[10px] text-emerald-400 font-semibold">11M ➔ 12M / 84M / 384M</span>
                                     </div>
                                 `).join('')}
                             </div>
                         </div>
                         <div class="pt-2 border-t border-slate-800 grid grid-cols-2 gap-2 text-[11px] font-mono">
-                            <div><span class="text-[9px] text-slate-500 uppercase">Vốn Cược:</span> <strong class="text-slate-200">500K</strong></div>
+                            <div><span class="text-[9px] text-slate-500 uppercase">Vốn 5 Dàn:</span> <strong class="text-slate-200">55.000K (55M)</strong></div>
                             <div class="text-right"><span class="text-[9px] text-slate-500 uppercase">Trạng Thái:</span> <strong class="text-amber-400">⏳ Chờ mở thưởng</strong></div>
                         </div>
                     </div>
@@ -3375,23 +3420,35 @@
             }
 
             const h5Hits = info.h5 || 0;
-            const ticketsWon = info.x5TicketsWon || 0;
-            const isWin = ticketsWon > 0;
-            const profitK = info.x5Profit170K != null ? info.x5Profit170K : (isWin ? (ticketsWon * 17000 - 500) : -500);
+            const evalX5 = evaluateXien5_5DanX4(h5Hits);
+            const isWin = evalX5.isWin;
+            const payoutK = info.x5PayoutK != null ? info.x5PayoutK : evalX5.payoutK;
+            const profitK = info.x5ProfitK != null ? info.x5ProfitK : evalX5.profitK;
+
+            let resultBadgeHtml = '';
+            if (h5Hits === 5) {
+                resultBadgeHtml = `<span class="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black ring-1 ring-white shadow-xs px-2 py-0.5 text-[11px]">👑 ĂN 5 DÀN (+1.865M)</span>`;
+            } else if (h5Hits === 4) {
+                resultBadgeHtml = `<span class="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black ring-1 ring-white shadow-xs px-2 py-0.5 text-[11px]">👑 ĂN 5/5 DÀN (+665M)</span>`;
+            } else if (h5Hits === 3) {
+                resultBadgeHtml = `<span class="inline-flex items-center gap-1 rounded-lg bg-purple-600 text-white font-black px-2 py-0.5 text-[11px] shadow-xs">🔥 ĂN 5/5 DÀN (+149M)</span>`;
+            } else if (h5Hits === 2) {
+                resultBadgeHtml = `<span class="inline-flex items-center gap-1 rounded-lg bg-teal-600 text-white font-bold px-2 py-0.5 text-[11px] shadow-xs">🛡️ ĂN 3 DÀN X2 (36M / -19M)</span>`;
+            } else {
+                resultBadgeHtml = `<span class="inline-flex items-center gap-1 rounded-lg bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold px-2 py-0.5 text-[11px]">❌ Trượt (-55M)</span>`;
+            }
 
             return `
                 <div>
                     <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2 mb-2.5">
                         <div>
                             <div class="font-black text-amber-400 text-xs flex items-center gap-1.5">
-                                <i class="bi bi-stars text-amber-400"></i> 👑 Dàn Xiên 5 (5 Quả Xiên 4)
+                                <i class="bi bi-stars text-amber-400"></i> 👑 Dàn Xiên 5 (5 Dàn Xiên 4)
                             </div>
-                            <div class="text-[10px] text-slate-400 mt-0.5">Ngày ${formatDateVi(info.date)} · Cược độc lập 100K/vé</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">Ngày ${formatDateVi(info.date)} · Vốn 11M/dàn (Tổng 55M)</div>
                         </div>
                         <div class="text-right">
-                            <span class="inline-flex items-center gap-1 rounded-lg ${isWin ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black ring-1 ring-white shadow-xs' : 'bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold'} px-2 py-0.5 text-[11px]">
-                                ${ticketsWon === 5 ? '👑 ĂN TRỌN 5 VÉ (+84.5M)' : (ticketsWon === 1 ? '🎉 ĂN 1 VÉ (+16.5M)' : '❌ Trượt 5 vé')}
-                            </span>
+                            ${resultBadgeHtml}
                         </div>
                     </div>
                     <div class="mb-3">
@@ -3405,24 +3462,37 @@
                                 return `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg font-mono text-xs ${hit ? 'bg-emerald-400 text-slate-950 font-black ring-2 ring-emerald-300 scale-105' : 'bg-slate-800 text-slate-300 font-bold'}">${n}${hit ? ' ⭐' : ''}</span>`;
                             }).join('')}
                         </div>
-                        <div class="text-[10px] font-bold text-slate-400 mb-1 uppercase">Chi Tiết 5 Vé Xiên 4:</div>
+                        <div class="text-[10px] font-bold text-slate-400 mb-1 uppercase">Chi Tiết 5 Dàn Xiên 4 (11M/dàn):</div>
                         <div class="space-y-1 font-mono text-xs">
                             ${tkList.map((t, idx) => {
                                 const hitCount = t.filter(num => drawPrizesSet.has(num)).length;
-                                const tWon = hitCount === 4;
+                                let danResultText = '';
+                                let danClass = 'bg-slate-900 border-slate-800 text-slate-300';
+                                if (hitCount === 4) {
+                                    danResultText = '👑 Ăn 4 con: 384M (Lãi +373M)';
+                                    danClass = 'bg-amber-950/90 border-amber-400 text-amber-200 ring-1 ring-amber-400';
+                                } else if (hitCount === 3) {
+                                    danResultText = '🔥 Ăn 3 con: 84M (Lãi +73M)';
+                                    danClass = 'bg-purple-950/90 border-purple-400 text-purple-200 ring-1 ring-purple-400';
+                                } else if (hitCount === 2) {
+                                    danResultText = '✨ Ăn 2 con: 12M (Lãi +1M)';
+                                    danClass = 'bg-teal-950/90 border-teal-400 text-teal-200 ring-1 ring-teal-400';
+                                } else {
+                                    danResultText = `${hitCount}/4 con · Trượt (-11M)`;
+                                }
                                 return `
-                                    <div class="flex items-center justify-between ${tWon ? 'bg-emerald-950/90 border-emerald-400 text-emerald-200 ring-1 ring-emerald-400' : 'bg-slate-900 border-slate-800 text-slate-300'} border rounded-lg px-2.5 py-1">
-                                        <span class="${tWon ? 'text-amber-300 font-black' : 'text-slate-400'} font-bold">Vé ${idx + 1}:</span>
+                                    <div class="flex items-center justify-between ${danClass} border rounded-lg px-2.5 py-1">
+                                        <span class="font-bold text-amber-300">Dàn ${idx + 1}:</span>
                                         <span>${t.map(num => drawPrizesSet.has(num) ? `<strong class="text-emerald-400 font-black">${num}</strong>` : num).join(' - ')}</span>
-                                        <span class="text-[10px] font-bold ${tWon ? 'text-amber-300' : 'text-slate-400'}">${tWon ? '⭐ ĂN 17M' : `${hitCount}/4 con`}</span>
+                                        <span class="text-[10px] font-bold">${danResultText}</span>
                                     </div>
                                 `;
                             }).join('')}
                         </div>
                     </div>
                     <div class="pt-2 border-t border-slate-800 grid grid-cols-3 gap-2 text-[11px] font-mono">
-                        <div><div class="text-[9px] text-slate-500 uppercase">Vốn Cược</div><div class="font-bold text-slate-300">500K</div></div>
-                        <div><div class="text-[9px] text-slate-500 uppercase">Tiền Thưởng</div><div class="font-bold ${isWin ? 'text-emerald-400' : 'text-slate-400'}">${isWin ? moneyM(ticketsWon * 17000) : '0đ'}</div></div>
+                        <div><div class="text-[9px] text-slate-500 uppercase">Vốn Cược</div><div class="font-bold text-slate-300">55.000K (55M)</div></div>
+                        <div><div class="text-[9px] text-slate-500 uppercase">Tiền Thưởng</div><div class="font-bold ${payoutK > 0 ? 'text-amber-300' : 'text-slate-400'}">${payoutK > 0 ? moneyM(payoutK) : '0đ'}</div></div>
                         <div class="text-right"><div class="text-[9px] text-slate-500 uppercase">Lãi/Lỗ Ròng</div><div class="font-black ${profitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(profitK, { signed: true })}</div></div>
                     </div>
                 </div>
@@ -3723,33 +3793,35 @@
         if (type === 'loXien5') {
             const top5Day = p?.loTop5ConsensusXien?.settledLedger?.find(r => r.date === date);
             if (top5Day) {
+                const evalX5 = evaluateXien5_5DanX4(top5Day.h5 || 0);
+                const payoutK = top5Day.x5Payout55K != null ? top5Day.x5Payout55K : evalX5.payoutK;
+                const profitK = top5Day.x5Profit55K != null ? top5Day.x5Profit55K : evalX5.profitK;
                 return {
                     date,
                     isPending: false,
                     top5: top5Day.top5 || [],
                     h5: top5Day.h5 || 0,
-                    x5TicketsWon: top5Day.x5TicketsWon || 0,
                     x5Tickets: top5Day.x5Tickets || getXi5Tickets(top5Day.top5),
-                    x5StakeK: top5Day.x5StakeK || 500,
-                    x5Payout170K: top5Day.x5Payout170K || 0,
-                    x5Profit170K: top5Day.x5Profit170K || 0,
-                    x5Payout250K: top5Day.x5Payout250K || 0,
-                    x5Profit250K: top5Day.x5Profit250K || 0,
-                    isWin: (top5Day.x5TicketsWon || 0) > 0
+                    x5StakeK: 55000,
+                    x5PayoutK: payoutK,
+                    x5ProfitK: profitK,
+                    payoutK,
+                    profitK,
+                    isWin: profitK > 0
                 };
             }
+            const evalZero = evaluateXien5_5DanX4(0);
             return {
                 date,
                 isPending: false,
                 top5: [],
                 h5: 0,
-                x5TicketsWon: 0,
                 x5Tickets: [],
-                x5StakeK: 500,
-                x5Payout170K: 0,
-                x5Profit170K: -500,
-                x5Payout250K: 0,
-                x5Profit250K: -500,
+                x5StakeK: 55000,
+                x5PayoutK: 0,
+                x5ProfitK: evalZero.profitK,
+                payoutK: 0,
+                profitK: evalZero.profitK,
                 isWin: false
             };
         }
@@ -3843,7 +3915,7 @@
             { id: 'loStd', label: '🎯 Lô Chuẩn (Top 20)', icon: 'bi-trophy-fill' },
             { id: 'loX2', label: '🚀 Lô Tăng Tốc (X2)', icon: 'bi-lightning-charge-fill' },
             { id: 'lo4Engine', label: '🔥 Lô Ghép 4 Động Cơ', icon: 'bi-fire' },
-            { id: 'loXien5', label: '👑 Dàn Xiên 5 (5 Vé X4)', icon: 'bi-stars' },
+            { id: 'loXien5', label: '👑 Dàn Xiên 5 (5 Dàn X4)', icon: 'bi-stars' },
             { id: 'lo4Xien4', label: '🎲 Lô Xiên 4 (Quây)', icon: 'bi-dice-4-fill' },
             { id: 'total', label: '📊 Dòng Tiền Ngày', icon: 'bi-cash-coin' }
         ];
@@ -3869,7 +3941,7 @@
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
                         <button type="button" class="btn-copy-expanded-numbers text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-all shadow-sm flex items-center gap-1.5 font-sans" data-date="${date}" data-tab="${currentTab}">
-                            <i class="bi bi-clipboard-check"></i> Sao chép ${currentTab === 'de' ? 'dàn Đề' : (currentTab === 'loStd' ? 'Top 20' : (currentTab === 'loX2' ? 'Top 7' : (currentTab === 'lo4Engine' ? 'dàn Ghép 4' : (currentTab === 'loXien5' ? '5 vé Xiên 4' : 'dàn số'))))}
+                            <i class="bi bi-clipboard-check"></i> Sao chép ${currentTab === 'de' ? 'dàn Đề' : (currentTab === 'loStd' ? 'Top 20' : (currentTab === 'loX2' ? 'Top 7' : (currentTab === 'lo4Engine' ? 'dàn Ghép 4' : (currentTab === 'loXien5' ? '5 dàn Xiên 4' : 'dàn số'))))}
                         </button>
                         <button type="button" class="btn-diary-collapse-row text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 transition-all flex items-center gap-1" data-date="${date}">
                             <i class="bi bi-chevron-up"></i> Thu gọn
@@ -3970,7 +4042,7 @@
                         } else if (tab === 'loXien5') {
                             const tkList = info.x5Tickets && info.x5Tickets.length ? info.x5Tickets : getXi5Tickets(info.top5);
                             if (tkList.length) {
-                                copyRawText(tkList.map((t, i) => `Vé ${i + 1}: ${t.join('-')}`).join('\n'), 'Đã sao chép 5 vé Xiên 4!');
+                                copyRawText(tkList.map((t, i) => `Dàn ${i + 1}: ${t.join('-')}`).join('\n'), 'Đã sao chép 5 dàn Xiên 4 (11M/dàn)!');
                             } else {
                                 copyNumbers(info.top5);
                             }
@@ -4154,7 +4226,7 @@
             loX2: 'Nhật Ký Đối Soát: 🚀 Lô Tăng Tốc X2 (Bộ Điều Phối Đổi Pha)',
             loXi3: 'Nhật Ký Đối Soát: 🌟 Tam Thủ Xiên 3 (Chế Độ Quan Sát Độc Lập)',
             loXi4: 'Nhật Ký Đối Soát: 🎲 Lô Xiên 4 (Phương Pháp Ghép 4 Mới)',
-            loXien5: 'Nhật Ký Đối Soát: 👑 Dàn Xiên 5 (5 Quả Xiên 4 Độc Lập — Lãi +172M ROI +128.4%)'
+            loXien5: 'Nhật Ký Đối Soát: 👑 Dàn Xiên 5 (5 Dàn Xiên 4 Độc Lập — 11M/dàn, Trúng 2: 12M, 3: 84M, 4: 384M)'
         };
         const PROFIT_LABELS_MAP = {
             all: 'Tổng Lãi Trong Mốc (Đề + Lô):',
@@ -4165,7 +4237,7 @@
             loX2: 'Tổng Lãi Lô Tăng Tốc X2:',
             loXi3: 'Tổng Lãi Riêng Xiên 3 (Quan sát):',
             loXi4: 'Tổng Lãi Lô Xiên 4 (Ghép 4):',
-            loXien5: 'Tổng Lãi Dàn Xiên 5 (5 Quả X4):'
+            loXien5: 'Tổng Lãi Dàn Xiên 5 (5 Dàn X4 · 11M):'
         };
 
         if (headingTitle) headingTitle.textContent = TITLES_MAP[currentDiaryCategory] || TITLES_MAP.all;
@@ -4247,10 +4319,10 @@
                     <tr class="border-b border-indigo-300 bg-indigo-50/80 text-indigo-950 uppercase font-black tracking-wider text-[10px]">
                         <th class="px-3 py-3">Ngày</th>
                         <th class="px-3 py-3">Bộ 5 Số Vàng (Đồng thuận)</th>
-                        <th class="px-3 py-3">Chi Tiết 5 Vé Xiên 4</th>
-                        <th class="px-3 py-3 text-center">Số Con Về / Vé Nổ</th>
-                        <th class="px-3 py-3">Trạng Thái Thưởng (1:170)</th>
-                        <th class="px-3 py-3 text-right">Lãi/Lỗ Ngày (Vốn 500K)</th>
+                        <th class="px-3 py-3">Chi Tiết 5 Dàn Xiên 4</th>
+                        <th class="px-3 py-3 text-center">Số Con Về / Dàn Nổ</th>
+                        <th class="px-3 py-3">Trạng Thái Thưởng (11M/dàn)</th>
+                        <th class="px-3 py-3 text-right">Lãi/Lỗ Ngày (Vốn 55M)</th>
                         <th class="px-3 py-3 text-right">Lũy Kế Xiên 5</th>
                     </tr>
                 `;
@@ -4263,7 +4335,7 @@
                         <th class="px-3 py-3">🚀 Lô Tăng Tốc X2</th>
                         <th class="px-3 py-3">🔥 Lô Ghép 4 Động Cơ <span class="text-[9px] text-slate-400 font-normal lowercase">(Live)</span></th>
                         <th class="px-3 py-3">🎲 Lô Xiên 4 Ghép Mới <span class="text-[9px] text-slate-400 font-normal lowercase">(quan sát)</span></th>
-                        <th class="px-3 py-3">👑 Dàn Xiên 5 (5 Vé X4) <span class="text-[9px] text-slate-400 font-normal lowercase">(quan sát)</span></th>
+                        <th class="px-3 py-3">👑 Dàn Xiên 5 (5 Dàn X4 · 11M) <span class="text-[9px] text-slate-400 font-normal lowercase">(quan sát)</span></th>
                         <th class="px-3 py-3 text-right">Tổng Ngày</th>
                         <th class="px-3 py-3 text-right">Lũy Kế Mốc</th>
                     </tr>
@@ -4478,13 +4550,12 @@
                         isPending: true,
                         top5: (payload?.loTop5ConsensusXien?.top5Xien || []).map(number),
                         h5: 0,
-                        x5TicketsWon: 0,
                         x5Tickets: getXi5Tickets((payload?.loTop5ConsensusXien?.top5Xien || []).map(number)),
-                        x5StakeK: 500,
-                        x5Payout170K: 0,
-                        x5Profit170K: 0,
-                        x5Payout250K: 0,
-                        x5Profit250K: 0,
+                        x5StakeK: 55000,
+                        x5PayoutK: 0,
+                        x5ProfitK: 0,
+                        payoutK: 0,
+                        profitK: 0,
                         isWin: false,
                         cumLoXien5ProfitK
                     },
@@ -4694,7 +4765,17 @@
             const top5XienDay = payload?.loTop5ConsensusXien?.settledLedger?.find(r => r.date === date);
             const lo4Xien4ProfitK = top5XienDay ? top5XienDay.q11ProfitVIP_K : (lo4Row ? (lo4Row.dayXien4ProfitK || 0) : 0);
             cumLo4Xien4ProfitK += lo4Xien4ProfitK;
-            const loXien5ProfitK = top5XienDay ? (top5XienDay.x5Profit170K != null ? top5XienDay.x5Profit170K : 0) : 0;
+            let loXien5ProfitK = 0;
+            let loXien5PayoutK = 0;
+            let loXien5H5 = 0;
+            if (top5XienDay) {
+                loXien5H5 = top5XienDay.h5 || 0;
+                const evalX5 = evaluateXien5_5DanX4(loXien5H5);
+                loXien5PayoutK = top5XienDay.x5Payout55K != null ? top5XienDay.x5Payout55K : evalX5.payoutK;
+                loXien5ProfitK = top5XienDay.x5Profit55K != null ? top5XienDay.x5Profit55K : evalX5.profitK;
+            } else {
+                loXien5ProfitK = -55000;
+            }
             cumLoXien5ProfitK += loXien5ProfitK;
 
             const lo4EngineDetails = lo4Row ? {
@@ -4853,28 +4934,26 @@
                     date,
                     isPending: false,
                     top5: (top5XienDay.top5 || []).map(number),
-                    h5: top5XienDay.h5 || 0,
-                    x5TicketsWon: top5XienDay.x5TicketsWon || 0,
+                    h5: loXien5H5,
                     x5Tickets: top5XienDay.x5Tickets || getXi5Tickets(top5XienDay.top5),
-                    x5StakeK: top5XienDay.x5StakeK || 500,
-                    x5Payout170K: top5XienDay.x5Payout170K || 0,
-                    x5Profit170K: top5XienDay.x5Profit170K || 0,
-                    x5Payout250K: top5XienDay.x5Payout250K || 0,
-                    x5Profit250K: top5XienDay.x5Profit250K || 0,
-                    isWin: (top5XienDay.x5TicketsWon || 0) > 0,
+                    x5StakeK: 55000,
+                    x5PayoutK: loXien5PayoutK,
+                    x5ProfitK: loXien5ProfitK,
+                    payoutK: loXien5PayoutK,
+                    profitK: loXien5ProfitK,
+                    isWin: loXien5ProfitK > 0,
                     cumLoXien5ProfitK
                 } : {
                     date,
                     isPending: false,
                     top5: [],
                     h5: 0,
-                    x5TicketsWon: 0,
                     x5Tickets: [],
-                    x5StakeK: 500,
-                    x5Payout170K: 0,
-                    x5Profit170K: -500,
-                    x5Payout250K: 0,
-                    x5Profit250K: -500,
+                    x5StakeK: 55000,
+                    x5PayoutK: 0,
+                    x5ProfitK: -55000,
+                    payoutK: 0,
+                    profitK: -55000,
                     isWin: false,
                     cumLoXien5ProfitK
                 },
@@ -4946,7 +5025,7 @@
                 if (currentDiaryCategory === 'loX2') return (r.x2.profitK || 0) > 0;
                 if (currentDiaryCategory === 'loXi3') return (r.xi3.profitK || 0) > 0;
                 if (currentDiaryCategory === 'loXi4' || currentDiaryCategory === 'lo4Xien4') return (r.lo4Xien4?.profitK || 0) > 0;
-                if (currentDiaryCategory === 'loXien5') return (r.loXien5?.x5Profit170K || 0) > 0;
+                if (currentDiaryCategory === 'loXien5') return (r.loXien5?.profitK || 0) > 0;
                 return r.dayTotalK > 0;
             });
         } else if (unifiedStatusFilter === 'loss') {
@@ -4958,7 +5037,7 @@
                 if (currentDiaryCategory === 'loX2') return (r.x2.profitK || 0) <= 0;
                 if (currentDiaryCategory === 'loXi3') return (r.xi3.profitK || 0) <= 0;
                 if (currentDiaryCategory === 'loXi4' || currentDiaryCategory === 'lo4Xien4') return (r.lo4Xien4?.profitK || 0) <= 0;
-                if (currentDiaryCategory === 'loXien5') return (r.loXien5?.x5Profit170K || 0) <= 0;
+                if (currentDiaryCategory === 'loXien5') return (r.loXien5?.profitK || 0) <= 0;
                 return r.dayTotalK <= 0;
             });
         }
@@ -4987,9 +5066,8 @@
             else if (r.lo4Xien4?.status === 'SKIPPED_TOO_MANY') lo4Xien4SkipCount++;
             lo4Xien4TotalProfit += (r.lo4Xien4?.profitK || 0);
 
-            if ((r.loXien5?.x5Profit170K || 0) > 0) loXien5WinCount++;
-            loXien5TicketsWonTotal += (r.loXien5?.x5TicketsWon || 0);
-            loXien5TotalProfit += (r.loXien5?.x5Profit170K || 0);
+            if ((r.loXien5?.profitK || 0) > 0) loXien5WinCount++;
+            loXien5TotalProfit += (r.loXien5?.profitK || 0);
 
             if (currentDiaryCategory === 'de') {
                 if (r.deProfitK > 0) catWinCount++;
@@ -5010,8 +5088,8 @@
                 if ((r.lo4Xien4?.profitK || 0) > 0) catWinCount++;
                 catTotalProfit += (r.lo4Xien4?.profitK || 0);
             } else if (currentDiaryCategory === 'loXien5') {
-                if ((r.loXien5?.x5Profit170K || 0) > 0) catWinCount++;
-                catTotalProfit += (r.loXien5?.x5Profit170K || 0);
+                if ((r.loXien5?.profitK || 0) > 0) catWinCount++;
+                catTotalProfit += (r.loXien5?.profitK || 0);
             } else {
                 if (r.dayTotalK > 0) catWinCount++;
                 catTotalProfit += r.dayTotalK;
@@ -5058,7 +5136,7 @@
         }
         const xien5SubEl = byId('unifiedDiaryXien5Subtext');
         if (xien5SubEl) {
-            xien5SubEl.innerHTML = `Thắng <strong>${loXien5WinCount}/${totalCount}</strong> ngày · Nổ <strong>${loXien5TicketsWonTotal}</strong> vé X4 (ROI +128.4%)`;
+            xien5SubEl.innerHTML = `Thắng <strong>${loXien5WinCount}/${totalCount}</strong> ngày (Vốn 55M/ngày) · Trúng 2: 12M, 3: 84M, 4: 384M`;
         }
 
         const reversedRows = [...displayRows].reverse();
@@ -5743,9 +5821,9 @@
                                 <div class="text-[10px] text-slate-500 mt-0.5">Top 5 Đồng Thuận 4 ĐC</div>
                             </td>
                             <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-indigo-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXien5">
-                                <div class="text-[11px] font-mono text-indigo-900 font-bold">5 Vé Xiên 4 (100K/vé)</div>
+                                <div class="text-[11px] font-mono text-indigo-900 font-bold">5 Dàn Xiên 4 (11M/dàn)</div>
                                 <div class="text-[9px] text-indigo-700 font-bold mt-1 flex items-center gap-1">
-                                    <i class="bi bi-cursor-fill text-[8px]"></i> <span class="diary-expand-indicator underline text-indigo-800 font-bold">Bấm xem 5 vé cược <i class="bi bi-chevron-down text-[8px]"></i></span>
+                                    <i class="bi bi-cursor-fill text-[8px]"></i> <span class="diary-expand-indicator underline text-indigo-800 font-bold">Bấm xem 5 dàn cược <i class="bi bi-chevron-down text-[8px]"></i></span>
                                 </div>
                             </td>
                             <td class="px-3 py-3 whitespace-nowrap text-center">
@@ -5756,7 +5834,7 @@
                             </td>
                             <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
                                 <div class="font-bold text-xs text-amber-600">⏳ Chờ KQ</div>
-                                <div class="text-[10px] text-slate-400 font-sans">Vốn 500K</div>
+                                <div class="text-[10px] text-slate-400 font-sans">Vốn 55M</div>
                             </td>
                             <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
                                 <div class="font-semibold text-xs text-slate-400">--</div>
@@ -5766,15 +5844,19 @@
                 }
 
                 const h5Hits = loXien5Info.h5 || 0;
-                const ticketsWon = loXien5Info.x5TicketsWon || 0;
-                const isWin = ticketsWon > 0;
-                const profitK = loXien5Info.x5Profit170K != null ? loXien5Info.x5Profit170K : (isWin ? (ticketsWon * 17000 - 500) : -500);
+                const evalX5 = evaluateXien5_5DanX4(h5Hits);
+                const isWin = evalX5.isWin;
+                const profitK = loXien5Info.profitK != null ? loXien5Info.profitK : evalX5.profitK;
 
-                let rewardStatusHtml = `<span class="inline-flex items-center gap-1 rounded bg-rose-100 text-rose-800 px-2 py-0.5 text-xs font-semibold">❌ Trượt (-500K)</span>`;
-                if (ticketsWon === 5) {
-                    rewardStatusHtml = `<span class="inline-flex items-center gap-1 rounded bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black px-2.5 py-1 text-xs shadow-xs ring-1 ring-amber-500">👑 ĂN TRỌN 5 VÉ = +84.5M</span>`;
-                } else if (ticketsWon === 1) {
-                    rewardStatusHtml = `<span class="inline-flex items-center gap-1 rounded bg-emerald-600 text-white font-black px-2.5 py-1 text-xs shadow-xs ring-1 ring-emerald-400">🎉 ĂN 1 VÉ = +16.5M</span>`;
+                let rewardStatusHtml = `<span class="inline-flex items-center gap-1 rounded bg-rose-100 text-rose-800 px-2 py-0.5 text-xs font-semibold">❌ Trượt (-55M)</span>`;
+                if (h5Hits === 5) {
+                    rewardStatusHtml = `<span class="inline-flex items-center gap-1 rounded bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black px-2.5 py-1 text-xs shadow-xs ring-1 ring-amber-500">👑 ĂN 5 DÀN = +1.865M</span>`;
+                } else if (h5Hits === 4) {
+                    rewardStatusHtml = `<span class="inline-flex items-center gap-1 rounded bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black px-2.5 py-1 text-xs shadow-xs ring-1 ring-amber-500">👑 ĂN 5/5 DÀN = +665M</span>`;
+                } else if (h5Hits === 3) {
+                    rewardStatusHtml = `<span class="inline-flex items-center gap-1 rounded bg-purple-600 text-white font-black px-2.5 py-1 text-xs shadow-xs">🔥 ĂN 5/5 DÀN = +149M</span>`;
+                } else if (h5Hits === 2) {
+                    rewardStatusHtml = `<span class="inline-flex items-center gap-1 rounded bg-teal-600 text-white font-bold px-2.5 py-1 text-xs shadow-xs">🛡️ ĂN 3 DÀN X2 = 36M (-19M)</span>`;
                 }
 
                 return `
@@ -5796,8 +5878,19 @@
                             <div class="flex items-center gap-1 flex-wrap">
                                 ${tkList.map((t, i) => {
                                     const hitCount = t.filter(num => drawPrizesSet.has(num)).length;
-                                    const tWon = hitCount === 4;
-                                    return `<span class="inline-block px-1.5 py-0.5 rounded font-mono text-[10px] ${tWon ? 'bg-amber-400 text-slate-950 font-black ring-1 ring-amber-500' : 'bg-slate-100 text-slate-700 font-medium'}">V${i+1}: ${t.join('-')}</span>`;
+                                    let tText = `D${i+1}: trượt`;
+                                    let tClass = 'bg-slate-100 text-slate-700 font-medium';
+                                    if (hitCount === 4) {
+                                        tText = `D${i+1}: 4s (384M)`;
+                                        tClass = 'bg-amber-400 text-slate-950 font-black ring-1 ring-amber-500';
+                                    } else if (hitCount === 3) {
+                                        tText = `D${i+1}: 3s (84M)`;
+                                        tClass = 'bg-purple-600 text-white font-black';
+                                    } else if (hitCount === 2) {
+                                        tText = `D${i+1}: 2s (12M)`;
+                                        tClass = 'bg-teal-600 text-white font-bold';
+                                    }
+                                    return `<span class="inline-block px-1.5 py-0.5 rounded font-mono text-[10px] ${tClass}">[${t.join('-')}] ${tText}</span>`;
                                 }).join(' ')}
                             </div>
                             <div class="text-[9px] text-indigo-700 font-bold mt-1 flex items-center gap-1">
@@ -5806,7 +5899,7 @@
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap text-center">
                             <span class="font-bold text-xs ${isWin ? 'text-emerald-700 font-black' : 'text-slate-700'}">
-                                ${isWin ? `🎉 Nổ ${ticketsWon} vé (${h5Hits}/5 con)` : `${h5Hits}/5 con về`}
+                                ${isWin ? `🎉 Nổ ${evalX5.winningDansCount}/5 dàn (${h5Hits}/5 con)` : `${h5Hits}/5 con về`}
                             </span>
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
@@ -5816,7 +5909,7 @@
                             <div class="font-black text-xs ${profitK > 0 ? 'text-emerald-600' : 'text-rose-600'}">
                                 ${moneyM(profitK, { signed: true })}
                             </div>
-                            <div class="text-[10px] text-slate-400 font-sans">Vốn 500K</div>
+                            <div class="text-[10px] text-slate-400 font-sans">Vốn 55M</div>
                         </td>
                         <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
                             <div class="font-black text-xs ${(r.cumLoXien5ProfitK || 0) >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
@@ -5907,14 +6000,14 @@
                         </td>
                         <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-indigo-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXien5">
                             <div class="text-[11px] font-bold text-indigo-950 flex items-center gap-1">
-                                <i class="bi bi-award-fill text-indigo-600 text-[10px]"></i> Dàn Xiên 5 (5 Quả X4)
+                                <i class="bi bi-award-fill text-indigo-600 text-[10px]"></i> Dàn Xiên 5 (5 Dàn X4)
                             </div>
                             <div class="flex items-center gap-1.5 mt-0.5 text-xs">
-                                <span class="text-amber-600 font-bold">⏳ Chờ mở (5 vé)</span>
-                                <span class="font-mono text-slate-400 font-semibold">500K</span>
+                                <span class="text-amber-600 font-bold">⏳ Chờ mở (5 dàn)</span>
+                                <span class="font-mono text-slate-400 font-semibold">55M (11M/dàn)</span>
                             </div>
                             <div class="text-[10px] text-slate-600 mt-0.5 font-medium flex items-center justify-between">
-                                <span class="text-slate-500">C(5,4) = 5 vé độc lập</span>
+                                <span class="text-slate-500">Trúng 2: 12M · 3: 84M · 4: 384M</span>
                                 <span class="diary-expand-indicator text-indigo-700 font-sans font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
                             </div>
                         </td>
@@ -5982,19 +6075,25 @@
 
             const loXien5Info = r.loXien5Info || r.loXien5 || {};
             const h5HitsUnified = loXien5Info.h5 || 0;
-            const ticketsWonUnified = loXien5Info.x5TicketsWon || 0;
+            const evalX5 = evaluateXien5_5DanX4(h5HitsUnified);
             let loXien5Tag = '';
             let xien5DetailSubtext = '';
 
-            if (ticketsWonUnified === 5) {
-                loXien5Tag = `<span class="rounded bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 px-1.5 py-0.5 text-[10px] font-black shadow-xs ring-1 ring-amber-500">👑 Ăn 5 vé</span>`;
-                xien5DetailSubtext = '<span class="text-amber-700 font-bold">Ăn 85M (Lãi +84.5M)</span>';
-            } else if (ticketsWonUnified === 1) {
-                loXien5Tag = `<span class="rounded bg-emerald-600 text-white px-1.5 py-0.5 text-[10px] font-black shadow-xs">🎉 Ăn 1 vé</span>`;
-                xien5DetailSubtext = '<span class="text-emerald-700 font-bold">Ăn 17M (Lãi +16.5M)</span>';
+            if (h5HitsUnified === 5) {
+                loXien5Tag = `<span class="rounded bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 px-1.5 py-0.5 text-[10px] font-black shadow-xs ring-1 ring-amber-500">👑 Ăn 5 dàn X4</span>`;
+                xien5DetailSubtext = '<span class="text-amber-700 font-bold">Ăn 1.920M (Lãi +1.865M)</span>';
+            } else if (h5HitsUnified === 4) {
+                loXien5Tag = `<span class="rounded bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 px-1.5 py-0.5 text-[10px] font-black shadow-xs ring-1 ring-amber-500">🔥 Ăn 1 dàn X4 + 4 dàn X3</span>`;
+                xien5DetailSubtext = '<span class="text-amber-700 font-bold">Ăn 720M (Lãi +665M)</span>';
+            } else if (h5HitsUnified === 3) {
+                loXien5Tag = `<span class="rounded bg-purple-600 text-white px-1.5 py-0.5 text-[10px] font-black shadow-xs">🎉 Ăn 2 dàn X3 + 3 dàn X2</span>`;
+                xien5DetailSubtext = '<span class="text-purple-700 font-bold">Ăn 204M (Lãi +149M)</span>';
+            } else if (h5HitsUnified === 2) {
+                loXien5Tag = `<span class="rounded bg-teal-600 text-white px-1.5 py-0.5 text-[10px] font-bold shadow-xs">🛡️ Ăn 3 dàn X2</span>`;
+                xien5DetailSubtext = '<span class="text-teal-700 font-bold">Ăn 36M (Thu hồi -19M)</span>';
             } else {
                 loXien5Tag = `<span class="text-slate-500 text-[10px] font-semibold">Trượt (${h5HitsUnified}/5)</span>`;
-                xien5DetailSubtext = `Về ${h5HitsUnified}/5 con · Trượt (-500K)`;
+                xien5DetailSubtext = `Về ${h5HitsUnified}/5 con · Trượt (-55M)`;
             }
 
             const dayClass = r.dayTotalK > 0 ? 'bg-emerald-50/40' : (r.dayTotalK < -50000 ? 'bg-rose-50/20' : '');
@@ -6080,7 +6179,7 @@
                         </div>
                         <div class="flex items-center justify-between gap-1.5 mt-0.5 text-xs">
                             ${loXien5Tag}
-                            <span class="font-mono font-bold ${(loXien5Info.x5Profit170K ?? 0) > 0 ? 'text-emerald-600' : 'text-rose-600'}">${moneyM(loXien5Info.x5Profit170K ?? -500, { signed: true })}</span>
+                            <span class="font-mono font-bold ${(loXien5Info.profitK ?? evalX5.profitK) > 0 ? 'text-emerald-600' : 'text-rose-600'}">${moneyM(loXien5Info.profitK ?? evalX5.profitK, { signed: true })}</span>
                         </div>
                         <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
                             <span>${xien5DetailSubtext}</span>
@@ -9678,13 +9777,24 @@
             } else if (methodKey === 'loXien5') {
                 numbers = (r.top5 || []).map(number);
                 tickets = r.x5Tickets && r.x5Tickets.length ? r.x5Tickets : getXi5Tickets(numbers);
-                const won = r.x5TicketsWon || 0;
-                isHit = won > 0;
-                stakeK = r.x5StakeK || 500;
-                payoutK = r.x5Payout170K || (won > 0 ? won * 17000 : 0);
-                profitK = r.x5Profit170K != null ? r.x5Profit170K : (won > 0 ? won * 17000 - 500 : -500);
-                hitBadge = won === 5 ? '👑 ĂN TRỌN 5 VÉ (+84.5M)' : (won === 1 ? '🎉 ĂN 1 VÉ (+16.5M)' : `❌ TRƯỢT (${r.h5 || 0}/5 con)`);
-                detailDesc = `Top 5 Đồng Thuận ghép 5 vé Xiên 4 (Ăn 17M / 85M)`;
+                const evalX5 = evaluateXien5_5DanX4(r.h5 != null ? r.h5 : (r.hitCount5 ?? 0));
+                stakeK = 55000;
+                payoutK = r.x5Payout55K != null ? r.x5Payout55K : (r.x5PayoutK != null ? r.x5PayoutK : evalX5.payoutK);
+                profitK = r.x5Profit55K != null ? r.x5Profit55K : (r.x5ProfitK != null ? r.x5ProfitK : evalX5.profitK);
+                isHit = profitK > 0;
+                const h5Hits = evalX5.h5;
+                if (h5Hits >= 5) {
+                    hitBadge = '👑 ĂN 5 DÀN (+1.865M)';
+                } else if (h5Hits === 4) {
+                    hitBadge = '🔥 ĂN 4 DÀN (+665M)';
+                } else if (h5Hits === 3) {
+                    hitBadge = '🎉 ĂN 3 DÀN (+149M)';
+                } else if (h5Hits === 2) {
+                    hitBadge = '🛡️ THU HỒI 36M (-19M)';
+                } else {
+                    hitBadge = `❌ TRƯỢT (${h5Hits}/5 con)`;
+                }
+                detailDesc = `Top 5 Đồng Thuận ghép 5 Dàn Xiên 4 (11M/dàn · 55M/ngày)`;
             } else if (methodKey === 'lo4Xien4') {
                 numbers = (r.top4 || []).map(number);
                 const hits = r.h4 || 0;
@@ -9783,12 +9893,26 @@
                         <div class="space-y-1 font-mono text-xs">
                             ${r.tickets.map((t, idx) => {
                                 const hitCount = t.filter(num => r.drawPrizesSet.has(num)).length;
-                                const isTicketWon = hitCount === 4;
+                                let badge = '';
+                                let cardStyle = '';
+                                if (hitCount === 4) {
+                                    badge = '<span class="text-amber-300 font-black">👑 ĂN 4 CON: 384M (+373M)</span>';
+                                    cardStyle = 'bg-amber-950/80 border-amber-400 text-amber-200 ring-1 ring-amber-400';
+                                } else if (hitCount === 3) {
+                                    badge = '<span class="text-purple-300 font-bold">🔥 ĂN 3 CON: 84M (+73M)</span>';
+                                    cardStyle = 'bg-purple-950/80 border-purple-400 text-purple-200 ring-1 ring-purple-400';
+                                } else if (hitCount === 2) {
+                                    badge = '<span class="text-teal-300 font-bold">✨ ĂN 2 CON: 12M (+1M)</span>';
+                                    cardStyle = 'bg-teal-950/80 border-teal-400 text-teal-200 ring-1 ring-teal-400';
+                                } else {
+                                    badge = `<span class="text-slate-400">${hitCount}/4 con (-11M)</span>`;
+                                    cardStyle = 'bg-black/40 border-white/10 text-slate-300';
+                                }
                                 return `
-                                    <div class="flex items-center justify-between ${isTicketWon ? 'bg-emerald-950/80 border-emerald-400 text-emerald-200 ring-1 ring-emerald-400' : 'bg-black/40 border-white/10 text-slate-300'} border rounded-lg px-2.5 py-1 text-xs">
-                                        <span class="${isTicketWon ? 'text-amber-300 font-black' : 'text-slate-400'} text-[11px]">Vé ${idx + 1}:</span>
+                                    <div class="flex items-center justify-between ${cardStyle} border rounded-lg px-2.5 py-1 text-xs">
+                                        <span class="text-slate-300 font-bold text-[11px]">Dàn ${idx + 1} (11M):</span>
                                         <span class="font-bold tracking-wide">${t.map(num => r.drawPrizesSet.has(num) ? `<strong class="text-emerald-300">${num}</strong>` : num).join(' - ')}</span>
-                                        <span class="text-[10px] font-bold ${isTicketWon ? 'text-amber-300' : 'text-slate-400'}">${isTicketWon ? '⭐ ĂN 17M' : `${hitCount}/4 con`}</span>
+                                        <span class="text-[10px]">${badge}</span>
                                     </div>
                                 `;
                             }).join('')}
@@ -9839,7 +9963,7 @@
             }
 
             const copyNumsText = isXien
-                ? r.tickets.map((t, idx) => `Vé ${idx + 1}: ${t.join('-')}`).join('\n')
+                ? r.tickets.map((t, idx) => `Dàn ${idx + 1}: ${t.join('-')}`).join('\n')
                 : r.numbers.join(', ');
 
             return `
@@ -10052,26 +10176,37 @@
                 detailDesc = `Hội tụ 4 động cơ: ${r?.countOver2 || 0} số trùng ≥ 2 ĐC`;
             }
         } else if (methodKey === 'loXien5') {
-            methodTitle = '👑 Dàn Xiên 5 (5 Quả Xiên 4 Từ Top 5)';
+            methodTitle = '👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)';
             if (isPending) {
                 numbers = (payloadData.loTop5ConsensusXien?.top5Consensus || payloadData.loTop5ConsensusXien?.top5Xien || []).map(number);
                 tickets = getXi5Tickets(numbers);
-                stakeK = 500;
+                stakeK = 55000;
                 profitK = 0;
                 payoutK = 0;
                 hitBadge = '⏳ Chờ mở thưởng 18h40';
-                detailDesc = 'Top 5 Đồng Thuận ghép 5 vé Xiên 4 (Ăn 17M / 85M)';
+                detailDesc = 'Top 5 Đồng Thuận ghép 5 Dàn Xiên 4 (11M/dàn · Trúng 2: 12M, 3: 84M, 4: 384M)';
             } else {
                 const r = payloadData.loTop5ConsensusXien?.settledLedger?.find(x => x.date === date);
                 numbers = (r?.top5 || []).map(number);
                 tickets = r?.x5Tickets && r.x5Tickets.length ? r.x5Tickets : getXi5Tickets(numbers);
-                const won = r?.x5TicketsWon || 0;
-                isHit = won > 0;
-                stakeK = r?.x5StakeK || 500;
-                payoutK = r?.x5Payout170K || (won > 0 ? won * 17000 : 0);
-                profitK = r?.x5Profit170K != null ? r.x5Profit170K : (won > 0 ? won * 17000 - 500 : -500);
-                hitBadge = won === 5 ? '👑 ĂN TRỌN 5 VÉ (+84.5M)' : (won === 1 ? '🎉 ĂN 1 VÉ (+16.5M)' : `❌ TRƯỢT (${r?.h5 || 0}/5 con)`);
-                detailDesc = 'Top 5 Đồng Thuận ghép 5 vé Xiên 4 (Ăn 17M / 85M)';
+                const evalX5 = evaluateXien5_5DanX4(r?.h5 != null ? r.h5 : (r?.hitCount5 ?? 0));
+                stakeK = 55000;
+                payoutK = r?.x5Payout55K != null ? r.x5Payout55K : (r?.x5PayoutK != null ? r.x5PayoutK : evalX5.payoutK);
+                profitK = r?.x5Profit55K != null ? r.x5Profit55K : (r?.x5ProfitK != null ? r.x5ProfitK : evalX5.profitK);
+                isHit = profitK > 0;
+                const h5Hits = evalX5.h5;
+                if (h5Hits >= 5) {
+                    hitBadge = '👑 ĂN 5 DÀN (+1.865M)';
+                } else if (h5Hits === 4) {
+                    hitBadge = '🔥 ĂN 4 DÀN (+665M)';
+                } else if (h5Hits === 3) {
+                    hitBadge = '🎉 ĂN 3 DÀN (+149M)';
+                } else if (h5Hits === 2) {
+                    hitBadge = '🛡️ THU HỒI 36M (-19M)';
+                } else {
+                    hitBadge = `❌ TRƯỢT (${h5Hits}/5 con)`;
+                }
+                detailDesc = 'Top 5 Đồng Thuận ghép 5 Dàn Xiên 4 (11M/dàn · Trúng 2: 12M, 3: 84M, 4: 384M)';
             }
         } else if (methodKey === 'loStd') {
             methodTitle = '🏆 Lô Chuẩn Nền Tảng (Top 20)';
@@ -10515,13 +10650,36 @@
                         </div>
                         <div class="space-y-1 font-mono text-xs">
                             ${loData.tickets.map((t, idx) => {
+                                if (loData.isPending) {
+                                    return `
+                                        <div class="flex items-center justify-between bg-black/40 border border-white/10 rounded-lg px-2.5 py-1 text-xs text-slate-300">
+                                            <span class="text-amber-300 font-bold text-[11px]">Dàn ${idx + 1} (11M):</span>
+                                            <span class="font-bold tracking-wide">${t.join(' - ')}</span>
+                                            <span class="text-[10px] text-slate-400">Chờ mở thưởng</span>
+                                        </div>
+                                    `;
+                                }
                                 const hitCount = t.filter(num => loData.drawPrizesSet.has(num)).length;
-                                const isTicketWon = hitCount === 4;
+                                let badge = '';
+                                let cardStyle = '';
+                                if (hitCount === 4) {
+                                    badge = '<span class="text-amber-300 font-black">👑 ĂN 4 CON: 384M (+373M)</span>';
+                                    cardStyle = 'bg-amber-950/80 border-amber-400 text-amber-200 ring-1 ring-amber-400';
+                                } else if (hitCount === 3) {
+                                    badge = '<span class="text-purple-300 font-bold">🔥 ĂN 3 CON: 84M (+73M)</span>';
+                                    cardStyle = 'bg-purple-950/80 border-purple-400 text-purple-200 ring-1 ring-purple-400';
+                                } else if (hitCount === 2) {
+                                    badge = '<span class="text-teal-300 font-bold">✨ ĂN 2 CON: 12M (+1M)</span>';
+                                    cardStyle = 'bg-teal-950/80 border-teal-400 text-teal-200 ring-1 ring-teal-400';
+                                } else {
+                                    badge = `<span class="text-slate-400">${hitCount}/4 con (-11M)</span>`;
+                                    cardStyle = 'bg-black/40 border-white/10 text-slate-300';
+                                }
                                 return `
-                                    <div class="flex items-center justify-between ${isTicketWon ? 'bg-emerald-950/80 border-emerald-400 text-emerald-200 ring-1 ring-emerald-400' : 'bg-black/40 border-white/10 text-slate-300'} border rounded-lg px-2.5 py-1 text-xs">
-                                        <span class="${isTicketWon ? 'text-amber-300 font-black' : 'text-slate-400'} text-[11px]">Vé ${idx + 1}:</span>
+                                    <div class="flex items-center justify-between ${cardStyle} border rounded-lg px-2.5 py-1 text-xs">
+                                        <span class="text-slate-300 font-bold text-[11px]">Dàn ${idx + 1} (11M):</span>
                                         <span class="font-bold tracking-wide">${t.map(num => loData.drawPrizesSet.has(num) ? `<strong class="text-emerald-300">${num}</strong>` : num).join(' - ')}</span>
-                                        <span class="text-[10px] font-bold ${isTicketWon ? 'text-amber-300' : 'text-slate-400'}">${isTicketWon ? '⭐ ĂN 17M' : `${hitCount}/4 con`}</span>
+                                        <span class="text-[10px]">${badge}</span>
                                     </div>
                                 `;
                             }).join('')}
@@ -10543,7 +10701,7 @@
 
         const loHeaderLabel = byId('loNumbersHeaderLabel');
         if (loHeaderLabel) {
-            loHeaderLabel.textContent = loData.methodKey === 'loXien5' ? 'Bộ 5 số vàng & 5 vé Xiên 4:' : `Dàn số đã đánh (${loData.numbers.length} số):`;
+            loHeaderLabel.textContent = loData.methodKey === 'loXien5' ? 'Bộ 5 số vàng & 5 Dàn Xiên 4 (11M/dàn):' : `Dàn số đã đánh (${loData.numbers.length} số):`;
         }
 
         const loFinSummary = byId('loFinancialSummary');
@@ -10558,7 +10716,7 @@
         const btnCopyLo = byId('btnCopyInPageLoNumbers');
         if (btnCopyLo) {
             btnCopyLo.dataset.numbers = loData.methodKey === 'loXien5'
-                ? loData.tickets.map((t, idx) => `Vé ${idx + 1}: ${t.join('-')}`).join('\n')
+                ? loData.tickets.map((t, idx) => `Dàn ${idx + 1}: ${t.join('-')}`).join('\n')
                 : loData.numbers.join(', ');
         }
 
@@ -10582,7 +10740,7 @@
         const btnCopyComb = byId('btnCopyInPageCombinedDay');
         if (btnCopyComb) {
             const loText = loData.methodKey === 'loXien5'
-                ? `Bộ 5 số vàng: ${loData.numbers.join(', ')}\n` + loData.tickets.map((t, idx) => `Vé ${idx + 1}: ${t.join('-')}`).join('\n')
+                ? `Bộ 5 số vàng: ${loData.numbers.join(', ')}\n` + loData.tickets.map((t, idx) => `Dàn ${idx + 1}: ${t.join('-')}`).join('\n')
                 : loData.numbers.join(', ');
 
             btnCopyComb.dataset.combinedText = `=== DÀN ĐÁNH NGÀY ${formatDateVi(targetDate)} ===\n\n💎 ĐỀ (${deData.methodTitle} - ${deData.numbers.length} số):\n${deData.numbers.join(', ')}\n\n🎰 LÔ & XIÊN (${loData.methodTitle} - ${loData.numbers.length} số):\n${loText}`;
