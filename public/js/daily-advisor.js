@@ -118,22 +118,22 @@
         maxProfit: {
             id: 'maxProfit',
             name: 'Gói 1: Combo Bù Trừ Dòng Tiền Chéo (Đề VIP + Lô 4 ĐC + Xiên Quây)',
-            deMethod: 'adaptiveDualMerge',
+            deMethod: 'deMarkovGapHazard',
             loEngine: 'lo4Fusion',
             loSubTier: 7,
             badge: '🛡️ COMBO CHỦ LỰC · BÙ TRỪ DÒNG TIỀN CHÉO (WIN 78.97%)',
             roiLabel: 'Win 78.97% · ROI +120.8%',
-            rationale: 'Chiến thuật phối hợp 3 trụ cột vững chắc: Đề Tinh Tuyển VIP (1 ăn 84-252), Lô Ghép 4 Động Cơ đa tầng (X5/X4/X3/X1) và Dàn Xiên Quây 11 vé. Cơ chế tự động cân bằng tỷ trọng vốn bảo đảm chỉ cần nổ bất kỳ 1 trụ cột là sinh lãi ròng tổng kết quả trong ngày (Profit > 0).'
+            rationale: 'Chiến thuật phối hợp 3 trụ cột vững chắc: Đề Tinh Tuyển VIP Markov (1 ăn 84-252, P nổ bù 57.0%), Lô Ghép 4 Động Cơ đa tầng (X5/X4/X3/X1) và Dàn Xiên Quây 11 vé. Cơ chế tự động cân bằng tỷ trọng vốn bảo đảm chỉ cần nổ bất kỳ 1 trụ cột là sinh lãi ròng tổng kết quả trong ngày (Profit > 0).'
         },
         crossHedging: {
             id: 'crossHedging',
             name: 'Gói 1: Combo Bù Trừ Dòng Tiền Chéo (Đề VIP + Lô 4 ĐC + Xiên Quây)',
-            deMethod: 'adaptiveDualMerge',
+            deMethod: 'deMarkovGapHazard',
             loEngine: 'lo4Fusion',
             loSubTier: 7,
             badge: '🛡️ COMBO CHỦ LỰC · BÙ TRỪ DÒNG TIỀN CHÉO (WIN 78.97%)',
             roiLabel: 'Win 78.97% · ROI +120.8%',
-            rationale: 'Chiến thuật phối hợp 3 trụ cột vững chắc: Đề Tinh Tuyển VIP (1 ăn 84-252), Lô Ghép 4 Động Cơ đa tầng (X5/X4/X3/X1) và Dàn Xiên Quây 11 vé. Cơ chế tự động cân bằng tỷ trọng vốn bảo đảm chỉ cần nổ bất kỳ 1 trụ cột là sinh lãi ròng tổng kết quả trong ngày (Profit > 0).'
+            rationale: 'Chiến thuật phối hợp 3 trụ cột vững chắc: Đề Tinh Tuyển VIP Markov (1 ăn 84-252, P nổ bù 57.0%), Lô Ghép 4 Động Cơ đa tầng (X5/X4/X3/X1) và Dàn Xiên Quây 11 vé. Cơ chế tự động cân bằng tỷ trọng vốn bảo đảm chỉ cần nổ bất kỳ 1 trụ cột là sinh lãi ròng tổng kết quả trong ngày (Profit > 0).'
         },
         smartAlternating: {
             id: 'smartAlternating',
@@ -1491,28 +1491,29 @@
             };
         }
         if (methodKey === 'deMarkovGapHazard') {
+            const crossP1 = fullData?.crossHedgingPortfolio?.pillar1_De;
             const rec = fullData?.deMarkovGapHazard?.latestRecommendation 
                 || fullData?.streakAwareDeAdvisor?.latestRecommendation?.availableMethods?.deMarkovGapHazard
                 || fullData?.streakAwareDeAdvisor?.markovAdvisor?.latestRecommendation
                 || {};
-            const allNums = (rec.numbers || []).map(number);
-            const vipNums = (rec.vipNumbers || allNums.slice(0, 17)).map(number);
-            const singleNums = (rec.backupNumbers || allNums.slice(17)).map(number);
-            const dynStake = (vipNums.length * 3 + singleNums.length * 1) * 1000;
+            const allNums = (crossP1?.allNumbers || rec.numbers || []).map(number);
+            const vipNums = (crossP1?.vipNumbers || rec.vipNumbers || allNums.slice(0, 10)).map(number);
+            const singleNums = (crossP1?.singleNumbers || rec.backupNumbers || allNums.filter(n => !vipNums.includes(n))).map(number);
+            const dynStake = crossP1?.stakeK || ((vipNums.length * 3 + singleNums.length * 1) * 1000);
             const stakeM = Math.round(dynStake / 1000);
             return {
-                label: '🔮 Đề Markov Bậc 2 & Chu Kỳ Khuyết (43s)',
-                badge: 'Markov Bậc 2 + Weibull Hazard ⭐',
+                label: '🔮 Đề Markov Bậc 2 & Gap Hazard (43s)',
+                badge: 'Markov Bậc 2 + Weibull Hazard ⭐ (Xác suất nổ bù 57.0%)',
                 stakeK: dynStake,
-                stakeText: `Vốn: ${stakeM}M / ngày (${vipNums.length} VIP X3 + ${singleNums.length} Lót X1 · ${stakeM} đơn vị cược)`,
-                stdTitle: `🔮 DÀN ĐỀ MARKOV & CHU KỲ KHUYẾT (${allNums.length} SỐ · VỐN ${stakeM}M · ĂN TỚI 252M)`,
+                stakeText: `Vốn: ${moneyM(dynStake)} / ngày (${vipNums.length} VIP X3 + ${singleNums.length} Lót X1 · ${stakeM} đơn vị cược)`,
+                stdTitle: `🔮 DÀN ĐỀ MARKOV & CHU KỲ KHUYẾT (${allNums.length} SỐ · VỐN ${moneyM(dynStake)} · ĂN TỚI 226.8M)`,
                 allNums,
                 vipNums,
                 singleNums,
                 vipLabel: `⚡ VIP MARKOV X3 (${vipNums.length} SỐ - CƯỢC X3)`,
                 singleLabel: `🛡️ BỌC LÓT X1 (${singleNums.length} SỐ)`,
-                rationale: rec.rationale || 'Mô hình ma trận chuyển tiếp bậc 2 kết hợp hàm mật độ nguy cơ Weibull Gap, độc lập 100% với mốc lịch sử, cứu 45.6% chuỗi gãy kép.',
-                liveStat: '49.0% Win 2026 (+10.8 TỶ)'
+                rationale: crossP1?.rationale || rec.rationale || 'Mô hình ma trận chuyển tiếp bậc 2 kết hợp hàm mật độ nguy cơ Weibull Gap, độc lập 100% với mốc lịch sử, xác suất nổ bù đạt 57.0% sau nhịp trượt L1.',
+                liveStat: '57.0% Nổ Bù Thực Chiến (+19.92 TỶ Cross-Hedging)'
             };
         }
         if (methodKey === 'dePositionalGraphFlow') {
@@ -1687,9 +1688,11 @@
 
         // 1. ĐỀ TINH HOA — CHỌN PHƯƠNG PHÁP & HIỂN THỊ
         const recommendedDeMethod = currentActiveDeMethod
+            || (PORTFOLIOS_CONFIG && PORTFOLIOS_CONFIG[currentActivePortfolio]?.deMethod)
+            || fullData?.crossHedgingPortfolio?.selectedMethod
             || fullData?.strategicPortfolioGovernor?.recommendedPortfolio?.deMethod
             || streakDeAdv?.selectedMethod
-            || 'pentaCoreDe';
+            || 'deMarkovGapHazard';
         let activeDeMethodKey = recommendedDeMethod;
 
         // Đánh dấu huy hiệu (⭐ Đề Xuất) cho đúng phương pháp được bộ điều phối chọn hôm nay
@@ -1886,7 +1889,7 @@
             }
 
             const rowsHtml = matrix.map(cand => {
-                const isChosen = cand.isChosen || (cand.methodId === activeDeMethodKey);
+                const isChosen = (cand.methodId === activeDeMethodKey);
                 const streak = cand.curStreak;
                 const isWinStreak = streak > 0;
                 const streakBadgeClass = isWinStreak
@@ -3768,6 +3771,52 @@
                 `;
             }
 
+            if (currentDiaryCategory === 'all' && (info.chRow || info.chTotalProfitK != null)) {
+                const ch = info.chRow || {};
+                const dePnl = (info.chDePnlK != null ? info.chDePnlK : (ch.dePnlK != null ? ch.dePnlK : (info.deProfitK || 0)));
+                const loPnl = (info.chLoPnlK != null ? info.chLoPnlK : (ch.loPnlK != null ? ch.loPnlK : (info.lo4ProfitK || 0)));
+                const xienPnl = (info.chXienPnlK != null ? info.chXienPnlK : (ch.xienPnlK != null ? ch.xienPnlK : (info.lo4Xien4ProfitK || 0)));
+                const totProfit = (info.chTotalProfitK != null ? info.chTotalProfitK : (ch.totalProfitK != null ? ch.totalProfitK : (dePnl + loPnl + xienPnl)));
+                const cumTot = (info.chCumProfitK != null ? info.chCumProfitK : (ch.cumulativeProfitK != null ? ch.cumulativeProfitK : (info.cumProfitK || totProfit)));
+                const deMethodTitle = ch.details?.p1Method === 'deMarkovGapHazard' ? 'Đề Markov Bậc 2 & Gap Hazard' : 'Đề Tinh Tuyển VIP';
+                return `
+                    <div>
+                        <div class="border-b border-slate-800 pb-2 mb-2.5">
+                            <div class="font-black text-white text-xs flex items-center gap-1.5">
+                                <i class="bi bi-shield-check text-amber-400"></i> Combo Bù Trừ Dòng Tiền Chéo — Ngày ${formatDateVi(info.date)}
+                            </div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">
+                                Đối soát dòng tiền 3 trụ cột thực chiến phối hợp bảo toàn vốn
+                            </div>
+                        </div>
+                        <div class="space-y-1.5 text-xs font-mono">
+                            <div class="flex justify-between items-center py-0.5">
+                                <span class="text-slate-400">💎 ${deMethodTitle}:</span>
+                                <span class="${dePnl >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400'}">${moneyM(dePnl, { signed: true })} <span class="text-[9px] text-amber-300 font-bold">(LK: ${moneyM(info.chCumDeProfitK ?? dePnl, { signed: true })})</span></span>
+                            </div>
+                            <div class="flex justify-between items-center py-0.5">
+                                <span class="text-slate-400">🔥 Lô Hội Tụ 4 Động Cơ:</span>
+                                <span class="${loPnl >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400'}">${moneyM(loPnl, { signed: true })} <span class="text-[9px] text-indigo-300 font-bold">(LK: ${moneyM(info.chCumLoProfitK ?? loPnl, { signed: true })})</span></span>
+                            </div>
+                            <div class="flex justify-between items-center py-0.5">
+                                <span class="text-slate-400">🎲 Dàn Xiên Quây 11 Vé:</span>
+                                <span class="${xienPnl >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400'}">${moneyM(xienPnl, { signed: true })} <span class="text-[9px] text-purple-300 font-bold">(LK: ${moneyM(info.chCumXienProfitK ?? xienPnl, { signed: true })})</span></span>
+                            </div>
+                        </div>
+                        <div class="mt-2.5 pt-2 border-t border-slate-800 space-y-1 font-mono">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-slate-300">Tổng Lãi Ròng Combo (Profit_total):</span>
+                                <strong class="text-sm font-black ${totProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(totProfit, { signed: true })}</strong>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-400">Lũy Kế Combo Toàn Bộ Mốc:</span>
+                                <strong class="font-bold ${cumTot >= 0 ? 'text-indigo-400' : 'text-rose-400'}">${moneyM(cumTot, { signed: true })}</strong>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
             return `
                 <div>
                     <div class="border-b border-slate-800 pb-2 mb-2.5">
@@ -4597,7 +4646,7 @@
                         <th class="px-3 py-3">💎 Đề Tinh Tuyển VIP</th>
                         <th class="px-3 py-3">🔥 Lô Ghép 4 Động Cơ</th>
                         <th class="px-3 py-3">🎲 Dàn Xiên Quây</th>
-                        <th class="px-3 py-3">👑 Dàn Xiên 5 (5 Dàn Quây 4)</th>
+                        <th class="px-3 py-3">👑 Dàn Xiên 5 (Theo Dõi Độc Lập)</th>
                         <th class="px-3 py-3 text-right">Lãi/Lỗ Tổng Hợp (Profit_total)</th>
                         <th class="px-3 py-3 text-right">Lũy Kế Mốc</th>
                     </tr>
@@ -5211,22 +5260,54 @@
                 cumXien4ProfitK: cumLo4Xien4ProfitK
             });
 
+            const isCrossDeMarkov = (chRow?.details?.p1Method === 'deMarkovGapHazard');
+            let diaryDeMethodName = deMethodName;
+            let diaryDeSubTierLabel = deSubTierLabel;
+            let diaryDeNumbers = deNumbers;
+            let diaryDeX2Nums = deX2Nums;
+            let diaryDeX1Nums = deX1Nums;
+            let diaryDeStakeK = deStakeK;
+            let diaryDeProfitK = deProfitK;
+            let diaryDeIsHit = deIsHitFinal;
+            let diaryDeIsX2 = Boolean(resolvedDe.isX2);
+            let diaryDeIsX1 = Boolean(resolvedDe.isX1);
+            let diaryDeHitType = resolvedDe.hitType;
+
+            if (isCrossDeMarkov && chRow) {
+                diaryDeMethodName = '🔮 Đề Markov Bậc 2 & Gap Hazard';
+                const markovNums = markovRow?.numbers || payload?.deMarkovGapHazard?.latestRecommendation?.numbers || payload?.streakAwareDeAdvisor?.markovAdvisor?.latestRecommendation?.numbers || [];
+                const markovVip = markovRow?.vipNumbers || payload?.deMarkovGapHazard?.latestRecommendation?.vipNumbers || markovNums.slice(0, 10);
+                const markovSingles = markovRow?.backupNumbers || payload?.deMarkovGapHazard?.latestRecommendation?.backupNumbers || markovNums.filter(n => !markovVip.includes(n));
+                if (markovNums.length > 0) {
+                    diaryDeNumbers = markovNums.map(number);
+                    diaryDeX2Nums = markovVip.map(number);
+                    diaryDeX1Nums = markovSingles.map(number);
+                }
+                diaryDeStakeK = chRow.deStakeK || 6075;
+                diaryDeProfitK = chRow.dePnlK != null ? chRow.dePnlK : (chRow.deProfitK || 0);
+                diaryDeIsHit = Boolean(chRow.isDeHit);
+                diaryDeIsX2 = Boolean(chRow.isVipHit);
+                diaryDeIsX1 = Boolean(chRow.isDeHit && !chRow.isVipHit);
+                diaryDeHitType = diaryDeIsX2 ? 'win_x3' : (diaryDeIsHit ? 'win_x1' : 'loss');
+                diaryDeSubTierLabel = `Dàn ${diaryDeNumbers.length || 43} số (${diaryDeX2Nums.length || 10} VIP X3 · ${diaryDeX1Nums.length || 33} X1)`;
+            }
+
             diaryDetailsMap[date] = {
                 de: {
                     date,
-                    methodName: deMethodName,
-                    subTierLabel: deSubTierLabel,
-                    numbers: deNumbers,
-                    x2Nums: deX2Nums,
-                    x1Nums: deX1Nums,
+                    methodName: diaryDeMethodName,
+                    subTierLabel: diaryDeSubTierLabel,
+                    numbers: diaryDeNumbers,
+                    x2Nums: diaryDeX2Nums,
+                    x1Nums: diaryDeX1Nums,
                     actualSpecial: actualSpecialStr,
-                    isHit: deIsHitFinal,
-                    isX2: Boolean(resolvedDe.isX2),
-                    isX1: Boolean(resolvedDe.isX1),
-                    hitType: resolvedDe.hitType,
-                    stakeK: deStakeK,
-                    profitK: deProfitK,
-                    payoutK: deIsHitFinal ? (deStakeK + deProfitK) : 0,
+                    isHit: diaryDeIsHit,
+                    isX2: diaryDeIsX2,
+                    isX1: diaryDeIsX1,
+                    hitType: diaryDeHitType,
+                    stakeK: diaryDeStakeK,
+                    profitK: diaryDeProfitK,
+                    payoutK: diaryDeIsHit ? (diaryDeStakeK + diaryDeProfitK) : 0,
                     switchPhase: resolvedDe.switchPhase || null,
                     switchReason: resolvedDe.switchReason || null,
                     cumDeProfitK: cumCrossDeProfitK || cumDeProfitK
@@ -5306,6 +5387,15 @@
                 },
                 total: {
                     date,
+                    chRow,
+                    chDePnlK,
+                    chLoPnlK,
+                    chXienPnlK,
+                    chTotalProfitK,
+                    chCumProfitK,
+                    chCumDeProfitK: cumCrossDeProfitK,
+                    chCumLoProfitK: cumCrossLoProfitK,
+                    chCumXienProfitK: cumCrossXienProfitK,
                     deProfitK,
                     stdProfitK,
                     x2ProfitK,
@@ -6419,28 +6509,62 @@
                 `;
             }
 
-            const dePnlVal = (deInfo?.profitK != null ? deInfo.profitK : (r.deProfitK || 0));
-            const loPnlVal = (lo4Info?.dayLotoProfitK != null ? lo4Info.dayLotoProfitK : (r.lo4Engine?.dayLotoProfitK || 0));
-            const xienPnlVal = (lo4Xien4Info?.profitK != null ? lo4Xien4Info.profitK : (r.lo4Xien4?.profitK || 0));
+            const chRow = r.chRow;
+            const isAllCat = (currentDiaryCategory === 'all');
+
+            const dePnlVal = (isAllCat && chRow && chRow.dePnlK != null)
+                ? chRow.dePnlK
+                : (deInfo?.profitK != null ? deInfo.profitK : (r.deProfitK || 0));
+            const loPnlVal = (isAllCat && chRow && chRow.loPnlK != null)
+                ? chRow.loPnlK
+                : (lo4Info?.dayLotoProfitK != null ? lo4Info.dayLotoProfitK : (r.lo4Engine?.dayLotoProfitK || 0));
+            const xienPnlVal = (isAllCat && chRow && chRow.xienPnlK != null)
+                ? chRow.xienPnlK
+                : (lo4Xien4Info?.profitK != null ? lo4Xien4Info.profitK : (r.lo4Xien4?.profitK || 0));
+
             const loXien5Info = r.loXien5Info || r.loXien5 || {};
             const loXien5H5 = loXien5Info.h5 || 0;
             const evalX5Row = evaluateXien5_5DanX4(loXien5H5);
             const loXien5ProfitK = loXien5Info.profitK != null ? loXien5Info.profitK : (loXien5Info.x5ProfitK != null ? loXien5Info.x5ProfitK : evalX5Row.profitK);
 
-            const dayTotalVal = dePnlVal + loPnlVal + xienPnlVal + loXien5ProfitK;
-            const cumDeVal = (r.cumDeProfitK != null ? r.cumDeProfitK : 0);
-            const cumLoVal = (r.cumLo4ProfitK != null ? r.cumLo4ProfitK : 0);
-            const cumXien4Val = (r.cumLo4Xien4ProfitK != null ? r.cumLo4Xien4ProfitK : 0);
+            const dayTotalVal = (isAllCat && chRow && chRow.totalProfitK != null)
+                ? chRow.totalProfitK
+                : (isAllCat
+                    ? (dePnlVal + loPnlVal + xienPnlVal)
+                    : (dePnlVal + loPnlVal + xienPnlVal + loXien5ProfitK));
+
+            const cumDeVal = (isAllCat && r.chCumDeProfitK != null)
+                ? r.chCumDeProfitK
+                : (r.cumDeProfitK != null ? r.cumDeProfitK : 0);
+            const cumLoVal = (isAllCat && r.chCumLoProfitK != null)
+                ? r.chCumLoProfitK
+                : (r.cumLo4ProfitK != null ? r.cumLo4ProfitK : 0);
+            const cumXien4Val = (isAllCat && r.chCumXienProfitK != null)
+                ? r.chCumXienProfitK
+                : (r.cumLo4Xien4ProfitK != null ? r.cumLo4Xien4ProfitK : 0);
             const cumXien5Val = (r.cumLoXien5ProfitK != null ? r.cumLoXien5ProfitK : (loXien5Info.cumLoXien5ProfitK || 0));
-            const cumProfitVal = cumDeVal + cumLoVal + cumXien4Val + cumXien5Val;
+
+            const cumProfitVal = (isAllCat && r.chCumProfitK != null)
+                ? r.chCumProfitK
+                : (cumDeVal + cumLoVal + cumXien4Val + (isAllCat ? 0 : cumXien5Val));
 
             const isDayWin = dayTotalVal > 0;
-            const specialNum = (deInfo?.actualSpecial != null ? number(deInfo.actualSpecial) : (r.chRow?.special != null ? number(r.chRow.special) : '--'));
-            const isDeHit = Boolean(deInfo?.isHit || r.deIsHit);
-            const isVipHit = Boolean(deInfo?.isX3 || deInfo?.isX2 || r.deIsX2 || deInfo?.hitType === 'win_x3' || deInfo?.hitType === 'win_x2');
+            const specialNum = (isAllCat && chRow?.special != null)
+                ? number(chRow.special)
+                : (deInfo?.actualSpecial != null ? number(deInfo.actualSpecial) : (r.chRow?.special != null ? number(r.chRow.special) : '--'));
+            const isDeHit = (isAllCat && chRow && chRow.isDeHit != null)
+                ? Boolean(chRow.isDeHit)
+                : Boolean(deInfo?.isHit || r.deIsHit);
+            const isVipHit = (isAllCat && chRow && chRow.isVipHit != null)
+                ? Boolean(chRow.isVipHit)
+                : Boolean(deInfo?.isX3 || deInfo?.isX2 || r.deIsX2 || deInfo?.hitType === 'win_x3' || deInfo?.hitType === 'win_x2');
 
             const loHitsCount = r.chRow?.loHits != null ? r.chRow.loHits : (lo4Info?.dayLotoHits || 0);
             const xienHitsCount = r.chRow?.uniqueTop4Hits != null ? r.chRow.uniqueTop4Hits : (lo4Xien4Info?.h4 || 0);
+
+            const deMethodTitle = (isAllCat && chRow?.details?.p1Method === 'deMarkovGapHazard')
+                ? 'Đề Markov Bậc 2 & Gap Hazard'
+                : (deInfo?.methodName || 'Đề Markov Bậc 2 & Gap Hazard');
 
             const dayClass = dayTotalVal > 0 ? 'bg-emerald-50/40' : (dayTotalVal < -20000 ? 'bg-rose-50/20' : '');
 
@@ -6458,7 +6582,7 @@
                     <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="de">
                         <div class="flex items-center justify-between text-[11px] font-bold text-amber-950 gap-1 flex-wrap">
                             <span class="flex items-center gap-1">
-                                <i class="bi bi-gem-fill text-amber-500 text-[10px]"></i> <span>${escapeHtml(deInfo?.methodName || 'Đề Markov Bậc 2 & Gap Hazard')}</span>
+                                <i class="bi bi-gem-fill text-amber-500 text-[10px]"></i> <span>${escapeHtml(deMethodTitle)}</span>
                                 ${getSwitchPhaseBadgeHtml(deInfo?.switchPhase, deInfo?.switchReason)}
                             </span>
                             <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${dePnlVal >= 0 ? 'bg-amber-100 text-amber-900 ring-1 ring-amber-300' : 'bg-rose-100 text-rose-800'}">P&L: ${moneyM(dePnlVal, { signed: true })}</span>
@@ -6531,7 +6655,7 @@
                     <!-- Cột 5: Dàn Xiên 5 (5 Dàn Quây 4) -->
                     <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-indigo-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXien5">
                         <div class="flex items-center justify-between text-[11px] font-bold text-indigo-950 gap-1">
-                            <span class="flex items-center gap-1"><i class="bi bi-stars text-indigo-600 text-[10px]"></i> 5 Dàn Xiên 4 (55M)</span>
+                            <span class="flex items-center gap-1"><i class="bi bi-stars text-indigo-600 text-[10px]"></i> 5 Dàn Xiên 4 (55M) ${isAllCat ? '<span class="text-[9px] text-slate-400 font-normal lowercase">(độc lập)</span>' : ''}</span>
                             <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${loXien5ProfitK >= 0 ? 'bg-indigo-100 text-indigo-900 ring-1 ring-indigo-300' : 'bg-rose-100 text-rose-800'}">P&L: ${moneyM(loXien5ProfitK, { signed: true })}</span>
                         </div>
                         <div class="flex items-center justify-between gap-1.5 mt-0.5 text-xs">
