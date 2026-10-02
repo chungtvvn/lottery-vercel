@@ -416,7 +416,7 @@
 
     function resolvePendingRecommendation(p, forcedPortfolioKey) {
         const payloadData = p || payload || {};
-        const key = forcedPortfolioKey || currentActivePortfolio || payloadData?.strategicPortfolioGovernor?.recommendedPortfolioId || 'steadyAccumulator';
+        const key = forcedPortfolioKey || currentActivePortfolio || (payloadData?.crossHedgingPortfolio ? 'maxProfit' : (payloadData?.strategicPortfolioGovernor?.recommendedPortfolioId || 'maxProfit'));
         const cfg = PORTFOLIOS_CONFIG[key] || PORTFOLIOS_CONFIG.steadyAccumulator;
         const deMethodKey = currentActiveDeMethod || cfg.deMethod || 'pentaCoreDe';
         const loEngineKey = currentActiveLoEngine || cfg.loEngine || 'quad';
@@ -2922,8 +2922,8 @@
                             </div>
                         </div>
                         <div class="text-right shrink-0">
-                            <span class="inline-flex items-center gap-1 rounded-lg ${isHit ? (info.isX3 || info.isX2 ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black shadow-xs ring-1 ring-white' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-black') : 'bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold'} px-2 py-0.5 text-[11px]">
-                                ${isHit ? (info.isX3 || info.isX2 ? `🎉 Trúng VIP X3 (${moneyM(info.profitK, { signed: true })})` : `🎉 Trúng ĐB (${moneyM(info.profitK, { signed: true })})`) : '❌ Trượt'}
+                            <span class="inline-flex items-center gap-1 rounded-lg ${isHit ? (info.isX3 || info.isX2 || info.hitType === 'win_x3' || info.hitType === 'win_x2' ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black shadow-xs ring-1 ring-white' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-black') : 'bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold'} px-2 py-0.5 text-[11px]">
+                                ${isHit ? (info.isX3 || info.isX2 || info.hitType === 'win_x3' || info.hitType === 'win_x2' ? `👑 Nổ VIP X3 (${moneyM(info.profitK, { signed: true })})` : `🎉 Trúng Đề X1 (${moneyM(info.profitK, { signed: true })})`) : `❌ Trượt (${moneyM(info.profitK, { signed: true })})`}
                             </span>
                             <div class="text-[10px] font-mono text-slate-400 mt-0.5">ĐB: <strong class="text-white font-bold">${actualSpec != null ? number(actualSpec) : '--'}</strong></div>
                         </div>
@@ -5567,10 +5567,11 @@
                     `;
                 }
 
+                const isVipX3 = Boolean(deInfo.isX3 || deInfo.isX2 || deInfo.hitType === 'win_x3' || deInfo.hitType === 'win_x2');
                 const dePill = deInfo.isHit
-                    ? (deInfo.isX2
-                        ? `<span class="inline-flex items-center gap-1 rounded bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black px-2.5 py-1 text-xs shadow-xs ring-1 ring-amber-500">🎉 Trúng X2 ${moneyM(deInfo.profitK, { signed: true })}</span>`
-                        : `<span class="inline-flex items-center gap-1 rounded bg-emerald-100 text-emerald-900 px-2 py-0.5 text-xs font-black">🎉 Trúng ĐB ${moneyM(deInfo.profitK, { signed: true })}</span>`)
+                    ? (isVipX3
+                        ? `<span class="inline-flex items-center gap-1 rounded bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black px-2.5 py-1 text-xs shadow-xs ring-1 ring-amber-500">👑 Nổ VIP X3 ${moneyM(deInfo.profitK, { signed: true })}</span>`
+                        : `<span class="inline-flex items-center gap-1 rounded bg-emerald-100 text-emerald-900 px-2 py-0.5 text-xs font-black">🎉 Trúng Đề X1 ${moneyM(deInfo.profitK, { signed: true })}</span>`)
                     : `<span class="inline-flex items-center gap-1 rounded bg-rose-100 text-rose-900 px-2 py-0.5 text-xs font-bold">❌ Trượt ${moneyM(deInfo.profitK, { signed: true })}</span>`;
 
                 const chipsHtml = (deInfo.numbers || []).slice(0, 16).map(n => {
@@ -6412,25 +6413,25 @@
                 `;
             }
 
-            const dePnlVal = (r.chDePnlK != null ? r.chDePnlK : (deInfo?.profitK || 0));
-            const loPnlVal = (r.chLoPnlK != null ? r.chLoPnlK : (lo4Info?.dayLotoProfitK || 0));
-            const xienPnlVal = (r.chXienPnlK != null ? r.chXienPnlK : (lo4Xien4Info?.profitK || 0));
-            const dayTotalVal = (r.chTotalProfitK != null ? r.chTotalProfitK : (r.dayTotalK || 0));
-            const cumProfitVal = (r.chCumProfitK != null ? r.chCumProfitK : (r.cumProfitK || 0));
-
-            const cumDeVal = (r.chCumDeProfitK != null ? r.chCumDeProfitK : (r.cumDeProfitK || 0));
-            const cumLoVal = (r.chCumLoProfitK != null ? r.chCumLoProfitK : (r.cumLo4ProfitK || 0));
-            const cumXien4Val = (r.chCumXienProfitK != null ? r.chCumXienProfitK : (r.cumLo4Xien4ProfitK || 0));
+            const dePnlVal = (deInfo?.profitK != null ? deInfo.profitK : (r.deProfitK || 0));
+            const loPnlVal = (lo4Info?.dayLotoProfitK != null ? lo4Info.dayLotoProfitK : (r.lo4Engine?.dayLotoProfitK || 0));
+            const xienPnlVal = (lo4Xien4Info?.profitK != null ? lo4Xien4Info.profitK : (r.lo4Xien4?.profitK || 0));
             const loXien5Info = r.loXien5Info || r.loXien5 || {};
             const loXien5H5 = loXien5Info.h5 || 0;
             const evalX5Row = evaluateXien5_5DanX4(loXien5H5);
             const loXien5ProfitK = loXien5Info.profitK != null ? loXien5Info.profitK : (loXien5Info.x5ProfitK != null ? loXien5Info.x5ProfitK : evalX5Row.profitK);
-            const cumXien5Val = (r.cumLoXien5ProfitK != null ? r.cumLoXien5ProfitK : (loXien5Info.cumLoXien5ProfitK || 0));
 
-            const isDayWin = (r.chRow ? r.chRow.isWin : (dayTotalVal > 0));
-            const specialNum = r.chRow?.special != null ? number(r.chRow.special) : (deInfo?.actualSpecial != null ? number(deInfo.actualSpecial) : '--');
-            const isDeHit = Boolean(r.chRow?.isDeHit || deInfo?.isHit);
-            const isVipHit = Boolean(r.chRow?.isVipHit);
+            const dayTotalVal = dePnlVal + loPnlVal + xienPnlVal + loXien5ProfitK;
+            const cumDeVal = (r.cumDeProfitK != null ? r.cumDeProfitK : 0);
+            const cumLoVal = (r.cumLo4ProfitK != null ? r.cumLo4ProfitK : 0);
+            const cumXien4Val = (r.cumLo4Xien4ProfitK != null ? r.cumLo4Xien4ProfitK : 0);
+            const cumXien5Val = (r.cumLoXien5ProfitK != null ? r.cumLoXien5ProfitK : (loXien5Info.cumLoXien5ProfitK || 0));
+            const cumProfitVal = cumDeVal + cumLoVal + cumXien4Val + cumXien5Val;
+
+            const isDayWin = dayTotalVal > 0;
+            const specialNum = (deInfo?.actualSpecial != null ? number(deInfo.actualSpecial) : (r.chRow?.special != null ? number(r.chRow.special) : '--'));
+            const isDeHit = Boolean(deInfo?.isHit || r.deIsHit);
+            const isVipHit = Boolean(deInfo?.isX3 || deInfo?.isX2 || r.deIsX2 || deInfo?.hitType === 'win_x3' || deInfo?.hitType === 'win_x2');
 
             const loHitsCount = r.chRow?.loHits != null ? r.chRow.loHits : (lo4Info?.dayLotoHits || 0);
             const xienHitsCount = r.chRow?.uniqueTop4Hits != null ? r.chRow.uniqueTop4Hits : (lo4Xien4Info?.h4 || 0);
@@ -6459,13 +6460,13 @@
                         <div class="flex items-center gap-1.5 mt-0.5">
                             <span class="text-xs text-slate-700">ĐB: <strong class="font-mono text-sm ${isDeHit ? 'text-emerald-600 font-black' : 'text-slate-800'}">${specialNum}</strong></span>
                             ${isVipHit
-                                ? `<span class="inline-flex items-center gap-1 rounded bg-amber-400 text-slate-950 font-black px-1.5 py-0.5 text-[10px] shadow-xs ring-1 ring-amber-500">👑 Nổ VIP</span>`
+                                ? `<span class="inline-flex items-center gap-1 rounded bg-amber-400 text-slate-950 font-black px-1.5 py-0.5 text-[10px] shadow-xs ring-1 ring-amber-500">👑 Nổ VIP X3</span>`
                                 : (isDeHit
-                                    ? `<span class="inline-flex items-center gap-1 rounded bg-emerald-100 text-emerald-900 px-1.5 py-0.5 text-[10px] font-black">🎉 Trúng Đề</span>`
+                                    ? `<span class="inline-flex items-center gap-1 rounded bg-emerald-100 text-emerald-900 px-1.5 py-0.5 text-[10px] font-black">🎉 Trúng Đề X1</span>`
                                     : `<span class="inline-flex items-center gap-1 rounded bg-rose-100 text-rose-900 px-1.5 py-0.5 text-[10px] font-bold">❌ Trượt</span>`)}
                         </div>
                         <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
-                            <span>${isVipHit ? '10 số VIP nổ giải ĐB' : (escapeHtml(deInfo?.subTierLabel || '10 VIP + 33 Dàn'))}</span>
+                            <span>${isVipHit ? 'Dàn VIP nổ giải ĐB (Ăn X3)' : (escapeHtml(deInfo?.subTierLabel || '10 VIP + 33 Dàn'))}</span>
                             <span class="diary-expand-indicator text-amber-700 font-bold underline flex items-center gap-0.5">Bấm xem dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
                         </div>
                         <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-amber-200/50 pt-0.5">
@@ -6749,10 +6750,12 @@
         // =========================================================================
         // 5 CHIẾN LƯỢC TỐI ĐA HÓA LỢI NHUẬN (STRATEGIC PORTFOLIOS CONTROLLER)
         // =========================================================================
-        const recommendedPortfolioId = fullData?.strategicPortfolioGovernor?.recommendedPortfolioId
-            || fullData?.streakAwareDeAdvisor?.latestRecommendation?.strategicPortfolio?.id
-            || currentActivePortfolio
-            || 'steadyAccumulator';
+        const recommendedPortfolioId = fullData?.crossHedgingPortfolio
+            ? 'maxProfit'
+            : (fullData?.strategicPortfolioGovernor?.recommendedPortfolioId
+                || fullData?.streakAwareDeAdvisor?.latestRecommendation?.strategicPortfolio?.id
+                || currentActivePortfolio
+                || 'maxProfit');
 
         currentActivePortfolio = recommendedPortfolioId;
 
