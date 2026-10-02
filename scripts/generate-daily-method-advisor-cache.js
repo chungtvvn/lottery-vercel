@@ -74,11 +74,29 @@ async function main() {
     if (!pendingSnapshot || pendingSnapshot.settled || pendingSnapshot.main?.numbers?.length !== service.BET_COUNT) {
         throw new Error(`Thiếu snapshot ngày kế tiếp ${expectedPredictionDate || 'unknown'} sau khi sinh Daily Advisor.`);
     }
+
+    const fs = require('fs');
+    const dataDir = path.join(__dirname, '..', 'data');
+    if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
+    }
+    fs.writeFileSync(path.join(dataDir, 'cached_daily_method_advisor.json'), JSON.stringify(cache));
+
     console.log(JSON.stringify({
-        file: 'lib/data/statistics/cached_daily_method_advisor.json',
+        files: [
+            'lib/data/statistics/cached_daily_method_advisor.json',
+            'data/cached_daily_method_advisor.json'
+        ],
         latestDataDate: cache.latestDataDate,
         records: cache.records.length,
         pendingPredictionDate: pendingSnapshot.predictionDate,
+        crossHedgingPortfolio: {
+            targetDate: cache.crossHedgingPortfolio?.targetDate,
+            mode: cache.crossHedgingPortfolio?.mode,
+            sizingMultiplier: cache.crossHedgingPortfolio?.sizingMultiplier,
+            dailyPositiveProfitRate: cache.crossHedgingPortfolio?.metrics?.dailyPositiveProfitRate,
+            cumulativeRoi: cache.crossHedgingPortfolio?.metrics?.cumulativeRoi
+        },
         main: cache.summary.main,
         hybrid: cache.summary.hybrid
     }, null, 2));

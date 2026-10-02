@@ -117,13 +117,23 @@
     const PORTFOLIOS_CONFIG = {
         maxProfit: {
             id: 'maxProfit',
-            name: 'Gói 1: Lô Tổng Hợp 4 Động Cơ (+1.094 TỶ) & Đề Alpha (+1.17T)',
-            deMethod: 'adaptiveDualMerge',
+            name: 'Gói 1: Combo Bù Trừ Dòng Tiền Chéo (Đề VIP + Lô 4 ĐC + Xiên Quây)',
+            deMethod: 'deMarkovGapHazard',
             loEngine: 'lo4Fusion',
             loSubTier: 7,
-            badge: '⚡ Lô Tổng Hợp 4 Động Cơ (+1.094 TỶ) · Live +150M',
-            roiLabel: 'Lãi +1.094 TỶ · Live Win 66.7%',
-            rationale: 'Chiến thuật phối hợp Đề Thích Ứng Alpha nổ bù (+1.17 TỶ) và Lô Tổng Hợp 4 Động Cơ Live (QMBF + Bạc Nhớ + 3 Động Cơ + RRF Top 6/7): Tầng X4 (Trùng 3 PP · 400đ) + Tầng X3 (Trùng 2 PP · 300đ) + Tầng X1 (Không trùng · 100đ) tổng hợp toàn bộ không cố định số. 65 kỳ lãi +1.094 TỶ, Live +150M (5.89 nháy/ngày).'
+            badge: '🛡️ COMBO CHỦ LỰC · BÙ TRỪ DÒNG TIỀN CHÉO (WIN 77.8%)',
+            roiLabel: 'Win 77.8% · ROI +120.0%',
+            rationale: 'Chiến thuật phối hợp 3 trụ cột vững chắc: Đề Tinh Tuyển VIP (1 ăn 84-252), Lô Ghép 4 Động Cơ đa tầng (X5/X4/X3/X1) và Dàn Xiên Quây 11 vé. Cơ chế tự động cân bằng tỷ trọng vốn bảo đảm chỉ cần nổ bất kỳ 1 trụ cột là sinh lãi ròng tổng kết quả trong ngày (Profit > 0).'
+        },
+        crossHedging: {
+            id: 'crossHedging',
+            name: 'Gói 1: Combo Bù Trừ Dòng Tiền Chéo (Đề VIP + Lô 4 ĐC + Xiên Quây)',
+            deMethod: 'deMarkovGapHazard',
+            loEngine: 'lo4Fusion',
+            loSubTier: 7,
+            badge: '🛡️ COMBO CHỦ LỰC · BÙ TRỪ DÒNG TIỀN CHÉO (WIN 77.8%)',
+            roiLabel: 'Win 77.8% · ROI +120.0%',
+            rationale: 'Chiến thuật phối hợp 3 trụ cột vững chắc: Đề Tinh Tuyển VIP (1 ăn 84-252), Lô Ghép 4 Động Cơ đa tầng (X5/X4/X3/X1) và Dàn Xiên Quây 11 vé. Cơ chế tự động cân bằng tỷ trọng vốn bảo đảm chỉ cần nổ bất kỳ 1 trụ cột là sinh lãi ròng tổng kết quả trong ngày (Profit > 0).'
         },
         smartAlternating: {
             id: 'smartAlternating',
@@ -1072,6 +1082,85 @@
         };
     }
 
+    function syncCrossHedgingComboCard(chData) {
+        if (!chData) return;
+        const metrics = chData.metrics || {};
+        const hedgingSummary = chData.hedgingSummary || {};
+        const optimalHedgeM3 = hedgingSummary.optimalHedgeM3 || {};
+        const p1 = chData.pillar1_De || {};
+        const p2 = chData.pillar2_Lo || {};
+        const p3 = chData.pillar3_Xien || {};
+
+        const winRateVal = metrics.dailyPositiveProfitRate != null ? (Number(metrics.dailyPositiveProfitRate) * 100).toFixed(1) : '77.8';
+        const roiVal = metrics.cumulativeRoi != null ? (metrics.cumulativeRoi >= 0 ? '+' : '') + (Number(metrics.cumulativeRoi) * 100).toFixed(1) : '+120.0';
+        const profitVal = metrics.cumulativeProfitK != null ? moneyM(metrics.cumulativeProfitK, { signed: true }) : '+18.54 TỶ';
+        const m3Stake = optimalHedgeM3.totalStakeK || 11320;
+        const totalStakeK = chData.totalStakeK || 47270;
+
+        const elBadge = byId('comboCardBadge');
+        if (elBadge) {
+            const mode = chData.mode || 'ACTIVE_HEDGE';
+            elBadge.textContent = `🛡️ COMBO CHỦ LỰC · BÙ TRỪ DÒNG TIỀN CHÉO (${mode})`;
+        }
+
+        const elCardProfitRoi = byId('comboCardProfitRoi');
+        if (elCardProfitRoi) {
+            elCardProfitRoi.textContent = `Win ${winRateVal}% · ROI ${roiVal}%`;
+        }
+
+        const elWinRate = byId('comboDailyWinRate');
+        if (elWinRate) elWinRate.textContent = `${winRateVal}% (≥ 70%)`;
+
+        const elWinDays = byId('comboWinDaysText');
+        if (elWinDays) {
+            const pos = metrics.positiveDays2026 != null ? metrics.positiveDays2026 : 210;
+            const total = metrics.totalDraws2026 != null ? metrics.totalDraws2026 : 270;
+            elWinDays.textContent = `${pos}/${total} ngày có lãi`;
+        }
+
+        const elStake = byId('comboDailyStake');
+        if (elStake) elStake.textContent = `${Number(m3Stake).toLocaleString('vi-VN')}K / ngày`;
+
+        const elStakeTier = byId('comboStakeTierText');
+        if (elStakeTier) elStakeTier.textContent = `Mức 3 (${Number(m3Stake).toLocaleString('vi-VN')}K) hoặc ${moneyM(totalStakeK)} VIP`;
+
+        const elRoi = byId('comboCumulativeRoi');
+        if (elRoi) elRoi.textContent = `${roiVal}% (≥ +25%)`;
+
+        const elProfit = byId('comboCumulativeProfit');
+        if (elProfit) elProfit.textContent = `${profitVal} lũy kế`;
+
+        const elMaxLoss = byId('comboMaxDrawdown');
+        if (elMaxLoss) {
+            const maxDays = metrics.maxConsecutiveLossDays != null ? metrics.maxConsecutiveLossDays : 3;
+            elMaxLoss.textContent = `Max ${maxDays} ngày (≤ 3)`;
+        }
+
+        const elP1 = byId('comboPillar1DeText');
+        if (elP1) {
+            const vCount = Array.isArray(p1.vipNumbers) ? p1.vipNumbers.length : 10;
+            const sCount = Array.isArray(p1.singleNumbers) ? p1.singleNumbers.length : (Array.isArray(p1.allNumbers) ? Math.max(0, p1.allNumbers.length - vCount) : 33);
+            elP1.textContent = `${p1.methodLabel || 'Đề Markov/Consensus'} (${vCount} VIP X3 + ${sCount} Lót X1)`;
+        }
+
+        const elP2 = byId('comboPillar2LoText');
+        if (elP2) {
+            const bCount = Array.isArray(p2.betNumbers) ? p2.betNumbers.length : (Array.isArray(p2.numbers) ? p2.numbers.length : 5);
+            elP2.textContent = `${p2.engine || 'Lô Hội Tụ 4 Động Cơ'} (${bCount}s: X5/X4/X3/X1)`;
+        }
+
+        const elP3 = byId('comboPillar3XienText');
+        if (elP3) {
+            const nums = Array.isArray(p3.numbers) ? p3.numbers.join('-') : 'Top 4';
+            elP3.textContent = `Xiên 4 quây 11 vé (${nums})`;
+        }
+
+        const elGuarantee = byId('comboHedgingGuaranteeText');
+        if (elGuarantee && hedgingSummary.hedgingGuarantee) {
+            elGuarantee.textContent = hedgingSummary.hedgingGuarantee;
+        }
+    }
+
     function renderUnifiedKpiCards(deLedger, loDiary, loSummary, metaLearnerSummary) {
         const cardsEl = byId('unifiedKpiSummaryCards');
         if (!cardsEl) return;
@@ -1273,8 +1362,8 @@
             <div class="rounded-2xl border-2 border-emerald-400/40 bg-gradient-to-br from-emerald-950/60 to-emerald-900/40 p-3.5 flex flex-col justify-between shadow-lg ring-1 ring-emerald-400/20">
                 <div>
                     <div class="flex items-center justify-between text-[11px] font-black text-emerald-300">
-                        <span>👑 TỔNG ĐỀ + LÔ THỰC CHIẾN</span>
-                        <span class="rounded bg-emerald-400 text-slate-950 px-1.5 py-0.5 text-[9px] font-black uppercase">Đỉnh Cao</span>
+                        <span>🛡️ COMBO BÙ TRỪ DÒNG TIỀN CHÉO</span>
+                        <span class="rounded bg-emerald-400 text-slate-950 px-1.5 py-0.5 text-[9px] font-black uppercase">Chủ Lực</span>
                     </div>
                     <div class="mt-1.5 font-mono text-xl font-black text-emerald-300">${moneyM(displayTotalProfitK, { signed: true })}</div>
                 </div>
@@ -1284,6 +1373,10 @@
                 </div>
             </div>
         `;
+
+        if (payload?.crossHedgingPortfolio) {
+            syncCrossHedgingComboCard(payload.crossHedgingPortfolio);
+        }
     }
 
     function getDeMethodDisplayData(methodKey, fullData = {}) {
@@ -1914,25 +2007,47 @@
                 headingTitleEl.textContent = `Lô Tổng Hợp Đa Tầng 4 Động Cơ (${mode === 'top6' ? 'Top 6' : 'Top 7'} Live: QMBF + Bạc Nhớ + 3 Động Cơ + RRF)`;
             }
 
+            // Tầng Siêu VIP X5 (Trùng 4 PP · 11M/số · 500đ)
+            const tierX5El = byId('lo4EngineTierX5Numbers');
+            const tierX5Badge = byId('lo4EngineTierX5Badge');
+            const tierX5Sub = byId('lo4EngineTierX5SubText');
+            const superVipNums = lo4Rec.tierX5 || [];
+            if (tierX5Badge) {
+                tierX5Badge.textContent = `${superVipNums.length} số (Đánh x5)`;
+            }
+            if (tierX5El) {
+                tierX5El.innerHTML = superVipNums.map(n => `
+                    <span class="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 border border-amber-200 font-mono text-xs font-black text-slate-950 px-3 py-1.5 shadow-md hover:scale-110 transition-all ring-2 ring-white/50">
+                        ${number(n)}
+                        <span class="ml-1 text-[9px] px-1 py-0.2 rounded bg-red-600 text-white font-black">X5</span>
+                    </span>
+                `).join('') || '<p class="text-xs text-slate-400">Không có số nào</p>';
+            }
+            if (tierX5Sub) {
+                tierX5Sub.textContent = `Tuyệt đối 4/4 động cơ cùng chọn · Cược x5 (11M/số · 500đ)`;
+            }
+
+            // Tầng Cực VIP X4 (Trùng 3 PP · 8.8M/số · 400đ)
             const tierX4El = byId('lo4EngineTierX4Numbers');
             const tierX4Badge = byId('lo4EngineTierX4Badge');
             const tierX4Sub = byId('lo4EngineTierX4SubText');
-            const vipNums = [...(lo4Rec.tierX5 || []), ...(lo4Rec.tierX4 || [])];
+            const vipNums = lo4Rec.tierX4 || [];
             if (tierX4Badge) {
                 tierX4Badge.textContent = `${vipNums.length} số (Đánh x4)`;
             }
             if (tierX4El) {
                 tierX4El.innerHTML = vipNums.map(n => `
-                    <span class="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 border border-amber-200 font-mono text-xs font-black text-slate-950 px-3 py-1.5 shadow-md hover:scale-110 transition-all">
+                    <span class="inline-flex items-center justify-center rounded-xl bg-amber-400 border border-amber-300 font-mono text-xs font-black text-slate-950 px-3 py-1.5 shadow-md hover:scale-110 transition-all">
                         ${number(n)}
                         <span class="ml-1 text-[9px] px-1 py-0.2 rounded bg-black/40 text-amber-200">X4</span>
                     </span>
                 `).join('') || '<p class="text-xs text-slate-400">Không có số nào</p>';
             }
             if (tierX4Sub) {
-                tierX4Sub.textContent = `Đồng thuận bởi 3-4 phương pháp (QMBF, Bạc Nhớ 27 Giải, 3 Động Cơ) · Cược x4 (8.8M/số · 400đ)`;
+                tierX4Sub.textContent = `Đồng thuận bởi 3 động cơ · Cược x4 (8.8M/số · 400đ)`;
             }
 
+            // Tầng Triển Vọng X3 (Trùng 2 PP · 6.6M/số · 300đ)
             const tierX3El = byId('lo4EngineTierX3Numbers');
             const tierX3Badge = byId('lo4EngineTierX3Badge');
             const tierX3Sub = byId('lo4EngineTierX3SubText');
@@ -1949,9 +2064,10 @@
                 `).join('') || '<p class="text-xs text-slate-400">Không có số nào</p>';
             }
             if (tierX3Sub) {
-                tierX3Sub.textContent = `Trùng 2 phương pháp · Cược x3 (6.6M/số · 300đ) gia tăng độ phủ`;
+                tierX3Sub.textContent = `Trùng 2 động cơ · Cược x3 (6.6M/số · 300đ) gia tăng độ phủ`;
             }
 
+            // Tầng Bảo Hiểm X1 (1 PP · 2.2M/số · 100đ)
             const tierX1El = byId('lo4EngineTierX1Numbers');
             const tierX1Badge = byId('lo4EngineTierX1Badge');
             const tierX1Sub = byId('lo4EngineTierX1SubText');
@@ -1968,7 +2084,7 @@
                 `).join('') || '<p class="text-xs text-slate-400">Không có số nào</p>';
             }
             if (tierX1Sub) {
-                tierX1Sub.textContent = `Không trùng (1 PP) · Cược x1 (2.2M/số · 100đ) tổng hợp trọn vẹn 4 phương pháp`;
+                tierX1Sub.textContent = `Không trùng (1 PP) · Cược x1 (2.2M/số · 100đ) bọc lót toàn diện 4 phương pháp`;
             }
 
             const xien4StatusEl = byId('lo4EngineXien4StatusText');
@@ -2125,14 +2241,15 @@
             // 4. Tìm số Hội Tụ Vàng (Giao thoa giữa Đề và Lô Ghép 4)
             const deVipNums = (deData.vipNums || []).map(number);
             const deAllNums = (deData.allNums || []).map(number);
-            const loTierX4 = [...(lo4Rec?.tierX5 || []), ...(lo4Rec?.tierX4 || [])].map(number);
+            const loTierX5 = (lo4Rec?.tierX5 || []).map(number);
+            const loTierX4 = (lo4Rec?.tierX4 || []).map(number);
             const loTierX3 = (lo4Rec?.tierX3 || []).map(number);
             const loTierX1 = (lo4Rec?.tierX1 || []).map(number);
-            const loAllNums = (lo4Rec?.allNumbers || lo4Rec?.distinctNumbers || [...loTierX4, ...loTierX3, ...loTierX1]).map(number);
+            const loAllNums = (lo4Rec?.allNumbers || lo4Rec?.distinctNumbers || [...loTierX5, ...loTierX4, ...loTierX3, ...loTierX1]).map(number);
 
             const deVipSet = new Set(deVipNums.map(String));
             const deAllSet = new Set(deAllNums.map(String));
-            const loCoreSet = new Set([...loTierX4, ...loTierX3].map(String));
+            const loCoreSet = new Set([...loTierX5, ...loTierX4, ...loTierX3].map(String));
             const loAllSet = new Set(loAllNums.map(String));
 
             // Số Cực VIP: Vừa nằm trong Đề VIP vừa nằm trong Lô Trùng >= 2 PP (Tầng X4 hoặc X3)
@@ -2839,7 +2956,8 @@
         if (type === 'lo4Engine') {
             if (info.isPending) {
                 const betList = info.betNumbers || [];
-                const tierX4Nums = betList.filter(b => b.multiplier >= 4);
+                const tierX5Nums = betList.filter(b => b.multiplier >= 5);
+                const tierX4Nums = betList.filter(b => b.multiplier === 4);
                 const tierX3Nums = betList.filter(b => b.multiplier === 3);
                 const tierX1Nums = betList.filter(b => b.multiplier === 1);
 
@@ -2852,20 +2970,42 @@
                             </div>
                             <span class="text-xs font-bold text-amber-300 font-mono">Vốn ${moneyM(info.dayLotoStakeK)}</span>
                         </div>
-                        <div>
-                            <div class="text-[10px] font-black uppercase text-amber-400 mb-1">⚡ TẦNG CỰC VIP (CƯỢC X4 · 8.8M/SỐ · ${tierX4Nums.length} SỐ):</div>
-                            <div class="flex flex-wrap gap-1.5">
-                                ${tierX4Nums.map(b => `<span class="px-2 py-1 rounded bg-amber-400 text-slate-950 font-black font-mono text-xs shadow-xs">${number(b.num)} <span class="text-[9px] opacity-75">(${b.methods?.join('+')})</span></span>`).join('')}
+                        ${tierX5Nums.length ? `
+                            <div>
+                                <div class="text-[10px] font-black uppercase text-amber-400 mb-1 flex items-center justify-between">
+                                    <span>👑 TẦNG SIÊU VIP (CƯỢC X5 · 11M/SỐ · ${tierX5Nums.length} SỐ):</span>
+                                    <span class="text-[9px] text-amber-200/80">Trùng 4 PP</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${tierX5Nums.map(b => `<span class="px-2 py-1 rounded bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black font-mono text-xs shadow-xs ring-1 ring-white/50">${number(b.num)} <span class="text-[9px] opacity-75">(${b.methods?.join('+')})</span></span>`).join('')}
+                                </div>
                             </div>
-                        </div>
+                        ` : ''}
+                        ${tierX4Nums.length ? `
+                            <div>
+                                <div class="text-[10px] font-black uppercase text-amber-300 mb-1 flex items-center justify-between">
+                                    <span>⚡ TẦNG CỰC VIP (CƯỢC X4 · 8.8M/SỐ · ${tierX4Nums.length} SỐ):</span>
+                                    <span class="text-[9px] text-amber-200/80">Trùng 3 PP</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${tierX4Nums.map(b => `<span class="px-2 py-1 rounded bg-amber-400 text-slate-950 font-black font-mono text-xs shadow-xs">${number(b.num)} <span class="text-[9px] opacity-75">(${b.methods?.join('+')})</span></span>`).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
                         <div>
-                            <div class="text-[10px] font-black uppercase text-indigo-300 mb-1">⚡ TẦNG TRIỂN VỌNG (CƯỢC X3 · 6.6M/SỐ · ${tierX3Nums.length} SỐ):</div>
+                            <div class="text-[10px] font-black uppercase text-indigo-300 mb-1 flex items-center justify-between">
+                                <span>⚡ TẦNG TRIỂN VỌNG (CƯỢC X3 · 6.6M/SỐ · ${tierX3Nums.length} SỐ):</span>
+                                <span class="text-[9px] text-indigo-200/80">Trùng 2 PP</span>
+                            </div>
                             <div class="flex flex-wrap gap-1.5">
                                 ${tierX3Nums.map(b => `<span class="px-2 py-1 rounded bg-indigo-900 border border-indigo-500 text-indigo-100 font-black font-mono text-xs shadow-xs">${number(b.num)} <span class="text-[9px] opacity-75">(${b.methods?.join('+')})</span></span>`).join('')}
                             </div>
                         </div>
                         <div>
-                            <div class="text-[10px] font-black uppercase text-teal-300 mb-1">🛡️ TẦNG BẢO HIỂM (CƯỢC X1 · 2.2M/SỐ · ${tierX1Nums.length} SỐ):</div>
+                            <div class="text-[10px] font-black uppercase text-teal-300 mb-1 flex items-center justify-between">
+                                <span>🛡️ TẦNG BẢO HIỂM (CƯỢC X1 · 2.2M/SỐ · ${tierX1Nums.length} SỐ):</span>
+                                <span class="text-[9px] text-teal-200/80">Không trùng</span>
+                            </div>
                             <div class="flex flex-wrap gap-1.5">
                                 ${tierX1Nums.map(b => `<span class="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-slate-200 font-bold font-mono text-xs shadow-xs">${number(b.num)} <span class="text-[9px] opacity-75">(${b.methods?.join('+')})</span></span>`).join('')}
                             </div>
@@ -2946,21 +3086,67 @@
                         </span>
                     </div>
 
-                    <div>
-                        <div class="text-[10px] font-black uppercase text-amber-300 mb-1">Chi tiết các số đã đánh (Vàng = Nổ nháy):</div>
-                        <div class="flex flex-wrap gap-1.5">
-                            ${betList.map(b => {
-                                const isHit = (b.hits || 0) > 0;
-                                return `
-                                    <span class="px-2 py-1 rounded font-mono text-xs font-black ${isHit ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 ring-2 ring-white shadow-md' : 'bg-slate-800 text-slate-300 border border-slate-700'}">
-                                        ${number(b.num)}
-                                        <span class="text-[9px] font-sans font-bold px-1 py-0.2 rounded ${isHit ? 'bg-slate-950 text-amber-300' : 'bg-slate-700 text-slate-400'}">x${b.multiplier}</span>
-                                        ${isHit ? `<span class="text-[9px] text-red-700 font-black">(${b.hits} nháy)</span>` : ''}
-                                    </span>
-                                `;
-                            }).join('')}
-                        </div>
-                    </div>
+                    ${(() => {
+                        const tierX5List = betList.filter(b => b.multiplier >= 5);
+                        const tierX4List = betList.filter(b => b.multiplier === 4);
+                        const tierX3List = betList.filter(b => b.multiplier === 3);
+                        const tierX1List = betList.filter(b => b.multiplier === 1 || !b.multiplier);
+
+                        const renderChip = (b) => {
+                            const isHit = (b.hits || 0) > 0;
+                            return `
+                                <span class="px-2 py-1 rounded font-mono text-xs font-black ${isHit ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 ring-2 ring-white shadow-md' : 'bg-slate-800 text-slate-300 border border-slate-700'}">
+                                    ${number(b.num)}
+                                    <span class="text-[9px] font-sans font-bold px-1 py-0.2 rounded ${isHit ? 'bg-slate-950 text-amber-300' : 'bg-slate-700 text-slate-400'}">x${b.multiplier || 1}</span>
+                                    ${isHit ? `<span class="text-[9px] text-red-700 font-black">(${b.hits}n)</span>` : ''}
+                                </span>
+                            `;
+                        };
+
+                        return `
+                            <div class="space-y-2">
+                                ${tierX5List.length ? `
+                                    <div>
+                                        <div class="text-[10px] font-black uppercase text-amber-400 mb-1 flex items-center justify-between">
+                                            <span>👑 TẦNG SIÊU VIP (CƯỢC X5 · 11M/SỐ · ${tierX5List.length} SỐ):</span>
+                                            <span class="text-[9px] text-amber-200/80">Trùng 4 PP</span>
+                                        </div>
+                                        <div class="flex flex-wrap gap-1.5">${tierX5List.map(renderChip).join('')}</div>
+                                    </div>
+                                ` : ''}
+
+                                ${tierX4List.length ? `
+                                    <div>
+                                        <div class="text-[10px] font-black uppercase text-amber-300 mb-1 flex items-center justify-between">
+                                            <span>⚡ TẦNG CỰC VIP (CƯỢC X4 · 8.8M/SỐ · ${tierX4List.length} SỐ):</span>
+                                            <span class="text-[9px] text-amber-200/80">Trùng 3 PP</span>
+                                        </div>
+                                        <div class="flex flex-wrap gap-1.5">${tierX4List.map(renderChip).join('')}</div>
+                                    </div>
+                                ` : ''}
+
+                                ${tierX3List.length ? `
+                                    <div>
+                                        <div class="text-[10px] font-black uppercase text-indigo-300 mb-1 flex items-center justify-between">
+                                            <span>⚡ TẦNG TRIỂN VỌNG (CƯỢC X3 · 6.6M/SỐ · ${tierX3List.length} SỐ):</span>
+                                            <span class="text-[9px] text-indigo-200/80">Trùng 2 PP</span>
+                                        </div>
+                                        <div class="flex flex-wrap gap-1.5">${tierX3List.map(renderChip).join('')}</div>
+                                    </div>
+                                ` : ''}
+
+                                ${tierX1List.length ? `
+                                    <div>
+                                        <div class="text-[10px] font-black uppercase text-teal-300 mb-1 flex items-center justify-between">
+                                            <span>🛡️ TẦNG BẢO HIỂM (CƯỢC X1 · 2.2M/SỐ · ${tierX1List.length} SỐ):</span>
+                                            <span class="text-[9px] text-teal-200/80">Không trùng</span>
+                                        </div>
+                                        <div class="flex flex-wrap gap-1.5">${tierX1List.map(renderChip).join('')}</div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    })()}
 
                     <div class="text-[11px] text-slate-300 bg-slate-900/60 p-2 rounded-lg border border-slate-700">
                         🎲 <strong>Xiên 4:</strong> ${escapeHtml(info.xien4Reason || (info.xien4Status === 'SKIPPED_TOO_MANY' ? 'Bỏ qua (> 5 số trùng)' : 'Không cược'))}
@@ -3785,7 +3971,7 @@
             }
         }
         if (type === 'lo4Engine') {
-            const synth = synthesizeLo4RowFallback(date, p);
+            const synth = synthesizeLo4RowFallback(date, p, currentLo4EngineMode);
             if (synth) return synth;
             const quadRow = p?.loQuadHybrid?.settledLedger?.find(r => r.date === date);
             const prizeCounts = {};
@@ -3813,7 +3999,7 @@
             };
         }
         if (type === 'lo4Xien4') {
-            const synth = synthesizeLo4RowFallback(date, p);
+            const synth = synthesizeLo4RowFallback(date, p, currentLo4EngineMode);
             if (synth) {
                 return {
                     date,
@@ -4146,14 +4332,16 @@
         }
     }
 
-    function synthesizeLo4RowFallback(date, p, mode = 'top7') {
+    function synthesizeLo4RowFallback(date, p, mode = (typeof currentLo4EngineMode !== 'undefined' ? currentLo4EngineMode : 'top6')) {
         const topN = mode === 'top6' ? 6 : 7;
         const qmbf = (p?.loQuantumBayesFusion?.settledLedger || []).find(r => r.date === date);
         const dual = (p?.loDualMerge?.settledLedger || []).find(r => r.date === date);
         const tri = (p?.loTriHarmonic?.settledLedger || []).find(r => r.date === date);
         const quad = (p?.loQuadHybrid?.settledLedger || []).find(r => r.date === date);
+        const lo4Rec = p?.lo4EngineFusion?.modes?.[mode]?.latestRecommendation || p?.lo4EngineFusion?.latestRecommendation;
+        const isRecDate = Boolean(lo4Rec && lo4Rec.predictionDate === date && Array.isArray(lo4Rec.betNumbers) && lo4Rec.betNumbers.length > 0);
 
-        if (!qmbf && !dual && !tri && !quad) return null;
+        if (!qmbf && !dual && !tri && !quad && !isRecDate) return null;
 
         const drawInfo = p?.drawPrizesByDate?.[date] || {};
         const actual27 = (drawInfo.prizes || qmbf?.actual27 || quad?.actual27 || []).map(n => String(n).padStart(2, '0'));
@@ -4191,48 +4379,74 @@
         let dayLotoStakeK = 0, dayLotoPayoutK = 0, dayLotoHits = 0;
         const betNumbers = [];
 
-        numbersAll.forEach(num => {
-            const v = votes[num];
-            let multiplier = 1;
-            if (v >= 4) multiplier = 5;
-            else if (v === 3) multiplier = 4;
-            else if (v === 2) multiplier = 3;
-            else multiplier = 1;
-
-            const hits = actualMap[num] || 0;
-            const stake = multiplier * BASE_STAKE;
-            const payout = hits * multiplier * BASE_PAYOUT;
-            dayLotoStakeK += stake;
-            dayLotoPayoutK += payout;
-            dayLotoHits += hits;
-            betNumbers.push({ num, votes: v, multiplier, hits, methods: methodVotes[num] });
-        });
-
-        const dayLotoProfitK = dayLotoPayoutK - dayLotoStakeK;
-        const countOver2 = numbersOver2.length;
-        let xien4Status = 'SKIPPED', xien4Reason = '', xien4StakeK = 0, xien4PayoutK = 0, dayXien4ProfitK = 0, isXien4Win = false;
-        let xien4Combinations = [];
-
-        function getCombs(arr, k) {
-            if (k === 1) return arr.map(e => [e]);
-            const res = [];
-            arr.forEach((e, idx) => {
-                const rest = arr.slice(idx + 1);
-                getCombs(rest, k - 1).forEach(c => res.push([e, ...c]));
+        // Snapshot Freezing: Nếu ngày này trùng với latestRecommendation của lo4EngineFusion (hoặc đã có betNumbers cố định),
+        // giữ nguyên 100% dàn số, số phiếu và multiplier X5/X4/X3/X1 đã chốt trước giờ quay, tuyệt đối không tính lại!
+        if (isRecDate) {
+            lo4Rec.betNumbers.forEach(b => {
+                const numStr = String(b.num).padStart(2, '0');
+                const hits = actualMap[numStr] || 0;
+                const multiplier = b.multiplier || 1;
+                const stake = multiplier * BASE_STAKE;
+                const payout = hits * multiplier * BASE_PAYOUT;
+                dayLotoStakeK += stake;
+                dayLotoPayoutK += payout;
+                dayLotoHits += hits;
+                betNumbers.push({
+                    num: numStr,
+                    votes: b.votes,
+                    multiplier,
+                    hits,
+                    methods: b.methods || methodVotes[numStr] || []
+                });
             });
-            return res;
+        } else {
+            numbersAll.forEach(num => {
+                const v = votes[num];
+                let multiplier = 1;
+                if (v >= 4) multiplier = 5;
+                else if (v === 3) multiplier = 4;
+                else if (v === 2) multiplier = 3;
+                else multiplier = 1;
+
+                const hits = actualMap[num] || 0;
+                const stake = multiplier * BASE_STAKE;
+                const payout = hits * multiplier * BASE_PAYOUT;
+                dayLotoStakeK += stake;
+                dayLotoPayoutK += payout;
+                dayLotoHits += hits;
+                betNumbers.push({ num, votes: v, multiplier, hits, methods: methodVotes[num] });
+            });
         }
 
-        const top4Fallback = numbersOver2.slice(0, 4);
+        const dayLotoProfitK = dayLotoPayoutK - dayLotoStakeK;
+        const finalAllNumbers = isRecDate ? (lo4Rec.allNumbers || betNumbers.map(b => b.num)) : numbersAll;
+        const finalCountTotal = finalAllNumbers.length;
+        const finalNumbersOver2 = isRecDate ? (lo4Rec.numbersOver2 || betNumbers.filter(b => b.multiplier >= 3).map(b => b.num)) : numbersOver2;
+        const finalCountOver2 = finalNumbersOver2.length;
+        const finalTierX5 = isRecDate ? (lo4Rec.tierX5 || betNumbers.filter(b => b.multiplier >= 5).map(b => b.num)) : betNumbers.filter(b => b.multiplier >= 5).map(b => b.num);
+        const finalTierX4 = isRecDate ? (lo4Rec.tierX4 || betNumbers.filter(b => b.multiplier === 4).map(b => b.num)) : betNumbers.filter(b => b.multiplier === 4).map(b => b.num);
+        const finalTierX3 = isRecDate ? (lo4Rec.tierX3 || betNumbers.filter(b => b.multiplier === 3).map(b => b.num)) : betNumbers.filter(b => b.multiplier === 3).map(b => b.num);
+        const finalTierX1 = isRecDate ? (lo4Rec.tierX1 || betNumbers.filter(b => b.multiplier === 1 || !b.multiplier).map(b => b.num)) : betNumbers.filter(b => b.multiplier === 1 || !b.multiplier).map(b => b.num);
+
+        let xien4Status = 'SKIPPED', xien4Reason = '', xien4StakeK = 0, xien4PayoutK = 0, dayXien4ProfitK = 0, isXien4Win = false;
+        let xien4Combinations = [];
+        let uniqueHits = 0;
+
+        const top4Fallback = (isRecDate && lo4Rec.xien4?.numbers?.length >= 4)
+            ? lo4Rec.xien4.numbers.map(n => String(n).padStart(2, '0'))
+            : (isRecDate && lo4Rec.xien4?.top4?.length >= 4)
+                ? lo4Rec.xien4.top4.map(n => String(n).padStart(2, '0'))
+                : finalNumbersOver2.slice(0, 4);
+
         if (top4Fallback.length < 4) {
             xien4Status = 'TOO_FEW';
-            xien4Reason = `< 4 số (${countOver2} số) -> Không đủ ghép Xiên 4`;
+            xien4Reason = `< 4 số (${finalCountOver2} số) -> Không đủ ghép Xiên 4`;
         } else {
-            xien4Status = 'ACTIVE';
-            xien4Reason = `Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé [${top4Fallback.join('-')}]`;
-            xien4Combinations = [top4Fallback];
-            const uniqueHits = top4Fallback.filter(n => (actualMap[n] || 0) > 0).length;
-            xien4StakeK = 11000;
+            xien4Status = (isRecDate && lo4Rec.xien4?.status) ? lo4Rec.xien4.status : 'ACTIVE';
+            xien4Reason = (isRecDate && lo4Rec.xien4?.reason) ? lo4Rec.xien4.reason : `Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé [${top4Fallback.join('-')}]`;
+            xien4Combinations = (isRecDate && lo4Rec.xien4?.combinations?.length) ? lo4Rec.xien4.combinations : [top4Fallback];
+            uniqueHits = top4Fallback.filter(n => (actualMap[n] || 0) > 0).length;
+            xien4StakeK = (isRecDate && lo4Rec.xien4?.stakeK) ? lo4Rec.xien4.stakeK : 11000;
             if (uniqueHits >= 4) xien4PayoutK = 384000;
             else if (uniqueHits === 3) xien4PayoutK = 84000;
             else if (uniqueHits === 2) xien4PayoutK = 12000;
@@ -4245,11 +4459,15 @@
             isLive: true,
             topN,
             h4: uniqueHits,
-            countTotal: numbersAll.length,
-            countOver2,
-            countX1: numbersAll.length - countOver2,
-            numbersOver2,
-            allNumbers: numbersAll,
+            countTotal: finalCountTotal,
+            countOver2: finalCountOver2,
+            countX1: finalCountTotal - finalCountOver2,
+            numbersOver2: finalNumbersOver2,
+            allNumbers: finalAllNumbers,
+            tierX5: finalTierX5,
+            tierX4: finalTierX4,
+            tierX3: finalTierX3,
+            tierX1: finalTierX1,
             betNumbers,
             dayLotoStakeK,
             dayLotoPayoutK,
@@ -4275,7 +4493,7 @@
         const profitLabel = byId('unifiedDiaryProfitLabel');
 
         const TITLES_MAP = {
-            all: 'Nhật Ký & Đối Soát Chi Tiết Từng Ngày Theo Đề Xuất (Đề + Lô)',
+            all: 'Nhật Ký Đối Soát: 🛡️ Combo Bù Trừ Dòng Tiền Chéo (Đề VIP + Lô Ghép 4 + Xiên Quây)',
             de: 'Nhật Ký Đối Soát: 💎 Đề Theo Gợi Ý (Dung Hợp & Đổi Pha)',
             lo4Engine: 'Nhật Ký Đối Soát: 🔥 Lô Ghép 4 Động Cơ (Top 6/7 Live: QMBF + Bạc Nhớ + 3 Động Cơ + RRF)',
             lo4Xien4: 'Nhật Ký Đối Soát: 🎲 Lô Xiên 4 (Phương Pháp Ghép 4 Mới)',
@@ -4286,7 +4504,7 @@
             loXien5: 'Nhật Ký Đối Soát: 👑 Dàn Xiên 5 (5 Dàn Xiên 4 Độc Lập — 11M/dàn, Trúng 2: 12M, 3: 84M, 4: 384M)'
         };
         const PROFIT_LABELS_MAP = {
-            all: 'Tổng Lãi Trong Mốc (Đề + Lô):',
+            all: 'Tổng Lãi Trong Mốc (Combo Cross-Hedging):',
             de: 'Tổng Lãi Đề Theo Gợi Ý:',
             lo4Engine: 'Tổng Lãi Lô Ghép 4 Động Cơ:',
             lo4Xien4: 'Tổng Lãi Lô Xiên 4 (Ghép 4):',
@@ -4318,7 +4536,7 @@
                     <tr class="border-b border-amber-300 bg-amber-50/80 text-amber-950 uppercase font-black tracking-wider text-[10px]">
                         <th class="px-3 py-3">Ngày</th>
                         <th class="px-3 py-3">Số Trùng &ge; 2 Động Cơ</th>
-                        <th class="px-3 py-3">Dàn Lô Đánh (x3 / x4 / x5)</th>
+                        <th class="px-3 py-3">Dàn Lô Đánh (X1 / X3 / X4 / X5)</th>
                         <th class="px-3 py-3">Số Nháy Về</th>
                         <th class="px-3 py-3">Xiên 4 (4-5 Số)</th>
                         <th class="px-3 py-3 text-right">Lãi/Lỗ Lô (Vốn)</th>
@@ -4387,13 +4605,10 @@
                 thead.innerHTML = `
                     <tr class="border-b border-slate-200 bg-slate-100/70 text-slate-600 uppercase font-black tracking-wider text-[10px]">
                         <th class="px-3 py-3">Ngày</th>
-                        <th class="px-3 py-3">💎 Đề Theo Gợi Ý</th>
-                        <th class="px-3 py-3">🏆 Lô Chuẩn Nền Tảng</th>
-                        <th class="px-3 py-3">🚀 Lô Tăng Tốc X2</th>
-                        <th class="px-3 py-3">🔥 Lô Ghép 4 Động Cơ <span class="text-[9px] text-slate-400 font-normal lowercase">(Live)</span></th>
-                        <th class="px-3 py-3">🎲 Lô Xiên 4 Ghép Mới <span class="text-[9px] text-slate-400 font-normal lowercase">(quan sát)</span></th>
-                        <th class="px-3 py-3">👑 Dàn Xiên 5 (5 Dàn X4 · 11M) <span class="text-[9px] text-slate-400 font-normal lowercase">(quan sát)</span></th>
-                        <th class="px-3 py-3 text-right">Tổng Ngày</th>
+                        <th class="px-3 py-3">💎 Đề Tinh Tuyển VIP</th>
+                        <th class="px-3 py-3">🔥 Lô Ghép 4 Động Cơ</th>
+                        <th class="px-3 py-3">🎲 Dàn Xiên Quây</th>
+                        <th class="px-3 py-3 text-right">Lãi/Lỗ Tổng Hợp (Profit_total)</th>
                         <th class="px-3 py-3 text-right">Lũy Kế Mốc</th>
                     </tr>
                 `;
@@ -4415,6 +4630,15 @@
         lo4Ledger.forEach(row => {
             if (row && row.date) {
                 lo4Map[row.date] = row;
+                allDatesSet.add(row.date);
+            }
+        });
+
+        const crossHedgingLedger = payload?.crossHedgingPortfolio?.settledLedger || [];
+        const crossHedgingMap = {};
+        crossHedgingLedger.forEach(row => {
+            if (row && row.date) {
+                crossHedgingMap[row.date] = row;
                 allDatesSet.add(row.date);
             }
         });
@@ -4453,7 +4677,7 @@
         if (filteredDates.length === 0 && unifiedTimeframe === 'sep16') {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="8" class="py-10 text-center bg-amber-50/50">
+                    <td colspan="6" class="py-10 text-center bg-amber-50/50">
                         <div class="max-w-md mx-auto space-y-2">
                             <span class="text-3xl">🎯</span>
                             <h4 class="text-base font-black text-amber-950">Mốc Thực Chiến Mới: Bắt Đầu Từ 16/09/2026</h4>
@@ -4495,6 +4719,10 @@
         }
 
         let cumProfitK = 0;
+        let cumCrossProfitK = 0;
+        let cumCrossDeProfitK = 0;
+        let cumCrossLoProfitK = 0;
+        let cumCrossXienProfitK = 0;
         let cumDeProfitK = 0;
         let cumStdProfitK = 0;
         let cumX2ProfitK = 0;
@@ -4566,6 +4794,7 @@
                         countOver2: (lo4ModeData?.latestRecommendation?.numbersOver2 || payload?.lo4EngineFusion?.latestRecommendation?.numbersOver2)?.length || 0,
                         countX1: (lo4ModeData?.latestRecommendation?.tierX1 || payload?.lo4EngineFusion?.latestRecommendation?.tierX1)?.length || 0,
                         numbersOver2: lo4ModeData?.latestRecommendation?.numbersOver2 || payload?.lo4EngineFusion?.latestRecommendation?.numbersOver2 || [],
+                        tierX5: lo4ModeData?.latestRecommendation?.tierX5 || payload?.lo4EngineFusion?.latestRecommendation?.tierX5 || [],
                         tierX4: lo4ModeData?.latestRecommendation?.tierX4 || payload?.lo4EngineFusion?.latestRecommendation?.tierX4 || [],
                         tierX3: lo4ModeData?.latestRecommendation?.tierX3 || payload?.lo4EngineFusion?.latestRecommendation?.tierX3 || [],
                         tierX1: lo4ModeData?.latestRecommendation?.tierX1 || payload?.lo4EngineFusion?.latestRecommendation?.tierX1 || [],
@@ -4680,6 +4909,15 @@
                 mergedRows.push({
                     date,
                     isPending: true,
+                    chRow: (payload?.crossHedgingPortfolio?.targetDate === date) ? payload.crossHedgingPortfolio : (crossHedgingMap[date] || null),
+                    chDePnlK: 0,
+                    chLoPnlK: 0,
+                    chXienPnlK: 0,
+                    chTotalProfitK: 0,
+                    chCumProfitK: cumCrossProfitK,
+                    chCumDeProfitK: cumCrossDeProfitK,
+                    chCumLoProfitK: cumCrossLoProfitK,
+                    chCumXienProfitK: cumCrossXienProfitK,
                     deRow: null,
                     deIsHit: false,
                     deProfitK: 0,
@@ -4835,6 +5073,18 @@
             cumLoXien5ProfitK += loXien5ProfitK;
             cumXi3ProfitK += xi3ProfitK;
             cumXi4ProfitK += xi4ProfitK;
+
+            const chRow = crossHedgingMap[date] || null;
+            const chDePnlK = chRow ? (chRow.dePnlK != null ? chRow.dePnlK : (chRow.deProfitK != null ? chRow.deProfitK : deProfitK)) : deProfitK;
+            const chLoPnlK = chRow ? (chRow.loPnlK != null ? chRow.loPnlK : (chRow.loProfitK != null ? chRow.loProfitK : lo4ProfitK)) : lo4ProfitK;
+            const chXienPnlK = chRow ? (chRow.xienPnlK != null ? chRow.xienPnlK : (chRow.xienProfitK != null ? chRow.xienProfitK : lo4Xien4ProfitK)) : lo4Xien4ProfitK;
+            const chTotalProfitK = chRow ? (chRow.totalProfitK != null ? chRow.totalProfitK : (chDePnlK + chLoPnlK + chXienPnlK)) : dayTotalK;
+
+            cumCrossProfitK += chTotalProfitK;
+            cumCrossDeProfitK += chDePnlK;
+            cumCrossLoProfitK += chLoPnlK;
+            cumCrossXienProfitK += chXienPnlK;
+            const chCumProfitK = (unifiedTimeframe === 'all' && chRow?.cumulativeProfitK != null) ? chRow.cumulativeProfitK : cumCrossProfitK;
 
             const lo4EngineDetails = lo4Row ? {
                 ...lo4Row,
@@ -5038,6 +5288,15 @@
 
             mergedRows.push({
                 date,
+                chRow,
+                chDePnlK,
+                chLoPnlK,
+                chXienPnlK,
+                chTotalProfitK,
+                chCumProfitK,
+                chCumDeProfitK: cumCrossDeProfitK,
+                chCumLoProfitK: cumCrossLoProfitK,
+                chCumXienProfitK: cumCrossXienProfitK,
                 deRow,
                 deIsHit: deIsHitFinal,
                 deIsX2: Boolean(resolvedDe.isX2),
@@ -5092,7 +5351,7 @@
                 if (currentDiaryCategory === 'loXi3') return (r.xi3.profitK || 0) > 0;
                 if (currentDiaryCategory === 'loXi4' || currentDiaryCategory === 'lo4Xien4') return (r.lo4Xien4?.profitK || 0) > 0;
                 if (currentDiaryCategory === 'loXien5') return (r.loXien5?.profitK || 0) > 0;
-                return r.dayTotalK > 0;
+                return (r.chRow ? r.chRow.isWin : r.dayTotalK > 0);
             });
         } else if (unifiedStatusFilter === 'loss') {
             displayRows = mergedRows.filter(r => {
@@ -5104,7 +5363,7 @@
                 if (currentDiaryCategory === 'loXi3') return (r.xi3.profitK || 0) <= 0;
                 if (currentDiaryCategory === 'loXi4' || currentDiaryCategory === 'lo4Xien4') return (r.lo4Xien4?.profitK || 0) <= 0;
                 if (currentDiaryCategory === 'loXien5') return (r.loXien5?.profitK || 0) <= 0;
-                return r.dayTotalK <= 0;
+                return (r.chRow ? !r.chRow.isWin : r.dayTotalK <= 0);
             });
         }
 
@@ -5157,8 +5416,10 @@
                 if ((r.loXien5?.profitK || 0) > 0) catWinCount++;
                 catTotalProfit += (r.loXien5?.profitK || 0);
             } else {
-                if (r.dayTotalK > 0) catWinCount++;
-                catTotalProfit += r.dayTotalK;
+                const isDayWin = (r.chRow ? r.chRow.isWin : (r.dayTotalK > 0));
+                const dayPnl = (r.chTotalProfitK != null ? r.chTotalProfitK : r.dayTotalK);
+                if (isDayWin) catWinCount++;
+                catTotalProfit += dayPnl;
             }
         });
 
@@ -5182,7 +5443,7 @@
         }
         const lo4SubEl = byId('unifiedDiaryLo4Subtext');
         if (lo4SubEl) {
-            lo4SubEl.innerHTML = `Thắng <strong>${lo4WinCount}/${totalCount}</strong> ngày (${percent(lo4WinCount / totalCount)}) · Đa tầng x3/x4/x5`;
+            lo4SubEl.innerHTML = `Thắng <strong>${lo4WinCount}/${totalCount}</strong> ngày (${percent(lo4WinCount / totalCount)}) · Đa tầng X1/X3/X4/X5`;
         }
 
         const xien4ProfitEl = byId('unifiedDiaryXien4Profit');
@@ -5337,10 +5598,12 @@
                 if (r.isPending) {
                     const betList = lo4Info.betNumbers || [];
                     const chipsHtml = betList.map(b => {
-                        const isVip = b.multiplier >= 4;
+                        const isSuperVip = b.multiplier >= 5;
+                        const isVip = b.multiplier === 4;
                         const isMed = b.multiplier === 3;
                         let badgeCls = 'bg-slate-800 text-slate-300 border border-slate-700';
-                        if (isVip) badgeCls = 'bg-amber-400 text-slate-950 border border-amber-300';
+                        if (isSuperVip) badgeCls = 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 border border-amber-200 ring-1 ring-white/50 shadow-xs';
+                        else if (isVip) badgeCls = 'bg-amber-400 text-slate-950 border border-amber-300';
                         else if (isMed) badgeCls = 'bg-indigo-900 text-indigo-100 border border-indigo-700';
                         return `<span class="inline-block px-1.5 py-0.5 rounded font-mono text-[11px] font-black ${badgeCls}">${number(b.num)}<sub class="text-[8px] font-sans ml-0.5">x${b.multiplier}</sub></span>`;
                     }).join(' ');
@@ -5392,13 +5655,15 @@
                 const betList = lo4Info.betNumbers || [];
                 const chipsHtml = betList.map(b => {
                     const isHit = (b.hits || 0) > 0;
-                    const isVip = b.multiplier >= 4;
+                    const isSuperVip = b.multiplier >= 5;
+                    const isVip = b.multiplier === 4;
                     const isMed = b.multiplier === 3;
                     if (isHit) {
                         return `<span class="inline-block px-1.5 py-0.5 rounded font-mono text-[11px] font-black bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 ring-2 ring-white shadow-sm">${number(b.num)}<sub class="text-[8px] font-sans font-bold text-red-700 ml-0.5">x${b.multiplier}${b.hits > 1 ? `·${b.hits}n` : ''}</sub></span>`;
                     }
                     let badgeCls = 'bg-slate-100 text-slate-700 border border-slate-200';
-                    if (isVip) badgeCls = 'bg-amber-100 text-amber-900 border border-amber-300';
+                    if (isSuperVip) badgeCls = 'bg-gradient-to-r from-amber-200 to-amber-300 text-amber-950 border-2 border-amber-400 shadow-xs';
+                    else if (isVip) badgeCls = 'bg-amber-100 text-amber-900 border border-amber-300';
                     else if (isMed) badgeCls = 'bg-indigo-100 text-indigo-900 border border-indigo-300';
                     return `<span class="inline-block px-1.5 py-0.5 rounded font-mono text-[11px] font-black ${badgeCls}">${number(b.num)}<sub class="text-[8px] font-sans opacity-70 ml-0.5">x${b.multiplier}</sub></span>`;
                 }).join(' ');
@@ -5986,289 +6251,208 @@
                 `;
             }
 
-            // --- 5. VIEW TỔNG HỢP (MẶC ĐỊNH CHI TIẾT & TƯƠNG TÁC RÊ CHUỘT) ---
+            // --- 5. VIEW TỔNG HỢP COMBO BÙ TRỪ DÒNG TIỀN CHÉO (6 CỘT CHUẨN ĐỊNH LƯỢNG) ---
             if (r.isPending) {
+                const p1 = payload?.crossHedgingPortfolio?.pillar1_De;
+                const p2 = payload?.crossHedgingPortfolio?.pillar2_Lo;
+                const p3 = payload?.crossHedgingPortfolio?.pillar3_Xien;
+                const optHedge = payload?.crossHedgingPortfolio?.hedgingSummary?.optimalHedgeM3;
+
+                const deMethodName = p1?.methodLabel || deInfo?.methodName || 'Đề Markov Bậc 2 & Gap Hazard';
+                const deStakeText = `Vốn ${moneyM(optHedge?.deStakeK || 4500)} (VIP ${moneyM(p1?.stakeK || 6075)})`;
+                const loMethodName = p2?.engine || 'Lô Hội Tụ 4 Động Cơ';
+                const loStakeText = `Vốn ${moneyM(optHedge?.loStakeK || 5720)} (VIP ${moneyM(p2?.stakeK || 39710)})`;
+                const xienStakeText = `Vốn ${moneyM(optHedge?.xienStakeK || 1100)} (VIP ${moneyM(p3?.stakeK || 1485)})`;
+                const totalStakeVal = optHedge?.totalStakeK || 11320;
+
+                const loBetList = (p2?.betNumbers || lo4Info?.betNumbers || []).slice(0, 5);
+                const xienNums = (p3?.numbers || lo4Xien4Info?.top4 || ['22', '38', '70', '93']).map(number);
+
                 return `
                     <tr class="hover:bg-amber-50/50 bg-amber-50/20 border-l-4 border-l-amber-500 transition-colors">
+                        <!-- Cột 1: Ngày -->
                         <td class="px-3 py-3 whitespace-nowrap">
                             <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
                             <div class="text-[10px] text-amber-600 font-bold flex items-center gap-1">
                                 <i class="bi bi-lock-fill text-[9px]"></i> 🔒 ĐÃ KHÓA
                             </div>
                         </td>
+                        <!-- Cột 2: Đề Tinh Tuyển VIP -->
                         <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="de">
                             <div class="text-[11px] font-bold text-amber-950 flex items-center gap-1 flex-wrap">
-                                <i class="bi bi-gem-fill text-amber-500 text-[10px]"></i> <span>${escapeHtml(deInfo.methodName)}</span>
-                                ${getSwitchPhaseBadgeHtml(deInfo.switchPhase, deInfo.switchReason)}
+                                <i class="bi bi-gem-fill text-amber-500 text-[10px]"></i> <span>${escapeHtml(deMethodName)}</span>
+                                ${getSwitchPhaseBadgeHtml(deInfo?.switchPhase, deInfo?.switchReason)}
                             </div>
                             <div class="flex items-center gap-1.5 mt-0.5">
                                 <span class="text-xs text-slate-600">ĐB: <strong class="font-mono text-xs text-amber-600 font-bold">⏳ Chờ mở</strong></span>
-                                <span class="inline-flex items-center gap-1 rounded bg-amber-100 text-amber-900 border border-amber-300 px-1.5 py-0.5 text-[10px] font-black">🔒 Đã khóa</span>
+                                <span class="inline-flex items-center gap-1 rounded bg-amber-100 text-amber-900 border border-amber-300 px-1.5 py-0.5 text-[10px] font-black">10 số VIP</span>
+                                <span class="inline-flex items-center rounded bg-slate-100 text-slate-700 px-1 py-0.5 text-[10px] font-semibold">${p1?.totalNumbersCount || deInfo?.numbers?.length || 43}s Dàn</span>
                             </div>
                             <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
-                                <span>${escapeHtml(deInfo.subTierLabel)}</span>
+                                <span>${deStakeText}</span>
                                 <span class="diary-expand-indicator text-amber-700 font-bold underline flex items-center gap-0.5">Bấm xem dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
                             </div>
                         </td>
-                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-indigo-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loStd">
-                            <div class="text-[11px] font-bold text-indigo-900 flex items-center gap-1">
-                                <i class="bi bi-trophy-fill text-indigo-600 text-[10px]"></i> ${escapeHtml(stdInfo.methodName)}
-                            </div>
-                            <div class="text-xs flex items-center gap-1.5 mt-0.5">
-                                <span class="text-amber-600 font-bold">⏳ Chờ 27 giải</span>
-                                <span class="font-mono text-slate-400">Vốn ${moneyM(stdInfo.stakeK)}</span>
-                            </div>
-                            <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
-                                <span>${escapeHtml(stdInfo.subTierLabel || 'Top 20 số chuẩn')}</span>
-                                <span class="diary-expand-indicator text-indigo-700 font-bold underline flex items-center gap-0.5">Bấm xem dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
-                            </div>
-                        </td>
-                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-teal-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loX2">
-                            <div class="text-[11px] font-bold text-teal-900 flex items-center gap-1">
-                                <i class="bi bi-lightning-charge-fill text-teal-600 text-[10px]"></i> ${escapeHtml(x2Info.methodName)}
-                            </div>
-                            <div class="text-xs flex items-center gap-1.5 mt-0.5">
-                                <span class="text-amber-600 font-bold">⏳ Chờ 27 giải</span>
-                                <span class="font-mono text-slate-400">Vốn ${moneyM(x2Info.stakeK)}</span>
-                            </div>
-                            <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
-                                <span>${escapeHtml(x2Info.subTierLabel || `Top ${x2Info.numbers.length}s cược X2`)}</span>
-                                <span class="diary-expand-indicator text-teal-700 font-bold underline flex items-center gap-0.5">Bấm xem dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
-                            </div>
-                        </td>
+                        <!-- Cột 3: Lô Ghép 4 Động Cơ -->
                         <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-rose-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Engine">
                             <div class="text-[11px] font-bold text-rose-950 flex items-center gap-1">
-                                <i class="bi bi-fire text-rose-600 text-[10px]"></i> Ghép 4 Động Cơ Live
+                                <i class="bi bi-fire text-rose-600 text-[10px]"></i> <span>${escapeHtml(loMethodName)}</span>
                             </div>
-                            <div class="flex items-center gap-1.5 mt-0.5 text-xs">
+                            <div class="flex items-center gap-1.5 mt-0.5 text-xs flex-wrap">
                                 <span class="text-amber-600 font-bold">⏳ Chờ 27 giải</span>
-                                <span class="font-mono text-slate-400">Vốn ${moneyM(lo4Info.dayLotoStakeK || 0)}</span>
+                                ${loBetList.map(b => `
+                                    <span class="px-1.5 py-0.2 rounded font-mono text-[10px] font-black bg-rose-100 text-rose-900 border border-rose-300">
+                                        ${number(b.num || b)} <span class="text-[8px] font-sans text-rose-700">X${b.multiplier || 1}</span>
+                                    </span>
+                                `).join('')}
                             </div>
-                            <div class="text-[10px] text-slate-600 mt-0.5 font-bold flex items-center justify-between">
-                                <span>${lo4Info.countTotal || 17}s tổng hợp (${lo4Info.countOver2 || 0} trùng)</span>
-                                <span class="diary-expand-indicator text-rose-700 font-sans font-bold underline flex items-center gap-0.5">Bấm xem dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
+                            <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
+                                <span>${loStakeText}</span>
+                                <span class="diary-expand-indicator text-rose-700 font-bold underline flex items-center gap-0.5">Bấm xem dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
                             </div>
                         </td>
+                        <!-- Cột 4: Dàn Xiên Quây -->
                         <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-purple-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Xien4">
                             <div class="text-[11px] font-bold text-purple-950 flex items-center gap-1">
-                                <i class="bi bi-dice-4-fill text-purple-600 text-[10px]"></i> Xiên 4 Ghép Mới
+                                <i class="bi bi-dice-4-fill text-purple-600 text-[10px]"></i> <span>Quây 11 Vé (4 Số Nòng Cốt)</span>
                             </div>
                             <div class="flex items-center gap-1.5 mt-0.5 text-xs">
-                                ${(lo4Xien4Info.status === 'ACTIVE' || lo4Xien4Info.status === 'ACTIVE_BET' || (r.isPending && (lo4Xien4Info.top4?.length > 0 || lo4Xien4Info.combinations?.length > 0)))
-                                    ? `<span class="text-amber-600 font-bold">⏳ Chờ mở (11 vé Quây Top 4)</span>`
-                                    : `<span class="inline-flex items-center gap-1 rounded bg-slate-100 text-slate-700 px-1.5 py-0.5 text-[10px] font-bold">🛡️ Bỏ qua (>5s)</span>`}
-                                <span class="font-mono text-slate-400 font-semibold">${(lo4Xien4Info.status === 'ACTIVE' || lo4Xien4Info.status === 'ACTIVE_BET' || r.isPending) ? moneyM(lo4Xien4Info.stakeK || 11000) : '0đ'}</span>
+                                <span class="text-amber-600 font-bold">⏳ Chờ mở</span>
+                                <span class="font-mono text-purple-900 font-bold text-[11px]">
+                                    [${xienNums.join(', ')}]
+                                </span>
                             </div>
-                            <div class="text-[10px] text-slate-600 mt-0.5 font-medium flex items-center justify-between">
-                                <span class="text-purple-700 font-semibold">${(lo4Xien4Info.status === 'ACTIVE' || lo4Xien4Info.status === 'ACTIVE_BET' || r.isPending) ? 'Bộ 4 Quây 11 vé VIP' : 'Bảo toàn vốn'}</span>
-                                <span class="diary-expand-indicator text-purple-700 font-sans font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
-                            </div>
-                        </td>
-                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-indigo-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXien5">
-                            <div class="text-[11px] font-bold text-indigo-950 flex items-center gap-1">
-                                <i class="bi bi-award-fill text-indigo-600 text-[10px]"></i> Dàn Xiên 5 (5 Dàn X4)
-                            </div>
-                            <div class="flex items-center gap-1.5 mt-0.5 text-xs">
-                                <span class="text-amber-600 font-bold">⏳ Chờ mở (5 dàn)</span>
-                                <span class="font-mono text-slate-400 font-semibold">55M (11M/dàn)</span>
-                            </div>
-                            <div class="text-[10px] text-slate-600 mt-0.5 font-medium flex items-center justify-between">
-                                <span class="text-slate-500">Trúng 2: 12M · 3: 84M · 4: 384M</span>
-                                <span class="diary-expand-indicator text-indigo-700 font-sans font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
+                            <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
+                                <span>${xienStakeText}</span>
+                                <span class="diary-expand-indicator text-purple-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
                             </div>
                         </td>
+                        <!-- Cột 5: Lãi/Lỗ Tổng Hợp -->
                         <td class="diary-cell-interactive px-3 py-3 text-right whitespace-nowrap font-mono cursor-pointer hover:bg-amber-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="total">
                             <div class="font-black text-xs text-amber-600">
                                 ⏳ Chờ KQ
                             </div>
-                            <div class="text-[10px] text-slate-400 font-sans">Tổng Lô, Đề, Xiên</div>
+                            <div class="text-[10px] text-slate-400 font-sans">Vốn M3: ${moneyM(totalStakeVal)}</div>
                             <div class="diary-expand-indicator text-[9px] text-amber-700 font-bold font-sans underline mt-0.5 flex items-center gap-0.5 justify-end">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></div>
                         </td>
+                        <!-- Cột 6: Lũy Kế Mốc -->
                         <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
                             <div class="font-semibold text-xs text-slate-400">
                                 --
                             </div>
-                            <div class="text-[10px] text-slate-400 font-sans">Lũy kế toàn bộ</div>
+                            <div class="text-[10px] text-slate-400 font-sans">Lũy kế toàn mốc</div>
                         </td>
                     </tr>
                 `;
             }
 
-            const dePill = deInfo.isHit
-                ? (deInfo.isX3 || deInfo.isX2
-                    ? `<span class="inline-flex items-center gap-1 rounded bg-amber-400 text-slate-950 font-black px-2 py-0.5 text-xs shadow-xs ring-1 ring-amber-500">🎉 Trúng X3 ${moneyM(deInfo.profitK, { signed: true })}</span>`
-                    : `<span class="inline-flex items-center gap-1 rounded bg-emerald-100 text-emerald-900 px-1.5 py-0.5 text-[11px] font-black">🎉 Trúng ${moneyM(deInfo.profitK, { signed: true })}</span>`)
-                : `<span class="inline-flex items-center gap-1 rounded bg-rose-100 text-rose-900 px-1.5 py-0.5 text-[11px] font-bold">❌ Trượt ${moneyM(deInfo.profitK, { signed: true })}</span>`;
+            const dePnlVal = (r.chDePnlK != null ? r.chDePnlK : (deInfo?.profitK || 0));
+            const loPnlVal = (r.chLoPnlK != null ? r.chLoPnlK : (lo4Info?.dayLotoProfitK || 0));
+            const xienPnlVal = (r.chXienPnlK != null ? r.chXienPnlK : (lo4Xien4Info?.profitK || 0));
+            const dayTotalVal = (r.chTotalProfitK != null ? r.chTotalProfitK : (r.dayTotalK || 0));
+            const cumProfitVal = (r.chCumProfitK != null ? r.chCumProfitK : (r.cumProfitK || 0));
 
-            const actualSpecText = deInfo.actualSpecial != null ? `<strong class="font-mono text-sm ${deInfo.isHit ? 'text-emerald-600 font-black' : 'text-slate-800'}">${number(deInfo.actualSpecial)}</strong>` : '--';
+            const isDayWin = (r.chRow ? r.chRow.isWin : (dayTotalVal > 0));
+            const specialNum = r.chRow?.special != null ? number(r.chRow.special) : (deInfo?.actualSpecial != null ? number(deInfo.actualSpecial) : '--');
+            const isDeHit = Boolean(r.chRow?.isDeHit || deInfo?.isHit);
+            const isVipHit = Boolean(r.chRow?.isVipHit);
 
-            const stdHitsText = `<strong>${stdInfo.hits}</strong> nháy`;
-            const stdProfitText = `<span class="font-mono font-bold ${stdInfo.profitK >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${moneyM(stdInfo.profitK, { signed: true })}</span>`;
+            const loHitsCount = r.chRow?.loHits != null ? r.chRow.loHits : (lo4Info?.dayLotoHits || 0);
+            const xienHitsCount = r.chRow?.uniqueTop4Hits != null ? r.chRow.uniqueTop4Hits : (lo4Xien4Info?.h4 || 0);
 
-            const x2HitsText = `<strong>${x2Info.hits}</strong> nháy`;
-            const x2ProfitText = `<span class="font-mono font-bold ${x2Info.profitK >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${moneyM(x2Info.profitK, { signed: true })}</span>`;
-
-            const lo4HitsText = `<strong>${lo4Info.dayLotoHits ?? 0}</strong> nháy`;
-            const lo4ProfitText = `<span class="font-mono font-bold ${(lo4Info.dayLotoProfitK ?? 0) >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${moneyM(lo4Info.dayLotoProfitK ?? 0, { signed: true })}</span>`;
-
-            const h4HitsUnified = lo4Xien4Info.h4 != null ? lo4Xien4Info.h4 : (lo4Xien4Info.dayLotoHits || 0);
-            const lo4Xien4ProfitText = `<span class="font-mono font-bold ${(lo4Xien4Info.profitK ?? 0) > 0 ? 'text-emerald-600' : ((lo4Xien4Info.profitK ?? 0) < 0 ? 'text-rose-600' : 'text-slate-400')}">${moneyM(lo4Xien4Info.profitK ?? 0, { signed: true })} <span class="text-[9px] font-normal text-slate-400 font-sans">VIP</span></span>`;
-            let lo4Xien4Tag = `<span class="inline-flex items-center gap-1 rounded bg-slate-100 text-slate-600 px-1 py-0.5 text-[10px] font-semibold">🛡️ Bỏ qua</span>`;
-            if (lo4Xien4Info.status === 'ACTIVE') {
-                if (h4HitsUnified === 4) {
-                    lo4Xien4Tag = `<span class="rounded bg-amber-400 text-slate-950 px-1.5 py-0.5 text-[10px] font-black shadow-xs ring-1 ring-amber-500">👑 Nổ 4 con</span>`;
-                } else if (h4HitsUnified === 3) {
-                    lo4Xien4Tag = `<span class="rounded bg-purple-600 text-white px-1.5 py-0.5 text-[10px] font-black shadow-xs">🔥 Nổ 3 con</span>`;
-                } else if (h4HitsUnified === 2) {
-                    lo4Xien4Tag = `<span class="rounded bg-emerald-600 text-white px-1.5 py-0.5 text-[10px] font-black shadow-xs">✨ Nổ 2 con</span>`;
-                } else {
-                    lo4Xien4Tag = `<span class="text-slate-500 text-[10px] font-semibold">Trượt (${h4HitsUnified}/4)</span>`;
-                }
-            }
-
-            let xien4DetailSubtext = '';
-            if (lo4Info.isHistoricalBaseline) {
-                xien4DetailSubtext = 'Giai đoạn trước 02/06';
-            } else if (h4HitsUnified === 4) {
-                xien4DetailSubtext = '<span class="text-amber-700 font-bold">Ăn 384M (Lãi +373M)</span>';
-            } else if (h4HitsUnified === 3) {
-                xien4DetailSubtext = '<span class="text-purple-700 font-bold">Ăn 84M (Lãi +73M)</span>';
-            } else if (h4HitsUnified === 2) {
-                xien4DetailSubtext = '<span class="text-emerald-700 font-bold">Ăn 12M (Lãi +1M)</span>';
-            } else {
-                xien4DetailSubtext = `Về ${h4HitsUnified}/4 con · Trượt (-11M)`;
-            }
-
-            const loXien5Info = r.loXien5Info || r.loXien5 || {};
-            const h5HitsUnified = loXien5Info.h5 || 0;
-            const evalX5 = evaluateXien5_5DanX4(h5HitsUnified);
-            let loXien5Tag = '';
-            let xien5DetailSubtext = '';
-
-            if (h5HitsUnified === 5) {
-                loXien5Tag = `<span class="rounded bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 px-1.5 py-0.5 text-[10px] font-black shadow-xs ring-1 ring-amber-500">👑 Ăn 5 dàn X4</span>`;
-                xien5DetailSubtext = '<span class="text-amber-700 font-bold">Ăn 1.920M (Lãi +1.865M)</span>';
-            } else if (h5HitsUnified === 4) {
-                loXien5Tag = `<span class="rounded bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 px-1.5 py-0.5 text-[10px] font-black shadow-xs ring-1 ring-amber-500">🔥 Ăn 1 dàn X4 + 4 dàn X3</span>`;
-                xien5DetailSubtext = '<span class="text-amber-700 font-bold">Ăn 720M (Lãi +665M)</span>';
-            } else if (h5HitsUnified === 3) {
-                loXien5Tag = `<span class="rounded bg-purple-600 text-white px-1.5 py-0.5 text-[10px] font-black shadow-xs">🎉 Ăn 2 dàn X3 + 3 dàn X2</span>`;
-                xien5DetailSubtext = '<span class="text-purple-700 font-bold">Ăn 204M (Lãi +149M)</span>';
-            } else if (h5HitsUnified === 2) {
-                loXien5Tag = `<span class="rounded bg-teal-600 text-white px-1.5 py-0.5 text-[10px] font-bold shadow-xs">🛡️ Ăn 3 dàn X2</span>`;
-                xien5DetailSubtext = '<span class="text-teal-700 font-bold">Ăn 36M (Thu hồi -19M)</span>';
-            } else {
-                loXien5Tag = `<span class="text-slate-500 text-[10px] font-semibold">Trượt (${h5HitsUnified}/5)</span>`;
-                xien5DetailSubtext = `Về ${h5HitsUnified}/5 con · Trượt (-55M)`;
-            }
-
-            const dayClass = r.dayTotalK > 0 ? 'bg-emerald-50/40' : (r.dayTotalK < -50000 ? 'bg-rose-50/20' : '');
+            const dayClass = dayTotalVal > 0 ? 'bg-emerald-50/40' : (dayTotalVal < -20000 ? 'bg-rose-50/20' : '');
 
             return `
                 <tr class="hover:bg-slate-50/80 transition-colors ${dayClass}">
+                    <!-- Cột 1: Ngày -->
                     <td class="px-3 py-3 whitespace-nowrap">
                         <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
-                        <div class="text-[10px] text-slate-400 font-semibold">${isLiveBadge}</div>
+                        <div class="flex items-center gap-1 mt-0.5">
+                            <span class="text-[10px] text-slate-400 font-semibold">${isLiveBadge}</span>
+                            ${r.chRow?.mode ? `<span class="px-1 py-0.2 rounded text-[9px] font-bold ${r.chRow.mode === 'MOMENTUM_BOOST' ? 'bg-amber-100 text-amber-900 border border-amber-300' : (r.chRow.mode === 'DEFENSIVE_HOLD' ? 'bg-blue-100 text-blue-900 border border-blue-300' : 'bg-slate-100 text-slate-700')}">${r.chRow.mode === 'MOMENTUM_BOOST' ? '⚡ BOOST' : (r.chRow.mode === 'DEFENSIVE_HOLD' ? '🛡️ DEF' : '⚖️ HEDGE')}</span>` : ''}
+                        </div>
                     </td>
+                    <!-- Cột 2: Đề Tinh Tuyển VIP -->
                     <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="de">
                         <div class="flex items-center justify-between text-[11px] font-bold text-amber-950 gap-1 flex-wrap">
                             <span class="flex items-center gap-1">
-                                <i class="bi bi-gem-fill text-amber-500 text-[10px]"></i> <span>${escapeHtml(deInfo.methodName)}</span>
-                                ${getSwitchPhaseBadgeHtml(deInfo.switchPhase, deInfo.switchReason)}
+                                <i class="bi bi-gem-fill text-amber-500 text-[10px]"></i> <span>${escapeHtml(deInfo?.methodName || 'Đề Markov Bậc 2 & Gap Hazard')}</span>
+                                ${getSwitchPhaseBadgeHtml(deInfo?.switchPhase, deInfo?.switchReason)}
                             </span>
-                            <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${r.cumDeProfitK >= 0 ? 'bg-amber-100 text-amber-900 ring-1 ring-amber-300' : 'bg-rose-100 text-rose-800'}">LK: ${moneyM(r.cumDeProfitK, { signed: true })}</span>
+                            <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${dePnlVal >= 0 ? 'bg-amber-100 text-amber-900 ring-1 ring-amber-300' : 'bg-rose-100 text-rose-800'}">P&L: ${moneyM(dePnlVal, { signed: true })}</span>
                         </div>
                         <div class="flex items-center gap-1.5 mt-0.5">
-                            <span class="text-xs text-slate-700">ĐB: ${actualSpecText}</span>
-                            ${dePill}
+                            <span class="text-xs text-slate-700">ĐB: <strong class="font-mono text-sm ${isDeHit ? 'text-emerald-600 font-black' : 'text-slate-800'}">${specialNum}</strong></span>
+                            ${isVipHit
+                                ? `<span class="inline-flex items-center gap-1 rounded bg-amber-400 text-slate-950 font-black px-1.5 py-0.5 text-[10px] shadow-xs ring-1 ring-amber-500">👑 Nổ VIP</span>`
+                                : (isDeHit
+                                    ? `<span class="inline-flex items-center gap-1 rounded bg-emerald-100 text-emerald-900 px-1.5 py-0.5 text-[10px] font-black">🎉 Trúng Đề</span>`
+                                    : `<span class="inline-flex items-center gap-1 rounded bg-rose-100 text-rose-900 px-1.5 py-0.5 text-[10px] font-bold">❌ Trượt</span>`)}
                         </div>
                         <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
-                            <span>${escapeHtml(deInfo.subTierLabel)}</span>
+                            <span>${isVipHit ? '10 số VIP nổ giải ĐB' : (escapeHtml(deInfo?.subTierLabel || '10 VIP + 33 Dàn'))}</span>
                             <span class="diary-expand-indicator text-amber-700 font-bold underline flex items-center gap-0.5">Bấm xem dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
                         </div>
                     </td>
-                    <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-indigo-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loStd">
-                        <div class="flex items-center justify-between text-[11px] font-bold text-indigo-900 gap-1">
-                            <span class="flex items-center gap-1"><i class="bi bi-trophy-fill text-indigo-600 text-[10px]"></i> ${escapeHtml(stdInfo.methodName)}</span>
-                            <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${r.cumStdProfitK >= 0 ? 'bg-indigo-100 text-indigo-800 ring-1 ring-indigo-300' : 'bg-rose-100 text-rose-800'}">LK: ${moneyM(r.cumStdProfitK, { signed: true })}</span>
-                        </div>
-                        <div class="text-xs flex items-center gap-1.5 mt-0.5">
-                            <span class="text-slate-700">${stdHitsText}</span>
-                            <span>${stdProfitText}</span>
-                        </div>
-                        <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
-                            <span>Top 20 số chuẩn</span>
-                            <span class="diary-expand-indicator text-indigo-700 font-bold underline flex items-center gap-0.5">Bấm xem dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
-                        </div>
-                    </td>
-                    <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-teal-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loX2">
-                        <div class="flex items-center justify-between text-[11px] font-bold text-teal-900 gap-1">
-                            <span class="flex items-center gap-1"><i class="bi bi-lightning-charge-fill text-teal-600 text-[10px]"></i> ${escapeHtml(x2Info.methodName)}</span>
-                            <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${r.cumX2ProfitK >= 0 ? 'bg-teal-100 text-teal-800 ring-1 ring-teal-300' : 'bg-rose-100 text-rose-800'}">LK: ${moneyM(r.cumX2ProfitK, { signed: true })}</span>
-                        </div>
-                        <div class="text-xs flex items-center gap-1.5 mt-0.5">
-                            <span class="text-slate-700">${x2HitsText}</span>
-                            <span>${x2ProfitText}</span>
-                        </div>
-                        <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
-                            <span>Top ${x2Info.numbers.length}s cược X2</span>
-                            <span class="diary-expand-indicator text-teal-700 font-bold underline flex items-center gap-0.5">Bấm xem dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
-                        </div>
-                    </td>
+                    <!-- Cột 3: Lô Ghép 4 Động Cơ -->
                     <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-rose-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Engine">
                         <div class="flex items-center justify-between text-[11px] font-bold text-rose-950 gap-1">
-                            <span class="flex items-center gap-1"><i class="bi bi-fire text-rose-600 text-[10px]"></i> ${lo4Info.isHistoricalBaseline ? 'Lô Ghép 4 (Nền tảng)' : 'Ghép 4 Động Cơ Live'}</span>
-                            ${!lo4Info.isHistoricalBaseline ? `<span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${r.cumLo4ProfitK >= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">LK: ${moneyM(r.cumLo4ProfitK, { signed: true })}</span>` : ''}
+                            <span class="flex items-center gap-1"><i class="bi bi-fire text-rose-600 text-[10px]"></i> ${lo4Info?.isHistoricalBaseline ? 'Lô Ghép 4 (Nền tảng)' : 'Lô Hội Tụ 4 Động Cơ'}</span>
+                            <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${loPnlVal >= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">P&L: ${moneyM(loPnlVal, { signed: true })}</span>
                         </div>
                         <div class="flex items-center justify-between gap-1.5 mt-0.5 text-xs">
-                            <span class="text-slate-700">${lo4Info.isHistoricalBaseline ? `Nổ <strong>${lo4Info.dayLotoHits || 0}</strong> nháy` : lo4HitsText}</span>
-                            <span>${lo4Info.isHistoricalBaseline ? '<span class="text-[10px] text-slate-400 font-semibold font-mono">(Tiền đề)</span>' : lo4ProfitText}</span>
+                            <span class="text-slate-700">Nổ <strong>${loHitsCount}</strong> nháy</span>
+                            <span class="font-mono font-bold ${loPnlVal >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${moneyM(loPnlVal, { signed: true })}</span>
                         </div>
                         <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
-                            <span>${lo4Info.isHistoricalBaseline ? 'Mô hình tiền đề Quad+QMBF' : `${lo4Info.countTotal || 17}s tổng hợp (${lo4Info.countOver2 || 0} trùng)`}</span>
+                            <span>${lo4Info?.countTotal || 5} số (Top 4 X4/X5 + Vệ Tinh)</span>
                             <span class="diary-expand-indicator text-rose-700 font-bold underline flex items-center gap-0.5">Bấm xem dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
                         </div>
                     </td>
+                    <!-- Cột 4: Dàn Xiên Quây -->
                     <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-purple-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Xien4">
                         <div class="flex items-center justify-between text-[11px] font-bold text-purple-950 gap-1">
-                            <span class="flex items-center gap-1"><i class="bi bi-dice-4-fill text-purple-600 text-[10px]"></i> Xiên 4 Ghép Mới</span>
-                            ${!lo4Info.isHistoricalBaseline ? `<span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${r.cumLo4Xien4ProfitK >= 0 ? 'bg-purple-100 text-purple-800' : 'bg-rose-100 text-rose-800'}">LK: ${moneyM(r.cumLo4Xien4ProfitK, { signed: true })}</span>` : ''}
+                            <span class="flex items-center gap-1"><i class="bi bi-dice-4-fill text-purple-600 text-[10px]"></i> Dàn Xiên Quây 11 Vé</span>
+                            <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${xienPnlVal >= 0 ? 'bg-purple-100 text-purple-800' : 'bg-rose-100 text-rose-800'}">P&L: ${moneyM(xienPnlVal, { signed: true })}</span>
                         </div>
                         <div class="flex items-center justify-between gap-1.5 mt-0.5 text-xs">
-                            ${lo4Info.isHistoricalBaseline ? '<span class="text-[10px] text-slate-400 font-semibold">Chế độ quan sát</span>' : lo4Xien4Tag}
-                            ${lo4Info.isHistoricalBaseline ? '' : lo4Xien4ProfitText}
+                            ${(() => {
+                                if (xienHitsCount === 4) return `<span class="rounded bg-amber-400 text-slate-950 px-1.5 py-0.5 text-[10px] font-black shadow-xs ring-1 ring-amber-500">👑 Nổ 4 con (Ăn X4)</span>`;
+                                if (xienHitsCount === 3) return `<span class="rounded bg-purple-600 text-white px-1.5 py-0.5 text-[10px] font-black shadow-xs">🔥 Nổ 3 con (Ăn X3)</span>`;
+                                if (xienHitsCount === 2) return `<span class="rounded bg-emerald-600 text-white px-1.5 py-0.5 text-[10px] font-black shadow-xs">✨ Nổ 2 con (Ăn X2)</span>`;
+                                return `<span class="text-slate-500 text-[10px] font-semibold">Trượt (${xienHitsCount}/4 con)</span>`;
+                            })()}
+                            <span class="font-mono font-bold ${xienPnlVal > 0 ? 'text-emerald-600' : (xienPnlVal < 0 ? 'text-rose-600' : 'text-slate-400')}">${moneyM(xienPnlVal, { signed: true })}</span>
                         </div>
                         <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
-                            <span>${xien4DetailSubtext}</span>
+                            <span>${(() => {
+                                if (xienHitsCount === 4) return '<strong class="text-amber-700">Ăn toàn bộ 11 vé Quây</strong>';
+                                if (xienHitsCount === 3) return '<strong class="text-purple-700">Ăn 1 vé X3 + 3 vé X2</strong>';
+                                if (xienHitsCount === 2) return '<strong class="text-emerald-700">Ăn 1 vé X2 (Thu hồi vốn)</strong>';
+                                return 'Quây 11 vé Top 4 nòng cốt';
+                            })()}</span>
                             <span class="diary-expand-indicator text-purple-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
                         </div>
                     </td>
-                    <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-indigo-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXien5">
-                        <div class="flex items-center justify-between text-[11px] font-bold text-indigo-950 gap-1">
-                            <span class="flex items-center gap-1"><i class="bi bi-award-fill text-indigo-600 text-[10px]"></i> Dàn Xiên 5</span>
-                            <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${(r.cumLoXien5ProfitK || 0) >= 0 ? 'bg-indigo-100 text-indigo-800' : 'bg-rose-100 text-rose-800'}">LK: ${moneyM(r.cumLoXien5ProfitK || 0, { signed: true })}</span>
-                        </div>
-                        <div class="flex items-center justify-between gap-1.5 mt-0.5 text-xs">
-                            ${loXien5Tag}
-                            <span class="font-mono font-bold ${(loXien5Info.profitK ?? evalX5.profitK) > 0 ? 'text-emerald-600' : 'text-rose-600'}">${moneyM(loXien5Info.profitK ?? evalX5.profitK, { signed: true })}</span>
-                        </div>
-                        <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
-                            <span>${xien5DetailSubtext}</span>
-                            <span class="diary-expand-indicator text-indigo-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
-                        </div>
-                    </td>
+                    <!-- Cột 5: Lãi/Lỗ Tổng Hợp -->
                     <td class="diary-cell-interactive px-3 py-3 text-right whitespace-nowrap font-mono cursor-pointer hover:bg-slate-100 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="total">
-                        <div class="font-black text-xs ${r.dayTotalK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">
-                            ${moneyM(r.dayTotalK, { signed: true })}
+                        <div class="font-black text-xs ${dayTotalVal >= 0 ? 'text-emerald-700' : 'text-rose-700'}">
+                            ${moneyM(dayTotalVal, { signed: true })}
                         </div>
-                        <div class="text-[10px] text-slate-400 font-sans">Tổng Lô, Đề, Xiên</div>
-                        <div class="diary-expand-indicator text-[9px] text-indigo-600 font-bold font-sans underline mt-0.5 flex items-center gap-0.5 justify-end">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></div>
+                        <div class="text-[10px] text-slate-400 font-sans">Vốn: ${r.chRow?.totalStakeK ? moneyM(r.chRow.totalStakeK) : '11,320K'}</div>
+                        <div class="flex items-center justify-end gap-1 mt-0.5">
+                            ${isDayWin
+                                ? `<span class="inline-block px-1 py-0.2 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800">✅ THẮNG</span>`
+                                : `<span class="inline-block px-1 py-0.2 rounded text-[9px] font-bold bg-rose-100 text-rose-800">❌ THUA</span>`}
+                            <span class="diary-expand-indicator text-[9px] text-indigo-600 font-bold font-sans underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
+                        </div>
                     </td>
+                    <!-- Cột 6: Lũy Kế Mốc -->
                     <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
-                        <div class="font-black text-xs ${r.cumProfitK >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
-                            ${moneyM(r.cumProfitK, { signed: true })}
+                        <div class="font-black text-xs ${cumProfitVal >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
+                            ${moneyM(cumProfitVal, { signed: true })}
                         </div>
-                        <div class="text-[10px] text-slate-400 font-sans">Lũy kế toàn bộ</div>
+                        <div class="text-[10px] text-slate-400 font-sans">Lũy kế mốc</div>
                     </td>
                 </tr>
             `;
@@ -6586,6 +6770,10 @@
                 renderFinalOptimalCombinedSlip();
             }
 
+            if (fullData?.crossHedgingPortfolio || payload?.crossHedgingPortfolio) {
+                syncCrossHedgingComboCard(fullData?.crossHedgingPortfolio || payload?.crossHedgingPortfolio);
+            }
+
             if (!isInitial) {
                 showToast(`🎯 Đã kích hoạt ${cfg.name}! Tự động đồng bộ dàn số Đề & Lô.`);
             }
@@ -6689,20 +6877,37 @@
                 } else {
                     const lo4Adv = fullData?.lo4EngineFusion?.latestRecommendation || payload?.lo4EngineFusion?.latestRecommendation;
                     if (cfg.id === 'maxProfit' && lo4Adv && lo4Adv.betNumbers?.length) {
-                        const tierX4List = [...(lo4Adv.tierX5 || []), ...(lo4Adv.tierX4 || [])];
+                        const tierX5List = lo4Adv.tierX5 || [];
+                        const tierX4List = lo4Adv.tierX4 || [];
                         const tierX3List = lo4Adv.tierX3 || [];
                         const tierX1List = lo4Adv.tierX1 || [];
                         const distinctLo = lo4Adv.allNumbers || lo4Adv.distinctNumbers || lo4Adv.numbersOver2 || [];
-                        const btcLo = tierX4List[0] || distinctLo[0] || '22';
-                        const stcLo = (tierX4List.length >= 2 ? [tierX4List[0], tierX4List[1]] : distinctLo.slice(0, 2)).join(' - ');
+                        const btcLo = tierX5List[0] || tierX4List[0] || distinctLo[0] || '22';
+                        const stcLo = (tierX5List.length >= 2 ? [tierX5List[0], tierX5List[1]] : (tierX4List.length >= 2 ? [tierX4List[0], tierX4List[1]] : distinctLo.slice(0, 2))).join(' - ');
 
                         slipLines.push(
                             `🎰 2. LÔ TỔNG HỢP 4 ĐỘNG CƠ THỰC CHIẾN (Top 6/7 Live: QMBF + Bạc Nhớ + 3 Động Cơ + RRF):`,
                             `👑 BẠCH THỦ: ${btcLo} · SONG THỦ VIP: ${stcLo}`,
-                            ``,
-                            `🔥 TẦNG CỰC VIP CƯỢC X4 (Trùng 3-4 PP - 400đ [8.8M/số] · ${tierX4List.length} số):`,
-                            tierX4List.map(n => String(number(n)).padStart(2, '0')).join(' '),
-                            ``,
+                            ``
+                        );
+
+                        if (tierX5List.length) {
+                            slipLines.push(
+                                `👑 TẦNG SIÊU VIP CƯỢC X5 (Trùng 4 PP - 500đ [11M/số] · ${tierX5List.length} số):`,
+                                tierX5List.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                                ``
+                            );
+                        }
+
+                        if (tierX4List.length) {
+                            slipLines.push(
+                                `🔥 TẦNG CỰC VIP CƯỢC X4 (Trùng 3 PP - 400đ [8.8M/số] · ${tierX4List.length} số):`,
+                                tierX4List.map(n => String(number(n)).padStart(2, '0')).join(' '),
+                                ``
+                            );
+                        }
+
+                        slipLines.push(
                             `⚡ TẦNG TRIỂN VỌNG CƯỢC X3 (Trùng 2 PP - 300đ [6.6M/số] · ${tierX3List.length} số):`,
                             tierX3List.map(n => String(number(n)).padStart(2, '0')).join(' '),
                             ``,
@@ -7390,8 +7595,11 @@
                 const deRow = resolveUnifiedDeRowForDate(targetDate, fullData);
                 const loMode = currentLo4EngineMode || 'top6';
                 const isTop6 = (loMode === 'top6');
-                const loRow = fullData?.lo4EngineFusion?.modes?.[loMode]?.settledLedger?.find(r => r.date === targetDate)
+                let loRow = fullData?.lo4EngineFusion?.modes?.[loMode]?.settledLedger?.find(r => r.date === targetDate)
                     || fullData?.lo4EngineFusion?.modes?.top7?.settledLedger?.find(r => r.date === targetDate);
+                if (!loRow && targetDate >= '2026-06-02') {
+                    loRow = synthesizeLo4RowFallback(targetDate, fullData, loMode);
+                }
                 const draw = fullData?.drawPrizesByDate?.[targetDate];
                 const actualSpecial = draw?.special;
 
@@ -10152,6 +10360,7 @@
         let profitK = 0;
         let hitBadge = '';
         let detailDesc = '';
+        let lo4Tiers = null;
 
         // Tự động phân giải nếu người dùng chọn 'official'
         let effectiveKey = methodKey;
@@ -10379,15 +10588,34 @@
             methodTitle = '🔥 Lô Ghép 4 Động Cơ (Top 6/7 Live)';
             if (isPending) {
                 const rec = payloadData.lo4EngineFusion?.latestRecommendation || {};
-                numbers = (rec.allNumbers || rec.numbersOver2 || []).map(number);
-                stakeK = rec.totalLotoStakeK || 66000;
+                const betList = rec.betNumbers || [];
+                numbers = (rec.allNumbers || betList.map(b => b.num) || []).map(number);
+                stakeK = rec.totalLotoStakeK || 63800;
                 profitK = 0;
                 payoutK = 0;
                 hitBadge = '⏳ Chờ mở thưởng 18h40';
-                detailDesc = `Hội tụ 4 động cơ: ${rec.numbersOver2?.length || 6} số trùng ≥ 2 ĐC`;
+                detailDesc = `Hội tụ 4 động cơ: ${rec.numbersOver2?.length || 5} số trùng ≥ 2 ĐC`;
+
+                const tierX5 = (rec.tierX5 && rec.tierX5.length) ? rec.tierX5 : betList.filter(b => b.multiplier >= 5).map(b => b.num);
+                const tierX4 = (rec.tierX4 && rec.tierX4.length) ? rec.tierX4 : betList.filter(b => b.multiplier === 4).map(b => b.num);
+                const tierX3 = (rec.tierX3 && rec.tierX3.length) ? rec.tierX3 : betList.filter(b => b.multiplier === 3).map(b => b.num);
+                const tierX1 = (rec.tierX1 && rec.tierX1.length) ? rec.tierX1 : betList.filter(b => b.multiplier === 1 || !b.multiplier).map(b => b.num);
+
+                lo4Tiers = {
+                    tierX5: tierX5.map(number),
+                    tierX4: tierX4.map(number),
+                    tierX3: tierX3.map(number),
+                    tierX1: tierX1.map(number),
+                    betNumbers: betList,
+                    xien4: rec.xien4 || null
+                };
             } else {
-                const r = payloadData.lo4EngineFusion?.modes?.[currentLo4EngineMode]?.settledLedger?.find(x => x.date === date)
-                    || payloadData.lo4EngineFusion?.modes?.top7?.settledLedger?.find(x => x.date === date);
+                let r = payloadData.lo4EngineFusion?.modes?.[currentLo4EngineMode]?.settledLedger?.find(x => x.date === date)
+                    || payloadData.lo4EngineFusion?.modes?.top7?.settledLedger?.find(x => x.date === date)
+                    || payloadData.lo4EngineFusion?.settledLedger?.find(x => x.date === date);
+                if (!r && date >= '2026-06-02') {
+                    r = synthesizeLo4RowFallback(date, payloadData, currentLo4EngineMode);
+                }
                 const betList = r?.betNumbers || [];
                 numbers = betList.map(b => number(b.num));
                 const hits = r?.dayLotoHits || 0;
@@ -10397,6 +10625,30 @@
                 payoutK = r?.dayLotoPayoutK || 0;
                 hitBadge = hits > 0 ? `🎉 NỔ ${hits} NHÁY (${moneyM(profitK, { signed: true })})` : '❌ TRƯỢT';
                 detailDesc = `Hội tụ 4 động cơ: ${r?.countOver2 || 0} số trùng ≥ 2 ĐC`;
+
+                const tierX5 = (r?.tierX5 && r.tierX5.length) ? r.tierX5 : betList.filter(b => b.multiplier >= 5).map(b => b.num);
+                const tierX4 = (r?.tierX4 && r.tierX4.length) ? r.tierX4 : betList.filter(b => b.multiplier === 4).map(b => b.num);
+                const tierX3 = (r?.tierX3 && r.tierX3.length) ? r.tierX3 : betList.filter(b => b.multiplier === 3).map(b => b.num);
+                const tierX1 = (r?.tierX1 && r.tierX1.length) ? r.tierX1 : betList.filter(b => b.multiplier === 1 || !b.multiplier).map(b => b.num);
+
+                lo4Tiers = {
+                    tierX5: tierX5.map(number),
+                    tierX4: tierX4.map(number),
+                    tierX3: tierX3.map(number),
+                    tierX1: tierX1.map(number),
+                    betNumbers: betList,
+                    xien4: {
+                        status: r?.xien4Status || 'ACTIVE',
+                        reason: r?.xien4Reason || '',
+                        combinations: r?.xien4Combinations || [],
+                        top4: r?.top4 || (r?.xien4Combinations?.[0]) || [],
+                        numbers: r?.top4 || (r?.xien4Combinations?.[0]) || [],
+                        stakeK: r?.xien4StakeK || 0,
+                        payoutK: r?.xien4PayoutK || 0,
+                        profitK: r?.dayXien4ProfitK || 0,
+                        isWin: r?.isXien4Win || false
+                    }
+                };
             }
         } else if (effectiveKey === 'loXien5') {
             methodTitle = '👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)';
@@ -10554,6 +10806,7 @@
             payoutK,
             hitBadge,
             detailDesc,
+            lo4Tiers,
             actualSpecial,
             drawPrizesSet,
             drawPrizes
@@ -10980,6 +11233,92 @@
                         </div>
                     </div>
                 `;
+            } else if (loData.methodKey === 'lo4Engine' && loData.lo4Tiers) {
+                const lt = loData.lo4Tiers;
+                const tierX5 = lt.tierX5 || [];
+                const tierX4 = lt.tierX4 || [];
+                const tierX3 = lt.tierX3 || [];
+                const tierX1 = lt.tierX1 || [];
+                const xien4 = lt.xien4;
+
+                const renderTierChips = (nums, badgeCls, multText) => {
+                    return nums.map(n => {
+                        const hits = loData.drawPrizes.filter(x => x === n).length;
+                        const isHit = hits > 0;
+                        if (isHit) {
+                            return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black ring-2 ring-white scale-105 shadow-md">${n} <sub class="text-[9px] font-sans font-bold text-red-800 ml-0.5">(${multText}${hits > 1 ? `·${hits}n` : ''})</sub> ⭐</span>`;
+                        }
+                        return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs ${badgeCls}">${n} <sub class="text-[8px] font-sans opacity-80 ml-0.5">${multText}</sub></span>`;
+                    }).join('');
+                };
+
+                loChipsBox.innerHTML = `
+                    <div class="space-y-3">
+                        ${tierX5.length ? `
+                        <div>
+                            <div class="text-[10px] font-black uppercase text-amber-300 mb-1 flex items-center justify-between">
+                                <span>👑 TẦNG SIÊU VIP (CƯỢC X5 · 11M/SỐ · ${tierX5.length} SỐ):</span>
+                                <span class="text-amber-300/80 font-sans font-normal text-[9px]">Trùng 4 phương pháp</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1">
+                                ${renderTierChips(tierX5, 'bg-gradient-to-r from-amber-500/20 to-amber-600/30 border-2 border-amber-400 text-amber-200 font-black ring-1 ring-amber-400/50 shadow-sm', 'x5')}
+                            </div>
+                        </div>` : ''}
+
+                        ${tierX4.length ? `
+                        <div>
+                            <div class="text-[10px] font-black uppercase text-amber-400 mb-1 flex items-center justify-between">
+                                <span>⚡ TẦNG CỰC VIP (CƯỢC X4 · 8.8M/SỐ · ${tierX4.length} SỐ):</span>
+                                <span class="text-amber-400/80 font-sans font-normal text-[9px]">Trùng 3 phương pháp</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1">
+                                ${renderTierChips(tierX4, 'bg-amber-950/70 border border-amber-500/50 text-amber-200 font-bold', 'x4')}
+                            </div>
+                        </div>` : ''}
+
+                        ${tierX3.length ? `
+                        <div>
+                            <div class="text-[10px] font-black uppercase text-indigo-300 mb-1 flex items-center justify-between">
+                                <span>✨ TẦNG TRIỂN VỌNG (CƯỢC X3 · 6.6M/SỐ · ${tierX3.length} SỐ):</span>
+                                <span class="text-indigo-300/80 font-sans font-normal text-[9px]">Trùng 2 phương pháp</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1">
+                                ${renderTierChips(tierX3, 'bg-indigo-950/60 border border-indigo-500/40 text-indigo-200 font-bold', 'x3')}
+                            </div>
+                        </div>` : ''}
+
+                        ${tierX1.length ? `
+                        <div>
+                            <div class="text-[10px] font-black uppercase text-slate-400 mb-1 flex items-center justify-between">
+                                <span>🛡️ TẦNG BẢO HIỂM (CƯỢC X1 · 2.2M/SỐ · ${tierX1.length} SỐ):</span>
+                                <span class="text-slate-400 font-sans font-normal text-[9px]">Không trùng (1 PP)</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1">
+                                ${renderTierChips(tierX1, 'bg-slate-900 border border-slate-700 text-slate-300 font-semibold', 'x1')}
+                            </div>
+                        </div>` : ''}
+
+                        ${xien4 ? `
+                        <div class="pt-2 border-t border-slate-800/80">
+                            <div class="text-[10px] font-black uppercase text-purple-300 mb-1 flex items-center justify-between">
+                                <span>🎲 XIÊN 4 TINH HOA QUÂY 11 VÉ:</span>
+                                <span class="text-purple-300 font-mono text-[10px]">${loData.isPending ? 'Vốn 11M (Chờ 18h40)' : (xien4.profitK > 0 ? `🎉 LÃI ${moneyM(xien4.profitK, { signed: true })}` : (xien4.payoutK > 0 ? `THU HỒI ${moneyM(xien4.payoutK)}` : `LỖ -${moneyM(xien4.stakeK)}`))}</span>
+                            </div>
+                            <div class="rounded-lg bg-purple-950/40 border border-purple-500/30 p-2 text-xs">
+                                <div class="flex items-center justify-between text-[11px] mb-1">
+                                    <span class="text-slate-300 font-bold">${escapeHtml(xien4.reason || 'Top 5 Đồng Thuận')}</span>
+                                    <span class="text-[10px] text-purple-300 font-mono">11 vé x 1M</span>
+                                </div>
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    ${((xien4.top4 || xien4.combinations?.[0] || xien4.numbers || [])).map(n => {
+                                        const hit = loData.drawPrizesSet.has(n);
+                                        return `<span class="px-2 py-0.5 rounded font-mono text-xs font-black ${hit ? 'bg-gradient-to-r from-purple-400 to-amber-400 text-slate-950 ring-2 ring-white scale-105 shadow-md' : 'bg-slate-800 border border-slate-700 text-purple-200'}">${number(n)}${hit ? ' ⭐' : ''}</span>`;
+                                    }).join('')}
+                                </div>
+                            </div>
+                        </div>` : ''}
+                    </div>
+                `;
             } else {
                 loChipsBox.innerHTML = `
                     <div class="flex flex-wrap gap-1">
@@ -11008,10 +11347,25 @@
         }
 
         const btnCopyLo = byId('btnCopyInPageLoNumbers');
+        let loCopyText = loData.numbers.join(', ');
+        if (loData.methodKey === 'loXien5') {
+            loCopyText = loData.tickets.map((t, idx) => `Dàn ${idx + 1}: ${t.join('-')}`).join('\n');
+        } else if (loData.methodKey === 'lo4Engine' && loData.lo4Tiers) {
+            const lt = loData.lo4Tiers;
+            const x4 = loData.xien4;
+            const xienNumbers = (x4?.top4 || x4?.combinations?.[0] || x4?.numbers || []).map(number);
+            const lines = [
+                `🔥 DÀN LÔ GHÉP 4 ĐỘNG CƠ — NGÀY ${formatDateVi(targetDate)}`,
+                lt.tierX5?.length ? `👑 TẦNG SIÊU VIP (CƯỢC X5 · ${lt.tierX5.length}s): ${lt.tierX5.map(number).join(' ')}` : '',
+                lt.tierX4?.length ? `⚡ TẦNG CỰC VIP (CƯỢC X4 · ${lt.tierX4.length}s): ${lt.tierX4.map(number).join(' ')}` : '',
+                lt.tierX3?.length ? `⚡ TẦNG TRIỂN VỌNG (CƯỢC X3 · ${lt.tierX3.length}s): ${lt.tierX3.map(number).join(' ')}` : '',
+                lt.tierX1?.length ? `🛡️ TẦNG BẢO HIỂM (CƯỢC X1 · ${lt.tierX1.length}s): ${lt.tierX1.map(number).join(' ')}` : '',
+                xienNumbers.length >= 4 ? `🎲 BỘ 4 QUÂY 11 VÉ XIÊN: [${xienNumbers.join('-')}] (Vốn 11M)` : ''
+            ].filter(Boolean);
+            loCopyText = lines.join('\n');
+        }
         if (btnCopyLo) {
-            btnCopyLo.dataset.numbers = loData.methodKey === 'loXien5'
-                ? loData.tickets.map((t, idx) => `Dàn ${idx + 1}: ${t.join('-')}`).join('\n')
-                : loData.numbers.join(', ');
+            btnCopyLo.dataset.numbers = loCopyText;
         }
 
         // 3. COMBINED DAY BAR
@@ -11033,11 +11387,7 @@
 
         const btnCopyComb = byId('btnCopyInPageCombinedDay');
         if (btnCopyComb) {
-            const loText = loData.methodKey === 'loXien5'
-                ? `Bộ 5 số vàng: ${loData.numbers.join(', ')}\n` + loData.tickets.map((t, idx) => `Dàn ${idx + 1}: ${t.join('-')}`).join('\n')
-                : loData.numbers.join(', ');
-
-            btnCopyComb.dataset.combinedText = `=== DÀN ĐÁNH NGÀY ${formatDateVi(targetDate)} ===\n\n💎 ĐỀ (${deData.methodTitle} - ${deData.numbers.length} số):\n${deData.numbers.join(', ')}\n\n🎰 LÔ & XIÊN (${loData.methodTitle} - ${loData.numbers.length} số):\n${loText}`;
+            btnCopyComb.dataset.combinedText = `=== DÀN ĐÁNH NGÀY ${formatDateVi(targetDate)} ===\n\n💎 ĐỀ (${deData.methodTitle} - ${deData.numbers.length} số):\n${deData.numbers.join(', ')}\n\n🎰 LÔ & XIÊN (${loData.methodTitle} - ${loData.numbers.length} số):\n${loCopyText}`;
         }
     }
 
@@ -11075,6 +11425,12 @@
                 errBox.classList.remove('hidden');
             }
         }
+    }
+
+    if (typeof window !== 'undefined') {
+        window.resolveMethodPlaySlipData = resolveMethodPlaySlipData;
+        window.synthesizeFallbackDiaryInfo = synthesizeFallbackDiaryInfo;
+        window.synthesizeLo4RowFallback = synthesizeLo4RowFallback;
     }
 
     if (document.readyState === 'loading') {

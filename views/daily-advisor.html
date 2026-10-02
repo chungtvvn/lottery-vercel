@@ -248,40 +248,67 @@
 
                     <!-- 5 Strategic Portfolios Grid -->
                     <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4" id="strategicPortfoliosGrid">
-                        <!-- GÓI 1: ĐỘT PHÁ LỢI NHUẬN TỐI ĐA & ĐÒN BẨY X2 GỠ LỖ -->
+                        <!-- GÓI 1: COMBO CHỦ LỰC BÙ TRỪ DÒNG TIỀN CHÉO (CROSS-HEDGING PORTFOLIO) -->
                         <div class="portfolio-card rounded-2xl border border-white/15 bg-slate-900/80 p-4 transition-all hover:border-amber-300 shadow-md cursor-pointer flex flex-col justify-between" data-portfolio="maxProfit">
                             <div>
                                 <div class="flex items-center justify-between gap-2">
-                                    <span class="rounded-full bg-amber-400 text-slate-950 font-black text-[10px] px-2.5 py-0.5 uppercase tracking-wide shadow-xs flex items-center gap-1">
-                                        ⚡ GÓI 1 · LÔ TỔNG HỢP 4 ĐỘNG CƠ (+1.094 TỶ)
+                                    <span class="rounded-full bg-amber-400 text-slate-950 font-black text-[10px] px-2.5 py-0.5 uppercase tracking-wide shadow-xs flex items-center gap-1" id="comboCardBadge">
+                                        🛡️ COMBO CHỦ LỰC · BÙ TRỪ DÒNG TIỀN CHÉO
                                     </span>
-                                    <span class="text-xs font-black text-amber-300 font-mono">Lãi +1.094 TỶ · Live +150M</span>
+                                    <span class="text-xs font-black text-amber-300 font-mono" id="comboCardProfitRoi">Win 77.8% · ROI +120.0%</span>
                                 </div>
                                 <h4 class="text-base font-black text-white mt-2 flex items-center gap-1.5">
-                                    <span>Lô Tổng Hợp 4 Động Cơ (X4/X3/X1) &amp; Đề Alpha</span>
-                                    <span class="rounded bg-amber-400 text-slate-950 px-1.5 py-0.2 text-[9px] font-black uppercase">👑 Thực Chiến Đỉnh Cao</span>
+                                    <span id="comboCardTitle">Combo Bù Trừ Dòng Tiền Chéo (3 Trụ Cột)</span>
+                                    <span class="rounded bg-amber-400 text-slate-950 px-1.5 py-0.2 text-[9px] font-black uppercase">👑 Chủ Lực PIT</span>
                                 </h4>
-                                <p class="text-[11px] text-slate-300 mt-1 leading-relaxed">
-                                    Tổng hợp toàn bộ 4 phương pháp Live (QMBF, Bạc Nhớ 27 Giải, 3 Động Cơ, RRF) phân tầng cược X4/X3/X1 không cố định số, lãi 65 kỳ +1.094 TỶ (Live +150M, 5.89 nháy/ngày), kết hợp Đề Alpha nổ bù sau trượt. Xiên 4 tự động bật van bảo toàn vốn khi số trùng > 5.
+                                <p class="text-[11px] text-slate-300 mt-1 leading-relaxed" id="comboCardRationale">
+                                    Chiến thuật phối hợp 3 trụ cột vững chắc: Đề Tinh Tuyển VIP, Lô Ghép 4 Động Cơ đa tầng (X5/X4/X3/X1) và Dàn Xiên Quây 11 vé. Cơ chế tự động cân bằng tỷ trọng vốn bảo đảm chỉ cần nổ bất kỳ 1 trụ cột là sinh lãi ròng tổng kết quả trong ngày (Profit &gt; 0).
                                 </p>
 
-                                <div class="mt-3 space-y-1.5 rounded-xl bg-black/40 p-2.5 text-[11px] font-mono border border-white/5">
-                                    <div class="flex justify-between text-amber-200">
-                                        <span>💎 Đề:</span>
-                                        <strong class="font-bold">Alpha Nổ Bù (23 VIP X3 + 14 Lót)</strong>
+                                <!-- Dynamic Live Telemetry Metrics Grid -->
+                                <div class="mt-3 grid grid-cols-2 gap-1.5 text-[11px] font-mono">
+                                    <div class="rounded-lg bg-emerald-500/10 border border-emerald-500/30 p-2">
+                                        <div class="text-[10px] text-emerald-400 font-bold uppercase">Tỷ Lệ Ngày Lãi Ròng</div>
+                                        <div class="text-sm font-black text-emerald-300" id="comboDailyWinRate">77.8% (≥ 70%)</div>
+                                        <div class="text-[9px] text-emerald-200/80" id="comboWinDaysText">210/270 ngày có lãi</div>
                                     </div>
-                                    <div class="flex justify-between text-teal-200">
-                                        <span>🎰 Lô:</span>
-                                        <strong class="font-bold">🔥 Tổng Hợp 4 Động Cơ [X4/X3/X1] (17s)</strong>
+                                    <div class="rounded-lg bg-amber-500/10 border border-amber-500/30 p-2">
+                                        <div class="text-[10px] text-amber-400 font-bold uppercase">Tổng Vốn Cược Ngày</div>
+                                        <div class="text-sm font-black text-amber-300" id="comboDailyStake">11,320K / ngày</div>
+                                        <div class="text-[9px] text-amber-200/80" id="comboStakeTierText">Mức 3 (hoặc 113.2M VIP)</div>
                                     </div>
-                                    <div class="flex justify-between text-indigo-200">
-                                        <span>✨ Xiên 4:</span>
-                                        <strong class="font-bold">🛡️ Bỏ qua hôm nay (Bảo toàn vốn)</strong>
+                                    <div class="rounded-lg bg-cyan-500/10 border border-cyan-500/30 p-2">
+                                        <div class="text-[10px] text-cyan-400 font-bold uppercase">ROI Lũy Kế / Lợi Nhuận</div>
+                                        <div class="text-sm font-black text-cyan-300" id="comboCumulativeRoi">+120.0% (≥ +25%)</div>
+                                        <div class="text-[9px] text-cyan-200/80" id="comboCumulativeProfit">+18.54 TỶ lũy kế</div>
+                                    </div>
+                                    <div class="rounded-lg bg-indigo-500/10 border border-indigo-500/30 p-2">
+                                        <div class="text-[10px] text-indigo-400 font-bold uppercase">Chuỗi Thua Tối Đa</div>
+                                        <div class="text-sm font-black text-indigo-300" id="comboMaxDrawdown">Max 3 ngày (≤ 3)</div>
+                                        <div class="text-[9px] text-indigo-200/80">Khiên chống drawdown</div>
                                     </div>
                                 </div>
 
-                                <div class="mt-2.5 text-[10px] text-amber-300 font-semibold flex items-center gap-1">
-                                    <i class="bi bi-lightning-charge-fill text-amber-400"></i> <span>Đòn bẩy X3/X2 gỡ bù mọi khoản thua lỗ và bứt phá profit kỷ lục</span>
+                                <!-- 3 Pillars Breakdown Box -->
+                                <div class="mt-3 space-y-1.5 rounded-xl bg-black/40 p-2.5 text-[11px] font-mono border border-white/5" id="comboPillarsBreakdown">
+                                    <div class="flex justify-between text-amber-200">
+                                        <span>💎 Đề VIP (Trụ 1):</span>
+                                        <strong class="font-bold" id="comboPillar1DeText">VIP X3 + Lót X1 (Ăn 1:84 - 1:252)</strong>
+                                    </div>
+                                    <div class="flex justify-between text-teal-200">
+                                        <span>🔥 Lô 4 ĐC (Trụ 2):</span>
+                                        <strong class="font-bold" id="comboPillar2LoText">Phân tầng X5/X4/X3/X1 (Nổ 96.7%)</strong>
+                                    </div>
+                                    <div class="flex justify-between text-indigo-200">
+                                        <span>🎲 Xiên Quây (Trụ 3):</span>
+                                        <strong class="font-bold" id="comboPillar3XienText">Xiên 4 quây 11 vé (Lãi từ 2 con)</strong>
+                                    </div>
+                                </div>
+
+                                <!-- Hedging Mechanism Note -->
+                                <div class="mt-2.5 text-[10px] text-amber-300 font-semibold flex items-center gap-1" id="comboHedgingMechanism">
+                                    <i class="bi bi-shield-check text-amber-400"></i>
+                                    <span id="comboHedgingGuaranteeText">Cơ chế bù trừ dòng tiền chéo 3 trụ cột: Nổ bất kỳ 1 trụ là sinh Lãi Ròng tổng &gt; 0!</span>
                                 </div>
                             </div>
 
@@ -1250,41 +1277,53 @@
                                 </div>
 
                                 <!-- Dàn số phân tầng -->
-                                <div class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
-                                    <!-- Tầng X4 / X5 (Trùng 3-4 PP) -->
+                                <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                    <!-- Tầng Siêu VIP X5 (Trùng 4 PP) -->
+                                    <div class="rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 border-2 border-amber-400 p-3 shadow-sm">
+                                        <div class="flex items-center justify-between text-xs font-bold text-amber-300 mb-2">
+                                            <span class="flex items-center gap-1.5 uppercase font-black tracking-wide text-amber-400">
+                                                <i class="bi bi-star-fill text-amber-400 animate-pulse"></i> SIÊU VIP (TRÙNG 4 PP · X5):
+                                            </span>
+                                            <span class="rounded bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 text-[10px] font-black px-2 py-0.5 shadow-xs" id="lo4EngineTierX5Badge">0 số</span>
+                                        </div>
+                                        <div id="lo4EngineTierX5Numbers" class="flex flex-wrap gap-1.5"></div>
+                                        <div class="text-[10px] text-amber-200 mt-1.5 font-medium" id="lo4EngineTierX5SubText">Cược x5 (500đ · 11M/số) Tuyệt đối đồng thuận cả 4 động cơ</div>
+                                    </div>
+
+                                    <!-- Tầng Cực VIP X4 (Trùng 3 PP) -->
                                     <div class="rounded-xl bg-amber-500/15 border border-amber-400/50 p-3">
                                         <div class="flex items-center justify-between text-xs font-bold text-amber-300 mb-2">
                                             <span class="flex items-center gap-1.5 uppercase font-black tracking-wide">
-                                                <i class="bi bi-stars text-amber-400"></i> TẦNG CỰC VIP (TRÙNG 3-4 PP · X4/X5):
+                                                <i class="bi bi-stars text-amber-400"></i> CỰC VIP (TRÙNG 3 PP · X4):
                                             </span>
                                             <span class="rounded bg-amber-400 text-slate-950 text-[10px] font-black px-2 py-0.5" id="lo4EngineTierX4Badge">3 số</span>
                                         </div>
-                                        <div id="lo4EngineTierX4Numbers" class="flex flex-wrap gap-2"></div>
-                                        <div class="text-[10px] text-amber-200/80 mt-1.5 italic" id="lo4EngineTierX4SubText">Đồng thuận bởi QMBF, Bạc Nhớ 27 Giải và 3 Động Cơ</div>
+                                        <div id="lo4EngineTierX4Numbers" class="flex flex-wrap gap-1.5"></div>
+                                        <div class="text-[10px] text-amber-200/80 mt-1.5 italic" id="lo4EngineTierX4SubText">Cược x4 (400đ · 8.8M/số) Trùng 3 động cơ</div>
                                     </div>
 
-                                    <!-- Tầng X3 (Trùng 2 PP) -->
+                                    <!-- Tầng Triển Vọng X3 (Trùng 2 PP) -->
                                     <div class="rounded-xl bg-indigo-500/15 border border-indigo-400/30 p-3">
                                         <div class="flex items-center justify-between text-xs font-bold text-indigo-300 mb-2">
                                             <span class="flex items-center gap-1.5 uppercase font-black tracking-wide">
-                                                <i class="bi bi-shield-check text-indigo-400"></i> TẦNG TRIỂN VỌNG (TRÙNG 2 PP · X3):
+                                                <i class="bi bi-shield-check text-indigo-400"></i> TRIỂN VỌNG (TRÙNG 2 PP · X3):
                                             </span>
                                             <span class="rounded bg-indigo-500/30 text-indigo-200 text-[10px] font-bold px-2 py-0.5" id="lo4EngineTierX3Badge">5 số</span>
                                         </div>
                                         <div id="lo4EngineTierX3Numbers" class="flex flex-wrap gap-1.5"></div>
-                                        <div class="text-[10px] text-indigo-200/70 mt-1.5 italic" id="lo4EngineTierX3SubText">Cược x3 lần (300đ · 6.6M/số) gia tăng độ phủ</div>
+                                        <div class="text-[10px] text-indigo-200/70 mt-1.5 italic" id="lo4EngineTierX3SubText">Cược x3 (300đ · 6.6M/số) Trùng 2 động cơ</div>
                                     </div>
 
-                                    <!-- Tầng X1 (Không Trùng · 1 PP) -->
+                                    <!-- Tầng Bảo Hiểm X1 (Không Trùng · 1 PP) -->
                                     <div class="rounded-xl bg-slate-800/60 border border-slate-700/50 p-3">
                                         <div class="flex items-center justify-between text-xs font-bold text-slate-300 mb-2">
                                             <span class="flex items-center gap-1.5 uppercase font-black tracking-wide">
-                                                <i class="bi bi-grid-3x3-gap text-teal-400"></i> TẦNG BẢO HIỂM (KHÔNG TRÙNG · X1):
+                                                <i class="bi bi-grid-3x3-gap text-teal-400"></i> BẢO HIỂM (1 PP · X1):
                                             </span>
                                             <span class="rounded bg-slate-700 text-teal-300 text-[10px] font-bold px-2 py-0.5" id="lo4EngineTierX1Badge">9 số</span>
                                         </div>
                                         <div id="lo4EngineTierX1Numbers" class="flex flex-wrap gap-1.5"></div>
-                                        <div class="text-[10px] text-slate-400 mt-1.5 italic" id="lo4EngineTierX1SubText">Cược x1 lần (100đ · 2.2M/số) tổng hợp toàn bộ 4 PP</div>
+                                        <div class="text-[10px] text-slate-400 mt-1.5 italic" id="lo4EngineTierX1SubText">Cược x1 (100đ · 2.2M/số) Bọc lót toàn diện</div>
                                     </div>
                                 </div>
 
@@ -1904,7 +1943,7 @@
                 <!-- Category Sub-tabs: Phân tách theo từng loại -->
                 <div class="mt-4 flex flex-wrap items-center gap-1.5 border-b border-slate-100 pb-3.5" id="diaryCategoryTabs">
                     <button type="button" data-diary-cat="all" class="diary-cat-btn active rounded-xl bg-slate-900 text-white font-black text-xs px-3.5 py-2 transition-all shadow-xs flex items-center gap-1.5">
-                        <i class="bi bi-layers-fill"></i> 📊 Tổng Hợp (Đề + Lô)
+                        <i class="bi bi-shield-shaded text-amber-400"></i> 🛡️ Combo Bù Trừ Chéo (3 Trụ Cột)
                     </button>
                     <button type="button" data-diary-cat="de" class="diary-cat-btn rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2 transition-all flex items-center gap-1.5">
                         <i class="bi bi-gem"></i> 💎 Đề Theo Gợi Ý
@@ -2002,13 +2041,10 @@
                         <thead id="unifiedCombatDiaryTableHead">
                             <tr class="border-b border-slate-200 bg-slate-100/70 text-slate-600 uppercase font-black tracking-wider text-[10px]">
                                 <th class="px-3 py-3">Ngày</th>
-                                <th class="px-3 py-3">💎 Đề Theo Gợi Ý</th>
-                                <th class="px-3 py-3">🏆 Lô Chuẩn Nền Tảng</th>
-                                <th class="px-3 py-3">🚀 Lô Tăng Tốc X2</th>
-                                <th class="px-3 py-3">🔥 Lô Ghép 4 Động Cơ <span class="text-[9px] text-slate-400 font-normal lowercase">(Live)</span></th>
-                                <th class="px-3 py-3">🎲 Lô Xiên 4 Ghép Mới <span class="text-[9px] text-slate-400 font-normal lowercase">(quan sát)</span></th>
-                                <th class="px-3 py-3">👑 Dàn Xiên 5 (5 Dàn X4 · 11M) <span class="text-[9px] text-slate-400 font-normal lowercase">(quan sát)</span></th>
-                                <th class="px-3 py-3 text-right">Tổng Ngày</th>
+                                <th class="px-3 py-3">💎 Đề Tinh Tuyển VIP</th>
+                                <th class="px-3 py-3">🔥 Lô Ghép 4 Động Cơ</th>
+                                <th class="px-3 py-3">🎲 Dàn Xiên Quây</th>
+                                <th class="px-3 py-3 text-right">Lãi/Lỗ Tổng Hợp (Profit_total)</th>
                                 <th class="px-3 py-3 text-right">Lũy Kế Mốc</th>
                             </tr>
                         </thead>
@@ -2990,6 +3026,6 @@
         </div>
     </div>
 
-    <script src="/js/daily-advisor.js?v=20260930_inpage_playslips_v2"></script>
+    <script src="/js/daily-advisor.js?v=20261002_snapshot_freeze_v4"></script>
 </body>
 </html>

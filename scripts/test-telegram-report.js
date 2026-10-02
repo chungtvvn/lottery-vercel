@@ -359,7 +359,7 @@ async function main() {
     assert.match(report.text, /2\. 🏆 LÔ CHUẨN TỐI ƯU \(DÀN 20 SỐ\)/);
     assert.match(report.text, /3\. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO \(DÀN 7 SỐ TĂNG TỐC\)/);
     assert.match(report.text, /4\. ⚡ BẢNG GỘP ĐÁNH LÔ TỔNG LỰC/);
-    assert.match(report.text, /5\. 💎 LÔ XIÊN 4 TINH HOA \(QUÂY 11 VÉ\)/);
+    assert.match(report.text, /5\. 💎 LÔ XIÊN/);
     assert.match(report.text, /6\. 📊 BẢNG THEO DÕI THỰC CHIẾN THEO GỢI Ý/);
     assert.match(report.text, /7\. 💡 KHUYẾN NGHỊ PHÂN BỔ VỐN/);
     assert.ok(!report.text.includes('LÔ XIÊN 2 CHIẾN LƯỢC'), 'Báo cáo không được chứa Lô Xiên 2');

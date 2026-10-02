@@ -82,6 +82,13 @@ function normalizeDate(value) {
     return String(value || '').slice(0, 10);
 }
 
+function nextIsoDate(value) {
+    const date = new Date(`${String(value || '').slice(0, 10)}T00:00:00Z`);
+    if (Number.isNaN(date.getTime())) return null;
+    date.setUTCDate(date.getUTCDate() + 1);
+    return date.toISOString().slice(0, 10);
+}
+
 function readSpecial(row) {
     const value = row?.special ?? row?.db ?? row?.giaiDb ?? row?.giai_dac_biet;
     const number = Number(value);
@@ -317,6 +324,80 @@ function settleFromRaw(payload, rawRows) {
         } catch (_) {}
     }
 
+    let crossHedgingPortfolio = payload.crossHedgingPortfolio || null;
+    let crossHedgingService = null;
+    try {
+        crossHedgingService = require('@/lib/services/crossHedgingPortfolioService');
+    } catch (_) {
+        try {
+            crossHedgingService = require('../../../lib/services/crossHedgingPortfolioService');
+        } catch (_) {}
+    }
+
+    if (crossHedgingService) {
+        const lastHedgingDate = normalizeDate(
+            crossHedgingPortfolio?.settledLedger?.at(-1)?.date ||
+            crossHedgingPortfolio?.targetDate
+        );
+
+        if (!crossHedgingPortfolio || !Array.isArray(crossHedgingPortfolio.settledLedger) || crossHedgingPortfolio.settledLedger.length === 0 || (latestRawDate && lastHedgingDate && lastHedgingDate < latestRawDate)) {
+            try {
+                const backtestRes = crossHedgingService.runCrossHedgingBacktest2026(rawRows, {
+                    advisorCache: payload
+                });
+                const nextTargetDate = normalizeDate(payload?.pendingPredictionDate || (rawRows.length ? nextIsoDate(rawRows.at(-1)?.date) : null));
+                const pendingDecision = crossHedgingService.evaluateCrossAssetPortfolio(
+                    nextTargetDate,
+                    rawRows,
+                    payload,
+                    {
+                        metrics: backtestRes.summary,
+                        priorState: backtestRes.latestDecision ? {
+                            mode: backtestRes.latestDecision.mode,
+                            abstainConsecutive: backtestRes.latestDecision.regimeDetails?.abstainConsecutive || 0
+                        } : null,
+                        ledgerHistory: backtestRes.settledLedger
+                    }
+                );
+                crossHedgingPortfolio = {
+                    ...pendingDecision,
+                    latestRecommendation: pendingDecision,
+                    summary: backtestRes.summary,
+                    metrics: {
+                        dailyPositiveProfitRate: backtestRes.summary.dailyPositiveProfitRate,
+                        cumulativeProfitK: backtestRes.summary.cumulativeProfitK,
+                        cumulativeRoi: backtestRes.summary.cumulativeRoi,
+                        maxConsecutiveLossDays: backtestRes.summary.maxConsecutiveLossDays,
+                        totalDraws2026: backtestRes.summary.totalDraws2026,
+                        positiveDays2026: backtestRes.summary.positiveDays2026,
+                        activeDays: backtestRes.summary.activeDays
+                    },
+                    settledLedger: backtestRes.settledLedger
+                };
+            } catch (err) {
+                console.error('[API daily-advisor] Error rebuilding crossHedgingPortfolio:', err);
+            }
+        } else {
+            // Settle pending recommendation on-the-fly if raw results are available for targetDate
+            const targetDate = normalizeDate(crossHedgingPortfolio.targetDate || crossHedgingPortfolio.latestRecommendation?.targetDate);
+            const actualRow = targetDate ? (rawRows || []).find(r => normalizeDate(r?.date || r?.ngay) === targetDate) : null;
+            if (actualRow && (actualRow.special != null || actualRow.prize1 != null)) {
+                try {
+                    const decision = crossHedgingPortfolio.latestRecommendation || crossHedgingPortfolio;
+                    const settled = crossHedgingService.settleCrossAssetPortfolio(decision, actualRow);
+                    crossHedgingPortfolio = {
+                        ...crossHedgingPortfolio,
+                        lastSettled: settled
+                    };
+                    const existsInLedger = (crossHedgingPortfolio.settledLedger || []).some(r => normalizeDate(r?.date) === targetDate);
+                    if (!existsInLedger && Array.isArray(crossHedgingPortfolio.settledLedger)) {
+                        crossHedgingPortfolio.settledLedger = [...crossHedgingPortfolio.settledLedger, settled];
+                    }
+                } catch (_) {}
+            }
+        }
+    }
+
     return {
         ...payload,
         records,
@@ -336,6 +417,7 @@ function settleFromRaw(payload, rawRows) {
         loHawkesClustering: payload.loHawkesClustering || null,
         loXien4Synergy: loXien4Synergy || payload.loXien4Synergy || null,
         lo4EngineFusion: payload.lo4EngineFusion || null,
+        crossHedgingPortfolio: crossHedgingPortfolio || payload.crossHedgingPortfolio || null,
         dynamicMetaAdvisor: dynamicMetaAdvisor || payload.dynamicMetaAdvisor || loQuantumBayesFusion?.dynamicMetaAdvisor || null,
         latestDataDate: rawRows?.at(-1)?.date || payload.latestDataDate,
         snapshotLock: (() => {

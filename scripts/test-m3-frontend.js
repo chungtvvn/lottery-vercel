@@ -1,0 +1,374 @@
+#!/usr/bin/env node
+/**
+ * scripts/test-m3-frontend.js
+ *
+ * Milestone 3 Verification Suite:
+ * Frontend Web UI /daily-advisor Upgrade (Requirement R4 frontend)
+ *
+ * Verifies:
+ * 1. HTML Layout & Template IDs (views/daily-advisor.html)
+ * 2. Strategic Portfolio Combo Card Dynamic Telemetry Elements
+ * 3. 6-Column Unified Combat Diary Audit Table (#unifiedCombatDiaryTableHead)
+ * 4. Client JS Logic & Defensive Handlers (public/js/daily-advisor.js)
+ * 5. Headless Mock Execution of syncCrossHedgingComboCard & Row Rendering
+ * 6. Mathematical Consistency between View Figures and crossHedgingPortfolio Data
+ *
+ * Zero External Dependencies (Native Node.js assert).
+ */
+
+'use strict';
+
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
+
+const stats = {
+    total: 0,
+    passed: 0,
+    failed: 0
+};
+
+function test(description, fn) {
+    stats.total++;
+    try {
+        fn();
+        stats.passed++;
+        console.log(`  ✓ [PASS] ${description}`);
+    } catch (err) {
+        stats.failed++;
+        console.error(`  ✗ [FAIL] ${description}`);
+        console.error(`    ${err.message}`);
+        if (err.stack) console.error(err.stack);
+    }
+}
+
+const ROOT_DIR = path.resolve(__dirname, '..');
+const HTML_PATH = path.join(ROOT_DIR, 'views', 'daily-advisor.html');
+const JS_PATH = path.join(ROOT_DIR, 'public', 'js', 'daily-advisor.js');
+const CACHE_PATH = path.join(ROOT_DIR, 'data', 'cached_daily_method_advisor.json');
+
+console.log('='.repeat(80));
+console.log('  MILESTONE 3: FRONTEND WEB UI /daily-advisor VERIFICATION');
+console.log('='.repeat(80));
+
+// =========================================================================
+// SECTION 1: HTML Structure & Template IDs Verification
+// =========================================================================
+console.log('\n--- SECTION 1: HTML Structure & Template IDs (views/daily-advisor.html) ---');
+
+let htmlContent = '';
+test('views/daily-advisor.html exists and is readable', () => {
+    assert.ok(fs.existsSync(HTML_PATH), 'daily-advisor.html must exist');
+    htmlContent = fs.readFileSync(HTML_PATH, 'utf8');
+    assert.ok(htmlContent.length > 10000, 'daily-advisor.html must have substantial content');
+});
+
+test('Contains #strategicPortfoliosGrid container', () => {
+    assert.ok(htmlContent.includes('id="strategicPortfoliosGrid"'), 'HTML must contain #strategicPortfoliosGrid');
+});
+
+test('Contains all required Combo Card telemetry element IDs', () => {
+    const requiredIds = [
+        'comboCardBadge',
+        'comboCardProfitRoi',
+        'comboCardTitle',
+        'comboCardRationale',
+        'comboDailyWinRate',
+        'comboWinDaysText',
+        'comboDailyStake',
+        'comboStakeTierText',
+        'comboCumulativeRoi',
+        'comboCumulativeProfit',
+        'comboMaxDrawdown',
+        'comboPillarsBreakdown',
+        'comboPillar1DeText',
+        'comboPillar2LoText',
+        'comboPillar3XienText',
+        'comboHedgingMechanism',
+        'comboHedgingGuaranteeText'
+    ];
+
+    for (const id of requiredIds) {
+        assert.ok(htmlContent.includes(`id="${id}"`), `HTML must contain element #${id}`);
+    }
+});
+
+test('Contains #unifiedCombatDiaryTableHead with exact 6 institutional columns', () => {
+    assert.ok(htmlContent.includes('id="unifiedCombatDiaryTableHead"'), 'HTML must contain #unifiedCombatDiaryTableHead');
+
+    // Extract table head content
+    const theadMatch = htmlContent.match(/<thead[^>]*id="unifiedCombatDiaryTableHead"[^>]*>([\s\S]*?)<\/thead>/);
+    assert.ok(theadMatch, 'Must find <thead> with id="unifiedCombatDiaryTableHead"');
+    const theadContent = theadMatch[1];
+
+    const requiredColumns = [
+        'Ngày',
+        '💎 Đề Tinh Tuyển VIP',
+        '🔥 Lô Ghép 4 Động Cơ',
+        '🎲 Dàn Xiên Quây',
+        'Lãi/Lỗ Tổng Hợp (Profit_total)',
+        'Lũy Kế Mốc'
+    ];
+
+    for (const col of requiredColumns) {
+        assert.ok(theadContent.includes(col), `Header must include column: ${col}`);
+    }
+
+    const thMatches = theadContent.match(/<th\b/g) || [];
+    assert.strictEqual(thMatches.length, 6, `Header must have exactly 6 columns, found ${thMatches.length}`);
+});
+
+test('Contains #unifiedCombatDiaryTableBody container', () => {
+    assert.ok(htmlContent.includes('id="unifiedCombatDiaryTableBody"'), 'HTML must contain #unifiedCombatDiaryTableBody');
+});
+
+test('Category filter tabs include Combo Bù Trừ Chéo as active button', () => {
+    assert.ok(htmlContent.includes('data-diary-cat="all"'), 'HTML must contain category tab data-diary-cat="all"');
+    assert.ok(htmlContent.includes('Combo Bù Trừ Chéo'), 'Category tab must be labeled Combo Bù Trừ Chéo');
+});
+
+// =========================================================================
+// SECTION 2: JavaScript Syntax & Logic Implementation
+// =========================================================================
+console.log('\n--- SECTION 2: JavaScript Syntax & Implementation (public/js/daily-advisor.js) ---');
+
+let jsContent = '';
+test('public/js/daily-advisor.js syntax validation (node -c)', () => {
+    assert.ok(fs.existsSync(JS_PATH), 'daily-advisor.js must exist');
+    jsContent = fs.readFileSync(JS_PATH, 'utf8');
+    execSync(`node -c "${JS_PATH}"`, { stdio: 'pipe' });
+});
+
+test('PORTFOLIOS_CONFIG defines crossHedging with tier Mức 3 11,320K', () => {
+    assert.ok(jsContent.includes("crossHedging:"), 'PORTFOLIOS_CONFIG must contain crossHedging entry');
+    assert.ok(jsContent.includes("11,320K"), 'crossHedging must define 11,320K base stake');
+    assert.ok(jsContent.includes("Đề VIP + Lô Ghép 4 + Xiên Quây"), 'crossHedging must describe the 3 pillars');
+});
+
+test('PORTFOLIOS_CONFIG maxProfit points to Cross-Hedging Combo Portfolio', () => {
+    assert.ok(jsContent.includes("COMBO BÙ TRỪ DÒNG TIỀN CHÉO"), 'maxProfit portfolio title must represent Cross-Hedging Combo');
+});
+
+test('syncCrossHedgingComboCard function is implemented with defensive null-checks', () => {
+    assert.ok(jsContent.includes("function syncCrossHedgingComboCard(chData)"), 'syncCrossHedgingComboCard must be defined');
+    assert.ok(jsContent.includes("if (!chData) return;"), 'syncCrossHedgingComboCard must defensively check for missing data');
+    assert.ok(jsContent.includes("comboDailyWinRate"), 'syncCrossHedgingComboCard must populate #comboDailyWinRate');
+    assert.ok(jsContent.includes("comboDailyStake"), 'syncCrossHedgingComboCard must populate #comboDailyStake');
+    assert.ok(jsContent.includes("comboCumulativeRoi"), 'syncCrossHedgingComboCard must populate #comboCumulativeRoi');
+    assert.ok(jsContent.includes("comboCumulativeProfit"), 'syncCrossHedgingComboCard must populate #comboCumulativeProfit');
+    assert.ok(jsContent.includes("comboHedgingGuaranteeText"), 'syncCrossHedgingComboCard must populate #comboHedgingGuaranteeText');
+});
+
+test('renderUnifiedKpiCards wires syncCrossHedgingComboCard and updates KPI Card 7', () => {
+    assert.ok(jsContent.includes("syncCrossHedgingComboCard(payload.crossHedgingPortfolio);") || jsContent.includes("syncCrossHedgingComboCard(data.crossHedgingPortfolio);"), 'renderUnifiedKpiCards must call syncCrossHedgingComboCard');
+    assert.ok(jsContent.includes("COMBO BÙ TRỪ DÒNG TIỀN CHÉO"), 'Card 7 must display COMBO BÙ TRỪ DÒNG TIỀN CHÉO');
+});
+
+test('selectStrategicPortfolio wires syncCrossHedgingComboCard', () => {
+    assert.ok(jsContent.includes("syncCrossHedgingComboCard(fullData?.crossHedgingPortfolio || payload?.crossHedgingPortfolio);") || jsContent.includes("syncCrossHedgingComboCard(payload?.crossHedgingPortfolio);"), 'selectStrategicPortfolio must call syncCrossHedgingComboCard');
+});
+
+test('renderUnifiedCombatDiary tracks crossHedgingMap and cumCrossProfitK', () => {
+    assert.ok(jsContent.includes("const crossHedgingLedger = payload?.crossHedgingPortfolio?.settledLedger || [];"), 'Must read settledLedger');
+    assert.ok(jsContent.includes("const crossHedgingMap = {};"), 'Must build crossHedgingMap indexed by date');
+    assert.ok(jsContent.includes("let cumCrossProfitK = 0;"), 'Must maintain cumCrossProfitK');
+    assert.ok(jsContent.includes("chDePnlK"), 'Must compute chDePnlK');
+    assert.ok(jsContent.includes("chLoPnlK"), 'Must compute chLoPnlK');
+    assert.ok(jsContent.includes("chXienPnlK"), 'Must compute chXienPnlK');
+    assert.ok(jsContent.includes("chTotalProfitK"), 'Must compute chTotalProfitK');
+});
+
+test('renderUnifiedCombatDiary empty state has colspan="6"', () => {
+    assert.ok(jsContent.includes('<td colspan="6" class="py-10 text-center bg-amber-50/50">'), 'Empty state must use colspan="6"');
+});
+
+test('renderUnifiedCombatDiary thead generation produces exact 6 columns for default all view', () => {
+    const jsTheadRegex = /<tr[^>]*>\s*<th[^>]*>Ngày<\/th>\s*<th[^>]*>💎 Đề Tinh Tuyển VIP<\/th>\s*<th[^>]*>🔥 Lô Ghép 4 Động Cơ<\/th>\s*<th[^>]*>🎲 Dàn Xiên Quây<\/th>\s*<th[^>]*>Lãi\/Lỗ Tổng Hợp \(Profit_total\)<\/th>\s*<th[^>]*>Lũy Kế Mốc<\/th>\s*<\/tr>/;
+    assert.ok(jsTheadRegex.test(jsContent), 'JS thead template must match 6 columns exactly');
+});
+
+test('View 5 template generates 6 <td> elements for pending and settled rows', () => {
+    assert.ok(jsContent.includes("VIEW TỔNG HỢP COMBO BÙ TRỪ DÒNG TIỀN CHÉO (6 CỘT CHUẨN ĐỊNH LƯỢNG)"), 'View 5 comment must be present');
+    assert.ok(jsContent.includes('<!-- Cột 1: Ngày -->'), 'View 5 must have Cột 1');
+    assert.ok(jsContent.includes('<!-- Cột 2: Đề Tinh Tuyển VIP -->'), 'View 5 must have Cột 2');
+    assert.ok(jsContent.includes('<!-- Cột 3: Lô Ghép 4 Động Cơ -->'), 'View 5 must have Cột 3');
+    assert.ok(jsContent.includes('<!-- Cột 4: Dàn Xiên Quây -->'), 'View 5 must have Cột 4');
+    assert.ok(jsContent.includes('<!-- Cột 5: Lãi/Lỗ Tổng Hợp -->'), 'View 5 must have Cột 5');
+    assert.ok(jsContent.includes('<!-- Cột 6: Lũy Kế Mốc -->'), 'View 5 must have Cột 6');
+});
+
+// =========================================================================
+// SECTION 3: Headless Mock Execution & Dynamic Data Binding
+// =========================================================================
+console.log('\n--- SECTION 3: Headless Mock Execution & Dynamic Data Binding ---');
+
+let cacheData = {};
+test('Load data/cached_daily_method_advisor.json and verify crossHedgingPortfolio contract', () => {
+    assert.ok(fs.existsSync(CACHE_PATH), 'Cache file must exist');
+    cacheData = JSON.parse(fs.readFileSync(CACHE_PATH, 'utf8'));
+    assert.ok(cacheData.crossHedgingPortfolio, 'crossHedgingPortfolio must exist in cache');
+    assert.ok(cacheData.crossHedgingPortfolio.metrics, 'metrics must exist');
+    assert.ok(cacheData.crossHedgingPortfolio.settledLedger, 'settledLedger must exist');
+    assert.ok(Array.isArray(cacheData.crossHedgingPortfolio.settledLedger), 'settledLedger must be array');
+    assert.ok(cacheData.crossHedgingPortfolio.settledLedger.length >= 260, 'settledLedger must have >= 260 items');
+});
+
+// Create a DOM Mock environment
+function createMockDom() {
+    const elements = new Map();
+
+    function getOrCreateElement(id) {
+        if (!elements.has(id)) {
+            elements.set(id, {
+                id,
+                textContent: '',
+                innerHTML: '',
+                className: '',
+                classList: {
+                    add: () => {},
+                    remove: () => {},
+                    contains: () => false
+                },
+                style: {},
+                dataset: {}
+            });
+        }
+        return elements.get(id);
+    }
+
+    return {
+        byId: (id) => getOrCreateElement(id),
+        get: (id) => elements.get(id)
+    };
+}
+
+// Extract and test syncCrossHedgingComboCard in isolated sandbox
+test('Execute syncCrossHedgingComboCard in mock DOM with actual cached data', () => {
+    const mockDom = createMockDom();
+
+    // Helper money / percent functions matching daily-advisor.js
+    function moneyM(k, opts = {}) {
+        if (k == null || isNaN(k)) return '--';
+        const num = Number(k);
+        const signed = opts.signed ? (num > 0 ? '+' : '') : '';
+        if (Math.abs(num) >= 1000000) {
+            return `${signed}${(num / 1000000).toFixed(2)} TỶ`;
+        }
+        if (Math.abs(num) >= 1000) {
+            return `${signed}${(num / 1000).toFixed(1)}M`;
+        }
+        return `${signed}${num.toLocaleString('vi-VN')}K`;
+    }
+
+    function percent(val) {
+        if (val == null || isNaN(val)) return '--';
+        const num = Number(val);
+        return `${(num * 100).toFixed(1)}%`;
+    }
+
+    // Extract function implementation
+    const syncFuncMatch = jsContent.match(/function syncCrossHedgingComboCard\(chData\)\s*\{([\s\S]*?)\n    \}/);
+    assert.ok(syncFuncMatch, 'Must extract syncCrossHedgingComboCard implementation');
+
+    const fnBody = syncFuncMatch[1];
+    const testFn = new Function('chData', 'byId', 'moneyM', 'percent', fnBody);
+
+    // Run with real cache data
+    testFn(cacheData.crossHedgingPortfolio, mockDom.byId, moneyM, percent);
+
+    // Verify DOM updates
+    const winRateEl = mockDom.get('comboDailyWinRate');
+    assert.ok(winRateEl && winRateEl.textContent.includes('77.8%'), `Win rate must be 77.8%, got: ${winRateEl?.textContent}`);
+
+    const winDaysEl = mockDom.get('comboWinDaysText');
+    assert.ok(winDaysEl && winDaysEl.textContent.includes('210/270'), `Win days must include 210/270, got: ${winDaysEl?.textContent}`);
+
+    const stakeEl = mockDom.get('comboDailyStake');
+    assert.ok(stakeEl && (stakeEl.textContent.includes('11,320K') || stakeEl.textContent.includes('11.320K')), `Daily stake must be 11,320K or 11.320K, got: ${stakeEl?.textContent}`);
+
+    const roiEl = mockDom.get('comboCumulativeRoi');
+    assert.ok(roiEl && roiEl.textContent.includes('+120.0%'), `ROI must be +120.0%, got: ${roiEl?.textContent}`);
+
+    const profitEl = mockDom.get('comboCumulativeProfit');
+    assert.ok(profitEl && profitEl.textContent.includes('+18.54 TỶ'), `Profit must be +18.54 TỶ, got: ${profitEl?.textContent}`);
+
+    const ddEl = mockDom.get('comboMaxDrawdown');
+    assert.ok(ddEl && ddEl.textContent.includes('3 ngày'), `Max drawdown must be 3 ngày, got: ${ddEl?.textContent}`);
+
+    const p1El = mockDom.get('comboPillar1DeText');
+    assert.ok(p1El && p1El.textContent.includes('Đề Markov'), `Pillar 1 text must mention Đề Markov, got: ${p1El?.textContent}`);
+
+    const p2El = mockDom.get('comboPillar2LoText');
+    assert.ok(p2El && (p2El.textContent.includes('Lô') || p2El.textContent.includes('4 Động Cơ')), `Pillar 2 text must mention Lô, got: ${p2El?.textContent}`);
+
+    const p3El = mockDom.get('comboPillar3XienText');
+    assert.ok(p3El && p3El.textContent.includes('11 vé'), `Pillar 3 text must mention 11 vé, got: ${p3El?.textContent}`);
+
+    const guaranteeEl = mockDom.get('comboHedgingGuaranteeText');
+    assert.ok(guaranteeEl && guaranteeEl.textContent.includes('BẢO TOÀN LÃI RÒNG THẤT THỦ'), `Guarantee text must be present, got: ${guaranteeEl?.textContent}`);
+});
+
+test('syncCrossHedgingComboCard executes defensively when chData is null without throwing', () => {
+    const mockDom = createMockDom();
+    const syncFuncMatch = jsContent.match(/function syncCrossHedgingComboCard\(chData\)\s*\{([\s\S]*?)\n    \}/);
+    const testFn = new Function('chData', 'byId', 'moneyM', 'percent', syncFuncMatch[1]);
+
+    // Should not throw on null, undefined, or empty object
+    testFn(null, mockDom.byId, () => '', () => '');
+    testFn(undefined, mockDom.byId, () => '', () => '');
+    testFn({}, mockDom.byId, () => '', () => '');
+});
+
+// =========================================================================
+// SECTION 4: Mathematical Consistency & PIT Ledger Verification
+// =========================================================================
+console.log('\n--- SECTION 4: Mathematical Consistency & PIT Ledger Verification ---');
+
+test('settledLedger strictly satisfies: dePnlK + loPnlK + xienPnlK === totalProfitK across all dates', () => {
+    const ledger = cacheData.crossHedgingPortfolio.settledLedger;
+    let mismatches = 0;
+
+    for (const row of ledger) {
+        const expected = row.dePnlK + row.loPnlK + row.xienPnlK;
+        if (expected !== row.totalProfitK) {
+            mismatches++;
+        }
+    }
+
+    assert.strictEqual(mismatches, 0, `All ${ledger.length} entries must have dePnlK + loPnlK + xienPnlK === totalProfitK`);
+});
+
+test('settledLedger final cumulativeProfitK matches metrics.cumulativeProfitK exactly', () => {
+    const ledger = cacheData.crossHedgingPortfolio.settledLedger;
+    const finalRow = ledger[ledger.length - 1];
+    const metricsProfit = cacheData.crossHedgingPortfolio.metrics.cumulativeProfitK;
+
+    assert.strictEqual(finalRow.cumulativeProfitK, metricsProfit, `Final row cumulative ${finalRow.cumulativeProfitK} must match metrics ${metricsProfit}`);
+    assert.strictEqual(metricsProfit, 18541036, 'Cumulative profit must be exactly 18,541,036K');
+});
+
+test('settledLedger win rate matches metrics.dailyPositiveProfitRate within 0.0001', () => {
+    const ledger = cacheData.crossHedgingPortfolio.settledLedger;
+    const wins = ledger.filter(r => r.isWin).length;
+    const computedRate = wins / ledger.length;
+    const metricRate = cacheData.crossHedgingPortfolio.metrics.dailyPositiveProfitRate;
+
+    assert.ok(Math.abs(computedRate - metricRate) < 0.001, `Computed rate ${computedRate} must match metric rate ${metricRate}`);
+    assert.strictEqual(wins, 210, 'Total winning draws must be 210');
+    assert.strictEqual(ledger.length, 270, 'Total draws must be 270');
+});
+
+// =========================================================================
+// SECTION 5: Summary Report
+// =========================================================================
+console.log('\n' + '='.repeat(80));
+console.log(`  MILESTONE 3 VERIFICATION COMPLETE: ${stats.passed}/${stats.total} PASSED`);
+if (stats.failed > 0) {
+    console.error(`  ❌ FAILURES: ${stats.failed}`);
+    process.exit(1);
+} else {
+    console.log('  ✅ ALL TESTS PASSED: Frontend Web UI /daily-advisor is fully verified!');
+    console.log('='.repeat(80));
+    process.exit(0);
+}

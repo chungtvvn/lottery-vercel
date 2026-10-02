@@ -77,3 +77,11 @@ reports/**/*.log
 
 # wrangler
 .wrangler/
+
+# agent artifacts
+.agents/
+ORIGINAL_REQUEST.md
+TEST_INFRA.md
+TEST_READY.md
+reports/five-method-daily-selector-*.md
+reports/recent-method-advisor-*.md
