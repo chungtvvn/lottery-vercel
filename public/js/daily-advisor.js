@@ -118,21 +118,21 @@
         maxProfit: {
             id: 'maxProfit',
             name: 'Gói 1: Combo Bù Trừ Dòng Tiền Chéo (Đề VIP + Lô 4 ĐC + Xiên Quây)',
-            deMethod: 'deMarkovGapHazard',
+            deMethod: 'adaptiveDualMerge',
             loEngine: 'lo4Fusion',
             loSubTier: 7,
-            badge: '🛡️ COMBO CHỦ LỰC · BÙ TRỪ DÒNG TIỀN CHÉO (WIN 77.8%)',
-            roiLabel: 'Win 77.8% · ROI +120.0%',
+            badge: '🛡️ COMBO CHỦ LỰC · BÙ TRỪ DÒNG TIỀN CHÉO (WIN 78.97%)',
+            roiLabel: 'Win 78.97% · ROI +120.8%',
             rationale: 'Chiến thuật phối hợp 3 trụ cột vững chắc: Đề Tinh Tuyển VIP (1 ăn 84-252), Lô Ghép 4 Động Cơ đa tầng (X5/X4/X3/X1) và Dàn Xiên Quây 11 vé. Cơ chế tự động cân bằng tỷ trọng vốn bảo đảm chỉ cần nổ bất kỳ 1 trụ cột là sinh lãi ròng tổng kết quả trong ngày (Profit > 0).'
         },
         crossHedging: {
             id: 'crossHedging',
             name: 'Gói 1: Combo Bù Trừ Dòng Tiền Chéo (Đề VIP + Lô 4 ĐC + Xiên Quây)',
-            deMethod: 'deMarkovGapHazard',
+            deMethod: 'adaptiveDualMerge',
             loEngine: 'lo4Fusion',
             loSubTier: 7,
-            badge: '🛡️ COMBO CHỦ LỰC · BÙ TRỪ DÒNG TIỀN CHÉO (WIN 77.8%)',
-            roiLabel: 'Win 77.8% · ROI +120.0%',
+            badge: '🛡️ COMBO CHỦ LỰC · BÙ TRỪ DÒNG TIỀN CHÉO (WIN 78.97%)',
+            roiLabel: 'Win 78.97% · ROI +120.8%',
             rationale: 'Chiến thuật phối hợp 3 trụ cột vững chắc: Đề Tinh Tuyển VIP (1 ăn 84-252), Lô Ghép 4 Động Cơ đa tầng (X5/X4/X3/X1) và Dàn Xiên Quây 11 vé. Cơ chế tự động cân bằng tỷ trọng vốn bảo đảm chỉ cần nổ bất kỳ 1 trụ cột là sinh lãi ròng tổng kết quả trong ngày (Profit > 0).'
         },
         smartAlternating: {
@@ -358,12 +358,13 @@
         payload = data;
 
         // Tự động mặc định kích hoạt Gói Chiến Lược được AI Governor Đề Xuất Hôm Nay
-        const recommendedPortId = data?.strategicPortfolioGovernor?.recommendedPortfolioId
+        const recommendedPortId = (data?.crossHedgingPortfolio ? 'maxProfit' : null)
+            || data?.strategicPortfolioGovernor?.recommendedPortfolioId
             || data?.streakAwareDeAdvisor?.latestRecommendation?.strategicPortfolio?.id
-            || 'steadyAccumulator';
+            || 'maxProfit';
 
         currentActivePortfolio = recommendedPortId;
-        const initialCfg = PORTFOLIOS_CONFIG[currentActivePortfolio] || PORTFOLIOS_CONFIG.steadyAccumulator;
+        const initialCfg = PORTFOLIOS_CONFIG[currentActivePortfolio] || PORTFOLIOS_CONFIG.maxProfit;
         currentActiveDeMethod = initialCfg.deMethod;
         currentActiveLoEngine = initialCfg.loEngine;
         currentSelectedLoSubTier = initialCfg.loSubTier || 7;
@@ -1854,6 +1855,11 @@
 
             if (typeof window.__renderFinalOptimalCombinedSlip === 'function') {
                 window.__renderFinalOptimalCombinedSlip();
+            }
+
+            if (typeof renderInPageHistoricalPlaySlips === 'function' && (!currentAdvisorDate || currentAdvisorDate === (fullData?.pendingPredictionDate || payload?.pendingPredictionDate))) {
+                isUserOverridingDeMethod = false;
+                renderInPageHistoricalPlaySlips(currentAdvisorDate || fullData?.pendingPredictionDate || payload?.pendingPredictionDate);
             }
         }
 
@@ -6889,6 +6895,13 @@
                 syncCrossHedgingComboCard(fullData?.crossHedgingPortfolio || payload?.crossHedgingPortfolio);
             }
 
+            // Đồng bộ tức thời phần Chi Tiết Dàn Đánh Các Phương Pháp Đề Xuất (In-Page Slips)
+            if (typeof renderInPageHistoricalPlaySlips === 'function') {
+                isUserOverridingDeMethod = false;
+                isUserOverridingLoMethod = false;
+                renderInPageHistoricalPlaySlips(currentAdvisorDate || fullData?.pendingPredictionDate || payload?.pendingPredictionDate);
+            }
+
             if (!isInitial) {
                 showToast(`🎯 Đã kích hoạt ${cfg.name}! Tự động đồng bộ dàn số Đề & Lô.`);
             }
@@ -10423,10 +10436,14 @@
         let loMethod = 'lo4Engine';
 
         if (targetDate === pendingDate) {
-            deMethod = payloadData.streakAwareDeAdvisor?.latestRecommendation?.strategicPortfolio?.deMethod
-                || payloadData.streakAwareDeAdvisor?.latestRecommendation?.chosenMethod
-                || 'deMarkovGapHazard';
-            loMethod = 'lo4Engine';
+            const activePort = currentActivePortfolio || (payloadData?.crossHedgingPortfolio ? 'maxProfit' : (payloadData?.strategicPortfolioGovernor?.recommendedPortfolioId || 'maxProfit'));
+            const portCfg = PORTFOLIOS_CONFIG[activePort] || PORTFOLIOS_CONFIG.maxProfit;
+            deMethod = currentActiveDeMethod
+                || portCfg?.deMethod
+                || payloadData.strategicPortfolioGovernor?.portfolios?.[activePort]?.deMethod
+                || payloadData.strategicPortfolioGovernor?.recommendedPortfolio?.deMethod
+                || 'adaptiveDualMerge';
+            loMethod = currentActiveLoEngine || portCfg?.loEngine || 'lo4Engine';
         } else if (targetDate === '2026-09-16') {
             deMethod = 'metaLearner';
         } else if (targetDate >= '2026-09-17' && targetDate <= '2026-09-22') {
