@@ -700,14 +700,19 @@
             || p?.streakAwareDeAdvisor?.markovAdvisor?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
         const graphRow = p?.dePositionalGraphFlow?.settledLedger?.find(r => (r.predictionDate || r.date) === date)
             || p?.streakAwareDeAdvisor?.graphAdvisor?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
+        const chRow = p?.crossHedgingPortfolio?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
 
-        let chosenDeMethod = 'metaLearner';
-        if (date === '2026-09-16') {
-            chosenDeMethod = 'metaLearner';
-        } else if (date >= '2026-09-17' && date <= '2026-09-22') {
-            chosenDeMethod = 'adaptiveDualMerge';
+        let chosenDeMethod = 'deMarkovGapHazard';
+        if (chRow?.details?.p1Method) {
+            chosenDeMethod = chRow.details.p1Method;
         } else if (streakRow?.chosenMethod) {
             chosenDeMethod = streakRow.chosenMethod;
+        } else if (date >= '2026-09-27') {
+            chosenDeMethod = 'deMarkovGapHazard';
+        } else if (date >= '2026-09-17' && date <= '2026-09-22') {
+            chosenDeMethod = 'adaptiveDualMerge';
+        } else if (date === '2026-09-16') {
+            chosenDeMethod = 'metaLearner';
         } else {
             chosenDeMethod = 'adaptiveDualMerge';
         }
@@ -773,14 +778,20 @@
             deIsHitFinal = Boolean(r?.isHit || deProfitK > 0);
         } else if (chosenDeMethod === 'deMarkovGapHazard') {
             const r = markovRow || streakRow;
+            const p1 = p?.crossHedgingPortfolio?.pillar1_De || p?.crossHedgingPortfolio?.latestRecommendation?.pillar1_De;
             deMethodName = '🔮 Đề Markov Bậc 2 & Gap Hazard';
-            deNumbers = (r?.numbers || deNumbers).map(number);
-            deX2Nums = (r?.vipNumbers || r?.numbers?.slice(0, 17) || []).map(number);
-            deX1Nums = (r?.backupNumbers || r?.numbers?.slice(17) || []).map(number);
-            deStakeK = (deX2Nums.length * 3 + deX1Nums.length * 1) * 1000;
+            deNumbers = (r?.numbers || p1?.allNumbers || deNumbers).map(number);
+            deX2Nums = (r?.vipNumbers || p1?.vipNumbers || deNumbers.slice(0, 10)).map(number);
+            deX1Nums = (r?.backupNumbers || p1?.singleNumbers || deNumbers.slice(10)).map(number);
+            deStakeK = chRow?.deStakeK || r?.stakeK || (deX2Nums.length * 3 + deX1Nums.length * 1) * 1000;
             deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X3 · ${deX1Nums.length} X1)`;
-            deProfitK = r?.profitK != null ? r.profitK : deProfitK;
-            deIsHitFinal = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || r?.hitType === 'win_x1' || r?.isHit || deProfitK > 0);
+            if (chRow?.deProfitK != null) {
+                deProfitK = chRow.deProfitK;
+                deIsHitFinal = Boolean(chRow.isDeHit);
+            } else {
+                deProfitK = r?.profitK != null ? r.profitK : deProfitK;
+                deIsHitFinal = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || r?.hitType === 'win_x1' || r?.isHit || deProfitK > 0);
+            }
         } else if (chosenDeMethod === 'dePositionalGraphFlow') {
             const r = graphRow || streakRow;
             deMethodName = '🕸️ Cầu Đề Đồ Thị Vị Trí';
@@ -7476,6 +7487,10 @@
                 const d = r.predictionDate || r.date;
                 if (d && d >= '2026-01-01') dateSet.add(d);
             });
+            (fullData?.crossHedgingPortfolio?.settledLedger || []).forEach(r => {
+                const d = r.predictionDate || r.date;
+                if (d && d >= '2026-01-01') dateSet.add(d);
+            });
             (fullData?.lo4EngineFusion?.modes?.top7?.settledLedger || []).forEach(r => {
                 const d = r.date;
                 if (d && d >= '2026-01-01') dateSet.add(d);
@@ -7490,7 +7505,9 @@
 
             pastDates.forEach(d => {
                 const curDraw = fullData?.drawPrizesByDate?.[d];
-                const specStr = curDraw?.special ? `Đề ${curDraw.special}` : '';
+                const ch = fullData?.crossHedgingPortfolio?.settledLedger?.find(r => (r.predictionDate || r.date) === d);
+                const specVal = curDraw?.special != null ? curDraw.special : (ch?.special != null ? ch.special : null);
+                const specStr = specVal != null ? `Đề ${specVal}` : '';
                 const deRow = resolveUnifiedDeRowForDate(d, fullData);
                 const loRow = fullData?.lo4EngineFusion?.modes?.top7?.settledLedger?.find(r => r.date === d);
                 const hitSummary = deRow.isHit ? 'Ăn Đề' : (loRow?.dayLotoHits ? `Lô ${loRow.dayLotoHits}n` : 'Xịt');
@@ -7621,22 +7638,28 @@
                 // Column 1: Đề
                 // Fallback protection: Never let deData be empty
                 if (!deData.allNums || deData.allNums.length === 0) {
-                    const fallbackDe = fullData?.adaptiveDualMerge?.latestRecommendation || fullData?.streakAwareDeAdvisor?.latestRecommendation || {};
-                    deData.vipNums = (fallbackDe.intersectionX2 || fallbackDe.tierX2 || [68, 93, 62, 73, 41]).map(number);
-                    deData.singleNums = (fallbackDe.uniqueSinglesX1 || fallbackDe.singles || [19, 52]).map(number);
-                    deData.allNums = [...deData.vipNums, ...deData.singleNums];
+                    const fallbackDe = fullData?.crossHedgingPortfolio?.pillar1_De
+                        || fullData?.crossHedgingPortfolio?.latestRecommendation?.pillar1_De
+                        || fullData?.deMarkovGapHazard?.latestRecommendation
+                        || fullData?.adaptiveDualMerge?.latestRecommendation
+                        || fullData?.streakAwareDeAdvisor?.latestRecommendation || {};
+                    deData.vipNums = (fallbackDe.vipNumbers || fallbackDe.vipNums || fallbackDe.intersectionX2 || fallbackDe.tierX2 || [5, 19, 36, 50, 53, 55, 69, 92, 93, 97]).map(number);
+                    deData.singleNums = (fallbackDe.singleNumbers || fallbackDe.singleNums || fallbackDe.backupNumbers || fallbackDe.uniqueSinglesX1 || fallbackDe.singles || []).map(number);
+                    deData.allNums = (fallbackDe.allNumbers || fallbackDe.numbers || [...deData.vipNums, ...deData.singleNums]).map(number);
+                    deData.label = fallbackDe.methodLabel || fallbackDe.label || '🔮 Đề Markov Bậc 2 & Gap Hazard';
+                    deData.badge = fallbackDe.badge || 'Markov Bậc 2 + Weibull Hazard ⭐ (Xác suất nổ bù 57.0%)';
                 }
 
                 if (deTitleEl) {
-                    const cleanDeLabel = (deData.label || 'Đề Thích Ứng Alpha').replace(/<[^>]*>?/gm, '').trim();
+                    const cleanDeLabel = (deData.label || 'Đề Markov Bậc 2 & Gap Hazard').replace(/<[^>]*>?/gm, '').trim();
                     deTitleEl.textContent = `1. ${cleanDeLabel} (${deData.allNums.length}s)`;
                 }
                 if (deWinRateBadgeEl) {
                     deWinRateBadgeEl.className = 'rounded bg-amber-400/20 text-amber-200 border border-amber-400/30 text-[10px] font-bold px-1.5 py-0.5';
-                    deWinRateBadgeEl.textContent = deData.badge || 'Win 70.2%';
+                    deWinRateBadgeEl.textContent = deData.badge || 'Nổ bù 57.0%';
                 }
                 if (deRationaleEl) {
-                    deRationaleEl.textContent = deData.rationale || 'Săn đón nhịp nổ bù với Đề Thích Ứng Alpha cược X3 số trùng hạt nhân (23 số) và X1 bọc lót (14 số). Tối ưu hóa vốn bằng cách cắt tỉa số ngoại vi.';
+                    deRationaleEl.textContent = deData.rationale || 'Mô hình ma trận chuyển tiếp bậc 2 kết hợp hàm mật độ nguy cơ Weibull Gap, độc lập 100% với mốc lịch sử, xác suất nổ bù đạt 57.0% sau nhịp trượt L1.';
                 }
                 if (deVipLabelEl) {
                     const vLabel = (deData.vipLabel || '⚡ VIP TRÙNG X3');
@@ -10556,18 +10579,26 @@
         const payloadData = payload || {};
         const pendingDate = payloadData.pendingPredictionDate || '2026-09-30';
         
-        let deMethod = 'adaptiveDualMerge';
+        let deMethod = 'deMarkovGapHazard';
         let loMethod = 'lo4Engine';
 
-        if (targetDate === pendingDate) {
+        const chRow = payloadData.crossHedgingPortfolio?.settledLedger?.find(r => (r.predictionDate || r.date) === targetDate);
+        if (chRow?.details?.p1Method) {
+            deMethod = chRow.details.p1Method;
+            loMethod = currentActiveLoEngine || 'lo4Engine';
+            return { deMethod, loMethod };
+        }
+
+        if (targetDate === pendingDate || targetDate >= (payloadData.latestDataDate || '2026-09-28')) {
             const activePort = currentActivePortfolio || (payloadData?.crossHedgingPortfolio ? 'maxProfit' : (payloadData?.strategicPortfolioGovernor?.recommendedPortfolioId || 'maxProfit'));
             const portCfg = PORTFOLIOS_CONFIG[activePort] || PORTFOLIOS_CONFIG.maxProfit;
             deMethod = currentActiveDeMethod
                 || portCfg?.deMethod
                 || payloadData.strategicPortfolioGovernor?.portfolios?.[activePort]?.deMethod
                 || payloadData.strategicPortfolioGovernor?.recommendedPortfolio?.deMethod
-                || 'adaptiveDualMerge';
+                || 'deMarkovGapHazard';
             loMethod = currentActiveLoEngine || portCfg?.loEngine || 'lo4Engine';
+            return { deMethod, loMethod };
         } else if (targetDate === '2026-09-16') {
             deMethod = 'metaLearner';
         } else if (targetDate >= '2026-09-17' && targetDate <= '2026-09-22') {
@@ -10576,6 +10607,8 @@
             const streakRow = payloadData.streakAwareDeAdvisor?.settledLedger?.find(r => (r.predictionDate || r.date) === targetDate);
             if (streakRow?.chosenMethod) {
                 deMethod = streakRow.chosenMethod;
+            } else if (targetDate >= '2026-09-27') {
+                deMethod = 'deMarkovGapHazard';
             } else {
                 deMethod = 'adaptiveDualMerge';
             }
@@ -10740,12 +10773,14 @@
             }
         } else if (effectiveKey === 'deMarkovGapHazard') {
             methodTitle = '🔮 Đề Markov Bậc 2 & Gap Hazard (VIP X3 + X1)';
+            const crossP1 = payloadData.crossHedgingPortfolio?.pillar1_De || payloadData.crossHedgingPortfolio?.latestRecommendation?.pillar1_De;
+            const chRow = payloadData.crossHedgingPortfolio?.settledLedger?.find(x => (x.predictionDate || x.date) === date);
             if (isPending) {
                 const rec = payloadData.deMarkovGapHazard?.latestRecommendation || payloadData.streakAwareDeAdvisor?.latestRecommendation?.strategicPortfolio?.deStructure || payloadData.streakAwareDeAdvisor?.latestRecommendation || {};
-                vipNumbers = (rec.vipNums || rec.vipNumbers || rec.numbers?.slice(0, 17) || []).map(number);
-                singleNumbers = (rec.singleNums || rec.backupNumbers || rec.singles || rec.numbers?.slice(17) || []).map(number);
-                numbers = (rec.allNums || rec.numbers || [...vipNumbers, ...singleNumbers]).map(number);
-                stakeK = (vipNumbers.length * 3 + singleNumbers.length * 1) * 1000;
+                vipNumbers = (crossP1?.vipNumbers || rec.vipNums || rec.vipNumbers || (rec.numbers || []).slice(0, 10)).map(number);
+                singleNumbers = (crossP1?.singleNumbers || rec.singleNums || rec.backupNumbers || rec.singles || (rec.numbers || []).slice(10)).map(number);
+                numbers = (crossP1?.allNumbers || rec.allNums || rec.numbers || [...vipNumbers, ...singleNumbers]).map(number);
+                stakeK = crossP1?.stakeK || (vipNumbers.length * 3 + singleNumbers.length * 1) * 1000;
                 profitK = 0;
                 payoutK = 0;
                 hitBadge = '⏳ Chờ mở thưởng 18h15';
@@ -10753,14 +10788,23 @@
             } else {
                 const r = payloadData.deMarkovGapHazard?.settledLedger?.find(x => (x.predictionDate || x.date) === date)
                     || payloadData.streakAwareDeAdvisor?.markovAdvisor?.settledLedger?.find(x => (x.predictionDate || x.date) === date);
-                vipNumbers = (r?.vipNumbers || r?.numbers?.slice(0, 17) || []).map(number);
-                singleNumbers = (r?.backupNumbers || r?.numbers?.slice(17) || []).map(number);
-                numbers = (r?.numbers || [...vipNumbers, ...singleNumbers]).map(number);
-                isHit = Boolean(r?.isHit || (actualSpecial != null && numbers.includes(actualSpecial)));
-                isX2 = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || (actualSpecial != null && vipNumbers.includes(actualSpecial)));
-                stakeK = (vipNumbers.length * 3 + singleNumbers.length * 1) * 1000;
-                profitK = isHit ? (isX2 ? (252000 - stakeK) : (84000 - stakeK)) : -stakeK;
-                payoutK = r?.payoutK || (isHit ? (stakeK + profitK) : 0);
+                vipNumbers = (r?.vipNumbers || crossP1?.vipNumbers || (r?.numbers || []).slice(0, 10)).map(number);
+                singleNumbers = (r?.backupNumbers || crossP1?.singleNumbers || (r?.numbers || []).slice(10)).map(number);
+                numbers = (r?.numbers || crossP1?.allNumbers || [...vipNumbers, ...singleNumbers]).map(number);
+
+                if (chRow) {
+                    isHit = Boolean(chRow.isDeHit || (actualSpecial != null && numbers.includes(actualSpecial)));
+                    isX2 = Boolean(chRow.isVipHit || (actualSpecial != null && vipNumbers.includes(actualSpecial)));
+                    stakeK = chRow.deStakeK || (vipNumbers.length * 3 + singleNumbers.length * 1) * 1000;
+                    profitK = chRow.deProfitK != null ? chRow.deProfitK : (isHit ? (isX2 ? (252000 - stakeK) : (84000 - stakeK)) : -stakeK);
+                    payoutK = chRow.dePayoutK != null ? chRow.dePayoutK : (isHit ? (stakeK + profitK) : 0);
+                } else {
+                    isHit = Boolean(r?.isHit || (actualSpecial != null && numbers.includes(actualSpecial)));
+                    isX2 = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || (actualSpecial != null && vipNumbers.includes(actualSpecial)));
+                    stakeK = (vipNumbers.length * 3 + singleNumbers.length * 1) * 1000;
+                    profitK = isHit ? (isX2 ? (252000 - stakeK) : (84000 - stakeK)) : -stakeK;
+                    payoutK = r?.payoutK || (isHit ? (stakeK + profitK) : 0);
+                }
                 hitBadge = isHit ? (isX2 ? `🎉 TRÚNG VIP X3 (+${Math.round(profitK/1000)}M)` : `🎉 TRÚNG BỌC LÓT (${profitK >= 0 ? '+' : ''}${Math.round(profitK/1000)}M)`) : `❌ TRƯỢT (-${Math.round(stakeK/1000)}M)`;
                 detailDesc = `Đề Markov Bậc 2 & Gap Hazard (${vipNumbers.length}s VIP X3 · ${singleNumbers.length}s X1)`;
             }
@@ -11140,6 +11184,10 @@
             const d = r.predictionDate || r.date;
             if (d && d >= '2026-01-01') dateSet.add(d);
         });
+        (p.crossHedgingPortfolio?.settledLedger || []).forEach(r => {
+            const d = r.predictionDate || r.date;
+            if (d && d >= '2026-01-01') dateSet.add(d);
+        });
         (p.lo4EngineFusion?.modes?.top7?.settledLedger || []).forEach(r => {
             const d = r.date;
             if (d && d >= '2026-01-01') dateSet.add(d);
@@ -11156,14 +11204,18 @@
 
         const selDate = byId('selPlaySlipSectionDate');
         if (selDate) {
+            const initialDate = currentAdvisorDate || pendingDate;
             selDate.innerHTML = allAvailableAdvisorDates.map(d => {
                 const isPending = (d === pendingDate);
+                const isSelected = (d === initialDate);
                 if (isPending) {
-                    return `<option value="${d}">${d} (Hôm Nay · Chờ KQ)</option>`;
+                    return `<option value="${d}" ${isSelected ? 'selected' : ''}>${d} (Hôm Nay · Chờ KQ)</option>`;
                 }
                 const draw = p.drawPrizesByDate?.[d];
-                const spec = draw?.special != null ? number(draw.special) : '--';
-                return `<option value="${d}">${d} · [ĐB: ${spec}]</option>`;
+                const ch = p.crossHedgingPortfolio?.settledLedger?.find(r => (r.predictionDate || r.date) === d);
+                const specVal = draw?.special != null ? draw.special : (ch?.special != null ? ch.special : null);
+                const spec = specVal != null ? number(specVal) : '--';
+                return `<option value="${d}" ${isSelected ? 'selected' : ''}>${d} · [ĐB: ${spec}]</option>`;
             }).join('');
 
             selDate.onchange = () => {

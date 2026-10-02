@@ -592,10 +592,10 @@
                                 </span>
                             </div>
                             <h3 class="text-lg sm:text-2xl font-black text-white mt-1 flex items-center gap-2">
-                                <span id="finalOptimalSlipTitle">Tổ Hợp Lô Tam Trụ X3/X2/X1 &amp; Đề Alpha Đòn Bẩy X2</span>
+                                <span id="finalOptimalSlipTitle">🔮 Đề Markov Bậc 2 &amp; Gap Hazard &amp; Lô Chủ Lực Duy Nhất (Smart Selective Router)</span>
                             </h3>
                             <p class="text-xs text-slate-300 mt-1 max-w-3xl leading-relaxed" id="finalOptimalSlipDesc">
-                                Hệ thống tự động phối hợp các thuật toán mạnh nhất: Đề Thích Ứng Alpha đòn bẩy X2 gỡ drawdown sau trượt + Lô Ghép Tầng Tam Trụ (QMBF + QUAD + PENTA) lãi kỷ lục +4.167 TỶ.
+                                Dàn số đề xuất tối ưu cuối cùng: Kết hợp 🔮 Đề Markov Bậc 2 &amp; Gap Hazard cược VIP X3/X1 và Lô Chủ Lực duy nhất được tuyển chọn thông minh (vốn thấp, Win Rate 79.7%), loại bỏ hoàn toàn các dàn cược trung gian rườm rà.
                             </p>
                             <div class="mt-2.5 rounded-xl bg-rose-500/15 border border-rose-500/30 p-2.5 flex items-start gap-2 text-xs text-rose-200">
                                 <i class="bi bi-exclamation-triangle-fill text-amber-400 mt-0.5 shrink-0"></i>
@@ -625,22 +625,22 @@
                                 <div class="flex items-center justify-between border-b border-amber-400/20 pb-2.5">
                                     <div>
                                         <span class="text-xs font-black text-amber-300 uppercase flex items-center gap-1.5">
-                                            <i class="bi bi-gem"></i> <span id="finalDeBoxTitle">1. Đề Thích Ứng Alpha (37s)</span>
+                                            <i class="bi bi-gem"></i> <span id="finalDeBoxTitle">1. 🔮 Đề Markov Bậc 2 &amp; Gap Hazard (43s)</span>
                                         </span>
                                         <div class="text-[10px] text-amber-300/80 font-mono mt-0.5">
-                                            Xác suất ngẫu nhiên: <strong>30/100 (30.0%)</strong> · Hòa vốn: <strong>35.7%</strong> (1 ăn 84)
+                                            Xác suất ngẫu nhiên: <strong>43/100 (43.0%)</strong> · Hòa vốn: <strong>35.7%</strong> (1 ăn 84)
                                         </div>
                                     </div>
-                                    <span class="rounded bg-amber-400/20 text-amber-200 border border-amber-400/30 text-[10px] font-bold px-1.5 py-0.5" id="finalDeWinRateBadge">Win 70.2%</span>
+                                    <span class="rounded bg-amber-400/20 text-amber-200 border border-amber-400/30 text-[10px] font-bold px-1.5 py-0.5" id="finalDeWinRateBadge">Nổ bù 57.0%</span>
                                 </div>
                                 
                                 <div class="mt-3 space-y-2.5">
                                     <p id="finalDeRationale" class="text-[11px] text-amber-200/90 italic mb-2 leading-relaxed">
-                                        Đang tải lý do AI chọn...
+                                        Mô hình ma trận chuyển tiếp bậc 2 kết hợp hàm mật độ nguy cơ Weibull Gap, độc lập 100% với mốc lịch sử, xác suất nổ bù đạt 57.0% sau nhịp trượt L1.
                                     </p>
                                     <div class="rounded-xl bg-black/40 border border-amber-400/30 p-2.5">
                                         <div class="flex items-center justify-between text-xs font-bold text-amber-300 mb-1.5">
-                                            <span id="finalDeVipLabel">⚡ VIP X3 (23 số - Cược Gấp Ba):</span>
+                                            <span id="finalDeVipLabel">⚡ VIP MARKOV X3 (10 số - Cược Gấp Ba):</span>
                                             <button type="button" id="btnCopyFinalDeVip" class="text-[10px] font-bold text-amber-400 hover:underline">Copy</button>
                                         </div>
                                         <div id="finalDeVipNums" class="flex flex-wrap gap-1 font-mono text-xs font-black text-amber-200"></div>
@@ -648,7 +648,7 @@
 
                                     <div class="rounded-xl bg-white/5 border border-white/10 p-2.5">
                                         <div class="flex items-center justify-between text-xs font-bold text-slate-300 mb-1.5">
-                                            <span id="finalDeSingleLabel">🛡️ Bọc Lót X1 (14 số):</span>
+                                            <span id="finalDeSingleLabel">🛡️ Bọc Lót X1 (33 số):</span>
                                             <button type="button" id="btnCopyFinalDeSingle" class="text-[10px] font-bold text-slate-300 hover:underline">Copy</button>
                                         </div>
                                         <div id="finalDeSingleNums" class="flex flex-wrap gap-1 font-mono text-xs font-bold text-slate-300"></div>
@@ -923,10 +923,10 @@
                                         <label for="selInPageDeMethod" class="text-[11px] text-slate-400 font-bold shrink-0">Đổi PP:</label>
                                         <select id="selInPageDeMethod" class="rounded-lg bg-slate-900 border border-amber-400/40 text-amber-300 font-bold text-xs px-2.5 py-1 focus:ring-1 focus:ring-amber-400">
                                             <option value="official">🌟 Đề Xuất Chuẩn (Theo Ngày Đang Xem)</option>
+                                            <option value="deMarkovGapHazard" selected>🔮 Đề Markov Bậc 2 &amp; Gap Hazard (VIP X3 + X1 · Đề Xuất Hôm Nay)</option>
                                             <option value="adaptiveDualMerge">👑 Đề Thích Ứng Alpha (VIP X3 + X1)</option>
                                             <option value="dualMerge">🎯 Đề Gộp Tiêu Chuẩn (22-26s)</option>
                                             <option value="tripleMerge">🏛️ Đề Tam Trụ (X3 / X2 / X1)</option>
-                                            <option value="deMarkovGapHazard">🔮 Đề Markov Bậc 2 & Gap Hazard (VIP X3 + X1)</option>
                                             <option value="bayesFormResonance">🔮 Đề Ngũ Hành Bayes Bù Trừ (VIP X3 + X1)</option>
                                             <option value="dePositionalGraphFlow">🕸️ Cầu Đề Đồ Thị Vị Trí (VIP X3 + X1)</option>
                                             <option value="pentaCoreDe">👑 Đề Ngũ Trụ Tinh Hoa AI (VIP X3 + X1)</option>
@@ -3027,6 +3027,6 @@
         </div>
     </div>
 
-    <script src="/js/daily-advisor.js?v=20261003_markov_sync_v13"></script>
+    <script src="/js/daily-advisor.js?v=20261003_markov_sync_v14"></script>
 </body>
 </html>
