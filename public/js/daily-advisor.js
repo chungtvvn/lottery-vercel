@@ -2954,69 +2954,6 @@
         }
 
         if (type === 'lo4Engine') {
-            if (info.isPending) {
-                const betList = info.betNumbers || [];
-                const tierX5Nums = betList.filter(b => b.multiplier >= 5);
-                const tierX4Nums = betList.filter(b => b.multiplier === 4);
-                const tierX3Nums = betList.filter(b => b.multiplier === 3);
-                const tierX1Nums = betList.filter(b => b.multiplier === 1);
-
-                return `
-                    <div class="space-y-3 p-1">
-                        <div class="flex items-center justify-between border-b border-amber-500/30 pb-2">
-                            <div>
-                                <span class="rounded bg-amber-400 text-slate-950 font-black text-[10px] px-2 py-0.5 uppercase">🔒 ĐÃ KHÓA KỲ TỚI</span>
-                                <h4 class="font-black text-sm text-white mt-1">Lô Tổng Hợp 4 Động Cơ Live — ${formatDateVi(info.date)}</h4>
-                            </div>
-                            <span class="text-xs font-bold text-amber-300 font-mono">Vốn ${moneyM(info.dayLotoStakeK)}</span>
-                        </div>
-                        ${tierX5Nums.length ? `
-                            <div>
-                                <div class="text-[10px] font-black uppercase text-amber-400 mb-1 flex items-center justify-between">
-                                    <span>👑 TẦNG SIÊU VIP (CƯỢC X5 · 11M/SỐ · ${tierX5Nums.length} SỐ):</span>
-                                    <span class="text-[9px] text-amber-200/80">Trùng 4 PP</span>
-                                </div>
-                                <div class="flex flex-wrap gap-1.5">
-                                    ${tierX5Nums.map(b => `<span class="px-2 py-1 rounded bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black font-mono text-xs shadow-xs ring-1 ring-white/50">${number(b.num)} <span class="text-[9px] opacity-75">(${b.methods?.join('+')})</span></span>`).join('')}
-                                </div>
-                            </div>
-                        ` : ''}
-                        ${tierX4Nums.length ? `
-                            <div>
-                                <div class="text-[10px] font-black uppercase text-amber-300 mb-1 flex items-center justify-between">
-                                    <span>⚡ TẦNG CỰC VIP (CƯỢC X4 · 8.8M/SỐ · ${tierX4Nums.length} SỐ):</span>
-                                    <span class="text-[9px] text-amber-200/80">Trùng 3 PP</span>
-                                </div>
-                                <div class="flex flex-wrap gap-1.5">
-                                    ${tierX4Nums.map(b => `<span class="px-2 py-1 rounded bg-amber-400 text-slate-950 font-black font-mono text-xs shadow-xs">${number(b.num)} <span class="text-[9px] opacity-75">(${b.methods?.join('+')})</span></span>`).join('')}
-                                </div>
-                            </div>
-                        ` : ''}
-                        <div>
-                            <div class="text-[10px] font-black uppercase text-indigo-300 mb-1 flex items-center justify-between">
-                                <span>⚡ TẦNG TRIỂN VỌNG (CƯỢC X3 · 6.6M/SỐ · ${tierX3Nums.length} SỐ):</span>
-                                <span class="text-[9px] text-indigo-200/80">Trùng 2 PP</span>
-                            </div>
-                            <div class="flex flex-wrap gap-1.5">
-                                ${tierX3Nums.map(b => `<span class="px-2 py-1 rounded bg-indigo-900 border border-indigo-500 text-indigo-100 font-black font-mono text-xs shadow-xs">${number(b.num)} <span class="text-[9px] opacity-75">(${b.methods?.join('+')})</span></span>`).join('')}
-                            </div>
-                        </div>
-                        <div>
-                            <div class="text-[10px] font-black uppercase text-teal-300 mb-1 flex items-center justify-between">
-                                <span>🛡️ TẦNG BẢO HIỂM (CƯỢC X1 · 2.2M/SỐ · ${tierX1Nums.length} SỐ):</span>
-                                <span class="text-[9px] text-teal-200/80">Không trùng</span>
-                            </div>
-                            <div class="flex flex-wrap gap-1.5">
-                                ${tierX1Nums.map(b => `<span class="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-slate-200 font-bold font-mono text-xs shadow-xs">${number(b.num)} <span class="text-[9px] opacity-75">(${b.methods?.join('+')})</span></span>`).join('')}
-                            </div>
-                        </div>
-                        <div class="text-[11px] text-slate-300 bg-slate-900/60 p-2 rounded-lg border border-slate-700">
-                            🎲 <strong>Xiên 4:</strong> ${escapeHtml(info.xien4Reason || 'Bỏ qua không đánh')}
-                        </div>
-                    </div>
-                `;
-            }
-
             if (info.isHistoricalBaseline) {
                 const betList = info.betNumbers || [];
                 return `
@@ -3058,95 +2995,135 @@
             }
 
             const betList = info.betNumbers || [];
+            const tierX5Nums = betList.filter(b => b.multiplier >= 5);
+            const tierX4Nums = betList.filter(b => b.multiplier === 4);
+            const tierX3Nums = betList.filter(b => b.multiplier === 3);
+            const tierX1Nums = betList.filter(b => b.multiplier === 1 || !b.multiplier);
             const hits = info.dayLotoHits || 0;
             const isWin = info.isLotoWin;
+            const isPending = Boolean(info.isPending);
+
+            const getMethodsText = (b) => {
+                const m = Array.isArray(b.methods) ? b.methods.join('+') : (b.methods || '');
+                return m ? ` <span class="text-[9px] opacity-75 font-sans">(${escapeHtml(m)})</span>` : '';
+            };
+
+            const renderChipX5 = (b) => {
+                const isHit = !isPending && (b.hits || 0) > 0;
+                return `
+                    <span class="px-2 py-1 rounded bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black font-mono text-xs shadow-xs ring-1 ring-white/50 ${isHit ? 'ring-2 ring-emerald-400 shadow-md scale-105' : ''}">
+                        ${number(b.num)}${getMethodsText(b)}${isHit ? ` <span class="text-[9px] text-red-700 font-black">⭐ (${b.hits}n)</span>` : ''}
+                    </span>
+                `;
+            };
+
+            const renderChipX4 = (b) => {
+                const isHit = !isPending && (b.hits || 0) > 0;
+                return `
+                    <span class="px-2 py-1 rounded bg-amber-400 text-slate-950 font-black font-mono text-xs shadow-xs ${isHit ? 'ring-2 ring-white shadow-md scale-105' : ''}">
+                        ${number(b.num)}${getMethodsText(b)}${isHit ? ` <span class="text-[9px] text-red-700 font-black">⭐ (${b.hits}n)</span>` : ''}
+                    </span>
+                `;
+            };
+
+            const renderChipX3 = (b) => {
+                const isHit = !isPending && (b.hits || 0) > 0;
+                return `
+                    <span class="px-2 py-1 rounded bg-indigo-900 border border-indigo-500 text-indigo-100 font-black font-mono text-xs shadow-xs ${isHit ? 'ring-2 ring-white shadow-md bg-indigo-800 scale-105' : ''}">
+                        ${number(b.num)}${getMethodsText(b)}${isHit ? ` <span class="text-[9px] text-amber-300 font-black">⭐ (${b.hits}n)</span>` : ''}
+                    </span>
+                `;
+            };
+
+            const renderChipX1 = (b) => {
+                const isHit = !isPending && (b.hits || 0) > 0;
+                return `
+                    <span class="px-2 py-1 rounded font-mono text-xs shadow-xs ${isHit ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black ring-2 ring-white shadow-md scale-105' : 'bg-slate-800 border border-slate-700 text-slate-200 font-bold'}">
+                        ${number(b.num)}${getMethodsText(b)}${isHit ? ` <span class="text-[9px] text-red-700 font-black">⭐ (${b.hits}n)</span>` : ''}
+                    </span>
+                `;
+            };
+
             return `
                 <div class="space-y-3 p-1">
-                    <div class="flex items-center justify-between border-b border-white/10 pb-2">
+                    <div class="flex items-center justify-between border-b border-amber-500/30 pb-2">
                         <div>
-                            <span class="rounded ${info.isLive ? 'bg-red-500/20 text-red-300 border border-red-500/40' : 'bg-slate-700 text-slate-300'} font-black text-[10px] px-2 py-0.5 uppercase">
-                                ${info.isLive ? '🔴 THỰC CHIẾN LIVE' : '🛡️ STRICT PIT D-1'}
+                            <span class="rounded bg-amber-400 text-slate-950 font-black text-[10px] px-2 py-0.5 uppercase">
+                                🔒 ĐÃ KHÓA KỲ TỚI
                             </span>
-                            <h4 class="font-black text-sm text-white mt-1">Lô Tổng Hợp 4 Động Cơ — ${formatDateVi(info.date)}</h4>
+                            ${!isPending ? `<span class="rounded ${info.isLive ? 'bg-red-500/20 text-red-300 border border-red-500/40' : 'bg-slate-700 text-slate-300'} font-black text-[10px] px-2 py-0.5 uppercase ml-1">${info.isLive ? '🔴 ĐỐI SOÁT LIVE' : '🛡️ STRICT PIT'}</span>` : ''}
+                            <h4 class="font-black text-sm text-white mt-1">Lô Tổng Hợp 4 Động Cơ Live — ${formatDateVi(info.date)}</h4>
                         </div>
                         <div class="text-right">
-                            <div class="font-black text-xs ${info.dayLotoProfitK >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-mono">
-                                ${moneyM(info.dayLotoProfitK, { signed: true })}
-                            </div>
-                            <div class="text-[10px] text-slate-400 font-sans">Vốn ${moneyM(info.dayLotoStakeK)}</div>
+                            ${!isPending && info.dayLotoProfitK != null ? `
+                                <div class="font-black text-xs ${info.dayLotoProfitK >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-mono">
+                                    ${moneyM(info.dayLotoProfitK, { signed: true })}
+                                </div>
+                            ` : ''}
+                            <span class="text-xs font-bold text-amber-300 font-mono">Vốn ${moneyM(info.dayLotoStakeK || 63800)}</span>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <span class="rounded ${isWin ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'} font-bold text-xs px-2.5 py-1">
-                            ${isWin ? `🎉 NỔ ${hits} NHÁY (ĂN ${moneyM(info.dayLotoPayoutK)})` : `❌ TRƯỢT (${hits} nháy)`}
-                        </span>
-                        <span class="rounded-lg bg-indigo-950/80 border border-indigo-500/40 text-xs px-2.5 py-1 text-indigo-200 font-mono">
-                            🔥 Lũy Kế Lô Ghép 4: <strong class="${(info.cumLotoProfitK ?? 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-black">${moneyM(info.cumLotoProfitK ?? 0, { signed: true })}</strong>
-                        </span>
-                    </div>
+                    ${!isPending ? `
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="rounded ${isWin ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'} font-bold text-xs px-2.5 py-1">
+                                ${isWin ? `🎉 NỔ ${hits} NHÁY (ĂN ${moneyM(info.dayLotoPayoutK)})` : `❌ TRƯỢT (${hits} nháy)`}
+                            </span>
+                            <span class="rounded-lg bg-indigo-950/80 border border-indigo-500/40 text-xs px-2.5 py-1 text-indigo-200 font-mono">
+                                🔥 Lũy Kế Lô Ghép 4: <strong class="${(info.cumLotoProfitK ?? 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-black">${moneyM(info.cumLotoProfitK ?? 0, { signed: true })}</strong>
+                            </span>
+                        </div>
+                    ` : ''}
 
-                    ${(() => {
-                        const tierX5List = betList.filter(b => b.multiplier >= 5);
-                        const tierX4List = betList.filter(b => b.multiplier === 4);
-                        const tierX3List = betList.filter(b => b.multiplier === 3);
-                        const tierX1List = betList.filter(b => b.multiplier === 1 || !b.multiplier);
-
-                        const renderChip = (b) => {
-                            const isHit = (b.hits || 0) > 0;
-                            return `
-                                <span class="px-2 py-1 rounded font-mono text-xs font-black ${isHit ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 ring-2 ring-white shadow-md' : 'bg-slate-800 text-slate-300 border border-slate-700'}">
-                                    ${number(b.num)}
-                                    <span class="text-[9px] font-sans font-bold px-1 py-0.2 rounded ${isHit ? 'bg-slate-950 text-amber-300' : 'bg-slate-700 text-slate-400'}">x${b.multiplier || 1}</span>
-                                    ${isHit ? `<span class="text-[9px] text-red-700 font-black">(${b.hits}n)</span>` : ''}
-                                </span>
-                            `;
-                        };
-
-                        return `
-                            <div class="space-y-2">
-                                ${tierX5List.length ? `
-                                    <div>
-                                        <div class="text-[10px] font-black uppercase text-amber-400 mb-1 flex items-center justify-between">
-                                            <span>👑 TẦNG SIÊU VIP (CƯỢC X5 · 11M/SỐ · ${tierX5List.length} SỐ):</span>
-                                            <span class="text-[9px] text-amber-200/80">Trùng 4 PP</span>
-                                        </div>
-                                        <div class="flex flex-wrap gap-1.5">${tierX5List.map(renderChip).join('')}</div>
-                                    </div>
-                                ` : ''}
-
-                                ${tierX4List.length ? `
-                                    <div>
-                                        <div class="text-[10px] font-black uppercase text-amber-300 mb-1 flex items-center justify-between">
-                                            <span>⚡ TẦNG CỰC VIP (CƯỢC X4 · 8.8M/SỐ · ${tierX4List.length} SỐ):</span>
-                                            <span class="text-[9px] text-amber-200/80">Trùng 3 PP</span>
-                                        </div>
-                                        <div class="flex flex-wrap gap-1.5">${tierX4List.map(renderChip).join('')}</div>
-                                    </div>
-                                ` : ''}
-
-                                ${tierX3List.length ? `
-                                    <div>
-                                        <div class="text-[10px] font-black uppercase text-indigo-300 mb-1 flex items-center justify-between">
-                                            <span>⚡ TẦNG TRIỂN VỌNG (CƯỢC X3 · 6.6M/SỐ · ${tierX3List.length} SỐ):</span>
-                                            <span class="text-[9px] text-indigo-200/80">Trùng 2 PP</span>
-                                        </div>
-                                        <div class="flex flex-wrap gap-1.5">${tierX3List.map(renderChip).join('')}</div>
-                                    </div>
-                                ` : ''}
-
-                                ${tierX1List.length ? `
-                                    <div>
-                                        <div class="text-[10px] font-black uppercase text-teal-300 mb-1 flex items-center justify-between">
-                                            <span>🛡️ TẦNG BẢO HIỂM (CƯỢC X1 · 2.2M/SỐ · ${tierX1List.length} SỐ):</span>
-                                            <span class="text-[9px] text-teal-200/80">Không trùng</span>
-                                        </div>
-                                        <div class="flex flex-wrap gap-1.5">${tierX1List.map(renderChip).join('')}</div>
-                                    </div>
-                                ` : ''}
+                    <div class="space-y-2.5">
+                        ${tierX5Nums.length ? `
+                            <div>
+                                <div class="text-[10px] font-black uppercase text-amber-400 mb-1 flex items-center justify-between">
+                                    <span>👑 TẦNG SIÊU VIP (CƯỢC X5 · 11M/SỐ · ${tierX5Nums.length} SỐ):</span>
+                                    <span class="text-[9px] text-amber-200/80">Trùng 4 PP</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${tierX5Nums.map(renderChipX5).join('')}
+                                </div>
                             </div>
-                        `;
-                    })()}
+                        ` : ''}
+
+                        ${tierX4Nums.length ? `
+                            <div>
+                                <div class="text-[10px] font-black uppercase text-amber-300 mb-1 flex items-center justify-between">
+                                    <span>⚡ TẦNG CỰC VIP (CƯỢC X4 · 8.8M/SỐ · ${tierX4Nums.length} SỐ):</span>
+                                    <span class="text-[9px] text-amber-200/80">Trùng 3 PP</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${tierX4Nums.map(renderChipX4).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        ${tierX3Nums.length ? `
+                            <div>
+                                <div class="text-[10px] font-black uppercase text-indigo-300 mb-1 flex items-center justify-between">
+                                    <span>⚡ TẦNG TRIỂN VỌNG (CƯỢC X3 · 6.6M/SỐ · ${tierX3Nums.length} SỐ):</span>
+                                    <span class="text-[9px] text-indigo-200/80">Trùng 2 PP</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${tierX3Nums.map(renderChipX3).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        ${tierX1Nums.length ? `
+                            <div>
+                                <div class="text-[10px] font-black uppercase text-teal-300 mb-1 flex items-center justify-between">
+                                    <span>🛡️ TẦNG BẢO HIỂM (CƯỢC X1 · 2.2M/SỐ · ${tierX1Nums.length} SỐ):</span>
+                                    <span class="text-[9px] text-teal-200/80">Không trùng</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${tierX1Nums.map(renderChipX1).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
 
                     <div class="text-[11px] text-slate-300 bg-slate-900/60 p-2 rounded-lg border border-slate-700">
                         🎲 <strong>Xiên 4:</strong> ${escapeHtml(info.xien4Reason || (info.xien4Status === 'SKIPPED_TOO_MANY' ? 'Bỏ qua (> 5 số trùng)' : 'Không cược'))}
@@ -11245,10 +11222,13 @@
                     return nums.map(n => {
                         const hits = loData.drawPrizes.filter(x => x === n).length;
                         const isHit = hits > 0;
+                        const betObj = lt.betNumbers?.find(b => String(b.num).padStart(2, '0') === String(n).padStart(2, '0'));
+                        const mStr = betObj?.methods?.join('+') || '';
+                        const mLabel = mStr ? ` (${mStr})` : '';
                         if (isHit) {
-                            return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black ring-2 ring-white scale-105 shadow-md">${n} <sub class="text-[9px] font-sans font-bold text-red-800 ml-0.5">(${multText}${hits > 1 ? `·${hits}n` : ''})</sub> ⭐</span>`;
+                            return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black ring-2 ring-white scale-105 shadow-md">${n}${mLabel} <sub class="text-[9px] font-sans font-bold text-red-800 ml-0.5">(${multText}${hits > 1 ? `·${hits}n` : ''})</sub> ⭐</span>`;
                         }
-                        return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs ${badgeCls}">${n} <sub class="text-[8px] font-sans opacity-80 ml-0.5">${multText}</sub></span>`;
+                        return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs ${badgeCls}">${n}${mLabel} <sub class="text-[8px] font-sans opacity-80 ml-0.5">${multText}</sub></span>`;
                     }).join('');
                 };
 
