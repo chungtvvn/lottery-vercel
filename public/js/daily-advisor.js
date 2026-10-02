@@ -6300,7 +6300,7 @@
 
                 const loBetList = (p2?.betNumbers || lo4Info?.betNumbers || []).slice(0, 5);
                 const xienNums = (p3?.numbers || lo4Xien4Info?.top4 || ['22', '38', '70', '93']).map(number);
-                const xien5Nums = (loXien5Info?.top5?.length ? loXien5Info.top5 : (payload?.loTop5ConsensusXien?.top5Xien || ['22', '38', '70', '92', '95'])).map(number);
+                const xien5Nums = ((r.loXien5Info || r.loXien5)?.top5?.length ? (r.loXien5Info || r.loXien5).top5 : (payload?.loTop5ConsensusXien?.top5Xien || ['22', '38', '70', '92', '95'])).map(number);
 
                 return `
                     <tr class="hover:bg-amber-50/50 bg-amber-50/20 border-l-4 border-l-amber-500 transition-colors">
