@@ -2935,7 +2935,7 @@
                         </div>
                         ${chipsHtml}
                     </div>
-                    <div class="pt-2 border-t border-slate-800/80 grid grid-cols-3 gap-2 text-[11px] font-mono">
+                    <div class="pt-2 border-t border-slate-800/80 grid grid-cols-4 gap-2 text-[11px] font-mono">
                         <div>
                             <div class="text-[9px] text-slate-500 uppercase">Vốn Cược</div>
                             <div class="font-bold text-slate-300">${moneyM(info.stakeK)}</div>
@@ -2944,9 +2944,13 @@
                             <div class="text-[9px] text-slate-500 uppercase">Tiền Thưởng</div>
                             <div class="font-bold ${info.payoutK > 0 ? 'text-emerald-400' : 'text-slate-400'}">${moneyM(info.payoutK)}</div>
                         </div>
-                        <div class="text-right">
+                        <div>
                             <div class="text-[9px] text-slate-500 uppercase">Lãi/Lỗ Ròng</div>
                             <div class="font-black ${info.profitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(info.profitK, { signed: true })}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-[9px] text-slate-500 uppercase">Lũy Kế Đề</div>
+                            <div class="font-black ${(info.cumDeProfitK ?? 0) >= 0 ? 'text-amber-400' : 'text-rose-400'}">${moneyM(info.cumDeProfitK ?? 0, { signed: true })}</div>
                         </div>
                     </div>
                 </div>
@@ -3658,7 +3662,7 @@
                             <div class="font-black text-amber-400 text-xs flex items-center gap-1.5">
                                 <i class="bi bi-stars text-amber-400"></i> 👑 Dàn Xiên 5 (5 Dàn Xiên 4)
                             </div>
-                            <div class="text-[10px] text-slate-400 mt-0.5">Ngày ${formatDateVi(info.date)} · Vốn 11M/dàn (Tổng 55M)</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">Ngày ${formatDateVi(info.date)} · Vốn 11M/dàn (Tổng 55M) · Lũy kế: <strong class="${(info.cumLoXien5ProfitK ?? 0) >= 0 ? 'text-amber-300' : 'text-rose-400'} font-mono">${moneyM(info.cumLoXien5ProfitK ?? 0, { signed: true })}</strong></div>
                         </div>
                         <div class="text-right">
                             ${resultBadgeHtml}
@@ -3703,10 +3707,11 @@
                             }).join('')}
                         </div>
                     </div>
-                    <div class="pt-2 border-t border-slate-800 grid grid-cols-3 gap-2 text-[11px] font-mono">
+                    <div class="pt-2 border-t border-slate-800 grid grid-cols-4 gap-2 text-[11px] font-mono">
                         <div><div class="text-[9px] text-slate-500 uppercase">Vốn Cược</div><div class="font-bold text-slate-300">55.000K (55M)</div></div>
                         <div><div class="text-[9px] text-slate-500 uppercase">Tiền Thưởng</div><div class="font-bold ${payoutK > 0 ? 'text-amber-300' : 'text-slate-400'}">${payoutK > 0 ? moneyM(payoutK) : '0đ'}</div></div>
-                        <div class="text-right"><div class="text-[9px] text-slate-500 uppercase">Lãi/Lỗ Ròng</div><div class="font-black ${profitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(profitK, { signed: true })}</div></div>
+                        <div><div class="text-[9px] text-slate-500 uppercase">Lãi/Lỗ Ròng</div><div class="font-black ${profitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(profitK, { signed: true })}</div></div>
+                        <div class="text-right"><div class="text-[9px] text-slate-500 uppercase">Lũy Kế Xiên 5</div><div class="font-black ${(info.cumLoXien5ProfitK ?? 0) >= 0 ? 'text-amber-400' : 'text-rose-400'}">${moneyM(info.cumLoXien5ProfitK ?? 0, { signed: true })}</div></div>
                     </div>
                 </div>
             `;
@@ -4027,7 +4032,8 @@
                     x5ProfitK: profitK,
                     payoutK,
                     profitK,
-                    isWin: profitK > 0
+                    isWin: profitK > 0,
+                    cumLoXien5ProfitK: top5Day.cumLoXien5ProfitK || top5Day.cumX5Profit55K || 0
                 };
             }
             const evalZero = evaluateXien5_5DanX4(0);
@@ -4470,7 +4476,7 @@
         const profitLabel = byId('unifiedDiaryProfitLabel');
 
         const TITLES_MAP = {
-            all: 'Nhật Ký Đối Soát: 🛡️ Combo Bù Trừ Dòng Tiền Chéo (Đề VIP + Lô Ghép 4 + Xiên Quây)',
+            all: 'Nhật Ký Đối Soát: 🛡️ Combo Bù Trừ Dòng Tiền Chéo (Đề VIP + Lô Ghép 4 + Xiên Quây + Dàn Xiên 5)',
             de: 'Nhật Ký Đối Soát: 💎 Đề Theo Gợi Ý (Dung Hợp & Đổi Pha)',
             lo4Engine: 'Nhật Ký Đối Soát: 🔥 Lô Ghép 4 Động Cơ (Top 6/7 Live: QMBF + Bạc Nhớ + 3 Động Cơ + RRF)',
             lo4Xien4: 'Nhật Ký Đối Soát: 🎲 Lô Xiên 4 (Phương Pháp Ghép 4 Mới)',
@@ -4585,6 +4591,7 @@
                         <th class="px-3 py-3">💎 Đề Tinh Tuyển VIP</th>
                         <th class="px-3 py-3">🔥 Lô Ghép 4 Động Cơ</th>
                         <th class="px-3 py-3">🎲 Dàn Xiên Quây</th>
+                        <th class="px-3 py-3">👑 Dàn Xiên 5 (5 Dàn Quây 4)</th>
                         <th class="px-3 py-3 text-right">Lãi/Lỗ Tổng Hợp (Profit_total)</th>
                         <th class="px-3 py-3 text-right">Lũy Kế Mốc</th>
                     </tr>
@@ -4654,7 +4661,7 @@
         if (filteredDates.length === 0 && unifiedTimeframe === 'sep16') {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="6" class="py-10 text-center bg-amber-50/50">
+                    <td colspan="7" class="py-10 text-center bg-amber-50/50">
                         <div class="max-w-md mx-auto space-y-2">
                             <span class="text-3xl">🎯</span>
                             <h4 class="text-base font-black text-amber-950">Mốc Thực Chiến Mới: Bắt Đầu Từ 16/09/2026</h4>
@@ -5215,7 +5222,8 @@
                     profitK: deProfitK,
                     payoutK: deIsHitFinal ? (deStakeK + deProfitK) : 0,
                     switchPhase: resolvedDe.switchPhase || null,
-                    switchReason: resolvedDe.switchReason || null
+                    switchReason: resolvedDe.switchReason || null,
+                    cumDeProfitK: cumCrossDeProfitK || cumDeProfitK
                 },
                 lo4Engine: lo4EngineDetails,
                 lo4Xien4: lo4Xien4Details,
@@ -6292,6 +6300,7 @@
 
                 const loBetList = (p2?.betNumbers || lo4Info?.betNumbers || []).slice(0, 5);
                 const xienNums = (p3?.numbers || lo4Xien4Info?.top4 || ['22', '38', '70', '93']).map(number);
+                const xien5Nums = (loXien5Info?.top5?.length ? loXien5Info.top5 : (payload?.loTop5ConsensusXien?.top5Xien || ['22', '38', '70', '92', '95'])).map(number);
 
                 return `
                     <tr class="hover:bg-amber-50/50 bg-amber-50/20 border-l-4 border-l-amber-500 transition-colors">
@@ -6317,6 +6326,10 @@
                                 <span>${deStakeText}</span>
                                 <span class="diary-expand-indicator text-amber-700 font-bold underline flex items-center gap-0.5">Bấm xem dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
                             </div>
+                            <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-amber-200/50 pt-0.5">
+                                <span class="text-slate-400 font-sans">Lũy kế Đề:</span>
+                                <span class="text-slate-400 font-bold">--</span>
+                            </div>
                         </td>
                         <!-- Cột 3: Lô Ghép 4 Động Cơ -->
                         <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-rose-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Engine">
@@ -6335,8 +6348,12 @@
                                 <span>${loStakeText}</span>
                                 <span class="diary-expand-indicator text-rose-700 font-bold underline flex items-center gap-0.5">Bấm xem dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
                             </div>
+                            <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-rose-200/50 pt-0.5">
+                                <span class="text-slate-400 font-sans">Lũy kế Lô:</span>
+                                <span class="text-slate-400 font-bold">--</span>
+                            </div>
                         </td>
-                        <!-- Cột 4: Dàn Xiên Quây -->
+                        <!-- Cột 4: Dàn Xiên Quây (Top 4) -->
                         <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-purple-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Xien4">
                             <div class="text-[11px] font-bold text-purple-950 flex items-center gap-1">
                                 <i class="bi bi-dice-4-fill text-purple-600 text-[10px]"></i> <span>Quây 11 Vé (4 Số Nòng Cốt)</span>
@@ -6351,8 +6368,32 @@
                                 <span>${xienStakeText}</span>
                                 <span class="diary-expand-indicator text-purple-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
                             </div>
+                            <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-purple-200/50 pt-0.5">
+                                <span class="text-slate-400 font-sans">Lũy kế Xiên 4:</span>
+                                <span class="text-slate-400 font-bold">--</span>
+                            </div>
                         </td>
-                        <!-- Cột 5: Lãi/Lỗ Tổng Hợp -->
+                        <!-- Cột 5: Dàn Xiên 5 (5 Dàn Quây 4) -->
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-indigo-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXien5">
+                            <div class="text-[11px] font-bold text-indigo-950 flex items-center gap-1">
+                                <i class="bi bi-stars text-indigo-600 text-[10px]"></i> <span>5 Dàn Xiên 4 (Vốn 55M)</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 mt-0.5 text-xs">
+                                <span class="text-amber-600 font-bold">⏳ Chờ mở</span>
+                                <span class="font-mono text-indigo-900 font-bold text-[11px]">
+                                    [${xien5Nums.join(', ')}]
+                                </span>
+                            </div>
+                            <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
+                                <span>5 dàn X4 · 11M/dàn</span>
+                                <span class="diary-expand-indicator text-indigo-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
+                            </div>
+                            <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-indigo-200/50 pt-0.5">
+                                <span class="text-slate-400 font-sans">Lũy kế Xiên 5:</span>
+                                <span class="text-slate-400 font-bold">--</span>
+                            </div>
+                        </td>
+                        <!-- Cột 6: Lãi/Lỗ Tổng Hợp -->
                         <td class="diary-cell-interactive px-3 py-3 text-right whitespace-nowrap font-mono cursor-pointer hover:bg-amber-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="total">
                             <div class="font-black text-xs text-amber-600">
                                 ⏳ Chờ KQ
@@ -6360,7 +6401,7 @@
                             <div class="text-[10px] text-slate-400 font-sans">Vốn M3: ${moneyM(totalStakeVal)}</div>
                             <div class="diary-expand-indicator text-[9px] text-amber-700 font-bold font-sans underline mt-0.5 flex items-center gap-0.5 justify-end">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></div>
                         </td>
-                        <!-- Cột 6: Lũy Kế Mốc -->
+                        <!-- Cột 7: Lũy Kế Mốc -->
                         <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
                             <div class="font-semibold text-xs text-slate-400">
                                 --
@@ -6376,6 +6417,15 @@
             const xienPnlVal = (r.chXienPnlK != null ? r.chXienPnlK : (lo4Xien4Info?.profitK || 0));
             const dayTotalVal = (r.chTotalProfitK != null ? r.chTotalProfitK : (r.dayTotalK || 0));
             const cumProfitVal = (r.chCumProfitK != null ? r.chCumProfitK : (r.cumProfitK || 0));
+
+            const cumDeVal = (r.chCumDeProfitK != null ? r.chCumDeProfitK : (r.cumDeProfitK || 0));
+            const cumLoVal = (r.chCumLoProfitK != null ? r.chCumLoProfitK : (r.cumLo4ProfitK || 0));
+            const cumXien4Val = (r.chCumXienProfitK != null ? r.chCumXienProfitK : (r.cumLo4Xien4ProfitK || 0));
+            const loXien5Info = r.loXien5Info || r.loXien5 || {};
+            const loXien5H5 = loXien5Info.h5 || 0;
+            const evalX5Row = evaluateXien5_5DanX4(loXien5H5);
+            const loXien5ProfitK = loXien5Info.profitK != null ? loXien5Info.profitK : (loXien5Info.x5ProfitK != null ? loXien5Info.x5ProfitK : evalX5Row.profitK);
+            const cumXien5Val = (r.cumLoXien5ProfitK != null ? r.cumLoXien5ProfitK : (loXien5Info.cumLoXien5ProfitK || 0));
 
             const isDayWin = (r.chRow ? r.chRow.isWin : (dayTotalVal > 0));
             const specialNum = r.chRow?.special != null ? number(r.chRow.special) : (deInfo?.actualSpecial != null ? number(deInfo.actualSpecial) : '--');
@@ -6418,6 +6468,10 @@
                             <span>${isVipHit ? '10 số VIP nổ giải ĐB' : (escapeHtml(deInfo?.subTierLabel || '10 VIP + 33 Dàn'))}</span>
                             <span class="diary-expand-indicator text-amber-700 font-bold underline flex items-center gap-0.5">Bấm xem dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
                         </div>
+                        <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-amber-200/50 pt-0.5">
+                            <span class="text-slate-500 font-sans">Lũy kế Đề:</span>
+                            <strong class="${cumDeVal >= 0 ? 'text-amber-800' : 'text-rose-600'} font-bold">${moneyM(cumDeVal, { signed: true })}</strong>
+                        </div>
                     </td>
                     <!-- Cột 3: Lô Ghép 4 Động Cơ -->
                     <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-rose-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Engine">
@@ -6433,8 +6487,12 @@
                             <span>${lo4Info?.countTotal || 5} số (Top 4 X4/X5 + Vệ Tinh)</span>
                             <span class="diary-expand-indicator text-rose-700 font-bold underline flex items-center gap-0.5">Bấm xem dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
                         </div>
+                        <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-rose-200/50 pt-0.5">
+                            <span class="text-slate-500 font-sans">Lũy kế Lô:</span>
+                            <strong class="${cumLoVal >= 0 ? 'text-emerald-700' : 'text-rose-600'} font-bold">${moneyM(cumLoVal, { signed: true })}</strong>
+                        </div>
                     </td>
-                    <!-- Cột 4: Dàn Xiên Quây -->
+                    <!-- Cột 4: Dàn Xiên Quây (Top 4) -->
                     <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-purple-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Xien4">
                         <div class="flex items-center justify-between text-[11px] font-bold text-purple-950 gap-1">
                             <span class="flex items-center gap-1"><i class="bi bi-dice-4-fill text-purple-600 text-[10px]"></i> Dàn Xiên Quây 11 Vé</span>
@@ -6458,8 +6516,37 @@
                             })()}</span>
                             <span class="diary-expand-indicator text-purple-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
                         </div>
+                        <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-purple-200/50 pt-0.5">
+                            <span class="text-slate-500 font-sans">Lũy kế Xiên 4:</span>
+                            <strong class="${cumXien4Val >= 0 ? 'text-purple-700' : 'text-rose-600'} font-bold">${moneyM(cumXien4Val, { signed: true })}</strong>
+                        </div>
                     </td>
-                    <!-- Cột 5: Lãi/Lỗ Tổng Hợp -->
+                    <!-- Cột 5: Dàn Xiên 5 (5 Dàn Quây 4) -->
+                    <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-indigo-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXien5">
+                        <div class="flex items-center justify-between text-[11px] font-bold text-indigo-950 gap-1">
+                            <span class="flex items-center gap-1"><i class="bi bi-stars text-indigo-600 text-[10px]"></i> 5 Dàn Xiên 4 (55M)</span>
+                            <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${loXien5ProfitK >= 0 ? 'bg-indigo-100 text-indigo-900 ring-1 ring-indigo-300' : 'bg-rose-100 text-rose-800'}">P&L: ${moneyM(loXien5ProfitK, { signed: true })}</span>
+                        </div>
+                        <div class="flex items-center justify-between gap-1.5 mt-0.5 text-xs">
+                            ${(() => {
+                                if (loXien5H5 >= 5) return `<span class="rounded bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 px-1.5 py-0.5 text-[10px] font-black shadow-xs ring-1 ring-amber-500">👑 ĂN 5 DÀN (+1.865M)</span>`;
+                                if (loXien5H5 === 4) return `<span class="rounded bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 px-1.5 py-0.5 text-[10px] font-black shadow-xs ring-1 ring-amber-500">👑 ĂN 5/5 DÀN (+665M)</span>`;
+                                if (loXien5H5 === 3) return `<span class="rounded bg-purple-600 text-white px-1.5 py-0.5 text-[10px] font-black shadow-xs">🔥 ĂN 5/5 DÀN (+149M)</span>`;
+                                if (loXien5H5 === 2) return `<span class="rounded bg-teal-600 text-white px-1.5 py-0.5 text-[10px] font-bold shadow-xs">🛡️ ĂN 3 DÀN X2 (-19M)</span>`;
+                                return `<span class="text-slate-500 text-[10px] font-semibold">Trượt (-55M)</span>`;
+                            })()}
+                            <span class="font-mono font-bold ${loXien5ProfitK > 0 ? 'text-emerald-600' : 'text-rose-600'}">${moneyM(loXien5ProfitK, { signed: true })}</span>
+                        </div>
+                        <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
+                            <span>${loXien5H5}/5 con về · [${(loXien5Info.top5 || []).join('-')}]</span>
+                            <span class="diary-expand-indicator text-indigo-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
+                        </div>
+                        <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-indigo-200/50 pt-0.5">
+                            <span class="text-slate-500 font-sans">Lũy kế Xiên 5:</span>
+                            <strong class="${cumXien5Val >= 0 ? 'text-indigo-700' : 'text-rose-600'} font-bold">${moneyM(cumXien5Val, { signed: true })}</strong>
+                        </div>
+                    </td>
+                    <!-- Cột 6: Lãi/Lỗ Tổng Hợp -->
                     <td class="diary-cell-interactive px-3 py-3 text-right whitespace-nowrap font-mono cursor-pointer hover:bg-slate-100 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="total">
                         <div class="font-black text-xs ${dayTotalVal >= 0 ? 'text-emerald-700' : 'text-rose-700'}">
                             ${moneyM(dayTotalVal, { signed: true })}
@@ -6472,7 +6559,7 @@
                             <span class="diary-expand-indicator text-[9px] text-indigo-600 font-bold font-sans underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
                         </div>
                     </td>
-                    <!-- Cột 6: Lũy Kế Mốc -->
+                    <!-- Cột 7: Lũy Kế Mốc -->
                     <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
                         <div class="font-black text-xs ${cumProfitVal >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
                             ${moneyM(cumProfitVal, { signed: true })}
