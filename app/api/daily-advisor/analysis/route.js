@@ -12,15 +12,11 @@ function isAuthorized(request) {
         return true;
     }
     const expected = process.env.PREDICTION_API_TOKEN || process.env.EXTERNAL_API_TOKEN || '';
-    const isProd = process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production';
-    if (isProd) {
-        if (!expected) return false;
-    } else {
-        if (!expected) return true;
-    }
+    if (!expected) return true;
+
     const url = new URL(request.url);
     const provided = request.headers.get('x-api-key') || request.headers.get('authorization')?.replace(/^Bearer\s+/i, '') || url.searchParams.get('token') || '';
-    return Boolean(expected && provided === expected);
+    return Boolean(provided === expected);
 }
 
 export async function GET(request) {

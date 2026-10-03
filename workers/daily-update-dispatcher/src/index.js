@@ -1541,6 +1541,9 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     if (!std30.length) {
       std30 = advisorPayload?.dualMerge?.latestRecommendation?.fullUnion
         || advisorPayload?.adaptiveDualMerge?.latestRecommendation?.fullUnion
+        || dePayload?.nextPrediction?.strategies?.[DEFAULT_DE_STRATEGY]?.holds?.[DEFAULT_DE_TARGET]?.betNumbers
+        || dePayload?.nextPrediction?.strategies?.chainSmallFirst?.holds?.[DEFAULT_DE_TARGET]?.betNumbers
+        || dePayload?.nextPrediction?.strategies?.dedupEdge75Pit?.holds?.[DEFAULT_DE_TARGET]?.betNumbers
         || [];
       core10 = std30.slice(0, 10);
       core20 = std30.slice(0, 20);
@@ -1592,7 +1595,13 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   } else if (advisorPayload?.loQuantumBayesFusion?.latestRecommendation?.rankedNumbers?.length) {
     stdNums = advisorPayload.loQuantumBayesFusion.latestRecommendation.rankedNumbers.slice(0, 20).map(normalizeLotteryNumber);
   } else {
-    stdNums = (metaNext?.standard?.numbers || []).map(normalizeLotteryNumber);
+    stdNums = (
+      metaNext?.standard?.numbers ||
+      lotoPayload?.nextPrediction?.predictions?.top20?.numbers ||
+      lotoPayload?.nextPrediction?.strategies?.[DEFAULT_LOTO_STRATEGY]?.predictions?.top20?.numbers ||
+      lotoPayload?.nextPrediction?.strategies?.[LEGACY_RRF_LOTO_STRATEGY]?.predictions?.top20?.numbers ||
+      []
+    ).map(normalizeLotteryNumber);
   }
 
   const isQuadMaster = Boolean(loQuadAdv);
@@ -1628,9 +1637,25 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     );
   }
 
-  let x2Nums = (subTierData.numbers || engineData.rankedNumbers?.slice(0, selectedSubTier) || loGovernor.subTiers?.[selectedSubTier]?.numbers || loQuadAdv?.top7 || metaNext?.x2?.numbers || []).map(normalizeLotteryNumber);
+  let x2Nums = (
+    subTierData.numbers ||
+    engineData.rankedNumbers?.slice(0, selectedSubTier) ||
+    loGovernor.subTiers?.[selectedSubTier]?.numbers ||
+    loQuadAdv?.top7 ||
+    metaNext?.x2?.numbers ||
+    []
+  ).map(normalizeLotteryNumber);
   if (!x2Nums.length && advisorPayload?.loQuantumBayesFusion?.latestRecommendation?.rankedNumbers?.length) {
     x2Nums = advisorPayload.loQuantumBayesFusion.latestRecommendation.rankedNumbers.slice(0, selectedSubTier).map(normalizeLotteryNumber);
+  }
+  if (!x2Nums.length) {
+    x2Nums = (
+      lotoPayload?.nextPrediction?.predictions?.top7?.numbers ||
+      lotoPayload?.nextPrediction?.strategies?.[DEFAULT_LOTO_STRATEGY]?.predictions?.top7?.numbers ||
+      lotoPayload?.nextPrediction?.strategies?.[LEGACY_RRF_LOTO_STRATEGY]?.predictions?.top7?.numbers ||
+      stdNums.slice(0, selectedSubTier) ||
+      []
+    ).map(normalizeLotteryNumber);
   }
 
   const top2Nums = (engineData.subTiers?.[2]?.numbers || engineData.rankedNumbers?.slice(0, 2) || loGovernor.subTiers?.[2]?.numbers || loQuadAdv?.top2 || []).map(normalizeLotteryNumber);
@@ -1712,12 +1737,12 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   // 5. 💎 LÔ XIÊN 3 & XIÊN 4 TINH HOA — DUNG HỢP TOP 5 ĐỒNG THUẬN
   // =========================================================================
   const top4Consensus = (loTop5Xien?.top4Xien || []).map(normalizeLotteryNumber);
-  const top5Consensus = (loTop5Xien?.top5Xien || []).map(normalizeLotteryNumber);
-  const top3Consensus = (loTop5Xien?.top3Xien || []).map(normalizeLotteryNumber);
+  const top5Consensus = (loTop5Xien?.top5Xien || (stdNums.length >= 5 ? stdNums.slice(0, 5) : [])).map(normalizeLotteryNumber);
+  const top3Consensus = (loTop5Xien?.top3Xien || (stdNums.length >= 3 ? stdNums.slice(0, 3) : [])).map(normalizeLotteryNumber);
 
   let xi4Nums = top4Consensus.length >= 4 ? top4Consensus : (loXien4Adv?.numbers || metaNext?.xien4?.numbers || []).map(normalizeLotteryNumber);
-  if (!xi4Nums.length) {
-    xi4Nums = overlapNums.length >= 4 ? overlapNums.slice(0, 4) : sList.slice(0, 4);
+  if (xi4Nums.length < 4) {
+    xi4Nums = overlapNums.length >= 4 ? overlapNums.slice(0, 4) : (sList.length >= 4 ? sList.slice(0, 4) : (stdNums.length >= 4 ? stdNums.slice(0, 4) : []));
   }
   lines.push(`<b>5. 💎 LÔ XIÊN 3 & XIÊN 4 TINH HOA — DUNG HỢP TOP 5 ĐỒNG THUẬN</b>`);
   lines.push(
@@ -2192,15 +2217,50 @@ function evaluatePredictionCacheReadiness(dePayload = {}, lotoPayload = {}, expe
   };
 }
 
+function hasValidAdvisorData(payload) {
+  if (!payload || typeof payload !== 'object') return false;
+  return Boolean(
+    payload.streakAwareDeAdvisor?.latestRecommendation ||
+    payload.dualMerge?.latestRecommendation ||
+    payload.crossHedgingPortfolio?.latestRecommendation ||
+    payload.crossHedgingPortfolio ||
+    payload.metaLearner?.latestRecommendation ||
+    payload.loQuadHybrid?.latestRecommendation
+  );
+}
+
 async function getLockedAdvisorPayload(env) {
-  const advisorPayload = await fetchPredictionJson(env, '/api/daily-advisor').catch(err => {
-    console.error('Failed to fetch /api/daily-advisor:', err);
-    return {};
+  let advisorPayload = await fetchPredictionJson(env, '/api/daily-advisor').catch(err => {
+    console.warn('Failed to fetch /api/daily-advisor, will try fallback:', err?.message || err);
+    return null;
   });
 
-  const predictionDate = advisorPayload?.streakAwareDeAdvisor?.latestRecommendation?.predictionDate
+  if (!hasValidAdvisorData(advisorPayload)) {
+    try {
+      const r2Base = String(env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || 'https://pub-df6c4a2a06ff417cad48f09d66fd7bf0.r2.dev').replace(/\/$/, '');
+      const r2Res = await fetch(`${r2Base}/statistics/cached_daily_method_advisor.json`, {
+        headers: { accept: 'application/json' }
+      });
+      if (r2Res.ok) {
+        const r2Json = await r2Res.json();
+        if (hasValidAdvisorData(r2Json)) {
+          advisorPayload = r2Json;
+        }
+      }
+    } catch (r2Err) {
+      console.warn('R2 fallback fetch error:', r2Err);
+    }
+  }
+
+  if (!advisorPayload) advisorPayload = {};
+
+  const predictionDate = advisorPayload?.crossHedgingPortfolio?.latestRecommendation?.targetDate
+    || advisorPayload?.crossHedgingPortfolio?.targetDate
+    || advisorPayload?.streakAwareDeAdvisor?.latestRecommendation?.predictionDate
     || advisorPayload?.loQuadHybrid?.latestRecommendation?.predictionDate
     || advisorPayload?.loQuantumBayesFusion?.latestRecommendation?.predictionDate
+    || advisorPayload?.dualMerge?.latestRecommendation?.predictionDate
+    || advisorPayload?.pendingPredictionDate
     || getVietnamDate();
 
   if (!env.TELEGRAM_STATE) {
@@ -2228,11 +2288,11 @@ async function getLockedAdvisorPayload(env) {
   const kvKey = `LOCKED_ADVISOR_${predictionDate}`;
   try {
     const saved = await env.TELEGRAM_STATE.get(kvKey, 'json');
-    if (saved && (saved.streakAwareDeAdvisor?.latestRecommendation || saved.dualMerge?.latestRecommendation)) {
+    if (saved && hasValidAdvisorData(saved)) {
       // Use the locked snapshot from KV to ensure 100% immutability even across new deploys
       return { advisorPayload: saved, predictionDate };
     }
-    if (inLockWindow && (advisorPayload?.streakAwareDeAdvisor?.latestRecommendation || advisorPayload?.dualMerge?.latestRecommendation)) {
+    if (inLockWindow && hasValidAdvisorData(advisorPayload)) {
       await env.TELEGRAM_STATE.put(kvKey, JSON.stringify(advisorPayload), { expirationTtl: 86400 });
     }
   } catch (err) {
@@ -2264,19 +2324,21 @@ async function notifyTelegram(env, options = {}) {
     getLockedAdvisorPayload(env)
   ]);
   const advisorPayload = advisorResult?.advisorPayload || {};
+  const hasAdvisor = hasValidAdvisorData(advisorPayload);
   const readiness = evaluatePredictionCacheReadiness(
     dePayload,
     lotoPayload,
     options.expectedDataDate || null
   );
-  if (!options.force && !readiness.ready) {
+  if (!options.force && (!readiness.ready || !hasAdvisor)) {
     return {
       ok: false,
       skipped: true,
-      reason: 'prediction-cache-not-ready',
+      reason: !readiness.ready ? 'prediction-cache-not-ready' : 'advisor-cache-not-ready',
       expectedDataDate: readiness.expectedDataDate,
       deLatestDataDate: readiness.deLatestDataDate,
-      lotoLatestDataDate: readiness.lotoLatestDataDate
+      lotoLatestDataDate: readiness.lotoLatestDataDate,
+      hasAdvisorData: hasAdvisor
     };
   }
 
