@@ -547,12 +547,12 @@ runTest('7.6: detectRegimeAndSizing requires confirmed win before upgrading from
 });
 
 runTest('7.7: solveOptimalHedgeWeights accurately reports profitIfLo2HitsK and profitIfLo3HitsK', () => {
-    const hedgeTop4 = crossHedgingService.solveOptimalHedgeWeights({ loNumbersCount: 4, loPoints: 65 });
+    const hedgeTop4 = crossHedgingService.solveOptimalHedgeWeights({ DE_STAKE_BASE_K: 4500, loNumbersCount: 4, loPoints: 65 });
     assert.strictEqual(hedgeTop4.profitIfLo2HitsK, 280);
     assert(hedgeTop4.profitIfLo3HitsK > 0);
     assert.strictEqual(hedgeTop4.isHedgingGuaranteed, true);
 
-    const hedgeTop7 = crossHedgingService.solveOptimalHedgeWeights({ loNumbersCount: 7, loPoints: 70 });
+    const hedgeTop7 = crossHedgingService.solveOptimalHedgeWeights({ DE_STAKE_BASE_K: 4500, loNumbersCount: 7, loPoints: 70 });
     assert(hedgeTop7.profitIfLo2HitsK < 0);
     assert(hedgeTop7.profitIfLo3HitsK > 0);
     assert.strictEqual(hedgeTop7.isHedgingGuaranteed, true);
