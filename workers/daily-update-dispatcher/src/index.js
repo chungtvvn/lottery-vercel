@@ -394,14 +394,14 @@ function resolveSmartSelectedLo(advisorPayload = {}) {
     (top20Anchor.length >= 7 ? top20Anchor.slice(0, 7) : [68, 93, 62, 73, 41, 19, 52]))
   ).slice(0, 7).map(Number);
 
-  if (uniqueConsensus.length >= 3 && uniqueConsensus.length <= 6) {
+  if (uniqueConsensus.length >= 3 && uniqueConsensus.length <= 7) {
     const count = uniqueConsensus.length;
     return {
       type: '4ENGINE_CONSENSUS',
       name: `Lô Hội Tụ 4 Động Cơ (${count} Số Đồng Thuận)`,
       shortName: `4ĐC Hội Tụ (${count}s)`,
-      badge: `⚡ HỘI TỤ VÀNG 4 ĐỘNG CƠ (${count} SỐ · CHI PHÍ SIÊU THẤP)`,
-      rationale: `4 Động cơ AI (QMBF, Dual, Tri, RRF) đạt độ hội tụ vàng với ${count} số đồng thuận (≥ 2 động cơ cùng chọn). Kích hoạt Lô Hội Tụ 4 Động Cơ để tối ưu vốn thấp nhất (chỉ ${count} số), tập trung hỏa lực mang lại ROI đỉnh cao (+35.2%).`,
+      badge: `⚡ HỘI TỤ VÀNG 4 ĐỘNG CƠ (${count} SỐ · ĐA TẦNG X4/X3)`,
+      rationale: `4 Động cơ AI (QMBF, Dual, Tri, RRF) đạt độ hội tụ vàng với ${count} số đồng thuận (≥ 2 động cơ cùng chọn). Kích hoạt Lô Hội Tụ 4 Động Cơ để tập trung hỏa lực mang lại ROI đỉnh cao.`,
       numbers: uniqueConsensus,
       betCount: count,
       stakeDailyK_M3: count * 25 * 22,
@@ -2034,7 +2034,31 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
       `🎰 <b>2. LÔ CHỦ LỰC ĐỀ XUẤT DUY NHẤT HÔM NAY — BỘ ĐIỀU PHỐI THÔNG MINH:</b>`,
       `  • <i>🎯 ${escapeHtml(smartLo.badge)}</i>`,
       `  • 💡 <i>Lý do AI lựa chọn: ${escapeHtml(smartLo.rationale)}</i>`,
-      `  • 🎯 <b>Dàn Lô Đánh (${smartLo.numbers.length} số · Vốn Tối Ưu Chi Phí Thấp):</b> <code>${escapeHtml(formatNumberList(smartLo.numbers.map(normalizeLotteryNumber)))}</code>`,
+      `  • 🎯 <b>Dàn Lô Đánh (${smartLo.numbers.length} số · Vốn Tối Ưu Chi Phí Thấp):</b> <code>${escapeHtml(formatNumberList(smartLo.numbers.map(normalizeLotteryNumber)))}</code>`
+    );
+
+    const lo4Adv = advisorPayload?.lo4EngineFusion?.latestRecommendation || {};
+    const rx5 = (smartLo.tierX5 || recPort?.loStructure?.tierX5 || lo4Adv.tierX5 || []).map(normalizeLotteryNumber);
+    const rx4 = (smartLo.tierX4 || recPort?.loStructure?.tierX4 || lo4Adv.tierX4 || []).map(normalizeLotteryNumber);
+    const rx3 = (smartLo.tierX3 || recPort?.loStructure?.tierX3 || lo4Adv.tierX3 || []).map(normalizeLotteryNumber);
+    const rx1 = (smartLo.singlesX1 || recPort?.loStructure?.singlesX1 || lo4Adv.tierX1 || []).map(normalizeLotteryNumber);
+
+    if (rx5.length || rx4.length || rx3.length || rx1.length) {
+      if (rx5.length) {
+        lines.push(`     └ 👑 <b>Siêu VIP X5 (${rx5.length} số):</b> <code>${escapeHtml(formatNumberList(rx5))}</code>`);
+      }
+      if (rx4.length) {
+        lines.push(`     └ 🔥 <b>Cực VIP X4 (${rx4.length} số):</b> <code>${escapeHtml(formatNumberList(rx4))}</code>`);
+      }
+      if (rx3.length) {
+        lines.push(`     └ ⚡ <b>Triển Vọng X3 (${rx3.length} số):</b> <code>${escapeHtml(formatNumberList(rx3))}</code>`);
+      }
+      if (rx1.length) {
+        lines.push(`     └ 🛡️ <b>Bảo Hiểm X1 (${rx1.length} số):</b> <code>${escapeHtml(formatNumberList(rx1))}</code>`);
+      }
+    }
+
+    lines.push(
       `  • <i>Vốn cược: Mức 3 (Mặc định 25đ) = ${(smartLo.stakeDailyK_M3 / 1000).toFixed(2)}M · Mức VIP (100đ) = ${(smartLo.stakeDailyK_VIP / 1000).toFixed(1)}M · Mức Chuẩn (10đ) = ${(smartLo.stakeDailyK_Std / 1000).toFixed(2)}M · Ăn 2M/nháy M3 (8M/nháy VIP)</i>`,
       `  • ⚡ <i>Điểm hòa vốn: Chỉ cần ${smartLo.hitsToProfit} nháy nổ là có lãi ròng ngay!</i>`
     );
