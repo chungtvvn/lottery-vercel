@@ -6441,11 +6441,15 @@
                 const optHedge = payload?.crossHedgingPortfolio?.hedgingSummary?.optimalHedgeM3;
 
                 const deMethodName = p1?.methodLabel || deInfo?.methodName || 'Đề Markov Bậc 2 & Gap Hazard';
-                const deStakeText = `Vốn ${moneyM(optHedge?.deStakeK || 4500)} (VIP ${moneyM(p1?.stakeK || 6075)})`;
+                const deVipCount = p1?.vipCount || p1?.vipNumbers?.length || deInfo?.x2Nums?.length || 17;
+                const deSingleCount = p1?.singleCount || p1?.singleNumbers?.length || deInfo?.x1Nums?.length || 26;
+                const deTotalCount = p1?.totalNumbersCount || (deVipCount + deSingleCount);
+                const deStakeVal = p1?.stakeK || deInfo?.stakeK || ((deVipCount * 3 + deSingleCount * 1) * 1000);
+                const deStakeText = `Vốn ${moneyM(deStakeVal)} (${deVipCount} VIP X3 · ${deSingleCount} Lót X1)`;
                 const loMethodName = p2?.engine || 'Lô Hội Tụ 4 Động Cơ';
-                const loStakeText = `Vốn ${moneyM(optHedge?.loStakeK || 5720)} (VIP ${moneyM(p2?.stakeK || 39710)})`;
-                const xienStakeText = `Vốn ${moneyM(optHedge?.xienStakeK || 1100)} (VIP ${moneyM(p3?.stakeK || 1485)})`;
-                const totalStakeVal = optHedge?.totalStakeK || 11320;
+                const loStakeText = `Vốn ${moneyM(p2?.stakeK || optHedge?.loStakeK || 63800)}`;
+                const xienStakeText = `Vốn ${moneyM(p3?.stakeK || optHedge?.xienStakeK || 1485)}`;
+                const totalStakeVal = (deStakeVal + (p2?.stakeK || 63800) + (p3?.stakeK || 1485));
 
                 const loBetList = (p2?.betNumbers || lo4Info?.betNumbers || []).slice(0, 5);
                 const xienNums = (p3?.numbers || lo4Xien4Info?.top4 || ['22', '38', '70', '93']).map(number);
@@ -6468,8 +6472,8 @@
                             </div>
                             <div class="flex items-center gap-1.5 mt-0.5">
                                 <span class="text-xs text-slate-600">ĐB: <strong class="font-mono text-xs text-amber-600 font-bold">⏳ Chờ mở</strong></span>
-                                <span class="inline-flex items-center gap-1 rounded bg-amber-100 text-amber-900 border border-amber-300 px-1.5 py-0.5 text-[10px] font-black">10 số VIP</span>
-                                <span class="inline-flex items-center rounded bg-slate-100 text-slate-700 px-1 py-0.5 text-[10px] font-semibold">${p1?.totalNumbersCount || deInfo?.numbers?.length || 43}s Dàn</span>
+                                <span class="inline-flex items-center gap-1 rounded bg-amber-100 text-amber-900 border border-amber-300 px-1.5 py-0.5 text-[10px] font-black">${deVipCount} số VIP</span>
+                                <span class="inline-flex items-center rounded bg-slate-100 text-slate-700 px-1 py-0.5 text-[10px] font-semibold">${deTotalCount}s Dàn</span>
                             </div>
                             <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
                                 <span>${deStakeText}</span>
@@ -7458,8 +7462,8 @@
 
             if (isLatest) {
                 const curDeMethodName = p.crossHedgingPortfolio?.pillar1_De?.methodLabel || 'Đề Markov Bậc 2 & Gap Hazard';
-                const curDeVipCount = p.crossHedgingPortfolio?.pillar1_De?.vipNumbers?.length || 10;
-                const curDeSingleCount = p.crossHedgingPortfolio?.pillar1_De?.singleNumbers?.length || 33;
+                const curDeVipCount = p.crossHedgingPortfolio?.pillar1_De?.vipNumbers?.length || 17;
+                const curDeSingleCount = p.crossHedgingPortfolio?.pillar1_De?.singleNumbers?.length || 26;
 
                 if (prevDe?.isHit) {
                     const isPrevVip = prevDe.isX3 || prevDe.isX2;
