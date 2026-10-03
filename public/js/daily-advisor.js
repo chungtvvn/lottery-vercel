@@ -119,7 +119,7 @@
             id: 'maxProfit',
             name: 'Gói 1: Combo Bù Trừ Dòng Tiền Chéo (Đề VIP + Lô 4 ĐC + Xiên Quây)',
             deMethod: 'deMarkovGapHazard',
-            loEngine: 'lo4Fusion',
+            loEngine: 'lo4Engine',
             loSubTier: 7,
             badge: '🛡️ COMBO CHỦ LỰC · BÙ TRỪ DÒNG TIỀN CHÉO (WIN 78.97%)',
             roiLabel: 'Win 78.97% · ROI +120.8%',
@@ -129,7 +129,7 @@
             id: 'crossHedging',
             name: 'Gói 1: Combo Bù Trừ Dòng Tiền Chéo (Đề VIP + Lô 4 ĐC + Xiên Quây)',
             deMethod: 'deMarkovGapHazard',
-            loEngine: 'lo4Fusion',
+            loEngine: 'lo4Engine',
             loSubTier: 7,
             badge: '🛡️ COMBO CHỦ LỰC · BÙ TRỪ DÒNG TIỀN CHÉO (WIN 78.97%)',
             roiLabel: 'Win 78.97% · ROI +120.8%',
@@ -782,16 +782,11 @@
             deMethodName = '🔮 Đề Markov Bậc 2 & Gap Hazard';
             deNumbers = (r?.numbers || p1?.allNumbers || deNumbers).map(number);
             deX2Nums = (r?.vipNumbers || p1?.vipNumbers || deNumbers.slice(0, 10)).map(number);
-            deX1Nums = (r?.backupNumbers || p1?.singleNumbers || deNumbers.slice(10)).map(number);
-            deStakeK = chRow?.deStakeK || r?.stakeK || (deX2Nums.length * 3 + deX1Nums.length * 1) * 1000;
+            deX1Nums = (r?.backupNumbers || deNumbers.filter(n => !deX2Nums.includes(n))).map(number);
+            deStakeK = (deX2Nums.length * 3 + deX1Nums.length * 1) * 1000;
             deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} X3 · ${deX1Nums.length} X1)`;
-            if (chRow?.deProfitK != null) {
-                deProfitK = chRow.deProfitK;
-                deIsHitFinal = Boolean(chRow.isDeHit);
-            } else {
-                deProfitK = r?.profitK != null ? r.profitK : deProfitK;
-                deIsHitFinal = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || r?.hitType === 'win_x1' || r?.isHit || deProfitK > 0);
-            }
+            deProfitK = r?.profitK != null ? r.profitK : deProfitK;
+            deIsHitFinal = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || r?.hitType === 'win_x1' || r?.isHit || deProfitK > 0);
         } else if (chosenDeMethod === 'dePositionalGraphFlow') {
             const r = graphRow || streakRow;
             deMethodName = '🕸️ Cầu Đề Đồ Thị Vị Trí';
@@ -5116,18 +5111,24 @@
                     diaryDeX2Nums = markovVip.map(number);
                     diaryDeX1Nums = markovSingles.map(number);
                 }
-                diaryDeStakeK = chRow.deStakeK || 6075;
-                diaryDeProfitK = chRow.dePnlK != null ? chRow.dePnlK : (chRow.deProfitK || 0);
-                diaryDeIsHit = Boolean(chRow.isDeHit);
-                diaryDeIsX2 = Boolean(chRow.isVipHit);
-                diaryDeIsX1 = Boolean(chRow.isDeHit && !chRow.isVipHit);
+                diaryDeStakeK = (diaryDeX2Nums.length * 3 + diaryDeX1Nums.length * 1) * 1000;
+                diaryDeIsHit = Boolean(markovRow?.isHit || (markovRow?.profitK != null && markovRow.profitK > 0) || chRow.isDeHit || resolvedDe.isHit);
+                diaryDeIsX2 = Boolean(markovRow?.hitType === 'win_x3' || markovRow?.isVip || chRow.isVipHit || resolvedDe.isX2);
+                diaryDeIsX1 = Boolean(diaryDeIsHit && !diaryDeIsX2);
                 diaryDeHitType = diaryDeIsX2 ? 'win_x3' : (diaryDeIsHit ? 'win_x1' : 'loss');
+                if (diaryDeIsX2) {
+                    diaryDeProfitK = 252000 - diaryDeStakeK;
+                } else if (diaryDeIsX1) {
+                    diaryDeProfitK = 84000 - diaryDeStakeK;
+                } else {
+                    diaryDeProfitK = -diaryDeStakeK;
+                }
                 diaryDeSubTierLabel = `Dàn ${diaryDeNumbers.length || 43} số (${diaryDeX2Nums.length || 10} VIP X3 · ${diaryDeX1Nums.length || 33} X1)`;
             }
 
-            const rawLo4ProfitK = lo4Row ? (lo4Row.dayLotoProfitK || 0) : 0;
+            const rawLo4ProfitK = lo4Row ? (lo4Row.dayLotoProfitK || 0) : (chRow?.loProfitK > 10000 ? chRow.loProfitK : (chRow?.loPnlK || 0));
             const top5XienDay = payload?.loTop5ConsensusXien?.settledLedger?.find(r => r.date === date);
-            const rawLo4Xien4ProfitK = top5XienDay ? top5XienDay.q11ProfitVIP_K : (lo4Row ? (lo4Row.dayXien4ProfitK || 0) : 0);
+            const rawLo4Xien4ProfitK = top5XienDay ? top5XienDay.q11ProfitVIP_K : (lo4Row ? (lo4Row.dayXien4ProfitK || 0) : (chRow?.xienProfitK !== undefined ? chRow.xienProfitK : (chRow?.xienPnlK || 0)));
             let loXien5ProfitK = 0;
             let loXien5PayoutK = 0;
             let loXien5H5 = 0;
@@ -5140,16 +5141,16 @@
                 loXien5ProfitK = -55000;
             }
 
-            const chDePnlK = chRow ? (chRow.dePnlK != null ? chRow.dePnlK : (chRow.deProfitK != null ? chRow.deProfitK : diaryDeProfitK)) : diaryDeProfitK;
-            const chLoPnlK = chRow ? (chRow.loPnlK != null ? chRow.loPnlK : (chRow.loProfitK != null ? chRow.loProfitK : rawLo4ProfitK)) : rawLo4ProfitK;
-            const chXienPnlK = chRow ? (chRow.xienPnlK != null ? chRow.xienPnlK : (chRow.xienProfitK != null ? chRow.xienProfitK : rawLo4Xien4ProfitK)) : rawLo4Xien4ProfitK;
-            const chTotalProfitK = chRow ? (chRow.totalProfitK != null ? chRow.totalProfitK : (chDePnlK + chLoPnlK + chXienPnlK)) : (chDePnlK + chLoPnlK + chXienPnlK);
+            const chDePnlK = diaryDeProfitK;
+            const chLoPnlK = rawLo4ProfitK;
+            const chXienPnlK = rawLo4Xien4ProfitK;
+            const chTotalProfitK = chDePnlK + chLoPnlK + chXienPnlK;
 
             cumCrossProfitK += chTotalProfitK;
             cumCrossDeProfitK += chDePnlK;
             cumCrossLoProfitK += chLoPnlK;
             cumCrossXienProfitK += chXienPnlK;
-            const chCumProfitK = (unifiedTimeframe === 'all' && chRow?.cumulativeProfitK != null) ? chRow.cumulativeProfitK : cumCrossProfitK;
+            const chCumProfitK = cumCrossProfitK;
 
             // Đồng bộ hoá PnL & Lũy kế cho danh mục Combo Bù Trừ Chéo và các tab Đề, Lô Ghép 4, Xiên 4
             const lo4ProfitK = chLoPnlK;
@@ -6482,40 +6483,28 @@
             const chRow = r.chRow;
             const isAllCat = (currentDiaryCategory === 'all');
 
-            const dePnlVal = (isAllCat && chRow && chRow.dePnlK != null)
-                ? chRow.dePnlK
-                : (deInfo?.profitK != null ? deInfo.profitK : (r.deProfitK || 0));
-            const loPnlVal = (isAllCat && chRow && chRow.loPnlK != null)
-                ? chRow.loPnlK
-                : (lo4Info?.dayLotoProfitK != null ? lo4Info.dayLotoProfitK : (r.lo4Engine?.dayLotoProfitK || 0));
-            const xienPnlVal = (isAllCat && chRow && chRow.xienPnlK != null)
-                ? chRow.xienPnlK
-                : (lo4Xien4Info?.profitK != null ? lo4Xien4Info.profitK : (r.lo4Xien4?.profitK || 0));
+            const dePnlVal = (deInfo?.profitK != null ? deInfo.profitK : (r.deProfitK || 0));
+            const loPnlVal = (lo4Info?.dayLotoProfitK != null ? lo4Info.dayLotoProfitK : (r.lo4ProfitK != null ? r.lo4ProfitK : (r.lo4Engine?.dayLotoProfitK || 0)));
+            const xienPnlVal = (lo4Xien4Info?.profitK != null ? lo4Xien4Info.profitK : (r.lo4Xien4ProfitK != null ? r.lo4Xien4ProfitK : (r.lo4Xien4?.profitK || 0)));
 
             const loXien5Info = r.loXien5Info || r.loXien5 || {};
             const loXien5H5 = loXien5Info.h5 || 0;
             const evalX5Row = evaluateXien5_5DanX4(loXien5H5);
             const loXien5ProfitK = loXien5Info.profitK != null ? loXien5Info.profitK : (loXien5Info.x5ProfitK != null ? loXien5Info.x5ProfitK : evalX5Row.profitK);
 
-            const dayTotalVal = (isAllCat && chRow && chRow.totalProfitK != null)
-                ? chRow.totalProfitK
+            const dayTotalVal = (r.dayTotalK != null)
+                ? r.dayTotalK
                 : (isAllCat
                     ? (dePnlVal + loPnlVal + xienPnlVal)
                     : (dePnlVal + loPnlVal + xienPnlVal + loXien5ProfitK));
 
-            const cumDeVal = (isAllCat && r.chCumDeProfitK != null)
-                ? r.chCumDeProfitK
-                : (r.cumDeProfitK != null ? r.cumDeProfitK : 0);
-            const cumLoVal = (isAllCat && r.chCumLoProfitK != null)
-                ? r.chCumLoProfitK
-                : (r.cumLo4ProfitK != null ? r.cumLo4ProfitK : 0);
-            const cumXien4Val = (isAllCat && r.chCumXienProfitK != null)
-                ? r.chCumXienProfitK
-                : (r.cumLo4Xien4ProfitK != null ? r.cumLo4Xien4ProfitK : 0);
+            const cumDeVal = (r.cumDeProfitK != null ? r.cumDeProfitK : 0);
+            const cumLoVal = (r.cumLo4ProfitK != null ? r.cumLo4ProfitK : 0);
+            const cumXien4Val = (r.cumLo4Xien4ProfitK != null ? r.cumLo4Xien4ProfitK : 0);
             const cumXien5Val = (r.cumLoXien5ProfitK != null ? r.cumLoXien5ProfitK : (loXien5Info.cumLoXien5ProfitK || 0));
 
-            const cumProfitVal = (isAllCat && r.chCumProfitK != null)
-                ? r.chCumProfitK
+            const cumProfitVal = (r.cumProfitK != null)
+                ? r.cumProfitK
                 : (cumDeVal + cumLoVal + cumXien4Val + (isAllCat ? 0 : cumXien5Val));
 
             const isDayWin = dayTotalVal > 0;
@@ -10614,8 +10603,9 @@
         let detailDesc = '';
         let lo4Tiers = null;
 
-        // Tự động phân giải nếu người dùng chọn 'official'
+        // Tự động phân giải nếu người dùng chọn 'official' hoặc alias
         let effectiveKey = methodKey;
+        if (effectiveKey === 'lo4Fusion') effectiveKey = 'lo4Engine';
         if (effectiveKey === 'official') {
             const off = getOfficialMethodsForDate(date);
             effectiveKey = off.deMethod;
@@ -10740,10 +10730,10 @@
             const chRow = payloadData.crossHedgingPortfolio?.settledLedger?.find(x => (x.predictionDate || x.date) === date);
             if (isPending) {
                 const rec = payloadData.deMarkovGapHazard?.latestRecommendation || payloadData.streakAwareDeAdvisor?.latestRecommendation?.strategicPortfolio?.deStructure || payloadData.streakAwareDeAdvisor?.latestRecommendation || {};
-                vipNumbers = (crossP1?.vipNumbers || rec.vipNums || rec.vipNumbers || (rec.numbers || []).slice(0, 10)).map(number);
-                singleNumbers = (crossP1?.singleNumbers || rec.singleNums || rec.backupNumbers || rec.singles || (rec.numbers || []).slice(10)).map(number);
-                numbers = (crossP1?.allNumbers || rec.allNums || rec.numbers || [...vipNumbers, ...singleNumbers]).map(number);
-                stakeK = crossP1?.stakeK || (vipNumbers.length * 3 + singleNumbers.length * 1) * 1000;
+                numbers = (crossP1?.allNumbers || rec.allNums || rec.numbers || []).map(number);
+                vipNumbers = (crossP1?.vipNumbers || rec.vipNums || rec.vipNumbers || numbers.slice(0, 10)).map(number);
+                singleNumbers = numbers.filter(n => !vipNumbers.includes(n));
+                stakeK = (vipNumbers.length * 3 + singleNumbers.length * 1) * 1000;
                 profitK = 0;
                 payoutK = 0;
                 hitBadge = '⏳ Chờ mở thưởng 18h15';
@@ -10751,25 +10741,17 @@
             } else {
                 const r = payloadData.deMarkovGapHazard?.settledLedger?.find(x => (x.predictionDate || x.date) === date)
                     || payloadData.streakAwareDeAdvisor?.markovAdvisor?.settledLedger?.find(x => (x.predictionDate || x.date) === date);
-                vipNumbers = (r?.vipNumbers || crossP1?.vipNumbers || (r?.numbers || []).slice(0, 10)).map(number);
-                singleNumbers = (r?.backupNumbers || crossP1?.singleNumbers || (r?.numbers || []).slice(10)).map(number);
-                numbers = (r?.numbers || crossP1?.allNumbers || [...vipNumbers, ...singleNumbers]).map(number);
+                numbers = (r?.numbers || crossP1?.allNumbers || []).map(number);
+                vipNumbers = (r?.vipNumbers || crossP1?.vipNumbers || numbers.slice(0, 10)).map(number);
+                singleNumbers = numbers.filter(n => !vipNumbers.includes(n));
+                stakeK = (vipNumbers.length * 3 + singleNumbers.length * 1) * 1000;
 
-                if (chRow) {
-                    isHit = Boolean(chRow.isDeHit || (actualSpecial != null && numbers.includes(actualSpecial)));
-                    isX2 = Boolean(chRow.isVipHit || (actualSpecial != null && vipNumbers.includes(actualSpecial)));
-                    stakeK = chRow.deStakeK || (vipNumbers.length * 3 + singleNumbers.length * 1) * 1000;
-                    profitK = chRow.deProfitK != null ? chRow.deProfitK : (isHit ? (isX2 ? (252000 - stakeK) : (84000 - stakeK)) : -stakeK);
-                    payoutK = chRow.dePayoutK != null ? chRow.dePayoutK : (isHit ? (stakeK + profitK) : 0);
-                } else {
-                    isHit = Boolean(r?.isHit || (actualSpecial != null && numbers.includes(actualSpecial)));
-                    isX2 = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || (actualSpecial != null && vipNumbers.includes(actualSpecial)));
-                    stakeK = (vipNumbers.length * 3 + singleNumbers.length * 1) * 1000;
-                    profitK = isHit ? (isX2 ? (252000 - stakeK) : (84000 - stakeK)) : -stakeK;
-                    payoutK = r?.payoutK || (isHit ? (stakeK + profitK) : 0);
-                }
+                isHit = Boolean(r?.isHit || (actualSpecial != null && numbers.includes(actualSpecial)));
+                isX2 = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || (actualSpecial != null && vipNumbers.includes(actualSpecial)));
+                profitK = isHit ? (isX2 ? (252000 - stakeK) : (84000 - stakeK)) : -stakeK;
+                payoutK = isHit ? (stakeK + profitK) : 0;
                 hitBadge = isHit ? (isX2 ? `🎉 TRÚNG VIP X3 (+${Math.round(profitK/1000)}M)` : `🎉 TRÚNG BỌC LÓT (${profitK >= 0 ? '+' : ''}${Math.round(profitK/1000)}M)`) : `❌ TRƯỢT (-${Math.round(stakeK/1000)}M)`;
-                detailDesc = `Đề Markov Bậc 2 & Gap Hazard (${vipNumbers.length}s VIP X3 · ${singleNumbers.length}s X1)`;
+                detailDesc = `Đề Markov Bậc 2 & Gap Hazard (${vipNumbers.length}s VIP X3 · ${singleNumbers.length}s X1 · Vốn ${moneyM(stakeK)})`;
             }
         } else if (effectiveKey === 'bayesFormResonance') {
             methodTitle = '🔮 Đề Ngũ Hành Bayes Bù Trừ (VIP X3 + X1)';
@@ -10847,7 +10829,7 @@
                 hitBadge = isHit ? (isX2 ? `🎉 TRÚNG VIP X3 (+${Math.round(profitK/1000)}M)` : `🎉 TRÚNG BỌC LÓT (${profitK >= 0 ? '+' : ''}${Math.round(profitK/1000)}M)`) : `❌ TRƯỢT (-${Math.round(stakeK/1000)}M)`;
                 detailDesc = `Đề Ngũ Trụ Tinh Hoa AI (${vipNumbers.length}s VIP X3 · ${singleNumbers.length}s X1)`;
             }
-        } else if (effectiveKey === 'lo4Engine') {
+        } else if (effectiveKey === 'lo4Engine' || effectiveKey === 'lo4Fusion') {
             methodTitle = '🔥 Lô Ghép 4 Động Cơ (Top 6/7 Live)';
             if (isPending) {
                 const rec = payloadData.lo4EngineFusion?.latestRecommendation || {};
@@ -11359,14 +11341,21 @@
             selDe.value = official.deMethod;
         }
         if (!isUserOverridingLoMethod && selLo) {
-            selLo.value = official.loMethod;
+            let m = official.loMethod;
+            if (m === 'lo4Fusion' || !m) m = 'lo4Engine';
+            selLo.value = m;
         }
 
         let chosenDeMethod = selDe?.value || official.deMethod;
         if (chosenDeMethod === 'official') chosenDeMethod = official.deMethod;
 
         let chosenLoMethod = selLo?.value || official.loMethod;
-        if (chosenLoMethod === 'official') chosenLoMethod = official.loMethod;
+        if (chosenLoMethod === 'official' || chosenLoMethod === 'lo4Fusion' || !chosenLoMethod) {
+            chosenLoMethod = (official.loMethod === 'lo4Fusion' ? 'lo4Engine' : (official.loMethod || 'lo4Engine'));
+        }
+        if (selLo && (!selLo.value || selLo.value === 'official')) {
+            selLo.value = chosenLoMethod;
+        }
 
         // Update official badges
         const deOfficialBadge = byId('deOfficialBadge');
@@ -11552,7 +11541,7 @@
                         </div>
                     </div>
                 `;
-            } else if (loData.methodKey === 'lo4Engine' && loData.lo4Tiers) {
+            } else if ((loData.methodKey === 'lo4Engine' || loData.methodKey === 'lo4Fusion') && loData.lo4Tiers) {
                 const lt = loData.lo4Tiers;
                 const tierX5 = lt.tierX5 || [];
                 const tierX4 = lt.tierX4 || [];
