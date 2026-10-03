@@ -5156,16 +5156,33 @@
             let diaryDeHitType = resolvedDe.hitType;
 
             if (chRow) {
-                diaryDeMethodName = '🔮 Đề Markov Bậc 2 & Gap Hazard';
-                const markovNums = markovRow?.numbers || payload?.deMarkovGapHazard?.latestRecommendation?.numbers || payload?.streakAwareDeAdvisor?.markovAdvisor?.latestRecommendation?.numbers || [];
-                const markovVip = (markovRow?.vipNumbers || payload?.deMarkovGapHazard?.latestRecommendation?.vipNumbers || markovNums.slice(0, 10)).slice(0, 10);
-                const markovSingles = markovNums.filter(n => !markovVip.includes(n));
-                if (markovNums.length > 0) {
-                    diaryDeNumbers = markovNums.map(number);
-                    diaryDeX2Nums = markovVip.map(number);
-                    diaryDeX1Nums = markovSingles.map(number);
+                // Use chRow as ground truth for P&L and stake (from crossHedgingPortfolio settledLedger)
+                // chRow.deStakeK and chRow.deProfitK are the actual values played (e.g. 77M for adaptiveDualMerge, 63M for deMarkovGapHazard)
+                const chDeStakeK = chRow.deStakeK || 63000;
+                const chDeProfitKActual = chRow.deProfitK;
+                diaryDeMethodName = chRow.details?.p1Method === 'adaptiveDualMerge'
+                    ? '👑 Đề Thích Ứng Alpha (Adaptive X3)'
+                    : '🔮 Đề Markov Bậc 2 & Gap Hazard';
+                // Resolve the actual number list for display (markov for deMarkovGapHazard, adaptive for adaptiveDualMerge)
+                let resolvedNums = [];
+                let resolvedVip = [];
+                if (chRow.details?.p1Method === 'adaptiveDualMerge') {
+                    const adRow = payload?.adaptiveDualMerge?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
+                    resolvedNums = adRow?.numbers || adRow?.fullUnion || markovRow?.numbers || [];
+                    const adVip = (adRow?.vipNumbers || adRow?.intersectionX2 || []).slice(0, 10);
+                    resolvedVip = adVip.length > 0 ? adVip : resolvedNums.slice(0, 10);
+                } else {
+                    resolvedNums = markovRow?.numbers || payload?.deMarkovGapHazard?.latestRecommendation?.numbers || payload?.streakAwareDeAdvisor?.markovAdvisor?.latestRecommendation?.numbers || [];
+                    resolvedVip = (markovRow?.vipNumbers || payload?.deMarkovGapHazard?.latestRecommendation?.vipNumbers || resolvedNums.slice(0, 10)).slice(0, 10);
                 }
-                diaryDeStakeK = (diaryDeX2Nums.length * 3 + diaryDeX1Nums.length * 1) * 1000;
+                const resolvedSingles = resolvedNums.filter(n => !resolvedVip.includes(n));
+                if (resolvedNums.length > 0) {
+                    diaryDeNumbers = resolvedNums.map(number);
+                    diaryDeX2Nums = resolvedVip.map(number);
+                    diaryDeX1Nums = resolvedSingles.map(number);
+                }
+                // Always use chRow stake and pnl as ground truth
+                diaryDeStakeK = chDeStakeK;
                 if (actualSpecialStr != null) {
                     diaryDeIsX2 = diaryDeX2Nums.some(n => number(n) === actualSpecialStr);
                     diaryDeIsX1 = diaryDeX1Nums.some(n => number(n) === actualSpecialStr) || (!diaryDeIsX2 && diaryDeNumbers.some(n => number(n) === actualSpecialStr));
@@ -5176,13 +5193,17 @@
                     diaryDeIsX1 = diaryDeIsHit && !diaryDeIsX2;
                 }
                 diaryDeHitType = diaryDeIsX2 ? 'win_x3' : (diaryDeIsHit ? 'win_x1' : 'loss');
-                if (diaryDeIsX2) {
+                // P&L: use chRow if available (ground truth), else recalculate
+                if (chDeProfitKActual != null) {
+                    diaryDeProfitK = chDeProfitKActual;
+                } else if (diaryDeIsX2) {
                     diaryDeProfitK = 252000 - diaryDeStakeK;
                 } else if (diaryDeIsX1) {
                     diaryDeProfitK = 84000 - diaryDeStakeK;
                 } else {
                     diaryDeProfitK = -diaryDeStakeK;
                 }
+                const vipLabel = chRow.details?.p1Method === 'adaptiveDualMerge' ? 'Adaptive Alpha' : 'Markov';
                 diaryDeSubTierLabel = `Dàn ${diaryDeNumbers.length || 43} số (${diaryDeX2Nums.length || 10} VIP X3 · ${diaryDeX1Nums.length || 33} Bọc Lót X1)`;
             }
 
