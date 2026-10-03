@@ -770,7 +770,7 @@
             const r = bayesRow || streakRow;
             deMethodName = '🔮 Đề Ngũ Hành Bayes (Bù Trừ)';
             deNumbers = (r?.numbers || deNumbers).map(number);
-            deX2Nums = (r?.vip17 || r?.vipNumbers || deNumbers.slice(0, 10)).slice(0, 10).map(number);
+            deX2Nums = (r?.vip17 || r?.vipNumbers || deNumbers.slice(0, 17)).map(number);
             deX1Nums = deNumbers.filter(n => !deX2Nums.includes(n));
             deStakeK = (deX2Nums.length * 3 + deX1Nums.length * 1) * 1000;
             deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} VIP X3 · ${deX1Nums.length} Bọc Lót X1)`;
@@ -781,7 +781,7 @@
             const p1 = p?.crossHedgingPortfolio?.pillar1_De || p?.crossHedgingPortfolio?.latestRecommendation?.pillar1_De;
             deMethodName = '🔮 Đề Markov Bậc 2 & Gap Hazard';
             deNumbers = (r?.numbers || p1?.allNumbers || deNumbers).map(number);
-            deX2Nums = (r?.vipNumbers || p1?.vipNumbers || deNumbers.slice(0, 10)).slice(0, 10).map(number);
+            deX2Nums = (r?.vipNumbers || p1?.vipNumbers || deNumbers.slice(0, 17)).map(number);
             deX1Nums = deNumbers.filter(n => !deX2Nums.includes(n));
             deStakeK = (deX2Nums.length * 3 + deX1Nums.length * 1) * 1000;
             deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} VIP X3 · ${deX1Nums.length} Bọc Lót X1)`;
@@ -791,7 +791,7 @@
             const r = graphRow || streakRow;
             deMethodName = '🕸️ Cầu Đề Đồ Thị Vị Trí';
             deNumbers = (r?.numbers || deNumbers).map(number);
-            deX2Nums = (r?.vipNumbers || deNumbers.slice(0, 10)).slice(0, 10).map(number);
+            deX2Nums = (r?.vipNumbers || deNumbers.slice(0, 17)).map(number);
             deX1Nums = deNumbers.filter(n => !deX2Nums.includes(n));
             deStakeK = (deX2Nums.length * 3 + deX1Nums.length * 1) * 1000;
             deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} VIP X3 · ${deX1Nums.length} Bọc Lót X1)`;
@@ -1447,7 +1447,7 @@
                 || fullData?.streakAwareDeAdvisor?.markovAdvisor?.latestRecommendation
                 || {};
             const allNums = (crossP1?.allNumbers || rec.numbers || []).map(number);
-            const vipNums = (crossP1?.vipNumbers || rec.vipNumbers || allNums.slice(0, 10)).slice(0, 10).map(number);
+            const vipNums = (crossP1?.vipNumbers || rec.vipNumbers || allNums.slice(0, 17)).map(number);
             const singleNums = allNums.filter(n => !vipNums.includes(n));
             const dynStake = crossP1?.stakeK || ((vipNums.length * 3 + singleNums.length * 1) * 1000);
             const stakeM = Math.round(dynStake / 1000);
@@ -1456,7 +1456,7 @@
                 badge: 'Markov Bậc 2 + Weibull Hazard ⭐ (Xác suất nổ bù 57.0%)',
                 stakeK: dynStake,
                 stakeText: `Vốn: ${moneyM(dynStake)} / ngày (${vipNums.length} VIP X3 + ${singleNums.length} Lót X1 · ${stakeM} đơn vị cược)`,
-                stdTitle: `🔮 DÀN ĐỀ MARKOV & CHU KỲ KHUYẾT (${allNums.length} SỐ · VỐN ${moneyM(dynStake)} · ĂN TỚI 226.8M)`,
+                stdTitle: `🔮 DÀN ĐỀ MARKOV & CHU KỲ KHUYẾT (${allNums.length} SỐ · VỐN ${moneyM(dynStake)} · ĂN TỚI 252M)`,
                 allNums,
                 vipNums,
                 singleNums,
@@ -5157,8 +5157,8 @@
 
             if (chRow) {
                 // Use chRow as ground truth for P&L and stake (from crossHedgingPortfolio settledLedger)
-                // chRow.deStakeK and chRow.deProfitK are the actual values played (e.g. 77M for adaptiveDualMerge, 63M for deMarkovGapHazard)
-                const chDeStakeK = chRow.deStakeK || 63000;
+                // chRow.deStakeK and chRow.deProfitK are the actual values played (77M base stake for 17 VIP X3 + 26 Bọc Lót X1)
+                const chDeStakeK = chRow.deStakeK || 77000;
                 const chDeProfitKActual = chRow.deProfitK;
                 diaryDeMethodName = chRow.details?.p1Method === 'adaptiveDualMerge'
                     ? '👑 Đề Thích Ứng Alpha (Adaptive X3)'
@@ -5169,11 +5169,11 @@
                 if (chRow.details?.p1Method === 'adaptiveDualMerge') {
                     const adRow = payload?.adaptiveDualMerge?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
                     resolvedNums = adRow?.numbers || adRow?.fullUnion || markovRow?.numbers || [];
-                    const adVip = (adRow?.vipNumbers || adRow?.intersectionX2 || []).slice(0, 10);
-                    resolvedVip = adVip.length > 0 ? adVip : resolvedNums.slice(0, 10);
+                    const adVip = (adRow?.vipNumbers || adRow?.intersectionX2 || []);
+                    resolvedVip = adVip.length > 0 ? adVip : resolvedNums.slice(0, 17);
                 } else {
-                    resolvedNums = markovRow?.numbers || payload?.deMarkovGapHazard?.latestRecommendation?.numbers || payload?.streakAwareDeAdvisor?.markovAdvisor?.latestRecommendation?.numbers || [];
-                    resolvedVip = (markovRow?.vipNumbers || payload?.deMarkovGapHazard?.latestRecommendation?.vipNumbers || resolvedNums.slice(0, 10)).slice(0, 10);
+                    resolvedNums = markovRow?.numbers || payload?.deMarkovGapHazard?.latestRecommendation?.numbers || payload?.crossHedgingPortfolio?.pillar1_De?.allNumbers || payload?.streakAwareDeAdvisor?.markovAdvisor?.latestRecommendation?.numbers || [];
+                    resolvedVip = markovRow?.vipNumbers || payload?.deMarkovGapHazard?.latestRecommendation?.vipNumbers || payload?.crossHedgingPortfolio?.pillar1_De?.vipNumbers || resolvedNums.slice(0, 17);
                 }
                 const resolvedSingles = resolvedNums.filter(n => !resolvedVip.includes(n));
                 if (resolvedNums.length > 0) {
@@ -5204,7 +5204,7 @@
                     diaryDeProfitK = -diaryDeStakeK;
                 }
                 const vipLabel = chRow.details?.p1Method === 'adaptiveDualMerge' ? 'Adaptive Alpha' : 'Markov';
-                diaryDeSubTierLabel = `Dàn ${diaryDeNumbers.length || 43} số (${diaryDeX2Nums.length || 10} VIP X3 · ${diaryDeX1Nums.length || 33} Bọc Lót X1)`;
+                diaryDeSubTierLabel = `Dàn ${diaryDeNumbers.length || 43} số (${diaryDeX2Nums.length || 17} VIP X3 · ${diaryDeX1Nums.length || 26} Bọc Lót X1)`;
             }
 
             const rawLo4ProfitK = lo4Row ? (lo4Row.dayLotoProfitK || 0) : (chRow?.loProfitK != null ? chRow.loProfitK : (chRow?.loPnlK || 0));
@@ -6565,7 +6565,7 @@
             const isAllCat = (currentDiaryCategory === 'all');
 
             const dePnlVal = (isAllCat && chRow)
-                ? (chRow.deProfitK != null ? chRow.deProfitK : (chRow.isDeHit ? (chRow.isVipHit ? 189000 : 21000) : -(chRow.deStakeK || 63000)))
+                ? (chRow.deProfitK != null ? chRow.deProfitK : (chRow.isDeHit ? (chRow.isVipHit ? 175000 : 7000) : -(chRow.deStakeK || 77000)))
                 : (deInfo?.profitK != null ? deInfo.profitK : (r.deProfitK || 0));
             const loPnlVal = (lo4Info?.dayLotoProfitK != null ? lo4Info.dayLotoProfitK : (r.lo4ProfitK != null ? r.lo4ProfitK : (r.lo4Engine?.dayLotoProfitK || 0)));
             const xienPnlVal = (lo4Xien4Info?.profitK != null ? lo4Xien4Info.profitK : (r.lo4Xien4ProfitK != null ? r.lo4Xien4ProfitK : (r.lo4Xien4?.profitK || 0)));
@@ -6640,7 +6640,7 @@
                                     : `<span class="inline-flex items-center gap-1 rounded bg-rose-100 text-rose-900 px-1.5 py-0.5 text-[10px] font-bold">❌ Trượt</span>`)}
                         </div>
                         <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
-                            <span>${isVipHit ? 'Dàn VIP nổ giải ĐB (Ăn X3)' : (escapeHtml(deInfo?.subTierLabel || '10 VIP + 33 Dàn'))}</span>
+                            <span>${isVipHit ? 'Dàn VIP nổ giải ĐB (Ăn X3)' : (escapeHtml(deInfo?.subTierLabel || '17 VIP + 26 Dàn'))}</span>
                             <span class="diary-expand-indicator text-amber-700 font-bold underline flex items-center gap-0.5">Bấm xem dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
                         </div>
                         <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-amber-200/50 pt-0.5">
@@ -7680,16 +7680,15 @@
                         || fullData?.deMarkovGapHazard?.latestRecommendation
                         || fullData?.adaptiveDualMerge?.latestRecommendation
                         || fullData?.streakAwareDeAdvisor?.latestRecommendation || {};
-                    deData.vipNums = (fallbackDe.vipNumbers || fallbackDe.vipNums || fallbackDe.intersectionX2 || fallbackDe.tierX2 || [5, 19, 36, 50, 53, 55, 69, 92, 93, 97]).map(number);
+                    deData.vipNums = (fallbackDe.vipNumbers || fallbackDe.vipNums || fallbackDe.intersectionX2 || fallbackDe.tierX2 || [75, 20, 50, 92, 40, 97, 41, 36, 93, 82, 69, 55, 5, 19, 74, 53, 64]).map(number);
                     deData.singleNums = (fallbackDe.singleNumbers || fallbackDe.singleNums || fallbackDe.backupNumbers || fallbackDe.uniqueSinglesX1 || fallbackDe.singles || []).map(number);
                     deData.allNums = (fallbackDe.allNumbers || fallbackDe.numbers || [...deData.vipNums, ...deData.singleNums]).map(number);
                     deData.label = fallbackDe.methodLabel || fallbackDe.label || '🔮 Đề Markov Bậc 2 & Gap Hazard';
                     deData.badge = fallbackDe.badge || 'Markov Bậc 2 + Weibull Hazard ⭐ (Xác suất nổ bù 57.0%)';
                 }
 
-                // Guarantee strictly 10 VIP numbers and remaining single numbers (33 numbers)
+                // Ensure VIP numbers and remaining single numbers (26 numbers) are strictly non-overlapping
                 if (deData.vipNums && deData.vipNums.length > 0) {
-                    deData.vipNums = deData.vipNums.slice(0, 10).map(number);
                     if (deData.allNums && deData.allNums.length > 0) {
                         deData.singleNums = deData.allNums.filter(n => !deData.vipNums.includes(number(n))).map(number);
                     } else if (deData.singleNums && deData.singleNums.length > 0) {
@@ -10825,7 +10824,7 @@
             if (isPending) {
                 const rec = payloadData.deMarkovGapHazard?.latestRecommendation || payloadData.streakAwareDeAdvisor?.latestRecommendation?.strategicPortfolio?.deStructure || payloadData.streakAwareDeAdvisor?.latestRecommendation || {};
                 numbers = (crossP1?.allNumbers || rec.allNums || rec.numbers || []).map(number);
-                vipNumbers = (crossP1?.vipNumbers || rec.vipNums || rec.vipNumbers || numbers.slice(0, 10)).map(number);
+                vipNumbers = (crossP1?.vipNumbers || rec.vipNums || rec.vipNumbers || numbers.slice(0, 17)).map(number);
                 singleNumbers = numbers.filter(n => !vipNumbers.includes(n));
                 stakeK = (vipNumbers.length * 3 + singleNumbers.length * 1) * 1000;
                 profitK = 0;
@@ -10836,13 +10835,13 @@
                 const r = payloadData.deMarkovGapHazard?.settledLedger?.find(x => (x.predictionDate || x.date) === date)
                     || payloadData.streakAwareDeAdvisor?.markovAdvisor?.settledLedger?.find(x => (x.predictionDate || x.date) === date);
                 numbers = (r?.numbers || crossP1?.allNumbers || []).map(number);
-                vipNumbers = (r?.vipNumbers || crossP1?.vipNumbers || numbers.slice(0, 10)).map(number);
+                vipNumbers = (r?.vipNumbers || crossP1?.vipNumbers || numbers.slice(0, 17)).map(number);
                 singleNumbers = numbers.filter(n => !vipNumbers.includes(n));
-                stakeK = (vipNumbers.length * 3 + singleNumbers.length * 1) * 1000;
+                stakeK = (chRow?.deStakeK != null ? chRow.deStakeK : (vipNumbers.length * 3 + singleNumbers.length * 1) * 1000);
 
-                isHit = Boolean(r?.isHit || (actualSpecial != null && numbers.includes(actualSpecial)));
-                isX2 = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || (actualSpecial != null && vipNumbers.includes(actualSpecial)));
-                profitK = isHit ? (isX2 ? (252000 - stakeK) : (84000 - stakeK)) : -stakeK;
+                isHit = Boolean(r?.isHit || (actualSpecial != null && numbers.includes(actualSpecial)) || chRow?.isDeHit);
+                isX2 = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || (actualSpecial != null && vipNumbers.includes(actualSpecial)) || chRow?.isVipHit);
+                profitK = chRow?.deProfitK != null ? chRow.deProfitK : (isHit ? (isX2 ? (252000 - stakeK) : (84000 - stakeK)) : -stakeK);
                 payoutK = isHit ? (stakeK + profitK) : 0;
                 hitBadge = isHit ? (isX2 ? `🎉 TRÚNG VIP X3 (+${Math.round(profitK/1000)}M)` : `🎉 TRÚNG BỌC LÓT (${profitK >= 0 ? '+' : ''}${Math.round(profitK/1000)}M)`) : `❌ TRƯỢT (-${Math.round(stakeK/1000)}M)`;
                 detailDesc = `Đề Markov Bậc 2 & Gap Hazard (${vipNumbers.length}s VIP X3 · ${singleNumbers.length}s X1 · Vốn ${moneyM(stakeK)})`;
