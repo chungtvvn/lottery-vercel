@@ -55,7 +55,8 @@
     }
 
     function renderShadowDashboard(data, analysisData) {
-        // 1. Identify primary production strategy: MAIN_STRATEGY_ID ('balanced-selector-fixed30-v1')
+        // 1. Identify primary production strategy: Auto Best-Selection SSOT or MAIN_STRATEGY_ID
+        const autoBest = data.autoBestSelection || null;
         const records = Array.isArray(data.records) ? data.records : [];
         const latestRecord = records.at(-1) || {};
         const strategySnapshots = latestRecord.strategySnapshots || [];
@@ -63,12 +64,17 @@
             || strategySnapshots[0]
             || {};
 
-        const targetDate = latestRecord.predictionDate || 'Chờ mở thưởng';
+        const targetDate = autoBest?.targetDate || latestRecord.predictionDate || 'Chờ mở thưởng';
         byId('shadowTargetDate').textContent = targetDate;
 
         // Determine if abstained
-        const isAbstained = Boolean(mainStrategy.abstained || mainStrategy.action === 'ABSTAIN');
-        const mainNumbers = Array.isArray(mainStrategy.numbers) ? mainStrategy.numbers : (latestRecord.main?.numbers || []);
+        const isAbstained = autoBest
+            ? (autoBest.status === 'ABSTAIN' || autoBest.action === 'ABSTAIN')
+            : Boolean(mainStrategy.abstained || mainStrategy.action === 'ABSTAIN');
+
+        const mainNumbers = (autoBest?.numbers && autoBest.numbers.length)
+            ? autoBest.numbers
+            : (Array.isArray(mainStrategy.numbers) ? mainStrategy.numbers : (latestRecord.main?.numbers || []));
 
         const actionBanner = byId('shadowActionBanner');
         const actionStatusText = byId('shadowActionStatusText');
@@ -79,12 +85,13 @@
         if (isAbstained) {
             actionBanner.className = 'rounded-2xl border-2 border-rose-500 bg-rose-950/40 p-5 shadow-xl ring-2 ring-rose-500/20';
             actionStatusText.innerHTML = '<span class="inline-flex items-center gap-1.5 text-rose-300 font-black uppercase text-sm sm:text-base"><i class="bi bi-shield-slash-fill text-rose-400"></i> 🛡️ CÔNG TẮC BẢO TOÀN VỐN: HÔM NAY TẠM DỪNG (ABSTAIN)</span>';
-            actionDesc.textContent = mainStrategy.abstainReason || 'Mô hình phát hiện tín hiệu kỳ vọng toán học chưa vượt ngưỡng hòa vốn thực tế sau phí (~36.8%). Quyết định tối ưu: Cược 0đ để bảo toàn vốn, chuyển sang chế độ quan sát.';
+            actionDesc.textContent = autoBest?.reasoning || mainStrategy.abstainReason || 'Mô hình phát hiện tín hiệu kỳ vọng toán học chưa vượt ngưỡng hòa vốn thực tế sau phí (~36.8%). Quyết định tối ưu: Cược 0đ để bảo toàn vốn, chuyển sang chế độ quan sát.';
             numbersBox.classList.add('hidden');
         } else {
             actionBanner.className = 'rounded-2xl border-2 border-emerald-500 bg-emerald-950/30 p-5 shadow-xl ring-2 ring-emerald-500/20';
-            actionStatusText.innerHTML = '<span class="inline-flex items-center gap-1.5 text-emerald-300 font-black uppercase text-sm sm:text-base"><i class="bi bi-check-circle-fill text-emerald-400"></i> ✅ ĐỦ ĐIỀU KIỆN PHÁT HÀNH: VÀO KÈO (BET DÀN 30 SỐ)</span>';
-            actionDesc.textContent = 'Mọi chỉ số Wilson 90 kỳ và Posterior 30 kỳ đều vượt mốc hòa vốn an toàn. Dàn số được niêm phong bất biến và kiểm định ý nghĩa trước khi phát hành.';
+            const methodLabel = autoBest?.selectedMethodLabel || 'Đề Chọn Lọc Tự Động';
+            actionStatusText.innerHTML = `<span class="inline-flex items-center gap-1.5 text-emerald-300 font-black uppercase text-sm sm:text-base"><i class="bi bi-check-circle-fill text-emerald-400"></i> ✅ ĐỦ ĐIỀU KIỆN PHÁT HÀNH: VÀO KÈO (${methodLabel.toUpperCase()})</span>`;
+            actionDesc.textContent = autoBest?.reasoning || 'Mọi chỉ số Wilson 90 kỳ và Posterior 30 kỳ đều vượt mốc hòa vốn an toàn. Dàn số được niêm phong bất biến và kiểm định ý nghĩa trước khi phát hành.';
             numbersBox.classList.remove('hidden');
             numbersContainer.innerHTML = mainNumbers.map(n => `<span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-400/50 font-mono text-sm font-black text-emerald-200">${numStr(n)}</span>`).join('');
         }

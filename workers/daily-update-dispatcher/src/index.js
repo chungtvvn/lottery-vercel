@@ -1360,8 +1360,9 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   ];
 
   const snapshotLock = advisorPayload?.snapshotLock || streakDeAdv?.snapshotLock || loQuadAdv?.snapshotLock;
+  const isSettled = Boolean(snapshotLock?.isSettled);
   let isLocked = Boolean(snapshotLock?.isLocked);
-  if (!isLocked && predictionDate) {
+  if (!isLocked && !isSettled && predictionDate) {
     try {
       const now = new Date();
       const vnFormatter = new Intl.DateTimeFormat('en-CA', {
@@ -1374,12 +1375,14 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
       for (const p of parts) m[p.type] = p.value;
       const vnDate = `${m.year}-${m.month}-${m.day}`;
       const vnHour = parseInt(m.hour, 10);
-      if (vnDate === String(predictionDate).slice(0, 10) && vnHour >= 12) {
+      const vnMinute = parseInt(m.minute, 10);
+      const totalMinutes = vnHour * 60 + vnMinute;
+      if (vnDate === String(predictionDate).slice(0, 10) && totalMinutes >= 720 && totalMinutes < 1120) {
         isLocked = true;
       }
     } catch (e) {}
   }
-  if (isLocked) {
+  if (isLocked && !isSettled) {
     lines.push(
       `🔒 <b>TRẠNG THÁI: ĐÃ NIÊM PHONG BẤT BIẾN (TỪ 12H TRƯA)</b>`,
       `<i>Dàn số được bảo toàn 100% không đổi cho đến khi kết toán sau 18h40.</i>`,

@@ -363,7 +363,91 @@ test('settledLedger win rate matches metrics.dailyPositiveProfitRate within 0.00
 });
 
 // =========================================================================
-// SECTION 5: Summary Report
+// SECTION 5: Reviewer 2 Defect Fixes Verification (Modal Slip, Monthly Tables, 18 Combat Draws)
+// =========================================================================
+console.log('\n--- SECTION 5: Reviewer 2 Defect Fixes Verification ---');
+
+test('resolveMethodPlaySlipData for crossHedging on 2026-10-03 returns multi-asset combo math', () => {
+    const number = (n) => String(n).padStart(2, '0').slice(-2);
+    const resolveSlipMatch = jsContent.match(/function resolveMethodPlaySlipData\(methodKey, date, p\) \{([\s\S]*?)\n    \}/);
+    assert.ok(resolveSlipMatch, 'Must find resolveMethodPlaySlipData');
+    const fnSlip = new Function('methodKey', 'date', 'p', 'payload', 'number', 'moneyM', 'escapeHtml', 'resolveUnifiedDeRowForDate', resolveSlipMatch[0] + '\nreturn resolveMethodPlaySlipData(methodKey, date, p);');
+
+    const res = fnSlip('crossHedging', '2026-10-03', cacheData, cacheData, number, (k) => k + 'M', (s) => s, () => ({}));
+    assert.strictEqual(res.profitK, 31200, `Profit for 2026-10-03 must be +31,200K, got ${res.profitK}`);
+    assert.strictEqual(res.isHit, true, 'isHit must be true for winning 03/10 combo');
+    assert.strictEqual(res.stakeK, 140800, `Stake must be 140,800K, got ${res.stakeK}`);
+    assert.strictEqual(res.payoutK, 172000, `Payout must be 172,000K, got ${res.payoutK}`);
+    assert.ok(res.numbers && res.numbers.length > 0, 'Numbers must be populated');
+    assert.ok(res.hitBadge.includes('+31.2M') || res.hitBadge.includes('THẮNG'), 'Hit badge must show win');
+});
+
+test('resolveMethodPlaySlipData for crossHedging across 18 combat dates yields +421.7M VIP profit and 7/18 wins', () => {
+    const number = (n) => String(n).padStart(2, '0').slice(-2);
+    const resolveSlipMatch = jsContent.match(/function resolveMethodPlaySlipData\(methodKey, date, p\) \{([\s\S]*?)\n    \}/);
+    const fnSlip = new Function('methodKey', 'date', 'p', 'payload', 'number', 'moneyM', 'escapeHtml', 'resolveUnifiedDeRowForDate', resolveSlipMatch[0] + '\nreturn resolveMethodPlaySlipData(methodKey, date, p);');
+
+    const combatDates = [
+        '2026-09-16', '2026-09-17', '2026-09-18', '2026-09-19', '2026-09-20', '2026-09-21',
+        '2026-09-22', '2026-09-23', '2026-09-24', '2026-09-25', '2026-09-26', '2026-09-27',
+        '2026-09-28', '2026-09-29', '2026-09-30', '2026-10-01', '2026-10-02', '2026-10-03'
+    ];
+
+    let totalProfitK = 0;
+    let wins = 0;
+    combatDates.forEach(d => {
+        const r = fnSlip('crossHedging', d, cacheData, cacheData, number, (k) => k + 'M', (s) => s, () => ({}));
+        totalProfitK += r.profitK;
+        if (r.isHit) wins++;
+    });
+
+    assert.strictEqual(totalProfitK, 421680, `Total combat profit must be +421,680K, got ${totalProfitK}`);
+    assert.strictEqual(wins, 7, `Total combat wins must be 7/18, got ${wins}`);
+});
+
+test('renderDeMonthlyTable renders valid rows for crossHedging and lo4Engine without empty warning', () => {
+    const elements = {};
+    const byId = (id) => (elements[id] || (elements[id] = { innerHTML: '', className: '' }));
+
+    const match = jsContent.match(/function renderDeMonthlyTable\(records = \[\], methodId = 'metaLearner'\)\s*\{([\s\S]*?)\n    \}/);
+    assert.ok(match, 'Must find renderDeMonthlyTable');
+    const fn = new Function('records', 'methodId', 'byId', 'percent', 'moneyM', 'signedM', match[1]);
+
+    // Test crossHedging
+    fn(cacheData.crossHedgingPortfolio.settledLedger, 'crossHedging', byId, (v) => (v * 100).toFixed(1) + '%', (v) => v + 'K', (v) => (v >= 0 ? '+' : '') + v + 'K');
+    const tableHtmlCH = elements['dualMergeMonthlyTableBody'].innerHTML;
+    assert.ok(tableHtmlCH.includes('Tháng'), 'crossHedging monthly table must include monthly rows');
+    assert.ok(!tableHtmlCH.includes('Chưa có dữ liệu thống kê tháng'), 'crossHedging monthly table must NOT show empty error');
+
+    // Test lo4Engine
+    fn(cacheData.lo4EngineFusion.modes.top7.settledLedger, 'lo4Engine', byId, (v) => (v * 100).toFixed(1) + '%', (v) => v + 'K', (v) => (v >= 0 ? '+' : '') + v + 'K');
+    const tableHtmlLo = elements['dualMergeMonthlyTableBody'].innerHTML;
+    assert.ok(tableHtmlLo.includes('Tháng'), 'lo4Engine monthly table must include monthly rows');
+    assert.ok(!tableHtmlLo.includes('Chưa có dữ liệu thống kê tháng'), 'lo4Engine monthly table must NOT show empty error');
+});
+
+test('getDeMethodObject(deMarkovGapHazard) incorporates all 18 combat dates up to 03/10/2026 and valid window stats', () => {
+    const getDeMatch = jsContent.match(/function getDeMethodObject\(methodId, p = payload\)\s*\{([\s\S]*?)\n    \}/);
+    const computeStatsMatch = jsContent.match(/function computeLastNDaysStats\(records = \[\], n = 7, stakePerDay = 60000\)\s*\{([\s\S]*?)\n    \}/);
+    assert.ok(getDeMatch && computeStatsMatch, 'Must find getDeMethodObject and computeLastNDaysStats');
+
+    const fnGetDe = new Function('methodId', 'p', 'payload', computeStatsMatch[0] + '\n' + getDeMatch[0] + '\nreturn getDeMethodObject(methodId, p);');
+
+    const mkObj = fnGetDe('deMarkovGapHazard', cacheData, cacheData);
+    assert.strictEqual(mkObj.records.length, 272, `deMarkovGapHazard records length must be 272, got ${mkObj.records.length}`);
+
+    const combatRecords = mkObj.records.filter(r => (r.date || r.predictionDate) >= '2026-09-16');
+    assert.strictEqual(combatRecords.length, 18, `Combat records count must be 18, got ${combatRecords.length}`);
+
+    const lastDate = mkObj.records[mkObj.records.length - 1].date;
+    assert.strictEqual(lastDate, '2026-10-03', `Last record date must be 2026-10-03, got ${lastDate}`);
+
+    assert.ok(mkObj.summary.windows && mkObj.summary.windows.last7, 'Windows stats must be present');
+    assert.strictEqual(mkObj.summary.windows.last7.days, 7, 'Last 7 days window must have 7 days');
+});
+
+// =========================================================================
+// SECTION 6: Summary Report
 // =========================================================================
 console.log('\n' + '='.repeat(80));
 console.log(`  MILESTONE 3 VERIFICATION COMPLETE: ${stats.passed}/${stats.total} PASSED`);
