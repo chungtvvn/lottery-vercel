@@ -5126,7 +5126,7 @@
                 diaryDeSubTierLabel = `Dàn ${diaryDeNumbers.length || 43} số (${diaryDeX2Nums.length || 10} VIP X3 · ${diaryDeX1Nums.length || 33} X1)`;
             }
 
-            const rawLo4ProfitK = lo4Row ? (lo4Row.dayLotoProfitK || 0) : (chRow?.loProfitK > 10000 ? chRow.loProfitK : (chRow?.loPnlK || 0));
+            const rawLo4ProfitK = lo4Row ? (lo4Row.dayLotoProfitK || 0) : (chRow?.loProfitK != null ? chRow.loProfitK : (chRow?.loPnlK || 0));
             const top5XienDay = payload?.loTop5ConsensusXien?.settledLedger?.find(r => r.date === date);
             const rawLo4Xien4ProfitK = top5XienDay ? top5XienDay.q11ProfitVIP_K : (lo4Row ? (lo4Row.dayXien4ProfitK || 0) : (chRow?.xienProfitK !== undefined ? chRow.xienProfitK : (chRow?.xienPnlK || 0)));
             let loXien5ProfitK = 0;
@@ -5171,8 +5171,8 @@
 
             const lo4EngineDetails = lo4Row ? {
                 ...lo4Row,
-                dayLotoStakeK: (chRow?.loStakeK != null ? chRow.loStakeK : (lo4Row.dayLotoStakeK || 0)),
-                dayLotoPayoutK: (chRow?.loPayoutK != null ? chRow.loPayoutK : (lo4Row.dayLotoPayoutK || 0)),
+                dayLotoStakeK: (lo4Row.dayLotoStakeK != null ? lo4Row.dayLotoStakeK : (chRow?.loStakeK || 0)),
+                dayLotoPayoutK: (lo4Row.dayLotoPayoutK != null ? lo4Row.dayLotoPayoutK : (chRow?.loPayoutK || 0)),
                 dayLotoProfitK: chLoPnlK,
                 isLotoWin: (chLoPnlK > 0),
                 cumLotoProfitK: cumCrossLoProfitK
