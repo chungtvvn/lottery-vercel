@@ -6,20 +6,20 @@ const path = require('path');
 const targetDate = '2026-10-03';
 
 // 1. Define the locked recommendation as requested by user
-const tierX4 = ['38', '62', '72'];
+const tierX4 = ['38', '62', '76'];
 const tierX3 = ['10', '11', '24', '36'];
 const tierX1 = ['45', '65', '75', '81', '82', '85', '93'];
-const numbersOver2 = [...tierX4, ...tierX3]; // 7 numbers: 38, 62, 72, 10, 11, 24, 36
+const numbersOver2 = [...tierX4, ...tierX3]; // 7 numbers: 38, 62, 76, 10, 11, 24, 36
 const allNumbers = [...numbersOver2, ...tierX1]; // 14 numbers
 const distinctNumbers = [...allNumbers];
 
-const top4Xien = ['38', '62', '72', '10'];
-const top5Xien = ['38', '62', '72', '10', '11'];
+const top4Xien = ['38', '62', '76', '10'];
+const top5Xien = ['38', '62', '76', '10', '11'];
 
 const betNumbers = [
     { num: '38', votes: 3, multiplier: 4, methods: ['QMBF', 'Dual', 'Tri'] },
     { num: '62', votes: 3, multiplier: 4, methods: ['QMBF', 'Dual', 'RRF'] },
-    { num: '72', votes: 3, multiplier: 4, methods: ['Dual', 'Tri', 'RRF'] },
+    { num: '76', votes: 3, multiplier: 4, methods: ['Dual', 'Tri', 'RRF'] },
     { num: '10', votes: 2, multiplier: 3, methods: ['QMBF', 'Tri'] },
     { num: '11', votes: 2, multiplier: 3, methods: ['Dual', 'Tri'] },
     { num: '24', votes: 2, multiplier: 3, methods: ['QMBF', 'Dual'] },
@@ -60,7 +60,7 @@ const lo4Rec = {
     totalLotoStakeK: (3 * 4 + 4 * 3 + 7 * 1) * 2200, // (12 + 12 + 7)*2200 = 31 * 2200 = 68.200K VIP (17.050K M3)
     xien4: {
         status: 'ACTIVE',
-        reason: 'Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé [38-62-72-10] & Bộ 5 Quây 10 vé X3 [38-62-72-10-11]',
+        reason: 'Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé [38-62-76-10] & Bộ 5 Quây 10 vé X3 [38-62-76-10-11]',
         numbers: top4Xien,
         top4: top4Xien,
         top5: top5Xien,
@@ -176,7 +176,7 @@ for (const filePath of files) {
                 name: 'Lô Hội Tụ 4 Động Cơ (7 Số Đồng Thuận)',
                 shortName: '4ĐC Hội Tụ (7s)',
                 badge: '⚡ HỘI TỤ VÀNG 4 ĐỘNG CƠ (7 SỐ · ĐA TẦNG X4/X3)',
-                rationale: '4 Động cơ AI đạt độ hội tụ vàng với 7 số đồng thuận (3 số X4: 38, 62, 72 và 4 số X3: 10, 11, 24, 36). Kích hoạt Lô Hội Tụ 4 Động Cơ để tập trung hỏa lực mang lại ROI đỉnh cao.',
+                rationale: '4 Động cơ AI đạt độ hội tụ vàng với 7 số đồng thuận (3 số X4: 38, 62, 76 và 4 số X3: 10, 11, 24, 36). Kích hoạt Lô Hội Tụ 4 Động Cơ để tập trung hỏa lực mang lại ROI đỉnh cao.',
                 numbers: numbersOver2.map(Number),
                 betCount: 7,
                 stakeDailyK_M3: 7 * 25 * 22, // 3.850K
