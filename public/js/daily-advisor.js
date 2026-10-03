@@ -6584,7 +6584,7 @@
                             <div class="font-black text-xs text-amber-600">
                                 ⏳ Chờ KQ
                             </div>
-                            <div class="text-[10px] text-slate-400 font-sans">Vốn M3: ${moneyM(totalStakeVal)}</div>
+                            <div class="text-[10px] text-slate-400 font-sans">Vốn: ${moneyM(totalStakeVal)}</div>
                             <div class="diary-expand-indicator text-[9px] text-amber-700 font-bold font-sans underline mt-0.5 flex items-center gap-0.5 justify-end">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></div>
                         </td>
                         <!-- Cột 7: Lũy Kế Mốc -->
@@ -6769,7 +6769,7 @@
                         <div class="font-black text-xs ${dayTotalVal >= 0 ? 'text-emerald-700' : 'text-rose-700'}">
                             ${moneyM(dayTotalVal, { signed: true })}
                         </div>
-                        <div class="text-[10px] text-slate-400 font-sans">Vốn: ${r.chRow?.totalStakeK ? moneyM(r.chRow.totalStakeK) : '11,320K'}</div>
+                        <div class="text-[10px] text-slate-400 font-sans">Vốn: ${moneyM(r.chRow?.totalStakeK || 142285)}</div>
                         <div class="flex items-center justify-end gap-1 mt-0.5">
                             ${isDayWin
                                 ? `<span class="inline-block px-1 py-0.2 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800">✅ THẮNG</span>`
