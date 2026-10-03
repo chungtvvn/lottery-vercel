@@ -522,6 +522,15 @@ export async function GET(request) {
                 if (!payload?.loTop5ConsensusXien && localPayload?.loTop5ConsensusXien) {
                     payload.loTop5ConsensusXien = localPayload.loTop5ConsensusXien;
                 }
+                if (localPayload?.crossHedgingPortfolio) {
+                    const localLedgerLen = localPayload.crossHedgingPortfolio.settledLedger?.length || 0;
+                    const r2LedgerLen = payload.crossHedgingPortfolio?.settledLedger?.length || 0;
+                    const localVipCount = localPayload.crossHedgingPortfolio?.pillar1_De?.vipNumbers?.length || 0;
+                    const r2VipCount = payload.crossHedgingPortfolio?.pillar1_De?.vipNumbers?.length || 0;
+                    if (!payload.crossHedgingPortfolio || localLedgerLen >= r2LedgerLen || (localVipCount === 17 && r2VipCount !== 17)) {
+                        payload.crossHedgingPortfolio = localPayload.crossHedgingPortfolio;
+                    }
+                }
             } catch (_) {}
         }
 

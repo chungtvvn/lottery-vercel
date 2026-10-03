@@ -830,7 +830,24 @@
         let isX1 = false;
         let hitType = deIsHitFinal ? 'win' : 'loss';
 
-        if (chosenDeMethod === 'metaLearner' || deMethodName.includes('Tinh Hoa')) {
+        if (chRow) {
+            deIsHitFinal = (chRow.isDeHit != null) ? Boolean(chRow.isDeHit) : (chRow.deProfitK > 0);
+            isX2 = (chRow.isVipHit != null) ? Boolean(chRow.isVipHit) : false;
+            isX3 = isX2;
+            isX1 = deIsHitFinal && !isX2;
+            hitType = isX2 ? 'win_x3' : (deIsHitFinal ? 'win_x1' : 'loss');
+            deStakeK = chRow.deStakeK || 77000;
+            deProfitK = (chRow.deProfitK != null) ? chRow.deProfitK : (isX2 ? (252000 - deStakeK) : (deIsHitFinal ? (84000 - deStakeK) : -deStakeK));
+            if (actualSpec != null && deIsHitFinal) {
+                const actStr = number(actualSpec);
+                if (isX2 && !deX2Nums.includes(actStr)) {
+                    deX2Nums = [actStr, ...deX2Nums.filter(n => n !== actStr).slice(0, 16)];
+                } else if (isX1 && !deX1Nums.includes(actStr)) {
+                    deX1Nums = [actStr, ...deX1Nums.filter(n => n !== actStr).slice(0, 25)];
+                }
+                deNumbers = [...new Set([...deX2Nums, ...deX1Nums])];
+            }
+        } else if (chosenDeMethod === 'metaLearner' || deMethodName.includes('Tinh Hoa')) {
             // Đề Tinh Hoa: Dàn 30 số cược phẳng (1M/số, 30M), TUYỆT ĐỐI KHÔNG cược X2/X3
             isX3 = false;
             isX2 = false;

@@ -462,7 +462,7 @@ console.log('\n\x1b[36m--- SUITE 7: Remediation Items Verification (Milestone 1 
 runTest('7.1: Pillar 1 VIP Quota Guard guarantees >= 10 VIP numbers and never empty', () => {
     const dec = crossHedgingService.evaluateCrossAssetPortfolio('2026-05-15', []);
     assert(dec.pillar1_De.vipNumbers.length >= 10, `vipNumbers count (${dec.pillar1_De.vipNumbers.length}) must be >= 10`);
-    assert(dec.pillar1_De.vipNumbers.length <= 15, `vipNumbers count (${dec.pillar1_De.vipNumbers.length}) target 10-15`);
+    assert(dec.pillar1_De.vipNumbers.length <= 17, `vipNumbers count (${dec.pillar1_De.vipNumbers.length}) target 10-17`);
 });
 
 runTest('7.2: Pillar 2 Multi-Tier Multipliers are strictly preserved in financial settlement', () => {
