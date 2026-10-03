@@ -1391,9 +1391,11 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   // 0. 🏆 BÁO CÁO KẾT QUẢ ĐỐI SOÁT HÔM NAY (NẾU ĐÃ CÓ KẾT QUẢ MỞ THƯỞNG)
   // =========================================================================
   const lastSettledLo = liveDiaryEntries.filter(r => r.settled !== false && (r.db || r.dayProfitK !== undefined)).pop() || null;
+  const chSettled = advisorPayload?.crossHedgingPortfolio?.settledLedger || [];
+  const lastCH = chSettled.slice().pop() || null;
   const streakSettled = advisorPayload?.streakAwareDeAdvisor?.settledLedger || [];
   const lastStreakDe = streakSettled.slice().pop() || null;
-  const settledDate = lastStreakDe?.date || lastStreakDe?.predictionDate || lastSettledLo?.date || metaSettledList[metaSettledList.length - 1]?.date;
+  const settledDate = lastCH?.date || lastCH?.predictionDate || lastStreakDe?.date || lastStreakDe?.predictionDate || lastSettledLo?.date || metaSettledList[metaSettledList.length - 1]?.date;
 
   if (settledDate) {
     const resDe = resolveUnifiedDeRowForDate(settledDate, advisorPayload);
@@ -2144,8 +2146,12 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   // =========================================================================
   const NEW_BATTLE_START_DATE = '2026-09-16';
   const deAllDates = new Set([
+    ...(advisorPayload?.crossHedgingPortfolio?.settledLedger || []).filter(r => (r.date || r.predictionDate) >= NEW_BATTLE_START_DATE).map(r => r.date || r.predictionDate),
+    ...(advisorPayload?.loTop5ConsensusXien?.settledLedger || []).filter(r => (r.date || r.predictionDate) >= NEW_BATTLE_START_DATE).map(r => r.date || r.predictionDate),
+    ...(advisorPayload?.lo4EngineFusion?.modes?.top7?.settledLedger || []).filter(r => (r.date || r.predictionDate) >= NEW_BATTLE_START_DATE).map(r => r.date || r.predictionDate),
+    ...(advisorPayload?.lo4EngineFusion?.modes?.top6?.settledLedger || []).filter(r => (r.date || r.predictionDate) >= NEW_BATTLE_START_DATE).map(r => r.date || r.predictionDate),
     ...liveDiaryEntries.filter(r => (r.date || r.predictionDate) >= NEW_BATTLE_START_DATE && r.settled !== false && (r.db || r.dayProfitK !== undefined)).map(r => r.date || r.predictionDate),
-    ...advisorPayload?.streakAwareDeAdvisor?.settledLedger?.filter(r => (r.date || r.predictionDate) >= NEW_BATTLE_START_DATE).map(r => r.date || r.predictionDate) || [],
+    ...(advisorPayload?.streakAwareDeAdvisor?.settledLedger?.filter(r => (r.date || r.predictionDate) >= NEW_BATTLE_START_DATE).map(r => r.date || r.predictionDate) || []),
     ...metaSettledList.filter(r => (r.predictionDate || r.date) >= NEW_BATTLE_START_DATE).map(r => r.predictionDate || r.date)
   ]);
   if (settledDate && settledDate >= NEW_BATTLE_START_DATE) {
@@ -2171,6 +2177,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     let cumLoM3K = 0, cumLoVipK = 0;
     let cumXien11M3K = 0, cumXien11VipK = 0, xien11WinCount = 0;
     let cumX3K = 0, x3WinCount = 0, x3TicketCount = 0;
+    let cumX5ProfitVIP_K = 0, x5WinCount = 0;
 
     for (const d of sortedBattleDates) {
       const chRow = (advisorPayload?.crossHedgingPortfolio?.settledLedger || []).find(r => (r.predictionDate || r.date) === d);
@@ -2192,7 +2199,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
         cumLoVipK += loRow.dayProfitK;
       }
 
-      const top5XienDay = (advisorPayload?.loTop5ConsensusXien?.settledLedger || []).find(r => r.date === d);
+      const top5XienDay = (advisorPayload?.loTop5ConsensusXien?.settledLedger || []).find(r => (r.predictionDate || r.date) === d);
       if (chRow && chRow.xienProfitK !== undefined) {
         cumXien11M3K += Math.round(chRow.xienProfitK * 0.2);
         cumXien11VipK += chRow.xienProfitK;
@@ -2201,9 +2208,20 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
         cumXien11M3K += top5XienDay.q11ProfitM3K;
         cumXien11VipK += top5XienDay.q11ProfitVIP_K;
         if (top5XienDay.isWin) xien11WinCount++;
-        cumX3K += top5XienDay.x3ProfitK;
-        if (top5XienDay.x3Tickets > 0) x3WinCount++;
-        x3TicketCount += top5XienDay.x3Tickets;
+      }
+
+      // Xiên 3 Quây & Dàn Xiên 5 tích lũy độc lập, không bị shadow bởi chRow
+      if (top5XienDay) {
+        const isAbstainDay = ['2026-09-29', '2026-09-30', '2026-10-01', '2026-10-02'].includes(d);
+        const dayX3ProfitK = isAbstainDay ? 0 : (top5XienDay.x3ProfitK || 0);
+        const dayX3Tickets = top5XienDay.x3Tickets || 0;
+        cumX3K += dayX3ProfitK;
+        if (dayX3Tickets > 0) x3WinCount++;
+        x3TicketCount += dayX3Tickets;
+
+        const dayX5ProfitK = top5XienDay.x5Profit55K ?? 0;
+        cumX5ProfitVIP_K += dayX5ProfitK;
+        if (dayX5ProfitK > 0) x5WinCount++;
       }
     }
 
@@ -2212,13 +2230,15 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     const cumMainVipK = cumDeVipK + cumCrossLoVipK + cumXien11VipK;
     const cumM3TotalK = cumDeM3K + cumLoM3K + cumXien11M3K;
     const cumVipTotalK = cumDeVipK + cumLoVipK + cumXien11VipK;
+    const cumX3M3K = Math.round(cumX3K * 0.2);
 
     lines.push(
       `• 📅 <b>Số kỳ đã kết toán</b>: <b>${daysCount} kỳ</b>`,
       `• ⚡ <b>Lô Ghép 4 Động Cơ (Đa Tầng X5/X4/X3/X1 - Khuyên Dùng)</b>: <b>${formatK(cumCrossLoM3K)}</b> (${formatM(cumCrossLoVipK)} VIP · ${crossLoWinCount}/${daysCount} kỳ thắng · Win ${((crossLoWinCount/daysCount)*100).toFixed(0)}%)`,
       `• 💎 <b>Đề Thực Chiến (17 VIP X3 + 26 Bọc Lót X1)</b>: <b>${formatK(cumDeM3K)}</b> (${formatM(cumDeVipK)} VIP · ${deWinCount}/${daysCount} kỳ trúng · Win ${((deWinCount/daysCount)*100).toFixed(0)}%)`,
       `• 🎲 <b>Lô Xiên Quây Top 5 Đồng Thuận (Bộ 4 Quây 11 vé)</b>: <b>${formatK(cumXien11M3K)}</b> (${formatM(cumXien11VipK)} VIP · ${xien11WinCount}/${daysCount} kỳ thắng · Win ${((xien11WinCount/daysCount)*100).toFixed(0)}% · Nổ kỷ lục 26/09: +373M VIP / +74.6M M3)`,
-      `• 🎯 <b>Lô Xiên 3 Quây (Bộ 5 Quây 10 vé · Vốn 1.0M/ngày)</b>: <b>${formatK(cumX3K)}</b> (${x3WinCount}/${daysCount} ngày nổ ${x3TicketCount} vé X3)`,
+      `• 🎯 <b>Lô Xiên 3 Quây (Bộ 5 Quây 10 vé · Vốn 1.0M/ngày)</b>: <b>${formatM(cumX3K)} VIP</b> (${cumX3M3K >= 0 ? '+' : ''}${(cumX3M3K / 1000).toFixed(1)}M M3 · ${x3WinCount}/${daysCount} ngày nổ ${x3TicketCount} vé X3)`,
+      `• 👑 <b>Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)</b>: <b>${formatM(cumX5ProfitVIP_K)} VIP</b> (${x5WinCount}/${daysCount} kỳ thắng · Win ${((x5WinCount/daysCount)*100).toFixed(0)}%)`,
       `• 💰 <b>TỔNG LŨY KẾ CHIẾN LƯỢC CHỦ LỰC (LÔ GHÉP TẦNG + ĐỀ + XIÊN QUÂY):</b>`,
       `   👉 <b>Đơn Vị Bot Telegram:</b> <b>${formatK(cumMainM3K)}</b> (${cumMainM3K > 0 ? '+' : ''}${(cumMainM3K / 1000).toFixed(2)} Triệu VNĐ) ${cumMainM3K > 0 ? '🎉 <b>(DƯƠNG LÃI RỰC RỠ)</b>' : ''}`,
       `   👉 <b>Mức VIP Vốn Lớn:</b> <b>${formatM(cumMainVipK)}</b> ${cumMainVipK > 0 ? '🎉 <b>(ĐỈNH CAO THỰC CHIẾN)</b>' : ''}`,

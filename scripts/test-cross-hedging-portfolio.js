@@ -557,6 +557,135 @@ runTest('7.7: solveOptimalHedgeWeights accurately reports profitIfLo2HitsK and p
 });
 
 // -----------------------------------------------------------------------------
+// SUITE 8: 2026-10-03 SETTLEMENT & MULTI-ASSET REALIGNMENT (MILESTONE 1 ORCHESTRATION 4)
+// -----------------------------------------------------------------------------
+console.log('\n\x1b[36m--- SUITE 8: 2026-10-03 Settlement & Multi-Asset Realignment ---\x1b[0m');
+
+runTest('8.1: Accurate settlement of 2026-10-03 combo portfolio satisfying financial conservation', () => {
+    const cachePath = path.join(__dirname, '..', 'lib', 'data', 'statistics', 'cached_daily_method_advisor.json');
+    const cache = JSON.parse(fs.readFileSync(cachePath, 'utf8'));
+    const chRow = (cache.crossHedgingPortfolio?.settledLedger || []).find(r => r.date === '2026-10-03');
+    assert(chRow, '2026-10-03 row must exist in crossHedgingPortfolio.settledLedger');
+
+    // VIP level verification
+    assert.strictEqual(chRow.special, 61, 'ĐB must be 61');
+    assert.strictEqual(chRow.deStakeK, 77000, 'Pillar 1 Đề VIP stake must be 77M (77000K)');
+    assert.strictEqual(chRow.dePayoutK, 0, 'Pillar 1 Đề payout must be 0K (missed)');
+    assert.strictEqual(chRow.deProfitK, -77000, 'Pillar 1 Đề profit must be -77M (-77000K)');
+
+    assert.strictEqual(chRow.loHits, 3, 'Pillar 2 Lô hits must be 3 (38, 76 X4; 10 X3)');
+    assert.strictEqual(chRow.loStakeK, 52800, 'Pillar 2 Lô VIP stake must be 52.8M (52800K)');
+    assert.strictEqual(chRow.loPayoutK, 88000, 'Pillar 2 Lô VIP payout must be 88M (88000K)');
+    assert.strictEqual(chRow.loProfitK, 35200, 'Pillar 2 Lô VIP profit must be +35.2M (+35200K)');
+
+    assert.strictEqual(chRow.uniqueTop4Hits, 3, 'Pillar 3 Xiên 4 hits must be 3');
+    assert.strictEqual(chRow.xienStakeK, 11000, 'Pillar 3 Xiên VIP stake must be 11M (11000K)');
+    assert.strictEqual(chRow.xienPayoutK, 84000, 'Pillar 3 Xiên VIP payout must be 84M (84000K)');
+    assert.strictEqual(chRow.xienProfitK, 73000, 'Pillar 3 Xiên VIP profit must be +73M (+73000K)');
+
+    assert.strictEqual(chRow.totalStakeK, 140800, 'Combo total stake VIP must be 140.8M (140800K)');
+    assert.strictEqual(chRow.totalPayoutK, 172000, 'Combo total payout VIP must be 172.0M (172000K)');
+    assert.strictEqual(chRow.totalProfitK, 31200, 'Combo total net profit VIP must be +31.2M (+31200K)');
+    assert.strictEqual(chRow.isWin, true, 'Combo overall must be winning (isWin: true)');
+
+    // Strict financial conservation law:
+    assert.strictEqual(chRow.totalPayoutK - chRow.totalStakeK, chRow.totalProfitK, 'Financial Conservation: totalProfitK === totalPayoutK - totalStakeK');
+    assert.strictEqual(chRow.dePayoutK - chRow.deStakeK, chRow.deProfitK, 'Financial Conservation: deProfitK === dePayoutK - deStakeK');
+    assert.strictEqual(chRow.loPayoutK - chRow.loStakeK, chRow.loProfitK, 'Financial Conservation: loProfitK === loPayoutK - loStakeK');
+    assert.strictEqual(chRow.xienPayoutK - chRow.xienStakeK, chRow.xienProfitK, 'Financial Conservation: xienProfitK === xienPayoutK - xienStakeK');
+
+    // Mức 3 (Mặc định) proportions verification
+    const m3DeStakeK = Math.round(chRow.deStakeK * 0.2);
+    const m3DePayoutK = Math.round(chRow.dePayoutK * 0.2);
+    const m3DeProfitK = m3DePayoutK - m3DeStakeK;
+    assert.strictEqual(m3DeStakeK, 15400, 'M3 Đề stake: 15.4M');
+    assert.strictEqual(m3DeProfitK, -15400, 'M3 Đề profit: -15.4M');
+
+    const m3LoStakeK = Math.round(chRow.loStakeK * 0.25);
+    const m3LoPayoutK = Math.round(chRow.loPayoutK * 0.25);
+    const m3LoProfitK = m3LoPayoutK - m3LoStakeK;
+    assert.strictEqual(m3LoStakeK, 13200, 'M3 Lô stake: 13.2M');
+    assert.strictEqual(m3LoPayoutK, 22000, 'M3 Lô payout: 22.0M');
+    assert.strictEqual(m3LoProfitK, 8800, 'M3 Lô profit: +8.8M');
+
+    const m3XienStakeK = Math.round(chRow.xienStakeK * 0.2);
+    const m3XienPayoutK = Math.round(chRow.xienPayoutK * 0.2);
+    const m3XienProfitK = m3XienPayoutK - m3XienStakeK;
+    assert.strictEqual(m3XienStakeK, 2200, 'M3 Xiên stake: 2.2M');
+    assert.strictEqual(m3XienPayoutK, 16800, 'M3 Xiên payout: 16.8M');
+    assert.strictEqual(m3XienProfitK, 14600, 'M3 Xiên profit: +14.6M');
+
+    const m3TotalProfitK = m3DeProfitK + m3LoProfitK + m3XienProfitK;
+    assert.strictEqual(m3TotalProfitK, 8000, 'M3 Combo total net profit must be +8.0M (+8000K)');
+    assert(m3TotalProfitK > 0, 'Cross-hedging must guarantee positive net profit on 2026-10-03');
+});
+
+runTest('8.2: Settle Xiên 3 Quây and Dàn Xiên 5 on 2026-10-03', () => {
+    const cachePath = path.join(__dirname, '..', 'lib', 'data', 'statistics', 'cached_daily_method_advisor.json');
+    const cache = JSON.parse(fs.readFileSync(cachePath, 'utf8'));
+    const xRow = (cache.loTop5ConsensusXien?.settledLedger || []).find(r => r.date === '2026-10-03');
+    assert(xRow, '2026-10-03 row must exist in loTop5ConsensusXien.settledLedger');
+
+    // Xiên 3 Quây [38, 62, 76, 10, 11] (trúng 1 vé X3 ăn 6.5M -> lãi +5.5M)
+    assert.strictEqual(xRow.x3Tickets, 1, 'Xiên 3 Quây must win exactly 1 ticket X3');
+    assert.strictEqual(xRow.x3PayoutK, 6500, 'Xiên 3 Quây payout must be 6.5M (6500K)');
+    assert.strictEqual(xRow.x3ProfitK, 5500, 'Xiên 3 Quây profit must be +5.5M (+5500K)');
+
+    // Dàn Xiên 5 (5 dàn X4 · 11M/dàn = 55M): 2 dàn X3 + 3 dàn X2 -> ăn 204M -> lãi +149.0M
+    assert.strictEqual(xRow.x5DanHit3, 2, 'Dàn Xiên 5 must have 2 sets hitting Xiên 3');
+    assert.strictEqual(xRow.x5DanHit2, 3, 'Dàn Xiên 5 must have 3 sets hitting Xiên 2');
+    assert.strictEqual(xRow.x5Stake55K, 55000, 'Dàn Xiên 5 stake must be 55M (55000K)');
+    assert.strictEqual(xRow.x5Payout55K, 204000, 'Dàn Xiên 5 payout must be 204M (204000K)');
+    assert.strictEqual(xRow.x5Profit55K, 149000, 'Dàn Xiên 5 net profit must be +149.0M (+149000K)');
+    assert.strictEqual(xRow.isX5Win55, true, 'Dàn Xiên 5 must be winning');
+});
+
+runTest('8.3: Ledger synchronization across 18 combat dates from 2026-09-16 to 2026-10-03', () => {
+    const cachePath = path.join(__dirname, '..', 'lib', 'data', 'statistics', 'cached_daily_method_advisor.json');
+    const cache = JSON.parse(fs.readFileSync(cachePath, 'utf8'));
+
+    const chLedger18 = (cache.crossHedgingPortfolio?.settledLedger || []).filter(r => r.date >= '2026-09-16');
+    const top7Ledger18 = (cache.lo4EngineFusion?.modes?.top7?.settledLedger || []).filter(r => r.date >= '2026-09-16');
+    const top6Ledger18 = (cache.lo4EngineFusion?.modes?.top6?.settledLedger || []).filter(r => r.date >= '2026-09-16');
+    const xien5Ledger18 = (cache.loTop5ConsensusXien?.settledLedger || []).filter(r => r.date >= '2026-09-16');
+
+    assert.strictEqual(chLedger18.length, 18, 'crossHedgingPortfolio must have 18 dates from 2026-09-16 to 2026-10-03');
+    assert.strictEqual(top7Ledger18.length, 18, 'lo4EngineFusion Top 7 must have 18 dates from 2026-09-16 to 2026-10-03');
+    assert.strictEqual(top6Ledger18.length, 18, 'lo4EngineFusion Top 6 must have 18 dates from 2026-09-16 to 2026-10-03');
+    assert.strictEqual(xien5Ledger18.length, 18, 'loTop5ConsensusXien must have 18 dates from 2026-09-16 to 2026-10-03');
+
+    // Confirm Top 7 on 2026-10-03 has 3 hits, Top 6 has 3 hits, 14 numbers has 4 hits
+    const top7Row03 = top7Ledger18.find(r => r.date === '2026-10-03');
+    assert(top7Row03, 'Top 7 must have 2026-10-03');
+    assert.strictEqual(top7Row03.dayLotoHits, 3, 'Top 7 must have 3 hits on 2026-10-03');
+    assert.strictEqual(top7Row03.dayLotoProfitK, 35200, 'Top 7 profit must be +35.2M');
+
+    const top6Row03 = top6Ledger18.find(r => r.date === '2026-10-03');
+    assert(top6Row03, 'Top 6 must have 2026-10-03');
+    assert.strictEqual(top6Row03.dayLotoHits, 3, 'Top 6 must have 3 hits on 2026-10-03');
+    assert.strictEqual(top6Row03.dayLotoProfitK, 41800, 'Top 6 profit must be +41.8M');
+
+    const total14Hits03 = top7Row03.betNumbers.reduce((s, b) => s + (b.hits || 0), 0);
+    assert.strictEqual(total14Hits03, 4, '14 numbers in betNumbers must have 4 hits (38, 76, 10, 93)');
+
+    // Confirm snapshotLock status
+    assert.strictEqual(cache.snapshotLock.isSettled, true, 'cache.snapshotLock.isSettled must be true');
+    assert.strictEqual(cache.snapshotLock.lockTargetDate, '2026-10-03', 'lockTargetDate must be 2026-10-03');
+});
+
+runTest('8.4: XSMB history file contains actual 2026-10-03 results', () => {
+    const rawPath = path.join(__dirname, '..', 'lib', 'data', 'xsmb-2-digits.json');
+    const raw = JSON.parse(fs.readFileSync(rawPath, 'utf8'));
+    const last = raw[raw.length - 1];
+    assert.strictEqual(last.date, '2026-10-03', 'Last entry date must be 2026-10-03');
+    assert.strictEqual(last.special, 61, 'Last entry special must be 61');
+    assert.strictEqual(last.prize7_1, 38, 'prize7_1 must be 38');
+    assert.strictEqual(last.prize5_2, 76, 'prize5_2 must be 76');
+    assert.strictEqual(last.prize5_1, 10, 'prize5_1 must be 10');
+    assert.strictEqual(last.prize3_4, 93, 'prize3_4 must be 93');
+});
+
+// -----------------------------------------------------------------------------
 // SUMMARY REPORT
 // -----------------------------------------------------------------------------
 console.log('\n================================================================================');

@@ -394,6 +394,17 @@ async function main() {
         assert.match(liveReport.text, /XSMB — GỢI Ý THỰC CHIẾN HÀNG NGÀY/);
         assert.match(liveReport.text, /BÁO CÁO KẾT QUẢ ĐỐI SOÁT HÔM NAY/);
         assert.ok(!liveReport.text.includes('LÔ XIÊN 2 CHIẾN LƯỢC'), 'Live report không được chứa Lô Xiên 2');
+
+        // Section 6 assertions: 18 draws, Xiên 3 > 0 (+31.5M), Dàn Xiên 5, and exact Web-Telegram alignment
+        assert.match(liveReport.text, /6\. 📊 BẢNG THEO DÕI THỰC CHIẾN THEO GỢI Ý/);
+        assert.match(liveReport.text, /Số kỳ đã kết toán.*?18 kỳ/);
+        assert.match(liveReport.text, /Lô Ghép 4 Động Cơ.*?(\+95\.501K).*?(\+382M|\+382\.0M).*?12\/18 kỳ thắng/);
+        assert.match(liveReport.text, /Đề Thực Chiến.*?(-75\.600K).*?(-378M|-378\.0M).*?6\/18 kỳ trúng/);
+        assert.match(liveReport.text, /Lô Xiên Quây Top 5 Đồng Thuận.*?(\+83\.536K).*?(\+417,7M|\+417\.7M).*?6\/18 kỳ thắng/);
+        assert.match(liveReport.text, /Lô Xiên 3 Quây.*?(\+31,5M|\+31\.5M).*?\+6\.3M M3.*?4\/18 ngày nổ 7 vé X3/);
+        assert.match(liveReport.text, /Dàn Xiên 5 \(5 Dàn X4 · 11M\/dàn\).*?(\+522M|\+522\.0M).*?4\/18 kỳ thắng/);
+        assert.match(liveReport.text, /TỔNG LŨY KẾ CHIẾN LƯỢC CHỦ LỰC.*?(\+103\.437K|\+103\.44 Triệu VNĐ).*?(\+421,7M|\+421\.7M)/s);
+
         console.log('=== LIVE TELEGRAM REPORT PREVIEW ===\n' + liveReport.text + '\n===================================');
 
         const { buildBetCalculationSheet, BETTING_TIERS } = await loadWorkerModule();

@@ -4753,6 +4753,7 @@
         let cumXi3ProfitK = 0;
         let cumXi4ProfitK = 0;
         let cumLo4ProfitK = 0;
+        let cumTop6LoProfitK = 0;
         let cumLo4Xien4ProfitK = 0;
         let cumLoXien5ProfitK = 0;
 
@@ -5244,13 +5245,41 @@
             let loXien5ProfitK = 0;
             let loXien5PayoutK = 0;
             let loXien5H5 = 0;
+            let loXien5Top5 = [];
+            let loXien5Tickets = [];
+
             if (top5XienDay) {
+                loXien5Top5 = (top5XienDay.top5 || []).map(number);
                 loXien5H5 = top5XienDay.h5 || 0;
                 const evalX5 = evaluateXien5_5DanX4(loXien5H5);
                 loXien5PayoutK = top5XienDay.x5Payout55K != null ? top5XienDay.x5Payout55K : evalX5.payoutK;
                 loXien5ProfitK = top5XienDay.x5Profit55K != null ? top5XienDay.x5Profit55K : evalX5.profitK;
+                loXien5Tickets = top5XienDay.x5Tickets || getXi5Tickets(top5XienDay.top5);
             } else {
-                loXien5ProfitK = -55000;
+                let fallbackTop5 = (lo4Row?.top5 || []).map(number);
+                if (fallbackTop5.length < 5 && lo4Row?.betNumbers?.length >= 5) {
+                    fallbackTop5 = lo4Row.betNumbers.slice(0, 5).map(b => number(b.num));
+                }
+                loXien5Top5 = fallbackTop5;
+                const drawPrizesForDate = (payload?.drawPrizesByDate?.[date]?.prizes || []).map(number);
+                const hasPrizes = drawPrizesForDate.length > 0 || Object.keys(prizeCounts).length > 0;
+
+                if (fallbackTop5.length >= 5 && hasPrizes) {
+                    loXien5H5 = fallbackTop5.filter(n => (prizeCounts[n] || 0) > 0 || drawPrizesForDate.includes(n)).length;
+                    const evalX5 = evaluateXien5_5DanX4(loXien5H5);
+                    loXien5PayoutK = evalX5.payoutK;
+                    loXien5ProfitK = evalX5.profitK;
+                    loXien5Tickets = getXi5Tickets(fallbackTop5);
+                } else if (!hasPrizes) {
+                    loXien5PayoutK = 0;
+                    loXien5ProfitK = 0;
+                    loXien5Tickets = fallbackTop5.length >= 5 ? getXi5Tickets(fallbackTop5) : [];
+                } else {
+                    const evalX5 = evaluateXien5_5DanX4(0);
+                    loXien5PayoutK = evalX5.payoutK;
+                    loXien5ProfitK = evalX5.profitK;
+                    loXien5Tickets = [];
+                }
             }
 
             const chDePnlK = diaryDeProfitK;
@@ -5266,6 +5295,21 @@
             cumCrossXienProfitK += chXienPnlK;
             const chCumProfitK = cumCrossProfitK;
 
+            // Chế độ Top 6 độc lập: tính PnL và lũy kế từ lo4Row Top 6 thay vì ghi đè bằng chLoPnlK (Top 7)
+            let lo4DayProfitK = chLoPnlK;
+            let lo4CumProfitK = cumCrossLoProfitK;
+            let lo4IsWin = (chLoPnlK > 0);
+
+            if (currentLo4EngineMode === 'top6') {
+                const top6DayPnl = (lo4Row && lo4Row.dayLotoProfitK != null)
+                    ? lo4Row.dayLotoProfitK
+                    : (chRow && chRow.loProfitK != null ? chRow.loProfitK : (lo4Row?.dayLotoProfitK || 0));
+                lo4DayProfitK = top6DayPnl;
+                cumTop6LoProfitK += top6DayPnl;
+                lo4CumProfitK = cumTop6LoProfitK;
+                lo4IsWin = (top6DayPnl > 0);
+            }
+
             // Đồng bộ hoá PnL & Lũy kế cho danh mục Combo Bù Trừ Chéo và các tab Đề, Lô Ghép 4, Xiên 4
             const lo4ProfitK = chLoPnlK;
             const lo4Xien4ProfitK = chXienPnlK;
@@ -5275,7 +5319,7 @@
 
             cumProfitK = cumCrossProfitK;
             cumDeProfitK = cumCrossDeProfitK;
-            cumLo4ProfitK = cumCrossLoProfitK;
+            cumLo4ProfitK = (currentLo4EngineMode === 'top6' ? lo4CumProfitK : cumCrossLoProfitK);
             cumLo4Xien4ProfitK = cumCrossXienProfitK;
             cumStdProfitK += stdProfitK;
             cumX2ProfitK += x2ProfitK;
@@ -5287,9 +5331,9 @@
                 ...lo4Row,
                 dayLotoStakeK: (lo4Row.dayLotoStakeK != null ? lo4Row.dayLotoStakeK : (chRow?.loStakeK || 0)),
                 dayLotoPayoutK: (lo4Row.dayLotoPayoutK != null ? lo4Row.dayLotoPayoutK : (chRow?.loPayoutK || 0)),
-                dayLotoProfitK: chLoPnlK,
-                isLotoWin: (chLoPnlK > 0),
-                cumLotoProfitK: cumCrossLoProfitK
+                dayLotoProfitK: (currentLo4EngineMode === 'top6' ? lo4DayProfitK : chLoPnlK),
+                isLotoWin: (currentLo4EngineMode === 'top6' ? lo4IsWin : (chLoPnlK > 0)),
+                cumLotoProfitK: (currentLo4EngineMode === 'top6' ? lo4CumProfitK : cumCrossLoProfitK)
             } : {
                 date,
                 isHistoricalBaseline: true,
@@ -5304,11 +5348,11 @@
                 dayLotoHits: (chRow?.loHits != null ? chRow.loHits : x2Hits),
                 dayLotoStakeK: chRow?.loStakeK || 0,
                 dayLotoPayoutK: chRow?.loPayoutK || 0,
-                dayLotoProfitK: chLoPnlK,
-                isLotoWin: chLoPnlK > 0,
+                dayLotoProfitK: (currentLo4EngineMode === 'top6' ? lo4DayProfitK : chLoPnlK),
+                isLotoWin: (currentLo4EngineMode === 'top6' ? lo4IsWin : (chLoPnlK > 0)),
                 xien4Status: 'BASELINE_PHASE',
                 xien4Reason: 'Giai đoạn đối soát độc lập trước khởi chạy Live Ghép 4 (Từ 02/06/2026)',
-                cumLotoProfitK: cumCrossLoProfitK
+                cumLotoProfitK: (currentLo4EngineMode === 'top6' ? lo4CumProfitK : cumCrossLoProfitK)
             };
 
             const lo4Xien4Details = top5XienDay ? {
@@ -5440,31 +5484,18 @@
                     profitK: xi4ProfitK,
                     payoutK: (xi4ProfitK > 0) ? (xi4StakeK + xi4ProfitK) : 0
                 },
-                loXien5: top5XienDay ? {
+                loXien5: {
                     date,
                     isPending: false,
-                    top5: (top5XienDay.top5 || []).map(number),
+                    top5: loXien5Top5,
                     h5: loXien5H5,
-                    x5Tickets: top5XienDay.x5Tickets || getXi5Tickets(top5XienDay.top5),
+                    x5Tickets: loXien5Tickets,
                     x5StakeK: 55000,
                     x5PayoutK: loXien5PayoutK,
                     x5ProfitK: loXien5ProfitK,
                     payoutK: loXien5PayoutK,
                     profitK: loXien5ProfitK,
                     isWin: loXien5ProfitK > 0,
-                    cumLoXien5ProfitK
-                } : {
-                    date,
-                    isPending: false,
-                    top5: [],
-                    h5: 0,
-                    x5Tickets: [],
-                    x5StakeK: 55000,
-                    x5PayoutK: 0,
-                    x5ProfitK: -55000,
-                    payoutK: 0,
-                    profitK: -55000,
-                    isWin: false,
                     cumLoXien5ProfitK
                 },
                 total: {
@@ -5517,7 +5548,7 @@
                 actualSpec,
                 loRow,
                 lo4Engine: diaryDetailsMap[date].lo4Engine,
-                cumLo4ProfitK: cumCrossLoProfitK,
+                cumLo4ProfitK: (currentLo4EngineMode === 'top6' ? diaryDetailsMap[date].lo4Engine?.cumLotoProfitK : cumCrossLoProfitK),
                 lo4Xien4: diaryDetailsMap[date].lo4Xien4,
                 cumLo4Xien4ProfitK: cumCrossXienProfitK,
                 loXien5: diaryDetailsMap[date].loXien5,
@@ -5556,7 +5587,12 @@
             displayRows = mergedRows.filter(r => {
                 if (r.isPending) return false;
                 if (currentDiaryCategory === 'de') return (r.chDePnlK != null ? r.chDePnlK : r.deProfitK) > 0;
-                if (currentDiaryCategory === 'lo4Engine') return (r.chLoPnlK != null ? r.chLoPnlK : (r.lo4Engine?.dayLotoProfitK || 0)) > 0;
+                if (currentDiaryCategory === 'lo4Engine') {
+                    const effLo = (currentLo4EngineMode === 'top6' && r.lo4Engine?.dayLotoProfitK != null)
+                        ? r.lo4Engine.dayLotoProfitK
+                        : (r.chLoPnlK != null ? r.chLoPnlK : (r.lo4Engine?.dayLotoProfitK || 0));
+                    return effLo > 0;
+                }
                 if (currentDiaryCategory === 'loStd') return (r.std.profitK || 0) > 0;
                 if (currentDiaryCategory === 'loX2') return (r.x2.profitK || 0) > 0;
                 if (currentDiaryCategory === 'loXi3') return (r.xi3.profitK || 0) > 0;
@@ -5568,7 +5604,12 @@
             displayRows = mergedRows.filter(r => {
                 if (r.isPending) return false;
                 if (currentDiaryCategory === 'de') return (r.chDePnlK != null ? r.chDePnlK : r.deProfitK) <= 0;
-                if (currentDiaryCategory === 'lo4Engine') return (r.chLoPnlK != null ? r.chLoPnlK : (r.lo4Engine?.dayLotoProfitK || 0)) <= 0;
+                if (currentDiaryCategory === 'lo4Engine') {
+                    const effLo = (currentLo4EngineMode === 'top6' && r.lo4Engine?.dayLotoProfitK != null)
+                        ? r.lo4Engine.dayLotoProfitK
+                        : (r.chLoPnlK != null ? r.chLoPnlK : (r.lo4Engine?.dayLotoProfitK || 0));
+                    return effLo <= 0;
+                }
                 if (currentDiaryCategory === 'loStd') return (r.std.profitK || 0) <= 0;
                 if (currentDiaryCategory === 'loX2') return (r.x2.profitK || 0) <= 0;
                 if (currentDiaryCategory === 'loXi3') return (r.xi3.profitK || 0) <= 0;
@@ -5581,12 +5622,15 @@
         // Compute category metrics for KPI header
         let catWinCount = 0;
         let catTotalProfit = 0;
+        let catTotalProfitM3 = 0;
         let settledDaysCount = 0;
         let lo4WinCount = 0;
         let lo4TotalProfit = 0;
+        let lo4TotalProfitM3 = 0;
         let lo4Xien4WinCount = 0;
         let lo4Xien4SkipCount = 0;
         let lo4Xien4TotalProfit = 0;
+        let lo4Xien4TotalProfitM3 = 0;
         let loXien5WinCount = 0;
         let loXien5TicketsWonTotal = 0;
         let loXien5TotalProfit = 0;
@@ -5595,45 +5639,61 @@
             if (r.isPending) return;
             settledDaysCount++;
 
-            const effLoProfit = (r.chLoPnlK != null ? r.chLoPnlK : (r.lo4Engine?.dayLotoProfitK || 0));
+            const effLoProfit = (currentLo4EngineMode === 'top6' && r.lo4Engine?.dayLotoProfitK != null)
+                ? r.lo4Engine.dayLotoProfitK
+                : (r.chLoPnlK != null ? r.chLoPnlK : (r.lo4Engine?.dayLotoProfitK || 0));
             if (effLoProfit > 0) lo4WinCount++;
             lo4TotalProfit += effLoProfit;
+            const effLoProfitM3 = Math.round(effLoProfit * 0.25);
+            lo4TotalProfitM3 += effLoProfitM3;
 
             const effXienProfit = (r.chXienPnlK != null ? r.chXienPnlK : (r.lo4Xien4?.profitK || 0));
             if (effXienProfit > 0) lo4Xien4WinCount++;
             else if (r.lo4Xien4?.status === 'SKIPPED_TOO_MANY') lo4Xien4SkipCount++;
             lo4Xien4TotalProfit += effXienProfit;
+            const effXienProfitM3 = Math.round(effXienProfit * 0.2);
+            lo4Xien4TotalProfitM3 += effXienProfitM3;
 
             if ((r.loXien5?.profitK || 0) > 0) loXien5WinCount++;
             loXien5TotalProfit += (r.loXien5?.profitK || 0);
 
+            const effDeProfit = (r.chDePnlK != null ? r.chDePnlK : r.deProfitK);
+            const effDeProfitM3 = Math.round(effDeProfit * 0.2);
+
             if (currentDiaryCategory === 'de') {
-                const effDeProfit = (r.chDePnlK != null ? r.chDePnlK : r.deProfitK);
                 if (effDeProfit > 0) catWinCount++;
                 catTotalProfit += effDeProfit;
+                catTotalProfitM3 += effDeProfitM3;
             } else if (currentDiaryCategory === 'lo4Engine') {
                 if (effLoProfit > 0) catWinCount++;
                 catTotalProfit += effLoProfit;
+                catTotalProfitM3 += effLoProfitM3;
             } else if (currentDiaryCategory === 'loStd') {
                 if ((r.std.profitK || 0) > 0) catWinCount++;
                 catTotalProfit += (r.std.profitK || 0);
+                catTotalProfitM3 += Math.round((r.std.profitK || 0) * 0.25);
             } else if (currentDiaryCategory === 'loX2') {
                 if ((r.x2.profitK || 0) > 0) catWinCount++;
                 catTotalProfit += (r.x2.profitK || 0);
+                catTotalProfitM3 += Math.round((r.x2.profitK || 0) * 0.25);
             } else if (currentDiaryCategory === 'loXi3') {
                 if ((r.xi3.profitK || 0) > 0) catWinCount++;
                 catTotalProfit += (r.xi3.profitK || 0);
+                catTotalProfitM3 += Math.round((r.xi3.profitK || 0) * 0.2);
             } else if (currentDiaryCategory === 'loXi4' || currentDiaryCategory === 'lo4Xien4') {
                 if (effXienProfit > 0) catWinCount++;
                 catTotalProfit += effXienProfit;
+                catTotalProfitM3 += effXienProfitM3;
             } else if (currentDiaryCategory === 'loXien5') {
                 if ((r.loXien5?.profitK || 0) > 0) catWinCount++;
                 catTotalProfit += (r.loXien5?.profitK || 0);
+                catTotalProfitM3 += (r.loXien5?.profitK || 0);
             } else {
                 const isDayWin = (r.chRow ? r.chRow.isWin : (r.dayTotalK > 0));
                 const dayPnl = (r.chTotalProfitK != null ? r.chTotalProfitK : r.dayTotalK);
                 if (isDayWin) catWinCount++;
                 catTotalProfit += dayPnl;
+                catTotalProfitM3 += (effDeProfitM3 + effLoProfitM3 + effXienProfitM3);
             }
         });
 
@@ -5646,23 +5706,30 @@
         if (wRate) wRate.textContent = percent(catWinCount / totalCount);
         const totalProfitEl = byId('unifiedDiaryTotalProfit');
         if (totalProfitEl) {
-            totalProfitEl.textContent = moneyM(catTotalProfit, { signed: true });
+            if (currentDiaryCategory === 'all') {
+                totalProfitEl.textContent = `${moneyM(catTotalProfitM3, { signed: true })} M3 / ${moneyM(catTotalProfit, { signed: true })} VIP`;
+            } else if (['de', 'lo4Engine', 'lo4Xien4', 'loXi4'].includes(currentDiaryCategory)) {
+                totalProfitEl.textContent = `${moneyM(catTotalProfitM3, { signed: true })} M3 / ${moneyM(catTotalProfit, { signed: true })} VIP`;
+            } else {
+                totalProfitEl.textContent = moneyM(catTotalProfit, { signed: true });
+            }
             totalProfitEl.className = `font-black text-sm font-mono ${catTotalProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`;
         }
 
         const lo4ProfitEl = byId('unifiedDiaryLo4Profit');
         if (lo4ProfitEl) {
-            lo4ProfitEl.textContent = moneyM(lo4TotalProfit, { signed: true });
+            lo4ProfitEl.textContent = `${moneyM(lo4TotalProfitM3, { signed: true })} M3 / ${moneyM(lo4TotalProfit, { signed: true })} VIP`;
             lo4ProfitEl.className = `font-black text-sm font-mono ${lo4TotalProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'}`;
         }
         const lo4SubEl = byId('unifiedDiaryLo4Subtext');
         if (lo4SubEl) {
-            lo4SubEl.innerHTML = `Thắng <strong>${lo4WinCount}/${totalCount}</strong> ngày (${percent(lo4WinCount / totalCount)}) · Đa tầng X1/X3/X4/X5`;
+            const loModeLabel = currentLo4EngineMode === 'top6' ? 'Top 6' : 'Top 7';
+            lo4SubEl.innerHTML = `Thắng <strong>${lo4WinCount}/${totalCount}</strong> ngày (${percent(lo4WinCount / totalCount)}) · Đa tầng (${loModeLabel})`;
         }
 
         const xien4ProfitEl = byId('unifiedDiaryXien4Profit');
         if (xien4ProfitEl) {
-            xien4ProfitEl.textContent = moneyM(lo4Xien4TotalProfit, { signed: true });
+            xien4ProfitEl.textContent = `${moneyM(lo4Xien4TotalProfitM3, { signed: true })} M3 / ${moneyM(lo4Xien4TotalProfit, { signed: true })} VIP`;
             xien4ProfitEl.className = `font-black text-sm font-mono ${lo4Xien4TotalProfit >= 0 ? 'text-purple-700' : 'text-rose-600'}`;
         }
         const xien4SubEl = byId('unifiedDiaryXien4Subtext');
