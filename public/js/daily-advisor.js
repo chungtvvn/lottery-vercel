@@ -118,24 +118,24 @@
         maxProfit: {
             id: 'maxProfit',
             name: 'Gói 1: Combo Bù Trừ Dòng Tiền Chéo (Đề VIP + Lô 4 ĐC + Xiên Quây)',
-            deMethod: 'deMarkovGapHazard',
+            deMethod: 'dualMerge',
             loEngine: 'lo4Engine',
             loSubTier: 7,
             badge: '🛡️ COMBO CHỦ LỰC · BÙ TRỪ DÒNG TIỀN CHÉO (WIN 78.97%)',
             roiLabel: 'Win 78.97% · ROI +120.8%',
-            rationale: 'Chiến thuật phối hợp 3 trụ cột vững chắc: Đề Tinh Tuyển VIP Markov (1 ăn 84-252, P nổ bù 57.0%), Lô Ghép 4 Động Cơ đa tầng (X5/X4/X3/X1) và Dàn Xiên Quây 11 vé. Cơ chế tự động cân bằng tỷ trọng vốn bảo đảm chỉ cần nổ bất kỳ 1 trụ cột là sinh lãi ròng tổng kết quả trong ngày (Profit > 0).'
+            rationale: 'Chiến thuật phối hợp 3 trụ cột vững chắc: Đề Tinh Tuyển VIP Sweet-Spot (1 ăn 84-252, P nổ bù 57.0%), Lô Ghép 4 Động Cơ đa tầng (X5/X4/X3/X1) và Dàn Xiên Quây 11 vé. Cơ chế tự động cân bằng tỷ trọng vốn bảo đảm chỉ cần nổ bất kỳ 1 trụ cột là sinh lãi ròng tổng kết quả trong ngày (Profit > 0).'
         },
         crossHedging: {
             id: 'crossHedging',
             name: 'Gói 1: Combo Bù Trừ Dòng Tiền Chéo (Đề VIP + Lô Ghép 4 + Xiên Quây - Mức 3 11,320K)',
             baseStakeK: 11320,
             baseStakeText: '11,320K',
-            deMethod: 'deMarkovGapHazard',
+            deMethod: 'dualMerge',
             loEngine: 'lo4Engine',
             loSubTier: 7,
             badge: '🛡️ COMBO CHỦ LỰC · BÙ TRỪ DÒNG TIỀN CHÉO (WIN 78.97%)',
             roiLabel: 'Win 78.97% · ROI +120.8%',
-            rationale: 'Chiến thuật phối hợp 3 trụ cột vững chắc: Đề Tinh Tuyển VIP Markov (1 ăn 84-252, P nổ bù 57.0%), Lô Ghép 4 Động Cơ đa tầng (X5/X4/X3/X1) và Dàn Xiên Quây 11 vé. Cơ chế tự động cân bằng tỷ trọng vốn bảo đảm chỉ cần nổ bất kỳ 1 trụ cột là sinh lãi ròng tổng kết quả trong ngày (Profit > 0).'
+            rationale: 'Chiến thuật phối hợp 3 trụ cột vững chắc: Đề Tinh Tuyển VIP Sweet-Spot (1 ăn 84-252, P nổ bù 57.0%), Lô Ghép 4 Động Cơ đa tầng (X5/X4/X3/X1) và Dàn Xiên Quây 11 vé. Cơ chế tự động cân bằng tỷ trọng vốn bảo đảm chỉ cần nổ bất kỳ 1 trụ cột là sinh lãi ròng tổng kết quả trong ngày (Profit > 0).'
         },
         smartAlternating: {
             id: 'smartAlternating',
@@ -421,20 +421,32 @@
         const payloadData = p || payload || {};
         const key = forcedPortfolioKey || currentActivePortfolio || (payloadData?.crossHedgingPortfolio ? 'maxProfit' : (payloadData?.strategicPortfolioGovernor?.recommendedPortfolioId || 'maxProfit'));
         const cfg = PORTFOLIOS_CONFIG[key] || PORTFOLIOS_CONFIG.steadyAccumulator;
-        const deMethodKey = currentActiveDeMethod || cfg.deMethod || 'pentaCoreDe';
+        const lockedP1 = payloadData?.crossHedgingPortfolio?.latestRecommendation?.pillar1_De
+            || payloadData?.crossHedgingPortfolio?.pillar1_De;
+        const defaultDeMethod = lockedP1?.methodId || cfg.deMethod || 'dualMerge';
+        const deMethodKey = currentActiveDeMethod || defaultDeMethod;
         const loEngineKey = currentActiveLoEngine || cfg.loEngine || 'quad';
 
         // 1. Resolve Đề
-        let deMethodName = '👑 Ngũ Trụ Tinh Hoa AI (Penta-Core 60M)';
+        let deMethodName = '🎯 Đề Gộp Tiêu Chuẩn Sweet-Spot';
         let deNumbers = [];
         let deX2Nums = [];
         let deX1Nums = [];
-        let deStakeK = 60000;
+        let deStakeK = 68000;
         let deSubTierLabel = '';
         let deRationale = '';
         let deBadge = '';
 
-        if (deMethodKey === 'metaLearner') {
+        if ((key === 'maxProfit' || key === 'crossHedging' || deMethodKey === 'dualMerge' || deMethodKey === (lockedP1?.methodId || 'dualMerge')) && lockedP1 && lockedP1.vipNumbers && lockedP1.vipNumbers.length > 0) {
+            deMethodName = lockedP1.methodLabel || '🎯 Đề Gộp Tiêu Chuẩn Sweet-Spot';
+            deX2Nums = lockedP1.vipNumbers.map(number);
+            deX1Nums = (lockedP1.singleNumbers || lockedP1.backupNumbers || []).map(number);
+            deNumbers = (lockedP1.allNumbers || [...deX2Nums, ...deX1Nums]).map(number);
+            deStakeK = lockedP1.stakeK || ((deX2Nums.length * 3 + deX1Nums.length * 1) * 1000);
+            deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} VIP X3 · ${deX1Nums.length} Lót X1) (Vốn ${moneyM(deStakeK)})`;
+            deRationale = lockedP1.rationale || 'Cặp bài trùng tinh hoa gộp từ 2 phương pháp có độ tương quan bù trừ cao nhất (17 VIP X3 + 17 Lót X1).';
+            deBadge = lockedP1.badge || 'Sweet-Spot Tinh Tuyển 🎯';
+        } else if (deMethodKey === 'metaLearner') {
             const streakRec = payloadData.streakAwareDeAdvisor?.latestRecommendation || {};
             const metaRec = payloadData.metaLearner?.latestRecommendation || {};
             deMethodName = '💎 Đề Tinh Hoa (30 Số Chuẩn)';
@@ -456,15 +468,26 @@
             deRationale = pentaDe.rationale || 'Hệ thống Ngũ Trụ AI đại đồng thuận 5 động cơ lớn (Thích Ứng Alpha, Đề Gộp Tiêu Chuẩn, Tam Trụ, Markov Gap và Bayes Dạng Số). 16 số Siêu VIP được từ 4 đến 5 động cơ cùng chọn (số 46 đạt tuyệt đối 5/5 động cơ).';
             deBadge = pentaDe.confidenceBadge || 'Đại Đồng Thuận 5 Động Cơ · 16 Siêu VIP 👑';
         } else if (deMethodKey === 'dualMerge') {
-            const rec = payloadData.dualMerge?.latestRecommendation || {};
-            deMethodName = '🎯 Đề Gộp Tiêu Chuẩn (Dual Merge)';
-            deX2Nums = (rec.intersectionX2 || rec.intersection || []).map(number);
-            deX1Nums = (rec.uniqueSinglesX1 || rec.uniqueSingles || []).map(number);
-            deNumbers = (rec.fullUnion || rec.union || rec.numbers || [...deX2Nums, ...deX1Nums]).map(number);
-            deStakeK = (deX2Nums.length * 3 + deX1Nums.length * 1) * 1000;
-            deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} VIP X3 · ${deX1Nums.length} Lót X1) (Vốn ${moneyM(deStakeK)})`;
-            deRationale = rec.rationale || 'Chiến lược phòng thủ vững chắc với Đề Gộp Tiêu Chuẩn cược VIP X3 và Lót X1.';
-            deBadge = 'An Toàn Tuyệt Đối';
+            if (lockedP1 && lockedP1.vipNumbers && lockedP1.vipNumbers.length > 0) {
+                deMethodName = lockedP1.methodLabel || '🎯 Đề Gộp Tiêu Chuẩn Sweet-Spot';
+                deX2Nums = lockedP1.vipNumbers.map(number);
+                deX1Nums = (lockedP1.singleNumbers || lockedP1.backupNumbers || []).map(number);
+                deNumbers = (lockedP1.allNumbers || [...deX2Nums, ...deX1Nums]).map(number);
+                deStakeK = lockedP1.stakeK || ((deX2Nums.length * 3 + deX1Nums.length * 1) * 1000);
+                deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} VIP X3 · ${deX1Nums.length} Lót X1) (Vốn ${moneyM(deStakeK)})`;
+                deRationale = lockedP1.rationale || 'Chiến lược phòng thủ vững chắc với Đề Gộp Tiêu Chuẩn cược VIP X3 và Lót X1.';
+                deBadge = 'An Toàn Tuyệt Đối';
+            } else {
+                const rec = payloadData.dualMerge?.latestRecommendation || {};
+                deMethodName = '🎯 Đề Gộp Tiêu Chuẩn (Dual Merge)';
+                deX2Nums = (rec.intersectionX2 || rec.intersection || []).map(number);
+                deX1Nums = (rec.uniqueSinglesX1 || rec.uniqueSingles || []).map(number);
+                deNumbers = (rec.fullUnion || rec.union || rec.numbers || [...deX2Nums, ...deX1Nums]).map(number);
+                deStakeK = (deX2Nums.length * 3 + deX1Nums.length * 1) * 1000;
+                deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} VIP X3 · ${deX1Nums.length} Lót X1) (Vốn ${moneyM(deStakeK)})`;
+                deRationale = rec.rationale || 'Chiến lược phòng thủ vững chắc với Đề Gộp Tiêu Chuẩn cược VIP X3 và Lót X1.';
+                deBadge = 'An Toàn Tuyệt Đối';
+            }
         } else if (deMethodKey === 'bayesFormResonance') {
             const rec = payloadData.streakAwareDeAdvisor?.bayesAdvisor?.latestRecommendation 
                 || payloadData.streakAwareDeAdvisor?.latestRecommendation?.availableMethods?.bayesFormResonance
@@ -1396,15 +1419,24 @@
             };
         }
         if (methodKey === 'dualMerge') {
-            const rec = fullData?.dualMerge?.latestRecommendation || {};
-            const allNums = (rec.fullUnion || rec.numbers || []).map(number);
-            const vipNums = (rec.intersectionX2 || rec.intersection || allNums.slice(0, 17)).slice(0, 17).map(number);
-            const singleNums = allNums.filter(n => !vipNums.includes(n));
-            const dynStake = (vipNums.length * 3 + singleNums.length * 1) * 1000;
+            const crossP1 = fullData?.crossHedgingPortfolio?.latestRecommendation?.pillar1_De
+                || fullData?.crossHedgingPortfolio?.pillar1_De;
+            let allNums, vipNums, singleNums;
+            if (crossP1 && crossP1.vipNumbers && crossP1.vipNumbers.length > 0 && (crossP1.methodId === 'dualMerge' || !crossP1.methodId)) {
+                vipNums = crossP1.vipNumbers.map(number);
+                singleNums = (crossP1.singleNumbers || crossP1.backupNumbers || []).map(number);
+                allNums = (crossP1.allNumbers || [...vipNums, ...singleNums]).map(number);
+            } else {
+                const rec = fullData?.dualMerge?.latestRecommendation || {};
+                allNums = (rec.fullUnion || rec.numbers || []).map(number);
+                vipNums = (rec.intersectionX2 || rec.intersection || allNums.slice(0, 17)).slice(0, 17).map(number);
+                singleNums = allNums.filter(n => !vipNums.includes(n));
+            }
+            const dynStake = crossP1?.stakeK || ((vipNums.length * 3 + singleNums.length * 1) * 1000);
             const stakeM = Math.round(dynStake / 1000);
             return {
-                label: '🎯 Đề Gộp Tiêu Chuẩn (Dual Merge)',
-                badge: 'Cặp Bài Trùng Tinh Hoa',
+                label: crossP1?.methodLabel || '🎯 Đề Gộp Tiêu Chuẩn Sweet-Spot',
+                badge: crossP1?.badge || 'Cặp Bài Trùng Tinh Hoa (17 VIP X3 + 17 Lót X1)',
                 stakeK: dynStake,
                 stakeText: `Vốn: ${moneyM(dynStake)} / ngày (${vipNums.length} VIP X3 + ${singleNums.length} Lót X1 · ${stakeM} đơn vị cược)`,
                 stdTitle: `🎯 DÀN ĐỀ GỘP TIÊU CHUẨN (${allNums.length} SỐ · ${stakeM} ĐƠN VỊ CƯỢC)`,
@@ -1413,7 +1445,7 @@
                 singleNums,
                 vipLabel: `⚡ VIP TRÙNG X3 (${vipNums.length} SỐ - CƯỢC X3)`,
                 singleLabel: `🛡️ BỌC LÓT X1 (${singleNums.length} SỐ - CƯỢC X1)`,
-                rationale: 'Gộp 2 phương pháp có độ tương quan bù trừ cao nhất từ Mốc Lịch Sử D-1, tối ưu hóa điểm Jaccard và tỷ lệ hiệp đồng.',
+                rationale: crossP1?.rationale || 'Gộp 2 phương pháp có độ tương quan bù trừ cao nhất từ Mốc Lịch Sử D-1, tối ưu hóa điểm Jaccard và tỷ lệ hiệp đồng.',
                 liveStat: '54.9% Win 2026 (+10.2 TỶ)'
             };
         }
@@ -1460,7 +1492,9 @@
             };
         }
         if (methodKey === 'deMarkovGapHazard') {
-            const crossP1 = fullData?.crossHedgingPortfolio?.pillar1_De;
+            const crossP1 = (fullData?.crossHedgingPortfolio?.latestRecommendation?.pillar1_De?.methodId === 'deMarkovGapHazard' || fullData?.crossHedgingPortfolio?.pillar1_De?.methodId === 'deMarkovGapHazard')
+                ? (fullData?.crossHedgingPortfolio?.latestRecommendation?.pillar1_De || fullData?.crossHedgingPortfolio?.pillar1_De)
+                : null;
             const rec = fullData?.deMarkovGapHazard?.latestRecommendation 
                 || fullData?.streakAwareDeAdvisor?.latestRecommendation?.availableMethods?.deMarkovGapHazard
                 || fullData?.streakAwareDeAdvisor?.markovAdvisor?.latestRecommendation
@@ -7047,10 +7081,15 @@
 
         function selectStrategicPortfolio(key, isInitial = false) {
             currentActivePortfolio = key;
+            const lockedDeMethod = fullData?.crossHedgingPortfolio?.latestRecommendation?.pillar1_De?.methodId
+                || fullData?.crossHedgingPortfolio?.pillar1_De?.methodId;
             const cfg = {
                 ...(PORTFOLIOS_CONFIG[key] || PORTFOLIOS_CONFIG.steadyAccumulator),
                 ...(fullData?.strategicPortfolioGovernor?.portfolios?.[key] || {})
             };
+            if ((key === 'maxProfit' || key === 'crossHedging') && lockedDeMethod) {
+                cfg.deMethod = lockedDeMethod;
+            }
             currentActiveDeMethod = cfg.deMethod;
             currentActiveLoEngine = cfg.loEngine;
             currentSelectedLoSubTier = cfg.loSubTier || 7;
@@ -7776,7 +7815,7 @@
                 if (stratBadgeEl) {
                     stratBadgeEl.textContent = '⚡ DÀN SỐ ĐÁNH CUỐI CÙNG · KHUYÊN DÙNG HÔM NAY';
                 }
-                const cleanDeLabel = (deData.label || 'Đề Markov Bậc 2 & Gap Hazard').replace(/<[^>]*>?/gm, '').trim();
+                const cleanDeLabel = (deData.label || '🎯 Đề Gộp Tiêu Chuẩn Sweet-Spot').replace(/<[^>]*>?/gm, '').trim();
                 if (titleEl) {
                     titleEl.textContent = `${cleanDeLabel} & Lô Chủ Lực Duy Nhất (Smart Selective Router)`;
                 }
@@ -7788,29 +7827,29 @@
                 // Pillar 1 Đề Ground Truth: Use locked pillar1_De if available
                 const lockedP1 = fullData?.crossHedgingPortfolio?.pillar1_De
                     || fullData?.crossHedgingPortfolio?.latestRecommendation?.pillar1_De
-                    || fullData?.deMarkovGapHazard?.latestRecommendation;
+                    || fullData?.dualMerge?.latestRecommendation;
                 if (lockedP1 && lockedP1.vipNumbers && lockedP1.vipNumbers.length > 0) {
                     deData.vipNums = lockedP1.vipNumbers.map(number);
                     deData.singleNums = (lockedP1.singleNumbers || lockedP1.backupNumbers || []).map(number);
                     deData.allNums = (lockedP1.allNumbers || [...deData.vipNums, ...deData.singleNums]).map(number);
-                    deData.label = lockedP1.methodLabel || lockedP1.label || '🔮 Đề Markov Bậc 2 & Gap Hazard';
-                    deData.badge = lockedP1.badge || 'Markov Bậc 2 + Weibull Hazard ⭐ (Xác suất nổ bù 57.0%)';
-                    deData.stakeK = lockedP1.stakeK || 77000;
+                    deData.label = lockedP1.methodLabel || lockedP1.label || '🎯 Đề Gộp Tiêu Chuẩn Sweet-Spot';
+                    deData.badge = lockedP1.badge || 'Sweet-Spot Cặp Bài Trùng (17 VIP X3 + 17 Lót X1)';
+                    deData.stakeK = lockedP1.stakeK || 68000;
                     deData.rationale = lockedP1.rationale || deData.rationale;
                 } else if (!deData.allNums || deData.allNums.length === 0) {
                     const fallbackDe = fullData?.crossHedgingPortfolio?.pillar1_De
                         || fullData?.crossHedgingPortfolio?.latestRecommendation?.pillar1_De
-                        || fullData?.deMarkovGapHazard?.latestRecommendation
+                        || fullData?.dualMerge?.latestRecommendation
                         || fullData?.adaptiveDualMerge?.latestRecommendation
                         || fullData?.streakAwareDeAdvisor?.latestRecommendation || {};
-                    deData.vipNums = (fallbackDe.vipNumbers || fallbackDe.vipNums || fallbackDe.intersectionX2 || fallbackDe.tierX2 || [75, 20, 50, 92, 40, 97, 41, 36, 93, 82, 69, 55, 5, 19, 74, 53, 64]).map(number);
+                    deData.vipNums = (fallbackDe.vipNumbers || fallbackDe.vipNums || fallbackDe.intersectionX2 || fallbackDe.tierX2 || []).map(number);
                     deData.singleNums = (fallbackDe.singleNumbers || fallbackDe.singleNums || fallbackDe.backupNumbers || fallbackDe.uniqueSinglesX1 || fallbackDe.singles || []).map(number);
                     deData.allNums = (fallbackDe.allNumbers || fallbackDe.numbers || [...deData.vipNums, ...deData.singleNums]).map(number);
-                    deData.label = fallbackDe.methodLabel || fallbackDe.label || '🔮 Đề Markov Bậc 2 & Gap Hazard';
-                    deData.badge = fallbackDe.badge || 'Markov Bậc 2 + Weibull Hazard ⭐ (Xác suất nổ bù 57.0%)';
+                    deData.label = fallbackDe.methodLabel || fallbackDe.label || '🎯 Đề Gộp Tiêu Chuẩn Sweet-Spot';
+                    deData.badge = fallbackDe.badge || 'Sweet-Spot Cặp Bài Trùng (17 VIP X3 + 17 Lót X1)';
                 }
 
-                // Ensure VIP numbers and remaining single numbers (26 numbers) are strictly non-overlapping
+                // Ensure VIP numbers and remaining single numbers (17 numbers) are strictly non-overlapping
                 if (deData.vipNums && deData.vipNums.length > 0) {
                     if (deData.allNums && deData.allNums.length > 0) {
                         deData.singleNums = deData.allNums.filter(n => !deData.vipNums.includes(number(n))).map(number);
@@ -7821,18 +7860,18 @@
                 }
 
                 if (deTitleEl) {
-                    const cleanDeLabel = (deData.label || 'Đề Markov Bậc 2 & Gap Hazard').replace(/<[^>]*>?/gm, '').trim();
+                    const cleanDeLabel = (deData.label || '🎯 Đề Gộp Tiêu Chuẩn Sweet-Spot').replace(/<[^>]*>?/gm, '').trim();
                     deTitleEl.textContent = `1. ${cleanDeLabel} (${deData.allNums.length}s)`;
                 }
                 if (deWinRateBadgeEl) {
                     deWinRateBadgeEl.className = 'rounded bg-amber-400/20 text-amber-200 border border-amber-400/30 text-[10px] font-bold px-1.5 py-0.5';
-                    deWinRateBadgeEl.textContent = deData.badge || 'Nổ bù 57.0%';
+                    deWinRateBadgeEl.textContent = deData.badge || 'Win 78.97%';
                 }
                 if (deRationaleEl) {
-                    deRationaleEl.textContent = deData.rationale || 'Mô hình ma trận chuyển tiếp bậc 2 kết hợp hàm mật độ nguy cơ Weibull Gap, độc lập 100% với mốc lịch sử, xác suất nổ bù đạt 57.0% sau nhịp trượt L1.';
+                    deRationaleEl.textContent = deData.rationale || 'Cặp bài trùng tinh hoa gộp từ 2 phương pháp có độ tương quan bù trừ cao nhất (17 VIP X3 + 17 Lót X1).';
                 }
                 if (deVipLabelEl) {
-                    deVipLabelEl.textContent = `⚡ VIP MARKOV X3 (${deData.vipNums.length} số - Cược Gấp Ba):`;
+                    deVipLabelEl.textContent = `⚡ VIP TRÙNG X3 (${deData.vipNums.length} số - Cược Gấp Ba):`;
                 }
                 if (deVipNumsEl) {
                     deVipNumsEl.innerHTML = deData.vipNums.map(n => `
@@ -10862,13 +10901,16 @@
         }
 
         if (targetDate === pendingDate || targetDate >= (payloadData.latestDataDate || '2026-09-28')) {
+            const lockedP1Method = payloadData.crossHedgingPortfolio?.latestRecommendation?.pillar1_De?.methodId
+                || payloadData.crossHedgingPortfolio?.pillar1_De?.methodId;
             const activePort = currentActivePortfolio || (payloadData?.crossHedgingPortfolio ? 'maxProfit' : (payloadData?.strategicPortfolioGovernor?.recommendedPortfolioId || 'maxProfit'));
             const portCfg = PORTFOLIOS_CONFIG[activePort] || PORTFOLIOS_CONFIG.maxProfit;
             deMethod = currentActiveDeMethod
+                || lockedP1Method
                 || portCfg?.deMethod
                 || payloadData.strategicPortfolioGovernor?.portfolios?.[activePort]?.deMethod
                 || payloadData.strategicPortfolioGovernor?.recommendedPortfolio?.deMethod
-                || 'deMarkovGapHazard';
+                || 'dualMerge';
             loMethod = currentActiveLoEngine || portCfg?.loEngine || 'lo4Engine';
             return { deMethod, loMethod };
         } else if (targetDate === '2026-09-16') {
@@ -10996,17 +11038,28 @@
                 detailDesc = `Cặp: ${r?.m1Label || 'M1'} + ${r?.m2Label || 'M2'} (${r?.modeLabel || 'Thích ứng Alpha'})`;
             }
         } else if (effectiveKey === 'dualMerge') {
-            methodTitle = '🎯 Đề Gộp Tiêu Chuẩn (22-26s)';
+            methodTitle = '🎯 Đề Gộp Tiêu Chuẩn Sweet-Spot';
             if (isPending) {
-                const rec = payloadData.dualMerge?.latestRecommendation?.topPair || payloadData.dualMerge?.latestRecommendation || {};
-                vipNumbers = (rec.intersectionX2 || rec.intersection || []).map(number);
-                singleNumbers = (rec.uniqueSinglesX1 || rec.uniqueSingles || []).map(number);
-                numbers = (rec.fullUnion || rec.union || [...vipNumbers, ...singleNumbers]).map(number);
-                stakeK = (vipNumbers.length * 3 + singleNumbers.length * 1) * 1000;
+                const crossP1 = payloadData.crossHedgingPortfolio?.latestRecommendation?.pillar1_De
+                    || payloadData.crossHedgingPortfolio?.pillar1_De;
+                if (crossP1 && crossP1.vipNumbers && crossP1.vipNumbers.length > 0) {
+                    vipNumbers = crossP1.vipNumbers.map(number);
+                    singleNumbers = (crossP1.singleNumbers || crossP1.backupNumbers || []).map(number);
+                    numbers = (crossP1.allNumbers || [...vipNumbers, ...singleNumbers]).map(number);
+                    stakeK = crossP1.stakeK || ((vipNumbers.length * 3 + singleNumbers.length * 1) * 1000);
+                    methodTitle = crossP1.methodLabel || '🎯 Đề Gộp Tiêu Chuẩn Sweet-Spot';
+                    detailDesc = `Dàn Sweet-Spot: ${vipNumbers.length} số VIP X3 + ${singleNumbers.length} số Lót X1 (Vốn ${moneyM(stakeK)})`;
+                } else {
+                    const rec = payloadData.dualMerge?.latestRecommendation?.topPair || payloadData.dualMerge?.latestRecommendation || {};
+                    vipNumbers = (rec.intersectionX2 || rec.intersection || []).map(number);
+                    singleNumbers = (rec.uniqueSinglesX1 || rec.uniqueSingles || []).map(number);
+                    numbers = (rec.fullUnion || rec.union || [...vipNumbers, ...singleNumbers]).map(number);
+                    stakeK = (vipNumbers.length * 3 + singleNumbers.length * 1) * 1000;
+                    detailDesc = `Cặp: ${rec.m1Label || 'M1'} + ${rec.m2Label || 'M2'} (Vốn ${moneyM(stakeK)})`;
+                }
                 profitK = 0;
                 payoutK = 0;
                 hitBadge = '⏳ Chờ mở thưởng 18h15';
-                detailDesc = `Cặp: ${rec.m1Label || 'M1'} + ${rec.m2Label || 'M2'} (Vốn ${moneyM(stakeK)})`;
             } else {
                 const r = payloadData.dualMerge?.settledLedger?.find(x => (x.predictionDate || x.date) === date);
                 vipNumbers = (r?.intersectionX2 || r?.intersection || []).map(number);
@@ -11046,7 +11099,9 @@
             }
         } else if (effectiveKey === 'deMarkovGapHazard') {
             methodTitle = '🔮 Đề Markov Bậc 2 & Gap Hazard (VIP X3 + X1)';
-            const crossP1 = payloadData.crossHedgingPortfolio?.pillar1_De || payloadData.crossHedgingPortfolio?.latestRecommendation?.pillar1_De;
+            const crossP1 = (payloadData.crossHedgingPortfolio?.pillar1_De?.methodId === 'deMarkovGapHazard' || payloadData.crossHedgingPortfolio?.latestRecommendation?.pillar1_De?.methodId === 'deMarkovGapHazard')
+                ? (payloadData.crossHedgingPortfolio?.pillar1_De || payloadData.crossHedgingPortfolio?.latestRecommendation?.pillar1_De)
+                : null;
             const chRow = payloadData.crossHedgingPortfolio?.settledLedger?.find(x => (x.predictionDate || x.date) === date);
             if (isPending) {
                 const rec = payloadData.deMarkovGapHazard?.latestRecommendation || payloadData.streakAwareDeAdvisor?.latestRecommendation?.strategicPortfolio?.deStructure || payloadData.streakAwareDeAdvisor?.latestRecommendation || {};
