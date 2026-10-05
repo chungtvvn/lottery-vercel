@@ -1270,7 +1270,7 @@
         // Update Hero badge
         const heroBadge = byId('heroUnifiedLiveBadge');
         if (heroBadge) {
-            heroBadge.innerHTML = `<i class="bi bi-trophy-fill mr-1 text-amber-300"></i> ${heroText}`;
+            heroBadge.innerHTML = `<i class="bi bi-trophy-fill mr-1 text-amber-300"></i> ${isSep16Mode ? 'MỐC TỪ 16/09' : 'LŨY KẾ LIVE'}: ${moneyM(displayTotalProfitK, { signed: true })} LỖ LÃI LŨY KẾ (${totalDraws} KỲ BÙ TRỪ CHÉO)`;
         }
 
         cardsEl.innerHTML = `
@@ -1282,8 +1282,9 @@
                     </div>
                     <div class="mt-1.5 font-mono text-xl font-black text-amber-300">${moneyM(displayDeProfitK, { signed: true })}</div>
                 </div>
-                <div class="mt-2 text-[10px] text-amber-200/80 font-semibold">
-                    ${deSubText}
+                <div class="mt-2 text-[10px] text-amber-200/80 font-semibold flex items-center justify-between">
+                    <span>${deSubText}</span>
+                    <span class="text-amber-300 font-mono font-bold">Lũy kế Đề</span>
                 </div>
             </div>
 
@@ -1355,13 +1356,13 @@
             <div class="rounded-2xl border-2 border-emerald-400/40 bg-gradient-to-br from-emerald-950/60 to-emerald-900/40 p-3.5 flex flex-col justify-between shadow-lg ring-1 ring-emerald-400/20">
                 <div>
                     <div class="flex items-center justify-between text-[11px] font-black text-emerald-300">
-                        <span>🛡️ COMBO BÙ TRỪ DÒNG TIỀN CHÉO</span>
-                        <span class="rounded bg-emerald-400 text-slate-950 px-1.5 py-0.5 text-[9px] font-black uppercase">Chủ Lực</span>
+                        <span>💰 LỖ LÃI LŨY KẾ (COMBO CHÉO)</span>
+                        <span class="rounded bg-emerald-400 text-slate-950 px-1.5 py-0.5 text-[9px] font-black uppercase">Lũy Kế Chủ Lực</span>
                     </div>
                     <div class="mt-1.5 font-mono text-xl font-black text-emerald-300">${moneyM(displayTotalProfitK, { signed: true })}</div>
                 </div>
                 <div class="mt-2 text-[10px] text-emerald-200 font-bold flex items-center justify-between">
-                    <span>${isSep16Mode ? 'Lãi từ 16/09:' : 'Lãi toàn bộ:'} <strong>${moneyM(displayTotalProfitK, { signed: true })}</strong></span>
+                    <span>${isSep16Mode ? 'Lũy kế từ 16/09:' : 'Lũy kế toàn bộ:'} <strong>${moneyM(displayTotalProfitK, { signed: true })}</strong></span>
                     <span class="text-amber-300">${comboWins}/${totalDraws} ngày thắng (${percent(comboWins / totalDraws)})</span>
                 </div>
             </div>
@@ -5670,6 +5671,12 @@
         let loXien5WinCount = 0;
         let loXien5TicketsWonTotal = 0;
         let loXien5TotalProfit = 0;
+        let comboWinCount = 0;
+        let comboTotalProfit = 0;
+        let comboTotalProfitM3 = 0;
+        let deWinCount = 0;
+        let deTotalProfit = 0;
+        let deTotalProfitM3 = 0;
 
         mergedRows.forEach(r => {
             if (r.isPending) return;
@@ -5695,6 +5702,16 @@
 
             const effDeProfit = (r.chDePnlK != null ? r.chDePnlK : r.deProfitK);
             const effDeProfitM3 = Math.round(effDeProfit * 0.2);
+
+            const isComboDayWin = (r.chRow ? r.chRow.isWin : (r.dayTotalK > 0));
+            const dayComboPnl = (r.chTotalProfitK != null ? r.chTotalProfitK : r.dayTotalK);
+            if (isComboDayWin) comboWinCount++;
+            comboTotalProfit += dayComboPnl;
+            comboTotalProfitM3 += (effDeProfitM3 + effLoProfitM3 + effXienProfitM3);
+
+            if (effDeProfit > 0) deWinCount++;
+            deTotalProfit += effDeProfit;
+            deTotalProfitM3 += effDeProfitM3;
 
             if (currentDiaryCategory === 'de') {
                 if (effDeProfit > 0) catWinCount++;
@@ -5725,10 +5742,8 @@
                 catTotalProfit += (r.loXien5?.profitK || 0);
                 catTotalProfitM3 += (r.loXien5?.profitK || 0);
             } else {
-                const isDayWin = (r.chRow ? r.chRow.isWin : (r.dayTotalK > 0));
-                const dayPnl = (r.chTotalProfitK != null ? r.chTotalProfitK : r.dayTotalK);
-                if (isDayWin) catWinCount++;
-                catTotalProfit += dayPnl;
+                if (isComboDayWin) catWinCount++;
+                catTotalProfit += dayComboPnl;
                 catTotalProfitM3 += (effDeProfitM3 + effLoProfitM3 + effXienProfitM3);
             }
         });
@@ -5752,10 +5767,30 @@
             totalProfitEl.className = `font-black text-sm font-mono ${catTotalProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`;
         }
 
+        const comboProfitEl = byId('unifiedDiaryComboProfit');
+        if (comboProfitEl) {
+            comboProfitEl.textContent = `${moneyM(comboTotalProfitM3, { signed: true })} M3 / ${moneyM(comboTotalProfit, { signed: true })} VIP`;
+            comboProfitEl.className = `font-black text-sm font-mono ${comboTotalProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'}`;
+        }
+        const comboSubEl = byId('unifiedDiaryComboSubtext');
+        if (comboSubEl) {
+            comboSubEl.innerHTML = `Thắng <strong>${comboWinCount}/${totalCount}</strong> ngày (${percent(comboWinCount / totalCount)}) · Mốc thực chiến`;
+        }
+
+        const deProfitEl = byId('unifiedDiaryDeProfit');
+        if (deProfitEl) {
+            deProfitEl.textContent = `${moneyM(deTotalProfitM3, { signed: true })} M3 / ${moneyM(deTotalProfit, { signed: true })} VIP`;
+            deProfitEl.className = `font-black text-sm font-mono ${deTotalProfit >= 0 ? 'text-amber-700' : 'text-rose-600'}`;
+        }
+        const deSubEl = byId('unifiedDiaryDeSubtext');
+        if (deSubEl) {
+            deSubEl.innerHTML = `Trúng <strong>${deWinCount}/${totalCount}</strong> ngày (${percent(deWinCount / totalCount)}) · VIP X3 + Lót X1`;
+        }
+
         const lo4ProfitEl = byId('unifiedDiaryLo4Profit');
         if (lo4ProfitEl) {
             lo4ProfitEl.textContent = `${moneyM(lo4TotalProfitM3, { signed: true })} M3 / ${moneyM(lo4TotalProfit, { signed: true })} VIP`;
-            lo4ProfitEl.className = `font-black text-sm font-mono ${lo4TotalProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'}`;
+            lo4ProfitEl.className = `font-black text-sm font-mono ${lo4TotalProfit >= 0 ? 'text-rose-700' : 'text-rose-600'}`;
         }
         const lo4SubEl = byId('unifiedDiaryLo4Subtext');
         if (lo4SubEl) {
@@ -5776,7 +5811,7 @@
         const xien5ProfitEl = byId('unifiedDiaryXien5Profit');
         if (xien5ProfitEl) {
             xien5ProfitEl.textContent = moneyM(loXien5TotalProfit, { signed: true });
-            xien5ProfitEl.className = `font-black text-sm font-mono ${loXien5TotalProfit >= 0 ? 'text-amber-400' : 'text-rose-600'}`;
+            xien5ProfitEl.className = `font-black text-sm font-mono ${loXien5TotalProfit >= 0 ? 'text-indigo-700' : 'text-rose-600'}`;
         }
         const xien5SubEl = byId('unifiedDiaryXien5Subtext');
         if (xien5SubEl) {
@@ -5843,9 +5878,10 @@
                                 <div class="text-[10px] text-slate-400 font-sans">Vốn ${moneyM(deInfo.stakeK)}</div>
                             </td>
                             <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
-                                <div class="font-semibold text-xs text-slate-400">
-                                    --
+                                <div class="font-black text-xs ${(r.cumDeProfitK || 0) >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
+                                    ${moneyM(r.cumDeProfitK || 0, { signed: true })}
                                 </div>
+                                <div class="text-[9px] text-slate-400 font-sans">Lũy kế hiện tại</div>
                             </td>
                         </tr>
                     `;
@@ -5962,9 +5998,10 @@
                                 <div class="text-[10px] text-slate-400 font-sans">Vốn ${moneyM(lo4Info.dayLotoStakeK)}</div>
                             </td>
                             <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
-                                <div class="font-semibold text-xs text-slate-400">
-                                    --
+                                <div class="font-black text-xs ${(r.cumLo4ProfitK || 0) >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
+                                    ${moneyM(r.cumLo4ProfitK || 0, { signed: true })}
                                 </div>
+                                <div class="text-[9px] text-slate-400 font-sans">Lũy kế hiện tại</div>
                             </td>
                         </tr>
                     `;
@@ -6069,9 +6106,10 @@
                                 <div class="text-[10px] text-slate-400 font-sans">Vốn ${moneyM(stdInfo.stakeK)}</div>
                             </td>
                             <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
-                                <div class="font-semibold text-xs text-slate-400">
-                                    --
+                                <div class="font-black text-xs ${(r.cumStdProfitK || 0) >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
+                                    ${moneyM(r.cumStdProfitK || 0, { signed: true })}
                                 </div>
+                                <div class="text-[9px] text-slate-400 font-sans">Lũy kế hiện tại</div>
                             </td>
                         </tr>
                     `;
@@ -6156,9 +6194,10 @@
                                 <div class="text-[10px] text-slate-400 font-sans">Vốn ${moneyM(x2Info.stakeK)}</div>
                             </td>
                             <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
-                                <div class="font-semibold text-xs text-slate-400">
-                                    --
+                                <div class="font-black text-xs ${(r.cumX2ProfitK || 0) >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
+                                    ${moneyM(r.cumX2ProfitK || 0, { signed: true })}
                                 </div>
+                                <div class="text-[9px] text-slate-400 font-sans">Lũy kế hiện tại</div>
                             </td>
                         </tr>
                     `;
@@ -6248,9 +6287,10 @@
                                 <div class="text-[10px] text-slate-400 font-sans">Vốn quan sát ${moneyM(xi3Info.stakeK || 500)}</div>
                             </td>
                             <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
-                                <div class="font-semibold text-xs text-slate-400">
-                                    --
+                                <div class="font-black text-xs ${(r.cumXi3ProfitK || 0) >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
+                                    ${moneyM(r.cumXi3ProfitK || 0, { signed: true })}
                                 </div>
+                                <div class="text-[9px] text-slate-400 font-sans">Lũy kế hiện tại</div>
                             </td>
                         </tr>
                     `;
@@ -6364,9 +6404,10 @@
                                 <div class="text-[10px] text-slate-400 font-sans">Vốn 2.2M M3 / 11M VIP</div>
                             </td>
                             <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
-                                <div class="font-semibold text-xs text-slate-400">
-                                    --
+                                <div class="font-black text-xs ${(r.cumLo4Xien4ProfitK || 0) >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
+                                    ${moneyM(r.cumLo4Xien4ProfitK || 0, { signed: true })}
                                 </div>
+                                <div class="text-[9px] text-slate-400 font-sans">Lũy kế hiện tại</div>
                             </td>
                         </tr>
                     `;
@@ -6486,7 +6527,10 @@
                                 <div class="text-[10px] text-slate-400 font-sans">Vốn 55M</div>
                             </td>
                             <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
-                                <div class="font-semibold text-xs text-slate-400">--</div>
+                                <div class="font-black text-xs ${(r.cumLoXien5ProfitK || 0) >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
+                                    ${moneyM(r.cumLoXien5ProfitK || 0, { signed: true })}
+                                </div>
+                                <div class="text-[9px] text-slate-400 font-sans">Lũy kế hiện tại</div>
                             </td>
                         </tr>
                     `;
@@ -6616,8 +6660,8 @@
                                 <span class="diary-expand-indicator text-amber-700 font-bold underline flex items-center gap-0.5">Bấm xem dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
                             </div>
                             <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-amber-200/50 pt-0.5">
-                                <span class="text-slate-400 font-sans">Lũy kế Đề:</span>
-                                <span class="text-slate-400 font-bold">--</span>
+                                <span class="text-slate-500 font-sans">Lũy kế Đề:</span>
+                                <span class="font-bold ${(r.chCumDeProfitK ?? r.cumDeProfitK ?? 0) >= 0 ? 'text-amber-700' : 'text-rose-600'}">${moneyM(r.chCumDeProfitK ?? r.cumDeProfitK ?? 0, { signed: true })}</span>
                             </div>
                         </td>
                         <!-- Cột 3: Lô Ghép 4 Động Cơ -->
@@ -6638,8 +6682,8 @@
                                 <span class="diary-expand-indicator text-rose-700 font-bold underline flex items-center gap-0.5">Bấm xem dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
                             </div>
                             <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-rose-200/50 pt-0.5">
-                                <span class="text-slate-400 font-sans">Lũy kế Lô:</span>
-                                <span class="text-slate-400 font-bold">--</span>
+                                <span class="text-slate-500 font-sans">Lũy kế Lô:</span>
+                                <span class="font-bold ${(r.chCumLoProfitK ?? r.cumLo4ProfitK ?? 0) >= 0 ? 'text-rose-700' : 'text-rose-600'}">${moneyM(r.chCumLoProfitK ?? r.cumLo4ProfitK ?? 0, { signed: true })}</span>
                             </div>
                         </td>
                         <!-- Cột 4: Dàn Xiên Quây (Top 4) -->
@@ -6658,8 +6702,8 @@
                                 <span class="diary-expand-indicator text-purple-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
                             </div>
                             <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-purple-200/50 pt-0.5">
-                                <span class="text-slate-400 font-sans">Lũy kế Xiên 4:</span>
-                                <span class="text-slate-400 font-bold">--</span>
+                                <span class="text-slate-500 font-sans">Lũy kế Xiên 4:</span>
+                                <span class="font-bold ${(r.chCumXienProfitK ?? r.cumLo4Xien4ProfitK ?? 0) >= 0 ? 'text-purple-700' : 'text-rose-600'}">${moneyM(r.chCumXienProfitK ?? r.cumLo4Xien4ProfitK ?? 0, { signed: true })}</span>
                             </div>
                         </td>
                         <!-- Cột 5: Dàn Xiên 5 (5 Dàn Quây 4) -->
@@ -6678,8 +6722,8 @@
                                 <span class="diary-expand-indicator text-indigo-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
                             </div>
                             <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-indigo-200/50 pt-0.5">
-                                <span class="text-slate-400 font-sans">Lũy kế Xiên 5:</span>
-                                <span class="text-slate-400 font-bold">--</span>
+                                <span class="text-slate-500 font-sans">Lũy kế Xiên 5:</span>
+                                <span class="font-bold ${(r.cumLoXien5ProfitK ?? 0) >= 0 ? 'text-indigo-700' : 'text-rose-600'}">${moneyM(r.cumLoXien5ProfitK ?? 0, { signed: true })}</span>
                             </div>
                         </td>
                         <!-- Cột 6: Lãi/Lỗ Tổng Hợp -->
@@ -6692,10 +6736,10 @@
                         </td>
                         <!-- Cột 7: Lũy Kế Mốc -->
                         <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
-                            <div class="font-semibold text-xs text-slate-400">
-                                --
+                            <div class="font-black text-xs ${(r.cumProfitK || 0) >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
+                                ${moneyM(r.cumProfitK || 0, { signed: true })}
                             </div>
-                            <div class="text-[10px] text-slate-400 font-sans">Lũy kế toàn mốc</div>
+                            <div class="text-[9px] text-slate-400 font-sans">Lũy kế hiện tại</div>
                         </td>
                     </tr>
                 `;
@@ -10200,9 +10244,9 @@
                     </td>
                     <td class="px-4 py-3 text-right font-mono text-xs ${profitClass}">
                         ${!isSettled 
-                            ? '<span class="text-amber-700 font-bold text-xs">Chờ 18h30</span>'
+                            ? `<span class="text-amber-700 font-bold text-xs">Chờ 18h30</span><span class="text-[10px] ${runningLiveCumulativeK >= 0 ? 'text-emerald-700' : 'text-rose-700'} font-bold block">Lũy kế Live: ${signedM(runningLiveCumulativeK)}</span>`
                             : (isLive 
-                                ? `${signedM(r.profitK)} <span class="text-[10px] text-emerald-700 font-bold block">Lũy kế Live: ${signedM(r.calcLiveCumulativeProfitK ?? r.liveCumulativeProfitK)}</span>` 
+                                ? `${signedM(r.profitK)} <span class="text-[10px] ${(r.calcLiveCumulativeProfitK ?? r.liveCumulativeProfitK ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-700'} font-bold block">Lũy kế Live: ${signedM(r.calcLiveCumulativeProfitK ?? r.liveCumulativeProfitK)}</span>` 
                                 : `<span class="text-slate-400 font-semibold text-xs">--</span><span class="text-[10px] text-slate-400 block font-normal">Chỉ tính thực chiến Live</span>`
                               )
                         }

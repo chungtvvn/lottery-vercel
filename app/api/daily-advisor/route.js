@@ -394,6 +394,14 @@ function settleFromRaw(payload, rawRows) {
         }
     }
 
+    let triCoreDe = payload.triCoreDe || null;
+    try {
+        const { buildTriCoreDeAdvisor } = require('@/lib/services/triCoreDeAdvisorService');
+        triCoreDe = buildTriCoreDeAdvisor(rawRows, payload);
+    } catch (err) {
+        console.error('[API daily-advisor] Error building triCoreDe:', err);
+    }
+
     return {
         ...payload,
         records,
@@ -415,6 +423,7 @@ function settleFromRaw(payload, rawRows) {
         lo4EngineFusion: payload.lo4EngineFusion || null,
         crossHedgingPortfolio: crossHedgingPortfolio || payload.crossHedgingPortfolio || null,
         dynamicMetaAdvisor: dynamicMetaAdvisor || payload.dynamicMetaAdvisor || loQuantumBayesFusion?.dynamicMetaAdvisor || null,
+        triCoreDe: triCoreDe || payload.triCoreDe || null,
         latestDataDate: rawRows?.at(-1)?.date || payload.latestDataDate,
         snapshotLock: (() => {
             try {
@@ -525,6 +534,13 @@ export async function GET(request) {
                     const r2VipCount = payload.crossHedgingPortfolio?.pillar1_De?.vipNumbers?.length || 0;
                     if (!payload.crossHedgingPortfolio || localLedgerLen >= r2LedgerLen || (localVipCount === 17 && r2VipCount !== 17)) {
                         payload.crossHedgingPortfolio = localPayload.crossHedgingPortfolio;
+                    }
+                }
+                if (localPayload?.triCoreDe) {
+                    const localTarget = localPayload.triCoreDe.latestRecommendation?.targetDate || '';
+                    const r2Target = payload?.triCoreDe?.latestRecommendation?.targetDate || '';
+                    if (!payload.triCoreDe || localTarget >= r2Target) {
+                        payload.triCoreDe = localPayload.triCoreDe;
                     }
                 }
             } catch (_) {}

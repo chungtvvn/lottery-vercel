@@ -75,12 +75,25 @@ async function main() {
         throw new Error(`Thiếu snapshot ngày kế tiếp ${expectedPredictionDate || 'unknown'} sau khi sinh Daily Advisor.`);
     }
 
+    try {
+        const { buildTriCoreDeAdvisor } = require('../lib/services/triCoreDeAdvisorService');
+        cache.triCoreDe = buildTriCoreDeAdvisor(raw, cache);
+    } catch (err) {
+        console.error('[generateDailyAdvisorCache] Error building triCoreDe:', err);
+    }
+
     const fs = require('fs');
     const dataDir = path.join(__dirname, '..', 'data');
     if (!fs.existsSync(dataDir)) {
         fs.mkdirSync(dataDir, { recursive: true });
     }
     fs.writeFileSync(path.join(dataDir, 'cached_daily_method_advisor.json'), JSON.stringify(cache, null, 2));
+
+    const statsDir = path.join(__dirname, '..', 'lib', 'data', 'statistics');
+    if (!fs.existsSync(statsDir)) {
+        fs.mkdirSync(statsDir, { recursive: true });
+    }
+    fs.writeFileSync(path.join(statsDir, 'cached_daily_method_advisor.json'), JSON.stringify(cache, null, 2));
 
     console.log(JSON.stringify({
         files: [
