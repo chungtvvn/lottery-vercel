@@ -2,6 +2,7 @@
 // Bản theo dõi nghiêm ngặt (Shadow Monitor) của tab Đề Xuất Tinh Hoa Hợp Nhất
 // Chiến lược Đề Tri-Core 24 Số Tinh Hoa & Smart Abstain Gate (Ngưỡng Điểm >= 6.5)
 // Kết hợp Lô Ghép 4 Động Cơ (Top 6 / Top 7) bù đắp dòng tiền
+// Tích hợp Tra cứu Dàn Đã Đánh & Đánh Dấu Số Trúng (100% Strict PIT)
 (() => {
     'use strict';
 
@@ -56,6 +57,7 @@
     let currentShadowLoMode = 'top6';
     let currentStrategyMode = 'wilsonAbstain';
     let cachedAdvisorData = null;
+    let availableDatesList = [];
 
     async function initShadowMonitor() {
         try {
@@ -78,6 +80,7 @@
             }
 
             renderShadowDashboard(advisorData, analysisData);
+            initShadowSlipModal();
         } catch (err) {
             console.error('Shadow Monitor Error:', err);
             const errBox = byId('shadowErrorBox');
@@ -480,6 +483,14 @@
 
         const allDates = Array.from(new Set([...deLedger.map(r => r.date), ...loLedger.map(r => r.date)])).filter(Boolean).sort();
 
+        // Update global available dates list for modal selector
+        const deLatestRec = triCore?.latestRecommendation;
+        const loLatestRec = loModeData?.latestRecommendation || lo4Fusion?.latestRecommendation;
+        const targetDate = deLatestRec?.targetDate || deLatestRec?.predictionDate || loLatestRec?.predictionDate || '2026-10-05';
+
+        const fullDatesSorted = Array.from(new Set([targetDate, ...allDates])).filter(Boolean).sort().reverse();
+        availableDatesList = fullDatesSorted;
+
         let cumDeK = 0;
         let cumLoK = 0;
         let cumComboK = 0;
@@ -589,6 +600,7 @@
                     <th class="py-2.5 px-3">Ngày Quay</th>
                     <th class="py-2.5 px-3">Đề Tri-Core 24s</th>
                     <th class="py-2.5 px-3">Lô Ghép 4 ĐC (${mode === 'top6' ? 'Top 6' : 'Top 7'})</th>
+                    <th class="py-2.5 px-3 text-center">Dàn Đánh &amp; Số Trúng</th>
                     <th class="py-2.5 px-3 text-right">Tổng Vốn</th>
                     <th class="py-2.5 px-3 text-right">Lãi Đề</th>
                     <th class="py-2.5 px-3 text-right">Lãi Lô</th>
@@ -602,33 +614,31 @@
                     <th class="py-2.5 px-3">Ngày Quay</th>
                     <th class="py-2.5 px-3">Phương Pháp Chọn</th>
                     <th class="py-2.5 px-3 text-center">Hành Động</th>
-                    <th class="py-2.5 px-3">Dàn 24 Số</th>
+                    <th class="py-2.5 px-3">Dàn 24 Số &amp; Số Trúng</th>
                     <th class="py-2.5 px-3 text-center">Đặc Biệt</th>
                     <th class="py-2.5 px-3 text-right">Lãi/Lỗ Ngày</th>
                     <th class="py-2.5 px-3 text-right">Lũy Kế Đề</th>
+                    <th class="py-2.5 px-3 text-center">Chi Tiết</th>
                 </tr>
             `;
         } else { // 'lo'
             thead.innerHTML = `
                 <tr class="border-b border-white/10 text-[11px] font-bold text-slate-400 uppercase tracking-wide">
                     <th class="py-2.5 px-3">Ngày Quay</th>
-                    <th class="py-2.5 px-3">Chế Độ & Trạng Thái</th>
-                    <th class="py-2.5 px-3">Chi Tiết Dàn Số (X5 / X4 / X3 / X1)</th>
+                    <th class="py-2.5 px-3">Chế Độ &amp; Trạng Thái</th>
+                    <th class="py-2.5 px-3">Dàn Số &amp; Số Nổ (X5 / X4 / X3 / X1)</th>
                     <th class="py-2.5 px-3 text-center">Nháy Nổ (27 Giải)</th>
                     <th class="py-2.5 px-3 text-right">Vốn Cược</th>
                     <th class="py-2.5 px-3 text-right">Tiền Trúng</th>
                     <th class="py-2.5 px-3 text-right">Lãi/Lỗ Ngày</th>
                     <th class="py-2.5 px-3 text-right">Lũy Kế Lô</th>
+                    <th class="py-2.5 px-3 text-center">Chi Tiết</th>
                 </tr>
             `;
         }
 
         // 3. Pending Row for Today (2026-10-05) pinned at top
-        const deLatestRec = triCore?.latestRecommendation;
-        const loLatestRec = loModeData?.latestRecommendation || lo4Fusion?.latestRecommendation;
-        const targetDate = deLatestRec?.targetDate || deLatestRec?.predictionDate || loLatestRec?.predictionDate || '2026-10-05';
         const formattedTargetDate = formatDateVi(targetDate);
-
         let pendingRowHtml = '';
 
         if (currentShadowCategory === 'combo') {
@@ -648,11 +658,16 @@
                     </td>
                     <td class="py-3 px-3">
                         <span class="text-amber-300 font-semibold">Tri-Core 24s (${deRecScore})</span>
-                        <div class="text-[10px] text-slate-400">${(deLatestRec?.numbers || []).slice(0, 8).map(numStr).join(' ')}...</div>
+                        <div class="text-[10px] text-slate-400">${(deLatestRec?.numbers || []).slice(0, 6).map(numStr).join(' ')}...</div>
                     </td>
                     <td class="py-3 px-3">
                         <span class="text-teal-300 font-semibold">${mode === 'top6' ? 'Top 6 Live' : 'Top 7 Live'} (${loBetCount} số)</span>
                         <div class="text-[10px] text-slate-400">X5: ${(loLatestRec?.tierX5 || []).join(', ') || '—'} · X4: ${(loLatestRec?.tierX4 || []).join(', ') || '—'}</div>
+                    </td>
+                    <td class="py-3 px-3 text-center">
+                        <button type="button" class="btn-open-slip px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-200 hover:text-slate-950 border border-amber-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer" data-slip-date="${targetDate}">
+                            <i class="bi bi-eye-fill text-amber-300"></i> Xem Dàn Khóa
+                        </button>
                     </td>
                     <td class="py-3 px-3 text-right">
                         <span class="text-white font-bold">${totalStakeM}</span>
@@ -666,7 +681,7 @@
             `;
         } else if (currentShadowCategory === 'de') {
             const deRecScore = deLatestRec?.topScore ? ` (Điểm: ${deLatestRec.topScore.toFixed(1)})` : '';
-            const deNums = (deLatestRec?.numbers || []).slice(0, 10).map(numStr).join(' ') + ((deLatestRec?.numbers?.length > 10) ? '...' : '');
+            const deNums = (deLatestRec?.numbers || []).slice(0, 8).map(numStr).join(' ') + ((deLatestRec?.numbers?.length > 8) ? '...' : '');
 
             pendingRowHtml = `
                 <tr class="border-b border-amber-500/20 bg-amber-950/20 hover:bg-amber-950/30 transition-colors font-mono text-xs">
@@ -684,6 +699,11 @@
                     <td class="py-3 px-3 text-center font-bold text-amber-400">⏳ Chờ mở</td>
                     <td class="py-3 px-3 text-right text-slate-400 font-medium">Vốn 2.4M (Chờ kq)</td>
                     <td class="py-3 px-3 text-right font-bold text-emerald-300">${formatMoneyK(cumDeK)}</td>
+                    <td class="py-3 px-3 text-center">
+                        <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-200 hover:text-slate-950 border border-amber-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer" data-slip-date="${targetDate}">
+                            <i class="bi bi-eye"></i> 24 Số
+                        </button>
+                    </td>
                 </tr>
             `;
         } else { // 'lo'
@@ -715,6 +735,11 @@
                     <td class="py-3 px-3 text-right text-slate-400 font-mono">—</td>
                     <td class="py-3 px-3 text-right font-bold text-amber-300">⏳ Chờ kết toán</td>
                     <td class="py-3 px-3 text-right font-bold text-emerald-300">${formatMoneyK(cumLoK)}</td>
+                    <td class="py-3 px-3 text-center">
+                        <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-teal-500/20 hover:bg-teal-500 text-teal-200 hover:text-slate-950 border border-teal-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer" data-slip-date="${targetDate}">
+                            <i class="bi bi-eye"></i> Chi Tiết
+                        </button>
+                    </td>
                 </tr>
             `;
         }
@@ -730,18 +755,28 @@
                 if (row.deAbstain) {
                     deBadge = '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700">🛡️ ABSTAIN</span>';
                 } else if (row.deHit) {
-                    deBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">🎯 Ăn ĐB ${numStr(row.deRow?.actual)}</span>`;
+                    deBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-black bg-amber-400 text-slate-950 ring-1 ring-amber-300 shadow-xs">🎯 Ăn ĐB ${numStr(row.deRow?.actual)} ⭐</span>`;
                 } else {
                     deBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">❌ Trượt (ĐB ${numStr(row.deRow?.actual)})</span>`;
                 }
 
-                const loBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold ${row.isLoWin ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'}">${row.loHits} nháy (${row.isLoWin ? 'Thắng' : 'Thua'})</span>`;
+                const loHitsList = (row.loRow?.betNumbers || []).filter(b => b.hits > 0);
+                const loHitsStr = loHitsList.map(b => `${numStr(b.num)}(${b.hits}n)`).slice(0, 3).join(', ') + (loHitsList.length > 3 ? '...' : '');
+
+                const loBadge = row.isLoWin
+                    ? `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40" title="${loHitsList.map(b => `${numStr(b.num)} (${b.hits} nháy)`).join(', ')}">🔥 ${row.loHits} nháy (${loHitsStr || 'Thắng'})</span>`
+                    : `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">${row.loHits} nháy (Thua)</span>`;
 
                 return `
                     <tr class="border-b border-white/5 hover:bg-white/5 transition-colors font-mono text-xs">
                         <td class="py-2.5 px-3 font-bold text-slate-300">${dateVi}</td>
                         <td class="py-2.5 px-3">${deBadge}</td>
                         <td class="py-2.5 px-3">${loBadge}</td>
+                        <td class="py-2.5 px-3 text-center">
+                            <button type="button" class="btn-open-slip px-2.5 py-1 rounded-lg bg-indigo-600/30 hover:bg-indigo-600 text-indigo-200 hover:text-white border border-indigo-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${row.date}">
+                                <i class="bi bi-eye-fill text-amber-300"></i> Xem Dàn
+                            </button>
+                        </td>
                         <td class="py-2.5 px-3 text-right text-slate-400">${formatMoneyK(row.comboDayStakeK, false)}</td>
                         <td class="py-2.5 px-3 text-right font-bold ${row.deProfitK > 0 ? 'text-emerald-400' : (row.deProfitK < 0 ? 'text-rose-400' : 'text-slate-500')}">${row.deAbstain ? '0đ' : formatMoneyK(row.deProfitK)}</td>
                         <td class="py-2.5 px-3 text-right font-bold ${row.loProfitK > 0 ? 'text-emerald-400' : (row.loProfitK < 0 ? 'text-rose-400' : 'text-slate-500')}">${formatMoneyK(row.loProfitK)}</td>
@@ -759,7 +794,17 @@
                     statusBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">❌ TRƯỢT (-2.4M)</span>';
                 }
 
-                const numsText = (row.deRow?.numbers || []).slice(0, 10).map(numStr).join(' ') + ((row.deRow?.numbers?.length > 10) ? '...' : '');
+                // If hit, show the hit number prominently!
+                let numsCellContent = '—';
+                if (!row.deAbstain && row.deRow?.numbers?.length) {
+                    if (row.deHit) {
+                        numsCellContent = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-black bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 ring-2 ring-amber-300 shadow-xs mr-1">🎯 ${numStr(row.deRow?.actual)} ⭐</span>`;
+                        numsCellContent += `<span class="text-slate-400 text-[11px]">${(row.deRow.numbers.filter(n => Number(n) !== Number(row.deRow.actual))).slice(0, 6).map(numStr).join(' ')}...</span>`;
+                    } else {
+                        numsCellContent = `<span class="text-slate-400 text-[11px]">${(row.deRow.numbers || []).slice(0, 8).map(numStr).join(' ')}...</span>`;
+                    }
+                }
+
                 const topScoreStr = row.deRow?.topScore ? ` (Điểm: ${row.deRow.topScore.toFixed(1)})` : '';
                 const methodName = row.deAbstain ? `Tri-Core Consensus${topScoreStr}` : `Tri-Core 24s${topScoreStr}`;
 
@@ -768,10 +813,15 @@
                         <td class="py-2.5 px-3 font-bold text-slate-300">${dateVi}</td>
                         <td class="py-2.5 px-3 text-amber-300 font-semibold">${methodName}</td>
                         <td class="py-2.5 px-3 text-center">${statusBadge}</td>
-                        <td class="py-2.5 px-3 text-slate-400 text-[11px]" title="${(row.deRow?.numbers || []).map(numStr).join(', ')}">${row.deAbstain ? '—' : numsText}</td>
+                        <td class="py-2.5 px-3" title="${(row.deRow?.numbers || []).map(numStr).join(', ')}">${numsCellContent}</td>
                         <td class="py-2.5 px-3 text-center font-bold text-white">${row.deRow?.actual !== null && row.deRow?.actual !== undefined ? numStr(row.deRow.actual) : '—'}</td>
                         <td class="py-2.5 px-3 text-right font-bold ${row.deProfitK > 0 ? 'text-emerald-400' : (row.deProfitK < 0 ? 'text-rose-400' : 'text-slate-500')}">${row.deAbstain ? '0đ' : formatMoneyK(row.deProfitK)}</td>
                         <td class="py-2.5 px-3 text-right font-bold ${row.cumDeK >= 0 ? 'text-emerald-300' : 'text-rose-300'}">${formatMoneyK(row.cumDeK)}</td>
+                        <td class="py-2.5 px-3 text-center">
+                            <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-200 hover:text-slate-950 border border-amber-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${row.date}">
+                                <i class="bi bi-eye"></i> 24 Số
+                            </button>
+                        </td>
                     </tr>
                 `;
             } else { // 'lo'
@@ -809,12 +859,486 @@
                         <td class="py-2.5 px-3 text-right font-bold text-amber-300">${formatMoneyK(row.loPayoutK, false)}</td>
                         <td class="py-2.5 px-3 text-right font-black ${row.loProfitK > 0 ? 'text-emerald-400' : (row.loProfitK < 0 ? 'text-rose-400' : 'text-slate-500')}">${formatMoneyK(row.loProfitK)}</td>
                         <td class="py-2.5 px-3 text-right font-bold ${row.cumLoK >= 0 ? 'text-emerald-300' : 'text-rose-300'}">${formatMoneyK(row.cumLoK)}</td>
+                        <td class="py-2.5 px-3 text-center">
+                            <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-teal-500/20 hover:bg-teal-500 text-teal-200 hover:text-slate-950 border border-teal-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${row.date}">
+                                <i class="bi bi-eye"></i> Chi Tiết
+                            </button>
+                        </td>
                     </tr>
                 `;
             }
         }).join('');
 
         tbody.innerHTML = pendingRowHtml + settledRowsHtml;
+    }
+
+    // =========================================================================
+    // MODAL: TRA CỨU CHI TIẾT DÀN ĐÃ ĐÁNH & ĐÁNH DẤU SỐ TRÚNG (STRICT PIT)
+    // =========================================================================
+    function initShadowSlipModal() {
+        const modal = byId('shadowSlipModal');
+        if (!modal) return;
+
+        const btnOpen = byId('btnOpenShadowSlipModal');
+        const btnClose = byId('btnCloseShadowSlipModal');
+        const btnDismiss = byId('btnDismissShadowSlipModal');
+        const selDate = byId('selShadowSlipDate');
+        const btnPrev = byId('btnShadowSlipPrevDate');
+        const btnNext = byId('btnShadowSlipNextDate');
+        const tbody = byId('shadowLedgerTbody');
+
+        // Open Modal handler
+        function openModal(dateToOpen) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+
+            const dates = availableDatesList || [];
+            populateDateDropdown(dates, dateToOpen);
+
+            const activeDate = dateToOpen || (selDate ? selDate.value : dates[0]);
+            renderShadowSlipContent(activeDate);
+        }
+
+        // Close Modal handler
+        function closeModal() {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        // Populate dropdown
+        function populateDateDropdown(dates, selectValue) {
+            if (!selDate || !dates.length) return;
+            selDate.innerHTML = dates.map(d => {
+                const label = formatDateVi(d);
+                return `<option value="${d}">${label}${d === '2026-10-05' ? ' (Hôm Nay 🔒)' : ''}</option>`;
+            }).join('');
+
+            if (selectValue && dates.includes(selectValue)) {
+                selDate.value = selectValue;
+            } else {
+                selDate.value = dates[0];
+            }
+        }
+
+        // Bind button triggers
+        if (btnOpen) {
+            btnOpen.onclick = () => {
+                const def = availableDatesList[0] || '2026-10-05';
+                openModal(def);
+            };
+        }
+        if (btnClose) btnClose.onclick = () => closeModal();
+        if (btnDismiss) btnDismiss.onclick = () => closeModal();
+
+        // Backdrop click
+        modal.onclick = (e) => {
+            if (e.target === modal) closeModal();
+        };
+
+        // Escape key listener
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                closeModal();
+            }
+        });
+
+        // Dropdown change
+        if (selDate) {
+            selDate.onchange = () => {
+                renderShadowSlipContent(selDate.value);
+            };
+        }
+
+        // Prev & Next Date buttons
+        if (btnPrev) {
+            btnPrev.onclick = () => {
+                const curr = selDate.value;
+                const idx = availableDatesList.indexOf(curr);
+                // Note: availableDatesList is descending (newest first)
+                if (idx !== -1 && idx < availableDatesList.length - 1) {
+                    const prevDate = availableDatesList[idx + 1];
+                    selDate.value = prevDate;
+                    renderShadowSlipContent(prevDate);
+                }
+            };
+        }
+
+        if (btnNext) {
+            btnNext.onclick = () => {
+                const curr = selDate.value;
+                const idx = availableDatesList.indexOf(curr);
+                if (idx > 0) {
+                    const nextDate = availableDatesList[idx - 1];
+                    selDate.value = nextDate;
+                    renderShadowSlipContent(nextDate);
+                }
+            };
+        }
+
+        // Event delegation on table body for [data-slip-date]
+        if (tbody) {
+            tbody.addEventListener('click', (e) => {
+                const btn = e.target.closest('[data-slip-date]');
+                if (btn) {
+                    const d = btn.getAttribute('data-slip-date');
+                    if (d) openModal(d);
+                }
+            });
+        }
+
+        // Event delegation for copy buttons inside modal
+        const modalBody = byId('shadowSlipModalBody');
+        if (modalBody && !modalBody.__copyBound) {
+            modalBody.__copyBound = true;
+            modalBody.addEventListener('click', (e) => {
+                const copyDeBtn = e.target.closest('.btn-copy-slip-de');
+                if (copyDeBtn) {
+                    const raw = copyDeBtn.getAttribute('data-numbers') || '';
+                    if (raw) {
+                        navigator.clipboard.writeText(raw);
+                        showToast(`📋 Đã sao chép 24 số Đề ngày ${formatDateVi(copyDeBtn.getAttribute('data-date'))}!`);
+                    }
+                }
+
+                const copyLoBtn = e.target.closest('.btn-copy-slip-lo');
+                if (copyLoBtn) {
+                    const raw = copyLoBtn.getAttribute('data-numbers') || '';
+                    if (raw) {
+                        navigator.clipboard.writeText(raw);
+                        showToast(`📋 Đã sao chép dàn Lô ngày ${formatDateVi(copyLoBtn.getAttribute('data-date'))}!`);
+                    }
+                }
+            });
+        }
+    }
+
+    // Render detailed slips and mark winning numbers for selected target date
+    function renderShadowSlipContent(targetDate) {
+        const container = byId('shadowSlipModalBody');
+        const dateBadge = byId('shadowSlipModalDateBadge');
+        const statusBadge = byId('shadowSlipModalStatusBadge');
+        const summaryPill = byId('shadowSlipQuickSummaryPill');
+        if (!container || !cachedAdvisorData) return;
+
+        const data = cachedAdvisorData;
+        const triCore = data.triCoreDe;
+        const lo4Fusion = data.lo4EngineFusion;
+        const mode = currentShadowLoMode || 'top6';
+        const loModeData = lo4Fusion?.modes?.[mode] || lo4Fusion;
+        const drawPrizesObj = data.drawPrizesByDate?.[targetDate] || null;
+
+        const deLatestRec = triCore?.latestRecommendation;
+        const loLatestRec = loModeData?.latestRecommendation || lo4Fusion?.latestRecommendation;
+        const pendingDate = deLatestRec?.targetDate || loLatestRec?.predictionDate || '2026-10-05';
+        const isPending = (targetDate === pendingDate && !drawPrizesObj);
+
+        let deRow = null;
+        let loRow = null;
+
+        if (isPending) {
+            deRow = deLatestRec;
+            loRow = loLatestRec;
+        } else {
+            deRow = (triCore?.settledLedger || []).find(r => r.date === targetDate) || (triCore?.allDaysLedger || []).find(r => r.date === targetDate);
+            loRow = (loModeData?.settledLedger || []).find(r => r.date === targetDate);
+        }
+
+        const dateVi = formatDateVi(targetDate);
+        if (dateBadge) dateBadge.textContent = `Ngày ${dateVi}`;
+
+        if (statusBadge) {
+            if (isPending) {
+                statusBadge.className = 'text-xs font-mono font-bold px-2.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40';
+                statusBadge.innerHTML = '🔒 ĐÃ KHÓA · CHỜ MỞ 18:30';
+            } else {
+                statusBadge.className = 'text-xs font-mono font-bold px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+                statusBadge.innerHTML = '✅ ĐÃ ĐỐI SOÁT 100% STRICT PIT';
+            }
+        }
+
+        // Actual lottery results
+        const actualSpecial = isPending ? null : (drawPrizesObj?.special !== undefined ? numStr(drawPrizesObj.special) : (deRow?.actual !== undefined ? numStr(deRow.actual) : null));
+        const prizesList = isPending ? [] : (drawPrizesObj?.prizes || []);
+
+        // Đề numbers and metrics
+        const deNumbers = (deRow?.numbers || []).map(Number);
+        const deAbstain = Boolean(deRow?.abstained);
+        const deHit = Boolean(deRow?.hit || (actualSpecial && deNumbers.includes(Number(actualSpecial))));
+        const deTopScore = deRow?.topScore || 0;
+        const deStakeK = deAbstain ? 0 : (deRow?.stakeK || 2400);
+        const dePayoutK = deAbstain ? 0 : (deHit ? 8400 : 0);
+        const deProfitK = deRow?.dayProfitK ?? (deAbstain ? 0 : (deHit ? 6000 : -2400));
+
+        // Lô numbers and metrics
+        const loBetList = (loRow?.betNumbers || []).map(b => ({
+            ...b,
+            num: numStr(b.num),
+            hits: b.hits || 0
+        }));
+        const loStakeK = loRow?.dayLotoStakeK || (isPending ? (loRow?.totalLotoStakeK || 63800) : 0);
+        const loPayoutK = isPending ? 0 : (loRow?.dayLotoPayoutK || 0);
+        const loProfitK = isPending ? 0 : (loRow?.dayLotoProfitK || 0);
+        const loHits = isPending ? 0 : (loRow?.dayLotoHits || 0);
+        const isLoWin = isPending ? false : Boolean(loRow?.isLotoWin || loProfitK > 0);
+
+        // Combo metrics
+        const comboStakeK = deStakeK + loStakeK;
+        const comboPayoutK = dePayoutK + loPayoutK;
+        const comboProfitK = deProfitK + loProfitK;
+
+        if (summaryPill) {
+            if (isPending) {
+                summaryPill.innerHTML = `
+                    <span class="text-slate-400">Tổng Vốn Chốt:</span>
+                    <strong class="text-white font-bold">${formatMoneyK(comboStakeK, false)}</strong>
+                    <span class="text-amber-400 font-bold ml-2">⏳ Chờ mở thưởng</span>
+                `;
+            } else {
+                summaryPill.innerHTML = `
+                    <span class="text-slate-400">Vốn:</span> <strong class="text-slate-200">${formatMoneyK(comboStakeK, false)}</strong>
+                    <span class="text-slate-400 ml-2">Thưởng:</span> <strong class="text-amber-300">${formatMoneyK(comboPayoutK, false)}</strong>
+                    <span class="text-slate-400 ml-2">Lãi ròng:</span> <strong class="${comboProfitK >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}">${formatMoneyK(comboProfitK)}</strong>
+                `;
+            }
+        }
+
+        // Set of all numbers bet across Đề & Lô for highlighting in 27 prizes
+        const allBetLotoNumbersSet = new Set(loBetList.map(b => b.num));
+
+        // 1. Lottery Draw Results Strip
+        let resultsStripHtml = '';
+        if (isPending) {
+            resultsStripHtml = `
+                <div class="rounded-2xl border border-amber-500/30 bg-amber-950/20 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                    <div class="flex items-center gap-2 text-amber-300 font-bold">
+                        <i class="bi bi-clock-history text-lg"></i>
+                        <span>Kỳ quay ${dateVi} đang chờ mở thưởng trực tiếp (18:15 – 18:30)</span>
+                    </div>
+                    <span class="text-slate-400">Dàn cược đã khóa niêm phong bất biến từ 12:00 trưa</span>
+                </div>
+            `;
+        } else {
+            const prizesPillsHtml = prizesList.map(p => {
+                const pStr = numStr(p);
+                const isMatched = allBetLotoNumbersSet.has(pStr);
+                if (isMatched) {
+                    return `<span class="inline-flex items-center justify-center w-7 h-6 rounded bg-emerald-400 text-slate-950 font-black font-mono text-[11px] ring-2 ring-emerald-300 shadow-sm" title="Trúng Lô con ${pStr}!">${pStr}</span>`;
+                }
+                return `<span class="inline-flex items-center justify-center w-7 h-6 rounded bg-white/5 border border-white/5 font-mono text-[11px] text-slate-400">${pStr}</span>`;
+            }).join('');
+
+            resultsStripHtml = `
+                <div class="rounded-2xl border border-white/10 bg-black/50 p-4 space-y-3">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-black uppercase text-amber-400 flex items-center gap-1.5">
+                                <i class="bi bi-trophy-fill text-amber-400"></i> KẾT QUẢ MỞ THƯỞNG XSMB NGÀY ${dateVi}:
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs text-slate-400">Giải Đặc Biệt:</span>
+                            <span class="inline-flex items-center justify-center px-3 py-1 rounded-xl bg-gradient-to-r from-rose-500 via-amber-500 to-yellow-400 text-slate-950 font-black font-mono text-xl shadow-lg ring-2 ring-white/50 animate-pulse">
+                                ${actualSpecial || '—'}
+                            </span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between text-[11px] text-slate-400 mb-1.5">
+                            <span>27 Giải Lô (Các số trùng khớp với dàn cược được tô sáng màu xanh):</span>
+                            <span class="text-emerald-400 font-bold">${loHits} nháy nổ</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1">
+                            ${prizesPillsHtml || '<span class="text-xs text-slate-500 italic">Chưa có bảng 27 giải</span>'}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 2. Section Đề Tri-Core 24s
+        let deSectionHtml = '';
+        if (deAbstain) {
+            deSectionHtml = `
+                <div class="rounded-2xl border border-indigo-500/30 bg-indigo-950/20 p-4 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <h4 class="text-xs font-black uppercase text-indigo-300 flex items-center gap-2">
+                            <i class="bi bi-shield-check text-indigo-400 text-base"></i>
+                            🎯 ĐỀ TRI-CORE: CÔNG TẮC BẢO TOÀN VỐN (SMART ABSTAIN GATE)
+                        </h4>
+                        <span class="text-xs font-mono font-bold text-indigo-300 px-2 py-0.5 rounded bg-indigo-500/20 border border-indigo-500/40">
+                            🛡️ NÉ CƯỢC · VỐN 0Đ
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Điểm đồng thuận 4 động cơ Tri-Core ngày ${dateVi} chỉ đạt <strong>${deTopScore.toFixed(1)}/7.5</strong> (dưới ngưỡng an toàn 6.5). Hệ thống tự động kích hoạt chế độ né cược để bảo toàn 100% vốn (+2.4M), né hoàn toàn phiên giao dịch biến động xấu.
+                    </p>
+                </div>
+            `;
+        } else {
+            const deCardsHtml = deNumbers.map(n => {
+                const isHitNumber = (actualSpecial != null && Number(n) === Number(actualSpecial));
+                if (isHitNumber) {
+                    return `
+                        <div class="relative group flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-500 text-slate-950 p-2 font-black ring-4 ring-amber-300 shadow-xl scale-105 animate-pulse min-w-[58px]">
+                            <span class="text-[9px] font-black uppercase tracking-wider text-amber-950">🎯 NỔ ĐB</span>
+                            <span class="font-mono text-xl leading-none font-black my-0.5">${numStr(n)}</span>
+                            <span class="text-[8px] font-black uppercase bg-slate-950 text-amber-300 px-1 py-0.2 rounded mt-0.5 shadow-xs">+6.0M ⭐</span>
+                        </div>
+                    `;
+                }
+                return `
+                    <div class="flex flex-col items-center justify-center rounded-xl bg-slate-800/80 border border-white/10 text-slate-200 p-2 font-mono text-base font-bold min-w-[48px] hover:border-amber-400/40 hover:bg-slate-800 transition-all">
+                        <span>${numStr(n)}</span>
+                    </div>
+                `;
+            }).join('');
+
+            const deStatusTag = isPending
+                ? '<span class="text-xs font-bold text-amber-300 bg-amber-500/20 border border-amber-500/40 px-2 py-0.5 rounded">⏳ VÀO KÈO 24 SỐ · CHỜ MỞ</span>'
+                : (deHit
+                    ? '<span class="text-xs font-black text-slate-950 bg-gradient-to-r from-amber-400 to-amber-500 px-2.5 py-0.5 rounded shadow-sm">🎯 TRÚNG ĐẶC BIỆT (+6.0M)</span>'
+                    : '<span class="text-xs font-bold text-rose-300 bg-rose-500/20 border border-rose-500/40 px-2 py-0.5 rounded">❌ TRƯỢT ĐỀ (-2.4M)</span>');
+
+            deSectionHtml = `
+                <div class="rounded-2xl border border-white/10 bg-slate-900/60 p-4 space-y-3">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-2.5">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h4 class="text-xs font-black uppercase text-amber-400 flex items-center gap-1.5">
+                                <i class="bi bi-gem text-amber-400"></i> 🎯 ĐỀ TRI-CORE 24 SỐ TINH HOA:
+                            </h4>
+                            <span class="text-xs text-slate-400">(Top 1 Score: <strong>${deTopScore.toFixed(1)}/7.5</strong>)</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            ${deStatusTag}
+                            <button type="button" class="btn-copy-slip-de text-[11px] font-bold text-amber-300 hover:text-white bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-lg border border-white/10 transition-all flex items-center gap-1 cursor-pointer" data-numbers="${deNumbers.map(numStr).join(', ')}" data-date="${targetDate}">
+                                <i class="bi bi-clipboard"></i> Copy 24s
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        ${deCardsHtml}
+                    </div>
+                    <div class="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-white/5 font-mono">
+                        <span>Vốn cược: <strong class="text-slate-200">2.4M</strong> (100k/số)</span>
+                        <span>Tiền thưởng: <strong class="text-amber-300">${isPending ? '—' : (deHit ? '8.4M' : '0đ')}</strong></span>
+                        <span>Lãi ròng Đề: <strong class="${deProfitK > 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold">${isPending ? 'Chờ kq' : formatMoneyK(deProfitK)}</strong></span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 3. Section Lô Ghép 4 Động Cơ
+        const loTiers = [
+            { key: 'tierX5', name: '👑 Siêu VIP X5', mult: 5, color: 'text-amber-400' },
+            { key: 'tierX4', name: '🔥 Cực VIP X4', mult: 4, color: 'text-teal-400' },
+            { key: 'tierX3', name: '⚡ Triển Vọng X3', mult: 3, color: 'text-cyan-400' },
+            { key: 'tierX1', name: '🛡️ Bảo Hiểm X1', mult: 1, color: 'text-slate-400' }
+        ];
+
+        const loTiersHtml = loTiers.map(tier => {
+            const numbersInTier = loBetList.filter(b => (b.multiplier || 1) === tier.mult);
+            if (!numbersInTier.length) return '';
+
+            const chipsHtml = numbersInTier.map(b => {
+                const hits = b.hits || 0;
+                if (!isPending && hits > 0) {
+                    return `
+                        <div class="relative group flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 text-slate-950 p-2 font-black ring-2 ring-emerald-300 shadow-md min-w-[58px]" title="Trúng ${hits} nháy!">
+                            <span class="text-[8px] font-black uppercase text-emerald-950">🎯 ${hits} NHÁY</span>
+                            <span class="font-mono text-lg font-black leading-tight my-0.5">${b.num}</span>
+                            <span class="text-[8px] font-black bg-slate-950 text-emerald-300 px-1 py-0.2 rounded mt-0.5">x${tier.mult} ⭐</span>
+                        </div>
+                    `;
+                }
+                return `
+                    <div class="flex flex-col items-center justify-center rounded-xl bg-slate-800/80 border border-white/10 text-slate-300 p-2 font-mono text-base font-semibold min-w-[48px] hover:border-teal-400/40 transition-all">
+                        <span>${b.num}</span>
+                        <span class="text-[8px] text-slate-400">x${tier.mult}</span>
+                    </div>
+                `;
+            }).join('');
+
+            return `
+                <div class="space-y-1.5">
+                    <div class="text-[10px] font-black uppercase ${tier.color} tracking-wider flex items-center justify-between">
+                        <span>${tier.name} (${numbersInTier.length} số):</span>
+                        <span class="text-slate-400 font-mono">Hệ số x${tier.mult}</span>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5">
+                        ${chipsHtml}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        const loStatusTag = isPending
+            ? '<span class="text-xs font-bold text-teal-300 bg-teal-500/20 border border-teal-500/40 px-2 py-0.5 rounded">⏳ CHỐT DÀN LÔ · CHỜ MỞ</span>'
+            : (isLoWin
+                ? `<span class="text-xs font-black text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-400 px-2.5 py-0.5 rounded shadow-sm">🔥 THẮNG LÔ (${loHits} NHÁY)</span>`
+                : `<span class="text-xs font-bold text-rose-300 bg-rose-500/20 border border-rose-500/40 px-2 py-0.5 rounded">❌ THUA LÔ (${loHits} NHÁY)</span>`);
+
+        const loSectionHtml = `
+            <div class="rounded-2xl border border-white/10 bg-slate-900/60 p-4 space-y-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-2.5">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h4 class="text-xs font-black uppercase text-teal-300 flex items-center gap-1.5">
+                            <i class="bi bi-fire text-rose-400"></i> 🔥 LÔ GHÉP 4 ĐỘNG CƠ (${mode === 'top6' ? 'TOP 6 LỤC THỦ' : 'TOP 7 THẤT THỦ'}):
+                        </h4>
+                        <span class="text-xs text-slate-400 font-mono">(${loBetList.length} số đánh)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        ${loStatusTag}
+                        <button type="button" class="btn-copy-slip-lo text-[11px] font-bold text-teal-300 hover:text-white bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-lg border border-white/10 transition-all flex items-center gap-1 cursor-pointer" data-numbers="${loBetList.map(b => b.num).join(' ')}" data-date="${targetDate}">
+                            <i class="bi bi-clipboard"></i> Copy Dàn Lô
+                        </button>
+                    </div>
+                </div>
+                <div class="space-y-2.5">
+                    ${loTiersHtml || '<div class="text-xs text-slate-400">Không có dàn số Lô</div>'}
+                </div>
+                <div class="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-white/5 font-mono">
+                    <span>Vốn cược: <strong class="text-slate-200">${formatMoneyK(loStakeK, false)}</strong></span>
+                    <span>Tiền thưởng: <strong class="text-amber-300">${isPending ? '—' : formatMoneyK(loPayoutK, false)}</strong></span>
+                    <span>Lãi ròng Lô: <strong class="${loProfitK > 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold">${isPending ? 'Chờ kq' : formatMoneyK(loProfitK)}</strong></span>
+                </div>
+            </div>
+        `;
+
+        // 4. Section Financial Summary
+        const summaryCardHtml = `
+            <div class="rounded-2xl border border-amber-500/30 bg-gradient-to-r from-slate-900 via-amber-950/20 to-slate-900 p-4">
+                <div class="flex items-center justify-between text-xs mb-2">
+                    <span class="font-black uppercase text-amber-300 flex items-center gap-1.5">
+                        <i class="bi bi-cash-stack"></i> 👑 TỔNG HỢP KẾT TOÁN TÀI CHÍNH NGÀY ${dateVi}:
+                    </span>
+                    <span class="font-mono text-slate-400">${isPending ? 'Dự kiến' : '100% Strict PIT'}</span>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs font-mono">
+                    <div class="rounded-xl bg-black/40 border border-white/10 p-2">
+                        <div class="text-slate-400 text-[10px]">TỔNG VỐN</div>
+                        <div class="font-bold text-white text-sm mt-0.5">${formatMoneyK(comboStakeK, false)}</div>
+                    </div>
+                    <div class="rounded-xl bg-black/40 border border-white/10 p-2">
+                        <div class="text-slate-400 text-[10px]">TỔNG THƯỞNG</div>
+                        <div class="font-bold text-amber-300 text-sm mt-0.5">${isPending ? '—' : formatMoneyK(comboPayoutK, false)}</div>
+                    </div>
+                    <div class="rounded-xl bg-black/40 border border-white/10 p-2">
+                        <div class="text-slate-400 text-[10px]">LÃI RÒNG NGÀY</div>
+                        <div class="font-black text-sm mt-0.5 ${isPending ? 'text-amber-300' : (comboProfitK >= 0 ? 'text-emerald-400' : 'text-rose-400')}">${isPending ? 'Chờ kq' : formatMoneyK(comboProfitK)}</div>
+                    </div>
+                    <div class="rounded-xl bg-black/40 border border-white/10 p-2">
+                        <div class="text-slate-400 text-[10px]">KẾT QUẢ</div>
+                        <div class="font-bold text-xs mt-1 ${isPending ? 'text-amber-300' : (comboProfitK > 0 ? 'text-emerald-400' : 'text-rose-400')}">
+                            ${isPending ? '⏳ Chờ 18:30' : (comboProfitK > 0 ? '🎉 DƯƠNG LÃI' : (comboProfitK === 0 ? '🛡️ HÒA VỐN' : '❌ LỖ RÒNG'))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        container.innerHTML = resultsStripHtml + deSectionHtml + loSectionHtml + summaryCardHtml;
     }
 
     document.addEventListener('DOMContentLoaded', initShadowMonitor);

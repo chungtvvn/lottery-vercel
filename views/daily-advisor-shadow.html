@@ -485,6 +485,9 @@
                             <i class="bi bi-fire text-rose-400"></i> 🔥 Lô Ghép 4 Động Cơ
                         </button>
                     </div>
+                    <button type="button" id="btnOpenShadowSlipModal" class="rounded-xl bg-gradient-to-r from-indigo-600 via-purple-600 to-amber-500 hover:opacity-95 text-white font-black text-xs px-3.5 py-1.5 transition-all flex items-center gap-1.5 shadow-md">
+                        <i class="bi bi-card-checklist text-amber-300"></i> 📋 Tra Cứu Dàn Đánh &amp; Số Trúng
+                    </button>
                     <span class="rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold px-2.5 py-1">
                         Zero Data Leakage
                     </span>
@@ -512,7 +515,7 @@
                     </thead>
                     <tbody id="shadowLedgerTbody" class="divide-y divide-white/5">
                         <tr>
-                            <td colspan="7" class="py-8 text-center text-xs text-slate-400">
+                            <td colspan="8" class="py-8 text-center text-xs text-slate-400">
                                 Đang tải nhật ký kiểm toán...
                             </td>
                         </tr>
@@ -521,6 +524,74 @@
             </div>
         </section>
     </main>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL: TRA CỨU CHI TIẾT DÀN ĐÁNH & ĐÁNH DẤU SỐ TRÚNG (100% STRICT PIT) -->
+    <!-- ========================================================================= -->
+    <div id="shadowSlipModal" class="fixed inset-0 z-[9999] hidden items-center justify-center p-2 sm:p-4 bg-slate-950/85 backdrop-blur-md transition-opacity">
+        <div class="relative w-full max-w-4xl rounded-3xl border-2 border-indigo-500/40 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between border-b border-white/10 p-4 sm:p-5 bg-white/5">
+                <div>
+                    <div class="flex items-center gap-2 flex-wrap mb-1">
+                        <span class="rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-[10px] px-2.5 py-0.5 uppercase shadow-sm">
+                            <i class="bi bi-shield-check"></i> 100% STRICT PIT
+                        </span>
+                        <span id="shadowSlipModalDateBadge" class="text-xs font-mono font-bold text-amber-300 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30">
+                            Ngày --/--/----
+                        </span>
+                        <span id="shadowSlipModalStatusBadge" class="text-xs font-mono font-bold px-2 py-0.5 rounded">
+                            Đã đối soát
+                        </span>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                        <i class="bi bi-bullseye text-emerald-400"></i>
+                        Chi Tiết Dàn Đã Đánh &amp; Đối Soát Số Trúng
+                    </h3>
+                    <p class="text-xs text-slate-300 mt-0.5">
+                        Toàn bộ số đã chốt niêm phong trước 12:00, đối soát tự động với giải ĐB &amp; 27 giải Lô. Các con số nổ được đánh dấu nổi bật kèm số nháy.
+                    </p>
+                </div>
+                <button type="button" id="btnCloseShadowSlipModal" class="rounded-xl bg-white/10 hover:bg-white/20 p-2 text-slate-300 hover:text-white transition-all">
+                    <i class="bi bi-x-lg text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Controls Bar: Select Date & Quick Navigate -->
+            <div class="flex flex-wrap items-center justify-between gap-3 p-3 sm:px-5 bg-black/40 border-b border-white/10 text-xs">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-slate-400 font-medium">Chọn ngày tra cứu:</span>
+                    <select id="selShadowSlipDate" class="rounded-lg bg-slate-800 border border-white/20 text-white font-mono text-xs px-3 py-1.5 focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                        <!-- Populated dynamically -->
+                    </select>
+                    <div class="inline-flex rounded-lg border border-white/10 p-0.5 bg-black/30">
+                        <button type="button" id="btnShadowSlipPrevDate" class="px-2 py-1 text-slate-300 hover:text-white hover:bg-white/10 rounded transition-all text-xs" title="Ngày trước đó">
+                            <i class="bi bi-chevron-left"></i> Trước
+                        </button>
+                        <button type="button" id="btnShadowSlipNextDate" class="px-2 py-1 text-slate-300 hover:text-white hover:bg-white/10 rounded transition-all text-xs" title="Ngày kế tiếp">
+                            Sau <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="shadowSlipQuickSummaryPill" class="flex items-center gap-3 font-mono">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Modal Body (Scrollable) -->
+            <div class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 custom-scrollbar" id="shadowSlipModalBody">
+                <!-- Populated dynamically -->
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="border-t border-white/10 bg-slate-950/90 p-3 sm:p-4 flex items-center justify-between text-xs text-slate-400">
+                <span>Dữ liệu niêm phong trước giờ quay · Tuyệt đối không rò rỉ tương lai.</span>
+                <button type="button" id="btnDismissShadowSlipModal" class="rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-4 py-2 text-xs transition-all">
+                    Đóng
+                </button>
+            </div>
+        </div>
+    </div>
 
     <footer class="border-t border-white/10 py-6 text-center text-xs text-slate-500">
         XSMB Scientific Predictive Intelligence · Strict PIT Walk-Forward Validation · Shadow Monitor Mode
