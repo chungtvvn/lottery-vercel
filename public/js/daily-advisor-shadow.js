@@ -330,7 +330,7 @@
                         abstained: Boolean(strategy.abstained),
                         hit: strategy.hit,
                         numbers: strategy.numbers || [],
-                        dayProfitK: strategy.abstained ? 0 : (strategy.hit ? 6000 : -2400)
+                        dayProfitK: strategy.abstained ? 0 : (strategy.hit ? 60000 : -24000)
                     };
                 });
             }
@@ -347,7 +347,7 @@
             ledger.forEach(r => {
                 const isAbstain = Boolean(r.abstained);
                 const isHit = Boolean(r.hit);
-                const dayProfitK = r.dayProfitK !== undefined ? r.dayProfitK : (isAbstain ? 0 : (isHit ? 6000 : -2400));
+                const dayProfitK = r.dayProfitK !== undefined ? r.dayProfitK : (isAbstain ? 0 : (isHit ? 60000 : -24000));
                 r.dayProfitK = dayProfitK;
 
                 if (!isAbstain) {
@@ -387,8 +387,8 @@
             // Realistic Payout After Fee (1 ăn 81.5)
             const realisticPayoutMultiplier = 81.5;
             const realisticBreakEven = 24 / realisticPayoutMultiplier;
-            const totalStakeK = totalIssued * 2400; // 2400K = 2.4M (100k/số)
-            const realisticProfitK = wins * 8150 - totalStakeK;
+            const totalStakeK = totalIssued * 24000; // 24000K = 24M (1M/số)
+            const realisticProfitK = wins * 81500 - totalStakeK;
             const realisticRoi = totalStakeK > 0 ? realisticProfitK / totalStakeK : 0;
 
             // Update UI Metric Cards
@@ -501,8 +501,8 @@
 
             const deAbstain = Boolean(deRow?.abstained);
             const deHit = Boolean(deRow?.hit);
-            const deProfitK = deRow?.dayProfitK ?? (deAbstain ? 0 : (deHit ? 6000 : -2400));
-            const deStakeK = deAbstain ? 0 : (deRow?.stakeK || 2400);
+            const deProfitK = deRow?.dayProfitK ?? (deAbstain ? 0 : (deHit ? 60000 : -24000));
+            const deStakeK = deAbstain ? 0 : (deRow?.stakeK || 24000);
 
             const loHits = loRow?.dayLotoHits || 0;
             const loStakeK = loRow?.dayLotoStakeK || 0;
@@ -645,8 +645,8 @@
             const deRecScore = deLatestRec?.topScore ? `Top 1: ${deLatestRec.topScore.toFixed(1)}đ` : 'Vào kèo 24s';
             const loBetCount = loLatestRec?.betNumbers?.length || 14;
             const loStakeM = loLatestRec?.totalLotoStakeK ? (loLatestRec.totalLotoStakeK / 1000).toFixed(1) + 'M' : '63.8M';
-            const deStakeM = '2.4M';
-            const totalStakeM = ((Number(loLatestRec?.totalLotoStakeK || 63800) + 2400) / 1000).toFixed(1) + 'M';
+            const deStakeM = '24.0M';
+            const totalStakeM = ((Number(loLatestRec?.totalLotoStakeK || 63800) + 24000) / 1000).toFixed(1) + 'M';
 
             pendingRowHtml = `
                 <tr class="border-b border-amber-500/20 bg-amber-950/20 hover:bg-amber-950/30 transition-colors font-mono text-xs">
@@ -697,7 +697,7 @@
                     </td>
                     <td class="py-3 px-3 text-slate-300 text-[11px]" title="${(deLatestRec?.numbers || []).map(numStr).join(', ')}">${deNums}</td>
                     <td class="py-3 px-3 text-center font-bold text-amber-400">⏳ Chờ mở</td>
-                    <td class="py-3 px-3 text-right text-slate-400 font-medium">Vốn 2.4M (Chờ kq)</td>
+                    <td class="py-3 px-3 text-right text-slate-400 font-medium">Vốn 24M (Chờ kq)</td>
                     <td class="py-3 px-3 text-right font-bold text-emerald-300">${formatMoneyK(cumDeK)}</td>
                     <td class="py-3 px-3 text-center">
                         <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-200 hover:text-slate-950 border border-amber-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer" data-slip-date="${targetDate}">
@@ -789,9 +789,9 @@
                 if (row.deAbstain) {
                     statusBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700">🛡️ ABSTAIN (Né Cược)</span>';
                 } else if (row.deHit) {
-                    statusBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">🎯 TRÚNG ĐỀ (+6.0M)</span>';
+                    statusBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">🎯 TRÚNG ĐỀ (+60.0M)</span>';
                 } else {
-                    statusBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">❌ TRƯỢT (-2.4M)</span>';
+                    statusBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">❌ TRƯỢT (-24.0M)</span>';
                 }
 
                 // If hit, show the hit number prominently!
@@ -1067,9 +1067,9 @@
         const deAbstain = Boolean(deRow?.abstained);
         const deHit = Boolean(deRow?.hit || (actualSpecial && deNumbers.includes(Number(actualSpecial))));
         const deTopScore = deRow?.topScore || 0;
-        const deStakeK = deAbstain ? 0 : (deRow?.stakeK || 2400);
-        const dePayoutK = deAbstain ? 0 : (deHit ? 8400 : 0);
-        const deProfitK = deRow?.dayProfitK ?? (deAbstain ? 0 : (deHit ? 6000 : -2400));
+        const deStakeK = deAbstain ? 0 : (deRow?.stakeK || 24000);
+        const dePayoutK = deAbstain ? 0 : (deHit ? 84000 : 0);
+        const deProfitK = deRow?.dayProfitK ?? (deAbstain ? 0 : (deHit ? 60000 : -24000));
 
         // Lô numbers and metrics
         const loBetList = (loRow?.betNumbers || []).map(b => ({
@@ -1172,7 +1172,7 @@
                         </span>
                     </div>
                     <p class="text-xs text-slate-300 leading-relaxed">
-                        Điểm đồng thuận 4 động cơ Tri-Core ngày ${dateVi} chỉ đạt <strong>${deTopScore.toFixed(1)}/7.5</strong> (dưới ngưỡng an toàn 6.5). Hệ thống tự động kích hoạt chế độ né cược để bảo toàn 100% vốn (+2.4M), né hoàn toàn phiên giao dịch biến động xấu.
+                        Điểm đồng thuận 4 động cơ Tri-Core ngày ${dateVi} chỉ đạt <strong>${deTopScore.toFixed(1)}/7.5</strong> (dưới ngưỡng an toàn 6.5). Hệ thống tự động kích hoạt chế độ né cược để bảo toàn 100% vốn (+24M), né hoàn toàn phiên giao dịch biến động xấu.
                     </p>
                 </div>
             `;
@@ -1184,7 +1184,7 @@
                         <div class="relative group flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-500 text-slate-950 p-2 font-black ring-4 ring-amber-300 shadow-xl scale-105 animate-pulse min-w-[58px]">
                             <span class="text-[9px] font-black uppercase tracking-wider text-amber-950">🎯 NỔ ĐB</span>
                             <span class="font-mono text-xl leading-none font-black my-0.5">${numStr(n)}</span>
-                            <span class="text-[8px] font-black uppercase bg-slate-950 text-amber-300 px-1 py-0.2 rounded mt-0.5 shadow-xs">+6.0M ⭐</span>
+                            <span class="text-[8px] font-black uppercase bg-slate-950 text-amber-300 px-1 py-0.2 rounded mt-0.5 shadow-xs">+60.0M ⭐</span>
                         </div>
                     `;
                 }
@@ -1198,8 +1198,8 @@
             const deStatusTag = isPending
                 ? '<span class="text-xs font-bold text-amber-300 bg-amber-500/20 border border-amber-500/40 px-2 py-0.5 rounded">⏳ VÀO KÈO 24 SỐ · CHỜ MỞ</span>'
                 : (deHit
-                    ? '<span class="text-xs font-black text-slate-950 bg-gradient-to-r from-amber-400 to-amber-500 px-2.5 py-0.5 rounded shadow-sm">🎯 TRÚNG ĐẶC BIỆT (+6.0M)</span>'
-                    : '<span class="text-xs font-bold text-rose-300 bg-rose-500/20 border border-rose-500/40 px-2 py-0.5 rounded">❌ TRƯỢT ĐỀ (-2.4M)</span>');
+                    ? '<span class="text-xs font-black text-slate-950 bg-gradient-to-r from-amber-400 to-amber-500 px-2.5 py-0.5 rounded shadow-sm">🎯 TRÚNG ĐẶC BIỆT (+60.0M)</span>'
+                    : '<span class="text-xs font-bold text-rose-300 bg-rose-500/20 border border-rose-500/40 px-2 py-0.5 rounded">❌ TRƯỢT ĐỀ (-24.0M)</span>');
 
             deSectionHtml = `
                 <div class="rounded-2xl border border-white/10 bg-slate-900/60 p-4 space-y-3">
@@ -1221,8 +1221,8 @@
                         ${deCardsHtml}
                     </div>
                     <div class="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-white/5 font-mono">
-                        <span>Vốn cược: <strong class="text-slate-200">2.4M</strong> (100k/số)</span>
-                        <span>Tiền thưởng: <strong class="text-amber-300">${isPending ? '—' : (deHit ? '8.4M' : '0đ')}</strong></span>
+                        <span>Vốn cược: <strong class="text-slate-200">24.0M</strong> (1M/số)</span>
+                        <span>Tiền thưởng: <strong class="text-amber-300">${isPending ? '—' : (deHit ? '84.0M' : '0đ')}</strong></span>
                         <span>Lãi ròng Đề: <strong class="${deProfitK > 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold">${isPending ? 'Chờ kq' : formatMoneyK(deProfitK)}</strong></span>
                     </div>
                 </div>
