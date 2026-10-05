@@ -460,7 +460,7 @@
             </div>
         </section>
 
-        <!-- 📑 SETTLED LEDGER TABLE: 100% STRICT PIT AUDIT TRAIL 2026 -->
+        <!-- 📑 SETTLED LEDGER TABLE: 100% STRICT PIT AUDIT TRAIL 2026 (ĐỀ & LÔ ĐỒNG THUẬN) -->
         <section class="rounded-3xl border border-white/10 bg-slate-900/60 p-6 space-y-4">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-white/10 pb-4">
                 <div>
@@ -469,28 +469,46 @@
                         Nhật Ký Đối Soát Thực Chiến 2026 (100% Strict PIT)
                     </h3>
                     <p class="text-xs text-slate-400 mt-0.5">
-                        Mỗi dòng được chốt niêm phong trước giờ quay và đối soát tự động với giải đặc biệt thực tế sau 18:30.
+                        Mỗi dòng được chốt niêm phong trước giờ quay và đối soát tự động với giải đặc biệt &amp; 27 giải lô thực tế sau 18:30.
                     </p>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <!-- Tab Switcher Category: Tổng Hợp, Đề, Lô -->
+                    <div class="inline-flex items-center gap-1 bg-black/60 p-1 rounded-xl border border-white/15" id="shadowLedgerCategoryTabs">
+                        <button type="button" data-shadow-cat="combo" class="shadow-cat-btn active rounded-lg bg-indigo-600 text-white font-black text-xs px-3 py-1.5 transition-all shadow-xs flex items-center gap-1.5">
+                            <i class="bi bi-layers-fill text-amber-300"></i> 👑 Tổng Hợp (Đề + Lô)
+                        </button>
+                        <button type="button" data-shadow-cat="de" class="shadow-cat-btn rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 font-bold text-xs px-3 py-1.5 transition-all flex items-center gap-1.5">
+                            <i class="bi bi-gem text-amber-400"></i> 🎯 Đề Tri-Core 24s
+                        </button>
+                        <button type="button" data-shadow-cat="lo" class="shadow-cat-btn rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 font-bold text-xs px-3 py-1.5 transition-all flex items-center gap-1.5">
+                            <i class="bi bi-fire text-rose-400"></i> 🔥 Lô Ghép 4 Động Cơ
+                        </button>
+                    </div>
                     <span class="rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold px-2.5 py-1">
                         Zero Data Leakage
                     </span>
                 </div>
             </div>
 
+            <!-- Category Summary & Sub-Controls Bar -->
+            <div class="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-black/40 border border-white/10 text-xs">
+                <div class="flex items-center gap-3 flex-wrap text-slate-300">
+                    <span>Số kỳ đối soát: <strong class="text-white font-mono" id="shadowDiaryRowCount">273</strong></span>
+                    <span>Số ngày thắng: <strong class="text-emerald-400 font-mono" id="shadowDiaryWinCount">187</strong></span>
+                    <span>Tỷ lệ thắng: <strong class="text-emerald-400 font-mono" id="shadowDiaryWinRate">68.5%</strong></span>
+                    <span id="shadowDiaryHitsTag" class="hidden">Tổng nháy: <strong class="text-amber-400 font-mono" id="shadowDiaryHitsCount">1.133</strong></span>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap font-mono">
+                    <span class="text-slate-400 font-sans" id="shadowDiaryProfitLabel">💰 Lỗ Lãi Lũy Kế Combo:</span>
+                    <strong class="font-black text-sm text-emerald-400" id="shadowDiaryTotalProfit">+5.644 TỶ</strong>
+                </div>
+            </div>
+
             <div class="overflow-x-auto custom-scrollbar">
                 <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="border-b border-white/10 text-[11px] font-bold text-slate-400 uppercase tracking-wide">
-                            <th class="py-2.5 px-3">Ngày Quay</th>
-                            <th class="py-2.5 px-3">Phương Pháp Chọn</th>
-                            <th class="py-2.5 px-3 text-center">Hành Động</th>
-                            <th class="py-2.5 px-3">Dàn 24 Số</th>
-                            <th class="py-2.5 px-3 text-center">Đặc Biệt</th>
-                            <th class="py-2.5 px-3 text-right">Lãi/Lỗ Ngày</th>
-                            <th class="py-2.5 px-3 text-right">Lũy Kế Lợi Nhuận</th>
-                        </tr>
+                    <thead id="shadowLedgerThead">
+                        <!-- Populated by JS based on current category -->
                     </thead>
                     <tbody id="shadowLedgerTbody" class="divide-y divide-white/5">
                         <tr>
