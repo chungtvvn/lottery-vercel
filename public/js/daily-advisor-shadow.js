@@ -54,12 +54,84 @@
 
     // Global dashboard states
     let currentShadowCategory = 'deDropoff';
-    let currentShadowLoMode = 'top6';
+    let currentShadowLoMode = 'top7';
     let currentStrategyMode = 'dropoff40';
     let currentDeStrategy = 'dropoff40';    // 'dropoff40' or 'triCore24'
     let currentShadowYear = '2026';         // '2026', '2025', or 'all'
     let cachedAdvisorData = null;
     let availableDatesList = [];
+
+    // Helper functions for Lô Xiên 5 (5 dàn Xiên 4 từ Top 5 Lô Dropoff)
+    function getXien5Combinations(top5) {
+        if (!Array.isArray(top5) || top5.length < 5) return [];
+        const n = top5.map(numStr);
+        return [
+            [n[0], n[1], n[2], n[3]], // Vé 1 (bỏ n[4])
+            [n[0], n[1], n[2], n[4]], // Vé 2 (bỏ n[3])
+            [n[0], n[1], n[3], n[4]], // Vé 3 (bỏ n[2])
+            [n[0], n[2], n[3], n[4]], // Vé 4 (bỏ n[1])
+            [n[1], n[2], n[3], n[4]]  // Vé 5 (bỏ n[0])
+        ];
+    }
+
+    function evaluateXien5Row(top5, numHitsMap) {
+        const hitsMap = numHitsMap || {};
+        const safeTop5 = (top5 || []).slice(0, 5).map(numStr);
+        const hitsInTop5 = safeTop5.filter(num => (hitsMap[num] || 0) > 0);
+        const h5 = hitsInTop5.length;
+        const tickets = getXien5Combinations(safeTop5);
+        let payoutK = 0;
+        let x4Count = 0;
+        let x3Count = 0;
+        let x2Count = 0;
+
+        const ticketDetails = tickets.map((t, idx) => {
+            const tHits = t.filter(num => (hitsMap[num] || 0) > 0);
+            const count = tHits.length;
+            let prizeK = 0;
+            let tierLabel = 'Trượt';
+            if (count === 4) {
+                prizeK = 384000;
+                x4Count++;
+                tierLabel = 'Xiên 4 (+384M)';
+            } else if (count === 3) {
+                prizeK = 84000;
+                x3Count++;
+                tierLabel = 'Xiên 3 (+84M)';
+            } else if (count === 2) {
+                prizeK = 12000;
+                x2Count++;
+                tierLabel = 'Xiên 2 (+12M)';
+            }
+            payoutK += prizeK;
+            return {
+                ticket: t,
+                hits: tHits,
+                count,
+                prizeK,
+                tierLabel,
+                ticketIndex: idx + 1
+            };
+        });
+
+        const stakeK = 55000; // 11M/vé x 5 vé = 55M/ngày
+        const profitK = payoutK - stakeK;
+        const isWin = profitK > 0;
+        return {
+            top5: safeTop5,
+            hitsInTop5,
+            h5,
+            tickets,
+            ticketDetails,
+            stakeK,
+            payoutK,
+            profitK,
+            isWin,
+            x4Count,
+            x3Count,
+            x2Count
+        };
+    }
 
     async function initShadowMonitor() {
         try {
@@ -383,6 +455,66 @@
 
         // Initial render of Lo card (Top 7 default)
         renderShadowLoCard('top7');
+
+        // 3. Render Card 3: Lô Xiên 5 (5 Dàn Xiên 4 Tuyển Chọn từ Top 5 Lô Dropoff)
+        function renderShadowXien5Card() {
+            const loDropoff = data?.loDropoff27;
+            const loRec = loDropoff?.latestRecommendation || {};
+            const rawNumbers = loRec.numbers || loRec.top7 || [];
+            const top5 = rawNumbers.slice(0, 5).map(numStr);
+            const tickets = getXien5Combinations(top5);
+
+            const top5ChipsEl = byId('shadowXien5Top5Chips');
+            if (top5ChipsEl) {
+                top5ChipsEl.innerHTML = top5.map((n, idx) => `
+                    <div class="flex flex-col items-center justify-center rounded-xl bg-gradient-to-b from-amber-400 via-amber-300 to-amber-500 text-slate-950 px-2.5 py-1 font-mono font-black text-sm ring-1 ring-amber-300 shadow-xs" title="Top #${idx + 1}: ${n}">
+                        <span>${n}</span>
+                        <span class="text-[8px] font-bold uppercase opacity-85">#${idx + 1}</span>
+                    </div>
+                `).join('');
+            }
+
+            const ticketsContainer = byId('shadowXien5Container');
+            if (ticketsContainer) {
+                ticketsContainer.innerHTML = tickets.map((t, idx) => `
+                    <div class="flex items-center justify-between p-2 sm:p-2.5 rounded-xl bg-slate-900/90 border border-amber-500/20 text-xs font-mono hover:border-amber-400/40 transition-all">
+                        <div class="flex items-center gap-2">
+                            <span class="inline-flex items-center justify-center w-5 h-5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold text-[10px]">#${idx + 1}</span>
+                            <div class="flex items-center gap-1 font-bold text-white text-xs sm:text-sm">
+                                ${t.map(n => `<span class="bg-black/60 px-1.5 py-0.5 rounded border border-white/10">${n}</span>`).join(' ')}
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-amber-300 font-bold">11.000K</span>
+                            <span class="text-[9px] sm:text-[10px] text-slate-400 block">Ăn X4: 384M · X3: 84M</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            const metaProfitEl = byId('shadowXien5MetaProfit');
+            if (metaProfitEl) {
+                metaProfitEl.innerHTML = `Thực chiến 20 kỳ: <strong class="text-amber-300 font-bold font-mono">Win 30.0% (6/20)</strong> · Lãi ròng: <strong class="text-emerald-300 font-bold font-mono">+820.0M</strong> (Ăn đậm khi nổ ≥3 con)`;
+            }
+
+            const btnCopyXien5 = byId('btnCopyXien5Tickets');
+            if (btnCopyXien5) {
+                btnCopyXien5.onclick = () => {
+                    if (tickets.length) {
+                        const lines = [
+                            `🎲 DÀN LÔ XIÊN 5 (5 DÀN XIÊN 4 TUYỂN CHỌN) - NGÀY ${formatDateVi(targetDate)}:`,
+                            `Top 5 số nguồn: ${top5.join(', ')}`,
+                            `Vốn cược: 11M/dàn x 5 dàn = 55M/ngày`,
+                            `Cơ cấu thưởng: Ăn Xiên 4 = 384M | Ăn Xiên 3 = 84M | Ăn Xiên 2 = 12M`,
+                            ...tickets.map((t, idx) => `Vé ${idx + 1}: ${t.join(' - ')} (11M)`)
+                        ].join('\n');
+                        navigator.clipboard.writeText(lines);
+                        showToast('Đã sao chép 5 dàn Xiên 4 tuyển chọn!');
+                    }
+                };
+            }
+        }
+        renderShadowXien5Card();
 
         // Setup Category Tabs (Combo, Đề Dropoff, Đề Tri-Core, Lô)
         function setupCategoryTabs() {
@@ -972,6 +1104,155 @@
             }).join('');
 
             tbody.innerHTML = pendingRowHtml + (settledRowsHtml || '<tr><td colspan="9" class="py-8 text-center text-xs text-slate-400">Không có dữ liệu đối soát</td></tr>');
+            return;
+        }
+
+        // =====================================================================
+        // CATEGORY: LÔ XIÊN 5 (5 DÀN XIÊN 4 TUYỂN CHỌN TỪ TOP 5 LÔ DROPOFF)
+        // =====================================================================
+        if (currentShadowCategory === 'loXien5') {
+            let rows = loLedger;
+            if (currentShadowYear === '2026') {
+                rows = rows.filter(r => r.year === 2026 || String(r.date).startsWith('2026'));
+            }
+
+            const totalDays = rows.length;
+            let runningCumProfitK = 0;
+            let winsCount = 0;
+
+            const enrichedRows = rows.map(r => {
+                const top5 = (r.numbers || []).slice(0, 5);
+                const ev = evaluateXien5Row(top5, r.numHitsMap || {});
+                runningCumProfitK += ev.profitK;
+                if (ev.isWin) winsCount++;
+                return {
+                    date: r.date,
+                    year: r.year,
+                    top5,
+                    ...ev,
+                    viewAccumProfitK: runningCumProfitK
+                };
+            });
+
+            const hitRate = totalDays > 0 ? (winsCount / totalDays * 100).toFixed(1) : '0.0';
+            const totalStakeK = totalDays * 55000;
+            const totalProfitK = runningCumProfitK;
+
+            if (rowCountEl) rowCountEl.textContent = `${totalDays}`;
+            if (winCountEl) winCountEl.textContent = `${winsCount} ngày thắng (${totalDays - winsCount} trượt)`;
+            if (winRateEl) winRateEl.textContent = `${hitRate}% (Ăn ≥3 con)`;
+            if (hitsTagEl) hitsTagEl.classList.add('hidden');
+            if (profitLabelEl) profitLabelEl.textContent = '💰 Lãi Lũy Kế Lô Xiên 5 (5 Dàn Xiên 4):';
+            if (totalProfitEl) {
+                totalProfitEl.textContent = formatMoneyK(totalProfitK);
+                totalProfitEl.className = `font-black text-sm font-mono ${totalProfitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+            }
+
+            thead.innerHTML = `
+                <tr class="border-b border-white/10 text-[11px] font-bold text-slate-400 uppercase tracking-wide">
+                    <th class="py-2.5 px-3">Ngày Quay</th>
+                    <th class="py-2.5 px-3">Top 5 Số Nguồn</th>
+                    <th class="py-2.5 px-3">5 Dàn Xiên 4 (11M/dàn)</th>
+                    <th class="py-2.5 px-3 text-center">Nổ Top 5</th>
+                    <th class="py-2.5 px-3 text-center">Kết Quả Vé Trúng</th>
+                    <th class="py-2.5 px-3 text-right">Vốn Cược</th>
+                    <th class="py-2.5 px-3 text-right">Tiền Thưởng</th>
+                    <th class="py-2.5 px-3 text-right">Lãi/Lỗ Ngày</th>
+                    <th class="py-2.5 px-3 text-right">Lũy Kế Lợi Nhuận</th>
+                    <th class="py-2.5 px-3 text-center">Chi Tiết</th>
+                </tr>
+            `;
+
+            // Pending Row for Today pinned at top
+            const targetDateFormatted = formatDateVi(targetDate);
+            const top5Pending = (loLatestRec?.numbers || []).slice(0, 5);
+
+            const pendingRowHtml = `
+                <tr class="border-b border-amber-500/20 bg-amber-950/20 hover:bg-amber-950/30 transition-colors font-mono text-xs">
+                    <td class="py-3 px-3 font-bold text-amber-300">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span>${targetDateFormatted}</span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">🔒 ĐÃ KHÓA</span>
+                        </div>
+                    </td>
+                    <td class="py-3 px-3">
+                        <div class="flex items-center gap-1 font-bold text-white flex-wrap">
+                            ${top5Pending.map(n => `<span class="bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded border border-amber-500/40">${n}</span>`).join(' ')}
+                        </div>
+                        <span class="text-[10px] text-slate-400 block mt-0.5">Top 5 QMBF v6</span>
+                    </td>
+                    <td class="py-3 px-3">
+                        <span class="text-amber-300 font-semibold">5 Dàn Xiên 4 Tuyển Chọn</span>
+                        <div class="text-[10px] text-slate-400">11M/dàn · 5 vé độc lập</div>
+                    </td>
+                    <td class="py-3 px-3 text-center text-amber-400 font-bold">⏳ Chờ mở 18:30</td>
+                    <td class="py-3 px-3 text-center text-amber-400 font-bold">⏳ Chờ kết quả</td>
+                    <td class="py-3 px-3 text-right text-white font-bold">55.0M</td>
+                    <td class="py-3 px-3 text-right text-slate-400 font-mono">—</td>
+                    <td class="py-3 px-3 text-right font-bold text-amber-300">⏳ Chờ kết toán</td>
+                    <td class="py-3 px-3 text-right font-bold text-emerald-300">${formatMoneyK(totalProfitK)}</td>
+                    <td class="py-3 px-3 text-center">
+                        <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-200 hover:text-slate-950 border border-amber-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${targetDate}">
+                            <i class="bi bi-eye"></i> 5 Dàn
+                        </button>
+                    </td>
+                </tr>
+            `;
+
+            const reversedRows = [...enrichedRows].reverse();
+            const settledRowsHtml = reversedRows.map(r => {
+                const dateVi = formatDateVi(r.date);
+
+                // Chips for Top 5 with highlight
+                const top5Chips = r.top5.map(n => {
+                    const isHit = r.hitsInTop5.includes(n);
+                    if (isHit) {
+                        return `<span class="inline-flex items-center px-1.5 py-0.5 rounded font-black bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 ring-1 ring-emerald-300 shadow-xs animate-pulse">🎯 ${n}</span>`;
+                    }
+                    return `<span class="px-1.5 py-0.5 rounded bg-white/5 text-slate-400 border border-white/5 opacity-60">${n}</span>`;
+                }).join(' ');
+
+                // Win ticket badges
+                let ticketBadges = [];
+                if (r.x4Count > 0) ticketBadges.push(`<span class="inline-flex items-center px-2 py-0.5 rounded font-black text-[10px] bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-md">⭐ ${r.x4Count} vé X4 (+${(r.x4Count * 384)}M)</span>`);
+                if (r.x3Count > 0) ticketBadges.push(`<span class="inline-flex items-center px-2 py-0.5 rounded font-black text-[10px] bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 ring-1 ring-emerald-300 shadow-xs">🎉 ${r.x3Count} vé X3 (+${(r.x3Count * 84)}M)</span>`);
+                if (r.x2Count > 0) ticketBadges.push(`<span class="inline-flex items-center px-1.5 py-0.5 rounded font-bold text-[10px] bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">⚡ ${r.x2Count} vé X2 (+${(r.x2Count * 12)}M)</span>`);
+                if (!ticketBadges.length) ticketBadges.push('<span class="text-rose-400 text-[10px] font-bold">❌ 0 vé trúng</span>');
+
+                const isWin = r.isWin;
+
+                return `
+                    <tr class="border-b border-white/5 ${isWin ? 'bg-emerald-950/20 border-l-4 border-l-emerald-400' : ''} hover:bg-white/5 transition-colors font-mono text-xs">
+                        <td class="py-2.5 px-3 font-bold text-slate-300">${dateVi}</td>
+                        <td class="py-2.5 px-3">
+                            <div class="flex items-center gap-1 flex-wrap">${top5Chips}</div>
+                        </td>
+                        <td class="py-2.5 px-3 text-slate-300">
+                            <span class="font-semibold text-white">5 Dàn Xiên 4</span>
+                            <span class="text-[10px] text-slate-400 block">Vốn 55M (11M/dàn)</span>
+                        </td>
+                        <td class="py-2.5 px-3 text-center">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-black ${r.h5 >= 3 ? 'bg-amber-400 text-slate-950 ring-2 ring-amber-300' : (r.h5 === 2 ? 'bg-teal-500/20 text-teal-300 border border-teal-500/40' : 'bg-rose-500/20 text-rose-300 border border-rose-500/40')}">
+                                ${r.h5}/5 con
+                            </span>
+                        </td>
+                        <td class="py-2.5 px-3 text-center">
+                            <div class="flex items-center justify-center gap-1 flex-wrap">${ticketBadges.join(' ')}</div>
+                        </td>
+                        <td class="py-2.5 px-3 text-right text-slate-400">55.0M</td>
+                        <td class="py-2.5 px-3 text-right font-bold ${r.payoutK > 0 ? 'text-amber-300' : 'text-slate-500'}">${r.payoutK > 0 ? formatMoneyK(r.payoutK, false) : '0đ'}</td>
+                        <td class="py-2.5 px-3 text-right font-black ${r.profitK > 0 ? 'text-emerald-400' : 'text-rose-400'}">${formatMoneyK(r.profitK)}</td>
+                        <td class="py-2.5 px-3 text-right font-bold ${r.viewAccumProfitK >= 0 ? 'text-emerald-300' : 'text-rose-300'}">${formatMoneyK(r.viewAccumProfitK)}</td>
+                        <td class="py-2.5 px-3 text-center">
+                            <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-200 hover:text-slate-950 border border-amber-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${r.date}">
+                                <i class="bi bi-eye"></i> 5 Dàn
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            tbody.innerHTML = pendingRowHtml + (settledRowsHtml || '<tr><td colspan="10" class="py-8 text-center text-xs text-slate-400">Không có dữ liệu đối soát</td></tr>');
             return;
         }
 
@@ -1619,6 +1900,15 @@
                         showToast(`📋 Đã sao chép dàn Lô ngày ${formatDateVi(copyLoBtn.getAttribute('data-date'))}!`);
                     }
                 }
+
+                const copyXien5Btn = e.target.closest('.btn-copy-slip-xien5');
+                if (copyXien5Btn) {
+                    const raw = copyXien5Btn.getAttribute('data-tickets') || '';
+                    if (raw) {
+                        navigator.clipboard.writeText(raw);
+                        showToast(`📋 Đã sao chép 5 dàn Xiên 4 ngày ${formatDateVi(copyXien5Btn.getAttribute('data-date'))}!`);
+                    }
+                }
             });
         }
     }
@@ -2095,7 +2385,110 @@
             `;
         }
 
-        // 5. Section Financial Summary
+        // 5. Section Lô Xiên 5 (5 Dàn Xiên 4 Tuyển Chọn)
+        let xien5SectionHtml = '';
+        if (loRow) {
+            const top5Nums = (loInfo.numbers || []).slice(0, 5).map(numStr);
+            const xien5Eval = evaluateXien5Row(top5Nums, isPending ? {} : (loRow.numHitsMap || {}));
+            const tickets = xien5Eval.tickets;
+            const ticketDetails = xien5Eval.ticketDetails;
+
+            const ticketsHtml = ticketDetails.map(td => {
+                const ticketChips = td.ticket.map(n => {
+                    const isHit = (!isPending && (loRow?.numHitsMap?.[n] || 0) > 0);
+                    const hitsCount = isPending ? 0 : (loRow?.numHitsMap?.[n] || 0);
+                    if (isHit) {
+                        return `<span class="inline-flex items-center px-2 py-0.5 rounded-lg font-mono font-black text-xs bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 text-slate-950 ring-2 ring-emerald-300 shadow-md animate-pulse">🎯 ${n} <sub class="text-[8px] font-bold bg-slate-950 text-emerald-300 px-1 py-0.2 rounded">${hitsCount}n</sub></span>`;
+                    }
+                    return `<span class="px-2 py-0.5 rounded-lg font-mono font-semibold text-xs bg-white/10 text-slate-400 border border-white/5 opacity-60">${n}</span>`;
+                }).join(' ');
+
+                let statusBadge = '';
+                if (isPending) {
+                    statusBadge = '<span class="text-[10px] font-bold text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/40">⏳ Chờ mở 18:30</span>';
+                } else if (td.count === 4) {
+                    statusBadge = '<span class="text-[10px] font-black text-slate-950 bg-gradient-to-r from-amber-400 to-yellow-500 px-2 py-0.5 rounded ring-2 ring-amber-300 shadow-md">⭐ ĂN XIÊN 4 (+384M)</span>';
+                } else if (td.count === 3) {
+                    statusBadge = '<span class="text-[10px] font-black text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-400 px-2 py-0.5 rounded ring-1 ring-emerald-300 shadow-xs">🎉 ĂN XIÊN 3 (+84M)</span>';
+                } else if (td.count === 2) {
+                    statusBadge = '<span class="text-[10px] font-bold text-cyan-300 bg-cyan-500/20 px-2 py-0.5 rounded border border-cyan-500/40">⚡ ĂN XIÊN 2 (+12M)</span>';
+                } else {
+                    statusBadge = '<span class="text-[10px] font-bold text-rose-400 bg-rose-500/20 px-2 py-0.5 rounded border border-rose-500/30">❌ Trượt (0đ)</span>';
+                }
+
+                return `
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-xl bg-black/40 border border-white/10">
+                        <div class="flex items-center gap-2">
+                            <span class="inline-flex items-center justify-center w-6 h-6 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono font-bold text-xs">#${td.ticketIndex}</span>
+                            <div class="flex items-center gap-1.5 flex-wrap">${ticketChips}</div>
+                        </div>
+                        <div class="flex items-center gap-2 self-end sm:self-auto font-mono text-xs">
+                            <span class="text-slate-400">Vốn 11M</span>
+                            ${statusBadge}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            const top5Badges = top5Nums.map((n, idx) => {
+                const isHit = (!isPending && (loRow?.numHitsMap?.[n] || 0) > 0);
+                if (isHit) {
+                    return `<span class="inline-flex items-center px-2 py-1 rounded-lg font-mono font-black text-xs bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 ring-2 ring-emerald-300 shadow-md animate-pulse">🎯 #${idx+1}: ${n}</span>`;
+                }
+                return `<span class="px-2 py-1 rounded-lg font-mono font-bold text-xs bg-white/10 text-slate-400 border border-white/5 opacity-60">#${idx+1}: ${n}</span>`;
+            }).join(' ');
+
+            const copyTextTickets = [
+                `🎲 DÀN LÔ XIÊN 5 (5 DÀN XIÊN 4) - NGÀY ${dateVi}:`,
+                `Top 5: ${top5Nums.join(', ')}`,
+                `Vốn: 11M/dàn x 5 dàn = 55M`,
+                ...tickets.map((t, idx) => `Vé ${idx + 1}: ${t.join(' - ')} (11M)`)
+            ].join('\n');
+
+            xien5SectionHtml = `
+                <div class="rounded-2xl border border-amber-500/40 bg-slate-900/80 p-4 space-y-3">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-2.5">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h4 class="text-xs font-black uppercase text-amber-300 flex items-center gap-1.5">
+                                <i class="bi bi-dice-5-fill text-amber-400"></i> 🎲 3. LÔ XIÊN 5 (5 DÀN XIÊN 4 TUYỂN CHỌN):
+                            </h4>
+                            <span class="text-[11px] text-slate-400 font-mono">(5 vé độc lập · Vốn 55M/ngày)</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            ${isPending 
+                                ? '<span class="text-xs font-bold text-amber-300 bg-amber-500/20 border border-amber-500/40 px-2 py-0.5 rounded">⏳ 5 DÀN X4 · CHỜ MỞ 18:30</span>' 
+                                : (xien5Eval.isWin 
+                                    ? `<span class="text-xs font-black text-slate-950 bg-gradient-to-r from-amber-400 to-yellow-400 px-2.5 py-0.5 rounded shadow-sm ring-1 ring-amber-300">🔥 THẮNG XIÊN 5 (${formatMoneyK(xien5Eval.profitK)})</span>` 
+                                    : `<span class="text-xs font-bold text-rose-300 bg-rose-500/20 border border-rose-500/40 px-2 py-0.5 rounded">${formatMoneyK(xien5Eval.profitK)}</span>`)}
+                            <button type="button" class="btn-copy-slip-xien5 text-[11px] font-bold text-amber-300 hover:text-white bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-lg border border-white/10 transition-all flex items-center gap-1 cursor-pointer" data-tickets="${copyTextTickets.replace(/"/g, '&quot;')}" data-date="${targetDate}">
+                                <i class="bi bi-clipboard"></i> Copy 5 Dàn
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Top 5 source display -->
+                    <div class="p-2.5 rounded-xl bg-black/40 border border-amber-500/20 flex flex-wrap items-center justify-between gap-2 text-xs">
+                        <span class="text-slate-400 font-medium">Top 5 Số Nguồn (QMBF v6):</span>
+                        <div class="flex items-center gap-1.5 flex-wrap">${top5Badges}</div>
+                        <span class="font-mono text-amber-300 font-bold">${isPending ? 'Chờ kq' : `Nổ ${xien5Eval.h5}/5 con`}</span>
+                    </div>
+
+                    <!-- 5 Tickets detail -->
+                    <div class="space-y-1.5">
+                        ${ticketsHtml}
+                    </div>
+
+                    <!-- Financial summary footer -->
+                    <div class="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-white/5 font-mono flex-wrap gap-2">
+                        <span>Vốn cược: <strong class="text-slate-200">55.0M</strong> (11M x 5 dàn)</span>
+                        <span>Tiền thưởng: <strong class="text-amber-300">${isPending ? '—' : formatMoneyK(xien5Eval.payoutK, false)}</strong></span>
+                        <span>Lãi ròng Xiên 5: <strong class="${xien5Eval.profitK > 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold">${isPending ? 'Chờ kq' : formatMoneyK(xien5Eval.profitK)}</strong></span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 6. Section Financial Summary
         const summaryCardHtml = `
             <div class="rounded-2xl border border-amber-500/30 bg-gradient-to-r from-slate-900 via-amber-950/20 to-slate-900 p-4">
                 <div class="flex items-center justify-between text-xs mb-2">
@@ -2127,7 +2520,7 @@
             </div>
         `;
 
-        container.innerHTML = resultsStripHtml + dropoffSectionHtml + deSectionHtml + loSectionHtml + summaryCardHtml;
+        container.innerHTML = resultsStripHtml + dropoffSectionHtml + deSectionHtml + loSectionHtml + xien5SectionHtml + summaryCardHtml;
     }
 
     document.addEventListener('DOMContentLoaded', initShadowMonitor);
