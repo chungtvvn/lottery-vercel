@@ -1021,6 +1021,8 @@
         }
 
         let cumDeK = 0;
+        let cumLoFlatK = 0;
+        let cumLoTierK = 0;
         let cumLoK = 0;
         let cumComboK = 0;
 
@@ -1053,10 +1055,17 @@
             const loProfitK = loInfo.profitK;
             const isLoWin = loInfo.isWin;
 
+            const loTierStakeK = loInfo.tierStakeK;
+            const loTierPayoutK = loInfo.tierPayoutK;
+            const loTierProfitK = loInfo.tierProfitK;
+            const isLoTierWin = loInfo.isTierWin;
+
             const comboDayProfitK = deProfitK + loProfitK;
             const comboDayStakeK = deStakeK + loStakeK;
 
             cumDeK += deProfitK;
+            cumLoFlatK += loProfitK;
+            cumLoTierK += loTierProfitK;
             cumLoK += loProfitK;
             cumComboK += comboDayProfitK;
 
@@ -1075,7 +1084,13 @@
                 loPayoutK,
                 loProfitK,
                 isLoWin,
+                cumLoFlatK,
                 cumLoK,
+                loTierStakeK,
+                loTierPayoutK,
+                loTierProfitK,
+                isLoTierWin,
+                cumLoTierK,
                 comboDayProfitK,
                 comboDayStakeK,
                 cumComboK,
@@ -1111,21 +1126,28 @@
                 totalProfitEl.className = `font-black text-sm font-mono ${cumDeK >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
             }
         } else { // 'loDropoff' or 'lo'
-            const loWins = rowsData.filter(r => r.isLoWin).length;
-            const loWinRate = totalDays > 0 ? (loWins / totalDays * 100).toFixed(1) : '0.0';
+            const loFlatWins = rowsData.filter(r => r.isLoWin).length;
+            const loFlatWinRate = totalDays > 0 ? (loFlatWins / totalDays * 100).toFixed(1) : '0.0';
+            const loTierWins = rowsData.filter(r => r.isLoTierWin).length;
+            const loTierWinRate = totalDays > 0 ? (loTierWins / totalDays * 100).toFixed(1) : '0.0';
             const totalHits = rowsData.reduce((acc, r) => acc + (r.loHits || 0), 0);
             const topNLabel = mode === 'top6' ? 'Top 6' : (mode === 'top8' ? 'Top 8' : (mode === 'top10' ? 'Top 10' : 'Top 7'));
             if (rowCountEl) rowCountEl.textContent = `${totalDays}`;
-            if (winCountEl) winCountEl.textContent = `${loWins}`;
-            if (winRateEl) winRateEl.textContent = `${loWinRate}%`;
+            if (winCountEl) winCountEl.innerHTML = `<span class="text-teal-300">Phẳng: ${loFlatWins}w (${loFlatWinRate}%)</span> · <span class="text-amber-300">Tầng: ${loTierWins}w (${loTierWinRate}%)</span>`;
+            if (winRateEl) winRateEl.textContent = `${loFlatWinRate}% / ${loTierWinRate}%`;
             if (hitsTagEl) {
                 hitsTagEl.classList.remove('hidden');
                 if (hitsCountEl) hitsCountEl.textContent = `${totalHits.toLocaleString('vi-VN')}`;
             }
             if (profitLabelEl) profitLabelEl.textContent = `💰 Lãi Lũy Kế Lô Dropoff 27 (${topNLabel} · Từ 17/09):`;
             if (totalProfitEl) {
-                totalProfitEl.textContent = formatMoneyK(cumLoK);
-                totalProfitEl.className = `font-black text-sm font-mono ${cumLoK >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+                totalProfitEl.innerHTML = `
+                    <div class="flex items-center gap-2 flex-wrap text-xs font-mono">
+                        <span class="text-teal-300 font-bold">Phẳng (2.2M): <strong class="${cumLoFlatK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${formatMoneyK(cumLoFlatK)}</strong></span>
+                        <span class="text-slate-500 font-normal">|</span>
+                        <span class="text-amber-300 font-bold">Phân Tầng: <strong class="${cumLoTierK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${formatMoneyK(cumLoTierK)}</strong></span>
+                    </div>
+                `;
             }
         }
 
@@ -1162,13 +1184,13 @@
             thead.innerHTML = `
                 <tr class="border-b border-white/10 text-[11px] font-bold text-slate-400 uppercase tracking-wide">
                     <th class="py-2.5 px-3">Ngày Quay</th>
-                    <th class="py-2.5 px-3">Chế Độ &amp; Trạng Thái</th>
-                    <th class="py-2.5 px-3">Dàn Lô Dropoff 27 &amp; Số Nổ (${topNTitle})</th>
-                    <th class="py-2.5 px-3 text-center">Nháy Nổ (27 Giải)</th>
-                    <th class="py-2.5 px-3 text-right">Vốn Cược</th>
-                    <th class="py-2.5 px-3 text-right">Tiền Trúng</th>
-                    <th class="py-2.5 px-3 text-right">Lãi/Lỗ Ngày</th>
-                    <th class="py-2.5 px-3 text-right">Lũy Kế Lô</th>
+                    <th class="py-2.5 px-3">Trạng Thái (${topNTitle})</th>
+                    <th class="py-2.5 px-3">Dàn Lô Dropoff 27 &amp; Số Nổ</th>
+                    <th class="py-2.5 px-3 text-center">Nháy Nổ</th>
+                    <th class="py-2.5 px-3 text-right">Lô Đánh Phẳng (2.2M)</th>
+                    <th class="py-2.5 px-3 text-right">Lũy Kế Phẳng</th>
+                    <th class="py-2.5 px-3 text-right">Lô Phân Tầng (X3/X2/X1)</th>
+                    <th class="py-2.5 px-3 text-right">Lũy Kế Tầng</th>
                     <th class="py-2.5 px-3 text-center">Chi Tiết</th>
                 </tr>
             `;
@@ -1236,7 +1258,7 @@
                     <td class="py-3 px-3 text-right text-slate-400 font-medium">Vốn 24M (Chờ kq)</td>
                     <td class="py-3 px-3 text-right font-bold text-emerald-300">${formatMoneyK(cumDeK)}</td>
                     <td class="py-3 px-3 text-center">
-                        <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-200 hover:text-slate-950 border border-amber-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer" data-slip-date="${targetDate}">
+                        <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-200 hover:text-slate-950 border border-amber-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${targetDate}">
                             <i class="bi bi-eye"></i> 24 Số
                         </button>
                     </td>
@@ -1248,7 +1270,8 @@
                 return `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-teal-500/15 text-teal-200 border border-teal-500/30 font-mono">${p.num}<span class="text-[9px] opacity-80 ml-0.5">·${p.tier}</span></span>`;
             }).join(' ');
 
-            const stakeStr = formatMoneyK(loPendingInfo.stakeK, false);
+            const flatStakeStr = formatMoneyK(loPendingInfo.stakeK, false);
+            const tierStakeStr = formatMoneyK(loPendingInfo.tierStakeK, false);
 
             pendingRowHtml = `
                 <tr class="border-b border-amber-500/20 bg-amber-950/20 hover:bg-amber-950/30 transition-colors font-mono text-xs">
@@ -1266,12 +1289,18 @@
                         <div class="flex flex-wrap gap-1 max-w-md">${betPillsHtml || '—'}</div>
                     </td>
                     <td class="py-3 px-3 text-center text-amber-400 font-bold">⏳ Chờ 18:30</td>
-                    <td class="py-3 px-3 text-right font-bold text-white">${stakeStr}</td>
-                    <td class="py-3 px-3 text-right text-slate-400 font-mono">—</td>
-                    <td class="py-3 px-3 text-right font-bold text-amber-300">⏳ Chờ kết toán</td>
-                    <td class="py-3 px-3 text-right font-bold text-emerald-300">${formatMoneyK(cumLoK)}</td>
+                    <td class="py-3 px-3 text-right">
+                        <span class="text-white font-bold">Vốn ${flatStakeStr}</span>
+                        <div class="text-[10px] text-amber-400">Chờ mở thưởng</div>
+                    </td>
+                    <td class="py-3 px-3 text-right font-bold text-emerald-300">${formatMoneyK(cumLoFlatK)}</td>
+                    <td class="py-3 px-3 text-right">
+                        <span class="text-white font-bold">Vốn ${tierStakeStr}</span>
+                        <div class="text-[10px] text-amber-400">Chờ mở thưởng</div>
+                    </td>
+                    <td class="py-3 px-3 text-right font-bold text-amber-300">${formatMoneyK(cumLoTierK)}</td>
                     <td class="py-3 px-3 text-center">
-                        <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-teal-500/20 hover:bg-teal-500 text-teal-200 hover:text-slate-950 border border-teal-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer" data-slip-date="${targetDate}">
+                        <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-teal-500/20 hover:bg-teal-500 text-teal-200 hover:text-slate-950 border border-teal-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${targetDate}">
                             <i class="bi bi-eye"></i> Chi Tiết
                         </button>
                     </td>
@@ -1390,12 +1419,17 @@
                         ? 'bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 ring-2 ring-emerald-300 font-black shadow-md'
                         : 'bg-rose-500/20 text-rose-300 border border-rose-500/30 font-semibold');
 
+                const flatProfitStr = formatMoneyK(row.loProfitK);
+                const tierProfitStr = formatMoneyK(row.loTierProfitK);
+
                 return `
-                    <tr class="border-b border-white/5 ${row.isLoWin ? 'bg-emerald-950/15' : ''} hover:bg-white/5 transition-colors font-mono text-xs">
+                    <tr class="border-b border-white/5 ${row.isLoWin || row.isLoTierWin ? 'bg-emerald-950/15' : ''} hover:bg-white/5 transition-colors font-mono text-xs">
                         <td class="py-2.5 px-3 font-bold text-slate-300">${dateVi}</td>
                         <td class="py-2.5 px-3">
                             <div class="font-bold text-teal-300">Lô Dropoff 27 (${topNTitle})</div>
-                            <div class="text-[10px] ${row.isLoWin ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}">${row.isLoWin ? '✅ Thắng Lô' : '❌ Thua Lô'}</div>
+                            <div class="text-[10px] ${row.isLoWin ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}">
+                                ${row.isLoWin ? '✅ Phẳng: Lãi' : '❌ Phẳng: Lỗ'} · ${row.isLoTierWin ? '<span class="text-amber-300">Tầng: Lãi</span>' : '<span class="text-rose-400">Tầng: Lỗ</span>'}
+                            </div>
                         </td>
                         <td class="py-2.5 px-3">
                             <div class="flex flex-wrap gap-1 max-w-md">${betPillsHtml || '—'}</div>
@@ -1403,10 +1437,20 @@
                         <td class="py-2.5 px-3 text-center">
                             <span class="inline-flex items-center justify-center min-w-[28px] h-6 rounded-md font-mono text-[11px] px-1.5 ${hitsBadgeClass}">${row.loHits} nháy</span>
                         </td>
-                        <td class="py-2.5 px-3 text-right text-slate-400">${formatMoneyK(row.loStakeK, false)}</td>
-                        <td class="py-2.5 px-3 text-right font-bold text-amber-300">${formatMoneyK(row.loPayoutK, false)}</td>
-                        <td class="py-2.5 px-3 text-right font-black ${row.loProfitK > 0 ? 'text-emerald-400' : (row.loProfitK < 0 ? 'text-rose-400' : 'text-slate-500')}">${formatMoneyK(row.loProfitK)}</td>
-                        <td class="py-2.5 px-3 text-right font-bold ${row.cumLoK >= 0 ? 'text-emerald-300' : 'text-rose-300'}">${formatMoneyK(row.cumLoK)}</td>
+                        <td class="py-2.5 px-3 text-right font-black ${row.loProfitK > 0 ? 'text-emerald-400' : (row.loProfitK < 0 ? 'text-rose-400' : 'text-slate-500')}">
+                            ${flatProfitStr}
+                            <div class="text-[9px] text-slate-500 font-normal">Vốn ${formatMoneyK(row.loStakeK, false)}</div>
+                        </td>
+                        <td class="py-2.5 px-3 text-right font-bold ${row.cumLoFlatK >= 0 ? 'text-emerald-300' : 'text-rose-300'}">
+                            ${formatMoneyK(row.cumLoFlatK)}
+                        </td>
+                        <td class="py-2.5 px-3 text-right font-black ${row.loTierProfitK > 0 ? 'text-emerald-400' : (row.loTierProfitK < 0 ? 'text-rose-400' : 'text-slate-500')}">
+                            ${tierProfitStr}
+                            <div class="text-[9px] text-slate-500 font-normal">Vốn ${formatMoneyK(row.loTierStakeK, false)}</div>
+                        </td>
+                        <td class="py-2.5 px-3 text-right font-bold ${row.cumLoTierK >= 0 ? 'text-amber-300' : 'text-rose-300'}">
+                            ${formatMoneyK(row.cumLoTierK)}
+                        </td>
                         <td class="py-2.5 px-3 text-center">
                             <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-teal-500/20 hover:bg-teal-500 text-teal-200 hover:text-slate-950 border border-teal-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${row.date}">
                                 <i class="bi bi-eye"></i> Chi Tiết
@@ -1780,9 +1824,9 @@
                 const s = numStr(n);
                 const isNumHit = actualSpecial && (s === actualSpecial);
                 if (isNumHit) {
-                    return `<span class="inline-flex items-center justify-center px-2 py-1 rounded-lg font-mono font-black text-xs bg-amber-400 text-slate-950 ring-2 ring-amber-300 shadow-md">🎯 ${s}</span>`;
+                    return `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-xl font-mono font-black text-sm bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 ring-2 ring-amber-300 shadow-lg scale-110 animate-pulse">🎯 ${s} ⭐</span>`;
                 }
-                return `<span class="inline-flex items-center justify-center px-2 py-1 rounded-lg font-mono font-bold text-xs bg-white/10 text-slate-200 border border-white/10 hover:bg-white/20 transition-all">${s}</span>`;
+                return `<span class="inline-flex items-center justify-center px-2 py-1 rounded-lg font-mono font-bold text-xs bg-white/5 text-slate-400 border border-white/5 opacity-60 hover:opacity-100 transition-all">${s}</span>`;
             }).join('');
 
             dropoffSectionHtml = `
@@ -2025,10 +2069,27 @@
                             <div class="flex flex-wrap gap-1 pt-1">${x1Chips}</div>
                         </div>
                     </div>
-                    <div class="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-white/5 font-mono">
-                        <span>Vốn cược: <strong class="text-slate-200">${formatMoneyK(loInfo.stakeK, false)}</strong> (Đều 2.2M) · Phân Tầng: <strong class="text-slate-200">${formatMoneyK(loInfo.tierStakeK, false)}</strong></span>
-                        <span>Tiền thưởng: <strong class="text-amber-300">${isPending ? '—' : formatMoneyK(loInfo.payoutK, false)}</strong></span>
-                        <span>Lãi ròng Lô: <strong class="${loInfo.profitK > 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold">${isPending ? 'Chờ kq' : formatMoneyK(loInfo.profitK)}</strong></span>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-white/10 font-mono text-[11px]">
+                        <div class="rounded-xl bg-black/40 border border-teal-500/30 p-2.5 space-y-1">
+                            <div class="flex items-center justify-between">
+                                <span class="text-teal-300 font-bold uppercase text-[10px]">1. Đánh Phẳng (1U = 2.2M/số):</span>
+                                <span class="text-slate-300">Vốn ${formatMoneyK(loInfo.stakeK, false)}</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-400">Thưởng: <strong class="text-amber-300">${isPending ? '—' : formatMoneyK(loInfo.payoutK, false)}</strong></span>
+                                <span>Lãi: <strong class="${loInfo.profitK > 0 ? 'text-emerald-400' : (loInfo.profitK < 0 ? 'text-rose-400' : 'text-slate-400')} font-black">${isPending ? 'Chờ kq' : formatMoneyK(loInfo.profitK)}</strong></span>
+                            </div>
+                        </div>
+                        <div class="rounded-xl bg-black/40 border border-amber-500/30 p-2.5 space-y-1">
+                            <div class="flex items-center justify-between">
+                                <span class="text-amber-300 font-bold uppercase text-[10px]">2. Phân Tầng (X3/X2/X1):</span>
+                                <span class="text-slate-300">Vốn ${formatMoneyK(loInfo.tierStakeK, false)}</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-400">Thưởng: <strong class="text-amber-300">${isPending ? '—' : formatMoneyK(loInfo.tierPayoutK, false)}</strong></span>
+                                <span>Lãi: <strong class="${loInfo.tierProfitK > 0 ? 'text-emerald-400' : (loInfo.tierProfitK < 0 ? 'text-rose-400' : 'text-slate-400')} font-black">${isPending ? 'Chờ kq' : formatMoneyK(loInfo.tierProfitK)}</strong></span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
