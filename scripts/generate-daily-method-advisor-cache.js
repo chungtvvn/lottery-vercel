@@ -82,6 +82,20 @@ async function main() {
         console.error('[generateDailyAdvisorCache] Error building triCoreDe:', err);
     }
 
+    try {
+        const { buildDeDropoffMergeAdvisor } = require('../lib/services/deDropoffMergeAdvisorService');
+        cache.deDropoffMerge = buildDeDropoffMergeAdvisor(raw, cache);
+    } catch (err) {
+        console.error('[generateDailyAdvisorCache] Error building deDropoffMerge:', err);
+    }
+
+    try {
+        const { buildLoDropoff27Advisor } = require('../lib/services/loDropoff27AdvisorService');
+        cache.loDropoff27 = buildLoDropoff27Advisor(raw, cache);
+    } catch (err) {
+        console.error('[generateDailyAdvisorCache] Error building loDropoff27:', err);
+    }
+
     const fs = require('fs');
     const dataDir = path.join(__dirname, '..', 'data');
     if (!fs.existsSync(dataDir)) {

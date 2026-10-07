@@ -561,6 +561,20 @@ export async function GET(request) {
                         payload.triCoreDe = localPayload.triCoreDe;
                     }
                 }
+                if (localPayload?.deDropoffMerge) {
+                    const localTarget = localPayload.deDropoffMerge.latestRecommendation?.targetDate || '';
+                    const r2Target = payload?.deDropoffMerge?.latestRecommendation?.targetDate || '';
+                    if (!payload.deDropoffMerge || localTarget >= r2Target) {
+                        payload.deDropoffMerge = localPayload.deDropoffMerge;
+                    }
+                }
+                if (localPayload?.loDropoff27) {
+                    const localTarget = localPayload.loDropoff27.latestRecommendation?.targetDate || '';
+                    const r2Target = payload?.loDropoff27?.latestRecommendation?.targetDate || '';
+                    if (!payload.loDropoff27 || localTarget >= r2Target) {
+                        payload.loDropoff27 = localPayload.loDropoff27;
+                    }
+                }
             } catch (_) {}
         }
 

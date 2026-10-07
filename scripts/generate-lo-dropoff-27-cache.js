@@ -50,11 +50,14 @@ async function generate() {
     let maxDD7 = 0;
 
     let combatAccumProfit7K = 0;
+    let accumTierProfit7K = 0;
+    let combatAccumTierProfit7K = 0;
+    let tierWinDays7 = 0;
 
-    // Process all 273 days of 2026
+    // Process all days of 2026
     qmbf.settledLedger.forEach(row => {
         const dt = String(row.date || row.predictionIsoDate).slice(0, 10);
-        const actualPrizes = row.actual27 || [];
+        const actualPrizes = (row.actual27 || []).map(p => String(p).padStart(2, '0'));
         const actualSpecial = row.actualSpecial || (actualPrizes.length ? Number(actualPrizes[0]) : null);
 
         const m7 = row.methods?.top7 || {};
@@ -92,9 +95,31 @@ async function generate() {
         const dd7 = peak7 - accumProfit7K;
         if (dd7 > maxDD7) maxDD7 = dd7;
 
+        // Build numHitsMap
+        const numHitsMap = {};
+        actualPrizes.forEach(p => {
+            numHitsMap[p] = (numHitsMap[p] || 0) + 1;
+        });
+
+        // 2. Multi-tier (X3: 6.6M ăn 24M, X2: 4.4M ăn 16M, X1: 2.2M ăn 8M):
+        const x3Hits = (numHitsMap[top7Nums[0]] || 0) + (numHitsMap[top7Nums[1]] || 0);
+        const x2Hits = (numHitsMap[top7Nums[2]] || 0) + (numHitsMap[top7Nums[3]] || 0);
+        let x1Hits = 0;
+        for (let idx = 4; idx < top7Nums.length; idx++) {
+            x1Hits += (numHitsMap[top7Nums[idx]] || 0);
+        }
+        const tierStakeK = (2 * 6600) + (2 * 4400) + (Math.max(0, top7Nums.length - 4) * 2200); // 28,600K
+        const tierPayoutK = (x3Hits * 24000) + (x2Hits * 16000) + (x1Hits * 8000);
+        const tierProfitK = tierPayoutK - tierStakeK;
+        const isTierWin = tierProfitK > 0;
+
+        accumTierProfit7K += tierProfitK;
+        if (isTierWin) tierWinDays7++;
+
         const isCombat = dt >= START_DATE;
         if (isCombat) {
             combatAccumProfit7K += dayProfit7K;
+            combatAccumTierProfit7K += tierProfitK;
         }
 
         const rowObj = {
@@ -113,6 +138,10 @@ async function generate() {
                 score: Math.round((20 - idx * 1.5) * 10) / 10
             })),
             hitNumbers: top7Nums.filter(n => actualPrizes.includes(n)),
+            numHitsMap,
+            x3Hits,
+            x2Hits,
+            x1Hits,
             hits: hits7,
             hits7,
             hits6,
@@ -125,11 +154,11 @@ async function generate() {
             profitK: dayProfit7K,
             dayProfitK: dayProfit7K,
             accumProfitK: isCombat ? combatAccumProfit7K : accumProfit7K,
-            tierStakeK: dayStake7K,
-            tierPayoutK: dayPayout7K,
-            tierProfitK: dayProfit7K,
-            accumTierProfitK: isCombat ? combatAccumProfit7K : accumProfit7K,
-            isTierWin: isWin7,
+            tierStakeK,
+            tierPayoutK,
+            tierProfitK,
+            accumTierProfitK: isCombat ? combatAccumTierProfit7K : accumTierProfit7K,
+            isTierWin,
             actualPrizes,
             actualSpecial,
             snapshotLock: {
@@ -151,12 +180,17 @@ async function generate() {
     const livePayout7K = liveHits7 * CFG.unitPayoutK;
     const liveProfit7K = livePayout7K - liveStake7K;
 
+    const liveTierWins7 = combatLedger.filter(r => r.isTierWin).length;
+    const liveTierStake7K = combatLedger.length * 28600;
+    const liveTierPayoutK = combatLedger.reduce((sum, r) => sum + r.tierPayoutK, 0);
+    const liveTierProfitK = liveTierPayoutK - liveTierStake7K;
+
     const nextRecRaw = qmbf.latestRecommendation || {};
     const nextTop7 = (nextRecRaw.byTop?.top7?.numbers || ['62', '88', '84', '52', '70', '36', '19']).map(n => String(n).padStart(2, '0'));
     const nextTop6 = (nextRecRaw.byTop?.top6?.numbers || ['62', '88', '84', '52', '70', '36']).map(n => String(n).padStart(2, '0'));
     const nextTop8 = (nextRecRaw.byTop?.top8?.numbers || ['62', '88', '84', '52', '70', '36', '19', '68']).map(n => String(n).padStart(2, '0'));
     const nextTop10 = (nextRecRaw.byTop?.top10?.numbers || ['62', '88', '84', '52', '70', '36', '19', '68', '54', '41']).map(n => String(n).padStart(2, '0'));
-    const targetDate = advisorCache.pendingPredictionDate || '2026-10-05';
+    const targetDate = advisorCache.pendingPredictionDate || '2026-10-07';
 
     const latestRecommendation = {
         targetDate,
@@ -237,12 +271,12 @@ async function generate() {
                 roi: liveStake7K ? liveProfit7K / liveStake7K : 0,
                 maxLossStreak: 1,
                 maxDrawdownK: 15400,
-                tierWins: liveWins7,
-                tierHitRate: combatLedger.length ? liveWins7 / combatLedger.length : 0,
-                tierStakeK: liveStake7K,
-                tierPayoutK: livePayout7K,
-                tierProfitK: liveProfit7K,
-                tierRoi: liveStake7K ? liveProfit7K / liveStake7K : 0
+                tierWins: liveTierWins7,
+                tierHitRate: combatLedger.length ? liveTierWins7 / combatLedger.length : 0,
+                tierStakeK: liveTierStake7K,
+                tierPayoutK: liveTierPayoutK,
+                tierProfitK: liveTierProfitK,
+                tierRoi: liveTierStake7K ? liveTierProfitK / liveTierStake7K : 0
             },
             byTop: {
                 top6: qmbf.summary?.top6,
