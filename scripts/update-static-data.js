@@ -47,6 +47,7 @@ const MILESTONE20Y_CACHE_FILES = [
 const PERFORMANCE_REPORT_CACHE_FILE = 'cached_profit_report_2026.json';
 const HISTORY_PERFORMANCE_REPORT_CACHE_FILE = 'cached_prediction_history_performance_2026.json';
 const DAILY_METHOD_ADVISOR_CACHE_FILE = 'cached_daily_method_advisor.json';
+const DE_DROPOFF_MERGE_CACHE_FILE = 'cached_de_dropoff_merge_shadow.json';
 const PROBABILITY_SCORE_CACHE_FILE = 'cached_probability_score.json';
 const PROBABILITY_DISTRIBUTION_CACHE_FILE = 'cached_probability_distribution.json';
 const PROBABILITY_SCORE_HISTORY_VERSION = 'probability-score-history-v1';
@@ -1225,7 +1226,7 @@ function uploadOnlyPredictionCaches(options = {}) {
         PERFORMANCE_REPORT_CACHE_FILE,
         HISTORY_PERFORMANCE_REPORT_CACHE_FILE
     ].filter(file => fsSync.existsSync(path.join(statsDir, file)));
-    const predictionHistoryFiles = ['cached_prediction_history.json', DAILY_METHOD_ADVISOR_CACHE_FILE, PROBABILITY_SCORE_CACHE_FILE, PROBABILITY_DISTRIBUTION_CACHE_FILE]
+    const predictionHistoryFiles = ['cached_prediction_history.json', DAILY_METHOD_ADVISOR_CACHE_FILE, DE_DROPOFF_MERGE_CACHE_FILE, PROBABILITY_SCORE_CACHE_FILE, PROBABILITY_DISTRIBUTION_CACHE_FILE]
         .filter(file => fsSync.existsSync(path.join(statsDir, file)));
     if (!includeLoto) {
         console.log('[6] Upload riêng cache dự đoán nhưng giữ nguyên cached_loto_* trên R2 vì Lô không sinh mới trong run này.');
@@ -1259,6 +1260,16 @@ function generateDailyMethodAdvisorCache(options = {}) {
         },
         { timeoutMs: 300_000 }
     );
+    try {
+        runNodeScript(
+            'scripts/generate-de-dropoff-merge-cache.js',
+            'Sinh cache Đề Khử Trùng Dropoff 60s & Gộp Đa Tầng 40s (2025-2026)',
+            {},
+            { timeoutMs: 300_000 }
+        );
+    } catch (e) {
+        console.warn('[Cache Update] Could not generate de-dropoff-merge cache:', e.message);
+    }
 }
 
 function generateProbabilityScoreCache(options = {}) {

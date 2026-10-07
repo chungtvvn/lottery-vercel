@@ -88,10 +88,10 @@
                 <div>
                     <div class="flex items-center gap-2 mb-1">
                         <span class="rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-black text-[10px] px-2.5 py-0.5 uppercase tracking-wide">
-                            👑 PRODUCTION ĐỀ TRI-CORE 24 SỐ &amp; LÔ GHÉP 4 ĐỘNG CƠ
+                            👑 ĐỀ DROPOFF 40 SỐ (X3/X2/X1) &amp; LÔ GHÉP 4 ĐỘNG CƠ
                         </span>
                         <span class="rounded-full bg-white/10 text-slate-300 font-mono text-[10px] px-2 py-0.5">
-                            Đề Tri-Core 24 Số Tinh Hoa (Smart Abstain Gate) &amp; Lô Đồng Thuận 4 Động Cơ (Top 6 / Top 7)
+                            Đề Khử Trùng Dropoff 40 Số (Win 90.1% · Lãi +64.812 TỶ 2025-2026) &amp; Lô Đồng Thuận 4 ĐC
                         </span>
                     </div>
                     <h3 class="text-xl sm:text-2xl font-black text-white">
@@ -99,31 +99,73 @@
                     </h3>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="text-xs text-slate-400">Danh mục cân bằng:</span>
-                    <span class="rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 text-xs font-bold px-2.5 py-1">Tri-Core 24s Smart Abstain + Lô Ghép 4 ĐC</span>
+                    <span class="text-xs text-slate-400">Danh mục chủ lực:</span>
+                    <span class="rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 text-xs font-bold px-2.5 py-1">Dropoff 40s (72M) + Lô Ghép 4 ĐC</span>
                 </div>
             </div>
 
             <!-- Two-Column Grid for Recommendation: Đề Tinh Hoa & Lô Ghép 4 Động Cơ -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                <!-- Column 1: Đề Tri-Core 24 Số -->
+                <!-- Column 1: Đề Khử Trùng Dropoff 40s (X3/X2/X1) & Đề Tri-Core 24s -->
                 <div id="shadowActionBanner" class="rounded-2xl border-2 border-slate-700 bg-slate-800/40 p-5 shadow-xl transition-all flex flex-col justify-between">
                     <div>
-                        <div class="flex items-center justify-between border-b border-white/10 pb-2.5 mb-3">
-                            <span class="text-xs font-black uppercase text-amber-300 flex items-center gap-1.5">
-                                <i class="bi bi-gem"></i> 1. Đề Tri-Core (24 Số Tinh Hoa)
+                        <div class="flex items-center justify-between border-b border-white/10 pb-2.5 mb-3 flex-wrap gap-2">
+                            <span class="text-xs font-black uppercase text-amber-300 flex items-center gap-1.5" id="shadowDeTitleLabel">
+                                <i class="bi bi-award-fill text-amber-400"></i> 1. Đề Dropoff 40s (X3/X2/X1)
                             </span>
-                            <span class="rounded bg-amber-400/20 text-amber-200 border border-amber-400/30 text-[10px] font-bold px-1.5 py-0.5">Cược Phẳng 24 Số (1M/số · Vốn 24M)</span>
+                            <div class="inline-flex items-center gap-1 bg-black/60 p-0.5 rounded-lg border border-white/10 text-[10px]" id="shadowDeStrategyToggleGroup">
+                                <button type="button" id="btnToggleDeDropoff" class="px-2.5 py-1 rounded-md font-black bg-amber-500 text-slate-950 transition-all shadow-xs">👑 Dropoff 40s (+64.8 TỶ)</button>
+                                <button type="button" id="btnToggleDeTriCore" class="px-2.5 py-1 rounded-md font-bold text-slate-300 hover:text-white transition-all">🎯 Tri-Core 24s</button>
+                            </div>
                         </div>
                         <div id="shadowActionStatusText" class="text-base font-black text-white mb-2">
                             Đang đối soát trạng thái công tắc an toàn...
                         </div>
                         <p id="shadowActionDesc" class="text-xs text-slate-300 leading-relaxed"></p>
 
-                        <!-- 24 Numbers Box (Only shown if BET) -->
+                        <!-- Đề Dropoff 40 Numbers Box (3 Tiers: X3, X2, X1) -->
+                        <div id="shadowDropoffTiersBox" class="mt-4 pt-3 border-t border-white/10 space-y-3">
+                            <div class="flex items-center justify-between flex-wrap gap-2">
+                                <span class="text-xs font-bold text-amber-300 uppercase tracking-wide">🏆 Dàn 40 Số Phân Tầng (Vốn 72M/ngày):</span>
+                                <div class="flex items-center gap-1.5">
+                                    <button type="button" id="btnCopyDropoffX3" class="rounded-lg bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-slate-950 border border-rose-500/40 font-bold text-[11px] px-2 py-0.5 transition-all">
+                                        Copy 10 VIP X3
+                                    </button>
+                                    <button type="button" id="btnCopyDropoffAll" class="rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs px-2.5 py-1 transition-all shadow-md flex items-center gap-1">
+                                        <i class="bi bi-clipboard-check-fill"></i> Copy 40 Số
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- 3 Tiers visual boxes -->
+                            <div class="space-y-2 text-xs">
+                                <div class="p-2.5 rounded-xl bg-rose-950/30 border border-rose-500/30 space-y-1">
+                                    <div class="flex items-center justify-between text-[11px]">
+                                        <span class="font-black text-rose-400 uppercase">🔴 Tầng 1: Siêu VIP X3 (10 Số · 3M/số · Ăn 252M)</span>
+                                        <span class="text-rose-300 font-mono font-bold">Vốn 30M</span>
+                                    </div>
+                                    <div id="shadowDropoffX3Container" class="flex flex-wrap gap-1 pt-1"></div>
+                                </div>
+                                <div class="p-2.5 rounded-xl bg-amber-950/30 border border-amber-500/30 space-y-1">
+                                    <div class="flex items-center justify-between text-[11px]">
+                                        <span class="font-black text-amber-300 uppercase">🟡 Tầng 2: Trung Tâm X2 (12 Số · 2M/số · Ăn 168M)</span>
+                                        <span class="text-amber-200 font-mono font-bold">Vốn 24M</span>
+                                    </div>
+                                    <div id="shadowDropoffX2Container" class="flex flex-wrap gap-1 pt-1"></div>
+                                </div>
+                                <div class="p-2.5 rounded-xl bg-emerald-950/30 border border-emerald-500/30 space-y-1">
+                                    <div class="flex items-center justify-between text-[11px]">
+                                        <span class="font-black text-emerald-300 uppercase">🟢 Tầng 3: Bọc Lót X1 (18 Số · 1M/số · Ăn 84M)</span>
+                                        <span class="text-emerald-200 font-mono font-bold">Vốn 18M</span>
+                                    </div>
+                                    <div id="shadowDropoffX1Container" class="flex flex-wrap gap-1 pt-1"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 24 Numbers Box (Shown when Tri-Core is selected) -->
                         <div id="shadowNumbersBox" class="mt-4 pt-3 border-t border-white/10 hidden space-y-2.5">
                             <div class="flex items-center justify-between">
-                                <span class="text-xs font-bold text-emerald-300 uppercase tracking-wide">🎯 Dàn 24 Số Tinh Hoa:</span>
+                                <span class="text-xs font-bold text-emerald-300 uppercase tracking-wide">🎯 Dàn 24 Số Tinh Hoa (Cược Phẳng 1M/số):</span>
                                 <button type="button" id="btnCopyShadowNumbers" class="rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs px-2.5 py-1 transition-all shadow-md flex items-center gap-1">
                                     <i class="bi bi-clipboard-check-fill"></i> Copy 24 Số
                                 </button>
@@ -131,9 +173,9 @@
                             <div id="shadowNumbersContainer" class="flex flex-wrap gap-1.5 p-2.5 rounded-xl bg-black/40 border border-white/10"></div>
                         </div>
                     </div>
-                    <div class="mt-4 pt-2.5 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-400">
-                        <span>Hòa vốn: <strong class="text-amber-300">28.6% (1 ăn 84)</strong></span>
-                        <span>Quản lý vốn: <strong class="text-emerald-400">Smart Abstain Gate (&ge;6.5)</strong></span>
+                    <div class="mt-4 pt-2.5 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-400" id="shadowDeFooterMeta">
+                        <span>Hòa vốn: <strong class="text-amber-300">0% rủi ro trúng-lỗ (72M &lt; 84M)</strong></span>
+                        <span>Độ bền: <strong class="text-emerald-400">Win 90.1% (2 năm 2025-2026)</strong></span>
                     </div>
                 </div>
 
@@ -181,22 +223,25 @@
             </div>
         </section>
 
-        <!-- Mode Switcher: Smart Abstain (Selective Filter) vs Balanced (All Days) -->
+        <!-- Mode Switcher: Dropoff 40s vs Tri-Core 24s Smart Abstain vs Tri-Core Balanced -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-2xl bg-white/5 border border-white/10">
             <div>
-                <span class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-                    <i class="bi bi-toggles text-amber-400"></i> SO SÁNH CHẾ ĐỘ CƯỢC THỰC NGHIỆM ĐỀ 24 SỐ:
+                <span class="text-xs font-bold text-slate-300 flex items-center gap-1.5" id="shadowStrategySwitcherTitle">
+                    <i class="bi bi-toggles text-amber-400"></i> SO SÁNH CHẾ ĐỘ CƯỢC THỰC NGHIỆM ĐỀ:
                 </span>
-                <p class="text-[11px] text-slate-400 mt-0.5">
-                    So sánh đối soát giữa chế độ lọc Smart Abstain (chỉ cược khi Top 1 score &ge; 6.5) vs. Cược đều tất cả 272 ngày năm 2026.
+                <p class="text-[11px] text-slate-400 mt-0.5" id="shadowStrategySwitcherDesc">
+                    Đối soát giữa Đề Khử Trùng Dropoff 40s (Vốn 72M · Win 90.1%) vs. Đề Tri-Core 24s Smart Abstain (Vốn 24M · Win 44.9%).
                 </p>
             </div>
-            <div class="flex items-center gap-2 shrink-0">
-                <button type="button" id="btnModeWilson" class="rounded-xl bg-amber-500 text-slate-950 font-black text-xs px-3.5 py-2 transition-all shadow-md">
-                    🛡️ Lọc Kèo Khắt Khe (Smart Abstain: +134.4M · ROI +57.1%)
+            <div class="flex items-center gap-2 shrink-0 flex-wrap">
+                <button type="button" id="btnModeDropoff" class="rounded-xl bg-amber-500 text-slate-950 font-black text-xs px-3.5 py-2 transition-all shadow-md">
+                    👑 Đề Dropoff 40s (+64.8 TỶ · Win 90.1%)
+                </button>
+                <button type="button" id="btnModeWilson" class="rounded-xl bg-white/10 hover:bg-white/15 text-slate-300 font-bold text-xs px-3.5 py-2 transition-all">
+                    🎯 Tri-Core 24s Smart Abstain (+134.4M)
                 </button>
                 <button type="button" id="btnModeBalanced" class="rounded-xl bg-white/10 hover:bg-white/15 text-slate-300 font-bold text-xs px-3.5 py-2 transition-all">
-                    ⚖️ Cân Bằng (Đánh Đều 272 Ngày: +103.2M · ROI +15.8%)
+                    ⚖️ Tri-Core 24s Cân Bằng (+103.2M)
                 </button>
             </div>
         </div>
@@ -473,10 +518,13 @@
                     </p>
                 </div>
                 <div class="flex items-center gap-2 flex-wrap">
-                    <!-- Tab Switcher Category: Tổng Hợp, Đề, Lô -->
+                    <!-- Tab Switcher Category: Đề Dropoff 40s (Mặc định), Tổng Hợp, Đề Tri-Core, Lô -->
                     <div class="inline-flex items-center gap-1 bg-black/60 p-1 rounded-xl border border-white/15" id="shadowLedgerCategoryTabs">
-                        <button type="button" data-shadow-cat="combo" class="shadow-cat-btn active rounded-lg bg-indigo-600 text-white font-black text-xs px-3 py-1.5 transition-all shadow-xs flex items-center gap-1.5">
-                            <i class="bi bi-layers-fill text-amber-300"></i> 👑 Tổng Hợp (Đề + Lô)
+                        <button type="button" data-shadow-cat="deDropoff" class="shadow-cat-btn active rounded-lg bg-indigo-600 text-white font-black text-xs px-3 py-1.5 transition-all shadow-xs flex items-center gap-1.5">
+                            <i class="bi bi-award-fill text-amber-400"></i> 🏆 Đề Dropoff 40s (2025-2026)
+                        </button>
+                        <button type="button" data-shadow-cat="combo" class="shadow-cat-btn rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 font-bold text-xs px-3 py-1.5 transition-all flex items-center gap-1.5">
+                            <i class="bi bi-layers-fill text-amber-300"></i> 👑 Tổng Hợp (Đề Dropoff + Lô)
                         </button>
                         <button type="button" data-shadow-cat="de" class="shadow-cat-btn rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 font-bold text-xs px-3 py-1.5 transition-all flex items-center gap-1.5">
                             <i class="bi bi-gem text-amber-400"></i> 🎯 Đề Tri-Core 24s
@@ -494,9 +542,17 @@
                 </div>
             </div>
 
-            <!-- Category Summary & Sub-Controls Bar -->
+            <!-- Category Summary & Sub-Controls Bar with Year Selector -->
             <div class="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-black/40 border border-white/10 text-xs">
                 <div class="flex items-center gap-3 flex-wrap text-slate-300">
+                    <!-- Year Filter Buttons -->
+                    <div class="inline-flex items-center gap-1 bg-slate-900/90 p-1 rounded-xl border border-white/10 text-xs mr-2" id="shadowYearFilterGroup">
+                        <span class="text-slate-400 px-1 font-semibold text-[11px]"><i class="bi bi-calendar3"></i> Năm:</span>
+                        <button type="button" data-shadow-year="2026" class="shadow-year-btn active px-2.5 py-0.5 rounded-lg bg-indigo-600 text-white font-bold text-[11px] transition-all">2026</button>
+                        <button type="button" data-shadow-year="2025" class="shadow-year-btn px-2.5 py-0.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 font-bold text-[11px] transition-all">2025</button>
+                        <button type="button" data-shadow-year="all" class="shadow-year-btn px-2.5 py-0.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 font-bold text-[11px] transition-all">Tất cả (634 kỳ)</button>
+                    </div>
+
                     <span>Số kỳ đối soát: <strong class="text-white font-mono" id="shadowDiaryRowCount">273</strong></span>
                     <span>Số ngày thắng: <strong class="text-emerald-400 font-mono" id="shadowDiaryWinCount">187</strong></span>
                     <span>Tỷ lệ thắng: <strong class="text-emerald-400 font-mono" id="shadowDiaryWinRate">68.5%</strong></span>

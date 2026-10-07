@@ -402,6 +402,14 @@ function settleFromRaw(payload, rawRows) {
         console.error('[API daily-advisor] Error building triCoreDe:', err);
     }
 
+    let deDropoffMerge = payload.deDropoffMerge || null;
+    try {
+        const { buildDeDropoffMergeAdvisor } = require('@/lib/services/deDropoffMergeAdvisorService');
+        deDropoffMerge = buildDeDropoffMergeAdvisor(rawRows, payload);
+    } catch (err) {
+        console.error('[API daily-advisor] Error building deDropoffMerge:', err);
+    }
+
     return {
         ...payload,
         records,
@@ -424,6 +432,7 @@ function settleFromRaw(payload, rawRows) {
         crossHedgingPortfolio: crossHedgingPortfolio || payload.crossHedgingPortfolio || null,
         dynamicMetaAdvisor: dynamicMetaAdvisor || payload.dynamicMetaAdvisor || loQuantumBayesFusion?.dynamicMetaAdvisor || null,
         triCoreDe: triCoreDe || payload.triCoreDe || null,
+        deDropoffMerge: deDropoffMerge || payload.deDropoffMerge || null,
         latestDataDate: rawRows?.at(-1)?.date || payload.latestDataDate,
         snapshotLock: (() => {
             try {
