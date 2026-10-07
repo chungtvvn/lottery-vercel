@@ -670,7 +670,7 @@
 
     // Helper to extract Lô Dropoff 27 info for a given row and mode (top6, top7, top8, top10)
     // Đơn vị đánh Lô: 2.2M ăn 8M (x2: 4.4M ăn 16M, x3: 6.6M ăn 24M)
-    function getLoDropoffRowInfo(row, mode = 'top7') {
+    function getLoDropoffRowInfo(row, mode = 'top7', extraPrizesList = null) {
         if (!row) {
             return {
                 mode,
@@ -702,19 +702,42 @@
             numbers = row.numbers.slice(0, topN);
         }
 
-        const numHitsMap = row.numHitsMap || {};
-        const isPending = (row.hits === undefined && !row.actualPrizes && !row.actualSpecial);
+        // Build robust effectiveHitsMap from all available prize sources
+        const effectiveHitsMap = { ...(row.numHitsMap || {}) };
+        if (Object.keys(effectiveHitsMap).length === 0) {
+            const prizesList = (Array.isArray(extraPrizesList) && extraPrizesList.length > 0)
+                ? extraPrizesList
+                : ((Array.isArray(row.actualPrizes) && row.actualPrizes.length > 0)
+                    ? row.actualPrizes
+                    : (cachedAdvisorData?.drawPrizesByDate?.[row.date]?.prizes || []));
+
+            if (prizesList.length > 0) {
+                prizesList.forEach(p => {
+                    const s = numStr(p);
+                    effectiveHitsMap[s] = (effectiveHitsMap[s] || 0) + 1;
+                });
+            } else if (Array.isArray(row.hitNumbers) && row.hitNumbers.length > 0) {
+                row.hitNumbers.forEach(n => {
+                    const s = numStr(n);
+                    effectiveHitsMap[s] = (effectiveHitsMap[s] || 0) + 1;
+                });
+            }
+        }
+
+        const isPending = (row.hits === undefined && !row.actualPrizes && !row.actualSpecial && Object.keys(effectiveHitsMap).length === 0);
         let hits = 0;
 
         if (!isPending) {
-            if (row.numHitsMap) {
-                hits = numbers.reduce((sum, n) => sum + (numHitsMap[numStr(n)] || 0), 0);
-            } else if (row.actualPrizes && row.actualPrizes.length) {
-                hits = numbers.reduce((sum, n) => sum + row.actualPrizes.filter(p => numStr(p) === numStr(n)).length, 0);
+            if (Object.keys(effectiveHitsMap).length > 0) {
+                hits = numbers.reduce((sum, n) => sum + (effectiveHitsMap[numStr(n)] || 0), 0);
             } else if (mode === 'top7' && row.hits !== undefined) {
                 hits = row.hits;
             } else if (mode === 'top6' && row.hits6 !== undefined) {
                 hits = row.hits6;
+            } else if (mode === 'top8' && row.hits8 !== undefined) {
+                hits = row.hits8;
+            } else if (mode === 'top10' && row.hits10 !== undefined) {
+                hits = row.hits10;
             }
         }
 
@@ -725,13 +748,17 @@
         const isWin = isPending ? false : (flatProfitK > 0);
 
         // 2. Multi-tier (X3: 6.6M ăn 24M, X2: 4.4M ăn 16M, X1: 2.2M ăn 8M):
-        const x3Hits = (row.x3Hits !== undefined) ? row.x3Hits : ((numHitsMap[numStr(numbers[0])] || 0) + (numHitsMap[numStr(numbers[1])] || 0));
-        const x2Hits = (row.x2Hits !== undefined) ? row.x2Hits : ((numHitsMap[numStr(numbers[2])] || 0) + (numHitsMap[numStr(numbers[3])] || 0));
+        const x3Hits = (row.x3Hits !== undefined && row.x3Hits !== null)
+            ? row.x3Hits
+            : ((effectiveHitsMap[numStr(numbers[0])] || 0) + (effectiveHitsMap[numStr(numbers[1])] || 0));
+        const x2Hits = (row.x2Hits !== undefined && row.x2Hits !== null)
+            ? row.x2Hits
+            : ((effectiveHitsMap[numStr(numbers[2])] || 0) + (effectiveHitsMap[numStr(numbers[3])] || 0));
         let x1Hits = 0;
-        if (row.x1Hits !== undefined) {
+        if (row.x1Hits !== undefined && row.x1Hits !== null) {
             x1Hits = row.x1Hits;
         } else {
-            for (let i = 4; i < numbers.length; i++) x1Hits += (numHitsMap[numStr(numbers[i])] || 0);
+            for (let i = 4; i < numbers.length; i++) x1Hits += (effectiveHitsMap[numStr(numbers[i])] || 0);
         }
         const tierStakeK = (2 * 6600) + (2 * 4400) + (Math.max(0, topN - 4) * 2200); // Top 7: 28.6M
         const tierPayoutK = isPending ? 0 : (x3Hits * 24000) + (x2Hits * 16000) + (x1Hits * 8000);
@@ -740,7 +767,7 @@
 
         const pills = numbers.map((n, idx) => {
             const s = numStr(n);
-            const nhay = numHitsMap[s] || 0;
+            const nhay = effectiveHitsMap[s] || 0;
             let tierTag = 'X1';
             let tierRate = '2.2M';
             if (idx < 2) {
@@ -1621,7 +1648,7 @@
         const deProfitK = deRow?.dayProfitK ?? (deAbstain ? 0 : (deHit ? 60000 : -24000));
 
         // Lô metrics (from loDropoff27)
-        const loInfo = getLoDropoffRowInfo(loRow, mode);
+        const loInfo = getLoDropoffRowInfo(loRow, mode, prizesList);
         const loStakeK = loInfo.stakeK;
         const loPayoutK = isPending ? 0 : loInfo.payoutK;
         const loProfitK = isPending ? 0 : loInfo.profitK;
@@ -1895,7 +1922,7 @@
                 return pillsList.map(p => {
                     if (!isPending && p.hits > 0) {
                         return `
-                            <div class="relative group flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 via-teal-400 to-emerald-500 text-slate-950 p-1.5 font-black ring-2 ring-emerald-300 shadow-md scale-105 min-w-[54px]" title="Trúng ${p.hits} nháy!">
+                            <div class="relative group flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 via-teal-400 to-emerald-500 text-slate-950 p-1.5 font-black ring-2 ring-emerald-300 shadow-md scale-105 min-w-[54px] animate-pulse" title="Trúng ${p.hits} nháy!">
                                 <span class="text-[8px] font-black uppercase text-slate-950">🎯 ${p.hits} NHÁY</span>
                                 <span class="font-mono text-lg leading-none font-black my-0.5">${p.num}</span>
                                 <span class="text-[8px] font-black uppercase bg-slate-950 text-emerald-300 px-1 py-0.2 rounded mt-0.5 shadow-xs">x${mult} ⭐</span>
@@ -1903,9 +1930,9 @@
                         `;
                     }
                     return `
-                        <div class="flex flex-col items-center justify-center rounded-xl ${baseBg} border border-white/10 text-slate-200 p-1.5 font-mono text-sm font-bold min-w-[44px] hover:border-teal-400/40 transition-all">
+                        <div class="flex flex-col items-center justify-center rounded-xl ${baseBg} border border-white/5 text-slate-400 p-1.5 font-mono text-sm font-bold min-w-[44px] opacity-60 hover:opacity-100 transition-all">
                             <span>${p.num}</span>
-                            <span class="text-[8px] text-slate-400">x${mult}</span>
+                            <span class="text-[8px] text-slate-500">x${mult}</span>
                         </div>
                     `;
                 }).join('');
@@ -1915,20 +1942,40 @@
             const x2Chips = renderTierChips(x2Pills, 2, 'bg-teal-950/40 text-teal-200');
             const x1Chips = renderTierChips(x1Pills, 1, 'bg-cyan-950/40 text-cyan-200');
 
+            const hitPillsList = loInfo.pills.filter(p => p.isHit);
+            const hitBadgesSummary = (!isPending && hitPillsList.length > 0)
+                ? `<div class="flex items-center gap-1 flex-wrap mt-1">
+                    <span class="text-[10px] font-black text-emerald-950 bg-emerald-300 px-1.5 py-0.2 rounded shadow-xs">Trúng Lô:</span>
+                    ${hitPillsList.map(p => `<span class="inline-flex items-center px-1.5 py-0.5 rounded-lg font-mono text-[11px] font-black bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 ring-1 ring-emerald-300 shadow-xs animate-pulse">🎯 ${p.num}<sub class="text-[8px] font-bold ml-0.5 text-slate-900">(${p.hits}n)</sub></span>`).join(' ')}
+                   </div>`
+                : '';
+
+            const numGridChipsLo = loInfo.pills.map(p => {
+                if (!isPending && p.hits > 0) {
+                    return `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl font-mono font-black text-xs bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 text-slate-950 ring-2 ring-emerald-300 shadow-md scale-105 animate-pulse" title="Trúng ${p.hits} nháy!">🎯 ${p.num} <sub class="text-[8px] font-black bg-slate-950 text-emerald-300 px-1 py-0.2 rounded">${p.hits}n</sub></span>`;
+                }
+                return `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg font-mono font-bold text-xs bg-white/10 text-slate-400 border border-white/5 opacity-60">${p.num}</span>`;
+            }).join(' ');
+
             const loStatusTag = isPending
                 ? `<span class="text-xs font-bold text-teal-300 bg-teal-500/20 border border-teal-500/40 px-2 py-0.5 rounded">⏳ CHỐT DÀN LÔ (TOP ${loInfo.topN}) · CHỜ MỞ</span>`
                 : (loInfo.isWin
-                    ? `<span class="text-xs font-black text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-400 px-2.5 py-0.5 rounded shadow-sm">🔥 THẮNG LÔ (${loInfo.hits} NHÁY)</span>`
-                    : `<span class="text-xs font-bold text-rose-300 bg-rose-500/20 border border-rose-500/40 px-2 py-0.5 rounded">❌ THUA LÔ (${loInfo.hits} NHÁY)</span>`);
+                    ? `<span class="text-xs font-black text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-400 px-2.5 py-0.5 rounded shadow-sm ring-1 ring-emerald-300">🔥 THẮNG LÔ (${loInfo.hits} NHÁY · ${hitPillsList.map(p=>p.num).join(', ')})</span>`
+                    : (loInfo.hits > 0
+                        ? `<span class="text-xs font-bold text-teal-300 bg-teal-500/20 border border-teal-500/40 px-2 py-0.5 rounded">⚡ NỔ ${loInfo.hits} NHÁY · VỀ VỐN</span>`
+                        : `<span class="text-xs font-bold text-rose-300 bg-rose-500/20 border border-rose-500/40 px-2 py-0.5 rounded">❌ THUA LÔ (0 NHÁY)</span>`));
 
             loSectionHtml = `
                 <div class="rounded-2xl border border-teal-500/40 bg-slate-900/80 p-4 space-y-3">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-2.5">
-                        <div class="flex items-center gap-2 flex-wrap">
-                            <h4 class="text-xs font-black uppercase text-teal-300 flex items-center gap-1.5">
-                                <i class="bi bi-dice-5-fill text-teal-400"></i> 🎯 2. LÔ DROPOFF 27 VỊ TRÍ (${topNTitle}):
-                            </h4>
-                            <span class="text-[11px] text-slate-400 font-mono">(Quét 27 giải · ${loInfo.topN} số)</span>
+                        <div class="flex flex-col gap-1">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h4 class="text-xs font-black uppercase text-teal-300 flex items-center gap-1.5">
+                                    <i class="bi bi-dice-5-fill text-teal-400"></i> 🎯 2. LÔ DROPOFF 27 VỊ TRÍ (${topNTitle}):
+                                </h4>
+                                <span class="text-[11px] text-slate-400 font-mono">(Quét 27 giải · ${loInfo.topN} số)</span>
+                            </div>
+                            ${hitBadgesSummary}
                         </div>
                         <div class="flex items-center gap-2">
                             ${loStatusTag}
@@ -1937,6 +1984,23 @@
                             </button>
                         </div>
                     </div>
+
+                    <!-- Top N Numbers visual grid -->
+                    <div class="p-3 rounded-xl bg-black/40 border border-teal-500/20 space-y-2">
+                        <div class="flex items-center justify-between text-[11px]">
+                            <span class="font-bold text-teal-300">Dàn ${topNTitle} Chủ Lực (Đánh Đều 2.2M/số · Ăn 8M/nháy):</span>
+                            <span class="font-mono text-xs">
+                                ${isPending 
+                                    ? '<span class="text-slate-400">⏳ Chờ kết quả 18:30</span>' 
+                                    : (loInfo.hits > 0 
+                                        ? `<span class="text-emerald-400 font-black">🔥 Nổ ${loInfo.hits} nháy (${hitPillsList.map(p => `${p.num} · ${p.hits}n`).join(', ')}) ⭐</span>` 
+                                        : '<span class="text-rose-400 font-bold">❌ Không nổ nháy nào</span>')
+                                }
+                            </span>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5 pt-1">${numGridChipsLo}</div>
+                    </div>
+
                     <!-- 3 Tiers visual boxes for Lo -->
                     <div class="space-y-2 text-xs">
                         <div class="p-2.5 rounded-xl bg-amber-950/30 border border-amber-500/30 space-y-1">
