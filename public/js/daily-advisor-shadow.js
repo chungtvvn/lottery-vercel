@@ -294,20 +294,24 @@
                 container.innerHTML = recNumbers.map((num, idx) => {
                     let badgeStyle = '';
                     let badgeTag = '';
+                    let badgeDetail = '';
                     if (idx < 2) {
                         badgeStyle = 'bg-gradient-to-b from-amber-400 to-yellow-500 text-slate-950 font-black ring-2 ring-amber-300 shadow-md shadow-amber-500/20';
                         badgeTag = '👑 SIÊU VIP X3';
+                        badgeDetail = '6.6M/số · Ăn 24M/nháy';
                     } else if (idx < 4) {
                         badgeStyle = 'bg-gradient-to-b from-teal-400 to-emerald-400 text-slate-950 font-black ring-1 ring-teal-300 shadow-sm';
                         badgeTag = '⚡ TRUNG TÂM X2';
+                        badgeDetail = '4.4M/số · Ăn 16M/nháy';
                     } else {
                         badgeStyle = 'bg-gradient-to-b from-cyan-400 to-sky-400 text-slate-950 font-bold ring-1 ring-cyan-300 shadow-sm';
                         badgeTag = '🛡️ BỌC LÓT X1';
+                        badgeDetail = '2.2M/số · Ăn 8M/nháy';
                     }
                     const scoreObj = (loRec.ranked || []).find(r => r.num === numStr(num));
                     const scoreStr = scoreObj ? ` (Điểm: ${scoreObj.score})` : '';
                     return `
-                        <div class="relative group flex flex-col items-center justify-center rounded-xl ${badgeStyle} px-3 py-1.5 shadow-xs hover:scale-105 transition-all cursor-pointer min-w-[56px]" title="Vị trí rank #${idx + 1}${scoreStr}">
+                        <div class="relative group flex flex-col items-center justify-center rounded-xl ${badgeStyle} px-3 py-1.5 shadow-xs hover:scale-105 transition-all cursor-pointer min-w-[56px]" title="Vị trí rank #${idx + 1}${scoreStr} · ${badgeDetail}">
                             <span class="font-mono text-base font-black leading-tight tracking-tight">${numStr(num)}</span>
                             <span class="text-[9px] font-black uppercase tracking-tight opacity-90 mt-0.5">${badgeTag}</span>
                         </div>
@@ -317,14 +321,14 @@
 
             const metaStake = byId('shadowLoMetaStake');
             if (metaStake) {
-                const stake10d = (n * 220 / 1000).toFixed(2);
-                const stakeM3 = (n * 440 / 1000).toFixed(2);
-                metaStake.innerHTML = `Vốn 10đ: <strong class="text-white">${stake10d}M</strong> · M3 (20đ): <strong class="text-white">${stakeM3}M</strong>`;
+                const stakeFlat = (n * 2.2).toFixed(1);
+                const stakeTier = (2 * 6.6 + 2 * 4.4 + Math.max(0, n - 4) * 2.2).toFixed(1);
+                metaStake.innerHTML = `Vốn 1 Đơn vị (2.2M): <strong class="text-white">${stakeFlat}M</strong> · Phân Tầng: <strong class="text-white">${stakeTier}M</strong>`;
             }
 
             const metaProfit = byId('shadowLoMetaProfit');
             if (metaProfit) {
-                metaProfit.innerHTML = `Lãi ròng (18 kỳ): <strong class="text-teal-300 font-bold font-mono">+1.88M</strong> (10đ) · <strong class="text-teal-300 font-bold font-mono">+3.76M</strong> (M3)`;
+                metaProfit.innerHTML = `Lãi ròng (18 kỳ): <strong class="text-teal-300 font-bold font-mono">+18.8M</strong> (Đều 2.2M) · <strong class="text-emerald-300 font-bold font-mono">+29.2M</strong> (Phân Tầng)`;
             }
 
             // Copy button handlers
@@ -648,6 +652,7 @@
     }
 
     // Helper to extract Lô Dropoff 27 info for a given row and mode (top6, top7, top8, top10)
+    // Đơn vị đánh Lô: 2.2M ăn 8M (x2: 4.4M ăn 16M, x3: 6.6M ăn 24M)
     function getLoDropoffRowInfo(row, mode = 'top7') {
         if (!row) {
             return {
@@ -655,10 +660,17 @@
                 topN: 7,
                 numbers: [],
                 hits: 0,
-                stakeK: 1540,
+                x3Hits: 0,
+                x2Hits: 0,
+                x1Hits: 0,
+                stakeK: 15400,
                 payoutK: 0,
-                profitK: -1540,
+                profitK: -15400,
+                tierStakeK: 28600,
+                tierPayoutK: 0,
+                tierProfitK: -28600,
                 isWin: false,
+                isTierWin: false,
                 pills: [],
                 isPending: false
             };
@@ -689,23 +701,45 @@
             }
         }
 
-        const stakeK = topN * 220; // 10 điểm / con (22K * 10 = 220K)
-        const payoutK = isPending ? 0 : hits * 800; // 80K * 10 = 800K
-        const profitK = isPending ? 0 : (payoutK - stakeK);
-        const isWin = isPending ? false : (profitK > 0);
+        // 1. Flat 1 Unit (2.2M / con ăn 8M / nháy):
+        const flatStakeK = topN * 2200; // 2.2M / con (Top 7: 15.4M)
+        const flatPayoutK = isPending ? 0 : hits * 8000; // 8M / nháy
+        const flatProfitK = isPending ? 0 : (flatPayoutK - flatStakeK);
+        const isWin = isPending ? false : (flatProfitK > 0);
+
+        // 2. Multi-tier (X3: 6.6M ăn 24M, X2: 4.4M ăn 16M, X1: 2.2M ăn 8M):
+        const x3Hits = (row.x3Hits !== undefined) ? row.x3Hits : ((numHitsMap[numStr(numbers[0])] || 0) + (numHitsMap[numStr(numbers[1])] || 0));
+        const x2Hits = (row.x2Hits !== undefined) ? row.x2Hits : ((numHitsMap[numStr(numbers[2])] || 0) + (numHitsMap[numStr(numbers[3])] || 0));
+        let x1Hits = 0;
+        if (row.x1Hits !== undefined) {
+            x1Hits = row.x1Hits;
+        } else {
+            for (let i = 4; i < numbers.length; i++) x1Hits += (numHitsMap[numStr(numbers[i])] || 0);
+        }
+        const tierStakeK = (2 * 6600) + (2 * 4400) + (Math.max(0, topN - 4) * 2200); // Top 7: 28.6M
+        const tierPayoutK = isPending ? 0 : (x3Hits * 24000) + (x2Hits * 16000) + (x1Hits * 8000);
+        const tierProfitK = isPending ? 0 : (tierPayoutK - tierStakeK);
+        const isTierWin = isPending ? false : (tierProfitK > 0);
 
         const pills = numbers.map((n, idx) => {
             const s = numStr(n);
             const nhay = numHitsMap[s] || 0;
             let tierTag = 'X1';
-            if (idx < 2) tierTag = 'X3';
-            else if (idx < 4) tierTag = 'X2';
+            let tierRate = '2.2M';
+            if (idx < 2) {
+                tierTag = 'X3';
+                tierRate = '6.6M';
+            } else if (idx < 4) {
+                tierTag = 'X2';
+                tierRate = '4.4M';
+            }
 
             return {
                 num: s,
                 hits: nhay,
                 isHit: nhay > 0,
                 tier: tierTag,
+                rate: tierRate,
                 rank: idx + 1
             };
         });
@@ -715,9 +749,16 @@
             topN,
             numbers,
             hits,
-            stakeK,
-            payoutK,
-            profitK,
+            x3Hits,
+            x2Hits,
+            x1Hits,
+            stakeK: flatStakeK,
+            payoutK: flatPayoutK,
+            profitK: flatProfitK,
+            tierStakeK,
+            tierPayoutK,
+            tierProfitK,
+            isTierWin,
             isWin,
             pills,
             isPending
@@ -1886,28 +1927,28 @@
                     <div class="space-y-2 text-xs">
                         <div class="p-2.5 rounded-xl bg-amber-950/30 border border-amber-500/30 space-y-1">
                             <div class="flex items-center justify-between text-[11px]">
-                                <span class="font-black text-amber-300 uppercase">👑 Tầng 1: Siêu VIP X3 (2 Số hàng đầu)</span>
-                                <span class="text-amber-200 font-mono font-bold">Điểm cao nhất</span>
+                                <span class="font-black text-amber-300 uppercase">👑 Tầng 1: Siêu VIP X3 (2 Số hàng đầu · 6.6M/số · Ăn 24M/nháy)</span>
+                                <span class="text-amber-200 font-mono font-bold">Vốn 13.2M</span>
                             </div>
                             <div class="flex flex-wrap gap-1 pt-1">${x3Chips}</div>
                         </div>
                         <div class="p-2.5 rounded-xl bg-teal-950/30 border border-teal-500/30 space-y-1">
                             <div class="flex items-center justify-between text-[11px]">
-                                <span class="font-black text-teal-300 uppercase">⚡ Tầng 2: Trung Tâm X2 (2 Số nhịp rơi)</span>
-                                <span class="text-teal-200 font-mono font-bold">Nhịp 1-3 ngày</span>
+                                <span class="font-black text-teal-300 uppercase">⚡ Tầng 2: Trung Tâm X2 (2 Số nhịp rơi · 4.4M/số · Ăn 16M/nháy)</span>
+                                <span class="text-teal-200 font-mono font-bold">Vốn 8.8M</span>
                             </div>
                             <div class="flex flex-wrap gap-1 pt-1">${x2Chips}</div>
                         </div>
                         <div class="p-2.5 rounded-xl bg-cyan-950/30 border border-cyan-500/30 space-y-1">
                             <div class="flex items-center justify-between text-[11px]">
-                                <span class="font-black text-cyan-300 uppercase">🛡️ Tầng 3: Bọc Lót X1 (${x1Pills.length} Số đồng pha)</span>
-                                <span class="text-cyan-200 font-mono font-bold">Khử gan mềm</span>
+                                <span class="font-black text-cyan-300 uppercase">🛡️ Tầng 3: Bọc Lót X1 (${x1Pills.length} Số đồng pha · 2.2M/số · Ăn 8M/nháy)</span>
+                                <span class="text-cyan-200 font-mono font-bold">Vốn ${(x1Pills.length * 2.2).toFixed(1)}M</span>
                             </div>
                             <div class="flex flex-wrap gap-1 pt-1">${x1Chips}</div>
                         </div>
                     </div>
                     <div class="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-white/5 font-mono">
-                        <span>Vốn cược (10đ): <strong class="text-slate-200">${formatMoneyK(loInfo.stakeK, false)}</strong></span>
+                        <span>Vốn cược: <strong class="text-slate-200">${formatMoneyK(loInfo.stakeK, false)}</strong> (Đều 2.2M) · Phân Tầng: <strong class="text-slate-200">${formatMoneyK(loInfo.tierStakeK, false)}</strong></span>
                         <span>Tiền thưởng: <strong class="text-amber-300">${isPending ? '—' : formatMoneyK(loInfo.payoutK, false)}</strong></span>
                         <span>Lãi ròng Lô: <strong class="${loInfo.profitK > 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold">${isPending ? 'Chờ kq' : formatMoneyK(loInfo.profitK)}</strong></span>
                     </div>

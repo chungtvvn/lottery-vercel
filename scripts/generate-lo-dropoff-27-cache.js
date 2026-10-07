@@ -98,23 +98,32 @@ async function generate() {
     console.log(`Historical draws: ${allDraws.length}, Live combat starts at index: ${startIndex} (${START_DATE})`);
 
     // Configuration for Lô Dropoff 27 Vị Trí
-    // Points per number: 10 points (22K/pt = 220K/num), Hit payout: 80K/pt = 800K/hit
-    // For Top 7: Stake = 7 * 220K = 1,540K/day. 2 hits = 1,600K (+60K) -> Win!
+    // Đơn vị cơ bản (1 unit): 2.2M ăn 8M (100 điểm)
+    // Hệ số x2: 4.4M ăn 16M (200 điểm)
+    // Hệ số x3: 6.6M ăn 24M (300 điểm)
     const CFG = {
         strategyId: 'loDropoff27',
         strategyName: 'Lô Khử Trùng 27 Vị Trí (Top 7 Thất Thủ)',
         defaultTopN: 7,
-        pointCostK: 22,    // 22K/điểm
-        pointPayoutK: 80,  // 80K/điểm
-        pointsPerNum: 10,  // 10 điểm/số
-        costPerNumK: 220,  // 220K/số
-        payoutPerHitK: 800 // 800K/nháy
+        unitCostK: 2200,      // 2,200K = 2.2M VND (100 điểm)
+        unitPayoutK: 8000,    // 8,000K = 8.0M VND
+        x1CostK: 2200,        // 2.2M VND / số
+        x1PayoutK: 8000,      // 8.0M VND / nháy
+        x2CostK: 4400,        // 4.4M VND / số (x2)
+        x2PayoutK: 16000,     // 16.0M VND / nháy
+        x3CostK: 6600,        // 6.6M VND / số (x3)
+        x3PayoutK: 24000      // 24.0M VND / nháy
     };
 
     const settledLedger = [];
     let accumProfit7K = 0;
+    let accumTierProfit7K = 0;
     let totalHits7 = 0;
+    let totalX3Hits = 0;
+    let totalX2Hits = 0;
+    let totalX1Hits = 0;
     let winDays7 = 0;
+    let tierWinDays7 = 0;
     let maxLossStreak7 = 0;
     let curLossStreak7 = 0;
     let peak7 = 0;
@@ -157,19 +166,41 @@ async function generate() {
             hits6Count += (numHitsMap[n] || 0);
         });
 
-        const dayStake7K = top7.length * CFG.costPerNumK; // 7 * 220 = 1540K
-        const dayPayout7K = hits7Count * CFG.payoutPerHitK; // hits * 800K
+        // 1. Flat 1 Unit (2.2M / con ăn 8M / nháy):
+        const dayStake7K = top7.length * CFG.unitCostK; // 7 * 2,200K = 15,400K (15.4M)
+        const dayPayout7K = hits7Count * CFG.unitPayoutK; // hits * 8,000K (8M)
         const dayProfit7K = dayPayout7K - dayStake7K;
-        const isWin7 = (hits7Count >= 2); // 2+ nháy sinh lời
+        const isWin7 = (hits7Count >= 2); // 2+ nháy = 16M > 15.4M -> Thắng
+
+        // 2. Multi-tier Weighted (Top 2: X3 @ 6.6M, Top 3-4: X2 @ 4.4M, Top 5-7: X1 @ 2.2M):
+        const dayX3Hits = (numHitsMap[top7[0]] || 0) + (numHitsMap[top7[1]] || 0);
+        const dayX2Hits = (numHitsMap[top7[2]] || 0) + (numHitsMap[top7[3]] || 0);
+        let dayX1Hits = 0;
+        for (let k = 4; k < top7.length; k++) {
+            dayX1Hits += (numHitsMap[top7[k]] || 0);
+        }
+        totalX3Hits += dayX3Hits;
+        totalX2Hits += dayX2Hits;
+        totalX1Hits += dayX1Hits;
+
+        const dayTierStake7K = (2 * CFG.x3CostK) + (2 * CFG.x2CostK) + (Math.max(0, top7.length - 4) * CFG.x1CostK); // 13.2M + 8.8M + 6.6M = 28.6M = 28,600K
+        const dayTierPayout7K = (dayX3Hits * CFG.x3PayoutK) + (dayX2Hits * CFG.x2PayoutK) + (dayX1Hits * CFG.x1PayoutK);
+        const dayTierProfit7K = dayTierPayout7K - dayTierStake7K;
+        const isTierWin7 = (dayTierProfit7K > 0);
 
         accumProfit7K += dayProfit7K;
+        accumTierProfit7K += dayTierProfit7K;
         totalHits7 += hits7Count;
+
         if (isWin7) {
             winDays7++;
             curLossStreak7 = 0;
         } else {
             curLossStreak7++;
             if (curLossStreak7 > maxLossStreak7) maxLossStreak7 = curLossStreak7;
+        }
+        if (isTierWin7) {
+            tierWinDays7++;
         }
 
         if (accumProfit7K > peak7) peak7 = accumProfit7K;
@@ -196,13 +227,23 @@ async function generate() {
             hits: hits7Count,
             hits7: hits7Count,
             hits6: hits6Count,
+            x3Hits: dayX3Hits,
+            x2Hits: dayX2Hits,
+            x1Hits: dayX1Hits,
             isHit: isWin7,
             isWin: isWin7,
+            // Flat sizing (2.2M / con ăn 8M / nháy)
             stakeK: dayStake7K,
             payoutK: dayPayout7K,
             profitK: dayProfit7K,
             dayProfitK: dayProfit7K,
             accumProfitK: accumProfit7K,
+            // Tier sizing (X3: 6.6M, X2: 4.4M, X1: 2.2M)
+            tierStakeK: dayTierStake7K,
+            tierPayoutK: dayTierPayout7K,
+            tierProfitK: dayTierProfit7K,
+            accumTierProfitK: accumTierProfit7K,
+            isTierWin: isTierWin7,
             actualPrizes,
             actualSpecial: currentDraw.special,
             snapshotLock: {
@@ -246,23 +287,29 @@ async function generate() {
         top8: nextTop8,
         top10: nextTop10,
         ranked: nextRanked.slice(0, 10),
-        tierX3: nextTop7.slice(0, 2), // Top 2 Siêu VIP
-        tierX2: nextTop7.slice(2, 4), // Top 3-4 Trung Tâm
-        tierX1: nextTop7.slice(4, 7), // Top 5-7 Bọc Lót
-        stakeK: nextTop7.length * CFG.costPerNumK, // 1540K
-        totalStakeVND: nextTop7.length * CFG.costPerNumK * 1000,
-        payoutPerHitVND: CFG.payoutPerHitK * 1000,
-        winCondition: '≥ 2 nháy sinh lời ròng dương (+60K đến +2.46M)',
+        tierX3: nextTop7.slice(0, 2), // Top 2 Siêu VIP (X3: 6.6M / số · Ăn 24M/nháy)
+        tierX2: nextTop7.slice(2, 4), // Top 3-4 Trung Tâm (X2: 4.4M / số · Ăn 16M/nháy)
+        tierX1: nextTop7.slice(4, 7), // Top 5-7 Bọc Lót (X1: 2.2M / số · Ăn 8M/nháy)
+        unitCostK: CFG.unitCostK,
+        unitPayoutK: CFG.unitPayoutK,
+        stakeK: nextTop7.length * CFG.unitCostK, // 15,400K (15.4M)
+        stakeFlatK: nextTop7.length * CFG.unitCostK,
+        stakeTierK: (2 * CFG.x3CostK) + (2 * CFG.x2CostK) + (Math.max(0, nextTop7.length - 4) * CFG.x1CostK), // 28,600K (28.6M)
+        totalStakeVND: nextTop7.length * CFG.unitCostK * 1000,
+        totalTierStakeVND: ((2 * CFG.x3CostK) + (2 * CFG.x2CostK) + (Math.max(0, nextTop7.length - 4) * CFG.x1CostK)) * 1000,
+        payoutPerHitVND: CFG.unitPayoutK * 1000,
+        winCondition: '≥ 2 nháy sinh lời ròng dương (+600K đến +24.6M)',
         breakEvenHits: 2,
         historicalWinRate: winDays7 / settledLedger.length,
         historicalAvgHits: totalHits7 / settledLedger.length,
         historicalProfitK: accumProfit7K,
+        historicalTierProfitK: accumTierProfit7K,
         snapshotLock: {
             isLocked: true,
             targetDate,
             lockedAt: new Date().toISOString()
         },
-        reasoning: `Quét toàn diện 27 vị trí mở thưởng XSMB up to ${latestDate}. Hợp nhất: (1) Cầu ghép 27 vị trí nhịp vàng 1-3 ngày, (2) Lô rơi đồng pha 27 giải, (3) Nhịp nhả 2-4 ngày và khử gan cứng (>12 ngày). Tuyển chọn Top 7 số có mật độ nổ cao nhất.`
+        reasoning: `Quét toàn diện 27 vị trí mở thưởng XSMB up to ${latestDate}. Hợp nhất: (1) Cầu ghép 27 vị trí nhịp vàng 1-3 ngày, (2) Lô rơi đồng pha 27 giải, (3) Nhịp nhả 2-4 ngày và khử gan cứng (>12 ngày). Tuyển chọn Top 7 số có mật độ nổ cao nhất. Đơn vị cược: 2.2M ăn 8M (x2: 4.4M, x3: 6.6M).`
     };
 
     const payload = {
@@ -280,12 +327,20 @@ async function generate() {
                 hitRate: settledLedger.length ? winDays7 / settledLedger.length : 0,
                 totalHits: totalHits7,
                 avgHitsPerDay: settledLedger.length ? totalHits7 / settledLedger.length : 0,
-                stakeK: settledLedger.length * (7 * CFG.costPerNumK),
-                payoutK: totalHits7 * CFG.payoutPerHitK,
-                profitK: accumProfit7K,
-                roi: (settledLedger.length * (7 * CFG.costPerNumK)) ? accumProfit7K / (settledLedger.length * (7 * CFG.costPerNumK)) : 0,
+                // Flat 1 Unit (2.2M / con ăn 8M / nháy)
+                stakeK: settledLedger.length * (7 * CFG.unitCostK), // 277,200K (277.2M)
+                payoutK: totalHits7 * CFG.unitPayoutK, // 296,000K (296.0M)
+                profitK: accumProfit7K, // +18,800K (+18.8M)
+                roi: (settledLedger.length * (7 * CFG.unitCostK)) ? accumProfit7K / (settledLedger.length * (7 * CFG.unitCostK)) : 0,
                 maxLossStreak: maxLossStreak7,
-                maxDrawdownK: maxDD7
+                maxDrawdownK: maxDD7,
+                // Multi-tier (X3: 6.6M, X2: 4.4M, X1: 2.2M)
+                tierWins: tierWinDays7,
+                tierHitRate: settledLedger.length ? tierWinDays7 / settledLedger.length : 0,
+                tierStakeK: settledLedger.length * 28600, // 514,800K (514.8M)
+                tierPayoutK: (totalX3Hits * CFG.x3PayoutK) + (totalX2Hits * CFG.x2PayoutK) + (totalX1Hits * CFG.x1PayoutK), // 544,000K (544.0M)
+                tierProfitK: accumTierProfit7K, // +29,200K (+29.2M)
+                tierRoi: (settledLedger.length * 28600) ? accumTierProfit7K / (settledLedger.length * 28600) : 0
             }
         },
         latestRecommendation,
@@ -297,7 +352,8 @@ async function generate() {
 
     console.log(`\n🎉 Generated Lô Dropoff 27 cache successfully to: ${targetCacheFile}`);
     console.log(`Cache file size: ${(fs.statSync(targetCacheFile).size / 1024).toFixed(1)} KB`);
-    console.log(`Summary Top 7: Win ${winDays7}/${settledLedger.length} (${(winDays7/settledLedger.length*100).toFixed(1)}%), Hits: ${totalHits7} (${(totalHits7/settledLedger.length).toFixed(2)}/day), Profit: +${(accumProfit7K/1000).toFixed(2)}M, ROI: +${(accumProfit7K/(settledLedger.length * 1540)*100).toFixed(1)}%`);
+    console.log(`Summary Flat (2.2M ăn 8M): Win ${winDays7}/${settledLedger.length} (${(winDays7/settledLedger.length*100).toFixed(1)}%), Hits: ${totalHits7} (${(totalHits7/settledLedger.length).toFixed(2)}/day), Profit: +${(accumProfit7K/1000).toFixed(1)}M, ROI: +${(accumProfit7K/(settledLedger.length * 15400)*100).toFixed(1)}%`);
+    console.log(`Summary Tier (X3: 6.6M, X2: 4.4M, X1: 2.2M): Win ${tierWinDays7}/${settledLedger.length} (${(tierWinDays7/settledLedger.length*100).toFixed(1)}%), Profit: +${(accumTierProfit7K/1000).toFixed(1)}M, ROI: +${(accumTierProfit7K/(settledLedger.length * 28600)*100).toFixed(1)}%`);
 }
 
 generate().catch(console.error);
