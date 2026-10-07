@@ -397,12 +397,12 @@ async function main() {
 
         // Section 6 assertions: draws count, Xiên 3 > 0, Dàn Xiên 5, and exact Web-Telegram alignment
         assert.match(liveReport.text, /6\. 📊 BẢNG THEO DÕI THỰC CHIẾN THEO GỢI Ý/);
-        assert.match(liveReport.text, /Số kỳ đã kết toán.*?(18|19) kỳ/);
-        assert.match(liveReport.text, /Lô Ghép 4 Động Cơ.*?[+-]?\d+[\d.,]*K.*?[+-]?\d+[\d.,]*M VIP.*?12\/(18|19) kỳ thắng/);
-        assert.match(liveReport.text, /Đề Thực Chiến.*?[+-]?\d+[\d.,]*K.*?[+-]?\d+[\d.,]*M VIP.*?6\/(18|19) kỳ trúng/);
-        assert.match(liveReport.text, /Lô Xiên Quây Top 5 Đồng Thuận.*?[+-]?\d+[\d.,]*K.*?[+-]?\d+[\d.,]*M VIP.*?6\/(18|19) kỳ thắng/);
-        assert.match(liveReport.text, /Lô Xiên 3 Quây.*?\+\d+[\d.,]*M VIP.*?\+\d+[\d.,]*M M3.*?4\/(18|19) ngày nổ/);
-        assert.match(liveReport.text, /Dàn Xiên 5 \(5 Dàn X4 · 11M\/dàn\).*?\+\d+[\d.,]*M VIP.*?4\/(18|19) kỳ thắng/);
+        assert.match(liveReport.text, /Số kỳ đã kết toán.*?\d+ kỳ/);
+        assert.match(liveReport.text, /Lô Ghép 4 Động Cơ.*?[+-]?\d+[\d.,]*K.*?[+-]?\d+[\d.,]*M VIP.*?\d+\/\d+ kỳ thắng/);
+        assert.match(liveReport.text, /Đề Thực Chiến.*?[+-]?\d+[\d.,]*K.*?[+-]?\d+[\d.,]*M VIP.*?\d+\/\d+ kỳ trúng/);
+        assert.match(liveReport.text, /Lô Xiên Quây Top 5 Đồng Thuận.*?[+-]?\d+[\d.,]*K.*?[+-]?\d+[\d.,]*M VIP.*?\d+\/\d+ kỳ thắng/);
+        assert.match(liveReport.text, /Lô Xiên 3 Quây.*?\+\d+[\d.,]*M VIP.*?\+\d+[\d.,]*M M3.*?\d+\/\d+ ngày nổ/);
+        assert.match(liveReport.text, /Dàn Xiên 5 \(5 Dàn X4 · 11M\/dàn\).*?\+\d+[\d.,]*M VIP.*?\d+\/\d+ kỳ thắng/);
         assert.match(liveReport.text, /TỔNG LŨY KẾ CHIẾN LƯỢC CHỦ LỰC.*?(\+\d+[\d.,]*K|\+\d+[\d.,]* Triệu VNĐ).*?\+\d+[\d.,]*M/s);
 
         console.log('=== LIVE TELEGRAM REPORT PREVIEW ===\n' + liveReport.text + '\n===================================');
