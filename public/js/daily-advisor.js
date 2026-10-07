@@ -5894,13 +5894,18 @@
                         : `<span class="inline-flex items-center gap-1 rounded bg-emerald-100 text-emerald-900 px-2 py-0.5 text-xs font-black">🎉 Trúng Đề X1 ${moneyM(deInfo.profitK, { signed: true })}</span>`)
                     : `<span class="inline-flex items-center gap-1 rounded bg-rose-100 text-rose-900 px-2 py-0.5 text-xs font-bold">❌ Trượt ${moneyM(deInfo.profitK, { signed: true })}</span>`;
 
-                const chipsHtml = (deInfo.numbers || []).slice(0, 16).map(n => {
-                    const isHitNum = (deInfo.actualSpecial != null && Number(n) === Number(deInfo.actualSpecial));
-                    return `<span class="inline-block px-1.5 py-0.5 rounded font-mono text-[11px] font-bold ${isHitNum ? 'bg-emerald-600 text-white font-black scale-110 shadow-xs ring-2 ring-emerald-400' : 'bg-slate-100 text-slate-700'}">${number(n)}</span>`;
-                }).join(' ') + (deInfo.numbers?.length > 16 ? ` <span class="text-[10px] text-slate-400 font-semibold">+${deInfo.numbers.length - 16} số...</span>` : '');
+                const actualSpecNum = (deInfo.actualSpecial != null) ? Number(deInfo.actualSpecial) : null;
+                let displayNumbers = (deInfo.numbers || []).slice(0, 16);
+                if (deInfo.isHit && actualSpecNum != null && deInfo.numbers?.map(Number).includes(actualSpecNum) && !displayNumbers.map(Number).includes(actualSpecNum)) {
+                    displayNumbers = [actualSpecNum, ...displayNumbers.slice(0, 15)];
+                }
+                const chipsHtml = displayNumbers.map(n => {
+                    const isHitNum = (actualSpecNum != null && Number(n) === actualSpecNum);
+                    return `<span class="inline-block px-1.5 py-0.5 rounded font-mono text-[11px] font-bold ${isHitNum ? 'bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 font-black scale-110 shadow-md ring-2 ring-amber-300 animate-pulse' : 'bg-slate-100 text-slate-700'}">${number(n)}${isHitNum ? ' ⭐' : ''}</span>`;
+                }).join(' ') + (deInfo.numbers?.length > displayNumbers.length ? ` <span class="text-[10px] text-slate-400 font-semibold">+${deInfo.numbers.length - displayNumbers.length} số...</span>` : '');
 
                 return `
-                    <tr class="hover:bg-amber-50/40 transition-colors ${deInfo.isHit ? 'bg-emerald-50/40' : ''}">
+                    <tr class="hover:bg-amber-50/40 transition-colors ${deInfo.isHit ? 'bg-amber-50/50' : ''}">
                         <td class="px-3 py-3 whitespace-nowrap">
                             <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
                             <div class="text-[10px] text-slate-400 font-semibold">${isLiveBadge}</div>
@@ -5913,8 +5918,8 @@
                             <div class="text-[10px] text-slate-500 font-medium">${escapeHtml(deInfo.subTierLabel)}</div>
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
-                            <span class="inline-flex items-center justify-center font-mono text-base font-black px-2.5 py-1 rounded-xl ${deInfo.isHit ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-900'}">
-                                ${deInfo.actualSpecial != null ? number(deInfo.actualSpecial) : '--'}
+                            <span class="inline-flex items-center justify-center font-mono text-base font-black px-2.5 py-1 rounded-xl ${deInfo.isHit ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-md animate-pulse' : 'bg-slate-100 text-slate-900'}">
+                                ${deInfo.actualSpecial != null ? (deInfo.isHit ? `🎯 ${number(deInfo.actualSpecial)} ⭐` : number(deInfo.actualSpecial)) : '--'}
                             </span>
                         </td>
                         <td class="diary-cell-interactive px-3 py-3 max-w-md cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="de">
@@ -6014,12 +6019,12 @@
                     const isVip = b.multiplier === 4;
                     const isMed = b.multiplier === 3;
                     if (isHit) {
-                        return `<span class="inline-block px-1.5 py-0.5 rounded font-mono text-[11px] font-black bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 ring-2 ring-white shadow-sm">${number(b.num)}<sub class="text-[8px] font-sans font-bold text-red-700 ml-0.5">x${b.multiplier}${b.hits > 1 ? `·${b.hits}n` : ''}</sub></span>`;
+                        return `<span class="inline-block px-1.5 py-0.5 rounded-lg font-mono text-[11px] font-black bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 text-slate-950 ring-2 ring-emerald-300 shadow-md scale-105 animate-pulse">🎯 ${number(b.num)}<sub class="text-[8px] font-sans font-black text-slate-950 ml-0.5">x${b.multiplier}${b.hits > 1 ? `·${b.hits}n` : ''}</sub></span>`;
                     }
-                    let badgeCls = 'bg-slate-100 text-slate-700 border border-slate-200';
-                    if (isSuperVip) badgeCls = 'bg-gradient-to-r from-amber-200 to-amber-300 text-amber-950 border-2 border-amber-400 shadow-xs';
-                    else if (isVip) badgeCls = 'bg-amber-100 text-amber-900 border border-amber-300';
-                    else if (isMed) badgeCls = 'bg-indigo-100 text-indigo-900 border border-indigo-300';
+                    let badgeCls = 'bg-slate-100 text-slate-700 border border-slate-200 opacity-60';
+                    if (isSuperVip) badgeCls = 'bg-gradient-to-r from-amber-200 to-amber-300 text-amber-950 border-2 border-amber-400 shadow-xs opacity-90';
+                    else if (isVip) badgeCls = 'bg-amber-100 text-amber-900 border border-amber-300 opacity-80';
+                    else if (isMed) badgeCls = 'bg-indigo-100 text-indigo-900 border border-indigo-300 opacity-80';
                     return `<span class="inline-block px-1.5 py-0.5 rounded font-mono text-[11px] font-black ${badgeCls}">${number(b.num)}<sub class="text-[8px] font-sans opacity-70 ml-0.5">x${b.multiplier}</sub></span>`;
                 }).join(' ');
 
@@ -6045,7 +6050,7 @@
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
                             <span class="font-black text-xs ${isLotoWin ? 'text-emerald-700' : 'text-slate-500'}">
-                                ${hits > 0 ? `💥 ${hits} nháy` : 'Trượt'}
+                                ${hits > 0 ? `<span class="inline-flex items-center gap-1 font-black text-xs text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-400 px-2 py-0.5 rounded-lg ring-1 ring-emerald-300 shadow-xs">💥 ${hits} nháy ⭐</span>` : 'Trượt'}
                             </span>
                             <div class="text-[10px] text-slate-400 font-mono">Ăn ${moneyM(lo4Info.dayLotoPayoutK || 0)}</div>
                         </td>
@@ -6115,10 +6120,14 @@
                     `;
                 }
 
-                const chipsHtml = (stdInfo.numbers || []).slice(0, 12).map(n => {
+                const allStdNums = (stdInfo.numbers || []);
+                const winningStdNums = allStdNums.filter(n => (stdInfo.prizeCounts?.[number(n)] || 0) > 0);
+                const nonWinningStdNums = allStdNums.filter(n => (stdInfo.prizeCounts?.[number(n)] || 0) === 0);
+                const prioritizedStdNums = [...winningStdNums, ...nonWinningStdNums];
+                const chipsHtml = prioritizedStdNums.slice(0, 14).map(n => {
                     const hits = stdInfo.prizeCounts?.[number(n)] || 0;
-                    return `<span class="inline-block px-1.5 py-0.5 rounded font-mono text-[11px] font-bold ${hits > 0 ? 'bg-emerald-600 text-white font-black' : 'bg-slate-900 text-white'}">${number(n)}</span>`;
-                }).join(' ') + (stdInfo.numbers?.length > 12 ? ` <span class="text-[10px] text-slate-400 font-semibold">+${stdInfo.numbers.length - 12}s...</span>` : '');
+                    return `<span class="inline-block px-1.5 py-0.5 rounded font-mono text-[11px] font-bold ${hits > 0 ? 'bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 font-black ring-1 ring-emerald-300 scale-105 shadow-xs' : 'bg-slate-900 text-slate-400 opacity-60'}">${number(n)}${hits > 1 ? `<sub class="text-[8px] font-black ml-0.5">${hits}n</sub>` : ''}</span>`;
+                }).join(' ') + (prioritizedStdNums.length > 14 ? ` <span class="text-[10px] text-slate-400 font-semibold">+${prioritizedStdNums.length - 14}s...</span>` : '');
 
                 return `
                     <tr class="hover:bg-indigo-50/40 transition-colors ${stdInfo.profitK > 0 ? 'bg-emerald-50/40' : ''}">
@@ -6205,7 +6214,7 @@
 
                 const chipsHtml = (x2Info.numbers || []).map(n => {
                     const hits = x2Info.prizeCounts?.[number(n)] || 0;
-                    return `<span class="inline-block px-2 py-0.5 rounded font-mono text-[11px] font-black ${hits > 0 ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 ring-1 ring-white' : 'bg-emerald-700 text-white'}">${number(n)}</span>`;
+                    return `<span class="inline-block px-2 py-0.5 rounded font-mono text-[11px] font-black ${hits > 0 ? 'bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 text-slate-950 ring-2 ring-emerald-300 shadow-md scale-105 animate-pulse' : 'bg-slate-100 text-slate-600 border border-slate-200 opacity-60'}">${number(n)}${hits > 1 ? `<sub class="text-[8px] font-black ml-0.5">·${hits}n</sub>` : ''}</span>`;
                 }).join(' ');
 
                 return `
@@ -6416,20 +6425,25 @@
                 const h4Hits = lo4Xien4Info.h4 != null ? lo4Xien4Info.h4 : (lo4Xien4Info.dayLotoHits || 0);
                 const isXienWin = lo4Xien4Info.isWin || lo4Xien4Info.isXien4Win || (h4Hits >= 2);
 
+                const drawPrizes = (payload?.drawPrizesByDate?.[r.date]?.prizes || []).map(number);
+                const drawPrizesSet = new Set(drawPrizes);
+
                 const chipsHtml = top4Nums.length ? `
                     <div class="flex flex-col gap-1">
                         <div class="flex flex-wrap items-center gap-1">
                             <span class="text-[10px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded">Bộ 4:</span>
-                            ${top4Nums.map(n => `
-                                <span class="inline-block px-1.5 py-0.5 rounded font-mono text-[11px] font-bold ${isXienWin ? 'bg-amber-400 text-slate-950 font-black ring-1 ring-amber-500' : 'bg-slate-800 text-slate-200'}">${number(n)}</span>
-                            `).join(' ')}
+                            ${top4Nums.map(n => {
+                                const isHit = drawPrizesSet.has(number(n));
+                                return `<span class="inline-block px-1.5 py-0.5 rounded font-mono text-[11px] font-bold ${isHit ? 'bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 font-black ring-1 ring-emerald-300 scale-105 shadow-xs' : 'bg-slate-100 text-slate-600 border border-slate-200 opacity-60'}">${number(n)}${isHit ? ' ⭐' : ''}</span>`;
+                            }).join(' ')}
                         </div>
                         ${top5Nums.length ? `
                         <div class="flex flex-wrap items-center gap-1">
                             <span class="text-[9px] font-semibold text-purple-800 bg-purple-100 px-1 py-0.2 rounded">Bộ 5 X3:</span>
-                            ${top5Nums.map(n => `
-                                <span class="inline-block px-1 py-0.2 rounded font-mono text-[10px] font-semibold bg-purple-50 text-purple-900 border border-purple-200">${number(n)}</span>
-                            `).join(' ')}
+                            ${top5Nums.map(n => {
+                                const isHit = drawPrizesSet.has(number(n));
+                                return `<span class="inline-block px-1 py-0.2 rounded font-mono text-[10px] font-semibold ${isHit ? 'bg-purple-600 text-white font-black shadow-xs scale-105' : 'bg-purple-50 text-purple-900 border border-purple-200 opacity-60'}">${number(n)}${isHit ? ' ⭐' : ''}</span>`;
+                            }).join(' ')}
                         </div>` : ''}
                     </div>
                 ` : (isSkipped
@@ -6562,7 +6576,7 @@
                             <div class="flex items-center gap-1">
                                 ${top5Nums.map(n => {
                                     const hit = drawPrizesSet.has(n);
-                                    return `<span class="inline-block px-1.5 py-0.5 rounded font-mono text-[11px] font-black ${hit ? 'bg-emerald-500 text-white ring-1 ring-emerald-300 scale-105' : 'bg-slate-200 text-slate-800'}">${n}${hit ? '⭐' : ''}</span>`;
+                                    return `<span class="inline-block px-1.5 py-0.5 rounded font-mono text-[11px] font-black ${hit ? 'bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 ring-2 ring-emerald-300 scale-105 shadow-xs' : 'bg-slate-200 text-slate-700 opacity-60'}">${n}${hit ? ' ⭐' : ''}</span>`;
                                 }).join(' ')}
                             </div>
                             <div class="text-[10px] text-slate-500 mt-0.5">Top 5 Đồng Thuận</div>
@@ -6800,6 +6814,12 @@
                 ? 'Đề Markov Bậc 2 & Gap Hazard'
                 : (deInfo?.methodName || 'Đề Markov Bậc 2 & Gap Hazard');
 
+            const rowDrawPrizes = (payload?.drawPrizesByDate?.[r.date]?.prizes || []).map(number);
+            const rowDrawPrizesSet = new Set(rowDrawPrizes);
+            const hitLo4Numbers = (lo4Info?.betNumbers || []).filter(b => (b.hits || 0) > 0);
+            const hitXienNums = (lo4Xien4Info?.top4 || (lo4Xien4Info?.combinations?.[0] || [])).filter(n => rowDrawPrizesSet.has(number(n)));
+            const hitTop5Nums = (loXien5Info?.top5 || []).filter(n => rowDrawPrizesSet.has(number(n)));
+
             const dayClass = dayTotalVal > 0 ? 'bg-emerald-50/40' : (dayTotalVal < -20000 ? 'bg-rose-50/20' : '');
 
             return `
@@ -6822,7 +6842,10 @@
                             <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${dePnlVal >= 0 ? 'bg-amber-100 text-amber-900 ring-1 ring-amber-300' : 'bg-rose-100 text-rose-800'}">P&L: ${moneyM(dePnlVal, { signed: true })}</span>
                         </div>
                         <div class="flex items-center gap-1.5 mt-0.5">
-                            <span class="text-xs text-slate-700">ĐB: <strong class="font-mono text-sm ${isDeHit ? 'text-emerald-600 font-black' : 'text-slate-800'}">${specialNum}</strong></span>
+                            ${isDeHit
+                                ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 font-black font-mono text-xs ring-2 ring-amber-300 shadow-xs animate-pulse">🎯 ĐB: ${specialNum} ⭐</span>`
+                                : `<span class="text-xs text-slate-700">ĐB: <strong class="font-mono text-sm text-slate-800">${specialNum}</strong></span>`
+                            }
                             ${isVipHit
                                 ? `<span class="inline-flex items-center gap-1 rounded bg-amber-400 text-slate-950 font-black px-1.5 py-0.5 text-[10px] shadow-xs ring-1 ring-amber-500">👑 Nổ VIP X3</span>`
                                 : (isDeHit
@@ -6848,6 +6871,11 @@
                             <span class="text-slate-700">Nổ <strong>${loHitsCount}</strong> nháy</span>
                             <span class="font-mono font-bold ${loPnlVal >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${moneyM(loPnlVal, { signed: true })}</span>
                         </div>
+                        ${hitLo4Numbers.length > 0 ? `
+                        <div class="flex flex-wrap items-center gap-1 mt-1">
+                            <span class="text-[9px] font-black text-emerald-800 bg-emerald-100 px-1.5 py-0.2 rounded">Trúng:</span>
+                            ${hitLo4Numbers.map(b => `<span class="inline-flex items-center px-1.5 py-0.2 rounded font-mono text-[10px] font-black bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 ring-1 ring-emerald-300 shadow-xs">🎯 ${number(b.num)}<sub class="text-[8px] font-bold ml-0.5 text-slate-900">(${b.hits}n)</sub></span>`).join(' ')}
+                        </div>` : ''}
                         <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
                             <span>${lo4Info?.countTotal || 5} số (Top 4 X4/X5 + Vệ Tinh)</span>
                             <span class="diary-expand-indicator text-rose-700 font-bold underline flex items-center gap-0.5">Bấm xem dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
@@ -6872,6 +6900,11 @@
                             })()}
                             <span class="font-mono font-bold ${xienPnlVal > 0 ? 'text-emerald-600' : (xienPnlVal < 0 ? 'text-rose-600' : 'text-slate-400')}">${moneyM(xienPnlVal, { signed: true })}</span>
                         </div>
+                        ${hitXienNums.length > 0 ? `
+                        <div class="flex flex-wrap items-center gap-1 mt-1">
+                            <span class="text-[9px] font-black text-purple-800 bg-purple-100 px-1.5 py-0.2 rounded">Trúng:</span>
+                            ${hitXienNums.map(n => `<span class="inline-flex items-center px-1.5 py-0.2 rounded font-mono text-[10px] font-black bg-purple-600 text-white shadow-xs">🎯 ${number(n)}</span>`).join(' ')}
+                        </div>` : ''}
                         <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
                             <span>${(() => {
                                 if (xienHitsCount === 4) return '<strong class="text-amber-700">Ăn toàn bộ 11 vé Quây</strong>';
@@ -6902,6 +6935,11 @@
                             })()}
                             <span class="font-mono font-bold ${loXien5ProfitK > 0 ? 'text-emerald-600' : 'text-rose-600'}">${moneyM(loXien5ProfitK, { signed: true })}</span>
                         </div>
+                        ${hitTop5Nums.length > 0 ? `
+                        <div class="flex flex-wrap items-center gap-1 mt-1">
+                            <span class="text-[9px] font-black text-indigo-800 bg-indigo-100 px-1.5 py-0.2 rounded">Trúng:</span>
+                            ${hitTop5Nums.map(n => `<span class="inline-flex items-center px-1.5 py-0.2 rounded font-mono text-[10px] font-black bg-indigo-600 text-white shadow-xs">🎯 ${number(n)}</span>`).join(' ')}
+                        </div>` : ''}
                         <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
                             <span>${loXien5H5}/5 con về · [${(loXien5Info.top5 || []).join('-')}]</span>
                             <span class="diary-expand-indicator text-indigo-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
@@ -9254,7 +9292,10 @@
                         <div class="mt-0.5">${sourceBadge}</div>
                     </td>
                     <td class="p-2.5 text-center">
-                        <span class="inline-block rounded-md bg-white/10 px-2 py-0.5 font-mono text-xs font-black text-amber-300">${number(r.actual)}</span>
+                        ${(r.hitType && r.hitType !== 'loss')
+                            ? `<span class="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 px-2 py-0.5 font-mono text-xs font-black ring-2 ring-amber-300 shadow-md animate-pulse">🎯 ${number(r.actual)} ⭐</span>`
+                            : `<span class="inline-block rounded-md bg-white/10 px-2 py-0.5 font-mono text-xs font-bold text-slate-400">${number(r.actual)}</span>`
+                        }
                     </td>
                     <td class="p-2.5 text-indigo-200">
                         <div class="font-bold text-white text-[11px]">${r.m1Label || 'Edge50'} + ${r.m2Label || 'Edge75'} + ${r.m3Label || 'Dropoff'}</div>
@@ -9511,7 +9552,10 @@
                     <td class="p-2.5 text-center text-amber-300 font-bold">${r.overlapCount || (r.intersectionX2?.length || 0)} số</td>
                     <td class="p-2.5 text-center text-teal-300 font-medium">${r.uniqueSinglesCount || (r.uniqueSinglesX1?.length || 0)} số</td>
                     <td class="p-2.5 text-center">
-                        <span class="inline-block rounded-md bg-white/10 px-2 py-0.5 font-mono text-xs font-black text-amber-300">${number(actualNum)}</span>
+                        ${(isX2 || isX1)
+                            ? `<span class="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 px-2 py-0.5 font-mono text-xs font-black ring-2 ring-amber-300 shadow-md animate-pulse">🎯 ${number(actualNum)} ⭐</span>`
+                            : `<span class="inline-block rounded-md bg-white/10 px-2 py-0.5 font-mono text-xs font-bold text-slate-400">${number(actualNum)}</span>`
+                        }
                     </td>
                     <td class="p-2.5 text-center">${hitBadge}</td>
                     <td class="p-2.5 pr-4 text-right ${profitClass}">
@@ -10220,9 +10264,10 @@
                         </div>
                     </td>
                     <td class="px-3 py-3 text-center">
-                        <span class="inline-flex h-8 min-w-8 items-center justify-center rounded-xl border border-amber-300 bg-amber-100 font-mono text-xs font-black text-amber-950 shadow-xs">
-                            ${actualStr}
-                        </span>
+                        ${(isSettled && (r.isHit || r.hitType !== 'loss'))
+                            ? `<span class="inline-flex h-8 min-w-8 items-center justify-center rounded-xl font-mono text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-md animate-pulse">🎯 ${actualStr} ⭐</span>`
+                            : `<span class="inline-flex h-8 min-w-8 items-center justify-center rounded-xl border border-slate-300 bg-slate-100 font-mono text-xs font-bold text-slate-700 shadow-xs">${actualStr}</span>`
+                        }
                     </td>
                     <td class="px-4 py-3 max-w-[280px]">
                         <div class="flex flex-col gap-1">

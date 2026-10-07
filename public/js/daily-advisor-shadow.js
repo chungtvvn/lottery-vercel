@@ -909,21 +909,24 @@
             const settledRowsHtml = reversedDropoffRows.map(r => {
                 const dateVi = formatDateVi(r.date);
                 const hitBadge = r.hit
-                    ? '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-emerald-500 text-slate-950 shadow-sm ring-1 ring-emerald-300">🎯 TRÚNG ĐỀ (+44.0M)</span>'
+                    ? '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 shadow-sm ring-1 ring-emerald-300">🎯 TRÚNG ĐỀ (+44.0M)</span>'
                     : '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">❌ TRƯỢT (-40.0M)</span>';
 
                 const actualStr = (r.actual !== null && r.actual !== undefined) ? numStr(r.actual) : '—';
                 const hitNumberHtml = r.hit
-                    ? `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded font-black font-mono text-xs bg-amber-400 text-slate-950 ring-1 ring-amber-300">🎯 ${actualStr}</span>`
+                    ? `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg font-black font-mono text-sm bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 ring-2 ring-amber-300 shadow-md animate-pulse">🎯 ${actualStr} ⭐</span>`
                     : `<span class="text-slate-400 font-mono text-xs">${actualStr}</span>`;
 
                 const stakeM = ((r.stakeK || 40000) / 1000).toFixed(1) + 'M';
 
                 return `
-                    <tr class="border-b border-white/5 hover:bg-white/5 transition-colors font-mono text-xs">
+                    <tr class="border-b border-white/5 ${r.hit ? 'bg-amber-950/25 border-l-4 border-l-amber-400' : ''} hover:bg-white/5 transition-colors font-mono text-xs">
                         <td class="py-2.5 px-3 font-bold text-slate-300">${dateVi}</td>
                         <td class="py-2.5 px-3">
-                            <span class="text-amber-300 font-semibold">Đa Động Cơ 40s</span>
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <span class="text-amber-300 font-bold">Đa Động Cơ 40s</span>
+                                ${r.hit ? `<span class="inline-flex items-center px-1.5 py-0.2 rounded font-black font-mono text-[10px] bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 ring-1 ring-amber-300 shadow-xs">🎯 NỔ ĐỀ: ${actualStr} ⭐</span>` : ''}
+                            </div>
                             <span class="text-[10px] text-slate-400 block">Đánh phẳng 1M/số (Ăn 84M)</span>
                         </td>
                         <td class="py-2.5 px-3 text-center">${hitBadge}</td>
@@ -1258,24 +1261,41 @@
             if (currentShadowCategory === 'combo') {
                 const actualStr = (row.deRow?.actual !== null && row.deRow?.actual !== undefined) ? numStr(row.deRow.actual) : '—';
                 const deBadge = row.deHit
-                    ? `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-black bg-emerald-500 text-slate-950 ring-1 ring-emerald-300 shadow-xs">🎯 Trúng Đề (+44M) · ${actualStr} ⭐</span>`
+                    ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-xs animate-pulse">🎯 Trúng Đề (+44M) · ${actualStr} ⭐</span>`
                     : `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">❌ Trượt (-40M) · ${actualStr}</span>`;
 
                 const loHitsList = row.loInfo.pills.filter(p => p.hits > 0);
                 const loHitsStr = loHitsList.map(p => `${p.num}(${p.hits}n)`).slice(0, 3).join(', ') + (loHitsList.length > 3 ? '...' : '');
 
                 const loBadge = row.isLoWin
-                    ? `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40" title="${loHitsList.map(p => `${p.num} (${p.hits} nháy)`).join(', ')}">🔥 ${row.loHits} nháy (${loHitsStr || 'Thắng'})</span>`
+                    ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 ring-2 ring-emerald-300 shadow-xs" title="${loHitsList.map(p => `${p.num} (${p.hits} nháy)`).join(', ')}">🔥 ${row.loHits} nháy (${loHitsStr || 'Thắng'})</span>`
                     : `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">${row.loHits} nháy (Thua)</span>`;
 
+                // Render winning numbers chips directly in Column 4 (Dàn Đánh & Số Trúng)
+                let winningBadgesHtml = '';
+                if (row.deHit) {
+                    winningBadgesHtml += `<span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-1 ring-amber-300 shadow-xs">🎯 ĐB: ${actualStr} ⭐</span> `;
+                }
+                if (loHitsList.length > 0) {
+                    winningBadgesHtml += loHitsList.map(p => {
+                        return `<span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[10px] font-black bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 ring-1 ring-emerald-300 shadow-xs">🎯 ${p.num}<sub class="text-[8px] font-black ml-0.5">(${p.hits}n)</sub></span>`;
+                    }).join(' ');
+                }
+                if (!winningBadgesHtml) {
+                    winningBadgesHtml = '<span class="text-slate-500 text-[10px] italic">Không nổ số nào</span>';
+                }
+
                 return `
-                    <tr class="border-b border-white/5 hover:bg-white/5 transition-colors font-mono text-xs">
+                    <tr class="border-b border-white/5 ${row.comboDayProfitK > 0 ? 'bg-emerald-950/15' : ''} hover:bg-white/5 transition-colors font-mono text-xs">
                         <td class="py-2.5 px-3 font-bold text-slate-300">${dateVi}</td>
                         <td class="py-2.5 px-3">${deBadge}</td>
                         <td class="py-2.5 px-3">${loBadge}</td>
                         <td class="py-2.5 px-3 text-center">
-                            <button type="button" class="btn-open-slip px-2.5 py-1 rounded-lg bg-indigo-600/30 hover:bg-indigo-600 text-indigo-200 hover:text-white border border-indigo-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${row.date}">
-                                <i class="bi bi-eye-fill text-amber-300"></i> Xem Dàn
+                            <div class="flex flex-wrap gap-1 justify-center items-center mb-1">
+                                ${winningBadgesHtml}
+                            </div>
+                            <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-indigo-600/30 hover:bg-indigo-600 text-indigo-200 hover:text-white border border-indigo-500/40 text-[10px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${row.date}">
+                                <i class="bi bi-eye-fill text-amber-300"></i> Xem Đủ Dàn
                             </button>
                         </td>
                         <td class="py-2.5 px-3 text-right text-slate-400">${formatMoneyK(row.comboDayStakeK, false)}</td>
@@ -1290,7 +1310,7 @@
                 if (row.deAbstain) {
                     statusBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700">🛡️ ABSTAIN (Né Cược)</span>';
                 } else if (row.deHit) {
-                    statusBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">🎯 TRÚNG ĐỀ (+60.0M)</span>';
+                    statusBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 ring-1 ring-emerald-300 shadow-xs">🎯 TRÚNG ĐỀ (+60.0M)</span>';
                 } else {
                     statusBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">❌ TRƯỢT (-24.0M)</span>';
                 }
@@ -1298,7 +1318,7 @@
                 let numsCellContent = '—';
                 if (!row.deAbstain && row.deRow?.numbers?.length) {
                     if (row.deHit) {
-                        numsCellContent = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-black bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 ring-2 ring-amber-300 shadow-xs mr-1">🎯 ${numStr(row.deRow?.actual)} ⭐</span>`;
+                        numsCellContent = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-black bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 ring-2 ring-amber-300 shadow-xs mr-1 animate-pulse">🎯 ${numStr(row.deRow?.actual)} ⭐</span>`;
                         numsCellContent += `<span class="text-slate-400 text-[11px]">${(row.deRow.numbers.filter(n => Number(n) !== Number(row.deRow.actual))).slice(0, 6).map(numStr).join(' ')}...</span>`;
                     } else {
                         numsCellContent = `<span class="text-slate-400 text-[11px]">${(row.deRow.numbers || []).slice(0, 8).map(numStr).join(' ')}...</span>`;
@@ -1309,12 +1329,17 @@
                 const methodName = row.deAbstain ? `Tri-Core Consensus${topScoreStr}` : `Tri-Core 24s${topScoreStr}`;
 
                 return `
-                    <tr class="border-b border-white/5 hover:bg-white/5 transition-colors font-mono text-xs">
+                    <tr class="border-b border-white/5 ${row.deHit ? 'bg-amber-950/20' : ''} hover:bg-white/5 transition-colors font-mono text-xs">
                         <td class="py-2.5 px-3 font-bold text-slate-300">${dateVi}</td>
                         <td class="py-2.5 px-3 text-amber-300 font-semibold">${methodName}</td>
                         <td class="py-2.5 px-3 text-center">${statusBadge}</td>
                         <td class="py-2.5 px-3" title="${(row.deRow?.numbers || []).map(numStr).join(', ')}">${numsCellContent}</td>
-                        <td class="py-2.5 px-3 text-center font-bold text-white">${row.deRow?.actual !== null && row.deRow?.actual !== undefined ? numStr(row.deRow.actual) : '—'}</td>
+                        <td class="py-2.5 px-3 text-center font-bold">
+                            ${row.deHit
+                                ? `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded font-black font-mono text-xs bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">🎯 ${numStr(row.deRow.actual)} ⭐</span>`
+                                : `<span class="text-slate-400 font-mono text-xs">${row.deRow?.actual !== null && row.deRow?.actual !== undefined ? numStr(row.deRow.actual) : '—'}</span>`
+                            }
+                        </td>
                         <td class="py-2.5 px-3 text-right font-bold ${row.deProfitK > 0 ? 'text-emerald-400' : (row.deProfitK < 0 ? 'text-rose-400' : 'text-slate-500')}">${row.deAbstain ? '0đ' : formatMoneyK(row.deProfitK)}</td>
                         <td class="py-2.5 px-3 text-right font-bold ${row.cumDeK >= 0 ? 'text-emerald-300' : 'text-rose-300'}">${formatMoneyK(row.cumDeK)}</td>
                         <td class="py-2.5 px-3 text-center">
@@ -1326,22 +1351,20 @@
                 `;
             } else { // 'loDropoff' or 'lo'
                 const betPillsHtml = row.loInfo.pills.map(p => {
-                    const hitTag = p.isHit ? `<span class="text-[9px] font-black text-amber-300 ml-0.5">(${p.hits}n)</span>` : '';
-                    const tierTag = `<span class="text-[8px] opacity-75">·${p.tier}</span>`;
                     if (p.isHit) {
-                        return `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-black bg-emerald-500/25 text-emerald-200 border border-emerald-400/60 font-mono shadow-xs" title="Trúng ${p.hits} nháy (${p.tier})">🎯${p.num}${hitTag}${tierTag}</span>`;
+                        return `<span class="inline-flex items-center px-1.5 py-0.5 rounded-lg text-[10px] font-black bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 text-slate-950 ring-2 ring-emerald-300 shadow-md scale-105 font-mono animate-pulse" title="Trúng ${p.hits} nháy (${p.tier})">🎯 ${p.num} <span class="bg-slate-950 text-emerald-300 px-1 py-0.2 rounded text-[8px] font-black ml-0.5">${p.hits}n</span></span>`;
                     }
-                    return `<span class="inline-flex items-center px-1 py-0.5 rounded text-[10px] font-mono text-slate-400 bg-white/5 border border-white/5" title="${p.tier}">${p.num}${tierTag}</span>`;
+                    return `<span class="inline-flex items-center px-1 py-0.5 rounded text-[10px] font-mono text-slate-400 bg-white/5 border border-white/5 opacity-60" title="${p.tier}">${p.num}<span class="text-[8px] opacity-75 ml-0.5">·${p.tier}</span></span>`;
                 }).join(' ');
 
                 const hitsBadgeClass = row.loHits >= 4
-                    ? 'bg-amber-400 text-slate-950 ring-2 ring-amber-300 font-black'
+                    ? 'bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 ring-2 ring-amber-300 font-black shadow-md'
                     : (row.loHits >= 2
-                        ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-400/50 font-bold'
+                        ? 'bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 ring-2 ring-emerald-300 font-black shadow-md'
                         : 'bg-rose-500/20 text-rose-300 border border-rose-500/30 font-semibold');
 
                 return `
-                    <tr class="border-b border-white/5 hover:bg-white/5 transition-colors font-mono text-xs">
+                    <tr class="border-b border-white/5 ${row.isLoWin ? 'bg-emerald-950/15' : ''} hover:bg-white/5 transition-colors font-mono text-xs">
                         <td class="py-2.5 px-3 font-bold text-slate-300">${dateVi}</td>
                         <td class="py-2.5 px-3">
                             <div class="font-bold text-teal-300">Lô Dropoff 27 (${topNTitle})</div>
