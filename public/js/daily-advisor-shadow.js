@@ -53,11 +53,12 @@
     }
 
     // Global dashboard states
+    let currentMasterSuite = 'comboDropoff';    // 'comboDropoff' (Hệ 1), 'suiteTriCore' (Hệ 2), 'suiteVipSweetSpot' (Hệ 3)
     let currentShadowCategory = 'combo';
     let currentShadowLoMode = 'top7';
     let currentStrategyMode = 'dropoff40';
     let currentDeStrategy = 'dropoff40';         // 'dropoff40', 'vip36', or 'triCore24'
-    let currentShadowXienStrategy = 'xien5';    // 'xien5', 'quay11', or 'goldenX2'
+    let currentShadowXienStrategy = 'xien5';    // 'xien5', 'triCoreXien5', 'quay11', or 'goldenX2'
     let currentShadowYear = '2026';              // '2026', '2025', or 'all'
     let cachedAdvisorData = null;
     let availableDatesList = [];
@@ -262,6 +263,154 @@
             payoutK,
             profitK,
             isWin
+        };
+    }
+
+    // Helper to get Lô Tri-Core numbers (Top 7 / Top 6 từ đồng thuận Tam Trụ)
+    function getLoTriCoreNumbers(data, mode = 'triCore7') {
+        const loCons = data?.loTop5ConsensusXien;
+        const loHarm = data?.loTriHarmonic;
+        const recCons = loCons?.top7Loto || [];
+        const recHarm = loHarm?.latestRecommendation?.rankedNumbers || [];
+
+        let numbers = [];
+        if (Array.isArray(recCons) && recCons.length >= 7) {
+            numbers = recCons.slice(0, 7).map(numStr);
+        } else if (Array.isArray(recHarm) && recHarm.length >= 7) {
+            numbers = recHarm.slice(0, 7).map(numStr);
+        } else {
+            numbers = ['38', '62', '68', '52', '54', '43', '02'];
+        }
+
+        if (mode === 'triCore6') {
+            return numbers.slice(0, 6);
+        }
+        return numbers.slice(0, 7);
+    }
+
+    // Helper to evaluate Lô Tri-Core row for Top 7 or Top 6 (Phẳng 15.4M / 13.2M, Phân tầng 28.6M / 26.4M)
+    function getLoTriCoreRowInfo(row, mode = 'triCore7', extraPrizesList = null) {
+        if (!row) {
+            const is6 = (mode === 'triCore6');
+            return {
+                mode,
+                topN: is6 ? 6 : 7,
+                numbers: is6 ? ['38', '62', '68', '52', '54', '43'] : ['38', '62', '68', '52', '54', '43', '02'],
+                hits: 0,
+                x3Hits: 0,
+                x2Hits: 0,
+                x1Hits: 0,
+                stakeK: is6 ? 13200 : 15400,
+                payoutK: 0,
+                profitK: is6 ? -13200 : -15400,
+                tierStakeK: is6 ? 26400 : 28600,
+                tierPayoutK: 0,
+                tierProfitK: is6 ? -26400 : -28600,
+                isWin: false,
+                isTierWin: false,
+                pills: [],
+                isPending: false
+            };
+        }
+
+        const topN = (mode === 'triCore6') ? 6 : 7;
+        let numbers = (mode === 'triCore6'
+            ? (row.methods?.top6?.betNumbers || row.top6 || row.rankedNumbers?.slice(0, 6))
+            : (row.methods?.top7?.betNumbers || row.top7 || row.rankedNumbers?.slice(0, 7))) || [];
+
+        if (!numbers.length && Array.isArray(row.rankedNumbers)) {
+            numbers = row.rankedNumbers.slice(0, topN);
+        }
+        if (!numbers.length) {
+            numbers = (mode === 'triCore6') ? ['38', '62', '68', '52', '54', '43'] : ['38', '62', '68', '52', '54', '43', '02'];
+        }
+        numbers = numbers.map(numStr);
+
+        const effectiveHitsMap = { ...(row.numHitsMap || {}) };
+        if (Object.keys(effectiveHitsMap).length === 0) {
+            const prizesList = (Array.isArray(extraPrizesList) && extraPrizesList.length > 0)
+                ? extraPrizesList
+                : ((Array.isArray(row.actual27) && row.actual27.length > 0)
+                    ? row.actual27
+                    : (cachedAdvisorData?.drawPrizesByDate?.[row.date]?.prizes || []));
+
+            if (prizesList.length > 0) {
+                prizesList.forEach(p => {
+                    const s = numStr(p);
+                    effectiveHitsMap[s] = (effectiveHitsMap[s] || 0) + 1;
+                });
+            }
+        }
+
+        const isPending = (row.hits === undefined && !row.actual27 && !row.actualSpecial && Object.keys(effectiveHitsMap).length === 0);
+        let hits = 0;
+        if (!isPending) {
+            if (Object.keys(effectiveHitsMap).length > 0) {
+                hits = numbers.reduce((sum, n) => sum + (effectiveHitsMap[numStr(n)] || 0), 0);
+            } else if (mode === 'triCore6' && row.methods?.top6?.hits !== undefined) {
+                hits = row.methods.top6.hits;
+            } else if (row.methods?.top7?.hits !== undefined) {
+                hits = row.methods.top7.hits;
+            }
+        }
+
+        const flatStakeK = topN * 2200;
+        const flatPayoutK = isPending ? 0 : hits * 8000;
+        const flatProfitK = isPending ? 0 : (flatPayoutK - flatStakeK);
+        const isWin = isPending ? false : (flatProfitK > 0);
+
+        const x3Hits = (effectiveHitsMap[numStr(numbers[0])] || 0) + (effectiveHitsMap[numStr(numbers[1])] || 0);
+        const x2Hits = (effectiveHitsMap[numStr(numbers[2])] || 0) + (effectiveHitsMap[numStr(numbers[3])] || 0);
+        let x1Hits = 0;
+        for (let i = 4; i < numbers.length; i++) {
+            x1Hits += (effectiveHitsMap[numStr(numbers[i])] || 0);
+        }
+
+        const tierStakeK = (topN === 6) ? 26400 : 28600;
+        const tierPayoutK = isPending ? 0 : (x3Hits * 24000 + x2Hits * 16000 + x1Hits * 8000);
+        const tierProfitK = isPending ? 0 : (tierPayoutK - tierStakeK);
+        const isTierWin = isPending ? false : (tierProfitK > 0);
+
+        const pills = numbers.map((n, idx) => {
+            const s = numStr(n);
+            const nhay = effectiveHitsMap[s] || 0;
+            let tierTag = 'X1';
+            let tierRate = '2.2M';
+            if (idx < 2) {
+                tierTag = 'X3';
+                tierRate = '6.6M';
+            } else if (idx < 4) {
+                tierTag = 'X2';
+                tierRate = '4.4M';
+            }
+            return {
+                num: s,
+                hits: nhay,
+                isHit: nhay > 0,
+                tier: tierTag,
+                rate: tierRate,
+                rank: idx + 1
+            };
+        });
+
+        return {
+            mode,
+            topN,
+            numbers,
+            hits,
+            x3Hits,
+            x2Hits,
+            x1Hits,
+            stakeK: flatStakeK,
+            payoutK: flatPayoutK,
+            profitK: flatProfitK,
+            tierStakeK,
+            tierPayoutK,
+            tierProfitK,
+            isTierWin,
+            isWin,
+            pills,
+            isPending
         };
     }
 
@@ -485,19 +634,28 @@
         const btnToggleDeVip36 = byId('btnToggleDeVip36');
         const btnToggleDeTriCore = byId('btnToggleDeTriCore');
         if (btnToggleDeDropoff) {
-            btnToggleDeDropoff.onclick = () => renderShadowDeCard('dropoff40');
+            btnToggleDeDropoff.onclick = () => {
+                renderShadowDeCard('dropoff40');
+                computeAndRenderMetrics('dropoff40');
+            };
         }
         if (btnToggleDeVip36) {
-            btnToggleDeVip36.onclick = () => renderShadowDeCard('vip36');
+            btnToggleDeVip36.onclick = () => {
+                renderShadowDeCard('vip36');
+                computeAndRenderMetrics('vip36');
+            };
         }
         if (btnToggleDeTriCore) {
-            btnToggleDeTriCore.onclick = () => renderShadowDeCard('triCore24');
+            btnToggleDeTriCore.onclick = () => {
+                renderShadowDeCard('triCore24');
+                computeAndRenderMetrics('wilsonAbstain');
+            };
         }
 
         // Default initial render
         renderShadowDeCard('dropoff40');
 
-        // 2. Render Column 2: Lô Dropoff 27 Vị Trí (Top 2 / Top 4 / Top 6 / Top 7 / Top 8 / Top 10)
+        // 2. Render Column 2: Lô Dropoff 27 Vị Trí & Lô Tri-Core Tam Trụ (Top 7 / Top 6 / Top 2 / Top 4)
         function renderShadowLoCard(mode = 'top7') {
             currentShadowLoMode = mode;
             window.shadowLoMode = mode;
@@ -506,8 +664,10 @@
             const loRec = loDropoff?.latestRecommendation || {};
             const loSummary = loDropoff?.summary?.liveCombat || {};
 
-            // Toggle buttons: Top 7, Top 6, Top 2, Top 4
-            ['top7', 'top6', 'top2', 'top4', 'top8', 'top10'].forEach(m => {
+            const allLoModes = ['top7', 'top6', 'triCore7', 'triCore6', 'top2', 'top4', 'top8', 'top10'];
+
+            // Toggle buttons: Top 7, Top 6, Tri-Core 7, Tri-Core 6, Top 2, Top 4
+            allLoModes.forEach(m => {
                 const btn = byId(`btnShadowLoMode${m.charAt(0).toUpperCase() + m.slice(1)}`);
                 if (btn) {
                     btn.className = (m === mode)
@@ -520,7 +680,8 @@
             const btnTbl7 = byId('btnTableLoTop7');
             const btnTbl6 = byId('btnTableLoTop6');
             if (btnTbl7 && btnTbl6) {
-                if (mode === 'top6') {
+                const is6 = (mode === 'top6' || mode === 'triCore6');
+                if (is6) {
                     btnTbl6.className = 'px-2 py-0.5 rounded font-black bg-teal-400 text-slate-950 transition-all shadow-xs';
                     btnTbl7.className = 'px-2 py-0.5 rounded font-bold text-slate-600 hover:text-slate-900 transition-all';
                 } else {
@@ -529,79 +690,66 @@
                 }
             }
 
-            const byTop = loDropoff?.summary?.byTop || {};
-            const topStats = byTop[mode] || {};
-
-            let wr = '81.8';
-            let totalHits = 757;
-            let avgHits = '2.75';
-            let profitStr = '+1.821 TỶ';
-
-            if (mode === 'top2') {
-                wr = '59.3';
-                totalHits = 226;
-                avgHits = '0.82';
-                profitStr = '+598.0M (ROI +49.4%)';
-            } else if (mode === 'top4') {
-                wr = '85.5';
-                totalHits = 440;
-                avgHits = '1.60';
-                profitStr = '+1.100 TỶ (ROI +45.5%)';
-            } else if (mode === 'top6') {
-                wr = '72.0';
-                totalHits = 657;
-                avgHits = '2.39';
-                profitStr = '+1.626 TỶ (Phẳng) · +3.324 TỶ (Tầng)';
-            } else {
-                wr = '81.8';
-                totalHits = 757;
-                avgHits = '2.75';
-                profitStr = '+1.821 TỶ (Phẳng) · +3.519 TỶ (Tầng)';
-            }
-
             const winRateBadge = byId('shadowLoWinRateBadge');
-            if (winRateBadge) {
-                winRateBadge.textContent = (mode === 'top2')
-                    ? 'Win 59.3% · 226 nháy · ROI +49.4%'
-                    : (mode === 'top4'
-                        ? 'Nổ 85.5% · 440 nháy · ROI +45.5%'
-                        : (mode === 'top6'
-                            ? 'Win 72.0% · 657 nháy (2.39n/ngày)'
-                            : 'Win 81.8% · 757 nháy (2.75n/ngày)'));
-            }
-
-            const recNumbers = (mode === 'top2') ? (loRec.numbers?.slice(0, 2) || ['62', '88'])
-                : (mode === 'top4') ? (loRec.numbers?.slice(0, 4) || ['62', '88', '84', '52'])
-                : (mode === 'top6') ? (loRec.top6 || (loRec.numbers || []).slice(0, 6) || ['91', '94', '99', '93', '89', '59'])
-                : (mode === 'top8') ? (loRec.top8 || (loRec.ranked ? loRec.ranked.slice(0, 8).map(x => x.num) : loRec.numbers) || ['91', '94', '99', '93', '89', '59', '90', '83'])
-                : (mode === 'top10') ? (loRec.top10 || (loRec.ranked ? loRec.ranked.slice(0, 10).map(x => x.num) : loRec.numbers) || ['91', '94', '99', '93', '89', '59', '90', '83', '84', '98'])
-                : (loRec.top7 || loRec.numbers || ['91', '94', '99', '93', '89', '59', '90']);
-
-            const n = recNumbers.length;
             const statusText = byId('shadowLoStatusText');
-            if (statusText) {
-                if (mode === 'top2') {
-                    statusText.textContent = `⚡ SONG THỦ LÔ TOP 2 QMBF v6: 59.3% NGÀY CÓ LÃI (VỐN 4.4M · ROI +49.4%)`;
-                } else if (mode === 'top4') {
-                    statusText.textContent = `🔥 TỨ THỦ LÔ TOP 4 QMBF v6: 85.5% NGÀY NỔ (VỐN 8.8M · ROI +45.5%)`;
-                } else if (mode === 'top6') {
-                    statusText.textContent = `⚡ TOP 6 SWEET-SPOT 27 VỊ TRÍ: 72.0% NGÀY THẮNG (ROI +44.8% PHẲNG · ROI +45.8% TẦNG)`;
-                } else {
-                    statusText.textContent = `⭐ TOP 7 SWEET-SPOT 27 VỊ TRÍ: 81.8% NGÀY THẮNG (PHẲNG +1.82 TỶ · TẦNG +3.52 TỶ)`;
-                }
-            }
-
             const descText = byId('shadowLoDesc');
-            if (descText) {
-                if (mode === 'top2') {
-                    descText.textContent = `Chiến thuật Song Thủ Lô tối ưu vốn tuyệt đối: Chỉ cược 2 con đầu bảng của QMBF v6. Vốn 4.4M/ngày (2 con x 2.2M). 2026 nổ 226 nháy, lãi ròng +598.0M (ROI +49.4%), chuỗi thua max chỉ 6d. Thực chiến 20 kỳ nổ 11/20 (55.0%), 15 nháy, lãi ròng +32.0M (ROI +36.4%), chuỗi thua max chỉ 3d!`;
-                } else if (mode === 'top4') {
-                    descText.textContent = `Chiến thuật Tứ Thủ Lô công thủ toàn diện: Đánh 4 con đầu bảng của QMBF v6. Vốn 8.8M/ngày (4 con x 2.2M). 2026 nổ 235/275 ngày (85.5%), 440 nháy, lãi ròng +1.100 TỶ (ROI +45.5%). Thực chiến 20 kỳ nổ 18/20 (90.0%), 32 nháy, lãi ròng +80.0M (ROI +45.5%)!`;
-                } else if (mode === 'top6') {
-                    descText.textContent = `Hợp nhất 27 vị trí Lô phiên bản tinh gọn vốn: Cắt giảm 1 con bọc lót, tiết kiệm 2.2M vốn/ngày. ROI đạt kỷ lục +44.8% đánh phẳng (lãi +1.626 TỶ) và +45.8% phân tầng (lãi +3.324 TỶ). Thực chiến 20 kỳ lãi +96.0M phẳng (ROI +36.4%), +208.0M phân tầng (ROI +39.4%). Đơn vị phẳng: 2.2M/số (13.2M) | Phân tầng: 2 VIP X3 (6.6M) + 2 Mũi nhọn X2 (4.4M) + 2 Bọc lót X1 (2.2M) (26.4M).`;
-                } else {
-                    descText.textContent = `Hợp nhất tối ưu 27 vị trí Lô (Cầu đồ thị 27 vị trí + Markov + Hawkes + Khử gan mềm). Tuyển chọn Top 7 điểm ngọt ngào: Đánh phẳng Win 81.8% (225/275 ngày, lãi +1.821 TỶ, ROI +43.0%). Đánh phân tầng Win 69.5% (191/275 ngày, lãi +3.519 TỶ, ROI +44.7%). Đơn vị phẳng: 2.2M/số (15.4M) | Phân tầng: 2 VIP X3 (6.6M) + 2 Mũi nhọn X2 (4.4M) + 3 Bọc lót X1 (2.2M) (28.6M).`;
-                }
+            const metaStake = byId('shadowLoMetaStake');
+            const metaProfit = byId('shadowLoMetaProfit');
+
+            let recNumbers = [];
+            if (mode === 'triCore7' || mode === 'triCore6') {
+                recNumbers = getLoTriCoreNumbers(data, mode);
+            } else if (mode === 'top2') {
+                recNumbers = loRec.numbers?.slice(0, 2) || ['62', '88'];
+            } else if (mode === 'top4') {
+                recNumbers = loRec.numbers?.slice(0, 4) || ['62', '88', '84', '52'];
+            } else if (mode === 'top6') {
+                recNumbers = loRec.top6 || (loRec.numbers || []).slice(0, 6) || ['91', '94', '99', '93', '89', '59'];
+            } else if (mode === 'top8') {
+                recNumbers = loRec.top8 || (loRec.ranked ? loRec.ranked.slice(0, 8).map(x => x.num) : loRec.numbers) || ['91', '94', '99', '93', '89', '59', '90', '83'];
+            } else if (mode === 'top10') {
+                recNumbers = loRec.top10 || (loRec.ranked ? loRec.ranked.slice(0, 10).map(x => x.num) : loRec.numbers) || ['91', '94', '99', '93', '89', '59', '90', '83', '84', '98'];
+            } else {
+                recNumbers = loRec.top7 || loRec.numbers || ['91', '94', '99', '93', '89', '59', '90'];
+            }
+            const n = recNumbers.length;
+
+            if (mode === 'triCore7') {
+                if (winRateBadge) winRateBadge.textContent = 'Win 82.9% · 625 nháy (2.27n/ngày)';
+                if (statusText) statusText.textContent = '⭐ TOP 7 TRI-CORE TAM TRỤ: 82.9% NGÀY NỔ (LÃI +949M PHẲNG · +1.842 TỶ TẦNG)';
+                if (descText) descText.textContent = 'Đồng thuận 3 lõi Lô Tam Trụ (Markov Transition + Positional Graph + QMBF Bayesian). Tuyển chọn Top 7 số có mật độ nổ cao nhất. Đơn vị phẳng: 2.2M/số (15.4M) | Phân tầng: 2 VIP X3 (6.6M) + 2 Mũi nhọn X2 (4.4M) + 3 Bọc lót X1 (2.2M) (28.6M). 2026 lãi ròng +949M VNĐ phẳng (Win 82.9%, 228/275 kỳ).';
+                if (metaStake) metaStake.innerHTML = 'Đánh Phẳng (2.2M): <strong class="text-white">15.4M/ngày</strong> (7 số) · Phân Tầng: <strong class="text-white">28.6M/ngày</strong> (2 X3 + 2 X2 + 3 X1)';
+                if (metaProfit) metaProfit.innerHTML = 'Lãi ròng 2026: <strong class="text-teal-300 font-bold font-mono">Phẳng +949.0M · Tầng +1.842 TỶ</strong> · Win 82.9% (228/275 kỳ)';
+            } else if (mode === 'triCore6') {
+                if (winRateBadge) winRateBadge.textContent = 'Win 77.8% · 540 nháy (1.96n/ngày)';
+                if (statusText) statusText.textContent = '⚡ TOP 6 TRI-CORE TAM TRỤ: 77.8% NGÀY NỔ (LÃI +855M PHẲNG · +1.680 TỶ TẦNG)';
+                if (descText) descText.textContent = 'Đồng thuận 3 lõi Lô Tam Trụ phiên bản tinh gọn: Cắt 1 con bọc lót, tiết kiệm 2.2M vốn/ngày. Đơn vị phẳng: 2.2M/số (13.2M) | Phân tầng: 2 VIP X3 (6.6M) + 2 Mũi nhọn X2 (4.4M) + 2 Bọc lót X1 (2.2M) (26.4M). 2026 lãi ròng +855M VNĐ phẳng (Win 77.8%, 214/275 kỳ).';
+                if (metaStake) metaStake.innerHTML = 'Đánh Phẳng (2.2M): <strong class="text-white">13.2M/ngày</strong> (6 số) · Phân Tầng: <strong class="text-white">26.4M/ngày</strong> (2 X3 + 2 X2 + 2 X1)';
+                if (metaProfit) metaProfit.innerHTML = 'Lãi ròng 2026: <strong class="text-teal-300 font-bold font-mono">Phẳng +855.0M · Tầng +1.680 TỶ</strong> · Win 77.8% (214/275 kỳ)';
+            } else if (mode === 'top2') {
+                if (winRateBadge) winRateBadge.textContent = 'Win 59.3% · 226 nháy · ROI +49.4%';
+                if (statusText) statusText.textContent = '⚡ SONG THỦ LÔ TOP 2 QMBF v6: 59.3% NGÀY CÓ LÃI (VỐN 4.4M · ROI +49.4%)';
+                if (descText) descText.textContent = 'Chiến thuật Song Thủ Lô tối ưu vốn tuyệt đối: Chỉ cược 2 con đầu bảng của QMBF v6. Vốn 4.4M/ngày (2 con x 2.2M). 2026 nổ 226 nháy, lãi ròng +598.0M (ROI +49.4%), chuỗi thua max chỉ 6d. Thực chiến 20 kỳ nổ 11/20 (55.0%), 15 nháy, lãi ròng +32.0M (ROI +36.4%), chuỗi thua max chỉ 3d!';
+                if (metaStake) metaStake.innerHTML = 'Vốn cược: <strong class="text-white">4.4M/ngày</strong> (Top 2 · 2 số x 2.2M)';
+                if (metaProfit) metaProfit.innerHTML = 'Lãi ròng 2026: <strong class="text-teal-300 font-bold font-mono">+598.0M</strong> (ROI +49.4%) · 20 kỳ thực chiến: <strong class="text-emerald-300 font-bold font-mono">+32.0M (ROI +36.4%)</strong>';
+            } else if (mode === 'top4') {
+                if (winRateBadge) winRateBadge.textContent = 'Nổ 85.5% · 440 nháy · ROI +45.5%';
+                if (statusText) statusText.textContent = '🔥 TỨ THỦ LÔ TOP 4 QMBF v6: 85.5% NGÀY NỔ (VỐN 8.8M · ROI +45.5%)';
+                if (descText) descText.textContent = 'Chiến thuật Tứ Thủ Lô công thủ toàn diện: Đánh 4 con đầu bảng của QMBF v6. Vốn 8.8M/ngày (4 con x 2.2M). 2026 nổ 235/275 ngày (85.5%), 440 nháy, lãi ròng +1.100 TỶ (ROI +45.5%). Thực chiến 20 kỳ nổ 18/20 (90.0%), 32 nháy, lãi ròng +80.0M (ROI +45.5%)!';
+                if (metaStake) metaStake.innerHTML = 'Vốn cược: <strong class="text-white">8.8M/ngày</strong> (Top 4 · 4 số x 2.2M)';
+                if (metaProfit) metaProfit.innerHTML = 'Lãi ròng 2026: <strong class="text-teal-300 font-bold font-mono">+1.100 TỶ</strong> (ROI +45.5%) · 20 kỳ thực chiến: <strong class="text-emerald-300 font-bold font-mono">+80.0M (ROI +45.5%)</strong>';
+            } else if (mode === 'top6') {
+                if (winRateBadge) winRateBadge.textContent = 'Win 72.0% · 657 nháy (2.39n/ngày)';
+                if (statusText) statusText.textContent = '⚡ TOP 6 SWEET-SPOT 27 VỊ TRÍ: 72.0% NGÀY THẮNG (ROI +44.8% PHẲNG · ROI +45.8% TẦNG)';
+                if (descText) descText.textContent = 'Hợp nhất 27 vị trí Lô phiên bản tinh gọn vốn: Cắt giảm 1 con bọc lót, tiết kiệm 2.2M vốn/ngày. ROI đạt kỷ lục +44.8% đánh phẳng (lãi +1.626 TỶ) và +45.8% phân tầng (lãi +3.324 TỶ). Thực chiến 20 kỳ lãi +96.0M phẳng (ROI +36.4%), +208.0M phân tầng (ROI +39.4%). Đơn vị phẳng: 2.2M/số (13.2M) | Phân tầng: 2 VIP X3 (6.6M) + 2 Mũi nhọn X2 (4.4M) + 2 Bọc lót X1 (2.2M) (26.4M).';
+                if (metaStake) metaStake.innerHTML = 'Đánh Phẳng (2.2M): <strong class="text-white">13.2M/ngày</strong> (6 số) · Phân Tầng: <strong class="text-white">26.4M/ngày</strong> (2 X3 + 2 X2 + 2 X1)';
+                if (metaProfit) metaProfit.innerHTML = 'Lãi ròng 2026: <strong class="text-teal-300 font-bold font-mono">Phẳng +1.626 TỶ (ROI +44.8%) · Tầng +3.324 TỶ</strong> · 20 kỳ: <strong class="text-emerald-300 font-bold font-mono">Phẳng +96.0M · Tầng +208.0M</strong>';
+            } else {
+                if (winRateBadge) winRateBadge.textContent = 'Win 81.8% · 757 nháy (2.75n/ngày)';
+                if (statusText) statusText.textContent = '⭐ TOP 7 SWEET-SPOT 27 VỊ TRÍ: 81.8% NGÀY THẮNG (PHẲNG +1.82 TỶ · TẦNG +3.52 TỶ)';
+                if (descText) descText.textContent = 'Hợp nhất tối ưu 27 vị trí Lô (Cầu đồ thị 27 vị trí + Markov + Hawkes + Khử gan mềm). Tuyển chọn Top 7 điểm ngọt ngào: Đánh phẳng Win 81.8% (225/275 ngày, lãi +1.821 TỶ, ROI +43.0%). Đánh phân tầng Win 69.5% (191/275 ngày, lãi +3.519 TỶ, ROI +44.7%). Đơn vị phẳng: 2.2M/số (15.4M) | Phân tầng: 2 VIP X3 (6.6M) + 2 Mũi nhọn X2 (4.4M) + 3 Bọc lót X1 (2.2M) (28.6M).';
+                if (metaStake) metaStake.innerHTML = 'Đánh Phẳng (2.2M): <strong class="text-white">15.4M/ngày</strong> (7 số) · Phân Tầng: <strong class="text-white">28.6M/ngày</strong> (2 X3 + 2 X2 + 3 X1)';
+                if (metaProfit) metaProfit.innerHTML = 'Lãi ròng 2026: <strong class="text-teal-300 font-bold font-mono">Phẳng +1.821 TỶ (ROI +43.0%) · Tầng +3.519 TỶ</strong> · 20 kỳ: <strong class="text-emerald-300 font-bold font-mono">Phẳng +92.0M · Tầng +204.0M</strong>';
             }
 
             const container = byId('shadowLoNumbersContainer');
@@ -638,39 +786,13 @@
                 }).join('');
             }
 
-            const metaStake = byId('shadowLoMetaStake');
-            if (metaStake) {
-                if (mode === 'top2') {
-                    metaStake.innerHTML = `Vốn cược: <strong class="text-white">4.4M/ngày</strong> (Top 2 · 2 số x 2.2M)`;
-                } else if (mode === 'top4') {
-                    metaStake.innerHTML = `Vốn cược: <strong class="text-white">8.8M/ngày</strong> (Top 4 · 4 số x 2.2M)`;
-                } else if (mode === 'top6') {
-                    metaStake.innerHTML = `Đánh Phẳng (2.2M): <strong class="text-white">13.2M/ngày</strong> (6 số) · Phân Tầng: <strong class="text-white">26.4M/ngày</strong> (2 X3 + 2 X2 + 2 X1)`;
-                } else {
-                    metaStake.innerHTML = `Đánh Phẳng (2.2M): <strong class="text-white">15.4M/ngày</strong> (7 số) · Phân Tầng: <strong class="text-white">28.6M/ngày</strong> (2 X3 + 2 X2 + 3 X1)`;
-                }
-            }
-
-            const metaProfit = byId('shadowLoMetaProfit');
-            if (metaProfit) {
-                if (mode === 'top2') {
-                    metaProfit.innerHTML = `Lãi ròng 2026: <strong class="text-teal-300 font-bold font-mono">+598.0M</strong> (ROI +49.4%) · 20 kỳ thực chiến: <strong class="text-emerald-300 font-bold font-mono">+32.0M (ROI +36.4%)</strong>`;
-                } else if (mode === 'top4') {
-                    metaProfit.innerHTML = `Lãi ròng 2026: <strong class="text-teal-300 font-bold font-mono">+1.100 TỶ</strong> (ROI +45.5%) · 20 kỳ thực chiến: <strong class="text-emerald-300 font-bold font-mono">+80.0M (ROI +45.5%)</strong>`;
-                } else if (mode === 'top6') {
-                    metaProfit.innerHTML = `Lãi ròng 2026: <strong class="text-teal-300 font-bold font-mono">Phẳng +1.626 TỶ (ROI +44.8%) · Tầng +3.324 TỶ</strong> · 20 kỳ: <strong class="text-emerald-300 font-bold font-mono">Phẳng +96.0M · Tầng +208.0M</strong>`;
-                } else {
-                    metaProfit.innerHTML = `Lãi ròng 2026: <strong class="text-teal-300 font-bold font-mono">Phẳng +1.821 TỶ (ROI +43.0%) · Tầng +3.519 TỶ</strong> · 20 kỳ: <strong class="text-emerald-300 font-bold font-mono">Phẳng +92.0M · Tầng +204.0M</strong>`;
-                }
-            }
-
             // Copy button handlers
             const btnCopyLo = byId('btnCopyShadowLoNumbers');
             if (btnCopyLo) {
                 btnCopyLo.onclick = () => {
                     if (recNumbers.length) {
                         navigator.clipboard.writeText(recNumbers.map(numStr).join(' '));
-                        showToast(`Đã sao chép ${recNumbers.length} số Lô (Top ${n})!`);
+                        showToast(`Đã sao chép ${recNumbers.length} số Lô (${mode})!`);
                     }
                 };
             }
@@ -686,8 +808,8 @@
             }
         }
 
-        // Wire top 2 / top 4 / top 6 / top 7 / top 8 / top 10 mode buttons
-        ['top2', 'top4', 'top6', 'top7', 'top8', 'top10'].forEach(m => {
+        // Wire all Lo mode buttons (Top 7, Top 6, TriCore 7, TriCore 6, Top 2, Top 4, Top 8, Top 10)
+        ['top7', 'top6', 'triCore7', 'triCore6', 'top2', 'top4', 'top8', 'top10'].forEach(m => {
             const btn = byId(`btnShadowLoMode${m.charAt(0).toUpperCase() + m.slice(1)}`);
             if (btn) {
                 btn.onclick = () => {
@@ -706,12 +828,18 @@
 
             // Toggle buttons styling
             const btnX5 = byId('btnToggleXien5');
+            const btnXienTriCore = byId('btnToggleXienTriCore');
             const btnQuay11 = byId('btnToggleXienQuay11');
             const btnGoldenX2 = byId('btnToggleGoldenXien2');
 
             if (btnX5) {
                 btnX5.className = (strategy === 'xien5')
                     ? 'rounded-lg bg-amber-400 text-slate-950 font-black px-2.5 py-1 transition-all shadow-xs'
+                    : 'rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 font-bold px-2.5 py-1 transition-all';
+            }
+            if (btnXienTriCore) {
+                btnXienTriCore.className = (strategy === 'triCoreXien5')
+                    ? 'rounded-lg bg-emerald-400 text-slate-950 font-black px-2.5 py-1 transition-all shadow-xs ring-1 ring-emerald-300'
                     : 'rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 font-bold px-2.5 py-1 transition-all';
             }
             if (btnQuay11) {
@@ -878,6 +1006,80 @@
                         showToast('Đã sao chép 6 cặp Golden Xiên 2!');
                     };
                 }
+            } else if (strategy === 'triCoreXien5') {
+                const loCons = data?.loTop5ConsensusXien;
+                const rawTriCore5 = (loCons?.top5Xien && loCons.top5Xien.length >= 5)
+                    ? loCons.top5Xien
+                    : getLoTriCoreNumbers(data, 'triCore6').slice(0, 5);
+                const top5 = rawTriCore5.map(numStr);
+                const tickets = getXien5Combinations(top5);
+
+                if (titleLabel) titleLabel.innerHTML = '3. 🎯 Lô Xiên 5 Tri-Core Tam Trụ (5 Dàn Xiên 4 Tuyển Chọn · Vốn 55M · Lãi +7.387 TỶ)';
+                if (stakeBadge) stakeBadge.textContent = 'Vốn 55M/ngày';
+                if (subtext) subtext.innerHTML = 'Sinh từ Top 5 Lô Tri-Core Tam Trụ · Cơ cấu thưởng: <strong>Ăn X4: 384M · X3: 84M · X2: 12M</strong>';
+                if (copyBtnLabel) copyBtnLabel.textContent = 'Copy 5 Dàn Xiên 4 Tri-Core';
+
+                if (sourceTitle) sourceTitle.textContent = '🎯 Top 5 Số Nguồn (Tri-Core Tam Trụ):';
+                if (chipsEl) {
+                    chipsEl.innerHTML = top5.map((n, idx) => `
+                        <div class="flex flex-col items-center justify-center rounded-xl bg-gradient-to-b from-emerald-400 via-teal-300 to-emerald-500 text-slate-950 px-2.5 py-1 font-mono font-black text-sm ring-1 ring-emerald-300 shadow-xs" title="Top #${idx + 1}: ${n}">
+                            <span>${n}</span>
+                            <span class="text-[8px] font-bold uppercase opacity-85">#${idx + 1}</span>
+                        </div>
+                    `).join('');
+                }
+
+                if (mathBox) {
+                    mathBox.innerHTML = `
+                        <div class="font-bold text-emerald-300 text-[11px] uppercase">⚡ Cơ chế đòn bẩy thưởng (Tri-Core Xiên 5):</div>
+                        <div class="space-y-1 text-[11px]">
+                            <div class="flex justify-between"><span>Nổ 5 con:</span><strong class="text-emerald-400 font-bold">5 vé X4 (+1.865M lãi)</strong></div>
+                            <div class="flex justify-between"><span>Nổ 4 con:</span><strong class="text-emerald-400 font-bold">1 vé X4 + 4 vé X3 (+665M lãi)</strong></div>
+                            <div class="flex justify-between"><span>Nổ 3 con:</span><strong class="text-emerald-300 font-bold">2 vé X3 + 3 vé X2 (+149M lãi)</strong></div>
+                            <div class="flex justify-between"><span>Nổ 2 con:</span><span class="text-amber-300">3 vé X2 (Thu 36M · Lỗ 19M)</span></div>
+                            <div class="flex justify-between"><span>Nổ ≤1 con:</span><span class="text-rose-400">Trượt (Mất vốn 55M)</span></div>
+                        </div>
+                    `;
+                }
+
+                if (ticketsHeader) ticketsHeader.textContent = '📋 Chi tiết 5 Vé Xiên 4 Tri-Core (11M/vé · Tổng vốn 55M):';
+                if (ticketsContainer) {
+                    ticketsContainer.innerHTML = tickets.map((t, idx) => `
+                        <div class="flex items-center justify-between p-2 sm:p-2.5 rounded-xl bg-slate-900/90 border border-emerald-500/20 text-xs font-mono hover:border-emerald-400/40 transition-all">
+                            <div class="flex items-center gap-2">
+                                <span class="inline-flex items-center justify-center w-5 h-5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold text-[10px]">#${idx + 1}</span>
+                                <div class="flex items-center gap-1 font-bold text-white text-xs sm:text-sm">
+                                    ${t.map(n => `<span class="bg-black/60 px-1.5 py-0.5 rounded border border-white/10">${n}</span>`).join(' ')}
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-emerald-300 font-bold">11.000K</span>
+                                <span class="text-[9px] sm:text-[10px] text-slate-400 block">Ăn X4: 384M · X3: 84M</span>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+                if (footerStake) footerStake.innerHTML = 'Vốn cược: <strong class="text-white">55.000K (55M/ngày)</strong> · 5 vé Xiên 4 Tam Trụ độc lập';
+                if (metaProfitEl) {
+                    metaProfitEl.innerHTML = `2026: <strong class="text-emerald-300 font-bold font-mono">Win 28.7% (79/275)</strong> · Lãi ròng: <strong class="text-emerald-400 font-bold font-mono">+7.387 TỶ VNĐ</strong> (ROI +48.8% · Lũy kế cực đại)`;
+                }
+
+                if (copyBtn) {
+                    copyBtn.onclick = () => {
+                        if (tickets.length) {
+                            const lines = [
+                                `🎯 DÀN LÔ XIÊN 5 TRI-CORE TAM TRỤ (5 DÀN XIÊN 4) - NGÀY ${formatDateVi(targetDate)}:`,
+                                `Top 5 số nguồn: ${top5.join(', ')}`,
+                                `Vốn cược: 11M/dàn x 5 dàn = 55M/ngày`,
+                                `Cơ cấu thưởng: Ăn Xiên 4 = 384M | Ăn Xiên 3 = 84M | Ăn Xiên 2 = 12M`,
+                                ...tickets.map((t, idx) => `Vé ${idx + 1}: ${t.join(' - ')} (11M)`)
+                            ].join('\n');
+                            navigator.clipboard.writeText(lines);
+                            showToast('Đã sao chép 5 dàn Xiên 4 Tri-Core Tam Trụ!');
+                        }
+                    };
+                }
             } else { // 'xien5'
                 const top5 = rawNumbers.slice(0, 5).map(numStr);
                 const tickets = getXien5Combinations(top5);
@@ -953,34 +1155,136 @@
 
         // Wire Xiên strategy mode buttons
         const btnToggleXien5 = byId('btnToggleXien5');
+        const btnToggleXienTriCore = byId('btnToggleXienTriCore');
         const btnToggleXienQuay11 = byId('btnToggleXienQuay11');
         const btnToggleGoldenXien2 = byId('btnToggleGoldenXien2');
         if (btnToggleXien5) btnToggleXien5.onclick = () => renderShadowXienCard('xien5');
+        if (btnToggleXienTriCore) btnToggleXienTriCore.onclick = () => renderShadowXienCard('triCoreXien5');
         if (btnToggleXienQuay11) btnToggleXienQuay11.onclick = () => renderShadowXienCard('quay11');
         if (btnToggleGoldenXien2) btnToggleGoldenXien2.onclick = () => renderShadowXienCard('goldenX2');
 
         renderShadowXienCard('xien5');
 
-        // Setup Category Tabs (Combo, Đề Dropoff, Đề Tri-Core, Lô)
+        // Setup Category Tab Selection helper
+        function selectCategoryTab(cat) {
+            currentShadowCategory = cat;
+            const tabBtns = document.querySelectorAll('#shadowLedgerCategoryTabs .shadow-cat-btn');
+            tabBtns.forEach(b => {
+                const bCat = b.getAttribute('data-shadow-cat');
+                if (bCat === cat) {
+                    b.className = 'shadow-cat-btn active rounded-lg bg-indigo-600 text-white font-black text-xs px-3 py-1.5 transition-all shadow-xs flex items-center gap-1.5';
+                } else {
+                    b.className = 'shadow-cat-btn rounded-lg bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs px-3 py-1.5 transition-all flex items-center gap-1.5 border border-slate-200/60';
+                }
+            });
+            renderShadowSettledTable();
+        }
+
+        // Setup Category Tabs (Combo, Đề Dropoff, Đề Tri-Core, Lô, v.v.)
         function setupCategoryTabs() {
             const tabBtns = document.querySelectorAll('#shadowLedgerCategoryTabs .shadow-cat-btn');
             tabBtns.forEach(btn => {
                 btn.onclick = () => {
                     const cat = btn.getAttribute('data-shadow-cat');
                     if (!cat || cat === currentShadowCategory) return;
-                    currentShadowCategory = cat;
-                    tabBtns.forEach(b => {
-                        if (b === btn) {
-                            b.className = 'shadow-cat-btn active rounded-lg bg-indigo-600 text-white font-black text-xs px-3 py-1.5 transition-all shadow-xs flex items-center gap-1.5';
-                        } else {
-                            b.className = 'shadow-cat-btn rounded-lg bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs px-3 py-1.5 transition-all flex items-center gap-1.5 border border-slate-200/60';
-                        }
-                    });
-                    renderShadowSettledTable();
+                    selectCategoryTab(cat);
                 };
             });
         }
         setupCategoryTabs();
+
+        // Master Suite Switcher Component (Hệ 1: comboDropoff, Hệ 2: suiteTriCore, Hệ 3: suiteVipSweetSpot)
+        function switchMasterSuite(suiteId) {
+            currentMasterSuite = suiteId;
+
+            const btn1 = byId('btnMasterSuiteDropoff');
+            const btn2 = byId('btnMasterSuiteTriCore');
+            const btn3 = byId('btnMasterSuiteVip');
+
+            // Update Master Suite Card UI & Tags
+            if (btn1) {
+                const tag = btn1.querySelector('.suite-status-tag');
+                if (suiteId === 'comboDropoff') {
+                    btn1.className = 'master-suite-card active group relative flex flex-col justify-between text-left p-4 sm:p-5 rounded-2xl border-2 border-amber-400 bg-gradient-to-b from-amber-950/40 via-slate-900 to-slate-900 ring-2 ring-amber-400/30 shadow-xl transition-all hover:scale-[1.01] cursor-pointer';
+                    if (tag) {
+                        tag.className = 'suite-status-tag px-2 py-0.5 rounded bg-amber-400 text-slate-950 font-black text-[10px]';
+                        tag.textContent = 'ĐANG CHỌN';
+                    }
+                } else {
+                    btn1.className = 'master-suite-card group relative flex flex-col justify-between text-left p-4 sm:p-5 rounded-2xl border border-slate-700 bg-slate-900/80 hover:border-amber-400/60 transition-all hover:scale-[1.01] cursor-pointer';
+                    if (tag) {
+                        tag.className = 'suite-status-tag px-2 py-0.5 rounded bg-white/10 text-slate-400 font-bold text-[10px]';
+                        tag.textContent = 'CHỌN HỆ NÀY';
+                    }
+                }
+            }
+
+            if (btn2) {
+                const tag = btn2.querySelector('.suite-status-tag');
+                if (suiteId === 'suiteTriCore') {
+                    btn2.className = 'master-suite-card active group relative flex flex-col justify-between text-left p-4 sm:p-5 rounded-2xl border-2 border-emerald-400 bg-gradient-to-b from-emerald-950/40 via-slate-900 to-slate-900 ring-2 ring-emerald-400/30 shadow-xl transition-all hover:scale-[1.01] cursor-pointer';
+                    if (tag) {
+                        tag.className = 'suite-status-tag px-2 py-0.5 rounded bg-emerald-400 text-slate-950 font-black text-[10px]';
+                        tag.textContent = 'ĐANG CHỌN';
+                    }
+                } else {
+                    btn2.className = 'master-suite-card group relative flex flex-col justify-between text-left p-4 sm:p-5 rounded-2xl border border-slate-700 bg-slate-900/80 hover:border-emerald-400/60 transition-all hover:scale-[1.01] cursor-pointer';
+                    if (tag) {
+                        tag.className = 'suite-status-tag px-2 py-0.5 rounded bg-white/10 text-slate-400 font-bold text-[10px]';
+                        tag.textContent = 'CHỌN HỆ NÀY';
+                    }
+                }
+            }
+
+            if (btn3) {
+                const tag = btn3.querySelector('.suite-status-tag');
+                if (suiteId === 'suiteVipSweetSpot') {
+                    btn3.className = 'master-suite-card active group relative flex flex-col justify-between text-left p-4 sm:p-5 rounded-2xl border-2 border-amber-400 bg-gradient-to-b from-amber-950/40 via-slate-900 to-slate-900 ring-2 ring-amber-400/30 shadow-xl transition-all hover:scale-[1.01] cursor-pointer';
+                    if (tag) {
+                        tag.className = 'suite-status-tag px-2 py-0.5 rounded bg-amber-400 text-slate-950 font-black text-[10px]';
+                        tag.textContent = 'ĐANG CHỌN';
+                    }
+                } else {
+                    btn3.className = 'master-suite-card group relative flex flex-col justify-between text-left p-4 sm:p-5 rounded-2xl border border-slate-700 bg-slate-900/80 hover:border-amber-400/60 transition-all hover:scale-[1.01] cursor-pointer';
+                    if (tag) {
+                        tag.className = 'suite-status-tag px-2 py-0.5 rounded bg-white/10 text-slate-400 font-bold text-[10px]';
+                        tag.textContent = 'CHỌN HỆ NÀY';
+                    }
+                }
+            }
+
+            // Sync Components based on Suite
+            if (suiteId === 'comboDropoff') {
+                renderShadowDeCard('dropoff40');
+                renderShadowLoCard('top7');
+                renderShadowXienCard('xien5');
+                selectCategoryTab('combo');
+                computeAndRenderMetrics('dropoff40');
+                updateXaiBlock('comboDropoff');
+            } else if (suiteId === 'suiteTriCore') {
+                renderShadowDeCard('triCore24');
+                renderShadowLoCard('triCore7');
+                renderShadowXienCard('triCoreXien5');
+                selectCategoryTab('triCoreSuite');
+                computeAndRenderMetrics('wilsonAbstain');
+                updateXaiBlock('suiteTriCore');
+            } else if (suiteId === 'suiteVipSweetSpot') {
+                renderShadowDeCard('vip36');
+                renderShadowLoCard('top2');
+                renderShadowXienCard('quay11');
+                selectCategoryTab('vipSuite');
+                computeAndRenderMetrics('vip36');
+                updateXaiBlock('suiteVipSweetSpot');
+            }
+        }
+
+        // Wire Master Suite Cards
+        const btnMasterSuiteDropoff = byId('btnMasterSuiteDropoff');
+        const btnMasterSuiteTriCore = byId('btnMasterSuiteTriCore');
+        const btnMasterSuiteVip = byId('btnMasterSuiteVip');
+        if (btnMasterSuiteDropoff) btnMasterSuiteDropoff.onclick = () => switchMasterSuite('comboDropoff');
+        if (btnMasterSuiteTriCore) btnMasterSuiteTriCore.onclick = () => switchMasterSuite('suiteTriCore');
+        if (btnMasterSuiteVip) btnMasterSuiteVip.onclick = () => switchMasterSuite('suiteVipSweetSpot');
 
         // Setup Year Filter Group (2026, 2025, Tất cả 634 kỳ)
         function setupYearFilters() {
@@ -1077,6 +1381,89 @@
                     roiEl.className = `text-xs font-bold ${equity >= 0 ? 'text-emerald-300' : 'text-rose-300'}`;
                 }
                 byId('metricAbstainCount').textContent = `0/${totalIssued} ngày (Thực chiến từ 17/09)`;
+
+                renderShadowSettledTable();
+                return;
+            }
+
+            // Strategy 2: ⭐ Đề 36s VIP Sweet-Spot (1M/số = 36M/ngày)
+            if (mode === 'vip36') {
+                let dropoffRows = deDropoff?.settledLedger || [];
+                if (currentShadowYear === '2026') {
+                    dropoffRows = dropoffRows.filter(r => r.year === 2026 || String(r.date).startsWith('2026'));
+                } else if (currentShadowYear === '2025') {
+                    dropoffRows = dropoffRows.filter(r => r.year === 2025 || String(r.date).startsWith('2025'));
+                }
+
+                const sortedRows = dropoffRows.slice().sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+                let peakEquity = 0;
+                let equity = 0;
+                let maxDrawdownK = 0;
+                let maxDrawdownDays = 0;
+                let currentDrawdownDays = 0;
+                let longestLoss = 0;
+                let currentLoss = 0;
+
+                sortedRows.forEach(r => {
+                    const actualStr = (r.actual !== null && r.actual !== undefined) ? numStr(r.actual) : null;
+                    const nums36 = (r.numbers36 || r.numbers || r.top40 || []).slice(0, 36).map(numStr);
+                    const isHit = (r.isHit36 !== undefined) ? Boolean(r.isHit36) : (actualStr ? nums36.includes(actualStr) : false);
+                    const dayProfitK = (r.profit36K !== undefined) ? r.profit36K : (isHit ? (84000 - 36000) : -36000);
+                    currentLoss = isHit ? 0 : currentLoss + 1;
+                    longestLoss = Math.max(longestLoss, currentLoss);
+
+                    equity += dayProfitK;
+                    if (equity > peakEquity) {
+                        peakEquity = equity;
+                        currentDrawdownDays = 0;
+                    } else {
+                        currentDrawdownDays += 1;
+                        const dd = peakEquity - equity;
+                        if (dd > maxDrawdownK) maxDrawdownK = dd;
+                        if (currentDrawdownDays > maxDrawdownDays) maxDrawdownDays = currentDrawdownDays;
+                    }
+                });
+
+                const totalIssued = dropoffRows.length;
+                const wins = dropoffRows.filter(r => {
+                    const actualStr = (r.actual !== null && r.actual !== undefined) ? numStr(r.actual) : null;
+                    const nums36 = (r.numbers36 || r.numbers || r.top40 || []).slice(0, 36).map(numStr);
+                    return (r.isHit36 !== undefined) ? Boolean(r.isHit36) : (actualStr ? nums36.includes(actualStr) : false);
+                }).length;
+                const hitRate = totalIssued > 0 ? wins / totalIssued : 0;
+
+                const z = 1.95996;
+                const p = hitRate;
+                const n = Math.max(1, totalIssued);
+                const denom = 1 + (z * z) / n;
+                const center = p + (z * z) / (2 * n);
+                const margin = z * Math.sqrt((p * (1 - p) + (z * z) / (4 * n)) / n);
+                const ciLow = Math.max(0, (center - margin) / denom);
+                const ciHigh = Math.min(1, (center + margin) / denom);
+
+                const totalStakeK = totalIssued * 36000;
+                const roi = totalStakeK > 0 ? equity / totalStakeK : 0;
+
+                byId('metricHitRate').textContent = `${(hitRate * 100).toFixed(1)}%`;
+                byId('metricWinsTotal').textContent = `${wins}/${totalIssued} ngày phát hành`;
+                byId('metricCI95').textContent = `${(ciLow * 100).toFixed(1)}% – ${(ciHigh * 100).toFixed(1)}%`;
+                byId('metricBreakEvenReq').textContent = `⭐ Đề 36s VIP (1M/số = 36M) · Ăn 84M (Lãi +48M/kỳ nổ · Hòa vốn 42.9%)`;
+
+                byId('metricMaxDrawdown').textContent = `-${moneyAbsM(maxDrawdownK)}`;
+                byId('metricMaxDrawdownDays').textContent = `Kéo dài tối đa ${maxDrawdownDays} kỳ`;
+                byId('metricLongestLoss').textContent = `${longestLoss} kỳ`;
+
+                const profitEl = byId('metricRealisticProfit');
+                profitEl.textContent = moneyM(equity);
+                profitEl.className = `text-2xl font-black font-mono ${equity >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+
+                const roiSign = roi > 0 ? '+' : '';
+                const roiEl = byId('metricRealisticRoi');
+                if (roiEl) {
+                    roiEl.textContent = `${roiSign}${(roi * 100).toFixed(1)}% (Tổng lãi: ${formatMoneyK(equity)})`;
+                    roiEl.className = `text-xs font-bold ${equity >= 0 ? 'text-emerald-300' : 'text-rose-300'}`;
+                }
+                byId('metricAbstainCount').textContent = `0/${totalIssued} ngày (Cược liên tục)`;
 
                 renderShadowSettledTable();
                 return;
@@ -1221,28 +1608,53 @@
         // Run default computation with Đề Dropoff 40s
         computeAndRenderMetrics('dropoff40');
 
-        // 4. Render Explainable AI Block ("Vì sao chọn dàn này")
-        const evidences = [
-            'Đồng Thuận Đa Động Cơ (MetaLearner 3.0 + DualMerge 2.0 + MarkovGap 1.5 + PentaCore 1.0) kết hợp bộ lọc Khử 60 số gãy.',
-            'Đánh Phẳng Chuẩn Mực 40s (1M/số = 40M/ngày) · Thưởng 84M cố định khi trúng · Lãi ròng +44M/kỳ nổ.',
-            'Triệt Tiêu Hoàn Toàn Bẫy Sizing Phân Tầng: Cả năm 2026 đạt 141/273 kỳ trúng (51.6%), Lãi ròng +924M (ROI +8.5%). Thực chiến 18 kỳ đạt 9/18 (50.0%), Lãi ròng +36M.'
-        ];
-        const majorRisk = 'Duy trì kỷ luật vốn phẳng 40M/ngày (1M/số). Không gấp thếp khi gặp chuỗi trượt ngắn (max trượt 4 kỳ). Tỷ lệ trúng thực chiến 50.0% vượt xa ngưỡng hòa vốn lý thuyết 47.6%.';
+        // 4. Render Explainable AI Block ("Vì sao chọn dàn này" - Dynamic by Master Suite)
+        function updateXaiBlock(suiteId = 'comboDropoff') {
+            const evidenceList = byId('shadowEvidenceList');
+            const riskEl = byId('shadowMajorRiskText');
+            const churnEl = byId('shadowChurnGuardText');
 
-        const evidenceList = byId('shadowEvidenceList');
-        if (evidenceList) {
-            evidenceList.innerHTML = evidences.map(e => `<li class="flex items-start gap-2"><i class="bi bi-check2-circle text-amber-400 mt-0.5 shrink-0"></i><span>${e}</span></li>`).join('');
-        }
-        const riskEl = byId('shadowMajorRiskText');
-        if (riskEl) {
-            riskEl.textContent = majorRisk;
-        }
+            let evidences = [];
+            let majorRisk = '';
+            let churnGuard = '';
 
-        // Churn guard display
-        const churnEl = byId('shadowChurnGuardText');
-        if (churnEl) {
-            churnEl.textContent = 'Hệ thống áp dụng cơ chế Khử Trùng Dropoff Rate kết hợp Ngưỡng Hòa Vốn Bất Biến: Theo dõi thực chiến nghiêm ngặt từ 17/09/2026, loại bỏ dữ liệu ảo giác trước đó, bảo toàn vốn trước các biến động cực đoan.';
+            if (suiteId === 'suiteTriCore') {
+                evidences = [
+                    'Hội tụ 3 lõi Tam Trụ (Markov Transition Tensor + Positional Graph Flow + QMBF Bayesian Ensemble).',
+                    'Bộ lọc Smart Abstain Filter: Khi điểm đồng thuận Top 1 < 6.5, hệ thống tự động cược 0đ (ABSTAIN), né 174 kỳ thị trường xấu năm 2026, bảo toàn 4.176 TỶ tiền vốn.',
+                    'Lô Tri-Core Top 7 nổ 82.9% (228/275 kỳ, lãi +949M) + Lô Xiên 5 Tri-Core lãi kỷ lục +7.387 TỶ VNĐ. Tổng 3 trụ Tri-Core lãi +9.692 TỶ VNĐ năm 2026.'
+                ];
+                majorRisk = 'Chấp nhận các chuỗi né cược liên tiếp khi thị trường nhiễu loạn để bảo vệ vốn. Tuyệt đối không tự ý vào kèo khi hệ thống cảnh báo ABSTAIN (Cược 0đ).';
+                churnGuard = 'Bộ cảm biến Regime Shift & Bayesian Transition Matrix nhận diện pha thị trường gãy nhịp, tự động kích hoạt lá chắn bảo toàn vốn 0đ trước giờ quay (100% Strict PIT).';
+            } else if (suiteId === 'suiteVipSweetSpot') {
+                evidences = [
+                    'Đề 36s VIP Sweet-Spot: Cắt bỏ 4 số biên xác suất thấp của dàn 40s, cược phẳng 36M (ăn 84M · Lãi +48M/kỳ). Tỷ lệ trúng 2026 đạt 47.3% (vượt hòa vốn 42.9%), lãi ròng +1.020 TỶ VNĐ (ROI +10.3%).',
+                    'Song Thủ Lô Top 2 QMBF v6: Vốn tối thiểu 4.4M/ngày (2 số x 2.2M). Tỷ lệ nổ 59.3%, lãi ròng +598.0M (ROI +49.4%), chuỗi thua max chỉ 6d.',
+                    'Lô Xiên 4 Quây 11 Vé (1M/vé · Vốn 11M): Nổ ≥2 con là có lãi ngay (+1M đến +781M). 2026 lãi ròng +4.343 TỶ (ROI +143.6%).'
+                ];
+                majorRisk = 'Tổng vốn cược mỗi ngày chỉ 51.4M (nhẹ nhất trong 3 hệ). Tối ưu hóa dòng tiền cho người chơi thích vốn gọn, an toàn và tỷ suất sinh lời ROI cao.';
+                churnGuard = 'Ngưỡng cắt biên 36 số được tính toán bằng Pareto Cutoff trên không gian xác suất 100 số, loại bỏ nhiễu biên và giữ lại vùng mật độ kỳ vọng dương cao nhất.';
+            } else { // 'comboDropoff'
+                evidences = [
+                    'Đồng Thuận Đa Động Cơ (MetaLearner 3.0 + DualMerge 2.0 + MarkovGap 1.5 + PentaCore 1.0) kết hợp bộ lọc Khử 60 số gãy.',
+                    'Đánh Phẳng Chuẩn Mực 40s (1M/số = 40M/ngày) · Thưởng 84M cố định khi trúng · Lãi ròng +44M/kỳ nổ.',
+                    'Bù trừ chéo 3 trụ cột mạnh nhất: Đề 40s phẳng (40M) + Lô Sweet-Spot QMBF v6 Top 7/6 (15.4M) + Lô Xiên 5 (55M), nổ ăn đậm bù đắp hoàn toàn chi phí khi Đề trượt.'
+                ];
+                majorRisk = 'Duy trì kỷ luật vốn phẳng 40M/ngày (1M/số). Không gấp thếp khi gặp chuỗi trượt ngắn (max trượt 4 kỳ). Tỷ lệ trúng thực chiến 50.0% vượt xa ngưỡng hòa vốn lý thuyết 47.6%.';
+                churnGuard = 'Hệ thống áp dụng cơ chế Khử Trùng Dropoff Rate kết hợp Ngưỡng Hòa Vốn Bất Biến: Theo dõi thực chiến nghiêm ngặt từ 17/09/2026, loại bỏ dữ liệu ảo giác trước đó, bảo toàn vốn trước các biến động cực đoan.';
+            }
+
+            if (evidenceList) {
+                evidenceList.innerHTML = evidences.map(e => `<li class="flex items-start gap-2"><i class="bi bi-check2-circle text-amber-400 mt-0.5 shrink-0"></i><span>${e}</span></li>`).join('');
+            }
+            if (riskEl) {
+                riskEl.textContent = majorRisk;
+            }
+            if (churnEl) {
+                churnEl.textContent = churnGuard;
+            }
         }
+        updateXaiBlock('comboDropoff');
     }
 
     // Helper to extract Lô Dropoff 27 info for a given row and mode (top6, top7, top8, top10)
@@ -1412,9 +1824,13 @@
         const triCore = data.triCoreDe || null;
         const loDropoff = data.loDropoff27 || null;
         const deDropoff = data.deDropoffMerge || null;
+        const loTriHarmonic = data.loTriHarmonic || null;
+        const loTop5Xien = data.loTop5ConsensusXien || null;
         const mode = currentShadowLoMode || 'top7';
         const loLedger = loDropoff?.settledLedger || [];
         const deDropoffLedger = deDropoff?.settledLedger || [];
+        const loTriLedger = loTriHarmonic?.settledLedger || [];
+        const loTop5XienLedger = loTop5Xien?.settledLedger || [];
 
         let deLedger = [];
         if (triCore) {
@@ -1427,12 +1843,15 @@
         const deLatestRec = triCore?.latestRecommendation;
         const loLatestRec = loDropoff?.latestRecommendation;
         const dropoffLatestRec = deDropoff?.latestRecommendation;
-        const targetDate = dropoffLatestRec?.targetDate || loLatestRec?.targetDate || '2026-10-05';
+        const loTriLatestRec = loTriHarmonic?.latestRecommendation;
+        const targetDate = dropoffLatestRec?.targetDate || loLatestRec?.targetDate || loTriLatestRec?.targetDate || '2026-10-05';
 
         const allDates = Array.from(new Set([
             ...deDropoffLedger.map(r => r.date),
             ...loLedger.map(r => r.date),
-            ...(currentShadowCategory === 'de' ? deLedger.map(r => r.date) : [])
+            ...deLedger.map(r => r.date),
+            ...loTriLedger.map(r => r.date),
+            ...loTop5XienLedger.map(r => r.date)
         ])).filter(Boolean).sort();
 
         const fullDatesSorted = Array.from(new Set([targetDate, ...allDates])).filter(Boolean).sort().reverse();
@@ -2143,6 +2562,763 @@
             }).join('');
 
             tbody.innerHTML = pendingRowHtml + (settledRowsHtml || '<tr><td colspan="10" class="py-8 text-center text-xs text-slate-400">Không có dữ liệu đối soát</td></tr>');
+            return;
+        }
+
+        // =====================================================================
+        // CATEGORY: 🎯 HỆ 2: TỔNG HỢP TRI-CORE (ĐỀ 24S + LÔ TRI-CORE + XIÊN 5)
+        // =====================================================================
+        if (currentShadowCategory === 'triCoreSuite') {
+            const triDeMap = new Map((triCore?.allDaysLedger || triCore?.settledLedger || []).map(r => [r.date, r]));
+            const triLoMap = new Map((loTriHarmonic?.settledLedger || []).map(r => [r.date, r]));
+            const triXienMap = new Map((loTop5Xien?.settledLedger || []).map(r => [r.date, r]));
+
+            let baseDates = (loTriHarmonic?.settledLedger || []).map(r => r.date).filter(Boolean).sort();
+            if (currentShadowYear === '2026') {
+                baseDates = baseDates.filter(d => String(d).startsWith('2026'));
+            }
+
+            const loMode = (mode === 'top6' || mode === 'triCore6') ? 'top6' : 'top7';
+            const topNLabel = (loMode === 'top6') ? 'Top 6' : 'Top 7';
+
+            let cumDeK = 0;
+            let cumLoK = 0;
+            let cumXien5K = 0;
+            let cumSuiteK = 0;
+
+            const rowsData = baseDates.map(date => {
+                const deRow = triDeMap.get(date);
+                const loRow = triLoMap.get(date);
+                const xienRow = triXienMap.get(date);
+
+                const deAbstain = Boolean(deRow?.abstained);
+                const deHit = Boolean(deRow?.hit);
+                const deStakeK = deAbstain ? 0 : 24000;
+                const deProfitK = deRow ? (deRow.dayProfitK ?? (deAbstain ? 0 : (deHit ? 60000 : -24000))) : 0;
+
+                const loInfo = getLoTriCoreRowInfo(loRow, loMode);
+                const loHits = loInfo.hits;
+                const loStakeK = loInfo.stakeK;
+                const loProfitK = loInfo.profitK;
+                const isLoWin = loInfo.isWin;
+
+                const xien5StakeK = xienRow?.x5Stake55K ?? xienRow?.x5StakeK ?? 55000;
+                const xien5PayoutK = xienRow?.x5Payout55K ?? xienRow?.x5PayoutK ?? 0;
+                const xien5ProfitK = xienRow?.x5Profit55K ?? xienRow?.x5ProfitK ?? -55000;
+                const isXien5Win = xien5ProfitK > 0;
+                const x4Count = xienRow?.x5DanHit4 ?? 0;
+                const x3Count = xienRow?.x5DanHit3 ?? 0;
+                const x2Count = xienRow?.x5DanHit2 ?? 0;
+                const h5 = xienRow?.h5 ?? 0;
+
+                const suiteDayProfitK = deProfitK + loProfitK + xien5ProfitK;
+                const suiteDayStakeK = deStakeK + loStakeK + xien5StakeK;
+                const isSuiteWin = suiteDayProfitK > 0;
+
+                cumDeK += deProfitK;
+                cumLoK += loProfitK;
+                cumXien5K += xien5ProfitK;
+                cumSuiteK += suiteDayProfitK;
+
+                return {
+                    date,
+                    deRow,
+                    loRow,
+                    xienRow,
+                    deAbstain,
+                    deHit,
+                    deStakeK,
+                    deProfitK,
+                    cumDeK,
+                    loInfo,
+                    loHits,
+                    loStakeK,
+                    loProfitK,
+                    isLoWin,
+                    cumLoK,
+                    xien5StakeK,
+                    xien5PayoutK,
+                    xien5ProfitK,
+                    isXien5Win,
+                    cumXien5K,
+                    x4Count,
+                    x3Count,
+                    x2Count,
+                    h5,
+                    suiteDayProfitK,
+                    suiteDayStakeK,
+                    cumSuiteK,
+                    isSuiteWin
+                };
+            });
+
+            const totalDays = rowsData.length;
+            const suiteWins = rowsData.filter(r => r.isSuiteWin).length;
+            const suiteWinRate = totalDays > 0 ? (suiteWins / totalDays * 100).toFixed(1) : '0.0';
+            const betDays = rowsData.filter(r => !r.deAbstain).length;
+            const abstainDays = totalDays - betDays;
+
+            if (rowCountEl) rowCountEl.textContent = `${totalDays} (${betDays} cược / ${abstainDays} né)`;
+            if (winCountEl) winCountEl.textContent = `${suiteWins} ngày thắng tổng (${totalDays - suiteWins} ngày âm)`;
+            if (winRateEl) winRateEl.textContent = `${suiteWinRate}%`;
+            if (hitsTagEl) hitsTagEl.classList.add('hidden');
+            if (profitLabelEl) profitLabelEl.textContent = '💰 Lãi Lũy Kế Hệ 2 Tri-Core Tam Trụ (2026):';
+            if (totalProfitEl) {
+                totalProfitEl.innerHTML = `
+                    <div class="flex items-center gap-2 flex-wrap text-xs font-mono">
+                        <span class="font-black text-sm ${cumSuiteK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">Tổng 3 Trụ: ${formatMoneyK(cumSuiteK)}</span>
+                        <span class="text-slate-500 font-normal">|</span>
+                        <span class="font-bold ${cumDeK >= 0 ? 'text-emerald-300' : 'text-rose-300'}">Đề 24s: ${formatMoneyK(cumDeK)}</span>
+                        <span class="text-slate-500 font-normal">|</span>
+                        <span class="font-bold ${cumLoK >= 0 ? 'text-emerald-300' : 'text-rose-300'}">Lô Tri-Core: ${formatMoneyK(cumLoK)}</span>
+                        <span class="text-slate-500 font-normal">|</span>
+                        <span class="font-bold ${cumXien5K >= 0 ? 'text-emerald-300' : 'text-rose-300'}">Xiên 5: ${formatMoneyK(cumXien5K)}</span>
+                    </div>
+                `;
+            }
+
+            const loTableSubSwitch = byId('shadowLoTableSubSwitchGroup');
+            if (loTableSubSwitch) {
+                loTableSubSwitch.classList.remove('hidden');
+                const btnTbl7 = byId('btnTableLoTop7');
+                const btnTbl6 = byId('btnTableLoTop6');
+                if (btnTbl7) {
+                    btnTbl7.className = (loMode === 'top7')
+                        ? 'px-2 py-0.5 rounded font-black bg-teal-400 text-slate-950 transition-all shadow-xs'
+                        : 'px-2 py-0.5 rounded font-bold text-slate-600 hover:text-slate-900 transition-all';
+                    btnTbl7.onclick = () => { renderShadowLoCard('triCore7'); renderShadowSettledTable(); };
+                }
+                if (btnTbl6) {
+                    btnTbl6.className = (loMode === 'top6')
+                        ? 'px-2 py-0.5 rounded font-black bg-teal-400 text-slate-950 transition-all shadow-xs'
+                        : 'px-2 py-0.5 rounded font-bold text-slate-600 hover:text-slate-900 transition-all';
+                    btnTbl6.onclick = () => { renderShadowLoCard('triCore6'); renderShadowSettledTable(); };
+                }
+            }
+
+            thead.innerHTML = `
+                <tr class="border-b border-white/10 text-[11px] font-bold text-slate-400 uppercase tracking-wide">
+                    <th class="py-2.5 px-3">Ngày Quay</th>
+                    <th class="py-2.5 px-3">Đề Tri-Core 24s</th>
+                    <th class="py-2.5 px-3">Lô Tri-Core (${topNLabel})</th>
+                    <th class="py-2.5 px-3">Lô Xiên 5 Tri-Core</th>
+                    <th class="py-2.5 px-3 text-center">Dàn Đánh &amp; Số Nổ</th>
+                    <th class="py-2.5 px-3 text-right">Tổng Vốn</th>
+                    <th class="py-2.5 px-3 text-right">Lãi &amp; LK Đề</th>
+                    <th class="py-2.5 px-3 text-right">Lãi &amp; LK Lô</th>
+                    <th class="py-2.5 px-3 text-right">Lãi &amp; LK Lô Xiên</th>
+                    <th class="py-2.5 px-3 text-right">Lãi Ròng Ngày</th>
+                    <th class="py-2.5 px-3 text-right">Lũy Kế Tổng (3 Trụ)</th>
+                </tr>
+            `;
+
+            const formattedTargetDate = formatDateVi(targetDate);
+            const loPendingInfo = getLoTriCoreRowInfo(loTriLatestRec || loLatestRec, loMode);
+            const loStakeM = (loPendingInfo.stakeK / 1000).toFixed(1) + 'M';
+            const dePendingAbstain = deLatestRec?.action === 'ABSTAIN';
+            const deStakeM = dePendingAbstain ? '0.0M' : '24.0M';
+            const xienStakeM = '55.0M';
+            const totalStakeM = (((dePendingAbstain ? 0 : 24000) + loPendingInfo.stakeK + 55000) / 1000).toFixed(1) + 'M';
+            const top5Str = (loPendingInfo.numbers || []).slice(0, 5).map(numStr).join(', ');
+
+            let pendingRowHtml = `
+                <tr class="border-b border-amber-500/20 bg-amber-950/20 hover:bg-amber-950/30 transition-colors font-mono text-xs">
+                    <td class="py-3 px-3 font-bold text-amber-300">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span>${formattedTargetDate}</span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">🔒 ĐÃ KHÓA</span>
+                        </div>
+                    </td>
+                    <td class="py-3 px-3">
+                        <span class="text-amber-300 font-semibold">${dePendingAbstain ? 'Tri-Core (Smart Abstain)' : 'Tri-Core 24s (1M/số)'}</span>
+                        <div class="text-[10px] text-slate-400">${dePendingAbstain ? '🛡️ Né cược · Vốn 0đ' : `Vào kèo 24 số · Vốn ${deStakeM}`}</div>
+                    </td>
+                    <td class="py-3 px-3">
+                        <span class="text-teal-300 font-semibold">Lô Tri-Core (${topNLabel})</span>
+                        <div class="text-[10px] text-slate-400">Top: ${loPendingInfo.numbers.slice(0, 4).join(', ')}... · Vốn ${loStakeM}</div>
+                    </td>
+                    <td class="py-3 px-3">
+                        <span class="text-amber-300 font-semibold">5 Dàn Xiên 4 Tri-Core</span>
+                        <div class="text-[10px] text-slate-400">Top 5: ${top5Str} · Vốn ${xienStakeM}</div>
+                    </td>
+                    <td class="py-3 px-3 text-center">
+                        <button type="button" class="btn-open-slip px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-200 hover:text-slate-950 border border-amber-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer" data-slip-date="${targetDate}">
+                            <i class="bi bi-eye-fill text-amber-300"></i> Xem Dàn Khóa
+                        </button>
+                    </td>
+                    <td class="py-3 px-3 text-right">
+                        <span class="text-white font-bold">${totalStakeM}</span>
+                        <div class="text-[10px] text-slate-400">Đề ${deStakeM} + Lô ${loStakeM} + Xiên ${xienStakeM}</div>
+                    </td>
+                    <td class="py-3 px-3 text-right">
+                        <div class="text-amber-400 font-bold">⏳ Chờ 18:30</div>
+                        <div class="text-[10px] ${cumDeK >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-semibold">LK: ${formatMoneyK(cumDeK)}</div>
+                    </td>
+                    <td class="py-3 px-3 text-right">
+                        <div class="text-amber-400 font-bold">⏳ Chờ 18:30</div>
+                        <div class="text-[10px] ${cumLoK >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-semibold">LK: ${formatMoneyK(cumLoK)}</div>
+                    </td>
+                    <td class="py-3 px-3 text-right">
+                        <div class="text-amber-400 font-bold">⏳ Chờ 18:30</div>
+                        <div class="text-[10px] ${cumXien5K >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-semibold">LK: ${formatMoneyK(cumXien5K)}</div>
+                    </td>
+                    <td class="py-3 px-3 text-right font-bold text-amber-300">⏳ Chờ kết toán</td>
+                    <td class="py-3 px-3 text-right">
+                        <div class="font-black text-sm ${cumSuiteK >= 0 ? 'text-emerald-300' : 'text-rose-300'}">${formatMoneyK(cumSuiteK)}</div>
+                        <div class="text-[9px] text-slate-400">Đề + Lô + Xiên</div>
+                    </td>
+                </tr>
+            `;
+
+            const reversedRows = [...rowsData].reverse();
+            const settledRowsHtml = reversedRows.map(row => {
+                const dateVi = formatDateVi(row.date);
+                const actualStr = (row.deRow?.actual !== null && row.deRow?.actual !== undefined) ? numStr(row.deRow.actual) : '—';
+
+                let deBadge = '';
+                if (row.deAbstain) {
+                    deBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700">🛡️ Né Cược (0đ)</span>';
+                } else if (row.deHit) {
+                    deBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-xs animate-pulse">🎯 Trúng Đề (+60M) · ${actualStr} ⭐</span>`;
+                } else {
+                    deBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">❌ Trượt (-24M) · ${actualStr}</span>`;
+                }
+
+                const loHitsList = row.loInfo.pills.filter(p => p.hits > 0);
+                const loBadge = row.isLoWin
+                    ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 ring-2 ring-emerald-300 shadow-xs">🔥 ${row.loHits} nháy (+${formatMoneyK(row.loProfitK, false)})</span>`
+                    : `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">${row.loHits} nháy (-${formatMoneyK(Math.abs(row.loProfitK), false)})</span>`;
+
+                let xien5Badge = '';
+                if (row.x4Count > 0) {
+                    xien5Badge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-xs animate-pulse">⭐ ĂN X4 (+${row.x4Count * 384}M)</span>`;
+                } else if (row.x3Count > 0) {
+                    xien5Badge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 ring-2 ring-emerald-300 shadow-xs">🎉 ĂN X3 (${row.x3Count}v · +${row.x3Count * 84}M)</span>`;
+                } else if (row.x2Count > 0) {
+                    xien5Badge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/40">⚡ ĂN X2 (${row.x2Count}v · -${formatMoneyK(Math.abs(row.xien5ProfitK), false)})</span>`;
+                } else {
+                    xien5Badge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">❌ Trượt (${row.h5}/5 con · -55M)</span>`;
+                }
+
+                let winningBadgesHtml = '';
+                if (!row.deAbstain && row.deHit) {
+                    winningBadgesHtml += `<span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-1 ring-amber-300 shadow-xs">🎯 ĐB: ${actualStr} ⭐</span> `;
+                }
+                if (loHitsList.length > 0) {
+                    winningBadgesHtml += loHitsList.map(p => {
+                        return `<span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[10px] font-black bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 ring-1 ring-emerald-300 shadow-xs">🎯 ${p.num}<sub class="text-[8px] font-black ml-0.5">(${p.hits}n)</sub></span>`;
+                    }).join(' ');
+                }
+                if (row.h5 >= 2) {
+                    winningBadgesHtml += ` <span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[10px] font-black bg-gradient-to-r from-purple-400 to-indigo-400 text-slate-950 ring-1 purple-300 shadow-xs">🎲 X5: ${row.h5}/5 con</span>`;
+                }
+                if (!winningBadgesHtml) {
+                    winningBadgesHtml = '<span class="text-slate-500 text-[10px] italic">Không nổ số nào</span>';
+                }
+
+                return `
+                    <tr class="border-b border-white/5 ${row.suiteDayProfitK > 0 ? 'bg-emerald-950/15' : ''} hover:bg-white/5 transition-colors font-mono text-xs">
+                        <td class="py-2.5 px-3 font-bold text-slate-300">${dateVi}</td>
+                        <td class="py-2.5 px-3">${deBadge}</td>
+                        <td class="py-2.5 px-3">${loBadge}</td>
+                        <td class="py-2.5 px-3">${xien5Badge}</td>
+                        <td class="py-2.5 px-3 text-center">
+                            <div class="flex flex-wrap gap-1 justify-center items-center mb-1">
+                                ${winningBadgesHtml}
+                            </div>
+                            <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-indigo-600/30 hover:bg-indigo-600 text-indigo-200 hover:text-white border border-indigo-500/40 text-[10px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${row.date}">
+                                <i class="bi bi-eye-fill text-amber-300"></i> Xem Đủ Dàn
+                            </button>
+                        </td>
+                        <td class="py-2.5 px-3 text-right">
+                            <span class="text-slate-300 font-bold">${formatMoneyK(row.suiteDayStakeK, false)}</span>
+                            <div class="text-[9px] text-slate-500">Đề ${row.deAbstain ? '0M' : '24M'} + Lô ${(row.loStakeK/1000).toFixed(1)}M + X5 55M</div>
+                        </td>
+                        <td class="py-2.5 px-3 text-right">
+                            <div><span class="font-bold ${row.deProfitK > 0 ? 'text-emerald-400' : (row.deProfitK < 0 ? 'text-rose-400' : 'text-slate-500')}">${row.deAbstain ? '0đ' : formatMoneyK(row.deProfitK)}</span></div>
+                            <div class="text-[10px] font-semibold ${row.cumDeK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">LK: ${formatMoneyK(row.cumDeK)}</div>
+                        </td>
+                        <td class="py-2.5 px-3 text-right">
+                            <div><span class="font-bold ${row.loProfitK > 0 ? 'text-emerald-400' : (row.loProfitK < 0 ? 'text-rose-400' : 'text-slate-500')}">${formatMoneyK(row.loProfitK)}</span></div>
+                            <div class="text-[10px] font-semibold ${row.cumLoK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">LK: ${formatMoneyK(row.cumLoK)}</div>
+                        </td>
+                        <td class="py-2.5 px-3 text-right">
+                            <div><span class="font-bold ${row.xien5ProfitK > 0 ? 'text-emerald-400' : (row.xien5ProfitK < 0 ? 'text-rose-400' : 'text-slate-500')}">${formatMoneyK(row.xien5ProfitK)}</span></div>
+                            <div class="text-[10px] font-semibold ${row.cumXien5K >= 0 ? 'text-emerald-400' : 'text-rose-400'}">LK: ${formatMoneyK(row.cumXien5K)}</div>
+                        </td>
+                        <td class="py-2.5 px-3 text-right">
+                            <span class="font-black text-xs ${row.suiteDayProfitK > 0 ? 'text-emerald-400' : (row.suiteDayProfitK < 0 ? 'text-rose-400' : 'text-slate-400')}">${formatMoneyK(row.suiteDayProfitK)}</span>
+                        </td>
+                        <td class="py-2.5 px-3 text-right">
+                            <div class="font-black text-sm ${row.cumSuiteK >= 0 ? 'text-emerald-300' : 'text-rose-300'}">${formatMoneyK(row.cumSuiteK)}</div>
+                            <div class="text-[9px] text-slate-500">Đề + Lô + Xiên</div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            tbody.innerHTML = pendingRowHtml + (settledRowsHtml || '<tr><td colspan="11" class="py-8 text-center text-xs text-slate-400">Không có dữ liệu đối soát</td></tr>');
+            return;
+        }
+
+        // =====================================================================
+        // CATEGORY: ⭐ HỆ 3: TỔNG HỢP VIP SWEET-SPOT (ĐỀ 36S + TOP 2 + QUÂY 11)
+        // =====================================================================
+        if (currentShadowCategory === 'vipSuite') {
+            const deDropoffMap = new Map(deDropoffLedger.map(r => [r.date, r]));
+            const loMap = new Map(loLedger.map(r => [r.date, r]));
+
+            let baseDates = deDropoffLedger.map(r => r.date).filter(Boolean).sort();
+            if (currentShadowYear === '2026') {
+                baseDates = baseDates.filter(d => String(d).startsWith('2026'));
+            }
+
+            let cumDeK = 0;
+            let cumLoK = 0;
+            let cumXienK = 0;
+            let cumSuiteK = 0;
+
+            const rowsData = baseDates.map(date => {
+                const rDe = deDropoffMap.get(date);
+                const rLo = loMap.get(date);
+
+                // Đề 36s VIP (1M/số = 36M, ăn 84M)
+                const nums36 = rDe?.numbers36 || (rDe?.numbers || rDe?.top40 || []).slice(0, 36).map(numStr);
+                const actualStr = (rDe?.actual !== null && rDe?.actual !== undefined) ? numStr(rDe.actual) : null;
+                const isHit36 = (rDe?.isHit36 !== undefined) ? Boolean(rDe.isHit36) : (actualStr ? nums36.includes(actualStr) : false);
+                const deStakeK = 36000;
+                const dePayoutK = isHit36 ? 84000 : 0;
+                const deProfitK = dePayoutK - deStakeK;
+
+                // Song Thủ Lô Top 2 (2 số x 2.2M = 4.4M, ăn 8M/nháy)
+                const loInfo = getLoDropoffRowInfo(rLo, 'top2');
+                const loHits = loInfo.hits;
+                const loStakeK = 4400;
+                const loPayoutK = loHits * 8000;
+                const loProfitK = loPayoutK - loStakeK;
+                const isLoWin = loProfitK > 0;
+
+                // Xiên Quây 11 Vé (Bộ 4 QMBF Top 4 · 1M/vé = 11M)
+                const top4Nums = (rLo?.numbers || []).slice(0, 4).map(numStr);
+                const q11 = evaluateXienQuay11Row(top4Nums, rLo?.numHitsMap || {});
+                const xienStakeK = 11000;
+                const xienPayoutK = q11.payoutK;
+                const xienProfitK = q11.profitK;
+                const isXienWin = q11.isWin;
+
+                const suiteDayProfitK = deProfitK + loProfitK + xienProfitK;
+                const suiteDayStakeK = 51400; // 36M + 4.4M + 11M = 51.4M
+                const isSuiteWin = suiteDayProfitK > 0;
+
+                cumDeK += deProfitK;
+                cumLoK += loProfitK;
+                cumXienK += xienProfitK;
+                cumSuiteK += suiteDayProfitK;
+
+                return {
+                    date,
+                    rDe,
+                    rLo,
+                    nums36,
+                    actualStr,
+                    isHit36,
+                    deStakeK,
+                    dePayoutK,
+                    deProfitK,
+                    cumDeK,
+                    loInfo,
+                    loHits,
+                    loStakeK,
+                    loPayoutK,
+                    loProfitK,
+                    isLoWin,
+                    cumLoK,
+                    top4Nums,
+                    q11,
+                    xienStakeK,
+                    xienPayoutK,
+                    xienProfitK,
+                    isXienWin,
+                    cumXienK,
+                    suiteDayProfitK,
+                    suiteDayStakeK,
+                    cumSuiteK,
+                    isSuiteWin
+                };
+            });
+
+            const totalDays = rowsData.length;
+            const suiteWins = rowsData.filter(r => r.isSuiteWin).length;
+            const suiteWinRate = totalDays > 0 ? (suiteWins / totalDays * 100).toFixed(1) : '0.0';
+
+            if (rowCountEl) rowCountEl.textContent = `${totalDays}`;
+            if (winCountEl) winCountEl.textContent = `${suiteWins} ngày thắng (${totalDays - suiteWins} ngày âm)`;
+            if (winRateEl) winRateEl.textContent = `${suiteWinRate}%`;
+            if (hitsTagEl) hitsTagEl.classList.add('hidden');
+            if (profitLabelEl) profitLabelEl.textContent = '💰 Lãi Lũy Kế ⭐ HỆ 3: VIP Sweet-Spot (Vốn 51.4M/ngày):';
+            if (totalProfitEl) {
+                totalProfitEl.innerHTML = `
+                    <div class="flex items-center gap-2 flex-wrap text-xs font-mono">
+                        <span class="font-black text-sm ${cumSuiteK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">Tổng 3 Trụ: ${formatMoneyK(cumSuiteK)}</span>
+                        <span class="text-slate-500 font-normal">|</span>
+                        <span class="font-bold ${cumDeK >= 0 ? 'text-emerald-300' : 'text-rose-300'}">Đề 36s: ${formatMoneyK(cumDeK)}</span>
+                        <span class="text-slate-500 font-normal">|</span>
+                        <span class="font-bold ${cumLoK >= 0 ? 'text-emerald-300' : 'text-rose-300'}">Song Thủ Top 2: ${formatMoneyK(cumLoK)}</span>
+                        <span class="text-slate-500 font-normal">|</span>
+                        <span class="font-bold ${cumXienK >= 0 ? 'text-emerald-300' : 'text-rose-300'}">Xiên Quây 11: ${formatMoneyK(cumXienK)}</span>
+                    </div>
+                `;
+            }
+
+            const loTableSubSwitch = byId('shadowLoTableSubSwitchGroup');
+            if (loTableSubSwitch) loTableSubSwitch.classList.add('hidden');
+
+            thead.innerHTML = `
+                <tr class="border-b border-white/10 text-[11px] font-bold text-slate-400 uppercase tracking-wide">
+                    <th class="py-2.5 px-3">Ngày Quay</th>
+                    <th class="py-2.5 px-3">⭐ Đề 36s VIP Sweet-Spot</th>
+                    <th class="py-2.5 px-3">⚡ Song Thủ Top 2</th>
+                    <th class="py-2.5 px-3">🚀 Xiên Quây 11 Vé (Bộ 4)</th>
+                    <th class="py-2.5 px-3 text-center">Dàn Đánh &amp; Số Nổ</th>
+                    <th class="py-2.5 px-3 text-right">Tổng Vốn</th>
+                    <th class="py-2.5 px-3 text-right">Lãi &amp; LK Đề</th>
+                    <th class="py-2.5 px-3 text-right">Lãi &amp; LK Lô</th>
+                    <th class="py-2.5 px-3 text-right">Lãi &amp; LK Lô Xiên</th>
+                    <th class="py-2.5 px-3 text-right">Lãi Ròng Ngày</th>
+                    <th class="py-2.5 px-3 text-right">Lũy Kế Tổng (3 Trụ)</th>
+                </tr>
+            `;
+
+            const formattedTargetDate = formatDateVi(targetDate);
+            const pendingTop2 = (loLatestRec?.numbers || []).slice(0, 2).map(numStr).join(', ');
+            const pendingTop4 = (loLatestRec?.numbers || []).slice(0, 4).map(numStr).join(', ');
+
+            let pendingRowHtml = `
+                <tr class="border-b border-amber-500/20 bg-amber-950/20 hover:bg-amber-950/30 transition-colors font-mono text-xs">
+                    <td class="py-3 px-3 font-bold text-amber-300">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span>${formattedTargetDate}</span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">🔒 ĐÃ KHÓA</span>
+                        </div>
+                    </td>
+                    <td class="py-3 px-3">
+                        <span class="text-amber-300 font-semibold">Đề 36s VIP (1M/số)</span>
+                        <div class="text-[10px] text-slate-400">Vốn 36.0M · Ăn 84M</div>
+                    </td>
+                    <td class="py-3 px-3">
+                        <span class="text-teal-300 font-semibold">Song Thủ Lô Top 2</span>
+                        <div class="text-[10px] text-slate-400">Số: ${pendingTop2 || '—'} · Vốn 4.4M</div>
+                    </td>
+                    <td class="py-3 px-3">
+                        <span class="text-indigo-300 font-semibold">Xiên Quây 11 Vé (Bộ 4)</span>
+                        <div class="text-[10px] text-slate-400">Bộ 4: ${pendingTop4 || '—'} · Vốn 11.0M</div>
+                    </td>
+                    <td class="py-3 px-3 text-center">
+                        <button type="button" class="btn-open-slip px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-200 hover:text-slate-950 border border-amber-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer" data-slip-date="${targetDate}">
+                            <i class="bi bi-eye-fill text-amber-300"></i> Xem Dàn Khóa
+                        </button>
+                    </td>
+                    <td class="py-3 px-3 text-right">
+                        <span class="text-white font-bold">51.4M</span>
+                        <div class="text-[10px] text-slate-400">Đề 36M + Lô 4.4M + Xiên 11M</div>
+                    </td>
+                    <td class="py-3 px-3 text-right">
+                        <div class="text-amber-400 font-bold">⏳ Chờ 18:30</div>
+                        <div class="text-[10px] ${cumDeK >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-semibold">LK: ${formatMoneyK(cumDeK)}</div>
+                    </td>
+                    <td class="py-3 px-3 text-right">
+                        <div class="text-amber-400 font-bold">⏳ Chờ 18:30</div>
+                        <div class="text-[10px] ${cumLoK >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-semibold">LK: ${formatMoneyK(cumLoK)}</div>
+                    </td>
+                    <td class="py-3 px-3 text-right">
+                        <div class="text-amber-400 font-bold">⏳ Chờ 18:30</div>
+                        <div class="text-[10px] ${cumXienK >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-semibold">LK: ${formatMoneyK(cumXienK)}</div>
+                    </td>
+                    <td class="py-3 px-3 text-right font-bold text-amber-300">⏳ Chờ kết toán</td>
+                    <td class="py-3 px-3 text-right">
+                        <div class="font-black text-sm ${cumSuiteK >= 0 ? 'text-emerald-300' : 'text-rose-300'}">${formatMoneyK(cumSuiteK)}</div>
+                        <div class="text-[9px] text-slate-400">Đề + Lô + Xiên</div>
+                    </td>
+                </tr>
+            `;
+
+            const reversedRows = [...rowsData].reverse();
+            const settledRowsHtml = reversedRows.map(row => {
+                const dateVi = formatDateVi(row.date);
+                const actualStr = row.actualStr || '—';
+
+                const deBadge = row.isHit36
+                    ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-xs animate-pulse">🎯 Trúng Đề (+48M) · ${actualStr} ⭐</span>`
+                    : `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">❌ Trượt (-36M) · ${actualStr}</span>`;
+
+                const loBadge = row.isLoWin
+                    ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 ring-2 ring-emerald-300 shadow-xs">🔥 ${row.loHits} nháy (+${formatMoneyK(row.loProfitK, false)})</span>`
+                    : `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">${row.loHits} nháy (-${formatMoneyK(Math.abs(row.loProfitK), false)})</span>`;
+
+                const q = row.q11;
+                let xienBadge = '';
+                if (q.x4Count > 0) {
+                    xienBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-xs animate-pulse">⭐ NỔ 4 CON (+309M)</span>`;
+                } else if (q.x3Count > 0) {
+                    xienBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 ring-2 ring-emerald-300 shadow-xs">🎉 NỔ 3 CON (+59M)</span>`;
+                } else if (q.x2Count > 0) {
+                    xienBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/40">⚡ NỔ 2 CON (-1M)</span>`;
+                } else {
+                    xienBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">❌ Trượt (${q.h4}/4 con · -11M)</span>`;
+                }
+
+                let winningBadgesHtml = '';
+                if (row.isHit36) {
+                    winningBadgesHtml += `<span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-1 ring-amber-300 shadow-xs">🎯 ĐB: ${actualStr} ⭐</span> `;
+                }
+                const loHitsList = row.loInfo.pills.filter(p => p.hits > 0);
+                if (loHitsList.length > 0) {
+                    winningBadgesHtml += loHitsList.map(p => {
+                        return `<span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[10px] font-black bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 ring-1 ring-emerald-300 shadow-xs">🎯 ${p.num}<sub class="text-[8px] font-black ml-0.5">(${p.hits}n)</sub></span>`;
+                    }).join(' ');
+                }
+                if (q.hitsInTop4.length >= 2) {
+                    winningBadgesHtml += ` <span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[10px] font-black bg-gradient-to-r from-purple-400 to-indigo-400 text-slate-950 ring-1 ring-purple-300 shadow-xs">🚀 Quây: ${q.hitsInTop4.join('-')}</span>`;
+                }
+                if (!winningBadgesHtml) {
+                    winningBadgesHtml = '<span class="text-slate-500 text-[10px] italic">Không nổ số nào</span>';
+                }
+
+                return `
+                    <tr class="border-b border-white/5 ${row.suiteDayProfitK > 0 ? 'bg-emerald-950/15' : ''} hover:bg-white/5 transition-colors font-mono text-xs">
+                        <td class="py-2.5 px-3 font-bold text-slate-300">${dateVi}</td>
+                        <td class="py-2.5 px-3">${deBadge}</td>
+                        <td class="py-2.5 px-3">${loBadge}</td>
+                        <td class="py-2.5 px-3">${xienBadge}</td>
+                        <td class="py-2.5 px-3 text-center">
+                            <div class="flex flex-wrap gap-1 justify-center items-center mb-1">
+                                ${winningBadgesHtml}
+                            </div>
+                            <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-indigo-600/30 hover:bg-indigo-600 text-indigo-200 hover:text-white border border-indigo-500/40 text-[10px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${row.date}">
+                                <i class="bi bi-eye-fill text-amber-300"></i> Xem Đủ Dàn
+                            </button>
+                        </td>
+                        <td class="py-2.5 px-3 text-right">
+                            <span class="text-slate-300 font-bold">51.4M</span>
+                            <div class="text-[9px] text-slate-500">Đề 36M + Lô 4.4M + Xiên 11M</div>
+                        </td>
+                        <td class="py-2.5 px-3 text-right">
+                            <div><span class="font-bold ${row.deProfitK > 0 ? 'text-emerald-400' : (row.deProfitK < 0 ? 'text-rose-400' : 'text-slate-500')}">${formatMoneyK(row.deProfitK)}</span></div>
+                            <div class="text-[10px] font-semibold ${row.cumDeK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">LK: ${formatMoneyK(row.cumDeK)}</div>
+                        </td>
+                        <td class="py-2.5 px-3 text-right">
+                            <div><span class="font-bold ${row.loProfitK > 0 ? 'text-emerald-400' : (row.loProfitK < 0 ? 'text-rose-400' : 'text-slate-500')}">${formatMoneyK(row.loProfitK)}</span></div>
+                            <div class="text-[10px] font-semibold ${row.cumLoK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">LK: ${formatMoneyK(row.cumLoK)}</div>
+                        </td>
+                        <td class="py-2.5 px-3 text-right">
+                            <div><span class="font-bold ${row.xienProfitK > 0 ? 'text-emerald-400' : (row.xienProfitK < 0 ? 'text-rose-400' : 'text-slate-500')}">${formatMoneyK(row.xienProfitK)}</span></div>
+                            <div class="text-[10px] font-semibold ${row.cumXienK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">LK: ${formatMoneyK(row.cumXienK)}</div>
+                        </td>
+                        <td class="py-2.5 px-3 text-right">
+                            <span class="font-black text-xs ${row.suiteDayProfitK > 0 ? 'text-emerald-400' : (row.suiteDayProfitK < 0 ? 'text-rose-400' : 'text-slate-400')}">${formatMoneyK(row.suiteDayProfitK)}</span>
+                        </td>
+                        <td class="py-2.5 px-3 text-right">
+                            <div class="font-black text-sm ${row.cumSuiteK >= 0 ? 'text-emerald-300' : 'text-rose-300'}">${formatMoneyK(row.cumSuiteK)}</div>
+                            <div class="text-[9px] text-slate-500">Đề + Lô + Xiên</div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            tbody.innerHTML = pendingRowHtml + (settledRowsHtml || '<tr><td colspan="11" class="py-8 text-center text-xs text-slate-400">Không có dữ liệu đối soát</td></tr>');
+            return;
+        }
+
+        // =====================================================================
+        // CATEGORY: 💎 LÔ TRI-CORE TAM TRỤ (TOP 7 / TOP 6)
+        // =====================================================================
+        if (currentShadowCategory === 'loTriCore') {
+            let baseRows = loTriHarmonic?.settledLedger || [];
+            if (currentShadowYear === '2026') {
+                baseRows = baseRows.filter(r => r.year === 2026 || String(r.date).startsWith('2026'));
+            }
+
+            const loMode = (mode === 'top6' || mode === 'triCore6') ? 'top6' : 'top7';
+            const topNLabel = (loMode === 'top6') ? 'Top 6' : 'Top 7';
+
+            let cumFlatK = 0;
+            let cumTierK = 0;
+            let flatWins = 0;
+            let tierWins = 0;
+            let totalHits = 0;
+
+            const enrichedRows = baseRows.map(r => {
+                const loInfo = getLoTriCoreRowInfo(r, loMode);
+                cumFlatK += loInfo.profitK;
+                cumTierK += loInfo.tierProfitK;
+                if (loInfo.isWin) flatWins++;
+                if (loInfo.isTierWin) tierWins++;
+                totalHits += loInfo.hits;
+
+                return {
+                    date: r.date,
+                    raw: r,
+                    loInfo,
+                    viewAccumFlatK: cumFlatK,
+                    viewAccumTierK: cumTierK
+                };
+            });
+
+            const totalDays = enrichedRows.length;
+            const flatWinRate = totalDays > 0 ? (flatWins / totalDays * 100).toFixed(1) : '0.0';
+            const tierWinRate = totalDays > 0 ? (tierWins / totalDays * 100).toFixed(1) : '0.0';
+
+            if (rowCountEl) rowCountEl.textContent = `${totalDays}`;
+            if (winCountEl) winCountEl.innerHTML = `<span class="text-teal-300">Phẳng: ${flatWins}w (${flatWinRate}%)</span> · <span class="text-amber-300">Tầng: ${tierWins}w (${tierWinRate}%)</span>`;
+            if (winRateEl) winRateEl.textContent = `${flatWinRate}% / ${tierWinRate}%`;
+            if (hitsTagEl) {
+                hitsTagEl.classList.remove('hidden');
+                if (hitsCountEl) hitsCountEl.textContent = `${totalHits.toLocaleString('vi-VN')} (${(totalHits / Math.max(1, totalDays)).toFixed(2)} nháy/ngày)`;
+            }
+            if (profitLabelEl) profitLabelEl.textContent = `💰 Lãi Lũy Kế Lô Tri-Core Tam Trụ (${topNLabel} · 2026):`;
+            if (totalProfitEl) {
+                totalProfitEl.innerHTML = `
+                    <div class="flex items-center gap-2 flex-wrap text-xs font-mono">
+                        <span class="text-teal-300 font-bold">Phẳng: <strong class="${cumFlatK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${formatMoneyK(cumFlatK)}</strong></span>
+                        <span class="text-slate-500 font-normal">|</span>
+                        <span class="text-amber-300 font-bold">Phân Tầng: <strong class="${cumTierK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${formatMoneyK(cumTierK)}</strong></span>
+                    </div>
+                `;
+            }
+
+            const loTableSubSwitch = byId('shadowLoTableSubSwitchGroup');
+            if (loTableSubSwitch) {
+                loTableSubSwitch.classList.remove('hidden');
+                const btnTbl7 = byId('btnTableLoTop7');
+                const btnTbl6 = byId('btnTableLoTop6');
+                if (btnTbl7) {
+                    btnTbl7.className = (loMode === 'top7')
+                        ? 'px-2 py-0.5 rounded font-black bg-teal-400 text-slate-950 transition-all shadow-xs'
+                        : 'px-2 py-0.5 rounded font-bold text-slate-600 hover:text-slate-900 transition-all';
+                    btnTbl7.onclick = () => { renderShadowLoCard('triCore7'); renderShadowSettledTable(); };
+                }
+                if (btnTbl6) {
+                    btnTbl6.className = (loMode === 'top6')
+                        ? 'px-2 py-0.5 rounded font-black bg-teal-400 text-slate-950 transition-all shadow-xs'
+                        : 'px-2 py-0.5 rounded font-bold text-slate-600 hover:text-slate-900 transition-all';
+                    btnTbl6.onclick = () => { renderShadowLoCard('triCore6'); renderShadowSettledTable(); };
+                }
+            }
+
+            thead.innerHTML = `
+                <tr class="border-b border-white/10 text-[11px] font-bold text-slate-400 uppercase tracking-wide">
+                    <th class="py-2.5 px-3">Ngày Quay</th>
+                    <th class="py-2.5 px-3">Trạng Thái (${topNLabel})</th>
+                    <th class="py-2.5 px-3">Dàn Lô Tri-Core &amp; Số Nổ</th>
+                    <th class="py-2.5 px-3 text-center">Nháy Nổ</th>
+                    <th class="py-2.5 px-3 text-right">Lô Đánh Phẳng (2.2M)</th>
+                    <th class="py-2.5 px-3 text-right">Lũy Kế Phẳng</th>
+                    <th class="py-2.5 px-3 text-right">Lô Phân Tầng (X3/X2/X1)</th>
+                    <th class="py-2.5 px-3 text-right">Lũy Kế Tầng</th>
+                    <th class="py-2.5 px-3 text-center">Chi Tiết</th>
+                </tr>
+            `;
+
+            const formattedTargetDate = formatDateVi(targetDate);
+            const loPendingInfo = getLoTriCoreRowInfo(loTriLatestRec || loLatestRec, loMode);
+            const betPillsHtml = loPendingInfo.pills.map(p => {
+                return `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-teal-500/15 text-teal-200 border border-teal-500/30 font-mono">${p.num}<span class="text-[9px] opacity-80 ml-0.5">·${p.tier}</span></span>`;
+            }).join(' ');
+
+            const flatStakeStr = formatMoneyK(loPendingInfo.stakeK, false);
+            const tierStakeStr = formatMoneyK(loPendingInfo.tierStakeK, false);
+
+            let pendingRowHtml = `
+                <tr class="border-b border-amber-500/20 bg-amber-950/20 hover:bg-amber-950/30 transition-colors font-mono text-xs">
+                    <td class="py-3 px-3 font-bold text-amber-300">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span>${formattedTargetDate}</span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">🔒 ĐÃ KHÓA</span>
+                        </div>
+                    </td>
+                    <td class="py-3 px-3">
+                        <div class="font-bold text-teal-300">Lô Tri-Core Tam Trụ (${topNLabel})</div>
+                        <div class="text-[10px] text-amber-300 font-semibold">🔒 Đã niêm phong 12:00</div>
+                    </td>
+                    <td class="py-3 px-3">
+                        <div class="flex flex-wrap gap-1 max-w-md">${betPillsHtml || '—'}</div>
+                    </td>
+                    <td class="py-3 px-3 text-center text-amber-400 font-bold">⏳ Chờ 18:30</td>
+                    <td class="py-3 px-3 text-right">
+                        <span class="text-white font-bold">Vốn ${flatStakeStr}</span>
+                        <div class="text-[10px] text-amber-400">Chờ mở thưởng</div>
+                    </td>
+                    <td class="py-3 px-3 text-right font-bold text-emerald-300">${formatMoneyK(cumFlatK)}</td>
+                    <td class="py-3 px-3 text-right">
+                        <span class="text-white font-bold">Vốn ${tierStakeStr}</span>
+                        <div class="text-[10px] text-amber-400">Chờ mở thưởng</div>
+                    </td>
+                    <td class="py-3 px-3 text-right font-bold text-amber-300">${formatMoneyK(cumTierK)}</td>
+                    <td class="py-3 px-3 text-center">
+                        <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-teal-500/20 hover:bg-teal-500 text-teal-200 hover:text-slate-950 border border-teal-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${targetDate}">
+                            <i class="bi bi-eye"></i> Chi Tiết
+                        </button>
+                    </td>
+                </tr>
+            `;
+
+            const reversedRows = [...enrichedRows].reverse();
+            const settledRowsHtml = reversedRows.map(row => {
+                const dateVi = formatDateVi(row.date);
+                const loInfo = row.loInfo;
+
+                const betPillsHtml = loInfo.pills.map(p => {
+                    if (p.isHit) {
+                        return `<span class="inline-flex items-center px-1.5 py-0.5 rounded-lg text-[10px] font-black bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 text-slate-950 ring-2 ring-emerald-300 shadow-md scale-105 font-mono animate-pulse" title="Trúng ${p.hits} nháy (${p.tier})">🎯 ${p.num} <span class="bg-slate-950 text-emerald-300 px-1 py-0.2 rounded text-[8px] font-black ml-0.5">${p.hits}n</span></span>`;
+                    }
+                    return `<span class="inline-flex items-center px-1 py-0.5 rounded text-[10px] font-mono text-slate-400 bg-white/5 border border-white/5 opacity-60" title="${p.tier}">${p.num}<span class="text-[8px] opacity-75 ml-0.5">·${p.tier}</span></span>`;
+                }).join(' ');
+
+                const hitsBadgeClass = loInfo.hits >= 4
+                    ? 'bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 ring-2 ring-amber-300 font-black shadow-md'
+                    : (loInfo.hits >= 2
+                        ? 'bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 ring-2 ring-emerald-300 font-black shadow-md'
+                        : 'bg-rose-500/20 text-rose-300 border border-rose-500/30 font-semibold');
+
+                return `
+                    <tr class="border-b border-white/5 ${loInfo.isWin || loInfo.isTierWin ? 'bg-emerald-950/15' : ''} hover:bg-white/5 transition-colors font-mono text-xs">
+                        <td class="py-2.5 px-3 font-bold text-slate-300">${dateVi}</td>
+                        <td class="py-2.5 px-3">
+                            <div class="font-bold text-teal-300">Lô Tri-Core (${topNLabel})</div>
+                            <div class="text-[10px] ${loInfo.isWin ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}">
+                                ${loInfo.isWin ? '✅ Phẳng: Lãi' : '❌ Phẳng: Lỗ'} · ${loInfo.isTierWin ? '<span class="text-amber-300">Tầng: Lãi</span>' : '<span class="text-rose-400">Tầng: Lỗ</span>'}
+                            </div>
+                        </td>
+                        <td class="py-2.5 px-3">
+                            <div class="flex flex-wrap gap-1 max-w-md">${betPillsHtml || '—'}</div>
+                        </td>
+                        <td class="py-2.5 px-3 text-center">
+                            <span class="inline-flex items-center justify-center min-w-[28px] h-6 rounded-md font-mono text-[11px] px-1.5 ${hitsBadgeClass}">${loInfo.hits} nháy</span>
+                        </td>
+                        <td class="py-2.5 px-3 text-right font-black ${loInfo.profitK > 0 ? 'text-emerald-400' : (loInfo.profitK < 0 ? 'text-rose-400' : 'text-slate-500')}">
+                            ${formatMoneyK(loInfo.profitK)}
+                            <div class="text-[9px] text-slate-500 font-normal">Vốn ${formatMoneyK(loInfo.stakeK, false)}</div>
+                        </td>
+                        <td class="py-2.5 px-3 text-right font-bold ${row.viewAccumFlatK >= 0 ? 'text-emerald-300' : 'text-rose-300'}">
+                            ${formatMoneyK(row.viewAccumFlatK)}
+                        </td>
+                        <td class="py-2.5 px-3 text-right font-black ${loInfo.tierProfitK > 0 ? 'text-emerald-400' : (loInfo.tierProfitK < 0 ? 'text-rose-400' : 'text-slate-500')}">
+                            ${formatMoneyK(loInfo.tierProfitK)}
+                            <div class="text-[9px] text-slate-500 font-normal">Vốn ${formatMoneyK(loInfo.tierStakeK, false)}</div>
+                        </td>
+                        <td class="py-2.5 px-3 text-right font-bold ${row.viewAccumTierK >= 0 ? 'text-amber-300' : 'text-rose-300'}">
+                            ${formatMoneyK(row.viewAccumTierK)}
+                        </td>
+                        <td class="py-2.5 px-3 text-center">
+                            <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-teal-500/20 hover:bg-teal-500 text-teal-200 hover:text-slate-950 border border-teal-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${row.date}">
+                                <i class="bi bi-eye"></i> Chi Tiết
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            tbody.innerHTML = pendingRowHtml + (settledRowsHtml || '<tr><td colspan="9" class="py-8 text-center text-xs text-slate-400">Không có dữ liệu đối soát</td></tr>');
             return;
         }
 
