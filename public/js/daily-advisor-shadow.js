@@ -139,13 +139,13 @@
                     actionBanner.className = 'rounded-2xl border-2 border-amber-500 bg-amber-950/30 p-5 shadow-xl ring-2 ring-amber-500/20 flex flex-col justify-between';
                 }
                 if (actionStatusText) {
-                    actionStatusText.innerHTML = '<span class="inline-flex items-center gap-1.5 text-amber-300 font-black uppercase text-sm sm:text-base"><i class="bi bi-shield-check text-amber-400"></i> 👑 ĐỀ PHÂN TẦNG DROPOFF: VÀO KÈO 40 SỐ · TỶ LỆ THẮNG 90.1%</span>';
+                    actionStatusText.innerHTML = '<span class="inline-flex items-center gap-1.5 text-amber-300 font-black uppercase text-sm sm:text-base"><i class="bi bi-shield-check text-amber-400"></i> 👑 ĐỀ PHÂN TẦNG DROPOFF: VÀO KÈO 40 SỐ · THỰC CHIẾN TỪ 17/09</span>';
                 }
                 if (actionDesc) {
                     actionDesc.textContent = 'Loại bỏ 60 số có tỷ lệ % gãy (Dropoff) cao nhất lịch sử (100% Strict PIT). Phân tầng 40 số sinh tồn: 10 Siêu VIP X3 (3M/số) + 12 Trung Tâm X2 (2M/số) + 18 Bọc Lót X1 (1M/số). Tổng vốn 72M/ngày (luôn < 84M) triệt tiêu hoàn toàn rủi ro trúng-lỗ.';
                 }
                 if (footerMeta) {
-                    footerMeta.innerHTML = '<span>Hòa vốn: <strong class="text-amber-300">0% rủi ro trúng-lỗ (72M &lt; 84M)</strong></span><span>Độ bền: <strong class="text-emerald-400">Win 90.1% (634 kỳ: +64.812 TỶ)</strong></span>';
+                    footerMeta.innerHTML = '<span>Hòa vốn: <strong class="text-amber-300">0% rủi ro trúng-lỗ (72M &lt; 84M)</strong></span><span>Thực chiến: <strong class="text-emerald-400">Win 44.4% (8/18 kỳ từ 17/09)</strong></span>';
                 }
 
                 const dropoffRec = deDropoff?.latestRecommendation || {};
@@ -247,79 +247,68 @@
         // Default initial render
         renderShadowDeCard('dropoff40');
 
-        // 2. Render Column 2: Lô Ghép 4 Động Cơ (Top 6 / Top 7)
-        function renderShadowLoCard(mode) {
+        // 2. Render Column 2: Lô Dropoff 27 Vị Trí (Top 6 / Top 7 / Top 8 / Top 10)
+        function renderShadowLoCard(mode = 'top7') {
             currentShadowLoMode = mode;
             window.shadowLoMode = mode;
 
-            const isTop6 = (mode === 'top6');
-            const lo4Fusion = data?.lo4EngineFusion;
-            const lo4ModeData = lo4Fusion?.modes?.[mode] || lo4Fusion;
-            const lo4Rec = lo4ModeData?.latestRecommendation || lo4Fusion?.latestRecommendation || {};
-            const loSummary = lo4ModeData?.summary?.all || {};
+            const loDropoff = data?.loDropoff27;
+            const loRec = loDropoff?.latestRecommendation || {};
+            const loSummary = loDropoff?.summary?.liveCombat || {};
 
-            // Toggle buttons
-            const btnTop6 = byId('btnShadowLoModeTop6');
-            const btnTop7 = byId('btnShadowLoModeTop7');
-            if (btnTop6 && btnTop7) {
-                btnTop6.className = isTop6
-                    ? 'rounded-lg bg-teal-400 text-slate-950 font-black text-[10px] px-2 py-0.5 transition-all shadow-xs'
-                    : 'rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 font-bold text-[10px] px-2 py-0.5 transition-all';
-                btnTop7.className = !isTop6
-                    ? 'rounded-lg bg-teal-400 text-slate-950 font-black text-[10px] px-2 py-0.5 transition-all shadow-xs'
-                    : 'rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 font-bold text-[10px] px-2 py-0.5 transition-all';
-            }
+            // Toggle buttons: Top 6, Top 7, Top 8, Top 10
+            ['top6', 'top7', 'top8', 'top10'].forEach(m => {
+                const btn = byId(`btnShadowLoMode${m.charAt(0).toUpperCase() + m.slice(1)}`);
+                if (btn) {
+                    btn.className = (m === mode)
+                        ? 'rounded-lg bg-teal-400 text-slate-950 font-black text-[10px] px-2 py-0.5 transition-all shadow-xs'
+                        : 'rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 font-bold text-[10px] px-2 py-0.5 transition-all';
+                }
+            });
 
             const winRateBadge = byId('shadowLoWinRateBadge');
             if (winRateBadge) {
-                const wr = loSummary.winRate ? (loSummary.winRate * 100).toFixed(1) : (isTop6 ? '68.5' : '69.6');
-                const hits = loSummary.hits || (isTop6 ? 1133 : 1273);
-                winRateBadge.textContent = `Win ${wr}% · ${hits.toLocaleString('vi-VN')} nháy`;
+                const wr = loSummary.hitRate ? (loSummary.hitRate * 100).toFixed(1) : '61.1';
+                const hits = loSummary.totalHits || 37;
+                winRateBadge.textContent = `Win ${wr}% · ${hits} nháy`;
             }
 
+            const recNumbers = (mode === 'top6') ? (loRec.top6 || ['91', '94', '99', '93', '89', '59'])
+                : (mode === 'top8') ? (loRec.top8 || ['91', '94', '99', '93', '89', '59', '90', '83'])
+                : (mode === 'top10') ? (loRec.top10 || ['91', '94', '99', '93', '89', '59', '90', '83', '84', '98'])
+                : (loRec.top7 || loRec.numbers || ['91', '94', '99', '93', '89', '59', '90']);
+
+            const n = recNumbers.length;
             const statusText = byId('shadowLoStatusText');
             if (statusText) {
-                statusText.textContent = isTop6
-                    ? '🔥 TOP 6 LỤC THỦ: VUA HIỆU SUẤT (+5.513 TỶ)'
-                    : '🛡️ TOP 7 THẤT THỦ: NỀN TẢNG BỀN VỮNG (+6.394 TỶ)';
+                statusText.textContent = `🔥 TOP ${n} KHỬ TRÙNG 27 VỊ TRÍ: 61.1% NGÀY THẮNG LÃI (2.06 NHÁY/NGÀY)`;
             }
 
             const descText = byId('shadowLoDesc');
             if (descText) {
-                descText.textContent = isTop6
-                    ? 'Hội tụ 4 động cơ định lượng (QMBF + Bạc Nhớ + Tri + RRF). Bắt trọn 1.133 nháy 2026 (4.15 nháy/ngày), lãi ròng +5.513 TỶ, tối ưu hóa tỷ suất sinh lời ròng.'
-                    : 'Hội tụ 4 động cơ định lượng (QMBF + Bạc Nhớ + Tri + RRF). Bắt trọn 1.273 nháy 2026 (4.66 nháy/ngày), lãi ròng +6.394 TỶ, tần suất nổ dày đặc và an toàn nhất.';
+                descText.textContent = `Quét 27 vị trí mở thưởng XSMB (Cầu ghép 27 vị trí 1-3 ngày + Lô rơi 27 giải + Khử gan mềm). Tuyển chọn Top ${n} nổ dày đặc nhất theo dõi thực chiến từ 17/09/2026.`;
             }
-
-            // Numbers
-            const recNumbers = (lo4Rec.numbersOver2 && lo4Rec.numbersOver2.length)
-                ? lo4Rec.numbersOver2
-                : (isTop6 ? ['62', '52', '84', '88', '36'] : ['62', '52', '84', '88', '36', '09', '38']);
-
-            const betNumbersList = (lo4Rec.betNumbers && lo4Rec.betNumbers.length)
-                ? lo4Rec.betNumbers.filter(b => recNumbers.includes(String(b.num)))
-                : recNumbers.map(n => ({ num: n, votes: 3, multiplier: 4, methods: ['QMBF', 'Dual', 'Tri'] }));
 
             const container = byId('shadowLoNumbersContainer');
             if (container) {
-                container.innerHTML = betNumbersList.map(b => {
-                    const v = b.votes || 2;
+                container.innerHTML = recNumbers.map((num, idx) => {
                     let badgeStyle = '';
                     let badgeTag = '';
-                    if (v >= 4) {
+                    if (idx < 2) {
                         badgeStyle = 'bg-gradient-to-b from-amber-400 to-yellow-500 text-slate-950 font-black ring-2 ring-amber-300 shadow-md shadow-amber-500/20';
-                        badgeTag = '🔥 4/4 ĐC';
-                    } else if (v === 3) {
+                        badgeTag = '👑 SIÊU VIP X3';
+                    } else if (idx < 4) {
                         badgeStyle = 'bg-gradient-to-b from-teal-400 to-emerald-400 text-slate-950 font-black ring-1 ring-teal-300 shadow-sm';
-                        badgeTag = '⚡ 3/4 ĐC';
+                        badgeTag = '⚡ TRUNG TÂM X2';
                     } else {
                         badgeStyle = 'bg-gradient-to-b from-cyan-400 to-sky-400 text-slate-950 font-bold ring-1 ring-cyan-300 shadow-sm';
-                        badgeTag = '🛡️ 2/4 ĐC';
+                        badgeTag = '🛡️ BỌC LÓT X1';
                     }
-                    const engines = (b.methods || []).join(' + ');
+                    const scoreObj = (loRec.ranked || []).find(r => r.num === numStr(num));
+                    const scoreStr = scoreObj ? ` (Điểm: ${scoreObj.score})` : '';
                     return `
-                        <div class="relative group flex flex-col items-center justify-center rounded-xl ${badgeStyle} px-3 py-1.5 shadow-xs hover:scale-105 transition-all cursor-pointer min-w-[52px]" title="Đồng thuận: ${v}/4 Động cơ (${engines})">
-                            <span class="font-mono text-base font-black leading-tight tracking-tight">${numStr(b.num)}</span>
+                        <div class="relative group flex flex-col items-center justify-center rounded-xl ${badgeStyle} px-3 py-1.5 shadow-xs hover:scale-105 transition-all cursor-pointer min-w-[56px]" title="Vị trí rank #${idx + 1}${scoreStr}">
+                            <span class="font-mono text-base font-black leading-tight tracking-tight">${numStr(num)}</span>
                             <span class="text-[9px] font-black uppercase tracking-tight opacity-90 mt-0.5">${badgeTag}</span>
                         </div>
                     `;
@@ -328,16 +317,14 @@
 
             const metaStake = byId('shadowLoMetaStake');
             if (metaStake) {
-                const m3 = '3.19';
-                const vip = '63.8';
-                metaStake.innerHTML = `Vốn M3: <strong class="text-white">${m3}M</strong> · VIP: <strong class="text-white">${vip}M</strong>`;
+                const stake10d = (n * 220 / 1000).toFixed(2);
+                const stakeM3 = (n * 440 / 1000).toFixed(2);
+                metaStake.innerHTML = `Vốn 10đ: <strong class="text-white">${stake10d}M</strong> · M3 (20đ): <strong class="text-white">${stakeM3}M</strong>`;
             }
 
             const metaProfit = byId('shadowLoMetaProfit');
             if (metaProfit) {
-                metaProfit.innerHTML = isTop6
-                    ? `Lãi 2026: <strong class="text-teal-300 font-bold font-mono">+5.513 TỶ</strong>`
-                    : `Lãi 2026: <strong class="text-teal-300 font-bold font-mono">+6.394 TỶ</strong>`;
+                metaProfit.innerHTML = `Lãi ròng (18 kỳ): <strong class="text-teal-300 font-bold font-mono">+1.88M</strong> (10đ) · <strong class="text-teal-300 font-bold font-mono">+3.76M</strong> (M3)`;
             }
 
             // Copy button handlers
@@ -346,7 +333,7 @@
                 btnCopyLo.onclick = () => {
                     if (recNumbers.length) {
                         navigator.clipboard.writeText(recNumbers.map(numStr).join(' '));
-                        showToast(`Đã sao chép ${recNumbers.length} số Lô (${isTop6 ? 'Top 6' : 'Top 7'})!`);
+                        showToast(`Đã sao chép ${recNumbers.length} số Lô Dropoff 27 (Top ${n})!`);
                     }
                 };
             }
@@ -362,24 +349,19 @@
             }
         }
 
-        // Wire top 6 / top 7 mode buttons
-        const btnShadowTop6 = byId('btnShadowLoModeTop6');
-        const btnShadowTop7 = byId('btnShadowLoModeTop7');
-        if (btnShadowTop6) {
-            btnShadowTop6.onclick = () => {
-                renderShadowLoCard('top6');
-                renderShadowSettledTable();
-            };
-        }
-        if (btnShadowTop7) {
-            btnShadowTop7.onclick = () => {
-                renderShadowLoCard('top7');
-                renderShadowSettledTable();
-            };
-        }
+        // Wire top 6 / top 7 / top 8 / top 10 mode buttons
+        ['top6', 'top7', 'top8', 'top10'].forEach(m => {
+            const btn = byId(`btnShadowLoMode${m.charAt(0).toUpperCase() + m.slice(1)}`);
+            if (btn) {
+                btn.onclick = () => {
+                    renderShadowLoCard(m);
+                    renderShadowSettledTable();
+                };
+            }
+        });
 
-        // Initial render of Lo card
-        renderShadowLoCard('top6');
+        // Initial render of Lo card (Top 7 default)
+        renderShadowLoCard('top7');
 
         // Setup Category Tabs (Combo, Đề Dropoff, Đề Tri-Core, Lô)
         function setupCategoryTabs() {
@@ -490,11 +472,13 @@
                 byId('metricLongestLoss').textContent = `${longestLoss} kỳ`;
 
                 const profitEl = byId('metricRealisticProfit');
-                profitEl.textContent = formatMoneyK(equity);
-                profitEl.className = `text-2xl font-black font-mono ${equity >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
-
-                byId('metricRealisticRoi').textContent = `+${(roi * 100).toFixed(1)}% (Tổng lãi: ${formatMoneyK(equity)})`;
-                byId('metricAbstainCount').textContent = `0/${totalIssued} ngày (100% Trực chiến)`;
+                const roiSign = roi > 0 ? '+' : '';
+                const roiEl = byId('metricRealisticRoi');
+                if (roiEl) {
+                    roiEl.textContent = `${roiSign}${(roi * 100).toFixed(1)}% (Tổng lãi: ${formatMoneyK(equity)})`;
+                    roiEl.className = `text-xs font-bold ${equity >= 0 ? 'text-emerald-300' : 'text-rose-300'}`;
+                }
+                byId('metricAbstainCount').textContent = `0/${totalIssued} ngày (Thực chiến từ 17/09)`;
 
                 renderShadowSettledTable();
                 return;
@@ -641,11 +625,11 @@
 
         // 4. Render Explainable AI Block ("Vì sao chọn dàn này")
         const evidences = [
-            'Khử Trùng Dropoff % Gãy: Quét lịch sử chuỗi trượt 20 năm (Strict PIT), loại bỏ 60 số có tỷ lệ gãy cao nhất.',
+            'Khử Trùng Dropoff % Gãy: Quét chu kỳ trượt 20 năm (Strict PIT), loại bỏ 60 số có tỷ lệ gãy cao nhất.',
             'Phân Tầng Đa Động Cơ (10 VIP X3 / 12 Trung Tâm X2 / 18 Bọc Lót X1): Cược 72M/ngày, thưởng 84M đến 252M.',
-            'Triệt Tiêu Hoàn Toàn Bẫy Trúng-Lỗ: 100% ngày nổ bất kỳ tầng nào đều sinh lãi ròng dương (72M < 84M, Max Drawdown -336M, Lãi 2 năm +64.812 TỶ).'
+            'Triệt Tiêu Hoàn Toàn Bẫy Trúng-Lỗ: 100% ngày nổ bất kỳ tầng nào đều sinh lãi ròng dương (72M < 84M, thưởng từ +12M đến +180M).'
         ];
-        const majorRisk = 'Dù tỷ lệ trúng thực nghiệm đạt 90.1% (+142.0% ROI trên 634 kỳ), vẫn có thể xuất hiện chuỗi trượt tối đa 3-4 kỳ liên tiếp (Drawdown -336M). Tuyệt đối duy trì kỷ luật vốn 72M/ngày, không bao giờ gấp thếp Martingale.';
+        const majorRisk = 'Thực chiến 18 kỳ (từ 17/09 đến 04/10/2026): Trúng 8/18 kỳ (44.4%), xuất hiện chuỗi trượt tối đa 4 kỳ liên tiếp (Drawdown -336M, PnL -288M). Tuyệt đối duy trì kỷ luật vốn 72M/ngày, không bao giờ gấp thếp Martingale.';
 
         const evidenceList = byId('shadowEvidenceList');
         if (evidenceList) {
@@ -659,8 +643,85 @@
         // Churn guard display
         const churnEl = byId('shadowChurnGuardText');
         if (churnEl) {
-            churnEl.textContent = 'Hệ thống áp dụng cơ chế Khử Trùng Dropoff Rate kết hợp Ngưỡng Hòa Vốn Bất Biến: Đạt tỷ lệ trúng 90.1% qua 634 kỳ mở thưởng thực tế (2025-2026), bảo toàn vốn trước các biến động cực đoan.';
+            churnEl.textContent = 'Hệ thống áp dụng cơ chế Khử Trùng Dropoff Rate kết hợp Ngưỡng Hòa Vốn Bất Biến: Theo dõi thực chiến nghiêm ngặt từ 17/09/2026, loại bỏ dữ liệu ảo giác trước đó, bảo toàn vốn trước các biến động cực đoan.';
         }
+    }
+
+    // Helper to extract Lô Dropoff 27 info for a given row and mode (top6, top7, top8, top10)
+    function getLoDropoffRowInfo(row, mode = 'top7') {
+        if (!row) {
+            return {
+                mode,
+                topN: 7,
+                numbers: [],
+                hits: 0,
+                stakeK: 1540,
+                payoutK: 0,
+                profitK: -1540,
+                isWin: false,
+                pills: [],
+                isPending: false
+            };
+        }
+        const topN = (mode === 'top6' ? 6 : (mode === 'top8' ? 8 : (mode === 'top10' ? 10 : 7)));
+        let numbers = (mode === 'top6' ? (row.top6 || row.numbers?.slice(0, 6))
+            : (mode === 'top8' ? (row.top8 || (row.ranked ? row.ranked.slice(0, 8).map(x => x.num) : row.numbers))
+            : (mode === 'top10' ? (row.top10 || (row.ranked ? row.ranked.slice(0, 10).map(x => x.num) : row.numbers))
+            : (row.top7 || row.numbers)))) || [];
+
+        if (!numbers.length && Array.isArray(row.numbers)) {
+            numbers = row.numbers.slice(0, topN);
+        }
+
+        const numHitsMap = row.numHitsMap || {};
+        const isPending = (row.hits === undefined && !row.actualPrizes && !row.actualSpecial);
+        let hits = 0;
+
+        if (!isPending) {
+            if (row.numHitsMap) {
+                hits = numbers.reduce((sum, n) => sum + (numHitsMap[numStr(n)] || 0), 0);
+            } else if (row.actualPrizes && row.actualPrizes.length) {
+                hits = numbers.reduce((sum, n) => sum + row.actualPrizes.filter(p => numStr(p) === numStr(n)).length, 0);
+            } else if (mode === 'top7' && row.hits !== undefined) {
+                hits = row.hits;
+            } else if (mode === 'top6' && row.hits6 !== undefined) {
+                hits = row.hits6;
+            }
+        }
+
+        const stakeK = topN * 220; // 10 điểm / con (22K * 10 = 220K)
+        const payoutK = isPending ? 0 : hits * 800; // 80K * 10 = 800K
+        const profitK = isPending ? 0 : (payoutK - stakeK);
+        const isWin = isPending ? false : (profitK > 0);
+
+        const pills = numbers.map((n, idx) => {
+            const s = numStr(n);
+            const nhay = numHitsMap[s] || 0;
+            let tierTag = 'X1';
+            if (idx < 2) tierTag = 'X3';
+            else if (idx < 4) tierTag = 'X2';
+
+            return {
+                num: s,
+                hits: nhay,
+                isHit: nhay > 0,
+                tier: tierTag,
+                rank: idx + 1
+            };
+        });
+
+        return {
+            mode,
+            topN,
+            numbers,
+            hits,
+            stakeK,
+            payoutK,
+            profitK,
+            isWin,
+            pills,
+            isPending
+        };
     }
 
     // Dynamic Settled Ledger Table Renderer supporting Combo, Đề Dropoff, Đề Tri-Core, and Lô
@@ -671,11 +732,10 @@
 
         const data = cachedAdvisorData;
         const triCore = data.triCoreDe || null;
-        const lo4Fusion = data.lo4EngineFusion || null;
+        const loDropoff = data.loDropoff27 || null;
         const deDropoff = data.deDropoffMerge || null;
-        const mode = currentShadowLoMode || 'top6';
-        const loModeData = lo4Fusion?.modes?.[mode] || lo4Fusion;
-        const loLedger = loModeData?.settledLedger || [];
+        const mode = currentShadowLoMode || 'top7';
+        const loLedger = loDropoff?.settledLedger || [];
         const deDropoffLedger = deDropoff?.settledLedger || [];
 
         let deLedger = [];
@@ -687,14 +747,14 @@
 
         // Global available dates list for modal selector
         const deLatestRec = triCore?.latestRecommendation;
-        const loLatestRec = loModeData?.latestRecommendation || lo4Fusion?.latestRecommendation;
+        const loLatestRec = loDropoff?.latestRecommendation;
         const dropoffLatestRec = deDropoff?.latestRecommendation;
-        const targetDate = dropoffLatestRec?.targetDate || deLatestRec?.targetDate || loLatestRec?.predictionDate || '2026-10-05';
+        const targetDate = dropoffLatestRec?.targetDate || loLatestRec?.targetDate || '2026-10-05';
 
         const allDates = Array.from(new Set([
             ...deDropoffLedger.map(r => r.date),
-            ...deLedger.map(r => r.date),
-            ...loLedger.map(r => r.date)
+            ...loLedger.map(r => r.date),
+            ...(currentShadowCategory === 'de' ? deLedger.map(r => r.date) : [])
         ])).filter(Boolean).sort();
 
         const fullDatesSorted = Array.from(new Set([targetDate, ...allDates])).filter(Boolean).sort().reverse();
@@ -709,14 +769,12 @@
         const totalProfitEl = byId('shadowDiaryTotalProfit');
 
         // =====================================================================
-        // CATEGORY: ĐỀ DROPOFF 40S (2025 - 2026: 634 KỲ)
+        // CATEGORY: ĐỀ DROPOFF 40S (THỰC CHIẾN TỪ 17/09/2026: 18 KỲ)
         // =====================================================================
         if (currentShadowCategory === 'deDropoff') {
             let dropoffRows = deDropoffLedger;
             if (currentShadowYear === '2026') {
                 dropoffRows = dropoffRows.filter(r => r.year === 2026 || String(r.date).startsWith('2026'));
-            } else if (currentShadowYear === '2025') {
-                dropoffRows = dropoffRows.filter(r => r.year === 2025 || String(r.date).startsWith('2025'));
             }
 
             const totalDays = dropoffRows.length;
@@ -733,7 +791,7 @@
             if (winCountEl) winCountEl.textContent = `${wins} (X3: ${x3Wins} · X2: ${x2Wins} · X1: ${x1Wins})`;
             if (winRateEl) winRateEl.textContent = `${hitRate}%`;
             if (hitsTagEl) hitsTagEl.classList.add('hidden');
-            if (profitLabelEl) profitLabelEl.textContent = `💰 Lãi Lũy Kế Đề Dropoff 40s (${currentShadowYear === 'all' ? '2025-2026' : currentShadowYear}):`;
+            if (profitLabelEl) profitLabelEl.textContent = '💰 Lãi Lũy Kế Đề Dropoff 40s (Từ 17/09/2026):';
             if (totalProfitEl) {
                 totalProfitEl.textContent = formatMoneyK(totalProfitK);
                 totalProfitEl.className = `font-black text-sm font-mono ${totalProfitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
@@ -754,36 +812,34 @@
             `;
 
             let pendingRowHtml = '';
-            if (currentShadowYear !== '2025') {
-                const targetDateFormatted = formatDateVi(dropoffLatestRec?.targetDate || '2026-10-05');
-                pendingRowHtml = `
-                    <tr class="border-b border-amber-500/20 bg-amber-950/20 hover:bg-amber-950/30 transition-colors font-mono text-xs">
-                        <td class="py-3 px-3 font-bold text-amber-300">
-                            <div class="flex items-center gap-1.5 flex-wrap">
-                                <span>${targetDateFormatted}</span>
-                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">🔒 ĐÃ KHÓA</span>
-                            </div>
-                        </td>
-                        <td class="py-3 px-3">
-                            <span class="text-amber-300 font-semibold">Dropoff 40s (10 X3 · 12 X2 · 18 X1)</span>
-                            <div class="text-[10px] text-slate-400">Khử 60 số gãy cao nhất · Vốn 72M</div>
-                        </td>
-                        <td class="py-3 px-3 text-center">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">⏳ CHỜ MỞ 18:30</span>
-                        </td>
-                        <td class="py-3 px-3 text-center font-bold text-amber-400">⏳ Chờ mở</td>
-                        <td class="py-3 px-3 text-right text-white font-bold">72.0M</td>
-                        <td class="py-3 px-3 text-right text-slate-400 font-mono">—</td>
-                        <td class="py-3 px-3 text-right font-bold text-amber-300">⏳ Chờ kết toán</td>
-                        <td class="py-3 px-3 text-right font-bold text-emerald-300">${formatMoneyK(totalProfitK)}</td>
-                        <td class="py-3 px-3 text-center">
-                            <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-200 hover:text-slate-950 border border-amber-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${dropoffLatestRec?.targetDate || '2026-10-05'}">
-                                <i class="bi bi-eye"></i> 40 Số
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            }
+            const targetDateFormatted = formatDateVi(dropoffLatestRec?.targetDate || '2026-10-05');
+            pendingRowHtml = `
+                <tr class="border-b border-amber-500/20 bg-amber-950/20 hover:bg-amber-950/30 transition-colors font-mono text-xs">
+                    <td class="py-3 px-3 font-bold text-amber-300">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span>${targetDateFormatted}</span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">🔒 ĐÃ KHÓA</span>
+                        </div>
+                    </td>
+                    <td class="py-3 px-3">
+                        <span class="text-amber-300 font-semibold">Dropoff 40s (10 X3 · 12 X2 · 18 X1)</span>
+                        <div class="text-[10px] text-slate-400">Khử 60 số gãy cao nhất · Vốn 72M</div>
+                    </td>
+                    <td class="py-3 px-3 text-center">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">⏳ CHỜ MỞ 18:30</span>
+                    </td>
+                    <td class="py-3 px-3 text-center font-bold text-amber-400">⏳ Chờ mở</td>
+                    <td class="py-3 px-3 text-right text-white font-bold">72.0M</td>
+                    <td class="py-3 px-3 text-right text-slate-400 font-mono">—</td>
+                    <td class="py-3 px-3 text-right font-bold text-amber-300">⏳ Chờ kết toán</td>
+                    <td class="py-3 px-3 text-right font-bold text-emerald-300">${formatMoneyK(totalProfitK)}</td>
+                    <td class="py-3 px-3 text-center">
+                        <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-200 hover:text-slate-950 border border-amber-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${dropoffLatestRec?.targetDate || '2026-10-05'}">
+                            <i class="bi bi-eye"></i> 40 Số
+                        </button>
+                    </td>
+                </tr>
+            `;
 
             let runningProfitK = 0;
             const enrichedDropoffRows = dropoffRows.map(r => {
@@ -837,7 +893,7 @@
         }
 
         // =====================================================================
-        // CATEGORIES: COMBO, ĐỀ TRI-CORE, LÔ GHÉP 4 ĐỘNG CƠ
+        // CATEGORIES: COMBO (TỔNG HỢP), LÔ DROPOFF 27, ĐỀ TRI-CORE
         // =====================================================================
         const loMap = new Map();
         loLedger.forEach(row => loMap.set(row.date, row));
@@ -848,15 +904,18 @@
         const deMap = new Map();
         deLedger.forEach(row => deMap.set(row.date, row));
 
-        const baseDates = Array.from(new Set([
-            ...(currentShadowCategory === 'combo' ? deDropoffLedger.map(r => r.date) : deLedger.map(r => r.date)),
-            ...loLedger.map(r => r.date)
-        ])).filter(Boolean).sort();
+        let baseDates = [];
+        if (currentShadowCategory === 'combo') {
+            baseDates = deDropoffLedger.map(r => r.date).filter(Boolean).sort();
+        } else if (currentShadowCategory === 'loDropoff' || currentShadowCategory === 'lo') {
+            baseDates = loLedger.map(r => r.date).filter(Boolean).sort();
+        } else {
+            baseDates = deLedger.map(r => r.date).filter(Boolean).sort();
+        }
+
         let targetDates = baseDates;
         if (currentShadowYear === '2026') {
             targetDates = baseDates.filter(d => String(d).startsWith('2026'));
-        } else if (currentShadowYear === '2025') {
-            targetDates = baseDates.filter(d => String(d).startsWith('2025'));
         }
 
         if (!targetDates.length) {
@@ -871,8 +930,7 @@
             tbody.innerHTML = `
                 <tr>
                     <td colspan="9" class="py-8 text-center text-xs text-amber-300">
-                        <i class="bi bi-info-circle text-base"></i> Không có dữ liệu đối soát năm ${currentShadowYear} cho hạng mục này.<br>
-                        (Vui lòng chọn tab <strong>🏆 Đề Dropoff 40s</strong> để xem toàn bộ 634 kỳ cả 2025 và 2026).
+                        <i class="bi bi-info-circle text-base"></i> Không có dữ liệu đối soát thực chiến từ 17/09/2026 cho hạng mục này.
                     </td>
                 </tr>
             `;
@@ -886,7 +944,8 @@
         const rowsData = targetDates.map(date => {
             const isCombo = (currentShadowCategory === 'combo');
             const deRow = isCombo ? deDropoffMap.get(date) : deMap.get(date);
-            const loRow = loMap.get(date);
+            const rawLoRow = loMap.get(date);
+            const loInfo = getLoDropoffRowInfo(rawLoRow, mode);
 
             let deAbstain = false;
             let deHit = false;
@@ -897,7 +956,7 @@
                 deAbstain = false;
                 deHit = Boolean(deRow?.hit);
                 deStakeK = deRow?.stakeK || 72000;
-                deProfitK = deRow ? (deRow.profitK !== undefined ? deRow.profitK : (deHit ? ((deRow.payoutK || 0) - deStakeK) : -deStakeK)) : 0;
+                deProfitK = deRow ? (deRow.profitK !== undefined ? deRow.profitK : (deHit ? ((deRow.payoutK || 0) - deStakeK) : -deStakeK)) : -72000;
             } else {
                 deAbstain = Boolean(deRow?.abstained);
                 deHit = Boolean(deRow?.hit);
@@ -905,11 +964,11 @@
                 deStakeK = deAbstain ? 0 : (deRow?.stakeK || 24000);
             }
 
-            const loHits = loRow?.dayLotoHits || 0;
-            const loStakeK = loRow?.dayLotoStakeK || 0;
-            const loPayoutK = loRow?.dayLotoPayoutK || 0;
-            const loProfitK = loRow?.dayLotoProfitK ?? (loPayoutK - loStakeK);
-            const isLoWin = loRow?.isLotoWin ?? (loProfitK > 0);
+            const loHits = loInfo.hits;
+            const loStakeK = loInfo.stakeK;
+            const loPayoutK = loInfo.payoutK;
+            const loProfitK = loInfo.profitK;
+            const isLoWin = loInfo.isWin;
 
             const comboDayProfitK = deProfitK + loProfitK;
             const comboDayStakeK = deStakeK + loStakeK;
@@ -921,7 +980,8 @@
             return {
                 date,
                 deRow,
-                loRow,
+                rawLoRow,
+                loInfo,
                 deAbstain,
                 deHit,
                 deProfitK,
@@ -949,7 +1009,7 @@
             if (winCountEl) winCountEl.textContent = `${comboWins}`;
             if (winRateEl) winRateEl.textContent = `${comboWinRate}%`;
             if (hitsTagEl) hitsTagEl.classList.add('hidden');
-            if (profitLabelEl) profitLabelEl.textContent = `💰 Lãi Lũy Kế Combo (${currentShadowYear === 'all' ? 'Tất cả' : currentShadowYear}):`;
+            if (profitLabelEl) profitLabelEl.textContent = '💰 Lãi Lũy Kế Combo (Từ 17/09/2026):';
             if (totalProfitEl) {
                 totalProfitEl.textContent = formatMoneyK(cumComboK);
                 totalProfitEl.className = `font-black text-sm font-mono ${cumComboK >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
@@ -962,15 +1022,16 @@
             if (winCountEl) winCountEl.textContent = `${deWins}`;
             if (winRateEl) winRateEl.textContent = `${deWinRate}% (ngày cược)`;
             if (hitsTagEl) hitsTagEl.classList.add('hidden');
-            if (profitLabelEl) profitLabelEl.textContent = `💰 Lãi Lũy Kế Đề Tri-Core (${currentShadowYear === 'all' ? 'Tất cả' : currentShadowYear}):`;
+            if (profitLabelEl) profitLabelEl.textContent = '💰 Lãi Lũy Kế Đề Tri-Core (2026):';
             if (totalProfitEl) {
                 totalProfitEl.textContent = formatMoneyK(cumDeK);
                 totalProfitEl.className = `font-black text-sm font-mono ${cumDeK >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
             }
-        } else { // 'lo'
+        } else { // 'loDropoff' or 'lo'
             const loWins = rowsData.filter(r => r.isLoWin).length;
             const loWinRate = totalDays > 0 ? (loWins / totalDays * 100).toFixed(1) : '0.0';
             const totalHits = rowsData.reduce((acc, r) => acc + (r.loHits || 0), 0);
+            const topNLabel = mode === 'top6' ? 'Top 6' : (mode === 'top8' ? 'Top 8' : (mode === 'top10' ? 'Top 10' : 'Top 7'));
             if (rowCountEl) rowCountEl.textContent = `${totalDays}`;
             if (winCountEl) winCountEl.textContent = `${loWins}`;
             if (winRateEl) winRateEl.textContent = `${loWinRate}%`;
@@ -978,7 +1039,7 @@
                 hitsTagEl.classList.remove('hidden');
                 if (hitsCountEl) hitsCountEl.textContent = `${totalHits.toLocaleString('vi-VN')}`;
             }
-            if (profitLabelEl) profitLabelEl.textContent = `💰 Lãi Lũy Kế Lô (${mode === 'top6' ? 'Top 6' : 'Top 7'} · ${currentShadowYear === 'all' ? 'Tất cả' : currentShadowYear}):`;
+            if (profitLabelEl) profitLabelEl.textContent = `💰 Lãi Lũy Kế Lô Dropoff 27 (${topNLabel} · Từ 17/09):`;
             if (totalProfitEl) {
                 totalProfitEl.textContent = formatMoneyK(cumLoK);
                 totalProfitEl.className = `font-black text-sm font-mono ${cumLoK >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
@@ -986,12 +1047,13 @@
         }
 
         // Render dynamic THEAD
+        const topNTitle = mode === 'top6' ? 'Top 6' : (mode === 'top8' ? 'Top 8' : (mode === 'top10' ? 'Top 10' : 'Top 7'));
         if (currentShadowCategory === 'combo') {
             thead.innerHTML = `
                 <tr class="border-b border-white/10 text-[11px] font-bold text-slate-400 uppercase tracking-wide">
                     <th class="py-2.5 px-3">Ngày Quay</th>
                     <th class="py-2.5 px-3">Đề Dropoff 40s</th>
-                    <th class="py-2.5 px-3">Lô Ghép 4 ĐC (${mode === 'top6' ? 'Top 6' : 'Top 7'})</th>
+                    <th class="py-2.5 px-3">Lô Dropoff 27 (${topNTitle})</th>
                     <th class="py-2.5 px-3 text-center">Dàn Đánh &amp; Số Trúng</th>
                     <th class="py-2.5 px-3 text-right">Tổng Vốn</th>
                     <th class="py-2.5 px-3 text-right">Lãi Đề</th>
@@ -1013,12 +1075,12 @@
                     <th class="py-2.5 px-3 text-center">Chi Tiết</th>
                 </tr>
             `;
-        } else { // 'lo'
+        } else { // 'loDropoff' or 'lo'
             thead.innerHTML = `
                 <tr class="border-b border-white/10 text-[11px] font-bold text-slate-400 uppercase tracking-wide">
                     <th class="py-2.5 px-3">Ngày Quay</th>
                     <th class="py-2.5 px-3">Chế Độ &amp; Trạng Thái</th>
-                    <th class="py-2.5 px-3">Dàn Số &amp; Số Nổ (X5 / X4 / X3 / X1)</th>
+                    <th class="py-2.5 px-3">Dàn Lô Dropoff 27 &amp; Số Nổ (${topNTitle})</th>
                     <th class="py-2.5 px-3 text-center">Nháy Nổ (27 Giải)</th>
                     <th class="py-2.5 px-3 text-right">Vốn Cược</th>
                     <th class="py-2.5 px-3 text-right">Tiền Trúng</th>
@@ -1029,112 +1091,109 @@
             `;
         }
 
-        // Pending Row for Today pinned at top (only if year is 2026 or all)
+        // Pending Row for Today pinned at top
         const formattedTargetDate = formatDateVi(targetDate);
         let pendingRowHtml = '';
 
-        if (currentShadowYear !== '2025') {
-            if (currentShadowCategory === 'combo') {
-                const loBetCount = loLatestRec?.betNumbers?.length || 14;
-                const loStakeM = loLatestRec?.totalLotoStakeK ? (loLatestRec.totalLotoStakeK / 1000).toFixed(1) + 'M' : '63.8M';
-                const deStakeM = '72.0M';
-                const totalStakeM = ((Number(loLatestRec?.totalLotoStakeK || 63800) + 72000) / 1000).toFixed(1) + 'M';
+        if (currentShadowCategory === 'combo') {
+            const loPendingInfo = getLoDropoffRowInfo(loLatestRec, mode);
+            const loStakeM = (loPendingInfo.stakeK / 1000).toFixed(2) + 'M';
+            const deStakeM = '72.0M';
+            const totalStakeM = ((72000 + loPendingInfo.stakeK) / 1000).toFixed(2) + 'M';
 
-                pendingRowHtml = `
-                    <tr class="border-b border-amber-500/20 bg-amber-950/20 hover:bg-amber-950/30 transition-colors font-mono text-xs">
-                        <td class="py-3 px-3 font-bold text-amber-300">
-                            <div class="flex items-center gap-1.5 flex-wrap">
-                                <span>${formattedTargetDate}</span>
-                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">🔒 ĐÃ KHÓA</span>
-                            </div>
-                        </td>
-                        <td class="py-3 px-3">
-                            <span class="text-amber-300 font-semibold">Dropoff 40s (10 X3 · 12 X2 · 18 X1)</span>
-                            <div class="text-[10px] text-slate-400">Khử 60 số gãy · Vốn 72M</div>
-                        </td>
-                        <td class="py-3 px-3">
-                            <span class="text-teal-300 font-semibold">${mode === 'top6' ? 'Top 6 Live' : 'Top 7 Live'} (${loBetCount} số)</span>
-                            <div class="text-[10px] text-slate-400">X5: ${(loLatestRec?.tierX5 || []).join(', ') || '—'} · X4: ${(loLatestRec?.tierX4 || []).join(', ') || '—'}</div>
-                        </td>
-                        <td class="py-3 px-3 text-center">
-                            <button type="button" class="btn-open-slip px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-200 hover:text-slate-950 border border-amber-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer" data-slip-date="${targetDate}">
-                                <i class="bi bi-eye-fill text-amber-300"></i> Xem Dàn Khóa
-                            </button>
-                        </td>
-                        <td class="py-3 px-3 text-right">
-                            <span class="text-white font-bold">${totalStakeM}</span>
-                            <div class="text-[10px] text-slate-400">Đề ${deStakeM} + Lô ${loStakeM}</div>
-                        </td>
-                        <td class="py-3 px-3 text-right text-amber-400 font-bold">⏳ Chờ 18:30</td>
-                        <td class="py-3 px-3 text-right text-amber-400 font-bold">⏳ Chờ 18:30</td>
-                        <td class="py-3 px-3 text-right font-bold text-amber-300">⏳ Chờ kết toán</td>
-                        <td class="py-3 px-3 text-right font-bold text-emerald-300">${formatMoneyK(cumComboK)}</td>
-                    </tr>
-                `;
-            } else if (currentShadowCategory === 'de') {
-                const deRecScore = deLatestRec?.topScore ? ` (Điểm: ${deLatestRec.topScore.toFixed(1)})` : '';
-                const deNums = (deLatestRec?.numbers || []).slice(0, 8).map(numStr).join(' ') + ((deLatestRec?.numbers?.length > 8) ? '...' : '');
+            pendingRowHtml = `
+                <tr class="border-b border-amber-500/20 bg-amber-950/20 hover:bg-amber-950/30 transition-colors font-mono text-xs">
+                    <td class="py-3 px-3 font-bold text-amber-300">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span>${formattedTargetDate}</span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">🔒 ĐÃ KHÓA</span>
+                        </div>
+                    </td>
+                    <td class="py-3 px-3">
+                        <span class="text-amber-300 font-semibold">Dropoff 40s (10 X3 · 12 X2 · 18 X1)</span>
+                        <div class="text-[10px] text-slate-400">Khử 60 số gãy · Vốn 72M</div>
+                    </td>
+                    <td class="py-3 px-3">
+                        <span class="text-teal-300 font-semibold">Lô Dropoff 27 (${topNTitle})</span>
+                        <div class="text-[10px] text-slate-400">Top: ${loPendingInfo.numbers.slice(0, 4).join(', ')}... · Vốn ${loStakeM}</div>
+                    </td>
+                    <td class="py-3 px-3 text-center">
+                        <button type="button" class="btn-open-slip px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-200 hover:text-slate-950 border border-amber-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer" data-slip-date="${targetDate}">
+                            <i class="bi bi-eye-fill text-amber-300"></i> Xem Dàn Khóa
+                        </button>
+                    </td>
+                    <td class="py-3 px-3 text-right">
+                        <span class="text-white font-bold">${totalStakeM}</span>
+                        <div class="text-[10px] text-slate-400">Đề ${deStakeM} + Lô ${loStakeM}</div>
+                    </td>
+                    <td class="py-3 px-3 text-right text-amber-400 font-bold">⏳ Chờ 18:30</td>
+                    <td class="py-3 px-3 text-right text-amber-400 font-bold">⏳ Chờ 18:30</td>
+                    <td class="py-3 px-3 text-right font-bold text-amber-300">⏳ Chờ kết toán</td>
+                    <td class="py-3 px-3 text-right font-bold text-emerald-300">${formatMoneyK(cumComboK)}</td>
+                </tr>
+            `;
+        } else if (currentShadowCategory === 'de') {
+            const deRecScore = deLatestRec?.topScore ? ` (Điểm: ${deLatestRec.topScore.toFixed(1)})` : '';
+            const deNums = (deLatestRec?.numbers || []).slice(0, 8).map(numStr).join(' ') + ((deLatestRec?.numbers?.length > 8) ? '...' : '');
 
-                pendingRowHtml = `
-                    <tr class="border-b border-amber-500/20 bg-amber-950/20 hover:bg-amber-950/30 transition-colors font-mono text-xs">
-                        <td class="py-3 px-3 font-bold text-amber-300">
-                            <div class="flex items-center gap-1.5 flex-wrap">
-                                <span>${formattedTargetDate}</span>
-                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">🔒 ĐÃ KHÓA</span>
-                            </div>
-                        </td>
-                        <td class="py-3 px-3 text-amber-300 font-semibold">Tri-Core 24s${deRecScore}</td>
-                        <td class="py-3 px-3 text-center">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">✅ VÀO KÈO 24S</span>
-                        </td>
-                        <td class="py-3 px-3 text-slate-300 text-[11px]" title="${(deLatestRec?.numbers || []).map(numStr).join(', ')}">${deNums}</td>
-                        <td class="py-3 px-3 text-center font-bold text-amber-400">⏳ Chờ mở</td>
-                        <td class="py-3 px-3 text-right text-slate-400 font-medium">Vốn 24M (Chờ kq)</td>
-                        <td class="py-3 px-3 text-right font-bold text-emerald-300">${formatMoneyK(cumDeK)}</td>
-                        <td class="py-3 px-3 text-center">
-                            <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-200 hover:text-slate-950 border border-amber-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer" data-slip-date="${targetDate}">
-                                <i class="bi bi-eye"></i> 24 Số
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            } else { // 'lo'
-                const betList = loLatestRec?.betNumbers || [];
-                const betPillsHtml = betList.map(b => {
-                    const multTag = b.multiplier > 1 ? `·x${b.multiplier}` : '';
-                    return `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-teal-500/15 text-teal-200 border border-teal-500/30 font-mono">${numStr(b.num)}<span class="text-[9px] opacity-80">${multTag}</span></span>`;
-                }).join(' ');
+            pendingRowHtml = `
+                <tr class="border-b border-amber-500/20 bg-amber-950/20 hover:bg-amber-950/30 transition-colors font-mono text-xs">
+                    <td class="py-3 px-3 font-bold text-amber-300">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span>${formattedTargetDate}</span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">🔒 ĐÃ KHÓA</span>
+                        </div>
+                    </td>
+                    <td class="py-3 px-3 text-amber-300 font-semibold">Tri-Core 24s${deRecScore}</td>
+                    <td class="py-3 px-3 text-center">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">✅ VÀO KÈO 24S</span>
+                    </td>
+                    <td class="py-3 px-3 text-slate-300 text-[11px]" title="${(deLatestRec?.numbers || []).map(numStr).join(', ')}">${deNums}</td>
+                    <td class="py-3 px-3 text-center font-bold text-amber-400">⏳ Chờ mở</td>
+                    <td class="py-3 px-3 text-right text-slate-400 font-medium">Vốn 24M (Chờ kq)</td>
+                    <td class="py-3 px-3 text-right font-bold text-emerald-300">${formatMoneyK(cumDeK)}</td>
+                    <td class="py-3 px-3 text-center">
+                        <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-200 hover:text-slate-950 border border-amber-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer" data-slip-date="${targetDate}">
+                            <i class="bi bi-eye"></i> 24 Số
+                        </button>
+                    </td>
+                </tr>
+            `;
+        } else { // 'loDropoff' or 'lo'
+            const loPendingInfo = getLoDropoffRowInfo(loLatestRec, mode);
+            const betPillsHtml = loPendingInfo.pills.map(p => {
+                return `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-teal-500/15 text-teal-200 border border-teal-500/30 font-mono">${p.num}<span class="text-[9px] opacity-80 ml-0.5">·${p.tier}</span></span>`;
+            }).join(' ');
 
-                const stakeStr = formatMoneyK(loLatestRec?.totalLotoStakeK || 63800, false);
+            const stakeStr = formatMoneyK(loPendingInfo.stakeK, false);
 
-                pendingRowHtml = `
-                    <tr class="border-b border-amber-500/20 bg-amber-950/20 hover:bg-amber-950/30 transition-colors font-mono text-xs">
-                        <td class="py-3 px-3 font-bold text-amber-300">
-                            <div class="flex items-center gap-1.5 flex-wrap">
-                                <span>${formattedTargetDate}</span>
-                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">🔒 ĐÃ KHÓA</span>
-                            </div>
-                        </td>
-                        <td class="py-3 px-3">
-                            <div class="font-bold text-teal-300">${mode === 'top6' ? 'Top 6 Lục Thủ' : 'Top 7 Thất Thủ'}</div>
-                            <div class="text-[10px] text-amber-300 font-semibold">🔒 Đã niêm phong 12:00</div>
-                        </td>
-                        <td class="py-3 px-3">
-                            <div class="flex flex-wrap gap-1 max-w-md">${betPillsHtml || '—'}</div>
-                        </td>
-                        <td class="py-3 px-3 text-center text-amber-400 font-bold">⏳ Chờ 18:30</td>
-                        <td class="py-3 px-3 text-right font-bold text-white">${stakeStr}</td>
-                        <td class="py-3 px-3 text-right text-slate-400 font-mono">—</td>
-                        <td class="py-3 px-3 text-right font-bold text-amber-300">⏳ Chờ kết toán</td>
-                        <td class="py-3 px-3 text-right font-bold text-emerald-300">${formatMoneyK(cumLoK)}</td>
-                        <td class="py-3 px-3 text-center">
-                            <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-teal-500/20 hover:bg-teal-500 text-teal-200 hover:text-slate-950 border border-teal-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer" data-slip-date="${targetDate}">
-                                <i class="bi bi-eye"></i> Chi Tiết
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            }
+            pendingRowHtml = `
+                <tr class="border-b border-amber-500/20 bg-amber-950/20 hover:bg-amber-950/30 transition-colors font-mono text-xs">
+                    <td class="py-3 px-3 font-bold text-amber-300">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span>${formattedTargetDate}</span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">🔒 ĐÃ KHÓA</span>
+                        </div>
+                    </td>
+                    <td class="py-3 px-3">
+                        <div class="font-bold text-teal-300">Lô Dropoff 27 (${topNTitle})</div>
+                        <div class="text-[10px] text-amber-300 font-semibold">🔒 Đã niêm phong 12:00</div>
+                    </td>
+                    <td class="py-3 px-3">
+                        <div class="flex flex-wrap gap-1 max-w-md">${betPillsHtml || '—'}</div>
+                    </td>
+                    <td class="py-3 px-3 text-center text-amber-400 font-bold">⏳ Chờ 18:30</td>
+                    <td class="py-3 px-3 text-right font-bold text-white">${stakeStr}</td>
+                    <td class="py-3 px-3 text-right text-slate-400 font-mono">—</td>
+                    <td class="py-3 px-3 text-right font-bold text-amber-300">⏳ Chờ kết toán</td>
+                    <td class="py-3 px-3 text-right font-bold text-emerald-300">${formatMoneyK(cumLoK)}</td>
+                    <td class="py-3 px-3 text-center">
+                        <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-teal-500/20 hover:bg-teal-500 text-teal-200 hover:text-slate-950 border border-teal-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer" data-slip-date="${targetDate}">
+                            <i class="bi bi-eye"></i> Chi Tiết
+                        </button>
+                    </td>
+                </tr>
+            `;
         }
 
         // Settled Rows (Reverse Chronological)
@@ -1158,11 +1217,11 @@
                     deBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">❌ Trượt (${actualStr})</span>`;
                 }
 
-                const loHitsList = (row.loRow?.betNumbers || []).filter(b => b.hits > 0);
-                const loHitsStr = loHitsList.map(b => `${numStr(b.num)}(${b.hits}n)`).slice(0, 3).join(', ') + (loHitsList.length > 3 ? '...' : '');
+                const loHitsList = row.loInfo.pills.filter(p => p.hits > 0);
+                const loHitsStr = loHitsList.map(p => `${p.num}(${p.hits}n)`).slice(0, 3).join(', ') + (loHitsList.length > 3 ? '...' : '');
 
                 const loBadge = row.isLoWin
-                    ? `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40" title="${loHitsList.map(b => `${numStr(b.num)} (${b.hits} nháy)`).join(', ')}">🔥 ${row.loHits} nháy (${loHitsStr || 'Thắng'})</span>`
+                    ? `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40" title="${loHitsList.map(p => `${p.num} (${p.hits} nháy)`).join(', ')}">🔥 ${row.loHits} nháy (${loHitsStr || 'Thắng'})</span>`
                     : `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">${row.loHits} nháy (Thua)</span>`;
 
                 return `
@@ -1221,16 +1280,14 @@
                         </td>
                     </tr>
                 `;
-            } else { // 'lo'
-                const betList = row.loRow?.betNumbers || [];
-                const betPillsHtml = betList.map(b => {
-                    const isHit = (b.hits && b.hits > 0);
-                    const hitTag = isHit ? `<span class="text-[9px] font-black text-amber-300 ml-0.5">(${b.hits}n)</span>` : '';
-                    const multTag = b.multiplier > 1 ? `<span class="text-[8px] opacity-75">·x${b.multiplier}</span>` : '';
-                    if (isHit) {
-                        return `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-black bg-emerald-500/25 text-emerald-200 border border-emerald-400/60 font-mono shadow-xs" title="Trúng ${b.hits} nháy · Hệ số x${b.multiplier}">🎯${numStr(b.num)}${hitTag}${multTag}</span>`;
+            } else { // 'loDropoff' or 'lo'
+                const betPillsHtml = row.loInfo.pills.map(p => {
+                    const hitTag = p.isHit ? `<span class="text-[9px] font-black text-amber-300 ml-0.5">(${p.hits}n)</span>` : '';
+                    const tierTag = `<span class="text-[8px] opacity-75">·${p.tier}</span>`;
+                    if (p.isHit) {
+                        return `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-black bg-emerald-500/25 text-emerald-200 border border-emerald-400/60 font-mono shadow-xs" title="Trúng ${p.hits} nháy (${p.tier})">🎯${p.num}${hitTag}${tierTag}</span>`;
                     }
-                    return `<span class="inline-flex items-center px-1 py-0.5 rounded text-[10px] font-mono text-slate-400 bg-white/5 border border-white/5" title="Hệ số x${b.multiplier}">${numStr(b.num)}${multTag}</span>`;
+                    return `<span class="inline-flex items-center px-1 py-0.5 rounded text-[10px] font-mono text-slate-400 bg-white/5 border border-white/5" title="${p.tier}">${p.num}${tierTag}</span>`;
                 }).join(' ');
 
                 const hitsBadgeClass = row.loHits >= 4
@@ -1243,7 +1300,7 @@
                     <tr class="border-b border-white/5 hover:bg-white/5 transition-colors font-mono text-xs">
                         <td class="py-2.5 px-3 font-bold text-slate-300">${dateVi}</td>
                         <td class="py-2.5 px-3">
-                            <div class="font-bold text-teal-300">${mode === 'top6' ? 'Top 6 Lục Thủ' : 'Top 7 Thất Thủ'}</div>
+                            <div class="font-bold text-teal-300">Lô Dropoff 27 (${topNTitle})</div>
                             <div class="text-[10px] ${row.isLoWin ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}">${row.isLoWin ? '✅ Thắng Lô' : '❌ Thua Lô'}</div>
                         </td>
                         <td class="py-2.5 px-3">
@@ -1438,16 +1495,15 @@
 
         const data = cachedAdvisorData;
         const triCore = data.triCoreDe;
-        const lo4Fusion = data.lo4EngineFusion;
+        const loDropoff = data.loDropoff27;
         const deDropoff = data.deDropoffMerge;
-        const mode = currentShadowLoMode || 'top6';
-        const loModeData = lo4Fusion?.modes?.[mode] || lo4Fusion;
+        const mode = currentShadowLoMode || 'top7';
         const drawPrizesObj = data.drawPrizesByDate?.[targetDate] || null;
 
         const deLatestRec = triCore?.latestRecommendation;
-        const loLatestRec = loModeData?.latestRecommendation || lo4Fusion?.latestRecommendation;
+        const loLatestRec = loDropoff?.latestRecommendation;
         const dropoffLatestRec = deDropoff?.latestRecommendation;
-        const pendingDate = dropoffLatestRec?.targetDate || deLatestRec?.targetDate || loLatestRec?.predictionDate || '2026-10-05';
+        const pendingDate = dropoffLatestRec?.targetDate || deLatestRec?.targetDate || loLatestRec?.targetDate || '2026-10-05';
         const isPending = (targetDate === pendingDate && !drawPrizesObj);
 
         let deRow = null;
@@ -1460,7 +1516,7 @@
             dropoffRow = dropoffLatestRec;
         } else {
             deRow = (triCore?.settledLedger || []).find(r => r.date === targetDate) || (triCore?.allDaysLedger || []).find(r => r.date === targetDate);
-            loRow = (loModeData?.settledLedger || []).find(r => r.date === targetDate);
+            loRow = (loDropoff?.settledLedger || []).find(r => r.date === targetDate);
             dropoffRow = (deDropoff?.settledLedger || []).find(r => r.date === targetDate);
         }
 
@@ -1497,17 +1553,13 @@
         const dePayoutK = deAbstain ? 0 : (deHit ? 84000 : 0);
         const deProfitK = deRow?.dayProfitK ?? (deAbstain ? 0 : (deHit ? 60000 : -24000));
 
-        // Lô metrics
-        const loBetList = (loRow?.betNumbers || []).map(b => ({
-            ...b,
-            num: numStr(b.num),
-            hits: b.hits || 0
-        }));
-        const loStakeK = loRow?.dayLotoStakeK || (isPending ? (loRow?.totalLotoStakeK || 63800) : 0);
-        const loPayoutK = isPending ? 0 : (loRow?.dayLotoPayoutK || 0);
-        const loProfitK = isPending ? 0 : (loRow?.dayLotoProfitK || 0);
-        const loHits = isPending ? 0 : (loRow?.dayLotoHits || 0);
-        const isLoWin = isPending ? false : Boolean(loRow?.isLotoWin || loProfitK > 0);
+        // Lô metrics (from loDropoff27)
+        const loInfo = getLoDropoffRowInfo(loRow, mode);
+        const loStakeK = loInfo.stakeK;
+        const loPayoutK = isPending ? 0 : loInfo.payoutK;
+        const loProfitK = isPending ? 0 : loInfo.profitK;
+        const loHits = isPending ? 0 : loInfo.hits;
+        const isLoWin = isPending ? false : loInfo.isWin;
 
         // Active totals
         const activeDeStakeK = isDropoffActive ? dropoffStakeK : deStakeK;
@@ -1534,7 +1586,7 @@
             }
         }
 
-        const allBetLotoNumbersSet = new Set(loBetList.map(b => b.num));
+        const allBetLotoNumbersSet = new Set(loInfo.numbers.map(numStr));
 
         // 1. Lottery Draw Results Strip
         let resultsStripHtml = '';
@@ -1774,81 +1826,90 @@
             }
         }
 
-        // 4. Section Lô Ghép 4 Động Cơ (Top 6 / Top 7)
+        // 4. Section Lô Dropoff 27 Vị Trí (Top 6 / Top 7 / Top 8 / Top 10)
         let loSectionHtml = '';
         if (loRow) {
-            const loTiers = [
-                { key: 'tierX5', name: '👑 Siêu VIP X5', mult: 5, color: 'text-amber-400' },
-                { key: 'tierX4', name: '🔥 Cực VIP X4', mult: 4, color: 'text-teal-400' },
-                { key: 'tierX3', name: '⚡ Triển Vọng X3', mult: 3, color: 'text-cyan-400' },
-                { key: 'tierX1', name: '🛡️ Bảo Hiểm X1', mult: 1, color: 'text-slate-400' }
-            ];
+            const topNTitle = mode === 'top6' ? 'Top 6 Lục Thủ' : (mode === 'top8' ? 'Top 8 Bát Thủ' : (mode === 'top10' ? 'Top 10 Thập Thủ' : 'Top 7 Thất Thủ'));
 
-            const loTiersHtml = loTiers.map(tier => {
-                const numbersInTier = loBetList.filter(b => (b.multiplier || 1) === tier.mult);
-                if (!numbersInTier.length) return '';
+            // Tiers: X3 (rank 1-2), X2 (rank 3-4), X1 (rank 5+)
+            const x3Pills = loInfo.pills.filter(p => p.tier === 'X3');
+            const x2Pills = loInfo.pills.filter(p => p.tier === 'X2');
+            const x1Pills = loInfo.pills.filter(p => p.tier === 'X1');
 
-                const chipsHtml = numbersInTier.map(b => {
-                    const hits = b.hits || 0;
-                    if (!isPending && hits > 0) {
+            const renderTierChips = (pillsList, mult, baseBg) => {
+                return pillsList.map(p => {
+                    if (!isPending && p.hits > 0) {
                         return `
-                            <div class="relative group flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 text-slate-950 p-2 font-black ring-2 ring-emerald-300 shadow-md min-w-[58px]" title="Trúng ${hits} nháy!">
-                                <span class="text-[8px] font-black uppercase text-emerald-950">🎯 ${hits} NHÁY</span>
-                                <span class="font-mono text-lg font-black leading-tight my-0.5">${b.num}</span>
-                                <span class="text-[8px] font-black bg-slate-950 text-emerald-300 px-1 py-0.2 rounded mt-0.5">x${tier.mult} ⭐</span>
+                            <div class="relative group flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 via-teal-400 to-emerald-500 text-slate-950 p-1.5 font-black ring-2 ring-emerald-300 shadow-md scale-105 min-w-[54px]" title="Trúng ${p.hits} nháy!">
+                                <span class="text-[8px] font-black uppercase text-slate-950">🎯 ${p.hits} NHÁY</span>
+                                <span class="font-mono text-lg leading-none font-black my-0.5">${p.num}</span>
+                                <span class="text-[8px] font-black uppercase bg-slate-950 text-emerald-300 px-1 py-0.2 rounded mt-0.5 shadow-xs">x${mult} ⭐</span>
                             </div>
                         `;
                     }
                     return `
-                        <div class="flex flex-col items-center justify-center rounded-xl bg-slate-800/80 border border-white/10 text-slate-300 p-2 font-mono text-base font-semibold min-w-[48px] hover:border-teal-400/40 transition-all">
-                            <span>${b.num}</span>
-                            <span class="text-[8px] text-slate-400">x${tier.mult}</span>
+                        <div class="flex flex-col items-center justify-center rounded-xl ${baseBg} border border-white/10 text-slate-200 p-1.5 font-mono text-sm font-bold min-w-[44px] hover:border-teal-400/40 transition-all">
+                            <span>${p.num}</span>
+                            <span class="text-[8px] text-slate-400">x${mult}</span>
                         </div>
                     `;
                 }).join('');
+            };
 
-                return `
-                    <div class="space-y-1.5">
-                        <div class="text-[10px] font-black uppercase ${tier.color} tracking-wider flex items-center justify-between">
-                            <span>${tier.name} (${numbersInTier.length} số):</span>
-                            <span class="text-slate-400 font-mono">Hệ số x${tier.mult}</span>
-                        </div>
-                        <div class="flex flex-wrap gap-1.5">
-                            ${chipsHtml}
-                        </div>
-                    </div>
-                `;
-            }).join('');
+            const x3Chips = renderTierChips(x3Pills, 3, 'bg-amber-950/40 text-amber-200');
+            const x2Chips = renderTierChips(x2Pills, 2, 'bg-teal-950/40 text-teal-200');
+            const x1Chips = renderTierChips(x1Pills, 1, 'bg-cyan-950/40 text-cyan-200');
 
             const loStatusTag = isPending
-                ? '<span class="text-xs font-bold text-teal-300 bg-teal-500/20 border border-teal-500/40 px-2 py-0.5 rounded">⏳ CHỐT DÀN LÔ · CHỜ MỞ</span>'
-                : (isLoWin
-                    ? `<span class="text-xs font-black text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-400 px-2.5 py-0.5 rounded shadow-sm">🔥 THẮNG LÔ (${loHits} NHÁY)</span>`
-                    : `<span class="text-xs font-bold text-rose-300 bg-rose-500/20 border border-rose-500/40 px-2 py-0.5 rounded">❌ THUA LÔ (${loHits} NHÁY)</span>`);
+                ? `<span class="text-xs font-bold text-teal-300 bg-teal-500/20 border border-teal-500/40 px-2 py-0.5 rounded">⏳ CHỐT DÀN LÔ (TOP ${loInfo.topN}) · CHỜ MỞ</span>`
+                : (loInfo.isWin
+                    ? `<span class="text-xs font-black text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-400 px-2.5 py-0.5 rounded shadow-sm">🔥 THẮNG LÔ (${loInfo.hits} NHÁY)</span>`
+                    : `<span class="text-xs font-bold text-rose-300 bg-rose-500/20 border border-rose-500/40 px-2 py-0.5 rounded">❌ THUA LÔ (${loInfo.hits} NHÁY)</span>`);
 
             loSectionHtml = `
-                <div class="rounded-2xl border border-white/10 bg-slate-900/60 p-4 space-y-3">
+                <div class="rounded-2xl border border-teal-500/40 bg-slate-900/80 p-4 space-y-3">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-2.5">
                         <div class="flex items-center gap-2 flex-wrap">
                             <h4 class="text-xs font-black uppercase text-teal-300 flex items-center gap-1.5">
-                                <i class="bi bi-fire text-rose-400"></i> 🔥 LÔ GHÉP 4 ĐỘNG CƠ (${mode === 'top6' ? 'TOP 6 LỤC THỦ' : 'TOP 7 THẤT THỦ'}):
+                                <i class="bi bi-dice-5-fill text-teal-400"></i> 🎯 2. LÔ DROPOFF 27 VỊ TRÍ (${topNTitle}):
                             </h4>
-                            <span class="text-xs text-slate-400 font-mono">(${loBetList.length} số đánh)</span>
+                            <span class="text-[11px] text-slate-400 font-mono">(Quét 27 giải · ${loInfo.topN} số)</span>
                         </div>
                         <div class="flex items-center gap-2">
                             ${loStatusTag}
-                            <button type="button" class="btn-copy-slip-lo text-[11px] font-bold text-teal-300 hover:text-white bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-lg border border-white/10 transition-all flex items-center gap-1 cursor-pointer" data-numbers="${loBetList.map(b => b.num).join(' ')}" data-date="${targetDate}">
-                                <i class="bi bi-clipboard"></i> Copy Dàn Lô
+                            <button type="button" class="btn-copy-slip-lo text-[11px] font-bold text-teal-300 hover:text-white bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-lg border border-white/10 transition-all flex items-center gap-1 cursor-pointer" data-numbers="${loInfo.numbers.map(numStr).join(' ')}" data-date="${targetDate}">
+                                <i class="bi bi-clipboard"></i> Copy Top ${loInfo.topN}
                             </button>
                         </div>
                     </div>
-                    <div class="space-y-2.5">
-                        ${loTiersHtml || '<div class="text-xs text-slate-400">Không có dàn số Lô</div>'}
+                    <!-- 3 Tiers visual boxes for Lo -->
+                    <div class="space-y-2 text-xs">
+                        <div class="p-2.5 rounded-xl bg-amber-950/30 border border-amber-500/30 space-y-1">
+                            <div class="flex items-center justify-between text-[11px]">
+                                <span class="font-black text-amber-300 uppercase">👑 Tầng 1: Siêu VIP X3 (2 Số hàng đầu)</span>
+                                <span class="text-amber-200 font-mono font-bold">Điểm cao nhất</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1 pt-1">${x3Chips}</div>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-teal-950/30 border border-teal-500/30 space-y-1">
+                            <div class="flex items-center justify-between text-[11px]">
+                                <span class="font-black text-teal-300 uppercase">⚡ Tầng 2: Trung Tâm X2 (2 Số nhịp rơi)</span>
+                                <span class="text-teal-200 font-mono font-bold">Nhịp 1-3 ngày</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1 pt-1">${x2Chips}</div>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-cyan-950/30 border border-cyan-500/30 space-y-1">
+                            <div class="flex items-center justify-between text-[11px]">
+                                <span class="font-black text-cyan-300 uppercase">🛡️ Tầng 3: Bọc Lót X1 (${x1Pills.length} Số đồng pha)</span>
+                                <span class="text-cyan-200 font-mono font-bold">Khử gan mềm</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1 pt-1">${x1Chips}</div>
+                        </div>
                     </div>
                     <div class="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-white/5 font-mono">
-                        <span>Vốn cược: <strong class="text-slate-200">${formatMoneyK(loStakeK, false)}</strong></span>
-                        <span>Tiền thưởng: <strong class="text-amber-300">${isPending ? '—' : formatMoneyK(loPayoutK, false)}</strong></span>
-                        <span>Lãi ròng Lô: <strong class="${loProfitK > 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold">${isPending ? 'Chờ kq' : formatMoneyK(loProfitK)}</strong></span>
+                        <span>Vốn cược (10đ): <strong class="text-slate-200">${formatMoneyK(loInfo.stakeK, false)}</strong></span>
+                        <span>Tiền thưởng: <strong class="text-amber-300">${isPending ? '—' : formatMoneyK(loInfo.payoutK, false)}</strong></span>
+                        <span>Lãi ròng Lô: <strong class="${loInfo.profitK > 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold">${isPending ? 'Chờ kq' : formatMoneyK(loInfo.profitK)}</strong></span>
                     </div>
                 </div>
             `;

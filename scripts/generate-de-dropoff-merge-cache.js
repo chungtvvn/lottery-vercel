@@ -15,11 +15,13 @@ async function generate() {
     await lotteryService.loadStats();
 
     const rawData = lotteryService.getRawData() || [];
-    const draws2025 = rawData.filter(r => String(r.date || r.ngay).startsWith('2025-'));
-    const draws2026 = rawData.filter(r => String(r.date || r.ngay).startsWith('2026-'));
-    const allHistorical = [...draws2025, ...draws2026];
+    const START_DATE = '2026-09-17';
+    const allHistorical = rawData.filter(r => {
+        const dt = String(r.date || r.ngay).slice(0, 10);
+        return dt >= START_DATE;
+    });
 
-    console.log(`Historical draws: 2025=${draws2025.length}, 2026=${draws2026.length}, Total=${allHistorical.length}`);
+    console.log(`Live combat draws from ${START_DATE}: ${allHistorical.length} draws`);
 
     const CFG = {
         strategyId: 'deDropoffMergeTier40',
@@ -38,8 +40,6 @@ async function generate() {
     const settledLedger = [];
     let accumProfitK = 0;
 
-    let s2025 = { total: 0, wins: 0, x3Wins: 0, x2Wins: 0, x1Wins: 0, stakeK: 0, payoutK: 0, profitK: 0, maxLossStreak: 0, curLoss: 0, maxDD: 0, peak: 0 };
-    let s2026 = { total: 0, wins: 0, x3Wins: 0, x2Wins: 0, x1Wins: 0, stakeK: 0, payoutK: 0, profitK: 0, maxLossStreak: 0, curLoss: 0, maxDD: 0, peak: 0 };
     let sTotal = { total: 0, wins: 0, x3Wins: 0, x2Wins: 0, x1Wins: 0, stakeK: 0, payoutK: 0, profitK: 0, maxLossStreak: 0, curLoss: 0, maxDD: 0, peak: 0 };
 
     const t0 = Date.now();
@@ -48,8 +48,7 @@ async function generate() {
         const row = allHistorical[i];
         const dt = String(row.date || row.ngay).slice(0, 10);
         const actualSpecial = Number(row.special);
-        const is2025 = dt.startsWith('2025');
-        const sYear = is2025 ? s2025 : s2026;
+        const is2025 = false;
 
         let bundle = null;
         try {
@@ -106,31 +105,29 @@ async function generate() {
         const dayProfitK = dayPayoutK - CFG.stakeK;
         accumProfitK += dayProfitK;
 
-        [sYear, sTotal].forEach(s => {
-            s.total++;
-            s.stakeK += CFG.stakeK;
-            s.payoutK += dayPayoutK;
-            s.profitK += dayProfitK;
-            if (isHit) {
-                s.wins++;
-                s.curLoss = 0;
-            } else {
-                s.curLoss++;
-                if (s.curLoss > s.maxLossStreak) s.maxLossStreak = s.curLoss;
-            }
-            if (isHitX3) s.x3Wins++;
-            if (isHitX2) s.x2Wins++;
-            if (isHitX1) s.x1Wins++;
+        sTotal.total++;
+        sTotal.stakeK += CFG.stakeK;
+        sTotal.payoutK += dayPayoutK;
+        sTotal.profitK += dayProfitK;
+        if (isHit) {
+            sTotal.wins++;
+            sTotal.curLoss = 0;
+        } else {
+            sTotal.curLoss++;
+            if (sTotal.curLoss > sTotal.maxLossStreak) sTotal.maxLossStreak = sTotal.curLoss;
+        }
+        if (isHitX3) sTotal.x3Wins++;
+        if (isHitX2) sTotal.x2Wins++;
+        if (isHitX1) sTotal.x1Wins++;
 
-            if (s.profitK > s.peak) s.peak = s.profitK;
-            const dd = s.peak - s.profitK;
-            if (dd > s.maxDD) s.maxDD = dd;
-        });
+        if (sTotal.profitK > sTotal.peak) sTotal.peak = sTotal.profitK;
+        const dd = sTotal.peak - sTotal.profitK;
+        if (dd > sTotal.maxDD) sTotal.maxDD = dd;
 
         settledLedger.push({
             date: dt,
             predictionDate: dt,
-            year: is2025 ? 2025 : 2026,
+            year: 2026,
             action: 'BET',
             actual: actualSpecial,
             actualSpecial,
@@ -257,8 +254,8 @@ async function generate() {
         latestDataDate: latestDate,
         pendingPredictionDate: targetDate,
         summary: {
-            y2025: buildSummaryObj(s2025),
-            y2026: buildSummaryObj(s2026),
+            liveCombat: buildSummaryObj(sTotal),
+            y2026: buildSummaryObj(sTotal),
             total2Years: buildSummaryObj(sTotal)
         },
         latestRecommendation,
@@ -269,10 +266,8 @@ async function generate() {
     fs.writeFileSync(targetCacheFile, JSON.stringify(payload, null, 2), 'utf8');
 
     console.log(`\n🎉 Generated cache successfully to: ${targetCacheFile}`);
-    console.log(`Cache file size: ${(fs.statSync(targetCacheFile).size / 1024 / 1024).toFixed(2)} MB`);
-    console.log(`Summary 2025: Win ${s2025.wins}/${s2025.total} (${(s2025.wins/s2025.total*100).toFixed(1)}%), Profit: +${(s2025.profitK/1000).toFixed(1)}M, ROI: +${(s2025.profitK/s2025.stakeK*100).toFixed(1)}%`);
-    console.log(`Summary 2026: Win ${s2026.wins}/${s2026.total} (${(s2026.wins/s2026.total*100).toFixed(1)}%), Profit: +${(s2026.profitK/1000).toFixed(1)}M, ROI: +${(s2026.profitK/s2026.stakeK*100).toFixed(1)}%`);
-    console.log(`Summary 2-Year: Win ${sTotal.wins}/${sTotal.total} (${(sTotal.wins/sTotal.total*100).toFixed(1)}%), Profit: +${(sTotal.profitK/1000).toFixed(1)}M, ROI: +${(sTotal.profitK/sTotal.stakeK*100).toFixed(1)}%`);
+    console.log(`Cache file size: ${(fs.statSync(targetCacheFile).size / 1024).toFixed(1)} KB`);
+    console.log(`Summary Live Phase (from ${START_DATE}): Win ${sTotal.wins}/${sTotal.total} (${(sTotal.wins/sTotal.total*100).toFixed(1)}%), Profit: ${(sTotal.profitK/1000).toFixed(1)}M, ROI: ${(sTotal.profitK/sTotal.stakeK*100).toFixed(1)}%`);
 }
 
 generate().catch(console.error);
