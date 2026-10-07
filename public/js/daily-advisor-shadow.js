@@ -60,6 +60,8 @@
     let currentDeStrategy = 'dropoff40';         // 'dropoff40', 'vip36', or 'triCore24'
     let currentShadowXienStrategy = 'xien5';    // 'xien5', 'triCoreXien5', 'quay11', or 'goldenX2'
     let currentShadowYear = '2026';              // '2026', '2025', or 'all'
+    let currentShadowPhase = 'from0710';         // 'from0710' (Bắt đầu từ 07/10/2026) hoặc 'allHistory'
+    const SHADOW_START_DATE = '2026-10-07';      // Mốc thời gian bắt đầu đối soát theo yêu cầu
     let cachedAdvisorData = null;
     let availableDatesList = [];
 
@@ -454,7 +456,7 @@
         const records = Array.isArray(data.records) ? data.records : [];
         const latestRecord = records.at(-1) || {};
 
-        const targetDate = deDropoff?.latestRecommendation?.targetDate || triCore?.latestRecommendation?.targetDate || autoBest?.targetDate || latestRecord.predictionDate || '2026-10-05';
+        const targetDate = deDropoff?.latestRecommendation?.targetDate || triCore?.latestRecommendation?.targetDate || data.pendingPredictionDate || autoBest?.targetDate || latestRecord.predictionDate || '2026-10-07';
         byId('shadowTargetDate').textContent = formatDateVi(targetDate);
 
         // 1. Column 1: Đề Khử Trùng Dropoff 40s (X3/X2/X1) vs. Đề 36s VIP Sweet-Spot vs. Đề Tri-Core 24s
@@ -1286,22 +1288,26 @@
         if (btnMasterSuiteTriCore) btnMasterSuiteTriCore.onclick = () => switchMasterSuite('suiteTriCore');
         if (btnMasterSuiteVip) btnMasterSuiteVip.onclick = () => switchMasterSuite('suiteVipSweetSpot');
 
-        // Setup Year Filter Group (2026, 2025, Tất cả 634 kỳ)
+        // Setup Year Filter Group (Phase: from0710 vs allHistory, or year filter)
         function setupYearFilters() {
             const yearBtns = document.querySelectorAll('#shadowYearFilterGroup .shadow-year-btn');
             yearBtns.forEach(btn => {
                 btn.onclick = () => {
+                    const phase = btn.getAttribute('data-shadow-phase');
+                    if (phase) {
+                        currentShadowPhase = phase;
+                    }
                     const yr = btn.getAttribute('data-shadow-year');
-                    if (!yr || yr === currentShadowYear) return;
-                    currentShadowYear = yr;
+                    if (yr) currentShadowYear = yr;
+
                     yearBtns.forEach(b => {
                         if (b === btn) {
-                            b.className = 'shadow-year-btn active px-2.5 py-0.5 rounded-lg bg-indigo-600 text-white font-bold text-[11px] transition-all';
+                            b.className = 'shadow-year-btn active px-2.5 py-0.5 rounded-lg bg-emerald-600 text-white font-bold text-[11px] transition-all flex items-center gap-1 shadow-xs cursor-pointer';
                         } else {
-                            b.className = 'shadow-year-btn px-2.5 py-0.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 font-bold text-[11px] transition-all';
+                            b.className = 'shadow-year-btn px-2.5 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-[11px] transition-all flex items-center gap-1 cursor-pointer';
                         }
                     });
-                    computeAndRenderMetrics(currentStrategyMode);
+                    renderShadowSettledTable();
                 };
             });
         }
@@ -1844,7 +1850,7 @@
         const loLatestRec = loDropoff?.latestRecommendation;
         const dropoffLatestRec = deDropoff?.latestRecommendation;
         const loTriLatestRec = loTriHarmonic?.latestRecommendation;
-        const targetDate = dropoffLatestRec?.targetDate || loLatestRec?.targetDate || loTriLatestRec?.targetDate || '2026-10-05';
+        const targetDate = dropoffLatestRec?.targetDate || loLatestRec?.targetDate || loTriLatestRec?.targetDate || data.pendingPredictionDate || '2026-10-07';
 
         const allDates = Array.from(new Set([
             ...deDropoffLedger.map(r => r.date),
@@ -1854,7 +1860,11 @@
             ...loTop5XienLedger.map(r => r.date)
         ])).filter(Boolean).sort();
 
-        const fullDatesSorted = Array.from(new Set([targetDate, ...allDates])).filter(Boolean).sort().reverse();
+        let filteredDatesForSelector = allDates;
+        if (currentShadowPhase === 'from0710') {
+            filteredDatesForSelector = allDates.filter(d => d >= SHADOW_START_DATE);
+        }
+        const fullDatesSorted = Array.from(new Set([targetDate, ...filteredDatesForSelector])).filter(Boolean).sort().reverse();
         availableDatesList = fullDatesSorted;
 
         const rowCountEl = byId('shadowDiaryRowCount');
@@ -1866,11 +1876,13 @@
         const totalProfitEl = byId('shadowDiaryTotalProfit');
 
         // =====================================================================
-        // CATEGORY: ĐỀ DROPOFF 40S (THỰC CHIẾN TỪ 17/09/2026: 18 KỲ)
+        // CATEGORY: ĐỀ DROPOFF 40S
         // =====================================================================
         if (currentShadowCategory === 'deDropoff') {
             let dropoffRows = deDropoffLedger;
-            if (currentShadowYear === '2026') {
+            if (currentShadowPhase === 'from0710') {
+                dropoffRows = dropoffRows.filter(r => (r.date || '') >= SHADOW_START_DATE);
+            } else if (currentShadowYear === '2026') {
                 dropoffRows = dropoffRows.filter(r => r.year === 2026 || String(r.date).startsWith('2026'));
             }
 
@@ -1884,11 +1896,11 @@
             const totalPayoutK = dropoffRows.reduce((sum, r) => sum + (r.payoutK || 0), 0);
             const totalProfitK = totalPayoutK - totalStakeK;
 
-            if (rowCountEl) rowCountEl.textContent = `${totalDays}`;
+            if (rowCountEl) rowCountEl.textContent = (currentShadowPhase === 'from0710' && totalDays === 0) ? '0 (Kỳ 1 ngày 07/10 đang chờ mở 18:30)' : `${totalDays}`;
             if (winCountEl) winCountEl.textContent = `${wins} ngày trúng (${totalDays - wins} trượt)`;
             if (winRateEl) winRateEl.textContent = `${hitRate}%`;
             if (hitsTagEl) hitsTagEl.classList.add('hidden');
-            if (profitLabelEl) profitLabelEl.textContent = '💰 Lãi Lũy Kế Đề Đa Động Cơ 40s (Đánh Phẳng 1M/số):';
+            if (profitLabelEl) profitLabelEl.textContent = (currentShadowPhase === 'from0710') ? '💰 Lãi Lũy Kế Đề Đa Động Cơ 40s (Từ 07/10/2026):' : '💰 Lãi Lũy Kế Đề Đa Động Cơ 40s (Đánh Phẳng 1M/số):';
             if (totalProfitEl) {
                 totalProfitEl.textContent = formatMoneyK(totalProfitK);
                 totalProfitEl.className = `font-black text-sm font-mono ${totalProfitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
@@ -1909,7 +1921,7 @@
             `;
 
             let pendingRowHtml = '';
-            const targetDateFormatted = formatDateVi(dropoffLatestRec?.targetDate || '2026-10-05');
+            const targetDateFormatted = formatDateVi(dropoffLatestRec?.targetDate || targetDate);
             pendingRowHtml = `
                 <tr class="border-b border-amber-500/20 bg-amber-950/20 hover:bg-amber-950/30 transition-colors font-mono text-xs">
                     <td class="py-3 px-3 font-bold text-amber-300">
@@ -1931,7 +1943,7 @@
                     <td class="py-3 px-3 text-right font-bold text-amber-300">⏳ Chờ kết toán</td>
                     <td class="py-3 px-3 text-right font-bold text-emerald-300">${formatMoneyK(totalProfitK)}</td>
                     <td class="py-3 px-3 text-center">
-                        <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-200 hover:text-slate-950 border border-amber-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${dropoffLatestRec?.targetDate || '2026-10-05'}">
+                        <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-200 hover:text-slate-950 border border-amber-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${dropoffLatestRec?.targetDate || targetDate}">
                             <i class="bi bi-eye"></i> 40 Số
                         </button>
                     </td>
@@ -1983,7 +1995,11 @@
                 `;
             }).join('');
 
-            tbody.innerHTML = pendingRowHtml + (settledRowsHtml || '<tr><td colspan="9" class="py-8 text-center text-xs text-slate-400">Không có dữ liệu đối soát</td></tr>');
+            const emptyMessageHtml = (currentShadowPhase === 'from0710')
+                ? `<tr><td colspan="9" class="py-8 text-center text-xs text-amber-300 font-mono bg-amber-950/15 border-t border-amber-500/20"><i class="bi bi-clock-history text-base text-amber-400"></i> Bắt đầu đối soát từ kỳ mở thưởng 07/10/2026. Kỳ 1 hôm nay đang niêm phong khóa cược ở trên, chờ kết quả mở thưởng 18:30.<div class="text-[11px] text-slate-400 mt-1">Toàn bộ dữ liệu trước 07/10 đã được bỏ qua theo yêu cầu đối soát mới.</div></td></tr>`
+                : '<tr><td colspan="9" class="py-8 text-center text-xs text-slate-400">Không có dữ liệu đối soát</td></tr>';
+
+            tbody.innerHTML = pendingRowHtml + (settledRowsHtml || emptyMessageHtml);
             return;
         }
 
@@ -1992,7 +2008,9 @@
         // =====================================================================
         if (currentShadowCategory === 'loXien5') {
             let rows = loLedger;
-            if (currentShadowYear === '2026') {
+            if (currentShadowPhase === 'from0710') {
+                rows = rows.filter(r => (r.date || '') >= SHADOW_START_DATE);
+            } else if (currentShadowYear === '2026') {
                 rows = rows.filter(r => r.year === 2026 || String(r.date).startsWith('2026'));
             }
 
@@ -2018,11 +2036,11 @@
             const totalStakeK = totalDays * 55000;
             const totalProfitK = runningCumProfitK;
 
-            if (rowCountEl) rowCountEl.textContent = `${totalDays}`;
+            if (rowCountEl) rowCountEl.textContent = (currentShadowPhase === 'from0710' && totalDays === 0) ? '0 (Kỳ 1 ngày 07/10 đang chờ mở 18:30)' : `${totalDays}`;
             if (winCountEl) winCountEl.textContent = `${winsCount} ngày thắng (${totalDays - winsCount} trượt)`;
             if (winRateEl) winRateEl.textContent = `${hitRate}% (Ăn ≥3 con)`;
             if (hitsTagEl) hitsTagEl.classList.add('hidden');
-            if (profitLabelEl) profitLabelEl.textContent = '💰 Lãi Lũy Kế Lô Xiên 5 (5 Dàn Xiên 4):';
+            if (profitLabelEl) profitLabelEl.textContent = (currentShadowPhase === 'from0710') ? '💰 Lãi Lũy Kế Lô Xiên 5 (Từ 07/10/2026):' : '💰 Lãi Lũy Kế Lô Xiên 5 (5 Dàn Xiên 4):';
             if (totalProfitEl) {
                 totalProfitEl.textContent = formatMoneyK(totalProfitK);
                 totalProfitEl.className = `font-black text-sm font-mono ${totalProfitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
@@ -2132,7 +2150,11 @@
                 `;
             }).join('');
 
-            tbody.innerHTML = pendingRowHtml + (settledRowsHtml || '<tr><td colspan="10" class="py-8 text-center text-xs text-slate-400">Không có dữ liệu đối soát</td></tr>');
+            const emptyMessageHtml = (currentShadowPhase === 'from0710')
+                ? `<tr><td colspan="10" class="py-8 text-center text-xs text-amber-300 font-mono bg-amber-950/15 border-t border-amber-500/20"><i class="bi bi-clock-history text-base text-amber-400"></i> Bắt đầu đối soát từ kỳ mở thưởng 07/10/2026. Kỳ 1 hôm nay đang niêm phong khóa cược ở hàng trên, chờ kết quả mở thưởng 18:30.<div class="text-[11px] text-slate-400 mt-1">Toàn bộ dữ liệu trước 07/10 đã được bỏ qua theo yêu cầu đối soát mới.</div></td></tr>`
+                : '<tr><td colspan="10" class="py-8 text-center text-xs text-slate-400">Không có dữ liệu đối soát</td></tr>';
+
+            tbody.innerHTML = pendingRowHtml + (settledRowsHtml || emptyMessageHtml);
             return;
         }
 
@@ -2141,7 +2163,9 @@
         // =====================================================================
         if (currentShadowCategory === 'de36') {
             let dropoffRows = deDropoffLedger;
-            if (currentShadowYear === '2026') {
+            if (currentShadowPhase === 'from0710') {
+                dropoffRows = dropoffRows.filter(r => (r.date || '') >= SHADOW_START_DATE);
+            } else if (currentShadowYear === '2026') {
                 dropoffRows = dropoffRows.filter(r => r.year === 2026 || String(r.date).startsWith('2026'));
             } else if (currentShadowYear === '2025') {
                 dropoffRows = dropoffRows.filter(r => r.year === 2025 || String(r.date).startsWith('2025'));
@@ -2177,11 +2201,11 @@
             const totalStakeK = totalDays * 36000;
             const totalProfitK = runningProfitK;
 
-            if (rowCountEl) rowCountEl.textContent = `${totalDays}`;
+            if (rowCountEl) rowCountEl.textContent = (currentShadowPhase === 'from0710' && totalDays === 0) ? '0 (Kỳ 1 ngày 07/10 đang chờ mở 18:30)' : `${totalDays}`;
             if (winCountEl) winCountEl.textContent = `${wins} ngày trúng (${totalDays - wins} trượt)`;
             if (winRateEl) winRateEl.textContent = `${hitRate}% (Hòa vốn 42.9%)`;
             if (hitsTagEl) hitsTagEl.classList.add('hidden');
-            if (profitLabelEl) profitLabelEl.textContent = '💰 Lãi Lũy Kế ⭐ Đề 36 Số VIP Sweet-Spot (1M/số · Vốn 36M):';
+            if (profitLabelEl) profitLabelEl.textContent = (currentShadowPhase === 'from0710') ? '💰 Lãi Lũy Kế ⭐ Đề 36 Số VIP Sweet-Spot (Từ 07/10/2026):' : '💰 Lãi Lũy Kế ⭐ Đề 36 Số VIP Sweet-Spot (1M/số · Vốn 36M):';
             if (totalProfitEl) {
                 totalProfitEl.textContent = formatMoneyK(totalProfitK);
                 totalProfitEl.className = `font-black text-sm font-mono ${totalProfitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
@@ -2202,7 +2226,7 @@
             `;
 
             let pendingRowHtml = '';
-            const targetDateFormatted = formatDateVi(dropoffLatestRec?.targetDate || '2026-10-05');
+            const targetDateFormatted = formatDateVi(dropoffLatestRec?.targetDate || targetDate);
             pendingRowHtml = `
                 <tr class="border-b border-amber-500/20 bg-amber-950/20 hover:bg-amber-950/30 transition-colors font-mono text-xs">
                     <td class="py-3 px-3 font-bold text-amber-300">
@@ -2224,7 +2248,7 @@
                     <td class="py-3 px-3 text-right font-bold text-amber-300">⏳ Chờ kết toán</td>
                     <td class="py-3 px-3 text-right font-bold text-emerald-300">${formatMoneyK(totalProfitK)}</td>
                     <td class="py-3 px-3 text-center">
-                        <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-200 hover:text-slate-950 border border-amber-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${dropoffLatestRec?.targetDate || '2026-10-05'}">
+                        <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-200 hover:text-slate-950 border border-amber-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${dropoffLatestRec?.targetDate || targetDate}">
                             <i class="bi bi-eye"></i> 36 Số
                         </button>
                     </td>
@@ -2268,7 +2292,11 @@
                 `;
             }).join('');
 
-            tbody.innerHTML = pendingRowHtml + (settledRowsHtml || '<tr><td colspan="9" class="py-8 text-center text-xs text-slate-400">Không có dữ liệu đối soát</td></tr>');
+            const emptyMessageHtml = (currentShadowPhase === 'from0710')
+                ? `<tr><td colspan="9" class="py-8 text-center text-xs text-amber-300 font-mono bg-amber-950/15 border-t border-amber-500/20"><i class="bi bi-clock-history text-base text-amber-400"></i> Bắt đầu đối soát từ kỳ mở thưởng 07/10/2026. Kỳ 1 hôm nay đang niêm phong khóa cược ở hàng trên, chờ kết quả mở thưởng 18:30.<div class="text-[11px] text-slate-400 mt-1">Toàn bộ dữ liệu trước 07/10 đã được bỏ qua theo yêu cầu đối soát mới.</div></td></tr>`
+                : '<tr><td colspan="9" class="py-8 text-center text-xs text-slate-400">Không có dữ liệu đối soát</td></tr>';
+
+            tbody.innerHTML = pendingRowHtml + (settledRowsHtml || emptyMessageHtml);
             return;
         }
 
@@ -2277,7 +2305,9 @@
         // =====================================================================
         if (currentShadowCategory === 'loTop2') {
             let rows = loLedger;
-            if (currentShadowYear === '2026') {
+            if (currentShadowPhase === 'from0710') {
+                rows = rows.filter(r => (r.date || '') >= SHADOW_START_DATE);
+            } else if (currentShadowYear === '2026') {
                 rows = rows.filter(r => r.year === 2026 || String(r.date).startsWith('2026'));
             } else if (currentShadowYear === '2025') {
                 rows = rows.filter(r => r.year === 2025 || String(r.date).startsWith('2025'));
@@ -2316,14 +2346,14 @@
             const hitRate = totalDays > 0 ? (winsCount / totalDays * 100).toFixed(1) : '0.0';
             const totalProfitK = runningProfitK;
 
-            if (rowCountEl) rowCountEl.textContent = `${totalDays}`;
+            if (rowCountEl) rowCountEl.textContent = (currentShadowPhase === 'from0710' && totalDays === 0) ? '0 (Kỳ 1 ngày 07/10 đang chờ mở 18:30)' : `${totalDays}`;
             if (winCountEl) winCountEl.textContent = `${winsCount} ngày thắng (${totalDays - winsCount} trượt)`;
             if (winRateEl) winRateEl.textContent = `${hitRate}% (Thắng khi nổ ≥1 nháy)`;
             if (hitsTagEl) {
                 hitsTagEl.classList.remove('hidden');
                 if (hitsCountEl) hitsCountEl.textContent = `${totalHits.toLocaleString('vi-VN')} (${(totalHits / Math.max(1, totalDays)).toFixed(2)} nháy/ngày)`;
             }
-            if (profitLabelEl) profitLabelEl.textContent = '💰 Lãi Lũy Kế ⚡ Song Thủ Lô Top 2 (Vốn 4.4M · Ăn 8M/nháy):';
+            if (profitLabelEl) profitLabelEl.textContent = (currentShadowPhase === 'from0710') ? '💰 Lãi Lũy Kế ⚡ Song Thủ Lô Top 2 (Từ 07/10/2026):' : '💰 Lãi Lũy Kế ⚡ Song Thủ Lô Top 2 (Vốn 4.4M · Ăn 8M/nháy):';
             if (totalProfitEl) {
                 totalProfitEl.textContent = formatMoneyK(totalProfitK);
                 totalProfitEl.className = `font-black text-sm font-mono ${totalProfitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
@@ -2415,7 +2445,11 @@
                 `;
             }).join('');
 
-            tbody.innerHTML = pendingRowHtml + (settledRowsHtml || '<tr><td colspan="9" class="py-8 text-center text-xs text-slate-400">Không có dữ liệu đối soát</td></tr>');
+            const emptyMessageHtml = (currentShadowPhase === 'from0710')
+                ? `<tr><td colspan="9" class="py-8 text-center text-xs text-amber-300 font-mono bg-amber-950/15 border-t border-amber-500/20"><i class="bi bi-clock-history text-base text-amber-400"></i> Bắt đầu đối soát từ kỳ mở thưởng 07/10/2026. Kỳ 1 hôm nay đang niêm phong khóa cược ở hàng trên, chờ kết quả mở thưởng 18:30.<div class="text-[11px] text-slate-400 mt-1">Toàn bộ dữ liệu trước 07/10 đã được bỏ qua theo yêu cầu đối soát mới.</div></td></tr>`
+                : '<tr><td colspan="9" class="py-8 text-center text-xs text-slate-400">Không có dữ liệu đối soát</td></tr>';
+
+            tbody.innerHTML = pendingRowHtml + (settledRowsHtml || emptyMessageHtml);
             return;
         }
 
@@ -2424,7 +2458,9 @@
         // =====================================================================
         if (currentShadowCategory === 'loQuay11') {
             let rows = loLedger;
-            if (currentShadowYear === '2026') {
+            if (currentShadowPhase === 'from0710') {
+                rows = rows.filter(r => (r.date || '') >= SHADOW_START_DATE);
+            } else if (currentShadowYear === '2026') {
                 rows = rows.filter(r => r.year === 2026 || String(r.date).startsWith('2026'));
             } else if (currentShadowYear === '2025') {
                 rows = rows.filter(r => r.year === 2025 || String(r.date).startsWith('2025'));
@@ -2452,11 +2488,11 @@
             const hitRate = totalDays > 0 ? (winsCount / totalDays * 100).toFixed(1) : '0.0';
             const totalProfitK = runningProfitK;
 
-            if (rowCountEl) rowCountEl.textContent = `${totalDays}`;
+            if (rowCountEl) rowCountEl.textContent = (currentShadowPhase === 'from0710' && totalDays === 0) ? '0 (Kỳ 1 ngày 07/10 đang chờ mở 18:30)' : `${totalDays}`;
             if (winCountEl) winCountEl.textContent = `${winsCount} ngày thắng (${totalDays - winsCount} trượt)`;
             if (winRateEl) winRateEl.textContent = `${hitRate}% (Nổ ≥2 con là có lãi)`;
             if (hitsTagEl) hitsTagEl.classList.add('hidden');
-            if (profitLabelEl) profitLabelEl.textContent = '💰 Lãi Lũy Kế 🚀 Lô Xiên Quây 11 Vé (Top 4 QMBF v6 · Vốn 11M):';
+            if (profitLabelEl) profitLabelEl.textContent = (currentShadowPhase === 'from0710') ? '💰 Lãi Lũy Kế 🚀 Lô Xiên Quây 11 Vé (Từ 07/10/2026):' : '💰 Lãi Lũy Kế 🚀 Lô Xiên Quây 11 Vé (Top 4 QMBF v6 · Vốn 11M):';
             if (totalProfitEl) {
                 totalProfitEl.textContent = formatMoneyK(totalProfitK);
                 totalProfitEl.className = `font-black text-sm font-mono ${totalProfitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
@@ -2561,7 +2597,11 @@
                 `;
             }).join('');
 
-            tbody.innerHTML = pendingRowHtml + (settledRowsHtml || '<tr><td colspan="10" class="py-8 text-center text-xs text-slate-400">Không có dữ liệu đối soát</td></tr>');
+            const emptyMessageHtml = (currentShadowPhase === 'from0710')
+                ? `<tr><td colspan="10" class="py-8 text-center text-xs text-amber-300 font-mono bg-amber-950/15 border-t border-amber-500/20"><i class="bi bi-clock-history text-base text-amber-400"></i> Bắt đầu đối soát từ kỳ mở thưởng 07/10/2026. Kỳ 1 hôm nay đang niêm phong khóa cược ở hàng trên, chờ kết quả mở thưởng 18:30.<div class="text-[11px] text-slate-400 mt-1">Toàn bộ dữ liệu trước 07/10 đã được bỏ qua theo yêu cầu đối soát mới.</div></td></tr>`
+                : '<tr><td colspan="10" class="py-8 text-center text-xs text-slate-400">Không có dữ liệu đối soát</td></tr>';
+
+            tbody.innerHTML = pendingRowHtml + (settledRowsHtml || emptyMessageHtml);
             return;
         }
 
@@ -2574,7 +2614,9 @@
             const triXienMap = new Map((loTop5Xien?.settledLedger || []).map(r => [r.date, r]));
 
             let baseDates = (loTriHarmonic?.settledLedger || []).map(r => r.date).filter(Boolean).sort();
-            if (currentShadowYear === '2026') {
+            if (currentShadowPhase === 'from0710') {
+                baseDates = baseDates.filter(d => d >= SHADOW_START_DATE);
+            } else if (currentShadowYear === '2026') {
                 baseDates = baseDates.filter(d => String(d).startsWith('2026'));
             }
 
@@ -2658,11 +2700,11 @@
             const betDays = rowsData.filter(r => !r.deAbstain).length;
             const abstainDays = totalDays - betDays;
 
-            if (rowCountEl) rowCountEl.textContent = `${totalDays} (${betDays} cược / ${abstainDays} né)`;
+            if (rowCountEl) rowCountEl.textContent = (currentShadowPhase === 'from0710' && totalDays === 0) ? '0 (Kỳ 1 ngày 07/10 đang chờ mở 18:30)' : `${totalDays} (${betDays} cược / ${abstainDays} né)`;
             if (winCountEl) winCountEl.textContent = `${suiteWins} ngày thắng tổng (${totalDays - suiteWins} ngày âm)`;
             if (winRateEl) winRateEl.textContent = `${suiteWinRate}%`;
             if (hitsTagEl) hitsTagEl.classList.add('hidden');
-            if (profitLabelEl) profitLabelEl.textContent = '💰 Lãi Lũy Kế Hệ 2 Tri-Core Tam Trụ (2026):';
+            if (profitLabelEl) profitLabelEl.textContent = (currentShadowPhase === 'from0710') ? '💰 Lãi Lũy Kế Hệ 2 Tri-Core Tam Trụ (Từ 07/10/2026):' : '💰 Lãi Lũy Kế Hệ 2 Tri-Core Tam Trụ (2026):';
             if (totalProfitEl) {
                 totalProfitEl.innerHTML = `
                     <div class="flex items-center gap-2 flex-wrap text-xs font-mono">
@@ -2857,7 +2899,11 @@
                 `;
             }).join('');
 
-            tbody.innerHTML = pendingRowHtml + (settledRowsHtml || '<tr><td colspan="11" class="py-8 text-center text-xs text-slate-400">Không có dữ liệu đối soát</td></tr>');
+            const emptyMessageHtml = (currentShadowPhase === 'from0710')
+                ? `<tr><td colspan="11" class="py-8 text-center text-xs text-amber-300 font-mono bg-amber-950/15 border-t border-amber-500/20"><i class="bi bi-clock-history text-base text-amber-400"></i> Bắt đầu đối soát từ kỳ mở thưởng 07/10/2026. Kỳ 1 hôm nay đang niêm phong khóa cược ở hàng trên, chờ kết quả mở thưởng 18:30.<div class="text-[11px] text-slate-400 mt-1">Toàn bộ dữ liệu trước 07/10 đã được bỏ qua theo yêu cầu đối soát mới.</div></td></tr>`
+                : '<tr><td colspan="11" class="py-8 text-center text-xs text-slate-400">Không có dữ liệu đối soát</td></tr>';
+
+            tbody.innerHTML = pendingRowHtml + (settledRowsHtml || emptyMessageHtml);
             return;
         }
 
@@ -2869,7 +2915,9 @@
             const loMap = new Map(loLedger.map(r => [r.date, r]));
 
             let baseDates = deDropoffLedger.map(r => r.date).filter(Boolean).sort();
-            if (currentShadowYear === '2026') {
+            if (currentShadowPhase === 'from0710') {
+                baseDates = baseDates.filter(d => d >= SHADOW_START_DATE);
+            } else if (currentShadowYear === '2026') {
                 baseDates = baseDates.filter(d => String(d).startsWith('2026'));
             }
 
@@ -2951,11 +2999,11 @@
             const suiteWins = rowsData.filter(r => r.isSuiteWin).length;
             const suiteWinRate = totalDays > 0 ? (suiteWins / totalDays * 100).toFixed(1) : '0.0';
 
-            if (rowCountEl) rowCountEl.textContent = `${totalDays}`;
+            if (rowCountEl) rowCountEl.textContent = (currentShadowPhase === 'from0710' && totalDays === 0) ? '0 (Kỳ 1 ngày 07/10 đang chờ mở 18:30)' : `${totalDays}`;
             if (winCountEl) winCountEl.textContent = `${suiteWins} ngày thắng (${totalDays - suiteWins} ngày âm)`;
             if (winRateEl) winRateEl.textContent = `${suiteWinRate}%`;
             if (hitsTagEl) hitsTagEl.classList.add('hidden');
-            if (profitLabelEl) profitLabelEl.textContent = '💰 Lãi Lũy Kế ⭐ HỆ 3: VIP Sweet-Spot (Vốn 51.4M/ngày):';
+            if (profitLabelEl) profitLabelEl.textContent = (currentShadowPhase === 'from0710') ? '💰 Lãi Lũy Kế ⭐ HỆ 3: VIP Sweet-Spot (Từ 07/10/2026):' : '💰 Lãi Lũy Kế ⭐ HỆ 3: VIP Sweet-Spot (Vốn 51.4M/ngày):';
             if (totalProfitEl) {
                 totalProfitEl.innerHTML = `
                     <div class="flex items-center gap-2 flex-wrap text-xs font-mono">
@@ -3125,7 +3173,11 @@
                 `;
             }).join('');
 
-            tbody.innerHTML = pendingRowHtml + (settledRowsHtml || '<tr><td colspan="11" class="py-8 text-center text-xs text-slate-400">Không có dữ liệu đối soát</td></tr>');
+            const emptyMessageHtml = (currentShadowPhase === 'from0710')
+                ? `<tr><td colspan="11" class="py-8 text-center text-xs text-amber-300 font-mono bg-amber-950/15 border-t border-amber-500/20"><i class="bi bi-clock-history text-base text-amber-400"></i> Bắt đầu đối soát từ kỳ mở thưởng 07/10/2026. Kỳ 1 hôm nay đang niêm phong khóa cược ở hàng trên, chờ kết quả mở thưởng 18:30.<div class="text-[11px] text-slate-400 mt-1">Toàn bộ dữ liệu trước 07/10 đã được bỏ qua theo yêu cầu đối soát mới.</div></td></tr>`
+                : '<tr><td colspan="11" class="py-8 text-center text-xs text-slate-400">Không có dữ liệu đối soát</td></tr>';
+
+            tbody.innerHTML = pendingRowHtml + (settledRowsHtml || emptyMessageHtml);
             return;
         }
 
@@ -3134,7 +3186,9 @@
         // =====================================================================
         if (currentShadowCategory === 'loTriCore') {
             let baseRows = loTriHarmonic?.settledLedger || [];
-            if (currentShadowYear === '2026') {
+            if (currentShadowPhase === 'from0710') {
+                baseRows = baseRows.filter(r => (r.date || '') >= SHADOW_START_DATE);
+            } else if (currentShadowYear === '2026') {
                 baseRows = baseRows.filter(r => r.year === 2026 || String(r.date).startsWith('2026'));
             }
 
@@ -3168,14 +3222,14 @@
             const flatWinRate = totalDays > 0 ? (flatWins / totalDays * 100).toFixed(1) : '0.0';
             const tierWinRate = totalDays > 0 ? (tierWins / totalDays * 100).toFixed(1) : '0.0';
 
-            if (rowCountEl) rowCountEl.textContent = `${totalDays}`;
+            if (rowCountEl) rowCountEl.textContent = (currentShadowPhase === 'from0710' && totalDays === 0) ? '0 (Kỳ 1 ngày 07/10 đang chờ mở 18:30)' : `${totalDays}`;
             if (winCountEl) winCountEl.innerHTML = `<span class="text-teal-300">Phẳng: ${flatWins}w (${flatWinRate}%)</span> · <span class="text-amber-300">Tầng: ${tierWins}w (${tierWinRate}%)</span>`;
             if (winRateEl) winRateEl.textContent = `${flatWinRate}% / ${tierWinRate}%`;
             if (hitsTagEl) {
                 hitsTagEl.classList.remove('hidden');
                 if (hitsCountEl) hitsCountEl.textContent = `${totalHits.toLocaleString('vi-VN')} (${(totalHits / Math.max(1, totalDays)).toFixed(2)} nháy/ngày)`;
             }
-            if (profitLabelEl) profitLabelEl.textContent = `💰 Lãi Lũy Kế Lô Tri-Core Tam Trụ (${topNLabel} · 2026):`;
+            if (profitLabelEl) profitLabelEl.textContent = (currentShadowPhase === 'from0710') ? `💰 Lãi Lũy Kế Lô Tri-Core Tam Trụ (${topNLabel} · Từ 07/10/2026):` : `💰 Lãi Lũy Kế Lô Tri-Core Tam Trụ (${topNLabel} · 2026):`;
             if (totalProfitEl) {
                 totalProfitEl.innerHTML = `
                     <div class="flex items-center gap-2 flex-wrap text-xs font-mono">
@@ -3318,7 +3372,11 @@
                 `;
             }).join('');
 
-            tbody.innerHTML = pendingRowHtml + (settledRowsHtml || '<tr><td colspan="9" class="py-8 text-center text-xs text-slate-400">Không có dữ liệu đối soát</td></tr>');
+            const emptyMessageHtml = (currentShadowPhase === 'from0710')
+                ? `<tr><td colspan="9" class="py-8 text-center text-xs text-amber-300 font-mono bg-amber-950/15 border-t border-amber-500/20"><i class="bi bi-clock-history text-base text-amber-400"></i> Bắt đầu đối soát từ kỳ mở thưởng 07/10/2026. Kỳ 1 hôm nay đang niêm phong khóa cược ở hàng trên, chờ kết quả mở thưởng 18:30.<div class="text-[11px] text-slate-400 mt-1">Toàn bộ dữ liệu trước 07/10 đã được bỏ qua theo yêu cầu đối soát mới.</div></td></tr>`
+                : '<tr><td colspan="9" class="py-8 text-center text-xs text-slate-400">Không có dữ liệu đối soát</td></tr>';
+
+            tbody.innerHTML = pendingRowHtml + (settledRowsHtml || emptyMessageHtml);
             return;
         }
 
@@ -3344,27 +3402,10 @@
         }
 
         let targetDates = baseDates;
-        if (currentShadowYear === '2026') {
+        if (currentShadowPhase === 'from0710') {
+            targetDates = baseDates.filter(d => d >= SHADOW_START_DATE);
+        } else if (currentShadowYear === '2026') {
             targetDates = baseDates.filter(d => String(d).startsWith('2026'));
-        }
-
-        if (!targetDates.length) {
-            if (rowCountEl) rowCountEl.textContent = '0';
-            if (winCountEl) winCountEl.textContent = '0';
-            if (winRateEl) winRateEl.textContent = '0.0%';
-            if (hitsTagEl) hitsTagEl.classList.add('hidden');
-            if (totalProfitEl) {
-                totalProfitEl.textContent = '0đ';
-                totalProfitEl.className = 'font-black text-sm font-mono text-slate-400';
-            }
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="9" class="py-8 text-center text-xs text-amber-300">
-                        <i class="bi bi-info-circle text-base"></i> Không có dữ liệu đối soát thực chiến từ 17/09/2026 cho hạng mục này.
-                    </td>
-                </tr>
-            `;
-            return;
         }
 
         let cumDeK = 0;
@@ -3467,11 +3508,11 @@
         if (currentShadowCategory === 'combo') {
             const comboWins = rowsData.filter(r => r.isComboWin).length;
             const comboWinRate = totalDays > 0 ? (comboWins / totalDays * 100).toFixed(1) : '0.0';
-            if (rowCountEl) rowCountEl.textContent = `${totalDays}`;
+            if (rowCountEl) rowCountEl.textContent = (currentShadowPhase === 'from0710' && totalDays === 0) ? '0 (Kỳ 1 ngày 07/10 đang chờ mở 18:30)' : `${totalDays}`;
             if (winCountEl) winCountEl.textContent = `${comboWins}`;
             if (winRateEl) winRateEl.textContent = `${comboWinRate}%`;
             if (hitsTagEl) hitsTagEl.classList.add('hidden');
-            if (profitLabelEl) profitLabelEl.textContent = '💰 Lãi Lũy Kế Tổng Hợp 3 Trụ Cột (Từ 17/09/2026):';
+            if (profitLabelEl) profitLabelEl.textContent = (currentShadowPhase === 'from0710') ? '💰 Lãi Lũy Kế Tổng Hợp 3 Trụ Cột (Từ 07/10/2026):' : '💰 Lãi Lũy Kế Tổng Hợp 3 Trụ Cột (Từ 17/09/2026):';
             if (totalProfitEl) {
                 totalProfitEl.innerHTML = `
                     <div class="flex items-center gap-2 flex-wrap text-xs font-mono">
@@ -3489,11 +3530,11 @@
             const issuedRows = rowsData.filter(r => !r.deAbstain);
             const deWins = issuedRows.filter(r => r.deHit).length;
             const deWinRate = issuedRows.length > 0 ? (deWins / issuedRows.length * 100).toFixed(1) : '0.0';
-            if (rowCountEl) rowCountEl.textContent = `${totalDays} (${issuedRows.length} cược / ${totalDays - issuedRows.length} né)`;
+            if (rowCountEl) rowCountEl.textContent = (currentShadowPhase === 'from0710' && totalDays === 0) ? '0 (Kỳ 1 ngày 07/10 đang chờ mở 18:30)' : `${totalDays} (${issuedRows.length} cược / ${totalDays - issuedRows.length} né)`;
             if (winCountEl) winCountEl.textContent = `${deWins}`;
             if (winRateEl) winRateEl.textContent = `${deWinRate}% (ngày cược)`;
             if (hitsTagEl) hitsTagEl.classList.add('hidden');
-            if (profitLabelEl) profitLabelEl.textContent = '💰 Lãi Lũy Kế Đề Tri-Core (2026):';
+            if (profitLabelEl) profitLabelEl.textContent = (currentShadowPhase === 'from0710') ? '💰 Lãi Lũy Kế Đề Tri-Core (Từ 07/10/2026):' : '💰 Lãi Lũy Kế Đề Tri-Core (2026):';
             if (totalProfitEl) {
                 totalProfitEl.textContent = formatMoneyK(cumDeK);
                 totalProfitEl.className = `font-black text-sm font-mono ${cumDeK >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
@@ -3505,14 +3546,14 @@
             const loTierWinRate = totalDays > 0 ? (loTierWins / totalDays * 100).toFixed(1) : '0.0';
             const totalHits = rowsData.reduce((acc, r) => acc + (r.loHits || 0), 0);
             const topNLabel = mode === 'top6' ? 'Top 6' : (mode === 'top8' ? 'Top 8' : (mode === 'top10' ? 'Top 10' : 'Top 7'));
-            if (rowCountEl) rowCountEl.textContent = `${totalDays}`;
+            if (rowCountEl) rowCountEl.textContent = (currentShadowPhase === 'from0710' && totalDays === 0) ? '0 (Kỳ 1 ngày 07/10 đang chờ mở 18:30)' : `${totalDays}`;
             if (winCountEl) winCountEl.innerHTML = `<span class="text-teal-300">Phẳng: ${loFlatWins}w (${loFlatWinRate}%)</span> · <span class="text-amber-300">Tầng: ${loTierWins}w (${loTierWinRate}%)</span>`;
             if (winRateEl) winRateEl.textContent = `${loFlatWinRate}% / ${loTierWinRate}%`;
             if (hitsTagEl) {
                 hitsTagEl.classList.remove('hidden');
                 if (hitsCountEl) hitsCountEl.textContent = `${totalHits.toLocaleString('vi-VN')}`;
             }
-            if (profitLabelEl) profitLabelEl.textContent = `💰 Lãi Lũy Kế Lô Sweet-Spot 27 (${topNLabel} · Từ 17/09):`;
+            if (profitLabelEl) profitLabelEl.textContent = (currentShadowPhase === 'from0710') ? `💰 Lãi Lũy Kế Lô Sweet-Spot 27 (${topNLabel} · Từ 07/10/2026):` : `💰 Lãi Lũy Kế Lô Sweet-Spot 27 (${topNLabel} · Từ 17/09):`;
             if (totalProfitEl) {
                 totalProfitEl.innerHTML = `
                     <div class="flex items-center gap-2 flex-wrap text-xs font-mono">
@@ -3914,7 +3955,12 @@
             }
         }).join('');
 
-        tbody.innerHTML = pendingRowHtml + settledRowsHtml;
+        const emptyColspan = (currentShadowCategory === 'combo') ? 11 : ((currentShadowCategory === 'de') ? 8 : 9);
+        const emptyMessageHtml = (currentShadowPhase === 'from0710')
+            ? `<tr><td colspan="${emptyColspan}" class="py-8 text-center text-xs text-amber-300 font-mono bg-amber-950/15 border-t border-amber-500/20"><i class="bi bi-clock-history text-base text-amber-400"></i> Bắt đầu đối soát từ kỳ mở thưởng 07/10/2026. Kỳ 1 hôm nay đang niêm phong khóa cược ở hàng trên, chờ kết quả mở thưởng 18:30.<div class="text-[11px] text-slate-400 mt-1">Toàn bộ dữ liệu trước 07/10 đã được bỏ qua theo yêu cầu đối soát mới.</div></td></tr>`
+            : `<tr><td colspan="${emptyColspan}" class="py-8 text-center text-xs text-slate-400">Không có dữ liệu đối soát</td></tr>`;
+
+        tbody.innerHTML = pendingRowHtml + (settledRowsHtml || emptyMessageHtml);
     }
 
     // =========================================================================
