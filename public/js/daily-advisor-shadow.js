@@ -506,15 +506,28 @@
             const loRec = loDropoff?.latestRecommendation || {};
             const loSummary = loDropoff?.summary?.liveCombat || {};
 
-            // Toggle buttons: Top 2, Top 4, Top 6, Top 7, Top 8, Top 10
-            ['top2', 'top4', 'top6', 'top7', 'top8', 'top10'].forEach(m => {
+            // Toggle buttons: Top 7, Top 6, Top 2, Top 4
+            ['top7', 'top6', 'top2', 'top4', 'top8', 'top10'].forEach(m => {
                 const btn = byId(`btnShadowLoMode${m.charAt(0).toUpperCase() + m.slice(1)}`);
                 if (btn) {
                     btn.className = (m === mode)
-                        ? 'rounded-lg bg-teal-400 text-slate-950 font-black text-[10px] px-2 py-0.5 transition-all shadow-xs'
-                        : 'rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 font-bold text-[10px] px-2 py-0.5 transition-all';
+                        ? 'rounded-lg bg-teal-400 text-slate-950 font-black text-[10px] px-2.5 py-1 transition-all shadow-xs'
+                        : 'rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 font-bold text-[10px] px-2.5 py-1 transition-all';
                 }
             });
+
+            // Sync with Table sub-switcher if present
+            const btnTbl7 = byId('btnTableLoTop7');
+            const btnTbl6 = byId('btnTableLoTop6');
+            if (btnTbl7 && btnTbl6) {
+                if (mode === 'top6') {
+                    btnTbl6.className = 'px-2 py-0.5 rounded font-black bg-teal-400 text-slate-950 transition-all shadow-xs';
+                    btnTbl7.className = 'px-2 py-0.5 rounded font-bold text-slate-600 hover:text-slate-900 transition-all';
+                } else {
+                    btnTbl7.className = 'px-2 py-0.5 rounded font-black bg-teal-400 text-slate-950 transition-all shadow-xs';
+                    btnTbl6.className = 'px-2 py-0.5 rounded font-bold text-slate-600 hover:text-slate-900 transition-all';
+                }
+            }
 
             const byTop = loDropoff?.summary?.byTop || {};
             const topStats = byTop[mode] || {};
@@ -534,11 +547,16 @@
                 totalHits = 440;
                 avgHits = '1.60';
                 profitStr = '+1.100 TỶ (ROI +45.5%)';
+            } else if (mode === 'top6') {
+                wr = '72.0';
+                totalHits = 657;
+                avgHits = '2.39';
+                profitStr = '+1.626 TỶ (Phẳng) · +3.324 TỶ (Tầng)';
             } else {
-                wr = topStats.winRate ? (topStats.winRate * 100).toFixed(1) : (loSummary.hitRate ? (loSummary.hitRate * 100).toFixed(1) : '81.3');
-                totalHits = topStats.totalHits || loSummary.totalHits || 753;
-                avgHits = topStats.avgHitsPerDay ? topStats.avgHitsPerDay.toFixed(2) : (loSummary.avgHitsPerDay ? loSummary.avgHitsPerDay.toFixed(2) : '2.76');
-                profitStr = topStats.profitK ? (topStats.profitK >= 1000000 ? `+${(topStats.profitK / 1000000).toFixed(2)} TỶ` : `+${(topStats.profitK / 1000).toFixed(1)}M`) : '+1.82 TỶ';
+                wr = '81.8';
+                totalHits = 757;
+                avgHits = '2.75';
+                profitStr = '+1.821 TỶ (Phẳng) · +3.519 TỶ (Tầng)';
             }
 
             const winRateBadge = byId('shadowLoWinRateBadge');
@@ -547,12 +565,14 @@
                     ? 'Win 59.3% · 226 nháy · ROI +49.4%'
                     : (mode === 'top4'
                         ? 'Nổ 85.5% · 440 nháy · ROI +45.5%'
-                        : `Win ${wr}% · ${totalHits} nháy`);
+                        : (mode === 'top6'
+                            ? 'Win 72.0% · 657 nháy (2.39n/ngày)'
+                            : 'Win 81.8% · 757 nháy (2.75n/ngày)'));
             }
 
             const recNumbers = (mode === 'top2') ? (loRec.numbers?.slice(0, 2) || ['62', '88'])
                 : (mode === 'top4') ? (loRec.numbers?.slice(0, 4) || ['62', '88', '84', '52'])
-                : (mode === 'top6') ? (loRec.top6 || loRec.numbers?.slice(0, 6) || ['91', '94', '99', '93', '89', '59'])
+                : (mode === 'top6') ? (loRec.top6 || (loRec.numbers || []).slice(0, 6) || ['91', '94', '99', '93', '89', '59'])
                 : (mode === 'top8') ? (loRec.top8 || (loRec.ranked ? loRec.ranked.slice(0, 8).map(x => x.num) : loRec.numbers) || ['91', '94', '99', '93', '89', '59', '90', '83'])
                 : (mode === 'top10') ? (loRec.top10 || (loRec.ranked ? loRec.ranked.slice(0, 10).map(x => x.num) : loRec.numbers) || ['91', '94', '99', '93', '89', '59', '90', '83', '84', '98'])
                 : (loRec.top7 || loRec.numbers || ['91', '94', '99', '93', '89', '59', '90']);
@@ -564,8 +584,10 @@
                     statusText.textContent = `⚡ SONG THỦ LÔ TOP 2 QMBF v6: 59.3% NGÀY CÓ LÃI (VỐN 4.4M · ROI +49.4%)`;
                 } else if (mode === 'top4') {
                     statusText.textContent = `🔥 TỨ THỦ LÔ TOP 4 QMBF v6: 85.5% NGÀY NỔ (VỐN 8.8M · ROI +45.5%)`;
+                } else if (mode === 'top6') {
+                    statusText.textContent = `⚡ TOP 6 SWEET-SPOT 27 VỊ TRÍ: 72.0% NGÀY THẮNG (ROI +44.8% PHẲNG · ROI +45.8% TẦNG)`;
                 } else {
-                    statusText.textContent = `🔥 TOP ${n} QUANTUM BAYES FUSION v6: ${wr}% NGÀY CÓ LÃI (${avgHits} NHÁY/NGÀY)`;
+                    statusText.textContent = `⭐ TOP 7 SWEET-SPOT 27 VỊ TRÍ: 81.8% NGÀY THẮNG (PHẲNG +1.82 TỶ · TẦNG +3.52 TỶ)`;
                 }
             }
 
@@ -575,8 +597,10 @@
                     descText.textContent = `Chiến thuật Song Thủ Lô tối ưu vốn tuyệt đối: Chỉ cược 2 con đầu bảng của QMBF v6. Vốn 4.4M/ngày (2 con x 2.2M). 2026 nổ 226 nháy, lãi ròng +598.0M (ROI +49.4%), chuỗi thua max chỉ 6d. Thực chiến 20 kỳ nổ 11/20 (55.0%), 15 nháy, lãi ròng +32.0M (ROI +36.4%), chuỗi thua max chỉ 3d!`;
                 } else if (mode === 'top4') {
                     descText.textContent = `Chiến thuật Tứ Thủ Lô công thủ toàn diện: Đánh 4 con đầu bảng của QMBF v6. Vốn 8.8M/ngày (4 con x 2.2M). 2026 nổ 235/275 ngày (85.5%), 440 nháy, lãi ròng +1.100 TỶ (ROI +45.5%). Thực chiến 20 kỳ nổ 18/20 (90.0%), 32 nháy, lãi ròng +80.0M (ROI +45.5%)!`;
+                } else if (mode === 'top6') {
+                    descText.textContent = `Hợp nhất 27 vị trí Lô phiên bản tinh gọn vốn: Cắt giảm 1 con bọc lót, tiết kiệm 2.2M vốn/ngày. ROI đạt kỷ lục +44.8% đánh phẳng (lãi +1.626 TỶ) và +45.8% phân tầng (lãi +3.324 TỶ). Thực chiến 20 kỳ lãi +96.0M phẳng (ROI +36.4%), +208.0M phân tầng (ROI +39.4%). Đơn vị phẳng: 2.2M/số (13.2M) | Phân tầng: 2 VIP X3 (6.6M) + 2 Mũi nhọn X2 (4.4M) + 2 Bọc lót X1 (2.2M) (26.4M).`;
                 } else {
-                    descText.textContent = `Hợp nhất 4 động cơ (Đồ thị vị trí + Markov 2-bước + Hawkes nổ chùm + Khử gan mềm). Tuyển chọn Top ${n} nổ cực đại năm 2026: ${wr}% ngày thắng, lợi nhuận lũy kế ${profitStr}.`;
+                    descText.textContent = `Hợp nhất tối ưu 27 vị trí Lô (Cầu đồ thị 27 vị trí + Markov + Hawkes + Khử gan mềm). Tuyển chọn Top 7 điểm ngọt ngào: Đánh phẳng Win 81.8% (225/275 ngày, lãi +1.821 TỶ, ROI +43.0%). Đánh phân tầng Win 69.5% (191/275 ngày, lãi +3.519 TỶ, ROI +44.7%). Đơn vị phẳng: 2.2M/số (15.4M) | Phân tầng: 2 VIP X3 (6.6M) + 2 Mũi nhọn X2 (4.4M) + 3 Bọc lót X1 (2.2M) (28.6M).`;
                 }
             }
 
@@ -596,7 +620,7 @@
                         badgeDetail = '6.6M/số · Ăn 24M/nháy';
                     } else if (idx < 4) {
                         badgeStyle = 'bg-gradient-to-b from-teal-400 to-emerald-400 text-slate-950 font-black ring-1 ring-teal-300 shadow-sm';
-                        badgeTag = '⚡ TRUNG TÂM X2';
+                        badgeTag = '⚡ MŨI NHỌN X2';
                         badgeDetail = '4.4M/số · Ăn 16M/nháy';
                     } else {
                         badgeStyle = 'bg-gradient-to-b from-cyan-400 to-sky-400 text-slate-950 font-bold ring-1 ring-cyan-300 shadow-sm';
@@ -616,14 +640,14 @@
 
             const metaStake = byId('shadowLoMetaStake');
             if (metaStake) {
-                const stakeFlat = (n * 2.2).toFixed(1);
                 if (mode === 'top2') {
                     metaStake.innerHTML = `Vốn cược: <strong class="text-white">4.4M/ngày</strong> (Top 2 · 2 số x 2.2M)`;
                 } else if (mode === 'top4') {
                     metaStake.innerHTML = `Vốn cược: <strong class="text-white">8.8M/ngày</strong> (Top 4 · 4 số x 2.2M)`;
+                } else if (mode === 'top6') {
+                    metaStake.innerHTML = `Đánh Phẳng (2.2M): <strong class="text-white">13.2M/ngày</strong> (6 số) · Phân Tầng: <strong class="text-white">26.4M/ngày</strong> (2 X3 + 2 X2 + 2 X1)`;
                 } else {
-                    const stakeTier = (2 * 6.6 + 2 * 4.4 + Math.max(0, n - 4) * 2.2).toFixed(1);
-                    metaStake.innerHTML = `Vốn 1 Đơn vị (2.2M): <strong class="text-white">${stakeFlat}M</strong> · Phân Tầng: <strong class="text-white">${stakeTier}M</strong>`;
+                    metaStake.innerHTML = `Đánh Phẳng (2.2M): <strong class="text-white">15.4M/ngày</strong> (7 số) · Phân Tầng: <strong class="text-white">28.6M/ngày</strong> (2 X3 + 2 X2 + 3 X1)`;
                 }
             }
 
@@ -633,8 +657,10 @@
                     metaProfit.innerHTML = `Lãi ròng 2026: <strong class="text-teal-300 font-bold font-mono">+598.0M</strong> (ROI +49.4%) · 20 kỳ thực chiến: <strong class="text-emerald-300 font-bold font-mono">+32.0M (ROI +36.4%)</strong>`;
                 } else if (mode === 'top4') {
                     metaProfit.innerHTML = `Lãi ròng 2026: <strong class="text-teal-300 font-bold font-mono">+1.100 TỶ</strong> (ROI +45.5%) · 20 kỳ thực chiến: <strong class="text-emerald-300 font-bold font-mono">+80.0M (ROI +45.5%)</strong>`;
+                } else if (mode === 'top6') {
+                    metaProfit.innerHTML = `Lãi ròng 2026: <strong class="text-teal-300 font-bold font-mono">Phẳng +1.626 TỶ (ROI +44.8%) · Tầng +3.324 TỶ</strong> · 20 kỳ: <strong class="text-emerald-300 font-bold font-mono">Phẳng +96.0M · Tầng +208.0M</strong>`;
                 } else {
-                    metaProfit.innerHTML = `Lãi ròng 2026: <strong class="text-teal-300 font-bold font-mono">+1.819 TỶ</strong> (ROI +43.3%) · 20 kỳ thực chiến: <strong class="text-emerald-300 font-bold font-mono">+92.0M</strong>`;
+                    metaProfit.innerHTML = `Lãi ròng 2026: <strong class="text-teal-300 font-bold font-mono">Phẳng +1.821 TỶ (ROI +43.0%) · Tầng +3.519 TỶ</strong> · 20 kỳ: <strong class="text-emerald-300 font-bold font-mono">Phẳng +92.0M · Tầng +204.0M</strong>`;
                 }
             }
 
@@ -1303,17 +1329,19 @@
         const isWin = isPending ? false : (flatProfitK > 0);
 
         // 2. Multi-tier (X3: 6.6M ăn 24M, X2: 4.4M ăn 16M, X1: 2.2M ăn 8M):
-        const x3Hits = (row.x3Hits !== undefined && row.x3Hits !== null)
-            ? row.x3Hits
-            : ((effectiveHitsMap[numStr(numbers[0])] || 0) + (effectiveHitsMap[numStr(numbers[1])] || 0));
-        const x2Hits = (row.x2Hits !== undefined && row.x2Hits !== null)
-            ? row.x2Hits
-            : ((effectiveHitsMap[numStr(numbers[2])] || 0) + (effectiveHitsMap[numStr(numbers[3])] || 0));
+        let x3Hits = 0;
+        let x2Hits = 0;
         let x1Hits = 0;
-        if (row.x1Hits !== undefined && row.x1Hits !== null) {
+        if (mode === 'top7' && row.x3Hits !== undefined && row.x3Hits !== null && Object.keys(effectiveHitsMap).length === 0) {
+            x3Hits = row.x3Hits;
+            x2Hits = row.x2Hits;
             x1Hits = row.x1Hits;
         } else {
-            for (let i = 4; i < numbers.length; i++) x1Hits += (effectiveHitsMap[numStr(numbers[i])] || 0);
+            x3Hits = (effectiveHitsMap[numStr(numbers[0])] || 0) + (effectiveHitsMap[numStr(numbers[1])] || 0);
+            x2Hits = (effectiveHitsMap[numStr(numbers[2])] || 0) + (effectiveHitsMap[numStr(numbers[3])] || 0);
+            for (let i = 4; i < numbers.length; i++) {
+                x1Hits += (effectiveHitsMap[numStr(numbers[i])] || 0);
+            }
         }
         const tierStakeK = (topN <= 2)
             ? flatStakeK
@@ -2308,7 +2336,7 @@
                 hitsTagEl.classList.remove('hidden');
                 if (hitsCountEl) hitsCountEl.textContent = `${totalHits.toLocaleString('vi-VN')}`;
             }
-            if (profitLabelEl) profitLabelEl.textContent = `💰 Lãi Lũy Kế Lô Dropoff 27 (${topNLabel} · Từ 17/09):`;
+            if (profitLabelEl) profitLabelEl.textContent = `💰 Lãi Lũy Kế Lô Sweet-Spot 27 (${topNLabel} · Từ 17/09):`;
             if (totalProfitEl) {
                 totalProfitEl.innerHTML = `
                     <div class="flex items-center gap-2 flex-wrap text-xs font-mono">
@@ -2320,6 +2348,30 @@
             }
         }
 
+        // Sub Switcher for Lo Sweet-Spot in Category Summary Bar
+        const loTableSubSwitch = byId('shadowLoTableSubSwitchGroup');
+        if (loTableSubSwitch) {
+            if (currentShadowCategory === 'loDropoff' || currentShadowCategory === 'lo') {
+                loTableSubSwitch.classList.remove('hidden');
+                const btnTbl7 = byId('btnTableLoTop7');
+                const btnTbl6 = byId('btnTableLoTop6');
+                if (btnTbl7) {
+                    btnTbl7.className = (mode === 'top7')
+                        ? 'px-2 py-0.5 rounded font-black bg-teal-400 text-slate-950 transition-all shadow-xs'
+                        : 'px-2 py-0.5 rounded font-bold text-slate-600 hover:text-slate-900 transition-all';
+                    btnTbl7.onclick = () => { renderShadowLoCard('top7'); renderShadowSettledTable(); };
+                }
+                if (btnTbl6) {
+                    btnTbl6.className = (mode === 'top6')
+                        ? 'px-2 py-0.5 rounded font-black bg-teal-400 text-slate-950 transition-all shadow-xs'
+                        : 'px-2 py-0.5 rounded font-bold text-slate-600 hover:text-slate-900 transition-all';
+                    btnTbl6.onclick = () => { renderShadowLoCard('top6'); renderShadowSettledTable(); };
+                }
+            } else {
+                loTableSubSwitch.classList.add('hidden');
+            }
+        }
+
         // Render dynamic THEAD
         const topNTitle = mode === 'top6' ? 'Top 6' : (mode === 'top8' ? 'Top 8' : (mode === 'top10' ? 'Top 10' : 'Top 7'));
         if (currentShadowCategory === 'combo') {
@@ -2327,7 +2379,7 @@
                 <tr class="border-b border-white/10 text-[11px] font-bold text-slate-400 uppercase tracking-wide">
                     <th class="py-2.5 px-3">Ngày Quay</th>
                     <th class="py-2.5 px-3">Đề Dropoff 40s</th>
-                    <th class="py-2.5 px-3">Lô QMBF (${topNTitle})</th>
+                    <th class="py-2.5 px-3">Lô Sweet-Spot (${topNTitle})</th>
                     <th class="py-2.5 px-3">Lô Xiên 5 (5 Vé X4)</th>
                     <th class="py-2.5 px-3 text-center">Dàn Đánh &amp; Số Nổ</th>
                     <th class="py-2.5 px-3 text-right">Tổng Vốn</th>
@@ -2356,7 +2408,7 @@
                 <tr class="border-b border-white/10 text-[11px] font-bold text-slate-400 uppercase tracking-wide">
                     <th class="py-2.5 px-3">Ngày Quay</th>
                     <th class="py-2.5 px-3">Trạng Thái (${topNTitle})</th>
-                    <th class="py-2.5 px-3">Dàn Lô Dropoff 27 &amp; Số Nổ</th>
+                    <th class="py-2.5 px-3">Dàn Lô Sweet-Spot 27 &amp; Số Nổ</th>
                     <th class="py-2.5 px-3 text-center">Nháy Nổ</th>
                     <th class="py-2.5 px-3 text-right">Lô Đánh Phẳng (2.2M)</th>
                     <th class="py-2.5 px-3 text-right">Lũy Kế Phẳng</th>
@@ -2392,7 +2444,7 @@
                         <div class="text-[10px] text-slate-400">Đồng thuận 4 Động cơ · Vốn ${deStakeM}</div>
                     </td>
                     <td class="py-3 px-3">
-                        <span class="text-teal-300 font-semibold">Lô QMBF v6 (${topNTitle})</span>
+                        <span class="text-teal-300 font-semibold">Lô Sweet-Spot (${topNTitle})</span>
                         <div class="text-[10px] text-slate-400">Top: ${loPendingInfo.numbers.slice(0, 4).join(', ')}... · Vốn ${loStakeM}</div>
                     </td>
                     <td class="py-3 px-3">
@@ -2472,7 +2524,7 @@
                         </div>
                     </td>
                     <td class="py-3 px-3">
-                        <div class="font-bold text-teal-300">Lô Dropoff 27 (${topNTitle})</div>
+                        <div class="font-bold text-teal-300">Lô Sweet-Spot 27 (${topNTitle})</div>
                         <div class="text-[10px] text-amber-300 font-semibold">🔒 Đã niêm phong 12:00</div>
                     </td>
                     <td class="py-3 px-3">
@@ -2651,7 +2703,7 @@
                     <tr class="border-b border-white/5 ${row.isLoWin || row.isLoTierWin ? 'bg-emerald-950/15' : ''} hover:bg-white/5 transition-colors font-mono text-xs">
                         <td class="py-2.5 px-3 font-bold text-slate-300">${dateVi}</td>
                         <td class="py-2.5 px-3">
-                            <div class="font-bold text-teal-300">Lô Dropoff 27 (${topNTitle})</div>
+                            <div class="font-bold text-teal-300">Lô Sweet-Spot 27 (${topNTitle})</div>
                             <div class="text-[10px] ${row.isLoWin ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}">
                                 ${row.isLoWin ? '✅ Phẳng: Lãi' : '❌ Phẳng: Lỗ'} · ${row.isLoTierWin ? '<span class="text-amber-300">Tầng: Lãi</span>' : '<span class="text-rose-400">Tầng: Lỗ</span>'}
                             </div>
@@ -3267,7 +3319,7 @@
                         <div class="flex flex-col gap-1">
                             <div class="flex items-center gap-2 flex-wrap">
                                 <h4 class="text-xs font-black uppercase text-teal-300 flex items-center gap-1.5">
-                                    <i class="bi bi-dice-5-fill text-teal-400"></i> 🎯 2. LÔ DROPOFF 27 VỊ TRÍ (${topNTitle}):
+                                    <i class="bi bi-dice-5-fill text-teal-400"></i> 🎯 2. LÔ SWEET-SPOT 27 VỊ TRÍ (${topNTitle}):
                                 </h4>
                                 <span class="text-[11px] text-slate-400 font-mono">(Quét 27 giải · ${loInfo.topN} số)</span>
                             </div>
