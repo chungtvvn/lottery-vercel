@@ -280,6 +280,10 @@ async function generate() {
 
     const targetCacheFile = path.join(process.cwd(), 'lib', 'data', 'statistics', 'cached_de_dropoff_merge_shadow.json');
     fs.writeFileSync(targetCacheFile, JSON.stringify(payload, null, 2), 'utf8');
+    const dataCacheFile = path.join(process.cwd(), 'data', 'cached_de_dropoff_merge_shadow.json');
+    if (fs.existsSync(path.join(process.cwd(), 'data'))) {
+        fs.writeFileSync(dataCacheFile, JSON.stringify(payload, null, 2), 'utf8');
+    }
 
     console.log(`\n🎉 Generated Đề Consensus Flat 40 cache successfully to: ${targetCacheFile}`);
     console.log(`Cache file size: ${(fs.statSync(targetCacheFile).size / 1024).toFixed(1)} KB`);

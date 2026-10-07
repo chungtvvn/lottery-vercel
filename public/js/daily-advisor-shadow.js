@@ -53,7 +53,7 @@
     }
 
     // Global dashboard states
-    let currentShadowCategory = 'deDropoff';
+    let currentShadowCategory = 'combo';
     let currentShadowLoMode = 'top7';
     let currentStrategyMode = 'dropoff40';
     let currentDeStrategy = 'dropoff40';    // 'dropoff40' or 'triCore24'
@@ -528,7 +528,7 @@
                         if (b === btn) {
                             b.className = 'shadow-cat-btn active rounded-lg bg-indigo-600 text-white font-black text-xs px-3 py-1.5 transition-all shadow-xs flex items-center gap-1.5';
                         } else {
-                            b.className = 'shadow-cat-btn rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 font-bold text-xs px-3 py-1.5 transition-all flex items-center gap-1.5';
+                            b.className = 'shadow-cat-btn rounded-lg bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs px-3 py-1.5 transition-all flex items-center gap-1.5 border border-slate-200/60';
                         }
                     });
                     renderShadowSettledTable();
@@ -1305,6 +1305,7 @@
         let cumLoFlatK = 0;
         let cumLoTierK = 0;
         let cumLoK = 0;
+        let cumXien5K = 0;
         let cumComboK = 0;
 
         const rowsData = targetDates.map(date => {
@@ -1341,13 +1342,22 @@
             const loTierProfitK = loInfo.tierProfitK;
             const isLoTierWin = loInfo.isTierWin;
 
-            const comboDayProfitK = deProfitK + loProfitK;
-            const comboDayStakeK = deStakeK + loStakeK;
+            // Lô Xiên 5 (5 Dàn Xiên 4 từ Top 5 Lô Dropoff)
+            const top5Nums = (loInfo.numbers || []).slice(0, 5).map(numStr);
+            const xien5Eval = evaluateXien5Row(top5Nums, rawLoRow?.numHitsMap || {});
+            const xien5StakeK = xien5Eval.stakeK || 55000;
+            const xien5PayoutK = xien5Eval.payoutK || 0;
+            const xien5ProfitK = xien5Eval.profitK;
+            const isXien5Win = xien5Eval.isWin;
+
+            const comboDayProfitK = deProfitK + loProfitK + (isCombo ? xien5ProfitK : 0);
+            const comboDayStakeK = deStakeK + loStakeK + (isCombo ? xien5StakeK : 0);
 
             cumDeK += deProfitK;
             cumLoFlatK += loProfitK;
             cumLoTierK += loTierProfitK;
             cumLoK += loProfitK;
+            cumXien5K += xien5ProfitK;
             cumComboK += comboDayProfitK;
 
             return {
@@ -1355,6 +1365,13 @@
                 deRow,
                 rawLoRow,
                 loInfo,
+                top5Nums,
+                xien5Eval,
+                xien5StakeK,
+                xien5PayoutK,
+                xien5ProfitK,
+                isXien5Win,
+                cumXien5K,
                 deAbstain,
                 deHit,
                 deProfitK,
@@ -1388,10 +1405,19 @@
             if (winCountEl) winCountEl.textContent = `${comboWins}`;
             if (winRateEl) winRateEl.textContent = `${comboWinRate}%`;
             if (hitsTagEl) hitsTagEl.classList.add('hidden');
-            if (profitLabelEl) profitLabelEl.textContent = '💰 Lãi Lũy Kế Combo (Từ 17/09/2026):';
+            if (profitLabelEl) profitLabelEl.textContent = '💰 Lãi Lũy Kế Tổng Hợp 3 Trụ Cột (Từ 17/09/2026):';
             if (totalProfitEl) {
-                totalProfitEl.textContent = formatMoneyK(cumComboK);
-                totalProfitEl.className = `font-black text-sm font-mono ${cumComboK >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+                totalProfitEl.innerHTML = `
+                    <div class="flex items-center gap-2 flex-wrap text-xs font-mono">
+                        <span class="font-black text-sm ${cumComboK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">Tổng 3 Trụ: ${formatMoneyK(cumComboK)}</span>
+                        <span class="text-slate-500 font-normal">|</span>
+                        <span class="font-bold ${cumDeK >= 0 ? 'text-emerald-300' : 'text-rose-300'}">Đề 40s: ${formatMoneyK(cumDeK)}</span>
+                        <span class="text-slate-500 font-normal">|</span>
+                        <span class="font-bold ${cumLoK >= 0 ? 'text-emerald-300' : 'text-rose-300'}">Lô: ${formatMoneyK(cumLoK)}</span>
+                        <span class="text-slate-500 font-normal">|</span>
+                        <span class="font-bold ${cumXien5K >= 0 ? 'text-emerald-300' : 'text-rose-300'}">Xiên 5: ${formatMoneyK(cumXien5K)}</span>
+                    </div>
+                `;
             }
         } else if (currentShadowCategory === 'de') {
             const issuedRows = rowsData.filter(r => !r.deAbstain);
@@ -1439,13 +1465,15 @@
                 <tr class="border-b border-white/10 text-[11px] font-bold text-slate-400 uppercase tracking-wide">
                     <th class="py-2.5 px-3">Ngày Quay</th>
                     <th class="py-2.5 px-3">Đề Dropoff 40s</th>
-                    <th class="py-2.5 px-3">Lô Dropoff 27 (${topNTitle})</th>
-                    <th class="py-2.5 px-3 text-center">Dàn Đánh &amp; Số Trúng</th>
+                    <th class="py-2.5 px-3">Lô QMBF (${topNTitle})</th>
+                    <th class="py-2.5 px-3">Lô Xiên 5 (5 Vé X4)</th>
+                    <th class="py-2.5 px-3 text-center">Dàn Đánh &amp; Số Nổ</th>
                     <th class="py-2.5 px-3 text-right">Tổng Vốn</th>
-                    <th class="py-2.5 px-3 text-right">Lãi Đề</th>
-                    <th class="py-2.5 px-3 text-right">Lãi Lô</th>
+                    <th class="py-2.5 px-3 text-right">Lãi &amp; LK Đề</th>
+                    <th class="py-2.5 px-3 text-right">Lãi &amp; LK Lô</th>
+                    <th class="py-2.5 px-3 text-right">Lãi &amp; LK Lô Xiên</th>
                     <th class="py-2.5 px-3 text-right">Lãi Ròng Ngày</th>
-                    <th class="py-2.5 px-3 text-right">Lũy Kế Combo</th>
+                    <th class="py-2.5 px-3 text-right">Lũy Kế Tổng (3 Trụ)</th>
                 </tr>
             `;
         } else if (currentShadowCategory === 'de') {
@@ -1485,7 +1513,9 @@
             const loPendingInfo = getLoDropoffRowInfo(loLatestRec, mode);
             const loStakeM = (loPendingInfo.stakeK / 1000).toFixed(1) + 'M';
             const deStakeM = '40.0M';
-            const totalStakeM = ((40000 + loPendingInfo.stakeK) / 1000).toFixed(1) + 'M';
+            const xienStakeM = '55.0M';
+            const totalStakeM = ((40000 + loPendingInfo.stakeK + 55000) / 1000).toFixed(1) + 'M';
+            const top5Str = (loPendingInfo.numbers || []).slice(0, 5).map(numStr).join(', ');
 
             pendingRowHtml = `
                 <tr class="border-b border-amber-500/20 bg-amber-950/20 hover:bg-amber-950/30 transition-colors font-mono text-xs">
@@ -1497,11 +1527,15 @@
                     </td>
                     <td class="py-3 px-3">
                         <span class="text-amber-300 font-semibold">Đa Động Cơ 40s (1M/số)</span>
-                        <div class="text-[10px] text-slate-400">Đồng thuận 4 Động cơ · Vốn 40M</div>
+                        <div class="text-[10px] text-slate-400">Đồng thuận 4 Động cơ · Vốn ${deStakeM}</div>
                     </td>
                     <td class="py-3 px-3">
                         <span class="text-teal-300 font-semibold">Lô QMBF v6 (${topNTitle})</span>
                         <div class="text-[10px] text-slate-400">Top: ${loPendingInfo.numbers.slice(0, 4).join(', ')}... · Vốn ${loStakeM}</div>
+                    </td>
+                    <td class="py-3 px-3">
+                        <span class="text-amber-300 font-semibold">Lô Xiên 5 (5 Vé X4)</span>
+                        <div class="text-[10px] text-slate-400">Top 5: ${top5Str} · Vốn ${xienStakeM}</div>
                     </td>
                     <td class="py-3 px-3 text-center">
                         <button type="button" class="btn-open-slip px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-200 hover:text-slate-950 border border-amber-500/40 text-[11px] font-bold inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer" data-slip-date="${targetDate}">
@@ -1510,12 +1544,25 @@
                     </td>
                     <td class="py-3 px-3 text-right">
                         <span class="text-white font-bold">${totalStakeM}</span>
-                        <div class="text-[10px] text-slate-400">Đề ${deStakeM} + Lô ${loStakeM}</div>
+                        <div class="text-[10px] text-slate-400">Đề 40M + Lô ${loStakeM} + Xiên 55M</div>
                     </td>
-                    <td class="py-3 px-3 text-right text-amber-400 font-bold">⏳ Chờ 18:30</td>
-                    <td class="py-3 px-3 text-right text-amber-400 font-bold">⏳ Chờ 18:30</td>
+                    <td class="py-3 px-3 text-right">
+                        <div class="text-amber-400 font-bold">⏳ Chờ 18:30</div>
+                        <div class="text-[10px] ${cumDeK >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-semibold">LK: ${formatMoneyK(cumDeK)}</div>
+                    </td>
+                    <td class="py-3 px-3 text-right">
+                        <div class="text-amber-400 font-bold">⏳ Chờ 18:30</div>
+                        <div class="text-[10px] ${cumLoK >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-semibold">LK: ${formatMoneyK(cumLoK)}</div>
+                    </td>
+                    <td class="py-3 px-3 text-right">
+                        <div class="text-amber-400 font-bold">⏳ Chờ 18:30</div>
+                        <div class="text-[10px] ${cumXien5K >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-semibold">LK: ${formatMoneyK(cumXien5K)}</div>
+                    </td>
                     <td class="py-3 px-3 text-right font-bold text-amber-300">⏳ Chờ kết toán</td>
-                    <td class="py-3 px-3 text-right font-bold text-emerald-300">${formatMoneyK(cumComboK)}</td>
+                    <td class="py-3 px-3 text-right">
+                        <div class="font-black text-sm ${cumComboK >= 0 ? 'text-emerald-300' : 'text-rose-300'}">${formatMoneyK(cumComboK)}</div>
+                        <div class="text-[9px] text-slate-400">Đề + Lô + Xiên</div>
+                    </td>
                 </tr>
             `;
         } else if (currentShadowCategory === 'de') {
@@ -1605,10 +1652,22 @@
                 const loHitsStr = loHitsList.map(p => `${p.num}(${p.hits}n)`).slice(0, 3).join(', ') + (loHitsList.length > 3 ? '...' : '');
 
                 const loBadge = row.isLoWin
-                    ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 ring-2 ring-emerald-300 shadow-xs" title="${loHitsList.map(p => `${p.num} (${p.hits} nháy)`).join(', ')}">🔥 ${row.loHits} nháy (${loHitsStr || 'Thắng'})</span>`
-                    : `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">${row.loHits} nháy (Thua)</span>`;
+                    ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 ring-2 ring-emerald-300 shadow-xs" title="${loHitsList.map(p => `${p.num} (${p.hits} nháy)`).join(', ')}">🔥 ${row.loHits} nháy (+${formatMoneyK(row.loProfitK, false)})</span>`
+                    : `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">${row.loHits} nháy (-${formatMoneyK(Math.abs(row.loProfitK), false)})</span>`;
 
-                // Render winning numbers chips directly in Column 4 (Dàn Đánh & Số Trúng)
+                const xev = row.xien5Eval;
+                let xien5Badge = '';
+                if (xev.x4Count > 0) {
+                    xien5Badge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-xs animate-pulse">⭐ ĂN X4 (+384M)</span>`;
+                } else if (xev.x3Count > 0) {
+                    xien5Badge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 ring-2 ring-emerald-300 shadow-xs">🎉 ĂN X3 (${xev.x3Count}v · +${formatMoneyK(xev.payoutK, false)})</span>`;
+                } else if (xev.x2Count > 0) {
+                    xien5Badge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/40">⚡ ĂN X2 (${xev.x2Count}v · -${formatMoneyK(Math.abs(row.xien5ProfitK), false)})</span>`;
+                } else {
+                    xien5Badge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">❌ Trượt (${xev.h5}/5 con · -55M)</span>`;
+                }
+
+                // Render winning numbers chips directly in Column 5 (Dàn Đánh & Số Trúng)
                 let winningBadgesHtml = '';
                 if (row.deHit) {
                     winningBadgesHtml += `<span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-1 ring-amber-300 shadow-xs">🎯 ĐB: ${actualStr} ⭐</span> `;
@@ -1617,6 +1676,10 @@
                     winningBadgesHtml += loHitsList.map(p => {
                         return `<span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[10px] font-black bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 ring-1 ring-emerald-300 shadow-xs">🎯 ${p.num}<sub class="text-[8px] font-black ml-0.5">(${p.hits}n)</sub></span>`;
                     }).join(' ');
+                }
+                const xienHitsInTop5 = (row.top5Nums || []).filter(n => ((row.rawLoRow?.numHitsMap || {})[n] || 0) > 0);
+                if (xienHitsInTop5.length >= 2) {
+                    winningBadgesHtml += ` <span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[10px] font-black bg-gradient-to-r from-purple-400 to-indigo-400 text-slate-950 ring-1 ring-purple-300 shadow-xs">🎲 X5: ${xienHitsInTop5.join('-')}</span>`;
                 }
                 if (!winningBadgesHtml) {
                     winningBadgesHtml = '<span class="text-slate-500 text-[10px] italic">Không nổ số nào</span>';
@@ -1627,6 +1690,7 @@
                         <td class="py-2.5 px-3 font-bold text-slate-300">${dateVi}</td>
                         <td class="py-2.5 px-3">${deBadge}</td>
                         <td class="py-2.5 px-3">${loBadge}</td>
+                        <td class="py-2.5 px-3">${xien5Badge}</td>
                         <td class="py-2.5 px-3 text-center">
                             <div class="flex flex-wrap gap-1 justify-center items-center mb-1">
                                 ${winningBadgesHtml}
@@ -1635,11 +1699,29 @@
                                 <i class="bi bi-eye-fill text-amber-300"></i> Xem Đủ Dàn
                             </button>
                         </td>
-                        <td class="py-2.5 px-3 text-right text-slate-400">${formatMoneyK(row.comboDayStakeK, false)}</td>
-                        <td class="py-2.5 px-3 text-right font-bold ${row.deProfitK > 0 ? 'text-emerald-400' : (row.deProfitK < 0 ? 'text-rose-400' : 'text-slate-500')}">${row.deAbstain ? '0đ' : formatMoneyK(row.deProfitK)}</td>
-                        <td class="py-2.5 px-3 text-right font-bold ${row.loProfitK > 0 ? 'text-emerald-400' : (row.loProfitK < 0 ? 'text-rose-400' : 'text-slate-500')}">${formatMoneyK(row.loProfitK)}</td>
-                        <td class="py-2.5 px-3 text-right font-black ${row.comboDayProfitK > 0 ? 'text-emerald-400' : (row.comboDayProfitK < 0 ? 'text-rose-400' : 'text-slate-400')}">${formatMoneyK(row.comboDayProfitK)}</td>
-                        <td class="py-2.5 px-3 text-right font-bold ${row.cumComboK >= 0 ? 'text-emerald-300' : 'text-rose-300'}">${formatMoneyK(row.cumComboK)}</td>
+                        <td class="py-2.5 px-3 text-right">
+                            <span class="text-slate-300 font-bold">${formatMoneyK(row.comboDayStakeK, false)}</span>
+                            <div class="text-[9px] text-slate-500">Đề 40M + Lô ${(row.loStakeK/1000).toFixed(1)}M + X5 55M</div>
+                        </td>
+                        <td class="py-2.5 px-3 text-right">
+                            <div><span class="font-bold ${row.deProfitK > 0 ? 'text-emerald-400' : (row.deProfitK < 0 ? 'text-rose-400' : 'text-slate-500')}">${row.deAbstain ? '0đ' : formatMoneyK(row.deProfitK)}</span></div>
+                            <div class="text-[10px] font-semibold ${row.cumDeK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">LK: ${formatMoneyK(row.cumDeK)}</div>
+                        </td>
+                        <td class="py-2.5 px-3 text-right">
+                            <div><span class="font-bold ${row.loProfitK > 0 ? 'text-emerald-400' : (row.loProfitK < 0 ? 'text-rose-400' : 'text-slate-500')}">${formatMoneyK(row.loProfitK)}</span></div>
+                            <div class="text-[10px] font-semibold ${row.cumLoK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">LK: ${formatMoneyK(row.cumLoK)}</div>
+                        </td>
+                        <td class="py-2.5 px-3 text-right">
+                            <div><span class="font-bold ${row.xien5ProfitK > 0 ? 'text-emerald-400' : (row.xien5ProfitK < 0 ? 'text-rose-400' : 'text-slate-500')}">${formatMoneyK(row.xien5ProfitK)}</span></div>
+                            <div class="text-[10px] font-semibold ${row.cumXien5K >= 0 ? 'text-emerald-400' : 'text-rose-400'}">LK: ${formatMoneyK(row.cumXien5K)}</div>
+                        </td>
+                        <td class="py-2.5 px-3 text-right">
+                            <span class="font-black text-xs ${row.comboDayProfitK > 0 ? 'text-emerald-400' : (row.comboDayProfitK < 0 ? 'text-rose-400' : 'text-slate-400')}">${formatMoneyK(row.comboDayProfitK)}</span>
+                        </td>
+                        <td class="py-2.5 px-3 text-right">
+                            <div class="font-black text-sm ${row.cumComboK >= 0 ? 'text-emerald-300' : 'text-rose-300'}">${formatMoneyK(row.cumComboK)}</div>
+                            <div class="text-[9px] text-slate-500">Đề + Lô + Xiên</div>
+                        </td>
                     </tr>
                 `;
             } else if (currentShadowCategory === 'de') {
