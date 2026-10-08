@@ -3168,6 +3168,9 @@
                     hitsMap: r.hitsMap || {},
                     de: deData,
                     lo: loData,
+                    loTop7: r.lo?.top7 || [],
+                    loTop3Vip: r.lo?.top3Vip || [],
+                    loTop4Lot: r.lo?.top4Lot || [],
                     loHits: r.lo?.totalHits || 0,
                     xien: xienData,
                     combo: comboData,
@@ -3312,18 +3315,26 @@
                 const dateVi = formatDateVi(row.date);
                 const actualStr = row.actualSpecial || '—';
 
+                const isVipHit = (row.de.hitType === 'VIP' || row.de.hitType === 'VIP_12' || (row.de.isHit && (row.de.vip12 || []).includes(actualStr)));
+                const isLotHit = (row.de.hitType === 'LOT' || row.de.hitType === 'LOT_24' || (row.de.isHit && (row.de.lot24 || []).includes(actualStr)));
+
                 let deBadge = '';
-                if (row.de.hitType === 'VIP_12') {
+                if (isVipHit) {
                     deBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-xs animate-pulse">🎯 NỔ VIP 12 (+156M) · ${actualStr} ⭐</span>`;
-                } else if (row.de.hitType === 'LOT_24') {
-                    deBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-violet-500/20 text-violet-300 border border-violet-500/40">🎯 Ăn Lót 24 (+30M) · ${actualStr}</span>`;
+                } else if (isLotHit) {
+                    deBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-teal-500/20 text-teal-300 border border-teal-500/40">🎯 Ăn Lót 24 (+30M) · ${actualStr}</span>`;
                 } else {
                     deBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">❌ Trượt (-54M) · ${actualStr}</span>`;
                 }
 
-                const loBadge = row.lo.isWin
-                    ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 ring-2 ring-emerald-300 shadow-xs">🔥 ${row.loHits} nháy (+${formatMoneyK(row.loProfitK, false)})</span>`
-                    : `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">${row.loHits} nháy (-${formatMoneyK(Math.abs(row.loProfitK), false)})</span>`;
+                let loBadge = '';
+                if (row.loProfitK > 0) {
+                    loBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 ring-2 ring-emerald-300 shadow-xs">🔥 ${row.loHits} nháy (+${formatMoneyK(row.loProfitK, false)})</span>`;
+                } else if (row.loProfitK === 0) {
+                    loBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-teal-500/20 text-teal-300 border border-teal-500/40">${row.loHits} nháy (Hòa vốn)</span>`;
+                } else {
+                    loBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">${row.loHits} nháy (-${formatMoneyK(Math.abs(row.loProfitK), false)})</span>`;
+                }
 
                 const x5 = row.xien;
                 let xienBadge = '';
@@ -3339,9 +3350,9 @@
 
                 let winningBadgesHtml = '';
                 if (row.de.isHit) {
-                    winningBadgesHtml += `<span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-1 ring-amber-300 shadow-xs">🎯 ĐB: ${actualStr} ${row.de.hitType === 'VIP_12' ? '⭐' : ''}</span> `;
+                    winningBadgesHtml += `<span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-1 ring-amber-300 shadow-xs">🎯 ĐB: ${actualStr} ${isVipHit ? '⭐' : ''}</span> `;
                 }
-                const top7Nums = row.lo.numbers || [];
+                const top7Nums = row.loTop7 || [];
                 const loHitNums = top7Nums.filter(n => (row.hitsMap[numStr(n)] || 0) > 0);
                 if (loHitNums.length > 0) {
                     winningBadgesHtml += loHitNums.map(n => {
@@ -3376,15 +3387,15 @@
                         </td>
                         <td class="py-2.5 px-3 text-right">
                             <div><span class="font-bold ${row.deProfitK > 0 ? 'text-emerald-400' : (row.deProfitK < 0 ? 'text-rose-400' : 'text-slate-500')}">${formatMoneyK(row.deProfitK)}</span></div>
-                            <div class="text-[10px] font-semibold ${row.cumDeK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">LK: ${formatMoneyK(cumDeK)}</div>
+                            <div class="text-[10px] font-semibold ${row.cumDeK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">LK: ${formatMoneyK(row.cumDeK)}</div>
                         </td>
                         <td class="py-2.5 px-3 text-right">
                             <div><span class="font-bold ${row.loProfitK > 0 ? 'text-emerald-400' : (row.loProfitK < 0 ? 'text-rose-400' : 'text-slate-500')}">${formatMoneyK(row.loProfitK)}</span></div>
-                            <div class="text-[10px] font-semibold ${row.cumLoK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">LK: ${formatMoneyK(cumLoK)}</div>
+                            <div class="text-[10px] font-semibold ${row.cumLoK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">LK: ${formatMoneyK(row.cumLoK)}</div>
                         </td>
                         <td class="py-2.5 px-3 text-right">
                             <div><span class="font-bold ${row.xienProfitK > 0 ? 'text-emerald-400' : (row.xienProfitK < 0 ? 'text-rose-400' : 'text-slate-500')}">${formatMoneyK(row.xienProfitK)}</span></div>
-                            <div class="text-[10px] font-semibold ${row.cumXienK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">LK: ${formatMoneyK(cumXienK)}</div>
+                            <div class="text-[10px] font-semibold ${row.cumXienK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">LK: ${formatMoneyK(row.cumXienK)}</div>
                         </td>
                         <td class="py-2.5 px-3 text-right">
                             <span class="font-black text-xs ${row.dayProfitK > 0 ? 'text-emerald-400' : (row.dayProfitK < 0 ? 'text-rose-400' : 'text-slate-400')}">${formatMoneyK(row.dayProfitK)}</span>
