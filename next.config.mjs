@@ -12,6 +12,21 @@ const nextConfig = {
         ];
     },
 
+    async redirects() {
+        return [
+            {
+                source: '/advisor-analysis',
+                destination: '/daily-advisor-shadow',
+                permanent: true,
+            },
+            {
+                source: '/research',
+                destination: '/daily-advisor-shadow',
+                permanent: true,
+            },
+        ];
+    },
+
     // Exclude statistics files from serverless function bundles to avoid exceeding size limit
     outputFileTracingExcludes: {
         '*': [

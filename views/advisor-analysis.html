@@ -77,7 +77,7 @@
             <a href="/daily-advisor#dualMerge" class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors">
                 <i class="bi bi-intersect text-indigo-500"></i> 🎯 Gợi Ý Đề Gộp Riêng Biệt (1/2/3/Meta)
             </a>
-            <a href="/advisor-analysis" class="flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 via-indigo-600 to-violet-600 px-4 py-2.5 text-sm font-black text-white shadow-md transition-all">
+            <a href="/daily-advisor-shadow" class="flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 via-indigo-600 to-violet-600 px-4 py-2.5 text-sm font-black text-white shadow-md transition-all">
                 <i class="bi bi-shield-check text-emerald-300"></i> 🔬 Nghiên Cứu Thực Chiến (Shadow)
                 <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-black bg-gradient-to-r from-rose-400 to-amber-300 text-slate-950 shadow-sm uppercase tracking-wider animate-pulse">NEW</span>
             </a>
@@ -126,7 +126,7 @@
                         <i class="bi bi-toggles2 text-amber-400"></i> BỘ ĐIỀU PHỐI VẬN HÀNH TOÀN DIỆN (ĐỀ · LÔ · LÔ XIÊN)
                     </div>
                     <h2 class="text-lg sm:text-xl font-black text-white mt-1">
-                        Lựa Chọn 1 Trong 3 Hệ Phương Pháp Vận Hành Độc Lập
+                        Lựa Chọn 1 Trong 4 Hệ Phương Pháp Vận Hành Độc Lập
                     </h2>
                     <p class="text-xs text-slate-300 mt-0.5">
                         Khi bấm chọn 1 hệ, toàn bộ thẻ đề xuất hôm nay, nhật ký đối soát, thước đo định lượng và phân tích XAI sẽ tự động chuyển đổi đồng bộ 100%.
@@ -139,8 +139,8 @@
                 </div>
             </div>
 
-            <!-- 3 Master Suite Cards Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+            <!-- 4 Master Suite Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
                 <!-- Suite 1: Đa Động Cơ Sweet-Spot 27 Vị Trí (Mặc định) -->
                 <button type="button" id="btnMasterSuiteDropoff" class="master-suite-card active group relative flex flex-col justify-between text-left p-4 sm:p-5 rounded-2xl border-2 border-amber-400 bg-gradient-to-b from-amber-950/40 via-slate-900 to-slate-900 ring-2 ring-amber-400/30 shadow-xl transition-all hover:scale-[1.01] cursor-pointer">
                     <div class="space-y-2.5">
@@ -224,6 +224,35 @@
                     </div>
                     <div class="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between text-[11px]">
                         <span class="text-emerald-400 font-bold">Lãi 2026: +10.685 TỶ (ROI +40.7%)</span>
+                        <span class="suite-status-tag px-2 py-0.5 rounded bg-white/10 text-slate-400 font-bold text-[10px]">CHỌN HỆ NÀY</span>
+                    </div>
+                </button>
+
+                <!-- Suite 4: Cộng Hưởng Đa Tầng (Semantic Resonance & Co-Affinity) -->
+                <button type="button" id="btnMasterSuiteResonance" class="master-suite-card group relative flex flex-col justify-between text-left p-4 sm:p-5 rounded-2xl border border-slate-700 bg-slate-900/80 hover:border-violet-400/60 transition-all hover:scale-[1.01] cursor-pointer">
+                    <div class="space-y-2.5">
+                        <div class="flex items-center justify-between">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-violet-500/20 text-violet-300 border border-violet-500/40">
+                                <i class="bi bi-gem-fill"></i> HỆ 4 · ĐA DẠNG SỐ & CHUỖI
+                            </span>
+                            <span class="text-[11px] font-mono font-bold text-violet-300">Vốn 124.4M / 131M</span>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-black text-white group-hover:text-violet-300 transition-colors flex items-center gap-1.5">
+                                💎 Cộng Hưởng Đa Tầng
+                            </h3>
+                            <p class="text-[11px] text-slate-300 mt-1 leading-relaxed">
+                                Đề Tri-Tier 36s (12 VIP x 2.5M ăn 210M lãi +156M / 24 Lót ăn 84M lãi +30M) + Lô Top 7 Co-Affinity (Flat / Phân Tầng) + Lô Xiên 5 (55M).
+                            </p>
+                        </div>
+                        <div class="pt-2 border-t border-white/10 space-y-1 text-[11px] font-mono">
+                            <div class="flex justify-between text-slate-300"><span>• Đề:</span><strong class="text-violet-300">36s Tri-Tier (54M · 100% lãi)</strong></div>
+                            <div class="flex justify-between text-slate-300"><span>• Lô:</span><strong class="text-teal-300">Top 7 Co-Affinity (Flat/Tiered)</strong></div>
+                            <div class="flex justify-between text-slate-300"><span>• Xiên:</span><strong class="text-amber-300">Lô Xiên 5 (5 dàn X4 · 55M)</strong></div>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between text-[11px]">
+                        <span class="text-emerald-400 font-bold">Lãi 2026: +11.088 TỶ (Flat) / +11.945 TỶ</span>
                         <span class="suite-status-tag px-2 py-0.5 rounded bg-white/10 text-slate-400 font-bold text-[10px]">CHỌN HỆ NÀY</span>
                     </div>
                 </button>
@@ -317,10 +346,11 @@
                             <span class="text-xs font-black uppercase text-amber-300 flex items-center gap-1.5" id="shadowDeTitleLabel">
                                 <i class="bi bi-award-fill text-amber-400"></i> 1. Đề Đa Động Cơ 40s Đánh Phẳng (1M/số)
                             </span>
-                            <div class="inline-flex items-center gap-1 bg-black/60 p-0.5 rounded-lg border border-white/10 text-[10px]" id="shadowDeStrategyToggleGroup">
+                            <div class="inline-flex items-center gap-1 bg-black/60 p-0.5 rounded-lg border border-white/10 text-[10px] flex-wrap" id="shadowDeStrategyToggleGroup">
                                 <button type="button" id="btnToggleDeDropoff" class="px-2.5 py-1 rounded-md font-black bg-amber-500 text-slate-950 transition-all shadow-xs">👑 Đa Động Cơ 40s (Flat 1M)</button>
                                 <button type="button" id="btnToggleDeVip36" class="px-2.5 py-1 rounded-md font-bold text-slate-300 hover:text-white transition-all">⭐ 36s VIP Sweet-Spot</button>
                                 <button type="button" id="btnToggleDeTriCore" class="px-2.5 py-1 rounded-md font-bold text-slate-300 hover:text-white transition-all">🎯 Tri-Core 24s</button>
+                                <button type="button" id="btnToggleDeResonance" class="px-2.5 py-1 rounded-md font-bold text-slate-300 hover:text-white transition-all">💎 36s Tri-Tier Resonance</button>
                             </div>
                         </div>
                         <div id="shadowActionStatusText" class="text-base font-black text-white mb-2">
@@ -374,7 +404,7 @@
                                 </span>
                                 <span class="rounded bg-teal-400/20 text-teal-200 border border-teal-400/30 text-[10px] font-bold px-1.5 py-0.5" id="shadowLoWinRateBadge">Win 81.8% · 2.75 nháy/ngày</span>
                             </div>
-                            <!-- Sweet-Spot Switcher: Top 7 (Khuyên Dùng) vs Top 6 (Vốn Nhẹ) vs Top 7 Tri-Core vs Top 6 Tri-Core vs Top 2 vs Top 4 -->
+                            <!-- Sweet-Spot Switcher: Top 7 (Khuyên Dùng) vs Top 6 (Vốn Nhẹ) vs Top 7 Tri-Core vs Top 6 Tri-Core vs Top 2 vs Top 4 vs Resonance Flat/Tiered -->
                             <div class="flex items-center gap-1 bg-black/60 p-0.5 rounded-xl border border-teal-400/30 text-[10px] flex-wrap" id="shadowLoModeToggleGroup">
                                 <button type="button" id="btnShadowLoModeTop7" class="rounded-lg bg-teal-400 text-slate-950 font-black px-2.5 py-1 transition-all shadow-xs">⭐ Top 7 QMBF v6</button>
                                 <button type="button" id="btnShadowLoModeTop6" class="rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 font-bold px-2.5 py-1 transition-all">⚡ Top 6 QMBF v6</button>
@@ -382,6 +412,8 @@
                                 <button type="button" id="btnShadowLoModeTriCore6" class="rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 font-bold px-2.5 py-1 transition-all">🎯 Top 6 Tri-Core</button>
                                 <button type="button" id="btnShadowLoModeTop2" class="rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 font-bold px-2 py-0.5 transition-all">⚡ Top 2</button>
                                 <button type="button" id="btnShadowLoModeTop4" class="rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 font-bold px-2 py-0.5 transition-all">🔥 Top 4</button>
+                                <button type="button" id="btnShadowLoModeResonanceFlat" class="rounded-lg bg-white/10 hover:bg-white/20 text-violet-300 font-bold px-2 py-0.5 transition-all">💎 Top 7 Flat</button>
+                                <button type="button" id="btnShadowLoModeResonanceTiered" class="rounded-lg bg-white/10 hover:bg-white/20 text-violet-300 font-bold px-2 py-0.5 transition-all">💎 Top 7 Phân Tầng</button>
                             </div>
                         </div>
 
@@ -436,6 +468,7 @@
                         <div class="flex items-center gap-1 bg-black/60 p-0.5 rounded-xl border border-amber-400/30 text-[10px]" id="shadowXienStrategyToggleGroup">
                             <button type="button" id="btnToggleXien5" class="rounded-lg bg-amber-400 text-slate-950 font-black px-2.5 py-1 transition-all shadow-xs">👑 Dàn Xiên 5 Sweet-Spot (55M)</button>
                             <button type="button" id="btnToggleXienTriCore" class="rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 font-bold px-2.5 py-1 transition-all">🎯 Xiên 5 Tri-Core Tam Trụ (55M)</button>
+                            <button type="button" id="btnToggleXienResonance" class="rounded-lg bg-white/10 hover:bg-white/20 text-violet-300 font-bold px-2.5 py-1 transition-all">💎 Xiên 5 Co-Affinity (55M)</button>
                         </div>
                         <button type="button" id="btnCopyXien5Tickets" class="rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-xs px-3.5 py-2 transition-all shadow-md flex items-center gap-1.5 cursor-pointer">
                             <i class="bi bi-clipboard-check-fill"></i> <span id="btnCopyXienLabel">Copy 5 Dàn Xiên 4</span>
@@ -754,6 +787,12 @@
                         <button type="button" data-shadow-cat="vipSuite" class="shadow-cat-btn rounded-lg bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs px-3 py-1.5 transition-all flex items-center gap-1.5 border border-slate-200/60">
                             <i class="bi bi-star-fill text-amber-500"></i> ⭐ HỆ 3: Tổng Hợp VIP Sweet-Spot (Đề 36s + Song Thủ Top 2 + Xiên 5)
                         </button>
+                        <button type="button" data-shadow-cat="resonanceSuite" class="shadow-cat-btn rounded-lg bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs px-3 py-1.5 transition-all flex items-center gap-1.5 border border-slate-200/60">
+                            <i class="bi bi-gem-fill text-violet-600"></i> 💎 HỆ 4: Tổng Hợp Cộng Hưởng (Đề 36s + Lô Top 7 + Xiên 5)
+                        </button>
+                        <button type="button" data-shadow-cat="loResonance" class="shadow-cat-btn rounded-lg bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs px-3 py-1.5 transition-all flex items-center gap-1.5 border border-slate-200/60">
+                            <i class="bi bi-diagram-3-fill text-teal-600"></i> ⚡ Lô Top 7 Co-Affinity (Phân Tầng & Flat)
+                        </button>
                         <button type="button" data-shadow-cat="loDropoff" class="shadow-cat-btn rounded-lg bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs px-3 py-1.5 transition-all flex items-center gap-1.5 border border-slate-200/60">
                             <i class="bi bi-dice-5-fill text-teal-600"></i> 🎯 Lô Sweet-Spot (Top 7/6)
                         </button>
@@ -802,6 +841,12 @@
                     <div class="inline-flex items-center gap-1 bg-white p-0.5 rounded-lg border border-teal-300 text-[11px] hidden" id="shadowLoTableSubSwitchGroup">
                         <button type="button" id="btnTableLoTop7" class="px-2 py-0.5 rounded font-black bg-teal-400 text-slate-950 transition-all shadow-xs">⭐ Top 7 (Khuyên Dùng)</button>
                         <button type="button" id="btnTableLoTop6" class="px-2 py-0.5 rounded font-bold text-slate-600 hover:text-slate-900 transition-all">⚡ Top 6 (Vốn Nhẹ)</button>
+                    </div>
+
+                    <!-- Sub Switcher for Hệ 4 Resonance (Flat vs Phân Tầng) -->
+                    <div class="inline-flex items-center gap-1 bg-white p-0.5 rounded-lg border border-violet-300 text-[11px] hidden" id="shadowResonanceSubSwitchGroup">
+                        <button type="button" id="btnTableResonanceFlat" class="px-2 py-0.5 rounded font-black bg-violet-600 text-white transition-all shadow-xs">💎 Cược Phẳng (Flat 124.4M)</button>
+                        <button type="button" id="btnTableResonanceTiered" class="px-2 py-0.5 rounded font-bold text-slate-600 hover:text-slate-900 transition-all">⚡ Phân Tầng (Tiered 131.0M)</button>
                     </div>
 
                     <span>Số kỳ đối soát: <strong class="text-slate-900 font-mono" id="shadowDiaryRowCount">18</strong></span>
