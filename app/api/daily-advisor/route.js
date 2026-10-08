@@ -418,6 +418,14 @@ function settleFromRaw(payload, rawRows) {
         console.error('[API daily-advisor] Error building loDropoff27:', err);
     }
 
+    let semanticResonanceSuite = payload.semanticResonanceSuite || null;
+    try {
+        const { buildSemanticResonanceSuiteAdvisor } = require('@/lib/services/semanticResonanceSuiteAdvisorService');
+        semanticResonanceSuite = buildSemanticResonanceSuiteAdvisor(rawRows, payload);
+    } catch (err) {
+        console.error('[API daily-advisor] Error building semanticResonanceSuite:', err);
+    }
+
     return {
         ...payload,
         records,
@@ -442,6 +450,7 @@ function settleFromRaw(payload, rawRows) {
         triCoreDe: triCoreDe || payload.triCoreDe || null,
         deDropoffMerge: deDropoffMerge || payload.deDropoffMerge || null,
         loDropoff27: loDropoff27 || payload.loDropoff27 || null,
+        semanticResonanceSuite: semanticResonanceSuite || payload.semanticResonanceSuite || null,
         latestDataDate: rawRows?.at(-1)?.date || payload.latestDataDate,
         snapshotLock: (() => {
             try {
@@ -573,6 +582,13 @@ export async function GET(request) {
                     const r2Target = payload?.loDropoff27?.latestRecommendation?.targetDate || '';
                     if (!payload.loDropoff27 || localTarget >= r2Target) {
                         payload.loDropoff27 = localPayload.loDropoff27;
+                    }
+                }
+                if (localPayload?.semanticResonanceSuite) {
+                    const localTarget = localPayload.semanticResonanceSuite.latestRecommendation?.targetDate || '';
+                    const r2Target = payload?.semanticResonanceSuite?.latestRecommendation?.targetDate || '';
+                    if (!payload.semanticResonanceSuite || localTarget >= r2Target) {
+                        payload.semanticResonanceSuite = localPayload.semanticResonanceSuite;
                     }
                 }
             } catch (_) {}

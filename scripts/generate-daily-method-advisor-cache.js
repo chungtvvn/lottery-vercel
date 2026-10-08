@@ -96,6 +96,13 @@ async function main() {
         console.error('[generateDailyAdvisorCache] Error building loDropoff27:', err);
     }
 
+    try {
+        const { buildSemanticResonanceSuiteAdvisor } = require('../lib/services/semanticResonanceSuiteAdvisorService');
+        cache.semanticResonanceSuite = buildSemanticResonanceSuiteAdvisor(raw, cache);
+    } catch (err) {
+        console.error('[generateDailyAdvisorCache] Error building semanticResonanceSuite:', err);
+    }
+
     const fs = require('fs');
     const dataDir = path.join(__dirname, '..', 'data');
     if (!fs.existsSync(dataDir)) {
