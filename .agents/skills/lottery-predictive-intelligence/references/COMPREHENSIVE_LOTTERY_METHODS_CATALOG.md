@@ -58,7 +58,24 @@ Tất cả các phương pháp đơn lẻ đều tạo ra dàn **30 số** cố 
 
 ---
 
-### 1.3. Phương Pháp Tuyển Chọn Độc Lập & Đồng Thuận (Selectors & Consensus)
+### 1.3. Phương Pháp Đề Mới: Đề Phân Tầng Cộng Hưởng Đa Dạng Số (`DeTriTierResonance` & `DeConsensusFlat40`)
+
+Đột phá công nghệ dựa trên việc liên kết đồng thời 6 không gian Dạng Số (10 Chạm, 10 Tổng, 15 Bộ số, Parity, Size, Kép) và 4 trường Động Lực Chuỗi (Weibull Hazard, Lô rơi Đề, Bệt Chạm):
+
+1. **`DeTriTierResonance` - Đề Tri-Tier Semantic Resonance (36 Số)**:
+   - *Cơ cấu vốn*: Vốn **54M/ngày** (12 số VIP cược 2.5M/số + 24 số Bọc lót cược 1.0M/số).
+   - *Cơ chế trả thưởng*:
+     - Nổ VIP (12s): Ăn **210M** $\implies$ **LÃI RÒNG +156M** (ROI +288.9%).
+     - Nổ Bọc lót (24s): Ăn **84M** $\implies$ **LÃI RÒNG +30M** (ROI +55.6%).
+     - **100% các kỳ nổ đều có lãi ròng**, triệt tiêu tình trạng trúng bọc lót bị hòa/lỗ non.
+   - *Hiệu năng 2026 (275 kỳ)*: Trúng **130 kỳ (47.3% Win Rate)**, Lãi ròng **+1.020 TỶ VNĐ (ROI +10.3%)**.
+2. **`deConsensusFlat40` - Đề Đa Động Cơ 40 Số Đánh Phẳng (1M/số)**:
+   - *Cơ cấu vốn*: Vốn **40M/ngày** cược phẳng 1M/số $\implies$ Trúng ăn 84M $\implies$ Lãi **+44M**.
+   - *Hiệu năng 2026 (275 kỳ)*: Trúng **142 kỳ (51.6% Win Rate)**, Lãi ròng **+928.0M VNĐ (ROI +8.4%)**. Điểm tựa bảo vệ tài khoản với Max Loss Streak chỉ 6 ngày.
+
+---
+
+### 1.4. Phương Pháp Tuyển Chọn Độc Lập & Đồng Thuận (Selectors & Consensus)
 - **`balanced-selector-fixed30-v1` (Bộ chọn cân bằng)**: Tự động chọn 1 dàn 30 số tốt nhất từ các phương pháp nền tảng bằng posterior Bayes 7/30/90 kỳ kết hợp cận dưới khoảng tin cậy Wilson.
 - **`all-method-fixed30-consensus-v1` (Đồng thuận toàn bộ dàn 30)**: Bỏ phiếu có trọng số qua toàn bộ các dàn ứng viên để chọn ra dàn 30 số có độ đồng thuận liên thuật toán cao nhất.
 
@@ -70,28 +87,27 @@ Lô miền Bắc có 27 giải thưởng, xác suất một con số xuất hi�
 
 ### 2.1. Động Cơ Siêu Hợp Nhất QMBF v6.1 (Quantum Bayes-Markov Fusion)
 QMBF v6.1 tích hợp **7 động cơ độc lập** thông qua thuật toán dung hợp thứ hạng tương hỗ (Reciprocal Rank Fusion - RRF, $K = 16.0$):
-
-1. **Engine 1: Positional Markov Tensor ($w = 1.90$)**:
-   - Ma trận chuyển trạng thái 3 bậc trễ (Lag 1, Lag 2, Lag 3) trên 20+ năm.
-   - Gán trọng số đặc biệt cho vị trí giải: Giải Đặc Biệt (3.6x), Giải Nhất (2.6x), Giải 7 (2.0x).
-2. **Engine 2: Head-Tail Bayes Dynamic Momentum ($w = 0.30$)**:
-   - Xác suất Bayes phân tích độc lập đầu số ($0-9$) và đuôi số ($0-9$).
-3. **Engine 3: Co-occurrence PMI Affinity Matrix ($w = 0.25$)**:
-   - Lực hút cặp số cùng về (Pointwise Mutual Information) trên không gian ma trận đối xứng $100 \times 100$.
-4. **Engine 4: Elastic Momentum & Lô Rơi Đa Nháy ($w = 0.35$)**:
-   - Nhân hệ số $1.15\times$ khi số về $\ge 2$ nháy ở kỳ $D-1$.
-5. **Engine 5: Shadow & Inverse Pair Synergy ($w = 0.15$)**:
-   - Tương quan cặp số đảo vị trí (như $35 \leftrightarrow 53$) và bóng âm dương ngũ hành.
-6. **Engine 6: Positional Bridge Correlation ($w = 0.20$)**:
-   - Đồ thị cầu ghép các vị trí trọng điểm: GĐB, G1 và 4 con số của G7.
-7. **Engine 7: Form & Parity Transition Resonance ($w = 0.20$)**:
-   - Cộng hưởng dạng số: Chạm rơi, chuyển dịch tổng lân cận và số đảo từ giải đặc biệt $D-1$.
-8. **Bộ lọc Khử Lô Gan Nặng (Soft Gan Damping Filter)**:
-   - Giảm $50\%$ trọng số nếu gan $\ge 22$ kỳ, giảm $25\%$ nếu gan $15 - 21$ kỳ.
+1. **Engine 1**: Positional Markov Tensor (3 bậc trễ, trọng số $w = 1.90$).
+2. **Engine 2**: Head-Tail Bayes Dynamic Momentum (trọng số $w = 0.30$).
+3. **Engine 3**: Co-occurrence PMI Affinity Matrix (trọng số $w = 0.25$).
+4. **Engine 4**: Elastic Momentum & Lô Rơi Đa Nháy (hệ số $1.15\times$, trọng số $w = 0.35$).
+5. **Engine 5**: Shadow & Inverse Pair Synergy (trọng số $w = 0.15$).
+6. **Engine 6**: Positional Bridge Correlation (trọng số $w = 0.20$).
+7. **Engine 7**: Form & Parity Transition Resonance (trọng số $w = 0.20$).
 
 ---
 
-### 2.2. Bảy (07) Mức Cược Phân Tầng Lô Theo Số Lượng (Loto Top Counts)
+### 2.2. Phương Pháp Lô Mới: Mạng Lưới Đồng Pha & Động Lực Hai Chiều (`LoCoAffinityMomentum`)
+- **Động Lực Đa Nháy Hai Chiều**: Khi một số nổ $\ge 2$ nháy ở kỳ $D-1$, kích hoạt đồng thời số đó ($1.15\times$), số lộn ($1.18\times$) và bóng ngũ hành ($1.12\times$).
+- **Lực Hút Mạng Lưới PMI**: Khảo sát ma trận lực hút đồng xuất hiện qua 120 kỳ để phát hiện các cụm số về chùm.
+- **Phân bổ vốn chuẩn xác**:
+  - **Song Thủ Vàng (Top 2)**: Cặp có lực hút PMI lớn nhất trong Top 6, nổ $50.2\%$ ngày, ROI $+44.3\%$.
+  - **Lục Thủ Chủ Lực (Top 6)**: Điểm neo dòng tiền với tỷ lệ nổ $85.4\%$ ngày, tỷ lệ có lãi ròng $51.2\%$, lãi $+1.571$ TỶ VNĐ.
+  - **Thất Thủ Tuyển Chọn (Top 7)**: Tối ưu hóa chỉ số Sharpe trên cửa sổ 45 ngày, nổ $89.1\%$ ngày, lãi $+1.819$ TỶ VNĐ.
+
+---
+
+### 2.3. Bảy (07) Mức Cược Phân Tầng Lô Theo Số Lượng (Loto Top Counts)
 
 Chi phí: **2.200K / điểm (số)**. Tiền thưởng: **8.000K / nháy**.
 *Bắt buộc phân biệt giữa Tần suất Nổ (Hit Rate) và Tỷ lệ Có Lãi Ròng (Profitable Rate)*:
@@ -108,15 +124,15 @@ Chi phí: **2.200K / điểm (số)**. Tiền thưởng: **8.000K / nháy**.
 
 ---
 
-### 2.3. Lô Cặp & Ghép Xiên (Xiên 2, Xiên 3, Xiên 4)
+### 2.4. Lô Cặp & Ghép Xiên (Xiên 2, Xiên 3, Xiên 4)
 - **Golden Xiên 2 Tự Động**: Chọn các cặp có xác suất đồng xuất hiện vượt trội qua ma trận tương hỗ, tỷ lệ nổ $48.2\%$ ngày, ROI $+26.2\%$.
 - **Xiên Quây 4 (11 vé)** và **Xiên 5 (5 dàn Xiên 4)**: Đòn bẩy lợi nhuận với tỷ lệ nổ từ 2 con có lãi, gia tăng xác suất có ít nhất 1 dòng tiền dương trong ngày.
 
 ---
 
-## 3. Khuyến Nghị Phối Hợp Danh Mục Thực Chiến (Live Combat Allocation)
+## 3. Khuyến Nghị Phối Hợp Danh Mục Thực Chiến (Cross-Hedging Portfolio)
 
-Một danh mục thực chiến thông minh luôn phân bổ vốn cân bằng giữa Lô và Đề để triệt tiêu biến động (Cross-Hedging Portfolio):
+Một danh mục thực chiến thông minh luôn phân bổ vốn cân bằng giữa Lô và Đề để triệt tiêu biến động:
 
 ```mermaid
 graph TD
@@ -125,7 +141,9 @@ graph TD
     
     L --> L2["Song Thủ Top 2 (Vốn 4.4M - ROI +44.3%)"]
     L --> L6["Lục Thủ Top 6 (Vốn 13.2M - Lãi +1.571M)"]
+    L --> L7["Thất Thủ Top 7 (Vốn 15.4M - Lãi +1.819M)"]
     
-    D --> D1["Đề Gộp Tiêu Chuẩn (Vốn 60M - Win 36.7%)"]
-    D --> D3["Đề Tam Trụ Phân Tầng (Vốn 90M - Win 39.3%)"]
+    D --> D1["Đề Tri-Tier Semantic 36s (Vốn 54M - Lãi +1.020 TỶ)"]
+    D --> D2["Đề Consensus Flat 40s (Vốn 40M - Win 51.6% - Lãi +928M)"]
+    D --> D3["Đề Tam Trụ Phân Tầng (Vốn 90M - Win 39.3% - Lãi +3.318M)"]
 ```

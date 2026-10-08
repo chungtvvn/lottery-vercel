@@ -78,6 +78,14 @@ console.log(
 );
 console.log('-'.repeat(100));
 
+let deShadowCache = null;
+try {
+    const shadowPath = path.join(root, 'lib', 'data', 'statistics', 'cached_de_dropoff_merge_shadow.json');
+    if (fs.existsSync(shadowPath)) {
+        deShadowCache = JSON.parse(fs.readFileSync(shadowPath, 'utf8'));
+    }
+} catch (_) {}
+
 const deMethods = [
     { key: 'metaLearner', label: 'Đề Tinh Hoa (metaLearner)', ledger: cacheData.metaLearner?.settledLedger },
     { key: 'dualMerge', label: 'Đề Gộp Tiêu Chuẩn', ledger: cacheData.dualMerge?.settledLedger },
@@ -86,7 +94,8 @@ const deMethods = [
     { key: 'streakAwareDeAdvisor', label: 'Đề Streak Aware', ledger: cacheData.streakAwareDeAdvisor?.settledLedger },
     { key: 'pentaCoreDe', label: 'Đề Penta Core', ledger: cacheData.pentaCoreDe?.settledLedger },
     { key: 'deMarkovGapHazard', label: 'Đề Markov Hazard', ledger: cacheData.deMarkovGapHazard?.settledLedger },
-    { key: 'dePositionalGraphFlow', label: 'Đề Cầu Đồ Thị Vị Trí', ledger: cacheData.dePositionalGraphFlow?.settledLedger }
+    { key: 'dePositionalGraphFlow', label: 'Đề Cầu Đồ Thị Vị Trí', ledger: cacheData.dePositionalGraphFlow?.settledLedger },
+    { key: 'deConsensusFlat40', label: 'Đề Consensus Flat 40s', ledger: deShadowCache?.settledLedger }
 ];
 
 for (const m of deMethods) {
