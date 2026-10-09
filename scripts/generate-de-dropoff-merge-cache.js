@@ -285,6 +285,22 @@ async function generate() {
         fs.writeFileSync(dataCacheFile, JSON.stringify(payload, null, 2), 'utf8');
     }
 
+    // Direct synchronization into cached_daily_method_advisor.json
+    try {
+        const advisorLibFile = path.join(process.cwd(), 'lib', 'data', 'statistics', 'cached_daily_method_advisor.json');
+        if (fs.existsSync(advisorLibFile)) {
+            const adv = JSON.parse(fs.readFileSync(advisorLibFile, 'utf8'));
+            adv.deDropoffMerge = payload;
+            fs.writeFileSync(advisorLibFile, JSON.stringify(adv, null, 2), 'utf8');
+        }
+        const advisorDataFile = path.join(process.cwd(), 'data', 'cached_daily_method_advisor.json');
+        if (fs.existsSync(advisorDataFile)) {
+            const adv = JSON.parse(fs.readFileSync(advisorDataFile, 'utf8'));
+            adv.deDropoffMerge = payload;
+            fs.writeFileSync(advisorDataFile, JSON.stringify(adv, null, 2), 'utf8');
+        }
+    } catch (_) {}
+
     console.log(`\n🎉 Generated Đề Consensus Flat 40 cache successfully to: ${targetCacheFile}`);
     console.log(`Cache file size: ${(fs.statSync(targetCacheFile).size / 1024).toFixed(1)} KB`);
     console.log(`2026 Full Summary: Win ${wins40}/${all2026Ledger.length} (${(wins40/all2026Ledger.length*100).toFixed(1)}%), Profit: +${(accumProfitK/1000).toFixed(1)}M, ROI: +${(accumProfitK/(all2026Ledger.length * CFG.stakeK)*100).toFixed(1)}%`);

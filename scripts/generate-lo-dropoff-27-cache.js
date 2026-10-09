@@ -297,6 +297,22 @@ async function generate() {
         fs.writeFileSync(dataCacheFile, JSON.stringify(payload, null, 2), 'utf8');
     }
 
+    // Direct synchronization into cached_daily_method_advisor.json
+    try {
+        const advisorLibFile = path.join(process.cwd(), 'lib', 'data', 'statistics', 'cached_daily_method_advisor.json');
+        if (fs.existsSync(advisorLibFile)) {
+            const adv = JSON.parse(fs.readFileSync(advisorLibFile, 'utf8'));
+            adv.loDropoff27 = payload;
+            fs.writeFileSync(advisorLibFile, JSON.stringify(adv, null, 2), 'utf8');
+        }
+        const advisorDataFile = path.join(process.cwd(), 'data', 'cached_daily_method_advisor.json');
+        if (fs.existsSync(advisorDataFile)) {
+            const adv = JSON.parse(fs.readFileSync(advisorDataFile, 'utf8'));
+            adv.loDropoff27 = payload;
+            fs.writeFileSync(advisorDataFile, JSON.stringify(adv, null, 2), 'utf8');
+        }
+    } catch (_) {}
+
     console.log(`\n🎉 Generated Lô QMBF v6 cache successfully to: ${targetCacheFile}`);
     console.log(`Cache file size: ${(fs.statSync(targetCacheFile).size / 1024).toFixed(1)} KB`);
     console.log(`2026 Full Summary: Win ${winDays7}/${all2026Ledger.length} (${(winDays7/all2026Ledger.length*100).toFixed(1)}%), Hits: ${totalHits7} (${(totalHits7/all2026Ledger.length).toFixed(2)}/day), Profit: +${(accumProfit7K/1000).toFixed(1)}M, ROI: +${(accumProfit7K/(all2026Ledger.length * 15400)*100).toFixed(1)}%`);

@@ -573,14 +573,18 @@ export async function GET(request) {
                 if (localPayload?.deDropoffMerge) {
                     const localTarget = localPayload.deDropoffMerge.latestRecommendation?.targetDate || '';
                     const r2Target = payload?.deDropoffMerge?.latestRecommendation?.targetDate || '';
-                    if (!payload.deDropoffMerge || localTarget >= r2Target) {
+                    const localLen = localPayload.deDropoffMerge.settledLedger?.length || 0;
+                    const r2Len = payload?.deDropoffMerge?.settledLedger?.length || 0;
+                    if (!payload.deDropoffMerge || localLen >= r2Len || localTarget >= r2Target) {
                         payload.deDropoffMerge = localPayload.deDropoffMerge;
                     }
                 }
                 if (localPayload?.loDropoff27) {
                     const localTarget = localPayload.loDropoff27.latestRecommendation?.targetDate || '';
                     const r2Target = payload?.loDropoff27?.latestRecommendation?.targetDate || '';
-                    if (!payload.loDropoff27 || localTarget >= r2Target) {
+                    const localLen = localPayload.loDropoff27.settledLedger?.length || 0;
+                    const r2Len = payload?.loDropoff27?.settledLedger?.length || 0;
+                    if (!payload.loDropoff27 || localLen >= r2Len || localTarget >= r2Target) {
                         payload.loDropoff27 = localPayload.loDropoff27;
                     }
                 }
@@ -591,8 +595,45 @@ export async function GET(request) {
                         payload.semanticResonanceSuite = localPayload.semanticResonanceSuite;
                     }
                 }
+
+                // Explicit shadow cache file fallback for deDropoffMerge and loDropoff27
+                try {
+                    const deDropoffShadowFile = path.join(process.cwd(), 'lib', 'data', 'statistics', 'cached_de_dropoff_merge_shadow.json');
+                    if (fs.existsSync(deDropoffShadowFile)) {
+                        const shadowDe = JSON.parse(fs.readFileSync(deDropoffShadowFile, 'utf8'));
+                        if ((shadowDe?.settledLedger?.length || 0) >= (payload?.deDropoffMerge?.settledLedger?.length || 0)) {
+                            payload.deDropoffMerge = shadowDe;
+                        }
+                    }
+                    const loDropoffShadowFile = path.join(process.cwd(), 'lib', 'data', 'statistics', 'cached_lo_dropoff_27_shadow.json');
+                    if (fs.existsSync(loDropoffShadowFile)) {
+                        const shadowLo = JSON.parse(fs.readFileSync(loDropoffShadowFile, 'utf8'));
+                        if ((shadowLo?.settledLedger?.length || 0) >= (payload?.loDropoff27?.settledLedger?.length || 0)) {
+                            payload.loDropoff27 = shadowLo;
+                        }
+                    }
+                } catch (_) {}
             } catch (_) {}
         }
+
+        // Secondary R2 fallback for standalone shadow files if payload ledgers lag behind
+        try {
+            const latestRawDateStr = String(payload.latestDataDate || '').slice(0, 10);
+            const deLastSettled = payload.deDropoffMerge?.settledLedger?.at(-1)?.date || '';
+            if (latestRawDateStr && deLastSettled < latestRawDateStr) {
+                const r2ShadowDe = await loadJsonWithSupabaseFallback('cached_de_dropoff_merge_shadow.json').catch(() => null);
+                if ((r2ShadowDe?.settledLedger?.length || 0) > (payload.deDropoffMerge?.settledLedger?.length || 0)) {
+                    payload.deDropoffMerge = r2ShadowDe;
+                }
+            }
+            const loLastSettled = payload.loDropoff27?.settledLedger?.at(-1)?.date || '';
+            if (latestRawDateStr && loLastSettled < latestRawDateStr) {
+                const r2ShadowLo = await loadJsonWithSupabaseFallback('cached_lo_dropoff_27_shadow.json').catch(() => null);
+                if ((r2ShadowLo?.settledLedger?.length || 0) > (payload.loDropoff27?.settledLedger?.length || 0)) {
+                    payload.loDropoff27 = r2ShadowLo;
+                }
+            }
+        } catch (_) {}
 
         const raw = await getRawData();
         const { isPredictionLockActive } = require('@/lib/utils/predictionLockGuard');
