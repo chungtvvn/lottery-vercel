@@ -1260,7 +1260,7 @@
                 updateXaiBlock('suiteTriCore');
             } else if (suiteId === 'suiteVipSweetSpot') {
                 renderShadowDeCard('vip36');
-                renderShadowLoCard('top2');
+                renderShadowLoCard('top7');
                 renderShadowXienCard('xien5');
                 selectCategoryTab('vipSuite');
                 computeAndRenderMetrics('vip36');
@@ -1713,10 +1713,11 @@
             } else if (suiteId === 'suiteVipSweetSpot') {
                 evidences = [
                     'Đề 36s VIP Sweet-Spot: Cắt bỏ 4 số biên xác suất thấp của dàn 40s, cược phẳng 36M (ăn 84M · Lãi +48M/kỳ). Tỷ lệ trúng 2026 đạt 47.3% (vượt hòa vốn 42.9%), lãi ròng +1.020 TỶ VNĐ (ROI +10.3%).',
-                    'Song Thủ Lô Top 2 QMBF v6: Vốn tối thiểu 4.4M/ngày (2 số x 2.2M). Tỷ lệ nổ 59.3%, lãi ròng +598.0M (ROI +49.4%), chuỗi thua max chỉ 6d.',
+                    'Thất Thủ Lô Top 7 QMBF v6: Vốn 15.4M/ngày (7 số x 2.2M). Tỷ lệ nổ 79.6%, lãi ròng +1.790 TỶ (ROI +42.3%), nổ 691 nháy trong năm 2026.',
                     'Lô Xiên 5 (5 Dàn Xiên 4 Sweet-Spot · Vốn 55M): Cơ cấu đòn bẩy ăn đậm khi nổ ≥2 con (+12M đến +1.865 TỶ). 2026 lãi ròng +9.067 TỶ (ROI +59.9%).'
                 ];
-                majorRisk = 'Tổng vốn cược mỗi ngày 95.4M (Đề 36M + Lô 4.4M + Xiên 55M). Tối ưu hóa biên lợi nhuận bứt phá với Dàn Xiên 5 độc lập và Song Thủ Lô.';
+                majorRisk = 'Tổng vốn cược mỗi ngày 106.4M (Đề 36M + Lô 15.4M + Xiên 55M). Tối ưu hóa biên lợi nhuận bứt phá với Dàn Xiên 5 độc lập và Thất Thủ Lô Top 7.';
+                churnGuard = 'Bộ lọc xác suất QMBF v6 & Sweet-Spot 36s tối ưu điểm vào tiền: Tỷ lệ nổ Lô Top 7 đạt 79.6% nâng đỡ hoàn toàn rủi ro ngày Đề trượt (100% Strict PIT).';
             } else if (suiteId === 'suiteResonance') {
                 evidences = [
                     'Đề Tri-Tier Semantic Resonance 36s: 12 VIP cược 2.5M (ăn 210M, lãi +156M) + 24 Bọc lót cược 1.0M (ăn 84M, lãi +30M). 100% ngày trúng đều có lãi dương, lãi cả năm +732.0M VNĐ (Win 47.3%).',
@@ -2880,10 +2881,10 @@
                 const dePayoutK = isHit36 ? 84000 : 0;
                 const deProfitK = dePayoutK - deStakeK;
 
-                // Song Thủ Lô Top 2 (2 số x 2.2M = 4.4M, ăn 8M/nháy)
-                const loInfo = getLoDropoffRowInfo(rLo, 'top2');
+                // Thất Thủ Lô Top 7 (7 số x 2.2M = 15.4M, ăn 8M/nháy)
+                const loInfo = getLoDropoffRowInfo(rLo, 'top7');
                 const loHits = loInfo.hits;
-                const loStakeK = 4400;
+                const loStakeK = 15400;
                 const loPayoutK = loHits * 8000;
                 const loProfitK = loPayoutK - loStakeK;
                 const isLoWin = loProfitK > 0;
@@ -2897,7 +2898,7 @@
                 const isXienWin = x5Eval.isWin;
 
                 const suiteDayProfitK = deProfitK + loProfitK + xienProfitK;
-                const suiteDayStakeK = 95400; // 36M + 4.4M + 55M = 95.4M
+                const suiteDayStakeK = 106400; // 36M + 15.4M + 55M = 106.4M
                 const isSuiteWin = suiteDayProfitK > 0;
 
                 cumDeK += deProfitK;
@@ -2945,7 +2946,7 @@
             if (winCountEl) winCountEl.textContent = `${suiteWins} ngày thắng (${totalDays - suiteWins} ngày âm)`;
             if (winRateEl) winRateEl.textContent = `${suiteWinRate}%`;
             if (hitsTagEl) hitsTagEl.classList.add('hidden');
-            if (profitLabelEl) profitLabelEl.textContent = (currentShadowPhase === 'from0710') ? '💰 Lãi Lũy Kế ⭐ HỆ 3: VIP Sweet-Spot (Từ 07/10/2026):' : '💰 Lãi Lũy Kế ⭐ HỆ 3: VIP Sweet-Spot (Vốn 95.4M/ngày):';
+            if (profitLabelEl) profitLabelEl.textContent = (currentShadowPhase === 'from0710') ? '💰 Lãi Lũy Kế ⭐ HỆ 3: VIP Sweet-Spot (Từ 07/10/2026):' : '💰 Lãi Lũy Kế ⭐ HỆ 3: VIP Sweet-Spot (Vốn 106.4M/ngày):';
             if (totalProfitEl) {
                 totalProfitEl.innerHTML = `
                     <div class="flex items-center gap-2 flex-wrap text-xs font-mono">
@@ -2953,7 +2954,7 @@
                         <span class="text-slate-500 font-normal">|</span>
                         <span class="font-bold ${cumDeK >= 0 ? 'text-emerald-300' : 'text-rose-300'}">Đề 36s: ${formatMoneyK(cumDeK)}</span>
                         <span class="text-slate-500 font-normal">|</span>
-                        <span class="font-bold ${cumLoK >= 0 ? 'text-emerald-300' : 'text-rose-300'}">Song Thủ Top 2: ${formatMoneyK(cumLoK)}</span>
+                        <span class="font-bold ${cumLoK >= 0 ? 'text-emerald-300' : 'text-rose-300'}">Thất Thủ Top 7: ${formatMoneyK(cumLoK)}</span>
                         <span class="text-slate-500 font-normal">|</span>
                         <span class="font-bold ${cumXienK >= 0 ? 'text-emerald-300' : 'text-rose-300'}">5 Dàn Xiên 4: ${formatMoneyK(cumXienK)}</span>
                     </div>
@@ -2967,7 +2968,7 @@
                 <tr class="border-b border-white/10 text-[11px] font-bold text-slate-400 uppercase tracking-wide">
                     <th class="py-2.5 px-3">Ngày Quay</th>
                     <th class="py-2.5 px-3">⭐ Đề 36s VIP Sweet-Spot</th>
-                    <th class="py-2.5 px-3">⚡ Song Thủ Top 2</th>
+                    <th class="py-2.5 px-3">🎯 Thất Thủ Top 7</th>
                     <th class="py-2.5 px-3">👑 5 Dàn Xiên 4 (Top 5)</th>
                     <th class="py-2.5 px-3 text-center">Dàn Đánh &amp; Số Nổ</th>
                     <th class="py-2.5 px-3 text-right">Tổng Vốn</th>
@@ -2980,7 +2981,7 @@
             `;
 
             const formattedTargetDate = formatDateVi(targetDate);
-            const pendingTop2 = (loLatestRec?.numbers || []).slice(0, 2).map(numStr).join(', ');
+            const pendingTop7 = (loLatestRec?.numbers || []).slice(0, 7).map(numStr).join(', ');
             const pendingTop5 = (loLatestRec?.numbers || []).slice(0, 5).map(numStr).join(', ');
 
             let pendingRowHtml = `
@@ -2996,8 +2997,8 @@
                         <div class="text-[10px] text-slate-400">Vốn 36.0M · Ăn 84M</div>
                     </td>
                     <td class="py-3 px-3">
-                        <span class="text-teal-300 font-semibold">Song Thủ Lô Top 2</span>
-                        <div class="text-[10px] text-slate-400">Số: ${pendingTop2 || '—'} · Vốn 4.4M</div>
+                        <span class="text-teal-300 font-semibold">Thất Thủ Lô Top 7</span>
+                        <div class="text-[10px] text-slate-400">Top 7: ${pendingTop7 || '—'} · Vốn 15.4M</div>
                     </td>
                     <td class="py-3 px-3">
                         <span class="text-indigo-300 font-semibold">5 Dàn Xiên 4 (Top 5)</span>
@@ -3009,8 +3010,8 @@
                         </button>
                     </td>
                     <td class="py-3 px-3 text-right">
-                        <span class="text-white font-bold">95.4M</span>
-                        <div class="text-[10px] text-slate-400">Đề 36M + Lô 4.4M + Xiên 55M</div>
+                        <span class="text-white font-bold">106.4M</span>
+                        <div class="text-[10px] text-slate-400">Đề 36M + Lô 15.4M + Xiên 55M</div>
                     </td>
                     <td class="py-3 px-3 text-right">
                         <div class="text-amber-400 font-bold">⏳ Chờ 18:30</div>
@@ -3089,8 +3090,8 @@
                             </button>
                         </td>
                         <td class="py-2.5 px-3 text-right">
-                            <span class="text-slate-300 font-bold">95.4M</span>
-                            <div class="text-[9px] text-slate-500">Đề 36M + Lô 4.4M + Xiên 55M</div>
+                            <span class="text-slate-300 font-bold">106.4M</span>
+                            <div class="text-[9px] text-slate-500">Đề 36M + Lô 15.4M + Xiên 55M</div>
                         </td>
                         <td class="py-2.5 px-3 text-right">
                             <div><span class="font-bold ${row.deProfitK > 0 ? 'text-emerald-400' : (row.deProfitK < 0 ? 'text-rose-400' : 'text-slate-500')}">${formatMoneyK(row.deProfitK)}</span></div>
@@ -4736,7 +4737,8 @@
         const deProfitK = deRow?.dayProfitK ?? (deAbstain ? 0 : (deHit ? 60000 : -24000));
 
         // Lô metrics (from loDropoff27)
-        const loInfo = getLoDropoffRowInfo(loRow, mode, prizesList);
+        const loMode = isVipSuiteActive ? 'top7' : mode;
+        const loInfo = getLoDropoffRowInfo(loRow, loMode, prizesList);
         const loStakeK = loInfo.stakeK;
         const loPayoutK = isPending ? 0 : loInfo.payoutK;
         const loProfitK = isPending ? 0 : loInfo.profitK;
@@ -4745,6 +4747,7 @@
 
         // Song Thủ Lô Top 2 metrics (from loDropoff27 - 2 số x 2.2M = 4.4M, ăn 8M/nháy)
         const loTop2Info = getLoDropoffRowInfo(loRow, 'top2', prizesList);
+        const loVip7Info = getLoDropoffRowInfo(loRow, 'top7', prizesList);
 
         // Đề 36s VIP Sweet-Spot metrics (1M/số = 36M, ăn 84M)
         const numsVip36List = (dropoffRow?.numbers36 || (dropoffRow?.numbers || dropoffRow?.top40 || []).slice(0, 36)).map(numStr);
@@ -4771,9 +4774,9 @@
         const triSuiteDayPayoutK = isPending ? 0 : (dePayoutK + loTriInfo.payoutK + xienTriPayoutK);
         const triSuiteDayProfitK = isPending ? 0 : (triSuiteDayPayoutK - triSuiteDayStakeK);
 
-        // VIP Suite totals (Hệ 3: Đề 36M + Top 2 4.4M + Xiên 55M = 95.4M)
-        const vipSuiteDayStakeK = 95400;
-        const vipSuiteDayPayoutK = isPending ? 0 : (de36PayoutK + loTop2Info.payoutK + xien5PayoutK);
+        // VIP Suite totals (Hệ 3: Đề 36M + Top 7 15.4M + Xiên 55M = 106.4M)
+        const vipSuiteDayStakeK = 106400;
+        const vipSuiteDayPayoutK = isPending ? 0 : (de36PayoutK + loVip7Info.payoutK + xien5PayoutK);
         const vipSuiteDayProfitK = isPending ? 0 : (vipSuiteDayPayoutK - vipSuiteDayStakeK);
 
         // Active totals for Hệ 1 Combo
@@ -4881,7 +4884,10 @@
         if (isTriCoreActive) {
             allBetLotoNumbersSet = new Set((loTriInfo.numbers || []).map(numStr));
             displayLoHits = isPending ? 0 : loTriInfo.hits;
-        } else if (isVipSuiteActive || isLoTop2Active) {
+        } else if (isVipSuiteActive) {
+            allBetLotoNumbersSet = new Set((loVip7Info.numbers || []).map(numStr));
+            displayLoHits = isPending ? 0 : loVip7Info.hits;
+        } else if (isLoTop2Active) {
             allBetLotoNumbersSet = new Set((loTop2Info.numbers || []).map(numStr));
             displayLoHits = isPending ? 0 : loTop2Info.hits;
         } else if (isResonanceActive && resRow?.lo?.top7) {
@@ -5121,7 +5127,7 @@
         // 4. Section Lô Dropoff 27 Vị Trí (Top 6 / Top 7 / Top 8 / Top 10)
         let loSectionHtml = '';
         if (loRow) {
-            const topNTitle = mode === 'top6' ? 'Top 6 Lục Thủ' : (mode === 'top8' ? 'Top 8 Bát Thủ' : (mode === 'top10' ? 'Top 10 Thập Thủ' : 'Top 7 Thất Thủ'));
+            const topNTitle = isVipSuiteActive ? 'Top 7 Thất Thủ' : (mode === 'top6' ? 'Top 6 Lục Thủ' : (mode === 'top8' ? 'Top 8 Bát Thủ' : (mode === 'top10' ? 'Top 10 Thập Thủ' : 'Top 7 Thất Thủ')));
 
             // Tiers: X3 (rank 1-2), X2 (rank 3-4), X1 (rank 5+)
             const x3Pills = loInfo.pills.filter(p => p.tier === 'X3');
@@ -5789,7 +5795,7 @@
                     <div class="rounded-xl bg-black/40 border border-white/10 p-2">
                         <div class="text-slate-400 text-[10px]">TỔNG VỐN (3 TRỤ)</div>
                         <div class="font-bold text-white text-sm mt-0.5">${formatMoneyK(vipSuiteDayStakeK, false)}</div>
-                        <div class="text-[9px] text-slate-500">Đề 36M + Lô 4.4M + Xiên 55M</div>
+                        <div class="text-[9px] text-slate-500">Đề 36M + Lô 15.4M + Xiên 55M</div>
                     </div>
                     <div class="rounded-xl bg-black/40 border border-white/10 p-2">
                         <div class="text-slate-400 text-[10px]">TỔNG THƯỞNG</div>
@@ -6256,7 +6262,7 @@
         if (isTriCoreActive) {
             container.innerHTML = resultsStripHtml + deSectionHtml + loTriCoreSectionHtml + xien5TriCoreSectionHtml + triCoreSummaryCardHtml;
         } else if (isVipSuiteActive) {
-            container.innerHTML = resultsStripHtml + de36SectionHtml + loTop2SectionHtml + xien5SectionHtml + vipSummaryCardHtml;
+            container.innerHTML = resultsStripHtml + de36SectionHtml + loSectionHtml + xien5SectionHtml + vipSummaryCardHtml;
         } else if (isLoTop2Active) {
             container.innerHTML = resultsStripHtml + loTop2SectionHtml;
         } else if (isDe36Active) {
