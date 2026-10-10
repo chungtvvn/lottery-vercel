@@ -2,7 +2,8 @@
   "strategyId": "loDropoff27",
   "strategyName": "Lô Quantum Bayes Fusion v6 (Top 7 Tuyển Chọn)",
   "config": {
-    "strategyId": "loDropoff27",
+    "strategyId": "loQuantumBayesFusion",
+    "legacyStrategyId": "loDropoff27",
     "strategyName": "Lô Quantum Bayes Fusion v6 (Top 7 Tuyển Chọn)",
     "defaultTopN": 7,
     "unitCostK": 2200,
@@ -16,7 +17,7 @@
   },
   "generatedAt": "2026-10-09T04:13:40.226Z",
   "latestDataDate": "2026-10-08",
-  "pendingPredictionDate": "2026-10-09",
+  "pendingPredictionDate": "2026-10-11",
   "summary": {
     "all2026": {
       "totalDays": 277,
@@ -144,8 +145,8 @@
     }
   },
   "latestRecommendation": {
-    "targetDate": "2026-10-09",
-    "predictionDate": "2026-10-09",
+    "targetDate": "2026-10-11",
+    "predictionDate": "2026-10-11",
     "action": "BET",
     "status": "BET",
     "methodId": "loDropoff27",
@@ -259,6 +260,11 @@
     "stakeK": 15400,
     "stakeFlatK": 15400,
     "stakeTierK": 15400,
+    "snapshotLock": {
+      "isLocked": false,
+      "targetDate": "2026-10-11",
+      "lockedAt": "2026-10-10T17:57:18.844Z"
+    },
     "totalStakeVND": 15400000,
     "totalTierStakeVND": 15400000,
     "payoutPerHitVND": 8000000,
@@ -270,11 +276,6 @@
     "historicalTierProfitK": 1790200,
     "liveCombatWinRate": 0.7727272727272727,
     "liveCombatProfitK": 93200,
-    "snapshotLock": {
-      "isLocked": true,
-      "targetDate": "2026-10-09",
-      "lockedAt": "2026-10-09T04:13:40.225Z"
-    },
     "reasoning": "💎 Động cơ Siêu Hợp Nhất Quantum Bayes-Markov Fusion v6 (QMBF v6): Tích hợp 4 chiều (Cầu đồ thị 27 vị trí + Ma trận Markov 2 bước + Nhịp Clustering Hawkes + Giảm xóc Gan). Tuyển chọn Top 7 số có mật độ nổ cao nhất. Đơn vị cược chuẩn: 2.2M ăn 8M. Tỉ lệ ngày có lãi ròng năm 2026: 81.3% (222/273 ngày), bình quân 2.76 nháy/ngày, Lãi ròng +1.819 TỶ (ROI +43.3%). 18 kỳ thực chiến đạt Win 72.2% (+66.8M)."
   },
   "settledLedger": [
@@ -4270,6 +4271,304 @@
         "targetDate": "2026-10-08",
         "lockedAt": "2026-10-08T12:00:00.000Z"
       }
+    },
+    {
+      "date": "2026-10-09",
+      "predictionDate": "2026-10-09",
+      "year": 2026,
+      "action": "BET",
+      "topN": 7,
+      "numbers": [
+        "62",
+        "88",
+        "84",
+        "52",
+        "70",
+        "36",
+        "19"
+      ],
+      "top6": [
+        "62",
+        "88",
+        "84",
+        "52",
+        "70",
+        "36"
+      ],
+      "top7": [
+        "62",
+        "88",
+        "84",
+        "52",
+        "70",
+        "36",
+        "19"
+      ],
+      "top8": [
+        "62",
+        "88",
+        "84",
+        "52",
+        "70",
+        "36",
+        "19",
+        "68"
+      ],
+      "top10": [
+        "62",
+        "88",
+        "84",
+        "52",
+        "70",
+        "36",
+        "19",
+        "68",
+        "54",
+        "41"
+      ],
+      "ranked": [
+        {
+          "num": "62",
+          "score": 28.5
+        },
+        {
+          "num": "88",
+          "score": 26.7
+        },
+        {
+          "num": "84",
+          "score": 24.9
+        },
+        {
+          "num": "52",
+          "score": 23.1
+        },
+        {
+          "num": "70",
+          "score": 21.3
+        },
+        {
+          "num": "36",
+          "score": 19.5
+        },
+        {
+          "num": "19",
+          "score": 17.7
+        },
+        {
+          "num": "68",
+          "score": 15.9
+        },
+        {
+          "num": "54",
+          "score": 14.1
+        },
+        {
+          "num": "41",
+          "score": 12.3
+        }
+      ],
+      "hitNumbers": [
+        "52"
+      ],
+      "numHitsMap": {
+        "13": 1,
+        "15": 2,
+        "24": 1,
+        "34": 1,
+        "35": 1,
+        "51": 2,
+        "52": 1,
+        "54": 2,
+        "63": 2,
+        "65": 1,
+        "72": 1,
+        "75": 1,
+        "77": 1,
+        "81": 1,
+        "82": 1,
+        "90": 1,
+        "06": 1,
+        "09": 1,
+        "02": 2,
+        "04": 1,
+        "01": 1,
+        "03": 1
+      },
+      "x3Hits": 0,
+      "x2Hits": 1,
+      "x1Hits": 0,
+      "hits": 1,
+      "hits7": 1,
+      "hits6": 1,
+      "hits8": 1,
+      "hits10": 3,
+      "isHit": false,
+      "isWin": false,
+      "stakeK": 15400,
+      "payoutK": 8000,
+      "profitK": -7400,
+      "dayProfitK": -7400,
+      "accumProfitK": 85800,
+      "tierStakeK": 28600,
+      "tierPayoutK": 16000,
+      "tierProfitK": -12600,
+      "accumTierProfitK": 238200,
+      "isTierWin": false,
+      "actualPrizes": [
+        "35",
+        "82",
+        "15",
+        "06",
+        "15",
+        "63",
+        "09",
+        "02",
+        "51",
+        "75",
+        "04",
+        "52",
+        "81",
+        "51",
+        "34",
+        "77",
+        "01",
+        "72",
+        "24",
+        "54",
+        "65",
+        "90",
+        "54",
+        "02",
+        "13",
+        "03",
+        "63"
+      ],
+      "actualSpecial": 35,
+      "snapshotLock": {
+        "isLocked": true,
+        "targetDate": "2026-10-09",
+        "lockedAt": "2026-10-10T17:57:18.844Z"
+      }
+    },
+    {
+      "date": "2026-10-10",
+      "predictionDate": "2026-10-10",
+      "action": "BET",
+      "topN": 7,
+      "numbers": [
+        "62",
+        "88",
+        "84",
+        "52",
+        "70",
+        "36",
+        "19"
+      ],
+      "top7": [
+        "62",
+        "88",
+        "84",
+        "52",
+        "70",
+        "36",
+        "19"
+      ],
+      "top2": [
+        "62",
+        "88"
+      ],
+      "top6": [
+        "62",
+        "88",
+        "84",
+        "52",
+        "70",
+        "36"
+      ],
+      "hitNumbers": [
+        "36"
+      ],
+      "numHitsMap": {
+        "10": 1,
+        "18": 1,
+        "21": 1,
+        "22": 2,
+        "27": 1,
+        "30": 1,
+        "33": 1,
+        "34": 1,
+        "36": 1,
+        "43": 1,
+        "44": 1,
+        "50": 1,
+        "53": 1,
+        "63": 1,
+        "66": 1,
+        "67": 1,
+        "71": 1,
+        "76": 1,
+        "78": 1,
+        "79": 1,
+        "86": 1,
+        "90": 1,
+        "93": 1,
+        "94": 1,
+        "97": 1,
+        "04": 1
+      },
+      "hits": 1,
+      "hits7": 1,
+      "hits6": 1,
+      "hits2": 0,
+      "isHit": true,
+      "isWin": false,
+      "stakeK": 15400,
+      "payoutK": 8000,
+      "profitK": -7400,
+      "dayProfitK": -7400,
+      "tierStakeK": 22000,
+      "tierPayoutK": 8000,
+      "tierProfitK": -14000,
+      "isTierWin": false,
+      "actualPrizes": [
+        "53",
+        "34",
+        "94",
+        "21",
+        "66",
+        "67",
+        "93",
+        "44",
+        "50",
+        "79",
+        "97",
+        "63",
+        "10",
+        "36",
+        "27",
+        "78",
+        "76",
+        "22",
+        "33",
+        "22",
+        "90",
+        "86",
+        "04",
+        "30",
+        "71",
+        "18",
+        "43"
+      ],
+      "actualSpecial": 53,
+      "snapshotLock": {
+        "isLocked": true,
+        "targetDate": "2026-10-10",
+        "lockedAt": "2026-10-10T12:00:00.000Z",
+        "settledFromLockedSnapshot": true
+      },
+      "accumProfitK": 78400,
+      "accumTierProfitK": 224200
     }
   ],
   "all2026Ledger": [
@@ -54718,6 +55017,364 @@
         "targetDate": "2026-10-08",
         "lockedAt": "2026-10-08T12:00:00.000Z"
       }
+    },
+    {
+      "date": "2026-10-09",
+      "predictionDate": "2026-10-09",
+      "year": 2026,
+      "action": "BET",
+      "topN": 7,
+      "numbers": [
+        "62",
+        "88",
+        "84",
+        "52",
+        "70",
+        "36",
+        "19"
+      ],
+      "top6": [
+        "62",
+        "88",
+        "84",
+        "52",
+        "70",
+        "36"
+      ],
+      "top7": [
+        "62",
+        "88",
+        "84",
+        "52",
+        "70",
+        "36",
+        "19"
+      ],
+      "top8": [
+        "62",
+        "88",
+        "84",
+        "52",
+        "70",
+        "36",
+        "19",
+        "68"
+      ],
+      "top10": [
+        "62",
+        "88",
+        "84",
+        "52",
+        "70",
+        "36",
+        "19",
+        "68",
+        "54",
+        "41"
+      ],
+      "ranked": [
+        {
+          "num": "62",
+          "score": 28.5
+        },
+        {
+          "num": "88",
+          "score": 26.7
+        },
+        {
+          "num": "84",
+          "score": 24.9
+        },
+        {
+          "num": "52",
+          "score": 23.1
+        },
+        {
+          "num": "70",
+          "score": 21.3
+        },
+        {
+          "num": "36",
+          "score": 19.5
+        },
+        {
+          "num": "19",
+          "score": 17.7
+        },
+        {
+          "num": "68",
+          "score": 15.9
+        },
+        {
+          "num": "54",
+          "score": 14.1
+        },
+        {
+          "num": "41",
+          "score": 12.3
+        }
+      ],
+      "hitNumbers": [
+        "52"
+      ],
+      "numHitsMap": {
+        "13": 1,
+        "15": 2,
+        "24": 1,
+        "34": 1,
+        "35": 1,
+        "51": 2,
+        "52": 1,
+        "54": 2,
+        "63": 2,
+        "65": 1,
+        "72": 1,
+        "75": 1,
+        "77": 1,
+        "81": 1,
+        "82": 1,
+        "90": 1,
+        "06": 1,
+        "09": 1,
+        "02": 2,
+        "04": 1,
+        "01": 1,
+        "03": 1
+      },
+      "x3Hits": 0,
+      "x2Hits": 1,
+      "x1Hits": 0,
+      "hits": 1,
+      "hits7": 1,
+      "hits6": 1,
+      "hits8": 1,
+      "hits10": 3,
+      "isHit": false,
+      "isWin": false,
+      "stakeK": 15400,
+      "payoutK": 8000,
+      "profitK": -7400,
+      "dayProfitK": -7400,
+      "accumProfitK": 85800,
+      "tierStakeK": 28600,
+      "tierPayoutK": 16000,
+      "tierProfitK": -12600,
+      "accumTierProfitK": 238200,
+      "isTierWin": false,
+      "actualPrizes": [
+        "35",
+        "82",
+        "15",
+        "06",
+        "15",
+        "63",
+        "09",
+        "02",
+        "51",
+        "75",
+        "04",
+        "52",
+        "81",
+        "51",
+        "34",
+        "77",
+        "01",
+        "72",
+        "24",
+        "54",
+        "65",
+        "90",
+        "54",
+        "02",
+        "13",
+        "03",
+        "63"
+      ],
+      "actualSpecial": 35,
+      "snapshotLock": {
+        "isLocked": true,
+        "targetDate": "2026-10-09",
+        "lockedAt": "2026-10-10T17:57:18.844Z"
+      }
     }
-  ]
+  ],
+  "lastSettled": {
+    "date": "2026-10-09",
+    "predictionDate": "2026-10-09",
+    "year": 2026,
+    "action": "BET",
+    "topN": 7,
+    "numbers": [
+      "62",
+      "88",
+      "84",
+      "52",
+      "70",
+      "36",
+      "19"
+    ],
+    "top6": [
+      "62",
+      "88",
+      "84",
+      "52",
+      "70",
+      "36"
+    ],
+    "top7": [
+      "62",
+      "88",
+      "84",
+      "52",
+      "70",
+      "36",
+      "19"
+    ],
+    "top8": [
+      "62",
+      "88",
+      "84",
+      "52",
+      "70",
+      "36",
+      "19",
+      "68"
+    ],
+    "top10": [
+      "62",
+      "88",
+      "84",
+      "52",
+      "70",
+      "36",
+      "19",
+      "68",
+      "54",
+      "41"
+    ],
+    "ranked": [
+      {
+        "num": "62",
+        "score": 28.5
+      },
+      {
+        "num": "88",
+        "score": 26.7
+      },
+      {
+        "num": "84",
+        "score": 24.9
+      },
+      {
+        "num": "52",
+        "score": 23.1
+      },
+      {
+        "num": "70",
+        "score": 21.3
+      },
+      {
+        "num": "36",
+        "score": 19.5
+      },
+      {
+        "num": "19",
+        "score": 17.7
+      },
+      {
+        "num": "68",
+        "score": 15.9
+      },
+      {
+        "num": "54",
+        "score": 14.1
+      },
+      {
+        "num": "41",
+        "score": 12.3
+      }
+    ],
+    "hitNumbers": [
+      "52"
+    ],
+    "numHitsMap": {
+      "13": 1,
+      "15": 2,
+      "24": 1,
+      "34": 1,
+      "35": 1,
+      "51": 2,
+      "52": 1,
+      "54": 2,
+      "63": 2,
+      "65": 1,
+      "72": 1,
+      "75": 1,
+      "77": 1,
+      "81": 1,
+      "82": 1,
+      "90": 1,
+      "06": 1,
+      "09": 1,
+      "02": 2,
+      "04": 1,
+      "01": 1,
+      "03": 1
+    },
+    "x3Hits": 0,
+    "x2Hits": 1,
+    "x1Hits": 0,
+    "hits": 1,
+    "hits7": 1,
+    "hits6": 1,
+    "hits8": 1,
+    "hits10": 3,
+    "isHit": false,
+    "isWin": false,
+    "stakeK": 15400,
+    "payoutK": 8000,
+    "profitK": -7400,
+    "dayProfitK": -7400,
+    "accumProfitK": 85800,
+    "tierStakeK": 28600,
+    "tierPayoutK": 16000,
+    "tierProfitK": -12600,
+    "accumTierProfitK": 238200,
+    "isTierWin": false,
+    "actualPrizes": [
+      "35",
+      "82",
+      "15",
+      "06",
+      "15",
+      "63",
+      "09",
+      "02",
+      "51",
+      "75",
+      "04",
+      "52",
+      "81",
+      "51",
+      "34",
+      "77",
+      "01",
+      "72",
+      "24",
+      "54",
+      "65",
+      "90",
+      "54",
+      "02",
+      "13",
+      "03",
+      "63"
+    ],
+    "actualSpecial": 35,
+    "snapshotLock": {
+      "isLocked": true,
+      "targetDate": "2026-10-09",
+      "lockedAt": "2026-10-10T17:57:18.844Z"
+    }
+  }
 }
