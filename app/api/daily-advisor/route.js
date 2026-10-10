@@ -283,7 +283,7 @@ function settleFromRaw(payload, rawRows) {
     const lastLoQmbDate = normalizeDate(loQuantumBayesFusion?.settledLedger?.at(-1)?.date);
     if (!loQuantumBayesFusion || !Array.isArray(loQuantumBayesFusion.settledLedger) || loQuantumBayesFusion.settledLedger.length === 0 || (latestRawDate && lastLoQmbDate && lastLoQmbDate < latestRawDate)) {
         const { buildLoQuantumBayesFusionAdvisor } = require('@/lib/services/loDualMergeAdvisorService');
-        loQuantumBayesFusion = buildLoQuantumBayesFusionAdvisor(rawRows);
+        loQuantumBayesFusion = buildLoQuantumBayesFusionAdvisor(rawRows, { existingLoQuantumBayesFusion: payload.loQuantumBayesFusion });
     }
 
     let dynamicMetaAdvisor = payload.dynamicMetaAdvisor;
@@ -308,7 +308,7 @@ function settleFromRaw(payload, rawRows) {
     if (!loQuadHybrid && loQuantumBayesFusion && loDualMerge) {
         try {
             const { buildLoQuadHybridAdvisor } = require('@/lib/services/aiLotteryResearchService');
-            loQuadHybrid = buildLoQuadHybridAdvisor(loQuantumBayesFusion, loDualMerge, rawRows);
+            loQuadHybrid = buildLoQuadHybridAdvisor(loQuantumBayesFusion, loDualMerge, rawRows, loTriHarmonic);
         } catch (_) {}
     }
 
@@ -331,6 +331,26 @@ function settleFromRaw(payload, rawRows) {
     }
 
     if (crossHedgingService) {
+        // Bước 1: Luôn ưu tiên đối soát on-the-fly cho pending recommendation nếu ngày đó đã có kết quả mở thưởng
+        const pendingTargetDate = normalizeDate(crossHedgingPortfolio?.targetDate || crossHedgingPortfolio?.latestRecommendation?.targetDate);
+        const actualRow = pendingTargetDate ? (rawRows || []).find(r => normalizeDate(r?.date || r?.ngay) === pendingTargetDate) : null;
+        if (actualRow && (actualRow.special != null || actualRow.prize1 != null)) {
+            try {
+                const decision = crossHedgingPortfolio.latestRecommendation || crossHedgingPortfolio;
+                const settled = crossHedgingService.settleCrossAssetPortfolio(decision, actualRow);
+                crossHedgingPortfolio = {
+                    ...crossHedgingPortfolio,
+                    lastSettled: settled
+                };
+                const existsInLedger = (crossHedgingPortfolio.settledLedger || []).some(r => normalizeDate(r?.date) === pendingTargetDate);
+                if (!existsInLedger && Array.isArray(crossHedgingPortfolio.settledLedger)) {
+                    crossHedgingPortfolio.settledLedger = [...crossHedgingPortfolio.settledLedger, settled];
+                }
+            } catch (err) {
+                console.error('[API daily-advisor] Error settling crossHedging on-the-fly:', err);
+            }
+        }
+
         const lastHedgingDate = normalizeDate(
             crossHedgingPortfolio?.settledLedger?.at(-1)?.date ||
             crossHedgingPortfolio?.targetDate
@@ -355,9 +375,16 @@ function settleFromRaw(payload, rawRows) {
                         ledgerHistory: backtestRes.settledLedger
                     }
                 );
+                const { isPredictionLockActive, preserveLockedRecommendation } = require('@/lib/utils/predictionLockGuard');
+                const lockStatus = isPredictionLockActive(nextTargetDate, rawRows);
+                const finalPendingDecision = preserveLockedRecommendation(
+                    payload.crossHedgingPortfolio?.latestRecommendation || payload.crossHedgingPortfolio,
+                    pendingDecision,
+                    lockStatus
+                );
                 crossHedgingPortfolio = {
-                    ...pendingDecision,
-                    latestRecommendation: pendingDecision,
+                    ...finalPendingDecision,
+                    latestRecommendation: finalPendingDecision,
                     summary: backtestRes.summary,
                     metrics: {
                         dailyPositiveProfitRate: backtestRes.summary.dailyPositiveProfitRate,
@@ -373,31 +400,13 @@ function settleFromRaw(payload, rawRows) {
             } catch (err) {
                 console.error('[API daily-advisor] Error rebuilding crossHedgingPortfolio:', err);
             }
-        } else {
-            // Settle pending recommendation on-the-fly if raw results are available for targetDate
-            const targetDate = normalizeDate(crossHedgingPortfolio.targetDate || crossHedgingPortfolio.latestRecommendation?.targetDate);
-            const actualRow = targetDate ? (rawRows || []).find(r => normalizeDate(r?.date || r?.ngay) === targetDate) : null;
-            if (actualRow && (actualRow.special != null || actualRow.prize1 != null)) {
-                try {
-                    const decision = crossHedgingPortfolio.latestRecommendation || crossHedgingPortfolio;
-                    const settled = crossHedgingService.settleCrossAssetPortfolio(decision, actualRow);
-                    crossHedgingPortfolio = {
-                        ...crossHedgingPortfolio,
-                        lastSettled: settled
-                    };
-                    const existsInLedger = (crossHedgingPortfolio.settledLedger || []).some(r => normalizeDate(r?.date) === targetDate);
-                    if (!existsInLedger && Array.isArray(crossHedgingPortfolio.settledLedger)) {
-                        crossHedgingPortfolio.settledLedger = [...crossHedgingPortfolio.settledLedger, settled];
-                    }
-                } catch (_) {}
-            }
         }
     }
 
     let triCoreDe = payload.triCoreDe || null;
     try {
         const { buildTriCoreDeAdvisor } = require('@/lib/services/triCoreDeAdvisorService');
-        triCoreDe = buildTriCoreDeAdvisor(rawRows, payload);
+        triCoreDe = buildTriCoreDeAdvisor(rawRows, payload, { existingTriCoreDe: payload.triCoreDe });
     } catch (err) {
         console.error('[API daily-advisor] Error building triCoreDe:', err);
     }
@@ -405,7 +414,7 @@ function settleFromRaw(payload, rawRows) {
     let deDropoffMerge = payload.deDropoffMerge || null;
     try {
         const { buildDeDropoffMergeAdvisor } = require('@/lib/services/deDropoffMergeAdvisorService');
-        deDropoffMerge = buildDeDropoffMergeAdvisor(rawRows, payload);
+        deDropoffMerge = buildDeDropoffMergeAdvisor(rawRows, payload, { existingDeDropoffMerge: payload.deDropoffMerge });
     } catch (err) {
         console.error('[API daily-advisor] Error building deDropoffMerge:', err);
     }
@@ -413,7 +422,7 @@ function settleFromRaw(payload, rawRows) {
     let loDropoff27 = payload.loDropoff27 || null;
     try {
         const { buildLoDropoff27Advisor } = require('@/lib/services/loDropoff27AdvisorService');
-        loDropoff27 = buildLoDropoff27Advisor(rawRows, payload);
+        loDropoff27 = buildLoDropoff27Advisor(rawRows, payload, { existingLoDropoff27: payload.loDropoff27 });
     } catch (err) {
         console.error('[API daily-advisor] Error building loDropoff27:', err);
     }
@@ -421,7 +430,7 @@ function settleFromRaw(payload, rawRows) {
     let semanticResonanceSuite = payload.semanticResonanceSuite || null;
     try {
         const { buildSemanticResonanceSuiteAdvisor } = require('@/lib/services/semanticResonanceSuiteAdvisorService');
-        semanticResonanceSuite = buildSemanticResonanceSuiteAdvisor(rawRows, payload);
+        semanticResonanceSuite = buildSemanticResonanceSuiteAdvisor(rawRows, payload, { existingSemanticResonanceSuite: payload.semanticResonanceSuite });
     } catch (err) {
         console.error('[API daily-advisor] Error building semanticResonanceSuite:', err);
     }

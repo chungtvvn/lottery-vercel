@@ -77,28 +77,28 @@ async function main() {
 
     try {
         const { buildTriCoreDeAdvisor } = require('../lib/services/triCoreDeAdvisorService');
-        cache.triCoreDe = buildTriCoreDeAdvisor(raw, cache);
+        cache.triCoreDe = buildTriCoreDeAdvisor(raw, cache, { existingTriCoreDe: existingCache?.triCoreDe });
     } catch (err) {
         console.error('[generateDailyAdvisorCache] Error building triCoreDe:', err);
     }
 
     try {
         const { buildDeDropoffMergeAdvisor } = require('../lib/services/deDropoffMergeAdvisorService');
-        cache.deDropoffMerge = buildDeDropoffMergeAdvisor(raw, cache);
+        cache.deDropoffMerge = buildDeDropoffMergeAdvisor(raw, cache, { existingDeDropoffMerge: existingCache?.deDropoffMerge });
     } catch (err) {
         console.error('[generateDailyAdvisorCache] Error building deDropoffMerge:', err);
     }
 
     try {
         const { buildLoDropoff27Advisor } = require('../lib/services/loDropoff27AdvisorService');
-        cache.loDropoff27 = buildLoDropoff27Advisor(raw, cache);
+        cache.loDropoff27 = buildLoDropoff27Advisor(raw, cache, { existingLoDropoff27: existingCache?.loDropoff27 });
     } catch (err) {
         console.error('[generateDailyAdvisorCache] Error building loDropoff27:', err);
     }
 
     try {
         const { buildSemanticResonanceSuiteAdvisor } = require('../lib/services/semanticResonanceSuiteAdvisorService');
-        cache.semanticResonanceSuite = buildSemanticResonanceSuiteAdvisor(raw, cache);
+        cache.semanticResonanceSuite = buildSemanticResonanceSuiteAdvisor(raw, cache, { existingSemanticResonanceSuite: existingCache?.semanticResonanceSuite });
     } catch (err) {
         console.error('[generateDailyAdvisorCache] Error building semanticResonanceSuite:', err);
     }
@@ -115,6 +115,17 @@ async function main() {
         fs.mkdirSync(statsDir, { recursive: true });
     }
     fs.writeFileSync(path.join(statsDir, 'cached_daily_method_advisor.json'), JSON.stringify(cache, null, 2));
+
+    if (cache.deDropoffMerge) {
+        try {
+            fs.writeFileSync(path.join(statsDir, 'cached_de_dropoff_merge_shadow.json'), JSON.stringify(cache.deDropoffMerge, null, 2));
+        } catch (_) {}
+    }
+    if (cache.loDropoff27) {
+        try {
+            fs.writeFileSync(path.join(statsDir, 'cached_lo_dropoff_27_shadow.json'), JSON.stringify(cache.loDropoff27, null, 2));
+        } catch (_) {}
+    }
 
     console.log(JSON.stringify({
         files: [

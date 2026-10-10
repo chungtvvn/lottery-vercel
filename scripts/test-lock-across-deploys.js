@@ -83,8 +83,8 @@ console.log('✓ Deploy mới sau 12h trưa: Động cơ Lô và Dàn Thất Th�
 mockRawRows.push({ date: '2026-09-18', special: 63 }); // Đã có kết quả nổ 63 trúng Đề
 const timeAfter1840 = new Date('2026-09-18T19:00:00+07:00');
 const lockStatusAfter1840 = isPredictionLockActive(targetDate, mockRawRows, timeAfter1840);
-assert.strictEqual(lockStatusAfter1840.isLocked, false, 'Sau khi có kết quả phải mở khóa để kết toán');
+assert.strictEqual(lockStatusAfter1840.isLocked, true, 'Sau khi có kết quả dàn số được niêm phong bất biến vĩnh viễn (chống recalculate)');
 assert.strictEqual(lockStatusAfter1840.isSettled, true, 'Trạng thái phải là đã kết toán');
-console.log('✓ Sau 18h40 có kết quả: Hệ thống mở khóa và chuyển trạng thái kết toán thành công!');
+console.log('✓ Sau 18h40 có kết quả: Hệ thống khóa bất biến vĩnh viễn và chuyển trạng thái kết toán thành công!');
 
 console.log('✅ Toàn bộ bài kiểm thử Khóa Bất Biến Trước 12h Trưa & Kháng Deploy Mới đã vượt qua!');

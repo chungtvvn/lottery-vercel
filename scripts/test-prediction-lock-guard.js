@@ -56,11 +56,11 @@ const resDelayed = isPredictionLockActive(mockTargetDate, emptyRaw, delayedVN);
 assert.strictEqual(resDelayed.isLocked, true, 'Chưa có kết quả thì phải tiếp tục khóa');
 console.log('✓ 19:15 tối khi kết quả bị trễ: Tiếp tục khóa an toàn');
 
-// Ca 6: Đã có kết quả chính thức trong database -> MỞ KHÓA & ĐÃ KẾT TOÁN
+// Ca 6: Đã có kết quả chính thức trong database -> KHÓA BẤT BIẾN VĨNH VIỄN & ĐÃ KẾT TOÁN
 const resSettled = isPredictionLockActive(mockTargetDate, settledRaw, delayedVN);
-assert.strictEqual(resSettled.isLocked, false, 'Đã có kết quả thì mở khóa để sinh ngày mới');
+assert.strictEqual(resSettled.isLocked, true, 'Đã có kết quả thì khóa bất biến vĩnh viễn (chống recalculate)');
 assert.strictEqual(resSettled.isSettled, true);
-console.log('✓ Khi đã nạp kết quả mở thưởng: Mở khóa và chuyển trạng thái settled');
+console.log('✓ Khi đã nạp kết quả mở thưởng: Khóa bất biến vĩnh viễn và chuyển trạng thái settled');
 
 // 3. Kiểm tra preserveLockedRecommendation
 const existingSnapshot = {
@@ -85,6 +85,13 @@ assert.strictEqual(lockedResult.sizingMultiplier, 1.25, 'Phải giữ nguyên h�
 assert.strictEqual(lockedResult.snapshotLock.isLocked, true);
 console.log('✓ preserveLockedRecommendation: Bảo vệ tuyệt đối snapshot cũ khi đang khóa');
 
+// Khi đã có kết quả mở thưởng (kỳ quay đã kết toán):
+const settledProtectedResult = preserveLockedRecommendation(existingSnapshot, modifiedFreshRecommendation, resSettled);
+assert.strictEqual(settledProtectedResult.selectedMethod, 'adaptiveDualMerge', 'Kỳ đã có kết quả mở thưởng phải bảo toàn snapshot đã khóa');
+assert.deepStrictEqual(settledProtectedResult.numbers, [1, 2, 3, 4, 5], 'Dàn số đã chốt không được thay đổi sau giờ quay');
+assert.strictEqual(settledProtectedResult.snapshotLock.isLocked, true);
+console.log('✓ preserveLockedRecommendation: Bảo vệ tuyệt đối dàn số đã chốt sau khi có kết quả mở thưởng (Chống tính toán lại)');
+
 // Khi khóa không bật (buổi sáng):
 const unlockedResult = preserveLockedRecommendation(existingSnapshot, modifiedFreshRecommendation, { isLocked: false });
 assert.strictEqual(unlockedResult.selectedMethod, 'dualMerge', 'Buổi sáng cho phép nhận đề xuất mới');
@@ -93,3 +100,4 @@ assert.strictEqual(unlockedResult.snapshotLock.isLocked, false);
 console.log('✓ preserveLockedRecommendation: Cho phép cập nhật bình thường khi chưa khóa');
 
 console.log('✅ Toàn bộ bài kiểm thử Prediction Lock Guard đã vượt qua!\n');
+

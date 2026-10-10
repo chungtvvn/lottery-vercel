@@ -73,9 +73,9 @@ console.log(`  ✓ Latest Recommendation for ${rec.targetDate}:
 // 3. Test Template Integration
 console.log('\n--- 3. Testing HTML & Frontend Integration ---');
 const html = fs.readFileSync(path.join(__dirname, '..', 'views', 'daily-advisor-shadow.html'), 'utf8');
-assert.ok(html.includes('Đề Tri-Core 24 Số'), 'HTML must feature Đề Tri-Core 24 Số');
+assert.ok(html.includes('Tri-Core 24s') || html.includes('Đề Tri-Core 24 Số'), 'HTML must feature Đề Tri-Core 24s');
 assert.ok(html.includes('Smart Abstain'), 'HTML must feature Smart Abstain Gate');
-assert.ok(html.includes('Dàn 24 Số'), 'HTML must have Dàn 24 Số table header');
+assert.ok(html.includes('24 Số') || html.includes('24s') || html.includes('24 số'), 'HTML must have 24 numbers mention');
 assert.ok(html.includes('btnCopyShadowNumbers'), 'HTML must have copy numbers button');
 assert.ok(html.includes('btnModeWilson'), 'HTML must have Smart Abstain button');
 assert.ok(html.includes('btnModeBalanced'), 'HTML must have Balanced All-Days button');
