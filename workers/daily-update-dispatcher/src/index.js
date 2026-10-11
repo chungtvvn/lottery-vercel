@@ -2507,7 +2507,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
 
   return {
     predictionDate,
-    latestDataDate: dePayload.latestDataDate,
+    latestDataDate: advisorPayload?.latestDataDate || dePayload?.latestDataDate,
     text: lines.join('\n'),
     deStrategy: 'metaLearner',
     deTarget: 30,
@@ -2610,7 +2610,7 @@ function hasValidAdvisorData(payload) {
   );
 }
 
-async function getLockedAdvisorPayload(env) {
+async function getLockedAdvisorPayload(env, options = {}) {
   let advisorPayload = await fetchPredictionJson(env, '/api/daily-advisor').catch(err => {
     console.warn('Failed to fetch /api/daily-advisor, will try fallback:', err?.message || err);
     return null;
@@ -2668,12 +2668,14 @@ async function getLockedAdvisorPayload(env) {
 
   const kvKey = `LOCKED_ADVISOR_${predictionDate}`;
   try {
-    const saved = await env.TELEGRAM_STATE.get(kvKey, 'json');
-    if (saved && hasValidAdvisorData(saved)) {
-      // Use the locked snapshot from KV to ensure 100% immutability even across new deploys
-      return { advisorPayload: saved, predictionDate };
+    if (!options.force) {
+      const saved = await env.TELEGRAM_STATE.get(kvKey, 'json');
+      if (saved && hasValidAdvisorData(saved)) {
+        // Use the locked snapshot from KV to ensure 100% immutability even across new deploys
+        return { advisorPayload: saved, predictionDate };
+      }
     }
-    if (inLockWindow && hasValidAdvisorData(advisorPayload)) {
+    if ((inLockWindow || options.force) && hasValidAdvisorData(advisorPayload)) {
       await env.TELEGRAM_STATE.put(kvKey, JSON.stringify(advisorPayload), { expirationTtl: 86400 });
     }
   } catch (err) {
@@ -2702,7 +2704,7 @@ async function notifyTelegram(env, options = {}) {
       console.error('Failed to fetch /api/prediction/history:', err);
       return {};
     }),
-    getLockedAdvisorPayload(env)
+    getLockedAdvisorPayload(env, options)
   ]);
   const advisorPayload = advisorResult?.advisorPayload || {};
   const hasAdvisor = hasValidAdvisorData(advisorPayload);
