@@ -11527,6 +11527,52 @@
                         isXien4Win: true,
                         totalDayProfitK: 33200
                     };
+                } else if (date === '2026-10-10') {
+                    const frozenBet10 = [
+                        { num: '70', votes: 4, multiplier: 5, hits: 0, methods: ['QMBF', 'Dual', 'Tri', 'RRF'] },
+                        { num: '36', votes: 2, multiplier: 3, hits: 1, methods: ['Dual', 'Tri'] },
+                        { num: '43', votes: 2, multiplier: 3, hits: 1, methods: ['QMBF', 'RRF'] },
+                        { num: '62', votes: 2, multiplier: 3, hits: 0, methods: ['QMBF', 'RRF'] },
+                        { num: '79', votes: 2, multiplier: 3, hits: 1, methods: ['Tri', 'RRF'] },
+                        { num: '02', votes: 1, multiplier: 1, hits: 0, methods: ['RRF'] },
+                        { num: '09', votes: 1, multiplier: 1, hits: 0, methods: ['Tri'] },
+                        { num: '22', votes: 1, multiplier: 1, hits: 2, methods: ['Dual'] },
+                        { num: '30', votes: 1, multiplier: 1, hits: 1, methods: ['Dual'] },
+                        { num: '72', votes: 1, multiplier: 1, hits: 0, methods: ['QMBF'] },
+                        { num: '88', votes: 1, multiplier: 1, hits: 0, methods: ['Tri'] },
+                        { num: '93', votes: 1, multiplier: 1, hits: 1, methods: ['Dual'] },
+                        { num: '95', votes: 1, multiplier: 1, hits: 0, methods: ['QMBF'] }
+                    ];
+                    r = {
+                        ...(r || {}),
+                        date: '2026-10-10',
+                        isLive: true,
+                        topN: typeof currentLo4EngineMode !== 'undefined' && currentLo4EngineMode === 'top7' ? 7 : 6,
+                        h4: 3,
+                        countTotal: 13,
+                        countOver2: 5,
+                        countX1: 8,
+                        tierX5: ['70'],
+                        tierX4: [],
+                        tierX3: ['36', '43', '62', '79'],
+                        tierX1: ['02', '09', '22', '30', '72', '88', '93', '95'],
+                        numbersOver2: ['70', '36', '43', '62', '79'],
+                        allNumbers: ['70', '36', '43', '62', '79', '02', '09', '22', '30', '72', '88', '93', '95'],
+                        betNumbers: frozenBet10,
+                        dayLotoStakeK: 55000,
+                        dayLotoPayoutK: 104000,
+                        dayLotoProfitK: 49000,
+                        dayLotoHits: 7,
+                        isLotoWin: true,
+                        xien4Status: 'ACTIVE',
+                        xien4Reason: 'Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé [70-36-43-79] & Bộ 5 Quây 10 vé X3 [70-36-43-79-62]',
+                        xien4Combinations: [['70', '36', '43', '79']],
+                        xien4StakeK: 11000,
+                        xien4PayoutK: 84000,
+                        dayXien4ProfitK: 73000,
+                        isXien4Win: true,
+                        totalDayProfitK: 122000
+                    };
                 } else if (!r && date >= '2026-06-02') {
                     r = synthesizeLo4RowFallback(date, payloadData, typeof currentLo4EngineMode !== 'undefined' ? currentLo4EngineMode : 'top6');
                 }
