@@ -620,6 +620,9 @@ export async function GET(request) {
                         if ((shadowLo?.settledLedger?.length || 0) >= (payload?.loDropoff27?.settledLedger?.length || 0)) {
                             payload.loDropoff27 = shadowLo;
                         }
+                    const regFile = path.join(process.cwd(), 'lib', 'data', 'statistics', 'daily_locked_bets_registry.json');
+                    if (fs.existsSync(regFile)) {
+                        payload.dailyLockedBetsRegistry = JSON.parse(fs.readFileSync(regFile, 'utf8'));
                     }
                 } catch (_) {}
             } catch (_) {}
@@ -641,6 +644,10 @@ export async function GET(request) {
                 if ((r2ShadowLo?.settledLedger?.length || 0) > (payload.loDropoff27?.settledLedger?.length || 0)) {
                     payload.loDropoff27 = r2ShadowLo;
                 }
+            }
+            if (!payload.dailyLockedBetsRegistry) {
+                const r2Reg = await loadJsonWithSupabaseFallback('daily_locked_bets_registry.json').catch(() => null);
+                if (r2Reg) payload.dailyLockedBetsRegistry = r2Reg;
             }
         } catch (_) {}
 

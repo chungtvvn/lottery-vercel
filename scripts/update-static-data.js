@@ -1227,7 +1227,7 @@ function uploadOnlyPredictionCaches(options = {}) {
         PERFORMANCE_REPORT_CACHE_FILE,
         HISTORY_PERFORMANCE_REPORT_CACHE_FILE
     ].filter(file => fsSync.existsSync(path.join(statsDir, file)));
-    const predictionHistoryFiles = ['cached_prediction_history.json', DAILY_METHOD_ADVISOR_CACHE_FILE, DE_DROPOFF_MERGE_CACHE_FILE, LO_DROPOFF_27_CACHE_FILE, PROBABILITY_SCORE_CACHE_FILE, PROBABILITY_DISTRIBUTION_CACHE_FILE]
+    const predictionHistoryFiles = ['cached_prediction_history.json', DAILY_METHOD_ADVISOR_CACHE_FILE, DE_DROPOFF_MERGE_CACHE_FILE, LO_DROPOFF_27_CACHE_FILE, PROBABILITY_SCORE_CACHE_FILE, PROBABILITY_DISTRIBUTION_CACHE_FILE, 'daily_locked_bets_registry.json']
         .filter(file => fsSync.existsSync(path.join(statsDir, file)));
     if (!includeLoto) {
         console.log('[6] Upload riêng cache dự đoán nhưng giữ nguyên cached_loto_* trên R2 vì Lô không sinh mới trong run này.');

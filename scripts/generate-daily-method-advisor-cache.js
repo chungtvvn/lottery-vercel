@@ -103,6 +103,48 @@ async function main() {
         console.error('[generateDailyAdvisorCache] Error building semanticResonanceSuite:', err);
     }
 
+    // Tích hợp Single Source of Truth (SSOT) Registry
+    try {
+        const registryService = require('../lib/services/dailyLockedBetsRegistryService');
+        const latestRawRow = (raw || []).find(r => (r.date || r.ngay) === cache.latestDataDate);
+        if (latestRawRow) {
+            registryService.settleDateDirectly(cache.latestDataDate, latestRawRow);
+        }
+
+        // Đăng ký dàn đánh chính thức của ngày mục tiêu tiếp theo vào Registry
+        if (cache.lo4EngineFusion?.latestRecommendation) {
+            registryService.registerDailyBet(expectedPredictionDate, 'lo4EngineFusion', cache.lo4EngineFusion.latestRecommendation);
+        }
+        if (cache.crossHedgingPortfolio?.latestRecommendation || cache.crossHedgingPortfolio) {
+            registryService.registerDailyBet(expectedPredictionDate, 'crossHedgingPortfolio', cache.crossHedgingPortfolio.latestRecommendation || cache.crossHedgingPortfolio);
+        }
+        if (cache.deDropoffMerge?.latestRecommendation) {
+            registryService.registerDailyBet(expectedPredictionDate, 'deDropoffMerge', cache.deDropoffMerge.latestRecommendation);
+        }
+        if (cache.loDropoff27?.latestRecommendation) {
+            registryService.registerDailyBet(expectedPredictionDate, 'loDropoff27', cache.loDropoff27.latestRecommendation);
+        }
+        if (cache.triCoreDe?.latestRecommendation) {
+            registryService.registerDailyBet(expectedPredictionDate, 'triCoreDe', cache.triCoreDe.latestRecommendation);
+        }
+        if (cache.semanticResonanceSuite?.latestRecommendation) {
+            registryService.registerDailyBet(expectedPredictionDate, 'semanticResonanceSuite', cache.semanticResonanceSuite.latestRecommendation);
+        }
+        if (cache.dualMerge?.latestRecommendation) {
+            registryService.registerDailyBet(expectedPredictionDate, 'dualMerge', cache.dualMerge.latestRecommendation);
+        }
+        if (cache.tripleMerge?.latestRecommendation) {
+            registryService.registerDailyBet(expectedPredictionDate, 'tripleMerge', cache.tripleMerge.latestRecommendation);
+        }
+        if (cache.adaptiveDualMerge?.latestRecommendation) {
+            registryService.registerDailyBet(expectedPredictionDate, 'adaptiveDualMerge', cache.adaptiveDualMerge.latestRecommendation);
+        }
+
+        cache.dailyLockedBetsRegistry = registryService.loadRegistry();
+    } catch (err) {
+        console.error('[generateDailyAdvisorCache] Error updating locked bets registry:', err);
+    }
+
     const fs = require('fs');
     const dataDir = path.join(__dirname, '..', 'data');
     if (!fs.existsSync(dataDir)) {
@@ -119,11 +161,13 @@ async function main() {
     if (cache.deDropoffMerge) {
         try {
             fs.writeFileSync(path.join(statsDir, 'cached_de_dropoff_merge_shadow.json'), JSON.stringify(cache.deDropoffMerge, null, 2));
+            fs.writeFileSync(path.join(dataDir, 'cached_de_dropoff_merge_shadow.json'), JSON.stringify(cache.deDropoffMerge, null, 2));
         } catch (_) {}
     }
     if (cache.loDropoff27) {
         try {
             fs.writeFileSync(path.join(statsDir, 'cached_lo_dropoff_27_shadow.json'), JSON.stringify(cache.loDropoff27, null, 2));
+            fs.writeFileSync(path.join(dataDir, 'cached_lo_dropoff_27_shadow.json'), JSON.stringify(cache.loDropoff27, null, 2));
         } catch (_) {}
     }
 

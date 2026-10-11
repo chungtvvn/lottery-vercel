@@ -4736,6 +4736,14 @@
             resRow = (semanticResonance?.settledLedger || []).find(r => r.date === targetDate);
         }
 
+        const regBet = data.dailyLockedBetsRegistry?.dates?.[targetDate]?.bets;
+        if (regBet) {
+            if (!dropoffRow && regBet.deDropoffMerge) dropoffRow = regBet.deDropoffMerge;
+            if (!loRow && regBet.loDropoff27) loRow = regBet.loDropoff27;
+            if (!deRow && regBet.triCoreDe) deRow = regBet.triCoreDe;
+            if (!resRow && regBet.semanticResonanceSuite) resRow = regBet.semanticResonanceSuite;
+        }
+
         const dateVi = formatDateVi(targetDate);
         if (dateBadge) dateBadge.textContent = `Ngày ${dateVi}`;
 

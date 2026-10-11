@@ -149,134 +149,122 @@
     "predictionDate": "2026-10-11",
     "action": "BET",
     "status": "BET",
-    "methodId": "loDropoff27",
+    "methodId": "loQuantumBayesFusion",
     "methodName": "Lô Quantum Bayes Fusion v6 (Top 7 Tuyển Chọn)",
     "topN": 7,
     "numbers": [
-      "62",
-      "88",
-      "84",
+      "49",
       "52",
-      "70",
-      "36",
-      "19"
-    ],
-    "top6": [
+      "04",
+      "43",
       "62",
-      "88",
-      "84",
-      "52",
-      "70",
+      "54",
       "36"
     ],
-    "top7": [
-      "62",
-      "88",
-      "84",
+    "top6": [
+      "49",
       "52",
-      "70",
-      "36",
-      "19"
+      "04",
+      "43",
+      "62",
+      "54"
+    ],
+    "top7": [
+      "49",
+      "52",
+      "04",
+      "43",
+      "62",
+      "54",
+      "36"
     ],
     "top8": [
-      "62",
-      "88",
-      "84",
+      "49",
       "52",
-      "70",
+      "04",
+      "43",
+      "62",
+      "54",
       "36",
-      "19",
-      "68"
+      "95"
     ],
     "top10": [
-      "62",
-      "88",
-      "84",
+      "49",
       "52",
-      "70",
-      "36",
-      "19",
-      "68",
+      "04",
+      "43",
+      "62",
       "54",
-      "41"
+      "36",
+      "95",
+      "70",
+      "01"
     ],
     "ranked": [
       {
-        "num": "62",
+        "num": "49",
         "score": 28.5
       },
       {
-        "num": "88",
+        "num": "52",
         "score": 26.7
       },
       {
-        "num": "84",
+        "num": "04",
         "score": 24.9
       },
       {
-        "num": "52",
+        "num": "43",
         "score": 23.1
       },
       {
-        "num": "70",
+        "num": "62",
         "score": 21.3
       },
       {
-        "num": "36",
+        "num": "54",
         "score": 19.5
       },
       {
-        "num": "19",
+        "num": "36",
         "score": 17.7
       },
       {
-        "num": "68",
+        "num": "95",
         "score": 15.9
       },
       {
-        "num": "54",
+        "num": "70",
         "score": 14.1
       },
       {
-        "num": "41",
+        "num": "01",
         "score": 12.3
       }
     ],
     "tierX3": [
-      "62",
-      "88"
-    ],
-    "tierX2": [
-      "84",
+      "49",
       "52"
     ],
+    "tierX2": [
+      "04",
+      "43"
+    ],
     "tierX1": [
-      "70",
-      "36",
-      "19"
+      "62",
+      "54",
+      "36"
     ],
     "unitCostK": 2200,
     "unitPayoutK": 8000,
     "stakeK": 15400,
     "stakeFlatK": 15400,
-    "stakeTierK": 15400,
+    "stakeTierK": 28600,
     "snapshotLock": {
       "isLocked": false,
-      "targetDate": "2026-10-11",
-      "lockedAt": "2026-10-10T17:57:18.844Z"
-    },
-    "totalStakeVND": 15400000,
-    "totalTierStakeVND": 15400000,
-    "payoutPerHitVND": 8000000,
-    "winCondition": "≥ 2 nháy sinh lời ròng dương (+600K đến +24.6M)",
-    "breakEvenHits": 2,
-    "historicalWinRate": 0.8194945848375451,
-    "historicalAvgHits": 2.732851985559567,
-    "historicalProfitK": 1790200,
-    "historicalTierProfitK": 1790200,
-    "liveCombatWinRate": 0.7727272727272727,
-    "liveCombatProfitK": 93200,
-    "reasoning": "💎 Động cơ Siêu Hợp Nhất Quantum Bayes-Markov Fusion v6 (QMBF v6): Tích hợp 4 chiều (Cầu đồ thị 27 vị trí + Ma trận Markov 2 bước + Nhịp Clustering Hawkes + Giảm xóc Gan). Tuyển chọn Top 7 số có mật độ nổ cao nhất. Đơn vị cược chuẩn: 2.2M ăn 8M. Tỉ lệ ngày có lãi ròng năm 2026: 81.3% (222/273 ngày), bình quân 2.76 nháy/ngày, Lãi ròng +1.819 TỶ (ROI +43.3%). 18 kỳ thực chiến đạt Win 72.2% (+66.8M)."
+      "lockActive": false,
+      "lockReason": "Chưa đến 12:00 trưa (còn 89 phút). Dự đoán vẫn có thể cập nhật."
+    }
   },
   "settledLedger": [
     {
