@@ -1496,12 +1496,14 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
         );
       }
 
-      lines.push(
-        `• 🏆 <b>Lô Chuẩn Nền Tảng (Top 20 số)</b>: Nổ <b>${resLo.stdHits} nháy</b>${stdHitStr}`,
-        `   └ Đơn vị Bot (25đ/số): <b>${formatK(resLo.stdM3ProfitK)}</b> (Vốn 500đ [11.000K] · Ăn ${(resLo.stdM3PayoutK).toLocaleString('vi-VN')}K) · Mức VIP: <b>${formatM(resLo.stdProfitK)}</b>`,
-        `• 🚀 <b>Lô Tăng Tốc X2 (Top 7 số)</b>: ${resLo.x2ProfitK > 0 ? '🚀 <b>THẮNG</b>' : '❌ Trượt'} nổ <b>${resLo.x2Hits} nháy</b>${x2HitStr}`,
-        `   └ Đơn vị Bot (25đ/số): <b>${formatK(resLo.x2M3ProfitK)}</b> (Vốn 175đ [3.850K] · Ăn ${(resLo.x2M3PayoutK).toLocaleString('vi-VN')}K) · Mức VIP: <b>${formatM(resLo.x2ProfitK)}</b> (Vốn 15.4M · Ăn ${(resLo.x2PayoutK / 1000).toFixed(1)}M)`
-      );
+      if (!crossHedge) {
+        lines.push(
+          `• 🏆 <b>Lô Chuẩn Nền Tảng (Top 20 số)</b>: Nổ <b>${resLo.stdHits} nháy</b>${stdHitStr}`,
+          `   └ Đơn vị Bot (25đ/số): <b>${formatK(resLo.stdM3ProfitK)}</b> (Vốn 500đ [11.000K] · Ăn ${(resLo.stdM3PayoutK).toLocaleString('vi-VN')}K) · Mức VIP: <b>${formatM(resLo.stdProfitK)}</b>`,
+          `• 🚀 <b>Lô Tăng Tốc X2 (Top 7 số)</b>: ${resLo.x2ProfitK > 0 ? '🚀 <b>THẮNG</b>' : '❌ Trượt'} nổ <b>${resLo.x2Hits} nháy</b>${x2HitStr}`,
+          `   └ Đơn vị Bot (25đ/số): <b>${formatK(resLo.x2M3ProfitK)}</b> (Vốn 175đ [3.850K] · Ăn ${(resLo.x2M3PayoutK).toLocaleString('vi-VN')}K) · Mức VIP: <b>${formatM(resLo.x2ProfitK)}</b> (Vốn 15.4M · Ăn ${(resLo.x2PayoutK / 1000).toFixed(1)}M)`
+        );
+      }
 
       let xienTodayM3K = resLo.xi4M3ProfitK;
       let xienTodayVIP_K = resLo.xi4ProfitK;
@@ -1545,11 +1547,19 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
       const todayM3TotalWithXienK = coreM3TotalK + xienTodayM3K;
       const todayTotalProfitWithXienK = coreTotalProfitK + xienTodayVIP_K;
 
-      lines.push(
-        `💰 <b>TỔNG LÃI RÒNG HÔM NAY (${escapeHtml(displayDate(settledDate))}):</b>`,
-        `   👉 <b>Chiến Lược Chủ Lực Khuyên Dùng (Đề + Lô Ghép Tầng + Xiên Quây):</b> <b>${formatK(crossM3WithXienK)}</b> (${crossM3WithXienK > 0 ? '+' : ''}${(crossM3WithXienK / 1000).toFixed(2)}M) · Mức VIP: <b>${formatM(crossVipWithXienK)}</b> ${crossVipWithXienK > 0 ? '🎉 <b>(THẮNG LỢI RỰC RỠ)</b>' : ''}`,
-        `   👉 <b>Thực Chiến Combo (Đề + Lô Chuẩn + Lô X2 + Xiên Quây):</b> <b>${formatK(todayM3TotalWithXienK)}</b> (${todayM3TotalWithXienK > 0 ? '+' : ''}${(todayM3TotalWithXienK / 1000).toFixed(2)}M) · Mức VIP: <b>${formatM(todayTotalProfitWithXienK)}</b>`
-      );
+      if (crossHedge) {
+        lines.push(
+          `💰 <b>TỔNG LÃI RÒNG HÔM NAY (${escapeHtml(displayDate(settledDate))}):</b>`,
+          `   👉 <b>Đơn Vị Bot Telegram (Mức 3):</b> <b>${formatK(crossM3WithXienK)}</b> (${crossM3WithXienK > 0 ? '+' : ''}${(crossM3WithXienK / 1000).toFixed(2)}M) ${crossM3WithXienK > 0 ? '🎉' : ''}`,
+          `   👉 <b>Mức VIP Vốn Lớn:</b> <b>${formatM(crossVipWithXienK)}</b> ${crossVipWithXienK > 0 ? '🎉 <b>(THẮNG LỢI RỰC RỠ)</b>' : ''}`
+        );
+      } else {
+        lines.push(
+          `💰 <b>TỔNG LÃI RÒNG HÔM NAY (${escapeHtml(displayDate(settledDate))}):</b>`,
+          `   👉 <b>Chiến Lược Chủ Lực Khuyên Dùng (Đề + Lô Ghép Tầng + Xiên Quây):</b> <b>${formatK(crossM3WithXienK)}</b> (${crossM3WithXienK > 0 ? '+' : ''}${(crossM3WithXienK / 1000).toFixed(2)}M) · Mức VIP: <b>${formatM(crossVipWithXienK)}</b> ${crossVipWithXienK > 0 ? '🎉 <b>(THẮNG LỢI RỰC RỠ)</b>' : ''}`,
+          `   👉 <b>Thực Chiến Combo (Đề + Lô Chuẩn + Lô X2 + Xiên Quây):</b> <b>${formatK(todayM3TotalWithXienK)}</b> (${todayM3TotalWithXienK > 0 ? '+' : ''}${(todayM3TotalWithXienK / 1000).toFixed(2)}M) · Mức VIP: <b>${formatM(todayTotalProfitWithXienK)}</b>`
+        );
+      }
 
       // ── ĐỐI SOÁT 4 PHƯƠNG PHÁP SHADOW MONITOR ─────────────────────────────
       const shDe40 = (advisorPayload?.deDropoffMerge?.settledLedger || []).find(r => (r.date || r.predictionDate) === settledDate)
@@ -1617,13 +1627,21 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   }
 
   // =========================================================================
-  // 1. 💎 ĐỀ TINH HOA — BỘ ĐIỀU PHỐI ĐA PHƯƠNG PHÁP BÙ TRỪ
+  // 1-5. GỢI Ý THỰC CHIẾN CHI TIẾT (FALLBACK KHI KHÔNG CÓ CROSS-HEDGE)
   // =========================================================================
   let sNumbers = [];
   let sTierX2 = [];
   let sSingles = [];
   let sMethod = 'Đề Markov Bậc 2 & Gap Hazard';
   const chP1 = crossHedge?.pillar1_De || null;
+  let stdNums = [];
+  let x2Nums = [];
+  let crossOpt = null;
+  let allMerged = [];
+  let xi4Nums = [];
+  let top5Consensus = [];
+  let top3Consensus = [];
+  if (!crossHedge) {
 
   if (chP1 && Array.isArray(chP1.allNumbers) && chP1.allNumbers.length) {
     sMethod = chP1.methodLabel || 'Đề Markov Bậc 2 & Gap Hazard';
@@ -1984,9 +2002,9 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   // =========================================================================
   const top4Consensus = (loTop5Xien?.top4Xien || []).map(normalizeLotteryNumber);
   const top5Consensus = (loTop5Xien?.top5Xien || (stdNums.length >= 5 ? stdNums.slice(0, 5) : [])).map(normalizeLotteryNumber);
-  const top3Consensus = (loTop5Xien?.top3Xien || (stdNums.length >= 3 ? stdNums.slice(0, 3) : [])).map(normalizeLotteryNumber);
+  top3Consensus = (loTop5Xien?.top3Xien || (stdNums.length >= 3 ? stdNums.slice(0, 3) : [])).map(normalizeLotteryNumber);
 
-  let xi4Nums = top4Consensus.length >= 4 ? top4Consensus : (loXien4Adv?.numbers || metaNext?.xien4?.numbers || []).map(normalizeLotteryNumber);
+  xi4Nums = top4Consensus.length >= 4 ? top4Consensus : (loXien4Adv?.numbers || metaNext?.xien4?.numbers || []).map(normalizeLotteryNumber);
   if (xi4Nums.length < 4) {
     xi4Nums = overlapNums.length >= 4 ? overlapNums.slice(0, 4) : (sList.length >= 4 ? sList.slice(0, 4) : (stdNums.length >= 4 ? stdNums.slice(0, 4) : []));
   }
@@ -2011,6 +2029,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     );
   }
   lines.push(divider);
+  }
 
   // =========================================================================
   // 🛡️ COMBO DANH MỤC BÙ TRỪ DÒNG TIỀN CHÉO (CROSS-HEDGING PORTFOLIO)
@@ -2051,6 +2070,18 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     const expectedProfitK = crossHedge.hedgingSummary?.profitIfDeHitsK || Math.round(crossHedge.totalStakeK * 0.35);
     const expectedProfitM = (expectedProfitK / 1000).toFixed(2);
 
+    const stratGov = advisorPayload?.strategicPortfolioGovernor || null;
+    const recPort = stratGov?.recommendedPortfolio || null;
+    const smartLo = recPort?.loStructure?.selectedLo || stratGov?.smartSelectedLo || resolveSmartSelectedLo(advisorPayload);
+    const deTotalM3_K = (recPort?.id === 'steadyAccumulator') ? 8600 : 15400;
+    const deTotalVIP_K = (recPort?.id === 'steadyAccumulator') ? 43000 : 77000;
+    const loStakeDailyM3_K = smartLo ? smartLo.stakeDailyK_M3 : 3850;
+    const loStakeDailyVIP_K = smartLo ? smartLo.stakeDailyK_VIP : 15400;
+    const xien4TotalM3_K = 2200;
+    const xien4TotalVIP_K = 11000;
+    const totalM3_M = ((deTotalM3_K + loStakeDailyM3_K + xien4TotalM3_K) / 1000).toFixed(2);
+    const totalVIP_M = ((deTotalVIP_K + loStakeDailyVIP_K + xien4TotalVIP_K) / 1000).toFixed(1);
+
     lines.push(
       `🛡️ <b>COMBO DANH MỤC BÙ TRỪ DÒNG TIỀN CHÉO (CROSS-HEDGING PORTFOLIO)</b>`,
       `👑 <i>Chiến lược liên hoàn 3 Trụ Cột: Đề Tinh Tuyển VIP + Lô Ghép 4 Động Cơ + Dàn Xiên Quây Hiệp Đồng</i>`,
@@ -2060,7 +2091,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
       `💎 <b>Trụ Cột 1: Đề Tinh Tuyển VIP (${escapeHtml(p1.methodLabel || 'Đề VIP')})</b>`,
       `  • ⚡ VIP X2/X3 (${p1Vip.length} số): <code>${escapeHtml(formatNumberList(p1Vip))}</code>`,
       `  • 🛡️ Bọc Lót X1 (${p1Single.length} số): <code>${escapeHtml(formatNumberList(p1Single))}</code>`,
-      `  • 💰 Vốn cược: <b>${p1StakeM}M VNĐ</b> · Kỳ vọng nổ VIP: ăn <b>${p1PayoutVipM}M VNĐ</b> (Tỷ lệ 1:84 đến 1:252)`,
+      `  • 💰 Vốn cược: Mức 3 = ${(deTotalM3_K / 1000).toFixed(1)}M · Mức VIP = ${p1StakeM}M VNĐ (Kỳ vọng nổ VIP: ăn <b>${p1PayoutVipM}M VNĐ</b>)`,
       ``,
       `🎰 <b>Trụ Cột 2: Lô Ghép 4 Động Cơ (${escapeHtml(p2.engine || 'Lô Hội Tụ Đa Tầng')})</b>`,
       `  • 🎯 Dàn Lô (${p2Nums.length} số): <code>${escapeHtml(formatNumberList(p2Nums))}</code>`,
@@ -2068,21 +2099,24 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
       ...(p2Tiers[4]?.length ? [`  • 🔥 Cực VIP X4 (${p2Tiers[4].length} số): <code>${escapeHtml(formatNumberList(p2Tiers[4]))}</code>`] : []),
       ...(p2Tiers[3]?.length ? [`  • ⚡ Triển vọng X3 (${p2Tiers[3].length} số): <code>${escapeHtml(formatNumberList(p2Tiers[3]))}</code>`] : []),
       ...(p2Tiers[1]?.length ? [`  • 🛡️ Bọc lót X1 (${p2Tiers[1].length} số): <code>${escapeHtml(formatNumberList(p2Tiers[1]))}</code>`] : []),
-      `  • 💰 Vốn cược: <b>${p2StakeM}M VNĐ</b> · Kỳ vọng: <b>≥ ${p2ExpectedHits} nháy nổ/ngày</b> (Mỏ neo dòng tiền ổn định)`,
+      `  • 💰 Vốn cược: Mức 3 = ${(loStakeDailyM3_K / 1000).toFixed(2)}M · Mức VIP = ${p2StakeM}M VNĐ (Kỳ vọng: <b>≥ ${p2ExpectedHits} nháy nổ/ngày</b>)`,
       ``,
       `✨ <b>Trụ Cột 3: Dàn Xiên Quây Hiệp Đồng (${p3Tickets} Vé Quây)</b>`,
       `  • 🎲 Bộ số Xiên (${p3Nums.length} con): <code>${escapeHtml(formatNumberList(p3Nums))}</code>`,
-      `  • 💰 Vốn cược: <b>${p3StakeM}M VNĐ</b> · Nổ từ 2 con: ăn <b>${p3Payout2M}M VNĐ</b> (Đòn bẩy lợi nhuận, chắc chắn có lãi)`,
+      `  • 💰 Vốn cược: Mức 3 = ${(xien4TotalM3_K / 1000).toFixed(1)}M · Mức VIP = ${p3StakeM}M VNĐ (Nổ từ 2 con: ăn <b>${p3Payout2M}M VNĐ</b>)`,
       ``,
-      `💰 <b>TỔNG VỐN NGÀY:</b> <b>${totalStakeM}M VNĐ</b> · Lợi nhuận kỳ vọng: <b>+${expectedProfitM}M VNĐ</b>`,
+      `💰 <b>TỔNG VỐN ĐẦU TƯ GÓI CHỦ LỰC HÔM NAY:</b>`,
+      `  👉 <b>Mức 3 (Mặc định):</b> <b>${totalM3_M}M</b> (Đề ${(deTotalM3_K / 1000).toFixed(1)}M + Lô ${(loStakeDailyM3_K / 1000).toFixed(2)}M + Xiên ${(xien4TotalM3_K / 1000).toFixed(1)}M)`,
+      `  👉 <b>Mức VIP:</b> <b>${totalVIP_M}M</b> (Đề ${(deTotalVIP_K / 1000).toFixed(0)}M + Lô ${(loStakeDailyVIP_K / 1000).toFixed(1)}M + Xiên ${(xien4TotalVIP_K / 1000).toFixed(0)}M)`,
       `🛡️ <b>CƠ CHẾ BÙ TRỪ AN TOÀN:</b> <i>${escapeHtml(hedgeGuarantee)}</i>`,
       divider
     );
   }
 
   // =========================================================================
-  // 👑 BẢNG CHỐT DÀN SỐ ĐÁNH CUỐI CÙNG — BỘ ĐIỀU PHỐI GÓI CHIẾN LƯỢC THÔNG MINH
+  // 👑 BẢNG CHỐT DÀN SỐ ĐÁNH CUỐI CÙNG (FALLBACK KHI KHÔNG CÓ CROSS-HEDGE)
   // =========================================================================
+  if (!crossHedge) {
   const stratGov = advisorPayload?.strategicPortfolioGovernor || null;
   const recPort = stratGov?.recommendedPortfolio || null;
   const slipTitle = recPort ? recPort.name.toUpperCase() : 'SIÊU HỘI TỤ ĐA PHƯƠNG PHÁP';
@@ -2164,6 +2198,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
       );
     }
 
+    const rLo = recPort?.loStructure || {};
     // 2. Lô - BỘ ĐIỀU PHỐI THÔNG MINH (CHỈ ĐỀ XUẤT ĐÚNG 1 PHƯƠNG PHÁP DUY NHẤT)
     const smartLo = recPort?.loStructure?.selectedLo || stratGov?.smartSelectedLo || resolveSmartSelectedLo(advisorPayload);
     let loStakeDailyM3_K = 3850;
@@ -2280,6 +2315,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
       `  👉 <b>Mức VIP:</b> <b>${totalVIP_M}M</b> (Đề ${(deTotalVIP_K / 1000).toFixed(0)}M + Lô ${(loStakeDailyVIP_K / 1000).toFixed(1)}M + Xiên ${(xien4TotalVIP_K / 1000).toFixed(0)}M)`,
       divider
     );
+  }
   }
 
   // =========================================================================
@@ -2451,8 +2487,9 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
   lines.push(divider);
 
   // =========================================================================
-  // 7. 💡 KHUYẾN NGHỊ PHÂN BỔ VỐN & RADAR LỌT KHE
+  // 7. 💡 KHUYẾN NGHỊ PHÂN BỔ VỐN & RADAR LỌT KHE (FALLBACK KHI KHÔNG CÓ CROSS-HEDGE)
   // =========================================================================
+  if (!crossHedge) {
   const deMethodShort = streakDeAdv?.selectedMethodLabel || 'Đề Tuyển Chọn';
   const loTargetNums = crossOpt ? crossOpt.totalNumbers : allMerged.length;
   lines.push(
@@ -2499,6 +2536,9 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     }
   }
 
+  lines.push(divider);
+  }
+
   lines.push(
     '',
     `💬 <i>Gõ <b>/cuoc</b> để xem Bảng Tính Lỗ/Lãi Tự Động theo Mức 3 (Mặc định) hoặc chọn mức khác!</i>`,
@@ -2539,6 +2579,11 @@ function splitTelegramText(text, maxLength = 3900) {
   const chunks = [];
   let current = '';
   for (const line of lines) {
+    if (line === '━━━━━━━━━━━━━━━━━━━━' && current.length >= 2500 && current.length <= maxLength) {
+      chunks.push(current);
+      current = line;
+      continue;
+    }
     const next = current ? `${current}\n${line}` : line;
     if (current && next.length > maxLength) {
       chunks.push(current);
