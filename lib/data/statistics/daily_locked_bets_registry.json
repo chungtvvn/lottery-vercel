@@ -36,7 +36,120 @@
               "43",
               "79"
             ]
-          }
+          },
+          "betNumbers": [
+            {
+              "num": "70",
+              "votes": 4,
+              "multiplier": 5,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "36",
+              "votes": 2,
+              "multiplier": 3,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "43",
+              "votes": 2,
+              "multiplier": 3,
+              "methods": [
+                "QMBF",
+                "RRF"
+              ]
+            },
+            {
+              "num": "62",
+              "votes": 2,
+              "multiplier": 3,
+              "methods": [
+                "QMBF",
+                "RRF"
+              ]
+            },
+            {
+              "num": "79",
+              "votes": 2,
+              "multiplier": 3,
+              "methods": [
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "02",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "09",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "22",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "30",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "72",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "88",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "93",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "95",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "QMBF"
+              ]
+            }
+          ]
         },
         "deDropoffMerge": {
           "top40": [
@@ -281,7 +394,141 @@
           "totalStakeK": 66000,
           "totalPayoutK": 224000,
           "totalProfitK": 158000,
-          "isWin": true
+          "isWin": true,
+          "hitNumbers": [
+            "36",
+            "43",
+            "79",
+            "22",
+            "30",
+            "93"
+          ],
+          "betNumbers": [
+            {
+              "num": "70",
+              "votes": 4,
+              "multiplier": 5,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "36",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 1,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "43",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "RRF"
+              ]
+            },
+            {
+              "num": "62",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "RRF"
+              ]
+            },
+            {
+              "num": "79",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 1,
+              "methods": [
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "02",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "09",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "22",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 2,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "30",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "72",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "88",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "93",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "95",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            }
+          ]
         },
         "deDropoffMerge": {
           "date": "2026-10-10",
@@ -5030,7 +5277,153 @@
           "totalStakeK": 77000,
           "totalPayoutK": 80000,
           "totalProfitK": 3000,
-          "isWin": true
+          "isWin": true,
+          "betNumbers": [
+            {
+              "num": "04",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "43",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "49",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "36",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "70",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "81",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 1,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "03",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "46",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "52",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "54",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "56",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "62",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "84",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "88",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "95",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            }
+          ]
         },
         "deDropoffMerge": {
           "date": "2026-10-11",

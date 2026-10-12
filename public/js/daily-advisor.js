@@ -3011,7 +3011,30 @@
                 `;
             }
 
-            const betList = info.betNumbers || [];
+            let betList = info.betNumbers || [];
+            if (betList.length === 0 && (info.tierX5?.length || info.tierX4?.length || info.tierX3?.length || info.tierX1?.length)) {
+                const t5 = info.tierX5 || [];
+                const t4 = info.tierX4 || [];
+                const t3 = info.tierX3 || [];
+                const t1 = info.tierX1 || [];
+                betList = [
+                    ...t5.map(n => ({ num: n, multiplier: 5, votes: 4 })),
+                    ...t4.map(n => ({ num: n, multiplier: 4, votes: 3 })),
+                    ...t3.map(n => ({ num: n, multiplier: 3, votes: 2 })),
+                    ...t1.map(n => ({ num: n, multiplier: 1, votes: 1 }))
+                ];
+            } else if (betList.length === 0 && info.allNumbers?.length) {
+                betList = info.allNumbers.map(n => ({ num: n, multiplier: 1, votes: 1 }));
+            }
+            const drawPrizesForInfo = (payload?.drawPrizesByDate?.[info.date]?.prizes || []).map(number);
+            const prizeCountsInfo = {};
+            drawPrizesForInfo.forEach(p => { prizeCountsInfo[p] = (prizeCountsInfo[p] || 0) + 1; });
+            betList = betList.map(b => {
+                const n = number(b.num != null ? b.num : b);
+                const h = (b.hits != null && b.hits > 0) ? b.hits : (prizeCountsInfo[n] || 0);
+                return { ...b, num: n, hits: h };
+            });
+
             const tierX5Nums = betList.filter(b => b.multiplier >= 5);
             const tierX4Nums = betList.filter(b => b.multiplier === 4);
             const tierX3Nums = betList.filter(b => b.multiplier === 3);
@@ -4188,6 +4211,20 @@
         if (!info && date && type) {
             info = synthesizeFallbackDiaryInfo(date, type, payload);
         }
+        if (info && type === 'de' && (!info.numbers || info.numbers.length === 0)) {
+            const fallback = synthesizeFallbackDiaryInfo(date, type, payload);
+            if (fallback?.numbers?.length) {
+                info.numbers = fallback.numbers;
+                info.x2Nums = fallback.x2Nums || [];
+                info.x1Nums = fallback.x1Nums || [];
+            }
+        }
+        if (info && type === 'lo4Engine' && (!info.betNumbers || info.betNumbers.length === 0)) {
+            const fallback = synthesizeFallbackDiaryInfo(date, type, payload);
+            if (fallback?.betNumbers?.length) {
+                info.betNumbers = fallback.betNumbers;
+            }
+        }
         return info;
     }
 
@@ -4426,13 +4463,39 @@
         const regBet = p?.dailyLockedBetsRegistry?.dates?.[date]?.bets?.lo4EngineFusion;
         const regSettlement = p?.dailyLockedBetsRegistry?.dates?.[date]?.settlement?.lo4EngineFusion;
         if (regSettlement) {
-            const betNums = (regSettlement.betNumbers || regBet?.betNumbers || []).map(bn => ({
-                num: String(bn.num).padStart(2, '0'),
-                votes: bn.votes || 1,
-                multiplier: bn.multiplier || 1,
-                hits: bn.hits != null ? bn.hits : (regSettlement.hitNumbers?.includes(String(bn.num).padStart(2, '0')) ? 1 : 0),
-                methods: bn.methods || []
-            }));
+            let sourceBetNumbers = (regSettlement.betNumbers && regSettlement.betNumbers.length > 0) ? regSettlement.betNumbers : (regBet?.betNumbers && regBet.betNumbers.length > 0 ? regBet.betNumbers : null);
+            if (!sourceBetNumbers || sourceBetNumbers.length === 0) {
+                const t5 = regSettlement.tierX5 || regBet?.tierX5 || [];
+                const t4 = regSettlement.tierX4 || regBet?.tierX4 || [];
+                const t3 = regSettlement.tierX3 || regBet?.tierX3 || [];
+                const t1 = regSettlement.tierX1 || regBet?.tierX1 || [];
+                sourceBetNumbers = [
+                    ...t5.map(n => ({ num: n, multiplier: 5, votes: 4 })),
+                    ...t4.map(n => ({ num: n, multiplier: 4, votes: 3 })),
+                    ...t3.map(n => ({ num: n, multiplier: 3, votes: 2 })),
+                    ...t1.map(n => ({ num: n, multiplier: 1, votes: 1 }))
+                ];
+            }
+            const drawPrizesForD = (p?.drawPrizesByDate?.[date]?.prizes || []).map(number);
+            const prizeCountsD = {};
+            drawPrizesForD.forEach(pr => { prizeCountsD[pr] = (prizeCountsD[pr] || 0) + 1; });
+            const hitNumsSet = new Set((regSettlement.hitNumbers || []).map(number));
+            const betNums = (sourceBetNumbers || []).map(bn => {
+                const n = number(bn.num != null ? bn.num : bn);
+                let h = bn.hits;
+                if (h == null) {
+                    if (prizeCountsD[n] != null) h = prizeCountsD[n];
+                    else if (hitNumsSet.has(n)) h = 1;
+                    else h = 0;
+                }
+                return {
+                    num: n,
+                    votes: bn.votes || 1,
+                    multiplier: bn.multiplier || 1,
+                    hits: h,
+                    methods: bn.methods || []
+                };
+            });
             return {
                 date,
                 isLive: true,
@@ -4451,7 +4514,7 @@
                 dayLotoStakeK: regSettlement.lotoStakeK != null ? regSettlement.lotoStakeK : 66000,
                 dayLotoPayoutK: regSettlement.lotoPayoutK != null ? regSettlement.lotoPayoutK : 0,
                 dayLotoProfitK: regSettlement.lotoProfitK != null ? regSettlement.lotoProfitK : 0,
-                dayLotoHits: regSettlement.totalHits != null ? regSettlement.totalHits : 0,
+                dayLotoHits: regSettlement.totalHits != null ? regSettlement.totalHits : betNums.reduce((acc, x) => acc + (x.hits || 0), 0),
                 isLotoWin: (regSettlement.lotoProfitK || 0) > 0,
                 xien4Status: 'ACTIVE',
                 xien4Reason: regBet?.xien4?.reason || `Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé`,
@@ -4771,40 +4834,74 @@
             if (regEntry?.isSettled && regEntry?.settlement?.lo4EngineFusion) {
                 const s = regEntry.settlement.lo4EngineFusion;
                 const b = regEntry.bets?.lo4EngineFusion || {};
-                const betNums = (s.betNumbers || b.betNumbers || []).map(bn => ({
-                    num: String(bn.num).padStart(2, '0'),
-                    votes: bn.votes || 1,
-                    multiplier: bn.multiplier || 1,
-                    hits: bn.hits != null ? bn.hits : (s.hitNumbers?.includes(String(bn.num).padStart(2, '0')) ? 1 : 0),
-                    methods: bn.methods || []
-                }));
+                const existingLo4 = lo4Map[d] || {};
+
+                let sourceBetNumbers = (s.betNumbers && s.betNumbers.length > 0) ? s.betNumbers : (b.betNumbers && b.betNumbers.length > 0 ? b.betNumbers : null);
+                if (!sourceBetNumbers && existingLo4.betNumbers && existingLo4.betNumbers.length > 0) {
+                    sourceBetNumbers = existingLo4.betNumbers;
+                }
+                if (!sourceBetNumbers || sourceBetNumbers.length === 0) {
+                    const t5 = s.tierX5 || b.tierX5 || existingLo4.tierX5 || [];
+                    const t4 = s.tierX4 || b.tierX4 || existingLo4.tierX4 || [];
+                    const t3 = s.tierX3 || b.tierX3 || existingLo4.tierX3 || [];
+                    const t1 = s.tierX1 || b.tierX1 || existingLo4.tierX1 || [];
+                    sourceBetNumbers = [
+                        ...t5.map(n => ({ num: n, multiplier: 5, votes: 4 })),
+                        ...t4.map(n => ({ num: n, multiplier: 4, votes: 3 })),
+                        ...t3.map(n => ({ num: n, multiplier: 3, votes: 2 })),
+                        ...t1.map(n => ({ num: n, multiplier: 1, votes: 1 }))
+                    ];
+                }
+
+                const drawPrizesForD = (payload?.drawPrizesByDate?.[d]?.prizes || []).map(number);
+                const prizeCountsD = {};
+                drawPrizesForD.forEach(p => { prizeCountsD[p] = (prizeCountsD[p] || 0) + 1; });
+                const hitNumsSet = new Set((s.hitNumbers || []).map(number));
+
+                const betNums = (sourceBetNumbers || []).map(bn => {
+                    const n = number(bn.num != null ? bn.num : bn);
+                    let h = bn.hits;
+                    if (h == null) {
+                        if (prizeCountsD[n] != null) h = prizeCountsD[n];
+                        else if (hitNumsSet.has(n)) h = 1;
+                        else h = 0;
+                    }
+                    return {
+                        num: n,
+                        votes: bn.votes || 1,
+                        multiplier: bn.multiplier || 1,
+                        hits: h,
+                        methods: bn.methods || []
+                    };
+                });
+
                 lo4Map[d] = {
                     date: d,
                     isLive: true,
                     topN: 7,
-                    countTotal: betNums.length || 15,
-                    countOver2: betNums.filter(x => x.multiplier >= 3).length,
-                    countX1: betNums.filter(x => x.multiplier < 3).length,
-                    tierX5: s.tierX5 || b.tierX5 || [],
-                    tierX4: s.tierX4 || b.tierX4 || [],
-                    tierX3: s.tierX3 || b.tierX3 || [],
-                    tierX1: s.tierX1 || b.tierX1 || [],
+                    countTotal: betNums.length || existingLo4.countTotal || 15,
+                    countOver2: betNums.filter(x => x.multiplier >= 3).length || existingLo4.countOver2 || 0,
+                    countX1: betNums.filter(x => x.multiplier < 3).length || existingLo4.countX1 || 0,
+                    tierX5: s.tierX5 || b.tierX5 || existingLo4.tierX5 || [],
+                    tierX4: s.tierX4 || b.tierX4 || existingLo4.tierX4 || [],
+                    tierX3: s.tierX3 || b.tierX3 || existingLo4.tierX3 || [],
+                    tierX1: s.tierX1 || b.tierX1 || existingLo4.tierX1 || [],
                     numbersOver2: betNums.filter(x => x.multiplier >= 3).map(x => x.num),
                     allNumbers: betNums.map(x => x.num),
                     betNumbers: betNums,
-                    dayLotoStakeK: s.lotoStakeK != null ? s.lotoStakeK : 66000,
-                    dayLotoPayoutK: s.lotoPayoutK != null ? s.lotoPayoutK : 0,
-                    dayLotoProfitK: s.lotoProfitK != null ? s.lotoProfitK : 0,
-                    dayLotoHits: s.totalHits != null ? s.totalHits : 0,
-                    isLotoWin: (s.lotoProfitK || 0) > 0,
+                    dayLotoStakeK: s.lotoStakeK != null ? s.lotoStakeK : (existingLo4.dayLotoStakeK != null ? existingLo4.dayLotoStakeK : 66000),
+                    dayLotoPayoutK: s.lotoPayoutK != null ? s.lotoPayoutK : (existingLo4.dayLotoPayoutK != null ? existingLo4.dayLotoPayoutK : 0),
+                    dayLotoProfitK: s.lotoProfitK != null ? s.lotoProfitK : (existingLo4.dayLotoProfitK != null ? existingLo4.dayLotoProfitK : 0),
+                    dayLotoHits: s.totalHits != null ? s.totalHits : (existingLo4.dayLotoHits != null ? existingLo4.dayLotoHits : betNums.reduce((acc, x) => acc + (x.hits || 0), 0)),
+                    isLotoWin: (s.lotoProfitK != null ? s.lotoProfitK : (existingLo4.dayLotoProfitK || 0)) > 0,
                     xien4Status: 'ACTIVE',
-                    xien4Reason: b.xien4?.reason || `Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé`,
-                    xien4Combinations: b.xien4?.combinations || [s.xienTop4 || b.xien4?.top4 || []],
-                    xien4StakeK: s.xienStakeK != null ? s.xienStakeK : 11000,
-                    xien4PayoutK: s.xienPayoutK != null ? s.xienPayoutK : 0,
-                    dayXien4ProfitK: s.xienProfitK != null ? s.xienProfitK : -11000,
-                    isXien4Win: (s.xienProfitK || 0) > 0,
-                    totalDayProfitK: (s.lotoProfitK || 0) + (s.xienProfitK || 0)
+                    xien4Reason: b.xien4?.reason || existingLo4.xien4Reason || `Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé`,
+                    xien4Combinations: b.xien4?.combinations || existingLo4.xien4Combinations || [s.xienTop4 || b.xien4?.top4 || []],
+                    xien4StakeK: s.xienStakeK != null ? s.xienStakeK : (existingLo4.xien4StakeK != null ? existingLo4.xien4StakeK : 11000),
+                    xien4PayoutK: s.xienPayoutK != null ? s.xienPayoutK : (existingLo4.xien4PayoutK != null ? existingLo4.xien4PayoutK : 0),
+                    dayXien4ProfitK: s.xienProfitK != null ? s.xienProfitK : (existingLo4.dayXien4ProfitK != null ? existingLo4.dayXien4ProfitK : -11000),
+                    isXien4Win: (s.xienProfitK != null ? s.xienProfitK : (existingLo4.dayXien4ProfitK || 0)) > 0,
+                    totalDayProfitK: (s.lotoProfitK != null ? s.lotoProfitK : (existingLo4.dayLotoProfitK || 0)) + (s.xienProfitK != null ? s.xienProfitK : (existingLo4.dayXien4ProfitK || 0))
                 };
                 allDatesSet.add(d);
             }
@@ -6935,9 +7032,24 @@
 
             const rowDrawPrizes = (payload?.drawPrizesByDate?.[r.date]?.prizes || []).map(number);
             const rowDrawPrizesSet = new Set(rowDrawPrizes);
-            const hitLo4Numbers = (lo4Info?.betNumbers || []).filter(b => (b.hits || 0) > 0);
+            const prizeCountsRow = {};
+            rowDrawPrizes.forEach(p => { prizeCountsRow[p] = (prizeCountsRow[p] || 0) + 1; });
+
+            let lo4BetCandidates = lo4Info?.betNumbers;
+            if (!lo4BetCandidates || lo4BetCandidates.length === 0) {
+                const allN = lo4Info?.allNumbers || lo4Info?.numbersOver2 || [];
+                if (allN.length > 0) {
+                    lo4BetCandidates = allN.map(n => ({ num: n, multiplier: 1, hits: prizeCountsRow[number(n)] || 0 }));
+                }
+            }
+            const hitLo4Numbers = (lo4BetCandidates || []).map(b => {
+                const n = number(b.num != null ? b.num : b);
+                const h = (b.hits != null && b.hits > 0) ? b.hits : (prizeCountsRow[n] || (rowDrawPrizesSet.has(n) ? 1 : 0));
+                return { ...b, num: n, hits: h };
+            }).filter(b => b.hits > 0);
             const hitXienNums = (lo4Xien4Info?.top4 || (lo4Xien4Info?.combinations?.[0] || [])).filter(n => rowDrawPrizesSet.has(number(n)));
             const hitTop5Nums = (loXien5Info?.top5 || []).filter(n => rowDrawPrizesSet.has(number(n)));
+            const displayLoHits = (loHitsCount > 0) ? loHitsCount : hitLo4Numbers.reduce((acc, x) => acc + (x.hits || 0), 0);
 
             const dayClass = dayTotalVal > 0 ? 'bg-emerald-50/40' : (dayTotalVal < -20000 ? 'bg-rose-50/20' : '');
 
@@ -6987,7 +7099,7 @@
                             <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${loPnlVal >= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">P&L: ${moneyM(loPnlVal, { signed: true })}</span>
                         </div>
                         <div class="flex items-center justify-between gap-1.5 mt-0.5 text-xs">
-                            <span class="text-slate-700">Nổ <strong>${loHitsCount}</strong> nháy</span>
+                            <span class="text-slate-700">Nổ <strong>${displayLoHits}</strong> nháy</span>
                             <span class="font-mono font-bold ${loPnlVal >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${moneyM(loPnlVal, { signed: true })}</span>
                         </div>
                         ${hitLo4Numbers.length > 0 ? `
@@ -6996,7 +7108,7 @@
                             ${hitLo4Numbers.map(b => `<span class="inline-flex items-center px-1.5 py-0.2 rounded font-mono text-[10px] font-black bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 ring-1 ring-emerald-300 shadow-xs">🎯 ${number(b.num)}<sub class="text-[8px] font-bold ml-0.5 text-slate-900">(${b.hits}n)</sub></span>`).join(' ')}
                         </div>` : ''}
                         <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
-                            <span>${lo4Info?.countTotal || 5} số (Top 4 X4/X5 + Vệ Tinh)</span>
+                            <span>${lo4Info?.countTotal || lo4BetCandidates?.length || 15} số (Top 4 X4/X5 + Vệ Tinh)</span>
                             <span class="diary-expand-indicator text-rose-700 font-bold underline flex items-center gap-0.5">Bấm xem dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
                         </div>
                         <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-rose-200/50 pt-0.5">

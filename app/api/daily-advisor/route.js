@@ -460,6 +460,7 @@ function settleFromRaw(payload, rawRows) {
         deDropoffMerge: deDropoffMerge || payload.deDropoffMerge || null,
         loDropoff27: loDropoff27 || payload.loDropoff27 || null,
         semanticResonanceSuite: semanticResonanceSuite || payload.semanticResonanceSuite || null,
+        dailyLockedBetsRegistry: payload.dailyLockedBetsRegistry || null,
         latestDataDate: rawRows?.at(-1)?.date || payload.latestDataDate,
         snapshotLock: (() => {
             try {
@@ -697,7 +698,11 @@ export async function GET(request) {
             }
             settled.drawPrizesByDate = drawPrizesByDate;
         }
-        return NextResponse.json({ success: true, ...settled }, { headers: NO_STORE_HEADERS });
+        return NextResponse.json({
+            success: true,
+            ...settled,
+            dailyLockedBetsRegistry: settled.dailyLockedBetsRegistry || payload.dailyLockedBetsRegistry || null
+        }, { headers: NO_STORE_HEADERS });
     } catch (error) {
         return NextResponse.json(
             { success: false, error: `Không tải được cache Gợi ý từ R2: ${error.message}` },
