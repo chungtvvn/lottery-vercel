@@ -4262,10 +4262,269 @@
     let currentExpandedDate = null;
     let currentExpandedType = null;
 
+    function getUnifiedCombatDiaryEntryForDate(date, p = payload, loMode = (typeof currentLo4EngineMode !== 'undefined' ? currentLo4EngineMode : 'top7')) {
+        if (!date) return null;
+        const regEntry = p?.dailyLockedBetsRegistry?.dates?.[date];
+        if (!regEntry) return null;
+
+        const isPending = !regEntry.isSettled;
+        const b = regEntry.bets || {};
+        const s = regEntry.settlement || {};
+        const draw = p?.drawPrizesByDate?.[date] || {};
+        const actualSpec = isPending ? null : (regEntry.actualResult?.special || draw.special || s.de?.actualSpecial || null);
+        const actualPrizes = isPending ? [] : (regEntry.actualResult?.prizes || draw.prizes || []);
+
+        // 1. Đề
+        const bDe = b.de || b.crossHedgingPortfolio?.pillar1_De || {};
+        const sDe = s.de || {};
+        const deVipNums = (sDe.vipNumbers || bDe.vipNumbers || []).map(number);
+        const deSingleNums = (sDe.singleNumbers || bDe.singleNumbers || bDe.numbers || []).map(number).filter(n => !deVipNums.includes(n));
+        const deAllNums = (sDe.numbers || bDe.numbers || [...deVipNums, ...deSingleNums]).map(number);
+        const deStakeK = isPending ? (bDe.stakeK || ((deVipNums.length * 3 + deSingleNums.length) * 1000)) : (sDe.stakeK || 77000);
+        const deProfitK = isPending ? 0 : (sDe.profitK != null ? sDe.profitK : (s.crossHedgingPortfolio?.deProfitK ?? -deStakeK));
+        const dePayoutK = isPending ? 0 : (sDe.payoutK != null ? sDe.payoutK : (deStakeK + deProfitK));
+        const deIsHit = isPending ? false : (sDe.isHit != null ? sDe.isHit : (deProfitK > 0));
+        const deIsX2 = isPending ? false : (sDe.isVipHit != null ? sDe.isVipHit : (deProfitK >= 100000));
+        const deIsX1 = deIsHit && !deIsX2;
+        const deHitType = deIsX2 ? 'win_x3' : (deIsHit ? 'win_x1' : 'loss');
+        const deMethodName = sDe.methodName || bDe.methodName || '💎 Đề Tinh Tuyển VIP';
+        const deSubTierLabel = `Dàn ${deAllNums.length} số (${deVipNums.length} VIP X3 · ${deSingleNums.length} Bọc Lót X1)`;
+
+        const deInfo = {
+            date,
+            isPending,
+            methodName: deMethodName,
+            subTierLabel: deSubTierLabel,
+            numbers: deAllNums,
+            x2Nums: deVipNums,
+            x1Nums: deSingleNums,
+            actualSpecial: actualSpec,
+            isHit: deIsHit,
+            isX2: deIsX2,
+            isX1: deIsX1,
+            hitType: deHitType,
+            stakeK: deStakeK,
+            profitK: deProfitK,
+            payoutK: dePayoutK
+        };
+
+        // 2. Lô Ghép 4 Động Cơ
+        const bLo4 = b.lo4EngineFusion || {};
+        const sLo4 = s.lo4EngineFusion || {};
+        const t5 = (sLo4.tierX5 || bLo4.tierX5 || []).map(number);
+        const t4 = (sLo4.tierX4 || bLo4.tierX4 || []).map(number);
+        const t3 = (sLo4.tierX3 || bLo4.tierX3 || []).map(number);
+        const t1 = (sLo4.tierX1 || bLo4.tierX1 || []).map(number);
+        const betNumbers = (sLo4.betNumbers && sLo4.betNumbers.length) ? sLo4.betNumbers : (bLo4.betNumbers || [
+            ...t5.map(n => ({ num: n, multiplier: 5, votes: 4 })),
+            ...t4.map(n => ({ num: n, multiplier: 4, votes: 3 })),
+            ...t3.map(n => ({ num: n, multiplier: 3, votes: 2 })),
+            ...t1.map(n => ({ num: n, multiplier: 1, votes: 1 }))
+        ]);
+        const lo4Hits = isPending ? 0 : (sLo4.totalHits != null ? sLo4.totalHits : (s.crossHedgingPortfolio?.loHits ?? 0));
+        const lo4StakeK = isPending ? (bLo4.totalLotoStakeK || bLo4.stakeK || 77000) : (sLo4.lotoStakeK || 66000);
+        const lo4PayoutK = isPending ? 0 : (sLo4.lotoPayoutK != null ? sLo4.lotoPayoutK : (s.crossHedgingPortfolio?.loPayoutK ?? 0));
+        const lo4ProfitK = isPending ? 0 : (sLo4.lotoProfitK != null ? sLo4.lotoProfitK : (s.crossHedgingPortfolio?.loProfitK ?? (lo4PayoutK - lo4StakeK)));
+        const isLotoWin = lo4ProfitK > 0;
+
+        const lo4Info = {
+            date,
+            isLive: true,
+            isPending,
+            topN: 7,
+            countTotal: betNumbers.length,
+            countOver2: t5.length + t4.length + t3.length,
+            countX1: t1.length,
+            tierX5: t5,
+            tierX4: t4,
+            tierX3: t3,
+            tierX1: t1,
+            numbersOver2: [...t5, ...t4, ...t3],
+            allNumbers: betNumbers.map(b => number(b.num)),
+            betNumbers,
+            dayLotoStakeK: lo4StakeK,
+            dayLotoPayoutK: lo4PayoutK,
+            dayLotoProfitK: lo4ProfitK,
+            dayLotoHits: lo4Hits,
+            isLotoWin,
+            xien4Status: 'ACTIVE',
+            xien4Reason: bLo4.xien4?.reason || `Top 4 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé`,
+            xien4Combinations: bLo4.xien4?.combinations || [(sLo4.xienTop4 || bLo4.xien4?.top4 || []).map(number)],
+            totalDayProfitK: lo4ProfitK
+        };
+
+        // 3. Xiên 4 (Bộ 4 Quây 11 Vé)
+        const xienTop4 = (sLo4.xienTop4 || bLo4.xien4?.top4 || bLo4.xien4?.numbers || []).slice(0, 4).map(number);
+        const xienHits = isPending ? 0 : (sLo4.xienHitsCount != null ? sLo4.xienHitsCount : (s.crossHedgingPortfolio?.uniqueTop4Hits ?? 0));
+        const xienStakeK = isPending ? (bLo4.xien4?.stakeK || 11000) : (sLo4.xienStakeK || 11000);
+        const xienPayoutK = isPending ? 0 : (sLo4.xienPayoutK != null ? sLo4.xienPayoutK : (s.crossHedgingPortfolio?.xienPayoutK ?? 0));
+        const xienProfitK = isPending ? 0 : (sLo4.xienProfitK != null ? sLo4.xienProfitK : (s.crossHedgingPortfolio?.xienProfitK ?? (xienPayoutK - xienStakeK)));
+        const isXien4Win = xienProfitK > 0;
+
+        const lo4Xien4Info = {
+            date,
+            isLive: true,
+            isPending,
+            status: 'ACTIVE',
+            xien4Status: 'ACTIVE',
+            top4: xienTop4,
+            top5: xienTop4,
+            combinations: [xienTop4],
+            xien4Combinations: [xienTop4],
+            h4: xienHits,
+            countOver2: 4,
+            stakeK: xienStakeK,
+            payoutK: xienPayoutK,
+            profitK: xienProfitK,
+            dayXien4ProfitK: xienProfitK,
+            isWin: isXien4Win,
+            isXien4Win,
+            reason: `Top 4 Đồng Thuận: Quây 11 vé [${xienTop4.join('-')}]`
+        };
+
+        // 4. Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)
+        const bX5 = b.loXien5 || {};
+        const sX5 = s.loXien5 || {};
+        const xien5Top5 = (sX5.top5 || bX5.top5 || xienTop4).slice(0, 5).map(number);
+        const xien5H5 = isPending ? 0 : (sX5.h5 != null ? sX5.h5 : xienHits);
+        const xien5StakeK = isPending ? (bX5.stakeK || 55000) : (sX5.stakeK || 55000);
+        const xien5PayoutK = isPending ? 0 : (sX5.payoutK != null ? sX5.payoutK : 0);
+        const xien5ProfitK = isPending ? 0 : (sX5.profitK != null ? sX5.profitK : (xien5PayoutK - xien5StakeK));
+        const isXien5Win = xien5ProfitK > 0;
+
+        const loXien5Info = {
+            date,
+            isPending,
+            top5: xien5Top5,
+            h5: xien5H5,
+            x5Tickets: getXi5Tickets(xien5Top5),
+            x5StakeK: xien5StakeK,
+            x5PayoutK: xien5PayoutK,
+            x5ProfitK: xien5ProfitK,
+            payoutK: xien5PayoutK,
+            profitK: xien5ProfitK,
+            isWin: isXien5Win
+        };
+
+        // 5. Combo Bù Trừ Dòng Tiền Chéo
+        const bCH = b.crossHedgingPortfolio || {};
+        const sCH = s.crossHedgingPortfolio || {};
+        const chDePnlK = deProfitK;
+        const chLoPnlK = lo4ProfitK;
+        const chXienPnlK = xienProfitK;
+        const chTotalProfitK = isPending ? 0 : (sCH.totalProfitK != null ? sCH.totalProfitK : (chDePnlK + chLoPnlK + chXienPnlK));
+        const isComboWin = chTotalProfitK > 0;
+
+        const chRow = {
+            date,
+            isPending,
+            mode: sCH.mode || bCH.mode || 'ACTIVE_HEDGE',
+            sizingMultiplier: sCH.sizingMultiplier || bCH.sizingMultiplier || 1,
+            special: actualSpec,
+            deHits: sCH.deHits || (deIsHit ? 1 : 0),
+            isDeHit: deIsHit,
+            isVipHit: deIsX2,
+            dePayoutK,
+            deStakeK,
+            deProfitK,
+            loHits: lo4Hits,
+            loPayoutK: lo4PayoutK,
+            loStakeK: lo4StakeK,
+            loProfitK: lo4ProfitK,
+            uniqueTop4Hits: xienHits,
+            xienPayoutK,
+            xienStakeK,
+            xienProfitK,
+            totalPayoutK: isPending ? 0 : (sCH.totalPayoutK || (dePayoutK + lo4PayoutK + xienPayoutK)),
+            totalStakeK: sCH.totalStakeK || (deStakeK + lo4StakeK + xienStakeK),
+            totalProfitK: chTotalProfitK,
+            isWin: isComboWin,
+            isAbstain: sCH.isAbstain || false,
+            details: sCH.details || bCH.details || {
+                p1Method: 'deMarkovGapHazard',
+                p2Engine: '4ENGINE_CONSENSUS',
+                p3Type: 'XIEN_4_QUAY_11_VE'
+            }
+        };
+
+        const std = { methodName: 'Top 20 Chuẩn Nền Tảng', numbers: betNumbers.slice(0, 20).map(b => number(b.num)), stakeK: 44000, profitK: 0 };
+        const x2 = { methodName: 'Top 7 Tăng Tốc X2', numbers: betNumbers.slice(0, 7).map(b => number(b.num)), stakeK: 15400, profitK: 0 };
+        const xi3 = { methodName: 'Tam Thủ Xiên 3', numbers: betNumbers.slice(0, 3).map(b => number(b.num)), hits: 0, stakeK: 500, profitK: 0 };
+        const xi4 = { methodName: 'Xiên 4 Bộ 4 Quây', numbers: xienTop4, hits: xienHits, stakeK: 11000, profitK: xienProfitK };
+
+        return {
+            isRegistry: true,
+            isPending,
+            date,
+            chRow,
+            chDePnlK,
+            chLoPnlK,
+            chXienPnlK,
+            chTotalProfitK,
+            deRow: null,
+            deIsHit,
+            deIsX2,
+            deHitType,
+            deProfitK,
+            actualSpec,
+            loRow: null,
+            lo4Engine: lo4Info,
+            lo4Xien4: lo4Xien4Info,
+            loXien5: loXien5Info,
+            std,
+            x2,
+            xi3,
+            xi4,
+            loProfitK: lo4ProfitK,
+            dayTotalK: chTotalProfitK,
+            deInfo,
+            lo4Info,
+            lo4Xien4Info,
+            loXien5Info,
+            stdInfo: std,
+            x2Info: x2,
+            xi3Info: xi3,
+            xi4Info: xi4
+        };
+    }
+
     function getDiaryInfo(date, type) {
         if (!date || !type) return null;
         let info = diaryDetailsMap?.[date]?.[type];
-        if (!info && date && type) {
+        if (info && info.numbers?.length) return info;
+
+        // Ưu tiên đọc trực tiếp từ Single Source of Truth (SSOT) Registry
+        if (payload?.dailyLockedBetsRegistry?.dates?.[date]) {
+            const entry = getUnifiedCombatDiaryEntryForDate(date, payload, (typeof currentLo4EngineMode !== 'undefined' ? currentLo4EngineMode : 'top7'));
+            if (entry) {
+                if (!diaryDetailsMap) diaryDetailsMap = {};
+                if (!diaryDetailsMap[date]) {
+                    diaryDetailsMap[date] = {
+                        de: entry.deInfo,
+                        lo4Engine: entry.lo4Info,
+                        lo4Xien4: entry.lo4Xien4Info,
+                        loXien5: entry.loXien5Info,
+                        loStd: entry.stdInfo,
+                        loX2: entry.x2Info,
+                        loXi3: entry.xi3Info,
+                        loXi4: entry.xi4Info,
+                        total: {
+                            date,
+                            isPending: entry.isPending,
+                            chRow: entry.chRow,
+                            chDePnlK: entry.chDePnlK,
+                            chLoPnlK: entry.chLoPnlK,
+                            chXienPnlK: entry.chXienPnlK,
+                            chTotalProfitK: entry.chTotalProfitK,
+                            dayTotalK: entry.chTotalProfitK
+                        }
+                    };
+                }
+                if (diaryDetailsMap[date][type]) return diaryDetailsMap[date][type];
+            }
+        }
+
+        if (!info) {
             info = synthesizeFallbackDiaryInfo(date, type, payload);
         }
         if (info && type === 'de' && (!info.numbers || info.numbers.length === 0)) {
@@ -5157,6 +5416,56 @@
         diaryDetailsMap = {};
         let mergedRows = [];
         for (const date of filteredDates) {
+            const regEntryRow = getUnifiedCombatDiaryEntryForDate(date, payload, (typeof currentLo4EngineMode !== 'undefined' ? currentLo4EngineMode : 'top7'));
+            if (regEntryRow) {
+                if (!regEntryRow.isPending) {
+                    cumCrossProfitK += regEntryRow.chTotalProfitK;
+                    cumCrossDeProfitK += regEntryRow.chDePnlK;
+                    cumCrossLoProfitK += regEntryRow.chLoPnlK;
+                    cumCrossXienProfitK += regEntryRow.chXienPnlK;
+                    cumLoXien5ProfitK += (regEntryRow.loXien5?.profitK || 0);
+                    cumLo4ProfitK += regEntryRow.chLoPnlK;
+                    cumLo4Xien4ProfitK += regEntryRow.chXienPnlK;
+                    cumDeProfitK += regEntryRow.chDePnlK;
+                    cumProfitK += regEntryRow.chTotalProfitK;
+                }
+                regEntryRow.chCumProfitK = cumCrossProfitK;
+                regEntryRow.chCumDeProfitK = cumCrossDeProfitK;
+                regEntryRow.chCumLoProfitK = cumCrossLoProfitK;
+                regEntryRow.chCumXienProfitK = cumCrossXienProfitK;
+                regEntryRow.cumDeProfitK = cumCrossDeProfitK;
+                regEntryRow.cumLo4ProfitK = cumCrossLoProfitK;
+                regEntryRow.cumLo4Xien4ProfitK = cumCrossXienProfitK;
+                regEntryRow.cumLoXien5ProfitK = cumLoXien5ProfitK;
+                regEntryRow.cumProfitK = cumCrossProfitK;
+
+                diaryDetailsMap[date] = {
+                    de: { ...regEntryRow.deInfo, cumDeProfitK: cumCrossDeProfitK },
+                    lo4Engine: { ...regEntryRow.lo4Info, cumLotoProfitK: cumCrossLoProfitK },
+                    lo4Xien4: { ...regEntryRow.lo4Xien4Info, cumXien4ProfitK: cumCrossXienProfitK },
+                    loXien5: { ...regEntryRow.loXien5Info, cumLoXien5ProfitK },
+                    loStd: regEntryRow.stdInfo,
+                    loX2: regEntryRow.x2Info,
+                    loXi3: regEntryRow.xi3Info,
+                    loXi4: regEntryRow.xi4Info,
+                    total: {
+                        date,
+                        isPending: regEntryRow.isPending,
+                        chRow: regEntryRow.chRow,
+                        chDePnlK: regEntryRow.chDePnlK,
+                        chLoPnlK: regEntryRow.chLoPnlK,
+                        chXienPnlK: regEntryRow.chXienPnlK,
+                        chTotalProfitK: regEntryRow.chTotalProfitK,
+                        chCumProfitK: cumCrossProfitK,
+                        dayTotalK: regEntryRow.chTotalProfitK,
+                        cumProfitK: cumCrossProfitK
+                    }
+                };
+
+                mergedRows.push(regEntryRow);
+                continue;
+            }
+
             const isPendingRow = Boolean(date === pendingDate && hasPendingUnsettled);
 
             if (isPendingRow) {
@@ -10089,8 +10398,104 @@
         }
 
         const summary = data?.summary || {};
-        const records = data?.settledLedger || [];
+        let records = (data?.settledLedger || []).slice();
         const latestRec = data?.latestRecommendation || null;
+
+        // Ưu tiên nạp và đồng bộ bất biến 100% từ SSOT Registry
+        if (p?.dailyLockedBetsRegistry?.dates) {
+            const regDates = Object.keys(p.dailyLockedBetsRegistry.dates).sort();
+            const regMap = new Map();
+            regDates.forEach(d => {
+                const entry = p.dailyLockedBetsRegistry.dates[d];
+                const isSettled = entry.isSettled;
+                const b = entry.bets || {};
+                const s = entry.settlement || {};
+                const actualNum = isSettled ? (entry.actualResult?.special != null ? Number(entry.actualResult.special) : null) : null;
+
+                if (methodId === 'crossHedging') {
+                    const ch = isSettled ? s.crossHedgingPortfolio : b.crossHedgingPortfolio;
+                    if (ch) {
+                        regMap.set(d, {
+                            date: d,
+                            predictionDate: d,
+                            actual: actualNum,
+                            actualSpecial: actualNum,
+                            special: actualNum,
+                            settled: isSettled,
+                            isLocked: true,
+                            isHit: isSettled ? Boolean(ch.isWin) : false,
+                            hitType: isSettled ? (ch.isWin ? 'win' : 'loss') : 'pending',
+                            stakeK: ch.totalStakeK || 154000,
+                            payoutK: isSettled ? (ch.totalPayoutK || 0) : 0,
+                            profitK: isSettled ? (ch.totalProfitK != null ? ch.totalProfitK : 0) : null,
+                            isLiveSnapshot: true,
+                            sourceType: 'live-snapshot',
+                            chRow: ch
+                        });
+                    }
+                } else if (methodId === 'lo4Engine') {
+                    const lo4 = isSettled ? s.lo4EngineFusion : b.lo4EngineFusion;
+                    if (lo4) {
+                        const pnl = isSettled ? (lo4.lotoProfitK != null ? lo4.lotoProfitK : (lo4.totalProfitK || 0)) : null;
+                        regMap.set(d, {
+                            date: d,
+                            predictionDate: d,
+                            actual: actualNum,
+                            settled: isSettled,
+                            isLocked: true,
+                            isHit: isSettled ? (pnl > 0) : false,
+                            hitType: isSettled ? (pnl > 0 ? 'win' : 'loss') : 'pending',
+                            stakeK: lo4.lotoStakeK || 66000,
+                            payoutK: isSettled ? (lo4.lotoPayoutK || 0) : 0,
+                            profitK: pnl,
+                            isLiveSnapshot: true,
+                            sourceType: 'live-snapshot'
+                        });
+                    }
+                } else {
+                    // Đề methods
+                    const de = isSettled ? s.de : b.de;
+                    if (de) {
+                        const deVip = (de.vipNumbers || []).map(number);
+                        const deSingle = (de.singleNumbers || []).map(number);
+                        const deAll = (de.numbers || [...deVip, ...deSingle]).map(number);
+                        const isVipHit = isSettled ? Boolean(de.isVipHit) : false;
+                        const isHit = isSettled ? Boolean(de.isHit) : false;
+                        regMap.set(d, {
+                            date: d,
+                            predictionDate: d,
+                            actual: actualNum,
+                            actualSpecial: actualNum,
+                            special: actualNum,
+                            settled: isSettled,
+                            isLocked: true,
+                            isHit,
+                            isVipHit,
+                            hitType: isSettled ? (isVipHit ? 'win_x3' : (isHit ? 'win_x1' : 'loss')) : 'pending',
+                            numbers: deAll,
+                            vipNumbers: deVip,
+                            singleNumbers: deSingle,
+                            intersection: deVip,
+                            uniqueSingles: deSingle,
+                            union: deAll,
+                            stakeK: de.stakeK || 77000,
+                            payoutK: isSettled ? (de.payoutK || 0) : 0,
+                            profitK: isSettled ? (de.profitK != null ? de.profitK : -de.stakeK) : null,
+                            isLiveSnapshot: true,
+                            sourceType: 'live-snapshot',
+                            m1Label: de.methodName || 'Đề Gộp Thực Chiến'
+                        });
+                    }
+                }
+            });
+
+            if (regMap.size > 0) {
+                const earliestRegDate = regDates[0];
+                const baseHistorical = records.filter(r => (r.date || r.predictionDate) < earliestRegDate);
+                records = [...baseHistorical, ...regMap.values()].sort((a, b) => (a.date || a.predictionDate).localeCompare(b.date || b.predictionDate));
+            }
+        }
+
         const overallProfitK = Number(summary.overallProfitK || summary.profitK || 0);
         const overallHitRate = Number(summary.overallHitRate || summary.hitRate || 0);
         const liveProfitK = summary.live?.profitK ?? -Infinity;

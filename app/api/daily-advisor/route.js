@@ -710,6 +710,14 @@ export async function GET(request) {
             const chLedger = settled.crossHedgingPortfolio?.settledLedger || [];
             const lo7Ledger = settled.lo4EngineFusion?.modes?.top7?.settledLedger || [];
             const lo6Ledger = settled.lo4EngineFusion?.modes?.top6?.settledLedger || [];
+            const dmLedger = settled.dualMerge?.settledLedger || [];
+            const adLedger = settled.adaptiveDualMerge?.settledLedger || [];
+            const tmLedger = settled.tripleMerge?.settledLedger || [];
+            const metaLedger = settled.metaLearner?.settledLedger || [];
+            const deDropoffLedger = settled.deDropoffMerge?.settledLedger || [];
+            const loDropoffLedger = settled.loDropoff27?.settledLedger || [];
+            const triCoreLedger = settled.triCoreDe?.settledLedger || [];
+            const resSuiteLedger = settled.semanticResonanceSuite?.settledLedger || [];
 
             Object.entries(payload.dailyLockedBetsRegistry.dates || {}).forEach(([d, entry]) => {
                 if (entry?.isSettled && entry.settlement) {
@@ -745,6 +753,155 @@ export async function GET(request) {
                             totalDayProfitK: s.lo4EngineFusion.totalProfitK || 0
                         });
                     }
+                    // Lô Ghép 4 Top 6
+                    if (s.lo4EngineFusion && !lo6Ledger.some(r => normalizeDate(r?.date) === d)) {
+                        lo6Ledger.push({
+                            date: d,
+                            isLive: true,
+                            topN: 6,
+                            h4: s.lo4EngineFusion.xienHitsCount || 0,
+                            countTotal: s.lo4EngineFusion.betNumbers?.length || 15,
+                            countOver2: (s.lo4EngineFusion.tierX5?.length || 0) + (s.lo4EngineFusion.tierX4?.length || 0) + (s.lo4EngineFusion.tierX3?.length || 0),
+                            tierX5: s.lo4EngineFusion.tierX5 || [],
+                            tierX4: s.lo4EngineFusion.tierX4 || [],
+                            tierX3: s.lo4EngineFusion.tierX3 || [],
+                            tierX1: s.lo4EngineFusion.tierX1 || [],
+                            allNumbers: s.lo4EngineFusion.betNumbers?.map(b => b.num) || [],
+                            betNumbers: s.lo4EngineFusion.betNumbers || [],
+                            dayLotoStakeK: s.lo4EngineFusion.lotoStakeK || 66000,
+                            dayLotoPayoutK: s.lo4EngineFusion.lotoPayoutK || 0,
+                            dayLotoProfitK: s.lo4EngineFusion.lotoProfitK || 0,
+                            dayLotoHits: s.lo4EngineFusion.totalHits || 0,
+                            isLotoWin: (s.lo4EngineFusion.lotoProfitK || 0) > 0,
+                            xien4StakeK: s.lo4EngineFusion.xienStakeK || 11000,
+                            xien4PayoutK: s.lo4EngineFusion.xienPayoutK || 0,
+                            dayXien4ProfitK: s.lo4EngineFusion.xienProfitK || -11000,
+                            isXien4Win: (s.lo4EngineFusion.xienProfitK || 0) > 0,
+                            totalDayProfitK: s.lo4EngineFusion.totalProfitK || 0
+                        });
+                    }
+                    // Đề Ledgers (Dual Merge, Adaptive, Triple, Meta)
+                    if (s.de) {
+                        const deRecord = {
+                            date: d,
+                            predictionDate: d,
+                            actual: Number(s.de.actualSpecial),
+                            actualSpecial: Number(s.de.actualSpecial),
+                            special: Number(s.de.actualSpecial),
+                            settled: true,
+                            isLocked: true,
+                            isHit: Boolean(s.de.isHit),
+                            isVipHit: Boolean(s.de.isVipHit),
+                            hitType: s.de.isVipHit ? 'win_x3' : (s.de.isHit ? 'win_x1' : 'loss'),
+                            numbers: s.de.numbers || [],
+                            vipNumbers: s.de.vipNumbers || [],
+                            singleNumbers: s.de.singleNumbers || [],
+                            intersection: s.de.vipNumbers || [],
+                            uniqueSingles: s.de.singleNumbers || [],
+                            union: s.de.numbers || [],
+                            stakeK: s.de.stakeK || 77000,
+                            payoutK: s.de.payoutK || 0,
+                            profitK: s.de.profitK != null ? s.de.profitK : -77000,
+                            isLiveSnapshot: true,
+                            sourceType: 'live-snapshot',
+                            m1Label: s.de.methodName || 'Đề Gộp Thực Chiến'
+                        };
+                        if (!dmLedger.some(r => normalizeDate(r?.date || r?.predictionDate) === d)) {
+                            dmLedger.push(deRecord);
+                        }
+                        if (!adLedger.some(r => normalizeDate(r?.date || r?.predictionDate) === d)) {
+                            adLedger.push(deRecord);
+                        }
+                        if (!tmLedger.some(r => normalizeDate(r?.date || r?.predictionDate) === d)) {
+                            tmLedger.push(deRecord);
+                        }
+                        if (!metaLedger.some(r => normalizeDate(r?.date || r?.predictionDate) === d)) {
+                            metaLedger.push(deRecord);
+                        }
+                    }
+                    // Đề Dropoff
+                    if (s.deDropoffMerge && !deDropoffLedger.some(r => normalizeDate(r?.date) === d)) {
+                        deDropoffLedger.push({
+                            date: d,
+                            predictionDate: d,
+                            actual: Number(s.deDropoffMerge.actualSpecial),
+                            actualSpecial: Number(s.deDropoffMerge.actualSpecial),
+                            actualStr: String(s.deDropoffMerge.actualSpecial),
+                            hit: Boolean(s.deDropoffMerge.isHit40),
+                            isHit: Boolean(s.deDropoffMerge.isHit40),
+                            isHit40: Boolean(s.deDropoffMerge.isHit40),
+                            isHit36: Boolean(s.deDropoffMerge.isHit36),
+                            numbers: s.deDropoffMerge.top40 || [],
+                            numbers36: s.deDropoffMerge.top36 || [],
+                            top40: s.deDropoffMerge.top40 || [],
+                            top36: s.deDropoffMerge.top36 || [],
+                            stakeK: s.deDropoffMerge.stake40K || 40000,
+                            payoutK: s.deDropoffMerge.payout40K || 0,
+                            profitK: s.deDropoffMerge.profit40K != null ? s.deDropoffMerge.profit40K : -40000,
+                            stake36K: s.deDropoffMerge.stake36K || 36000,
+                            payout36K: s.deDropoffMerge.payout36K || 0,
+                            profit36K: s.deDropoffMerge.profit36K != null ? s.deDropoffMerge.profit36K : -36000
+                        });
+                    }
+                    // Lô Dropoff 27
+                    if (s.loDropoff27 && !loDropoffLedger.some(r => normalizeDate(r?.date) === d)) {
+                        const numHitsMap = {};
+                        (entry.actualResult?.prizes || []).forEach(p => {
+                            const ps = String(p).padStart(2, '0');
+                            numHitsMap[ps] = (numHitsMap[ps] || 0) + 1;
+                        });
+                        loDropoffLedger.push({
+                            date: d,
+                            predictionDate: d,
+                            numbers: s.loDropoff27.top7 || [],
+                            top7: s.loDropoff27.top7 || [],
+                            top6: s.loDropoff27.top6 || [],
+                            top2: s.loDropoff27.top2 || [],
+                            hits: s.loDropoff27.hits7 || 0,
+                            hits7: s.loDropoff27.hits7 || 0,
+                            hits6: s.loDropoff27.hits6 || 0,
+                            hits2: s.loDropoff27.hits2 || 0,
+                            numHitsMap,
+                            actualPrizes: entry.actualResult?.prizes || [],
+                            actualSpecial: entry.actualResult?.special,
+                            isHit: (s.loDropoff27.hits7 || 0) > 0,
+                            isWin: Boolean(s.loDropoff27.isFlatWin),
+                            stakeK: s.loDropoff27.flatStake7K || 15400,
+                            payoutK: s.loDropoff27.flatPayout7K || 0,
+                            profitK: s.loDropoff27.flatProfit7K != null ? s.loDropoff27.flatProfit7K : -15400,
+                            tierStakeK: s.loDropoff27.tierStakeK || 22000,
+                            tierPayoutK: s.loDropoff27.tierPayoutK || 0,
+                            tierProfitK: s.loDropoff27.tierProfitK != null ? s.loDropoff27.tierProfitK : -22000,
+                            isTierWin: Boolean(s.loDropoff27.isTierWin)
+                        });
+                    }
+                    // Tri-Core Đề
+                    if (s.triCoreDe && !triCoreLedger.some(r => normalizeDate(r?.date) === d)) {
+                        triCoreLedger.push({
+                            date: d,
+                            predictionDate: d,
+                            action: s.triCoreDe.action || 'BET',
+                            numbers: s.triCoreDe.numbers || [],
+                            actualSpecial: s.triCoreDe.actualSpecial != null ? Number(s.triCoreDe.actualSpecial) : null,
+                            actual: s.triCoreDe.actualSpecial != null ? Number(s.triCoreDe.actualSpecial) : null,
+                            hit: s.triCoreDe.hit,
+                            stakeK: s.triCoreDe.stakeK || 24000,
+                            payoutK: s.triCoreDe.payoutK || 0,
+                            profitK: s.triCoreDe.profitK != null ? s.triCoreDe.profitK : -24000,
+                            isWin: Boolean(s.triCoreDe.isWin)
+                        });
+                    }
+                    // Cộng Hưởng Suite
+                    if (s.semanticResonanceSuite && !resSuiteLedger.some(r => normalizeDate(r?.date) === d)) {
+                        resSuiteLedger.push({
+                            date: d,
+                            actualSpecial: s.semanticResonanceSuite.actualSpecial,
+                            de: s.semanticResonanceSuite.de,
+                            lo: s.semanticResonanceSuite.lo,
+                            xien5: s.semanticResonanceSuite.xien5,
+                            comboFlat: s.semanticResonanceSuite.comboFlat
+                        });
+                    }
                 }
             });
             if (settled.crossHedgingPortfolio) {
@@ -752,6 +909,33 @@ export async function GET(request) {
             }
             if (settled.lo4EngineFusion?.modes?.top7) {
                 settled.lo4EngineFusion.modes.top7.settledLedger = lo7Ledger.sort((a, b) => a.date.localeCompare(b.date));
+            }
+            if (settled.lo4EngineFusion?.modes?.top6) {
+                settled.lo4EngineFusion.modes.top6.settledLedger = lo6Ledger.sort((a, b) => a.date.localeCompare(b.date));
+            }
+            if (settled.dualMerge) {
+                settled.dualMerge.settledLedger = dmLedger.sort((a, b) => (a.date || a.predictionDate).localeCompare(b.date || b.predictionDate));
+            }
+            if (settled.adaptiveDualMerge) {
+                settled.adaptiveDualMerge.settledLedger = adLedger.sort((a, b) => (a.date || a.predictionDate).localeCompare(b.date || b.predictionDate));
+            }
+            if (settled.tripleMerge) {
+                settled.tripleMerge.settledLedger = tmLedger.sort((a, b) => (a.date || a.predictionDate).localeCompare(b.date || b.predictionDate));
+            }
+            if (settled.metaLearner) {
+                settled.metaLearner.settledLedger = metaLedger.sort((a, b) => (a.date || a.predictionDate).localeCompare(b.date || b.predictionDate));
+            }
+            if (settled.deDropoffMerge) {
+                settled.deDropoffMerge.settledLedger = deDropoffLedger.sort((a, b) => a.date.localeCompare(b.date));
+            }
+            if (settled.loDropoff27) {
+                settled.loDropoff27.settledLedger = loDropoffLedger.sort((a, b) => a.date.localeCompare(b.date));
+            }
+            if (settled.triCoreDe) {
+                settled.triCoreDe.settledLedger = triCoreLedger.sort((a, b) => a.date.localeCompare(b.date));
+            }
+            if (settled.semanticResonanceSuite) {
+                settled.semanticResonanceSuite.settledLedger = resSuiteLedger.sort((a, b) => a.date.localeCompare(b.date));
             }
         }
         if (!settled.drawPrizesByDate) {

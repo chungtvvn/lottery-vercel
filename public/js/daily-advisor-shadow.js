@@ -1919,10 +1919,10 @@
         const loTriHarmonic = data.loTriHarmonic || null;
         const loTop5Xien = data.loTop5ConsensusXien || null;
         const mode = currentShadowLoMode || 'top7';
-        const loLedger = loDropoff?.settledLedger || [];
-        const deDropoffLedger = deDropoff?.settledLedger || [];
-        const loTriLedger = loTriHarmonic?.settledLedger || [];
-        const loTop5XienLedger = loTop5Xien?.settledLedger || [];
+        let loLedger = loDropoff?.settledLedger || [];
+        let deDropoffLedger = deDropoff?.settledLedger || [];
+        let loTriLedger = loTriHarmonic?.settledLedger || [];
+        let loTop5XienLedger = loTop5Xien?.settledLedger || [];
 
         let deLedger = [];
         if (triCore) {
@@ -1930,15 +1930,135 @@
                 ? (triCore.settledLedger || [])
                 : (triCore.allDaysLedger || []);
         }
+        let resSuiteLedger = data.semanticResonanceSuite?.settledLedger || [];
+
+        // Đồng bộ Single Source of Truth (SSOT) Daily Locked Bets Registry
+        const shadowRegDates = data.dailyLockedBetsRegistry?.dates || {};
+        Object.entries(shadowRegDates).forEach(([d, entry]) => {
+            if (!entry?.isSettled || !entry.settlement) return;
+            const s = entry.settlement;
+            const b = entry.bets || {};
+
+            // 1. deDropoffMerge
+            if (s.deDropoffMerge) {
+                const sDe = s.deDropoffMerge;
+                const idx = deDropoffLedger.findIndex(r => r.date === d);
+                const item = {
+                    date: d,
+                    predictionDate: d,
+                    year: Number(d.slice(0, 4)),
+                    actual: sDe.actualSpecial != null ? Number(sDe.actualSpecial) : null,
+                    actualSpecial: sDe.actualSpecial != null ? Number(sDe.actualSpecial) : null,
+                    actualStr: sDe.actualSpecial != null ? String(sDe.actualSpecial).padStart(2, '0') : null,
+                    hit: Boolean(sDe.isHit40),
+                    isHit: Boolean(sDe.isHit40),
+                    isHit40: Boolean(sDe.isHit40),
+                    isHit36: Boolean(sDe.isHit36),
+                    numbers: sDe.top40 || b.deDropoffMerge?.numbers || [],
+                    numbers36: sDe.top36 || (sDe.top40 || []).slice(0, 36),
+                    top40: sDe.top40 || [],
+                    top36: sDe.top36 || [],
+                    stakeK: sDe.stake40K || 40000,
+                    payoutK: sDe.payout40K || 0,
+                    profitK: sDe.profit40K != null ? sDe.profit40K : -40000,
+                    stake36K: sDe.stake36K || 36000,
+                    payout36K: sDe.payout36K || 0,
+                    profit36K: sDe.profit36K != null ? sDe.profit36K : -36000
+                };
+                if (idx >= 0) deDropoffLedger[idx] = { ...deDropoffLedger[idx], ...item };
+                else deDropoffLedger.push(item);
+            }
+
+            // 2. loDropoff27
+            if (s.loDropoff27) {
+                const sLo = s.loDropoff27;
+                const idx = loLedger.findIndex(r => r.date === d);
+                const numHitsMap = {};
+                (entry.actualResult?.prizes || []).forEach(p => {
+                    const ps = String(p).padStart(2, '0');
+                    numHitsMap[ps] = (numHitsMap[ps] || 0) + 1;
+                });
+                const item = {
+                    date: d,
+                    predictionDate: d,
+                    year: Number(d.slice(0, 4)),
+                    numbers: sLo.top7 || b.loDropoff27?.numbers || [],
+                    top7: sLo.top7 || [],
+                    top6: sLo.top6 || [],
+                    top2: sLo.top2 || [],
+                    hits: sLo.hits7 != null ? sLo.hits7 : 0,
+                    hits7: sLo.hits7 != null ? sLo.hits7 : 0,
+                    hits6: sLo.hits6 != null ? sLo.hits6 : 0,
+                    hits2: sLo.hits2 != null ? sLo.hits2 : 0,
+                    numHitsMap,
+                    actualPrizes: entry.actualResult?.prizes || [],
+                    actualSpecial: entry.actualResult?.special,
+                    isHit: (sLo.hits7 || 0) > 0,
+                    isWin: Boolean(sLo.isFlatWin),
+                    stakeK: sLo.flatStake7K || 15400,
+                    payoutK: sLo.flatPayout7K || 0,
+                    profitK: sLo.flatProfit7K != null ? sLo.flatProfit7K : -15400,
+                    tierStakeK: sLo.tierStakeK || 22000,
+                    tierPayoutK: sLo.tierPayoutK || 0,
+                    tierProfitK: sLo.tierProfitK != null ? sLo.tierProfitK : -22000,
+                    isTierWin: Boolean(sLo.isTierWin)
+                };
+                if (idx >= 0) loLedger[idx] = { ...loLedger[idx], ...item };
+                else loLedger.push(item);
+            }
+
+            // 3. triCoreDe
+            if (s.triCoreDe) {
+                const sTri = s.triCoreDe;
+                const idx = deLedger.findIndex(r => r.date === d);
+                const item = {
+                    date: d,
+                    predictionDate: d,
+                    year: Number(d.slice(0, 4)),
+                    action: sTri.action || 'BET',
+                    numbers: sTri.numbers || b.triCoreDe?.numbers || [],
+                    actualSpecial: sTri.actualSpecial != null ? Number(sTri.actualSpecial) : null,
+                    actual: sTri.actualSpecial != null ? Number(sTri.actualSpecial) : null,
+                    hit: sTri.hit,
+                    stakeK: sTri.stakeK || 24000,
+                    payoutK: sTri.payoutK || 0,
+                    profitK: sTri.profitK != null ? sTri.profitK : -24000,
+                    isWin: Boolean(sTri.isWin)
+                };
+                if (idx >= 0) deLedger[idx] = { ...deLedger[idx], ...item };
+                else deLedger.push(item);
+            }
+
+            // 4. semanticResonanceSuite
+            if (s.semanticResonanceSuite) {
+                const sRes = s.semanticResonanceSuite;
+                const idx = resSuiteLedger.findIndex(r => r.date === d);
+                const item = {
+                    date: d,
+                    predictionDate: d,
+                    year: Number(d.slice(0, 4)),
+                    actualSpecial: sRes.actualSpecial,
+                    de: sRes.de,
+                    lo: sRes.lo,
+                    xien5: sRes.xien5,
+                    comboFlat: sRes.comboFlat
+                };
+                if (idx >= 0) resSuiteLedger[idx] = { ...resSuiteLedger[idx], ...item };
+                else resSuiteLedger.push(item);
+            }
+        });
+        deDropoffLedger.sort((a, b) => a.date.localeCompare(b.date));
+        loLedger.sort((a, b) => a.date.localeCompare(b.date));
+        deLedger.sort((a, b) => a.date.localeCompare(b.date));
+        resSuiteLedger.sort((a, b) => a.date.localeCompare(b.date));
 
         // Global available dates list for modal selector
         const deLatestRec = triCore?.latestRecommendation;
         const loLatestRec = loDropoff?.latestRecommendation;
         const dropoffLatestRec = deDropoff?.latestRecommendation;
         const loTriLatestRec = loTriHarmonic?.latestRecommendation;
-        const targetDate = dropoffLatestRec?.targetDate || loLatestRec?.targetDate || loTriLatestRec?.targetDate || data.pendingPredictionDate || '2026-10-07';
-
-        const resSuiteLedger = data.semanticResonanceSuite?.settledLedger || [];
+        const regPendingDate = Object.keys(shadowRegDates).sort().find(d => !shadowRegDates[d]?.isSettled);
+        const targetDate = regPendingDate || dropoffLatestRec?.targetDate || loLatestRec?.targetDate || loTriLatestRec?.targetDate || data.pendingPredictionDate || '2026-10-13';
 
         const allDates = Array.from(new Set([
             ...deDropoffLedger.map(r => r.date),
@@ -4736,12 +4856,62 @@
             resRow = (semanticResonance?.settledLedger || []).find(r => r.date === targetDate);
         }
 
-        const regBet = data.dailyLockedBetsRegistry?.dates?.[targetDate]?.bets;
-        if (regBet) {
-            if (!dropoffRow && regBet.deDropoffMerge) dropoffRow = regBet.deDropoffMerge;
-            if (!loRow && regBet.loDropoff27) loRow = regBet.loDropoff27;
-            if (!deRow && regBet.triCoreDe) deRow = regBet.triCoreDe;
-            if (!resRow && regBet.semanticResonanceSuite) resRow = regBet.semanticResonanceSuite;
+        const regEntry = data.dailyLockedBetsRegistry?.dates?.[targetDate];
+        const regBet = regEntry?.bets;
+        const regSettlement = regEntry?.settlement;
+        if (regSettlement || regBet) {
+            if (regSettlement?.deDropoffMerge) {
+                dropoffRow = {
+                    ...dropoffRow,
+                    ...regBet?.deDropoffMerge,
+                    ...regSettlement.deDropoffMerge,
+                    date: targetDate,
+                    actual: regSettlement.deDropoffMerge.actualSpecial,
+                    hit: regSettlement.deDropoffMerge.isHit40,
+                    stakeK: regSettlement.deDropoffMerge.stake40K,
+                    payoutK: regSettlement.deDropoffMerge.payout40K,
+                    profitK: regSettlement.deDropoffMerge.profit40K
+                };
+            } else if (!dropoffRow && regBet?.deDropoffMerge) {
+                dropoffRow = regBet.deDropoffMerge;
+            }
+            if (regSettlement?.loDropoff27) {
+                loRow = {
+                    ...loRow,
+                    ...regBet?.loDropoff27,
+                    ...regSettlement.loDropoff27,
+                    date: targetDate,
+                    numbers: regSettlement.loDropoff27.top7,
+                    top7: regSettlement.loDropoff27.top7,
+                    hits: regSettlement.loDropoff27.hits7,
+                    stakeK: regSettlement.loDropoff27.flatStake7K,
+                    payoutK: regSettlement.loDropoff27.flatPayout7K,
+                    profitK: regSettlement.loDropoff27.flatProfit7K
+                };
+            } else if (!loRow && regBet?.loDropoff27) {
+                loRow = regBet.loDropoff27;
+            }
+            if (regSettlement?.triCoreDe) {
+                deRow = {
+                    ...deRow,
+                    ...regBet?.triCoreDe,
+                    ...regSettlement.triCoreDe,
+                    date: targetDate,
+                    actual: regSettlement.triCoreDe.actualSpecial
+                };
+            } else if (!deRow && regBet?.triCoreDe) {
+                deRow = regBet.triCoreDe;
+            }
+            if (regSettlement?.semanticResonanceSuite) {
+                resRow = {
+                    ...resRow,
+                    ...regBet?.semanticResonanceSuite,
+                    ...regSettlement.semanticResonanceSuite,
+                    date: targetDate
+                };
+            } else if (!resRow && regBet?.semanticResonanceSuite) {
+                resRow = regBet.semanticResonanceSuite;
+            }
         }
 
         const dateVi = formatDateVi(targetDate);
