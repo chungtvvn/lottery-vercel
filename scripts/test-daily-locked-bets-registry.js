@@ -113,6 +113,17 @@ assert.deepStrictEqual(lo4_11.tierX4, ['04', '43', '49'], 'X4 ngày 11/10 là [0
 assert.deepStrictEqual(lo4_11.tierX3, ['36', '70', '81'], 'X3 ngày 11/10 là [36, 70, 81]');
 console.log('✔ PASS 4.4: lo4EngineFusion ngày 11/10 chốt dàn [04, 43, 49] X4 và [36, 70, 81] X3');
 
+// 4.5 Kiểm tra ngày 12/10: Dàn Đề Tuyển Chọn 43 số KHÔNG CÓ SỐ 87, kết toán trượt 87 chuẩn xác
+const bet12 = reg.dates['2026-10-12'];
+assert.ok(bet12, 'Phải có bản ghi 2026-10-12');
+assert.strictEqual(bet12.bets?.de?.numbers?.length, 43, 'Dàn Đề 12/10 phải là dàn 43 số Markov Gap Hazard');
+assert.strictEqual(bet12.bets?.de?.numbers?.includes('87'), false, 'Dàn Đề 12/10 tuyệt đối KHÔNG có số 87');
+assert.strictEqual(bet12.settlement?.de?.isHit, false, 'Đặc biệt về 87 kết toán trượt');
+assert.strictEqual(bet12.settlement?.de?.profitK, -70000, 'Lỗ cược Đề -70M VNĐ');
+assert.strictEqual(bet12.settlement?.crossHedgingPortfolio?.isDeHit, false, 'Combo Danh Mục ghi nhận Đề trượt');
+assert.strictEqual(bet12.settlement?.crossHedgingPortfolio?.totalProfitK, -91000, 'Combo Danh Mục lỗ ròng -91M (không bị tính nhầm ăn Đề)');
+console.log('✔ PASS 4.5: Ngày 12/10 Đề 43 số KHÔNG CÓ 87, kết toán Đề trượt (-70M), Combo lỗ -91M chuẩn xác 100%');
+
 // 5. Kiểm tra tính bất biến của ngày đã kết toán khi gọi registerDailyBet
 const overwriteAttempt = registerDailyBet('2026-10-10', 'lo4EngineFusion', { tierX5: ['99'] });
 assert.strictEqual(overwriteAttempt, false, 'Không được phép ghi đè ngày đã kết toán');

@@ -1817544,12 +1817544,12 @@
         "special": "87",
         "actual27Count": 27,
         "deHits": 1,
-        "isDeHit": true,
-        "isVipHit": true,
-        "dePayoutK": 252000,
+        "isDeHit": false,
+        "isVipHit": false,
+        "dePayoutK": 0,
         "deStakeK": 70000,
-        "deProfitK": 182000,
-        "dePnlK": 182000,
+        "deProfitK": -70000,
+        "dePnlK": -70000,
         "loHits": 4,
         "loPayoutK": 56000,
         "loStakeK": 66000,
@@ -1817560,10 +1817560,10 @@
         "xienStakeK": 11000,
         "xienProfitK": -11000,
         "xienPnlK": -11000,
-        "totalPayoutK": 308000,
+        "totalPayoutK": 56000,
         "totalStakeK": 147000,
-        "totalProfitK": 161000,
-        "isWin": true,
+        "totalProfitK": -91000,
+        "isWin": false,
         "isAbstain": false,
         "details": {
           "p1Method": "dualMerge",
@@ -1817573,7 +1817573,7 @@
         "cumDeProfitK": -1544470,
         "cumLoProfitK": 6432986,
         "cumXienProfitK": 2666259,
-        "cumulativeProfitK": 7554775
+        "cumulativeProfitK": 7302775
       }
     ],
     "snapshotLock": {
