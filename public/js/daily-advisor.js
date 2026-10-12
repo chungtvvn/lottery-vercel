@@ -5190,9 +5190,9 @@
         // Nạp thêm từ Single Source of Truth dailyLockedBetsRegistry nếu có
         const lockedDates = payload?.dailyLockedBetsRegistry?.dates || {};
         Object.entries(lockedDates).forEach(([d, regEntry]) => {
-            const s = regEntry?.settlement?.lo4EngineFusion;
+            const s = regEntry?.settlement?.lo4EngineFusion || {};
             const b = regEntry?.bets?.lo4EngineFusion || {};
-            if (s || b) {
+            if (regEntry?.settlement?.lo4EngineFusion || regEntry?.bets?.lo4EngineFusion) {
                 const existingLo4 = lo4Map[d] || {};
 
                 let sourceBetNumbers = (s.betNumbers && s.betNumbers.length > 0) ? s.betNumbers : (b.betNumbers && b.betNumbers.length > 0 ? b.betNumbers : null);
@@ -11631,13 +11631,13 @@
                         <div class="flex items-center gap-1.5 flex-wrap">
                             <span class="text-[10px] font-bold text-amber-300 uppercase">Bộ 5 Số Vàng:</span>
                             ${r.numbers.map(n => {
-                                const hit = r.drawPrizesSet.has(n);
+                                const hit = Boolean(r.drawPrizesSet && r.drawPrizesSet.has(n));
                                 return `<span class="inline-flex items-center justify-center rounded-lg font-mono text-xs font-black px-2 py-0.5 ${hit ? 'bg-emerald-400 text-slate-950 ring-2 ring-emerald-300 scale-105 shadow-md' : 'bg-slate-800 text-slate-300'}">${n}${hit ? ' ⭐' : ''}</span>`;
                             }).join('')}
                         </div>
                         <div class="space-y-1 font-mono text-xs">
                             ${r.tickets.map((t, idx) => {
-                                const hitCount = t.filter(num => r.drawPrizesSet.has(num)).length;
+                                const hitCount = t.filter(num => (r.drawPrizesSet && r.drawPrizesSet.has(num))).length;
                                 let badge = '';
                                 let cardStyle = '';
                                 if (hitCount === 4) {
@@ -11656,7 +11656,7 @@
                                 return `
                                     <div class="flex items-center justify-between ${cardStyle} border rounded-lg px-2.5 py-1 text-xs">
                                         <span class="text-slate-300 font-bold text-[11px]">Dàn ${idx + 1} (11M):</span>
-                                        <span class="font-bold tracking-wide">${t.map(num => r.drawPrizesSet.has(num) ? `<strong class="text-emerald-300">${num}</strong>` : num).join(' - ')}</span>
+                                        <span class="font-bold tracking-wide">${t.map(num => (r.drawPrizesSet && r.drawPrizesSet.has(num)) ? `<strong class="text-emerald-300">${num}</strong>` : num).join(' - ')}</span>
                                         <span class="text-[10px]">${badge}</span>
                                     </div>
                                 `;
@@ -13074,7 +13074,7 @@
                         <div class="flex items-center gap-1.5 flex-wrap">
                             <span class="text-[10px] font-bold text-amber-300 uppercase">Bộ 5 Số Vàng:</span>
                             ${loData.numbers.map(n => {
-                                const hit = loData.drawPrizesSet.has(n);
+                                const hit = Boolean(loData.drawPrizesSet && loData.drawPrizesSet.has(n));
                                 return `<span class="inline-flex items-center justify-center rounded-lg font-mono text-xs font-black px-2 py-0.5 ${hit ? 'bg-emerald-400 text-slate-950 ring-2 ring-emerald-300 scale-105 shadow-md' : 'bg-slate-800 text-slate-300'}">${n}${hit ? ' ⭐' : ''}</span>`;
                             }).join('')}
                         </div>
@@ -13089,7 +13089,7 @@
                                         </div>
                                     `;
                                 }
-                                const hitCount = t.filter(num => loData.drawPrizesSet.has(num)).length;
+                                const hitCount = t.filter(num => (loData.drawPrizesSet ? loData.drawPrizesSet.has(num) : false)).length;
                                 let badge = '';
                                 let cardStyle = '';
                                 if (hitCount === 4) {
@@ -13108,7 +13108,7 @@
                                 return `
                                     <div class="flex items-center justify-between ${cardStyle} border rounded-lg px-2.5 py-1 text-xs">
                                         <span class="text-slate-300 font-bold text-[11px]">Dàn ${idx + 1} (11M):</span>
-                                        <span class="font-bold tracking-wide">${t.map(num => loData.drawPrizesSet.has(num) ? `<strong class="text-emerald-300">${num}</strong>` : num).join(' - ')}</span>
+                                        <span class="font-bold tracking-wide">${t.map(num => (loData.drawPrizesSet && loData.drawPrizesSet.has(num)) ? `<strong class="text-emerald-300">${num}</strong>` : num).join(' - ')}</span>
                                         <span class="text-[10px]">${badge}</span>
                                     </div>
                                 `;
@@ -13126,7 +13126,7 @@
 
                 const renderTierChips = (nums, badgeCls, multText) => {
                     return nums.map(n => {
-                        const hits = loData.drawPrizes.filter(x => x === n).length;
+                        const hits = (loData.drawPrizes || []).filter(x => x === n).length;
                         const isHit = hits > 0;
                         const betObj = lt.betNumbers?.find(b => String(b.num).padStart(2, '0') === String(n).padStart(2, '0'));
                         const mStr = betObj?.methods?.join('+') || '';
@@ -13197,7 +13197,7 @@
                                 </div>
                                 <div class="flex items-center gap-1.5 flex-wrap">
                                     ${((xien4.top4 || xien4.combinations?.[0] || xien4.numbers || [])).map(n => {
-                                        const hit = loData.drawPrizesSet.has(n);
+                                        const hit = Boolean(loData.drawPrizesSet && loData.drawPrizesSet.has(n));
                                         return `<span class="px-2 py-0.5 rounded font-mono text-xs font-black ${hit ? 'bg-gradient-to-r from-purple-400 to-amber-400 text-slate-950 ring-2 ring-white scale-105 shadow-md' : 'bg-slate-800 border border-slate-700 text-purple-200'}">${number(n)}${hit ? ' ⭐' : ''}</span>`;
                                     }).join('')}
                                 </div>
@@ -13209,7 +13209,7 @@
                 loChipsBox.innerHTML = `
                     <div class="flex flex-wrap gap-1">
                         ${loData.numbers.map(n => {
-                            const hits = loData.drawPrizes.filter(x => x === n).length;
+                            const hits = (loData.drawPrizes || []).filter(x => x === n).length;
                             const isHit = hits > 0;
                             if (isHit) {
                                 return `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg font-mono text-xs bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 text-slate-950 font-black ring-2 ring-emerald-300 scale-105 shadow-md animate-pulse">🎯 ${n}${hits > 1 ? ` (${hits}n)` : ''} ⭐</span>`;

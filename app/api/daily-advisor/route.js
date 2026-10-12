@@ -649,8 +649,8 @@ export async function GET(request) {
             }
             let localReg = null;
             try {
-                const { getRegistry } = require('@/lib/services/dailyLockedBetsRegistryService');
-                localReg = getRegistry();
+                const regService = require('@/lib/services/dailyLockedBetsRegistryService');
+                localReg = (regService.loadRegistry || regService.getRegistry)();
             } catch (_) {}
             if (localReg && Object.keys(localReg.dates || {}).length > 0) {
                 payload.dailyLockedBetsRegistry = localReg;

@@ -6485,5 +6485,10 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', initShadowMonitor);
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initShadowMonitor);
+    } else {
+        initShadowMonitor();
+    }
 })();
+
