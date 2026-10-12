@@ -11692,6 +11692,38 @@
         "18",
         "43"
       ]
+    },
+    "2026-10-11": {
+      "special": "63",
+      "prizes": [
+        "63",
+        "24",
+        "51",
+        "66",
+        "46",
+        "31",
+        "43",
+        "98",
+        "75",
+        "47",
+        "81",
+        "39",
+        "14",
+        "41",
+        "17",
+        "56",
+        "51",
+        "17",
+        "84",
+        "91",
+        "67",
+        "55",
+        "53",
+        "53",
+        "89",
+        "06",
+        "41"
+      ]
     }
   },
   "dynamicMetaAdvisor": {
@@ -1673680,6 +1673712,229 @@
             "isXien4Win": true,
             "totalDayProfitK": 122000,
             "cumLotoProfitK": 5625800
+          },
+          {
+            "date": "2026-10-11",
+            "isLive": true,
+            "topN": 6,
+            "h4": 1,
+            "countTotal": 15,
+            "countOver2": 6,
+            "countX1": 9,
+            "numbersOver2": [
+              "04",
+              "43",
+              "49",
+              "36",
+              "70",
+              "81"
+            ],
+            "allNumbers": [
+              "04",
+              "43",
+              "49",
+              "36",
+              "70",
+              "81",
+              "03",
+              "46",
+              "52",
+              "54",
+              "56",
+              "62",
+              "84",
+              "88",
+              "95"
+            ],
+            "tierX5": [],
+            "tierX4": [
+              "04",
+              "43",
+              "49"
+            ],
+            "tierX3": [
+              "36",
+              "70",
+              "81"
+            ],
+            "tierX1": [
+              "03",
+              "46",
+              "52",
+              "54",
+              "56",
+              "62",
+              "84",
+              "88",
+              "95"
+            ],
+            "betNumbers": [
+              {
+                "num": "04",
+                "votes": 3,
+                "multiplier": 4,
+                "hits": 0,
+                "methods": [
+                  "QMBF",
+                  "Dual",
+                  "Tri"
+                ]
+              },
+              {
+                "num": "43",
+                "votes": 3,
+                "multiplier": 4,
+                "hits": 1,
+                "methods": [
+                  "QMBF",
+                  "Dual",
+                  "Tri"
+                ]
+              },
+              {
+                "num": "49",
+                "votes": 3,
+                "multiplier": 4,
+                "hits": 0,
+                "methods": [
+                  "QMBF",
+                  "Dual",
+                  "Tri"
+                ]
+              },
+              {
+                "num": "36",
+                "votes": 2,
+                "multiplier": 3,
+                "hits": 0,
+                "methods": [
+                  "Dual",
+                  "Tri"
+                ]
+              },
+              {
+                "num": "70",
+                "votes": 2,
+                "multiplier": 3,
+                "hits": 0,
+                "methods": [
+                  "Tri",
+                  "RRF"
+                ]
+              },
+              {
+                "num": "81",
+                "votes": 2,
+                "multiplier": 3,
+                "hits": 1,
+                "methods": [
+                  "Dual",
+                  "Tri"
+                ]
+              },
+              {
+                "num": "03",
+                "votes": 1,
+                "multiplier": 1,
+                "hits": 0,
+                "methods": [
+                  "Dual"
+                ]
+              },
+              {
+                "num": "46",
+                "votes": 1,
+                "multiplier": 1,
+                "hits": 1,
+                "methods": [
+                  "RRF"
+                ]
+              },
+              {
+                "num": "52",
+                "votes": 1,
+                "multiplier": 1,
+                "hits": 0,
+                "methods": [
+                  "QMBF"
+                ]
+              },
+              {
+                "num": "54",
+                "votes": 1,
+                "multiplier": 1,
+                "hits": 0,
+                "methods": [
+                  "QMBF"
+                ]
+              },
+              {
+                "num": "56",
+                "votes": 1,
+                "multiplier": 1,
+                "hits": 1,
+                "methods": [
+                  "RRF"
+                ]
+              },
+              {
+                "num": "62",
+                "votes": 1,
+                "multiplier": 1,
+                "hits": 0,
+                "methods": [
+                  "QMBF"
+                ]
+              },
+              {
+                "num": "84",
+                "votes": 1,
+                "multiplier": 1,
+                "hits": 1,
+                "methods": [
+                  "RRF"
+                ]
+              },
+              {
+                "num": "88",
+                "votes": 1,
+                "multiplier": 1,
+                "hits": 0,
+                "methods": [
+                  "RRF"
+                ]
+              },
+              {
+                "num": "95",
+                "votes": 1,
+                "multiplier": 1,
+                "hits": 0,
+                "methods": [
+                  "RRF"
+                ]
+              }
+            ],
+            "dayLotoStakeK": 66000,
+            "dayLotoPayoutK": 80000,
+            "dayLotoProfitK": 14000,
+            "dayLotoHits": 5,
+            "isLotoWin": true,
+            "xien4Status": "ACTIVE",
+            "xien4Reason": "Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé [04-43-49-36] & Bộ 5 Quây 10 vé X3 [04-43-49-36-70]",
+            "xien4Combinations": [
+              [
+                "04",
+                "43",
+                "49",
+                "36"
+              ]
+            ],
+            "xien4StakeK": 11000,
+            "xien4PayoutK": 0,
+            "dayXien4ProfitK": -11000,
+            "isXien4Win": false,
+            "totalDayProfitK": 3000,
+            "cumLotoProfitK": 5639800
           }
         ],
         "summary": {
@@ -1733919,6 +1734174,229 @@
             "isXien4Win": true,
             "totalDayProfitK": 122000,
             "cumLotoProfitK": 6505000
+          },
+          {
+            "date": "2026-10-11",
+            "isLive": true,
+            "topN": 7,
+            "h4": 1,
+            "countTotal": 15,
+            "countOver2": 6,
+            "countX1": 9,
+            "numbersOver2": [
+              "04",
+              "43",
+              "49",
+              "36",
+              "70",
+              "81"
+            ],
+            "allNumbers": [
+              "04",
+              "43",
+              "49",
+              "36",
+              "70",
+              "81",
+              "03",
+              "46",
+              "52",
+              "54",
+              "56",
+              "62",
+              "84",
+              "88",
+              "95"
+            ],
+            "tierX5": [],
+            "tierX4": [
+              "04",
+              "43",
+              "49"
+            ],
+            "tierX3": [
+              "36",
+              "70",
+              "81"
+            ],
+            "tierX1": [
+              "03",
+              "46",
+              "52",
+              "54",
+              "56",
+              "62",
+              "84",
+              "88",
+              "95"
+            ],
+            "betNumbers": [
+              {
+                "num": "04",
+                "votes": 3,
+                "multiplier": 4,
+                "hits": 0,
+                "methods": [
+                  "QMBF",
+                  "Dual",
+                  "Tri"
+                ]
+              },
+              {
+                "num": "43",
+                "votes": 3,
+                "multiplier": 4,
+                "hits": 1,
+                "methods": [
+                  "QMBF",
+                  "Dual",
+                  "Tri"
+                ]
+              },
+              {
+                "num": "49",
+                "votes": 3,
+                "multiplier": 4,
+                "hits": 0,
+                "methods": [
+                  "QMBF",
+                  "Dual",
+                  "Tri"
+                ]
+              },
+              {
+                "num": "36",
+                "votes": 2,
+                "multiplier": 3,
+                "hits": 0,
+                "methods": [
+                  "Dual",
+                  "Tri"
+                ]
+              },
+              {
+                "num": "70",
+                "votes": 2,
+                "multiplier": 3,
+                "hits": 0,
+                "methods": [
+                  "Tri",
+                  "RRF"
+                ]
+              },
+              {
+                "num": "81",
+                "votes": 2,
+                "multiplier": 3,
+                "hits": 1,
+                "methods": [
+                  "Dual",
+                  "Tri"
+                ]
+              },
+              {
+                "num": "03",
+                "votes": 1,
+                "multiplier": 1,
+                "hits": 0,
+                "methods": [
+                  "Dual"
+                ]
+              },
+              {
+                "num": "46",
+                "votes": 1,
+                "multiplier": 1,
+                "hits": 1,
+                "methods": [
+                  "RRF"
+                ]
+              },
+              {
+                "num": "52",
+                "votes": 1,
+                "multiplier": 1,
+                "hits": 0,
+                "methods": [
+                  "QMBF"
+                ]
+              },
+              {
+                "num": "54",
+                "votes": 1,
+                "multiplier": 1,
+                "hits": 0,
+                "methods": [
+                  "QMBF"
+                ]
+              },
+              {
+                "num": "56",
+                "votes": 1,
+                "multiplier": 1,
+                "hits": 1,
+                "methods": [
+                  "RRF"
+                ]
+              },
+              {
+                "num": "62",
+                "votes": 1,
+                "multiplier": 1,
+                "hits": 0,
+                "methods": [
+                  "QMBF"
+                ]
+              },
+              {
+                "num": "84",
+                "votes": 1,
+                "multiplier": 1,
+                "hits": 1,
+                "methods": [
+                  "RRF"
+                ]
+              },
+              {
+                "num": "88",
+                "votes": 1,
+                "multiplier": 1,
+                "hits": 0,
+                "methods": [
+                  "RRF"
+                ]
+              },
+              {
+                "num": "95",
+                "votes": 1,
+                "multiplier": 1,
+                "hits": 0,
+                "methods": [
+                  "RRF"
+                ]
+              }
+            ],
+            "dayLotoStakeK": 66000,
+            "dayLotoPayoutK": 80000,
+            "dayLotoProfitK": 14000,
+            "dayLotoHits": 5,
+            "isLotoWin": true,
+            "xien4Status": "ACTIVE",
+            "xien4Reason": "Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé [04-43-49-36] & Bộ 5 Quây 10 vé X3 [04-43-49-36-70]",
+            "xien4Combinations": [
+              [
+                "04",
+                "43",
+                "49",
+                "36"
+              ]
+            ],
+            "xien4StakeK": 11000,
+            "xien4PayoutK": 0,
+            "dayXien4ProfitK": -11000,
+            "isXien4Win": false,
+            "totalDayProfitK": 3000,
+            "cumLotoProfitK": 6519000
           }
         ],
         "summary": {
@@ -1804958,29 +1805436,29 @@
       {
         "date": "2026-10-10",
         "top4": [
-          "43",
           "70",
-          "72",
+          "36",
+          "43",
           "79"
         ],
         "top5": [
-          "43",
           "70",
-          "72",
+          "36",
+          "43",
           "79",
-          "36"
+          "62"
         ],
-        "h4": 2,
+        "h4": 3,
         "h5": 3,
         "isWin": true,
         "q11StakeM3K": 2200,
-        "q11PayoutM3K": 2400,
-        "q11ProfitM3K": 200,
+        "q11PayoutM3K": 24000,
+        "q11ProfitM3K": 21800,
         "q11StakeVIP_K": 11000,
-        "q11PayoutVIP_K": 12000,
-        "q11ProfitVIP_K": 1000,
+        "q11PayoutVIP_K": 120000,
+        "q11ProfitVIP_K": 109000,
         "cumProfitM3K": 283800,
-        "cumProfitVIP_K": 1419000,
+        "cumProfitVIP_K": 1528000,
         "x3Tickets": 1,
         "x3StakeK": 1000,
         "x3PayoutK": 6500,
@@ -1805012,6 +1805490,64 @@
         "x5ProfitVIP250K": -1000,
         "cumX5ProfitVIP170K": 265000,
         "cumX5ProfitVIP250K": 521000
+      },
+      {
+        "date": "2026-10-11",
+        "top4": [
+          "04",
+          "43",
+          "49",
+          "36"
+        ],
+        "top5": [
+          "04",
+          "43",
+          "49",
+          "36",
+          "70"
+        ],
+        "h4": 1,
+        "h5": 1,
+        "isWin": false,
+        "q11StakeM3K": 2200,
+        "q11PayoutM3K": 0,
+        "q11ProfitM3K": -2200,
+        "q11StakeVIP_K": 11000,
+        "q11PayoutVIP_K": 0,
+        "q11ProfitVIP_K": -11000,
+        "cumProfitM3K": 281600,
+        "cumProfitVIP_K": 1517000,
+        "x3Tickets": 0,
+        "x3StakeK": 1000,
+        "x3PayoutK": 0,
+        "x3ProfitK": -1000,
+        "cumX3ProfitK": 331000,
+        "x5Stake55K": 55000,
+        "x5Payout55K": 0,
+        "x5Profit55K": -55000,
+        "cumX5Profit55K": 5732000,
+        "x5DanHit4": 0,
+        "x5DanHit3": 0,
+        "x5DanHit2": 0,
+        "isX5Win55": false,
+        "x5StakeK": 55000,
+        "x5PayoutK": 0,
+        "x5ProfitK": -55000,
+        "cumLoXien5ProfitK": 5732000,
+        "x5TicketsWon": 0,
+        "x5Payout170K": 0,
+        "x5Profit170K": -500,
+        "x5Payout250K": 0,
+        "x5Profit250K": -500,
+        "cumX5Profit170K": 132000,
+        "cumX5Profit250K": 260000,
+        "x5StakeVIP_K": 1000,
+        "x5PayoutVIP170K": 0,
+        "x5ProfitVIP170K": -1000,
+        "x5PayoutVIP250K": 0,
+        "x5ProfitVIP250K": -1000,
+        "cumX5ProfitVIP170K": 264000,
+        "cumX5ProfitVIP250K": 520000
       }
     ],
     "summary": {
@@ -1816321,18 +1816857,18 @@
         "deProfitK": -72000,
         "dePnlK": -72000,
         "loHits": 2,
-        "loPayoutK": 16800,
-        "loStakeK": 16170,
-        "loProfitK": 630,
-        "loPnlK": 630,
+        "loPayoutK": 48000,
+        "loStakeK": 66000,
+        "loProfitK": -18000,
+        "loPnlK": -18000,
         "uniqueTop4Hits": 0,
         "xienPayoutK": 0,
-        "xienStakeK": 385,
-        "xienProfitK": -385,
-        "xienPnlK": -385,
-        "totalPayoutK": 16800,
-        "totalStakeK": 88555,
-        "totalProfitK": -71755,
+        "xienStakeK": 11000,
+        "xienProfitK": -11000,
+        "xienPnlK": -11000,
+        "totalPayoutK": 48000,
+        "totalStakeK": 149000,
+        "totalProfitK": -101000,
         "isWin": false,
         "isAbstain": false,
         "details": {
@@ -1816341,9 +1816877,9 @@
           "p3Type": "XIEN_4_QUAY_11_VE"
         },
         "cumDeProfitK": -1606470,
-        "cumLoProfitK": 6398616,
-        "cumXienProfitK": 2589874,
-        "cumulativeProfitK": 7382020
+        "cumLoProfitK": 6379986,
+        "cumXienProfitK": 2579259,
+        "cumulativeProfitK": 7352775
       },
       {
         "date": "2026-10-10",
@@ -1816379,9 +1816915,47 @@
           "p3Type": "XIEN_4_QUAY_11_VE"
         },
         "cumDeProfitK": -1649470,
-        "cumLoProfitK": 6447616,
-        "cumXienProfitK": 2698874,
-        "cumulativeProfitK": 7497020
+        "cumLoProfitK": 6428986,
+        "cumXienProfitK": 2688259,
+        "cumulativeProfitK": 7467775
+      },
+      {
+        "date": "2026-10-11",
+        "mode": "DEFEND_MINIMAL",
+        "sizingMultiplier": 0.35,
+        "special": 63,
+        "actual27Count": 27,
+        "deHits": 0,
+        "isDeHit": false,
+        "isVipHit": false,
+        "dePayoutK": 0,
+        "deStakeK": 77000,
+        "deProfitK": -77000,
+        "dePnlK": -77000,
+        "loHits": 5,
+        "loPayoutK": 80000,
+        "loStakeK": 66000,
+        "loProfitK": 14000,
+        "loPnlK": 14000,
+        "uniqueTop4Hits": 1,
+        "xienPayoutK": 0,
+        "xienStakeK": 11000,
+        "xienProfitK": -11000,
+        "xienPnlK": -11000,
+        "totalPayoutK": 80000,
+        "totalStakeK": 154000,
+        "totalProfitK": -74000,
+        "isWin": false,
+        "isAbstain": false,
+        "details": {
+          "p1Method": "dualMerge",
+          "p2Engine": "4ENGINE_CONSENSUS",
+          "p3Type": "XIEN_4_QUAY_11_VE"
+        },
+        "cumDeProfitK": -1726470,
+        "cumLoProfitK": 6442986,
+        "cumXienProfitK": 2677259,
+        "cumulativeProfitK": 7393775
       }
     ],
     "snapshotLock": {

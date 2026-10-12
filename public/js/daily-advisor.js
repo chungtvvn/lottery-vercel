@@ -4423,6 +4423,47 @@
 
     function synthesizeLo4RowFallback(date, p, mode = (typeof currentLo4EngineMode !== 'undefined' ? currentLo4EngineMode : 'top6')) {
         const topN = mode === 'top6' ? 6 : 7;
+        const regBet = p?.dailyLockedBetsRegistry?.dates?.[date]?.bets?.lo4EngineFusion;
+        const regSettlement = p?.dailyLockedBetsRegistry?.dates?.[date]?.settlement?.lo4EngineFusion;
+        if (regSettlement) {
+            const betNums = (regSettlement.betNumbers || regBet?.betNumbers || []).map(bn => ({
+                num: String(bn.num).padStart(2, '0'),
+                votes: bn.votes || 1,
+                multiplier: bn.multiplier || 1,
+                hits: bn.hits != null ? bn.hits : (regSettlement.hitNumbers?.includes(String(bn.num).padStart(2, '0')) ? 1 : 0),
+                methods: bn.methods || []
+            }));
+            return {
+                date,
+                isLive: true,
+                topN,
+                h4: regSettlement.xienHitsCount || 0,
+                countTotal: betNums.length || 15,
+                countOver2: betNums.filter(x => x.multiplier >= 3).length,
+                countX1: betNums.filter(x => x.multiplier < 3).length,
+                tierX5: regSettlement.tierX5 || regBet?.tierX5 || [],
+                tierX4: regSettlement.tierX4 || regBet?.tierX4 || [],
+                tierX3: regSettlement.tierX3 || regBet?.tierX3 || [],
+                tierX1: regSettlement.tierX1 || regBet?.tierX1 || [],
+                numbersOver2: betNums.filter(x => x.multiplier >= 3).map(x => x.num),
+                allNumbers: betNums.map(x => x.num),
+                betNumbers: betNums,
+                dayLotoStakeK: regSettlement.lotoStakeK != null ? regSettlement.lotoStakeK : 66000,
+                dayLotoPayoutK: regSettlement.lotoPayoutK != null ? regSettlement.lotoPayoutK : 0,
+                dayLotoProfitK: regSettlement.lotoProfitK != null ? regSettlement.lotoProfitK : 0,
+                dayLotoHits: regSettlement.totalHits != null ? regSettlement.totalHits : 0,
+                isLotoWin: (regSettlement.lotoProfitK || 0) > 0,
+                xien4Status: 'ACTIVE',
+                xien4Reason: regBet?.xien4?.reason || `Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé`,
+                xien4Combinations: regBet?.xien4?.combinations || [regSettlement.xienTop4 || regBet?.xien4?.top4 || []],
+                xien4StakeK: regSettlement.xienStakeK != null ? regSettlement.xienStakeK : 11000,
+                xien4PayoutK: regSettlement.xienPayoutK != null ? regSettlement.xienPayoutK : 0,
+                dayXien4ProfitK: regSettlement.xienProfitK != null ? regSettlement.xienProfitK : -11000,
+                isXien4Win: (regSettlement.xienProfitK || 0) > 0,
+                totalDayProfitK: (regSettlement.lotoProfitK || 0) + (regSettlement.xienProfitK || 0)
+            };
+        }
+
         const qmbf = (p?.loQuantumBayesFusion?.settledLedger || []).find(r => r.date === date);
         const dual = (p?.loDualMerge?.settledLedger || []).find(r => r.date === date);
         const tri = (p?.loTriHarmonic?.settledLedger || []).find(r => r.date === date);
@@ -4721,6 +4762,51 @@
             if (row && row.date) {
                 lo4Map[row.date] = row;
                 allDatesSet.add(row.date);
+            }
+        });
+
+        // Nạp thêm từ Single Source of Truth dailyLockedBetsRegistry nếu có
+        const lockedDates = payload?.dailyLockedBetsRegistry?.dates || {};
+        Object.entries(lockedDates).forEach(([d, regEntry]) => {
+            if (regEntry?.isSettled && regEntry?.settlement?.lo4EngineFusion) {
+                const s = regEntry.settlement.lo4EngineFusion;
+                const b = regEntry.bets?.lo4EngineFusion || {};
+                const betNums = (s.betNumbers || b.betNumbers || []).map(bn => ({
+                    num: String(bn.num).padStart(2, '0'),
+                    votes: bn.votes || 1,
+                    multiplier: bn.multiplier || 1,
+                    hits: bn.hits != null ? bn.hits : (s.hitNumbers?.includes(String(bn.num).padStart(2, '0')) ? 1 : 0),
+                    methods: bn.methods || []
+                }));
+                lo4Map[d] = {
+                    date: d,
+                    isLive: true,
+                    topN: 7,
+                    countTotal: betNums.length || 15,
+                    countOver2: betNums.filter(x => x.multiplier >= 3).length,
+                    countX1: betNums.filter(x => x.multiplier < 3).length,
+                    tierX5: s.tierX5 || b.tierX5 || [],
+                    tierX4: s.tierX4 || b.tierX4 || [],
+                    tierX3: s.tierX3 || b.tierX3 || [],
+                    tierX1: s.tierX1 || b.tierX1 || [],
+                    numbersOver2: betNums.filter(x => x.multiplier >= 3).map(x => x.num),
+                    allNumbers: betNums.map(x => x.num),
+                    betNumbers: betNums,
+                    dayLotoStakeK: s.lotoStakeK != null ? s.lotoStakeK : 66000,
+                    dayLotoPayoutK: s.lotoPayoutK != null ? s.lotoPayoutK : 0,
+                    dayLotoProfitK: s.lotoProfitK != null ? s.lotoProfitK : 0,
+                    dayLotoHits: s.totalHits != null ? s.totalHits : 0,
+                    isLotoWin: (s.lotoProfitK || 0) > 0,
+                    xien4Status: 'ACTIVE',
+                    xien4Reason: b.xien4?.reason || `Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé`,
+                    xien4Combinations: b.xien4?.combinations || [s.xienTop4 || b.xien4?.top4 || []],
+                    xien4StakeK: s.xienStakeK != null ? s.xienStakeK : 11000,
+                    xien4PayoutK: s.xienPayoutK != null ? s.xienPayoutK : 0,
+                    dayXien4ProfitK: s.xienProfitK != null ? s.xienProfitK : -11000,
+                    isXien4Win: (s.xienProfitK || 0) > 0,
+                    totalDayProfitK: (s.lotoProfitK || 0) + (s.xienProfitK || 0)
+                };
+                allDatesSet.add(d);
             }
         });
 
@@ -5307,13 +5393,13 @@
                 diaryDeSubTierLabel = `Dàn ${diaryDeNumbers.length || 43} số (${diaryDeX2Nums.length || 17} VIP X3 · ${diaryDeX1Nums.length || 26} Bọc Lót X1)`;
             }
 
-            const rawLo4ProfitK = (chRow && chRow.loProfitK != null)
-                ? chRow.loProfitK
-                : (lo4Row ? (lo4Row.dayLotoProfitK || 0) : (chRow?.loPnlK || 0));
+            const rawLo4ProfitK = (lo4Row && lo4Row.dayLotoProfitK != null)
+                ? lo4Row.dayLotoProfitK
+                : (chRow && chRow.loProfitK != null ? chRow.loProfitK : (chRow?.loPnlK || 0));
             const top5XienDay = payload?.loTop5ConsensusXien?.settledLedger?.find(r => r.date === date);
-            const rawLo4Xien4ProfitK = (chRow && chRow.xienProfitK != null)
-                ? chRow.xienProfitK
-                : (top5XienDay ? top5XienDay.q11ProfitVIP_K : (lo4Row ? (lo4Row.dayXien4ProfitK || 0) : (chRow?.xienPnlK || 0)));
+            const rawLo4Xien4ProfitK = (top5XienDay && top5XienDay.q11ProfitVIP_K != null)
+                ? top5XienDay.q11ProfitVIP_K
+                : (lo4Row && lo4Row.dayXien4ProfitK != null ? lo4Row.dayXien4ProfitK : (chRow && chRow.xienProfitK != null ? chRow.xienProfitK : (chRow?.xienPnlK || 0)));
             let loXien5ProfitK = 0;
             let loXien5PayoutK = 0;
             let loXien5H5 = 0;
@@ -5357,9 +5443,7 @@
             const chDePnlK = diaryDeProfitK;
             const chLoPnlK = rawLo4ProfitK;
             const chXienPnlK = rawLo4Xien4ProfitK;
-            const chTotalProfitK = (chRow && chRow.totalProfitK != null)
-                ? chRow.totalProfitK
-                : (chDePnlK + chLoPnlK + chXienPnlK);
+            const chTotalProfitK = chDePnlK + chLoPnlK + chXienPnlK;
 
             cumCrossProfitK += chTotalProfitK;
             cumCrossDeProfitK += chDePnlK;
@@ -5403,8 +5487,8 @@
                 ...lo4Row,
                 dayLotoStakeK: (lo4Row.dayLotoStakeK != null ? lo4Row.dayLotoStakeK : (chRow?.loStakeK || 0)),
                 dayLotoPayoutK: (lo4Row.dayLotoPayoutK != null ? lo4Row.dayLotoPayoutK : (chRow?.loPayoutK || 0)),
-                dayLotoProfitK: (currentLo4EngineMode === 'top6' ? lo4DayProfitK : chLoPnlK),
-                isLotoWin: (currentLo4EngineMode === 'top6' ? lo4IsWin : (chLoPnlK > 0)),
+                dayLotoProfitK: (currentLo4EngineMode === 'top6' ? lo4DayProfitK : rawLo4ProfitK),
+                isLotoWin: (currentLo4EngineMode === 'top6' ? lo4IsWin : (rawLo4ProfitK > 0)),
                 cumLotoProfitK: (currentLo4EngineMode === 'top6' ? lo4CumProfitK : cumCrossLoProfitK)
             } : {
                 date,
@@ -5420,8 +5504,8 @@
                 dayLotoHits: (chRow?.loHits != null ? chRow.loHits : x2Hits),
                 dayLotoStakeK: chRow?.loStakeK || 0,
                 dayLotoPayoutK: chRow?.loPayoutK || 0,
-                dayLotoProfitK: (currentLo4EngineMode === 'top6' ? lo4DayProfitK : chLoPnlK),
-                isLotoWin: (currentLo4EngineMode === 'top6' ? lo4IsWin : (chLoPnlK > 0)),
+                dayLotoProfitK: (currentLo4EngineMode === 'top6' ? lo4DayProfitK : rawLo4ProfitK),
+                isLotoWin: (currentLo4EngineMode === 'top6' ? lo4IsWin : (rawLo4ProfitK > 0)),
                 xien4Status: 'BASELINE_PHASE',
                 xien4Reason: 'Giai đoạn đối soát độc lập trước khởi chạy Live Ghép 4 (Từ 02/06/2026)',
                 cumLotoProfitK: (currentLo4EngineMode === 'top6' ? lo4CumProfitK : cumCrossLoProfitK)
@@ -5439,15 +5523,15 @@
                 xien4Combinations: [ top5XienDay.top4 ],
                 top4: top5XienDay.top4,
                 top5: top5XienDay.top5,
-                h4: (chRow?.uniqueTop4Hits != null ? chRow.uniqueTop4Hits : top5XienDay.h4),
+                h4: (top5XienDay.h4 != null ? top5XienDay.h4 : (chRow?.uniqueTop4Hits != null ? chRow.uniqueTop4Hits : 0)),
                 h5: top5XienDay.h5,
                 countOver2: 4,
-                stakeK: (chRow?.xienStakeK != null ? chRow.xienStakeK : top5XienDay.q11StakeVIP_K),
-                profitK: chXienPnlK,
-                dayXien4ProfitK: chXienPnlK,
-                payoutK: (chRow?.xienPayoutK != null ? chRow.xienPayoutK : top5XienDay.q11PayoutVIP_K),
-                isWin: chXienPnlK > 0,
-                isXien4Win: chXienPnlK > 0,
+                stakeK: (top5XienDay?.q11StakeVIP_K != null ? top5XienDay.q11StakeVIP_K : (lo4Row?.xien4StakeK || (chRow?.xienStakeK != null ? chRow.xienStakeK : 11000))),
+                profitK: rawLo4Xien4ProfitK,
+                dayXien4ProfitK: rawLo4Xien4ProfitK,
+                payoutK: (top5XienDay?.q11PayoutVIP_K != null ? top5XienDay.q11PayoutVIP_K : (lo4Row?.xien4PayoutK || (chRow?.xienPayoutK != null ? chRow.xienPayoutK : 0))),
+                isWin: rawLo4Xien4ProfitK > 0,
+                isXien4Win: rawLo4Xien4ProfitK > 0,
                 x3Tickets: top5XienDay.x3Tickets,
                 x3ProfitK: top5XienDay.x3ProfitK,
                 cumXien4ProfitK: cumCrossXienProfitK
@@ -6797,28 +6881,26 @@
             const chRow = r.chRow;
             const isAllCat = (currentDiaryCategory === 'all');
 
-            const dePnlVal = (chRow && chRow.deProfitK != null)
-                ? chRow.deProfitK
-                : (deInfo?.profitK != null ? deInfo.profitK : (r.deProfitK || 0));
-            const loPnlVal = (chRow && chRow.loProfitK != null)
-                ? chRow.loProfitK
-                : (lo4Info?.dayLotoProfitK != null ? lo4Info.dayLotoProfitK : (r.lo4ProfitK != null ? r.lo4ProfitK : (r.lo4Engine?.dayLotoProfitK || 0)));
-            const xienPnlVal = (chRow && chRow.xienProfitK != null)
-                ? chRow.xienProfitK
-                : (lo4Xien4Info?.profitK != null ? lo4Xien4Info.profitK : (r.lo4Xien4ProfitK != null ? r.lo4Xien4ProfitK : (r.lo4Xien4?.profitK || 0)));
+            const dePnlVal = (deInfo?.profitK != null)
+                ? deInfo.profitK
+                : (chRow && chRow.deProfitK != null ? chRow.deProfitK : (r.deProfitK || 0));
+            const loPnlVal = (lo4Info?.dayLotoProfitK != null)
+                ? lo4Info.dayLotoProfitK
+                : (r.lo4ProfitK != null ? r.lo4ProfitK : (chRow && chRow.loProfitK != null ? chRow.loProfitK : (r.lo4Engine?.dayLotoProfitK || 0)));
+            const xienPnlVal = (lo4Xien4Info?.profitK != null)
+                ? lo4Xien4Info.profitK
+                : (r.lo4Xien4ProfitK != null ? r.lo4Xien4ProfitK : (chRow && chRow.xienProfitK != null ? chRow.xienProfitK : (r.lo4Xien4?.profitK || 0)));
 
             const loXien5Info = r.loXien5Info || r.loXien5 || {};
             const loXien5H5 = loXien5Info.h5 || 0;
             const evalX5Row = evaluateXien5_5DanX4(loXien5H5);
             const loXien5ProfitK = loXien5Info.profitK != null ? loXien5Info.profitK : (loXien5Info.x5ProfitK != null ? loXien5Info.x5ProfitK : evalX5Row.profitK);
 
-            const dayTotalVal = (chRow && chRow.totalProfitK != null)
-                ? chRow.totalProfitK
-                : (r.dayTotalK != null
-                    ? r.dayTotalK
-                    : (isAllCat
-                        ? (dePnlVal + loPnlVal + xienPnlVal)
-                        : (dePnlVal + loPnlVal + xienPnlVal + loXien5ProfitK)));
+            const dayTotalVal = r.dayTotalK != null
+                ? r.dayTotalK
+                : (isAllCat
+                    ? (dePnlVal + loPnlVal + xienPnlVal)
+                    : (dePnlVal + loPnlVal + xienPnlVal + loXien5ProfitK));
 
             const cumDeVal = (r.cumDeProfitK != null ? r.cumDeProfitK : 0);
             const cumLoVal = (r.cumLo4ProfitK != null ? r.cumLo4ProfitK : 0);
@@ -6840,10 +6922,12 @@
                 ? Boolean(chRow.isVipHit)
                 : Boolean(deInfo?.isX3 || deInfo?.isX2 || r.deIsX2 || deInfo?.hitType === 'win_x3' || deInfo?.hitType === 'win_x2');
 
-            const loHitsCount = (lo4Info?.dayLotoHits != null && lo4Info.dayLotoHits > 0)
+            const loHitsCount = (lo4Info?.dayLotoHits != null)
                 ? lo4Info.dayLotoHits
-                : (r.chRow?.loHits != null ? r.chRow.loHits : (lo4Info?.dayLotoHits || 0));
-            const xienHitsCount = r.chRow?.uniqueTop4Hits != null ? r.chRow.uniqueTop4Hits : (lo4Xien4Info?.h4 || 0);
+                : (r.chRow?.loHits != null ? r.chRow.loHits : 0);
+            const xienHitsCount = (lo4Xien4Info?.h4 != null)
+                ? lo4Xien4Info.h4
+                : (r.chRow?.uniqueTop4Hits != null ? r.chRow.uniqueTop4Hits : 0);
 
             const deMethodTitle = (isAllCat && chRow?.details?.p1Method === 'deMarkovGapHazard')
                 ? 'Đề Markov Bậc 2 & Gap Hazard'
