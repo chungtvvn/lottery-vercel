@@ -112,6 +112,25 @@ async function main() {
         }
 
         // Đăng ký dàn đánh chính thức của ngày mục tiêu tiếp theo vào Registry
+        if (cache.streakAwareDeAdvisor?.latestRecommendation) {
+            const lr = cache.streakAwareDeAdvisor.latestRecommendation;
+            const vipNums = (lr.tierX3 || []).concat(lr.tierX2 || []).concat(lr.numbers?.slice(0, 17) || []).slice(0, 17);
+            const allNums = lr.numbers || [];
+            const singleNums = allNums.filter(n => !vipNums.includes(n));
+            registryService.registerDailyBet(expectedPredictionDate, 'de', {
+                methodName: lr.methodName || '🔮 Đề Markov Bậc 2 & Gap Hazard (Sweet-Spot)',
+                vipNumbers: vipNums.map(n => String(n).padStart(2, '0')),
+                singleNumbers: singleNums.map(n => String(n).padStart(2, '0')),
+                numbers: allNums.map(n => String(n).padStart(2, '0')),
+                stakeK: 70000
+            });
+        }
+        if (cache.lo4EngineFusion?.latestRecommendation?.xien4?.top5) {
+            registryService.registerDailyBet(expectedPredictionDate, 'loXien5', {
+                top5: cache.lo4EngineFusion.latestRecommendation.xien4.top5.map(n => String(n).padStart(2, '0')),
+                stakeK: 55000
+            });
+        }
         if (cache.lo4EngineFusion?.latestRecommendation) {
             registryService.registerDailyBet(expectedPredictionDate, 'lo4EngineFusion', cache.lo4EngineFusion.latestRecommendation);
         }

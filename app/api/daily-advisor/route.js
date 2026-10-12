@@ -719,16 +719,25 @@ export async function GET(request) {
             const triCoreLedger = settled.triCoreDe?.settledLedger || [];
             const resSuiteLedger = settled.semanticResonanceSuite?.settledLedger || [];
 
+            const upsertLedgerRow = (ledger, dateKey, row) => {
+                const idx = ledger.findIndex(r => normalizeDate(r?.date || r?.predictionDate) === dateKey);
+                if (idx >= 0) {
+                    ledger[idx] = { ...ledger[idx], ...row };
+                } else {
+                    ledger.push(row);
+                }
+            };
+
             Object.entries(payload.dailyLockedBetsRegistry.dates || {}).forEach(([d, entry]) => {
                 if (entry?.isSettled && entry.settlement) {
                     const s = entry.settlement;
                     // Cross Hedging
-                    if (s.crossHedgingPortfolio && !chLedger.some(r => normalizeDate(r?.date) === d)) {
-                        chLedger.push({ ...s.crossHedgingPortfolio, date: d });
+                    if (s.crossHedgingPortfolio) {
+                        upsertLedgerRow(chLedger, d, { ...s.crossHedgingPortfolio, date: d });
                     }
                     // Lô Ghép 4 Top 7
-                    if (s.lo4EngineFusion && !lo7Ledger.some(r => normalizeDate(r?.date) === d)) {
-                        lo7Ledger.push({
+                    if (s.lo4EngineFusion) {
+                        upsertLedgerRow(lo7Ledger, d, {
                             date: d,
                             isLive: true,
                             topN: 7,
@@ -754,8 +763,8 @@ export async function GET(request) {
                         });
                     }
                     // Lô Ghép 4 Top 6
-                    if (s.lo4EngineFusion && !lo6Ledger.some(r => normalizeDate(r?.date) === d)) {
-                        lo6Ledger.push({
+                    if (s.lo4EngineFusion) {
+                        upsertLedgerRow(lo6Ledger, d, {
                             date: d,
                             isLive: true,
                             topN: 6,
@@ -806,22 +815,14 @@ export async function GET(request) {
                             sourceType: 'live-snapshot',
                             m1Label: s.de.methodName || 'Đề Gộp Thực Chiến'
                         };
-                        if (!dmLedger.some(r => normalizeDate(r?.date || r?.predictionDate) === d)) {
-                            dmLedger.push(deRecord);
-                        }
-                        if (!adLedger.some(r => normalizeDate(r?.date || r?.predictionDate) === d)) {
-                            adLedger.push(deRecord);
-                        }
-                        if (!tmLedger.some(r => normalizeDate(r?.date || r?.predictionDate) === d)) {
-                            tmLedger.push(deRecord);
-                        }
-                        if (!metaLedger.some(r => normalizeDate(r?.date || r?.predictionDate) === d)) {
-                            metaLedger.push(deRecord);
-                        }
+                        upsertLedgerRow(dmLedger, d, deRecord);
+                        upsertLedgerRow(adLedger, d, deRecord);
+                        upsertLedgerRow(tmLedger, d, deRecord);
+                        upsertLedgerRow(metaLedger, d, deRecord);
                     }
                     // Đề Dropoff
-                    if (s.deDropoffMerge && !deDropoffLedger.some(r => normalizeDate(r?.date) === d)) {
-                        deDropoffLedger.push({
+                    if (s.deDropoffMerge) {
+                        upsertLedgerRow(deDropoffLedger, d, {
                             date: d,
                             predictionDate: d,
                             actual: Number(s.deDropoffMerge.actualSpecial),
@@ -844,13 +845,13 @@ export async function GET(request) {
                         });
                     }
                     // Lô Dropoff 27
-                    if (s.loDropoff27 && !loDropoffLedger.some(r => normalizeDate(r?.date) === d)) {
+                    if (s.loDropoff27) {
                         const numHitsMap = {};
                         (entry.actualResult?.prizes || []).forEach(p => {
                             const ps = String(p).padStart(2, '0');
                             numHitsMap[ps] = (numHitsMap[ps] || 0) + 1;
                         });
-                        loDropoffLedger.push({
+                        upsertLedgerRow(loDropoffLedger, d, {
                             date: d,
                             predictionDate: d,
                             numbers: s.loDropoff27.top7 || [],
@@ -876,8 +877,8 @@ export async function GET(request) {
                         });
                     }
                     // Tri-Core Đề
-                    if (s.triCoreDe && !triCoreLedger.some(r => normalizeDate(r?.date) === d)) {
-                        triCoreLedger.push({
+                    if (s.triCoreDe) {
+                        upsertLedgerRow(triCoreLedger, d, {
                             date: d,
                             predictionDate: d,
                             action: s.triCoreDe.action || 'BET',
@@ -892,8 +893,8 @@ export async function GET(request) {
                         });
                     }
                     // Cộng Hưởng Suite
-                    if (s.semanticResonanceSuite && !resSuiteLedger.some(r => normalizeDate(r?.date) === d)) {
-                        resSuiteLedger.push({
+                    if (s.semanticResonanceSuite) {
+                        upsertLedgerRow(resSuiteLedger, d, {
                             date: d,
                             actualSpecial: s.semanticResonanceSuite.actualSpecial,
                             de: s.semanticResonanceSuite.de,
