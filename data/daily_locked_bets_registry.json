@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "description": "Single Source of Truth (SSOT) Immutable Daily Bets and Settlement Registry",
-  "updatedAt": "2026-10-11T03:31:49.232Z",
+  "updatedAt": "2026-10-12T13:21:24.969Z",
   "dates": {
     "2026-10-10": {
       "targetDate": "2026-10-10",
@@ -36,7 +36,120 @@
               "43",
               "79"
             ]
-          }
+          },
+          "betNumbers": [
+            {
+              "num": "70",
+              "votes": 4,
+              "multiplier": 5,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "36",
+              "votes": 2,
+              "multiplier": 3,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "43",
+              "votes": 2,
+              "multiplier": 3,
+              "methods": [
+                "QMBF",
+                "RRF"
+              ]
+            },
+            {
+              "num": "62",
+              "votes": 2,
+              "multiplier": 3,
+              "methods": [
+                "QMBF",
+                "RRF"
+              ]
+            },
+            {
+              "num": "79",
+              "votes": 2,
+              "multiplier": 3,
+              "methods": [
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "02",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "09",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "22",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "30",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "72",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "88",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "93",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "95",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "QMBF"
+              ]
+            }
+          ]
         },
         "deDropoffMerge": {
           "top40": [
@@ -281,7 +394,141 @@
           "totalStakeK": 66000,
           "totalPayoutK": 224000,
           "totalProfitK": 158000,
-          "isWin": true
+          "isWin": true,
+          "hitNumbers": [
+            "36",
+            "43",
+            "79",
+            "22",
+            "30",
+            "93"
+          ],
+          "betNumbers": [
+            {
+              "num": "70",
+              "votes": 4,
+              "multiplier": 5,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "36",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 1,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "43",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "RRF"
+              ]
+            },
+            {
+              "num": "62",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "RRF"
+              ]
+            },
+            {
+              "num": "79",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 1,
+              "methods": [
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "02",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "09",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "22",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 2,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "30",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "72",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "88",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "93",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "95",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            }
+          ]
         },
         "deDropoffMerge": {
           "date": "2026-10-10",
@@ -570,7 +817,7 @@
     },
     "2026-10-11": {
       "targetDate": "2026-10-11",
-      "isSettled": false,
+      "isSettled": true,
       "registeredAt": "2026-10-11T03:31:01.666Z",
       "bets": {
         "lo4EngineFusion": {
@@ -4977,7 +5224,8155 @@
           }
         }
       },
-      "settlement": {}
+      "settlement": {
+        "lo4EngineFusion": {
+          "date": "2026-10-11",
+          "tierX5": [],
+          "tierX4": [
+            "04",
+            "43",
+            "49"
+          ],
+          "tierX3": [
+            "36",
+            "70",
+            "81"
+          ],
+          "tierX1": [
+            "03",
+            "46",
+            "52",
+            "54",
+            "56",
+            "62",
+            "84",
+            "88",
+            "95"
+          ],
+          "x5Hits": 0,
+          "x4Hits": 1,
+          "x3Hits": 1,
+          "x1Hits": 3,
+          "totalHits": 5,
+          "hitNumbers": [
+            "43",
+            "81",
+            "46",
+            "56",
+            "84"
+          ],
+          "lotoStakeK": 66000,
+          "lotoPayoutK": 80000,
+          "lotoProfitK": 14000,
+          "xienTop4": [
+            "04",
+            "43",
+            "49",
+            "36"
+          ],
+          "xienHitsCount": 1,
+          "xienStakeK": 11000,
+          "xienPayoutK": 0,
+          "xienProfitK": -11000,
+          "totalStakeK": 77000,
+          "totalPayoutK": 80000,
+          "totalProfitK": 3000,
+          "isWin": true,
+          "betNumbers": [
+            {
+              "num": "04",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "43",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "49",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "36",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "70",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "81",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 1,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "03",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "46",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "52",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "54",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "56",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "62",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "84",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "88",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "95",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            }
+          ]
+        },
+        "deDropoffMerge": {
+          "date": "2026-10-11",
+          "actualSpecial": "63",
+          "top40": [
+            "05",
+            "14",
+            "16",
+            "18",
+            "25",
+            "27",
+            "34",
+            "36",
+            "47",
+            "50",
+            "94",
+            "07",
+            "10",
+            "12",
+            "32",
+            "38",
+            "45",
+            "52",
+            "54",
+            "56",
+            "65",
+            "67",
+            "87",
+            "09",
+            "63",
+            "98",
+            "19",
+            "55",
+            "64",
+            "74",
+            "82",
+            "92",
+            "23",
+            "29",
+            "43",
+            "49",
+            "41",
+            "69",
+            "70",
+            "71"
+          ],
+          "isHit40": true,
+          "stake40K": 40000,
+          "payout40K": 84000,
+          "profit40K": 44000
+        },
+        "loDropoff27": {
+          "date": "2026-10-11",
+          "top7": [
+            "49",
+            "52",
+            "04",
+            "43",
+            "62",
+            "54",
+            "36"
+          ],
+          "top6": [
+            "49",
+            "52",
+            "04",
+            "43",
+            "62",
+            "54"
+          ],
+          "top2": [
+            "49",
+            "52"
+          ],
+          "hits7": 1,
+          "hits6": 1,
+          "hits2": 0,
+          "flatStake7K": 15400,
+          "flatPayout7K": 8000,
+          "flatProfit7K": -7400,
+          "tierStakeK": 22000,
+          "tierPayoutK": 16000,
+          "tierProfitK": -6000,
+          "isFlatWin": false,
+          "isTierWin": false
+        },
+        "triCoreDe": {
+          "date": "2026-10-11",
+          "action": "BET",
+          "actualSpecial": "63",
+          "numbers": [
+            16,
+            18,
+            25,
+            27,
+            34,
+            36,
+            47,
+            50,
+            94,
+            10,
+            12,
+            32,
+            38,
+            45,
+            52,
+            54,
+            56,
+            65,
+            67,
+            87,
+            9,
+            63,
+            98,
+            19
+          ],
+          "hit": true,
+          "stakeK": 24000,
+          "payoutK": 84000,
+          "profitK": 60000,
+          "isWin": true
+        },
+        "semanticResonanceSuite": {
+          "date": "2026-10-11",
+          "actualSpecial": "63",
+          "de": {
+            "vip12": [
+              "05",
+              "14",
+              "16",
+              "18",
+              "25",
+              "27",
+              "34",
+              "36",
+              "47",
+              "50",
+              "94",
+              "07"
+            ],
+            "lot24": [
+              "10",
+              "12",
+              "32",
+              "38",
+              "45",
+              "52",
+              "54",
+              "56",
+              "65",
+              "67",
+              "87",
+              "09",
+              "63",
+              "98",
+              "19",
+              "55",
+              "64",
+              "74",
+              "82",
+              "92",
+              "23",
+              "29",
+              "43",
+              "49"
+            ],
+            "hitType": "LOT",
+            "stakeK": 54000,
+            "payoutK": 84000,
+            "profitK": 30000,
+            "isWin": true
+          },
+          "lo": {
+            "top7": [
+              "49",
+              "52",
+              "04",
+              "43",
+              "62",
+              "54",
+              "36"
+            ],
+            "hits": 1,
+            "flatStakeK": 15400,
+            "flatPayoutK": 8000,
+            "flatProfitK": -7400,
+            "isWin": false
+          },
+          "xien5": {
+            "top5": [
+              "49",
+              "52",
+              "04",
+              "43",
+              "62"
+            ],
+            "hitsCount": 1,
+            "stakeK": 55000,
+            "payoutK": 0,
+            "profitK": -55000,
+            "isWin": false
+          },
+          "comboFlat": {
+            "stakeK": 124400,
+            "payoutK": 92000,
+            "profitK": -32400,
+            "isWin": false
+          }
+        }
+      },
+      "settledAt": "2026-10-11T18:35:00.000Z",
+      "actualResult": {
+        "date": "2026-10-11",
+        "special": "63",
+        "prizes": [
+          "63",
+          "24",
+          "51",
+          "66",
+          "46",
+          "31",
+          "43",
+          "98",
+          "75",
+          "47",
+          "81",
+          "39",
+          "14",
+          "41",
+          "17",
+          "56",
+          "51",
+          "17",
+          "84",
+          "91",
+          "67",
+          "55",
+          "53",
+          "53",
+          "89",
+          "06",
+          "41"
+        ]
+      }
+    },
+    "2026-09-16": {
+      "targetDate": "2026-09-16",
+      "isSettled": true,
+      "registeredAt": "2026-10-11T00:00:00.000Z",
+      "bets": {
+        "lo4EngineFusion": {
+          "predictionDate": "2026-09-16",
+          "methodId": "lo4EngineFusion",
+          "topN": 7,
+          "tierX5": [],
+          "tierX4": [
+            "64",
+            "92",
+            "93"
+          ],
+          "tierX3": [
+            "38",
+            "72",
+            "75"
+          ],
+          "tierX1": [
+            "01",
+            "14",
+            "31",
+            "36",
+            "43",
+            "44",
+            "53",
+            "62",
+            "63",
+            "66",
+            "70",
+            "71",
+            "91"
+          ],
+          "betNumbers": [
+            {
+              "num": "64",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "92",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "93",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "38",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual"
+              ]
+            },
+            {
+              "num": "72",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 1,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "75",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Tri"
+              ]
+            },
+            {
+              "num": "01",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "14",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "31",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 2,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "36",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "43",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "44",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "53",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "62",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "63",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "66",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "70",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "71",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "91",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "RRF"
+              ]
+            }
+          ],
+          "numbersOver2": [
+            "64",
+            "92",
+            "93",
+            "38",
+            "72",
+            "75"
+          ],
+          "allNumbers": [
+            "64",
+            "92",
+            "93",
+            "38",
+            "72",
+            "75",
+            "01",
+            "14",
+            "31",
+            "36",
+            "43",
+            "44",
+            "53",
+            "62",
+            "63",
+            "66",
+            "70",
+            "71",
+            "91"
+          ],
+          "xien4": {
+            "top4": [
+              "64",
+              "92",
+              "93",
+              "38"
+            ],
+            "top5": [
+              "64",
+              "92",
+              "93",
+              "38",
+              "72"
+            ],
+            "combinations": [
+              [
+                "64",
+                "92",
+                "93",
+                "38"
+              ]
+            ],
+            "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [64-92-93-38] (Ăn từ 2 con)"
+          }
+        }
+      },
+      "settlement": {
+        "lo4EngineFusion": {
+          "date": "2026-09-16",
+          "tierX5": [],
+          "tierX4": [
+            "64",
+            "92",
+            "93"
+          ],
+          "tierX3": [
+            "38",
+            "72",
+            "75"
+          ],
+          "tierX1": [
+            "01",
+            "14",
+            "31",
+            "36",
+            "43",
+            "44",
+            "53",
+            "62",
+            "63",
+            "66",
+            "70",
+            "71",
+            "91"
+          ],
+          "totalHits": 6,
+          "lotoStakeK": 74800,
+          "lotoPayoutK": 88000,
+          "lotoProfitK": 13200,
+          "xienTop4": [
+            "64",
+            "92",
+            "93",
+            "38"
+          ],
+          "xienHitsCount": 1,
+          "xienStakeK": 11000,
+          "xienPayoutK": 0,
+          "xienProfitK": -11000,
+          "totalStakeK": 85800,
+          "totalPayoutK": 88000,
+          "totalProfitK": 2200,
+          "isWin": true,
+          "hitNumbers": [
+            "64",
+            "72",
+            "31",
+            "44",
+            "91"
+          ]
+        }
+      }
+    },
+    "2026-09-17": {
+      "targetDate": "2026-09-17",
+      "isSettled": true,
+      "registeredAt": "2026-10-11T00:00:00.000Z",
+      "bets": {
+        "lo4EngineFusion": {
+          "predictionDate": "2026-09-17",
+          "methodId": "lo4EngineFusion",
+          "topN": 7,
+          "tierX5": [],
+          "tierX4": [
+            "43",
+            "52",
+            "66"
+          ],
+          "tierX3": [
+            "12",
+            "29",
+            "65",
+            "75"
+          ],
+          "tierX1": [
+            "34",
+            "36",
+            "44",
+            "46",
+            "55",
+            "62",
+            "63",
+            "76",
+            "79",
+            "81",
+            "82"
+          ],
+          "betNumbers": [
+            {
+              "num": "43",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "52",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "66",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "12",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 1,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "29",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "65",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "75",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Tri"
+              ]
+            },
+            {
+              "num": "34",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "36",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "44",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "46",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "55",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "62",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "63",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "76",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "79",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "81",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "82",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "RRF"
+              ]
+            }
+          ],
+          "numbersOver2": [
+            "43",
+            "52",
+            "66",
+            "12",
+            "29",
+            "65",
+            "75"
+          ],
+          "allNumbers": [
+            "43",
+            "52",
+            "66",
+            "12",
+            "29",
+            "65",
+            "75",
+            "34",
+            "36",
+            "44",
+            "46",
+            "55",
+            "62",
+            "63",
+            "76",
+            "79",
+            "81",
+            "82"
+          ],
+          "xien4": {
+            "top4": [
+              "43",
+              "52",
+              "66",
+              "12"
+            ],
+            "top5": [
+              "43",
+              "52",
+              "66",
+              "12",
+              "29"
+            ],
+            "combinations": [
+              [
+                "43",
+                "52",
+                "66",
+                "12"
+              ]
+            ],
+            "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [43-52-66-12] (Ăn từ 2 con)"
+          }
+        }
+      },
+      "settlement": {
+        "lo4EngineFusion": {
+          "date": "2026-09-17",
+          "tierX5": [],
+          "tierX4": [
+            "43",
+            "52",
+            "66"
+          ],
+          "tierX3": [
+            "12",
+            "29",
+            "65",
+            "75"
+          ],
+          "tierX1": [
+            "34",
+            "36",
+            "44",
+            "46",
+            "55",
+            "62",
+            "63",
+            "76",
+            "79",
+            "81",
+            "82"
+          ],
+          "totalHits": 7,
+          "lotoStakeK": 77000,
+          "lotoPayoutK": 136000,
+          "lotoProfitK": 59000,
+          "xienTop4": [
+            "43",
+            "52",
+            "66",
+            "12"
+          ],
+          "xienHitsCount": 3,
+          "xienStakeK": 11000,
+          "xienPayoutK": 84000,
+          "xienProfitK": 73000,
+          "totalStakeK": 88000,
+          "totalPayoutK": 220000,
+          "totalProfitK": 132000,
+          "isWin": true,
+          "hitNumbers": [
+            "43",
+            "66",
+            "12",
+            "75",
+            "34",
+            "36",
+            "82"
+          ]
+        }
+      }
+    },
+    "2026-09-18": {
+      "targetDate": "2026-09-18",
+      "isSettled": true,
+      "registeredAt": "2026-10-11T00:00:00.000Z",
+      "bets": {
+        "lo4EngineFusion": {
+          "predictionDate": "2026-09-18",
+          "methodId": "lo4EngineFusion",
+          "topN": 7,
+          "tierX5": [
+            "62"
+          ],
+          "tierX4": [
+            "22",
+            "29",
+            "36",
+            "63"
+          ],
+          "tierX3": [
+            "01",
+            "64",
+            "76",
+            "84"
+          ],
+          "tierX1": [
+            "38",
+            "43",
+            "54",
+            "96"
+          ],
+          "betNumbers": [
+            {
+              "num": "62",
+              "votes": 4,
+              "multiplier": 5,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "22",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "29",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 1,
+              "methods": [
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "36",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "RRF"
+              ]
+            },
+            {
+              "num": "63",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "01",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual"
+              ]
+            },
+            {
+              "num": "64",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "RRF"
+              ]
+            },
+            {
+              "num": "76",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Dual"
+              ]
+            },
+            {
+              "num": "84",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "38",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "43",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "54",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "96",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 2,
+              "methods": [
+                "Tri"
+              ]
+            }
+          ],
+          "numbersOver2": [
+            "62",
+            "22",
+            "29",
+            "36",
+            "63",
+            "01",
+            "64",
+            "76",
+            "84"
+          ],
+          "allNumbers": [
+            "62",
+            "22",
+            "29",
+            "36",
+            "63",
+            "01",
+            "64",
+            "76",
+            "84",
+            "38",
+            "43",
+            "54",
+            "96"
+          ],
+          "xien4": {
+            "top4": [
+              "62",
+              "22",
+              "29",
+              "36"
+            ],
+            "top5": [
+              "62",
+              "22",
+              "29",
+              "36",
+              "63"
+            ],
+            "combinations": [
+              [
+                "62",
+                "22",
+                "29",
+                "36"
+              ]
+            ],
+            "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [62-22-29-36] (Ăn từ 2 con)"
+          }
+        }
+      },
+      "settlement": {
+        "lo4EngineFusion": {
+          "date": "2026-09-18",
+          "tierX5": [
+            "62"
+          ],
+          "tierX4": [
+            "22",
+            "29",
+            "36",
+            "63"
+          ],
+          "tierX3": [
+            "01",
+            "64",
+            "76",
+            "84"
+          ],
+          "tierX1": [
+            "38",
+            "43",
+            "54",
+            "96"
+          ],
+          "totalHits": 5,
+          "lotoStakeK": 81400,
+          "lotoPayoutK": 104000,
+          "lotoProfitK": 22600,
+          "xienTop4": [
+            "62",
+            "22",
+            "29",
+            "36"
+          ],
+          "xienHitsCount": 2,
+          "xienStakeK": 11000,
+          "xienPayoutK": 12000,
+          "xienProfitK": 1000,
+          "totalStakeK": 92400,
+          "totalPayoutK": 116000,
+          "totalProfitK": 23600,
+          "isWin": true,
+          "hitNumbers": [
+            "29",
+            "36",
+            "76",
+            "96"
+          ]
+        }
+      }
+    },
+    "2026-09-19": {
+      "targetDate": "2026-09-19",
+      "isSettled": true,
+      "registeredAt": "2026-10-11T00:00:00.000Z",
+      "bets": {
+        "lo4EngineFusion": {
+          "predictionDate": "2026-09-19",
+          "methodId": "lo4EngineFusion",
+          "topN": 7,
+          "tierX5": [
+            "52",
+            "66",
+            "76"
+          ],
+          "tierX4": [
+            "24",
+            "38",
+            "64"
+          ],
+          "tierX3": [
+            "22"
+          ],
+          "tierX1": [
+            "00",
+            "23",
+            "29",
+            "54",
+            "97"
+          ],
+          "betNumbers": [
+            {
+              "num": "52",
+              "votes": 4,
+              "multiplier": 5,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "66",
+              "votes": 4,
+              "multiplier": 5,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "76",
+              "votes": 4,
+              "multiplier": 5,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "24",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 1,
+              "methods": [
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "38",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "64",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "22",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "RRF"
+              ]
+            },
+            {
+              "num": "00",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "23",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "29",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "54",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "97",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Dual"
+              ]
+            }
+          ],
+          "numbersOver2": [
+            "52",
+            "66",
+            "76",
+            "24",
+            "38",
+            "64",
+            "22"
+          ],
+          "allNumbers": [
+            "52",
+            "66",
+            "76",
+            "24",
+            "38",
+            "64",
+            "22",
+            "00",
+            "23",
+            "29",
+            "54",
+            "97"
+          ],
+          "xien4": {
+            "top4": [
+              "52",
+              "66",
+              "76",
+              "24"
+            ],
+            "top5": [
+              "52",
+              "66",
+              "76",
+              "24",
+              "38"
+            ],
+            "combinations": [
+              [
+                "52",
+                "66",
+                "76",
+                "24"
+              ]
+            ],
+            "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [52-66-76-24] (Ăn từ 2 con)"
+          }
+        }
+      },
+      "settlement": {
+        "lo4EngineFusion": {
+          "date": "2026-09-19",
+          "tierX5": [
+            "52",
+            "66",
+            "76"
+          ],
+          "tierX4": [
+            "24",
+            "38",
+            "64"
+          ],
+          "tierX3": [
+            "22"
+          ],
+          "tierX1": [
+            "00",
+            "23",
+            "29",
+            "54",
+            "97"
+          ],
+          "totalHits": 4,
+          "lotoStakeK": 77000,
+          "lotoPayoutK": 144000,
+          "lotoProfitK": 67000,
+          "xienTop4": [
+            "52",
+            "66",
+            "76",
+            "24"
+          ],
+          "xienHitsCount": 3,
+          "xienStakeK": 11000,
+          "xienPayoutK": 84000,
+          "xienProfitK": 73000,
+          "totalStakeK": 88000,
+          "totalPayoutK": 228000,
+          "totalProfitK": 140000,
+          "isWin": true,
+          "hitNumbers": [
+            "52",
+            "76",
+            "24",
+            "64"
+          ]
+        }
+      }
+    },
+    "2026-09-20": {
+      "targetDate": "2026-09-20",
+      "isSettled": true,
+      "registeredAt": "2026-10-11T00:00:00.000Z",
+      "bets": {
+        "lo4EngineFusion": {
+          "predictionDate": "2026-09-20",
+          "methodId": "lo4EngineFusion",
+          "topN": 7,
+          "tierX5": [
+            "10",
+            "54",
+            "88"
+          ],
+          "tierX4": [
+            "01",
+            "79"
+          ],
+          "tierX3": [
+            "38",
+            "49",
+            "68"
+          ],
+          "tierX1": [
+            "03",
+            "57",
+            "92",
+            "95"
+          ],
+          "betNumbers": [
+            {
+              "num": "10",
+              "votes": 4,
+              "multiplier": 5,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "54",
+              "votes": 4,
+              "multiplier": 5,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "88",
+              "votes": 4,
+              "multiplier": 5,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "01",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "RRF"
+              ]
+            },
+            {
+              "num": "79",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "38",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "RRF"
+              ]
+            },
+            {
+              "num": "49",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "68",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 1,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "03",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "57",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "92",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "95",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Dual"
+              ]
+            }
+          ],
+          "numbersOver2": [
+            "10",
+            "54",
+            "88",
+            "01",
+            "79",
+            "38",
+            "49",
+            "68"
+          ],
+          "allNumbers": [
+            "10",
+            "54",
+            "88",
+            "01",
+            "79",
+            "38",
+            "49",
+            "68",
+            "03",
+            "57",
+            "92",
+            "95"
+          ],
+          "xien4": {
+            "top4": [
+              "10",
+              "54",
+              "88",
+              "01"
+            ],
+            "top5": [
+              "10",
+              "54",
+              "88",
+              "01",
+              "79"
+            ],
+            "combinations": [
+              [
+                "10",
+                "54",
+                "88",
+                "01"
+              ]
+            ],
+            "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [10-54-88-01] (Ăn từ 2 con)"
+          }
+        }
+      },
+      "settlement": {
+        "lo4EngineFusion": {
+          "date": "2026-09-20",
+          "tierX5": [
+            "10",
+            "54",
+            "88"
+          ],
+          "tierX4": [
+            "01",
+            "79"
+          ],
+          "tierX3": [
+            "38",
+            "49",
+            "68"
+          ],
+          "tierX1": [
+            "03",
+            "57",
+            "92",
+            "95"
+          ],
+          "totalHits": 4,
+          "lotoStakeK": 79200,
+          "lotoPayoutK": 88000,
+          "lotoProfitK": 8800,
+          "xienTop4": [
+            "10",
+            "54",
+            "88",
+            "01"
+          ],
+          "xienHitsCount": 0,
+          "xienStakeK": 11000,
+          "xienPayoutK": 0,
+          "xienProfitK": -11000,
+          "totalStakeK": 90200,
+          "totalPayoutK": 88000,
+          "totalProfitK": -2200,
+          "isWin": false,
+          "hitNumbers": [
+            "79",
+            "38",
+            "68",
+            "92"
+          ]
+        }
+      }
+    },
+    "2026-09-21": {
+      "targetDate": "2026-09-21",
+      "isSettled": true,
+      "registeredAt": "2026-10-11T00:00:00.000Z",
+      "bets": {
+        "lo4EngineFusion": {
+          "predictionDate": "2026-09-21",
+          "methodId": "lo4EngineFusion",
+          "topN": 7,
+          "tierX5": [
+            "36"
+          ],
+          "tierX4": [
+            "38",
+            "54",
+            "62"
+          ],
+          "tierX3": [
+            "12",
+            "22",
+            "64",
+            "82",
+            "84"
+          ],
+          "tierX1": [
+            "01",
+            "24",
+            "49",
+            "56",
+            "70"
+          ],
+          "betNumbers": [
+            {
+              "num": "36",
+              "votes": 4,
+              "multiplier": 5,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "38",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "RRF"
+              ]
+            },
+            {
+              "num": "54",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "62",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "RRF"
+              ]
+            },
+            {
+              "num": "12",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "22",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "RRF"
+              ]
+            },
+            {
+              "num": "64",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "RRF"
+              ]
+            },
+            {
+              "num": "82",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "84",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "01",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "24",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "49",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "56",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "70",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Dual"
+              ]
+            }
+          ],
+          "numbersOver2": [
+            "36",
+            "38",
+            "54",
+            "62",
+            "12",
+            "22",
+            "64",
+            "82",
+            "84"
+          ],
+          "allNumbers": [
+            "36",
+            "38",
+            "54",
+            "62",
+            "12",
+            "22",
+            "64",
+            "82",
+            "84",
+            "01",
+            "24",
+            "49",
+            "56",
+            "70"
+          ],
+          "xien4": {
+            "top4": [
+              "36",
+              "38",
+              "54",
+              "62"
+            ],
+            "top5": [
+              "36",
+              "38",
+              "54",
+              "62",
+              "12"
+            ],
+            "combinations": [
+              [
+                "36",
+                "38",
+                "54",
+                "62"
+              ]
+            ],
+            "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [36-38-54-62] (Ăn từ 2 con)"
+          }
+        }
+      },
+      "settlement": {
+        "lo4EngineFusion": {
+          "date": "2026-09-21",
+          "tierX5": [
+            "36"
+          ],
+          "tierX4": [
+            "38",
+            "54",
+            "62"
+          ],
+          "tierX3": [
+            "12",
+            "22",
+            "64",
+            "82",
+            "84"
+          ],
+          "tierX1": [
+            "01",
+            "24",
+            "49",
+            "56",
+            "70"
+          ],
+          "totalHits": 2,
+          "lotoStakeK": 81400,
+          "lotoPayoutK": 40000,
+          "lotoProfitK": -41400,
+          "xienTop4": [
+            "36",
+            "38",
+            "54",
+            "62"
+          ],
+          "xienHitsCount": 1,
+          "xienStakeK": 11000,
+          "xienPayoutK": 0,
+          "xienProfitK": -11000,
+          "totalStakeK": 92400,
+          "totalPayoutK": 40000,
+          "totalProfitK": -52400,
+          "isWin": false,
+          "hitNumbers": [
+            "54",
+            "56"
+          ]
+        }
+      }
+    },
+    "2026-09-22": {
+      "targetDate": "2026-09-22",
+      "isSettled": true,
+      "registeredAt": "2026-10-11T00:00:00.000Z",
+      "bets": {
+        "lo4EngineFusion": {
+          "predictionDate": "2026-09-22",
+          "methodId": "lo4EngineFusion",
+          "topN": 7,
+          "tierX5": [],
+          "tierX4": [
+            "24"
+          ],
+          "tierX3": [
+            "00",
+            "23",
+            "31",
+            "57",
+            "92",
+            "94"
+          ],
+          "tierX1": [
+            "05",
+            "18",
+            "47",
+            "48",
+            "49",
+            "62",
+            "64",
+            "66",
+            "76",
+            "80",
+            "84",
+            "87",
+            "96"
+          ],
+          "betNumbers": [
+            {
+              "num": "24",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "00",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 1,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "23",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "31",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "57",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "92",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 3,
+              "methods": [
+                "QMBF",
+                "RRF"
+              ]
+            },
+            {
+              "num": "94",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual"
+              ]
+            },
+            {
+              "num": "05",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "18",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "47",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "48",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "49",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "62",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "64",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "66",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "76",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "80",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "84",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "87",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "96",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            }
+          ],
+          "numbersOver2": [
+            "24",
+            "00",
+            "23",
+            "31",
+            "57",
+            "92",
+            "94"
+          ],
+          "allNumbers": [
+            "24",
+            "00",
+            "23",
+            "31",
+            "57",
+            "92",
+            "94",
+            "05",
+            "18",
+            "47",
+            "48",
+            "49",
+            "62",
+            "64",
+            "66",
+            "76",
+            "80",
+            "84",
+            "87",
+            "96"
+          ],
+          "xien4": {
+            "top4": [
+              "24",
+              "00",
+              "23",
+              "31"
+            ],
+            "top5": [
+              "24",
+              "00",
+              "23",
+              "31",
+              "57"
+            ],
+            "combinations": [
+              [
+                "24",
+                "00",
+                "23",
+                "31"
+              ]
+            ],
+            "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [24-00-23-31] (Ăn từ 2 con)"
+          }
+        }
+      },
+      "settlement": {
+        "lo4EngineFusion": {
+          "date": "2026-09-22",
+          "tierX5": [],
+          "tierX4": [
+            "24"
+          ],
+          "tierX3": [
+            "00",
+            "23",
+            "31",
+            "57",
+            "92",
+            "94"
+          ],
+          "tierX1": [
+            "05",
+            "18",
+            "47",
+            "48",
+            "49",
+            "62",
+            "64",
+            "66",
+            "76",
+            "80",
+            "84",
+            "87",
+            "96"
+          ],
+          "totalHits": 7,
+          "lotoStakeK": 77000,
+          "lotoPayoutK": 120000,
+          "lotoProfitK": 43000,
+          "xienTop4": [
+            "24",
+            "00",
+            "23",
+            "31"
+          ],
+          "xienHitsCount": 1,
+          "xienStakeK": 11000,
+          "xienPayoutK": 0,
+          "xienProfitK": -11000,
+          "totalStakeK": 88000,
+          "totalPayoutK": 120000,
+          "totalProfitK": 32000,
+          "isWin": true,
+          "hitNumbers": [
+            "00",
+            "92",
+            "18",
+            "48",
+            "84"
+          ]
+        }
+      }
+    },
+    "2026-09-23": {
+      "targetDate": "2026-09-23",
+      "isSettled": true,
+      "registeredAt": "2026-10-11T00:00:00.000Z",
+      "bets": {
+        "lo4EngineFusion": {
+          "predictionDate": "2026-09-23",
+          "methodId": "lo4EngineFusion",
+          "topN": 7,
+          "tierX5": [],
+          "tierX4": [
+            "22"
+          ],
+          "tierX3": [
+            "29",
+            "44",
+            "54",
+            "62",
+            "70",
+            "93"
+          ],
+          "tierX1": [
+            "01",
+            "08",
+            "41",
+            "45",
+            "59",
+            "64",
+            "72",
+            "80",
+            "81",
+            "83",
+            "84",
+            "92",
+            "94"
+          ],
+          "betNumbers": [
+            {
+              "num": "22",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "29",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "44",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "54",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual"
+              ]
+            },
+            {
+              "num": "62",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "70",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "93",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "01",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "08",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "41",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "45",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "59",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "64",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "72",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "80",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "81",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "83",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "84",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "92",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "94",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "RRF"
+              ]
+            }
+          ],
+          "numbersOver2": [
+            "22",
+            "29",
+            "44",
+            "54",
+            "62",
+            "70",
+            "93"
+          ],
+          "allNumbers": [
+            "22",
+            "29",
+            "44",
+            "54",
+            "62",
+            "70",
+            "93",
+            "01",
+            "08",
+            "41",
+            "45",
+            "59",
+            "64",
+            "72",
+            "80",
+            "81",
+            "83",
+            "84",
+            "92",
+            "94"
+          ],
+          "xien4": {
+            "top4": [
+              "22",
+              "29",
+              "44",
+              "54"
+            ],
+            "top5": [
+              "22",
+              "29",
+              "44",
+              "54",
+              "62"
+            ],
+            "combinations": [
+              [
+                "22",
+                "29",
+                "44",
+                "54"
+              ]
+            ],
+            "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [22-29-44-54] (Ăn từ 2 con)"
+          }
+        }
+      },
+      "settlement": {
+        "lo4EngineFusion": {
+          "date": "2026-09-23",
+          "tierX5": [],
+          "tierX4": [
+            "22"
+          ],
+          "tierX3": [
+            "29",
+            "44",
+            "54",
+            "62",
+            "70",
+            "93"
+          ],
+          "tierX1": [
+            "01",
+            "08",
+            "41",
+            "45",
+            "59",
+            "64",
+            "72",
+            "80",
+            "81",
+            "83",
+            "84",
+            "92",
+            "94"
+          ],
+          "totalHits": 2,
+          "lotoStakeK": 77000,
+          "lotoPayoutK": 16000,
+          "lotoProfitK": -61000,
+          "xienTop4": [
+            "22",
+            "29",
+            "44",
+            "54"
+          ],
+          "xienHitsCount": 0,
+          "xienStakeK": 11000,
+          "xienPayoutK": 0,
+          "xienProfitK": -11000,
+          "totalStakeK": 88000,
+          "totalPayoutK": 16000,
+          "totalProfitK": -72000,
+          "isWin": false,
+          "hitNumbers": [
+            "45",
+            "94"
+          ]
+        }
+      }
+    },
+    "2026-09-24": {
+      "targetDate": "2026-09-24",
+      "isSettled": true,
+      "registeredAt": "2026-10-11T00:00:00.000Z",
+      "bets": {
+        "lo4EngineFusion": {
+          "predictionDate": "2026-09-24",
+          "methodId": "lo4EngineFusion",
+          "topN": 7,
+          "tierX5": [],
+          "tierX4": [
+            "22",
+            "38",
+            "64"
+          ],
+          "tierX3": [
+            "43",
+            "72",
+            "75",
+            "88"
+          ],
+          "tierX1": [
+            "09",
+            "35",
+            "36",
+            "54",
+            "61",
+            "70",
+            "76",
+            "82",
+            "91",
+            "93",
+            "98"
+          ],
+          "betNumbers": [
+            {
+              "num": "22",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "38",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "64",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "43",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "72",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Tri"
+              ]
+            },
+            {
+              "num": "75",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Tri"
+              ]
+            },
+            {
+              "num": "88",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "09",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "35",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "36",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "54",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "61",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "70",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "76",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "82",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "91",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "93",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "98",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            }
+          ],
+          "numbersOver2": [
+            "22",
+            "38",
+            "64",
+            "43",
+            "72",
+            "75",
+            "88"
+          ],
+          "allNumbers": [
+            "22",
+            "38",
+            "64",
+            "43",
+            "72",
+            "75",
+            "88",
+            "09",
+            "35",
+            "36",
+            "54",
+            "61",
+            "70",
+            "76",
+            "82",
+            "91",
+            "93",
+            "98"
+          ],
+          "xien4": {
+            "top4": [
+              "22",
+              "38",
+              "64",
+              "43"
+            ],
+            "top5": [
+              "22",
+              "38",
+              "64",
+              "43",
+              "72"
+            ],
+            "combinations": [
+              [
+                "22",
+                "38",
+                "64",
+                "43"
+              ]
+            ],
+            "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [22-38-64-43] (Ăn từ 2 con)"
+          }
+        }
+      },
+      "settlement": {
+        "lo4EngineFusion": {
+          "date": "2026-09-24",
+          "tierX5": [],
+          "tierX4": [
+            "22",
+            "38",
+            "64"
+          ],
+          "tierX3": [
+            "43",
+            "72",
+            "75",
+            "88"
+          ],
+          "tierX1": [
+            "09",
+            "35",
+            "36",
+            "54",
+            "61",
+            "70",
+            "76",
+            "82",
+            "91",
+            "93",
+            "98"
+          ],
+          "totalHits": 6,
+          "lotoStakeK": 77000,
+          "lotoPayoutK": 72000,
+          "lotoProfitK": -5000,
+          "xienTop4": [
+            "22",
+            "38",
+            "64",
+            "43"
+          ],
+          "xienHitsCount": 1,
+          "xienStakeK": 11000,
+          "xienPayoutK": 0,
+          "xienProfitK": -11000,
+          "totalStakeK": 88000,
+          "totalPayoutK": 72000,
+          "totalProfitK": -16000,
+          "isWin": false,
+          "hitNumbers": [
+            "64",
+            "35",
+            "70",
+            "76",
+            "82",
+            "93"
+          ]
+        }
+      }
+    },
+    "2026-09-25": {
+      "targetDate": "2026-09-25",
+      "isSettled": true,
+      "registeredAt": "2026-10-11T00:00:00.000Z",
+      "bets": {
+        "lo4EngineFusion": {
+          "predictionDate": "2026-09-25",
+          "methodId": "lo4EngineFusion",
+          "topN": 7,
+          "tierX5": [],
+          "tierX4": [
+            "38",
+            "52",
+            "54"
+          ],
+          "tierX3": [
+            "04",
+            "76",
+            "85"
+          ],
+          "tierX1": [
+            "15",
+            "22",
+            "24",
+            "37",
+            "41",
+            "43",
+            "48",
+            "62",
+            "63",
+            "72",
+            "92",
+            "95",
+            "97"
+          ],
+          "betNumbers": [
+            {
+              "num": "38",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "52",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "54",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "04",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "76",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "85",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 1,
+              "methods": [
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "15",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "22",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "24",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "37",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "41",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "43",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "48",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "62",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "63",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "72",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "92",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 2,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "95",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "97",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "Dual"
+              ]
+            }
+          ],
+          "numbersOver2": [
+            "38",
+            "52",
+            "54",
+            "04",
+            "76",
+            "85"
+          ],
+          "allNumbers": [
+            "38",
+            "52",
+            "54",
+            "04",
+            "76",
+            "85",
+            "15",
+            "22",
+            "24",
+            "37",
+            "41",
+            "43",
+            "48",
+            "62",
+            "63",
+            "72",
+            "92",
+            "95",
+            "97"
+          ],
+          "xien4": {
+            "top4": [
+              "38",
+              "52",
+              "54",
+              "04"
+            ],
+            "top5": [
+              "38",
+              "52",
+              "54",
+              "04",
+              "76"
+            ],
+            "combinations": [
+              [
+                "38",
+                "52",
+                "54",
+                "04"
+              ]
+            ],
+            "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [38-52-54-04] (Ăn từ 2 con)"
+          }
+        }
+      },
+      "settlement": {
+        "lo4EngineFusion": {
+          "date": "2026-09-25",
+          "tierX5": [],
+          "tierX4": [
+            "38",
+            "52",
+            "54"
+          ],
+          "tierX3": [
+            "04",
+            "76",
+            "85"
+          ],
+          "tierX1": [
+            "15",
+            "22",
+            "24",
+            "37",
+            "41",
+            "43",
+            "48",
+            "62",
+            "63",
+            "72",
+            "92",
+            "95",
+            "97"
+          ],
+          "totalHits": 7,
+          "lotoStakeK": 74800,
+          "lotoPayoutK": 72000,
+          "lotoProfitK": -2800,
+          "xienTop4": [
+            "38",
+            "52",
+            "54",
+            "04"
+          ],
+          "xienHitsCount": 0,
+          "xienStakeK": 11000,
+          "xienPayoutK": 0,
+          "xienProfitK": -11000,
+          "totalStakeK": 85800,
+          "totalPayoutK": 72000,
+          "totalProfitK": -13800,
+          "isWin": false,
+          "hitNumbers": [
+            "85",
+            "22",
+            "43",
+            "48",
+            "92",
+            "97"
+          ]
+        }
+      }
+    },
+    "2026-09-26": {
+      "targetDate": "2026-09-26",
+      "isSettled": true,
+      "registeredAt": "2026-10-11T00:00:00.000Z",
+      "bets": {
+        "lo4EngineFusion": {
+          "predictionDate": "2026-09-26",
+          "methodId": "lo4EngineFusion",
+          "topN": 7,
+          "tierX5": [],
+          "tierX4": [
+            "00",
+            "22",
+            "38",
+            "66",
+            "68",
+            "84"
+          ],
+          "tierX3": [
+            "46"
+          ],
+          "tierX1": [
+            "04",
+            "18",
+            "23",
+            "26",
+            "30",
+            "70",
+            "71",
+            "75"
+          ],
+          "betNumbers": [
+            {
+              "num": "00",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "22",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "38",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "66",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "68",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "84",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "46",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "04",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "18",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "23",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "26",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "30",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "70",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "71",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "75",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            }
+          ],
+          "numbersOver2": [
+            "00",
+            "22",
+            "38",
+            "66",
+            "68",
+            "84",
+            "46"
+          ],
+          "allNumbers": [
+            "00",
+            "22",
+            "38",
+            "66",
+            "68",
+            "84",
+            "46",
+            "04",
+            "18",
+            "23",
+            "26",
+            "30",
+            "70",
+            "71",
+            "75"
+          ],
+          "xien4": {
+            "top4": [
+              "00",
+              "22",
+              "38",
+              "66"
+            ],
+            "top5": [
+              "00",
+              "22",
+              "38",
+              "66",
+              "68"
+            ],
+            "combinations": [
+              [
+                "00",
+                "22",
+                "38",
+                "66"
+              ]
+            ],
+            "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [00-22-38-66] (Ăn từ 2 con)"
+          }
+        }
+      },
+      "settlement": {
+        "lo4EngineFusion": {
+          "date": "2026-09-26",
+          "tierX5": [],
+          "tierX4": [
+            "00",
+            "22",
+            "38",
+            "66",
+            "68",
+            "84"
+          ],
+          "tierX3": [
+            "46"
+          ],
+          "tierX1": [
+            "04",
+            "18",
+            "23",
+            "26",
+            "30",
+            "70",
+            "71",
+            "75"
+          ],
+          "totalHits": 5,
+          "lotoStakeK": 77000,
+          "lotoPayoutK": 136000,
+          "lotoProfitK": 59000,
+          "xienTop4": [
+            "00",
+            "22",
+            "38",
+            "66"
+          ],
+          "xienHitsCount": 2,
+          "xienStakeK": 11000,
+          "xienPayoutK": 12000,
+          "xienProfitK": 1000,
+          "totalStakeK": 88000,
+          "totalPayoutK": 148000,
+          "totalProfitK": 60000,
+          "isWin": true,
+          "hitNumbers": [
+            "22",
+            "66",
+            "68",
+            "84",
+            "71"
+          ]
+        }
+      }
+    },
+    "2026-09-27": {
+      "targetDate": "2026-09-27",
+      "isSettled": true,
+      "registeredAt": "2026-10-11T00:00:00.000Z",
+      "bets": {
+        "lo4EngineFusion": {
+          "predictionDate": "2026-09-27",
+          "methodId": "lo4EngineFusion",
+          "topN": 7,
+          "tierX5": [],
+          "tierX4": [
+            "22",
+            "38",
+            "68"
+          ],
+          "tierX3": [
+            "54",
+            "62",
+            "66",
+            "94"
+          ],
+          "tierX1": [
+            "33",
+            "36",
+            "45",
+            "49",
+            "59",
+            "76",
+            "81",
+            "82",
+            "85",
+            "90",
+            "93"
+          ],
+          "betNumbers": [
+            {
+              "num": "22",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "38",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "68",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "54",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 1,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "62",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "RRF"
+              ]
+            },
+            {
+              "num": "66",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 1,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "94",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "33",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 2,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "36",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "45",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "49",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "59",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "76",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "81",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "82",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "85",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "90",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "93",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            }
+          ],
+          "numbersOver2": [
+            "22",
+            "38",
+            "68",
+            "54",
+            "62",
+            "66",
+            "94"
+          ],
+          "allNumbers": [
+            "22",
+            "38",
+            "68",
+            "54",
+            "62",
+            "66",
+            "94",
+            "33",
+            "36",
+            "45",
+            "49",
+            "59",
+            "76",
+            "81",
+            "82",
+            "85",
+            "90",
+            "93"
+          ],
+          "xien4": {
+            "top4": [
+              "22",
+              "38",
+              "68",
+              "54"
+            ],
+            "top5": [
+              "22",
+              "38",
+              "68",
+              "54",
+              "62"
+            ],
+            "combinations": [
+              [
+                "22",
+                "38",
+                "68",
+                "54"
+              ]
+            ],
+            "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [22-38-68-54] (Ăn từ 2 con)"
+          }
+        }
+      },
+      "settlement": {
+        "lo4EngineFusion": {
+          "date": "2026-09-27",
+          "tierX5": [],
+          "tierX4": [
+            "22",
+            "38",
+            "68"
+          ],
+          "tierX3": [
+            "54",
+            "62",
+            "66",
+            "94"
+          ],
+          "tierX1": [
+            "33",
+            "36",
+            "45",
+            "49",
+            "59",
+            "76",
+            "81",
+            "82",
+            "85",
+            "90",
+            "93"
+          ],
+          "totalHits": 7,
+          "lotoStakeK": 77000,
+          "lotoPayoutK": 128000,
+          "lotoProfitK": 51000,
+          "xienTop4": [
+            "22",
+            "38",
+            "68",
+            "54"
+          ],
+          "xienHitsCount": 2,
+          "xienStakeK": 11000,
+          "xienPayoutK": 12000,
+          "xienProfitK": 1000,
+          "totalStakeK": 88000,
+          "totalPayoutK": 140000,
+          "totalProfitK": 52000,
+          "isWin": true,
+          "hitNumbers": [
+            "68",
+            "54",
+            "62",
+            "66",
+            "33",
+            "45"
+          ]
+        }
+      }
+    },
+    "2026-09-28": {
+      "targetDate": "2026-09-28",
+      "isSettled": true,
+      "registeredAt": "2026-10-11T00:00:00.000Z",
+      "bets": {
+        "lo4EngineFusion": {
+          "predictionDate": "2026-09-28",
+          "methodId": "lo4EngineFusion",
+          "topN": 7,
+          "tierX5": [
+            "52"
+          ],
+          "tierX4": [
+            "62",
+            "68",
+            "93"
+          ],
+          "tierX3": [
+            "01",
+            "11",
+            "14",
+            "43",
+            "73"
+          ],
+          "tierX1": [
+            "07",
+            "19",
+            "37",
+            "41",
+            "59"
+          ],
+          "betNumbers": [
+            {
+              "num": "52",
+              "votes": 4,
+              "multiplier": 5,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "62",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "68",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "93",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "01",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual"
+              ]
+            },
+            {
+              "num": "11",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "14",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "43",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "73",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "RRF"
+              ]
+            },
+            {
+              "num": "07",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "19",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "37",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "41",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "59",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            }
+          ],
+          "numbersOver2": [
+            "52",
+            "62",
+            "68",
+            "93",
+            "01",
+            "11",
+            "14",
+            "43",
+            "73"
+          ],
+          "allNumbers": [
+            "52",
+            "62",
+            "68",
+            "93",
+            "01",
+            "11",
+            "14",
+            "43",
+            "73",
+            "07",
+            "19",
+            "37",
+            "41",
+            "59"
+          ],
+          "xien4": {
+            "top4": [
+              "52",
+              "62",
+              "68",
+              "93"
+            ],
+            "top5": [
+              "52",
+              "62",
+              "68",
+              "93",
+              "01"
+            ],
+            "combinations": [
+              [
+                "52",
+                "62",
+                "68",
+                "93"
+              ]
+            ],
+            "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [52-62-68-93] (Ăn từ 2 con)"
+          }
+        }
+      },
+      "settlement": {
+        "lo4EngineFusion": {
+          "date": "2026-09-28",
+          "tierX5": [
+            "52"
+          ],
+          "tierX4": [
+            "62",
+            "68",
+            "93"
+          ],
+          "tierX3": [
+            "01",
+            "11",
+            "14",
+            "43",
+            "73"
+          ],
+          "tierX1": [
+            "07",
+            "19",
+            "37",
+            "41",
+            "59"
+          ],
+          "totalHits": 2,
+          "lotoStakeK": 81400,
+          "lotoPayoutK": 48000,
+          "lotoProfitK": -33400,
+          "xienTop4": [
+            "52",
+            "62",
+            "68",
+            "93"
+          ],
+          "xienHitsCount": 1,
+          "xienStakeK": 11000,
+          "xienPayoutK": 0,
+          "xienProfitK": -11000,
+          "totalStakeK": 92400,
+          "totalPayoutK": 48000,
+          "totalProfitK": -44400,
+          "isWin": false,
+          "hitNumbers": [
+            "52",
+            "37"
+          ]
+        }
+      }
+    },
+    "2026-09-29": {
+      "targetDate": "2026-09-29",
+      "isSettled": true,
+      "registeredAt": "2026-10-11T00:00:00.000Z",
+      "bets": {
+        "lo4EngineFusion": {
+          "predictionDate": "2026-09-29",
+          "methodId": "lo4EngineFusion",
+          "topN": 7,
+          "tierX5": [],
+          "tierX4": [
+            "10",
+            "11",
+            "24"
+          ],
+          "tierX3": [
+            "36",
+            "38",
+            "62",
+            "65"
+          ],
+          "tierX1": [
+            "03",
+            "19",
+            "25",
+            "33",
+            "67",
+            "73",
+            "86"
+          ],
+          "betNumbers": [
+            {
+              "num": "10",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "11",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "24",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "36",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "38",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual"
+              ]
+            },
+            {
+              "num": "62",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "65",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Tri"
+              ]
+            },
+            {
+              "num": "03",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "19",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 2,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "25",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "33",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "67",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "73",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "86",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "Dual"
+              ]
+            }
+          ],
+          "numbersOver2": [
+            "10",
+            "11",
+            "24",
+            "36",
+            "38",
+            "62",
+            "65"
+          ],
+          "allNumbers": [
+            "10",
+            "11",
+            "24",
+            "36",
+            "38",
+            "62",
+            "65",
+            "03",
+            "19",
+            "25",
+            "33",
+            "67",
+            "73",
+            "86"
+          ],
+          "xien4": {
+            "top4": [
+              "10",
+              "11",
+              "24",
+              "36"
+            ],
+            "top5": [
+              "10",
+              "11",
+              "24",
+              "36",
+              "38"
+            ],
+            "combinations": [
+              [
+                "10",
+                "11",
+                "24",
+                "36"
+              ]
+            ],
+            "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [10-11-24-36] (Ăn từ 2 con)"
+          }
+        }
+      },
+      "settlement": {
+        "lo4EngineFusion": {
+          "date": "2026-09-29",
+          "tierX5": [],
+          "tierX4": [
+            "10",
+            "11",
+            "24"
+          ],
+          "tierX3": [
+            "36",
+            "38",
+            "62",
+            "65"
+          ],
+          "tierX1": [
+            "03",
+            "19",
+            "25",
+            "33",
+            "67",
+            "73",
+            "86"
+          ],
+          "totalHits": 10,
+          "lotoStakeK": 68200,
+          "lotoPayoutK": 120000,
+          "lotoProfitK": 51800,
+          "xienTop4": [
+            "10",
+            "11",
+            "24",
+            "36"
+          ],
+          "xienHitsCount": 1,
+          "xienStakeK": 11000,
+          "xienPayoutK": 0,
+          "xienProfitK": -11000,
+          "totalStakeK": 79200,
+          "totalPayoutK": 120000,
+          "totalProfitK": 40800,
+          "isWin": true,
+          "hitNumbers": [
+            "10",
+            "65",
+            "03",
+            "19",
+            "25",
+            "33",
+            "67",
+            "73",
+            "86"
+          ]
+        }
+      }
+    },
+    "2026-09-30": {
+      "targetDate": "2026-09-30",
+      "isSettled": true,
+      "registeredAt": "2026-10-11T00:00:00.000Z",
+      "bets": {
+        "lo4EngineFusion": {
+          "predictionDate": "2026-09-30",
+          "methodId": "lo4EngineFusion",
+          "topN": 7,
+          "tierX5": [],
+          "tierX4": [
+            "10",
+            "11",
+            "24"
+          ],
+          "tierX3": [
+            "36",
+            "38",
+            "62",
+            "65"
+          ],
+          "tierX1": [
+            "06",
+            "17",
+            "23",
+            "30",
+            "48",
+            "72",
+            "88"
+          ],
+          "betNumbers": [
+            {
+              "num": "10",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "11",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "24",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "36",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "38",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual"
+              ]
+            },
+            {
+              "num": "62",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "65",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Tri"
+              ]
+            },
+            {
+              "num": "06",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "17",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "23",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "30",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "48",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "72",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 2,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "88",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "Dual"
+              ]
+            }
+          ],
+          "numbersOver2": [
+            "10",
+            "11",
+            "24",
+            "36",
+            "38",
+            "62",
+            "65"
+          ],
+          "allNumbers": [
+            "10",
+            "11",
+            "24",
+            "36",
+            "38",
+            "62",
+            "65",
+            "06",
+            "17",
+            "23",
+            "30",
+            "48",
+            "72",
+            "88"
+          ],
+          "xien4": {
+            "top4": [
+              "10",
+              "11",
+              "24",
+              "36"
+            ],
+            "top5": [
+              "10",
+              "11",
+              "24",
+              "36",
+              "38"
+            ],
+            "combinations": [
+              [
+                "10",
+                "11",
+                "24",
+                "36"
+              ]
+            ],
+            "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [10-11-24-36] (Ăn từ 2 con)"
+          }
+        }
+      },
+      "settlement": {
+        "lo4EngineFusion": {
+          "date": "2026-09-30",
+          "tierX5": [],
+          "tierX4": [
+            "10",
+            "11",
+            "24"
+          ],
+          "tierX3": [
+            "36",
+            "38",
+            "62",
+            "65"
+          ],
+          "tierX1": [
+            "06",
+            "17",
+            "23",
+            "30",
+            "48",
+            "72",
+            "88"
+          ],
+          "totalHits": 9,
+          "lotoStakeK": 68200,
+          "lotoPayoutK": 96000,
+          "lotoProfitK": 27800,
+          "xienTop4": [
+            "10",
+            "11",
+            "24",
+            "36"
+          ],
+          "xienHitsCount": 1,
+          "xienStakeK": 11000,
+          "xienPayoutK": 0,
+          "xienProfitK": -11000,
+          "totalStakeK": 79200,
+          "totalPayoutK": 96000,
+          "totalProfitK": 16800,
+          "isWin": true,
+          "hitNumbers": [
+            "11",
+            "06",
+            "17",
+            "23",
+            "30",
+            "48",
+            "72",
+            "88"
+          ]
+        }
+      }
+    },
+    "2026-10-01": {
+      "targetDate": "2026-10-01",
+      "isSettled": true,
+      "registeredAt": "2026-10-11T00:00:00.000Z",
+      "bets": {
+        "lo4EngineFusion": {
+          "predictionDate": "2026-10-01",
+          "methodId": "lo4EngineFusion",
+          "topN": 7,
+          "tierX5": [
+            "20",
+            "36",
+            "76",
+            "92"
+          ],
+          "tierX4": [
+            "52"
+          ],
+          "tierX3": [
+            "95"
+          ],
+          "tierX1": [
+            "33",
+            "59",
+            "72"
+          ],
+          "betNumbers": [
+            {
+              "num": "20",
+              "votes": 4,
+              "multiplier": 5,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "36",
+              "votes": 4,
+              "multiplier": 5,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "76",
+              "votes": 4,
+              "multiplier": 5,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "92",
+              "votes": 4,
+              "multiplier": 5,
+              "hits": 2,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "52",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "RRF"
+              ]
+            },
+            {
+              "num": "95",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 1,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "33",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "59",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "72",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            }
+          ],
+          "numbersOver2": [
+            "20",
+            "36",
+            "76",
+            "92",
+            "52",
+            "95"
+          ],
+          "allNumbers": [
+            "20",
+            "36",
+            "76",
+            "92",
+            "52",
+            "95",
+            "33",
+            "59",
+            "72"
+          ],
+          "xien4": {
+            "top4": [
+              "20",
+              "36",
+              "76",
+              "92"
+            ],
+            "top5": [
+              "20",
+              "36",
+              "76",
+              "92",
+              "52"
+            ],
+            "combinations": [
+              [
+                "20",
+                "36",
+                "76",
+                "92"
+              ]
+            ],
+            "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [20-36-76-92] (Ăn từ 2 con)"
+          }
+        }
+      },
+      "settlement": {
+        "lo4EngineFusion": {
+          "date": "2026-10-01",
+          "tierX5": [
+            "20",
+            "36",
+            "76",
+            "92"
+          ],
+          "tierX4": [
+            "52"
+          ],
+          "tierX3": [
+            "95"
+          ],
+          "tierX1": [
+            "33",
+            "59",
+            "72"
+          ],
+          "totalHits": 4,
+          "lotoStakeK": 66000,
+          "lotoPayoutK": 136000,
+          "lotoProfitK": 70000,
+          "xienTop4": [
+            "20",
+            "36",
+            "76",
+            "92"
+          ],
+          "xienHitsCount": 1,
+          "xienStakeK": 11000,
+          "xienPayoutK": 0,
+          "xienProfitK": -11000,
+          "totalStakeK": 77000,
+          "totalPayoutK": 136000,
+          "totalProfitK": 59000,
+          "isWin": true,
+          "hitNumbers": [
+            "92",
+            "52",
+            "95"
+          ]
+        }
+      }
+    },
+    "2026-10-02": {
+      "targetDate": "2026-10-02",
+      "isSettled": true,
+      "registeredAt": "2026-10-11T00:00:00.000Z",
+      "bets": {
+        "lo4EngineFusion": {
+          "predictionDate": "2026-10-02",
+          "methodId": "lo4EngineFusion",
+          "topN": 7,
+          "tierX5": [],
+          "tierX4": [
+            "22",
+            "38",
+            "70",
+            "93"
+          ],
+          "tierX3": [
+            "41"
+          ],
+          "tierX1": [
+            "45",
+            "61",
+            "62",
+            "72",
+            "75",
+            "81",
+            "82",
+            "85",
+            "92",
+            "95"
+          ],
+          "betNumbers": [
+            {
+              "num": "22",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "38",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "70",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "93",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "41",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "45",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "61",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "62",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "72",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "75",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 2,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "81",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "82",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "85",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "92",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "95",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            }
+          ],
+          "numbersOver2": [
+            "22",
+            "38",
+            "70",
+            "93",
+            "41"
+          ],
+          "allNumbers": [
+            "22",
+            "38",
+            "70",
+            "93",
+            "41",
+            "45",
+            "61",
+            "62",
+            "72",
+            "75",
+            "81",
+            "82",
+            "85",
+            "92",
+            "95"
+          ],
+          "xien4": {
+            "top4": [
+              "22",
+              "38",
+              "70",
+              "93"
+            ],
+            "top5": [
+              "22",
+              "38",
+              "70",
+              "93",
+              "41"
+            ],
+            "combinations": [
+              [
+                "22",
+                "38",
+                "70",
+                "93"
+              ]
+            ],
+            "reason": "Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé [22-38-70-93] & Bộ 5 Quây 10 vé X3 [22-38-70-93-41]"
+          }
+        }
+      },
+      "settlement": {
+        "lo4EngineFusion": {
+          "date": "2026-10-02",
+          "tierX5": [],
+          "tierX4": [
+            "22",
+            "38",
+            "70",
+            "93"
+          ],
+          "tierX3": [
+            "41"
+          ],
+          "tierX1": [
+            "45",
+            "61",
+            "62",
+            "72",
+            "75",
+            "81",
+            "82",
+            "85",
+            "92",
+            "95"
+          ],
+          "totalHits": 6,
+          "lotoStakeK": 63800,
+          "lotoPayoutK": 96000,
+          "lotoProfitK": 32200,
+          "xienTop4": [
+            "22",
+            "38",
+            "70",
+            "93"
+          ],
+          "xienHitsCount": 2,
+          "xienStakeK": 11000,
+          "xienPayoutK": 12000,
+          "xienProfitK": 1000,
+          "totalStakeK": 74800,
+          "totalPayoutK": 108000,
+          "totalProfitK": 33200,
+          "isWin": true,
+          "hitNumbers": [
+            "38",
+            "70",
+            "45",
+            "75",
+            "85"
+          ]
+        }
+      }
+    },
+    "2026-10-03": {
+      "targetDate": "2026-10-03",
+      "isSettled": true,
+      "registeredAt": "2026-10-11T00:00:00.000Z",
+      "bets": {
+        "lo4EngineFusion": {
+          "predictionDate": "2026-10-03",
+          "methodId": "lo4EngineFusion",
+          "topN": 7,
+          "tierX5": [],
+          "tierX4": [
+            "38",
+            "62",
+            "76"
+          ],
+          "tierX3": [
+            "10",
+            "11",
+            "24",
+            "36"
+          ],
+          "tierX1": [
+            "45",
+            "65",
+            "75",
+            "81",
+            "82",
+            "85",
+            "93"
+          ],
+          "betNumbers": [
+            {
+              "num": "38",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "62",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "RRF"
+              ]
+            },
+            {
+              "num": "76",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 1,
+              "methods": [
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "10",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Tri"
+              ]
+            },
+            {
+              "num": "11",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "24",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual"
+              ]
+            },
+            {
+              "num": "36",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "45",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "65",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "75",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "81",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "82",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "85",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "93",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "QMBF"
+              ]
+            }
+          ],
+          "numbersOver2": [
+            "38",
+            "62",
+            "76",
+            "10",
+            "11",
+            "24",
+            "36"
+          ],
+          "allNumbers": [
+            "38",
+            "62",
+            "76",
+            "10",
+            "11",
+            "24",
+            "36",
+            "45",
+            "65",
+            "75",
+            "81",
+            "82",
+            "85",
+            "93"
+          ],
+          "xien4": {
+            "top4": [
+              "38",
+              "62",
+              "76",
+              "10"
+            ],
+            "top5": [
+              "38",
+              "62",
+              "76",
+              "10",
+              "11"
+            ],
+            "combinations": [
+              [
+                "38",
+                "62",
+                "76",
+                "10"
+              ]
+            ],
+            "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [38-62-76-10] (Ăn từ 2 con)"
+          }
+        }
+      },
+      "settlement": {
+        "lo4EngineFusion": {
+          "date": "2026-10-03",
+          "tierX5": [],
+          "tierX4": [
+            "38",
+            "62",
+            "76"
+          ],
+          "tierX3": [
+            "10",
+            "11",
+            "24",
+            "36"
+          ],
+          "tierX1": [
+            "45",
+            "65",
+            "75",
+            "81",
+            "82",
+            "85",
+            "93"
+          ],
+          "totalHits": 4,
+          "lotoStakeK": 68200,
+          "lotoPayoutK": 96000,
+          "lotoProfitK": 27800,
+          "xienTop4": [
+            "38",
+            "62",
+            "76",
+            "10"
+          ],
+          "xienHitsCount": 3,
+          "xienStakeK": 11000,
+          "xienPayoutK": 84000,
+          "xienProfitK": 73000,
+          "totalStakeK": 79200,
+          "totalPayoutK": 180000,
+          "totalProfitK": 100800,
+          "isWin": true,
+          "hitNumbers": [
+            "38",
+            "76",
+            "10",
+            "93"
+          ]
+        }
+      }
+    },
+    "2026-10-04": {
+      "targetDate": "2026-10-04",
+      "isSettled": true,
+      "registeredAt": "2026-10-11T00:00:00.000Z",
+      "bets": {
+        "lo4EngineFusion": {
+          "predictionDate": "2026-10-04",
+          "methodId": "lo4EngineFusion",
+          "topN": 7,
+          "tierX5": [
+            "93"
+          ],
+          "tierX4": [
+            "54",
+            "95"
+          ],
+          "tierX3": [
+            "10",
+            "12",
+            "62"
+          ],
+          "tierX1": [
+            "01",
+            "45",
+            "52",
+            "72",
+            "78",
+            "81",
+            "82",
+            "85"
+          ],
+          "betNumbers": [
+            {
+              "num": "93",
+              "votes": 4,
+              "multiplier": 5,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "54",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "95",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "10",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Tri"
+              ]
+            },
+            {
+              "num": "12",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "62",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "RRF"
+              ]
+            },
+            {
+              "num": "01",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "45",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "52",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "72",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "78",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "81",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "82",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "85",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "RRF"
+              ]
+            }
+          ],
+          "numbersOver2": [
+            "93",
+            "54",
+            "95",
+            "10",
+            "12",
+            "62"
+          ],
+          "allNumbers": [
+            "93",
+            "54",
+            "95",
+            "10",
+            "12",
+            "62",
+            "01",
+            "45",
+            "52",
+            "72",
+            "78",
+            "81",
+            "82",
+            "85"
+          ],
+          "xien4": {
+            "top4": [
+              "93",
+              "54",
+              "95",
+              "10"
+            ],
+            "top5": [
+              "93",
+              "54",
+              "95",
+              "10",
+              "12"
+            ],
+            "combinations": [
+              [
+                "93",
+                "54",
+                "95",
+                "10"
+              ]
+            ],
+            "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [93-54-95-10] (Ăn từ 2 con)"
+          }
+        }
+      },
+      "settlement": {
+        "lo4EngineFusion": {
+          "date": "2026-10-04",
+          "tierX5": [
+            "93"
+          ],
+          "tierX4": [
+            "54",
+            "95"
+          ],
+          "tierX3": [
+            "10",
+            "12",
+            "62"
+          ],
+          "tierX1": [
+            "01",
+            "45",
+            "52",
+            "72",
+            "78",
+            "81",
+            "82",
+            "85"
+          ],
+          "totalHits": 3,
+          "lotoStakeK": 66000,
+          "lotoPayoutK": 24000,
+          "lotoProfitK": -42000,
+          "xienTop4": [
+            "93",
+            "54",
+            "95",
+            "10"
+          ],
+          "xienHitsCount": 0,
+          "xienStakeK": 11000,
+          "xienPayoutK": 0,
+          "xienProfitK": -11000,
+          "totalStakeK": 77000,
+          "totalPayoutK": 24000,
+          "totalProfitK": -53000,
+          "isWin": false,
+          "hitNumbers": [
+            "81",
+            "82",
+            "85"
+          ]
+        }
+      }
+    },
+    "2026-10-05": {
+      "targetDate": "2026-10-05",
+      "isSettled": true,
+      "registeredAt": "2026-10-11T00:00:00.000Z",
+      "bets": {
+        "lo4EngineFusion": {
+          "predictionDate": "2026-10-05",
+          "methodId": "lo4EngineFusion",
+          "topN": 7,
+          "tierX5": [
+            "62"
+          ],
+          "tierX4": [
+            "52",
+            "84",
+            "88"
+          ],
+          "tierX3": [
+            "36"
+          ],
+          "tierX1": [
+            "09",
+            "38",
+            "45",
+            "70",
+            "81",
+            "82",
+            "85",
+            "93",
+            "95"
+          ],
+          "betNumbers": [
+            {
+              "num": "62",
+              "votes": 4,
+              "multiplier": 5,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "52",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "84",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "88",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "36",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual"
+              ]
+            },
+            {
+              "num": "09",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "38",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "Tri"
+              ]
+            },
+            {
+              "num": "45",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "70",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "81",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "82",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "85",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "93",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "95",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 1,
+              "methods": [
+                "Dual"
+              ]
+            }
+          ],
+          "numbersOver2": [
+            "62",
+            "52",
+            "84",
+            "88",
+            "36"
+          ],
+          "allNumbers": [
+            "62",
+            "52",
+            "84",
+            "88",
+            "36",
+            "09",
+            "38",
+            "45",
+            "70",
+            "81",
+            "82",
+            "85",
+            "93",
+            "95"
+          ],
+          "xien4": {
+            "top4": [
+              "62",
+              "52",
+              "84",
+              "88"
+            ],
+            "top5": [
+              "62",
+              "52",
+              "84",
+              "88",
+              "36"
+            ],
+            "combinations": [
+              [
+                "62",
+                "52",
+                "84",
+                "88"
+              ]
+            ],
+            "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [62-52-84-88] (Ăn từ 2 con)"
+          }
+        }
+      },
+      "settlement": {
+        "lo4EngineFusion": {
+          "date": "2026-10-05",
+          "tierX5": [
+            "62"
+          ],
+          "tierX4": [
+            "52",
+            "84",
+            "88"
+          ],
+          "tierX3": [
+            "36"
+          ],
+          "tierX1": [
+            "09",
+            "38",
+            "45",
+            "70",
+            "81",
+            "82",
+            "85",
+            "93",
+            "95"
+          ],
+          "totalHits": 6,
+          "lotoStakeK": 63800,
+          "lotoPayoutK": 104000,
+          "lotoProfitK": 40200,
+          "xienTop4": [
+            "62",
+            "52",
+            "84",
+            "88"
+          ],
+          "xienHitsCount": 2,
+          "xienStakeK": 11000,
+          "xienPayoutK": 12000,
+          "xienProfitK": 1000,
+          "totalStakeK": 74800,
+          "totalPayoutK": 116000,
+          "totalProfitK": 41200,
+          "isWin": true,
+          "hitNumbers": [
+            "62",
+            "52",
+            "38",
+            "45",
+            "70",
+            "95"
+          ]
+        }
+      }
+    },
+    "2026-10-06": {
+      "targetDate": "2026-10-06",
+      "isSettled": true,
+      "registeredAt": "2026-10-11T00:00:00.000Z",
+      "bets": {
+        "lo4EngineFusion": {
+          "predictionDate": "2026-10-06",
+          "methodId": "lo4EngineFusion",
+          "topN": 7,
+          "tierX5": [
+            "38",
+            "52",
+            "66"
+          ],
+          "tierX4": [
+            "68",
+            "76"
+          ],
+          "tierX3": [
+            "43",
+            "44",
+            "59",
+            "70"
+          ],
+          "tierX1": [
+            "62",
+            "95"
+          ],
+          "betNumbers": [
+            {
+              "num": "38",
+              "votes": 4,
+              "multiplier": 5,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "52",
+              "votes": 4,
+              "multiplier": 5,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "66",
+              "votes": 4,
+              "multiplier": 5,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "68",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "76",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "43",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 1,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "44",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "RRF"
+              ]
+            },
+            {
+              "num": "59",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "RRF"
+              ]
+            },
+            {
+              "num": "70",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "RRF"
+              ]
+            },
+            {
+              "num": "62",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "95",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Tri"
+              ]
+            }
+          ],
+          "numbersOver2": [
+            "38",
+            "52",
+            "66",
+            "68",
+            "76",
+            "43",
+            "44",
+            "59",
+            "70"
+          ],
+          "allNumbers": [
+            "38",
+            "52",
+            "66",
+            "68",
+            "76",
+            "43",
+            "44",
+            "59",
+            "70",
+            "62",
+            "95"
+          ],
+          "xien4": {
+            "top4": [
+              "38",
+              "52",
+              "66",
+              "68"
+            ],
+            "top5": [
+              "38",
+              "52",
+              "66",
+              "68",
+              "76"
+            ],
+            "combinations": [
+              [
+                "38",
+                "52",
+                "66",
+                "68"
+              ]
+            ],
+            "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [38-52-66-68] (Ăn từ 2 con)"
+          }
+        }
+      },
+      "settlement": {
+        "lo4EngineFusion": {
+          "date": "2026-10-06",
+          "tierX5": [
+            "38",
+            "52",
+            "66"
+          ],
+          "tierX4": [
+            "68",
+            "76"
+          ],
+          "tierX3": [
+            "43",
+            "44",
+            "59",
+            "70"
+          ],
+          "tierX1": [
+            "62",
+            "95"
+          ],
+          "totalHits": 3,
+          "lotoStakeK": 81400,
+          "lotoPayoutK": 80000,
+          "lotoProfitK": -1400,
+          "xienTop4": [
+            "38",
+            "52",
+            "66",
+            "68"
+          ],
+          "xienHitsCount": 0,
+          "xienStakeK": 11000,
+          "xienPayoutK": 0,
+          "xienProfitK": -11000,
+          "totalStakeK": 92400,
+          "totalPayoutK": 80000,
+          "totalProfitK": -12400,
+          "isWin": false,
+          "hitNumbers": [
+            "76",
+            "43",
+            "70"
+          ]
+        }
+      }
+    },
+    "2026-10-07": {
+      "targetDate": "2026-10-07",
+      "isSettled": true,
+      "registeredAt": "2026-10-11T00:00:00.000Z",
+      "bets": {
+        "lo4EngineFusion": {
+          "predictionDate": "2026-10-07",
+          "methodId": "lo4EngineFusion",
+          "topN": 7,
+          "tierX5": [
+            "62"
+          ],
+          "tierX4": [
+            "38",
+            "68"
+          ],
+          "tierX3": [
+            "43",
+            "52",
+            "94"
+          ],
+          "tierX1": [
+            "01",
+            "02",
+            "45",
+            "54",
+            "81",
+            "82",
+            "85",
+            "93"
+          ],
+          "betNumbers": [
+            {
+              "num": "62",
+              "votes": 4,
+              "multiplier": 5,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "38",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "68",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "43",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Tri"
+              ]
+            },
+            {
+              "num": "52",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "94",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 1,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "01",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "02",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 2,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "45",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 2,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "54",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "81",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "82",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "85",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "93",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            }
+          ],
+          "numbersOver2": [
+            "62",
+            "38",
+            "68",
+            "43",
+            "52",
+            "94"
+          ],
+          "allNumbers": [
+            "62",
+            "38",
+            "68",
+            "43",
+            "52",
+            "94",
+            "01",
+            "02",
+            "45",
+            "54",
+            "81",
+            "82",
+            "85",
+            "93"
+          ],
+          "xien4": {
+            "top4": [
+              "62",
+              "38",
+              "68",
+              "43"
+            ],
+            "top5": [
+              "62",
+              "38",
+              "68",
+              "43",
+              "52"
+            ],
+            "combinations": [
+              [
+                "62",
+                "38",
+                "68",
+                "43"
+              ]
+            ],
+            "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [62-38-68-43] (Ăn từ 2 con)"
+          }
+        }
+      },
+      "settlement": {
+        "lo4EngineFusion": {
+          "date": "2026-10-07",
+          "tierX5": [
+            "62"
+          ],
+          "tierX4": [
+            "38",
+            "68"
+          ],
+          "tierX3": [
+            "43",
+            "52",
+            "94"
+          ],
+          "tierX1": [
+            "01",
+            "02",
+            "45",
+            "54",
+            "81",
+            "82",
+            "85",
+            "93"
+          ],
+          "totalHits": 7,
+          "lotoStakeK": 66000,
+          "lotoPayoutK": 128000,
+          "lotoProfitK": 62000,
+          "xienTop4": [
+            "62",
+            "38",
+            "68",
+            "43"
+          ],
+          "xienHitsCount": 2,
+          "xienStakeK": 11000,
+          "xienPayoutK": 12000,
+          "xienProfitK": 1000,
+          "totalStakeK": 77000,
+          "totalPayoutK": 140000,
+          "totalProfitK": 63000,
+          "isWin": true,
+          "hitNumbers": [
+            "62",
+            "38",
+            "94",
+            "02",
+            "45"
+          ]
+        }
+      }
+    },
+    "2026-10-08": {
+      "targetDate": "2026-10-08",
+      "isSettled": true,
+      "registeredAt": "2026-10-11T00:00:00.000Z",
+      "bets": {
+        "lo4EngineFusion": {
+          "predictionDate": "2026-10-08",
+          "methodId": "lo4EngineFusion",
+          "topN": 7,
+          "tierX5": [
+            "38",
+            "62",
+            "75",
+            "76"
+          ],
+          "tierX4": [],
+          "tierX3": [
+            "54",
+            "66",
+            "90"
+          ],
+          "tierX1": [
+            "10",
+            "43",
+            "63",
+            "70",
+            "84",
+            "88"
+          ],
+          "betNumbers": [
+            {
+              "num": "38",
+              "votes": 4,
+              "multiplier": 5,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "62",
+              "votes": 4,
+              "multiplier": 5,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "75",
+              "votes": 4,
+              "multiplier": 5,
+              "hits": 1,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "76",
+              "votes": 4,
+              "multiplier": 5,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "54",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "66",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "90",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "10",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "43",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 2,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "63",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "70",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "84",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "88",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            }
+          ],
+          "numbersOver2": [
+            "38",
+            "62",
+            "75",
+            "76",
+            "54",
+            "66",
+            "90"
+          ],
+          "allNumbers": [
+            "38",
+            "62",
+            "75",
+            "76",
+            "54",
+            "66",
+            "90",
+            "10",
+            "43",
+            "63",
+            "70",
+            "84",
+            "88"
+          ],
+          "xien4": {
+            "top4": [
+              "38",
+              "62",
+              "75",
+              "76"
+            ],
+            "top5": [
+              "38",
+              "62",
+              "75",
+              "76",
+              "54"
+            ],
+            "combinations": [
+              [
+                "38",
+                "62",
+                "75",
+                "76"
+              ]
+            ],
+            "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [38-62-75-76] (Ăn từ 2 con)"
+          }
+        }
+      },
+      "settlement": {
+        "lo4EngineFusion": {
+          "date": "2026-10-08",
+          "tierX5": [
+            "38",
+            "62",
+            "75",
+            "76"
+          ],
+          "tierX4": [],
+          "tierX3": [
+            "54",
+            "66",
+            "90"
+          ],
+          "tierX1": [
+            "10",
+            "43",
+            "63",
+            "70",
+            "84",
+            "88"
+          ],
+          "totalHits": 3,
+          "lotoStakeK": 77000,
+          "lotoPayoutK": 56000,
+          "lotoProfitK": -21000,
+          "xienTop4": [
+            "38",
+            "62",
+            "75",
+            "76"
+          ],
+          "xienHitsCount": 1,
+          "xienStakeK": 11000,
+          "xienPayoutK": 0,
+          "xienProfitK": -11000,
+          "totalStakeK": 88000,
+          "totalPayoutK": 56000,
+          "totalProfitK": -32000,
+          "isWin": false,
+          "hitNumbers": [
+            "75",
+            "43"
+          ]
+        }
+      }
+    },
+    "2026-10-09": {
+      "targetDate": "2026-10-09",
+      "isSettled": true,
+      "registeredAt": "2026-10-11T00:00:00.000Z",
+      "bets": {
+        "lo4EngineFusion": {
+          "predictionDate": "2026-10-09",
+          "methodId": "lo4EngineFusion",
+          "topN": 7,
+          "tierX5": [],
+          "tierX4": [
+            "38",
+            "62",
+            "70"
+          ],
+          "tierX3": [
+            "19",
+            "54",
+            "93"
+          ],
+          "tierX1": [
+            "10",
+            "11",
+            "43",
+            "46",
+            "49",
+            "56",
+            "84",
+            "88",
+            "95"
+          ],
+          "betNumbers": [
+            {
+              "num": "38",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "62",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "70",
+              "votes": 3,
+              "multiplier": 4,
+              "hits": 0,
+              "methods": [
+                "QMBF",
+                "Tri",
+                "RRF"
+              ]
+            },
+            {
+              "num": "19",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "54",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 2,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "93",
+              "votes": 2,
+              "multiplier": 3,
+              "hits": 0,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "10",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "11",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "43",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "46",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "49",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "56",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "84",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "88",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "95",
+              "votes": 1,
+              "multiplier": 1,
+              "hits": 0,
+              "methods": [
+                "RRF"
+              ]
+            }
+          ],
+          "numbersOver2": [
+            "38",
+            "62",
+            "70",
+            "19",
+            "54",
+            "93"
+          ],
+          "allNumbers": [
+            "38",
+            "62",
+            "70",
+            "19",
+            "54",
+            "93",
+            "10",
+            "11",
+            "43",
+            "46",
+            "49",
+            "56",
+            "84",
+            "88",
+            "95"
+          ],
+          "xien4": {
+            "top4": [
+              "38",
+              "62",
+              "70",
+              "19"
+            ],
+            "top5": [
+              "38",
+              "62",
+              "70",
+              "19",
+              "54"
+            ],
+            "combinations": [
+              [
+                "38",
+                "62",
+                "70",
+                "19"
+              ]
+            ],
+            "reason": "Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé [38-62-70-19] & Bộ 5 Quây 10 vé X3 [38-62-70-19-54]"
+          }
+        }
+      },
+      "settlement": {
+        "lo4EngineFusion": {
+          "date": "2026-10-09",
+          "tierX5": [],
+          "tierX4": [
+            "38",
+            "62",
+            "70"
+          ],
+          "tierX3": [
+            "19",
+            "54",
+            "93"
+          ],
+          "tierX1": [
+            "10",
+            "11",
+            "43",
+            "46",
+            "49",
+            "56",
+            "84",
+            "88",
+            "95"
+          ],
+          "totalHits": 2,
+          "lotoStakeK": 66000,
+          "lotoPayoutK": 48000,
+          "lotoProfitK": -18000,
+          "xienTop4": [
+            "38",
+            "62",
+            "70",
+            "19"
+          ],
+          "xienHitsCount": 0,
+          "xienStakeK": 11000,
+          "xienPayoutK": 0,
+          "xienProfitK": -11000,
+          "totalStakeK": 77000,
+          "totalPayoutK": 48000,
+          "totalProfitK": -29000,
+          "isWin": false,
+          "hitNumbers": [
+            "54"
+          ]
+        }
+      }
+    },
+    "2026-10-12": {
+      "targetDate": "2026-10-12",
+      "isSettled": true,
+      "registeredAt": "2026-10-12T11:00:00.000Z",
+      "bets": {
+        "lo4EngineFusion": {
+          "predictionDate": "2026-10-12",
+          "methodId": "lo4EngineFusion",
+          "topN": 6,
+          "methodName": "🔥 Lô Tổng Hợp 4 Động Cơ Thực Chiến (Top 6 Live: QMBF + Bạc Nhớ + 3 Động Cơ + RRF)",
+          "tierX5": [],
+          "tierX4": [
+            "38",
+            "62"
+          ],
+          "tierX3": [
+            "22",
+            "36",
+            "43",
+            "76"
+          ],
+          "tierX1": [
+            "46",
+            "54",
+            "56",
+            "59",
+            "70",
+            "72",
+            "84",
+            "88",
+            "93",
+            "95"
+          ],
+          "numbersOver2": [
+            "38",
+            "62",
+            "22",
+            "36",
+            "43",
+            "76"
+          ],
+          "allNumbers": [
+            "38",
+            "62",
+            "22",
+            "36",
+            "43",
+            "76",
+            "46",
+            "54",
+            "56",
+            "59",
+            "70",
+            "72",
+            "84",
+            "88",
+            "93",
+            "95"
+          ],
+          "distinctNumbers": [
+            "38",
+            "62",
+            "22",
+            "36",
+            "43",
+            "76",
+            "46",
+            "54",
+            "56",
+            "59",
+            "70",
+            "72",
+            "84",
+            "88",
+            "93",
+            "95"
+          ],
+          "betNumbers": [
+            {
+              "num": "38",
+              "votes": 3,
+              "multiplier": 4,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "62",
+              "votes": 3,
+              "multiplier": 4,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "22",
+              "votes": 2,
+              "multiplier": 3,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "36",
+              "votes": 2,
+              "multiplier": 3,
+              "methods": [
+                "Dual",
+                "Tri"
+              ]
+            },
+            {
+              "num": "43",
+              "votes": 2,
+              "multiplier": 3,
+              "methods": [
+                "QMBF",
+                "RRF"
+              ]
+            },
+            {
+              "num": "76",
+              "votes": 2,
+              "multiplier": 3,
+              "methods": [
+                "Dual",
+                "RRF"
+              ]
+            },
+            {
+              "num": "46",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "54",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "56",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "59",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "70",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "72",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "QMBF"
+              ]
+            },
+            {
+              "num": "84",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "88",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "RRF"
+              ]
+            },
+            {
+              "num": "93",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "Dual"
+              ]
+            },
+            {
+              "num": "95",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "RRF"
+              ]
+            }
+          ],
+          "totalLotoStakeK": 66000,
+          "xien4": {
+            "status": "ACTIVE",
+            "reason": "Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé [38-62-22-36] & Bộ 5 Quây 10 vé X3 [38-62-22-36-43]",
+            "numbers": [
+              "38",
+              "62",
+              "22",
+              "36"
+            ],
+            "top4": [
+              "38",
+              "62",
+              "22",
+              "36"
+            ],
+            "top5": [
+              "38",
+              "62",
+              "22",
+              "36",
+              "43"
+            ],
+            "combinations": [
+              [
+                "38",
+                "62",
+                "22",
+                "36"
+              ]
+            ],
+            "stakeK": 11000
+          }
+        },
+        "crossHedgingPortfolio": {
+          "targetDate": "2026-10-12",
+          "selectedEngine": "cross-hedging-portfolio",
+          "selectedMethod": "cross-hedging-portfolio",
+          "mode": "ACCUMULATE_AGGRESSIVE",
+          "sizingMultiplier": 1,
+          "pillar1_De": {
+            "methodId": "dualMerge",
+            "label": "Đề Gộp Tiêu Chuẩn Sweet-Spot",
+            "vipNumbers": [
+              "10",
+              "12",
+              "16",
+              "18",
+              "25",
+              "32",
+              "34",
+              "36",
+              "38",
+              "45",
+              "47",
+              "52",
+              "54",
+              "65",
+              "67",
+              "87",
+              "94"
+            ],
+            "singleNumbers": [
+              "05",
+              "07",
+              "14",
+              "19",
+              "27",
+              "28",
+              "30",
+              "35",
+              "37",
+              "50",
+              "55",
+              "56",
+              "64",
+              "72",
+              "74",
+              "78",
+              "82",
+              "92",
+              "98"
+            ],
+            "numbers": [
+              "05",
+              "07",
+              "10",
+              "12",
+              "14",
+              "16",
+              "18",
+              "19",
+              "25",
+              "27",
+              "28",
+              "30",
+              "32",
+              "34",
+              "35",
+              "36",
+              "37",
+              "38",
+              "45",
+              "47",
+              "50",
+              "52",
+              "54",
+              "55",
+              "56",
+              "64",
+              "65",
+              "67",
+              "72",
+              "74",
+              "78",
+              "82",
+              "87",
+              "92",
+              "94",
+              "98"
+            ],
+            "stakeK": 70000,
+            "targetPayoutVipK": 252000,
+            "targetPayoutSingleK": 84000
+          },
+          "pillar2_Lo": {
+            "engine": "Lô Hội Tụ 4 Động Cơ (6 Số Đồng Thuận)",
+            "numbers": [
+              "38",
+              "62",
+              "22",
+              "36",
+              "43",
+              "76"
+            ],
+            "betNumbers": [
+              {
+                "num": "38",
+                "votes": 3,
+                "multiplier": 4
+              },
+              {
+                "num": "62",
+                "votes": 3,
+                "multiplier": 4
+              },
+              {
+                "num": "22",
+                "votes": 2,
+                "multiplier": 3
+              },
+              {
+                "num": "36",
+                "votes": 2,
+                "multiplier": 3
+              },
+              {
+                "num": "43",
+                "votes": 2,
+                "multiplier": 3
+              },
+              {
+                "num": "76",
+                "votes": 2,
+                "multiplier": 3
+              }
+            ],
+            "stakeK": 66000
+          },
+          "pillar3_Xien": {
+            "type": "XIEN_4_QUAY_11_VE",
+            "numbers": [
+              "38",
+              "62",
+              "22",
+              "36"
+            ],
+            "top5": [
+              "38",
+              "62",
+              "22",
+              "36",
+              "43"
+            ],
+            "ticketPriceK": 1000,
+            "stakeK": 11000,
+            "payoutHit4K": 384000,
+            "payoutHit3K": 120000,
+            "payoutHit2K": 12000
+          }
+        },
+        "de": {
+          "methodName": "🎯 Đề Gộp Tiêu Chuẩn Sweet-Spot",
+          "vipNumbers": [
+            "10",
+            "12",
+            "16",
+            "18",
+            "25",
+            "32",
+            "34",
+            "36",
+            "38",
+            "45",
+            "47",
+            "52",
+            "54",
+            "65",
+            "67",
+            "87",
+            "94"
+          ],
+          "singleNumbers": [
+            "05",
+            "07",
+            "14",
+            "19",
+            "27",
+            "28",
+            "30",
+            "35",
+            "37",
+            "50",
+            "55",
+            "56",
+            "64",
+            "72",
+            "74",
+            "78",
+            "82",
+            "92",
+            "98"
+          ],
+          "numbers": [
+            "05",
+            "07",
+            "10",
+            "12",
+            "14",
+            "16",
+            "18",
+            "19",
+            "25",
+            "27",
+            "28",
+            "30",
+            "32",
+            "34",
+            "35",
+            "36",
+            "37",
+            "38",
+            "45",
+            "47",
+            "50",
+            "52",
+            "54",
+            "55",
+            "56",
+            "64",
+            "65",
+            "67",
+            "72",
+            "74",
+            "78",
+            "82",
+            "87",
+            "92",
+            "94",
+            "98"
+          ],
+          "stakeK": 70000
+        },
+        "loXien5": {
+          "top5": [
+            "38",
+            "62",
+            "22",
+            "36",
+            "43"
+          ],
+          "stakeK": 55000
+        }
+      },
+      "settlement": {
+        "lo4EngineFusion": {
+          "date": "2026-10-12",
+          "tierX5": [],
+          "tierX4": [
+            "38",
+            "62"
+          ],
+          "tierX3": [
+            "22",
+            "36",
+            "43",
+            "76"
+          ],
+          "tierX1": [
+            "46",
+            "54",
+            "56",
+            "59",
+            "70",
+            "72",
+            "84",
+            "88",
+            "93",
+            "95"
+          ],
+          "x5Hits": 0,
+          "x4Hits": 1,
+          "x3Hits": 0,
+          "x1Hits": 3,
+          "totalHits": 4,
+          "lotoStakeK": 66000,
+          "lotoPayoutK": 56000,
+          "lotoProfitK": -10000,
+          "xienTop4": [
+            "38",
+            "62",
+            "22",
+            "36"
+          ],
+          "xienHitsCount": 1,
+          "xienStakeK": 11000,
+          "xienPayoutK": 0,
+          "xienProfitK": -11000,
+          "totalStakeK": 77000,
+          "totalPayoutK": 56000,
+          "totalProfitK": -21000,
+          "isWin": false,
+          "hitNumbers": [
+            "38",
+            "56",
+            "72",
+            "88"
+          ],
+          "betNumbers": [
+            {
+              "num": "38",
+              "votes": 3,
+              "multiplier": 4,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ],
+              "hits": 1
+            },
+            {
+              "num": "62",
+              "votes": 3,
+              "multiplier": 4,
+              "methods": [
+                "QMBF",
+                "Dual",
+                "Tri"
+              ],
+              "hits": 0
+            },
+            {
+              "num": "22",
+              "votes": 2,
+              "multiplier": 3,
+              "methods": [
+                "Dual",
+                "Tri"
+              ],
+              "hits": 0
+            },
+            {
+              "num": "36",
+              "votes": 2,
+              "multiplier": 3,
+              "methods": [
+                "Dual",
+                "Tri"
+              ],
+              "hits": 0
+            },
+            {
+              "num": "43",
+              "votes": 2,
+              "multiplier": 3,
+              "methods": [
+                "QMBF",
+                "RRF"
+              ],
+              "hits": 0
+            },
+            {
+              "num": "76",
+              "votes": 2,
+              "multiplier": 3,
+              "methods": [
+                "Dual",
+                "RRF"
+              ],
+              "hits": 0
+            },
+            {
+              "num": "46",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "RRF"
+              ],
+              "hits": 0
+            },
+            {
+              "num": "54",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "QMBF"
+              ],
+              "hits": 0
+            },
+            {
+              "num": "56",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "RRF"
+              ],
+              "hits": 1
+            },
+            {
+              "num": "59",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "QMBF"
+              ],
+              "hits": 0
+            },
+            {
+              "num": "70",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "RRF"
+              ],
+              "hits": 0
+            },
+            {
+              "num": "72",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "QMBF"
+              ],
+              "hits": 1
+            },
+            {
+              "num": "84",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "RRF"
+              ],
+              "hits": 0
+            },
+            {
+              "num": "88",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "RRF"
+              ],
+              "hits": 1
+            },
+            {
+              "num": "93",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "Dual"
+              ],
+              "hits": 0
+            },
+            {
+              "num": "95",
+              "votes": 1,
+              "multiplier": 1,
+              "methods": [
+                "RRF"
+              ],
+              "hits": 0
+            }
+          ]
+        },
+        "crossHedgingPortfolio": {
+          "date": "2026-10-12",
+          "mode": "ACCUMULATE_AGGRESSIVE",
+          "sizingMultiplier": 1,
+          "special": "87",
+          "actual27Count": 27,
+          "deHits": 1,
+          "isDeHit": true,
+          "isVipHit": true,
+          "dePayoutK": 252000,
+          "deStakeK": 70000,
+          "deProfitK": 182000,
+          "dePnlK": 182000,
+          "loHits": 4,
+          "loPayoutK": 56000,
+          "loStakeK": 66000,
+          "loProfitK": -10000,
+          "loPnlK": -10000,
+          "uniqueTop4Hits": 1,
+          "xienPayoutK": 0,
+          "xienStakeK": 11000,
+          "xienProfitK": -11000,
+          "xienPnlK": -11000,
+          "totalPayoutK": 308000,
+          "totalStakeK": 147000,
+          "totalProfitK": 161000,
+          "isWin": true,
+          "isAbstain": false,
+          "details": {
+            "p1Method": "dualMerge",
+            "p2Engine": "4ENGINE_CONSENSUS",
+            "p3Type": "XIEN_4_QUAY_11_VE"
+          }
+        },
+        "de": {
+          "date": "2026-10-12",
+          "actualSpecial": "87",
+          "numbers": [
+            "05",
+            "07",
+            "10",
+            "12",
+            "14",
+            "16",
+            "18",
+            "19",
+            "25",
+            "27",
+            "28",
+            "30",
+            "32",
+            "34",
+            "35",
+            "36",
+            "37",
+            "38",
+            "45",
+            "47",
+            "50",
+            "52",
+            "54",
+            "55",
+            "56",
+            "64",
+            "65",
+            "67",
+            "72",
+            "74",
+            "78",
+            "82",
+            "87",
+            "92",
+            "94",
+            "98"
+          ],
+          "vipNumbers": [
+            "10",
+            "12",
+            "16",
+            "18",
+            "25",
+            "32",
+            "34",
+            "36",
+            "38",
+            "45",
+            "47",
+            "52",
+            "54",
+            "65",
+            "67",
+            "87",
+            "94"
+          ],
+          "singleNumbers": [
+            "05",
+            "07",
+            "14",
+            "19",
+            "27",
+            "28",
+            "30",
+            "35",
+            "37",
+            "50",
+            "55",
+            "56",
+            "64",
+            "72",
+            "74",
+            "78",
+            "82",
+            "92",
+            "98"
+          ],
+          "isHit": true,
+          "isVipHit": true,
+          "isSingleHit": false,
+          "stakeK": 70000,
+          "payoutK": 252000,
+          "profitK": 182000,
+          "isWin": true,
+          "methodName": "🎯 Đề Gộp Tiêu Chuẩn Sweet-Spot"
+        },
+        "loXien5": {
+          "date": "2026-10-12",
+          "top5": [
+            "38",
+            "62",
+            "22",
+            "36",
+            "43"
+          ],
+          "h5": 1,
+          "stakeK": 55000,
+          "payoutK": 0,
+          "profitK": -55000,
+          "isWin": false
+        }
+      },
+      "settledAt": "2026-10-12T13:21:24.963Z",
+      "actualResult": {
+        "special": "87",
+        "prizes": [
+          "87",
+          "80",
+          "24",
+          "61",
+          "37",
+          "68",
+          "56",
+          "58",
+          "06",
+          "45",
+          "82",
+          "75",
+          "96",
+          "72",
+          "88",
+          "87",
+          "26",
+          "16",
+          "24",
+          "81",
+          "57",
+          "40",
+          "30",
+          "49",
+          "86",
+          "38",
+          "75"
+        ]
+      }
     }
   }
 }

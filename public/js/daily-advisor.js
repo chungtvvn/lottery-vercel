@@ -713,6 +713,40 @@
 
     function resolveUnifiedDeRowForDate(date, dataPayload) {
         const p = dataPayload || payload || {};
+        const regEntry = p?.dailyLockedBetsRegistry?.dates?.[date];
+        const regDeBet = regEntry?.bets?.de || regEntry?.bets?.crossHedgingPortfolio?.pillar1_De;
+        const regDeSettlement = regEntry?.settlement?.de || regEntry?.settlement?.crossHedgingPortfolio;
+        if (regDeBet) {
+            const vipNums = (regDeBet.vipNumbers || []).map(number);
+            const singleNums = (regDeBet.singleNumbers || regDeBet.numbers || []).map(number).filter(n => !vipNums.includes(n));
+            const allNums = (regDeBet.numbers || [...vipNums, ...singleNums]).map(number);
+            const drawSpec = p?.drawPrizesByDate?.[date]?.special != null ? number(p.drawPrizesByDate[date].special) : null;
+            const isVip = drawSpec != null && vipNums.includes(drawSpec);
+            const isSingle = drawSpec != null && singleNums.includes(drawSpec);
+            const isHit = isVip || isSingle;
+            const stakeK = regDeBet.stakeK || (vipNums.length * 3 + singleNums.length * 1) * 1000;
+            let payoutK = 0;
+            if (isVip) payoutK = 252000;
+            else if (isSingle) payoutK = 84000;
+            const profitK = regDeSettlement?.deProfitK != null ? regDeSettlement.deProfitK : (payoutK - stakeK);
+
+            return {
+                methodName: regDeBet.methodName || '🎯 Đề Gộp Tiêu Chuẩn Sweet-Spot',
+                subTierLabel: `Dàn ${allNums.length} số (${vipNums.length} VIP X3 · ${singleNums.length} Bọc Lót X1)`,
+                numbers: allNums,
+                x2Nums: vipNums,
+                x1Nums: singleNums,
+                isHit,
+                isX2: isVip,
+                isX1: isSingle,
+                hitType: isVip ? 'win_x3' : (isSingle ? 'win_x1' : 'miss'),
+                stakeK,
+                profitK,
+                payoutK,
+                actualSpecial: drawSpec
+            };
+        }
+
         const deLedger = p.metaLearner?.settledLedger || [];
         const deRow = deLedger.find(r => (r.predictionDate || r.date) === date);
         const dualRow = p?.dualMerge?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
@@ -4145,6 +4179,29 @@
             };
         }
         if (type === 'loXien5') {
+            const regEntry = p?.dailyLockedBetsRegistry?.dates?.[date];
+            const regX5 = regEntry?.settlement?.loXien5 || regEntry?.bets?.loXien5;
+            if (regX5) {
+                const top5 = (regX5.top5 || []).map(number);
+                const h5 = regX5.h5 || 0;
+                const evalX5 = evaluateXien5_5DanX4(h5);
+                const payoutK = regX5.payoutK != null ? regX5.payoutK : evalX5.payoutK;
+                const profitK = regX5.profitK != null ? regX5.profitK : evalX5.profitK;
+                return {
+                    date,
+                    isPending: !regEntry.isSettled,
+                    top5,
+                    h5,
+                    x5Tickets: getXi5Tickets(top5),
+                    x5StakeK: regX5.stakeK || 55000,
+                    x5PayoutK: payoutK,
+                    x5ProfitK: profitK,
+                    payoutK,
+                    profitK,
+                    isWin: profitK > 0,
+                    cumLoXien5ProfitK: 0
+                };
+            }
             const top5Day = p?.loTop5ConsensusXien?.settledLedger?.find(r => r.date === date);
             if (top5Day) {
                 const evalX5 = evaluateXien5_5DanX4(top5Day.h5 || 0);
@@ -4462,13 +4519,15 @@
         const topN = mode === 'top6' ? 6 : 7;
         const regBet = p?.dailyLockedBetsRegistry?.dates?.[date]?.bets?.lo4EngineFusion;
         const regSettlement = p?.dailyLockedBetsRegistry?.dates?.[date]?.settlement?.lo4EngineFusion;
-        if (regSettlement) {
-            let sourceBetNumbers = (regSettlement.betNumbers && regSettlement.betNumbers.length > 0) ? regSettlement.betNumbers : (regBet?.betNumbers && regBet.betNumbers.length > 0 ? regBet.betNumbers : null);
+        if (regSettlement || regBet) {
+            let sourceBetNumbers = (regSettlement?.betNumbers && regSettlement.betNumbers.length > 0)
+                ? regSettlement.betNumbers
+                : (regBet?.betNumbers && regBet.betNumbers.length > 0 ? regBet.betNumbers : null);
             if (!sourceBetNumbers || sourceBetNumbers.length === 0) {
-                const t5 = regSettlement.tierX5 || regBet?.tierX5 || [];
-                const t4 = regSettlement.tierX4 || regBet?.tierX4 || [];
-                const t3 = regSettlement.tierX3 || regBet?.tierX3 || [];
-                const t1 = regSettlement.tierX1 || regBet?.tierX1 || [];
+                const t5 = regSettlement?.tierX5 || regBet?.tierX5 || [];
+                const t4 = regSettlement?.tierX4 || regBet?.tierX4 || [];
+                const t3 = regSettlement?.tierX3 || regBet?.tierX3 || [];
+                const t1 = regSettlement?.tierX1 || regBet?.tierX1 || [];
                 sourceBetNumbers = [
                     ...t5.map(n => ({ num: n, multiplier: 5, votes: 4 })),
                     ...t4.map(n => ({ num: n, multiplier: 4, votes: 3 })),
@@ -4479,52 +4538,93 @@
             const drawPrizesForD = (p?.drawPrizesByDate?.[date]?.prizes || []).map(number);
             const prizeCountsD = {};
             drawPrizesForD.forEach(pr => { prizeCountsD[pr] = (prizeCountsD[pr] || 0) + 1; });
-            const hitNumsSet = new Set((regSettlement.hitNumbers || []).map(number));
+            const hitNumsSet = new Set((regSettlement?.hitNumbers || []).map(number));
+            const hasDrawPrizes = drawPrizesForD.length >= 27;
+
+            let calcLotoStakeK = 0, calcLotoPayoutK = 0, calcLotoHits = 0;
             const betNums = (sourceBetNumbers || []).map(bn => {
                 const n = number(bn.num != null ? bn.num : bn);
                 let h = bn.hits;
-                if (h == null) {
-                    if (prizeCountsD[n] != null) h = prizeCountsD[n];
-                    else if (hitNumsSet.has(n)) h = 1;
+                if (h == null && hasDrawPrizes) {
+                    h = prizeCountsD[n] || 0;
+                } else if (h == null) {
+                    if (hitNumsSet.has(n)) h = 1;
                     else h = 0;
                 }
+                const mult = bn.multiplier || 1;
+                calcLotoStakeK += mult * 2200;
+                calcLotoPayoutK += h * mult * 8000;
+                calcLotoHits += h;
                 return {
                     num: n,
                     votes: bn.votes || 1,
-                    multiplier: bn.multiplier || 1,
+                    multiplier: mult,
                     hits: h,
                     methods: bn.methods || []
                 };
             });
+
+            const dayLotoStakeK = regSettlement?.lotoStakeK != null ? regSettlement.lotoStakeK : (regBet?.totalLotoStakeK || calcLotoStakeK);
+            const dayLotoPayoutK = regSettlement?.lotoPayoutK != null ? regSettlement.lotoPayoutK : (hasDrawPrizes ? calcLotoPayoutK : 0);
+            const dayLotoProfitK = regSettlement?.lotoProfitK != null ? regSettlement.lotoProfitK : (dayLotoPayoutK - dayLotoStakeK);
+            const dayLotoHits = regSettlement?.totalHits != null ? regSettlement.totalHits : (hasDrawPrizes ? calcLotoHits : 0);
+
+            // Xiên 4 Bộ 4 Quây
+            const xienTop4 = (regSettlement?.xienTop4 || regBet?.xien4?.top4 || regBet?.xien4?.numbers || []).slice(0, 4).map(number);
+            let xienHitsCount = regSettlement?.xienHitsCount;
+            if (xienHitsCount == null && hasDrawPrizes) {
+                xienHitsCount = 0;
+                xienTop4.forEach(n => { if ((prizeCountsD[n] || 0) > 0) xienHitsCount++; });
+            } else if (xienHitsCount == null) {
+                xienHitsCount = 0;
+            }
+
+            let xienPayoutK = regSettlement?.xienPayoutK;
+            const xienStakeK = regSettlement?.xienStakeK != null ? regSettlement.xienStakeK : (regBet?.xien4?.stakeK || 11000);
+            if (xienPayoutK == null && hasDrawPrizes) {
+                if (xienHitsCount === 4) xienPayoutK = 384000;
+                else if (xienHitsCount === 3) xienPayoutK = 120000;
+                else if (xienHitsCount === 2) xienPayoutK = 12000;
+                else xienPayoutK = 0;
+            } else if (xienPayoutK == null) {
+                xienPayoutK = 0;
+            }
+            const dayXien4ProfitK = regSettlement?.xienProfitK != null ? regSettlement.xienProfitK : (xienPayoutK - xienStakeK);
+
             return {
                 date,
                 isLive: true,
                 topN,
-                h4: regSettlement.xienHitsCount || 0,
+                h4: xienHitsCount,
                 countTotal: betNums.length || 15,
                 countOver2: betNums.filter(x => x.multiplier >= 3).length,
                 countX1: betNums.filter(x => x.multiplier < 3).length,
-                tierX5: regSettlement.tierX5 || regBet?.tierX5 || [],
-                tierX4: regSettlement.tierX4 || regBet?.tierX4 || [],
-                tierX3: regSettlement.tierX3 || regBet?.tierX3 || [],
-                tierX1: regSettlement.tierX1 || regBet?.tierX1 || [],
+                tierX5: regSettlement?.tierX5 || regBet?.tierX5 || [],
+                tierX4: regSettlement?.tierX4 || regBet?.tierX4 || [],
+                tierX3: regSettlement?.tierX3 || regBet?.tierX3 || [],
+                tierX1: regSettlement?.tierX1 || regBet?.tierX1 || [],
                 numbersOver2: betNums.filter(x => x.multiplier >= 3).map(x => x.num),
                 allNumbers: betNums.map(x => x.num),
                 betNumbers: betNums,
-                dayLotoStakeK: regSettlement.lotoStakeK != null ? regSettlement.lotoStakeK : 66000,
-                dayLotoPayoutK: regSettlement.lotoPayoutK != null ? regSettlement.lotoPayoutK : 0,
-                dayLotoProfitK: regSettlement.lotoProfitK != null ? regSettlement.lotoProfitK : 0,
-                dayLotoHits: regSettlement.totalHits != null ? regSettlement.totalHits : betNums.reduce((acc, x) => acc + (x.hits || 0), 0),
-                isLotoWin: (regSettlement.lotoProfitK || 0) > 0,
-                xien4Status: 'ACTIVE',
+                dayLotoStakeK,
+                dayLotoPayoutK,
+                dayLotoProfitK,
+                dayLotoHits,
+                isLotoWin: dayLotoProfitK > 0,
+                xien4Status: regBet?.xien4?.status || 'ACTIVE',
                 xien4Reason: regBet?.xien4?.reason || `Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé`,
-                xien4Combinations: regBet?.xien4?.combinations || [regSettlement.xienTop4 || regBet?.xien4?.top4 || []],
-                xien4StakeK: regSettlement.xienStakeK != null ? regSettlement.xienStakeK : 11000,
-                xien4PayoutK: regSettlement.xienPayoutK != null ? regSettlement.xienPayoutK : 0,
-                dayXien4ProfitK: regSettlement.xienProfitK != null ? regSettlement.xienProfitK : -11000,
-                isXien4Win: (regSettlement.xienProfitK || 0) > 0,
-                totalDayProfitK: (regSettlement.lotoProfitK || 0) + (regSettlement.xienProfitK || 0)
+                xien4Combinations: regBet?.xien4?.combinations || [xienTop4],
+                xien4StakeK,
+                xien4PayoutK,
+                dayXien4ProfitK,
+                isXien4Win: dayXien4ProfitK > 0,
+                totalDayProfitK: dayLotoProfitK + dayXien4ProfitK
             };
+        }
+
+        const ledgerRow = (p?.lo4EngineFusion?.modes?.[mode]?.settledLedger || p?.lo4EngineFusion?.settledLedger || []).find(r => r.date === date);
+        if (ledgerRow) {
+            return ledgerRow;
         }
 
         const qmbf = (p?.loQuantumBayesFusion?.settledLedger || []).find(r => r.date === date);
@@ -4831,9 +4931,9 @@
         // Nạp thêm từ Single Source of Truth dailyLockedBetsRegistry nếu có
         const lockedDates = payload?.dailyLockedBetsRegistry?.dates || {};
         Object.entries(lockedDates).forEach(([d, regEntry]) => {
-            if (regEntry?.isSettled && regEntry?.settlement?.lo4EngineFusion) {
-                const s = regEntry.settlement.lo4EngineFusion;
-                const b = regEntry.bets?.lo4EngineFusion || {};
+            const s = regEntry?.settlement?.lo4EngineFusion;
+            const b = regEntry?.bets?.lo4EngineFusion || {};
+            if (s || b) {
                 const existingLo4 = lo4Map[d] || {};
 
                 let sourceBetNumbers = (s.betNumbers && s.betNumbers.length > 0) ? s.betNumbers : (b.betNumbers && b.betNumbers.length > 0 ? b.betNumbers : null);
@@ -4913,6 +5013,48 @@
             if (row && row.date) {
                 crossHedgingMap[row.date] = row;
                 allDatesSet.add(row.date);
+            }
+        });
+
+        // Nạp thêm từ Single Source of Truth dailyLockedBetsRegistry cho crossHedging
+        Object.entries(lockedDates).forEach(([d, regEntry]) => {
+            const chSettlement = regEntry?.settlement?.crossHedgingPortfolio;
+            const chBet = regEntry?.bets?.crossHedgingPortfolio;
+            if (chSettlement || chBet) {
+                const s = chSettlement || {};
+                const b = chBet || {};
+                crossHedgingMap[d] = {
+                    ...(crossHedgingMap[d] || {}),
+                    date: d,
+                    mode: s.mode || b.mode || 'ACCUMULATE_AGGRESSIVE',
+                    sizingMultiplier: s.sizingMultiplier != null ? s.sizingMultiplier : (b.sizingMultiplier || 1),
+                    special: s.special,
+                    deHits: s.deHits,
+                    isDeHit: s.isDeHit,
+                    isVipHit: s.isVipHit,
+                    dePayoutK: s.dePayoutK != null ? s.dePayoutK : 0,
+                    deStakeK: s.deStakeK != null ? s.deStakeK : (b.pillar1_De?.stakeK || 70000),
+                    deProfitK: s.deProfitK != null ? s.deProfitK : 0,
+                    loHits: s.loHits != null ? s.loHits : 0,
+                    loPayoutK: s.loPayoutK != null ? s.loPayoutK : 0,
+                    loStakeK: s.loStakeK != null ? s.loStakeK : (regEntry?.settlement?.lo4EngineFusion?.lotoStakeK || 66000),
+                    loProfitK: s.loProfitK != null ? s.loProfitK : (regEntry?.settlement?.lo4EngineFusion?.lotoProfitK || 0),
+                    uniqueTop4Hits: s.uniqueTop4Hits != null ? s.uniqueTop4Hits : (regEntry?.settlement?.lo4EngineFusion?.xienHitsCount || 0),
+                    xienPayoutK: s.xienPayoutK != null ? s.xienPayoutK : (regEntry?.settlement?.lo4EngineFusion?.xienPayoutK || 0),
+                    xienStakeK: s.xienStakeK != null ? s.xienStakeK : (regEntry?.settlement?.lo4EngineFusion?.xienStakeK || 11000),
+                    xienProfitK: s.xienProfitK != null ? s.xienProfitK : (regEntry?.settlement?.lo4EngineFusion?.xienProfitK || -11000),
+                    totalPayoutK: s.totalPayoutK != null ? s.totalPayoutK : 0,
+                    totalStakeK: s.totalStakeK != null ? s.totalStakeK : 147000,
+                    totalProfitK: s.totalProfitK != null ? s.totalProfitK : ((s.deProfitK || 0) + (s.loProfitK || 0) + (s.xienProfitK || 0)),
+                    isWin: s.isWin != null ? s.isWin : ((s.totalProfitK || 0) > 0),
+                    isAbstain: s.isAbstain || false,
+                    details: s.details || {
+                        p1Method: 'dualMerge',
+                        p2Engine: '4ENGINE_CONSENSUS',
+                        p3Type: 'XIEN_4_QUAY_11_VE'
+                    }
+                };
+                allDatesSet.add(d);
             }
         });
 
@@ -5428,10 +5570,13 @@
             let diaryDeIsX1 = Boolean(resolvedDe.isX1);
             let diaryDeHitType = resolvedDe.hitType;
 
+            const regEntryForDate = payload?.dailyLockedBetsRegistry?.dates?.[date];
+            const hasLockedDe = Boolean(regEntryForDate?.bets?.de || regEntryForDate?.settlement?.de || regEntryForDate?.bets?.crossHedgingPortfolio?.pillar1_De);
+
             if (chRow) {
                 // Use chRow as ground truth for P&L and stake (from crossHedgingPortfolio settledLedger)
-                // chRow.deStakeK and chRow.deProfitK are the actual values played (77M base stake for 17 VIP X3 + 26 Bọc Lót X1)
-                const chDeStakeK = chRow.deStakeK || 77000;
+                // chRow.deStakeK and chRow.deProfitK are the actual values played
+                const chDeStakeK = chRow.deStakeK || (hasLockedDe ? resolvedDe.stakeK : 77000);
                 diaryDeStakeK = chDeStakeK;
 
                 // Hit status strictly follows chRow settled ground truth
@@ -5451,43 +5596,45 @@
                     diaryDeProfitK = -diaryDeStakeK;
                 }
 
-                diaryDeMethodName = chRow.details?.p1Method === 'adaptiveDualMerge'
-                    ? '👑 Đề Thích Ứng Alpha (Adaptive X3)'
-                    : '🔮 Đề Markov Bậc 2 & Gap Hazard';
+                if (!hasLockedDe) {
+                    diaryDeMethodName = chRow.details?.p1Method === 'adaptiveDualMerge'
+                        ? '👑 Đề Thích Ứng Alpha (Adaptive X3)'
+                        : '🔮 Đề Markov Bậc 2 & Gap Hazard';
 
-                // Resolve the actual number list for display
-                let resolvedNums = [];
-                let resolvedVip = [];
-                if (chRow.details?.p1Method === 'adaptiveDualMerge') {
-                    const adRow = payload?.adaptiveDualMerge?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
-                    resolvedNums = adRow?.numbers || adRow?.fullUnion || markovRow?.numbers || [];
-                    const adVip = (adRow?.vipNumbers || adRow?.intersectionX2 || []);
-                    resolvedVip = adVip.length > 0 ? adVip : resolvedNums.slice(0, 17);
-                } else {
-                    resolvedNums = markovRow?.numbers || payload?.crossHedgingPortfolio?.pillar1_De?.allNumbers || payload?.deMarkovGapHazard?.latestRecommendation?.numbers || [];
-                    resolvedVip = markovRow?.vipNumbers || payload?.crossHedgingPortfolio?.pillar1_De?.vipNumbers || payload?.deMarkovGapHazard?.latestRecommendation?.vipNumbers || resolvedNums.slice(0, 17);
-                }
-
-                // If this settled day hit and actualSpecialStr is available, ensure the winning number is contained in the appropriate tier
-                if (actualSpecialStr != null && diaryDeIsHit) {
-                    if (diaryDeIsX2 && !resolvedVip.some(n => number(n) === actualSpecialStr)) {
-                        resolvedVip = [actualSpecialStr, ...resolvedVip.filter(n => number(n) !== actualSpecialStr).slice(0, 16)];
-                        if (!resolvedNums.some(n => number(n) === actualSpecialStr)) {
-                            resolvedNums = [actualSpecialStr, ...resolvedNums.slice(0, 42)];
-                        }
-                    } else if (diaryDeIsX1 && !resolvedNums.some(n => number(n) === actualSpecialStr)) {
-                        resolvedNums = [...resolvedNums.slice(0, 42), actualSpecialStr];
+                    // Resolve the actual number list for display
+                    let resolvedNums = [];
+                    let resolvedVip = [];
+                    if (chRow.details?.p1Method === 'adaptiveDualMerge') {
+                        const adRow = payload?.adaptiveDualMerge?.settledLedger?.find(r => (r.predictionDate || r.date) === date);
+                        resolvedNums = adRow?.numbers || adRow?.fullUnion || markovRow?.numbers || [];
+                        const adVip = (adRow?.vipNumbers || adRow?.intersectionX2 || []);
+                        resolvedVip = adVip.length > 0 ? adVip : resolvedNums.slice(0, 17);
+                    } else {
+                        resolvedNums = markovRow?.numbers || payload?.crossHedgingPortfolio?.pillar1_De?.allNumbers || payload?.deMarkovGapHazard?.latestRecommendation?.numbers || [];
+                        resolvedVip = markovRow?.vipNumbers || payload?.crossHedgingPortfolio?.pillar1_De?.vipNumbers || payload?.deMarkovGapHazard?.latestRecommendation?.vipNumbers || resolvedNums.slice(0, 17);
                     }
-                }
-                const resolvedSingles = resolvedNums.filter(n => !resolvedVip.some(v => number(v) === number(n)));
 
-                if (resolvedNums.length > 0) {
-                    diaryDeNumbers = resolvedNums.map(number);
-                    diaryDeX2Nums = resolvedVip.map(number);
-                    diaryDeX1Nums = resolvedSingles.map(number);
-                }
+                    // If this settled day hit and actualSpecialStr is available, ensure the winning number is contained in the appropriate tier
+                    if (actualSpecialStr != null && diaryDeIsHit) {
+                        if (diaryDeIsX2 && !resolvedVip.some(n => number(n) === actualSpecialStr)) {
+                            resolvedVip = [actualSpecialStr, ...resolvedVip.filter(n => number(n) !== actualSpecialStr).slice(0, 16)];
+                            if (!resolvedNums.some(n => number(n) === actualSpecialStr)) {
+                                resolvedNums = [actualSpecialStr, ...resolvedNums.slice(0, 42)];
+                            }
+                        } else if (diaryDeIsX1 && !resolvedNums.some(n => number(n) === actualSpecialStr)) {
+                            resolvedNums = [...resolvedNums.slice(0, 42), actualSpecialStr];
+                        }
+                    }
+                    const resolvedSingles = resolvedNums.filter(n => !resolvedVip.some(v => number(v) === number(n)));
 
-                diaryDeSubTierLabel = `Dàn ${diaryDeNumbers.length || 43} số (${diaryDeX2Nums.length || 17} VIP X3 · ${diaryDeX1Nums.length || 26} Bọc Lót X1)`;
+                    if (resolvedNums.length > 0) {
+                        diaryDeNumbers = resolvedNums.map(number);
+                        diaryDeX2Nums = resolvedVip.map(number);
+                        diaryDeX1Nums = resolvedSingles.map(number);
+                    }
+
+                    diaryDeSubTierLabel = `Dàn ${diaryDeNumbers.length || 43} số (${diaryDeX2Nums.length || 17} VIP X3 · ${diaryDeX1Nums.length || 26} Bọc Lót X1)`;
+                }
             }
 
             const rawLo4ProfitK = (lo4Row && lo4Row.dayLotoProfitK != null)
@@ -8138,7 +8285,10 @@
 
                 // Column 1: Đề
                 // Pillar 1 Đề Ground Truth: Use locked pillar1_De if available
-                const lockedP1 = fullData?.crossHedgingPortfolio?.pillar1_De
+                const regPending = fullData?.dailyLockedBetsRegistry?.dates?.[pendingDate];
+                const lockedP1 = regPending?.bets?.crossHedgingPortfolio?.pillar1_De
+                    || regPending?.bets?.de
+                    || fullData?.crossHedgingPortfolio?.pillar1_De
                     || fullData?.crossHedgingPortfolio?.latestRecommendation?.pillar1_De
                     || fullData?.dualMerge?.latestRecommendation;
                 if (lockedP1 && lockedP1.vipNumbers && lockedP1.vipNumbers.length > 0) {
@@ -8235,13 +8385,18 @@
                 }
 
                 // Numbers: extract numbers with votes >= 2 (Top 6 or Top 7)
-                const recNumbers = (lo4Rec.numbersOver2 && lo4Rec.numbersOver2.length)
-                    ? lo4Rec.numbersOver2
-                    : (isTop6 ? ['62', '38', '44', '66', '93', '22'] : ['62', '93', '38', '44', '66', '22', '57']);
+                const regLo4Pending = regPending?.bets?.lo4EngineFusion;
+                const recNumbers = (regLo4Pending?.numbersOver2 && regLo4Pending.numbersOver2.length)
+                    ? regLo4Pending.numbersOver2
+                    : ((lo4Rec.numbersOver2 && lo4Rec.numbersOver2.length)
+                        ? lo4Rec.numbersOver2
+                        : (isTop6 ? ['62', '38', '44', '66', '93', '22'] : ['62', '93', '38', '44', '66', '22', '57']));
 
-                const betNumbersList = (lo4Rec.betNumbers && lo4Rec.betNumbers.length)
-                    ? lo4Rec.betNumbers.filter(b => recNumbers.includes(String(b.num)))
-                    : recNumbers.map(n => ({ num: n, votes: 3, multiplier: 4, methods: ['QMBF', 'Dual', 'Tri'] }));
+                const betNumbersList = (regLo4Pending?.betNumbers && regLo4Pending.betNumbers.length)
+                    ? regLo4Pending.betNumbers.filter(b => recNumbers.includes(String(b.num)))
+                    : ((lo4Rec.betNumbers && lo4Rec.betNumbers.length)
+                        ? lo4Rec.betNumbers.filter(b => recNumbers.includes(String(b.num)))
+                        : recNumbers.map(n => ({ num: n, votes: 3, multiplier: 4, methods: ['QMBF', 'Dual', 'Tri'] })));
 
                 if (loTitleEl) {
                     loTitleEl.textContent = `2. Lô Ghép 4 Động Cơ (${isTop6 ? 'Top 6 Lục Thủ' : 'Top 7 Thất Thủ'} · ${recNumbers.length}s)`;
@@ -8387,11 +8542,18 @@
                 }
             } else {
                 // ==================== PAST DAY (LỊCH SỬ ĐÃ MỞ THƯỞNG) ====================
+                const regPast = fullData?.dailyLockedBetsRegistry?.dates?.[targetDate];
                 const deRow = resolveUnifiedDeRowForDate(targetDate, fullData);
                 const loMode = currentLo4EngineMode || 'top6';
                 const isTop6 = (loMode === 'top6');
-                let loRow = fullData?.lo4EngineFusion?.modes?.[loMode]?.settledLedger?.find(r => r.date === targetDate)
-                    || fullData?.lo4EngineFusion?.modes?.top7?.settledLedger?.find(r => r.date === targetDate);
+                let loRow = null;
+                if (regPast?.settlement?.lo4EngineFusion || regPast?.bets?.lo4EngineFusion) {
+                    loRow = synthesizeLo4RowFallback(targetDate, fullData, loMode);
+                }
+                if (!loRow) {
+                    loRow = fullData?.lo4EngineFusion?.modes?.[loMode]?.settledLedger?.find(r => r.date === targetDate)
+                        || fullData?.lo4EngineFusion?.modes?.top7?.settledLedger?.find(r => r.date === targetDate);
+                }
                 if (!loRow && targetDate >= '2026-06-02') {
                     loRow = synthesizeLo4RowFallback(targetDate, fullData, loMode);
                 }
@@ -8562,7 +8724,8 @@
                 }
 
                 // Column 3: Dàn Xiên 5 (5 Quả Xiên 4) ngày quá khứ
-                const top5XienPastRow = fullData?.loTop5ConsensusXien?.settledLedger?.find(r => r.date === targetDate);
+                const top5XienPastRow = regPast?.settlement?.loXien5 || regPast?.bets?.loXien5
+                    || fullData?.loTop5ConsensusXien?.settledLedger?.find(r => r.date === targetDate);
                 if (xi4NumsEl) {
                     if (top5XienPastRow) {
                         const pastTop5 = (top5XienPastRow.top5 || []).map(number);
@@ -11296,6 +11459,150 @@
         if (effectiveKey === 'official') {
             const off = getOfficialMethodsForDate(date);
             effectiveKey = off.deMethod;
+        }
+
+        // =========================================================================
+        // KIỂM TRA SSOT REGISTRY: ƯU TIÊN TUYỆT ĐỐI BẤT BIẾN KHÔNG TÍNH TOÁN LẠI
+        // =========================================================================
+        const regEntry = payloadData.dailyLockedBetsRegistry?.dates?.[date];
+        if (regEntry) {
+            if (effectiveKey === 'dualMerge' || effectiveKey === 'official') {
+                const regDe = regEntry.settlement?.de || regEntry.bets?.de;
+                if (regDe) {
+                    methodTitle = regDe.methodName || '🎯 Đề Gộp Tiêu Chuẩn Sweet-Spot';
+                    vipNumbers = (regDe.vipNumbers || []).map(number);
+                    singleNumbers = (regDe.singleNumbers || regDe.numbers || []).map(number).filter(n => !vipNumbers.includes(n));
+                    numbers = (regDe.numbers || [...vipNumbers, ...singleNumbers]).map(number);
+                    stakeK = regDe.stakeK || ((vipNumbers.length * 3 + singleNumbers.length * 1) * 1000);
+                    if (isPending) {
+                        profitK = 0;
+                        payoutK = 0;
+                        hitBadge = '⏳ Chờ mở thưởng 18h15';
+                        detailDesc = `Dàn Sweet-Spot: ${vipNumbers.length} số VIP X3 + ${singleNumbers.length} số Lót X1 (Vốn ${moneyM(stakeK)}) · SSOT Khóa Bất Biến`;
+                    } else {
+                        isHit = Boolean(regDe.isHit != null ? regDe.isHit : (actualSpecial != null && numbers.includes(actualSpecial)));
+                        isX2 = Boolean(regDe.isVipHit != null ? regDe.isVipHit : (actualSpecial != null && vipNumbers.includes(actualSpecial)));
+                        profitK = regDe.profitK != null ? regDe.profitK : (isHit ? (isX2 ? (252000 - stakeK) : (84000 - stakeK)) : -stakeK);
+                        payoutK = regDe.payoutK != null ? regDe.payoutK : (isHit ? (stakeK + profitK) : 0);
+                        hitBadge = isHit ? (isX2 ? `🎉 TRÚNG VIP X3 (+${Math.round(profitK/1000)}M)` : `🎉 TRÚNG ĐỀ (${profitK >= 0 ? '+' : ''}${Math.round(profitK/1000)}M)`) : `❌ TRƯỢT (-${Math.round(stakeK/1000)}M)`;
+                        detailDesc = `Dàn Sweet-Spot: ${vipNumbers.length}s VIP X3 + ${singleNumbers.length}s Lót X1 · SSOT Khóa Bất Biến`;
+                    }
+                    return {
+                        methodKey: effectiveKey, methodTitle, numbers, vipNumbers, singleNumbers, tickets,
+                        isHit, isX2, stakeK, payoutK, profitK, hitBadge, detailDesc, isPending, actualSpecial, lo4Tiers
+                    };
+                }
+            } else if (effectiveKey === 'lo4Engine' || effectiveKey === 'lo4Fusion') {
+                const regLo4 = regEntry.settlement?.lo4EngineFusion || regEntry.bets?.lo4EngineFusion;
+                if (regLo4) {
+                    methodTitle = '🔥 Lô Ghép 4 Động Cơ (Top 6/7 Live)';
+                    const t5 = (regLo4.tierX5 || []).map(number);
+                    const t4 = (regLo4.tierX4 || []).map(number);
+                    const t3 = (regLo4.tierX3 || []).map(number);
+                    const t1 = (regLo4.tierX1 || []).map(number);
+                    const betList = (regLo4.betNumbers && regLo4.betNumbers.length) ? regLo4.betNumbers : [
+                        ...t5.map(n => ({ num: n, multiplier: 5, votes: 4 })),
+                        ...t4.map(n => ({ num: n, multiplier: 4, votes: 3 })),
+                        ...t3.map(n => ({ num: n, multiplier: 3, votes: 2 })),
+                        ...t1.map(n => ({ num: n, multiplier: 1, votes: 1 }))
+                    ];
+                    numbers = betList.map(b => number(b.num));
+                    stakeK = regLo4.lotoStakeK != null ? regLo4.lotoStakeK : (regLo4.totalLotoStakeK || 66000);
+                    if (isPending) {
+                        profitK = 0;
+                        payoutK = 0;
+                        hitBadge = '⏳ Chờ mở thưởng 18h40';
+                        detailDesc = `Hội tụ 4 động cơ: ${t5.length + t4.length + t3.length} số trùng ≥ 2 ĐC · SSOT Khóa Bất Biến`;
+                    } else {
+                        const hits = regLo4.totalHits != null ? regLo4.totalHits : (regLo4.dayLotoHits || 0);
+                        profitK = regLo4.lotoProfitK != null ? regLo4.lotoProfitK : (regLo4.dayLotoProfitK || 0);
+                        payoutK = regLo4.lotoPayoutK != null ? regLo4.lotoPayoutK : (stakeK + profitK);
+                        isHit = hits >= 2;
+                        hitBadge = hits > 0 ? `🎉 NỔ ${hits} NHÁY (${moneyM(profitK, { signed: true })})` : '❌ TRƯỢT';
+                        detailDesc = `Hội tụ 4 động cơ: ${t5.length + t4.length + t3.length} số trùng ≥ 2 ĐC · SSOT Khóa Bất Biến`;
+                    }
+                    const x4Top4 = (regLo4.xienTop4 || regLo4.xien4?.top4 || regLo4.xien4?.combinations?.[0] || []).map(number);
+                    lo4Tiers = {
+                        tierX5: t5,
+                        tierX4: t4,
+                        tierX3: t3,
+                        tierX1: t1,
+                        betNumbers: betList,
+                        xien4: {
+                            status: 'ACTIVE',
+                            reason: regLo4.xien4?.reason || `Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé`,
+                            combinations: [x4Top4],
+                            top4: x4Top4,
+                            numbers: x4Top4,
+                            stakeK: regLo4.xienStakeK != null ? regLo4.xienStakeK : 11000,
+                            payoutK: regLo4.xienPayoutK != null ? regLo4.xienPayoutK : 0,
+                            profitK: regLo4.xienProfitK != null ? regLo4.xienProfitK : -11000,
+                            isWin: (regLo4.xienProfitK || 0) > 0
+                        }
+                    };
+                    return {
+                        methodKey: effectiveKey, methodTitle, numbers, vipNumbers, singleNumbers, tickets,
+                        isHit, isX2, stakeK, payoutK, profitK, hitBadge, detailDesc, isPending, actualSpecial, lo4Tiers
+                    };
+                }
+            } else if (effectiveKey === 'loXien5') {
+                const regX5 = regEntry.settlement?.loXien5 || regEntry.bets?.loXien5;
+                if (regX5) {
+                    methodTitle = '👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)';
+                    numbers = (regX5.top5 || []).map(number);
+                    tickets = getXi5Tickets(numbers);
+                    stakeK = regX5.stakeK || 55000;
+                    if (isPending) {
+                        profitK = 0;
+                        payoutK = 0;
+                        hitBadge = '⏳ Chờ mở thưởng 18h40';
+                        detailDesc = 'Top 5 Đồng Thuận ghép 5 Dàn Xiên 4 (11M/dàn · SSOT Khóa Bất Biến)';
+                    } else {
+                        const h5 = regX5.h5 || 0;
+                        const evalX5 = evaluateXien5_5DanX4(h5);
+                        payoutK = regX5.payoutK != null ? regX5.payoutK : evalX5.payoutK;
+                        profitK = regX5.profitK != null ? regX5.profitK : evalX5.profitK;
+                        isHit = profitK > 0;
+                        hitBadge = isHit ? `🎉 TRÚNG XIÊN 5 (${moneyM(profitK, { signed: true })})` : `❌ TRƯỢT (-55M)`;
+                        detailDesc = `Top 5 Đồng Thuận: Về ${h5}/5 con · SSOT Khóa Bất Biến`;
+                    }
+                    return {
+                        methodKey: effectiveKey, methodTitle, numbers, vipNumbers, singleNumbers, tickets,
+                        isHit, isX2, stakeK, payoutK, profitK, hitBadge, detailDesc, isPending, actualSpecial, lo4Tiers
+                    };
+                }
+            } else if (effectiveKey === 'crossHedging') {
+                const regCH = regEntry.settlement?.crossHedgingPortfolio || regEntry.bets?.crossHedgingPortfolio;
+                if (regCH) {
+                    methodTitle = '🛡️ Combo Bù Trừ Dòng Tiền Chéo (Đề VIP + Lô Ghép 4 + Xiên Quây)';
+                    const p1 = regEntry.bets?.crossHedgingPortfolio?.pillar1_De || regEntry.bets?.de || {};
+                    vipNumbers = (p1.vipNumbers || []).map(number);
+                    singleNumbers = (p1.singleNumbers || p1.numbers || []).map(number).filter(n => !vipNumbers.includes(n));
+                    numbers = (p1.numbers || [...vipNumbers, ...singleNumbers]).map(number);
+                    stakeK = regCH.totalStakeK != null ? regCH.totalStakeK : 147000;
+                    if (isPending) {
+                        profitK = 0;
+                        payoutK = 0;
+                        isHit = false;
+                        hitBadge = '⏳ Chờ mở thưởng 18h15';
+                        detailDesc = `Combo 3 Trụ Cột: Đề VIP (${vipNumbers.length}s) + Lô Ghép 4 + Xiên Quây (Vốn ${moneyM(stakeK)}) · SSOT Khóa Bất Biến`;
+                    } else {
+                        payoutK = regCH.totalPayoutK != null ? regCH.totalPayoutK : 0;
+                        profitK = regCH.totalProfitK != null ? regCH.totalProfitK : (payoutK - stakeK);
+                        isHit = Boolean(regCH.isWin != null ? regCH.isWin : profitK > 0);
+                        hitBadge = isHit
+                            ? `🎉 THẮNG COMBO (${moneyM(profitK, { signed: true })})`
+                            : `❌ LỖ COMBO (${moneyM(profitK, { signed: true })})`;
+                        detailDesc = regCH.deProfitK != null
+                            ? `Đề: ${moneyM(regCH.deProfitK, { signed: true })} · Lô: ${moneyM(regCH.loProfitK, { signed: true })} · Xiên: ${moneyM(regCH.xienProfitK, { signed: true })}`
+                            : 'Combo Bù Trừ Dòng Tiền Chéo · SSOT Khóa Bất Biến';
+                    }
+                    return {
+                        methodKey: effectiveKey, methodTitle, numbers, vipNumbers, singleNumbers, tickets,
+                        isHit, isX2, stakeK, payoutK, profitK, hitBadge, detailDesc, isPending, actualSpecial, lo4Tiers
+                    };
+                }
+            }
         }
 
         if (effectiveKey === 'metaLearner') {

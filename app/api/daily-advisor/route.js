@@ -647,7 +647,14 @@ export async function GET(request) {
                     payload.loDropoff27 = r2ShadowLo;
                 }
             }
-            if (!payload.dailyLockedBetsRegistry) {
+            let localReg = null;
+            try {
+                const { getRegistry } = require('@/lib/services/dailyLockedBetsRegistryService');
+                localReg = getRegistry();
+            } catch (_) {}
+            if (localReg && Object.keys(localReg.dates || {}).length > 0) {
+                payload.dailyLockedBetsRegistry = localReg;
+            } else if (!payload.dailyLockedBetsRegistry) {
                 const r2Reg = await loadJsonWithSupabaseFallback('daily_locked_bets_registry.json').catch(() => null);
                 if (r2Reg) payload.dailyLockedBetsRegistry = r2Reg;
             }
@@ -677,6 +684,76 @@ export async function GET(request) {
         }
 
         const settled = settleFromRaw(payload, raw);
+
+        // ĐỒNG BỘ VÀ ĐỐI SOÁT SSOT REGISTRY VỚI KẾT QUẢ MỞ THƯỞNG
+        if (payload.dailyLockedBetsRegistry && Array.isArray(raw)) {
+            const rawMap = new Map();
+            raw.forEach(r => {
+                const d = normalizeDate(r?.date || r?.ngay);
+                if (d) rawMap.set(d, r);
+            });
+            const { settleDateDirectly } = require('@/lib/services/dailyLockedBetsRegistryService');
+            Object.entries(payload.dailyLockedBetsRegistry.dates || {}).forEach(([d, entry]) => {
+                if (!entry.isSettled && rawMap.has(d)) {
+                    try {
+                        const settledEntry = settleDateDirectly(d, rawMap.get(d));
+                        if (settledEntry) {
+                            payload.dailyLockedBetsRegistry.dates[d] = settledEntry;
+                        }
+                    } catch (err) {
+                        console.error(`[API daily-advisor] Error settling locked bets for ${d}:`, err);
+                    }
+                }
+            });
+
+            // Đồng bộ ngược vào settled ledgers để frontend luôn nhận đủ 100% dữ liệu
+            const chLedger = settled.crossHedgingPortfolio?.settledLedger || [];
+            const lo7Ledger = settled.lo4EngineFusion?.modes?.top7?.settledLedger || [];
+            const lo6Ledger = settled.lo4EngineFusion?.modes?.top6?.settledLedger || [];
+
+            Object.entries(payload.dailyLockedBetsRegistry.dates || {}).forEach(([d, entry]) => {
+                if (entry?.isSettled && entry.settlement) {
+                    const s = entry.settlement;
+                    // Cross Hedging
+                    if (s.crossHedgingPortfolio && !chLedger.some(r => normalizeDate(r?.date) === d)) {
+                        chLedger.push({ ...s.crossHedgingPortfolio, date: d });
+                    }
+                    // Lô Ghép 4 Top 7
+                    if (s.lo4EngineFusion && !lo7Ledger.some(r => normalizeDate(r?.date) === d)) {
+                        lo7Ledger.push({
+                            date: d,
+                            isLive: true,
+                            topN: 7,
+                            h4: s.lo4EngineFusion.xienHitsCount || 0,
+                            countTotal: s.lo4EngineFusion.betNumbers?.length || 15,
+                            countOver2: (s.lo4EngineFusion.tierX5?.length || 0) + (s.lo4EngineFusion.tierX4?.length || 0) + (s.lo4EngineFusion.tierX3?.length || 0),
+                            tierX5: s.lo4EngineFusion.tierX5 || [],
+                            tierX4: s.lo4EngineFusion.tierX4 || [],
+                            tierX3: s.lo4EngineFusion.tierX3 || [],
+                            tierX1: s.lo4EngineFusion.tierX1 || [],
+                            allNumbers: s.lo4EngineFusion.betNumbers?.map(b => b.num) || [],
+                            betNumbers: s.lo4EngineFusion.betNumbers || [],
+                            dayLotoStakeK: s.lo4EngineFusion.lotoStakeK || 66000,
+                            dayLotoPayoutK: s.lo4EngineFusion.lotoPayoutK || 0,
+                            dayLotoProfitK: s.lo4EngineFusion.lotoProfitK || 0,
+                            dayLotoHits: s.lo4EngineFusion.totalHits || 0,
+                            isLotoWin: (s.lo4EngineFusion.lotoProfitK || 0) > 0,
+                            xien4StakeK: s.lo4EngineFusion.xienStakeK || 11000,
+                            xien4PayoutK: s.lo4EngineFusion.xienPayoutK || 0,
+                            dayXien4ProfitK: s.lo4EngineFusion.xienProfitK || -11000,
+                            isXien4Win: (s.lo4EngineFusion.xienProfitK || 0) > 0,
+                            totalDayProfitK: s.lo4EngineFusion.totalProfitK || 0
+                        });
+                    }
+                }
+            });
+            if (settled.crossHedgingPortfolio) {
+                settled.crossHedgingPortfolio.settledLedger = chLedger.sort((a, b) => a.date.localeCompare(b.date));
+            }
+            if (settled.lo4EngineFusion?.modes?.top7) {
+                settled.lo4EngineFusion.modes.top7.settledLedger = lo7Ledger.sort((a, b) => a.date.localeCompare(b.date));
+            }
+        }
         if (!settled.drawPrizesByDate) {
             const drawPrizesByDate = {};
             for (const row of (raw || []).slice(-365)) {
