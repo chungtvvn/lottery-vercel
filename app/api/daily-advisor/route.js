@@ -620,6 +620,7 @@ export async function GET(request) {
                         if ((shadowLo?.settledLedger?.length || 0) >= (payload?.loDropoff27?.settledLedger?.length || 0)) {
                             payload.loDropoff27 = shadowLo;
                         }
+                    }
                     const regFile = path.join(process.cwd(), 'lib', 'data', 'statistics', 'daily_locked_bets_registry.json');
                     if (fs.existsSync(regFile)) {
                         payload.dailyLockedBetsRegistry = JSON.parse(fs.readFileSync(regFile, 'utf8'));
