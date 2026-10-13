@@ -4516,7 +4516,15 @@
                             chLoPnlK: entry.chLoPnlK,
                             chXienPnlK: entry.chXienPnlK,
                             chTotalProfitK: entry.chTotalProfitK,
-                            dayTotalK: entry.chTotalProfitK
+                            dayTotalK: entry.chTotalProfitK,
+                            deProfitK: entry.chDePnlK,
+                            lo4ProfitK: entry.chLoPnlK,
+                            lo4Xien4ProfitK: entry.chXienPnlK,
+                            loXien5ProfitK: (entry.loXien5?.profitK || 0),
+                            stdProfitK: 0,
+                            x2ProfitK: 0,
+                            xi3ProfitK: 0,
+                            xi4ProfitK: entry.chXienPnlK
                         }
                     };
                 }
@@ -5458,7 +5466,23 @@
                         chTotalProfitK: regEntryRow.chTotalProfitK,
                         chCumProfitK: cumCrossProfitK,
                         dayTotalK: regEntryRow.chTotalProfitK,
-                        cumProfitK: cumCrossProfitK
+                        cumProfitK: cumCrossProfitK,
+                        deProfitK: regEntryRow.chDePnlK,
+                        cumDeProfitK: cumCrossDeProfitK,
+                        lo4ProfitK: regEntryRow.chLoPnlK,
+                        cumLo4ProfitK: cumCrossLoProfitK,
+                        lo4Xien4ProfitK: regEntryRow.chXienPnlK,
+                        cumLo4Xien4ProfitK: cumCrossXienProfitK,
+                        loXien5ProfitK: (regEntryRow.loXien5?.profitK || 0),
+                        cumLoXien5ProfitK,
+                        stdProfitK: 0,
+                        cumStdProfitK: 0,
+                        x2ProfitK: 0,
+                        cumX2ProfitK: 0,
+                        xi3ProfitK: 0,
+                        cumXi3ProfitK: 0,
+                        xi4ProfitK: regEntryRow.chXienPnlK,
+                        cumXi4ProfitK: cumCrossXienProfitK
                     }
                 };
 
@@ -5630,10 +5654,21 @@
                         deProfitK: 0,
                         stdProfitK: 0,
                         x2ProfitK: 0,
+                        lo4ProfitK: 0,
+                        lo4Xien4ProfitK: 0,
+                        loXien5ProfitK: 0,
                         xi3ProfitK: 0,
                         xi4ProfitK: 0,
                         dayTotalK: 0,
-                        cumProfitK
+                        cumProfitK,
+                        cumDeProfitK,
+                        cumLo4ProfitK: cumCrossLoProfitK,
+                        cumLo4Xien4ProfitK: cumCrossXienProfitK,
+                        cumLoXien5ProfitK,
+                        cumStdProfitK,
+                        cumX2ProfitK,
+                        cumXi3ProfitK,
+                        cumXi4ProfitK: cumCrossXienProfitK
                     }
                 };
 

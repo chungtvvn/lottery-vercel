@@ -203,21 +203,21 @@ runTest('4.2: Root autoBestSelection Section Exists with Valid Contract', () => 
     assert(typeof cache.autoBestSelection.reasoning === 'string', 'Must contain reasoning text');
 });
 
-runTest('4.3: crossHedgingPortfolio.metrics Matches 272-Draw Settled Ledger Exactly', () => {
+runTest('4.3: crossHedgingPortfolio.metrics Matches Settled Ledger Exactly', () => {
     const cache = JSON.parse(fs.readFileSync(p1, 'utf8'));
     const ch = cache.crossHedgingPortfolio;
     assert(ch, 'Must have crossHedgingPortfolio');
 
     const ledger = ch.settledLedger;
-    assert.strictEqual(ledger.length, 272, 'settledLedger must have 272 draws');
+    assert(ledger.length >= 272, 'settledLedger must have at least 272 draws');
 
     const wins = ledger.filter(r => r.isWin).length;
     const finalRow = ledger[ledger.length - 1];
 
-    assert.strictEqual(ch.metrics.totalDraws2026, 272, 'totalDraws2026 must be 272');
+    assert.strictEqual(ch.metrics.totalDraws2026, ledger.length, 'totalDraws2026 must match ledger length');
     assert.strictEqual(ch.metrics.positiveDays2026, wins, 'positiveDays2026 must match ledger wins');
     assert.strictEqual(ch.metrics.cumulativeProfitK, finalRow.cumulativeProfitK, 'cumulativeProfitK must match final row');
-    assert(Math.abs(ch.metrics.dailyPositiveProfitRate - (wins / 272)) < 0.001, 'dailyPositiveProfitRate must match wins/272');
+    assert(Math.abs(ch.metrics.dailyPositiveProfitRate - (wins / ledger.length)) < 0.001, 'dailyPositiveProfitRate must match wins/ledger length');
 });
 
 // ============================================================================
