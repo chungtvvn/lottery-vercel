@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "description": "Single Source of Truth (SSOT) Immutable Daily Bets and Settlement Registry",
-  "updatedAt": "2026-10-14T16:52:54.430Z",
+  "updatedAt": "2026-10-14T17:37:41.538Z",
   "dates": {
     "2026-10-10": {
       "targetDate": "2026-10-10",
@@ -721,12 +721,12 @@
           ],
           "isHit40": false,
           "isHit36": false,
-          "stake40K": 40000,
+          "stake40K": 8000,
           "payout40K": 0,
-          "profit40K": -40000,
-          "stake36K": 36000,
+          "profit40K": -8000,
+          "stake36K": 7200,
           "payout36K": 0,
-          "profit36K": -36000
+          "profit36K": -7200
         },
         "loDropoff27": {
           "date": "2026-10-10",
@@ -794,9 +794,9 @@
             "88"
           ],
           "hit": false,
-          "stakeK": 24000,
+          "stakeK": 4800,
           "payoutK": 0,
-          "profitK": -24000,
+          "profitK": -4800,
           "isWin": false
         },
         "semanticResonanceSuite": {
@@ -1016,13 +1016,13 @@
             "62"
           ],
           "h5": 3,
-          "stakeK": 55000,
-          "payoutK": 204000,
-          "profitK": 149000,
+          "stakeK": 5500,
+          "payoutK": 20400,
+          "profitK": 14900,
           "isWin": true
         }
       },
-      "settledAt": "2026-10-14T16:52:54.377Z",
+      "settledAt": "2026-10-14T17:36:57.200Z",
       "actualResult": {
         "special": "53",
         "prizes": [
@@ -5771,12 +5771,12 @@
           ],
           "isHit40": true,
           "isHit36": true,
-          "stake40K": 40000,
-          "payout40K": 84000,
-          "profit40K": 44000,
-          "stake36K": 36000,
-          "payout36K": 84000,
-          "profit36K": 48000
+          "stake40K": 8000,
+          "payout40K": 16800,
+          "profit40K": 8800,
+          "stake36K": 7200,
+          "payout36K": 16800,
+          "profit36K": 9600
         },
         "loDropoff27": {
           "date": "2026-10-11",
@@ -5844,9 +5844,9 @@
             "19"
           ],
           "hit": true,
-          "stakeK": 24000,
-          "payoutK": 84000,
-          "profitK": 60000,
+          "stakeK": 4800,
+          "payoutK": 16800,
+          "profitK": 12000,
           "isWin": true
         },
         "semanticResonanceSuite": {
@@ -5995,13 +5995,13 @@
             "70"
           ],
           "h5": 1,
-          "stakeK": 55000,
+          "stakeK": 5500,
           "payoutK": 0,
-          "profitK": -55000,
+          "profitK": -5500,
           "isWin": false
         }
       },
-      "settledAt": "2026-10-14T16:52:54.400Z",
+      "settledAt": "2026-10-14T17:36:57.213Z",
       "actualResult": {
         "special": "63",
         "prizes": [
@@ -19782,13 +19782,13 @@
             "43"
           ],
           "h5": 1,
-          "stakeK": 55000,
+          "stakeK": 5500,
           "payoutK": 0,
-          "profitK": -55000,
+          "profitK": -5500,
           "isWin": false
         }
       },
-      "settledAt": "2026-10-14T16:52:54.410Z",
+      "settledAt": "2026-10-14T17:36:57.219Z",
       "actualResult": {
         "special": "87",
         "prizes": [
@@ -20847,13 +20847,13 @@
             "04"
           ],
           "h5": 1,
-          "stakeK": 55000,
+          "stakeK": 5500,
           "payoutK": 0,
-          "profitK": -55000,
+          "profitK": -5500,
           "isWin": false
         }
       },
-      "settledAt": "2026-10-14T16:52:54.420Z",
+      "settledAt": "2026-10-14T17:36:57.226Z",
       "actualResult": {
         "special": "18",
         "prizes": [
@@ -21811,13 +21811,13 @@
             "66"
           ],
           "h5": 2,
-          "stakeK": 55000,
-          "payoutK": 36000,
-          "profitK": -19000,
+          "stakeK": 5500,
+          "payoutK": 3600,
+          "profitK": -1900,
           "isWin": false
         }
       },
-      "settledAt": "2026-10-14T16:52:54.430Z",
+      "settledAt": "2026-10-14T17:37:41.490Z",
       "actualResult": {
         "special": "59",
         "prizes": [
@@ -21960,7 +21960,7 @@
             "36",
             "54"
           ],
-          "stakeK": 55000
+          "stakeK": 5500
         },
         "lo4EngineFusion": {
           "predictionDate": "2026-10-15",
@@ -25955,8 +25955,9 @@
             "isLocked": false,
             "isSettled": false,
             "lockActive": false,
-            "lockReason": "Kỳ quay 2026-10-15 là ngày tương lai.",
-            "vnTime": "2026-10-14T23:49:09+07:00"
+            "minutesUntilLock": 683,
+            "lockReason": "Chưa đến 12:00 trưa (còn 683 phút). Dự đoán vẫn có thể cập nhật.",
+            "vnTime": "2026-10-15T00:37:41+07:00"
           }
         },
         "tripleMerge": {
@@ -26077,8 +26078,9 @@
             "isLocked": false,
             "isSettled": false,
             "lockActive": false,
-            "lockReason": "Kỳ quay 2026-10-15 là ngày tương lai.",
-            "vnTime": "2026-10-14T23:49:09+07:00"
+            "minutesUntilLock": 683,
+            "lockReason": "Chưa đến 12:00 trưa (còn 683 phút). Dự đoán vẫn có thể cập nhật.",
+            "vnTime": "2026-10-15T00:37:41+07:00"
           }
         },
         "adaptiveDualMerge": {
@@ -26270,8 +26272,9 @@
             "isLocked": false,
             "isSettled": false,
             "lockActive": false,
-            "lockReason": "Kỳ quay 2026-10-15 là ngày tương lai.",
-            "vnTime": "2026-10-14T23:49:09+07:00"
+            "minutesUntilLock": 683,
+            "lockReason": "Chưa đến 12:00 trưa (còn 683 phút). Dự đoán vẫn có thể cập nhật.",
+            "vnTime": "2026-10-15T00:37:41+07:00"
           }
         },
         "semanticResonanceSuite": {
@@ -26512,7 +26515,7 @@
           "snapshotLock": {
             "isLocked": false,
             "lockActive": false,
-            "lockReason": "Kỳ quay 2026-10-15 là ngày tương lai."
+            "lockReason": "Chưa đến 12:00 trưa (còn 683 phút). Dự đoán vẫn có thể cập nhật."
           }
         }
       },

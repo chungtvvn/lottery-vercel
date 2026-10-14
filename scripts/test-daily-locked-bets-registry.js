@@ -56,9 +56,9 @@ console.log('✔ PASS 2.3: Xiên 4 Bộ 4 Quây 10/10 nổ 3 con, ăn 120.0M pay
 // 3. Kiểm tra các phương pháp Shadow ngày 10/10:
 assert.ok(settle10.deDropoffMerge, 'Phải có kết toán deDropoffMerge ngày 10/10');
 assert.strictEqual(settle10.deDropoffMerge.isHit40, false, 'Đề 10/10 về 53 trượt dàn 40s');
-assert.strictEqual(settle10.deDropoffMerge.profit40K, -40000, 'Lỗ -40M dàn 40s');
-assert.strictEqual(settle10.deDropoffMerge.profit36K, -36000, 'Lỗ -36M dàn 36s');
-console.log('✔ PASS 3.1: deDropoffMerge 10/10 kết toán trượt 53 (-40M / 36s -36M)');
+assert.strictEqual(settle10.deDropoffMerge.profit40K, -8000, 'Lỗ -8.0M dàn 40s');
+assert.strictEqual(settle10.deDropoffMerge.profit36K, -7200, 'Lỗ -7.2M dàn 36s');
+console.log('✔ PASS 3.1: deDropoffMerge 10/10 kết toán trượt 53 (-8.0M / 36s -7.2M)');
 
 assert.ok(settle10.loDropoff27, 'Phải có kết toán loDropoff27 ngày 10/10');
 assert.deepStrictEqual(settle10.loDropoff27.top7, ['62', '88', '84', '52', '70', '36', '19']);
@@ -69,8 +69,8 @@ console.log('✔ PASS 3.2: loDropoff27 10/10 kết toán nổ 36 1 nháy (Phẳn
 
 assert.ok(settle10.triCoreDe, 'Phải có kết toán triCoreDe ngày 10/10');
 assert.strictEqual(settle10.triCoreDe.hit, false, 'Tri-Core 24s trượt 53');
-assert.strictEqual(settle10.triCoreDe.profitK, -24000, 'Lỗ -24M');
-console.log('✔ PASS 3.3: triCoreDe 10/10 kết toán trượt (-24M)');
+assert.strictEqual(settle10.triCoreDe.profitK, -4800, 'Lỗ -4.8M');
+console.log('✔ PASS 3.3: triCoreDe 10/10 kết toán trượt (-4.8M)');
 
 assert.ok(settle10.semanticResonanceSuite, 'Phải có kết toán semanticResonanceSuite ngày 10/10');
 assert.strictEqual(settle10.semanticResonanceSuite.de.isWin, false, 'Đề 36s trượt (-10.8M)');

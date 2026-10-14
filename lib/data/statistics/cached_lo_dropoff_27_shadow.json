@@ -263,7 +263,7 @@
     "snapshotLock": {
       "isLocked": false,
       "lockActive": false,
-      "lockReason": "Kỳ quay 2026-10-15 là ngày tương lai."
+      "lockReason": "Chưa đến 12:00 trưa (còn 683 phút). Dự đoán vẫn có thể cập nhật."
     }
   },
   "settledLedger": [
