@@ -2842,24 +2842,24 @@
                     chipsHtml = `
                         <div class="space-y-2.5">
                             <div>
-                                <div class="flex items-center justify-between text-[10px] font-black uppercase text-amber-400 mb-1">
+                                <div class="flex items-center justify-between text-[10px] font-black uppercase text-amber-800 mb-1">
                                     <span>${vipHeader}</span>
-                                    <span class="text-amber-300">Cược X3</span>
+                                    <span class="text-amber-700 font-bold">Cược X3</span>
                                 </div>
                                 <div class="flex flex-wrap gap-1">
                                     ${info.x2Nums.map(n => {
                                         const isAbs = isPenta && Number(n) === 46;
-                                        return `<span class="inline-flex items-center justify-center px-2 py-1 rounded-lg font-mono text-xs ${isAbs ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black ring-2 ring-white shadow-md' : 'bg-amber-400 text-slate-950 font-black ring-1 ring-white shadow-xs'}" title="${isAbs ? 'Tuyệt đối 5/5 động cơ phê duyệt' : ''}">${number(n)}${isAbs ? ' 👑' : ''}</span>`;
+                                        return `<span class="inline-flex items-center justify-center px-2 py-1 rounded-lg font-mono text-xs ${isAbs ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black ring-2 ring-amber-300 shadow-md' : 'bg-amber-400 text-slate-950 font-black ring-1 ring-amber-300 shadow-xs'}" title="${isAbs ? 'Tuyệt đối 5/5 động cơ phê duyệt' : ''}">${number(n)}${isAbs ? ' 👑' : ''}</span>`;
                                     }).join('')}
                                 </div>
                             </div>
                             <div>
-                                <div class="flex items-center justify-between text-[10px] font-black uppercase text-indigo-300 mb-1">
+                                <div class="flex items-center justify-between text-[10px] font-black uppercase text-indigo-800 mb-1">
                                     <span>${backupHeader}</span>
-                                    <span class="text-indigo-200">Cược X1</span>
+                                    <span class="text-indigo-700 font-bold">Cược X1</span>
                                 </div>
                                 <div class="flex flex-wrap gap-1">
-                                    ${(info.x1Nums || []).map(n => `<span class="inline-flex items-center justify-center px-2 py-1 rounded-lg font-mono text-xs bg-slate-800 border border-slate-700 text-slate-200 font-bold">${number(n)}</span>`).join('')}
+                                    ${(info.x1Nums || []).map(n => `<span class="inline-flex items-center justify-center px-2 py-1 rounded-lg font-mono text-xs bg-slate-100 border border-slate-300 text-slate-800 font-bold">${number(n)}</span>`).join('')}
                                 </div>
                             </div>
                         </div>
@@ -2867,47 +2867,47 @@
                 } else {
                     chipsHtml = `
                         <div class="flex flex-wrap gap-1 max-h-44 overflow-y-auto pr-1 custom-scrollbar">
-                            ${(info.numbers || []).map(n => `<span class="inline-flex items-center justify-center px-2 py-1 rounded-lg font-mono text-xs bg-slate-800 border border-slate-700 text-slate-200 font-bold">${number(n)}</span>`).join('')}
+                            ${(info.numbers || []).map(n => `<span class="inline-flex items-center justify-center px-2 py-1 rounded-lg font-mono text-xs bg-slate-100 border border-slate-300 text-slate-800 font-bold">${number(n)}</span>`).join('')}
                         </div>
                     `;
                 }
 
                 return `
-                    <div>
-                        <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2 mb-2.5">
+                    <div class="bg-slate-50/60 rounded-xl p-3 border border-slate-200">
+                        <div class="flex items-start justify-between gap-2 border-b border-slate-200 pb-2 mb-2.5">
                             <div>
-                                <div class="font-black text-amber-400 text-xs flex items-center gap-1.5">
-                                    <i class="bi bi-lock-fill text-amber-400"></i> 🔒 ${escapeHtml(info.methodName)}
+                                <div class="font-black text-amber-900 text-xs flex items-center gap-1.5">
+                                    <i class="bi bi-lock-fill text-amber-600"></i> 🔒 ${escapeHtml(info.methodName)}
                                 </div>
-                                <div class="text-[10px] text-slate-400 mt-0.5">
+                                <div class="text-[10px] text-slate-600 mt-0.5">
                                     Ngày ${formatDateVi(info.date)} · ${escapeHtml(info.subTierLabel)}
                                 </div>
                             </div>
                             <div class="text-right shrink-0">
-                                <span class="inline-flex items-center gap-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 font-black px-2 py-0.5 text-[11px]">
+                                <span class="inline-flex items-center gap-1 rounded-lg bg-amber-100 text-amber-900 border border-amber-300 font-black px-2 py-0.5 text-[11px]">
                                     🔒 ĐÃ KHÓA BẤT BIẾN
                                 </span>
-                                <div class="text-[10px] font-mono text-amber-400/90 mt-0.5">⏳ Chờ mở thưởng (18:15)</div>
+                                <div class="text-[10px] font-mono text-amber-700 font-bold mt-0.5">⏳ Chờ mở thưởng (18:15)</div>
                             </div>
                         </div>
-                        <div class="rounded-lg bg-amber-500/10 border border-amber-500/20 p-2 text-[10px] text-amber-200 leading-relaxed mb-2.5">
+                        <div class="rounded-lg bg-amber-50 border border-amber-200 p-2 text-[10px] text-amber-900 leading-relaxed mb-2.5">
                             🔒 <strong>Dàn số Đề đã được niêm phong bất biến trước giờ quay</strong>. Người dùng đánh theo dàn này sẽ được tự động đối soát ngay sau 18:40.
-                            ${info.rationale ? `<div class="mt-1 text-slate-300 font-normal leading-relaxed border-t border-amber-500/20 pt-1">${escapeHtml(info.rationale)}</div>` : ''}
+                            ${info.rationale ? `<div class="mt-1 text-slate-700 font-normal leading-relaxed border-t border-amber-200 pt-1">${escapeHtml(info.rationale)}</div>` : ''}
                         </div>
                         <div class="mb-3">
-                            <div class="text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide">
+                            <div class="text-[10px] font-bold text-slate-700 mb-1.5 uppercase tracking-wide">
                                 Dàn số đã chốt đánh (${info.numbers?.length || 0} số):
                             </div>
                             ${chipsHtml}
                         </div>
-                        <div class="pt-2 border-t border-slate-800/80 grid grid-cols-2 gap-2 text-[11px] font-mono">
+                        <div class="pt-2 border-t border-slate-200 grid grid-cols-2 gap-2 text-[11px] font-mono">
                             <div>
-                                <div class="text-[9px] text-slate-500 uppercase">Vốn Cược Khuyến Nghị</div>
-                                <div class="font-bold text-slate-300">${moneyM(info.stakeK)}</div>
+                                <div class="text-[9px] text-slate-500 uppercase font-bold">Vốn Cược Khuyến Nghị</div>
+                                <div class="font-black text-slate-900">${moneyM(info.stakeK)}</div>
                             </div>
                             <div class="text-right">
-                                <div class="text-[9px] text-slate-500 uppercase">Trạng Thái Kết Toán</div>
-                                <div class="font-bold text-amber-400">⏳ Chờ mở thưởng</div>
+                                <div class="text-[9px] text-slate-500 uppercase font-bold">Trạng Thái Kết Toán</div>
+                                <div class="font-bold text-amber-700">⏳ Chờ mở thưởng</div>
                             </div>
                         </div>
                     </div>
@@ -2921,26 +2921,26 @@
                 chipsHtml = `
                     <div class="space-y-2.5">
                         <div>
-                            <div class="flex items-center justify-between text-[10px] font-black uppercase text-amber-400 mb-1">
+                            <div class="flex items-center justify-between text-[10px] font-black uppercase text-amber-800 mb-1">
                                 <span>⚡ VIP TRÙNG X3 (${(info.x3Nums || info.x2Nums).length} số):</span>
-                                <span class="text-amber-300">Cược X3 (3M/số · Ăn 252M)</span>
+                                <span class="text-amber-700 font-bold">Cược X3 (3M/số · Ăn 252M)</span>
                             </div>
                             <div class="flex flex-wrap gap-1">
                                 ${(info.x3Nums || info.x2Nums).map(n => {
                                     const hit = (actualSpec != null && Number(n) === Number(actualSpec));
-                                    return `<span class="inline-flex items-center justify-center px-2 py-1 rounded-lg font-mono text-xs ${hit ? 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 ring-2 ring-white scale-110 shadow-lg font-black animate-pulse' : 'bg-amber-950/40 border border-amber-500/20 text-amber-200/70 font-semibold opacity-60 hover:opacity-100 transition-all'}">${number(n)}${hit ? ' ⭐ NỔ ĐB' : ''}</span>`;
+                                    return `<span class="inline-flex items-center justify-center px-2 py-1 rounded-lg font-mono text-xs ${hit ? 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 ring-2 ring-amber-300 scale-110 shadow-lg font-black animate-pulse' : 'bg-amber-50 border border-amber-200 text-amber-900 font-bold opacity-80 hover:opacity-100 transition-all'}">${number(n)}${hit ? ' ⭐ NỔ ĐB' : ''}</span>`;
                                 }).join('')}
                             </div>
                         </div>
                         <div>
-                            <div class="flex items-center justify-between text-[10px] font-black uppercase text-indigo-300 mb-1">
+                            <div class="flex items-center justify-between text-[10px] font-black uppercase text-indigo-800 mb-1">
                                 <span>🛡️ BỌC LÓT X1 (${info.x1Nums.length} số):</span>
-                                <span class="text-indigo-200">Cược X1 (1M/số · Ăn 84M)</span>
+                                <span class="text-indigo-700 font-bold">Cược X1 (1M/số · Ăn 84M)</span>
                             </div>
                             <div class="flex flex-wrap gap-1">
                                 ${info.x1Nums.map(n => {
                                     const hit = (actualSpec != null && Number(n) === Number(actualSpec));
-                                    return `<span class="inline-flex items-center justify-center px-2 py-1 rounded-lg font-mono text-xs ${hit ? 'bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 text-slate-950 ring-2 ring-white scale-110 shadow-lg font-black animate-pulse' : 'bg-slate-800/80 border border-slate-700/60 text-slate-400 font-semibold opacity-60 hover:opacity-100 transition-all'}">${number(n)}${hit ? ' ⭐ NỔ ĐB' : ''}</span>`;
+                                    return `<span class="inline-flex items-center justify-center px-2 py-1 rounded-lg font-mono text-xs ${hit ? 'bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 text-slate-950 ring-2 ring-emerald-300 scale-110 shadow-lg font-black animate-pulse' : 'bg-slate-100 border border-slate-300 text-slate-700 font-semibold opacity-80 hover:opacity-100 transition-all'}">${number(n)}${hit ? ' ⭐ NỔ ĐB' : ''}</span>`;
                                 }).join('')}
                             </div>
                         </div>
@@ -2951,53 +2951,53 @@
                     <div class="flex flex-wrap gap-1 max-h-44 overflow-y-auto pr-1 custom-scrollbar">
                         ${(info.numbers || []).map(n => {
                             const hit = (actualSpec != null && Number(n) === Number(actualSpec));
-                            return `<span class="inline-flex items-center justify-center px-2 py-1 rounded-lg font-mono text-xs ${hit ? 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 ring-2 ring-amber-300 scale-110 shadow-lg font-black animate-pulse' : 'bg-slate-800/80 border border-slate-700/60 text-slate-400 font-semibold opacity-60 hover:opacity-100 transition-all'}">${number(n)}${hit ? ' ⭐ NỔ ĐB' : ''}</span>`;
-                        }).join('') || '<span class="text-xs text-slate-400">Dữ liệu dàn số lưu trữ lịch sử</span>'}
+                            return `<span class="inline-flex items-center justify-center px-2 py-1 rounded-lg font-mono text-xs ${hit ? 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 ring-2 ring-amber-300 scale-110 shadow-lg font-black animate-pulse' : 'bg-slate-100 border border-slate-300 text-slate-700 font-semibold opacity-80 hover:opacity-100 transition-all'}">${number(n)}${hit ? ' ⭐ NỔ ĐB' : ''}</span>`;
+                        }).join('') || '<span class="text-xs text-slate-500">Dữ liệu dàn số lưu trữ lịch sử</span>'}
                     </div>
                 `;
             }
 
             return `
-                <div>
-                    <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2 mb-2.5">
+                <div class="bg-slate-50/60 rounded-xl p-3 border border-slate-200">
+                    <div class="flex items-start justify-between gap-2 border-b border-slate-200 pb-2 mb-2.5">
                         <div>
-                            <div class="font-black text-amber-400 text-xs flex items-center gap-1.5">
-                                <i class="bi bi-gem-fill text-amber-500"></i> ${escapeHtml(info.methodName)}
+                            <div class="font-black text-amber-900 text-xs flex items-center gap-1.5">
+                                <i class="bi bi-gem-fill text-amber-600"></i> ${escapeHtml(info.methodName)}
                             </div>
-                            <div class="text-[10px] text-slate-400 mt-0.5">
+                            <div class="text-[10px] text-slate-600 mt-0.5">
                                 Ngày ${formatDateVi(info.date)} · ${escapeHtml(info.subTierLabel)}
                             </div>
                         </div>
                         <div class="text-right shrink-0">
-                            <span class="inline-flex items-center gap-1 rounded-lg ${isHit ? (info.isX3 || info.isX2 || info.hitType === 'win_x3' || info.hitType === 'win_x2' ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black shadow-xs ring-1 ring-white' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-black') : 'bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold'} px-2 py-0.5 text-[11px]">
+                            <span class="inline-flex items-center gap-1 rounded-lg ${isHit ? (info.isX3 || info.isX2 || info.hitType === 'win_x3' || info.hitType === 'win_x2' ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black shadow-xs ring-1 ring-amber-300' : 'bg-emerald-100 text-emerald-900 border border-emerald-300 font-black') : 'bg-rose-100 text-rose-900 border border-rose-300 font-bold'} px-2 py-0.5 text-[11px]">
                                 ${isHit ? (info.isX3 || info.isX2 || info.hitType === 'win_x3' || info.hitType === 'win_x2' ? `👑 Nổ VIP X3 (${moneyM(info.profitK, { signed: true })})` : `🎉 Trúng Đề X1 (${moneyM(info.profitK, { signed: true })})`) : `❌ Trượt (${moneyM(info.profitK, { signed: true })})`}
                             </span>
-                            <div class="text-[10px] font-mono text-slate-400 mt-0.5">ĐB: <strong class="text-white font-bold">${actualSpec != null ? number(actualSpec) : '--'}</strong></div>
+                            <div class="text-[10px] font-mono text-slate-600 mt-0.5">ĐB: <strong class="text-slate-900 font-black">${actualSpec != null ? number(actualSpec) : '--'}</strong></div>
                         </div>
                     </div>
                     <div class="mb-3">
-                        <div class="text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide flex items-center justify-between">
+                        <div class="text-[10px] font-bold text-slate-700 mb-1.5 uppercase tracking-wide flex items-center justify-between">
                             <span>Dàn số đã đánh (${info.numbers?.length || 0} số):</span>
-                            ${isHit ? '<span class="text-emerald-400 font-black">✓ Đã nổ số trúng!</span>' : ''}
+                            ${isHit ? '<span class="text-emerald-700 font-black">✓ Đã nổ số trúng!</span>' : ''}
                         </div>
                         ${chipsHtml}
                     </div>
-                    <div class="pt-2 border-t border-slate-800/80 grid grid-cols-4 gap-2 text-[11px] font-mono">
+                    <div class="pt-2 border-t border-slate-200 grid grid-cols-4 gap-2 text-[11px] font-mono">
                         <div>
-                            <div class="text-[9px] text-slate-500 uppercase">Vốn Cược</div>
-                            <div class="font-bold text-slate-300">${moneyM(info.stakeK)}</div>
+                            <div class="text-[9px] text-slate-500 uppercase font-bold">Vốn Cược</div>
+                            <div class="font-black text-slate-800">${moneyM(info.stakeK)}</div>
                         </div>
                         <div>
-                            <div class="text-[9px] text-slate-500 uppercase">Tiền Thưởng</div>
-                            <div class="font-bold ${info.payoutK > 0 ? 'text-emerald-400' : 'text-slate-400'}">${moneyM(info.payoutK)}</div>
+                            <div class="text-[9px] text-slate-500 uppercase font-bold">Tiền Thưởng</div>
+                            <div class="font-black ${info.payoutK > 0 ? 'text-emerald-700' : 'text-slate-500'}">${moneyM(info.payoutK)}</div>
                         </div>
                         <div>
-                            <div class="text-[9px] text-slate-500 uppercase">Lãi/Lỗ Ròng</div>
-                            <div class="font-black ${info.profitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(info.profitK, { signed: true })}</div>
+                            <div class="text-[9px] text-slate-500 uppercase font-bold">Lãi/Lỗ Ròng</div>
+                            <div class="font-black ${info.profitK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${moneyM(info.profitK, { signed: true })}</div>
                         </div>
                         <div class="text-right">
-                            <div class="text-[9px] text-slate-500 uppercase">Lũy Kế Đề</div>
-                            <div class="font-black ${(info.cumDeProfitK ?? 0) >= 0 ? 'text-amber-400' : 'text-rose-400'}">${moneyM(info.cumDeProfitK ?? 0, { signed: true })}</div>
+                            <div class="text-[9px] text-slate-500 uppercase font-bold">Lũy Kế Đề</div>
+                            <div class="font-black ${(info.cumDeProfitK ?? 0) >= 0 ? 'text-amber-700' : 'text-rose-700'}">${moneyM(info.cumDeProfitK ?? 0, { signed: true })}</div>
                         </div>
                     </div>
                 </div>
@@ -3008,29 +3008,29 @@
             if (info.isHistoricalBaseline) {
                 const betList = info.betNumbers || [];
                 return `
-                    <div class="space-y-3 p-1">
-                        <div class="flex items-center justify-between border-b border-amber-500/30 pb-2">
+                    <div class="bg-slate-50/60 rounded-xl p-3 border border-slate-200 space-y-3">
+                        <div class="flex items-center justify-between border-b border-amber-300 pb-2">
                             <div>
-                                <span class="rounded bg-slate-800 text-amber-300 border border-amber-500/30 font-black text-[10px] px-2 py-0.5 uppercase">
+                                <span class="rounded bg-amber-100 text-amber-900 border border-amber-300 font-black text-[10px] px-2 py-0.5 uppercase">
                                     🛡️ MỐC ĐỐI SOÁT NỀN TẢNG (TRƯỚC 02/06)
                                 </span>
-                                <h4 class="font-black text-sm text-white mt-1">Lô Ghép 4 Động Cơ — ${formatDateVi(info.date)}</h4>
+                                <h4 class="font-black text-sm text-slate-900 mt-1">Lô Ghép 4 Động Cơ — ${formatDateVi(info.date)}</h4>
                             </div>
-                            <span class="text-xs font-bold text-slate-400 font-mono">Tiền đề phát triển</span>
+                            <span class="text-xs font-bold text-slate-600 font-mono">Tiền đề phát triển</span>
                         </div>
-                        <div class="rounded-lg bg-amber-500/10 border border-amber-500/20 p-2 text-[11px] text-amber-200/90 leading-relaxed">
+                        <div class="rounded-lg bg-amber-50 border border-amber-200 p-2 text-[11px] text-amber-900 leading-relaxed">
                             💡 <strong>Giai đoạn chuẩn hóa dữ liệu:</strong> Phương pháp Tổng Hợp Ghép 4 Động Cơ (QMBF + Bạc Nhớ + 3 Động Cơ + RRF) bắt đầu lưu trữ và chốt vé Live chính thức từ ngày <strong>02/06/2026</strong>. Các kỳ trước đó chạy đối soát độc lập theo động cơ nền tảng Quad-Fusion v7.2 & QMBF.
                         </div>
                         <div>
-                            <div class="text-[10px] font-black uppercase text-amber-300 mb-1 flex items-center justify-between">
+                            <div class="text-[10px] font-black uppercase text-amber-800 mb-1 flex items-center justify-between">
                                 <span>Dàn Lô nền tảng đối soát (${betList.length} số):</span>
-                                <span class="text-emerald-400 font-bold">Nổ ${info.dayLotoHits || 0} nháy</span>
+                                <span class="text-emerald-700 font-bold">Nổ ${info.dayLotoHits || 0} nháy</span>
                             </div>
                             <div class="flex flex-wrap gap-1.5">
                                 ${betList.map(b => {
                                     const isHit = (b.hits || 0) > 0;
                                     return `
-                                        <span class="px-2 py-1 rounded font-mono text-xs font-black ${isHit ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 ring-2 ring-white shadow-md' : 'bg-slate-800 text-slate-300 border border-slate-700'}">
+                                        <span class="px-2 py-1 rounded font-mono text-xs font-black ${isHit ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 ring-2 ring-amber-300 shadow-md' : 'bg-slate-100 text-slate-800 border border-slate-300'}">
                                             ${number(b.num)}
                                             ${isHit ? `<span class="text-[9px] text-red-700 font-black">(${b.hits}n)</span>` : ''}
                                         </span>
@@ -3038,7 +3038,7 @@
                                 }).join('')}
                             </div>
                         </div>
-                        <div class="text-[11px] text-slate-300 bg-slate-900/60 p-2 rounded-lg border border-slate-700">
+                        <div class="text-[11px] text-slate-700 bg-white p-2 rounded-lg border border-slate-200">
                             🎲 <strong>Xiên 4:</strong> Bắt đầu chốt vé và theo dõi từ 02/06/2026.
                         </div>
                     </div>
@@ -3104,7 +3104,7 @@
                     `;
                 }
                 return `
-                    <span class="px-2 py-1 rounded-lg bg-gradient-to-r from-amber-400/20 to-amber-500/20 border border-amber-400/40 text-amber-200 font-mono text-xs opacity-60 hover:opacity-100 transition-all">
+                    <span class="px-2 py-1 rounded-lg bg-amber-100 border border-amber-300 text-amber-950 font-mono text-xs font-bold opacity-85 hover:opacity-100 transition-all">
                         ${number(b.num)}${getMethodsText(b)}
                     </span>
                 `;
@@ -3120,7 +3120,7 @@
                     `;
                 }
                 return `
-                    <span class="px-2 py-1 rounded-lg bg-amber-400/20 border border-amber-400/30 text-amber-200 font-mono text-xs opacity-60 hover:opacity-100 transition-all">
+                    <span class="px-2 py-1 rounded-lg bg-amber-50 border border-amber-300 text-amber-900 font-mono text-xs font-bold opacity-85 hover:opacity-100 transition-all">
                         ${number(b.num)}${getMethodsText(b)}
                     </span>
                 `;
@@ -3136,7 +3136,7 @@
                     `;
                 }
                 return `
-                    <span class="px-2 py-1 rounded-lg bg-indigo-900/40 border border-indigo-500/30 text-indigo-200 font-mono text-xs opacity-60 hover:opacity-100 transition-all">
+                    <span class="px-2 py-1 rounded-lg bg-indigo-50 border border-indigo-300 text-indigo-900 font-mono text-xs font-bold opacity-85 hover:opacity-100 transition-all">
                         ${number(b.num)}${getMethodsText(b)}
                     </span>
                 `;
@@ -3152,39 +3152,39 @@
                     `;
                 }
                 return `
-                    <span class="px-2 py-1 rounded-lg bg-slate-800/80 border border-slate-700/60 text-slate-400 font-mono text-xs opacity-60 hover:opacity-100 transition-all">
+                    <span class="px-2 py-1 rounded-lg bg-slate-100 border border-slate-300 text-slate-700 font-mono text-xs font-medium opacity-80 hover:opacity-100 transition-all">
                         ${number(b.num)}${getMethodsText(b)}
                     </span>
                 `;
             };
 
             return `
-                <div class="space-y-3 p-1">
-                    <div class="flex items-center justify-between border-b border-amber-500/30 pb-2">
+                <div class="bg-slate-50/60 rounded-xl p-3 border border-slate-200 space-y-3">
+                    <div class="flex items-center justify-between border-b border-amber-300 pb-2">
                         <div>
                             <span class="rounded bg-amber-400 text-slate-950 font-black text-[10px] px-2 py-0.5 uppercase">
                                 🔒 ĐÃ KHÓA KỲ TỚI
                             </span>
-                            ${!isPending ? `<span class="rounded ${info.isLive ? 'bg-red-500/20 text-red-300 border border-red-500/40' : 'bg-slate-700 text-slate-300'} font-black text-[10px] px-2 py-0.5 uppercase ml-1">${info.isLive ? '🔴 ĐỐI SOÁT LIVE' : '🛡️ STRICT PIT'}</span>` : ''}
-                            <h4 class="font-black text-sm text-white mt-1">Lô Tổng Hợp 4 Động Cơ Live — ${formatDateVi(info.date)}</h4>
+                            ${!isPending ? `<span class="rounded ${info.isLive ? 'bg-red-100 text-red-800 border border-red-300' : 'bg-slate-200 text-slate-700'} font-black text-[10px] px-2 py-0.5 uppercase ml-1">${info.isLive ? '🔴 ĐỐI SOÁT LIVE' : '🛡️ STRICT PIT'}</span>` : ''}
+                            <h4 class="font-black text-sm text-slate-900 mt-1">Lô Tổng Hợp 4 Động Cơ Live — ${formatDateVi(info.date)}</h4>
                         </div>
                         <div class="text-right">
                             ${!isPending && lotoProfitK != null ? `
-                                <div class="font-black text-xs ${lotoProfitK >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-mono">
+                                <div class="font-black text-xs ${lotoProfitK >= 0 ? 'text-emerald-700' : 'text-rose-700'} font-mono">
                                     ${moneyM(lotoProfitK, { signed: true })}
                                 </div>
                             ` : ''}
-                            <span class="text-xs font-bold text-amber-300 font-mono">Vốn ${moneyM(lotoStakeK || 63800)}</span>
+                            <span class="text-xs font-black text-amber-800 font-mono">Vốn ${moneyM(lotoStakeK || 63800)}</span>
                         </div>
                     </div>
 
                     ${!isPending ? `
                         <div class="flex items-center gap-2 flex-wrap">
-                            <span class="rounded ${isWin ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'} font-bold text-xs px-2.5 py-1">
+                            <span class="rounded ${isWin ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : 'bg-rose-100 text-rose-900 border border-rose-300'} font-bold text-xs px-2.5 py-1">
                                 ${isWin ? `🎉 NỔ ${hits} NHÁY (ĂN ${moneyM(lotoPayoutK)})` : `❌ TRƯỢT (${hits} nháy)`}
                             </span>
-                            <span class="rounded-lg bg-indigo-950/80 border border-indigo-500/40 text-xs px-2.5 py-1 text-indigo-200 font-mono">
-                                🔥 Lũy Kế Lô Ghép 4: <strong class="${(info.cumLotoProfitK ?? 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-black">${moneyM(info.cumLotoProfitK ?? 0, { signed: true })}</strong>
+                            <span class="rounded-lg bg-indigo-50 border border-indigo-200 text-xs px-2.5 py-1 text-indigo-900 font-mono">
+                                🔥 Lũy Kế Lô Ghép 4: <strong class="${(info.cumLotoProfitK ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-700'} font-black">${moneyM(info.cumLotoProfitK ?? 0, { signed: true })}</strong>
                             </span>
                         </div>
                     ` : ''}
@@ -3192,9 +3192,9 @@
                     <div class="space-y-2.5">
                         ${tierX5Nums.length ? `
                             <div>
-                                <div class="text-[10px] font-black uppercase text-amber-400 mb-1 flex items-center justify-between">
+                                <div class="text-[10px] font-black uppercase text-amber-800 mb-1 flex items-center justify-between">
                                     <span>👑 TẦNG SIÊU VIP (CƯỢC X5 · 11M/SỐ · ${tierX5Nums.length} SỐ):</span>
-                                    <span class="text-[9px] text-amber-200/80">Trùng 4 PP</span>
+                                    <span class="text-[9px] text-amber-700">Trùng 4 PP</span>
                                 </div>
                                 <div class="flex flex-wrap gap-1.5">
                                     ${tierX5Nums.map(renderChipX5).join('')}
@@ -3204,9 +3204,9 @@
 
                         ${tierX4Nums.length ? `
                             <div>
-                                <div class="text-[10px] font-black uppercase text-amber-300 mb-1 flex items-center justify-between">
+                                <div class="text-[10px] font-black uppercase text-amber-800 mb-1 flex items-center justify-between">
                                     <span>⚡ TẦNG CỰC VIP (CƯỢC X4 · 8.8M/SỐ · ${tierX4Nums.length} SỐ):</span>
-                                    <span class="text-[9px] text-amber-200/80">Trùng 3 PP</span>
+                                    <span class="text-[9px] text-amber-700">Trùng 3 PP</span>
                                 </div>
                                 <div class="flex flex-wrap gap-1.5">
                                     ${tierX4Nums.map(renderChipX4).join('')}
@@ -3216,9 +3216,9 @@
 
                         ${tierX3Nums.length ? `
                             <div>
-                                <div class="text-[10px] font-black uppercase text-indigo-300 mb-1 flex items-center justify-between">
+                                <div class="text-[10px] font-black uppercase text-indigo-800 mb-1 flex items-center justify-between">
                                     <span>⚡ TẦNG TRIỂN VỌNG (CƯỢC X3 · 6.6M/SỐ · ${tierX3Nums.length} SỐ):</span>
-                                    <span class="text-[9px] text-indigo-200/80">Trùng 2 PP</span>
+                                    <span class="text-[9px] text-indigo-700">Trùng 2 PP</span>
                                 </div>
                                 <div class="flex flex-wrap gap-1.5">
                                     ${tierX3Nums.map(renderChipX3).join('')}
@@ -3228,9 +3228,9 @@
 
                         ${tierX1Nums.length ? `
                             <div>
-                                <div class="text-[10px] font-black uppercase text-teal-300 mb-1 flex items-center justify-between">
+                                <div class="text-[10px] font-black uppercase text-teal-800 mb-1 flex items-center justify-between">
                                     <span>🛡️ TẦNG BẢO HIỂM (CƯỢC X1 · 2.2M/SỐ · ${tierX1Nums.length} SỐ):</span>
-                                    <span class="text-[9px] text-teal-200/80">Không trùng</span>
+                                    <span class="text-[9px] text-teal-700">Không trùng</span>
                                 </div>
                                 <div class="flex flex-wrap gap-1.5">
                                     ${tierX1Nums.map(renderChipX1).join('')}
@@ -3239,7 +3239,7 @@
                         ` : ''}
                     </div>
 
-                    <div class="text-[11px] text-slate-300 bg-slate-900/60 p-2 rounded-lg border border-slate-700">
+                    <div class="text-[11px] text-slate-700 bg-white p-2 rounded-lg border border-slate-200">
                         🎲 <strong>Xiên 4:</strong> ${escapeHtml(info.xien4Reason || (info.xien4Status === 'SKIPPED_TOO_MANY' ? 'Bỏ qua (> 5 số trùng)' : 'Không cược'))}
                     </div>
                 </div>
@@ -3257,32 +3257,32 @@
 
             if (info.isHistoricalBaseline) {
                 return `
-                    <div class="space-y-3 p-1">
-                        <div class="flex items-start justify-between gap-2 border-b border-white/10 pb-2">
+                    <div class="bg-slate-50/60 rounded-xl p-3 border border-slate-200 space-y-3">
+                        <div class="flex items-start justify-between gap-2 border-b border-slate-200 pb-2">
                             <div>
-                                <span class="rounded bg-slate-800 text-amber-300 border border-amber-500/30 font-black text-[10px] px-2 py-0.5 uppercase">
+                                <span class="rounded bg-slate-200 text-slate-800 border border-slate-300 font-black text-[10px] px-2 py-0.5 uppercase">
                                     🛡️ MỐC ĐỐI SOÁT NỀN TẢNG (TRƯỚC 02/06)
                                 </span>
-                                <h4 class="font-black text-sm text-white mt-1">Lô Xiên 4 Ghép Mới — ${formatDateVi(info.date)}</h4>
+                                <h4 class="font-black text-sm text-slate-900 mt-1">Lô Xiên 4 Ghép Mới — ${formatDateVi(info.date)}</h4>
                             </div>
                             <div class="text-right">
-                                <div class="font-bold text-xs text-slate-400 font-mono">Quan sát</div>
+                                <div class="font-bold text-xs text-slate-600 font-mono">Quan sát</div>
                             </div>
                         </div>
-                        <div class="rounded-xl bg-amber-500/10 border border-amber-400/30 text-amber-200 p-2.5 text-xs leading-relaxed">
-                            <div class="font-bold flex items-center gap-1.5 mb-1 text-amber-300">
+                        <div class="rounded-xl bg-amber-50 border border-amber-300 text-amber-900 p-2.5 text-xs leading-relaxed">
+                            <div class="font-bold flex items-center gap-1.5 mb-1 text-amber-800">
                                 <i class="bi bi-info-circle-fill"></i> Giai đoạn khởi động mô hình Ghép 4
                             </div>
                             Thuật toán Xiên 4 Ghép 4 Động Cơ (lọc tổ hợp từ &ge; 2 động cơ trùng nhau) được triển khai và ghi nhật ký tự động từ <strong>02/06/2026</strong>. Các kỳ trước đó theo dõi theo mô hình Tứ Thủ Xiên 4 nền tảng.
                         </div>
-                        <div class="pt-2 border-t border-white/10 grid grid-cols-2 gap-2 text-[11px] font-mono">
+                        <div class="pt-2 border-t border-slate-200 grid grid-cols-2 gap-2 text-[11px] font-mono">
                             <div>
-                                <div class="text-[9px] text-slate-400 uppercase">Trạng Thái</div>
-                                <div class="font-bold text-slate-300">🛡️ Tiền đề phát triển</div>
+                                <div class="text-[9px] text-slate-500 uppercase font-bold">Trạng Thái</div>
+                                <div class="font-bold text-slate-800">🛡️ Tiền đề phát triển</div>
                             </div>
                             <div class="text-right">
-                                <div class="text-[9px] text-slate-400 uppercase">Khởi Chạy Live</div>
-                                <div class="font-bold text-amber-400">Từ 02/06/2026</div>
+                                <div class="text-[9px] text-slate-500 uppercase font-bold">Khởi Chạy Live</div>
+                                <div class="font-bold text-amber-800">Từ 02/06/2026</div>
                             </div>
                         </div>
                     </div>
@@ -3293,12 +3293,12 @@
             if (combinations.length > 0) {
                 combinationsHtml = `
                     <div class="mb-2">
-                        <div class="text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wide">
+                        <div class="text-[10px] font-bold text-slate-600 mb-1 uppercase tracking-wide">
                             Các bộ Xiên 4 (${combinations.length} vé):
                         </div>
                         <div class="space-y-1 max-h-36 overflow-y-auto pr-1 custom-scrollbar">
                             ${combinations.map(comb => `
-                                <div class="rounded-lg bg-teal-500/20 border border-teal-400/30 text-teal-200 font-mono text-xs font-black px-2 py-1 text-center">
+                                <div class="rounded-lg bg-teal-50 border border-teal-200 text-teal-900 font-mono text-xs font-black px-2 py-1 text-center">
                                     ${comb.map(number).join(' - ')}
                                 </div>
                             `).join('')}
@@ -3308,47 +3308,47 @@
             }
 
             return `
-                <div class="space-y-3 p-1">
-                    <div class="flex items-start justify-between gap-2 border-b border-white/10 pb-2">
+                <div class="bg-slate-50/60 rounded-xl p-3 border border-slate-200 space-y-3">
+                    <div class="flex items-start justify-between gap-2 border-b border-slate-200 pb-2">
                         <div>
-                            <span class="rounded ${isPending ? 'bg-amber-400 text-slate-950 font-black' : (info.isLive ? 'bg-red-500/20 text-red-300 border border-red-500/40' : 'bg-slate-700 text-slate-300')} font-black text-[10px] px-2 py-0.5 uppercase">
+                            <span class="rounded ${isPending ? 'bg-amber-400 text-slate-950 font-black' : (info.isLive ? 'bg-red-100 text-red-800 border border-red-300' : 'bg-slate-200 text-slate-700')} font-black text-[10px] px-2 py-0.5 uppercase">
                                 ${isPending ? '🔒 ĐÃ KHÓA KỲ TỚI' : (info.isLive ? '🔴 THỰC CHIẾN LIVE' : '🛡️ STRICT PIT D-1')}
                             </span>
-                            <h4 class="font-black text-sm text-white mt-1">Lô Xiên 4 (Ghép 4 Mới) — ${formatDateVi(info.date)}</h4>
+                            <h4 class="font-black text-sm text-slate-900 mt-1">Lô Xiên 4 (Ghép 4 Mới) — ${formatDateVi(info.date)}</h4>
                         </div>
                         <div class="text-right">
-                            <div class="font-black text-xs ${profitK > 0 ? 'text-emerald-400' : (profitK < 0 ? 'text-rose-400' : 'text-slate-400')} font-mono">
+                            <div class="font-black text-xs ${profitK > 0 ? 'text-emerald-700' : (profitK < 0 ? 'text-rose-700' : 'text-slate-600')} font-mono">
                                 ${moneyM(profitK, { signed: true })}
                             </div>
-                            <div class="text-[10px] text-slate-400 font-sans">Vốn ${moneyM(stakeK)}</div>
+                            <div class="text-[10px] text-slate-500 font-sans">Vốn ${moneyM(stakeK)}</div>
                         </div>
                     </div>
 
-                    <div class="rounded-xl ${status === 'SKIPPED_TOO_MANY' ? 'bg-amber-500/10 border border-amber-400/40 text-amber-200' : (isWin ? 'bg-emerald-500/20 border border-emerald-400/40 text-emerald-200' : 'bg-slate-800 text-slate-300')} p-2.5 text-xs">
+                    <div class="rounded-xl ${status === 'SKIPPED_TOO_MANY' ? 'bg-amber-50 border border-amber-300 text-amber-900' : (isWin ? 'bg-emerald-50 border border-emerald-300 text-emerald-900' : 'bg-white border border-slate-200 text-slate-700')} p-2.5 text-xs">
                         <div class="font-bold flex items-center justify-between gap-1.5 flex-wrap">
                             <span class="flex items-center gap-1.5">
-                                <i class="bi ${status === 'SKIPPED_TOO_MANY' ? 'bi-shield-check text-amber-400' : (isWin ? 'bi-check-circle-fill text-emerald-400' : 'bi-info-circle')}"></i>
+                                <i class="bi ${status === 'SKIPPED_TOO_MANY' ? 'bi-shield-check text-amber-600' : (isWin ? 'bi-check-circle-fill text-emerald-600' : 'bi-info-circle text-slate-500')}"></i>
                                 ${status === 'SKIPPED_TOO_MANY' ? 'Chế độ Bảo Toàn Vốn (Tự Động Bỏ Qua Xiên 4)' : (isPending ? 'Kế Hoạch Cược Xiên 4' : (isWin ? '🎉 Ăn Xiên 4 Thành Công!' : 'Trượt Xiên 4'))}
                             </span>
-                            <span class="rounded bg-black/40 px-2 py-0.5 text-[10px] font-mono font-black ${(info.cumXien4ProfitK ?? 0) >= 0 ? 'text-purple-300' : 'text-rose-400'}">
+                            <span class="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-mono font-black ${(info.cumXien4ProfitK ?? 0) >= 0 ? 'text-purple-800' : 'text-rose-700'}">
                                 Lũy kế Xiên 4: ${moneyM(info.cumXien4ProfitK ?? 0, { signed: true })}
                             </span>
                         </div>
-                        <div class="text-[11px] mt-1 text-slate-300 leading-relaxed">
+                        <div class="text-[11px] mt-1 text-slate-600 leading-relaxed">
                             ${escapeHtml(reason || (status === 'SKIPPED_TOO_MANY' ? 'Có > 5 số trùng giữa 4 phương pháp -> Dừng cược Xiên 4 để không phân tán vốn.' : 'Theo dõi hiệu suất thuật toán ghép 4.'))}
                         </div>
                     </div>
 
                     ${combinationsHtml}
 
-                    <div class="pt-2 border-t border-white/10 grid grid-cols-2 gap-2 text-[11px] font-mono">
+                    <div class="pt-2 border-t border-slate-200 grid grid-cols-2 gap-2 text-[11px] font-mono">
                         <div>
-                            <div class="text-[9px] text-slate-400 uppercase">Trạng Thái</div>
-                            <div class="font-bold text-white">${status === 'SKIPPED_TOO_MANY' ? '🛡️ Bỏ qua không đánh' : (isPending ? '⏳ Chờ mở thưởng' : (isWin ? '🎉 Thắng cược' : '❌ Trượt'))}</div>
+                            <div class="text-[9px] text-slate-500 uppercase font-bold">Trạng Thái</div>
+                            <div class="font-black text-slate-900">${status === 'SKIPPED_TOO_MANY' ? '🛡️ Bỏ qua không đánh' : (isPending ? '⏳ Chờ mở thưởng' : (isWin ? '🎉 Thắng cược' : '❌ Trượt'))}</div>
                         </div>
                         <div class="text-right">
-                            <div class="text-[9px] text-slate-400 uppercase">Quy Tắc An Toàn</div>
-                            <div class="font-bold text-amber-400">Chỉ đánh khi 4-5 số trùng</div>
+                            <div class="text-[9px] text-slate-500 uppercase font-bold">Quy Tắc An Toàn</div>
+                            <div class="font-bold text-amber-800">Chỉ đánh khi 4-5 số trùng</div>
                         </div>
                     </div>
                 </div>
@@ -3362,7 +3362,7 @@
                     <div class="flex flex-wrap gap-1 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
                         ${(info.numbers || []).map(n => {
                             return `
-                                <span class="inline-flex items-center justify-center gap-1 px-2 py-1 rounded-lg font-mono text-xs ${isX2 ? 'bg-gradient-to-r from-teal-500 to-teal-600 text-white font-black' : 'bg-slate-800 border border-slate-700 text-slate-200 font-bold'}">
+                                <span class="inline-flex items-center justify-center gap-1 px-2 py-1 rounded-lg font-mono text-xs ${isX2 ? 'bg-gradient-to-r from-teal-600 to-teal-700 text-white font-black' : 'bg-slate-100 border border-slate-300 text-slate-800 font-bold'}">
                                     <span>${number(n)}</span>
                                 </span>
                             `;
@@ -3371,40 +3371,40 @@
                 `;
 
                 return `
-                    <div>
-                        <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2 mb-2.5">
+                    <div class="bg-slate-50/60 rounded-xl p-3 border border-slate-200">
+                        <div class="flex items-start justify-between gap-2 border-b border-slate-200 pb-2 mb-2.5">
                             <div>
-                                <div class="font-black ${isX2 ? 'text-teal-400' : 'text-indigo-400'} text-xs flex items-center gap-1.5">
+                                <div class="font-black ${isX2 ? 'text-teal-800' : 'text-indigo-800'} text-xs flex items-center gap-1.5">
                                     <i class="bi bi-lock-fill"></i> 🔒 ${escapeHtml(info.methodName)}
                                 </div>
-                                <div class="text-[10px] text-slate-400 mt-0.5">
+                                <div class="text-[10px] text-slate-600 mt-0.5">
                                     Ngày ${formatDateVi(info.date)} · ${escapeHtml(info.subTierLabel)}
                                 </div>
                             </div>
                             <div class="text-right shrink-0">
-                                <span class="inline-flex items-center gap-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 font-black px-2 py-0.5 text-[11px]">
+                                <span class="inline-flex items-center gap-1 rounded-lg bg-amber-100 text-amber-900 border border-amber-300 font-black px-2 py-0.5 text-[11px]">
                                     🔒 ĐÃ KHÓA BẤT BIẾN
                                 </span>
                             </div>
                         </div>
-                        <div class="rounded-lg bg-amber-500/10 border border-amber-500/20 p-2 text-[10px] text-amber-200 leading-relaxed mb-2.5">
+                        <div class="rounded-lg bg-amber-50 border border-amber-200 p-2 text-[10px] text-amber-900 leading-relaxed mb-2.5">
                             🔒 <strong>Dàn Lô đã được niêm phong bất biến</strong>. Kết quả 27 giải mở thưởng sẽ được đếm nháy nổ tự động sau 18:40.
                         </div>
                         <div class="mb-3">
-                            <div class="text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide flex items-center justify-between">
+                            <div class="text-[10px] font-bold text-slate-700 mb-1.5 uppercase tracking-wide flex items-center justify-between">
                                 <span>Dàn số đã đánh (${info.numbers?.length || 0} số):</span>
-                                <span class="text-slate-400">${isX2 ? 'Cược X2' : 'Cược chuẩn'}</span>
+                                <span class="text-slate-600">${isX2 ? 'Cược X2' : 'Cược chuẩn'}</span>
                             </div>
                             ${chipsHtml}
                         </div>
-                        <div class="pt-2 border-t border-slate-800/80 grid grid-cols-2 gap-2 text-[11px] font-mono">
+                        <div class="pt-2 border-t border-slate-200 grid grid-cols-2 gap-2 text-[11px] font-mono">
                             <div>
-                                <div class="text-[9px] text-slate-500 uppercase">Vốn Cược Khuyến Nghị</div>
-                                <div class="font-bold text-slate-300">${moneyM(info.stakeK)}</div>
+                                <div class="text-[9px] text-slate-500 uppercase font-bold">Vốn Cược Khuyến Nghị</div>
+                                <div class="font-black text-slate-800">${moneyM(info.stakeK)}</div>
                             </div>
                             <div class="text-right">
-                                <div class="text-[9px] text-slate-500 uppercase">Trạng Thái Kết Toán</div>
-                                <div class="font-bold text-amber-400">⏳ Chờ mở thưởng</div>
+                                <div class="text-[9px] text-slate-500 uppercase font-bold">Trạng Thái Kết Toán</div>
+                                <div class="font-bold text-amber-700">⏳ Chờ mở thưởng</div>
                             </div>
                         </div>
                     </div>
@@ -3426,50 +3426,50 @@
                             `;
                         }
                         return `
-                            <span class="inline-flex items-center justify-center gap-1 px-2 py-1 rounded-lg font-mono text-xs bg-slate-800/80 border border-slate-700/60 text-slate-400 font-medium opacity-60 hover:opacity-100 transition-all">
+                            <span class="inline-flex items-center justify-center gap-1 px-2 py-1 rounded-lg font-mono text-xs bg-slate-100 border border-slate-300 text-slate-700 font-medium opacity-80 hover:opacity-100 transition-all">
                                 <span>${number(n)}</span>
                             </span>
                         `;
-                    }).join('') || '<span class="text-xs text-slate-400">Dữ liệu dàn số lưu trữ lịch sử</span>'}
+                    }).join('') || '<span class="text-xs text-slate-500">Dữ liệu dàn số lưu trữ lịch sử</span>'}
                 </div>
             `;
 
             return `
-                <div>
-                    <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2 mb-2.5">
+                <div class="bg-slate-50/60 rounded-xl p-3 border border-slate-200">
+                    <div class="flex items-start justify-between gap-2 border-b border-slate-200 pb-2 mb-2.5">
                         <div>
-                            <div class="font-black ${isX2 ? 'text-teal-400' : 'text-indigo-400'} text-xs flex items-center gap-1.5">
+                            <div class="font-black ${isX2 ? 'text-teal-800' : 'text-indigo-800'} text-xs flex items-center gap-1.5">
                                 <i class="bi ${isX2 ? 'bi-lightning-charge-fill' : 'bi-trophy-fill'}"></i> ${escapeHtml(info.methodName)}
                             </div>
-                            <div class="text-[10px] text-slate-400 mt-0.5">
+                            <div class="text-[10px] text-slate-600 mt-0.5">
                                 Ngày ${formatDateVi(info.date)} · ${escapeHtml(info.subTierLabel)}
                             </div>
                         </div>
                         <div class="text-right shrink-0">
-                            <span class="inline-flex items-center gap-1 rounded-lg ${info.hits > 0 ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-black' : 'bg-slate-800 text-slate-400 font-bold'} px-2 py-0.5 text-[11px]">
+                            <span class="inline-flex items-center gap-1 rounded-lg ${info.hits > 0 ? 'bg-emerald-100 text-emerald-900 border border-emerald-300 font-black' : 'bg-slate-100 text-slate-600 font-bold'} px-2 py-0.5 text-[11px]">
                                 💥 Nổ ${info.hits || 0} nháy
                             </span>
                         </div>
                     </div>
                     <div class="mb-3">
-                        <div class="text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide flex items-center justify-between">
+                        <div class="text-[10px] font-bold text-slate-700 mb-1.5 uppercase tracking-wide flex items-center justify-between">
                             <span>Dàn số đã đánh (${info.numbers?.length || 0} số):</span>
-                            <span class="text-slate-400">${isX2 ? 'Cược X2 (4.4M/số)' : 'Cược 2.2M/số'}</span>
+                            <span class="text-slate-600">${isX2 ? 'Cược X2 (4.4M/số)' : 'Cược 2.2M/số'}</span>
                         </div>
                         ${chipsHtml}
                     </div>
-                    <div class="pt-2 border-t border-slate-800/80 grid grid-cols-3 gap-2 text-[11px] font-mono">
+                    <div class="pt-2 border-t border-slate-200 grid grid-cols-3 gap-2 text-[11px] font-mono">
                         <div>
-                            <div class="text-[9px] text-slate-500 uppercase">Vốn Cược</div>
-                            <div class="font-bold text-slate-300">${moneyM(info.stakeK)}</div>
+                            <div class="text-[9px] text-slate-500 uppercase font-bold">Vốn Cược</div>
+                            <div class="font-black text-slate-800">${moneyM(info.stakeK)}</div>
                         </div>
                         <div>
-                            <div class="text-[9px] text-slate-500 uppercase">Tiền Thưởng</div>
-                            <div class="font-bold ${info.payoutK > 0 ? 'text-emerald-400' : 'text-slate-400'}">${moneyM(info.payoutK)}</div>
+                            <div class="text-[9px] text-slate-500 uppercase font-bold">Tiền Thưởng</div>
+                            <div class="font-black ${info.payoutK > 0 ? 'text-emerald-700' : 'text-slate-500'}">${moneyM(info.payoutK)}</div>
                         </div>
                         <div class="text-right">
-                            <div class="text-[9px] text-slate-500 uppercase">Lãi/Lỗ Ròng</div>
-                            <div class="font-black ${info.profitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(info.profitK, { signed: true })}</div>
+                            <div class="text-[9px] text-slate-500 uppercase font-bold">Lãi/Lỗ Ròng</div>
+                            <div class="font-black ${info.profitK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${moneyM(info.profitK, { signed: true })}</div>
                         </div>
                     </div>
                 </div>
@@ -3482,7 +3482,7 @@
                     <div class="flex flex-wrap gap-2">
                         ${(info.numbers || []).map(n => {
                             return `
-                                <span class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-xs bg-slate-900 border border-amber-400/40 text-amber-300 font-black">
+                                <span class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-xs bg-amber-50 border border-amber-300 text-amber-950 font-black">
                                     <span>${number(n)}</span>
                                 </span>
                             `;
@@ -3491,39 +3491,39 @@
                 `;
 
                 return `
-                    <div>
-                        <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2 mb-2.5">
+                    <div class="bg-slate-50/60 rounded-xl p-3 border border-slate-200">
+                        <div class="flex items-start justify-between gap-2 border-b border-slate-200 pb-2 mb-2.5">
                             <div>
-                                <div class="font-black text-amber-400 text-xs flex items-center gap-1.5">
+                                <div class="font-black text-amber-900 text-xs flex items-center gap-1.5">
                                     <i class="bi bi-lock-fill"></i> 🔒 ${escapeHtml(info.methodName)}
                                 </div>
-                                <div class="text-[10px] text-slate-400 mt-0.5">
+                                <div class="text-[10px] text-slate-600 mt-0.5">
                                     Ngày ${formatDateVi(info.date)} · ${escapeHtml(info.subTierLabel)}
                                 </div>
                             </div>
                             <div class="text-right shrink-0">
-                                <span class="inline-flex items-center gap-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 font-black px-2 py-0.5 text-[11px]">
+                                <span class="inline-flex items-center gap-1 rounded-lg bg-amber-100 text-amber-900 border border-amber-300 font-black px-2 py-0.5 text-[11px]">
                                     🔒 ĐÃ KHÓA BẤT BIẾN
                                 </span>
                             </div>
                         </div>
-                        <div class="rounded-lg bg-amber-500/10 border border-amber-500/20 p-2 text-[10px] text-amber-200 leading-relaxed mb-2.5">
+                        <div class="rounded-lg bg-amber-50 border border-amber-200 p-2 text-[10px] text-amber-900 leading-relaxed mb-2.5">
                             🌟 <strong>Tam Thủ Xiên 3 (Chế độ quan sát độc lập)</strong>. Tỷ lệ 1 ăn 40 (cược 500K ăn 20M). Không tính vào Lũy Kế Mốc thực chiến.
                         </div>
                         <div class="mb-3">
-                            <div class="text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide">
+                            <div class="text-[10px] font-bold text-slate-700 mb-1.5 uppercase tracking-wide">
                                 Bộ 3 Số Vàng Tam Thủ:
                             </div>
                             ${chipsHtml}
                         </div>
-                        <div class="pt-2 border-t border-slate-800/80 grid grid-cols-2 gap-2 text-[11px] font-mono">
+                        <div class="pt-2 border-t border-slate-200 grid grid-cols-2 gap-2 text-[11px] font-mono">
                             <div>
-                                <div class="text-[9px] text-slate-500 uppercase">Vốn Cược (Quan sát)</div>
-                                <div class="font-bold text-slate-300">${moneyM(info.stakeK || 500)}</div>
+                                <div class="text-[9px] text-slate-500 uppercase font-bold">Vốn Cược (Quan sát)</div>
+                                <div class="font-black text-slate-800">${moneyM(info.stakeK || 500)}</div>
                             </div>
                             <div class="text-right">
-                                <div class="text-[9px] text-slate-500 uppercase">Trạng Thái</div>
-                                <div class="font-bold text-amber-400">⏳ Chờ mở thưởng</div>
+                                <div class="text-[9px] text-slate-500 uppercase font-bold">Trạng Thái</div>
+                                <div class="font-bold text-amber-700">⏳ Chờ mở thưởng</div>
                             </div>
                         </div>
                     </div>
@@ -3537,12 +3537,12 @@
                         const hits = prizeCounts[number(n)] || 0;
                         const isHit = hits > 0;
                         return `
-                            <span class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-xs ${isHit ? 'bg-amber-400 text-slate-950 font-black ring-2 ring-white scale-105 shadow-md' : 'bg-slate-800 border border-slate-700 text-slate-300 font-bold'}">
+                            <span class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-xs ${isHit ? 'bg-amber-400 text-slate-950 font-black ring-2 ring-amber-300 scale-105 shadow-md' : 'bg-slate-100 border border-slate-300 text-slate-800 font-bold'}">
                                 <span>${number(n)}</span>
-                                ${isHit ? '<span class="text-[10px]">✓ Nổ</span>' : '<span class="text-[10px] text-slate-500">✗ Trượt</span>'}
+                                ${isHit ? '<span class="text-[10px] text-emerald-800">✓ Nổ</span>' : '<span class="text-[10px] text-slate-500">✗ Trượt</span>'}
                             </span>
                         `;
-                    }).join('') || '<span class="text-xs text-slate-400">3 số vàng</span>'}
+                    }).join('') || '<span class="text-xs text-slate-500">3 số vàng</span>'}
                 </div>
             `;
 
@@ -3551,42 +3551,42 @@
             if (isXi3Win) ticketResult = '🎉 Nổ trọn vẹn Xiên 3 (Tỷ lệ 1:40, +19.5M VIP)';
 
             return `
-                <div>
-                    <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2 mb-2.5">
+                <div class="bg-slate-50/60 rounded-xl p-3 border border-slate-200">
+                    <div class="flex items-start justify-between gap-2 border-b border-slate-200 pb-2 mb-2.5">
                         <div>
-                            <div class="font-black text-amber-400 text-xs flex items-center gap-1.5">
+                            <div class="font-black text-amber-900 text-xs flex items-center gap-1.5">
                                 <i class="bi bi-triangle"></i> ${escapeHtml(info.methodName)}
                             </div>
-                            <div class="text-[10px] text-slate-400 mt-0.5">
+                            <div class="text-[10px] text-slate-600 mt-0.5">
                                 Ngày ${formatDateVi(info.date)} · ${escapeHtml(info.subTierLabel)}
                             </div>
                         </div>
                         <div class="text-right shrink-0">
-                            <span class="inline-flex items-center gap-1 rounded-lg ${isXi3Win ? 'bg-amber-400 text-slate-950 font-black' : 'bg-slate-800 text-slate-400'} px-2 py-0.5 text-[11px]">
+                            <span class="inline-flex items-center gap-1 rounded-lg ${isXi3Win ? 'bg-amber-400 text-slate-950 font-black' : 'bg-slate-100 text-slate-700 font-bold border border-slate-200'} px-2 py-0.5 text-[11px]">
                                 ${info.hits || 0} / 3 con về
                             </span>
                         </div>
                     </div>
-                    <div class="rounded bg-slate-800/60 p-1.5 text-[10px] text-slate-400 mb-2">
+                    <div class="rounded bg-white p-1.5 text-[10px] text-slate-600 border border-slate-200 mb-2">
                         <em>* Chế độ quan sát, không tính vào Lũy Kế Mốc</em>
                     </div>
                     <div class="mb-3">
-                        <div class="text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide">
+                        <div class="text-[10px] font-bold text-slate-700 mb-1.5 uppercase tracking-wide">
                             Bộ 3 Số Vàng Tam Thủ:
                         </div>
                         ${chipsHtml}
-                        <div class="mt-2 text-[11px] font-semibold ${isXi3Win ? 'text-amber-300 font-bold' : 'text-slate-400'}">
+                        <div class="mt-2 text-[11px] font-semibold ${isXi3Win ? 'text-amber-800 font-bold' : 'text-slate-600'}">
                             👉 ${ticketResult}
                         </div>
                     </div>
-                    <div class="pt-2 border-t border-slate-800/80 grid grid-cols-2 gap-2 text-[11px] font-mono">
+                    <div class="pt-2 border-t border-slate-200 grid grid-cols-2 gap-2 text-[11px] font-mono">
                         <div>
-                            <div class="text-[9px] text-slate-500 uppercase">Vốn Cược (Quan sát)</div>
-                            <div class="font-bold text-slate-300">${moneyM(info.stakeK || 500)}</div>
+                            <div class="text-[9px] text-slate-500 uppercase font-bold">Vốn Cược (Quan sát)</div>
+                            <div class="font-black text-slate-800">${moneyM(info.stakeK || 500)}</div>
                         </div>
                         <div class="text-right">
-                            <div class="text-[9px] text-slate-500 uppercase">Lãi/Lỗ Riêng</div>
-                            <div class="font-black ${info.profitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(info.profitK, { signed: true })}</div>
+                            <div class="text-[9px] text-slate-500 uppercase font-bold">Lãi/Lỗ Riêng</div>
+                            <div class="font-black ${info.profitK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${moneyM(info.profitK, { signed: true })}</div>
                         </div>
                     </div>
                 </div>
@@ -3599,7 +3599,7 @@
                     <div class="flex flex-wrap gap-2">
                         ${(info.numbers || []).map(n => {
                             return `
-                                <span class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-xs bg-slate-900 border border-amber-400/40 text-amber-300 font-black">
+                                <span class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-xs bg-amber-50 border border-amber-300 text-amber-950 font-black">
                                     <span>${number(n)}</span>
                                 </span>
                             `;
@@ -3608,39 +3608,39 @@
                 `;
 
                 return `
-                    <div>
-                        <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2 mb-2.5">
+                    <div class="bg-slate-50/60 rounded-xl p-3 border border-slate-200">
+                        <div class="flex items-start justify-between gap-2 border-b border-slate-200 pb-2 mb-2.5">
                             <div>
-                                <div class="font-black text-amber-400 text-xs flex items-center gap-1.5">
+                                <div class="font-black text-amber-900 text-xs flex items-center gap-1.5">
                                     <i class="bi bi-lock-fill"></i> 🔒 ${escapeHtml(info.methodName)}
                                 </div>
-                                <div class="text-[10px] text-slate-400 mt-0.5">
+                                <div class="text-[10px] text-slate-600 mt-0.5">
                                     Ngày ${formatDateVi(info.date)} · ${escapeHtml(info.subTierLabel)}
                                 </div>
                             </div>
                             <div class="text-right shrink-0">
-                                <span class="inline-flex items-center gap-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 font-black px-2 py-0.5 text-[11px]">
+                                <span class="inline-flex items-center gap-1 rounded-lg bg-amber-100 text-amber-900 border border-amber-300 font-black px-2 py-0.5 text-[11px]">
                                     🔒 ĐÃ KHÓA BẤT BIẾN
                                 </span>
                             </div>
                         </div>
-                        <div class="rounded-lg bg-amber-500/10 border border-amber-500/20 p-2 text-[10px] text-amber-200 leading-relaxed mb-2.5">
+                        <div class="rounded-lg bg-amber-50 border border-amber-200 p-2 text-[10px] text-amber-900 leading-relaxed mb-2.5">
                             🔒 <strong>Bộ 4 số vàng Tứ Thủ Xiên 4 (Chế độ quan sát độc lập)</strong>. Hệ thống quây 11 vé (1 vé X4, 4 vé X3, 6 vé X2) để theo dõi hiệu suất. Không tính tiền vào Lũy Kế thực chiến.
                         </div>
                         <div class="mb-3">
-                            <div class="text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide">
+                            <div class="text-[10px] font-bold text-slate-700 mb-1.5 uppercase tracking-wide">
                                 Bộ 4 Số Vàng Tinh Hoa:
                             </div>
                             ${chipsHtml}
                         </div>
-                        <div class="pt-2 border-t border-slate-800/80 grid grid-cols-2 gap-2 text-[11px] font-mono">
+                        <div class="pt-2 border-t border-slate-200 grid grid-cols-2 gap-2 text-[11px] font-mono">
                             <div>
-                                <div class="text-[9px] text-slate-500 uppercase">Vốn Quây (Quan sát)</div>
-                                <div class="font-bold text-slate-300">${moneyM(info.stakeK)}</div>
+                                <div class="text-[9px] text-slate-500 uppercase font-bold">Vốn Quây (Quan sát)</div>
+                                <div class="font-black text-slate-800">${moneyM(info.stakeK)}</div>
                             </div>
                             <div class="text-right">
-                                <div class="text-[9px] text-slate-500 uppercase">Trạng Thái</div>
-                                <div class="font-bold text-amber-400">⏳ Chờ mở thưởng</div>
+                                <div class="text-[9px] text-slate-500 uppercase font-bold">Trạng Thái</div>
+                                <div class="font-bold text-amber-700">⏳ Chờ mở thưởng</div>
                             </div>
                         </div>
                     </div>
@@ -3654,12 +3654,12 @@
                         const hits = prizeCounts[number(n)] || 0;
                         const isHit = hits > 0;
                         return `
-                            <span class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-xs ${isHit ? 'bg-amber-400 text-slate-950 font-black ring-2 ring-white scale-105 shadow-md' : 'bg-slate-800 border border-slate-700 text-slate-300 font-bold'}">
+                            <span class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-xs ${isHit ? 'bg-amber-400 text-slate-950 font-black ring-2 ring-amber-300 scale-105 shadow-md' : 'bg-slate-100 border border-slate-300 text-slate-800 font-bold'}">
                                 <span>${number(n)}</span>
-                                ${isHit ? '<span class="text-[10px]">✓ Nổ</span>' : '<span class="text-[10px] text-slate-500">✗ Trượt</span>'}
+                                ${isHit ? '<span class="text-[10px] text-emerald-800">✓ Nổ</span>' : '<span class="text-[10px] text-slate-500">✗ Trượt</span>'}
                             </span>
                         `;
-                    }).join('') || '<span class="text-xs text-slate-400">4 số vàng</span>'}
+                    }).join('') || '<span class="text-xs text-slate-500">4 số vàng</span>'}
                 </div>
             `;
 
@@ -3669,42 +3669,42 @@
             else if (info.hits === 2) ticketResult = '✨ Ăn 2 con: Ăn 12M (Lãi +1M VIP / +200K M3)';
 
             return `
-                <div>
-                    <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2 mb-2.5">
+                <div class="bg-slate-50/60 rounded-xl p-3 border border-slate-200">
+                    <div class="flex items-start justify-between gap-2 border-b border-slate-200 pb-2 mb-2.5">
                         <div>
-                            <div class="font-black text-amber-400 text-xs flex items-center gap-1.5">
+                            <div class="font-black text-amber-900 text-xs flex items-center gap-1.5">
                                 <i class="bi bi-stars"></i> ${escapeHtml(info.methodName)}
                             </div>
-                            <div class="text-[10px] text-slate-400 mt-0.5">
+                            <div class="text-[10px] text-slate-600 mt-0.5">
                                 Ngày ${formatDateVi(info.date)} · ${escapeHtml(info.subTierLabel)}
                             </div>
                         </div>
                         <div class="text-right shrink-0">
-                            <span class="inline-flex items-center gap-1 rounded-lg ${info.hits >= 2 ? 'bg-amber-400 text-slate-950 font-black' : 'bg-slate-800 text-slate-400'} px-2 py-0.5 text-[11px]">
+                            <span class="inline-flex items-center gap-1 rounded-lg ${info.hits >= 2 ? 'bg-amber-400 text-slate-950 font-black' : 'bg-slate-100 text-slate-700 font-bold border border-slate-200'} px-2 py-0.5 text-[11px]">
                                 ${info.hits} / 4 con về
                             </span>
                         </div>
                     </div>
-                    <div class="rounded bg-slate-800/60 p-1.5 text-[10px] text-slate-400 mb-2">
+                    <div class="rounded bg-white p-1.5 text-[10px] text-slate-600 border border-slate-200 mb-2">
                         <em>* Chế độ quan sát, không tính vào Lũy Kế Mốc</em>
                     </div>
                     <div class="mb-3">
-                        <div class="text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide">
+                        <div class="text-[10px] font-bold text-slate-700 mb-1.5 uppercase tracking-wide">
                             Bộ 4 Số Vàng Tinh Hoa:
                         </div>
                         ${chipsHtml}
-                        <div class="mt-2 text-[11px] font-semibold ${info.hits >= 2 ? 'text-amber-300' : 'text-slate-400'}">
+                        <div class="mt-2 text-[11px] font-semibold ${info.hits >= 2 ? 'text-amber-800 font-bold' : 'text-slate-600'}">
                             👉 ${ticketResult}
                         </div>
                     </div>
-                    <div class="pt-2 border-t border-slate-800/80 grid grid-cols-2 gap-2 text-[11px] font-mono">
+                    <div class="pt-2 border-t border-slate-200 grid grid-cols-2 gap-2 text-[11px] font-mono">
                         <div>
-                            <div class="text-[9px] text-slate-500 uppercase">Vốn Quây (Quan sát)</div>
-                            <div class="font-bold text-slate-300">${moneyM(info.stakeK)}</div>
+                            <div class="text-[9px] text-slate-500 uppercase font-bold">Vốn Quây (Quan sát)</div>
+                            <div class="font-black text-slate-800">${moneyM(info.stakeK)}</div>
                         </div>
                         <div class="text-right">
-                            <div class="text-[9px] text-slate-500 uppercase">Lãi/Lỗ Riêng</div>
-                            <div class="font-black ${info.profitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(info.profitK, { signed: true })}</div>
+                            <div class="text-[9px] text-slate-500 uppercase font-bold">Lãi/Lỗ Riêng</div>
+                            <div class="font-black ${info.profitK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${moneyM(info.profitK, { signed: true })}</div>
                         </div>
                     </div>
                 </div>
@@ -3719,35 +3719,35 @@
 
             if (info.isPending) {
                 return `
-                    <div>
-                        <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2 mb-2.5">
+                    <div class="bg-slate-50/60 rounded-xl p-3 border border-slate-200">
+                        <div class="flex items-start justify-between gap-2 border-b border-slate-200 pb-2 mb-2.5">
                             <div>
-                                <div class="font-black text-amber-400 text-xs flex items-center gap-1.5">
-                                    <i class="bi bi-stars text-amber-400"></i> 👑 Dàn Xiên 5 (5 Dàn Xiên 4)
+                                <div class="font-black text-amber-900 text-xs flex items-center gap-1.5">
+                                    <i class="bi bi-stars text-amber-600"></i> 👑 Dàn Xiên 5 (5 Dàn Xiên 4)
                                 </div>
-                                <div class="text-[10px] text-slate-400 mt-0.5">Ngày ${formatDateVi(info.date)} · Cược 11M/dàn (Tổng vốn 55M)</div>
+                                <div class="text-[10px] text-slate-600 mt-0.5">Ngày ${formatDateVi(info.date)} · Cược 11M/dàn (Tổng vốn 55M)</div>
                             </div>
-                            <span class="rounded bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[11px] font-black px-2 py-0.5">🔒 ĐÃ KHÓA</span>
+                            <span class="rounded bg-amber-100 text-amber-900 border border-amber-300 text-[11px] font-black px-2 py-0.5">🔒 ĐÃ KHÓA</span>
                         </div>
                         <div class="mb-3">
-                            <div class="text-[10px] font-bold text-slate-400 mb-1 uppercase">Bộ 5 Số Vàng (Đồng thuận 4 ĐC):</div>
+                            <div class="text-[10px] font-bold text-slate-700 mb-1 uppercase">Bộ 5 Số Vàng (Đồng thuận 4 ĐC):</div>
                             <div class="flex items-center gap-1.5 mb-2.5">
                                 ${top5Nums.map(n => `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg font-mono text-sm bg-amber-400 text-slate-950 font-black shadow-xs">${n}</span>`).join('')}
                             </div>
-                            <div class="text-[10px] font-bold text-slate-400 mb-1 uppercase">5 Dàn Xiên 4 Tổ Hợp C(5,4):</div>
+                            <div class="text-[10px] font-bold text-slate-700 mb-1 uppercase">5 Dàn Xiên 4 Tổ Hợp C(5,4):</div>
                             <div class="space-y-1.5 font-mono text-xs">
                                 ${tkList.map((t, idx) => `
-                                    <div class="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5">
-                                        <span class="text-amber-400 font-bold">Dàn ${idx + 1}:</span>
-                                        <span class="text-white font-bold">${t.join(' - ')}</span>
-                                        <span class="text-[10px] text-emerald-400 font-semibold">11M ➔ 12M / 84M / 384M</span>
+                                    <div class="flex items-center justify-between bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 shadow-2xs">
+                                        <span class="text-amber-800 font-bold">Dàn ${idx + 1}:</span>
+                                        <span class="text-slate-900 font-bold">${t.join(' - ')}</span>
+                                        <span class="text-[10px] text-emerald-700 font-bold">11M ➔ 12M / 84M / 384M</span>
                                     </div>
                                 `).join('')}
                             </div>
                         </div>
-                        <div class="pt-2 border-t border-slate-800 grid grid-cols-2 gap-2 text-[11px] font-mono">
-                            <div><span class="text-[9px] text-slate-500 uppercase">Vốn 5 Dàn:</span> <strong class="text-slate-200">55.000K (55M)</strong></div>
-                            <div class="text-right"><span class="text-[9px] text-slate-500 uppercase">Trạng Thái:</span> <strong class="text-amber-400">⏳ Chờ mở thưởng</strong></div>
+                        <div class="pt-2 border-t border-slate-200 grid grid-cols-2 gap-2 text-[11px] font-mono">
+                            <div><span class="text-[9px] text-slate-500 uppercase font-bold">Vốn 5 Dàn:</span> <strong class="text-slate-900 font-black">55.000K (55M)</strong></div>
+                            <div class="text-right"><span class="text-[9px] text-slate-500 uppercase font-bold">Trạng Thái:</span> <strong class="text-amber-700 font-black">⏳ Chờ mở thưởng</strong></div>
                         </div>
                     </div>
                 `;
@@ -3761,74 +3761,74 @@
 
             let resultBadgeHtml = '';
             if (h5Hits === 5) {
-                resultBadgeHtml = `<span class="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black ring-1 ring-white shadow-xs px-2 py-0.5 text-[11px]">👑 ĂN 5 DÀN (+1.865M)</span>`;
+                resultBadgeHtml = `<span class="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black ring-1 ring-amber-300 shadow-xs px-2 py-0.5 text-[11px]">👑 ĂN 5 DÀN (+1.865M)</span>`;
             } else if (h5Hits === 4) {
-                resultBadgeHtml = `<span class="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black ring-1 ring-white shadow-xs px-2 py-0.5 text-[11px]">👑 ĂN 5/5 DÀN (+665M)</span>`;
+                resultBadgeHtml = `<span class="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black ring-1 ring-amber-300 shadow-xs px-2 py-0.5 text-[11px]">👑 ĂN 5/5 DÀN (+665M)</span>`;
             } else if (h5Hits === 3) {
                 resultBadgeHtml = `<span class="inline-flex items-center gap-1 rounded-lg bg-purple-600 text-white font-black px-2 py-0.5 text-[11px] shadow-xs">🔥 ĂN 5/5 DÀN (+149M)</span>`;
             } else if (h5Hits === 2) {
                 resultBadgeHtml = `<span class="inline-flex items-center gap-1 rounded-lg bg-teal-600 text-white font-bold px-2 py-0.5 text-[11px] shadow-xs">🛡️ ĂN 3 DÀN X2 (36M / -19M)</span>`;
             } else {
-                resultBadgeHtml = `<span class="inline-flex items-center gap-1 rounded-lg bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold px-2 py-0.5 text-[11px]">❌ Trượt (-55M)</span>`;
+                resultBadgeHtml = `<span class="inline-flex items-center gap-1 rounded-lg bg-rose-100 text-rose-800 border border-rose-300 font-bold px-2 py-0.5 text-[11px]">❌ Trượt (-55M)</span>`;
             }
 
             return `
-                <div>
-                    <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2 mb-2.5">
+                <div class="bg-slate-50/60 rounded-xl p-3 border border-slate-200">
+                    <div class="flex items-start justify-between gap-2 border-b border-slate-200 pb-2 mb-2.5">
                         <div>
-                            <div class="font-black text-amber-400 text-xs flex items-center gap-1.5">
-                                <i class="bi bi-stars text-amber-400"></i> 👑 Dàn Xiên 5 (5 Dàn Xiên 4)
+                            <div class="font-black text-amber-900 text-xs flex items-center gap-1.5">
+                                <i class="bi bi-stars text-amber-600"></i> 👑 Dàn Xiên 5 (5 Dàn Xiên 4)
                             </div>
-                            <div class="text-[10px] text-slate-400 mt-0.5">Ngày ${formatDateVi(info.date)} · Vốn 11M/dàn (Tổng 55M) · Lũy kế: <strong class="${(info.cumLoXien5ProfitK ?? 0) >= 0 ? 'text-amber-300' : 'text-rose-400'} font-mono">${moneyM(info.cumLoXien5ProfitK ?? 0, { signed: true })}</strong></div>
+                            <div class="text-[10px] text-slate-600 mt-0.5">Ngày ${formatDateVi(info.date)} · Vốn 11M/dàn (Tổng 55M) · Lũy kế: <strong class="${(info.cumLoXien5ProfitK ?? 0) >= 0 ? 'text-amber-800' : 'text-rose-700'} font-mono font-black">${moneyM(info.cumLoXien5ProfitK ?? 0, { signed: true })}</strong></div>
                         </div>
                         <div class="text-right">
                             ${resultBadgeHtml}
                         </div>
                     </div>
                     <div class="mb-3">
-                        <div class="text-[10px] font-bold text-slate-400 mb-1 uppercase flex items-center justify-between">
+                        <div class="text-[10px] font-bold text-slate-700 mb-1 uppercase flex items-center justify-between">
                             <span>Bộ 5 Số Vàng:</span>
-                            <span class="text-emerald-400 font-bold">Nổ ${h5Hits}/5 con</span>
+                            <span class="text-emerald-700 font-bold">Nổ ${h5Hits}/5 con</span>
                         </div>
                         <div class="flex items-center gap-1.5 mb-2.5">
                             ${top5Nums.map(n => {
                                 const hit = drawPrizesSet.has(n);
-                                return `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg font-mono text-xs ${hit ? 'bg-emerald-400 text-slate-950 font-black ring-2 ring-emerald-300 scale-105' : 'bg-slate-800 text-slate-300 font-bold'}">${n}${hit ? ' ⭐' : ''}</span>`;
+                                return `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg font-mono text-xs ${hit ? 'bg-emerald-400 text-slate-950 font-black ring-2 ring-emerald-300 scale-105 shadow-sm' : 'bg-slate-100 border border-slate-300 text-slate-800 font-bold'}">${n}${hit ? ' ⭐' : ''}</span>`;
                             }).join('')}
                         </div>
-                        <div class="text-[10px] font-bold text-slate-400 mb-1 uppercase">Chi Tiết 5 Dàn Xiên 4 (11M/dàn):</div>
+                        <div class="text-[10px] font-bold text-slate-700 mb-1 uppercase">Chi Tiết 5 Dàn Xiên 4 (11M/dàn):</div>
                         <div class="space-y-1 font-mono text-xs">
                             ${tkList.map((t, idx) => {
                                 const hitCount = t.filter(num => drawPrizesSet.has(num)).length;
                                 let danResultText = '';
-                                let danClass = 'bg-slate-900 border-slate-800 text-slate-300';
+                                let danClass = 'bg-white border-slate-200 text-slate-700';
                                 if (hitCount === 4) {
                                     danResultText = '👑 Ăn 4 con: 384M (Lãi +373M)';
-                                    danClass = 'bg-amber-950/90 border-amber-400 text-amber-200 ring-1 ring-amber-400';
+                                    danClass = 'bg-amber-100 border-2 border-amber-400 text-amber-950 font-black';
                                 } else if (hitCount === 3) {
                                     danResultText = '🔥 Ăn 3 con: 84M (Lãi +73M)';
-                                    danClass = 'bg-purple-950/90 border-purple-400 text-purple-200 ring-1 ring-purple-400';
+                                    danClass = 'bg-purple-100 border-2 border-purple-400 text-purple-950 font-black';
                                 } else if (hitCount === 2) {
                                     danResultText = '✨ Ăn 2 con: 12M (Lãi +1M)';
-                                    danClass = 'bg-teal-950/90 border-teal-400 text-teal-200 ring-1 ring-teal-400';
+                                    danClass = 'bg-teal-100 border-2 border-teal-400 text-teal-950 font-bold';
                                 } else {
                                     danResultText = `${hitCount}/4 con · Trượt (-11M)`;
                                 }
                                 return `
-                                    <div class="flex items-center justify-between ${danClass} border rounded-lg px-2.5 py-1">
-                                        <span class="font-bold text-amber-300">Dàn ${idx + 1}:</span>
-                                        <span>${t.map(num => drawPrizesSet.has(num) ? `<strong class="text-emerald-400 font-black">${num}</strong>` : num).join(' - ')}</span>
+                                    <div class="flex items-center justify-between ${danClass} border rounded-lg px-2.5 py-1 shadow-2xs">
+                                        <span class="font-bold text-amber-800">Dàn ${idx + 1}:</span>
+                                        <span>${t.map(num => drawPrizesSet.has(num) ? `<strong class="text-emerald-700 font-black">${num}</strong>` : num).join(' - ')}</span>
                                         <span class="text-[10px] font-bold">${danResultText}</span>
                                     </div>
                                 `;
                             }).join('')}
                         </div>
                     </div>
-                    <div class="pt-2 border-t border-slate-800 grid grid-cols-4 gap-2 text-[11px] font-mono">
-                        <div><div class="text-[9px] text-slate-500 uppercase">Vốn Cược</div><div class="font-bold text-slate-300">55.000K (55M)</div></div>
-                        <div><div class="text-[9px] text-slate-500 uppercase">Tiền Thưởng</div><div class="font-bold ${payoutK > 0 ? 'text-amber-300' : 'text-slate-400'}">${payoutK > 0 ? moneyM(payoutK) : '0đ'}</div></div>
-                        <div><div class="text-[9px] text-slate-500 uppercase">Lãi/Lỗ Ròng</div><div class="font-black ${profitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(profitK, { signed: true })}</div></div>
-                        <div class="text-right"><div class="text-[9px] text-slate-500 uppercase">Lũy Kế Xiên 5</div><div class="font-black ${(info.cumLoXien5ProfitK ?? 0) >= 0 ? 'text-amber-400' : 'text-rose-400'}">${moneyM(info.cumLoXien5ProfitK ?? 0, { signed: true })}</div></div>
+                    <div class="pt-2 border-t border-slate-200 grid grid-cols-4 gap-2 text-[11px] font-mono">
+                        <div><div class="text-[9px] text-slate-500 uppercase font-bold">Vốn Cược</div><div class="font-black text-slate-800">55.000K (55M)</div></div>
+                        <div><div class="text-[9px] text-slate-500 uppercase font-bold">Tiền Thưởng</div><div class="font-black ${payoutK > 0 ? 'text-amber-700' : 'text-slate-500'}">${payoutK > 0 ? moneyM(payoutK) : '0đ'}</div></div>
+                        <div><div class="text-[9px] text-slate-500 uppercase font-bold">Lãi/Lỗ Ròng</div><div class="font-black ${profitK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${moneyM(profitK, { signed: true })}</div></div>
+                        <div class="text-right"><div class="text-[9px] text-slate-500 uppercase font-bold">Lũy Kế Xiên 5</div><div class="font-black ${(info.cumLoXien5ProfitK ?? 0) >= 0 ? 'text-amber-700' : 'text-rose-700'}">${moneyM(info.cumLoXien5ProfitK ?? 0, { signed: true })}</div></div>
                     </div>
                 </div>
             `;
@@ -3837,43 +3837,43 @@
         if (type === 'total') {
             if (info.isPending) {
                 return `
-                    <div>
-                        <div class="border-b border-slate-800 pb-2 mb-2.5">
-                            <div class="font-black text-white text-xs flex items-center gap-1.5">
-                                <i class="bi bi-lock-fill text-amber-400"></i> 🔒 Tổng Hợp Dự Đoán Ngày ${formatDateVi(info.date)}
+                    <div class="bg-slate-50/60 rounded-xl p-3 border border-slate-200">
+                        <div class="border-b border-slate-200 pb-2 mb-2.5">
+                            <div class="font-black text-slate-900 text-xs flex items-center gap-1.5">
+                                <i class="bi bi-lock-fill text-amber-600"></i> 🔒 Tổng Hợp Dự Đoán Ngày ${formatDateVi(info.date)}
                             </div>
-                            <div class="text-[10px] text-slate-400 mt-0.5">
+                            <div class="text-[10px] text-slate-600 mt-0.5">
                                 Dàn số Đề & Lô đã được niêm phong bất biến từ 12:00 trưa
                             </div>
                         </div>
                         <div class="space-y-1.5 text-xs font-mono">
                             <div class="flex justify-between items-center py-0.5">
-                                <span class="text-slate-400">💎 Đề Gợi Ý:</span>
-                                <strong class="text-amber-400 font-bold">⏳ Chờ KQ</strong>
+                                <span class="text-slate-600">💎 Đề Gợi Ý:</span>
+                                <strong class="text-amber-700 font-bold">⏳ Chờ KQ</strong>
                             </div>
                             <div class="flex justify-between items-center py-0.5">
-                                <span class="text-slate-400">🏆 Lô Chuẩn (Top 20):</span>
-                                <strong class="text-amber-400 font-bold">⏳ Chờ KQ</strong>
+                                <span class="text-slate-600">🏆 Lô Chuẩn (Top 20):</span>
+                                <strong class="text-amber-700 font-bold">⏳ Chờ KQ</strong>
                             </div>
                             <div class="flex justify-between items-center py-0.5">
-                                <span class="text-slate-400">🚀 Lô Tăng Tốc X2:</span>
-                                <strong class="text-amber-400 font-bold">⏳ Chờ KQ</strong>
+                                <span class="text-slate-600">🚀 Lô Tăng Tốc X2:</span>
+                                <strong class="text-amber-700 font-bold">⏳ Chờ KQ</strong>
                             </div>
                             <div class="flex justify-between items-center py-0.5 text-slate-500">
                                 <span>🌟 Tam Thủ Xiên 3:</span>
-                                <span class="text-slate-400 italic">⏳ Chờ (Quan sát)</span>
+                                <span class="text-slate-500 italic">⏳ Chờ (Quan sát)</span>
                             </div>
                             <div class="flex justify-between items-center py-0.5 text-slate-500">
                                 <span>💎 Lô Xiên 4:</span>
-                                <span class="text-slate-400 italic">⏳ Chờ (Quan sát)</span>
+                                <span class="text-slate-500 italic">⏳ Chờ (Quan sát)</span>
                             </div>
                         </div>
-                        <div class="mt-2 text-[10px] text-slate-400 italic">
+                        <div class="mt-2 text-[10px] text-slate-500 italic">
                             * Xiên 3 & Xiên 4 chỉ quan sát, không tính vào Lũy Kế
                         </div>
-                        <div class="mt-2.5 pt-2 border-t border-slate-800 flex justify-between items-center font-mono">
-                            <span class="text-xs font-bold text-slate-300">Trạng Thái:</span>
-                            <strong class="text-sm font-black text-amber-400">⏳ Chờ Kết Quả 18:40</strong>
+                        <div class="mt-2.5 pt-2 border-t border-slate-200 flex justify-between items-center font-mono">
+                            <span class="text-xs font-bold text-slate-700">Trạng Thái:</span>
+                            <strong class="text-sm font-black text-amber-700">⏳ Chờ Kết Quả 18:40</strong>
                         </div>
                     </div>
                 `;
@@ -3888,37 +3888,37 @@
                 const cumTot = (info.chCumProfitK != null ? info.chCumProfitK : (ch.cumulativeProfitK != null ? ch.cumulativeProfitK : (info.cumProfitK || totProfit)));
                 const deMethodTitle = ch.details?.p1Method === 'deMarkovGapHazard' ? 'Đề Markov Bậc 2 & Gap Hazard' : 'Đề Tinh Tuyển VIP';
                 return `
-                    <div>
-                        <div class="border-b border-slate-800 pb-2 mb-2.5">
-                            <div class="font-black text-white text-xs flex items-center gap-1.5">
-                                <i class="bi bi-shield-check text-amber-400"></i> Combo Bù Trừ Dòng Tiền Chéo — Ngày ${formatDateVi(info.date)}
+                    <div class="bg-slate-50/60 rounded-xl p-3 border border-slate-200">
+                        <div class="border-b border-slate-200 pb-2 mb-2.5">
+                            <div class="font-black text-slate-900 text-xs flex items-center gap-1.5">
+                                <i class="bi bi-shield-check text-amber-600"></i> Combo Bù Trừ Dòng Tiền Chéo — Ngày ${formatDateVi(info.date)}
                             </div>
-                            <div class="text-[10px] text-slate-400 mt-0.5">
+                            <div class="text-[10px] text-slate-600 mt-0.5">
                                 Đối soát dòng tiền 3 trụ cột thực chiến phối hợp bảo toàn vốn
                             </div>
                         </div>
                         <div class="space-y-1.5 text-xs font-mono">
                             <div class="flex justify-between items-center py-0.5">
-                                <span class="text-slate-400">💎 ${deMethodTitle}:</span>
-                                <span class="${dePnl >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400'}">${moneyM(dePnl, { signed: true })} <span class="text-[9px] text-amber-300 font-bold">(LK: ${moneyM(info.chCumDeProfitK ?? dePnl, { signed: true })})</span></span>
+                                <span class="text-slate-600">💎 ${deMethodTitle}:</span>
+                                <span class="${dePnl >= 0 ? 'text-emerald-700 font-bold' : 'text-rose-700'}">${moneyM(dePnl, { signed: true })} <span class="text-[9px] text-amber-800 font-bold">(LK: ${moneyM(info.chCumDeProfitK ?? dePnl, { signed: true })})</span></span>
                             </div>
                             <div class="flex justify-between items-center py-0.5">
-                                <span class="text-slate-400">🔥 Lô Hội Tụ 4 Động Cơ:</span>
-                                <span class="${loPnl >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400'}">${moneyM(loPnl, { signed: true })} <span class="text-[9px] text-indigo-300 font-bold">(LK: ${moneyM(info.chCumLoProfitK ?? loPnl, { signed: true })})</span></span>
+                                <span class="text-slate-600">🔥 Lô Hội Tụ 4 Động Cơ:</span>
+                                <span class="${loPnl >= 0 ? 'text-emerald-700 font-bold' : 'text-rose-700'}">${moneyM(loPnl, { signed: true })} <span class="text-[9px] text-indigo-800 font-bold">(LK: ${moneyM(info.chCumLoProfitK ?? loPnl, { signed: true })})</span></span>
                             </div>
                             <div class="flex justify-between items-center py-0.5">
-                                <span class="text-slate-400">🎲 Dàn Xiên Quây 11 Vé:</span>
-                                <span class="${xienPnl >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400'}">${moneyM(xienPnl, { signed: true })} <span class="text-[9px] text-purple-300 font-bold">(LK: ${moneyM(info.chCumXienProfitK ?? xienPnl, { signed: true })})</span></span>
+                                <span class="text-slate-600">🎲 Dàn Xiên Quây 11 Vé:</span>
+                                <span class="${xienPnl >= 0 ? 'text-emerald-700 font-bold' : 'text-rose-700'}">${moneyM(xienPnl, { signed: true })} <span class="text-[9px] text-purple-800 font-bold">(LK: ${moneyM(info.chCumXienProfitK ?? xienPnl, { signed: true })})</span></span>
                             </div>
                         </div>
-                        <div class="mt-2.5 pt-2 border-t border-slate-800 space-y-1 font-mono">
+                        <div class="mt-2.5 pt-2 border-t border-slate-200 space-y-1 font-mono">
                             <div class="flex justify-between items-center">
-                                <span class="text-xs font-bold text-slate-300">Tổng Lãi Ròng Combo (Profit_total):</span>
-                                <strong class="text-sm font-black ${totProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(totProfit, { signed: true })}</strong>
+                                <span class="text-xs font-bold text-slate-700">Tổng Lãi Ròng Combo (Profit_total):</span>
+                                <strong class="text-sm font-black ${totProfit >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${moneyM(totProfit, { signed: true })}</strong>
                             </div>
                             <div class="flex justify-between items-center text-xs">
-                                <span class="text-slate-400">Lũy Kế Combo Toàn Bộ Mốc:</span>
-                                <strong class="font-bold ${cumTot >= 0 ? 'text-indigo-400' : 'text-rose-400'}">${moneyM(cumTot, { signed: true })}</strong>
+                                <span class="text-slate-600">Lũy Kế Combo Toàn Bộ Mốc:</span>
+                                <strong class="font-bold ${cumTot >= 0 ? 'text-indigo-800' : 'text-rose-700'}">${moneyM(cumTot, { signed: true })}</strong>
                             </div>
                         </div>
                     </div>
@@ -3926,49 +3926,49 @@
             }
 
             return `
-                <div>
-                    <div class="border-b border-slate-800 pb-2 mb-2.5">
-                        <div class="font-black text-white text-xs flex items-center gap-1.5">
-                            <i class="bi bi-wallet2 text-indigo-400"></i> Tổng Kết Ngày ${formatDateVi(info.date)}
+                <div class="bg-slate-50/60 rounded-xl p-3 border border-slate-200">
+                    <div class="border-b border-slate-200 pb-2 mb-2.5">
+                        <div class="font-black text-slate-900 text-xs flex items-center gap-1.5">
+                            <i class="bi bi-wallet2 text-indigo-600"></i> Tổng Kết Ngày ${formatDateVi(info.date)}
                         </div>
-                        <div class="text-[10px] text-slate-400 mt-0.5">
+                        <div class="text-[10px] text-slate-600 mt-0.5">
                             Chi tiết lợi nhuận các phương pháp thực chiến
                         </div>
                     </div>
                     <div class="space-y-1.5 text-xs font-mono">
                         <div class="flex justify-between items-center py-0.5">
-                            <span class="text-slate-400">💎 Đề Gợi Ý:</span>
-                            <span class="${info.deProfitK >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400'}">${moneyM(info.deProfitK, { signed: true })} <span class="text-[9px] text-amber-300 font-bold">(LK: ${moneyM(info.cumDeProfitK ?? info.deProfitK, { signed: true })})</span></span>
+                            <span class="text-slate-600">💎 Đề Gợi Ý:</span>
+                            <span class="${info.deProfitK >= 0 ? 'text-emerald-700 font-bold' : 'text-rose-700'}">${moneyM(info.deProfitK, { signed: true })} <span class="text-[9px] text-amber-800 font-bold">(LK: ${moneyM(info.cumDeProfitK ?? info.deProfitK, { signed: true })})</span></span>
                         </div>
                         <div class="flex justify-between items-center py-0.5">
-                            <span class="text-slate-400">🏆 Lô Chuẩn (Top 20):</span>
-                            <span class="${info.stdProfitK >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400'}">${moneyM(info.stdProfitK, { signed: true })} <span class="text-[9px] text-indigo-300 font-bold">(LK: ${moneyM(info.cumStdProfitK ?? info.stdProfitK, { signed: true })})</span></span>
+                            <span class="text-slate-600">🏆 Lô Chuẩn (Top 20):</span>
+                            <span class="${info.stdProfitK >= 0 ? 'text-emerald-700 font-bold' : 'text-rose-700'}">${moneyM(info.stdProfitK, { signed: true })} <span class="text-[9px] text-indigo-800 font-bold">(LK: ${moneyM(info.cumStdProfitK ?? info.stdProfitK, { signed: true })})</span></span>
                         </div>
                         <div class="flex justify-between items-center py-0.5">
-                            <span class="text-slate-400">🚀 Lô Tăng Tốc X2:</span>
-                            <span class="${info.x2ProfitK >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400'}">${moneyM(info.x2ProfitK, { signed: true })} <span class="text-[9px] text-teal-300 font-bold">(LK: ${moneyM(info.cumX2ProfitK ?? info.x2ProfitK, { signed: true })})</span></span>
+                            <span class="text-slate-600">🚀 Lô Tăng Tốc X2:</span>
+                            <span class="${info.x2ProfitK >= 0 ? 'text-emerald-700 font-bold' : 'text-rose-700'}">${moneyM(info.x2ProfitK, { signed: true })} <span class="text-[9px] text-teal-800 font-bold">(LK: ${moneyM(info.cumX2ProfitK ?? info.x2ProfitK, { signed: true })})</span></span>
                         </div>
                         <div class="flex justify-between items-center py-0.5">
-                            <span class="text-slate-400">🔥 Lô Ghép 4 Động Cơ:</span>
-                            <span class="${info.lo4ProfitK >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400'}">${moneyM(info.lo4ProfitK, { signed: true })} <span class="text-[9px] text-rose-300 font-bold">(LK: ${moneyM(info.cumLo4ProfitK ?? info.lo4ProfitK, { signed: true })})</span></span>
+                            <span class="text-slate-600">🔥 Lô Ghép 4 Động Cơ:</span>
+                            <span class="${info.lo4ProfitK >= 0 ? 'text-emerald-700 font-bold' : 'text-rose-700'}">${moneyM(info.lo4ProfitK, { signed: true })} <span class="text-[9px] text-rose-800 font-bold">(LK: ${moneyM(info.cumLo4ProfitK ?? info.lo4ProfitK, { signed: true })})</span></span>
                         </div>
                         <div class="flex justify-between items-center py-0.5">
-                            <span class="text-slate-400">⚡ Lô Xiên 4 (Ghép Mới):</span>
-                            <span class="${(info.lo4Xien4ProfitK != null ? info.lo4Xien4ProfitK : info.xi4ProfitK) >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400'}">${moneyM(info.lo4Xien4ProfitK != null ? info.lo4Xien4ProfitK : info.xi4ProfitK, { signed: true })} <span class="text-[9px] text-purple-300 font-bold">(LK: ${moneyM(info.cumLo4Xien4ProfitK ?? info.xi4ProfitK, { signed: true })})</span></span>
+                            <span class="text-slate-600">⚡ Lô Xiên 4 (Ghép Mới):</span>
+                            <span class="${(info.lo4Xien4ProfitK != null ? info.lo4Xien4ProfitK : info.xi4ProfitK) >= 0 ? 'text-emerald-700 font-bold' : 'text-rose-700'}">${moneyM(info.lo4Xien4ProfitK != null ? info.lo4Xien4ProfitK : info.xi4ProfitK, { signed: true })} <span class="text-[9px] text-purple-800 font-bold">(LK: ${moneyM(info.cumLo4Xien4ProfitK ?? info.xi4ProfitK, { signed: true })})</span></span>
                         </div>
                         <div class="flex justify-between items-center py-0.5">
-                            <span class="text-slate-400">🎲 Dàn Xiên 5 (5 Dàn X4):</span>
-                            <span class="${(info.loXien5ProfitK || 0) >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400'}">${moneyM(info.loXien5ProfitK || 0, { signed: true })} <span class="text-[9px] text-indigo-300 font-bold">(LK: ${moneyM(info.cumLoXien5ProfitK ?? (info.loXien5ProfitK || 0), { signed: true })})</span></span>
+                            <span class="text-slate-600">🎲 Dàn Xiên 5 (5 Dàn X4):</span>
+                            <span class="${(info.loXien5ProfitK || 0) >= 0 ? 'text-emerald-700 font-bold' : 'text-rose-700'}">${moneyM(info.loXien5ProfitK || 0, { signed: true })} <span class="text-[9px] text-indigo-800 font-bold">(LK: ${moneyM(info.cumLoXien5ProfitK ?? (info.loXien5ProfitK || 0), { signed: true })})</span></span>
                         </div>
                     </div>
-                    <div class="mt-2.5 pt-2 border-t border-slate-800 space-y-1 font-mono">
+                    <div class="mt-2.5 pt-2 border-t border-slate-200 space-y-1 font-mono">
                         <div class="flex justify-between items-center">
-                            <span class="text-xs font-bold text-slate-300">Tổng Lãi Ròng Ngày (6 PP):</span>
-                            <strong class="text-sm font-black ${info.dayTotalK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(info.dayTotalK, { signed: true })}</strong>
+                            <span class="text-xs font-bold text-slate-700">Tổng Lãi Ròng Ngày (6 PP):</span>
+                            <strong class="text-sm font-black ${info.dayTotalK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${moneyM(info.dayTotalK, { signed: true })}</strong>
                         </div>
                         <div class="flex justify-between items-center text-xs">
-                            <span class="text-slate-400">Lũy Kế Toàn Bộ Mốc:</span>
-                            <strong class="font-bold ${(info.cumProfitK || 0) >= 0 ? 'text-indigo-400' : 'text-rose-400'}">${moneyM(info.cumProfitK || 0, { signed: true })}</strong>
+                            <span class="text-slate-600">Lũy Kế Toàn Bộ Mốc:</span>
+                            <strong class="font-bold ${(info.cumProfitK || 0) >= 0 ? 'text-indigo-800' : 'text-rose-700'}">${moneyM(info.cumProfitK || 0, { signed: true })}</strong>
                         </div>
                     </div>
                 </div>
@@ -4618,38 +4618,38 @@
         const contentHtml = renderDiaryPopoverContent(activeInfo, currentTab);
 
         return `
-            <div class="rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 border-2 border-amber-400/50 p-4 sm:p-5 text-white shadow-2xl space-y-4">
+            <div class="rounded-2xl bg-white border-2 border-amber-300 p-4 sm:p-5 text-slate-800 shadow-xl space-y-4">
                 <!-- Header bar -->
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
                     <div class="flex items-center gap-2.5 flex-wrap">
                         <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400 text-slate-950 font-black text-xs shadow-sm">
                             <i class="bi bi-calendar-check-fill"></i> Ngày ${formatDateVi(date)}
                         </span>
-                        <span class="text-xs text-slate-300 font-medium">
-                            Giải Đặc Biệt: <strong class="text-amber-300 font-mono text-sm px-1.5 py-0.5 bg-white/10 rounded">${actualSpec != null ? number(actualSpec) : '--'}</strong>
+                        <span class="text-xs text-slate-600 font-medium">
+                            Giải Đặc Biệt: <strong class="text-amber-800 font-mono text-sm px-2 py-0.5 bg-amber-50 border border-amber-200 rounded font-black">${actualSpec != null ? number(actualSpec) : '--'}</strong>
                         </span>
-                        <span class="text-xs font-mono font-bold ${dayTotalK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
-                            Lãi ròng ngày: <strong class="text-sm">${moneyM(dayTotalK, { signed: true })}</strong>
+                        <span class="text-xs font-mono font-bold ${dayTotalK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">
+                            Lãi ròng ngày: <strong class="text-sm font-black">${moneyM(dayTotalK, { signed: true })}</strong>
                         </span>
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
-                        <button type="button" class="btn-copy-expanded-numbers text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-all shadow-sm flex items-center gap-1.5 font-sans" data-date="${date}" data-tab="${currentTab}">
+                        <button type="button" class="btn-copy-expanded-numbers text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-all shadow-sm flex items-center gap-1.5 font-sans cursor-pointer" data-date="${date}" data-tab="${currentTab}">
                             <i class="bi bi-clipboard-check"></i> Sao chép ${currentTab === 'de' ? 'dàn Đề' : (currentTab === 'loStd' ? 'Top 20' : (currentTab === 'loX2' ? 'Top 7' : (currentTab === 'lo4Engine' ? 'dàn Ghép 4' : (currentTab === 'loXien5' ? '5 dàn Xiên 4' : 'dàn số'))))}
                         </button>
-                        <button type="button" class="btn-diary-collapse-row text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 transition-all flex items-center gap-1" data-date="${date}">
+                        <button type="button" class="btn-diary-collapse-row text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition-all flex items-center gap-1 cursor-pointer" data-date="${date}">
                             <i class="bi bi-chevron-up"></i> Thu gọn
                         </button>
                     </div>
                 </div>
 
                 <!-- Tab Pills Selector -->
-                <div class="flex flex-wrap items-center gap-1.5 border-b border-white/10 pb-2.5">
-                    <span class="text-[10px] font-black uppercase text-slate-400 mr-1">Xem dàn:</span>
+                <div class="flex flex-wrap items-center gap-1.5 border-b border-slate-200 pb-2.5">
+                    <span class="text-[10px] font-black uppercase text-slate-600 mr-1">Xem dàn:</span>
                     ${TABS.map(tab => {
                         const isActive = (tab.id === currentTab);
                         return `
                             <button type="button" 
-                                    class="diary-exp-tab-btn rounded-lg px-2.5 py-1 text-xs font-bold transition-all flex items-center gap-1.5 ${isActive ? 'bg-amber-400 text-slate-950 font-black shadow-md ring-2 ring-white/20' : 'bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700'}" 
+                                    class="diary-exp-tab-btn rounded-lg px-2.5 py-1 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${isActive ? 'bg-amber-400 text-slate-950 font-black shadow-md ring-2 ring-amber-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-semibold'}" 
                                     data-date="${date}" 
                                     data-tab="${tab.id}">
                                 <i class="bi ${tab.icon}"></i> ${tab.label}
@@ -4700,7 +4700,7 @@
         newRow.id = `diaryExpandedRow-${date}`;
         newRow.className = 'diary-expanded-row transition-all';
         newRow.innerHTML = `
-            <td colspan="${colCount}" class="p-2 sm:p-4 bg-slate-950/95 border-y-2 border-amber-400/50" id="diaryExpandedContent-${date}">
+            <td colspan="${colCount}" class="p-2 sm:p-4 bg-amber-50/40 border-y-2 border-amber-300" id="diaryExpandedContent-${date}">
                 ${renderDiaryExpandedCard(date, type)}
             </td>
         `;
@@ -11633,12 +11633,12 @@
         if (kpiStrip) {
             kpiStrip.innerHTML = `
                 <div class="flex items-center gap-3 sm:gap-6 flex-wrap">
-                    <div><span class="text-slate-400">Số kỳ:</span> <strong class="text-white">${totalDays} ngày</strong></div>
-                    <div><span class="text-slate-400">Thắng:</span> <strong class="text-emerald-400">${winCount}/${totalDays} (${winRate}%)</strong></div>
-                    <div><span class="text-slate-400">Tổng vốn:</span> <strong class="text-slate-200">${moneyM(totalStakeK)}</strong></div>
-                    <div><span class="text-slate-400">Tổng thưởng:</span> <strong class="text-amber-300">${moneyM(totalPayoutK)}</strong></div>
-                    <div><span class="text-slate-400">Lãi ròng:</span> <strong class="${totalProfitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(totalProfitK, { signed: true })}</strong></div>
-                    <div><span class="text-slate-400">Tỷ suất ROI:</span> <strong class="${Number(roi) >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${Number(roi) >= 0 ? '+' : ''}${roi}%</strong></div>
+                    <div><span class="text-slate-600">Số kỳ:</span> <strong class="text-slate-900 font-bold">${totalDays} ngày</strong></div>
+                    <div><span class="text-slate-600">Thắng:</span> <strong class="text-emerald-700 font-black">${winCount}/${totalDays} (${winRate}%)</strong></div>
+                    <div><span class="text-slate-600">Tổng vốn:</span> <strong class="text-slate-900 font-bold">${moneyM(totalStakeK)}</strong></div>
+                    <div><span class="text-slate-600">Tổng thưởng:</span> <strong class="text-amber-800 font-black">${moneyM(totalPayoutK)}</strong></div>
+                    <div><span class="text-slate-600">Lãi ròng:</span> <strong class="${totalProfitK >= 0 ? 'text-emerald-700 font-black' : 'text-rose-700 font-black'}">${moneyM(totalProfitK, { signed: true })}</strong></div>
+                    <div><span class="text-slate-600">Tỷ suất ROI:</span> <strong class="${Number(roi) >= 0 ? 'text-emerald-700 font-black' : 'text-rose-700 font-black'}">${Number(roi) >= 0 ? '+' : ''}${roi}%</strong></div>
                 </div>
             `;
         }
@@ -11648,7 +11648,7 @@
 
         if (reversed.length === 0) {
             container.innerHTML = `
-                <div class="p-8 text-center text-slate-400">
+                <div class="p-8 text-center text-slate-500">
                     <i class="bi bi-inbox text-3xl"></i>
                     <p class="mt-2 text-xs">Không có dữ liệu cho khoảng thời gian đã chọn.</p>
                 </div>
@@ -11664,10 +11664,10 @@
                 chipsHtml = `
                     <div class="space-y-2">
                         <div class="flex items-center gap-1.5 flex-wrap">
-                            <span class="text-[10px] font-bold text-amber-300 uppercase">Bộ 5 Số Vàng:</span>
+                            <span class="text-[10px] font-black text-amber-900 uppercase">Bộ 5 Số Vàng:</span>
                             ${r.numbers.map(n => {
                                 const hit = Boolean(r.drawPrizesSet && r.drawPrizesSet.has(n));
-                                return `<span class="inline-flex items-center justify-center rounded-lg font-mono text-xs font-black px-2 py-0.5 ${hit ? 'bg-emerald-400 text-slate-950 ring-2 ring-emerald-300 scale-105 shadow-md' : 'bg-slate-800 text-slate-300'}">${n}${hit ? ' ⭐' : ''}</span>`;
+                                return `<span class="inline-flex items-center justify-center rounded-lg font-mono text-xs font-black px-2 py-0.5 ${hit ? 'bg-emerald-500 text-white ring-2 ring-emerald-300 scale-105 shadow-md' : 'bg-slate-100 border border-slate-300 text-slate-800'}">${n}${hit ? ' ⭐' : ''}</span>`;
                             }).join('')}
                         </div>
                         <div class="space-y-1 font-mono text-xs">
@@ -11676,22 +11676,22 @@
                                 let badge = '';
                                 let cardStyle = '';
                                 if (hitCount === 4) {
-                                    badge = '<span class="text-amber-300 font-black">👑 ĂN 4 CON: 384M (+373M)</span>';
-                                    cardStyle = 'bg-amber-950/80 border-amber-400 text-amber-200 ring-1 ring-amber-400';
+                                    badge = '<span class="text-amber-900 font-black">👑 ĂN 4 CON: 384M (+373M)</span>';
+                                    cardStyle = 'bg-amber-100 border-amber-400 text-amber-950 font-bold ring-1 ring-amber-400';
                                 } else if (hitCount === 3) {
-                                    badge = '<span class="text-purple-300 font-bold">🔥 ĂN 3 CON: 84M (+73M)</span>';
-                                    cardStyle = 'bg-purple-950/80 border-purple-400 text-purple-200 ring-1 ring-purple-400';
+                                    badge = '<span class="text-purple-900 font-black">🔥 ĂN 3 CON: 84M (+73M)</span>';
+                                    cardStyle = 'bg-purple-100 border-purple-400 text-purple-950 font-bold ring-1 ring-purple-400';
                                 } else if (hitCount === 2) {
-                                    badge = '<span class="text-teal-300 font-bold">✨ ĂN 2 CON: 12M (+1M)</span>';
-                                    cardStyle = 'bg-teal-950/80 border-teal-400 text-teal-200 ring-1 ring-teal-400';
+                                    badge = '<span class="text-teal-900 font-black">✨ ĂN 2 CON: 12M (+1M)</span>';
+                                    cardStyle = 'bg-teal-100 border-teal-400 text-teal-950 font-bold ring-1 ring-teal-400';
                                 } else {
-                                    badge = `<span class="text-slate-400">${hitCount}/4 con (-11M)</span>`;
-                                    cardStyle = 'bg-black/40 border-white/10 text-slate-300';
+                                    badge = `<span class="text-slate-500 font-medium">${hitCount}/4 con (-11M)</span>`;
+                                    cardStyle = 'bg-slate-50 border-slate-200 text-slate-700';
                                 }
                                 return `
                                     <div class="flex items-center justify-between ${cardStyle} border rounded-lg px-2.5 py-1 text-xs">
-                                        <span class="text-slate-300 font-bold text-[11px]">Dàn ${idx + 1} (11M):</span>
-                                        <span class="font-bold tracking-wide">${t.map(num => (r.drawPrizesSet && r.drawPrizesSet.has(num)) ? `<strong class="text-emerald-300">${num}</strong>` : num).join(' - ')}</span>
+                                        <span class="text-slate-600 font-bold text-[11px]">Dàn ${idx + 1} (11M):</span>
+                                        <span class="font-bold tracking-wide">${t.map(num => (r.drawPrizesSet && r.drawPrizesSet.has(num)) ? `<strong class="text-emerald-700 font-black underline">${num}</strong>` : num).join(' - ')}</span>
                                         <span class="text-[10px]">${badge}</span>
                                     </div>
                                 `;
@@ -11703,40 +11703,40 @@
                 chipsHtml = `
                     <div class="space-y-2">
                         <div>
-                            <div class="flex items-center justify-between text-[10px] font-black uppercase text-amber-400 mb-1">
+                            <div class="flex items-center justify-between text-[10px] font-black uppercase text-amber-900 mb-1">
                                 <span>⚡ VIP TRÙNG X3 (${r.vipNumbers.length} số):</span>
-                                <span class="text-amber-300">Cược X3</span>
+                                <span class="text-amber-800 font-bold">Cược X3</span>
                             </div>
                             <div class="flex flex-wrap gap-1">
                                 ${r.vipNumbers.map(n => {
                                     const hit = (r.actualSpecial != null && Number(n) === Number(r.actualSpecial));
-                                    return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs ${hit ? 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 ring-2 ring-amber-300 scale-110 shadow-md font-black animate-pulse' : 'bg-amber-950/40 border border-amber-500/20 text-amber-200/70 font-semibold opacity-60 hover:opacity-100 transition-all'}">${hit ? `🎯 ${n} ⭐` : n}</span>`;
+                                    return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs ${hit ? 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 ring-2 ring-amber-300 scale-110 shadow-md font-black animate-pulse' : 'bg-amber-100 border border-amber-300 text-amber-950 font-bold'}">${hit ? `🎯 ${n} ⭐` : n}</span>`;
                                 }).join('')}
                             </div>
                         </div>
                         ${r.singleNumbers && r.singleNumbers.length ? `
                         <div>
-                            <div class="flex items-center justify-between text-[10px] font-black uppercase text-indigo-300 mb-1">
+                            <div class="flex items-center justify-between text-[10px] font-black uppercase text-indigo-900 mb-1">
                                 <span>🛡️ BỌC LÓT X1 (${r.singleNumbers.length} số):</span>
-                                <span class="text-indigo-200">Cược X1</span>
+                                <span class="text-indigo-800 font-bold">Cược X1</span>
                             </div>
                             <div class="flex flex-wrap gap-1">
                                 ${r.singleNumbers.map(n => {
                                     const hit = (r.actualSpecial != null && Number(n) === Number(actualSpecial));
-                                    return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs ${hit ? 'bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 text-slate-950 ring-2 ring-emerald-300 scale-110 shadow-lg font-black animate-pulse' : 'bg-slate-800/80 border border-slate-700/60 text-slate-400 font-semibold opacity-60 hover:opacity-100 transition-all'}">${hit ? `🎯 ${n} ⭐` : n}</span>`;
+                                    return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs ${hit ? 'bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white ring-2 ring-emerald-300 scale-110 shadow-lg font-black animate-pulse' : 'bg-slate-100 border border-slate-300 text-slate-700 font-semibold'}">${hit ? `🎯 ${n} ⭐` : n}</span>`;
                                 }).join('')}
                             </div>
                         </div>` : ''}
                         ${methodKey === 'crossHedging' && r.numbers && r.numbers.length ? `
                         <div>
-                            <div class="flex items-center justify-between text-[10px] font-black uppercase text-emerald-400 mb-1">
+                            <div class="flex items-center justify-between text-[10px] font-black uppercase text-emerald-900 mb-1">
                                 <span>🔥 TRỤ 2: LÔ GHÉP 4 ĐỘNG CƠ (${r.numbers.length} số):</span>
-                                <span class="text-emerald-300">Đa Tầng / Quây</span>
+                                <span class="text-emerald-800 font-bold">Đa Tầng / Quây</span>
                             </div>
                             <div class="flex flex-wrap gap-1">
                                 ${r.numbers.map(n => {
                                     const hit = r.drawPrizesSet && r.drawPrizesSet.has(n);
-                                    return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs ${hit ? 'bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 text-slate-950 font-black ring-2 ring-emerald-300 scale-105 shadow-md animate-pulse' : 'bg-slate-800/80 border border-slate-700/60 text-slate-400 font-semibold opacity-60 hover:opacity-100 transition-all'}">${hit ? `🎯 ${n} ⭐` : n}</span>`;
+                                    return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs ${hit ? 'bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black ring-2 ring-emerald-300 scale-105 shadow-md animate-pulse' : 'bg-slate-100 border border-slate-300 text-slate-700 font-semibold'}">${hit ? `🎯 ${n} ⭐` : n}</span>`;
                                 }).join('')}
                             </div>
                         </div>` : ''}
@@ -11752,9 +11752,9 @@
                             if (hit) {
                                 return isDe
                                     ? `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 ring-2 ring-amber-300 shadow-md scale-110 font-black animate-pulse">🎯 ${n} ⭐</span>`
-                                    : `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 text-slate-950 ring-2 ring-emerald-300 scale-105 shadow-md font-black animate-pulse">🎯 ${n} ⭐</span>`;
+                                    : `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white ring-2 ring-emerald-300 scale-105 shadow-md font-black animate-pulse">🎯 ${n} ⭐</span>`;
                             }
-                            return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs bg-slate-800/80 border border-slate-700/60 text-slate-400 font-semibold opacity-60 hover:opacity-100 transition-all">${n}</span>`;
+                            return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs bg-slate-100 border border-slate-300 text-slate-800 font-bold">${n}</span>`;
                         }).join('')}
                     </div>
                 `;
@@ -11765,39 +11765,39 @@
                 : r.numbers.join(', ');
 
             return `
-                <div class="rounded-2xl border ${r.isHit ? 'border-emerald-500/40 bg-emerald-950/20' : 'border-white/10 bg-slate-900/60'} p-3.5 sm:p-4 text-white space-y-2.5 transition-all hover:border-indigo-400/50">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-2">
+                <div class="rounded-2xl border ${r.isHit ? 'border-emerald-300 bg-emerald-50/50 shadow-sm' : 'border-slate-200 bg-white shadow-sm'} p-3.5 sm:p-4 text-slate-800 space-y-2.5 transition-all hover:border-indigo-400 hover:shadow-md">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-2">
                         <div class="flex items-center gap-2 flex-wrap">
-                            <span class="font-mono font-black text-xs text-white">${formatDateVi(r.date)}</span>
-                            <span class="rounded text-[9px] font-bold px-1.5 py-0.2 ${isLive ? 'bg-emerald-500/20 text-emerald-300' : 'bg-blue-500/20 text-blue-300'}">${isLive ? '🟢 Live' : '🔵 PIT'}</span>
-                            <span class="rounded text-[10px] font-black px-2 py-0.5 ${r.isHit ? 'bg-emerald-400 text-slate-950 shadow-xs' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'}">${r.hitBadge}</span>
+                            <span class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</span>
+                            <span class="rounded text-[9px] font-bold px-1.5 py-0.2 ${isLive ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-blue-100 text-blue-800 border border-blue-300'}">${isLive ? '🟢 Live' : '🔵 PIT'}</span>
+                            <span class="rounded text-[10px] font-black px-2 py-0.5 ${r.isHit ? 'bg-emerald-500 text-white shadow-xs' : 'bg-rose-100 text-rose-700 border border-rose-300'}">${r.hitBadge}</span>
                         </div>
                         <div class="flex items-center gap-3">
-                            <div class="font-mono font-black text-sm ${r.profitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
+                            <div class="font-mono font-black text-sm ${r.profitK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">
                                 ${moneyM(r.profitK, { signed: true })}
                             </div>
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-between text-xs text-slate-300 gap-2 flex-wrap">
-                        <div class="text-[11px] text-indigo-200">${escapeHtml(r.detailDesc)}</div>
-                        ${isDe && r.actualSpecial != null ? `<div>Giải ĐB: <strong class="text-amber-300 font-mono text-sm px-1.5 py-0.5 bg-black/40 rounded">[${number(r.actualSpecial)}]</strong></div>` : ''}
+                    <div class="flex items-center justify-between text-xs text-slate-600 gap-2 flex-wrap">
+                        <div class="text-[11px] text-indigo-900 font-medium">${escapeHtml(r.detailDesc)}</div>
+                        ${isDe && r.actualSpecial != null ? `<div>Giải ĐB: <strong class="text-amber-900 font-mono text-sm px-1.5 py-0.5 bg-amber-100 border border-amber-300 rounded font-black">[${number(r.actualSpecial)}]</strong></div>` : ''}
                     </div>
 
-                    <div class="bg-black/30 border border-white/5 rounded-xl p-2.5">
-                        <div class="text-[10px] font-bold text-slate-400 uppercase mb-1.5 flex items-center justify-between">
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-2.5">
+                        <div class="text-[10px] font-bold text-slate-600 uppercase mb-1.5 flex items-center justify-between">
                             <span>Dàn số đã đánh (${r.numbers.length} số):</span>
-                            ${r.isHit ? '<span class="text-emerald-400 font-bold">✓ Đã nổ trúng</span>' : ''}
+                            ${r.isHit ? '<span class="text-emerald-700 font-black">✓ Đã nổ trúng</span>' : ''}
                         </div>
                         ${chipsHtml}
                     </div>
 
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-white/10 text-xs">
-                        <div class="flex items-center gap-4 text-slate-400 font-mono text-[11px]">
-                            <span>Vốn: <strong class="text-slate-200">${moneyM(r.stakeK)}</strong></span>
-                            <span>Thưởng: <strong class="${r.payoutK > 0 ? 'text-amber-300' : 'text-slate-400'}">${moneyM(r.payoutK)}</strong></span>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-slate-200 text-xs">
+                        <div class="flex items-center gap-4 text-slate-600 font-mono text-[11px]">
+                            <span>Vốn: <strong class="text-slate-900 font-bold">${moneyM(r.stakeK)}</strong></span>
+                            <span>Thưởng: <strong class="${r.payoutK > 0 ? 'text-amber-800 font-black' : 'text-slate-600'}">${moneyM(r.payoutK)}</strong></span>
                         </div>
-                        <button type="button" class="btn-copy-history-slip rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-3 py-1 transition-all shadow-xs flex items-center gap-1 self-end sm:self-auto" data-date="${r.date}" data-numbers="${escapeHtml(copyNumsText)}">
+                        <button type="button" class="btn-copy-history-slip rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-3 py-1 transition-all shadow-xs flex items-center gap-1 self-end sm:self-auto" data-date="${r.date}" data-numbers="${escapeHtml(copyNumsText)}">
                             <i class="bi bi-clipboard-check"></i> Sao chép dàn ngày này
                         </button>
                     </div>
@@ -12912,8 +12912,8 @@
         if (infoBadge) {
             infoBadge.innerHTML = `
                 <div class="flex items-center gap-2">
-                    <strong class="text-white text-xs sm:text-sm">${formatDateVi(targetDate)}</strong>
-                    <span class="rounded text-[10px] font-bold px-2 py-0.5 ${isLatest ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40' : (targetDate >= '2026-08-28' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-blue-500/20 text-blue-300 border border-blue-500/40')}">
+                    <strong class="text-slate-900 text-xs sm:text-sm font-black">${formatDateVi(targetDate)}</strong>
+                    <span class="rounded text-[10px] font-bold px-2 py-0.5 ${isLatest ? 'bg-amber-100 text-amber-900 border border-amber-300' : (targetDate >= '2026-08-28' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-blue-100 text-blue-800 border border-blue-300')}">
                         ${isLatest ? '🔒 Chờ mở thưởng' : (targetDate >= '2026-08-28' ? '🟢 Thực chiến Live' : '🔵 Strict PIT')}
                     </span>
                 </div>
@@ -12925,7 +12925,7 @@
         if (drawBadge) {
             if (isLatest) {
                 drawBadge.innerHTML = `
-                    <span class="text-amber-400 text-xs font-bold flex items-center gap-1">
+                    <span class="text-amber-800 text-xs font-bold flex items-center gap-1">
                         <i class="bi bi-clock-history"></i> Mở thưởng 18h15 - 18h40
                     </span>
                 `;
@@ -12934,9 +12934,9 @@
                 const spec = draw?.special != null ? number(draw.special) : '--';
                 drawBadge.innerHTML = `
                     <div class="flex items-center gap-2">
-                        <span class="text-slate-300">ĐB: <strong class="text-amber-300 font-mono text-xs sm:text-sm bg-black/60 px-2 py-0.5 rounded-lg border border-amber-400/40 font-black">[${spec}]</strong></span>
-                        <span class="text-slate-500">|</span>
-                        <span class="text-teal-300 text-[11px] font-semibold">27 Giải Lô đã mở</span>
+                        <span class="text-slate-600 font-medium">ĐB: <strong class="text-amber-900 font-mono text-xs sm:text-sm bg-amber-100 px-2 py-0.5 rounded-lg border border-amber-300 font-black">[${spec}]</strong></span>
+                        <span class="text-slate-300">|</span>
+                        <span class="text-teal-800 text-[11px] font-bold">27 Giải Lô đã mở</span>
                     </div>
                 `;
             }
@@ -12971,10 +12971,10 @@
         const deOfficialBadge = byId('deOfficialBadge');
         if (deOfficialBadge) {
             if (!isUserOverridingDeMethod || chosenDeMethod === official.deMethod || selDe?.value === 'official') {
-                deOfficialBadge.className = 'rounded bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[9px] font-black px-2 py-0.5 uppercase';
+                deOfficialBadge.className = 'rounded bg-amber-100 text-amber-900 border border-amber-300 text-[9px] font-black px-2 py-0.5 uppercase';
                 deOfficialBadge.innerHTML = '🌟 Đề Xuất Ngày Này';
             } else {
-                deOfficialBadge.className = 'rounded bg-purple-500/20 text-purple-300 border border-purple-400/40 text-[9px] font-bold px-2 py-0.5 uppercase';
+                deOfficialBadge.className = 'rounded bg-purple-100 text-purple-900 border border-purple-300 text-[9px] font-bold px-2 py-0.5 uppercase';
                 deOfficialBadge.innerHTML = '🔍 So Sánh Phương Pháp Khác';
             }
         }
@@ -12982,10 +12982,10 @@
         const loOfficialBadge = byId('loOfficialBadge');
         if (loOfficialBadge) {
             if (!isUserOverridingLoMethod || chosenLoMethod === official.loMethod || selLo?.value === 'official') {
-                loOfficialBadge.className = 'rounded bg-teal-400/20 text-teal-300 border border-teal-400/40 text-[9px] font-black px-2 py-0.5 uppercase';
+                loOfficialBadge.className = 'rounded bg-teal-100 text-teal-900 border border-teal-300 text-[9px] font-black px-2 py-0.5 uppercase';
                 loOfficialBadge.innerHTML = '🌟 Đề Xuất Ngày Này';
             } else {
-                loOfficialBadge.className = 'rounded bg-purple-500/20 text-purple-300 border border-purple-400/40 text-[9px] font-bold px-2 py-0.5 uppercase';
+                loOfficialBadge.className = 'rounded bg-purple-100 text-purple-900 border border-purple-300 text-[9px] font-bold px-2 py-0.5 uppercase';
                 loOfficialBadge.innerHTML = '🔍 So Sánh Phương Pháp Khác';
             }
         }
@@ -13002,16 +13002,16 @@
         if (deBanner) {
             if (deData.isPending) {
                 deBanner.innerHTML = `
-                    <div class="rounded-xl bg-amber-500/10 border border-amber-400/30 text-amber-300 p-2.5 flex items-center justify-between text-xs font-bold">
+                    <div class="rounded-xl bg-amber-100/70 border border-amber-300 text-amber-900 p-2.5 flex items-center justify-between text-xs font-bold">
                         <span>🔒 Dàn Đề Đã Niêm Phong Bất Biến</span>
-                        <span class="text-amber-400 font-mono">Vốn ${moneyM(deData.stakeK)}</span>
+                        <span class="text-amber-800 font-mono font-black">Vốn ${moneyM(deData.stakeK)}</span>
                     </div>
                 `;
             } else {
                 deBanner.innerHTML = `
-                    <div class="rounded-xl ${deData.isHit ? 'bg-emerald-500/20 border-emerald-400/40 text-emerald-200' : 'bg-rose-500/20 border-rose-500/40 text-rose-300'} border p-2.5 flex items-center justify-between text-xs font-bold">
-                        <span>${deData.hitBadge} · Giải ĐB: <strong class="font-mono text-amber-300">[${deData.actualSpecial != null ? deData.actualSpecial : '--'}]</strong></span>
-                        <span class="font-mono text-sm font-black ${deData.profitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(deData.profitK, { signed: true })}</span>
+                    <div class="rounded-xl ${deData.isHit ? 'bg-emerald-100/70 border-emerald-300 text-emerald-950' : 'bg-rose-100/70 border-rose-300 text-rose-950'} border p-2.5 flex items-center justify-between text-xs font-bold">
+                        <span>${deData.hitBadge} · Giải ĐB: <strong class="font-mono text-amber-900 font-black">[${deData.actualSpecial != null ? deData.actualSpecial : '--'}]</strong></span>
+                        <span class="font-mono text-sm font-black ${deData.profitK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${moneyM(deData.profitK, { signed: true })}</span>
                     </div>
                 `;
             }
@@ -13023,27 +13023,27 @@
                 deChipsBox.innerHTML = `
                     <div class="space-y-2.5">
                         <div>
-                            <div class="text-[10px] font-black uppercase text-amber-400 mb-1 flex items-center justify-between">
+                            <div class="text-[10px] font-black uppercase text-amber-900 mb-1 flex items-center justify-between">
                                 <span>⚡ VIP TRÙNG X3 (${deData.vipNumbers.length} số):</span>
-                                <span class="text-amber-300">Cược X3</span>
+                                <span class="text-amber-800 font-bold">Cược X3</span>
                             </div>
                             <div class="flex flex-wrap gap-1">
                                 ${deData.vipNumbers.map(n => {
                                     const hit = (deData.actualSpecial != null && Number(n) === Number(deData.actualSpecial));
-                                    return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs ${hit ? 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 ring-2 ring-white scale-110 shadow-lg font-black animate-pulse' : 'bg-amber-950/40 border border-amber-500/20 text-amber-200/70 font-semibold opacity-60 hover:opacity-100 transition-all'}">${n}${hit ? ' ⭐ NỔ ĐB' : ''}</span>`;
+                                    return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs ${hit ? 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 ring-2 ring-amber-300 scale-110 shadow-lg font-black animate-pulse' : 'bg-amber-100 border border-amber-300 text-amber-950 font-bold'}">${n}${hit ? ' ⭐ NỔ ĐB' : ''}</span>`;
                                 }).join('')}
                             </div>
                         </div>
                         ${deData.singleNumbers && deData.singleNumbers.length ? `
                         <div>
-                            <div class="text-[10px] font-black uppercase text-indigo-300 mb-1 flex items-center justify-between">
+                            <div class="text-[10px] font-black uppercase text-indigo-900 mb-1 flex items-center justify-between">
                                 <span>🛡️ BỌC LÓT X1 (${deData.singleNumbers.length} số):</span>
-                                <span class="text-indigo-200">Cược X1</span>
+                                <span class="text-indigo-800 font-bold">Cược X1</span>
                             </div>
                             <div class="flex flex-wrap gap-1">
                                 ${deData.singleNumbers.map(n => {
                                     const hit = (deData.actualSpecial != null && Number(n) === Number(deData.actualSpecial));
-                                    return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs ${hit ? 'bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 text-slate-950 ring-2 ring-white scale-110 shadow-lg font-black animate-pulse' : 'bg-slate-800/80 border border-slate-700/60 text-slate-400 font-semibold opacity-60 hover:opacity-100 transition-all'}">${n}${hit ? ' ⭐ NỔ ĐB' : ''}</span>`;
+                                    return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs ${hit ? 'bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white ring-2 ring-emerald-300 scale-110 shadow-lg font-black animate-pulse' : 'bg-slate-100 border border-slate-300 text-slate-700 font-semibold'}">${n}${hit ? ' ⭐ NỔ ĐB' : ''}</span>`;
                                 }).join('')}
                             </div>
                         </div>` : ''}
@@ -13054,7 +13054,7 @@
                     <div class="flex flex-wrap gap-1">
                         ${deData.numbers.map(n => {
                             const hit = (deData.actualSpecial != null && Number(n) === Number(deData.actualSpecial));
-                            return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs ${hit ? 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 ring-2 ring-amber-300 scale-110 shadow-lg font-black animate-pulse' : 'bg-slate-800/80 border border-slate-700/60 text-slate-400 font-semibold opacity-60 hover:opacity-100 transition-all'}">${n}${hit ? ' ⭐ NỔ ĐB' : ''}</span>`;
+                            return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs ${hit ? 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 ring-2 ring-amber-300 scale-110 shadow-lg font-black animate-pulse' : 'bg-slate-100 border border-slate-300 text-slate-800 font-bold'}">${n}${hit ? ' ⭐ NỔ ĐB' : ''}</span>`;
                         }).join('')}
                     </div>
                 `;
@@ -13067,9 +13067,9 @@
         const deFinSummary = byId('deFinancialSummary');
         if (deFinSummary) {
             deFinSummary.innerHTML = `
-                <div><div class="text-[9px] text-slate-400 uppercase">Vốn Cược</div><div class="font-bold text-slate-200">${moneyM(deData.stakeK)}</div></div>
-                <div><div class="text-[9px] text-slate-400 uppercase">Tiền Thưởng</div><div class="font-bold ${deData.payoutK > 0 ? 'text-amber-300' : 'text-slate-400'}">${deData.payoutK > 0 ? moneyM(deData.payoutK) : '0đ'}</div></div>
-                <div class="text-right"><div class="text-[9px] text-slate-400 uppercase">Lãi/Lỗ Ròng</div><div class="font-black ${deData.profitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(deData.profitK, { signed: true })}</div></div>
+                <div><div class="text-[9px] text-slate-500 uppercase font-semibold">Vốn Cược</div><div class="font-bold text-slate-900">${moneyM(deData.stakeK)}</div></div>
+                <div><div class="text-[9px] text-slate-500 uppercase font-semibold">Tiền Thưởng</div><div class="font-bold ${deData.payoutK > 0 ? 'text-amber-800 font-black' : 'text-slate-600'}">${deData.payoutK > 0 ? moneyM(deData.payoutK) : '0đ'}</div></div>
+                <div class="text-right"><div class="text-[9px] text-slate-500 uppercase font-semibold">Lãi/Lỗ Ròng</div><div class="font-black ${deData.profitK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${moneyM(deData.profitK, { signed: true })}</div></div>
             `;
         }
 
@@ -13086,16 +13086,16 @@
         if (loBanner) {
             if (loData.isPending) {
                 loBanner.innerHTML = `
-                    <div class="rounded-xl bg-amber-500/10 border border-amber-400/30 text-amber-300 p-2.5 flex items-center justify-between text-xs font-bold">
+                    <div class="rounded-xl bg-teal-100/70 border border-teal-300 text-teal-900 p-2.5 flex items-center justify-between text-xs font-bold">
                         <span>🔒 Dàn Lô/Xiên Đã Niêm Phong Bất Biến</span>
-                        <span class="text-amber-400 font-mono">Vốn ${moneyM(loData.stakeK)}</span>
+                        <span class="text-teal-800 font-mono font-black">Vốn ${moneyM(loData.stakeK)}</span>
                     </div>
                 `;
             } else {
                 loBanner.innerHTML = `
-                    <div class="rounded-xl ${loData.isHit ? 'bg-emerald-500/20 border-emerald-400/40 text-emerald-200' : 'bg-rose-500/20 border-rose-500/40 text-rose-300'} border p-2.5 flex items-center justify-between text-xs font-bold">
+                    <div class="rounded-xl ${loData.isHit ? 'bg-emerald-100/70 border-emerald-300 text-emerald-950' : 'bg-rose-100/70 border-rose-300 text-rose-950'} border p-2.5 flex items-center justify-between text-xs font-bold">
                         <span>${loData.hitBadge}</span>
-                        <span class="font-mono text-sm font-black ${loData.profitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(loData.profitK, { signed: true })}</span>
+                        <span class="font-mono text-sm font-black ${loData.profitK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${moneyM(loData.profitK, { signed: true })}</span>
                     </div>
                 `;
             }
@@ -13107,20 +13107,20 @@
                 loChipsBox.innerHTML = `
                     <div class="space-y-2.5">
                         <div class="flex items-center gap-1.5 flex-wrap">
-                            <span class="text-[10px] font-bold text-amber-300 uppercase">Bộ 5 Số Vàng:</span>
+                            <span class="text-[10px] font-black text-amber-900 uppercase">Bộ 5 Số Vàng:</span>
                             ${loData.numbers.map(n => {
                                 const hit = Boolean(loData.drawPrizesSet && loData.drawPrizesSet.has(n));
-                                return `<span class="inline-flex items-center justify-center rounded-lg font-mono text-xs font-black px-2 py-0.5 ${hit ? 'bg-emerald-400 text-slate-950 ring-2 ring-emerald-300 scale-105 shadow-md' : 'bg-slate-800 text-slate-300'}">${n}${hit ? ' ⭐' : ''}</span>`;
+                                return `<span class="inline-flex items-center justify-center rounded-lg font-mono text-xs font-black px-2 py-0.5 ${hit ? 'bg-emerald-500 text-white ring-2 ring-emerald-300 scale-105 shadow-md' : 'bg-slate-100 border border-slate-300 text-slate-800'}">${n}${hit ? ' ⭐' : ''}</span>`;
                             }).join('')}
                         </div>
                         <div class="space-y-1 font-mono text-xs">
                             ${loData.tickets.map((t, idx) => {
                                 if (loData.isPending) {
                                     return `
-                                        <div class="flex items-center justify-between bg-black/40 border border-white/10 rounded-lg px-2.5 py-1 text-xs text-slate-300">
-                                            <span class="text-amber-300 font-bold text-[11px]">Dàn ${idx + 1} (11M):</span>
+                                        <div class="flex items-center justify-between bg-slate-100 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-800">
+                                            <span class="text-amber-800 font-bold text-[11px]">Dàn ${idx + 1} (11M):</span>
                                             <span class="font-bold tracking-wide">${t.join(' - ')}</span>
-                                            <span class="text-[10px] text-slate-400">Chờ mở thưởng</span>
+                                            <span class="text-[10px] text-slate-500">Chờ mở thưởng</span>
                                         </div>
                                     `;
                                 }
@@ -13128,22 +13128,22 @@
                                 let badge = '';
                                 let cardStyle = '';
                                 if (hitCount === 4) {
-                                    badge = '<span class="text-amber-300 font-black">👑 ĂN 4 CON: 384M (+373M)</span>';
-                                    cardStyle = 'bg-amber-950/80 border-amber-400 text-amber-200 ring-1 ring-amber-400';
+                                    badge = '<span class="text-amber-900 font-black">👑 ĂN 4 CON: 384M (+373M)</span>';
+                                    cardStyle = 'bg-amber-100 border-amber-400 text-amber-950 font-bold ring-1 ring-amber-400';
                                 } else if (hitCount === 3) {
-                                    badge = '<span class="text-purple-300 font-bold">🔥 ĂN 3 CON: 84M (+73M)</span>';
-                                    cardStyle = 'bg-purple-950/80 border-purple-400 text-purple-200 ring-1 ring-purple-400';
+                                    badge = '<span class="text-purple-900 font-black">🔥 ĂN 3 CON: 84M (+73M)</span>';
+                                    cardStyle = 'bg-purple-100 border-purple-400 text-purple-950 font-bold ring-1 ring-purple-400';
                                 } else if (hitCount === 2) {
-                                    badge = '<span class="text-teal-300 font-bold">✨ ĂN 2 CON: 12M (+1M)</span>';
-                                    cardStyle = 'bg-teal-950/80 border-teal-400 text-teal-200 ring-1 ring-teal-400';
+                                    badge = '<span class="text-teal-900 font-black">✨ ĂN 2 CON: 12M (+1M)</span>';
+                                    cardStyle = 'bg-teal-100 border-teal-400 text-teal-950 font-bold ring-1 ring-teal-400';
                                 } else {
-                                    badge = `<span class="text-slate-400">${hitCount}/4 con (-11M)</span>`;
-                                    cardStyle = 'bg-black/40 border-white/10 text-slate-300';
+                                    badge = `<span class="text-slate-500 font-medium">${hitCount}/4 con (-11M)</span>`;
+                                    cardStyle = 'bg-slate-50 border-slate-200 text-slate-700';
                                 }
                                 return `
                                     <div class="flex items-center justify-between ${cardStyle} border rounded-lg px-2.5 py-1 text-xs">
-                                        <span class="text-slate-300 font-bold text-[11px]">Dàn ${idx + 1} (11M):</span>
-                                        <span class="font-bold tracking-wide">${t.map(num => (loData.drawPrizesSet && loData.drawPrizesSet.has(num)) ? `<strong class="text-emerald-300">${num}</strong>` : num).join(' - ')}</span>
+                                        <span class="text-slate-600 font-bold text-[11px]">Dàn ${idx + 1} (11M):</span>
+                                        <span class="font-bold tracking-wide">${t.map(num => (loData.drawPrizesSet && loData.drawPrizesSet.has(num)) ? `<strong class="text-emerald-700 font-black underline">${num}</strong>` : num).join(' - ')}</span>
                                         <span class="text-[10px]">${badge}</span>
                                     </div>
                                 `;
@@ -13167,7 +13167,7 @@
                         const mStr = betObj?.methods?.join('+') || '';
                         const mLabel = mStr ? ` (${mStr})` : '';
                         if (isHit) {
-                            return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black ring-2 ring-white scale-105 shadow-md">${n}${mLabel} <sub class="text-[9px] font-sans font-bold text-red-800 ml-0.5">(${multText}${hits > 1 ? `·${hits}n` : ''})</sub> ⭐</span>`;
+                            return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black ring-2 ring-amber-300 scale-105 shadow-md">${n}${mLabel} <sub class="text-[9px] font-sans font-bold text-red-800 ml-0.5">(${multText}${hits > 1 ? `·${hits}n` : ''})</sub> ⭐</span>`;
                         }
                         return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs ${badgeCls}">${n}${mLabel} <sub class="text-[8px] font-sans opacity-80 ml-0.5">${multText}</sub></span>`;
                     }).join('');
@@ -13177,63 +13177,63 @@
                     <div class="space-y-3">
                         ${tierX5.length ? `
                         <div>
-                            <div class="text-[10px] font-black uppercase text-amber-300 mb-1 flex items-center justify-between">
+                            <div class="text-[10px] font-black uppercase text-amber-900 mb-1 flex items-center justify-between">
                                 <span>👑 TẦNG SIÊU VIP (CƯỢC X5 · 11M/SỐ · ${tierX5.length} SỐ):</span>
-                                <span class="text-amber-300/80 font-sans font-normal text-[9px]">Trùng 4 phương pháp</span>
+                                <span class="text-amber-800 font-sans font-normal text-[9px]">Trùng 4 phương pháp</span>
                             </div>
                             <div class="flex flex-wrap gap-1">
-                                ${renderTierChips(tierX5, 'bg-gradient-to-r from-amber-500/20 to-amber-600/30 border-2 border-amber-400 text-amber-200 font-black ring-1 ring-amber-400/50 shadow-sm', 'x5')}
+                                ${renderTierChips(tierX5, 'bg-amber-100 border-2 border-amber-400 text-amber-950 font-black ring-1 ring-amber-400/50 shadow-xs', 'x5')}
                             </div>
                         </div>` : ''}
 
                         ${tierX4.length ? `
                         <div>
-                            <div class="text-[10px] font-black uppercase text-amber-400 mb-1 flex items-center justify-between">
+                            <div class="text-[10px] font-black uppercase text-amber-800 mb-1 flex items-center justify-between">
                                 <span>⚡ TẦNG CỰC VIP (CƯỢC X4 · 8.8M/SỐ · ${tierX4.length} SỐ):</span>
-                                <span class="text-amber-400/80 font-sans font-normal text-[9px]">Trùng 3 phương pháp</span>
+                                <span class="text-amber-700 font-sans font-normal text-[9px]">Trùng 3 phương pháp</span>
                             </div>
                             <div class="flex flex-wrap gap-1">
-                                ${renderTierChips(tierX4, 'bg-amber-950/70 border border-amber-500/50 text-amber-200 font-bold', 'x4')}
+                                ${renderTierChips(tierX4, 'bg-amber-50 border border-amber-300 text-amber-900 font-bold', 'x4')}
                             </div>
                         </div>` : ''}
 
                         ${tierX3.length ? `
                         <div>
-                            <div class="text-[10px] font-black uppercase text-indigo-300 mb-1 flex items-center justify-between">
+                            <div class="text-[10px] font-black uppercase text-indigo-900 mb-1 flex items-center justify-between">
                                 <span>✨ TẦNG TRIỂN VỌNG (CƯỢC X3 · 6.6M/SỐ · ${tierX3.length} SỐ):</span>
-                                <span class="text-indigo-300/80 font-sans font-normal text-[9px]">Trùng 2 phương pháp</span>
+                                <span class="text-indigo-800 font-sans font-normal text-[9px]">Trùng 2 phương pháp</span>
                             </div>
                             <div class="flex flex-wrap gap-1">
-                                ${renderTierChips(tierX3, 'bg-indigo-950/60 border border-indigo-500/40 text-indigo-200 font-bold', 'x3')}
+                                ${renderTierChips(tierX3, 'bg-indigo-50 border border-indigo-300 text-indigo-900 font-bold', 'x3')}
                             </div>
                         </div>` : ''}
 
                         ${tierX1.length ? `
                         <div>
-                            <div class="text-[10px] font-black uppercase text-slate-400 mb-1 flex items-center justify-between">
+                            <div class="text-[10px] font-black uppercase text-slate-700 mb-1 flex items-center justify-between">
                                 <span>🛡️ TẦNG BẢO HIỂM (CƯỢC X1 · 2.2M/SỐ · ${tierX1.length} SỐ):</span>
-                                <span class="text-slate-400 font-sans font-normal text-[9px]">Không trùng (1 PP)</span>
+                                <span class="text-slate-600 font-sans font-normal text-[9px]">Không trùng (1 PP)</span>
                             </div>
                             <div class="flex flex-wrap gap-1">
-                                ${renderTierChips(tierX1, 'bg-slate-900 border border-slate-700 text-slate-300 font-semibold', 'x1')}
+                                ${renderTierChips(tierX1, 'bg-slate-100 border border-slate-300 text-slate-800 font-semibold', 'x1')}
                             </div>
                         </div>` : ''}
 
                         ${xien4 ? `
-                        <div class="pt-2 border-t border-slate-800/80">
-                            <div class="text-[10px] font-black uppercase text-purple-300 mb-1 flex items-center justify-between">
+                        <div class="pt-2 border-t border-slate-200">
+                            <div class="text-[10px] font-black uppercase text-purple-900 mb-1 flex items-center justify-between">
                                 <span>🎲 XIÊN 4 TINH HOA QUÂY 11 VÉ:</span>
-                                <span class="text-purple-300 font-mono text-[10px]">${loData.isPending ? 'Vốn 11M (Chờ 18h40)' : (xien4.profitK > 0 ? `🎉 LÃI ${moneyM(xien4.profitK, { signed: true })}` : (xien4.payoutK > 0 ? `THU HỒI ${moneyM(xien4.payoutK)}` : `LỖ -${moneyM(xien4.stakeK)}`))}</span>
+                                <span class="text-purple-800 font-mono text-[10px] font-bold">${loData.isPending ? 'Vốn 11M (Chờ 18h40)' : (xien4.profitK > 0 ? `🎉 LÃI ${moneyM(xien4.profitK, { signed: true })}` : (xien4.payoutK > 0 ? `THU HỒI ${moneyM(xien4.payoutK)}` : `LỖ -${moneyM(xien4.stakeK)}`))}</span>
                             </div>
-                            <div class="rounded-lg bg-purple-950/40 border border-purple-500/30 p-2 text-xs">
+                            <div class="rounded-lg bg-purple-50 border border-purple-200 p-2 text-xs">
                                 <div class="flex items-center justify-between text-[11px] mb-1">
-                                    <span class="text-slate-300 font-bold">${escapeHtml(xien4.reason || 'Top 5 Đồng Thuận')}</span>
-                                    <span class="text-[10px] text-purple-300 font-mono">11 vé x 1M</span>
+                                    <span class="text-slate-700 font-bold">${escapeHtml(xien4.reason || 'Top 5 Đồng Thuận')}</span>
+                                    <span class="text-[10px] text-purple-800 font-mono font-bold">11 vé x 1M</span>
                                 </div>
                                 <div class="flex items-center gap-1.5 flex-wrap">
                                     ${((xien4.top4 || xien4.combinations?.[0] || xien4.numbers || [])).map(n => {
                                         const hit = Boolean(loData.drawPrizesSet && loData.drawPrizesSet.has(n));
-                                        return `<span class="px-2 py-0.5 rounded font-mono text-xs font-black ${hit ? 'bg-gradient-to-r from-purple-400 to-amber-400 text-slate-950 ring-2 ring-white scale-105 shadow-md' : 'bg-slate-800 border border-slate-700 text-purple-200'}">${number(n)}${hit ? ' ⭐' : ''}</span>`;
+                                        return `<span class="px-2 py-0.5 rounded font-mono text-xs font-black ${hit ? 'bg-gradient-to-r from-purple-500 to-amber-400 text-white ring-2 ring-purple-300 scale-105 shadow-md' : 'bg-white border border-purple-200 text-purple-950 font-bold'}">${number(n)}${hit ? ' ⭐' : ''}</span>`;
                                     }).join('')}
                                 </div>
                             </div>
@@ -13247,9 +13247,9 @@
                             const hits = (loData.drawPrizes || []).filter(x => x === n).length;
                             const isHit = hits > 0;
                             if (isHit) {
-                                return `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg font-mono text-xs bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 text-slate-950 font-black ring-2 ring-emerald-300 scale-105 shadow-md animate-pulse">🎯 ${n}${hits > 1 ? ` (${hits}n)` : ''} ⭐</span>`;
+                                return `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg font-mono text-xs bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black ring-2 ring-emerald-300 scale-105 shadow-md animate-pulse">🎯 ${n}${hits > 1 ? ` (${hits}n)` : ''} ⭐</span>`;
                             }
-                            return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs bg-slate-800/80 border border-slate-700/60 text-slate-400 font-semibold opacity-60 hover:opacity-100 transition-all">${n}</span>`;
+                            return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs bg-slate-100 border border-slate-300 text-slate-800 font-semibold">${n}</span>`;
                         }).join('')}
                     </div>
                 `;
@@ -13264,9 +13264,9 @@
         const loFinSummary = byId('loFinancialSummary');
         if (loFinSummary) {
             loFinSummary.innerHTML = `
-                <div><div class="text-[9px] text-slate-400 uppercase">Vốn Cược</div><div class="font-bold text-slate-200">${moneyM(loData.stakeK)}</div></div>
-                <div><div class="text-[9px] text-slate-400 uppercase">Tiền Thưởng</div><div class="font-bold ${loData.payoutK > 0 ? 'text-amber-300' : 'text-slate-400'}">${loData.payoutK > 0 ? moneyM(loData.payoutK) : '0đ'}</div></div>
-                <div class="text-right"><div class="text-[9px] text-slate-400 uppercase">Lãi/Lỗ Ròng</div><div class="font-black ${loData.profitK >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${moneyM(loData.profitK, { signed: true })}</div></div>
+                <div><div class="text-[9px] text-slate-500 uppercase font-semibold">Vốn Cược</div><div class="font-bold text-slate-900">${moneyM(loData.stakeK)}</div></div>
+                <div><div class="text-[9px] text-slate-500 uppercase font-semibold">Tiền Thưởng</div><div class="font-bold ${loData.payoutK > 0 ? 'text-amber-800 font-black' : 'text-slate-600'}">${loData.payoutK > 0 ? moneyM(loData.payoutK) : '0đ'}</div></div>
+                <div class="text-right"><div class="text-[9px] text-slate-500 uppercase font-semibold">Lãi/Lỗ Ròng</div><div class="font-black ${loData.profitK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${moneyM(loData.profitK, { signed: true })}</div></div>
             `;
         }
 
