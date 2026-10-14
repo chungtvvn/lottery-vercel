@@ -2064,9 +2064,9 @@
             }
             if (tierX5El) {
                 tierX5El.innerHTML = superVipNums.map(n => `
-                    <span class="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 border border-amber-200 font-mono text-xs font-black text-slate-950 px-3 py-1.5 shadow-md hover:scale-110 transition-all ring-2 ring-white/50">
+                    <span class="lo-tier-chip-x5 inline-flex items-center justify-center rounded-xl font-mono text-xs font-black px-3 py-1.5 shadow-md hover:scale-110 transition-all ring-2 ring-amber-400/50" style="background-color: #fef08a !important; border: 2px solid #eab308 !important; color: #020617 !important;">
                         ${number(n)}
-                        <span class="ml-1 text-[9px] px-1 py-0.2 rounded bg-red-600 text-white font-black">X5</span>
+                        <span class="ml-1 text-[9px] px-1 py-0.2 rounded font-black" style="background-color: #dc2626 !important; color: #ffffff !important;">X5</span>
                     </span>
                 `).join('') || '<p class="text-xs text-slate-400">Không có số nào</p>';
             }
@@ -2084,9 +2084,9 @@
             }
             if (tierX4El) {
                 tierX4El.innerHTML = vipNums.map(n => `
-                    <span class="inline-flex items-center justify-center rounded-xl bg-amber-400 border border-amber-300 font-mono text-xs font-black text-slate-950 px-3 py-1.5 shadow-md hover:scale-110 transition-all">
+                    <span class="lo-tier-chip-x4 inline-flex items-center justify-center rounded-xl font-mono text-xs font-black px-3 py-1.5 shadow-md hover:scale-110 transition-all" style="background-color: #fed7aa !important; border: 2px solid #f97316 !important; color: #020617 !important;">
                         ${number(n)}
-                        <span class="ml-1 text-[9px] px-1 py-0.2 rounded bg-black/40 text-amber-200">X4</span>
+                        <span class="ml-1 text-[9px] px-1 py-0.2 rounded font-black" style="background-color: #f97316 !important; color: #ffffff !important;">X4</span>
                     </span>
                 `).join('') || '<p class="text-xs text-slate-400">Không có số nào</p>';
             }
@@ -2104,9 +2104,9 @@
             }
             if (tierX3El) {
                 tierX3El.innerHTML = medNums.map(n => `
-                    <span class="inline-flex items-center justify-center rounded-lg bg-indigo-900/90 border border-indigo-500/50 font-mono text-xs font-black text-indigo-100 px-2.5 py-1 shadow-xs hover:scale-105 transition-all">
+                    <span class="lo-tier-chip-x3 inline-flex items-center justify-center rounded-lg font-mono text-xs font-black px-2.5 py-1 shadow-xs hover:scale-105 transition-all" style="background-color: #bae6fd !important; border: 2px solid #0284c7 !important; color: #020617 !important;">
                         ${number(n)}
-                        <span class="ml-1 text-[9px] px-1 py-0.2 rounded bg-indigo-950 text-indigo-300">X3</span>
+                        <span class="ml-1 text-[9px] px-1 py-0.2 rounded font-black" style="background-color: #0284c7 !important; color: #ffffff !important;">X3</span>
                     </span>
                 `).join('') || '<p class="text-xs text-slate-400">Không có số nào</p>';
             }
@@ -2124,9 +2124,9 @@
             }
             if (tierX1El) {
                 tierX1El.innerHTML = x1Nums.map(n => `
-                    <span class="inline-flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 font-mono text-xs font-bold text-slate-200 px-2 py-0.5 hover:scale-105 transition-all">
+                    <span class="lo-tier-chip-x1 inline-flex items-center justify-center rounded-lg font-mono text-xs font-black px-2.5 py-1 shadow-xs hover:scale-105 transition-all" style="background-color: #e2e8f0 !important; border: 2px solid #64748b !important; color: #020617 !important;">
                         ${number(n)}
-                        <span class="ml-1 text-[8px] px-1 py-0.2 rounded bg-slate-900 text-teal-400">X1</span>
+                        <span class="ml-1 text-[8px] px-1 py-0.2 rounded font-black" style="background-color: #64748b !important; color: #ffffff !important;">X1</span>
                     </span>
                 `).join('') || '<p class="text-xs text-slate-400">Không có số nào</p>';
             }
@@ -2842,24 +2842,24 @@
                     chipsHtml = `
                         <div class="space-y-2.5">
                             <div>
-                                <div class="flex items-center justify-between text-[10px] font-black uppercase text-amber-800 mb-1">
+                                <div class="lo-tier-header-x3 flex items-center justify-between text-[11px] font-black uppercase mb-1" style="color: #78350f !important;">
                                     <span>${vipHeader}</span>
-                                    <span class="text-amber-700 font-bold">Cược X3</span>
+                                    <span class="font-bold text-[10px]" style="color: #92400e !important;">Cược X3</span>
                                 </div>
                                 <div class="flex flex-wrap gap-1">
                                     ${info.x2Nums.map(n => {
                                         const isAbs = isPenta && Number(n) === 46;
-                                        return `<span class="inline-flex items-center justify-center px-2 py-1 rounded-lg font-mono text-xs ${isAbs ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black ring-2 ring-amber-300 shadow-md' : 'bg-amber-400 text-slate-950 font-black ring-1 ring-amber-300 shadow-xs'}" title="${isAbs ? 'Tuyệt đối 5/5 động cơ phê duyệt' : ''}">${number(n)}${isAbs ? ' 👑' : ''}</span>`;
+                                        return `<span class="lo-tier-chip-x3 inline-flex items-center justify-center px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs" style="background-color: #fef08a !important; border: 2px solid #eab308 !important; color: #020617 !important;" title="${isAbs ? 'Tuyệt đối 5/5 động cơ phê duyệt' : ''}">${number(n)}${isAbs ? ' 👑' : ''}</span>`;
                                     }).join('')}
                                 </div>
                             </div>
                             <div>
-                                <div class="flex items-center justify-between text-[10px] font-black uppercase text-indigo-800 mb-1">
+                                <div class="lo-tier-header-x1 flex items-center justify-between text-[11px] font-black uppercase mb-1" style="color: #0369a1 !important;">
                                     <span>${backupHeader}</span>
-                                    <span class="text-indigo-700 font-bold">Cược X1</span>
+                                    <span class="font-bold text-[10px]" style="color: #0284c7 !important;">Cược X1</span>
                                 </div>
                                 <div class="flex flex-wrap gap-1">
-                                    ${(info.x1Nums || []).map(n => `<span class="inline-flex items-center justify-center px-2 py-1 rounded-lg font-mono text-xs bg-slate-100 border border-slate-300 text-slate-950 font-black shadow-2xs">${number(n)}</span>`).join('')}
+                                    ${(info.x1Nums || []).map(n => `<span class="lo-tier-chip-x1 inline-flex items-center justify-center px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs" style="background-color: #e2e8f0 !important; border: 2px solid #64748b !important; color: #020617 !important;">${number(n)}</span>`).join('')}
                                 </div>
                             </div>
                         </div>
@@ -2921,26 +2921,26 @@
                 chipsHtml = `
                     <div class="space-y-2.5">
                         <div>
-                            <div class="flex items-center justify-between text-[10px] font-black uppercase text-amber-800 mb-1">
+                            <div class="lo-tier-header-x3 flex items-center justify-between text-[11px] font-black uppercase mb-1" style="color: #78350f !important;">
                                 <span>⚡ VIP TRÙNG X3 (${(info.x3Nums || info.x2Nums).length} số):</span>
-                                <span class="text-amber-700 font-bold">Cược X3 (3M/số · Ăn 252M)</span>
+                                <span class="font-bold text-[10px]" style="color: #92400e !important;">Cược X3 (3M/số · Ăn 252M)</span>
                             </div>
                             <div class="flex flex-wrap gap-1">
                                 ${(info.x3Nums || info.x2Nums).map(n => {
                                     const hit = (actualSpec != null && Number(n) === Number(actualSpec));
-                                    return `<span class="inline-flex items-center justify-center px-2 py-1 rounded-lg font-mono text-xs ${hit ? 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 ring-2 ring-amber-300 scale-110 shadow-lg font-black animate-pulse' : 'bg-amber-100 border border-amber-300 text-amber-950 font-black shadow-2xs hover:shadow-xs transition-all'}">${number(n)}${hit ? ' ⭐ NỔ ĐB' : ''}</span>`;
+                                    return `<span class="lo-tier-chip-x3 inline-flex items-center justify-center px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all ${hit ? 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 ring-2 ring-amber-300 scale-110 shadow-lg animate-pulse' : ''}" style="${hit ? '' : 'background-color: #fef08a !important; border: 2px solid #eab308 !important; color: #020617 !important;'}">${number(n)}${hit ? ' ⭐ NỔ ĐB' : ''}</span>`;
                                 }).join('')}
                             </div>
                         </div>
                         <div>
-                            <div class="flex items-center justify-between text-[10px] font-black uppercase text-indigo-800 mb-1">
+                            <div class="lo-tier-header-x1 flex items-center justify-between text-[11px] font-black uppercase mb-1" style="color: #0369a1 !important;">
                                 <span>🛡️ BỌC LÓT X1 (${info.x1Nums.length} số):</span>
-                                <span class="text-indigo-700 font-bold">Cược X1 (1M/số · Ăn 84M)</span>
+                                <span class="font-bold text-[10px]" style="color: #0284c7 !important;">Cược X1 (1M/số · Ăn 84M)</span>
                             </div>
                             <div class="flex flex-wrap gap-1">
                                 ${info.x1Nums.map(n => {
                                     const hit = (actualSpec != null && Number(n) === Number(actualSpec));
-                                    return `<span class="inline-flex items-center justify-center px-2 py-1 rounded-lg font-mono text-xs ${hit ? 'bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 text-slate-950 ring-2 ring-emerald-300 scale-110 shadow-lg font-black animate-pulse' : 'bg-slate-100 border border-slate-300 text-slate-950 font-black shadow-2xs hover:shadow-xs transition-all'}">${number(n)}${hit ? ' ⭐ NỔ ĐB' : ''}</span>`;
+                                    return `<span class="lo-tier-chip-x1 inline-flex items-center justify-center px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all ${hit ? 'bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 text-slate-950 ring-2 ring-emerald-300 scale-110 shadow-lg animate-pulse' : ''}" style="${hit ? '' : 'background-color: #e2e8f0 !important; border: 2px solid #64748b !important; color: #020617 !important;'}">${number(n)}${hit ? ' ⭐ NỔ ĐB' : ''}</span>`;
                                 }).join('')}
                             </div>
                         </div>
@@ -3089,23 +3089,23 @@
             const isWin = (info.isLotoWin != null) ? info.isLotoWin : (lotoProfitK > 0 || (hits > 0 && lotoPayoutK > lotoStakeK));
             const isPending = Boolean(info.isPending);
 
-            const getMethodsText = (b) => {
+            const getMethodsText = (b, color = '#0f172a') => {
                 const m = Array.isArray(b.methods) ? b.methods.join('+') : (b.methods || '');
-                return m ? ` <span class="text-[9px] opacity-75 font-sans">(${escapeHtml(m)})</span>` : '';
+                return m ? ` <span class="text-[9px] font-sans font-black ml-0.5" style="color: ${color} !important;">(${escapeHtml(m)})</span>` : '';
             };
 
             const renderChipX5 = (b) => {
                 const isHit = !isPending && (b.hits || 0) > 0;
                 if (isHit) {
                     return `
-                        <span class="px-2 py-1 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black font-mono text-xs ring-2 ring-emerald-300 shadow-md scale-105 animate-pulse">
-                            🎯 ${number(b.num)}${getMethodsText(b)} <span class="bg-emerald-950 text-emerald-200 px-1 py-0.2 rounded text-[9px] font-black ml-0.5">(${b.hits}n)</span>
+                        <span class="px-2.5 py-1 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black font-mono text-xs ring-2 ring-emerald-300 shadow-md scale-105 animate-pulse" style="color: #ffffff !important;">
+                            🎯 ${number(b.num)}${getMethodsText(b, '#d1fae5')} <span class="bg-emerald-950 text-emerald-200 px-1 py-0.2 rounded text-[9px] font-black ml-0.5">(${b.hits}n)</span>
                         </span>
                     `;
                 }
                 return `
-                    <span class="px-2 py-1 rounded-lg bg-gradient-to-r from-amber-300 to-amber-400 border border-amber-500 text-slate-950 font-mono text-xs font-black shadow-2xs hover:shadow-xs transition-all">
-                        ${number(b.num)}${getMethodsText(b)}
+                    <span class="lo-tier-chip-x5 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all" style="background-color: #fef08a !important; border: 2px solid #eab308 !important; color: #020617 !important;">
+                        ${number(b.num)}${getMethodsText(b, '#713f12')}
                     </span>
                 `;
             };
@@ -3114,14 +3114,14 @@
                 const isHit = !isPending && (b.hits || 0) > 0;
                 if (isHit) {
                     return `
-                        <span class="px-2 py-1 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black font-mono text-xs ring-2 ring-emerald-300 shadow-md scale-105 animate-pulse">
-                            🎯 ${number(b.num)}${getMethodsText(b)} <span class="bg-emerald-950 text-emerald-200 px-1 py-0.2 rounded text-[9px] font-black ml-0.5">(${b.hits}n)</span>
+                        <span class="px-2.5 py-1 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black font-mono text-xs ring-2 ring-emerald-300 shadow-md scale-105 animate-pulse" style="color: #ffffff !important;">
+                            🎯 ${number(b.num)}${getMethodsText(b, '#d1fae5')} <span class="bg-emerald-950 text-emerald-200 px-1 py-0.2 rounded text-[9px] font-black ml-0.5">(${b.hits}n)</span>
                         </span>
                     `;
                 }
                 return `
-                    <span class="px-2 py-1 rounded-lg bg-amber-100 border border-amber-400 text-amber-950 font-mono text-xs font-black shadow-2xs hover:shadow-xs transition-all">
-                        ${number(b.num)}${getMethodsText(b)}
+                    <span class="lo-tier-chip-x4 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all" style="background-color: #fed7aa !important; border: 2px solid #f97316 !important; color: #020617 !important;">
+                        ${number(b.num)}${getMethodsText(b, '#7c2d12')}
                     </span>
                 `;
             };
@@ -3130,14 +3130,14 @@
                 const isHit = !isPending && (b.hits || 0) > 0;
                 if (isHit) {
                     return `
-                        <span class="px-2 py-1 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black font-mono text-xs ring-2 ring-emerald-300 shadow-md scale-105 animate-pulse">
-                            🎯 ${number(b.num)}${getMethodsText(b)} <span class="bg-emerald-950 text-emerald-200 px-1 py-0.2 rounded text-[9px] font-black ml-0.5">(${b.hits}n)</span>
+                        <span class="px-2.5 py-1 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black font-mono text-xs ring-2 ring-emerald-300 shadow-md scale-105 animate-pulse" style="color: #ffffff !important;">
+                            🎯 ${number(b.num)}${getMethodsText(b, '#d1fae5')} <span class="bg-emerald-950 text-emerald-200 px-1 py-0.2 rounded text-[9px] font-black ml-0.5">(${b.hits}n)</span>
                         </span>
                     `;
                 }
                 return `
-                    <span class="px-2 py-1 rounded-lg bg-indigo-50 border border-indigo-300 text-indigo-950 font-mono text-xs font-black shadow-2xs hover:shadow-xs transition-all">
-                        ${number(b.num)}${getMethodsText(b)}
+                    <span class="lo-tier-chip-x3 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all" style="background-color: #bae6fd !important; border: 2px solid #0284c7 !important; color: #020617 !important;">
+                        ${number(b.num)}${getMethodsText(b, '#082f49')}
                     </span>
                 `;
             };
@@ -3146,14 +3146,14 @@
                 const isHit = !isPending && (b.hits || 0) > 0;
                 if (isHit) {
                     return `
-                        <span class="px-2 py-1 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black font-mono text-xs ring-2 ring-emerald-300 shadow-md scale-105 animate-pulse">
-                            🎯 ${number(b.num)}${getMethodsText(b)} <span class="bg-emerald-950 text-emerald-200 px-1 py-0.2 rounded text-[9px] font-black ml-0.5">(${b.hits}n)</span>
+                        <span class="px-2.5 py-1 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black font-mono text-xs ring-2 ring-emerald-300 shadow-md scale-105 animate-pulse" style="color: #ffffff !important;">
+                            🎯 ${number(b.num)}${getMethodsText(b, '#d1fae5')} <span class="bg-emerald-950 text-emerald-200 px-1 py-0.2 rounded text-[9px] font-black ml-0.5">(${b.hits}n)</span>
                         </span>
                     `;
                 }
                 return `
-                    <span class="px-2 py-1 rounded-lg bg-slate-100 border border-slate-300 text-slate-950 font-mono text-xs font-black shadow-2xs hover:shadow-xs transition-all">
-                        ${number(b.num)}${getMethodsText(b)}
+                    <span class="lo-tier-chip-x1 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all" style="background-color: #e2e8f0 !important; border: 2px solid #64748b !important; color: #020617 !important;">
+                        ${number(b.num)}${getMethodsText(b, '#0f172a')}
                     </span>
                 `;
             };
@@ -3192,9 +3192,9 @@
                     <div class="space-y-2.5">
                         ${tierX5Nums.length ? `
                             <div>
-                                <div class="text-[10px] font-black uppercase text-amber-800 mb-1 flex items-center justify-between">
+                                <div class="lo-tier-header-x5 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #78350f !important;">
                                     <span>👑 TẦNG SIÊU VIP (CƯỢC X5 · 11M/SỐ · ${tierX5Nums.length} SỐ):</span>
-                                    <span class="text-[9px] text-amber-700">Trùng 4 PP</span>
+                                    <span class="text-[10px] font-bold" style="color: #92400e !important;">Trùng 4 PP</span>
                                 </div>
                                 <div class="flex flex-wrap gap-1.5">
                                     ${tierX5Nums.map(renderChipX5).join('')}
@@ -3204,9 +3204,9 @@
 
                         ${tierX4Nums.length ? `
                             <div>
-                                <div class="text-[10px] font-black uppercase text-amber-800 mb-1 flex items-center justify-between">
+                                <div class="lo-tier-header-x4 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #78350f !important;">
                                     <span>⚡ TẦNG CỰC VIP (CƯỢC X4 · 8.8M/SỐ · ${tierX4Nums.length} SỐ):</span>
-                                    <span class="text-[9px] text-amber-700">Trùng 3 PP</span>
+                                    <span class="text-[10px] font-bold" style="color: #92400e !important;">Trùng 3 PP</span>
                                 </div>
                                 <div class="flex flex-wrap gap-1.5">
                                     ${tierX4Nums.map(renderChipX4).join('')}
@@ -3216,9 +3216,9 @@
 
                         ${tierX3Nums.length ? `
                             <div>
-                                <div class="text-[10px] font-black uppercase text-indigo-800 mb-1 flex items-center justify-between">
+                                <div class="lo-tier-header-x3 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #0369a1 !important;">
                                     <span>⚡ TẦNG TRIỂN VỌNG (CƯỢC X3 · 6.6M/SỐ · ${tierX3Nums.length} SỐ):</span>
-                                    <span class="text-[9px] text-indigo-700">Trùng 2 PP</span>
+                                    <span class="text-[10px] font-bold" style="color: #0284c7 !important;">Trùng 2 PP</span>
                                 </div>
                                 <div class="flex flex-wrap gap-1.5">
                                     ${tierX3Nums.map(renderChipX3).join('')}
@@ -3228,19 +3228,15 @@
 
                         ${tierX1Nums.length ? `
                             <div>
-                                <div class="text-[10px] font-black uppercase text-teal-800 mb-1 flex items-center justify-between">
+                                <div class="lo-tier-header-x1 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #1e293b !important;">
                                     <span>🛡️ TẦNG BẢO HIỂM (CƯỢC X1 · 2.2M/SỐ · ${tierX1Nums.length} SỐ):</span>
-                                    <span class="text-[9px] text-teal-700">Không trùng</span>
+                                    <span class="text-[10px] font-bold" style="color: #475569 !important;">Không trùng</span>
                                 </div>
                                 <div class="flex flex-wrap gap-1.5">
                                     ${tierX1Nums.map(renderChipX1).join('')}
                                 </div>
                             </div>
                         ` : ''}
-                    </div>
-
-                    <div class="text-[11px] text-slate-700 bg-white p-2 rounded-lg border border-slate-200">
-                        🎲 <strong>Xiên 4:</strong> ${escapeHtml(info.xien4Reason || (info.xien4Status === 'SKIPPED_TOO_MANY' ? 'Bỏ qua (> 5 số trùng)' : 'Không cược'))}
                     </div>
                 </div>
             `;
@@ -9870,8 +9866,8 @@
             const cX3 = byId('tripleChipsX3');
             if (cX3) {
                 cX3.innerHTML = (rec.tierX3 || []).map(n => `
-                    <span class="inline-flex items-center justify-center rounded-lg bg-amber-400 font-mono text-xs font-black text-amber-950 px-2 py-1 shadow-sm">
-                        ${number(n)}<sup class="ml-0.5 text-[9px] text-amber-950 font-black">x3</sup>
+                    <span class="inline-flex items-center justify-center rounded-lg font-mono text-xs font-black px-2.5 py-1 shadow-xs" style="background-color: #fef08a !important; border: 2px solid #eab308 !important; color: #020617 !important;">
+                        ${number(n)}<sup class="ml-0.5 text-[9px] font-black" style="color: #78350f !important;">x3</sup>
                     </span>
                 `).join('');
             }
@@ -9879,8 +9875,8 @@
             const cX2 = byId('tripleChipsX2');
             if (cX2) {
                 cX2.innerHTML = (rec.tierX2 || []).map(n => `
-                    <span class="inline-flex items-center justify-center rounded-lg bg-cyan-400 font-mono text-xs font-black text-cyan-950 px-2 py-1 shadow-sm">
-                        ${number(n)}<sup class="ml-0.5 text-[9px] text-cyan-950 font-black">x2</sup>
+                    <span class="inline-flex items-center justify-center rounded-lg font-mono text-xs font-black px-2.5 py-1 shadow-xs" style="background-color: #cffafe !important; border: 2px solid #0891b2 !important; color: #020617 !important;">
+                        ${number(n)}<sup class="ml-0.5 text-[9px] font-black" style="color: #164e63 !important;">x2</sup>
                     </span>
                 `).join('');
             }
@@ -9888,8 +9884,8 @@
             const cX1 = byId('tripleChipsX1');
             if (cX1) {
                 cX1.innerHTML = (rec.tierX1 || []).map(n => `
-                    <span class="inline-flex items-center justify-center rounded-lg bg-indigo-900 border border-indigo-500/50 font-mono text-xs font-bold text-indigo-100 px-2 py-1 shadow-sm">
-                        ${number(n)}
+                    <span class="inline-flex items-center justify-center rounded-lg font-mono text-xs font-black px-2.5 py-1 shadow-xs" style="background-color: #e2e8f0 !important; border: 2px solid #64748b !important; color: #020617 !important;">
+                        ${number(n)}<sup class="ml-0.5 text-[9px] font-black" style="color: #334155 !important;">x1</sup>
                     </span>
                 `).join('');
             }
@@ -11085,15 +11081,15 @@
                 chipsHtml = [
                     ...x3Nums.map(n => {
                         const match = isSettled && Number(n) === Number(actualNum);
-                        return `<span class="inline-flex items-center justify-center rounded px-1.5 py-0.5 font-mono text-xs font-black transition-transform ${match ? 'bg-amber-300 text-amber-950 ring-2 ring-amber-500 scale-110 shadow-sm' : 'bg-amber-100/90 text-amber-950 border border-amber-300/80 font-black'}">${number(n)}<sup class="ml-0.5 text-[8px] text-amber-700 font-black">x3</sup></span>`;
+                        return `<span class="inline-flex items-center justify-center rounded px-2 py-0.5 font-mono text-xs font-black transition-transform ${match ? 'bg-amber-300 text-amber-950 ring-2 ring-amber-500 scale-110 shadow-sm' : ''}" style="${match ? '' : 'background-color: #fef08a !important; color: #020617 !important; border: 1px solid #eab308 !important;'}">${number(n)}<sup class="ml-0.5 text-[8px] font-black" style="color: #78350f !important;">x3</sup></span>`;
                     }),
                     ...x2Nums.map(n => {
                         const match = isSettled && Number(n) === Number(actualNum);
-                        return `<span class="inline-flex items-center justify-center rounded px-1.5 py-0.5 font-mono text-xs font-black transition-transform ${match ? 'bg-cyan-300 text-cyan-950 ring-2 ring-cyan-500 scale-110 shadow-sm' : 'bg-cyan-100/90 text-cyan-950 border border-cyan-300/80 font-black'}">${number(n)}<sup class="ml-0.5 text-[8px] text-cyan-700 font-bold">x2</sup></span>`;
+                        return `<span class="inline-flex items-center justify-center rounded px-2 py-0.5 font-mono text-xs font-black transition-transform ${match ? 'bg-cyan-300 text-cyan-950 ring-2 ring-cyan-500 scale-110 shadow-sm' : ''}" style="${match ? '' : 'background-color: #cffafe !important; color: #020617 !important; border: 1px solid #0891b2 !important;'}">${number(n)}<sup class="ml-0.5 text-[8px] font-black" style="color: #164e63 !important;">x2</sup></span>`;
                     }),
                     ...x1Nums.map(n => {
                         const match = isSettled && Number(n) === Number(actualNum);
-                        return `<span class="inline-flex items-center justify-center rounded px-1.5 py-0.5 font-mono text-xs font-black transition-transform ${match ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white ring-2 ring-indigo-400 scale-110 shadow-sm animate-pulse' : 'bg-indigo-50 text-indigo-950 border border-indigo-300 shadow-2xs'}">${number(n)}<sup class="ml-0.5 text-[8px] text-indigo-700 font-black">x1</sup></span>`;
+                        return `<span class="inline-flex items-center justify-center rounded px-2 py-0.5 font-mono text-xs font-black transition-transform ${match ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white ring-2 ring-indigo-400 scale-110 shadow-sm animate-pulse' : ''}" style="${match ? '' : 'background-color: #e2e8f0 !important; color: #020617 !important; border: 1px solid #64748b !important;'}">${number(n)}<sup class="ml-0.5 text-[8px] font-black" style="color: #334155 !important;">x1</sup></span>`;
                     })
                 ].join(' ');
             } else {
@@ -11102,11 +11098,11 @@
                 chipsHtml = [
                     ...x2Nums.map(n => {
                         const match = isSettled && Number(n) === Number(actualNum);
-                        return `<span class="inline-flex items-center justify-center rounded px-1.5 py-0.5 font-mono text-xs font-black transition-transform ${match ? 'bg-amber-300 text-amber-950 ring-2 ring-amber-500 scale-110 shadow-sm' : 'bg-amber-100/90 text-amber-950 border border-amber-300/80 font-black'}">${number(n)}<sup class="ml-0.5 text-[8px] text-amber-700 font-black">x2</sup></span>`;
+                        return `<span class="inline-flex items-center justify-center rounded px-2 py-0.5 font-mono text-xs font-black transition-transform ${match ? 'bg-amber-300 text-amber-950 ring-2 ring-amber-500 scale-110 shadow-sm' : ''}" style="${match ? '' : 'background-color: #fef08a !important; color: #020617 !important; border: 1px solid #eab308 !important;'}">${number(n)}<sup class="ml-0.5 text-[8px] font-black" style="color: #78350f !important;">x2</sup></span>`;
                     }),
                     ...x1Nums.map(n => {
                         const match = isSettled && Number(n) === Number(actualNum);
-                        return `<span class="inline-flex items-center justify-center rounded px-1.5 py-0.5 font-mono text-xs font-black transition-transform ${match ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-400 scale-110 shadow-sm animate-pulse' : 'bg-slate-100 text-slate-950 border border-slate-300 shadow-2xs'}">${number(n)}</span>`;
+                        return `<span class="inline-flex items-center justify-center rounded px-2 py-0.5 font-mono text-xs font-black transition-transform ${match ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-400 scale-110 shadow-sm animate-pulse' : ''}" style="${match ? '' : 'background-color: #e2e8f0 !important; color: #020617 !important; border: 1px solid #64748b !important;'}">${number(n)}</span>`;
                     })
                 ].join(' ');
             }
@@ -13210,17 +13206,17 @@
                 const tierX1 = lt.tierX1 || [];
                 const xien4 = lt.xien4;
 
-                const renderTierChips = (nums, badgeCls, multText) => {
+                const renderTierChips = (nums, badgeCls, multText, chipStyle, methodColor) => {
                     return nums.map(n => {
                         const hits = (loData.drawPrizes || []).filter(x => x === n).length;
                         const isHit = hits > 0;
                         const betObj = lt.betNumbers?.find(b => String(b.num).padStart(2, '0') === String(n).padStart(2, '0'));
                         const mStr = betObj?.methods?.join('+') || '';
-                        const mLabel = mStr ? ` (${mStr})` : '';
+                        const mLabel = mStr ? `<span class="text-[9px] font-sans font-black ml-0.5" style="color: ${methodColor || '#020617'} !important;">(${mStr})</span>` : '';
                         if (isHit) {
-                            return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black ring-2 ring-emerald-300 scale-105 shadow-md animate-pulse">${n}${mLabel} <sub class="text-[9px] font-sans font-black text-emerald-100 ml-0.5">(${multText}${hits > 1 ? `·${hits}n` : ''})</sub> ⭐</span>`;
+                            return `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg font-mono text-xs bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black ring-2 ring-emerald-300 scale-105 shadow-md animate-pulse" style="color: #ffffff !important;">${n}${mLabel} <sub class="text-[9px] font-sans font-black text-emerald-100 ml-0.5">(${multText}${hits > 1 ? `·${hits}n` : ''})</sub> ⭐</span>`;
                         }
-                        return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono text-xs ${badgeCls}">${n}${mLabel} <sub class="text-[8px] font-sans font-bold opacity-80 ml-0.5">${multText}</sub></span>`;
+                        return `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs ${badgeCls}" style="${chipStyle}">${n}${mLabel} <sub class="text-[9px] font-sans font-black opacity-90 ml-0.5" style="color: #020617 !important;">${multText}</sub></span>`;
                     }).join('');
                 };
 
@@ -13228,65 +13224,45 @@
                     <div class="space-y-3">
                         ${tierX5.length ? `
                         <div>
-                            <div class="text-[10px] font-black uppercase text-amber-900 mb-1 flex items-center justify-between">
+                            <div class="lo-tier-header-x5 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #78350f !important;">
                                 <span>👑 TẦNG SIÊU VIP (CƯỢC X5 · 11M/SỐ · ${tierX5.length} SỐ):</span>
-                                <span class="text-amber-800 font-sans font-normal text-[9px]">Trùng 4 phương pháp</span>
+                                <span class="text-[10px] font-bold" style="color: #92400e !important;">Trùng 4 phương pháp</span>
                             </div>
-                            <div class="flex flex-wrap gap-1">
-                                ${renderTierChips(tierX5, 'bg-amber-100 border-2 border-amber-400 text-amber-950 font-black ring-1 ring-amber-400/50 shadow-xs', 'x5')}
+                            <div class="flex flex-wrap gap-1.5">
+                                ${renderTierChips(tierX5, 'lo-tier-chip-x5', 'x5', 'background-color: #fef08a !important; border: 2px solid #eab308 !important; color: #020617 !important;', '#713f12')}
                             </div>
                         </div>` : ''}
 
                         ${tierX4.length ? `
                         <div>
-                            <div class="text-[10px] font-black uppercase text-amber-800 mb-1 flex items-center justify-between">
+                            <div class="lo-tier-header-x4 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #78350f !important;">
                                 <span>⚡ TẦNG CỰC VIP (CƯỢC X4 · 8.8M/SỐ · ${tierX4.length} SỐ):</span>
-                                <span class="text-amber-700 font-sans font-normal text-[9px]">Trùng 3 phương pháp</span>
+                                <span class="text-[10px] font-bold" style="color: #92400e !important;">Trùng 3 phương pháp</span>
                             </div>
-                            <div class="flex flex-wrap gap-1">
-                                ${renderTierChips(tierX4, 'bg-amber-100 border border-amber-400 text-amber-950 font-black shadow-2xs', 'x4')}
+                            <div class="flex flex-wrap gap-1.5">
+                                ${renderTierChips(tierX4, 'lo-tier-chip-x4', 'x4', 'background-color: #fed7aa !important; border: 2px solid #f97316 !important; color: #020617 !important;', '#7c2d12')}
                             </div>
                         </div>` : ''}
 
                         ${tierX3.length ? `
                         <div>
-                            <div class="text-[10px] font-black uppercase text-indigo-900 mb-1 flex items-center justify-between">
+                            <div class="lo-tier-header-x3 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #0369a1 !important;">
                                 <span>✨ TẦNG TRIỂN VỌNG (CƯỢC X3 · 6.6M/SỐ · ${tierX3.length} SỐ):</span>
-                                <span class="text-indigo-800 font-sans font-normal text-[9px]">Trùng 2 phương pháp</span>
+                                <span class="text-[10px] font-bold" style="color: #0284c7 !important;">Trùng 2 phương pháp</span>
                             </div>
-                            <div class="flex flex-wrap gap-1">
-                                ${renderTierChips(tierX3, 'bg-indigo-50 border border-indigo-300 text-indigo-950 font-black shadow-2xs', 'x3')}
+                            <div class="flex flex-wrap gap-1.5">
+                                ${renderTierChips(tierX3, 'lo-tier-chip-x3', 'x3', 'background-color: #bae6fd !important; border: 2px solid #0284c7 !important; color: #020617 !important;', '#082f49')}
                             </div>
                         </div>` : ''}
 
                         ${tierX1.length ? `
                         <div>
-                            <div class="text-[10px] font-black uppercase text-slate-700 mb-1 flex items-center justify-between">
+                            <div class="lo-tier-header-x1 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #1e293b !important;">
                                 <span>🛡️ TẦNG BẢO HIỂM (CƯỢC X1 · 2.2M/SỐ · ${tierX1.length} SỐ):</span>
-                                <span class="text-slate-600 font-sans font-normal text-[9px]">Không trùng (1 PP)</span>
+                                <span class="text-[10px] font-bold" style="color: #475569 !important;">Không trùng (1 PP)</span>
                             </div>
-                            <div class="flex flex-wrap gap-1">
-                                ${renderTierChips(tierX1, 'bg-slate-100 border border-slate-300 text-slate-950 font-black shadow-2xs', 'x1')}
-                            </div>
-                        </div>` : ''}
-
-                        ${xien4 ? `
-                        <div class="pt-2 border-t border-slate-200">
-                            <div class="text-[10px] font-black uppercase text-purple-900 mb-1 flex items-center justify-between">
-                                <span>🎲 XIÊN 4 TINH HOA QUÂY 11 VÉ:</span>
-                                <span class="text-purple-800 font-mono text-[10px] font-bold">${loData.isPending ? 'Vốn 11M (Chờ 18h40)' : (xien4.profitK > 0 ? `🎉 LÃI ${moneyM(xien4.profitK, { signed: true })}` : (xien4.payoutK > 0 ? `THU HỒI ${moneyM(xien4.payoutK)}` : `LỖ -${moneyM(xien4.stakeK)}`))}</span>
-                            </div>
-                            <div class="rounded-lg bg-purple-50 border border-purple-200 p-2 text-xs">
-                                <div class="flex items-center justify-between text-[11px] mb-1">
-                                    <span class="text-slate-700 font-bold">${escapeHtml(xien4.reason || 'Top 5 Đồng Thuận')}</span>
-                                    <span class="text-[10px] text-purple-800 font-mono font-bold">11 vé x 1M</span>
-                                </div>
-                                <div class="flex items-center gap-1.5 flex-wrap">
-                                    ${((xien4.top4 || xien4.combinations?.[0] || xien4.numbers || [])).map(n => {
-                                        const hit = Boolean(loData.drawPrizesSet && loData.drawPrizesSet.has(n));
-                                        return `<span class="px-2 py-0.5 rounded font-mono text-xs font-black ${hit ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white ring-2 ring-purple-300 scale-105 shadow-md animate-pulse' : 'bg-purple-50 border border-purple-300 text-purple-950 font-black shadow-2xs'}">${number(n)}${hit ? ' ⭐' : ''}</span>`;
-                                    }).join('')}
-                                </div>
+                            <div class="flex flex-wrap gap-1.5">
+                                ${renderTierChips(tierX1, 'lo-tier-chip-x1', 'x1', 'background-color: #e2e8f0 !important; border: 2px solid #64748b !important; color: #020617 !important;', '#0f172a')}
                             </div>
                         </div>` : ''}
                     </div>

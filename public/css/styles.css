@@ -367,7 +367,6 @@ body .bg-blue-100,
 body .bg-indigo-100 {
     background-color: rgba(14, 165, 233, 0.10) !important;
     border-color: rgba(56, 189, 248, 0.25) !important;
-    color: #dff7ff !important;
 }
 
 body .bg-teal-50,
@@ -378,7 +377,6 @@ body .bg-emerald-100,
 body .bg-green-100 {
     background-color: rgba(34, 197, 94, 0.11) !important;
     border-color: rgba(74, 222, 128, 0.26) !important;
-    color: #dcfce7 !important;
 }
 
 body .bg-red-50,
@@ -387,7 +385,6 @@ body .bg-rose-50,
 body .bg-rose-100 {
     background-color: rgba(244, 63, 94, 0.12) !important;
     border-color: rgba(251, 113, 133, 0.28) !important;
-    color: #ffe4e6 !important;
 }
 
 body .bg-yellow-50,
@@ -398,7 +395,65 @@ body .bg-orange-50,
 body .bg-orange-100 {
     background-color: rgba(245, 158, 11, 0.13) !important;
     border-color: rgba(251, 191, 36, 0.28) !important;
-    color: #fff7ed !important;
+}
+
+/* High-Contrast Multi-Tier Bet Chips (X5, X4, X3, X2, X1) */
+body .lo-tier-chip,
+body .lo-tier-chip-x5,
+body .lo-tier-chip-x4,
+body .lo-tier-chip-x3,
+body .lo-tier-chip-x2,
+body .lo-tier-chip-x1 {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+    font-weight: 900 !important;
+    letter-spacing: 0.02em !important;
+}
+
+body .lo-tier-chip-x5 {
+    background-color: #fef08a !important;
+    border: 2px solid #eab308 !important;
+    color: #020617 !important;
+}
+
+body .lo-tier-chip-x4 {
+    background-color: #fed7aa !important;
+    border: 2px solid #f97316 !important;
+    color: #020617 !important;
+}
+
+body .lo-tier-chip-x3 {
+    background-color: #bae6fd !important;
+    border: 2px solid #0284c7 !important;
+    color: #020617 !important;
+}
+
+body .lo-tier-chip-x2 {
+    background-color: #cffafe !important;
+    border: 2px solid #0891b2 !important;
+    color: #020617 !important;
+}
+
+body .lo-tier-chip-x1 {
+    background-color: #e2e8f0 !important;
+    border: 2px solid #64748b !important;
+    color: #020617 !important;
+}
+
+body .lo-tier-header-x5,
+body .lo-tier-header-x4 {
+    color: #78350f !important;
+}
+body .lo-tier-header-x3 {
+    color: #0369a1 !important;
+}
+body .lo-tier-header-x2 {
+    color: #0e7490 !important;
+}
+body .lo-tier-header-x1 {
+    color: #1e293b !important;
 }
 
 body .text-blue-900,
