@@ -159,7 +159,7 @@
     "snapshotLock": {
       "isLocked": false,
       "lockActive": false,
-      "lockReason": "Chưa đến 12:00 trưa (còn 683 phút). Dự đoán vẫn có thể cập nhật."
+      "lockReason": "Chưa đến 12:00 trưa (còn 661 phút). Dự đoán vẫn có thể cập nhật."
     }
   },
   "settledLedger": [

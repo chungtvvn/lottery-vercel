@@ -2709,7 +2709,7 @@
                 const deAbstain = Boolean(deRow?.abstained);
                 const deHit = Boolean(deRow?.hit);
                 const deStakeK = deAbstain ? 0 : 4800;
-                const deProfitK = deRow ? (deRow.dayProfitK ?? (deAbstain ? 0 : (deHit ? 12000 : -4800))) : 0;
+                const deProfitK = deAbstain ? 0 : (deHit ? 12000 : -4800);
 
                 const datePrizes = data.drawPrizesByDate?.[date]?.prizes || (loRow?.actual27) || (loRow?.actualPrizes) || [];
                 const loInfo = getLoTriCoreRowInfo(loRow, loMode, datePrizes);
@@ -4027,8 +4027,8 @@
             } else {
                 deAbstain = Boolean(deRow?.abstained);
                 deHit = Boolean(deRow?.hit);
-                deProfitK = deRow?.dayProfitK ?? (deAbstain ? 0 : (deHit ? 12000 : -4800));
-                deStakeK = deAbstain ? 0 : (deRow?.stakeK || 4800);
+                deStakeK = deAbstain ? 0 : 4800;
+                deProfitK = deAbstain ? 0 : (deHit ? 12000 : -4800);
             }
 
             const loHits = loInfo.hits;
@@ -4436,7 +4436,7 @@
                         </td>
                         <td class="py-2.5 px-3 text-right">
                             <div><span class="font-bold ${row.deProfitK > 0 ? 'text-emerald-700' : (row.deProfitK < 0 ? 'text-rose-700' : 'text-slate-500')}">${row.deAbstain ? '0đ' : formatMoneyK(row.deProfitK)}</span></div>
-                            <div class="text-[10px] font-semibold ${row.cumDeK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">LK: ${formatMoneyK(cumDeK)}</div>
+                            <div class="text-[10px] font-semibold ${row.cumDeK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">LK: ${formatMoneyK(row.cumDeK)}</div>
                         </td>
                         <td class="py-2.5 px-3 text-right">
                             <div><span class="font-bold ${row.loProfitK > 0 ? 'text-emerald-700' : (row.loProfitK < 0 ? 'text-rose-700' : 'text-slate-500')}">${formatMoneyK(row.loProfitK)}</span></div>
@@ -4460,9 +4460,9 @@
                 if (row.deAbstain) {
                     statusBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-black bg-slate-100 text-slate-900 border border-slate-300">🛡️ ABSTAIN (Né Cược)</span>';
                 } else if (row.deHit) {
-                    statusBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-sm">🎯 TRÚNG ĐỀ (+60.0M)</span>';
+                    statusBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-sm">🎯 TRÚNG ĐỀ (+12.0M)</span>';
                 } else {
-                    statusBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300">❌ TRƯỢT (-24.0M)</span>';
+                    statusBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300">❌ TRƯỢT (-4.8M)</span>';
                 }
 
                 let numsCellContent = '—';

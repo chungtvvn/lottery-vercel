@@ -6045,8 +6045,8 @@
                 loXien5Top5 = (top5XienDay.top5 || []).map(number);
                 loXien5H5 = top5XienDay.h5 || 0;
                 const evalX5 = evaluateXien5_5DanX4(loXien5H5);
-                loXien5PayoutK = top5XienDay.x5Payout55K != null ? top5XienDay.x5Payout55K : evalX5.payoutK;
-                loXien5ProfitK = top5XienDay.x5Profit55K != null ? top5XienDay.x5Profit55K : evalX5.profitK;
+                loXien5PayoutK = evalX5.payoutK;
+                loXien5ProfitK = evalX5.profitK;
                 loXien5Tickets = top5XienDay.x5Tickets || getXi5Tickets(top5XienDay.top5);
             } else {
                 let fallbackTop5 = (lo4Row?.top5 || []).map(number);

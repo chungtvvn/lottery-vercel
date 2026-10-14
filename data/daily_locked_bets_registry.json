@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "description": "Single Source of Truth (SSOT) Immutable Daily Bets and Settlement Registry",
-  "updatedAt": "2026-10-14T17:37:41.538Z",
+  "updatedAt": "2026-10-14T17:59:17.526Z",
   "dates": {
     "2026-10-10": {
       "targetDate": "2026-10-10",
@@ -21817,7 +21817,7 @@
           "isWin": false
         }
       },
-      "settledAt": "2026-10-14T17:37:41.490Z",
+      "settledAt": "2026-10-14T17:59:17.481Z",
       "actualResult": {
         "special": "59",
         "prizes": [
@@ -25955,9 +25955,9 @@
             "isLocked": false,
             "isSettled": false,
             "lockActive": false,
-            "minutesUntilLock": 683,
-            "lockReason": "Chưa đến 12:00 trưa (còn 683 phút). Dự đoán vẫn có thể cập nhật.",
-            "vnTime": "2026-10-15T00:37:41+07:00"
+            "minutesUntilLock": 661,
+            "lockReason": "Chưa đến 12:00 trưa (còn 661 phút). Dự đoán vẫn có thể cập nhật.",
+            "vnTime": "2026-10-15T00:59:16+07:00"
           }
         },
         "tripleMerge": {
@@ -26078,9 +26078,9 @@
             "isLocked": false,
             "isSettled": false,
             "lockActive": false,
-            "minutesUntilLock": 683,
-            "lockReason": "Chưa đến 12:00 trưa (còn 683 phút). Dự đoán vẫn có thể cập nhật.",
-            "vnTime": "2026-10-15T00:37:41+07:00"
+            "minutesUntilLock": 661,
+            "lockReason": "Chưa đến 12:00 trưa (còn 661 phút). Dự đoán vẫn có thể cập nhật.",
+            "vnTime": "2026-10-15T00:59:16+07:00"
           }
         },
         "adaptiveDualMerge": {
@@ -26272,9 +26272,9 @@
             "isLocked": false,
             "isSettled": false,
             "lockActive": false,
-            "minutesUntilLock": 683,
-            "lockReason": "Chưa đến 12:00 trưa (còn 683 phút). Dự đoán vẫn có thể cập nhật.",
-            "vnTime": "2026-10-15T00:37:41+07:00"
+            "minutesUntilLock": 661,
+            "lockReason": "Chưa đến 12:00 trưa (còn 661 phút). Dự đoán vẫn có thể cập nhật.",
+            "vnTime": "2026-10-15T00:59:16+07:00"
           }
         },
         "semanticResonanceSuite": {
@@ -26515,7 +26515,7 @@
           "snapshotLock": {
             "isLocked": false,
             "lockActive": false,
-            "lockReason": "Chưa đến 12:00 trưa (còn 683 phút). Dự đoán vẫn có thể cập nhật."
+            "lockReason": "Chưa đến 12:00 trưa (còn 661 phút). Dự đoán vẫn có thể cập nhật."
           }
         }
       },
