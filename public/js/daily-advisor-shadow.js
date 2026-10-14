@@ -2175,13 +2175,13 @@
             const settledRowsHtml = reversedDropoffRows.map(r => {
                 const dateVi = formatDateVi(r.date);
                 const hitBadge = r.hit
-                    ? '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-xs">🎯 TRÚNG ĐỀ (+44.0M)</span>'
+                    ? '<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-1 ring-emerald-300 shadow-xs">🎯 TRÚNG ĐỀ (+44.0M)</span>'
                     : '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">❌ TRƯỢT (-40.0M)</span>';
 
                 const actualStr = (r.actual !== null && r.actual !== undefined) ? numStr(r.actual) : '—';
                 const hitNumberHtml = r.hit
-                    ? `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg font-black font-mono text-sm bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">🎯 ${actualStr} ⭐</span>`
-                    : `<span class="text-slate-600 font-mono text-xs">${actualStr}</span>`;
+                    ? `<span class="inline-flex items-center justify-center px-3 py-1 rounded-xl font-black font-mono text-base bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 ring-2 ring-amber-300 shadow-md animate-pulse">🎯 ${actualStr} ⭐</span>`
+                    : `<span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-lg font-mono font-black text-sm bg-slate-100 text-slate-900 border border-slate-300 shadow-2xs">${actualStr}</span>`;
 
                 const stakeM = ((r.stakeK || 40000) / 1000).toFixed(1) + 'M';
 
@@ -2191,16 +2191,16 @@
                         <td class="py-2.5 px-3">
                             <div class="flex items-center gap-1.5 flex-wrap">
                                 <span class="text-amber-900 font-bold">Đa Động Cơ 40s</span>
-                                ${r.hit ? `<span class="inline-flex items-center px-1.5 py-0.2 rounded font-black font-mono text-[10px] bg-amber-100 text-amber-900 ring-1 ring-amber-300 shadow-xs">🎯 NỔ ĐỀ: ${actualStr} ⭐</span>` : ''}
+                                ${r.hit ? `<span class="inline-flex items-center px-2 py-0.5 rounded-md font-black font-mono text-xs bg-amber-400 text-slate-950 ring-2 ring-amber-300 shadow-xs">🎯 NỔ ĐỀ: ${actualStr} ⭐</span>` : ''}
                             </div>
                             <span class="text-[10px] text-slate-600 block">Đánh phẳng 1M/số (Ăn 84M)</span>
                         </td>
                         <td class="py-2.5 px-3 text-center">${hitBadge}</td>
                         <td class="py-2.5 px-3 text-center">${hitNumberHtml}</td>
-                        <td class="py-2.5 px-3 text-right text-slate-600 font-semibold">${stakeM}</td>
-                        <td class="py-2.5 px-3 text-right font-bold ${r.payoutK > 0 ? 'text-amber-800' : 'text-slate-400'}">${r.payoutK > 0 ? formatMoneyK(r.payoutK, false) : '0đ'}</td>
+                        <td class="py-2.5 px-3 text-right text-slate-700 font-bold">${stakeM}</td>
+                        <td class="py-2.5 px-3 text-right font-black ${r.payoutK > 0 ? 'text-amber-800' : 'text-slate-400'}">${r.payoutK > 0 ? formatMoneyK(r.payoutK, false) : '0đ'}</td>
                         <td class="py-2.5 px-3 text-right font-black ${r.profitK > 0 ? 'text-emerald-700' : 'text-rose-700'}">${formatMoneyK(r.profitK)}</td>
-                        <td class="py-2.5 px-3 text-right font-bold ${r.viewAccumProfitK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${formatMoneyK(r.viewAccumProfitK)}</td>
+                        <td class="py-2.5 px-3 text-right font-black ${r.viewAccumProfitK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${formatMoneyK(r.viewAccumProfitK)}</td>
                         <td class="py-2.5 px-3 text-center">
                             <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${r.date}" data-slip-cat="deDropoff">
                                 <i class="bi bi-eye"></i> 40 Số
@@ -2289,8 +2289,8 @@
                         </div>
                     </td>
                     <td class="py-3 px-3">
-                        <div class="flex items-center gap-1 font-bold text-slate-900 flex-wrap">
-                            ${top5Pending.map(n => `<span class="bg-amber-100 text-amber-900 px-1.5 py-0.5 rounded border border-amber-300 font-mono">${n}</span>`).join(' ')}
+                        <div class="flex items-center gap-1 font-black text-slate-950 flex-wrap">
+                            ${top5Pending.map(n => `<span class="bg-amber-100 text-amber-950 px-2 py-0.5 rounded-lg border border-amber-300 font-mono font-black shadow-2xs">${n}</span>`).join(' ')}
                         </div>
                         <span class="text-[10px] text-slate-600 block mt-0.5">Top 5 QMBF v6</span>
                     </td>
@@ -2320,16 +2320,16 @@
                 const top5Chips = r.top5.map(n => {
                     const isHit = r.hitsInTop5.includes(n);
                     if (isHit) {
-                        return `<span class="inline-flex items-center px-1.5 py-0.5 rounded font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-xs animate-pulse font-mono">🎯 ${n}</span>`;
+                        return `<span class="inline-flex items-center px-2 py-0.5 rounded-lg font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-sm animate-pulse font-mono text-xs">🎯 ${n}</span>`;
                     }
-                    return `<span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 font-mono">${n}</span>`;
+                    return `<span class="px-2 py-0.5 rounded-lg bg-slate-100 text-slate-950 border border-slate-300 font-black font-mono text-xs shadow-2xs">${n}</span>`;
                 }).join(' ');
 
                 // Win ticket badges
                 let ticketBadges = [];
-                if (r.x4Count > 0) ticketBadges.push(`<span class="inline-flex items-center px-2 py-0.5 rounded font-black text-[10px] bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-xs">⭐ ${r.x4Count} vé X4 (+${(r.x4Count * 384)}M)</span>`);
-                if (r.x3Count > 0) ticketBadges.push(`<span class="inline-flex items-center px-2 py-0.5 rounded font-black text-[10px] bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-xs">🎉 ${r.x3Count} vé X3 (+${(r.x3Count * 84)}M)</span>`);
-                if (r.x2Count > 0) ticketBadges.push(`<span class="inline-flex items-center px-1.5 py-0.5 rounded font-bold text-[10px] bg-cyan-50 text-cyan-800 border border-cyan-200">⚡ ${r.x2Count} vé X2 (+${(r.x2Count * 12)}M)</span>`);
+                if (r.x4Count > 0) ticketBadges.push(`<span class="inline-flex items-center px-2.5 py-0.5 rounded-lg font-black text-[11px] bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">⭐ ${r.x4Count} vé X4 (+${(r.x4Count * 384)}M)</span>`);
+                if (r.x3Count > 0) ticketBadges.push(`<span class="inline-flex items-center px-2.5 py-0.5 rounded-lg font-black text-[11px] bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-1 ring-emerald-300 shadow-xs">🎉 ${r.x3Count} vé X3 (+${(r.x3Count * 84)}M)</span>`);
+                if (r.x2Count > 0) ticketBadges.push(`<span class="inline-flex items-center px-2 py-0.5 rounded-lg font-black text-[11px] bg-cyan-100 text-cyan-900 border border-cyan-300">⚡ ${r.x2Count} vé X2 (+${(r.x2Count * 12)}M)</span>`);
                 if (!ticketBadges.length) ticketBadges.push('<span class="text-rose-700 text-[10px] font-bold">❌ 0 vé trúng</span>');
 
                 const isWin = r.isWin;
@@ -2338,24 +2338,24 @@
                     <tr class="border-b border-slate-200 ${isWin ? 'bg-emerald-50/60 border-l-4 border-l-emerald-500' : ''} hover:bg-slate-50 transition-colors font-mono text-xs text-slate-800">
                         <td class="py-2.5 px-3 font-bold text-slate-900">${dateVi}</td>
                         <td class="py-2.5 px-3">
-                            <div class="flex items-center gap-1 flex-wrap">${top5Chips}</div>
+                            <div class="flex items-center gap-1.5 flex-wrap">${top5Chips}</div>
                         </td>
                         <td class="py-2.5 px-3 text-slate-800">
                             <span class="font-bold text-slate-900">5 Dàn Xiên 4</span>
                             <span class="text-[10px] text-slate-600 block">Vốn 55M (11M/dàn)</span>
                         </td>
                         <td class="py-2.5 px-3 text-center">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-black ${r.h5 >= 3 ? 'bg-amber-400 text-slate-950 ring-2 ring-amber-300' : (r.h5 === 2 ? 'bg-teal-100 text-teal-800 border border-teal-300' : 'bg-rose-50 text-rose-700 border border-rose-200')}">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black ${r.h5 >= 3 ? 'bg-amber-400 text-slate-950 ring-2 ring-amber-300 shadow-xs' : (r.h5 === 2 ? 'bg-teal-100 text-teal-900 border border-teal-300 font-bold' : 'bg-rose-50 text-rose-800 border border-rose-300 font-bold')}">
                                 ${r.h5}/5 con
                             </span>
                         </td>
                         <td class="py-2.5 px-3 text-center">
-                            <div class="flex items-center justify-center gap-1 flex-wrap">${ticketBadges.join(' ')}</div>
+                            <div class="flex items-center justify-center gap-1.5 flex-wrap">${ticketBadges.join(' ')}</div>
                         </td>
-                        <td class="py-2.5 px-3 text-right text-slate-600 font-semibold">55.0M</td>
-                        <td class="py-2.5 px-3 text-right font-bold ${r.payoutK > 0 ? 'text-amber-800' : 'text-slate-400'}">${r.payoutK > 0 ? formatMoneyK(r.payoutK, false) : '0đ'}</td>
+                        <td class="py-2.5 px-3 text-right text-slate-700 font-bold">55.0M</td>
+                        <td class="py-2.5 px-3 text-right font-black ${r.payoutK > 0 ? 'text-amber-800' : 'text-slate-400'}">${r.payoutK > 0 ? formatMoneyK(r.payoutK, false) : '0đ'}</td>
                         <td class="py-2.5 px-3 text-right font-black ${r.profitK > 0 ? 'text-emerald-700' : 'text-rose-700'}">${formatMoneyK(r.profitK)}</td>
-                        <td class="py-2.5 px-3 text-right font-bold ${r.viewAccumProfitK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${formatMoneyK(r.viewAccumProfitK)}</td>
+                        <td class="py-2.5 px-3 text-right font-black ${r.viewAccumProfitK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${formatMoneyK(r.viewAccumProfitK)}</td>
                         <td class="py-2.5 px-3 text-center">
                             <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${r.date}" data-slip-cat="loXien5">
                                 <i class="bi bi-eye"></i> 5 Dàn
@@ -2474,13 +2474,13 @@
             const settledRowsHtml = reversedRows.map(r => {
                 const dateVi = formatDateVi(r.date);
                 const hitBadge = r.isHit
-                    ? '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-xs">🎯 TRÚNG ĐỀ (+48.0M)</span>'
-                    : '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">❌ TRƯỢT (-36.0M)</span>';
+                    ? '<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-sm animate-pulse">🎯 TRÚNG ĐỀ (+48.0M)</span>'
+                    : '<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-rose-50 text-rose-800 border border-rose-300">❌ TRƯỢT (-36.0M)</span>';
 
                 const actualStr = r.actualStr || '—';
                 const hitNumberHtml = r.isHit
-                    ? `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg font-black font-mono text-sm bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">🎯 ${actualStr} ⭐</span>`
-                    : `<span class="text-slate-600 font-mono text-xs">${actualStr}</span>`;
+                    ? `<span class="inline-flex items-center justify-center px-3 py-1 rounded-xl font-black font-mono text-base bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 ring-2 ring-amber-300 shadow-md animate-pulse">🎯 ${actualStr} ⭐</span>`
+                    : `<span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-lg font-mono font-black text-sm bg-slate-100 text-slate-950 border border-slate-300 shadow-2xs">${actualStr}</span>`;
 
                 return `
                     <tr class="border-b border-slate-200 ${r.isHit ? 'bg-amber-50/70 border-l-4 border-l-amber-500' : ''} hover:bg-slate-50 transition-colors font-mono text-xs text-slate-800">
@@ -2488,16 +2488,16 @@
                         <td class="py-2.5 px-3">
                             <div class="flex items-center gap-1.5 flex-wrap">
                                 <span class="text-amber-900 font-bold">⭐ Đề 36s VIP Sweet-Spot</span>
-                                ${r.isHit ? `<span class="inline-flex items-center px-1.5 py-0.2 rounded font-black font-mono text-[10px] bg-amber-100 text-amber-900 ring-1 ring-amber-300 shadow-xs">🎯 NỔ: ${actualStr} ⭐</span>` : ''}
+                                ${r.isHit ? `<span class="inline-flex items-center px-2 py-0.5 rounded-lg font-black font-mono text-xs bg-amber-100 text-amber-950 ring-1 ring-amber-300 shadow-xs">🎯 NỔ: ${actualStr} ⭐</span>` : ''}
                             </div>
                             <span class="text-[10px] text-slate-600 block">Vốn 36M (1M/số) · Ăn 84M · Lãi +48M</span>
                         </td>
                         <td class="py-2.5 px-3 text-center">${hitBadge}</td>
                         <td class="py-2.5 px-3 text-center">${hitNumberHtml}</td>
-                        <td class="py-2.5 px-3 text-right text-slate-600 font-semibold">36.0M</td>
-                        <td class="py-2.5 px-3 text-right font-bold ${r.payoutK > 0 ? 'text-amber-800' : 'text-slate-400'}">${r.payoutK > 0 ? formatMoneyK(r.payoutK, false) : '0đ'}</td>
+                        <td class="py-2.5 px-3 text-right text-slate-700 font-bold">36.0M</td>
+                        <td class="py-2.5 px-3 text-right font-black ${r.payoutK > 0 ? 'text-amber-800' : 'text-slate-400'}">${r.payoutK > 0 ? formatMoneyK(r.payoutK, false) : '0đ'}</td>
                         <td class="py-2.5 px-3 text-right font-black ${r.profitK > 0 ? 'text-emerald-700' : 'text-rose-700'}">${formatMoneyK(r.profitK)}</td>
-                        <td class="py-2.5 px-3 text-right font-bold ${r.viewAccumProfitK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${formatMoneyK(r.viewAccumProfitK)}</td>
+                        <td class="py-2.5 px-3 text-right font-black ${r.viewAccumProfitK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${formatMoneyK(r.viewAccumProfitK)}</td>
                         <td class="py-2.5 px-3 text-center">
                             <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${r.date}" data-slip-cat="de36">
                                 <i class="bi bi-eye"></i> 36 Số
@@ -2630,16 +2630,16 @@
                 const dateVi = formatDateVi(r.date);
                 const pillsHtml = r.loInfo.pills.map(p => {
                     if (p.isHit) {
-                        return `<span class="inline-flex items-center px-2 py-0.5 rounded-lg font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-1 ring-emerald-300 shadow-xs animate-pulse font-mono">🎯 ${p.num} <sub class="text-[8px] font-black ml-0.5">${p.hits}n</sub></span>`;
+                        return `<span class="inline-flex items-center px-2 py-0.5 rounded-lg font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-sm animate-pulse font-mono text-xs">🎯 ${p.num} <sub class="text-[9px] font-black ml-0.5">${p.hits}n</sub></span>`;
                     }
-                    return `<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 font-mono">${p.num}</span>`;
+                    return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg bg-slate-100 text-slate-950 border border-slate-300 font-black font-mono text-xs shadow-2xs">${p.num}</span>`;
                 }).join(' ');
 
                 const winBadge = r.isWin
-                    ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-xs">🔥 THẮNG LÔ (+${formatMoneyK(r.profitK, false)})</span>`
+                    ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-1 ring-emerald-300 shadow-xs">🔥 THẮNG LÔ (+${formatMoneyK(r.profitK, false)})</span>`
                     : (r.hits === 1
-                        ? '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-300">⚡ NỔ 1 NHÁY (-7.4M)</span>'
-                        : '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">❌ TRƯỢT (-15.4M)</span>');
+                        ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-bold bg-amber-100 text-amber-950 border border-amber-300">⚡ NỔ 1 NHÁY (-7.4M)</span>'
+                        : '<span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300">❌ TRƯỢT (-15.4M)</span>');
 
                 return `
                     <tr class="border-b border-slate-200 ${r.isWin ? 'bg-teal-50/60 border-l-4 border-l-teal-500' : ''} hover:bg-slate-50 transition-colors font-mono text-xs text-slate-800">
@@ -2649,14 +2649,14 @@
                         </td>
                         <td class="py-2.5 px-3 text-center">${winBadge}</td>
                         <td class="py-2.5 px-3 text-center">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-black ${r.hits >= 2 ? 'bg-amber-400 text-slate-950 ring-2 ring-amber-300' : (r.hits === 1 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-50 text-rose-700 border border-rose-200')}">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black ${r.hits >= 2 ? 'bg-amber-400 text-slate-950 ring-2 ring-amber-300 shadow-xs' : (r.hits === 1 ? 'bg-emerald-100 text-emerald-950 border border-emerald-300 font-bold' : 'bg-rose-50 text-rose-800 border border-rose-300 font-bold')}">
                                 ${r.hits} nháy
                             </span>
                         </td>
-                        <td class="py-2.5 px-3 text-right text-slate-600 font-semibold">15.4M</td>
-                        <td class="py-2.5 px-3 text-right font-bold ${r.payoutK > 0 ? 'text-amber-800' : 'text-slate-400'}">${r.payoutK > 0 ? formatMoneyK(r.payoutK, false) : '0đ'}</td>
+                        <td class="py-2.5 px-3 text-right text-slate-700 font-bold">15.4M</td>
+                        <td class="py-2.5 px-3 text-right font-black ${r.payoutK > 0 ? 'text-amber-800' : 'text-slate-400'}">${r.payoutK > 0 ? formatMoneyK(r.payoutK, false) : '0đ'}</td>
                         <td class="py-2.5 px-3 text-right font-black ${r.profitK > 0 ? 'text-emerald-700' : 'text-rose-700'}">${formatMoneyK(r.profitK)}</td>
-                        <td class="py-2.5 px-3 text-right font-bold ${r.viewAccumProfitK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${formatMoneyK(r.viewAccumProfitK)}</td>
+                        <td class="py-2.5 px-3 text-right font-black ${r.viewAccumProfitK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${formatMoneyK(r.viewAccumProfitK)}</td>
                         <td class="py-2.5 px-3 text-center">
                             <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${r.date}" data-slip-cat="loTop7">
                                 <i class="bi bi-eye"></i> Top 7
@@ -2889,43 +2889,43 @@
 
                 let deBadge = '';
                 if (row.deAbstain) {
-                    deBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-300">🛡️ Né Cược (0đ)</span>';
+                    deBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-black bg-slate-100 text-slate-900 border border-slate-300">🛡️ Né Cược (0đ)</span>';
                 } else if (row.deHit) {
-                    deBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-xs animate-pulse">🎯 Trúng Đề (+60M) · ${actualStr} ⭐</span>`;
+                    deBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">🎯 Trúng Đề (+60M) · ${actualStr} ⭐</span>`;
                 } else {
-                    deBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">❌ Trượt (-24M) · ${actualStr}</span>`;
+                    deBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300">❌ Trượt (-24M) · <strong class="font-mono font-black">${actualStr}</strong></span>`;
                 }
 
                 const loHitsList = row.loInfo.pills.filter(p => p.hits > 0);
                 const loBadge = row.isLoWin
-                    ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-xs">🔥 ${row.loHits} nháy (+${formatMoneyK(row.loProfitK, false)})</span>`
-                    : `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">${row.loHits} nháy (-${formatMoneyK(Math.abs(row.loProfitK), false)})</span>`;
+                    ? `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-sm">🔥 ${row.loHits} nháy (+${formatMoneyK(row.loProfitK, false)})</span>`
+                    : `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300"><strong class="font-black">${row.loHits}</strong> nháy (-${formatMoneyK(Math.abs(row.loProfitK), false)})</span>`;
 
                 let xien5Badge = '';
                 if (row.x4Count > 0) {
-                    xien5Badge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-xs animate-pulse">⭐ ĂN X4 (+${row.x4Count * 384}M)</span>`;
+                    xien5Badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">⭐ ĂN X4 (+${row.x4Count * 384}M)</span>`;
                 } else if (row.x3Count > 0) {
-                    xien5Badge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-xs">🎉 ĂN X3 (${row.x3Count}v · +${row.x3Count * 84}M)</span>`;
+                    xien5Badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-sm">🎉 ĂN X3 (${row.x3Count}v · +${row.x3Count * 84}M)</span>`;
                 } else if (row.x2Count > 0) {
-                    xien5Badge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-sky-50 text-sky-800 border border-sky-200">⚡ ĂN X2 (${row.x2Count}v · -${formatMoneyK(Math.abs(row.xien5ProfitK), false)})</span>`;
+                    xien5Badge = `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-sky-100 text-sky-950 border border-sky-300">⚡ ĂN X2 (${row.x2Count}v · -${formatMoneyK(Math.abs(row.xien5ProfitK), false)})</span>`;
                 } else {
-                    xien5Badge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">❌ Trượt (${row.h5}/5 con · -55M)</span>`;
+                    xien5Badge = `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300">❌ Trượt (${row.h5}/5 con · -55M)</span>`;
                 }
 
                 let winningBadgesHtml = '';
                 if (!row.deAbstain && row.deHit) {
-                    winningBadgesHtml += `<span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-1 ring-amber-300 shadow-xs">🎯 ĐB: ${actualStr} ⭐</span> `;
+                    winningBadgesHtml += `<span class="inline-flex items-center px-2 py-0.5 rounded-lg font-mono text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">🎯 ĐB: ${actualStr} ⭐</span> `;
                 }
                 if (loHitsList.length > 0) {
                     winningBadgesHtml += loHitsList.map(p => {
-                        return `<span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[10px] font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-1 ring-emerald-300 shadow-xs">🎯 ${p.num}<sub class="text-[8px] font-black ml-0.5">(${p.hits}n)</sub></span>`;
+                        return `<span class="inline-flex items-center px-2 py-0.5 rounded-lg font-mono text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-sm">🎯 ${p.num}<sub class="text-[9px] font-black ml-0.5">(${p.hits}n)</sub></span>`;
                     }).join(' ');
                 }
                 if (row.h5 >= 2) {
-                    winningBadgesHtml += ` <span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[10px] font-black bg-gradient-to-r from-purple-500 to-indigo-500 text-white ring-1 ring-purple-300 shadow-xs">🎲 X5: ${row.h5}/5 con</span>`;
+                    winningBadgesHtml += ` <span class="inline-flex items-center px-2 py-0.5 rounded-lg font-mono text-xs font-black bg-gradient-to-r from-purple-500 to-indigo-500 text-white ring-2 ring-purple-300 shadow-sm">🎲 X5: ${row.h5}/5 con</span>`;
                 }
                 if (!winningBadgesHtml) {
-                    winningBadgesHtml = '<span class="text-slate-400 text-[10px] italic">Không nổ số nào</span>';
+                    winningBadgesHtml = '<span class="text-slate-500 text-xs font-bold italic">Không nổ số nào</span>';
                 }
 
                 return `
@@ -3174,40 +3174,40 @@
                 const actualStr = row.actualStr || '—';
 
                 const deBadge = row.isHit36
-                    ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-xs animate-pulse">🎯 Trúng Đề (+48M) · ${actualStr} ⭐</span>`
-                    : `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">❌ Trượt (-36M) · ${actualStr}</span>`;
+                    ? `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">🎯 Trúng Đề (+48M) · ${actualStr} ⭐</span>`
+                    : `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300">❌ Trượt (-36M) · <strong class="font-mono font-black">${actualStr}</strong></span>`;
 
                 const loBadge = row.isLoWin
-                    ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-xs">🔥 ${row.loHits} nháy (+${formatMoneyK(row.loProfitK, false)})</span>`
-                    : `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">${row.loHits} nháy (-${formatMoneyK(Math.abs(row.loProfitK), false)})</span>`;
+                    ? `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-sm">🔥 ${row.loHits} nháy (+${formatMoneyK(row.loProfitK, false)})</span>`
+                    : `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300"><strong class="font-black">${row.loHits}</strong> nháy (-${formatMoneyK(Math.abs(row.loProfitK), false)})</span>`;
 
                 const x5 = row.x5Eval;
                 let xienBadge = '';
                 if (x5.x4Count > 0) {
-                    xienBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-xs animate-pulse">⭐ ${x5.x4Count} VÉ X4 (+384M)</span>`;
+                    xienBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">⭐ ${x5.x4Count} VÉ X4 (+384M)</span>`;
                 } else if (x5.x3Count > 0) {
-                    xienBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-xs">🎉 ${x5.x3Count} VÉ X3 (+84M)</span>`;
+                    xienBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-sm">🎉 ${x5.x3Count} VÉ X3 (+84M)</span>`;
                 } else if (x5.x2Count > 0) {
-                    xienBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-sky-50 text-sky-800 border border-sky-200">⚡ ${x5.x2Count} VÉ X2 (+12M)</span>`;
+                    xienBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-sky-100 text-sky-950 border border-sky-300">⚡ ${x5.x2Count} VÉ X2 (+12M)</span>`;
                 } else {
-                    xienBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">❌ Trượt (${x5.h5}/5 con · -55M)</span>`;
+                    xienBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300">❌ Trượt (${x5.h5}/5 con · -55M)</span>`;
                 }
 
                 let winningBadgesHtml = '';
                 if (row.isHit36) {
-                    winningBadgesHtml += `<span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-1 ring-amber-300 shadow-xs">🎯 ĐB: ${actualStr} ⭐</span> `;
+                    winningBadgesHtml += `<span class="inline-flex items-center px-2 py-0.5 rounded-lg font-mono text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm">🎯 ĐB: ${actualStr} ⭐</span> `;
                 }
                 const loHitsList = row.loInfo.pills.filter(p => p.hits > 0);
                 if (loHitsList.length > 0) {
                     winningBadgesHtml += loHitsList.map(p => {
-                        return `<span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[10px] font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-1 ring-emerald-300 shadow-xs">🎯 ${p.num}<sub class="text-[8px] font-black ml-0.5">(${p.hits}n)</sub></span>`;
+                        return `<span class="inline-flex items-center px-2 py-0.5 rounded-lg font-mono text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-sm">🎯 ${p.num}<sub class="text-[9px] font-black ml-0.5">(${p.hits}n)</sub></span>`;
                     }).join(' ');
                 }
                 if (x5.hitsInTop5.length >= 2) {
-                    winningBadgesHtml += ` <span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[10px] font-black bg-gradient-to-r from-purple-500 to-indigo-500 text-white ring-1 ring-purple-300 shadow-xs">👑 Xiên 5: ${x5.hitsInTop5.join('-')}</span>`;
+                    winningBadgesHtml += ` <span class="inline-flex items-center px-2 py-0.5 rounded-lg font-mono text-xs font-black bg-gradient-to-r from-purple-500 to-indigo-500 text-white ring-2 ring-purple-300 shadow-sm">👑 Xiên 5: ${x5.hitsInTop5.join('-')}</span>`;
                 }
                 if (!winningBadgesHtml) {
-                    winningBadgesHtml = '<span class="text-slate-400 text-[10px] italic">Không nổ số nào</span>';
+                    winningBadgesHtml = '<span class="text-slate-500 text-xs font-bold italic">Không nổ số nào</span>';
                 }
 
                 return `
@@ -3457,51 +3457,51 @@
 
                 let deBadge = '';
                 if (isVipHit) {
-                    deBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-xs animate-pulse">🎯 NỔ VIP 12 (+156M) · ${actualStr} ⭐</span>`;
+                    deBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">🎯 NỔ VIP 12 (+156M) · ${actualStr} ⭐</span>`;
                 } else if (isLotHit) {
-                    deBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-teal-50 text-teal-800 border border-teal-200">🎯 Ăn Lót 24 (+30M) · ${actualStr}</span>`;
+                    deBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-teal-100 text-teal-950 border border-teal-300">🎯 Ăn Lót 24 (+30M) · <strong class="font-mono font-black">${actualStr}</strong></span>`;
                 } else {
-                    deBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">❌ Trượt (-54M) · ${actualStr}</span>`;
+                    deBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300">❌ Trượt (-54M) · <strong class="font-mono font-black">${actualStr}</strong></span>`;
                 }
 
                 let loBadge = '';
                 if (row.loProfitK > 0) {
-                    loBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-xs">🔥 ${row.loHits} nháy (+${formatMoneyK(row.loProfitK, false)})</span>`;
+                    loBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-sm">🔥 ${row.loHits} nháy (+${formatMoneyK(row.loProfitK, false)})</span>`;
                 } else if (row.loProfitK === 0) {
-                    loBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-teal-50 text-teal-800 border border-teal-200">${row.loHits} nháy (Hòa vốn)</span>`;
+                    loBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-teal-100 text-teal-950 border border-teal-300">${row.loHits} nháy (Hòa vốn)</span>`;
                 } else {
-                    loBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">${row.loHits} nháy (-${formatMoneyK(Math.abs(row.loProfitK), false)})</span>`;
+                    loBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300"><strong class="font-black">${row.loHits}</strong> nháy (-${formatMoneyK(Math.abs(row.loProfitK), false)})</span>`;
                 }
 
                 const x5 = row.xien;
                 let xienBadge = '';
                 if (x5.x4Count > 0) {
-                    xienBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-xs animate-pulse">⭐ ${x5.x4Count} VÉ X4 (+384M)</span>`;
+                    xienBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">⭐ ${x5.x4Count} VÉ X4 (+384M)</span>`;
                 } else if (x5.x3Count > 0) {
-                    xienBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-xs">🎉 ${x5.x3Count} VÉ X3 (+84M)</span>`;
+                    xienBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-sm">🎉 ${x5.x3Count} VÉ X3 (+84M)</span>`;
                 } else if (x5.x2Count > 0) {
-                    xienBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-sky-50 text-sky-800 border border-sky-200">⚡ ${x5.x2Count} VÉ X2 (+12M)</span>`;
+                    xienBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-sky-100 text-sky-950 border border-sky-300">⚡ ${x5.x2Count} VÉ X2 (+12M)</span>`;
                 } else {
-                    xienBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">❌ Trượt (${x5.h5 || (x5.hitsInTop5 || []).length}/5 con · -55M)</span>`;
+                    xienBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300">❌ Trượt (${x5.h5 || (x5.hitsInTop5 || []).length}/5 con · -55M)</span>`;
                 }
 
                 let winningBadgesHtml = '';
                 if (row.de.isHit) {
-                    winningBadgesHtml += `<span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-1 ring-amber-300 shadow-xs">🎯 ĐB: ${actualStr} ${isVipHit ? '⭐' : ''}</span> `;
+                    winningBadgesHtml += `<span class="inline-flex items-center px-2 py-0.5 rounded-lg font-mono text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm">🎯 ĐB: ${actualStr} ${isVipHit ? '⭐' : ''}</span> `;
                 }
                 const top7Nums = row.loTop7 || [];
                 const loHitNums = top7Nums.filter(n => (row.hitsMap[numStr(n)] || 0) > 0);
                 if (loHitNums.length > 0) {
                     winningBadgesHtml += loHitNums.map(n => {
                         const cnt = row.hitsMap[numStr(n)] || 1;
-                        return `<span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[10px] font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-1 ring-emerald-300 shadow-xs">🎯 ${numStr(n)}<sub class="text-[8px] font-black ml-0.5">(${cnt}n)</sub></span>`;
+                        return `<span class="inline-flex items-center px-2 py-0.5 rounded-lg font-mono text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-sm">🎯 ${numStr(n)}<sub class="text-[9px] font-black ml-0.5">(${cnt}n)</sub></span>`;
                     }).join(' ');
                 }
                 if (x5.hitsInTop5 && x5.hitsInTop5.length >= 2) {
-                    winningBadgesHtml += ` <span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[10px] font-black bg-gradient-to-r from-purple-500 to-indigo-500 text-white ring-1 ring-purple-300 shadow-xs">👑 Xiên: ${x5.hitsInTop5.join('-')}</span>`;
+                    winningBadgesHtml += ` <span class="inline-flex items-center px-2 py-0.5 rounded-lg font-mono text-xs font-black bg-gradient-to-r from-purple-500 to-indigo-500 text-white ring-2 ring-purple-300 shadow-sm">👑 Xiên: ${x5.hitsInTop5.join('-')}</span>`;
                 }
                 if (!winningBadgesHtml) {
-                    winningBadgesHtml = '<span class="text-slate-400 text-[10px] italic">Không nổ số nào</span>';
+                    winningBadgesHtml = '<span class="text-slate-500 text-xs font-bold italic">Không nổ số nào</span>';
                 }
 
                 return `
@@ -3701,23 +3701,27 @@
                     const isHit = (row.hitsMap[numStr(n)] || 0) > 0;
                     const cnt = row.hitsMap[numStr(n)] || 0;
                     if (isHit) {
-                        return `<span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[10px] font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-1 ring-emerald-300 shadow-xs">🎯 ${numStr(n)}<sub class="text-[8px] font-black ml-0.5">(${cnt}n)</sub></span>`;
+                        return `<span class="inline-flex items-center px-2 py-0.5 rounded-lg font-mono text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-sm animate-pulse">🎯 ${numStr(n)}<sub class="text-[9px] font-black ml-0.5">(${cnt}n)</sub></span>`;
                     }
                     const isVip = idx < 3;
-                    const cls = isVip ? 'bg-amber-50 text-amber-900 border-amber-300' : 'bg-slate-100 text-slate-600 border-slate-200';
-                    return `<span class="px-1.5 py-0.5 rounded border text-[10px] font-mono ${cls}">${numStr(n)}</span>`;
+                    const cls = isVip ? 'bg-amber-100 text-amber-950 border-amber-300 font-black' : 'bg-slate-100 text-slate-950 border-slate-300 font-bold';
+                    return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg border text-xs font-mono shadow-2xs ${cls}">${numStr(n)}</span>`;
                 }).join(' ');
 
-                const vipHitsText = isTiered ? `<span class="text-amber-800 font-bold">VIP: ${row.vipHits}n (x16M)</span> · <span class="text-teal-800 font-semibold">Lót: ${row.lotHits}n (x8M)</span>` : `<span class="text-teal-800 font-bold">Đánh phẳng: ${row.hits} nháy (x8M)</span>`;
+                const vipHitsText = isTiered ? `<span class="text-amber-900 font-black">VIP: ${row.vipHits}n (x16M)</span> · <span class="text-teal-900 font-black">Lót: ${row.lotHits}n (x8M)</span>` : `<span class="text-teal-900 font-black">Đánh phẳng: ${row.hits} nháy (x8M)</span>`;
 
                 return `
                     <tr class="border-b border-slate-200 ${row.isWin ? 'bg-emerald-50/60 border-l-4 border-l-emerald-500' : ''} hover:bg-slate-50 transition-colors font-mono text-xs text-slate-800">
                         <td class="py-2.5 px-3 font-bold text-slate-900">${dateVi}</td>
-                        <td class="py-2.5 px-3"><div class="flex flex-wrap gap-1">${numbersHtml}</div></td>
-                        <td class="py-2.5 px-3 text-center font-bold ${row.hits > 0 ? 'text-emerald-700' : 'text-slate-400'}">${row.hits} nháy</td>
+                        <td class="py-2.5 px-3"><div class="flex flex-wrap gap-1.5">${numbersHtml}</div></td>
+                        <td class="py-2.5 px-3 text-center">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black ${row.hits >= 2 ? 'bg-amber-400 text-slate-950 ring-2 ring-amber-300 shadow-xs' : (row.hits === 1 ? 'bg-emerald-100 text-emerald-950 border border-emerald-300 font-bold' : 'bg-rose-50 text-rose-800 border border-rose-300 font-bold')}">
+                                ${row.hits} nháy
+                            </span>
+                        </td>
                         <td class="py-2.5 px-3 text-[11px]">${vipHitsText}</td>
-                        <td class="py-2.5 px-3 text-right text-slate-600 font-semibold">${formatMoneyK(row.stakeK, false)}</td>
-                        <td class="py-2.5 px-3 text-right text-amber-800 font-bold">${formatMoneyK(row.payoutK, false)}</td>
+                        <td class="py-2.5 px-3 text-right text-slate-700 font-bold">${formatMoneyK(row.stakeK, false)}</td>
+                        <td class="py-2.5 px-3 text-right text-amber-800 font-black">${formatMoneyK(row.payoutK, false)}</td>
                         <td class="py-2.5 px-3 text-right font-black ${row.profitK > 0 ? 'text-emerald-700' : (row.profitK < 0 ? 'text-rose-700' : 'text-slate-500')}">${formatMoneyK(row.profitK)}</td>
                         <td class="py-2.5 px-3 text-right font-black ${row.cumProfitK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${formatMoneyK(row.cumProfitK)}</td>
                         <td class="py-2.5 px-3 text-center">
@@ -3880,16 +3884,16 @@
 
                 const betPillsHtml = loInfo.pills.map(p => {
                     if (p.isHit) {
-                        return `<span class="inline-flex items-center px-1.5 py-0.5 rounded-lg text-[10px] font-black bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white ring-2 ring-emerald-300 shadow-sm scale-105 font-mono animate-pulse" title="Trúng ${p.hits} nháy (${p.tier})">🎯 ${p.num} <span class="bg-slate-900 text-emerald-300 px-1 py-0.2 rounded text-[8px] font-black ml-0.5">${p.hits}n</span></span>`;
+                        return `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-black bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white ring-2 ring-emerald-300 shadow-sm scale-105 font-mono animate-pulse" title="Trúng ${p.hits} nháy (${p.tier})">🎯 ${p.num} <span class="bg-slate-900 text-emerald-300 px-1.5 py-0.2 rounded text-[9px] font-black ml-0.5">${p.hits}n</span></span>`;
                     }
-                    return `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono text-slate-600 bg-slate-100 border border-slate-200" title="${p.tier}">${p.num}<span class="text-[8px] opacity-75 ml-0.5">·${p.tier}</span></span>`;
+                    return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg text-xs font-mono font-bold text-slate-950 bg-slate-100 border border-slate-300 shadow-2xs" title="${p.tier}">${p.num}<span class="text-[9px] opacity-75 ml-0.5">·${p.tier}</span></span>`;
                 }).join(' ');
 
                 const hitsBadgeClass = loInfo.hits >= 4
                     ? 'bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 ring-2 ring-amber-300 font-black shadow-sm'
                     : (loInfo.hits >= 2
                         ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 font-black shadow-sm'
-                        : 'bg-rose-50 text-rose-700 border border-rose-200 font-semibold');
+                        : 'bg-rose-50 text-rose-800 border border-rose-300 font-bold');
 
                 return `
                     <tr class="border-b border-slate-200 ${loInfo.isWin || loInfo.isTierWin ? 'bg-emerald-50/60 border-l-4 border-l-emerald-500' : ''} hover:bg-slate-50 transition-colors font-mono text-xs text-slate-800">
@@ -3897,27 +3901,27 @@
                         <td class="py-2.5 px-3">
                             <div class="font-bold text-teal-900">Lô Tri-Core (${topNLabel})</div>
                             <div class="text-[10px] ${loInfo.isWin ? 'text-emerald-700 font-bold' : 'text-rose-700 font-bold'}">
-                                ${loInfo.isWin ? '✅ Phẳng: Lãi' : '❌ Phẳng: Lỗ'} · ${loInfo.isTierWin ? '<span class="text-amber-800">Tầng: Lãi</span>' : '<span class="text-rose-700">Tầng: Lỗ</span>'}
+                                ${loInfo.isWin ? '✅ Phẳng: Lãi' : '❌ Phẳng: Lỗ'} · ${loInfo.isTierWin ? '<span class="text-amber-800 font-bold">Tầng: Lãi</span>' : '<span class="text-rose-700 font-bold">Tầng: Lỗ</span>'}
                             </div>
                         </td>
                         <td class="py-2.5 px-3">
-                            <div class="flex flex-wrap gap-1 max-w-md">${betPillsHtml || '—'}</div>
+                            <div class="flex flex-wrap gap-1.5 max-w-md">${betPillsHtml || '—'}</div>
                         </td>
                         <td class="py-2.5 px-3 text-center">
-                            <span class="inline-flex items-center justify-center min-w-[28px] h-6 rounded-md font-mono text-[11px] px-1.5 ${hitsBadgeClass}">${loInfo.hits} nháy</span>
+                            <span class="inline-flex items-center justify-center min-w-[32px] h-6 rounded-lg font-mono text-xs px-2 ${hitsBadgeClass}">${loInfo.hits} nháy</span>
                         </td>
                         <td class="py-2.5 px-3 text-right font-black ${loInfo.profitK > 0 ? 'text-emerald-700' : (loInfo.profitK < 0 ? 'text-rose-700' : 'text-slate-400')}">
                             ${formatMoneyK(loInfo.profitK)}
                             <div class="text-[9px] text-slate-500 font-normal">Vốn ${formatMoneyK(loInfo.stakeK, false)}</div>
                         </td>
-                        <td class="py-2.5 px-3 text-right font-bold ${row.viewAccumFlatK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">
+                        <td class="py-2.5 px-3 text-right font-black ${row.viewAccumFlatK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">
                             ${formatMoneyK(row.viewAccumFlatK)}
                         </td>
                         <td class="py-2.5 px-3 text-right font-black ${loInfo.tierProfitK > 0 ? 'text-emerald-700' : (loInfo.tierProfitK < 0 ? 'text-rose-700' : 'text-slate-400')}">
                             ${formatMoneyK(loInfo.tierProfitK)}
                             <div class="text-[9px] text-slate-500 font-normal">Vốn ${formatMoneyK(loInfo.tierStakeK, false)}</div>
                         </td>
-                        <td class="py-2.5 px-3 text-right font-bold ${row.viewAccumTierK >= 0 ? 'text-amber-800' : 'text-rose-700'}">
+                        <td class="py-2.5 px-3 text-right font-black ${row.viewAccumTierK >= 0 ? 'text-amber-800' : 'text-rose-700'}">
                             ${formatMoneyK(row.viewAccumTierK)}
                         </td>
                         <td class="py-2.5 px-3 text-center">
@@ -4341,44 +4345,44 @@
             if (currentShadowCategory === 'combo') {
                 const actualStr = (row.deRow?.actual !== null && row.deRow?.actual !== undefined) ? numStr(row.deRow.actual) : '—';
                 const deBadge = row.deHit
-                    ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-xs animate-pulse">🎯 Trúng Đề (+44M) · ${actualStr} ⭐</span>`
-                    : `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">❌ Trượt (-40M) · ${actualStr}</span>`;
+                    ? `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">🎯 Trúng Đề (+44M) · ${actualStr} ⭐</span>`
+                    : `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300">❌ Trượt (-40M) · <strong class="font-mono font-black">${actualStr}</strong></span>`;
 
                 const loHitsList = row.loInfo.pills.filter(p => p.hits > 0);
                 const loHitsStr = loHitsList.map(p => `${p.num}(${p.hits}n)`).slice(0, 3).join(', ') + (loHitsList.length > 3 ? '...' : '');
 
                 const loBadge = row.isLoWin
-                    ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-xs" title="${loHitsList.map(p => `${p.num} (${p.hits} nháy)`).join(', ')}">🔥 ${row.loHits} nháy (+${formatMoneyK(row.loProfitK, false)})</span>`
-                    : `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">${row.loHits} nháy (-${formatMoneyK(Math.abs(row.loProfitK), false)})</span>`;
+                    ? `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-sm" title="${loHitsList.map(p => `${p.num} (${p.hits} nháy)`).join(', ')}">🔥 ${row.loHits} nháy (+${formatMoneyK(row.loProfitK, false)})</span>`
+                    : `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300"><strong class="font-black">${row.loHits}</strong> nháy (-${formatMoneyK(Math.abs(row.loProfitK), false)})</span>`;
 
                 const xev = row.xien5Eval;
                 let xien5Badge = '';
                 if (xev.x4Count > 0) {
-                    xien5Badge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-xs animate-pulse">⭐ ĂN X4 (+384M)</span>`;
+                    xien5Badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">⭐ ĂN X4 (+384M)</span>`;
                 } else if (xev.x3Count > 0) {
-                    xien5Badge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-xs">🎉 ĂN X3 (${xev.x3Count}v · +${formatMoneyK(xev.payoutK, false)})</span>`;
+                    xien5Badge = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-sm">🎉 ĂN X3 (${xev.x3Count}v · +${formatMoneyK(xev.payoutK, false)})</span>`;
                 } else if (xev.x2Count > 0) {
-                    xien5Badge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-300">⚡ ĂN X2 (${xev.x2Count}v · -${formatMoneyK(Math.abs(row.xien5ProfitK), false)})</span>`;
+                    xien5Badge = `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-sky-100 text-sky-950 border border-sky-300">⚡ ĂN X2 (${xev.x2Count}v · -${formatMoneyK(Math.abs(row.xien5ProfitK), false)})</span>`;
                 } else {
-                    xien5Badge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">❌ Trượt (${xev.h5}/5 con · -55M)</span>`;
+                    xien5Badge = `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300">❌ Trượt (${xev.h5}/5 con · -55M)</span>`;
                 }
 
                 // Render winning numbers chips directly in Column 5 (Dàn Đánh & Số Trúng)
                 let winningBadgesHtml = '';
                 if (row.deHit) {
-                    winningBadgesHtml += `<span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-1 ring-amber-300 shadow-xs">🎯 ĐB: ${actualStr} ⭐</span> `;
+                    winningBadgesHtml += `<span class="inline-flex items-center px-2 py-0.5 rounded-lg font-mono text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm">🎯 ĐB: ${actualStr} ⭐</span> `;
                 }
                 if (loHitsList.length > 0) {
                     winningBadgesHtml += loHitsList.map(p => {
-                        return `<span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[10px] font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-1 ring-emerald-300 shadow-xs">🎯 ${p.num}<sub class="text-[8px] font-black ml-0.5">(${p.hits}n)</sub></span>`;
+                        return `<span class="inline-flex items-center px-2 py-0.5 rounded-lg font-mono text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-sm">🎯 ${p.num}<sub class="text-[9px] font-black ml-0.5">(${p.hits}n)</sub></span>`;
                     }).join(' ');
                 }
                 const xienHitsInTop5 = (row.top5Nums || []).filter(n => ((row.rawLoRow?.numHitsMap || {})[n] || 0) > 0);
                 if (xienHitsInTop5.length >= 2) {
-                    winningBadgesHtml += ` <span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[10px] font-black bg-gradient-to-r from-purple-500 to-indigo-500 text-white ring-1 ring-purple-300 shadow-xs">🎲 X5: ${xienHitsInTop5.join('-')}</span>`;
+                    winningBadgesHtml += ` <span class="inline-flex items-center px-2 py-0.5 rounded-lg font-mono text-xs font-black bg-gradient-to-r from-purple-500 to-indigo-500 text-white ring-2 ring-purple-300 shadow-sm">🎲 X5: ${xienHitsInTop5.join('-')}</span>`;
                 }
                 if (!winningBadgesHtml) {
-                    winningBadgesHtml = '<span class="text-slate-400 text-[10px] italic">Không nổ số nào</span>';
+                    winningBadgesHtml = '<span class="text-slate-500 text-xs font-bold italic">Không nổ số nào</span>';
                 }
 
                 return `
@@ -4423,20 +4427,20 @@
             } else if (currentShadowCategory === 'de') {
                 let statusBadge = '';
                 if (row.deAbstain) {
-                    statusBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-300">🛡️ ABSTAIN (Né Cược)</span>';
+                    statusBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-black bg-slate-100 text-slate-900 border border-slate-300">🛡️ ABSTAIN (Né Cược)</span>';
                 } else if (row.deHit) {
-                    statusBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-xs">🎯 TRÚNG ĐỀ (+60.0M)</span>';
+                    statusBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-sm">🎯 TRÚNG ĐỀ (+60.0M)</span>';
                 } else {
-                    statusBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">❌ TRƯỢT (-24.0M)</span>';
+                    statusBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300">❌ TRƯỢT (-24.0M)</span>';
                 }
 
                 let numsCellContent = '—';
                 if (!row.deAbstain && row.deRow?.numbers?.length) {
                     if (row.deHit) {
-                        numsCellContent = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-xs mr-1 animate-pulse">🎯 ${numStr(row.deRow?.actual)} ⭐</span>`;
-                        numsCellContent += `<span class="text-slate-600 text-[11px]">${(row.deRow.numbers.filter(n => Number(n) !== Number(row.deRow.actual))).slice(0, 6).map(numStr).join(' ')}...</span>`;
+                        numsCellContent = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm mr-1.5 animate-pulse">🎯 ${numStr(row.deRow?.actual)} ⭐</span>`;
+                        numsCellContent += `<span class="text-slate-950 font-mono font-bold text-xs">${(row.deRow.numbers.filter(n => Number(n) !== Number(row.deRow.actual))).slice(0, 6).map(numStr).join(' ')}...</span>`;
                     } else {
-                        numsCellContent = `<span class="text-slate-600 text-[11px]">${(row.deRow.numbers || []).slice(0, 8).map(numStr).join(' ')}...</span>`;
+                        numsCellContent = `<span class="text-slate-950 font-mono font-bold text-xs">${(row.deRow.numbers || []).slice(0, 8).map(numStr).join(' ')}...</span>`;
                     }
                 }
 
@@ -4451,12 +4455,12 @@
                         <td class="py-2.5 px-3" title="${(row.deRow?.numbers || []).map(numStr).join(', ')}">${numsCellContent}</td>
                         <td class="py-2.5 px-3 text-center font-bold">
                             ${row.deHit
-                                ? `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded font-black font-mono text-xs bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">🎯 ${numStr(row.deRow.actual)} ⭐</span>`
-                                : `<span class="text-slate-600 font-mono text-xs">${row.deRow?.actual !== null && row.deRow?.actual !== undefined ? numStr(row.deRow.actual) : '—'}</span>`
+                                ? `<span class="inline-flex items-center justify-center px-3 py-1 rounded-xl font-black font-mono text-base bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 ring-2 ring-amber-300 shadow-md animate-pulse">🎯 ${numStr(row.deRow.actual)} ⭐</span>`
+                                : `<span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-lg font-mono font-black text-sm bg-slate-100 text-slate-900 border border-slate-300 shadow-2xs">${row.deRow?.actual !== null && row.deRow?.actual !== undefined ? numStr(row.deRow.actual) : '—'}</span>`
                             }
                         </td>
-                        <td class="py-2.5 px-3 text-right font-bold ${row.deProfitK > 0 ? 'text-emerald-700' : (row.deProfitK < 0 ? 'text-rose-700' : 'text-slate-500')}">${row.deAbstain ? '0đ' : formatMoneyK(row.deProfitK)}</td>
-                        <td class="py-2.5 px-3 text-right font-bold ${row.cumDeK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${formatMoneyK(row.cumDeK)}</td>
+                        <td class="py-2.5 px-3 text-right font-black ${row.deProfitK > 0 ? 'text-emerald-700' : (row.deProfitK < 0 ? 'text-rose-700' : 'text-slate-500')}">${row.deAbstain ? '0đ' : formatMoneyK(row.deProfitK)}</td>
+                        <td class="py-2.5 px-3 text-right font-black ${row.cumDeK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${formatMoneyK(row.cumDeK)}</td>
                         <td class="py-2.5 px-3 text-center">
                             <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${row.date}" data-slip-cat="de">
                                 <i class="bi bi-eye"></i> 24 Số
@@ -4467,16 +4471,16 @@
             } else { // 'loDropoff' or 'lo'
                 const betPillsHtml = row.loInfo.pills.map(p => {
                     if (p.isHit) {
-                        return `<span class="inline-flex items-center px-1.5 py-0.5 rounded-lg text-[10px] font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-1 ring-emerald-300 shadow-md scale-105 font-mono animate-pulse" title="Trúng ${p.hits} nháy (${p.tier})">🎯 ${p.num} <span class="bg-slate-900 text-emerald-300 px-1 py-0.2 rounded text-[8px] font-black ml-0.5">${p.hits}n</span></span>`;
+                        return `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-md scale-105 font-mono animate-pulse" title="Trúng ${p.hits} nháy (${p.tier})">🎯 ${p.num} <span class="bg-slate-900 text-emerald-300 px-1.5 py-0.2 rounded text-[9px] font-black ml-0.5">${p.hits}n</span></span>`;
                     }
-                    return `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono text-slate-700 bg-slate-100 border border-slate-200" title="${p.tier}">${p.num}<span class="text-[8px] opacity-75 ml-0.5">·${p.tier}</span></span>`;
+                    return `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg text-xs font-mono font-bold text-slate-950 bg-slate-100 border border-slate-300 shadow-2xs" title="${p.tier}">${p.num}<span class="text-[9px] opacity-75 ml-0.5">·${p.tier}</span></span>`;
                 }).join(' ');
 
                 const hitsBadgeClass = row.loHits >= 4
                     ? 'bg-amber-400 text-slate-950 ring-2 ring-amber-300 font-black shadow-md'
                     : (row.loHits >= 2
-                        ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-1 ring-emerald-300 font-black shadow-md'
-                        : 'bg-rose-50 text-rose-700 border border-rose-200 font-semibold');
+                        ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 font-black shadow-md'
+                        : 'bg-rose-50 text-rose-800 border border-rose-300 font-bold');
 
                 const flatProfitStr = formatMoneyK(row.loProfitK);
                 const tierProfitStr = formatMoneyK(row.loTierProfitK);
@@ -4487,27 +4491,27 @@
                         <td class="py-2.5 px-3">
                             <div class="font-bold text-teal-800">Lô Sweet-Spot 27 (${topNTitle})</div>
                             <div class="text-[10px] ${row.isLoWin ? 'text-emerald-700 font-bold' : 'text-rose-700 font-bold'}">
-                                ${row.isLoWin ? '✅ Phẳng: Lãi' : '❌ Phẳng: Lỗ'} · ${row.isLoTierWin ? '<span class="text-amber-800">Tầng: Lãi</span>' : '<span class="text-rose-700">Tầng: Lỗ</span>'}
+                                ${row.isLoWin ? '✅ Phẳng: Lãi' : '❌ Phẳng: Lỗ'} · ${row.isLoTierWin ? '<span class="text-amber-800 font-bold">Tầng: Lãi</span>' : '<span class="text-rose-700 font-bold">Tầng: Lỗ</span>'}
                             </div>
                         </td>
                         <td class="py-2.5 px-3">
-                            <div class="flex flex-wrap gap-1 max-w-md">${betPillsHtml || '—'}</div>
+                            <div class="flex flex-wrap gap-1.5 max-w-md">${betPillsHtml || '—'}</div>
                         </td>
                         <td class="py-2.5 px-3 text-center">
-                            <span class="inline-flex items-center justify-center min-w-[28px] h-6 rounded-md font-mono text-[11px] px-1.5 ${hitsBadgeClass}">${row.loHits} nháy</span>
+                            <span class="inline-flex items-center justify-center min-w-[32px] h-6 rounded-lg font-mono text-xs px-2 ${hitsBadgeClass}">${row.loHits} nháy</span>
                         </td>
                         <td class="py-2.5 px-3 text-right font-black ${row.loProfitK > 0 ? 'text-emerald-700' : (row.loProfitK < 0 ? 'text-rose-700' : 'text-slate-500')}">
                             ${flatProfitStr}
                             <div class="text-[9px] text-slate-600 font-normal">Vốn ${formatMoneyK(row.loStakeK, false)}</div>
                         </td>
-                        <td class="py-2.5 px-3 text-right font-bold ${row.cumLoFlatK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">
+                        <td class="py-2.5 px-3 text-right font-black ${row.cumLoFlatK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">
                             ${formatMoneyK(row.cumLoFlatK)}
                         </td>
                         <td class="py-2.5 px-3 text-right font-black ${row.loTierProfitK > 0 ? 'text-emerald-700' : (row.loTierProfitK < 0 ? 'text-rose-700' : 'text-slate-500')}">
                             ${tierProfitStr}
                             <div class="text-[9px] text-slate-600 font-normal">Vốn ${formatMoneyK(row.loTierStakeK, false)}</div>
                         </td>
-                        <td class="py-2.5 px-3 text-right font-bold ${row.cumLoTierK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">
+                        <td class="py-2.5 px-3 text-right font-black ${row.cumLoTierK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">
                             ${formatMoneyK(row.cumLoTierK)}
                         </td>
                         <td class="py-2.5 px-3 text-center">
@@ -5126,9 +5130,9 @@
                 const pStr = numStr(p);
                 const isMatched = allBetLotoNumbersSet.has(pStr);
                 if (isMatched) {
-                    return `<span class="inline-flex items-center justify-center w-7 h-6 rounded bg-emerald-500 text-white font-black font-mono text-[11px] ring-2 ring-emerald-300 shadow-sm" title="Trúng Lô con ${pStr}!">${pStr}</span>`;
+                    return `<span class="inline-flex items-center justify-center min-w-[32px] h-7 px-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-black font-mono text-xs ring-2 ring-emerald-300 shadow-sm" title="Trúng Lô con ${pStr}!">${pStr}</span>`;
                 }
-                return `<span class="inline-flex items-center justify-center w-7 h-6 rounded bg-slate-100 border border-slate-200 font-mono text-[11px] text-slate-700 font-bold">${pStr}</span>`;
+                return `<span class="inline-flex items-center justify-center min-w-[32px] h-7 px-1.5 rounded-lg bg-slate-100 border border-slate-300 font-mono text-xs text-slate-950 font-black shadow-2xs">${pStr}</span>`;
             }).join('');
 
             resultsStripHtml = `
@@ -5181,17 +5185,17 @@
                         `;
                     }
                     return `
-                        <div class="flex flex-col items-center justify-center rounded-xl ${baseBg} border border-slate-300 text-slate-800 p-1.5 font-mono text-sm font-bold min-w-[42px] hover:border-amber-400 transition-all">
+                        <div class="flex flex-col items-center justify-center rounded-xl ${baseBg} border border-slate-300 text-slate-950 p-1.5 font-mono text-sm font-black min-w-[44px] hover:border-amber-400 shadow-2xs transition-all">
                             <span>${numStr(n)}</span>
-                            <span class="text-[8px] text-slate-500">x${mult}</span>
+                            <span class="text-[9px] font-bold text-slate-600">x${mult}</span>
                         </div>
                     `;
                 }).join('');
             };
 
-            const x3Chips = renderTierChips(x3List, 3, 'bg-rose-50 text-rose-900 border-rose-200');
-            const x2Chips = renderTierChips(x2List, 2, 'bg-amber-50 text-amber-900 border-amber-200');
-            const x1Chips = renderTierChips(x1List, 1, 'bg-emerald-50 text-emerald-900 border-emerald-200');
+            const x3Chips = renderTierChips(x3List, 3, 'bg-rose-100 text-rose-950 border-rose-300');
+            const x2Chips = renderTierChips(x2List, 2, 'bg-amber-100 text-amber-950 border-amber-300');
+            const x1Chips = renderTierChips(x1List, 1, 'bg-emerald-100 text-emerald-950 border-emerald-300');
 
             let dropoffStatusTag = '';
             if (isPending) {
@@ -5209,7 +5213,7 @@
                 if (isNumHit) {
                     return `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-xl font-mono font-black text-sm bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 ring-2 ring-amber-300 shadow-md scale-110 animate-pulse">🎯 ${s} ⭐</span>`;
                 }
-                return `<span class="inline-flex items-center justify-center px-2 py-1 rounded-lg font-mono font-bold text-xs bg-slate-100 text-slate-800 border border-slate-300 shadow-xs">${s}</span>`;
+                return `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg font-mono font-black text-xs bg-slate-100 text-slate-950 border border-slate-300 shadow-2xs">${s}</span>`;
             }).join('');
 
             dropoffSectionHtml = `
@@ -5294,7 +5298,7 @@
                         `;
                     }
                     return `
-                        <div class="flex flex-col items-center justify-center rounded-xl bg-slate-100 border border-slate-300 text-slate-800 p-2 font-mono text-base font-bold min-w-[48px] hover:border-amber-400 hover:bg-slate-200 transition-all shadow-xs">
+                        <div class="flex flex-col items-center justify-center rounded-xl bg-slate-100 border border-slate-300 text-slate-950 p-2 font-mono text-base font-black min-w-[48px] hover:border-amber-400 hover:bg-slate-200 transition-all shadow-2xs">
                             <span>${numStr(n)}</span>
                         </div>
                     `;
@@ -5357,23 +5361,23 @@
                         `;
                     }
                     return `
-                        <div class="flex flex-col items-center justify-center rounded-xl ${baseBg} border p-1.5 font-mono text-sm font-bold min-w-[44px] hover:border-teal-400 transition-all shadow-xs">
+                        <div class="flex flex-col items-center justify-center rounded-xl ${baseBg} border p-1.5 font-mono text-sm font-black text-slate-950 min-w-[44px] hover:border-teal-400 transition-all shadow-2xs">
                             <span>${p.num}</span>
-                            <span class="text-[8px] opacity-75">x${mult}</span>
+                            <span class="text-[9px] font-bold opacity-75">x${mult}</span>
                         </div>
                     `;
                 }).join('');
             };
 
-            const x3Chips = renderTierChips(x3Pills, 3, 'bg-amber-50 text-amber-900 border-amber-300');
-            const x2Chips = renderTierChips(x2Pills, 2, 'bg-teal-50 text-teal-900 border-teal-300');
-            const x1Chips = renderTierChips(x1Pills, 1, 'bg-slate-100 text-slate-800 border-slate-300');
+            const x3Chips = renderTierChips(x3Pills, 3, 'bg-amber-100 text-amber-950 border-amber-300');
+            const x2Chips = renderTierChips(x2Pills, 2, 'bg-teal-100 text-teal-950 border-teal-300');
+            const x1Chips = renderTierChips(x1Pills, 1, 'bg-slate-100 text-slate-950 border-slate-300');
 
             const hitPillsList = loInfo.pills.filter(p => p.isHit);
             const hitBadgesSummary = (!isPending && hitPillsList.length > 0)
                 ? `<div class="flex items-center gap-1 flex-wrap mt-1">
                     <span class="text-[10px] font-black text-emerald-900 bg-emerald-100 border border-emerald-300 px-1.5 py-0.2 rounded shadow-xs">Trúng Lô:</span>
-                    ${hitPillsList.map(p => `<span class="inline-flex items-center px-1.5 py-0.5 rounded-lg font-mono text-[11px] font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-1 ring-emerald-300 shadow-xs animate-pulse">🎯 ${p.num}<sub class="text-[8px] font-bold ml-0.5 text-slate-900">(${p.hits}n)</sub></span>`).join(' ')}
+                    ${hitPillsList.map(p => `<span class="inline-flex items-center px-2 py-0.5 rounded-lg font-mono text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-1 ring-emerald-300 shadow-xs animate-pulse">🎯 ${p.num}<sub class="text-[9px] font-black ml-0.5 text-slate-950">(${p.hits}n)</sub></span>`).join(' ')}
                    </div>`
                 : '';
 
@@ -5381,7 +5385,7 @@
                 if (!isPending && p.hits > 0) {
                     return `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl font-mono font-black text-xs bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white ring-2 ring-emerald-300 shadow-md scale-105 animate-pulse" title="Trúng ${p.hits} nháy!">🎯 ${p.num} <sub class="text-[8px] font-black bg-slate-950 text-emerald-300 px-1 py-0.2 rounded">${p.hits}n</sub></span>`;
                 }
-                return `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg font-mono font-bold text-xs bg-slate-100 text-slate-800 border border-slate-300 shadow-xs">${p.num}</span>`;
+                return `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg font-mono font-black text-xs bg-slate-100 text-slate-950 border border-slate-300 shadow-2xs">${p.num}</span>`;
             }).join(' ');
 
             const loStatusTag = isPending
@@ -5496,7 +5500,7 @@
                     if (isHit) {
                         return `<span class="inline-flex items-center px-2 py-0.5 rounded-lg font-mono font-black text-xs bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white ring-2 ring-emerald-300 shadow-md animate-pulse">🎯 ${n} <sub class="text-[8px] font-bold bg-slate-950 text-emerald-300 px-1 py-0.2 rounded">${hitsCount}n</sub></span>`;
                     }
-                    return `<span class="px-2 py-0.5 rounded-lg font-mono font-bold text-xs bg-white text-slate-800 border border-slate-300 shadow-xs">${n}</span>`;
+                    return `<span class="px-2 py-0.5 rounded-lg font-mono font-black text-xs bg-slate-100 text-slate-950 border border-slate-300 shadow-2xs">${n}</span>`;
                 }).join(' ');
 
                 let statusBadge = '';
@@ -5531,7 +5535,7 @@
                 if (isHit) {
                     return `<span class="inline-flex items-center px-2 py-1 rounded-lg font-mono font-black text-xs bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-md animate-pulse">🎯 #${idx+1}: ${n}</span>`;
                 }
-                return `<span class="px-2 py-1 rounded-lg font-mono font-bold text-xs bg-slate-100 text-slate-800 border border-slate-300 shadow-xs">#${idx+1}: ${n}</span>`;
+                return `<span class="px-2 py-1 rounded-lg font-mono font-black text-xs bg-slate-100 text-slate-950 border border-slate-300 shadow-2xs">#${idx+1}: ${n}</span>`;
             }).join(' ');
 
             const copyTextTickets = [
@@ -5604,17 +5608,17 @@
                         `;
                     }
                     return `
-                        <div class="flex flex-col items-center justify-center rounded-xl ${baseBg} border p-1.5 font-mono text-sm font-bold min-w-[44px] hover:shadow-xs transition-all">
-                            <span>${p.num}</span>
-                            <span class="text-[8px] opacity-75">x${mult}</span>
+                        <div class="flex flex-col items-center justify-center rounded-xl ${baseBg} border p-1.5 font-mono text-sm font-black min-w-[44px] hover:shadow-xs transition-all">
+                            <span class="font-black text-slate-950">${p.num}</span>
+                            <span class="text-[8px] font-black opacity-90">x${mult}</span>
                         </div>
                     `;
                 }).join('');
             };
 
-            const x3Chips = renderTierChips(x3Pills, 3, 'bg-amber-100/90 text-amber-900 border-amber-300');
-            const x2Chips = renderTierChips(x2Pills, 2, 'bg-teal-100/90 text-teal-900 border-teal-300');
-            const x1Chips = renderTierChips(x1Pills, 1, 'bg-cyan-100/90 text-cyan-900 border-cyan-300');
+            const x3Chips = renderTierChips(x3Pills, 3, 'bg-amber-100/90 text-amber-950 border-amber-300 font-black');
+            const x2Chips = renderTierChips(x2Pills, 2, 'bg-teal-100/90 text-teal-950 border-teal-300 font-black');
+            const x1Chips = renderTierChips(x1Pills, 1, 'bg-cyan-100/90 text-cyan-950 border-cyan-300 font-black');
 
             const hitPillsList = loTriInfo.pills.filter(p => p.isHit);
             const hitBadgesSummary = (!isPending && hitPillsList.length > 0)
@@ -5628,7 +5632,7 @@
                 if (!isPending && p.hits > 0) {
                     return `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl font-mono font-black text-xs bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white ring-2 ring-emerald-400 shadow-md scale-105 animate-pulse" title="Trúng ${p.hits} nháy!">🎯 ${p.num} <sub class="text-[8px] font-black bg-emerald-900/60 text-emerald-200 px-1 py-0.2 rounded">${p.hits}n</sub></span>`;
                 }
-                return `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg font-mono font-bold text-xs bg-white text-slate-800 border border-slate-300 shadow-2xs">${p.num}</span>`;
+                return `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg font-mono font-black text-xs bg-slate-100 text-slate-950 border border-slate-300 shadow-2xs">${p.num}</span>`;
             }).join(' ');
 
             const loStatusTag = isPending
