@@ -125,9 +125,14 @@ async function main() {
                 stakeK: 70000
             });
         }
-        if (cache.lo4EngineFusion?.latestRecommendation?.xien4?.top5) {
+        const top5Candidate = (cache.lo4EngineFusion?.latestRecommendation?.xien4?.top5?.length >= 5)
+            ? cache.lo4EngineFusion.latestRecommendation.xien4.top5
+            : (cache.loTop5ConsensusXien?.top5Xien?.length >= 5
+                ? cache.loTop5ConsensusXien.top5Xien
+                : (cache.lo4EngineFusion?.latestRecommendation?.numbersOver2?.slice(0, 5) || []));
+        if (top5Candidate.length >= 5) {
             registryService.registerDailyBet(expectedPredictionDate, 'loXien5', {
-                top5: cache.lo4EngineFusion.latestRecommendation.xien4.top5.map(n => String(n).padStart(2, '0')),
+                top5: top5Candidate.slice(0, 5).map(n => String(n).padStart(2, '0')),
                 stakeK: 55000
             });
         }

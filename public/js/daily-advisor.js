@@ -4182,14 +4182,35 @@
             const regEntry = p?.dailyLockedBetsRegistry?.dates?.[date];
             const regX5 = regEntry?.settlement?.loXien5 || regEntry?.bets?.loXien5;
             if (regX5) {
-                const top5 = (regX5.top5 || []).map(number);
-                const h5 = regX5.h5 || 0;
-                const evalX5 = evaluateXien5_5DanX4(h5);
-                const payoutK = regX5.payoutK != null ? regX5.payoutK : evalX5.payoutK;
-                const profitK = regX5.profitK != null ? regX5.profitK : evalX5.profitK;
+                let top5 = (regX5.top5 || []).map(number);
+                if (top5.length < 5) {
+                    const bLo4 = regEntry?.bets?.lo4EngineFusion || {};
+                    if (bLo4.xien4?.top5 && bLo4.xien4.top5.length >= 5) {
+                        top5 = bLo4.xien4.top5.slice(0, 5).map(number);
+                    } else if (bLo4.numbersOver2 && bLo4.numbersOver2.length >= 5) {
+                        top5 = bLo4.numbersOver2.slice(0, 5).map(number);
+                    }
+                }
+                const isPending = !regEntry.isSettled;
+                const actualPrizes = (regEntry.actualResult?.prizes || drawInfo.prizes || []).map(number);
+                let h5 = 0;
+                let payoutK = 0;
+                let profitK = isPending ? 0 : -(regX5.stakeK || 55000);
+                if (!isPending && actualPrizes.length > 0) {
+                    const pSet = new Set(actualPrizes);
+                    h5 = top5.filter(n => pSet.has(number(n))).length;
+                    const evalX5 = evaluateXien5_5DanX4(h5);
+                    payoutK = evalX5.payoutK;
+                    profitK = evalX5.profitK;
+                } else if (!isPending) {
+                    h5 = regX5.h5 || 0;
+                    const evalX5 = evaluateXien5_5DanX4(h5);
+                    payoutK = regX5.payoutK != null ? regX5.payoutK : evalX5.payoutK;
+                    profitK = regX5.profitK != null ? regX5.profitK : evalX5.profitK;
+                }
                 return {
                     date,
-                    isPending: !regEntry.isSettled,
+                    isPending,
                     top5,
                     h5,
                     x5Tickets: getXi5Tickets(top5),
@@ -4385,11 +4406,41 @@
         // 4. Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)
         const bX5 = b.loXien5 || {};
         const sX5 = s.loXien5 || {};
-        const xien5Top5 = (sX5.top5 || bX5.top5 || xienTop4).slice(0, 5).map(number);
-        const xien5H5 = isPending ? 0 : (sX5.h5 != null ? sX5.h5 : xienHits);
+        let xien5Top5 = (sX5.top5 && sX5.top5.length >= 5 ? sX5.top5 : (bX5.top5 && bX5.top5.length >= 5 ? bX5.top5 : [])).map(number);
+        if (xien5Top5.length < 5) {
+            const bLo4 = b.lo4EngineFusion || {};
+            if (bLo4.xien4?.top5 && bLo4.xien4.top5.length >= 5) {
+                xien5Top5 = bLo4.xien4.top5.slice(0, 5).map(number);
+            } else if (bLo4.numbersOver2 && bLo4.numbersOver2.length >= 5) {
+                xien5Top5 = bLo4.numbersOver2.slice(0, 5).map(number);
+            } else if (bLo4.allNumbers && bLo4.allNumbers.length >= 5) {
+                xien5Top5 = bLo4.allNumbers.slice(0, 5).map(number);
+            } else {
+                const x5LedgerRow = p?.loTop5ConsensusXien?.settledLedger?.find(r => r.date === date);
+                if (x5LedgerRow?.top5 && x5LedgerRow.top5.length >= 5) {
+                    xien5Top5 = x5LedgerRow.top5.slice(0, 5).map(number);
+                } else if (xienTop4 && xienTop4.length >= 4) {
+                    xien5Top5 = xienTop4;
+                }
+            }
+        }
         const xien5StakeK = isPending ? (bX5.stakeK || 55000) : (sX5.stakeK || 55000);
-        const xien5PayoutK = isPending ? 0 : (sX5.payoutK != null ? sX5.payoutK : 0);
-        const xien5ProfitK = isPending ? 0 : (sX5.profitK != null ? sX5.profitK : (xien5PayoutK - xien5StakeK));
+        let xien5H5 = 0;
+        let xien5PayoutK = 0;
+        let xien5ProfitK = isPending ? 0 : -xien5StakeK;
+
+        if (!isPending && actualPrizes && actualPrizes.length > 0) {
+            const drawSet = new Set(actualPrizes.map(number));
+            xien5H5 = xien5Top5.filter(n => drawSet.has(number(n))).length;
+            const evalX5 = evaluateXien5_5DanX4(xien5H5);
+            xien5PayoutK = evalX5.payoutK;
+            xien5ProfitK = evalX5.profitK;
+        } else if (!isPending) {
+            xien5H5 = sX5.h5 != null ? sX5.h5 : 0;
+            const evalX5 = evaluateXien5_5DanX4(xien5H5);
+            xien5PayoutK = sX5.payoutK != null ? sX5.payoutK : evalX5.payoutK;
+            xien5ProfitK = sX5.profitK != null ? sX5.profitK : evalX5.profitK;
+        }
         const isXien5Win = xien5ProfitK > 0;
 
         const loXien5Info = {

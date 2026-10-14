@@ -1825076,7 +1825076,7 @@
         "x5Stake55K": 55000,
         "x5Payout55K": 0,
         "x5Profit55K": -55000,
-        "cumX5Profit55K": 7333000,
+        "cumX5Profit55K": 5677000,
         "x5DanHit4": 0,
         "x5DanHit3": 0,
         "x5DanHit2": 0,
@@ -1825084,7 +1825084,7 @@
         "x5StakeK": 55000,
         "x5PayoutK": 0,
         "x5ProfitK": -55000,
-        "cumLoXien5ProfitK": 7333000,
+        "cumLoXien5ProfitK": 5677000,
         "x5TicketsWon": 0,
         "x5Payout170K": 0,
         "x5Profit170K": -500,
@@ -1825134,7 +1825134,7 @@
         "x5Stake55K": 55000,
         "x5Payout55K": 0,
         "x5Profit55K": -55000,
-        "cumX5Profit55K": 7278000,
+        "cumX5Profit55K": 5622000,
         "x5DanHit4": 0,
         "x5DanHit3": 0,
         "x5DanHit2": 0,
@@ -1825142,7 +1825142,7 @@
         "x5StakeK": 55000,
         "x5PayoutK": 0,
         "x5ProfitK": -55000,
-        "cumLoXien5ProfitK": 7278000,
+        "cumLoXien5ProfitK": 5622000,
         "x5TicketsWon": 0,
         "x5Payout170K": 0,
         "x5Profit170K": -500,
@@ -1825169,7 +1825169,7 @@
       "x3TotalTickets": 103,
       "cumX3ProfitK": 387500,
       "x5WinDays55": 52,
-      "cumX5Profit55K": 7350000,
+      "cumX5Profit55K": 5622000,
       "x5WinDays": 15,
       "x5TotalTicketsWon": 19,
       "cumX5Profit170K": 182000,
@@ -1825183,8 +1825183,8 @@
         "winDays": 52,
         "winRate": 0.1844,
         "stakeDailyK": 55000,
-        "profitK": 7350000,
-        "roi": 0.4739,
+        "profitK": 5622000,
+        "roi": 0.3625,
         "h5Days": 1,
         "h4Days": 14,
         "h3Days": 37,
@@ -2249944,10 +2249944,11 @@
           "loXien5": {
             "targetDate": "2026-10-10",
             "top5": [
+              "70",
               "36",
               "43",
-              "62",
-              "79"
+              "79",
+              "62"
             ],
             "stakeK": 55000,
             "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
@@ -2250506,10 +2250507,11 @@
           "loXien5": {
             "date": "2026-10-10",
             "top5": [
+              "70",
               "36",
               "43",
-              "62",
-              "79"
+              "79",
+              "62"
             ],
             "h5": 3,
             "stakeK": 55000,
@@ -2256060,10 +2256062,10 @@
               "38",
               "72"
             ],
-            "h5": 1,
+            "h5": 2,
             "stakeK": 55000,
-            "payoutK": 0,
-            "profitK": -55000,
+            "payoutK": 36000,
+            "profitK": -19000,
             "isWin": false
           }
         }
@@ -2257496,10 +2257498,11 @@
           "loXien5": {
             "targetDate": "2026-09-19",
             "top5": [
+              "52",
+              "66",
+              "76",
               "24",
-              "38",
-              "64",
-              "22"
+              "38"
             ],
             "stakeK": 55000,
             "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
@@ -2257682,10 +2257685,11 @@
           "loXien5": {
             "date": "2026-09-19",
             "top5": [
+              "52",
+              "66",
+              "76",
               "24",
-              "38",
-              "64",
-              "22"
+              "38"
             ],
             "h5": 3,
             "stakeK": 55000,
@@ -2258215,11 +2258219,11 @@
               "49",
               "68"
             ],
-            "h5": 0,
+            "h5": 3,
             "stakeK": 55000,
-            "payoutK": 0,
-            "profitK": -55000,
-            "isWin": false
+            "payoutK": 204000,
+            "profitK": 149000,
+            "isWin": true
           }
         }
       },
@@ -2261612,11 +2261616,11 @@
               "66",
               "68"
             ],
-            "h5": 2,
+            "h5": 3,
             "stakeK": 55000,
-            "payoutK": 36000,
-            "profitK": -19000,
-            "isWin": false
+            "payoutK": 204000,
+            "profitK": 149000,
+            "isWin": true
           }
         }
       },
@@ -2262173,11 +2262177,11 @@
               "54",
               "62"
             ],
-            "h5": 2,
+            "h5": 3,
             "stakeK": 55000,
-            "payoutK": 36000,
-            "profitK": -19000,
-            "isWin": false
+            "payoutK": 204000,
+            "profitK": 149000,
+            "isWin": true
           }
         }
       },
@@ -2262702,7 +2262706,7 @@
               "01",
               "11"
             ],
-            "h5": 1,
+            "h5": 0,
             "stakeK": 55000,
             "payoutK": 0,
             "profitK": -55000,
@@ -2264024,8 +2264028,11 @@
           "loXien5": {
             "targetDate": "2026-10-01",
             "top5": [
-              "52",
-              "95"
+              "20",
+              "36",
+              "76",
+              "92",
+              "52"
             ],
             "stakeK": 55000,
             "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
@@ -2264200,13 +2264207,16 @@
           "loXien5": {
             "date": "2026-10-01",
             "top5": [
-              "52",
-              "95"
+              "20",
+              "36",
+              "76",
+              "92",
+              "52"
             ],
-            "h5": 1,
+            "h5": 2,
             "stakeK": 55000,
-            "payoutK": 0,
-            "profitK": -55000,
+            "payoutK": 36000,
+            "profitK": -19000,
             "isWin": false
           }
         }
@@ -2266080,6 +2266090,7 @@
           "loXien5": {
             "targetDate": "2026-10-05",
             "top5": [
+              "62",
               "52",
               "84",
               "88",
@@ -2266272,6 +2266283,7 @@
           "loXien5": {
             "date": "2026-10-05",
             "top5": [
+              "62",
               "52",
               "84",
               "88",
@@ -2266770,10 +2266782,10 @@
               "44",
               "59"
             ],
-            "h5": 0,
+            "h5": 2,
             "stakeK": 55000,
-            "payoutK": 0,
-            "profitK": -55000,
+            "payoutK": 36000,
+            "profitK": -19000,
             "isWin": false
           }
         }
@@ -2267616,9 +2267628,11 @@
           "loXien5": {
             "targetDate": "2026-10-08",
             "top5": [
-              "54",
-              "66",
-              "90"
+              "38",
+              "62",
+              "75",
+              "76",
+              "54"
             ],
             "stakeK": 55000,
             "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
@@ -2267793,9 +2267807,11 @@
           "loXien5": {
             "date": "2026-10-08",
             "top5": [
-              "54",
-              "66",
-              "90"
+              "38",
+              "62",
+              "75",
+              "76",
+              "54"
             ],
             "h5": 1,
             "stakeK": 55000,
@@ -2268331,7 +2268347,7 @@
               "19",
               "54"
             ],
-            "h5": 0,
+            "h5": 1,
             "stakeK": 55000,
             "payoutK": 0,
             "profitK": -55000,
