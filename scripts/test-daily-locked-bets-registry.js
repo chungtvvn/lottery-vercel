@@ -73,11 +73,11 @@ assert.strictEqual(settle10.triCoreDe.profitK, -24000, 'Lỗ -24M');
 console.log('✔ PASS 3.3: triCoreDe 10/10 kết toán trượt (-24M)');
 
 assert.ok(settle10.semanticResonanceSuite, 'Phải có kết toán semanticResonanceSuite ngày 10/10');
-assert.strictEqual(settle10.semanticResonanceSuite.de.isWin, false, 'Đề 36s trượt (-54M)');
+assert.strictEqual(settle10.semanticResonanceSuite.de.isWin, false, 'Đề 36s trượt (-10.8M)');
 assert.strictEqual(settle10.semanticResonanceSuite.lo.hits, 1, 'Lô ăn 1 nháy (-7.4M)');
-assert.strictEqual(settle10.semanticResonanceSuite.xien5.hitsCount, 0, 'Xiên 5 trượt (-55M)');
-assert.strictEqual(settle10.semanticResonanceSuite.comboFlat.profitK, -116400, 'Combo Flat lỗ -116.4M');
-console.log('✔ PASS 3.4: semanticResonanceSuite 10/10 kết toán chuẩn xác (Combo Flat -116.4M)');
+assert.strictEqual(settle10.semanticResonanceSuite.xien5.hitsCount, 0, 'Xiên 5 trượt (-5.5M)');
+assert.strictEqual(settle10.semanticResonanceSuite.comboFlat.profitK, -23700, 'Combo Flat lỗ -23.7M');
+console.log('✔ PASS 3.4: semanticResonanceSuite 10/10 kết toán chuẩn xác (Combo Flat -23.7M)');
 
 // 4. Kiểm tra dàn đánh ngày 11/10 (Dự đoán ngày tiếp theo không bị lấy trùng ngày cũ):
 const bet11 = reg.dates['2026-10-11'];
