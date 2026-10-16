@@ -319,28 +319,47 @@
     // ==========================================
     function setupTabSwitching() {
         const btnUnified = byId('tabBtnUnifiedCombat');
+        const btnMirofish = byId('tabBtnMiroFishSwarm');
         const btnDual = byId('tabBtnDualMerge');
+
         const viewUnified = byId('unifiedCombatView');
+        const viewMirofish = byId('mirofishSwarmView');
         const viewDual = byId('dualMergeView');
 
         function switchTab(tab) {
             currentMainTab = tab;
+
+            // Reset all tab buttons
+            btnUnified?.classList.remove('bg-gradient-to-r', 'from-amber-500', 'via-indigo-600', 'to-violet-600', 'text-white', 'font-black', 'shadow-md');
+            btnUnified?.classList.add('text-slate-600', 'hover:bg-slate-100', 'font-bold');
+
+            btnMirofish?.classList.remove('bg-gradient-to-r', 'from-cyan-600', 'via-teal-600', 'to-blue-600', 'text-white', 'font-black', 'shadow-md');
+            btnMirofish?.classList.add('text-slate-600', 'hover:bg-slate-100', 'font-bold');
+
+            btnDual?.classList.remove('bg-gradient-to-r', 'from-amber-500', 'to-indigo-600', 'text-white', 'font-black', 'shadow-md');
+            btnDual?.classList.add('text-slate-600', 'hover:bg-slate-100', 'font-bold');
+
+            // Hide all tab views
+            viewUnified?.classList.add('hidden');
+            viewMirofish?.classList.add('hidden');
+            viewDual?.classList.add('hidden');
+
             if (tab === 'unifiedCombat') {
                 btnUnified?.classList.add('bg-gradient-to-r', 'from-amber-500', 'via-indigo-600', 'to-violet-600', 'text-white', 'font-black', 'shadow-md');
                 btnUnified?.classList.remove('text-slate-600', 'hover:bg-slate-100', 'font-bold');
-                btnDual?.classList.remove('bg-gradient-to-r', 'from-amber-500', 'to-indigo-600', 'text-white', 'font-black', 'shadow-md');
-                btnDual?.classList.add('text-slate-600', 'hover:bg-slate-100', 'font-bold');
-
                 viewUnified?.classList.remove('hidden');
-                viewDual?.classList.add('hidden');
+            } else if (tab === 'mirofishSwarm') {
+                btnMirofish?.classList.add('bg-gradient-to-r', 'from-cyan-600', 'via-teal-600', 'to-blue-600', 'text-white', 'font-black', 'shadow-md');
+                btnMirofish?.classList.remove('text-slate-600', 'hover:bg-slate-100', 'font-bold');
+                viewMirofish?.classList.remove('hidden');
+
+                if (payload?.mirofishSwarm) {
+                    renderMiroFishSwarmView(payload.mirofishSwarm);
+                }
             } else {
                 btnDual?.classList.add('bg-gradient-to-r', 'from-amber-500', 'to-indigo-600', 'text-white', 'font-black', 'shadow-md');
                 btnDual?.classList.remove('text-slate-600', 'hover:bg-slate-100', 'font-bold');
-                btnUnified?.classList.remove('bg-gradient-to-r', 'from-amber-500', 'via-indigo-600', 'to-violet-600', 'text-white', 'font-black', 'shadow-md');
-                btnUnified?.classList.add('text-slate-600', 'hover:bg-slate-100', 'font-bold');
-
                 viewDual?.classList.remove('hidden');
-                viewUnified?.classList.add('hidden');
 
                 if (payload) {
                     renderDeResearchEnsembleView(payload);
@@ -349,6 +368,7 @@
         }
 
         if (btnUnified) btnUnified.onclick = () => switchTab('unifiedCombat');
+        if (btnMirofish) btnMirofish.onclick = () => switchTab('mirofishSwarm');
         if (btnDual) btnDual.onclick = () => switchTab('dualMerge');
     }
 
@@ -14172,6 +14192,338 @@
     }
 
     // ==========================================
+    // MIROFISH SWARM INTELLIGENCE ADVISOR RENDERING
+    // ==========================================
+    let currentMirofishData = null;
+    let currentMirofishMonth = 'all';
+    let currentMirofishSearch = '';
+    let mirofishEventsWired = false;
+
+    function renderMiroFishSettledTable(data, monthFilter = 'all', searchDate = '') {
+        const tbody = byId('mirofishSettledTableBody');
+        const countInfo = byId('mirofishTableCountInfo');
+        if (!tbody || !data || !Array.isArray(data.settledLedger)) return;
+
+        let rows = [...data.settledLedger].reverse();
+
+        if (monthFilter && monthFilter !== 'all') {
+            rows = rows.filter(r => r.date && r.date.startsWith(monthFilter));
+        }
+
+        if (searchDate) {
+            const cleanSearch = searchDate.trim().toLowerCase();
+            rows = rows.filter(r => {
+                const viDate = formatDateVi(r.date).toLowerCase();
+                return r.date.includes(cleanSearch) || viDate.includes(cleanSearch);
+            });
+        }
+
+        if (countInfo) {
+            countInfo.textContent = `Đang hiển thị ${rows.length} / ${data.settledLedger.length} kỳ đã kết toán`;
+        }
+
+        if (rows.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-400 font-semibold italic">Không tìm thấy kỳ quay nào phù hợp điều kiện lọc.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = rows.map(r => {
+            const deStatusBadge = r.de?.isHit
+                ? (r.de?.isHitX2
+                    ? `<span class="inline-flex items-center gap-1 rounded-md bg-amber-100 text-amber-900 border border-amber-300 px-1.5 py-0.5 text-[10px] font-black">👑 Ăn VIP X2 (${r.actualSpecial})</span>`
+                    : `<span class="inline-flex items-center gap-1 rounded-md bg-emerald-100 text-emerald-900 border border-emerald-300 px-1.5 py-0.5 text-[10px] font-bold">🛡️ Ăn X1 (${r.actualSpecial})</span>`)
+                : `<span class="inline-flex items-center rounded-md bg-slate-100 text-slate-500 px-1.5 py-0.5 text-[10px]">Trượt</span>`;
+
+            const loStatusText = `<span class="font-bold text-slate-800">${r.lo?.hits || 0} nháy</span> <span class="text-slate-400">(${r.lo?.numbers?.length || 0} con)</span>`;
+
+            const h5 = r.xien5?.h5 || 0;
+            const xienStatusText = h5 >= 4
+                ? `<span class="inline-flex items-center gap-1 rounded-md bg-purple-100 text-purple-900 border border-purple-300 px-1.5 py-0.5 text-[10px] font-black">🔥 Ăn Xiên 4 (${h5}/5 con)</span>`
+                : (h5 >= 2
+                    ? `<span class="text-slate-600 font-mono font-medium">${h5}/5 con</span>`
+                    : `<span class="text-slate-400 font-mono font-medium">${h5}/5 con</span>`);
+
+            const isDayPositive = (r.combo?.profitK || 0) > 0;
+            const dayProfitBadge = `<span class="font-mono font-black ${isDayPositive ? 'text-emerald-600' : 'text-rose-500'}">${moneyM(r.combo?.profitK || 0, { signed: true })}</span>`;
+            const cumProfitColor = (r.cumComboProfitK || 0) >= 0 ? 'text-emerald-700' : 'text-rose-700';
+
+            return `
+                <tr class="hover:bg-slate-50/80 transition-colors">
+                    <td class="py-2.5 px-3 font-mono font-bold text-slate-900 whitespace-nowrap">${formatDateVi(r.date)}</td>
+                    <td class="py-2.5 px-3 whitespace-nowrap">
+                        <span class="font-mono font-black text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded text-xs">ĐB: ${r.actualSpecial || '--'}</span>
+                    </td>
+                    <td class="py-2.5 px-3">
+                        <div class="flex flex-col gap-0.5">
+                            <div>${deStatusBadge}</div>
+                            <div class="text-[10px] font-mono text-slate-500">${moneyM(r.de?.profitK || 0, { signed: true })}</div>
+                        </div>
+                    </td>
+                    <td class="py-2.5 px-3">
+                        <div class="flex flex-col gap-0.5">
+                            <div>${loStatusText}</div>
+                            <div class="text-[10px] font-mono text-slate-500">${moneyM(r.lo?.profitK || 0, { signed: true })}</div>
+                        </div>
+                    </td>
+                    <td class="py-2.5 px-3">
+                        <div class="flex flex-col gap-0.5">
+                            <div>${xienStatusText}</div>
+                            <div class="text-[10px] font-mono text-slate-500">${moneyM(r.xien5?.profitK || 0, { signed: true })}</div>
+                        </div>
+                    </td>
+                    <td class="py-2.5 px-3 text-right whitespace-nowrap">
+                        ${dayProfitBadge}
+                    </td>
+                    <td class="py-2.5 px-3 text-right font-mono font-black ${cumProfitColor} whitespace-nowrap">
+                        ${moneyM(r.cumComboProfitK || 0, { signed: true })}
+                    </td>
+                    <td class="py-2.5 px-3 text-center whitespace-nowrap">
+                        <button type="button" class="btn-copy-mirofish-row rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-200 px-2.5 py-1 text-[11px] font-bold text-slate-700 transition-colors cursor-pointer" data-date="${r.date}">
+                            <i class="bi bi-clipboard2 mr-1"></i>Copy
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        // Wire copy buttons on table
+        tbody.querySelectorAll('.btn-copy-mirofish-row').forEach(btn => {
+            btn.onclick = () => {
+                const targetDate = btn.getAttribute('data-date');
+                const targetRow = data.settledLedger.find(r => r.date === targetDate);
+                if (targetRow && targetRow.fullCopyText) {
+                    copyRawText(targetRow.fullCopyText, `Đã copy Full dàn ngày ${formatDateVi(targetDate)}!`);
+                }
+            };
+        });
+    }
+
+    function renderMiroFishSwarmView(data) {
+        if (!data) return;
+        currentMirofishData = data;
+
+        const rec = data.latestRecommendation;
+        if (rec) {
+            const dateEl = byId('mirofishHeaderDate');
+            if (dateEl) dateEl.textContent = formatDateVi(rec.date);
+
+            const badgeEl = byId('mirofishDateBadge');
+            if (badgeEl) {
+                if (rec.isPending) {
+                    badgeEl.innerHTML = `<i class="bi bi-lock-fill mr-1"></i> 🔒 ĐÃ NIÊM PHONG BẤT BIẾN (Chờ quay 18:15)`;
+                    badgeEl.className = 'rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-bold text-xs px-3 py-0.5';
+                } else {
+                    badgeEl.innerHTML = `<i class="bi bi-check-circle-fill mr-1"></i> ✅ ĐÃ KẾT TOÁN MỞ THƯỞNG`;
+                    badgeEl.className = 'rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 font-bold text-xs px-3 py-0.5';
+                }
+            }
+
+            // Copy Full Ensemble
+            const btnCopyFull = byId('btnCopyMirofishFullEnsemble');
+            if (btnCopyFull) {
+                btnCopyFull.onclick = () => {
+                    copyRawText(rec.fullCopyText, 'Đã copy Full dàn chi tiết MiroFish Swarm thành công!');
+                };
+            }
+
+            // Panel 1: Đề
+            const deX2CountEl = byId('mirofishDeX2Count');
+            if (deX2CountEl) deX2CountEl.textContent = `${rec.de?.x2Nums?.length || 0} số`;
+            const deX2Cont = byId('mirofishDeX2Container');
+            if (deX2Cont) {
+                deX2Cont.innerHTML = (rec.de?.x2Nums || []).map(n => `
+                    <span class="inline-flex items-center justify-center h-8 w-8 rounded-xl font-mono font-black text-xs bg-gradient-to-br from-amber-400 to-yellow-500 text-slate-950 shadow-xs border border-amber-300" title="Đề VIP X2: ${n}">${n}</span>
+                `).join('');
+            }
+
+            const deX1CountEl = byId('mirofishDeX1Count');
+            if (deX1CountEl) deX1CountEl.textContent = `${rec.de?.x1Nums?.length || 0} số`;
+            const deX1Cont = byId('mirofishDeX1Container');
+            if (deX1Cont) {
+                deX1Cont.innerHTML = (rec.de?.x1Nums || []).map(n => `
+                    <span class="inline-flex items-center justify-center h-8 w-8 rounded-xl font-mono font-bold text-xs bg-indigo-100 text-indigo-900 border border-indigo-200" title="Đề Lót X1: ${n}">${n}</span>
+                `).join('');
+            }
+
+            const btnDeOnly = byId('btnCopyMirofishDeOnly');
+            if (btnDeOnly) {
+                btnDeOnly.onclick = () => {
+                    const lines = [];
+                    lines.push('Đề:');
+                    lines.push(`- Dàn X2: ${rec.de?.x2Nums?.join(', ')}`);
+                    lines.push(`- Dàn X1: ${rec.de?.x1Nums?.join(', ')}`);
+                    copyRawText(lines.join('\n'), 'Đã copy dàn Đề thành công!');
+                };
+            }
+
+            // Panel 2: Lô Đa Tầng
+            const wrapX5 = byId('mirofishLoX5Wrapper');
+            const contX5 = byId('mirofishLoX5Container');
+            if (wrapX5 && contX5) {
+                if (rec.lo?.x5Nums?.length) {
+                    wrapX5.classList.remove('hidden');
+                    contX5.innerHTML = rec.lo.x5Nums.map(n => `
+                        <span class="inline-flex items-center justify-center h-8 w-8 rounded-xl font-mono font-black text-xs bg-gradient-to-br from-rose-600 to-pink-600 text-white shadow-xs" title="Lô X5: ${n}">${n}</span>
+                    `).join('');
+                } else {
+                    wrapX5.classList.add('hidden');
+                }
+            }
+
+            const wrapX4 = byId('mirofishLoX4Wrapper');
+            const contX4 = byId('mirofishLoX4Container');
+            if (wrapX4 && contX4) {
+                if (rec.lo?.x4Nums?.length) {
+                    wrapX4.classList.remove('hidden');
+                    contX4.innerHTML = rec.lo.x4Nums.map(n => `
+                        <span class="inline-flex items-center justify-center h-8 w-8 rounded-xl font-mono font-black text-xs bg-gradient-to-br from-amber-400 to-yellow-500 text-slate-950 shadow-xs" title="Lô X4: ${n}">${n}</span>
+                    `).join('');
+                } else {
+                    wrapX4.classList.add('hidden');
+                }
+            }
+
+            const wrapX3 = byId('mirofishLoX3Wrapper');
+            const contX3 = byId('mirofishLoX3Container');
+            if (wrapX3 && contX3) {
+                if (rec.lo?.x3Nums?.length) {
+                    wrapX3.classList.remove('hidden');
+                    contX3.innerHTML = rec.lo.x3Nums.map(n => `
+                        <span class="inline-flex items-center justify-center h-8 w-8 rounded-xl font-mono font-bold text-xs bg-emerald-600 text-white shadow-xs" title="Lô X3: ${n}">${n}</span>
+                    `).join('');
+                } else {
+                    wrapX3.classList.add('hidden');
+                }
+            }
+
+            const wrapX1 = byId('mirofishLoX1Wrapper');
+            const contX1 = byId('mirofishLoX1Container');
+            if (wrapX1 && contX1) {
+                if (rec.lo?.x1Nums?.length) {
+                    wrapX1.classList.remove('hidden');
+                    contX1.innerHTML = rec.lo.x1Nums.map(n => `
+                        <span class="inline-flex items-center justify-center h-8 w-8 rounded-xl font-mono font-bold text-xs bg-blue-600 text-white shadow-xs" title="Lô X1: ${n}">${n}</span>
+                    `).join('');
+                } else {
+                    wrapX1.classList.add('hidden');
+                }
+            }
+
+            const btnLoOnly = byId('btnCopyMirofishLoOnly');
+            if (btnLoOnly) {
+                btnLoOnly.onclick = () => {
+                    const lines = ['Lô:'];
+                    if (rec.lo?.x5Nums?.length) lines.push(`- Dàn X5: ${rec.lo.x5Nums.join(', ')}`);
+                    if (rec.lo?.x4Nums?.length) lines.push(`- Dàn X4: ${rec.lo.x4Nums.join(', ')}`);
+                    if (rec.lo?.x3Nums?.length) lines.push(`- Dàn X3: ${rec.lo.x3Nums.join(', ')}`);
+                    if (rec.lo?.x1Nums?.length) lines.push(`- Dàn X1: ${rec.lo.x1Nums.join(', ')}`);
+                    copyRawText(lines.join('\n'), 'Đã copy dàn Lô thành công!');
+                };
+            }
+
+            // Panel 3: Xiên 5
+            const xienCont = byId('mirofishXien5Top5Container');
+            if (xienCont) {
+                xienCont.innerHTML = (rec.xien5?.top5 || []).map(n => `
+                    <span class="inline-flex items-center justify-center h-9 w-9 rounded-2xl font-mono font-black text-sm bg-gradient-to-br from-cyan-600 to-teal-600 text-white shadow-md border-2 border-cyan-400" title="Hạt nhân Xiên: ${n}">${n}</span>
+                `).join('');
+            }
+
+            const ticketsCont = byId('mirofishXien5TicketsContainer');
+            if (ticketsCont) {
+                ticketsCont.innerHTML = (rec.xien5?.tickets || []).map((t, idx) => `
+                    <div class="flex items-center justify-between rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-mono font-bold text-slate-800 border border-slate-200">
+                        <span>Vé ${idx + 1}: [${t.join(', ')}]</span>
+                        <span class="text-emerald-600 text-[11px] font-black">50K / vé</span>
+                    </div>
+                `).join('');
+            }
+
+            const btnXienOnly = byId('btnCopyMirofishXienOnly');
+            if (btnXienOnly) {
+                btnXienOnly.onclick = () => {
+                    copyRawText(`Lô Xiên 5: ${rec.xien5?.top5?.join(', ')}`, 'Đã copy Lô Xiên 5 thành công!');
+                };
+            }
+
+            // Debate Log
+            const debateCont = byId('mirofishDebateContainer');
+            if (debateCont) {
+                debateCont.innerHTML = (rec.debateLog || []).map(d => `
+                    <div class="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 transition-all hover:bg-slate-100/70">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-cyan-600 text-white font-black text-xs">V${d.round}</span>
+                            <span class="text-xs font-black text-slate-900">${escapeHtml(d.title)}</span>
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">${escapeHtml(d.summary)}</p>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Summary KPIs
+        const sum = data.summary;
+        if (sum) {
+            const netVal = sum.netProfitK || 0;
+            const netFormatted = Math.abs(netVal) >= 1000000
+                ? `${netVal >= 0 ? '+' : ''}${(netVal / 1000000).toFixed(3)} TỶ`
+                : `${netVal >= 0 ? '+' : ''}${(netVal / 1000).toFixed(1)}M`;
+            const netEl = byId('mirofishKpiNetProfit');
+            if (netEl) netEl.textContent = netFormatted;
+
+            const winEl = byId('mirofishKpiWinRate');
+            if (winEl) winEl.textContent = `${sum.winRate}%`;
+
+            const deWinEl = byId('mirofishKpiDeWinRate');
+            if (deWinEl) deWinEl.textContent = `${sum.deWinRate}%`;
+
+            const loProfitVal = data.settledLedger?.reduce((acc, r) => acc + (r.lo?.profitK || 0), 0) || 0;
+            const loProfEl = byId('mirofishKpiLoProfit');
+            if (loProfEl) {
+                loProfEl.textContent = Math.abs(loProfitVal) >= 1000000
+                    ? `+${(loProfitVal / 1000000).toFixed(3)} TỶ`
+                    : `+${(loProfitVal / 1000).toFixed(1)}M`;
+            }
+
+            const xienProfitVal = data.settledLedger?.reduce((acc, r) => acc + (r.xien5?.profitK || 0), 0) || 0;
+            const xienProfEl = byId('mirofishKpiXienProfit');
+            if (xienProfEl) xienProfEl.textContent = `+${(xienProfitVal / 1000).toFixed(1)}M`;
+
+            const maxDdEl = byId('mirofishKpiMaxDd');
+            if (maxDdEl) maxDdEl.textContent = `${((sum.maxDrawdownK || 0) / 1000).toFixed(1)}M`;
+        }
+
+        // Setup filter events once
+        if (!mirofishEventsWired) {
+            mirofishEventsWired = true;
+            const monthBtns = document.querySelectorAll('.mirofish-month-btn');
+            monthBtns.forEach(btn => {
+                btn.onclick = () => {
+                    monthBtns.forEach(b => {
+                        b.classList.remove('active', 'bg-cyan-600', 'text-white', 'shadow-xs');
+                        b.classList.add('text-slate-600', 'bg-white', 'border', 'border-slate-200');
+                    });
+                    btn.classList.add('active', 'bg-cyan-600', 'text-white', 'shadow-xs');
+                    btn.classList.remove('text-slate-600', 'bg-white', 'border', 'border-slate-200');
+
+                    currentMirofishMonth = btn.getAttribute('data-month') || 'all';
+                    renderMiroFishSettledTable(currentMirofishData, currentMirofishMonth, currentMirofishSearch);
+                };
+            });
+
+            const searchInput = byId('mirofishSearchDate');
+            if (searchInput) {
+                searchInput.oninput = (e) => {
+                    currentMirofishSearch = e.target.value;
+                    renderMiroFishSettledTable(currentMirofishData, currentMirofishMonth, currentMirofishSearch);
+                };
+            }
+        }
+
+        renderMiroFishSettledTable(data, currentMirofishMonth, currentMirofishSearch);
+    }
+
+    // ==========================================
     // INITIALIZATION & DATA FETCHING
     // ==========================================
     async function init() {
@@ -14193,6 +14545,7 @@
             if (payload?.tripleMerge) renderTripleMergeView(payload.tripleMerge);
             if (payload?.adaptiveDualMerge) renderAdaptiveDualMergeView(payload.adaptiveDualMerge);
             if (payload?.metaLearner) renderMetaLearnerView(payload.metaLearner);
+            if (payload?.mirofishSwarm) renderMiroFishSwarmView(payload.mirofishSwarm);
             highlightBestDeMethod(payload);
 
             // In-page historical method play slips section

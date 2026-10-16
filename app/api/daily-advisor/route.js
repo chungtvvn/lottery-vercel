@@ -945,6 +945,14 @@ export async function GET(request) {
                 settled.deResearchEnsemble = buildDeResearchEnsembleAdvisor(raw, settled);
             } catch (_) {}
         }
+        if (!settled.mirofishSwarm) {
+            try {
+                const { buildMiroFishSwarmAdvisor } = require('@/lib/services/mirofishSwarmService');
+                settled.mirofishSwarm = buildMiroFishSwarmAdvisor(raw, settled);
+            } catch (err) {
+                console.error('[API] MiroFish Swarm Build Error:', err);
+            }
+        }
         if (!settled.drawPrizesByDate) {
             const drawPrizesByDate = {};
             for (const row of (raw || []).slice(-365)) {
