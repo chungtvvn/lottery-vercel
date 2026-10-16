@@ -14195,106 +14195,643 @@
     // MIROFISH SWARM INTELLIGENCE ADVISOR RENDERING
     // ==========================================
     let currentMirofishData = null;
+    let currentMirofishPhase = 'from0710'; // Mặc định: Live thực chiến từ 07/10/2026
     let currentMirofishMonth = 'all';
     let currentMirofishSearch = '';
     let mirofishEventsWired = false;
+    let mirofishModalEventsWired = false;
 
-    function renderMiroFishSettledTable(data, monthFilter = 'all', searchDate = '') {
+    function renderMiroFishSettledTable(data, phaseFilter = currentMirofishPhase, monthFilter = currentMirofishMonth, searchDate = currentMirofishSearch) {
         const tbody = byId('mirofishSettledTableBody');
         const countInfo = byId('mirofishTableCountInfo');
         if (!tbody || !data || !Array.isArray(data.settledLedger)) return;
 
-        let rows = [...data.settledLedger].reverse();
+        currentMirofishPhase = phaseFilter;
+        currentMirofishMonth = monthFilter;
+        currentMirofishSearch = searchDate;
 
-        if (monthFilter && monthFilter !== 'all') {
-            rows = rows.filter(r => r.date && r.date.startsWith(monthFilter));
+        let baseRows = [...data.settledLedger];
+
+        // 1. Lọc Phase: 'from0710' vs 'all2026'
+        if (phaseFilter === 'from0710') {
+            baseRows = baseRows.filter(r => r.date >= '2026-10-07');
         }
 
+        // 2. Lọc Tháng
+        if (monthFilter && monthFilter !== 'all') {
+            baseRows = baseRows.filter(r => r.date && r.date.startsWith(monthFilter));
+        }
+
+        // 3. Tìm kiếm ngày
         if (searchDate) {
             const cleanSearch = searchDate.trim().toLowerCase();
-            rows = rows.filter(r => {
+            baseRows = baseRows.filter(r => {
                 const viDate = formatDateVi(r.date).toLowerCase();
-                return r.date.includes(cleanSearch) || viDate.includes(cleanSearch);
+                return (r.date && r.date.includes(cleanSearch)) || viDate.includes(cleanSearch);
             });
         }
 
-        if (countInfo) {
-            countInfo.textContent = `Đang hiển thị ${rows.length} / ${data.settledLedger.length} kỳ đã kết toán`;
+        // Tính lũy kế chạy riêng cho lát cắt đã chọn theo thứ tự thời gian (cũ -> mới)
+        const chronoRows = [...baseRows].sort((a, b) => a.date.localeCompare(b.date));
+        let runningCumProfit = 0;
+        let runningDeProfit = 0;
+        let runningLoProfit = 0;
+        let runningXienProfit = 0;
+
+        const enrichedChrono = chronoRows.map(r => {
+            const dProf = r.de?.profitK || 0;
+            const lProf = r.lo?.profitK || 0;
+            const xProf = r.xien5?.profitK || 0;
+            const cProf = r.combo?.profitK || 0;
+            runningCumProfit += cProf;
+            runningDeProfit += dProf;
+            runningLoProfit += lProf;
+            runningXienProfit += xProf;
+            return {
+                ...r,
+                sliceCumProfitK: runningCumProfit,
+                sliceCumDeProfitK: runningDeProfit,
+                sliceCumLoProfitK: runningLoProfit,
+                sliceCumXienProfitK: runningXienProfit
+            };
+        });
+
+        // Cập nhật dải thanh tóm tắt #mirofishPhaseSummaryBar
+        const totalSliceDays = enrichedChrono.length;
+        const positiveDays = enrichedChrono.filter(r => (r.combo?.profitK || 0) > 0).length;
+        const winRate = totalSliceDays > 0 ? (positiveDays / totalSliceDays * 100).toFixed(1) : '0.0';
+        const deHits = enrichedChrono.filter(r => r.de?.isHit).length;
+        const deX2Hits = enrichedChrono.filter(r => r.de?.isHitX2).length;
+
+        const sumDaysEl = byId('mirofishSummaryDays');
+        if (sumDaysEl) sumDaysEl.textContent = `${totalSliceDays} kỳ`;
+
+        const sumWinDaysEl = byId('mirofishSummaryWinDays');
+        if (sumWinDaysEl) sumWinDaysEl.textContent = `${positiveDays} kỳ`;
+
+        const sumWinRateEl = byId('mirofishSummaryWinRate');
+        if (sumWinRateEl) sumWinRateEl.textContent = `${winRate}%`;
+
+        const sumDeHitEl = byId('mirofishSummaryDeHit');
+        if (sumDeHitEl) sumDeHitEl.textContent = `${deHits}/${totalSliceDays}`;
+
+        const sumDeX2El = byId('mirofishSummaryDeX2');
+        if (sumDeX2El) sumDeX2El.textContent = `${deX2Hits}`;
+
+        const sumProfitEl = byId('mirofishSummaryProfit');
+        if (sumProfitEl) {
+            sumProfitEl.textContent = moneyM(runningCumProfit, { signed: true });
+            sumProfitEl.className = 'font-mono font-black text-sm ' + (runningCumProfit >= 0 ? 'text-emerald-700' : 'text-rose-700');
         }
 
-        if (rows.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-400 font-semibold italic">Không tìm thấy kỳ quay nào phù hợp điều kiện lọc.</td></tr>`;
+        if (countInfo) {
+            countInfo.textContent = `Đang hiển thị ${totalSliceDays} / ${data.settledLedger.length} kỳ đối soát`;
+        }
+
+        // Hiển thị mới nhất lên trên
+        const displayRows = [...enrichedChrono].reverse();
+
+        // Kiểm tra hàng Pending hôm nay
+        const pendingRec = data.latestRecommendation;
+        let pendingHtml = '';
+        if (pendingRec && (pendingRec.isPending || !pendingRec.actualSpecial)) {
+            const matchesPhase = (phaseFilter === 'from0710' ? pendingRec.date >= '2026-10-07' : true);
+            const matchesMonth = (monthFilter === 'all' || pendingRec.date.startsWith(monthFilter));
+            const matchesSearch = (!searchDate || pendingRec.date.includes(searchDate) || formatDateVi(pendingRec.date).toLowerCase().includes(searchDate.toLowerCase()));
+
+            if (matchesPhase && matchesMonth && matchesSearch) {
+                pendingHtml = `
+                    <tr class="bg-amber-50/70 border-b-2 border-amber-300 transition-colors">
+                        <td class="py-3 px-3 font-mono font-bold text-slate-900 whitespace-nowrap">
+                            <div class="flex items-center gap-1.5">
+                                <span>${formatDateVi(pendingRec.date)}</span>
+                                <span class="rounded-full bg-amber-200 text-amber-950 text-[10px] font-black px-2 py-0.5 animate-pulse border border-amber-400">Hôm nay 🔒</span>
+                            </div>
+                        </td>
+                        <td class="py-3 px-3">
+                            <div class="font-bold text-slate-800">${pendingRec.de?.x2Nums?.length || 0}s X2 · ${pendingRec.de?.x1Nums?.length || 0}s X1</div>
+                            <div class="text-[10px] font-mono text-slate-500">Vốn ${((pendingRec.de?.stakeK || 0)/1000).toFixed(1)}M (Ăn 33.6M / 16.8M)</div>
+                        </td>
+                        <td class="py-3 px-3">
+                            <div class="font-bold text-slate-800">${pendingRec.lo?.numbers?.length || 0} số đa tầng</div>
+                            <div class="text-[10px] font-mono text-slate-500">Vốn ${((pendingRec.lo?.stakeK || 0)/1000).toFixed(1)}M (${pendingRec.lo?.x5Nums?.length || 0} X5 · ${pendingRec.lo?.x4Nums?.length || 0} X4 · ${pendingRec.lo?.x3Nums?.length || 0} X3 · ${pendingRec.lo?.x1Nums?.length || 0} X1)</div>
+                        </td>
+                        <td class="py-3 px-3">
+                            <div class="font-bold text-slate-800">5 vé Xiên 4 [Top 5]</div>
+                            <div class="text-[10px] font-mono text-slate-500">Vốn 5.5M (Ăn 192M / 72M / 20.4M)</div>
+                        </td>
+                        <td class="py-3 px-3 text-center whitespace-nowrap">
+                            <div class="flex items-center justify-center gap-1.5">
+                                <button type="button" class="btn-open-mirofish-modal rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white px-2.5 py-1 text-[11px] font-black transition-all shadow-xs cursor-pointer" data-date="${pendingRec.date}">
+                                    👁️ Xem Dàn Khóa
+                                </button>
+                                <button type="button" class="btn-copy-mirofish-row rounded-lg border border-slate-300 bg-white hover:bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-700 transition-colors cursor-pointer" data-date="${pendingRec.date}">
+                                    <i class="bi bi-clipboard2 mr-1"></i>Copy
+                                </button>
+                            </div>
+                        </td>
+                        <td class="py-3 px-3 text-right font-mono font-bold text-slate-700 whitespace-nowrap">
+                            ${((pendingRec.combo?.stakeK || 0)/1000).toFixed(1)}M
+                        </td>
+                        <td class="py-3 px-3 text-right font-bold text-amber-600 whitespace-nowrap">⏳ Chờ mở 18:30</td>
+                        <td class="py-3 px-3 text-right font-bold text-amber-600 whitespace-nowrap">⏳ Chờ mở 18:30</td>
+                        <td class="py-3 px-3 text-right font-bold text-amber-600 whitespace-nowrap">⏳ Chờ mở 18:30</td>
+                        <td class="py-3 px-3 text-right font-bold text-amber-600 whitespace-nowrap">⏳ Chờ mở 18:30</td>
+                        <td class="py-3 px-3 text-right font-mono font-bold text-slate-400 whitespace-nowrap">--</td>
+                    </tr>
+                `;
+            }
+        }
+
+        if (displayRows.length === 0 && !pendingHtml) {
+            tbody.innerHTML = `<tr><td colspan="11" class="text-center py-8 text-slate-400 font-semibold italic">Không tìm thấy kỳ quay nào phù hợp điều kiện lọc.</td></tr>`;
             return;
         }
 
-        tbody.innerHTML = rows.map(r => {
+        const rowsHtml = displayRows.map(r => {
+            // Đề Badge
             const deStatusBadge = r.de?.isHit
                 ? (r.de?.isHitX2
-                    ? `<span class="inline-flex items-center gap-1 rounded-md bg-amber-100 text-amber-900 border border-amber-300 px-1.5 py-0.5 text-[10px] font-black">👑 Ăn VIP X2 (${r.actualSpecial})</span>`
-                    : `<span class="inline-flex items-center gap-1 rounded-md bg-emerald-100 text-emerald-900 border border-emerald-300 px-1.5 py-0.5 text-[10px] font-bold">🛡️ Ăn X1 (${r.actualSpecial})</span>`)
-                : `<span class="inline-flex items-center rounded-md bg-slate-100 text-slate-500 px-1.5 py-0.5 text-[10px]">Trượt</span>`;
+                    ? `<span class="inline-flex items-center gap-1 rounded-md bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 text-xs font-black shadow-2xs">👑 Ăn VIP X2: ${r.actualSpecial}</span>`
+                    : `<span class="inline-flex items-center gap-1 rounded-md bg-emerald-100 text-emerald-900 border border-emerald-300 px-2 py-0.5 text-xs font-bold shadow-2xs">🛡️ Ăn X1: ${r.actualSpecial}</span>`)
+                : `<span class="inline-flex items-center rounded-md bg-slate-100 text-slate-500 px-1.5 py-0.5 text-[11px]">Trượt (ĐB ${r.actualSpecial || '--'})</span>`;
 
-            const loStatusText = `<span class="font-bold text-slate-800">${r.lo?.hits || 0} nháy</span> <span class="text-slate-400">(${r.lo?.numbers?.length || 0} con)</span>`;
+            // Lô Badge & Danh sách số nổ
+            const hits = r.lo?.hits || 0;
+            const loStatusBadge = hits > 0
+                ? `<span class="inline-flex items-center gap-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 text-xs font-black">🎯 Nổ ${hits} nháy</span>`
+                : `<span class="inline-flex items-center rounded-md bg-slate-100 text-slate-400 px-1.5 py-0.5 text-[11px]">0 nháy</span>`;
 
+            const hitPills = (r.lo?.pills || []).filter(p => p.hits > 0);
+            const hitPillsText = hitPills.length > 0
+                ? `<div class="text-[10px] text-slate-600 mt-0.5 truncate max-w-[170px]" title="${hitPills.map(p => `${p.num}(X${p.mult}${p.hits > 1 ? '·' + p.hits + 'n' : ''})`).join(', ')}">${hitPills.map(p => `<strong class="text-emerald-700 font-mono">${p.num}</strong>(X${p.mult}${p.hits > 1 ? '·' + p.hits + 'n' : ''})`).join(' ')}</div>`
+                : `<div class="text-[10px] text-slate-400 mt-0.5">${r.lo?.numbers?.length || 0} con (${((r.lo?.stakeK || 0)/1000).toFixed(1)}M)</div>`;
+
+            // Xiên 5 Badge
             const h5 = r.xien5?.h5 || 0;
-            const xienStatusText = h5 >= 4
-                ? `<span class="inline-flex items-center gap-1 rounded-md bg-purple-100 text-purple-900 border border-purple-300 px-1.5 py-0.5 text-[10px] font-black">🔥 Ăn Xiên 4 (${h5}/5 con)</span>`
-                : (h5 >= 2
-                    ? `<span class="text-slate-600 font-mono font-medium">${h5}/5 con</span>`
-                    : `<span class="text-slate-400 font-mono font-medium">${h5}/5 con</span>`);
+            const xienStatusBadge = h5 >= 4
+                ? `<span class="inline-flex items-center gap-1 rounded-md bg-purple-100 text-purple-900 border border-purple-300 px-2 py-0.5 text-xs font-black shadow-2xs">🔥 Ăn Xiên 4 (${h5}/5 con)</span>`
+                : (h5 === 3
+                    ? `<span class="inline-flex items-center gap-1 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 px-1.5 py-0.5 text-[11px] font-bold">✨ Nổ 3/5 con (+18.9M)</span>`
+                    : (h5 === 2
+                        ? `<span class="inline-flex items-center gap-1 rounded-md bg-blue-50 text-blue-700 border border-blue-200 px-1.5 py-0.5 text-[11px] font-medium">🛡️ Nổ 2/5 con (-1.9M)</span>`
+                        : `<span class="inline-flex items-center rounded-md bg-slate-100 text-slate-400 px-1.5 py-0.5 text-[11px]">${h5}/5 con</span>`));
 
-            const isDayPositive = (r.combo?.profitK || 0) > 0;
-            const dayProfitBadge = `<span class="font-mono font-black ${isDayPositive ? 'text-emerald-600' : 'text-rose-500'}">${moneyM(r.combo?.profitK || 0, { signed: true })}</span>`;
-            const cumProfitColor = (r.cumComboProfitK || 0) >= 0 ? 'text-emerald-700' : 'text-rose-700';
+            // PnL Values
+            const deProfit = r.de?.profitK || 0;
+            const loProfit = r.lo?.profitK || 0;
+            const xienProfit = r.xien5?.profitK || 0;
+            const comboProfit = r.combo?.profitK || 0;
+            const cumProfit = r.sliceCumProfitK || 0;
+
+            const deColor = deProfit > 0 ? 'text-emerald-600' : (deProfit < 0 ? 'text-rose-600' : 'text-slate-400');
+            const loColor = loProfit > 0 ? 'text-emerald-600' : (loProfit < 0 ? 'text-rose-600' : 'text-slate-400');
+            const xienColor = xienProfit > 0 ? 'text-emerald-600' : (xienProfit < 0 ? 'text-rose-600' : 'text-slate-400');
+            const comboColor = comboProfit > 0 ? 'text-emerald-600 font-black' : (comboProfit < 0 ? 'text-rose-600 font-bold' : 'text-slate-500');
+            const cumColor = cumProfit >= 0 ? 'text-emerald-700' : 'text-rose-700';
 
             return `
                 <tr class="hover:bg-slate-50/80 transition-colors">
-                    <td class="py-2.5 px-3 font-mono font-bold text-slate-900 whitespace-nowrap">${formatDateVi(r.date)}</td>
-                    <td class="py-2.5 px-3 whitespace-nowrap">
-                        <span class="font-mono font-black text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded text-xs">ĐB: ${r.actualSpecial || '--'}</span>
+                    <td class="py-2.5 px-3 font-mono font-bold text-slate-900 whitespace-nowrap">
+                        ${formatDateVi(r.date)}
                     </td>
                     <td class="py-2.5 px-3">
-                        <div class="flex flex-col gap-0.5">
-                            <div>${deStatusBadge}</div>
-                            <div class="text-[10px] font-mono text-slate-500">${moneyM(r.de?.profitK || 0, { signed: true })}</div>
-                        </div>
+                        <div>${deStatusBadge}</div>
+                        <div class="text-[10px] text-slate-500 mt-0.5">Dàn ${r.de?.numbers?.length || 0}s (${r.de?.x2Nums?.length || 0}s X2 · ${r.de?.x1Nums?.length || 0}s X1)</div>
                     </td>
                     <td class="py-2.5 px-3">
-                        <div class="flex flex-col gap-0.5">
-                            <div>${loStatusText}</div>
-                            <div class="text-[10px] font-mono text-slate-500">${moneyM(r.lo?.profitK || 0, { signed: true })}</div>
-                        </div>
+                        <div>${loStatusBadge}</div>
+                        ${hitPillsText}
                     </td>
                     <td class="py-2.5 px-3">
-                        <div class="flex flex-col gap-0.5">
-                            <div>${xienStatusText}</div>
-                            <div class="text-[10px] font-mono text-slate-500">${moneyM(r.xien5?.profitK || 0, { signed: true })}</div>
-                        </div>
-                    </td>
-                    <td class="py-2.5 px-3 text-right whitespace-nowrap">
-                        ${dayProfitBadge}
-                    </td>
-                    <td class="py-2.5 px-3 text-right font-mono font-black ${cumProfitColor} whitespace-nowrap">
-                        ${moneyM(r.cumComboProfitK || 0, { signed: true })}
+                        <div>${xienStatusBadge}</div>
+                        <div class="text-[10px] text-slate-500 mt-0.5">5 vé Xiên 4 (5.5M)</div>
                     </td>
                     <td class="py-2.5 px-3 text-center whitespace-nowrap">
-                        <button type="button" class="btn-copy-mirofish-row rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-200 px-2.5 py-1 text-[11px] font-bold text-slate-700 transition-colors cursor-pointer" data-date="${r.date}">
-                            <i class="bi bi-clipboard2 mr-1"></i>Copy
-                        </button>
+                        <div class="flex items-center justify-center gap-1.5">
+                            <button type="button" class="btn-open-mirofish-modal rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white px-2.5 py-1 text-[11px] font-black transition-all shadow-xs cursor-pointer" data-date="${r.date}">
+                                👁️ Xem Đủ Dàn
+                            </button>
+                            <button type="button" class="btn-copy-mirofish-row rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-200 px-2 py-1 text-[11px] font-bold text-slate-700 transition-colors cursor-pointer" data-date="${r.date}">
+                                <i class="bi bi-clipboard2 mr-1"></i>Copy
+                            </button>
+                        </div>
+                    </td>
+                    <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-700 whitespace-nowrap">
+                        ${((r.combo?.stakeK || 0)/1000).toFixed(1)}M
+                    </td>
+                    <td class="py-2.5 px-3 text-right font-mono font-bold ${deColor} whitespace-nowrap">
+                        ${moneyM(deProfit, { signed: true })}
+                    </td>
+                    <td class="py-2.5 px-3 text-right font-mono font-bold ${loColor} whitespace-nowrap">
+                        ${moneyM(loProfit, { signed: true })}
+                    </td>
+                    <td class="py-2.5 px-3 text-right font-mono font-bold ${xienColor} whitespace-nowrap">
+                        ${moneyM(xienProfit, { signed: true })}
+                    </td>
+                    <td class="py-2.5 px-3 text-right font-mono text-xs ${comboColor} whitespace-nowrap">
+                        ${moneyM(comboProfit, { signed: true })}
+                    </td>
+                    <td class="py-2.5 px-3 text-right font-mono font-black text-xs ${cumColor} whitespace-nowrap">
+                        ${moneyM(cumProfit, { signed: true })}
                     </td>
                 </tr>
             `;
         }).join('');
 
-        // Wire copy buttons on table
+        tbody.innerHTML = pendingHtml + rowsHtml;
+
+        // Gắn sự kiện copy nút từng dòng
         tbody.querySelectorAll('.btn-copy-mirofish-row').forEach(btn => {
             btn.onclick = () => {
                 const targetDate = btn.getAttribute('data-date');
-                const targetRow = data.settledLedger.find(r => r.date === targetDate);
+                const targetRow = (data.settledLedger || []).find(r => r.date === targetDate) || (data.latestRecommendation?.date === targetDate ? data.latestRecommendation : null);
                 if (targetRow && targetRow.fullCopyText) {
                     copyRawText(targetRow.fullCopyText, `Đã copy Full dàn ngày ${formatDateVi(targetDate)}!`);
                 }
             };
+        });
+
+        // Gắn sự kiện mở modal xem đủ dàn
+        tbody.querySelectorAll('.btn-open-mirofish-modal').forEach(btn => {
+            btn.onclick = () => {
+                const targetDate = btn.getAttribute('data-date');
+                if (targetDate) openMirofishDayModal(targetDate);
+            };
+        });
+    }
+
+    function openMirofishDayModal(targetDate) {
+        const modal = byId('modalMirofishDayDetails');
+        if (!modal || !currentMirofishData) return;
+
+        let row = (currentMirofishData.settledLedger || []).find(r => r.date === targetDate);
+        if (!row && currentMirofishData.latestRecommendation?.date === targetDate) {
+            row = currentMirofishData.latestRecommendation;
+        }
+        if (!row) return;
+
+        const isPending = Boolean(row.isPending || !row.actualSpecial);
+        const dateVi = formatDateVi(targetDate);
+
+        // Header modal
+        const titleEl = byId('modalMirofishDateTitle');
+        if (titleEl) titleEl.textContent = `${dateVi}`;
+
+        const headerEl = byId('modalMirofishDateHeader');
+        if (headerEl) headerEl.textContent = dateVi;
+
+        const badgeEl = byId('modalMirofishStatusBadge');
+        if (badgeEl) {
+            if (isPending) {
+                badgeEl.className = 'rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold px-2.5 py-0.5 border border-amber-400/40';
+                badgeEl.innerHTML = '🔒 ĐÃ KHÓA NIÊM PHONG (Chờ quay 18:15)';
+            } else {
+                badgeEl.className = 'rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-2.5 py-0.5 border border-emerald-400/40';
+                badgeEl.innerHTML = '✅ ĐÃ KẾT TOÁN 100% STRICT PIT';
+            }
+        }
+
+        const specialEl = byId('modalMirofishSpecialPrize');
+        if (specialEl) {
+            specialEl.textContent = isPending ? '⏳ Chờ 18:30' : (row.actualSpecial || '--');
+        }
+
+        // Nút Copy Full Ensemble
+        const btnCopyFull = byId('btnCopyModalMirofishFull');
+        if (btnCopyFull) {
+            btnCopyFull.onclick = () => {
+                if (row.fullCopyText) {
+                    copyRawText(row.fullCopyText, `Đã copy full dàn chi tiết ngày ${dateVi}!`);
+                }
+            };
+        }
+
+        // Cards Container
+        const container = byId('modalMirofishCardsContainer');
+        if (!container) return;
+
+        // 1. TRỤ CỘT ĐỀ PHÂN TẦNG
+        const de = row.de || {};
+        const x2Nums = de.x2Nums || [];
+        const x1Nums = de.x1Nums || [];
+        const actualSpecial = isPending ? null : row.actualSpecial;
+
+        const deX2Badges = x2Nums.map(n => {
+            const isHit = !isPending && n === actualSpecial;
+            if (isHit) {
+                return `<span class="inline-flex items-center justify-center h-9 w-9 rounded-xl font-mono font-black text-sm bg-gradient-to-br from-amber-400 to-yellow-500 text-slate-950 shadow-md border-2 border-amber-300 ring-2 ring-amber-400/50 animate-bounce" title="👑 NỔ VIP X2: ${n}">👑 ${n}</span>`;
+            }
+            return `<span class="inline-flex items-center justify-center h-8 w-8 rounded-xl font-mono font-black text-xs bg-amber-100 text-amber-900 border border-amber-300 hover:scale-105 transition-transform" title="VIP X2 (400K): ${n}">${n}</span>`;
+        }).join('');
+
+        const deX1Badges = x1Nums.map(n => {
+            const isHit = !isPending && n === actualSpecial;
+            if (isHit) {
+                return `<span class="inline-flex items-center justify-center h-9 w-9 rounded-xl font-mono font-black text-sm bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-md border-2 border-emerald-300 ring-2 ring-emerald-400/50 animate-bounce" title="🛡️ NỔ X1: ${n}">🛡️ ${n}</span>`;
+            }
+            return `<span class="inline-flex items-center justify-center h-8 w-8 rounded-xl font-mono font-bold text-xs bg-indigo-50 text-indigo-900 border border-indigo-200 hover:scale-105 transition-transform" title="Lót X1 (200K): ${n}">${n}</span>`;
+        }).join('');
+
+        const deResultText = isPending
+            ? `<span class="text-amber-600 font-bold">⏳ Chờ mở thưởng 18:30</span>`
+            : (de.isHit
+                ? (de.isHitX2
+                    ? `<span class="text-amber-700 font-black">👑 NỔ VIP X2 (${actualSpecial}) · Ăn 33.6M · Lãi ròng ${moneyM(de.profitK, { signed: true })}</span>`
+                    : `<span class="text-emerald-700 font-black">🛡️ NỔ X1 (${actualSpecial}) · Ăn 16.8M · Lãi ròng ${moneyM(de.profitK, { signed: true })}</span>`)
+                : `<span class="text-rose-600 font-bold">❌ Trượt Đề (Về ${actualSpecial}) · Lỗ -${((de.stakeK || 0)/1000).toFixed(1)}M</span>`);
+
+        // 2. TRỤ CỘT LÔ GHÉP ĐA TẦNG
+        const lo = row.lo || {};
+        const pills = lo.pills || [];
+        const loPillsBadges = pills.map(p => {
+            const isHit = !isPending && p.hits > 0;
+            if (isHit) {
+                return `
+                    <div class="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-3 py-1 font-mono font-black text-xs shadow-md border border-emerald-300 ring-2 ring-emerald-400/40">
+                        <span>🎯 ${p.num}</span>
+                        <span class="rounded bg-black/20 px-1 text-[10px]">X${p.mult}</span>
+                        <span class="rounded bg-amber-400 text-slate-950 px-1 text-[10px] font-black">${p.hits} nháy (+${moneyM(p.payoutK)})</span>
+                    </div>
+                `;
+            }
+            const colorClass = p.mult === 5 ? 'bg-rose-100 text-rose-900 border-rose-300'
+                : (p.mult === 4 ? 'bg-amber-100 text-amber-900 border-amber-300'
+                : (p.mult === 3 ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                : 'bg-blue-100 text-blue-900 border-blue-300'));
+            return `
+                <div class="inline-flex items-center gap-1 rounded-xl ${colorClass} border px-2.5 py-1 font-mono font-bold text-xs">
+                    <span>${p.num}</span>
+                    <span class="text-[10px] opacity-75">(X${p.mult})</span>
+                </div>
+            `;
+        }).join('');
+
+        const loResultText = isPending
+            ? `<span class="text-amber-600 font-bold">⏳ Chờ mở thưởng 18:30</span>`
+            : (lo.hits > 0
+                ? `<span class="text-emerald-700 font-black">🎯 Nổ ${lo.hits} nháy · Trả thưởng ${moneyM(lo.payoutK)} · Lãi ròng ${moneyM(lo.profitK, { signed: true })}</span>`
+                : `<span class="text-rose-600 font-bold">❌ Trượt Lô (0 nháy) · Lỗ -${((lo.stakeK || 0)/1000).toFixed(1)}M</span>`);
+
+        // 3. TRỤ CỘT LÔ XIÊN 5
+        const xien5 = row.xien5 || {};
+        const top5 = xien5.top5 || [];
+        const prizeCount = row.prizeCount || {};
+        const top5Badges = top5.map(n => {
+            const hits = !isPending ? (prizeCount[n] || 0) : 0;
+            if (hits > 0) {
+                return `<span class="inline-flex items-center justify-center h-9 w-9 rounded-2xl font-mono font-black text-sm bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md border-2 border-emerald-300 ring-2 ring-emerald-400/50" title="Đã nổ: ${hits} nháy">🎯 ${n}</span>`;
+            }
+            return `<span class="inline-flex items-center justify-center h-8 w-8 rounded-xl font-mono font-black text-xs bg-cyan-100 text-cyan-900 border border-cyan-300" title="Hạt nhân Xiên: ${n}">${n}</span>`;
+        }).join('');
+
+        const tickets = xien5.tickets || [];
+        const ticketsHtml = tickets.map((t, idx) => {
+            let hitInTicket = 0;
+            if (!isPending) {
+                hitInTicket = t.filter(n => (prizeCount[n] || 0) > 0).length;
+            }
+            const ticketResultBadge = isPending
+                ? `<span class="text-slate-500 text-[11px]">1.1M / vé</span>`
+                : (hitInTicket === 4
+                    ? `<span class="rounded bg-purple-100 text-purple-900 border border-purple-300 px-1.5 py-0.5 text-[10px] font-black">🔥 Nổ 4/4 (+38.4M)</span>`
+                    : (hitInTicket === 3
+                        ? `<span class="rounded bg-indigo-100 text-indigo-900 border border-indigo-300 px-1.5 py-0.5 text-[10px] font-bold">✨ Nổ 3/4 (+8.4M)</span>`
+                        : (hitInTicket === 2
+                            ? `<span class="rounded bg-blue-100 text-blue-900 border border-blue-300 px-1.5 py-0.5 text-[10px] font-medium">🛡️ Nổ 2/4 (+1.2M)</span>`
+                            : `<span class="text-slate-400 text-[10px]">Trượt (${hitInTicket}/4)</span>`)));
+            return `
+                <div class="flex items-center justify-between rounded-xl bg-slate-100/90 px-3 py-1.5 text-xs font-mono font-bold text-slate-800 border border-slate-200">
+                    <div class="flex items-center gap-2">
+                        <span class="rounded bg-slate-200 px-1.5 py-0.5 text-[10px] text-slate-700">Vé ${idx + 1}</span>
+                        <span>[${t.join(', ')}]</span>
+                    </div>
+                    <div>${ticketResultBadge}</div>
+                </div>
+            `;
+        }).join('');
+
+        const xienResultText = isPending
+            ? `<span class="text-amber-600 font-bold">⏳ Chờ mở thưởng 18:30</span>`
+            : (xien5.profitK > 0
+                ? `<span class="text-emerald-700 font-black">🔥 Thắng Xiên 5 · Nổ ${xien5.h5 || 0}/5 con · Thưởng ${moneyM(xien5.payoutK)} · Lãi ròng ${moneyM(xien5.profitK, { signed: true })}</span>`
+                : (xien5.h5 >= 2
+                    ? `<span class="text-slate-700 font-bold">🛡️ Nổ ${xien5.h5}/5 con · Thu về ${moneyM(xien5.payoutK)} · Lỗ ${moneyM(xien5.profitK, { signed: true })}</span>`
+                    : `<span class="text-rose-600 font-bold">❌ Trượt Xiên (Nổ ${xien5.h5 || 0}/5) · Lỗ -5.5M</span>`));
+
+        // 4. P&L BÙ TRỪ COMBO
+        const combo = row.combo || {};
+        const comboProfit = combo.profitK || 0;
+        const comboColor = comboProfit >= 0 ? 'text-emerald-600' : 'text-rose-600';
+
+        // 5. DEBATE LOG
+        const debate = row.debateLog || [];
+        const debateHtml = debate.map(d => `
+            <div class="rounded-xl border border-slate-200 bg-white p-3.5 shadow-2xs">
+                <div class="flex items-center gap-2 mb-1.5">
+                    <span class="flex h-5 w-5 items-center justify-center rounded-lg bg-cyan-600 text-white font-black text-[10px]">V${d.round}</span>
+                    <strong class="text-xs font-black text-slate-900">${escapeHtml(d.title)}</strong>
+                </div>
+                <p class="text-xs text-slate-600 leading-relaxed">${escapeHtml(d.summary)}</p>
+            </div>
+        `).join('');
+
+        container.innerHTML = `
+            <!-- Panel 1: Đề -->
+            <div class="rounded-2xl border-2 border-amber-300 bg-white p-4 sm:p-5 shadow-sm space-y-3">
+                <div class="flex items-center justify-between flex-wrap gap-2 border-b border-amber-100 pb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="flex h-7 w-7 items-center justify-center rounded-xl bg-amber-500 text-white font-black text-xs shadow-xs">1</span>
+                        <h4 class="font-black text-slate-900 text-sm sm:text-base">👑 ĐỀ PHÂN TẦNG: ${x2Nums.length}s X2 (400K) + ${x1Nums.length}s X1 (200K) · Vốn ${((de.stakeK || 0)/1000).toFixed(1)}M</h4>
+                    </div>
+                    <button type="button" class="btn-copy-modal-de rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-900 transition-colors cursor-pointer">
+                        <i class="bi bi-clipboard2 mr-1"></i>Copy Dàn Đề
+                    </button>
+                </div>
+                <div class="space-y-2">
+                    <div>
+                        <span class="text-[11px] font-black uppercase text-amber-800 tracking-wider">DÀN VIP X2 (${x2Nums.length} SỐ · CƯỢC 400K · NỔ ĂN 33.6M):</span>
+                        <div class="flex flex-wrap gap-1.5 mt-1">${deX2Badges || '<span class="text-slate-400 text-xs">Không có</span>'}</div>
+                    </div>
+                    <div>
+                        <span class="text-[11px] font-bold uppercase text-indigo-700 tracking-wider">DÀN LÓT X1 (${x1Nums.length} SỐ · CƯỢC 200K · NỔ ĂN 16.8M):</span>
+                        <div class="flex flex-wrap gap-1.5 mt-1">${deX1Badges || '<span class="text-slate-400 text-xs">Không có</span>'}</div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between border-t border-slate-100 pt-2 text-xs flex-wrap gap-2">
+                    <div>${deResultText}</div>
+                    <div class="font-mono text-slate-500">Vốn: ${((de.stakeK || 0)/1000).toFixed(1)}M · Thưởng: ${moneyM(de.payoutK || 0)}</div>
+                </div>
+            </div>
+
+            <!-- Panel 2: Lô Đa Tầng -->
+            <div class="rounded-2xl border-2 border-emerald-300 bg-white p-4 sm:p-5 shadow-sm space-y-3">
+                <div class="flex items-center justify-between flex-wrap gap-2 border-b border-emerald-100 pb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="flex h-7 w-7 items-center justify-center rounded-xl bg-emerald-600 text-white font-black text-xs shadow-xs">2</span>
+                        <h4 class="font-black text-slate-900 text-sm sm:text-base">🎯 LÔ GHÉP ĐA TẦNG: ${lo.numbers?.length || 0} SỐ (X5 / X4 / X3 / X1) · Vốn ${((lo.stakeK || 0)/1000).toFixed(1)}M</h4>
+                    </div>
+                    <button type="button" class="btn-copy-modal-lo rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-900 transition-colors cursor-pointer">
+                        <i class="bi bi-clipboard2 mr-1"></i>Copy Dàn Lô
+                    </button>
+                </div>
+                <div>
+                    <span class="text-[11px] font-black uppercase text-emerald-800 tracking-wider">CHI TIẾT DÀN LÔ CƯỢC &amp; KẾT QUẢ ĐỐI SOÁT:</span>
+                    <div class="flex flex-wrap gap-2 mt-1.5">${loPillsBadges || '<span class="text-slate-400 text-xs">Không có</span>'}</div>
+                </div>
+                <div class="flex items-center justify-between border-t border-slate-100 pt-2 text-xs flex-wrap gap-2">
+                    <div>${loResultText}</div>
+                    <div class="font-mono text-slate-500">Vốn: ${((lo.stakeK || 0)/1000).toFixed(1)}M · Thưởng: ${moneyM(lo.payoutK || 0)}</div>
+                </div>
+            </div>
+
+            <!-- Panel 3: Xiên 5 -->
+            <div class="rounded-2xl border-2 border-cyan-300 bg-white p-4 sm:p-5 shadow-sm space-y-3">
+                <div class="flex items-center justify-between flex-wrap gap-2 border-b border-cyan-100 pb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="flex h-7 w-7 items-center justify-center rounded-xl bg-cyan-600 text-white font-black text-xs shadow-xs">3</span>
+                        <h4 class="font-black text-slate-900 text-sm sm:text-base">🎰 LÔ XIÊN 5 (5 VÉ XIÊN 4 TỪ TOP 5 HẠT NHÂN) · Vốn 5.5M</h4>
+                    </div>
+                    <button type="button" class="btn-copy-modal-xien rounded-lg border border-cyan-300 bg-cyan-50 hover:bg-cyan-100 px-2.5 py-1 text-xs font-bold text-cyan-900 transition-colors cursor-pointer">
+                        <i class="bi bi-clipboard2 mr-1"></i>Copy Xiên 5
+                    </button>
+                </div>
+                <div>
+                    <span class="text-[11px] font-black uppercase text-cyan-900 tracking-wider">TOP 5 HẠT NHÂN XIÊN:</span>
+                    <div class="flex flex-wrap gap-2 mt-1">${top5Badges}</div>
+                </div>
+                <div>
+                    <span class="text-[11px] font-black uppercase text-slate-700 tracking-wider">5 VÉ XIÊN 4 THỰC CHIẾN (1.1M / VÉ):</span>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1.5">${ticketsHtml}</div>
+                </div>
+                <div class="flex items-center justify-between border-t border-slate-100 pt-2 text-xs flex-wrap gap-2">
+                    <div>${xienResultText}</div>
+                    <div class="font-mono text-slate-500">Vốn: 5.5M · Thưởng: ${moneyM(xien5.payoutK || 0)}</div>
+                </div>
+            </div>
+
+            <!-- Panel 4: Bảng Tổng Hợp P&L và Bù Trừ Dòng Tiền -->
+            <div class="rounded-2xl border-2 border-slate-300 bg-white p-4 sm:p-5 shadow-sm space-y-3">
+                <div class="flex items-center gap-2 border-b border-slate-200 pb-3">
+                    <span class="flex h-7 w-7 items-center justify-center rounded-xl bg-slate-800 text-white font-black text-xs shadow-xs">4</span>
+                    <h4 class="font-black text-slate-900 text-sm sm:text-base">📊 TỔNG HỢP P&amp;L 3 TRỤ CỘT &amp; CƠ CHẾ BÙ TRỪ DÒNG TIỀN</h4>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border border-slate-200 rounded-xl overflow-hidden">
+                        <thead class="bg-slate-100 font-black text-slate-700">
+                            <tr>
+                                <th class="py-2 px-3">Hạng Mục</th>
+                                <th class="py-2 px-3 text-right">Tổng Vốn Cược</th>
+                                <th class="py-2 px-3 text-right">Tiền Trúng Thưởng</th>
+                                <th class="py-2 px-3 text-right">Lãi Ròng P&amp;L</th>
+                                <th class="py-2 px-3 text-center">Trạng Thái</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200 font-mono">
+                            <tr>
+                                <td class="py-2 px-3 font-bold font-sans text-slate-800">👑 1. Đề Phân Tầng (X2/X1)</td>
+                                <td class="py-2 px-3 text-right">${moneyM(de.stakeK || 0)}</td>
+                                <td class="py-2 px-3 text-right font-bold text-amber-700">${moneyM(de.payoutK || 0)}</td>
+                                <td class="py-2 px-3 text-right font-black ${de.profitK >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${moneyM(de.profitK || 0, { signed: true })}</td>
+                                <td class="py-2 px-3 text-center font-sans">${isPending ? '⏳ Chờ' : (de.isHit ? '<span class="text-emerald-700 font-bold">Thắng</span>' : '<span class="text-slate-400">Trượt</span>')}</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 px-3 font-bold font-sans text-slate-800">🎯 2. Lô Ghép Đa Tầng</td>
+                                <td class="py-2 px-3 text-right">${moneyM(lo.stakeK || 0)}</td>
+                                <td class="py-2 px-3 text-right font-bold text-emerald-700">${moneyM(lo.payoutK || 0)}</td>
+                                <td class="py-2 px-3 text-right font-black ${lo.profitK >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${moneyM(lo.profitK || 0, { signed: true })}</td>
+                                <td class="py-2 px-3 text-center font-sans">${isPending ? '⏳ Chờ' : (lo.hits > 0 ? `<span class="text-emerald-700 font-bold">${lo.hits} nháy</span>` : '<span class="text-slate-400">Trượt</span>')}</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 px-3 font-bold font-sans text-slate-800">🎰 3. Lô Xiên 5 (5 Vé Xiên 4)</td>
+                                <td class="py-2 px-3 text-right">5.500K</td>
+                                <td class="py-2 px-3 text-right font-bold text-cyan-700">${moneyM(xien5.payoutK || 0)}</td>
+                                <td class="py-2 px-3 text-right font-black ${xien5.profitK >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${moneyM(xien5.profitK || 0, { signed: true })}</td>
+                                <td class="py-2 px-3 text-center font-sans">${isPending ? '⏳ Chờ' : (xien5.h5 >= 2 ? `<span class="text-cyan-700 font-bold">${xien5.h5}/5 con</span>` : '<span class="text-slate-400">Trượt</span>')}</td>
+                            </tr>
+                            <tr class="bg-slate-50 font-black border-t-2 border-slate-300 text-sm">
+                                <td class="py-2.5 px-3 font-sans text-slate-900">🌟 TỔNG HỢP COMBO NGÀY</td>
+                                <td class="py-2.5 px-3 text-right text-slate-900">${moneyM(combo.stakeK || 0)}</td>
+                                <td class="py-2.5 px-3 text-right text-slate-900">${moneyM(combo.payoutK || 0)}</td>
+                                <td class="py-2.5 px-3 text-right ${comboColor}">${moneyM(comboProfit, { signed: true })}</td>
+                                <td class="py-2.5 px-3 text-center font-sans">${isPending ? '⏳ Chờ' : (comboProfit > 0 ? '<span class="rounded bg-emerald-100 text-emerald-800 px-2 py-0.5 text-xs font-black">LÃI RÒNG</span>' : '<span class="rounded bg-rose-100 text-rose-800 px-2 py-0.5 text-xs font-bold">LỖ</span>')}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Panel 5: Debate Log -->
+            <div class="rounded-2xl border-2 border-cyan-200 bg-cyan-50/40 p-4 sm:p-5 shadow-sm space-y-3">
+                <div class="flex items-center gap-2 border-b border-cyan-200 pb-2">
+                    <span class="flex h-7 w-7 items-center justify-center rounded-xl bg-cyan-700 text-white font-black text-xs shadow-xs">5</span>
+                    <h4 class="font-black text-cyan-950 text-sm sm:text-base">🐟 NHẬT KÝ TRANH BIỆN BẦY ĐÀN (OASIS SWARM DEBATE)</h4>
+                </div>
+                <div class="space-y-2">${debateHtml || '<span class="text-slate-400 text-xs">Không có nhật ký tranh biện cho kỳ này.</span>'}</div>
+            </div>
+        `;
+
+        // Gắn sự kiện copy bên trong modal
+        const btnDeCopy = container.querySelector('.btn-copy-modal-de');
+        if (btnDeCopy) {
+            btnDeCopy.onclick = () => {
+                const text = `Đề ngày ${dateVi}:\n- Dàn X2: ${x2Nums.join(', ')}\n- Dàn X1: ${x1Nums.join(', ')}`;
+                copyRawText(text, `Đã copy dàn Đề ngày ${dateVi}!`);
+            };
+        }
+        const btnLoCopy = container.querySelector('.btn-copy-modal-lo');
+        if (btnLoCopy) {
+            btnLoCopy.onclick = () => {
+                const lines = [`Lô ngày ${dateVi}:`];
+                if (lo.x5Nums?.length) lines.push(`- Dàn X5: ${lo.x5Nums.join(', ')}`);
+                if (lo.x4Nums?.length) lines.push(`- Dàn X4: ${lo.x4Nums.join(', ')}`);
+                if (lo.x3Nums?.length) lines.push(`- Dàn X3: ${lo.x3Nums.join(', ')}`);
+                if (lo.x1Nums?.length) lines.push(`- Dàn X1: ${lo.x1Nums.join(', ')}`);
+                copyRawText(lines.join('\n'), `Đã copy dàn Lô ngày ${dateVi}!`);
+            };
+        }
+        const btnXienCopy = container.querySelector('.btn-copy-modal-xien');
+        if (btnXienCopy) {
+            btnXienCopy.onclick = () => {
+                const text = `Lô Xiên 5 ngày ${dateVi}: ${top5.join(', ')}`;
+                copyRawText(text, `Đã copy Lô Xiên 5 ngày ${dateVi}!`);
+            };
+        }
+
+        // Mở Modal
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.classList.add('overflow-hidden');
+    }
+
+    function closeMirofishDayModal() {
+        const modal = byId('modalMirofishDayDetails');
+        if (!modal) return;
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        document.body.classList.remove('overflow-hidden');
+    }
+
+    function initMirofishModalEvents() {
+        if (mirofishModalEventsWired) return;
+        mirofishModalEventsWired = true;
+
+        const modal = byId('modalMirofishDayDetails');
+        if (!modal) return;
+
+        const btnClose = byId('btnCloseMirofishDayModal');
+        const btnFooterClose = byId('btnFooterCloseMirofishModal');
+        if (btnClose) btnClose.onclick = closeMirofishDayModal;
+        if (btnFooterClose) btnFooterClose.onclick = closeMirofishDayModal;
+
+        modal.onclick = (e) => {
+            if (e.target === modal) closeMirofishDayModal();
+        };
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                closeMirofishDayModal();
+            }
         });
     }
 
@@ -14496,6 +15033,24 @@
         // Setup filter events once
         if (!mirofishEventsWired) {
             mirofishEventsWired = true;
+
+            // Nút chuyển Phase (Live từ 07/10 vs Toàn bộ 2026)
+            const phaseBtns = document.querySelectorAll('.mirofish-phase-btn');
+            phaseBtns.forEach(btn => {
+                btn.onclick = () => {
+                    phaseBtns.forEach(b => {
+                        b.classList.remove('active', 'bg-cyan-600', 'text-white', 'shadow-xs');
+                        b.classList.add('text-slate-600', 'hover:text-slate-900');
+                    });
+                    btn.classList.add('active', 'bg-cyan-600', 'text-white', 'shadow-xs');
+                    btn.classList.remove('text-slate-600', 'hover:text-slate-900');
+
+                    currentMirofishPhase = btn.getAttribute('data-phase') || 'from0710';
+                    renderMiroFishSettledTable(currentMirofishData, currentMirofishPhase, currentMirofishMonth, currentMirofishSearch);
+                };
+            });
+
+            // Nút lọc Tháng
             const monthBtns = document.querySelectorAll('.mirofish-month-btn');
             monthBtns.forEach(btn => {
                 btn.onclick = () => {
@@ -14507,20 +15062,22 @@
                     btn.classList.remove('text-slate-600', 'bg-white', 'border', 'border-slate-200');
 
                     currentMirofishMonth = btn.getAttribute('data-month') || 'all';
-                    renderMiroFishSettledTable(currentMirofishData, currentMirofishMonth, currentMirofishSearch);
+                    renderMiroFishSettledTable(currentMirofishData, currentMirofishPhase, currentMirofishMonth, currentMirofishSearch);
                 };
             });
 
+            // Ô tìm kiếm ngày
             const searchInput = byId('mirofishSearchDate');
             if (searchInput) {
                 searchInput.oninput = (e) => {
                     currentMirofishSearch = e.target.value;
-                    renderMiroFishSettledTable(currentMirofishData, currentMirofishMonth, currentMirofishSearch);
+                    renderMiroFishSettledTable(currentMirofishData, currentMirofishPhase, currentMirofishMonth, currentMirofishSearch);
                 };
             }
         }
 
-        renderMiroFishSettledTable(data, currentMirofishMonth, currentMirofishSearch);
+        initMirofishModalEvents();
+        renderMiroFishSettledTable(data, currentMirofishPhase, currentMirofishMonth, currentMirofishSearch);
     }
 
     // ==========================================
@@ -14531,6 +15088,7 @@
         setupLedgerFilters();
         initSystemUpdatesModal();
         initMethodPlaySlipsModal();
+        initMirofishModalEvents();
 
         try {
             const res = await fetch('/api/daily-advisor');

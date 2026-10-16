@@ -964,6 +964,15 @@ export async function GET(request) {
                     prizes
                 };
             }
+            const regDates = (settled.dailyLockedBetsRegistry || payload.dailyLockedBetsRegistry)?.dates || {};
+            Object.entries(regDates).forEach(([d, entry]) => {
+                if (entry?.isSettled && entry.actualResult) {
+                    drawPrizesByDate[d] = {
+                        special: entry.actualResult.special != null ? String(Number(entry.actualResult.special)).padStart(2, '0') : null,
+                        prizes: (entry.actualResult.prizes || []).map(p => String(Number(p)).padStart(2, '0'))
+                    };
+                }
+            });
             settled.drawPrizesByDate = drawPrizesByDate;
         }
         if (!settled.mirofishSwarm) {
