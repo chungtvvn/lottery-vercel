@@ -139,14 +139,43 @@
                 </div>
             </div>
 
-            <!-- 5 Master Suite Cards Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3.5">
-                <!-- Suite 5: Trí Tuệ Bầy Đàn AI MiroFish (Mặc định) -->
-                <button type="button" id="btnMasterSuiteQuadConsensus" class="master-suite-card active group relative flex flex-col justify-between text-left p-4 sm:p-5 rounded-2xl border-2 border-cyan-500 bg-cyan-50/70 ring-2 ring-cyan-300 shadow-md transition-all hover:scale-[1.01] cursor-pointer text-slate-800">
+            <!-- 6 Master Suite Cards Grid (Siêu Gộp 5 Phương Pháp Mặc Định Tối Ưu) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3.5">
+                <!-- Suite Penta: Siêu Gộp Ngũ Trụ 5 Phương Pháp (Mặc định Tối ưu nhất) -->
+                <button type="button" id="btnMasterSuitePentaConsensus" class="master-suite-card active group relative flex flex-col justify-between text-left p-4 sm:p-5 rounded-2xl border-2 border-amber-500 bg-gradient-to-b from-amber-50/90 via-yellow-50/60 to-white ring-2 ring-amber-400 shadow-lg transition-all hover:scale-[1.01] cursor-pointer text-slate-800">
                     <div class="space-y-2.5">
                         <div class="flex items-center justify-between">
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-xs">
-                                <i class="bi bi-cpu-fill"></i> HỆ 5 · TRÍ TUỆ BẦY ĐÀN AI
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-slate-950 shadow-xs">
+                                <i class="bi bi-crown-fill text-amber-950"></i> MẶC ĐỊNH · SIÊU GỘP NGŨ TRỤ
+                            </span>
+                            <span class="text-[11px] font-mono font-bold text-amber-900">Vốn 36.8M</span>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-black text-amber-950 group-hover:text-amber-800 transition-colors flex items-center gap-1.5">
+                                👑 Siêu Gộp 5 Phương Pháp
+                            </h3>
+                            <p class="text-[11px] text-slate-600 mt-1 leading-relaxed">
+                                Gộp đồng thuận CẢ 5 HỆ ĐỘC LẬP: Đa Động Cơ + Tri-Core + VIP Sweet-Spot + Cộng Hưởng + Bầy Đàn AI MiroFish. Lãi cực đại!
+                            </p>
+                        </div>
+                        <div class="pt-2 border-t border-slate-200 space-y-1 text-[11px] font-mono">
+                            <div class="flex justify-between text-slate-700"><span>• Đề:</span><strong class="text-amber-900 font-bold">Trùng &ge;3 (X2 400K) · 100% lãi</strong></div>
+                            <div class="flex justify-between text-slate-700"><span>• Lô:</span><strong class="text-teal-800 font-bold">Đa tầng số phiếu (X5-X1)</strong></div>
+                            <div class="flex justify-between text-slate-700"><span>• Xiên:</span><strong class="text-amber-900 font-bold">Top 5 Lô &rarr; 5 Dàn Xiên 4 (5.5M)</strong></div>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-2.5 border-t border-slate-200 flex items-center justify-between text-[11px]">
+                        <span class="text-emerald-700 font-bold">Lãi 2026: +7.347 TỶ (Win 62.1%)</span>
+                        <span class="suite-status-tag px-2 py-0.5 rounded bg-amber-500 text-slate-950 font-black text-[10px]">ĐANG CHỌN</span>
+                    </div>
+                </button>
+
+                <!-- Suite 5: Trí Tuệ Bầy Đàn AI MiroFish -->
+                <button type="button" id="btnMasterSuiteQuadConsensus" class="master-suite-card group relative flex flex-col justify-between text-left p-4 sm:p-5 rounded-2xl border border-slate-200 bg-white hover:border-cyan-300 transition-all hover:scale-[1.01] cursor-pointer shadow-xs text-slate-800">
+                    <div class="space-y-2.5">
+                        <div class="flex items-center justify-between">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-cyan-100 text-cyan-800 border border-cyan-300">
+                                <i class="bi bi-cpu-fill"></i> HỆ 5 · TRÍ TUỆ BẦY ĐÀN
                             </span>
                             <span class="text-[11px] font-mono font-bold text-cyan-900">Vốn 48.7M</span>
                         </div>
@@ -166,7 +195,7 @@
                     </div>
                     <div class="mt-3 pt-2.5 border-t border-slate-200 flex items-center justify-between text-[11px]">
                         <span class="text-emerald-700 font-bold">Lãi 2026: +2.116 TỶ (Win 54.7%)</span>
-                        <span class="suite-status-tag px-2 py-0.5 rounded bg-cyan-600 text-white font-black text-[10px]">ĐANG CHỌN</span>
+                        <span class="suite-status-tag px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-bold text-[10px]">CHỌN HỆ NÀY</span>
                     </div>
                 </button>
 
@@ -376,7 +405,8 @@
                                 <i class="bi bi-award-fill text-amber-600"></i> 1. Đề Đa Động Cơ 40s (20s X2 400K + 20s X1 200K · Vốn 12.0M)
                             </span>
                             <div class="inline-flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-300 text-[10px] flex-wrap" id="shadowDeStrategyToggleGroup">
-                                <button type="button" id="btnToggleDeQuad" class="px-2.5 py-1 rounded-md font-black bg-cyan-600 text-white transition-all shadow-xs ring-1 ring-cyan-300">🐟 Bầy Đàn AI (X2/X1)</button>
+                                <button type="button" id="btnToggleDePenta" class="px-2.5 py-1 rounded-md font-black bg-amber-500 text-slate-950 transition-all shadow-xs ring-1 ring-amber-400">👑 Siêu Gộp 5 PP (X2/X1)</button>
+                                <button type="button" id="btnToggleDeQuad" class="px-2.5 py-1 rounded-md font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-200 transition-all">🐟 Bầy Đàn AI (X2/X1)</button>
                                 <button type="button" id="btnToggleDeDropoff" class="px-2.5 py-1 rounded-md font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-200 transition-all">👑 Đa Động Cơ 40s (X2/X1)</button>
                                 <button type="button" id="btnToggleDeVip36" class="px-2.5 py-1 rounded-md font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-200 transition-all">⭐ 36s VIP Sweet-Spot</button>
                                 <button type="button" id="btnToggleDeTriCore" class="px-2.5 py-1 rounded-md font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-200 transition-all">🎯 Tri-Core 24s</button>
@@ -436,7 +466,8 @@
                             </div>
                             <!-- Sweet-Spot Switcher: Top 7 (Khuyên Dùng) vs Top 6 (Vốn Nhẹ) vs Top 7 Tri-Core vs Top 6 Tri-Core vs Top 2 vs Top 4 vs Resonance Flat/Tiered -->
                             <div class="flex items-center gap-1 bg-slate-100 p-0.5 rounded-xl border border-slate-300 text-[10px] flex-wrap" id="shadowLoModeToggleGroup">
-                                <button type="button" id="btnShadowLoModeQuadConsensus" class="rounded-lg bg-cyan-700 text-white font-black px-2.5 py-1 transition-all shadow-xs ring-1 ring-cyan-400">🐟 Lô Bầy Đàn AI (X5-X1)</button>
+                                <button type="button" id="btnShadowLoModePentaConsensus" class="rounded-lg bg-amber-500 text-slate-950 font-black px-2.5 py-1 transition-all shadow-xs ring-1 ring-amber-400">👑 Siêu Gộp 5 PP (X5-X1)</button>
+                                <button type="button" id="btnShadowLoModeQuadConsensus" class="rounded-lg bg-white/70 hover:bg-white text-slate-700 font-bold px-2.5 py-1 transition-all border border-slate-200">🐟 Lô Bầy Đàn AI (X5-X1)</button>
                                 <button type="button" id="btnShadowLoModeTop7" class="rounded-lg bg-white/70 hover:bg-white text-slate-700 font-bold px-2.5 py-1 transition-all border border-slate-200">⭐ Top 7 QMBF v6</button>
                                 <button type="button" id="btnShadowLoModeTop6" class="rounded-lg bg-white/70 hover:bg-white text-slate-700 font-bold px-2.5 py-1 transition-all border border-slate-200">⚡ Top 6 QMBF v6</button>
                                 <button type="button" id="btnShadowLoModeTriCore7" class="rounded-lg bg-white/70 hover:bg-white text-slate-700 font-bold px-2.5 py-1 transition-all border border-slate-200">🎯 Top 7 Tri-Core</button>
@@ -496,8 +527,9 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2 flex-wrap">
-                        <div class="flex items-center gap-1 bg-slate-100 p-0.5 rounded-xl border border-slate-300 text-[10px]" id="shadowXienStrategyToggleGroup">
-                            <button type="button" id="btnToggleXienQuad" class="rounded-lg bg-cyan-600 text-white font-black px-2.5 py-1 transition-all shadow-xs ring-1 ring-cyan-300">🐟 Xiên 5 Bầy Đàn AI (5.5M)</button>
+                        <div class="flex items-center gap-1 bg-slate-100 p-0.5 rounded-xl border border-slate-300 text-[10px] flex-wrap" id="shadowXienStrategyToggleGroup">
+                            <button type="button" id="btnToggleXienPenta" class="rounded-lg bg-amber-500 text-slate-950 font-black px-2.5 py-1 transition-all shadow-xs ring-1 ring-amber-400">👑 Xiên 5 Siêu Gộp 5 PP (5.5M)</button>
+                            <button type="button" id="btnToggleXienQuad" class="rounded-lg bg-white/70 hover:bg-white text-slate-700 font-bold px-2.5 py-1 transition-all border border-slate-200">🐟 Xiên 5 Bầy Đàn AI (5.5M)</button>
                             <button type="button" id="btnToggleXien5" class="rounded-lg bg-white/70 hover:bg-white text-slate-700 font-bold px-2.5 py-1 transition-all border border-slate-200">👑 Dàn Xiên 5 Sweet-Spot (5.5M)</button>
                             <button type="button" id="btnToggleXienTriCore" class="rounded-lg bg-white/70 hover:bg-white text-slate-700 font-bold px-2.5 py-1 transition-all border border-slate-200">🎯 Xiên 5 Tri-Core Tam Trụ (5.5M)</button>
                             <button type="button" id="btnToggleXienResonance" class="rounded-lg bg-white/70 hover:bg-white text-violet-700 font-bold px-2.5 py-1 transition-all border border-slate-200">💎 Xiên 5 Co-Affinity (5.5M)</button>
@@ -810,8 +842,11 @@
                 <div class="flex items-center gap-2 flex-wrap">
                     <!-- Tab Switcher Category: Tổng Hợp 3 Trụ Đa Động Cơ (Hệ 1), Tổng Hợp Tri-Core (Hệ 2), Tổng Hợp VIP (Hệ 3), Lô Sweet-Spot, Lô Tri-Core, Lô Xiên 5, v.v. -->
                     <div class="inline-flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 flex-wrap" id="shadowLedgerCategoryTabs">
-                        <button type="button" data-shadow-cat="quadSuite" class="shadow-cat-btn active rounded-lg bg-cyan-700 text-white font-black text-xs px-3 py-1.5 transition-all shadow-xs flex items-center gap-1.5">
-                            <i class="bi bi-cpu-fill text-cyan-300"></i> 👑 HỆ 5: Trí Tuệ Bầy Đàn AI MiroFish (Mặc Định)
+                        <button type="button" data-shadow-cat="pentaSuite" class="shadow-cat-btn active rounded-lg bg-amber-500 text-slate-950 font-black text-xs px-3 py-1.5 transition-all shadow-xs flex items-center gap-1.5 ring-2 ring-amber-400">
+                            <i class="bi bi-crown-fill text-amber-950"></i> 👑 SIÊU GỘP 5 PHƯƠNG PHÁP (Mặc Định · Lãi +7.347 TỶ)
+                        </button>
+                        <button type="button" data-shadow-cat="quadSuite" class="shadow-cat-btn rounded-lg bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs px-3 py-1.5 transition-all flex items-center gap-1.5 border border-slate-200/60">
+                            <i class="bi bi-cpu-fill text-cyan-600"></i> 🐟 HỆ 5: Trí Tuệ Bầy Đàn AI (48.7M)
                         </button>
                         <button type="button" data-shadow-cat="combo" class="shadow-cat-btn rounded-lg bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs px-3 py-1.5 transition-all flex items-center gap-1.5 border border-slate-200/60">
                             <i class="bi bi-layers-fill text-amber-500"></i> 👑 HỆ 1: Đa Động Cơ (32.9M)
@@ -994,7 +1029,7 @@
         XSMB Scientific Predictive Intelligence · Strict PIT Walk-Forward Validation · Shadow Monitor Mode
     </footer>
 
-    <script src="/js/daily-advisor-shadow.js?v=20261017_mirofish_suite5"></script>
+    <script src="/js/daily-advisor-shadow.js?v=20261017_penta_consensus_v9"></script>
 </body>
 
 </html>

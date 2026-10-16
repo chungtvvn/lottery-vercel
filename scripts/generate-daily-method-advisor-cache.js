@@ -110,6 +110,13 @@ async function main() {
         console.error('[generateDailyAdvisorCache] Error building deResearchEnsemble:', err);
     }
 
+    try {
+        const { buildMiroFishSwarmAdvisor } = require('../lib/services/mirofishSwarmService');
+        cache.mirofishSwarm = buildMiroFishSwarmAdvisor(raw, cache, { existingMiroFishSwarm: existingCache?.mirofishSwarm });
+    } catch (err) {
+        console.error('[generateDailyAdvisorCache] Error building mirofishSwarm:', err);
+    }
+
     // Tích hợp Single Source of Truth (SSOT) Registry
     try {
         const registryService = require('../lib/services/dailyLockedBetsRegistryService');
@@ -169,6 +176,9 @@ async function main() {
         }
         if (cache.adaptiveDualMerge?.latestRecommendation) {
             registryService.registerDailyBet(expectedPredictionDate, 'adaptiveDualMerge', cache.adaptiveDualMerge.latestRecommendation);
+        }
+        if (cache.mirofishSwarm?.latestRecommendation) {
+            registryService.registerDailyBet(expectedPredictionDate, 'mirofishSwarm', cache.mirofishSwarm.latestRecommendation);
         }
 
         cache.dailyLockedBetsRegistry = registryService.loadRegistry();
