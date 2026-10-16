@@ -342,8 +342,8 @@
                 viewDual?.classList.remove('hidden');
                 viewUnified?.classList.add('hidden');
 
-                if (payload && typeof switchDeStatsMethod === 'function') {
-                    switchDeStatsMethod(currentDeStatsMethod || 'metaLearner');
+                if (payload) {
+                    renderDeResearchEnsembleView(payload);
                 }
             }
         }
@@ -9558,9 +9558,391 @@
     }
 
     // ==========================================
+    // NGHIÊN CỨU ĐỀ HÀNG NGÀY: TOP 20 DA VS NỬA ĐẦU SHADOW
+    // ==========================================
+    let currentDeResearchMode = 'goldenIntersection';
+    let currentDeResearchWindow = 'liveCombat';
+    let currentDeResearchLedgerFilter = 'all';
+
+    function renderDeResearchEnsembleView(dataPayload) {
+        if (!dataPayload) return;
+        const deResearch = dataPayload.deResearchEnsemble || dataPayload.dualMerge?.deResearchEnsemble;
+        if (!deResearch) return;
+
+        const rec = deResearch.latestRecommendation || {};
+        const summary = deResearch.summary || {};
+        const settledLedger = deResearch.settledLedger || [];
+
+        // 1. Header Target Date & Latest Data Date
+        const targetDateEl = byId('deResearchTargetDate');
+        if (targetDateEl) {
+            targetDateEl.textContent = formatDateVi(rec.targetDate || deResearch.pendingPredictionDate || dataPayload.pendingPredictionDate);
+        }
+        const dataThroughEl = byId('deResearchLatestDataThrough');
+        if (dataThroughEl) {
+            const lastDate = deResearch.latestDataDate || dataPayload.latestDataDate;
+            dataThroughEl.textContent = `Dữ liệu đối soát đến kỳ ${formatDateVi(lastDate)} · Strict PIT 100%`;
+        }
+
+        // 2. Counts on Mode Switcher Buttons
+        const countIntersectionEl = byId('countModeIntersection');
+        if (countIntersectionEl) countIntersectionEl.textContent = rec.goldenIntersection?.count ?? (rec.goldenIntersection?.numbers?.length ?? '--');
+
+        const countShadowEl = byId('countModeShadow');
+        if (countShadowEl) countShadowEl.textContent = rec.shadowHalf?.count ?? (rec.shadowHalf?.numbers?.length ?? '--');
+
+        const countUnionEl = byId('countModeUnion');
+        if (countUnionEl) countUnionEl.textContent = rec.comprehensiveUnion?.count ?? (rec.comprehensiveUnion?.numbers?.length ?? '--');
+
+        const countDA4El = byId('countModeDA4');
+        if (countDA4El) countDA4El.textContent = rec.dailyAdvisor4Core?.count ?? (rec.dailyAdvisor4Core?.numbers?.length ?? '--');
+
+        // 3. Setup Mode Switcher Buttons & Render Active Recommendation
+        setupDeResearchModeButtons(rec);
+        renderResearchModeRecommendation(rec);
+
+        // 4. Setup Benchmark Window Toggle & Render Benchmark Table
+        setupDeResearchWindowToggles(summary);
+        renderResearchBenchmarkTable(summary);
+
+        // 5. Setup Ledger Filters & Render Settled Ledger
+        setupDeResearchLedgerFilters(settledLedger);
+        renderResearchDailyLedger(settledLedger);
+    }
+
+    function setupDeResearchModeButtons(rec) {
+        const modeBtns = document.querySelectorAll('.de-research-mode-btn');
+        modeBtns.forEach(btn => {
+            btn.onclick = () => {
+                const mode = btn.getAttribute('data-research-mode');
+                if (!mode) return;
+                currentDeResearchMode = mode;
+                renderResearchModeRecommendation(rec);
+            };
+        });
+    }
+
+    function renderResearchModeRecommendation(rec) {
+        const mode = currentDeResearchMode || 'goldenIntersection';
+        const modeData = rec[mode] || rec.goldenIntersection || {};
+        const numbers = Array.isArray(modeData.numbers) ? modeData.numbers : [];
+        const scoresMap = rec.scoresMap || {};
+
+        // 1. Update Buttons Active State
+        const modeBtns = document.querySelectorAll('.de-research-mode-btn');
+        modeBtns.forEach(btn => {
+            const btnMode = btn.getAttribute('data-research-mode');
+            if (btnMode === mode) {
+                btn.className = 'de-research-mode-btn rounded-xl border-2 border-amber-400 bg-amber-500 text-slate-950 font-black px-3.5 py-2 text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer';
+            } else {
+                btn.className = 'de-research-mode-btn rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold px-3.5 py-2 text-xs transition-all flex items-center gap-1.5 cursor-pointer';
+            }
+        });
+
+        // 2. Update Active Box Styling & Information
+        const titleEl = byId('deResearchActiveTitle');
+        const descEl = byId('deResearchActiveDesc');
+        const countBadge = byId('deResearchActiveCountBadge');
+        const chipsContainer = byId('deResearchChipsContainer');
+
+        if (titleEl) titleEl.textContent = modeData.title || 'Dàn Số Đề Xuất';
+        if (descEl) descEl.textContent = modeData.desc || '';
+        if (countBadge) countBadge.textContent = `${numbers.length} số`;
+
+        // 3. Render Number Chips
+        if (chipsContainer) {
+            if (numbers.length === 0) {
+                chipsContainer.innerHTML = '<p class="text-xs text-slate-500 italic">Đang cập nhật dàn số hôm nay...</p>';
+            } else {
+                chipsContainer.innerHTML = numbers.map(n => {
+                    const s = number(n);
+                    const score = scoresMap[s];
+                    const scoreBadge = (score && score > 1) ? `<span class="ml-1 rounded bg-black/15 text-[9px] font-black px-1">${score.toFixed(1)}</span>` : '';
+
+                    if (mode === 'goldenIntersection') {
+                        return `<span class="inline-flex items-center justify-center gap-1 rounded-xl bg-gradient-to-br from-amber-300 via-amber-400 to-amber-500 font-mono text-sm font-black text-amber-950 px-3 py-1.5 shadow-sm ring-1 ring-amber-600/30">
+                            <span>${s}</span>${scoreBadge}
+                        </span>`;
+                    } else if (mode === 'shadowHalf') {
+                        return `<span class="inline-flex items-center justify-center gap-1 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-200 border border-emerald-400 font-mono text-sm font-black text-emerald-950 px-3 py-1.5 shadow-2xs">
+                            <span>${s}</span>${scoreBadge}
+                        </span>`;
+                    } else if (mode === 'comprehensiveUnion') {
+                        return `<span class="inline-flex items-center justify-center gap-1 rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-300 font-mono text-sm font-black text-indigo-950 px-3 py-1.5 shadow-2xs">
+                            <span>${s}</span>${scoreBadge}
+                        </span>`;
+                    } else {
+                        return `<span class="inline-flex items-center justify-center gap-1 rounded-xl bg-slate-100 border border-slate-300 font-mono text-sm font-bold text-slate-800 px-3 py-1.5 shadow-2xs">
+                            <span>${s}</span>${scoreBadge}
+                        </span>`;
+                    }
+                }).join('');
+            }
+        }
+
+        // 4. Bind Copy Button
+        const copyBtn = byId('btnCopyDeResearchNumbers');
+        if (copyBtn) {
+            copyBtn.onclick = () => {
+                copyNumbers(numbers, ' ');
+                showToast(`Đã sao chép dàn ${numbers.length} số vào bộ nhớ đệm!`);
+            };
+        }
+    }
+
+    function setupDeResearchWindowToggles(summary) {
+        const btnLive = byId('btnWindowLiveCombat');
+        const btnAll = byId('btnWindowAll2026');
+
+        if (btnLive) {
+            btnLive.onclick = () => {
+                currentDeResearchWindow = 'liveCombat';
+                btnLive.className = 'window-toggle-btn rounded-lg bg-white text-indigo-900 font-black px-3.5 py-1.5 text-xs shadow-xs transition-all cursor-pointer';
+                if (btnAll) btnAll.className = 'window-toggle-btn rounded-lg text-slate-600 font-bold px-3.5 py-1.5 text-xs hover:text-slate-900 transition-all cursor-pointer';
+                renderResearchBenchmarkTable(summary);
+            };
+        }
+
+        if (btnAll) {
+            btnAll.onclick = () => {
+                currentDeResearchWindow = 'all2026';
+                btnAll.className = 'window-toggle-btn rounded-lg bg-white text-indigo-900 font-black px-3.5 py-1.5 text-xs shadow-xs transition-all cursor-pointer';
+                if (btnLive) btnLive.className = 'window-toggle-btn rounded-lg text-slate-600 font-bold px-3.5 py-1.5 text-xs hover:text-slate-900 transition-all cursor-pointer';
+                renderResearchBenchmarkTable(summary);
+            };
+        }
+    }
+
+    function renderResearchBenchmarkTable(summary) {
+        const tbody = byId('deResearchBenchmarkBody');
+        if (!tbody) return;
+
+        const windowKey = currentDeResearchWindow === 'all2026' ? 'all2026' : 'liveCombat';
+        const winSummary = summary[windowKey] || {};
+
+        const strategies = [
+            {
+                id: 'goldenIntersection',
+                name: '👑 Vùng Giao Thoa Vàng (DA ∩ Shadow)',
+                badge: 'Khuyên Dùng · Vốn Mỏng',
+                badgeClass: 'bg-amber-100 text-amber-900 border-amber-300',
+                rowClass: 'bg-amber-50/40'
+            },
+            {
+                id: 'shadowHalf',
+                name: '⭐ Shadow 1/2 Đầu Gộp (Phần 2)',
+                badge: 'Trùng Lặp > 85%',
+                badgeClass: 'bg-emerald-100 text-emerald-900 border-emerald-300',
+                rowClass: 'bg-emerald-50/20'
+            },
+            {
+                id: 'comprehensiveUnion',
+                name: '🛡️ Hợp Nhất Đa Tầng (DA ∪ Shadow)',
+                badge: 'Pháo Đài · Max Trượt 2',
+                badgeClass: 'bg-indigo-100 text-indigo-900 border-indigo-300',
+                rowClass: 'bg-indigo-50/30 font-bold'
+            },
+            {
+                id: 'dailyAdvisor4Core',
+                name: '📊 DA 4 Core Top 20 Gộp',
+                badge: 'Dàn ~39s',
+                badgeClass: 'bg-slate-100 text-slate-800 border-slate-300',
+                rowClass: ''
+            },
+            {
+                id: 'dailyAdvisorAll8',
+                name: '⚠️ DA All 8 Top 20 Gộp (Phần 1)',
+                badge: 'Phình Dàn · Cần 1:99',
+                badgeClass: 'bg-rose-100 text-rose-800 border-rose-300',
+                rowClass: ''
+            }
+        ];
+
+        tbody.innerHTML = strategies.map(s => {
+            const m = winSummary[s.id] || {};
+            const winRate = Number(m.winRate || 0);
+            const breakEvenRate = Number(m.breakEvenRate84 || 0);
+            const edge = Number(m.edge84 || 0);
+            const roi84 = Number(m.roi84 || 0);
+            const roi99 = Number(m.roi99 || 0);
+
+            const edgeClass = edge > 0 ? 'text-emerald-600 font-black' : (edge < 0 ? 'text-rose-600 font-bold' : 'text-slate-600');
+            const edgeText = (edge > 0 ? '+' : '') + (edge * 100).toFixed(1) + '%';
+
+            const roi84Class = roi84 > 0 ? 'text-emerald-600 font-black' : (roi84 < 0 ? 'text-rose-600 font-bold' : 'text-slate-600');
+            const roi84Text = (roi84 > 0 ? '+' : '') + roi84.toFixed(1) + '%';
+
+            const roi99Class = roi99 > 0 
+                ? 'inline-block px-2.5 py-1 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 font-black' 
+                : 'inline-block px-2.5 py-1 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 font-bold';
+            const roi99Text = (roi99 > 0 ? '+' : '') + roi99.toFixed(1) + '%';
+
+            return `
+                <tr class="hover:bg-slate-50/80 transition-colors ${s.rowClass}">
+                    <td class="px-4 py-3">
+                        <div class="font-black text-slate-900">${s.name}</div>
+                        <span class="inline-block mt-0.5 rounded border px-2 py-0.5 text-[10px] font-bold ${s.badgeClass}">${s.badge}</span>
+                    </td>
+                    <td class="px-3 py-3 text-center font-mono font-bold text-slate-800">
+                        ${m.avgNumbers ? m.avgNumbers.toFixed(1) : '--'} con
+                    </td>
+                    <td class="px-3 py-3 text-center font-mono font-bold text-slate-800">
+                        ${m.hits ?? 0}/${m.draws ?? 0}
+                    </td>
+                    <td class="px-3 py-3 text-center font-mono font-black ${winRate >= breakEvenRate ? 'text-emerald-700' : 'text-slate-700'}">
+                        ${(winRate * 100).toFixed(1)}%
+                    </td>
+                    <td class="px-3 py-3 text-center font-mono text-slate-500">
+                        ${(breakEvenRate * 100).toFixed(1)}%
+                    </td>
+                    <td class="px-3 py-3 text-center font-mono ${edgeClass}">
+                        ${edgeText}
+                    </td>
+                    <td class="px-3 py-3 text-center font-mono font-bold text-slate-700">
+                        ${m.maxLossStreak != null ? m.maxLossStreak + ' kỳ' : '--'}
+                    </td>
+                    <td class="px-4 py-3 text-right font-mono ${roi84Class}">
+                        ${roi84Text}
+                    </td>
+                    <td class="px-4 py-3 text-right font-mono">
+                        <span class="${roi99Class}">${roi99Text}</span>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function setupDeResearchLedgerFilters(ledger) {
+        const filterBtns = document.querySelectorAll('.research-ledger-filter-btn');
+
+        // Update counts
+        const cntAll = byId('ledgerCountAll');
+        if (cntAll) cntAll.textContent = ledger.length;
+
+        const cntGolden = byId('ledgerCountGolden');
+        if (cntGolden) cntGolden.textContent = ledger.filter(r => r.goldenIntersection?.isHit).length;
+
+        const cntShadow = byId('ledgerCountShadow');
+        if (cntShadow) cntShadow.textContent = ledger.filter(r => r.shadowHalf?.isHit).length;
+
+        const cntUnion = byId('ledgerCountUnion');
+        if (cntUnion) cntUnion.textContent = ledger.filter(r => r.comprehensiveUnion?.isHit).length;
+
+        const cntLoss = byId('ledgerCountLoss');
+        if (cntLoss) cntLoss.textContent = ledger.filter(r => !r.comprehensiveUnion?.isHit).length;
+
+        filterBtns.forEach(btn => {
+            btn.onclick = () => {
+                const f = btn.getAttribute('data-ledger-filter');
+                if (!f) return;
+                currentDeResearchLedgerFilter = f;
+
+                filterBtns.forEach(b => {
+                    if (b.getAttribute('data-ledger-filter') === f) {
+                        b.className = 'research-ledger-filter-btn rounded-lg bg-indigo-600 text-white font-bold px-3 py-1.5 text-xs shadow-xs cursor-pointer';
+                    } else {
+                        b.className = 'research-ledger-filter-btn rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold px-3 py-1.5 text-xs cursor-pointer';
+                    }
+                });
+
+                renderResearchDailyLedger(ledger);
+            };
+        });
+    }
+
+    function renderResearchDailyLedger(ledger) {
+        const tbody = byId('deResearchDailyLedgerBody');
+        if (!tbody) return;
+
+        const filter = currentDeResearchLedgerFilter || 'all';
+        let filtered = [...ledger];
+
+        if (filter === 'golden') {
+            filtered = filtered.filter(r => r.goldenIntersection?.isHit);
+        } else if (filter === 'shadow') {
+            filtered = filtered.filter(r => r.shadowHalf?.isHit);
+        } else if (filter === 'union') {
+            filtered = filtered.filter(r => r.comprehensiveUnion?.isHit);
+        } else if (filter === 'loss') {
+            filtered = filtered.filter(r => !r.comprehensiveUnion?.isHit);
+        }
+
+        // Show newest first
+        filtered.reverse();
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-xs text-slate-500 italic">Không có kỳ quay nào phù hợp với bộ lọc.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = filtered.map(row => {
+            const actual = number(row.actualStr != null ? row.actualStr : row.actualSpecial);
+
+            // Badges
+            const goldenBadge = row.goldenIntersection?.isHit
+                ? `<span class="inline-flex items-center gap-1 rounded-lg bg-amber-100 text-amber-950 font-black px-2 py-0.5 text-[11px] border border-amber-300 shadow-2xs"><i class="bi bi-star-fill text-amber-600"></i> TRÚNG (${row.goldenIntersection.count}s)</span>`
+                : `<span class="text-slate-400 font-mono text-[11px]">Trượt (${row.goldenIntersection?.count || 0}s)</span>`;
+
+            const shadowBadge = row.shadowHalf?.isHit
+                ? `<span class="inline-flex items-center gap-1 rounded-lg bg-emerald-100 text-emerald-950 font-black px-2 py-0.5 text-[11px] border border-emerald-300 shadow-2xs"><i class="bi bi-check-circle-fill text-emerald-600"></i> TRÚNG (${row.shadowHalf.count}s)</span>`
+                : `<span class="text-slate-400 font-mono text-[11px]">Trượt (${row.shadowHalf?.count || 0}s)</span>`;
+
+            const da4Badge = row.dailyAdvisor4Core?.isHit
+                ? `<span class="inline-flex items-center gap-1 rounded-lg bg-blue-100 text-blue-950 font-black px-2 py-0.5 text-[11px] border border-blue-300">TRÚNG (${row.dailyAdvisor4Core.count}s)</span>`
+                : `<span class="text-slate-400 font-mono text-[11px]">Trượt (${row.dailyAdvisor4Core?.count || 0}s)</span>`;
+
+            const unionBadge = row.comprehensiveUnion?.isHit
+                ? `<span class="inline-flex items-center gap-1 rounded-lg bg-indigo-100 text-indigo-950 font-black px-2 py-0.5 text-[11px] border border-indigo-300 shadow-2xs"><i class="bi bi-shield-fill-check text-indigo-600"></i> TRÚNG (${row.comprehensiveUnion.count}s)</span>`
+                : `<span class="inline-flex items-center gap-1 rounded-lg bg-rose-50 text-rose-700 font-bold px-2 py-0.5 text-[11px] border border-rose-200">❌ Trượt (${row.comprehensiveUnion?.count || 0}s)</span>`;
+
+            const dayP = row.goldenIntersection?.dayProfitK || 0;
+            const dayPText = (dayP > 0 ? '+' : '') + fmt(dayP * 1000) + ' đ';
+            const dayPClass = dayP > 0 ? 'text-emerald-600 font-black' : 'text-slate-500 font-mono';
+
+            const accP = row.goldenIntersection?.accumProfitK || 0;
+            const accText = signedM(accP);
+            const accClass = accP >= 0 ? 'text-emerald-700 font-black' : 'text-rose-600 font-bold';
+
+            return `
+                <tr class="hover:bg-slate-50/80 transition-colors border-b border-slate-100 text-xs">
+                    <td class="px-4 py-2.5 font-medium text-slate-800">
+                        ${formatDateVi(row.date)}
+                    </td>
+                    <td class="px-3 py-2.5 text-center">
+                        <span class="inline-flex items-center justify-center rounded-xl bg-slate-900 text-amber-300 font-mono text-xs font-black px-2.5 py-1 shadow-xs">
+                            ${actual}
+                        </span>
+                    </td>
+                    <td class="px-3 py-2.5 text-center">
+                        ${goldenBadge}
+                    </td>
+                    <td class="px-3 py-2.5 text-center">
+                        ${shadowBadge}
+                    </td>
+                    <td class="px-3 py-2.5 text-center">
+                        ${da4Badge}
+                    </td>
+                    <td class="px-3 py-2.5 text-center">
+                        ${unionBadge}
+                    </td>
+                    <td class="px-4 py-2.5 text-right font-mono ${dayPClass}">
+                        ${dayPText}
+                    </td>
+                    <td class="px-4 py-2.5 text-right font-mono ${accClass}">
+                        ${accText}
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    // ==========================================
     // 1. RENDER THỰC CHIẾN GỘP (DUAL-MERGE ADVISOR)
     // ==========================================
     function renderDualMergeView(dualMergeData) {
+        if (payload?.deResearchEnsemble || dualMergeData?.deResearchEnsemble) {
+            renderDeResearchEnsembleView(payload || dualMergeData);
+        }
         if (!dualMergeData) return;
         const rec = dualMergeData.latestRecommendation;
 
@@ -13360,6 +13742,7 @@
             // Render all views
             renderUnifiedCombatView(payload);
             renderDualMergeView(payload.dualMerge);
+            renderDeResearchEnsembleView(payload);
             if (payload?.tripleMerge) renderTripleMergeView(payload.tripleMerge);
             if (payload?.adaptiveDualMerge) renderAdaptiveDualMergeView(payload.adaptiveDualMerge);
             if (payload?.metaLearner) renderMetaLearnerView(payload.metaLearner);

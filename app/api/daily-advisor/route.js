@@ -939,6 +939,12 @@ export async function GET(request) {
                 settled.semanticResonanceSuite.settledLedger = resSuiteLedger.sort((a, b) => a.date.localeCompare(b.date));
             }
         }
+        if (!settled.deResearchEnsemble) {
+            try {
+                const { buildDeResearchEnsembleAdvisor } = require('@/lib/services/deResearchEnsembleAdvisorService');
+                settled.deResearchEnsemble = buildDeResearchEnsembleAdvisor(raw, settled);
+            } catch (_) {}
+        }
         if (!settled.drawPrizesByDate) {
             const drawPrizesByDate = {};
             for (const row of (raw || []).slice(-365)) {

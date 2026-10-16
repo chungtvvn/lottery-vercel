@@ -103,6 +103,13 @@ async function main() {
         console.error('[generateDailyAdvisorCache] Error building semanticResonanceSuite:', err);
     }
 
+    try {
+        const { buildDeResearchEnsembleAdvisor } = require('../lib/services/deResearchEnsembleAdvisorService');
+        cache.deResearchEnsemble = buildDeResearchEnsembleAdvisor(raw, cache);
+    } catch (err) {
+        console.error('[generateDailyAdvisorCache] Error building deResearchEnsemble:', err);
+    }
+
     // Tích hợp Single Source of Truth (SSOT) Registry
     try {
         const registryService = require('../lib/services/dailyLockedBetsRegistryService');
