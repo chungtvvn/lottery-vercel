@@ -14434,7 +14434,7 @@
                 ticketsCont.innerHTML = (rec.xien5?.tickets || []).map((t, idx) => `
                     <div class="flex items-center justify-between rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-mono font-bold text-slate-800 border border-slate-200">
                         <span>Vé ${idx + 1}: [${t.join(', ')}]</span>
-                        <span class="text-emerald-600 text-[11px] font-black">50K / vé</span>
+                        <span class="text-emerald-600 text-[11px] font-black">1.1M / vé</span>
                     </div>
                 `).join('');
             }
