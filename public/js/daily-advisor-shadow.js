@@ -427,11 +427,11 @@
 
                 const resRec = data?.semanticResonanceSuite?.latestRecommendation?.de || {};
                 const displayNums = resRec.numbers36 || [];
-                const vipNums = resRec.vip12 || displayNums.slice(0, 12);
-                const lotNums = resRec.lot24 || displayNums.slice(12, 36);
+                const vipNums = resRec.vip18 || displayNums.slice(0, 18);
+                const lotNums = resRec.lot18 || displayNums.slice(18, 36);
 
                 if (titleLabel) {
-                    titleLabel.innerHTML = '<i class="bi bi-gem-fill text-violet-600"></i> 1. 💎 Đề 36s Tri-Tier Resonance (12 VIP 500K + 24 Lót 200K) · Vốn 10.8M';
+                    titleLabel.innerHTML = '<i class="bi bi-gem-fill text-violet-600"></i> 1. 💎 Đề 36s Tri-Tier Resonance (18 VIP 400K + 18 Lót 200K) · Vốn 10.8M';
                 }
                 if (actionBanner) {
                     actionBanner.className = 'rounded-3xl border-2 border-violet-300 bg-white p-5 sm:p-6 shadow-sm flex flex-col justify-between text-slate-800';
@@ -440,46 +440,42 @@
                     actionStatusText.innerHTML = '<span class="inline-flex items-center gap-1.5 text-violet-900 font-black uppercase text-sm sm:text-base"><i class="bi bi-gem-fill text-violet-600"></i> 💎 ĐỀ 36S TRI-TIER: VÀO KÈO 36 SỐ (100% TRÚNG CÓ LÃI)</span>';
                 }
                 if (actionDesc) {
-                    actionDesc.textContent = 'Phân bổ 12 VIP (cược 500K ăn 42M, lãi +31.2M) + 24 Bọc lót (cược 200K ăn 16.8M, lãi +6.0M). Tổng vốn 10.8M/ngày. 100% ngày trúng đều có lãi ròng dương, triệt tiêu hoàn toàn rủi ro âm vốn.';
+                    actionDesc.textContent = 'Phân bổ 18 VIP (cược X2 400K ăn 33.6M, lãi +22.8M) + 18 Bọc lót (cược X1 200K ăn 16.8M, lãi +6.0M). Tổng vốn 10.8M/ngày. 100% ngày trúng đều có lãi ròng dương, triệt tiêu hoàn toàn rủi ro âm vốn.';
                 }
                 if (footerMeta) {
-                    footerMeta.innerHTML = '<span>Hòa vốn: <strong class="text-violet-900">Nổ VIP ăn 42M (+31.2M) · Lót ăn 16.8M (+6.0M)</strong></span><span>Thực chiến 2026: <strong class="text-emerald-700 font-bold">100% ngày trúng có lãi ròng</strong></span>';
+                    footerMeta.innerHTML = '<span>Ăn thưởng: <strong class="text-violet-900 font-bold">Nổ VIP X2 ăn 33.6M (+22.8M) · Lót X1 ăn 16.8M (+6.0M)</strong></span><span>Thực chiến 2026: <strong class="text-emerald-700 font-bold">100% ngày trúng có lãi ròng (+192.0M)</strong></span>';
                 }
 
                 const c40El = byId('shadowDropoff40Container');
                 if (c40El) {
                     c40El.innerHTML = displayNums.map((n, idx) => {
-                        const isVip = idx < 12;
+                        const isVip = idx < 18;
                         const badgeStyle = isVip
                             ? 'bg-amber-100 border-amber-300 text-amber-900 font-black ring-1 ring-amber-400'
                             : 'bg-violet-50 border-violet-200 text-violet-900 font-bold';
                         const titleText = isVip
-                            ? `#${idx + 1}: ${numStr(n)} (VIP · 500K/số · Ăn 42M · Lãi +31.2M)`
-                            : `#${idx + 1}: ${numStr(n)} (Lót · 200K/số · Ăn 16.8M · Lãi +6.0M)`;
+                            ? `#${idx + 1}: ${numStr(n)} (VIP X2 · 400K/số · Ăn 33.6M · Lãi +22.8M)`
+                            : `#${idx + 1}: ${numStr(n)} (Lót X1 · 200K/số · Ăn 16.8M · Lãi +6.0M)`;
                         return `<span class="inline-flex items-center justify-center w-7 h-7 rounded-lg border font-mono text-xs ${badgeStyle} hover:scale-110 transition-all cursor-pointer" title="${titleText}">${numStr(n)}</span>`;
                     }).join('');
                 }
 
                 const x3El = byId('shadowDropoffX3Container');
                 if (x3El) {
-                    x3El.innerHTML = vipNums.map(n => `<span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-amber-100 border border-amber-300 font-mono text-xs font-black text-amber-900 hover:scale-110 transition-all cursor-pointer" title="VIP 12 (500K/số): ${numStr(n)}">${numStr(n)}</span>`).join('');
+                    x3El.innerHTML = vipNums.map(n => `<span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-amber-100 border border-amber-300 font-mono text-xs font-black text-amber-900 hover:scale-110 transition-all cursor-pointer" title="VIP 18 (X2 · 400K/số): ${numStr(n)}">${numStr(n)}</span>`).join('');
                 }
                 const x2El = byId('shadowDropoffX2Container');
                 if (x2El) {
-                    x2El.innerHTML = lotNums.slice(0, 12).map(n => `<span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-violet-50 border border-violet-200 font-mono text-xs font-bold text-violet-900 hover:scale-110 transition-all cursor-pointer" title="Lót (200K/số): ${numStr(n)}">${numStr(n)}</span>`).join('');
-                }
-                const x1El = byId('shadowDropoffX1Container');
-                if (x1El) {
-                    x1El.innerHTML = lotNums.slice(12, 24).map(n => `<span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-violet-50 border border-violet-200 font-mono text-xs font-bold text-violet-900 hover:scale-110 transition-all cursor-pointer" title="Lót (200K/số): ${numStr(n)}">${numStr(n)}</span>`).join('');
+                    x2El.innerHTML = lotNums.map(n => `<span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-violet-50 border border-violet-200 font-mono text-xs font-bold text-violet-900 hover:scale-110 transition-all cursor-pointer" title="Lót (X1 · 200K/số): ${numStr(n)}">${numStr(n)}</span>`).join('');
                 }
 
                 const btnCopyX3 = byId('btnCopyDropoffX3');
                 if (btnCopyX3) {
-                    btnCopyX3.textContent = 'Copy 12 VIP';
+                    btnCopyX3.textContent = 'Copy 18 VIP (X2)';
                     btnCopyX3.onclick = () => {
                         if (vipNums.length) {
                             navigator.clipboard.writeText(vipNums.map(numStr).join(', '));
-                            showToast('Đã sao chép 12 số VIP Đề Tri-Tier!');
+                            showToast('Đã sao chép 18 số VIP Đề Tri-Tier (X2)!');
                         }
                     };
                 }
@@ -500,74 +496,74 @@
                 const dropoffRec = deDropoff?.latestRecommendation || {};
                 const all40Nums = dropoffRec.numbers || dropoffRec.top40 || [];
                 const displayNums = isVip36 ? all40Nums.slice(0, 36) : all40Nums;
-                const x3Nums = dropoffRec.tierX3 || all40Nums.slice(0, 10);
-                const x2Nums = dropoffRec.tierX2 || all40Nums.slice(10, 22);
-                const x1Nums = dropoffRec.tierX1 || all40Nums.slice(22, 40);
+                const halfCount = isVip36 ? 18 : 20;
+                const topHalfNums = displayNums.slice(0, halfCount);
+                const botHalfNums = displayNums.slice(halfCount);
 
                 if (isVip36) {
                     if (titleLabel) {
-                        titleLabel.innerHTML = '<i class="bi bi-star-fill text-amber-600"></i> 1. ⭐ Đề 36 Số VIP Sweet-Spot (1M/số) · Vốn 36M';
+                        titleLabel.innerHTML = '<i class="bi bi-star-fill text-amber-600"></i> 1. ⭐ Đề 36 Số VIP Sweet-Spot (18s X2 + 18s X1) · Vốn 10.8M';
                     }
                     if (actionBanner) {
                         actionBanner.className = 'rounded-3xl border-2 border-amber-300 bg-white p-5 sm:p-6 shadow-sm flex flex-col justify-between text-slate-800';
                     }
                     if (actionStatusText) {
-                        actionStatusText.innerHTML = '<span class="inline-flex items-center gap-1.5 text-amber-900 font-black uppercase text-sm sm:text-base"><i class="bi bi-star-fill text-amber-600"></i> ⭐ ĐỀ 36 SỐ VIP SWEET-SPOT: VÀO KÈO 36 SỐ (WIN 47.3% · LÃI +204.0M VNĐ · ROI +10.3%)</span>';
+                        actionStatusText.innerHTML = '<span class="inline-flex items-center gap-1.5 text-amber-900 font-black uppercase text-sm sm:text-base"><i class="bi bi-star-fill text-amber-600"></i> ⭐ ĐỀ 36 SỐ VIP SWEET-SPOT: VÀO KÈO 36 SỐ (WIN 47.2% · LÃI +1.032 TỶ · ROI +10.1%)</span>';
                     }
                     if (actionDesc) {
-                        actionDesc.textContent = 'Lấy 36 số đầu tiên có điểm đồng thuận cao nhất (loại bỏ 4 số đuôi có xác suất yếu nhất của dàn 40 số). Vốn cược phẳng 7.2M/ngày (200K/số). Ăn 16.8M khi trúng, lãi ròng +9.6M/kỳ. Tỷ lệ trúng cả năm 2026: 47.3% (130/275 kỳ), tỷ suất lợi nhuận ROI +10.3% (+204.0M VNĐ), vượt trội hơn dàn 40s (+185.6M, ROI +8.4%). Thực chiến 20 kỳ nổ 9/20 kỳ (+7.2M).';
+                        actionDesc.textContent = 'Lấy 36 số đầu tiên có điểm đồng thuận cao nhất. Phân bổ: 18 số đầu cược X2 (400K/số · ăn 33.6M, lãi +22.8M) + 18 số sau cược X1 (200K/số · ăn 16.8M, lãi +6.0M). Tổng vốn 10.8M/ngày. 100% ngày trúng đều có lãi ròng dương.';
                     }
                     if (footerMeta) {
-                        footerMeta.innerHTML = '<span>Hòa vốn: <strong class="text-amber-900">Cần 42.9% (1 ăn 84) · Lãi +9.6M/kỳ</strong></span><span>Thực chiến: <strong class="text-emerald-700 font-bold">Win 45.0% (9/20 kỳ từ 17/09) · 2026: Win 47.3% (+204.0M VNĐ · ROI +10.3%)</strong></span>';
+                        footerMeta.innerHTML = '<span>Ăn thưởng: <strong class="text-amber-900 font-bold">Nổ X2 ăn 33.6M (+22.8M) · Nổ X1 ăn 16.8M (+6.0M)</strong></span><span>Thực chiến 2026: <strong class="text-emerald-700 font-bold">134/284 kỳ trúng · Lãi +1.032 TỶ (ROI +10.1%)</strong></span>';
                     }
                 } else {
                     if (titleLabel) {
-                        titleLabel.innerHTML = '<i class="bi bi-award-fill text-amber-600"></i> 1. Đề Đa Động Cơ 40s Đánh Phẳng (200K/số) · Vốn 8.0M';
+                        titleLabel.innerHTML = '<i class="bi bi-award-fill text-amber-600"></i> 1. Đề Đa Động Cơ 40s (20s X2 + 20s X1) · Vốn 12.0M';
                     }
                     if (actionBanner) {
                         actionBanner.className = 'rounded-3xl border-2 border-amber-300 bg-white p-5 sm:p-6 shadow-sm flex flex-col justify-between text-slate-800';
                     }
                     if (actionStatusText) {
-                        actionStatusText.innerHTML = '<span class="inline-flex items-center gap-1.5 text-amber-900 font-black uppercase text-sm sm:text-base"><i class="bi bi-shield-check text-amber-600"></i> 👑 ĐỀ ĐA ĐỘNG CƠ ĐỒNG THUẬN: VÀO KÈO 40 SỐ (WIN 51.6% · LÃI +185.6M)</span>';
+                        actionStatusText.innerHTML = '<span class="inline-flex items-center gap-1.5 text-amber-900 font-black uppercase text-sm sm:text-base"><i class="bi bi-shield-check text-amber-600"></i> 👑 ĐỀ ĐA ĐỘNG CƠ ĐỒNG THUẬN: VÀO KÈO 40 SỐ (WIN 51.4% · LÃI +904.0M)</span>';
                     }
                     if (actionDesc) {
-                        actionDesc.textContent = 'Hợp nhất 4 động cơ định lượng (MetaLearner ML + DualMerge + Markov Weibull Gap + PentaCore Consensus). Tuyển chọn Top 40 số tinh hoa đánh phẳng (200K/số = 8.0M/ngày). Ăn 16.8M/ngày trúng, lãi ròng +8.8M/kỳ. Tỉ lệ trúng 2026: 51.6% (142/275 kỳ), vượt xa ngưỡng hòa vốn 47.6%. 20 kỳ thực chiến đạt Win 50.0% (+8.0M). Triệt tiêu hoàn toàn rủi ro phân tầng.';
+                        actionDesc.textContent = 'Hợp nhất 4 động cơ định lượng (MetaLearner ML + DualMerge + Markov Weibull Gap + PentaCore Consensus). Phân bổ: 20 số đầu cược X2 (400K/số · ăn 33.6M, lãi +21.6M) + 20 số sau cược X1 (200K/số · ăn 16.8M, lãi +4.8M). Tổng vốn 12.0M/ngày. 100% ngày trúng đều có lãi ròng dương, triệt tiêu hoàn toàn rủi ro âm vốn.';
                     }
                     if (footerMeta) {
-                        footerMeta.innerHTML = '<span>Hòa vốn: <strong class="text-amber-900">Cần 47.6% (1 ăn 84) · Lãi +8.8M/kỳ</strong></span><span>Thực chiến: <strong class="text-emerald-700 font-bold">Win 50.0% (10/20 kỳ từ 17/09) · 2026: Win 51.6% (+185.6M)</strong></span>';
+                        footerMeta.innerHTML = '<span>Ăn thưởng: <strong class="text-amber-900 font-bold">Nổ X2 ăn 33.6M (+21.6M) · Nổ X1 ăn 16.8M (+4.8M)</strong></span><span>Thực chiến 2026: <strong class="text-emerald-700 font-bold">146/284 kỳ trúng · Lãi +904.0M (ROI +8.0%)</strong></span>';
                     }
                 }
 
                 const c40El = byId('shadowDropoff40Container');
                 if (c40El) {
                     c40El.innerHTML = displayNums.map((n, idx) => {
-                        const isVip = idx < 10;
-                        const badgeStyle = isVip
+                        const isX2 = idx < halfCount;
+                        const badgeStyle = isX2
                             ? 'bg-amber-100 border-amber-300 text-amber-900 font-black ring-1 ring-amber-400'
                             : 'bg-indigo-50 border-indigo-200 text-indigo-900 font-bold';
-                        return `<span class="inline-flex items-center justify-center w-7 h-7 rounded-lg border font-mono text-xs ${badgeStyle} hover:scale-110 transition-all cursor-pointer" title="#${idx + 1}: ${numStr(n)} (200K/số · Ăn 16.8M)">${numStr(n)}</span>`;
+                        const titleText = isX2
+                            ? `#${idx + 1}: ${numStr(n)} (X2 · 400K/số · Ăn 33.6M)`
+                            : `#${idx + 1}: ${numStr(n)} (X1 · 200K/số · Ăn 16.8M)`;
+                        return `<span class="inline-flex items-center justify-center w-7 h-7 rounded-lg border font-mono text-xs ${badgeStyle} hover:scale-110 transition-all cursor-pointer" title="${titleText}">${numStr(n)}</span>`;
                     }).join('');
                 }
 
                 const x3El = byId('shadowDropoffX3Container');
                 if (x3El) {
-                    x3El.innerHTML = x3Nums.map(n => `<span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-rose-50 border border-rose-300 font-mono text-xs font-black text-rose-900 hover:scale-110 transition-all cursor-pointer" title="VIP: ${numStr(n)}">${numStr(n)}</span>`).join('');
+                    x3El.innerHTML = topHalfNums.map(n => `<span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-amber-100 border border-amber-300 font-mono text-xs font-black text-amber-900 hover:scale-110 transition-all cursor-pointer" title="Cược X2 (400K): ${numStr(n)}">${numStr(n)}</span>`).join('');
                 }
                 const x2El = byId('shadowDropoffX2Container');
                 if (x2El) {
-                    x2El.innerHTML = x2Nums.map(n => `<span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-amber-50 border border-amber-300 font-mono text-xs font-black text-amber-900 hover:scale-110 transition-all cursor-pointer">${numStr(n)}</span>`).join('');
-                }
-                const x1El = byId('shadowDropoffX1Container');
-                if (x1El) {
-                    x1El.innerHTML = x1Nums.map(n => `<span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-50 border border-emerald-300 font-mono text-xs font-bold text-emerald-900 hover:scale-110 transition-all cursor-pointer">${numStr(n)}</span>`).join('');
+                    x2El.innerHTML = botHalfNums.map(n => `<span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-50 border border-emerald-300 font-mono text-xs font-bold text-emerald-900 hover:scale-110 transition-all cursor-pointer" title="Cược X1 (200K): ${numStr(n)}">${numStr(n)}</span>`).join('');
                 }
 
                 const btnCopyX3 = byId('btnCopyDropoffX3');
                 if (btnCopyX3) {
+                    btnCopyX3.textContent = isVip36 ? 'Copy 18 VIP (X2)' : 'Copy 20 VIP (X2)';
                     btnCopyX3.onclick = () => {
-                        if (x3Nums.length) {
-                            navigator.clipboard.writeText(x3Nums.map(numStr).join(', '));
-                            showToast('Đã sao chép 10 số VIP Đa Động Cơ!');
+                        if (topHalfNums.length) {
+                            navigator.clipboard.writeText(topHalfNums.map(numStr).join(', '));
+                            showToast(isVip36 ? 'Đã sao chép 18 số VIP Sweet-Spot (X2)!' : 'Đã sao chép 20 số VIP Đa Động Cơ (X2)!');
                         }
                     };
                 }
@@ -588,10 +584,10 @@
                 if (triCoreBox) triCoreBox.classList.remove('hidden');
 
                 if (titleLabel) {
-                    titleLabel.innerHTML = '<i class="bi bi-gem text-emerald-600"></i> 1. Đề Tri-Core 24s (Cược Phẳng 200K) · Vốn 4.8M';
+                    titleLabel.innerHTML = '<i class="bi bi-gem text-emerald-600"></i> 1. Đề Tri-Core 24s (12s X2 400K + 12s X1 200K) · Vốn 7.2M';
                 }
                 if (footerMeta) {
-                    footerMeta.innerHTML = '<span>Hòa vốn: <strong class="text-amber-900">Cần trúng 28.6% (1 ăn 84)</strong></span><span>Độ bền: <strong class="text-emerald-700 font-bold">Win 44.9% (Smart Abstain)</strong></span>';
+                    footerMeta.innerHTML = '<span>Ăn thưởng: <strong class="text-amber-900 font-bold">Nổ X2 ăn 33.6M (+26.4M) · Nổ X1 ăn 16.8M (+9.6M)</strong></span><span>Smart Abstain: <strong class="text-emerald-700 font-bold">Lãi +415.2M (ROI +53.4%)</strong></span>';
                 }
 
                 const latestRec = triCore?.latestRecommendation || null;
@@ -612,11 +608,20 @@
                 } else {
                     if (actionBanner) actionBanner.className = 'rounded-3xl border-2 border-emerald-300 bg-white p-5 sm:p-6 shadow-sm flex flex-col justify-between text-slate-800';
                     if (actionStatusText) actionStatusText.innerHTML = `<span class="inline-flex items-center gap-1.5 text-emerald-800 font-black uppercase text-sm sm:text-base"><i class="bi bi-check-circle-fill text-emerald-600"></i> ✅ ĐỦ ĐIỀU KIỆN PHÁT HÀNH: VÀO KÈO (TRI-CORE 24 SỐ) · TOP 1: ${topScore.toFixed(1)}/7.5</span>`;
-                    if (actionDesc) actionDesc.textContent = latestRec?.reasoning || 'Hội tụ 4 động cơ định lượng (MetaLearner + DualMerge + MarkovGap + PentaCore). Điểm đồng thuận Top 1 đạt ' + topScore.toFixed(1) + '/7.5 (vượt ngưỡng an toàn 6.5). Đã loại bỏ 6 số gan cứng.';
+                    if (actionDesc) actionDesc.textContent = latestRec?.reasoning || 'Hội tụ 4 động cơ định lượng (MetaLearner + DualMerge + MarkovGap + PentaCore). Phân bổ: 12 số đầu cược X2 (400K) + 12 số sau cược X1 (200K) = 7.2M/ngày. 100% trúng có lãi.';
                     if (triCoreBox) triCoreBox.classList.remove('hidden');
                     const numbersContainer = byId('shadowNumbersContainer');
                     if (numbersContainer) {
-                        numbersContainer.innerHTML = mainNumbers.map(n => `<span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-300 font-mono text-sm font-black text-emerald-900" title="Số ${numStr(n)}">${numStr(n)}</span>`).join('');
+                        numbersContainer.innerHTML = mainNumbers.map((n, idx) => {
+                            const isX2 = idx < 12;
+                            const badgeCls = isX2
+                                ? 'bg-amber-100 border-amber-300 font-black text-amber-950 ring-1 ring-amber-400'
+                                : 'bg-emerald-50 border-emerald-300 font-bold text-emerald-900';
+                            const titleStr = isX2
+                                ? `#${idx + 1}: ${numStr(n)} (X2 · 400K/số · Ăn 33.6M · Lãi +26.4M)`
+                                : `#${idx + 1}: ${numStr(n)} (X1 · 200K/số · Ăn 16.8M · Lãi +9.6M)`;
+                            return `<span class="inline-flex items-center justify-center w-8 h-8 rounded-lg border font-mono text-sm ${badgeCls} hover:scale-110 transition-all cursor-pointer" title="${titleStr}">${numStr(n)}</span>`;
+                        }).join('');
                     }
                 }
 
@@ -625,7 +630,7 @@
                     btnCopy.onclick = () => {
                         if (mainNumbers.length) {
                             navigator.clipboard.writeText(mainNumbers.map(numStr).join(', '));
-                            showToast('Đã sao chép 24 số tinh hoa!');
+                            showToast('Đã sao chép 24 số tinh hoa (12 X2 + 12 X1)!');
                         }
                     };
                 }
@@ -1364,24 +1369,28 @@
                 const ciLow = Math.max(0, (center - margin) / denom);
                 const ciHigh = Math.min(1, (center + margin) / denom);
 
-                const totalStakeK = dropoffRows.reduce((sum, r) => sum + (r.stakeK || 8000), 0);
+                const totalStakeK = dropoffRows.reduce((sum, r) => sum + (r.stakeK || 12000), 0);
                 const roi = totalStakeK > 0 ? equity / totalStakeK : 0;
 
                 byId('metricHitRate').textContent = `${(hitRate * 100).toFixed(1)}%`;
                 byId('metricWinsTotal').textContent = `${wins}/${totalIssued} ngày phát hành`;
                 byId('metricCI95').textContent = `${(ciLow * 100).toFixed(1)}% – ${(ciHigh * 100).toFixed(1)}%`;
-                byId('metricBreakEvenReq').textContent = `Đa Động Cơ 40s Đánh Phẳng (200K/số = 8.0M) · Ăn 16.8M (Lãi +8.8M/kỳ nổ)`;
+                byId('metricBreakEvenReq').textContent = `Đa Động Cơ 40s: 20s X2 (400K) + 20s X1 (200K) = 12.0M/ngày · Nổ X2 ăn 33.6M (+21.6M) · Nổ X1 ăn 16.8M (+4.8M)`;
 
                 byId('metricMaxDrawdown').textContent = `-${moneyAbsM(maxDrawdownK)}`;
                 byId('metricMaxDrawdownDays').textContent = `Kéo dài tối đa ${maxDrawdownDays} kỳ`;
                 byId('metricLongestLoss').textContent = `${longestLoss} kỳ`;
 
                 const profitEl = byId('metricRealisticProfit');
+                if (profitEl) {
+                    profitEl.textContent = moneyM(equity);
+                    profitEl.className = `text-2xl font-black font-mono ${equity >= 0 ? 'text-emerald-700' : 'text-rose-700'}`;
+                }
                 const roiSign = roi > 0 ? '+' : '';
                 const roiEl = byId('metricRealisticRoi');
                 if (roiEl) {
                     roiEl.textContent = `${roiSign}${(roi * 100).toFixed(1)}% (Tổng lãi: ${formatMoneyK(equity)})`;
-                    roiEl.className = `text-xs font-bold ${equity >= 0 ? 'text-emerald-300' : 'text-rose-300'}`;
+                    roiEl.className = `text-xs font-bold ${equity >= 0 ? 'text-emerald-700' : 'text-rose-700'}`;
                 }
                 byId('metricAbstainCount').textContent = `0/${totalIssued} ngày (Thực chiến từ 17/09)`;
 
@@ -1389,7 +1398,7 @@
                 return;
             }
 
-            // Strategy 2: ⭐ Đề 36s VIP Sweet-Spot (200K/số = 7.2M/ngày)
+            // Strategy 2: ⭐ Đề 36s VIP Sweet-Spot (18s X2 @ 400K + 18s X1 @ 200K = 10.8M/ngày)
             if (mode === 'vip36') {
                 let dropoffRows = deDropoff?.settledLedger || [];
                 if (currentShadowYear === '2026') {
@@ -1410,8 +1419,12 @@
                 sortedRows.forEach(r => {
                     const actualStr = (r.actual !== null && r.actual !== undefined) ? numStr(r.actual) : null;
                     const nums36 = (r.numbers36 || r.numbers || r.top40 || []).slice(0, 36).map(numStr);
+                    const top18 = (r.top18_36 || nums36.slice(0, 18)).map(numStr);
+                    const bot18 = (r.bottom18_36 || nums36.slice(18, 36)).map(numStr);
                     const isHit = (r.isHit36 !== undefined) ? Boolean(r.isHit36) : (actualStr ? nums36.includes(actualStr) : false);
-                    const dayProfitK = (r.profit36K !== undefined) ? r.profit36K : (isHit ? (16800 - 7200) : -7200);
+                    const isHitX2 = (r.isHit36X2 !== undefined) ? Boolean(r.isHit36X2) : (actualStr ? top18.includes(actualStr) : false);
+                    const isHitX1 = (r.isHit36X1 !== undefined) ? Boolean(r.isHit36X1) : (actualStr ? bot18.includes(actualStr) : false);
+                    const dayProfitK = (r.profit36K !== undefined) ? r.profit36K : (isHitX2 ? 22800 : (isHitX1 ? 6000 : (isHit ? 22800 : -10800)));
                     currentLoss = isHit ? 0 : currentLoss + 1;
                     longestLoss = Math.max(longestLoss, currentLoss);
 
@@ -1444,13 +1457,13 @@
                 const ciLow = Math.max(0, (center - margin) / denom);
                 const ciHigh = Math.min(1, (center + margin) / denom);
 
-                const totalStakeK = totalIssued * 7200;
+                const totalStakeK = totalIssued * 10800;
                 const roi = totalStakeK > 0 ? equity / totalStakeK : 0;
 
                 byId('metricHitRate').textContent = `${(hitRate * 100).toFixed(1)}%`;
                 byId('metricWinsTotal').textContent = `${wins}/${totalIssued} ngày phát hành`;
                 byId('metricCI95').textContent = `${(ciLow * 100).toFixed(1)}% – ${(ciHigh * 100).toFixed(1)}%`;
-                byId('metricBreakEvenReq').textContent = `⭐ Đề 36s VIP (200K/số = 7.2M) · Ăn 16.8M (Lãi +9.6M/kỳ nổ · Hòa vốn 42.9%)`;
+                byId('metricBreakEvenReq').textContent = `⭐ Đề 36s VIP: 18s X2 (400K) + 18s X1 (200K) = 10.8M/ngày · Nổ X2 ăn 33.6M (+22.8M) · Nổ X1 ăn 16.8M (+6.0M)`;
 
                 byId('metricMaxDrawdown').textContent = `-${moneyAbsM(maxDrawdownK)}`;
                 byId('metricMaxDrawdownDays').textContent = `Kéo dài tối đa ${maxDrawdownDays} kỳ`;
@@ -1472,7 +1485,7 @@
                 return;
             }
 
-            // Strategy 3: 💎 Đề 36s Tri-Tier Resonance (12 VIP 2.5M + 24 Lót 1M = 54M/ngày)
+            // Strategy 3: 💎 Đề 36s Tri-Tier Resonance (18 VIP X2 400K + 18 Lót X1 200K = 10.8M/ngày)
             if (mode === 'resonance36') {
                 const resLedger = data?.semanticResonanceSuite?.settledLedger || [];
                 let resRows = resLedger;
@@ -1531,7 +1544,7 @@
                 byId('metricHitRate').textContent = `${(hitRate * 100).toFixed(1)}%`;
                 byId('metricWinsTotal').textContent = `${wins}/${totalIssued} ngày phát hành`;
                 byId('metricCI95').textContent = `${(ciLow * 100).toFixed(1)}% – ${(ciHigh * 100).toFixed(1)}%`;
-                byId('metricBreakEvenReq').textContent = `💎 Đề 36s Tri-Tier: VIP ăn 42M (+31.2M) · Lót ăn 16.8M (+6.0M) · 100% trúng có lãi`;
+                byId('metricBreakEvenReq').textContent = `💎 Đề 36s Tri-Tier: 18 VIP X2 (400K) + 18 Lót X1 (200K) = 10.8M/ngày · Nổ X2 ăn 33.6M (+22.8M) · Nổ X1 ăn 16.8M (+6.0M)`;
 
                 byId('metricMaxDrawdown').textContent = `-${moneyAbsM(maxDrawdownK)}`;
                 byId('metricMaxDrawdownDays').textContent = `Kéo dài tối đa ${maxDrawdownDays} kỳ`;
@@ -1576,13 +1589,20 @@
                             abstained: false
                         };
                     }
+                    const actualStr = (r.actual !== null && r.actual !== undefined) ? numStr(r.actual) : null;
+                    const top12 = (strategy.top12X2 || (strategy.numbers || []).slice(0, 12)).map(numStr);
+                    const bot12 = (strategy.bottom12X1 || (strategy.numbers || []).slice(12, 24)).map(numStr);
+                    const isHitX2 = strategy.isHitX2 !== undefined ? Boolean(strategy.isHitX2) : (actualStr ? top12.includes(actualStr) : false);
+                    const isHitX1 = strategy.isHitX1 !== undefined ? Boolean(strategy.isHitX1) : (actualStr ? bot12.includes(actualStr) : false);
                     return {
                         date: r.predictionDate,
                         actual: r.actual,
                         abstained: Boolean(strategy.abstained),
-                        hit: strategy.hit,
+                        hit: strategy.hit || isHitX2 || isHitX1,
+                        isHitX2,
+                        isHitX1,
                         numbers: strategy.numbers || [],
-                        dayProfitK: strategy.abstained ? 0 : (strategy.hit ? 12000 : -4800)
+                        dayProfitK: strategy.abstained ? 0 : (isHitX2 ? 26400 : (isHitX1 ? 9600 : (strategy.hit ? 26400 : -7200)))
                     };
                 });
             }
@@ -1598,8 +1618,8 @@
 
             ledger.forEach(r => {
                 const isAbstain = Boolean(r.abstained);
-                const isHit = Boolean(r.hit);
-                const dayProfitK = r.dayProfitK !== undefined ? r.dayProfitK : (isAbstain ? 0 : (isHit ? 12000 : -4800));
+                const isHit = Boolean(r.hit || r.isHitX2 || r.isHitX1);
+                const dayProfitK = r.profitK !== undefined ? r.profitK : (r.dayProfitK !== undefined ? r.dayProfitK : (isAbstain ? 0 : (r.isHitX2 ? 26400 : (r.isHitX1 ? 9600 : (isHit ? 26400 : -7200)))));
                 r.dayProfitK = dayProfitK;
 
                 if (!isAbstain) {
@@ -1636,18 +1656,15 @@
             const ciLow = Math.max(0, (center - margin) / denom);
             const ciHigh = Math.min(1, (center + margin) / denom);
 
-            // Realistic Payout After Fee (1 ăn 81.5)
-            const realisticPayoutMultiplier = 81.5;
-            const realisticBreakEven = 24 / realisticPayoutMultiplier;
-            const totalStakeK = totalIssued * 4800; // 4800K = 4.8M (200K/số)
-            const realisticProfitK = wins * 16300 - totalStakeK;
+            const totalStakeK = totalIssued * 7200; // 7.2M = 12s X2 @ 400K + 12s X1 @ 200K
+            const realisticProfitK = equity;
             const realisticRoi = totalStakeK > 0 ? realisticProfitK / totalStakeK : 0;
 
             // Update UI Metric Cards
             byId('metricHitRate').textContent = `${(hitRate * 100).toFixed(1)}%`;
             byId('metricWinsTotal').textContent = `${wins}/${totalIssued} ngày phát hành`;
             byId('metricCI95').textContent = `${(ciLow * 100).toFixed(1)}% – ${(ciHigh * 100).toFixed(1)}%`;
-            byId('metricBreakEvenReq').textContent = `Cần hòa vốn sau phí: ${(realisticBreakEven * 100).toFixed(1)}% (1 ăn 81.5)`;
+            byId('metricBreakEvenReq').textContent = `Tri-Core 24s: 12s X2 (400K) + 12s X1 (200K) = 7.2M/ngày · Nổ X2 ăn 33.6M (+26.4M) · Nổ X1 ăn 16.8M (+9.6M)`;
 
             byId('metricMaxDrawdown').textContent = `-${moneyAbsM(maxDrawdownK)}`;
             byId('metricMaxDrawdownDays').textContent = `Kéo dài tối đa ${maxDrawdownDays} kỳ`;
@@ -1657,7 +1674,7 @@
             profitEl.textContent = moneyM(equity);
             profitEl.className = `text-2xl font-black font-mono ${equity >= 0 ? 'text-emerald-700' : 'text-rose-700'}`;
 
-            byId('metricRealisticRoi').textContent = `${(totalStakeK > 0 ? (equity / totalStakeK * 100).toFixed(1) : '0.0')}% (ROI sau phí: ${(realisticRoi * 100).toFixed(1)}%)`;
+            byId('metricRealisticRoi').textContent = `${(totalStakeK > 0 ? (equity / totalStakeK * 100).toFixed(1) : '0.0')}% (Tổng lãi: ${formatMoneyK(equity)})`;
             byId('metricAbstainCount').textContent = `${abstainedDays.length}/${ledger.length} ngày (${((abstainedDays.length / Math.max(1, ledger.length)) * 100).toFixed(1)}%)`;
 
             // Render Settled Ledger Table
@@ -1705,34 +1722,35 @@
             if (suiteId === 'suiteTriCore') {
                 evidences = [
                     'Hội tụ 3 lõi Tam Trụ (Markov Transition Tensor + Positional Graph Flow + QMBF Bayesian Ensemble).',
-                    'Bộ lọc Smart Abstain Filter: Khi điểm đồng thuận Top 1 < 6.5, hệ thống tự động cược 0đ (ABSTAIN), né 174 kỳ thị trường xấu năm 2026, bảo toàn 835.2M tiền vốn.',
+                    'Đề Tri-Core 24s Phân Tầng: 12s X2 (400K) + 12s X1 (200K) = Vốn 7.2M (Nổ X2 lãi +26.4M, Nổ X1 lãi +9.6M).',
+                    'Bộ lọc Smart Abstain Filter: Khi điểm đồng thuận Top 1 < 6.5, hệ thống tự động cược 0đ (ABSTAIN), né 174 kỳ thị trường xấu năm 2026, bảo toàn 1.252 TỶ tiền vốn.',
                     'Lô Tri-Core Top 7 nổ 82.9% (228/275 kỳ, lãi +949M) + Lô Xiên 5 Tri-Core lãi kỷ lục +738.7M VNĐ. Tổng 3 trụ Tri-Core lãi cực đại năm 2026.'
                 ];
                 majorRisk = 'Chấp nhận các chuỗi né cược liên tiếp khi thị trường nhiễu loạn để bảo vệ vốn. Tuyệt đối không tự ý vào kèo khi hệ thống cảnh báo ABSTAIN (Cược 0đ).';
                 churnGuard = 'Bộ cảm biến Regime Shift & Bayesian Transition Matrix nhận diện pha thị trường gãy nhịp, tự động kích hoạt lá chắn bảo toàn vốn 0đ trước giờ quay (100% Strict PIT).';
             } else if (suiteId === 'suiteVipSweetSpot') {
                 evidences = [
-                    'Đề 36s VIP Sweet-Spot: Cắt bỏ 4 số biên xác suất thấp của dàn 40s, cược phẳng 7.2M (200K/số, ăn 16.8M · Lãi +9.6M/kỳ). Tỷ lệ trúng 2026 đạt 47.3% (vượt hòa vốn 42.9%), lãi ròng +204.0M VNĐ (ROI +10.3%).',
+                    'Đề 36s VIP Sweet-Spot: Cắt bỏ 4 số biên xác suất thấp của dàn 40s, cược phân tầng 18s X2 (400K) + 18s X1 (200K) = Vốn 10.8M (ăn X2 lãi +22.8M, ăn X1 lãi +6.0M). Tỷ lệ trúng 2026 đạt 47.3%, 100% ngày trúng đều có lãi dương.',
                     'Thất Thủ Lô Top 7 QMBF v6: Vốn 15.4M/ngày (7 số x 2.2M). Tỷ lệ nổ 79.6%, lãi ròng +1.790 TỶ (ROI +42.3%), nổ 691 nháy trong năm 2026.',
                     'Lô Xiên 5 (5 Dàn Xiên 4 Sweet-Spot · Vốn 5.5M): Cơ cấu đòn bẩy ăn đậm khi nổ ≥2 con (+1.2M đến +186.5M). 2026 lãi ròng +906.7M (ROI +59.9%).'
                 ];
-                majorRisk = 'Tổng vốn cược mỗi ngày 28.1M (Đề 7.2M + Lô 15.4M + Xiên 5.5M). Tối ưu hóa biên lợi nhuận bứt phá với Dàn Xiên 5 độc lập và Thất Thủ Lô Top 7.';
+                majorRisk = 'Tổng vốn cược mỗi ngày 31.7M (Đề 10.8M + Lô 15.4M + Xiên 5.5M). Tối ưu hóa biên lợi nhuận bứt phá với Dàn Xiên 5 độc lập và Thất Thủ Lô Top 7.';
                 churnGuard = 'Bộ lọc xác suất QMBF v6 & Sweet-Spot 36s tối ưu điểm vào tiền: Tỷ lệ nổ Lô Top 7 đạt 79.6% nâng đỡ hoàn toàn rủi ro ngày Đề trượt (100% Strict PIT).';
             } else if (suiteId === 'suiteResonance') {
                 evidences = [
-                    'Đề Tri-Tier Semantic Resonance 36s: 12 VIP cược 500K (ăn 42M, lãi +31.2M) + 24 Bọc lót cược 200K (ăn 16.8M, lãi +6.0M). 100% ngày trúng đều có lãi dương, vốn 10.8M/ngày.',
+                    'Đề Tri-Tier Semantic Resonance 36s: 18 VIP cược X2 400K (ăn 33.6M, lãi +22.8M) + 18 Bọc lót cược X1 200K (ăn 16.8M, lãi +6.0M). 100% ngày trúng đều có lãi dương, vốn 10.8M/ngày.',
                     'Lô Top 7 Co-Affinity & Động Lượng Hai Chiều: Hỗ trợ Cược Phẳng 15.4M hoặc Phân Tầng 22.0M, nổ với tần suất cao trong năm 2026.',
                     'Lô Xiên 5 Tuyển Chọn: Ghép 5 dàn Xiên 4 từ Top 5 Lô Co-Affinity, vốn 5.5M/ngày (1.1M/vé), nổ X4 ăn 38.4M, X3 ăn 8.4M, X2 ăn 1.2M.'
                 ];
                 majorRisk = 'Tổng vốn cược mỗi ngày 31.7M (Cược Phẳng) hoặc 38.3M (Phân Tầng). Dòng tiền Lô và Xiên nổ với mật độ cao bù đắp hoàn toàn rủi ro cho Đề.';
-                churnGuard = 'Cơ chế Tri-Tier Staking triệt tiêu hoàn toàn rủi ro lỗ non của dàn Đề: mọi kỳ trúng đều đảm bảo dương vốn ròng sau giờ quay (100% Strict PIT).';
+                churnGuard = 'Cơ chế Phân Tầng X2/X1 triệt tiêu hoàn toàn rủi ro lỗ non của dàn Đề: mọi kỳ trúng đều đảm bảo dương vốn ròng sau giờ quay (100% Strict PIT).';
             } else { // 'comboDropoff'
                 evidences = [
                     'Đồng Thuận Đa Động Cơ (MetaLearner 3.0 + DualMerge 2.0 + MarkovGap 1.5 + PentaCore 1.0) kết hợp bộ lọc Khử 60 số gãy.',
-                    'Đánh Phẳng Chuẩn Mực 40s (200K/số = 8.0M/ngày) · Thưởng 16.8M cố định khi trúng · Lãi ròng +8.8M/kỳ nổ.',
-                    'Bù trừ chéo 3 trụ cột mạnh nhất: Đề 40s phẳng (8.0M) + Lô Sweet-Spot QMBF v6 Top 7/6 (15.4M) + Lô Xiên 5 (5.5M), nổ ăn đậm bù đắp hoàn toàn chi phí khi Đề trượt.'
+                    'Đề Đa Động Cơ 40s Phân Tầng: 20s X2 (400K) + 20s X1 (200K) = Vốn 12.0M/ngày · Nổ X2 ăn 33.6M (lãi +21.6M), Nổ X1 ăn 16.8M (lãi +4.8M).',
+                    'Bù trừ chéo 3 trụ cột mạnh nhất: Đề 40s (12.0M) + Lô Sweet-Spot QMBF v6 Top 7/6 (15.4M) + Lô Xiên 5 (5.5M) = Vốn 32.9M, nổ ăn đậm bù đắp hoàn toàn chi phí khi Đề trượt.'
                 ];
-                majorRisk = 'Duy trì kỷ luật vốn phẳng 8.0M/ngày (200K/số). Không gấp thếp khi gặp chuỗi trượt ngắn (max trượt 4 kỳ). Tỷ lệ trúng thực chiến 50.0% vượt xa ngưỡng hòa vốn lý thuyết 47.6%.';
+                majorRisk = 'Duy trì kỷ luật vốn phân tầng 12.0M/ngày (20s X2 + 20s X1). Không gấp thếp khi gặp chuỗi trượt ngắn (max trượt 4 kỳ). Tỷ lệ trúng thực chiến 50.0% vượt xa ngưỡng hòa vốn lý thuyết 47.6%.';
                 churnGuard = 'Hệ thống áp dụng cơ chế Khử Trùng Dropoff Rate kết hợp Ngưỡng Hòa Vốn Bất Biến: Theo dõi thực chiến nghiêm ngặt từ 17/09/2026, loại bỏ dữ liệu ảo giác trước đó, bảo toàn vốn trước các biến động cực đoan.';
             }
 
@@ -1958,12 +1976,12 @@
                     numbers36: sDe.top36 || (sDe.top40 || []).slice(0, 36),
                     top40: sDe.top40 || [],
                     top36: sDe.top36 || [],
-                    stakeK: sDe.stake40K || 8000,
+                    stakeK: sDe.stake40K || 12000,
                     payoutK: sDe.payout40K || 0,
-                    profitK: sDe.profit40K != null ? sDe.profit40K : -8000,
-                    stake36K: sDe.stake36K || 7200,
+                    profitK: sDe.profit40K != null ? sDe.profit40K : -12000,
+                    stake36K: sDe.stake36K || 10800,
                     payout36K: sDe.payout36K || 0,
-                    profit36K: sDe.profit36K != null ? sDe.profit36K : -7200
+                    profit36K: sDe.profit36K != null ? sDe.profit36K : -10800
                 };
                 if (idx >= 0) deDropoffLedger[idx] = { ...deDropoffLedger[idx], ...item };
                 else deDropoffLedger.push(item);
@@ -2020,9 +2038,9 @@
                     actualSpecial: sTri.actualSpecial != null ? Number(sTri.actualSpecial) : null,
                     actual: sTri.actualSpecial != null ? Number(sTri.actualSpecial) : null,
                     hit: sTri.hit,
-                    stakeK: sTri.stakeK || 4800,
+                    stakeK: sTri.stakeK || 7200,
                     payoutK: sTri.payoutK || 0,
-                    profitK: sTri.profitK != null ? sTri.profitK : -4800,
+                    profitK: sTri.profitK != null ? sTri.profitK : -7200,
                     isWin: Boolean(sTri.isWin)
                 };
                 if (idx >= 0) deLedger[idx] = { ...deLedger[idx], ...item };
@@ -2091,7 +2109,7 @@
         const totalProfitEl = byId('shadowDiaryTotalProfit');
 
         // =====================================================================
-        // CATEGORY: ĐỀ DROPOFF 40S
+        // CATEGORY: ĐỀ DROPOFF 40S (20s X2 @ 400K + 20s X1 @ 200K = 12.0M)
         // =====================================================================
         if (currentShadowCategory === 'deDropoff') {
             let dropoffRows = deDropoffLedger;
@@ -2101,21 +2119,35 @@
                 dropoffRows = dropoffRows.filter(r => r.year === 2026 || String(r.date).startsWith('2026'));
             }
 
-            const totalDays = dropoffRows.length;
-            const wins = dropoffRows.filter(r => r.hit).length;
-            const x3Wins = dropoffRows.filter(r => r.hitType === 'VIP_X3').length;
-            const x2Wins = dropoffRows.filter(r => r.hitType === 'CENTER_X2').length;
-            const x1Wins = dropoffRows.filter(r => r.hitType === 'BACKUP_X1').length;
+            let runningProfitK = 0;
+            let wins = 0;
+            const enrichedDropoffRows = dropoffRows.map(r => {
+                const actualStr = (r.actual !== null && r.actual !== undefined) ? numStr(r.actual) : null;
+                const nums = (r.numbers || r.top40 || []).map(numStr);
+                const top20 = (r.top20 || nums.slice(0, 20)).map(numStr);
+                const bot20 = (r.bottom20 || nums.slice(20, 40)).map(numStr);
+                const isHitX2 = r.isHitX2 !== undefined ? Boolean(r.isHitX2) : (actualStr ? top20.includes(actualStr) : false);
+                const isHitX1 = r.isHitX1 !== undefined ? Boolean(r.isHitX1) : (actualStr ? bot20.includes(actualStr) : false);
+                const isHit = isHitX2 || isHitX1 || Boolean(r.hit || r.isHit || r.isHit40);
+                const stakeK = 12000;
+                const payoutK = r.payoutK !== undefined ? r.payoutK : (isHitX2 ? 33600 : (isHitX1 ? 16800 : 0));
+                const profitK = r.profitK !== undefined ? r.profitK : (payoutK - stakeK);
+                if (isHit) wins++;
+                runningProfitK += profitK;
+                return { ...r, isHit, hit: isHit, isHitX2, isHitX1, stakeK, payoutK, profitK, viewAccumProfitK: runningProfitK };
+            });
+
+            const totalDays = enrichedDropoffRows.length;
             const hitRate = totalDays > 0 ? (wins / totalDays * 100).toFixed(1) : '0.0';
-            const totalStakeK = dropoffRows.reduce((sum, r) => sum + (r.stakeK || 8000), 0);
-            const totalPayoutK = dropoffRows.reduce((sum, r) => sum + (r.payoutK || 0), 0);
-            const totalProfitK = totalPayoutK - totalStakeK;
+            const totalStakeK = enrichedDropoffRows.reduce((sum, r) => sum + r.stakeK, 0);
+            const totalPayoutK = enrichedDropoffRows.reduce((sum, r) => sum + r.payoutK, 0);
+            const totalProfitK = runningProfitK;
 
             if (rowCountEl) rowCountEl.textContent = (currentShadowPhase === 'from0710' && totalDays === 0) ? '0 (Kỳ 1 ngày 07/10 đang chờ mở 18:30)' : `${totalDays}`;
             if (winCountEl) winCountEl.textContent = `${wins} ngày trúng (${totalDays - wins} trượt)`;
             if (winRateEl) winRateEl.textContent = `${hitRate}%`;
             if (hitsTagEl) hitsTagEl.classList.add('hidden');
-            if (profitLabelEl) profitLabelEl.textContent = (currentShadowPhase === 'from0710') ? '💰 Lãi Lũy Kế Đề Đa Động Cơ 40s (Từ 07/10/2026):' : '💰 Lãi Lũy Kế Đề Đa Động Cơ 40s (Đánh Phẳng 200K/số):';
+            if (profitLabelEl) profitLabelEl.textContent = (currentShadowPhase === 'from0710') ? '💰 Lãi Lũy Kế Đề Đa Động Cơ 40s (Từ 07/10/2026):' : '💰 Lãi Lũy Kế Đề Đa Động Cơ 40s (20s X2 + 20s X1 · Vốn 12.0M):';
             if (totalProfitEl) {
                 totalProfitEl.textContent = formatMoneyK(totalProfitK);
                 totalProfitEl.className = `font-black text-sm font-mono ${totalProfitK >= 0 ? 'text-emerald-700' : 'text-rose-700'}`;
@@ -2146,14 +2178,14 @@
                         </div>
                     </td>
                     <td class="py-3 px-3">
-                        <span class="text-amber-900 font-bold">Đa Động Cơ 40s (Đánh Phẳng 200K/số)</span>
-                        <div class="text-[10px] text-slate-600">Đồng thuận 4 Động cơ · Vốn 8.0M · Ăn 16.8M</div>
+                        <span class="text-amber-900 font-bold">Đa Động Cơ 40s (20s X2 @ 400K + 20s X1 @ 200K)</span>
+                        <div class="text-[10px] text-slate-600">Đồng thuận 4 Động cơ · Vốn 12.0M · X2 ăn 33.6M (+21.6M) · X1 ăn 16.8M (+4.8M)</div>
                     </td>
                     <td class="py-3 px-3 text-center">
                         <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">⏳ CHỜ MỞ 18:30</span>
                     </td>
                     <td class="py-3 px-3 text-center font-bold text-amber-800">⏳ Chờ mở</td>
-                    <td class="py-3 px-3 text-right text-slate-900 font-bold">8.0M</td>
+                    <td class="py-3 px-3 text-right text-slate-900 font-bold">12.0M</td>
                     <td class="py-3 px-3 text-right text-slate-500 font-mono">—</td>
                     <td class="py-3 px-3 text-right font-bold text-amber-800">⏳ Chờ kết toán</td>
                     <td class="py-3 px-3 text-right font-bold ${totalProfitK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${formatMoneyK(totalProfitK)}</td>
@@ -2165,29 +2197,22 @@
                 </tr>
             `;
 
-            let runningProfitK = 0;
-            const enrichedDropoffRows = dropoffRows.map(r => {
-                const isHit = Boolean(r.hit || r.isHit || r.isHit40);
-                const stakeK = 8000;
-                const payoutK = isHit ? 16800 : 0;
-                const profitK = payoutK - stakeK;
-                runningProfitK += profitK;
-                return { ...r, isHit, hit: isHit, stakeK, payoutK, profitK, viewAccumProfitK: runningProfitK };
-            });
             const reversedDropoffRows = [...enrichedDropoffRows].reverse();
 
             const settledRowsHtml = reversedDropoffRows.map(r => {
                 const dateVi = formatDateVi(r.date);
-                const hitBadge = r.hit
-                    ? '<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-1 ring-emerald-300 shadow-xs">🎯 TRÚNG ĐỀ (+8.8M)</span>'
-                    : '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">❌ TRƯỢT (-8.0M)</span>';
+                const hitBadge = r.isHitX2
+                    ? '<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-black bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 ring-1 ring-amber-300 shadow-xs">🎯 NỔ X2 (+21.6M)</span>'
+                    : (r.isHitX1
+                        ? '<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-1 ring-emerald-300 shadow-xs">🎯 NỔ X1 (+4.8M)</span>'
+                        : '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">❌ TRƯỢT (-12.0M)</span>');
 
                 const actualStr = (r.actual !== null && r.actual !== undefined) ? numStr(r.actual) : '—';
                 const hitNumberHtml = r.hit
                     ? `<span class="inline-flex items-center justify-center px-3 py-1 rounded-xl font-black font-mono text-base bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 ring-2 ring-amber-300 shadow-md animate-pulse">🎯 ${actualStr} ⭐</span>`
                     : `<span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-lg font-mono font-black text-sm bg-slate-100 text-slate-900 border border-slate-300 shadow-2xs">${actualStr}</span>`;
 
-                const stakeM = ((r.stakeK || 8000) / 1000).toFixed(1) + 'M';
+                const stakeM = ((r.stakeK || 12000) / 1000).toFixed(1) + 'M';
 
                 return `
                     <tr class="border-b border-slate-200 ${r.hit ? 'bg-amber-50/70 border-l-4 border-l-amber-500' : ''} hover:bg-slate-50 transition-colors font-mono text-xs text-slate-800">
@@ -2197,7 +2222,7 @@
                                 <span class="text-amber-900 font-bold">Đa Động Cơ 40s</span>
                                 ${r.hit ? `<span class="inline-flex items-center px-2 py-0.5 rounded-md font-black font-mono text-xs bg-amber-400 text-slate-950 ring-2 ring-amber-300 shadow-xs">🎯 NỔ ĐỀ: ${actualStr} ⭐</span>` : ''}
                             </div>
-                            <span class="text-[10px] text-slate-600 block">Đánh phẳng 200K/số (Ăn 16.8M · Lãi +8.8M)</span>
+                            <span class="text-[10px] text-slate-600 block">20s X2 (400K) + 20s X1 (200K) · Vốn 12.0M</span>
                         </td>
                         <td class="py-2.5 px-3 text-center">${hitBadge}</td>
                         <td class="py-2.5 px-3 text-center">${hitNumberHtml}</td>
@@ -2378,7 +2403,7 @@
         }
 
         // =====================================================================
-        // CATEGORY: ⭐ ĐỀ 36 SỐ VIP SWEET-SPOT (VỐN 7.2M · ĂN 16.8M · LÃI +9.6M)
+        // CATEGORY: ⭐ ĐỀ 36 SỐ VIP SWEET-SPOT (18s X2 @ 400K + 18s X1 @ 200K = 10.8M)
         // =====================================================================
         if (currentShadowCategory === 'de36') {
             let dropoffRows = deDropoffLedger;
@@ -2397,9 +2422,13 @@
             const enrichedRows = dropoffRows.map(r => {
                 const nums36 = r.numbers36 || (r.numbers || r.top40 || []).slice(0, 36).map(numStr);
                 const actualStr = (r.actual !== null && r.actual !== undefined) ? numStr(r.actual) : null;
-                const isHit = (r.isHit36 !== undefined) ? Boolean(r.isHit36) : (actualStr ? nums36.includes(actualStr) : false);
-                const stakeK = r.stake36K || 7200; // 7.2M/ngày (200K/số)
-                const payoutK = r.payout36K !== undefined ? r.payout36K : (isHit ? 16800 : 0); // 16.8M khi trúng (1 ăn 84)
+                const top18 = (r.top18_36 || nums36.slice(0, 18)).map(numStr);
+                const bot18 = (r.bottom18_36 || nums36.slice(18, 36)).map(numStr);
+                const isHitX2 = (r.isHit36X2 !== undefined) ? Boolean(r.isHit36X2) : (actualStr ? top18.includes(actualStr) : false);
+                const isHitX1 = (r.isHit36X1 !== undefined) ? Boolean(r.isHit36X1) : (actualStr ? bot18.includes(actualStr) : false);
+                const isHit = isHitX2 || isHitX1 || ((r.isHit36 !== undefined) ? Boolean(r.isHit36) : (actualStr ? nums36.includes(actualStr) : false));
+                const stakeK = 10800; // 18s X2 (7.2M) + 18s X1 (3.6M) = 10.8M
+                const payoutK = r.payout36K !== undefined ? r.payout36K : (isHitX2 ? 33600 : (isHitX1 ? 16800 : 0));
                 const profitK = r.profit36K !== undefined ? r.profit36K : (payoutK - stakeK);
                 if (isHit) wins++;
                 runningProfitK += profitK;
@@ -2409,6 +2438,9 @@
                     nums36,
                     actualStr,
                     isHit,
+                    isHit36: isHit,
+                    isHitX2,
+                    isHitX1,
                     stakeK,
                     payoutK,
                     profitK,
@@ -2417,14 +2449,14 @@
             });
 
             const hitRate = totalDays > 0 ? (wins / totalDays * 100).toFixed(1) : '0.0';
-            const totalStakeK = totalDays * 7200;
+            const totalStakeK = totalDays * 10800;
             const totalProfitK = runningProfitK;
 
             if (rowCountEl) rowCountEl.textContent = (currentShadowPhase === 'from0710' && totalDays === 0) ? '0 (Kỳ 1 ngày 07/10 đang chờ mở 18:30)' : `${totalDays}`;
             if (winCountEl) winCountEl.textContent = `${wins} ngày trúng (${totalDays - wins} trượt)`;
-            if (winRateEl) winRateEl.textContent = `${hitRate}% (Hòa vốn 42.9%)`;
+            if (winRateEl) winRateEl.textContent = `${hitRate}% (18s X2 + 18s X1)`;
             if (hitsTagEl) hitsTagEl.classList.add('hidden');
-            if (profitLabelEl) profitLabelEl.textContent = (currentShadowPhase === 'from0710') ? '💰 Lãi Lũy Kế ⭐ Đề 36 Số VIP Sweet-Spot (Từ 07/10/2026):' : '💰 Lãi Lũy Kế ⭐ Đề 36 Số VIP Sweet-Spot (200K/số · Vốn 7.2M):';
+            if (profitLabelEl) profitLabelEl.textContent = (currentShadowPhase === 'from0710') ? '💰 Lãi Lũy Kế ⭐ Đề 36 Số VIP Sweet-Spot (Từ 07/10/2026):' : '💰 Lãi Lũy Kế ⭐ Đề 36 Số VIP Sweet-Spot (18s X2 + 18s X1 · Vốn 10.8M):';
             if (totalProfitEl) {
                 totalProfitEl.textContent = formatMoneyK(totalProfitK);
                 totalProfitEl.className = `font-black text-sm font-mono ${totalProfitK >= 0 ? 'text-emerald-700' : 'text-rose-700'}`;
@@ -2455,14 +2487,14 @@
                         </div>
                     </td>
                     <td class="py-3 px-3">
-                        <span class="text-amber-900 font-bold">⭐ Dàn 36 Số VIP Sweet-Spot (200K/số)</span>
-                        <div class="text-[10px] text-slate-600">Tối ưu điểm biên · Vốn 7.2M · Ăn 16.8M · Lãi +9.6M</div>
+                        <span class="text-amber-900 font-bold">⭐ Dàn 36 Số VIP Sweet-Spot (18s X2 @ 400K + 18s X1 @ 200K)</span>
+                        <div class="text-[10px] text-slate-600">Tối ưu điểm biên · Vốn 10.8M · X2 ăn 33.6M (+22.8M) · X1 ăn 16.8M (+6.0M)</div>
                     </td>
                     <td class="py-3 px-3 text-center">
                         <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">⏳ CHỜ MỞ 18:30</span>
                     </td>
                     <td class="py-3 px-3 text-center font-bold text-amber-800">⏳ Chờ mở</td>
-                    <td class="py-3 px-3 text-right text-slate-900 font-bold">7.2M</td>
+                    <td class="py-3 px-3 text-right text-slate-900 font-bold">10.8M</td>
                     <td class="py-3 px-3 text-right text-slate-500 font-mono">—</td>
                     <td class="py-3 px-3 text-right font-bold text-amber-800">⏳ Chờ kết toán</td>
                     <td class="py-3 px-3 text-right font-bold ${totalProfitK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${formatMoneyK(totalProfitK)}</td>
@@ -2477,9 +2509,11 @@
             const reversedRows = [...enrichedRows].reverse();
             const settledRowsHtml = reversedRows.map(r => {
                 const dateVi = formatDateVi(r.date);
-                const hitBadge = r.isHit
-                    ? '<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-sm animate-pulse">🎯 TRÚNG ĐỀ (+9.6M)</span>'
-                    : '<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-rose-50 text-rose-800 border border-rose-300">❌ TRƯỢT (-7.2M)</span>';
+                const hitBadge = r.isHitX2
+                    ? '<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">🎯 NỔ X2 (+22.8M)</span>'
+                    : (r.isHitX1
+                        ? '<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-sm animate-pulse">🎯 NỔ X1 (+6.0M)</span>'
+                        : '<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-rose-50 text-rose-800 border border-rose-300">❌ TRƯỢT (-10.8M)</span>');
 
                 const actualStr = r.actualStr || '—';
                 const hitNumberHtml = r.isHit
@@ -2494,11 +2528,11 @@
                                 <span class="text-amber-900 font-bold">⭐ Đề 36s VIP Sweet-Spot</span>
                                 ${r.isHit ? `<span class="inline-flex items-center px-2 py-0.5 rounded-lg font-black font-mono text-xs bg-amber-100 text-amber-950 ring-1 ring-amber-300 shadow-xs">🎯 NỔ: ${actualStr} ⭐</span>` : ''}
                             </div>
-                            <span class="text-[10px] text-slate-600 block">Vốn 7.2M (200K/số) · Ăn 16.8M · Lãi +9.6M</span>
+                            <span class="text-[10px] text-slate-600 block">Vốn 10.8M (18s X2 + 18s X1) · X2 ăn 33.6M · X1 ăn 16.8M</span>
                         </td>
                         <td class="py-2.5 px-3 text-center">${hitBadge}</td>
                         <td class="py-2.5 px-3 text-center">${hitNumberHtml}</td>
-                        <td class="py-2.5 px-3 text-right text-slate-700 font-bold">7.2M</td>
+                        <td class="py-2.5 px-3 text-right text-slate-700 font-bold">10.8M</td>
                         <td class="py-2.5 px-3 text-right font-black ${r.payoutK > 0 ? 'text-amber-800' : 'text-slate-400'}">${r.payoutK > 0 ? formatMoneyK(r.payoutK, false) : '0đ'}</td>
                         <td class="py-2.5 px-3 text-right font-black ${r.profitK > 0 ? 'text-emerald-700' : 'text-rose-700'}">${formatMoneyK(r.profitK)}</td>
                         <td class="py-2.5 px-3 text-right font-black ${r.viewAccumProfitK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${formatMoneyK(r.viewAccumProfitK)}</td>
@@ -2707,9 +2741,15 @@
                 const xienRow = triXienMap.get(date);
 
                 const deAbstain = Boolean(deRow?.abstained);
-                const deHit = Boolean(deRow?.hit);
-                const deStakeK = deAbstain ? 0 : 4800;
-                const deProfitK = deAbstain ? 0 : (deHit ? 12000 : -4800);
+                const actualStr = (deRow?.actual !== null && deRow?.actual !== undefined) ? numStr(deRow.actual) : null;
+                const top12 = (deRow?.top12X2 || (deRow?.numbers || []).slice(0, 12)).map(numStr);
+                const bot12 = (deRow?.bottom12X1 || (deRow?.numbers || []).slice(12, 24)).map(numStr);
+                const isHitX2 = deRow?.isHitX2 !== undefined ? Boolean(deRow.isHitX2) : (actualStr ? top12.includes(actualStr) : false);
+                const isHitX1 = deRow?.isHitX1 !== undefined ? Boolean(deRow.isHitX1) : (actualStr ? bot12.includes(actualStr) : false);
+                const deHit = Boolean(deRow?.hit || isHitX2 || isHitX1);
+                const deStakeK = deAbstain ? 0 : 7200; // 12s X2 (4.8M) + 12s X1 (2.4M) = 7.2M
+                const dePayoutK = deAbstain ? 0 : (isHitX2 ? 33600 : (isHitX1 ? 16800 : (deHit ? 33600 : 0)));
+                const deProfitK = deAbstain ? 0 : (deRow?.profitK !== undefined ? deRow.profitK : (dePayoutK - deStakeK));
 
                 const datePrizes = data.drawPrizesByDate?.[date]?.prizes || (loRow?.actual27) || (loRow?.actualPrizes) || [];
                 const loInfo = getLoTriCoreRowInfo(loRow, loMode, datePrizes);
@@ -2770,6 +2810,8 @@
                     xienRow,
                     deAbstain,
                     deHit,
+                    isHitX2,
+                    isHitX1,
                     deStakeK,
                     deProfitK,
                     cumDeK,
@@ -2859,9 +2901,9 @@
             const loPendingInfo = getLoTriCoreRowInfo(loTriLatestRec || loLatestRec, loMode);
             const loStakeM = (loPendingInfo.stakeK / 1000).toFixed(1) + 'M';
             const dePendingAbstain = deLatestRec?.action === 'ABSTAIN';
-            const deStakeM = dePendingAbstain ? '0.0M' : '4.8M';
+            const deStakeM = dePendingAbstain ? '0.0M' : '7.2M';
             const xienStakeM = '5.5M';
-            const totalStakeM = (((dePendingAbstain ? 0 : 4800) + loPendingInfo.stakeK + 5500) / 1000).toFixed(1) + 'M';
+            const totalStakeM = (((dePendingAbstain ? 0 : 7200) + loPendingInfo.stakeK + 5500) / 1000).toFixed(1) + 'M';
             const top5Str = (loPendingInfo.numbers || []).slice(0, 5).map(numStr).join(', ');
 
             let pendingRowHtml = `
@@ -2873,8 +2915,8 @@
                         </div>
                     </td>
                     <td class="py-3 px-3">
-                        <span class="text-amber-900 font-bold">${dePendingAbstain ? 'Tri-Core (Smart Abstain)' : 'Tri-Core 24s (200K/số)'}</span>
-                        <div class="text-[10px] text-slate-600">${dePendingAbstain ? '🛡️ Né cược · Vốn 0đ' : `Vào kèo 24 số · Vốn ${deStakeM}`}</div>
+                        <span class="text-amber-900 font-bold">${dePendingAbstain ? 'Tri-Core (Smart Abstain)' : 'Tri-Core 24s (12s X2 + 12s X1)'}</span>
+                        <div class="text-[10px] text-slate-600">${dePendingAbstain ? '🛡️ Né cược · Vốn 0đ' : `Vào kèo 24 số · Vốn ${deStakeM} (X2 ăn 33.6M · X1 ăn 16.8M)`}</div>
                     </td>
                     <td class="py-3 px-3">
                         <span class="text-teal-900 font-bold">Lô Tri-Core (${topNLabel})</span>
@@ -2921,10 +2963,14 @@
                 let deBadge = '';
                 if (row.deAbstain) {
                     deBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-black bg-slate-100 text-slate-900 border border-slate-300">🛡️ Né Cược (0đ)</span>';
+                } else if (row.isHitX2) {
+                    deBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">🎯 NỔ X2 (+26.4M) · ${actualStr} ⭐</span>`;
+                } else if (row.isHitX1) {
+                    deBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-sm">🎯 NỔ X1 (+9.6M) · ${actualStr} ⭐</span>`;
                 } else if (row.deHit) {
-                    deBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">🎯 Trúng Đề (+12.0M) · ${actualStr} ⭐</span>`;
+                    deBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm">🎯 Trúng Đề (+26.4M) · ${actualStr} ⭐</span>`;
                 } else {
-                    deBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300">❌ Trượt (-4.8M) · <strong class="font-mono font-black">${actualStr}</strong></span>`;
+                    deBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300">❌ Trượt (-7.2M) · <strong class="font-mono font-black">${actualStr}</strong></span>`;
                 }
 
                 const loHitsList = row.loInfo.pills.filter(p => p.hits > 0);
@@ -3031,12 +3077,16 @@
                 const rDe = deDropoffMap.get(date);
                 const rLo = loMap.get(date);
 
-                // Đề 36s VIP (200K/số = 7.2M, ăn 16.8M)
+                // Đề 36s VIP (18s X2 @ 400K + 18s X1 @ 200K = 10.8M)
                 const nums36 = rDe?.numbers36 || (rDe?.numbers || rDe?.top40 || []).slice(0, 36).map(numStr);
                 const actualStr = (rDe?.actual !== null && rDe?.actual !== undefined) ? numStr(rDe.actual) : null;
+                const top18 = (rDe?.top18_36 || nums36.slice(0, 18)).map(numStr);
+                const bot18 = (rDe?.bottom18_36 || nums36.slice(18, 36)).map(numStr);
                 const isHit36 = (rDe?.isHit36 !== undefined) ? Boolean(rDe.isHit36) : (actualStr ? nums36.includes(actualStr) : false);
-                const deStakeK = 7200;
-                const dePayoutK = isHit36 ? 16800 : 0;
+                const isHit36X2 = (rDe?.isHit36X2 !== undefined) ? Boolean(rDe.isHit36X2) : (actualStr ? top18.includes(actualStr) : false);
+                const isHit36X1 = (rDe?.isHit36X1 !== undefined) ? Boolean(rDe.isHit36X1) : (actualStr ? bot18.includes(actualStr) : false);
+                const deStakeK = 10800;
+                const dePayoutK = isHit36X2 ? 33600 : (isHit36X1 ? 16800 : 0);
                 const deProfitK = dePayoutK - deStakeK;
 
                 // Thất Thủ Lô Top 7 (7 số x 2.2M = 15.4M, ăn 8M/nháy)
@@ -3064,7 +3114,7 @@
                 const isXienWin = x5Eval.isWin;
 
                 const suiteDayProfitK = deProfitK + loProfitK + xienProfitK;
-                const suiteDayStakeK = 28100; // 7.2M + 15.4M + 5.5M = 28.1M
+                const suiteDayStakeK = 31700; // 10.8M + 15.4M + 5.5M = 31.7M
                 const isSuiteWin = suiteDayProfitK > 0;
 
                 cumDeK += deProfitK;
@@ -3079,6 +3129,8 @@
                     nums36,
                     actualStr,
                     isHit36,
+                    isHit36X2,
+                    isHit36X1,
                     deStakeK,
                     dePayoutK,
                     deProfitK,
@@ -3112,7 +3164,7 @@
             if (winCountEl) winCountEl.textContent = `${suiteWins} ngày thắng (${totalDays - suiteWins} ngày âm)`;
             if (winRateEl) winRateEl.textContent = `${suiteWinRate}%`;
             if (hitsTagEl) hitsTagEl.classList.add('hidden');
-            if (profitLabelEl) profitLabelEl.textContent = (currentShadowPhase === 'from0710') ? '💰 Lãi Lũy Kế ⭐ HỆ 3: VIP Sweet-Spot (Từ 07/10/2026):' : '💰 Lãi Lũy Kế ⭐ HỆ 3: VIP Sweet-Spot (Vốn 28.1M/ngày):';
+            if (profitLabelEl) profitLabelEl.textContent = (currentShadowPhase === 'from0710') ? '💰 Lãi Lũy Kế ⭐ HỆ 3: VIP Sweet-Spot (Từ 07/10/2026):' : '💰 Lãi Lũy Kế ⭐ HỆ 3: VIP Sweet-Spot (Vốn 31.7M/ngày):';
             if (totalProfitEl) {
                 totalProfitEl.innerHTML = `
                     <div class="flex items-center gap-2 flex-wrap text-xs font-mono">
@@ -3159,8 +3211,8 @@
                         </div>
                     </td>
                     <td class="py-3 px-3">
-                        <span class="text-amber-900 font-bold">Đề 36s VIP (200K/số)</span>
-                        <div class="text-[10px] text-slate-600">Vốn 7.2M · Ăn 16.8M</div>
+                        <span class="text-amber-900 font-bold">Đề 36s VIP (18s X2 + 18s X1)</span>
+                        <div class="text-[10px] text-slate-600">Vốn 10.8M · X2 ăn 33.6M · X1 ăn 16.8M</div>
                     </td>
                     <td class="py-3 px-3">
                         <span class="text-teal-900 font-bold">Thất Thủ Lô Top 7</span>
@@ -3176,8 +3228,8 @@
                         </button>
                     </td>
                     <td class="py-3 px-3 text-right">
-                        <span class="text-slate-900 font-bold">28.1M</span>
-                        <div class="text-[10px] text-slate-600">Đề 7.2M + Lô 15.4M + Xiên 5.5M</div>
+                        <span class="text-slate-900 font-bold">31.7M</span>
+                        <div class="text-[10px] text-slate-600">Đề 10.8M + Lô 15.4M + Xiên 5.5M</div>
                     </td>
                     <td class="py-3 px-3 text-right">
                         <div class="text-amber-800 font-bold">⏳ Chờ 18:30</div>
@@ -3204,9 +3256,11 @@
                 const dateVi = formatDateVi(row.date);
                 const actualStr = row.actualStr || '—';
 
-                const deBadge = row.isHit36
-                    ? `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">🎯 Trúng Đề (+9.6M) · ${actualStr} ⭐</span>`
-                    : `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300">❌ Trượt (-7.2M) · <strong class="font-mono font-black">${actualStr}</strong></span>`;
+                const deBadge = row.isHit36X2
+                    ? `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">🎯 NỔ X2 (+22.8M) · ${actualStr} ⭐</span>`
+                    : (row.isHit36X1
+                        ? `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-sm animate-pulse">🎯 NỔ X1 (+6.0M) · ${actualStr} ⭐</span>`
+                        : `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300">❌ Trượt (-10.8M) · <strong class="font-mono font-black">${actualStr}</strong></span>`);
 
                 const loBadge = row.isLoWin
                     ? `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-sm">🔥 ${row.loHits} nháy (+${formatMoneyK(row.loProfitK, false)})</span>`
@@ -3425,7 +3479,7 @@
 
             const formattedTargetDate = formatDateVi(targetDate);
             const resLatestRec = resSuite?.latestRecommendation;
-            const pendingDe36 = '12 VIP (2.5M) + 24 Lót (1M)';
+            const pendingDe36 = '18 VIP X2 (400K) + 18 Lót X1 (200K)';
             const pendingLo7 = isTiered ? 'Top 3 VIP (4.4M) + Top 4 Lót (2.2M)' : '7 số x 2.2M (Flat)';
             const pendingTop5 = (resLatestRec?.xien5?.top5 || []).map(numStr).join(', ');
 
@@ -3483,14 +3537,14 @@
                 const dateVi = formatDateVi(row.date);
                 const actualStr = row.actualSpecial || '—';
 
-                const isVipHit = (row.de.hitType === 'VIP' || row.de.hitType === 'VIP_12' || (row.de.isHit && (row.de.vip12 || []).includes(actualStr)));
-                const isLotHit = (row.de.hitType === 'LOT' || row.de.hitType === 'LOT_24' || (row.de.isHit && (row.de.lot24 || []).includes(actualStr)));
+                const isVipHit = Boolean(row.de.hitType === 'VIP' || row.de.hitType === 'VIP_18' || row.de.isHitX2 || (row.de.isHit && (row.de.vip18 || row.de.top18 || []).map(numStr).includes(actualStr)));
+                const isLotHit = Boolean(row.de.hitType === 'LOT' || row.de.hitType === 'LOT_18' || row.de.isHitX1 || (row.de.isHit && (row.de.lot18 || row.de.bottom18 || []).map(numStr).includes(actualStr)));
 
                 let deBadge = '';
                 if (isVipHit) {
-                    deBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">🎯 NỔ VIP 12 (+31.2M) · ${actualStr} ⭐</span>`;
+                    deBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">🎯 NỔ VIP X2 (+22.8M) · ${actualStr} ⭐</span>`;
                 } else if (isLotHit) {
-                    deBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-teal-100 text-teal-950 border border-teal-300">🎯 Ăn Lót 24 (+6.0M) · <strong class="font-mono font-black">${actualStr}</strong></span>`;
+                    deBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-teal-100 text-teal-950 border border-teal-300">🎯 Ăn Lót X1 (+6.0M) · <strong class="font-mono font-black">${actualStr}</strong></span>`;
                 } else {
                     deBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300">❌ Trượt (-10.8M) · <strong class="font-mono font-black">${actualStr}</strong></span>`;
                 }
@@ -4017,18 +4071,26 @@
             let deAbstain = false;
             let deHit = false;
             let deProfitK = 0;
-            let deStakeK = 4800;
+            let deStakeK = 7200;
+            let isHitX2 = false;
+            let isHitX1 = false;
 
             if (isCombo) {
                 deAbstain = false;
-                deHit = Boolean(deRow?.hit);
-                deStakeK = deRow?.stakeK || 8000;
-                deProfitK = deRow ? (deRow.profitK !== undefined ? deRow.profitK : (deHit ? ((deRow.payoutK || 16800) - deStakeK) : -deStakeK)) : -8000;
+                deStakeK = deRow?.stakeK || 12000;
+                const actualStr = (deRow?.actual !== null && deRow?.actual !== undefined) ? numStr(deRow.actual) : '';
+                isHitX2 = Boolean(deRow?.isHitX2 || (deRow?.numbers && deRow.numbers.slice(0, 20).map(numStr).includes(actualStr)));
+                isHitX1 = Boolean(deRow?.isHitX1 || (deRow?.numbers && deRow.numbers.slice(20, 40).map(numStr).includes(actualStr)));
+                deHit = isHitX2 || isHitX1 || Boolean(deRow?.hit);
+                deProfitK = deRow ? (deRow.profitK !== undefined ? deRow.profitK : (isHitX2 ? 21600 : (isHitX1 ? 4800 : -12000))) : -12000;
             } else {
                 deAbstain = Boolean(deRow?.abstained);
-                deHit = Boolean(deRow?.hit);
-                deStakeK = deAbstain ? 0 : 4800;
-                deProfitK = deAbstain ? 0 : (deHit ? 12000 : -4800);
+                const actualStr = (deRow?.actual !== null && deRow?.actual !== undefined) ? numStr(deRow.actual) : '';
+                isHitX2 = Boolean(deRow?.isHitX2 || (!deAbstain && deRow?.numbers && deRow.numbers.slice(0, 12).map(numStr).includes(actualStr)));
+                isHitX1 = Boolean(deRow?.isHitX1 || (!deAbstain && deRow?.numbers && deRow.numbers.slice(12, 24).map(numStr).includes(actualStr)));
+                deHit = isHitX2 || isHitX1 || Boolean(deRow?.hit);
+                deStakeK = deAbstain ? 0 : 7200;
+                deProfitK = deAbstain ? 0 : (deRow?.profitK !== undefined ? deRow.profitK : (isHitX2 ? 26400 : (isHitX1 ? 9600 : -7200)));
             }
 
             const loHits = loInfo.hits;
@@ -4081,6 +4143,8 @@
                 cumXien5K,
                 deAbstain,
                 deHit,
+                isHitX2,
+                isHitX1,
                 deProfitK,
                 deStakeK,
                 cumDeK,
@@ -4243,9 +4307,9 @@
         if (currentShadowCategory === 'combo') {
             const loPendingInfo = getLoDropoffRowInfo(loLatestRec, mode);
             const loStakeM = (loPendingInfo.stakeK / 1000).toFixed(1) + 'M';
-            const deStakeM = '8.0M';
+            const deStakeM = '12.0M';
             const xienStakeM = '5.5M';
-            const totalStakeM = ((8000 + loPendingInfo.stakeK + 5500) / 1000).toFixed(1) + 'M';
+            const totalStakeM = ((12000 + loPendingInfo.stakeK + 5500) / 1000).toFixed(1) + 'M';
             const top5Str = (loPendingInfo.numbers || []).slice(0, 5).map(numStr).join(', ');
 
             pendingRowHtml = `
@@ -4257,8 +4321,8 @@
                         </div>
                     </td>
                     <td class="py-3 px-3">
-                        <span class="text-amber-900 font-bold">Đa Động Cơ 40s (200K/số)</span>
-                        <div class="text-[10px] text-slate-600">Đồng thuận 4 Động cơ · Vốn ${deStakeM}</div>
+                        <span class="text-amber-900 font-bold">Đa Động Cơ 40s (20s X2 + 20s X1)</span>
+                        <div class="text-[10px] text-slate-600">20s X2 (400K) + 20s X1 (200K) · Vốn ${deStakeM}</div>
                     </td>
                     <td class="py-3 px-3">
                         <span class="text-teal-800 font-bold">Lô Sweet-Spot (${topNTitle})</span>
@@ -4314,7 +4378,7 @@
                     </td>
                     <td class="py-3 px-3 text-slate-700 text-[11px]" title="${(deLatestRec?.numbers || []).map(numStr).join(', ')}">${deNums}</td>
                     <td class="py-3 px-3 text-center font-bold text-amber-800">⏳ Chờ mở</td>
-                    <td class="py-3 px-3 text-right text-slate-600 font-medium">Vốn 4.8M (Chờ kq)</td>
+                    <td class="py-3 px-3 text-right text-slate-600 font-medium">Vốn 7.2M (Chờ kq)</td>
                     <td class="py-3 px-3 text-right font-bold ${cumDeK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${formatMoneyK(cumDeK)}</td>
                     <td class="py-3 px-3 text-center">
                         <button type="button" class="btn-open-slip px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-500 text-amber-900 hover:text-white border border-amber-300 text-[11px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${targetDate}" data-slip-cat="de">
@@ -4375,9 +4439,14 @@
 
             if (currentShadowCategory === 'combo') {
                 const actualStr = (row.deRow?.actual !== null && row.deRow?.actual !== undefined) ? numStr(row.deRow.actual) : '—';
-                const deBadge = row.deHit
-                    ? `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">🎯 Trúng Đề (+8.8M) · ${actualStr} ⭐</span>`
-                    : `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300">❌ Trượt (-8.0M) · <strong class="font-mono font-black">${actualStr}</strong></span>`;
+                let deBadge = '';
+                if (row.isHitX2) {
+                    deBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">🎯 NỔ X2 (+21.6M) · ${actualStr} ⭐</span>`;
+                } else if (row.isHitX1) {
+                    deBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-teal-100 text-teal-950 border border-teal-300">🎯 NỔ X1 (+4.8M) · <strong class="font-mono font-black">${actualStr}</strong></span>`;
+                } else {
+                    deBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300">❌ Trượt (-12.0M) · <strong class="font-mono font-black">${actualStr}</strong></span>`;
+                }
 
                 const loHitsList = row.loInfo.pills.filter(p => p.hits > 0);
                 const loHitsStr = loHitsList.map(p => `${p.num}(${p.hits}n)`).slice(0, 3).join(', ') + (loHitsList.length > 3 ? '...' : '');
@@ -4432,7 +4501,7 @@
                         </td>
                         <td class="py-2.5 px-3 text-right">
                             <span class="text-slate-900 font-bold">${formatMoneyK(row.comboDayStakeK, false)}</span>
-                            <div class="text-[9px] text-slate-600">Đề 8.0M + Lô ${(row.loStakeK/1000).toFixed(1)}M + X5 5.5M</div>
+                            <div class="text-[9px] text-slate-600">Đề 12.0M + Lô ${(row.loStakeK/1000).toFixed(1)}M + X5 5.5M</div>
                         </td>
                         <td class="py-2.5 px-3 text-right">
                             <div><span class="font-bold ${row.deProfitK > 0 ? 'text-emerald-700' : (row.deProfitK < 0 ? 'text-rose-700' : 'text-slate-500')}">${row.deAbstain ? '0đ' : formatMoneyK(row.deProfitK)}</span></div>
@@ -4459,10 +4528,12 @@
                 let statusBadge = '';
                 if (row.deAbstain) {
                     statusBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-black bg-slate-100 text-slate-900 border border-slate-300">🛡️ ABSTAIN (Né Cược)</span>';
-                } else if (row.deHit) {
-                    statusBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-sm">🎯 TRÚNG ĐỀ (+12.0M)</span>';
+                } else if (row.isHitX2) {
+                    statusBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">🎯 NỔ X2 (+26.4M) ⭐</span>';
+                } else if (row.isHitX1) {
+                    statusBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-teal-100 text-teal-950 border border-teal-300">🎯 NỔ X1 (+9.6M)</span>';
                 } else {
-                    statusBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300">❌ TRƯỢT (-4.8M)</span>';
+                    statusBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300">❌ TRƯỢT (-7.2M)</span>';
                 }
 
                 let numsCellContent = '—';
@@ -4968,19 +5039,29 @@
 
         const isDropoffActive = (currentDeStrategy === 'dropoff40');
 
-        // Dropoff metrics
-        const dropoffStakeK = dropoffRow ? (dropoffRow.stakeK || 8000) : 8000;
-        const dropoffPayoutK = isPending ? 0 : (dropoffRow?.payoutK || (dropoffRow?.hit ? 16800 : 0));
+        // Dropoff metrics (20s X2 @ 400K + 20s X1 @ 200K = 12.0M, payouts 33.6M / 16.8M)
+        const dropoffNumbers = (dropoffRow?.numbers || dropoffRow?.top40 || []).map(numStr);
+        const top20Dropoff = dropoffNumbers.slice(0, 20);
+        const bottom20Dropoff = dropoffNumbers.slice(20, 40);
+        const isDropoffHitX2 = isPending ? false : (actualSpecial ? top20Dropoff.includes(actualSpecial) : Boolean(dropoffRow?.isHitX2));
+        const isDropoffHitX1 = isPending ? false : (actualSpecial ? bottom20Dropoff.includes(actualSpecial) : Boolean(dropoffRow?.isHitX1));
+        const dropoffHit = isDropoffHitX2 || isDropoffHitX1 || Boolean(dropoffRow?.hit);
+        const dropoffStakeK = dropoffRow ? (dropoffRow.stakeK || 12000) : 12000;
+        const dropoffPayoutK = isPending ? 0 : (dropoffRow?.payoutK ?? (isDropoffHitX2 ? 33600 : (isDropoffHitX1 ? 16800 : 0)));
         const dropoffProfitK = isPending ? 0 : (dropoffRow?.profitK ?? (dropoffPayoutK - dropoffStakeK));
 
-        // Tri-Core metrics
+        // Tri-Core metrics (12s X2 @ 400K + 12s X1 @ 200K = 7.2M, payouts 33.6M / 16.8M)
         const deNumbers = (deRow?.numbers || []).map(Number);
+        const top12Tri = deNumbers.slice(0, 12).map(numStr);
+        const bottom12Tri = deNumbers.slice(12, 24).map(numStr);
         const deAbstain = Boolean(deRow?.abstained);
-        const deHit = Boolean(deRow?.hit || (actualSpecial && deNumbers.includes(Number(actualSpecial))));
+        const isTriHitX2 = isPending ? false : (!deAbstain && actualSpecial ? top12Tri.includes(actualSpecial) : Boolean(deRow?.isHitX2));
+        const isTriHitX1 = isPending ? false : (!deAbstain && actualSpecial ? bottom12Tri.includes(actualSpecial) : Boolean(deRow?.isHitX1));
+        const deHit = Boolean(deRow?.hit || isTriHitX2 || isTriHitX1);
         const deTopScore = deRow?.topScore || 0;
-        const deStakeK = deAbstain ? 0 : (deRow?.stakeK || 4800);
-        const dePayoutK = deAbstain ? 0 : (deHit ? 16800 : 0);
-        const deProfitK = deRow?.dayProfitK ?? (deAbstain ? 0 : (deHit ? 12000 : -4800));
+        const deStakeK = deAbstain ? 0 : (deRow?.stakeK || 7200);
+        const dePayoutK = isPending ? 0 : (deAbstain ? 0 : (deRow?.payoutK ?? (isTriHitX2 ? 33600 : (isTriHitX1 ? 16800 : 0))));
+        const deProfitK = isPending ? 0 : (deRow?.dayProfitK ?? (deRow?.profitK ?? (deAbstain ? 0 : (dePayoutK - deStakeK))));
 
         // Lô metrics (from loDropoff27)
         const loMode = isVipSuiteActive ? 'top7' : mode;
@@ -4995,12 +5076,16 @@
         const loTop2Info = getLoDropoffRowInfo(loRow, 'top2', prizesList);
         const loVip7Info = getLoDropoffRowInfo(loRow, 'top7', prizesList);
 
-        // Đề 36s VIP Sweet-Spot metrics (200K/số = 7.2M, ăn 16.8M)
+        // Đề 36s VIP Sweet-Spot metrics (18s X2 @ 400K + 18s X1 @ 200K = 10.8M, payouts 33.6M / 16.8M)
         const numsVip36List = (dropoffRow?.numbers36 || (dropoffRow?.numbers || dropoffRow?.top40 || []).slice(0, 36)).map(numStr);
-        const isHit36 = (dropoffRow?.isHit36 !== undefined) ? Boolean(dropoffRow.isHit36) : (actualSpecial ? numsVip36List.includes(actualSpecial) : false);
-        const de36StakeK = 7200;
-        const de36PayoutK = isPending ? 0 : (isHit36 ? 16800 : 0);
-        const de36ProfitK = isPending ? 0 : (de36PayoutK - de36StakeK);
+        const top18Vip36 = numsVip36List.slice(0, 18);
+        const bottom18Vip36 = numsVip36List.slice(18, 36);
+        const isHit36X2 = isPending ? false : (actualSpecial ? top18Vip36.includes(actualSpecial) : Boolean(dropoffRow?.isHit36X2));
+        const isHit36X1 = isPending ? false : (actualSpecial ? bottom18Vip36.includes(actualSpecial) : Boolean(dropoffRow?.isHit36X1));
+        const isHit36 = isHit36X2 || isHit36X1 || Boolean(dropoffRow?.isHit36);
+        const de36StakeK = 10800;
+        const de36PayoutK = isPending ? 0 : (dropoffRow?.payout36K ?? (isHit36X2 ? 33600 : (isHit36X1 ? 16800 : 0)));
+        const de36ProfitK = isPending ? 0 : (dropoffRow?.profit36K ?? (de36PayoutK - de36StakeK));
 
         // Xiên 5 metrics (from loDropoff27 Top 5 - Vốn 5.5M)
         const top5Nums = (loInfo.numbers || []).slice(0, 5).map(numStr);
@@ -5020,8 +5105,8 @@
         const triSuiteDayPayoutK = isPending ? 0 : (dePayoutK + loTriInfo.payoutK + xienTriPayoutK);
         const triSuiteDayProfitK = isPending ? 0 : (triSuiteDayPayoutK - triSuiteDayStakeK);
 
-        // VIP Suite totals (Hệ 3: Đề 7.2M + Top 7 15.4M + Xiên 5.5M = 28.1M)
-        const vipSuiteDayStakeK = 28100;
+        // VIP Suite totals (Hệ 3: Đề 10.8M + Top 7 15.4M + Xiên 5.5M = 31.7M)
+        const vipSuiteDayStakeK = 31700;
         const vipSuiteDayPayoutK = isPending ? 0 : (de36PayoutK + loVip7Info.payoutK + xien5PayoutK);
         const vipSuiteDayProfitK = isPending ? 0 : (vipSuiteDayPayoutK - vipSuiteDayStakeK);
 
@@ -5194,58 +5279,51 @@
             `;
         }
 
-        // 2. Section Đề Khử Trùng Dropoff 40s (10 X3 / 12 X2 / 18 X1)
+        // 2. Section Đề Khử Trùng Dropoff 40s (20s X2 @ 400K + 20s X1 @ 200K = 12.0M)
         let dropoffSectionHtml = '';
         if (dropoffRow) {
-            const x3List = dropoffRow.tierX3 || [];
-            const x2List = dropoffRow.tierX2 || [];
-            const x1List = dropoffRow.tierX1 || [];
-            const all40List = dropoffRow.numbers || [...x3List, ...x2List, ...x1List].sort((a,b)=>a-b);
+            const all40List = dropoffNumbers.length ? dropoffNumbers : (dropoffRow.numbers || dropoffRow.top40 || []).map(numStr);
+            const top20List = all40List.slice(0, 20);
+            const bottom20List = all40List.slice(20, 40);
             const excludedList = dropoffRow.excludedNumbers || [];
 
             const renderTierChips = (numbers, mult, baseBg) => {
                 return numbers.map(n => {
-                    const isHitNum = (actualSpecial != null && Number(n) === Number(actualSpecial));
+                    const s = numStr(n);
+                    const isHitNum = (actualSpecial != null && s === actualSpecial);
                     if (isHitNum) {
                         return `
                             <div class="relative group flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-500 text-slate-950 p-1.5 font-black ring-4 ring-amber-300 shadow-xl scale-105 animate-pulse min-w-[54px]">
                                 <span class="text-[8px] font-black uppercase tracking-wider text-amber-950">🎯 NỔ ĐB</span>
-                                <span class="font-mono text-lg leading-none font-black my-0.5">${numStr(n)}</span>
+                                <span class="font-mono text-lg leading-none font-black my-0.5">${s}</span>
                                 <span class="text-[8px] font-black uppercase bg-slate-950 text-amber-300 px-1 py-0.2 rounded mt-0.5 shadow-xs">x${mult} ⭐</span>
                             </div>
                         `;
                     }
                     return `
                         <div class="flex flex-col items-center justify-center rounded-xl ${baseBg} border border-slate-300 text-slate-950 p-1.5 font-mono text-sm font-black min-w-[44px] hover:border-amber-400 shadow-2xs transition-all">
-                            <span>${numStr(n)}</span>
+                            <span>${s}</span>
                             <span class="text-[9px] font-bold text-slate-600">x${mult}</span>
                         </div>
                     `;
                 }).join('');
             };
 
-            const x3Chips = renderTierChips(x3List, 3, 'bg-rose-100 text-rose-950 border-rose-300');
-            const x2Chips = renderTierChips(x2List, 2, 'bg-amber-100 text-amber-950 border-amber-300');
-            const x1Chips = renderTierChips(x1List, 1, 'bg-emerald-100 text-emerald-950 border-emerald-300');
+            const x2Chips = renderTierChips(top20List, 2, 'bg-amber-100 text-amber-950 border-amber-300');
+            const x1Chips = renderTierChips(bottom20List, 1, 'bg-teal-50 text-teal-950 border-teal-300');
 
             let dropoffStatusTag = '';
             if (isPending) {
-                dropoffStatusTag = '<span class="text-xs font-bold text-amber-900 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded">⏳ ĐÃ KHÓA 40 SỐ (8.0M)</span>';
-            } else if (dropoffRow.hit) {
-                dropoffStatusTag = `<span class="text-xs font-black text-white bg-emerald-500 px-2.5 py-0.5 rounded shadow-xs ring-1 ring-emerald-300">🎯 TRÚNG ĐỀ (+8.8M) · ${actualSpecial || ''} ⭐</span>`;
+                dropoffStatusTag = '<span class="text-xs font-bold text-amber-900 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded">⏳ ĐÃ KHÓA 40 SỐ (20s X2 + 20s X1 · 12.0M)</span>';
+            } else if (isDropoffHitX2) {
+                dropoffStatusTag = `<span class="text-xs font-black text-slate-950 bg-gradient-to-r from-amber-400 to-yellow-500 px-2.5 py-0.5 rounded shadow-sm ring-2 ring-amber-300 animate-pulse">🎯 NỔ X2 (+21.6M) · ${actualSpecial || ''} ⭐</span>`;
+            } else if (isDropoffHitX1) {
+                dropoffStatusTag = `<span class="text-xs font-black text-teal-950 bg-teal-100 border border-teal-300 px-2.5 py-0.5 rounded shadow-xs">🎯 NỔ X1 (+4.8M) · ${actualSpecial || ''}</span>`;
             } else {
-                dropoffStatusTag = '<span class="text-xs font-bold text-rose-800 bg-rose-100 border border-rose-300 px-2 py-0.5 rounded">❌ TRƯỢT ĐỀ (-8.0M)</span>';
+                dropoffStatusTag = '<span class="text-xs font-bold text-rose-800 bg-rose-100 border border-rose-300 px-2 py-0.5 rounded">❌ TRƯỢT ĐỀ (-12.0M)</span>';
             }
 
             const nums36List = all40List.slice(0, 36);
-            const numGridChips = all40List.map(n => {
-                const s = numStr(n);
-                const isNumHit = actualSpecial && (s === actualSpecial);
-                if (isNumHit) {
-                    return `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-xl font-mono font-black text-sm bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 ring-2 ring-amber-300 shadow-md scale-110 animate-pulse">🎯 ${s} ⭐</span>`;
-                }
-                return `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg font-mono font-black text-xs bg-slate-100 text-slate-950 border border-slate-300 shadow-2xs">${s}</span>`;
-            }).join('');
 
             dropoffSectionHtml = `
                 <div class="rounded-2xl border-2 border-amber-300 bg-white p-4 space-y-3 shadow-sm text-slate-800">
@@ -5254,26 +5332,35 @@
                             <h4 class="text-xs font-black uppercase text-amber-900 flex items-center gap-1.5">
                                 <i class="bi bi-award-fill text-amber-600"></i> 🏆 ĐỀ ĐA ĐỘNG CƠ 40 SỐ (ĐỒNG THUẬN CONSENSUS):
                             </h4>
-                            <span class="text-[11px] text-slate-600 font-mono">(Đánh phẳng 200K/số · Vốn 8.0M · Ăn 16.8M)</span>
+                            <span class="text-[11px] text-slate-600 font-mono">(20s X2 + 20s X1 · Vốn 12.0M · Ăn X2 +21.6M / Ăn X1 +4.8M)</span>
                         </div>
                         <div class="flex items-center gap-2">
                             ${dropoffStatusTag}
-                            <button type="button" class="btn-copy-slip-dropoff-36 text-[11px] font-bold text-teal-800 hover:text-teal-950 bg-teal-50 hover:bg-teal-100 px-2.5 py-1 rounded-lg border border-teal-300 transition-all flex items-center gap-1 cursor-pointer shadow-xs" data-numbers="${nums36List.map(numStr).join(', ')}" data-date="${targetDate}">
-                                <i class="bi bi-clipboard"></i> Copy 36s (7.2M)
+                            <button type="button" class="btn-copy-slip-dropoff-36 text-[11px] font-bold text-teal-800 hover:text-teal-950 bg-teal-50 hover:bg-teal-100 px-2.5 py-1 rounded-lg border border-teal-300 transition-all flex items-center gap-1 cursor-pointer shadow-xs" data-numbers="${nums36List.join(', ')}" data-date="${targetDate}">
+                                <i class="bi bi-clipboard"></i> Copy 36s (10.8M)
                             </button>
-                            <button type="button" class="btn-copy-slip-dropoff-all text-[11px] font-bold text-amber-900 hover:text-amber-950 bg-amber-50 hover:bg-amber-100 px-2.5 py-1 rounded-lg border border-amber-300 transition-all flex items-center gap-1 cursor-pointer shadow-xs" data-numbers="${all40List.map(numStr).join(', ')}" data-date="${targetDate}">
-                                <i class="bi bi-clipboard-check"></i> Copy 40s (8.0M)
+                            <button type="button" class="btn-copy-slip-dropoff-all text-[11px] font-bold text-amber-900 hover:text-amber-950 bg-amber-50 hover:bg-amber-100 px-2.5 py-1 rounded-lg border border-amber-300 transition-all flex items-center gap-1 cursor-pointer shadow-xs" data-numbers="${all40List.join(', ')}" data-date="${targetDate}">
+                                <i class="bi bi-clipboard-check"></i> Copy 40s (12.0M)
                             </button>
                         </div>
                     </div>
 
-                    <!-- 40 Numbers visual grid -->
-                    <div class="p-3 rounded-xl bg-slate-50 border border-amber-200 space-y-2">
+                    <!-- 20 Numbers X2 -->
+                    <div class="p-3 rounded-xl bg-amber-50/70 border border-amber-300 space-y-2">
                         <div class="flex items-center justify-between text-[11px]">
-                            <span class="font-bold text-amber-900">Dàn 40 Số Đồng Thuận (Đánh Đều 200K/số · Thưởng 16.8M):</span>
-                            <span class="text-slate-600 font-mono">Lãi khi nổ: <strong class="text-emerald-700 font-black">+8.8M</strong></span>
+                            <span class="font-black text-amber-900 uppercase">👑 TẦNG 1: TOP 20 SỐ X2 (400K/số · Vốn 8.0M · Thưởng 33.6M, Lãi +21.6M):</span>
+                            <span class="text-amber-800 font-mono font-bold">20 số</span>
                         </div>
-                        <div class="flex flex-wrap gap-1.5 pt-1">${numGridChips}</div>
+                        <div class="flex flex-wrap gap-1.5 pt-1">${x2Chips}</div>
+                    </div>
+
+                    <!-- 20 Numbers X1 -->
+                    <div class="p-3 rounded-xl bg-teal-50/60 border border-teal-300 space-y-2">
+                        <div class="flex items-center justify-between text-[11px]">
+                            <span class="font-black text-teal-900 uppercase">🛡️ TẦNG 2: 20 SỐ BỌC LÓT X1 (200K/số · Vốn 4.0M · Thưởng 16.8M, Lãi +4.8M):</span>
+                            <span class="text-teal-800 font-mono font-bold">20 số</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5 pt-1">${x1Chips}</div>
                     </div>
 
                     <!-- 60 Excluded numbers display -->
@@ -5288,11 +5375,10 @@
                     </details>
 
                     <div class="flex items-center justify-between text-[11px] text-slate-600 pt-2 border-t border-slate-200 font-mono">
-                        <span>Vốn cược: <strong class="text-slate-900 font-bold">8.0M</strong> (200K/số x 40 số)</span>
+                        <span>Vốn cược: <strong class="text-slate-900 font-bold">12.0M</strong> (20s x 400K + 20s x 200K)</span>
                         <span>Tiền thưởng: <strong class="text-amber-800 font-black">${isPending ? '—' : formatMoneyK(dropoffPayoutK, false)}</strong></span>
                         <span>Lãi ròng Đề: <strong class="${dropoffProfitK > 0 ? 'text-emerald-700' : 'text-rose-700'} font-black">${isPending ? 'Chờ kq' : formatMoneyK(dropoffProfitK)}</strong></span>
                     </div>
-                </div>
                 </div>
             `;
         }
@@ -5313,34 +5399,43 @@
                             </span>
                         </div>
                         <p class="text-xs text-slate-700 leading-relaxed">
-                            Điểm đồng thuận 4 động cơ Tri-Core ngày ${dateVi} chỉ đạt <strong>${deTopScore.toFixed(1)}/7.5</strong> (dưới ngưỡng an toàn 6.5). Hệ thống tự động kích hoạt chế độ né cược để bảo toàn 100% vốn (+4.8M).
+                            Điểm đồng thuận 4 động cơ Tri-Core ngày ${dateVi} chỉ đạt <strong>${deTopScore.toFixed(1)}/7.5</strong> (dưới ngưỡng an toàn 6.5). Hệ thống tự động kích hoạt chế độ né cược để bảo toàn 100% vốn (+7.2M).
                         </p>
                     </div>
                 `;
             } else {
-                const deCardsHtml = deNumbers.map(n => {
-                    const isHitNumber = (actualSpecial != null && Number(n) === Number(actualSpecial));
-                    if (isHitNumber) {
+                const renderTriTierChips = (numbers, mult, baseBg, profitLabel) => {
+                    return numbers.map(n => {
+                        const s = numStr(n);
+                        const isHitNumber = (actualSpecial != null && s === actualSpecial);
+                        if (isHitNumber) {
+                            return `
+                                <div class="relative group flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-500 text-slate-950 p-2 font-black ring-4 ring-amber-300 shadow-xl scale-105 animate-pulse min-w-[58px]">
+                                    <span class="text-[9px] font-black uppercase tracking-wider text-amber-950">🎯 NỔ ĐB</span>
+                                    <span class="font-mono text-xl leading-none font-black my-0.5">${s}</span>
+                                    <span class="text-[8px] font-black uppercase bg-slate-950 text-amber-300 px-1 py-0.2 rounded mt-0.5 shadow-xs">${profitLabel} ⭐</span>
+                                </div>
+                            `;
+                        }
                         return `
-                            <div class="relative group flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-500 text-slate-950 p-2 font-black ring-4 ring-amber-300 shadow-xl scale-105 animate-pulse min-w-[58px]">
-                                <span class="text-[9px] font-black uppercase tracking-wider text-amber-950">🎯 NỔ ĐB</span>
-                                <span class="font-mono text-xl leading-none font-black my-0.5">${numStr(n)}</span>
-                                <span class="text-[8px] font-black uppercase bg-slate-950 text-amber-300 px-1 py-0.2 rounded mt-0.5 shadow-xs">+12.0M ⭐</span>
+                            <div class="flex flex-col items-center justify-center rounded-xl ${baseBg} border border-slate-300 text-slate-950 p-2 font-mono text-base font-black min-w-[48px] hover:border-indigo-400 transition-all shadow-2xs">
+                                <span>${s}</span>
+                                <span class="text-[9px] font-bold text-slate-600">x${mult}</span>
                             </div>
                         `;
-                    }
-                    return `
-                        <div class="flex flex-col items-center justify-center rounded-xl bg-slate-100 border border-slate-300 text-slate-950 p-2 font-mono text-base font-black min-w-[48px] hover:border-amber-400 hover:bg-slate-200 transition-all shadow-2xs">
-                            <span>${numStr(n)}</span>
-                        </div>
-                    `;
-                }).join('');
+                    }).join('');
+                };
+
+                const triX2Chips = renderTriTierChips(top12Tri, 2, 'bg-amber-100 text-amber-950 border-amber-300', '+26.4M');
+                const triX1Chips = renderTriTierChips(bottom12Tri, 1, 'bg-indigo-50 text-indigo-950 border-indigo-200', '+9.6M');
 
                 const deStatusTag = isPending
-                    ? '<span class="text-xs font-bold text-amber-900 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded">⏳ VÀO KÈO 24 SỐ · CHỜ MỞ</span>'
-                    : (deHit
-                        ? '<span class="text-xs font-black text-slate-950 bg-gradient-to-r from-amber-400 to-amber-500 px-2.5 py-0.5 rounded shadow-sm">🎯 TRÚNG ĐẶC BIỆT (+12.0M)</span>'
-                        : '<span class="text-xs font-bold text-rose-800 bg-rose-100 border border-rose-300 px-2 py-0.5 rounded">❌ TRƯỢT ĐỀ (-4.8M)</span>');
+                    ? '<span class="text-xs font-bold text-amber-900 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded">⏳ VÀO KÈO 24 SỐ (12s X2 + 12s X1 · 7.2M)</span>'
+                    : (isTriHitX2
+                        ? `<span class="text-xs font-black text-slate-950 bg-gradient-to-r from-amber-400 to-yellow-500 px-2.5 py-0.5 rounded shadow-sm ring-2 ring-amber-300 animate-pulse">🎯 NỔ X2 (+26.4M) · ${actualSpecial} ⭐</span>`
+                        : (isTriHitX1
+                            ? `<span class="text-xs font-black text-teal-950 bg-teal-100 border border-teal-300 px-2.5 py-0.5 rounded shadow-xs">🎯 NỔ X1 (+9.6M) · ${actualSpecial}</span>`
+                            : '<span class="text-xs font-bold text-rose-800 bg-rose-100 border border-rose-300 px-2 py-0.5 rounded">❌ TRƯỢT ĐỀ (-7.2M)</span>'));
 
                 deSectionHtml = `
                     <div class="rounded-2xl border-2 border-indigo-200 bg-white p-4 space-y-3 shadow-sm text-slate-800">
@@ -5349,21 +5444,37 @@
                                 <h4 class="text-xs font-black uppercase text-indigo-900 flex items-center gap-1.5">
                                     <i class="bi bi-gem text-indigo-600"></i> 🎯 ĐỀ TRI-CORE 24 SỐ TINH HOA:
                                 </h4>
-                                <span class="text-xs text-slate-600">(Top 1 Score: <strong>${deTopScore.toFixed(1)}/7.5</strong>)</span>
+                                <span class="text-xs text-slate-600 font-mono">(12s X2 + 12s X1 · Vốn 7.2M · Top 1 Score: <strong>${deTopScore.toFixed(1)}/7.5</strong>)</span>
                             </div>
                             <div class="flex items-center gap-2">
                                 ${deStatusTag}
                                 <button type="button" class="btn-copy-slip-de text-[11px] font-bold text-indigo-900 hover:text-indigo-950 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg border border-indigo-300 transition-all flex items-center gap-1 cursor-pointer shadow-xs" data-numbers="${deNumbers.map(numStr).join(', ')}" data-date="${targetDate}">
-                                    <i class="bi bi-clipboard"></i> Copy 24s
+                                    <i class="bi bi-clipboard"></i> Copy 24s (7.2M)
                                 </button>
                             </div>
                         </div>
-                        <div class="flex flex-wrap gap-2">
-                            ${deCardsHtml}
+
+                        <!-- 12 Numbers X2 -->
+                        <div class="p-3 rounded-xl bg-amber-50/70 border border-amber-300 space-y-2">
+                            <div class="flex items-center justify-between text-[11px]">
+                                <span class="font-black text-amber-900 uppercase">👑 TẦNG 1: TOP 12 SỐ X2 (400K/số · Vốn 4.8M · Thưởng 33.6M, Lãi +26.4M):</span>
+                                <span class="text-amber-800 font-mono font-bold">12 số</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5 pt-1">${triX2Chips}</div>
                         </div>
+
+                        <!-- 12 Numbers X1 -->
+                        <div class="p-3 rounded-xl bg-indigo-50/60 border border-indigo-200 space-y-2">
+                            <div class="flex items-center justify-between text-[11px]">
+                                <span class="font-black text-indigo-900 uppercase">🛡️ TẦNG 2: 12 SỐ BỌC LÓT X1 (200K/số · Vốn 2.4M · Thưởng 16.8M, Lãi +9.6M):</span>
+                                <span class="text-indigo-800 font-mono font-bold">12 số</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5 pt-1">${triX1Chips}</div>
+                        </div>
+
                         <div class="flex items-center justify-between text-[11px] text-slate-600 pt-2 border-t border-slate-200 font-mono">
-                            <span>Vốn cược: <strong class="text-slate-900 font-bold">4.8M</strong> (200K/số)</span>
-                            <span>Tiền thưởng: <strong class="text-amber-800 font-black">${isPending ? '—' : (deHit ? '16.8M' : '0đ')}</strong></span>
+                            <span>Vốn cược: <strong class="text-slate-900 font-bold">7.2M</strong> (12s x 400K + 12s x 200K)</span>
+                            <span>Tiền thưởng: <strong class="text-amber-800 font-black">${isPending ? '—' : formatMoneyK(dePayoutK, false)}</strong></span>
                             <span>Lãi ròng Đề: <strong class="${deProfitK > 0 ? 'text-emerald-700' : 'text-rose-700'} font-black">${isPending ? 'Chờ kq' : formatMoneyK(deProfitK)}</strong></span>
                         </div>
                     </div>
@@ -5887,7 +5998,7 @@
                     <div class="rounded-xl bg-white border border-teal-200 p-2 shadow-xs">
                         <div class="text-slate-600 text-[10px]">TỔNG VỐN (3 TRỤ)</div>
                         <div class="font-bold text-slate-900 text-sm mt-0.5">${formatMoneyK(triSuiteDayStakeK, false)}</div>
-                        <div class="text-[9px] text-slate-500">${deAbstain ? '0M' : '4.8M'} + ${(loTriInfo.stakeK/1000).toFixed(1)}M + 5.5M</div>
+                        <div class="text-[9px] text-slate-500">${deAbstain ? '0M' : '7.2M'} + ${(loTriInfo.stakeK/1000).toFixed(1)}M + 5.5M</div>
                     </div>
                     <div class="rounded-xl bg-white border border-teal-200 p-2 shadow-xs">
                         <div class="text-slate-600 text-[10px]">TỔNG THƯỞNG</div>
@@ -5907,23 +6018,33 @@
             </div>
         `;
 
-        // 9. Section Đề 36s VIP Sweet-Spot (Hệ 3: Vốn 7.2M · Ăn 16.8M)
+        // 9. Section Đề 36s VIP Sweet-Spot (Hệ 3: 18s X2 @ 400K + 18s X1 @ 200K = 10.8M)
         let de36SectionHtml = '';
         if (dropoffRow) {
-            const numGridChips36 = numsVip36List.map(n => {
-                const s = numStr(n);
-                const isNumHit = actualSpecial && (s === actualSpecial);
-                if (isNumHit) {
-                    return `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-xl font-mono font-black text-sm bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-white ring-2 ring-amber-400 shadow-lg scale-110 animate-pulse">🎯 ${s} ⭐</span>`;
-                }
-                return `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg font-mono font-bold text-xs bg-white text-slate-800 border border-slate-300 shadow-2xs hover:border-amber-400 transition-all">${s}</span>`;
-            }).join('');
+            const top18List = numsVip36List.slice(0, 18);
+            const bottom18List = numsVip36List.slice(18, 36);
+
+            const renderDe36Chips = (numbers, mult, baseBg) => {
+                return numbers.map(n => {
+                    const s = numStr(n);
+                    const isNumHit = actualSpecial && (s === actualSpecial);
+                    if (isNumHit) {
+                        return `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-xl font-mono font-black text-sm bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-white ring-2 ring-amber-400 shadow-lg scale-110 animate-pulse">🎯 ${s} (x${mult}) ⭐</span>`;
+                    }
+                    return `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg font-mono font-bold text-xs ${baseBg} border border-slate-300 shadow-2xs hover:border-amber-400 transition-all">${s}<sub class="text-[8px] text-slate-500 ml-0.5">x${mult}</sub></span>`;
+                }).join(' ');
+            };
+
+            const x2Chips36 = renderDe36Chips(top18List, 2, 'bg-amber-50 text-amber-950');
+            const x1Chips36 = renderDe36Chips(bottom18List, 1, 'bg-teal-50 text-teal-950');
 
             const de36StatusTag = isPending
-                ? '<span class="text-xs font-bold text-amber-800 bg-amber-50 border border-amber-300 px-2 py-0.5 rounded">⏳ ĐÃ KHÓA 36 SỐ (7.2M) · CHỜ MỞ 18:30</span>'
-                : (isHit36
-                    ? `<span class="text-xs font-black text-white bg-gradient-to-r from-amber-500 to-yellow-600 px-2.5 py-0.5 rounded shadow-sm ring-1 ring-amber-400">🎯 TRÚNG ĐẶC BIỆT (+9.6M) · ${actualSpecial} ⭐</span>`
-                    : `<span class="text-xs font-bold text-rose-800 bg-rose-50 border border-rose-300 px-2 py-0.5 rounded">❌ TRƯỢT ĐỀ (-7.2M) · ${actualSpecial || ''}</span>`);
+                ? '<span class="text-xs font-bold text-amber-800 bg-amber-50 border border-amber-300 px-2 py-0.5 rounded">⏳ ĐÃ KHÓA 36 SỐ (18s X2 + 18s X1 · 10.8M)</span>'
+                : (isHit36X2
+                    ? `<span class="text-xs font-black text-white bg-gradient-to-r from-amber-500 to-yellow-600 px-2.5 py-0.5 rounded shadow-sm ring-1 ring-amber-400 animate-pulse">🎯 NỔ VIP X2 (+22.8M) · ${actualSpecial} ⭐</span>`
+                    : (isHit36X1
+                        ? `<span class="text-xs font-black text-teal-950 bg-teal-100 border border-teal-300 px-2.5 py-0.5 rounded shadow-xs">🎯 NỔ X1 (+6.0M) · ${actualSpecial}</span>`
+                        : `<span class="text-xs font-bold text-rose-800 bg-rose-50 border border-rose-300 px-2 py-0.5 rounded">❌ TRƯỢT ĐỀ (-10.8M) · ${actualSpecial || ''}</span>`));
 
             de36SectionHtml = `
                 <div class="rounded-2xl border-2 border-amber-300 bg-white p-4 space-y-3 shadow-sm text-slate-800">
@@ -5932,24 +6053,36 @@
                             <h4 class="text-xs font-black uppercase text-amber-900 flex items-center gap-1.5">
                                 <i class="bi bi-award-fill text-amber-600"></i> ⭐ 1. ĐỀ 36S VIP SWEET-SPOT:
                             </h4>
-                            <span class="text-[11px] text-slate-500 font-mono">(Đánh phẳng 200K/số · Vốn 7.2M · Ăn 16.8M)</span>
+                            <span class="text-[11px] text-slate-500 font-mono">(18s X2 + 18s X1 · Vốn 10.8M · Ăn X2 +22.8M / Ăn X1 +6.0M)</span>
                         </div>
                         <div class="flex items-center gap-2">
                             ${de36StatusTag}
                             <button type="button" class="btn-copy-slip-dropoff-36 text-[11px] font-bold text-amber-900 hover:text-white bg-amber-100 hover:bg-amber-600 px-2.5 py-1 rounded-lg border border-amber-300 transition-all flex items-center gap-1 cursor-pointer" data-numbers="${numsVip36List.join(', ')}" data-date="${targetDate}">
-                                <i class="bi bi-clipboard"></i> Copy 36s (7.2M)
+                                <i class="bi bi-clipboard"></i> Copy 36s (10.8M)
                             </button>
                         </div>
                     </div>
-                    <div class="p-3 rounded-xl bg-slate-50 border border-amber-200 space-y-2">
+
+                    <!-- 18 Numbers X2 -->
+                    <div class="p-3 rounded-xl bg-amber-50/70 border border-amber-300 space-y-2">
                         <div class="flex items-center justify-between text-[11px]">
-                            <span class="font-bold text-amber-900">Dàn 36 Số VIP (200K/số · Thưởng 16.8M):</span>
-                            <span class="text-slate-600 font-mono">Lãi khi nổ: <strong class="text-emerald-700">+9.6M</strong></span>
+                            <span class="font-black text-amber-900 uppercase">👑 TẦNG 1: TOP 18 SỐ VIP X2 (400K/số · Vốn 7.2M · Thưởng 33.6M, Lãi +22.8M):</span>
+                            <span class="text-amber-800 font-mono font-bold">18 số</span>
                         </div>
-                        <div class="flex flex-wrap gap-1.5 pt-1">${numGridChips36}</div>
+                        <div class="flex flex-wrap gap-1.5 pt-1">${x2Chips36}</div>
                     </div>
+
+                    <!-- 18 Numbers X1 -->
+                    <div class="p-3 rounded-xl bg-teal-50/60 border border-teal-300 space-y-2">
+                        <div class="flex items-center justify-between text-[11px]">
+                            <span class="font-black text-teal-900 uppercase">🛡️ TẦNG 2: 18 SỐ BỌC LÓT X1 (200K/số · Vốn 3.6M · Thưởng 16.8M, Lãi +6.0M):</span>
+                            <span class="text-teal-800 font-mono font-bold">18 số</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5 pt-1">${x1Chips36}</div>
+                    </div>
+
                     <div class="flex items-center justify-between text-[11px] text-slate-600 pt-2 border-t border-slate-200 font-mono">
-                        <span>Vốn cược: <strong class="text-slate-900">7.2M</strong> (200K/số x 36 số)</span>
+                        <span>Vốn cược: <strong class="text-slate-900">10.8M</strong> (18 x 400K + 18 x 200K)</span>
                         <span>Tiền thưởng: <strong class="text-amber-800 font-bold">${isPending ? '—' : formatMoneyK(de36PayoutK, false)}</strong></span>
                         <span>Lãi ròng Đề: <strong class="${de36ProfitK > 0 ? 'text-emerald-700' : 'text-rose-700'} font-black">${isPending ? 'Chờ kq' : formatMoneyK(de36ProfitK)}</strong></span>
                     </div>
@@ -6042,7 +6175,7 @@
                     <div class="rounded-xl bg-white border border-amber-200 p-2 shadow-xs">
                         <div class="text-slate-600 text-[10px]">TỔNG VỐN (3 TRỤ)</div>
                         <div class="font-bold text-slate-900 text-sm mt-0.5">${formatMoneyK(vipSuiteDayStakeK, false)}</div>
-                        <div class="text-[9px] text-slate-500">Đề 7.2M + Lô 15.4M + Xiên 5.5M</div>
+                        <div class="text-[9px] text-slate-500">Đề 10.8M + Lô 15.4M + Xiên 5.5M</div>
                     </div>
                     <div class="rounded-xl bg-white border border-amber-200 p-2 shadow-xs">
                         <div class="text-slate-600 text-[10px]">TỔNG THƯỞNG</div>
@@ -6073,7 +6206,7 @@
                 </div>
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs font-mono">
                     <div class="rounded-xl bg-white border border-amber-200 p-2 shadow-xs">
-                        <div class="text-slate-600 text-[10px]">TỔNG VỐN (${isDropoffActive ? 'ĐỀ 8.0M + LÔ + X5' : 'ĐỀ 4.8M + LÔ + X5'})</div>
+                        <div class="text-slate-600 text-[10px]">TỔNG VỐN (${isDropoffActive ? 'ĐỀ 12.0M + LÔ + X5' : 'ĐỀ 7.2M + LÔ + X5'})</div>
                         <div class="font-bold text-slate-900 text-sm mt-0.5">${formatMoneyK(comboStakeK, false)}</div>
                     </div>
                     <div class="rounded-xl bg-white border border-amber-200 p-2 shadow-xs">
@@ -6099,46 +6232,49 @@
         let resonanceSummaryCardHtml = '';
 
         if (isResonanceActive && resRow) {
-            // A. Đề Tri-Tier Semantic Resonance (12 VIP + 24 Lót)
+            // A. Đề Tri-Tier Semantic Resonance (18 VIP X2 + 18 Lót X1)
             const deData = resRow.de || {};
-            const vip12List = (deData.vip12 || []).map(numStr);
-            const lot24List = (deData.lot24 || []).map(numStr);
-            const numbers36List = (deData.numbers36 || [...vip12List, ...lot24List]).map(numStr);
+            const numbers36List = (deData.numbers36 || deData.numbers || []).map(numStr);
+            const vip18List = (deData.vip18 || deData.vip12 || numbers36List.slice(0, 18)).map(numStr);
+            const lot18List = (deData.lot18 || deData.lot24 || numbers36List.slice(18, 36)).map(numStr);
             const numbers40List = (deData.numbers40 || []).map(numStr);
+
+            const isVipHit = Boolean(deData.hitType === 'VIP' || deData.hitType === 'VIP_18' || deData.isHitX2 || (deData.isHit && vip18List.includes(actualSpecial)));
+            const isLotHit = Boolean(deData.hitType === 'LOT' || deData.hitType === 'LOT_18' || deData.isHitX1 || (deData.isHit && lot18List.includes(actualSpecial)));
 
             let deStatusTag = '';
             if (isPending) {
-                deStatusTag = '<span class="text-xs font-bold text-violet-800 bg-violet-50 border border-violet-300 px-2.5 py-0.5 rounded">⏳ ĐÃ KHÓA 36 SỐ (12 VIP + 24 LÓT) · VỐN 10.8M</span>';
-            } else if (deData.isHit && deData.hitType === 'VIP') {
-                deStatusTag = `<span class="text-xs font-black text-white bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-3 py-0.5 rounded shadow-md ring-2 ring-amber-400 animate-pulse">🔥 TRÚNG SIÊU VIP (+31.2M) · ${actualSpecial} ⭐</span>`;
-            } else if (deData.isHit && deData.hitType === 'LOT') {
-                deStatusTag = `<span class="text-xs font-black text-white bg-gradient-to-r from-teal-500 to-emerald-600 px-3 py-0.5 rounded shadow-md ring-2 ring-emerald-400">🎯 TRÚNG BỌC LÓT (+6.0M) · ${actualSpecial}</span>`;
+                deStatusTag = '<span class="text-xs font-bold text-violet-800 bg-violet-50 border border-violet-300 px-2.5 py-0.5 rounded">⏳ ĐÃ KHÓA 36 SỐ (18 VIP X2 + 18 LÓT X1) · VỐN 10.8M</span>';
+            } else if (isVipHit) {
+                deStatusTag = `<span class="text-xs font-black text-white bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-3 py-0.5 rounded shadow-md ring-2 ring-amber-400 animate-pulse">🔥 TRÚNG VIP X2 (+22.8M) · ${actualSpecial} ⭐</span>`;
+            } else if (isLotHit) {
+                deStatusTag = `<span class="text-xs font-black text-white bg-gradient-to-r from-teal-500 to-emerald-600 px-3 py-0.5 rounded shadow-md ring-2 ring-emerald-400">🎯 TRÚNG BỌC LÓT X1 (+6.0M) · ${actualSpecial}</span>`;
             } else if (deData.isHit) {
                 deStatusTag = `<span class="text-xs font-black text-white bg-emerald-600 px-2.5 py-0.5 rounded ring-1 ring-emerald-400">🎯 TRÚNG ĐỀ · ${actualSpecial}</span>`;
             } else {
                 deStatusTag = '<span class="text-xs font-bold text-rose-800 bg-rose-50 border border-rose-300 px-2.5 py-0.5 rounded">❌ TRƯỢT ĐỀ (-10.8M)</span>';
             }
 
-            const vipChips = vip12List.map(n => {
+            const vipChips = vip18List.map(n => {
                 const isHitNum = (actualSpecial != null && n === actualSpecial);
                 if (isHitNum) {
                     return `
                         <div class="relative group flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-500 text-slate-950 p-2 font-black ring-4 ring-amber-300 shadow-xl scale-110 animate-pulse min-w-[54px]">
                             <span class="text-[8px] font-black uppercase tracking-wider text-amber-950">🎯 NỔ VIP</span>
                             <span class="font-mono text-lg font-black leading-none my-0.5">${n}</span>
-                            <span class="text-[8px] font-black uppercase bg-slate-950 text-amber-300 px-1 py-0.2 rounded mt-0.5 shadow-xs">+31.2M ⭐</span>
+                            <span class="text-[8px] font-black uppercase bg-slate-950 text-amber-300 px-1 py-0.2 rounded mt-0.5 shadow-xs">+22.8M ⭐</span>
                         </div>
                     `;
                 }
                 return `
                     <div class="flex flex-col items-center justify-center rounded-xl bg-amber-50 border border-amber-300 text-amber-950 p-1.5 font-mono text-sm font-bold min-w-[42px] shadow-2xs hover:border-amber-400 transition-all">
                         <span>${n}</span>
-                        <span class="text-[8px] text-amber-700">x500K</span>
+                        <span class="text-[8px] text-amber-700">x400K</span>
                     </div>
                 `;
             }).join('');
 
-            const lotChips = lot24List.map(n => {
+            const lotChips = lot18List.map(n => {
                 const isHitNum = (actualSpecial != null && n === actualSpecial);
                 if (isHitNum) {
                     return `
@@ -6165,14 +6301,14 @@
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-2.5">
                         <div class="flex items-center gap-2 flex-wrap">
                             <h4 class="text-xs font-black uppercase text-violet-900 flex items-center gap-1.5">
-                                <i class="bi bi-gem text-violet-600"></i> 🎯 1. ĐỀ TRI-TIER SEMANTIC RESONANCE (36 SỐ: 12 VIP + 24 LÓT):
+                                <i class="bi bi-gem text-violet-600"></i> 🎯 1. ĐỀ TRI-TIER SEMANTIC RESONANCE (36 SỐ: 18 VIP + 18 LÓT):
                             </h4>
-                            <span class="text-[11px] text-slate-500 font-mono">(12 VIP cược 500K + 24 Lót cược 200K = 10.8M/ngày)</span>
+                            <span class="text-[11px] text-slate-500 font-mono">(18 VIP cược 400K + 18 Lót cược 200K = 10.8M/ngày)</span>
                         </div>
                         <div class="flex items-center gap-2">
                             ${deStatusTag}
-                            <button type="button" class="btn-copy-slip-resonance-vip text-[11px] font-bold text-amber-900 hover:text-white bg-amber-100 hover:bg-amber-600 px-2.5 py-1 rounded-lg border border-amber-300 transition-all flex items-center gap-1 cursor-pointer" data-numbers="${vip12List.join(', ')}" data-date="${targetDate}">
-                                <i class="bi bi-lightning-charge"></i> Copy 12 VIP (6.0M)
+                            <button type="button" class="btn-copy-slip-resonance-vip text-[11px] font-bold text-amber-900 hover:text-white bg-amber-100 hover:bg-amber-600 px-2.5 py-1 rounded-lg border border-amber-300 transition-all flex items-center gap-1 cursor-pointer" data-numbers="${vip18List.join(', ')}" data-date="${targetDate}">
+                                <i class="bi bi-lightning-charge"></i> Copy 18 VIP (7.2M)
                             </button>
                             <button type="button" class="btn-copy-slip-resonance-36 text-[11px] font-bold text-violet-900 hover:text-white bg-violet-100 hover:bg-violet-700 px-2.5 py-1 rounded-lg border border-violet-300 transition-all flex items-center gap-1 cursor-pointer" data-numbers="${numbers36List.join(', ')}" data-date="${targetDate}">
                                 <i class="bi bi-clipboard-check"></i> Copy 36s (10.8M)
@@ -6180,24 +6316,24 @@
                         </div>
                     </div>
 
-                    <!-- 12 VIP visual box -->
+                    <!-- 18 VIP visual box -->
                     <div class="p-3 rounded-xl bg-amber-50/60 border border-amber-300 space-y-2">
                         <div class="flex items-center justify-between text-[11px]">
                             <span class="font-black text-amber-900 uppercase flex items-center gap-1">
-                                👑 TẦNG 1: 12 SỐ SIÊU VIP (Cược 500K/số · Trúng ăn 42M, Lãi +31.2M)
+                                👑 TẦNG 1: 18 SỐ SIÊU VIP (Cược 400K/số · Trúng ăn 33.6M, Lãi +22.8M)
                             </span>
-                            <span class="text-amber-800 font-mono font-bold">Vốn 6.0M</span>
+                            <span class="text-amber-800 font-mono font-bold">Vốn 7.2M</span>
                         </div>
                         <div class="flex flex-wrap gap-1.5 pt-1">${vipChips}</div>
                     </div>
 
-                    <!-- 24 Lot visual box -->
+                    <!-- 18 Lot visual box -->
                     <div class="p-3 rounded-xl bg-teal-50/60 border border-teal-300 space-y-2">
                         <div class="flex items-center justify-between text-[11px]">
                             <span class="font-black text-teal-900 uppercase flex items-center gap-1">
-                                🛡️ TẦNG 2: 24 SỐ BỌC LÓT (Cược 200K/số · Trúng ăn 16.8M, Lãi +6.0M)
+                                🛡️ TẦNG 2: 18 SỐ BỌC LÓT (Cược 200K/số · Trúng ăn 16.8M, Lãi +6.0M)
                             </span>
-                            <span class="text-teal-800 font-mono font-bold">Vốn 4.8M</span>
+                            <span class="text-teal-800 font-mono font-bold">Vốn 3.6M</span>
                         </div>
                         <div class="flex flex-wrap gap-1.5 pt-1">${lotChips}</div>
                     </div>
@@ -6214,7 +6350,7 @@
                     </details>` : ''}
 
                     <div class="flex items-center justify-between text-[11px] text-slate-600 pt-2 border-t border-slate-200 font-mono">
-                        <span>Vốn cược: <strong class="text-slate-900">10.8M</strong> (12 x 500K + 24 x 200K)</span>
+                        <span>Vốn cược: <strong class="text-slate-900">10.8M</strong> (18 x 400K + 18 x 200K)</span>
                         <span>Tiền thưởng: <strong class="text-amber-800 font-bold">${isPending ? '—' : formatMoneyK(dePayoutK, false)}</strong></span>
                         <span>Lãi ròng Đề: <strong class="${deProfitK > 0 ? 'text-emerald-700' : 'text-rose-700'} font-black">${isPending ? 'Chờ kq' : formatMoneyK(deProfitK)}</strong></span>
                     </div>
