@@ -14318,25 +14318,25 @@
             if (matchesPhase && matchesMonth && matchesSearch) {
                 pendingHtml = `
                     <tr class="bg-amber-50/70 border-b-2 border-amber-300 transition-colors">
-                        <td class="py-3 px-3 font-mono font-bold text-slate-900 whitespace-nowrap">
-                            <div class="flex items-center gap-1.5">
-                                <span>${formatDateVi(pendingRec.date)}</span>
-                                <span class="rounded-full bg-amber-200 text-amber-950 text-[10px] font-black px-2 py-0.5 animate-pulse border border-amber-400">Hôm nay 🔒</span>
+                        <td class="py-2.5 px-2.5 font-mono font-bold text-slate-900 whitespace-nowrap w-px" style="width: 1%;">
+                            <div class="flex flex-col gap-0.5">
+                                <span class="leading-tight">${formatDateVi(pendingRec.date)}</span>
+                                <span class="inline-flex items-center w-fit rounded-full bg-amber-200 text-amber-950 text-[9px] font-black px-1.5 py-0.5 animate-pulse border border-amber-400">Hôm nay 🔒</span>
                             </div>
                         </td>
-                        <td class="py-3 px-3">
+                        <td class="py-2.5 px-3">
                             <div class="font-bold text-slate-800">${pendingRec.de?.x2Nums?.length || 0}s X2 · ${pendingRec.de?.x1Nums?.length || 0}s X1</div>
                             <div class="text-[10px] font-mono text-slate-500">Vốn ${((pendingRec.de?.stakeK || 0)/1000).toFixed(1)}M (Ăn 33.6M / 16.8M)</div>
                         </td>
-                        <td class="py-3 px-3">
+                        <td class="py-2.5 px-3">
                             <div class="font-bold text-slate-800">${pendingRec.lo?.numbers?.length || 0} số đa tầng</div>
                             <div class="text-[10px] font-mono text-slate-500">Vốn ${((pendingRec.lo?.stakeK || 0)/1000).toFixed(1)}M (${pendingRec.lo?.x5Nums?.length || 0} X5 · ${pendingRec.lo?.x4Nums?.length || 0} X4 · ${pendingRec.lo?.x3Nums?.length || 0} X3 · ${pendingRec.lo?.x1Nums?.length || 0} X1)</div>
                         </td>
-                        <td class="py-3 px-3">
+                        <td class="py-2.5 px-3">
                             <div class="font-bold text-slate-800">5 vé Xiên 4 [Top 5]</div>
                             <div class="text-[10px] font-mono text-slate-500">Vốn 5.5M (Ăn 192M / 72M / 20.4M)</div>
                         </td>
-                        <td class="py-3 px-3 text-center whitespace-nowrap">
+                        <td class="py-2.5 px-2 text-center whitespace-nowrap w-px" style="width: 1%;">
                             <div class="flex items-center justify-center gap-1.5">
                                 <button type="button" class="btn-open-mirofish-modal rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white px-2.5 py-1 text-[11px] font-black transition-all shadow-xs cursor-pointer" data-date="${pendingRec.date}">
                                     👁️ Xem Dàn Khóa
@@ -14346,14 +14346,14 @@
                                 </button>
                             </div>
                         </td>
-                        <td class="py-2.5 px-2 text-right font-mono font-bold text-slate-700 whitespace-nowrap">
+                        <td class="py-2.5 px-2 text-right font-mono font-bold text-slate-700 whitespace-nowrap w-px" style="width: 1%;">
                             ${((pendingRec.combo?.stakeK || 0)/1000).toFixed(1)}M
                         </td>
-                        <td class="py-2.5 px-2 text-right font-mono font-bold text-slate-400 whitespace-nowrap">--</td>
-                        <td class="py-2.5 px-2 text-right font-mono font-bold text-slate-400 whitespace-nowrap">--</td>
-                        <td class="py-2.5 px-2 text-right font-mono font-bold text-slate-400 whitespace-nowrap">--</td>
-                        <td class="py-2.5 px-2.5 text-right font-bold text-amber-600 whitespace-nowrap text-xs">⏳ Chờ mở 18:30</td>
-                        <td class="py-2.5 px-2.5 text-right font-mono font-bold text-slate-400 whitespace-nowrap">--</td>
+                        <td class="py-2.5 px-2 text-right font-mono font-bold text-slate-400 whitespace-nowrap w-px" style="width: 1%;">--</td>
+                        <td class="py-2.5 px-2 text-right font-mono font-bold text-slate-400 whitespace-nowrap w-px" style="width: 1%;">--</td>
+                        <td class="py-2.5 px-2 text-right font-mono font-bold text-slate-400 whitespace-nowrap w-px" style="width: 1%;">--</td>
+                        <td class="py-2.5 px-2.5 text-right font-bold text-amber-600 whitespace-nowrap text-xs w-px" style="width: 1%;">⏳ Chờ mở 18:30</td>
+                        <td class="py-2.5 px-2.5 text-right font-mono font-bold text-slate-400 whitespace-nowrap w-px" style="width: 1%;">--</td>
                     </tr>
                 `;
             }
@@ -14402,7 +14402,7 @@
 
             return `
                 <tr class="hover:bg-slate-50/80 transition-colors">
-                    <td class="py-2.5 px-3 font-mono font-bold text-slate-900 whitespace-nowrap">
+                    <td class="py-2.5 px-2.5 font-mono font-bold text-slate-900 whitespace-nowrap w-px" style="width: 1%;">
                         ${formatDateVi(r.date)}
                     </td>
                     <td class="py-2.5 px-3">
@@ -14417,7 +14417,7 @@
                         <div>${xienStatusBadge}</div>
                         <div class="text-[10px] text-slate-500 mt-0.5">5 vé Xiên 4 (5.5M)</div>
                     </td>
-                    <td class="py-2.5 px-2 text-center whitespace-nowrap">
+                    <td class="py-2.5 px-2 text-center whitespace-nowrap w-px" style="width: 1%;">
                         <div class="flex items-center justify-center gap-1.5">
                             <button type="button" class="btn-open-mirofish-modal rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white px-2.5 py-1 text-[11px] font-black transition-all shadow-xs cursor-pointer" data-date="${r.date}">
                                 👁️ Xem Đủ Dàn
@@ -14427,22 +14427,22 @@
                             </button>
                         </div>
                     </td>
-                    <td class="py-2.5 px-2 text-right font-mono font-bold text-slate-700 whitespace-nowrap">
+                    <td class="py-2.5 px-2 text-right font-mono font-bold text-slate-700 whitespace-nowrap w-px" style="width: 1%;">
                         ${((r.combo?.stakeK || 0)/1000).toFixed(1)}M
                     </td>
-                    <td class="py-2.5 px-2 text-right whitespace-nowrap">
+                    <td class="py-2.5 px-2 text-right whitespace-nowrap w-px" style="width: 1%;">
                         ${formatMirofishPnL(deProfit)}
                     </td>
-                    <td class="py-2.5 px-2 text-right whitespace-nowrap">
+                    <td class="py-2.5 px-2 text-right whitespace-nowrap w-px" style="width: 1%;">
                         ${formatMirofishPnL(loProfit)}
                     </td>
-                    <td class="py-2.5 px-2 text-right whitespace-nowrap">
+                    <td class="py-2.5 px-2 text-right whitespace-nowrap w-px" style="width: 1%;">
                         ${formatMirofishPnL(xienProfit)}
                     </td>
-                    <td class="py-2.5 px-2.5 text-right whitespace-nowrap">
+                    <td class="py-2.5 px-2.5 text-right whitespace-nowrap w-px" style="width: 1%;">
                         ${formatMirofishPnL(comboProfit)}
                     </td>
-                    <td class="py-2.5 px-2.5 text-right whitespace-nowrap">
+                    <td class="py-2.5 px-2.5 text-right whitespace-nowrap w-px" style="width: 1%;">
                         ${formatMirofishPnL(cumProfit)}
                     </td>
                 </tr>
