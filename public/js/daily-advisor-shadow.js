@@ -2736,9 +2736,14 @@
                         <div class="text-[10px] text-slate-600">5 vé x 1.1M · Vốn 5.5M · X4: 38.4M · X3: 8.4M</div>
                     </td>
                     <td class="py-3 px-3 text-center">
-                        <button type="button" class="btn-open-slip px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-500 text-amber-900 hover:text-white border border-amber-300 text-[11px] font-bold inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer" data-slip-date="${targetDate}" data-slip-cat="quadSuite">
-                            <i class="bi bi-eye-fill text-amber-700"></i> Xem Dàn Khóa
-                        </button>
+                        <div class="flex items-center justify-center gap-1.5 flex-wrap">
+                            <button type="button" class="btn-open-slip px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-500 text-amber-900 hover:text-white border border-amber-300 text-[11px] font-bold inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer" data-slip-date="${targetDate}" data-slip-cat="quadSuite">
+                                <i class="bi bi-eye-fill text-amber-700"></i> Xem Dàn Khóa
+                            </button>
+                            <button type="button" class="btn-quick-copy-full px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 text-[11px] font-black inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer ring-1 ring-amber-300" data-date="${targetDate}" data-cat="quadSuite" title="Copy full dàn chi tiết Đề, Lô, Xiên">
+                                <i class="bi bi-clipboard2-check-fill"></i> Copy Full Dàn
+                            </button>
+                        </div>
                     </td>
                     <td class="py-3 px-3 text-right">
                         <span class="text-slate-900 font-bold">${formatMoneyK(pendingQuad.combo.stakeK, false)}</span>
@@ -2821,9 +2826,14 @@
                             <div class="flex flex-wrap gap-1 justify-center items-center mb-1">
                                 ${winningBadgesHtml}
                             </div>
-                            <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200 text-[10px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${row.date}" data-slip-cat="quadSuite">
-                                <i class="bi bi-eye-fill text-indigo-600"></i> Xem Đủ Dàn
-                            </button>
+                            <div class="flex items-center justify-center gap-1 mt-1 flex-wrap">
+                                <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200 text-[10px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${row.date}" data-slip-cat="quadSuite">
+                                    <i class="bi bi-eye-fill text-indigo-600"></i> Xem Đủ Dàn
+                                </button>
+                                <button type="button" class="btn-quick-copy-full px-2 py-0.5 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 text-[10px] font-black inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer ring-1 ring-amber-300" data-date="${row.date}" data-cat="quadSuite" title="Copy full dàn chi tiết Đề, Lô, Xiên">
+                                    <i class="bi bi-clipboard2-check-fill"></i> Copy Full
+                                </button>
+                            </div>
                         </td>
                         <td class="py-2.5 px-3 text-right">
                             <span class="text-slate-900 font-bold">${formatMoneyK(q.combo.stakeK, false)}</span>
@@ -3679,9 +3689,14 @@
                         <div class="text-[10px] text-slate-600">Top 5: ${top5Str} · Vốn ${xienStakeM}</div>
                     </td>
                     <td class="py-3 px-3 text-center">
-                        <button type="button" class="btn-open-slip px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-500 text-amber-900 hover:text-white border border-amber-300 text-[11px] font-bold inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer" data-slip-date="${targetDate}" data-slip-cat="triCoreSuite">
-                            <i class="bi bi-eye-fill text-amber-700"></i> Xem Dàn Khóa
-                        </button>
+                        <div class="flex items-center justify-center gap-1.5 flex-wrap">
+                            <button type="button" class="btn-open-slip px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-500 text-amber-900 hover:text-white border border-amber-300 text-[11px] font-bold inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer" data-slip-date="${targetDate}" data-slip-cat="triCoreSuite">
+                                <i class="bi bi-eye-fill text-amber-700"></i> Xem Dàn Khóa
+                            </button>
+                            <button type="button" class="btn-quick-copy-full px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 text-[11px] font-black inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer ring-1 ring-amber-300" data-date="${targetDate}" data-cat="triCoreSuite" title="Copy full dàn chi tiết Đề, Lô, Xiên">
+                                <i class="bi bi-clipboard2-check-fill"></i> Copy Full Dàn
+                            </button>
+                        </div>
                     </td>
                     <td class="py-3 px-3 text-right">
                         <span class="text-slate-900 font-bold">${totalStakeM}</span>
@@ -3767,9 +3782,14 @@
                             <div class="flex flex-wrap gap-1 justify-center items-center mb-1">
                                 ${winningBadgesHtml}
                             </div>
-                            <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200 text-[10px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${row.date}" data-slip-cat="triCoreSuite">
-                                <i class="bi bi-eye-fill text-indigo-600"></i> Xem Đủ Dàn
-                            </button>
+                            <div class="flex items-center justify-center gap-1 mt-1 flex-wrap">
+                                <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200 text-[10px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${row.date}" data-slip-cat="triCoreSuite">
+                                    <i class="bi bi-eye-fill text-indigo-600"></i> Xem Đủ Dàn
+                                </button>
+                                <button type="button" class="btn-quick-copy-full px-2 py-0.5 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 text-[10px] font-black inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer ring-1 ring-amber-300" data-date="${row.date}" data-cat="triCoreSuite" title="Copy full dàn chi tiết Đề, Lô, Xiên">
+                                    <i class="bi bi-clipboard2-check-fill"></i> Copy Full
+                                </button>
+                            </div>
                         </td>
                         <td class="py-2.5 px-3 text-right">
                             <span class="text-slate-900 font-bold">${formatMoneyK(row.suiteDayStakeK, false)}</span>
@@ -3975,9 +3995,14 @@
                         <div class="text-[10px] text-slate-600">Top 5: ${pendingTop5 || '—'} · Vốn 5.5M</div>
                     </td>
                     <td class="py-3 px-3 text-center">
-                        <button type="button" class="btn-open-slip px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-500 text-amber-900 hover:text-white border border-amber-300 text-[11px] font-bold inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer" data-slip-date="${targetDate}" data-slip-cat="vipSuite">
-                            <i class="bi bi-eye-fill text-amber-700"></i> Xem Dàn Khóa
-                        </button>
+                        <div class="flex items-center justify-center gap-1.5 flex-wrap">
+                            <button type="button" class="btn-open-slip px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-500 text-amber-900 hover:text-white border border-amber-300 text-[11px] font-bold inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer" data-slip-date="${targetDate}" data-slip-cat="vipSuite">
+                                <i class="bi bi-eye-fill text-amber-700"></i> Xem Dàn Khóa
+                            </button>
+                            <button type="button" class="btn-quick-copy-full px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 text-[11px] font-black inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer ring-1 ring-amber-300" data-date="${targetDate}" data-cat="vipSuite" title="Copy full dàn chi tiết Đề, Lô, Xiên">
+                                <i class="bi bi-clipboard2-check-fill"></i> Copy Full Dàn
+                            </button>
+                        </div>
                     </td>
                     <td class="py-3 px-3 text-right">
                         <span class="text-slate-900 font-bold">31.7M</span>
@@ -4057,9 +4082,14 @@
                             <div class="flex flex-wrap gap-1 justify-center items-center mb-1">
                                 ${winningBadgesHtml}
                             </div>
-                            <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200 text-[10px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${row.date}" data-slip-cat="vipSuite">
-                                <i class="bi bi-eye-fill text-indigo-600"></i> Xem Đủ Dàn
-                            </button>
+                            <div class="flex items-center justify-center gap-1 mt-1 flex-wrap">
+                                <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200 text-[10px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${row.date}" data-slip-cat="vipSuite">
+                                    <i class="bi bi-eye-fill text-indigo-600"></i> Xem Đủ Dàn
+                                </button>
+                                <button type="button" class="btn-quick-copy-full px-2 py-0.5 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 text-[10px] font-black inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer ring-1 ring-amber-300" data-date="${row.date}" data-cat="vipSuite" title="Copy full dàn chi tiết Đề, Lô, Xiên">
+                                    <i class="bi bi-clipboard2-check-fill"></i> Copy Full
+                                </button>
+                            </div>
                         </td>
                         <td class="py-2.5 px-3 text-right">
                             <span class="text-slate-900 font-bold">28.1M</span>
@@ -4256,9 +4286,14 @@
                         <div class="text-[10px] text-slate-600">Top 5: ${pendingTop5 || '—'} · Vốn 5.5M</div>
                     </td>
                     <td class="py-3 px-3 text-center">
-                        <button type="button" class="btn-open-slip px-2.5 py-1 rounded-lg bg-violet-100 hover:bg-violet-600 text-violet-900 hover:text-white border border-violet-300 text-[11px] font-bold inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer" data-slip-date="${targetDate}" data-slip-cat="resonanceSuite">
-                            <i class="bi bi-eye-fill text-violet-600"></i> Xem Dàn Khóa
-                        </button>
+                        <div class="flex items-center justify-center gap-1.5 flex-wrap">
+                            <button type="button" class="btn-open-slip px-2.5 py-1 rounded-lg bg-violet-100 hover:bg-violet-600 text-violet-900 hover:text-white border border-violet-300 text-[11px] font-bold inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer" data-slip-date="${targetDate}" data-slip-cat="resonanceSuite">
+                                <i class="bi bi-eye-fill text-violet-600"></i> Xem Dàn Khóa
+                            </button>
+                            <button type="button" class="btn-quick-copy-full px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 text-[11px] font-black inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer ring-1 ring-amber-300" data-date="${targetDate}" data-cat="resonanceSuite" title="Copy full dàn chi tiết Đề, Lô, Xiên">
+                                <i class="bi bi-clipboard2-check-fill"></i> Copy Full Dàn
+                            </button>
+                        </div>
                     </td>
                     <td class="py-3 px-3 text-right">
                         <span class="text-slate-900 font-bold">${isTiered ? '38.3M' : '31.7M'}</span>
@@ -4351,9 +4386,14 @@
                             <div class="flex flex-wrap gap-1 justify-center items-center mb-1">
                                 ${winningBadgesHtml}
                             </div>
-                            <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200 text-[10px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${row.date}" data-slip-cat="resonanceSuite">
-                                <i class="bi bi-eye-fill text-indigo-600"></i> Xem Đủ Dàn
-                            </button>
+                            <div class="flex items-center justify-center gap-1 mt-1 flex-wrap">
+                                <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200 text-[10px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${row.date}" data-slip-cat="resonanceSuite">
+                                    <i class="bi bi-eye-fill text-indigo-600"></i> Xem Đủ Dàn
+                                </button>
+                                <button type="button" class="btn-quick-copy-full px-2 py-0.5 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 text-[10px] font-black inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer ring-1 ring-amber-300" data-date="${row.date}" data-cat="resonanceSuite" title="Copy full dàn chi tiết Đề, Lô, Xiên">
+                                    <i class="bi bi-clipboard2-check-fill"></i> Copy Full
+                                </button>
+                            </div>
                         </td>
                         <td class="py-2.5 px-3 text-right">
                             <span class="text-slate-900 font-bold">${isTiered ? '38.3M' : '31.7M'}</span>
@@ -5085,9 +5125,14 @@
                         <div class="text-[10px] text-slate-600">Top 5: ${top5Str} · Vốn ${xienStakeM}</div>
                     </td>
                     <td class="py-3 px-3 text-center">
-                        <button type="button" class="btn-open-slip px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-500 text-amber-900 hover:text-white border border-amber-300 text-[11px] font-bold inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer" data-slip-date="${targetDate}" data-slip-cat="combo">
-                            <i class="bi bi-eye-fill text-amber-600"></i> Xem Dàn Khóa
-                        </button>
+                        <div class="flex items-center justify-center gap-1.5 flex-wrap">
+                            <button type="button" class="btn-open-slip px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-500 text-amber-900 hover:text-white border border-amber-300 text-[11px] font-bold inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer" data-slip-date="${targetDate}" data-slip-cat="combo">
+                                <i class="bi bi-eye-fill text-amber-600"></i> Xem Dàn Khóa
+                            </button>
+                            <button type="button" class="btn-quick-copy-full px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 text-[11px] font-black inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer ring-1 ring-amber-300" data-date="${targetDate}" data-cat="combo" title="Copy full dàn chi tiết Đề, Lô, Xiên">
+                                <i class="bi bi-clipboard2-check-fill"></i> Copy Full Dàn
+                            </button>
+                        </div>
                     </td>
                     <td class="py-3 px-3 text-right">
                         <span class="text-slate-900 font-bold">${totalStakeM}</span>
@@ -5247,9 +5292,14 @@
                             <div class="flex flex-wrap gap-1 justify-center items-center mb-1">
                                 ${winningBadgesHtml}
                             </div>
-                            <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200 text-[10px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${row.date}" data-slip-cat="combo">
-                                <i class="bi bi-eye-fill text-amber-600"></i> Xem Đủ Dàn
-                            </button>
+                            <div class="flex items-center justify-center gap-1 mt-1 flex-wrap">
+                                <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200 text-[10px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${row.date}" data-slip-cat="combo">
+                                    <i class="bi bi-eye-fill text-amber-600"></i> Xem Đủ Dàn
+                                </button>
+                                <button type="button" class="btn-quick-copy-full px-2 py-0.5 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 text-[10px] font-black inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer ring-1 ring-amber-300" data-date="${row.date}" data-cat="combo" title="Copy full dàn chi tiết Đề, Lô, Xiên">
+                                    <i class="bi bi-clipboard2-check-fill"></i> Copy Full
+                                </button>
+                            </div>
                         </td>
                         <td class="py-2.5 px-3 text-right">
                             <span class="text-slate-900 font-bold">${formatMoneyK(row.comboDayStakeK, false)}</span>
@@ -5387,6 +5437,99 @@
     }
 
     // =========================================================================
+    // COPY CLIPBOARD HELPERS & ENSEMBLE TEXT GENERATION (STRICT PIT)
+    // =========================================================================
+    function copyTextToClipboard(text, successMessage) {
+        if (!text) return;
+        const msg = successMessage || '📋 Đã sao chép vào bộ nhớ tạm!';
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(msg);
+            }).catch(() => {
+                fallbackCopyText(text, msg);
+            });
+        } else {
+            fallbackCopyText(text, msg);
+        }
+    }
+
+    function fallbackCopyText(text, successMessage) {
+        try {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-9999px';
+            textArea.style.top = '0';
+            textArea.setAttribute('readonly', '');
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            const successful = document.execCommand('copy');
+            document.body.removeChild(textArea);
+            if (successful) {
+                showToast(successMessage || '📋 Đã sao chép vào bộ nhớ tạm!');
+            } else {
+                showToast('⚠️ Không thể tự động chép, vui lòng thử lại.');
+            }
+        } catch (err) {
+            showToast('⚠️ Trình duyệt chặn quyền copy.');
+        }
+    }
+
+    function generateFullEnsembleText(targetDate, category = null, data = null) {
+        const d = data || cachedAdvisorData;
+        if (!d) return '';
+
+        let quad = computeQuadConsensusForDate(targetDate, d);
+
+        let deX2 = [];
+        let deX1 = [];
+        let loX5 = [];
+        let loX4 = [];
+        let loX3 = [];
+        let loX1 = [];
+        let xien5List = [];
+
+        if (quad && quad.de && quad.lo) {
+            deX2 = quad.de.x2Nums || [];
+            deX1 = quad.de.x1Nums || [];
+            loX5 = quad.lo.x5Nums || [];
+            loX4 = quad.lo.x4Nums || [];
+            loX3 = quad.lo.x3Nums || [];
+            loX1 = quad.lo.x1Nums || [];
+            xien5List = quad.xien5?.top5 || [];
+        } else {
+            const isPending = !d.drawPrizesByDate?.[targetDate] || (d.drawPrizesByDate[targetDate].special === undefined);
+            const dropoffRow = isPending ? d.deDropoffMerge?.latestRecommendation : (d.deDropoffMerge?.settledLedger || []).find(r => r.date === targetDate);
+            const deNums = (dropoffRow?.numbers || dropoffRow?.top40 || []).map(numStr);
+            deX2 = deNums.slice(0, 20);
+            deX1 = deNums.slice(20, 40);
+
+            const loRow = isPending ? d.loDropoff27?.latestRecommendation : (d.loDropoff27?.settledLedger || []).find(r => r.date === targetDate);
+            const loNums = (loRow?.top7 || loRow?.numbers || []).map(numStr);
+            loX4 = loNums.slice(0, 3);
+            loX1 = loNums.slice(3, 7);
+            xien5List = loNums.slice(0, 5);
+        }
+
+        const lines = [];
+        lines.push('Đề:');
+        lines.push(`- Dàn X2: ${deX2.join(', ')}`);
+        lines.push(`- Dàn X1: ${deX1.join(', ')}`);
+        lines.push('Lô:');
+        if (loX5 && loX5.length) lines.push(`- Dàn X5: ${loX5.join(', ')}`);
+        if (loX4 && loX4.length) lines.push(`- Dàn X4: ${loX4.join(', ')}`);
+        if (loX3 && loX3.length) lines.push(`- Dàn X3: ${loX3.join(', ')}`);
+        if (loX1 && loX1.length) lines.push(`- Dàn X1: ${loX1.join(', ')}`);
+        if (xien5List && xien5List.length) {
+            lines.push(`Lô Xiên 5: ${xien5List.join(', ')}`);
+        }
+        lines.push('Chúc may mắn !');
+
+        return lines.join('\n');
+    }
+
+    // =========================================================================
     // MODAL: TRA CỨU CHI TIẾT DÀN ĐÃ ĐÁNH & ĐÁNH DẤU SỐ TRÚNG (STRICT PIT)
     // =========================================================================
     function initShadowSlipModal() {
@@ -5396,10 +5539,30 @@
         const btnOpen = byId('btnOpenShadowSlipModal');
         const btnClose = byId('btnCloseShadowSlipModal');
         const btnDismiss = byId('btnDismissShadowSlipModal');
+        const btnCopyFull = byId('btnCopyFullSlipEnsemble');
+        const btnCopyFullFooter = byId('btnCopyFullSlipEnsembleFooter');
         const selDate = byId('selShadowSlipDate');
         const btnPrev = byId('btnShadowSlipPrevDate');
         const btnNext = byId('btnShadowSlipNextDate');
         const tbody = byId('shadowLedgerTbody');
+
+        // Copy Full Ensemble Handler
+        function handleCopyFull(targetDate) {
+            const dateToUse = targetDate || (selDate ? selDate.value : (availableDatesList?.[0] || '2026-10-17'));
+            const text = generateFullEnsembleText(dateToUse, activeModalCategory, cachedAdvisorData);
+            if (text) {
+                copyTextToClipboard(text, `📋 Đã sao chép full dàn chi tiết ngày ${formatDateVi(dateToUse)}!`);
+            } else {
+                showToast('⚠️ Không tìm thấy dữ liệu dàn ngày này.');
+            }
+        }
+
+        if (btnCopyFull) {
+            btnCopyFull.onclick = () => handleCopyFull();
+        }
+        if (btnCopyFullFooter) {
+            btnCopyFullFooter.onclick = () => handleCopyFull();
+        }
 
         // Open Modal handler
         function openModal(dateToOpen, category = null) {
@@ -5496,9 +5659,15 @@
             };
         }
 
-        // Event delegation on table body for [data-slip-date]
+        // Event delegation on table body for [data-slip-date] and .btn-quick-copy-full
         if (tbody) {
             tbody.addEventListener('click', (e) => {
+                const quickCopyBtn = e.target.closest('.btn-quick-copy-full');
+                if (quickCopyBtn) {
+                    const d = quickCopyBtn.getAttribute('data-date');
+                    handleCopyFull(d);
+                    return;
+                }
                 const btn = e.target.closest('[data-slip-date]');
                 if (btn) {
                     const d = btn.getAttribute('data-slip-date');
@@ -5513,6 +5682,12 @@
         if (modalBody && !modalBody.__copyBound) {
             modalBody.__copyBound = true;
             modalBody.addEventListener('click', (e) => {
+                const copyFullBannerBtn = e.target.closest('.btn-copy-full-slip-banner');
+                if (copyFullBannerBtn) {
+                    const d = copyFullBannerBtn.getAttribute('data-date') || (selDate ? selDate.value : '');
+                    handleCopyFull(d);
+                    return;
+                }
                 const copyDropoff36Btn = e.target.closest('.btn-copy-slip-dropoff-36') || e.target.closest('.btn-copy-slip-dropoff-x3');
                 if (copyDropoff36Btn) {
                     const raw = copyDropoff36Btn.getAttribute('data-numbers') || '';
@@ -6078,6 +6253,28 @@
                 </div>
             `;
         }
+
+        const fullEnsembleBannerHtml = `
+            <div class="rounded-2xl border-2 border-amber-300 bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-amber-500/15 p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-yellow-500 flex items-center justify-center text-slate-950 text-xl font-black shadow-md flex-shrink-0 ring-2 ring-amber-300">
+                        <i class="bi bi-clipboard2-check-fill"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs sm:text-sm font-black text-slate-950 flex items-center gap-1.5 flex-wrap">
+                            <span>Full Dàn Chi Tiết Ngày ${dateVi}</span>
+                            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-200 text-amber-950 font-bold border border-amber-300">Đề X2/X1 · Lô Đa Tầng · Xiên 5</span>
+                        </div>
+                        <div class="text-[11px] text-slate-600 mt-0.5">
+                            Sao chép đầy đủ: Đề phân tầng (X2, X1), Lô đa tầng (X5, X4, X3, X1) và Lô Xiên 5.
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn-copy-full-slip-banner px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 font-black text-xs transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer ring-2 ring-amber-300 flex-shrink-0 self-stretch sm:self-auto" data-date="${targetDate}">
+                    <i class="bi bi-clipboard2-check-fill text-sm"></i> Copy Full Dàn Chi Tiết
+                </button>
+            </div>
+        `;
 
         // 2. Section Đề Khử Trùng Dropoff 40s (20s X2 @ 400K + 20s X1 @ 200K = 12.0M)
         let dropoffSectionHtml = '';
@@ -7721,19 +7918,19 @@
 
         // 14. Render Final Layout
         if (isQuadSuiteActive && quadData) {
-            container.innerHTML = resultsStripHtml + quadDeSectionHtml + quadLoSectionHtml + quadXienSectionHtml + quadSummaryCardHtml;
+            container.innerHTML = resultsStripHtml + fullEnsembleBannerHtml + quadDeSectionHtml + quadLoSectionHtml + quadXienSectionHtml + quadSummaryCardHtml;
         } else if (isTriCoreActive) {
-            container.innerHTML = resultsStripHtml + deSectionHtml + loTriCoreSectionHtml + xien5TriCoreSectionHtml + triCoreSummaryCardHtml;
+            container.innerHTML = resultsStripHtml + fullEnsembleBannerHtml + deSectionHtml + loTriCoreSectionHtml + xien5TriCoreSectionHtml + triCoreSummaryCardHtml;
         } else if (isVipSuiteActive) {
-            container.innerHTML = resultsStripHtml + de36SectionHtml + loSectionHtml + xien5SectionHtml + vipSummaryCardHtml;
+            container.innerHTML = resultsStripHtml + fullEnsembleBannerHtml + de36SectionHtml + loSectionHtml + xien5SectionHtml + vipSummaryCardHtml;
         } else if (isLoTop7Active) {
-            container.innerHTML = resultsStripHtml + loTop7SectionHtml;
+            container.innerHTML = resultsStripHtml + fullEnsembleBannerHtml + loTop7SectionHtml;
         } else if (isDe36Active) {
-            container.innerHTML = resultsStripHtml + de36SectionHtml;
+            container.innerHTML = resultsStripHtml + fullEnsembleBannerHtml + de36SectionHtml;
         } else if (isResonanceActive && resRow) {
-            container.innerHTML = resultsStripHtml + resonanceSectionHtml + resonanceSummaryCardHtml;
+            container.innerHTML = resultsStripHtml + fullEnsembleBannerHtml + resonanceSectionHtml + resonanceSummaryCardHtml;
         } else {
-            container.innerHTML = resultsStripHtml + dropoffSectionHtml + deSectionHtml + loSectionHtml + xien5SectionHtml + summaryCardHtml;
+            container.innerHTML = resultsStripHtml + fullEnsembleBannerHtml + dropoffSectionHtml + deSectionHtml + loSectionHtml + xien5SectionHtml + summaryCardHtml;
         }
     }
 
