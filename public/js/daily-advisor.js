@@ -14201,6 +14201,22 @@
     let mirofishEventsWired = false;
     let mirofishModalEventsWired = false;
 
+    function formatMirofishPnL(valK) {
+        if (valK === null || valK === undefined) return '<span class="text-slate-400 font-mono font-bold">--</span>';
+        const num = Number(valK || 0);
+        const inM = num / 1000;
+        if (inM === 0) {
+            return '<span class="text-slate-400 font-mono font-bold text-xs">0M</span>';
+        }
+        const absVal = Math.abs(inM);
+        const numStr = Number.isInteger(absVal) ? absVal.toString() : absVal.toFixed(1);
+        if (inM > 0) {
+            return `<span class="font-mono font-black text-emerald-600 text-xs whitespace-nowrap">+${numStr}M</span>`;
+        } else {
+            return `<span class="font-mono font-black text-rose-600 text-xs whitespace-nowrap">-${numStr}M</span>`;
+        }
+    }
+
     function renderMiroFishSettledTable(data, phaseFilter = currentMirofishPhase, monthFilter = currentMirofishMonth, searchDate = currentMirofishSearch) {
         const tbody = byId('mirofishSettledTableBody');
         const countInfo = byId('mirofishTableCountInfo');
@@ -14330,14 +14346,14 @@
                                 </button>
                             </div>
                         </td>
-                        <td class="py-3 px-3 text-right font-mono font-bold text-slate-700 whitespace-nowrap">
+                        <td class="py-2.5 px-2 text-right font-mono font-bold text-slate-700 whitespace-nowrap">
                             ${((pendingRec.combo?.stakeK || 0)/1000).toFixed(1)}M
                         </td>
-                        <td class="py-3 px-3 text-right font-bold text-amber-600 whitespace-nowrap">⏳ Chờ mở 18:30</td>
-                        <td class="py-3 px-3 text-right font-bold text-amber-600 whitespace-nowrap">⏳ Chờ mở 18:30</td>
-                        <td class="py-3 px-3 text-right font-bold text-amber-600 whitespace-nowrap">⏳ Chờ mở 18:30</td>
-                        <td class="py-3 px-3 text-right font-bold text-amber-600 whitespace-nowrap">⏳ Chờ mở 18:30</td>
-                        <td class="py-3 px-3 text-right font-mono font-bold text-slate-400 whitespace-nowrap">--</td>
+                        <td class="py-2.5 px-2 text-right font-mono font-bold text-slate-400 whitespace-nowrap">--</td>
+                        <td class="py-2.5 px-2 text-right font-mono font-bold text-slate-400 whitespace-nowrap">--</td>
+                        <td class="py-2.5 px-2 text-right font-mono font-bold text-slate-400 whitespace-nowrap">--</td>
+                        <td class="py-2.5 px-2.5 text-right font-bold text-amber-600 whitespace-nowrap text-xs">⏳ Chờ mở 18:30</td>
+                        <td class="py-2.5 px-2.5 text-right font-mono font-bold text-slate-400 whitespace-nowrap">--</td>
                     </tr>
                 `;
             }
@@ -14384,12 +14400,6 @@
             const comboProfit = r.combo?.profitK || 0;
             const cumProfit = r.sliceCumProfitK || 0;
 
-            const deColor = deProfit > 0 ? 'text-emerald-600' : (deProfit < 0 ? 'text-rose-600' : 'text-slate-400');
-            const loColor = loProfit > 0 ? 'text-emerald-600' : (loProfit < 0 ? 'text-rose-600' : 'text-slate-400');
-            const xienColor = xienProfit > 0 ? 'text-emerald-600' : (xienProfit < 0 ? 'text-rose-600' : 'text-slate-400');
-            const comboColor = comboProfit > 0 ? 'text-emerald-600 font-black' : (comboProfit < 0 ? 'text-rose-600 font-bold' : 'text-slate-500');
-            const cumColor = cumProfit >= 0 ? 'text-emerald-700' : 'text-rose-700';
-
             return `
                 <tr class="hover:bg-slate-50/80 transition-colors">
                     <td class="py-2.5 px-3 font-mono font-bold text-slate-900 whitespace-nowrap">
@@ -14407,7 +14417,7 @@
                         <div>${xienStatusBadge}</div>
                         <div class="text-[10px] text-slate-500 mt-0.5">5 vé Xiên 4 (5.5M)</div>
                     </td>
-                    <td class="py-2.5 px-3 text-center whitespace-nowrap">
+                    <td class="py-2.5 px-2 text-center whitespace-nowrap">
                         <div class="flex items-center justify-center gap-1.5">
                             <button type="button" class="btn-open-mirofish-modal rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white px-2.5 py-1 text-[11px] font-black transition-all shadow-xs cursor-pointer" data-date="${r.date}">
                                 👁️ Xem Đủ Dàn
@@ -14417,23 +14427,23 @@
                             </button>
                         </div>
                     </td>
-                    <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-700 whitespace-nowrap">
+                    <td class="py-2.5 px-2 text-right font-mono font-bold text-slate-700 whitespace-nowrap">
                         ${((r.combo?.stakeK || 0)/1000).toFixed(1)}M
                     </td>
-                    <td class="py-2.5 px-3 text-right font-mono font-bold ${deColor} whitespace-nowrap">
-                        ${moneyM(deProfit, { signed: true })}
+                    <td class="py-2.5 px-2 text-right whitespace-nowrap">
+                        ${formatMirofishPnL(deProfit)}
                     </td>
-                    <td class="py-2.5 px-3 text-right font-mono font-bold ${loColor} whitespace-nowrap">
-                        ${moneyM(loProfit, { signed: true })}
+                    <td class="py-2.5 px-2 text-right whitespace-nowrap">
+                        ${formatMirofishPnL(loProfit)}
                     </td>
-                    <td class="py-2.5 px-3 text-right font-mono font-bold ${xienColor} whitespace-nowrap">
-                        ${moneyM(xienProfit, { signed: true })}
+                    <td class="py-2.5 px-2 text-right whitespace-nowrap">
+                        ${formatMirofishPnL(xienProfit)}
                     </td>
-                    <td class="py-2.5 px-3 text-right font-mono text-xs ${comboColor} whitespace-nowrap">
-                        ${moneyM(comboProfit, { signed: true })}
+                    <td class="py-2.5 px-2.5 text-right whitespace-nowrap">
+                        ${formatMirofishPnL(comboProfit)}
                     </td>
-                    <td class="py-2.5 px-3 text-right font-mono font-black text-xs ${cumColor} whitespace-nowrap">
-                        ${moneyM(cumProfit, { signed: true })}
+                    <td class="py-2.5 px-2.5 text-right whitespace-nowrap">
+                        ${formatMirofishPnL(cumProfit)}
                     </td>
                 </tr>
             `;
