@@ -160,40 +160,109 @@ def run_test():
         print(f"✅ Live Combat First Row text: {first_row_text_live.strip()}")
         assert '28' in first_row_text_live, "Benchmark table should reflect 28 draws for Live Combat"
 
-        # 7. Check Daily Settled Ledger Table
+        # 7. Check Daily Settled Ledger Table with Method Focus Tabs & Payout Switcher
         ledger_rows = driver.find_elements(By.CSS_SELECTOR, '#deResearchDailyLedgerBody tr')
         print(f"✅ Daily settled ledger has {len(ledger_rows)} rows")
         assert len(ledger_rows) == 283, f"Expected 283 ledger rows, got {len(ledger_rows)}"
 
-        # Filter by Golden hits
-        filter_golden_btn = driver.find_element(By.CSS_SELECTOR, 'button[data-ledger-filter="golden"]')
-        driver.execute_script("arguments[0].click();", filter_golden_btn)
-        time.sleep(0.3)
-        golden_filtered_rows = driver.find_elements(By.CSS_SELECTOR, '#deResearchDailyLedgerBody tr')
-        print(f"✅ Filtered by Golden hits: {len(golden_filtered_rows)} rows")
-        assert len(golden_filtered_rows) == 62, f"Expected 62 golden hits in 2026, got {len(golden_filtered_rows)}"
+        # Check default method tab is Golden Intersection (62 hits in 2026)
+        count_all = driver.find_element(By.ID, 'ledgerCountAll').get_attribute('textContent')
+        count_hit = driver.find_element(By.ID, 'ledgerCountHit').get_attribute('textContent')
+        count_loss = driver.find_element(By.ID, 'ledgerCountLoss').get_attribute('textContent')
+        print(f"✅ Golden Method Status Counts -> All: {count_all}, Hit: {count_hit}, Loss: {count_loss}")
+        assert count_hit == '62', f"Expected 62 golden hits, got {count_hit}"
+        assert count_loss == '221', f"Expected 221 golden losses, got {count_loss}"
 
-        # Filter by Comprehensive Union hits
-        filter_union_btn = driver.find_element(By.CSS_SELECTOR, 'button[data-ledger-filter="union"]')
-        driver.execute_script("arguments[0].click();", filter_union_btn)
+        # Test Status Filter: Hit
+        filter_hit_btn = driver.find_element(By.CSS_SELECTOR, 'button[data-ledger-filter="hit"]')
+        driver.execute_script("arguments[0].click();", filter_hit_btn)
         time.sleep(0.3)
-        union_filtered_rows = driver.find_elements(By.CSS_SELECTOR, '#deResearchDailyLedgerBody tr')
-        print(f"✅ Filtered by Union hits: {len(union_filtered_rows)} rows")
-        assert len(union_filtered_rows) == 123, f"Expected 123 union hits in 2026, got {len(union_filtered_rows)}"
+        hit_rows = driver.find_elements(By.CSS_SELECTOR, '#deResearchDailyLedgerBody tr')
+        print(f"✅ Filtered by Golden hits: {len(hit_rows)} rows")
+        assert len(hit_rows) == 62, f"Expected 62 golden hit rows, got {len(hit_rows)}"
 
-        # Filter by Loss
+        # Test Status Filter: Loss
         filter_loss_btn = driver.find_element(By.CSS_SELECTOR, 'button[data-ledger-filter="loss"]')
         driver.execute_script("arguments[0].click();", filter_loss_btn)
         time.sleep(0.3)
-        loss_filtered_rows = driver.find_elements(By.CSS_SELECTOR, '#deResearchDailyLedgerBody tr')
-        print(f"✅ Filtered by Loss: {len(loss_filtered_rows)} rows")
-        assert len(loss_filtered_rows) == 160, f"Expected 160 losses in 2026, got {len(loss_filtered_rows)}"
+        loss_rows = driver.find_elements(By.CSS_SELECTOR, '#deResearchDailyLedgerBody tr')
+        print(f"✅ Filtered by Golden losses: {len(loss_rows)} rows")
+        assert len(loss_rows) == 221, f"Expected 221 golden loss rows, got {len(loss_rows)}"
 
-        # Reset filter to all
-        driver.execute_script("arguments[0].click();", driver.find_element(By.CSS_SELECTOR, 'button[data-ledger-filter="all"]'))
+        # Reset filter to All
+        filter_all_btn = driver.find_element(By.CSS_SELECTOR, 'button[data-ledger-filter="all"]')
+        driver.execute_script("arguments[0].click();", filter_all_btn)
         time.sleep(0.3)
 
-        # 8. Capture Screenshot of the research tab
+        # Test Payout Switcher: 1:99 vs 1:84
+        first_row_initial = driver.find_elements(By.CSS_SELECTOR, '#deResearchDailyLedgerBody tr')[0].text
+        print(f"✅ Default 1:84 first row summary: {first_row_initial.splitlines()[0] if first_row_initial else ''}")
+
+        btn_payout_99 = driver.find_element(By.ID, 'btnLedgerPayout99')
+        driver.execute_script("arguments[0].click();", btn_payout_99)
+        time.sleep(0.3)
+        first_row_99 = driver.find_elements(By.CSS_SELECTOR, '#deResearchDailyLedgerBody tr')[0].text
+        print(f"✅ Switched to 1:99 payout rate successfully")
+
+        btn_payout_84 = driver.find_element(By.ID, 'btnLedgerPayout84')
+        driver.execute_script("arguments[0].click();", btn_payout_84)
+        time.sleep(0.3)
+
+        # Test Switching Method Tab to Comprehensive Union
+        tab_union = driver.find_element(By.CSS_SELECTOR, 'button[data-ledger-method="comprehensiveUnion"]')
+        driver.execute_script("arguments[0].click();", tab_union)
+        time.sleep(0.3)
+        union_hit_count = driver.find_element(By.ID, 'ledgerCountHit').get_attribute('textContent')
+        union_loss_count = driver.find_element(By.ID, 'ledgerCountLoss').get_attribute('textContent')
+        print(f"✅ Switched to Union method -> Hits: {union_hit_count}, Loss: {union_loss_count}")
+        assert union_hit_count == '123', f"Expected 123 union hits, got {union_hit_count}"
+        assert union_loss_count == '160', f"Expected 160 union losses, got {union_loss_count}"
+
+        # Test Switching Method Tab to All Methods (Comparison view)
+        tab_all_methods = driver.find_element(By.CSS_SELECTOR, 'button[data-ledger-method="allMethods"]')
+        driver.execute_script("arguments[0].click();", tab_all_methods)
+        time.sleep(0.3)
+        header_text = driver.find_element(By.ID, 'deResearchDailyLedgerHeader').get_attribute('textContent')
+        print(f"✅ Switched to All Methods comparison table -> Header: {header_text.strip()[:60]}...")
+        assert 'Giao Thoa' in header_text
+        assert 'Shadow' in header_text
+
+        # 8. Test Day Modal Popup
+        first_row_el = driver.find_elements(By.CSS_SELECTOR, '#deResearchDailyLedgerBody tr')[0]
+        # Click row to open modal
+        driver.execute_script("arguments[0].click();", first_row_el)
+        time.sleep(0.5)
+
+        modal_el = driver.find_element(By.ID, 'modalDeResearchDayDetails')
+        assert 'hidden' not in modal_el.get_attribute('class'), "Modal should be visible after row click"
+        modal_date = driver.find_element(By.ID, 'modalDeResearchDateHeader').get_attribute('textContent')
+        modal_special = driver.find_element(By.ID, 'modalDeResearchSpecialPrize').get_attribute('textContent')
+        print(f"✅ Modal opened! Date: {modal_date}, Special Prize: {modal_special}")
+        assert modal_special != '--', "Special prize should be displayed in modal"
+
+        # Check that 4 method cards are rendered inside modal
+        cards = driver.find_elements(By.CSS_SELECTOR, '#modalDeResearchCardsContainer > div')
+        print(f"✅ Rendered {len(cards)} method cards in Day Modal")
+        assert len(cards) == 4, f"Expected 4 method cards in modal, got {len(cards)}"
+
+        # Verify winning number chip highlight if hit
+        chips_in_modal = driver.find_elements(By.CSS_SELECTOR, '#modalDeResearchCardsContainer span')
+        print(f"✅ Modal contains {len(chips_in_modal)} number chips and badges")
+
+        # Test Payout Toggle inside modal
+        modal_btn_99 = driver.find_element(By.ID, 'modalBtnPayout99')
+        driver.execute_script("arguments[0].click();", modal_btn_99)
+        time.sleep(0.2)
+        print("✅ Modal payout switched to 1:99")
+
+        # Close Modal
+        close_btn = driver.find_element(By.ID, 'btnCloseDeResearchDayModal')
+        driver.execute_script("arguments[0].click();", close_btn)
+        time.sleep(0.3)
+        assert 'hidden' in modal_el.get_attribute('class'), "Modal should be hidden after closing"
+        print("✅ Modal closed successfully")
+
+        # 9. Capture Screenshot of the research tab
         import base64
         screenshot_path = os.path.join(base_dir, 'scripts', 'screenshot-test-tab.png')
         cdp_res = driver.execute_cdp_cmd('Page.captureScreenshot', {
@@ -204,7 +273,7 @@ def run_test():
             f.write(base64.b64decode(cdp_res['data']))
         print(f"✅ Full-page screenshot saved to {screenshot_path}")
 
-        print("\n ALL UI & INTERACTION TESTS PASSED 100% SUCCESSFULLY! ")
+        print("\n🎉 ALL UI, MODAL & INTERACTION TESTS PASSED 100% SUCCESSFULLY! 🎉")
 
     finally:
         driver.quit()

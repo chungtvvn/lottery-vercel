@@ -9605,8 +9605,9 @@
         setupDeResearchWindowToggles(summary);
         renderResearchBenchmarkTable(summary);
 
-        // 5. Setup Ledger Filters & Render Settled Ledger
-        setupDeResearchLedgerFilters(settledLedger);
+        // 5. Setup Ledger Controls, Day Modal & Render Settled Ledger
+        setupDeResearchLedgerControls(settledLedger);
+        initDeResearchDayModal(settledLedger);
         renderResearchDailyLedger(settledLedger);
     }
 
@@ -9812,25 +9813,77 @@
         }).join('');
     }
 
-    function setupDeResearchLedgerFilters(ledger) {
+    // ==========================================
+    // DE RESEARCH LEDGER CONTROLS, DYNAMIC TABLE & INSPECTION MODAL
+    // ==========================================
+    let currentDeResearchLedgerMethod = 'goldenIntersection';
+    let currentDeResearchPayoutRate = 84;
+    let currentModalPayoutRate = 84;
+    let selectedDeResearchDayRow = null;
+    let activeDeResearchLedgerData = [];
+
+    function setupDeResearchLedgerControls(ledger) {
+        activeDeResearchLedgerData = ledger || [];
+
+        // 1. Method Tabs
+        const methodTabs = document.querySelectorAll('.ledger-method-tab-btn');
+        methodTabs.forEach(btn => {
+            btn.onclick = () => {
+                const method = btn.getAttribute('data-ledger-method');
+                if (!method) return;
+                currentDeResearchLedgerMethod = method;
+
+                methodTabs.forEach(b => {
+                    const m = b.getAttribute('data-ledger-method');
+                    if (m === method) {
+                        b.className = 'ledger-method-tab-btn rounded-xl border-2 border-amber-400 bg-amber-500 text-slate-950 font-black px-3 py-1.5 text-xs shadow-xs transition-all cursor-pointer';
+                    } else {
+                        b.className = 'ledger-method-tab-btn rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 font-bold px-3 py-1.5 text-xs transition-all cursor-pointer';
+                    }
+                });
+
+                // Update summary footnote
+                const footnote = byId('deResearchLedgerSummaryFootnote');
+                if (footnote) {
+                    const titles = {
+                        goldenIntersection: '👑 Vùng Giao Thoa Vàng (DA ∩ Shadow)',
+                        shadowHalf: '⭐ Shadow 1/2 Đầu Gộp (Phần 2)',
+                        comprehensiveUnion: '🛡️ Hợp Nhất Đa Tầng (DA ∪ Shadow)',
+                        dailyAdvisor4Core: '📊 Daily-Advisor 4 Core Top 20',
+                        allMethods: '🔄 So Sánh Đa Phương Pháp (Tổng Hợp)'
+                    };
+                    footnote.textContent = `Đang hiển thị: ${titles[method] || method}`;
+                }
+
+                updateLedgerFilterCounts(ledger);
+                renderResearchDailyLedger(ledger);
+            };
+        });
+
+        // 2. Payout Rate Toggle
+        const btnPayout84 = byId('btnLedgerPayout84');
+        const btnPayout99 = byId('btnLedgerPayout99');
+
+        if (btnPayout84) {
+            btnPayout84.onclick = () => {
+                currentDeResearchPayoutRate = 84;
+                btnPayout84.className = 'ledger-payout-btn rounded-xl bg-amber-500 text-slate-950 font-black px-3.5 py-1.5 text-xs shadow-xs transition-all cursor-pointer';
+                if (btnPayout99) btnPayout99.className = 'ledger-payout-btn rounded-xl text-slate-600 hover:text-slate-900 font-bold px-3.5 py-1.5 text-xs transition-all cursor-pointer';
+                renderResearchDailyLedger(ledger);
+            };
+        }
+
+        if (btnPayout99) {
+            btnPayout99.onclick = () => {
+                currentDeResearchPayoutRate = 99;
+                btnPayout99.className = 'ledger-payout-btn rounded-xl bg-amber-500 text-slate-950 font-black px-3.5 py-1.5 text-xs shadow-xs transition-all cursor-pointer';
+                if (btnPayout84) btnPayout84.className = 'ledger-payout-btn rounded-xl text-slate-600 hover:text-slate-900 font-bold px-3.5 py-1.5 text-xs transition-all cursor-pointer';
+                renderResearchDailyLedger(ledger);
+            };
+        }
+
+        // 3. Status Filters
         const filterBtns = document.querySelectorAll('.research-ledger-filter-btn');
-
-        // Update counts
-        const cntAll = byId('ledgerCountAll');
-        if (cntAll) cntAll.textContent = ledger.length;
-
-        const cntGolden = byId('ledgerCountGolden');
-        if (cntGolden) cntGolden.textContent = ledger.filter(r => r.goldenIntersection?.isHit).length;
-
-        const cntShadow = byId('ledgerCountShadow');
-        if (cntShadow) cntShadow.textContent = ledger.filter(r => r.shadowHalf?.isHit).length;
-
-        const cntUnion = byId('ledgerCountUnion');
-        if (cntUnion) cntUnion.textContent = ledger.filter(r => r.comprehensiveUnion?.isHit).length;
-
-        const cntLoss = byId('ledgerCountLoss');
-        if (cntLoss) cntLoss.textContent = ledger.filter(r => !r.comprehensiveUnion?.isHit).length;
-
         filterBtns.forEach(btn => {
             btn.onclick = () => {
                 const f = btn.getAttribute('data-ledger-filter');
@@ -9841,99 +9894,493 @@
                     if (b.getAttribute('data-ledger-filter') === f) {
                         b.className = 'research-ledger-filter-btn rounded-lg bg-indigo-600 text-white font-bold px-3 py-1.5 text-xs shadow-xs cursor-pointer';
                     } else {
-                        b.className = 'research-ledger-filter-btn rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold px-3 py-1.5 text-xs cursor-pointer';
+                        b.className = 'research-ledger-filter-btn rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 font-bold px-3 py-1.5 text-xs cursor-pointer';
                     }
                 });
 
                 renderResearchDailyLedger(ledger);
             };
         });
+
+        updateLedgerFilterCounts(ledger);
+    }
+
+    function updateLedgerFilterCounts(ledger) {
+        const cntAll = byId('ledgerCountAll');
+        const cntHit = byId('ledgerCountHit');
+        const cntLoss = byId('ledgerCountLoss');
+
+        if (cntAll) cntAll.textContent = ledger.length;
+
+        const mKey = currentDeResearchLedgerMethod;
+        let hits = 0;
+        let losses = 0;
+
+        if (mKey === 'allMethods') {
+            hits = ledger.filter(r => r.goldenIntersection?.isHit || r.shadowHalf?.isHit || r.comprehensiveUnion?.isHit).length;
+            losses = ledger.filter(r => !r.comprehensiveUnion?.isHit).length;
+        } else {
+            hits = ledger.filter(r => r[mKey]?.isHit).length;
+            losses = ledger.length - hits;
+        }
+
+        if (cntHit) cntHit.textContent = hits;
+        if (cntLoss) cntLoss.textContent = losses;
     }
 
     function renderResearchDailyLedger(ledger) {
+        const thead = byId('deResearchDailyLedgerHeader');
         const tbody = byId('deResearchDailyLedgerBody');
-        if (!tbody) return;
+        if (!tbody || !thead) return;
 
+        const method = currentDeResearchLedgerMethod || 'goldenIntersection';
+        const payoutRate = currentDeResearchPayoutRate || 84;
         const filter = currentDeResearchLedgerFilter || 'all';
-        let filtered = [...ledger];
 
-        if (filter === 'golden') {
-            filtered = filtered.filter(r => r.goldenIntersection?.isHit);
-        } else if (filter === 'shadow') {
-            filtered = filtered.filter(r => r.shadowHalf?.isHit);
-        } else if (filter === 'union') {
-            filtered = filtered.filter(r => r.comprehensiveUnion?.isHit);
-        } else if (filter === 'loss') {
-            filtered = filtered.filter(r => !r.comprehensiveUnion?.isHit);
+        // 1. Render Table Header
+        if (method !== 'allMethods') {
+            const methodNames = {
+                goldenIntersection: '👑 Giao Thoa Vàng',
+                shadowHalf: '⭐ Shadow Nửa Đầu',
+                comprehensiveUnion: '🛡️ Hợp Nhất Đa Tầng',
+                dailyAdvisor4Core: '📊 DA 4 Core'
+            };
+            const currentMethodTitle = methodNames[method] || method;
+
+            thead.innerHTML = `
+                <tr class="border-b border-slate-200 text-slate-600 uppercase font-black text-[10px]">
+                    <th class="px-4 py-3">Ngày Mở Thưởng</th>
+                    <th class="px-3 py-3 text-center">Giải ĐB</th>
+                    <th class="px-3 py-3 text-center">Trạng Thái (${currentMethodTitle})</th>
+                    <th class="px-3 py-3 text-center">Dàn Đánh</th>
+                    <th class="px-3 py-3 text-right">Tiền Cược (Vốn)</th>
+                    <th class="px-3 py-3 text-right">Tiền Thắng</th>
+                    <th class="px-4 py-3 text-right">Lãi/Lỗ Ngày (${payoutRate === 99 ? '1:99' : '1:84'})</th>
+                    <th class="px-4 py-3 text-right">Lũy Kế Lợi Nhuận</th>
+                    <th class="px-3 py-3 text-center">Chi Tiết Dàn</th>
+                </tr>
+            `;
+        } else {
+            thead.innerHTML = `
+                <tr class="border-b border-slate-200 text-slate-600 uppercase font-black text-[10px]">
+                    <th class="px-4 py-3">Ngày Mở Thưởng</th>
+                    <th class="px-3 py-3 text-center">Giải ĐB</th>
+                    <th class="px-3 py-3 text-center">Giao Thoa Vàng</th>
+                    <th class="px-3 py-3 text-center">Shadow Nửa Đầu</th>
+                    <th class="px-3 py-3 text-center">DA 4 Core</th>
+                    <th class="px-3 py-3 text-center">Hợp Nhất Đa Tầng</th>
+                    <th class="px-4 py-3 text-right">Lãi/Lỗ Giao Thoa (${payoutRate === 99 ? '1:99' : '1:84'})</th>
+                    <th class="px-4 py-3 text-right">Lũy Kế Lợi Nhuận</th>
+                    <th class="px-3 py-3 text-center">Chi Tiết Dàn</th>
+                </tr>
+            `;
         }
 
-        // Show newest first
+        // 2. Filter Rows
+        let filtered = [...ledger];
+        if (filter === 'hit') {
+            if (method === 'allMethods') {
+                filtered = filtered.filter(r => r.goldenIntersection?.isHit || r.shadowHalf?.isHit || r.comprehensiveUnion?.isHit);
+            } else {
+                filtered = filtered.filter(r => r[method]?.isHit);
+            }
+        } else if (filter === 'loss') {
+            if (method === 'allMethods') {
+                filtered = filtered.filter(r => !r.comprehensiveUnion?.isHit);
+            } else {
+                filtered = filtered.filter(r => !r[method]?.isHit);
+            }
+        }
+
+        // Reverse to show newest first
         filtered.reverse();
 
         if (filtered.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-xs text-slate-500 italic">Không có kỳ quay nào phù hợp với bộ lọc.</td></tr>';
+            const cols = method === 'allMethods' ? 9 : 9;
+            tbody.innerHTML = `<tr><td colspan="${cols}" class="text-center py-8 text-xs text-slate-500 italic">Không có kỳ quay nào phù hợp với bộ lọc đã chọn.</td></tr>`;
             return;
         }
 
+        // 3. Render Rows
         tbody.innerHTML = filtered.map(row => {
             const actual = number(row.actualStr != null ? row.actualStr : row.actualSpecial);
 
-            // Badges
-            const goldenBadge = row.goldenIntersection?.isHit
-                ? `<span class="inline-flex items-center gap-1 rounded-lg bg-amber-100 text-amber-950 font-black px-2 py-0.5 text-[11px] border border-amber-300 shadow-2xs"><i class="bi bi-star-fill text-amber-600"></i> TRÚNG (${row.goldenIntersection.count}s)</span>`
-                : `<span class="text-slate-400 font-mono text-[11px]">Trượt (${row.goldenIntersection?.count || 0}s)</span>`;
+            if (method !== 'allMethods') {
+                const mObj = row[method] || {};
+                const isHit = Boolean(mObj.isHit);
+                const count = mObj.count || (mObj.numbers ? mObj.numbers.length : 0);
+                const stakeK = mObj.stakeK != null ? mObj.stakeK : (count * 100);
+                const payoutWinK = isHit ? payoutRate * 100 : 0;
+                const dayProfitK = payoutRate === 99 
+                    ? (mObj.dayProfitK_99 != null ? mObj.dayProfitK_99 : (payoutWinK - stakeK))
+                    : (mObj.dayProfitK_84 != null ? mObj.dayProfitK_84 : (mObj.dayProfitK != null ? mObj.dayProfitK : (payoutWinK - stakeK)));
+                const accumProfitK = payoutRate === 99 
+                    ? (mObj.accumProfitK_99 != null ? mObj.accumProfitK_99 : 0)
+                    : (mObj.accumProfitK_84 != null ? mObj.accumProfitK_84 : (mObj.accumProfitK != null ? mObj.accumProfitK : 0));
 
-            const shadowBadge = row.shadowHalf?.isHit
-                ? `<span class="inline-flex items-center gap-1 rounded-lg bg-emerald-100 text-emerald-950 font-black px-2 py-0.5 text-[11px] border border-emerald-300 shadow-2xs"><i class="bi bi-check-circle-fill text-emerald-600"></i> TRÚNG (${row.shadowHalf.count}s)</span>`
-                : `<span class="text-slate-400 font-mono text-[11px]">Trượt (${row.shadowHalf?.count || 0}s)</span>`;
+                const statusBadge = isHit
+                    ? `<span class="inline-flex items-center gap-1 rounded-lg bg-emerald-100 text-emerald-950 font-black px-2.5 py-1 text-[11px] border border-emerald-300 shadow-2xs"><i class="bi bi-check-circle-fill text-emerald-600"></i> TRÚNG ĐB</span>`
+                    : `<span class="inline-flex items-center rounded-lg bg-slate-100 text-slate-500 font-bold px-2 py-0.5 text-[11px] border border-slate-200">Trượt</span>`;
 
-            const da4Badge = row.dailyAdvisor4Core?.isHit
-                ? `<span class="inline-flex items-center gap-1 rounded-lg bg-blue-100 text-blue-950 font-black px-2 py-0.5 text-[11px] border border-blue-300">TRÚNG (${row.dailyAdvisor4Core.count}s)</span>`
-                : `<span class="text-slate-400 font-mono text-[11px]">Trượt (${row.dailyAdvisor4Core?.count || 0}s)</span>`;
+                const dayPClass = dayProfitK > 0 ? 'text-emerald-600 font-black' : 'text-slate-500 font-mono';
+                const dayPText = (dayProfitK > 0 ? '+' : '') + fmt(dayProfitK * 1000) + ' đ';
 
-            const unionBadge = row.comprehensiveUnion?.isHit
-                ? `<span class="inline-flex items-center gap-1 rounded-lg bg-indigo-100 text-indigo-950 font-black px-2 py-0.5 text-[11px] border border-indigo-300 shadow-2xs"><i class="bi bi-shield-fill-check text-indigo-600"></i> TRÚNG (${row.comprehensiveUnion.count}s)</span>`
-                : `<span class="inline-flex items-center gap-1 rounded-lg bg-rose-50 text-rose-700 font-bold px-2 py-0.5 text-[11px] border border-rose-200">❌ Trượt (${row.comprehensiveUnion?.count || 0}s)</span>`;
+                const accClass = accumProfitK >= 0 ? 'text-emerald-700 font-black' : 'text-rose-600 font-bold';
+                const accText = signedM(accumProfitK);
 
-            const dayP = row.goldenIntersection?.dayProfitK || 0;
-            const dayPText = (dayP > 0 ? '+' : '') + fmt(dayP * 1000) + ' đ';
-            const dayPClass = dayP > 0 ? 'text-emerald-600 font-black' : 'text-slate-500 font-mono';
+                return `
+                    <tr class="hover:bg-amber-50/50 transition-colors border-b border-slate-100 text-xs cursor-pointer group" data-day-date="${row.date}">
+                        <td class="px-4 py-2.5 font-medium text-slate-800">
+                            ${formatDateVi(row.date)}
+                        </td>
+                        <td class="px-3 py-2.5 text-center">
+                            <span class="inline-flex items-center justify-center rounded-xl bg-slate-900 text-amber-300 font-mono text-xs font-black px-2.5 py-1 shadow-xs group-hover:ring-2 group-hover:ring-amber-400">
+                                ${actual}
+                            </span>
+                        </td>
+                        <td class="px-3 py-2.5 text-center">
+                            ${statusBadge}
+                        </td>
+                        <td class="px-3 py-2.5 text-center font-mono font-bold text-slate-800">
+                            ${count} con
+                        </td>
+                        <td class="px-3 py-2.5 text-right font-mono text-slate-600">
+                            ${fmt(stakeK * 1000)} đ
+                        </td>
+                        <td class="px-3 py-2.5 text-right font-mono font-bold ${isHit ? 'text-emerald-600' : 'text-slate-400'}">
+                            ${fmt(payoutWinK * 1000)} đ
+                        </td>
+                        <td class="px-4 py-2.5 text-right font-mono ${dayPClass}">
+                            ${dayPText}
+                        </td>
+                        <td class="px-4 py-2.5 text-right font-mono ${accClass}">
+                            ${accText}
+                        </td>
+                        <td class="px-3 py-2.5 text-center">
+                            <button type="button" class="btn-inspect-day-slip inline-flex items-center gap-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-2.5 py-1 text-[11px] font-bold shadow-2xs transition-all cursor-pointer" data-day-date="${row.date}">
+                                <i class="bi bi-eye-fill"></i> Xem Dàn
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                // All 4 Methods Side-by-Side View
+                const golden = row.goldenIntersection || {};
+                const shadow = row.shadowHalf || {};
+                const da4 = row.dailyAdvisor4Core || {};
+                const union = row.comprehensiveUnion || {};
 
-            const accP = row.goldenIntersection?.accumProfitK || 0;
-            const accText = signedM(accP);
-            const accClass = accP >= 0 ? 'text-emerald-700 font-black' : 'text-rose-600 font-bold';
+                const goldenDayP = payoutRate === 99 ? (golden.dayProfitK_99 ?? golden.dayProfitK ?? 0) : (golden.dayProfitK_84 ?? golden.dayProfitK ?? 0);
+                const goldenAccP = payoutRate === 99 ? (golden.accumProfitK_99 ?? 0) : (golden.accumProfitK_84 ?? golden.accumProfitK ?? 0);
+
+                const goldenBadge = golden.isHit
+                    ? `<span class="inline-flex items-center gap-1 rounded-lg bg-amber-100 text-amber-950 font-black px-2 py-0.5 text-[11px] border border-amber-300 shadow-2xs"><i class="bi bi-star-fill text-amber-600"></i> TRÚNG (${golden.count}s)</span>`
+                    : `<span class="text-slate-400 font-mono text-[11px]">Trượt (${golden.count || 0}s)</span>`;
+
+                const shadowBadge = shadow.isHit
+                    ? `<span class="inline-flex items-center gap-1 rounded-lg bg-emerald-100 text-emerald-950 font-black px-2 py-0.5 text-[11px] border border-emerald-300 shadow-2xs"><i class="bi bi-check-circle-fill text-emerald-600"></i> TRÚNG (${shadow.count}s)</span>`
+                    : `<span class="text-slate-400 font-mono text-[11px]">Trượt (${shadow.count || 0}s)</span>`;
+
+                const da4Badge = da4.isHit
+                    ? `<span class="inline-flex items-center gap-1 rounded-lg bg-blue-100 text-blue-950 font-black px-2 py-0.5 text-[11px] border border-blue-300">TRÚNG (${da4.count}s)</span>`
+                    : `<span class="text-slate-400 font-mono text-[11px]">Trượt (${da4.count || 0}s)</span>`;
+
+                const unionBadge = union.isHit
+                    ? `<span class="inline-flex items-center gap-1 rounded-lg bg-indigo-100 text-indigo-950 font-black px-2 py-0.5 text-[11px] border border-indigo-300 shadow-2xs"><i class="bi bi-shield-fill-check text-indigo-600"></i> TRÚNG (${union.count}s)</span>`
+                    : `<span class="inline-flex items-center gap-1 rounded-lg bg-rose-50 text-rose-700 font-bold px-2 py-0.5 text-[11px] border border-rose-200">❌ Trượt (${union.count || 0}s)</span>`;
+
+                const dayPText = (goldenDayP > 0 ? '+' : '') + fmt(goldenDayP * 1000) + ' đ';
+                const dayPClass = goldenDayP > 0 ? 'text-emerald-600 font-black' : 'text-slate-500 font-mono';
+                const accText = signedM(goldenAccP);
+                const accClass = goldenAccP >= 0 ? 'text-emerald-700 font-black' : 'text-rose-600 font-bold';
+
+                return `
+                    <tr class="hover:bg-amber-50/50 transition-colors border-b border-slate-100 text-xs cursor-pointer group" data-day-date="${row.date}">
+                        <td class="px-4 py-2.5 font-medium text-slate-800">
+                            ${formatDateVi(row.date)}
+                        </td>
+                        <td class="px-3 py-2.5 text-center">
+                            <span class="inline-flex items-center justify-center rounded-xl bg-slate-900 text-amber-300 font-mono text-xs font-black px-2.5 py-1 shadow-xs group-hover:ring-2 group-hover:ring-amber-400">
+                                ${actual}
+                            </span>
+                        </td>
+                        <td class="px-3 py-2.5 text-center">
+                            ${goldenBadge}
+                        </td>
+                        <td class="px-3 py-2.5 text-center">
+                            ${shadowBadge}
+                        </td>
+                        <td class="px-3 py-2.5 text-center">
+                            ${da4Badge}
+                        </td>
+                        <td class="px-3 py-2.5 text-center">
+                            ${unionBadge}
+                        </td>
+                        <td class="px-4 py-2.5 text-right font-mono ${dayPClass}">
+                            ${dayPText}
+                        </td>
+                        <td class="px-4 py-2.5 text-right font-mono ${accClass}">
+                            ${accText}
+                        </td>
+                        <td class="px-3 py-2.5 text-center">
+                            <button type="button" class="btn-inspect-day-slip inline-flex items-center gap-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-2.5 py-1 text-[11px] font-bold shadow-2xs transition-all cursor-pointer" data-day-date="${row.date}">
+                                <i class="bi bi-eye-fill"></i> Xem Dàn
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }
+        }).join('');
+
+        // Bind Row & Button click to Open Day Modal
+        tbody.querySelectorAll('tr[data-day-date]').forEach(rowEl => {
+            rowEl.onclick = (e) => {
+                const dateStr = rowEl.getAttribute('data-day-date');
+                if (dateStr) openDeResearchDayModal(dateStr, ledger);
+            };
+        });
+
+        tbody.querySelectorAll('.btn-inspect-day-slip').forEach(btn => {
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                const dateStr = btn.getAttribute('data-day-date');
+                if (dateStr) openDeResearchDayModal(dateStr, ledger);
+            };
+        });
+    }
+
+    // ==========================================
+    // INSPECTION MODAL: XEM CHI TIẾT DÀN SỐ & KẾT TOÁN TỪNG KỲ
+    // ==========================================
+    function initDeResearchDayModal(ledger) {
+        const modal = byId('modalDeResearchDayDetails');
+        if (!modal) return;
+
+        const btnClose = byId('btnCloseDeResearchDayModal');
+        const btnFooterClose = byId('btnFooterCloseDeResearchModal');
+
+        const closeModal = () => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            selectedDeResearchDayRow = null;
+        };
+
+        if (btnClose) btnClose.onclick = closeModal;
+        if (btnFooterClose) btnFooterClose.onclick = closeModal;
+
+        modal.onclick = (e) => {
+            if (e.target === modal) closeModal();
+        };
+
+        // Modal Payout Toggle
+        const btnM84 = byId('modalBtnPayout84');
+        const btnM99 = byId('modalBtnPayout99');
+
+        if (btnM84) {
+            btnM84.onclick = () => {
+                currentModalPayoutRate = 84;
+                btnM84.className = 'px-2.5 py-1 rounded-md bg-white text-slate-900 font-bold shadow-2xs';
+                if (btnM99) btnM99.className = 'px-2.5 py-1 rounded-md text-slate-600 font-medium hover:text-slate-900';
+                renderDeResearchDayModalContent();
+            };
+        }
+
+        if (btnM99) {
+            btnM99.onclick = () => {
+                currentModalPayoutRate = 99;
+                btnM99.className = 'px-2.5 py-1 rounded-md bg-white text-slate-900 font-bold shadow-2xs';
+                if (btnM84) btnM84.className = 'px-2.5 py-1 rounded-md text-slate-600 font-medium hover:text-slate-900';
+                renderDeResearchDayModalContent();
+            };
+        }
+    }
+
+    function openDeResearchDayModal(dateStr, ledger) {
+        const modal = byId('modalDeResearchDayDetails');
+        if (!modal) return;
+
+        const allRows = ledger || activeDeResearchLedgerData || [];
+        const row = allRows.find(r => r.date === dateStr);
+        if (!row) {
+            showToast('Không tìm thấy dữ liệu kỳ mở thưởng ngày ' + dateStr);
+            return;
+        }
+
+        selectedDeResearchDayRow = row;
+        currentModalPayoutRate = currentDeResearchPayoutRate || 84;
+
+        // Sync modal payout button styles
+        const btnM84 = byId('modalBtnPayout84');
+        const btnM99 = byId('modalBtnPayout99');
+        if (btnM84 && btnM99) {
+            if (currentModalPayoutRate === 99) {
+                btnM99.className = 'px-2.5 py-1 rounded-md bg-white text-slate-900 font-bold shadow-2xs';
+                btnM84.className = 'px-2.5 py-1 rounded-md text-slate-600 font-medium hover:text-slate-900';
+            } else {
+                btnM84.className = 'px-2.5 py-1 rounded-md bg-white text-slate-900 font-bold shadow-2xs';
+                btnM99.className = 'px-2.5 py-1 rounded-md text-slate-600 font-medium hover:text-slate-900';
+            }
+        }
+
+        const dateHeader = byId('modalDeResearchDateHeader');
+        if (dateHeader) dateHeader.textContent = formatDateVi(row.date);
+
+        const dateTitle = byId('modalDeResearchDateTitle');
+        if (dateTitle) dateTitle.textContent = `Kỳ quay ngày ${formatDateVi(row.date)}`;
+
+        const actual = number(row.actualStr != null ? row.actualStr : row.actualSpecial);
+        const specialEl = byId('modalDeResearchSpecialPrize');
+        if (specialEl) specialEl.textContent = actual;
+
+        renderDeResearchDayModalContent();
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function renderDeResearchDayModalContent() {
+        const container = byId('modalDeResearchCardsContainer');
+        if (!container || !selectedDeResearchDayRow) return;
+
+        const row = selectedDeResearchDayRow;
+        const actual = number(row.actualStr != null ? row.actualStr : row.actualSpecial);
+        const payout = currentModalPayoutRate || 84;
+
+        const methodConfigs = [
+            {
+                key: 'goldenIntersection',
+                name: '👑 Vùng Giao Thoa Vàng (DA ∩ Shadow)',
+                badge: 'Khuyên Dùng · Vốn Mỏng',
+                borderClass: 'border-amber-300 bg-amber-50/30'
+            },
+            {
+                key: 'shadowHalf',
+                name: '⭐ Shadow 1/2 Đầu Gộp (Phần 2)',
+                badge: 'Trùng Lặp > 85%',
+                borderClass: 'border-emerald-300 bg-emerald-50/20'
+            },
+            {
+                key: 'comprehensiveUnion',
+                name: '🛡️ Hợp Nhất Đa Tầng (DA ∪ Shadow)',
+                badge: 'Pháo Đài · Max Trượt 2',
+                borderClass: 'border-indigo-300 bg-indigo-50/20'
+            },
+            {
+                key: 'dailyAdvisor4Core',
+                name: '📊 Daily-Advisor 4 Core Top 20',
+                badge: 'Gộp 4 Động Cơ',
+                borderClass: 'border-slate-300 bg-slate-50/40'
+            }
+        ];
+
+        container.innerHTML = methodConfigs.map(cfg => {
+            const m = row[cfg.key] || {};
+            const isHit = Boolean(m.isHit);
+            const nums = Array.isArray(m.numbers) ? m.numbers : [];
+            const count = nums.length;
+            const stakeK = m.stakeK != null ? m.stakeK : (count * 100);
+            const payoutWinK = isHit ? payout * 100 : 0;
+            const dayProfitK = payout === 99 
+                ? (m.dayProfitK_99 != null ? m.dayProfitK_99 : (payoutWinK - stakeK))
+                : (m.dayProfitK_84 != null ? m.dayProfitK_84 : (m.dayProfitK != null ? m.dayProfitK : (payoutWinK - stakeK)));
+            const accumProfitK = payout === 99 
+                ? (m.accumProfitK_99 != null ? m.accumProfitK_99 : 0)
+                : (m.accumProfitK_84 != null ? m.accumProfitK_84 : (m.accumProfitK != null ? m.accumProfitK : 0));
+
+            const hitBadge = isHit
+                ? `<span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 text-emerald-950 font-black px-3 py-1 text-xs border border-emerald-300 shadow-2xs"><i class="bi bi-check-circle-fill text-emerald-600"></i> TRÚNG ĐB: ${actual}</span>`
+                : `<span class="inline-flex items-center rounded-full bg-slate-100 text-slate-600 font-bold px-3 py-1 text-xs border border-slate-300">TRƯỢT (${count} số)</span>`;
+
+            const dayPClass = dayProfitK > 0 ? 'text-emerald-600 font-black' : 'text-slate-600 font-bold';
+            const dayPText = (dayProfitK > 0 ? '+' : '') + fmt(dayProfitK * 1000) + ' đ';
+
+            const accClass = accumProfitK >= 0 ? 'text-emerald-700 font-black' : 'text-rose-600 font-bold';
+            const accText = signedM(accumProfitK);
+
+            const chipsHtml = nums.map(n => {
+                const s = number(n);
+                if (s === actual) {
+                    return `
+                        <span class="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 text-slate-950 font-mono text-sm font-black px-3 py-1.5 shadow-md ring-2 ring-amber-400 animate-pulse">
+                            <i class="bi bi-star-fill text-slate-950"></i>
+                            <span>${s}</span>
+                            <span class="rounded bg-slate-950 text-amber-300 text-[9px] font-black px-1.5 py-0.5">NỔ ĐB</span>
+                        </span>
+                    `;
+                }
+                return `
+                    <span class="inline-flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-800 font-mono text-xs font-bold px-2.5 py-1.5 shadow-2xs">
+                        ${s}
+                    </span>
+                `;
+            }).join('');
 
             return `
-                <tr class="hover:bg-slate-50/80 transition-colors border-b border-slate-100 text-xs">
-                    <td class="px-4 py-2.5 font-medium text-slate-800">
-                        ${formatDateVi(row.date)}
-                    </td>
-                    <td class="px-3 py-2.5 text-center">
-                        <span class="inline-flex items-center justify-center rounded-xl bg-slate-900 text-amber-300 font-mono text-xs font-black px-2.5 py-1 shadow-xs">
-                            ${actual}
-                        </span>
-                    </td>
-                    <td class="px-3 py-2.5 text-center">
-                        ${goldenBadge}
-                    </td>
-                    <td class="px-3 py-2.5 text-center">
-                        ${shadowBadge}
-                    </td>
-                    <td class="px-3 py-2.5 text-center">
-                        ${da4Badge}
-                    </td>
-                    <td class="px-3 py-2.5 text-center">
-                        ${unionBadge}
-                    </td>
-                    <td class="px-4 py-2.5 text-right font-mono ${dayPClass}">
-                        ${dayPText}
-                    </td>
-                    <td class="px-4 py-2.5 text-right font-mono ${accClass}">
-                        ${accText}
-                    </td>
-                </tr>
+                <div class="rounded-2xl border ${cfg.borderClass} p-4 sm:p-5 shadow-xs space-y-3.5">
+                    <!-- Card Top Header -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-3">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h4 class="font-black text-sm sm:text-base text-slate-900">${cfg.name}</h4>
+                                <span class="rounded border px-2 py-0.5 text-[10px] font-bold bg-white text-slate-700 border-slate-300">${cfg.badge}</span>
+                            </div>
+                            <div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-600">
+                                <span>Dàn: <strong class="text-slate-900 font-mono">${count}</strong> số</span>
+                                <span>•</span>
+                                <span>Tiền cược: <strong class="text-slate-900 font-mono">${fmt(stakeK * 1000)} đ</strong></span>
+                                <span>•</span>
+                                <span>Tiền thắng: <strong class="${isHit ? 'text-emerald-700 font-bold' : 'text-slate-500'} font-mono">${fmt(payoutWinK * 1000)} đ</strong></span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            ${hitBadge}
+                            <button type="button" class="btn-copy-modal-day-nums inline-flex items-center gap-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-3 py-1.5 shadow-xs transition-all cursor-pointer" data-copy-nums="${nums.join(' ')}">
+                                <i class="bi bi-clipboard"></i> Copy (${count}s)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Financial Summary Pill Strip -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-white/80 p-2.5 rounded-xl border border-slate-200 text-xs">
+                        <div>
+                            <span class="text-[10px] text-slate-500 block uppercase font-bold">Vốn Cược Ngày</span>
+                            <span class="font-mono font-bold text-slate-800">${fmt(stakeK * 1000)} đ</span>
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-slate-500 block uppercase font-bold">Tiền Trúng (${payout}:1)</span>
+                            <span class="font-mono font-bold ${isHit ? 'text-emerald-600' : 'text-slate-400'}">${fmt(payoutWinK * 1000)} đ</span>
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-slate-500 block uppercase font-bold">Lãi Ròng Ngày</span>
+                            <span class="font-mono ${dayPClass}">${dayPText}</span>
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-slate-500 block uppercase font-bold">Lũy Kế Lợi Nhuận</span>
+                            <span class="font-mono ${accClass}">${accText}</span>
+                        </div>
+                    </div>
+
+                    <!-- Number Chips Container -->
+                    <div>
+                        <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Danh sách số đánh ngày ${formatDateVi(row.date)}:</div>
+                        <div class="flex flex-wrap gap-1.5">
+                            ${chipsHtml}
+                        </div>
+                    </div>
+                </div>
             `;
         }).join('');
+
+        // Bind copy buttons inside modal
+        container.querySelectorAll('.btn-copy-modal-day-nums').forEach(btn => {
+            btn.onclick = () => {
+                const numsStr = btn.getAttribute('data-copy-nums');
+                if (numsStr) {
+                    copyNumbers(numsStr.split(' '), ' ');
+                    showToast('Đã sao chép dàn số vào bộ nhớ đệm!');
+                }
+            };
+        });
     }
 
     // ==========================================
