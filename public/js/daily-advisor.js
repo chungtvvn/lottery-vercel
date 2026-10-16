@@ -319,11 +319,9 @@
     // ==========================================
     function setupTabSwitching() {
         const btnUnified = byId('tabBtnUnifiedCombat');
-        const btnMirofish = byId('tabBtnMiroFishSwarm');
         const btnDual = byId('tabBtnDualMerge');
 
         const viewUnified = byId('unifiedCombatView');
-        const viewMirofish = byId('mirofishSwarmView');
         const viewDual = byId('dualMergeView');
 
         function switchTab(tab) {
@@ -333,29 +331,17 @@
             btnUnified?.classList.remove('bg-gradient-to-r', 'from-amber-500', 'via-indigo-600', 'to-violet-600', 'text-white', 'font-black', 'shadow-md');
             btnUnified?.classList.add('text-slate-600', 'hover:bg-slate-100', 'font-bold');
 
-            btnMirofish?.classList.remove('bg-gradient-to-r', 'from-cyan-600', 'via-teal-600', 'to-blue-600', 'text-white', 'font-black', 'shadow-md');
-            btnMirofish?.classList.add('text-slate-600', 'hover:bg-slate-100', 'font-bold');
-
             btnDual?.classList.remove('bg-gradient-to-r', 'from-amber-500', 'to-indigo-600', 'text-white', 'font-black', 'shadow-md');
             btnDual?.classList.add('text-slate-600', 'hover:bg-slate-100', 'font-bold');
 
             // Hide all tab views
             viewUnified?.classList.add('hidden');
-            viewMirofish?.classList.add('hidden');
             viewDual?.classList.add('hidden');
 
             if (tab === 'unifiedCombat') {
                 btnUnified?.classList.add('bg-gradient-to-r', 'from-amber-500', 'via-indigo-600', 'to-violet-600', 'text-white', 'font-black', 'shadow-md');
                 btnUnified?.classList.remove('text-slate-600', 'hover:bg-slate-100', 'font-bold');
                 viewUnified?.classList.remove('hidden');
-            } else if (tab === 'mirofishSwarm') {
-                btnMirofish?.classList.add('bg-gradient-to-r', 'from-cyan-600', 'via-teal-600', 'to-blue-600', 'text-white', 'font-black', 'shadow-md');
-                btnMirofish?.classList.remove('text-slate-600', 'hover:bg-slate-100', 'font-bold');
-                viewMirofish?.classList.remove('hidden');
-
-                if (payload?.mirofishSwarm) {
-                    renderMiroFishSwarmView(payload.mirofishSwarm);
-                }
             } else {
                 btnDual?.classList.add('bg-gradient-to-r', 'from-amber-500', 'to-indigo-600', 'text-white', 'font-black', 'shadow-md');
                 btnDual?.classList.remove('text-slate-600', 'hover:bg-slate-100', 'font-bold');
@@ -368,7 +354,6 @@
         }
 
         if (btnUnified) btnUnified.onclick = () => switchTab('unifiedCombat');
-        if (btnMirofish) btnMirofish.onclick = () => switchTab('mirofishSwarm');
         if (btnDual) btnDual.onclick = () => switchTab('dualMerge');
     }
 
@@ -14846,7 +14831,7 @@
     }
 
     function renderMiroFishSwarmView(data) {
-        if (!data) return;
+        if (!data || !byId('mirofishSettledTableBody')) return;
         currentMirofishData = data;
 
         const rec = data.latestRecommendation;
