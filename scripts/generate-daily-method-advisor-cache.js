@@ -140,7 +140,7 @@ async function main() {
         if (top5Candidate.length >= 5) {
             registryService.registerDailyBet(expectedPredictionDate, 'loXien5', {
                 top5: top5Candidate.slice(0, 5).map(n => String(n).padStart(2, '0')),
-                stakeK: 5500
+                stakeK: 55000
             });
         }
         if (cache.lo4EngineFusion?.latestRecommendation) {
