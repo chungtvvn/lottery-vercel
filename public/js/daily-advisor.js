@@ -3746,7 +3746,7 @@
                                 <div class="font-black text-amber-900 text-xs flex items-center gap-1.5">
                                     <i class="bi bi-stars text-amber-600"></i> 👑 Dàn Xiên 5 (5 Dàn Xiên 4)
                                 </div>
-                                <div class="text-[10px] text-slate-600 mt-0.5">Ngày ${formatDateVi(info.date)} · Cược 1.1M/dàn (Tổng vốn 5.5M)</div>
+                                <div class="text-[10px] text-slate-600 mt-0.5">Ngày ${formatDateVi(info.date)} · Cược 11M/dàn (Tổng vốn 55M)</div>
                             </div>
                             <span class="rounded bg-amber-100 text-amber-900 border border-amber-300 text-[11px] font-black px-2 py-0.5">🔒 ĐÃ KHÓA</span>
                         </div>
@@ -3761,13 +3761,13 @@
                                     <div class="flex items-center justify-between bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 shadow-2xs">
                                         <span class="text-amber-800 font-bold">Dàn ${idx + 1}:</span>
                                         <span class="text-slate-900 font-bold">${t.join(' - ')}</span>
-                                        <span class="text-[10px] text-emerald-700 font-bold">1.1M ➔ 1.2M / 8.4M / 38.4M</span>
+                                        <span class="text-[10px] text-emerald-700 font-bold">11M ➔ Trúng 2: 12M / Trúng 3: 84M / Trúng 4: 384M</span>
                                     </div>
                                 `).join('')}
                             </div>
                         </div>
                         <div class="pt-2 border-t border-slate-200 grid grid-cols-2 gap-2 text-[11px] font-mono">
-                            <div><span class="text-[9px] text-slate-500 uppercase font-bold">Vốn 5 Dàn:</span> <strong class="text-slate-900 font-black">5.500K (5.5M)</strong></div>
+                            <div><span class="text-[9px] text-slate-500 uppercase font-bold">Vốn 5 Dàn:</span> <strong class="text-slate-900 font-black">55.000K (55M)</strong></div>
                             <div class="text-right"><span class="text-[9px] text-slate-500 uppercase font-bold">Trạng Thái:</span> <strong class="text-amber-700 font-black">⏳ Chờ mở thưởng</strong></div>
                         </div>
                     </div>
@@ -3782,15 +3782,15 @@
 
             let resultBadgeHtml = '';
             if (h5Hits === 5) {
-                resultBadgeHtml = `<span class="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black ring-1 ring-amber-300 shadow-xs px-2 py-0.5 text-[11px]">👑 ĂN 5 DÀN (+186.5M)</span>`;
+                resultBadgeHtml = `<span class="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black ring-1 ring-amber-300 shadow-xs px-2 py-0.5 text-[11px]">👑 ĂN 5 DÀN (+1.865M)</span>`;
             } else if (h5Hits === 4) {
-                resultBadgeHtml = `<span class="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black ring-1 ring-amber-300 shadow-xs px-2 py-0.5 text-[11px]">👑 ĂN 5/5 DÀN (+66.5M)</span>`;
+                resultBadgeHtml = `<span class="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black ring-1 ring-amber-300 shadow-xs px-2 py-0.5 text-[11px]">👑 ĂN 5/5 DÀN (+665M)</span>`;
             } else if (h5Hits === 3) {
-                resultBadgeHtml = `<span class="inline-flex items-center gap-1 rounded-lg bg-purple-600 text-white font-black px-2 py-0.5 text-[11px] shadow-xs">🔥 ĂN 5/5 DÀN (+14.9M)</span>`;
+                resultBadgeHtml = `<span class="inline-flex items-center gap-1 rounded-lg bg-purple-600 text-white font-black px-2 py-0.5 text-[11px] shadow-xs">🔥 ĂN 5/5 DÀN (+149M)</span>`;
             } else if (h5Hits === 2) {
-                resultBadgeHtml = `<span class="inline-flex items-center gap-1 rounded-lg bg-teal-600 text-white font-bold px-2 py-0.5 text-[11px] shadow-xs">🛡️ ĂN 3 DÀN X2 (3.6M / -1.9M)</span>`;
+                resultBadgeHtml = `<span class="inline-flex items-center gap-1 rounded-lg bg-teal-600 text-white font-bold px-2 py-0.5 text-[11px] shadow-xs">🛡️ ĂN 3 DÀN X2 (36M / -19M)</span>`;
             } else {
-                resultBadgeHtml = `<span class="inline-flex items-center gap-1 rounded-lg bg-rose-100 text-rose-800 border border-rose-300 font-bold px-2 py-0.5 text-[11px]">❌ Trượt (-5.5M)</span>`;
+                resultBadgeHtml = `<span class="inline-flex items-center gap-1 rounded-lg bg-rose-100 text-rose-800 border border-rose-300 font-bold px-2 py-0.5 text-[11px]">❌ Trượt (-55M)</span>`;
             }
 
             return `
@@ -3800,7 +3800,7 @@
                             <div class="font-black text-amber-900 text-xs flex items-center gap-1.5">
                                 <i class="bi bi-stars text-amber-600"></i> 👑 Dàn Xiên 5 (5 Dàn Xiên 4)
                             </div>
-                            <div class="text-[10px] text-slate-600 mt-0.5">Ngày ${formatDateVi(info.date)} · Vốn 1.1M/dàn (Tổng 5.5M) · Lũy kế: <strong class="${(info.cumLoXien5ProfitK ?? 0) >= 0 ? 'text-amber-800' : 'text-rose-700'} font-mono font-black">${moneyM(info.cumLoXien5ProfitK ?? 0, { signed: true })}</strong></div>
+                            <div class="text-[10px] text-slate-600 mt-0.5">Ngày ${formatDateVi(info.date)} · Vốn 11M/dàn (Tổng 55M) · Lũy kế: <strong class="${(info.cumLoXien5ProfitK ?? 0) >= 0 ? 'text-amber-800' : 'text-rose-700'} font-mono font-black">${moneyM(info.cumLoXien5ProfitK ?? 0, { signed: true })}</strong></div>
                         </div>
                         <div class="text-right">
                             ${resultBadgeHtml}
@@ -3817,23 +3817,23 @@
                                 return `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg font-mono text-xs ${hit ? 'bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black ring-2 ring-emerald-300 scale-105 shadow-sm animate-pulse' : 'bg-slate-100 border border-slate-300 text-slate-950 font-black shadow-2xs'}">${n}${hit ? ' ⭐' : ''}</span>`;
                             }).join('')}
                         </div>
-                        <div class="text-[10px] font-bold text-slate-700 mb-1 uppercase">Chi Tiết 5 Dàn Xiên 4 (1.1M/dàn):</div>
+                        <div class="text-[10px] font-bold text-slate-700 mb-1 uppercase">Chi Tiết 5 Dàn Xiên 4 (11M/dàn · 55M tổng):</div>
                         <div class="space-y-1 font-mono text-xs">
                             ${tkList.map((t, idx) => {
                                 const hitCount = t.filter(num => drawPrizesSet.has(num)).length;
                                 let danResultText = '';
                                 let danClass = 'bg-white border-slate-200 text-slate-700';
                                 if (hitCount === 4) {
-                                    danResultText = '👑 Ăn 4 con: 38.4M (Lãi +37.3M)';
+                                    danResultText = '👑 Ăn 4 con: 384M (Lãi +373M)';
                                     danClass = 'bg-amber-100 border-2 border-amber-400 text-amber-950 font-black';
                                 } else if (hitCount === 3) {
-                                    danResultText = '🔥 Ăn 3 con: 8.4M (Lãi +7.3M)';
+                                    danResultText = '🔥 Ăn 3 con: 84M (Lãi +73M)';
                                     danClass = 'bg-purple-100 border-2 border-purple-400 text-purple-950 font-black';
                                 } else if (hitCount === 2) {
-                                    danResultText = '✨ Ăn 2 con: 1.2M (Lãi +100K)';
+                                    danResultText = '✨ Ăn 2 con: 12M (Lãi +1M)';
                                     danClass = 'bg-teal-100 border-2 border-teal-400 text-teal-950 font-bold';
                                 } else {
-                                    danResultText = `${hitCount}/4 con · Trượt (-1.1M)`;
+                                    danResultText = `${hitCount}/4 con · Trượt (-11M)`;
                                 }
                                 return `
                                     <div class="flex items-center justify-between ${danClass} border rounded-lg px-2.5 py-1 shadow-2xs">
@@ -3846,7 +3846,7 @@
                         </div>
                     </div>
                     <div class="pt-2 border-t border-slate-200 grid grid-cols-4 gap-2 text-[11px] font-mono">
-                        <div><div class="text-[9px] text-slate-500 uppercase font-bold">Vốn Cược</div><div class="font-black text-slate-800">5.500K (5.5M)</div></div>
+                        <div><div class="text-[9px] text-slate-500 uppercase font-bold">Vốn Cược</div><div class="font-black text-slate-800">55.000K (55M)</div></div>
                         <div><div class="text-[9px] text-slate-500 uppercase font-bold">Tiền Thưởng</div><div class="font-black ${payoutK > 0 ? 'text-amber-700' : 'text-slate-500'}">${payoutK > 0 ? moneyM(payoutK) : '0đ'}</div></div>
                         <div><div class="text-[9px] text-slate-500 uppercase font-bold">Lãi/Lỗ Ròng</div><div class="font-black ${profitK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${moneyM(profitK, { signed: true })}</div></div>
                         <div class="text-right"><div class="text-[9px] text-slate-500 uppercase font-bold">Lũy Kế Xiên 5</div><div class="font-black ${(info.cumLoXien5ProfitK ?? 0) >= 0 ? 'text-amber-700' : 'text-rose-700'}">${moneyM(info.cumLoXien5ProfitK ?? 0, { signed: true })}</div></div>
@@ -4920,15 +4920,17 @@
 
             let xienPayoutK = regSettlement?.xienPayoutK;
             const xienStakeK = regSettlement?.xienStakeK != null ? regSettlement.xienStakeK : (regBet?.xien4?.stakeK || 11000);
-            if (xienPayoutK == null && hasDrawPrizes) {
+            if (xienHitsCount === 3 && (xienPayoutK == null || xienPayoutK === 120000)) {
+                xienPayoutK = 84000;
+            } else if (xienPayoutK == null && hasDrawPrizes) {
                 if (xienHitsCount === 4) xienPayoutK = 384000;
-                else if (xienHitsCount === 3) xienPayoutK = 120000;
+                else if (xienHitsCount === 3) xienPayoutK = 84000;
                 else if (xienHitsCount === 2) xienPayoutK = 12000;
                 else xienPayoutK = 0;
             } else if (xienPayoutK == null) {
                 xienPayoutK = 0;
             }
-            const dayXien4ProfitK = regSettlement?.xienProfitK != null ? regSettlement.xienProfitK : (xienPayoutK - xienStakeK);
+            const dayXien4ProfitK = (regSettlement?.xienProfitK != null && xienPayoutK !== 84000) ? regSettlement.xienProfitK : (xienPayoutK - xienStakeK);
 
             return {
                 date,
@@ -5228,8 +5230,8 @@
                         <th class="px-3 py-3">Bộ 5 Số Vàng (Đồng thuận)</th>
                         <th class="px-3 py-3">Chi Tiết 5 Dàn Xiên 4</th>
                         <th class="px-3 py-3 text-center">Số Con Về / Dàn Nổ</th>
-                        <th class="px-3 py-3">Trạng Thái Thưởng (1.1M/dàn)</th>
-                        <th class="px-3 py-3 text-right">Lãi/Lỗ Ngày (Vốn 5.5M)</th>
+                        <th class="px-3 py-3">Trạng Thái Thưởng (11M/dàn)</th>
+                        <th class="px-3 py-3 text-right">Lãi/Lỗ Ngày (Vốn 55M)</th>
                         <th class="px-3 py-3 text-right">Lũy Kế Xiên 5</th>
                     </tr>
                 `;
@@ -7317,7 +7319,7 @@
                             </td>
                             <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
                                 <div class="font-bold text-xs text-amber-600">⏳ Chờ KQ</div>
-                                <div class="text-[10px] text-slate-400 font-sans">Vốn 5.5M</div>
+                                <div class="text-[10px] text-slate-400 font-sans">Vốn 55M</div>
                             </td>
                             <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
                                 <div class="font-black text-xs ${(r.cumLoXien5ProfitK || 0) >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
@@ -7334,15 +7336,15 @@
                 const isWin = evalX5.isWin;
                 const profitK = loXien5Info.profitK != null ? loXien5Info.profitK : evalX5.profitK;
 
-                let rewardStatusHtml = `<span class="inline-flex items-center gap-1 rounded bg-rose-100 text-rose-800 px-2 py-0.5 text-xs font-semibold">❌ Trượt (-5.5M)</span>`;
+                let rewardStatusHtml = `<span class="inline-flex items-center gap-1 rounded bg-rose-100 text-rose-800 px-2 py-0.5 text-xs font-semibold">❌ Trượt (-55M)</span>`;
                 if (h5Hits === 5) {
-                    rewardStatusHtml = `<span class="inline-flex items-center gap-1 rounded bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black px-2.5 py-1 text-xs shadow-xs ring-1 ring-amber-500">👑 ĂN 5 DÀN = +186.5M</span>`;
+                    rewardStatusHtml = `<span class="inline-flex items-center gap-1 rounded bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black px-2.5 py-1 text-xs shadow-xs ring-1 ring-amber-500">👑 ĂN 5 DÀN = +1.865M</span>`;
                 } else if (h5Hits === 4) {
-                    rewardStatusHtml = `<span class="inline-flex items-center gap-1 rounded bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black px-2.5 py-1 text-xs shadow-xs ring-1 ring-amber-500">👑 ĂN 5/5 DÀN = +66.5M</span>`;
+                    rewardStatusHtml = `<span class="inline-flex items-center gap-1 rounded bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black px-2.5 py-1 text-xs shadow-xs ring-1 ring-amber-500">👑 ĂN 5/5 DÀN = +665M</span>`;
                 } else if (h5Hits === 3) {
-                    rewardStatusHtml = `<span class="inline-flex items-center gap-1 rounded bg-purple-600 text-white font-black px-2.5 py-1 text-xs shadow-xs">🔥 ĂN 5/5 DÀN = +14.9M</span>`;
+                    rewardStatusHtml = `<span class="inline-flex items-center gap-1 rounded bg-purple-600 text-white font-black px-2.5 py-1 text-xs shadow-xs">🔥 ĂN 5/5 DÀN = +149M</span>`;
                 } else if (h5Hits === 2) {
-                    rewardStatusHtml = `<span class="inline-flex items-center gap-1 rounded bg-teal-600 text-white font-bold px-2.5 py-1 text-xs shadow-xs">🛡️ ĂN 3 DÀN X2 = 3.6M (-1.9M)</span>`;
+                    rewardStatusHtml = `<span class="inline-flex items-center gap-1 rounded bg-teal-600 text-white font-bold px-2.5 py-1 text-xs shadow-xs">🛡️ ĂN 3 DÀN X2 = 36M (-19M)</span>`;
                 }
 
                 return `
@@ -7367,13 +7369,13 @@
                                     let tText = `D${i+1}: trượt`;
                                     let tClass = 'bg-slate-100 text-slate-950 border border-slate-300 font-bold shadow-2xs';
                                     if (hitCount === 4) {
-                                        tText = `D${i+1}: 4s (38.4M)`;
+                                        tText = `D${i+1}: 4s (384M)`;
                                         tClass = 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black ring-1 ring-amber-400 shadow-xs animate-pulse';
                                     } else if (hitCount === 3) {
-                                        tText = `D${i+1}: 3s (8.4M)`;
+                                        tText = `D${i+1}: 3s (84M)`;
                                         tClass = 'bg-purple-600 text-white font-black shadow-xs';
                                     } else if (hitCount === 2) {
-                                        tText = `D${i+1}: 2s (1.2M)`;
+                                        tText = `D${i+1}: 2s (12M)`;
                                         tClass = 'bg-teal-600 text-white font-black shadow-xs';
                                     }
                                     return `<span class="inline-block px-1.5 py-0.5 rounded font-mono text-[10px] ${tClass}">[${t.join('-')}] ${tText}</span>`;
@@ -7395,7 +7397,7 @@
                             <div class="font-black text-xs ${profitK > 0 ? 'text-emerald-600' : 'text-rose-600'}">
                                 ${moneyM(profitK, { signed: true })}
                             </div>
-                            <div class="text-[10px] text-slate-400 font-sans">Vốn 5.5M</div>
+                            <div class="text-[10px] text-slate-400 font-sans">Vốn 55M</div>
                         </td>
                         <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
                             <div class="font-black text-xs ${(r.cumLoXien5ProfitK || 0) >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
@@ -7502,7 +7504,7 @@
                         <!-- Cột 5: Dàn Xiên 5 (5 Dàn Quây 4) -->
                         <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-indigo-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXien5">
                             <div class="text-[11px] font-bold text-indigo-950 flex items-center gap-1">
-                                <i class="bi bi-stars text-indigo-600 text-[10px]"></i> <span>5 Dàn Xiên 4 (Vốn 5.5M)</span>
+                                <i class="bi bi-stars text-indigo-600 text-[10px]"></i> <span>5 Dàn Xiên 4 (Vốn 55M)</span>
                             </div>
                             <div class="flex items-center gap-1.5 mt-0.5 text-xs">
                                 <span class="text-amber-600 font-bold">⏳ Chờ mở</span>
@@ -7511,7 +7513,7 @@
                                 </span>
                             </div>
                             <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
-                                <span>5 dàn X4 · 1.1M/dàn</span>
+                                <span>5 dàn X4 · 11M/dàn</span>
                                 <span class="diary-expand-indicator text-indigo-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
                             </div>
                             <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-indigo-200/50 pt-0.5">
@@ -7701,10 +7703,10 @@
                         </div>` : ''}
                         <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
                             <span>${(() => {
-                                if (xienHitsCount === 4) return '<strong class="text-amber-700">Ăn toàn bộ 11 vé Quây</strong>';
-                                if (xienHitsCount === 3) return '<strong class="text-purple-700">Ăn 1 vé X3 + 3 vé X2</strong>';
-                                if (xienHitsCount === 2) return '<strong class="text-emerald-700">Ăn 1 vé X2 (Thu hồi vốn)</strong>';
-                                return 'Quây 11 vé Top 4 nòng cốt';
+                                if (xienHitsCount === 4) return '<strong class="text-amber-700">Ăn 384M (Lãi +373M)</strong>';
+                                if (xienHitsCount === 3) return '<strong class="text-purple-700">Ăn 84M (Lãi +73M)</strong>';
+                                if (xienHitsCount === 2) return '<strong class="text-emerald-700">Ăn 12M (Lãi +1M)</strong>';
+                                return 'Vốn 11M · Trúng 2: 12M, 3: 84M, 4: 384M';
                             })()}</span>
                             <span class="diary-expand-indicator text-purple-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
                         </div>

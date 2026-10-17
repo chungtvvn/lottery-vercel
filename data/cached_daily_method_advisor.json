@@ -1847146,7 +1847146,8 @@
       "cumulativeRoi": 0.1609,
       "maxConsecutiveLossDays": 6,
       "totalStakeK": 46331105,
-      "isAcceptancePassed": false
+      "isAcceptancePassed": false,
+      "cumulativeNetProfitK": 7174290
     },
     "settledLedger": [
       {
@@ -1856105,7 +1856106,8 @@
         "cumDeProfitK": -868000,
         "cumLoProfitK": 5728800,
         "cumXienProfitK": 2252000,
-        "isVipHit": false
+        "isVipHit": false,
+        "liveCumulativeProfitK": 9200
       },
       {
         "date": "2026-08-29",
@@ -1856143,7 +1856145,8 @@
         "cumDeProfitK": -945000,
         "cumLoProfitK": 5742000,
         "cumXienProfitK": 2241000,
-        "isVipHit": false
+        "isVipHit": false,
+        "liveCumulativeProfitK": -65600
       },
       {
         "date": "2026-08-30",
@@ -1856181,7 +1856184,8 @@
         "cumulativeProfitK": 7286800,
         "cumDeProfitK": -770000,
         "cumLoProfitK": 5814800,
-        "cumXienProfitK": 2242000
+        "cumXienProfitK": 2242000,
+        "liveCumulativeProfitK": 183200
       },
       {
         "date": "2026-08-31",
@@ -1856219,7 +1856223,8 @@
         "cumDeProfitK": -847000,
         "cumLoProfitK": 5849800,
         "cumXienProfitK": 2243000,
-        "isVipHit": false
+        "isVipHit": false,
+        "liveCumulativeProfitK": 142200
       },
       {
         "date": "2026-09-01",
@@ -1856257,7 +1856262,8 @@
         "cumDeProfitK": -924000,
         "cumLoProfitK": 5932800,
         "cumXienProfitK": 2316000,
-        "isVipHit": false
+        "isVipHit": false,
+        "liveCumulativeProfitK": 221200
       },
       {
         "date": "2026-09-02",
@@ -1856295,7 +1856301,8 @@
         "cumDeProfitK": -1001000,
         "cumLoProfitK": 5963400,
         "cumXienProfitK": 2305000,
-        "isVipHit": false
+        "isVipHit": false,
+        "liveCumulativeProfitK": 163800
       },
       {
         "date": "2026-09-03",
@@ -1856333,7 +1856340,8 @@
         "cumDeProfitK": -994000,
         "cumLoProfitK": 5918400,
         "cumXienProfitK": 2294000,
-        "isVipHit": false
+        "isVipHit": false,
+        "liveCumulativeProfitK": 114800
       },
       {
         "date": "2026-09-04",
@@ -1856371,7 +1856379,8 @@
         "cumulativeProfitK": 7407200,
         "cumDeProfitK": -819000,
         "cumLoProfitK": 5943200,
-        "cumXienProfitK": 2283000
+        "cumXienProfitK": 2283000,
+        "liveCumulativeProfitK": 303600
       },
       {
         "date": "2026-09-05",
@@ -1856409,7 +1856418,8 @@
         "cumDeProfitK": -896000,
         "cumLoProfitK": 5970200,
         "cumXienProfitK": 2272000,
-        "isVipHit": false
+        "isVipHit": false,
+        "liveCumulativeProfitK": 242600
       },
       {
         "date": "2026-09-06",
@@ -1856447,7 +1856457,8 @@
         "cumulativeProfitK": 7535000,
         "cumDeProfitK": -721000,
         "cumLoProfitK": 5995000,
-        "cumXienProfitK": 2261000
+        "cumXienProfitK": 2261000,
+        "liveCumulativeProfitK": 431400
       },
       {
         "date": "2026-09-07",
@@ -1856485,7 +1856496,8 @@
         "cumDeProfitK": -798000,
         "cumLoProfitK": 5955800,
         "cumXienProfitK": 2250000,
-        "isVipHit": false
+        "isVipHit": false,
+        "liveCumulativeProfitK": 304200
       },
       {
         "date": "2026-09-08",
@@ -1856523,7 +1856535,8 @@
         "cumDeProfitK": -875000,
         "cumLoProfitK": 5926800,
         "cumXienProfitK": 2239000,
-        "isVipHit": false
+        "isVipHit": false,
+        "liveCumulativeProfitK": 187200
       },
       {
         "date": "2026-09-09",
@@ -1856561,7 +1856574,8 @@
         "cumDeProfitK": -868000,
         "cumLoProfitK": 5961800,
         "cumXienProfitK": 2228000,
-        "isVipHit": false
+        "isVipHit": false,
+        "liveCumulativeProfitK": 218200
       },
       {
         "date": "2026-09-10",
@@ -1856599,7 +1856613,8 @@
         "cumDeProfitK": -861000,
         "cumLoProfitK": 5962600,
         "cumXienProfitK": 2217000,
-        "isVipHit": false
+        "isVipHit": false,
+        "liveCumulativeProfitK": 215000
       },
       {
         "date": "2026-09-11",
@@ -1856637,7 +1856652,8 @@
         "cumDeProfitK": -854000,
         "cumLoProfitK": 5965600,
         "cumXienProfitK": 2206000,
-        "isVipHit": false
+        "isVipHit": false,
+        "liveCumulativeProfitK": 214000
       },
       {
         "date": "2026-09-12",
@@ -1856675,7 +1856691,8 @@
         "cumDeProfitK": -847000,
         "cumLoProfitK": 5926400,
         "cumXienProfitK": 2195000,
-        "isVipHit": false
+        "isVipHit": false,
+        "liveCumulativeProfitK": 170800
       },
       {
         "date": "2026-09-13",
@@ -1856713,7 +1856730,8 @@
         "cumDeProfitK": -924000,
         "cumLoProfitK": 5993400,
         "cumXienProfitK": 2184000,
-        "isVipHit": false
+        "isVipHit": false,
+        "liveCumulativeProfitK": 149800
       },
       {
         "date": "2026-09-14",
@@ -1856751,7 +1856769,8 @@
         "cumDeProfitK": -1001000,
         "cumLoProfitK": 6032000,
         "cumXienProfitK": 2185000,
-        "isVipHit": false
+        "isVipHit": false,
+        "liveCumulativeProfitK": 112400
       },
       {
         "date": "2026-09-15",
@@ -1856789,7 +1856808,8 @@
         "cumDeProfitK": -994000,
         "cumLoProfitK": 6046600,
         "cumXienProfitK": 2174000,
-        "isVipHit": false
+        "isVipHit": false,
+        "liveCumulativeProfitK": 123000
       },
       {
         "date": "2026-09-16",
@@ -1856827,7 +1856847,8 @@
         "cumDeProfitK": -1071000,
         "cumLoProfitK": 6059800,
         "cumXienProfitK": 2163000,
-        "isVipHit": false
+        "isVipHit": false,
+        "liveCumulativeProfitK": 48200
       },
       {
         "date": "2026-09-17",
@@ -1856865,7 +1856886,8 @@
         "cumDeProfitK": -1148000,
         "cumLoProfitK": 6118800,
         "cumXienProfitK": 2236000,
-        "isVipHit": false
+        "isVipHit": false,
+        "liveCumulativeProfitK": 103200
       },
       {
         "date": "2026-09-18",
@@ -1856903,7 +1856925,8 @@
         "cumDeProfitK": -1225000,
         "cumLoProfitK": 6141400,
         "cumXienProfitK": 2237000,
-        "isVipHit": false
+        "isVipHit": false,
+        "liveCumulativeProfitK": 49800
       },
       {
         "date": "2026-09-19",
@@ -1856924,13 +1856947,13 @@
         "loProfitK": 67000,
         "loPnlK": 67000,
         "uniqueTop4Hits": 3,
-        "xienPayoutK": 12000,
+        "xienPayoutK": 84000,
         "xienStakeK": 11000,
-        "xienProfitK": 1000,
-        "xienPnlK": 1000,
-        "totalPayoutK": 408000,
+        "xienProfitK": 73000,
+        "xienPnlK": 73000,
+        "totalPayoutK": 480000,
         "totalStakeK": 165000,
-        "totalProfitK": 243000,
+        "totalProfitK": 315000,
         "isWin": true,
         "isAbstain": false,
         "details": {
@@ -1856938,10 +1856961,11 @@
           "p2Engine": "PLATFORM_TOP7",
           "p3Type": "XIEN_4_QUAY_11_VE"
         },
-        "cumulativeProfitK": 7396400,
+        "cumulativeProfitK": 7468400,
         "cumDeProfitK": -1050000,
         "cumLoProfitK": 6208400,
-        "cumXienProfitK": 2238000
+        "cumXienProfitK": 2310000,
+        "liveCumulativeProfitK": 364800
       },
       {
         "date": "2026-09-20",
@@ -1856975,11 +1856999,12 @@
           "p2Engine": "PLATFORM_TOP7",
           "p3Type": "XIEN_4_QUAY_11_VE"
         },
-        "cumulativeProfitK": 7317200,
+        "cumulativeProfitK": 7389200,
         "cumDeProfitK": -1127000,
         "cumLoProfitK": 6217200,
-        "cumXienProfitK": 2227000,
-        "isVipHit": false
+        "cumXienProfitK": 2299000,
+        "isVipHit": false,
+        "liveCumulativeProfitK": 285600
       },
       {
         "date": "2026-09-21",
@@ -1857014,10 +1857039,11 @@
           "p2Engine": "PLATFORM_TOP7",
           "p3Type": "XIEN_4_QUAY_11_VE"
         },
-        "cumulativeProfitK": 7439800,
+        "cumulativeProfitK": 7511800,
         "cumDeProfitK": -952000,
         "cumLoProfitK": 6175800,
-        "cumXienProfitK": 2216000
+        "cumXienProfitK": 2288000,
+        "liveCumulativeProfitK": 408200
       },
       {
         "date": "2026-09-22",
@@ -1857051,11 +1857077,12 @@
           "p2Engine": "PLATFORM_TOP7",
           "p3Type": "XIEN_4_QUAY_11_VE"
         },
-        "cumulativeProfitK": 7394800,
+        "cumulativeProfitK": 7466800,
         "cumDeProfitK": -1029000,
         "cumLoProfitK": 6218800,
-        "cumXienProfitK": 2205000,
-        "isVipHit": false
+        "cumXienProfitK": 2277000,
+        "isVipHit": false,
+        "liveCumulativeProfitK": 363200
       },
       {
         "date": "2026-09-23",
@@ -1857089,11 +1857116,12 @@
           "p2Engine": "PLATFORM_TOP7",
           "p3Type": "XIEN_4_QUAY_11_VE"
         },
-        "cumulativeProfitK": 7329800,
+        "cumulativeProfitK": 7401800,
         "cumDeProfitK": -1022000,
         "cumLoProfitK": 6157800,
-        "cumXienProfitK": 2194000,
-        "isVipHit": false
+        "cumXienProfitK": 2266000,
+        "isVipHit": false,
+        "liveCumulativeProfitK": 298200
       },
       {
         "date": "2026-09-24",
@@ -1857127,11 +1857155,12 @@
           "p2Engine": "PLATFORM_TOP7",
           "p3Type": "XIEN_4_QUAY_11_VE"
         },
-        "cumulativeProfitK": 7320800,
+        "cumulativeProfitK": 7392800,
         "cumDeProfitK": -1015000,
         "cumLoProfitK": 6152800,
-        "cumXienProfitK": 2183000,
-        "isVipHit": false
+        "cumXienProfitK": 2255000,
+        "isVipHit": false,
+        "liveCumulativeProfitK": 289200
       },
       {
         "date": "2026-09-25",
@@ -1857166,10 +1857195,11 @@
           "p2Engine": "4ENGINE_CONSENSUS",
           "p3Type": "XIEN_4_QUAY_11_VE"
         },
-        "cumulativeProfitK": 7482000,
+        "cumulativeProfitK": 7554000,
         "cumDeProfitK": -840000,
         "cumLoProfitK": 6150000,
-        "cumXienProfitK": 2172000
+        "cumXienProfitK": 2244000,
+        "liveCumulativeProfitK": 450400
       },
       {
         "date": "2026-09-26",
@@ -1857203,11 +1857233,12 @@
           "p2Engine": "PLATFORM_TOP7",
           "p3Type": "XIEN_4_QUAY_11_VE"
         },
-        "cumulativeProfitK": 7837000,
+        "cumulativeProfitK": 7909000,
         "cumDeProfitK": -917000,
         "cumLoProfitK": 6209000,
-        "cumXienProfitK": 2545000,
-        "isVipHit": false
+        "cumXienProfitK": 2617000,
+        "isVipHit": false,
+        "liveCumulativeProfitK": 805400
       },
       {
         "date": "2026-09-27",
@@ -1857241,11 +1857272,12 @@
           "p2Engine": "PLATFORM_TOP7",
           "p3Type": "XIEN_4_QUAY_11_VE"
         },
-        "cumulativeProfitK": 7800000,
+        "cumulativeProfitK": 7872000,
         "cumDeProfitK": -994000,
         "cumLoProfitK": 6260000,
-        "cumXienProfitK": 2534000,
-        "isVipHit": false
+        "cumXienProfitK": 2606000,
+        "isVipHit": false,
+        "liveCumulativeProfitK": 768400
       },
       {
         "date": "2026-09-28",
@@ -1857279,11 +1857311,12 @@
           "p2Engine": "PLATFORM_TOP7",
           "p3Type": "XIEN_4_QUAY_11_VE"
         },
-        "cumulativeProfitK": 7678600,
+        "cumulativeProfitK": 7750600,
         "cumDeProfitK": -1071000,
         "cumLoProfitK": 6226600,
-        "cumXienProfitK": 2523000,
-        "isVipHit": false
+        "cumXienProfitK": 2595000,
+        "isVipHit": false,
+        "liveCumulativeProfitK": 647000
       },
       {
         "date": "2026-09-29",
@@ -1857318,10 +1857351,11 @@
           "p2Engine": "PLATFORM_TOP7",
           "p3Type": "XIEN_4_QUAY_11_VE"
         },
-        "cumulativeProfitK": 7596125,
+        "cumulativeProfitK": 7668125,
         "cumDeProfitK": -1148000,
         "cumLoProfitK": 6222610,
-        "cumXienProfitK": 2521515
+        "cumXienProfitK": 2593515,
+        "liveCumulativeProfitK": 564525
       },
       {
         "date": "2026-09-30",
@@ -1857356,10 +1857390,11 @@
           "p2Engine": "PLATFORM_TOP7",
           "p3Type": "XIEN_4_QUAY_11_VE"
         },
-        "cumulativeProfitK": 7586230,
+        "cumulativeProfitK": 7658230,
         "cumDeProfitK": -1225000,
         "cumLoProfitK": 6291200,
-        "cumXienProfitK": 2520030
+        "cumXienProfitK": 2592030,
+        "liveCumulativeProfitK": 554630
       },
       {
         "date": "2026-10-01",
@@ -1857394,10 +1857429,11 @@
           "p2Engine": "PLATFORM_TOP7",
           "p3Type": "XIEN_4_QUAY_11_VE"
         },
-        "cumulativeProfitK": 7661745,
+        "cumulativeProfitK": 7733745,
         "cumDeProfitK": -1218000,
         "cumLoProfitK": 6361200,
-        "cumXienProfitK": 2518545
+        "cumXienProfitK": 2590545,
+        "liveCumulativeProfitK": 630145
       },
       {
         "date": "2026-10-02",
@@ -1857432,10 +1857468,11 @@
           "p2Engine": "4ENGINE_CONSENSUS",
           "p3Type": "XIEN_4_QUAY_11_VE"
         },
-        "cumulativeProfitK": 7617080,
+        "cumulativeProfitK": 7689080,
         "cumDeProfitK": -1295000,
         "cumLoProfitK": 6393400,
-        "cumXienProfitK": 2518680
+        "cumXienProfitK": 2590680,
+        "liveCumulativeProfitK": 585480
       },
       {
         "date": "2026-10-03",
@@ -1857470,10 +1857507,11 @@
           "p2Engine": "4ENGINE_CONSENSUS",
           "p3Type": "XIEN_4_QUAY_11_VE"
         },
-        "cumulativeProfitK": 7648280,
+        "cumulativeProfitK": 7720280,
         "cumDeProfitK": -1372000,
         "cumLoProfitK": 6428600,
-        "cumXienProfitK": 2591680
+        "cumXienProfitK": 2663680,
+        "liveCumulativeProfitK": 616680
       },
       {
         "date": "2026-10-04",
@@ -1857510,8 +1857548,9 @@
         },
         "cumDeProfitK": -1449770,
         "cumLoProfitK": 6379716,
-        "cumXienProfitK": 2590569,
-        "cumulativeProfitK": 7520515
+        "cumXienProfitK": 2662569,
+        "cumulativeProfitK": 7592515,
+        "liveCumulativeProfitK": 488915
       },
       {
         "date": "2026-10-05",
@@ -1857548,8 +1857587,9 @@
         },
         "cumDeProfitK": -1507520,
         "cumLoProfitK": 6400716,
-        "cumXienProfitK": 2590644,
-        "cumulativeProfitK": 7483840
+        "cumXienProfitK": 2662644,
+        "cumulativeProfitK": 7555840,
+        "liveCumulativeProfitK": 452240
       },
       {
         "date": "2026-10-06",
@@ -1857586,8 +1857626,9 @@
         },
         "cumDeProfitK": -1534470,
         "cumLoProfitK": 6397986,
-        "cumXienProfitK": 2590259,
-        "cumulativeProfitK": 7453775
+        "cumXienProfitK": 2662259,
+        "cumulativeProfitK": 7525775,
+        "liveCumulativeProfitK": 422175
       },
       {
         "date": "2026-10-07",
@@ -1857615,8 +1857656,9 @@
         },
         "cumDeProfitK": -1534470,
         "cumLoProfitK": 6397986,
-        "cumXienProfitK": 2590259,
-        "cumulativeProfitK": 7453775
+        "cumXienProfitK": 2662259,
+        "cumulativeProfitK": 7525775,
+        "liveCumulativeProfitK": 422175
       },
       {
         "date": "2026-10-08",
@@ -1857644,8 +1857686,9 @@
         },
         "cumDeProfitK": -1534470,
         "cumLoProfitK": 6397986,
-        "cumXienProfitK": 2590259,
-        "cumulativeProfitK": 7453775
+        "cumXienProfitK": 2662259,
+        "cumulativeProfitK": 7525775,
+        "liveCumulativeProfitK": 422175
       },
       {
         "date": "2026-10-09",
@@ -1857682,8 +1857725,9 @@
         },
         "cumDeProfitK": -1606470,
         "cumLoProfitK": 6379986,
-        "cumXienProfitK": 2579259,
-        "cumulativeProfitK": 7352775
+        "cumXienProfitK": 2651259,
+        "cumulativeProfitK": 7424775,
+        "liveCumulativeProfitK": 321175
       },
       {
         "date": "2026-10-10",
@@ -1857704,13 +1857748,13 @@
         "loProfitK": 49000,
         "loPnlK": 49000,
         "uniqueTop4Hits": 3,
-        "xienPayoutK": 120000,
+        "xienPayoutK": 84000,
         "xienStakeK": 11000,
-        "xienProfitK": 109000,
-        "xienPnlK": 109000,
-        "totalPayoutK": 224000,
+        "xienProfitK": 73000,
+        "xienPnlK": 73000,
+        "totalPayoutK": 188000,
         "totalStakeK": 109000,
-        "totalProfitK": 115000,
+        "totalProfitK": 79000,
         "isWin": true,
         "isAbstain": false,
         "details": {
@@ -1857720,8 +1857764,9 @@
         },
         "cumDeProfitK": -1649470,
         "cumLoProfitK": 6428986,
-        "cumXienProfitK": 2688259,
-        "cumulativeProfitK": 7467775
+        "cumXienProfitK": 2724259,
+        "cumulativeProfitK": 7503775,
+        "liveCumulativeProfitK": 400175
       },
       {
         "date": "2026-10-11",
@@ -1857758,8 +1857803,9 @@
         },
         "cumDeProfitK": -1726470,
         "cumLoProfitK": 6442986,
-        "cumXienProfitK": 2677259,
-        "cumulativeProfitK": 7393775
+        "cumXienProfitK": 2713259,
+        "cumulativeProfitK": 7429775,
+        "liveCumulativeProfitK": 326175
       },
       {
         "date": "2026-10-12",
@@ -1857796,8 +1857842,9 @@
         },
         "cumDeProfitK": -1796470,
         "cumLoProfitK": 6432986,
-        "cumXienProfitK": 2666259,
-        "cumulativeProfitK": 7302775
+        "cumXienProfitK": 2702259,
+        "cumulativeProfitK": 7338775,
+        "liveCumulativeProfitK": 235175
       },
       {
         "date": "2026-10-13",
@@ -1857825,8 +1857872,9 @@
         },
         "cumDeProfitK": -1796470,
         "cumLoProfitK": 6432986,
-        "cumXienProfitK": 2666259,
-        "cumulativeProfitK": 7302775
+        "cumXienProfitK": 2702259,
+        "cumulativeProfitK": 7338775,
+        "liveCumulativeProfitK": 235175
       },
       {
         "date": "2026-10-14",
@@ -1857863,8 +1857911,9 @@
         },
         "cumDeProfitK": -1860470,
         "cumLoProfitK": 6425216,
-        "cumXienProfitK": 2665874,
-        "cumulativeProfitK": 7230620
+        "cumXienProfitK": 2701874,
+        "cumulativeProfitK": 7266620,
+        "liveCumulativeProfitK": 163020
       },
       {
         "date": "2026-10-15",
@@ -1857901,8 +1857950,9 @@
         },
         "cumDeProfitK": -1853470,
         "cumLoProfitK": 6406736,
-        "cumXienProfitK": 2665489,
-        "cumulativeProfitK": 7218755
+        "cumXienProfitK": 2701489,
+        "cumulativeProfitK": 7254755,
+        "liveCumulativeProfitK": 151155
       },
       {
         "date": "2026-10-16",
@@ -1857939,8 +1857989,9 @@
         },
         "cumDeProfitK": -1923470,
         "cumLoProfitK": 6396656,
-        "cumXienProfitK": 2665104,
-        "cumulativeProfitK": 7138290
+        "cumXienProfitK": 2701104,
+        "cumulativeProfitK": 7174290,
+        "liveCumulativeProfitK": 70690
       }
     ],
     "snapshotLock": {
@@ -2361033,11 +2361084,11 @@
             ],
             "xienHitsCount": 3,
             "xienStakeK": 11000,
-            "xienPayoutK": 120000,
-            "xienProfitK": 109000,
+            "xienPayoutK": 84000,
+            "xienProfitK": 73000,
             "totalStakeK": 66000,
-            "totalPayoutK": 224000,
-            "totalProfitK": 158000,
+            "totalPayoutK": 188000,
+            "totalProfitK": 122000,
             "isWin": true,
             "hitNumbers": [
               "36",
@@ -2361605,13 +2361656,13 @@
             "loProfitK": 49000,
             "loPnlK": 49000,
             "uniqueTop4Hits": 3,
-            "xienPayoutK": 120000,
+            "xienPayoutK": 84000,
             "xienStakeK": 11000,
-            "xienProfitK": 109000,
-            "xienPnlK": 109000,
-            "totalPayoutK": 224000,
+            "xienProfitK": 73000,
+            "xienPnlK": 73000,
+            "totalPayoutK": 188000,
             "totalStakeK": 109000,
-            "totalProfitK": 115000,
+            "totalProfitK": 79000,
             "isWin": true,
             "isAbstain": false,
             "details": {
@@ -2368125,11 +2368176,11 @@
             ],
             "xienHitsCount": 3,
             "xienStakeK": 11000,
-            "xienPayoutK": 120000,
-            "xienProfitK": 109000,
+            "xienPayoutK": 84000,
+            "xienProfitK": 73000,
             "totalStakeK": 88000,
-            "totalPayoutK": 256000,
-            "totalProfitK": 168000,
+            "totalPayoutK": 220000,
+            "totalProfitK": 132000,
             "isWin": true,
             "hitNumbers": [
               "43",
@@ -2368334,13 +2368385,13 @@
             "loProfitK": 59000,
             "loPnlK": 59000,
             "uniqueTop4Hits": 3,
-            "xienPayoutK": 120000,
+            "xienPayoutK": 84000,
             "xienStakeK": 11000,
-            "xienProfitK": 109000,
-            "xienPnlK": 109000,
-            "totalPayoutK": 256000,
+            "xienProfitK": 73000,
+            "xienPnlK": 73000,
+            "totalPayoutK": 220000,
             "totalStakeK": 165000,
-            "totalProfitK": 91000,
+            "totalProfitK": 55000,
             "isWin": true,
             "isAbstain": false,
             "details": {
@@ -2369553,11 +2369604,11 @@
             ],
             "xienHitsCount": 3,
             "xienStakeK": 11000,
-            "xienPayoutK": 120000,
-            "xienProfitK": 109000,
+            "xienPayoutK": 84000,
+            "xienProfitK": 73000,
             "totalStakeK": 88000,
-            "totalPayoutK": 264000,
-            "totalProfitK": 176000,
+            "totalPayoutK": 228000,
+            "totalProfitK": 140000,
             "isWin": true,
             "hitNumbers": [
               "52",
@@ -2369711,13 +2369762,13 @@
             "loProfitK": 67000,
             "loPnlK": 67000,
             "uniqueTop4Hits": 3,
-            "xienPayoutK": 120000,
+            "xienPayoutK": 84000,
             "xienStakeK": 11000,
-            "xienProfitK": 109000,
-            "xienPnlK": 109000,
-            "totalPayoutK": 264000,
+            "xienProfitK": 73000,
+            "xienPnlK": 73000,
+            "totalPayoutK": 228000,
             "totalStakeK": 165000,
-            "totalProfitK": 99000,
+            "totalProfitK": 63000,
             "isWin": true,
             "isAbstain": false,
             "details": {
@@ -2379755,11 +2379806,11 @@
             ],
             "xienHitsCount": 3,
             "xienStakeK": 11000,
-            "xienPayoutK": 120000,
-            "xienProfitK": 109000,
+            "xienPayoutK": 84000,
+            "xienProfitK": 73000,
             "totalStakeK": 79200,
-            "totalPayoutK": 216000,
-            "totalProfitK": 136800,
+            "totalPayoutK": 180000,
+            "totalProfitK": 100800,
             "isWin": true,
             "hitNumbers": [
               "38",
@@ -2379925,13 +2379976,13 @@
             "loProfitK": 27800,
             "loPnlK": 27800,
             "uniqueTop4Hits": 3,
-            "xienPayoutK": 120000,
+            "xienPayoutK": 84000,
             "xienStakeK": 11000,
-            "xienProfitK": 109000,
-            "xienPnlK": 109000,
-            "totalPayoutK": 216000,
+            "xienProfitK": 73000,
+            "xienPnlK": 73000,
+            "totalPayoutK": 180000,
             "totalStakeK": 156200,
-            "totalProfitK": 59800,
+            "totalProfitK": 23800,
             "isWin": true,
             "isAbstain": false,
             "details": {
