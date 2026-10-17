@@ -1256,15 +1256,35 @@
         // Determine active slice based on unifiedTimeframe
         const isSep16Mode = (unifiedTimeframe === 'sep16');
         const chLedger = payload?.crossHedgingPortfolio?.settledLedger || [];
-        let activeChRows = chLedger;
+        let rawActiveRows = chLedger;
         if (isSep16Mode) {
-            activeChRows = chLedger.filter(r => r.date >= '2026-09-16');
+            rawActiveRows = chLedger.filter(r => r.date >= '2026-09-16');
         } else if (unifiedTimeframe === 'live') {
-            activeChRows = chLedger.filter(r => r.date >= '2026-08-28');
+            rawActiveRows = chLedger.filter(r => r.date >= '2026-08-28');
         }
 
+        const regDates = payload?.dailyLockedBetsRegistry?.dates || {};
+        const activeChRows = rawActiveRows.map(r => {
+            const regEntry = regDates[r.date];
+            if (regEntry && regEntry.isSettled) {
+                const s = regEntry.settlement || {};
+                const sDe = s.de;
+                const sCH = s.crossHedgingPortfolio;
+                const deProfit = (sDe?.profitK != null) ? sDe.profitK : (sCH?.deProfitK ?? r.deProfitK ?? 0);
+                const isDeWin = (sDe?.isHit != null) ? sDe.isHit : (deProfit > 0);
+                return {
+                    ...r,
+                    deProfitK: deProfit,
+                    dePnlK: deProfit,
+                    isDeHit: isDeWin,
+                    totalProfitK: (sCH?.totalProfitK != null) ? sCH.totalProfitK : r.totalProfitK
+                };
+            }
+            return r;
+        });
+
         const totalDraws = activeChRows.length || 1;
-        const deWins = activeChRows.filter(r => (r.dePnlK || 0) > 0 || r.isDeHit).length;
+        const deWins = activeChRows.filter(r => (r.dePnlK != null ? r.dePnlK > 0 : (r.deProfitK || 0) > 0)).length;
         const displayDeProfitK = activeChRows.reduce((s, r) => s + (r.dePnlK != null ? r.dePnlK : (r.deProfitK || 0)), 0);
         const deSubText = `Trúng <strong>${deWins}/${totalDraws}</strong> ngày (${percent(deWins / totalDraws)})`;
 
@@ -10869,7 +10889,14 @@
         const container = byId('tripleLedgerBody');
         if (!container) return;
 
-        let list = (records || []).slice().reverse();
+        let ascList = (records || []).slice().sort((a, b) => (a.date || a.predictionDate || '').localeCompare(b.date || b.predictionDate || ''));
+        let runningTripleCum = 0;
+        ascList.forEach(r => {
+            runningTripleCum += Number(r.profitK || 0);
+            r.calcCumulativeProfitK = runningTripleCum;
+        });
+
+        let list = ascList.slice().reverse();
         if (limit !== 'all') {
             const num = parseInt(limit, 10);
             if (!Number.isNaN(num) && num > 0) {
@@ -10927,7 +10954,7 @@
                     <td class="p-2.5 text-center">${hitBadge}</td>
                     <td class="p-2.5 pr-4 text-right ${profitClass}">
                         <div>${signedM(r.profitK)}</div>
-                        <div class="text-[10px] text-indigo-300/70 font-normal">Lũy kế: ${signedM(r.cumulativeProfitK)}</div>
+                        <div class="text-[10px] text-indigo-300/70 font-normal">Lũy kế: ${signedM(r.calcCumulativeProfitK ?? r.cumulativeProfitK)}</div>
                     </td>
                 </tr>
             `;
@@ -11120,8 +11147,15 @@
         const container = byId('adaptiveLedgerBody');
         if (!container) return;
 
-        const allRecords = (records || []).filter(r => Number.isInteger(r.actualSpecial) || Number.isInteger(r.actual))
-            .slice().sort((a, b) => (b.predictionDate || b.date).localeCompare(a.predictionDate || a.date));
+        const sortedAsc = (records || []).filter(r => Number.isInteger(r.actualSpecial) || Number.isInteger(r.actual))
+            .slice().sort((a, b) => String(a.predictionDate || a.date).localeCompare(String(b.predictionDate || b.date)));
+        let runningCum = 0;
+        sortedAsc.forEach(r => {
+            runningCum += Number(r.profitK || 0);
+            r.calcCumulativeProfitK = runningCum;
+        });
+
+        const allRecords = sortedAsc.slice().reverse();
 
         const displayRecords = limitValue === 'all' ? allRecords : allRecords.slice(0, parseInt(limitValue, 10) || 30);
 
@@ -11181,7 +11215,7 @@
                         <div>${signedM(r.profitK)}</div>
                     </td>
                     <td class="p-2.5 pr-4 text-right font-mono font-bold text-slate-300">
-                        ${signedM(r.cumulativeProfitK || r.liveCumulativeProfitK)}
+                        ${signedM(r.calcCumulativeProfitK ?? r.cumulativeProfitK ?? r.liveCumulativeProfitK)}
                     </td>
                 </tr>
             `;
