@@ -271,7 +271,82 @@ function main() {
         isWin: false
     };
 
-    // 1.6. Combo Danh Mục Bù Trừ Chéo (crossHedgingPortfolio - Thắng lớn +21.0M)
+    // 1.6. Phương Pháp Gộp 5 ở Shadow Monitor (pentaConsensus - 2026-10-18)
+    d18.bets.pentaConsensus = {
+        targetDate: '2026-10-18',
+        predictionDate: '2026-10-18',
+        methodName: '👑 Siêu Gộp 5 Phương Pháp (Penta-Consensus Suite)',
+        de: {
+            numbers: ['00', '34', '62', '64', '68', '81', '82', '84', '93', '95', '97', '01', '03', '05', '09', '14', '17', '31', '33', '35', '37', '61', '63', '90', '91', '02', '04', '07', '08', '13', '16', '25', '30', '32', '60', '80', '88', '19', '20', '21', '40', '41', '50', '55', '57', '70', '75', '28', '36', '69', '71', '79', '85', '89'],
+            x2Nums: ['00', '34', '62', '64', '68', '81', '82', '84', '93', '95', '97', '01', '03', '05', '09', '14', '17', '31', '33', '35', '37', '61', '63', '90', '91', '02', '04', '07', '08', '13', '16', '25', '30', '32', '60', '80', '88'],
+            x1Nums: ['19', '20', '21', '40', '41', '50', '55', '57', '70', '75', '28', '36', '69', '71', '79', '85', '89'],
+            stakeK: 18200
+        },
+        lo: {
+            numbers: ['62', '54', '63', '59', '76', '02', '95', '18', '52', '10', '87', '77', '94', '57'],
+            x5Nums: ['62', '54', '63', '59'],
+            x4Nums: ['76', '02'],
+            x3Nums: ['95', '18'],
+            x1Nums: ['52', '10', '87', '77', '94', '57'],
+            multiplierMap: { '62': 5, '54': 5, '63': 5, '59': 5, '76': 4, '02': 4, '95': 3, '18': 3, '52': 1, '10': 1, '87': 1, '77': 1, '94': 1, '57': 1 },
+            stakeK: 88000
+        },
+        xien5: {
+            top5: ['62', '54', '63', '59', '76'],
+            tickets: [
+                ['62', '54', '63', '59'],
+                ['62', '54', '63', '76'],
+                ['62', '54', '59', '76'],
+                ['62', '63', '59', '76'],
+                ['54', '63', '59', '76']
+            ],
+            stakeK: 5500
+        }
+    };
+
+    d18.settlement.pentaConsensus = {
+        date: '2026-10-18',
+        actualSpecial: '42',
+        de: {
+            numbers: d18.bets.pentaConsensus.de.numbers,
+            x2Nums: d18.bets.pentaConsensus.de.x2Nums,
+            x1Nums: d18.bets.pentaConsensus.de.x1Nums,
+            isHit: false,
+            isHitX2: false,
+            isHitX1: false,
+            stakeK: 18200,
+            payoutK: 0,
+            profitK: -18200,
+            isWin: false
+        },
+        lo: {
+            numbers: d18.bets.pentaConsensus.lo.numbers,
+            x5Nums: d18.bets.pentaConsensus.lo.x5Nums,
+            x4Nums: d18.bets.pentaConsensus.lo.x4Nums,
+            x3Nums: d18.bets.pentaConsensus.lo.x3Nums,
+            x1Nums: d18.bets.pentaConsensus.lo.x1Nums,
+            hits: 4,
+            hitNums: ['54', '95', '18', '10'],
+            stakeK: 88000,
+            payoutK: 96000,
+            profitK: 8000,
+            isWin: true
+        },
+        xien5: {
+            top5: ['62', '54', '63', '59', '76'],
+            h5: 1,
+            stakeK: 5500,
+            payoutK: 0,
+            profitK: -5500,
+            isWin: false
+        },
+        totalStakeK: 111700,
+        totalPayoutK: 96000,
+        totalProfitK: -15700,
+        isWin: false
+    };
+
+    // 1.7. Combo Danh Mục Bù Trừ Chéo (crossHedgingPortfolio - Thắng lớn +21.0M)
     d18.bets.crossHedgingPortfolio = {
         date: '2026-10-18',
         targetDate: '2026-10-18',
@@ -404,6 +479,39 @@ function main() {
     d19.bets.loXien5 = {
         top5: ['59', '62', '76', '24', '35'],
         stakeK: 55000
+    };
+
+    // 2.3B. Phương Pháp Gộp 5 ở Shadow Monitor (pentaConsensus - 2026-10-19)
+    d19.bets.pentaConsensus = {
+        targetDate: '2026-10-19',
+        predictionDate: '2026-10-19',
+        methodName: '👑 Siêu Gộp 5 Phương Pháp (Penta-Consensus Suite)',
+        de: {
+            numbers: ['13', '16', '25', '26', '28', '33', '34', '36', '40', '41', '48', '68', '69', '70', '71', '74', '75', '78', '79', '84', '85', '88', '89', '98', '08', '10', '11', '14', '15', '18', '20', '92', '93', '94', '95', '97', '00', '01', '22', '24', '27', '29'],
+            x2Nums: ['13', '16', '25', '26', '28', '33', '34', '36', '40', '41', '48', '68', '69', '70', '71', '74', '75', '78', '79', '84', '85', '88', '89', '98', '08', '10', '11', '14', '15', '18', '20', '92', '93', '94', '95', '97'],
+            x1Nums: ['00', '01', '22', '24', '27', '29'],
+            stakeK: 15600
+        },
+        lo: {
+            numbers: ['62', '59', '76', '04', '22', '94', '52', '70', '35', '32', '42', '24', '53', '54'],
+            x5Nums: ['62', '59', '76', '04'],
+            x4Nums: ['22', '94'],
+            x3Nums: ['52', '70'],
+            x1Nums: ['35', '32', '42', '24', '53', '54'],
+            multiplierMap: { '62': 5, '59': 5, '76': 5, '04': 5, '22': 4, '94': 4, '52': 3, '70': 3, '35': 1, '32': 1, '42': 1, '24': 1, '53': 1, '54': 1 },
+            stakeK: 88000
+        },
+        xien5: {
+            top5: ['62', '59', '76', '04', '22'],
+            tickets: [
+                ['62', '59', '76', '04'],
+                ['62', '59', '76', '22'],
+                ['62', '59', '04', '22'],
+                ['62', '76', '04', '22'],
+                ['59', '76', '04', '22']
+            ],
+            stakeK: 5500
+        }
     };
 
     // 2.4. Cross Hedging Portfolio 2026-10-19 (Khôi phục Active Hedge chuẩn)
@@ -667,6 +775,10 @@ function main() {
             adv.loTop5ConsensusXien.top4Xien = ['59', '62', '76', '24'];
             adv.loTop5ConsensusXien.top5Xien = ['59', '62', '76', '24', '35'];
         }
+
+        adv.pentaConsensus = {
+            latestRecommendation: d19.bets.pentaConsensus
+        };
 
         const advStr = JSON.stringify(adv, null, 2);
         fs.writeFileSync(ADV_STATS_FILE, advStr, 'utf8');

@@ -196,6 +196,41 @@ async function main() {
             registryService.registerDailyBet(expectedPredictionDate, 'mirofishSwarm', cache.mirofishSwarm.latestRecommendation);
         }
 
+        try {
+            const { computePentaConsensusForDate } = require('../lib/services/pentaConsensusService');
+            const pentaNext = computePentaConsensusForDate(expectedPredictionDate, cache);
+            if (pentaNext) {
+                cache.pentaConsensus = {
+                    latestRecommendation: pentaNext
+                };
+                registryService.registerDailyBet(expectedPredictionDate, 'pentaConsensus', {
+                    targetDate: expectedPredictionDate,
+                    de: {
+                        numbers: pentaNext.de?.numbers || [],
+                        x2Nums: pentaNext.de?.x2Nums || [],
+                        x1Nums: pentaNext.de?.x1Nums || [],
+                        stakeK: pentaNext.de?.stakeK || 0
+                    },
+                    lo: {
+                        numbers: pentaNext.lo?.numbers || [],
+                        x5Nums: pentaNext.lo?.x5Nums || [],
+                        x4Nums: pentaNext.lo?.x4Nums || [],
+                        x3Nums: pentaNext.lo?.x3Nums || [],
+                        x1Nums: pentaNext.lo?.x1Nums || [],
+                        multiplierMap: pentaNext.lo?.multiplierMap || {},
+                        stakeK: pentaNext.lo?.stakeK || 0
+                    },
+                    xien5: {
+                        top5: pentaNext.xien5?.top5 || [],
+                        tickets: pentaNext.xien5?.tickets || [],
+                        stakeK: pentaNext.xien5?.stakeK || 5500
+                    }
+                });
+            }
+        } catch (err) {
+            console.error('[generateDailyAdvisorCache] Error computing pentaConsensus:', err);
+        }
+
         cache.dailyLockedBetsRegistry = registryService.loadRegistry();
     } catch (err) {
         console.error('[generateDailyAdvisorCache] Error updating locked bets registry:', err);

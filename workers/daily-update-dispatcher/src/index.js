@@ -1358,1201 +1358,639 @@ function resolveUnifiedCrossLoRowForDate(date, advisorPayload = {}) {
   };
 }
 
+function numStr(val) {
+  return String(Number(val)).padStart(2, '0');
+}
+
+function formatCostK(valK) {
+  const n = Math.abs(Math.round(Number(valK || 0)));
+  return `${n.toLocaleString('vi-VN')}K`;
+}
+
+function getXien5Combinations(top5) {
+    if (!Array.isArray(top5) || top5.length < 5) return [];
+    const n = top5.map(numStr);
+    return [
+        [n[0], n[1], n[2], n[3]],
+        [n[0], n[1], n[2], n[4]],
+        [n[0], n[1], n[3], n[4]],
+        [n[0], n[2], n[3], n[4]],
+        [n[1], n[2], n[3], n[4]]
+    ];
+}
+
+function computePentaConsensusForDate(targetDate, advisorCache) {
+    if (!advisorCache) return null;
+    const regEntry = advisorCache.dailyLockedBetsRegistry?.dates?.[targetDate];
+    if (regEntry?.bets?.pentaConsensus) {
+        const b = regEntry.bets.pentaConsensus;
+        const s = regEntry.settlement?.pentaConsensus;
+        return {
+            date: targetDate,
+            isPending: !regEntry.isSettled,
+            actualSpecial: s?.actualSpecial || null,
+            de: {
+                numbers: b.de?.numbers || [],
+                x2Nums: b.de?.x2Nums || [],
+                x1Nums: b.de?.x1Nums || [],
+                stakeK: s?.de?.stakeK ?? b.de?.stakeK ?? 0,
+                payoutK: s?.de?.payoutK ?? 0,
+                profitK: s?.de?.profitK ?? 0,
+                isHit: s?.de?.isHit || false,
+                isHitX2: s?.de?.isHitX2 || false,
+                isHitX1: s?.de?.isHitX1 || false
+            },
+            lo: {
+                numbers: b.lo?.numbers || [],
+                x5Nums: b.lo?.x5Nums || [],
+                x4Nums: b.lo?.x4Nums || [],
+                x3Nums: b.lo?.x3Nums || [],
+                x1Nums: b.lo?.x1Nums || [],
+                multiplierMap: b.lo?.multiplierMap || {},
+                hits: s?.lo?.hits || 0,
+                hitNums: s?.lo?.hitNums || [],
+                stakeK: s?.lo?.stakeK ?? b.lo?.stakeK ?? 0,
+                payoutK: s?.lo?.payoutK ?? 0,
+                profitK: s?.lo?.profitK ?? 0,
+                isWin: s?.lo?.isWin || false
+            },
+            xien5: {
+                top5: b.xien5?.top5 || [],
+                tickets: b.xien5?.tickets || getXien5Combinations(b.xien5?.top5),
+                h5: s?.xien5?.h5 || 0,
+                stakeK: s?.xien5?.stakeK ?? b.xien5?.stakeK ?? 5500,
+                payoutK: s?.xien5?.payoutK ?? 0,
+                profitK: s?.xien5?.profitK ?? 0,
+                isWin: s?.xien5?.isWin || false
+            },
+            combo: {
+                stakeK: s?.totalStakeK ?? ((b.de?.stakeK || 0) + (b.lo?.stakeK || 0) + (b.xien5?.stakeK || 5500)),
+                payoutK: s?.totalPayoutK ?? 0,
+                profitK: s?.totalProfitK ?? 0,
+                isWin: s?.isWin || false
+            }
+        };
+    }
+
+    const deDropoff = advisorCache.deDropoffMerge;
+    const triCore = advisorCache.triCoreDe;
+    const loDropoff = advisorCache.loDropoff27;
+    const loTriHarmonic = advisorCache.loTriHarmonic;
+    const loQuadHybrid = advisorCache.loQuadHybrid;
+    const semanticResonance = advisorCache.semanticResonanceSuite;
+    const miro = advisorCache.mirofishSwarm;
+
+    const drawPrizesObj = advisorCache.drawPrizesByDate?.[targetDate] || null;
+    const isPending = !drawPrizesObj || (drawPrizesObj.special === undefined && (!drawPrizesObj.prizes || drawPrizesObj.prizes.length === 0));
+
+    let d1 = [], d2 = [], d3 = [], d4 = [], d5 = [];
+    if (isPending) {
+        d1 = (deDropoff?.latestRecommendation?.numbers || deDropoff?.latestRecommendation?.top40 || []).slice(0, 40).map(numStr);
+        d2 = (triCore?.latestRecommendation?.numbers || []).map(numStr);
+        d3 = (deDropoff?.latestRecommendation?.numbers36 || deDropoff?.latestRecommendation?.top36 || d1.slice(0, 36)).map(numStr);
+        d4 = (semanticResonance?.latestRecommendation?.de?.numbers36 || []).map(numStr);
+        d5 = (miro?.latestRecommendation?.de?.numbers || miro?.latestRecommendation?.numbers || []).map(numStr);
+    } else {
+        const rD1 = (deDropoff?.settledLedger || []).find(r => r.date === targetDate);
+        d1 = (rD1?.numbers || rD1?.top40 || []).slice(0, 40).map(numStr);
+        const rD2 = (triCore?.settledLedger || []).concat(triCore?.allDaysLedger || []).find(r => r.date === targetDate);
+        d2 = (rD2?.numbers || []).map(numStr);
+        d3 = (rD1?.numbers36 || rD1?.top36 || d1.slice(0, 36)).map(numStr);
+        const rD4 = (semanticResonance?.settledLedger || []).find(r => r.date === targetDate);
+        d4 = (rD4?.de?.numbers36 || rD4?.de?.numbers || []).map(numStr);
+        const rD5 = (miro?.settledLedger || []).find(r => r.date === targetDate);
+        d5 = (rD5?.de?.numbers || []).map(numStr);
+    }
+
+    const deFreq = {};
+    [d1, d2, d3, d4, d5].forEach(arr => {
+        new Set(arr).forEach(n => {
+            const s = numStr(n);
+            if (s) deFreq[s] = (deFreq[s] || 0) + 1;
+        });
+    });
+
+    const allDeNums = Object.keys(deFreq).sort((a, b) => {
+        if (deFreq[b] !== deFreq[a]) return deFreq[b] - deFreq[a];
+        return a.localeCompare(b);
+    });
+    const deX2Nums = allDeNums.filter(n => deFreq[n] >= 3);
+    const deX1Nums = allDeNums.filter(n => deFreq[n] < 3);
+    const deStakeK = deX2Nums.length * 400 + deX1Nums.length * 200;
+    const actualSpecial = isPending ? null : (drawPrizesObj?.special !== undefined ? numStr(drawPrizesObj.special) : null);
+    const isHitX2 = isPending ? false : (actualSpecial ? deX2Nums.includes(actualSpecial) : false);
+    const isHitX1 = isPending ? false : (actualSpecial ? deX1Nums.includes(actualSpecial) : false);
+    const isDeHit = isHitX2 || isHitX1;
+    const dePayoutK = isPending ? 0 : (isHitX2 ? 33600 : (isHitX1 ? 16800 : 0));
+    const deProfitK = isPending ? 0 : (dePayoutK - deStakeK);
+
+    let l1 = [], l2 = [], l3 = [], l4 = [], l5 = [];
+    if (isPending) {
+        l1 = (loDropoff?.latestRecommendation?.top7 || loDropoff?.latestRecommendation?.numbers || []).slice(0, 7).map(numStr);
+        l2 = ((loTriHarmonic?.latestRecommendation?.rankedNumbers || []).slice(0, 7)).map(numStr);
+        l3 = (loQuadHybrid?.latestRecommendation?.top7 || []).map(numStr);
+        if (!l3.length) l3 = l1;
+        l4 = (semanticResonance?.latestRecommendation?.lo?.top7 || []).map(numStr);
+        l5 = (miro?.latestRecommendation?.lo?.numbers || []).slice(0, 7).map(numStr);
+    } else {
+        const rL1 = (loDropoff?.settledLedger || []).find(r => r.date === targetDate);
+        l1 = (rL1?.top7 || rL1?.numbers || []).slice(0, 7).map(numStr);
+        const rL2 = (loTriHarmonic?.settledLedger || []).find(r => r.date === targetDate);
+        l2 = (rL2?.rankedNumbers || []).slice(0, 7).map(numStr);
+        if (!l2.length) {
+            const rL2Alt = (advisorCache.loTop5ConsensusXien?.settledLedger || []).find(r => r.date === targetDate);
+            l2 = (rL2Alt?.top7Loto || []).slice(0, 7).map(numStr);
+        }
+        const rL3 = (loQuadHybrid?.settledLedger || []).find(r => r.date === targetDate);
+        l3 = (rL3?.top7 || []).map(numStr);
+        if (!l3.length) l3 = l1;
+        const rL4 = (semanticResonance?.settledLedger || []).find(r => r.date === targetDate);
+        l4 = (rL4?.lo?.top7 || []).map(numStr);
+        const rL5 = (miro?.settledLedger || []).find(r => r.date === targetDate);
+        l5 = (rL5?.lo?.numbers || []).slice(0, 7).map(numStr);
+    }
+
+    const loFreq = {};
+    const loScore = {};
+    [l1, l2, l3, l4, l5].forEach(arr => {
+        arr.forEach((n, idx) => {
+            const s = numStr(n);
+            if (s) {
+                loFreq[s] = (loFreq[s] || 0) + 1;
+                loScore[s] = (loScore[s] || 0) + (10 - idx);
+            }
+        });
+    });
+
+    const allLoNums = Object.keys(loFreq).sort((a, b) => {
+        if (loFreq[b] !== loFreq[a]) return loFreq[b] - loFreq[a];
+        if (loScore[b] !== loScore[a]) return loScore[b] - loScore[a];
+        return a.localeCompare(b);
+    });
+
+    const numMultiplierMap = {};
+    allLoNums.forEach(n => {
+        const f = loFreq[n];
+        if (f >= 4) numMultiplierMap[n] = 5;
+        else if (f === 3) numMultiplierMap[n] = 4;
+        else if (f === 2) numMultiplierMap[n] = 3;
+        else numMultiplierMap[n] = 1;
+    });
+
+    const x5Nums = allLoNums.filter(n => numMultiplierMap[n] === 5);
+    const x4Nums = allLoNums.filter(n => numMultiplierMap[n] === 4);
+    const x3Nums = allLoNums.filter(n => numMultiplierMap[n] === 3);
+    const x1Nums = allLoNums.filter(n => numMultiplierMap[n] === 1);
+
+    const prizeCount = {};
+    if (!isPending && drawPrizesObj?.prizes) {
+        drawPrizesObj.prizes.forEach(p => {
+            const s = numStr(p);
+            prizeCount[s] = (prizeCount[s] || 0) + 1;
+        });
+    }
+
+    let loStakeK = 0, loPayoutK = 0, loHits = 0;
+    const loHitNums = [];
+    allLoNums.forEach(n => {
+        const mult = numMultiplierMap[n] || 1;
+        const stake = mult * 2200;
+        const hits = isPending ? 0 : (prizeCount[n] || 0);
+        const payout = isPending ? 0 : hits * (mult * 8000);
+        loStakeK += stake;
+        loPayoutK += payout;
+        loHits += hits;
+        if (hits > 0) loHitNums.push(n);
+    });
+    const loProfitK = isPending ? 0 : (loPayoutK - loStakeK);
+
+    const top5Nums = allLoNums.slice(0, 5);
+    const tickets = getXien5Combinations(top5Nums);
+    const xienStakeK = 5500;
+    let xienPayoutK = 0, h5 = 0;
+    if (!isPending) {
+        h5 = top5Nums.filter(n => (prizeCount[n] || 0) > 0).length;
+        if (h5 === 5) xienPayoutK = 5 * 38400;
+        else if (h5 === 4) xienPayoutK = 1 * 38400 + 4 * 8400;
+        else if (h5 === 3) xienPayoutK = 2 * 8400 + 3 * 1200;
+        else if (h5 === 2) xienPayoutK = 3 * 1200;
+    }
+    const xienProfitK = isPending ? 0 : (xienPayoutK - xienStakeK);
+
+    return {
+        date: targetDate,
+        isPending,
+        actualSpecial,
+        de: {
+            numbers: allDeNums,
+            x2Nums: deX2Nums,
+            x1Nums: deX1Nums,
+            stakeK: deStakeK,
+            payoutK: dePayoutK,
+            profitK: deProfitK,
+            isHit: isDeHit,
+            isHitX2,
+            isHitX1
+        },
+        lo: {
+            numbers: allLoNums,
+            x5Nums,
+            x4Nums,
+            x3Nums,
+            x1Nums,
+            multiplierMap: numMultiplierMap,
+            hits: loHits,
+            hitNums: loHitNums,
+            stakeK: loStakeK,
+            payoutK: loPayoutK,
+            profitK: loProfitK,
+            isWin: loProfitK > 0
+        },
+        xien5: {
+            top5: top5Nums,
+            tickets,
+            h5,
+            stakeK: xienStakeK,
+            payoutK: xienPayoutK,
+            profitK: xienProfitK,
+            isWin: xienProfitK > 0
+        },
+        combo: {
+            stakeK: deStakeK + loStakeK + xienStakeK,
+            payoutK: dePayoutK + loPayoutK + xienPayoutK,
+            profitK: deProfitK + loProfitK + xienProfitK,
+            isWin: (deProfitK + loProfitK + xienProfitK) > 0
+        }
+    };
+}
+
 function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, advisorPayload = {}) {
-  // ── Data sources ──────────────────────────────────────────────────────────
-  // Đề Tinh Hoa — MetaLearner (dàn 30 số quán quân)
-  const metaLearner = advisorPayload?.metaLearner || null;
-  const metaRec = metaLearner?.latestRecommendation || null;
-  const metaSettledList = metaLearner?.settledLedger || [];
-  const metaLearnerSummary = metaLearner?.summary || {};
+    const reg = advisorPayload?.dailyLockedBetsRegistry?.dates || {};
+    const crossHedge = advisorPayload?.crossHedgingPortfolio?.latestRecommendation || advisorPayload?.crossHedgingPortfolio || null;
+    const predictionDate = crossHedge?.targetDate
+        || advisorPayload?.latestRecommendationDate
+        || dePayload?.nextPrediction?.predictionIsoDate
+        || lotoPayload?.nextPrediction?.predictionIsoDate
+        || '2026-10-19';
 
-  // Đề Tri-Governor Đa Phương Pháp (Streak-Aware) & Lô Tứ Trụ Quad-Fusion & Xiên 4 Synergy & Top 5 Consensus
-  const streakDeAdv = advisorPayload?.streakAwareDeAdvisor?.latestRecommendation || null;
-  const loQuadAdv = advisorPayload?.loQuadHybrid?.latestRecommendation || null;
-  const loXien4Adv = advisorPayload?.loXien4Synergy?.latestRecommendation || null;
-  const loTop5Xien = advisorPayload?.loTop5ConsensusXien || null;
-  const activeAdvisor = advisorPayload?.crossHedgingPortfolio
-    ? advisorPayload
-    : (dePayload?.crossHedgingPortfolio ? dePayload : (lotoPayload?.crossHedgingPortfolio ? lotoPayload : advisorPayload));
-  const crossHedge = activeAdvisor?.crossHedgingPortfolio?.latestRecommendation || activeAdvisor?.crossHedgingPortfolio || null;
+    if (!predictionDate) {
+        throw new Error('Payload chưa có đủ dự đoán Đề/Lô cho ngày tiếp theo.');
+    }
 
-  // Lô Tinh Hoa — Dynamic Meta-Selector (tự chọn PP tốt nhất mỗi ngày)
-  const metaAdv = advisorPayload?.dynamicMetaAdvisor || null;
-  const metaNext = metaAdv?.nextPrediction || null;
-  const metaAdvSummary = metaAdv?.summary || null;
-  const liveDiaryEntries = Array.isArray(metaAdv?.liveDiary) ? metaAdv.liveDiary : [];
+    const divider = '━━━━━━━━━━━━━━━━━━━━';
+    const lines = [
+        `🎯 <b>XSMB — GỢI Ý THỰC CHIẾN HÀNG NGÀY ${escapeHtml(displayDate(predictionDate))}</b>`,
+        `🔒 <i>100% Khớp Bất Biến Giữa Web (/daily-advisor &amp; /daily-advisor-shadow) và Bot Telegram</i>`,
+        ''
+    ];
 
-  // predictionDate fallback chain
-  const predictionDate = crossHedge?.targetDate
-    || streakDeAdv?.predictionDate
-    || loQuadAdv?.predictionDate
-    || loXien4Adv?.predictionDate
-    || metaNext?.predictionDate
-    || metaRec?.predictionDate
-    || advisorPayload?.loQuantumBayesFusion?.latestRecommendation?.predictionDate
-    || dePayload?.nextPrediction?.predictionIsoDate
-    || lotoPayload?.nextPrediction?.predictionIsoDate;
-
-  if (!predictionDate) {
-    throw new Error('Payload chưa có đủ dự đoán Đề/Lô cho ngày tiếp theo.');
-  }
-
-  const divider = '━━━━━━━━━━━━━━━━━━━━';
-
-  const lines = [
-    `🎯 <b>XSMB — GỢI Ý THỰC CHIẾN HÀNG NGÀY ${escapeHtml(displayDate(predictionDate))}</b>`,
-    `<i>Cơ chế cược Mức 3 (Mặc định): Đề 200K/số (X2 400K) · Lô 25đ/số · Xiên 4 quây 200K/vé (hoặc Mức VIP: Đề 1M · Lô 100đ)</i>`,
-    ''
-  ];
-
-  const snapshotLock = advisorPayload?.snapshotLock || streakDeAdv?.snapshotLock || loQuadAdv?.snapshotLock;
-  const isSettled = Boolean(snapshotLock?.isSettled);
-  let isLocked = Boolean(snapshotLock?.isLocked);
-  if (!isLocked && !isSettled && predictionDate) {
+    // Niêm phong status
+    let isLocked = false;
     try {
-      const now = new Date();
-      const vnFormatter = new Intl.DateTimeFormat('en-CA', {
-        timeZone: 'Asia/Ho_Chi_Minh',
-        year: 'numeric', month: '2-digit', day: '2-digit',
-        hour: '2-digit', minute: '2-digit', hour12: false
-      });
-      const parts = vnFormatter.formatToParts(now);
-      const m = {};
-      for (const p of parts) m[p.type] = p.value;
-      const vnDate = `${m.year}-${m.month}-${m.day}`;
-      const vnHour = parseInt(m.hour, 10);
-      const vnMinute = parseInt(m.minute, 10);
-      const totalMinutes = vnHour * 60 + vnMinute;
-      if (vnDate === String(predictionDate).slice(0, 10) && totalMinutes >= 720 && totalMinutes < 1120) {
-        isLocked = true;
-      }
+        const now = new Date();
+        const vnFormatter = new Intl.DateTimeFormat('en-CA', {
+            timeZone: 'Asia/Ho_Chi_Minh',
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', hour12: false
+        });
+        const parts = vnFormatter.formatToParts(now);
+        const m = {};
+        for (const p of parts) m[p.type] = p.value;
+        const vnDate = `${m.year}-${m.month}-${m.day}`;
+        const vnHour = parseInt(m.hour, 10);
+        const vnMinute = parseInt(m.minute, 10);
+        const totalMinutes = vnHour * 60 + vnMinute;
+        if (vnDate === String(predictionDate).slice(0, 10) && totalMinutes >= 720 && totalMinutes < 1120) {
+            isLocked = true;
+        }
     } catch (e) {}
-  }
-  if (isLocked && !isSettled) {
+
+    if (isLocked) {
+        lines.push(
+            `🔒 <b>TRẠNG THÁI: ĐÃ NIÊM PHONG BẤT BIẾN (TỪ 12H TRƯA)</b>`,
+            `<i>Dàn số được bảo toàn 100% không đổi cho đến khi kết toán sau 18h40.</i>`,
+            ''
+        );
+    }
+
+    // Determine settledDate
+    const settledDates = Object.keys(reg).filter(d => reg[d]?.isSettled).sort();
+    const chSettled = advisorPayload?.crossHedgingPortfolio?.settledLedger || [];
+    const settledDate = settledDates[settledDates.length - 1] 
+        || chSettled[chSettled.length - 1]?.date 
+        || dePayload?.livePredictions?.predictions?.[0]?.predictionIsoDate
+        || null;
+
+    if (settledDate) {
+        const regSettled = reg[settledDate] || {};
+        const sBets = regSettled.bets || {};
+        const sSettlement = regSettled.settlement || {};
+
+        // A. Đối soát Nhật ký đối soát (/daily-advisor)
+        const sDe = sSettlement.de || sSettlement.crossHedgingPortfolio || {};
+        const actualSpecial = sDe.actualSpecial 
+            || sSettlement.lo4EngineFusion?.actualSpecial
+            || advisorPayload?.drawPrizesByDate?.[settledDate]?.special
+            || dePayload?.livePredictions?.predictions?.[0]?.actualSpecial
+            || null;
+
+        const isDeHit = sDe.isHit ?? (sDe.deHits > 0 || (sDe.profitK || 0) > 0);
+        const isDeVipHit = sDe.isVipHit ?? false;
+        const deSpecialStr = actualSpecial != null ? numStr(actualSpecial) : '--';
+        let deResultText = '';
+        if (actualSpecial != null) {
+            if (isDeVipHit) {
+                deResultText = `👑 <b>TRÚNG ĐỀ VIP X3 (số ${deSpecialStr}) ăn 252M!</b>`;
+            } else if (isDeHit) {
+                deResultText = `✅ <b>TRÚNG ĐỀ BỌC LÓT X1 (số ${deSpecialStr}) ăn 84M!</b>`;
+            } else {
+                deResultText = `❌ <b>Trượt Đề (ĐB về ${deSpecialStr})</b>`;
+            }
+        } else {
+            deResultText = `⏳ <i>Đang chờ mở thưởng</i>`;
+        }
+        const advDeStakeK = sDe.stakeK || sDe.deStakeK || 70000;
+        const advDePayoutK = sDe.payoutK || sDe.dePayoutK || (isDeHit ? 84000 : 0);
+        const advDeProfitK = sDe.profitK ?? sDe.deProfitK ?? (advDePayoutK - advDeStakeK);
+
+        const sLo = sSettlement.lo4EngineFusion || {};
+        const advLoHits = sLo.totalHits ?? sSettlement.crossHedgingPortfolio?.loHits ?? 0;
+        const advLoHitNums = sLo.hitNumbers || [];
+        const advLoStakeK = sLo.lotoStakeK || sSettlement.crossHedgingPortfolio?.loStakeK || 66000;
+        const advLoPayoutK = sLo.lotoPayoutK || sSettlement.crossHedgingPortfolio?.loPayoutK || 0;
+        const advLoProfitK = sLo.lotoProfitK ?? sSettlement.crossHedgingPortfolio?.loProfitK ?? (advLoPayoutK - advLoStakeK);
+        const loHitsText = advLoHits > 0 
+            ? `🔥 <b>Nổ ${advLoHits} nháy</b>${advLoHitNums.length ? ` [${advLoHitNums.join(', ')}]` : ''}`
+            : `❌ <b>Trượt Lô (0 nháy)</b>`;
+
+        const sXien = sSettlement.loXien5 || {};
+        const advXienTop5 = (sXien.top5 || sBets.loXien5?.top5 || ['54', '62', '95', '57', '63']).map(numStr);
+        const advH5 = sXien.h5 ?? 0;
+        const advXienStakeK = sXien.stakeK || 55000;
+        const advXienPayoutK = sXien.payoutK || 0;
+        const advXienProfitK = sXien.profitK ?? (advXienPayoutK - advXienStakeK);
+        let advXienWinDesc = '';
+        if (advH5 >= 5) advXienWinDesc = '👑 Ăn 5 dàn X4 (1.920M)';
+        else if (advH5 === 4) advXienWinDesc = '👑 Ăn 1 dàn X4 + 4 dàn X3 (720M)';
+        else if (advH5 === 3) advXienWinDesc = '🔥 Ăn 2 dàn X3 + 3 dàn X2 (204M)';
+        else if (advH5 === 2) advXienWinDesc = '🛡️ Ăn 3 dàn X2 (36M)';
+        else advXienWinDesc = 'Trượt';
+
+        const advTotalStakeK = advDeStakeK + advLoStakeK + advXienStakeK;
+        const advTotalPayoutK = advDePayoutK + advLoPayoutK + advXienPayoutK;
+        const advTotalProfitK = advTotalPayoutK - advTotalStakeK;
+
+        // Lũy kế /daily-advisor (từ 16/09)
+        let advCumDeK = 0, advCumLoK = 0, advCumXienK = 0, advCumProfitK = 0;
+        const activeChRows = chSettled.filter(r => r.date >= '2026-09-16');
+        activeChRows.forEach(r => {
+            advCumDeK += (r.deProfitK || 0);
+            advCumLoK += (r.loProfitK || 0);
+            advCumXienK += (r.xienProfitK || 0);
+            advCumProfitK += (r.totalProfitK || 0);
+        });
+        const advTotalDays = activeChRows.length || 33;
+
+        // B. Đối soát Phương pháp Gộp 5 (/daily-advisor-shadow)
+        const sPenta = sSettlement.pentaConsensus || computePentaConsensusForDate(settledDate, advisorPayload) || {};
+        const pentaDeStakeK = sPenta.de?.stakeK || 0;
+        const pentaDePayoutK = sPenta.de?.payoutK || 0;
+        const pentaDeProfitK = sPenta.de?.profitK || 0;
+        let pentaDeResultText = '';
+        if (actualSpecial != null) {
+            if (sPenta.de?.isHitX2) {
+                pentaDeResultText = `👑 <b>TRÚNG ĐỀ X2 (ăn 33.6M)!</b>`;
+            } else if (sPenta.de?.isHitX1) {
+                pentaDeResultText = `✅ <b>TRÚNG ĐỀ X1 (ăn 16.8M)!</b>`;
+            } else {
+                pentaDeResultText = `❌ <b>Trượt Đề (ĐB về ${deSpecialStr})</b>`;
+            }
+        } else {
+            pentaDeResultText = `⏳ <i>Đang chờ mở thưởng</i>`;
+        }
+
+        const pentaLoHits = sPenta.lo?.hits || 0;
+        const pentaLoHitNums = sPenta.lo?.hitNums || [];
+        const pentaLoStakeK = sPenta.lo?.stakeK || 0;
+        const pentaLoPayoutK = sPenta.lo?.payoutK || 0;
+        const pentaLoProfitK = sPenta.lo?.profitK || 0;
+        const pentaLoHitsText = pentaLoHits > 0 
+            ? `🔥 <b>Nổ ${pentaLoHits} nháy</b>${pentaLoHitNums.length ? ` [${pentaLoHitNums.join(', ')}]` : ''}`
+            : `❌ <b>Trượt Lô (0 nháy)</b>`;
+
+        const pentaXienTop5 = (sPenta.xien5?.top5 || []).map(numStr);
+        const pentaH5 = sPenta.xien5?.h5 || 0;
+        const pentaXienStakeK = sPenta.xien5?.stakeK || 5500;
+        const pentaXienPayoutK = sPenta.xien5?.payoutK || 0;
+        const pentaXienProfitK = sPenta.xien5?.profitK || -pentaXienStakeK;
+        let pentaXienWinDesc = '';
+        if (pentaH5 >= 5) pentaXienWinDesc = '👑 Ăn 5 dàn X4 (192M)';
+        else if (pentaH5 === 4) pentaXienWinDesc = '👑 Ăn 1 dàn X4 + 4 dàn X3 (72M)';
+        else if (pentaH5 === 3) pentaXienWinDesc = '🔥 Ăn 2 dàn X3 + 3 dàn X2 (20.4M)';
+        else if (pentaH5 === 2) pentaXienWinDesc = '🛡️ Ăn 3 dàn X2 (3.6M)';
+        else pentaXienWinDesc = 'Trượt';
+
+        const pentaTotalStakeK = pentaDeStakeK + pentaLoStakeK + pentaXienStakeK;
+        const pentaTotalPayoutK = pentaDePayoutK + pentaLoPayoutK + pentaXienPayoutK;
+        const pentaTotalProfitK = pentaTotalPayoutK - pentaTotalStakeK;
+
+        // Lũy kế Gộp 5 (từ 07/10)
+        let pentaCumDeK = 0, pentaCumLoK = 0, pentaCumXienK = 0, pentaCumProfitK = 0;
+        const pentaDates = Object.keys(advisorPayload?.drawPrizesByDate || {}).filter(d => d >= '2026-10-07' && d <= settledDate).sort();
+        pentaDates.forEach(d => {
+            const res = computePentaConsensusForDate(d, advisorPayload);
+            if (res && !res.isPending) {
+                pentaCumDeK += res.de.profitK;
+                pentaCumLoK += res.lo.profitK;
+                pentaCumXienK += res.xien5.profitK;
+                pentaCumProfitK += res.combo.profitK;
+            }
+        });
+        const pentaTotalDays = pentaDates.length || 12;
+
+        lines.push(
+            divider,
+            `🏆 <b>BÁO CÁO KẾT QUẢ ĐỐI SOÁT HÔM NAY (${escapeHtml(displayDate(settledDate))})</b>`,
+            `<i>Giải Đặc Biệt: <b>${escapeHtml(deSpecialStr)}</b></i>`,
+            '',
+            `<b>A. 📊 NHẬT KÝ ĐỐI SOÁT (/daily-advisor)</b>`,
+            `  • <b>Đề Thực Chiến:</b> ${deResultText}`,
+            `    └ Vốn: ${formatCostK(advDeStakeK)} · Thưởng: ${formatCostK(advDePayoutK)} · Lãi ròng: <b>${formatMoneyK(advDeProfitK)}</b>`,
+            `  • <b>Lô Ghép 4 Động Cơ:</b> ${loHitsText}`,
+            `    └ Vốn: ${formatCostK(advLoStakeK)} · Thưởng: ${formatCostK(advLoPayoutK)} · Lãi ròng: <b>${formatMoneyK(advLoProfitK)}</b>`,
+            `  • <b>Dàn Xiên 5 (5 Dàn Xiên 4 · Vốn 55M):</b> ${advXienWinDesc}`,
+            `    └ Top 5 [${advXienTop5.join(', ')}] về ${advH5}/5 con`,
+            `    └ Vốn: ${formatCostK(advXienStakeK)} · Thưởng: ${formatCostK(advXienPayoutK)} · Lãi ròng: <b>${formatMoneyK(advXienProfitK)}</b>`,
+            `  👉 <b>TỔNG KẾT NGÀY (/daily-advisor):</b>`,
+            `    └ Vốn: ${formatCostK(advTotalStakeK)} · Thưởng: ${formatCostK(advTotalPayoutK)} · Lãi ròng: <b>${formatMoneyK(advTotalProfitK)}</b>`,
+            `    └ <b>Lũy kế (/daily-advisor từ 16/09):</b> <b>${formatM(advCumProfitK)}</b> (${advTotalDays} kỳ · Đề: ${formatM(advCumDeK)} | Lô: ${formatM(advCumLoK)} | Xiên: ${formatM(advCumXienK)})`,
+            '',
+            `<b>B. 👑 PHƯƠNG PHÁP GỘP 5 (/daily-advisor-shadow)</b>`,
+            `  • <b>Đề Siêu Gộp 5 PP (X2 400K + X1 200K):</b> ${pentaDeResultText}`,
+            `    └ Vốn: ${formatCostK(pentaDeStakeK)} · Thưởng: ${formatCostK(pentaDePayoutK)} · Lãi ròng: <b>${formatMoneyK(pentaDeProfitK)}</b>`,
+            `  • <b>Lô Siêu Gộp 5 PP (X5 / X4 / X3 / X1):</b> ${pentaLoHitsText}`,
+            `    └ Vốn: ${formatCostK(pentaLoStakeK)} · Thưởng: ${formatCostK(pentaLoPayoutK)} · Lãi ròng: <b>${formatMoneyK(pentaLoProfitK)}</b>`,
+            `  • <b>Xiên 5 Siêu Gộp (5 Dàn Xiên 4 · Vốn 5.5M):</b> ${pentaXienWinDesc}`,
+            `    └ Top 5 [${pentaXienTop5.join(', ')}] về ${pentaH5}/5 con`,
+            `    └ Vốn: ${formatCostK(pentaXienStakeK)} · Thưởng: ${formatCostK(pentaXienPayoutK)} · Lãi ròng: <b>${formatMoneyK(pentaXienProfitK)}</b>`,
+            `  👉 <b>TỔNG KẾT NGÀY (/daily-advisor-shadow):</b>`,
+            `    └ Vốn: ${formatCostK(pentaTotalStakeK)} · Thưởng: ${formatCostK(pentaTotalPayoutK)} · Lãi ròng: <b>${formatMoneyK(pentaTotalProfitK)}</b>`,
+            `    └ <b>Lũy kế (Gộp 5 từ 07/10):</b> <b>${formatM(pentaCumProfitK)}</b> (${pentaTotalDays} kỳ · Đề: ${formatM(pentaCumDeK)} | Lô: ${formatM(pentaCumLoK)} | Xiên 5: ${formatM(pentaCumXienK)})`,
+            ''
+        );
+    }
+
+    // Chốt số ngày mai (predictionDate)
+    const regNext = reg[predictionDate] || {};
+    const nBets = regNext.bets || {};
+
+    // 1. Nhật ký đối soát /daily-advisor
+    const nDe = nBets.de || advisorPayload?.crossHedgingPortfolio?.latestRecommendation?.pillar1_De || {};
+    let advNextDeVip = (nDe.vipNumbers || []).map(numStr);
+    let advNextDeSingle = (nDe.singleNumbers || []).map(numStr);
+    let advNextDeAll = (nDe.numbers || [...advNextDeVip, ...advNextDeSingle]).map(numStr);
+    if (!advNextDeAll.length) {
+        advNextDeAll = (dePayload?.nextPrediction?.strategies?.deMilestoneHistoryEdge75UnionX2?.holds?.[70]?.betNumbers || Array.from({ length: 30 }, (_, i) => String(i).padStart(2, '0'))).map(numStr);
+        advNextDeVip = advNextDeAll.slice(0, 12);
+        advNextDeSingle = advNextDeAll.slice(12);
+    }
+    const advNextDeStakeK = nDe.stakeK || 70000;
+
+    const nLo = nBets.lo4EngineFusion || advisorPayload?.lo4EngineFusion?.latestRecommendation || {};
+    let advNextLoX5 = (nLo.tierX5 || []).map(numStr);
+    let advNextLoX4 = (nLo.tierX4 || []).map(numStr);
+    let advNextLoX3 = (nLo.tierX3 || []).map(numStr);
+    let advNextLoX1 = (nLo.tierX1 || []).map(numStr);
+    let advNextLoAll = (nLo.allNumbers || nLo.distinctNumbers || [...advNextLoX5, ...advNextLoX4, ...advNextLoX3, ...advNextLoX1]).map(numStr);
+    if (!advNextLoAll.length) {
+        advNextLoAll = (lotoPayload?.nextPrediction?.predictions?.top7?.numbers || lotoPayload?.nextPrediction?.predictions?.top6?.numbers || ['01', '02', '03', '04', '05', '06', '07']).map(numStr);
+        advNextLoX4 = advNextLoAll.slice(0, 3);
+        advNextLoX3 = advNextLoAll.slice(3, 6);
+        advNextLoX1 = advNextLoAll.slice(6);
+    }
+    const advNextLoStakeK = nLo.totalLotoStakeK || 66000;
+
+    const nXien = nBets.loXien5 || {};
+    let advNextXienTop5 = (nXien.top5 || []).map(numStr);
+    if (advNextXienTop5.length < 5) {
+        advNextXienTop5 = (nLo.numbersOver2 || advNextLoAll).slice(0, 5).map(numStr);
+    }
+    if (advNextXienTop5.length < 5) {
+        advNextXienTop5 = advNextLoAll.slice(0, 5);
+    }
+    if (advNextXienTop5.length < 5) {
+        advNextXienTop5 = ['59', '62', '76', '24', '35'];
+    }
+    const advNextXienTickets = getXien5Combinations(advNextXienTop5);
+    const advNextXienStakeK = 55000;
+    const advNextTotalStakeK = advNextDeStakeK + advNextLoStakeK + advNextXienStakeK;
+
+    // 2. Phương pháp Gộp 5 /daily-advisor-shadow
+    const nPenta = nBets.pentaConsensus || computePentaConsensusForDate(predictionDate, advisorPayload) || {};
+    let pentaNextDeX2 = (nPenta.de?.x2Nums || []).map(numStr);
+    let pentaNextDeX1 = (nPenta.de?.x1Nums || []).map(numStr);
+    let pentaNextDeAll = (nPenta.de?.numbers || [...pentaNextDeX2, ...pentaNextDeX1]).map(numStr);
+    if (!pentaNextDeAll.length) {
+        pentaNextDeAll = advNextDeAll;
+        pentaNextDeX2 = advNextDeVip;
+        pentaNextDeX1 = advNextDeSingle;
+    }
+    const pentaNextDeStakeK = nPenta.de?.stakeK || (pentaNextDeX2.length * 400 + pentaNextDeX1.length * 200);
+
+    let pentaNextLoX5 = (nPenta.lo?.x5Nums || []).map(numStr);
+    let pentaNextLoX4 = (nPenta.lo?.x4Nums || []).map(numStr);
+    let pentaNextLoX3 = (nPenta.lo?.x3Nums || []).map(numStr);
+    let pentaNextLoX1 = (nPenta.lo?.x1Nums || []).map(numStr);
+    let pentaNextLoAll = (nPenta.lo?.numbers || [...pentaNextLoX5, ...pentaNextLoX4, ...pentaNextLoX3, ...pentaNextLoX1]).map(numStr);
+    if (!pentaNextLoAll.length) {
+        pentaNextLoAll = advNextLoAll;
+        pentaNextLoX4 = advNextLoX4;
+        pentaNextLoX3 = advNextLoX3;
+        pentaNextLoX1 = advNextLoX1;
+    }
+    const pentaNextLoStakeK = nPenta.lo?.stakeK || 88000;
+
+    let pentaNextXienTop5 = (nPenta.xien5?.top5 || pentaNextLoAll.slice(0, 5)).map(numStr);
+    if (pentaNextXienTop5.length < 5) pentaNextXienTop5 = advNextXienTop5;
+    if (pentaNextXienTop5.length < 5) pentaNextXienTop5 = ['62', '59', '76', '04', '22'];
+    const pentaNextXienTickets = getXien5Combinations(pentaNextXienTop5);
+    const pentaNextXienStakeK = nPenta.xien5?.stakeK || 5500;
+    const pentaNextTotalStakeK = pentaNextDeStakeK + pentaNextLoStakeK + pentaNextXienStakeK;
+
     lines.push(
-      `🔒 <b>TRẠNG THÁI: ĐÃ NIÊM PHONG BẤT BIẾN (TỪ 12H TRƯA)</b>`,
-      `<i>Dàn số được bảo toàn 100% không đổi cho đến khi kết toán sau 18h40.</i>`,
-      ''
-    );
-  }
-
-  // =========================================================================
-  // 0. 🏆 BÁO CÁO KẾT QUẢ ĐỐI SOÁT HÔM NAY (NẾU ĐÃ CÓ KẾT QUẢ MỞ THƯỞNG)
-  // =========================================================================
-  const lastSettledLo = liveDiaryEntries.filter(r => r.settled !== false && (r.db || r.dayProfitK !== undefined)).pop() || null;
-  const chSettled = advisorPayload?.crossHedgingPortfolio?.settledLedger || [];
-  const lastCH = chSettled.slice().pop() || null;
-  const streakSettled = advisorPayload?.streakAwareDeAdvisor?.settledLedger || [];
-  const lastStreakDe = streakSettled.slice().pop() || null;
-  const settledDate = lastCH?.date || lastCH?.predictionDate || lastStreakDe?.date || lastStreakDe?.predictionDate || lastSettledLo?.date || metaSettledList[metaSettledList.length - 1]?.date;
-
-  if (settledDate) {
-    const resDe = resolveUnifiedDeRowForDate(settledDate, advisorPayload);
-    const resLo = resolveUnifiedLoRowForDate(lastSettledLo);
-
-    const actualSpecial = resDe.actualSpecial ?? lastSettledLo?.db;
-    if (actualSpecial != null) {
-      const specStr = String(actualSpecial).padStart(2, '0');
-
-      const dmRow = (advisorPayload?.loDualMerge?.settledLedger || []).find(r => r.date === settledDate);
-      const actual27List = (dmRow?.actual27 || []).map(normalizeLotteryNumber);
-
-      const stdHitNums = (lastSettledLo?.standard?.numbers || []).map(normalizeLotteryNumber).filter(n => actual27List.includes(n));
-      const stdHitStr = stdHitNums.length ? ` (Nổ: <b>${stdHitNums.join(', ')}</b>)` : '';
-
-      const x2HitNums = (lastSettledLo?.x2?.numbers || []).map(normalizeLotteryNumber).filter(n => actual27List.includes(n));
-      const x2HitStr = x2HitNums.length ? ` (Nổ: <b>${x2HitNums.join(', ')}</b>)` : '';
-
-      let deResultTitle = '';
-      if (resDe.hitType === 'win_x3' || resDe.hitType === 'win_x2') {
-        deResultTitle = `🎉 <b>TRÚNG ĐỀ ${escapeHtml(specStr)} VIP X3 (ĂN 252M VIP / 50.4M M3)!</b>`;
-      } else if (resDe.hitType === 'win_x1') {
-        deResultTitle = `🎉 <b>TRÚNG ĐỀ ${escapeHtml(specStr)} BỌC LÓT X1 (ĂN 84M VIP / 16.8M M3)!</b>`;
-      } else {
-        deResultTitle = `❌ <b>Trượt (${formatK(-resDe.stakeM3K)} M3 / ${formatM(-resDe.stakeK)} VIP)</b>`;
-      }
-
-      const top5XienRow = (advisorPayload?.loTop5ConsensusXien?.settledLedger || []).find(r => r.date === settledDate);
-      const chSettledToday = (advisorPayload?.crossHedgingPortfolio?.settledLedger || []).find(r => (r.predictionDate || r.date) === settledDate);
-
-      const coreM3TotalK = resDe.profitM3K + resLo.stdM3ProfitK + resLo.x2M3ProfitK;
-      const coreTotalProfitK = resDe.profitK + resLo.stdProfitK + resLo.x2ProfitK;
-
-      const resCrossLo = resolveUnifiedCrossLoRowForDate(settledDate, advisorPayload);
-      const crossM3TotalK = resDe.profitM3K + resCrossLo.m3ProfitK;
-      const crossVipTotalK = resDe.profitK + resCrossLo.vipProfitK;
-
-      lines.push(
-        `🏆 <b>BÁO CÁO KẾT QUẢ ĐỐI SOÁT HÔM NAY (${escapeHtml(displayDate(settledDate))})</b>`,
-        `🎯 <b>Giải Đặc Biệt (Đề):</b> <b>${escapeHtml(specStr)}</b>`,
-        `• 💎 <b>Đề Thực Chiến (${escapeHtml(resDe.methodName)} - ${escapeHtml(resDe.subTierLabel)})</b>: ${deResultTitle}`,
-        `   └ Đơn vị Bot (200K/600K): <b>${formatK(resDe.profitM3K)}</b> (${resDe.profitM3K > 0 ? '+' : ''}${(resDe.profitM3K / 1000).toFixed(1)}M) · Mức VIP: <b>${formatM(resDe.profitK)}</b>`
-      );
-
-      if (resCrossLo && (resCrossLo.x5?.length || resCrossLo.x4?.length || resCrossLo.x3?.length || resCrossLo.x2?.length || resCrossLo.totalHits > 0 || resCrossLo.vipStakeK > 0)) {
-        lines.push(
-          `• ⚡ <b>Lô Tổng Hợp 4 Động Cơ (Đa Tầng X5/X4/X3/X1 - Khuyên Dùng)</b>: ${resCrossLo.isWin ? '🎉 <b>THẮNG</b>' : '❌ Trượt'} nổ <b>${resCrossLo.totalHits} nháy</b>${resCrossLo.hitNums.length ? ` (${resCrossLo.hitNums.join(', ')})` : ''}`,
-          `   └ Đơn vị Bot: <b>${formatK(resCrossLo.m3ProfitK)}</b> (${resCrossLo.m3ProfitK > 0 ? '+' : ''}${(resCrossLo.m3ProfitK / 1000).toFixed(2)}M) · Mức VIP: <b>${formatM(resCrossLo.vipProfitK)}</b>`
-        );
-      }
-
-      if (!crossHedge) {
-        lines.push(
-          `• 🏆 <b>Lô Chuẩn Nền Tảng (Top 20 số)</b>: Nổ <b>${resLo.stdHits} nháy</b>${stdHitStr}`,
-          `   └ Đơn vị Bot (25đ/số): <b>${formatK(resLo.stdM3ProfitK)}</b> (Vốn 500đ [11.000K] · Ăn ${(resLo.stdM3PayoutK).toLocaleString('vi-VN')}K) · Mức VIP: <b>${formatM(resLo.stdProfitK)}</b>`,
-          `• 🚀 <b>Lô Tăng Tốc X2 (Top 7 số)</b>: ${resLo.x2ProfitK > 0 ? '🚀 <b>THẮNG</b>' : '❌ Trượt'} nổ <b>${resLo.x2Hits} nháy</b>${x2HitStr}`,
-          `   └ Đơn vị Bot (25đ/số): <b>${formatK(resLo.x2M3ProfitK)}</b> (Vốn 175đ [3.850K] · Ăn ${(resLo.x2M3PayoutK).toLocaleString('vi-VN')}K) · Mức VIP: <b>${formatM(resLo.x2ProfitK)}</b> (Vốn 15.4M · Ăn ${(resLo.x2PayoutK / 1000).toFixed(1)}M)`
-        );
-      }
-
-      let xienTodayM3K = resLo.xi4M3ProfitK;
-      let xienTodayVIP_K = resLo.xi4ProfitK;
-
-      const regLoForXien = advisorPayload?.dailyLockedBetsRegistry?.dates?.[settledDate]?.settlement?.lo4EngineFusion;
-      if (regLoForXien && regLoForXien.xienPayoutK !== undefined) {
-        xienTodayVIP_K = regLoForXien.xienProfitK !== undefined ? regLoForXien.xienProfitK : (regLoForXien.xienPayoutK - (regLoForXien.xienStakeK || 11000));
-        xienTodayM3K = Math.round(xienTodayVIP_K * 0.2);
-        const xienH = regLoForXien.xienHitsCount ?? 3;
-        lines.push(
-          `• 💎 <b>Lô Xiên Quây Top 5 Đồng Thuận (Bộ 4 Quây 11 vé)</b>: ${xienTodayVIP_K > 0 ? `🎉 <b>ĂN ${xienH}/4 CON (CÓ LÃI RÒNG)</b>` : `❌ Trượt (${xienH}/4 con)`}`,
-          `   └ Đơn vị Bot (200K/vé = 2.2M): <b>${formatK(xienTodayM3K)}</b> · Mức VIP (1M/vé = 11M): <b>${formatM(xienTodayVIP_K)}</b>`
-        );
-      } else if (chSettledToday && chSettledToday.xienProfitK !== undefined) {
-        xienTodayM3K = Math.round(chSettledToday.xienProfitK * 0.2);
-        xienTodayVIP_K = chSettledToday.xienProfitK;
-        const xienH = chSettledToday.uniqueTop4Hits ?? (top5XienRow ? top5XienRow.h4 : 0);
-        lines.push(
-          `• 💎 <b>Lô Xiên Quây Top 5 Đồng Thuận (Bộ 4 Quây 11 vé)</b>: ${xienTodayVIP_K > 0 ? `🎉 <b>ĂN ${xienH}/4 CON (CÓ LÃI RÒNG)</b>` : `❌ Trượt (${xienH}/4 con)`}`,
-          `   └ Đơn vị Bot (200K/vé = 2.2M): <b>${formatK(xienTodayM3K)}</b> · Mức VIP (1M/vé = 11M): <b>${formatM(xienTodayVIP_K)}</b>`
-        );
-      } else if (top5XienRow) {
-        xienTodayM3K = top5XienRow.q11ProfitM3K;
-        xienTodayVIP_K = top5XienRow.q11ProfitVIP_K;
-        lines.push(
-          `• 💎 <b>Lô Xiên Quây Top 5 Đồng Thuận (Bộ 4 Quây 11 vé + Bộ 5 Quây X3)</b>:`,
-          `   └ 🎲 <b>Bộ 4 Quây 11 vé [${top5XienRow.top4.join(', ')}]</b>: ${top5XienRow.h4 >= 2 ? `🎉 <b>ĂN ${top5XienRow.h4}/4 CON (CÓ LÃI RÒNG)</b>` : `❌ Trượt (${top5XienRow.h4}/4 con)`}`,
-          `      • Đơn vị Bot (200K/vé = 2.2M): <b>${formatK(top5XienRow.q11ProfitM3K)}</b> (Ăn ${(top5XienRow.q11PayoutM3K).toLocaleString('vi-VN')}K) · Mức VIP (1M/vé = 11M): <b>${formatM(top5XienRow.q11ProfitVIP_K)}</b>`,
-          `   └ 🎯 <b>Bộ 5 Quây 10 vé Xiên 3 [${top5XienRow.top5.join(', ')}]</b>: ${top5XienRow.x3Tickets > 0 ? `🎉 <b>NỔ ${top5XienRow.x3Tickets} VÉ XIÊN 3 (Trúng ${top5XienRow.h5}/5 con)</b>` : `❌ Trượt (${top5XienRow.h5}/5 con)`}`,
-          `      • Vốn 1.0M (100K/vé): <b>${formatK(top5XienRow.x3ProfitK)}</b> (Ăn ${(top5XienRow.x3PayoutK).toLocaleString('vi-VN')}K)`
-        );
-      } else {
-        lines.push(
-          `• 💎 <b>Lô Xiên 4 (Quây 11 vé)</b>: ${resLo.xi4Hits >= 2 ? `🎉 <b>Ăn ${resLo.xi4Hits}/4 con</b>` : `❌ Trượt (${resLo.xi4Hits}/4 con)`}`,
-          `   └ Đơn vị Bot (200K/vé): <b>${formatK(resLo.xi4M3ProfitK)}</b> (11 vé · Vốn 2.200K · Ăn ${(resLo.xi4M3PayoutK).toLocaleString('vi-VN')}K) · Mức VIP: <b>${formatM(resLo.xi4ProfitK)}</b>`
-        );
-      }
-
-      const crossM3WithXienK = crossM3TotalK + xienTodayM3K;
-      const crossVipWithXienK = crossVipTotalK + xienTodayVIP_K;
-      const todayM3TotalWithXienK = coreM3TotalK + xienTodayM3K;
-      const todayTotalProfitWithXienK = coreTotalProfitK + xienTodayVIP_K;
-
-      if (crossHedge) {
-        lines.push(
-          `💰 <b>TỔNG LÃI RÒNG HÔM NAY (${escapeHtml(displayDate(settledDate))}):</b>`,
-          `   👉 <b>Đơn Vị Bot Telegram (Mức 3):</b> <b>${formatK(crossM3WithXienK)}</b> (${crossM3WithXienK > 0 ? '+' : ''}${(crossM3WithXienK / 1000).toFixed(2)}M) ${crossM3WithXienK > 0 ? '🎉' : ''}`,
-          `   👉 <b>Mức VIP Vốn Lớn:</b> <b>${formatM(crossVipWithXienK)}</b> ${crossVipWithXienK > 0 ? '🎉 <b>(THẮNG LỢI RỰC RỠ)</b>' : ''}`
-        );
-      } else {
-        lines.push(
-          `💰 <b>TỔNG LÃI RÒNG HÔM NAY (${escapeHtml(displayDate(settledDate))}):</b>`,
-          `   👉 <b>Chiến Lược Chủ Lực Khuyên Dùng (Đề + Lô Ghép Tầng + Xiên Quây):</b> <b>${formatK(crossM3WithXienK)}</b> (${crossM3WithXienK > 0 ? '+' : ''}${(crossM3WithXienK / 1000).toFixed(2)}M) · Mức VIP: <b>${formatM(crossVipWithXienK)}</b> ${crossVipWithXienK > 0 ? '🎉 <b>(THẮNG LỢI RỰC RỠ)</b>' : ''}`,
-          `   👉 <b>Thực Chiến Combo (Đề + Lô Chuẩn + Lô X2 + Xiên Quây):</b> <b>${formatK(todayM3TotalWithXienK)}</b> (${todayM3TotalWithXienK > 0 ? '+' : ''}${(todayM3TotalWithXienK / 1000).toFixed(2)}M) · Mức VIP: <b>${formatM(todayTotalProfitWithXienK)}</b>`
-        );
-      }
-
-      // ── ĐỐI SOÁT 4 PHƯƠNG PHÁP SHADOW MONITOR ─────────────────────────────
-      const shDe40 = (advisorPayload?.deDropoffMerge?.settledLedger || []).find(r => (r.date || r.predictionDate) === settledDate)
-        || advisorPayload?.dailyLockedBetsRegistry?.dates?.[settledDate]?.settlement?.deDropoffMerge;
-      const shLo7 = (advisorPayload?.loDropoff27?.settledLedger || []).find(r => (r.date || r.predictionDate) === settledDate)
-        || advisorPayload?.dailyLockedBetsRegistry?.dates?.[settledDate]?.settlement?.loDropoff27;
-      const shTri = (advisorPayload?.triCoreDe?.settledLedger || []).find(r => (r.date || r.predictionDate) === settledDate)
-        || advisorPayload?.dailyLockedBetsRegistry?.dates?.[settledDate]?.settlement?.triCoreDe;
-      const shSem = (advisorPayload?.semanticResonanceSuite?.settledLedger || []).find(r => (r.date || r.predictionDate) === settledDate)
-        || advisorPayload?.dailyLockedBetsRegistry?.dates?.[settledDate]?.settlement?.semanticResonanceSuite;
-
-      if (shDe40 || shLo7 || shTri || shSem) {
-        lines.push(
-          '',
-          `👥 <b>ĐỐI SOÁT 4 PHƯƠNG PHÁP SHADOW MONITOR (${escapeHtml(displayDate(settledDate))}):</b>`
-        );
-
-        if (shDe40) {
-          const hit40 = Boolean(shDe40.isHit40 ?? shDe40.isHit);
-          const p40 = shDe40.profit40K ?? shDe40.profitK ?? (hit40 ? 44000 : -40000);
-          const p36 = shDe40.profit36K ?? (shDe40.isHit36 ? 48000 : -36000);
-          const status40 = hit40 ? `🎉 <b>TRÚNG ${specStr} (+44.0M)</b>` : `❌ Trượt (-40.0M)`;
-          lines.push(
-            `• 💎 <b>1. Đề Khử Trùng 40s (Đánh Phẳng 40M)</b>: ${status40} (Dàn 36s VIP: ${p36 > 0 ? `+${(p36/1000).toFixed(1)}M` : `${(p36/1000).toFixed(1)}M`})`
-          );
-        }
-
-        if (shLo7) {
-          const hits = shLo7.hits7 ?? shLo7.hits ?? 0;
-          const hitNums = (shLo7.hitNumbers || []).join(', ');
-          const flatP = shLo7.flatProfit7K ?? shLo7.profitK ?? (hits * 8000 - 15400);
-          const tierP = shLo7.tierProfitK ?? (hits * 8000 - 22000);
-          const statusLo = hits >= 2 ? `🎉 <b>THẮNG ${hits} NHÁY</b>` : (hits === 1 ? `⚠️ Nổ 1 nháy` : `❌ Trượt 0 nháy`);
-          lines.push(
-            `• ⚡ <b>2. Lô Dropoff 27 Top 7 (QMBF v6 · 15.4M)</b>: ${statusLo}${hitNums ? ` (${hitNums})` : ''} · Phẳng: <b>${flatP > 0 ? '+' : ''}${(flatP / 1000).toFixed(1)}M</b> · Tầng: <b>${tierP > 0 ? '+' : ''}${(tierP / 1000).toFixed(1)}M</b>`
-          );
-        }
-
-        if (shTri) {
-          const hitTri = Boolean(shTri.hit || shTri.isHit || (shTri.profitK > 0));
-          const statusTri = hitTri ? `🎉 <b>TRÚNG ${specStr} (+60.0M)</b>` : `❌ Trượt (-24.0M)`;
-          lines.push(
-            `• 🎯 <b>3. Đề Tam Trụ Tri-Core 24s (Vốn 24M)</b>: ${statusTri}`
-          );
-        }
-
-        if (shSem) {
-          const semDeP = shSem.de?.profitK ?? (shSem.de?.isWin ? 30000 : -54000);
-          const semLoHits = shSem.lo?.totalHits ?? shSem.lo?.hits ?? 0;
-          const semLoP = shSem.lo?.flat?.profitK ?? shSem.lo?.flatProfitK ?? (semLoHits * 8000 - 15400);
-          const semX5P = shSem.xien5?.profitK ?? (shSem.xien5?.isWin ? 100000 : -55000);
-          const semComboP = shSem.combo?.flat?.profitK ?? shSem.comboFlat?.profitK ?? (semDeP + semLoP + semX5P);
-          lines.push(
-            `• 👑 <b>4. Tri-Tier Semantic Resonance Suite (54M+15.4M+55M)</b>: Combo Flat: <b>${semComboP > 0 ? '+' : ''}${(semComboP / 1000).toFixed(1)}M</b> (Đề 36s: ${(semDeP / 1000).toFixed(0)}M · Lô: ${(semLoP / 1000).toFixed(1)}M · Xiên: ${(semX5P / 1000).toFixed(0)}M)`
-          );
-        }
-      }
-
-      lines.push(
         divider,
-        `🔮 <b>GỢI Ý DÀN SỐ ĐÁNH TIẾP THEO (${escapeHtml(displayDate(predictionDate))})</b>`,
-        divider
-      );
-    }
-  }
-
-  // =========================================================================
-  // 1-5. GỢI Ý THỰC CHIẾN CHI TIẾT (FALLBACK KHI KHÔNG CÓ CROSS-HEDGE)
-  // =========================================================================
-  let sNumbers = [];
-  let sTierX2 = [];
-  let sSingles = [];
-  let sMethod = 'Đề Markov Bậc 2 & Gap Hazard';
-  const chP1 = crossHedge?.pillar1_De || null;
-  let stdNums = [];
-  let x2Nums = [];
-  let crossOpt = null;
-  let allMerged = [];
-  let xi4Nums = [];
-  let top5Consensus = [];
-  let top3Consensus = [];
-  if (!crossHedge) {
-
-  if (chP1 && Array.isArray(chP1.allNumbers) && chP1.allNumbers.length) {
-    sMethod = chP1.methodLabel || 'Đề Markov Bậc 2 & Gap Hazard';
-    sNumbers = chP1.allNumbers.map(normalizeLotteryNumber);
-    sTierX2 = (chP1.vipNumbers || []).map(normalizeLotteryNumber);
-    sSingles = (chP1.singleNumbers || []).map(normalizeLotteryNumber);
-    const sBadge = crossHedge?.mode === 'ACTIVE_HEDGE'
-      ? '🟢 CƯỢC CHỦ LỰC TẬP TRUNG (ĂN 252M VIP / 50.4M M3)'
-      : `🛡️ CHẾ ĐỘ PHÒNG THỦ (${crossHedge?.mode || 'ACTIVE'})`;
-    const sizing = Number(crossHedge?.sizingMultiplier || 1.0);
-    const sizingText = sizing !== 1.0 ? ` · Sizing: ${sizing}x` : '';
-    const totalUnits = sTierX2.length * 3 + sSingles.length;
-
-    lines.push(
-      `<b>1. 💎 ĐỀ TINH HOA TUYỂN CHỌN — BỘ ĐIỀU PHỐI ĐA PHƯƠNG PHÁP</b>`,
-      `👑 <b>Phương pháp: ${escapeHtml(sMethod)} ⭐ (Đề Xuất Hàng Ngày)</b>`,
-      `⚡ <b>Trạng thái:</b> <code>${escapeHtml(sBadge)}</code>${sizingText}`,
-      `💡 <i>${escapeHtml(crossHedge?.hedgingSummary?.hedgingGuarantee || 'Nổ bất kỳ trụ cột nào đều bảo toàn vốn và sinh lãi ròng!')}</i>`,
-      `🎯 <b>Dàn Đề Tuyển Chọn (${sNumbers.length} số · ${totalUnits} đơn vị cược):</b>`,
-      `<b>${escapeHtml(formatNumberList(sNumbers))}</b>`
+        `🎯 <b>DỰ ĐOÁN &amp; CHỐT SỐ NGÀY MAI (${escapeHtml(displayDate(predictionDate))})</b>`,
+        '',
+        `<b>1. 📊 NHẬT KÝ ĐỐI SOÁT (/daily-advisor)</b>`,
+        `  • <b>Đề Thực Chiến (${advNextDeAll.length} số · Vốn ${formatCostK(advNextDeStakeK)}):</b>`,
+        `    └ 👑 <b>VIP X3 (${advNextDeVip.length} số · cược 1.8M/số, ăn 252M):</b>`,
+        `       <code>${escapeHtml(advNextDeVip.join(', '))}</code>`,
+        `    └ 🛡️ <b>Bọc Lót X1 (${advNextDeSingle.length} số · cược 600K/số, ăn 84M):</b>`,
+        `       <code>${escapeHtml(advNextDeSingle.join(', '))}</code>`,
+        `  • <b>Lô Ghép 4 Động Cơ (${advNextLoAll.length} số · Vốn ${formatCostK(advNextLoStakeK)}):</b>`
     );
-    if (sTierX2.length) {
-      lines.push(
-        `⚡ <b>Dàn VIP Trùng X3 (${sTierX2.length} số - Vào tiền gấp 3):</b> <b>${escapeHtml(formatNumberList(sTierX2))}</b>`
-      );
-    }
-    if (sSingles.length) {
-      lines.push(
-        `🛡️ <b>Dàn Bọc Lót X1 (${sSingles.length} số - Vào tiền chuẩn):</b> <b>${escapeHtml(formatNumberList(sSingles))}</b>`
-      );
-    }
-    const hedge = streakDeAdv?.lotKheHedge;
-    if (hedge && hedge.isHedgeActive && hedge.numbers?.length) {
-      const hNums = hedge.numbers.map(normalizeLotteryNumber);
-      const stakeK = hedge.recommendedStakePerNumK || 100;
-      lines.push(
-        `🛡️ <b>Khiên Bảo Hiểm Lọt Khe 0-Vote (${hNums.length} số · ${stakeK}K/số · Ăn 1:84):</b> <b>${escapeHtml(formatNumberList(hNums))}</b>`,
-        `  • <i>${escapeHtml(hedge.rationale || 'Bọc lót nhẹ phòng khi nhà cái bẻ cầu lọt khe, nổ ăn x84 lần bù đắp rủi ro!')}</i>`
-      );
+    if (advNextLoX5.length) {
+        lines.push(`    └ 👑 <b>Siêu VIP X5 (${advNextLoX5.length} số · cược 11M/số [500đ], ăn 40M/nháy):</b> <code>${escapeHtml(advNextLoX5.join(', '))}</code>`);
     }
     lines.push(
-      `🎯 <b>Chi tiết cách vào tiền tối đa hóa lợi nhuận:</b>`,
-      `  • <b>VIP Trùng X3 (${sTierX2.length} số):</b> Cược gấp ba (Mức 3 đánh 600K/số, Mức VIP đánh 3M/số). Khi nổ VIP ăn <b>+50.4M Mức 3 / +252M VIP</b> (Lãi ròng <b>+35.0M M3 / +175M VIP</b>).`,
-      `  • <b>Bọc Lót X1 (${sSingles.length} số):</b> Cược chuẩn (Mức 3 đánh 200K/số, Mức VIP đánh 1M/số) để bảo hiểm vốn (ăn <b>+16.8M M3 / +84M VIP</b>, Lãi ròng <b>+1.4M M3 / +7M VIP</b>).`,
-      `  • <i>Tổng vốn: Mức 3 là 15.4M (${sTierX2.length}x600K + ${sSingles.length}x200K) · Mức VIP là 77M (${sTierX2.length}x3M + ${sSingles.length}x1M). Tối ưu hơn hẳn đánh cược đều ${sNumbers.length} số.</i>`,
-      `🔥 <b>Nguyên lý Đòn Bẩy X3 Bứt Phá Lợi Nhuận:</b> Cố định 17 VIP X3 (51M) + 26 Bọc Lót X1 (26M) = 43 số (77M/ngày) để khi nổ số trùng sẽ ăn ngay 252M VIP, gỡ bù mọi drawdown và đẩy tăng trưởng lũy kế cực mạnh.`
-    );
-  } else if (streakDeAdv && Array.isArray(streakDeAdv.numbers) && streakDeAdv.numbers.length) {
-    const sBadge = streakDeAdv.activePhaseLabel || streakDeAdv.confidenceBadge || '🟢 THEO ĐÀ THẮNG KHỎE ALPHA (80.8% WIN)';
-    sMethod = streakDeAdv.selectedMethodLabel || 'Đề Thích Ứng Alpha';
-    const sizing = Number(streakDeAdv.sizingMultiplier || 1.0);
-    const sizingText = sizing !== 1.0 ? ` · Sizing: ${sizing}x` : '';
-    sNumbers = streakDeAdv.numbers.map(normalizeLotteryNumber);
-    sTierX2 = (streakDeAdv.tierX2 || []).map(normalizeLotteryNumber);
-    sSingles = (streakDeAdv.singles || []).map(normalizeLotteryNumber);
-    const totalUnits = sTierX2.length * 3 + sSingles.length;
-
-    lines.push(
-      `<b>1. 💎 ĐỀ TINH HOA TUYỂN CHỌN — BỘ ĐIỀU PHỐI ĐA PHƯƠNG PHÁP</b>`,
-      `👑 <b>Phương pháp: ${escapeHtml(sMethod)} ⭐ (Đề Xuất Hàng Ngày)</b>`,
-      `⚡ <b>Trạng thái:</b> <code>${escapeHtml(sBadge)}</code>${sizingText}`,
-      `💡 <i>${escapeHtml(streakDeAdv.rationale || streakDeAdv.phaseRationale || '')}</i>`,
-      `🎯 <b>Dàn Đề Tuyển Chọn (${sNumbers.length} số · ${totalUnits} đơn vị cược):</b>`,
-      `<b>${escapeHtml(formatNumberList(sNumbers))}</b>`
-    );
-    if (sTierX2.length) {
-      lines.push(
-        `⚡ <b>Dàn VIP Trùng X3 (${sTierX2.length} số - Vào tiền gấp 3):</b> <b>${escapeHtml(formatNumberList(sTierX2))}</b>`
-      );
-    }
-    if (sSingles.length) {
-      lines.push(
-        `🛡️ <b>Dàn Bọc Lót X1 (${sSingles.length} số - Vào tiền chuẩn):</b> <b>${escapeHtml(formatNumberList(sSingles))}</b>`
-      );
-    }
-    const hedge = streakDeAdv.lotKheHedge;
-    if (hedge && hedge.isHedgeActive && hedge.numbers?.length) {
-      const hNums = hedge.numbers.map(normalizeLotteryNumber);
-      const stakeK = hedge.recommendedStakePerNumK || 100;
-      lines.push(
-        `🛡️ <b>Khiên Bảo Hiểm Lọt Khe 0-Vote (${hNums.length} số · ${stakeK}K/số · Ăn 1:84):</b> <b>${escapeHtml(formatNumberList(hNums))}</b>`,
-        `  • <i>${escapeHtml(hedge.rationale || 'Bọc lót nhẹ phòng khi nhà cái bẻ cầu lọt khe, nổ ăn x84 lần bù đắp rủi ro!')}</i>`
-      );
-    }
-    lines.push(
-      `🎯 <b>Chi tiết cách vào tiền tối đa hóa lợi nhuận:</b>`,
-      `  • <b>VIP Trùng X3 (${sTierX2.length} số):</b> Cược gấp ba (Mức 3 đánh 600K/số, Mức VIP đánh 3M/số). Khi nổ VIP ăn <b>+50.4M Mức 3 / +252M VIP</b> (Lãi ròng <b>+35.0M M3 / +175M VIP</b>).`,
-      `  • <b>Bọc Lót X1 (${sSingles.length} số):</b> Cược chuẩn (Mức 3 đánh 200K/số, Mức VIP đánh 1M/số) để bảo hiểm vốn (ăn <b>+16.8M M3 / +84M VIP</b>, Lãi ròng <b>+1.4M M3 / +7M VIP</b>).`,
-      `  • <i>Tổng vốn: Mức 3 là 15.4M (${sTierX2.length}x600K + ${sSingles.length}x200K) · Mức VIP là 77M (${sTierX2.length}x3M + ${sSingles.length}x1M). Tối ưu hơn hẳn đánh cược đều ${sNumbers.length} số.</i>`,
-      `🔥 <b>Nguyên lý Đòn Bẩy X3 Bứt Phá Lợi Nhuận:</b> Cố định 17 VIP X3 (51M) + 26 Bọc Lót X1 (26M) = 43 số (77M/ngày) để khi nổ số trùng sẽ ăn ngay 252M VIP, gỡ bù mọi drawdown và đẩy tăng trưởng lũy kế cực mạnh.`
-    );
-
-    // =========================================================================
-    // CÁC PHƯƠNG PHÁP THỰC CHIẾN LỰA CHỌN THÊM (MỐC LỊCH SỬ HIỆN TẠI)
-    // =========================================================================
-    const altMethods = [];
-    const chosenKey = streakDeAdv.selectedMethod;
-
-    if (chosenKey !== 'adaptiveDualMerge' && advisorPayload?.adaptiveDualMerge?.latestRecommendation) {
-      const aRec = advisorPayload.adaptiveDualMerge.latestRecommendation;
-      const aUnion = (aRec.fullUnion || []).map(normalizeLotteryNumber);
-      const aX2 = (aRec.intersectionX2 || []).map(normalizeLotteryNumber);
-      const aX1 = (aRec.uniqueSinglesX1 || []).map(normalizeLotteryNumber);
-      if (aUnion.length) {
-        altMethods.push(
-          `• 👑 <b>Lựa chọn 2 — Đề Thích Ứng Alpha (Dàn ${aUnion.length} số · Vốn 60M · X2/X1):</b>`,
-          `   └ ⚡ <b>VIP Trùng X2 (${aX2.length} số):</b> <b>${escapeHtml(formatNumberList(aX2))}</b>`,
-          `   └ 🛡️ <b>Bọc Lót X1 (${aX1.length} số):</b> <b>${escapeHtml(formatNumberList(aX1))}</b>`
-        );
-      }
-    }
-
-    if (chosenKey !== 'dualMerge' && advisorPayload?.dualMerge?.latestRecommendation) {
-      const dRec = advisorPayload.dualMerge.latestRecommendation;
-      const dUnion = (dRec.fullUnion || []).map(normalizeLotteryNumber);
-      const dX2 = (dRec.intersectionX2 || []).map(normalizeLotteryNumber);
-      const dX1 = (dRec.uniqueSinglesX1 || []).map(normalizeLotteryNumber);
-      if (dUnion.length) {
-        altMethods.push(
-          `• 🎯 <b>Lựa chọn — Đề Gộp Tiêu Chuẩn (Dàn ${dUnion.length} số · Vốn 60M · X2/X1):</b>`,
-          `   └ ⚡ <b>VIP Trùng X2 (${dX2.length} số):</b> <b>${escapeHtml(formatNumberList(dX2))}</b>`,
-          `   └ 🛡️ <b>Bọc Lót X1 (${dX1.length} số):</b> <b>${escapeHtml(formatNumberList(dX1))}</b>`
-        );
-      }
-    }
-
-    if (chosenKey !== 'metaLearner' && (metaRec || advisorPayload?.metaLearner?.latestRecommendation)) {
-      const mRec = metaRec || advisorPayload.metaLearner.latestRecommendation;
-      const m30 = (mRec.standard30 || mRec.numbers || []).map(normalizeLotteryNumber);
-      const mCore10 = (mRec.core10 || m30.slice(0, 10)).map(normalizeLotteryNumber);
-      if (m30.length) {
-        altMethods.push(
-          `• 💎 <b>Lựa chọn 3 — Đề Tinh Hoa (Dàn 30 số · Vốn 30M cược phẳng · Không X2):</b>`,
-          `   └ <b>${escapeHtml(formatNumberList(m30))}</b>`,
-          `   └ ⚡ Core 10 VIP: <b>${escapeHtml(formatNumberList(mCore10))}</b>`
-        );
-      }
-    }
-
-    const resonance = streakDeAdv.dualResonanceUnion;
-    if (resonance && Array.isArray(resonance.numbers) && resonance.numbers.length) {
-      const rNums = resonance.numbers.map(normalizeLotteryNumber);
-      altMethods.push(
-        `• 🛡️ <b>Lựa chọn 4 — Dàn Hợp Bù Trừ Đối Kháng (${rNums.length} số · Win 63% - 77%):</b>`,
-        `   └ <b>${escapeHtml(formatNumberList(rNums))}</b>`
-      );
-    }
-
-    if (altMethods.length) {
-      lines.push(
-        `⭐️ <b>CÁC PHƯƠNG PHÁP THỰC CHIẾN LỰA CHỌN THÊM (MỐC LỊCH SỬ HIỆN TẠI):</b>`,
-        ...altMethods
-      );
-    }
-  } else {
-    lines.push(`<b>1. 💎 ĐỀ TINH HOA — DÀN 30 SỐ GỢI Ý</b>`);
-    let std30 = metaRec?.standard30 || metaRec?.numbers || [];
-    let core10 = metaRec?.core10 || [];
-    let core20 = metaRec?.core20 || [];
-
-    if (!std30.length) {
-      std30 = advisorPayload?.dualMerge?.latestRecommendation?.fullUnion
-        || advisorPayload?.adaptiveDualMerge?.latestRecommendation?.fullUnion
-        || dePayload?.nextPrediction?.strategies?.[DEFAULT_DE_STRATEGY]?.holds?.[DEFAULT_DE_TARGET]?.betNumbers
-        || dePayload?.nextPrediction?.strategies?.chainSmallFirst?.holds?.[DEFAULT_DE_TARGET]?.betNumbers
-        || dePayload?.nextPrediction?.strategies?.dedupEdge75Pit?.holds?.[DEFAULT_DE_TARGET]?.betNumbers
-        || [];
-      core10 = std30.slice(0, 10);
-      core20 = std30.slice(0, 20);
-    }
-    sNumbers = std30.map(normalizeLotteryNumber);
-    sTierX2 = core10.map(normalizeLotteryNumber);
-    sSingles = core20.map(normalizeLotteryNumber);
-
-    lines.push(
-      `👑 <b>Dàn Chuẩn 30 số</b> (Vốn 30M · Ăn 84M · Lãi ròng +54M):`,
-      `  • <i>Mức chuẩn 10K/số: Vốn 300K · Ăn 840K (x84) · Lãi +540K</i>`,
-      `  • <i>Mức VIP 1M/số: Vốn 30M · Ăn 84M · Lãi +54M</i>`,
-      `<b>${escapeHtml(formatNumberList(std30))}</b>`,
-      `⚡ <b>Core 10 VIP</b> (10M · Hạt nhân): <b>${escapeHtml(formatNumberList(core10))}</b>`,
-      `🔥 <b>Core 20 Rút gọn</b> (20M): <b>${escapeHtml(formatNumberList(core20))}</b>`
-    );
-  }
-  lines.push(divider);
-
-  // =========================================================================
-  // 2. 🏆 LÔ CHUẨN TỐI ƯU (DÀN 20 SỐ)
-  // =========================================================================
-  lines.push(`<b>2. 🏆 LÔ CHUẨN TỐI ƯU (DÀN 20 SỐ)</b>`);
-
-  const loGovernor = loQuadAdv?.streakGovernor || {};
-  const activeLoEngineKey = loGovernor.selectedEngine || 'qmbf';
-  let engineData = loGovernor.engines?.[activeLoEngineKey] || {};
-  if (!engineData.rankedNumbers?.length) {
-    if (activeLoEngineKey === 'penta' && advisorPayload?.loPentaMatrix?.latestRecommendation) {
-      engineData = advisorPayload.loPentaMatrix.latestRecommendation;
-    } else if (activeLoEngineKey === 'bridge' && advisorPayload?.loPositionalBridgeFlow?.latestRecommendation) {
-      engineData = advisorPayload.loPositionalBridgeFlow.latestRecommendation;
-    } else if (activeLoEngineKey === 'hawkes' && advisorPayload?.loHawkesClustering?.latestRecommendation) {
-      engineData = advisorPayload.loHawkesClustering.latestRecommendation;
-    }
-  }
-
-  let stdNums = [];
-  if (loQuadAdv?.top20 && loQuadAdv.top20.length) {
-    stdNums = loQuadAdv.top20.map(normalizeLotteryNumber);
-  } else if (loQuadAdv?.rankedNumbers && loQuadAdv.rankedNumbers.length) {
-    stdNums = loQuadAdv.rankedNumbers.slice(0, 20).map(normalizeLotteryNumber);
-  } else if (engineData.top20 && engineData.top20.length) {
-    stdNums = engineData.top20.map(normalizeLotteryNumber);
-  } else if (engineData.rankedNumbers && engineData.rankedNumbers.length) {
-    stdNums = engineData.rankedNumbers.slice(0, 20).map(normalizeLotteryNumber);
-  } else if (metaNext?.standard?.numbers?.length) {
-    stdNums = (metaNext.standard.numbers || []).map(normalizeLotteryNumber);
-  } else if (advisorPayload?.loQuantumBayesFusion?.latestRecommendation?.rankedNumbers?.length) {
-    stdNums = advisorPayload.loQuantumBayesFusion.latestRecommendation.rankedNumbers.slice(0, 20).map(normalizeLotteryNumber);
-  } else {
-    stdNums = (
-      metaNext?.standard?.numbers ||
-      lotoPayload?.nextPrediction?.predictions?.top20?.numbers ||
-      lotoPayload?.nextPrediction?.strategies?.[DEFAULT_LOTO_STRATEGY]?.predictions?.top20?.numbers ||
-      lotoPayload?.nextPrediction?.strategies?.[LEGACY_RRF_LOTO_STRATEGY]?.predictions?.top20?.numbers ||
-      []
-    ).map(normalizeLotteryNumber);
-  }
-
-  const isQuadMaster = Boolean(loQuadAdv);
-  const loEngineLabel = engineData.label || loGovernor.selectedEngineLabel || 'Quantum Bayes Fusion 7D';
-  const loMethodTitle = isQuadMaster
-    ? `👑 Tứ Trụ Quad-Fusion v7.2 Top 20 (Mỏ Neo Nền Tảng)`
-    : `${loEngineLabel} Top 20 (Đề Xuất Nền Tảng)`;
-  const loMethodStat = isQuadMaster
-    ? ` · Win 77.3% (Lãi 2026: +2.98 TỶ · 6.96 Nháy)`
-    : (engineData.winRateTop20 ? ` · Win ${engineData.winRateTop20}` : '');
-  lines.push(
-    `🎯 <b>${escapeHtml(loMethodTitle)}</b>${escapeHtml(loMethodStat)} (Vốn 44M · Cược 2.2M/số [2.200K / 100đ] · Ăn 8M/nháy):`,
-    `  • <i>Mức chuẩn 10đ/số: Vốn 200 điểm (4.400K) · Ăn 800K/nháy (1đ = 22K ăn 80K)</i>`,
-    `  • <i>Mức 3 mặc định: 25đ/số (500đ = 11M) · Ăn 2M/nháy</i>`,
-    `  • <i>Mức VIP 100đ/số: Vốn 44M · Ăn 8M/nháy</i>`,
-    `<b>${escapeHtml(formatNumberList(stdNums))}</b>`
-  );
-  lines.push(divider);
-
-  // =========================================================================
-  // 3. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO (DÀN 7 SỐ TĂNG TỐC - ĐỔI PHA)
-  // =========================================================================
-  const selectedEngineLabel = engineData.label || loGovernor.selectedEngineLabel || 'Quantum Bayes Fusion 7D';
-  const selectedSubTier = loGovernor.selectedSubTier || 7;
-  const subTierData = engineData.subTiers?.[selectedSubTier] || loGovernor.subTiers?.[selectedSubTier] || {};
-  const subTierLabel = subTierData.label || `Top ${selectedSubTier}`;
-
-  lines.push(`<b>3. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO (DÀN ${selectedSubTier} SỐ TĂNG TỐC)</b>`);
-  if (loGovernor.confidenceBadge) {
-    lines.push(
-      `👑 <b>Động cơ: ${escapeHtml(selectedEngineLabel)}</b> · <b>Dàn ${escapeHtml(subTierLabel)} [${selectedSubTier} số]</b> · ${escapeHtml(loGovernor.confidenceBadge)}`,
-      `💡 <i>Lý do chọn: ${escapeHtml(loGovernor.rationale || '')}</i>`
-    );
-  }
-
-  let x2Nums = (
-    subTierData.numbers ||
-    engineData.rankedNumbers?.slice(0, selectedSubTier) ||
-    loGovernor.subTiers?.[selectedSubTier]?.numbers ||
-    loQuadAdv?.top7 ||
-    metaNext?.x2?.numbers ||
-    []
-  ).map(normalizeLotteryNumber);
-  if (!x2Nums.length && advisorPayload?.loQuantumBayesFusion?.latestRecommendation?.rankedNumbers?.length) {
-    x2Nums = advisorPayload.loQuantumBayesFusion.latestRecommendation.rankedNumbers.slice(0, selectedSubTier).map(normalizeLotteryNumber);
-  }
-  if (!x2Nums.length) {
-    x2Nums = (
-      lotoPayload?.nextPrediction?.predictions?.top7?.numbers ||
-      lotoPayload?.nextPrediction?.strategies?.[DEFAULT_LOTO_STRATEGY]?.predictions?.top7?.numbers ||
-      lotoPayload?.nextPrediction?.strategies?.[LEGACY_RRF_LOTO_STRATEGY]?.predictions?.top7?.numbers ||
-      stdNums.slice(0, selectedSubTier) ||
-      []
-    ).map(normalizeLotteryNumber);
-  }
-
-  const top2Nums = (engineData.subTiers?.[2]?.numbers || engineData.rankedNumbers?.slice(0, 2) || loGovernor.subTiers?.[2]?.numbers || loQuadAdv?.top2 || []).map(normalizeLotteryNumber);
-  const top1Num = (engineData.subTiers?.[1]?.numbers?.[0] || loGovernor.subTiers?.[1]?.numbers?.[0] || top2Nums[0] || loQuadAdv?.top1?.[0]);
-  if (top2Nums.length) {
-    lines.push(
-      `🔥 <b>Song Thủ Siêu VIP: [${escapeHtml(formatNumberList(top2Nums))}]</b> <i>(61.2% Nổ 2026 · +47.6% ROI)</i> · Bạch Thủ: <b>[${top1Num || top2Nums[0]}]</b> <i>(36.5% Win · +41.3% ROI)</i>`
-    );
-  }
-  lines.push(
-    `🎯 <b>Dàn ${x2Nums.length} số Tăng Tốc</b> (Vốn ${(x2Nums.length * 2.2).toFixed(1)}M · Cược 2.2M/số [2.200K / 100đ] · Ăn 8M/nháy):`,
-    `  • <i>Mức chuẩn 10đ/số: Vốn ${x2Nums.length * 10} điểm (${(x2Nums.length * 10 * 22).toLocaleString('vi-VN')}K) · Ăn 800K/nháy</i>`,
-    `  • <i>Mức 3 mặc định: 25đ/số (${x2Nums.length * 25}đ = ${(x2Nums.length * 25 * 22 / 1000).toFixed(1)}M) · Ăn 2M/nháy (Cùng mức Top 20)</i>`,
-    `  • <i>Mức VIP 100đ/số: Vốn ${(x2Nums.length * 2.2).toFixed(1)}M · Ăn 8M/nháy</i>`,
-    `<b>${escapeHtml(formatNumberList(x2Nums))}</b>`
-  );
-  lines.push(divider);
-
-  // =========================================================================
-  // 4. ⚡ BẢNG GỘP ĐÁNH LÔ TỔNG LỰC / LÔ GHÉP TẦNG ĐA PHƯƠNG PHÁP (+3.0 TỶ)
-  // =========================================================================
-  const crossOpt = metaNext?.optimalCrossTierEnsemble?.primary;
-  const sList = (stdNums || []).map(normalizeLotteryNumber).filter(Boolean);
-  const xList = (x2Nums || []).map(normalizeLotteryNumber).filter(Boolean);
-  const sSet = new Set(sList);
-  const overlapNums = xList.filter(n => sSet.has(n));
-  const singleNums = sList.filter(n => !overlapNums.includes(n));
-  const allMerged = crossOpt?.distinctNumbers?.length
-    ? crossOpt.distinctNumbers
-    : Array.from(new Set([...sList, ...xList]));
-
-  if (crossOpt && (crossOpt.overlapX3 || crossOpt.overlapX2) && crossOpt.singlesX1) {
-    lines.push(`<b>4. ⚡ LÔ GHÉP TẦNG ĐA PHƯƠNG PHÁP (${crossOpt.totalNumbers} SỐ · ${escapeHtml(crossOpt.badge)})</b>`);
-    lines.push(`<i>${escapeHtml(crossOpt.description)}</i>`);
-
-    if (crossOpt.overlapX3 && crossOpt.overlapX3.length > 0) {
-      lines.push(
-        `⚡ <b>Hạt Nhân Cược X3 (ĐÒN BẨY CỰC ĐẠI - ${crossOpt.overlapX3.length} số - Tam Động Cơ Đồng Thuận):</b>`,
-        `  • <i>Mức chuẩn: 30đ/số (660K) · Mức 3: 75đ/số (1.650K) · Mức VIP: 6.6M/số [300đ]</i>`,
-        `<b>${escapeHtml(formatNumberList(crossOpt.overlapX3))}</b>`
-      );
-    }
-
-    if (crossOpt.overlapX2 && crossOpt.overlapX2.length > 0) {
-      lines.push(
-        `🔥 <b>Mũi Nhọn Cược X2 (ĐÒN BẨY BÙNG NỔ - ${crossOpt.overlapX2.length} số - Song Động Cơ Đồng Thuận):</b>`,
-        `  • <i>Mức chuẩn: 20đ/số (440K) · Mức 3: 50đ/số (1.100K) · Mức VIP: 4.4M/số [200đ]</i>`,
-        `<b>${escapeHtml(formatNumberList(crossOpt.overlapX2))}</b>`
-      );
-    }
-
-    if (crossOpt.singlesX1 && crossOpt.singlesX1.length > 0) {
-      lines.push(
-        `🛡️ <b>Số Riêng Cược X1 (BẢO HIỂM BỌC LÓT - ${crossOpt.singlesX1.length} số):</b>`,
-        `  • <i>Mức chuẩn: 10đ/số (220K) · Mức 3: 25đ/số (550K) · Mức VIP: 2.2M/số [100đ]</i>`,
-        `<b>${escapeHtml(formatNumberList(crossOpt.singlesX1))}</b>`
-      );
-    } else if (!crossOpt.overlapX2?.length && !crossOpt.overlapX3?.length) {
-      lines.push(`<i>🎯 Toàn bộ dàn số đánh cược đồng đều mức chuẩn.</i>`);
-    }
-  } else {
-    lines.push(`<b>4. ⚡ BẢNG GỘP ĐÁNH LÔ TỔNG LỰC (${allMerged.length} SỐ - CÙNG MỨC CƯỢC 25Đ / 100Đ)</b>`);
-    lines.push(
-      `<i>Tổng hợp từ 2 dàn trên: Mặc định giữ Top 20 nền tảng mỏ neo (${escapeHtml(loEngineLabel)}), dàn ${escapeHtml(subTierLabel)} làm mũi nhọn:</i>`,
-      `💡 <i>Cách chơi đồng bộ: Cả nhóm số trùng và số riêng đều cược cùng đơn vị 25đ/số (550K/số) trên Bot Telegram (hoặc 100đ/số [2.2M/số] trên Web VIP).</i>`
-    );
-    lines.push(
-      `🔥 <b>Nhóm Số Trùng (MŨI NHỌN ĐỒNG THUẬN - ${overlapNums.length} số):</b>`,
-      `  • <i>Mức chuẩn: 10đ/số (220K/số) · Mức 3: 25đ/số (550K/số) · Mức VIP: 2.2M/số</i>`,
-      `<b>${escapeHtml(formatNumberList(overlapNums))}</b>`,
-      `🛡️ <b>Nhóm Số Riêng (BỌC LÓT NỀN TẢNG - ${singleNums.length} số):</b>`,
-      `  • <i>Mức chuẩn: 10đ/số (220K/số) · Mức 3: 25đ/số (550K/số) · Mức VIP: 2.2M/số</i>`,
-      `<b>${escapeHtml(formatNumberList(singleNums))}</b>`
-    );
-  }
-  lines.push(divider);
-
-  // =========================================================================
-  // 5. 💎 LÔ XIÊN 3 & XIÊN 4 TINH HOA — DUNG HỢP TOP 5 ĐỒNG THUẬN
-  // =========================================================================
-  const top4Consensus = (loTop5Xien?.top4Xien || []).map(normalizeLotteryNumber);
-  const top5Consensus = (loTop5Xien?.top5Xien || (stdNums.length >= 5 ? stdNums.slice(0, 5) : [])).map(normalizeLotteryNumber);
-  top3Consensus = (loTop5Xien?.top3Xien || (stdNums.length >= 3 ? stdNums.slice(0, 3) : [])).map(normalizeLotteryNumber);
-
-  xi4Nums = top4Consensus.length >= 4 ? top4Consensus : (loXien4Adv?.numbers || metaNext?.xien4?.numbers || []).map(normalizeLotteryNumber);
-  if (xi4Nums.length < 4) {
-    xi4Nums = overlapNums.length >= 4 ? overlapNums.slice(0, 4) : (sList.length >= 4 ? sList.slice(0, 4) : (stdNums.length >= 4 ? stdNums.slice(0, 4) : []));
-  }
-  lines.push(`<b>5. 💎 LÔ XIÊN 3 & XIÊN 4 TINH HOA — DUNG HỢP TOP 5 ĐỒNG THUẬN</b>`);
-  lines.push(
-    `👑 <i>Dung hợp từ 4 động cơ đỉnh cao (QMBF + QuadFusion + TriHarmonic + PentaMatrix) · 100% Strict PIT 2026:</i>`
-  );
-  lines.push(
-    `🎲 <b>Bộ 4 Số Vàng Xiên 4 & Quây 11 Vé:</b> <b>${escapeHtml(formatNumberList(xi4Nums))}</b>`,
-    `  • 🏆 <i>Hiệu suất 2026: Lãi ròng <b>+1.005 TỶ</b> (ROI <b>+171.2%</b>) · Tỷ lệ nổ có lãi <b>40.1%</b> (107/267 ngày)</i>`,
-    `  • <i>Cơ cấu 11 vé (1 vé X4 + 4 vé X3 + 6 vé X2) · Vốn 2.2M/ngày (Mức 3 200K/vé) / 11M (VIP 1M/vé):</i>`,
-    `     └ 💥 <b>Ăn 4 con</b>: Mức 200K ăn 76.8M (Lãi +74.6M) · Mức VIP ăn 384M (Lãi +373M)`,
-    `     └ 🔥 <b>Ăn 3 con</b>: Mức 200K ăn 16.8M (Lãi +14.6M) · Mức VIP ăn 84M (Lãi +73M)`,
-    `     └ 🎯 <b>Ăn 2 con</b>: Mức 200K ăn 2.4M (Lãi +200K) · Mức VIP ăn 12M (Lãi +1M)`
-  );
-  if (top5Consensus.length >= 5) {
-    lines.push(
-      `🎯 <b>Bộ 5 Số Vàng Quây Xiên 3 (10 Vé):</b> <b>${escapeHtml(formatNumberList(top5Consensus))}</b>`,
-      `  • ⚡ <i>Hiệu suất 2026: Nổ Xiên 3 <b>47/267 ngày (17.6%)</b> · Lãi ròng <b>+331M</b> (ROI <b>+124.0%</b>)</i>`,
-      `  • <i>Vốn cược: 10 vé x 100K = 1.000K/ngày (Mức 3: 10 vé x 200K = 2.0M/ngày). Nổ 1 cặp X3 ăn 4M (M3 ăn 8M), nổ 2 cặp ăn 8M (M3 ăn 16M)!</i>`,
-      `  • 🌟 <i>Bạch thủ Xiên 3 (Single Top 3): <b>[${escapeHtml(formatNumberList(top3Consensus))}]</b> (Lãi +57.8M · ROI +216.5%)</i>`
-    );
-  }
-  lines.push(divider);
-  }
-
-  // =========================================================================
-  // 🛡️ COMBO DANH MỤC BÙ TRỪ DÒNG TIỀN CHÉO (CROSS-HEDGING PORTFOLIO)
-  // =========================================================================
-  if (crossHedge) {
-    const chMode = crossHedge.mode || 'ACTIVE_HEDGE';
-    const chSizing = crossHedge.sizingMultiplier != null ? Number(crossHedge.sizingMultiplier).toFixed(2) : '1.00';
-    const chMetrics = crossHedge.metrics || activeAdvisor?.crossHedgingPortfolio?.summary || {};
-    const chWinRate = chMetrics.dailyPositiveProfitRate ? (chMetrics.dailyPositiveProfitRate * 100).toFixed(1) : '77.8';
-    const chRoi = chMetrics.cumulativeRoi ? (chMetrics.cumulativeRoi * 100).toFixed(1) : '120.0';
-    const chMaxLoss = chMetrics.maxConsecutiveLossDays ?? 3;
-
-    const p1 = crossHedge.pillar1_De || {};
-    const p1Vip = (p1.vipNumbers || []).map(normalizeLotteryNumber);
-    const p1Single = (p1.singleNumbers || []).map(normalizeLotteryNumber);
-    const p1StakeM = (p1.stakeK / 1000).toFixed(2);
-    const p1PayoutVipM = (p1.targetPayoutVipK / 1000).toFixed(1);
-
-    const p2 = crossHedge.pillar2_Lo || {};
-    const p2Nums = (p2.numbers || []).map(normalizeLotteryNumber);
-    const p2StakeM = (p2.stakeK / 1000).toFixed(2);
-    const p2ExpectedHits = p2.expectedHits || 2;
-    const p2Tiers = {};
-    (p2.betNumbers || []).forEach(b => {
-      const m = b.multiplier || 1;
-      p2Tiers[m] = p2Tiers[m] || [];
-      p2Tiers[m].push(normalizeLotteryNumber(b.num));
-    });
-
-    const p3 = crossHedge.pillar3_Xien || {};
-    const p3Nums = (p3.numbers || []).map(normalizeLotteryNumber);
-    const p3Tickets = p3.ticketsCount || 11;
-    const p3StakeM = (p3.stakeK / 1000).toFixed(2);
-    const p3Payout2M = (p3.payoutHit2K / 1000).toFixed(1);
-
-    const totalStakeM = (crossHedge.totalStakeK / 1000).toFixed(2);
-    const hedgeGuarantee = crossHedge.hedgingSummary?.hedgingGuarantee || 'Nổ bất kỳ trụ cột nào đều sinh Lãi Ròng > 0!';
-    const expectedProfitK = crossHedge.hedgingSummary?.profitIfDeHitsK || Math.round(crossHedge.totalStakeK * 0.35);
-    const expectedProfitM = (expectedProfitK / 1000).toFixed(2);
-
-    const stratGov = advisorPayload?.strategicPortfolioGovernor || null;
-    const recPort = stratGov?.recommendedPortfolio || null;
-    const smartLo = recPort?.loStructure?.selectedLo || stratGov?.smartSelectedLo || resolveSmartSelectedLo(advisorPayload);
-    const deTotalM3_K = (recPort?.id === 'steadyAccumulator') ? 8600 : 15400;
-    const deTotalVIP_K = (recPort?.id === 'steadyAccumulator') ? 43000 : 77000;
-    const loStakeDailyM3_K = smartLo ? smartLo.stakeDailyK_M3 : 3850;
-    const loStakeDailyVIP_K = smartLo ? smartLo.stakeDailyK_VIP : 15400;
-    const xien4TotalM3_K = 2200;
-    const xien4TotalVIP_K = 11000;
-    const totalM3_M = ((deTotalM3_K + loStakeDailyM3_K + xien4TotalM3_K) / 1000).toFixed(2);
-    const totalVIP_M = ((deTotalVIP_K + loStakeDailyVIP_K + xien4TotalVIP_K) / 1000).toFixed(1);
-
-    lines.push(
-      `🛡️ <b>COMBO DANH MỤC BÙ TRỪ DÒNG TIỀN CHÉO (CROSS-HEDGING PORTFOLIO)</b>`,
-      `👑 <i>Chiến lược liên hoàn 3 Trụ Cột: Đề Tinh Tuyển VIP + Lô Ghép 4 Động Cơ + Dàn Xiên Quây Hiệp Đồng</i>`,
-      `⚡ <b>Chế độ vận hành:</b> <code>${escapeHtml(chMode)} (${chSizing}x)</code>`,
-      `📊 <b>Thước đo định lượng 2026:</b> Tỷ lệ ngày có lãi ròng: <b>${chWinRate}%</b> · ROI: <b>+${chRoi}%</b> · Max chuỗi lỗ: <b>${chMaxLoss} ngày</b>`,
-      ``,
-      `💎 <b>Trụ Cột 1: Đề Tinh Tuyển VIP (${escapeHtml(p1.methodLabel || 'Đề VIP')})</b>`,
-      `  • ⚡ VIP X2/X3 (${p1Vip.length} số): <code>${escapeHtml(formatNumberList(p1Vip))}</code>`,
-      `  • 🛡️ Bọc Lót X1 (${p1Single.length} số): <code>${escapeHtml(formatNumberList(p1Single))}</code>`,
-      `  • 💰 Vốn cược: Mức 3 = ${(deTotalM3_K / 1000).toFixed(1)}M · Mức VIP = ${p1StakeM}M VNĐ (Kỳ vọng nổ VIP: ăn <b>${p1PayoutVipM}M VNĐ</b>)`,
-      ``,
-      `🎰 <b>Trụ Cột 2: Lô Ghép 4 Động Cơ (${escapeHtml(p2.engine || 'Lô Hội Tụ Đa Tầng')})</b>`,
-      `  • 🎯 Dàn Lô (${p2Nums.length} số): <code>${escapeHtml(formatNumberList(p2Nums))}</code>`,
-      ...(p2Tiers[5]?.length ? [`  • 👑 Siêu VIP X5 (${p2Tiers[5].length} số): <code>${escapeHtml(formatNumberList(p2Tiers[5]))}</code>`] : []),
-      ...(p2Tiers[4]?.length ? [`  • 🔥 Cực VIP X4 (${p2Tiers[4].length} số): <code>${escapeHtml(formatNumberList(p2Tiers[4]))}</code>`] : []),
-      ...(p2Tiers[3]?.length ? [`  • ⚡ Triển vọng X3 (${p2Tiers[3].length} số): <code>${escapeHtml(formatNumberList(p2Tiers[3]))}</code>`] : []),
-      ...(p2Tiers[1]?.length ? [`  • 🛡️ Bọc lót X1 (${p2Tiers[1].length} số): <code>${escapeHtml(formatNumberList(p2Tiers[1]))}</code>`] : []),
-      `  • 💰 Vốn cược: Mức 3 = ${(loStakeDailyM3_K / 1000).toFixed(2)}M · Mức VIP = ${p2StakeM}M VNĐ (Kỳ vọng: <b>≥ ${p2ExpectedHits} nháy nổ/ngày</b>)`,
-      ``,
-      `✨ <b>Trụ Cột 3: Dàn Xiên Quây Hiệp Đồng (${p3Tickets} Vé Quây)</b>`,
-      `  • 🎲 Bộ số Xiên (${p3Nums.length} con): <code>${escapeHtml(formatNumberList(p3Nums))}</code>`,
-      `  • 💰 Vốn cược: Mức 3 = ${(xien4TotalM3_K / 1000).toFixed(1)}M · Mức VIP = ${p3StakeM}M VNĐ (Nổ từ 2 con: ăn <b>${p3Payout2M}M VNĐ</b>)`,
-      ``,
-      `💰 <b>TỔNG VỐN ĐẦU TƯ GÓI CHỦ LỰC HÔM NAY:</b>`,
-      `  👉 <b>Mức 3 (Mặc định):</b> <b>${totalM3_M}M</b> (Đề ${(deTotalM3_K / 1000).toFixed(1)}M + Lô ${(loStakeDailyM3_K / 1000).toFixed(2)}M + Xiên ${(xien4TotalM3_K / 1000).toFixed(1)}M)`,
-      `  👉 <b>Mức VIP:</b> <b>${totalVIP_M}M</b> (Đề ${(deTotalVIP_K / 1000).toFixed(0)}M + Lô ${(loStakeDailyVIP_K / 1000).toFixed(1)}M + Xiên ${(xien4TotalVIP_K / 1000).toFixed(0)}M)`,
-      `🛡️ <b>CƠ CHẾ BÙ TRỪ AN TOÀN:</b> <i>${escapeHtml(hedgeGuarantee)}</i>`,
-      divider
-    );
-  }
-
-  // =========================================================================
-  // 👑 BẢNG CHỐT DÀN SỐ ĐÁNH CUỐI CÙNG (FALLBACK KHI KHÔNG CÓ CROSS-HEDGE)
-  // =========================================================================
-  if (!crossHedge) {
-  const stratGov = advisorPayload?.strategicPortfolioGovernor || null;
-  const recPort = stratGov?.recommendedPortfolio || null;
-  const slipTitle = recPort ? recPort.name.toUpperCase() : 'SIÊU HỘI TỤ ĐA PHƯƠNG PHÁP';
-  const slipBadge = recPort ? recPort.badge : 'MAX PROFIT & WIN RATE';
-  const slipRationale = stratGov?.decisionRationale || recPort?.rationale || 'Tự động phối hợp các thuật toán đỉnh cao nhất để tối đa hóa xác suất nổ & lợi nhuận.';
-
-  lines.push(
-    `👑 <b>BẢNG CHỐT DÀN SỐ ĐÁNH CUỐI CÙNG — ${escapeHtml(slipTitle)}</b>`,
-    `<i>${escapeHtml(slipBadge)}</i>`,
-    `💡 <i>Lý do AI lựa chọn: ${escapeHtml(slipRationale)}</i>`,
-    ``
-  );
-
-  if (crossHedge) {
-    const deTotalM3_K = (recPort?.id === 'steadyAccumulator') ? 8600 : 15400;
-    const deTotalVIP_K = (recPort?.id === 'steadyAccumulator') ? 43000 : 77000;
-    const smartLo = recPort?.loStructure?.selectedLo || stratGov?.smartSelectedLo || resolveSmartSelectedLo(advisorPayload);
-    const loStakeDailyM3_K = smartLo ? smartLo.stakeDailyK_M3 : 3850;
-    const loStakeDailyVIP_K = smartLo ? smartLo.stakeDailyK_VIP : 15400;
-    const xien4TotalM3_K = 2200;
-    const xien4TotalVIP_K = 11000;
-    const totalM3_M = ((deTotalM3_K + loStakeDailyM3_K + xien4TotalM3_K) / 1000).toFixed(2);
-    const totalVIP_M = ((deTotalVIP_K + loStakeDailyVIP_K + xien4TotalVIP_K) / 1000).toFixed(1);
-
-    lines.push(
-      `👑 <b>BẢNG CHỐT KHUNG VỐN & CHIẾN LƯỢC — ${escapeHtml(slipTitle)}</b>`,
-      `<i>${escapeHtml(slipBadge)}</i>`,
-      `💡 <i>Lý do AI lựa chọn: ${escapeHtml(slipRationale)}</i>`,
-      `  • 💎 <b>1. Đề Tinh Tuyển VIP:</b> Đã chốt theo Trụ Cột 1 (${(chP1?.allNumbers || []).length} số · ${(chP1?.vipNumbers || []).length} VIP X3 + ${(chP1?.singleNumbers || []).length} Lót X1)`,
-      `  • 🎰 <b>2. Lô Ghép 4 Động Cơ:</b> Đã chốt theo Trụ Cột 2 (${smartLo ? smartLo.numbers.length : ((crossHedge.pillar2_Lo?.numbers || []).length)} số · Hội Tụ Đa Tầng)`,
-      `  • ✨ <b>3. Lô Xiên Quây Top 5:</b> Đã chốt theo Trụ Cột 3 (Bộ 4 Quây 11 vé + Bộ 5 Quây 10 vé X3)`,
-      `💰 <b>TỔNG VỐN ĐẦU TƯ GÓI CHỦ LỰC TỐI ƯU HÔM NAY:</b>`,
-      `  👉 <b>Mức 3 (Mặc định):</b> <b>${totalM3_M}M</b> (Đề ${(deTotalM3_K / 1000).toFixed(1)}M + Lô ${(loStakeDailyM3_K / 1000).toFixed(2)}M + Xiên ${(xien4TotalM3_K / 1000).toFixed(1)}M)`,
-      `  👉 <b>Mức VIP:</b> <b>${totalVIP_M}M</b> (Đề ${(deTotalVIP_K / 1000).toFixed(0)}M + Lô ${(loStakeDailyVIP_K / 1000).toFixed(1)}M + Xiên ${(xien4TotalVIP_K / 1000).toFixed(0)}M)`,
-      divider
-    );
-  } else {
-    // 1. Đề
-    const deFinalTitle = recPort?.deStructure?.label || sMethod || 'Đề Thích Ứng Alpha';
-    const deFinalNums = (recPort?.deStructure?.allNums || sNumbers || []).map(normalizeLotteryNumber);
-    const deFinalVip = (recPort?.deStructure?.vipNums || sTierX2 || []).map(normalizeLotteryNumber);
-    const deFinalSingles = (recPort?.deStructure?.singleNums || sSingles || []).map(normalizeLotteryNumber);
-
-    const deFinalModeSuffix = (recPort?.id === 'steadyAccumulator') ? 'CƯỢC PHẲNG / CÂN BẰNG AN TOÀN' : 'ĐÒN BẨY X3';
-    lines.push(
-      `💎 <b>1. ĐỀ ${escapeHtml(deFinalTitle.toUpperCase())} (${deFinalNums.length} SỐ · ${deFinalModeSuffix}):</b>`
-    );
-    if (deFinalVip.length > 0) {
-      lines.push(
-        `  • ⚡ <b>VIP X3 (${deFinalVip.length} số - Vào tiền gấp 3):</b> <code>${escapeHtml(formatNumberList(deFinalVip))}</code>`
-      );
-    }
-    if (deFinalSingles.length > 0) {
-      lines.push(
-        `  • 🛡️ <b>Bọc Lót X1 (${deFinalSingles.length} số - Vào tiền chuẩn):</b> <code>${escapeHtml(formatNumberList(deFinalSingles))}</code>`
-      );
-    }
-    const finalHedge = (recPort?.deStructure?.isHedgeActive && recPort.deStructure.hedgeNums?.length)
-      ? { isHedgeActive: true, numbers: recPort.deStructure.hedgeNums, recommendedStakePerNumK: 100 }
-      : (streakDeAdv?.lotKheHedge?.isHedgeActive && streakDeAdv.lotKheHedge.numbers?.length)
-        ? streakDeAdv.lotKheHedge
-        : (recPort?.deStructure?.hedgeNums?.length ? { isHedgeActive: true, numbers: recPort.deStructure.hedgeNums, recommendedStakePerNumK: 100 } : null);
-    if (finalHedge && finalHedge.numbers?.length && (finalHedge.isHedgeActive || recPort?.deStructure?.isHedgeActive)) {
-      const fhNums = finalHedge.numbers.map(normalizeLotteryNumber);
-      const fhStake = finalHedge.recommendedStakePerNumK || 100;
-      lines.push(
-        `  • 🛡️ <b>Khiên Bảo Hiểm Lọt Khe (${fhNums.length} số · ${fhStake}K/số · Ăn 1:84):</b> <code>${escapeHtml(formatNumberList(fhNums))}</code>`
-      );
-    }
-    if (recPort?.id === 'steadyAccumulator') {
-      lines.push(
-        `  • <i>Vốn: Mức 3 = 8.6M · Mức VIP = 43M (Nổ ăn 16.8M M3 / 84M VIP 👉 Lãi ròng +8.2M M3 / +41M VIP · Triệt tiêu chuỗi thua)</i>`,
-        ``
-      );
-    } else {
-      lines.push(
-        `  • <i>Vốn: Mức 3 = 15.4M (600K/VIP · 200K/Lót) · Mức VIP = 77M (3M/VIP · 1M/Lót) 👉 Nổ VIP X3 ăn 50.4M M3 / 252M VIP (Lãi ròng +35.0M M3 / +175M VIP); Nổ Lót X1 ăn 16.8M M3 / 84M VIP (Lãi ròng +1.4M M3 / +7M VIP)</i>`,
-        ``
-      );
-    }
-
-    const rLo = recPort?.loStructure || {};
-    // 2. Lô - BỘ ĐIỀU PHỐI THÔNG MINH (CHỈ ĐỀ XUẤT ĐÚNG 1 PHƯƠNG PHÁP DUY NHẤT)
-    const smartLo = recPort?.loStructure?.selectedLo || stratGov?.smartSelectedLo || resolveSmartSelectedLo(advisorPayload);
-    let loStakeDailyM3_K = 3850;
-    let loStakeDailyVIP_K = 15400;
-
-    if (smartLo) {
-      loStakeDailyM3_K = smartLo.stakeDailyK_M3;
-      loStakeDailyVIP_K = smartLo.stakeDailyK_VIP;
-      lines.push(
-        `🎰 <b>2. LÔ CHỦ LỰC ĐỀ XUẤT DUY NHẤT HÔM NAY — BỘ ĐIỀU PHỐI THÔNG MINH:</b>`,
-        `  • <i>🎯 ${escapeHtml(smartLo.badge)}</i>`,
-        `  • 💡 <i>Lý do AI lựa chọn: ${escapeHtml(smartLo.rationale)}</i>`,
-        `  • 🎯 <b>Dàn Lô Đánh (${smartLo.numbers.length} số · Vốn Tối Ưu Chi Phí Thấp):</b> <code>${escapeHtml(formatNumberList(smartLo.numbers.map(normalizeLotteryNumber)))}</code>`
-      );
-
-      const lo4Adv = advisorPayload?.lo4EngineFusion?.latestRecommendation || {};
-      const rx5 = (smartLo.tierX5 || recPort?.loStructure?.tierX5 || lo4Adv.tierX5 || []).map(normalizeLotteryNumber);
-      const rx4 = (smartLo.tierX4 || recPort?.loStructure?.tierX4 || lo4Adv.tierX4 || []).map(normalizeLotteryNumber);
-      const rx3 = (smartLo.tierX3 || recPort?.loStructure?.tierX3 || lo4Adv.tierX3 || []).map(normalizeLotteryNumber);
-      const rx1 = (smartLo.singlesX1 || recPort?.loStructure?.singlesX1 || lo4Adv.tierX1 || []).map(normalizeLotteryNumber);
-
-      if (rx5.length || rx4.length || rx3.length || rx1.length) {
-        if (rx5.length) {
-          lines.push(`     └ 👑 <b>Siêu VIP X5 (${rx5.length} số):</b> <code>${escapeHtml(formatNumberList(rx5))}</code>`);
-        }
-        if (rx4.length) {
-          lines.push(`     └ 🔥 <b>Cực VIP X4 (${rx4.length} số):</b> <code>${escapeHtml(formatNumberList(rx4))}</code>`);
-        }
-        if (rx3.length) {
-          lines.push(`     └ ⚡ <b>Triển Vọng X3 (${rx3.length} số):</b> <code>${escapeHtml(formatNumberList(rx3))}</code>`);
-        }
-        if (rx1.length) {
-          lines.push(`     └ 🛡️ <b>Bảo Hiểm X1 (${rx1.length} số):</b> <code>${escapeHtml(formatNumberList(rx1))}</code>`);
-        }
-      }
-
-      lines.push(
-        `  • <i>Vốn cược: Mức 3 (Mặc định 25đ) = ${(smartLo.stakeDailyK_M3 / 1000).toFixed(2)}M · Mức VIP (100đ) = ${(smartLo.stakeDailyK_VIP / 1000).toFixed(1)}M · Mức Chuẩn (10đ) = ${(smartLo.stakeDailyK_Std / 1000).toFixed(2)}M · Ăn 2M/nháy M3 (8M/nháy VIP)</i>`,
-        `  • ⚡ <i>Điểm hòa vốn: Chỉ cần ${smartLo.hitsToProfit} nháy nổ là có lãi ròng ngay!</i>`
-      );
-    } else {
-      const lo4Adv = advisorPayload?.lo4EngineFusion?.latestRecommendation || {};
-      const rx5 = (rLo.tierX5 || lo4Adv.tierX5 || []).map(normalizeLotteryNumber);
-      const rx4 = (rLo.tierX4 || lo4Adv.tierX4 || []).map(normalizeLotteryNumber);
-      const rx3 = (rLo.tierX3 || lo4Adv.tierX3 || crossOpt?.overlapX3 || []).map(normalizeLotteryNumber);
-      const rx2 = (rLo.tierX2 || crossOpt?.overlapX2 || []).map(normalizeLotteryNumber);
-      const rx1 = (rLo.singlesX1 || lo4Adv.tierX1 || crossOpt?.singlesX1 || []).map(normalizeLotteryNumber);
-      const rDistinct = (rLo.distinctLo || lo4Adv.allNumbers || crossOpt?.distinctNumbers || x2Nums || []).map(normalizeLotteryNumber);
-
-      if (rx5.length || rx4.length || rx3.length || rx2.length) {
-        lines.push(
-          `🎰 <b>2. LÔ TỔNG HỢP 4 ĐỘNG CƠ (${rDistinct.length} SỐ · ĐA TẦNG X5/X4/X3/X1):</b>`
-        );
-        if (rx5.length) {
-          lines.push(
-            `  • 👑 <b>Siêu VIP X5 (${rx5.length} số - 4 Động Cơ Đồng Thuận):</b> <code>${escapeHtml(formatNumberList(rx5))}</code>`
-          );
-        }
-        if (rx4.length) {
-          lines.push(
-            `  • 🔥 <b>Cực VIP X4 (${rx4.length} số - 3 Động Cơ):</b> <code>${escapeHtml(formatNumberList(rx4))}</code>`
-          );
-        }
-        if (rx3.length) {
-          lines.push(
-            `  • ⚡ <b>Triển Vọng X3 (${rx3.length} số - 2 Động Cơ):</b> <code>${escapeHtml(formatNumberList(rx3))}</code>`
-          );
-        }
-        if (rx1.length) {
-          lines.push(
-            `  • 🛡️ <b>Bảo Hiểm X1 (${rx1.length} số - Không trùng):</b> <code>${escapeHtml(formatNumberList(rx1))}</code>`
-          );
-        }
-        const totalVipStakeK = lo4Adv.totalLotoStakeK || (rx5.length * 11000 + rx4.length * 8800 + rx3.length * 6600 + rx1.length * 2200);
-        const totalM3StakeK = Math.round(totalVipStakeK * 0.25);
-        lines.push(
-          `  • <i>Vốn cược: Mức 3 (25đ/đơn vị) = ${(totalM3StakeK / 1000).toFixed(2)}M · Mức VIP (100đ/đơn vị) = ${(totalVipStakeK / 1000).toFixed(1)}M · Ăn 2M/nháy M3 (8M/nháy VIP)</i>`
-        );
-      } else if (rDistinct.length) {
-        loStakeDailyM3_K = (rDistinct.length * 25 * 22);
-        loStakeDailyVIP_K = (rDistinct.length * 2200);
-        lines.push(
-          `🎰 <b>2. LÔ ĐỀ XUẤT RIÊNG (${rDistinct.length} SỐ):</b> <code>${escapeHtml(formatNumberList(rDistinct))}</code>`,
-          `  • <i>Vốn: Mức 3 = ${(loStakeDailyM3_K / 1000).toFixed(2)}M · Mức VIP = ${(loStakeDailyVIP_K / 1000).toFixed(1)}M</i>`
-        );
-      }
-    }
-    lines.push('');
-
-    // 3. Tứ Thủ Lô Xiên 4 & Quây Xiên 3 Top 5
-    lines.push(
-      `✨ <b>3. LÔ XIÊN TINH HOA TOP 5 ĐỒNG THUẬN (LÃI +1.005 TỶ · THẮNG 40.1%):</b>`,
-      `  • 🎲 <b>Bộ 4 số vàng (Xiên 4 & Quây 11 vé):</b> <code>${escapeHtml(formatNumberList(xi4Nums))}</code>`,
-      `     └ <i>Vốn: Mức 3 = 2.2M (200K/vé) · Mức VIP = 11.0M (1M/vé) · Trúng từ 2 con là có lãi!</i>`
-    );
-    if (top5Consensus.length >= 5) {
-      lines.push(
-        `  • 🎯 <b>Bộ 5 số vàng (Quây 10 vé Xiên 3):</b> <code>${escapeHtml(formatNumberList(top5Consensus))}</code>`,
-        `     └ <i>Vốn: 1.0M (100K/vé) hoặc Mức 3 = 2.0M (200K/vé) · 17.6% nổ Xiên 3 (Lãi +331M)</i>`
-      );
-    }
-    lines.push('');
-
-    const deTotalM3_K = (recPort?.id === 'steadyAccumulator') ? 8600 : 15400;
-    const deTotalVIP_K = (recPort?.id === 'steadyAccumulator') ? 43000 : 77000;
-    const xien4TotalM3_K = 2200;
-    const xien4TotalVIP_K = 11000;
-    const totalM3_M = ((deTotalM3_K + loStakeDailyM3_K + xien4TotalM3_K) / 1000).toFixed(2);
-    const totalVIP_M = ((deTotalVIP_K + loStakeDailyVIP_K + xien4TotalVIP_K) / 1000).toFixed(1);
-
-    lines.push(
-      `💰 <b>TỔNG VỐN ĐẦU TƯ GÓI CHỦ LỰC TỐI ƯU HÔM NAY:</b>`,
-      `  👉 <b>Mức 3 (Mặc định):</b> <b>${totalM3_M}M</b> (Đề ${(deTotalM3_K / 1000).toFixed(1)}M + Lô ${(loStakeDailyM3_K / 1000).toFixed(2)}M + Xiên ${(xien4TotalM3_K / 1000).toFixed(1)}M)`,
-      `  👉 <b>Mức VIP:</b> <b>${totalVIP_M}M</b> (Đề ${(deTotalVIP_K / 1000).toFixed(0)}M + Lô ${(loStakeDailyVIP_K / 1000).toFixed(1)}M + Xiên ${(xien4TotalVIP_K / 1000).toFixed(0)}M)`,
-      divider
-    );
-  }
-  }
-
-  // =========================================================================
-  // 👥 DÀN 4 PHƯƠNG PHÁP SHADOW MONITOR (DỰ PHÒNG & THAM KHẢO)
-  // =========================================================================
-  const shNextDe40 = (advisorPayload?.deDropoffMerge?.latestRecommendation?.numbers || []).map(normalizeLotteryNumber);
-  const shNextLo7Rec = advisorPayload?.loDropoff27?.latestRecommendation || {};
-  const shNextLo7 = (shNextLo7Rec.top7 || shNextLo7Rec.numbers || []).map(normalizeLotteryNumber);
-  const shNextLo2 = (shNextLo7Rec.top2 || shNextLo7.slice(0, 2)).map(normalizeLotteryNumber);
-  const shNextLo1 = shNextLo7Rec.top1 || shNextLo2[0] || shNextLo7[0];
-  const shNextTri24 = (advisorPayload?.triCoreDe?.latestRecommendation?.numbers || []).map(normalizeLotteryNumber);
-  const shNextSem = advisorPayload?.semanticResonanceSuite?.latestRecommendation?.de || {};
-  const shNextRes36 = (shNextSem.numbers36 || []).map(normalizeLotteryNumber);
-  const shNextResVip12 = (shNextSem.vip12 || shNextRes36.slice(0, 12)).map(normalizeLotteryNumber);
-  const shNextResLot24 = (shNextSem.lot24 || shNextRes36.slice(12, 36)).map(normalizeLotteryNumber);
-
-  if (shNextDe40.length || shNextLo7.length || shNextTri24.length || shNextRes36.length) {
-    lines.push(
-      `👥 <b>DÀN 4 PHƯƠNG PHÁP SHADOW MONITOR (${escapeHtml(displayDate(predictionDate))}):</b>`
-    );
-    if (shNextDe40.length) {
-      lines.push(
-        `• 💎 <b>1. Đề Khử Trùng 40s (1M/số = 40M · Ăn 84M · Lãi +44M):</b>`,
-        `<code>${escapeHtml(formatNumberList(shNextDe40))}</code>`
-      );
-    }
-    if (shNextLo7.length) {
-      lines.push(
-        `• ⚡ <b>2. Lô Dropoff 27 Top 7 (2.2M/số = 15.4M · Ăn 8M/nháy):</b>`,
-        `<code>${escapeHtml(formatNumberList(shNextLo7))}</code>`,
-        `   └ 🔥 Song thủ: <b>[${escapeHtml(formatNumberList(shNextLo2))}]</b> · Bạch thủ: <b>[${escapeHtml(shNextLo1)}]</b>`
-      );
-    }
-    if (shNextTri24.length) {
-      lines.push(
-        `• 🎯 <b>3. Đề Tam Trụ Tri-Core 24s (1M/số = 24M · Ăn 84M · Lãi +60M):</b>`,
-        `<code>${escapeHtml(formatNumberList(shNextTri24))}</code>`
-      );
-    }
-    if (shNextRes36.length) {
-      lines.push(
-        `• 👑 <b>4. Đề 36s Tri-Tier Resonance (Vốn 54M):</b>`,
-        `   └ ⚡ <b>12 VIP (2.5M ăn 210M):</b> <code>${escapeHtml(formatNumberList(shNextResVip12))}</code>`,
-        `   └ 🛡️ <b>24 Lót (1.0M ăn 84M):</b> <code>${escapeHtml(formatNumberList(shNextResLot24))}</code>`
-      );
-    }
-    lines.push(divider);
-  }
-
-  // =========================================================================
-  // 6. 📊 BẢNG THEO DÕI THỰC CHIẾN THEO GỢI Ý (BẮT ĐẦU TỪ 16/09/2026)
-  // =========================================================================
-  const NEW_BATTLE_START_DATE = '2026-09-16';
-  const deAllDates = new Set([
-    ...(advisorPayload?.crossHedgingPortfolio?.settledLedger || []).filter(r => (r.date || r.predictionDate) >= NEW_BATTLE_START_DATE).map(r => r.date || r.predictionDate),
-    ...(advisorPayload?.loTop5ConsensusXien?.settledLedger || []).filter(r => (r.date || r.predictionDate) >= NEW_BATTLE_START_DATE).map(r => r.date || r.predictionDate),
-    ...(advisorPayload?.lo4EngineFusion?.modes?.top7?.settledLedger || []).filter(r => (r.date || r.predictionDate) >= NEW_BATTLE_START_DATE).map(r => r.date || r.predictionDate),
-    ...(advisorPayload?.lo4EngineFusion?.modes?.top6?.settledLedger || []).filter(r => (r.date || r.predictionDate) >= NEW_BATTLE_START_DATE).map(r => r.date || r.predictionDate),
-    ...liveDiaryEntries.filter(r => (r.date || r.predictionDate) >= NEW_BATTLE_START_DATE && r.settled !== false && (r.db || r.dayProfitK !== undefined)).map(r => r.date || r.predictionDate),
-    ...(advisorPayload?.streakAwareDeAdvisor?.settledLedger?.filter(r => (r.date || r.predictionDate) >= NEW_BATTLE_START_DATE).map(r => r.date || r.predictionDate) || []),
-    ...metaSettledList.filter(r => (r.predictionDate || r.date) >= NEW_BATTLE_START_DATE).map(r => r.predictionDate || r.date)
-  ]);
-  if (settledDate && settledDate >= NEW_BATTLE_START_DATE) {
-    deAllDates.add(settledDate);
-  }
-  const sortedBattleDates = [...deAllDates].filter(d => d >= NEW_BATTLE_START_DATE).sort();
-
-  lines.push(`<b>6. 📊 BẢNG THEO DÕI THỰC CHIẾN THEO GỢI Ý (BẮT ĐẦU TỪ 16/09/2026)</b>`);
-  lines.push(`<i>Thống kê thực tế hoàn toàn theo các dàn gợi ý thực chiến ở trên — Mốc khởi điểm 0đ</i>`);
-
-  if (sortedBattleDates.length === 0) {
-    lines.push(
-      `• 📅 <b>Kỳ 1 (${escapeHtml(displayDate(predictionDate))}):</b> ⏳ <b>ĐANG CHỜ KẾT QUẢ QUAY THƯỞNG 18:15</b>`,
-      `• 💎 Đề Thực Chiến: Chờ quay (Đơn vị Bot: 200K/600K · VIP: Vốn 77M)`,
-      `• 🏆 Lô Chuẩn Gợi Ý (Top 20): Chờ quay (Đơn vị Bot: 25đ/số [11.000K] · VIP: Vốn 44M)`,
-      `• 🚀 Lô Tăng Tốc (Top 7): Chờ quay (Đơn vị Bot: 25đ/số [3.850K] · VIP: Vốn 15.4M)`,
-      `• 💎 Lô Xiên 4 Gợi Ý (Quây 11 vé): Chờ quay (Đơn vị Bot: 200K/vé [2.200K] · VIP: Vốn 11M)`,
-      `• 💰 <b>Tổng Lũy Kế Thực Chiến GỢI Ý</b>: <b>0 VNĐ (Baseline khởi động)</b>`
-    );
-  } else {
-    let cumDeM3K = 0, cumDeVipK = 0, deWinCount = 0;
-    let cumCrossLoM3K = 0, cumCrossLoVipK = 0, crossLoWinCount = 0;
-    let cumLoM3K = 0, cumLoVipK = 0;
-    let cumXien11M3K = 0, cumXien11VipK = 0, xien11WinCount = 0;
-    let cumX3K = 0, x3WinCount = 0, x3TicketCount = 0;
-    let cumX5ProfitVIP_K = 0, x5WinCount = 0;
-
-    for (const d of sortedBattleDates) {
-      const chRow = (advisorPayload?.crossHedgingPortfolio?.settledLedger || []).find(r => (r.predictionDate || r.date) === d);
-
-      const deRow = resolveUnifiedDeRowForDate(d, advisorPayload);
-      cumDeM3K += deRow.profitM3K;
-      cumDeVipK += deRow.profitK;
-      if (deRow.isHit) deWinCount++;
-
-      const crossLoRow = resolveUnifiedCrossLoRowForDate(d, advisorPayload);
-      cumCrossLoM3K += crossLoRow.m3ProfitK;
-      cumCrossLoVipK += crossLoRow.vipProfitK;
-      if (crossLoRow.isWin) crossLoWinCount++;
-
-      const loEntry = liveDiaryEntries.find(r => (r.date || r.predictionDate) === d && r.settled !== false);
-      if (loEntry) {
-        const loRow = resolveUnifiedLoRowForDate(loEntry);
-        cumLoM3K += loRow.dayM3ProfitK;
-        cumLoVipK += loRow.dayProfitK;
-      }
-
-      const top5XienDay = (advisorPayload?.loTop5ConsensusXien?.settledLedger || []).find(r => (r.predictionDate || r.date) === d);
-      if (chRow && chRow.xienProfitK !== undefined) {
-        cumXien11M3K += Math.round(chRow.xienProfitK * 0.2);
-        cumXien11VipK += chRow.xienProfitK;
-        if (chRow.xienProfitK > 0) xien11WinCount++;
-      } else if (top5XienDay) {
-        cumXien11M3K += top5XienDay.q11ProfitM3K;
-        cumXien11VipK += top5XienDay.q11ProfitVIP_K;
-        if (top5XienDay.isWin) xien11WinCount++;
-      }
-
-      // Xiên 3 Quây & Dàn Xiên 5 tích lũy độc lập, không bị shadow bởi chRow
-      if (top5XienDay) {
-        const isAbstainDay = ['2026-09-29', '2026-09-30', '2026-10-01', '2026-10-02'].includes(d);
-        const dayX3ProfitK = isAbstainDay ? 0 : (top5XienDay.x3ProfitK || 0);
-        const dayX3Tickets = top5XienDay.x3Tickets || 0;
-        cumX3K += dayX3ProfitK;
-        if (dayX3Tickets > 0) x3WinCount++;
-        x3TicketCount += dayX3Tickets;
-
-        const dayX5ProfitK = top5XienDay.x5Profit55K ?? 0;
-        cumX5ProfitVIP_K += dayX5ProfitK;
-        if (dayX5ProfitK > 0) x5WinCount++;
-      }
-    }
-
-    const daysCount = sortedBattleDates.length;
-    const cumMainM3K = cumDeM3K + cumCrossLoM3K + cumXien11M3K;
-    const cumMainVipK = cumDeVipK + cumCrossLoVipK + cumXien11VipK;
-    const cumM3TotalK = cumDeM3K + cumLoM3K + cumXien11M3K;
-    const cumVipTotalK = cumDeVipK + cumLoVipK + cumXien11VipK;
-    const cumX3M3K = Math.round(cumX3K * 0.2);
-
-    lines.push(
-      `• 📅 <b>Số kỳ đã kết toán</b>: <b>${daysCount} kỳ</b>`,
-      `• ⚡ <b>Lô Ghép 4 Động Cơ (Đa Tầng X5/X4/X3/X1 - Khuyên Dùng)</b>: <b>${formatK(cumCrossLoM3K)}</b> (${formatM(cumCrossLoVipK)} VIP · ${crossLoWinCount}/${daysCount} kỳ thắng · Win ${((crossLoWinCount/daysCount)*100).toFixed(0)}%)`,
-      `• 💎 <b>Đề Thực Chiến (17 VIP X3 + 26 Bọc Lót X1)</b>: <b>${formatK(cumDeM3K)}</b> (${formatM(cumDeVipK)} VIP · ${deWinCount}/${daysCount} kỳ trúng · Win ${((deWinCount/daysCount)*100).toFixed(0)}%)`,
-      `• 🎲 <b>Lô Xiên Quây Top 5 Đồng Thuận (Bộ 4 Quây 11 vé)</b>: <b>${formatK(cumXien11M3K)}</b> (${formatM(cumXien11VipK)} VIP · ${xien11WinCount}/${daysCount} kỳ thắng · Win ${((xien11WinCount/daysCount)*100).toFixed(0)}% · Nổ kỷ lục 26/09: +373M VIP / +74.6M M3)`,
-      `• 🎯 <b>Lô Xiên 3 Quây (Bộ 5 Quây 10 vé · Vốn 1.0M/ngày)</b>: <b>${formatM(cumX3K)} VIP</b> (${cumX3M3K >= 0 ? '+' : ''}${(cumX3M3K / 1000).toFixed(1)}M M3 · ${x3WinCount}/${daysCount} ngày nổ ${x3TicketCount} vé X3)`,
-      `• 👑 <b>Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)</b>: <b>${formatM(cumX5ProfitVIP_K)} VIP</b> (${x5WinCount}/${daysCount} kỳ thắng · Win ${((x5WinCount/daysCount)*100).toFixed(0)}%)`,
-      `• 💰 <b>TỔNG LŨY KẾ CHIẾN LƯỢC CHỦ LỰC (LÔ GHÉP TẦNG + ĐỀ + XIÊN QUÂY):</b>`,
-      `   👉 <b>Đơn Vị Bot Telegram:</b> <b>${formatK(cumMainM3K)}</b> (${cumMainM3K > 0 ? '+' : ''}${(cumMainM3K / 1000).toFixed(2)} Triệu VNĐ) ${cumMainM3K > 0 ? '🎉 <b>(DƯƠNG LÃI RỰC RỠ)</b>' : ''}`,
-      `   👉 <b>Mức VIP Vốn Lớn:</b> <b>${formatM(cumMainVipK)}</b> ${cumMainVipK > 0 ? '🎉 <b>(ĐỈNH CAO THỰC CHIẾN)</b>' : ''}`,
-      `<i>(Đối soát nếu phân tán vốn đánh cả combo: Lô ${formatK(cumLoM3K)} · Xiên ${formatK(cumXien11M3K)} · Tổng ${formatK(cumM3TotalK)})</i>`
+        `    └ 🔥 <b>Cực VIP X4 (${advNextLoX4.length} số · cược 8.8M/số [400đ], ăn 32M/nháy):</b>`,
+        `       <code>${escapeHtml(advNextLoX4.join(', '))}</code>`,
+        `    └ ⚡ <b>Triển Vọng X3 (${advNextLoX3.length} số · cược 6.6M/số [300đ], ăn 24M/nháy):</b>`,
+        `       <code>${escapeHtml(advNextLoX3.join(', '))}</code>`,
+        `    └ 🛡️ <b>Bảo Hiểm X1 (${advNextLoX1.length} số · cược 2.2M/số [100đ], ăn 8M/nháy):</b>`,
+        `       <code>${escapeHtml(advNextLoX1.join(', '))}</code>`,
+        `  • <b>Dàn Xiên 5 (5 Dàn Xiên 4 Ghép Top 5 · Vốn 55M · 11M/dàn):</b>`,
+        `    └ 👑 <b>Top 5 Lô đồng thuận:</b> <code>[${escapeHtml(advNextXienTop5.join(', '))}]</code>`,
+        `    └ 5 Dàn Xiên 4 cụ thể:`,
+        `       • Dàn 1: <code>${escapeHtml(advNextXienTickets[0].join(', '))}</code> (11M)`,
+        `       • Dàn 2: <code>${escapeHtml(advNextXienTickets[1].join(', '))}</code> (11M)`,
+        `       • Dàn 3: <code>${escapeHtml(advNextXienTickets[2].join(', '))}</code> (11M)`,
+        `       • Dàn 4: <code>${escapeHtml(advNextXienTickets[3].join(', '))}</code> (11M)`,
+        `       • Dàn 5: <code>${escapeHtml(advNextXienTickets[4].join(', '))}</code> (11M)`,
+        `    └ <i>Tỷ lệ ăn: 5 con về = 1.920M · 4 con = 720M · 3 con = 204M · 2 con = 36M</i>`,
+        `  👉 <b>Tổng vốn đầu tư /daily-advisor:</b> <b>${formatCostK(advNextTotalStakeK)}</b>`,
+        '',
+        divider,
+        `<b>2. 👑 PHƯƠNG PHÁP GỘP 5 (/daily-advisor-shadow)</b>`,
+        `  • <b>Đề Siêu Gộp 5 PP (${pentaNextDeAll.length} số · Vốn ${formatCostK(pentaNextDeStakeK)}):</b>`,
+        `    └ 👑 <b>VIP X2 (trùng ≥3 hệ · ${pentaNextDeX2.length} số · cược 400K/số, ăn 33.6M):</b>`,
+        `       <code>${escapeHtml(pentaNextDeX2.join(', '))}</code>`,
+        `    └ 🛡️ <b>Bọc Lót X1 (trùng &lt;3 hệ · ${pentaNextDeX1.length} số · cược 200K/số, ăn 16.8M):</b>`,
+        `       <code>${escapeHtml(pentaNextDeX1.join(', '))}</code>`,
+        `  • <b>Lô Siêu Gộp 5 PP (${pentaNextLoAll.length} số · Vốn ${formatCostK(pentaNextLoStakeK)}):</b>`,
+        `    └ 👑 <b>Siêu VIP X5 (trùng ≥4 hệ · ${pentaNextLoX5.length} số · cược 11M/số [500đ], ăn 40M/nháy):</b>`,
+        `       <code>${escapeHtml(pentaNextLoX5.join(', '))}</code>`,
+        `    └ 🔥 <b>Cực VIP X4 (trùng 3 hệ · ${pentaNextLoX4.length} số · cược 8.8M/số [400đ], ăn 32M/nháy):</b>`,
+        `       <code>${escapeHtml(pentaNextLoX4.join(', '))}</code>`,
+        `    └ ⚡ <b>Triển Vọng X3 (trùng 2 hệ · ${pentaNextLoX3.length} số · cược 6.6M/số [300đ], ăn 24M/nháy):</b>`,
+        `       <code>${escapeHtml(pentaNextLoX3.join(', '))}</code>`,
+        `    └ 🛡️ <b>Bảo Hiểm X1 (trùng 1 hệ · ${pentaNextLoX1.length} số · cược 2.2M/số [100đ], ăn 8M/nháy):</b>`,
+        `       <code>${escapeHtml(pentaNextLoX1.join(', '))}</code>`,
+        `  • <b>Xiên 5 Siêu Gộp (5 Dàn Xiên 4 Ghép Top 5 Ngũ Trụ · Vốn 5.5M · 1.1M/dàn):</b>`,
+        `    └ 👑 <b>Top 5 Lô ngũ trụ:</b> <code>[${escapeHtml(pentaNextXienTop5.join(', '))}]</code>`,
+        `    └ 5 Dàn Xiên 4 cụ thể:`,
+        `       • Dàn 1: <code>${escapeHtml(pentaNextXienTickets[0].join(', '))}</code> (1.1M)`,
+        `       • Dàn 2: <code>${escapeHtml(pentaNextXienTickets[1].join(', '))}</code> (1.1M)`,
+        `       • Dàn 3: <code>${escapeHtml(pentaNextXienTickets[2].join(', '))}</code> (1.1M)`,
+        `       • Dàn 4: <code>${escapeHtml(pentaNextXienTickets[3].join(', '))}</code> (1.1M)`,
+        `       • Dàn 5: <code>${escapeHtml(pentaNextXienTickets[4].join(', '))}</code> (1.1M)`,
+        `    └ <i>Tỷ lệ ăn: 5 con về = 192M · 4 con = 72M · 3 con = 20.4M · 2 con = 3.6M</i>`,
+        `  👉 <b>Tổng vốn đầu tư /daily-advisor-shadow:</b> <b>${formatCostK(pentaNextTotalStakeK)}</b>`,
+        '',
+        divider,
+        `🔗 <i>Chi tiết bảng đối soát trực quan:</i>`,
+        `• Nhật ký đối soát: <a href="https://lottery-stats-vercel.vercel.app/daily-advisor">/daily-advisor</a>`,
+        `• Phương pháp Gộp 5: <a href="https://lottery-stats-vercel.vercel.app/daily-advisor-shadow">/daily-advisor-shadow</a>`
     );
 
-    // Lũy kế 4 Phương Pháp Shadow Monitor (Thực Chiến từ 17/09/2026)
-    const shDe40Sum = advisorPayload?.deDropoffMerge?.summary;
-    const shLo7Sum = advisorPayload?.loDropoff27?.summary;
-    const shTriSum = advisorPayload?.triCoreDe?.summary;
-    const shSemSum = advisorPayload?.semanticResonanceSuite?.summary;
-    if (shDe40Sum || shLo7Sum || shTriSum || shSemSum) {
-      lines.push(
-        `• 👥 <b>Lũy Kế 4 Phương Pháp Shadow Monitor (Mốc Thực Chiến):</b>`,
-        `   └ 💎 Đề Khử Trùng 40s: <b>${formatM(shDe40Sum?.combatProfitK ?? 44000)}</b> (${shDe40Sum?.combatWinRate ?? '50.0%'} Win)`,
-        `   └ ⚡ Lô Top 7 QMBF v6: <b>${formatM(shLo7Sum?.combatProfitK ?? 93200)}</b> (${shLo7Sum?.combatWinRate ?? '77.3%'} Win · ${(shLo7Sum?.combatAvgHits ?? 2.45).toFixed(2)} nháy/kỳ)`,
-        `   └ 🎯 Đề Tam Trụ 24s: <b>${formatM(shTriSum?.combatProfitK ?? 60000)}</b> (${shTriSum?.combatWinRate ?? '30.0%'} Win)`,
-        `   └ 👑 Semantic Resonance 36s: <b>${formatM(shSemSum?.combatProfitK ?? 732000)}</b> (${shSemSum?.combatWinRate ?? '47.3%'} Win)`
-      );
-    }
-  }
-  lines.push(divider);
-
-  // =========================================================================
-  // 7. 💡 KHUYẾN NGHỊ PHÂN BỔ VỐN & RADAR LỌT KHE (FALLBACK KHI KHÔNG CÓ CROSS-HEDGE)
-  // =========================================================================
-  if (!crossHedge) {
-  const deMethodShort = streakDeAdv?.selectedMethodLabel || 'Đề Tuyển Chọn';
-  const loTargetNums = crossOpt ? crossOpt.totalNumbers : allMerged.length;
-  lines.push(
-    `<b>7. 💡 KHUYẾN NGHỊ PHÂN BỔ VỐN & RADAR KHÁNG BẪY</b>`,
-    `• 🛡️ <b>Phòng thủ (50%)</b>: <b>${escapeHtml(deMethodShort)}</b> (${sNumbers.length || 43} số · Đòn bẩy X2 gỡ lỗ sau trượt) — Ăn đều đặn bảo vệ vốn.`,
-    `• ⚔️ <b>Tấn công (50%)</b>: <b>Lô Ghép Tầng Đa Phương Pháp</b> (${loTargetNums} số: Hạt nhân X3, mũi nhọn X2, bảo hiểm X1) + <b>Lô Xiên 4 Quây</b> săn đại thắng.`
-  );
-
-  // Radar Lọt Khe (Unchosen Pool Radar)
-  const dePoolsForRadar = [
-    advisorPayload?.pentaCoreDe?.latestRecommendation?.numbers,
-    advisorPayload?.adaptiveDualMerge?.latestRecommendation?.fullUnion,
-    advisorPayload?.dualMerge?.latestRecommendation?.fullUnion,
-    advisorPayload?.tripleMerge?.latestRecommendation?.fullUnion,
-    advisorPayload?.metaLearner?.latestRecommendation?.standard30 || advisorPayload?.metaLearner?.latestRecommendation?.numbers,
-    advisorPayload?.deMarkovGapHazard?.latestRecommendation?.numbers,
-    advisorPayload?.dePositionalGraphFlow?.latestRecommendation?.numbers
-  ].filter(Boolean);
-
-  if (dePoolsForRadar.length > 0) {
-    const voteCounts = Array.from({ length: 100 }, () => 0);
-    dePoolsForRadar.forEach(pool => {
-      (pool || []).forEach(n => {
-        const idx = Number(n);
-        if (Number.isInteger(idx) && idx >= 0 && idx < 100) voteCounts[idx]++;
-      });
-    });
-
-    const lotKhe0 = [];
-    for (let i = 0; i < 100; i++) {
-      if (voteCounts[i] === 0) lotKhe0.push(String(i).padStart(2, '0'));
-    }
-    const aiCoverage = 100 - lotKhe0.length;
-
-    if (lotKhe0.length > 0 && lotKhe0.length < 100) {
-      const isHedgeActive = Boolean(recPort?.deStructure?.isHedgeActive || streakDeAdv?.lotKheHedge?.isHedgeActive || (lotKhe0.length > 0 && lotKhe0.length <= 15));
-      const hedgeNote = isHedgeActive
-        ? ` 👉 <b>HỆ THỐNG ĐÃ TỰ ĐỘNG KÍCH HOẠT KHIÊN BẢO HIỂM LỌT KHE (1 Ăn 84)!</b>`
-        : ` <i>(Độ an toàn AI rất cao, không cần bọc lót hoặc chơi Gói 5 Kháng Bẫy Outlier)</i>`;
-      lines.push(
-        `• 🎯 <b>Radar Lọt Khe Hôm Nay (An toàn AI: ${aiCoverage}%)</b>: 7 siêu động cơ AI phủ <b>${aiCoverage}/100</b> số. Còn <b>${lotKhe0.length} số Lọt Khe tuyệt đối (0-vote)</b>:`,
-        `   └ <code>${lotKhe0.join(' ')}</code>${hedgeNote}`
-      );
-    }
-  }
-
-  lines.push(divider);
-  }
-
-  lines.push(
-    '',
-    `💬 <i>Gõ <b>/cuoc</b> để xem Bảng Tính Lỗ/Lãi Tự Động theo Mức 3 (Mặc định) hoặc chọn mức khác!</i>`,
-    `<i>Dữ liệu được niêm phong bất biến (Strict PIT) · Minh bạch &amp; đối soát tự động.</i>`
-  );
-
-  return {
-    predictionDate,
-    latestDataDate: advisorPayload?.latestDataDate || dePayload?.latestDataDate,
-    text: lines.join('\n'),
-    deStrategy: 'metaLearner',
-    deTarget: 30,
-    lotoMethodKey: 'dynamicMetaAdvisor'
-  };
+    return {
+        predictionDate,
+        latestDataDate: advisorPayload?.latestDataDate || dePayload?.latestDataDate,
+        text: lines.filter(Boolean).join('\n'),
+        deStrategy: 'sweetSpotDe',
+        deTarget: 43,
+        lotoMethodKey: 'lo4EngineFusion'
+    };
 }
 
 async function telegramApi(env, method, body) {

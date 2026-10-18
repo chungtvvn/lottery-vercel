@@ -355,13 +355,19 @@ async function main() {
 
     const report = buildTelegramReport(compactDe, compactLoto, compactHistory);
     assert.match(report.text, /XSMB — GỢI Ý THỰC CHIẾN HÀNG NGÀY/);
-    assert.match(report.text, /1\. 💎 ĐỀ TINH HOA — DÀN 30 SỐ GỢI Ý/);
-    assert.match(report.text, /2\. 🏆 LÔ CHUẨN TỐI ƯU \(DÀN 20 SỐ\)/);
-    assert.match(report.text, /3\. 🚀 LÔ ĐÁNH X2 AN TOÀN CAO \(DÀN 7 SỐ TĂNG TỐC\)/);
-    assert.match(report.text, /4\. ⚡ BẢNG GỘP ĐÁNH LÔ TỔNG LỰC/);
-    assert.match(report.text, /5\. 💎 LÔ XIÊN/);
-    assert.match(report.text, /6\. 📊 BẢNG THEO DÕI THỰC CHIẾN THEO GỢI Ý/);
-    assert.match(report.text, /7\. 💡 KHUYẾN NGHỊ PHÂN BỔ VỐN/);
+    assert.match(report.text, /1\. 📊 NHẬT KÝ ĐỐI SOÁT \(\/daily-advisor\)/);
+    assert.match(report.text, /2\. 👑 PHƯƠNG PHÁP GỘP 5 \(\/daily-advisor-shadow\)/);
+    assert.match(report.text, /Đề Thực Chiến/);
+    assert.match(report.text, /Lô Ghép 4 Động Cơ/);
+    assert.match(report.text, /Dàn Xiên 5 \(5 Dàn Xiên 4/);
+    assert.match(report.text, /Đề Siêu Gộp 5 PP/);
+    assert.match(report.text, /Lô Siêu Gộp 5 PP/);
+    assert.match(report.text, /Xiên 5 Siêu Gộp \(5 Dàn Xiên 4/);
+    assert.ok(!report.text.includes('ĐỀ TINH HOA — DÀN 30 SỐ GỢI Ý'), 'Không chứa Đề 30 số cũ');
+    assert.ok(!report.text.includes('LÔ CHUẨN TỐI ƯU (DÀN 20 SỐ)'), 'Không chứa Top 20 Lô cũ');
+    assert.ok(!report.text.includes('DÀN 7 SỐ TĂNG TỐC'), 'Không chứa Top 7 Lô cũ');
+    assert.ok(!report.text.includes('BẢNG GỘP ĐÁNH LÔ TỔNG LỰC'), 'Không chứa Lô tổng lực cũ');
+    assert.ok(!report.text.includes('KHUYẾN NGHỊ PHÂN BỔ VỐN'), 'Không chứa Mục 7 cũ');
     assert.ok(!report.text.includes('LÔ XIÊN 2 CHIẾN LƯỢC'), 'Báo cáo không được chứa Lô Xiên 2');
     assert.match(report.text, /━━━━━━━━━━━━━━━━━━━━/);
     assert.ok(splitTelegramText(report.text).every(chunk => chunk.length <= 3900), 'Telegram report phải được chia gói an toàn');
@@ -393,17 +399,22 @@ async function main() {
         const liveReport = buildTelegramReport(liveCompactDe, liveCompactLoto, liveCompactHistory, liveAdvisor);
         assert.match(liveReport.text, /XSMB — GỢI Ý THỰC CHIẾN HÀNG NGÀY/);
         assert.match(liveReport.text, /BÁO CÁO KẾT QUẢ ĐỐI SOÁT HÔM NAY/);
+        assert.match(liveReport.text, /A\. 📊 NHẬT KÝ ĐỐI SOÁT \(\/daily-advisor\)/);
+        assert.match(liveReport.text, /B\. 👑 PHƯƠNG PHÁP GỘP 5 \(\/daily-advisor-shadow\)/);
+        assert.match(liveReport.text, /1\. 📊 NHẬT KÝ ĐỐI SOÁT \(\/daily-advisor\)/);
+        assert.match(liveReport.text, /2\. 👑 PHƯƠNG PHÁP GỘP 5 \(\/daily-advisor-shadow\)/);
+        assert.match(liveReport.text, /Đề Thực Chiến/);
+        assert.match(liveReport.text, /Lô Ghép 4 Động Cơ/);
+        assert.match(liveReport.text, /Dàn Xiên 5 \(5 Dàn Xiên 4/);
+        assert.match(liveReport.text, /Đề Siêu Gộp 5 PP/);
+        assert.match(liveReport.text, /Lô Siêu Gộp 5 PP/);
+        assert.match(liveReport.text, /Xiên 5 Siêu Gộp \(5 Dàn Xiên 4/);
+        assert.match(liveReport.text, /Lũy kế \(\/daily-advisor từ 16\/09\)/);
+        assert.match(liveReport.text, /Lũy kế \(Gộp 5 từ 07\/10\)/);
         assert.ok(!liveReport.text.includes('LÔ XIÊN 2 CHIẾN LƯỢC'), 'Live report không được chứa Lô Xiên 2');
-
-        // Section 6 assertions: draws count, Xiên 3 > 0, Dàn Xiên 5, and exact Web-Telegram alignment
-        assert.match(liveReport.text, /6\. 📊 BẢNG THEO DÕI THỰC CHIẾN THEO GỢI Ý/);
-        assert.match(liveReport.text, /Số kỳ đã kết toán.*?\d+ kỳ/);
-        assert.match(liveReport.text, /Lô Ghép 4 Động Cơ.*?[+-]?\d+[\d.,]*K.*?[+-]?\d+[\d.,]*M VIP.*?\d+\/\d+ kỳ thắng/);
-        assert.match(liveReport.text, /Đề Thực Chiến.*?[+-]?\d+[\d.,]*K.*?[+-]?\d+[\d.,]*M VIP.*?\d+\/\d+ kỳ trúng/);
-        assert.match(liveReport.text, /Lô Xiên Quây Top 5 Đồng Thuận.*?[+-]?\d+[\d.,]*K.*?[+-]?\d+[\d.,]*M VIP.*?\d+\/\d+ kỳ thắng/);
-        assert.match(liveReport.text, /Lô Xiên 3 Quây.*?\+\d+[\d.,]*M VIP.*?\+\d+[\d.,]*M M3.*?\d+\/\d+ ngày nổ/);
-        assert.match(liveReport.text, /Dàn Xiên 5 \(5 Dàn X4 · 11M\/dàn\).*?\+\d+[\d.,]*M VIP.*?\d+\/\d+ kỳ thắng/);
-        assert.match(liveReport.text, /TỔNG LŨY KẾ CHIẾN LƯỢC CHỦ LỰC.*?(\+\d+[\d.,]*K|\+\d+[\d.,]* Triệu VNĐ).*?\+\d+[\d.,]*M/s);
+        assert.ok(!liveReport.text.includes('ĐỀ TINH HOA — DÀN 30 SỐ GỢI Ý'), 'Không chứa Đề 30 số cũ');
+        assert.ok(!liveReport.text.includes('LÔ CHUẨN TỐI ƯU (DÀN 20 SỐ)'), 'Không chứa Top 20 Lô cũ');
+        assert.ok(!liveReport.text.includes('KHUYẾN NGHỊ PHÂN BỔ VỐN'), 'Không chứa Mục 7 cũ');
 
         console.log('=== LIVE TELEGRAM REPORT PREVIEW ===\n' + liveReport.text + '\n===================================');
 
