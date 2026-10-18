@@ -2152,9 +2152,13 @@
 
             const xien4StatusEl = byId('lo4EngineXien4StatusText');
             const xien4NumsEl = byId('lo4EngineXien4Numbers');
+            const regDate = predDate || lo4Rec?.predictionDate || lo4Rec?.targetDate;
+            const regPending = fullData?.dailyLockedBetsRegistry?.dates?.[regDate];
+            const regXien4 = regPending?.bets?.lo4EngineFusion?.xien4;
+            const regXien5 = regPending?.bets?.loXien5;
             const top5Cons = fullData?.loTop5ConsensusXien;
-            const top4Rec = (top5Cons?.top4Xien || lo4Rec.xien4?.top4 || lo4Rec.xien4?.numbers || []).map(number);
-            const top5Rec = (top5Cons?.top5Xien || lo4Rec.xien4?.top5 || []).map(number);
+            const top4Rec = (regXien4?.top4 || lo4Rec.xien4?.top4 || lo4Rec.xien4?.numbers || top5Cons?.top4Xien || []).map(number);
+            const top5Rec = (regXien5?.top5 || regXien4?.top5 || lo4Rec.xien4?.top5 || top5Cons?.top5Xien || []).map(number);
 
             if (top4Rec.length >= 4) {
                 if (xien4StatusEl) {
@@ -4847,6 +4851,10 @@
 
     function synthesizeLo4RowFallback(date, p, mode = (typeof currentLo4EngineMode !== 'undefined' ? currentLo4EngineMode : 'top6')) {
         const topN = mode === 'top6' ? 6 : 7;
+        const ledgerRow = (p?.lo4EngineFusion?.modes?.[mode]?.settledLedger || p?.lo4EngineFusion?.settledLedger || []).find(r => r.date === date);
+        if (ledgerRow && (ledgerRow.allNumbers?.length || ledgerRow.betNumbers?.length)) {
+            return ledgerRow;
+        }
         const regBet = p?.dailyLockedBetsRegistry?.dates?.[date]?.bets?.lo4EngineFusion;
         const regSettlement = p?.dailyLockedBetsRegistry?.dates?.[date]?.settlement?.lo4EngineFusion;
         if (regSettlement || regBet) {
@@ -6816,7 +6824,11 @@
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
                             <span class="rounded bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-bold px-2 py-0.5" title="${escapeHtml(lo4Info.xien4Reason || '')}">
-                                ${lo4Info.xien4Status === 'SKIPPED_TOO_MANY' ? '🛡️ Bỏ qua (>5 số)' : (lo4Info.xien4Status === 'ACTIVE_BET' ? (lo4Info.isXien4Win ? '🎉 Ăn Xiên 4' : 'Trượt Xiên 4') : 'Bỏ qua')}
+                                ${(lo4Info.xien4Status === 'ACTIVE_BET' || lo4Info.xien4Status === 'ACTIVE')
+                                    ? (lo4Info.isXien4Win
+                                        ? `<span class="text-emerald-700 font-black">🎉 Ăn Xiên 4 (+${moneyM(lo4Info.dayXien4ProfitK || 0)})</span>`
+                                        : `<span class="text-slate-500">Trượt Xiên 4</span>`)
+                                    : (lo4Info.xien4Status === 'SKIPPED_TOO_MANY' ? '🛡️ Bỏ qua (>5 số)' : 'Bỏ qua')}
                             </span>
                         </td>
                         <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
@@ -8405,7 +8417,7 @@
                 const loNumbersToCopy = smartLo?.numbers || allMergedLo;
                 const deFormatted = deData.allNums.map(n => String(number(n)).padStart(2, '0')).join(', ');
                 const loFormatted = loNumbersToCopy.map(n => String(number(n)).padStart(2, '0')).join(', ');
-                const top4ConsensusForWeb = (fullData?.loTop5ConsensusXien?.top4Xien || []).map(number);
+                const top4ConsensusForWeb = (lo4Adv?.xien4?.top4 || fullData?.loTop5ConsensusXien?.top4Xien || []).map(number);
                 const xi4Formatted = (top4ConsensusForWeb.length >= 4)
                     ? top4ConsensusForWeb.map(n => String(number(n)).padStart(2, '0')).join(', ')
                     : ((cfg.id === 'maxProfit' && lo4Adv?.xien4?.status === 'SKIPPED_TOO_MANY')
@@ -8783,17 +8795,20 @@
 
                 // Numbers: extract numbers with votes >= 2 (Top 6 or Top 7)
                 const regLo4Pending = regPending?.bets?.lo4EngineFusion;
-                const recNumbers = (regLo4Pending?.numbersOver2 && regLo4Pending.numbersOver2.length)
+                const recNumbers = (isTop6 && regLo4Pending?.numbersOver2 && regLo4Pending.numbersOver2.length)
                     ? regLo4Pending.numbersOver2
-                    : ((lo4Rec.numbersOver2 && lo4Rec.numbersOver2.length)
-                        ? lo4Rec.numbersOver2
-                        : (isTop6 ? ['62', '38', '44', '66', '93', '22'] : ['62', '93', '38', '44', '66', '22', '57']));
+                    : ((lo4ModeData?.latestRecommendation?.numbersOver2 && lo4ModeData.latestRecommendation.numbersOver2.length)
+                        ? lo4ModeData.latestRecommendation.numbersOver2
+                        : ((lo4Rec.numbersOver2 && lo4Rec.numbersOver2.length)
+                            ? lo4Rec.numbersOver2
+                            : (isTop6 ? ['59', '62', '76', '24', '35', '52'] : ['59', '62', '70', '76', '24', '35', '52'])));
 
-                const betNumbersList = (regLo4Pending?.betNumbers && regLo4Pending.betNumbers.length)
-                    ? regLo4Pending.betNumbers.filter(b => recNumbers.includes(String(b.num)))
-                    : ((lo4Rec.betNumbers && lo4Rec.betNumbers.length)
-                        ? lo4Rec.betNumbers.filter(b => recNumbers.includes(String(b.num)))
-                        : recNumbers.map(n => ({ num: n, votes: 3, multiplier: 4, methods: ['QMBF', 'Dual', 'Tri'] })));
+                const rawBetSource = (isTop6 && regLo4Pending?.betNumbers && regLo4Pending.betNumbers.length)
+                    ? regLo4Pending.betNumbers
+                    : (lo4ModeData?.latestRecommendation?.betNumbers || lo4Rec.betNumbers || []);
+                const betNumbersList = rawBetSource.length
+                    ? rawBetSource.filter(b => recNumbers.includes(String(b.num)))
+                    : recNumbers.map(n => ({ num: n, votes: 3, multiplier: 4, methods: ['QMBF', 'Dual', 'Tri'] }));
 
                 if (loTitleEl) {
                     loTitleEl.textContent = `2. Lô Ghép 4 Động Cơ (${isTop6 ? 'Top 6 Lục Thủ' : 'Top 7 Thất Thủ'} · ${recNumbers.length}s)`;
@@ -8894,8 +8909,13 @@
                 }
 
                 // Column 3: Dàn Xiên 5 (5 Quả Xiên 4) & Tứ Thủ Quây
+                const regX5 = regPending?.bets?.loXien5?.top5;
                 const top5Consensus = fullData?.loTop5ConsensusXien;
-                const top5Nums = (top5Consensus?.top5Xien || []).map(number);
+                const top5Nums = (regX5 && regX5.length >= 5)
+                    ? regX5.map(number)
+                    : ((lo4Rec.xien4?.top5 && lo4Rec.xien4.top5.length >= 5)
+                        ? lo4Rec.xien4.top5.map(number)
+                        : ((top5Consensus?.top5Xien || []).map(number)));
                 const xi5Tickets = getXi5Tickets(top5Nums);
 
                 if (xi4NumsEl) {
@@ -12855,7 +12875,7 @@
                         const hits = regLo4.totalHits != null ? regLo4.totalHits : (regLo4.dayLotoHits || 0);
                         profitK = regLo4.lotoProfitK != null ? regLo4.lotoProfitK : (regLo4.dayLotoProfitK || 0);
                         payoutK = regLo4.lotoPayoutK != null ? regLo4.lotoPayoutK : (stakeK + profitK);
-                        isHit = hits >= 2;
+                        isHit = (profitK > 0) || (regLo4.isWin != null ? regLo4.isWin : hits >= 2);
                         hitBadge = hits > 0 ? `🎉 NỔ ${hits} NHÁY (${moneyM(profitK, { signed: true })})` : '❌ TRƯỢT';
                         detailDesc = `Hội tụ 4 động cơ: ${t5.length + t4.length + t3.length} số trùng ≥ 2 ĐC · SSOT Khóa Bất Biến`;
                     }
