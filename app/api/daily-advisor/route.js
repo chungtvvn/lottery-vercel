@@ -781,9 +781,9 @@ export async function GET(request) {
                             isLotoWin: (s.lo4EngineFusion.lotoProfitK || 0) > 0,
                             xien4StakeK: s.lo4EngineFusion.xienStakeK || 11000,
                             xien4PayoutK: s.lo4EngineFusion.xienPayoutK || 0,
-                            dayXien4ProfitK: s.lo4EngineFusion.xienProfitK || -11000,
+                            dayXien4ProfitK: s.lo4EngineFusion.xienProfitK != null ? s.lo4EngineFusion.xienProfitK : -11000,
                             isXien4Win: (s.lo4EngineFusion.xienProfitK || 0) > 0,
-                            totalDayProfitK: s.lo4EngineFusion.totalProfitK || 0
+                            totalDayProfitK: s.lo4EngineFusion.totalProfitK != null ? s.lo4EngineFusion.totalProfitK : 0
                         });
                     }
                     // Lô Ghép 4 Top 6
@@ -808,9 +808,9 @@ export async function GET(request) {
                             isLotoWin: (s.lo4EngineFusion.lotoProfitK || 0) > 0,
                             xien4StakeK: s.lo4EngineFusion.xienStakeK || 11000,
                             xien4PayoutK: s.lo4EngineFusion.xienPayoutK || 0,
-                            dayXien4ProfitK: s.lo4EngineFusion.xienProfitK || -11000,
+                            dayXien4ProfitK: s.lo4EngineFusion.xienProfitK != null ? s.lo4EngineFusion.xienProfitK : -11000,
                             isXien4Win: (s.lo4EngineFusion.xienProfitK || 0) > 0,
-                            totalDayProfitK: s.lo4EngineFusion.totalProfitK || 0
+                            totalDayProfitK: s.lo4EngineFusion.totalProfitK != null ? s.lo4EngineFusion.totalProfitK : 0
                         });
                     }
                     // Đề Ledgers (Dual Merge, Adaptive, Triple, Meta)

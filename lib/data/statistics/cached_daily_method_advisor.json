@@ -2529652,7 +2529652,7 @@
   "dailyLockedBetsRegistry": {
     "version": "1.0.0",
     "description": "Single Source of Truth (SSOT) Immutable Daily Bets and Settlement Registry",
-    "updatedAt": "2026-10-18T17:03:18.837Z",
+    "updatedAt": "2026-10-18T17:23:56.537Z",
     "dates": {
       "2026-10-10": {
         "targetDate": "2026-10-10",

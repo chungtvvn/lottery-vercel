@@ -54,6 +54,9 @@ async function main() {
         } catch (_) {}
     }
 
+    const registryService = require('../lib/services/dailyLockedBetsRegistryService');
+    const currentReg = registryService.loadRegistry();
+
     const raw = await getRawData();
     const cache = await service.generateAndWriteCache({
         history: history || undefined,
@@ -67,7 +70,8 @@ async function main() {
         existingMetaCrossMethod: existingCache?.metaCrossMethod || null,
         limit: 90,
         forceSynthesize: process.env.FORCE_SYNTHESIZE === '1',
-        existingCache: existingCache
+        existingCache: existingCache,
+        dailyLockedBetsRegistry: currentReg
     });
     const expectedPredictionDate = nextIsoDate(cache.latestDataDate);
     const pendingSnapshot = cache.records.find(record => record?.predictionDate === expectedPredictionDate);
@@ -77,28 +81,28 @@ async function main() {
 
     try {
         const { buildTriCoreDeAdvisor } = require('../lib/services/triCoreDeAdvisorService');
-        cache.triCoreDe = buildTriCoreDeAdvisor(raw, cache, { existingTriCoreDe: existingCache?.triCoreDe });
+        cache.triCoreDe = buildTriCoreDeAdvisor(raw, cache, { existingTriCoreDe: existingCache?.triCoreDe, dailyLockedBetsRegistry: currentReg });
     } catch (err) {
         console.error('[generateDailyAdvisorCache] Error building triCoreDe:', err);
     }
 
     try {
         const { buildDeDropoffMergeAdvisor } = require('../lib/services/deDropoffMergeAdvisorService');
-        cache.deDropoffMerge = buildDeDropoffMergeAdvisor(raw, cache, { existingDeDropoffMerge: existingCache?.deDropoffMerge });
+        cache.deDropoffMerge = buildDeDropoffMergeAdvisor(raw, cache, { existingDeDropoffMerge: existingCache?.deDropoffMerge, dailyLockedBetsRegistry: currentReg });
     } catch (err) {
         console.error('[generateDailyAdvisorCache] Error building deDropoffMerge:', err);
     }
 
     try {
         const { buildLoDropoff27Advisor } = require('../lib/services/loDropoff27AdvisorService');
-        cache.loDropoff27 = buildLoDropoff27Advisor(raw, cache, { existingLoDropoff27: existingCache?.loDropoff27 });
+        cache.loDropoff27 = buildLoDropoff27Advisor(raw, cache, { existingLoDropoff27: existingCache?.loDropoff27, dailyLockedBetsRegistry: currentReg });
     } catch (err) {
         console.error('[generateDailyAdvisorCache] Error building loDropoff27:', err);
     }
 
     try {
         const { buildSemanticResonanceSuiteAdvisor } = require('../lib/services/semanticResonanceSuiteAdvisorService');
-        cache.semanticResonanceSuite = buildSemanticResonanceSuiteAdvisor(raw, cache, { existingSemanticResonanceSuite: existingCache?.semanticResonanceSuite });
+        cache.semanticResonanceSuite = buildSemanticResonanceSuiteAdvisor(raw, cache, { existingSemanticResonanceSuite: existingCache?.semanticResonanceSuite, dailyLockedBetsRegistry: currentReg });
     } catch (err) {
         console.error('[generateDailyAdvisorCache] Error building semanticResonanceSuite:', err);
     }
