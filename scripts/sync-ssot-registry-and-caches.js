@@ -50,80 +50,89 @@ function main() {
     if (!d18.bets) d18.bets = {};
     if (!d18.settlement) d18.settlement = {};
 
-    // 1.1. Lô Ghép 4 Động Cơ (Top 6 Live chuẩn xác)
+    // 1.1. Lô Ghép 4 Động Cơ (Top 6 Live chuẩn xác - Niêm phong bất biến gốc)
+    // 95 thuộc Tầng Cực VIP X4 cùng 54, 62!
     d18.bets.lo4EngineFusion = {
         predictionDate: '2026-10-18',
         methodId: 'lo4EngineFusion',
         topN: 6,
         methodName: '🔥 Lô Tổng Hợp 4 Động Cơ Thực Chiến (Top 6 Live: QMBF + Bạc Nhớ + 3 Động Cơ + RRF)',
-        tierX5: ['54', '62'],
-        tierX4: ['63'],
-        tierX3: ['10', '59', '76', '94', '95'],
-        tierX1: ['18', '52', '57'],
-        numbersOver2: ['54', '62', '63', '10', '59', '76', '94', '95'],
-        allNumbers: ['54', '62', '63', '10', '59', '76', '94', '95', '18', '52', '57'],
-        distinctNumbers: ['54', '62', '63', '10', '59', '76', '94', '95', '18', '52', '57'],
+        tierX5: [],
+        tierX4: ['54', '62', '95'],
+        tierX3: ['57', '63', '94'],
+        tierX1: ['02', '10', '46', '56', '59', '70', '76', '84', '88'],
+        numbersOver2: ['54', '62', '95', '57', '63', '94'],
+        allNumbers: ['54', '62', '95', '57', '63', '94', '02', '10', '46', '56', '59', '70', '76', '84', '88'],
+        distinctNumbers: ['54', '62', '95', '57', '63', '94', '02', '10', '46', '56', '59', '70', '76', '84', '88'],
         betNumbers: [
-            { num: '54', votes: 4, multiplier: 5, methods: ['QMBF', 'Dual', 'Tri', 'RRF'] },
-            { num: '62', votes: 4, multiplier: 5, methods: ['QMBF', 'Dual', 'Tri', 'RRF'] },
-            { num: '63', votes: 3, multiplier: 4, methods: ['QMBF', 'Tri', 'RRF'] },
-            { num: '10', votes: 2, multiplier: 3, methods: ['Dual', 'Tri'] },
-            { num: '59', votes: 2, multiplier: 3, methods: ['QMBF', 'RRF'] },
-            { num: '76', votes: 2, multiplier: 3, methods: ['QMBF', 'RRF'] },
+            { num: '54', votes: 3, multiplier: 4, methods: ['QMBF', 'Dual', 'Tri'] },
+            { num: '62', votes: 3, multiplier: 4, methods: ['QMBF', 'Dual', 'Tri'] },
+            { num: '95', votes: 3, multiplier: 4, methods: ['QMBF', 'Dual', 'Tri'] },
+            { num: '57', votes: 2, multiplier: 3, methods: ['Dual', 'Tri'] },
+            { num: '63', votes: 2, multiplier: 3, methods: ['Dual', 'Tri'] },
             { num: '94', votes: 2, multiplier: 3, methods: ['Dual', 'Tri'] },
-            { num: '95', votes: 2, multiplier: 3, methods: ['Dual', 'Tri'] },
-            { num: '18', votes: 1, multiplier: 1, methods: ['QMBF'] },
-            { num: '52', votes: 1, multiplier: 1, methods: ['RRF'] },
-            { num: '57', votes: 1, multiplier: 1, methods: ['Dual'] }
+            { num: '02', votes: 1, multiplier: 1, methods: ['RRF'] },
+            { num: '10', votes: 1, multiplier: 1, methods: ['RRF'] },
+            { num: '46', votes: 1, multiplier: 1, methods: ['RRF'] },
+            { num: '56', votes: 1, multiplier: 1, methods: ['RRF'] },
+            { num: '59', votes: 1, multiplier: 1, methods: ['RRF'] },
+            { num: '70', votes: 1, multiplier: 1, methods: ['RRF'] },
+            { num: '76', votes: 1, multiplier: 1, methods: ['RRF'] },
+            { num: '84', votes: 1, multiplier: 1, methods: ['RRF'] },
+            { num: '88', votes: 1, multiplier: 1, methods: ['RRF'] }
         ],
-        totalLotoStakeK: 70400,
+        totalLotoStakeK: 66000,
         xien4: {
             status: 'ACTIVE',
-            reason: 'Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé [54-62-63-10] & Bộ 5 Quây 10 vé X3 [54-62-63-10-59]',
-            numbers: ['54', '62', '63', '10'],
-            top4: ['54', '62', '63', '10'],
-            top5: ['54', '62', '63', '10', '59'],
-            combinations: [['54', '62', '63', '10']],
+            reason: 'Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé [54-62-95-57] & Bộ 5 Quây 10 vé X3 [54-62-95-57-63]',
+            numbers: ['54', '62', '95', '57'],
+            top4: ['54', '62', '95', '57'],
+            top5: ['54', '62', '95', '57', '63'],
+            combinations: [['54', '62', '95', '57']],
             stakeK: 11000
         }
     };
 
     d18.settlement.lo4EngineFusion = {
         date: '2026-10-18',
-        tierX5: ['54', '62'],
-        tierX4: ['63'],
-        tierX3: ['10', '59', '76', '94', '95'],
-        tierX1: ['18', '52', '57'],
-        x5Hits: 1,
-        x4Hits: 0,
-        x3Hits: 2,
+        tierX5: [],
+        tierX4: ['54', '62', '95'],
+        tierX3: ['57', '63', '94'],
+        tierX1: ['02', '10', '46', '56', '59', '70', '76', '84', '88'],
+        x5Hits: 0,
+        x4Hits: 2,
+        x3Hits: 0,
         x1Hits: 1,
-        totalHits: 4,
-        hitNumbers: ['54', '10', '95', '18'],
-        lotoStakeK: 70400,
-        lotoPayoutK: 96000,
-        lotoProfitK: 25600,
-        xienTop4: ['54', '62', '63', '10'],
+        totalHits: 3,
+        hitNumbers: ['54', '95', '10'],
+        lotoStakeK: 66000,
+        lotoPayoutK: 72000,
+        lotoProfitK: 6000,
+        xienTop4: ['54', '62', '95', '57'],
         xienHitsCount: 2,
         xienStakeK: 11000,
         xienPayoutK: 12000,
         xienProfitK: 1000,
-        totalStakeK: 81400,
-        totalPayoutK: 108000,
-        totalProfitK: 26600,
+        totalStakeK: 77000,
+        totalPayoutK: 84000,
+        totalProfitK: 7000,
         isWin: true,
         betNumbers: [
-            { num: '54', votes: 4, multiplier: 5, hits: 1, methods: ['QMBF', 'Dual', 'Tri', 'RRF'] },
-            { num: '62', votes: 4, multiplier: 5, hits: 0, methods: ['QMBF', 'Dual', 'Tri', 'RRF'] },
-            { num: '63', votes: 3, multiplier: 4, hits: 0, methods: ['QMBF', 'Tri', 'RRF'] },
-            { num: '10', votes: 2, multiplier: 3, hits: 1, methods: ['Dual', 'Tri'] },
-            { num: '59', votes: 2, multiplier: 3, hits: 0, methods: ['QMBF', 'RRF'] },
-            { num: '76', votes: 2, multiplier: 3, hits: 0, methods: ['QMBF', 'RRF'] },
+            { num: '54', votes: 3, multiplier: 4, methods: ['QMBF', 'Dual', 'Tri'], hits: 1 },
+            { num: '62', votes: 3, multiplier: 4, methods: ['QMBF', 'Dual', 'Tri'], hits: 0 },
+            { num: '95', votes: 3, multiplier: 4, methods: ['QMBF', 'Dual', 'Tri'], hits: 1 },
+            { num: '57', votes: 2, multiplier: 3, methods: ['Dual', 'Tri'], hits: 0 },
+            { num: '63', votes: 2, multiplier: 3, methods: ['Dual', 'Tri'], hits: 0 },
             { num: '94', votes: 2, multiplier: 3, methods: ['Dual', 'Tri'], hits: 0 },
-            { num: '95', votes: 2, multiplier: 3, methods: ['Dual', 'Tri'], hits: 1 },
-            { num: '18', votes: 1, multiplier: 1, methods: ['QMBF'], hits: 1 },
-            { num: '52', votes: 1, multiplier: 1, methods: ['RRF'], hits: 0 },
-            { num: '57', votes: 1, multiplier: 1, methods: ['Dual'], hits: 0 }
+            { num: '02', votes: 1, multiplier: 1, methods: ['RRF'], hits: 0 },
+            { num: '10', votes: 1, multiplier: 1, methods: ['RRF'], hits: 1 },
+            { num: '46', votes: 1, multiplier: 1, methods: ['RRF'], hits: 0 },
+            { num: '56', votes: 1, multiplier: 1, methods: ['RRF'], hits: 0 },
+            { num: '59', votes: 1, multiplier: 1, methods: ['RRF'], hits: 0 },
+            { num: '70', votes: 1, multiplier: 1, methods: ['RRF'], hits: 0 },
+            { num: '76', votes: 1, multiplier: 1, methods: ['RRF'], hits: 0 },
+            { num: '84', votes: 1, multiplier: 1, methods: ['RRF'], hits: 0 },
+            { num: '88', votes: 1, multiplier: 1, methods: ['RRF'], hits: 0 }
         ]
     };
 
@@ -247,16 +256,31 @@ function main() {
         profit36K: -10800
     };
 
-    // 1.6. Combo Danh Mục Bù Trừ Chéo (crossHedgingPortfolio - Thắng lớn +40.6M)
+    // 1.5. Lô Xiên 5
+    d18.bets.loXien5 = {
+        top5: ['54', '62', '95', '57', '63'],
+        stakeK: 55000
+    };
+    d18.settlement.loXien5 = {
+        date: '2026-10-18',
+        top5: ['54', '62', '95', '57', '63'],
+        h5: 2,
+        stakeK: 55000,
+        payoutK: 36000,
+        profitK: -19000,
+        isWin: false
+    };
+
+    // 1.6. Combo Danh Mục Bù Trừ Chéo (crossHedgingPortfolio - Thắng lớn +21.0M)
     d18.bets.crossHedgingPortfolio = {
         date: '2026-10-18',
         targetDate: '2026-10-18',
         mode: 'ACCUMULATE_AGGRESSIVE',
         sizingMultiplier: 1.0,
         pillar1_De: { stakeK: 70000 },
-        pillar2_Lo: { stakeK: 70400 },
-        pillar3_Xien: { stakeK: 11000 },
-        totalStakeK: 151400
+        pillar2_Lo: { stakeK: 66000, numbers: ['54', '62', '95', '57'] },
+        pillar3_Xien: { stakeK: 11000, numbers: ['54', '62', '95', '57'] },
+        totalStakeK: 147000
     };
 
     d18.settlement.crossHedgingPortfolio = {
@@ -272,19 +296,19 @@ function main() {
         deStakeK: 70000,
         deProfitK: 14000,
         dePnlK: 14000,
-        loHits: 4,
-        loPayoutK: 96000,
-        loStakeK: 70400,
-        loProfitK: 25600,
-        loPnlK: 25600,
+        loHits: 3,
+        loPayoutK: 72000,
+        loStakeK: 66000,
+        loProfitK: 6000,
+        loPnlK: 6000,
         uniqueTop4Hits: 2,
         xienPayoutK: 12000,
         xienStakeK: 11000,
         xienProfitK: 1000,
         xienPnlK: 1000,
-        totalPayoutK: 192000,
-        totalStakeK: 151400,
-        totalProfitK: 40600,
+        totalPayoutK: 168000,
+        totalStakeK: 147000,
+        totalProfitK: 21000,
         isWin: true,
         isAbstain: false,
         details: {
@@ -484,17 +508,17 @@ function main() {
                 deStakeK: 70000,
                 deProfitK: 14000,
                 dePnlK: 14000,
-                loPayoutK: 96000,
-                loStakeK: 70400,
-                loProfitK: 25600,
-                loPnlK: 25600,
+                loPayoutK: 72000,
+                loStakeK: 66000,
+                loProfitK: 6000,
+                loPnlK: 6000,
                 xienPayoutK: 12000,
                 xienStakeK: 11000,
                 xienProfitK: 1000,
                 xienPnlK: 1000,
-                totalPayoutK: 192000,
-                totalStakeK: 151400,
-                totalProfitK: 40600,
+                totalPayoutK: 168000,
+                totalStakeK: 147000,
+                totalProfitK: 21000,
                 isWin: true,
                 isAbstain: false,
                 details: {
@@ -525,6 +549,89 @@ function main() {
 
             // Cập nhật latestRecommendation 2026-10-19 cho crossHedgingPortfolio
             adv.crossHedgingPortfolio.latestRecommendation = d19.bets.crossHedgingPortfolio;
+        }
+
+        // Cập nhật lo4EngineFusion cho cả modes.top6 và modes.top7
+        if (adv.lo4EngineFusion && adv.lo4EngineFusion.modes) {
+            const loRow18Top6 = {
+                date: '2026-10-18',
+                isLive: true,
+                topN: 6,
+                h4: 2,
+                countTotal: 15,
+                countOver2: 6,
+                countX1: 9,
+                numbersOver2: ['54', '62', '95', '57', '63', '94'],
+                allNumbers: ['54', '62', '95', '57', '63', '94', '02', '10', '46', '56', '59', '70', '76', '84', '88'],
+                tierX5: [],
+                tierX4: ['54', '62', '95'],
+                tierX3: ['57', '63', '94'],
+                tierX1: ['02', '10', '46', '56', '59', '70', '76', '84', '88'],
+                betNumbers: [
+                    { num: '54', votes: 3, multiplier: 4, hits: 1, methods: ['QMBF', 'Dual', 'Tri'] },
+                    { num: '62', votes: 3, multiplier: 4, hits: 0, methods: ['QMBF', 'Dual', 'Tri'] },
+                    { num: '95', votes: 3, multiplier: 4, hits: 1, methods: ['QMBF', 'Dual', 'Tri'] },
+                    { num: '57', votes: 2, multiplier: 3, hits: 0, methods: ['Dual', 'Tri'] },
+                    { num: '63', votes: 2, multiplier: 3, hits: 0, methods: ['Dual', 'Tri'] },
+                    { num: '94', votes: 2, multiplier: 3, hits: 0, methods: ['Dual', 'Tri'] },
+                    { num: '02', votes: 1, multiplier: 1, hits: 0, methods: ['RRF'] },
+                    { num: '10', votes: 1, multiplier: 1, hits: 1, methods: ['RRF'] },
+                    { num: '46', votes: 1, multiplier: 1, hits: 0, methods: ['RRF'] },
+                    { num: '56', votes: 1, multiplier: 1, hits: 0, methods: ['RRF'] },
+                    { num: '59', votes: 1, multiplier: 1, hits: 0, methods: ['RRF'] },
+                    { num: '70', votes: 1, multiplier: 1, hits: 0, methods: ['RRF'] },
+                    { num: '76', votes: 1, multiplier: 1, hits: 0, methods: ['RRF'] },
+                    { num: '84', votes: 1, multiplier: 1, hits: 0, methods: ['RRF'] },
+                    { num: '88', votes: 1, multiplier: 1, hits: 0, methods: ['RRF'] }
+                ],
+                dayLotoStakeK: 66000,
+                dayLotoPayoutK: 72000,
+                dayLotoProfitK: 6000,
+                dayLotoHits: 3,
+                isLotoWin: true,
+                xien4Status: 'ACTIVE',
+                xien4Reason: 'Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé [54-62-95-57] & Bộ 5 Quây 10 vé X3 [54-62-95-57-63]',
+                xien4Combinations: [['54', '62', '95', '57']],
+                xien4StakeK: 11000,
+                xien4PayoutK: 12000,
+                dayXien4ProfitK: 1000,
+                isXien4Win: true,
+                totalDayProfitK: 7000
+            };
+
+            if (adv.lo4EngineFusion.modes.top6 && Array.isArray(adv.lo4EngineFusion.modes.top6.settledLedger)) {
+                const t6Ledger = adv.lo4EngineFusion.modes.top6.settledLedger;
+                const idx6 = t6Ledger.findIndex(r => r.date === '2026-10-18');
+                if (idx6 >= 0) t6Ledger[idx6] = { ...t6Ledger[idx6], ...loRow18Top6 };
+                else t6Ledger.push(loRow18Top6);
+                t6Ledger.sort((a, b) => a.date.localeCompare(b.date));
+
+                let runLoto = 0;
+                t6Ledger.forEach(row => {
+                    runLoto += (row.dayLotoProfitK || 0);
+                    row.cumLotoProfitK = runLoto;
+                });
+            }
+
+            if (adv.lo4EngineFusion.modes.top7 && Array.isArray(adv.lo4EngineFusion.modes.top7.settledLedger)) {
+                const t7Ledger = adv.lo4EngineFusion.modes.top7.settledLedger;
+                const idx7 = t7Ledger.findIndex(r => r.date === '2026-10-18');
+                const loRow18Top7 = { ...loRow18Top6, topN: 7 };
+                if (idx7 >= 0) t7Ledger[idx7] = { ...t7Ledger[idx7], ...loRow18Top7 };
+                else t7Ledger.push(loRow18Top7);
+                t7Ledger.sort((a, b) => a.date.localeCompare(b.date));
+
+                let runLoto7 = 0;
+                t7Ledger.forEach(row => {
+                    runLoto7 += (row.dayLotoProfitK || 0);
+                    row.cumLotoProfitK = runLoto7;
+                });
+            }
+
+            // Đồng bộ latestRecommendation 2026-10-19
+            adv.lo4EngineFusion.latestRecommendation = d19.bets.lo4EngineFusion;
+            if (adv.lo4EngineFusion.modes.top6) adv.lo4EngineFusion.modes.top6.latestRecommendation = d19.bets.lo4EngineFusion;
+            if (adv.lo4EngineFusion.modes.top7) adv.lo4EngineFusion.modes.top7.latestRecommendation = d19.bets.lo4EngineFusion;
         }
 
         // Cập nhật loDropoff27 trong cache
