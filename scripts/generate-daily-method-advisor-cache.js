@@ -120,10 +120,21 @@ async function main() {
     // Tích hợp Single Source of Truth (SSOT) Registry
     try {
         const registryService = require('../lib/services/dailyLockedBetsRegistryService');
-        const latestRawRow = (raw || []).find(r => (r.date || r.ngay) === cache.latestDataDate);
-        if (latestRawRow) {
-            registryService.settleDateDirectly(cache.latestDataDate, latestRawRow);
-        }
+        const rawMap = new Map();
+        (raw || []).forEach(r => {
+            const d = String(r.date || r.ngay || '').slice(0, 10);
+            if (d && (r.special != null || r.prize1 != null)) rawMap.set(d, r);
+        });
+        const currentReg = registryService.loadRegistry();
+        Object.entries(currentReg.dates || {}).forEach(([d, entry]) => {
+            if (!entry.isSettled && rawMap.has(d)) {
+                try {
+                    registryService.settleDateDirectly(d, rawMap.get(d));
+                } catch (err) {
+                    console.error(`[generateDailyAdvisorCache] Error settling ${d}:`, err);
+                }
+            }
+        });
 
         // Đăng ký dàn đánh chính thức của ngày mục tiêu tiếp theo vào Registry
         if (cache.streakAwareDeAdvisor?.latestRecommendation) {

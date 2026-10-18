@@ -842,10 +842,10 @@
             deIsHitFinal = Boolean(r?.hitType === 'win_x3' || r?.hitType === 'win_x2' || r?.hitType === 'win_x1' || r?.isHit || deProfitK > 0);
         } else if (chosenDeMethod === 'deMarkovGapHazard') {
             const r = markovRow || streakRow;
-            const p1 = p?.crossHedgingPortfolio?.pillar1_De || p?.crossHedgingPortfolio?.latestRecommendation?.pillar1_De;
+            const chLedgerRow = p?.crossHedgingPortfolio?.settledLedger?.find(row => (row.predictionDate || row.date) === date);
             deMethodName = '🔮 Đề Markov Bậc 2 & Gap Hazard';
-            deNumbers = (r?.numbers || p1?.allNumbers || deNumbers).map(number);
-            deX2Nums = (r?.vipNumbers || p1?.vipNumbers || deNumbers.slice(0, 17)).map(number);
+            deNumbers = (r?.numbers || chLedgerRow?.numbers || deNumbers).map(number);
+            deX2Nums = (r?.vipNumbers || chLedgerRow?.vipNumbers || deNumbers.slice(0, 17)).map(number);
             deX1Nums = deNumbers.filter(n => !deX2Nums.includes(n));
             deStakeK = (deX2Nums.length * 3 + deX1Nums.length * 1) * 1000;
             deSubTierLabel = `Dàn ${deNumbers.length} số (${deX2Nums.length} VIP X3 · ${deX1Nums.length} Bọc Lót X1)`;
@@ -902,15 +902,6 @@
             hitType = isX2 ? 'win_x3' : (deIsHitFinal ? 'win_x1' : 'loss');
             deStakeK = chRow.deStakeK || 77000;
             deProfitK = (chRow.deProfitK != null) ? chRow.deProfitK : (isX2 ? (252000 - deStakeK) : (deIsHitFinal ? (84000 - deStakeK) : -deStakeK));
-            if (actualSpec != null && deIsHitFinal) {
-                const actStr = number(actualSpec);
-                if (isX2 && !deX2Nums.includes(actStr)) {
-                    deX2Nums = [actStr, ...deX2Nums.filter(n => n !== actStr).slice(0, 16)];
-                } else if (isX1 && !deX1Nums.includes(actStr)) {
-                    deX1Nums = [actStr, ...deX1Nums.filter(n => n !== actStr).slice(0, 25)];
-                }
-                deNumbers = [...new Set([...deX2Nums, ...deX1Nums])];
-            }
         } else if (chosenDeMethod === 'metaLearner' || deMethodName.includes('Tinh Hoa')) {
             // Đề Tinh Hoa: Dàn 30 số cược phẳng (1M/số, 30M), TUYỆT ĐỐI KHÔNG cược X2/X3
             isX3 = false;
@@ -6028,20 +6019,8 @@
                         const adVip = (adRow?.vipNumbers || adRow?.intersectionX2 || []);
                         resolvedVip = adVip.length > 0 ? adVip : resolvedNums.slice(0, 17);
                     } else {
-                        resolvedNums = markovRow?.numbers || payload?.crossHedgingPortfolio?.pillar1_De?.allNumbers || payload?.deMarkovGapHazard?.latestRecommendation?.numbers || [];
-                        resolvedVip = markovRow?.vipNumbers || payload?.crossHedgingPortfolio?.pillar1_De?.vipNumbers || payload?.deMarkovGapHazard?.latestRecommendation?.vipNumbers || resolvedNums.slice(0, 17);
-                    }
-
-                    // If this settled day hit and actualSpecialStr is available, ensure the winning number is contained in the appropriate tier
-                    if (actualSpecialStr != null && diaryDeIsHit) {
-                        if (diaryDeIsX2 && !resolvedVip.some(n => number(n) === actualSpecialStr)) {
-                            resolvedVip = [actualSpecialStr, ...resolvedVip.filter(n => number(n) !== actualSpecialStr).slice(0, 16)];
-                            if (!resolvedNums.some(n => number(n) === actualSpecialStr)) {
-                                resolvedNums = [actualSpecialStr, ...resolvedNums.slice(0, 42)];
-                            }
-                        } else if (diaryDeIsX1 && !resolvedNums.some(n => number(n) === actualSpecialStr)) {
-                            resolvedNums = [...resolvedNums.slice(0, 42), actualSpecialStr];
-                        }
+                        resolvedNums = markovRow?.numbers || chRow?.numbers || [];
+                        resolvedVip = markovRow?.vipNumbers || chRow?.vipNumbers || resolvedNums.slice(0, 17);
                     }
                     const resolvedSingles = resolvedNums.filter(n => !resolvedVip.some(v => number(v) === number(n)));
 
@@ -12823,8 +12802,10 @@
         // =========================================================================
         const regEntry = payloadData.dailyLockedBetsRegistry?.dates?.[date];
         if (regEntry) {
-            if (effectiveKey === 'dualMerge' || effectiveKey === 'official') {
-                const regDe = regEntry.settlement?.de || regEntry.bets?.de;
+            const regSpecificBet = regEntry.settlement?.[effectiveKey] || regEntry.bets?.[effectiveKey];
+            const isDeCategory = ['dualMerge', 'official', 'de', 'deMarkovGapHazard', 'adaptiveDualMerge', 'pentaCoreDe', 'tripleMerge', 'bayesFormResonance', 'triCoreDe', 'deDropoffMerge'].includes(effectiveKey);
+            if ((isDeCategory && (regSpecificBet || regEntry.settlement?.de || regEntry.bets?.de)) || (regSpecificBet?.numbers || regSpecificBet?.vipNumbers)) {
+                const regDe = regSpecificBet || regEntry.settlement?.de || regEntry.bets?.de;
                 if (regDe) {
                     methodTitle = regDe.methodName || '🎯 Đề Gộp Tiêu Chuẩn Sweet-Spot';
                     vipNumbers = (regDe.vipNumbers || []).map(number);

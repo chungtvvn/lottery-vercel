@@ -377,8 +377,12 @@ function settleFromRaw(payload, rawRows) {
                 );
                 const { isPredictionLockActive, preserveLockedRecommendation } = require('@/lib/utils/predictionLockGuard');
                 const lockStatus = isPredictionLockActive(nextTargetDate, rawRows);
+                const regBet = payload?.dailyLockedBetsRegistry?.dates?.[nextTargetDate]?.bets?.crossHedgingPortfolio;
+                const baseExisting = (regBet && (regBet.numbers?.length || regBet.pillar1_De?.allNumbers?.length || regBet.pillar1_De?.vipNumbers?.length))
+                    ? regBet
+                    : (payload.crossHedgingPortfolio?.latestRecommendation || payload.crossHedgingPortfolio);
                 const finalPendingDecision = preserveLockedRecommendation(
-                    payload.crossHedgingPortfolio?.latestRecommendation || payload.crossHedgingPortfolio,
+                    baseExisting,
                     pendingDecision,
                     lockStatus
                 );
@@ -567,9 +571,7 @@ export async function GET(request) {
                 if (localPayload?.crossHedgingPortfolio) {
                     const localLedgerLen = localPayload.crossHedgingPortfolio.settledLedger?.length || 0;
                     const r2LedgerLen = payload.crossHedgingPortfolio?.settledLedger?.length || 0;
-                    const localVipCount = localPayload.crossHedgingPortfolio?.pillar1_De?.vipNumbers?.length || 0;
-                    const r2VipCount = payload.crossHedgingPortfolio?.pillar1_De?.vipNumbers?.length || 0;
-                    if (!payload.crossHedgingPortfolio || localLedgerLen >= r2LedgerLen || (localVipCount === 17 && r2VipCount !== 17)) {
+                    if (!payload.crossHedgingPortfolio || localLedgerLen > r2LedgerLen) {
                         payload.crossHedgingPortfolio = localPayload.crossHedgingPortfolio;
                     }
                 }
@@ -621,11 +623,6 @@ export async function GET(request) {
                         if ((shadowLo?.settledLedger?.length || 0) >= (payload?.loDropoff27?.settledLedger?.length || 0)) {
                             payload.loDropoff27 = shadowLo;
                         }
-                    }
-                    const regFile = path.join(process.cwd(), 'lib', 'data', 'statistics', 'daily_locked_bets_registry.json');
-                    if (fs.existsSync(regFile)) {
-                        payload.dailyLockedBetsRegistry = JSON.parse(fs.readFileSync(regFile, 'utf8'));
-                    }
                 } catch (_) {}
             } catch (_) {}
         }
@@ -652,11 +649,38 @@ export async function GET(request) {
                 const regService = require('@/lib/services/dailyLockedBetsRegistryService');
                 localReg = (regService.loadRegistry || regService.getRegistry)();
             } catch (_) {}
-            if (localReg && Object.keys(localReg.dates || {}).length > 0) {
-                payload.dailyLockedBetsRegistry = localReg;
-            } else if (!payload.dailyLockedBetsRegistry) {
-                const r2Reg = await loadJsonWithSupabaseFallback('daily_locked_bets_registry.json').catch(() => null);
-                if (r2Reg) payload.dailyLockedBetsRegistry = r2Reg;
+            let r2Reg = null;
+            try {
+                r2Reg = await loadJsonWithSupabaseFallback('daily_locked_bets_registry.json').catch(() => null);
+            } catch (_) {}
+
+            // HỢP NHẤT THÔNG MINH BẢO TOÀN SSOT (PAYLOAD + LOCAL + R2)
+            const allDateKeys = new Set([
+                ...Object.keys(payload.dailyLockedBetsRegistry?.dates || {}),
+                ...Object.keys(localReg?.dates || {}),
+                ...Object.keys(r2Reg?.dates || {})
+            ]);
+            const mergedDates = {};
+            for (const d of allDateKeys) {
+                const pEntry = payload.dailyLockedBetsRegistry?.dates?.[d];
+                const lEntry = localReg?.dates?.[d];
+                const rEntry = r2Reg?.dates?.[d];
+                const candidates = [lEntry, rEntry, pEntry].filter(Boolean);
+                // Ưu tiên bản ghi đã có bets hợp lệ và đã kết toán
+                const bestEntry = candidates.find(c => c.isSettled && Object.keys(c.bets || {}).length > 0)
+                    || candidates.find(c => Object.keys(c.bets || {}).length > 0)
+                    || candidates[0];
+                if (bestEntry) {
+                    mergedDates[d] = bestEntry;
+                }
+            }
+            if (Object.keys(mergedDates).length > 0) {
+                payload.dailyLockedBetsRegistry = {
+                    version: '1.0.0',
+                    description: 'Merged SSOT Daily Locked Bets Registry',
+                    updatedAt: new Date().toISOString(),
+                    dates: mergedDates
+                };
             }
         } catch (_) {}
 

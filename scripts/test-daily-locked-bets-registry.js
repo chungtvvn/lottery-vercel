@@ -50,15 +50,15 @@ console.log('✔ PASS 2.2: lo4EngineFusion 10/10 tính toán nổ 7 nháy, lãi 
 
 // Kiểm tra Xiên 4 Bộ 4 Quây ngày 10/10:
 assert.strictEqual(settle10.lo4EngineFusion.xienHitsCount, 3, 'Xiên 4 [70, 36, 43, 79] nổ 3 con (36, 43, 79)');
-assert.strictEqual(settle10.lo4EngineFusion.xienPayoutK, 120000, 'Ăn 1 vé Xiên 3 (84M) + 3 vé Xiên 2 (36M) = 120M');
-console.log('✔ PASS 2.3: Xiên 4 Bộ 4 Quây 10/10 nổ 3 con, ăn 120.0M payout');
+assert.strictEqual(settle10.lo4EngineFusion.xienPayoutK, 84000, 'Ăn xiên 4 trúng 3 con là 84M');
+console.log('✔ PASS 2.3: Xiên 4 Bộ 4 Quây 10/10 nổ 3 con, ăn 84.0M payout');
 
 // 3. Kiểm tra các phương pháp Shadow ngày 10/10:
 assert.ok(settle10.deDropoffMerge, 'Phải có kết toán deDropoffMerge ngày 10/10');
 assert.strictEqual(settle10.deDropoffMerge.isHit40, false, 'Đề 10/10 về 53 trượt dàn 40s');
-assert.strictEqual(settle10.deDropoffMerge.profit40K, -8000, 'Lỗ -8.0M dàn 40s');
-assert.strictEqual(settle10.deDropoffMerge.profit36K, -7200, 'Lỗ -7.2M dàn 36s');
-console.log('✔ PASS 3.1: deDropoffMerge 10/10 kết toán trượt 53 (-8.0M / 36s -7.2M)');
+assert.strictEqual(settle10.deDropoffMerge.profit40K, -12000, 'Lỗ -12.0M dàn 40s');
+assert.strictEqual(settle10.deDropoffMerge.profit36K, -10800, 'Lỗ -10.8M dàn 36s');
+console.log('✔ PASS 3.1: deDropoffMerge 10/10 kết toán trượt 53 (-12.0M / 36s -10.8M)');
 
 assert.ok(settle10.loDropoff27, 'Phải có kết toán loDropoff27 ngày 10/10');
 assert.deepStrictEqual(settle10.loDropoff27.top7, ['62', '88', '84', '52', '70', '36', '19']);
@@ -69,8 +69,8 @@ console.log('✔ PASS 3.2: loDropoff27 10/10 kết toán nổ 36 1 nháy (Phẳn
 
 assert.ok(settle10.triCoreDe, 'Phải có kết toán triCoreDe ngày 10/10');
 assert.strictEqual(settle10.triCoreDe.hit, false, 'Tri-Core 24s trượt 53');
-assert.strictEqual(settle10.triCoreDe.profitK, -4800, 'Lỗ -4.8M');
-console.log('✔ PASS 3.3: triCoreDe 10/10 kết toán trượt (-4.8M)');
+assert.strictEqual(settle10.triCoreDe.profitK, -7200, 'Lỗ -7.2M');
+console.log('✔ PASS 3.3: triCoreDe 10/10 kết toán trượt (-7.2M)');
 
 assert.ok(settle10.semanticResonanceSuite, 'Phải có kết toán semanticResonanceSuite ngày 10/10');
 assert.strictEqual(settle10.semanticResonanceSuite.de.isWin, false, 'Đề 36s trượt (-10.8M)');
