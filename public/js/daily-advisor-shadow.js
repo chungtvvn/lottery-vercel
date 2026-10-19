@@ -348,6 +348,66 @@
     function computePentaConsensusForDate(targetDate, data) {
         if (!data) return null;
 
+        // 0. Ưu tiên đọc trực tiếp từ Single Source of Truth (dailyLockedBetsRegistry)
+        const regLocked = data.dailyLockedBetsRegistry?.dates?.[targetDate];
+        if (regLocked && (regLocked.settlement?.pentaConsensus || regLocked.bets?.pentaConsensus)) {
+            const isSettled = regLocked.isSettled;
+            const s = regLocked.settlement?.pentaConsensus;
+            const b = regLocked.bets?.pentaConsensus;
+            const drawPrizesObj = data.drawPrizesByDate?.[targetDate] || null;
+            if (isSettled && s) {
+                const prizeCount = {};
+                if (drawPrizesObj?.prizes) {
+                    drawPrizesObj.prizes.forEach(p => {
+                        const str = numStr(p);
+                        prizeCount[str] = (prizeCount[str] || 0) + 1;
+                    });
+                }
+                const multMap = b?.lo?.multiplierMap || {};
+                const allLoNums = s.lo?.numbers || b?.lo?.numbers || [];
+                const loPills = allLoNums.map(n => {
+                    const mult = multMap[n] || (s.lo?.x5Nums?.includes(n) ? 5 : (s.lo?.x4Nums?.includes(n) ? 4 : (s.lo?.x3Nums?.includes(n) ? 3 : 1)));
+                    const hits = prizeCount[n] || 0;
+                    return {
+                        num: n,
+                        freq: mult === 5 ? '≥4' : (mult === 4 ? 3 : (mult === 3 ? 2 : 1)),
+                        mult,
+                        stakeK: mult * 2200,
+                        hits,
+                        payoutK: hits * (mult * 8000)
+                    };
+                });
+                return {
+                    date: targetDate,
+                    isPending: false,
+                    actualSpecial: s.actualSpecial || numStr(drawPrizesObj?.special),
+                    drawPrizes: drawPrizesObj?.prizes || [],
+                    prizeCount,
+                    de: s.de,
+                    lo: {
+                        ...s.lo,
+                        pills: loPills,
+                        multiplierMap: multMap
+                    },
+                    xien5: {
+                        top5: s.xien5?.top5 || [],
+                        tickets: b?.xien5?.tickets || getXien5Combinations(s.xien5?.top5 || []),
+                        h5: s.xien5?.h5 || 0,
+                        stakeK: s.xien5?.stakeK || 5500,
+                        payoutK: s.xien5?.payoutK || 0,
+                        profitK: s.xien5?.profitK || -5500,
+                        isWin: s.xien5?.isWin || false
+                    },
+                    combo: {
+                        stakeK: s.totalStakeK,
+                        payoutK: s.totalPayoutK,
+                        profitK: s.totalProfitK,
+                        isWin: s.isWin
+                    }
+                };
+            }
+        }
+
         const deDropoff = data.deDropoffMerge;
         const triCore = data.triCoreDe;
         const loDropoff = data.loDropoff27;
@@ -2763,11 +2823,11 @@
                 evidences = [
                     '👑 HỆ SIÊU GỘP NGŨ TRỤ (5 PHƯƠNG PHÁP): Gộp đồng thuận toàn diện cả 5 hệ độc lập (Đa Động Cơ + Tri-Core Tam Trụ + VIP Sweet-Spot + Tri-Tier Cộng Hưởng + Trí Tuệ Bầy Đàn AI MiroFish).',
                     'Đề Siêu Gộp Phân Tầng X2/X1: Các số trùng ≥3/5 hệ cược X2 (400K, ăn 33.6M); các số còn lại cược X1 (200K, ăn 16.8M). Tỷ lệ trúng 55.4% (158/285 ngày), 100% ngày trúng đều có lãi ròng dương (+281.2M lãi Đề).',
-                    'Lô Phân Tầng Đa Cấp Ngũ Trụ: Trùng 5-4 hệ cược X5/X4 (11.0M-8.8M/số), trùng 3 cược X3 (6.6M/số), trùng 2-1 cược X1 (2.2M/số). Năm 2026 nổ 1.134 nháy, Win Rate 68.1% (194/285 ngày), lãi kỷ lục +6.272 TỶ VNĐ.',
+                    'Lô Phân Tầng Đa Cấp Ngũ Trụ: Trùng ≥4 hệ cược X5 (11.0M/số · ăn 40M), trùng 3 cược X4 (8.8M/số · ăn 32M), trùng 2 cược X3 (6.6M/số · ăn 24M), trùng 1 cược X1 (2.2M/số · ăn 8M). Năm 2026 nổ 1.134 nháy, Win Rate 68.1% (194/285 ngày), lãi kỷ lục +6.272 TỶ VNĐ.',
                     'Lô Xiên 5 Siêu Gộp: Ghép 5 dàn Xiên 4 từ Top 5 Lô có điểm đồng thuận ngũ trụ cao nhất (5.5M/ngày), năm 2026 lãi ròng +794.0M VNĐ.',
                     'Tổng Lợi Nhuận Combo 3 Trụ 2026: +7.347 TỶ VNĐ, Win Rate 62.1% (177/285 ngày), ROI +26.6%, tạo dòng tiền dương ổn định nhất toàn hệ thống.'
                 ];
-                majorRisk = 'Tổng vốn cược mỗi ngày trung bình ~36.8M (Đề ~15.2M + Lô ~16.1M + Xiên 5.5M). Tuân thủ đúng phân tầng X2/X1 cho Đề và X5/X4/X3/X1 cho Lô để duy trì biên an toàn.';
+                majorRisk = 'Tổng vốn cược mỗi ngày ~109M (Đề ~15.6M + Lô ~88.0M + Xiên 5.5M). Tuân thủ đúng phân tầng X2/X1 cho Đề và X5/X4/X3/X1 cho Lô để duy trì biên an toàn.';
                 churnGuard = '100% Strict Point-In-Time (Strict PIT), niêm phong toàn bộ dàn số trước 12:00 trưa mỗi ngày. Bất biến trước và sau giờ quay thưởng.';
             } else if (suiteId === 'suiteQuadConsensus') {
                 evidences = [
@@ -8584,7 +8644,7 @@
                             <h4 class="text-xs font-black uppercase text-teal-900 flex items-center gap-1.5">
                                 <i class="bi bi-crown-fill text-teal-600"></i> 👑 2. LÔ SIÊU GỘP 5 PHƯƠNG PHÁP (${pentaData.lo.numbers.length} SỐ · TỶ TRỌNG X5/X4/X3/X1):
                             </h4>
-                            <span class="text-[11px] text-slate-500 font-mono">(Trùng 5-4 hệ -&gt; X5/X4 · Trùng 3 -&gt; X3 · Trùng 2-1 -&gt; X1)</span>
+                            <span class="text-[11px] text-slate-500 font-mono">(Trùng ≥4 hệ -&gt; X5 · Trùng 3 hệ -&gt; X4 · Trùng 2 hệ -&gt; X3 · Trùng 1 hệ -&gt; X1)</span>
                         </div>
                         <div class="flex items-center gap-2">
                             ${loStatusTag}

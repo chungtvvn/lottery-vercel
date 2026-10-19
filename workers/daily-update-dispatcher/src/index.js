@@ -1923,9 +1923,9 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
         '',
         `<b>1. 📊 NHẬT KÝ ĐỐI SOÁT (/daily-advisor)</b>`,
         `  • <b>Đề Thực Chiến (${advNextDeAll.length} số · Vốn ${formatCostK(advNextDeStakeK)}):</b>`,
-        `    └ 👑 <b>VIP X3 (${advNextDeVip.length} số · cược 1.8M/số, ăn 252M):</b>`,
+        `    └ 👑 <b>VIP X3 (${advNextDeVip.length} số · cược 3.0M/số, ăn 252M):</b>`,
         `       <code>${escapeHtml(advNextDeVip.join(', '))}</code>`,
-        `    └ 🛡️ <b>Bọc Lót X1 (${advNextDeSingle.length} số · cược 600K/số, ăn 84M):</b>`,
+        `    └ 🛡️ <b>Bọc Lót X1 (${advNextDeSingle.length} số · cược 1.0M/số, ăn 84M):</b>`,
         `       <code>${escapeHtml(advNextDeSingle.join(', '))}</code>`,
         `  • <b>Lô Ghép 4 Động Cơ (${advNextLoAll.length} số · Vốn ${formatCostK(advNextLoStakeK)}):</b>`
     );
