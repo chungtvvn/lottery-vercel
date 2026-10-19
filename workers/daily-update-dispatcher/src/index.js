@@ -538,7 +538,7 @@ function buildBetCalculationSheet(tier, date, advisorPayload = {}) {
       `  • Tổng vốn: <b>${smartLoStakeK.toLocaleString('vi-VN')}K</b> (1 điểm = 22K)`,
       `  • Tiền thưởng: <b>${smartLoWinPerHitK.toLocaleString('vi-VN')}K / nháy nổ</b> (1 điểm = 80K)`,
       `  • Hòa vốn: cần <b>${smartLo.hitsToProfit} nháy</b> (từ ${smartLo.hitsToProfit} nháy là CÓ LÃI RÒNG)`,
-      `  • Ví dụ: Nổ ${smartLo.hitsToProfit} nháy ăn ${(smartLo.hitsToProfit * smartLoWinPerHitK).toLocaleString('vi-VN')}K -> lãi <b>+${(smartLo.hitsToProfit * smartLoWinPerHitK - smartLoStakeK).toLocaleString('vi-VN')}K</b>`,
+      `  • Ví dụ: Nổ ${smartLo.hitsToProfit} nháy ăn ${(smartLo.hitsToProfit * smartLoWinPerHitK).toLocaleString('vi-VN')}K -> lãi <b>${formatK(smartLo.hitsToProfit * smartLoWinPerHitK - smartLoStakeK)}</b>`,
       divider,
       `<b>3. 💎 LÔ XIÊN 4 TINH HOA (QUÂY 11 VÉ)</b>`,
       `  • Mức cược: <b>${tier.xien4K.toLocaleString('vi-VN')}K / vé</b> (Tổng 11 vé: 1 X4 + 4 X3 + 6 X2)`,
