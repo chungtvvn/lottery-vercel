@@ -302,6 +302,159 @@
     }
 
     // ==========================================
+    // HELPER: COPY LÔ + XIÊN (HỘI TỤ 4 ĐỘNG CƠ & DÀN XIÊN 5)
+    // ==========================================
+    function getLoXienCopyTextForDate(targetDate) {
+        const regDates = payload?.dailyLockedBetsRegistry?.dates || {};
+        const date = targetDate || payload?.dailyLockedBetsRegistry?.pendingDate || payload?.currentDate || payload?.latestRecommendation?.date || Object.keys(regDates).sort().pop();
+        if (!date) return '';
+
+        const cleanList = (arr) => {
+            if (!Array.isArray(arr)) return [];
+            const set = new Set();
+            const result = [];
+            arr.forEach(item => {
+                const n = number(item.num != null ? item.num : item);
+                if (n && !set.has(n)) {
+                    set.add(n);
+                    result.push(n);
+                }
+            });
+            return result;
+        };
+
+        let t5 = [];
+        let t4 = [];
+        let t3 = [];
+        let t1 = [];
+        let top5 = [];
+
+        // 1. Thử lấy từ entry nếu đã tính toán
+        if (typeof getUnifiedCombatDiaryEntryForDate === 'function') {
+            const entry = getUnifiedCombatDiaryEntryForDate(date, payload);
+            if (entry) {
+                if (entry.lo4Info) {
+                    t5 = cleanList(entry.lo4Info.tierX5 || []);
+                    t4 = cleanList(entry.lo4Info.tierX4 || []);
+                    t3 = cleanList(entry.lo4Info.tierX3 || []);
+                    t1 = cleanList(entry.lo4Info.tierX1 || []);
+                }
+                if (entry.loXien5Info?.top5 && entry.loXien5Info.top5.length >= 5) {
+                    top5 = cleanList(entry.loXien5Info.top5);
+                }
+            }
+        }
+
+        // 2. Lấy trực tiếp từ SSOT Registry
+        const regEntry = regDates[date];
+        const b = regEntry?.bets || {};
+        const s = regEntry?.settlement || {};
+        const bLo4 = b.lo4EngineFusion || {};
+        const sLo4 = s.lo4EngineFusion || {};
+
+        if (t5.length === 0 && t4.length === 0 && t3.length === 0 && t1.length === 0) {
+            t5 = cleanList(sLo4.tierX5 || bLo4.tierX5 || []);
+            t4 = cleanList(sLo4.tierX4 || bLo4.tierX4 || []);
+            t3 = cleanList(sLo4.tierX3 || bLo4.tierX3 || []);
+            t1 = cleanList(sLo4.tierX1 || bLo4.tierX1 || []);
+
+            if (t5.length === 0 && t4.length === 0 && t3.length === 0 && t1.length === 0) {
+                const betNumbers = (sLo4.betNumbers && sLo4.betNumbers.length) ? sLo4.betNumbers : (bLo4.betNumbers || []);
+                betNumbers.forEach(item => {
+                    const num = number(item.num != null ? item.num : item);
+                    const m = Number(item.multiplier || 1);
+                    if (m >= 5) t5.push(num);
+                    else if (m === 4) t4.push(num);
+                    else if (m === 3) t3.push(num);
+                    else t1.push(num);
+                });
+                t5 = cleanList(t5);
+                t4 = cleanList(t4);
+                t3 = cleanList(t3);
+                t1 = cleanList(t1);
+            }
+        }
+
+        // 3. Fallback cho ngày lịch sử từ settledLedger nếu có
+        if (t5.length === 0 && t4.length === 0 && t3.length === 0 && t1.length === 0) {
+            const ledgerRow = (payload?.lo4EngineFusion?.modes?.top7?.settledLedger || payload?.lo4EngineFusion?.settledLedger || []).find(r => r.date === date);
+            if (ledgerRow?.betNumbers?.length) {
+                ledgerRow.betNumbers.forEach(item => {
+                    const num = number(item.num != null ? item.num : item);
+                    const m = Number(item.multiplier || 1);
+                    if (m >= 5) t5.push(num);
+                    else if (m === 4) t4.push(num);
+                    else if (m === 3) t3.push(num);
+                    else t1.push(num);
+                });
+                t5 = cleanList(t5);
+                t4 = cleanList(t4);
+                t3 = cleanList(t3);
+                t1 = cleanList(t1);
+            }
+        }
+
+        // 4. Lấy 5 số Dàn Xiên 5
+        if (top5.length < 5) {
+            const bX5 = b.loXien5 || {};
+            const sX5 = s.loXien5 || {};
+            top5 = cleanList(sX5.top5 && sX5.top5.length >= 5 ? sX5.top5 : (bX5.top5 && bX5.top5.length >= 5 ? bX5.top5 : []));
+
+            if (top5.length < 5) {
+                if (bLo4.xien4?.top5 && bLo4.xien4.top5.length >= 5) {
+                    top5 = cleanList(bLo4.xien4.top5);
+                } else if (bLo4.numbersOver2 && bLo4.numbersOver2.length >= 5) {
+                    top5 = cleanList(bLo4.numbersOver2);
+                } else {
+                    const x5LedgerRow = payload?.loTop5ConsensusXien?.settledLedger?.find(r => r.date === date);
+                    if (x5LedgerRow?.top5 && x5LedgerRow.top5.length >= 5) {
+                        top5 = cleanList(x5LedgerRow.top5);
+                    } else if (payload?.loTop5ConsensusXien?.top5Xien && payload?.loTop5ConsensusXien.top5Xien.length >= 5) {
+                        top5 = cleanList(payload.loTop5ConsensusXien.top5Xien);
+                    } else {
+                        top5 = cleanList([...t5, ...t4, ...t3]);
+                    }
+                }
+            }
+        }
+        top5 = top5.slice(0, 5);
+
+        return [
+            `X5: ${t5.join(', ')}`,
+            `X4: ${t4.join(', ')}`,
+            `X3: ${t3.join(', ')}`,
+            `X1: ${t1.join(', ')}`,
+            `Xiên 5: ${top5.join(', ')}`
+        ].join('\n');
+    }
+
+    function copyLoXienForDate(targetDate) {
+        const text = getLoXienCopyTextForDate(targetDate);
+        if (!text) {
+            showToast('Không tìm thấy dữ liệu Lô & Xiên để sao chép!');
+            return;
+        }
+        const regDates = payload?.dailyLockedBetsRegistry?.dates || {};
+        const d = targetDate || payload?.dailyLockedBetsRegistry?.pendingDate || payload?.currentDate || payload?.latestRecommendation?.date || Object.keys(regDates).sort().pop();
+        copyRawText(text, `Đã copy Lô + Xiên ngày ${formatDateVi(d)}!`);
+    }
+
+    function getLoXienCopyButtonHtml(date, isPending = false) {
+        if (isPending) {
+            return `
+                <button type="button" class="btn-copy-lo-xien-row mt-1.5 px-2 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-black flex items-center gap-1 shadow-xs transition-all cursor-pointer" data-date="${date}" title="Copy Lô hội tụ 4 động cơ & 5 số dàn Xiên 5">
+                    <i class="bi bi-clipboard2-check"></i> Copy Lô + Xiên
+                </button>
+            `;
+        }
+        return `
+            <button type="button" class="btn-copy-lo-xien-row mt-1 px-1.5 py-0.5 rounded-md bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 text-slate-600 border border-slate-200 text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer" data-date="${date}" title="Copy Lô hội tụ 4 động cơ & 5 số dàn Xiên 5">
+                <i class="bi bi-clipboard2"></i> Copy Lô + Xiên
+            </button>
+        `;
+    }
+
+    // ==========================================
     // HELPER: DATE FORMATTING
     // ==========================================
     function formatDateVi(dateStr) {
@@ -4700,6 +4853,9 @@
                         </span>
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
+                        <button type="button" class="btn-copy-lo-xien-expanded text-xs font-bold px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-sm flex items-center gap-1.5 font-sans cursor-pointer" data-date="${date}">
+                            <i class="bi bi-clipboard2-check"></i> Copy Lô + Xiên
+                        </button>
                         <button type="button" class="btn-copy-expanded-numbers text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-all shadow-sm flex items-center gap-1.5 font-sans cursor-pointer" data-date="${date}" data-tab="${currentTab}">
                             <i class="bi bi-clipboard-check"></i> Sao chép ${currentTab === 'de' ? 'dàn Đề' : (currentTab === 'loStd' ? 'Top 20' : (currentTab === 'loX2' ? 'Top 7' : (currentTab === 'lo4Engine' ? 'dàn Ghép 4' : (currentTab === 'loXien5' ? '5 dàn Xiên 4' : 'dàn số'))))}
                         </button>
@@ -4789,6 +4945,15 @@
             tbody.__diaryExpansionBound = true;
 
             tbody.addEventListener('click', e => {
+                // 0. Nút sao chép Lô + Xiên (từ hàng bảng hoặc trong card mở rộng)
+                const copyLoXienBtn = e.target.closest('.btn-copy-lo-xien-row, .btn-copy-lo-xien-expanded');
+                if (copyLoXienBtn) {
+                    e.stopPropagation();
+                    const date = copyLoXienBtn.dataset.date;
+                    copyLoXienForDate(date);
+                    return;
+                }
+
                 // 1. Nút sao chép dàn số bên trong card mở rộng
                 const copyBtn = e.target.closest('.btn-copy-expanded-numbers');
                 if (copyBtn) {
@@ -4845,6 +5010,15 @@
                     const type = cell.dataset.diaryCell || 'de';
                     toggleDiaryExpandedRow(cell, date, type);
                 }
+            });
+        }
+
+        const btnHeaderCopy = byId('btnCopyLoXienDiaryHeader');
+        if (btnHeaderCopy && !btnHeaderCopy.__bound) {
+            btnHeaderCopy.__bound = true;
+            btnHeaderCopy.addEventListener('click', () => {
+                const targetDate = payload?.dailyLockedBetsRegistry?.pendingDate || payload?.currentDate || payload?.latestRecommendation?.date;
+                copyLoXienForDate(targetDate);
             });
         }
     }
@@ -4962,7 +5136,6 @@
             };
         }
 
-        const ledgerRow = (p?.lo4EngineFusion?.modes?.[mode]?.settledLedger || p?.lo4EngineFusion?.settledLedger || []).find(r => r.date === date);
         if (ledgerRow) {
             return ledgerRow;
         }
@@ -6615,6 +6788,7 @@
                                 <div class="text-[10px] text-amber-600 font-bold flex items-center gap-1">
                                     <i class="bi bi-lock-fill text-[9px]"></i> 🔒 ĐÃ KHÓA
                                 </div>
+                                ${getLoXienCopyButtonHtml(r.date, true)}
                             </td>
                             <td class="px-3 py-3 whitespace-nowrap">
                                 <div class="font-black text-xs text-amber-950 flex items-center gap-1.5 flex-wrap">
@@ -6677,6 +6851,7 @@
                         <td class="px-3 py-3 whitespace-nowrap">
                             <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
                             <div class="text-[10px] text-slate-400 font-semibold">${isLiveBadge}</div>
+                            ${getLoXienCopyButtonHtml(r.date, false)}
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
                             <div class="font-black text-xs text-amber-950 flex items-center gap-1.5 flex-wrap">
@@ -6742,6 +6917,7 @@
                                 <div class="text-[10px] text-amber-600 font-bold flex items-center gap-1">
                                     <i class="bi bi-lock-fill text-[9px]"></i> 🔒 ĐÃ KHÓA KỲ TỚI
                                 </div>
+                                ${getLoXienCopyButtonHtml(r.date, true)}
                             </td>
                             <td class="px-3 py-3 whitespace-nowrap">
                                 <span class="rounded bg-amber-100 text-amber-900 border border-amber-300 text-xs font-black px-2 py-1">
@@ -6804,6 +6980,7 @@
                         <td class="px-3 py-3 whitespace-nowrap">
                             <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
                             <div class="text-[10px] text-slate-400 font-semibold">${isLiveBadge}</div>
+                            ${getLoXienCopyButtonHtml(r.date, false)}
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
                             <span class="rounded bg-amber-100 text-amber-900 border border-amber-300 text-xs font-black px-2 py-0.5">
@@ -6860,6 +7037,7 @@
                                 <div class="text-[10px] text-indigo-600 font-bold flex items-center gap-1">
                                     <i class="bi bi-lock-fill text-[9px]"></i> 🔒 ĐÃ KHÓA
                                 </div>
+                                ${getLoXienCopyButtonHtml(r.date, true)}
                             </td>
                             <td class="px-3 py-3 whitespace-nowrap">
                                 <div class="font-bold text-xs text-indigo-950">${escapeHtml(stdInfo.methodName)}</div>
@@ -6906,6 +7084,7 @@
                         <td class="px-3 py-3 whitespace-nowrap">
                             <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
                             <div class="text-[10px] text-slate-400 font-semibold">${isLiveBadge}</div>
+                            ${getLoXienCopyButtonHtml(r.date, false)}
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
                             <div class="font-bold text-xs text-indigo-950">${escapeHtml(stdInfo.methodName)}</div>
@@ -6952,6 +7131,7 @@
                                 <div class="text-[10px] text-teal-600 font-bold flex items-center gap-1">
                                     <i class="bi bi-lock-fill text-[9px]"></i> 🔒 ĐÃ KHÓA
                                 </div>
+                                ${getLoXienCopyButtonHtml(r.date, true)}
                             </td>
                             <td class="px-3 py-3 whitespace-nowrap">
                                 <div class="font-bold text-xs text-teal-950">${escapeHtml(x2Info.methodName)}</div>
@@ -6994,6 +7174,7 @@
                         <td class="px-3 py-3 whitespace-nowrap">
                             <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
                             <div class="text-[10px] text-slate-400 font-semibold">${isLiveBadge}</div>
+                            ${getLoXienCopyButtonHtml(r.date, false)}
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
                             <div class="font-bold text-xs text-teal-950">${escapeHtml(x2Info.methodName)}</div>
@@ -7040,6 +7221,7 @@
                                 <div class="text-[10px] text-amber-600 font-bold flex items-center gap-1">
                                     <i class="bi bi-lock-fill text-[9px]"></i> 🔒 ĐÃ KHÓA
                                 </div>
+                                ${getLoXienCopyButtonHtml(r.date, true)}
                             </td>
                             <td class="px-3 py-3 whitespace-nowrap">
                                 <div class="font-bold text-xs text-amber-950">${escapeHtml(xi3Info.methodName)}</div>
@@ -7093,6 +7275,7 @@
                         <td class="px-3 py-3 whitespace-nowrap">
                             <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
                             <div class="text-[10px] text-slate-400 font-semibold">${isLiveBadge}</div>
+                            ${getLoXienCopyButtonHtml(r.date, false)}
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
                             <div class="font-bold text-xs text-amber-950">${escapeHtml(xi3Info.methodName)}</div>
@@ -7159,6 +7342,7 @@
                                 <div class="text-[10px] text-amber-600 font-bold flex items-center gap-1">
                                     <i class="bi bi-lock-fill text-[9px]"></i> 🔒 ĐÃ KHÓA
                                 </div>
+                                ${getLoXienCopyButtonHtml(r.date, true)}
                             </td>
                             <td class="px-3 py-3 whitespace-nowrap">
                                 <div class="font-bold text-xs text-amber-950">Top 5 Đồng Thuận</div>
@@ -7239,6 +7423,7 @@
                         <td class="px-3 py-3 whitespace-nowrap">
                             <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
                             <div class="text-[10px] text-slate-400 font-semibold">${isLiveBadge}</div>
+                            ${getLoXienCopyButtonHtml(r.date, false)}
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
                             <div class="font-bold text-xs text-purple-950">Top 5 Đồng Thuận</div>
@@ -7289,6 +7474,7 @@
                                 <div class="text-[10px] text-amber-600 font-bold flex items-center gap-1">
                                     <i class="bi bi-lock-fill text-[9px]"></i> 🔒 ĐÃ KHÓA
                                 </div>
+                                ${getLoXienCopyButtonHtml(r.date, true)}
                             </td>
                             <td class="px-3 py-3 whitespace-nowrap">
                                 <div class="flex items-center gap-1">
@@ -7343,6 +7529,7 @@
                         <td class="px-3 py-3 whitespace-nowrap">
                             <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
                             <div class="text-[10px] text-slate-400 font-semibold">${isLiveBadge}</div>
+                            ${getLoXienCopyButtonHtml(r.date, false)}
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
                             <div class="flex items-center gap-1">
@@ -7429,6 +7616,7 @@
                             <div class="text-[10px] text-amber-600 font-bold flex items-center gap-1">
                                 <i class="bi bi-lock-fill text-[9px]"></i> 🔒 ĐÃ KHÓA
                             </div>
+                            ${getLoXienCopyButtonHtml(r.date, true)}
                         </td>
                         <!-- Cột 2: Đề Tinh Tuyển VIP -->
                         <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="de">
@@ -7618,6 +7806,7 @@
                             <span class="text-[10px] text-slate-400 font-semibold">${isLiveBadge}</span>
                             ${r.chRow?.mode ? `<span class="px-1 py-0.2 rounded text-[9px] font-bold ${r.chRow.mode === 'MOMENTUM_BOOST' ? 'bg-amber-100 text-amber-900 border border-amber-300' : (r.chRow.mode === 'DEFENSIVE_HOLD' ? 'bg-blue-100 text-blue-900 border border-blue-300' : 'bg-slate-100 text-slate-700')}">${r.chRow.mode === 'MOMENTUM_BOOST' ? '⚡ BOOST' : (r.chRow.mode === 'DEFENSIVE_HOLD' ? '🛡️ DEF' : '⚖️ HEDGE')}</span>` : ''}
                         </div>
+                        ${getLoXienCopyButtonHtml(r.date, false)}
                     </td>
                     <!-- Cột 2: Đề Tinh Tuyển VIP -->
                     <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="de">
