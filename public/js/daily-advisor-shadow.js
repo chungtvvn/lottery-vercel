@@ -2822,10 +2822,10 @@
             if (suiteId === 'suitePentaConsensus') {
                 evidences = [
                     '👑 HỆ SIÊU GỘP NGŨ TRỤ (5 PHƯƠNG PHÁP): Gộp đồng thuận toàn diện cả 5 hệ độc lập (Đa Động Cơ + Tri-Core Tam Trụ + VIP Sweet-Spot + Tri-Tier Cộng Hưởng + Trí Tuệ Bầy Đàn AI MiroFish).',
-                    'Đề Siêu Gộp Phân Tầng X2/X1: Các số trùng ≥3/5 hệ cược X2 (400K, ăn 33.6M); các số còn lại cược X1 (200K, ăn 16.8M). Tỷ lệ trúng 55.4% (158/285 ngày), 100% ngày trúng đều có lãi ròng dương (+281.2M lãi Đề).',
-                    'Lô Phân Tầng Đa Cấp Ngũ Trụ: Trùng ≥4 hệ cược X5 (11.0M/số · ăn 40M), trùng 3 cược X4 (8.8M/số · ăn 32M), trùng 2 cược X3 (6.6M/số · ăn 24M), trùng 1 cược X1 (2.2M/số · ăn 8M). Năm 2026 nổ 1.134 nháy, Win Rate 68.1% (194/285 ngày), lãi kỷ lục +6.272 TỶ VNĐ.',
-                    'Lô Xiên 5 Siêu Gộp: Ghép 5 dàn Xiên 4 từ Top 5 Lô có điểm đồng thuận ngũ trụ cao nhất (5.5M/ngày), năm 2026 lãi ròng +794.0M VNĐ.',
-                    'Tổng Lợi Nhuận Combo 3 Trụ 2026: +7.347 TỶ VNĐ, Win Rate 62.1% (177/285 ngày), ROI +26.6%, tạo dòng tiền dương ổn định nhất toàn hệ thống.'
+                    'Đề Siêu Gộp Phân Tầng X2/X1: Trùng ≥3/5 hệ cược X2 (400K, ăn 33.6M); còn lại cược X1 (200K, ăn 16.8M). Thực chiến 12 kỳ ăn 3 kỳ (25%), lãi ròng -14.0M.',
+                    'Lô Phân Tầng Đa Cấp Ngũ Trụ: Trùng ≥4 hệ cược X5 (11.0M/số · ăn 40M), trùng 3 cược X4 (8.8M/số · ăn 32M), trùng 2 cược X3 (6.6M/số · ăn 24M), trùng 1 cược X1 (2.2M/số · ăn 8M). Thực chiến nổ 43 nháy, Win Rate 75.0% (9/12 ngày), lãi ròng +318.6M VNĐ.',
+                    'Lô Xiên 5 Siêu Gộp: Ghép 5 dàn Xiên 4 từ Top 5 Lô có điểm đồng thuận ngũ trụ cao nhất (5.5M/ngày), thực chiến 12 kỳ ăn 1 kỳ, lãi ròng -27.6M VNĐ.',
+                    'Tổng Lợi Nhuận Combo 3 Trụ Thực Chiến (Từ 07/10/2026): +277.0M VNĐ, Win Rate 75.0% (9/12 ngày có lãi ròng), bảo toàn dòng tiền an toàn nhờ mỏ neo Lô thắng lớn bù đắp toàn bộ chi phí.'
                 ];
                 majorRisk = 'Tổng vốn cược mỗi ngày ~109M (Đề ~15.6M + Lô ~88.0M + Xiên 5.5M). Tuân thủ đúng phân tầng X2/X1 cho Đề và X5/X4/X3/X1 cho Lô để duy trì biên an toàn.';
                 churnGuard = '100% Strict Point-In-Time (Strict PIT), niêm phong toàn bộ dàn số trước 12:00 trưa mỗi ngày. Bất biến trước và sau giờ quay thưởng.';
