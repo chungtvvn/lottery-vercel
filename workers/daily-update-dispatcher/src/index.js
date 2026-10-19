@@ -2116,6 +2116,29 @@ async function getLockedAdvisorPayload(env, options = {}) {
     }
   }
 
+  // Merge latest dailyLockedBetsRegistry from R2 to ensure complete SSOT dates
+  try {
+    const r2Base = String(env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || 'https://pub-df6c4a2a06ff417cad48f09d66fd7bf0.r2.dev').replace(/\/$/, '');
+    const regRes = await fetch(`${r2Base}/statistics/daily_locked_bets_registry.json`, {
+      headers: { accept: 'application/json' }
+    });
+    if (regRes.ok) {
+      const regJson = await regRes.json();
+      if (regJson?.dates) {
+        advisorPayload.dailyLockedBetsRegistry = {
+          ...(advisorPayload.dailyLockedBetsRegistry || {}),
+          ...regJson,
+          dates: {
+            ...(advisorPayload.dailyLockedBetsRegistry?.dates || {}),
+            ...regJson.dates
+          }
+        };
+      }
+    }
+  } catch (regErr) {
+    console.warn('R2 registry fetch error:', regErr);
+  }
+
   if (!advisorPayload) advisorPayload = {};
 
   const predictionDate = advisorPayload?.crossHedgingPortfolio?.latestRecommendation?.targetDate
@@ -2361,6 +2384,9 @@ async function handleRequest(request, env) {
       force: url.searchParams.get('force') === '1',
       expectedDataDate: url.searchParams.get('dataDate') || undefined
     }));
+  }
+  if (url.pathname === '/telegram/send-test' || url.pathname === '/telegram/trigger') {
+    return json(await notifyTelegram(env, { force: true }));
   }
   if (request.method === 'GET' && url.pathname === '/telegram/status') {
     if (!isAuthorizedRequest(request, env)) return json({ ok: false, error: 'Unauthorized' }, 401);
