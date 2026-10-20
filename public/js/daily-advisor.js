@@ -4711,7 +4711,7 @@
     function getDiaryInfo(date, type) {
         if (!date || !type) return null;
         let info = diaryDetailsMap?.[date]?.[type];
-        if (info && info.numbers?.length) return info;
+        if (info && (info.numbers?.length || info.top5?.length || info.betNumbers?.length)) return info;
 
         // Ưu tiên đọc trực tiếp từ Single Source of Truth (SSOT) Registry
         if (payload?.dailyLockedBetsRegistry?.dates?.[date]) {
@@ -6228,7 +6228,17 @@
             let loXien5Top5 = [];
             let loXien5Tickets = [];
 
-            if (top5XienDay) {
+            // 100% Strict PIT SSOT: Ưu tiên đọc từ dailyLockedBetsRegistry để bảo toàn bất biến trước và sau giờ quay
+            const regX5 = regEntryForDate?.settlement?.loXien5 || regEntryForDate?.bets?.loXien5;
+            if (regX5?.top5 && regX5.top5.length >= 5) {
+                loXien5Top5 = regX5.top5.map(number);
+                const drawPrizesForDate = (payload?.drawPrizesByDate?.[date]?.prizes || []).map(number);
+                loXien5H5 = regX5.h5 != null ? regX5.h5 : loXien5Top5.filter(n => (prizeCounts[n] || 0) > 0 || drawPrizesForDate.includes(n)).length;
+                const evalX5 = evaluateXien5_5DanX4(loXien5H5);
+                loXien5PayoutK = regX5.payoutK != null ? regX5.payoutK : evalX5.payoutK;
+                loXien5ProfitK = regX5.profitK != null ? regX5.profitK : evalX5.profitK;
+                loXien5Tickets = getXi5Tickets(loXien5Top5);
+            } else if (top5XienDay) {
                 loXien5Top5 = (top5XienDay.top5 || []).map(number);
                 loXien5H5 = top5XienDay.h5 || 0;
                 const evalX5 = evaluateXien5_5DanX4(loXien5H5);
@@ -9483,21 +9493,25 @@
             const btnCopyXi5Tk = byId('btnCopyXi5Tickets');
             if (btnCopyXi5Tk) {
                 btnCopyXi5Tk.onclick = () => {
-                    const top5Nums = isLatest
-                        ? (fullData?.loTop5ConsensusXien?.top5Xien || []).map(number)
-                        : ((fullData?.loTop5ConsensusXien?.settledLedger?.find(r => r.date === targetDate)?.top5) || []).map(number);
+                    const regEntry = fullData?.dailyLockedBetsRegistry?.dates?.[targetDate];
+                    const regTop5 = regEntry?.settlement?.loXien5?.top5 || regEntry?.bets?.loXien5?.top5 || regEntry?.bets?.lo4EngineFusion?.xien4?.top5;
+                    const top5Nums = (regTop5 && regTop5.length >= 5)
+                        ? regTop5.map(number)
+                        : (isLatest
+                            ? (fullData?.loTop5ConsensusXien?.top5Xien || []).map(number)
+                            : ((fullData?.loTop5ConsensusXien?.settledLedger?.find(r => r.date === targetDate)?.top5) || []).map(number));
                     const tkList = getXi5Tickets(top5Nums);
                     if (tkList.length) {
-                        const text = tkList.map((t, i) => `Vé ${i + 1}: ${t.join('-')}`).join('\n');
+                        const text = tkList.map((t, i) => `Dàn ${i + 1}: ${t.join('-')}`).join('\n');
                         if (navigator.clipboard) {
                             navigator.clipboard.writeText(text).then(() => {
-                                showToast('📋 Đã copy 5 vé Xiên 4 (100K/vé)!');
+                                showToast('📋 Đã copy 5 dàn Xiên 4 (11M/dàn)!');
                             });
                         } else {
                             copyNumbers(top5Nums);
                         }
                     } else {
-                        showToast('Không có dữ liệu 5 vé Xiên 4!');
+                        showToast('Không có dữ liệu 5 dàn Xiên 4!');
                     }
                 };
             }
@@ -9505,13 +9519,17 @@
             const btnCopyXi5Nm = byId('btnCopyXi5Nums');
             if (btnCopyXi5Nm) {
                 btnCopyXi5Nm.onclick = () => {
-                    const top5Nums = isLatest
-                        ? (fullData?.loTop5ConsensusXien?.top5Xien || []).map(number)
-                        : ((fullData?.loTop5ConsensusXien?.settledLedger?.find(r => r.date === targetDate)?.top5) || []).map(number);
+                    const regEntry = fullData?.dailyLockedBetsRegistry?.dates?.[targetDate];
+                    const regTop5 = regEntry?.settlement?.loXien5?.top5 || regEntry?.bets?.loXien5?.top5 || regEntry?.bets?.lo4EngineFusion?.xien4?.top5;
+                    const top5Nums = (regTop5 && regTop5.length >= 5)
+                        ? regTop5.map(number)
+                        : (isLatest
+                            ? (fullData?.loTop5ConsensusXien?.top5Xien || []).map(number)
+                            : ((fullData?.loTop5ConsensusXien?.settledLedger?.find(r => r.date === targetDate)?.top5) || []).map(number));
                     if (top5Nums.length) {
                         copyNumbers(top5Nums);
                     } else {
-                        showToast('Không có dữ liệu 5 số!');
+                        showToast('Không có dữ liệu 5 số Dàn Xiên 5!');
                     }
                 };
             }
@@ -13662,7 +13680,38 @@
             }
         } else if (effectiveKey === 'loXien5') {
             methodTitle = '👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)';
-            if (isPending) {
+            const regEntry = payloadData?.dailyLockedBetsRegistry?.dates?.[date];
+            const regX5 = isPending ? regEntry?.bets?.loXien5 : (regEntry?.settlement?.loXien5 || regEntry?.bets?.loXien5);
+            if (regX5?.top5 && regX5.top5.length >= 5) {
+                numbers = regX5.top5.map(number);
+                tickets = getXi5Tickets(numbers);
+                stakeK = regX5.stakeK || 55000;
+                if (isPending) {
+                    profitK = 0;
+                    payoutK = 0;
+                    hitBadge = '⏳ Chờ mở thưởng 18h40';
+                    detailDesc = 'Top 5 Đồng Thuận ghép 5 Dàn Xiên 4 (11M/dàn · Trúng 2: 36M, 3: 204M, 4: 720M, 5: 1.920M)';
+                } else {
+                    const drawPrizesForDate = (payloadData?.drawPrizesByDate?.[date]?.prizes || []).map(number);
+                    const h5Hits = regX5.h5 != null ? regX5.h5 : numbers.filter(n => drawPrizesForDate.includes(n)).length;
+                    const evalX5 = evaluateXien5_5DanX4(h5Hits);
+                    payoutK = regX5.payoutK != null ? regX5.payoutK : evalX5.payoutK;
+                    profitK = regX5.profitK != null ? regX5.profitK : evalX5.profitK;
+                    isHit = profitK > 0;
+                    if (h5Hits >= 5) {
+                        hitBadge = '👑 ĂN 5 DÀN (+1.865M)';
+                    } else if (h5Hits === 4) {
+                        hitBadge = '🔥 ĂN 4 DÀN (+665M)';
+                    } else if (h5Hits === 3) {
+                        hitBadge = '🎉 ĂN 3 DÀN (+149M)';
+                    } else if (h5Hits === 2) {
+                        hitBadge = '🛡️ THU HỒI 36M (-19M)';
+                    } else {
+                        hitBadge = `❌ TRƯỢT (${h5Hits}/5 con)`;
+                    }
+                    detailDesc = `Top 5 [${numbers.join(', ')}] về ${h5Hits}/5 con. Trúng: ${evalX5.ticketsWon} vé (P&L: ${moneyM(profitK, { signed: true })})`;
+                }
+            } else if (isPending) {
                 numbers = (payloadData.loTop5ConsensusXien?.top5Consensus || payloadData.loTop5ConsensusXien?.top5Xien || []).map(number);
                 tickets = getXi5Tickets(numbers);
                 stakeK = 55000;
@@ -13735,7 +13784,27 @@
             }
         } else if (effectiveKey === 'lo4Xien4') {
             methodTitle = '🎲 Lô Xiên 4 (Quây 11 Vé Top 4)';
-            if (isPending) {
+            const regEntry = payloadData?.dailyLockedBetsRegistry?.dates?.[date];
+            const regX4 = isPending ? regEntry?.bets?.lo4EngineFusion?.xien4 : (regEntry?.settlement?.lo4EngineFusion || regEntry?.bets?.lo4EngineFusion?.xien4);
+            const lockedTop4 = regX4?.xienTop4 || regX4?.top4 || regX4?.numbers;
+            if (lockedTop4 && lockedTop4.length >= 4) {
+                numbers = lockedTop4.slice(0, 4).map(number);
+                stakeK = regX4.xienStakeK || 11000;
+                if (isPending) {
+                    profitK = 0;
+                    payoutK = 0;
+                    hitBadge = '⏳ Chờ mở thưởng 18h40';
+                    detailDesc = 'Quây 11 vé Top 4 (Vốn VIP 11M)';
+                } else {
+                    const drawPrizesForDate = (payloadData?.drawPrizesByDate?.[date]?.prizes || []).map(number);
+                    const hits = regX4.xienHitsCount != null ? regX4.xienHitsCount : numbers.filter(n => drawPrizesForDate.includes(n)).length;
+                    payoutK = regX4.xienPayoutK != null ? regX4.xienPayoutK : 0;
+                    profitK = regX4.xienProfitK != null ? regX4.xienProfitK : (payoutK - stakeK);
+                    isHit = hits >= 2;
+                    hitBadge = hits >= 4 ? '👑 ĂN 4 CON (+373M)' : (hits === 3 ? '🔥 ĂN 3 CON (+73M)' : (hits === 2 ? '✨ ĂN 2 CON (+1M)' : `❌ TRƯỢT (${hits}/4 con)`));
+                    detailDesc = `Quây 11 vé [${numbers.join(', ')}] nổ ${hits}/4 con. P&L: ${moneyM(profitK, { signed: true })}`;
+                }
+            } else if (isPending) {
                 numbers = (payloadData.loTop5ConsensusXien?.top4Xien || []).map(number);
                 stakeK = 11000;
                 profitK = 0;

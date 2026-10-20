@@ -774,6 +774,74 @@ function main() {
         if (adv.loTop5ConsensusXien) {
             adv.loTop5ConsensusXien.top4Xien = ['59', '62', '76', '24'];
             adv.loTop5ConsensusXien.top5Xien = ['59', '62', '76', '24', '35'];
+
+            // 100% Strict PIT SSOT: Khóa bất biến toàn bộ settledLedger theo dailyLockedBetsRegistry
+            let cumVIP = 0;
+            let cumM3 = 0;
+            let cumX3 = 0;
+            let cumX5 = 0;
+
+            for (const row of adv.loTop5ConsensusXien.settledLedger || []) {
+                const d = row.date;
+                const entry = reg.dates?.[d];
+                if (entry) {
+                    const lockedTop5 = entry.settlement?.loXien5?.top5 || entry.bets?.loXien5?.top5;
+                    if (lockedTop5 && lockedTop5.length >= 5) {
+                        row.top5 = lockedTop5.slice(0, 5).map(v => String(v).padStart(2, '0'));
+                        const lockedTop4 = entry.settlement?.lo4EngineFusion?.xienTop4 || entry.bets?.lo4EngineFusion?.xien4?.top4 || row.top5.slice(0, 4);
+                        row.top4 = lockedTop4.slice(0, 4).map(v => String(v).padStart(2, '0'));
+
+                        const drawPrizes = (adv.drawPrizesByDate?.[d]?.prizes || []).map(v => String(v).padStart(2, '0'));
+                        const drawSet = new Set(drawPrizes);
+                        row.h4 = row.top4.filter(n => drawSet.has(n)).length;
+                        row.h5 = row.top5.filter(n => drawSet.has(n)).length;
+
+                        let q11PayoutM3K = 0, q11PayoutVIP_K = 0;
+                        if (row.h4 >= 4) { q11PayoutVIP_K = 384000; q11PayoutM3K = 76800; }
+                        else if (row.h4 === 3) { q11PayoutVIP_K = 84000; q11PayoutM3K = 16800; }
+                        else if (row.h4 === 2) { q11PayoutVIP_K = 12000; q11PayoutM3K = 2400; }
+                        row.q11PayoutM3K = q11PayoutM3K;
+                        row.q11PayoutVIP_K = q11PayoutVIP_K;
+                        row.q11ProfitM3K = q11PayoutM3K - 2200;
+                        row.q11ProfitVIP_K = q11PayoutVIP_K - 11000;
+                        row.isWin = row.h4 >= 2;
+
+                        let x3Tickets = 0;
+                        if (row.h5 === 5) x3Tickets = 10;
+                        else if (row.h5 === 4) x3Tickets = 4;
+                        else if (row.h5 === 3) x3Tickets = 1;
+                        row.x3Tickets = x3Tickets;
+                        row.x3PayoutK = x3Tickets * 6500;
+                        row.x3ProfitK = row.x3PayoutK - 1000;
+
+                        let x5Payout55K = 0, x5DanHit4 = 0, x5DanHit3 = 0, x5DanHit2 = 0;
+                        if (row.h5 === 5) { x5DanHit4 = 5; x5Payout55K = 5 * 384000; }
+                        else if (row.h5 === 4) { x5DanHit4 = 1; x5DanHit3 = 4; x5Payout55K = 384000 + 4 * 84000; }
+                        else if (row.h5 === 3) { x5DanHit3 = 2; x5DanHit2 = 3; x5Payout55K = 2 * 84000 + 3 * 12000; }
+                        else if (row.h5 === 2) { x5DanHit2 = 3; x5Payout55K = 3 * 12000; }
+                        row.x5DanHit4 = x5DanHit4;
+                        row.x5DanHit3 = x5DanHit3;
+                        row.x5DanHit2 = x5DanHit2;
+                        row.x5Stake55K = 55000;
+                        row.x5Payout55K = x5Payout55K;
+                        row.x5Profit55K = x5Payout55K - 55000;
+                        row.x5StakeK = 55000;
+                        row.x5PayoutK = x5Payout55K;
+                        row.x5ProfitK = row.x5Profit55K;
+                        row.isX5Win55 = row.x5Profit55K > 0;
+                    }
+                }
+
+                cumVIP += row.q11ProfitVIP_K;
+                cumM3 += row.q11ProfitM3K;
+                cumX3 += row.x3ProfitK;
+                cumX5 += row.x5Profit55K;
+                row.cumProfitVIP_K = cumVIP;
+                row.cumProfitM3K = cumM3;
+                row.cumX3ProfitK = cumX3;
+                row.cumX5Profit55K = cumX5;
+                row.cumLoXien5ProfitK = cumX5;
+            }
         }
 
         adv.pentaConsensus = {
