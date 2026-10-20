@@ -96,6 +96,80 @@
         };
     }
 
+    // 100% STRICT PIT SINGLE SOURCE OF TRUTH (SSOT) HELPERS:
+    // Đảm bảo 5 số Dàn Xiên 5 và 4 số Xiên 4 bất biến tuyệt đối giữa trước giờ quay và sau khi có kết quả.
+    function getImmutableLockedLoXien5(date, customData = null) {
+        if (!date) return [];
+        const d = customData || payload;
+        const regEntry = d?.dailyLockedBetsRegistry?.dates?.[date];
+        const b = regEntry?.bets || {};
+        const s = regEntry?.settlement || {};
+
+        // 1. SSOT: Khóa từ registry settlement hoặc bets
+        const regX5 = s.loXien5 || b.loXien5 || b.lo4EngineFusion?.xien4 || s.lo4EngineFusion;
+        let top5 = (regX5?.top5 || []).map(number);
+        if (top5.length < 5 && b.lo4EngineFusion?.xien4?.top5 && b.lo4EngineFusion.xien4.top5.length >= 5) {
+            top5 = b.lo4EngineFusion.xien4.top5.slice(0, 5).map(number);
+        }
+        if (top5.length < 5 && b.lo4EngineFusion?.numbersOver2 && b.lo4EngineFusion.numbersOver2.length >= 5) {
+            top5 = b.lo4EngineFusion.numbersOver2.slice(0, 5).map(number);
+        }
+        if (top5.length < 5 && b.lo4EngineFusion?.allNumbers && b.lo4EngineFusion.allNumbers.length >= 5) {
+            top5 = b.lo4EngineFusion.allNumbers.slice(0, 5).map(number);
+        }
+
+        // 2. Tra cứu settledLedger hoặc top5Consensus
+        if (top5.length < 5) {
+            const ledgerRow = d?.loTop5ConsensusXien?.settledLedger?.find(r => r.date === date);
+            if (ledgerRow?.top5 && ledgerRow.top5.length >= 5) {
+                top5 = ledgerRow.top5.slice(0, 5).map(number);
+            } else if (d?.loTop5ConsensusXien?.top5Xien && d.loTop5ConsensusXien.top5Xien.length >= 5) {
+                top5 = d.loTop5ConsensusXien.top5Xien.slice(0, 5).map(number);
+            }
+        }
+
+        // 3. Fallback từ lo4EngineFusion betNumbers
+        if (top5.length < 5) {
+            const lo4Rec = b.lo4EngineFusion || d?.lo4EngineFusion?.latestRecommendation || {};
+            if (lo4Rec?.betNumbers && lo4Rec.betNumbers.length >= 5) {
+                top5 = lo4Rec.betNumbers.slice(0, 5).map(item => number(item.num != null ? item.num : item));
+            }
+        }
+
+        return top5.slice(0, 5);
+    }
+
+    function getImmutableLockedLoXien4(date, customData = null) {
+        if (!date) return [];
+        const d = customData || payload;
+        const regEntry = d?.dailyLockedBetsRegistry?.dates?.[date];
+        const b = regEntry?.bets || {};
+        const s = regEntry?.settlement || {};
+
+        // 1. SSOT: Khóa từ lo4EngineFusion.xienTop4 hoặc bets.lo4EngineFusion.xien4.top4
+        let top4 = (s.lo4EngineFusion?.xienTop4 || b.lo4EngineFusion?.xien4?.top4 || b.lo4EngineFusion?.xien4?.numbers || []).slice(0, 4).map(number);
+
+        // 2. Nếu chưa đủ 4 số, lấy 4 số đầu tiên của Dàn Xiên 5
+        if (top4.length < 4) {
+            const top5 = getImmutableLockedLoXien5(date, d);
+            if (top5 && top5.length >= 4) {
+                top4 = top5.slice(0, 4);
+            }
+        }
+
+        // 3. Tra cứu settledLedger hoặc top5Consensus
+        if (top4.length < 4) {
+            const ledgerRow = d?.loTop5ConsensusXien?.settledLedger?.find(r => r.date === date);
+            if (ledgerRow?.top4 && ledgerRow.top4.length >= 4) {
+                top4 = ledgerRow.top4.slice(0, 4).map(number);
+            } else if (d?.loTop5ConsensusXien?.top4Xien && d.loTop5ConsensusXien.top4Xien.length >= 4) {
+                top4 = d.loTop5ConsensusXien.top4Xien.slice(0, 4).map(number);
+            }
+        }
+
+        return top4.slice(0, 4);
+    }
+
     let payload = null;
     let currentMainTab = 'unifiedCombat'; // 'unifiedCombat' | 'dualMerge'
     let unifiedTimeframe = 'sep16'; // 'sep16' | 'live' | 'all'
@@ -394,28 +468,9 @@
             }
         }
 
-        // 4. Lấy 5 số Dàn Xiên 5
+        // 4. Lấy 5 số Dàn Xiên 5 (100% SSOT Bất Biến)
         if (top5.length < 5) {
-            const bX5 = b.loXien5 || {};
-            const sX5 = s.loXien5 || {};
-            top5 = cleanList(sX5.top5 && sX5.top5.length >= 5 ? sX5.top5 : (bX5.top5 && bX5.top5.length >= 5 ? bX5.top5 : []));
-
-            if (top5.length < 5) {
-                if (bLo4.xien4?.top5 && bLo4.xien4.top5.length >= 5) {
-                    top5 = cleanList(bLo4.xien4.top5);
-                } else if (bLo4.numbersOver2 && bLo4.numbersOver2.length >= 5) {
-                    top5 = cleanList(bLo4.numbersOver2);
-                } else {
-                    const x5LedgerRow = payload?.loTop5ConsensusXien?.settledLedger?.find(r => r.date === date);
-                    if (x5LedgerRow?.top5 && x5LedgerRow.top5.length >= 5) {
-                        top5 = cleanList(x5LedgerRow.top5);
-                    } else if (payload?.loTop5ConsensusXien?.top5Xien && payload?.loTop5ConsensusXien.top5Xien.length >= 5) {
-                        top5 = cleanList(payload.loTop5ConsensusXien.top5Xien);
-                    } else {
-                        top5 = cleanList([...t5, ...t4, ...t3]);
-                    }
-                }
-            }
+            top5 = getImmutableLockedLoXien5(date, payload);
         }
         top5 = top5.slice(0, 5);
 
@@ -1413,18 +1468,40 @@
             if (regEntry && regEntry.isSettled) {
                 const s = regEntry.settlement || {};
                 const sDe = s.de;
-                const sCH = s.crossHedgingPortfolio;
-                const deProfit = (sDe?.profitK != null) ? sDe.profitK : (sCH?.deProfitK ?? r.deProfitK ?? 0);
+                const sLo4 = s.lo4EngineFusion;
+                const deProfit = (sDe?.profitK != null) ? sDe.profitK : (r.deProfitK ?? r.dePnlK ?? 0);
+                const loProfit = (sLo4?.lotoProfitK != null) ? sLo4.lotoProfitK : (r.loPnlK ?? r.loProfitK ?? 0);
+                const xienProfit = (sLo4?.xienProfitK != null) ? sLo4.xienProfitK : (r.xienPnlK ?? r.xienProfitK ?? 0);
                 const isDeWin = (sDe?.isHit != null) ? sDe.isHit : (deProfit > 0);
+                const trueTotalProfitK = deProfit + loProfit + xienProfit;
                 return {
                     ...r,
                     deProfitK: deProfit,
                     dePnlK: deProfit,
                     isDeHit: isDeWin,
-                    totalProfitK: (sCH?.totalProfitK != null) ? sCH.totalProfitK : r.totalProfitK
+                    loProfitK: loProfit,
+                    loPnlK: loProfit,
+                    xienProfitK: xienProfit,
+                    xienPnlK: xienProfit,
+                    totalProfitK: trueTotalProfitK,
+                    isWin: trueTotalProfitK > 0
                 };
             }
-            return r;
+            const deProfit = r.deProfitK ?? r.dePnlK ?? 0;
+            const loProfit = r.loProfitK ?? r.loPnlK ?? 0;
+            const xienProfit = r.xienProfitK ?? r.xienPnlK ?? 0;
+            const trueTotalProfitK = deProfit + loProfit + xienProfit;
+            return {
+                ...r,
+                deProfitK: deProfit,
+                dePnlK: deProfit,
+                loProfitK: loProfit,
+                loPnlK: loProfit,
+                xienProfitK: xienProfit,
+                xienPnlK: xienProfit,
+                totalProfitK: trueTotalProfitK,
+                isWin: trueTotalProfitK > 0
+            };
         });
 
         const totalDraws = activeChRows.length || 1;
@@ -3416,109 +3493,121 @@
         }
 
         if (type === 'lo4Xien4') {
-            const isPending = info.isPending;
-            const status = info.status || info.xien4Status;
-            const reason = info.reason || info.xien4Reason;
-            const combinations = info.combinations || info.xien4Combinations || [];
-            const stakeK = info.stakeK || info.xien4StakeK || 0;
-            const profitK = info.profitK || info.dayXien4ProfitK || 0;
-            const isWin = info.isWin || info.isXien4Win;
+            const isPending = Boolean(info.isPending);
+            const top4 = getImmutableLockedLoXien4(info.date, payload);
+            const drawPrizes = (payload?.drawPrizesByDate?.[info.date]?.prizes || []).map(number);
+            const drawPrizesSet = new Set(drawPrizes);
+            const hitTop4Nums = top4.filter(n => drawPrizesSet.has(n));
+            const h4Hits = (!isPending && drawPrizesSet.size > 0) ? hitTop4Nums.length : ((info.h4 != null) ? info.h4 : 0);
+            const stakeK = info.stakeK || 11000;
+            let payoutK = 0;
+            if (!isPending) {
+                if (h4Hits >= 4) payoutK = 384000;
+                else if (h4Hits === 3) payoutK = 84000;
+                else if (h4Hits === 2) payoutK = 12000;
+            }
+            const profitK = isPending ? 0 : (payoutK - stakeK);
+            const isWin = profitK > 0;
 
-            if (info.isHistoricalBaseline) {
+            if (isPending) {
                 return `
-                    <div class="bg-slate-50/60 rounded-xl p-3 border border-slate-200 space-y-3">
-                        <div class="flex items-start justify-between gap-2 border-b border-slate-200 pb-2">
+                    <div class="bg-slate-50/60 rounded-xl p-3 border border-slate-200">
+                        <div class="flex items-start justify-between gap-2 border-b border-slate-200 pb-2 mb-2.5">
                             <div>
-                                <span class="rounded bg-slate-200 text-slate-800 border border-slate-300 font-black text-[10px] px-2 py-0.5 uppercase">
-                                    🛡️ MỐC ĐỐI SOÁT NỀN TẢNG (TRƯỚC 02/06)
-                                </span>
-                                <h4 class="font-black text-sm text-slate-900 mt-1">Lô Xiên 4 Ghép Mới — ${formatDateVi(info.date)}</h4>
+                                <div class="font-black text-purple-900 text-xs flex items-center gap-1.5">
+                                    <i class="bi bi-dice-4-fill text-purple-600"></i> 🎲 Dàn Xiên Quây 11 Vé (4 Số Nòng Cốt)
+                                </div>
+                                <div class="text-[10px] text-slate-600 mt-0.5">Ngày ${formatDateVi(info.date)} · Vốn 11M (1 vé X4 + 4 vé X3 + 6 vé X2)</div>
                             </div>
-                            <div class="text-right">
-                                <div class="font-bold text-xs text-slate-600 font-mono">Quan sát</div>
-                            </div>
+                            <span class="rounded bg-amber-100 text-amber-900 border border-amber-300 text-[11px] font-black px-2 py-0.5">🔒 ĐÃ KHÓA</span>
                         </div>
-                        <div class="rounded-xl bg-amber-50 border border-amber-300 text-amber-900 p-2.5 text-xs leading-relaxed">
-                            <div class="font-bold flex items-center gap-1.5 mb-1 text-amber-800">
-                                <i class="bi bi-info-circle-fill"></i> Giai đoạn khởi động mô hình Ghép 4
+                        <div class="mb-3">
+                            <div class="text-[10px] font-bold text-slate-700 mb-1 uppercase">Bộ 4 Số Vàng Nòng Cốt:</div>
+                            <div class="flex items-center gap-1.5 mb-2.5">
+                                ${top4.map(n => `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg font-mono text-sm bg-purple-600 text-white font-black shadow-xs">${n}</span>`).join('')}
                             </div>
-                            Thuật toán Xiên 4 Ghép 4 Động Cơ (lọc tổ hợp từ &ge; 2 động cơ trùng nhau) được triển khai và ghi nhật ký tự động từ <strong>02/06/2026</strong>. Các kỳ trước đó theo dõi theo mô hình Tứ Thủ Xiên 4 nền tảng.
+                            <div class="text-[10px] font-bold text-slate-700 mb-1 uppercase">Cơ Cấu Quây 11 Vé:</div>
+                            <div class="space-y-1 font-mono text-xs">
+                                <div class="flex items-center justify-between bg-white border border-slate-200 rounded-lg px-2.5 py-1 shadow-2xs">
+                                    <span class="text-purple-800 font-bold">1 Vé Xiên 4:</span>
+                                    <span class="text-slate-900 font-bold">[${top4.join(' - ')}]</span>
+                                    <span class="text-[10px] text-amber-600 font-bold">Trúng 4 con: 384M (+373M)</span>
+                                </div>
+                                <div class="flex items-center justify-between bg-white border border-slate-200 rounded-lg px-2.5 py-1 shadow-2xs">
+                                    <span class="text-purple-800 font-bold">4 Vé Xiên 3:</span>
+                                    <span class="text-slate-600 font-bold">Các cặp 3 con ghép</span>
+                                    <span class="text-[10px] text-purple-700 font-bold">Trúng 3 con: 84M (+73M)</span>
+                                </div>
+                                <div class="flex items-center justify-between bg-white border border-slate-200 rounded-lg px-2.5 py-1 shadow-2xs">
+                                    <span class="text-purple-800 font-bold">6 Vé Xiên 2:</span>
+                                    <span class="text-slate-600 font-bold">Các cặp 2 con ghép</span>
+                                    <span class="text-[10px] text-teal-700 font-bold">Trúng 2 con: 12M (+1M)</span>
+                                </div>
+                            </div>
                         </div>
                         <div class="pt-2 border-t border-slate-200 grid grid-cols-2 gap-2 text-[11px] font-mono">
-                            <div>
-                                <div class="text-[9px] text-slate-500 uppercase font-bold">Trạng Thái</div>
-                                <div class="font-bold text-slate-800">🛡️ Tiền đề phát triển</div>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-[9px] text-slate-500 uppercase font-bold">Khởi Chạy Live</div>
-                                <div class="font-bold text-amber-800">Từ 02/06/2026</div>
-                            </div>
+                            <div><span class="text-[9px] text-slate-500 uppercase font-bold">Vốn Cược:</span> <strong class="text-slate-900 font-black">11.000K (11M)</strong></div>
+                            <div class="text-right"><span class="text-[9px] text-slate-500 uppercase font-bold">Trạng Thái:</span> <strong class="text-amber-700 font-black">⏳ Chờ mở thưởng</strong></div>
                         </div>
                     </div>
                 `;
             }
 
-            let combinationsHtml = '';
-            if (combinations.length > 0) {
-                combinationsHtml = `
-                    <div class="mb-2">
-                        <div class="text-[10px] font-bold text-slate-600 mb-1 uppercase tracking-wide">
-                            Các bộ Xiên 4 (${combinations.length} vé):
-                        </div>
-                        <div class="space-y-1 max-h-36 overflow-y-auto pr-1 custom-scrollbar">
-                            ${combinations.map(comb => `
-                                <div class="rounded-lg bg-teal-50 border border-teal-200 text-teal-900 font-mono text-xs font-black px-2 py-1 text-center">
-                                    ${comb.map(number).join(' - ')}
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
+            let resultBadgeHtml = '';
+            if (h4Hits >= 4) {
+                resultBadgeHtml = `<span class="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black ring-1 ring-amber-300 shadow-xs px-2 py-0.5 text-[11px]">👑 ĂN 4 CON (+373M)</span>`;
+            } else if (h4Hits === 3) {
+                resultBadgeHtml = `<span class="inline-flex items-center gap-1 rounded-lg bg-purple-600 text-white font-black px-2 py-0.5 text-[11px] shadow-xs">🔥 ĂN 3 CON (+73M)</span>`;
+            } else if (h4Hits === 2) {
+                resultBadgeHtml = `<span class="inline-flex items-center gap-1 rounded-lg bg-teal-600 text-white font-bold px-2 py-0.5 text-[11px] shadow-xs">✨ ĂN 2 CON (+1M)</span>`;
+            } else {
+                resultBadgeHtml = `<span class="inline-flex items-center gap-1 rounded-lg bg-rose-100 text-rose-800 border border-rose-300 font-bold px-2 py-0.5 text-[11px]">❌ Trượt (-11M)</span>`;
             }
 
             return `
-                <div class="bg-slate-50/60 rounded-xl p-3 border border-slate-200 space-y-3">
-                    <div class="flex items-start justify-between gap-2 border-b border-slate-200 pb-2">
+                <div class="bg-slate-50/60 rounded-xl p-3 border border-slate-200">
+                    <div class="flex items-start justify-between gap-2 border-b border-slate-200 pb-2 mb-2.5">
                         <div>
-                            <span class="rounded ${isPending ? 'bg-amber-400 text-slate-950 font-black' : (info.isLive ? 'bg-red-100 text-red-800 border border-red-300' : 'bg-slate-200 text-slate-700')} font-black text-[10px] px-2 py-0.5 uppercase">
-                                ${isPending ? '🔒 ĐÃ KHÓA KỲ TỚI' : (info.isLive ? '🔴 THỰC CHIẾN LIVE' : '🛡️ STRICT PIT D-1')}
-                            </span>
-                            <h4 class="font-black text-sm text-slate-900 mt-1">Lô Xiên 4 (Ghép 4 Mới) — ${formatDateVi(info.date)}</h4>
-                        </div>
-                        <div class="text-right">
-                            <div class="font-black text-xs ${profitK > 0 ? 'text-emerald-700' : (profitK < 0 ? 'text-rose-700' : 'text-slate-600')} font-mono">
-                                ${moneyM(profitK, { signed: true })}
+                            <div class="font-black text-purple-900 text-xs flex items-center gap-1.5">
+                                <i class="bi bi-dice-4-fill text-purple-600"></i> 🎲 Dàn Xiên Quây 11 Vé (4 Số Nòng Cốt)
                             </div>
-                            <div class="text-[10px] text-slate-500 font-sans">Vốn ${moneyM(stakeK)}</div>
-                        </div>
-                    </div>
-
-                    <div class="rounded-xl ${status === 'SKIPPED_TOO_MANY' ? 'bg-amber-50 border border-amber-300 text-amber-900' : (isWin ? 'bg-emerald-50 border border-emerald-300 text-emerald-900' : 'bg-white border border-slate-200 text-slate-700')} p-2.5 text-xs">
-                        <div class="font-bold flex items-center justify-between gap-1.5 flex-wrap">
-                            <span class="flex items-center gap-1.5">
-                                <i class="bi ${status === 'SKIPPED_TOO_MANY' ? 'bi-shield-check text-amber-600' : (isWin ? 'bi-check-circle-fill text-emerald-600' : 'bi-info-circle text-slate-500')}"></i>
-                                ${status === 'SKIPPED_TOO_MANY' ? 'Chế độ Bảo Toàn Vốn (Tự Động Bỏ Qua Xiên 4)' : (isPending ? 'Kế Hoạch Cược Xiên 4' : (isWin ? '🎉 Ăn Xiên 4 Thành Công!' : 'Trượt Xiên 4'))}
-                            </span>
-                            <span class="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-mono font-black ${(info.cumXien4ProfitK ?? 0) >= 0 ? 'text-purple-800' : 'text-rose-700'}">
-                                Lũy kế Xiên 4: ${moneyM(info.cumXien4ProfitK ?? 0, { signed: true })}
-                            </span>
-                        </div>
-                        <div class="text-[11px] mt-1 text-slate-600 leading-relaxed">
-                            ${escapeHtml(reason || (status === 'SKIPPED_TOO_MANY' ? 'Có > 5 số trùng giữa 4 phương pháp -> Dừng cược Xiên 4 để không phân tán vốn.' : 'Theo dõi hiệu suất thuật toán ghép 4.'))}
-                        </div>
-                    </div>
-
-                    ${combinationsHtml}
-
-                    <div class="pt-2 border-t border-slate-200 grid grid-cols-2 gap-2 text-[11px] font-mono">
-                        <div>
-                            <div class="text-[9px] text-slate-500 uppercase font-bold">Trạng Thái</div>
-                            <div class="font-black text-slate-900">${status === 'SKIPPED_TOO_MANY' ? '🛡️ Bỏ qua không đánh' : (isPending ? '⏳ Chờ mở thưởng' : (isWin ? '🎉 Thắng cược' : '❌ Trượt'))}</div>
+                            <div class="text-[10px] text-slate-600 mt-0.5">Ngày ${formatDateVi(info.date)} · Vốn 11M · Lũy kế: <strong class="${(info.cumXien4ProfitK ?? 0) >= 0 ? 'text-purple-800' : 'text-rose-700'} font-mono font-black">${moneyM(info.cumXien4ProfitK ?? 0, { signed: true })}</strong></div>
                         </div>
                         <div class="text-right">
-                            <div class="text-[9px] text-slate-500 uppercase font-bold">Quy Tắc An Toàn</div>
-                            <div class="font-bold text-amber-800">Chỉ đánh khi 4-5 số trùng</div>
+                            ${resultBadgeHtml}
                         </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="text-[10px] font-bold text-slate-700 mb-1 uppercase flex items-center justify-between">
+                            <span>Bộ 4 Số Vàng:</span>
+                            <span class="text-purple-700 font-bold">Nổ ${h4Hits}/4 con</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 mb-2.5">
+                            ${top4.map(n => {
+                                const hit = drawPrizesSet.has(n);
+                                return `<span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg font-mono text-xs ${hit ? 'bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black ring-2 ring-emerald-300 scale-105 shadow-sm animate-pulse' : 'bg-slate-100 border border-slate-300 text-slate-950 font-black shadow-2xs'}">${n}${hit ? ' ⭐' : ''}</span>`;
+                            }).join('')}
+                        </div>
+                        <div class="text-[10px] font-bold text-slate-700 mb-1 uppercase">Kết Quả Quây 11 Vé:</div>
+                        <div class="space-y-1 font-mono text-xs">
+                            <div class="flex items-center justify-between ${h4Hits >= 4 ? 'bg-amber-950/80 border-amber-400 text-amber-200 ring-1 ring-amber-400' : 'bg-white border-slate-200 text-slate-700'} border rounded-lg px-2.5 py-1">
+                                <span class="font-bold">1 Vé Xiên 4: [${top4.join('-')}]</span>
+                                <span class="font-bold text-[10px]">${h4Hits >= 4 ? '👑 Ăn 384M (+373M)' : 'Trượt'}</span>
+                            </div>
+                            <div class="flex items-center justify-between ${h4Hits >= 3 ? 'bg-purple-950/80 border-purple-400 text-purple-200 ring-1 ring-purple-400' : 'bg-white border-slate-200 text-slate-700'} border rounded-lg px-2.5 py-1">
+                                <span class="font-bold">4 Vé Xiên 3:</span>
+                                <span class="font-bold text-[10px]">${h4Hits >= 4 ? '4/4 vé trúng (Ăn 4 x 84M = 336M)' : (h4Hits === 3 ? '🔥 1/4 vé trúng: Ăn 84M (+73M)' : 'Trượt')}</span>
+                            </div>
+                            <div class="flex items-center justify-between ${h4Hits >= 2 ? 'bg-teal-950/80 border-teal-400 text-teal-200 ring-1 ring-teal-400' : 'bg-white border-slate-200 text-slate-700'} border rounded-lg px-2.5 py-1">
+                                <span class="font-bold">6 Vé Xiên 2:</span>
+                                <span class="font-bold text-[10px]">${h4Hits >= 4 ? '6/6 vé trúng (Ăn 6 x 12M = 72M)' : (h4Hits === 3 ? '3/6 vé trúng (Ăn 3 x 12M = 36M)' : (h4Hits === 2 ? '✨ 1/6 vé trúng: Ăn 12M (+1M)' : 'Trượt'))}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pt-2 border-t border-slate-200 grid grid-cols-3 gap-2 text-[11px] font-mono">
+                        <div><span class="text-[9px] text-slate-500 uppercase font-bold">Vốn:</span> <strong class="text-slate-900 font-black">${moneyM(stakeK)}</strong></div>
+                        <div><span class="text-[9px] text-slate-500 uppercase font-bold">Thưởng:</span> <strong class="${payoutK > 0 ? 'text-emerald-700' : 'text-slate-500'} font-black">${moneyM(payoutK)}</strong></div>
+                        <div class="text-right"><span class="text-[9px] text-slate-500 uppercase font-bold">Lãi Ròng:</span> <strong class="${profitK >= 0 ? 'text-emerald-700' : 'text-rose-700'} font-black">${moneyM(profitK, { signed: true })}</strong></div>
                     </div>
                 </div>
             `;
@@ -3881,10 +3970,16 @@
         }
 
         if (type === 'loXien5') {
-            const top5Nums = (info.top5 || []).map(number);
-            const tkList = info.x5Tickets && info.x5Tickets.length ? info.x5Tickets : getXi5Tickets(top5Nums);
+            const top5Nums = getImmutableLockedLoXien5(info.date, payload);
+            const tkList = getXi5Tickets(top5Nums);
             const drawPrizes = (payload?.drawPrizesByDate?.[info.date]?.prizes || []).map(number);
             const drawPrizesSet = new Set(drawPrizes);
+            const hitNums = top5Nums.filter(n => drawPrizesSet.has(n));
+            const h5Hits = (drawPrizesSet.size > 0) ? hitNums.length : (info.h5 || 0);
+            const evalX5 = evaluateXien5_5DanX4(h5Hits);
+            const isWin = evalX5.isWin;
+            const payoutK = info.isPending ? 0 : evalX5.payoutK;
+            const profitK = info.isPending ? 0 : evalX5.profitK;
 
             if (info.isPending) {
                 return `
@@ -3921,12 +4016,6 @@
                     </div>
                 `;
             }
-
-            const h5Hits = info.h5 || 0;
-            const evalX5 = evaluateXien5_5DanX4(h5Hits);
-            const isWin = evalX5.isWin;
-            const payoutK = info.x5PayoutK != null ? info.x5PayoutK : evalX5.payoutK;
-            const profitK = info.x5ProfitK != null ? info.x5ProfitK : evalX5.profitK;
 
             let resultBadgeHtml = '';
             if (h5Hits === 5) {
@@ -4053,8 +4142,8 @@
                 const dePnl = (info.chDePnlK != null ? info.chDePnlK : (ch.dePnlK != null ? ch.dePnlK : (info.deProfitK || 0)));
                 const loPnl = (info.chLoPnlK != null ? info.chLoPnlK : (ch.loPnlK != null ? ch.loPnlK : (info.lo4ProfitK || 0)));
                 const xienPnl = (info.chXienPnlK != null ? info.chXienPnlK : (ch.xienPnlK != null ? ch.xienPnlK : (info.lo4Xien4ProfitK || 0)));
-                const totProfit = (info.chTotalProfitK != null ? info.chTotalProfitK : (ch.totalProfitK != null ? ch.totalProfitK : (dePnl + loPnl + xienPnl)));
-                const cumTot = (info.chCumProfitK != null ? info.chCumProfitK : (ch.cumulativeProfitK != null ? ch.cumulativeProfitK : (info.cumProfitK || totProfit)));
+                const totProfit = dePnl + loPnl + xienPnl;
+                const cumTot = (info.chCumProfitK != null ? info.chCumProfitK : (info.cumProfitK || totProfit));
                 const deMethodTitle = ch.details?.p1Method === 'deMarkovGapHazard' ? 'Đề Markov Bậc 2 & Gap Hazard' : 'Đề Tinh Tuyển VIP';
                 return `
                     <div class="bg-slate-50/60 rounded-xl p-3 border border-slate-200">
@@ -4348,83 +4437,31 @@
             };
         }
         if (type === 'loXien5') {
+            const top5 = getImmutableLockedLoXien5(date, p);
             const regEntry = p?.dailyLockedBetsRegistry?.dates?.[date];
             const regX5 = regEntry?.settlement?.loXien5 || regEntry?.bets?.loXien5;
-            if (regX5) {
-                let top5 = (regX5.top5 || []).map(number);
-                if (top5.length < 5) {
-                    const bLo4 = regEntry?.bets?.lo4EngineFusion || {};
-                    if (bLo4.xien4?.top5 && bLo4.xien4.top5.length >= 5) {
-                        top5 = bLo4.xien4.top5.slice(0, 5).map(number);
-                    } else if (bLo4.numbersOver2 && bLo4.numbersOver2.length >= 5) {
-                        top5 = bLo4.numbersOver2.slice(0, 5).map(number);
-                    }
-                }
-                const isPending = !regEntry.isSettled;
-                const actualPrizes = (regEntry.actualResult?.prizes || drawInfo.prizes || []).map(number);
-                let h5 = 0;
-                let payoutK = 0;
-                let profitK = isPending ? 0 : -(regX5.stakeK || 55000);
-                if (!isPending && actualPrizes.length > 0) {
-                    const pSet = new Set(actualPrizes);
-                    h5 = top5.filter(n => pSet.has(number(n))).length;
-                    const evalX5 = evaluateXien5_5DanX4(h5);
-                    payoutK = evalX5.payoutK;
-                    profitK = evalX5.profitK;
-                } else if (!isPending) {
-                    h5 = regX5.h5 || 0;
-                    const evalX5 = evaluateXien5_5DanX4(h5);
-                    payoutK = regX5.payoutK != null ? regX5.payoutK : evalX5.payoutK;
-                    profitK = regX5.profitK != null ? regX5.profitK : evalX5.profitK;
-                }
-                return {
-                    date,
-                    isPending,
-                    top5,
-                    h5,
-                    x5Tickets: getXi5Tickets(top5),
-                    x5StakeK: regX5.stakeK || 55000,
-                    x5PayoutK: payoutK,
-                    x5ProfitK: profitK,
-                    payoutK,
-                    profitK,
-                    isWin: profitK > 0,
-                    cumLoXien5ProfitK: 0
-                };
-            }
-            const top5Day = p?.loTop5ConsensusXien?.settledLedger?.find(r => r.date === date);
-            if (top5Day) {
-                const evalX5 = evaluateXien5_5DanX4(top5Day.h5 || 0);
-                const payoutK = evalX5.payoutK;
-                const profitK = evalX5.profitK;
-                return {
-                    date,
-                    isPending: false,
-                    top5: top5Day.top5 || [],
-                    h5: top5Day.h5 || 0,
-                    x5Tickets: top5Day.x5Tickets || getXi5Tickets(top5Day.top5),
-                    x5StakeK: 55000,
-                    x5PayoutK: payoutK,
-                    x5ProfitK: profitK,
-                    payoutK,
-                    profitK,
-                    isWin: profitK > 0,
-                    cumLoXien5ProfitK: top5Day.cumLoXien5ProfitK || top5Day.cumX5Profit55K || 0
-                };
-            }
-            const evalZero = evaluateXien5_5DanX4(0);
+            const isPending = !regEntry?.isSettled && (date >= (p?.pendingPredictionDate || '2026-10-19'));
+            const actualPrizes = (regEntry?.actualResult?.prizes || drawInfo.prizes || []).map(number);
+            const drawSet = new Set(actualPrizes);
+            const h5 = (!isPending && actualPrizes.length > 0)
+                ? top5.filter(n => drawSet.has(n)).length
+                : (regX5?.h5 != null ? regX5.h5 : 0);
+            const evalX5 = evaluateXien5_5DanX4(h5);
+            const payoutK = isPending ? 0 : (regX5?.payoutK != null ? regX5.payoutK : evalX5.payoutK);
+            const profitK = isPending ? 0 : (regX5?.profitK != null ? regX5.profitK : evalX5.profitK);
             return {
                 date,
-                isPending: false,
-                top5: [],
-                h5: 0,
-                x5Tickets: [],
+                isPending,
+                top5,
+                h5,
+                x5Tickets: getXi5Tickets(top5),
                 x5StakeK: 55000,
-                x5PayoutK: 0,
-                x5ProfitK: evalZero.profitK,
-                payoutK: 0,
-                profitK: evalZero.profitK,
-                isWin: false
+                x5PayoutK: payoutK,
+                x5ProfitK: profitK,
+                payoutK,
+                profitK,
+                isWin: profitK > 0,
+                cumLoXien5ProfitK: 0
             };
         }
         if (type === 'total') {
@@ -4543,12 +4580,19 @@
             totalDayProfitK: lo4ProfitK
         };
 
-        // 3. Xiên 4 (Bộ 4 Quây 11 Vé)
-        const xienTop4 = (sLo4.xienTop4 || bLo4.xien4?.top4 || bLo4.xien4?.numbers || []).slice(0, 4).map(number);
-        const xienHits = isPending ? 0 : (sLo4.xienHitsCount != null ? sLo4.xienHitsCount : (s.crossHedgingPortfolio?.uniqueTop4Hits ?? 0));
+        // 3. Xiên 4 (Bộ 4 Quây 11 Vé) - 100% SSOT Bất Biến
+        const xienTop4 = getImmutableLockedLoXien4(date, p);
+        const drawSetX = (actualPrizes && actualPrizes.length > 0) ? new Set(actualPrizes.map(number)) : new Set();
+        const calcHits4 = (!isPending && drawSetX.size > 0) ? xienTop4.filter(n => drawSetX.has(n)).length : 0;
+        const xienHits = isPending ? 0 : (drawSetX.size > 0 ? calcHits4 : (sLo4.xienHitsCount != null ? sLo4.xienHitsCount : (s.crossHedgingPortfolio?.uniqueTop4Hits ?? 0)));
         const xienStakeK = isPending ? (bLo4.xien4?.stakeK || 11000) : (sLo4.xienStakeK || 11000);
-        const xienPayoutK = isPending ? 0 : (sLo4.xienPayoutK != null ? sLo4.xienPayoutK : (s.crossHedgingPortfolio?.xienPayoutK ?? 0));
-        const xienProfitK = isPending ? 0 : (sLo4.xienProfitK != null ? sLo4.xienProfitK : (s.crossHedgingPortfolio?.xienProfitK ?? (xienPayoutK - xienStakeK)));
+        let xienPayoutK = 0;
+        if (!isPending) {
+            if (xienHits >= 4) xienPayoutK = 384000;
+            else if (xienHits === 3) xienPayoutK = 84000;
+            else if (xienHits === 2) xienPayoutK = 12000;
+        }
+        const xienProfitK = isPending ? 0 : (xienPayoutK - xienStakeK);
         const isXien4Win = xienProfitK > 0;
 
         const lo4Xien4Info = {
@@ -4572,44 +4616,18 @@
             reason: `Top 4 Đồng Thuận: Quây 11 vé [${xienTop4.join('-')}]`
         };
 
-        // 4. Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)
-        const bX5 = b.loXien5 || {};
-        const sX5 = s.loXien5 || {};
-        let xien5Top5 = (sX5.top5 && sX5.top5.length >= 5 ? sX5.top5 : (bX5.top5 && bX5.top5.length >= 5 ? bX5.top5 : [])).map(number);
-        if (xien5Top5.length < 5) {
-            const bLo4 = b.lo4EngineFusion || {};
-            if (bLo4.xien4?.top5 && bLo4.xien4.top5.length >= 5) {
-                xien5Top5 = bLo4.xien4.top5.slice(0, 5).map(number);
-            } else if (bLo4.numbersOver2 && bLo4.numbersOver2.length >= 5) {
-                xien5Top5 = bLo4.numbersOver2.slice(0, 5).map(number);
-            } else if (bLo4.allNumbers && bLo4.allNumbers.length >= 5) {
-                xien5Top5 = bLo4.allNumbers.slice(0, 5).map(number);
-            } else {
-                const x5LedgerRow = p?.loTop5ConsensusXien?.settledLedger?.find(r => r.date === date);
-                if (x5LedgerRow?.top5 && x5LedgerRow.top5.length >= 5) {
-                    xien5Top5 = x5LedgerRow.top5.slice(0, 5).map(number);
-                } else if (xienTop4 && xienTop4.length >= 4) {
-                    xien5Top5 = xienTop4;
-                }
-            }
-        }
-        const xien5StakeK = isPending ? (bX5.stakeK || 55000) : (sX5.stakeK || 55000);
+        // 4. Dàn Xiên 5 (5 Dàn X4 · 11M/dàn) - 100% SSOT Bất Biến
+        const xien5Top5 = getImmutableLockedLoXien5(date, p);
+        const xien5StakeK = 55000;
         let xien5H5 = 0;
-        let xien5PayoutK = 0;
-        let xien5ProfitK = isPending ? 0 : -xien5StakeK;
-
-        if (!isPending && actualPrizes && actualPrizes.length > 0) {
-            const drawSet = new Set(actualPrizes.map(number));
-            xien5H5 = xien5Top5.filter(n => drawSet.has(number(n))).length;
-            const evalX5 = evaluateXien5_5DanX4(xien5H5);
-            xien5PayoutK = evalX5.payoutK;
-            xien5ProfitK = evalX5.profitK;
+        if (!isPending && drawSetX.size > 0) {
+            xien5H5 = xien5Top5.filter(n => drawSetX.has(n)).length;
         } else if (!isPending) {
             xien5H5 = sX5.h5 != null ? sX5.h5 : 0;
-            const evalX5 = evaluateXien5_5DanX4(xien5H5);
-            xien5PayoutK = sX5.payoutK != null ? sX5.payoutK : evalX5.payoutK;
-            xien5ProfitK = sX5.profitK != null ? sX5.profitK : evalX5.profitK;
         }
+        const evalX5 = evaluateXien5_5DanX4(xien5H5);
+        const xien5PayoutK = isPending ? 0 : evalX5.payoutK;
+        const xien5ProfitK = isPending ? 0 : evalX5.profitK;
         const isXien5Win = xien5ProfitK > 0;
 
         const loXien5Info = {
@@ -4632,7 +4650,7 @@
         const chDePnlK = deProfitK;
         const chLoPnlK = lo4ProfitK;
         const chXienPnlK = xienProfitK;
-        const chTotalProfitK = isPending ? 0 : (sCH.totalProfitK != null ? sCH.totalProfitK : (chDePnlK + chLoPnlK + chXienPnlK));
+        const chTotalProfitK = isPending ? 0 : (chDePnlK + chLoPnlK + chXienPnlK);
         const isComboWin = chTotalProfitK > 0;
 
         const chRow = {
@@ -4655,8 +4673,8 @@
             xienPayoutK,
             xienStakeK,
             xienProfitK,
-            totalPayoutK: isPending ? 0 : (sCH.totalPayoutK || (dePayoutK + lo4PayoutK + xienPayoutK)),
-            totalStakeK: sCH.totalStakeK || (deStakeK + lo4StakeK + xienStakeK),
+            totalPayoutK: isPending ? 0 : (dePayoutK + lo4PayoutK + xienPayoutK),
+            totalStakeK: (deStakeK + lo4StakeK + xienStakeK),
             totalProfitK: chTotalProfitK,
             isWin: isComboWin,
             isAbstain: sCH.isAbstain || false,
@@ -6222,71 +6240,30 @@
             const rawLo4Xien4ProfitK = (top5XienDay && top5XienDay.q11ProfitVIP_K != null)
                 ? top5XienDay.q11ProfitVIP_K
                 : (lo4Row && lo4Row.dayXien4ProfitK != null ? lo4Row.dayXien4ProfitK : (chRow && chRow.xienProfitK != null ? chRow.xienProfitK : (chRow?.xienPnlK || 0)));
-            let loXien5ProfitK = 0;
-            let loXien5PayoutK = 0;
-            let loXien5H5 = 0;
-            let loXien5Top5 = [];
-            let loXien5Tickets = [];
-
-            // 100% Strict PIT SSOT: Ưu tiên đọc từ dailyLockedBetsRegistry để bảo toàn bất biến trước và sau giờ quay
+            // 100% Strict PIT SSOT: Dàn Xiên 5 bất biến tuyệt đối giữa trước giờ quay và sau khi có kết quả
+            const loXien5Top5 = getImmutableLockedLoXien5(date, payload);
+            const drawPrizesForDate = (payload?.drawPrizesByDate?.[date]?.prizes || []).map(number);
+            const drawSetDate = new Set(drawPrizesForDate);
+            const hasDrawPrizesForDate = drawPrizesForDate.length > 0 || Object.keys(prizeCounts).length > 0;
             const regX5 = regEntryForDate?.settlement?.loXien5 || regEntryForDate?.bets?.loXien5;
-            if (regX5?.top5 && regX5.top5.length >= 5) {
-                loXien5Top5 = regX5.top5.map(number);
-                const drawPrizesForDate = (payload?.drawPrizesByDate?.[date]?.prizes || []).map(number);
-                loXien5H5 = regX5.h5 != null ? regX5.h5 : loXien5Top5.filter(n => (prizeCounts[n] || 0) > 0 || drawPrizesForDate.includes(n)).length;
-                const evalX5 = evaluateXien5_5DanX4(loXien5H5);
-                loXien5PayoutK = regX5.payoutK != null ? regX5.payoutK : evalX5.payoutK;
-                loXien5ProfitK = regX5.profitK != null ? regX5.profitK : evalX5.profitK;
-                loXien5Tickets = getXi5Tickets(loXien5Top5);
-            } else if (top5XienDay) {
-                loXien5Top5 = (top5XienDay.top5 || []).map(number);
-                loXien5H5 = top5XienDay.h5 || 0;
-                const evalX5 = evaluateXien5_5DanX4(loXien5H5);
-                loXien5PayoutK = evalX5.payoutK;
-                loXien5ProfitK = evalX5.profitK;
-                loXien5Tickets = top5XienDay.x5Tickets || getXi5Tickets(top5XienDay.top5);
-            } else {
-                let fallbackTop5 = (lo4Row?.top5 || []).map(number);
-                if (fallbackTop5.length < 5 && lo4Row?.betNumbers?.length >= 5) {
-                    fallbackTop5 = lo4Row.betNumbers.slice(0, 5).map(b => number(b.num));
-                }
-                loXien5Top5 = fallbackTop5;
-                const drawPrizesForDate = (payload?.drawPrizesByDate?.[date]?.prizes || []).map(number);
-                const hasPrizes = drawPrizesForDate.length > 0 || Object.keys(prizeCounts).length > 0;
 
-                if (fallbackTop5.length >= 5 && hasPrizes) {
-                    loXien5H5 = fallbackTop5.filter(n => (prizeCounts[n] || 0) > 0 || drawPrizesForDate.includes(n)).length;
-                    const evalX5 = evaluateXien5_5DanX4(loXien5H5);
-                    loXien5PayoutK = evalX5.payoutK;
-                    loXien5ProfitK = evalX5.profitK;
-                    loXien5Tickets = getXi5Tickets(fallbackTop5);
-                } else if (!hasPrizes) {
-                    loXien5PayoutK = 0;
-                    loXien5ProfitK = 0;
-                    loXien5Tickets = fallbackTop5.length >= 5 ? getXi5Tickets(fallbackTop5) : [];
-                } else {
-                    const evalX5 = evaluateXien5_5DanX4(0);
-                    loXien5PayoutK = evalX5.payoutK;
-                    loXien5ProfitK = evalX5.profitK;
-                    loXien5Tickets = [];
-                }
+            let loXien5H5 = 0;
+            if (hasDrawPrizesForDate && loXien5Top5.length >= 5) {
+                loXien5H5 = loXien5Top5.filter(n => drawSetDate.has(n) || (prizeCounts[n] || 0) > 0).length;
+            } else if (regX5?.h5 != null) {
+                loXien5H5 = regX5.h5;
+            } else if (top5XienDay?.h5 != null) {
+                loXien5H5 = top5XienDay.h5;
             }
-
-            const chDePnlK = diaryDeProfitK;
-            const chLoPnlK = rawLo4ProfitK;
-            const chXienPnlK = rawLo4Xien4ProfitK;
-            const chTotalProfitK = chDePnlK + chLoPnlK + chXienPnlK;
-
-            cumCrossProfitK += chTotalProfitK;
-            cumCrossDeProfitK += chDePnlK;
-            cumCrossLoProfitK += chLoPnlK;
-            cumCrossXienProfitK += chXienPnlK;
-            const chCumProfitK = cumCrossProfitK;
+            const evalX5 = evaluateXien5_5DanX4(loXien5H5);
+            const loXien5PayoutK = hasDrawPrizesForDate ? evalX5.payoutK : (regX5?.payoutK != null ? regX5.payoutK : 0);
+            const loXien5ProfitK = hasDrawPrizesForDate ? evalX5.profitK : (regX5?.profitK != null ? regX5.profitK : 0);
+            const loXien5Tickets = getXi5Tickets(loXien5Top5);
 
             // Chế độ Top 6 độc lập: tính PnL và lũy kế từ lo4Row Top 6 thay vì ghi đè bằng chLoPnlK (Top 7)
-            let lo4DayProfitK = chLoPnlK;
+            let lo4DayProfitK = rawLo4ProfitK;
             let lo4CumProfitK = cumCrossLoProfitK;
-            let lo4IsWin = (chLoPnlK > 0);
+            let lo4IsWin = (rawLo4ProfitK > 0);
 
             if (currentLo4EngineMode === 'top6') {
                 const top6DayPnl = (lo4Row && lo4Row.dayLotoProfitK != null)
@@ -6298,9 +6275,43 @@
                 lo4IsWin = (top6DayPnl > 0);
             }
 
+            const lockedTop4 = getImmutableLockedLoXien4(date, payload);
+            const lockedTop5 = getImmutableLockedLoXien5(date, payload);
+            let h4Count = 0;
+            if (hasDrawPrizesForDate && lockedTop4.length >= 4) {
+                h4Count = lockedTop4.filter(n => drawSetDate.has(n) || (prizeCounts[n] || 0) > 0).length;
+            } else if (regEntryForDate?.settlement?.lo4EngineFusion?.xienHitsCount != null) {
+                h4Count = regEntryForDate.settlement.lo4EngineFusion.xienHitsCount;
+            } else if (top5XienDay?.h4 != null) {
+                h4Count = top5XienDay.h4;
+            } else if (chRow?.uniqueTop4Hits != null) {
+                h4Count = chRow.uniqueTop4Hits;
+            }
+
+            let lo4Xien4PayoutK = 0;
+            if (hasDrawPrizesForDate) {
+                if (h4Count >= 4) lo4Xien4PayoutK = 384000;
+                else if (h4Count === 3) lo4Xien4PayoutK = 84000;
+                else if (h4Count === 2) lo4Xien4PayoutK = 12000;
+            } else if (top5XienDay?.q11PayoutVIP_K != null) {
+                lo4Xien4PayoutK = top5XienDay.q11PayoutVIP_K;
+            }
+            const lo4Xien4StakeK = (top5XienDay?.q11StakeVIP_K != null ? top5XienDay.q11StakeVIP_K : (lo4Row?.xien4StakeK || (chRow?.xienStakeK != null ? chRow.xienStakeK : 11000)));
+            const lo4Xien4ProfitK = hasDrawPrizesForDate ? (lo4Xien4PayoutK - lo4Xien4StakeK) : rawLo4Xien4ProfitK;
+
+            const chDePnlK = diaryDeProfitK;
+            const chLoPnlK = (currentLo4EngineMode === 'top6' ? lo4DayProfitK : rawLo4ProfitK);
+            const chXienPnlK = lo4Xien4ProfitK;
+            const chTotalProfitK = chDePnlK + chLoPnlK + chXienPnlK;
+
+            cumCrossProfitK += chTotalProfitK;
+            cumCrossDeProfitK += chDePnlK;
+            cumCrossLoProfitK += chLoPnlK;
+            cumCrossXienProfitK += chXienPnlK;
+            const chCumProfitK = cumCrossProfitK;
+
             // Đồng bộ hoá PnL & Lũy kế cho danh mục Combo Bù Trừ Chéo và các tab Đề, Lô Ghép 4, Xiên 4
             const lo4ProfitK = chLoPnlK;
-            const lo4Xien4ProfitK = chXienPnlK;
             deProfitK = chDePnlK;
             const dayTotalK = chTotalProfitK;
             const loProfitK = stdProfitK + x2ProfitK;
@@ -6315,96 +6326,31 @@
             cumXi3ProfitK += xi3ProfitK;
             cumXi4ProfitK += xi4ProfitK;
 
-            const lo4EngineDetails = lo4Row ? {
-                ...lo4Row,
-                dayLotoStakeK: (lo4Row.dayLotoStakeK != null ? lo4Row.dayLotoStakeK : (chRow?.loStakeK || 0)),
-                dayLotoPayoutK: (lo4Row.dayLotoPayoutK != null ? lo4Row.dayLotoPayoutK : (chRow?.loPayoutK || 0)),
-                dayLotoProfitK: (currentLo4EngineMode === 'top6' ? lo4DayProfitK : rawLo4ProfitK),
-                isLotoWin: (currentLo4EngineMode === 'top6' ? lo4IsWin : (rawLo4ProfitK > 0)),
-                cumLotoProfitK: (currentLo4EngineMode === 'top6' ? lo4CumProfitK : cumCrossLoProfitK)
-            } : {
-                date,
-                isHistoricalBaseline: true,
-                isPending: false,
-                isLive: false,
-                methodName: 'Lô Ghép 4 Động Cơ (QMBF + Bạc Nhớ + 3 Động Cơ + RRF)',
-                betNumbers: x2Numbers.map((n, idx) => ({
-                    num: n,
-                    multiplier: idx < 2 ? 4 : (idx < 4 ? 3 : 1),
-                    hits: (prizeCounts[number(n)] || 0)
-                })),
-                dayLotoHits: (chRow?.loHits != null ? chRow.loHits : x2Hits),
-                dayLotoStakeK: chRow?.loStakeK || 0,
-                dayLotoPayoutK: chRow?.loPayoutK || 0,
-                dayLotoProfitK: (currentLo4EngineMode === 'top6' ? lo4DayProfitK : rawLo4ProfitK),
-                isLotoWin: (currentLo4EngineMode === 'top6' ? lo4IsWin : (rawLo4ProfitK > 0)),
-                xien4Status: 'BASELINE_PHASE',
-                xien4Reason: 'Giai đoạn đối soát độc lập trước khởi chạy Live Ghép 4 (Từ 02/06/2026)',
-                cumLotoProfitK: (currentLo4EngineMode === 'top6' ? lo4CumProfitK : cumCrossLoProfitK)
-            };
-
-            const lo4Xien4Details = top5XienDay ? {
+            const lo4Xien4Details = {
                 date,
                 isPending: false,
                 isLive: true,
                 status: 'ACTIVE',
                 xien4Status: 'ACTIVE',
-                reason: `Top 5 Đồng Thuận: Quây 11 vé Top 4 [${top5XienDay.top4.join('-')}] · Quây 10 vé X3 [${top5XienDay.top5.join('-')}]`,
-                xien4Reason: `Top 5 Đồng Thuận: Quây 11 vé Top 4 [${top5XienDay.top4.join('-')}] · Quây 10 vé X3 [${top5XienDay.top5.join('-')}]`,
-                combinations: [ top5XienDay.top4 ],
-                xien4Combinations: [ top5XienDay.top4 ],
-                top4: top5XienDay.top4,
-                top5: top5XienDay.top5,
-                h4: (top5XienDay.h4 != null ? top5XienDay.h4 : (chRow?.uniqueTop4Hits != null ? chRow.uniqueTop4Hits : 0)),
-                h5: top5XienDay.h5,
+                reason: `Top 5 Đồng Thuận: Quây 11 vé Top 4 [${lockedTop4.join('-')}] · Quây 10 vé X3 [${lockedTop5.join('-')}]`,
+                xien4Reason: `Top 5 Đồng Thuận: Quây 11 vé Top 4 [${lockedTop4.join('-')}] · Quây 10 vé X3 [${lockedTop5.join('-')}]`,
+                combinations: [ lockedTop4 ],
+                xien4Combinations: [ lockedTop4 ],
+                top4: lockedTop4,
+                top5: lockedTop5,
+                h4: h4Count,
+                h5: loXien5H5,
                 countOver2: 4,
-                stakeK: (top5XienDay?.q11StakeVIP_K != null ? top5XienDay.q11StakeVIP_K : (lo4Row?.xien4StakeK || (chRow?.xienStakeK != null ? chRow.xienStakeK : 11000))),
-                profitK: rawLo4Xien4ProfitK,
-                dayXien4ProfitK: rawLo4Xien4ProfitK,
-                payoutK: (top5XienDay?.q11PayoutVIP_K != null ? top5XienDay.q11PayoutVIP_K : (lo4Row?.xien4PayoutK || (chRow?.xienPayoutK != null ? chRow.xienPayoutK : 0))),
-                isWin: rawLo4Xien4ProfitK > 0,
-                isXien4Win: rawLo4Xien4ProfitK > 0,
-                x3Tickets: top5XienDay.x3Tickets,
-                x3ProfitK: top5XienDay.x3ProfitK,
+                stakeK: lo4Xien4StakeK,
+                profitK: lo4Xien4ProfitK,
+                dayXien4ProfitK: lo4Xien4ProfitK,
+                payoutK: lo4Xien4PayoutK,
+                isWin: lo4Xien4ProfitK > 0,
+                isXien4Win: lo4Xien4ProfitK > 0,
+                x3Tickets: top5XienDay?.x3Tickets || 0,
+                x3ProfitK: top5XienDay?.x3ProfitK || 0,
                 cumXien4ProfitK: cumCrossXienProfitK
-            } : (lo4Row ? {
-                date,
-                isPending: false,
-                isLive: lo4Row.isLive,
-                status: lo4Row.xien4Status || 'SKIPPED_TOO_MANY',
-                xien4Status: lo4Row.xien4Status || 'SKIPPED_TOO_MANY',
-                reason: lo4Row.xien4Reason || '',
-                xien4Reason: lo4Row.xien4Reason || '',
-                combinations: lo4Row.xien4Combinations || [],
-                xien4Combinations: lo4Row.xien4Combinations || [],
-                countOver2: lo4Row.countOver2 || 0,
-                stakeK: (chRow?.xienStakeK != null ? chRow.xienStakeK : (lo4Row.xien4StakeK || 0)),
-                profitK: chXienPnlK,
-                dayXien4ProfitK: chXienPnlK,
-                payoutK: (chRow?.xienPayoutK != null ? chRow.xienPayoutK : (lo4Row.xien4PayoutK || 0)),
-                isWin: chXienPnlK > 0,
-                isXien4Win: chXienPnlK > 0,
-                cumXien4ProfitK: cumCrossXienProfitK
-            } : {
-                date,
-                isHistoricalBaseline: true,
-                isPending: false,
-                isLive: false,
-                status: 'BASELINE_PHASE',
-                xien4Status: 'BASELINE_PHASE',
-                reason: 'Thuật toán Xiên 4 Ghép 4 lưu vết & chốt thực chiến từ 02/06/2026.',
-                xien4Reason: 'Thuật toán Xiên 4 Ghép 4 lưu vết & chốt thực chiến từ 02/06/2026.',
-                combinations: [ xi4Numbers ],
-                xien4Combinations: [ xi4Numbers ],
-                countOver2: 4,
-                stakeK: (chRow?.xienStakeK || 0),
-                profitK: chXienPnlK,
-                dayXien4ProfitK: chXienPnlK,
-                payoutK: (chRow?.xienPayoutK || 0),
-                isWin: chXienPnlK > 0,
-                isXien4Win: chXienPnlK > 0,
-                cumXien4ProfitK: cumCrossXienProfitK
-            });
+            };
 
             diaryDetailsMap[date] = {
                 de: {
@@ -7322,15 +7268,14 @@
 
             // --- 5. VIEW LÔ XIÊN 4 & XIÊN 3 (DUNG HỢP TOP 5 ĐỒNG THUẬN) ---
             if (currentDiaryCategory === 'loXi4' || currentDiaryCategory === 'lo4Xien4') {
-                const top4Nums = lo4Xien4Info.top4 || (lo4Xien4Info.combinations?.[0] || []);
-                const top5Nums = lo4Xien4Info.top5 || [];
+                const top4Nums = getImmutableLockedLoXien4(r.date, payload);
+                const top5Nums = getImmutableLockedLoXien5(r.date, payload);
                 const isSkipped = !top4Nums.length && (lo4Xien4Info.status === 'SKIPPED_TOO_MANY');
                 const combs = lo4Xien4Info.combinations || lo4Xien4Info.xien4Combinations || [];
 
                 if (r.isPending) {
-                    const top5Rec = fullData?.loTop5ConsensusXien;
-                    const pTop4 = (top5Rec?.top4Xien || []).map(number);
-                    const pTop5 = (top5Rec?.top5Xien || []).map(number);
+                    const pTop4 = top4Nums;
+                    const pTop5 = top5Nums;
                     const chipsHtml = `
                         <div class="flex flex-col gap-1">
                             <div class="flex flex-wrap items-center gap-1">
@@ -7388,11 +7333,17 @@
                     `;
                 }
 
-                const h4Hits = lo4Xien4Info.h4 != null ? lo4Xien4Info.h4 : (lo4Xien4Info.dayLotoHits || 0);
-                const isXienWin = lo4Xien4Info.isWin || lo4Xien4Info.isXien4Win || (h4Hits >= 2);
-
                 const drawPrizes = (payload?.drawPrizesByDate?.[r.date]?.prizes || []).map(number);
                 const drawPrizesSet = new Set(drawPrizes);
+                const hitXienNums = top4Nums.filter(n => drawPrizesSet.has(number(n)));
+                const h4Hits = (drawPrizesSet.size > 0) ? hitXienNums.length : ((lo4Xien4Info?.h4 != null) ? lo4Xien4Info.h4 : (r.chRow?.uniqueTop4Hits ?? 0));
+                let xienPayoutK = 0;
+                if (h4Hits >= 4) xienPayoutK = 384000;
+                else if (h4Hits === 3) xienPayoutK = 84000;
+                else if (h4Hits === 2) xienPayoutK = 12000;
+                const xienStakeK = lo4Xien4Info.stakeK || 11000;
+                const xienProfitK = (drawPrizesSet.size > 0) ? (xienPayoutK - xienStakeK) : (lo4Xien4Info.profitK != null ? lo4Xien4Info.profitK : (xienPayoutK - xienStakeK));
+                const isXienWin = xienProfitK > 0;
 
                 const chipsHtml = top4Nums.length ? `
                     <div class="flex flex-col gap-1">
@@ -7429,7 +7380,7 @@
                 }
 
                 return `
-                    <tr class="hover:bg-amber-50/40 transition-colors ${(lo4Xien4Info.profitK || 0) > 0 ? 'bg-emerald-50/40' : ''}">
+                    <tr class="hover:bg-amber-50/40 transition-colors ${xienProfitK > 0 ? 'bg-emerald-50/40' : ''}">
                         <td class="px-3 py-3 whitespace-nowrap">
                             <div class="font-mono font-black text-xs text-slate-900">${formatDateVi(r.date)}</div>
                             <div class="text-[10px] text-slate-400 font-semibold">${isLiveBadge}</div>
@@ -7454,8 +7405,8 @@
                             ${ticketStatus}
                         </td>
                         <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
-                            <div class="font-black text-xs ${(lo4Xien4Info.profitK || 0) > 0 ? 'text-emerald-600' : ((lo4Xien4Info.profitK || 0) < 0 ? 'text-rose-600' : 'text-slate-500')}">
-                                ${moneyM(lo4Xien4Info.profitK || 0, { signed: true })}
+                            <div class="font-black text-xs ${xienProfitK > 0 ? 'text-emerald-600' : (xienProfitK < 0 ? 'text-rose-600' : 'text-slate-500')}">
+                                ${moneyM(xienProfitK, { signed: true })}
                             </div>
                             <div class="text-[10px] text-slate-400 font-sans">Vốn ${moneyM(lo4Xien4Info.stakeK || 0)}</div>
                         </td>
@@ -7470,11 +7421,11 @@
 
             // --- 6. VIEW DÀN XIÊN 5 (5 QUẢ XIÊN 4 ĐỘC LẬP) ---
             if (currentDiaryCategory === 'loXien5') {
-                const loXien5Info = r.loXien5Info || r.loXien5 || {};
-                const top5Nums = (loXien5Info.top5 || []).map(number);
-                const tkList = loXien5Info.x5Tickets && loXien5Info.x5Tickets.length ? loXien5Info.x5Tickets : getXi5Tickets(top5Nums);
+                const top5Nums = getImmutableLockedLoXien5(r.date, payload);
+                const tkList = getXi5Tickets(top5Nums);
                 const drawPrizes = (payload?.drawPrizesByDate?.[r.date]?.prizes || []).map(number);
                 const drawPrizesSet = new Set(drawPrizes);
+                const hitTop5Nums = top5Nums.filter(n => drawPrizesSet.has(number(n)));
 
                 if (r.isPending) {
                     return `
@@ -7518,10 +7469,10 @@
                     `;
                 }
 
-                const h5Hits = loXien5Info.h5 || 0;
+                const h5Hits = (drawPrizesSet.size > 0) ? hitTop5Nums.length : ((loXien5Info?.h5 != null) ? loXien5Info.h5 : 0);
                 const evalX5 = evaluateXien5_5DanX4(h5Hits);
                 const isWin = evalX5.isWin;
-                const profitK = loXien5Info.profitK != null ? loXien5Info.profitK : evalX5.profitK;
+                const profitK = (drawPrizesSet.size > 0) ? evalX5.profitK : (loXien5Info.profitK != null ? loXien5Info.profitK : evalX5.profitK);
 
                 let rewardStatusHtml = `<span class="inline-flex items-center gap-1 rounded bg-rose-100 text-rose-800 px-2 py-0.5 text-xs font-semibold">❌ Trượt (-55M)</span>`;
                 if (h5Hits === 5) {
@@ -7742,25 +7693,35 @@
                 ? lo4Xien4Info.profitK
                 : (r.lo4Xien4ProfitK != null ? r.lo4Xien4ProfitK : (chRow && chRow.xienProfitK != null ? chRow.xienProfitK : (r.lo4Xien4?.profitK || 0)));
 
+            const rowDrawPrizes = (payload?.drawPrizesByDate?.[r.date]?.prizes || []).map(number);
+            const rowDrawPrizesSet = new Set(rowDrawPrizes);
+            const prizeCountsRow = {};
+            rowDrawPrizes.forEach(p => { prizeCountsRow[p] = (prizeCountsRow[p] || 0) + 1; });
+
+            // 100% Strict PIT SSOT: Top 4 Xiên và Top 5 Dàn Xiên 5 luôn đồng bộ tuyệt đối từ Registry
+            const rowTop4 = getImmutableLockedLoXien4(r.date, payload);
+            const rowTop5 = getImmutableLockedLoXien5(r.date, payload);
+            const hitXienNums = rowTop4.filter(n => rowDrawPrizesSet.has(number(n)));
+            const hitTop5Nums = rowTop5.filter(n => rowDrawPrizesSet.has(number(n)));
+            const xienHitsCount = (rowDrawPrizesSet.size > 0) ? hitXienNums.length : ((lo4Xien4Info?.h4 != null) ? lo4Xien4Info.h4 : (r.chRow?.uniqueTop4Hits ?? 0));
+
             const loXien5Info = r.loXien5Info || r.loXien5 || {};
-            const loXien5H5 = loXien5Info.h5 || 0;
+            const loXien5H5 = (rowDrawPrizesSet.size > 0) ? hitTop5Nums.length : ((loXien5Info?.h5 != null) ? loXien5Info.h5 : 0);
             const evalX5Row = evaluateXien5_5DanX4(loXien5H5);
             const loXien5ProfitK = loXien5Info.profitK != null ? loXien5Info.profitK : (loXien5Info.x5ProfitK != null ? loXien5Info.x5ProfitK : evalX5Row.profitK);
 
-            const dayTotalVal = r.dayTotalK != null
-                ? r.dayTotalK
-                : (isAllCat
-                    ? (dePnlVal + loPnlVal + xienPnlVal)
-                    : (dePnlVal + loPnlVal + xienPnlVal + loXien5ProfitK));
+            const dayTotalVal = (isAllCat
+                ? (dePnlVal + loPnlVal + xienPnlVal)
+                : (dePnlVal + loPnlVal + xienPnlVal + loXien5ProfitK));
 
             const cumDeVal = (r.cumDeProfitK != null ? r.cumDeProfitK : 0);
             const cumLoVal = (r.cumLo4ProfitK != null ? r.cumLo4ProfitK : 0);
             const cumXien4Val = (r.cumLo4Xien4ProfitK != null ? r.cumLo4Xien4ProfitK : 0);
             const cumXien5Val = (r.cumLoXien5ProfitK != null ? r.cumLoXien5ProfitK : (loXien5Info.cumLoXien5ProfitK || 0));
 
-            const cumProfitVal = (r.cumProfitK != null)
-                ? r.cumProfitK
-                : (cumDeVal + cumLoVal + cumXien4Val + (isAllCat ? 0 : cumXien5Val));
+            const cumProfitVal = isAllCat
+                ? (cumDeVal + cumLoVal + cumXien4Val)
+                : (cumDeVal + cumLoVal + cumXien4Val + cumXien5Val);
 
             const isDayWin = dayTotalVal > 0;
             const specialNum = (chRow?.special != null)
@@ -7776,18 +7737,10 @@
             const loHitsCount = (lo4Info?.dayLotoHits != null)
                 ? lo4Info.dayLotoHits
                 : (r.chRow?.loHits != null ? r.chRow.loHits : 0);
-            const xienHitsCount = (lo4Xien4Info?.h4 != null)
-                ? lo4Xien4Info.h4
-                : (r.chRow?.uniqueTop4Hits != null ? r.chRow.uniqueTop4Hits : 0);
 
             const deMethodTitle = (isAllCat && chRow?.details?.p1Method === 'deMarkovGapHazard')
                 ? 'Đề Markov Bậc 2 & Gap Hazard'
                 : (deInfo?.methodName || 'Đề Markov Bậc 2 & Gap Hazard');
-
-            const rowDrawPrizes = (payload?.drawPrizesByDate?.[r.date]?.prizes || []).map(number);
-            const rowDrawPrizesSet = new Set(rowDrawPrizes);
-            const prizeCountsRow = {};
-            rowDrawPrizes.forEach(p => { prizeCountsRow[p] = (prizeCountsRow[p] || 0) + 1; });
 
             let lo4BetCandidates = lo4Info?.betNumbers;
             if (!lo4BetCandidates || lo4BetCandidates.length === 0) {
@@ -7801,8 +7754,6 @@
                 const h = (b.hits != null && b.hits > 0) ? b.hits : (prizeCountsRow[n] || (rowDrawPrizesSet.has(n) ? 1 : 0));
                 return { ...b, num: n, hits: h };
             }).filter(b => b.hits > 0);
-            const hitXienNums = (lo4Xien4Info?.top4 || (lo4Xien4Info?.combinations?.[0] || [])).filter(n => rowDrawPrizesSet.has(number(n)));
-            const hitTop5Nums = (loXien5Info?.top5 || []).filter(n => rowDrawPrizesSet.has(number(n)));
             const displayLoHits = (loHitsCount > 0) ? loHitsCount : hitLo4Numbers.reduce((acc, x) => acc + (x.hits || 0), 0);
 
             const dayClass = dayTotalVal > 0 ? 'bg-emerald-50/40' : (dayTotalVal < -20000 ? 'bg-rose-50/20' : '');
@@ -7892,12 +7843,7 @@
                             ${hitXienNums.map(n => `<span class="inline-flex items-center px-1.5 py-0.2 rounded font-mono text-[10px] font-black bg-gradient-to-r from-purple-600 to-indigo-600 text-white ring-1 ring-purple-300 shadow-xs animate-pulse">🎯 ${number(n)}</span>`).join(' ')}
                         </div>` : ''}
                         <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
-                            <span>${(() => {
-                                if (xienHitsCount === 4) return '<strong class="text-amber-700">Ăn 384M (Lãi +373M)</strong>';
-                                if (xienHitsCount === 3) return '<strong class="text-purple-700">Ăn 84M (Lãi +73M)</strong>';
-                                if (xienHitsCount === 2) return '<strong class="text-emerald-700">Ăn 12M (Lãi +1M)</strong>';
-                                return 'Vốn 11M · Trúng 2: 12M, 3: 84M, 4: 384M';
-                            })()}</span>
+                            <span>${xienHitsCount}/4 con về · [${rowTop4.join('-')}]</span>
                             <span class="diary-expand-indicator text-purple-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
                         </div>
                         <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-purple-200/50 pt-0.5">
@@ -7927,7 +7873,7 @@
                             ${hitTop5Nums.map(n => `<span class="inline-flex items-center px-1.5 py-0.2 rounded font-mono text-[10px] font-black bg-gradient-to-r from-indigo-600 to-blue-600 text-white ring-1 ring-indigo-300 shadow-xs animate-pulse">🎯 ${number(n)}</span>`).join(' ')}
                         </div>` : ''}
                         <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
-                            <span>${loXien5H5}/5 con về · [${(loXien5Info.top5 || []).join('-')}]</span>
+                            <span>${loXien5H5}/5 con về · [${rowTop5.join('-')}]</span>
                             <span class="diary-expand-indicator text-indigo-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
                         </div>
                         <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-indigo-200/50 pt-0.5">
@@ -9107,14 +9053,8 @@
                     loHitRuleEl.textContent = 'Ăn từ 2 nháy có lãi';
                 }
 
-                // Column 3: Dàn Xiên 5 (5 Quả Xiên 4) & Tứ Thủ Quây
-                const regX5 = regPending?.bets?.loXien5?.top5;
-                const top5Consensus = fullData?.loTop5ConsensusXien;
-                const top5Nums = (regX5 && regX5.length >= 5)
-                    ? regX5.map(number)
-                    : ((lo4Rec.xien4?.top5 && lo4Rec.xien4.top5.length >= 5)
-                        ? lo4Rec.xien4.top5.map(number)
-                        : ((top5Consensus?.top5Xien || []).map(number)));
+                // Column 3: Dàn Xiên 5 (5 Quả Xiên 4) & Tứ Thủ Quây (100% SSOT Bất Biến)
+                const top5Nums = getImmutableLockedLoXien5(targetDate, fullData);
                 const xi5Tickets = getXi5Tickets(top5Nums);
 
                 if (xi4NumsEl) {
@@ -9131,9 +9071,9 @@
                                 <div class="space-y-1 w-full text-left font-mono">
                                     ${xi5Tickets.map((t, idx) => `
                                         <div class="flex items-center justify-between bg-black/50 border border-indigo-400/25 rounded-lg px-2.5 py-1 text-xs hover:border-indigo-400/50 transition-all">
-                                            <span class="text-amber-400 font-bold text-[11px]">Vé ${idx + 1}:</span>
+                                            <span class="text-amber-400 font-bold text-[11px]">Dàn ${idx + 1}:</span>
                                             <span class="text-white font-black tracking-wide">${t.join(' - ')}</span>
-                                            <span class="text-[10px] text-emerald-400 font-semibold">100K &rarr; 17M</span>
+                                            <span class="text-[10px] text-amber-300 font-bold">11M &rarr; Ăn 12M / 84M / 384M</span>
                                         </div>
                                     `).join('')}
                                 </div>
@@ -9339,28 +9279,36 @@
                     loHitRuleEl.textContent = `Đã nổ ${loRow?.dayLotoHits ?? 0} nháy`;
                 }
 
-                // Column 3: Dàn Xiên 5 (5 Quả Xiên 4) ngày quá khứ
-                const top5XienPastRow = regPast?.settlement?.loXien5 || regPast?.bets?.loXien5
-                    || fullData?.loTop5ConsensusXien?.settledLedger?.find(r => r.date === targetDate);
+                // Column 3: Dàn Xiên 5 (5 Quả Xiên 4) ngày quá khứ (100% SSOT Bất Biến)
+                const pastTop5 = getImmutableLockedLoXien5(targetDate, fullData);
                 if (xi4NumsEl) {
-                    if (top5XienPastRow) {
-                        const pastTop5 = (top5XienPastRow.top5 || []).map(number);
+                    if (pastTop5.length >= 5) {
                         const pastTickets = getXi5Tickets(pastTop5);
                         const drawPrizes = (fullData?.drawPrizesByDate?.[targetDate]?.prizes || []).map(number);
                         const drawPrizesSet = new Set(drawPrizes);
-                        const h5Hits = top5XienPastRow.h5 || 0;
-                        const ticketsWon = top5XienPastRow.x5TicketsWon || 0;
-                        const isWin = ticketsWon > 0;
+                        const hitTop5Nums = pastTop5.filter(n => drawPrizesSet.has(n));
+                        const h5Hits = hitTop5Nums.length;
+                        const evalX5 = evaluateXien5_5DanX4(h5Hits);
+                        const isWin = evalX5.isWin;
+
+                        let headerBadgeText = '';
+                        if (h5Hits >= 5) {
+                            headerBadgeText = '👑 ĂN 5 DÀN XIÊN 4 (+1.865 TỶ)!';
+                        } else if (h5Hits === 4) {
+                            headerBadgeText = '👑 ĂN 5/5 DÀN XIÊN 4 (+665M)!';
+                        } else if (h5Hits === 3) {
+                            headerBadgeText = '🔥 ĂN 5/5 DÀN XIÊN 4 (+149M)!';
+                        } else if (h5Hits === 2) {
+                            headerBadgeText = '🛡️ ĂN 3 DÀN X2 (36M / -19M)!';
+                        } else {
+                            headerBadgeText = `❌ Trượt (-55M) · Về ${h5Hits}/5 con`;
+                        }
 
                         xi4NumsEl.innerHTML = `
                             <div class="flex flex-col gap-2 w-full">
-                                <div class="rounded-xl ${isWin ? 'bg-emerald-500/20 border-emerald-400/50' : 'bg-slate-800/60 border-slate-700'} border p-2 text-center w-full">
-                                    <div class="text-[11px] font-black ${isWin ? 'text-emerald-300' : 'text-slate-300'}">
-                                        ${ticketsWon === 5
-                                            ? '👑 ĂN TRỌN 5 VÉ XIÊN 4 = ĂN 85M (LÃI +84.5M)!'
-                                            : (ticketsWon === 1
-                                                ? '🎉 ĂN 1 VÉ XIÊN 4 = ĂN 17M (LÃI +16.5M)!'
-                                                : `❌ Trượt 5 vé (-500K) · Về ${h5Hits}/5 con`)}
+                                <div class="rounded-xl ${isWin ? 'bg-emerald-500/20 border-emerald-400/50' : (h5Hits === 2 ? 'bg-teal-500/20 border-teal-400/50' : 'bg-slate-800/60 border-slate-700')} border p-2 text-center w-full">
+                                    <div class="text-[11px] font-black ${isWin ? 'text-emerald-300' : (h5Hits === 2 ? 'text-teal-300' : 'text-slate-300')}">
+                                        ${headerBadgeText}
                                     </div>
                                     <div class="flex items-center justify-center gap-1.5 mt-1.5">
                                         ${pastTop5.map(n => {
@@ -9376,12 +9324,25 @@
                                 <div class="space-y-1 w-full text-left font-mono">
                                     ${pastTickets.map((t, idx) => {
                                         const hitCount = t.filter(num => drawPrizesSet.has(num)).length;
-                                        const isTicketWon = hitCount === 4;
+                                        let danBadge = '';
+                                        let danClass = 'bg-black/50 border-white/10 text-slate-300';
+                                        if (hitCount === 4) {
+                                            danBadge = '👑 ĂN 384M (+373M)';
+                                            danClass = 'bg-amber-950/80 border-amber-400 text-amber-200 ring-1 ring-amber-400';
+                                        } else if (hitCount === 3) {
+                                            danBadge = '🔥 ĂN 84M (+73M)';
+                                            danClass = 'bg-purple-950/80 border-purple-400 text-purple-200 ring-1 ring-purple-400';
+                                        } else if (hitCount === 2) {
+                                            danBadge = '✨ ĂN 12M (+1M)';
+                                            danClass = 'bg-teal-950/80 border-teal-400 text-teal-200 ring-1 ring-teal-400';
+                                        } else {
+                                            danBadge = `${hitCount}/4 con · Trượt`;
+                                        }
                                         return `
-                                            <div class="flex items-center justify-between ${isTicketWon ? 'bg-emerald-950/80 border-emerald-400 text-emerald-200 ring-1 ring-emerald-400' : 'bg-black/50 border-white/10 text-slate-300'} border rounded-lg px-2.5 py-1 text-xs">
-                                                <span class="${isTicketWon ? 'text-amber-300 font-black' : 'text-slate-400'} text-[11px]">Vé ${idx + 1}:</span>
+                                            <div class="flex items-center justify-between ${danClass} border rounded-lg px-2.5 py-1 text-xs">
+                                                <span class="${hitCount >= 2 ? 'text-amber-300 font-black' : 'text-slate-400'} text-[11px]">Dàn ${idx + 1}:</span>
                                                 <span class="font-bold tracking-wide">${t.map(num => drawPrizesSet.has(num) ? `<strong class="text-emerald-300">${num}</strong>` : num).join(' - ')}</span>
-                                                <span class="text-[10px] font-bold ${isTicketWon ? 'text-amber-300' : 'text-slate-400'}">${isTicketWon ? '⭐ ĂN 17M' : `${hitCount}/4 con`}</span>
+                                                <span class="text-[10px] font-bold ${hitCount >= 2 ? 'text-amber-300' : 'text-slate-400'}">${danBadge}</span>
                                             </div>
                                         `;
                                     }).join('')}
@@ -9408,13 +9369,17 @@
                 if (capEl) {
                     const deStk = deRow.stakeK || 60000;
                     const loStk = loRow?.dayLotoStakeK || 0;
-                    const xiStk = top5XienPastRow ? top5XienPastRow.q11StakeVIP_K : 0;
+                    const xiStk = pastTop5.length >= 5 ? 55000 : 0;
                     capEl.textContent = `Vốn cược ngày: ${moneyM(deStk + loStk + xiStk)}`;
                 }
                 if (perfEl) {
                     const deProf = deRow.profitK || 0;
                     const loProf = loRow?.dayLotoProfitK || 0;
-                    const xiProf = top5XienPastRow ? top5XienPastRow.q11ProfitVIP_K : 0;
+                    const drawPrizes = (fullData?.drawPrizesByDate?.[targetDate]?.prizes || []).map(number);
+                    const drawPrizesSet = new Set(drawPrizes);
+                    const h5Hits = pastTop5.filter(n => drawPrizesSet.has(n)).length;
+                    const evalX5 = evaluateXien5_5DanX4(h5Hits);
+                    const xiProf = pastTop5.length >= 5 ? evalX5.profitK : 0;
                     const totProf = deProf + loProf + xiProf;
                     perfEl.textContent = `Tổng lãi/lỗ ngày: ${totProf >= 0 ? '+' : ''}${(totProf/1000).toFixed(1)}M VNĐ`;
                 }
@@ -9493,13 +9458,7 @@
             const btnCopyXi5Tk = byId('btnCopyXi5Tickets');
             if (btnCopyXi5Tk) {
                 btnCopyXi5Tk.onclick = () => {
-                    const regEntry = fullData?.dailyLockedBetsRegistry?.dates?.[targetDate];
-                    const regTop5 = regEntry?.settlement?.loXien5?.top5 || regEntry?.bets?.loXien5?.top5 || regEntry?.bets?.lo4EngineFusion?.xien4?.top5;
-                    const top5Nums = (regTop5 && regTop5.length >= 5)
-                        ? regTop5.map(number)
-                        : (isLatest
-                            ? (fullData?.loTop5ConsensusXien?.top5Xien || []).map(number)
-                            : ((fullData?.loTop5ConsensusXien?.settledLedger?.find(r => r.date === targetDate)?.top5) || []).map(number));
+                    const top5Nums = getImmutableLockedLoXien5(targetDate, fullData);
                     const tkList = getXi5Tickets(top5Nums);
                     if (tkList.length) {
                         const text = tkList.map((t, i) => `Dàn ${i + 1}: ${t.join('-')}`).join('\n');
@@ -9519,13 +9478,7 @@
             const btnCopyXi5Nm = byId('btnCopyXi5Nums');
             if (btnCopyXi5Nm) {
                 btnCopyXi5Nm.onclick = () => {
-                    const regEntry = fullData?.dailyLockedBetsRegistry?.dates?.[targetDate];
-                    const regTop5 = regEntry?.settlement?.loXien5?.top5 || regEntry?.bets?.loXien5?.top5 || regEntry?.bets?.lo4EngineFusion?.xien4?.top5;
-                    const top5Nums = (regTop5 && regTop5.length >= 5)
-                        ? regTop5.map(number)
-                        : (isLatest
-                            ? (fullData?.loTop5ConsensusXien?.top5Xien || []).map(number)
-                            : ((fullData?.loTop5ConsensusXien?.settledLedger?.find(r => r.date === targetDate)?.top5) || []).map(number));
+                    const top5Nums = getImmutableLockedLoXien5(targetDate, fullData);
                     if (top5Nums.length) {
                         copyNumbers(top5Nums);
                     } else {
@@ -13114,7 +13067,7 @@
                 const regX5 = regEntry.settlement?.loXien5 || regEntry.bets?.loXien5;
                 if (regX5) {
                     methodTitle = '👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)';
-                    numbers = (regX5.top5 || []).map(number);
+                    numbers = getImmutableLockedLoXien5(date, payloadData || payload);
                     tickets = getXi5Tickets(numbers);
                     stakeK = regX5.stakeK || 55000;
                     if (isPending) {
@@ -13123,7 +13076,8 @@
                         hitBadge = '⏳ Chờ mở thưởng 18h40';
                         detailDesc = 'Top 5 Đồng Thuận ghép 5 Dàn Xiên 4 (11M/dàn · SSOT Khóa Bất Biến)';
                     } else {
-                        const h5 = regX5.h5 || 0;
+                        const drawPrizesForDate = ((payloadData || payload)?.drawPrizesByDate?.[date]?.prizes || []).map(number);
+                        const h5 = drawPrizesForDate.length > 0 ? numbers.filter(n => drawPrizesForDate.includes(n)).length : (regX5.h5 || 0);
                         const evalX5 = evaluateXien5_5DanX4(h5);
                         payoutK = regX5.payoutK != null ? regX5.payoutK : evalX5.payoutK;
                         profitK = regX5.profitK != null ? regX5.profitK : evalX5.profitK;
@@ -13681,54 +13635,22 @@
         } else if (effectiveKey === 'loXien5') {
             methodTitle = '👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)';
             const regEntry = payloadData?.dailyLockedBetsRegistry?.dates?.[date];
-            const regX5 = isPending ? regEntry?.bets?.loXien5 : (regEntry?.settlement?.loXien5 || regEntry?.bets?.loXien5);
-            if (regX5?.top5 && regX5.top5.length >= 5) {
-                numbers = regX5.top5.map(number);
-                tickets = getXi5Tickets(numbers);
-                stakeK = regX5.stakeK || 55000;
-                if (isPending) {
-                    profitK = 0;
-                    payoutK = 0;
-                    hitBadge = '⏳ Chờ mở thưởng 18h40';
-                    detailDesc = 'Top 5 Đồng Thuận ghép 5 Dàn Xiên 4 (11M/dàn · Trúng 2: 36M, 3: 204M, 4: 720M, 5: 1.920M)';
-                } else {
-                    const drawPrizesForDate = (payloadData?.drawPrizesByDate?.[date]?.prizes || []).map(number);
-                    const h5Hits = regX5.h5 != null ? regX5.h5 : numbers.filter(n => drawPrizesForDate.includes(n)).length;
-                    const evalX5 = evaluateXien5_5DanX4(h5Hits);
-                    payoutK = regX5.payoutK != null ? regX5.payoutK : evalX5.payoutK;
-                    profitK = regX5.profitK != null ? regX5.profitK : evalX5.profitK;
-                    isHit = profitK > 0;
-                    if (h5Hits >= 5) {
-                        hitBadge = '👑 ĂN 5 DÀN (+1.865M)';
-                    } else if (h5Hits === 4) {
-                        hitBadge = '🔥 ĂN 4 DÀN (+665M)';
-                    } else if (h5Hits === 3) {
-                        hitBadge = '🎉 ĂN 3 DÀN (+149M)';
-                    } else if (h5Hits === 2) {
-                        hitBadge = '🛡️ THU HỒI 36M (-19M)';
-                    } else {
-                        hitBadge = `❌ TRƯỢT (${h5Hits}/5 con)`;
-                    }
-                    detailDesc = `Top 5 [${numbers.join(', ')}] về ${h5Hits}/5 con. Trúng: ${evalX5.ticketsWon} vé (P&L: ${moneyM(profitK, { signed: true })})`;
-                }
-            } else if (isPending) {
-                numbers = (payloadData.loTop5ConsensusXien?.top5Consensus || payloadData.loTop5ConsensusXien?.top5Xien || []).map(number);
-                tickets = getXi5Tickets(numbers);
-                stakeK = 55000;
+            numbers = getImmutableLockedLoXien5(date, payloadData || payload);
+            tickets = getXi5Tickets(numbers);
+            stakeK = 55000;
+            if (isPending) {
                 profitK = 0;
                 payoutK = 0;
                 hitBadge = '⏳ Chờ mở thưởng 18h40';
                 detailDesc = 'Top 5 Đồng Thuận ghép 5 Dàn Xiên 4 (11M/dàn · Trúng 2: 36M, 3: 204M, 4: 720M, 5: 1.920M)';
             } else {
-                const r = payloadData.loTop5ConsensusXien?.settledLedger?.find(x => x.date === date);
-                numbers = (r?.top5 || []).map(number);
-                tickets = r?.x5Tickets && r.x5Tickets.length ? r.x5Tickets : getXi5Tickets(numbers);
-                const evalX5 = evaluateXien5_5DanX4(r?.h5 != null ? r.h5 : (r?.hitCount5 ?? 0));
-                stakeK = 55000;
-                payoutK = r?.x5Payout55K != null ? r.x5Payout55K : (r?.x5PayoutK != null ? r.x5PayoutK : evalX5.payoutK);
-                profitK = r?.x5Profit55K != null ? r.x5Profit55K : (r?.x5ProfitK != null ? r.x5ProfitK : evalX5.profitK);
+                const drawPrizesForDate = ((payloadData || payload)?.drawPrizesByDate?.[date]?.prizes || []).map(number);
+                const regX5 = regEntry?.settlement?.loXien5 || regEntry?.bets?.loXien5;
+                const h5Hits = drawPrizesForDate.length > 0 ? numbers.filter(n => drawPrizesForDate.includes(n)).length : (regX5?.h5 || 0);
+                const evalX5 = evaluateXien5_5DanX4(h5Hits);
+                payoutK = evalX5.payoutK;
+                profitK = evalX5.profitK;
                 isHit = profitK > 0;
-                const h5Hits = evalX5.h5;
                 if (h5Hits >= 5) {
                     hitBadge = '👑 ĂN 5 DÀN (+1.865M)';
                 } else if (h5Hits === 4) {
@@ -13740,7 +13662,7 @@
                 } else {
                     hitBadge = `❌ TRƯỢT (${h5Hits}/5 con)`;
                 }
-                detailDesc = 'Top 5 Đồng Thuận ghép 5 Dàn Xiên 4 (11M/dàn · Trúng 2: 36M, 3: 204M, 4: 720M, 5: 1.920M)';
+                detailDesc = `Top 5 [${numbers.join(', ')}] về ${h5Hits}/5 con. Trúng: ${evalX5.winningDansCount} dàn (P&L: ${moneyM(profitK, { signed: true })})`;
             }
         } else if (effectiveKey === 'loStd') {
             methodTitle = '🏆 Lô Chuẩn Nền Tảng (Top 20)';
@@ -13784,43 +13706,27 @@
             }
         } else if (effectiveKey === 'lo4Xien4') {
             methodTitle = '🎲 Lô Xiên 4 (Quây 11 Vé Top 4)';
-            const regEntry = payloadData?.dailyLockedBetsRegistry?.dates?.[date];
-            const regX4 = isPending ? regEntry?.bets?.lo4EngineFusion?.xien4 : (regEntry?.settlement?.lo4EngineFusion || regEntry?.bets?.lo4EngineFusion?.xien4);
-            const lockedTop4 = regX4?.xienTop4 || regX4?.top4 || regX4?.numbers;
-            if (lockedTop4 && lockedTop4.length >= 4) {
-                numbers = lockedTop4.slice(0, 4).map(number);
-                stakeK = regX4.xienStakeK || 11000;
-                if (isPending) {
-                    profitK = 0;
-                    payoutK = 0;
-                    hitBadge = '⏳ Chờ mở thưởng 18h40';
-                    detailDesc = 'Quây 11 vé Top 4 (Vốn VIP 11M)';
-                } else {
-                    const drawPrizesForDate = (payloadData?.drawPrizesByDate?.[date]?.prizes || []).map(number);
-                    const hits = regX4.xienHitsCount != null ? regX4.xienHitsCount : numbers.filter(n => drawPrizesForDate.includes(n)).length;
-                    payoutK = regX4.xienPayoutK != null ? regX4.xienPayoutK : 0;
-                    profitK = regX4.xienProfitK != null ? regX4.xienProfitK : (payoutK - stakeK);
-                    isHit = hits >= 2;
-                    hitBadge = hits >= 4 ? '👑 ĂN 4 CON (+373M)' : (hits === 3 ? '🔥 ĂN 3 CON (+73M)' : (hits === 2 ? '✨ ĂN 2 CON (+1M)' : `❌ TRƯỢT (${hits}/4 con)`));
-                    detailDesc = `Quây 11 vé [${numbers.join(', ')}] nổ ${hits}/4 con. P&L: ${moneyM(profitK, { signed: true })}`;
-                }
-            } else if (isPending) {
-                numbers = (payloadData.loTop5ConsensusXien?.top4Xien || []).map(number);
-                stakeK = 11000;
+            numbers = getImmutableLockedLoXien4(date, payloadData || payload);
+            stakeK = 11000;
+            if (isPending) {
                 profitK = 0;
                 payoutK = 0;
                 hitBadge = '⏳ Chờ mở thưởng 18h40';
                 detailDesc = 'Quây 11 vé Top 4 (Vốn VIP 11M)';
             } else {
-                const r = payloadData.loTop5ConsensusXien?.settledLedger?.find(x => x.date === date);
-                numbers = (r?.top4 || []).map(number);
-                const hits = r?.h4 || 0;
+                const drawPrizesForDate = ((payloadData || payload)?.drawPrizesByDate?.[date]?.prizes || []).map(number);
+                const regEntry = payloadData?.dailyLockedBetsRegistry?.dates?.[date];
+                const regX4 = regEntry?.settlement?.lo4EngineFusion || regEntry?.bets?.lo4EngineFusion?.xien4;
+                const hits = drawPrizesForDate.length > 0 ? numbers.filter(n => drawPrizesForDate.includes(n)).length : (regX4?.xienHitsCount || 0);
+                let payoutKVal = 0;
+                if (hits >= 4) payoutKVal = 384000;
+                else if (hits === 3) payoutKVal = 84000;
+                else if (hits === 2) payoutKVal = 12000;
+                payoutK = payoutKVal;
+                profitK = payoutK - stakeK;
                 isHit = hits >= 2;
-                stakeK = r?.q11StakeVIP_K || 11000;
-                profitK = r?.q11ProfitVIP_K || 0;
-                payoutK = r?.q11PayoutVIP_K || 0;
                 hitBadge = hits >= 4 ? '👑 ĂN 4 CON (+373M)' : (hits === 3 ? '🔥 ĂN 3 CON (+73M)' : (hits === 2 ? '✨ ĂN 2 CON (+1M)' : `❌ TRƯỢT (${hits}/4 con)`));
-                detailDesc = 'Quây 11 vé Top 4 (Vốn VIP 11M)';
+                detailDesc = `Quây 11 vé [${numbers.join(', ')}] nổ ${hits}/4 con. P&L: ${moneyM(profitK, { signed: true })}`;
             }
         }
 

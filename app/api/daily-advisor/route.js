@@ -704,7 +704,29 @@ export async function GET(request) {
             if (payload?.lo4EngineFusion?.latestRecommendation) {
                 payload.lo4EngineFusion.latestRecommendation.snapshotLock = lockStatus;
             }
+            if (payload?.loTop5ConsensusXien) {
+                payload.loTop5ConsensusXien.snapshotLock = lockStatus;
+            }
             payload.snapshotLock = lockStatus;
+        }
+
+        // Đóng băng SSOT cho pending prediction nếu có trong dailyLockedBetsRegistry
+        if (payload?.loTop5ConsensusXien && nextTargetDate) {
+            const pendingReg = payload.dailyLockedBetsRegistry?.dates?.[nextTargetDate];
+            if (pendingReg) {
+                const lockedTop5 = pendingReg.settlement?.loXien5?.top5 || pendingReg.bets?.loXien5?.top5;
+                if (lockedTop5 && lockedTop5.length >= 5) {
+                    payload.loTop5ConsensusXien.top5Xien = lockedTop5.slice(0, 5).map(v => String(v).padStart(2, '0'));
+                }
+                const lockedTop4 = pendingReg.settlement?.lo4EngineFusion?.xienTop4 
+                    || pendingReg.bets?.lo4EngineFusion?.xien4?.top4 
+                    || pendingReg.bets?.lo4EngineFusion?.xien4?.numbers;
+                if (lockedTop4 && lockedTop4.length >= 4) {
+                    payload.loTop5ConsensusXien.top4Xien = lockedTop4.slice(0, 4).map(v => String(v).padStart(2, '0'));
+                } else if (payload.loTop5ConsensusXien.top5Xien?.length >= 4) {
+                    payload.loTop5ConsensusXien.top4Xien = payload.loTop5ConsensusXien.top5Xien.slice(0, 4);
+                }
+            }
         }
 
         const settled = settleFromRaw(payload, raw);
@@ -742,6 +764,7 @@ export async function GET(request) {
             const loDropoffLedger = settled.loDropoff27?.settledLedger || [];
             const triCoreLedger = settled.triCoreDe?.settledLedger || [];
             const resSuiteLedger = settled.semanticResonanceSuite?.settledLedger || [];
+            const loTop5Ledger = settled.loTop5ConsensusXien?.settledLedger || [];
 
             const upsertLedgerRow = (ledger, dateKey, row) => {
                 const idx = ledger.findIndex(r => normalizeDate(r?.date || r?.predictionDate) === dateKey);
@@ -755,9 +778,46 @@ export async function GET(request) {
             Object.entries(payload.dailyLockedBetsRegistry.dates || {}).forEach(([d, entry]) => {
                 if (entry?.isSettled && entry.settlement) {
                     const s = entry.settlement;
-                    // Cross Hedging
-                    if (s.crossHedgingPortfolio) {
-                        upsertLedgerRow(chLedger, d, { ...s.crossHedgingPortfolio, date: d });
+                    // Cross Hedging: SSOT Đảm bảo nhất quán tuyệt đối giữa Đề, Lô và Xiên
+                    if (s.crossHedgingPortfolio || (s.de && s.lo4EngineFusion)) {
+                        const deProf = s.de?.profitK != null ? s.de.profitK : (s.crossHedgingPortfolio?.deProfitK ?? 0);
+                        const loProf = s.lo4EngineFusion?.lotoProfitK != null ? s.lo4EngineFusion.lotoProfitK : (s.crossHedgingPortfolio?.loProfitK ?? 0);
+                        const xienProf = s.lo4EngineFusion?.xienProfitK != null ? s.lo4EngineFusion.xienProfitK : (s.crossHedgingPortfolio?.xienProfitK ?? 0);
+                        const totProf = deProf + loProf + xienProf;
+                        const deStk = s.de?.stakeK || 77000;
+                        const loStk = s.lo4EngineFusion?.lotoStakeK || 66000;
+                        const xienStk = s.lo4EngineFusion?.xienStakeK || 11000;
+                        const totStk = deStk + loStk + xienStk;
+                        const dePay = s.de?.payoutK != null ? s.de.payoutK : (deProf + deStk);
+                        const loPay = s.lo4EngineFusion?.lotoPayoutK != null ? s.lo4EngineFusion.lotoPayoutK : (loProf + loStk);
+                        const xienPay = s.lo4EngineFusion?.xienPayoutK != null ? s.lo4EngineFusion.xienPayoutK : (xienProf + xienStk);
+                        const totPay = dePay + loPay + xienPay;
+
+                        upsertLedgerRow(chLedger, d, {
+                            ...(s.crossHedgingPortfolio || {}),
+                            date: d,
+                            deHits: s.de?.isHit ? 1 : 0,
+                            isDeHit: Boolean(s.de?.isHit),
+                            isVipHit: Boolean(s.de?.isVipHit),
+                            dePayoutK: dePay,
+                            deStakeK: deStk,
+                            deProfitK: deProf,
+                            dePnlK: deProf,
+                            loHits: s.lo4EngineFusion?.totalHits || 0,
+                            loPayoutK: loPay,
+                            loStakeK: loStk,
+                            loProfitK: loProf,
+                            loPnlK: loProf,
+                            uniqueTop4Hits: s.lo4EngineFusion?.xienHitsCount || 0,
+                            xienPayoutK: xienPay,
+                            xienStakeK: xienStk,
+                            xienProfitK: xienProf,
+                            xienPnlK: xienProf,
+                            totalPayoutK: totPay,
+                            totalStakeK: totStk,
+                            totalProfitK: totProf,
+                            isWin: totProf > 0
+                        });
                     }
                     // Lô Ghép 4 Top 7
                     if (s.lo4EngineFusion) {
@@ -927,10 +987,58 @@ export async function GET(request) {
                             comboFlat: s.semanticResonanceSuite.comboFlat
                         });
                     }
+                    // Lô Xiên 5 / Top 5 Consensus
+                    if (s.loXien5 || s.lo4EngineFusion?.xienTop4) {
+                        const top5 = s.loXien5?.top5 || entry.bets?.loXien5?.top5 || [];
+                        const top4 = s.lo4EngineFusion?.xienTop4 || entry.bets?.lo4EngineFusion?.xien4?.top4 || top5.slice(0, 4);
+                        const h4 = s.lo4EngineFusion?.xienHitsCount != null ? s.lo4EngineFusion.xienHitsCount : (s.loXien5?.h4 || 0);
+                        const h5 = s.loXien5?.h5 != null ? s.loXien5.h5 : 0;
+                        const x5StakeK = s.loXien5?.stakeK || 55000;
+                        const x5PayoutK = s.loXien5?.payoutK || 0;
+                        const x5ProfitK = s.loXien5?.profitK != null ? s.loXien5.profitK : -55000;
+                        const q11StakeVIP_K = s.lo4EngineFusion?.xienStakeK || 11000;
+                        const q11PayoutVIP_K = s.lo4EngineFusion?.xienPayoutK || 0;
+                        const q11ProfitVIP_K = s.lo4EngineFusion?.xienProfitK != null ? s.lo4EngineFusion.xienProfitK : -11000;
+                        upsertLedgerRow(loTop5Ledger, d, {
+                            date: d,
+                            predictionDate: d,
+                            top4,
+                            top5,
+                            h4,
+                            h5,
+                            isWin: h4 >= 2,
+                            q11StakeVIP_K,
+                            q11PayoutVIP_K,
+                            q11ProfitVIP_K,
+                            x5Stake55K: x5StakeK,
+                            x5Payout55K: x5PayoutK,
+                            x5Profit55K: x5ProfitK,
+                            x5StakeK,
+                            x5PayoutK,
+                            x5ProfitK,
+                            isX5Win55: x5ProfitK > 0,
+                            isLive: true
+                        });
+                    }
                 }
             });
             if (settled.crossHedgingPortfolio) {
-                settled.crossHedgingPortfolio.settledLedger = chLedger.sort((a, b) => a.date.localeCompare(b.date));
+                chLedger.sort((a, b) => a.date.localeCompare(b.date));
+                let runDe = 0, runLo = 0, runXien = 0, runTot = 0;
+                chLedger.forEach(row => {
+                    runDe += (row.deProfitK || 0);
+                    runLo += (row.loProfitK || 0);
+                    runXien += (row.xienProfitK || 0);
+                    runTot += (row.totalProfitK || 0);
+                    row.cumDeProfitK = runDe;
+                    row.cumLoProfitK = runLo;
+                    row.cumXienProfitK = runXien;
+                    row.cumulativeProfitK = runTot;
+                });
+                settled.crossHedgingPortfolio.settledLedger = chLedger;
+            }
+            if (settled.loTop5ConsensusXien) {
+                settled.loTop5ConsensusXien.settledLedger = loTop5Ledger.sort((a, b) => a.date.localeCompare(b.date));
             }
             if (settled.lo4EngineFusion?.modes?.top7) {
                 settled.lo4EngineFusion.modes.top7.settledLedger = lo7Ledger.sort((a, b) => a.date.localeCompare(b.date));

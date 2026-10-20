@@ -533,11 +533,15 @@ function main() {
             reason: 'Vận hành Active Hedge chuẩn: Cân bằng bù trừ rủi ro đa tài sản sau chiến thắng 18/10 (+40.6M)'
         },
         pillar1_De: {
-            methodId: 'dualMerge',
-            methodLabel: 'Đề Gộp Tiêu Chuẩn Sweet-Spot',
-            vipNumbers: ['08', '13', '14', '18', '22', '25', '26', '28', '29', '38', '40', '41', '42', '48', '68', '78', '88'],
-            singleNumbers: ['10', '11', '12', '15', '16', '17', '20', '24', '27', '30', '31', '32', '33', '34', '35', '36', '39', '58', '98'],
-            allNumbers: ['08', '10', '11', '12', '13', '14', '15', '16', '17', '18', '20', '22', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '38', '39', '40', '41', '42', '48', '58', '68', '78', '88', '98'],
+            methodId: 'deMarkovGapHazard',
+            methodLabel: '🔮 Đề Markov Bậc 2 & Gap Hazard (Sweet-Spot)',
+            vipNumbers: (d19.bets.de?.vipNumbers || ['19', '40', '41', '92', '55', '97', '70', '20', '05', '93', '75', '50', '94', '03', '71', '79', '82']),
+            singleNumbers: (d19.bets.de?.singleNumbers || ['09', '14', '69', '84', '74', '89', '57', '34', '68', '47', '95', '01', '64', '25', '36', '00', '85', '48', '13', '16', '26', '91', '78', '28', '21', '33']),
+            allNumbers: (d19.bets.de?.numbers || [
+                '19', '40', '41', '92', '55', '97', '70', '20', '05', '93', '75', '50', '94', '03', '71', '79', '82',
+                '09', '14', '69', '84', '74', '89', '57', '34', '68', '47', '95', '01', '64', '25', '36', '00', '85',
+                '48', '13', '16', '26', '91', '78', '28', '21', '33'
+            ]),
             stakeK: 70000,
             targetPayoutVipK: 252000,
             targetPayoutSingleK: 84000
@@ -585,6 +589,82 @@ function main() {
         }
     };
 
+    // =========================================================================
+    // CHUẨN HÓA VÀ ĐỒNG BỘ 100% CÁC KỲ ĐỐI SOÁT TRONG REGISTRY
+    // =========================================================================
+    console.log('\n[2.5] Chuẩn hóa toàn bộ các kỳ đối soát lịch sử trong daily_locked_bets_registry...');
+    const allRegDates = Object.keys(reg.dates || {}).sort();
+    allRegDates.forEach(d => {
+        const entry = reg.dates[d];
+        if (!entry || !entry.isSettled || !entry.settlement) return;
+        const s = entry.settlement;
+        const b = entry.bets || {};
+
+        if (s.de && s.lo4EngineFusion) {
+            const deProfit = s.de.profitK ?? 0;
+            const dePayout = s.de.payoutK ?? (deProfit + (s.de.stakeK || 77000));
+            const deStake = s.de.stakeK || 77000;
+
+            const loProfit = s.lo4EngineFusion.lotoProfitK ?? 0;
+            const loPayout = s.lo4EngineFusion.lotoPayoutK ?? 0;
+            const loStake = s.lo4EngineFusion.lotoStakeK ?? 66000;
+
+            const xienProfit = s.lo4EngineFusion.xienProfitK != null ? s.lo4EngineFusion.xienProfitK : (s.lo4EngineFusion.xienPayoutK != null ? s.lo4EngineFusion.xienPayoutK - (s.lo4EngineFusion.xienStakeK || 11000) : -11000);
+            const xienPayout = s.lo4EngineFusion.xienPayoutK ?? 0;
+            const xienStake = s.lo4EngineFusion.xienStakeK ?? 11000;
+
+            const totProfit = deProfit + loProfit + xienProfit;
+            const totPayout = dePayout + loPayout + xienPayout;
+            const totStake = deStake + loStake + xienStake;
+
+            s.crossHedgingPortfolio = {
+                ...(s.crossHedgingPortfolio || {}),
+                date: d,
+                special: s.de.actualSpecial || entry.actualResult?.special || null,
+                deHits: s.de.isHit ? 1 : 0,
+                isDeHit: Boolean(s.de.isHit),
+                isVipHit: Boolean(s.de.isVipHit),
+                dePayoutK: dePayout,
+                deStakeK: deStake,
+                deProfitK: deProfit,
+                dePnlK: deProfit,
+                loHits: s.lo4EngineFusion.totalHits || 0,
+                loPayoutK: loPayout,
+                loStakeK: loStake,
+                loProfitK: loProfit,
+                loPnlK: loProfit,
+                uniqueTop4Hits: s.lo4EngineFusion.xienHitsCount || 0,
+                xienPayoutK: xienPayout,
+                xienStakeK: xienStake,
+                xienProfitK: xienProfit,
+                xienPnlK: xienProfit,
+                totalPayoutK: totPayout,
+                totalStakeK: totStake,
+                totalProfitK: totProfit,
+                isWin: totProfit > 0,
+                details: {
+                    p1Method: s.de.methodName || 'deMarkovGapHazard',
+                    p2Engine: '4ENGINE_CONSENSUS',
+                    p3Type: 'XIEN_4_QUAY_11_VE'
+                }
+            };
+        }
+
+        // Đảm bảo bets.crossHedgingPortfolio đồng bộ với bets.de
+        if (b.de && b.crossHedgingPortfolio) {
+            b.crossHedgingPortfolio.pillar1_De = {
+                methodId: b.de.methodId || 'deMethod',
+                methodLabel: b.de.methodName,
+                vipNumbers: b.de.vipNumbers || [],
+                singleNumbers: b.de.singleNumbers || [],
+                allNumbers: b.de.numbers || [],
+                stakeK: b.de.stakeK || 70000,
+                targetPayoutVipK: 252000,
+                targetPayoutSingleK: 84000
+            };
+        }
+    });
+
     // Lưu lại registry ở cả stats và data
     reg.updatedAt = new Date().toISOString();
     const regStr = JSON.stringify(reg, null, 2);
@@ -604,56 +684,28 @@ function main() {
         // Đồng bộ registry vào cache
         adv.dailyLockedBetsRegistry = reg;
 
-        // Cập nhật crossHedgingPortfolio row 2026-10-18 trong settledLedger
-        if (adv.crossHedgingPortfolio && Array.isArray(adv.crossHedgingPortfolio.settledLedger)) {
-            const chLedger = adv.crossHedgingPortfolio.settledLedger;
-            const r18Idx = chLedger.findIndex(r => r.date === '2026-10-18');
-            const chRow18 = {
-                date: '2026-10-18',
-                mode: 'ACCUMULATE_AGGRESSIVE',
-                sizingMultiplier: 1.0,
-                dePayoutK: 84000,
-                deStakeK: 70000,
-                deProfitK: 14000,
-                dePnlK: 14000,
-                loPayoutK: 72000,
-                loStakeK: 66000,
-                loProfitK: 6000,
-                loPnlK: 6000,
-                xienPayoutK: 12000,
-                xienStakeK: 11000,
-                xienProfitK: 1000,
-                xienPnlK: 1000,
-                totalPayoutK: 168000,
-                totalStakeK: 147000,
-                totalProfitK: 21000,
-                isWin: true,
-                isAbstain: false,
-                details: {
-                    p1Method: 'dualMerge',
-                    p2Engine: '4ENGINE_CONSENSUS',
-                    p3Type: 'XIEN_4_QUAY_11_VE'
-                }
-            };
-            if (r18Idx >= 0) {
-                chLedger[r18Idx] = chRow18;
-            } else {
-                chLedger.push(chRow18);
-            }
-            chLedger.sort((a, b) => a.date.localeCompare(b.date));
-
-            // Tái tính toán chạy lũy kế (cumulative totals)
+        // Tái tạo toàn diện settledLedger của crossHedgingPortfolio từ registry SSOT
+        if (adv.crossHedgingPortfolio) {
+            const chLedger = [];
             let runDe = 0, runLo = 0, runXien = 0, runTot = 0;
-            chLedger.forEach(row => {
-                runDe += (row.deProfitK || 0);
-                runLo += (row.loProfitK || 0);
-                runXien += (row.xienProfitK || 0);
-                runTot = runDe + runLo + runXien;
-                row.cumDeProfitK = runDe;
-                row.cumLoProfitK = runLo;
-                row.cumXienProfitK = runXien;
-                row.cumulativeProfitK = runTot;
+            allRegDates.forEach(d => {
+                const entry = reg.dates[d];
+                if (!entry || !entry.isSettled || !entry.settlement?.crossHedgingPortfolio) return;
+                const ch = entry.settlement.crossHedgingPortfolio;
+                runDe += (ch.deProfitK || 0);
+                runLo += (ch.loProfitK || 0);
+                runXien += (ch.xienProfitK || 0);
+                runTot += (ch.totalProfitK || 0);
+                chLedger.push({
+                    ...ch,
+                    date: d,
+                    cumDeProfitK: runDe,
+                    cumLoProfitK: runLo,
+                    cumXienProfitK: runXien,
+                    cumulativeProfitK: runTot
+                });
             });
+            adv.crossHedgingPortfolio.settledLedger = chLedger;
 
             // Cập nhật latestRecommendation 2026-10-19 cho crossHedgingPortfolio
             adv.crossHedgingPortfolio.latestRecommendation = d19.bets.crossHedgingPortfolio;
