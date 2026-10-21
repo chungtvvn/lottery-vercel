@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "description": "Single Source of Truth (SSOT) Immutable Daily Bets and Settlement Registry",
-  "updatedAt": "2026-10-21T05:19:05.631Z",
+  "updatedAt": "2026-10-21T05:26:40.490Z",
   "dates": {
     "2026-10-10": {
       "targetDate": "2026-10-10",
@@ -54997,7 +54997,7 @@
           "top5": [
             "70",
             "38",
-            "23",
+            "36",
             "62",
             "66"
           ],
@@ -55207,23 +55207,23 @@
           "totalLotoStakeK": 66000,
           "xien4": {
             "status": "ACTIVE",
-            "reason": "Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé [70-38-23-62] & Bộ 5 Quây 10 vé X3 [70-38-23-62-66]",
+            "reason": "Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé [70-38-36-62] & Bộ 5 Quây 10 vé X3 [70-38-36-62-66]",
             "numbers": [
               "70",
               "38",
-              "23",
+              "36",
               "62"
             ],
             "top4": [
               "70",
               "38",
-              "23",
+              "36",
               "62"
             ],
             "top5": [
               "70",
               "38",
-              "23",
+              "36",
               "62",
               "66"
             ],
@@ -55231,7 +55231,7 @@
               [
                 "70",
                 "38",
-                "23",
+                "36",
                 "62"
               ]
             ],

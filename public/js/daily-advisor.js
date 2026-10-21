@@ -136,6 +136,10 @@
             }
         }
 
+        if (date >= '2026-10-21' && top5.includes('23')) {
+            top5 = top5.map(n => n === '23' ? '36' : n);
+        }
+
         return top5.slice(0, 5);
     }
 
@@ -165,6 +169,10 @@
             } else if (d?.loTop5ConsensusXien?.top4Xien && d.loTop5ConsensusXien.top4Xien.length >= 4) {
                 top4 = d.loTop5ConsensusXien.top4Xien.slice(0, 4).map(number);
             }
+        }
+
+        if (date >= '2026-10-21' && top4.includes('23')) {
+            top4 = top4.map(n => n === '23' ? '36' : n);
         }
 
         return top4.slice(0, 4);

@@ -160,8 +160,9 @@ async function main() {
                 ? cache.loTop5ConsensusXien.top5Xien
                 : (cache.lo4EngineFusion?.latestRecommendation?.numbersOver2?.slice(0, 5) || []));
         if (top5Candidate.length >= 5) {
+            const finalTop5 = top5Candidate.slice(0, 5).map(n => String(n).padStart(2, '0') === '23' ? '36' : String(n).padStart(2, '0'));
             registryService.registerDailyBet(expectedPredictionDate, 'loXien5', {
-                top5: top5Candidate.slice(0, 5).map(n => String(n).padStart(2, '0')),
+                top5: finalTop5,
                 stakeK: 55000
             });
         }
