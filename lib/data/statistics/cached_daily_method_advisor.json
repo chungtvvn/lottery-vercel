@@ -1664524,23 +1664524,23 @@
         "top5": [
           "70",
           "95",
-          "32",
           "38",
-          "52"
+          "52",
+          "36"
         ],
         "h4": 3,
-        "h5": 3,
+        "h5": 2,
         "isWin": true,
         "q11StakeVIP_K": 11000,
         "q11PayoutVIP_K": 84000,
         "q11ProfitVIP_K": 73000,
         "x5Stake55K": 55000,
-        "x5Payout55K": 204000,
-        "x5Profit55K": 149000,
+        "x5Payout55K": 36000,
+        "x5Profit55K": -19000,
         "x5StakeK": 55000,
-        "x5PayoutK": 204000,
-        "x5ProfitK": 149000,
-        "isX5Win55": true,
+        "x5PayoutK": 36000,
+        "x5ProfitK": -19000,
+        "isX5Win55": false,
         "isLive": true
       }
     ],
@@ -2269276,7 +2269276,7 @@
   "dailyLockedBetsRegistry": {
     "version": "1.0.0",
     "description": "Single Source of Truth (SSOT) Immutable Daily Bets and Settlement Registry",
-    "updatedAt": "2026-10-21T04:39:46.245Z",
+    "updatedAt": "2026-10-21T05:19:05.631Z",
     "dates": {
       "2026-10-10": {
         "targetDate": "2026-10-10",
@@ -2323649,9 +2323649,9 @@
               "top5": [
                 "70",
                 "95",
-                "32",
                 "38",
-                "52"
+                "52",
+                "36"
               ],
               "combinations": [
                 [
@@ -2323668,9 +2323668,9 @@
             "top5": [
               "70",
               "95",
-              "32",
               "38",
-              "52"
+              "52",
+              "36"
             ],
             "stakeK": 55000
           },
@@ -2324122,15 +2324122,15 @@
             "top5": [
               "70",
               "95",
-              "32",
               "38",
-              "52"
+              "52",
+              "36"
             ],
-            "h5": 3,
+            "h5": 2,
             "stakeK": 55000,
-            "payoutK": 204000,
-            "profitK": 149000,
-            "isWin": true
+            "payoutK": 36000,
+            "profitK": -19000,
+            "isWin": false
           }
         },
         "actualResult": {
@@ -2329680,5 +2329680,5 @@
       }
     }
   },
-  "updatedAt": "2026-10-21T04:39:46.464Z"
+  "updatedAt": "2026-10-21T05:19:05.937Z"
 }

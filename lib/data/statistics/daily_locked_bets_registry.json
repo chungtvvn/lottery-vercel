@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "description": "Single Source of Truth (SSOT) Immutable Daily Bets and Settlement Registry",
-  "updatedAt": "2026-10-21T04:39:46.245Z",
+  "updatedAt": "2026-10-21T05:19:05.631Z",
   "dates": {
     "2026-10-10": {
       "targetDate": "2026-10-10",
@@ -54374,9 +54374,9 @@
             "top5": [
               "70",
               "95",
-              "32",
               "38",
-              "52"
+              "52",
+              "36"
             ],
             "combinations": [
               [
@@ -54393,9 +54393,9 @@
           "top5": [
             "70",
             "95",
-            "32",
             "38",
-            "52"
+            "52",
+            "36"
           ],
           "stakeK": 55000
         },
@@ -54847,15 +54847,15 @@
           "top5": [
             "70",
             "95",
-            "32",
             "38",
-            "52"
+            "52",
+            "36"
           ],
-          "h5": 3,
+          "h5": 2,
           "stakeK": 55000,
-          "payoutK": 204000,
-          "profitK": 149000,
-          "isWin": true
+          "payoutK": 36000,
+          "profitK": -19000,
+          "isWin": false
         }
       },
       "actualResult": {
