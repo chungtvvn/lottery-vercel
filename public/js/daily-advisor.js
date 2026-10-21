@@ -4809,7 +4809,41 @@
         const isLotoWin = lo4ProfitK > 0;
 
         const lo4LedgerRow = (p?.lo4EngineFusion?.settledLedger || []).find(r => r.date === date);
-        const crossX2 = sLo4.crossX2 || bLo4.crossX2 || lo4LedgerRow?.crossX2 || (isPending ? p?.lo4EngineFusion?.latestRecommendation?.crossX2 : null) || null;
+        let crossX2 = sLo4.crossX2 || bLo4.crossX2 || lo4LedgerRow?.crossX2 || (isPending ? p?.lo4EngineFusion?.latestRecommendation?.crossX2 : null) || null;
+
+        // Safety self-healing: Đảm bảo crossX2 luôn luôn bám chặt 100% dàn gốc t5, t4, t3, t1
+        if (crossX2 && !isPending && (t5.length > 0 || t4.length > 0 || t3.length > 0 || t1.length > 0)) {
+            const c4 = (crossX2.tierX4 || []).map(number);
+            const c5 = (crossX2.tierX5 || []).map(number);
+            if (c4.join(',') !== t4.join(',') || c5.join(',') !== t5.join(',')) {
+                const drawP = (p?.drawPrizesByDate?.[date]?.prizes || []).map(number);
+                const pCnt = {};
+                drawP.forEach(pr => { pCnt[pr] = (pCnt[pr] || 0) + 1; });
+                const promotedX2 = (crossX2.tierX2 || []).map(number);
+                const remX1 = t1.filter(n => !promotedX2.includes(n));
+                let h5 = 0, h4 = 0, h3 = 0, h2 = 0, h1 = 0;
+                t5.forEach(n => { h5 += (pCnt[n] || 0); });
+                t4.forEach(n => { h4 += (pCnt[n] || 0); });
+                t3.forEach(n => { h3 += (pCnt[n] || 0); });
+                promotedX2.forEach(n => { h2 += (pCnt[n] || 0); });
+                remX1.forEach(n => { h1 += (pCnt[n] || 0); });
+                const stKX2 = (t5.length * 5 + t4.length * 4 + t3.length * 3 + promotedX2.length * 2 + remX1.length * 1) * 2200;
+                const payKX2 = (h5 * 5 + h4 * 4 + h3 * 3 + h2 * 2 + h1 * 1) * 8000;
+                crossX2 = {
+                    ...crossX2,
+                    tierX5: t5,
+                    tierX4: t4,
+                    tierX3: t3,
+                    tierX2: promotedX2,
+                    tierX1: remX1,
+                    x2Hits: h2,
+                    dayLotoStakeKX2: stKX2,
+                    dayLotoPayoutKX2: payKX2,
+                    dayLotoProfitKX2: payKX2 - stKX2,
+                    isLotoWinX2: (payKX2 - stKX2) > 0
+                };
+            }
+        }
 
         const lo4Info = {
             date,

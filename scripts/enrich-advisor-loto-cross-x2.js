@@ -22,6 +22,24 @@ async function enrichAdvisorCache() {
 
         lo4.settledLedger.forEach(row => {
             const d = row.date;
+            const regEntry = adv.dailyLockedBetsRegistry?.dates?.[d];
+            const sLo4 = regEntry?.settlement?.lo4EngineFusion || regEntry?.bets?.lo4EngineFusion;
+
+            // Đồng bộ hoá tuyệt đối 100% với SSOT từ dailyLockedBetsRegistry
+            if (sLo4 && sLo4.tierX1 && (sLo4.tierX5 || sLo4.tierX4 || sLo4.tierX3)) {
+                row.tierX5 = sLo4.tierX5 || [];
+                row.tierX4 = sLo4.tierX4 || [];
+                row.tierX3 = sLo4.tierX3 || [];
+                row.tierX1 = sLo4.tierX1 || [];
+                row.dayLotoStakeK = sLo4.lotoStakeK || row.dayLotoStakeK;
+                row.dayLotoPayoutK = sLo4.lotoPayoutK != null ? sLo4.lotoPayoutK : row.dayLotoPayoutK;
+                row.dayLotoProfitK = sLo4.lotoProfitK != null ? sLo4.lotoProfitK : row.dayLotoProfitK;
+                row.dayLotoHits = sLo4.totalHits != null ? sLo4.totalHits : row.dayLotoHits;
+                row.isLotoWin = row.dayLotoProfitK > 0;
+                row.allNumbers = sLo4.betNumbers?.map(b => numStr(b.num || b)) || row.allNumbers;
+                row.betNumbers = sLo4.betNumbers || row.betNumbers;
+            }
+
             const penta = computePentaConsensusForDate(d, adv);
             const pentaHighSet = new Set(penta ? [...(penta.lo.x5Nums || []), ...(penta.lo.x4Nums || []), ...(penta.lo.x3Nums || [])] : []);
 
@@ -70,6 +88,9 @@ async function enrichAdvisorCache() {
                 cumLotoProfitKX2: cumProfitX2,
                 isLotoWinX2: profitKX2 > 0
             };
+            if (regEntry?.settlement?.lo4EngineFusion) {
+                regEntry.settlement.lo4EngineFusion.crossX2 = { ...row.crossX2 };
+            }
         });
 
         // Enrich modes.top7 and modes.top6 if exist
@@ -80,6 +101,15 @@ async function enrichAdvisorCache() {
                     const match = lo4.settledLedger.find(r => r.date === row.date);
                     if (match && match.crossX2) {
                         mCumX2 += match.crossX2.dayLotoProfitKX2;
+                        row.tierX5 = match.tierX5;
+                        row.tierX4 = match.tierX4;
+                        row.tierX3 = match.tierX3;
+                        row.tierX1 = match.tierX1;
+                        row.dayLotoStakeK = match.dayLotoStakeK;
+                        row.dayLotoPayoutK = match.dayLotoPayoutK;
+                        row.dayLotoProfitK = match.dayLotoProfitK;
+                        row.dayLotoHits = match.dayLotoHits;
+                        row.isLotoWin = match.isLotoWin;
                         row.crossX2 = {
                             ...match.crossX2,
                             cumLotoProfitKX2: mCumX2

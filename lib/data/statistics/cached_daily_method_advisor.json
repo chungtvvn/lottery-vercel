@@ -1599407,38 +1599407,35 @@
             "topN": 6,
             "cumLotoProfitK": 569800,
             "crossX2": {
-              "tierX5": [],
+              "tierX5": [
+                "70",
+                "95"
+              ],
               "tierX4": [
-                "22",
-                "38",
-                "68"
+                "32"
               ],
               "tierX3": [
-                "54",
+                "38",
+                "52",
+                "76"
+              ],
+              "tierX2": [
                 "62",
-                "66",
-                "94"
+                "66"
               ],
-              "tierX2": [],
               "tierX1": [
-                "33",
                 "36",
-                "45",
-                "49",
-                "59",
-                "76",
-                "81",
-                "82",
-                "85",
-                "90",
-                "93"
+                "46",
+                "56",
+                "84",
+                "88"
               ],
-              "x2Hits": 0,
-              "dayLotoStakeKX2": 77000,
-              "dayLotoPayoutKX2": 32000,
-              "dayLotoProfitKX2": -45000,
-              "cumLotoProfitKX2": 416000,
-              "isLotoWinX2": false
+              "x2Hits": 1,
+              "dayLotoStakeKX2": 70400,
+              "dayLotoPayoutKX2": 208000,
+              "dayLotoProfitKX2": 137600,
+              "cumLotoProfitKX2": 598600,
+              "isLotoWinX2": true
             }
           }
         ],
@@ -1608082,38 +1608079,35 @@
             "topN": 7,
             "cumLotoProfitK": 569800,
             "crossX2": {
-              "tierX5": [],
+              "tierX5": [
+                "70",
+                "95"
+              ],
               "tierX4": [
-                "22",
-                "38",
-                "68"
+                "32"
               ],
               "tierX3": [
-                "54",
+                "38",
+                "52",
+                "76"
+              ],
+              "tierX2": [
                 "62",
-                "66",
-                "94"
+                "66"
               ],
-              "tierX2": [],
               "tierX1": [
-                "33",
                 "36",
-                "45",
-                "49",
-                "59",
-                "76",
-                "81",
-                "82",
-                "85",
-                "90",
-                "93"
+                "46",
+                "56",
+                "84",
+                "88"
               ],
-              "x2Hits": 0,
-              "dayLotoStakeKX2": 77000,
-              "dayLotoPayoutKX2": 32000,
-              "dayLotoProfitKX2": -45000,
-              "cumLotoProfitKX2": 416000,
-              "isLotoWinX2": false
+              "x2Hits": 1,
+              "dayLotoStakeKX2": 70400,
+              "dayLotoPayoutKX2": 208000,
+              "dayLotoProfitKX2": 137600,
+              "cumLotoProfitKX2": 598600,
+              "isLotoWinX2": true
             }
           }
         ],
@@ -1673460,56 +1673454,71 @@
           "94"
         ],
         "allNumbers": [
-          "22",
+          "70",
+          "95",
+          "32",
           "38",
-          "68",
-          "54",
+          "52",
+          "76",
+          "36",
+          "46",
+          "56",
           "62",
           "66",
-          "94",
-          "33",
-          "36",
-          "45",
-          "49",
-          "59",
-          "76",
-          "81",
-          "82",
-          "85",
-          "90",
-          "93"
+          "84",
+          "88"
         ],
-        "tierX5": [],
+        "tierX5": [
+          "70",
+          "95"
+        ],
         "tierX4": [
-          "22",
-          "38",
-          "68"
+          "32"
         ],
         "tierX3": [
-          "54",
-          "62",
-          "66",
-          "94"
+          "38",
+          "52",
+          "76"
         ],
         "tierX1": [
-          "33",
           "36",
-          "45",
-          "49",
-          "59",
-          "76",
-          "81",
-          "82",
-          "85",
-          "90",
-          "93"
+          "46",
+          "56",
+          "62",
+          "66",
+          "84",
+          "88"
         ],
         "betNumbers": [
           {
-            "num": "22",
+            "num": "70",
+            "votes": 4,
+            "multiplier": 5,
+            "hits": 2,
+            "methods": [
+              "QMBF",
+              "Dual",
+              "Tri",
+              "RRF"
+            ]
+          },
+          {
+            "num": "95",
+            "votes": 4,
+            "multiplier": 5,
+            "hits": 1,
+            "methods": [
+              "QMBF",
+              "Dual",
+              "Tri",
+              "RRF"
+            ]
+          },
+          {
+            "num": "32",
             "votes": 3,
             "multiplier": 4,
-            "hits": 0,
+            "hits": 2,
             "methods": [
               "QMBF",
               "Dual",
@@ -1673518,28 +1673527,6 @@
           },
           {
             "num": "38",
-            "votes": 3,
-            "multiplier": 4,
-            "hits": 0,
-            "methods": [
-              "QMBF",
-              "Dual",
-              "Tri"
-            ]
-          },
-          {
-            "num": "68",
-            "votes": 3,
-            "multiplier": 4,
-            "hits": 0,
-            "methods": [
-              "QMBF",
-              "Dual",
-              "Tri"
-            ]
-          },
-          {
-            "num": "54",
             "votes": 2,
             "multiplier": 3,
             "hits": 0,
@@ -1673549,27 +1673536,7 @@
             ]
           },
           {
-            "num": "62",
-            "votes": 2,
-            "multiplier": 3,
-            "hits": 0,
-            "methods": [
-              "QMBF",
-              "RRF"
-            ]
-          },
-          {
-            "num": "66",
-            "votes": 2,
-            "multiplier": 3,
-            "hits": 1,
-            "methods": [
-              "Dual",
-              "Tri"
-            ]
-          },
-          {
-            "num": "94",
+            "num": "52",
             "votes": 2,
             "multiplier": 3,
             "hits": 0,
@@ -1673579,11 +1673546,12 @@
             ]
           },
           {
-            "num": "33",
-            "votes": 1,
-            "multiplier": 1,
+            "num": "76",
+            "votes": 2,
+            "multiplier": 3,
             "hits": 0,
             "methods": [
+              "Dual",
               "Tri"
             ]
           },
@@ -1673593,11 +1673561,11 @@
             "multiplier": 1,
             "hits": 0,
             "methods": [
-              "QMBF"
+              "RRF"
             ]
           },
           {
-            "num": "45",
+            "num": "46",
             "votes": 1,
             "multiplier": 1,
             "hits": 0,
@@ -1673606,61 +1673574,7 @@
             ]
           },
           {
-            "num": "49",
-            "votes": 1,
-            "multiplier": 1,
-            "hits": 0,
-            "methods": [
-              "Dual"
-            ]
-          },
-          {
-            "num": "59",
-            "votes": 1,
-            "multiplier": 1,
-            "hits": 0,
-            "methods": [
-              "QMBF"
-            ]
-          },
-          {
-            "num": "76",
-            "votes": 1,
-            "multiplier": 1,
-            "hits": 0,
-            "methods": [
-              "QMBF"
-            ]
-          },
-          {
-            "num": "81",
-            "votes": 1,
-            "multiplier": 1,
-            "hits": 0,
-            "methods": [
-              "RRF"
-            ]
-          },
-          {
-            "num": "82",
-            "votes": 1,
-            "multiplier": 1,
-            "hits": 0,
-            "methods": [
-              "RRF"
-            ]
-          },
-          {
-            "num": "85",
-            "votes": 1,
-            "multiplier": 1,
-            "hits": 0,
-            "methods": [
-              "RRF"
-            ]
-          },
-          {
-            "num": "90",
+            "num": "56",
             "votes": 1,
             "multiplier": 1,
             "hits": 1,
@@ -1673669,7 +1673583,34 @@
             ]
           },
           {
-            "num": "93",
+            "num": "62",
+            "votes": 1,
+            "multiplier": 1,
+            "hits": 0,
+            "methods": [
+              "RRF"
+            ]
+          },
+          {
+            "num": "66",
+            "votes": 1,
+            "multiplier": 1,
+            "hits": 1,
+            "methods": [
+              "RRF"
+            ]
+          },
+          {
+            "num": "84",
+            "votes": 1,
+            "multiplier": 1,
+            "hits": 0,
+            "methods": [
+              "RRF"
+            ]
+          },
+          {
+            "num": "88",
             "votes": 1,
             "multiplier": 1,
             "hits": 0,
@@ -1673678,11 +1673619,11 @@
             ]
           }
         ],
-        "dayLotoStakeK": 77000,
-        "dayLotoPayoutK": 32000,
-        "dayLotoProfitK": -45000,
-        "dayLotoHits": 2,
-        "isLotoWin": false,
+        "dayLotoStakeK": 66000,
+        "dayLotoPayoutK": 200000,
+        "dayLotoProfitK": 134000,
+        "dayLotoHits": 7,
+        "isLotoWin": true,
         "xien4Status": "ACTIVE",
         "xien4Reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [22-38-68-54] (Ăn từ 2 con)",
         "xien4Combinations": [
@@ -1673700,38 +1673641,35 @@
         "totalDayProfitK": -56000,
         "cumLotoProfitK": 5499200,
         "crossX2": {
-          "tierX5": [],
+          "tierX5": [
+            "70",
+            "95"
+          ],
           "tierX4": [
-            "22",
-            "38",
-            "68"
+            "32"
           ],
           "tierX3": [
-            "54",
+            "38",
+            "52",
+            "76"
+          ],
+          "tierX2": [
             "62",
-            "66",
-            "94"
+            "66"
           ],
-          "tierX2": [],
           "tierX1": [
-            "33",
             "36",
-            "45",
-            "49",
-            "59",
-            "76",
-            "81",
-            "82",
-            "85",
-            "90",
-            "93"
+            "46",
+            "56",
+            "84",
+            "88"
           ],
-          "x2Hits": 0,
-          "dayLotoStakeKX2": 77000,
-          "dayLotoPayoutKX2": 32000,
-          "dayLotoProfitKX2": -45000,
-          "cumLotoProfitKX2": 5686200,
-          "isLotoWinX2": false
+          "x2Hits": 1,
+          "dayLotoStakeKX2": 70400,
+          "dayLotoPayoutKX2": 208000,
+          "dayLotoProfitKX2": 137600,
+          "cumLotoProfitKX2": 5868800,
+          "isLotoWinX2": true
         }
       }
     ],
@@ -2383446,9 +2383384,7 @@
             "93",
             "94",
             "95",
-            "97"
-          ],
-          "x1Nums": [
+            "97",
             "00",
             "01",
             "02",
@@ -2383465,7 +2383401,9 @@
             "20",
             "25",
             "40",
-            "41",
+            "41"
+          ],
+          "x1Nums": [
             "55",
             "64",
             "68",
@@ -2383479,57 +2383417,57 @@
             "99"
           ],
           "freqMap": {
-            "10": 3,
-            "12": 3,
-            "13": 2,
-            "14": 2,
-            "16": 3,
-            "18": 3,
-            "19": 2,
-            "20": 1,
-            "22": 3,
-            "25": 1,
-            "30": 3,
-            "32": 3,
-            "34": 3,
-            "36": 3,
-            "40": 1,
-            "41": 1,
-            "42": 3,
-            "50": 3,
-            "52": 2,
-            "54": 2,
-            "55": 1,
-            "62": 2,
-            "64": 1,
-            "68": 1,
-            "69": 1,
-            "70": 3,
-            "72": 2,
+            "10": 5,
+            "12": 5,
+            "13": 4,
+            "14": 4,
+            "16": 5,
+            "18": 5,
+            "19": 4,
+            "20": 3,
+            "22": 5,
+            "25": 3,
+            "30": 5,
+            "32": 5,
+            "34": 5,
+            "36": 5,
+            "40": 3,
+            "41": 3,
+            "42": 5,
+            "50": 5,
+            "52": 4,
+            "54": 4,
+            "55": 2,
+            "62": 4,
+            "64": 2,
+            "68": 2,
+            "69": 2,
+            "70": 5,
+            "72": 4,
             "79": 1,
-            "82": 3,
+            "82": 5,
             "84": 1,
             "89": 1,
             "90": 1,
-            "91": 2,
-            "92": 3,
-            "93": 3,
-            "94": 3,
-            "95": 3,
+            "91": 4,
+            "92": 5,
+            "93": 5,
+            "94": 5,
+            "95": 5,
             "96": 1,
-            "97": 3,
+            "97": 5,
             "98": 1,
             "99": 1,
-            "09": 3,
-            "02": 2,
-            "00": 2,
-            "01": 2,
-            "03": 2,
-            "05": 2
+            "09": 5,
+            "00": 4,
+            "01": 4,
+            "02": 4,
+            "03": 4,
+            "05": 4
           },
-          "stakeK": 13200,
+          "stakeK": 16600,
           "payoutK": 33600,
-          "profitK": 20400,
+          "profitK": 17000,
           "isHit": true,
           "isHitX2": true,
           "isHitX1": false
@@ -2383553,15 +2383491,14 @@
             "38",
             "70",
             "95",
-            "32"
-          ],
-          "x4Nums": [
+            "32",
             "62"
           ],
-          "x3Nums": [
+          "x4Nums": [
             "66",
             "52"
           ],
+          "x3Nums": [],
           "x1Nums": [
             "36",
             "75",
@@ -2383575,9 +2383512,9 @@
             "36": 1,
             "38": 5,
             "42": 1,
-            "52": 3,
-            "62": 4,
-            "66": 3,
+            "52": 4,
+            "62": 5,
+            "66": 4,
             "70": 5,
             "75": 1,
             "95": 5,
@@ -2383585,16 +2383522,16 @@
           },
           "freqMap": {
             "22": 1,
-            "32": 4,
+            "32": 5,
             "36": 1,
-            "38": 4,
+            "38": 5,
             "42": 1,
-            "52": 2,
-            "62": 3,
-            "66": 2,
-            "70": 4,
+            "52": 3,
+            "62": 4,
+            "66": 3,
+            "70": 5,
             "75": 1,
-            "95": 4,
+            "95": 5,
             "04": 1
           },
           "hits": 7,
@@ -2383605,11 +2383542,11 @@
             "66",
             "75"
           ],
-          "stakeK": 77000,
-          "payoutK": 232000,
-          "profitK": 155000,
+          "stakeK": 83600,
+          "payoutK": 240000,
+          "profitK": 156400,
           "isWin": true,
-          "cumProfitK": 6271400
+          "cumProfitK": 6272800
         },
         "loCrossX2": {
           "numbers": [
@@ -2383630,33 +2383567,31 @@
             "38",
             "70",
             "95",
-            "32"
-          ],
-          "x4Nums": [
+            "32",
             "62"
           ],
-          "x3Nums": [
+          "x4Nums": [
             "66",
             "52"
           ],
-          "x2Nums": [
-            "22"
-          ],
+          "x3Nums": [],
+          "x2Nums": [],
           "x1Nums": [
             "36",
             "75",
             "04",
+            "22",
             "42"
           ],
           "multiplierMap": {
-            "22": 2,
+            "22": 1,
             "32": 5,
             "36": 1,
             "38": 5,
             "42": 1,
-            "52": 3,
-            "62": 4,
-            "66": 3,
+            "52": 4,
+            "62": 5,
+            "66": 4,
             "70": 5,
             "75": 1,
             "95": 5,
@@ -2383670,11 +2383605,11 @@
             "66",
             "75"
           ],
-          "stakeK": 79200,
-          "payoutK": 232000,
-          "profitK": 152800,
+          "stakeK": 83600,
+          "payoutK": 240000,
+          "profitK": 156400,
           "isWin": true,
-          "cumProfitK": 6236000
+          "cumProfitK": 6239600
         },
         "xien5": {
           "top5": [
@@ -2383723,9 +2383658,9 @@
           "isWin": true
         },
         "combo": {
-          "stakeK": 95700,
-          "payoutK": 286000,
-          "profitK": 190300,
+          "stakeK": 105700,
+          "payoutK": 294000,
+          "profitK": 188300,
           "isWin": true
         }
       }
@@ -2384445,7 +2384380,37 @@
                 ],
                 "hits": 0
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [
+                "70"
+              ],
+              "tierX4": [],
+              "tierX3": [
+                "36",
+                "43",
+                "62",
+                "79"
+              ],
+              "tierX2": [
+                "02",
+                "72",
+                "88",
+                "93"
+              ],
+              "tierX1": [
+                "09",
+                "22",
+                "30",
+                "95"
+              ],
+              "x2Hits": 1,
+              "dayLotoStakeKX2": 63800,
+              "dayLotoPayoutKX2": 112000,
+              "dayLotoProfitKX2": 48200,
+              "cumLotoProfitKX2": 5757800,
+              "isLotoWinX2": true
+            }
           },
           "deDropoffMerge": {
             "date": "2026-10-10",
@@ -2389570,7 +2389535,39 @@
                 ],
                 "hits": 0
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [],
+              "tierX4": [
+                "04",
+                "43",
+                "49"
+              ],
+              "tierX3": [
+                "36",
+                "70",
+                "81"
+              ],
+              "tierX2": [
+                "52",
+                "62"
+              ],
+              "tierX1": [
+                "03",
+                "46",
+                "54",
+                "56",
+                "84",
+                "88",
+                "95"
+              ],
+              "x2Hits": 0,
+              "dayLotoStakeKX2": 70400,
+              "dayLotoPayoutKX2": 80000,
+              "dayLotoProfitKX2": 9600,
+              "cumLotoProfitKX2": 5767400,
+              "isLotoWinX2": true
+            }
           },
           "deDropoffMerge": {
             "date": "2026-10-11",
@@ -2390786,7 +2390783,43 @@
                   "RRF"
                 ]
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [],
+              "tierX4": [
+                "64",
+                "92",
+                "93"
+              ],
+              "tierX3": [
+                "38",
+                "72",
+                "75"
+              ],
+              "tierX2": [
+                "62"
+              ],
+              "tierX1": [
+                "01",
+                "14",
+                "31",
+                "36",
+                "43",
+                "44",
+                "53",
+                "63",
+                "66",
+                "70",
+                "71",
+                "91"
+              ],
+              "x2Hits": 0,
+              "dayLotoStakeKX2": 77000,
+              "dayLotoPayoutKX2": 88000,
+              "dayLotoProfitKX2": 11000,
+              "cumLotoProfitKX2": 5281200,
+              "isLotoWinX2": true
+            }
           },
           "crossHedgingPortfolio": {
             "date": "2026-09-16",
@@ -2391677,7 +2391710,42 @@
                   "RRF"
                 ]
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [],
+              "tierX4": [
+                "43",
+                "52",
+                "66"
+              ],
+              "tierX3": [
+                "12",
+                "29",
+                "65",
+                "75"
+              ],
+              "tierX2": [
+                "36",
+                "62"
+              ],
+              "tierX1": [
+                "34",
+                "44",
+                "46",
+                "55",
+                "63",
+                "76",
+                "79",
+                "81",
+                "82"
+              ],
+              "x2Hits": 1,
+              "dayLotoStakeKX2": 81400,
+              "dayLotoPayoutKX2": 144000,
+              "dayLotoProfitKX2": 62600,
+              "cumLotoProfitKX2": 5343800,
+              "isLotoWinX2": true
+            }
           },
           "crossHedgingPortfolio": {
             "date": "2026-09-17",
@@ -2392468,7 +2392536,37 @@
                   "Tri"
                 ]
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [
+                "62"
+              ],
+              "tierX4": [
+                "22",
+                "29",
+                "36",
+                "63"
+              ],
+              "tierX3": [
+                "01",
+                "64",
+                "76",
+                "84"
+              ],
+              "tierX2": [],
+              "tierX1": [
+                "38",
+                "43",
+                "54",
+                "96"
+              ],
+              "x2Hits": 0,
+              "dayLotoStakeKX2": 81400,
+              "dayLotoPayoutKX2": 104000,
+              "dayLotoProfitKX2": 22600,
+              "cumLotoProfitKX2": 5366400,
+              "isLotoWinX2": true
+            }
           },
           "crossHedgingPortfolio": {
             "date": "2026-09-18",
@@ -2393224,7 +2393322,36 @@
                   "Dual"
                 ]
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [
+                "52",
+                "66",
+                "76"
+              ],
+              "tierX4": [
+                "24",
+                "38",
+                "64"
+              ],
+              "tierX3": [
+                "22"
+              ],
+              "tierX2": [],
+              "tierX1": [
+                "00",
+                "23",
+                "29",
+                "54",
+                "97"
+              ],
+              "x2Hits": 0,
+              "dayLotoStakeKX2": 77000,
+              "dayLotoPayoutKX2": 144000,
+              "dayLotoProfitKX2": 67000,
+              "cumLotoProfitKX2": 5433400,
+              "isLotoWinX2": true
+            }
           },
           "crossHedgingPortfolio": {
             "date": "2026-09-19",
@@ -2393999,7 +2394126,37 @@
                   "Dual"
                 ]
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [
+                "10",
+                "54",
+                "88"
+              ],
+              "tierX4": [
+                "01",
+                "79"
+              ],
+              "tierX3": [
+                "38",
+                "49",
+                "68"
+              ],
+              "tierX2": [
+                "57"
+              ],
+              "tierX1": [
+                "03",
+                "92",
+                "95"
+              ],
+              "x2Hits": 0,
+              "dayLotoStakeKX2": 81400,
+              "dayLotoPayoutKX2": 88000,
+              "dayLotoProfitKX2": 6600,
+              "cumLotoProfitKX2": 5440000,
+              "isLotoWinX2": true
+            }
           },
           "crossHedgingPortfolio": {
             "date": "2026-09-20",
@@ -2394793,7 +2394950,38 @@
                   "Dual"
                 ]
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [
+                "36"
+              ],
+              "tierX4": [
+                "38",
+                "54",
+                "62"
+              ],
+              "tierX3": [
+                "12",
+                "22",
+                "64",
+                "82",
+                "84"
+              ],
+              "tierX2": [],
+              "tierX1": [
+                "01",
+                "24",
+                "49",
+                "56",
+                "70"
+              ],
+              "x2Hits": 0,
+              "dayLotoStakeKX2": 81400,
+              "dayLotoPayoutKX2": 40000,
+              "dayLotoProfitKX2": -41400,
+              "cumLotoProfitKX2": 5398600,
+              "isLotoWinX2": false
+            }
           },
           "crossHedgingPortfolio": {
             "date": "2026-09-21",
@@ -2395690,7 +2395878,44 @@
                   "RRF"
                 ]
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [],
+              "tierX4": [
+                "24"
+              ],
+              "tierX3": [
+                "00",
+                "23",
+                "31",
+                "57",
+                "92",
+                "94"
+              ],
+              "tierX2": [
+                "48",
+                "62",
+                "64"
+              ],
+              "tierX1": [
+                "05",
+                "18",
+                "47",
+                "49",
+                "66",
+                "76",
+                "80",
+                "84",
+                "87",
+                "96"
+              ],
+              "x2Hits": 1,
+              "dayLotoStakeKX2": 83600,
+              "dayLotoPayoutKX2": 128000,
+              "dayLotoProfitKX2": 44400,
+              "cumLotoProfitKX2": 5443000,
+              "isLotoWinX2": true
+            }
           },
           "crossHedgingPortfolio": {
             "date": "2026-09-22",
@@ -2396594,7 +2396819,44 @@
                   "RRF"
                 ]
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [],
+              "tierX4": [
+                "22"
+              ],
+              "tierX3": [
+                "29",
+                "44",
+                "54",
+                "62",
+                "70",
+                "93"
+              ],
+              "tierX2": [
+                "72",
+                "92"
+              ],
+              "tierX1": [
+                "01",
+                "08",
+                "41",
+                "45",
+                "59",
+                "64",
+                "80",
+                "81",
+                "83",
+                "84",
+                "94"
+              ],
+              "x2Hits": 0,
+              "dayLotoStakeKX2": 81400,
+              "dayLotoPayoutKX2": 16000,
+              "dayLotoProfitKX2": -65400,
+              "cumLotoProfitKX2": 5377600,
+              "isLotoWinX2": false
+            }
           },
           "crossHedgingPortfolio": {
             "date": "2026-09-23",
@@ -2397456,7 +2397718,42 @@
                   "RRF"
                 ]
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [],
+              "tierX4": [
+                "22",
+                "38",
+                "64"
+              ],
+              "tierX3": [
+                "43",
+                "72",
+                "75",
+                "88"
+              ],
+              "tierX2": [
+                "36"
+              ],
+              "tierX1": [
+                "09",
+                "35",
+                "54",
+                "61",
+                "70",
+                "76",
+                "82",
+                "91",
+                "93",
+                "98"
+              ],
+              "x2Hits": 0,
+              "dayLotoStakeKX2": 79200,
+              "dayLotoPayoutKX2": 72000,
+              "dayLotoProfitKX2": -7200,
+              "cumLotoProfitKX2": 5370400,
+              "isLotoWinX2": false
+            }
           },
           "crossHedgingPortfolio": {
             "date": "2026-09-24",
@@ -2398342,7 +2398639,43 @@
                   "Dual"
                 ]
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [],
+              "tierX4": [
+                "38",
+                "52",
+                "54"
+              ],
+              "tierX3": [
+                "04",
+                "76",
+                "85"
+              ],
+              "tierX2": [
+                "22",
+                "62",
+                "72"
+              ],
+              "tierX1": [
+                "15",
+                "24",
+                "37",
+                "41",
+                "43",
+                "48",
+                "63",
+                "92",
+                "95",
+                "97"
+              ],
+              "x2Hits": 1,
+              "dayLotoStakeKX2": 81400,
+              "dayLotoPayoutKX2": 80000,
+              "dayLotoProfitKX2": -1400,
+              "cumLotoProfitKX2": 5369000,
+              "isLotoWinX2": false
+            }
           },
           "crossHedgingPortfolio": {
             "date": "2026-09-25",
@@ -2399154,7 +2399487,38 @@
                   "QMBF"
                 ]
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [],
+              "tierX4": [
+                "00",
+                "22",
+                "38",
+                "66",
+                "68",
+                "84"
+              ],
+              "tierX3": [
+                "46"
+              ],
+              "tierX2": [],
+              "tierX1": [
+                "04",
+                "18",
+                "23",
+                "26",
+                "30",
+                "70",
+                "71",
+                "75"
+              ],
+              "x2Hits": 0,
+              "dayLotoStakeKX2": 77000,
+              "dayLotoPayoutKX2": 136000,
+              "dayLotoProfitKX2": 59000,
+              "cumLotoProfitKX2": 5428000,
+              "isLotoWinX2": true
+            }
           },
           "crossHedgingPortfolio": {
             "date": "2026-09-26",
@@ -2400010,7 +2400374,41 @@
                   "RRF"
                 ]
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [],
+              "tierX4": [
+                "22",
+                "38",
+                "68"
+              ],
+              "tierX3": [
+                "54",
+                "62",
+                "66",
+                "94"
+              ],
+              "tierX2": [],
+              "tierX1": [
+                "33",
+                "36",
+                "45",
+                "49",
+                "59",
+                "76",
+                "81",
+                "82",
+                "85",
+                "90",
+                "93"
+              ],
+              "x2Hits": 0,
+              "dayLotoStakeKX2": 77000,
+              "dayLotoPayoutKX2": 128000,
+              "dayLotoProfitKX2": 51000,
+              "cumLotoProfitKX2": 5479000,
+              "isLotoWinX2": true
+            }
           },
           "crossHedgingPortfolio": {
             "date": "2026-09-27",
@@ -2400796,7 +2401194,39 @@
                   "QMBF"
                 ]
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [
+                "52"
+              ],
+              "tierX4": [
+                "62",
+                "68",
+                "93"
+              ],
+              "tierX3": [
+                "01",
+                "11",
+                "14",
+                "43",
+                "73"
+              ],
+              "tierX2": [
+                "19",
+                "41"
+              ],
+              "tierX1": [
+                "07",
+                "37",
+                "59"
+              ],
+              "x2Hits": 0,
+              "dayLotoStakeKX2": 85800,
+              "dayLotoPayoutKX2": 48000,
+              "dayLotoProfitKX2": -37800,
+              "cumLotoProfitKX2": 5441200,
+              "isLotoWinX2": false
+            }
           },
           "crossHedgingPortfolio": {
             "date": "2026-09-28",
@@ -2401579,7 +2402009,38 @@
                   "Dual"
                 ]
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [],
+              "tierX4": [
+                "10",
+                "11",
+                "24"
+              ],
+              "tierX3": [
+                "36",
+                "38",
+                "62",
+                "65"
+              ],
+              "tierX2": [
+                "33"
+              ],
+              "tierX1": [
+                "03",
+                "19",
+                "25",
+                "67",
+                "73",
+                "86"
+              ],
+              "x2Hits": 1,
+              "dayLotoStakeKX2": 70400,
+              "dayLotoPayoutKX2": 128000,
+              "dayLotoProfitKX2": 57600,
+              "cumLotoProfitKX2": 5498800,
+              "isLotoWinX2": true
+            }
           },
           "crossHedgingPortfolio": {
             "date": "2026-09-29",
@@ -2402359,7 +2402820,37 @@
                   "Dual"
                 ]
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [],
+              "tierX4": [
+                "10",
+                "11",
+                "24"
+              ],
+              "tierX3": [
+                "36",
+                "38",
+                "62",
+                "65"
+              ],
+              "tierX2": [],
+              "tierX1": [
+                "06",
+                "17",
+                "23",
+                "30",
+                "48",
+                "72",
+                "88"
+              ],
+              "x2Hits": 0,
+              "dayLotoStakeKX2": 68200,
+              "dayLotoPayoutKX2": 96000,
+              "dayLotoProfitKX2": 27800,
+              "cumLotoProfitKX2": 5526600,
+              "isLotoWinX2": true
+            }
           },
           "crossHedgingPortfolio": {
             "date": "2026-09-30",
@@ -2403036,7 +2403527,34 @@
                   "RRF"
                 ]
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [
+                "20",
+                "36",
+                "76",
+                "92"
+              ],
+              "tierX4": [
+                "52"
+              ],
+              "tierX3": [
+                "95"
+              ],
+              "tierX2": [
+                "33"
+              ],
+              "tierX1": [
+                "59",
+                "72"
+              ],
+              "x2Hits": 0,
+              "dayLotoStakeKX2": 68200,
+              "dayLotoPayoutKX2": 136000,
+              "dayLotoProfitKX2": 67800,
+              "cumLotoProfitKX2": 5594400,
+              "isLotoWinX2": true
+            }
           },
           "crossHedgingPortfolio": {
             "date": "2026-10-01",
@@ -2403832,7 +2404350,39 @@
                   "QMBF"
                 ]
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [],
+              "tierX4": [
+                "22",
+                "38",
+                "70",
+                "93"
+              ],
+              "tierX3": [
+                "41"
+              ],
+              "tierX2": [
+                "72",
+                "75",
+                "95"
+              ],
+              "tierX1": [
+                "45",
+                "61",
+                "62",
+                "81",
+                "82",
+                "85",
+                "92"
+              ],
+              "x2Hits": 2,
+              "dayLotoStakeKX2": 70400,
+              "dayLotoPayoutKX2": 112000,
+              "dayLotoProfitKX2": 41600,
+              "cumLotoProfitKX2": 5636000,
+              "isLotoWinX2": true
+            }
           },
           "crossHedgingPortfolio": {
             "date": "2026-10-02",
@@ -2404594,7 +2405144,38 @@
                   "QMBF"
                 ]
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [],
+              "tierX4": [
+                "38",
+                "62",
+                "76"
+              ],
+              "tierX3": [
+                "10",
+                "11",
+                "24",
+                "36"
+              ],
+              "tierX2": [
+                "75"
+              ],
+              "tierX1": [
+                "45",
+                "65",
+                "81",
+                "82",
+                "85",
+                "93"
+              ],
+              "x2Hits": 0,
+              "dayLotoStakeKX2": 70400,
+              "dayLotoPayoutKX2": 96000,
+              "dayLotoProfitKX2": 25600,
+              "cumLotoProfitKX2": 5661600,
+              "isLotoWinX2": true
+            }
           },
           "crossHedgingPortfolio": {
             "date": "2026-10-03",
@@ -2405354,7 +2405935,39 @@
                   "RRF"
                 ]
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [
+                "93"
+              ],
+              "tierX4": [
+                "54",
+                "95"
+              ],
+              "tierX3": [
+                "10",
+                "12",
+                "62"
+              ],
+              "tierX2": [
+                "52"
+              ],
+              "tierX1": [
+                "01",
+                "45",
+                "72",
+                "78",
+                "81",
+                "82",
+                "85"
+              ],
+              "x2Hits": 0,
+              "dayLotoStakeKX2": 68200,
+              "dayLotoPayoutKX2": 24000,
+              "dayLotoProfitKX2": -44200,
+              "cumLotoProfitKX2": 5617400,
+              "isLotoWinX2": false
+            }
           },
           "crossHedgingPortfolio": {
             "date": "2026-10-04",
@@ -2406136,7 +2406749,39 @@
                   "Dual"
                 ]
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [
+                "62"
+              ],
+              "tierX4": [
+                "52",
+                "84",
+                "88"
+              ],
+              "tierX3": [
+                "36"
+              ],
+              "tierX2": [
+                "38",
+                "70"
+              ],
+              "tierX1": [
+                "09",
+                "45",
+                "81",
+                "82",
+                "85",
+                "93",
+                "95"
+              ],
+              "x2Hits": 2,
+              "dayLotoStakeKX2": 68200,
+              "dayLotoPayoutKX2": 120000,
+              "dayLotoProfitKX2": 51800,
+              "cumLotoProfitKX2": 5669200,
+              "isLotoWinX2": true
+            }
           },
           "crossHedgingPortfolio": {
             "date": "2026-10-05",
@@ -2406870,7 +2407515,36 @@
                   "Tri"
                 ]
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [
+                "38",
+                "52",
+                "66"
+              ],
+              "tierX4": [
+                "68",
+                "76"
+              ],
+              "tierX3": [
+                "43",
+                "44",
+                "59",
+                "70"
+              ],
+              "tierX2": [
+                "62"
+              ],
+              "tierX1": [
+                "95"
+              ],
+              "x2Hits": 0,
+              "dayLotoStakeKX2": 83600,
+              "dayLotoPayoutKX2": 80000,
+              "dayLotoProfitKX2": -3600,
+              "cumLotoProfitKX2": 5665600,
+              "isLotoWinX2": false
+            }
           },
           "crossHedgingPortfolio": {
             "date": "2026-10-06",
@@ -2407656,7 +2408330,39 @@
                   "RRF"
                 ]
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [
+                "62"
+              ],
+              "tierX4": [
+                "38",
+                "68"
+              ],
+              "tierX3": [
+                "43",
+                "52",
+                "94"
+              ],
+              "tierX2": [
+                "02"
+              ],
+              "tierX1": [
+                "01",
+                "45",
+                "54",
+                "81",
+                "82",
+                "85",
+                "93"
+              ],
+              "x2Hits": 2,
+              "dayLotoStakeKX2": 68200,
+              "dayLotoPayoutKX2": 144000,
+              "dayLotoProfitKX2": 75800,
+              "cumLotoProfitKX2": 5741400,
+              "isLotoWinX2": true
+            }
           },
           "crossHedgingPortfolio": {
             "date": "2026-10-07",
@@ -2408418,7 +2409124,37 @@
                   "RRF"
                 ]
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [
+                "38",
+                "62",
+                "75",
+                "76"
+              ],
+              "tierX4": [],
+              "tierX3": [
+                "54",
+                "66",
+                "90"
+              ],
+              "tierX2": [
+                "43",
+                "70"
+              ],
+              "tierX1": [
+                "10",
+                "63",
+                "84",
+                "88"
+              ],
+              "x2Hits": 2,
+              "dayLotoStakeKX2": 81400,
+              "dayLotoPayoutKX2": 72000,
+              "dayLotoProfitKX2": -9400,
+              "cumLotoProfitKX2": 5732000,
+              "isLotoWinX2": false
+            }
           },
           "crossHedgingPortfolio": {
             "date": "2026-10-08",
@@ -2409214,7 +2409950,39 @@
                   "RRF"
                 ]
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [],
+              "tierX4": [
+                "38",
+                "62",
+                "70"
+              ],
+              "tierX3": [
+                "19",
+                "54",
+                "93"
+              ],
+              "tierX2": [
+                "10",
+                "43"
+              ],
+              "tierX1": [
+                "11",
+                "46",
+                "49",
+                "56",
+                "84",
+                "88",
+                "95"
+              ],
+              "x2Hits": 0,
+              "dayLotoStakeKX2": 70400,
+              "dayLotoPayoutKX2": 48000,
+              "dayLotoProfitKX2": -22400,
+              "cumLotoProfitKX2": 5709600,
+              "isLotoWinX2": false
+            }
           },
           "crossHedgingPortfolio": {
             "date": "2026-10-09",
@@ -2410129,7 +2410897,40 @@
                 ],
                 "hits": 0
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [],
+              "tierX4": [
+                "38",
+                "62"
+              ],
+              "tierX3": [
+                "22",
+                "36",
+                "43",
+                "76"
+              ],
+              "tierX2": [
+                "72"
+              ],
+              "tierX1": [
+                "46",
+                "54",
+                "56",
+                "59",
+                "70",
+                "84",
+                "88",
+                "93",
+                "95"
+              ],
+              "x2Hits": 1,
+              "dayLotoStakeKX2": 68200,
+              "dayLotoPayoutKX2": 64000,
+              "dayLotoProfitKX2": -4200,
+              "cumLotoProfitKX2": 5763200,
+              "isLotoWinX2": false
+            }
           },
           "crossHedgingPortfolio": {
             "date": "2026-10-12",
@@ -2411194,7 +2411995,41 @@
                 ],
                 "hits": 1
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [],
+              "tierX4": [
+                "36",
+                "43",
+                "62",
+                "76"
+              ],
+              "tierX3": [
+                "04",
+                "63",
+                "94"
+              ],
+              "tierX2": [
+                "54",
+                "72"
+              ],
+              "tierX1": [
+                "46",
+                "56",
+                "70",
+                "84",
+                "86",
+                "88",
+                "93",
+                "95"
+              ],
+              "x2Hits": 0,
+              "dayLotoStakeKX2": 81400,
+              "dayLotoPayoutKX2": 80000,
+              "dayLotoProfitKX2": -1400,
+              "cumLotoProfitKX2": 5761800,
+              "isLotoWinX2": false
+            }
           },
           "crossHedgingPortfolio": {
             "date": "2026-10-13",
@@ -2412184,7 +2413019,41 @@
                 ],
                 "hits": 0
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [],
+              "tierX4": [
+                "36",
+                "38",
+                "52",
+                "75"
+              ],
+              "tierX3": [
+                "66",
+                "81",
+                "88"
+              ],
+              "tierX2": [
+                "72"
+              ],
+              "tierX1": [
+                "15",
+                "43",
+                "46",
+                "56",
+                "70",
+                "84",
+                "86",
+                "95",
+                "97"
+              ],
+              "x2Hits": 0,
+              "dayLotoStakeKX2": 79200,
+              "dayLotoPayoutKX2": 104000,
+              "dayLotoProfitKX2": 24800,
+              "cumLotoProfitKX2": 5786600,
+              "isLotoWinX2": true
+            }
           },
           "crossHedgingPortfolio": {
             "date": "2026-10-14",
@@ -2417199,7 +2418068,38 @@
                 ],
                 "hits": 0
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [],
+              "tierX4": [
+                "22",
+                "75",
+                "95"
+              ],
+              "tierX3": [
+                "36",
+                "54",
+                "59",
+                "88"
+              ],
+              "tierX2": [
+                "38",
+                "52"
+              ],
+              "tierX1": [
+                "43",
+                "46",
+                "56",
+                "70",
+                "84"
+              ],
+              "x2Hits": 0,
+              "dayLotoStakeKX2": 72600,
+              "dayLotoPayoutKX2": 8000,
+              "dayLotoProfitKX2": -64600,
+              "cumLotoProfitKX2": 5722000,
+              "isLotoWinX2": false
+            }
           },
           "deDropoffMerge": {
             "date": "2026-10-15",
@@ -2423267,7 +2424167,38 @@
                 ],
                 "hits": 1
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [],
+              "tierX4": [
+                "36",
+                "62",
+                "95"
+              ],
+              "tierX3": [
+                "10",
+                "56",
+                "67",
+                "72"
+              ],
+              "tierX2": [
+                "44",
+                "96"
+              ],
+              "tierX1": [
+                "21",
+                "46",
+                "70",
+                "84",
+                "88"
+              ],
+              "x2Hits": 2,
+              "dayLotoStakeKX2": 72600,
+              "dayLotoPayoutKX2": 72000,
+              "dayLotoProfitKX2": -600,
+              "cumLotoProfitKX2": 5721400,
+              "isLotoWinX2": false
+            }
           },
           "deDropoffMerge": {
             "date": "2026-10-16",
@@ -2428939,7 +2429870,40 @@
                 ],
                 "hits": 0
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [],
+              "tierX4": [
+                "59"
+              ],
+              "tierX3": [
+                "16",
+                "24",
+                "29",
+                "38",
+                "54",
+                "66"
+              ],
+              "tierX2": [
+                "52",
+                "76",
+                "79"
+              ],
+              "tierX1": [
+                "46",
+                "56",
+                "70",
+                "84",
+                "88",
+                "95"
+              ],
+              "x2Hits": 1,
+              "dayLotoStakeKX2": 74800,
+              "dayLotoPayoutKX2": 112000,
+              "dayLotoProfitKX2": 37200,
+              "cumLotoProfitKX2": 5758600,
+              "isLotoWinX2": true
+            }
           },
           "deDropoffMerge": {
             "date": "2026-10-17",
@@ -2430985,7 +2431949,39 @@
                 ],
                 "hits": 0
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [],
+              "tierX4": [
+                "54",
+                "62",
+                "95"
+              ],
+              "tierX3": [
+                "57",
+                "63",
+                "94"
+              ],
+              "tierX2": [
+                "02",
+                "59",
+                "76"
+              ],
+              "tierX1": [
+                "10",
+                "46",
+                "56",
+                "70",
+                "84",
+                "88"
+              ],
+              "x2Hits": 0,
+              "dayLotoStakeKX2": 72600,
+              "dayLotoPayoutKX2": 72000,
+              "dayLotoProfitKX2": -600,
+              "cumLotoProfitKX2": 5758000,
+              "isLotoWinX2": false
+            }
           },
           "crossHedgingPortfolio": {
             "date": "2026-10-18",
@@ -2437035,7 +2438031,39 @@
                 ],
                 "hits": 1
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [],
+              "tierX4": [
+                "59",
+                "62",
+                "76"
+              ],
+              "tierX3": [
+                "24",
+                "35",
+                "52"
+              ],
+              "tierX2": [
+                "04",
+                "22",
+                "70",
+                "94"
+              ],
+              "tierX1": [
+                "46",
+                "56",
+                "84",
+                "88",
+                "95"
+              ],
+              "x2Hits": 1,
+              "dayLotoStakeKX2": 74800,
+              "dayLotoPayoutKX2": 48000,
+              "dayLotoProfitKX2": -26800,
+              "cumLotoProfitKX2": 5731200,
+              "isLotoWinX2": false
+            }
           },
           "deDropoffMerge": {
             "date": "2026-10-19",
@@ -2438689,7 +2439717,38 @@
                   "RRF"
                 ]
               }
-            ]
+            ],
+            "crossX2": {
+              "tierX5": [
+                "70",
+                "95"
+              ],
+              "tierX4": [
+                "32"
+              ],
+              "tierX3": [
+                "38",
+                "52",
+                "76"
+              ],
+              "tierX2": [
+                "62",
+                "66"
+              ],
+              "tierX1": [
+                "36",
+                "46",
+                "56",
+                "84",
+                "88"
+              ],
+              "x2Hits": 1,
+              "dayLotoStakeKX2": 70400,
+              "dayLotoPayoutKX2": 208000,
+              "dayLotoProfitKX2": 137600,
+              "cumLotoProfitKX2": 5868800,
+              "isLotoWinX2": true
+            }
           },
           "crossHedgingPortfolio": {
             "date": "2026-10-20",

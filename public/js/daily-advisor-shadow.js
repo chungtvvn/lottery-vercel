@@ -55,6 +55,7 @@
     // Global dashboard states
     let currentMasterSuite = 'suitePentaConsensus'; // 'suitePentaConsensus' (👑 Siêu Gộp 5 PP Mặc Định), 'suiteQuadConsensus' (Hệ 5), 'comboDropoff' (Hệ 1), 'suiteTriCore' (Hệ 2), 'suiteVipSweetSpot' (Hệ 3), 'suiteResonance' (Hệ 4)
     let currentShadowCategory = 'pentaSuite';
+    let currentShadowStatusFilter = 'all'; // 'all' | 'win' | 'loss'
     let activeModalCategory = 'pentaSuite';
     let currentShadowLoMode = 'pentaConsensus';
     let currentResonanceLoMode = 'flat';        // 'flat' (15.4M) or 'tiered' (22.0M)
@@ -2161,19 +2162,34 @@
         // Setup Category Tab Selection helper
         function selectCategoryTab(cat) {
             currentShadowCategory = cat;
+            activeModalCategory = cat;
+
             const tabBtns = document.querySelectorAll('#shadowLedgerCategoryTabs .shadow-cat-btn');
+            let isMainTabMatched = false;
             tabBtns.forEach(b => {
                 const bCat = b.getAttribute('data-shadow-cat');
                 if (bCat === cat) {
-                    b.className = 'shadow-cat-btn active rounded-lg bg-indigo-600 text-white font-black text-xs px-3 py-1.5 transition-all shadow-xs flex items-center gap-1.5';
+                    isMainTabMatched = true;
+                    b.className = 'shadow-cat-btn active rounded-xl bg-slate-900 text-white font-black text-xs px-3.5 py-2 transition-all shadow-xs flex items-center gap-1.5 ring-2 ring-amber-400 cursor-pointer';
                 } else {
-                    b.className = 'shadow-cat-btn rounded-lg bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs px-3 py-1.5 transition-all flex items-center gap-1.5 border border-slate-200/60';
+                    b.className = 'shadow-cat-btn rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2 transition-all flex items-center gap-1.5 border border-slate-200 cursor-pointer';
                 }
             });
+
+            // Đồng bộ dropdown Hệ Khác
+            const selOther = byId('selShadowOtherSuites');
+            if (selOther) {
+                if (isMainTabMatched) {
+                    selOther.value = '';
+                } else {
+                    selOther.value = cat;
+                }
+            }
+
             renderShadowSettledTable();
         }
 
-        // Setup Category Tabs (Combo, Đề Dropoff, Đề Tri-Core, Lô, v.v.)
+        // Setup Category Tabs (5 Tab chính + Dropdown hệ ứng viên + Status Filter)
         function setupCategoryTabs() {
             const tabBtns = document.querySelectorAll('#shadowLedgerCategoryTabs .shadow-cat-btn');
             tabBtns.forEach(btn => {
@@ -2183,6 +2199,23 @@
                     selectCategoryTab(cat);
                 };
             });
+
+            const selOther = byId('selShadowOtherSuites');
+            if (selOther) {
+                selOther.onchange = () => {
+                    const cat = selOther.value;
+                    if (!cat) return;
+                    selectCategoryTab(cat);
+                };
+            }
+
+            const statusFilter = byId('shadowDiaryStatusFilter');
+            if (statusFilter) {
+                statusFilter.onchange = () => {
+                    currentShadowStatusFilter = statusFilter.value || 'all';
+                    renderShadowSettledTable();
+                };
+            }
         }
         setupCategoryTabs();
 
@@ -2372,11 +2405,18 @@
                     const yr = btn.getAttribute('data-shadow-year');
                     if (yr) currentShadowYear = yr;
 
+                    const activePhaseText = byId('shadowActivePhaseText');
+                    if (activePhaseText) {
+                        activePhaseText.textContent = (currentShadowPhase === 'from0710')
+                            ? 'Đang xem: 🎯 Bắt đầu từ 07/10/2026 (Chính thức)'
+                            : 'Đang xem: 📚 Toàn bộ lịch sử kiểm định';
+                    }
+
                     yearBtns.forEach(b => {
                         if (b === btn) {
-                            b.className = 'shadow-year-btn active px-2.5 py-0.5 rounded-lg bg-emerald-600 text-white font-bold text-[11px] transition-all flex items-center gap-1 shadow-xs cursor-pointer';
+                            b.className = 'shadow-year-btn active px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-black text-xs transition-all shadow-xs cursor-pointer flex items-center gap-1';
                         } else {
-                            b.className = 'shadow-year-btn px-2.5 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-[11px] transition-all flex items-center gap-1 cursor-pointer';
+                            b.className = 'shadow-year-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 font-bold text-xs transition-all cursor-pointer flex items-center gap-1';
                         }
                     });
                     renderShadowSettledTable();
@@ -3416,10 +3456,11 @@
             });
 
             const totalDays = rowsData.length;
-            const comboWins = rowsData.filter(r => r.penta.combo.isWin).length;
+            const comboWins = rowsData.filter(r => r.penta.combo.isWin || r.penta.combo.profitK > 0).length;
             const comboWinRate = totalDays > 0 ? (comboWins / totalDays * 100).toFixed(1) : '0.0';
 
-            if (rowCountEl) rowCountEl.textContent = (currentShadowPhase === 'from0710' && totalDays === 0) ? '0 (Kỳ 1 ngày 07/10 đang chờ mở 18:30)' : `${totalDays}`;
+            // Cập nhật Sub-Controls Bar
+            if (rowCountEl) rowCountEl.textContent = (currentShadowPhase === 'from0710' && totalDays === 0) ? '0 (Kỳ 1 đang chờ mở 18:30)' : `${totalDays}`;
             if (winCountEl) winCountEl.textContent = `${comboWins} ngày thắng (${totalDays - comboWins} ngày âm)`;
             if (winRateEl) winRateEl.textContent = `${comboWinRate}%`;
             if (hitsTagEl) hitsTagEl.classList.add('hidden');
@@ -3433,215 +3474,379 @@
                         <span class="text-slate-400 font-normal">|</span>
                         <span class="font-bold ${cumLoK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">Lô Đa Tầng: ${formatMoneyK(cumLoK)}</span>
                         <span class="text-slate-400 font-normal">|</span>
+                        <span class="font-bold ${cumLoX2K >= 0 ? 'text-emerald-700' : 'text-rose-700'}">Lô X2: ${formatMoneyK(cumLoX2K)}</span>
+                        <span class="text-slate-400 font-normal">|</span>
                         <span class="font-bold ${cumXienK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">5 Dàn Xiên 4: ${formatMoneyK(cumXienK)}</span>
                     </div>
                 `;
             }
 
+            // Cập nhật 5 Thẻ KPI Pills phía trên bảng
+            const pillComboProfit = byId('shadowPillComboProfit');
+            const pillComboSubtext = byId('shadowPillComboSubtext');
+            const pillDeProfit = byId('shadowPillDeProfit');
+            const pillDeSubtext = byId('shadowPillDeSubtext');
+            const pillLoProfit = byId('shadowPillLoProfit');
+            const pillLoSubtext = byId('shadowPillLoSubtext');
+            const pillLoX2Profit = byId('shadowPillLoX2Profit');
+            const pillLoX2Subtext = byId('shadowPillLoX2Subtext');
+            const pillLoX2Diff = byId('shadowPillLoX2Diff');
+            const pillXien5Profit = byId('shadowPillXien5Profit');
+            const pillXien5Subtext = byId('shadowPillXien5Subtext');
+
+            if (pillComboProfit) {
+                pillComboProfit.textContent = formatMoneyK(cumComboK);
+                pillComboProfit.className = `font-black text-sm ${cumComboK >= 0 ? 'text-amber-800' : 'text-rose-700'}`;
+            }
+            if (pillComboSubtext) pillComboSubtext.textContent = `Thắng ${comboWins}/${totalDays} ngày (${comboWinRate}%)`;
+
+            const deHitsCount = rowsData.filter(r => r.penta.de.isHit).length;
+            if (pillDeProfit) {
+                pillDeProfit.textContent = formatMoneyK(cumDeK);
+                pillDeProfit.className = `font-black text-sm ${cumDeK >= 0 ? 'text-amber-700' : 'text-rose-700'}`;
+            }
+            if (pillDeSubtext) pillDeSubtext.textContent = `Nổ ${deHitsCount}/${totalDays} kỳ · Vốn 12M`;
+
+            const loWinsCount = rowsData.filter(r => r.penta.lo.isWin).length;
+            const loTotHits = rowsData.reduce((acc, r) => acc + (r.penta.lo.hits || 0), 0);
+            if (pillLoProfit) {
+                pillLoProfit.textContent = formatMoneyK(cumLoK);
+                pillLoProfit.className = `font-black text-sm ${cumLoK >= 0 ? 'text-rose-700' : 'text-rose-700'}`;
+            }
+            if (pillLoSubtext) pillLoSubtext.textContent = `Nổ ${loTotHits} nháy · Thắng ${loWinsCount}/${totalDays} ngày`;
+
+            const loX2WinsCount = rowsData.filter(r => (r.penta.loCrossX2?.isWin ?? r.penta.lo.isWin)).length;
+            const diffLoX2Total = cumLoX2K - cumLoK;
+            if (pillLoX2Profit) {
+                pillLoX2Profit.textContent = formatMoneyK(cumLoX2K);
+                pillLoX2Profit.className = `font-black text-sm ${cumLoX2K >= 0 ? 'text-emerald-700' : 'text-rose-700'}`;
+            }
+            if (pillLoX2Subtext) pillLoX2Subtext.textContent = `Thắng ${loX2WinsCount}/${totalDays} ngày · Nâng X2`;
+            if (pillLoX2Diff) pillLoX2Diff.textContent = `(${diffLoX2Total >= 0 ? '+' : ''}${formatMoneyK(diffLoX2Total)} so gốc)`;
+
+            const xien5WinsCount = rowsData.filter(r => r.penta.xien5.isWin).length;
+            if (pillXien5Profit) {
+                pillXien5Profit.textContent = formatMoneyK(cumXienK);
+                pillXien5Profit.className = `font-black text-sm ${cumXienK >= 0 ? 'text-indigo-700' : 'text-rose-700'}`;
+            }
+            if (pillXien5Subtext) pillXien5Subtext.textContent = `Ăn ${xien5WinsCount}/${totalDays} kỳ · 5 Dàn X4`;
+
             const loTableSubSwitch = byId('shadowLoTableSubSwitchGroup');
             if (loTableSubSwitch) loTableSubSwitch.classList.add('hidden');
 
+            // BẢNG 7 CỘT CHUẨN ĐỊNH LƯỢNG GIỐNG DAILY-ADVISOR
             thead.innerHTML = `
-                <tr class="border-b border-amber-300 bg-amber-50/70 text-[11px] font-bold text-slate-800 uppercase tracking-wide">
-                    <th class="py-2.5 px-3">Ngày Quay</th>
-                    <th class="py-2.5 px-3">👑 Đề Siêu Gộp 5 PP (X2 / X1)</th>
-                    <th class="py-2.5 px-3">🔥 Lô Siêu Gộp Gốc (X5-X1)</th>
-                    <th class="py-2.5 px-3 bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-950 font-black">⚡ Lô Đột Phá X2 (Nâng Hạng)</th>
-                    <th class="py-2.5 px-3">👑 Xiên 5 Siêu Gộp (Top 5)</th>
-                    <th class="py-2.5 px-3 text-center">Dàn Đánh &amp; Số Nổ</th>
-                    <th class="py-2.5 px-3 text-right">Tổng Vốn</th>
-                    <th class="py-2.5 px-3 text-right">Lãi &amp; LK Đề</th>
-                    <th class="py-2.5 px-3 text-right">Lãi &amp; LK Lô Gốc</th>
-                    <th class="py-2.5 px-3 text-right text-emerald-950 bg-emerald-100/60 font-black">Lãi &amp; LK Lô X2</th>
-                    <th class="py-2.5 px-3 text-right">Lãi &amp; LK Lô Xiên</th>
-                    <th class="py-2.5 px-3 text-right">Lãi Ròng Ngày</th>
-                    <th class="py-2.5 px-3 text-right">Lũy Kế Tổng (3 Trụ)</th>
+                <tr class="border-b border-amber-300 bg-amber-50/80 text-[10px] font-black text-slate-800 uppercase tracking-wider">
+                    <th class="px-3 py-3">Ngày</th>
+                    <th class="px-3 py-3">👑 Đề Siêu Gộp 5 PP (X2 / X1)</th>
+                    <th class="px-3 py-3">🔥 Lô Siêu Gộp (Gốc: X5-X1)</th>
+                    <th class="px-3 py-3 bg-emerald-100/70 text-emerald-950 font-black">⚡ Lô Đột Phá X2 (Nâng Hạng)</th>
+                    <th class="px-3 py-3">👑 Dàn Xiên 5 (5 Dàn X4)</th>
+                    <th class="px-3 py-3 text-right">Lãi/Lỗ Tổng Hợp</th>
+                    <th class="px-3 py-3 text-right">Lũy Kế Mốc</th>
                 </tr>
             `;
 
             const pendingPenta = computePentaConsensusForDate(targetDate, data);
             const formattedTargetDate = formatDateVi(targetDate);
 
-            let pendingRowHtml = `
-                <tr class="border-b border-amber-300 bg-amber-50/80 hover:bg-amber-100 transition-colors font-mono text-xs text-slate-800">
-                    <td class="py-3 px-3 font-bold text-amber-900">
-                        <div class="flex items-center gap-1.5 flex-wrap">
-                            <span>${formattedTargetDate}</span>
-                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-200 text-amber-950 border border-amber-400">👑 5 PP KHÓA</span>
-                        </div>
-                    </td>
-                    <td class="py-3 px-3">
-                        <span class="text-amber-900 font-bold">Đề Siêu Gộp 5 PP (${pendingPenta.de.numbers.length}s: ${pendingPenta.de.x2Nums.length} X2 + ${pendingPenta.de.x1Nums.length} X1)</span>
-                        <div class="text-[10px] text-slate-600">Vốn ${formatMoneyK(pendingPenta.de.stakeK, false)} · X2 ăn 33.6M · X1 ăn 16.8M</div>
-                    </td>
-                    <td class="py-3 px-3">
-                        <span class="text-teal-900 font-bold">Lô Gốc (${pendingPenta.lo.numbers.length} số)</span>
-                        <div class="text-[10px] text-slate-600">${pendingPenta.lo.x5Nums.length ? pendingPenta.lo.x5Nums.length + ' X5 ' : ''}${pendingPenta.lo.x4Nums.length ? pendingPenta.lo.x4Nums.length + ' X4 ' : ''}${pendingPenta.lo.x3Nums.length ? pendingPenta.lo.x3Nums.length + ' X3 ' : ''}${pendingPenta.lo.x1Nums.length ? pendingPenta.lo.x1Nums.length + ' X1' : ''} · Vốn ${formatMoneyK(pendingPenta.lo.stakeK, false)}</div>
-                    </td>
-                    <td class="py-3 px-3 bg-emerald-50/50">
-                        <span class="text-emerald-950 font-bold">Lô Đột Phá X2 (${pendingPenta.loCrossX2?.numbers?.length || pendingPenta.lo.numbers.length} số)</span>
-                        <div class="text-[10px] text-emerald-800">${pendingPenta.loCrossX2?.x2Nums?.length ? `<span class="text-slate-950 bg-amber-300 font-black px-1.5 py-0.2 rounded ring-1 ring-amber-400">⚡ Nâng X2: ${pendingPenta.loCrossX2.x2Nums.join(', ')}</span> ` : '<span class="text-slate-500 italic">0 số nâng</span> '}· Vốn ${formatMoneyK(pendingPenta.loCrossX2?.stakeK || pendingPenta.lo.stakeK, false)}</div>
-                    </td>
-                    <td class="py-3 px-3">
-                        <span class="text-indigo-900 font-bold">Xiên 5 Siêu Gộp (Top 5: ${pendingPenta.xien5.top5.join(', ')})</span>
-                        <div class="text-[10px] text-slate-600">5 vé x 1.1M · Vốn 5.5M · X4: 38.4M · X3: 8.4M</div>
-                    </td>
-                    <td class="py-3 px-3 text-center">
-                        <div class="flex items-center justify-center gap-1.5 flex-wrap">
-                            <button type="button" class="btn-open-slip px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-500 text-amber-900 hover:text-white border border-amber-300 text-[11px] font-bold inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer" data-slip-date="${targetDate}" data-slip-cat="pentaSuite">
-                                <i class="bi bi-crown-fill text-amber-600"></i> Xem Dàn Khóa
-                            </button>
-                            <button type="button" class="btn-quick-copy-full px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 text-[11px] font-black inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer ring-1 ring-amber-300" data-date="${targetDate}" data-cat="pentaSuite" title="Copy full dàn chi tiết Đề, Lô, Xiên 5 Phương Pháp">
-                                <i class="bi bi-clipboard2-check-fill"></i> Copy Full Dàn
-                            </button>
-                        </div>
-                    </td>
-                    <td class="py-3 px-3 text-right">
-                        <span class="text-slate-900 font-bold">${formatMoneyK(pendingPenta.combo.stakeK, false)}</span>
-                        <div class="text-[10px] text-slate-600">Đề ${(pendingPenta.de.stakeK/1000).toFixed(1)}M + Lô ${(pendingPenta.lo.stakeK/1000).toFixed(1)}M + Xiên 5.5M</div>
-                    </td>
-                    <td class="py-3 px-3 text-right">
-                        <div class="text-amber-800 font-bold">⏳ Chờ 18:30</div>
-                        <div class="text-[10px] ${cumDeK >= 0 ? 'text-emerald-700' : 'text-rose-700'} font-semibold">LK: ${formatMoneyK(cumDeK)}</div>
-                    </td>
-                    <td class="py-3 px-3 text-right">
-                        <div class="text-amber-800 font-bold">⏳ Chờ 18:30</div>
-                        <div class="text-[10px] ${cumLoK >= 0 ? 'text-emerald-700' : 'text-rose-700'} font-semibold">LK: ${formatMoneyK(cumLoK)}</div>
-                    </td>
-                    <td class="py-3 px-3 text-right bg-emerald-50/30">
-                        <div class="text-emerald-800 font-bold">⏳ Chờ 18:30</div>
-                        <div class="text-[10px] ${cumLoX2K >= 0 ? 'text-emerald-700' : 'text-rose-700'} font-semibold">LK: ${formatMoneyK(cumLoX2K)}</div>
-                    </td>
-                    <td class="py-3 px-3 text-right">
-                        <div class="text-amber-800 font-bold">⏳ Chờ 18:30</div>
-                        <div class="text-[10px] ${cumXienK >= 0 ? 'text-emerald-700' : 'text-rose-700'} font-semibold">LK: ${formatMoneyK(cumXienK)}</div>
-                    </td>
-                    <td class="py-3 px-3 text-right font-bold text-amber-800">⏳ Chờ kết toán</td>
-                    <td class="py-3 px-3 text-right">
-                        <div class="font-black text-sm ${cumComboK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${formatMoneyK(cumComboK)}</div>
-                        <div class="text-[9px] text-slate-500">Đề + Lô + Xiên</div>
-                    </td>
-                </tr>
-            `;
+            let pendingRowHtml = '';
+            if (currentShadowStatusFilter === 'all') {
+                pendingRowHtml = `
+                    <tr class="border-b border-amber-300 bg-amber-50/80 hover:bg-amber-100/60 transition-colors font-mono text-xs text-slate-800">
+                        <!-- Cột 1: Ngày -->
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <div class="font-mono font-black text-xs text-slate-900">${formattedTargetDate}</div>
+                            <div class="flex items-center gap-1 mt-0.5">
+                                <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-200 text-amber-950 border border-amber-400">👑 5 PP KHÓA</span>
+                            </div>
+                            <div class="flex items-center gap-1 mt-1">
+                                <button type="button" class="btn-quick-copy-full px-2 py-0.5 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 text-[10px] font-black inline-flex items-center gap-1 shadow-xs cursor-pointer ring-1 ring-amber-300" data-date="${targetDate}" data-cat="pentaSuite" title="Copy full dàn chi tiết">
+                                    <i class="bi bi-clipboard2-check-fill"></i> Copy Full
+                                </button>
+                                <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-[10px] font-bold inline-flex items-center gap-1 shadow-xs cursor-pointer" data-slip-date="${targetDate}" data-slip-cat="pentaSuite" title="Xem dàn đánh chi tiết">
+                                    <i class="bi bi-eye"></i> Dàn
+                                </button>
+                            </div>
+                        </td>
+                        <!-- Cột 2: Đề Siêu Gộp 5 PP -->
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-slip-date="${targetDate}" data-slip-cat="pentaSuite">
+                            <div class="text-[11px] font-bold text-amber-950 flex items-center justify-between gap-1">
+                                <span class="flex items-center gap-1"><i class="bi bi-gem-fill text-amber-500 text-[10px]"></i> Đề Siêu Gộp (${pendingPenta.de.numbers.length}s)</span>
+                                <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-amber-100 text-amber-900">⏳ Chờ 18:30</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 mt-1 text-xs">
+                                <span class="text-amber-700 font-bold">⏳ Chờ giải ĐB</span>
+                                <span class="text-[10px] text-slate-500">(${pendingPenta.de.x2Nums.length} X2 · ${pendingPenta.de.x1Nums.length} X1)</span>
+                            </div>
+                            <div class="text-[10px] text-slate-500 mt-1 flex items-center justify-between">
+                                <span>Vốn: ${formatMoneyK(pendingPenta.de.stakeK, false)}</span>
+                                <span class="text-amber-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
+                            </div>
+                            <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-amber-200/50 pt-0.5">
+                                <span class="text-slate-500 font-sans">Lũy kế Đề:</span>
+                                <strong class="${cumDeK >= 0 ? 'text-amber-800' : 'text-rose-600'} font-bold">${formatMoneyK(cumDeK)}</strong>
+                            </div>
+                        </td>
+                        <!-- Cột 3: Lô Siêu Gộp Gốc -->
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-rose-100/50 rounded-xl transition-all" data-slip-date="${targetDate}" data-slip-cat="pentaSuite">
+                            <div class="text-[11px] font-bold text-rose-950 flex items-center justify-between gap-1">
+                                <span class="flex items-center gap-1"><i class="bi bi-fire text-rose-600 text-[10px]"></i> Lô Siêu Gộp (${pendingPenta.lo.numbers.length}s)</span>
+                                <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-amber-100 text-amber-900">⏳ Chờ 27 giải</span>
+                            </div>
+                            <div class="flex items-center gap-1 mt-1 text-xs flex-wrap">
+                                <span class="text-amber-700 font-bold">⏳ Chờ 27 giải</span>
+                                <span class="text-[10px] text-slate-500">(${pendingPenta.lo.x5Nums.length ? pendingPenta.lo.x5Nums.length + ' X5 ' : ''}${pendingPenta.lo.x4Nums.length ? pendingPenta.lo.x4Nums.length + ' X4 ' : ''}${pendingPenta.lo.x3Nums.length ? pendingPenta.lo.x3Nums.length + ' X3 ' : ''}${pendingPenta.lo.x1Nums.length ? pendingPenta.lo.x1Nums.length + ' X1' : ''})</span>
+                            </div>
+                            <div class="text-[10px] text-slate-500 mt-1 flex items-center justify-between">
+                                <span>Vốn: ${formatMoneyK(pendingPenta.lo.stakeK, false)}</span>
+                                <span class="text-rose-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
+                            </div>
+                            <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-rose-200/50 pt-0.5">
+                                <span class="text-slate-500 font-sans">Lũy kế Lô:</span>
+                                <strong class="${cumLoK >= 0 ? 'text-emerald-700' : 'text-rose-600'} font-bold">${formatMoneyK(cumLoK)}</strong>
+                            </div>
+                        </td>
+                        <!-- Cột 4: Lô Đột Phá X2 -->
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-emerald-100/50 rounded-xl transition-all border-l border-emerald-200/60 bg-emerald-50/25" data-slip-date="${targetDate}" data-slip-cat="pentaSuite">
+                            <div class="text-[11px] font-bold text-emerald-950 flex items-center justify-between gap-1">
+                                <span class="flex items-center gap-1"><i class="bi bi-rocket-takeoff-fill text-emerald-600 text-[10px]"></i> Lô Đột Phá X2</span>
+                                <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-amber-100 text-amber-900">⏳ Chờ 27 giải</span>
+                            </div>
+                            <div class="flex items-center gap-1 mt-1 text-xs flex-wrap">
+                                ${pendingPenta.loCrossX2?.x2Nums?.length ? `<span class="px-1.5 py-0.2 rounded font-mono text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 ring-1 ring-amber-400 shadow-xs">⚡ Nâng X2: ${pendingPenta.loCrossX2.x2Nums.join(', ')}</span>` : '<span class="text-[10px] text-slate-400 italic">0 số nâng (như gốc)</span>'}
+                            </div>
+                            <div class="text-[10px] text-slate-500 mt-1 flex items-center justify-between">
+                                <span>Vốn: ${formatMoneyK(pendingPenta.loCrossX2?.stakeK || pendingPenta.lo.stakeK, false)}</span>
+                                <span class="text-emerald-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
+                            </div>
+                            <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-emerald-200/50 pt-0.5">
+                                <span class="text-slate-500 font-sans">Lũy kế Đột Phá:</span>
+                                <strong class="${cumLoX2K >= 0 ? 'text-emerald-700' : 'text-rose-600'} font-bold">${formatMoneyK(cumLoX2K)}</strong>
+                            </div>
+                        </td>
+                        <!-- Cột 5: Dàn Xiên 5 -->
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-indigo-100/50 rounded-xl transition-all" data-slip-date="${targetDate}" data-slip-cat="pentaSuite">
+                            <div class="text-[11px] font-bold text-indigo-950 flex items-center justify-between gap-1">
+                                <span class="flex items-center gap-1"><i class="bi bi-stars text-indigo-600 text-[10px]"></i> 5 Dàn Xiên 4 (Top 5)</span>
+                                <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-amber-100 text-amber-900">⏳ Chờ 18:30</span>
+                            </div>
+                            <div class="flex items-center gap-1 mt-1 text-xs">
+                                <span class="text-amber-700 font-bold">⏳ Chờ mở</span>
+                                <span class="font-mono text-indigo-900 font-bold text-[11px]">[${pendingPenta.xien5.top5.join(', ')}]</span>
+                            </div>
+                            <div class="text-[10px] text-slate-500 mt-1 flex items-center justify-between">
+                                <span>5 vé x 1.1M · Vốn 5.5M</span>
+                                <span class="text-indigo-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
+                            </div>
+                            <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-indigo-200/50 pt-0.5">
+                                <span class="text-slate-500 font-sans">Lũy kế Xiên 5:</span>
+                                <strong class="${cumXienK >= 0 ? 'text-indigo-700' : 'text-rose-600'} font-bold">${formatMoneyK(cumXienK)}</strong>
+                            </div>
+                        </td>
+                        <!-- Cột 6: Lãi/Lỗ Tổng Hợp -->
+                        <td class="diary-cell-interactive px-3 py-3 text-right whitespace-nowrap font-mono cursor-pointer hover:bg-slate-100 rounded-xl transition-all" data-slip-date="${targetDate}" data-slip-cat="pentaSuite">
+                            <div class="font-black text-xs text-amber-600">⏳ Chờ KQ</div>
+                            <div class="text-[10px] text-slate-400 font-sans">Vốn: ${formatMoneyK(pendingPenta.combo.stakeK, false)}</div>
+                            <div class="text-[9px] text-indigo-600 font-bold font-sans underline mt-1 flex items-center gap-0.5 justify-end">Xem chi tiết <i class="bi bi-chevron-down text-[8px]"></i></div>
+                        </td>
+                        <!-- Cột 7: Lũy Kế Mốc -->
+                        <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
+                            <div class="font-black text-xs ${cumComboK >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
+                                ${formatMoneyK(cumComboK)}
+                            </div>
+                            <div class="text-[9px] text-slate-400 font-sans">Lũy kế 3 trụ</div>
+                        </td>
+                    </tr>
+                `;
+            }
 
-            const reversedRows = [...rowsData].reverse();
+            // Áp dụng bộ lọc trạng thái (currentShadowStatusFilter)
+            let displayRows = [...rowsData];
+            if (currentShadowStatusFilter === 'win') {
+                displayRows = displayRows.filter(r => r.penta.combo.isWin || r.penta.combo.profitK > 0);
+            } else if (currentShadowStatusFilter === 'loss') {
+                displayRows = displayRows.filter(r => !r.penta.combo.isWin && r.penta.combo.profitK <= 0);
+            }
+
+            const reversedRows = displayRows.reverse();
             const settledRowsHtml = reversedRows.map(row => {
                 const dateVi = formatDateVi(row.date);
                 const q = row.penta;
                 const actualStr = q.actualSpecial || '—';
 
-                const deBadge = q.de.isHitX2
-                    ? `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">🎯 NỔ X2 (+${formatMoneyK(q.de.profitK, false)}) · ${actualStr} ⭐</span>`
-                    : (q.de.isHitX1
-                        ? `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-sm animate-pulse">🎯 NỔ X1 (+${formatMoneyK(q.de.profitK, false)}) · ${actualStr} ⭐</span>`
-                        : `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300">❌ Trượt (-${formatMoneyK(q.de.stakeK, false)}) · <strong class="font-mono font-black">${actualStr}</strong></span>`);
+                const loHitPills = (q.lo?.pills || []).filter(p => p.hits > 0);
+                const qCross = q.loCrossX2 || q.lo;
+                const loPnlX2 = qCross.profitK ?? q.lo.profitK;
+                const loHitsX2 = qCross.hits ?? q.lo.hits;
+                const loStakeX2 = qCross.stakeK ?? q.lo.stakeK;
+                const promotedX2Nums = qCross.x2Nums || [];
+                const diffLoX2 = row.cumLoX2K - row.cumLoK;
 
-                const loBadge = q.lo.isWin
-                    ? `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-sm">🔥 ${q.lo.hits} nháy (+${formatMoneyK(q.lo.profitK, false)})</span>`
-                    : `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300"><strong class="font-black">${q.lo.hits}</strong> nháy (-${formatMoneyK(Math.abs(q.lo.profitK), false)})</span>`;
+                const hitTop5Nums = (q.xien5?.top5 || []).filter(n => ((q.prizeCount?.[n] ?? (q.drawPrizes?.includes(n) ? 1 : 0)) > 0));
 
-                let xienBadge = '';
-                if (q.xien5.h5 === 5) {
-                    xienBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">⭐ 5 VÉ X4 (+${formatMoneyK(q.xien5.profitK, false)})</span>`;
-                } else if (q.xien5.h5 === 4) {
-                    xienBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">⭐ 1 VÉ X4 + 4 VÉ X3 (+${formatMoneyK(q.xien5.profitK, false)})</span>`;
-                } else if (q.xien5.h5 === 3) {
-                    xienBadge = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-sm">🎉 2 VÉ X3 + 3 VÉ X2 (+${formatMoneyK(q.xien5.profitK, false)})</span>`;
-                } else if (q.xien5.h5 === 2) {
-                    xienBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-sky-100 text-sky-950 border border-sky-300">⚡ 3 VÉ X2 (-1.9M)</span>`;
-                } else {
-                    xienBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300">❌ Trượt (${q.xien5.h5}/5 con · -5.5M)</span>`;
-                }
-
-                let winningBadgesHtml = '';
-                if (q.de.isHit) {
-                    winningBadgesHtml += `<span class="inline-flex items-center px-2 py-0.5 rounded-lg font-mono text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-sm">🎯 ĐB: ${actualStr} ⭐</span> `;
-                }
-                const loHitPills = q.lo.pills.filter(p => p.hits > 0);
-                if (loHitPills.length > 0) {
-                    winningBadgesHtml += loHitPills.map(p => {
-                        return `<span class="inline-flex items-center px-2 py-0.5 rounded-lg font-mono text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white ring-2 ring-emerald-300 shadow-sm">🎯 ${p.num}<sub class="text-[9px] font-black ml-0.5">(X${p.mult}·${p.hits}n)</sub></span>`;
-                    }).join(' ');
-                }
-                if (q.xien5.h5 >= 2) {
-                    const hitTop5Nums = q.xien5.top5.filter(n => ((q.prizeCount?.[n] ?? (q.drawPrizes?.includes(n) ? 1 : 0)) > 0));
-                    winningBadgesHtml += ` <span class="inline-flex items-center px-2 py-0.5 rounded-lg font-mono text-xs font-black bg-gradient-to-r from-purple-500 to-indigo-500 text-white ring-2 ring-purple-300 shadow-sm">👑 Xiên 5: ${hitTop5Nums.join('-')}</span>`;
-                }
-                if (!winningBadgesHtml) {
-                    winningBadgesHtml = '<span class="text-slate-500 text-xs font-bold italic">Không nổ số nào</span>';
-                }
+                const isDayWin = q.combo.isWin || q.combo.profitK > 0;
+                const dayClass = isDayWin ? 'bg-amber-50/20' : (q.combo.profitK < -20000 ? 'bg-rose-50/20' : '');
 
                 return `
-                    <tr class="border-b border-slate-200 ${q.combo.profitK > 0 ? 'bg-amber-50/40 border-l-4 border-l-amber-500' : ''} hover:bg-slate-50 transition-colors font-mono text-xs text-slate-800">
-                        <td class="py-2.5 px-3 font-bold text-slate-900">${dateVi}</td>
-                        <td class="py-2.5 px-3">${deBadge}</td>
-                        <td class="py-2.5 px-3">${loBadge}</td>
-                        <td class="py-2.5 px-3 bg-emerald-50/40">
-                            ${(() => {
-                                const qX2 = q.loCrossX2;
-                                if (!qX2) return `<span class="text-slate-400 text-xs">--</span>`;
-                                const isWin = qX2.isWin;
-                                const x2Nums = qX2.x2Nums || [];
-                                return `
-                                    <div class="flex flex-col gap-0.5">
-                                        ${isWin
-                                            ? `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-xs">🚀 ${qX2.hits}n (+${formatMoneyK(qX2.profitK, false)})</span>`
-                                            : `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300">${qX2.hits}n (-${formatMoneyK(Math.abs(qX2.profitK), false)})</span>`}
-                                        ${x2Nums.length > 0
-                                            ? `<span class="text-[9px] text-amber-950 font-bold bg-amber-200/80 px-1 py-0.2 rounded mt-0.5">⚡ Nâng X2: ${x2Nums.join(', ')}</span>`
-                                            : `<span class="text-[9px] text-slate-400 italic">0 số nâng (như gốc)</span>`}
-                                    </div>
-                                `;
-                            })()}
-                        </td>
-                        <td class="py-2.5 px-3">${xienBadge}</td>
-                        <td class="py-2.5 px-3 text-center">
-                            <div class="flex flex-wrap gap-1 justify-center items-center mb-1">
-                                ${winningBadgesHtml}
+                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors font-mono text-xs text-slate-800 ${dayClass}">
+                        <!-- Cột 1: Ngày -->
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <div class="font-mono font-black text-xs text-slate-900">${dateVi}</div>
+                            <div class="flex items-center gap-1 mt-0.5">
+                                <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-900 border border-amber-300">👑 5 PP KHÓA</span>
                             </div>
-                            <div class="flex items-center justify-center gap-1 mt-1 flex-wrap">
-                                <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-amber-50 hover:bg-amber-600 text-amber-800 hover:text-white border border-amber-200 text-[10px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs" data-slip-date="${row.date}" data-slip-cat="pentaSuite">
-                                    <i class="bi bi-crown-fill text-amber-600"></i> Xem Đủ Dàn
-                                </button>
-                                <button type="button" class="btn-quick-copy-full px-2 py-0.5 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 text-[10px] font-black inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer ring-1 ring-amber-300" data-date="${row.date}" data-cat="pentaSuite" title="Copy full dàn chi tiết Đề, Lô, Xiên 5 Phương Pháp">
+                            <div class="flex items-center gap-1 mt-1">
+                                <button type="button" class="btn-quick-copy-full px-2 py-0.5 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 text-[10px] font-black inline-flex items-center gap-1 shadow-xs cursor-pointer ring-1 ring-amber-300" data-date="${row.date}" data-cat="pentaSuite" title="Copy full dàn chi tiết Đề, Lô, Xiên 5 Phương Pháp">
                                     <i class="bi bi-clipboard2-check-fill"></i> Copy Full
                                 </button>
+                                <button type="button" class="btn-open-slip px-2 py-0.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-[10px] font-bold inline-flex items-center gap-1 shadow-xs cursor-pointer" data-slip-date="${row.date}" data-slip-cat="pentaSuite" title="Xem dàn đánh chi tiết">
+                                    <i class="bi bi-eye"></i> Dàn
+                                </button>
                             </div>
                         </td>
-                        <td class="py-2.5 px-3 text-right">
-                            <span class="text-slate-900 font-bold">${formatMoneyK(q.combo.stakeK, false)}</span>
-                            <div class="text-[9px] text-slate-500">Đề ${(q.de.stakeK/1000).toFixed(1)}M + Lô ${(q.lo.stakeK/1000).toFixed(1)}M + Xiên 5.5M</div>
+
+                        <!-- Cột 2: Đề Siêu Gộp 5 PP (X2/X1) -->
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-slip-date="${row.date}" data-slip-cat="pentaSuite">
+                            <div class="flex items-center justify-between text-[11px] font-bold text-amber-950 gap-1 flex-wrap">
+                                <span class="flex items-center gap-1">
+                                    <i class="bi bi-gem-fill text-amber-500 text-[10px]"></i> <span>Đề Siêu Gộp (${q.de.numbers?.length || 34}s)</span>
+                                </span>
+                                <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${q.de.profitK >= 0 ? 'bg-amber-100 text-amber-900 ring-1 ring-amber-300' : 'bg-rose-100 text-rose-800'}">P&L: ${formatMoneyK(q.de.profitK, true)}</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 mt-1">
+                                ${q.de.isHit
+                                    ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 font-black font-mono text-xs ring-2 ring-amber-300 shadow-xs animate-pulse">🎯 ĐB: ${actualStr} ⭐</span>`
+                                    : `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-lg font-mono font-black text-xs bg-slate-100 text-slate-950 border border-slate-300 shadow-2xs">ĐB: ${actualStr}</span>`
+                                }
+                                ${q.de.isHitX2
+                                    ? `<span class="inline-flex items-center gap-1 rounded bg-amber-400 text-slate-950 font-black px-1.5 py-0.5 text-[10px] shadow-xs ring-1 ring-amber-500">👑 Nổ VIP X2</span>`
+                                    : (q.de.isHitX1
+                                        ? `<span class="inline-flex items-center gap-1 rounded bg-emerald-100 text-emerald-900 px-1.5 py-0.5 text-[10px] font-black">🎉 Nổ Đề X1</span>`
+                                        : `<span class="inline-flex items-center gap-1 rounded bg-rose-100 text-rose-900 px-1.5 py-0.5 text-[10px] font-bold">❌ Trượt</span>`)}
+                            </div>
+                            <div class="text-[10px] text-slate-500 mt-1 flex items-center justify-between">
+                                <span>Vốn 12M (${q.de.x2Nums?.length || 6} X2 · ${q.de.x1Nums?.length || 28} X1)</span>
+                                <span class="text-amber-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
+                            </div>
+                            <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-amber-200/50 pt-0.5">
+                                <span class="text-slate-500 font-sans">Lũy kế Đề:</span>
+                                <strong class="${row.cumDeK >= 0 ? 'text-amber-800' : 'text-rose-600'} font-bold">${formatMoneyK(row.cumDeK, true)}</strong>
+                            </div>
                         </td>
-                        <td class="py-2.5 px-3 text-right">
-                            <div><span class="font-bold ${q.de.profitK > 0 ? 'text-emerald-700' : (q.de.profitK < 0 ? 'text-rose-700' : 'text-slate-400')}">${formatMoneyK(q.de.profitK)}</span></div>
-                            <div class="text-[10px] font-semibold ${row.cumDeK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">LK: ${formatMoneyK(row.cumDeK)}</div>
+
+                        <!-- Cột 3: Lô Siêu Gộp Gốc (X5-X1) -->
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-rose-100/50 rounded-xl transition-all" data-slip-date="${row.date}" data-slip-cat="pentaSuite">
+                            <div class="flex items-center justify-between text-[11px] font-bold text-rose-950 gap-1">
+                                <span class="flex items-center gap-1"><i class="bi bi-fire text-rose-600 text-[10px]"></i> Lô Siêu Gộp (${q.lo.numbers?.length || 15}s)</span>
+                                <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${q.lo.profitK >= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">P&L: ${formatMoneyK(q.lo.profitK, true)}</span>
+                            </div>
+                            <div class="flex items-center justify-between gap-1.5 mt-0.5 text-xs">
+                                <span class="text-slate-950 font-bold">Nổ <strong class="font-black text-slate-950 text-sm">${q.lo.hits}</strong> nháy</span>
+                                <span class="font-mono font-bold ${q.lo.profitK >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${formatMoneyK(q.lo.profitK, true)}</span>
+                            </div>
+                            ${loHitPills.length > 0 ? `
+                            <div class="flex flex-wrap items-center gap-1 mt-1">
+                                <span class="text-[9px] font-black text-emerald-900 bg-emerald-100 px-1.5 py-0.2 rounded shadow-xs border border-emerald-300">Trúng:</span>
+                                ${loHitPills.map(p => `<span class="inline-flex items-center px-1.5 py-0.2 rounded font-mono text-[10px] font-black bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white ring-1 ring-emerald-300 shadow-xs animate-pulse">🎯 ${p.num}<sub class="text-[8px] font-black ml-0.5 text-emerald-100">(X${p.mult}·${p.hits}n)</sub></span>`).join(' ')}
+                            </div>` : ''}
+                            <div class="text-[10px] text-slate-500 mt-1 flex items-center justify-between">
+                                <span>Vốn: ${formatMoneyK(q.lo.stakeK, false)} (${q.lo.numbers?.length || 15} số)</span>
+                                <span class="text-rose-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
+                            </div>
+                            <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-rose-200/50 pt-0.5">
+                                <span class="text-slate-500 font-sans">Lũy kế Lô:</span>
+                                <strong class="${row.cumLoK >= 0 ? 'text-emerald-700' : 'text-rose-600'} font-bold">${formatMoneyK(row.cumLoK, true)}</strong>
+                            </div>
                         </td>
-                        <td class="py-2.5 px-3 text-right">
-                            <div><span class="font-bold ${q.lo.profitK > 0 ? 'text-emerald-700' : (q.lo.profitK < 0 ? 'text-rose-700' : 'text-slate-400')}">${formatMoneyK(q.lo.profitK)}</span></div>
-                            <div class="text-[10px] font-semibold ${row.cumLoK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">LK: ${formatMoneyK(row.cumLoK)}</div>
+
+                        <!-- Cột 4: Lô Đột Phá X2 (Nâng Hạng) -->
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-emerald-100/50 rounded-xl transition-all border-l border-emerald-200/60 bg-emerald-50/25" data-slip-date="${row.date}" data-slip-cat="pentaSuite">
+                            <div class="flex items-center justify-between text-[11px] font-bold text-emerald-950 gap-1">
+                                <span class="flex items-center gap-1"><i class="bi bi-rocket-takeoff-fill text-emerald-600 text-[10px]"></i> Lô Đột Phá X2</span>
+                                <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${loPnlX2 >= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">P&L: ${formatMoneyK(loPnlX2, true)}</span>
+                            </div>
+                            <div class="flex items-center justify-between gap-1.5 mt-0.5 text-xs">
+                                <span class="text-slate-950 font-bold">Nổ <strong class="font-black text-slate-950 text-sm">${loHitsX2}</strong> nháy</span>
+                                <span class="font-mono font-bold ${loPnlX2 >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${formatMoneyK(loPnlX2, true)}</span>
+                            </div>
+                            ${promotedX2Nums.length > 0 ? `
+                            <div class="flex flex-wrap items-center gap-1 mt-1">
+                                <span class="text-[9px] font-black text-amber-950 bg-amber-200 px-1.5 py-0.2 rounded shadow-xs border border-amber-300">Nâng X2:</span>
+                                ${promotedX2Nums.map(n => `<span class="inline-flex items-center px-1.5 py-0.2 rounded font-mono text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 ring-1 ring-amber-400 shadow-xs">⚡ ${n}${q.prizeCount?.[n] > 0 ? `<sub class="text-[8px] font-black ml-0.5 text-emerald-900">(${q.prizeCount[n]}n)</sub>` : ''}</span>`).join(' ')}
+                            </div>` : `<div class="text-[10px] text-slate-400 mt-1 italic">0 số nâng X2 (như gốc)</div>`}
+                            <div class="text-[10px] text-slate-500 mt-1 flex items-center justify-between">
+                                <span>Vốn: ${formatMoneyK(loStakeX2, false)}</span>
+                                <span class="text-emerald-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
+                            </div>
+                            <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-emerald-200/50 pt-0.5">
+                                <span class="text-slate-500 font-sans">Lũy kế Đột Phá:</span>
+                                <div class="text-right">
+                                    <strong class="${row.cumLoX2K >= 0 ? 'text-emerald-700' : 'text-rose-600'} font-bold">${formatMoneyK(row.cumLoX2K, true)}</strong>
+                                    <span class="text-[9px] ${diffLoX2 >= 0 ? 'text-emerald-600' : 'text-amber-600'} block font-sans font-semibold">(${diffLoX2 >= 0 ? '+' : ''}${formatMoneyK(diffLoX2)} so gốc)</span>
+                                </div>
+                            </div>
                         </td>
-                        <td class="py-2.5 px-3 text-right bg-emerald-50/40">
-                            <div><span class="font-bold ${q.loCrossX2?.profitK > 0 ? 'text-emerald-700' : (q.loCrossX2?.profitK < 0 ? 'text-rose-700' : 'text-slate-400')}">${formatMoneyK(q.loCrossX2?.profitK || q.lo.profitK)}</span></div>
-                            <div class="text-[10px] font-semibold ${row.cumLoX2K >= 0 ? 'text-emerald-700' : 'text-rose-700'}">LK: ${formatMoneyK(row.cumLoX2K)}</div>
+
+                        <!-- Cột 5: Dàn Xiên 5 (5 Dàn X4) -->
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-indigo-100/50 rounded-xl transition-all" data-slip-date="${row.date}" data-slip-cat="pentaSuite">
+                            <div class="flex items-center justify-between text-[11px] font-bold text-indigo-950 gap-1">
+                                <span class="flex items-center gap-1"><i class="bi bi-stars text-indigo-600 text-[10px]"></i> 5 Dàn Xiên 4 (Top 5)</span>
+                                <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${q.xien5.profitK >= 0 ? 'bg-indigo-100 text-indigo-900 ring-1 ring-indigo-300' : 'bg-rose-100 text-rose-800'}">P&L: ${formatMoneyK(q.xien5.profitK, true)}</span>
+                            </div>
+                            <div class="flex items-center justify-between gap-1.5 mt-0.5 text-xs">
+                                ${(() => {
+                                    if (q.xien5.h5 === 5) return `<span class="rounded bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 px-1.5 py-0.5 text-[10px] font-black shadow-xs ring-1 ring-amber-500">👑 ĂN 5 DÀN (+1.865M)</span>`;
+                                    if (q.xien5.h5 === 4) return `<span class="rounded bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 px-1.5 py-0.5 text-[10px] font-black shadow-xs ring-1 ring-amber-500">👑 ĂN 5/5 DÀN (+665M)</span>`;
+                                    if (q.xien5.h5 === 3) return `<span class="rounded bg-purple-600 text-white px-1.5 py-0.5 text-[10px] font-black shadow-xs">🔥 ĂN 5/5 DÀN (+149M)</span>`;
+                                    if (q.xien5.h5 === 2) return `<span class="rounded bg-teal-600 text-white px-1.5 py-0.5 text-[10px] font-bold shadow-xs">⚡ ĂN 3 DÀN X2 (-1.9M)</span>`;
+                                    return `<span class="text-slate-500 text-[10px] font-semibold">Trượt (-5.5M)</span>`;
+                                })()}
+                                <span class="font-mono font-bold ${q.xien5.profitK > 0 ? 'text-emerald-600' : 'text-rose-600'}">${formatMoneyK(q.xien5.profitK, true)}</span>
+                            </div>
+                            ${hitTop5Nums.length > 0 ? `
+                            <div class="flex flex-wrap items-center gap-1 mt-1">
+                                <span class="text-[9px] font-black text-indigo-900 bg-indigo-100 px-1.5 py-0.2 rounded shadow-xs border border-indigo-300">Trúng:</span>
+                                ${hitTop5Nums.map(n => `<span class="inline-flex items-center px-1.5 py-0.2 rounded font-mono text-[10px] font-black bg-gradient-to-r from-indigo-600 to-blue-600 text-white ring-1 ring-indigo-300 shadow-xs animate-pulse">🎯 ${n}</span>`).join(' ')}
+                            </div>` : ''}
+                            <div class="text-[10px] text-slate-500 mt-1 flex items-center justify-between">
+                                <span>${q.xien5.h5}/5 con về · [${q.xien5.top5.join('-')}]</span>
+                                <span class="text-indigo-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
+                            </div>
+                            <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-indigo-200/50 pt-0.5">
+                                <span class="text-slate-500 font-sans">Lũy kế Xiên 5:</span>
+                                <strong class="${row.cumXienK >= 0 ? 'text-indigo-700' : 'text-rose-600'} font-bold">${formatMoneyK(row.cumXienK, true)}</strong>
+                            </div>
                         </td>
-                        <td class="py-2.5 px-3 text-right">
-                            <div><span class="font-bold ${q.xien5.profitK > 0 ? 'text-emerald-700' : (q.xien5.profitK < 0 ? 'text-rose-700' : 'text-slate-400')}">${formatMoneyK(q.xien5.profitK)}</span></div>
-                            <div class="text-[10px] font-semibold ${row.cumXienK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">LK: ${formatMoneyK(row.cumXienK)}</div>
+
+                        <!-- Cột 6: Lãi/Lỗ Tổng Hợp -->
+                        <td class="diary-cell-interactive px-3 py-3 text-right whitespace-nowrap font-mono cursor-pointer hover:bg-slate-100 rounded-xl transition-all" data-slip-date="${row.date}" data-slip-cat="pentaSuite">
+                            <div class="font-black text-xs ${q.combo.profitK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">
+                                ${formatMoneyK(q.combo.profitK, true)}
+                            </div>
+                            <div class="text-[10px] text-slate-400 font-sans">Vốn: ${formatMoneyK(q.combo.stakeK, false)}</div>
+                            <div class="flex items-center justify-end gap-1 mt-1">
+                                ${isDayWin
+                                    ? `<span class="inline-block px-1.5 py-0.2 rounded text-[9px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">✅ THẮNG</span>`
+                                    : `<span class="inline-block px-1.5 py-0.2 rounded text-[9px] font-bold bg-rose-100 text-rose-800">❌ THUA</span>`}
+                                <span class="text-[9px] text-indigo-600 font-bold font-sans underline flex items-center gap-0.5">Xem <i class="bi bi-chevron-down text-[8px]"></i></span>
+                            </div>
                         </td>
-                        <td class="py-2.5 px-3 text-right">
-                            <span class="font-black text-xs ${q.combo.profitK > 0 ? 'text-emerald-700' : (q.combo.profitK < 0 ? 'text-rose-700' : 'text-slate-500')}">${formatMoneyK(q.combo.profitK)}</span>
-                        </td>
-                        <td class="py-2.5 px-3 text-right">
-                            <div class="font-black text-sm ${row.cumComboK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${formatMoneyK(row.cumComboK)}</div>
-                            <div class="text-[9px] text-slate-500">Đề + Lô + Xiên</div>
+
+                        <!-- Cột 7: Lũy Kế Mốc -->
+                        <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
+                            <div class="font-black text-xs ${row.cumComboK >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
+                                ${formatMoneyK(row.cumComboK, true)}
+                            </div>
+                            <div class="text-[9px] text-slate-400 font-sans">Lũy kế 3 trụ</div>
                         </td>
                     </tr>
                 `;
             }).join('');
 
             const emptyMessageHtml = (currentShadowPhase === 'from0710')
-                ? `<tr><td colspan="13" class="py-8 text-center text-xs text-amber-900 font-mono bg-amber-50/60 border-t border-amber-300"><i class="bi bi-clock-history text-base text-amber-600"></i> Bắt đầu đối soát từ kỳ mở thưởng 07/10/2026. Kỳ 1 hôm nay đang niêm phong khóa cược ở hàng trên, chờ kết quả mở thưởng 18:30.<div class="text-[11px] text-slate-600 mt-1">Toàn bộ dữ liệu trước 07/10 đã được bỏ qua theo yêu cầu đối soát mới.</div></td></tr>`
-                : '<tr><td colspan="13" class="py-8 text-center text-xs text-slate-500">Không có dữ liệu đối soát</td></tr>';
+                ? `<tr><td colspan="7" class="py-8 text-center text-xs text-amber-900 font-mono bg-amber-50/60 border-t border-amber-300"><i class="bi bi-clock-history text-base text-amber-600"></i> Bắt đầu đối soát từ kỳ mở thưởng 07/10/2026. Kỳ hôm nay đang niêm phong khóa cược ở hàng trên, chờ kết quả mở thưởng 18:30.<div class="text-[11px] text-slate-600 mt-1">Toàn bộ dữ liệu trước 07/10 đã được lưu trữ trong mục Lịch sử kiểm định.</div></td></tr>`
+                : '<tr><td colspan="7" class="py-8 text-center text-xs text-slate-500">Không có dữ liệu đối soát</td></tr>';
 
             tbody.innerHTML = pendingRowHtml + (settledRowsHtml || emptyMessageHtml);
             return;
