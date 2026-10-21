@@ -527,6 +527,8 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     const nDe = nBets.de || advisorPayload?.crossHedgingPortfolio?.latestRecommendation?.pillar1_De || {};
     let advNextDeVip = (nDe.vipNumbers || []).map(numStr);
     let advNextDeSingle = (nDe.singleNumbers || []).map(numStr);
+    const advDeVipSet = new Set(advNextDeVip);
+    advNextDeSingle = advNextDeSingle.filter(n => !advDeVipSet.has(n));
     let advNextDeAll = (nDe.numbers || [...advNextDeVip, ...advNextDeSingle]).map(numStr);
     if (!advNextDeAll.length) {
         advNextDeAll = (dePayload?.nextPrediction?.strategies?.deMilestoneHistoryEdge75UnionX2?.holds?.[70]?.betNumbers || Array.from({ length: 30 }, (_, i) => String(i).padStart(2, '0'))).map(numStr);
@@ -540,6 +542,8 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     let advNextLoX4 = (nLo.tierX4 || []).map(numStr);
     let advNextLoX3 = (nLo.tierX3 || []).map(numStr);
     let advNextLoX1 = (nLo.tierX1 || []).map(numStr);
+    const higherLoTiers = new Set([...advNextLoX5, ...advNextLoX4, ...advNextLoX3]);
+    advNextLoX1 = advNextLoX1.filter(n => !higherLoTiers.has(n));
     let advNextLoAll = (nLo.allNumbers || nLo.distinctNumbers || [...advNextLoX5, ...advNextLoX4, ...advNextLoX3, ...advNextLoX1]).map(numStr);
     if (!advNextLoAll.length) {
         advNextLoAll = (lotoPayload?.nextPrediction?.predictions?.top7?.numbers || lotoPayload?.nextPrediction?.predictions?.top6?.numbers || ['01', '02', '03', '04', '05', '06', '07']).map(numStr);
@@ -568,6 +572,8 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     const nPenta = nBets.pentaConsensus || computePentaConsensusForDate(predictionDate, advisorPayload) || {};
     let pentaNextDeX2 = (nPenta.de?.x2Nums || []).map(numStr);
     let pentaNextDeX1 = (nPenta.de?.x1Nums || []).map(numStr);
+    const pdX2Set = new Set(pentaNextDeX2);
+    pentaNextDeX1 = pentaNextDeX1.filter(n => !pdX2Set.has(n));
     let pentaNextDeAll = (nPenta.de?.numbers || [...pentaNextDeX2, ...pentaNextDeX1]).map(numStr);
     if (!pentaNextDeAll.length) {
         pentaNextDeAll = advNextDeAll;
@@ -580,6 +586,12 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     let pentaNextLoX4 = (nPenta.lo?.x4Nums || []).map(numStr);
     let pentaNextLoX3 = (nPenta.lo?.x3Nums || []).map(numStr);
     let pentaNextLoX1 = (nPenta.lo?.x1Nums || []).map(numStr);
+    const p5Set = new Set(pentaNextLoX5);
+    pentaNextLoX4 = pentaNextLoX4.filter(n => !p5Set.has(n));
+    const p4Set = new Set([...p5Set, ...pentaNextLoX4]);
+    pentaNextLoX3 = pentaNextLoX3.filter(n => !p4Set.has(n));
+    const p3Set = new Set([...p4Set, ...pentaNextLoX3]);
+    pentaNextLoX1 = pentaNextLoX1.filter(n => !p3Set.has(n));
     let pentaNextLoAll = (nPenta.lo?.numbers || [...pentaNextLoX5, ...pentaNextLoX4, ...pentaNextLoX3, ...pentaNextLoX1]).map(numStr);
     if (!pentaNextLoAll.length) {
         pentaNextLoAll = advNextLoAll;

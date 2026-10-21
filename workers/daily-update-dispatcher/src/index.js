@@ -141,7 +141,11 @@ async function dispatchGithubWorkflow(env, inputs, source) {
 
 async function fetchPredictionJson(env, pathname) {
   const base = String(env.APP_BASE_URL || DEFAULT_APP_BASE_URL).replace(/\/$/, '');
-  const headers = { accept: 'application/json' };
+  const headers = {
+    accept: 'application/json',
+    'cache-control': 'no-cache',
+    pragma: 'no-cache'
+  };
   if (env.PREDICTION_API_TOKEN) headers['x-api-key'] = env.PREDICTION_API_TOKEN;
   const response = await fetch(`${base}${pathname}`, { headers });
   if (!response.ok) {
@@ -369,21 +373,26 @@ function formatM(profitK) {
   return `${sign}${formatted}M`;
 }
 
-function resolveSmartSelectedLo(advisorPayload = {}) {
-  const stratGov = advisorPayload?.strategicPortfolioGovernor || null;
-  const recPort = stratGov?.recommendedPortfolio || null;
-  if (recPort?.loStructure?.selectedLo) return recPort.loStructure.selectedLo;
-  if (stratGov?.smartSelectedLo) return stratGov.smartSelectedLo;
+function resolveSmartSelectedLo(advisorPayload = {}, targetDate = null) {
+  const reg = advisorPayload?.dailyLockedBetsRegistry?.dates || {};
+  const dateKey = targetDate || advisorPayload?.pendingPredictionDate || advisorPayload?.latestRecommendationDate;
+  const regLo = (dateKey && reg[dateKey]?.bets?.lo4EngineFusion) || advisorPayload?.lo4EngineFusion?.latestRecommendation || {};
 
-  const lo4Rec = advisorPayload?.lo4EngineFusion?.latestRecommendation || {};
-  let consensusNums = (lo4Rec.numbersOver2 || []).map(Number);
+  let consensusNums = (regLo.numbersOver2 || []).map(Number);
   if (!consensusNums.length) {
-    const x5 = (lo4Rec.tierX5 || []).map(Number);
-    const x4 = (lo4Rec.tierX4 || []).map(Number);
-    const x3 = (lo4Rec.tierX3 || []).map(Number);
+    const x5 = (regLo.tierX5 || []).map(Number);
+    const x4 = (regLo.tierX4 || []).map(Number);
+    const x3 = (regLo.tierX3 || []).map(Number);
     consensusNums = [...x5, ...x4, ...x3];
   }
   const uniqueConsensus = [...new Set(consensusNums)].filter(n => Number.isInteger(n) && n >= 0 && n < 100);
+
+  const stratGov = advisorPayload?.strategicPortfolioGovernor || null;
+  const recPort = stratGov?.recommendedPortfolio || null;
+  if (!uniqueConsensus.length) {
+    if (recPort?.loStructure?.selectedLo) return recPort.loStructure.selectedLo;
+    if (stratGov?.smartSelectedLo) return stratGov.smartSelectedLo;
+  }
 
   const quadRec = advisorPayload?.loQuadHybrid?.latestRecommendation || {};
   const quadGov = advisorPayload?.loQuadHybrid?.streakGovernor || {};
@@ -522,7 +531,7 @@ function buildBetCalculationSheet(tier, date, advisorPayload = {}) {
   }
 
   const smartLo = (advisorPayload && (advisorPayload.loQuadHybrid || advisorPayload.loQuantumBayesFusion || advisorPayload.strategicPortfolioGovernor || advisorPayload.lo4EngineFusion))
-    ? resolveSmartSelectedLo(advisorPayload)
+    ? resolveSmartSelectedLo(advisorPayload, date)
     : null;
 
   if (smartLo) {
@@ -698,23 +707,38 @@ function buildOptimalBetSlipMessage(date, advisorPayload = {}) {
   }
   lines.push(divider);
 
-  const x3List = (recPort?.loStructure?.tierX3 || crossOpt?.overlapX3 || []).map(normalizeLotteryNumber);
-  const x2List = (recPort?.loStructure?.tierX2 || crossOpt?.overlapX2 || []).map(normalizeLotteryNumber);
-  const x1List = (recPort?.loStructure?.singlesX1 || crossOpt?.singlesX1 || []).map(normalizeLotteryNumber);
-  const distinctLo = (recPort?.loStructure?.distinctLo || crossOpt?.distinctNumbers || []).map(normalizeLotteryNumber);
+  const regLo = advisorPayload?.dailyLockedBetsRegistry?.dates?.[date]?.bets?.lo4EngineFusion
+    || advisorPayload?.lo4EngineFusion?.latestRecommendation
+    || null;
 
-  if (x3List.length || x2List.length) {
+  const loX5 = (regLo?.tierX5 || []).map(normalizeLotteryNumber);
+  const loX4 = (regLo?.tierX4 || (loX5.length === 0 ? recPort?.loStructure?.tierX4 : []) || []).map(normalizeLotteryNumber);
+  const loX3 = (regLo?.tierX3 || recPort?.loStructure?.tierX3 || crossOpt?.overlapX3 || []).map(normalizeLotteryNumber);
+  const higherTiers = new Set([...loX5, ...loX4, ...loX3]);
+  const loX2 = (recPort?.loStructure?.tierX2 || crossOpt?.overlapX2 || []).map(normalizeLotteryNumber).filter(n => !higherTiers.has(n));
+  loX2.forEach(n => higherTiers.add(n));
+  const loX1 = (regLo?.tierX1 || recPort?.loStructure?.singlesX1 || crossOpt?.singlesX1 || []).map(normalizeLotteryNumber).filter(n => !higherTiers.has(n));
+  const distinctLo = (regLo?.distinctNumbers || regLo?.numbersOver2 || recPort?.loStructure?.distinctLo || crossOpt?.distinctNumbers || [...loX5, ...loX4, ...loX3, ...loX2, ...loX1]).map(normalizeLotteryNumber);
+
+  if (loX5.length || loX4.length || loX3.length || loX2.length) {
+    const mainConsensus = [...loX5, ...loX4, ...loX3];
     lines.push(
-      `🎰 <b>2. LÔ ĐỀ XUẤT RIÊNG (${distinctLo.length} SỐ · ĐA TẦNG X3/X2/X1):</b>`
+      `🎰 <b>2. LÔ GHÉP 4 ĐỘNG CƠ THỰC CHIẾN (${distinctLo.length} SỐ · ĐA TẦNG X5/X4/X3/X1):</b>`
     );
-    if (x3List.length) {
-      lines.push(`⚡ <b>Hạt Nhân X3 (${x3List.length} số):</b> <code>${escapeHtml(formatNumberList(x3List))}</code>`);
+    if (loX5.length) {
+      lines.push(`👑 <b>Siêu VIP X5 (${loX5.length} số):</b> <code>${escapeHtml(formatNumberList(loX5))}</code>`);
     }
-    if (x2List.length) {
-      lines.push(`🔥 <b>Mũi Nhọn X2 (${x2List.length} số):</b> <code>${escapeHtml(formatNumberList(x2List))}</code>`);
+    if (loX4.length) {
+      lines.push(`🔥 <b>Cực VIP X4 (${loX4.length} số):</b> <code>${escapeHtml(formatNumberList(loX4))}</code>`);
     }
-    if (x1List.length) {
-      lines.push(`🛡️ <b>Bảo Hiểm X1 (${x1List.length} số):</b> <code>${escapeHtml(formatNumberList(x1List))}</code>`);
+    if (loX3.length) {
+      lines.push(`⚡ <b>Triển Vọng X3 (${loX3.length} số):</b> <code>${escapeHtml(formatNumberList(loX3))}</code>`);
+    }
+    if (loX2.length) {
+      lines.push(`🔥 <b>Mũi Nhọn X2 (${loX2.length} số):</b> <code>${escapeHtml(formatNumberList(loX2))}</code>`);
+    }
+    if (loX1.length) {
+      lines.push(`🛡️ <b>Bảo Hiểm X1 (${loX1.length} số):</b> <code>${escapeHtml(formatNumberList(loX1))}</code>`);
     }
   } else if (distinctLo.length) {
     lines.push(
@@ -756,7 +780,13 @@ function buildOptimalBetSlipMessage(date, advisorPayload = {}) {
     lines.push(`• <b>Khiên Lọt Khe (1:84):</b> <code>${slipHedge.numbers.map(normalizeLotteryNumber).join(', ')}</code>`);
   }
 
-  if (distinctLo.length) {
+  const mainConsensus = [...loX5, ...loX4, ...loX3];
+  if (mainConsensus.length) {
+    lines.push(`• <b>Lô Chủ Lực (${mainConsensus.length} số):</b> <code>${mainConsensus.join(', ')}</code>`);
+  }
+  if (loX1.length) {
+    lines.push(`• <b>Lô Bảo Hiểm X1:</b> <code>${loX1.join(', ')}</code>`);
+  } else if (distinctLo.length) {
     lines.push(`• <b>Lô Đề Xuất Riêng:</b> <code>${distinctLo.join(', ')}</code>`);
   }
   if (top20Anchor.length) {
@@ -1848,6 +1878,8 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     const nDe = nBets.de || advisorPayload?.crossHedgingPortfolio?.latestRecommendation?.pillar1_De || {};
     let advNextDeVip = (nDe.vipNumbers || []).map(numStr);
     let advNextDeSingle = (nDe.singleNumbers || []).map(numStr);
+    const advDeVipSet = new Set(advNextDeVip);
+    advNextDeSingle = advNextDeSingle.filter(n => !advDeVipSet.has(n));
     let advNextDeAll = (nDe.numbers || [...advNextDeVip, ...advNextDeSingle]).map(numStr);
     if (!advNextDeAll.length) {
         advNextDeAll = (dePayload?.nextPrediction?.strategies?.deMilestoneHistoryEdge75UnionX2?.holds?.[70]?.betNumbers || Array.from({ length: 30 }, (_, i) => String(i).padStart(2, '0'))).map(numStr);
@@ -1861,6 +1893,9 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     let advNextLoX4 = (nLo.tierX4 || []).map(numStr);
     let advNextLoX3 = (nLo.tierX3 || []).map(numStr);
     let advNextLoX1 = (nLo.tierX1 || []).map(numStr);
+    // De-duplicate: Ensure lower tiers do not contain numbers already in higher tiers
+    const higherLoTiers = new Set([...advNextLoX5, ...advNextLoX4, ...advNextLoX3]);
+    advNextLoX1 = advNextLoX1.filter(n => !higherLoTiers.has(n));
     let advNextLoAll = (nLo.allNumbers || nLo.distinctNumbers || [...advNextLoX5, ...advNextLoX4, ...advNextLoX3, ...advNextLoX1]).map(numStr);
     if (!advNextLoAll.length) {
         advNextLoAll = (lotoPayload?.nextPrediction?.predictions?.top7?.numbers || lotoPayload?.nextPrediction?.predictions?.top6?.numbers || ['01', '02', '03', '04', '05', '06', '07']).map(numStr);
@@ -1889,6 +1924,8 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     const nPenta = nBets.pentaConsensus || computePentaConsensusForDate(predictionDate, advisorPayload) || {};
     let pentaNextDeX2 = (nPenta.de?.x2Nums || []).map(numStr);
     let pentaNextDeX1 = (nPenta.de?.x1Nums || []).map(numStr);
+    const pdX2Set = new Set(pentaNextDeX2);
+    pentaNextDeX1 = pentaNextDeX1.filter(n => !pdX2Set.has(n));
     let pentaNextDeAll = (nPenta.de?.numbers || [...pentaNextDeX2, ...pentaNextDeX1]).map(numStr);
     if (!pentaNextDeAll.length) {
         pentaNextDeAll = advNextDeAll;
@@ -1901,6 +1938,12 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     let pentaNextLoX4 = (nPenta.lo?.x4Nums || []).map(numStr);
     let pentaNextLoX3 = (nPenta.lo?.x3Nums || []).map(numStr);
     let pentaNextLoX1 = (nPenta.lo?.x1Nums || []).map(numStr);
+    const p5Set = new Set(pentaNextLoX5);
+    pentaNextLoX4 = pentaNextLoX4.filter(n => !p5Set.has(n));
+    const p4Set = new Set([...p5Set, ...pentaNextLoX4]);
+    pentaNextLoX3 = pentaNextLoX3.filter(n => !p4Set.has(n));
+    const p3Set = new Set([...p4Set, ...pentaNextLoX3]);
+    pentaNextLoX1 = pentaNextLoX1.filter(n => !p3Set.has(n));
     let pentaNextLoAll = (nPenta.lo?.numbers || [...pentaNextLoX5, ...pentaNextLoX4, ...pentaNextLoX3, ...pentaNextLoX1]).map(numStr);
     if (!pentaNextLoAll.length) {
         pentaNextLoAll = advNextLoAll;
@@ -2059,7 +2102,33 @@ async function sendTelegramMessage(env, chatId, text, replyMarkup = null) {
   return lastMessage;
 }
 
-function evaluatePredictionCacheReadiness(dePayload = {}, lotoPayload = {}, expectedDataDate = null) {
+function evaluatePredictionCacheReadiness(dePayload = {}, lotoPayload = {}, expectedDataDate = null, advisorPayload = {}) {
+  // Ưu tiên kiểm tra advisorPayload (Single Source of Truth cho /daily-advisor và /daily-advisor-shadow)
+  const advisorDataDate = String(advisorPayload?.latestDataDate || '');
+  const advisorPredDate = String(advisorPayload?.pendingPredictionDate || advisorPayload?.latestRecommendationDate || '');
+  const regDates = Object.keys(advisorPayload?.dailyLockedBetsRegistry?.dates || {}).sort();
+  const latestRegDate = regDates[regDates.length - 1] || null;
+
+  if (hasValidAdvisorData(advisorPayload) && (advisorDataDate || latestRegDate)) {
+    const effectiveDataDate = advisorDataDate || latestRegDate;
+    const requestedDataDate = expectedDataDate ? String(expectedDataDate) : null;
+    const dateMatches = !requestedDataDate
+      || effectiveDataDate === requestedDataDate
+      || advisorPredDate === requestedDataDate
+      || (advisorPayload.dailyLockedBetsRegistry?.dates?.[requestedDataDate] !== undefined);
+
+    if (dateMatches) {
+      return {
+        ready: true,
+        dataDate: effectiveDataDate,
+        expectedDataDate: requestedDataDate,
+        deLatestDataDate: effectiveDataDate,
+        lotoLatestDataDate: effectiveDataDate,
+        source: 'advisorPayload'
+      };
+    }
+  }
+
   const deLatestDataDate = String(dePayload.latestDataDate || '');
   const lotoLatestDataDate = String(lotoPayload.latestDataDate || '');
   const dePredDate = String(dePayload.nextPrediction?.predictionIsoDate || '');
@@ -2102,8 +2171,8 @@ async function getLockedAdvisorPayload(env, options = {}) {
   if (!hasValidAdvisorData(advisorPayload)) {
     try {
       const r2Base = String(env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || 'https://pub-df6c4a2a06ff417cad48f09d66fd7bf0.r2.dev').replace(/\/$/, '');
-      const r2Res = await fetch(`${r2Base}/statistics/cached_daily_method_advisor.json`, {
-        headers: { accept: 'application/json' }
+      const r2Res = await fetch(`${r2Base}/statistics/cached_daily_method_advisor.json?_t=${Date.now()}`, {
+        headers: { accept: 'application/json', 'cache-control': 'no-cache', pragma: 'no-cache' }
       });
       if (r2Res.ok) {
         const r2Json = await r2Res.json();
@@ -2119,8 +2188,8 @@ async function getLockedAdvisorPayload(env, options = {}) {
   // Merge latest dailyLockedBetsRegistry from R2 to ensure complete SSOT dates
   try {
     const r2Base = String(env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || 'https://pub-df6c4a2a06ff417cad48f09d66fd7bf0.r2.dev').replace(/\/$/, '');
-    const regRes = await fetch(`${r2Base}/statistics/daily_locked_bets_registry.json`, {
-      headers: { accept: 'application/json' }
+    const regRes = await fetch(`${r2Base}/statistics/daily_locked_bets_registry.json?_t=${Date.now()}`, {
+      headers: { accept: 'application/json', 'cache-control': 'no-cache', pragma: 'no-cache' }
     });
     if (regRes.ok) {
       const regJson = await regRes.json();
@@ -2176,8 +2245,14 @@ async function getLockedAdvisorPayload(env, options = {}) {
   try {
     if (!options.force) {
       const saved = await env.TELEGRAM_STATE.get(kvKey, 'json');
-      if (saved && hasValidAdvisorData(saved)) {
-        // Use the locked snapshot from KV to ensure 100% immutability even across new deploys
+      const savedLatestDate = saved?.latestDataDate || '';
+      const currentLatestDate = advisorPayload?.latestDataDate || '';
+      const savedSettledCount = Object.keys(saved?.dailyLockedBetsRegistry?.dates || {}).filter(d => saved.dailyLockedBetsRegistry[d].isSettled).length;
+      const currentSettledCount = Object.keys(advisorPayload?.dailyLockedBetsRegistry?.dates || {}).filter(d => advisorPayload.dailyLockedBetsRegistry[d].isSettled).length;
+
+      // Only reuse saved KV snapshot if current advisorPayload does NOT have newer settled data
+      if (saved && hasValidAdvisorData(saved) && (!currentLatestDate || savedLatestDate >= currentLatestDate) && currentSettledCount <= savedSettledCount) {
+        // Use the locked snapshot from KV
         return { advisorPayload: saved, predictionDate };
       }
     }
@@ -2217,7 +2292,8 @@ async function notifyTelegram(env, options = {}) {
   const readiness = evaluatePredictionCacheReadiness(
     dePayload,
     lotoPayload,
-    options.expectedDataDate || null
+    options.expectedDataDate || null,
+    advisorPayload
   );
   if (!options.force && (!readiness.ready || !hasAdvisor)) {
     return {

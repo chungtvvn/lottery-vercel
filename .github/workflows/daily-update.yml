@@ -522,7 +522,7 @@ jobs:
             exit 0
           fi
           if ! curl -fsS --retry 4 --retry-all-errors --retry-delay 5 --max-time 120 \
-            -X POST "$TELEGRAM_WORKER_NOTIFY_URL/telegram/notify?dataDate=$TELEGRAM_DATA_DATE" \
+            -X POST "$TELEGRAM_WORKER_NOTIFY_URL/telegram/notify?dataDate=$TELEGRAM_DATA_DATE&force=1" \
             -H "x-dispatch-secret: $TELEGRAM_DISPATCH_SECRET"; then
             echo "::warning::Telegram Worker tạm thời chưa gửi được báo cáo. Cache Đề/Lô đã xác minh và Vercel vẫn tiếp tục deploy; Worker cron sẽ thử lại."
           fi
