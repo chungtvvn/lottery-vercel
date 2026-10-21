@@ -389,6 +389,32 @@
                         pills: loPills,
                         multiplierMap: multMap
                     },
+                    loCrossX2: s.loCrossX2 || (() => {
+                        const bCross = b?.loCrossX2 || null;
+                        const x2List = bCross?.x2Nums || [];
+                        const x2MultMap = { ...multMap };
+                        x2List.forEach(n => { x2MultMap[n] = 2; });
+                        let x2StakeK = 0, x2PayoutK = 0, x2Hits = 0;
+                        allLoNums.forEach(n => {
+                            const mult = x2MultMap[n] || 1;
+                            const stake = mult * 2200;
+                            const hits = prizeCount[n] || 0;
+                            const payout = hits * (mult * 8000);
+                            x2StakeK += stake;
+                            x2PayoutK += payout;
+                            x2Hits += hits;
+                        });
+                        return {
+                            numbers: allLoNums,
+                            x2Nums: x2List,
+                            multiplierMap: x2MultMap,
+                            hits: x2Hits,
+                            stakeK: x2StakeK,
+                            payoutK: x2PayoutK,
+                            profitK: x2PayoutK - x2StakeK,
+                            isWin: (x2PayoutK - x2StakeK) > 0
+                        };
+                    })(),
                     xien5: {
                         top5: s.xien5?.top5 || [],
                         tickets: b?.xien5?.tickets || getXien5Combinations(s.xien5?.top5 || []),
@@ -581,6 +607,46 @@
         const comboProfitK = isPending ? 0 : (comboPayoutK - comboStakeK);
         const isComboWin = isPending ? false : (comboProfitK > 0);
 
+        // 2B. Lô Đột Phá X2 (Cross-promotion với Lo 4 Engine của Daily Advisor)
+        let lo4HighSet = new Set();
+        const lo4Rec = data?.lo4EngineFusion?.latestRecommendation || null;
+        const lo4SettledRow = (data?.lo4EngineFusion?.settledLedger || []).find(r => r.date === targetDate);
+        const lo4Src = isPending ? lo4Rec : (lo4SettledRow || lo4Rec);
+        if (lo4Src) {
+            const h = [...(lo4Src.tierX5 || []), ...(lo4Src.tierX4 || []), ...(lo4Src.tierX3 || [])].map(numStr);
+            lo4HighSet = new Set(h);
+        }
+        const crossX2Promoted = x1Nums.filter(n => lo4HighSet.has(n));
+        const crossX1Remaining = x1Nums.filter(n => !lo4HighSet.has(n));
+
+        const multMapX2 = { ...numMultiplierMap };
+        crossX2Promoted.forEach(n => {
+            multMapX2[n] = 2; // Cược 4.4M (200đ)
+        });
+
+        let loStakeX2K = 0, loPayoutX2K = 0, loHitsX2 = 0;
+        const loHitNumsX2 = [];
+        const loPillsX2 = allLoNums.map(n => {
+            const mult = multMapX2[n] || 1;
+            const stake = mult * 2200;
+            const hits = isPending ? 0 : (prizeCount[n] || 0);
+            const payout = isPending ? 0 : hits * (mult * 8000);
+            loStakeX2K += stake;
+            loPayoutX2K += payout;
+            loHitsX2 += hits;
+            if (hits > 0) loHitNumsX2.push(n);
+            return {
+                num: n,
+                freq: loFreq[n],
+                mult,
+                stakeK: stake,
+                hits,
+                payoutK: payout
+            };
+        });
+        const loProfitX2K = isPending ? 0 : (loPayoutX2K - loStakeX2K);
+        const isLoX2Win = isPending ? false : (loProfitX2K > 0);
+
         return {
             date: targetDate,
             isPending,
@@ -613,6 +679,23 @@
                 profitK: loProfitK,
                 hits: loHits,
                 isWin: isLoWin
+            },
+            loCrossX2: {
+                numbers: allLoNums,
+                x5Nums,
+                x4Nums,
+                x3Nums,
+                x2Nums: crossX2Promoted,
+                x1Nums: crossX1Remaining,
+                pills: loPillsX2,
+                freqMap: loFreq,
+                multiplierMap: multMapX2,
+                stakeK: loStakeX2K,
+                payoutK: loPayoutX2K,
+                profitK: loProfitX2K,
+                hits: loHitsX2,
+                hitNums: loHitNumsX2,
+                isWin: isLoX2Win
             },
             xien5: {
                 top5: top5Nums,
@@ -807,6 +890,46 @@
         const comboProfitK = isPending ? 0 : (comboPayoutK - comboStakeK);
         const isComboWin = isPending ? false : (comboProfitK > 0);
 
+        // 2B. Lô Đột Phá X2 (Cross-promotion với Lo 4 Engine của Daily Advisor)
+        let lo4HighSet = new Set();
+        const lo4Rec = data?.lo4EngineFusion?.latestRecommendation || null;
+        const lo4SettledRow = (data?.lo4EngineFusion?.settledLedger || []).find(r => r.date === targetDate);
+        const lo4Src = isPending ? lo4Rec : (lo4SettledRow || lo4Rec);
+        if (lo4Src) {
+            const h = [...(lo4Src.tierX5 || []), ...(lo4Src.tierX4 || []), ...(lo4Src.tierX3 || [])].map(numStr);
+            lo4HighSet = new Set(h);
+        }
+        const crossX2Promoted = x1Nums.filter(n => lo4HighSet.has(n));
+        const crossX1Remaining = x1Nums.filter(n => !lo4HighSet.has(n));
+
+        const multMapX2 = { ...numMultiplierMap };
+        crossX2Promoted.forEach(n => {
+            multMapX2[n] = 2; // Cược 4.4M (200đ)
+        });
+
+        let loStakeX2K = 0, loPayoutX2K = 0, loHitsX2 = 0;
+        const loHitNumsX2 = [];
+        const loPillsX2 = allLoNums.map(n => {
+            const mult = multMapX2[n] || 1;
+            const stake = mult * 2200;
+            const hits = isPending ? 0 : (prizeCount[n] || 0);
+            const payout = isPending ? 0 : hits * (mult * 8000);
+            loStakeX2K += stake;
+            loPayoutX2K += payout;
+            loHitsX2 += hits;
+            if (hits > 0) loHitNumsX2.push(n);
+            return {
+                num: n,
+                freq: loFreq[n],
+                mult,
+                stakeK: stake,
+                hits,
+                payoutK: payout
+            };
+        });
+        const loProfitX2K = isPending ? 0 : (loPayoutX2K - loStakeX2K);
+        const isLoX2Win = isPending ? false : (loProfitX2K > 0);
+
         return {
             date: targetDate,
             isPending,
@@ -839,6 +962,23 @@
                 profitK: loProfitK,
                 hits: loHits,
                 isWin: isLoWin
+            },
+            loCrossX2: {
+                numbers: allLoNums,
+                x5Nums,
+                x4Nums,
+                x3Nums,
+                x2Nums: crossX2Promoted,
+                x1Nums: crossX1Remaining,
+                pills: loPillsX2,
+                freqMap: loFreq,
+                multiplierMap: multMapX2,
+                stakeK: loStakeX2K,
+                payoutK: loPayoutX2K,
+                profitK: loProfitX2K,
+                hits: loHitsX2,
+                hitNums: loHitNumsX2,
+                isWin: isLoX2Win
             },
             xien5: {
                 top5: top5Nums,
@@ -2252,16 +2392,20 @@
 
             // Strategy 👑: 👑 Đề Siêu Gộp 5 Phương Pháp (Trùng ≥3 cược X2 @ 400K, còn lại cược X1 @ 200K)
             if (mode === 'pentaConsensus') {
-                let baseRows = deDropoff?.settledLedger || [];
+                let baseDates = Array.from(new Set([
+                    ...(deDropoff?.settledLedger || []).map(r => r.date),
+                    ...(data?.pentaConsensus?.settledLedger || []).map(r => r.date),
+                    ...Object.keys(data?.dailyLockedBetsRegistry?.dates || {}).filter(d => data?.dailyLockedBetsRegistry?.dates?.[d]?.isSettled)
+                ])).filter(Boolean).sort();
                 if (currentShadowPhase === 'from0710') {
-                    baseRows = baseRows.filter(r => (r.date || '') >= SHADOW_START_DATE);
+                    baseDates = baseDates.filter(d => d >= SHADOW_START_DATE);
                 } else if (currentShadowYear === '2026') {
-                    baseRows = baseRows.filter(r => r.year === 2026 || String(r.date).startsWith('2026'));
+                    baseDates = baseDates.filter(d => String(d).startsWith('2026'));
                 } else if (currentShadowYear === '2025') {
-                    baseRows = baseRows.filter(r => r.year === 2025 || String(r.date).startsWith('2025'));
+                    baseDates = baseDates.filter(d => String(d).startsWith('2025'));
                 }
 
-                const sortedRows = baseRows.slice().sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+                const sortedRows = baseDates.map(date => ({ date }));
                 let peakEquity = 0;
                 let equity = 0;
                 let maxDrawdownK = 0;
@@ -3232,7 +3376,12 @@
         // CATEGORY: 👑 HỆ SIÊU GỘP NGŨ TRỤ (5 PHƯƠNG PHÁP) (PENTA CONSENSUS SUITE)
         // =====================================================================
         if (currentShadowCategory === 'pentaSuite') {
-            let baseDates = deDropoffLedger.map(r => r.date).filter(Boolean).sort();
+            let baseDates = Array.from(new Set([
+                ...deDropoffLedger.map(r => r.date),
+                ...loLedger.map(r => r.date),
+                ...(data?.pentaConsensus?.settledLedger || []).map(r => r.date),
+                ...Object.keys(shadowRegDates).filter(d => shadowRegDates[d]?.isSettled)
+            ])).filter(Boolean).sort();
             if (currentShadowPhase === 'from0710') {
                 baseDates = baseDates.filter(d => d >= SHADOW_START_DATE);
             } else if (currentShadowYear === '2026') {
