@@ -1194195,6 +1194195,8 @@
     "description": "Bộ Luân Chuyển Đan Xen Động Học (Dynamic Alternating Governor v10.0): Luân chuyển chuẩn xác giữa Đề Tinh Hoa, Markov Gap và Cầu Đồ Thị dựa trên ma trận chuyển tiếp chuỗi Markov (Strict PIT).",
     "latestRecommendation": {
       "predictionDate": "2026-10-21",
+      "selectedMethod": "deMarkovGapHazard",
+      "selectedMethodLabel": "🔮 Đề Markov Bậc 2 & Gap Hazard (Sweet-Spot)",
       "methodName": "🔮 Đề Markov Bậc 2 & Gap Hazard (Sweet-Spot)",
       "numbers": [
         "55",
@@ -1194289,7 +1194291,11 @@
         "33",
         "10"
       ],
-      "stakeK": 70000
+      "stakeK": 70000,
+      "snapshotLock": {
+        "isLocked": true,
+        "lockedAt": "2026-10-21T04:11:21.839Z"
+      }
     },
     "settledLedger": [
       {
@@ -1598126,60 +1598132,75 @@
             "date": "2026-10-20",
             "predictionDate": "2026-10-20",
             "isLive": true,
-            "h4": 0,
-            "countTotal": 18,
-            "countOver2": 7,
-            "tierX5": [],
+            "h4": 3,
+            "countTotal": 13,
+            "countOver2": 6,
+            "tierX5": [
+              "70",
+              "95"
+            ],
             "tierX4": [
-              "22",
-              "38",
-              "68"
+              "32"
             ],
             "tierX3": [
-              "54",
-              "62",
-              "66",
-              "94"
+              "38",
+              "52",
+              "76"
             ],
             "tierX1": [
-              "33",
               "36",
-              "45",
-              "49",
-              "59",
-              "76",
-              "81",
-              "82",
-              "85",
-              "90",
-              "93"
-            ],
-            "allNumbers": [
-              "22",
-              "38",
-              "68",
-              "54",
+              "46",
+              "56",
               "62",
               "66",
-              "94",
-              "33",
-              "36",
-              "45",
-              "49",
-              "59",
+              "84",
+              "88"
+            ],
+            "allNumbers": [
+              "70",
+              "95",
+              "32",
+              "38",
+              "52",
               "76",
-              "81",
-              "82",
-              "85",
-              "90",
-              "93"
+              "36",
+              "46",
+              "56",
+              "62",
+              "66",
+              "84",
+              "88"
             ],
             "betNumbers": [
               {
-                "num": "22",
+                "num": "70",
+                "votes": 4,
+                "multiplier": 5,
+                "hits": 2,
+                "methods": [
+                  "QMBF",
+                  "Dual",
+                  "Tri",
+                  "RRF"
+                ]
+              },
+              {
+                "num": "95",
+                "votes": 4,
+                "multiplier": 5,
+                "hits": 1,
+                "methods": [
+                  "QMBF",
+                  "Dual",
+                  "Tri",
+                  "RRF"
+                ]
+              },
+              {
+                "num": "32",
                 "votes": 3,
                 "multiplier": 4,
-                "hits": 0,
+                "hits": 2,
                 "methods": [
                   "QMBF",
                   "Dual",
@@ -1598188,28 +1598209,6 @@
               },
               {
                 "num": "38",
-                "votes": 3,
-                "multiplier": 4,
-                "hits": 0,
-                "methods": [
-                  "QMBF",
-                  "Dual",
-                  "Tri"
-                ]
-              },
-              {
-                "num": "68",
-                "votes": 3,
-                "multiplier": 4,
-                "hits": 0,
-                "methods": [
-                  "QMBF",
-                  "Dual",
-                  "Tri"
-                ]
-              },
-              {
-                "num": "54",
                 "votes": 2,
                 "multiplier": 3,
                 "hits": 0,
@@ -1598219,27 +1598218,7 @@
                 ]
               },
               {
-                "num": "62",
-                "votes": 2,
-                "multiplier": 3,
-                "hits": 0,
-                "methods": [
-                  "QMBF",
-                  "RRF"
-                ]
-              },
-              {
-                "num": "66",
-                "votes": 2,
-                "multiplier": 3,
-                "hits": 1,
-                "methods": [
-                  "Dual",
-                  "Tri"
-                ]
-              },
-              {
-                "num": "94",
+                "num": "52",
                 "votes": 2,
                 "multiplier": 3,
                 "hits": 0,
@@ -1598249,11 +1598228,12 @@
                 ]
               },
               {
-                "num": "33",
-                "votes": 1,
-                "multiplier": 1,
+                "num": "76",
+                "votes": 2,
+                "multiplier": 3,
                 "hits": 0,
                 "methods": [
+                  "Dual",
                   "Tri"
                 ]
               },
@@ -1598263,11 +1598243,11 @@
                 "multiplier": 1,
                 "hits": 0,
                 "methods": [
-                  "QMBF"
+                  "RRF"
                 ]
               },
               {
-                "num": "45",
+                "num": "46",
                 "votes": 1,
                 "multiplier": 1,
                 "hits": 0,
@@ -1598276,61 +1598256,7 @@
                 ]
               },
               {
-                "num": "49",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "Dual"
-                ]
-              },
-              {
-                "num": "59",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "QMBF"
-                ]
-              },
-              {
-                "num": "76",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "QMBF"
-                ]
-              },
-              {
-                "num": "81",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "RRF"
-                ]
-              },
-              {
-                "num": "82",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "RRF"
-                ]
-              },
-              {
-                "num": "85",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "RRF"
-                ]
-              },
-              {
-                "num": "90",
+                "num": "56",
                 "votes": 1,
                 "multiplier": 1,
                 "hits": 1,
@@ -1598339,7 +1598265,34 @@
                 ]
               },
               {
-                "num": "93",
+                "num": "62",
+                "votes": 1,
+                "multiplier": 1,
+                "hits": 0,
+                "methods": [
+                  "RRF"
+                ]
+              },
+              {
+                "num": "66",
+                "votes": 1,
+                "multiplier": 1,
+                "hits": 1,
+                "methods": [
+                  "RRF"
+                ]
+              },
+              {
+                "num": "84",
+                "votes": 1,
+                "multiplier": 1,
+                "hits": 0,
+                "methods": [
+                  "RRF"
+                ]
+              },
+              {
+                "num": "88",
                 "votes": 1,
                 "multiplier": 1,
                 "hits": 0,
@@ -1598348,18 +1598301,18 @@
                 ]
               }
             ],
-            "dayLotoStakeK": 77000,
-            "dayLotoPayoutK": 32000,
-            "dayLotoProfitK": -45000,
-            "dayLotoHits": 2,
-            "isLotoWin": false,
+            "dayLotoStakeK": 66000,
+            "dayLotoPayoutK": 200000,
+            "dayLotoProfitK": 134000,
+            "dayLotoHits": 7,
+            "isLotoWin": true,
             "xien4StakeK": 11000,
-            "xien4PayoutK": 0,
-            "dayXien4ProfitK": -11000,
-            "isXien4Win": false,
-            "totalDayProfitK": -56000,
+            "xien4PayoutK": 84000,
+            "dayXien4ProfitK": 73000,
+            "isXien4Win": true,
+            "totalDayProfitK": 207000,
             "topN": 6,
-            "cumLotoProfitK": 390800
+            "cumLotoProfitK": 569800
           }
         ],
         "summary": {
@@ -1605727,60 +1605680,75 @@
             "date": "2026-10-20",
             "predictionDate": "2026-10-20",
             "isLive": true,
-            "h4": 0,
-            "countTotal": 18,
-            "countOver2": 7,
-            "tierX5": [],
+            "h4": 3,
+            "countTotal": 13,
+            "countOver2": 6,
+            "tierX5": [
+              "70",
+              "95"
+            ],
             "tierX4": [
-              "22",
-              "38",
-              "68"
+              "32"
             ],
             "tierX3": [
-              "54",
-              "62",
-              "66",
-              "94"
+              "38",
+              "52",
+              "76"
             ],
             "tierX1": [
-              "33",
               "36",
-              "45",
-              "49",
-              "59",
-              "76",
-              "81",
-              "82",
-              "85",
-              "90",
-              "93"
-            ],
-            "allNumbers": [
-              "22",
-              "38",
-              "68",
-              "54",
+              "46",
+              "56",
               "62",
               "66",
-              "94",
-              "33",
-              "36",
-              "45",
-              "49",
-              "59",
+              "84",
+              "88"
+            ],
+            "allNumbers": [
+              "70",
+              "95",
+              "32",
+              "38",
+              "52",
               "76",
-              "81",
-              "82",
-              "85",
-              "90",
-              "93"
+              "36",
+              "46",
+              "56",
+              "62",
+              "66",
+              "84",
+              "88"
             ],
             "betNumbers": [
               {
-                "num": "22",
+                "num": "70",
+                "votes": 4,
+                "multiplier": 5,
+                "hits": 2,
+                "methods": [
+                  "QMBF",
+                  "Dual",
+                  "Tri",
+                  "RRF"
+                ]
+              },
+              {
+                "num": "95",
+                "votes": 4,
+                "multiplier": 5,
+                "hits": 1,
+                "methods": [
+                  "QMBF",
+                  "Dual",
+                  "Tri",
+                  "RRF"
+                ]
+              },
+              {
+                "num": "32",
                 "votes": 3,
                 "multiplier": 4,
-                "hits": 0,
+                "hits": 2,
                 "methods": [
                   "QMBF",
                   "Dual",
@@ -1605789,28 +1605757,6 @@
               },
               {
                 "num": "38",
-                "votes": 3,
-                "multiplier": 4,
-                "hits": 0,
-                "methods": [
-                  "QMBF",
-                  "Dual",
-                  "Tri"
-                ]
-              },
-              {
-                "num": "68",
-                "votes": 3,
-                "multiplier": 4,
-                "hits": 0,
-                "methods": [
-                  "QMBF",
-                  "Dual",
-                  "Tri"
-                ]
-              },
-              {
-                "num": "54",
                 "votes": 2,
                 "multiplier": 3,
                 "hits": 0,
@@ -1605820,27 +1605766,7 @@
                 ]
               },
               {
-                "num": "62",
-                "votes": 2,
-                "multiplier": 3,
-                "hits": 0,
-                "methods": [
-                  "QMBF",
-                  "RRF"
-                ]
-              },
-              {
-                "num": "66",
-                "votes": 2,
-                "multiplier": 3,
-                "hits": 1,
-                "methods": [
-                  "Dual",
-                  "Tri"
-                ]
-              },
-              {
-                "num": "94",
+                "num": "52",
                 "votes": 2,
                 "multiplier": 3,
                 "hits": 0,
@@ -1605850,11 +1605776,12 @@
                 ]
               },
               {
-                "num": "33",
-                "votes": 1,
-                "multiplier": 1,
+                "num": "76",
+                "votes": 2,
+                "multiplier": 3,
                 "hits": 0,
                 "methods": [
+                  "Dual",
                   "Tri"
                 ]
               },
@@ -1605864,11 +1605791,11 @@
                 "multiplier": 1,
                 "hits": 0,
                 "methods": [
-                  "QMBF"
+                  "RRF"
                 ]
               },
               {
-                "num": "45",
+                "num": "46",
                 "votes": 1,
                 "multiplier": 1,
                 "hits": 0,
@@ -1605877,61 +1605804,7 @@
                 ]
               },
               {
-                "num": "49",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "Dual"
-                ]
-              },
-              {
-                "num": "59",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "QMBF"
-                ]
-              },
-              {
-                "num": "76",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "QMBF"
-                ]
-              },
-              {
-                "num": "81",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "RRF"
-                ]
-              },
-              {
-                "num": "82",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "RRF"
-                ]
-              },
-              {
-                "num": "85",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "RRF"
-                ]
-              },
-              {
-                "num": "90",
+                "num": "56",
                 "votes": 1,
                 "multiplier": 1,
                 "hits": 1,
@@ -1605940,7 +1605813,34 @@
                 ]
               },
               {
-                "num": "93",
+                "num": "62",
+                "votes": 1,
+                "multiplier": 1,
+                "hits": 0,
+                "methods": [
+                  "RRF"
+                ]
+              },
+              {
+                "num": "66",
+                "votes": 1,
+                "multiplier": 1,
+                "hits": 1,
+                "methods": [
+                  "RRF"
+                ]
+              },
+              {
+                "num": "84",
+                "votes": 1,
+                "multiplier": 1,
+                "hits": 0,
+                "methods": [
+                  "RRF"
+                ]
+              },
+              {
+                "num": "88",
                 "votes": 1,
                 "multiplier": 1,
                 "hits": 0,
@@ -1605949,18 +1605849,18 @@
                 ]
               }
             ],
-            "dayLotoStakeK": 77000,
-            "dayLotoPayoutK": 32000,
-            "dayLotoProfitK": -45000,
-            "dayLotoHits": 2,
-            "isLotoWin": false,
+            "dayLotoStakeK": 66000,
+            "dayLotoPayoutK": 200000,
+            "dayLotoProfitK": 134000,
+            "dayLotoHits": 7,
+            "isLotoWin": true,
             "xien4StakeK": 11000,
-            "xien4PayoutK": 0,
-            "dayXien4ProfitK": -11000,
-            "isXien4Win": false,
-            "totalDayProfitK": -56000,
+            "xien4PayoutK": 84000,
+            "dayXien4ProfitK": 73000,
+            "isXien4Win": true,
+            "totalDayProfitK": 207000,
             "topN": 7,
-            "cumLotoProfitK": 390800
+            "cumLotoProfitK": 569800
           }
         ],
         "summary": {
@@ -1664616,31 +1664516,31 @@
         "date": "2026-10-20",
         "predictionDate": "2026-10-20",
         "top4": [
-          "22",
-          "38",
-          "68",
-          "54"
+          "70",
+          "95",
+          "32",
+          "38"
         ],
         "top5": [
-          "22",
+          "70",
+          "95",
+          "32",
           "38",
-          "68",
-          "54",
-          "62"
+          "52"
         ],
-        "h4": 0,
-        "h5": 0,
-        "isWin": false,
+        "h4": 3,
+        "h5": 3,
+        "isWin": true,
         "q11StakeVIP_K": 11000,
-        "q11PayoutVIP_K": 0,
-        "q11ProfitVIP_K": -11000,
+        "q11PayoutVIP_K": 84000,
+        "q11ProfitVIP_K": 73000,
         "x5Stake55K": 55000,
-        "x5Payout55K": 0,
-        "x5Profit55K": -55000,
+        "x5Payout55K": 204000,
+        "x5Profit55K": 149000,
         "x5StakeK": 55000,
-        "x5PayoutK": 0,
-        "x5ProfitK": -55000,
-        "isX5Win55": false,
+        "x5PayoutK": 204000,
+        "x5ProfitK": 149000,
+        "isX5Win55": true,
         "isLive": true
       }
     ],
@@ -1666778,19 +1666678,19 @@
         "deStakeK": 70000,
         "deProfitK": 182000,
         "dePnlK": 182000,
-        "loHits": 2,
-        "loPayoutK": 32000,
-        "loStakeK": 77000,
-        "loProfitK": -45000,
-        "loPnlK": -45000,
-        "uniqueTop4Hits": 0,
-        "xienPayoutK": 0,
+        "loHits": 7,
+        "loPayoutK": 200000,
+        "loStakeK": 66000,
+        "loProfitK": 134000,
+        "loPnlK": 134000,
+        "uniqueTop4Hits": 3,
+        "xienPayoutK": 84000,
         "xienStakeK": 11000,
-        "xienProfitK": -11000,
-        "xienPnlK": -11000,
-        "totalPayoutK": 284000,
-        "totalStakeK": 158000,
-        "totalProfitK": 126000,
+        "xienProfitK": 73000,
+        "xienPnlK": 73000,
+        "totalPayoutK": 536000,
+        "totalStakeK": 147000,
+        "totalProfitK": 389000,
         "isWin": true,
         "isAbstain": false,
         "details": {
@@ -1666800,9 +1666700,9 @@
         },
         "predictionDate": "2026-10-20",
         "cumDeProfitK": 472530,
-        "cumLoProfitK": 390800,
-        "cumXienProfitK": 47000,
-        "cumulativeProfitK": 910330
+        "cumLoProfitK": 569800,
+        "cumXienProfitK": 131000,
+        "cumulativeProfitK": 1173330
       }
     ],
     "snapshotLock": {
@@ -2269376,7 +2269276,7 @@
   "dailyLockedBetsRegistry": {
     "version": "1.0.0",
     "description": "Single Source of Truth (SSOT) Immutable Daily Bets and Settlement Registry",
-    "updatedAt": "2026-10-21T04:13:00.075Z",
+    "updatedAt": "2026-10-21T04:39:46.245Z",
     "dates": {
       "2026-10-10": {
         "targetDate": "2026-10-10",
@@ -2323551,40 +2323451,85 @@
             "stakeK": 70000
           },
           "lo4EngineFusion": {
-            "predictionDate": "2026-09-27",
+            "predictionDate": "2026-10-20",
+            "targetDate": "2026-10-20",
             "methodId": "lo4EngineFusion",
+            "methodName": "🔥 Lô Tổng Hợp 4 Động Cơ Thực Chiến (Top 6 Live: QMBF + Bạc Nhớ + 3 Động Cơ + RRF)",
             "topN": 6,
-            "tierX5": [],
+            "tierX5": [
+              "70",
+              "95"
+            ],
             "tierX4": [
-              "22",
-              "38",
-              "68"
+              "32"
             ],
             "tierX3": [
-              "54",
-              "62",
-              "66",
-              "94"
+              "38",
+              "52",
+              "76"
             ],
             "tierX1": [
-              "33",
               "36",
-              "45",
-              "49",
-              "59",
+              "46",
+              "56",
+              "62",
+              "66",
+              "84",
+              "88"
+            ],
+            "numbersOver2": [
+              "70",
+              "95",
+              "32",
+              "38",
+              "52",
+              "76"
+            ],
+            "allNumbers": [
+              "70",
+              "95",
+              "32",
+              "38",
+              "52",
               "76",
-              "81",
-              "82",
-              "85",
-              "90",
-              "93"
+              "36",
+              "46",
+              "56",
+              "62",
+              "66",
+              "84",
+              "88"
             ],
             "betNumbers": [
               {
-                "num": "22",
+                "num": "70",
+                "votes": 4,
+                "multiplier": 5,
+                "hits": 2,
+                "methods": [
+                  "QMBF",
+                  "Dual",
+                  "Tri",
+                  "RRF"
+                ]
+              },
+              {
+                "num": "95",
+                "votes": 4,
+                "multiplier": 5,
+                "hits": 1,
+                "methods": [
+                  "QMBF",
+                  "Dual",
+                  "Tri",
+                  "RRF"
+                ]
+              },
+              {
+                "num": "32",
                 "votes": 3,
                 "multiplier": 4,
-                "hits": 0,
+                "hits": 2,
                 "methods": [
                   "QMBF",
                   "Dual",
@@ -2323593,58 +2323538,6 @@
               },
               {
                 "num": "38",
-                "votes": 3,
-                "multiplier": 4,
-                "hits": 0,
-                "methods": [
-                  "QMBF",
-                  "Dual",
-                  "Tri"
-                ]
-              },
-              {
-                "num": "68",
-                "votes": 3,
-                "multiplier": 4,
-                "hits": 1,
-                "methods": [
-                  "QMBF",
-                  "Dual",
-                  "Tri"
-                ]
-              },
-              {
-                "num": "54",
-                "votes": 2,
-                "multiplier": 3,
-                "hits": 1,
-                "methods": [
-                  "Dual",
-                  "Tri"
-                ]
-              },
-              {
-                "num": "62",
-                "votes": 2,
-                "multiplier": 3,
-                "hits": 1,
-                "methods": [
-                  "QMBF",
-                  "RRF"
-                ]
-              },
-              {
-                "num": "66",
-                "votes": 2,
-                "multiplier": 3,
-                "hits": 1,
-                "methods": [
-                  "Dual",
-                  "Tri"
-                ]
-              },
-              {
-                "num": "94",
                 "votes": 2,
                 "multiplier": 3,
                 "hits": 0,
@@ -2323654,11 +2323547,22 @@
                 ]
               },
               {
-                "num": "33",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 2,
+                "num": "52",
+                "votes": 2,
+                "multiplier": 3,
+                "hits": 0,
                 "methods": [
+                  "Dual",
+                  "Tri"
+                ]
+              },
+              {
+                "num": "76",
+                "votes": 2,
+                "multiplier": 3,
+                "hits": 0,
+                "methods": [
+                  "Dual",
                   "Tri"
                 ]
               },
@@ -2323668,11 +2323572,20 @@
                 "multiplier": 1,
                 "hits": 0,
                 "methods": [
-                  "QMBF"
+                  "RRF"
                 ]
               },
               {
-                "num": "45",
+                "num": "46",
+                "votes": 1,
+                "multiplier": 1,
+                "hits": 0,
+                "methods": [
+                  "RRF"
+                ]
+              },
+              {
+                "num": "56",
                 "votes": 1,
                 "multiplier": 1,
                 "hits": 1,
@@ -2323681,34 +2323594,7 @@
                 ]
               },
               {
-                "num": "49",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "Dual"
-                ]
-              },
-              {
-                "num": "59",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "QMBF"
-                ]
-              },
-              {
-                "num": "76",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "QMBF"
-                ]
-              },
-              {
-                "num": "81",
+                "num": "62",
                 "votes": 1,
                 "multiplier": 1,
                 "hits": 0,
@@ -2323717,7 +2323603,16 @@
                 ]
               },
               {
-                "num": "82",
+                "num": "66",
+                "votes": 1,
+                "multiplier": 1,
+                "hits": 1,
+                "methods": [
+                  "RRF"
+                ]
+              },
+              {
+                "num": "84",
                 "votes": 1,
                 "multiplier": 1,
                 "hits": 0,
@@ -2323726,25 +2323621,7 @@
                 ]
               },
               {
-                "num": "85",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "RRF"
-                ]
-              },
-              {
-                "num": "90",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "RRF"
-                ]
-              },
-              {
-                "num": "93",
+                "num": "88",
                 "votes": 1,
                 "multiplier": 1,
                 "hits": 0,
@@ -2323753,75 +2323630,47 @@
                 ]
               }
             ],
-            "numbersOver2": [
-              "22",
-              "38",
-              "68",
-              "54",
-              "62",
-              "66",
-              "94"
-            ],
-            "allNumbers": [
-              "22",
-              "38",
-              "68",
-              "54",
-              "62",
-              "66",
-              "94",
-              "33",
-              "36",
-              "45",
-              "49",
-              "59",
-              "76",
-              "81",
-              "82",
-              "85",
-              "90",
-              "93"
-            ],
+            "totalLotoStakeK": 66000,
             "xien4": {
+              "status": "ACTIVE",
+              "reason": "Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé [70-95-32-38] & Bộ 5 Quây 10 vé X3 [70-95-32-38-52]",
+              "numbers": [
+                "70",
+                "95",
+                "32",
+                "38"
+              ],
               "top4": [
-                "22",
-                "38",
-                "68",
-                "54"
+                "70",
+                "95",
+                "32",
+                "38"
               ],
               "top5": [
-                "22",
+                "70",
+                "95",
+                "32",
                 "38",
-                "68",
-                "54",
-                "62"
+                "52"
               ],
               "combinations": [
                 [
-                  "22",
-                  "38",
-                  "68",
-                  "54"
+                  "70",
+                  "95",
+                  "32",
+                  "38"
                 ]
               ],
-              "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [22-38-68-54] (Ăn từ 2 con)"
-            },
-            "targetDate": "2026-09-27",
-            "snapshotLock": {
-              "isLocked": true,
-              "isSettled": false,
-              "lockActive": true,
-              "lockTargetDate": "2026-09-27",
-              "lockReason": "Đã khóa bất biến từ SSOT Registry. Tuyệt đối không thay đổi dàn số."
+              "stakeK": 11000
             }
           },
           "loXien5": {
             "top5": [
-              "22",
+              "70",
+              "95",
+              "32",
               "38",
-              "68",
-              "54",
-              "62"
+              "52"
             ],
             "stakeK": 55000
           },
@@ -2323949,63 +2323798,86 @@
         "settlement": {
           "lo4EngineFusion": {
             "date": "2026-10-20",
-            "tierX5": [],
+            "tierX5": [
+              "70",
+              "95"
+            ],
             "tierX4": [
-              "22",
-              "38",
-              "68"
+              "32"
             ],
             "tierX3": [
-              "54",
-              "62",
-              "66",
-              "94"
+              "38",
+              "52",
+              "76"
             ],
             "tierX1": [
-              "33",
               "36",
-              "45",
-              "49",
-              "59",
-              "76",
-              "81",
-              "82",
-              "85",
-              "90",
-              "93"
-            ],
-            "x5Hits": 0,
-            "x4Hits": 0,
-            "x3Hits": 1,
-            "x1Hits": 1,
-            "totalHits": 2,
-            "lotoStakeK": 77000,
-            "lotoPayoutK": 32000,
-            "lotoProfitK": -45000,
-            "xienTop4": [
-              "22",
-              "38",
-              "68",
-              "54"
-            ],
-            "xienHitsCount": 0,
-            "xienStakeK": 11000,
-            "xienPayoutK": 0,
-            "xienProfitK": -11000,
-            "totalStakeK": 88000,
-            "totalPayoutK": 32000,
-            "totalProfitK": -56000,
-            "isWin": false,
-            "hitNumbers": [
+              "46",
+              "56",
+              "62",
               "66",
-              "90"
+              "84",
+              "88"
             ],
+            "x5Hits": 3,
+            "x4Hits": 2,
+            "x3Hits": 0,
+            "x1Hits": 2,
+            "totalHits": 7,
+            "hitNumbers": [
+              "70",
+              "95",
+              "32",
+              "56",
+              "66"
+            ],
+            "lotoStakeK": 66000,
+            "lotoPayoutK": 200000,
+            "lotoProfitK": 134000,
+            "xienTop4": [
+              "70",
+              "95",
+              "32",
+              "38"
+            ],
+            "xienHitsCount": 3,
+            "xienStakeK": 11000,
+            "xienPayoutK": 84000,
+            "xienProfitK": 73000,
+            "totalStakeK": 77000,
+            "totalPayoutK": 284000,
+            "totalProfitK": 207000,
+            "isWin": true,
             "betNumbers": [
               {
-                "num": "22",
+                "num": "70",
+                "votes": 4,
+                "multiplier": 5,
+                "hits": 2,
+                "methods": [
+                  "QMBF",
+                  "Dual",
+                  "Tri",
+                  "RRF"
+                ]
+              },
+              {
+                "num": "95",
+                "votes": 4,
+                "multiplier": 5,
+                "hits": 1,
+                "methods": [
+                  "QMBF",
+                  "Dual",
+                  "Tri",
+                  "RRF"
+                ]
+              },
+              {
+                "num": "32",
                 "votes": 3,
                 "multiplier": 4,
-                "hits": 0,
+                "hits": 2,
                 "methods": [
                   "QMBF",
                   "Dual",
@@ -2324014,28 +2323886,6 @@
               },
               {
                 "num": "38",
-                "votes": 3,
-                "multiplier": 4,
-                "hits": 0,
-                "methods": [
-                  "QMBF",
-                  "Dual",
-                  "Tri"
-                ]
-              },
-              {
-                "num": "68",
-                "votes": 3,
-                "multiplier": 4,
-                "hits": 0,
-                "methods": [
-                  "QMBF",
-                  "Dual",
-                  "Tri"
-                ]
-              },
-              {
-                "num": "54",
                 "votes": 2,
                 "multiplier": 3,
                 "hits": 0,
@@ -2324045,27 +2323895,7 @@
                 ]
               },
               {
-                "num": "62",
-                "votes": 2,
-                "multiplier": 3,
-                "hits": 0,
-                "methods": [
-                  "QMBF",
-                  "RRF"
-                ]
-              },
-              {
-                "num": "66",
-                "votes": 2,
-                "multiplier": 3,
-                "hits": 1,
-                "methods": [
-                  "Dual",
-                  "Tri"
-                ]
-              },
-              {
-                "num": "94",
+                "num": "52",
                 "votes": 2,
                 "multiplier": 3,
                 "hits": 0,
@@ -2324075,11 +2323905,12 @@
                 ]
               },
               {
-                "num": "33",
-                "votes": 1,
-                "multiplier": 1,
+                "num": "76",
+                "votes": 2,
+                "multiplier": 3,
                 "hits": 0,
                 "methods": [
+                  "Dual",
                   "Tri"
                 ]
               },
@@ -2324089,11 +2323920,11 @@
                 "multiplier": 1,
                 "hits": 0,
                 "methods": [
-                  "QMBF"
+                  "RRF"
                 ]
               },
               {
-                "num": "45",
+                "num": "46",
                 "votes": 1,
                 "multiplier": 1,
                 "hits": 0,
@@ -2324102,61 +2323933,7 @@
                 ]
               },
               {
-                "num": "49",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "Dual"
-                ]
-              },
-              {
-                "num": "59",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "QMBF"
-                ]
-              },
-              {
-                "num": "76",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "QMBF"
-                ]
-              },
-              {
-                "num": "81",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "RRF"
-                ]
-              },
-              {
-                "num": "82",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "RRF"
-                ]
-              },
-              {
-                "num": "85",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "RRF"
-                ]
-              },
-              {
-                "num": "90",
+                "num": "56",
                 "votes": 1,
                 "multiplier": 1,
                 "hits": 1,
@@ -2324165,7 +2323942,34 @@
                 ]
               },
               {
-                "num": "93",
+                "num": "62",
+                "votes": 1,
+                "multiplier": 1,
+                "hits": 0,
+                "methods": [
+                  "RRF"
+                ]
+              },
+              {
+                "num": "66",
+                "votes": 1,
+                "multiplier": 1,
+                "hits": 1,
+                "methods": [
+                  "RRF"
+                ]
+              },
+              {
+                "num": "84",
+                "votes": 1,
+                "multiplier": 1,
+                "hits": 0,
+                "methods": [
+                  "RRF"
+                ]
+              },
+              {
+                "num": "88",
                 "votes": 1,
                 "multiplier": 1,
                 "hits": 0,
@@ -2324188,19 +2323992,19 @@
             "deStakeK": 70000,
             "deProfitK": 182000,
             "dePnlK": 182000,
-            "loHits": 2,
-            "loPayoutK": 32000,
-            "loStakeK": 77000,
-            "loProfitK": -45000,
-            "loPnlK": -45000,
-            "uniqueTop4Hits": 0,
-            "xienPayoutK": 0,
+            "loHits": 7,
+            "loPayoutK": 200000,
+            "loStakeK": 66000,
+            "loProfitK": 134000,
+            "loPnlK": 134000,
+            "uniqueTop4Hits": 3,
+            "xienPayoutK": 84000,
             "xienStakeK": 11000,
-            "xienProfitK": -11000,
-            "xienPnlK": -11000,
-            "totalPayoutK": 284000,
-            "totalStakeK": 158000,
-            "totalProfitK": 126000,
+            "xienProfitK": 73000,
+            "xienPnlK": 73000,
+            "totalPayoutK": 536000,
+            "totalStakeK": 147000,
+            "totalProfitK": 389000,
             "isWin": true,
             "isAbstain": false,
             "details": {
@@ -2324316,17 +2324120,17 @@
           "loXien5": {
             "date": "2026-10-20",
             "top5": [
-              "22",
+              "70",
+              "95",
+              "32",
               "38",
-              "68",
-              "54",
-              "62"
+              "52"
             ],
-            "h5": 0,
+            "h5": 3,
             "stakeK": 55000,
-            "payoutK": 0,
-            "profitK": -55000,
-            "isWin": false
+            "payoutK": 204000,
+            "profitK": 149000,
+            "isWin": true
           }
         },
         "actualResult": {
@@ -2329876,5 +2329680,5 @@
       }
     }
   },
-  "updatedAt": "2026-10-21T04:13:00.311Z"
+  "updatedAt": "2026-10-21T04:39:46.464Z"
 }

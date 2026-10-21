@@ -417,12 +417,15 @@ function syncAll() {
             if (!adv.streakAwareDeAdvisor) adv.streakAwareDeAdvisor = {};
             adv.streakAwareDeAdvisor.latestRecommendation = {
                 predictionDate: latestDate,
+                selectedMethod: 'deMarkovGapHazard',
+                selectedMethodLabel: lb.de.methodName,
                 methodName: lb.de.methodName,
                 numbers: lb.de.numbers,
                 tierX3: lb.de.vipNumbers,
                 tierX2: [],
                 singles: lb.de.singleNumbers,
-                stakeK: lb.de.stakeK
+                stakeK: lb.de.stakeK,
+                snapshotLock: { isLocked: true, lockedAt: latestEntry.registeredAt }
             };
         }
         if (lb.deDropoffMerge) adv.deDropoffMerge.latestRecommendation = lb.deDropoffMerge;
