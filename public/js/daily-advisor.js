@@ -5378,11 +5378,14 @@
                     <tr class="border-b border-amber-300 bg-amber-50/80 text-amber-950 uppercase font-black tracking-wider text-[10px]">
                         <th class="px-3 py-3">Ngày</th>
                         <th class="px-3 py-3">Số Trùng &ge; 2 Động Cơ</th>
-                        <th class="px-3 py-3">Dàn Lô Đánh (X1 / X3 / X4 / X5)</th>
+                        <th class="px-3 py-3">Dàn Lô Đánh (Gốc: X1/X3/X4/X5)</th>
                         <th class="px-3 py-3">Số Nháy Về</th>
                         <th class="px-3 py-3">Xiên 4 (4-5 Số)</th>
-                        <th class="px-3 py-3 text-right">Lãi/Lỗ Lô (Vốn)</th>
-                        <th class="px-3 py-3 text-right">Lũy Kế Lô Ghép</th>
+                        <th class="px-3 py-3 text-right">Lãi/Lỗ Gốc (Vốn)</th>
+                        <th class="px-3 py-3 text-right">Lũy Kế Gốc</th>
+                        <th class="px-3 py-3 bg-emerald-100/70 text-emerald-950 font-black">⚡ Nâng X2 (Shadow)</th>
+                        <th class="px-3 py-3 bg-emerald-100/70 text-right text-emerald-950 font-black">Lãi/Lỗ Đột Phá X2</th>
+                        <th class="px-3 py-3 bg-emerald-100/70 text-right text-emerald-950 font-black">Lũy Kế Đột Phá X2</th>
                     </tr>
                 `;
             } else if (currentDiaryCategory === 'loStd') {
@@ -5448,7 +5451,8 @@
                     <tr class="border-b border-slate-200 bg-slate-100/70 text-slate-600 uppercase font-black tracking-wider text-[10px]">
                         <th class="px-3 py-3">Ngày</th>
                         <th class="px-3 py-3">💎 Đề Tinh Tuyển VIP</th>
-                        <th class="px-3 py-3">🔥 Lô Ghép 4 Động Cơ</th>
+                        <th class="px-3 py-3">🔥 Lô Ghép 4 (Gốc: X5-X1)</th>
+                        <th class="px-3 py-3 bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-950 font-black">🚀 Lô Đột Phá X2 (Nâng Hạng)</th>
                         <th class="px-3 py-3">🎲 Dàn Xiên Quây</th>
                         <th class="px-3 py-3">👑 Dàn Xiên 5 (Theo Dõi Độc Lập)</th>
                         <th class="px-3 py-3 text-right">Lãi/Lỗ Tổng Hợp (Profit_total)</th>
@@ -7647,6 +7651,31 @@
                                 <span class="font-bold ${(r.chCumLoProfitK ?? r.cumLo4ProfitK ?? 0) >= 0 ? 'text-rose-700' : 'text-rose-600'}">${moneyM(r.chCumLoProfitK ?? r.cumLo4ProfitK ?? 0, { signed: true })}</span>
                             </div>
                         </td>
+                        <!-- Cột 3B: Lô Ghép 4 Đột Phá (Nâng Hạng X2 Chéo) -->
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-emerald-100/50 rounded-xl transition-all border-l border-emerald-200/60 bg-emerald-50/30" data-date="${r.date}" data-diary-cell="lo4CrossX2">
+                            <div class="text-[11px] font-bold text-emerald-950 flex items-center gap-1">
+                                <i class="bi bi-rocket-takeoff-fill text-emerald-600 text-[10px]"></i> <span>Lô Đột Phá X2</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 mt-0.5 text-xs flex-wrap">
+                                <span class="text-amber-600 font-bold">⏳ Chờ 27 giải</span>
+                                ${(() => {
+                                    const pCross = lo4Info?.crossX2 || payload?.lo4EngineFusion?.latestRecommendation?.crossX2 || null;
+                                    const pX2Nums = (pCross?.tierX2 || []).map(number);
+                                    if (pX2Nums.length > 0) {
+                                        return `<span class="px-1.5 py-0.2 rounded font-mono text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 ring-1 ring-amber-400 shadow-xs">⚡ Nâng X2: ${pX2Nums.join(', ')}</span>`;
+                                    }
+                                    return '<span class="text-[10px] text-slate-400 italic">0 số nâng X2 (như gốc)</span>';
+                                })()}
+                            </div>
+                            <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
+                                <span>Vốn: ${moneyM((lo4Info?.crossX2 || payload?.lo4EngineFusion?.latestRecommendation?.crossX2)?.stakeKX2 || 70400)}</span>
+                                <span class="diary-expand-indicator text-emerald-700 font-bold underline flex items-center gap-0.5">Bấm xem dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
+                            </div>
+                            <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-emerald-200/50 pt-0.5">
+                                <span class="text-slate-500 font-sans">Lũy kế Đột Phá:</span>
+                                <span class="font-bold text-emerald-700">+5.686,2M</span>
+                            </div>
+                        </td>
                         <!-- Cột 4: Dàn Xiên Quây (Top 4) -->
                         <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-purple-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Xien4">
                             <div class="text-[11px] font-bold text-purple-950 flex items-center gap-1">
@@ -7782,6 +7811,12 @@
             }).filter(b => b.hits > 0);
             const displayLoHits = (loHitsCount > 0) ? loHitsCount : hitLo4Numbers.reduce((acc, x) => acc + (x.hits || 0), 0);
 
+            const crossX2Data = lo4Info?.crossX2 || null;
+            const promotedX2Nums = (crossX2Data?.tierX2 || []).map(number);
+            const loPnlX2 = crossX2Data?.dayLotoProfitKX2 !== undefined ? crossX2Data.dayLotoProfitKX2 : loPnlVal;
+            const loStakeX2 = crossX2Data?.dayLotoStakeKX2 !== undefined ? crossX2Data.dayLotoStakeKX2 : (lo4Info?.dayLotoStakeK || lo4Info?.lotoStakeK || 66000);
+            const cumLoX2 = crossX2Data?.cumLotoProfitKX2 !== undefined ? crossX2Data.cumLotoProfitKX2 : cumLoVal;
+
             const dayClass = dayTotalVal > 0 ? 'bg-emerald-50/40' : (dayTotalVal < -20000 ? 'bg-rose-50/20' : '');
 
             return `
@@ -7846,6 +7881,30 @@
                         <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-rose-200/50 pt-0.5">
                             <span class="text-slate-500 font-sans">Lũy kế Lô:</span>
                             <strong class="${cumLoVal >= 0 ? 'text-emerald-700' : 'text-rose-600'} font-bold">${moneyM(cumLoVal, { signed: true })}</strong>
+                        </div>
+                    </td>
+                    <!-- Cột 3B: Lô Ghép 4 Đột Phá (Nâng Hạng X2 Chéo) -->
+                    <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-emerald-100/50 rounded-xl transition-all border-l border-emerald-200/60 bg-emerald-50/25" data-date="${r.date}" data-diary-cell="lo4CrossX2">
+                        <div class="flex items-center justify-between text-[11px] font-bold text-emerald-950 gap-1">
+                            <span class="flex items-center gap-1"><i class="bi bi-rocket-takeoff-fill text-emerald-600 text-[10px]"></i> Lô Đột Phá X2</span>
+                            <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${loPnlX2 >= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">P&L: ${moneyM(loPnlX2, { signed: true })}</span>
+                        </div>
+                        <div class="flex items-center justify-between gap-1.5 mt-0.5 text-xs">
+                            <span class="text-slate-950 font-bold">Nổ <strong class="font-black text-slate-950 text-sm">${displayLoHits}</strong> nháy</span>
+                            <span class="font-mono font-bold ${loPnlX2 >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${moneyM(loPnlX2, { signed: true })}</span>
+                        </div>
+                        ${promotedX2Nums.length > 0 ? `
+                        <div class="flex flex-wrap items-center gap-1 mt-1">
+                            <span class="text-[9px] font-black text-amber-950 bg-amber-200 px-1.5 py-0.2 rounded shadow-xs border border-amber-300">Nâng X2:</span>
+                            ${promotedX2Nums.map(n => `<span class="inline-flex items-center px-1.5 py-0.2 rounded font-mono text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 ring-1 ring-amber-400 shadow-xs">⚡ ${n}${prizeCountsRow[n] > 0 ? `<sub class="text-[8px] font-black ml-0.5 text-emerald-900">(${prizeCountsRow[n]}n)</sub>` : ''}</span>`).join(' ')}
+                        </div>` : `<div class="text-[10px] text-slate-400 mt-1 italic">0 số nâng X2 (như gốc)</div>`}
+                        <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
+                            <span>Vốn: ${moneyM(loStakeX2)}</span>
+                            <span class="diary-expand-indicator text-emerald-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
+                        </div>
+                        <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-emerald-200/50 pt-0.5">
+                            <span class="text-slate-500 font-sans">Lũy kế Đột Phá:</span>
+                            <strong class="${cumLoX2 >= 0 ? 'text-emerald-700' : 'text-rose-600'} font-bold">${moneyM(cumLoX2, { signed: true })}</strong>
                         </div>
                     </td>
                     <!-- Cột 4: Dàn Xiên Quây (Top 4) -->
@@ -9047,8 +9106,32 @@
 
                 // Sub-rows handling
                 if (loX3RowEl) loX3RowEl.style.display = 'none';
-                if (loX2RowEl) loX2RowEl.style.display = 'none';
                 if (loTop20RowEl) loTop20RowEl.style.display = 'none';
+
+                const crossX2Rec = lo4Rec?.crossX2 || null;
+                const tierX2Numbers = (crossX2Rec?.tierX2 && crossX2Rec.tierX2.length)
+                    ? crossX2Rec.tierX2.map(number)
+                    : [];
+
+                if (loX2RowEl) {
+                    if (tierX2Numbers && tierX2Numbers.length > 0) {
+                        loX2RowEl.style.display = 'block';
+                        const loX2LabelEl = byId('finalLoX2Label');
+                        if (loX2LabelEl) {
+                            loX2LabelEl.innerHTML = `<span class="text-amber-300 font-bold">⚡ NÂNG HẠNG TIER X2 (SHADOW ĐỒNG THUẬN &ge; X3)</span> <span class="text-[10px] text-slate-300 font-normal">(Cược 4.4M/số [200đ], ăn 16M/nháy · ${tierX2Numbers.length} số):</span>`;
+                        }
+                        const loX2NumsEl = byId('finalLoX2Nums');
+                        if (loX2NumsEl) {
+                            loX2NumsEl.innerHTML = tierX2Numbers.map(n => `
+                                <span class="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 font-mono text-xs font-black px-2.5 py-1 ring-1 ring-amber-300 shadow-sm hover:scale-105 transition-all">
+                                    ⚡ ${n}
+                                </span>
+                            `).join('');
+                        }
+                    } else {
+                        loX2RowEl.style.display = 'none';
+                    }
+                }
 
                 const tierX1Numbers = (lo4Rec.tierX1 && lo4Rec.tierX1.length)
                     ? lo4Rec.tierX1.map(number)
@@ -9059,7 +9142,9 @@
                         loX1RowEl.style.display = 'block';
                         const loX1LabelEl = byId('finalLoX1Label');
                         if (loX1LabelEl) {
-                            loX1LabelEl.innerHTML = `<span class="text-teal-300 font-bold">🛡️ TẦNG X1 BỌC LÓT</span> <span class="text-[10px] text-slate-400 font-normal">(Không trùng · Cược X1 100đ - ${tierX1Numbers.length} số):</span>`;
+                            loX1LabelEl.innerHTML = tierX2Numbers.length > 0
+                                ? `<span class="text-teal-300 font-bold">🛡️ TẦNG X1 BỌC LÓT</span> <span class="text-[10px] text-slate-400 font-normal">(Gốc ${tierX1Numbers.length} số · có ${tierX2Numbers.length} số [${tierX2Numbers.join(', ')}] nâng lên X2 ở trên · Cược X1 100đ):</span>`
+                                : `<span class="text-teal-300 font-bold">🛡️ TẦNG X1 BỌC LÓT</span> <span class="text-[10px] text-slate-400 font-normal">(Không trùng · Cược X1 100đ - ${tierX1Numbers.length} số):</span>`;
                         }
                         const loX1NumsEl = byId('finalLoX1Nums');
                         if (loX1NumsEl) {

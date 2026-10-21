@@ -3243,6 +3243,7 @@
 
             let cumDeK = 0;
             let cumLoK = 0;
+            let cumLoX2K = 0;
             let cumXienK = 0;
             let cumComboK = 0;
 
@@ -3250,6 +3251,7 @@
                 const penta = computePentaConsensusForDate(date, data);
                 cumDeK += penta.de.profitK;
                 cumLoK += penta.lo.profitK;
+                cumLoX2K += (penta.loCrossX2?.profitK ?? penta.lo.profitK);
                 cumXienK += penta.xien5.profitK;
                 cumComboK += penta.combo.profitK;
 
@@ -3258,6 +3260,7 @@
                     penta,
                     cumDeK,
                     cumLoK,
+                    cumLoX2K,
                     cumXienK,
                     cumComboK
                 };
@@ -3293,12 +3296,14 @@
                 <tr class="border-b border-amber-300 bg-amber-50/70 text-[11px] font-bold text-slate-800 uppercase tracking-wide">
                     <th class="py-2.5 px-3">Ngày Quay</th>
                     <th class="py-2.5 px-3">👑 Đề Siêu Gộp 5 PP (X2 / X1)</th>
-                    <th class="py-2.5 px-3">🔥 Lô Siêu Gộp 5 PP (X5-X1)</th>
+                    <th class="py-2.5 px-3">🔥 Lô Siêu Gộp Gốc (X5-X1)</th>
+                    <th class="py-2.5 px-3 bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-950 font-black">⚡ Lô Đột Phá X2 (Nâng Hạng)</th>
                     <th class="py-2.5 px-3">👑 Xiên 5 Siêu Gộp (Top 5)</th>
                     <th class="py-2.5 px-3 text-center">Dàn Đánh &amp; Số Nổ</th>
                     <th class="py-2.5 px-3 text-right">Tổng Vốn</th>
                     <th class="py-2.5 px-3 text-right">Lãi &amp; LK Đề</th>
-                    <th class="py-2.5 px-3 text-right">Lãi &amp; LK Lô</th>
+                    <th class="py-2.5 px-3 text-right">Lãi &amp; LK Lô Gốc</th>
+                    <th class="py-2.5 px-3 text-right text-emerald-950 bg-emerald-100/60 font-black">Lãi &amp; LK Lô X2</th>
                     <th class="py-2.5 px-3 text-right">Lãi &amp; LK Lô Xiên</th>
                     <th class="py-2.5 px-3 text-right">Lãi Ròng Ngày</th>
                     <th class="py-2.5 px-3 text-right">Lũy Kế Tổng (3 Trụ)</th>
@@ -3321,8 +3326,12 @@
                         <div class="text-[10px] text-slate-600">Vốn ${formatMoneyK(pendingPenta.de.stakeK, false)} · X2 ăn 33.6M · X1 ăn 16.8M</div>
                     </td>
                     <td class="py-3 px-3">
-                        <span class="text-teal-900 font-bold">Lô Siêu Gộp (${pendingPenta.lo.numbers.length} số)</span>
+                        <span class="text-teal-900 font-bold">Lô Gốc (${pendingPenta.lo.numbers.length} số)</span>
                         <div class="text-[10px] text-slate-600">${pendingPenta.lo.x5Nums.length ? pendingPenta.lo.x5Nums.length + ' X5 ' : ''}${pendingPenta.lo.x4Nums.length ? pendingPenta.lo.x4Nums.length + ' X4 ' : ''}${pendingPenta.lo.x3Nums.length ? pendingPenta.lo.x3Nums.length + ' X3 ' : ''}${pendingPenta.lo.x1Nums.length ? pendingPenta.lo.x1Nums.length + ' X1' : ''} · Vốn ${formatMoneyK(pendingPenta.lo.stakeK, false)}</div>
+                    </td>
+                    <td class="py-3 px-3 bg-emerald-50/50">
+                        <span class="text-emerald-950 font-bold">Lô Đột Phá X2 (${pendingPenta.loCrossX2?.numbers?.length || pendingPenta.lo.numbers.length} số)</span>
+                        <div class="text-[10px] text-emerald-800">${pendingPenta.loCrossX2?.x2Nums?.length ? `<span class="text-slate-950 bg-amber-300 font-black px-1.5 py-0.2 rounded ring-1 ring-amber-400">⚡ Nâng X2: ${pendingPenta.loCrossX2.x2Nums.join(', ')}</span> ` : '<span class="text-slate-500 italic">0 số nâng</span> '}· Vốn ${formatMoneyK(pendingPenta.loCrossX2?.stakeK || pendingPenta.lo.stakeK, false)}</div>
                     </td>
                     <td class="py-3 px-3">
                         <span class="text-indigo-900 font-bold">Xiên 5 Siêu Gộp (Top 5: ${pendingPenta.xien5.top5.join(', ')})</span>
@@ -3349,6 +3358,10 @@
                     <td class="py-3 px-3 text-right">
                         <div class="text-amber-800 font-bold">⏳ Chờ 18:30</div>
                         <div class="text-[10px] ${cumLoK >= 0 ? 'text-emerald-700' : 'text-rose-700'} font-semibold">LK: ${formatMoneyK(cumLoK)}</div>
+                    </td>
+                    <td class="py-3 px-3 text-right bg-emerald-50/30">
+                        <div class="text-emerald-800 font-bold">⏳ Chờ 18:30</div>
+                        <div class="text-[10px] ${cumLoX2K >= 0 ? 'text-emerald-700' : 'text-rose-700'} font-semibold">LK: ${formatMoneyK(cumLoX2K)}</div>
                     </td>
                     <td class="py-3 px-3 text-right">
                         <div class="text-amber-800 font-bold">⏳ Chờ 18:30</div>
@@ -3414,6 +3427,24 @@
                         <td class="py-2.5 px-3 font-bold text-slate-900">${dateVi}</td>
                         <td class="py-2.5 px-3">${deBadge}</td>
                         <td class="py-2.5 px-3">${loBadge}</td>
+                        <td class="py-2.5 px-3 bg-emerald-50/40">
+                            ${(() => {
+                                const qX2 = q.loCrossX2;
+                                if (!qX2) return `<span class="text-slate-400 text-xs">--</span>`;
+                                const isWin = qX2.isWin;
+                                const x2Nums = qX2.x2Nums || [];
+                                return `
+                                    <div class="flex flex-col gap-0.5">
+                                        ${isWin
+                                            ? `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-xs">🚀 ${qX2.hits}n (+${formatMoneyK(qX2.profitK, false)})</span>`
+                                            : `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300">${qX2.hits}n (-${formatMoneyK(Math.abs(qX2.profitK), false)})</span>`}
+                                        ${x2Nums.length > 0
+                                            ? `<span class="text-[9px] text-amber-950 font-bold bg-amber-200/80 px-1 py-0.2 rounded mt-0.5">⚡ Nâng X2: ${x2Nums.join(', ')}</span>`
+                                            : `<span class="text-[9px] text-slate-400 italic">0 số nâng (như gốc)</span>`}
+                                    </div>
+                                `;
+                            })()}
+                        </td>
                         <td class="py-2.5 px-3">${xienBadge}</td>
                         <td class="py-2.5 px-3 text-center">
                             <div class="flex flex-wrap gap-1 justify-center items-center mb-1">
@@ -3440,6 +3471,10 @@
                             <div><span class="font-bold ${q.lo.profitK > 0 ? 'text-emerald-700' : (q.lo.profitK < 0 ? 'text-rose-700' : 'text-slate-400')}">${formatMoneyK(q.lo.profitK)}</span></div>
                             <div class="text-[10px] font-semibold ${row.cumLoK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">LK: ${formatMoneyK(row.cumLoK)}</div>
                         </td>
+                        <td class="py-2.5 px-3 text-right bg-emerald-50/40">
+                            <div><span class="font-bold ${q.loCrossX2?.profitK > 0 ? 'text-emerald-700' : (q.loCrossX2?.profitK < 0 ? 'text-rose-700' : 'text-slate-400')}">${formatMoneyK(q.loCrossX2?.profitK || q.lo.profitK)}</span></div>
+                            <div class="text-[10px] font-semibold ${row.cumLoX2K >= 0 ? 'text-emerald-700' : 'text-rose-700'}">LK: ${formatMoneyK(row.cumLoX2K)}</div>
+                        </td>
                         <td class="py-2.5 px-3 text-right">
                             <div><span class="font-bold ${q.xien5.profitK > 0 ? 'text-emerald-700' : (q.xien5.profitK < 0 ? 'text-rose-700' : 'text-slate-400')}">${formatMoneyK(q.xien5.profitK)}</span></div>
                             <div class="text-[10px] font-semibold ${row.cumXienK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">LK: ${formatMoneyK(row.cumXienK)}</div>
@@ -3456,8 +3491,8 @@
             }).join('');
 
             const emptyMessageHtml = (currentShadowPhase === 'from0710')
-                ? `<tr><td colspan="11" class="py-8 text-center text-xs text-amber-900 font-mono bg-amber-50/60 border-t border-amber-300"><i class="bi bi-clock-history text-base text-amber-600"></i> Bắt đầu đối soát từ kỳ mở thưởng 07/10/2026. Kỳ 1 hôm nay đang niêm phong khóa cược ở hàng trên, chờ kết quả mở thưởng 18:30.<div class="text-[11px] text-slate-600 mt-1">Toàn bộ dữ liệu trước 07/10 đã được bỏ qua theo yêu cầu đối soát mới.</div></td></tr>`
-                : '<tr><td colspan="11" class="py-8 text-center text-xs text-slate-500">Không có dữ liệu đối soát</td></tr>';
+                ? `<tr><td colspan="13" class="py-8 text-center text-xs text-amber-900 font-mono bg-amber-50/60 border-t border-amber-300"><i class="bi bi-clock-history text-base text-amber-600"></i> Bắt đầu đối soát từ kỳ mở thưởng 07/10/2026. Kỳ 1 hôm nay đang niêm phong khóa cược ở hàng trên, chờ kết quả mở thưởng 18:30.<div class="text-[11px] text-slate-600 mt-1">Toàn bộ dữ liệu trước 07/10 đã được bỏ qua theo yêu cầu đối soát mới.</div></td></tr>`
+                : '<tr><td colspan="13" class="py-8 text-center text-xs text-slate-500">Không có dữ liệu đối soát</td></tr>';
 
             tbody.innerHTML = pendingRowHtml + (settledRowsHtml || emptyMessageHtml);
             return;

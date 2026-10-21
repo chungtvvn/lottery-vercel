@@ -34,7 +34,7 @@ export async function GET(request) {
         }
 
         const url = new URL(request.url);
-        const limit = parseInt(url.searchParams.get('limit')) || 90;
+        const limit = parseInt(url.searchParams.get('limit')) || 180;
         const history = await predictionHistoryService.getHistory(limit);
 
         if (url.searchParams.get('view') === 'telegram') {
