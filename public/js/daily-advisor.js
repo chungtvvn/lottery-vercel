@@ -1531,6 +1531,23 @@
         const displayLo4ProfitK = activeChRows.reduce((s, r) => s + (r.loPnlK != null ? r.loPnlK : (r.loProfitK || 0)), 0);
         const lo4SubText = `Thắng <strong>${lo4Wins}/${totalDraws}</strong> ngày (${percent(lo4Wins / totalDraws)})`;
 
+        const lo4FusionLedger = payload?.lo4EngineFusion?.settledLedger || [];
+        const lo4FusionMap = {};
+        lo4FusionLedger.forEach(x => { lo4FusionMap[x.date] = x; });
+
+        let lo4CrossX2Wins = 0;
+        let displayLo4CrossX2ProfitK = 0;
+        activeChRows.forEach(r => {
+            const fus = lo4FusionMap[r.date];
+            const pnl = fus?.crossX2?.dayLotoProfitKX2 !== undefined 
+                ? fus.crossX2.dayLotoProfitKX2 
+                : (r.loPnlK ?? r.loProfitK ?? 0);
+            if (pnl > 0) lo4CrossX2Wins++;
+            displayLo4CrossX2ProfitK += pnl;
+        });
+        const diffCrossX2K = displayLo4CrossX2ProfitK - displayLo4ProfitK;
+        const lo4CrossX2SubText = `Thắng <strong>${lo4CrossX2Wins}/${totalDraws}</strong> ngày (${percent(lo4CrossX2Wins / totalDraws)})`;
+
         const lo4Xien4Wins = activeChRows.filter(r => (r.xienPnlK || 0) > 0).length;
         const displayLo4Xien4ProfitK = activeChRows.reduce((s, r) => s + (r.xienPnlK != null ? r.xienPnlK : (r.xienProfitK || 0)), 0);
         const lo4Xien4SubText = `Ăn <strong>${lo4Xien4Wins}</strong> kỳ · Quây 11 vé Top 4`;
@@ -1635,6 +1652,20 @@
                 </div>
                 <div class="mt-2 text-[10px] text-amber-200/90 font-semibold">
                     ${lo4SubText}
+                </div>
+            </div>
+
+            <div class="rounded-2xl border border-emerald-400/30 bg-emerald-500/15 p-3.5 flex flex-col justify-between ring-1 ring-emerald-400/30">
+                <div>
+                    <div class="flex items-center justify-between text-[11px] font-black text-emerald-300">
+                        <span>🚀 Lô Đột Phá X2</span>
+                        <span class="rounded bg-emerald-400 text-slate-950 px-1.5 py-0.5 text-[9px] font-black">Shadow X2</span>
+                    </div>
+                    <div class="mt-1.5 font-mono text-xl font-black text-emerald-300">${moneyM(displayLo4CrossX2ProfitK, { signed: true })}</div>
+                </div>
+                <div class="mt-2 text-[10px] text-emerald-200/90 font-semibold flex items-center justify-between">
+                    <span>${lo4CrossX2SubText}</span>
+                    <span class="font-mono font-bold ${diffCrossX2K >= 0 ? 'text-emerald-300' : 'text-amber-300'}">${diffCrossX2K >= 0 ? '+' : ''}${moneyM(diffCrossX2K)}</span>
                 </div>
             </div>
 
@@ -3684,8 +3715,8 @@
                         </div>
                         <div class="bg-white p-2 rounded-lg border border-slate-200">
                             <span class="text-slate-500 block text-[10px]">Lũy Kế Đột Phá X2:</span>
-                            <strong class="${info.cumLotoProfitK >= 0 ? 'text-emerald-700 font-black' : 'text-rose-600 font-black'}">${moneyM(info.cumLotoProfitK, { signed: true })}</strong>
-                            <span class="text-[9px] text-emerald-600 block font-sans font-bold">+187,0M so với Gốc</span>
+                            <strong class="${(info.cumLotoProfitKX2 !== undefined ? info.cumLotoProfitKX2 : info.cumLotoProfitK) >= 0 ? 'text-emerald-700 font-black' : 'text-rose-600 font-black'}">${moneyM(info.cumLotoProfitKX2 !== undefined ? info.cumLotoProfitKX2 : info.cumLotoProfitK, { signed: true })}</strong>
+                            <span class="text-[9px] ${((info.cumLotoProfitKX2 !== undefined ? info.cumLotoProfitKX2 : info.cumLotoProfitK) - (info.baseLo4?.cumLotoProfitK || 0)) >= 0 ? 'text-emerald-600' : 'text-amber-600'} block font-sans font-bold">${moneyM((info.cumLotoProfitKX2 !== undefined ? info.cumLotoProfitKX2 : info.cumLotoProfitK) - (info.baseLo4?.cumLotoProfitK || 0), { signed: true })} so với Gốc</span>
                         </div>
                     </div>
                 </div>
@@ -4619,7 +4650,8 @@
                 dayLotoStakeK: crossX2?.dayLotoStakeKX2 || crossX2?.stakeKX2 || baseLo4?.dayLotoStakeK || 70400,
                 dayLotoPayoutK: crossX2?.dayLotoPayoutKX2 !== undefined ? crossX2.dayLotoPayoutKX2 : (baseLo4?.dayLotoPayoutK || 0),
                 dayLotoProfitK: crossX2?.dayLotoProfitKX2 !== undefined ? crossX2.dayLotoProfitKX2 : baseLo4?.dayLotoProfitK,
-                cumLotoProfitK: crossX2?.cumLotoProfitKX2 !== undefined ? crossX2.cumLotoProfitKX2 : (baseLo4?.cumProfitK || 0),
+                cumLotoProfitK: (diaryDetailsMap?.[date]?.lo4CrossX2?.cumLotoProfitKX2 !== undefined) ? diaryDetailsMap[date].lo4CrossX2.cumLotoProfitKX2 : (crossX2?.cumLotoProfitKX2 !== undefined ? crossX2.cumLotoProfitKX2 : (baseLo4?.cumProfitK || 0)),
+                cumLotoProfitKX2: (diaryDetailsMap?.[date]?.lo4CrossX2?.cumLotoProfitKX2 !== undefined) ? diaryDetailsMap[date].lo4CrossX2.cumLotoProfitKX2 : (crossX2?.cumLotoProfitKX2 !== undefined ? crossX2.cumLotoProfitKX2 : (baseLo4?.cumProfitK || 0)),
                 isLotoWin: crossX2?.isLotoWinX2 !== undefined ? crossX2.isLotoWinX2 : baseLo4?.isLotoWin
             };
         }
@@ -5943,16 +5975,24 @@
         let cumTop6LoProfitK = 0;
         let cumLo4Xien4ProfitK = 0;
         let cumLoXien5ProfitK = 0;
+        let cumLoCrossX2ProfitK = 0;
 
         diaryDetailsMap = {};
         let mergedRows = [];
         for (const date of filteredDates) {
             const regEntryRow = getUnifiedCombatDiaryEntryForDate(date, payload, (typeof currentLo4EngineMode !== 'undefined' ? currentLo4EngineMode : 'top7'));
             if (regEntryRow) {
+                const dayLoX2ProfitK = (regEntryRow.lo4CrossX2Info?.dayLotoProfitKX2 !== undefined)
+                    ? regEntryRow.lo4CrossX2Info.dayLotoProfitKX2
+                    : (regEntryRow.lo4Info?.crossX2?.dayLotoProfitKX2 !== undefined
+                        ? regEntryRow.lo4Info.crossX2.dayLotoProfitKX2
+                        : regEntryRow.chLoPnlK);
+
                 if (!regEntryRow.isPending) {
                     cumCrossProfitK += regEntryRow.chTotalProfitK;
                     cumCrossDeProfitK += regEntryRow.chDePnlK;
                     cumCrossLoProfitK += regEntryRow.chLoPnlK;
+                    cumLoCrossX2ProfitK += dayLoX2ProfitK;
                     cumCrossXienProfitK += regEntryRow.chXienPnlK;
                     cumLoXien5ProfitK += (regEntryRow.loXien5?.profitK || 0);
                     cumLo4ProfitK += regEntryRow.chLoPnlK;
@@ -5963,6 +6003,7 @@
                 regEntryRow.chCumProfitK = cumCrossProfitK;
                 regEntryRow.chCumDeProfitK = cumCrossDeProfitK;
                 regEntryRow.chCumLoProfitK = cumCrossLoProfitK;
+                regEntryRow.cumLoCrossX2ProfitK = cumLoCrossX2ProfitK;
                 regEntryRow.chCumXienProfitK = cumCrossXienProfitK;
                 regEntryRow.cumDeProfitK = cumCrossDeProfitK;
                 regEntryRow.cumLo4ProfitK = cumCrossLoProfitK;
@@ -5970,9 +6011,17 @@
                 regEntryRow.cumLoXien5ProfitK = cumLoXien5ProfitK;
                 regEntryRow.cumProfitK = cumCrossProfitK;
 
+                const lo4CrossX2Obj = {
+                    ...(regEntryRow.lo4CrossX2Info || regEntryRow.lo4Info?.crossX2 || {}),
+                    cumLotoProfitKX2: cumLoCrossX2ProfitK,
+                    baseLo4: { ...regEntryRow.lo4Info, cumLotoProfitK: cumCrossLoProfitK }
+                };
+
                 diaryDetailsMap[date] = {
                     de: { ...regEntryRow.deInfo, cumDeProfitK: cumCrossDeProfitK },
                     lo4Engine: { ...regEntryRow.lo4Info, cumLotoProfitK: cumCrossLoProfitK },
+                    lo4CrossX2: lo4CrossX2Obj,
+                    lo4CrossX2Info: lo4CrossX2Obj,
                     lo4Xien4: { ...regEntryRow.lo4Xien4Info, cumXien4ProfitK: cumCrossXienProfitK },
                     loXien5: { ...regEntryRow.loXien5Info, cumLoXien5ProfitK },
                     loStd: regEntryRow.stdInfo,
@@ -5985,6 +6034,7 @@
                         chRow: regEntryRow.chRow,
                         chDePnlK: regEntryRow.chDePnlK,
                         chLoPnlK: regEntryRow.chLoPnlK,
+                        chLoCrossX2PnlK: dayLoX2ProfitK,
                         chXienPnlK: regEntryRow.chXienPnlK,
                         chTotalProfitK: regEntryRow.chTotalProfitK,
                         chCumProfitK: cumCrossProfitK,
@@ -5994,6 +6044,8 @@
                         cumDeProfitK: cumCrossDeProfitK,
                         lo4ProfitK: regEntryRow.chLoPnlK,
                         cumLo4ProfitK: cumCrossLoProfitK,
+                        lo4CrossX2ProfitK: dayLoX2ProfitK,
+                        cumLoCrossX2ProfitK,
                         lo4Xien4ProfitK: regEntryRow.chXienPnlK,
                         cumLo4Xien4ProfitK: cumCrossXienProfitK,
                         loXien5ProfitK: (regEntryRow.loXien5?.profitK || 0),
@@ -6087,6 +6139,27 @@
                         xien4Combinations: lo4ModeData?.latestRecommendation?.xien4?.combinations || payload?.lo4EngineFusion?.latestRecommendation?.xien4?.combinations || [],
                         totalDayProfitK: 0,
                         cumLotoProfitK: cumLo4ProfitK
+                    },
+                    lo4CrossX2: {
+                        date,
+                        isPending: true,
+                        isLive: true,
+                        crossX2: (lo4ModeData?.latestRecommendation?.crossX2 || payload?.lo4EngineFusion?.latestRecommendation?.crossX2 || null),
+                        tierX5: (lo4ModeData?.latestRecommendation?.crossX2?.tierX5 || lo4ModeData?.latestRecommendation?.tierX5 || payload?.lo4EngineFusion?.latestRecommendation?.tierX5 || []),
+                        tierX4: (lo4ModeData?.latestRecommendation?.crossX2?.tierX4 || lo4ModeData?.latestRecommendation?.tierX4 || payload?.lo4EngineFusion?.latestRecommendation?.tierX4 || []),
+                        tierX3: (lo4ModeData?.latestRecommendation?.crossX2?.tierX3 || lo4ModeData?.latestRecommendation?.tierX3 || payload?.lo4EngineFusion?.latestRecommendation?.tierX3 || []),
+                        tierX2: (lo4ModeData?.latestRecommendation?.crossX2?.tierX2 || []),
+                        tierX1: (lo4ModeData?.latestRecommendation?.crossX2?.tierX1 || lo4ModeData?.latestRecommendation?.tierX1 || payload?.lo4EngineFusion?.latestRecommendation?.tierX1 || []),
+                        dayLotoStakeKX2: (lo4ModeData?.latestRecommendation?.crossX2?.stakeKX2 || 70400),
+                        dayLotoPayoutKX2: 0,
+                        dayLotoProfitKX2: 0,
+                        cumLotoProfitKX2: cumLoCrossX2ProfitK,
+                        baseLo4: {
+                            date,
+                            isPending: true,
+                            cumLotoProfitK: cumLo4ProfitK,
+                            dayLotoStakeK: lo4ModeData?.latestRecommendation?.totalLotoStakeK || payload?.lo4EngineFusion?.latestRecommendation?.totalLotoStakeK || 0
+                        }
                     },
                     lo4Xien4: {
                         date,
@@ -6215,6 +6288,9 @@
                     loRow: null,
                     lo4Engine: diaryDetailsMap[date].lo4Engine,
                     cumLo4ProfitK,
+                    lo4CrossX2: diaryDetailsMap[date].lo4CrossX2,
+                    lo4CrossX2Info: diaryDetailsMap[date].lo4CrossX2,
+                    cumLoCrossX2ProfitK,
                     lo4Xien4: diaryDetailsMap[date].lo4Xien4,
                     cumLo4Xien4ProfitK,
                     loXien5: diaryDetailsMap[date].loXien5,
@@ -6560,12 +6636,15 @@
 
             const chDePnlK = diaryDeProfitK;
             const chLoPnlK = (currentLo4EngineMode === 'top6' ? lo4DayProfitK : rawLo4ProfitK);
+            const crossX2Fallback = lo4Row?.crossX2 || (payload?.lo4EngineFusion?.settledLedger || []).find(x => x.date === date)?.crossX2 || null;
+            const dayLoX2ProfitK = (crossX2Fallback?.dayLotoProfitKX2 !== undefined) ? crossX2Fallback.dayLotoProfitKX2 : chLoPnlK;
             const chXienPnlK = lo4Xien4ProfitK;
             const chTotalProfitK = chDePnlK + chLoPnlK + chXienPnlK;
 
             cumCrossProfitK += chTotalProfitK;
             cumCrossDeProfitK += chDePnlK;
             cumCrossLoProfitK += chLoPnlK;
+            cumLoCrossX2ProfitK += dayLoX2ProfitK;
             cumCrossXienProfitK += chXienPnlK;
             const chCumProfitK = cumCrossProfitK;
 
@@ -6584,6 +6663,30 @@
             cumLoXien5ProfitK += loXien5ProfitK;
             cumXi3ProfitK += xi3ProfitK;
             cumXi4ProfitK += xi4ProfitK;
+
+            const lo4EngineDetails = {
+                ...(lo4Row || {}),
+                date,
+                isPending: false,
+                isLive: true,
+                dayLotoProfitK: chLoPnlK,
+                cumLotoProfitK: (currentLo4EngineMode === 'top6' ? lo4CumProfitK : cumCrossLoProfitK),
+                crossX2: crossX2Fallback
+            };
+
+            const lo4CrossX2Details = {
+                ...(crossX2Fallback || {}),
+                date,
+                isPending: false,
+                isLive: true,
+                crossX2: crossX2Fallback,
+                tierX2: crossX2Fallback?.tierX2 || [],
+                dayLotoStakeKX2: crossX2Fallback?.dayLotoStakeKX2 || crossX2Fallback?.stakeKX2 || 66000,
+                dayLotoPayoutKX2: crossX2Fallback?.dayLotoPayoutKX2 || 0,
+                dayLotoProfitKX2: dayLoX2ProfitK,
+                cumLotoProfitKX2: cumLoCrossX2ProfitK,
+                baseLo4: lo4EngineDetails
+            };
 
             const lo4Xien4Details = {
                 date,
@@ -6632,6 +6735,8 @@
                     cumDeProfitK: cumCrossDeProfitK || cumDeProfitK
                 },
                 lo4Engine: lo4EngineDetails,
+                lo4CrossX2: lo4CrossX2Details,
+                lo4CrossX2Info: lo4CrossX2Details,
                 lo4Xien4: lo4Xien4Details,
                 loStd: {
                     date,
@@ -6731,6 +6836,7 @@
                 chCumProfitK,
                 chCumDeProfitK: cumCrossDeProfitK,
                 chCumLoProfitK: cumCrossLoProfitK,
+                cumLoCrossX2ProfitK,
                 chCumXienProfitK: cumCrossXienProfitK,
                 deRow,
                 deIsHit: diaryDeIsHit,
@@ -6765,6 +6871,7 @@
                 cumProfitK: cumCrossProfitK,
                 deInfo: diaryDetailsMap[date].de,
                 lo4Info: diaryDetailsMap[date].lo4Engine,
+                lo4CrossX2: diaryDetailsMap[date].lo4CrossX2,
                 lo4CrossX2Info: diaryDetailsMap[date].lo4CrossX2 || diaryDetailsMap[date].lo4Engine?.crossX2,
                 lo4Xien4Info: diaryDetailsMap[date].lo4Xien4,
                 loXien5Info: diaryDetailsMap[date].loXien5,
@@ -7911,7 +8018,7 @@
                             </div>
                             <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-emerald-200/50 pt-0.5">
                                 <span class="text-slate-500 font-sans">Lũy kế Đột Phá:</span>
-                                <span class="font-bold text-emerald-700">+5.686,2M</span>
+                                <span class="font-bold ${(r.cumLoCrossX2ProfitK ?? cumLoCrossX2ProfitK ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${moneyM(r.cumLoCrossX2ProfitK ?? cumLoCrossX2ProfitK ?? 0, { signed: true })}</span>
                             </div>
                         </td>
                         <!-- Cột 4: Dàn Xiên Quây (Top 4) -->
@@ -8053,7 +8160,8 @@
             const promotedX2Nums = (crossX2Data?.tierX2 || []).map(number);
             const loPnlX2 = crossX2Data?.dayLotoProfitKX2 !== undefined ? crossX2Data.dayLotoProfitKX2 : loPnlVal;
             const loStakeX2 = crossX2Data?.dayLotoStakeKX2 !== undefined ? crossX2Data.dayLotoStakeKX2 : (lo4Info?.dayLotoStakeK || lo4Info?.lotoStakeK || 66000);
-            const cumLoX2 = crossX2Data?.cumLotoProfitKX2 !== undefined ? crossX2Data.cumLotoProfitKX2 : cumLoVal;
+            const cumLoX2 = (r.cumLoCrossX2ProfitK !== undefined) ? r.cumLoCrossX2ProfitK : (crossX2Data?.cumLotoProfitKX2 !== undefined ? crossX2Data.cumLotoProfitKX2 : cumLoVal);
+            const diffLoX2 = cumLoX2 - cumLoVal;
 
             const dayClass = dayTotalVal > 0 ? 'bg-emerald-50/40' : (dayTotalVal < -20000 ? 'bg-rose-50/20' : '');
 
@@ -8142,7 +8250,10 @@
                         </div>
                         <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-emerald-200/50 pt-0.5">
                             <span class="text-slate-500 font-sans">Lũy kế Đột Phá:</span>
-                            <strong class="${cumLoX2 >= 0 ? 'text-emerald-700' : 'text-rose-600'} font-bold">${moneyM(cumLoX2, { signed: true })}</strong>
+                            <div class="text-right">
+                                <strong class="${cumLoX2 >= 0 ? 'text-emerald-700' : 'text-rose-600'} font-bold">${moneyM(cumLoX2, { signed: true })}</strong>
+                                <span class="text-[9px] ${diffLoX2 >= 0 ? 'text-emerald-600' : 'text-amber-600'} block font-sans font-semibold">(${diffLoX2 >= 0 ? '+' : ''}${moneyM(diffLoX2)} so gốc)</span>
+                            </div>
                         </div>
                     </td>
                     <!-- Cột 4: Dàn Xiên Quây (Top 4) -->
