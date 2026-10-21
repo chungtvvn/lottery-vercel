@@ -665,6 +665,7 @@ export async function GET(request) {
                             xien4PayoutK: s.lo4EngineFusion.xienPayoutK || 0,
                             dayXien4ProfitK: s.lo4EngineFusion.xienProfitK != null ? s.lo4EngineFusion.xienProfitK : -11000,
                             isXien4Win: (s.lo4EngineFusion.xienProfitK || 0) > 0,
+                            crossX2: s.lo4EngineFusion.crossX2 || null,
                             totalDayProfitK: s.lo4EngineFusion.totalProfitK != null ? s.lo4EngineFusion.totalProfitK : 0
                         });
                     }
@@ -692,6 +693,7 @@ export async function GET(request) {
                             xien4PayoutK: s.lo4EngineFusion.xienPayoutK || 0,
                             dayXien4ProfitK: s.lo4EngineFusion.xienProfitK != null ? s.lo4EngineFusion.xienProfitK : -11000,
                             isXien4Win: (s.lo4EngineFusion.xienProfitK || 0) > 0,
+                            crossX2: s.lo4EngineFusion.crossX2 || null,
                             totalDayProfitK: s.lo4EngineFusion.totalProfitK != null ? s.lo4EngineFusion.totalProfitK : 0
                         });
                     }

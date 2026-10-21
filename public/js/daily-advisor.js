@@ -4526,6 +4526,83 @@
         popover.style.top = `${Math.round(top)}px`;
     }
 
+    function resolveLo4CrossX2(date, sLo4, bLo4, p = payload, isPending = false, t5 = [], t4 = [], t3 = [], t1 = [], drawPrizes = []) {
+        let crossX2 = sLo4?.crossX2 || bLo4?.crossX2 || null;
+        if (!crossX2) {
+            const loMode = (typeof currentLo4EngineMode !== 'undefined' ? currentLo4EngineMode : 'top7');
+            const ledgerRow = (p?.lo4EngineFusion?.modes?.[loMode]?.settledLedger || p?.lo4EngineFusion?.modes?.top7?.settledLedger || p?.lo4EngineFusion?.settledLedger || []).find(r => r.date === date);
+            if (ledgerRow?.crossX2) crossX2 = ledgerRow.crossX2;
+        }
+        if (!crossX2) {
+            const latestRec = p?.lo4EngineFusion?.latestRecommendation;
+            if (latestRec?.crossX2 && (isPending || date === p?.pendingPredictionDate || latestRec.targetDate === date)) {
+                crossX2 = latestRec.crossX2;
+            }
+        }
+        // Self-healing fallback: nếu vẫn chưa có hoặc tierX2 rỗng, đối soát với Shadow Monitor Penta
+        let promotedX2 = (crossX2?.tierX2 || []).map(number);
+        let remX1 = (crossX2?.tierX1 || []).map(number);
+        if (promotedX2.length === 0 && t1.length > 0) {
+            const regEntry = p?.dailyLockedBetsRegistry?.dates?.[date];
+            const pentaLo = regEntry?.settlement?.pentaConsensus?.lo || regEntry?.bets?.pentaConsensus?.lo || (p?.pentaConsensus?.settledLedger || []).find(r => r.date === date)?.lo || (p?.pentaConsensus?.latestRecommendation?.lo) || {};
+            const pentaHighSet = new Set([
+                ...(pentaLo.x5Nums || []),
+                ...(pentaLo.x4Nums || []),
+                ...(pentaLo.x3Nums || [])
+            ].map(number));
+            if (pentaHighSet.size > 0) {
+                promotedX2 = t1.filter(n => pentaHighSet.has(n));
+                remX1 = t1.filter(n => !pentaHighSet.has(n));
+            }
+        }
+        if (remX1.length === 0 && t1.length > 0) {
+            remX1 = t1.filter(n => !promotedX2.includes(n));
+        }
+
+        const effectiveT5 = (crossX2?.tierX5 && crossX2.tierX5.length) ? crossX2.tierX5.map(number) : t5.map(number);
+        const effectiveT4 = (crossX2?.tierX4 && crossX2.tierX4.length) ? crossX2.tierX4.map(number) : t4.map(number);
+        const effectiveT3 = (crossX2?.tierX3 && crossX2.tierX3.length) ? crossX2.tierX3.map(number) : t3.map(number);
+
+        const pCnt = {};
+        const pArr = (drawPrizes && drawPrizes.length) ? drawPrizes : (p?.drawPrizesByDate?.[date]?.prizes || []);
+        (pArr || []).forEach(pr => { const n = number(pr); pCnt[n] = (pCnt[n] || 0) + 1; });
+        const hasDrawResults = Object.keys(pCnt).length > 0 && !isPending;
+
+        let h5 = 0, h4 = 0, h3 = 0, h2 = 0, h1 = 0;
+        effectiveT5.forEach(n => { h5 += (pCnt[n] || 0); });
+        effectiveT4.forEach(n => { h4 += (pCnt[n] || 0); });
+        effectiveT3.forEach(n => { h3 += (pCnt[n] || 0); });
+        promotedX2.forEach(n => { h2 += (pCnt[n] || 0); });
+        remX1.forEach(n => { h1 += (pCnt[n] || 0); });
+
+        const stKX2 = (effectiveT5.length * 5 + effectiveT4.length * 4 + effectiveT3.length * 3 + promotedX2.length * 2 + remX1.length * 1) * 2200;
+        const payKX2 = hasDrawResults ? (h5 * 5 + h4 * 4 + h3 * 3 + h2 * 2 + h1 * 1) * 8000 : (crossX2?.dayLotoPayoutKX2 || 0);
+        const profKX2 = hasDrawResults ? (payKX2 - stKX2) : (crossX2?.dayLotoProfitKX2 !== undefined ? crossX2.dayLotoProfitKX2 : (isPending ? 0 : (payKX2 - stKX2)));
+
+        return {
+            ...(crossX2 || {}),
+            tierX5: effectiveT5,
+            tierX4: effectiveT4,
+            tierX3: effectiveT3,
+            tierX2: promotedX2,
+            tierX1: remX1,
+            x5Hits: hasDrawResults ? h5 : (crossX2?.x5Hits || 0),
+            x4Hits: hasDrawResults ? h4 : (crossX2?.x4Hits || 0),
+            x3Hits: hasDrawResults ? h3 : (crossX2?.x3Hits || 0),
+            x2Hits: hasDrawResults ? h2 : (crossX2?.x2Hits || 0),
+            x1Hits: hasDrawResults ? h1 : (crossX2?.x1Hits || 0),
+            totalHits: hasDrawResults ? (h5 + h4 + h3 + h2 + h1) : (crossX2?.totalHits || 0),
+            dayLotoStakeKX2: stKX2,
+            stakeKX2: stKX2,
+            dayLotoPayoutKX2: payKX2,
+            dayLotoProfitKX2: profKX2,
+            isLotoWinX2: profKX2 > 0,
+            promotedRationale: promotedX2.length > 0
+                ? `Số [${promotedX2.join(', ')}] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy).`
+                : 'Không có số nào cần nâng hạng hôm nay.'
+        };
+    }
+
     function synthesizeFallbackDiaryInfo(date, type, p) {
         if (!date || !type) return null;
         const drawInfo = p?.drawPrizesByDate?.[date] || {};
@@ -4634,8 +4711,7 @@
         }
         if (type === 'lo4CrossX2') {
             const baseLo4 = getDiaryInfo(date, 'lo4Engine');
-            const lo4LedgerRow = (p?.lo4EngineFusion?.settledLedger || []).find(r => r.date === date);
-            const crossX2 = baseLo4?.crossX2 || lo4LedgerRow?.crossX2 || (baseLo4?.isPending ? p?.lo4EngineFusion?.latestRecommendation?.crossX2 : null) || null;
+            const crossX2 = baseLo4?.crossX2 || resolveLo4CrossX2(date, baseLo4?.sLo4, baseLo4?.bLo4, p, baseLo4?.isPending, baseLo4?.tierX5 || [], baseLo4?.tierX4 || [], baseLo4?.tierX3 || [], baseLo4?.tierX1 || [], p?.drawPrizesByDate?.[date]?.prizes || []);
             return {
                 ...baseLo4,
                 type: 'lo4CrossX2',
@@ -4808,41 +4884,10 @@
         const lo4ProfitK = isPending ? 0 : (sLo4.lotoProfitK != null ? sLo4.lotoProfitK : (s.crossHedgingPortfolio?.loProfitK ?? (lo4PayoutK - lo4StakeK)));
         const isLotoWin = lo4ProfitK > 0;
 
-        const lo4LedgerRow = (p?.lo4EngineFusion?.settledLedger || []).find(r => r.date === date);
-        let crossX2 = sLo4.crossX2 || bLo4.crossX2 || lo4LedgerRow?.crossX2 || (isPending ? p?.lo4EngineFusion?.latestRecommendation?.crossX2 : null) || null;
-
-        // Safety self-healing: Đảm bảo crossX2 luôn luôn bám chặt 100% dàn gốc t5, t4, t3, t1
-        if (crossX2 && !isPending && (t5.length > 0 || t4.length > 0 || t3.length > 0 || t1.length > 0)) {
-            const c4 = (crossX2.tierX4 || []).map(number);
-            const c5 = (crossX2.tierX5 || []).map(number);
-            if (c4.join(',') !== t4.join(',') || c5.join(',') !== t5.join(',')) {
-                const drawP = (p?.drawPrizesByDate?.[date]?.prizes || []).map(number);
-                const pCnt = {};
-                drawP.forEach(pr => { pCnt[pr] = (pCnt[pr] || 0) + 1; });
-                const promotedX2 = (crossX2.tierX2 || []).map(number);
-                const remX1 = t1.filter(n => !promotedX2.includes(n));
-                let h5 = 0, h4 = 0, h3 = 0, h2 = 0, h1 = 0;
-                t5.forEach(n => { h5 += (pCnt[n] || 0); });
-                t4.forEach(n => { h4 += (pCnt[n] || 0); });
-                t3.forEach(n => { h3 += (pCnt[n] || 0); });
-                promotedX2.forEach(n => { h2 += (pCnt[n] || 0); });
-                remX1.forEach(n => { h1 += (pCnt[n] || 0); });
-                const stKX2 = (t5.length * 5 + t4.length * 4 + t3.length * 3 + promotedX2.length * 2 + remX1.length * 1) * 2200;
-                const payKX2 = (h5 * 5 + h4 * 4 + h3 * 3 + h2 * 2 + h1 * 1) * 8000;
-                crossX2 = {
-                    ...crossX2,
-                    tierX5: t5,
-                    tierX4: t4,
-                    tierX3: t3,
-                    tierX2: promotedX2,
-                    tierX1: remX1,
-                    x2Hits: h2,
-                    dayLotoStakeKX2: stKX2,
-                    dayLotoPayoutKX2: payKX2,
-                    dayLotoProfitKX2: payKX2 - stKX2,
-                    isLotoWinX2: (payKX2 - stKX2) > 0
-                };
-            }
+        const crossX2 = resolveLo4CrossX2(date, sLo4, bLo4, p, isPending, t5, t4, t3, t1, actualPrizes);
+        if (crossX2) {
+            if (!bLo4.crossX2) bLo4.crossX2 = crossX2;
+            if (!sLo4.crossX2 && !isPending) sLo4.crossX2 = crossX2;
         }
 
         const lo4Info = {
@@ -8190,7 +8235,7 @@
             }).filter(b => b.hits > 0);
             const displayLoHits = (loHitsCount > 0) ? loHitsCount : hitLo4Numbers.reduce((acc, x) => acc + (x.hits || 0), 0);
 
-            const crossX2Data = lo4Info?.crossX2 || r.lo4CrossX2Info?.crossX2 || (payload?.lo4EngineFusion?.settledLedger || []).find(x => x.date === r.date)?.crossX2 || null;
+            const crossX2Data = lo4Info?.crossX2 || r.lo4CrossX2Info?.crossX2 || (payload?.lo4EngineFusion?.settledLedger || []).find(x => x.date === r.date)?.crossX2 || resolveLo4CrossX2(r.date, lo4Info?.sLo4, lo4Info?.bLo4, payload, r.isPending, lo4Info?.tierX5 || [], lo4Info?.tierX4 || [], lo4Info?.tierX3 || [], lo4Info?.tierX1 || [], rowDrawPrizes);
             const promotedX2Nums = (crossX2Data?.tierX2 || []).map(number);
             const loPnlX2 = crossX2Data?.dayLotoProfitKX2 !== undefined ? crossX2Data.dayLotoProfitKX2 : loPnlVal;
             const loStakeX2 = crossX2Data?.dayLotoStakeKX2 !== undefined ? crossX2Data.dayLotoStakeKX2 : (lo4Info?.dayLotoStakeK || lo4Info?.lotoStakeK || 66000);
@@ -13651,16 +13696,17 @@
                     };
                 }
             } else if (effectiveKey === 'lo4CrossX2') {
-                const regLo4 = regEntry.settlement?.lo4EngineFusion || regEntry.bets?.lo4EngineFusion;
-                const lo4LedgerRow = (payloadData.lo4EngineFusion?.settledLedger || []).find(x => x.date === date);
-                const crossX2 = regLo4?.crossX2 || lo4LedgerRow?.crossX2 || (payloadData.lo4EngineFusion?.latestRecommendation?.targetDate === date ? payloadData.lo4EngineFusion?.latestRecommendation?.crossX2 : null);
-                if (crossX2 || regLo4) {
+                const sLo4 = regEntry.settlement?.lo4EngineFusion || {};
+                const bLo4 = regEntry.bets?.lo4EngineFusion || {};
+                const drawArr = (payloadData?.drawPrizesByDate?.[date]?.prizes || regEntry.actualResult?.prizes || []).map(number);
+                const crossX2 = resolveLo4CrossX2(date, sLo4, bLo4, payloadData, isPending, sLo4.tierX5 || bLo4.tierX5 || [], sLo4.tierX4 || bLo4.tierX4 || [], sLo4.tierX3 || bLo4.tierX3 || [], sLo4.tierX1 || bLo4.tierX1 || [], drawArr);
+                if (crossX2 || bLo4.tierX1) {
                     methodTitle = '🚀 Lô Đột Phá X2 (Nâng Hạng Từ Shadow)';
-                    const t5 = (crossX2?.tierX5 || regLo4?.tierX5 || lo4LedgerRow?.tierX5 || []).map(number);
-                    const t4 = (crossX2?.tierX4 || regLo4?.tierX4 || lo4LedgerRow?.tierX4 || []).map(number);
-                    const t3 = (crossX2?.tierX3 || regLo4?.tierX3 || lo4LedgerRow?.tierX3 || []).map(number);
-                    const t2 = (crossX2?.tierX2 || crossX2?.x2Nums || []).map(number);
-                    const t1 = (crossX2?.tierX1 || regLo4?.tierX1 || lo4LedgerRow?.tierX1 || []).map(number);
+                    const t5 = (crossX2?.tierX5 || []).map(number);
+                    const t4 = (crossX2?.tierX4 || []).map(number);
+                    const t3 = (crossX2?.tierX3 || []).map(number);
+                    const t2 = (crossX2?.tierX2 || []).map(number);
+                    const t1 = (crossX2?.tierX1 || []).map(number);
                     numbers = (crossX2?.numbers || [...t5, ...t4, ...t3, ...t2, ...t1]).map(number);
                     stakeK = crossX2?.dayLotoStakeKX2 || crossX2?.stakeKX2 || 70400;
                     if (isPending) {
@@ -13669,9 +13715,9 @@
                         hitBadge = '⏳ Chờ mở thưởng 18h40';
                         detailDesc = t2.length ? `Thăng hạng X2: ${t2.join(', ')} (${t2.length} số · 4.4M/số) · SSOT Khóa Bất Biến` : `0 số thăng hạng X2 (như gốc) · Vốn ${moneyM(stakeK)}`;
                     } else {
-                        const hits = crossX2?.dayLotoHits !== undefined ? crossX2.dayLotoHits : (crossX2?.hits !== undefined ? crossX2.hits : (regLo4?.totalHits || 0));
-                        profitK = crossX2?.dayLotoProfitKX2 !== undefined ? crossX2.dayLotoProfitKX2 : (crossX2?.profitK !== undefined ? crossX2.profitK : (regLo4?.lotoProfitK || 0));
-                        payoutK = crossX2?.dayLotoPayoutKX2 !== undefined ? crossX2.dayLotoPayoutKX2 : (crossX2?.payoutK !== undefined ? crossX2.payoutK : (stakeK + profitK));
+                        const hits = crossX2?.totalHits !== undefined ? crossX2.totalHits : (crossX2?.x2Hits || 0);
+                        profitK = crossX2?.dayLotoProfitKX2 !== undefined ? crossX2.dayLotoProfitKX2 : 0;
+                        payoutK = crossX2?.dayLotoPayoutKX2 !== undefined ? crossX2.dayLotoPayoutKX2 : (stakeK + profitK);
                         isHit = (profitK > 0) || hits >= 2;
                         hitBadge = hits > 0 ? `🎉 NỔ ${hits} NHÁY (${moneyM(profitK, { signed: true })})` : '❌ TRƯỢT';
                         detailDesc = t2.length ? `Thăng hạng X2: ${t2.join(', ')} (${t2.length} số) · Vốn ${moneyM(stakeK)} · SSOT Khóa Bất Biến` : `0 số nâng X2 (như gốc) · Vốn ${moneyM(stakeK)}`;
@@ -14260,8 +14306,12 @@
             }
         } else if (effectiveKey === 'lo4CrossX2') {
             methodTitle = '🚀 Lô Đột Phá X2 (Nâng Hạng Từ Shadow)';
+            const regEntry = payloadData?.dailyLockedBetsRegistry?.dates?.[date] || payload?.dailyLockedBetsRegistry?.dates?.[date];
+            const sLo4 = regEntry?.settlement?.lo4EngineFusion || {};
+            const bLo4 = regEntry?.bets?.lo4EngineFusion || {};
             const lo4Settled = (payloadData.lo4EngineFusion?.settledLedger || []).find(x => x.date === date);
-            const crossX2 = lo4Settled?.crossX2 || null;
+            const drawArr = (payloadData?.drawPrizesByDate?.[date]?.prizes || regEntry?.actualResult?.prizes || []).map(number);
+            const crossX2 = lo4Settled?.crossX2 || resolveLo4CrossX2(date, sLo4, bLo4, payloadData || payload, isPending, sLo4.tierX5 || bLo4.tierX5 || lo4Settled?.tierX5 || [], sLo4.tierX4 || bLo4.tierX4 || lo4Settled?.tierX4 || [], sLo4.tierX3 || bLo4.tierX3 || lo4Settled?.tierX3 || [], sLo4.tierX1 || bLo4.tierX1 || lo4Settled?.tierX1 || [], drawArr);
             if (crossX2) {
                 const t5 = (crossX2.tierX5 || lo4Settled?.tierX5 || []).map(number);
                 const t4 = (crossX2.tierX4 || lo4Settled?.tierX4 || []).map(number);

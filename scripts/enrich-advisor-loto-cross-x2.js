@@ -12,11 +12,87 @@ async function enrichAdvisorCache() {
     }
     const adv = JSON.parse(fs.readFileSync(advisorPath, 'utf8'));
 
+    // Đồng bộ lại dailyLockedBetsRegistry từ file gốc
+    const regPath = path.join(process.cwd(), 'lib', 'data', 'statistics', 'daily_locked_bets_registry.json');
+    let regDisk = null;
+    if (fs.existsSync(regPath)) {
+        regDisk = JSON.parse(fs.readFileSync(regPath, 'utf8'));
+        adv.dailyLockedBetsRegistry = regDisk;
+    }
+
+    // Nạp đầy đủ drawPrizesByDate từ xsmb-2-digits.json
+    const rawPath = path.join(process.cwd(), 'lib', 'data', 'xsmb-2-digits.json');
+    if (fs.existsSync(rawPath)) {
+        const rawList = JSON.parse(fs.readFileSync(rawPath, 'utf8'));
+        if (!adv.drawPrizesByDate) adv.drawPrizesByDate = {};
+        rawList.forEach(r => {
+            if (r.date && !adv.drawPrizesByDate[r.date]) {
+                const prizes = [];
+                if (r.special != null) prizes.push(numStr(r.special));
+                if (r.prize1 != null) prizes.push(numStr(r.prize1));
+                for (let p = 2; p <= 7; p++) {
+                    for (let i = 1; i <= 6; i++) {
+                        const key = `prize${p}_${i}`;
+                        if (r[key] != null) prizes.push(numStr(r[key]));
+                    }
+                }
+                adv.drawPrizesByDate[r.date] = {
+                    date: r.date,
+                    special: numStr(r.special),
+                    prizes
+                };
+            }
+        });
+    }
+
     console.log('=== ENRICHING CACHED DAILY METHOD ADVISOR VỚI LÔ CROSS X2 ===');
 
     // 1. Enrich lo4EngineFusion settledLedger
     const lo4 = adv.lo4EngineFusion;
     if (lo4 && lo4.settledLedger) {
+        // Đảm bảo tất cả các ngày đã kết toán trong dailyLockedBetsRegistry đều có trong settledLedger
+        Object.keys(adv.dailyLockedBetsRegistry?.dates || {}).sort().forEach(d => {
+            const regEntry = adv.dailyLockedBetsRegistry.dates[d];
+            if (regEntry.isSettled && regEntry.settlement?.lo4EngineFusion) {
+                if (!lo4.settledLedger.some(r => r.date === d)) {
+                    const sLo = regEntry.settlement.lo4EngineFusion;
+                    const bLo = regEntry.bets?.lo4EngineFusion || {};
+                    const prevRow = lo4.settledLedger[lo4.settledLedger.length - 1];
+                    const cumLo = (prevRow ? prevRow.cumLotoProfitK : 0) + sLo.lotoProfitK;
+                    lo4.settledLedger.push({
+                        date: d,
+                        isLive: true,
+                        topN: 6,
+                        h4: sLo.xienHitsCount || 0,
+                        countTotal: sLo.betNumbers?.length || 14,
+                        countOver2: (sLo.tierX5?.length || 0) + (sLo.tierX4?.length || 0) + (sLo.tierX3?.length || 0),
+                        countX1: sLo.tierX1?.length || 0,
+                        numbersOver2: [...(sLo.tierX5 || []), ...(sLo.tierX4 || []), ...(sLo.tierX3 || [])],
+                        allNumbers: sLo.betNumbers?.map(b => numStr(b.num || b)) || [],
+                        tierX5: sLo.tierX5 || [],
+                        tierX4: sLo.tierX4 || [],
+                        tierX3: sLo.tierX3 || [],
+                        tierX1: sLo.tierX1 || [],
+                        betNumbers: sLo.betNumbers || [],
+                        dayLotoStakeK: sLo.lotoStakeK || 66000,
+                        dayLotoPayoutK: sLo.lotoPayoutK || 0,
+                        dayLotoProfitK: sLo.lotoProfitK || 0,
+                        dayLotoHits: sLo.totalHits || 0,
+                        isLotoWin: sLo.lotoProfitK > 0,
+                        xien4Status: "ACTIVE",
+                        xien4Reason: bLo.xien4?.reason || "Top 4 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé",
+                        xien4Combinations: bLo.xien4?.combinations || [sLo.xienTop4 || []],
+                        xien4StakeK: sLo.xienStakeK || 11000,
+                        xien4PayoutK: sLo.xienPayoutK || 0,
+                        dayXien4ProfitK: sLo.xienProfitK != null ? sLo.xienProfitK : -11000,
+                        isXien4Win: (sLo.xienProfitK || 0) > 0,
+                        totalDayProfitK: sLo.totalProfitK || 0,
+                        cumLotoProfitK: cumLo
+                    });
+                }
+            }
+        });
+
         let cumProfitX2 = 0;
         let origWins = 0, x2Wins = 0;
 
@@ -40,16 +116,26 @@ async function enrichAdvisorCache() {
                 row.betNumbers = sLo4.betNumbers || row.betNumbers;
             }
 
-            const penta = computePentaConsensusForDate(d, adv);
-            const pentaHighSet = new Set(penta ? [...(penta.lo.x5Nums || []), ...(penta.lo.x4Nums || []), ...(penta.lo.x3Nums || [])] : []);
-
             const t5 = (row.tierX5 || []).map(numStr);
             const t4 = (row.tierX4 || []).map(numStr);
             const t3 = (row.tierX3 || []).map(numStr);
             const t1 = (row.tierX1 || []).map(numStr);
 
-            const promotedToX2 = t1.filter(n => pentaHighSet.has(n));
-            const remainingX1 = t1.filter(n => !pentaHighSet.has(n));
+            // Ưu tiên đọc dàn X2 đã khóa bất biến (SSOT)
+            let promotedToX2 = [];
+            let remainingX1 = [...t1];
+            if (sLo4?.crossX2?.tierX2 && Array.isArray(sLo4.crossX2.tierX2) && sLo4.crossX2.tierX2.length > 0) {
+                promotedToX2 = sLo4.crossX2.tierX2.map(numStr);
+                remainingX1 = t1.filter(n => !promotedToX2.includes(n));
+            } else if (regEntry?.bets?.lo4EngineFusion?.crossX2?.tierX2?.length > 0) {
+                promotedToX2 = regEntry.bets.lo4EngineFusion.crossX2.tierX2.map(numStr);
+                remainingX1 = t1.filter(n => !promotedToX2.includes(n));
+            } else {
+                const penta = computePentaConsensusForDate(d, adv);
+                const pentaHighSet = new Set(penta ? [...(penta.lo.x5Nums || []), ...(penta.lo.x4Nums || []), ...(penta.lo.x3Nums || [])] : []);
+                promotedToX2 = t1.filter(n => pentaHighSet.has(n));
+                remainingX1 = t1.filter(n => !pentaHighSet.has(n));
+            }
 
             const prizeCount = {};
             const prizesObj = adv.drawPrizesByDate?.[d];
@@ -81,7 +167,12 @@ async function enrichAdvisorCache() {
                 tierX3: t3,
                 tierX2: promotedToX2,
                 tierX1: remainingX1,
+                x5Hits,
+                x4Hits,
+                x3Hits,
                 x2Hits,
+                x1Hits,
+                totalHits: x5Hits + x4Hits + x3Hits + x2Hits + x1Hits,
                 dayLotoStakeKX2: stakeKX2,
                 dayLotoPayoutKX2: payoutKX2,
                 dayLotoProfitKX2: profitKX2,
@@ -189,6 +280,11 @@ async function enrichAdvisorCache() {
 
     fs.writeFileSync(advisorPath, JSON.stringify(adv, null, 2), 'utf8');
     console.log(`✅ Đã lưu ${advisorPath}`);
+
+    if (regDisk) {
+        fs.writeFileSync(regPath, JSON.stringify(adv.dailyLockedBetsRegistry, null, 2), 'utf8');
+        console.log(`✅ Đã đồng bộ SSOT vào ${regPath}`);
+    }
 
     // Ghi file gzip
     const gzPath = path.join(process.cwd(), 'lib', 'data', 'statistics', 'cached_daily_method_advisor.json.gz');
