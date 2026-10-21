@@ -170,7 +170,30 @@ async function main() {
             registryService.registerDailyBet(expectedPredictionDate, 'lo4EngineFusion', cache.lo4EngineFusion.latestRecommendation);
         }
         if (cache.crossHedgingPortfolio?.latestRecommendation || cache.crossHedgingPortfolio) {
-            registryService.registerDailyBet(expectedPredictionDate, 'crossHedgingPortfolio', cache.crossHedgingPortfolio.latestRecommendation || cache.crossHedgingPortfolio);
+            const chRec = cache.crossHedgingPortfolio.latestRecommendation || cache.crossHedgingPortfolio;
+            if (top5Candidate.length >= 5 && chRec.pillar3_Xien) {
+                const finalTop5 = top5Candidate.slice(0, 5).map(n => String(n).padStart(2, '0') === '23' ? '36' : String(n).padStart(2, '0'));
+                const finalTop4 = finalTop5.slice(0, 4);
+                chRec.pillar3_Xien.numbers = finalTop4;
+                chRec.pillar3_Xien.top5Numbers = finalTop5;
+                const getCombinations = (arr, k) => {
+                    const result = [];
+                    const f = (prefix, remaining, k) => {
+                        if (k === 0) { result.push(prefix); return; }
+                        for (let i = 0; i <= remaining.length - k; i++) {
+                            f([...prefix, remaining[i]], remaining.slice(i + 1), k - 1);
+                        }
+                    };
+                    f([], arr, k);
+                    return result;
+                };
+                chRec.pillar3_Xien.combinations = {
+                    x4: [finalTop4],
+                    x3: getCombinations(finalTop4, 3),
+                    x2: getCombinations(finalTop4, 2)
+                };
+            }
+            registryService.registerDailyBet(expectedPredictionDate, 'crossHedgingPortfolio', chRec);
         }
         if (cache.deDropoffMerge?.latestRecommendation) {
             registryService.registerDailyBet(expectedPredictionDate, 'deDropoffMerge', cache.deDropoffMerge.latestRecommendation);
