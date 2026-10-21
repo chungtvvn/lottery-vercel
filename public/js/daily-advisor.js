@@ -7566,8 +7566,8 @@
                 const totalStakeVal = (deStakeVal + (p2?.stakeK || 63800) + (p3?.stakeK || 1485));
 
                 const loBetList = (p2?.betNumbers || lo4Info?.betNumbers || []).slice(0, 5);
-                const xienNums = (p3?.numbers || lo4Xien4Info?.top4 || ['22', '38', '70', '93']).map(number);
-                const xien5Nums = ((r.loXien5Info || r.loXien5)?.top5?.length ? (r.loXien5Info || r.loXien5).top5 : (payload?.loTop5ConsensusXien?.top5Xien || ['22', '38', '70', '92', '95'])).map(number);
+                const xienNums = (p3?.numbers || lo4Xien4Info?.top4 || getImmutableLockedLoXien4(r.date, payload) || []).map(number);
+                const xien5Nums = ((r.loXien5Info || r.loXien5)?.top5?.length ? (r.loXien5Info || r.loXien5).top5 : (getImmutableLockedLoXien5(r.date, payload) || [])).map(number);
 
                 return `
                     <tr class="hover:bg-amber-50/50 bg-amber-50/20 border-l-4 border-l-amber-500 transition-colors">
@@ -8938,21 +8938,31 @@
                     profitTag.textContent = isTop6 ? 'Lãi +5.288 TỶ' : 'Lãi +6.058 TỶ';
                 }
 
-                // Numbers: extract numbers with votes >= 2 (Top 6 or Top 7)
+                // SSOT Ground Truth cho Lô 4 Động Cơ:
                 const regLo4Pending = regPending?.bets?.lo4EngineFusion;
-                const recNumbers = (isTop6 && regLo4Pending?.numbersOver2 && regLo4Pending.numbersOver2.length)
+                const regOver2 = (regLo4Pending?.numbersOver2 && regLo4Pending.numbersOver2.length)
                     ? regLo4Pending.numbersOver2
-                    : ((lo4ModeData?.latestRecommendation?.numbersOver2 && lo4ModeData.latestRecommendation.numbersOver2.length)
-                        ? lo4ModeData.latestRecommendation.numbersOver2
-                        : ((lo4Rec.numbersOver2 && lo4Rec.numbersOver2.length)
-                            ? lo4Rec.numbersOver2
-                            : (isTop6 ? ['59', '62', '76', '24', '35', '52'] : ['59', '62', '70', '76', '24', '35', '52'])));
+                    : [
+                        ...(regLo4Pending?.tierX5 || []),
+                        ...(regLo4Pending?.tierX4 || []),
+                        ...(regLo4Pending?.tierX3 || [])
+                    ];
+                let recNumbers = [];
+                if (isTop6) {
+                    recNumbers = (regOver2.length >= 6) ? regOver2.slice(0, 6) : regOver2;
+                } else {
+                    const allLo = regLo4Pending?.allNumbers || [...regOver2, ...(regLo4Pending?.tierX1 || [])];
+                    recNumbers = (allLo.length >= 7) ? allLo.slice(0, 7) : (regOver2.length ? regOver2 : allLo);
+                }
+                if (!recNumbers || !recNumbers.length) {
+                    recNumbers = (lo4ModeData?.latestRecommendation?.numbersOver2 || lo4Rec.numbersOver2 || lo4Rec.allNumbers || []).slice(0, isTop6 ? 6 : 7);
+                }
 
-                const rawBetSource = (isTop6 && regLo4Pending?.betNumbers && regLo4Pending.betNumbers.length)
+                const rawBetSource = (regLo4Pending?.betNumbers && regLo4Pending.betNumbers.length)
                     ? regLo4Pending.betNumbers
                     : (lo4ModeData?.latestRecommendation?.betNumbers || lo4Rec.betNumbers || []);
                 const betNumbersList = rawBetSource.length
-                    ? rawBetSource.filter(b => recNumbers.includes(String(b.num)))
+                    ? rawBetSource.filter(b => recNumbers.includes(String(b.num != null ? b.num : b)))
                     : recNumbers.map(n => ({ num: n, votes: 3, multiplier: 4, methods: ['QMBF', 'Dual', 'Tri'] }));
 
                 if (loTitleEl) {

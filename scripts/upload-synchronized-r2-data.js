@@ -74,6 +74,15 @@ async function uploadAll() {
         await uploadFileToR2('statistics/cached_lo_dropoff_27_shadow.json.gz', loGz, 'application/json', 'gzip');
     }
 
+    // 4. xsmb-2-digits (Raw Data)
+    const rawFile = path.join(__dirname, '..', 'lib', 'data', 'xsmb-2-digits.json');
+    if (fs.existsSync(rawFile)) {
+        const rawBuf = fs.readFileSync(rawFile);
+        const rawGz = zlib.gzipSync(rawBuf);
+        await uploadFileToR2('data/xsmb-2-digits.json', rawBuf);
+        await uploadFileToR2('data/xsmb-2-digits.json.gz', rawGz, 'application/json', 'gzip');
+    }
+
     console.log('\n🎉 HOÀN TẤT UPLOAD TẤT CẢ DỮ LIỆU LÊN R2 THÀNH CÔNG!');
 }
 

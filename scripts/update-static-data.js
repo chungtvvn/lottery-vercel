@@ -1281,6 +1281,16 @@ function generateDailyMethodAdvisorCache(options = {}) {
     } catch (e) {
         console.warn('[Cache Update] Could not generate lo-dropoff-27 cache:', e.message);
     }
+    try {
+        runNodeScript(
+            'scripts/sync-all-ssot.js',
+            'Đồng bộ hóa 100% SSOT Registry và Caches.',
+            {},
+            { timeoutMs: 300_000 }
+        );
+    } catch (e) {
+        console.warn('[Cache Update] Could not sync all SSOT:', e.message);
+    }
 }
 
 function generateProbabilityScoreCache(options = {}) {

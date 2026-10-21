@@ -235,209 +235,24 @@ function settleFromRaw(payload, rawRows) {
         }
     } catch (_) {}
 
-    const latestRawDate = normalizeDate(rawRows?.at(-1)?.date || rawRows?.at(-1)?.ngay);
-
-    let dualMerge = payload.dualMerge;
-    const lastDualMergeDate = normalizeDate(dualMerge?.settledLedger?.at(-1)?.date);
-    if (!dualMerge || !Array.isArray(dualMerge.settledLedger) || dualMerge.settledLedger.length === 0 || (latestRawDate && lastDualMergeDate && lastDualMergeDate < latestRawDate)) {
-        const dualMergeService = require('@/lib/services/dualMergeAdvisorService');
-        dualMerge = dualMergeService.buildDualMergeAdvisor(historyPayload, rawRows, { existingAdvisorRecords: payload.records, existingDualMerge: payload.dualMerge });
-    }
-
-    let adaptiveDualMerge = payload.adaptiveDualMerge;
-    const lastAdaptiveDate = normalizeDate(adaptiveDualMerge?.settledLedger?.at(-1)?.predictionDate || adaptiveDualMerge?.settledLedger?.at(-1)?.date);
-    if (!adaptiveDualMerge || !Array.isArray(adaptiveDualMerge.settledLedger) || adaptiveDualMerge.settledLedger.length === 0 || !adaptiveDualMerge.latestRecommendation?.overlapCount || (latestRawDate && lastAdaptiveDate && lastAdaptiveDate < latestRawDate)) {
-        const { buildAdaptiveDualMergeAdvisor } = require('@/lib/services/adaptiveDualMergeAdvisorService');
-        adaptiveDualMerge = buildAdaptiveDualMergeAdvisor(historyPayload, rawRows, { existingAdvisorRecords: payload.records, existingAdaptiveDualMerge: payload.adaptiveDualMerge });
-    }
-
-    let tripleMerge = payload.tripleMerge;
-    const lastTripleDate = normalizeDate(tripleMerge?.settledLedger?.at(-1)?.date);
-    if (!tripleMerge || !Array.isArray(tripleMerge.settledLedger) || tripleMerge.settledLedger.length === 0 || !tripleMerge.latestRecommendation?.tierX3?.length || (latestRawDate && lastTripleDate && lastTripleDate < latestRawDate)) {
-        const { buildTripleMergeAdvisor } = require('@/lib/services/tripleMergeAdvisorService');
-        tripleMerge = buildTripleMergeAdvisor(historyPayload, rawRows, { existingAdvisorRecords: payload.records, existingTripleMerge: payload.tripleMerge });
-    }
-
-    let metaLearner = payload.metaLearner;
-    const lastMetaLearnerDate = normalizeDate(metaLearner?.settledLedger?.at(-1)?.date);
-    if (!metaLearner || !Array.isArray(metaLearner.settledLedger) || metaLearner.settledLedger.length === 0 || (latestRawDate && lastMetaLearnerDate && lastMetaLearnerDate < latestRawDate)) {
-        const { buildMetaLearnerAdvisor } = require('@/lib/services/metaLearnerAdvisorService');
-        metaLearner = buildMetaLearnerAdvisor(historyPayload, rawRows, { existingAdvisorCache: payload, existingMetaLearner: payload.metaLearner });
-    }
-
-    let loDualMerge = payload.loDualMerge;
-    const lastLoDualDate = normalizeDate(loDualMerge?.settledLedger?.at(-1)?.date);
-    if (!loDualMerge || !Array.isArray(loDualMerge.settledLedger) || loDualMerge.settledLedger.length === 0 || (latestRawDate && lastLoDualDate && lastLoDualDate < latestRawDate)) {
-        const { buildLoDualMergeAdvisor } = require('@/lib/services/loDualMergeAdvisorService');
-        loDualMerge = buildLoDualMergeAdvisor(dualMerge, rawRows, tripleMerge);
-    }
-
-    let loTriHarmonic = payload.loTriHarmonic;
-    const lastLoTriDate = normalizeDate(loTriHarmonic?.settledLedger?.at(-1)?.date);
-    if (!loTriHarmonic || !Array.isArray(loTriHarmonic.settledLedger) || loTriHarmonic.settledLedger.length === 0 || (latestRawDate && lastLoTriDate && lastLoTriDate < latestRawDate)) {
-        const { buildLoTriHarmonicAdvisor } = require('@/lib/services/loDualMergeAdvisorService');
-        loTriHarmonic = buildLoTriHarmonicAdvisor(rawRows);
-    }
-
-    let loQuantumBayesFusion = payload.loQuantumBayesFusion;
-    const lastLoQmbDate = normalizeDate(loQuantumBayesFusion?.settledLedger?.at(-1)?.date);
-    if (!loQuantumBayesFusion || !Array.isArray(loQuantumBayesFusion.settledLedger) || loQuantumBayesFusion.settledLedger.length === 0 || (latestRawDate && lastLoQmbDate && lastLoQmbDate < latestRawDate)) {
-        const { buildLoQuantumBayesFusionAdvisor } = require('@/lib/services/loDualMergeAdvisorService');
-        loQuantumBayesFusion = buildLoQuantumBayesFusionAdvisor(rawRows, { existingLoQuantumBayesFusion: payload.loQuantumBayesFusion });
-    }
-
-    let dynamicMetaAdvisor = payload.dynamicMetaAdvisor;
-    const lastDynamicDate = normalizeDate(dynamicMetaAdvisor?.liveDiary?.at(-1)?.date);
-    if (!dynamicMetaAdvisor || !Array.isArray(dynamicMetaAdvisor.liveDiary) || dynamicMetaAdvisor.liveDiary.length === 0 || (latestRawDate && lastDynamicDate && lastDynamicDate < latestRawDate)) {
-        const { buildDynamicCrossMethodAdvisor } = require('@/lib/services/loDualMergeAdvisorService');
-        dynamicMetaAdvisor = buildDynamicCrossMethodAdvisor({
-            loQuantumBayesFusion,
-            loDualMerge,
-            loTriHarmonic
-        }, rawRows, { existingDynamicMetaAdvisor: payload.dynamicMetaAdvisor });
-    }
-    let streakAwareDeAdvisor = payload.streakAwareDeAdvisor;
-    if (!streakAwareDeAdvisor && dualMerge && tripleMerge) {
-        try {
-            const { buildStreakAwareDeAdvisor } = require('@/lib/services/aiLotteryResearchService');
-            streakAwareDeAdvisor = buildStreakAwareDeAdvisor(dualMerge, tripleMerge, adaptiveDualMerge, rawRows);
-        } catch (_) {}
-    }
-
-    let loQuadHybrid = payload.loQuadHybrid;
-    if (!loQuadHybrid && loQuantumBayesFusion && loDualMerge) {
-        try {
-            const { buildLoQuadHybridAdvisor } = require('@/lib/services/aiLotteryResearchService');
-            loQuadHybrid = buildLoQuadHybridAdvisor(loQuantumBayesFusion, loDualMerge, rawRows, loTriHarmonic);
-        } catch (_) {}
-    }
-
-    let loXien4Synergy = payload.loXien4Synergy;
-    if (!loXien4Synergy && loQuadHybrid) {
-        try {
-            const { buildLoXien4SynergyAdvisor } = require('@/lib/services/aiLotteryResearchService');
-            loXien4Synergy = buildLoXien4SynergyAdvisor(loQuadHybrid, rawRows);
-        } catch (_) {}
-    }
-
+    // SSOT: Khóa bất biến tuyệt đối dữ liệu đã sinh và lưu trong cache/file
+    // CẤM TUYỆT ĐỐI tái sinh (re-synthesize/re-train) thuật toán on-the-fly trong GET request
+    let dualMerge = payload.dualMerge || null;
+    let adaptiveDualMerge = payload.adaptiveDualMerge || null;
+    let tripleMerge = payload.tripleMerge || null;
+    let metaLearner = payload.metaLearner || null;
+    let loDualMerge = payload.loDualMerge || null;
+    let loTriHarmonic = payload.loTriHarmonic || null;
+    let loQuantumBayesFusion = payload.loQuantumBayesFusion || null;
+    let dynamicMetaAdvisor = payload.dynamicMetaAdvisor || null;
+    let streakAwareDeAdvisor = payload.streakAwareDeAdvisor || null;
+    let loQuadHybrid = payload.loQuadHybrid || null;
+    let loXien4Synergy = payload.loXien4Synergy || null;
     let crossHedgingPortfolio = payload.crossHedgingPortfolio || null;
-    let crossHedgingService = null;
-    try {
-        crossHedgingService = require('@/lib/services/crossHedgingPortfolioService');
-    } catch (_) {
-        try {
-            crossHedgingService = require('../../../lib/services/crossHedgingPortfolioService');
-        } catch (_) {}
-    }
-
-    if (crossHedgingService) {
-        // Bước 1: Luôn ưu tiên đối soát on-the-fly cho pending recommendation nếu ngày đó đã có kết quả mở thưởng
-        const pendingTargetDate = normalizeDate(crossHedgingPortfolio?.targetDate || crossHedgingPortfolio?.latestRecommendation?.targetDate);
-        const actualRow = pendingTargetDate ? (rawRows || []).find(r => normalizeDate(r?.date || r?.ngay) === pendingTargetDate) : null;
-        if (actualRow && (actualRow.special != null || actualRow.prize1 != null)) {
-            try {
-                const decision = crossHedgingPortfolio.latestRecommendation || crossHedgingPortfolio;
-                const settled = crossHedgingService.settleCrossAssetPortfolio(decision, actualRow);
-                crossHedgingPortfolio = {
-                    ...crossHedgingPortfolio,
-                    lastSettled: settled
-                };
-                const existsInLedger = (crossHedgingPortfolio.settledLedger || []).some(r => normalizeDate(r?.date) === pendingTargetDate);
-                if (!existsInLedger && Array.isArray(crossHedgingPortfolio.settledLedger)) {
-                    crossHedgingPortfolio.settledLedger = [...crossHedgingPortfolio.settledLedger, settled];
-                }
-            } catch (err) {
-                console.error('[API daily-advisor] Error settling crossHedging on-the-fly:', err);
-            }
-        }
-
-        const lastHedgingDate = normalizeDate(
-            crossHedgingPortfolio?.settledLedger?.at(-1)?.date ||
-            crossHedgingPortfolio?.targetDate
-        );
-
-        if (!crossHedgingPortfolio || !Array.isArray(crossHedgingPortfolio.settledLedger) || crossHedgingPortfolio.settledLedger.length === 0 || (latestRawDate && lastHedgingDate && lastHedgingDate < latestRawDate)) {
-            try {
-                const backtestRes = crossHedgingService.runCrossHedgingBacktest2026(rawRows, {
-                    advisorCache: payload
-                });
-                const nextTargetDate = normalizeDate(payload?.pendingPredictionDate || (rawRows.length ? nextIsoDate(rawRows.at(-1)?.date) : null));
-                const pendingDecision = crossHedgingService.evaluateCrossAssetPortfolio(
-                    nextTargetDate,
-                    rawRows,
-                    payload,
-                    {
-                        metrics: backtestRes.summary,
-                        priorState: backtestRes.latestDecision ? {
-                            mode: backtestRes.latestDecision.mode,
-                            abstainConsecutive: backtestRes.latestDecision.regimeDetails?.abstainConsecutive || 0
-                        } : null,
-                        ledgerHistory: backtestRes.settledLedger
-                    }
-                );
-                const { isPredictionLockActive, preserveLockedRecommendation } = require('@/lib/utils/predictionLockGuard');
-                const lockStatus = isPredictionLockActive(nextTargetDate, rawRows);
-                const regBet = payload?.dailyLockedBetsRegistry?.dates?.[nextTargetDate]?.bets?.crossHedgingPortfolio;
-                const baseExisting = (regBet && (regBet.numbers?.length || regBet.pillar1_De?.allNumbers?.length || regBet.pillar1_De?.vipNumbers?.length))
-                    ? regBet
-                    : (payload.crossHedgingPortfolio?.latestRecommendation || payload.crossHedgingPortfolio);
-                const finalPendingDecision = preserveLockedRecommendation(
-                    baseExisting,
-                    pendingDecision,
-                    lockStatus
-                );
-                crossHedgingPortfolio = {
-                    ...finalPendingDecision,
-                    latestRecommendation: finalPendingDecision,
-                    summary: backtestRes.summary,
-                    metrics: {
-                        dailyPositiveProfitRate: backtestRes.summary.dailyPositiveProfitRate,
-                        cumulativeProfitK: backtestRes.summary.cumulativeProfitK,
-                        cumulativeRoi: backtestRes.summary.cumulativeRoi,
-                        maxConsecutiveLossDays: backtestRes.summary.maxConsecutiveLossDays,
-                        totalDraws2026: backtestRes.summary.totalDraws2026,
-                        positiveDays2026: backtestRes.summary.positiveDays2026,
-                        activeDays: backtestRes.summary.activeDays
-                    },
-                    settledLedger: backtestRes.settledLedger
-                };
-            } catch (err) {
-                console.error('[API daily-advisor] Error rebuilding crossHedgingPortfolio:', err);
-            }
-        }
-    }
-
     let triCoreDe = payload.triCoreDe || null;
-    try {
-        const { buildTriCoreDeAdvisor } = require('@/lib/services/triCoreDeAdvisorService');
-        triCoreDe = buildTriCoreDeAdvisor(rawRows, payload, { existingTriCoreDe: payload.triCoreDe });
-    } catch (err) {
-        console.error('[API daily-advisor] Error building triCoreDe:', err);
-    }
-
     let deDropoffMerge = payload.deDropoffMerge || null;
-    try {
-        const { buildDeDropoffMergeAdvisor } = require('@/lib/services/deDropoffMergeAdvisorService');
-        deDropoffMerge = buildDeDropoffMergeAdvisor(rawRows, payload, { existingDeDropoffMerge: payload.deDropoffMerge });
-    } catch (err) {
-        console.error('[API daily-advisor] Error building deDropoffMerge:', err);
-    }
-
     let loDropoff27 = payload.loDropoff27 || null;
-    try {
-        const { buildLoDropoff27Advisor } = require('@/lib/services/loDropoff27AdvisorService');
-        loDropoff27 = buildLoDropoff27Advisor(rawRows, payload, { existingLoDropoff27: payload.loDropoff27 });
-    } catch (err) {
-        console.error('[API daily-advisor] Error building loDropoff27:', err);
-    }
-
     let semanticResonanceSuite = payload.semanticResonanceSuite || null;
-    try {
-        const { buildSemanticResonanceSuiteAdvisor } = require('@/lib/services/semanticResonanceSuiteAdvisorService');
-        semanticResonanceSuite = buildSemanticResonanceSuiteAdvisor(rawRows, payload, { existingSemanticResonanceSuite: payload.semanticResonanceSuite });
-    } catch (err) {
-        console.error('[API daily-advisor] Error building semanticResonanceSuite:', err);
-    }
 
     return {
         ...payload,
@@ -514,6 +329,12 @@ export async function GET(request) {
         if (fs.existsSync(localFile)) {
             try {
                 const localPayload = JSON.parse(fs.readFileSync(localFile, 'utf8'));
+                if (localPayload?.latestDataDate && (!payload.latestDataDate || localPayload.latestDataDate >= payload.latestDataDate)) {
+                    payload.latestDataDate = localPayload.latestDataDate;
+                    if (localPayload.pendingPredictionDate) {
+                        payload.pendingPredictionDate = localPayload.pendingPredictionDate;
+                    }
+                }
                 if ((localPayload?.dualMerge?.settledLedger?.length || 0) > (payload?.dualMerge?.settledLedger?.length || 0)) {
                     payload.dualMerge = localPayload.dualMerge;
                 }
@@ -623,6 +444,7 @@ export async function GET(request) {
                         if ((shadowLo?.settledLedger?.length || 0) >= (payload?.loDropoff27?.settledLedger?.length || 0)) {
                             payload.loDropoff27 = shadowLo;
                         }
+                    }
                 } catch (_) {}
             } catch (_) {}
         }
