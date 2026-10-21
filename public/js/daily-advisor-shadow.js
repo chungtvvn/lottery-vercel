@@ -6501,6 +6501,7 @@
         let loX4 = [];
         let loX3 = [];
         let loX1 = [];
+        let loX2Promoted = [];
         let xien5List = [];
 
         if (consensus && consensus.de && consensus.lo) {
@@ -6510,6 +6511,7 @@
             loX4 = consensus.lo.x4Nums || [];
             loX3 = consensus.lo.x3Nums || [];
             loX1 = consensus.lo.x1Nums || [];
+            loX2Promoted = consensus.loCrossX2?.x2Nums || [];
             xien5List = consensus.xien5?.top5 || [];
         } else {
             const isPending = !d.drawPrizesByDate?.[targetDate] || (d.drawPrizesByDate[targetDate].special === undefined);
@@ -6533,6 +6535,7 @@
         if (loX5 && loX5.length) lines.push(`- Dàn X5: ${loX5.join(', ')}`);
         if (loX4 && loX4.length) lines.push(`- Dàn X4: ${loX4.join(', ')}`);
         if (loX3 && loX3.length) lines.push(`- Dàn X3: ${loX3.join(', ')}`);
+        if (loX2Promoted && loX2Promoted.length) lines.push(`- Lô Đột Phá X2 (Nâng hạng từ Advisor): ${loX2Promoted.join(', ')}`);
         if (loX1 && loX1.length) lines.push(`- Dàn X1: ${loX1.join(', ')}`);
         if (xien5List && xien5List.length) {
             lines.push(`Lô Xiên 5: ${xien5List.join(', ')}`);
@@ -6857,6 +6860,15 @@
                     }
                 }
 
+                const copyPentaLoX2Btn = e.target.closest('.btn-copy-slip-penta-lo-x2');
+                if (copyPentaLoX2Btn) {
+                    const raw = copyPentaLoX2Btn.getAttribute('data-numbers') || '';
+                    if (raw) {
+                        navigator.clipboard.writeText(raw);
+                        showToast(`📋 Đã sao chép dàn Lô Đột Phá X2 ngày ${formatDateVi(copyPentaLoX2Btn.getAttribute('data-date'))}!`);
+                    }
+                }
+
                 const copyPentaXien5Btn = e.target.closest('.btn-copy-slip-penta-xien5');
                 if (copyPentaXien5Btn) {
                     const raw = copyPentaXien5Btn.getAttribute('data-tickets') || '';
@@ -6882,6 +6894,15 @@
                     if (raw) {
                         navigator.clipboard.writeText(raw);
                         showToast(`📋 Đã sao chép dàn Lô Tứ Trụ ngày ${formatDateVi(copyQuadLoBtn.getAttribute('data-date'))}!`);
+                    }
+                }
+
+                const copyQuadLoX2Btn = e.target.closest('.btn-copy-slip-quad-lo-x2');
+                if (copyQuadLoX2Btn) {
+                    const raw = copyQuadLoX2Btn.getAttribute('data-numbers') || '';
+                    if (raw) {
+                        navigator.clipboard.writeText(raw);
+                        showToast(`📋 Đã sao chép dàn Lô Đột Phá X2 Tứ Trụ ngày ${formatDateVi(copyQuadLoX2Btn.getAttribute('data-date'))}!`);
                     }
                 }
 
@@ -8701,6 +8722,7 @@
         // 13A. Section 👑 Siêu Gộp 5 Phương Pháp (Hệ Penta)
         let pentaDeSectionHtml = '';
         let pentaLoSectionHtml = '';
+        let pentaLoCrossX2SectionHtml = '';
         let pentaXienSectionHtml = '';
         let pentaSummaryCardHtml = '';
 
@@ -8859,6 +8881,134 @@
                 </div>
             `;
 
+            // B2. LÔ ĐỘT PHÁ X2 (Tương Hỗ Nâng Hạng Từ Daily Advisor)
+            const pentaX2Promoted = pentaData.loCrossX2?.x2Nums || [];
+            const hasPentaPromotedX2 = pentaX2Promoted.length > 0;
+            const pentaX2DiffStakeK = pentaData.loCrossX2.stakeK - pentaData.lo.stakeK;
+            const pentaX2DiffProfitK = isPending ? 0 : (pentaData.loCrossX2.profitK - pentaData.lo.profitK);
+
+            const pentaLoX2ChipsHtml = pentaData.loCrossX2.pills.map(p => {
+                const isPromoted = pentaX2Promoted.includes(p.num);
+                if (!isPending && p.hits > 0) {
+                    return `
+                        <div class="relative group flex flex-col items-center justify-center rounded-xl ${isPromoted ? 'bg-gradient-to-br from-amber-500 via-yellow-500 to-amber-600 ring-4 ring-amber-300' : 'bg-gradient-to-br from-emerald-500 via-teal-500 to-emerald-600 ring-2 ring-emerald-300'} text-white p-2.5 font-black shadow-md scale-105 min-w-[70px] animate-pulse">
+                            <span class="text-[9px] font-black uppercase ${isPromoted ? 'text-amber-100' : 'text-emerald-100'}">🎯 ${p.hits} NHÁY (X${p.mult})</span>
+                            <span class="font-mono text-2xl leading-none font-black my-1 text-white">${p.num}</span>
+                            <span class="text-[9px] font-black uppercase ${isPromoted ? 'bg-slate-950/70 text-amber-200' : 'bg-emerald-900/60 text-emerald-200'} px-2 py-0.5 rounded shadow-xs">+${formatMoneyK(p.payoutK, false)}</span>
+                        </div>
+                    `;
+                }
+                let multBadgeColor = 'bg-slate-100 text-slate-700 border-slate-200';
+                let multLabel = `X${p.mult} · ${p.freq ? p.freq + '/5 hệ' : ''}`;
+                if (p.mult === 5) {
+                    multBadgeColor = 'bg-rose-100 text-rose-800 border-rose-300';
+                } else if (p.mult === 4) {
+                    multBadgeColor = 'bg-amber-100 text-amber-800 border-amber-300';
+                } else if (p.mult === 3) {
+                    multBadgeColor = 'bg-indigo-100 text-indigo-800 border-indigo-300';
+                } else if (p.mult === 2 && isPromoted) {
+                    multBadgeColor = 'bg-amber-300 text-slate-950 border-amber-400 font-black shadow-xs ring-1 ring-amber-300';
+                    multLabel = '⚡ X2 (Nâng)';
+                }
+                return `
+                    <div class="flex flex-col items-center justify-center rounded-xl bg-white border ${isPromoted ? 'border-amber-400 ring-2 ring-amber-300/60 bg-amber-50/50' : 'border-slate-300'} text-slate-800 p-2 font-mono text-base font-bold min-w-[60px] shadow-2xs hover:border-amber-400 transition-all">
+                        <span>${p.num}</span>
+                        <span class="text-[9px] font-bold px-1 py-0.2 rounded border ${multBadgeColor} mt-0.5">${multLabel}</span>
+                    </div>
+                `;
+            }).join('');
+
+            const pentaPromotedBadgesHtml = hasPentaPromotedX2 
+                ? pentaX2Promoted.map(n => {
+                    const hits = isPending ? 0 : (pentaData.prizeCount?.[n] || 0);
+                    if (hits > 0) {
+                        return `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl font-mono font-black text-xs bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">🎯 ${n} <span class="text-[10px] bg-slate-950 text-amber-300 px-1 py-0.2 rounded font-bold">${hits} nháy (+${formatMoneyK(hits * 16000, false)})</span></span>`;
+                    }
+                    return `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl font-mono font-bold text-xs bg-amber-100 text-amber-950 border border-amber-300 shadow-2xs">${n} <span class="text-[9px] text-amber-800 font-bold">4.4M</span></span>`;
+                }).join(' ')
+                : `<span class="text-xs text-slate-500 italic">Không có số nào thuộc tầng X1 trùng với Lô chủ lực (≥X3) bên Daily Advisor. Dàn số và mức cược giữ nguyên như gốc.</span>`;
+
+            const loX2StatusTag = isPending
+                ? `<span class="text-xs font-bold text-amber-900 bg-amber-100 border border-amber-300 px-2.5 py-0.5 rounded">⏳ ĐÃ KHÓA ${pentaData.loCrossX2.numbers.length} SỐ (${hasPentaPromotedX2 ? `${pentaX2Promoted.length} số nâng X2` : 'như gốc'} · Vốn ${formatMoneyK(pentaData.loCrossX2.stakeK, false)})</span>`
+                : (pentaData.loCrossX2.isWin
+                    ? `<span class="text-xs font-black text-slate-950 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 px-2.5 py-0.5 rounded shadow-sm ring-2 ring-amber-300 animate-pulse">🔥 THẮNG LÔ X2 (${pentaData.loCrossX2.hits} NHÁY · +${formatMoneyK(pentaData.loCrossX2.profitK, false)})</span>`
+                    : `<span class="text-xs font-bold text-rose-800 bg-rose-50 border border-rose-300 px-2.5 py-0.5 rounded">❌ THUA LÔ (${pentaData.loCrossX2.hits} NHÁY · ${formatMoneyK(pentaData.loCrossX2.profitK)})</span>`);
+
+            pentaLoCrossX2SectionHtml = `
+                <div class="rounded-2xl border-2 border-amber-400 bg-white p-4 space-y-3 shadow-sm text-slate-800">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-200 pb-2.5">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h4 class="text-xs font-black uppercase text-amber-950 flex items-center gap-1.5">
+                                <i class="bi bi-rocket-takeoff-fill text-amber-600"></i> 🚀 2B. LÔ ĐỘT PHÁ X2 (NÂNG HẠNG TƯƠNG HỖ VỚI DAILY ADVISOR):
+                            </h4>
+                            <span class="text-[11px] text-slate-600 font-mono">(${pentaData.loCrossX2.numbers.length} số · ${hasPentaPromotedX2 ? `<strong class="text-amber-900 font-bold">${pentaX2Promoted.length} số nâng X2 (4.4M)</strong>` : 'giữ nguyên như gốc'})</span>
+                        </div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            ${loX2StatusTag}
+                            <button type="button" class="btn-copy-slip-penta-lo-x2 text-[11px] font-bold text-amber-900 hover:text-white bg-amber-100 hover:bg-amber-600 px-2.5 py-1 rounded-lg border border-amber-300 transition-all flex items-center gap-1 cursor-pointer" data-numbers="${pentaData.loCrossX2.numbers.join(' ')}" data-x2="${pentaX2Promoted.join(' ')}" data-date="${targetDate}">
+                                <i class="bi bi-rocket-takeoff"></i> Copy Dàn Lô X2 (${formatMoneyK(pentaData.loCrossX2.stakeK, false)})
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Banner giải trình nâng hạng X2 -->
+                    <div class="p-3 rounded-xl bg-gradient-to-r from-amber-50 via-yellow-50 to-amber-50 border border-amber-300 space-y-2">
+                        <div class="flex items-center justify-between text-[11px] flex-wrap gap-1">
+                            <span class="font-black text-amber-950 uppercase flex items-center gap-1">
+                                <i class="bi bi-lightning-charge-fill text-amber-600"></i> CÁC SỐ X1 ĐƯỢC THĂNG HẠNG LÊN X2 (4.4M/SỐ · ĂN 16M/NHÁY):
+                            </span>
+                            <span class="text-[11px] text-amber-900 font-mono font-bold">${hasPentaPromotedX2 ? `${pentaX2Promoted.length} số thăng hạng` : '0 số'}</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5 pt-0.5 items-center">
+                            ${pentaPromotedBadgesHtml}
+                        </div>
+                        <div class="text-[10px] text-slate-500 pt-1 border-t border-amber-200/60 leading-relaxed">
+                            💡 <em>Cơ chế: Các số thuộc tầng X1 của Shadow nếu trùng với các số chủ lực (≥X3) bên Daily Advisor sẽ được thăng hạng lên cược X2 (4.4M/số thay vì 2.2M). Các số X5, X4, X3 và X1 còn lại giữ nguyên mức cược.</em>
+                        </div>
+                    </div>
+
+                    <!-- Toàn bộ dàn số theo tỷ trọng X2 -->
+                    <div class="p-3 rounded-xl bg-slate-50 border border-amber-200 space-y-2">
+                        <div class="flex items-center justify-between text-[11px]">
+                            <span class="font-bold text-slate-800">Chi Tiết Tỷ Trọng Sau Nâng Hạng (Vốn ${formatMoneyK(pentaData.loCrossX2.stakeK, false)}):</span>
+                            <span class="font-mono text-xs">
+                                ${isPending 
+                                    ? '<span class="text-slate-500">⏳ Chờ kết quả 18:30</span>' 
+                                    : (pentaData.loCrossX2.hits > 0 
+                                        ? `<span class="text-emerald-700 font-black">🔥 Nổ ${pentaData.loCrossX2.hits} nháy (${pentaData.loCrossX2.hitNums.join(', ')}) ⭐</span>` 
+                                        : '<span class="text-rose-700 font-bold">❌ 0 nháy</span>')
+                                }
+                            </span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 pt-1">${pentaLoX2ChipsHtml}</div>
+                    </div>
+
+                    <!-- Bảng so sánh tài chính: Gốc vs Đột Phá X2 -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-[11px] font-mono">
+                        <div class="p-2 rounded-xl bg-slate-50 border border-slate-200">
+                            <div class="text-slate-500 text-[10px]">VỐN CƯỢC X2</div>
+                            <div class="font-bold text-slate-900 text-xs mt-0.5">${formatMoneyK(pentaData.loCrossX2.stakeK, false)} <span class="text-[10px] text-amber-700 font-normal">(${pentaX2DiffStakeK > 0 ? `+${formatMoneyK(pentaX2DiffStakeK, false)}` : 'như gốc'})</span></div>
+                        </div>
+                        <div class="p-2 rounded-xl bg-slate-50 border border-slate-200">
+                            <div class="text-slate-500 text-[10px]">TIỀN THƯỞNG X2</div>
+                            <div class="font-bold text-amber-800 text-xs mt-0.5">${isPending ? '—' : formatMoneyK(pentaData.loCrossX2.payoutK, false)}</div>
+                        </div>
+                        <div class="p-2 rounded-xl bg-slate-50 border border-slate-200">
+                            <div class="text-slate-500 text-[10px]">LÃI RÒNG X2</div>
+                            <div class="font-bold text-xs mt-0.5 ${isPending ? 'text-slate-500' : (pentaData.loCrossX2.profitK > 0 ? 'text-emerald-700 font-black' : 'text-rose-700')}">
+                                ${isPending ? 'Chờ kq' : formatMoneyK(pentaData.loCrossX2.profitK)}
+                            </div>
+                        </div>
+                        <div class="p-2 rounded-xl ${pentaX2DiffProfitK > 0 ? 'bg-emerald-50 border-emerald-300' : (pentaX2DiffProfitK < 0 ? 'bg-rose-50 border-rose-300' : 'bg-slate-50 border-slate-200')} border">
+                            <div class="text-slate-500 text-[10px]">CHÊNH LỆCH VS GỐC</div>
+                            <div class="font-bold text-xs mt-0.5 ${isPending ? 'text-slate-400' : (pentaX2DiffProfitK > 0 ? 'text-emerald-700 font-black' : (pentaX2DiffProfitK < 0 ? 'text-rose-700' : 'text-slate-600'))}">
+                                ${isPending ? '—' : (pentaX2DiffProfitK > 0 ? `+${formatMoneyK(pentaX2DiffProfitK)} ⭐` : (pentaX2DiffProfitK < 0 ? formatMoneyK(pentaX2DiffProfitK) : '0đ (ngang nhau)'))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
             // C. Xiên 5 Siêu Gộp (5 Dàn Xiên 4 từ Top 5)
             const top5Badges = pentaData.xien5.top5.map(n => {
                 const hits = isPending ? 0 : ((pentaData.prizeCount?.[n] ?? (pentaData.drawPrizes?.includes(n) ? 1 : 0)) > 0 ? (pentaData.prizeCount?.[n] || 1) : 0);
@@ -8964,6 +9114,7 @@
                         <div class="rounded-xl bg-white border border-amber-200 p-2 shadow-xs">
                             <div class="text-slate-600 text-[10px]">LÃI RÒNG NGÀY</div>
                             <div class="font-black text-sm mt-0.5 ${isPending ? 'text-amber-800' : (pentaData.combo.profitK >= 0 ? 'text-emerald-700' : 'text-rose-700')}">${isPending ? 'Chờ kq' : formatMoneyK(pentaData.combo.profitK)}</div>
+                            <div class="text-[9px] text-slate-500 mt-0.5">PA Đột Phá X2: <strong class="${(pentaData.combo.profitK + pentaX2DiffProfitK) >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${isPending ? '—' : formatMoneyK(pentaData.combo.profitK + pentaX2DiffProfitK)}</strong></div>
                         </div>
                         <div class="rounded-xl bg-white border border-amber-200 p-2 shadow-xs">
                             <div class="text-slate-600 text-[10px]">KẾT QUẢ</div>
@@ -8979,6 +9130,7 @@
         // 13B. Section Siêu Hợp Nhất Tứ Trụ (Hệ 5)
         let quadDeSectionHtml = '';
         let quadLoSectionHtml = '';
+        let quadLoCrossX2SectionHtml = '';
         let quadXienSectionHtml = '';
         let quadSummaryCardHtml = '';
 
@@ -9137,6 +9289,134 @@
                 </div>
             `;
 
+            // B2. Lô Đột Phá X2 Quad (Tương Hỗ Nâng Hạng Từ Daily Advisor)
+            const quadX2Promoted = quadData.loCrossX2?.x2Nums || [];
+            const hasQuadPromotedX2 = quadX2Promoted.length > 0;
+            const quadX2DiffStakeK = quadData.loCrossX2.stakeK - quadData.lo.stakeK;
+            const quadX2DiffProfitK = isPending ? 0 : (quadData.loCrossX2.profitK - quadData.lo.profitK);
+
+            const quadLoX2ChipsHtml = quadData.loCrossX2.pills.map(p => {
+                const isPromoted = quadX2Promoted.includes(p.num);
+                if (!isPending && p.hits > 0) {
+                    return `
+                        <div class="relative group flex flex-col items-center justify-center rounded-xl ${isPromoted ? 'bg-gradient-to-br from-amber-500 via-yellow-500 to-amber-600 ring-4 ring-amber-300' : 'bg-gradient-to-br from-emerald-500 via-teal-500 to-emerald-600 ring-2 ring-emerald-300'} text-white p-2.5 font-black shadow-md scale-105 min-w-[70px] animate-pulse">
+                            <span class="text-[9px] font-black uppercase ${isPromoted ? 'text-amber-100' : 'text-emerald-100'}">🎯 ${p.hits} NHÁY (X${p.mult})</span>
+                            <span class="font-mono text-2xl leading-none font-black my-1 text-white">${p.num}</span>
+                            <span class="text-[9px] font-black uppercase ${isPromoted ? 'bg-slate-950/70 text-amber-200' : 'bg-emerald-900/60 text-emerald-200'} px-2 py-0.5 rounded shadow-xs">+${formatMoneyK(p.payoutK, false)}</span>
+                        </div>
+                    `;
+                }
+                let multBadgeColor = 'bg-slate-100 text-slate-700 border-slate-200';
+                let multLabel = `X${p.mult} · ${p.freq ? p.freq + '/4 hệ' : ''}`;
+                if (p.mult === 5) {
+                    multBadgeColor = 'bg-rose-100 text-rose-800 border-rose-300';
+                } else if (p.mult === 4) {
+                    multBadgeColor = 'bg-amber-100 text-amber-800 border-amber-300';
+                } else if (p.mult === 3) {
+                    multBadgeColor = 'bg-indigo-100 text-indigo-800 border-indigo-300';
+                } else if (p.mult === 2 && isPromoted) {
+                    multBadgeColor = 'bg-amber-300 text-slate-950 border-amber-400 font-black shadow-xs ring-1 ring-amber-300';
+                    multLabel = '⚡ X2 (Nâng)';
+                }
+                return `
+                    <div class="flex flex-col items-center justify-center rounded-xl bg-white border ${isPromoted ? 'border-amber-400 ring-2 ring-amber-300/60 bg-amber-50/50' : 'border-slate-300'} text-slate-800 p-2 font-mono text-base font-bold min-w-[60px] shadow-2xs hover:border-amber-400 transition-all">
+                        <span>${p.num}</span>
+                        <span class="text-[9px] font-bold px-1 py-0.2 rounded border ${multBadgeColor} mt-0.5">${multLabel}</span>
+                    </div>
+                `;
+            }).join('');
+
+            const quadPromotedBadgesHtml = hasQuadPromotedX2 
+                ? quadX2Promoted.map(n => {
+                    const hits = isPending ? 0 : (quadData.prizeCount?.[n] || 0);
+                    if (hits > 0) {
+                        return `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl font-mono font-black text-xs bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">🎯 ${n} <span class="text-[10px] bg-slate-950 text-amber-300 px-1 py-0.2 rounded font-bold">${hits} nháy (+${formatMoneyK(hits * 16000, false)})</span></span>`;
+                    }
+                    return `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl font-mono font-bold text-xs bg-amber-100 text-amber-950 border border-amber-300 shadow-2xs">${n} <span class="text-[9px] text-amber-800 font-bold">4.4M</span></span>`;
+                }).join(' ')
+                : `<span class="text-xs text-slate-500 italic">Không có số nào thuộc tầng X1 trùng với Lô chủ lực (≥X3) bên Daily Advisor. Dàn số và mức cược giữ nguyên như gốc.</span>`;
+
+            const quadLoX2StatusTag = isPending
+                ? `<span class="text-xs font-bold text-amber-900 bg-amber-100 border border-amber-300 px-2.5 py-0.5 rounded">⏳ ĐÃ KHÓA ${quadData.loCrossX2.numbers.length} SỐ (${hasQuadPromotedX2 ? `${quadX2Promoted.length} số nâng X2` : 'như gốc'} · Vốn ${formatMoneyK(quadData.loCrossX2.stakeK, false)})</span>`
+                : (quadData.loCrossX2.isWin
+                    ? `<span class="text-xs font-black text-slate-950 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 px-2.5 py-0.5 rounded shadow-sm ring-2 ring-amber-300 animate-pulse">🔥 THẮNG LÔ X2 (${quadData.loCrossX2.hits} NHÁY · +${formatMoneyK(quadData.loCrossX2.profitK, false)})</span>`
+                    : `<span class="text-xs font-bold text-rose-800 bg-rose-50 border border-rose-300 px-2.5 py-0.5 rounded">❌ THUA LÔ (${quadData.loCrossX2.hits} NHÁY · ${formatMoneyK(quadData.loCrossX2.profitK)})</span>`);
+
+            quadLoCrossX2SectionHtml = `
+                <div class="rounded-2xl border-2 border-amber-400 bg-white p-4 space-y-3 shadow-sm text-slate-800">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-200 pb-2.5">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h4 class="text-xs font-black uppercase text-amber-950 flex items-center gap-1.5">
+                                <i class="bi bi-rocket-takeoff-fill text-amber-600"></i> 🚀 2B. LÔ ĐỘT PHÁ X2 (NÂNG HẠNG TƯƠNG HỖ VỚI DAILY ADVISOR):
+                            </h4>
+                            <span class="text-[11px] text-slate-600 font-mono">(${quadData.loCrossX2.numbers.length} số · ${hasQuadPromotedX2 ? `<strong class="text-amber-900 font-bold">${quadX2Promoted.length} số nâng X2 (4.4M)</strong>` : 'giữ nguyên như gốc'})</span>
+                        </div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            ${quadLoX2StatusTag}
+                            <button type="button" class="btn-copy-slip-quad-lo-x2 text-[11px] font-bold text-amber-900 hover:text-white bg-amber-100 hover:bg-amber-600 px-2.5 py-1 rounded-lg border border-amber-300 transition-all flex items-center gap-1 cursor-pointer" data-numbers="${quadData.loCrossX2.numbers.join(' ')}" data-x2="${quadX2Promoted.join(' ')}" data-date="${targetDate}">
+                                <i class="bi bi-rocket-takeoff"></i> Copy Dàn Lô X2 (${formatMoneyK(quadData.loCrossX2.stakeK, false)})
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Banner giải trình nâng hạng X2 -->
+                    <div class="p-3 rounded-xl bg-gradient-to-r from-amber-50 via-yellow-50 to-amber-50 border border-amber-300 space-y-2">
+                        <div class="flex items-center justify-between text-[11px] flex-wrap gap-1">
+                            <span class="font-black text-amber-950 uppercase flex items-center gap-1">
+                                <i class="bi bi-lightning-charge-fill text-amber-600"></i> CÁC SỐ X1 ĐƯỢC THĂNG HẠNG LÊN X2 (4.4M/SỐ · ĂN 16M/NHÁY):
+                            </span>
+                            <span class="text-[11px] text-amber-900 font-mono font-bold">${hasQuadPromotedX2 ? `${quadX2Promoted.length} số thăng hạng` : '0 số'}</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5 pt-0.5 items-center">
+                            ${quadPromotedBadgesHtml}
+                        </div>
+                        <div class="text-[10px] text-slate-500 pt-1 border-t border-amber-200/60 leading-relaxed">
+                            💡 <em>Cơ chế: Các số thuộc tầng X1 của Shadow nếu trùng với các số chủ lực (≥X3) bên Daily Advisor sẽ được thăng hạng lên cược X2 (4.4M/số thay vì 2.2M). Các số X5, X4, X3 và X1 còn lại giữ nguyên mức cược.</em>
+                        </div>
+                    </div>
+
+                    <!-- Toàn bộ dàn số theo tỷ trọng X2 -->
+                    <div class="p-3 rounded-xl bg-slate-50 border border-amber-200 space-y-2">
+                        <div class="flex items-center justify-between text-[11px]">
+                            <span class="font-bold text-slate-800">Chi Tiết Tỷ Trọng Sau Nâng Hạng (Vốn ${formatMoneyK(quadData.loCrossX2.stakeK, false)}):</span>
+                            <span class="font-mono text-xs">
+                                ${isPending 
+                                    ? '<span class="text-slate-500">⏳ Chờ kết quả 18:30</span>' 
+                                    : (quadData.loCrossX2.hits > 0 
+                                        ? `<span class="text-emerald-700 font-black">🔥 Nổ ${quadData.loCrossX2.hits} nháy (${quadData.loCrossX2.hitNums.join(', ')}) ⭐</span>` 
+                                        : '<span class="text-rose-700 font-bold">❌ 0 nháy</span>')
+                                }
+                            </span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 pt-1">${quadLoX2ChipsHtml}</div>
+                    </div>
+
+                    <!-- Bảng so sánh tài chính: Gốc vs Đột Phá X2 -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-[11px] font-mono">
+                        <div class="p-2 rounded-xl bg-slate-50 border border-slate-200">
+                            <div class="text-slate-500 text-[10px]">VỐN CƯỢC X2</div>
+                            <div class="font-bold text-slate-900 text-xs mt-0.5">${formatMoneyK(quadData.loCrossX2.stakeK, false)} <span class="text-[10px] text-amber-700 font-normal">(${quadX2DiffStakeK > 0 ? `+${formatMoneyK(quadX2DiffStakeK, false)}` : 'như gốc'})</span></div>
+                        </div>
+                        <div class="p-2 rounded-xl bg-slate-50 border border-slate-200">
+                            <div class="text-slate-500 text-[10px]">TIỀN THƯỞNG X2</div>
+                            <div class="font-bold text-amber-800 text-xs mt-0.5">${isPending ? '—' : formatMoneyK(quadData.loCrossX2.payoutK, false)}</div>
+                        </div>
+                        <div class="p-2 rounded-xl bg-slate-50 border border-slate-200">
+                            <div class="text-slate-500 text-[10px]">LÃI RÒNG X2</div>
+                            <div class="font-bold text-xs mt-0.5 ${isPending ? 'text-slate-500' : (quadData.loCrossX2.profitK > 0 ? 'text-emerald-700 font-black' : 'text-rose-700')}">
+                                ${isPending ? 'Chờ kq' : formatMoneyK(quadData.loCrossX2.profitK)}
+                            </div>
+                        </div>
+                        <div class="p-2 rounded-xl ${quadX2DiffProfitK > 0 ? 'bg-emerald-50 border-emerald-300' : (quadX2DiffProfitK < 0 ? 'bg-rose-50 border-rose-300' : 'bg-slate-50 border-slate-200')} border">
+                            <div class="text-slate-500 text-[10px]">CHÊNH LỆCH VS GỐC</div>
+                            <div class="font-bold text-xs mt-0.5 ${isPending ? 'text-slate-400' : (quadX2DiffProfitK > 0 ? 'text-emerald-700 font-black' : (quadX2DiffProfitK < 0 ? 'text-rose-700' : 'text-slate-600'))}">
+                                ${isPending ? '—' : (quadX2DiffProfitK > 0 ? `+${formatMoneyK(quadX2DiffProfitK)} ⭐` : (quadX2DiffProfitK < 0 ? formatMoneyK(quadX2DiffProfitK) : '0đ (ngang nhau)'))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
             // C. Xiên 5 Tuyển Chọn (5 Dàn Xiên 4 từ Top 5)
             const top5Badges = quadData.xien5.top5.map(n => {
                 const hits = isPending ? 0 : ((quadData.prizeCount?.[n] ?? (quadData.drawPrizes?.includes(n) ? 1 : 0)) > 0 ? (quadData.prizeCount?.[n] || 1) : 0);
@@ -9256,9 +9536,9 @@
 
         // 14. Render Final Layout
         if (isPentaSuiteActive && pentaData) {
-            container.innerHTML = resultsStripHtml + fullEnsembleBannerHtml + pentaDeSectionHtml + pentaLoSectionHtml + pentaXienSectionHtml + pentaSummaryCardHtml;
+            container.innerHTML = resultsStripHtml + fullEnsembleBannerHtml + pentaDeSectionHtml + pentaLoSectionHtml + pentaLoCrossX2SectionHtml + pentaXienSectionHtml + pentaSummaryCardHtml;
         } else if (isQuadSuiteActive && quadData) {
-            container.innerHTML = resultsStripHtml + fullEnsembleBannerHtml + quadDeSectionHtml + quadLoSectionHtml + quadXienSectionHtml + quadSummaryCardHtml;
+            container.innerHTML = resultsStripHtml + fullEnsembleBannerHtml + quadDeSectionHtml + quadLoSectionHtml + quadLoCrossX2SectionHtml + quadXienSectionHtml + quadSummaryCardHtml;
         } else if (isTriCoreActive) {
             container.innerHTML = resultsStripHtml + fullEnsembleBannerHtml + deSectionHtml + loTriCoreSectionHtml + xien5TriCoreSectionHtml + triCoreSummaryCardHtml;
         } else if (isVipSuiteActive) {
