@@ -1187,8 +1187,8 @@
     async function initShadowMonitor() {
         try {
             const [advisorRes, analysisRes] = await Promise.all([
-                fetch('/api/daily-advisor'),
-                fetch('/api/daily-advisor/analysis').catch(() => null)
+                fetch(`/api/daily-advisor?_t=${Date.now()}`, { cache: 'no-store' }),
+                fetch(`/api/daily-advisor/analysis?_t=${Date.now()}`, { cache: 'no-store' }).catch(() => null)
             ]);
 
             const advisorData = await advisorRes.json();
@@ -1225,7 +1225,11 @@
         const latestRecord = records.at(-1) || {};
 
         const targetDate = deDropoff?.latestRecommendation?.targetDate || triCore?.latestRecommendation?.targetDate || data.pendingPredictionDate || autoBest?.targetDate || latestRecord.predictionDate || '2026-10-07';
-        byId('shadowTargetDate').textContent = formatDateVi(targetDate);
+        const isPendingFuture = Boolean(data.latestDataDate && targetDate > data.latestDataDate);
+        const targetText = isPendingFuture
+            ? `${formatDateVi(targetDate)} (Kỳ Mới Nhất · Chờ Mở 18:30) · Đã Kết Toán ${formatDateVi(data.latestDataDate)}`
+            : formatDateVi(targetDate);
+        byId('shadowTargetDate').textContent = targetText;
 
         // 1. Column 1: Đề Khử Trùng Dropoff 40s (X3/X2/X1) vs. Đề 36s VIP Sweet-Spot vs. Đề Tri-Core 24s vs. Đề 36s Tri-Tier Resonance
         function renderShadowDeCard(strategy) {

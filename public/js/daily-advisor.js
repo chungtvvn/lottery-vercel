@@ -9611,10 +9611,15 @@
 
             // Sort past dates descending
             const pastDates = Array.from(dateSet).filter(d => d < pendingDate).sort((a, b) => b.localeCompare(a));
+            const latestSettledDate = fullData?.latestDataDate || pastDates[0];
+            const isTomorrow = Boolean(latestSettledDate && pendingDate > latestSettledDate);
 
             // Build options
             const options = [];
-            options.push(`<option value="${pendingDate}" ${currentAdvisorDate === pendingDate ? 'selected' : ''}>🌟 ${formatDate(pendingDate)} (Hôm Nay · Chờ Mở Thưởng)</option>`);
+            const pendingLabel = isTomorrow
+                ? `🌟 ${formatDate(pendingDate)} (Kỳ Mới Nhất · Chờ Mở Thưởng 18:15)`
+                : `🌟 ${formatDate(pendingDate)} (Hôm Nay · Chờ Mở Thưởng 18:15)`;
+            options.push(`<option value="${pendingDate}" ${currentAdvisorDate === pendingDate ? 'selected' : ''}>${pendingLabel}</option>`);
 
             pastDates.forEach(d => {
                 const curDraw = fullData?.drawPrizesByDate?.[d];
@@ -9624,7 +9629,10 @@
                 const deRow = resolveUnifiedDeRowForDate(d, fullData);
                 const loRow = fullData?.lo4EngineFusion?.modes?.top7?.settledLedger?.find(r => r.date === d);
                 const hitSummary = deRow.isHit ? 'Ăn Đề' : (loRow?.dayLotoHits ? `Lô ${loRow.dayLotoHits}n` : 'Xịt');
-                options.push(`<option value="${d}" ${currentAdvisorDate === d ? 'selected' : ''}>📅 ${formatDate(d)} · ${specStr} [${hitSummary}]</option>`);
+                const isLatestSettled = (d === latestSettledDate);
+                const prefix = isLatestSettled ? '✅' : '📅';
+                const suffix = isLatestSettled ? ' · Vừa Kết Toán' : '';
+                options.push(`<option value="${d}" ${currentAdvisorDate === d ? 'selected' : ''}>${prefix} ${formatDate(d)} · ${specStr} [${hitSummary}${suffix}]</option>`);
             });
 
             selectEl.innerHTML = options.join('');
@@ -9637,6 +9645,14 @@
                 resetBtn.onclick = () => {
                     selectEl.value = pendingDate;
                     setActiveAdvisorDate(pendingDate);
+                };
+            }
+
+            const viewSettledBtn = byId('btnViewLatestSettledDate');
+            if (viewSettledBtn && latestSettledDate) {
+                viewSettledBtn.onclick = () => {
+                    selectEl.value = latestSettledDate;
+                    setActiveAdvisorDate(latestSettledDate);
                 };
             }
         }
@@ -9660,12 +9676,13 @@
             const statusBadge = byId('selectedDateStatusBadge');
             if (statusBadge) {
                 if (isLatest) {
+                    const latestSettledStr = fullData?.latestDataDate ? ` · ✅ Đã kết toán kỳ ${formatDate(fullData.latestDataDate)}` : '';
                     statusBadge.className = 'text-xs text-emerald-300 font-bold';
-                    statusBadge.innerHTML = '🔒 Ngày mới nhất (Chờ mở thưởng 18:15)';
+                    statusBadge.innerHTML = `🔒 Kỳ dự đoán mới nhất: ${formatDate(pendingDate)} (Chờ mở 18:15)${latestSettledStr}`;
                 } else {
                     const draw = fullData?.drawPrizesByDate?.[targetDate];
                     statusBadge.className = 'text-xs text-amber-300 font-bold';
-                    statusBadge.innerHTML = `✅ Đã mở thưởng ngày ${formatDate(targetDate)} · Đề về [${draw?.special || '--'}]`;
+                    statusBadge.innerHTML = `✅ Đã kết toán ngày ${formatDate(targetDate)} · Giải ĐB [${draw?.special || '--'}]`;
                 }
             }
 
@@ -16442,7 +16459,7 @@
         initMirofishModalEvents();
 
         try {
-            const res = await fetch('/api/daily-advisor');
+            const res = await fetch(`/api/daily-advisor?_t=${Date.now()}`, { cache: 'no-store' });
             const data = await res.json();
             if (!data.success) throw new Error(data.error || 'Lỗi tải dữ liệu');
             payload = data;
