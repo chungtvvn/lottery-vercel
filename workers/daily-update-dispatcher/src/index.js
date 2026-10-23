@@ -2368,14 +2368,32 @@ async function getLockedAdvisorPayload(env, options = {}) {
     if (regRes.ok) {
       const regJson = await regRes.json();
       if (regJson?.dates) {
-        advisorPayload.dailyLockedBetsRegistry = {
-          ...(advisorPayload.dailyLockedBetsRegistry || {}),
-          ...regJson,
-          dates: {
-            ...(advisorPayload.dailyLockedBetsRegistry?.dates || {}),
-            ...regJson.dates
+        if (!advisorPayload.dailyLockedBetsRegistry) {
+          advisorPayload.dailyLockedBetsRegistry = { ...regJson };
+        } else {
+          const mergedDates = { ...(advisorPayload.dailyLockedBetsRegistry.dates || {}) };
+          for (const d of Object.keys(regJson.dates)) {
+            const incoming = regJson.dates[d];
+            const existing = mergedDates[d];
+            if (!existing) {
+              mergedDates[d] = incoming;
+            } else if (existing.isSettled && !incoming?.isSettled) {
+              // Preserve settled state
+              mergedDates[d] = {
+                ...incoming,
+                ...existing,
+                isSettled: true,
+                settlement: existing.settlement || incoming.settlement
+              };
+            } else {
+              mergedDates[d] = {
+                ...existing,
+                ...incoming
+              };
+            }
           }
-        };
+          advisorPayload.dailyLockedBetsRegistry.dates = mergedDates;
+        }
       }
     }
   } catch (regErr) {
