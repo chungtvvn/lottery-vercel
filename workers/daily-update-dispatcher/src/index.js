@@ -715,9 +715,9 @@ function buildOptimalBetSlipMessage(date, advisorPayload = {}) {
   const loX4 = (regLo?.tierX4 || (loX5.length === 0 ? recPort?.loStructure?.tierX4 : []) || []).map(normalizeLotteryNumber);
   const loX3 = (regLo?.tierX3 || recPort?.loStructure?.tierX3 || crossOpt?.overlapX3 || []).map(normalizeLotteryNumber);
   const higherTiers = new Set([...loX5, ...loX4, ...loX3]);
-  const loX2 = (recPort?.loStructure?.tierX2 || crossOpt?.overlapX2 || []).map(normalizeLotteryNumber).filter(n => !higherTiers.has(n));
+  const loX2 = (regLo?.crossX2?.tierX2 || recPort?.loStructure?.tierX2 || crossOpt?.overlapX2 || []).map(normalizeLotteryNumber).filter(n => !higherTiers.has(n));
   loX2.forEach(n => higherTiers.add(n));
-  const loX1 = (regLo?.tierX1 || recPort?.loStructure?.singlesX1 || crossOpt?.singlesX1 || []).map(normalizeLotteryNumber).filter(n => !higherTiers.has(n));
+  const loX1 = (regLo?.crossX2?.tierX1 || regLo?.tierX1 || recPort?.loStructure?.singlesX1 || crossOpt?.singlesX1 || []).map(normalizeLotteryNumber).filter(n => !higherTiers.has(n));
   const distinctLo = (regLo?.distinctNumbers || regLo?.numbersOver2 || recPort?.loStructure?.distinctLo || crossOpt?.distinctNumbers || [...loX5, ...loX4, ...loX3, ...loX2, ...loX1]).map(normalizeLotteryNumber);
 
   if (loX5.length || loX4.length || loX3.length || loX2.length) {
@@ -735,7 +735,7 @@ function buildOptimalBetSlipMessage(date, advisorPayload = {}) {
       lines.push(`⚡ <b>Triển Vọng X3 (${loX3.length} số):</b> <code>${escapeHtml(formatNumberList(loX3))}</code>`);
     }
     if (loX2.length) {
-      lines.push(`🔥 <b>Mũi Nhọn X2 (${loX2.length} số):</b> <code>${escapeHtml(formatNumberList(loX2))}</code>`);
+      lines.push(`🚀 <b>Đột Phá Nâng X2 (${loX2.length} số):</b> <code>${escapeHtml(formatNumberList(loX2))}</code>`);
     }
     if (loX1.length) {
       lines.push(`🛡️ <b>Bảo Hiểm X1 (${loX1.length} số):</b> <code>${escapeHtml(formatNumberList(loX1))}</code>`);
@@ -1444,6 +1444,20 @@ function computePentaConsensusForDate(targetDate, advisorCache) {
                 profitK: s?.lo?.profitK ?? 0,
                 isWin: s?.lo?.isWin || false
             },
+            loCrossX2: {
+                numbers: b.loCrossX2?.numbers || b.lo?.numbers || [],
+                x5Nums: b.loCrossX2?.x5Nums || b.lo?.x5Nums || [],
+                x4Nums: b.loCrossX2?.x4Nums || b.lo?.x4Nums || [],
+                x3Nums: b.loCrossX2?.x3Nums || b.lo?.x3Nums || [],
+                x2Nums: b.loCrossX2?.x2Nums || s?.loCrossX2?.x2Nums || [],
+                x1Nums: b.loCrossX2?.x1Nums || s?.loCrossX2?.x1Nums || b.lo?.x1Nums || [],
+                hits: s?.loCrossX2?.hits ?? s?.lo?.hits ?? 0,
+                hitNums: s?.loCrossX2?.hitNums || s?.lo?.hitNums || [],
+                stakeK: s?.loCrossX2?.stakeK ?? b.loCrossX2?.stakeK ?? (s?.lo?.stakeK ?? b.lo?.stakeK ?? 0),
+                payoutK: s?.loCrossX2?.payoutK ?? (s?.lo?.payoutK ?? 0),
+                profitK: s?.loCrossX2?.profitK ?? (s?.lo?.profitK ?? 0),
+                isWin: s?.loCrossX2?.isWin ?? s?.lo?.isWin ?? false
+            },
             xien5: {
                 top5: b.xien5?.top5 || [],
                 tickets: b.xien5?.tickets || getXien5Combinations(b.xien5?.top5),
@@ -1594,6 +1608,47 @@ function computePentaConsensusForDate(targetDate, advisorCache) {
     });
     const loProfitK = isPending ? 0 : (loPayoutK - loStakeK);
 
+    // Dàn Lô Đột Phá X2
+    const lo4HighSet = new Set();
+    const lo4Ledger = advisorCache?.lo4EngineFusion?.settledLedger || [];
+    const lo4Row = isPending
+        ? (advisorCache?.lo4EngineFusion?.latestRecommendation || null)
+        : lo4Ledger.find(r => r.date === targetDate);
+    if (lo4Row) {
+        const h = [
+            ...(lo4Row.tierX5 || []),
+            ...(lo4Row.tierX4 || []),
+            ...(lo4Row.tierX3 || [])
+        ];
+        h.forEach(n => lo4HighSet.add(numStr(n)));
+    }
+    const regEntryForLo4 = advisorCache?.dailyLockedBetsRegistry?.dates?.[targetDate];
+    const lockedLo4 = regEntryForLo4?.settlement?.lo4EngineFusion || regEntryForLo4?.bets?.lo4EngineFusion;
+    if (lockedLo4 && lo4HighSet.size === 0) {
+        const h = [
+            ...(lockedLo4.tierX5 || []),
+            ...(lockedLo4.tierX4 || []),
+            ...(lockedLo4.tierX3 || [])
+        ];
+        h.forEach(n => lo4HighSet.add(numStr(n)));
+    }
+
+    const promotedToX2 = x1Nums.filter(n => lo4HighSet.has(n));
+    const remainingX1 = x1Nums.filter(n => !lo4HighSet.has(n));
+    const numMultiplierMapX2 = { ...numMultiplierMap };
+    promotedToX2.forEach(n => { numMultiplierMapX2[n] = 2; });
+
+    let loStakeKX2 = 0, loPayoutKX2 = 0;
+    allLoNums.forEach(n => {
+        const mult = numMultiplierMapX2[n] || 1;
+        const stake = mult * 2200;
+        const hits = isPending ? 0 : (prizeCount[n] || 0);
+        const payout = isPending ? 0 : hits * (mult * 8000);
+        loStakeKX2 += stake;
+        loPayoutKX2 += payout;
+    });
+    const loProfitKX2 = isPending ? 0 : (loPayoutKX2 - loStakeKX2);
+
     const top5Nums = allLoNums.slice(0, 5);
     const tickets = getXien5Combinations(top5Nums);
     const xienStakeK = 5500;
@@ -1635,6 +1690,21 @@ function computePentaConsensusForDate(targetDate, advisorCache) {
             payoutK: loPayoutK,
             profitK: loProfitK,
             isWin: loProfitK > 0
+        },
+        loCrossX2: {
+            numbers: allLoNums,
+            x5Nums,
+            x4Nums,
+            x3Nums,
+            x2Nums: promotedToX2,
+            x1Nums: remainingX1,
+            multiplierMap: numMultiplierMapX2,
+            hits: loHits,
+            hitNums: loHitNums,
+            stakeK: loStakeKX2,
+            payoutK: loPayoutKX2,
+            profitK: loProfitKX2,
+            isWin: loProfitKX2 > 0
         },
         xien5: {
             top5: top5Nums,
@@ -1698,7 +1768,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     if (isLocked) {
         lines.push(
             `🔒 <b>TRẠNG THÁI: ĐÃ NIÊM PHONG BẤT BIẾN (TỪ 12H TRƯA)</b>`,
-            `<i>Dàn số được bảo toàn 100% không đổi cho đến khi kết toán sau 18h40.</i>`,
+            `<i>Dàn số được bảo toàn 100% không đổi cho đến khi kết toán sau 18h40 (Chống nảy số tuyệt đối).</i>`,
             ''
         );
     }
@@ -1753,18 +1823,54 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
             ? `🔥 <b>Nổ ${advLoHits} nháy</b>${advLoHitNums.length ? ` [${advLoHitNums.join(', ')}]` : ''}`
             : `❌ <b>Trượt Lô (0 nháy)</b>`;
 
+        // Lô Đột Phá X2
+        const sLoCrossX2 = sLo.crossX2 || sBets.lo4EngineFusion?.crossX2 || {};
+        const loX2StakeK = sLoCrossX2.dayLotoStakeKX2 || advLoStakeK;
+        const loX2PayoutK = sLoCrossX2.dayLotoPayoutKX2 !== undefined ? sLoCrossX2.dayLotoPayoutKX2 : advLoPayoutK;
+        const loX2ProfitK = sLoCrossX2.dayLotoProfitKX2 !== undefined ? sLoCrossX2.dayLotoProfitKX2 : advLoProfitK;
+        const loPromotedX2 = (sLoCrossX2.tierX2 || []).map(numStr);
+        const loX2Hits = sLoCrossX2.x2Hits || 0;
+
+        // Xiên 5
         const sXien = sSettlement.loXien5 || {};
-        const advXienTop5 = (sXien.top5 || sBets.loXien5?.top5 || ['54', '62', '95', '57', '63']).map(numStr);
-        const advH5 = sXien.h5 ?? 0;
+        let advXienTop5 = (sXien.top5 || sBets.loXien5?.top5 || []).map(numStr);
+        if (advXienTop5.length < 5) {
+            advXienTop5 = (sBets.lo4EngineFusion?.xien4?.top5 || sBets.lo4EngineFusion?.numbersOver2 || []).slice(0, 5).map(numStr);
+        }
+        if (advXienTop5.length < 5) advXienTop5 = ['54', '62', '95', '57', '63'];
+        const prizesList = advisorPayload?.drawPrizesByDate?.[settledDate]?.prizes || [];
+        const advH5 = sXien.h5 !== undefined ? sXien.h5 : (prizesList.length ? advXienTop5.filter(n => prizesList.includes(n)).length : 0);
         const advXienStakeK = sXien.stakeK || 55000;
-        const advXienPayoutK = sXien.payoutK || 0;
-        const advXienProfitK = sXien.profitK ?? (advXienPayoutK - advXienStakeK);
+        let advXienPayoutK = sXien.payoutK || 0;
+        if (sXien.payoutK === undefined && advH5 >= 2) {
+            if (advH5 >= 5) advXienPayoutK = 1920000;
+            else if (advH5 === 4) advXienPayoutK = 720000;
+            else if (advH5 === 3) advXienPayoutK = 204000;
+            else if (advH5 === 2) advXienPayoutK = 36000;
+        }
+        const advXienProfitK = sXien.profitK !== undefined ? sXien.profitK : (advXienPayoutK - advXienStakeK);
         let advXienWinDesc = '';
         if (advH5 >= 5) advXienWinDesc = '👑 Ăn 5 dàn X4 (1.920M)';
         else if (advH5 === 4) advXienWinDesc = '👑 Ăn 1 dàn X4 + 4 dàn X3 (720M)';
         else if (advH5 === 3) advXienWinDesc = '🔥 Ăn 2 dàn X3 + 3 dàn X2 (204M)';
         else if (advH5 === 2) advXienWinDesc = '🛡️ Ăn 3 dàn X2 (36M)';
         else advXienWinDesc = 'Trượt';
+
+        // 2 Dàn Xiên 4 Tinh Hoa (Top 8 Chẵn/Lẻ · Vốn 22M)
+        const sTop8 = sSettlement.top8ParityXien4 || regSettled.settlement?.top8ParityXien4 || {};
+        const top8StakeK = sTop8.stakeK || 22000;
+        const top8PayoutK = sTop8.payoutK || 0;
+        const top8ProfitK = sTop8.profitK !== undefined ? sTop8.profitK : (top8PayoutK - top8StakeK);
+        const h1 = sTop8.hits1 || 0;
+        const h2 = sTop8.hits2 || 0;
+
+        // Xiên 4 Bộ 4 Quây 11 vé
+        const sXien4 = sLo.xien4 || sBets.lo4EngineFusion?.xien4 || {};
+        const xien4Hits = sLo.xienHitsCount ?? 0;
+        const xien4Top4 = (sLo.xienTop4 || sXien4.top4 || sXien4.numbers || []).map(numStr);
+        const xien4StakeK = sLo.xienStakeK || 11000;
+        const xien4PayoutK = sLo.xienPayoutK || 0;
+        const xien4ProfitK = sLo.xienProfitK !== undefined ? sLo.xienProfitK : (xien4PayoutK - xien4StakeK);
 
         const advTotalStakeK = advDeStakeK + advLoStakeK + advXienStakeK;
         const advTotalPayoutK = advDePayoutK + advLoPayoutK + advXienPayoutK;
@@ -1808,6 +1914,13 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
             ? `🔥 <b>Nổ ${pentaLoHits} nháy</b>${pentaLoHitNums.length ? ` [${pentaLoHitNums.join(', ')}]` : ''}`
             : `❌ <b>Trượt Lô (0 nháy)</b>`;
 
+        // Lô Gộp 5 Đột Phá X2
+        const sPentaCross = sPenta.loCrossX2 || regSettled.settlement?.pentaConsensus?.loCrossX2 || {};
+        const pCrossStakeK = sPentaCross.stakeK || pentaLoStakeK;
+        const pCrossPayoutK = sPentaCross.payoutK || pentaLoPayoutK;
+        const pCrossProfitK = sPentaCross.profitK !== undefined ? sPentaCross.profitK : (pCrossPayoutK - pCrossStakeK);
+        const pCrossPromoted = (sPentaCross.x2Nums || []).map(numStr);
+
         const pentaXienTop5 = (sPenta.xien5?.top5 || []).map(numStr);
         const pentaH5 = sPenta.xien5?.h5 || 0;
         const pentaXienStakeK = sPenta.xien5?.stakeK || 5500;
@@ -1847,10 +1960,15 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
             `  • <b>Đề Thực Chiến:</b> ${deResultText}`,
             `    └ Vốn: ${formatCostK(advDeStakeK)} · Thưởng: ${formatCostK(advDePayoutK)} · Lãi ròng: <b>${formatMoneyK(advDeProfitK)}</b>`,
             `  • <b>Lô Ghép 4 Động Cơ:</b> ${loHitsText}`,
-            `    └ Vốn: ${formatCostK(advLoStakeK)} · Thưởng: ${formatCostK(advLoPayoutK)} · Lãi ròng: <b>${formatMoneyK(advLoProfitK)}</b>`,
-            `  • <b>Dàn Xiên 5 (5 Dàn Xiên 4 · Vốn 55M):</b> ${advXienWinDesc}`,
-            `    └ Top 5 [${advXienTop5.join(', ')}] về ${advH5}/5 con`,
-            `    └ Vốn: ${formatCostK(advXienStakeK)} · Thưởng: ${formatCostK(advXienPayoutK)} · Lãi ròng: <b>${formatMoneyK(advXienProfitK)}</b>`,
+            `    └ <b>Dàn Chuẩn (gốc):</b> Vốn: ${formatCostK(advLoStakeK)} · Thưởng: ${formatCostK(advLoPayoutK)} · Lãi: <b>${formatMoneyK(advLoProfitK)}</b>`,
+            `    └ 🚀 <b>Dàn Đột Phá X2:</b> Vốn: ${formatCostK(loX2StakeK)} · Thưởng: ${formatCostK(loX2PayoutK)} · Lãi: <b>${formatMoneyK(loX2ProfitK)}</b>`,
+            `       └ <i>Nâng X2: ${loPromotedX2.length ? `[${loPromotedX2.join(', ')}] (${loX2Hits} nháy)` : 'Không nâng'} · Lũy kế Lô X2: ${formatM(sLoCrossX2.cumLotoProfitKX2 || 5854600)}</i>`,
+            `  • <b>Các Dàn Lô Xiên Đối Chiếu:</b>`,
+            `    └ 👑 <b>Dàn Xiên 5 (55M):</b> ${advXienWinDesc} (Top 5 [${advXienTop5.join(', ')}] về ${advH5}/5 con) · Lãi: <b>${formatMoneyK(advXienProfitK)}</b>`,
+            `    └ 🎲 <b>2 Dàn Xiên 4 Tinh Hoa (22M):</b> Thưởng: ${formatCostK(top8PayoutK)} · Lãi: <b>${formatMoneyK(top8ProfitK)}</b>`,
+            `       • Dàn 1 [${(sTop8.dan1 || []).join(', ')}]: Nổ ${h1}/4 con${h1 >= 2 ? ' (Ăn vé X2)' : ''} 👉 ${formatMoneyK(sTop8.profit1 || -11000)}`,
+            `       • Dàn 2 [${(sTop8.dan2 || []).join(', ')}]: Nổ ${h2}/4 con${h2 >= 2 ? ' (Ăn vé X2)' : ''} 👉 ${formatMoneyK(sTop8.profit2 || -11000)}`,
+            `    └ 🎯 <b>Bộ 4 Quây 11 vé (11M):</b> [${xien4Top4.join(', ')}] về ${xien4Hits}/4 con · Lãi: <b>${formatMoneyK(xien4ProfitK)}</b>`,
             `  👉 <b>TỔNG KẾT NGÀY (/daily-advisor):</b>`,
             `    └ Vốn: ${formatCostK(advTotalStakeK)} · Thưởng: ${formatCostK(advTotalPayoutK)} · Lãi ròng: <b>${formatMoneyK(advTotalProfitK)}</b>`,
             `    └ <b>Lũy kế (/daily-advisor từ 16/09):</b> <b>${formatM(advCumProfitK)}</b> (${advTotalDays} kỳ · Đề: ${formatM(advCumDeK)} | Lô: ${formatM(advCumLoK)} | Xiên: ${formatM(advCumXienK)})`,
@@ -1859,10 +1977,11 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
             `  • <b>Đề Siêu Gộp 5 PP (X2 400K + X1 200K):</b> ${pentaDeResultText}`,
             `    └ Vốn: ${formatCostK(pentaDeStakeK)} · Thưởng: ${formatCostK(pentaDePayoutK)} · Lãi ròng: <b>${formatMoneyK(pentaDeProfitK)}</b>`,
             `  • <b>Lô Siêu Gộp 5 PP (X5 / X4 / X3 / X1):</b> ${pentaLoHitsText}`,
-            `    └ Vốn: ${formatCostK(pentaLoStakeK)} · Thưởng: ${formatCostK(pentaLoPayoutK)} · Lãi ròng: <b>${formatMoneyK(pentaLoProfitK)}</b>`,
+            `    └ <b>Dàn Chuẩn Gộp 5:</b> Vốn: ${formatCostK(pentaLoStakeK)} · Thưởng: ${formatCostK(pentaLoPayoutK)} · Lãi: <b>${formatMoneyK(pentaLoProfitK)}</b>`,
+            `    └ 🚀 <b>Dàn Đột Phá X2:</b> Vốn: ${formatCostK(pCrossStakeK)} · Thưởng: ${formatCostK(pCrossPayoutK)} · Lãi: <b>${formatMoneyK(pCrossProfitK)}</b>`,
+            `       └ <i>Nâng X2 từ Lô 4: ${pCrossPromoted.length ? `[${pCrossPromoted.join(', ')}]` : 'Không nâng'}</i>`,
             `  • <b>Xiên 5 Siêu Gộp (5 Dàn Xiên 4 · Vốn 5.5M):</b> ${pentaXienWinDesc}`,
-            `    └ Top 5 [${pentaXienTop5.join(', ')}] về ${pentaH5}/5 con`,
-            `    └ Vốn: ${formatCostK(pentaXienStakeK)} · Thưởng: ${formatCostK(pentaXienPayoutK)} · Lãi ròng: <b>${formatMoneyK(pentaXienProfitK)}</b>`,
+            `    └ Top 5 [${pentaXienTop5.join(', ')}] về ${pentaH5}/5 con · Lãi: <b>${formatMoneyK(pentaXienProfitK)}</b>`,
             `  👉 <b>TỔNG KẾT NGÀY (/daily-advisor-shadow):</b>`,
             `    └ Vốn: ${formatCostK(pentaTotalStakeK)} · Thưởng: ${formatCostK(pentaTotalPayoutK)} · Lãi ròng: <b>${formatMoneyK(pentaTotalProfitK)}</b>`,
             `    └ <b>Lũy kế (Gộp 5 từ 07/10):</b> <b>${formatM(pentaCumProfitK)}</b> (${pentaTotalDays} kỳ · Đề: ${formatM(pentaCumDeK)} | Lô: ${formatM(pentaCumLoK)} | Xiên 5: ${formatM(pentaCumXienK)})`,
@@ -1892,18 +2011,19 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     let advNextLoX5 = (nLo.tierX5 || []).map(numStr);
     let advNextLoX4 = (nLo.tierX4 || []).map(numStr);
     let advNextLoX3 = (nLo.tierX3 || []).map(numStr);
-    let advNextLoX1 = (nLo.tierX1 || []).map(numStr);
-    // De-duplicate: Ensure lower tiers do not contain numbers already in higher tiers
-    const higherLoTiers = new Set([...advNextLoX5, ...advNextLoX4, ...advNextLoX3]);
+    const nextCrossX2 = nBets.lo4EngineFusion?.crossX2 || nLo.crossX2 || {};
+    let advNextLoX2 = (nextCrossX2.tierX2 || []).map(numStr);
+    let advNextLoX1 = (nextCrossX2.tierX1 && nextCrossX2.tierX1.length ? nextCrossX2.tierX1 : nLo.tierX1 || []).map(numStr);
+    const higherLoTiers = new Set([...advNextLoX5, ...advNextLoX4, ...advNextLoX3, ...advNextLoX2]);
     advNextLoX1 = advNextLoX1.filter(n => !higherLoTiers.has(n));
-    let advNextLoAll = (nLo.allNumbers || nLo.distinctNumbers || [...advNextLoX5, ...advNextLoX4, ...advNextLoX3, ...advNextLoX1]).map(numStr);
+    let advNextLoAll = (nLo.allNumbers || nLo.distinctNumbers || [...advNextLoX5, ...advNextLoX4, ...advNextLoX3, ...advNextLoX2, ...advNextLoX1]).map(numStr);
     if (!advNextLoAll.length) {
         advNextLoAll = (lotoPayload?.nextPrediction?.predictions?.top7?.numbers || lotoPayload?.nextPrediction?.predictions?.top6?.numbers || ['01', '02', '03', '04', '05', '06', '07']).map(numStr);
         advNextLoX4 = advNextLoAll.slice(0, 3);
         advNextLoX3 = advNextLoAll.slice(3, 6);
         advNextLoX1 = advNextLoAll.slice(6);
     }
-    const advNextLoStakeK = nLo.totalLotoStakeK || 66000;
+    const advNextLoStakeK = nextCrossX2.stakeKX2 || nLo.totalLotoStakeK || 74800;
 
     const nXien = nBets.loXien5 || {};
     let advNextXienTop5 = (nXien.top5 || []).map(numStr);
@@ -1918,6 +2038,14 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     }
     const advNextXienTickets = getXien5Combinations(advNextXienTop5);
     const advNextXienStakeK = 55000;
+
+    const nextTop8 = nBets.top8ParityXien4 || advisorPayload?.top8ParityXien4?.latestRecommendation || {};
+    const nextDan1 = (nextTop8.dan1 || []).map(numStr);
+    const nextDan2 = (nextTop8.dan2 || []).map(numStr);
+
+    const nextXien4 = nBets.lo4EngineFusion?.xien4 || nLo.xien4 || {};
+    const nextXien4Top4 = (nextXien4.top4 || nextXien4.numbers || advNextLoAll.slice(0, 4)).map(numStr);
+
     const advNextTotalStakeK = advNextDeStakeK + advNextLoStakeK + advNextXienStakeK;
 
     // 2. Phương pháp Gộp 5 /daily-advisor-shadow
@@ -1937,21 +2065,24 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     let pentaNextLoX5 = (nPenta.lo?.x5Nums || []).map(numStr);
     let pentaNextLoX4 = (nPenta.lo?.x4Nums || []).map(numStr);
     let pentaNextLoX3 = (nPenta.lo?.x3Nums || []).map(numStr);
-    let pentaNextLoX1 = (nPenta.lo?.x1Nums || []).map(numStr);
+    let pentaNextLoCrossX2 = (nPenta.loCrossX2?.x2Nums || []).map(numStr);
+    let pentaNextLoX1 = (nPenta.loCrossX2?.x1Nums || nPenta.lo?.x1Nums || []).map(numStr);
     const p5Set = new Set(pentaNextLoX5);
     pentaNextLoX4 = pentaNextLoX4.filter(n => !p5Set.has(n));
     const p4Set = new Set([...p5Set, ...pentaNextLoX4]);
     pentaNextLoX3 = pentaNextLoX3.filter(n => !p4Set.has(n));
     const p3Set = new Set([...p4Set, ...pentaNextLoX3]);
-    pentaNextLoX1 = pentaNextLoX1.filter(n => !p3Set.has(n));
-    let pentaNextLoAll = (nPenta.lo?.numbers || [...pentaNextLoX5, ...pentaNextLoX4, ...pentaNextLoX3, ...pentaNextLoX1]).map(numStr);
+    pentaNextLoCrossX2 = pentaNextLoCrossX2.filter(n => !p3Set.has(n));
+    const p2Set = new Set([...p3Set, ...pentaNextLoCrossX2]);
+    pentaNextLoX1 = pentaNextLoX1.filter(n => !p2Set.has(n));
+    let pentaNextLoAll = (nPenta.lo?.numbers || [...pentaNextLoX5, ...pentaNextLoX4, ...pentaNextLoX3, ...pentaNextLoCrossX2, ...pentaNextLoX1]).map(numStr);
     if (!pentaNextLoAll.length) {
         pentaNextLoAll = advNextLoAll;
         pentaNextLoX4 = advNextLoX4;
         pentaNextLoX3 = advNextLoX3;
         pentaNextLoX1 = advNextLoX1;
     }
-    const pentaNextLoStakeK = nPenta.lo?.stakeK || 88000;
+    const pentaNextLoStakeK = nPenta.loCrossX2?.stakeK || nPenta.lo?.stakeK || 92400;
 
     let pentaNextXienTop5 = (nPenta.xien5?.top5 || pentaNextLoAll.slice(0, 5)).map(numStr);
     if (pentaNextXienTop5.length < 5) pentaNextXienTop5 = advNextXienTop5;
@@ -1975,52 +2106,94 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     if (advNextLoX5.length) {
         lines.push(`    └ 👑 <b>Siêu VIP X5 (${advNextLoX5.length} số · cược 11M/số [500đ], ăn 40M/nháy):</b> <code>${escapeHtml(advNextLoX5.join(', '))}</code>`);
     }
+    if (advNextLoX4.length) {
+        lines.push(
+            `    └ 🔥 <b>Cực VIP X4 (${advNextLoX4.length} số · cược 8.8M/số [400đ], ăn 32M/nháy):</b>`,
+            `       <code>${escapeHtml(advNextLoX4.join(', '))}</code>`
+        );
+    }
+    if (advNextLoX3.length) {
+        lines.push(
+            `    └ ⚡ <b>Triển Vọng X3 (${advNextLoX3.length} số · cược 6.6M/số [300đ], ăn 24M/nháy):</b>`,
+            `       <code>${escapeHtml(advNextLoX3.join(', '))}</code>`
+        );
+    }
+    if (advNextLoX2.length) {
+        lines.push(
+            `    └ 🚀 <b>ĐỘT PHÁ NÂNG TIER X2 (${advNextLoX2.length} số · cược 4.4M/số [200đ], ăn 16M/nháy):</b>`,
+            `       <code>${escapeHtml(advNextLoX2.join(', '))}</code>`,
+            `       └ 💡 <i>Lý do: Đồng thuận cao (&gt;= X3) bên Shadow Monitor</i>`
+        );
+    }
+    if (advNextLoX1.length) {
+        lines.push(
+            `    └ 🛡️ <b>Bảo Hiểm X1 (${advNextLoX1.length} số · cược 2.2M/số [100đ], ăn 8M/nháy):</b>`,
+            `       <code>${escapeHtml(advNextLoX1.join(', '))}</code>`
+        );
+    }
+
     lines.push(
-        `    └ 🔥 <b>Cực VIP X4 (${advNextLoX4.length} số · cược 8.8M/số [400đ], ăn 32M/nháy):</b>`,
-        `       <code>${escapeHtml(advNextLoX4.join(', '))}</code>`,
-        `    └ ⚡ <b>Triển Vọng X3 (${advNextLoX3.length} số · cược 6.6M/số [300đ], ăn 24M/nháy):</b>`,
-        `       <code>${escapeHtml(advNextLoX3.join(', '))}</code>`,
-        `    └ 🛡️ <b>Bảo Hiểm X1 (${advNextLoX1.length} số · cược 2.2M/số [100đ], ăn 8M/nháy):</b>`,
-        `       <code>${escapeHtml(advNextLoX1.join(', '))}</code>`,
-        `  • <b>Dàn Xiên 5 (5 Dàn Xiên 4 Ghép Top 5 · Vốn 55M · 11M/dàn):</b>`,
-        `    └ 👑 <b>Top 5 Lô đồng thuận:</b> <code>[${escapeHtml(advNextXienTop5.join(', '))}]</code>`,
-        `    └ 5 Dàn Xiên 4 cụ thể:`,
-        `       • Dàn 1: <code>${escapeHtml(advNextXienTickets[0].join(', '))}</code> (11M)`,
-        `       • Dàn 2: <code>${escapeHtml(advNextXienTickets[1].join(', '))}</code> (11M)`,
-        `       • Dàn 3: <code>${escapeHtml(advNextXienTickets[2].join(', '))}</code> (11M)`,
-        `       • Dàn 4: <code>${escapeHtml(advNextXienTickets[3].join(', '))}</code> (11M)`,
-        `       • Dàn 5: <code>${escapeHtml(advNextXienTickets[4].join(', '))}</code> (11M)`,
-        `    └ <i>Tỷ lệ ăn: 5 con về = 1.920M · 4 con = 720M · 3 con = 204M · 2 con = 36M</i>`,
+        `  • <b>Các Dàn Lô Xiên Thực Chiến:</b>`,
+        `    └ 👑 <b>Dàn Xiên 5 (5 Dàn Xiên 4 Ghép Top 5 · Vốn 55M · 11M/dàn):</b>`,
+        `       • Top 5: <code>[${escapeHtml(advNextXienTop5.join(', '))}]</code>`,
+        `       • 5 Dàn: <code>${escapeHtml(advNextXienTickets[0].join(', '))}</code> | <code>${escapeHtml(advNextXienTickets[1].join(', '))}</code> | <code>${escapeHtml(advNextXienTickets[2].join(', '))}</code> | <code>${escapeHtml(advNextXienTickets[3].join(', '))}</code> | <code>${escapeHtml(advNextXienTickets[4].join(', '))}</code>`
+    );
+    if (nextDan1.length && nextDan2.length) {
+        lines.push(
+            `    └ 🎲 <b>2 Dàn Xiên 4 Tinh Hoa (Top 8 Chẵn/Lẻ · Vốn 22M · 11M/dàn):</b>`,
+            `       • Dàn 1: <code>${escapeHtml(nextDan1.join(', '))}</code> (11M)`,
+            `       • Dàn 2: <code>${escapeHtml(nextDan2.join(', '))}</code> (11M)`,
+            `       └ <i>Quây 11 vé/dàn: Nổ 2 con = 12M · 3 con = 84M · 4 con = 384M</i>`
+        );
+    }
+    if (nextXien4Top4.length) {
+        lines.push(
+            `    └ 🎯 <b>Xiên 4 Bộ 4 Quây 11 vé (Vốn 11M):</b>`,
+            `       • Bộ 4: <code>${escapeHtml(nextXien4Top4.join(', '))}</code> (Ăn 2: 12M · 3: 84M · 4: 384M)`
+        );
+    }
+    lines.push(
         `  👉 <b>Tổng vốn đầu tư /daily-advisor:</b> <b>${formatCostK(advNextTotalStakeK)}</b>`,
         '',
         divider,
         `<b>2. 👑 PHƯƠNG PHÁP GỘP 5 (/daily-advisor-shadow)</b>`,
         `  • <b>Đề Siêu Gộp 5 PP (${pentaNextDeAll.length} số · Vốn ${formatCostK(pentaNextDeStakeK)}):</b>`,
-        `    └ 👑 <b>VIP X2 (trùng ≥3 hệ · ${pentaNextDeX2.length} số · cược 400K/số, ăn 33.6M):</b>`,
+        `    └ 👑 <b>VIP X2 (trùng &gt;=3 hệ · ${pentaNextDeX2.length} số · cược 400K/số, ăn 33.6M):</b>`,
         `       <code>${escapeHtml(pentaNextDeX2.join(', '))}</code>`,
         `    └ 🛡️ <b>Bọc Lót X1 (trùng &lt;3 hệ · ${pentaNextDeX1.length} số · cược 200K/số, ăn 16.8M):</b>`,
         `       <code>${escapeHtml(pentaNextDeX1.join(', '))}</code>`,
         `  • <b>Lô Siêu Gộp 5 PP (${pentaNextLoAll.length} số · Vốn ${formatCostK(pentaNextLoStakeK)}):</b>`,
-        `    └ 👑 <b>Siêu VIP X5 (trùng ≥4 hệ · ${pentaNextLoX5.length} số · cược 11M/số [500đ], ăn 40M/nháy):</b>`,
+        `    └ 👑 <b>Siêu VIP X5 (trùng &gt;=4 hệ · ${pentaNextLoX5.length} số · cược 11M/số [500đ], ăn 40M/nháy):</b>`,
         `       <code>${escapeHtml(pentaNextLoX5.join(', '))}</code>`,
         `    └ 🔥 <b>Cực VIP X4 (trùng 3 hệ · ${pentaNextLoX4.length} số · cược 8.8M/số [400đ], ăn 32M/nháy):</b>`,
         `       <code>${escapeHtml(pentaNextLoX4.join(', '))}</code>`,
         `    └ ⚡ <b>Triển Vọng X3 (trùng 2 hệ · ${pentaNextLoX3.length} số · cược 6.6M/số [300đ], ăn 24M/nháy):</b>`,
-        `       <code>${escapeHtml(pentaNextLoX3.join(', '))}</code>`,
-        `    └ 🛡️ <b>Bảo Hiểm X1 (trùng 1 hệ · ${pentaNextLoX1.length} số · cược 2.2M/số [100đ], ăn 8M/nháy):</b>`,
-        `       <code>${escapeHtml(pentaNextLoX1.join(', '))}</code>`,
+        `       <code>${escapeHtml(pentaNextLoX3.join(', '))}</code>`
+    );
+    if (pentaNextLoCrossX2.length) {
+        lines.push(
+            `    └ 🚀 <b>ĐỘT PHÁ NÂNG TIER X2 (${pentaNextLoCrossX2.length} số · cược 4.4M/số [200đ], ăn 16M/nháy):</b>`,
+            `       <code>${escapeHtml(pentaNextLoCrossX2.join(', '))}</code>`,
+            `       └ 💡 <i>Lý do: Nằm trong Top High Set Lô Ghép 4 Advisor</i>`
+        );
+    }
+    if (pentaNextLoX1.length) {
+        lines.push(
+            `    └ 🛡️ <b>Bảo Hiểm X1 (trùng 1 hệ · ${pentaNextLoX1.length} số · cược 2.2M/số [100đ], ăn 8M/nháy):</b>`,
+            `       <code>${escapeHtml(pentaNextLoX1.join(', '))}</code>`
+        );
+    }
+
+    lines.push(
         `  • <b>Xiên 5 Siêu Gộp (5 Dàn Xiên 4 Ghép Top 5 Ngũ Trụ · Vốn 5.5M · 1.1M/dàn):</b>`,
         `    └ 👑 <b>Top 5 Lô ngũ trụ:</b> <code>[${escapeHtml(pentaNextXienTop5.join(', '))}]</code>`,
-        `    └ 5 Dàn Xiên 4 cụ thể:`,
-        `       • Dàn 1: <code>${escapeHtml(pentaNextXienTickets[0].join(', '))}</code> (1.1M)`,
-        `       • Dàn 2: <code>${escapeHtml(pentaNextXienTickets[1].join(', '))}</code> (1.1M)`,
-        `       • Dàn 3: <code>${escapeHtml(pentaNextXienTickets[2].join(', '))}</code> (1.1M)`,
-        `       • Dàn 4: <code>${escapeHtml(pentaNextXienTickets[3].join(', '))}</code> (1.1M)`,
-        `       • Dàn 5: <code>${escapeHtml(pentaNextXienTickets[4].join(', '))}</code> (1.1M)`,
-        `    └ <i>Tỷ lệ ăn: 5 con về = 192M · 4 con = 72M · 3 con = 20.4M · 2 con = 3.6M</i>`,
+        `    └ 5 Dàn: <code>${escapeHtml(pentaNextXienTickets[0].join(', '))}</code> | <code>${escapeHtml(pentaNextXienTickets[1].join(', '))}</code> | <code>${escapeHtml(pentaNextXienTickets[2].join(', '))}</code> | <code>${escapeHtml(pentaNextXienTickets[3].join(', '))}</code> | <code>${escapeHtml(pentaNextXienTickets[4].join(', '))}</code>`,
         `  👉 <b>Tổng vốn đầu tư /daily-advisor-shadow:</b> <b>${formatCostK(pentaNextTotalStakeK)}</b>`,
         '',
         divider,
+        `🔒 <b>BẢO CHỨNG BẤT BIẾN SSOT:</b>`,
+        `• Dữ liệu đối soát &amp; dự đoán đọc trực tiếp từ Daily Locked Bets Registry.`,
+        `• Khóa niêm phong trước giờ quay (trước 18h15), tuyệt đối không nảy số sau giờ quay!`,
         `🔗 <i>Chi tiết bảng đối soát trực quan:</i>`,
         `• Nhật ký đối soát: <a href="https://lottery-stats-vercel.vercel.app/daily-advisor">/daily-advisor</a>`,
         `• Phương pháp Gộp 5: <a href="https://lottery-stats-vercel.vercel.app/daily-advisor-shadow">/daily-advisor-shadow</a>`
@@ -2035,6 +2208,7 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
         lotoMethodKey: 'lo4EngineFusion'
     };
 }
+
 
 async function telegramApi(env, method, body) {
   const token = requireEnv(env, 'TELEGRAM_BOT_TOKEN');

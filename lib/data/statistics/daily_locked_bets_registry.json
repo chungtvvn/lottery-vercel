@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "description": "Single Source of Truth (SSOT) Immutable Daily Bets and Settlement Registry",
-  "updatedAt": "2026-10-23T03:34:08.304Z",
+  "updatedAt": "2026-10-23T10:21:16.319Z",
   "dates": {
     "2026-10-10": {
       "targetDate": "2026-10-10",
@@ -558,6 +558,34 @@
           ],
           "stakeK": 55000,
           "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-10-10",
+          "top8": [
+            "36",
+            "30",
+            "79",
+            "70",
+            "93",
+            "43",
+            "09",
+            "22"
+          ],
+          "dan1": [
+            "36",
+            "30",
+            "79",
+            "43"
+          ],
+          "dan2": [
+            "70",
+            "93",
+            "09",
+            "22"
+          ],
+          "swapped": true,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -771,7 +799,7 @@
             "dayLotoStakeKX2": 63800,
             "dayLotoPayoutKX2": 112000,
             "dayLotoProfitKX2": 48200,
-            "cumLotoProfitKX2": 5766400,
+            "cumLotoProfitKX2": 5706200,
             "isLotoWinX2": true
           }
         },
@@ -1321,6 +1349,45 @@
           "payoutK": 204000,
           "profitK": 149000,
           "isWin": true
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "36",
+            "30",
+            "79",
+            "43"
+          ],
+          "dan2": [
+            "70",
+            "93",
+            "09",
+            "22"
+          ],
+          "hits1": 4,
+          "hits2": 2,
+          "hitNums1": [
+            "36",
+            "30",
+            "79",
+            "43"
+          ],
+          "hitNums2": [
+            "93",
+            "22"
+          ],
+          "payout1": 384000,
+          "payout2": 12000,
+          "profit1": 373000,
+          "profit2": 1000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 396000,
+          "profitK": 374000,
+          "isWin": true,
+          "h4Count": 1,
+          "h3Count": 0,
+          "h2Count": 1
         }
       },
       "settledAt": "2026-10-16T10:30:14.905Z",
@@ -5725,6 +5792,34 @@
           ],
           "stakeK": 55000,
           "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-10-11",
+          "top8": [
+            "43",
+            "04",
+            "81",
+            "49",
+            "03",
+            "36",
+            "68",
+            "52"
+          ],
+          "dan1": [
+            "43",
+            "04",
+            "81",
+            "36"
+          ],
+          "dan2": [
+            "49",
+            "03",
+            "68",
+            "52"
+          ],
+          "swapped": true,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -5961,7 +6056,7 @@
             "dayLotoStakeKX2": 70400,
             "dayLotoPayoutKX2": 80000,
             "dayLotoProfitKX2": 9600,
-            "cumLotoProfitKX2": 5776000,
+            "cumLotoProfitKX2": 5715800,
             "isLotoWinX2": true
           }
         },
@@ -6440,6 +6535,40 @@
           "payoutK": 0,
           "profitK": -55000,
           "isWin": false
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "43",
+            "04",
+            "81",
+            "36"
+          ],
+          "dan2": [
+            "49",
+            "03",
+            "68",
+            "52"
+          ],
+          "hits1": 2,
+          "hits2": 0,
+          "hitNums1": [
+            "43",
+            "81"
+          ],
+          "hitNums2": [],
+          "payout1": 12000,
+          "payout2": 0,
+          "profit1": 1000,
+          "profit2": -11000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 12000,
+          "profitK": -10000,
+          "isWin": false,
+          "h4Count": 0,
+          "h3Count": 0,
+          "h2Count": 1
         }
       },
       "settledAt": "2026-10-16T10:30:14.917Z",
@@ -6970,6 +7099,34 @@
           ],
           "stakeK": 55000,
           "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-09-16",
+          "top8": [
+            "93",
+            "92",
+            "72",
+            "38",
+            "44",
+            "66",
+            "64",
+            "21"
+          ],
+          "dan1": [
+            "93",
+            "92",
+            "72",
+            "44"
+          ],
+          "dan2": [
+            "38",
+            "66",
+            "64",
+            "21"
+          ],
+          "swapped": true,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -7250,7 +7407,7 @@
             "dayLotoStakeKX2": 77000,
             "dayLotoPayoutKX2": 88000,
             "dayLotoProfitKX2": 11000,
-            "cumLotoProfitKX2": 5294200,
+            "cumLotoProfitKX2": 5232600,
             "isLotoWinX2": true
           }
         },
@@ -7392,6 +7549,43 @@
           "payoutK": 36000,
           "profitK": -19000,
           "isWin": false
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "93",
+            "92",
+            "72",
+            "44"
+          ],
+          "dan2": [
+            "38",
+            "66",
+            "64",
+            "21"
+          ],
+          "hits1": 2,
+          "hits2": 2,
+          "hitNums1": [
+            "72",
+            "44"
+          ],
+          "hitNums2": [
+            "64",
+            "21"
+          ],
+          "payout1": 12000,
+          "payout2": 12000,
+          "profit1": 1000,
+          "profit2": 1000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 24000,
+          "profitK": 2000,
+          "isWin": true,
+          "h4Count": 0,
+          "h3Count": 0,
+          "h2Count": 2
         }
       },
       "settledAt": "2026-10-16T10:30:14.924Z",
@@ -7940,6 +8134,34 @@
           ],
           "stakeK": 55000,
           "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-09-17",
+          "top8": [
+            "12",
+            "66",
+            "44",
+            "52",
+            "43",
+            "65",
+            "75",
+            "29"
+          ],
+          "dan1": [
+            "12",
+            "66",
+            "44",
+            "52"
+          ],
+          "dan2": [
+            "43",
+            "65",
+            "75",
+            "29"
+          ],
+          "swapped": false,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -8212,7 +8434,7 @@
             "dayLotoStakeKX2": 81400,
             "dayLotoPayoutKX2": 144000,
             "dayLotoProfitKX2": 62600,
-            "cumLotoProfitKX2": 5356800,
+            "cumLotoProfitKX2": 5295200,
             "isLotoWinX2": true
           }
         },
@@ -8368,6 +8590,43 @@
           "payoutK": 204000,
           "profitK": 149000,
           "isWin": true
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "12",
+            "66",
+            "44",
+            "52"
+          ],
+          "dan2": [
+            "43",
+            "65",
+            "75",
+            "29"
+          ],
+          "hits1": 2,
+          "hits2": 2,
+          "hitNums1": [
+            "12",
+            "66"
+          ],
+          "hitNums2": [
+            "43",
+            "75"
+          ],
+          "payout1": 12000,
+          "payout2": 12000,
+          "profit1": 1000,
+          "profit2": 1000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 24000,
+          "profitK": 2000,
+          "isWin": true,
+          "h4Count": 0,
+          "h3Count": 0,
+          "h2Count": 2
         }
       },
       "settledAt": "2026-10-16T10:30:14.933Z",
@@ -8845,6 +9104,34 @@
           ],
           "stakeK": 55000,
           "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-09-18",
+          "top8": [
+            "63",
+            "29",
+            "84",
+            "62",
+            "01",
+            "43",
+            "76",
+            "36"
+          ],
+          "dan1": [
+            "63",
+            "29",
+            "84",
+            "76"
+          ],
+          "dan2": [
+            "62",
+            "01",
+            "43",
+            "36"
+          ],
+          "swapped": true,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -9066,7 +9353,7 @@
             "dayLotoStakeKX2": 83600,
             "dayLotoPayoutKX2": 104000,
             "dayLotoProfitKX2": 20400,
-            "cumLotoProfitKX2": 5377200,
+            "cumLotoProfitKX2": 5315600,
             "isLotoWinX2": true
           }
         },
@@ -9212,6 +9499,42 @@
           "payoutK": 36000,
           "profitK": -19000,
           "isWin": false
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "63",
+            "29",
+            "84",
+            "76"
+          ],
+          "dan2": [
+            "62",
+            "01",
+            "43",
+            "36"
+          ],
+          "hits1": 2,
+          "hits2": 1,
+          "hitNums1": [
+            "29",
+            "76"
+          ],
+          "hitNums2": [
+            "36"
+          ],
+          "payout1": 12000,
+          "payout2": 0,
+          "profit1": 1000,
+          "profit2": -11000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 12000,
+          "profitK": -10000,
+          "isWin": false,
+          "h4Count": 0,
+          "h3Count": 0,
+          "h2Count": 1
         }
       },
       "settledAt": "2026-10-16T10:30:14.941Z",
@@ -9671,6 +9994,34 @@
           ],
           "stakeK": 55000,
           "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-09-19",
+          "top8": [
+            "76",
+            "52",
+            "23",
+            "24",
+            "97",
+            "54",
+            "66",
+            "38"
+          ],
+          "dan1": [
+            "76",
+            "52",
+            "23",
+            "24"
+          ],
+          "dan2": [
+            "97",
+            "54",
+            "66",
+            "38"
+          ],
+          "swapped": false,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -9881,7 +10232,7 @@
             "dayLotoStakeKX2": 77000,
             "dayLotoPayoutKX2": 144000,
             "dayLotoProfitKX2": 67000,
-            "cumLotoProfitKX2": 5444200,
+            "cumLotoProfitKX2": 5382600,
             "isLotoWinX2": true
           }
         },
@@ -10025,6 +10376,41 @@
           "payoutK": 204000,
           "profitK": 149000,
           "isWin": true
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "76",
+            "52",
+            "23",
+            "24"
+          ],
+          "dan2": [
+            "97",
+            "54",
+            "66",
+            "38"
+          ],
+          "hits1": 3,
+          "hits2": 0,
+          "hitNums1": [
+            "76",
+            "52",
+            "24"
+          ],
+          "hitNums2": [],
+          "payout1": 84000,
+          "payout2": 0,
+          "profit1": 73000,
+          "profit2": -11000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 84000,
+          "profitK": 62000,
+          "isWin": true,
+          "h4Count": 0,
+          "h3Count": 1,
+          "h2Count": 0
         }
       },
       "settledAt": "2026-10-16T10:30:14.947Z",
@@ -10506,6 +10892,34 @@
           ],
           "stakeK": 55000,
           "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-09-20",
+          "top8": [
+            "54",
+            "88",
+            "10",
+            "03",
+            "01",
+            "95",
+            "68",
+            "49"
+          ],
+          "dan1": [
+            "54",
+            "88",
+            "10",
+            "03"
+          ],
+          "dan2": [
+            "01",
+            "95",
+            "68",
+            "49"
+          ],
+          "swapped": false,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -10717,7 +11131,7 @@
             "dayLotoStakeKX2": 81400,
             "dayLotoPayoutKX2": 88000,
             "dayLotoProfitKX2": 6600,
-            "cumLotoProfitKX2": 5450800,
+            "cumLotoProfitKX2": 5389200,
             "isLotoWinX2": true
           }
         },
@@ -10871,6 +11285,39 @@
           "payoutK": 204000,
           "profitK": 149000,
           "isWin": true
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "54",
+            "88",
+            "10",
+            "03"
+          ],
+          "dan2": [
+            "01",
+            "95",
+            "68",
+            "49"
+          ],
+          "hits1": 0,
+          "hits2": 1,
+          "hitNums1": [],
+          "hitNums2": [
+            "68"
+          ],
+          "payout1": 0,
+          "payout2": 0,
+          "profit1": -11000,
+          "profit2": -11000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 0,
+          "profitK": -22000,
+          "isWin": false,
+          "h4Count": 0,
+          "h3Count": 0,
+          "h2Count": 0
         }
       },
       "settledAt": "2026-10-16T10:30:14.954Z",
@@ -11147,16 +11594,17 @@
               "82",
               "84"
             ],
-            "tierX2": [],
+            "tierX2": [
+              "01"
+            ],
             "tierX1": [
-              "01",
               "24",
               "49",
               "56",
               "70"
             ],
-            "stakeKX2": 81400,
-            "promotedRationale": "Không có số nào cần nâng hạng hôm nay."
+            "stakeKX2": 83600,
+            "promotedRationale": "Số [01] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "crossHedgingPortfolio": {
@@ -11346,6 +11794,34 @@
           ],
           "stakeK": 55000,
           "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-09-21",
+          "top8": [
+            "84",
+            "82",
+            "54",
+            "12",
+            "36",
+            "46",
+            "70",
+            "38"
+          ],
+          "dan1": [
+            "84",
+            "82",
+            "54",
+            "12"
+          ],
+          "dan2": [
+            "36",
+            "46",
+            "70",
+            "38"
+          ],
+          "swapped": false,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -11557,9 +12033,10 @@
               "82",
               "84"
             ],
-            "tierX2": [],
+            "tierX2": [
+              "01"
+            ],
             "tierX1": [
-              "01",
               "24",
               "49",
               "56",
@@ -11571,10 +12048,10 @@
             "x2Hits": 0,
             "x1Hits": 1,
             "totalHits": 2,
-            "dayLotoStakeKX2": 81400,
+            "dayLotoStakeKX2": 83600,
             "dayLotoPayoutKX2": 40000,
-            "dayLotoProfitKX2": -41400,
-            "cumLotoProfitKX2": 5409400,
+            "dayLotoProfitKX2": -43600,
+            "cumLotoProfitKX2": 5345600,
             "isLotoWinX2": false
           }
         },
@@ -11714,6 +12191,41 @@
           "payoutK": 0,
           "profitK": -55000,
           "isWin": false
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "84",
+            "82",
+            "54",
+            "12"
+          ],
+          "dan2": [
+            "36",
+            "46",
+            "70",
+            "38"
+          ],
+          "hits1": 1,
+          "hits2": 1,
+          "hitNums1": [
+            "54"
+          ],
+          "hitNums2": [
+            "46"
+          ],
+          "payout1": 0,
+          "payout2": 0,
+          "profit1": -11000,
+          "profit2": -11000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 0,
+          "profitK": -22000,
+          "isWin": false,
+          "h4Count": 0,
+          "h3Count": 0,
+          "h2Count": 0
         }
       },
       "settledAt": "2026-10-16T10:30:14.961Z",
@@ -12256,6 +12768,34 @@
           ],
           "stakeK": 55000,
           "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-09-22",
+          "top8": [
+            "23",
+            "31",
+            "94",
+            "57",
+            "24",
+            "87",
+            "00",
+            "65"
+          ],
+          "dan1": [
+            "23",
+            "31",
+            "94",
+            "57"
+          ],
+          "dan2": [
+            "24",
+            "87",
+            "00",
+            "65"
+          ],
+          "swapped": false,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -12546,7 +13086,7 @@
             "dayLotoStakeKX2": 83600,
             "dayLotoPayoutKX2": 128000,
             "dayLotoProfitKX2": 44400,
-            "cumLotoProfitKX2": 5453800,
+            "cumLotoProfitKX2": 5390000,
             "isLotoWinX2": true
           }
         },
@@ -12688,6 +13228,37 @@
           "payoutK": 0,
           "profitK": -55000,
           "isWin": false
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "23",
+            "31",
+            "94",
+            "57"
+          ],
+          "dan2": [
+            "24",
+            "87",
+            "00",
+            "65"
+          ],
+          "hits1": 0,
+          "hits2": 0,
+          "hitNums1": [],
+          "hitNums2": [],
+          "payout1": 0,
+          "payout2": 0,
+          "profit1": -11000,
+          "profit2": -11000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 0,
+          "profitK": -22000,
+          "isWin": false,
+          "h4Count": 0,
+          "h3Count": 0,
+          "h2Count": 0
         }
       },
       "settledAt": "2026-10-16T10:30:14.967Z",
@@ -13238,6 +13809,34 @@
           ],
           "stakeK": 55000,
           "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-09-23",
+          "top8": [
+            "92",
+            "54",
+            "22",
+            "01",
+            "44",
+            "83",
+            "41",
+            "59"
+          ],
+          "dan1": [
+            "92",
+            "54",
+            "22",
+            "01"
+          ],
+          "dan2": [
+            "44",
+            "83",
+            "41",
+            "59"
+          ],
+          "swapped": false,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -13525,7 +14124,7 @@
             "dayLotoStakeKX2": 81400,
             "dayLotoPayoutKX2": 16000,
             "dayLotoProfitKX2": -65400,
-            "cumLotoProfitKX2": 5388400,
+            "cumLotoProfitKX2": 5324600,
             "isLotoWinX2": false
           }
         },
@@ -13671,6 +14270,37 @@
           "payoutK": 0,
           "profitK": -55000,
           "isWin": false
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "92",
+            "54",
+            "22",
+            "01"
+          ],
+          "dan2": [
+            "44",
+            "83",
+            "41",
+            "59"
+          ],
+          "hits1": 0,
+          "hits2": 0,
+          "hitNums1": [],
+          "hitNums2": [],
+          "payout1": 0,
+          "payout2": 0,
+          "profit1": -11000,
+          "profit2": -11000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 0,
+          "profitK": -22000,
+          "isWin": false,
+          "h4Count": 0,
+          "h3Count": 0,
+          "h2Count": 0
         }
       },
       "settledAt": "2026-10-16T10:30:14.974Z",
@@ -14187,6 +14817,34 @@
           ],
           "stakeK": 55000,
           "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-09-24",
+          "top8": [
+            "22",
+            "43",
+            "88",
+            "38",
+            "70",
+            "76",
+            "64",
+            "62"
+          ],
+          "dan1": [
+            "22",
+            "43",
+            "88",
+            "38"
+          ],
+          "dan2": [
+            "70",
+            "76",
+            "64",
+            "62"
+          ],
+          "swapped": false,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -14458,7 +15116,7 @@
             "dayLotoStakeKX2": 79200,
             "dayLotoPayoutKX2": 72000,
             "dayLotoProfitKX2": -7200,
-            "cumLotoProfitKX2": 5381200,
+            "cumLotoProfitKX2": 5317400,
             "isLotoWinX2": false
           }
         },
@@ -14598,6 +15256,41 @@
           "payoutK": 0,
           "profitK": -55000,
           "isWin": false
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "22",
+            "43",
+            "88",
+            "38"
+          ],
+          "dan2": [
+            "70",
+            "76",
+            "64",
+            "62"
+          ],
+          "hits1": 0,
+          "hits2": 3,
+          "hitNums1": [],
+          "hitNums2": [
+            "70",
+            "76",
+            "64"
+          ],
+          "payout1": 0,
+          "payout2": 84000,
+          "profit1": -11000,
+          "profit2": 73000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 84000,
+          "profitK": 62000,
+          "isWin": true,
+          "h4Count": 0,
+          "h3Count": 1,
+          "h2Count": 0
         }
       },
       "settledAt": "2026-10-16T10:30:14.981Z",
@@ -15136,6 +15829,34 @@
           ],
           "stakeK": 55000,
           "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-09-25",
+          "top8": [
+            "52",
+            "54",
+            "62",
+            "38",
+            "04",
+            "97",
+            "76",
+            "70"
+          ],
+          "dan1": [
+            "52",
+            "54",
+            "62",
+            "38"
+          ],
+          "dan2": [
+            "04",
+            "97",
+            "76",
+            "70"
+          ],
+          "swapped": false,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -15417,7 +16138,7 @@
             "dayLotoStakeKX2": 81400,
             "dayLotoPayoutKX2": 80000,
             "dayLotoProfitKX2": -1400,
-            "cumLotoProfitKX2": 5379800,
+            "cumLotoProfitKX2": 5316000,
             "isLotoWinX2": false
           }
         },
@@ -15563,6 +16284,39 @@
           "payoutK": 0,
           "profitK": -55000,
           "isWin": false
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "52",
+            "54",
+            "62",
+            "38"
+          ],
+          "dan2": [
+            "04",
+            "97",
+            "76",
+            "70"
+          ],
+          "hits1": 0,
+          "hits2": 1,
+          "hitNums1": [],
+          "hitNums2": [
+            "97"
+          ],
+          "payout1": 0,
+          "payout2": 0,
+          "profit1": -11000,
+          "profit2": -11000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 0,
+          "profitK": -22000,
+          "isWin": false,
+          "h4Count": 0,
+          "h3Count": 0,
+          "h2Count": 0
         }
       },
       "settledAt": "2026-10-16T10:30:14.988Z",
@@ -15843,7 +16597,9 @@
             "tierX3": [
               "46"
             ],
-            "tierX2": [],
+            "tierX2": [
+              "75"
+            ],
             "tierX1": [
               "04",
               "18",
@@ -15851,11 +16607,10 @@
               "26",
               "30",
               "70",
-              "71",
-              "75"
+              "71"
             ],
-            "stakeKX2": 77000,
-            "promotedRationale": "Không có số nào cần nâng hạng hôm nay."
+            "stakeKX2": 79200,
+            "promotedRationale": "Số [75] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "crossHedgingPortfolio": {
@@ -16053,6 +16808,34 @@
           ],
           "stakeK": 55000,
           "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-09-26",
+          "top8": [
+            "84",
+            "22",
+            "46",
+            "66",
+            "38",
+            "68",
+            "00",
+            "03"
+          ],
+          "dan1": [
+            "84",
+            "22",
+            "46",
+            "38"
+          ],
+          "dan2": [
+            "66",
+            "68",
+            "00",
+            "03"
+          ],
+          "swapped": true,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -16272,7 +17055,9 @@
             "tierX3": [
               "46"
             ],
-            "tierX2": [],
+            "tierX2": [
+              "75"
+            ],
             "tierX1": [
               "04",
               "18",
@@ -16280,8 +17065,7 @@
               "26",
               "30",
               "70",
-              "71",
-              "75"
+              "71"
             ],
             "x5Hits": 0,
             "x4Hits": 4,
@@ -16289,10 +17073,10 @@
             "x2Hits": 0,
             "x1Hits": 1,
             "totalHits": 5,
-            "dayLotoStakeKX2": 77000,
+            "dayLotoStakeKX2": 79200,
             "dayLotoPayoutKX2": 136000,
-            "dayLotoProfitKX2": 59000,
-            "cumLotoProfitKX2": 5438800,
+            "dayLotoProfitKX2": 56800,
+            "cumLotoProfitKX2": 5372800,
             "isLotoWinX2": true
           }
         },
@@ -16436,6 +17220,43 @@
           "payoutK": 204000,
           "profitK": 149000,
           "isWin": true
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "84",
+            "22",
+            "46",
+            "38"
+          ],
+          "dan2": [
+            "66",
+            "68",
+            "00",
+            "03"
+          ],
+          "hits1": 2,
+          "hits2": 2,
+          "hitNums1": [
+            "84",
+            "22"
+          ],
+          "hitNums2": [
+            "66",
+            "68"
+          ],
+          "payout1": 12000,
+          "payout2": 12000,
+          "profit1": 1000,
+          "profit2": 1000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 24000,
+          "profitK": 2000,
+          "isWin": true,
+          "h4Count": 0,
+          "h3Count": 0,
+          "h2Count": 2
         }
       },
       "settledAt": "2026-10-16T10:30:14.995Z",
@@ -16948,6 +17769,34 @@
           ],
           "stakeK": 55000,
           "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-09-27",
+          "top8": [
+            "22",
+            "94",
+            "68",
+            "38",
+            "66",
+            "54",
+            "33",
+            "82"
+          ],
+          "dan1": [
+            "22",
+            "94",
+            "68",
+            "38"
+          ],
+          "dan2": [
+            "66",
+            "54",
+            "33",
+            "82"
+          ],
+          "swapped": false,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -17219,7 +18068,7 @@
             "dayLotoStakeKX2": 79200,
             "dayLotoPayoutKX2": 128000,
             "dayLotoProfitKX2": 48800,
-            "cumLotoProfitKX2": 5487600,
+            "cumLotoProfitKX2": 5421600,
             "isLotoWinX2": true
           }
         },
@@ -17357,6 +18206,43 @@
           "payoutK": 204000,
           "profitK": 149000,
           "isWin": true
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "22",
+            "94",
+            "68",
+            "38"
+          ],
+          "dan2": [
+            "66",
+            "54",
+            "33",
+            "82"
+          ],
+          "hits1": 1,
+          "hits2": 3,
+          "hitNums1": [
+            "68"
+          ],
+          "hitNums2": [
+            "66",
+            "54",
+            "33"
+          ],
+          "payout1": 0,
+          "payout2": 84000,
+          "profit1": -11000,
+          "profit2": 73000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 84000,
+          "profitK": 62000,
+          "isWin": true,
+          "h4Count": 0,
+          "h3Count": 1,
+          "h2Count": 0
         }
       },
       "settledAt": "2026-10-16T10:30:15.002Z",
@@ -17841,6 +18727,34 @@
           ],
           "stakeK": 55000,
           "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-09-28",
+          "top8": [
+            "14",
+            "68",
+            "43",
+            "11",
+            "93",
+            "62",
+            "52",
+            "07"
+          ],
+          "dan1": [
+            "14",
+            "68",
+            "43",
+            "11"
+          ],
+          "dan2": [
+            "93",
+            "62",
+            "52",
+            "07"
+          ],
+          "swapped": false,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -18070,7 +18984,7 @@
             "dayLotoStakeKX2": 85800,
             "dayLotoPayoutKX2": 48000,
             "dayLotoProfitKX2": -37800,
-            "cumLotoProfitKX2": 5449800,
+            "cumLotoProfitKX2": 5383800,
             "isLotoWinX2": false
           }
         },
@@ -18214,6 +19128,39 @@
           "payoutK": 0,
           "profitK": -55000,
           "isWin": false
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "14",
+            "68",
+            "43",
+            "11"
+          ],
+          "dan2": [
+            "93",
+            "62",
+            "52",
+            "07"
+          ],
+          "hits1": 0,
+          "hits2": 1,
+          "hitNums1": [],
+          "hitNums2": [
+            "52"
+          ],
+          "payout1": 0,
+          "payout2": 0,
+          "profit1": -11000,
+          "profit2": -11000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 0,
+          "profitK": -22000,
+          "isWin": false,
+          "h4Count": 0,
+          "h3Count": 0,
+          "h2Count": 0
         }
       },
       "settledAt": "2026-10-16T10:30:15.009Z",
@@ -18686,6 +19633,34 @@
           ],
           "stakeK": 55000,
           "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-09-29",
+          "top8": [
+            "38",
+            "44",
+            "66",
+            "62",
+            "22",
+            "57",
+            "93",
+            "25"
+          ],
+          "dan1": [
+            "38",
+            "44",
+            "66",
+            "62"
+          ],
+          "dan2": [
+            "22",
+            "57",
+            "93",
+            "25"
+          ],
+          "swapped": false,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -18916,7 +19891,7 @@
             "dayLotoStakeKX2": 70400,
             "dayLotoPayoutKX2": 128000,
             "dayLotoProfitKX2": 57600,
-            "cumLotoProfitKX2": 5507400,
+            "cumLotoProfitKX2": 5441400,
             "isLotoWinX2": true
           }
         },
@@ -19058,6 +20033,41 @@
           "payoutK": 0,
           "profitK": -55000,
           "isWin": false
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "38",
+            "44",
+            "66",
+            "62"
+          ],
+          "dan2": [
+            "22",
+            "57",
+            "93",
+            "25"
+          ],
+          "hits1": 1,
+          "hits2": 1,
+          "hitNums1": [
+            "66"
+          ],
+          "hitNums2": [
+            "25"
+          ],
+          "payout1": 0,
+          "payout2": 0,
+          "profit1": -11000,
+          "profit2": -11000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 0,
+          "profitK": -22000,
+          "isWin": false,
+          "h4Count": 0,
+          "h3Count": 0,
+          "h2Count": 0
         }
       },
       "settledAt": "2026-10-16T10:30:15.015Z",
@@ -19324,18 +20334,19 @@
               "62",
               "65"
             ],
-            "tierX2": [],
+            "tierX2": [
+              "88"
+            ],
             "tierX1": [
               "06",
               "17",
               "23",
               "30",
               "48",
-              "72",
-              "88"
+              "72"
             ],
-            "stakeKX2": 68200,
-            "promotedRationale": "Không có số nào cần nâng hạng hôm nay."
+            "stakeKX2": 70400,
+            "promotedRationale": "Số [88] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "crossHedgingPortfolio": {
@@ -19529,6 +20540,34 @@
           ],
           "stakeK": 55000,
           "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-09-30",
+          "top8": [
+            "76",
+            "62",
+            "36",
+            "38",
+            "91",
+            "52",
+            "88",
+            "01"
+          ],
+          "dan1": [
+            "76",
+            "62",
+            "36",
+            "38"
+          ],
+          "dan2": [
+            "91",
+            "52",
+            "88",
+            "01"
+          ],
+          "swapped": false,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -19738,26 +20777,27 @@
               "62",
               "65"
             ],
-            "tierX2": [],
+            "tierX2": [
+              "88"
+            ],
             "tierX1": [
               "06",
               "17",
               "23",
               "30",
               "48",
-              "72",
-              "88"
+              "72"
             ],
             "x5Hits": 0,
             "x4Hits": 1,
             "x3Hits": 0,
-            "x2Hits": 0,
-            "x1Hits": 8,
+            "x2Hits": 1,
+            "x1Hits": 7,
             "totalHits": 9,
-            "dayLotoStakeKX2": 68200,
-            "dayLotoPayoutKX2": 96000,
-            "dayLotoProfitKX2": 27800,
-            "cumLotoProfitKX2": 5535200,
+            "dayLotoStakeKX2": 70400,
+            "dayLotoPayoutKX2": 104000,
+            "dayLotoProfitKX2": 33600,
+            "cumLotoProfitKX2": 5475000,
             "isLotoWinX2": true
           }
         },
@@ -19899,6 +20939,41 @@
           "payoutK": 0,
           "profitK": -55000,
           "isWin": false
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "76",
+            "62",
+            "36",
+            "38"
+          ],
+          "dan2": [
+            "91",
+            "52",
+            "88",
+            "01"
+          ],
+          "hits1": 0,
+          "hits2": 3,
+          "hitNums1": [],
+          "hitNums2": [
+            "91",
+            "88",
+            "01"
+          ],
+          "payout1": 0,
+          "payout2": 84000,
+          "profit1": -11000,
+          "profit2": 73000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 84000,
+          "profitK": 62000,
+          "isWin": true,
+          "h4Count": 0,
+          "h3Count": 1,
+          "h2Count": 0
         }
       },
       "settledAt": "2026-10-16T10:30:15.023Z",
@@ -20313,6 +21388,34 @@
           ],
           "stakeK": 55000,
           "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-10-01",
+          "top8": [
+            "36",
+            "95",
+            "76",
+            "92",
+            "62",
+            "20",
+            "11",
+            "43"
+          ],
+          "dan1": [
+            "36",
+            "95",
+            "76",
+            "62"
+          ],
+          "dan2": [
+            "92",
+            "20",
+            "11",
+            "43"
+          ],
+          "swapped": true,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -20489,7 +21592,7 @@
             "dayLotoStakeKX2": 68200,
             "dayLotoPayoutKX2": 136000,
             "dayLotoProfitKX2": 67800,
-            "cumLotoProfitKX2": 5603000,
+            "cumLotoProfitKX2": 5542800,
             "isLotoWinX2": true
           }
         },
@@ -20629,6 +21732,41 @@
           "payoutK": 36000,
           "profitK": -19000,
           "isWin": false
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "36",
+            "95",
+            "76",
+            "62"
+          ],
+          "dan2": [
+            "92",
+            "20",
+            "11",
+            "43"
+          ],
+          "hits1": 1,
+          "hits2": 1,
+          "hitNums1": [
+            "95"
+          ],
+          "hitNums2": [
+            "92"
+          ],
+          "payout1": 0,
+          "payout2": 0,
+          "profit1": -11000,
+          "profit2": -11000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 0,
+          "profitK": -22000,
+          "isWin": false,
+          "h4Count": 0,
+          "h3Count": 0,
+          "h2Count": 0
         }
       },
       "settledAt": "2026-10-16T10:30:15.029Z",
@@ -21114,6 +22252,34 @@
           ],
           "stakeK": 55000,
           "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-10-02",
+          "top8": [
+            "70",
+            "22",
+            "75",
+            "38",
+            "41",
+            "93",
+            "95",
+            "66"
+          ],
+          "dan1": [
+            "70",
+            "22",
+            "75",
+            "38"
+          ],
+          "dan2": [
+            "41",
+            "93",
+            "95",
+            "66"
+          ],
+          "swapped": false,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -21350,7 +22516,7 @@
             "dayLotoStakeKX2": 70400,
             "dayLotoPayoutKX2": 112000,
             "dayLotoProfitKX2": 41600,
-            "cumLotoProfitKX2": 5644600,
+            "cumLotoProfitKX2": 5584400,
             "isLotoWinX2": true
           }
         },
@@ -21494,6 +22660,41 @@
           "payoutK": 36000,
           "profitK": -19000,
           "isWin": false
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "70",
+            "22",
+            "75",
+            "38"
+          ],
+          "dan2": [
+            "41",
+            "93",
+            "95",
+            "66"
+          ],
+          "hits1": 3,
+          "hits2": 0,
+          "hitNums1": [
+            "70",
+            "75",
+            "38"
+          ],
+          "hitNums2": [],
+          "payout1": 84000,
+          "payout2": 0,
+          "profit1": 73000,
+          "profit2": -11000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 84000,
+          "profitK": 62000,
+          "isWin": true,
+          "h4Count": 0,
+          "h3Count": 1,
+          "h2Count": 0
         }
       },
       "settledAt": "2026-10-16T10:30:15.036Z",
@@ -21950,6 +23151,34 @@
           ],
           "stakeK": 55000,
           "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-10-03",
+          "top8": [
+            "38",
+            "75",
+            "36",
+            "76",
+            "10",
+            "11",
+            "90",
+            "24"
+          ],
+          "dan1": [
+            "38",
+            "75",
+            "36",
+            "24"
+          ],
+          "dan2": [
+            "76",
+            "10",
+            "11",
+            "90"
+          ],
+          "swapped": true,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -22175,7 +23404,7 @@
             "dayLotoStakeKX2": 70400,
             "dayLotoPayoutKX2": 96000,
             "dayLotoProfitKX2": 25600,
-            "cumLotoProfitKX2": 5670200,
+            "cumLotoProfitKX2": 5610000,
             "isLotoWinX2": true
           }
         },
@@ -22309,6 +23538,42 @@
           "payoutK": 204000,
           "profitK": 149000,
           "isWin": true
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "38",
+            "75",
+            "36",
+            "24"
+          ],
+          "dan2": [
+            "76",
+            "10",
+            "11",
+            "90"
+          ],
+          "hits1": 1,
+          "hits2": 2,
+          "hitNums1": [
+            "38"
+          ],
+          "hitNums2": [
+            "76",
+            "10"
+          ],
+          "payout1": 0,
+          "payout2": 12000,
+          "profit1": -11000,
+          "profit2": 1000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 12000,
+          "profitK": -10000,
+          "isWin": false,
+          "h4Count": 0,
+          "h3Count": 0,
+          "h2Count": 1
         }
       },
       "settledAt": "2026-10-16T10:30:15.043Z",
@@ -22774,6 +24039,34 @@
           ],
           "stakeK": 55000,
           "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-10-04",
+          "top8": [
+            "12",
+            "93",
+            "95",
+            "52",
+            "10",
+            "54",
+            "78",
+            "75"
+          ],
+          "dan1": [
+            "12",
+            "93",
+            "95",
+            "52"
+          ],
+          "dan2": [
+            "10",
+            "54",
+            "78",
+            "75"
+          ],
+          "swapped": false,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -23000,7 +24293,7 @@
             "dayLotoStakeKX2": 68200,
             "dayLotoPayoutKX2": 24000,
             "dayLotoProfitKX2": -44200,
-            "cumLotoProfitKX2": 5626000,
+            "cumLotoProfitKX2": 5565800,
             "isLotoWinX2": false
           }
         },
@@ -23138,6 +24431,37 @@
           "payoutK": 0,
           "profitK": -55000,
           "isWin": false
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "12",
+            "93",
+            "95",
+            "52"
+          ],
+          "dan2": [
+            "10",
+            "54",
+            "78",
+            "75"
+          ],
+          "hits1": 0,
+          "hits2": 0,
+          "hitNums1": [],
+          "hitNums2": [],
+          "payout1": 0,
+          "payout2": 0,
+          "profit1": -11000,
+          "profit2": -11000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 0,
+          "profitK": -22000,
+          "isWin": false,
+          "h4Count": 0,
+          "h3Count": 0,
+          "h2Count": 0
         }
       },
       "settledAt": "2026-10-16T10:30:15.050Z",
@@ -23618,6 +24942,34 @@
           ],
           "stakeK": 55000,
           "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-10-05",
+          "top8": [
+            "62",
+            "52",
+            "95",
+            "36",
+            "88",
+            "19",
+            "84",
+            "93"
+          ],
+          "dan1": [
+            "62",
+            "52",
+            "95",
+            "36"
+          ],
+          "dan2": [
+            "88",
+            "19",
+            "84",
+            "93"
+          ],
+          "swapped": false,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -23847,7 +25199,7 @@
             "dayLotoStakeKX2": 68200,
             "dayLotoPayoutKX2": 120000,
             "dayLotoProfitKX2": 51800,
-            "cumLotoProfitKX2": 5677800,
+            "cumLotoProfitKX2": 5617600,
             "isLotoWinX2": true
           }
         },
@@ -23993,6 +25345,43 @@
           "payoutK": 36000,
           "profitK": -19000,
           "isWin": false
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "62",
+            "52",
+            "95",
+            "36"
+          ],
+          "dan2": [
+            "88",
+            "19",
+            "84",
+            "93"
+          ],
+          "hits1": 3,
+          "hits2": 1,
+          "hitNums1": [
+            "62",
+            "52",
+            "95"
+          ],
+          "hitNums2": [
+            "19"
+          ],
+          "payout1": 84000,
+          "payout2": 0,
+          "profit1": 73000,
+          "profit2": -11000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 84000,
+          "profitK": 62000,
+          "isWin": true,
+          "h4Count": 0,
+          "h3Count": 1,
+          "h2Count": 0
         }
       },
       "settledAt": "2026-10-16T10:30:15.057Z",
@@ -24440,6 +25829,34 @@
           ],
           "stakeK": 55000,
           "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-10-06",
+          "top8": [
+            "52",
+            "44",
+            "66",
+            "38",
+            "68",
+            "43",
+            "76",
+            "59"
+          ],
+          "dan1": [
+            "52",
+            "44",
+            "66",
+            "38"
+          ],
+          "dan2": [
+            "68",
+            "43",
+            "76",
+            "59"
+          ],
+          "swapped": false,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -24640,7 +26057,7 @@
             "dayLotoStakeKX2": 83600,
             "dayLotoPayoutKX2": 80000,
             "dayLotoProfitKX2": -3600,
-            "cumLotoProfitKX2": 5674200,
+            "cumLotoProfitKX2": 5614000,
             "isLotoWinX2": false
           }
         },
@@ -24782,6 +26199,40 @@
           "payoutK": 36000,
           "profitK": -19000,
           "isWin": false
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "52",
+            "44",
+            "66",
+            "38"
+          ],
+          "dan2": [
+            "68",
+            "43",
+            "76",
+            "59"
+          ],
+          "hits1": 0,
+          "hits2": 2,
+          "hitNums1": [],
+          "hitNums2": [
+            "43",
+            "76"
+          ],
+          "payout1": 0,
+          "payout2": 12000,
+          "profit1": -11000,
+          "profit2": 1000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 12000,
+          "profitK": -10000,
+          "isWin": false,
+          "h4Count": 0,
+          "h3Count": 0,
+          "h2Count": 1
         }
       },
       "settledAt": "2026-10-16T10:30:15.065Z",
@@ -25263,6 +26714,34 @@
           ],
           "stakeK": 55000,
           "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-10-07",
+          "top8": [
+            "38",
+            "68",
+            "62",
+            "94",
+            "54",
+            "52",
+            "97",
+            "70"
+          ],
+          "dan1": [
+            "38",
+            "68",
+            "62",
+            "94"
+          ],
+          "dan2": [
+            "54",
+            "52",
+            "97",
+            "70"
+          ],
+          "swapped": false,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -25491,7 +26970,7 @@
             "dayLotoStakeKX2": 68200,
             "dayLotoPayoutKX2": 144000,
             "dayLotoProfitKX2": 75800,
-            "cumLotoProfitKX2": 5750000,
+            "cumLotoProfitKX2": 5689800,
             "isLotoWinX2": true
           }
         },
@@ -25636,6 +27115,43 @@
           "payoutK": 36000,
           "profitK": -19000,
           "isWin": false
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "38",
+            "68",
+            "62",
+            "94"
+          ],
+          "dan2": [
+            "54",
+            "52",
+            "97",
+            "70"
+          ],
+          "hits1": 3,
+          "hits2": 1,
+          "hitNums1": [
+            "38",
+            "62",
+            "94"
+          ],
+          "hitNums2": [
+            "70"
+          ],
+          "payout1": 84000,
+          "payout2": 0,
+          "profit1": 73000,
+          "profit2": -11000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 84000,
+          "profitK": 62000,
+          "isWin": true,
+          "h4Count": 0,
+          "h3Count": 1,
+          "h2Count": 0
         }
       },
       "settledAt": "2026-10-16T10:30:15.071Z",
@@ -26097,6 +27613,34 @@
           ],
           "stakeK": 55000,
           "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-10-08",
+          "top8": [
+            "38",
+            "75",
+            "90",
+            "62",
+            "76",
+            "84",
+            "66",
+            "49"
+          ],
+          "dan1": [
+            "38",
+            "75",
+            "90",
+            "62"
+          ],
+          "dan2": [
+            "76",
+            "84",
+            "66",
+            "49"
+          ],
+          "swapped": false,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -26314,7 +27858,7 @@
             "dayLotoStakeKX2": 81400,
             "dayLotoPayoutKX2": 72000,
             "dayLotoProfitKX2": -9400,
-            "cumLotoProfitKX2": 5740600,
+            "cumLotoProfitKX2": 5680400,
             "isLotoWinX2": false
           }
         },
@@ -26453,6 +27997,39 @@
           "payoutK": 0,
           "profitK": -55000,
           "isWin": false
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "38",
+            "75",
+            "90",
+            "62"
+          ],
+          "dan2": [
+            "76",
+            "84",
+            "66",
+            "49"
+          ],
+          "hits1": 1,
+          "hits2": 0,
+          "hitNums1": [
+            "75"
+          ],
+          "hitNums2": [],
+          "payout1": 0,
+          "payout2": 0,
+          "profit1": -11000,
+          "profit2": -11000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 0,
+          "profitK": -22000,
+          "isWin": false,
+          "h4Count": 0,
+          "h3Count": 0,
+          "h2Count": 0
         }
       },
       "settledAt": "2026-10-16T10:30:15.079Z",
@@ -26943,6 +28520,34 @@
           ],
           "stakeK": 55000,
           "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-10-09",
+          "top8": [
+            "62",
+            "10",
+            "70",
+            "54",
+            "38",
+            "43",
+            "49",
+            "11"
+          ],
+          "dan1": [
+            "62",
+            "10",
+            "70",
+            "54"
+          ],
+          "dan2": [
+            "38",
+            "43",
+            "49",
+            "11"
+          ],
+          "swapped": false,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -27175,7 +28780,7 @@
             "dayLotoStakeKX2": 70400,
             "dayLotoPayoutKX2": 48000,
             "dayLotoProfitKX2": -22400,
-            "cumLotoProfitKX2": 5718200,
+            "cumLotoProfitKX2": 5658000,
             "isLotoWinX2": false
           }
         },
@@ -27321,6 +28926,39 @@
           "payoutK": 0,
           "profitK": -55000,
           "isWin": false
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "62",
+            "10",
+            "70",
+            "54"
+          ],
+          "dan2": [
+            "38",
+            "43",
+            "49",
+            "11"
+          ],
+          "hits1": 1,
+          "hits2": 0,
+          "hitNums1": [
+            "54"
+          ],
+          "hitNums2": [],
+          "payout1": 0,
+          "payout2": 0,
+          "profit1": -11000,
+          "profit2": -11000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 0,
+          "profitK": -22000,
+          "isWin": false,
+          "h4Count": 0,
+          "h3Count": 0,
+          "h2Count": 0
         }
       },
       "settledAt": "2026-10-16T10:30:15.086Z",
@@ -27912,6 +29550,34 @@
           ],
           "stakeK": 55000,
           "methodName": "👑 Dàn Xiên 5 (5 Dàn X4 · 11M/dàn)"
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-10-12",
+          "top8": [
+            "36",
+            "76",
+            "38",
+            "72",
+            "62",
+            "59",
+            "93",
+            "43"
+          ],
+          "dan1": [
+            "36",
+            "76",
+            "38",
+            "62"
+          ],
+          "dan2": [
+            "72",
+            "59",
+            "93",
+            "43"
+          ],
+          "swapped": true,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -28157,7 +29823,7 @@
             "dayLotoStakeKX2": 68200,
             "dayLotoPayoutKX2": 64000,
             "dayLotoProfitKX2": -4200,
-            "cumLotoProfitKX2": 5771800,
+            "cumLotoProfitKX2": 5711600,
             "isLotoWinX2": false
           }
         },
@@ -28313,6 +29979,41 @@
           "payoutK": 0,
           "profitK": -55000,
           "isWin": false
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "36",
+            "76",
+            "38",
+            "62"
+          ],
+          "dan2": [
+            "72",
+            "59",
+            "93",
+            "43"
+          ],
+          "hits1": 1,
+          "hits2": 1,
+          "hitNums1": [
+            "38"
+          ],
+          "hitNums2": [
+            "72"
+          ],
+          "payout1": 0,
+          "payout2": 0,
+          "profit1": -11000,
+          "profit2": -11000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 0,
+          "profitK": -22000,
+          "isWin": false,
+          "h4Count": 0,
+          "h3Count": 0,
+          "h2Count": 0
         }
       },
       "settledAt": "2026-10-16T10:30:15.094Z",
@@ -29031,6 +30732,34 @@
             "payoutHit2K": 12000
           },
           "totalStakeK": 165000
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-10-13",
+          "top8": [
+            "76",
+            "94",
+            "62",
+            "43",
+            "04",
+            "75",
+            "36",
+            "93"
+          ],
+          "dan1": [
+            "76",
+            "94",
+            "62",
+            "43"
+          ],
+          "dan2": [
+            "04",
+            "75",
+            "36",
+            "93"
+          ],
+          "swapped": false,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -29291,7 +31020,7 @@
             "dayLotoStakeKX2": 81400,
             "dayLotoPayoutKX2": 80000,
             "dayLotoProfitKX2": -1400,
-            "cumLotoProfitKX2": 5770400,
+            "cumLotoProfitKX2": 5710200,
             "isLotoWinX2": false
           }
         },
@@ -29447,6 +31176,41 @@
           "payoutK": 0,
           "profitK": -55000,
           "isWin": false
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "76",
+            "94",
+            "62",
+            "43"
+          ],
+          "dan2": [
+            "04",
+            "75",
+            "36",
+            "93"
+          ],
+          "hits1": 1,
+          "hits2": 1,
+          "hitNums1": [
+            "62"
+          ],
+          "hitNums2": [
+            "75"
+          ],
+          "payout1": 0,
+          "payout2": 0,
+          "profit1": -11000,
+          "profit2": -11000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 0,
+          "profitK": -22000,
+          "isWin": false,
+          "h4Count": 0,
+          "h3Count": 0,
+          "h2Count": 0
         }
       },
       "settledAt": "2026-10-16T10:30:15.101Z",
@@ -30091,6 +31855,34 @@
             "payoutHit2K": 12000
           },
           "totalStakeK": 165000
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-10-14",
+          "top8": [
+            "36",
+            "38",
+            "75",
+            "66",
+            "52",
+            "97",
+            "62",
+            "15"
+          ],
+          "dan1": [
+            "36",
+            "38",
+            "75",
+            "66"
+          ],
+          "dan2": [
+            "52",
+            "97",
+            "62",
+            "15"
+          ],
+          "swapped": false,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -30350,7 +32142,7 @@
             "dayLotoStakeKX2": 79200,
             "dayLotoPayoutKX2": 104000,
             "dayLotoProfitKX2": 24800,
-            "cumLotoProfitKX2": 5795200,
+            "cumLotoProfitKX2": 5735000,
             "isLotoWinX2": true
           }
         },
@@ -30480,6 +32272,42 @@
           "payoutK": 36000,
           "profitK": -19000,
           "isWin": false
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "36",
+            "38",
+            "75",
+            "66"
+          ],
+          "dan2": [
+            "52",
+            "97",
+            "62",
+            "15"
+          ],
+          "hits1": 1,
+          "hits2": 2,
+          "hitNums1": [
+            "66"
+          ],
+          "hitNums2": [
+            "52",
+            "62"
+          ],
+          "payout1": 0,
+          "payout2": 12000,
+          "profit1": -11000,
+          "profit2": 1000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 12000,
+          "profitK": -10000,
+          "isWin": false,
+          "h4Count": 0,
+          "h3Count": 0,
+          "h2Count": 1
         }
       },
       "settledAt": "2026-10-14T17:59:17.481Z",
@@ -35206,6 +37034,34 @@
             "lockActive": false,
             "lockReason": "Chưa đến 12:00 trưa (còn 661 phút). Dự đoán vẫn có thể cập nhật."
           }
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-10-15",
+          "top8": [
+            "59",
+            "54",
+            "36",
+            "95",
+            "22",
+            "75",
+            "38",
+            "43"
+          ],
+          "dan1": [
+            "59",
+            "54",
+            "36",
+            "22"
+          ],
+          "dan2": [
+            "95",
+            "75",
+            "38",
+            "43"
+          ],
+          "swapped": true,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -35428,7 +37284,7 @@
             "dayLotoStakeKX2": 72600,
             "dayLotoPayoutKX2": 8000,
             "dayLotoProfitKX2": -64600,
-            "cumLotoProfitKX2": 5730600,
+            "cumLotoProfitKX2": 5670400,
             "isLotoWinX2": false
           }
         },
@@ -35996,6 +37852,37 @@
           "payoutK": 0,
           "profitK": -55000,
           "isWin": false
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "59",
+            "54",
+            "36",
+            "22"
+          ],
+          "dan2": [
+            "95",
+            "75",
+            "38",
+            "43"
+          ],
+          "hits1": 0,
+          "hits2": 0,
+          "hitNums1": [],
+          "hitNums2": [],
+          "payout1": 0,
+          "payout2": 0,
+          "profit1": -11000,
+          "profit2": -11000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 0,
+          "profitK": -22000,
+          "isWin": false,
+          "h4Count": 0,
+          "h3Count": 0,
+          "h2Count": 0
         }
       },
       "settledAt": "2026-10-16T11:02:06.295Z",
@@ -41333,6 +43220,34 @@
           "payout36X1K": 16800,
           "profit36X2K": 22800,
           "profit36X1K": 6000
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-10-16",
+          "top8": [
+            "36",
+            "96",
+            "62",
+            "92",
+            "10",
+            "44",
+            "59",
+            "49"
+          ],
+          "dan1": [
+            "36",
+            "96",
+            "62",
+            "92"
+          ],
+          "dan2": [
+            "10",
+            "44",
+            "59",
+            "49"
+          ],
+          "swapped": false,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -41559,7 +43474,7 @@
             "dayLotoStakeKX2": 72600,
             "dayLotoPayoutKX2": 72000,
             "dayLotoProfitKX2": -600,
-            "cumLotoProfitKX2": 5730000,
+            "cumLotoProfitKX2": 5669800,
             "isLotoWinX2": false
           }
         },
@@ -42127,6 +44042,43 @@
           "payoutK": 0,
           "profitK": -55000,
           "isWin": false
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "36",
+            "96",
+            "62",
+            "92"
+          ],
+          "dan2": [
+            "10",
+            "44",
+            "59",
+            "49"
+          ],
+          "hits1": 2,
+          "hits2": 2,
+          "hitNums1": [
+            "96",
+            "92"
+          ],
+          "hitNums2": [
+            "44",
+            "59"
+          ],
+          "payout1": 12000,
+          "payout2": 12000,
+          "profit1": 1000,
+          "profit2": 1000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 24000,
+          "profitK": 2000,
+          "isWin": true,
+          "h4Count": 0,
+          "h3Count": 0,
+          "h2Count": 2
         }
       },
       "settledAt": "2026-10-16T11:50:19.199Z",
@@ -47051,6 +49003,34 @@
             "lockReason": "Kỳ quay 2026-10-17 là ngày tương lai.",
             "vnTime": "2026-10-16T18:50:18+07:00"
           }
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-10-17",
+          "top8": [
+            "79",
+            "38",
+            "59",
+            "76",
+            "66",
+            "52",
+            "24",
+            "62"
+          ],
+          "dan1": [
+            "79",
+            "38",
+            "59",
+            "66"
+          ],
+          "dan2": [
+            "76",
+            "52",
+            "24",
+            "62"
+          ],
+          "swapped": true,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -47298,7 +49278,7 @@
             "dayLotoStakeKX2": 74800,
             "dayLotoPayoutKX2": 112000,
             "dayLotoProfitKX2": 37200,
-            "cumLotoProfitKX2": 5767200,
+            "cumLotoProfitKX2": 5707000,
             "isLotoWinX2": true
           }
         },
@@ -47866,6 +49846,42 @@
           "payoutK": 204000,
           "profitK": 149000,
           "isWin": true
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "79",
+            "38",
+            "59",
+            "66"
+          ],
+          "dan2": [
+            "76",
+            "52",
+            "24",
+            "62"
+          ],
+          "hits1": 2,
+          "hits2": 1,
+          "hitNums1": [
+            "38",
+            "59"
+          ],
+          "hitNums2": [
+            "52"
+          ],
+          "payout1": 12000,
+          "payout2": 0,
+          "profit1": 1000,
+          "profit2": -11000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 12000,
+          "profitK": -10000,
+          "isWin": false,
+          "h4Count": 0,
+          "h3Count": 0,
+          "h2Count": 1
         }
       },
       "settledAt": "2026-10-18T12:16:30.666Z",
@@ -49234,6 +51250,34 @@
             },
             "stakeK": 92400
           }
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-10-18",
+          "top8": [
+            "62",
+            "76",
+            "59",
+            "54",
+            "18",
+            "63",
+            "02",
+            "93"
+          ],
+          "dan1": [
+            "62",
+            "76",
+            "59",
+            "54"
+          ],
+          "dan2": [
+            "18",
+            "63",
+            "02",
+            "93"
+          ],
+          "swapped": false,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -49468,7 +51512,7 @@
             "dayLotoStakeKX2": 72600,
             "dayLotoPayoutKX2": 72000,
             "dayLotoProfitKX2": -600,
-            "cumLotoProfitKX2": 5766600,
+            "cumLotoProfitKX2": 5706400,
             "isLotoWinX2": false
           }
         },
@@ -50101,6 +52145,41 @@
             "profitK": 3600,
             "isWin": true
           }
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "62",
+            "76",
+            "59",
+            "54"
+          ],
+          "dan2": [
+            "18",
+            "63",
+            "02",
+            "93"
+          ],
+          "hits1": 1,
+          "hits2": 1,
+          "hitNums1": [
+            "54"
+          ],
+          "hitNums2": [
+            "18"
+          ],
+          "payout1": 0,
+          "payout2": 0,
+          "profit1": -11000,
+          "profit2": -11000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 0,
+          "profitK": -22000,
+          "isWin": false,
+          "h4Count": 0,
+          "h3Count": 0,
+          "h2Count": 0
         }
       },
       "settledAt": "2026-10-18T12:19:00.185Z",
@@ -55477,6 +57556,34 @@
             },
             "stakeK": 92400
           }
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-10-19",
+          "top8": [
+            "62",
+            "76",
+            "59",
+            "35",
+            "24",
+            "52",
+            "70",
+            "66"
+          ],
+          "dan1": [
+            "62",
+            "76",
+            "59",
+            "35"
+          ],
+          "dan2": [
+            "24",
+            "52",
+            "70",
+            "66"
+          ],
+          "swapped": false,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -55711,7 +57818,7 @@
             "dayLotoStakeKX2": 74800,
             "dayLotoPayoutKX2": 48000,
             "dayLotoProfitKX2": -26800,
-            "cumLotoProfitKX2": 5739800,
+            "cumLotoProfitKX2": 5679600,
             "isLotoWinX2": false
           }
         },
@@ -56516,6 +58623,41 @@
             "profitK": -36400,
             "isWin": false
           }
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "62",
+            "76",
+            "59",
+            "35"
+          ],
+          "dan2": [
+            "24",
+            "52",
+            "70",
+            "66"
+          ],
+          "hits1": 1,
+          "hits2": 1,
+          "hitNums1": [
+            "35"
+          ],
+          "hitNums2": [
+            "66"
+          ],
+          "payout1": 0,
+          "payout2": 0,
+          "profit1": -11000,
+          "profit2": -11000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 0,
+          "profitK": -22000,
+          "isWin": false,
+          "h4Count": 0,
+          "h3Count": 0,
+          "h2Count": 0
         }
       },
       "actualResult": {
@@ -57277,6 +59419,34 @@
             ],
             "stakeK": 5500
           }
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-10-20",
+          "top8": [
+            "38",
+            "70",
+            "32",
+            "95",
+            "52",
+            "66",
+            "63",
+            "76"
+          ],
+          "dan1": [
+            "38",
+            "70",
+            "32",
+            "66"
+          ],
+          "dan2": [
+            "95",
+            "52",
+            "63",
+            "76"
+          ],
+          "swapped": true,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -57495,7 +59665,7 @@
             "dayLotoStakeKX2": 70400,
             "dayLotoPayoutKX2": 208000,
             "dayLotoProfitKX2": 137600,
-            "cumLotoProfitKX2": 5877400,
+            "cumLotoProfitKX2": 5817200,
             "isLotoWinX2": true
           }
         },
@@ -57977,6 +60147,44 @@
           "flatPayout7K": 48000,
           "flatProfit7K": 32600,
           "isFlatWin": true
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "38",
+            "70",
+            "32",
+            "66"
+          ],
+          "dan2": [
+            "95",
+            "52",
+            "63",
+            "76"
+          ],
+          "hits1": 3,
+          "hits2": 2,
+          "hitNums1": [
+            "70",
+            "32",
+            "66"
+          ],
+          "hitNums2": [
+            "95",
+            "63"
+          ],
+          "payout1": 84000,
+          "payout2": 12000,
+          "profit1": 73000,
+          "profit2": 1000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 96000,
+          "profitK": 74000,
+          "isWin": true,
+          "h4Count": 0,
+          "h3Count": 1,
+          "h2Count": 1
         }
       },
       "actualResult": {
@@ -63575,6 +65783,34 @@
             ],
             "stakeK": 94600
           }
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-10-21",
+          "top8": [
+            "66",
+            "90",
+            "23",
+            "70",
+            "38",
+            "62",
+            "59",
+            "24"
+          ],
+          "dan1": [
+            "66",
+            "90",
+            "23",
+            "70"
+          ],
+          "dan2": [
+            "38",
+            "62",
+            "59",
+            "24"
+          ],
+          "swapped": false,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -64593,6 +66829,42 @@
           "totalPayoutK": 144000,
           "totalProfitK": 14700,
           "isWin": true
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "66",
+            "90",
+            "23",
+            "70"
+          ],
+          "dan2": [
+            "38",
+            "62",
+            "59",
+            "24"
+          ],
+          "hits1": 1,
+          "hits2": 2,
+          "hitNums1": [
+            "90"
+          ],
+          "hitNums2": [
+            "62",
+            "59"
+          ],
+          "payout1": 0,
+          "payout2": 12000,
+          "profit1": -11000,
+          "profit2": 1000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 12000,
+          "profitK": -10000,
+          "isWin": false,
+          "h4Count": 0,
+          "h3Count": 0,
+          "h2Count": 1
         }
       },
       "actualResult": {
@@ -64627,7 +66899,7 @@
           "08"
         ]
       },
-      "settledAt": "2026-10-23T03:34:08.303Z"
+      "settledAt": "2026-10-23T10:21:16.317Z"
     },
     "2026-10-22": {
       "targetDate": "2026-10-22",
@@ -64832,21 +67104,22 @@
               "72",
               "86"
             ],
-            "tierX2": [],
+            "tierX2": [
+              "62"
+            ],
             "tierX1": [
               "11",
               "46",
               "49",
               "56",
-              "62",
               "70",
               "84",
               "88",
               "92",
               "95"
             ],
-            "stakeKX2": 66000,
-            "promotedRationale": "Không có số nào cần nâng hạng hôm nay."
+            "stakeKX2": 68200,
+            "promotedRationale": "Số [62] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "pentaConsensus": {
@@ -64936,138 +67209,200 @@
             "numbers": [
               "66",
               "38",
-              "72",
-              "86",
               "62",
-              "26",
-              "92",
-              "12",
               "44",
+              "72",
+              "12",
+              "86",
+              "61",
+              "26",
               "11",
-              "14"
+              "42",
+              "14",
+              "92",
+              "43",
+              "90",
+              "95"
             ],
-            "x5Nums": [],
-            "x4Nums": [],
-            "x3Nums": [
+            "x5Nums": [
               "66",
               "38",
+              "62",
+              "44"
+            ],
+            "x4Nums": [
               "72"
             ],
-            "x1Nums": [
-              "86",
-              "62",
-              "26",
-              "92",
+            "x3Nums": [
               "12",
-              "44",
+              "86",
+              "61"
+            ],
+            "x1Nums": [
+              "26",
               "11",
-              "14"
+              "42",
+              "14",
+              "92",
+              "43",
+              "90",
+              "95"
             ],
             "multiplierMap": {
               "11": 1,
-              "12": 1,
+              "12": 3,
               "14": 1,
               "26": 1,
-              "38": 3,
-              "44": 1,
-              "62": 1,
-              "66": 3,
-              "72": 3,
-              "86": 1,
-              "92": 1
+              "38": 5,
+              "42": 1,
+              "43": 1,
+              "44": 5,
+              "61": 3,
+              "62": 5,
+              "66": 5,
+              "72": 4,
+              "86": 3,
+              "90": 1,
+              "92": 1,
+              "95": 1
             },
-            "stakeK": 37400
+            "stakeK": 90200
           },
           "loCrossX2": {
             "numbers": [
               "66",
               "38",
-              "72",
-              "86",
               "62",
-              "26",
-              "92",
-              "12",
               "44",
+              "72",
+              "12",
+              "86",
+              "61",
+              "26",
               "11",
-              "14"
+              "42",
+              "14",
+              "92",
+              "43",
+              "90",
+              "95"
             ],
-            "x5Nums": [],
-            "x4Nums": [],
-            "x3Nums": [
+            "x5Nums": [
               "66",
               "38",
+              "62",
+              "44"
+            ],
+            "x4Nums": [
               "72"
             ],
-            "x2Nums": [
+            "x3Nums": [
+              "12",
               "86",
-              "44",
+              "61"
+            ],
+            "x2Nums": [
               "14"
             ],
             "x1Nums": [
-              "62",
               "26",
+              "11",
+              "42",
               "92",
-              "12",
-              "11"
+              "43",
+              "90",
+              "95"
             ],
             "multiplierMap": {
               "11": 1,
-              "12": 1,
+              "12": 3,
               "14": 2,
               "26": 1,
-              "38": 3,
-              "44": 2,
-              "62": 1,
-              "66": 3,
-              "72": 3,
-              "86": 2,
-              "92": 1
+              "38": 5,
+              "42": 1,
+              "43": 1,
+              "44": 5,
+              "61": 3,
+              "62": 5,
+              "66": 5,
+              "72": 4,
+              "86": 3,
+              "90": 1,
+              "92": 1,
+              "95": 1
             },
-            "stakeK": 44000
+            "stakeK": 92400
           },
           "xien5": {
             "top5": [
               "66",
               "38",
-              "72",
-              "86",
-              "62"
+              "62",
+              "44",
+              "72"
             ],
             "tickets": [
               [
                 "66",
                 "38",
-                "72",
-                "86"
+                "62",
+                "44"
               ],
               [
                 "66",
                 "38",
-                "72",
-                "62"
+                "62",
+                "72"
               ],
               [
                 "66",
                 "38",
-                "86",
-                "62"
+                "44",
+                "72"
               ],
               [
                 "66",
-                "72",
-                "86",
-                "62"
+                "62",
+                "44",
+                "72"
               ],
               [
                 "38",
-                "72",
-                "86",
-                "62"
+                "62",
+                "44",
+                "72"
               ]
             ],
             "stakeK": 5500
           }
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-10-22",
+          "top8": [
+            "66",
+            "86",
+            "14",
+            "38",
+            "72",
+            "49",
+            "62",
+            "24"
+          ],
+          "dan1": [
+            "66",
+            "86",
+            "14",
+            "38"
+          ],
+          "dan2": [
+            "72",
+            "49",
+            "62",
+            "24"
+          ],
+          "swapped": false,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {
@@ -65234,13 +67569,14 @@
               "72",
               "86"
             ],
-            "tierX2": [],
+            "tierX2": [
+              "62"
+            ],
             "tierX1": [
               "11",
               "46",
               "49",
               "56",
-              "62",
               "70",
               "84",
               "88",
@@ -65253,9 +67589,10 @@
             "x2Hits": 0,
             "x1Hits": 3,
             "totalHits": 5,
-            "dayLotoStakeKX2": 66000,
+            "dayLotoStakeKX2": 68200,
             "dayLotoPayoutKX2": 80000,
-            "dayLotoProfitKX2": 14000,
+            "dayLotoProfitKX2": 11800,
+            "cumLotoProfitKX2": 5854600,
             "isLotoWinX2": true
           }
         },
@@ -65353,126 +67690,154 @@
             "numbers": [
               "66",
               "38",
-              "72",
-              "86",
               "62",
-              "26",
-              "92",
-              "12",
               "44",
+              "72",
+              "12",
+              "86",
+              "61",
+              "26",
               "11",
-              "14"
+              "42",
+              "14",
+              "92",
+              "43",
+              "90",
+              "95"
             ],
-            "x5Nums": [],
-            "x4Nums": [],
-            "x3Nums": [
+            "x5Nums": [
               "66",
               "38",
+              "62",
+              "44"
+            ],
+            "x4Nums": [
               "72"
             ],
-            "x1Nums": [
-              "86",
-              "62",
-              "26",
-              "92",
+            "x3Nums": [
               "12",
-              "44",
-              "11",
-              "14"
+              "86",
+              "61"
             ],
-            "hits": 3,
+            "x1Nums": [
+              "26",
+              "11",
+              "42",
+              "14",
+              "92",
+              "43",
+              "90",
+              "95"
+            ],
+            "hits": 5,
             "hitNums": [
               "66",
               "12",
-              "14"
+              "61",
+              "14",
+              "43"
             ],
-            "stakeK": 37400,
-            "payoutK": 40000,
-            "profitK": 2600,
+            "stakeK": 90200,
+            "payoutK": 104000,
+            "profitK": 13800,
             "isWin": true
           },
           "loCrossX2": {
             "numbers": [
               "66",
               "38",
-              "72",
-              "86",
               "62",
-              "26",
-              "92",
-              "12",
               "44",
+              "72",
+              "12",
+              "86",
+              "61",
+              "26",
               "11",
-              "14"
+              "42",
+              "14",
+              "92",
+              "43",
+              "90",
+              "95"
             ],
-            "x5Nums": [],
-            "x4Nums": [],
-            "x3Nums": [
+            "x5Nums": [
               "66",
               "38",
+              "62",
+              "44"
+            ],
+            "x4Nums": [
               "72"
             ],
-            "x2Nums": [
+            "x3Nums": [
+              "12",
               "86",
-              "44",
+              "61"
+            ],
+            "x2Nums": [
               "14"
             ],
             "x1Nums": [
-              "62",
               "26",
+              "11",
+              "42",
               "92",
-              "12",
-              "11"
+              "43",
+              "90",
+              "95"
             ],
-            "hits": 3,
+            "hits": 5,
             "hitNums": [
               "66",
               "12",
-              "14"
+              "61",
+              "14",
+              "43"
             ],
-            "stakeK": 44000,
-            "payoutK": 48000,
-            "profitK": 4000,
+            "stakeK": 92400,
+            "payoutK": 112000,
+            "profitK": 19600,
             "isWin": true
           },
           "xien5": {
             "top5": [
               "66",
               "38",
-              "72",
-              "86",
-              "62"
+              "62",
+              "44",
+              "72"
             ],
             "tickets": [
               [
                 "66",
                 "38",
-                "72",
-                "86"
+                "62",
+                "44"
               ],
               [
                 "66",
                 "38",
-                "72",
-                "62"
+                "62",
+                "72"
               ],
               [
                 "66",
                 "38",
-                "86",
-                "62"
+                "44",
+                "72"
               ],
               [
                 "66",
-                "72",
-                "86",
-                "62"
+                "62",
+                "44",
+                "72"
               ],
               [
                 "38",
-                "72",
-                "86",
-                "62"
+                "62",
+                "44",
+                "72"
               ]
             ],
             "h5": 1,
@@ -65482,11 +67847,45 @@
             "isWin": false
           },
           "combo": {
-            "stakeK": 58900,
-            "payoutK": 56800,
-            "profitK": -2100,
-            "isWin": false
+            "stakeK": 111700,
+            "payoutK": 120800,
+            "profitK": 9100,
+            "isWin": true
           }
+        },
+        "top8ParityXien4": {
+          "dan1": [
+            "66",
+            "86",
+            "14",
+            "38"
+          ],
+          "dan2": [
+            "72",
+            "49",
+            "62",
+            "24"
+          ],
+          "hits1": 2,
+          "hits2": 0,
+          "hitNums1": [
+            "66",
+            "14"
+          ],
+          "hitNums2": [],
+          "payout1": 12000,
+          "payout2": 0,
+          "profit1": 1000,
+          "profit2": -11000,
+          "stakeK": 22000,
+          "dan1StakeK": 11000,
+          "dan2StakeK": 11000,
+          "payoutK": 12000,
+          "profitK": -10000,
+          "isWin": false,
+          "h4Count": 0,
+          "h3Count": 0,
+          "h2Count": 1
         }
       },
       "actualResult": {
@@ -67289,7 +69688,7 @@
           "snapshotLock": {
             "isLocked": true,
             "lockActive": true,
-            "lockedAt": "2026-10-23T03:31:52.261Z",
+            "lockedAt": "2026-10-23T06:10:52.683Z",
             "lockStartTime": "2026-10-22T17:08:00.000Z",
             "lockTargetDate": "2026-10-23",
             "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -70467,7 +72866,7 @@
           "snapshotLock": {
             "isLocked": true,
             "lockActive": true,
-            "lockedAt": "2026-10-23T03:31:51.643Z",
+            "lockedAt": "2026-10-23T06:10:52.086Z",
             "lockStartTime": "2026-10-22T17:08:00.000Z",
             "lockTargetDate": "2026-10-23",
             "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -70588,7 +72987,7 @@
           "snapshotLock": {
             "isLocked": true,
             "lockActive": true,
-            "lockedAt": "2026-10-23T03:31:51.643Z",
+            "lockedAt": "2026-10-23T06:10:52.086Z",
             "lockStartTime": "2026-10-22T17:08:00.000Z",
             "lockTargetDate": "2026-10-23",
             "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -71142,6 +73541,34 @@
           "shannonEntropy": 0.38,
           "expectedValue": "+16.8%",
           "fullCopyText": "Đề:\n- Dàn X2: 00, 13, 68, 03, 19, 26, 37, 57, 64, 66, 79, 97, 02, 04, 06, 08, 09, 11, 17, 24, 28, 31, 33, 42, 44, 46, 51, 62, 71\n- Dàn X1: 22, 48, 60, 82, 88, 91, 99, 01, 05, 16, 25, 53\nLô:\n- Dàn X3: 42, 31, 64, 22\n- Dàn X1: 56, 75, 95\nLô Xiên 5: 42, 31, 64, 22, 43\nChúc may mắn !"
+        },
+        "top8ParityXien4": {
+          "targetDate": "2026-10-23",
+          "top8": [
+            "31",
+            "95",
+            "12",
+            "41",
+            "57",
+            "97",
+            "23",
+            "44"
+          ],
+          "dan1": [
+            "31",
+            "95",
+            "12",
+            "41"
+          ],
+          "dan2": [
+            "57",
+            "97",
+            "23",
+            "44"
+          ],
+          "swapped": false,
+          "stakeK": 22000,
+          "stakePerDanK": 11000
         }
       },
       "settlement": {}

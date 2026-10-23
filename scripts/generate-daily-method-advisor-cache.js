@@ -306,8 +306,76 @@ async function main() {
         if (cache.mirofishSwarm?.latestRecommendation) {
             registryService.registerDailyBet(expectedPredictionDate, 'mirofishSwarm', cache.mirofishSwarm.latestRecommendation);
         }
+        if (cache.metaCrossMethod?.latestRecommendation) {
+            const top8 = cache.metaCrossMethod.latestRecommendation.topPredictions?.top8?.numbers
+                || (cache.metaCrossMethod.latestRecommendation.rankedNumbers || []).slice(0, 8);
+            if (top8 && top8.length >= 8) {
+                const { pairTop8WithParity } = require('../lib/services/top8ParityXien4Service');
+                const paired = pairTop8WithParity(top8);
+                registryService.registerDailyBet(expectedPredictionDate, 'top8ParityXien4', {
+                    targetDate: expectedPredictionDate,
+                    top8: top8.map(n => String(n).padStart(2, '0')),
+                    dan1: paired.dan1,
+                    dan2: paired.dan2,
+                    swapped: paired.swapped,
+                    stakeK: 22000,
+                    stakePerDanK: 11000
+                });
+            }
+        }
 
         cache.dailyLockedBetsRegistry = registryService.loadRegistry();
+
+        // Xây dựng cấu trúc top8ParityXien4 (2 Dàn Xiên 4 Tinh Hoa) trong cache
+        const { pairTop8WithParity, evaluateTop8ParityXien4 } = require('../lib/services/top8ParityXien4Service');
+        const regDates = cache.dailyLockedBetsRegistry?.dates || {};
+        const metaLedger = cache.metaCrossMethod?.settledLedger || [];
+        let cumParityProfitK = 0;
+        const paritySettledLedger = metaLedger.map(r => {
+            const d = r.date;
+            const regSett = regDates[d]?.settlement?.top8ParityXien4;
+            const regBet = regDates[d]?.bets?.top8ParityXien4;
+            let dan1 = regBet?.dan1 || regSett?.dan1;
+            let dan2 = regBet?.dan2 || regSett?.dan2;
+            let swapped = regBet?.swapped || false;
+            let top8 = regBet?.top8 || r.methods?.top8?.betNumbers || [];
+            if (!dan1 || !dan2) {
+                const paired = pairTop8WithParity(top8);
+                dan1 = paired.dan1;
+                dan2 = paired.dan2;
+                swapped = paired.swapped;
+            }
+            const evalRes = regSett || evaluateTop8ParityXien4(dan1, dan2, r.actual27);
+            cumParityProfitK += evalRes.profitK;
+            return {
+                date: d,
+                top8,
+                dan1,
+                dan2,
+                swapped,
+                ...evalRes,
+                cumProfitK: cumParityProfitK
+            };
+        });
+
+        const pendingTop8 = cache.metaCrossMethod?.latestRecommendation?.topPredictions?.top8?.numbers
+            || (cache.metaCrossMethod?.latestRecommendation?.rankedNumbers || []).slice(0, 8);
+        const pendingPaired = pairTop8WithParity(pendingTop8);
+        cache.top8ParityXien4 = {
+            methodName: '🎲 2 Dàn Xiên 4 Tinh Hoa (Đầu Chẵn/Lẻ)',
+            stakeK: 22000,
+            latestRecommendation: {
+                targetDate: expectedPredictionDate,
+                predictionDate: expectedPredictionDate,
+                top8: pendingTop8,
+                dan1: pendingPaired.dan1,
+                dan2: pendingPaired.dan2,
+                swapped: pendingPaired.swapped,
+                stakeK: 22000,
+                stakePerDanK: 11000
+            },
+            settledLedger: paritySettledLedger
+        };
 
         // Đồng bộ hóa crossX2 từ SSOT Registry cho cả main settledLedger và modes.top7 / modes.top6
         if (cache.lo4EngineFusion) {
@@ -355,6 +423,7 @@ async function main() {
         pruneUnsettledLedger(cache.tripleMerge?.settledLedger);
         pruneUnsettledLedger(cache.crossHedgingPortfolio?.settledLedger);
         pruneUnsettledLedger(cache.pentaConsensus?.settledLedger);
+        pruneUnsettledLedger(cache.top8ParityXien4?.settledLedger);
     }
 
     const fs = require('fs');

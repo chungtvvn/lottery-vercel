@@ -279,6 +279,7 @@ function settleFromRaw(payload, rawRows) {
         deDropoffMerge: deDropoffMerge || payload.deDropoffMerge || null,
         loDropoff27: loDropoff27 || payload.loDropoff27 || null,
         semanticResonanceSuite: semanticResonanceSuite || payload.semanticResonanceSuite || null,
+        top8ParityXien4: payload.top8ParityXien4 || null,
         dailyLockedBetsRegistry: payload.dailyLockedBetsRegistry || null,
         latestDataDate: rawRows?.at(-1)?.date || payload.latestDataDate,
         snapshotLock: (() => {
