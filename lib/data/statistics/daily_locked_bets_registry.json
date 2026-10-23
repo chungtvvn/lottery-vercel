@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "description": "Single Source of Truth (SSOT) Immutable Daily Bets and Settlement Registry",
-  "updatedAt": "2026-10-23T01:45:39.639Z",
+  "updatedAt": "2026-10-23T02:07:41.656Z",
   "dates": {
     "2026-10-10": {
       "targetDate": "2026-10-10",
@@ -64373,7 +64373,7 @@
           "08"
         ]
       },
-      "settledAt": "2026-10-23T01:45:39.638Z"
+      "settledAt": "2026-10-23T02:07:41.655Z"
     }
   }
 }
