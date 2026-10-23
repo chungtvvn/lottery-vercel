@@ -922,10 +922,10 @@ export async function GET(request) {
         }
 
         // BẢO VỆ BẤT BIẾN LÔ ĐỘT PHÁ X2 TRÊN API CHO CẢ 2 BÊN (ADVISOR & SHADOW)
-        if (settled.lo4EngineFusion?.latestRecommendation && (!settled.lo4EngineFusion.latestRecommendation.crossX2 || !settled.lo4EngineFusion.latestRecommendation.crossX2.tierX2?.length)) {
+        if (settled.lo4EngineFusion?.latestRecommendation && !settled.lo4EngineFusion.latestRecommendation.crossX2) {
             const nextTarget = settled.lo4EngineFusion.latestRecommendation.predictionDate || settled.pendingPredictionDate;
             const regCross = settled.dailyLockedBetsRegistry?.dates?.[nextTarget]?.bets?.lo4EngineFusion?.crossX2;
-            if (regCross && regCross.tierX2?.length) {
+            if (regCross) {
                 settled.lo4EngineFusion.latestRecommendation.crossX2 = regCross;
             } else {
                 const pentaRecLo = settled.pentaConsensus?.latestRecommendation?.lo;
@@ -955,10 +955,10 @@ export async function GET(request) {
                 }
             }
         }
-        if (settled.pentaConsensus?.latestRecommendation?.lo && (!settled.pentaConsensus.latestRecommendation.loCrossX2 || !settled.pentaConsensus.latestRecommendation.loCrossX2.x2Nums?.length)) {
+        if (settled.pentaConsensus?.latestRecommendation?.lo && !settled.pentaConsensus.latestRecommendation.loCrossX2) {
             const nextTarget = settled.pentaConsensus.latestRecommendation.date || settled.pendingPredictionDate;
             const regCross = settled.dailyLockedBetsRegistry?.dates?.[nextTarget]?.bets?.pentaConsensus?.loCrossX2;
-            if (regCross && regCross.x2Nums?.length) {
+            if (regCross) {
                 settled.pentaConsensus.latestRecommendation.loCrossX2 = regCross;
             } else {
                 const lo4Rec = settled.lo4EngineFusion?.latestRecommendation;

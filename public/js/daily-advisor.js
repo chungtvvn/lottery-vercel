@@ -3555,7 +3555,7 @@
             const prizeCountsInfo = {};
             drawPrizesForInfo.forEach(p => { prizeCountsInfo[p] = (prizeCountsInfo[p] || 0) + 1; });
 
-            const stakeKX2 = info.dayLotoStakeKX2 || info.dayLotoStakeK || crossX2.dayLotoStakeKX2 || crossX2.stakeKX2 || 70400;
+            const stakeKX2 = info.dayLotoStakeKX2 || crossX2.dayLotoStakeKX2 || crossX2.stakeKX2 || info.dayLotoStakeK || baseLo4.dayLotoStakeK || 66000;
             const payoutKX2 = isPending ? 0 : (info.dayLotoPayoutKX2 !== undefined ? info.dayLotoPayoutKX2 : (info.dayLotoPayoutK !== undefined ? info.dayLotoPayoutK : (crossX2.dayLotoPayoutKX2 || 0)));
             const profitKX2 = isPending ? 0 : (info.dayLotoProfitKX2 !== undefined ? info.dayLotoProfitKX2 : (info.dayLotoProfitK !== undefined ? info.dayLotoProfitK : (crossX2.dayLotoProfitKX2 !== undefined ? crossX2.dayLotoProfitKX2 : (payoutKX2 - stakeKX2))));
             const isWin = !isPending && profitKX2 > 0;
@@ -4587,14 +4587,14 @@
                 crossX2 = latestRec.crossX2;
             }
         }
-        // Self-healing fallback: nếu vẫn chưa có hoặc tierX2 rỗng, đối soát với Shadow Monitor Penta
+        // Self-healing fallback: nếu vẫn chưa có crossX2, đối soát với Shadow Monitor Penta của ngày đó
         let promotedX2 = (crossX2?.tierX2 || []).map(number);
         let remX1 = (crossX2?.tierX1 || []).map(number);
-        if (promotedX2.length === 0 && t1.length > 0) {
+        if (!crossX2 && t1.length > 0) {
             const pentaLo = regEntry?.settlement?.pentaConsensus?.lo 
                 || regEntry?.bets?.pentaConsensus?.lo 
                 || (p?.pentaConsensus?.settledLedger || []).find(r => r.date === date && (r.lo?.x5Nums?.length || r.lo?.x3Nums?.length))?.lo 
-                || (p?.pentaConsensus?.latestRecommendation?.lo) 
+                || ((isPending || date === p?.pendingPredictionDate) ? p?.pentaConsensus?.latestRecommendation?.lo : null)
                 || {};
             const pentaHighSet = new Set([
                 ...(pentaLo.x5Nums || []),
@@ -7474,8 +7474,8 @@
                             <!-- Cột 8: ⚡ Nâng X2 (Shadow) -->
                             <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-emerald-100/50 rounded-xl transition-all border-l border-emerald-200/60 bg-emerald-50/25" data-date="${r.date}" data-diary-cell="lo4CrossX2">
                                 ${(() => {
-                                    const pCross = (lo4Info?.crossX2?.tierX2?.length ? lo4Info.crossX2 : null)
-                                        || (payload?.lo4EngineFusion?.latestRecommendation?.crossX2?.tierX2?.length ? payload.lo4EngineFusion.latestRecommendation.crossX2 : null)
+                                    const pCross = lo4Info?.crossX2
+                                        || (payload?.lo4EngineFusion?.latestRecommendation?.targetDate === r.date ? payload.lo4EngineFusion.latestRecommendation.crossX2 : null)
                                         || resolveLo4CrossX2(r.date, lo4Info?.sLo4, lo4Info?.bLo4, payload, true, lo4Info?.tierX5 || [], lo4Info?.tierX4 || [], lo4Info?.tierX3 || [], lo4Info?.tierX1 || []);
                                     const pX2Nums = (pCross?.tierX2 || []).map(number);
                                     if (pX2Nums.length > 0) {
@@ -7484,14 +7484,14 @@
                                     return '<span class="text-[10px] text-slate-400 italic">0 số nâng X2 (như gốc)</span>';
                                 })()}
                                 <div class="text-[10px] text-slate-500 mt-1 flex items-center justify-between">
-                                    <span>Vốn: ${moneyM((lo4Info?.crossX2?.stakeKX2 || payload?.lo4EngineFusion?.latestRecommendation?.crossX2?.stakeKX2 || resolveLo4CrossX2(r.date, lo4Info?.sLo4, lo4Info?.bLo4, payload, true, lo4Info?.tierX5 || [], lo4Info?.tierX4 || [], lo4Info?.tierX3 || [], lo4Info?.tierX1 || [])?.stakeKX2 || 74800))}</span>
+                                    <span>Vốn: ${moneyM((lo4Info?.crossX2?.stakeKX2 || lo4Info?.crossX2?.dayLotoStakeKX2 || (payload?.lo4EngineFusion?.latestRecommendation?.targetDate === r.date ? payload.lo4EngineFusion.latestRecommendation.crossX2?.stakeKX2 : null) || resolveLo4CrossX2(r.date, lo4Info?.sLo4, lo4Info?.bLo4, payload, true, lo4Info?.tierX5 || [], lo4Info?.tierX4 || [], lo4Info?.tierX3 || [], lo4Info?.tierX1 || [])?.stakeKX2 || lo4Info?.dayLotoStakeK || 66000))}</span>
                                     <span class="diary-expand-indicator text-emerald-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
                                 </div>
                             </td>
                             <!-- Cột 9: Lãi/Lỗ Đột Phá X2 -->
                             <td class="px-3 py-3 text-right whitespace-nowrap font-mono bg-emerald-50/25">
                                 <div class="font-bold text-xs text-amber-600">⏳ Chờ KQ</div>
-                                <div class="text-[10px] text-slate-400 font-sans">Vốn ${moneyM((lo4Info?.crossX2?.stakeKX2 || payload?.lo4EngineFusion?.latestRecommendation?.crossX2?.stakeKX2 || resolveLo4CrossX2(r.date, lo4Info?.sLo4, lo4Info?.bLo4, payload, true, lo4Info?.tierX5 || [], lo4Info?.tierX4 || [], lo4Info?.tierX3 || [], lo4Info?.tierX1 || [])?.stakeKX2 || 74800))}</div>
+                                <div class="text-[10px] text-slate-400 font-sans">Vốn ${moneyM((lo4Info?.crossX2?.stakeKX2 || lo4Info?.crossX2?.dayLotoStakeKX2 || (payload?.lo4EngineFusion?.latestRecommendation?.targetDate === r.date ? payload.lo4EngineFusion.latestRecommendation.crossX2?.stakeKX2 : null) || resolveLo4CrossX2(r.date, lo4Info?.sLo4, lo4Info?.bLo4, payload, true, lo4Info?.tierX5 || [], lo4Info?.tierX4 || [], lo4Info?.tierX3 || [], lo4Info?.tierX1 || [])?.stakeKX2 || lo4Info?.dayLotoStakeK || 66000))}</div>
                             </td>
                             <!-- Cột 10: Lũy Kế Đột Phá X2 -->
                             <td class="px-3 py-3 text-right whitespace-nowrap font-mono bg-emerald-50/25">
@@ -7585,7 +7585,7 @@
                                 return '<div class="text-[10px] text-slate-400 italic">0 số nâng X2 (như gốc)</div>';
                             })()}
                             <div class="text-[10px] text-slate-500 mt-1 flex items-center justify-between">
-                                <span>Vốn: ${moneyM(lo4Info?.crossX2?.dayLotoStakeKX2 || lo4Info?.crossX2?.stakeKX2 || 70400)}</span>
+                                <span>Vốn: ${moneyM(lo4Info?.crossX2?.dayLotoStakeKX2 || lo4Info?.crossX2?.stakeKX2 || lo4Info?.dayLotoStakeK || 66000)}</span>
                                 <span class="diary-expand-indicator text-emerald-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
                             </div>
                         </td>

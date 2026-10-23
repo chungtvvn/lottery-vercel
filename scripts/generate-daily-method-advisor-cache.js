@@ -335,6 +335,28 @@ async function main() {
         console.error('[generateDailyAdvisorCache] Error updating locked bets registry:', err);
     }
 
+    // Zero-Mutation SSOT Guarantee: Loại bỏ triệt để bất kỳ ngày chưa có kết quả (date > latestDataDate) khỏi tất cả các settledLedger
+    const latestDataDate = cache.latestDataDate;
+    if (latestDataDate) {
+        const pruneUnsettledLedger = (ledger) => {
+            if (!Array.isArray(ledger)) return;
+            for (let i = ledger.length - 1; i >= 0; i--) {
+                const rDate = String(ledger[i].date || ledger[i].predictionDate || '').slice(0, 10);
+                if (rDate > latestDataDate) {
+                    ledger.splice(i, 1);
+                }
+            }
+        };
+        pruneUnsettledLedger(cache.lo4EngineFusion?.settledLedger);
+        pruneUnsettledLedger(cache.lo4EngineFusion?.modes?.top7?.settledLedger);
+        pruneUnsettledLedger(cache.lo4EngineFusion?.modes?.top6?.settledLedger);
+        pruneUnsettledLedger(cache.adaptiveDualMerge?.settledLedger);
+        pruneUnsettledLedger(cache.dualMerge?.settledLedger);
+        pruneUnsettledLedger(cache.tripleMerge?.settledLedger);
+        pruneUnsettledLedger(cache.crossHedgingPortfolio?.settledLedger);
+        pruneUnsettledLedger(cache.pentaConsensus?.settledLedger);
+    }
+
     const fs = require('fs');
     const dataDir = path.join(__dirname, '..', 'data');
     if (!fs.existsSync(dataDir)) {

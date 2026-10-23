@@ -1,6 +1,6 @@
 {
   "version": "daily-advisor-model-selection-v10",
-  "generatedAt": "2026-10-23T03:01:43.820Z",
+  "generatedAt": "2026-10-23T03:31:51.645Z",
   "immutableFingerprint": "ce327fe1ed5df7fb9a323a68c9cf13d61b5177562ba6a1faabb9da4d7f1ca8c4",
   "latestDataDate": "2026-10-22",
   "pendingPredictionDate": "2026-10-23",
@@ -11,7 +11,7 @@
     "lockStartTime": "2026-10-22T17:08:00.000Z",
     "lockTargetDate": "2026-10-23",
     "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh.",
-    "vnTime": "2026-10-23T10:01:43+07:00"
+    "vnTime": "2026-10-23T10:31:51+07:00"
   },
   "drawPrizesByDate": {
     "2025-10-19": {
@@ -12141,7 +12141,7 @@
       "snapshotLock": {
         "isLocked": true,
         "lockActive": true,
-        "lockedAt": "2026-10-23T03:01:43.818Z",
+        "lockedAt": "2026-10-23T03:31:51.643Z",
         "lockStartTime": "2026-10-22T17:08:00.000Z",
         "lockTargetDate": "2026-10-23",
         "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -23630,7 +23630,7 @@
         "nextPrediction": {
           "predictionDate": "2026-10-23",
           "isLocked": true,
-          "lockedAt": "2026-10-23T03:01:35.686Z",
+          "lockedAt": "2026-10-23T03:31:43.984Z",
           "settled": false,
           "lifecycle": {
             "mode": "live-issued",
@@ -287256,7 +287256,7 @@
         "nextPrediction": {
           "predictionDate": "2026-10-23",
           "isLocked": true,
-          "lockedAt": "2026-10-23T03:01:35.686Z",
+          "lockedAt": "2026-10-23T03:31:43.984Z",
           "settled": false,
           "lifecycle": {
             "mode": "live-issued",
@@ -292576,7 +292576,7 @@
       "nextPrediction": {
         "predictionDate": "2026-10-23",
         "isLocked": true,
-        "lockedAt": "2026-10-23T03:01:35.686Z",
+        "lockedAt": "2026-10-23T03:31:43.984Z",
         "settled": false,
         "lifecycle": {
           "mode": "live-issued",
@@ -299114,7 +299114,7 @@
   },
   "metaLearner": {
     "version": "meta-learner-advisor-v1",
-    "generatedAt": "2026-10-23T03:01:37.838Z",
+    "generatedAt": "2026-10-23T03:31:46.006Z",
     "description": "Đề Tinh Hoa Meta-Learner (Phân Tích Lựa Chọn) · Vốn 30M/ngày · Strict PIT 100%",
     "latestRecommendation": {
       "predictionDate": "2026-10-23",
@@ -299330,7 +299330,7 @@
       "snapshotLock": {
         "isLocked": true,
         "lockActive": true,
-        "lockedAt": "2026-10-23T03:01:43.818Z",
+        "lockedAt": "2026-10-23T03:31:51.643Z",
         "lockStartTime": "2026-10-22T17:08:00.000Z",
         "lockTargetDate": "2026-10-23",
         "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -309931,7 +309931,7 @@
   },
   "dualMerge": {
     "version": "dual-merge-advisor-v1",
-    "generatedAt": "2026-10-23T03:01:31.565Z",
+    "generatedAt": "2026-10-23T03:31:40.185Z",
     "description": "Thực chiến GỘP 2/7 phương pháp Mốc lịch sử · Đánh x2 số trùng · Đánh x1 số riêng · Strict PIT 100%",
     "latestRecommendation": {
       "predictionDate": "2026-10-23",
@@ -313105,7 +313105,7 @@
       "snapshotLock": {
         "isLocked": true,
         "lockActive": true,
-        "lockedAt": "2026-10-23T03:01:43.818Z",
+        "lockedAt": "2026-10-23T03:31:51.643Z",
         "lockStartTime": "2026-10-22T17:08:00.000Z",
         "lockTargetDate": "2026-10-23",
         "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -343869,7 +343869,7 @@
   },
   "adaptiveDualMerge": {
     "version": "adaptive-dual-merge-advisor-v1",
-    "generatedAt": "2026-10-23T03:01:35.233Z",
+    "generatedAt": "2026-10-23T03:31:43.578Z",
     "description": "Thực chiến GỘP 2 THÍCH ỨNG ALPHA · Tấn công X2 (+28.6% ROI) & Phòng thủ cắt chuỗi (61.2% trúng) · Strict PIT 100%",
     "latestRecommendation": {
       "predictionDate": "2026-10-23",
@@ -374355,184 +374355,79 @@
         "liveCumulativeProfitK": 247530,
         "cumulativeHitRate": 0.4643,
         "settledIndex": 56
-      },
-      {
-        "date": "2026-10-23",
-        "predictionDate": "2026-10-23",
-        "actual": 0,
-        "actualSpecial": 0,
-        "settled": true,
-        "isLocked": true,
-        "sourceDrawDate": "2026-10-22",
-        "sourceType": "live-snapshot",
-        "isLiveSnapshot": true,
-        "mode": "balanced_alpha",
-        "modeLabel": "⚖️ Cân bằng Alpha (Multi-Objective)",
-        "m1": "dedupEdge50Hold70",
-        "m1Label": "Dự đoán Edge 50% (Mốc Lịch sử D-1)",
-        "m2": "dedupEdge75Hold70",
-        "m2Label": "Edge75 Hold (Mốc Lịch sử D-1)",
-        "intersectionX2": [
-          0,
-          2,
-          4,
-          6,
-          8,
-          11,
-          13,
-          17,
-          19,
-          24,
-          26,
-          28,
-          33,
-          37,
-          42,
-          44,
-          46,
-          62,
-          64,
-          66,
-          68,
-          79,
-          88,
-          97,
-          99
-        ],
-        "uniqueSinglesX1": [
-          3,
-          9,
-          22,
-          31,
-          48,
-          57,
-          59,
-          60,
-          77,
-          86
-        ],
-        "fullUnion": [
-          0,
-          2,
-          3,
-          4,
-          6,
-          8,
-          9,
-          11,
-          13,
-          17,
-          19,
-          22,
-          24,
-          26,
-          28,
-          31,
-          33,
-          37,
-          42,
-          44,
-          46,
-          48,
-          57,
-          59,
-          60,
-          62,
-          64,
-          66,
-          68,
-          77,
-          79,
-          86,
-          88,
-          97,
-          99
-        ],
-        "overlapCount": 25,
-        "totalNumbersCount": 35,
-        "hitType": "win_x3",
-        "isHit": true,
-        "isX2": true,
-        "stakeK": 85000,
-        "payoutK": 252000,
-        "profitK": 167000,
-        "cumulativeProfitK": -3546470,
-        "liveCumulativeProfitK": 414530,
-        "cumulativeHitRate": 0.4737,
-        "settledIndex": 57
       }
     ],
     "summary": {
-      "days": 292,
-      "wins": 104,
-      "winsX3": 74,
-      "winsX2": 74,
+      "days": 291,
+      "wins": 103,
+      "winsX3": 73,
+      "winsX2": 73,
       "winsX1": 30,
       "losses": 188,
-      "hitRate": 0.3562,
-      "winX3Rate": 0.2534,
-      "winX2Rate": 0.2534,
-      "winX1Rate": 0.1027,
-      "stakeK": 24768000,
-      "payoutK": 21168000,
-      "profitK": -3600000,
-      "roi": -0.1453,
-      "totalSettled": 292,
-      "totalWins": 104,
+      "hitRate": 0.354,
+      "winX3Rate": 0.2509,
+      "winX2Rate": 0.2509,
+      "winX1Rate": 0.1031,
+      "stakeK": 24683000,
+      "payoutK": 20916000,
+      "profitK": -3767000,
+      "roi": -0.1526,
+      "totalSettled": 291,
+      "totalWins": 103,
       "totalLosses": 188,
-      "overallHitRate": 0.3562,
-      "totalStakeK": 24768000,
-      "totalPayoutK": 21168000,
-      "overallProfitK": -3600000,
+      "overallHitRate": 0.354,
+      "totalStakeK": 24683000,
+      "totalPayoutK": 20916000,
+      "overallProfitK": -3767000,
       "breakEvenHitRate": 0.7143,
       "live": {
-        "days": 57,
-        "wins": 27,
-        "winsX3": 17,
-        "winsX2": 17,
+        "days": 56,
+        "wins": 26,
+        "winsX3": 16,
+        "winsX2": 16,
         "winsX1": 10,
         "losses": 30,
-        "hitRate": 0.4737,
-        "winX3Rate": 0.2982,
-        "winX2Rate": 0.2982,
-        "winX1Rate": 0.1754,
-        "stakeK": 4763000,
-        "payoutK": 5124000,
-        "profitK": 361000,
-        "roi": 0.0758
+        "hitRate": 0.4643,
+        "winX3Rate": 0.2857,
+        "winX2Rate": 0.2857,
+        "winX1Rate": 0.1786,
+        "stakeK": 4678000,
+        "payoutK": 4872000,
+        "profitK": 194000,
+        "roi": 0.0415
       },
       "all": {
-        "days": 292,
-        "wins": 104,
-        "winsX3": 74,
-        "winsX2": 74,
+        "days": 291,
+        "wins": 103,
+        "winsX3": 73,
+        "winsX2": 73,
         "winsX1": 30,
         "losses": 188,
-        "hitRate": 0.3562,
-        "winX3Rate": 0.2534,
-        "winX2Rate": 0.2534,
-        "winX1Rate": 0.1027,
-        "stakeK": 24768000,
-        "payoutK": 21168000,
-        "profitK": -3600000,
-        "roi": -0.1453
+        "hitRate": 0.354,
+        "winX3Rate": 0.2509,
+        "winX2Rate": 0.2509,
+        "winX1Rate": 0.1031,
+        "stakeK": 24683000,
+        "payoutK": 20916000,
+        "profitK": -3767000,
+        "roi": -0.1526
       },
       "windows": {
         "liveTotal": {
-          "days": 57,
-          "wins": 27,
-          "winsX3": 17,
-          "winsX2": 17,
+          "days": 56,
+          "wins": 26,
+          "winsX3": 16,
+          "winsX2": 16,
           "winsX1": 10,
           "losses": 30,
-          "hitRate": 0.4737,
-          "winX3Rate": 0.2982,
-          "winX2Rate": 0.2982,
-          "winX1Rate": 0.1754,
-          "stakeK": 4763000,
-          "payoutK": 5124000,
-          "profitK": 361000,
-          "roi": 0.0758
+          "hitRate": 0.4643,
+          "winX3Rate": 0.2857,
+          "winX2Rate": 0.2857,
+          "winX1Rate": 0.1786,
+          "stakeK": 4678000,
+          "payoutK": 4872000,
+          "profitK": 194000,
+          "roi": 0.0415
         },
         "last7": {
           "days": 7,
@@ -374545,42 +374440,42 @@
           "winX3Rate": 0.2857,
           "winX2Rate": 0.2857,
           "winX1Rate": 0.2857,
-          "stakeK": 592000,
+          "stakeK": 591000,
           "payoutK": 672000,
-          "profitK": 80000,
-          "roi": 0.1351
+          "profitK": 81000,
+          "roi": 0.1371
         },
         "last15": {
           "days": 15,
           "wins": 7,
-          "winsX3": 3,
-          "winsX2": 3,
-          "winsX1": 4,
+          "winsX3": 2,
+          "winsX2": 2,
+          "winsX1": 5,
           "losses": 8,
           "hitRate": 0.4667,
-          "winX3Rate": 0.2,
-          "winX2Rate": 0.2,
-          "winX1Rate": 0.2667,
-          "stakeK": 1265000,
-          "payoutK": 1092000,
-          "profitK": -173000,
-          "roi": -0.1368
+          "winX3Rate": 0.1333,
+          "winX2Rate": 0.1333,
+          "winX1Rate": 0.3333,
+          "stakeK": 1267000,
+          "payoutK": 924000,
+          "profitK": -343000,
+          "roi": -0.2707
         },
         "last30": {
           "days": 30,
-          "wins": 15,
-          "winsX3": 9,
-          "winsX2": 9,
+          "wins": 14,
+          "winsX3": 8,
+          "winsX2": 8,
           "winsX1": 6,
-          "losses": 15,
-          "hitRate": 0.5,
-          "winX3Rate": 0.3,
-          "winX2Rate": 0.3,
+          "losses": 16,
+          "hitRate": 0.4667,
+          "winX3Rate": 0.2667,
+          "winX2Rate": 0.2667,
           "winX1Rate": 0.2,
-          "stakeK": 2516000,
-          "payoutK": 2772000,
-          "profitK": 256000,
-          "roi": 0.1017
+          "stakeK": 2515000,
+          "payoutK": 2520000,
+          "profitK": 5000,
+          "roi": 0.002
         },
         "last60": {
           "days": 60,
@@ -374593,42 +374488,42 @@
           "winX3Rate": 0.2833,
           "winX2Rate": 0.2833,
           "winX1Rate": 0.1667,
-          "stakeK": 5020000,
+          "stakeK": 5022000,
           "payoutK": 5124000,
-          "profitK": 104000,
-          "roi": 0.0207
+          "profitK": 102000,
+          "roi": 0.0203
         },
         "last90": {
           "days": 90,
-          "wins": 39,
-          "winsX3": 23,
-          "winsX2": 23,
+          "wins": 38,
+          "winsX3": 22,
+          "winsX2": 22,
           "winsX1": 16,
-          "losses": 51,
-          "hitRate": 0.4333,
-          "winX3Rate": 0.2556,
-          "winX2Rate": 0.2556,
+          "losses": 52,
+          "hitRate": 0.4222,
+          "winX3Rate": 0.2444,
+          "winX2Rate": 0.2444,
           "winX1Rate": 0.1778,
-          "stakeK": 7536000,
-          "payoutK": 7140000,
-          "profitK": -396000,
-          "roi": -0.0525
+          "stakeK": 7531000,
+          "payoutK": 6888000,
+          "profitK": -643000,
+          "roi": -0.0854
         },
         "all2026": {
-          "days": 292,
-          "wins": 104,
-          "winsX3": 74,
-          "winsX2": 74,
+          "days": 291,
+          "wins": 103,
+          "winsX3": 73,
+          "winsX2": 73,
           "winsX1": 30,
           "losses": 188,
-          "hitRate": 0.3562,
-          "winX3Rate": 0.2534,
-          "winX2Rate": 0.2534,
-          "winX1Rate": 0.1027,
-          "stakeK": 24768000,
-          "payoutK": 21168000,
-          "profitK": -3600000,
-          "roi": -0.1453
+          "hitRate": 0.354,
+          "winX3Rate": 0.2509,
+          "winX2Rate": 0.2509,
+          "winX1Rate": 0.1031,
+          "stakeK": 24683000,
+          "payoutK": 20916000,
+          "profitK": -3767000,
+          "roi": -0.1526
         }
       }
     }
@@ -380968,7 +380863,7 @@
       "snapshotLock": {
         "isLocked": true,
         "lockActive": true,
-        "lockedAt": "2026-10-23T03:01:43.818Z",
+        "lockedAt": "2026-10-23T03:31:51.643Z",
         "lockStartTime": "2026-10-22T17:08:00.000Z",
         "lockTargetDate": "2026-10-23",
         "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -731793,7 +731688,7 @@
       "snapshotLock": {
         "isLocked": true,
         "lockActive": true,
-        "lockedAt": "2026-10-23T03:01:43.818Z",
+        "lockedAt": "2026-10-23T03:31:51.643Z",
         "lockStartTime": "2026-10-22T17:08:00.000Z",
         "lockTargetDate": "2026-10-23",
         "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -994171,7 +994066,7 @@
       "snapshotLock": {
         "isLocked": true,
         "lockActive": true,
-        "lockedAt": "2026-10-23T03:01:43.818Z",
+        "lockedAt": "2026-10-23T03:31:51.643Z",
         "lockStartTime": "2026-10-22T17:08:00.000Z",
         "lockTargetDate": "2026-10-23",
         "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -1255630,7 +1255525,7 @@
         "snapshotLock": {
           "isLocked": true,
           "lockActive": true,
-          "lockedAt": "2026-10-23T03:01:43.818Z",
+          "lockedAt": "2026-10-23T03:31:51.643Z",
           "lockStartTime": "2026-10-22T17:08:00.000Z",
           "lockTargetDate": "2026-10-23",
           "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -1260603,7 +1260498,7 @@
   },
   "tripleMerge": {
     "version": "triple-consensus-advisor-v1",
-    "generatedAt": "2026-10-23T03:01:34.907Z",
+    "generatedAt": "2026-10-23T03:31:43.323Z",
     "description": "Thực chiến GỘP 3 phương pháp Mốc lịch sử · 3 Tầng vốn X3/X2/X1 · Strict PIT 100%",
     "latestRecommendation": {
       "predictionDate": "2026-10-23",
@@ -1260720,7 +1260615,7 @@
       "snapshotLock": {
         "isLocked": true,
         "lockActive": true,
-        "lockedAt": "2026-10-23T03:01:43.818Z",
+        "lockedAt": "2026-10-23T03:31:51.643Z",
         "lockStartTime": "2026-10-22T17:08:00.000Z",
         "lockTargetDate": "2026-10-23",
         "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -1292724,12 +1292619,12 @@
         "actionRecommendation": "standard"
       },
       "adaptiveStreakInfo": {
-        "curStreakType": "win",
-        "curStreakLen": 1,
-        "expectedWinProb": 0.2419,
-        "statusType": "hot_momentum",
-        "statusBadge": "🟢 Đà Thắng Khỏe (Xác suất thắng tiếp ~70%)",
-        "actionRecommendation": "attack_momentum"
+        "curStreakType": "loss",
+        "curStreakLen": 2,
+        "expectedWinProb": 0.1364,
+        "statusType": "golden_rebound",
+        "statusBadge": "🔥 Điểm Rơi Vàng Nhịp Hồi 2d (Xác suất nổ lại ~13.6%)",
+        "actionRecommendation": "attack_rebound"
       },
       "bayesStreakInfo": {
         "curStreakType": "loss",
@@ -1293865,6 +1293760,23 @@
           "selectionReason": ""
         },
         {
+          "methodId": "adaptiveDualMerge",
+          "methodLabel": "👑 Đề Thích Ứng Alpha",
+          "stakeK": 60000,
+          "curStreak": -1,
+          "stateTag": "L1",
+          "stateSemanticLabel": "Vừa trượt 1 kỳ (Điểm rơi phục hồi nhịp)",
+          "baseWinRate": 0.354,
+          "condProb": 0.3391,
+          "sampleTotal": 65,
+          "sampleWins": 22,
+          "rawRate": 0.3385,
+          "anticipatoryScore": 0.3891,
+          "isCurrentMethod": false,
+          "isChosen": false,
+          "selectionReason": ""
+        },
+        {
           "methodId": "bayesFormResonance",
           "methodLabel": "🔮 Đề Dạng Số Bayes Bù Trừ",
           "stakeK": 60000,
@@ -1293877,23 +1293789,6 @@
           "sampleWins": 21,
           "rawRate": 0.3182,
           "anticipatoryScore": 0.3714,
-          "isCurrentMethod": false,
-          "isChosen": false,
-          "selectionReason": ""
-        },
-        {
-          "methodId": "adaptiveDualMerge",
-          "methodLabel": "👑 Đề Thích Ứng Alpha",
-          "stakeK": 60000,
-          "curStreak": 1,
-          "stateTag": "W1",
-          "stateSemanticLabel": "Vừa thắng 1 kỳ (Quán tính xuất phát)",
-          "baseWinRate": 0.3562,
-          "condProb": 0.3539,
-          "sampleTotal": 65,
-          "sampleWins": 23,
-          "rawRate": 0.3538,
-          "anticipatoryScore": 0.3539,
           "isCurrentMethod": false,
           "isChosen": false,
           "selectionReason": ""
@@ -1321318,7 +1321213,7 @@
         "snapshotLock": {
           "isLocked": true,
           "lockActive": true,
-          "lockedAt": "2026-10-23T03:01:43.818Z",
+          "lockedAt": "2026-10-23T03:31:51.643Z",
           "lockStartTime": "2026-10-22T17:08:00.000Z",
           "lockTargetDate": "2026-10-23",
           "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -1414112,7 +1414007,7 @@
     },
     "metaAdvisor": {
       "version": "meta-learner-advisor-v1",
-      "generatedAt": "2026-10-23T03:01:37.838Z",
+      "generatedAt": "2026-10-23T03:31:46.006Z",
       "description": "Đề Tinh Hoa Meta-Learner (Phân Tích Lựa Chọn) · Vốn 30M/ngày · Strict PIT 100%",
       "latestRecommendation": {
         "predictionDate": "2026-10-23",
@@ -1414328,7 +1414223,7 @@
         "snapshotLock": {
           "isLocked": true,
           "lockActive": true,
-          "lockedAt": "2026-10-23T03:01:43.818Z",
+          "lockedAt": "2026-10-23T03:31:51.643Z",
           "lockStartTime": "2026-10-22T17:08:00.000Z",
           "lockTargetDate": "2026-10-23",
           "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -1425256,7 +1425151,7 @@
       "snapshotLock": {
         "isLocked": true,
         "lockActive": true,
-        "lockedAt": "2026-10-23T03:01:43.818Z",
+        "lockedAt": "2026-10-23T03:31:51.643Z",
         "lockStartTime": "2026-10-22T17:08:00.000Z",
         "lockTargetDate": "2026-10-23",
         "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -1452299,7 +1452194,7 @@
       "snapshotLock": {
         "isLocked": true,
         "lockActive": true,
-        "lockedAt": "2026-10-23T03:01:43.818Z",
+        "lockedAt": "2026-10-23T03:31:51.643Z",
         "lockStartTime": "2026-10-22T17:08:00.000Z",
         "lockTargetDate": "2026-10-23",
         "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -1483271,7 +1483166,7 @@
       "snapshotLock": {
         "isLocked": true,
         "lockActive": true,
-        "lockedAt": "2026-10-23T03:01:43.818Z",
+        "lockedAt": "2026-10-23T03:31:51.643Z",
         "lockStartTime": "2026-10-22T17:08:00.000Z",
         "lockTargetDate": "2026-10-23",
         "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -1519124,7 +1519019,7 @@
       "snapshotLock": {
         "isLocked": true,
         "lockActive": true,
-        "lockedAt": "2026-10-23T03:01:43.818Z",
+        "lockedAt": "2026-10-23T03:31:51.643Z",
         "lockStartTime": "2026-10-22T17:08:00.000Z",
         "lockTargetDate": "2026-10-23",
         "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -1521531,7 +1521426,7 @@
       "snapshotLock": {
         "isLocked": true,
         "lockActive": true,
-        "lockedAt": "2026-10-23T03:01:43.818Z",
+        "lockedAt": "2026-10-23T03:31:51.643Z",
         "lockStartTime": "2026-10-22T17:08:00.000Z",
         "lockTargetDate": "2026-10-23",
         "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -1601847,7 +1601742,7 @@
       "snapshotLock": {
         "isLocked": true,
         "lockActive": true,
-        "lockedAt": "2026-10-23T03:01:43.818Z",
+        "lockedAt": "2026-10-23T03:31:51.643Z",
         "lockStartTime": "2026-10-22T17:08:00.000Z",
         "lockTargetDate": "2026-10-23",
         "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -1632780,7 +1632675,7 @@
       "snapshotLock": {
         "isLocked": true,
         "lockActive": true,
-        "lockedAt": "2026-10-23T03:01:43.818Z",
+        "lockedAt": "2026-10-23T03:31:51.643Z",
         "lockStartTime": "2026-10-22T17:08:00.000Z",
         "lockTargetDate": "2026-10-23",
         "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -1657304,7 +1657199,7 @@
       "snapshotLock": {
         "isLocked": true,
         "lockActive": true,
-        "lockedAt": "2026-10-23T03:01:43.818Z",
+        "lockedAt": "2026-10-23T03:31:51.643Z",
         "lockStartTime": "2026-10-22T17:08:00.000Z",
         "lockTargetDate": "2026-10-23",
         "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -1681547,7 +1681442,7 @@
       "snapshotLock": {
         "isLocked": true,
         "lockActive": true,
-        "lockedAt": "2026-10-23T03:01:43.818Z",
+        "lockedAt": "2026-10-23T03:31:51.643Z",
         "lockStartTime": "2026-10-22T17:08:00.000Z",
         "lockTargetDate": "2026-10-23",
         "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -1751992,299 +1751887,32 @@
             },
             "totalDayProfitK": 15000,
             "cumLotoProfitK": 5633400
-          },
-          {
-            "date": "2026-10-23",
-            "isLive": true,
-            "topN": 6,
-            "h4": 0,
-            "countTotal": 17,
-            "countOver2": 5,
-            "countX1": 12,
-            "numbersOver2": [
-              "31",
-              "95",
-              "12",
-              "41",
-              "57"
-            ],
-            "allNumbers": [
-              "31",
-              "95",
-              "12",
-              "41",
-              "57",
-              "22",
-              "23",
-              "42",
-              "43",
-              "46",
-              "56",
-              "64",
-              "70",
-              "76",
-              "84",
-              "88",
-              "97"
-            ],
-            "tierX5": [],
-            "tierX4": [
-              "31",
-              "95"
-            ],
-            "tierX3": [
-              "12",
-              "41",
-              "57"
-            ],
-            "tierX1": [
-              "23",
-              "46",
-              "56",
-              "70",
-              "84",
-              "88",
-              "97"
-            ],
-            "betNumbers": [
-              {
-                "num": "31",
-                "votes": 3,
-                "multiplier": 4,
-                "hits": 0,
-                "methods": [
-                  "QMBF",
-                  "Dual",
-                  "Tri"
-                ]
-              },
-              {
-                "num": "95",
-                "votes": 3,
-                "multiplier": 4,
-                "hits": 0,
-                "methods": [
-                  "Dual",
-                  "Tri",
-                  "RRF"
-                ]
-              },
-              {
-                "num": "12",
-                "votes": 2,
-                "multiplier": 3,
-                "hits": 0,
-                "methods": [
-                  "Dual",
-                  "Tri"
-                ]
-              },
-              {
-                "num": "41",
-                "votes": 2,
-                "multiplier": 3,
-                "hits": 0,
-                "methods": [
-                  "Dual",
-                  "Tri"
-                ]
-              },
-              {
-                "num": "57",
-                "votes": 2,
-                "multiplier": 3,
-                "hits": 0,
-                "methods": [
-                  "Dual",
-                  "Tri"
-                ]
-              },
-              {
-                "num": "22",
-                "votes": 1,
-                "multiplier": 2,
-                "hits": 0,
-                "methods": [
-                  "QMBF"
-                ]
-              },
-              {
-                "num": "42",
-                "votes": 1,
-                "multiplier": 2,
-                "hits": 0,
-                "methods": [
-                  "QMBF"
-                ]
-              },
-              {
-                "num": "43",
-                "votes": 1,
-                "multiplier": 2,
-                "hits": 0,
-                "methods": [
-                  "QMBF"
-                ]
-              },
-              {
-                "num": "64",
-                "votes": 1,
-                "multiplier": 2,
-                "hits": 0,
-                "methods": [
-                  "QMBF"
-                ]
-              },
-              {
-                "num": "76",
-                "votes": 1,
-                "multiplier": 2,
-                "hits": 0,
-                "methods": [
-                  "Dual"
-                ]
-              },
-              {
-                "num": "23",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "Dual"
-                ]
-              },
-              {
-                "num": "46",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "RRF"
-                ]
-              },
-              {
-                "num": "56",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "RRF"
-                ]
-              },
-              {
-                "num": "70",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "RRF"
-                ]
-              },
-              {
-                "num": "84",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "RRF"
-                ]
-              },
-              {
-                "num": "88",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "RRF"
-                ]
-              },
-              {
-                "num": "97",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "RRF"
-                ]
-              }
-            ],
-            "dayLotoStakeK": 74800,
-            "dayLotoPayoutK": 0,
-            "dayLotoProfitK": -74800,
-            "dayLotoHits": 0,
-            "isLotoWin": false,
-            "xien4Status": "ACTIVE",
-            "xien4Reason": "Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé [31-95-12-41] & Bộ 5 Quây 10 vé X3 [31-95-12-41-57]",
-            "xien4Combinations": [
-              [
-                "31",
-                "95",
-                "12",
-                "41"
-              ]
-            ],
-            "xien4StakeK": 11000,
-            "xien4PayoutK": 0,
-            "dayXien4ProfitK": -11000,
-            "isXien4Win": false,
-            "totalDayProfitK": -85800,
-            "cumLotoProfitK": 5558600,
-            "crossX2": {
-              "tierX5": [],
-              "tierX4": [
-                "31",
-                "95"
-              ],
-              "tierX3": [
-                "12",
-                "41",
-                "57"
-              ],
-              "tierX2": [
-                "22",
-                "42",
-                "43",
-                "64",
-                "76"
-              ],
-              "tierX1": [
-                "23",
-                "46",
-                "56",
-                "70",
-                "84",
-                "88",
-                "97"
-              ],
-              "stakeKX2": 74800,
-              "promotedRationale": "Số [22, 42, 43, 64, 76] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
-            }
           }
         ],
         "summary": {
           "all": {
-            "days": 292,
+            "days": 291,
             "wins": 198,
-            "losses": 94,
-            "winRate": 0.678082191780822,
+            "losses": 93,
+            "winRate": 0.6804123711340206,
             "hits": 1220,
-            "avgHitsPerDay": 4.18,
-            "stakeK": 19881400,
+            "avgHitsPerDay": 4.19,
+            "stakeK": 19806600,
             "payoutK": 25440000,
-            "profitK": 5558600,
-            "roi": 0.2796
+            "profitK": 5633400,
+            "roi": 0.2844
           },
           "live": {
-            "days": 57,
+            "days": 56,
             "wins": 37,
-            "losses": 20,
-            "winRate": 0.6491228070175439,
+            "losses": 19,
+            "winRate": 0.6607142857142857,
             "hits": 248,
-            "avgHitsPerDay": 4.35,
-            "stakeK": 3995200,
+            "avgHitsPerDay": 4.43,
+            "stakeK": 3920400,
             "payoutK": 4792000,
-            "profitK": 796800,
-            "roi": 0.1994
+            "profitK": 871600,
+            "roi": 0.2223
           }
         },
         "latestRecommendation": {
@@ -1752573,7 +1752201,7 @@
           "snapshotLock": {
             "isLocked": true,
             "lockActive": true,
-            "lockedAt": "2026-10-23T03:01:43.818Z",
+            "lockedAt": "2026-10-23T03:31:51.644Z",
             "lockStartTime": "2026-10-22T17:08:00.000Z",
             "lockTargetDate": "2026-10-23",
             "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -1815707,299 +1815335,32 @@
             },
             "totalDayProfitK": 15000,
             "cumLotoProfitK": 6547800
-          },
-          {
-            "date": "2026-10-23",
-            "isLive": true,
-            "topN": 7,
-            "h4": 0,
-            "countTotal": 17,
-            "countOver2": 5,
-            "countX1": 12,
-            "numbersOver2": [
-              "31",
-              "95",
-              "12",
-              "41",
-              "57"
-            ],
-            "allNumbers": [
-              "31",
-              "95",
-              "12",
-              "41",
-              "57",
-              "22",
-              "23",
-              "42",
-              "43",
-              "46",
-              "56",
-              "64",
-              "70",
-              "76",
-              "84",
-              "88",
-              "97"
-            ],
-            "tierX5": [],
-            "tierX4": [
-              "31",
-              "95"
-            ],
-            "tierX3": [
-              "12",
-              "41",
-              "57"
-            ],
-            "tierX1": [
-              "23",
-              "46",
-              "56",
-              "70",
-              "84",
-              "88",
-              "97"
-            ],
-            "betNumbers": [
-              {
-                "num": "31",
-                "votes": 3,
-                "multiplier": 4,
-                "hits": 0,
-                "methods": [
-                  "QMBF",
-                  "Dual",
-                  "Tri"
-                ]
-              },
-              {
-                "num": "95",
-                "votes": 3,
-                "multiplier": 4,
-                "hits": 0,
-                "methods": [
-                  "Dual",
-                  "Tri",
-                  "RRF"
-                ]
-              },
-              {
-                "num": "12",
-                "votes": 2,
-                "multiplier": 3,
-                "hits": 0,
-                "methods": [
-                  "Dual",
-                  "Tri"
-                ]
-              },
-              {
-                "num": "41",
-                "votes": 2,
-                "multiplier": 3,
-                "hits": 0,
-                "methods": [
-                  "Dual",
-                  "Tri"
-                ]
-              },
-              {
-                "num": "57",
-                "votes": 2,
-                "multiplier": 3,
-                "hits": 0,
-                "methods": [
-                  "Dual",
-                  "Tri"
-                ]
-              },
-              {
-                "num": "22",
-                "votes": 1,
-                "multiplier": 2,
-                "hits": 0,
-                "methods": [
-                  "QMBF"
-                ]
-              },
-              {
-                "num": "42",
-                "votes": 1,
-                "multiplier": 2,
-                "hits": 0,
-                "methods": [
-                  "QMBF"
-                ]
-              },
-              {
-                "num": "43",
-                "votes": 1,
-                "multiplier": 2,
-                "hits": 0,
-                "methods": [
-                  "QMBF"
-                ]
-              },
-              {
-                "num": "64",
-                "votes": 1,
-                "multiplier": 2,
-                "hits": 0,
-                "methods": [
-                  "QMBF"
-                ]
-              },
-              {
-                "num": "76",
-                "votes": 1,
-                "multiplier": 2,
-                "hits": 0,
-                "methods": [
-                  "Dual"
-                ]
-              },
-              {
-                "num": "23",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "Dual"
-                ]
-              },
-              {
-                "num": "46",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "RRF"
-                ]
-              },
-              {
-                "num": "56",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "RRF"
-                ]
-              },
-              {
-                "num": "70",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "RRF"
-                ]
-              },
-              {
-                "num": "84",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "RRF"
-                ]
-              },
-              {
-                "num": "88",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "RRF"
-                ]
-              },
-              {
-                "num": "97",
-                "votes": 1,
-                "multiplier": 1,
-                "hits": 0,
-                "methods": [
-                  "RRF"
-                ]
-              }
-            ],
-            "dayLotoStakeK": 74800,
-            "dayLotoPayoutK": 0,
-            "dayLotoProfitK": -74800,
-            "dayLotoHits": 0,
-            "isLotoWin": false,
-            "xien4Status": "ACTIVE",
-            "xien4Reason": "Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé [31-95-12-41] & Bộ 5 Quây 10 vé X3 [31-95-12-41-57]",
-            "xien4Combinations": [
-              [
-                "31",
-                "95",
-                "12",
-                "41"
-              ]
-            ],
-            "xien4StakeK": 11000,
-            "xien4PayoutK": 0,
-            "dayXien4ProfitK": -11000,
-            "isXien4Win": false,
-            "totalDayProfitK": -85800,
-            "cumLotoProfitK": 6473000,
-            "crossX2": {
-              "tierX5": [],
-              "tierX4": [
-                "31",
-                "95"
-              ],
-              "tierX3": [
-                "12",
-                "41",
-                "57"
-              ],
-              "tierX2": [
-                "22",
-                "42",
-                "43",
-                "64",
-                "76"
-              ],
-              "tierX1": [
-                "23",
-                "46",
-                "56",
-                "70",
-                "84",
-                "88",
-                "97"
-              ],
-              "stakeKX2": 74800,
-              "promotedRationale": "Số [22, 42, 43, 64, 76] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
-            }
           }
         ],
         "summary": {
           "all": {
-            "days": 292,
+            "days": 291,
             "wins": 198,
-            "losses": 94,
-            "winRate": 0.678082191780822,
+            "losses": 93,
+            "winRate": 0.6804123711340206,
             "hits": 1352,
-            "avgHitsPerDay": 4.63,
-            "stakeK": 22759000,
+            "avgHitsPerDay": 4.65,
+            "stakeK": 22684200,
             "payoutK": 29232000,
-            "profitK": 6473000,
-            "roi": 0.2844
+            "profitK": 6547800,
+            "roi": 0.2887
           },
           "live": {
-            "days": 57,
+            "days": 56,
             "wins": 38,
-            "losses": 19,
-            "winRate": 0.6666666666666666,
+            "losses": 18,
+            "winRate": 0.6785714285714286,
             "hits": 260,
-            "avgHitsPerDay": 4.56,
-            "stakeK": 4206400,
+            "avgHitsPerDay": 4.64,
+            "stakeK": 4131600,
             "payoutK": 5064000,
-            "profitK": 857600,
-            "roi": 0.2039
+            "profitK": 932400,
+            "roi": 0.2257
           }
         },
         "latestRecommendation": {
@@ -1816288,7 +1815649,7 @@
           "snapshotLock": {
             "isLocked": true,
             "lockActive": true,
-            "lockedAt": "2026-10-23T03:01:43.818Z",
+            "lockedAt": "2026-10-23T03:31:51.644Z",
             "lockStartTime": "2026-10-22T17:08:00.000Z",
             "lockTargetDate": "2026-10-23",
             "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -1874750,299 +1874111,32 @@
         },
         "totalDayProfitK": 15000,
         "cumLotoProfitK": 5633400
-      },
-      {
-        "date": "2026-10-23",
-        "isLive": true,
-        "topN": 6,
-        "h4": 0,
-        "countTotal": 17,
-        "countOver2": 5,
-        "countX1": 12,
-        "numbersOver2": [
-          "31",
-          "95",
-          "12",
-          "41",
-          "57"
-        ],
-        "allNumbers": [
-          "31",
-          "95",
-          "12",
-          "41",
-          "57",
-          "22",
-          "23",
-          "42",
-          "43",
-          "46",
-          "56",
-          "64",
-          "70",
-          "76",
-          "84",
-          "88",
-          "97"
-        ],
-        "tierX5": [],
-        "tierX4": [
-          "31",
-          "95"
-        ],
-        "tierX3": [
-          "12",
-          "41",
-          "57"
-        ],
-        "tierX1": [
-          "23",
-          "46",
-          "56",
-          "70",
-          "84",
-          "88",
-          "97"
-        ],
-        "betNumbers": [
-          {
-            "num": "31",
-            "votes": 3,
-            "multiplier": 4,
-            "hits": 0,
-            "methods": [
-              "QMBF",
-              "Dual",
-              "Tri"
-            ]
-          },
-          {
-            "num": "95",
-            "votes": 3,
-            "multiplier": 4,
-            "hits": 0,
-            "methods": [
-              "Dual",
-              "Tri",
-              "RRF"
-            ]
-          },
-          {
-            "num": "12",
-            "votes": 2,
-            "multiplier": 3,
-            "hits": 0,
-            "methods": [
-              "Dual",
-              "Tri"
-            ]
-          },
-          {
-            "num": "41",
-            "votes": 2,
-            "multiplier": 3,
-            "hits": 0,
-            "methods": [
-              "Dual",
-              "Tri"
-            ]
-          },
-          {
-            "num": "57",
-            "votes": 2,
-            "multiplier": 3,
-            "hits": 0,
-            "methods": [
-              "Dual",
-              "Tri"
-            ]
-          },
-          {
-            "num": "22",
-            "votes": 1,
-            "multiplier": 2,
-            "hits": 0,
-            "methods": [
-              "QMBF"
-            ]
-          },
-          {
-            "num": "42",
-            "votes": 1,
-            "multiplier": 2,
-            "hits": 0,
-            "methods": [
-              "QMBF"
-            ]
-          },
-          {
-            "num": "43",
-            "votes": 1,
-            "multiplier": 2,
-            "hits": 0,
-            "methods": [
-              "QMBF"
-            ]
-          },
-          {
-            "num": "64",
-            "votes": 1,
-            "multiplier": 2,
-            "hits": 0,
-            "methods": [
-              "QMBF"
-            ]
-          },
-          {
-            "num": "76",
-            "votes": 1,
-            "multiplier": 2,
-            "hits": 0,
-            "methods": [
-              "Dual"
-            ]
-          },
-          {
-            "num": "23",
-            "votes": 1,
-            "multiplier": 1,
-            "hits": 0,
-            "methods": [
-              "Dual"
-            ]
-          },
-          {
-            "num": "46",
-            "votes": 1,
-            "multiplier": 1,
-            "hits": 0,
-            "methods": [
-              "RRF"
-            ]
-          },
-          {
-            "num": "56",
-            "votes": 1,
-            "multiplier": 1,
-            "hits": 0,
-            "methods": [
-              "RRF"
-            ]
-          },
-          {
-            "num": "70",
-            "votes": 1,
-            "multiplier": 1,
-            "hits": 0,
-            "methods": [
-              "RRF"
-            ]
-          },
-          {
-            "num": "84",
-            "votes": 1,
-            "multiplier": 1,
-            "hits": 0,
-            "methods": [
-              "RRF"
-            ]
-          },
-          {
-            "num": "88",
-            "votes": 1,
-            "multiplier": 1,
-            "hits": 0,
-            "methods": [
-              "RRF"
-            ]
-          },
-          {
-            "num": "97",
-            "votes": 1,
-            "multiplier": 1,
-            "hits": 0,
-            "methods": [
-              "RRF"
-            ]
-          }
-        ],
-        "dayLotoStakeK": 74800,
-        "dayLotoPayoutK": 0,
-        "dayLotoProfitK": -74800,
-        "dayLotoHits": 0,
-        "isLotoWin": false,
-        "xien4Status": "ACTIVE",
-        "xien4Reason": "Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé [31-95-12-41] & Bộ 5 Quây 10 vé X3 [31-95-12-41-57]",
-        "xien4Combinations": [
-          [
-            "31",
-            "95",
-            "12",
-            "41"
-          ]
-        ],
-        "xien4StakeK": 11000,
-        "xien4PayoutK": 0,
-        "dayXien4ProfitK": -11000,
-        "isXien4Win": false,
-        "totalDayProfitK": -85800,
-        "cumLotoProfitK": 5558600,
-        "crossX2": {
-          "tierX5": [],
-          "tierX4": [
-            "31",
-            "95"
-          ],
-          "tierX3": [
-            "12",
-            "41",
-            "57"
-          ],
-          "tierX2": [
-            "22",
-            "42",
-            "43",
-            "64",
-            "76"
-          ],
-          "tierX1": [
-            "23",
-            "46",
-            "56",
-            "70",
-            "84",
-            "88",
-            "97"
-          ],
-          "stakeKX2": 74800,
-          "promotedRationale": "Số [22, 42, 43, 64, 76] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
-        }
       }
     ],
     "summary": {
       "all": {
-        "days": 292,
+        "days": 291,
         "wins": 198,
-        "losses": 94,
-        "winRate": 0.678082191780822,
+        "losses": 93,
+        "winRate": 0.6804123711340206,
         "hits": 1220,
-        "avgHitsPerDay": 4.18,
-        "stakeK": 19881400,
+        "avgHitsPerDay": 4.19,
+        "stakeK": 19806600,
         "payoutK": 25440000,
-        "profitK": 5558600,
-        "roi": 0.2796
+        "profitK": 5633400,
+        "roi": 0.2844
       },
       "live": {
-        "days": 57,
+        "days": 56,
         "wins": 37,
-        "losses": 20,
-        "winRate": 0.6491228070175439,
+        "losses": 19,
+        "winRate": 0.6607142857142857,
         "hits": 248,
-        "avgHitsPerDay": 4.35,
-        "stakeK": 3995200,
+        "avgHitsPerDay": 4.43,
+        "stakeK": 3920400,
         "payoutK": 4792000,
-        "profitK": 796800,
-        "roi": 0.1994
+        "profitK": 871600,
+        "roi": 0.2223
       }
     },
     "latestRecommendation": {
@@ -1875331,7 +1874425,7 @@
       "snapshotLock": {
         "isLocked": true,
         "lockActive": true,
-        "lockedAt": "2026-10-23T03:01:43.818Z",
+        "lockedAt": "2026-10-23T03:31:51.644Z",
         "lockStartTime": "2026-10-22T17:08:00.000Z",
         "lockTargetDate": "2026-10-23",
         "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -1891569,7 +1890663,7 @@
     "snapshotLock": {
       "isLocked": true,
       "lockActive": true,
-      "lockedAt": "2026-10-23T03:01:43.818Z",
+      "lockedAt": "2026-10-23T03:31:51.643Z",
       "lockStartTime": "2026-10-22T17:08:00.000Z",
       "lockTargetDate": "2026-10-23",
       "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -1891892,7 +1890986,7 @@
     "snapshotLock": {
       "isLocked": true,
       "lockActive": true,
-      "lockedAt": "2026-10-23T03:01:43.818Z",
+      "lockedAt": "2026-10-23T03:31:51.644Z",
       "lockStartTime": "2026-10-22T17:08:00.000Z",
       "lockTargetDate": "2026-10-23",
       "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -1892214,7 +1891308,7 @@
       "snapshotLock": {
         "isLocked": true,
         "lockActive": true,
-        "lockedAt": "2026-10-23T03:01:43.818Z",
+        "lockedAt": "2026-10-23T03:31:51.644Z",
         "lockStartTime": "2026-10-22T17:08:00.000Z",
         "lockTargetDate": "2026-10-23",
         "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -2148538,7 +2147632,7 @@
     "snapshotLock": {
       "isLocked": true,
       "lockActive": true,
-      "lockedAt": "2026-10-23T03:01:43.818Z",
+      "lockedAt": "2026-10-23T03:31:51.644Z",
       "lockStartTime": "2026-10-22T17:08:00.000Z",
       "lockTargetDate": "2026-10-23",
       "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -2148819,7 +2147913,7 @@
       "snapshotLock": {
         "isLocked": true,
         "lockActive": true,
-        "lockedAt": "2026-10-23T03:01:44.365Z",
+        "lockedAt": "2026-10-23T03:31:52.194Z",
         "lockStartTime": "2026-10-22T17:08:00.000Z",
         "lockTargetDate": "2026-10-23",
         "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -2193035,7 +2192129,7 @@
       "snapshotLock": {
         "isLocked": true,
         "lockActive": true,
-        "lockedAt": "2026-10-23T03:01:44.376Z",
+        "lockedAt": "2026-10-23T03:31:52.204Z",
         "lockStartTime": "2026-10-22T17:08:00.000Z",
         "lockTargetDate": "2026-10-23",
         "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -2211154,7 +2210248,7 @@
       "snapshotLock": {
         "isLocked": true,
         "lockActive": true,
-        "lockedAt": "2026-10-23T03:01:44.388Z",
+        "lockedAt": "2026-10-23T03:31:52.216Z",
         "lockStartTime": "2026-10-22T17:08:00.000Z",
         "lockTargetDate": "2026-10-23",
         "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -2269145,7 +2268239,7 @@
       "snapshotLock": {
         "isLocked": true,
         "lockActive": true,
-        "lockedAt": "2026-10-23T03:01:44.432Z",
+        "lockedAt": "2026-10-23T03:31:52.261Z",
         "lockStartTime": "2026-10-22T17:08:00.000Z",
         "lockTargetDate": "2026-10-23",
         "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -2376348,7 +2375442,7 @@
   "deResearchEnsemble": {
     "strategyId": "deResearchEnsemble",
     "strategyName": "Nghiên Cứu Đề Hàng Ngày: Top 20 DA vs Nửa Đầu Shadow",
-    "generatedAt": "2026-10-23T03:01:44.455Z",
+    "generatedAt": "2026-10-23T03:31:52.296Z",
     "latestDataDate": "2026-10-22",
     "pendingPredictionDate": "2026-10-23",
     "latestRecommendation": {
@@ -2557045,7 +2556139,7 @@
   "dailyLockedBetsRegistry": {
     "version": "1.0.0",
     "description": "Single Source of Truth (SSOT) Immutable Daily Bets and Settlement Registry",
-    "updatedAt": "2026-10-23T03:01:44.637Z",
+    "updatedAt": "2026-10-23T03:31:52.466Z",
     "dates": {
       "2026-10-10": {
         "targetDate": "2026-10-10",
@@ -2606218,6 +2605312,65 @@
                 ]
               ],
               "stakeK": 5500
+            },
+            "loCrossX2": {
+              "numbers": [
+                "62",
+                "54",
+                "63",
+                "59",
+                "76",
+                "02",
+                "95",
+                "18",
+                "52",
+                "10",
+                "87",
+                "77",
+                "94",
+                "57"
+              ],
+              "x5Nums": [
+                "62",
+                "54",
+                "63",
+                "59"
+              ],
+              "x4Nums": [
+                "76",
+                "02"
+              ],
+              "x3Nums": [
+                "95",
+                "18"
+              ],
+              "x2Nums": [
+                "94",
+                "57"
+              ],
+              "x1Nums": [
+                "52",
+                "10",
+                "87",
+                "77"
+              ],
+              "multiplierMap": {
+                "10": 1,
+                "18": 3,
+                "52": 1,
+                "54": 5,
+                "57": 2,
+                "59": 5,
+                "62": 5,
+                "63": 5,
+                "76": 4,
+                "77": 1,
+                "87": 1,
+                "94": 2,
+                "95": 3,
+                "02": 4
+              },
+              "stakeK": 92400
             }
           }
         },
@@ -2607016,7 +2606169,76 @@
             "totalStakeK": 111700,
             "totalPayoutK": 96000,
             "totalProfitK": -15700,
-            "isWin": false
+            "isWin": false,
+            "loCrossX2": {
+              "numbers": [
+                "62",
+                "54",
+                "63",
+                "59",
+                "76",
+                "02",
+                "95",
+                "18",
+                "52",
+                "10",
+                "87",
+                "77",
+                "94",
+                "57"
+              ],
+              "x5Nums": [
+                "62",
+                "54",
+                "63",
+                "59"
+              ],
+              "x4Nums": [
+                "76",
+                "02"
+              ],
+              "x3Nums": [
+                "95",
+                "18"
+              ],
+              "x2Nums": [
+                "94",
+                "57"
+              ],
+              "x1Nums": [
+                "52",
+                "10",
+                "87",
+                "77"
+              ],
+              "hits": 4,
+              "hitNums": [
+                "54",
+                "95",
+                "18",
+                "10"
+              ],
+              "multiplierMap": {
+                "10": 1,
+                "18": 3,
+                "52": 1,
+                "54": 5,
+                "57": 2,
+                "59": 5,
+                "62": 5,
+                "63": 5,
+                "76": 4,
+                "77": 1,
+                "87": 1,
+                "94": 2,
+                "95": 3,
+                "02": 4
+              },
+              "stakeK": 92400,
+              "payoutK": 96000,
+              "profitK": 3600,
+              "isWin": true
+            }
           }
         },
         "settledAt": "2026-10-18T12:19:00.185Z",
@@ -2612333,6 +2611555,65 @@
                 ]
               ],
               "stakeK": 5500
+            },
+            "loCrossX2": {
+              "numbers": [
+                "62",
+                "59",
+                "76",
+                "04",
+                "22",
+                "94",
+                "52",
+                "70",
+                "35",
+                "32",
+                "42",
+                "24",
+                "53",
+                "54"
+              ],
+              "x5Nums": [
+                "62",
+                "59",
+                "76",
+                "04"
+              ],
+              "x4Nums": [
+                "22",
+                "94"
+              ],
+              "x3Nums": [
+                "52",
+                "70"
+              ],
+              "x2Nums": [
+                "35",
+                "24"
+              ],
+              "x1Nums": [
+                "32",
+                "42",
+                "53",
+                "54"
+              ],
+              "multiplierMap": {
+                "22": 4,
+                "24": 2,
+                "32": 1,
+                "35": 2,
+                "42": 1,
+                "52": 3,
+                "53": 1,
+                "54": 1,
+                "59": 5,
+                "62": 5,
+                "70": 3,
+                "76": 5,
+                "94": 4,
+                "04": 5
+              },
+              "stakeK": 92400
             }
           }
         },
@@ -2613305,7 +2612586,74 @@
             "totalStakeK": 109100,
             "totalPayoutK": 48000,
             "totalProfitK": -61100,
-            "isWin": false
+            "isWin": false,
+            "loCrossX2": {
+              "numbers": [
+                "62",
+                "59",
+                "76",
+                "04",
+                "22",
+                "94",
+                "52",
+                "70",
+                "35",
+                "32",
+                "42",
+                "24",
+                "53",
+                "54"
+              ],
+              "x5Nums": [
+                "62",
+                "59",
+                "76",
+                "04"
+              ],
+              "x4Nums": [
+                "22",
+                "94"
+              ],
+              "x3Nums": [
+                "52",
+                "70"
+              ],
+              "x2Nums": [
+                "35",
+                "24"
+              ],
+              "x1Nums": [
+                "32",
+                "42",
+                "53",
+                "54"
+              ],
+              "hits": 2,
+              "hitNums": [
+                "04",
+                "35"
+              ],
+              "multiplierMap": {
+                "22": 4,
+                "24": 2,
+                "32": 1,
+                "35": 2,
+                "42": 1,
+                "52": 3,
+                "53": 1,
+                "54": 1,
+                "59": 5,
+                "62": 5,
+                "70": 3,
+                "76": 5,
+                "94": 4,
+                "04": 5
+              },
+              "stakeK": 92400,
+              "payoutK": 56000,
+              "profitK": -36400,
+              "isWin": false
+            }
           }
         },
         "actualResult": {
@@ -2621417,7 +2620765,7 @@
             "08"
           ]
         },
-        "settledAt": "2026-10-23T02:07:41.655Z"
+        "settledAt": "2026-10-23T03:01:54.158Z"
       },
       "2026-10-22": {
         "targetDate": "2026-10-22",
@@ -2624079,7 +2623427,7 @@
             "snapshotLock": {
               "isLocked": true,
               "lockActive": true,
-              "lockedAt": "2026-10-23T03:01:44.432Z",
+              "lockedAt": "2026-10-23T03:31:52.261Z",
               "lockStartTime": "2026-10-22T17:08:00.000Z",
               "lockTargetDate": "2026-10-23",
               "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -2627257,7 +2626605,7 @@
             "snapshotLock": {
               "isLocked": true,
               "lockActive": true,
-              "lockedAt": "2026-10-23T03:01:43.818Z",
+              "lockedAt": "2026-10-23T03:31:51.643Z",
               "lockStartTime": "2026-10-22T17:08:00.000Z",
               "lockTargetDate": "2026-10-23",
               "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."
@@ -2627378,7 +2626726,7 @@
             "snapshotLock": {
               "isLocked": true,
               "lockActive": true,
-              "lockedAt": "2026-10-23T03:01:43.818Z",
+              "lockedAt": "2026-10-23T03:31:51.643Z",
               "lockStartTime": "2026-10-22T17:08:00.000Z",
               "lockTargetDate": "2026-10-23",
               "lockReason": "Kỳ quay 2026-10-23 đã được niêm phong chính thức trong SSOT Registry. Tuyệt đối không thay đổi dàn số đánh."

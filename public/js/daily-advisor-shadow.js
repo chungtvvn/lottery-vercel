@@ -395,7 +395,17 @@
                     },
                     loCrossX2: s.loCrossX2 || (() => {
                         const bCross = b?.loCrossX2 || null;
-                        const x2List = (bCross?.x2Nums || []).map(numStr);
+                        let x2List = (bCross?.x2Nums || []).map(numStr);
+                        if (x2List.length === 0) {
+                            const lo4 = regLocked?.settlement?.lo4EngineFusion || regLocked?.bets?.lo4EngineFusion || (data?.lo4EngineFusion?.settledLedger || []).find(r => r.date === targetDate);
+                            const lo4High = new Set([
+                                ...(lo4?.tierX5 || []),
+                                ...(lo4?.tierX4 || []),
+                                ...(lo4?.tierX3 || [])
+                            ].map(numStr));
+                            const x1List = (s.lo?.x1Nums || []).map(numStr);
+                            x2List = x1List.filter(n => lo4High.has(n));
+                        }
                         const x2MultMap = { ...multMap };
                         x2List.forEach(n => { x2MultMap[n] = 2; });
                         let x2StakeK = 0, x2PayoutK = 0, x2Hits = 0;
