@@ -612,7 +612,9 @@
         let lo4HighSet = new Set();
         const lo4Rec = data?.lo4EngineFusion?.latestRecommendation || null;
         const lo4SettledRow = (data?.lo4EngineFusion?.settledLedger || []).find(r => r.date === targetDate);
-        const lo4Src = isPending ? lo4Rec : (lo4SettledRow || lo4Rec);
+        const regEntry = data?.dailyLockedBetsRegistry?.dates?.[targetDate];
+        const lo4Reg = regEntry?.settlement?.lo4EngineFusion || regEntry?.bets?.lo4EngineFusion;
+        const lo4Src = isPending ? (lo4Reg || lo4Rec) : (lo4SettledRow || lo4Reg || lo4Rec);
         if (lo4Src) {
             const h = [...(lo4Src.tierX5 || []), ...(lo4Src.tierX4 || []), ...(lo4Src.tierX3 || [])].map(numStr);
             lo4HighSet = new Set(h);
@@ -895,7 +897,9 @@
         let lo4HighSet = new Set();
         const lo4Rec = data?.lo4EngineFusion?.latestRecommendation || null;
         const lo4SettledRow = (data?.lo4EngineFusion?.settledLedger || []).find(r => r.date === targetDate);
-        const lo4Src = isPending ? lo4Rec : (lo4SettledRow || lo4Rec);
+        const regEntry = data?.dailyLockedBetsRegistry?.dates?.[targetDate];
+        const lo4Reg = regEntry?.settlement?.lo4EngineFusion || regEntry?.bets?.lo4EngineFusion;
+        const lo4Src = isPending ? (lo4Reg || lo4Rec) : (lo4SettledRow || lo4Reg || lo4Rec);
         if (lo4Src) {
             const h = [...(lo4Src.tierX5 || []), ...(lo4Src.tierX4 || []), ...(lo4Src.tierX3 || [])].map(numStr);
             lo4HighSet = new Set(h);

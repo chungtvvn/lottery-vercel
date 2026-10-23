@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "description": "Single Source of Truth (SSOT) Immutable Daily Bets and Settlement Registry",
-  "updatedAt": "2026-10-21T12:13:39.350Z",
+  "updatedAt": "2026-10-23T01:45:39.639Z",
   "dates": {
     "2026-10-10": {
       "targetDate": "2026-10-10",
@@ -149,7 +149,33 @@
                 "QMBF"
               ]
             }
-          ]
+          ],
+          "crossX2": {
+            "tierX5": [
+              "70"
+            ],
+            "tierX4": [],
+            "tierX3": [
+              "36",
+              "43",
+              "62",
+              "79"
+            ],
+            "tierX2": [
+              "02",
+              "72",
+              "88",
+              "93"
+            ],
+            "tierX1": [
+              "09",
+              "22",
+              "30",
+              "95"
+            ],
+            "stakeKX2": 63800,
+            "promotedRationale": "Số [02, 72, 88, 93] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
+          }
         },
         "deDropoffMerge": {
           "top40": [
@@ -745,7 +771,7 @@
             "dayLotoStakeKX2": 63800,
             "dayLotoPayoutKX2": 112000,
             "dayLotoProfitKX2": 48200,
-            "cumLotoProfitKX2": 5757800,
+            "cumLotoProfitKX2": 5766400,
             "isLotoWinX2": true
           }
         },
@@ -1610,6 +1636,34 @@
             "minutesUntilLock": 89,
             "lockReason": "Chưa đến 12:00 trưa (còn 89 phút). Dự đoán vẫn có thể cập nhật.",
             "vnTime": "2026-10-11T10:31:48+07:00"
+          },
+          "crossX2": {
+            "tierX5": [],
+            "tierX4": [
+              "04",
+              "43",
+              "49"
+            ],
+            "tierX3": [
+              "36",
+              "70",
+              "81"
+            ],
+            "tierX2": [
+              "52",
+              "62"
+            ],
+            "tierX1": [
+              "03",
+              "46",
+              "54",
+              "56",
+              "84",
+              "88",
+              "95"
+            ],
+            "stakeKX2": 70400,
+            "promotedRationale": "Số [52, 62] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "crossHedgingPortfolio": {
@@ -5907,7 +5961,7 @@
             "dayLotoStakeKX2": 70400,
             "dayLotoPayoutKX2": 80000,
             "dayLotoProfitKX2": 9600,
-            "cumLotoProfitKX2": 5767400,
+            "cumLotoProfitKX2": 5776000,
             "isLotoWinX2": true
           }
         },
@@ -6691,6 +6745,38 @@
               ]
             ],
             "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [64-92-93-38] (Ăn từ 2 con)"
+          },
+          "crossX2": {
+            "tierX5": [],
+            "tierX4": [
+              "64",
+              "92",
+              "93"
+            ],
+            "tierX3": [
+              "38",
+              "72",
+              "75"
+            ],
+            "tierX2": [
+              "62"
+            ],
+            "tierX1": [
+              "01",
+              "14",
+              "31",
+              "36",
+              "43",
+              "44",
+              "53",
+              "63",
+              "66",
+              "70",
+              "71",
+              "91"
+            ],
+            "stakeKX2": 77000,
+            "promotedRationale": "Số [62] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "crossHedgingPortfolio": {
@@ -7164,7 +7250,7 @@
             "dayLotoStakeKX2": 77000,
             "dayLotoPayoutKX2": 88000,
             "dayLotoProfitKX2": 11000,
-            "cumLotoProfitKX2": 5281200,
+            "cumLotoProfitKX2": 5294200,
             "isLotoWinX2": true
           }
         },
@@ -7602,6 +7688,37 @@
               ]
             ],
             "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [43-52-66-12] (Ăn từ 2 con)"
+          },
+          "crossX2": {
+            "tierX5": [],
+            "tierX4": [
+              "43",
+              "52",
+              "66"
+            ],
+            "tierX3": [
+              "12",
+              "29",
+              "65",
+              "75"
+            ],
+            "tierX2": [
+              "36",
+              "62"
+            ],
+            "tierX1": [
+              "34",
+              "44",
+              "46",
+              "55",
+              "63",
+              "76",
+              "79",
+              "81",
+              "82"
+            ],
+            "stakeKX2": 81400,
+            "promotedRationale": "Số [36, 62] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "crossHedgingPortfolio": {
@@ -8095,7 +8212,7 @@
             "dayLotoStakeKX2": 81400,
             "dayLotoPayoutKX2": 144000,
             "dayLotoProfitKX2": 62600,
-            "cumLotoProfitKX2": 5343800,
+            "cumLotoProfitKX2": 5356800,
             "isLotoWinX2": true
           }
         },
@@ -8500,6 +8617,33 @@
               ]
             ],
             "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [62-22-29-36] (Ăn từ 2 con)"
+          },
+          "crossX2": {
+            "tierX5": [
+              "62"
+            ],
+            "tierX4": [
+              "22",
+              "29",
+              "36",
+              "63"
+            ],
+            "tierX3": [
+              "01",
+              "64",
+              "76",
+              "84"
+            ],
+            "tierX2": [
+              "38"
+            ],
+            "tierX1": [
+              "43",
+              "54",
+              "96"
+            ],
+            "stakeKX2": 83600,
+            "promotedRationale": "Số [38] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "crossHedgingPortfolio": {
@@ -8905,9 +9049,10 @@
               "76",
               "84"
             ],
-            "tierX2": [],
+            "tierX2": [
+              "38"
+            ],
             "tierX1": [
-              "38",
               "43",
               "54",
               "96"
@@ -8918,10 +9063,10 @@
             "x2Hits": 0,
             "x1Hits": 2,
             "totalHits": 5,
-            "dayLotoStakeKX2": 81400,
+            "dayLotoStakeKX2": 83600,
             "dayLotoPayoutKX2": 104000,
-            "dayLotoProfitKX2": 22600,
-            "cumLotoProfitKX2": 5366400,
+            "dayLotoProfitKX2": 20400,
+            "cumLotoProfitKX2": 5377200,
             "isLotoWinX2": true
           }
         },
@@ -9304,6 +9449,31 @@
               ]
             ],
             "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [52-66-76-24] (Ăn từ 2 con)"
+          },
+          "crossX2": {
+            "tierX5": [
+              "52",
+              "66",
+              "76"
+            ],
+            "tierX4": [
+              "24",
+              "38",
+              "64"
+            ],
+            "tierX3": [
+              "22"
+            ],
+            "tierX2": [],
+            "tierX1": [
+              "00",
+              "23",
+              "29",
+              "54",
+              "97"
+            ],
+            "stakeKX2": 77000,
+            "promotedRationale": "Không có số nào cần nâng hạng hôm nay."
           }
         },
         "crossHedgingPortfolio": {
@@ -9711,7 +9881,7 @@
             "dayLotoStakeKX2": 77000,
             "dayLotoPayoutKX2": 144000,
             "dayLotoProfitKX2": 67000,
-            "cumLotoProfitKX2": 5433400,
+            "cumLotoProfitKX2": 5444200,
             "isLotoWinX2": true
           }
         },
@@ -10093,6 +10263,32 @@
               ]
             ],
             "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [10-54-88-01] (Ăn từ 2 con)"
+          },
+          "crossX2": {
+            "tierX5": [
+              "10",
+              "54",
+              "88"
+            ],
+            "tierX4": [
+              "01",
+              "79"
+            ],
+            "tierX3": [
+              "38",
+              "49",
+              "68"
+            ],
+            "tierX2": [
+              "57"
+            ],
+            "tierX1": [
+              "03",
+              "92",
+              "95"
+            ],
+            "stakeKX2": 81400,
+            "promotedRationale": "Số [57] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "crossHedgingPortfolio": {
@@ -10521,7 +10717,7 @@
             "dayLotoStakeKX2": 81400,
             "dayLotoPayoutKX2": 88000,
             "dayLotoProfitKX2": 6600,
-            "cumLotoProfitKX2": 5440000,
+            "cumLotoProfitKX2": 5450800,
             "isLotoWinX2": true
           }
         },
@@ -10934,6 +11130,33 @@
               ]
             ],
             "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [36-38-54-62] (Ăn từ 2 con)"
+          },
+          "crossX2": {
+            "tierX5": [
+              "36"
+            ],
+            "tierX4": [
+              "38",
+              "54",
+              "62"
+            ],
+            "tierX3": [
+              "12",
+              "22",
+              "64",
+              "82",
+              "84"
+            ],
+            "tierX2": [],
+            "tierX1": [
+              "01",
+              "24",
+              "49",
+              "56",
+              "70"
+            ],
+            "stakeKX2": 81400,
+            "promotedRationale": "Không có số nào cần nâng hạng hôm nay."
           }
         },
         "crossHedgingPortfolio": {
@@ -11351,7 +11574,7 @@
             "dayLotoStakeKX2": 81400,
             "dayLotoPayoutKX2": 40000,
             "dayLotoProfitKX2": -41400,
-            "cumLotoProfitKX2": 5398600,
+            "cumLotoProfitKX2": 5409400,
             "isLotoWinX2": false
           }
         },
@@ -11807,6 +12030,39 @@
               ]
             ],
             "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [24-00-23-31] (Ăn từ 2 con)"
+          },
+          "crossX2": {
+            "tierX5": [],
+            "tierX4": [
+              "24"
+            ],
+            "tierX3": [
+              "00",
+              "23",
+              "31",
+              "57",
+              "92",
+              "94"
+            ],
+            "tierX2": [
+              "48",
+              "62",
+              "64"
+            ],
+            "tierX1": [
+              "05",
+              "18",
+              "47",
+              "49",
+              "66",
+              "76",
+              "80",
+              "84",
+              "87",
+              "96"
+            ],
+            "stakeKX2": 83600,
+            "promotedRationale": "Số [48, 62, 64] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "crossHedgingPortfolio": {
@@ -12290,7 +12546,7 @@
             "dayLotoStakeKX2": 83600,
             "dayLotoPayoutKX2": 128000,
             "dayLotoProfitKX2": 44400,
-            "cumLotoProfitKX2": 5443000,
+            "cumLotoProfitKX2": 5453800,
             "isLotoWinX2": true
           }
         },
@@ -12748,6 +13004,39 @@
               ]
             ],
             "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [22-29-44-54] (Ăn từ 2 con)"
+          },
+          "crossX2": {
+            "tierX5": [],
+            "tierX4": [
+              "22"
+            ],
+            "tierX3": [
+              "29",
+              "44",
+              "54",
+              "62",
+              "70",
+              "93"
+            ],
+            "tierX2": [
+              "72",
+              "92"
+            ],
+            "tierX1": [
+              "01",
+              "08",
+              "41",
+              "45",
+              "59",
+              "64",
+              "80",
+              "81",
+              "83",
+              "84",
+              "94"
+            ],
+            "stakeKX2": 81400,
+            "promotedRationale": "Số [72, 92] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "crossHedgingPortfolio": {
@@ -13236,7 +13525,7 @@
             "dayLotoStakeKX2": 81400,
             "dayLotoPayoutKX2": 16000,
             "dayLotoProfitKX2": -65400,
-            "cumLotoProfitKX2": 5377600,
+            "cumLotoProfitKX2": 5388400,
             "isLotoWinX2": false
           }
         },
@@ -13678,6 +13967,37 @@
               ]
             ],
             "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [22-38-64-43] (Ăn từ 2 con)"
+          },
+          "crossX2": {
+            "tierX5": [],
+            "tierX4": [
+              "22",
+              "38",
+              "64"
+            ],
+            "tierX3": [
+              "43",
+              "72",
+              "75",
+              "88"
+            ],
+            "tierX2": [
+              "36"
+            ],
+            "tierX1": [
+              "09",
+              "35",
+              "54",
+              "61",
+              "70",
+              "76",
+              "82",
+              "91",
+              "93",
+              "98"
+            ],
+            "stakeKX2": 79200,
+            "promotedRationale": "Số [36] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "crossHedgingPortfolio": {
@@ -14138,7 +14458,7 @@
             "dayLotoStakeKX2": 79200,
             "dayLotoPayoutKX2": 72000,
             "dayLotoProfitKX2": -7200,
-            "cumLotoProfitKX2": 5370400,
+            "cumLotoProfitKX2": 5381200,
             "isLotoWinX2": false
           }
         },
@@ -14583,6 +14903,38 @@
               ]
             ],
             "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [38-52-54-04] (Ăn từ 2 con)"
+          },
+          "crossX2": {
+            "tierX5": [],
+            "tierX4": [
+              "38",
+              "52",
+              "54"
+            ],
+            "tierX3": [
+              "04",
+              "76",
+              "85"
+            ],
+            "tierX2": [
+              "22",
+              "62",
+              "72"
+            ],
+            "tierX1": [
+              "15",
+              "24",
+              "37",
+              "41",
+              "43",
+              "48",
+              "63",
+              "92",
+              "95",
+              "97"
+            ],
+            "stakeKX2": 81400,
+            "promotedRationale": "Số [22, 62, 72] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "crossHedgingPortfolio": {
@@ -15065,7 +15417,7 @@
             "dayLotoStakeKX2": 81400,
             "dayLotoPayoutKX2": 80000,
             "dayLotoProfitKX2": -1400,
-            "cumLotoProfitKX2": 5369000,
+            "cumLotoProfitKX2": 5379800,
             "isLotoWinX2": false
           }
         },
@@ -15477,6 +15829,33 @@
               ]
             ],
             "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [00-22-38-66] (Ăn từ 2 con)"
+          },
+          "crossX2": {
+            "tierX5": [],
+            "tierX4": [
+              "00",
+              "22",
+              "38",
+              "66",
+              "68",
+              "84"
+            ],
+            "tierX3": [
+              "46"
+            ],
+            "tierX2": [],
+            "tierX1": [
+              "04",
+              "18",
+              "23",
+              "26",
+              "30",
+              "70",
+              "71",
+              "75"
+            ],
+            "stakeKX2": 77000,
+            "promotedRationale": "Không có số nào cần nâng hạng hôm nay."
           }
         },
         "crossHedgingPortfolio": {
@@ -15913,7 +16292,7 @@
             "dayLotoStakeKX2": 77000,
             "dayLotoPayoutKX2": 136000,
             "dayLotoProfitKX2": 59000,
-            "cumLotoProfitKX2": 5428000,
+            "cumLotoProfitKX2": 5438800,
             "isLotoWinX2": true
           }
         },
@@ -16353,6 +16732,37 @@
               ]
             ],
             "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [22-38-68-54] (Ăn từ 2 con)"
+          },
+          "crossX2": {
+            "tierX5": [],
+            "tierX4": [
+              "22",
+              "38",
+              "68"
+            ],
+            "tierX3": [
+              "54",
+              "62",
+              "66",
+              "94"
+            ],
+            "tierX2": [
+              "36"
+            ],
+            "tierX1": [
+              "33",
+              "45",
+              "49",
+              "59",
+              "76",
+              "81",
+              "82",
+              "85",
+              "90",
+              "93"
+            ],
+            "stakeKX2": 79200,
+            "promotedRationale": "Số [36] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "crossHedgingPortfolio": {
@@ -16785,10 +17195,11 @@
               "66",
               "94"
             ],
-            "tierX2": [],
+            "tierX2": [
+              "36"
+            ],
             "tierX1": [
               "33",
-              "36",
               "45",
               "49",
               "59",
@@ -16805,10 +17216,10 @@
             "x2Hits": 0,
             "x1Hits": 3,
             "totalHits": 7,
-            "dayLotoStakeKX2": 77000,
+            "dayLotoStakeKX2": 79200,
             "dayLotoPayoutKX2": 128000,
-            "dayLotoProfitKX2": 51000,
-            "cumLotoProfitKX2": 5479000,
+            "dayLotoProfitKX2": 48800,
+            "cumLotoProfitKX2": 5487600,
             "isLotoWinX2": true
           }
         },
@@ -17205,6 +17616,34 @@
               ]
             ],
             "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [52-62-68-93] (Ăn từ 2 con)"
+          },
+          "crossX2": {
+            "tierX5": [
+              "52"
+            ],
+            "tierX4": [
+              "62",
+              "68",
+              "93"
+            ],
+            "tierX3": [
+              "01",
+              "11",
+              "14",
+              "43",
+              "73"
+            ],
+            "tierX2": [
+              "19",
+              "41"
+            ],
+            "tierX1": [
+              "07",
+              "37",
+              "59"
+            ],
+            "stakeKX2": 85800,
+            "promotedRationale": "Số [19, 41] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "crossHedgingPortfolio": {
@@ -17631,7 +18070,7 @@
             "dayLotoStakeKX2": 85800,
             "dayLotoPayoutKX2": 48000,
             "dayLotoProfitKX2": -37800,
-            "cumLotoProfitKX2": 5441200,
+            "cumLotoProfitKX2": 5449800,
             "isLotoWinX2": false
           }
         },
@@ -18027,6 +18466,33 @@
               ]
             ],
             "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [10-11-24-36] (Ăn từ 2 con)"
+          },
+          "crossX2": {
+            "tierX5": [],
+            "tierX4": [
+              "10",
+              "11",
+              "24"
+            ],
+            "tierX3": [
+              "36",
+              "38",
+              "62",
+              "65"
+            ],
+            "tierX2": [
+              "33"
+            ],
+            "tierX1": [
+              "03",
+              "19",
+              "25",
+              "67",
+              "73",
+              "86"
+            ],
+            "stakeKX2": 70400,
+            "promotedRationale": "Số [33] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "crossHedgingPortfolio": {
@@ -18450,7 +18916,7 @@
             "dayLotoStakeKX2": 70400,
             "dayLotoPayoutKX2": 128000,
             "dayLotoProfitKX2": 57600,
-            "cumLotoProfitKX2": 5498800,
+            "cumLotoProfitKX2": 5507400,
             "isLotoWinX2": true
           }
         },
@@ -18844,6 +19310,32 @@
               ]
             ],
             "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [10-11-24-36] (Ăn từ 2 con)"
+          },
+          "crossX2": {
+            "tierX5": [],
+            "tierX4": [
+              "10",
+              "11",
+              "24"
+            ],
+            "tierX3": [
+              "36",
+              "38",
+              "62",
+              "65"
+            ],
+            "tierX2": [],
+            "tierX1": [
+              "06",
+              "17",
+              "23",
+              "30",
+              "48",
+              "72",
+              "88"
+            ],
+            "stakeKX2": 68200,
+            "promotedRationale": "Không có số nào cần nâng hạng hôm nay."
           }
         },
         "crossHedgingPortfolio": {
@@ -19265,7 +19757,7 @@
             "dayLotoStakeKX2": 68200,
             "dayLotoPayoutKX2": 96000,
             "dayLotoProfitKX2": 27800,
-            "cumLotoProfitKX2": 5526600,
+            "cumLotoProfitKX2": 5535200,
             "isLotoWinX2": true
           }
         },
@@ -19609,6 +20101,29 @@
               ]
             ],
             "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [20-36-76-92] (Ăn từ 2 con)"
+          },
+          "crossX2": {
+            "tierX5": [
+              "20",
+              "36",
+              "76",
+              "92"
+            ],
+            "tierX4": [
+              "52"
+            ],
+            "tierX3": [
+              "95"
+            ],
+            "tierX2": [
+              "33"
+            ],
+            "tierX1": [
+              "59",
+              "72"
+            ],
+            "stakeKX2": 68200,
+            "promotedRationale": "Số [33] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "crossHedgingPortfolio": {
@@ -19974,7 +20489,7 @@
             "dayLotoStakeKX2": 68200,
             "dayLotoPayoutKX2": 136000,
             "dayLotoProfitKX2": 67800,
-            "cumLotoProfitKX2": 5594400,
+            "cumLotoProfitKX2": 5603000,
             "isLotoWinX2": true
           }
         },
@@ -20374,6 +20889,34 @@
               ]
             ],
             "reason": "Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé [22-38-70-93] & Bộ 5 Quây 10 vé X3 [22-38-70-93-41]"
+          },
+          "crossX2": {
+            "tierX5": [],
+            "tierX4": [
+              "22",
+              "38",
+              "70",
+              "93"
+            ],
+            "tierX3": [
+              "41"
+            ],
+            "tierX2": [
+              "72",
+              "75",
+              "95"
+            ],
+            "tierX1": [
+              "45",
+              "61",
+              "62",
+              "81",
+              "82",
+              "85",
+              "92"
+            ],
+            "stakeKX2": 70400,
+            "promotedRationale": "Số [72, 75, 95] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "crossHedgingPortfolio": {
@@ -20807,7 +21350,7 @@
             "dayLotoStakeKX2": 70400,
             "dayLotoPayoutKX2": 112000,
             "dayLotoProfitKX2": 41600,
-            "cumLotoProfitKX2": 5636000,
+            "cumLotoProfitKX2": 5644600,
             "isLotoWinX2": true
           }
         },
@@ -21203,6 +21746,33 @@
               ]
             ],
             "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [38-62-76-10] (Ăn từ 2 con)"
+          },
+          "crossX2": {
+            "tierX5": [],
+            "tierX4": [
+              "38",
+              "62",
+              "76"
+            ],
+            "tierX3": [
+              "10",
+              "11",
+              "24",
+              "36"
+            ],
+            "tierX2": [
+              "75"
+            ],
+            "tierX1": [
+              "45",
+              "65",
+              "81",
+              "82",
+              "85",
+              "93"
+            ],
+            "stakeKX2": 70400,
+            "promotedRationale": "Số [75] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "crossHedgingPortfolio": {
@@ -21605,7 +22175,7 @@
             "dayLotoStakeKX2": 70400,
             "dayLotoPayoutKX2": 96000,
             "dayLotoProfitKX2": 25600,
-            "cumLotoProfitKX2": 5661600,
+            "cumLotoProfitKX2": 5670200,
             "isLotoWinX2": true
           }
         },
@@ -21991,6 +22561,34 @@
               ]
             ],
             "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [93-54-95-10] (Ăn từ 2 con)"
+          },
+          "crossX2": {
+            "tierX5": [
+              "93"
+            ],
+            "tierX4": [
+              "54",
+              "95"
+            ],
+            "tierX3": [
+              "10",
+              "12",
+              "62"
+            ],
+            "tierX2": [
+              "52"
+            ],
+            "tierX1": [
+              "01",
+              "45",
+              "72",
+              "78",
+              "81",
+              "82",
+              "85"
+            ],
+            "stakeKX2": 68200,
+            "promotedRationale": "Số [52] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "crossHedgingPortfolio": {
@@ -22402,7 +23000,7 @@
             "dayLotoStakeKX2": 68200,
             "dayLotoPayoutKX2": 24000,
             "dayLotoProfitKX2": -44200,
-            "cumLotoProfitKX2": 5617400,
+            "cumLotoProfitKX2": 5626000,
             "isLotoWinX2": false
           }
         },
@@ -22791,6 +23389,34 @@
               ]
             ],
             "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [62-52-84-88] (Ăn từ 2 con)"
+          },
+          "crossX2": {
+            "tierX5": [
+              "62"
+            ],
+            "tierX4": [
+              "52",
+              "84",
+              "88"
+            ],
+            "tierX3": [
+              "36"
+            ],
+            "tierX2": [
+              "38",
+              "70"
+            ],
+            "tierX1": [
+              "09",
+              "45",
+              "81",
+              "82",
+              "85",
+              "93",
+              "95"
+            ],
+            "stakeKX2": 68200,
+            "promotedRationale": "Số [38, 70] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "crossHedgingPortfolio": {
@@ -23221,7 +23847,7 @@
             "dayLotoStakeKX2": 68200,
             "dayLotoPayoutKX2": 120000,
             "dayLotoProfitKX2": 51800,
-            "cumLotoProfitKX2": 5669200,
+            "cumLotoProfitKX2": 5677800,
             "isLotoWinX2": true
           }
         },
@@ -23596,6 +24222,31 @@
               ]
             ],
             "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [38-52-66-68] (Ăn từ 2 con)"
+          },
+          "crossX2": {
+            "tierX5": [
+              "38",
+              "52",
+              "66"
+            ],
+            "tierX4": [
+              "68",
+              "76"
+            ],
+            "tierX3": [
+              "43",
+              "44",
+              "59",
+              "70"
+            ],
+            "tierX2": [
+              "62"
+            ],
+            "tierX1": [
+              "95"
+            ],
+            "stakeKX2": 83600,
+            "promotedRationale": "Số [62] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "crossHedgingPortfolio": {
@@ -23989,7 +24640,7 @@
             "dayLotoStakeKX2": 83600,
             "dayLotoPayoutKX2": 80000,
             "dayLotoProfitKX2": -3600,
-            "cumLotoProfitKX2": 5665600,
+            "cumLotoProfitKX2": 5674200,
             "isLotoWinX2": false
           }
         },
@@ -24383,6 +25034,34 @@
               ]
             ],
             "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [62-38-68-43] (Ăn từ 2 con)"
+          },
+          "crossX2": {
+            "tierX5": [
+              "62"
+            ],
+            "tierX4": [
+              "38",
+              "68"
+            ],
+            "tierX3": [
+              "43",
+              "52",
+              "94"
+            ],
+            "tierX2": [
+              "02"
+            ],
+            "tierX1": [
+              "01",
+              "45",
+              "54",
+              "81",
+              "82",
+              "85",
+              "93"
+            ],
+            "stakeKX2": 68200,
+            "promotedRationale": "Số [02] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "crossHedgingPortfolio": {
@@ -24812,7 +25491,7 @@
             "dayLotoStakeKX2": 68200,
             "dayLotoPayoutKX2": 144000,
             "dayLotoProfitKX2": 75800,
-            "cumLotoProfitKX2": 5741400,
+            "cumLotoProfitKX2": 5750000,
             "isLotoWinX2": true
           }
         },
@@ -25203,6 +25882,32 @@
               ]
             ],
             "reason": "Top 5 Đồng Thuận: Quây 11 vé Top 4 [38-62-75-76] (Ăn từ 2 con)"
+          },
+          "crossX2": {
+            "tierX5": [
+              "38",
+              "62",
+              "75",
+              "76"
+            ],
+            "tierX4": [],
+            "tierX3": [
+              "54",
+              "66",
+              "90"
+            ],
+            "tierX2": [
+              "43",
+              "70"
+            ],
+            "tierX1": [
+              "10",
+              "63",
+              "84",
+              "88"
+            ],
+            "stakeKX2": 81400,
+            "promotedRationale": "Số [43, 70] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "crossHedgingPortfolio": {
@@ -25609,7 +26314,7 @@
             "dayLotoStakeKX2": 81400,
             "dayLotoPayoutKX2": 72000,
             "dayLotoProfitKX2": -9400,
-            "cumLotoProfitKX2": 5732000,
+            "cumLotoProfitKX2": 5740600,
             "isLotoWinX2": false
           }
         },
@@ -26009,6 +26714,34 @@
               ]
             ],
             "reason": "Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé [38-62-70-19] & Bộ 5 Quây 10 vé X3 [38-62-70-19-54]"
+          },
+          "crossX2": {
+            "tierX5": [],
+            "tierX4": [
+              "38",
+              "62",
+              "70"
+            ],
+            "tierX3": [
+              "19",
+              "54",
+              "93"
+            ],
+            "tierX2": [
+              "10",
+              "43"
+            ],
+            "tierX1": [
+              "11",
+              "46",
+              "49",
+              "56",
+              "84",
+              "88",
+              "95"
+            ],
+            "stakeKX2": 70400,
+            "promotedRationale": "Số [10, 43] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "crossHedgingPortfolio": {
@@ -26442,7 +27175,7 @@
             "dayLotoStakeKX2": 70400,
             "dayLotoPayoutKX2": 48000,
             "dayLotoProfitKX2": -22400,
-            "cumLotoProfitKX2": 5709600,
+            "cumLotoProfitKX2": 5718200,
             "isLotoWinX2": false
           }
         },
@@ -26871,6 +27604,35 @@
               ]
             ],
             "stakeK": 11000
+          },
+          "crossX2": {
+            "tierX5": [],
+            "tierX4": [
+              "38",
+              "62"
+            ],
+            "tierX3": [
+              "22",
+              "36",
+              "43",
+              "76"
+            ],
+            "tierX2": [
+              "72"
+            ],
+            "tierX1": [
+              "46",
+              "54",
+              "56",
+              "59",
+              "70",
+              "84",
+              "88",
+              "93",
+              "95"
+            ],
+            "stakeKX2": 68200,
+            "promotedRationale": "Số [72] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "crossHedgingPortfolio": {
@@ -27395,7 +28157,7 @@
             "dayLotoStakeKX2": 68200,
             "dayLotoPayoutKX2": 64000,
             "dayLotoProfitKX2": -4200,
-            "cumLotoProfitKX2": 5763200,
+            "cumLotoProfitKX2": 5771800,
             "isLotoWinX2": false
           }
         },
@@ -27929,6 +28691,36 @@
             "payoutHit4K": 384000,
             "payoutHit3K": 120000,
             "payoutHit2K": 12000
+          },
+          "crossX2": {
+            "tierX5": [],
+            "tierX4": [
+              "36",
+              "43",
+              "62",
+              "76"
+            ],
+            "tierX3": [
+              "04",
+              "63",
+              "94"
+            ],
+            "tierX2": [
+              "54",
+              "72"
+            ],
+            "tierX1": [
+              "46",
+              "56",
+              "70",
+              "84",
+              "86",
+              "88",
+              "93",
+              "95"
+            ],
+            "stakeKX2": 81400,
+            "promotedRationale": "Số [54, 72] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "loXien5": {
@@ -28499,7 +29291,7 @@
             "dayLotoStakeKX2": 81400,
             "dayLotoPayoutKX2": 80000,
             "dayLotoProfitKX2": -1400,
-            "cumLotoProfitKX2": 5761800,
+            "cumLotoProfitKX2": 5770400,
             "isLotoWinX2": false
           }
         },
@@ -28985,6 +29777,36 @@
             "payoutHit3K": 120000,
             "payoutHit2K": 12000,
             "reason": "Top 5 Đồng Thuận: Chốt đánh Bộ 4 Quây 11 vé [36-38-52-75] & Bộ 5 Quây 10 vé X3"
+          },
+          "crossX2": {
+            "tierX5": [],
+            "tierX4": [
+              "36",
+              "38",
+              "52",
+              "75"
+            ],
+            "tierX3": [
+              "66",
+              "81",
+              "88"
+            ],
+            "tierX2": [
+              "72"
+            ],
+            "tierX1": [
+              "15",
+              "43",
+              "46",
+              "56",
+              "70",
+              "84",
+              "86",
+              "95",
+              "97"
+            ],
+            "stakeKX2": 79200,
+            "promotedRationale": "Số [72] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "loXien5": {
@@ -29528,7 +30350,7 @@
             "dayLotoStakeKX2": 79200,
             "dayLotoPayoutKX2": 104000,
             "dayLotoProfitKX2": 24800,
-            "cumLotoProfitKX2": 5786600,
+            "cumLotoProfitKX2": 5795200,
             "isLotoWinX2": true
           }
         },
@@ -30070,6 +30892,33 @@
             "lockActive": false,
             "lockReason": "Kỳ quay 2026-10-15 là ngày tương lai.",
             "vnTime": "2026-10-14T23:48:36+07:00"
+          },
+          "crossX2": {
+            "tierX5": [],
+            "tierX4": [
+              "22",
+              "75",
+              "95"
+            ],
+            "tierX3": [
+              "36",
+              "54",
+              "59",
+              "88"
+            ],
+            "tierX2": [
+              "38",
+              "52"
+            ],
+            "tierX1": [
+              "43",
+              "46",
+              "56",
+              "70",
+              "84"
+            ],
+            "stakeKX2": 72600,
+            "promotedRationale": "Số [38, 52] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "crossHedgingPortfolio": {
@@ -34579,7 +35428,7 @@
             "dayLotoStakeKX2": 72600,
             "dayLotoPayoutKX2": 8000,
             "dayLotoProfitKX2": -64600,
-            "cumLotoProfitKX2": 5722000,
+            "cumLotoProfitKX2": 5730600,
             "isLotoWinX2": false
           }
         },
@@ -35560,6 +36409,33 @@
             "lockStartTime": "2026-10-16T12:00:00+07:00",
             "lockTargetDate": "2026-10-16",
             "lockReason": "Đã khóa bất biến từ 12:00 trưa ngày 2026-10-16 đến khi có kết quả và kết toán sau 18:40. Tuyệt đối không thay đổi dàn số đánh."
+          },
+          "crossX2": {
+            "tierX5": [],
+            "tierX4": [
+              "36",
+              "62",
+              "95"
+            ],
+            "tierX3": [
+              "10",
+              "56",
+              "67",
+              "72"
+            ],
+            "tierX2": [
+              "44",
+              "96"
+            ],
+            "tierX1": [
+              "21",
+              "46",
+              "70",
+              "84",
+              "88"
+            ],
+            "stakeKX2": 72600,
+            "promotedRationale": "Số [44, 96] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "crossHedgingPortfolio": {
@@ -40683,7 +41559,7 @@
             "dayLotoStakeKX2": 72600,
             "dayLotoPayoutKX2": 72000,
             "dayLotoProfitKX2": -600,
-            "cumLotoProfitKX2": 5721400,
+            "cumLotoProfitKX2": 5730000,
             "isLotoWinX2": false
           }
         },
@@ -41682,6 +42558,35 @@
             "lockActive": false,
             "lockReason": "Kỳ quay 2026-10-17 là ngày tương lai.",
             "vnTime": "2026-10-16T18:50:18+07:00"
+          },
+          "crossX2": {
+            "tierX5": [],
+            "tierX4": [
+              "59"
+            ],
+            "tierX3": [
+              "16",
+              "24",
+              "29",
+              "38",
+              "54",
+              "66"
+            ],
+            "tierX2": [
+              "52",
+              "76",
+              "79"
+            ],
+            "tierX1": [
+              "46",
+              "56",
+              "70",
+              "84",
+              "88",
+              "95"
+            ],
+            "stakeKX2": 74800,
+            "promotedRationale": "Số [52, 76, 79] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "crossHedgingPortfolio": {
@@ -46393,7 +47298,7 @@
             "dayLotoStakeKX2": 74800,
             "dayLotoPayoutKX2": 112000,
             "dayLotoProfitKX2": 37200,
-            "cumLotoProfitKX2": 5758600,
+            "cumLotoProfitKX2": 5767200,
             "isLotoWinX2": true
           }
         },
@@ -47330,6 +48235,34 @@
               ]
             ],
             "stakeK": 11000
+          },
+          "crossX2": {
+            "tierX5": [],
+            "tierX4": [
+              "54",
+              "62",
+              "95"
+            ],
+            "tierX3": [
+              "57",
+              "63",
+              "94"
+            ],
+            "tierX2": [
+              "02",
+              "59",
+              "76"
+            ],
+            "tierX1": [
+              "10",
+              "46",
+              "56",
+              "70",
+              "84",
+              "88"
+            ],
+            "stakeKX2": 72600,
+            "promotedRationale": "Số [02, 59, 76] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "loXien5": {
@@ -48476,7 +49409,7 @@
             "dayLotoStakeKX2": 72600,
             "dayLotoPayoutKX2": 72000,
             "dayLotoProfitKX2": -600,
-            "cumLotoProfitKX2": 5758000,
+            "cumLotoProfitKX2": 5766600,
             "isLotoWinX2": false
           }
         },
@@ -49419,6 +50352,34 @@
               ]
             ],
             "stakeK": 11000
+          },
+          "crossX2": {
+            "tierX5": [],
+            "tierX4": [
+              "59",
+              "62",
+              "76"
+            ],
+            "tierX3": [
+              "24",
+              "35",
+              "52"
+            ],
+            "tierX2": [
+              "04",
+              "22",
+              "70",
+              "94"
+            ],
+            "tierX1": [
+              "46",
+              "56",
+              "84",
+              "88",
+              "95"
+            ],
+            "stakeKX2": 74800,
+            "promotedRationale": "Số [04, 22, 70, 94] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "crossHedgingPortfolio": {
@@ -54563,7 +55524,7 @@
             "dayLotoStakeKX2": 74800,
             "dayLotoPayoutKX2": 48000,
             "dayLotoProfitKX2": -26800,
-            "cumLotoProfitKX2": 5731200,
+            "cumLotoProfitKX2": 5739800,
             "isLotoWinX2": false
           }
         },
@@ -55650,6 +56611,33 @@
               ]
             ],
             "stakeK": 11000
+          },
+          "crossX2": {
+            "tierX5": [
+              "70",
+              "95"
+            ],
+            "tierX4": [
+              "32"
+            ],
+            "tierX3": [
+              "38",
+              "52",
+              "76"
+            ],
+            "tierX2": [
+              "62",
+              "66"
+            ],
+            "tierX1": [
+              "36",
+              "46",
+              "56",
+              "84",
+              "88"
+            ],
+            "stakeKX2": 70400,
+            "promotedRationale": "Số [62, 66] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy)."
           }
         },
         "loXien5": {
@@ -56253,7 +57241,7 @@
             "dayLotoStakeKX2": 70400,
             "dayLotoPayoutKX2": 208000,
             "dayLotoProfitKX2": 137600,
-            "cumLotoProfitKX2": 5868800,
+            "cumLotoProfitKX2": 5877400,
             "isLotoWinX2": true
           }
         },
@@ -62559,7 +63547,6 @@
             "dayLotoStakeKX2": 70400,
             "dayLotoPayoutKX2": 96000,
             "dayLotoProfitKX2": 25600,
-            "cumLotoProfitKX2": 5894400,
             "isLotoWinX2": true
           }
         },
@@ -63386,7 +64373,7 @@
           "08"
         ]
       },
-      "settledAt": "2026-10-21T12:13:39.289Z"
+      "settledAt": "2026-10-23T01:45:39.638Z"
     }
   }
 }

@@ -182,6 +182,21 @@ async function enrichAdvisorCache() {
             if (regEntry?.settlement?.lo4EngineFusion) {
                 regEntry.settlement.lo4EngineFusion.crossX2 = { ...row.crossX2 };
             }
+            if (regEntry?.bets?.lo4EngineFusion) {
+                if (!regEntry.bets.lo4EngineFusion.crossX2 || !regEntry.bets.lo4EngineFusion.crossX2.tierX2?.length) {
+                    regEntry.bets.lo4EngineFusion.crossX2 = {
+                        tierX5: t5,
+                        tierX4: t4,
+                        tierX3: t3,
+                        tierX2: promotedToX2,
+                        tierX1: remainingX1,
+                        stakeKX2,
+                        promotedRationale: promotedToX2.length > 0
+                            ? `Số [${promotedToX2.join(', ')}] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy).`
+                            : 'Không có số nào cần nâng hạng hôm nay.'
+                    };
+                }
+            }
         });
 
         // Enrich modes.top7 and modes.top6 if exist
@@ -279,11 +294,19 @@ async function enrichAdvisorCache() {
     console.log(`Penta Consensus settledLedger generated: ${pentaSettledLedger.length} days.`);
 
     fs.writeFileSync(advisorPath, JSON.stringify(adv, null, 2), 'utf8');
+    const dataAdvPath = path.join(process.cwd(), 'data', 'cached_daily_method_advisor.json');
+    try {
+        fs.writeFileSync(dataAdvPath, JSON.stringify(adv, null, 2), 'utf8');
+    } catch (_) {}
     console.log(`✅ Đã lưu ${advisorPath}`);
 
     if (regDisk) {
         fs.writeFileSync(regPath, JSON.stringify(adv.dailyLockedBetsRegistry, null, 2), 'utf8');
-        console.log(`✅ Đã đồng bộ SSOT vào ${regPath}`);
+        const regDataPath = path.join(process.cwd(), 'data', 'daily_locked_bets_registry.json');
+        try {
+            fs.writeFileSync(regDataPath, JSON.stringify(adv.dailyLockedBetsRegistry, null, 2), 'utf8');
+        } catch (_) {}
+        console.log(`✅ Đã đồng bộ SSOT vào ${regPath} và data/`);
     }
 
     // Ghi file gzip

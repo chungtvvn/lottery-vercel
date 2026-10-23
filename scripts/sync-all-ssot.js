@@ -235,6 +235,7 @@ function syncAll() {
                 xien4PayoutK: loS.xienPayoutK || 0,
                 dayXien4ProfitK: loS.xienProfitK != null ? loS.xienProfitK : -11000,
                 isXien4Win: (loS.xienProfitK || 0) > 0,
+                crossX2: loS.crossX2 || b.lo4EngineFusion?.crossX2 || null,
                 totalDayProfitK: loS.totalProfitK != null ? loS.totalProfitK : 0
             };
             lo7Ledger.push({ ...loRow, topN: 7, cumLotoProfitK: cumLo7 });
@@ -370,6 +371,7 @@ function syncAll() {
 
     if (!adv.lo4EngineFusion) adv.lo4EngineFusion = { modes: {} };
     if (!adv.lo4EngineFusion.modes) adv.lo4EngineFusion.modes = {};
+    adv.lo4EngineFusion.settledLedger = lo7Ledger;
     adv.lo4EngineFusion.modes.top7 = { ...(adv.lo4EngineFusion.modes.top7 || {}), settledLedger: lo7Ledger };
     adv.lo4EngineFusion.modes.top6 = { ...(adv.lo4EngineFusion.modes.top6 || {}), settledLedger: lo6Ledger };
 

@@ -166,8 +166,75 @@ async function main() {
                 stakeK: 55000
             });
         }
+
+        // Tính toán PentaConsensus (Shadow Monitor) trước để làm cơ sở khóa bất biến Cross X2
+        let pentaNext = null;
+        try {
+            const { computePentaConsensusForDate } = require('../lib/services/pentaConsensusService');
+            pentaNext = computePentaConsensusForDate(expectedPredictionDate, cache);
+            if (pentaNext) {
+                cache.pentaConsensus = {
+                    latestRecommendation: pentaNext
+                };
+                registryService.registerDailyBet(expectedPredictionDate, 'pentaConsensus', {
+                    targetDate: expectedPredictionDate,
+                    de: {
+                        numbers: pentaNext.de?.numbers || [],
+                        x2Nums: pentaNext.de?.x2Nums || [],
+                        x1Nums: pentaNext.de?.x1Nums || [],
+                        stakeK: pentaNext.de?.stakeK || 0
+                    },
+                    lo: {
+                        numbers: pentaNext.lo?.numbers || [],
+                        x5Nums: pentaNext.lo?.x5Nums || [],
+                        x4Nums: pentaNext.lo?.x4Nums || [],
+                        x3Nums: pentaNext.lo?.x3Nums || [],
+                        x1Nums: pentaNext.lo?.x1Nums || [],
+                        multiplierMap: pentaNext.lo?.multiplierMap || {},
+                        stakeK: pentaNext.lo?.stakeK || 0
+                    },
+                    xien5: {
+                        top5: pentaNext.xien5?.top5 || [],
+                        tickets: pentaNext.xien5?.tickets || [],
+                        stakeK: pentaNext.xien5?.stakeK || 5500
+                    }
+                });
+            }
+        } catch (err) {
+            console.error('[generateDailyAdvisorCache] Error computing pentaConsensus:', err);
+        }
+
+        // Khóa bất biến Lô Đột Phá X2 (Cross X2) vào latestRecommendation trước khi đăng ký bet
         if (cache.lo4EngineFusion?.latestRecommendation) {
-            registryService.registerDailyBet(expectedPredictionDate, 'lo4EngineFusion', cache.lo4EngineFusion.latestRecommendation);
+            const lRec = cache.lo4EngineFusion.latestRecommendation;
+            const pentaHighSet = new Set(pentaNext?.lo ? [
+                ...(pentaNext.lo.x5Nums || []),
+                ...(pentaNext.lo.x4Nums || []),
+                ...(pentaNext.lo.x3Nums || [])
+            ].map(n => String(n).padStart(2, '0')) : []);
+
+            const t5 = (lRec.tierX5 || []).map(n => String(n).padStart(2, '0'));
+            const t4 = (lRec.tierX4 || []).map(n => String(n).padStart(2, '0'));
+            const t3 = (lRec.tierX3 || []).map(n => String(n).padStart(2, '0'));
+            const t1 = (lRec.tierX1 || []).map(n => String(n).padStart(2, '0'));
+
+            const promotedToX2 = t1.filter(n => pentaHighSet.has(n));
+            const remainingX1 = t1.filter(n => !pentaHighSet.has(n));
+            const stakeKX2 = (t5.length * 5 + t4.length * 4 + t3.length * 3 + promotedToX2.length * 2 + remainingX1.length * 1) * 2200;
+
+            lRec.crossX2 = {
+                tierX5: t5,
+                tierX4: t4,
+                tierX3: t3,
+                tierX2: promotedToX2,
+                tierX1: remainingX1,
+                stakeKX2,
+                promotedRationale: promotedToX2.length > 0
+                    ? `Số [${promotedToX2.join(', ')}] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy).`
+                    : 'Không có số nào cần nâng hạng hôm nay.'
+            };
+
+            registryService.registerDailyBet(expectedPredictionDate, 'lo4EngineFusion', lRec);
         }
         if (cache.crossHedgingPortfolio?.latestRecommendation || cache.crossHedgingPortfolio) {
             const chRec = cache.crossHedgingPortfolio.latestRecommendation || cache.crossHedgingPortfolio;
@@ -218,41 +285,6 @@ async function main() {
         }
         if (cache.mirofishSwarm?.latestRecommendation) {
             registryService.registerDailyBet(expectedPredictionDate, 'mirofishSwarm', cache.mirofishSwarm.latestRecommendation);
-        }
-
-        try {
-            const { computePentaConsensusForDate } = require('../lib/services/pentaConsensusService');
-            const pentaNext = computePentaConsensusForDate(expectedPredictionDate, cache);
-            if (pentaNext) {
-                cache.pentaConsensus = {
-                    latestRecommendation: pentaNext
-                };
-                registryService.registerDailyBet(expectedPredictionDate, 'pentaConsensus', {
-                    targetDate: expectedPredictionDate,
-                    de: {
-                        numbers: pentaNext.de?.numbers || [],
-                        x2Nums: pentaNext.de?.x2Nums || [],
-                        x1Nums: pentaNext.de?.x1Nums || [],
-                        stakeK: pentaNext.de?.stakeK || 0
-                    },
-                    lo: {
-                        numbers: pentaNext.lo?.numbers || [],
-                        x5Nums: pentaNext.lo?.x5Nums || [],
-                        x4Nums: pentaNext.lo?.x4Nums || [],
-                        x3Nums: pentaNext.lo?.x3Nums || [],
-                        x1Nums: pentaNext.lo?.x1Nums || [],
-                        multiplierMap: pentaNext.lo?.multiplierMap || {},
-                        stakeK: pentaNext.lo?.stakeK || 0
-                    },
-                    xien5: {
-                        top5: pentaNext.xien5?.top5 || [],
-                        tickets: pentaNext.xien5?.tickets || [],
-                        stakeK: pentaNext.xien5?.stakeK || 5500
-                    }
-                });
-            }
-        } catch (err) {
-            console.error('[generateDailyAdvisorCache] Error computing pentaConsensus:', err);
         }
 
         cache.dailyLockedBetsRegistry = registryService.loadRegistry();

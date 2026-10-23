@@ -4527,15 +4527,31 @@
     }
 
     function resolveLo4CrossX2(date, sLo4, bLo4, p = payload, isPending = false, t5 = [], t4 = [], t3 = [], t1 = [], drawPrizes = []) {
-        let crossX2 = sLo4?.crossX2 || bLo4?.crossX2 || null;
-        if (!crossX2) {
+        const regEntry = p?.dailyLockedBetsRegistry?.dates?.[date];
+        const regSettledCross = regEntry?.settlement?.lo4EngineFusion?.crossX2;
+        const regBetCross = regEntry?.bets?.lo4EngineFusion?.crossX2;
+
+        let crossX2 = null;
+        if (sLo4?.crossX2?.tierX2?.length) crossX2 = sLo4.crossX2;
+        else if (bLo4?.crossX2?.tierX2?.length) crossX2 = bLo4.crossX2;
+        else if (regSettledCross?.tierX2?.length) crossX2 = regSettledCross;
+        else if (regBetCross?.tierX2?.length) crossX2 = regBetCross;
+        else if (sLo4?.crossX2) crossX2 = sLo4.crossX2;
+        else if (bLo4?.crossX2) crossX2 = bLo4.crossX2;
+        else if (regSettledCross) crossX2 = regSettledCross;
+        else if (regBetCross) crossX2 = regBetCross;
+
+        if (!crossX2 || !crossX2.tierX2?.length) {
             const loMode = (typeof currentLo4EngineMode !== 'undefined' ? currentLo4EngineMode : 'top7');
             const ledgerRow = (p?.lo4EngineFusion?.modes?.[loMode]?.settledLedger || p?.lo4EngineFusion?.modes?.top7?.settledLedger || p?.lo4EngineFusion?.settledLedger || []).find(r => r.date === date);
-            if (ledgerRow?.crossX2) crossX2 = ledgerRow.crossX2;
+            if (ledgerRow?.crossX2?.tierX2?.length) crossX2 = ledgerRow.crossX2;
+            else if (ledgerRow?.crossX2) crossX2 = ledgerRow.crossX2;
         }
-        if (!crossX2) {
+        if (!crossX2 || !crossX2.tierX2?.length) {
             const latestRec = p?.lo4EngineFusion?.latestRecommendation;
-            if (latestRec?.crossX2 && (isPending || date === p?.pendingPredictionDate || latestRec.targetDate === date)) {
+            if (latestRec?.crossX2?.tierX2?.length && (isPending || date === p?.pendingPredictionDate || latestRec.targetDate === date)) {
+                crossX2 = latestRec.crossX2;
+            } else if (latestRec?.crossX2 && (isPending || date === p?.pendingPredictionDate || latestRec.targetDate === date)) {
                 crossX2 = latestRec.crossX2;
             }
         }
@@ -4543,8 +4559,11 @@
         let promotedX2 = (crossX2?.tierX2 || []).map(number);
         let remX1 = (crossX2?.tierX1 || []).map(number);
         if (promotedX2.length === 0 && t1.length > 0) {
-            const regEntry = p?.dailyLockedBetsRegistry?.dates?.[date];
-            const pentaLo = regEntry?.settlement?.pentaConsensus?.lo || regEntry?.bets?.pentaConsensus?.lo || (p?.pentaConsensus?.settledLedger || []).find(r => r.date === date)?.lo || (p?.pentaConsensus?.latestRecommendation?.lo) || {};
+            const pentaLo = regEntry?.settlement?.pentaConsensus?.lo 
+                || regEntry?.bets?.pentaConsensus?.lo 
+                || (p?.pentaConsensus?.settledLedger || []).find(r => r.date === date && (r.lo?.x5Nums?.length || r.lo?.x3Nums?.length))?.lo 
+                || (p?.pentaConsensus?.latestRecommendation?.lo) 
+                || {};
             const pentaHighSet = new Set([
                 ...(pentaLo.x5Nums || []),
                 ...(pentaLo.x4Nums || []),
@@ -5092,6 +5111,7 @@
                     diaryDetailsMap[date] = {
                         de: entry.deInfo,
                         lo4Engine: entry.lo4Info,
+                        lo4CrossX2: entry.lo4CrossX2Info,
                         lo4Xien4: entry.lo4Xien4Info,
                         loXien5: entry.loXien5Info,
                         loStd: entry.stdInfo,
@@ -5137,6 +5157,13 @@
             const fallback = synthesizeFallbackDiaryInfo(date, type, payload);
             if (fallback?.betNumbers?.length) {
                 info.betNumbers = fallback.betNumbers;
+            }
+        }
+        if (info && type === 'lo4CrossX2' && (!info.crossX2?.tierX2?.length && !info.tierX2?.length)) {
+            const fallback = synthesizeFallbackDiaryInfo(date, type, payload);
+            if (fallback?.tierX2?.length) {
+                info.tierX2 = fallback.tierX2;
+                info.crossX2 = fallback.crossX2 || info.crossX2;
             }
         }
         return info;
@@ -7354,6 +7381,33 @@
                                 </div>
                                 <div class="text-[9px] text-slate-400 font-sans">Lũy kế hiện tại</div>
                             </td>
+                            <!-- Cột 8: ⚡ Nâng X2 (Shadow) -->
+                            <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-emerald-100/50 rounded-xl transition-all border-l border-emerald-200/60 bg-emerald-50/25" data-date="${r.date}" data-diary-cell="lo4CrossX2">
+                                ${(() => {
+                                    const pCross = lo4Info?.crossX2 || payload?.lo4EngineFusion?.latestRecommendation?.crossX2 || null;
+                                    const pX2Nums = (pCross?.tierX2 || []).map(number);
+                                    if (pX2Nums.length > 0) {
+                                        return `<span class="px-1.5 py-0.2 rounded font-mono text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 ring-1 ring-amber-400 shadow-xs">⚡ Nâng X2: ${pX2Nums.join(', ')}</span>`;
+                                    }
+                                    return '<span class="text-[10px] text-slate-400 italic">0 số nâng X2 (như gốc)</span>';
+                                })()}
+                                <div class="text-[10px] text-slate-500 mt-1 flex items-center justify-between">
+                                    <span>Vốn: ${moneyM((lo4Info?.crossX2 || payload?.lo4EngineFusion?.latestRecommendation?.crossX2)?.stakeKX2 || 70400)}</span>
+                                    <span class="diary-expand-indicator text-emerald-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
+                                </div>
+                            </td>
+                            <!-- Cột 9: Lãi/Lỗ Đột Phá X2 -->
+                            <td class="px-3 py-3 text-right whitespace-nowrap font-mono bg-emerald-50/25">
+                                <div class="font-bold text-xs text-amber-600">⏳ Chờ KQ</div>
+                                <div class="text-[10px] text-slate-400 font-sans">Vốn ${moneyM((lo4Info?.crossX2 || payload?.lo4EngineFusion?.latestRecommendation?.crossX2)?.stakeKX2 || 70400)}</div>
+                            </td>
+                            <!-- Cột 10: Lũy Kế Đột Phá X2 -->
+                            <td class="px-3 py-3 text-right whitespace-nowrap font-mono bg-emerald-50/25">
+                                <div class="font-black text-xs ${(r.cumLoCrossX2ProfitK ?? cumLoCrossX2ProfitK ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-600'}">
+                                    ${moneyM(r.cumLoCrossX2ProfitK ?? cumLoCrossX2ProfitK ?? 0, { signed: true })}
+                                </div>
+                                <div class="text-[9px] text-slate-400 font-sans">Lũy kế hiện tại</div>
+                            </td>
                         </tr>
                     `;
                 }
@@ -7419,6 +7473,44 @@
                         <td class="px-3 py-3 text-right whitespace-nowrap font-mono">
                             <div class="font-black text-xs ${r.cumLo4ProfitK >= 0 ? 'text-indigo-600' : 'text-rose-600'}">
                                 ${moneyM(r.cumLo4ProfitK, { signed: true })}
+                            </div>
+                        </td>
+                        <!-- Cột 8: ⚡ Nâng X2 (Shadow) -->
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-emerald-100/50 rounded-xl transition-all border-l border-emerald-200/60 bg-emerald-50/25" data-date="${r.date}" data-diary-cell="lo4CrossX2">
+                            ${(() => {
+                                const cross = lo4Info?.crossX2 || r.lo4CrossX2Info?.crossX2 || (payload?.lo4EngineFusion?.settledLedger || []).find(x => x.date === r.date)?.crossX2 || resolveLo4CrossX2(r.date, lo4Info?.sLo4, lo4Info?.bLo4, payload, r.isPending, lo4Info?.tierX5 || [], lo4Info?.tierX4 || [], lo4Info?.tierX3 || [], lo4Info?.tierX1 || []);
+                                const pX2 = (cross?.tierX2 || []).map(number);
+                                const rowDraw = (payload?.drawPrizesByDate?.[r.date]?.prizes || []).map(number);
+                                const pCounts = {};
+                                rowDraw.forEach(p => { pCounts[p] = (pCounts[p] || 0) + 1; });
+                                if (pX2.length > 0) {
+                                    return `
+                                    <div class="flex flex-wrap items-center gap-1">
+                                        <span class="text-[9px] font-black text-amber-950 bg-amber-200 px-1.5 py-0.2 rounded shadow-xs border border-amber-300">Nâng X2:</span>
+                                        ${pX2.map(n => `<span class="inline-flex items-center px-1.5 py-0.2 rounded font-mono text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 ring-1 ring-amber-400 shadow-xs">⚡ ${n}${pCounts[n] > 0 ? `<sub class="text-[8px] font-black ml-0.5 text-emerald-900">(${pCounts[n]}n)</sub>` : ''}</span>`).join(' ')}
+                                    </div>`;
+                                }
+                                return '<div class="text-[10px] text-slate-400 italic">0 số nâng X2 (như gốc)</div>';
+                            })()}
+                            <div class="text-[10px] text-slate-500 mt-1 flex items-center justify-between">
+                                <span>Vốn: ${moneyM(lo4Info?.crossX2?.dayLotoStakeKX2 || lo4Info?.crossX2?.stakeKX2 || 70400)}</span>
+                                <span class="diary-expand-indicator text-emerald-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
+                            </div>
+                        </td>
+                        <!-- Cột 9: Lãi/Lỗ Đột Phá X2 -->
+                        <td class="px-3 py-3 text-right whitespace-nowrap font-mono bg-emerald-50/25">
+                            <div class="font-black text-xs ${(lo4Info?.crossX2?.dayLotoProfitKX2 ?? lo4Info.dayLotoProfitK ?? 0) >= 0 ? 'text-emerald-600' : 'text-rose-600'}">
+                                ${moneyM(lo4Info?.crossX2?.dayLotoProfitKX2 ?? lo4Info.dayLotoProfitK ?? 0, { signed: true })}
+                            </div>
+                            <div class="text-[10px] text-slate-400 font-sans">Ăn ${moneyM(lo4Info?.crossX2?.dayLotoPayoutKX2 ?? lo4Info.dayLotoPayoutK ?? 0)}</div>
+                        </td>
+                        <!-- Cột 10: Lũy Kế Đột Phá X2 -->
+                        <td class="px-3 py-3 text-right whitespace-nowrap font-mono bg-emerald-50/25">
+                            <div class="font-black text-xs ${(r.cumLoCrossX2ProfitK ?? lo4Info?.crossX2?.cumLotoProfitKX2 ?? r.cumLo4ProfitK ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-600'}">
+                                ${moneyM(r.cumLoCrossX2ProfitK ?? lo4Info?.crossX2?.cumLotoProfitKX2 ?? r.cumLo4ProfitK ?? 0, { signed: true })}
+                            </div>
+                            <div class="text-[9px] ${((r.cumLoCrossX2ProfitK ?? lo4Info?.crossX2?.cumLotoProfitKX2 ?? r.cumLo4ProfitK ?? 0) - (r.cumLo4ProfitK || 0)) >= 0 ? 'text-emerald-600' : 'text-amber-600'} font-sans font-semibold">
+                                (${((r.cumLoCrossX2ProfitK ?? lo4Info?.crossX2?.cumLotoProfitKX2 ?? r.cumLo4ProfitK ?? 0) - (r.cumLo4ProfitK || 0)) >= 0 ? '+' : ''}${moneyM((r.cumLoCrossX2ProfitK ?? lo4Info?.crossX2?.cumLotoProfitKX2 ?? r.cumLo4ProfitK ?? 0) - (r.cumLo4ProfitK || 0))} so gốc)
                             </div>
                         </td>
                     </tr>
@@ -8235,7 +8327,10 @@
             }).filter(b => b.hits > 0);
             const displayLoHits = (loHitsCount > 0) ? loHitsCount : hitLo4Numbers.reduce((acc, x) => acc + (x.hits || 0), 0);
 
-            const crossX2Data = lo4Info?.crossX2 || r.lo4CrossX2Info?.crossX2 || (payload?.lo4EngineFusion?.settledLedger || []).find(x => x.date === r.date)?.crossX2 || resolveLo4CrossX2(r.date, lo4Info?.sLo4, lo4Info?.bLo4, payload, r.isPending, lo4Info?.tierX5 || [], lo4Info?.tierX4 || [], lo4Info?.tierX3 || [], lo4Info?.tierX1 || [], rowDrawPrizes);
+            const crossX2Data = (lo4Info?.crossX2?.tierX2?.length ? lo4Info.crossX2 : null)
+                || (r.lo4CrossX2Info?.crossX2?.tierX2?.length ? r.lo4CrossX2Info.crossX2 : null)
+                || (payload?.lo4EngineFusion?.settledLedger || []).find(x => x.date === r.date && x.crossX2?.tierX2?.length)?.crossX2
+                || resolveLo4CrossX2(r.date, lo4Info?.sLo4, lo4Info?.bLo4, payload, r.isPending, lo4Info?.tierX5 || [], lo4Info?.tierX4 || [], lo4Info?.tierX3 || [], lo4Info?.tierX1 || [], rowDrawPrizes);
             const promotedX2Nums = (crossX2Data?.tierX2 || []).map(number);
             const loPnlX2 = crossX2Data?.dayLotoProfitKX2 !== undefined ? crossX2Data.dayLotoProfitKX2 : loPnlVal;
             const loStakeX2 = crossX2Data?.dayLotoStakeKX2 !== undefined ? crossX2Data.dayLotoStakeKX2 : (lo4Info?.dayLotoStakeK || lo4Info?.lotoStakeK || 66000);
