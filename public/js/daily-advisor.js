@@ -5212,7 +5212,7 @@
             loPayoutK: lo4PayoutK,
             loStakeK: lo4StakeK,
             loProfitK: lo4ProfitK,
-            uniqueTop4Hits: xienHits,
+            uniqueTop4Hits: (lo4Xien4Info?.h4 != null ? lo4Xien4Info.h4 : Math.max(hits1 || 0, hits2 || 0)),
             xienPayoutK,
             xienStakeK,
             xienProfitK,
