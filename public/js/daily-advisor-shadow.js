@@ -352,11 +352,14 @@
         // 0. Ưu tiên đọc trực tiếp từ Single Source of Truth (dailyLockedBetsRegistry)
         const regLocked = data.dailyLockedBetsRegistry?.dates?.[targetDate];
         if (regLocked && (regLocked.settlement?.pentaConsensus || regLocked.bets?.pentaConsensus)) {
-            const isSettled = regLocked.isSettled;
+            const isSettled = Boolean(regLocked.isSettled);
             const s = regLocked.settlement?.pentaConsensus;
             const b = regLocked.bets?.pentaConsensus;
             const drawPrizesObj = data.drawPrizesByDate?.[targetDate] || null;
-            if (isSettled && s) {
+            const hasDrawResults = Boolean(drawPrizesObj && (drawPrizesObj.special !== undefined || (drawPrizesObj.prizes && drawPrizesObj.prizes.length > 0)));
+            const isPendingBet = !hasDrawResults;
+
+            if (isSettled && s && !isPendingBet) {
                 const prizeCount = {};
                 if (drawPrizesObj?.prizes) {
                     drawPrizesObj.prizes.forEach(p => {
@@ -392,7 +395,7 @@
                     },
                     loCrossX2: s.loCrossX2 || (() => {
                         const bCross = b?.loCrossX2 || null;
-                        const x2List = bCross?.x2Nums || [];
+                        const x2List = (bCross?.x2Nums || []).map(numStr);
                         const x2MultMap = { ...multMap };
                         x2List.forEach(n => { x2MultMap[n] = 2; });
                         let x2StakeK = 0, x2PayoutK = 0, x2Hits = 0;
@@ -407,7 +410,11 @@
                         });
                         return {
                             numbers: allLoNums,
+                            x5Nums: s.lo?.x5Nums || [],
+                            x4Nums: s.lo?.x4Nums || [],
+                            x3Nums: s.lo?.x3Nums || [],
                             x2Nums: x2List,
+                            x1Nums: allLoNums.filter(n => !(s.lo?.x5Nums || []).includes(n) && !(s.lo?.x4Nums || []).includes(n) && !(s.lo?.x3Nums || []).includes(n) && !x2List.includes(n)),
                             multiplierMap: x2MultMap,
                             hits: x2Hits,
                             stakeK: x2StakeK,
@@ -430,6 +437,170 @@
                         payoutK: s.totalPayoutK,
                         profitK: s.totalProfitK,
                         isWin: s.isWin
+                    }
+                };
+            }
+
+            // Nếu có dàn cược đã khóa b (pending hoặc đối soát trực tiếp)
+            if (b && b.lo && b.de) {
+                const prizeCount = {};
+                if (!isPendingBet && drawPrizesObj?.prizes) {
+                    drawPrizesObj.prizes.forEach(p => {
+                        const str = numStr(p);
+                        prizeCount[str] = (prizeCount[str] || 0) + 1;
+                    });
+                }
+                const actualSpecial = !isPendingBet && drawPrizesObj?.special !== undefined ? numStr(drawPrizesObj.special) : null;
+
+                // 1. Đề
+                const deX2 = (b.de.x2Nums || []).map(numStr);
+                const deX1 = (b.de.x1Nums || []).map(numStr);
+                const allDe = (b.de.numbers || [...deX2, ...deX1]).map(numStr);
+                const deStakeK = b.de.stakeK || (deX2.length * 400 + deX1.length * 200);
+                const isHitX2 = !isPendingBet && actualSpecial ? deX2.includes(actualSpecial) : false;
+                const isHitX1 = !isPendingBet && actualSpecial ? deX1.includes(actualSpecial) : false;
+                const isDeHit = isHitX2 || isHitX1;
+                const dePayoutK = isPendingBet ? 0 : (isHitX2 ? 33600 : (isHitX1 ? 16800 : 0));
+                const deProfitK = isPendingBet ? 0 : (dePayoutK - deStakeK);
+
+                // 2. Lô gốc
+                const allLoNums = (b.lo.numbers || []).map(numStr);
+                const multMap = b.lo.multiplierMap || {};
+                const x5Nums = (b.lo.x5Nums || []).map(numStr);
+                const x4Nums = (b.lo.x4Nums || []).map(numStr);
+                const x3Nums = (b.lo.x3Nums || []).map(numStr);
+                const x1Nums = (b.lo.x1Nums || []).map(numStr);
+
+                let loStakeK = 0, loPayoutK = 0, loHits = 0;
+                const loHitNums = [];
+                const loPills = allLoNums.map(n => {
+                    const mult = multMap[n] || 1;
+                    const stake = mult * 2200;
+                    const hits = isPendingBet ? 0 : (prizeCount[n] || 0);
+                    const payout = isPendingBet ? 0 : hits * (mult * 8000);
+                    loStakeK += stake;
+                    loPayoutK += payout;
+                    loHits += hits;
+                    if (hits > 0) loHitNums.push(n);
+                    return {
+                        num: n,
+                        freq: mult === 5 ? '≥4' : (mult === 4 ? 3 : (mult === 3 ? 2 : 1)),
+                        mult,
+                        stakeK: stake,
+                        hits,
+                        payoutK: payout
+                    };
+                });
+                const loProfitK = isPendingBet ? 0 : (loPayoutK - loStakeK);
+
+                // 3. Lô Đột Phá X2
+                const bCross = b.loCrossX2 || null;
+                const x2List = (bCross?.x2Nums || []).map(numStr);
+                const x2MultMap = { ...multMap };
+                x2List.forEach(n => { x2MultMap[n] = 2; });
+                let x2StakeK = 0, x2PayoutK = 0, x2Hits = 0;
+                const x2HitNums = [];
+                const loX2Pills = allLoNums.map(n => {
+                    const mult = x2MultMap[n] || 1;
+                    const stake = mult * 2200;
+                    const hits = isPendingBet ? 0 : (prizeCount[n] || 0);
+                    const payout = isPendingBet ? 0 : hits * (mult * 8000);
+                    x2StakeK += stake;
+                    x2PayoutK += payout;
+                    x2Hits += hits;
+                    if (hits > 0) x2HitNums.push(n);
+                    return {
+                        num: n,
+                        freq: mult === 5 ? '≥4' : (mult === 4 ? 3 : (mult === 3 ? 2 : 1)),
+                        mult,
+                        stakeK: stake,
+                        hits,
+                        payoutK: payout
+                    };
+                });
+                const x2ProfitK = isPendingBet ? 0 : (x2PayoutK - x2StakeK);
+
+                // 4. Dàn Xiên 5
+                const top5Nums = (b.xien5?.top5 || allLoNums.slice(0, 5)).map(numStr);
+                const tickets = b.xien5?.tickets || getXien5Combinations(top5Nums);
+                const xienStakeK = b.xien5?.stakeK || 5500;
+                let xienPayoutK = 0, h5 = 0;
+                if (!isPendingBet) {
+                    h5 = top5Nums.filter(n => (prizeCount[n] || 0) > 0).length;
+                    if (h5 === 5) xienPayoutK = 5 * 38400;
+                    else if (h5 === 4) xienPayoutK = 1 * 38400 + 4 * 8400;
+                    else if (h5 === 3) xienPayoutK = 2 * 8400 + 3 * 1200;
+                    else if (h5 === 2) xienPayoutK = 3 * 1200;
+                }
+                const xienProfitK = isPendingBet ? 0 : (xienPayoutK - xienStakeK);
+
+                // 5. Combo
+                const comboStakeK = deStakeK + loStakeK + xienStakeK;
+                const comboPayoutK = dePayoutK + loPayoutK + xienPayoutK;
+                const comboProfitK = isPendingBet ? 0 : (comboPayoutK - comboStakeK);
+
+                return {
+                    date: targetDate,
+                    isPending: isPendingBet,
+                    actualSpecial,
+                    drawPrizes: drawPrizesObj?.prizes || [],
+                    prizeCount,
+                    de: {
+                        numbers: allDe,
+                        x2Nums: deX2,
+                        x1Nums: deX1,
+                        stakeK: deStakeK,
+                        payoutK: dePayoutK,
+                        profitK: deProfitK,
+                        isHit: isDeHit,
+                        isHitX2,
+                        isHitX1
+                    },
+                    lo: {
+                        numbers: allLoNums,
+                        x5Nums,
+                        x4Nums,
+                        x3Nums,
+                        x1Nums,
+                        multiplierMap: multMap,
+                        pills: loPills,
+                        hits: loHits,
+                        hitNums: loHitNums,
+                        stakeK: loStakeK,
+                        payoutK: loPayoutK,
+                        profitK: loProfitK,
+                        isWin: loProfitK > 0
+                    },
+                    loCrossX2: {
+                        numbers: allLoNums,
+                        x5Nums,
+                        x4Nums,
+                        x3Nums,
+                        x2Nums: x2List,
+                        x1Nums: allLoNums.filter(n => !x5Nums.includes(n) && !x4Nums.includes(n) && !x3Nums.includes(n) && !x2List.includes(n)),
+                        multiplierMap: x2MultMap,
+                        pills: loX2Pills,
+                        hits: x2Hits,
+                        hitNums: x2HitNums,
+                        stakeK: x2StakeK,
+                        payoutK: x2PayoutK,
+                        profitK: x2ProfitK,
+                        isWin: x2ProfitK > 0
+                    },
+                    xien5: {
+                        top5: top5Nums,
+                        tickets,
+                        h5,
+                        stakeK: xienStakeK,
+                        payoutK: xienPayoutK,
+                        profitK: xienProfitK,
+                        isWin: xienProfitK > 0
+                    },
+                    combo: {
+                        stakeK: comboStakeK,
+                        payoutK: comboPayoutK,
+                        profitK: comboProfitK,
+                        isWin: comboProfitK > 0
                     }
                 };
             }
@@ -8935,6 +9106,51 @@
         let pentaXienSectionHtml = '';
         let pentaSummaryCardHtml = '';
 
+        // Hàm render chip Lô chuẩn mực: in đậm font-black, viền 2px solid theo tầng (đồng nhất giữa Gốc và X2)
+        const renderShadowLoChip = (num, mult, tierKey, prizeCountMap = {}) => {
+            const hits = isPending ? 0 : (prizeCountMap[num] || 0);
+            if (!isPending && hits > 0) {
+                return `
+                    <span class="px-2.5 py-1 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black font-mono text-xs ring-2 ring-emerald-300 shadow-md scale-105 animate-pulse inline-flex items-center gap-1" style="color: #ffffff !important;">
+                        🎯 ${num} <span class="bg-emerald-950 text-emerald-200 px-1 py-0.2 rounded text-[9px] font-black ml-0.5">(${hits}n)</span>
+                    </span>
+                `;
+            }
+            if (tierKey === 'X5') {
+                return `
+                    <span class="lo-tier-chip-x5 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all inline-flex items-center justify-center" style="background-color: #fef08a !important; border: 2px solid #eab308 !important; color: #020617 !important;">
+                        ${num}
+                    </span>
+                `;
+            }
+            if (tierKey === 'X4') {
+                return `
+                    <span class="lo-tier-chip-x4 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all inline-flex items-center justify-center" style="background-color: #fed7aa !important; border: 2px solid #f97316 !important; color: #020617 !important;">
+                        ${num}
+                    </span>
+                `;
+            }
+            if (tierKey === 'X3') {
+                return `
+                    <span class="lo-tier-chip-x3 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all inline-flex items-center justify-center" style="background-color: #bae6fd !important; border: 2px solid #0284c7 !important; color: #020617 !important;">
+                        ${num}
+                    </span>
+                `;
+            }
+            if (tierKey === 'X2') {
+                return `
+                    <span class="lo-tier-chip-x2 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all inline-flex items-center justify-center" style="background-color: #fef3c7 !important; border: 2px solid #d97706 !important; color: #020617 !important;">
+                        ⚡ ${num}
+                    </span>
+                `;
+            }
+            return `
+                <span class="lo-tier-chip-x1 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all inline-flex items-center justify-center" style="background-color: #e2e8f0 !important; border: 2px solid #64748b !important; color: #020617 !important;">
+                    ${num}
+                </span>
+            `;
+        };
+
         if (isPentaSuiteActive && pentaData) {
             // A. Đề Siêu Gộp 5 PP (X2 vs X1)
             const deX2Chips = pentaData.de.x2Nums.map(n => {
@@ -9027,24 +9243,10 @@
             `;
 
             // B. Lô Đa Tầng Ngũ Trụ
-            const loChipsHtml = pentaData.lo.pills.map(p => {
-                if (!isPending && p.hits > 0) {
-                    return `
-                        <div class="relative group flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 via-teal-500 to-emerald-600 text-white p-2.5 font-black ring-2 ring-emerald-300 shadow-md scale-105 min-w-[70px] animate-pulse">
-                            <span class="text-[9px] font-black uppercase text-emerald-100">🎯 ${p.hits} NHÁY (X${p.mult})</span>
-                            <span class="font-mono text-2xl leading-none font-black my-1 text-white">${p.num}</span>
-                            <span class="text-[9px] font-black uppercase bg-emerald-900/60 text-emerald-200 px-2 py-0.5 rounded shadow-xs">+${formatMoneyK(p.payoutK, false)}</span>
-                        </div>
-                    `;
-                }
-                const multBadgeColor = p.mult === 5 ? 'bg-rose-100 text-rose-800 border-rose-300' : (p.mult === 4 ? 'bg-amber-100 text-amber-800 border-amber-300' : (p.mult === 3 ? 'bg-indigo-100 text-indigo-800 border-indigo-300' : 'bg-slate-100 text-slate-700 border-slate-200'));
-                return `
-                    <div class="flex flex-col items-center justify-center rounded-xl bg-white border border-slate-300 text-slate-800 p-2 font-mono text-base font-bold min-w-[60px] shadow-2xs hover:border-teal-400 transition-all">
-                        <span>${p.num}</span>
-                        <span class="text-[9px] font-bold px-1 py-0.2 rounded border ${multBadgeColor} mt-0.5">X${p.mult} · ${p.freq ? p.freq + '/5 hệ' : ''}</span>
-                    </div>
-                `;
-            }).join('');
+            const pLoT5 = (pentaData.lo.x5Nums || []).map(numStr);
+            const pLoT4 = (pentaData.lo.x4Nums || []).map(numStr);
+            const pLoT3 = (pentaData.lo.x3Nums || []).map(numStr);
+            const pLoT1 = (pentaData.lo.x1Nums || []).map(numStr);
 
             const loStatusTag = isPending
                 ? `<span class="text-xs font-bold text-teal-800 bg-teal-50 border border-teal-300 px-2 py-0.5 rounded">⏳ ĐÃ KHÓA ${pentaData.lo.numbers.length} SỐ (${formatMoneyK(pentaData.lo.stakeK, false)} · Lãi 2026: +6.272 TỶ)</span>`
@@ -9068,20 +9270,58 @@
                             </button>
                         </div>
                     </div>
-                    <div class="p-3 rounded-xl bg-slate-50 border border-teal-200 space-y-2">
-                        <div class="flex items-center justify-between text-[11px]">
-                            <span class="font-bold text-teal-900">Chi Tiết Tỷ Trọng &amp; Tần Số Trùng (Vốn ${formatMoneyK(pentaData.lo.stakeK, false)}):</span>
-                            <span class="font-mono text-xs">
-                                ${isPending 
-                                    ? '<span class="text-slate-500">⏳ Chờ kết quả 18:30</span>' 
-                                    : (pentaData.lo.hits > 0 
-                                        ? `<span class="text-emerald-700 font-black">🔥 Nổ ${pentaData.lo.hits} nháy ⭐</span>` 
-                                        : '<span class="text-rose-700 font-bold">❌ 0 nháy</span>')
-                                }
-                            </span>
-                        </div>
-                        <div class="flex flex-wrap gap-2 pt-1">${loChipsHtml}</div>
+
+                    <!-- Bố cục phân tầng dọc space-y-2.5 in đậm tô viền 2px chuẩn mực -->
+                    <div class="space-y-2.5">
+                        ${pLoT5.length ? `
+                            <div>
+                                <div class="lo-tier-header-x5 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #78350f !important;">
+                                    <span>👑 TẦNG SIÊU VIP (CƯỢC X5 · 11M/SỐ · ${pLoT5.length} SỐ):</span>
+                                    <span class="text-[10px] font-bold" style="color: #92400e !important;">500đ · Trùng ≥4 hệ</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${pLoT5.map(n => renderShadowLoChip(n, 5, 'X5', pentaData.prizeCount)).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        ${pLoT4.length ? `
+                            <div>
+                                <div class="lo-tier-header-x4 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #78350f !important;">
+                                    <span>⚡ TẦNG CỰC VIP (CƯỢC X4 · 8.8M/SỐ · ${pLoT4.length} SỐ):</span>
+                                    <span class="text-[10px] font-bold" style="color: #92400e !important;">400đ · Trùng 3 hệ</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${pLoT4.map(n => renderShadowLoChip(n, 4, 'X4', pentaData.prizeCount)).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        ${pLoT3.length ? `
+                            <div>
+                                <div class="lo-tier-header-x3 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #0369a1 !important;">
+                                    <span>⚡ TẦNG TRIỂN VỌNG (CƯỢC X3 · 6.6M/SỐ · ${pLoT3.length} SỐ):</span>
+                                    <span class="text-[10px] font-bold" style="color: #0284c7 !important;">300đ · Trùng 2 hệ</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${pLoT3.map(n => renderShadowLoChip(n, 3, 'X3', pentaData.prizeCount)).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        ${pLoT1.length ? `
+                            <div>
+                                <div class="lo-tier-header-x1 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #1e293b !important;">
+                                    <span>🛡️ TẦNG BẢO HIỂM (CƯỢC X1 · 2.2M/SỐ · ${pLoT1.length} SỐ):</span>
+                                    <span class="text-[10px] font-bold" style="color: #475569 !important;">100đ · Trùng 1 hệ</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${pLoT1.map(n => renderShadowLoChip(n, 1, 'X1', pentaData.prizeCount)).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
                     </div>
+
                     <div class="flex items-center justify-between text-[11px] text-slate-600 pt-2 border-t border-slate-200 font-mono">
                         <span>Vốn cược: <strong class="text-slate-900">${formatMoneyK(pentaData.lo.stakeK, false)}</strong></span>
                         <span>Tiền thưởng: <strong class="text-amber-800 font-bold">${isPending ? '—' : formatMoneyK(pentaData.lo.payoutK, false)}</strong></span>
@@ -9091,51 +9331,12 @@
             `;
 
             // B2. LÔ ĐỘT PHÁ X2 (Tương Hỗ Nâng Hạng Từ Daily Advisor)
-            const pentaX2Promoted = pentaData.loCrossX2?.x2Nums || [];
+            const pentaX2Promoted = (pentaData.loCrossX2?.x2Nums || []).map(numStr);
             const hasPentaPromotedX2 = pentaX2Promoted.length > 0;
             const pentaX2DiffStakeK = pentaData.loCrossX2.stakeK - pentaData.lo.stakeK;
             const pentaX2DiffProfitK = isPending ? 0 : (pentaData.loCrossX2.profitK - pentaData.lo.profitK);
 
-            const pentaLoX2ChipsHtml = pentaData.loCrossX2.pills.map(p => {
-                const isPromoted = pentaX2Promoted.includes(p.num);
-                if (!isPending && p.hits > 0) {
-                    return `
-                        <div class="relative group flex flex-col items-center justify-center rounded-xl ${isPromoted ? 'bg-gradient-to-br from-amber-500 via-yellow-500 to-amber-600 ring-4 ring-amber-300' : 'bg-gradient-to-br from-emerald-500 via-teal-500 to-emerald-600 ring-2 ring-emerald-300'} text-white p-2.5 font-black shadow-md scale-105 min-w-[70px] animate-pulse">
-                            <span class="text-[9px] font-black uppercase ${isPromoted ? 'text-amber-100' : 'text-emerald-100'}">🎯 ${p.hits} NHÁY (X${p.mult})</span>
-                            <span class="font-mono text-2xl leading-none font-black my-1 text-white">${p.num}</span>
-                            <span class="text-[9px] font-black uppercase ${isPromoted ? 'bg-slate-950/70 text-amber-200' : 'bg-emerald-900/60 text-emerald-200'} px-2 py-0.5 rounded shadow-xs">+${formatMoneyK(p.payoutK, false)}</span>
-                        </div>
-                    `;
-                }
-                let multBadgeColor = 'bg-slate-100 text-slate-700 border-slate-200';
-                let multLabel = `X${p.mult} · ${p.freq ? p.freq + '/5 hệ' : ''}`;
-                if (p.mult === 5) {
-                    multBadgeColor = 'bg-rose-100 text-rose-800 border-rose-300';
-                } else if (p.mult === 4) {
-                    multBadgeColor = 'bg-amber-100 text-amber-800 border-amber-300';
-                } else if (p.mult === 3) {
-                    multBadgeColor = 'bg-indigo-100 text-indigo-800 border-indigo-300';
-                } else if (p.mult === 2 && isPromoted) {
-                    multBadgeColor = 'bg-amber-300 text-slate-950 border-amber-400 font-black shadow-xs ring-1 ring-amber-300';
-                    multLabel = '⚡ X2 (Nâng)';
-                }
-                return `
-                    <div class="flex flex-col items-center justify-center rounded-xl bg-white border ${isPromoted ? 'border-amber-400 ring-2 ring-amber-300/60 bg-amber-50/50' : 'border-slate-300'} text-slate-800 p-2 font-mono text-base font-bold min-w-[60px] shadow-2xs hover:border-amber-400 transition-all">
-                        <span>${p.num}</span>
-                        <span class="text-[9px] font-bold px-1 py-0.2 rounded border ${multBadgeColor} mt-0.5">${multLabel}</span>
-                    </div>
-                `;
-            }).join('');
-
-            const pentaPromotedBadgesHtml = hasPentaPromotedX2 
-                ? pentaX2Promoted.map(n => {
-                    const hits = isPending ? 0 : (pentaData.prizeCount?.[n] || 0);
-                    if (hits > 0) {
-                        return `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl font-mono font-black text-xs bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">🎯 ${n} <span class="text-[10px] bg-slate-950 text-amber-300 px-1 py-0.2 rounded font-bold">${hits} nháy (+${formatMoneyK(hits * 16000, false)})</span></span>`;
-                    }
-                    return `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl font-mono font-bold text-xs bg-amber-100 text-amber-950 border border-amber-300 shadow-2xs">${n} <span class="text-[9px] text-amber-800 font-bold">4.4M</span></span>`;
-                }).join(' ')
-                : `<span class="text-xs text-slate-500 italic">Không có số nào thuộc tầng X1 trùng với Lô chủ lực (≥X3) bên Daily Advisor. Dàn số và mức cược giữ nguyên như gốc.</span>`;
+            const pLoX2T1 = pLoT1.filter(n => !pentaX2Promoted.includes(n));
 
             const loX2StatusTag = isPending
                 ? `<span class="text-xs font-bold text-amber-900 bg-amber-100 border border-amber-300 px-2.5 py-0.5 rounded">⏳ ĐÃ KHÓA ${pentaData.loCrossX2.numbers.length} SỐ (${hasPentaPromotedX2 ? `${pentaX2Promoted.length} số nâng X2` : 'như gốc'} · Vốn ${formatMoneyK(pentaData.loCrossX2.stakeK, false)})</span>`
@@ -9160,40 +9361,75 @@
                         </div>
                     </div>
 
-                    <!-- Banner giải trình nâng hạng X2 -->
-                    <div class="p-3 rounded-xl bg-gradient-to-r from-amber-50 via-yellow-50 to-amber-50 border border-amber-300 space-y-2">
-                        <div class="flex items-center justify-between text-[11px] flex-wrap gap-1">
-                            <span class="font-black text-amber-950 uppercase flex items-center gap-1">
-                                <i class="bi bi-lightning-charge-fill text-amber-600"></i> CÁC SỐ X1 ĐƯỢC THĂNG HẠNG LÊN X2 (4.4M/SỐ · ĂN 16M/NHÁY):
-                            </span>
-                            <span class="text-[11px] text-amber-900 font-mono font-bold">${hasPentaPromotedX2 ? `${pentaX2Promoted.length} số thăng hạng` : '0 số'}</span>
-                        </div>
-                        <div class="flex flex-wrap gap-1.5 pt-0.5 items-center">
-                            ${pentaPromotedBadgesHtml}
-                        </div>
-                        <div class="text-[10px] text-slate-500 pt-1 border-t border-amber-200/60 leading-relaxed">
-                            💡 <em>Cơ chế: Các số thuộc tầng X1 của Shadow nếu trùng với các số chủ lực (≥X3) bên Daily Advisor sẽ được thăng hạng lên cược X2 (4.4M/số thay vì 2.2M). Các số X5, X4, X3 và X1 còn lại giữ nguyên mức cược.</em>
-                        </div>
-                    </div>
+                    <!-- Bố cục phân tầng dọc space-y-2.5 in đậm tô viền 2px chuẩn mực -->
+                    <div class="space-y-2.5">
+                        ${pLoT5.length ? `
+                            <div>
+                                <div class="lo-tier-header-x5 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #78350f !important;">
+                                    <span>👑 TẦNG SIÊU VIP (CƯỢC X5 · 11M/SỐ · ${pLoT5.length} SỐ):</span>
+                                    <span class="text-[10px] font-bold" style="color: #92400e !important;">500đ · Trùng ≥4 hệ</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${pLoT5.map(n => renderShadowLoChip(n, 5, 'X5', pentaData.prizeCount)).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
 
-                    <!-- Toàn bộ dàn số theo tỷ trọng X2 -->
-                    <div class="p-3 rounded-xl bg-slate-50 border border-amber-200 space-y-2">
-                        <div class="flex items-center justify-between text-[11px]">
-                            <span class="font-bold text-slate-800">Chi Tiết Tỷ Trọng Sau Nâng Hạng (Vốn ${formatMoneyK(pentaData.loCrossX2.stakeK, false)}):</span>
-                            <span class="font-mono text-xs">
-                                ${isPending 
-                                    ? '<span class="text-slate-500">⏳ Chờ kết quả 18:30</span>' 
-                                    : (pentaData.loCrossX2.hits > 0 
-                                        ? `<span class="text-emerald-700 font-black">🔥 Nổ ${pentaData.loCrossX2.hits} nháy (${pentaData.loCrossX2.hitNums.join(', ')}) ⭐</span>` 
-                                        : '<span class="text-rose-700 font-bold">❌ 0 nháy</span>')
-                                }
-                            </span>
-                        </div>
-                        <div class="flex flex-wrap gap-2 pt-1">${pentaLoX2ChipsHtml}</div>
+                        ${pLoT4.length ? `
+                            <div>
+                                <div class="lo-tier-header-x4 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #78350f !important;">
+                                    <span>⚡ TẦNG CỰC VIP (CƯỢC X4 · 8.8M/SỐ · ${pLoT4.length} SỐ):</span>
+                                    <span class="text-[10px] font-bold" style="color: #92400e !important;">400đ · Trùng 3 hệ</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${pLoT4.map(n => renderShadowLoChip(n, 4, 'X4', pentaData.prizeCount)).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        ${pLoT3.length ? `
+                            <div>
+                                <div class="lo-tier-header-x3 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #0369a1 !important;">
+                                    <span>⚡ TẦNG TRIỂN VỌNG (CƯỢC X3 · 6.6M/SỐ · ${pLoT3.length} SỐ):</span>
+                                    <span class="text-[10px] font-bold" style="color: #0284c7 !important;">300đ · Trùng 2 hệ</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${pLoT3.map(n => renderShadowLoChip(n, 3, 'X3', pentaData.prizeCount)).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        ${pentaX2Promoted.length ? `
+                            <div>
+                                <div class="lo-tier-header-x2 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #92400e !important;">
+                                    <span>🚀 TẦNG X2 ĐỘT PHÁ (CƯỢC X2 · 4.4M/SỐ · ${pentaX2Promoted.length} SỐ):</span>
+                                    <span class="text-[10px] font-bold" style="color: #b45309 !important;">200đ · Nâng hạng từ trùng Advisor ≥X3</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${pentaX2Promoted.map(n => renderShadowLoChip(n, 2, 'X2', pentaData.prizeCount)).join('')}
+                                </div>
+                            </div>
+                        ` : `
+                            <div class="text-[10px] text-slate-500 italic p-2 rounded bg-amber-50/50 border border-amber-200">
+                                💡 Không có số nào thuộc tầng X1 trùng với Lô chủ lực (≥X3) bên Daily Advisor. Mức cược giữ nguyên như gốc.
+                            </div>
+                        `}
+
+                        ${pLoX2T1.length ? `
+                            <div>
+                                <div class="lo-tier-header-x1 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #1e293b !important;">
+                                    <span>🛡️ TẦNG BẢO HIỂM (CƯỢC X1 · 2.2M/SỐ · ${pLoX2T1.length} SỐ):</span>
+                                    <span class="text-[10px] font-bold" style="color: #475569 !important;">100đ · Trùng 1 hệ</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${pLoX2T1.map(n => renderShadowLoChip(n, 1, 'X1', pentaData.prizeCount)).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
                     </div>
 
                     <!-- Bảng so sánh tài chính: Gốc vs Đột Phá X2 -->
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-[11px] font-mono">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-amber-200 text-[11px] font-mono">
                         <div class="p-2 rounded-xl bg-slate-50 border border-slate-200">
                             <div class="text-slate-500 text-[10px]">VỐN CƯỢC X2</div>
                             <div class="font-bold text-slate-900 text-xs mt-0.5">${formatMoneyK(pentaData.loCrossX2.stakeK, false)} <span class="text-[10px] text-amber-700 font-normal">(${pentaX2DiffStakeK > 0 ? `+${formatMoneyK(pentaX2DiffStakeK, false)}` : 'như gốc'})</span></div>
@@ -9435,24 +9671,10 @@
             `;
 
             // B. Lô Đa Tầng (X5 / X4 / X3 / X1)
-            const loChipsHtml = quadData.lo.pills.map(p => {
-                if (!isPending && p.hits > 0) {
-                    return `
-                        <div class="relative group flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 via-teal-500 to-emerald-600 text-white p-2.5 font-black ring-2 ring-emerald-300 shadow-md scale-105 min-w-[70px] animate-pulse">
-                            <span class="text-[9px] font-black uppercase text-emerald-100">🎯 ${p.hits} NHÁY (X${p.mult})</span>
-                            <span class="font-mono text-2xl leading-none font-black my-1 text-white">${p.num}</span>
-                            <span class="text-[9px] font-black uppercase bg-emerald-900/60 text-emerald-200 px-2 py-0.5 rounded shadow-xs">+${formatMoneyK(p.payoutK, false)}</span>
-                        </div>
-                    `;
-                }
-                const multBadgeColor = p.mult === 5 ? 'bg-rose-100 text-rose-800 border-rose-300' : (p.mult === 4 ? 'bg-amber-100 text-amber-800 border-amber-300' : (p.mult === 3 ? 'bg-indigo-100 text-indigo-800 border-indigo-300' : 'bg-slate-100 text-slate-700 border-slate-200'));
-                return `
-                    <div class="flex flex-col items-center justify-center rounded-xl bg-white border border-slate-300 text-slate-800 p-2 font-mono text-base font-bold min-w-[60px] shadow-2xs hover:border-teal-400 transition-all">
-                        <span>${p.num}</span>
-                        <span class="text-[9px] font-bold px-1 py-0.2 rounded border ${multBadgeColor} mt-0.5">X${p.mult} · ${p.freq ? p.freq + ' phiếu' : ''}</span>
-                    </div>
-                `;
-            }).join('');
+            const qLoT5 = (quadData.lo.x5Nums || []).map(numStr);
+            const qLoT4 = (quadData.lo.x4Nums || []).map(numStr);
+            const qLoT3 = (quadData.lo.x3Nums || []).map(numStr);
+            const qLoT1 = (quadData.lo.x1Nums || []).map(numStr);
 
             const loStatusTag = isPending
                 ? `<span class="text-xs font-bold text-teal-800 bg-teal-50 border border-teal-300 px-2 py-0.5 rounded">⏳ ĐÃ KHÓA ${quadData.lo.numbers.length} SỐ (${formatMoneyK(quadData.lo.stakeK, false)})</span>`
@@ -9467,7 +9689,7 @@
                             <h4 class="text-xs font-black uppercase text-teal-900 flex items-center gap-1.5">
                                 <i class="bi bi-cpu-fill text-teal-600"></i> 🐟 2. LÔ BẦY ĐÀN AI MIROFISH ĐA TẦNG (${quadData.lo.numbers.length} SỐ · TỶ TRỌNG X5/X4/X3/X1):
                             </h4>
-                            <span class="text-[11px] text-slate-500 font-mono">(Trùng 6-5 -&gt; X5 · Trùng 4 -&gt; X4 · Trùng 3 -&gt; X3 · Trùng 2-1 -&gt; X1)</span>
+                            <span class="text-[11px] text-slate-500 font-mono">(Trùng 4 hệ -&gt; X5 · Trùng 3 hệ -&gt; X4 · Trùng 2 hệ -&gt; X3 · Trùng 1 hệ -&gt; X1)</span>
                         </div>
                         <div class="flex items-center gap-2">
                             ${loStatusTag}
@@ -9476,20 +9698,58 @@
                             </button>
                         </div>
                     </div>
-                    <div class="p-3 rounded-xl bg-slate-50 border border-teal-200 space-y-2">
-                        <div class="flex items-center justify-between text-[11px]">
-                            <span class="font-bold text-teal-900">Chi Tiết Tỷ Trọng &amp; Tần Số Trùng (Vốn ${formatMoneyK(quadData.lo.stakeK, false)}):</span>
-                            <span class="font-mono text-xs">
-                                ${isPending 
-                                    ? '<span class="text-slate-500">⏳ Chờ kết quả 18:30</span>' 
-                                    : (quadData.lo.hits > 0 
-                                        ? `<span class="text-emerald-700 font-black">🔥 Nổ ${quadData.lo.hits} nháy ⭐</span>` 
-                                        : '<span class="text-rose-700 font-bold">❌ 0 nháy</span>')
-                                }
-                            </span>
-                        </div>
-                        <div class="flex flex-wrap gap-2 pt-1">${loChipsHtml}</div>
+
+                    <!-- Bố cục phân tầng dọc space-y-2.5 in đậm tô viền 2px chuẩn mực -->
+                    <div class="space-y-2.5">
+                        ${qLoT5.length ? `
+                            <div>
+                                <div class="lo-tier-header-x5 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #78350f !important;">
+                                    <span>👑 TẦNG SIÊU VIP (CƯỢC X5 · 11M/SỐ · ${qLoT5.length} SỐ):</span>
+                                    <span class="text-[10px] font-bold" style="color: #92400e !important;">500đ · Trùng 4 hệ</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${qLoT5.map(n => renderShadowLoChip(n, 5, 'X5', quadData.prizeCount)).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        ${qLoT4.length ? `
+                            <div>
+                                <div class="lo-tier-header-x4 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #78350f !important;">
+                                    <span>⚡ TẦNG CỰC VIP (CƯỢC X4 · 8.8M/SỐ · ${qLoT4.length} SỐ):</span>
+                                    <span class="text-[10px] font-bold" style="color: #92400e !important;">400đ · Trùng 3 hệ</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${qLoT4.map(n => renderShadowLoChip(n, 4, 'X4', quadData.prizeCount)).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        ${qLoT3.length ? `
+                            <div>
+                                <div class="lo-tier-header-x3 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #0369a1 !important;">
+                                    <span>⚡ TẦNG TRIỂN VỌNG (CƯỢC X3 · 6.6M/SỐ · ${qLoT3.length} SỐ):</span>
+                                    <span class="text-[10px] font-bold" style="color: #0284c7 !important;">300đ · Trùng 2 hệ</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${qLoT3.map(n => renderShadowLoChip(n, 3, 'X3', quadData.prizeCount)).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        ${qLoT1.length ? `
+                            <div>
+                                <div class="lo-tier-header-x1 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #1e293b !important;">
+                                    <span>🛡️ TẦNG BẢO HIỂM (CƯỢC X1 · 2.2M/SỐ · ${qLoT1.length} SỐ):</span>
+                                    <span class="text-[10px] font-bold" style="color: #475569 !important;">100đ · Trùng 1 hệ</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${qLoT1.map(n => renderShadowLoChip(n, 1, 'X1', quadData.prizeCount)).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
                     </div>
+
                     <div class="flex items-center justify-between text-[11px] text-slate-600 pt-2 border-t border-slate-200 font-mono">
                         <span>Vốn cược: <strong class="text-slate-900">${formatMoneyK(quadData.lo.stakeK, false)}</strong></span>
                         <span>Tiền thưởng: <strong class="text-amber-800 font-bold">${isPending ? '—' : formatMoneyK(quadData.lo.payoutK, false)}</strong></span>
@@ -9499,51 +9759,12 @@
             `;
 
             // B2. Lô Đột Phá X2 Quad (Tương Hỗ Nâng Hạng Từ Daily Advisor)
-            const quadX2Promoted = quadData.loCrossX2?.x2Nums || [];
+            const quadX2Promoted = (quadData.loCrossX2?.x2Nums || []).map(numStr);
             const hasQuadPromotedX2 = quadX2Promoted.length > 0;
             const quadX2DiffStakeK = quadData.loCrossX2.stakeK - quadData.lo.stakeK;
             const quadX2DiffProfitK = isPending ? 0 : (quadData.loCrossX2.profitK - quadData.lo.profitK);
 
-            const quadLoX2ChipsHtml = quadData.loCrossX2.pills.map(p => {
-                const isPromoted = quadX2Promoted.includes(p.num);
-                if (!isPending && p.hits > 0) {
-                    return `
-                        <div class="relative group flex flex-col items-center justify-center rounded-xl ${isPromoted ? 'bg-gradient-to-br from-amber-500 via-yellow-500 to-amber-600 ring-4 ring-amber-300' : 'bg-gradient-to-br from-emerald-500 via-teal-500 to-emerald-600 ring-2 ring-emerald-300'} text-white p-2.5 font-black shadow-md scale-105 min-w-[70px] animate-pulse">
-                            <span class="text-[9px] font-black uppercase ${isPromoted ? 'text-amber-100' : 'text-emerald-100'}">🎯 ${p.hits} NHÁY (X${p.mult})</span>
-                            <span class="font-mono text-2xl leading-none font-black my-1 text-white">${p.num}</span>
-                            <span class="text-[9px] font-black uppercase ${isPromoted ? 'bg-slate-950/70 text-amber-200' : 'bg-emerald-900/60 text-emerald-200'} px-2 py-0.5 rounded shadow-xs">+${formatMoneyK(p.payoutK, false)}</span>
-                        </div>
-                    `;
-                }
-                let multBadgeColor = 'bg-slate-100 text-slate-700 border-slate-200';
-                let multLabel = `X${p.mult} · ${p.freq ? p.freq + '/4 hệ' : ''}`;
-                if (p.mult === 5) {
-                    multBadgeColor = 'bg-rose-100 text-rose-800 border-rose-300';
-                } else if (p.mult === 4) {
-                    multBadgeColor = 'bg-amber-100 text-amber-800 border-amber-300';
-                } else if (p.mult === 3) {
-                    multBadgeColor = 'bg-indigo-100 text-indigo-800 border-indigo-300';
-                } else if (p.mult === 2 && isPromoted) {
-                    multBadgeColor = 'bg-amber-300 text-slate-950 border-amber-400 font-black shadow-xs ring-1 ring-amber-300';
-                    multLabel = '⚡ X2 (Nâng)';
-                }
-                return `
-                    <div class="flex flex-col items-center justify-center rounded-xl bg-white border ${isPromoted ? 'border-amber-400 ring-2 ring-amber-300/60 bg-amber-50/50' : 'border-slate-300'} text-slate-800 p-2 font-mono text-base font-bold min-w-[60px] shadow-2xs hover:border-amber-400 transition-all">
-                        <span>${p.num}</span>
-                        <span class="text-[9px] font-bold px-1 py-0.2 rounded border ${multBadgeColor} mt-0.5">${multLabel}</span>
-                    </div>
-                `;
-            }).join('');
-
-            const quadPromotedBadgesHtml = hasQuadPromotedX2 
-                ? quadX2Promoted.map(n => {
-                    const hits = isPending ? 0 : (quadData.prizeCount?.[n] || 0);
-                    if (hits > 0) {
-                        return `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl font-mono font-black text-xs bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 ring-2 ring-amber-300 shadow-sm animate-pulse">🎯 ${n} <span class="text-[10px] bg-slate-950 text-amber-300 px-1 py-0.2 rounded font-bold">${hits} nháy (+${formatMoneyK(hits * 16000, false)})</span></span>`;
-                    }
-                    return `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl font-mono font-bold text-xs bg-amber-100 text-amber-950 border border-amber-300 shadow-2xs">${n} <span class="text-[9px] text-amber-800 font-bold">4.4M</span></span>`;
-                }).join(' ')
-                : `<span class="text-xs text-slate-500 italic">Không có số nào thuộc tầng X1 trùng với Lô chủ lực (≥X3) bên Daily Advisor. Dàn số và mức cược giữ nguyên như gốc.</span>`;
+            const qLoX2T1 = qLoT1.filter(n => !quadX2Promoted.includes(n));
 
             const quadLoX2StatusTag = isPending
                 ? `<span class="text-xs font-bold text-amber-900 bg-amber-100 border border-amber-300 px-2.5 py-0.5 rounded">⏳ ĐÃ KHÓA ${quadData.loCrossX2.numbers.length} SỐ (${hasQuadPromotedX2 ? `${quadX2Promoted.length} số nâng X2` : 'như gốc'} · Vốn ${formatMoneyK(quadData.loCrossX2.stakeK, false)})</span>`
@@ -9568,40 +9789,75 @@
                         </div>
                     </div>
 
-                    <!-- Banner giải trình nâng hạng X2 -->
-                    <div class="p-3 rounded-xl bg-gradient-to-r from-amber-50 via-yellow-50 to-amber-50 border border-amber-300 space-y-2">
-                        <div class="flex items-center justify-between text-[11px] flex-wrap gap-1">
-                            <span class="font-black text-amber-950 uppercase flex items-center gap-1">
-                                <i class="bi bi-lightning-charge-fill text-amber-600"></i> CÁC SỐ X1 ĐƯỢC THĂNG HẠNG LÊN X2 (4.4M/SỐ · ĂN 16M/NHÁY):
-                            </span>
-                            <span class="text-[11px] text-amber-900 font-mono font-bold">${hasQuadPromotedX2 ? `${quadX2Promoted.length} số thăng hạng` : '0 số'}</span>
-                        </div>
-                        <div class="flex flex-wrap gap-1.5 pt-0.5 items-center">
-                            ${quadPromotedBadgesHtml}
-                        </div>
-                        <div class="text-[10px] text-slate-500 pt-1 border-t border-amber-200/60 leading-relaxed">
-                            💡 <em>Cơ chế: Các số thuộc tầng X1 của Shadow nếu trùng với các số chủ lực (≥X3) bên Daily Advisor sẽ được thăng hạng lên cược X2 (4.4M/số thay vì 2.2M). Các số X5, X4, X3 và X1 còn lại giữ nguyên mức cược.</em>
-                        </div>
-                    </div>
+                    <!-- Bố cục phân tầng dọc space-y-2.5 in đậm tô viền 2px chuẩn mực -->
+                    <div class="space-y-2.5">
+                        ${qLoT5.length ? `
+                            <div>
+                                <div class="lo-tier-header-x5 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #78350f !important;">
+                                    <span>👑 TẦNG SIÊU VIP (CƯỢC X5 · 11M/SỐ · ${qLoT5.length} SỐ):</span>
+                                    <span class="text-[10px] font-bold" style="color: #92400e !important;">500đ · Trùng 4 hệ</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${qLoT5.map(n => renderShadowLoChip(n, 5, 'X5', quadData.prizeCount)).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
 
-                    <!-- Toàn bộ dàn số theo tỷ trọng X2 -->
-                    <div class="p-3 rounded-xl bg-slate-50 border border-amber-200 space-y-2">
-                        <div class="flex items-center justify-between text-[11px]">
-                            <span class="font-bold text-slate-800">Chi Tiết Tỷ Trọng Sau Nâng Hạng (Vốn ${formatMoneyK(quadData.loCrossX2.stakeK, false)}):</span>
-                            <span class="font-mono text-xs">
-                                ${isPending 
-                                    ? '<span class="text-slate-500">⏳ Chờ kết quả 18:30</span>' 
-                                    : (quadData.loCrossX2.hits > 0 
-                                        ? `<span class="text-emerald-700 font-black">🔥 Nổ ${quadData.loCrossX2.hits} nháy (${quadData.loCrossX2.hitNums.join(', ')}) ⭐</span>` 
-                                        : '<span class="text-rose-700 font-bold">❌ 0 nháy</span>')
-                                }
-                            </span>
-                        </div>
-                        <div class="flex flex-wrap gap-2 pt-1">${quadLoX2ChipsHtml}</div>
+                        ${qLoT4.length ? `
+                            <div>
+                                <div class="lo-tier-header-x4 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #78350f !important;">
+                                    <span>⚡ TẦNG CỰC VIP (CƯỢC X4 · 8.8M/SỐ · ${qLoT4.length} SỐ):</span>
+                                    <span class="text-[10px] font-bold" style="color: #92400e !important;">400đ · Trùng 3 hệ</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${qLoT4.map(n => renderShadowLoChip(n, 4, 'X4', quadData.prizeCount)).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        ${qLoT3.length ? `
+                            <div>
+                                <div class="lo-tier-header-x3 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #0369a1 !important;">
+                                    <span>⚡ TẦNG TRIỂN VỌNG (CƯỢC X3 · 6.6M/SỐ · ${qLoT3.length} SỐ):</span>
+                                    <span class="text-[10px] font-bold" style="color: #0284c7 !important;">300đ · Trùng 2 hệ</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${qLoT3.map(n => renderShadowLoChip(n, 3, 'X3', quadData.prizeCount)).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        ${quadX2Promoted.length ? `
+                            <div>
+                                <div class="lo-tier-header-x2 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #92400e !important;">
+                                    <span>🚀 TẦNG X2 ĐỘT PHÁ (CƯỢC X2 · 4.4M/SỐ · ${quadX2Promoted.length} SỐ):</span>
+                                    <span class="text-[10px] font-bold" style="color: #b45309 !important;">200đ · Nâng hạng từ trùng Advisor ≥X3</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${quadX2Promoted.map(n => renderShadowLoChip(n, 2, 'X2', quadData.prizeCount)).join('')}
+                                </div>
+                            </div>
+                        ` : `
+                            <div class="text-[10px] text-slate-500 italic p-2 rounded bg-amber-50/50 border border-amber-200">
+                                💡 Không có số nào thuộc tầng X1 trùng với Lô chủ lực (≥X3) bên Daily Advisor. Mức cược giữ nguyên như gốc.
+                            </div>
+                        `}
+
+                        ${qLoX2T1.length ? `
+                            <div>
+                                <div class="lo-tier-header-x1 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #1e293b !important;">
+                                    <span>🛡️ TẦNG BẢO HIỂM (CƯỢC X1 · 2.2M/SỐ · ${qLoX2T1.length} SỐ):</span>
+                                    <span class="text-[10px] font-bold" style="color: #475569 !important;">100đ · Trùng 1 hệ</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${qLoX2T1.map(n => renderShadowLoChip(n, 1, 'X1', quadData.prizeCount)).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
                     </div>
 
                     <!-- Bảng so sánh tài chính: Gốc vs Đột Phá X2 -->
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-[11px] font-mono">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-amber-200 text-[11px] font-mono">
                         <div class="p-2 rounded-xl bg-slate-50 border border-slate-200">
                             <div class="text-slate-500 text-[10px]">VỐN CƯỢC X2</div>
                             <div class="font-bold text-slate-900 text-xs mt-0.5">${formatMoneyK(quadData.loCrossX2.stakeK, false)} <span class="text-[10px] text-amber-700 font-normal">(${quadX2DiffStakeK > 0 ? `+${formatMoneyK(quadX2DiffStakeK, false)}` : 'như gốc'})</span></div>

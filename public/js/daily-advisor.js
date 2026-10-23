@@ -3577,42 +3577,42 @@
                 const isHit = !isPending && hits > 0;
                 if (isHit) {
                     return `
-                        <span class="px-2.5 py-1 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black font-mono text-xs ring-2 ring-emerald-300 shadow-md scale-105 animate-pulse flex items-center gap-1" style="color: #ffffff !important;">
-                            🎯 ${n}${getMethodsText(n, '#d1fae5')} <span class="bg-emerald-950 text-emerald-200 px-1 py-0.2 rounded text-[9px] font-black ml-0.5">(${hits}n · X${mult} · +${moneyM(hits * mult * 8000)})</span>
+                        <span class="px-2.5 py-1 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black font-mono text-xs ring-2 ring-emerald-300 shadow-md scale-105 animate-pulse inline-flex items-center gap-1" style="color: #ffffff !important;">
+                            🎯 ${n}${getMethodsText(n, '#d1fae5')} <span class="bg-emerald-950 text-emerald-200 px-1 py-0.2 rounded text-[9px] font-black ml-0.5">(${hits}n)</span>
                         </span>
                     `;
                 }
                 if (tierKey === 'X5') {
                     return `
-                        <span class="lo-tier-chip-x5 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all flex items-center gap-1" style="background-color: #fef08a !important; border: 2px solid #eab308 !important; color: #020617 !important;">
-                            ${n}${getMethodsText(n, '#713f12')} <span class="text-[9px] font-black opacity-80" style="color: #854d0e !important;">(X5)</span>
+                        <span class="lo-tier-chip-x5 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all inline-flex items-center gap-1" style="background-color: #fef08a !important; border: 2px solid #eab308 !important; color: #020617 !important;">
+                            ${n}${getMethodsText(n, '#713f12')}
                         </span>
                     `;
                 }
                 if (tierKey === 'X4') {
                     return `
-                        <span class="lo-tier-chip-x4 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all flex items-center gap-1" style="background-color: #fed7aa !important; border: 2px solid #f97316 !important; color: #020617 !important;">
-                            ${n}${getMethodsText(n, '#7c2d12')} <span class="text-[9px] font-black opacity-80" style="color: #9a3412 !important;">(X4)</span>
+                        <span class="lo-tier-chip-x4 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all inline-flex items-center gap-1" style="background-color: #fed7aa !important; border: 2px solid #f97316 !important; color: #020617 !important;">
+                            ${n}${getMethodsText(n, '#7c2d12')}
                         </span>
                     `;
                 }
                 if (tierKey === 'X3') {
                     return `
-                        <span class="lo-tier-chip-x3 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all flex items-center gap-1" style="background-color: #bae6fd !important; border: 2px solid #0284c7 !important; color: #020617 !important;">
-                            ${n}${getMethodsText(n, '#082f49')} <span class="text-[9px] font-black opacity-80" style="color: #0369a1 !important;">(X3)</span>
+                        <span class="lo-tier-chip-x3 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all inline-flex items-center gap-1" style="background-color: #bae6fd !important; border: 2px solid #0284c7 !important; color: #020617 !important;">
+                            ${n}${getMethodsText(n, '#082f49')}
                         </span>
                     `;
                 }
                 if (tierKey === 'X2') {
                     return `
-                        <span class="lo-tier-chip-x2 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all flex items-center gap-1" style="background-color: #fef3c7 !important; border: 2px solid #d97706 !important; color: #020617 !important;">
-                            ⚡ ${n}${getMethodsText(n, '#92400e')} <span class="text-[9px] font-black" style="color: #b45309 !important;">(X2 · 4.4M)</span>
+                        <span class="lo-tier-chip-x2 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all inline-flex items-center gap-1" style="background-color: #fef3c7 !important; border: 2px solid #d97706 !important; color: #020617 !important;">
+                            ⚡ ${n}${getMethodsText(n, '#92400e')}
                         </span>
                     `;
                 }
                 return `
-                    <span class="lo-tier-chip-x1 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all flex items-center gap-1" style="background-color: #e2e8f0 !important; border: 2px solid #64748b !important; color: #020617 !important;">
-                        ${n}${getMethodsText(n, '#0f172a')} <span class="text-[9px] font-black opacity-75" style="color: #475569 !important;">(X1)</span>
+                    <span class="lo-tier-chip-x1 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all inline-flex items-center gap-1" style="background-color: #e2e8f0 !important; border: 2px solid #64748b !important; color: #020617 !important;">
+                        ${n}${getMethodsText(n, '#0f172a')}
                     </span>
                 `;
             };
@@ -7474,7 +7474,9 @@
                             <!-- Cột 8: ⚡ Nâng X2 (Shadow) -->
                             <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-emerald-100/50 rounded-xl transition-all border-l border-emerald-200/60 bg-emerald-50/25" data-date="${r.date}" data-diary-cell="lo4CrossX2">
                                 ${(() => {
-                                    const pCross = lo4Info?.crossX2 || payload?.lo4EngineFusion?.latestRecommendation?.crossX2 || null;
+                                    const pCross = (lo4Info?.crossX2?.tierX2?.length ? lo4Info.crossX2 : null)
+                                        || (payload?.lo4EngineFusion?.latestRecommendation?.crossX2?.tierX2?.length ? payload.lo4EngineFusion.latestRecommendation.crossX2 : null)
+                                        || resolveLo4CrossX2(r.date, lo4Info?.sLo4, lo4Info?.bLo4, payload, true, lo4Info?.tierX5 || [], lo4Info?.tierX4 || [], lo4Info?.tierX3 || [], lo4Info?.tierX1 || []);
                                     const pX2Nums = (pCross?.tierX2 || []).map(number);
                                     if (pX2Nums.length > 0) {
                                         return `<span class="px-1.5 py-0.2 rounded font-mono text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 ring-1 ring-amber-400 shadow-xs">⚡ Nâng X2: ${pX2Nums.join(', ')}</span>`;
@@ -7482,14 +7484,14 @@
                                     return '<span class="text-[10px] text-slate-400 italic">0 số nâng X2 (như gốc)</span>';
                                 })()}
                                 <div class="text-[10px] text-slate-500 mt-1 flex items-center justify-between">
-                                    <span>Vốn: ${moneyM((lo4Info?.crossX2 || payload?.lo4EngineFusion?.latestRecommendation?.crossX2)?.stakeKX2 || 70400)}</span>
+                                    <span>Vốn: ${moneyM((lo4Info?.crossX2?.stakeKX2 || payload?.lo4EngineFusion?.latestRecommendation?.crossX2?.stakeKX2 || resolveLo4CrossX2(r.date, lo4Info?.sLo4, lo4Info?.bLo4, payload, true, lo4Info?.tierX5 || [], lo4Info?.tierX4 || [], lo4Info?.tierX3 || [], lo4Info?.tierX1 || [])?.stakeKX2 || 74800))}</span>
                                     <span class="diary-expand-indicator text-emerald-700 font-bold underline flex items-center gap-0.5">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></span>
                                 </div>
                             </td>
                             <!-- Cột 9: Lãi/Lỗ Đột Phá X2 -->
                             <td class="px-3 py-3 text-right whitespace-nowrap font-mono bg-emerald-50/25">
                                 <div class="font-bold text-xs text-amber-600">⏳ Chờ KQ</div>
-                                <div class="text-[10px] text-slate-400 font-sans">Vốn ${moneyM((lo4Info?.crossX2 || payload?.lo4EngineFusion?.latestRecommendation?.crossX2)?.stakeKX2 || 70400)}</div>
+                                <div class="text-[10px] text-slate-400 font-sans">Vốn ${moneyM((lo4Info?.crossX2?.stakeKX2 || payload?.lo4EngineFusion?.latestRecommendation?.crossX2?.stakeKX2 || resolveLo4CrossX2(r.date, lo4Info?.sLo4, lo4Info?.bLo4, payload, true, lo4Info?.tierX5 || [], lo4Info?.tierX4 || [], lo4Info?.tierX3 || [], lo4Info?.tierX1 || [])?.stakeKX2 || 74800))}</div>
                             </td>
                             <!-- Cột 10: Lũy Kế Đột Phá X2 -->
                             <td class="px-3 py-3 text-right whitespace-nowrap font-mono bg-emerald-50/25">
@@ -9721,7 +9723,8 @@
                 if (loX3RowEl) loX3RowEl.style.display = 'none';
                 if (loTop20RowEl) loTop20RowEl.style.display = 'none';
 
-                const crossX2Rec = lo4Rec?.crossX2 || null;
+                const crossX2Rec = (lo4Rec?.crossX2?.tierX2?.length ? lo4Rec.crossX2 : null)
+                    || resolveLo4CrossX2(payload?.pendingPredictionDate, null, lo4Rec, payload, true, lo4Rec?.tierX5 || [], lo4Rec?.tierX4 || [], lo4Rec?.tierX3 || [], lo4Rec?.tierX1 || []);
                 const tierX2Numbers = (crossX2Rec?.tierX2 && crossX2Rec.tierX2.length)
                     ? crossX2Rec.tierX2.map(number)
                     : [];

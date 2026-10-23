@@ -193,6 +193,16 @@ async function main() {
                         multiplierMap: pentaNext.lo?.multiplierMap || {},
                         stakeK: pentaNext.lo?.stakeK || 0
                     },
+                    loCrossX2: pentaNext.loCrossX2 ? {
+                        numbers: pentaNext.loCrossX2.numbers || [],
+                        x5Nums: pentaNext.loCrossX2.x5Nums || [],
+                        x4Nums: pentaNext.loCrossX2.x4Nums || [],
+                        x3Nums: pentaNext.loCrossX2.x3Nums || [],
+                        x2Nums: pentaNext.loCrossX2.x2Nums || [],
+                        x1Nums: pentaNext.loCrossX2.x1Nums || [],
+                        multiplierMap: pentaNext.loCrossX2.multiplierMap || {},
+                        stakeK: pentaNext.loCrossX2.stakeK || 0
+                    } : null,
                     xien5: {
                         top5: pentaNext.xien5?.top5 || [],
                         tickets: pentaNext.xien5?.tickets || [],
@@ -235,6 +245,16 @@ async function main() {
             };
 
             registryService.registerDailyBet(expectedPredictionDate, 'lo4EngineFusion', lRec);
+            if (cache.lo4EngineFusion.modes?.top7) {
+                cache.lo4EngineFusion.modes.top7.latestRecommendation = lRec;
+            }
+            if (cache.lo4EngineFusion.modes?.top6) {
+                cache.lo4EngineFusion.modes.top6.latestRecommendation = {
+                    ...lRec,
+                    topN: 6,
+                    crossX2: lRec.crossX2
+                };
+            }
         }
         if (cache.crossHedgingPortfolio?.latestRecommendation || cache.crossHedgingPortfolio) {
             const chRec = cache.crossHedgingPortfolio.latestRecommendation || cache.crossHedgingPortfolio;
@@ -288,6 +308,29 @@ async function main() {
         }
 
         cache.dailyLockedBetsRegistry = registryService.loadRegistry();
+
+        // Đồng bộ hóa crossX2 từ SSOT Registry cho cả main settledLedger và modes.top7 / modes.top6
+        if (cache.lo4EngineFusion) {
+            const regDates = cache.dailyLockedBetsRegistry?.dates || {};
+            const syncLedgerCross = (ledger) => {
+                if (!Array.isArray(ledger)) return;
+                ledger.forEach(row => {
+                    if (!row.crossX2 || !row.crossX2.tierX2?.length) {
+                        const regCross = regDates[row.date]?.settlement?.lo4EngineFusion?.crossX2 || regDates[row.date]?.bets?.lo4EngineFusion?.crossX2;
+                        if (regCross?.tierX2?.length) {
+                            row.crossX2 = JSON.parse(JSON.stringify(regCross));
+                        }
+                    }
+                });
+            };
+            syncLedgerCross(cache.lo4EngineFusion.settledLedger);
+            if (cache.lo4EngineFusion.modes?.top7?.settledLedger) {
+                syncLedgerCross(cache.lo4EngineFusion.modes.top7.settledLedger);
+            }
+            if (cache.lo4EngineFusion.modes?.top6?.settledLedger) {
+                syncLedgerCross(cache.lo4EngineFusion.modes.top6.settledLedger);
+            }
+        }
     } catch (err) {
         console.error('[generateDailyAdvisorCache] Error updating locked bets registry:', err);
     }

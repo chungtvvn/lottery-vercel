@@ -587,6 +587,7 @@ export async function GET(request) {
             const triCoreLedger = settled.triCoreDe?.settledLedger || [];
             const resSuiteLedger = settled.semanticResonanceSuite?.settledLedger || [];
             const loTop5Ledger = settled.loTop5ConsensusXien?.settledLedger || [];
+            const pentaLedger = settled.pentaConsensus?.settledLedger || [];
 
             const upsertLedgerRow = (ledger, dateKey, row) => {
                 const idx = ledger.findIndex(r => normalizeDate(r?.date || r?.predictionDate) === dateKey);
@@ -844,6 +845,24 @@ export async function GET(request) {
                             isLive: true
                         });
                     }
+                    // Phương Pháp Gộp 5 ở Shadow Monitor (pentaConsensus)
+                    if (s.pentaConsensus) {
+                        upsertLedgerRow(pentaLedger, d, {
+                            date: d,
+                            predictionDate: d,
+                            actualSpecial: s.pentaConsensus.actualSpecial,
+                            de: s.pentaConsensus.de,
+                            lo: s.pentaConsensus.lo,
+                            loCrossX2: s.pentaConsensus.loCrossX2,
+                            xien5: s.pentaConsensus.xien5,
+                            combo: s.pentaConsensus.combo || {
+                                stakeK: (s.pentaConsensus.de?.stakeK || 0) + (s.pentaConsensus.lo?.stakeK || 0) + (s.pentaConsensus.xien5?.stakeK || 0),
+                                payoutK: (s.pentaConsensus.de?.payoutK || 0) + (s.pentaConsensus.lo?.payoutK || 0) + (s.pentaConsensus.xien5?.payoutK || 0),
+                                profitK: (s.pentaConsensus.de?.profitK || 0) + (s.pentaConsensus.lo?.profitK || 0) + (s.pentaConsensus.xien5?.profitK || 0),
+                                isWin: ((s.pentaConsensus.de?.profitK || 0) + (s.pentaConsensus.lo?.profitK || 0) + (s.pentaConsensus.xien5?.profitK || 0)) > 0
+                            }
+                        });
+                    }
                 }
             });
             if (settled.crossHedgingPortfolio) {
@@ -864,11 +883,17 @@ export async function GET(request) {
             if (settled.loTop5ConsensusXien) {
                 settled.loTop5ConsensusXien.settledLedger = loTop5Ledger.sort((a, b) => a.date.localeCompare(b.date));
             }
+            if (settled.lo4EngineFusion) {
+                settled.lo4EngineFusion.settledLedger = lo7Ledger.sort((a, b) => a.date.localeCompare(b.date));
+            }
             if (settled.lo4EngineFusion?.modes?.top7) {
                 settled.lo4EngineFusion.modes.top7.settledLedger = lo7Ledger.sort((a, b) => a.date.localeCompare(b.date));
             }
             if (settled.lo4EngineFusion?.modes?.top6) {
                 settled.lo4EngineFusion.modes.top6.settledLedger = lo6Ledger.sort((a, b) => a.date.localeCompare(b.date));
+            }
+            if (settled.pentaConsensus) {
+                settled.pentaConsensus.settledLedger = pentaLedger.sort((a, b) => a.date.localeCompare(b.date));
             }
             if (settled.dualMerge) {
                 settled.dualMerge.settledLedger = dmLedger.sort((a, b) => (a.date || a.predictionDate).localeCompare(b.date || b.predictionDate));
@@ -893,6 +918,73 @@ export async function GET(request) {
             }
             if (settled.semanticResonanceSuite) {
                 settled.semanticResonanceSuite.settledLedger = resSuiteLedger.sort((a, b) => a.date.localeCompare(b.date));
+            }
+        }
+
+        // BẢO VỆ BẤT BIẾN LÔ ĐỘT PHÁ X2 TRÊN API CHO CẢ 2 BÊN (ADVISOR & SHADOW)
+        if (settled.lo4EngineFusion?.latestRecommendation && (!settled.lo4EngineFusion.latestRecommendation.crossX2 || !settled.lo4EngineFusion.latestRecommendation.crossX2.tierX2?.length)) {
+            const nextTarget = settled.lo4EngineFusion.latestRecommendation.predictionDate || settled.pendingPredictionDate;
+            const regCross = settled.dailyLockedBetsRegistry?.dates?.[nextTarget]?.bets?.lo4EngineFusion?.crossX2;
+            if (regCross && regCross.tierX2?.length) {
+                settled.lo4EngineFusion.latestRecommendation.crossX2 = regCross;
+            } else {
+                const pentaRecLo = settled.pentaConsensus?.latestRecommendation?.lo;
+                if (pentaRecLo) {
+                    const pentaHigh = new Set([
+                        ...(pentaRecLo.x5Nums || []),
+                        ...(pentaRecLo.x4Nums || []),
+                        ...(pentaRecLo.x3Nums || [])
+                    ].map(n => String(n).padStart(2, '0')));
+                    const t5 = (settled.lo4EngineFusion.latestRecommendation.tierX5 || []).map(n => String(n).padStart(2, '0'));
+                    const t4 = (settled.lo4EngineFusion.latestRecommendation.tierX4 || []).map(n => String(n).padStart(2, '0'));
+                    const t3 = (settled.lo4EngineFusion.latestRecommendation.tierX3 || []).map(n => String(n).padStart(2, '0'));
+                    const t1 = (settled.lo4EngineFusion.latestRecommendation.tierX1 || []).map(n => String(n).padStart(2, '0'));
+                    const promoted = t1.filter(n => pentaHigh.has(n));
+                    const rem = t1.filter(n => !pentaHigh.has(n));
+                    settled.lo4EngineFusion.latestRecommendation.crossX2 = {
+                        tierX5: t5,
+                        tierX4: t4,
+                        tierX3: t3,
+                        tierX2: promoted,
+                        tierX1: rem,
+                        stakeKX2: (t5.length * 5 + t4.length * 4 + t3.length * 3 + promoted.length * 2 + rem.length * 1) * 2200,
+                        promotedRationale: promoted.length > 0
+                            ? `Số [${promoted.join(', ')}] xuất hiện ở nhóm đồng thuận cao (>= X3) bên Shadow Monitor -> Nâng lên Tier X2 (cược 4.4M/số, ăn 16M/nháy).`
+                            : 'Không có số nào cần nâng hạng hôm nay.'
+                    };
+                }
+            }
+        }
+        if (settled.pentaConsensus?.latestRecommendation?.lo && (!settled.pentaConsensus.latestRecommendation.loCrossX2 || !settled.pentaConsensus.latestRecommendation.loCrossX2.x2Nums?.length)) {
+            const nextTarget = settled.pentaConsensus.latestRecommendation.date || settled.pendingPredictionDate;
+            const regCross = settled.dailyLockedBetsRegistry?.dates?.[nextTarget]?.bets?.pentaConsensus?.loCrossX2;
+            if (regCross && regCross.x2Nums?.length) {
+                settled.pentaConsensus.latestRecommendation.loCrossX2 = regCross;
+            } else {
+                const lo4Rec = settled.lo4EngineFusion?.latestRecommendation;
+                if (lo4Rec) {
+                    const lo4High = new Set([
+                        ...(lo4Rec.tierX5 || []),
+                        ...(lo4Rec.tierX4 || []),
+                        ...(lo4Rec.tierX3 || [])
+                    ].map(n => String(n).padStart(2, '0')));
+                    const x1 = (settled.pentaConsensus.latestRecommendation.lo.x1Nums || []).map(n => String(n).padStart(2, '0'));
+                    const promoted = x1.filter(n => lo4High.has(n));
+                    const rem = x1.filter(n => !lo4High.has(n));
+                    const allLo = (settled.pentaConsensus.latestRecommendation.lo.numbers || []).map(n => String(n).padStart(2, '0'));
+                    const multMap = { ...(settled.pentaConsensus.latestRecommendation.lo.multiplierMap || {}) };
+                    promoted.forEach(n => { multMap[n] = 2; });
+                    settled.pentaConsensus.latestRecommendation.loCrossX2 = {
+                        numbers: allLo,
+                        x5Nums: settled.pentaConsensus.latestRecommendation.lo.x5Nums || [],
+                        x4Nums: settled.pentaConsensus.latestRecommendation.lo.x4Nums || [],
+                        x3Nums: settled.pentaConsensus.latestRecommendation.lo.x3Nums || [],
+                        x2Nums: promoted,
+                        x1Nums: rem,
+                        multiplierMap: multMap,
+                        stakeK: ((settled.pentaConsensus.latestRecommendation.lo.x5Nums || []).length * 5 + (settled.pentaConsensus.latestRecommendation.lo.x4Nums || []).length * 4 + (settled.pentaConsensus.latestRecommendation.lo.x3Nums || []).length * 3 + promoted.length * 2 + rem.length * 1) * 2200
+                    };
+                }
             }
         }
         if (!settled.deResearchEnsemble) {
