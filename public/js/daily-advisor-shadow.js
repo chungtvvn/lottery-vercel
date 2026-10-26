@@ -351,7 +351,7 @@
 
         // 0. Ưu tiên đọc trực tiếp từ Single Source of Truth (dailyLockedBetsRegistry)
         const regLocked = data.dailyLockedBetsRegistry?.dates?.[targetDate];
-        if (regLocked && (regLocked.settlement?.pentaConsensus || regLocked.bets?.pentaConsensus)) {
+        if (regLocked && ((regLocked.settlement?.pentaConsensus?.de && regLocked.settlement?.pentaConsensus?.lo) || (regLocked.bets?.pentaConsensus?.de && regLocked.bets?.pentaConsensus?.lo))) {
             const isSettled = Boolean(regLocked.isSettled);
             const s = regLocked.settlement?.pentaConsensus;
             const b = regLocked.bets?.pentaConsensus;
@@ -359,7 +359,7 @@
             const hasDrawResults = Boolean(drawPrizesObj && (drawPrizesObj.special !== undefined || (drawPrizesObj.prizes && drawPrizesObj.prizes.length > 0)));
             const isPendingBet = !hasDrawResults;
 
-            if (isSettled && s && !isPendingBet) {
+            if (isSettled && s && s.de && s.lo && !isPendingBet) {
                 const prizeCount = {};
                 if (drawPrizesObj?.prizes) {
                     drawPrizesObj.prizes.forEach(p => {
@@ -443,10 +443,10 @@
                         isWin: s.xien5?.isWin || false
                     },
                     combo: {
-                        stakeK: s.totalStakeK,
-                        payoutK: s.totalPayoutK,
-                        profitK: s.totalProfitK,
-                        isWin: s.isWin
+                        stakeK: s.totalStakeK !== undefined ? s.totalStakeK : (s.combo?.stakeK ?? ((s.de?.stakeK || 0) + (s.lo?.stakeK || 0) + (s.xien5?.stakeK || 0))),
+                        payoutK: s.totalPayoutK !== undefined ? s.totalPayoutK : (s.combo?.payoutK ?? ((s.de?.payoutK || 0) + (s.lo?.payoutK || 0) + (s.xien5?.payoutK || 0))),
+                        profitK: s.totalProfitK !== undefined ? s.totalProfitK : (s.combo?.profitK ?? (s.de?.profitK != null && s.lo?.profitK != null ? s.de.profitK + s.lo.profitK + (s.xien5?.profitK || 0) : 0)),
+                        isWin: s.isWin !== undefined ? s.isWin : (s.combo?.isWin ?? ((s.totalProfitK || s.combo?.profitK || 0) > 0))
                     }
                 };
             }
@@ -2647,6 +2647,7 @@
 
                 sortedRows.forEach(r => {
                     const penta = computePentaConsensusForDate(r.date, data);
+                    if (!penta || !penta.de) return;
                     const isHit = Boolean(penta.de.isHit);
                     const dayProfitK = Number(penta.de.profitK || 0);
                     const dayStakeK = Number(penta.de.stakeK || 0);
@@ -3627,11 +3628,18 @@
 
             const rowsData = baseDates.map(date => {
                 const penta = computePentaConsensusForDate(date, data);
-                cumDeK += penta.de.profitK;
-                cumLoK += penta.lo.profitK;
-                cumLoX2K += (penta.loCrossX2?.profitK ?? penta.lo.profitK);
-                cumXienK += penta.xien5.profitK;
-                cumComboK += penta.combo.profitK;
+                if (!penta || !penta.de || !penta.lo) return null;
+                const deProfit = Number(penta.de.profitK) || 0;
+                const loProfit = Number(penta.lo.profitK) || 0;
+                const loX2Profit = Number(penta.loCrossX2?.profitK ?? penta.lo.profitK) || 0;
+                const xienProfit = Number(penta.xien5?.profitK) || 0;
+                const comboProfit = Number(penta.combo?.profitK ?? (deProfit + loProfit + xienProfit)) || 0;
+
+                cumDeK += deProfit;
+                cumLoK += loProfit;
+                cumLoX2K += loX2Profit;
+                cumXienK += xienProfit;
+                cumComboK += comboProfit;
 
                 return {
                     date,
@@ -3642,7 +3650,7 @@
                     cumXienK,
                     cumComboK
                 };
-            });
+            }).filter(Boolean);
 
             const totalDays = rowsData.length;
             const comboWins = rowsData.filter(r => r.penta.combo.isWin || r.penta.combo.profitK > 0).length;
@@ -4061,10 +4069,16 @@
 
             const rowsData = baseDates.map(date => {
                 const quad = computeQuadConsensusForDate(date, data);
-                cumDeK += quad.de.profitK;
-                cumLoK += quad.lo.profitK;
-                cumXienK += quad.xien5.profitK;
-                cumComboK += quad.combo.profitK;
+                if (!quad || !quad.de || !quad.lo) return null;
+                const deProfit = Number(quad.de.profitK) || 0;
+                const loProfit = Number(quad.lo.profitK) || 0;
+                const xienProfit = Number(quad.xien5?.profitK) || 0;
+                const comboProfit = Number(quad.combo?.profitK ?? (deProfit + loProfit + xienProfit)) || 0;
+
+                cumDeK += deProfit;
+                cumLoK += loProfit;
+                cumXienK += xienProfit;
+                cumComboK += comboProfit;
 
                 return {
                     date,
@@ -4074,7 +4088,7 @@
                     cumXienK,
                     cumComboK
                 };
-            });
+            }).filter(Boolean);
 
             const totalDays = rowsData.length;
             const comboWins = rowsData.filter(r => r.quad.combo.isWin).length;
