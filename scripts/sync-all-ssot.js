@@ -33,12 +33,25 @@ function syncAll() {
     console.log('🚀 UNIFIED SSOT SYNCHRONIZATION RUNNING...');
     console.log('='.repeat(80));
 
-    // 1. Tải registry
-    let reg = null;
-    if (fs.existsSync(REG_DATA_FILE)) {
-        reg = JSON.parse(fs.readFileSync(REG_DATA_FILE, 'utf8'));
-    } else if (fs.existsSync(REG_STATS_FILE)) {
-        reg = JSON.parse(fs.readFileSync(REG_STATS_FILE, 'utf8'));
+    // 1. Tải registry (gộp thông minh cả data/ và lib/data/statistics/)
+    let reg1 = null, reg2 = null;
+    try { if (fs.existsSync(REG_DATA_FILE)) reg1 = JSON.parse(fs.readFileSync(REG_DATA_FILE, 'utf8')); } catch (_) {}
+    try { if (fs.existsSync(REG_STATS_FILE)) reg2 = JSON.parse(fs.readFileSync(REG_STATS_FILE, 'utf8')); } catch (_) {}
+    let reg = reg1 || reg2;
+    if (reg1?.dates && reg2?.dates) {
+        const merged = { ...reg2.dates, ...reg1.dates };
+        for (const [d, v] of Object.entries(reg2.dates)) {
+            if (merged[d]) {
+                merged[d] = {
+                    ...v,
+                    ...merged[d],
+                    isSettled: Boolean(merged[d].isSettled || v.isSettled),
+                    bets: { ...(v.bets || {}), ...(merged[d].bets || {}) },
+                    settlement: { ...(v.settlement || {}), ...(merged[d].settlement || {}) }
+                };
+            }
+        }
+        reg = { ...(reg1 || reg2), dates: merged };
     }
     if (!reg || !reg.dates) {
         throw new Error('daily_locked_bets_registry.json không tồn tại hoặc bị lỗi!');
@@ -144,9 +157,12 @@ function syncAll() {
     const deDropoffLedger = [];
     const loDropoffLedger = [];
     const triCoreLedger = [];
+    const pentaLedger = [];
+    const top8ParityLedger = [];
 
     let cumDe = 0, cumLo = 0, cumXien = 0, cumTot = 0;
     let cumLo7 = 0, cumLo6 = 0;
+    let cumPenta = 0, cumTop8Parity = 0;
 
     sortedDates.forEach(d => {
         const entry = reg.dates[d];
@@ -363,6 +379,35 @@ function syncAll() {
                 isWin: Boolean(s.triCoreDe.isWin)
             });
         }
+
+        // PentaConsensus (Shadow Monitor)
+        if (s.pentaConsensus) {
+            const pS = s.pentaConsensus;
+            cumPenta += (pS.totalProfitK || 0);
+            pentaLedger.push({
+                date: d,
+                predictionDate: d,
+                ...pS,
+                cumProfitK: cumPenta
+            });
+        }
+
+        // 2 Dàn Xiên 4 Tinh Hoa (top8ParityXien4)
+        if (s.top8ParityXien4 || b.top8ParityXien4) {
+            const pS = s.top8ParityXien4 || {};
+            const pB = b.top8ParityXien4 || {};
+            cumTop8Parity += (pS.profitK || 0);
+            top8ParityLedger.push({
+                date: d,
+                predictionDate: d,
+                top8: pS.top8 || pB.top8 || [],
+                dan1: pS.dan1 || pB.dan1 || [],
+                dan2: pS.dan2 || pB.dan2 || [],
+                swapped: Boolean(pS.swapped ?? pB.swapped),
+                ...pS,
+                cumProfitK: cumTop8Parity
+            });
+        }
     });
 
     // 6. Gán các ledger đã tái tạo chuẩn xác vào adv
@@ -399,6 +444,12 @@ function syncAll() {
     if (!adv.triCoreDe) adv.triCoreDe = {};
     adv.triCoreDe.settledLedger = triCoreLedger;
 
+    if (!adv.pentaConsensus) adv.pentaConsensus = {};
+    if (pentaLedger.length > 0) adv.pentaConsensus.settledLedger = pentaLedger;
+
+    if (!adv.top8ParityXien4) adv.top8ParityXien4 = {};
+    if (top8ParityLedger.length > 0) adv.top8ParityXien4.settledLedger = top8ParityLedger;
+
     // 7. CẬP NHẬT LATEST RECOMMENDATION CHO NGÀY TIẾP THEO (PENDING)
     if (latestEntry && latestEntry.bets) {
         const lb = latestEntry.bets;
@@ -433,6 +484,18 @@ function syncAll() {
         if (lb.deDropoffMerge) adv.deDropoffMerge.latestRecommendation = lb.deDropoffMerge;
         if (lb.loDropoff27) adv.loDropoff27.latestRecommendation = lb.loDropoff27;
         if (lb.triCoreDe) adv.triCoreDe.latestRecommendation = lb.triCoreDe;
+        if (lb.pentaConsensus) {
+            if (!adv.pentaConsensus) adv.pentaConsensus = {};
+            adv.pentaConsensus.latestRecommendation = lb.pentaConsensus;
+        }
+        if (lb.top8ParityXien4) {
+            if (!adv.top8ParityXien4) adv.top8ParityXien4 = {};
+            adv.top8ParityXien4.latestRecommendation = {
+                targetDate: latestDate,
+                predictionDate: latestDate,
+                ...lb.top8ParityXien4
+            };
+        }
     }
 
     // 8. Lưu lại file cache

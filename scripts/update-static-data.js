@@ -537,12 +537,32 @@ async function readJsonFromR2(fileName, prefix = process.env.CLOUDFLARE_R2_DATA_
     const baseUrl = getR2PublicUrl();
     if (!baseUrl) return null;
     const normalizedPrefix = String(prefix || '').replace(/^\/|\/$/g, '');
-    const response = await fetch(`${baseUrl}/${normalizedPrefix}/${fileName}.gz`, { cache: 'no-store' });
-    if (!response.ok) {
-        throw new Error(`R2 HTTP ${response.status} for ${normalizedPrefix}/${fileName}.gz`);
+    const gzUrl = `${baseUrl}/${normalizedPrefix}/${fileName}.gz?t=${Date.now()}`;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+            const response = await fetch(gzUrl, { cache: 'no-store' });
+            if (!response.ok) {
+                if (response.status === 404) {
+                    const rawUrl = `${baseUrl}/${normalizedPrefix}/${fileName}?t=${Date.now()}`;
+                    const rawResp = await fetch(rawUrl, { cache: 'no-store' });
+                    if (rawResp.ok) {
+                        return await rawResp.json();
+                    }
+                    return null;
+                }
+                throw new Error(`R2 HTTP ${response.status} for ${normalizedPrefix}/${fileName}.gz`);
+            }
+            const buffer = Buffer.from(await response.arrayBuffer());
+            if (buffer.length >= 2 && buffer[0] === 0x1f && buffer[1] === 0x8b) {
+                return JSON.parse(zlib.gunzipSync(buffer).toString('utf8'));
+            }
+            return JSON.parse(buffer.toString('utf8'));
+        } catch (err) {
+            if (attempt === 3) throw err;
+            await sleep(1000 * attempt);
+        }
     }
-    const compressed = Buffer.from(await response.arrayBuffer());
-    return JSON.parse(zlib.gunzipSync(compressed).toString('utf8'));
+    return null;
 }
 
 async function readStatsJsonFromR2(fileName) {
@@ -1123,7 +1143,9 @@ async function hydrateDailyLockedBetsRegistryFromR2() {
                     mergedDates[date] = {
                         ...val,
                         ...mergedDates[date],
-                        bets: { ...(val.bets || {}), ...(mergedDates[date].bets || {}) }
+                        isSettled: Boolean(mergedDates[date].isSettled || val.isSettled),
+                        bets: { ...(val.bets || {}), ...(mergedDates[date].bets || {}) },
+                        settlement: { ...(val.settlement || {}), ...(mergedDates[date].settlement || {}) }
                     };
                 }
             }
@@ -1145,6 +1167,71 @@ async function hydrateDailyLockedBetsRegistryFromR2() {
         return true;
     } catch (error) {
         console.warn(`[SSOT Registry] Không hydrate được registry từ R2, giữ bản ghi local hiện có: ${error.message}`);
+        return false;
+    }
+}
+
+async function hydrateDailyMethodAdvisorFromR2() {
+    if (!getR2PublicUrl()) return false;
+
+    try {
+        const remoteAdv = await readStatsJsonFromR2('cached_daily_method_advisor.json');
+        if (!remoteAdv || typeof remoteAdv !== 'object') {
+            console.warn('[DailyAdvisor] Remote cached_daily_method_advisor trên R2 rỗng hoặc không tồn tại.');
+            return false;
+        }
+
+        const statsPath = path.join(DATA_DIR, 'statistics', 'cached_daily_method_advisor.json');
+        const dataPath = path.join(__dirname, '..', 'data', 'cached_daily_method_advisor.json');
+
+        const jsonStr = JSON.stringify(remoteAdv);
+        await fs.mkdir(path.dirname(statsPath), { recursive: true });
+        await fs.writeFile(statsPath, jsonStr, 'utf8');
+        await fs.mkdir(path.dirname(dataPath), { recursive: true });
+        await fs.writeFile(dataPath, jsonStr, 'utf8');
+
+        console.log(`[DailyAdvisor] Hydrate cached_daily_method_advisor từ R2 (latestDataDate=${remoteAdv.latestDataDate || 'none'}) thành công.`);
+        return true;
+    } catch (error) {
+        console.warn(`[DailyAdvisor] Không hydrate được cached_daily_method_advisor từ R2: ${error.message}`);
+        return false;
+    }
+}
+
+async function hydrateLoDropoff27ShadowFromR2() {
+    if (!getR2PublicUrl()) return false;
+
+    try {
+        const remote = await readStatsJsonFromR2('cached_lo_dropoff_27_shadow.json');
+        if (!remote || typeof remote !== 'object') return false;
+
+        const statsPath = path.join(DATA_DIR, 'statistics', 'cached_lo_dropoff_27_shadow.json');
+        await fs.mkdir(path.dirname(statsPath), { recursive: true });
+        await fs.writeFile(statsPath, JSON.stringify(remote), 'utf8');
+        console.log(`[Shadow Lo] Hydrate cached_lo_dropoff_27_shadow từ R2 thành công.`);
+        return true;
+    } catch (error) {
+        console.warn(`[Shadow Lo] Không hydrate được cached_lo_dropoff_27_shadow từ R2: ${error.message}`);
+        return false;
+    }
+}
+
+async function hydrateAllSsotFromR2() {
+    if (!getR2PublicUrl()) {
+        console.log('[SSOT Hydration] Không có URL R2, bỏ qua hydrate.');
+        return false;
+    }
+    console.log('[SSOT Hydration] 🚀 Đang hydrate toàn bộ SSOT từ Cloudflare R2 trước khi chạy pipeline...');
+    try {
+        await hydrateDailyLockedBetsRegistryFromR2();
+        await hydrateDailyMethodAdvisorFromR2();
+        await hydratePredictionHistoryFromR2();
+        await hydrateLoDropoff27ShadowFromR2();
+        await hydrateMilestone20yLiveCacheFromR2();
+        console.log('[SSOT Hydration] ✅ Hoàn tất hydrate toàn bộ SSOT từ R2.');
+        return true;
+    } catch (e) {
+        console.warn(`[SSOT Hydration] Có lỗi khi hydrate SSOT từ R2: ${e.message}`);
         return false;
     }
 }
@@ -1664,6 +1751,7 @@ async function main() {
     }
 
     await fs.mkdir(path.join(DATA_DIR, 'statistics'), { recursive: true });
+    await hydrateAllSsotFromR2();
     const currentArray = await readCurrentRawData();
     console.log('[2] Cập nhật dữ liệu từ nguồn độc lập xoso.com.vn...');
     const { data: finalArray, source } = await buildRawDataFromSources(currentArray);

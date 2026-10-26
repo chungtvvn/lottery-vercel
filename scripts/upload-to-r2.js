@@ -229,6 +229,15 @@ async function uploadToR2() {
         console.log('[R2 Upload] Chế độ chỉ upload cache thống kê: giữ nguyên raw data trên R2.');
     } else if (fs.existsSync(DATA_FILE)) {
         await uploadJsonGzip(s3, DATA_FILE, `${DATA_PREFIX}/xsmb-2-digits.json.gz`);
+        try {
+            await s3.send(new PutObjectCommand({
+                Bucket: BUCKET,
+                Key: `${DATA_PREFIX}/xsmb-2-digits.json`,
+                Body: fs.readFileSync(DATA_FILE),
+                ContentType: 'application/json',
+                CacheControl: 'public, max-age=60, s-maxage=300'
+            }));
+        } catch (_) {}
     } else {
         console.warn(`[R2 Upload] Không tìm thấy raw data file: ${DATA_FILE}`);
     }
@@ -256,6 +265,17 @@ async function uploadToR2() {
         const filePath = path.join(STATS_DIR, file);
         try {
             await uploadJsonGzip(s3, filePath, `${STATS_PREFIX}/${file}.gz`);
+            if (file === 'daily_locked_bets_registry.json' || file === 'cached_daily_method_advisor.json') {
+                try {
+                    await s3.send(new PutObjectCommand({
+                        Bucket: BUCKET,
+                        Key: `${STATS_PREFIX}/${file}`,
+                        Body: fs.readFileSync(filePath),
+                        ContentType: 'application/json',
+                        CacheControl: 'public, max-age=60, s-maxage=300'
+                    }));
+                } catch (_) {}
+            }
         } catch (error) {
             console.error(`[R2 Upload] ❌ Lỗi tải lên ${file}:`, error.message);
             throw error;
