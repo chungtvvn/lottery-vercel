@@ -5747,6 +5747,7 @@
         const dual = (p?.loDualMerge?.settledLedger || []).find(r => r.date === date);
         const tri = (p?.loTriHarmonic?.settledLedger || []).find(r => r.date === date);
         const quad = (p?.loQuadHybrid?.settledLedger || []).find(r => r.date === date);
+        const rrfNumsFromSource = (p?.lo4EngineFusion?.sourceEngines?.rrf || p?.loPentaMatrix?.sourceEngines?.rrf || []).slice(0, topN);
         const lo4Rec = p?.lo4EngineFusion?.modes?.[mode]?.latestRecommendation || p?.lo4EngineFusion?.latestRecommendation;
         const isRecDate = Boolean(lo4Rec && lo4Rec.predictionDate === date && Array.isArray(lo4Rec.betNumbers) && lo4Rec.betNumbers.length > 0);
 
@@ -5762,7 +5763,7 @@
         const qNums = (qmbf?.rankedNumbers || []).slice(0, topN);
         const dNums = (dual?.rankedNumbers || []).slice(0, topN);
         const tNums = (tri?.rankedNumbers || []).slice(0, topN);
-        const quadNums = (quad?.top7Numbers || quad?.rankedNumbers || []).slice(0, topN);
+        const rNums = rrfNumsFromSource.length ? rrfNumsFromSource : (quad?.top7Numbers || quad?.rankedNumbers || []).slice(0, topN);
 
         const votes = {};
         const methodVotes = {};
@@ -5770,7 +5771,7 @@
             { id: 'QMBF', nums: qNums },
             { id: 'Dual', nums: dNums },
             { id: 'Tri', nums: tNums },
-            { id: 'Quad', nums: quadNums }
+            { id: rrfNumsFromSource.length ? 'RRF' : 'Quad', nums: rNums }
         ].forEach(m => {
             m.nums.forEach(num => {
                 const s = String(num).padStart(2, '0');
@@ -5863,6 +5864,7 @@
             if (dayXien4ProfitK > 0) isXien4Win = true;
         }
 
+        const crossX2 = resolveLo4CrossX2(date, null, null, p, false, finalTierX5, finalTierX4, finalTierX3, finalTierX1, actual27);
         return {
             date,
             isLive: true,
@@ -5878,11 +5880,12 @@
             tierX3: finalTierX3,
             tierX1: finalTierX1,
             betNumbers,
-            dayLotoStakeK,
-            dayLotoPayoutK,
-            dayLotoProfitK,
+            crossX2,
+            dayLotoStakeK: crossX2?.dayLotoStakeKX2 || dayLotoStakeK,
+            dayLotoPayoutK: crossX2?.dayLotoPayoutKX2 !== undefined ? crossX2.dayLotoPayoutKX2 : dayLotoPayoutK,
+            dayLotoProfitK: crossX2?.dayLotoProfitKX2 !== undefined ? crossX2.dayLotoProfitKX2 : dayLotoProfitK,
             dayLotoHits,
-            isLotoWin: dayLotoProfitK > 0,
+            isLotoWin: (crossX2?.dayLotoProfitKX2 !== undefined ? crossX2.dayLotoProfitKX2 : dayLotoProfitK) > 0,
             xien4Status,
             xien4Reason,
             xien4Combinations,

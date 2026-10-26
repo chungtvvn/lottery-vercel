@@ -1091,6 +1091,64 @@ async function hydrateMilestone20yLiveCacheFromR2() {
     }
 }
 
+async function hydrateDailyLockedBetsRegistryFromR2() {
+    if (!getR2PublicUrl()) return false;
+
+    try {
+        const remoteReg = await readStatsJsonFromR2('daily_locked_bets_registry.json');
+        if (!remoteReg || typeof remoteReg !== 'object' || !remoteReg.dates) {
+            console.warn('[SSOT Registry] Remote registry trên R2 rỗng hoặc sai cấu trúc.');
+            return false;
+        }
+
+        const fsSync = require('fs');
+        const statsPath = path.join(DATA_DIR, 'statistics', 'daily_locked_bets_registry.json');
+        const dataPath = path.join(__dirname, '..', 'data', 'daily_locked_bets_registry.json');
+
+        let localReg = null;
+        try {
+            if (fsSync.existsSync(statsPath)) {
+                localReg = JSON.parse(fsSync.readFileSync(statsPath, 'utf8'));
+            } else if (fsSync.existsSync(dataPath)) {
+                localReg = JSON.parse(fsSync.readFileSync(dataPath, 'utf8'));
+            }
+        } catch (_) {}
+
+        const mergedDates = { ...(remoteReg.dates || {}) };
+        if (localReg && localReg.dates) {
+            for (const [date, val] of Object.entries(localReg.dates)) {
+                if (!mergedDates[date]) {
+                    mergedDates[date] = val;
+                } else {
+                    mergedDates[date] = {
+                        ...val,
+                        ...mergedDates[date],
+                        bets: { ...(val.bets || {}), ...(mergedDates[date].bets || {}) }
+                    };
+                }
+            }
+        }
+
+        const finalReg = {
+            ...remoteReg,
+            dates: mergedDates,
+            updatedAt: new Date().toISOString()
+        };
+
+        const jsonStr = JSON.stringify(finalReg, null, 2);
+        await fs.mkdir(path.dirname(statsPath), { recursive: true });
+        await fs.writeFile(statsPath, jsonStr, 'utf8');
+        await fs.mkdir(path.dirname(dataPath), { recursive: true });
+        await fs.writeFile(dataPath, jsonStr, 'utf8');
+
+        console.log(`[SSOT Registry] Hydrate ${Object.keys(finalReg.dates).length} ngày cược & đối soát từ R2 thành công.`);
+        return true;
+    } catch (error) {
+        console.warn(`[SSOT Registry] Không hydrate được registry từ R2, giữ bản ghi local hiện có: ${error.message}`);
+        return false;
+    }
+}
+
 async function hydrateMilestone20yBaselineFromR2(expectedLatestDate) {
     if (!getR2PublicUrl()) return false;
 
@@ -1746,6 +1804,7 @@ async function main() {
                     ? '[6] Performance report cache thiếu/sai phương pháp; giữ lại để chạy bằng workflow thủ công, không chặn daily refresh.'
                     : '[6] Performance report cache đã đúng phương pháp; bỏ qua backtest report.');
             }
+            await hydrateDailyLockedBetsRegistryFromR2();
             await hydrateMilestone20yLiveCacheFromR2();
             await hydrateCoreStatsFromR2ForPredictionCache();
             const predictionHistoryService = require('../lib/services/predictionHistoryService');
@@ -2109,6 +2168,7 @@ async function main() {
                     const specialNumber = latestResult.special;
                     await predictionHistoryService.syncPredictionHistory(drawDateStr, specialNumber);
                 }
+                await hydrateDailyLockedBetsRegistryFromR2();
                 generateDailyMethodAdvisorCache({ useLocalHistory: true });
                 generateProbabilityScoreCache({ useLocalHistory: true });
                 generateProbabilityDistributionCache();
@@ -2194,6 +2254,7 @@ async function main() {
                 } else {
                     await predictionHistoryService.generateLocalPredictionHistoryFromSimulation(90, predictionHistorySimulation);
                 }
+                await hydrateDailyLockedBetsRegistryFromR2();
                 generateDailyMethodAdvisorCache({ useLocalHistory: true });
                 generateProbabilityScoreCache({ useLocalHistory: true });
                 generateProbabilityDistributionCache();

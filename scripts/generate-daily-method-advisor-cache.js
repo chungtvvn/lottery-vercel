@@ -55,6 +55,33 @@ async function main() {
     }
 
     const registryService = require('../lib/services/dailyLockedBetsRegistryService');
+    try {
+        const remoteReg = await loadJsonWithSupabaseFallback('daily_locked_bets_registry.json');
+        if (remoteReg && remoteReg.dates && typeof remoteReg.dates === 'object') {
+            const cur = registryService.loadRegistry();
+            const mergedDates = { ...(remoteReg.dates || {}) };
+            if (cur && cur.dates) {
+                for (const [date, val] of Object.entries(cur.dates)) {
+                    if (!mergedDates[date]) {
+                        mergedDates[date] = val;
+                    } else {
+                        mergedDates[date] = {
+                            ...val,
+                            ...mergedDates[date],
+                            bets: { ...(val.bets || {}), ...(mergedDates[date].bets || {}) }
+                        };
+                    }
+                }
+            }
+            registryService.saveRegistry({
+                ...remoteReg,
+                dates: mergedDates
+            });
+            console.log(`[DailyAdvisor] Đã nạp và gộp SSOT Registry từ R2 (${Object.keys(mergedDates).length} ngày).`);
+        }
+    } catch (e) {
+        console.warn('[DailyAdvisor] Không tải được SSOT Registry từ R2:', e.message);
+    }
     const currentReg = registryService.loadRegistry();
 
     const raw = await getRawData();
