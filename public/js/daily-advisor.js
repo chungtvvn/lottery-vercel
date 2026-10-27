@@ -5904,6 +5904,18 @@
         };
     }
 
+    // UI-7: pending diary rows get ONE banner; per-cell wait phrases are stripped.
+    // Display only: this touches rendered HTML strings, never stored data or settlement.
+    function applyDiaryPendingBanner(rowHtml) {
+        if (!rowHtml || rowHtml.indexOf('⏳ Chờ') === -1) return rowHtml;
+        let cleaned = rowHtml
+            .replace(/<span[^>]*>\s*⏳\s*Chờ[^<]*<\/span>/g, '')
+            .replace(/<div[^>]*>\s*⏳\s*Chờ[^<]*<\/div>/g, '')
+            .replace(/<strong[^>]*>\s*⏳\s*Chờ[^<]*<\/strong>/g, '—');
+        const banner = `<tr class="diary-pending-banner"><td colspan="12" class="px-3 py-2 bg-amber-50 text-amber-900 text-[11px] font-bold border-b border-amber-200">⏳ Dòng đang chờ kết quả — dàn đã khóa, chờ mở thưởng 18:15–18:40, kết toán sau 18:40</td></tr>`;
+        return banner + cleaned;
+    }
+
     function renderUnifiedCombatDiary(deLedger, loDiary, loAllDiary) {
         const tbody = byId('unifiedCombatDiaryTableBody');
         if (!tbody) return;
@@ -5925,7 +5937,7 @@
             loXien5: 'Nhật Ký Đối Soát: 👑 Dàn Xiên 5 (5 Dàn Xiên 4 Độc Lập — 11M/dàn, Trúng 2: 12M, 3: 84M, 4: 384M)'
         };
         const PROFIT_LABELS_MAP = {
-            all: 'Tổng Lãi Trong Mốc (Combo Cross-Hedging):',
+            all: 'Lũy kế combo (Đề + Lô + 2 Xiên 4):',
             de: 'Tổng Lãi Đề Theo Gợi Ý:',
             lo4Engine: 'Tổng Lãi Lô Ghép 4 Động Cơ:',
             lo4CrossX2: 'Tổng Lãi Lô Đột Phá X2:',
@@ -5944,99 +5956,99 @@
             if (currentDiaryCategory === 'de') {
                 thead.innerHTML = `
                     <tr class="border-b border-amber-200 bg-amber-50/80 text-amber-950 uppercase font-black tracking-wider text-[10px]">
-                        <th class="px-3 py-3">Ngày</th>
-                        <th class="px-3 py-3">Phương Pháp Đề</th>
-                        <th class="px-3 py-3">Giải ĐB Về</th>
-                        <th class="px-3 py-3">Dàn Đề Đã Đánh (Bấm xem dàn số)</th>
-                        <th class="px-3 py-3">Kết Quả Đề</th>
-                        <th class="px-3 py-3 text-right">Lãi/Lỗ Đề</th>
-                        <th class="px-3 py-3 text-right">Lũy Kế Đề</th>
+                        <th class="whitespace-nowrap px-3 py-3">Ngày</th>
+                        <th class="whitespace-nowrap px-3 py-3">Phương Pháp Đề</th>
+                        <th class="whitespace-nowrap px-3 py-3">Giải ĐB Về</th>
+                        <th class="whitespace-nowrap px-3 py-3">Dàn Đề Đã Đánh (Bấm xem dàn số)</th>
+                        <th class="whitespace-nowrap px-3 py-3">Kết Quả Đề</th>
+                        <th class="whitespace-nowrap px-3 py-3 text-right">Lãi/Lỗ Đề</th>
+                        <th class="whitespace-nowrap px-3 py-3 text-right">Lũy Kế Đề</th>
                     </tr>
                 `;
             } else if (currentDiaryCategory === 'lo4Engine') {
                 thead.innerHTML = `
                     <tr class="border-b border-amber-300 bg-amber-50/80 text-amber-950 uppercase font-black tracking-wider text-[10px]">
-                        <th class="px-3 py-3">Ngày</th>
-                        <th class="px-3 py-3">Số Trùng &ge; 2 Động Cơ</th>
-                        <th class="px-3 py-3">Dàn Lô Đánh (Gốc: X1/X3/X4/X5)</th>
-                        <th class="px-3 py-3">Số Nháy Về</th>
-                        <th class="px-3 py-3">Xiên 4 (4-5 Số)</th>
-                        <th class="px-3 py-3 text-right">Lãi/Lỗ Gốc (Vốn)</th>
-                        <th class="px-3 py-3 text-right">Lũy Kế Gốc</th>
-                        <th class="px-3 py-3 bg-emerald-100/70 text-emerald-950 font-black">⚡ Nâng X2 (Shadow)</th>
-                        <th class="px-3 py-3 bg-emerald-100/70 text-right text-emerald-950 font-black">Lãi/Lỗ Đột Phá X2</th>
-                        <th class="px-3 py-3 bg-emerald-100/70 text-right text-emerald-950 font-black">Lũy Kế Đột Phá X2</th>
+                        <th class="whitespace-nowrap px-3 py-3">Ngày</th>
+                        <th class="whitespace-nowrap px-3 py-3">Số Trùng &ge; 2 Động Cơ</th>
+                        <th class="whitespace-nowrap px-3 py-3">Dàn Lô Đánh (Gốc: X1/X3/X4/X5)</th>
+                        <th class="whitespace-nowrap px-3 py-3">Số Nháy Về</th>
+                        <th class="whitespace-nowrap px-3 py-3">Xiên 4 (4-5 Số)</th>
+                        <th class="whitespace-nowrap px-3 py-3 text-right">Lãi/Lỗ Gốc (Vốn)</th>
+                        <th class="whitespace-nowrap px-3 py-3 text-right">Lũy Kế Gốc</th>
+                        <th class="whitespace-nowrap px-3 py-3 bg-emerald-100/70 text-emerald-950 font-black">⚡ Nâng X2 (Shadow)</th>
+                        <th class="whitespace-nowrap px-3 py-3 bg-emerald-100/70 text-right text-emerald-950 font-black">Lãi/Lỗ Đột Phá X2</th>
+                        <th class="whitespace-nowrap px-3 py-3 bg-emerald-100/70 text-right text-emerald-950 font-black">Lũy Kế Đột Phá X2</th>
                     </tr>
                 `;
             } else if (currentDiaryCategory === 'loStd') {
                 thead.innerHTML = `
                     <tr class="border-b border-indigo-200 bg-indigo-50/80 text-indigo-950 uppercase font-black tracking-wider text-[10px]">
-                        <th class="px-3 py-3">Ngày</th>
-                        <th class="px-3 py-3">Phương Pháp Lô Nền Tảng</th>
-                        <th class="px-3 py-3">Dàn 20 Số Đã Đánh (Bấm xem dàn số)</th>
-                        <th class="px-3 py-3">Số Nháy Về</th>
-                        <th class="px-3 py-3 text-right">Lãi/Lỗ (Vốn 44M)</th>
-                        <th class="px-3 py-3 text-right">Lũy Kế Lô Chuẩn</th>
+                        <th class="whitespace-nowrap px-3 py-3">Ngày</th>
+                        <th class="whitespace-nowrap px-3 py-3">Phương Pháp Lô Nền Tảng</th>
+                        <th class="whitespace-nowrap px-3 py-3">Dàn 20 Số Đã Đánh (Bấm xem dàn số)</th>
+                        <th class="whitespace-nowrap px-3 py-3">Số Nháy Về</th>
+                        <th class="whitespace-nowrap px-3 py-3 text-right">Lãi/Lỗ (Vốn 44M)</th>
+                        <th class="whitespace-nowrap px-3 py-3 text-right">Lũy Kế Lô Chuẩn</th>
                     </tr>
                 `;
             } else if (currentDiaryCategory === 'loX2' || currentDiaryCategory === 'lo4CrossX2') {
                 thead.innerHTML = `
                     <tr class="border-b border-emerald-300 bg-emerald-50/80 text-emerald-950 uppercase font-black tracking-wider text-[10px]">
-                        <th class="px-3 py-3">Ngày</th>
-                        <th class="px-3 py-3">Phương Pháp Đột Phá</th>
-                        <th class="px-3 py-3">⚡ Số Thăng Hạng Tier X2 (Cược 4.4M/số)</th>
-                        <th class="px-3 py-3">Số Nháy Về</th>
-                        <th class="px-3 py-3 text-right">Lãi/Lỗ Đột Phá X2</th>
-                        <th class="px-3 py-3 text-right">Lũy Kế Đột Phá X2</th>
+                        <th class="whitespace-nowrap px-3 py-3">Ngày</th>
+                        <th class="whitespace-nowrap px-3 py-3">Phương Pháp Đột Phá</th>
+                        <th class="whitespace-nowrap px-3 py-3">⚡ Số Thăng Hạng Tier X2 (Cược 4.4M/số)</th>
+                        <th class="whitespace-nowrap px-3 py-3">Số Nháy Về</th>
+                        <th class="whitespace-nowrap px-3 py-3 text-right">Lãi/Lỗ Đột Phá X2</th>
+                        <th class="whitespace-nowrap px-3 py-3 text-right">Lũy Kế Đột Phá X2</th>
                     </tr>
                 `;
             } else if (currentDiaryCategory === 'loXi3') {
                 thead.innerHTML = `
                     <tr class="border-b border-amber-200 bg-amber-50/80 text-amber-950 uppercase font-black tracking-wider text-[10px]">
-                        <th class="px-3 py-3">Ngày</th>
-                        <th class="px-3 py-3">Phương Pháp Xiên 3</th>
-                        <th class="px-3 py-3">Bộ 3 Số Tam Thủ</th>
-                        <th class="px-3 py-3">Số Con Về</th>
-                        <th class="px-3 py-3">Kết Quả Vé</th>
-                        <th class="px-3 py-3 text-right">Lãi/Lỗ Riêng (Vốn 500K)</th>
-                        <th class="px-3 py-3 text-right">Lũy Kế Xiên 3</th>
+                        <th class="whitespace-nowrap px-3 py-3">Ngày</th>
+                        <th class="whitespace-nowrap px-3 py-3">Phương Pháp Xiên 3</th>
+                        <th class="whitespace-nowrap px-3 py-3">Bộ 3 Số Tam Thủ</th>
+                        <th class="whitespace-nowrap px-3 py-3">Số Con Về</th>
+                        <th class="whitespace-nowrap px-3 py-3">Kết Quả Vé</th>
+                        <th class="whitespace-nowrap px-3 py-3 text-right">Lãi/Lỗ Riêng (Vốn 500K)</th>
+                        <th class="whitespace-nowrap px-3 py-3 text-right">Lũy Kế Xiên 3</th>
                     </tr>
                 `;
             } else if (currentDiaryCategory === 'loXi4' || currentDiaryCategory === 'lo4Xien4') {
                 thead.innerHTML = `
                     <tr class="border-b border-amber-200 bg-amber-50/80 text-amber-950 uppercase font-black tracking-wider text-[10px]">
-                        <th class="px-3 py-3">Ngày</th>
-                        <th class="px-3 py-3">Phương Pháp</th>
-                        <th class="px-3 py-3">Số Lô Trùng &ge; 2 Động Cơ</th>
-                        <th class="px-3 py-3">Trạng Thái Xiên 4</th>
-                        <th class="px-3 py-3">Bộ Số / Vé Quây</th>
-                        <th class="px-3 py-3 text-right">Lãi/Lỗ Xiên 4 (Vốn)</th>
-                        <th class="px-3 py-3 text-right">Lũy Kế Xiên 4</th>
+                        <th class="whitespace-nowrap px-3 py-3">Ngày</th>
+                        <th class="whitespace-nowrap px-3 py-3">Phương Pháp</th>
+                        <th class="whitespace-nowrap px-3 py-3">Số Lô Trùng &ge; 2 Động Cơ</th>
+                        <th class="whitespace-nowrap px-3 py-3">Trạng Thái Xiên 4</th>
+                        <th class="whitespace-nowrap px-3 py-3">Bộ Số / Vé Quây</th>
+                        <th class="whitespace-nowrap px-3 py-3 text-right">Lãi/Lỗ Xiên 4 (Vốn)</th>
+                        <th class="whitespace-nowrap px-3 py-3 text-right">Lũy Kế Xiên 4</th>
                     </tr>
                 `;
             } else if (currentDiaryCategory === 'loXien5') {
                 thead.innerHTML = `
                     <tr class="border-b border-indigo-300 bg-indigo-50/80 text-indigo-950 uppercase font-black tracking-wider text-[10px]">
-                        <th class="px-3 py-3">Ngày</th>
-                        <th class="px-3 py-3">Bộ 5 Số Vàng (Đồng thuận)</th>
-                        <th class="px-3 py-3">Chi Tiết 5 Dàn Xiên 4</th>
-                        <th class="px-3 py-3 text-center">Số Con Về / Dàn Nổ</th>
-                        <th class="px-3 py-3">Trạng Thái Thưởng (11M/dàn)</th>
-                        <th class="px-3 py-3 text-right">Lãi/Lỗ Ngày (Vốn 55M)</th>
-                        <th class="px-3 py-3 text-right">Lũy Kế Xiên 5</th>
+                        <th class="whitespace-nowrap px-3 py-3">Ngày</th>
+                        <th class="whitespace-nowrap px-3 py-3">Bộ 5 Số Vàng (Đồng thuận)</th>
+                        <th class="whitespace-nowrap px-3 py-3">Chi Tiết 5 Dàn Xiên 4</th>
+                        <th class="whitespace-nowrap px-3 py-3 text-center">Số Con Về / Dàn Nổ</th>
+                        <th class="whitespace-nowrap px-3 py-3">Trạng Thái Thưởng (11M/dàn)</th>
+                        <th class="whitespace-nowrap px-3 py-3 text-right">Lãi/Lỗ Ngày (Vốn 55M)</th>
+                        <th class="whitespace-nowrap px-3 py-3 text-right">Lũy Kế Xiên 5</th>
                     </tr>
                 `;
             } else {
                 thead.innerHTML = `
                     <tr class="border-b border-slate-200 bg-slate-100/70 text-slate-600 uppercase font-black tracking-wider text-[10px]">
-                        <th class="px-3 py-3">Ngày</th>
-                        <th class="px-3 py-3">💎 Đề Tinh Tuyển VIP</th>
-                        <th class="px-3 py-3">🔥 Lô Ghép 4 (Gốc: X5-X1)</th>
-                        <th class="px-3 py-3 bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-950 font-black">🚀 Lô Đột Phá X2 (Nâng Hạng)</th>
-                        <th class="px-3 py-3">🎲 2 Dàn Xiên 4 Tinh Hoa</th>
-                        <th class="px-3 py-3">👑 Dàn Xiên 5 (Theo Dõi Độc Lập)</th>
-                        <th class="px-3 py-3 text-right">Lãi/Lỗ Tổng Hợp (Profit_total)</th>
-                        <th class="px-3 py-3 text-right">Lũy Kế Mốc</th>
+                        <th class="whitespace-nowrap px-3 py-3">Ngày</th>
+                        <th class="whitespace-nowrap px-3 py-3">💎 Đề Tinh Tuyển VIP</th>
+                        <th class="whitespace-nowrap px-3 py-3">🔥 Lô Ghép 4 (Gốc: X5-X1)</th>
+                        <th class="whitespace-nowrap px-3 py-3 bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-950 font-black">🚀 Lô Đột Phá X2 (Nâng Hạng)</th>
+                        <th class="whitespace-nowrap px-3 py-3">🎲 2 Dàn Xiên 4 Tinh Hoa</th>
+                        <th class="whitespace-nowrap px-3 py-3">👑 Dàn Xiên 5 (Theo Dõi Độc Lập)</th>
+                        <th class="whitespace-nowrap px-3 py-3 text-right">Lãi/Lỗ Tổng Hợp (Profit_total)</th>
+                        <th class="whitespace-nowrap px-3 py-3 text-right">Lũy Kế Mốc</th>
                     </tr>
                 `;
             }
@@ -6262,7 +6274,7 @@
                 };
             }
             const rCount = byId('unifiedDiaryRowCount');
-            if (rCount) rCount.textContent = '0';
+            if (rCount) rCount.textContent = '0 dòng (0 đã kết toán + 0 chờ KQ)';
             const wCount = byId('unifiedDiaryWinCount');
             if (wCount) wCount.textContent = '0/0';
             const wRate = byId('unifiedDiaryWinRate');
@@ -7383,7 +7395,7 @@
 
         const totalCount = settledDaysCount || 1;
         const rCount = byId('unifiedDiaryRowCount');
-        if (rCount) rCount.textContent = String(displayRows.length);
+        if (rCount) rCount.textContent = `${displayRows.length} dòng (${settledDaysCount} đã kết toán + ${displayRows.length - settledDaysCount} chờ KQ)`;
         const wCount = byId('unifiedDiaryWinCount');
         if (wCount) wCount.textContent = `${catWinCount}/${totalCount}`;
         const wRate = byId('unifiedDiaryWinRate');
@@ -7391,7 +7403,9 @@
         const totalProfitEl = byId('unifiedDiaryTotalProfit');
         if (totalProfitEl) {
             if (currentDiaryCategory === 'all') {
-                totalProfitEl.textContent = `${moneyM(catTotalProfitM3, { signed: true })} M3 / ${moneyM(catTotalProfit, { signed: true })} VIP`;
+                totalProfitEl.textContent = `${moneyM(catTotalProfit, { signed: true })} VIP`;
+                const m3Foot = byId('unifiedDiaryM3FootnoteValue');
+                if (m3Foot) m3Foot.textContent = `${moneyM(catTotalProfitM3, { signed: true })} M3`;
             } else if (['de', 'lo4Engine', 'lo4Xien4', 'loXi4', 'lo4CrossX2', 'loX2'].includes(currentDiaryCategory)) {
                 totalProfitEl.textContent = `${moneyM(catTotalProfitM3, { signed: true })} M3 / ${moneyM(catTotalProfit, { signed: true })} VIP`;
             } else {
@@ -8391,7 +8405,9 @@
                 const deVipCount = deInfo?.x2Nums?.length || 17;
                 const deSingleCount = deInfo?.x1Nums?.length || 26;
                 const deTotalCount = deInfo?.numbers?.length || (deVipCount + deSingleCount);
-                const deStakeVal = deInfo?.stakeK || ((deVipCount * 3 + deSingleCount * 1) * 1000);
+                const deDerivedStakeVal = ((deVipCount * 3 + deSingleCount * 1) * 1000);
+                const deStakeVal = deDerivedStakeVal;
+                const deStakeMismatch = (deInfo?.stakeK != null && deInfo.stakeK !== deDerivedStakeVal);
                 const deStakeText = `Vốn ${moneyM(deStakeVal)} (${deVipCount} VIP X3 · ${deSingleCount} Lót X1)`;
                 const loMethodName = lo4Info?.methodName || p2?.engine || 'Lô Ghép 4 Động Cơ';
                 const loStakeText = `Vốn ${moneyM(lo4Info?.dayLotoStakeK || lo4Info?.stakeK || p2?.stakeK || optHedge?.loStakeK || 66000)}`;
@@ -8439,6 +8455,7 @@
                             </div>
                             <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
                                 <span>${deStakeText}</span>
+                                ${deStakeMismatch ? `<span class="rounded bg-rose-100 text-rose-900 border border-rose-300 px-1.5 py-0.5 text-[9px] font-black">⚠️ Vốn lưu lệch vốn suy ra: lưu ${moneyM(deInfo.stakeK)} ≠ suy ra ${moneyM(deDerivedStakeVal)}</span>` : ''}
                                 <span class="diary-expand-indicator text-amber-700 font-bold underline flex items-center gap-0.5">Bấm xem dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
                             </div>
                             <div class="text-[10px] font-mono mt-0.5 flex items-center justify-between border-t border-amber-200/50 pt-0.5">
@@ -8832,7 +8849,7 @@
                     </td>
                 </tr>
             `;
-        }).join('');
+        }).map(rowHtml => applyDiaryPendingBanner(rowHtml)).join('');
 
         setupDiaryExpansionRows();
     }

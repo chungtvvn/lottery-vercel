@@ -18,6 +18,7 @@
     "analyze:exclusion-overlap": "node scripts/analyze-exclusion-number-overlap.js",
     "test:so-le-theo-cap": "node scripts/test-so-le-theo-cap.js",
     "test:ssot-invariants": "node scripts/test-ssot-invariants.js",
+    "test:ui-diary": "node scripts/test-ui-diary.js",
     "test:prediction-history-immutability": "node scripts/test-prediction-history-immutability.js",
     "generate:prediction-history-performance": "node scripts/generate-prediction-history-performance.js",
     "test:prediction-history-performance": "node scripts/test-prediction-history-performance.js",
