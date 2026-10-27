@@ -1070,8 +1070,8 @@ async function generateMilestone20yPredictionCache() {
     runNodeScript('scripts/generate-milestone-20y-cache.js',
         'Sinh/đối soát cache dự đoán Mốc 20 năm cho API/tab Mốc 20 năm.', {
         NODE_OPTIONS: process.env.NODE_OPTIONS || '--max-old-space-size=12288',
-        LOTTERY_DATA_SOURCE: process.env.MILESTONE20Y_DATA_SOURCE || process.env.LOTTERY_DATA_SOURCE || 'local',
-        LOTTERY_STATS_SOURCE: process.env.MILESTONE20Y_STATS_SOURCE || process.env.LOTTERY_STATS_SOURCE || 'local'
+        LOTTERY_DATA_SOURCE: process.env.MILESTONE20Y_DATA_SOURCE || process.env.LOTTERY_DATA_SOURCE || 'r2',
+        LOTTERY_STATS_SOURCE: process.env.MILESTONE20Y_STATS_SOURCE || process.env.LOTTERY_STATS_SOURCE || 'r2'
     }, timeoutMs > 0 ? { timeoutMs } : {});
 }
 
@@ -1396,7 +1396,9 @@ function generateDailyMethodAdvisorCache(options = {}) {
         'scripts/generate-daily-method-advisor-cache.js',
         'Sinh cache Gợi ý phương pháp hàng ngày + dàn Kết hợp Z-score từ snapshot/R2.',
         {
-            LOTTERY_DATA_SOURCE: options.useLocalHistory ? 'local' : (process.env.LOTTERY_DATA_SOURCE || 'r2'),
+            // R2-ONLY: data-access trong child phải đọc từ R2 kể cả khi
+            // prediction history được đọc từ file local (flag bên dưới).
+            LOTTERY_DATA_SOURCE: process.env.LOTTERY_DATA_SOURCE || 'r2',
             LOTTERY_STATS_SOURCE: process.env.LOTTERY_STATS_SOURCE || 'r2',
             // The prediction history was just refreshed locally in this action.
             // Do not read its previous R2 copy before the upload stage completes.
@@ -1441,8 +1443,9 @@ function generateProbabilityScoreCache(options = {}) {
         'scripts/generate-probability-score-cache.js',
         'Sinh snapshot Điểm xác suất tương đối cho ngày kế tiếp từ R2.',
         {
-            LOTTERY_DATA_SOURCE: options.useLocalHistory ? 'local' : (process.env.LOTTERY_DATA_SOURCE || 'r2'),
-            LOTTERY_STATS_SOURCE: options.useLocalHistory ? 'local' : (process.env.LOTTERY_STATS_SOURCE || 'r2'),
+            // R2-ONLY: như advisor — data-access trong child phải đọc từ R2.
+            LOTTERY_DATA_SOURCE: process.env.LOTTERY_DATA_SOURCE || 'r2',
+            LOTTERY_STATS_SOURCE: process.env.LOTTERY_STATS_SOURCE || 'r2',
             PROBABILITY_SCORE_USE_LOCAL_HISTORY: options.useLocalHistory ? '1' : '0'
         },
         { timeoutMs: 90_000 }
@@ -1454,8 +1457,9 @@ function generateProbabilityDistributionCache(options = {}) {
         'scripts/generate-probability-distribution-cache.js',
         'Sinh snapshot phân bổ nhóm số cho ngày kế tiếp từ R2.',
         {
-            LOTTERY_DATA_SOURCE: options.useLocalHistory ? 'local' : (process.env.LOTTERY_DATA_SOURCE || 'r2'),
-            LOTTERY_STATS_SOURCE: options.useLocalHistory ? 'local' : (process.env.LOTTERY_STATS_SOURCE || 'r2')
+            // R2-ONLY: như advisor/score — data-access trong child phải đọc từ R2.
+            LOTTERY_DATA_SOURCE: process.env.LOTTERY_DATA_SOURCE || 'r2',
+            LOTTERY_STATS_SOURCE: process.env.LOTTERY_STATS_SOURCE || 'r2'
         },
         { timeoutMs: 90_000 }
     );
@@ -1525,8 +1529,10 @@ async function runDailyLotoOnlyMode() {
     }
 
     await fs.writeFile(JSON_FILE, JSON.stringify(rawData, null, 0), 'utf8');
-    process.env.LOTTERY_DATA_SOURCE = 'local';
-    process.env.LOTTERY_STATS_SOURCE = 'local';
+    // R2-ONLY: giữ 'r2' — generateLotoPredictionCacheIfNeeded đọc qua
+    // data-access, guard R2-only cấm mode 'local' (lỗi gãy run 27/10).
+    process.env.LOTTERY_DATA_SOURCE = 'r2';
+    process.env.LOTTERY_STATS_SOURCE = 'r2';
     process.env.LOTO_SKIP_BACKTEST = '1';
     process.env.SIMULATION_CACHE_DAYS = '0';
 
@@ -1571,8 +1577,10 @@ async function runDailyMilestone20yOnlyMode() {
     }
 
     await fs.writeFile(JSON_FILE, JSON.stringify(rawData, null, 0), 'utf8');
-    process.env.LOTTERY_DATA_SOURCE = 'local';
-    process.env.LOTTERY_STATS_SOURCE = 'local';
+    // R2-ONLY: giữ 'r2' — các cache Mốc 20 năm được hydrate từ R2, guard
+    // R2-only cấm mode 'local' (lỗi gãy run 27/10).
+    process.env.LOTTERY_DATA_SOURCE = 'r2';
+    process.env.LOTTERY_STATS_SOURCE = 'r2';
 
     await Promise.all([
         hydrateCoreStatsFromR2ForPredictionCache(),
@@ -1742,11 +1750,12 @@ async function main() {
         return;
     }
 
-    // The generator must read the freshly written local JSON files.
-    process.env.LOTTERY_DATA_SOURCE = 'local';
-    if (!process.env.LOTTERY_STATS_SOURCE) {
-        process.env.LOTTERY_STATS_SOURCE = 'local';
-    }
+    // R2-ONLY (fix-forward 2026-10-28): toàn bộ pipeline đọc qua Cloudflare
+    // R2, không dùng local disk — guard R2-only trong lib/data-access.js cấm
+    // mode 'local'. Raw mới vừa ghi ở bước [3] sẽ được upload lên R2 ở bước
+    // [3b] dưới đây để mọi phase sau đều thấy kết quả mới.
+    process.env.LOTTERY_DATA_SOURCE = 'r2';
+    process.env.LOTTERY_STATS_SOURCE = 'r2';
 
     await fs.mkdir(path.join(DATA_DIR, 'statistics'), { recursive: true });
     await hydrateAllSsotFromR2();
@@ -1949,6 +1958,13 @@ async function main() {
     if (rawDataChanged || forceRegenerateStats || isStale || localRawOutOfSync || r2LotoCacheMissing || lotoCacheMissing || r2MilestoneCacheMissing || milestoneCacheMissing) {
         await fs.writeFile(JSON_FILE, JSON.stringify(finalArray, null, 0), 'utf-8');
         console.log(`[3] Ghi file xsmb-2-digits.json (RAW_DATA) thành công! (${finalArray.length} bản ghi, latest=${latestRawDate}, source=${source})`);
+        // [3b] R2-ONLY: upload raw mới lên R2 TRƯỚC khi sinh thống kê, vì các
+        // phase sau (Quick Stats, advisor, probability, Lô) đọc raw qua
+        // data-access từ R2. Chỉ upload raw — file thống kê cục bộ lúc này
+        // vẫn cũ, sẽ được upload đủ ở bước [6] sau khi sinh xong.
+        const { putR2Json } = require('../lib/r2Store.js');
+        await putR2Json('xsmb-2-digits.json', process.env.CLOUDFLARE_R2_DATA_PREFIX || 'data', finalArray);
+        console.log(`[3b] Đã upload raw mới lên R2 trước khi sinh thống kê (latest=${latestRawDate}).`);
     } else {
         console.log(`[3] RAW_DATA không đổi nhưng stats đang bị chậm hoặc FORCE_REGENERATE_STATS=1, sinh lại thống kê/cache từ code mới.`);
     }
