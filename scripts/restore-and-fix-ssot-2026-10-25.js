@@ -14,7 +14,7 @@ const DATA_DIR = path.join(process.cwd(), 'data');
 const REG_STATS_FILE = path.join(STATS_DIR, 'daily_locked_bets_registry.json');
 const REG_DATA_FILE = path.join(DATA_DIR, 'daily_locked_bets_registry.json');
 const ADV_STATS_FILE = path.join(STATS_DIR, 'cached_daily_method_advisor.json');
-const ADV_DATA_FILE = path.join(DATA_DIR, 'cached_daily_method_advisor.json');
+// CANONICAL CACHE (2026-10-27 consolidation): no data/ duplicate of the advisor cache.
 
 const base = String(process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || '').replace(/\/$/, '');
 
@@ -418,7 +418,7 @@ async function main() {
         }
 
         fs.writeFileSync(ADV_STATS_FILE, JSON.stringify(advCache, null, 2), 'utf8');
-        try { fs.writeFileSync(ADV_DATA_FILE, JSON.stringify(advCache, null, 2), 'utf8'); } catch (_) {}
+        // CANONICAL CACHE (2026-10-27 consolidation): no data/ duplicate write.
         console.log('✅ Đã đồng bộ 2026-10-25 vào cached_daily_method_advisor.json');
     }
 

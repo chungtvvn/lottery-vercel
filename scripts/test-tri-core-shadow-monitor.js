@@ -90,10 +90,10 @@ console.log('  ✓ All HTML template labels and JS selectors properly mapped.');
 // 4. Test API integration
 console.log('\n--- 4. Testing API & Cache Invariance ---');
 assert.ok(cache.triCoreDe, 'cached_daily_method_advisor.json must contain triCoreDe');
-const dataCache = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'cached_daily_method_advisor.json'), 'utf8'));
-assert.ok(dataCache.triCoreDe, 'data/cached_daily_method_advisor.json must contain triCoreDe');
+const dataCache = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'lib', 'data', 'statistics', 'cached_daily_method_advisor.json'), 'utf8'));
+assert.ok(dataCache.triCoreDe, 'lib/data/statistics/cached_daily_method_advisor.json must contain triCoreDe');
 
-console.log('  ✓ Cache files in lib/ and data/ are synchronized and populated with triCoreDe.');
+console.log('  ✓ Canonical cache in lib/ is populated with triCoreDe.');
 
 console.log('\n================================================================================');
 console.log('🎉 ALL TRI-CORE 24S SHADOW MONITOR TESTS PASSED WITH 100% INTEGRITY!');

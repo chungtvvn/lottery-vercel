@@ -136,7 +136,9 @@
             }
         }
 
-        if (date >= '2026-10-21' && top5.includes('23')) {
+        // DATED RULE (from 2026-10-21): 23 -> 36, pending generation ONLY.
+        // It must never rewrite a settled/locked row at render time.
+        if (date >= '2026-10-21' && !regEntry?.isSettled && top5.includes('23')) {
             top5 = top5.map(n => n === '23' ? '36' : n);
         }
 
@@ -153,8 +155,9 @@
         // 1. Luôn ưu tiên 4 số đầu tiên của Dàn Xiên 5 nếu đang chờ quay hoặc từ 2026-10-21 trở đi:
         // Đảm bảo Xiên 4 quây 11 vé là tập con bất biến 100% của Dàn Xiên 5 trước và sau mở thưởng.
         const top5 = getImmutableLockedLoXien5(date, d);
-        if (top5 && top5.length >= 4 && (!regEntry?.isSettled || date >= '2026-10-21')) {
+        if (top5 && top5.length >= 4 && !regEntry?.isSettled) {
             let t4 = top5.slice(0, 4).map(number);
+            // DATED RULE (from 2026-10-21): 23 -> 36, pending generation ONLY.
             if (date >= '2026-10-21' && t4.includes('23')) {
                 t4 = t4.map(n => n === '23' ? '36' : n);
             }
@@ -179,7 +182,8 @@
             }
         }
 
-        if (date >= '2026-10-21' && top4.includes('23')) {
+        // DATED RULE (from 2026-10-21): 23 -> 36, pending generation ONLY.
+        if (date >= '2026-10-21' && !regEntry?.isSettled && top4.includes('23')) {
             top4 = top4.map(n => n === '23' ? '36' : n);
         }
 
@@ -5221,8 +5225,10 @@
             totalProfitK: chTotalProfitK,
             isWin: isComboWin,
             isAbstain: sCH.isAbstain || false,
+            // CANONICAL: never default p1Method to 'deMarkovGapHazard' when
+            // details is absent; derive it from the canonical Đề object above.
             details: sCH.details || bCH.details || {
-                p1Method: 'deMarkovGapHazard',
+                p1Method: deMethodName,
                 p2Engine: '4ENGINE_CONSENSUS',
                 p3Type: 'XIEN_4_QUAY_11_VE'
             }
@@ -5369,6 +5375,7 @@
             expandedRow.remove();
         }
         document.querySelectorAll(`.diary-cell-interactive[data-date="${targetDate}"]`).forEach(c => {
+            c.setAttribute('aria-expanded', 'false');
             const badge = c.querySelector('.diary-expand-indicator');
             if (badge) {
                 badge.innerHTML = 'Bấm xem dàn số <i class="bi bi-chevron-down text-[8px]"></i>';
@@ -5392,6 +5399,7 @@
     function updateDiaryCellIndicators(date, activeType) {
         document.querySelectorAll(`.diary-cell-interactive[data-date="${date}"]`).forEach(c => {
             const cellType = c.dataset.diaryCell;
+            c.setAttribute('aria-expanded', String(cellType === activeType));
             const isThisActive = (cellType === activeType);
             const badge = c.querySelector('.diary-expand-indicator');
             if (badge) {
@@ -7490,7 +7498,7 @@
                                     ⏳ Chờ 18:30
                                 </span>
                             </td>
-                            <td class="diary-cell-interactive px-3 py-3 max-w-md cursor-pointer hover:bg-amber-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="de">
+                            <td class="diary-cell-interactive px-3 py-3 max-w-md cursor-pointer hover:bg-amber-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="de" aria-expanded="false">
                                 <div class="flex flex-wrap items-center gap-1">${chipsHtml}</div>
                                 <div class="text-[9px] text-amber-700 font-bold mt-1 flex items-center gap-1">
                                     <i class="bi bi-cursor-fill text-[8px]"></i> 🔒 Đã khóa bất biến · <span class="diary-expand-indicator underline text-amber-800 font-bold">Bấm xem dàn số (${deInfo.numbers.length}s) <i class="bi bi-chevron-down text-[8px]"></i></span>
@@ -7553,7 +7561,7 @@
                                 ${deInfo.actualSpecial != null ? (deInfo.isHit ? `🎯 ${number(deInfo.actualSpecial)} ⭐` : number(deInfo.actualSpecial)) : '--'}
                             </span>
                         </td>
-                        <td class="diary-cell-interactive px-3 py-3 max-w-md cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="de">
+                        <td class="diary-cell-interactive px-3 py-3 max-w-md cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="de" aria-expanded="false">
                             <div class="flex flex-wrap items-center gap-1">${chipsHtml || '<span class="text-slate-400">Dàn số đề</span>'}</div>
                             <div class="text-[9px] text-amber-700 font-bold mt-1 flex items-center gap-1">
                                 <i class="bi bi-cursor-fill text-[8px]"></i> <span class="diary-expand-indicator underline text-amber-800 font-bold">Bấm xem toàn bộ dàn & phân nhóm X2 <i class="bi bi-chevron-down text-[8px]"></i></span>
@@ -7612,7 +7620,7 @@
                                     🔥 ${betList.length || 17} số tổng hợp (${lo4Info.countOver2 || 8} trùng)
                                 </span>
                             </td>
-                            <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Engine">
+                            <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Engine" aria-expanded="false">
                                 <div class="flex flex-wrap items-center gap-1">${chipsHtml}</div>
                                 <div class="text-[9px] text-amber-700 font-bold mt-1 flex items-center gap-1">
                                     <i class="bi bi-cursor-fill text-[8px]"></i> <span class="diary-expand-indicator underline text-amber-800 font-bold">Bấm xem chi tiết từng tầng cược <i class="bi bi-chevron-down text-[8px]"></i></span>
@@ -7641,7 +7649,7 @@
                                 <div class="text-[9px] text-slate-400 font-sans">Lũy kế hiện tại</div>
                             </td>
                             <!-- Cột 8: ⚡ Nâng X2 (Shadow) -->
-                            <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-emerald-100/50 rounded-xl transition-all border-l border-emerald-200/60 bg-emerald-50/25" data-date="${r.date}" data-diary-cell="lo4CrossX2">
+                            <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-emerald-100/50 rounded-xl transition-all border-l border-emerald-200/60 bg-emerald-50/25" data-date="${r.date}" data-diary-cell="lo4CrossX2" aria-expanded="false">
                                 ${(() => {
                                     const pCross = lo4Info?.crossX2
                                         || (payload?.lo4EngineFusion?.latestRecommendation?.targetDate === r.date ? payload.lo4EngineFusion.latestRecommendation.crossX2 : null)
@@ -7704,7 +7712,7 @@
                                 ${lo4Info.countTotal || betList.length} số tổng hợp (${lo4Info.countOver2 || 0} trùng)
                             </span>
                         </td>
-                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Engine">
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Engine" aria-expanded="false">
                             <div class="flex flex-wrap items-center gap-1">${chipsHtml}</div>
                             <div class="text-[9px] text-slate-500 mt-1 flex items-center gap-1">
                                 <i class="bi bi-cursor-fill text-[8px]"></i> <span class="diary-expand-indicator underline text-rose-800 font-bold">Bấm xem đối soát chi tiết <i class="bi bi-chevron-down text-[8px]"></i></span>
@@ -7737,7 +7745,7 @@
                             </div>
                         </td>
                         <!-- Cột 8: ⚡ Nâng X2 (Shadow) -->
-                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-emerald-100/50 rounded-xl transition-all border-l border-emerald-200/60 bg-emerald-50/25" data-date="${r.date}" data-diary-cell="lo4CrossX2">
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-emerald-100/50 rounded-xl transition-all border-l border-emerald-200/60 bg-emerald-50/25" data-date="${r.date}" data-diary-cell="lo4CrossX2" aria-expanded="false">
                             ${(() => {
                                 const cross = lo4Info?.crossX2 || r.lo4CrossX2Info?.crossX2 || (payload?.lo4EngineFusion?.settledLedger || []).find(x => x.date === r.date)?.crossX2 || resolveLo4CrossX2(r.date, lo4Info?.sLo4, lo4Info?.bLo4, payload, r.isPending, lo4Info?.tierX5 || [], lo4Info?.tierX4 || [], lo4Info?.tierX3 || [], lo4Info?.tierX1 || []);
                                 const pX2 = (cross?.tierX2 || []).map(number);
@@ -7798,7 +7806,7 @@
                                 <div class="font-bold text-xs text-indigo-950">${escapeHtml(stdInfo.methodName)}</div>
                                 <div class="text-[10px] text-slate-500">${escapeHtml(stdInfo.subTierLabel || 'Dàn 20 số nền tảng')}</div>
                             </td>
-                            <td class="diary-cell-interactive px-3 py-3 max-w-md cursor-pointer hover:bg-indigo-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loStd">
+                            <td class="diary-cell-interactive px-3 py-3 max-w-md cursor-pointer hover:bg-indigo-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loStd" aria-expanded="false">
                                 <div class="flex flex-wrap items-center gap-1">${chipsHtml}</div>
                                 <div class="text-[9px] text-indigo-700 font-bold mt-1 flex items-center gap-1">
                                     <i class="bi bi-cursor-fill text-[8px]"></i> 🔒 Đã khóa 20 số · <span class="diary-expand-indicator underline text-indigo-800 font-bold">Bấm xem chi tiết <i class="bi bi-chevron-down text-[8px]"></i></span>
@@ -7845,7 +7853,7 @@
                             <div class="font-bold text-xs text-indigo-950">${escapeHtml(stdInfo.methodName)}</div>
                             <div class="text-[10px] text-slate-500">Dàn 20 số nền tảng</div>
                         </td>
-                        <td class="diary-cell-interactive px-3 py-3 max-w-md cursor-pointer hover:bg-indigo-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loStd">
+                        <td class="diary-cell-interactive px-3 py-3 max-w-md cursor-pointer hover:bg-indigo-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loStd" aria-expanded="false">
                             <div class="flex flex-wrap items-center gap-1">${chipsHtml}</div>
                             <div class="text-[9px] text-indigo-700 font-bold mt-1 flex items-center gap-1">
                                 <i class="bi bi-cursor-fill text-[8px]"></i> <span class="diary-expand-indicator underline text-indigo-800 font-bold">Bấm xem 20 số & số nháy nổ <i class="bi bi-chevron-down text-[8px]"></i></span>
@@ -7894,7 +7902,7 @@
                                 <div class="font-bold text-xs text-teal-950">${escapeHtml(x2Info.methodName || 'Lô Đột Phá X2')}</div>
                                 <div class="text-[10px] text-teal-700 font-medium">${escapeHtml(x2Info.subTierLabel || `Dàn ${x2Info.numbers?.length || 0} số (Nâng ${pX2Nums.length} số X2)`)}</div>
                             </td>
-                            <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-teal-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4CrossX2">
+                            <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-teal-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4CrossX2" aria-expanded="false">
                                 <div class="flex flex-wrap items-center gap-1.5">${chipsHtml}</div>
                                 <div class="text-[9px] text-teal-700 font-bold mt-1 flex items-center gap-1">
                                     <i class="bi bi-cursor-fill text-[8px]"></i> 🔒 Đã khóa · <span class="diary-expand-indicator underline text-teal-800 font-bold">Bấm xem dàn X2 (${x2Info.numbers?.length || 0}s) <i class="bi bi-chevron-down text-[8px]"></i></span>
@@ -7952,7 +7960,7 @@
                             <div class="font-bold text-xs text-teal-950">${escapeHtml(x2Info.methodName || 'Lô Đột Phá X2')}</div>
                             <div class="text-[10px] text-teal-700 font-medium">${escapeHtml(x2Info.subTierLabel || `Dàn ${x2Info.numbers?.length || 0} số`)}</div>
                         </td>
-                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-teal-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4CrossX2">
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-teal-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4CrossX2" aria-expanded="false">
                             <div class="flex flex-wrap items-center gap-1.5">${chipsHtml}</div>
                             <div class="text-[9px] text-teal-700 font-bold mt-1 flex items-center gap-1">
                                 <i class="bi bi-cursor-fill text-[8px]"></i> <span class="diary-expand-indicator underline text-teal-800 font-bold">Bấm xem dàn X2 & số nháy <i class="bi bi-chevron-down text-[8px]"></i></span>
@@ -7999,7 +8007,7 @@
                                 <div class="font-bold text-xs text-amber-950">${escapeHtml(xi3Info.methodName)}</div>
                                 <div class="text-[10px] text-amber-600 font-semibold">🌟 Chế độ quan sát (1:40)</div>
                             </td>
-                            <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXi3">
+                            <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXi3" aria-expanded="false">
                                 <div class="flex flex-wrap items-center gap-1.5">${chipsHtml}</div>
                                 <div class="text-[9px] text-amber-700 font-bold mt-1 flex items-center gap-1">
                                     <i class="bi bi-cursor-fill text-[8px]"></i> 🔒 Đã khóa 3 số · <span class="diary-expand-indicator underline text-amber-800 font-bold">Bấm xem chi tiết <i class="bi bi-chevron-down text-[8px]"></i></span>
@@ -8053,7 +8061,7 @@
                             <div class="font-bold text-xs text-amber-950">${escapeHtml(xi3Info.methodName)}</div>
                             <div class="text-[10px] text-slate-500">Tam Thủ Đột Phá · 1:40</div>
                         </td>
-                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXi3">
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXi3" aria-expanded="false">
                             <div class="flex flex-wrap items-center gap-1.5">${chipsHtml}</div>
                             <div class="text-[9px] text-amber-700 font-bold mt-1 flex items-center gap-1">
                                 <i class="bi bi-cursor-fill text-[8px]"></i> <span class="diary-expand-indicator underline text-amber-800 font-bold">Bấm xem chi tiết <i class="bi bi-chevron-down text-[8px]"></i></span>
@@ -8115,7 +8123,7 @@
                                 <div class="font-bold text-xs text-purple-950">2 Dàn Xiên 4 Tinh Hoa</div>
                                 <div class="text-[10px] text-purple-700 font-semibold">Top 8 Chẵn/Lẻ · Quây 11 vé/dàn</div>
                             </td>
-                            <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Xien4">
+                            <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Xien4" aria-expanded="false">
                                 ${chipsHtml}
                                 <div class="text-[9px] text-purple-700 font-bold mt-1 flex items-center gap-1">
                                     <i class="bi bi-cursor-fill text-[8px]"></i> 🔒 <span class="diary-expand-indicator underline text-purple-800 font-bold">Bấm xem chi tiết 2 dàn <i class="bi bi-chevron-down text-[8px]"></i></span>
@@ -8210,7 +8218,7 @@
                             <div class="font-bold text-xs text-purple-950">2 Dàn Xiên 4 Tinh Hoa</div>
                             <div class="text-[10px] text-slate-500">Top 8 Chẵn/Lẻ · 22M</div>
                         </td>
-                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Xien4">
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Xien4" aria-expanded="false">
                             ${chipsHtml}
                             <div class="text-[9px] text-purple-700 font-bold mt-1 flex items-center gap-1">
                                 <i class="bi bi-cursor-fill text-[8px]"></i> <span class="diary-expand-indicator underline text-purple-800 font-bold">Bấm xem chi tiết đối soát <i class="bi bi-chevron-down text-[8px]"></i></span>
@@ -8263,7 +8271,7 @@
                                 </div>
                                 <div class="text-[10px] text-slate-500 mt-0.5">Top 5 Đồng Thuận 4 ĐC</div>
                             </td>
-                            <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-indigo-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXien5">
+                            <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-indigo-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXien5" aria-expanded="false">
                                 <div class="text-[11px] font-mono text-indigo-900 font-bold">5 Dàn Xiên 4 (11M/dàn)</div>
                                 <div class="text-[9px] text-indigo-700 font-bold mt-1 flex items-center gap-1">
                                     <i class="bi bi-cursor-fill text-[8px]"></i> <span class="diary-expand-indicator underline text-indigo-800 font-bold">Bấm xem 5 dàn cược <i class="bi bi-chevron-down text-[8px]"></i></span>
@@ -8321,7 +8329,7 @@
                             </div>
                             <div class="text-[10px] text-slate-500 mt-0.5">Top 5 Đồng Thuận</div>
                         </td>
-                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-indigo-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXien5">
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-indigo-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXien5" aria-expanded="false">
                             <div class="flex items-center gap-1 flex-wrap">
                                 ${tkList.map((t, i) => {
                                     const hitCount = t.filter(num => drawPrizesSet.has(num)).length;
@@ -8374,11 +8382,16 @@
                 const p3 = payload?.crossHedgingPortfolio?.pillar3_Xien;
                 const optHedge = payload?.crossHedgingPortfolio?.hedgingSummary?.optimalHedgeM3;
 
-                const deMethodName = p1?.methodLabel || deInfo?.methodName || 'Đề Markov Bậc 2 & Gap Hazard';
-                const deVipCount = p1?.vipCount || p1?.vipNumbers?.length || deInfo?.x2Nums?.length || 17;
-                const deSingleCount = p1?.singleCount || p1?.singleNumbers?.length || deInfo?.x1Nums?.length || 26;
-                const deTotalCount = p1?.totalNumbersCount || (deVipCount + deSingleCount);
-                const deStakeVal = p1?.stakeK || deInfo?.stakeK || ((deVipCount * 3 + deSingleCount * 1) * 1000);
+                // CANONICAL (2026-10-27 upgrade): the combo history preview
+                // reads the SAME registry deInfo object as getDiaryInfo /
+                // renderDiaryExpandedCard (the Markov 43-set), NOT the live
+                // Pillar 1 Biên 75 object. Pillar 1 remains a method component
+                // elsewhere; it must no longer be presented as the combo Đề here.
+                const deMethodName = deInfo?.methodName || 'Đề Markov Bậc 2 & Gap Hazard';
+                const deVipCount = deInfo?.x2Nums?.length || 17;
+                const deSingleCount = deInfo?.x1Nums?.length || 26;
+                const deTotalCount = deInfo?.numbers?.length || (deVipCount + deSingleCount);
+                const deStakeVal = deInfo?.stakeK || ((deVipCount * 3 + deSingleCount * 1) * 1000);
                 const deStakeText = `Vốn ${moneyM(deStakeVal)} (${deVipCount} VIP X3 · ${deSingleCount} Lót X1)`;
                 const loMethodName = lo4Info?.methodName || p2?.engine || 'Lô Ghép 4 Động Cơ';
                 const loStakeText = `Vốn ${moneyM(lo4Info?.dayLotoStakeK || lo4Info?.stakeK || p2?.stakeK || optHedge?.loStakeK || 66000)}`;
@@ -8392,6 +8405,8 @@
                 const rawLoList = (lo4Info?.betNumbers && lo4Info.betNumbers.length) ? lo4Info.betNumbers : (p2?.betNumbers || []);
                 const loBetList = rawLoList.slice(0, 5).map(b => {
                     let numStr = number(b.num != null ? b.num : b);
+                    // DATED RULE (from 2026-10-21): 23 -> 36, pending row ONLY
+                    // (this block only runs for r.isPending).
                     if (r.date >= '2026-10-21' && numStr === '23') numStr = '36';
                     return {
                         ...b,
@@ -8412,7 +8427,7 @@
                             ${getLoXienCopyButtonHtml(r.date, true)}
                         </td>
                         <!-- Cột 2: Đề Tinh Tuyển VIP -->
-                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="de">
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="de" aria-expanded="false">
                             <div class="text-[11px] font-bold text-amber-950 flex items-center gap-1 flex-wrap">
                                 <i class="bi bi-gem-fill text-amber-500 text-[10px]"></i> <span>${escapeHtml(deMethodName)}</span>
                                 ${getSwitchPhaseBadgeHtml(deInfo?.switchPhase, deInfo?.switchReason)}
@@ -8432,7 +8447,7 @@
                             </div>
                         </td>
                         <!-- Cột 3: Lô Ghép 4 Động Cơ -->
-                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-rose-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Engine">
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-rose-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Engine" aria-expanded="false">
                             <div class="text-[11px] font-bold text-rose-950 flex items-center gap-1">
                                 <i class="bi bi-fire text-rose-600 text-[10px]"></i> <span>${escapeHtml(loMethodName)}</span>
                             </div>
@@ -8454,7 +8469,7 @@
                             </div>
                         </td>
                         <!-- Cột 3B: Lô Ghép 4 Đột Phá (Nâng Hạng X2 Chéo) -->
-                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-emerald-100/50 rounded-xl transition-all border-l border-emerald-200/60 bg-emerald-50/30" data-date="${r.date}" data-diary-cell="lo4CrossX2">
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-emerald-100/50 rounded-xl transition-all border-l border-emerald-200/60 bg-emerald-50/30" data-date="${r.date}" data-diary-cell="lo4CrossX2" aria-expanded="false">
                             <div class="text-[11px] font-bold text-emerald-950 flex items-center gap-1">
                                 <i class="bi bi-rocket-takeoff-fill text-emerald-600 text-[10px]"></i> <span>Lô Đột Phá X2</span>
                             </div>
@@ -8479,7 +8494,7 @@
                             </div>
                         </td>
                         <!-- Cột 4: 2 Dàn Xiên 4 Tinh Hoa (Top 8 Chẵn/Lẻ) -->
-                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-purple-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Xien4">
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-purple-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Xien4" aria-expanded="false">
                             <div class="text-[11px] font-bold text-purple-950 flex items-center justify-between gap-1">
                                 <span class="flex items-center gap-1"><i class="bi bi-dice-4-fill text-purple-600 text-[10px]"></i> 2 Dàn Xiên 4 Tinh Hoa</span>
                                 <span class="text-amber-600 font-bold text-[10px]">⏳ Chờ mở</span>
@@ -8504,7 +8519,7 @@
                             </div>
                         </td>
                         <!-- Cột 5: Dàn Xiên 5 (5 Dàn Quây 4) -->
-                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-indigo-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXien5">
+                        <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-indigo-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXien5" aria-expanded="false">
                             <div class="text-[11px] font-bold text-indigo-950 flex items-center gap-1">
                                 <i class="bi bi-stars text-indigo-600 text-[10px]"></i> <span>5 Dàn Xiên 4 (Vốn 55M)</span>
                             </div>
@@ -8524,11 +8539,11 @@
                             </div>
                         </td>
                         <!-- Cột 6: Lãi/Lỗ Tổng Hợp -->
-                        <td class="diary-cell-interactive px-3 py-3 text-right whitespace-nowrap font-mono cursor-pointer hover:bg-amber-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="total">
+                        <td class="diary-cell-interactive px-3 py-3 text-right whitespace-nowrap font-mono cursor-pointer hover:bg-amber-100/60 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="total" aria-expanded="false">
                             <div class="font-black text-xs text-amber-600">
                                 ⏳ Chờ KQ
                             </div>
-                            <div class="text-[10px] text-slate-400 font-sans">Vốn: ${moneyM(totalStakeVal)}</div>
+                            <div class="text-[10px] text-slate-400 font-sans">Vốn: ${moneyM(totalStakeVal)} · Đề + Lô + Xiên 4; Xiên 5 độc lập, X2 không cộng thêm</div>
                             <div class="diary-expand-indicator text-[9px] text-amber-700 font-bold font-sans underline mt-0.5 flex items-center gap-0.5 justify-end">Bấm xem <i class="bi bi-chevron-down text-[8px]"></i></div>
                         </td>
                         <!-- Cột 7: Lũy Kế Mốc -->
@@ -8604,9 +8619,9 @@
                 ? lo4Info.dayLotoHits
                 : (r.chRow?.loHits != null ? r.chRow.loHits : 0);
 
-            const deMethodTitle = (isAllCat && chRow?.details?.p1Method === 'deMarkovGapHazard')
-                ? 'Đề Markov Bậc 2 & Gap Hazard'
-                : (deInfo?.methodName || 'Đề Markov Bậc 2 & Gap Hazard');
+            // CANONICAL: title comes from the registry deInfo first, never
+            // from a hardcoded Markov default.
+            const deMethodTitle = deInfo?.methodName || chRow?.details?.p1Method || 'Đề Markov Bậc 2 & Gap Hazard';
 
             let lo4BetCandidates = lo4Info?.betNumbers;
             if (!lo4BetCandidates || lo4BetCandidates.length === 0) {
@@ -8646,7 +8661,7 @@
                         ${getLoXienCopyButtonHtml(r.date, false)}
                     </td>
                     <!-- Cột 2: Đề Tinh Tuyển VIP -->
-                    <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="de">
+                    <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-amber-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="de" aria-expanded="false">
                         <div class="flex items-center justify-between text-[11px] font-bold text-amber-950 gap-1 flex-wrap">
                             <span class="flex items-center gap-1">
                                 <i class="bi bi-gem-fill text-amber-500 text-[10px]"></i> <span>${escapeHtml(deMethodTitle)}</span>
@@ -8675,7 +8690,7 @@
                         </div>
                     </td>
                     <!-- Cột 3: Lô Ghép 4 Động Cơ -->
-                    <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-rose-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Engine">
+                    <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-rose-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Engine" aria-expanded="false">
                         <div class="flex items-center justify-between text-[11px] font-bold text-rose-950 gap-1">
                             <span class="flex items-center gap-1"><i class="bi bi-fire text-rose-600 text-[10px]"></i> ${lo4Info?.isHistoricalBaseline ? 'Lô Ghép 4 (Nền tảng)' : 'Lô Hội Tụ 4 Động Cơ'}</span>
                             <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${loPnlVal >= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">P&L: ${moneyM(loPnlVal, { signed: true })}</span>
@@ -8699,7 +8714,7 @@
                         </div>
                     </td>
                     <!-- Cột 3B: Lô Ghép 4 Đột Phá (Nâng Hạng X2 Chéo) -->
-                    <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-emerald-100/50 rounded-xl transition-all border-l border-emerald-200/60 bg-emerald-50/25" data-date="${r.date}" data-diary-cell="lo4CrossX2">
+                    <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-emerald-100/50 rounded-xl transition-all border-l border-emerald-200/60 bg-emerald-50/25" data-date="${r.date}" data-diary-cell="lo4CrossX2" aria-expanded="false">
                         <div class="flex items-center justify-between text-[11px] font-bold text-emerald-950 gap-1">
                             <span class="flex items-center gap-1"><i class="bi bi-rocket-takeoff-fill text-emerald-600 text-[10px]"></i> Lô Đột Phá X2</span>
                             <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${loPnlX2 >= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">P&L: ${moneyM(loPnlX2, { signed: true })}</span>
@@ -8726,7 +8741,7 @@
                         </div>
                     </td>
                     <!-- Cột 4: 2 Dàn Xiên 4 Tinh Hoa (Top 8 Chẵn/Lẻ) -->
-                    <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-purple-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Xien4">
+                    <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-purple-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="lo4Xien4" aria-expanded="false">
                         <div class="flex items-center justify-between text-[11px] font-bold text-purple-950 gap-1">
                             <span class="flex items-center gap-1"><i class="bi bi-dice-4-fill text-purple-600 text-[10px]"></i> 2 Dàn Xiên 4 Tinh Hoa</span>
                             <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${xienPnlVal >= 0 ? 'bg-purple-100 text-purple-800' : 'bg-rose-100 text-rose-800'}">P&L: ${moneyM(xienPnlVal, { signed: true })}</span>
@@ -8766,7 +8781,7 @@
                         </div>
                     </td>
                     <!-- Cột 5: Dàn Xiên 5 (5 Dàn Quây 4) -->
-                    <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-indigo-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXien5">
+                    <td class="diary-cell-interactive px-3 py-3 cursor-pointer hover:bg-indigo-100/50 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="loXien5" aria-expanded="false">
                         <div class="flex items-center justify-between text-[11px] font-bold text-indigo-950 gap-1">
                             <span class="flex items-center gap-1"><i class="bi bi-stars text-indigo-600 text-[10px]"></i> 5 Dàn Xiên 4 (55M) ${isAllCat ? '<span class="text-[9px] text-slate-400 font-normal lowercase">(độc lập)</span>' : ''}</span>
                             <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${loXien5ProfitK >= 0 ? 'bg-indigo-100 text-indigo-900 ring-1 ring-indigo-300' : 'bg-rose-100 text-rose-800'}">P&L: ${moneyM(loXien5ProfitK, { signed: true })}</span>
@@ -8796,11 +8811,11 @@
                         </div>
                     </td>
                     <!-- Cột 6: Lãi/Lỗ Tổng Hợp -->
-                    <td class="diary-cell-interactive px-3 py-3 text-right whitespace-nowrap font-mono cursor-pointer hover:bg-slate-100 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="total">
+                    <td class="diary-cell-interactive px-3 py-3 text-right whitespace-nowrap font-mono cursor-pointer hover:bg-slate-100 rounded-xl transition-all" data-date="${r.date}" data-diary-cell="total" aria-expanded="false">
                         <div class="font-black text-xs ${dayTotalVal >= 0 ? 'text-emerald-700' : 'text-rose-700'}">
                             ${moneyM(dayTotalVal, { signed: true })}
                         </div>
-                        <div class="text-[10px] text-slate-400 font-sans">Vốn: ${moneyM(r.chRow?.totalStakeK || (diaryDetailsMap?.[r.date]?.de?.stakeK || 43000) + (lo4Info?.dayLotoStakeK || 66000) + (lo4Xien4Info?.stakeK || 22000))}</div>
+                        <div class="text-[10px] text-slate-400 font-sans">Vốn: ${moneyM(r.chRow?.totalStakeK || (diaryDetailsMap?.[r.date]?.de?.stakeK || ((diaryDetailsMap?.[r.date]?.de?.x2Nums?.length || 0) * 3 + (diaryDetailsMap?.[r.date]?.de?.x1Nums?.length || 0)) * 1000) + (lo4Info?.dayLotoStakeK || 66000) + (lo4Xien4Info?.stakeK || 22000))} · Đề + Lô + Xiên 4; Xiên 5 độc lập, X2 không cộng thêm</div>
                         <div class="flex items-center justify-end gap-1 mt-0.5">
                             ${isDayWin
                                 ? `<span class="inline-block px-1 py-0.2 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800">✅ THẮNG</span>`
@@ -8938,7 +8953,9 @@
                 document.querySelectorAll('.diary-cat-btn').forEach(b => {
                     b.classList.remove('active', 'bg-slate-900', 'text-white', 'shadow-xs');
                     b.classList.add('bg-slate-100', 'text-slate-700');
+                    b.setAttribute('aria-selected', 'false');
                 });
+                btn.setAttribute('aria-selected', 'true');
                 btn.classList.add('active', 'bg-slate-900', 'text-white', 'shadow-xs');
                 btn.classList.remove('bg-slate-100', 'text-slate-700');
                 currentDiaryCategory = btn.dataset.diaryCat || 'all';

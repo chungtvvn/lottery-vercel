@@ -46,7 +46,7 @@ function test(description, fn) {
 const ROOT_DIR = path.resolve(__dirname, '..');
 const HTML_PATH = path.join(ROOT_DIR, 'views', 'daily-advisor.html');
 const JS_PATH = path.join(ROOT_DIR, 'public', 'js', 'daily-advisor.js');
-const CACHE_PATH = path.join(ROOT_DIR, 'data', 'cached_daily_method_advisor.json');
+const CACHE_PATH = path.join(ROOT_DIR, 'lib', 'data', 'statistics', 'cached_daily_method_advisor.json');
 
 console.log('='.repeat(80));
 console.log('  MILESTONE 3: FRONTEND WEB UI /daily-advisor VERIFICATION');
@@ -203,7 +203,7 @@ test('View 5 template generates <td> elements for pending and settled rows', () 
 console.log('\n--- SECTION 3: Headless Mock Execution & Dynamic Data Binding ---');
 
 let cacheData = {};
-test('Load data/cached_daily_method_advisor.json and verify crossHedgingPortfolio contract', () => {
+test('Load lib/data/statistics/cached_daily_method_advisor.json and verify crossHedgingPortfolio contract', () => {
     assert.ok(fs.existsSync(CACHE_PATH), 'Cache file must exist');
     cacheData = JSON.parse(fs.readFileSync(CACHE_PATH, 'utf8'));
     assert.ok(cacheData.crossHedgingPortfolio, 'crossHedgingPortfolio must exist in cache');

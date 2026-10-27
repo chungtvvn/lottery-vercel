@@ -19,7 +19,7 @@ const DATA_DIR = path.join(ROOT_DIR, 'data');
 const REG_STATS_FILE = path.join(STATS_DIR, 'daily_locked_bets_registry.json');
 const REG_DATA_FILE = path.join(DATA_DIR, 'daily_locked_bets_registry.json');
 const ADV_STATS_FILE = path.join(STATS_DIR, 'cached_daily_method_advisor.json');
-const ADV_DATA_FILE = path.join(DATA_DIR, 'cached_daily_method_advisor.json');
+// CANONICAL CACHE (2026-10-27 consolidation): no data/ duplicate of the advisor cache.
 const LO_DROPOFF_SHADOW_FILE = path.join(STATS_DIR, 'cached_lo_dropoff_27_shadow.json');
 const LO_DROPOFF_SHADOW_DATA_FILE = path.join(DATA_DIR, 'cached_lo_dropoff_27_shadow.json');
 
@@ -902,8 +902,7 @@ function main() {
 
         const advStr = JSON.stringify(adv, null, 2);
         fs.writeFileSync(ADV_STATS_FILE, advStr, 'utf8');
-        fs.writeFileSync(ADV_DATA_FILE, advStr, 'utf8');
-        console.log('  ✓ Đã cập nhật cached_daily_method_advisor.json tại lib/ và data/');
+        console.log('  ✓ Đã cập nhật cached_daily_method_advisor.json tại lib/ (canonical, no data/ duplicate)');
     }
 
     // =========================================================================

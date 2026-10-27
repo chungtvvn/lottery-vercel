@@ -70,10 +70,9 @@ const lo4Rec = {
     snapshotLock
 };
 
-// Process cache files
+// Process cache files (canonical only, 2026-10-27 consolidation: no data/ duplicate)
 const files = [
-    path.join(__dirname, '..', 'lib', 'data', 'statistics', 'cached_daily_method_advisor.json'),
-    path.join(__dirname, '..', 'data', 'cached_daily_method_advisor.json')
+    path.join(__dirname, '..', 'lib', 'data', 'statistics', 'cached_daily_method_advisor.json')
 ];
 
 for (const filePath of files) {

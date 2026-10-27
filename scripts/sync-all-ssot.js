@@ -22,7 +22,7 @@ const DATA_DIR = path.join(ROOT_DIR, 'data');
 const REG_STATS_FILE = path.join(STATS_DIR, 'daily_locked_bets_registry.json');
 const REG_DATA_FILE = path.join(DATA_DIR, 'daily_locked_bets_registry.json');
 const ADV_STATS_FILE = path.join(STATS_DIR, 'cached_daily_method_advisor.json');
-const ADV_DATA_FILE = path.join(DATA_DIR, 'cached_daily_method_advisor.json');
+// CANONICAL CACHE (2026-10-27 consolidation): no data/ duplicate of the advisor cache.
 const RAW_FILE = path.join(ROOT_DIR, 'lib', 'data', 'xsmb-2-digits.json');
 
 const numStr = n => String(Number(n)).padStart(2, '0');
@@ -93,8 +93,6 @@ function syncAll() {
     let adv = null;
     if (fs.existsSync(ADV_STATS_FILE)) {
         adv = JSON.parse(fs.readFileSync(ADV_STATS_FILE, 'utf8'));
-    } else if (fs.existsSync(ADV_DATA_FILE)) {
-        adv = JSON.parse(fs.readFileSync(ADV_DATA_FILE, 'utf8'));
     }
     if (!adv) {
         console.warn('cached_daily_method_advisor.json chưa có, tạo cấu trúc cơ bản...');
@@ -502,8 +500,7 @@ function syncAll() {
     adv.updatedAt = new Date().toISOString();
     const advStr = JSON.stringify(adv, null, 2);
     fs.writeFileSync(ADV_STATS_FILE, advStr, 'utf8');
-    fs.writeFileSync(ADV_DATA_FILE, advStr, 'utf8');
-    console.log(`[Cache] Đã lưu cached_daily_method_advisor.json vào cả data/ và lib/data/statistics/.`);
+    console.log(`[Cache] Đã lưu cached_daily_method_advisor.json vào lib/data/statistics/ (canonical, no data/ duplicate).`);
 
     // In thống kê kiểm tra
     console.log('\n[Summary Check]');

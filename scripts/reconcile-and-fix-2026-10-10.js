@@ -521,7 +521,7 @@ async function reconcileAndFix() {
     console.log('\n--- 6. Writing Cache Files ---');
     const advJsonStr = JSON.stringify(advisor, null, 2);
     fs.writeFileSync(path.join(STATS_DIR, 'cached_daily_method_advisor.json'), advJsonStr);
-    fs.writeFileSync(path.join(DATA_DIR, 'cached_daily_method_advisor.json'), advJsonStr);
+    // CANONICAL CACHE (2026-10-27 consolidation): no data/ duplicate write.
     console.log(`  ✓ Đã ghi cached_daily_method_advisor.json (${(Buffer.byteLength(advJsonStr) / (1024 * 1024)).toFixed(1)} MB)`);
 
     const deShadowStr = JSON.stringify(advisor.deDropoffMerge, null, 2);

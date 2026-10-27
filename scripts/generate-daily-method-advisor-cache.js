@@ -178,7 +178,9 @@ async function main() {
                 vipNumbers: vipNums.map(n => String(n).padStart(2, '0')),
                 singleNumbers: singleNums.map(n => String(n).padStart(2, '0')),
                 numbers: allNums.map(n => String(n).padStart(2, '0')),
-                stakeK: 70000
+                // CANONICAL (fix-forward): Đề capital is derived, never a literal.
+                // 17 VIP X3 + 26 single X1 = (17*3 + 26*1) * 1000K = 77000K.
+                stakeK: (vipNums.length * 3 + singleNums.length) * 1000
             });
         }
         const top5Candidate = (cache.lo4EngineFusion?.latestRecommendation?.xien4?.top5?.length >= 5)
@@ -453,12 +455,15 @@ async function main() {
         pruneUnsettledLedger(cache.top8ParityXien4?.settledLedger);
     }
 
+    // CANONICAL CACHE (2026-10-27 consolidation): only the canonical copy
+    // lib/data/statistics/cached_daily_method_advisor.json is written. The
+    // former data/ duplicate is no longer produced. (dataDir is still used
+    // below for the dropoff shadow files, which are out of this scope.)
     const fs = require('fs');
     const dataDir = path.join(__dirname, '..', 'data');
     if (!fs.existsSync(dataDir)) {
         fs.mkdirSync(dataDir, { recursive: true });
     }
-    fs.writeFileSync(path.join(dataDir, 'cached_daily_method_advisor.json'), JSON.stringify(cache, null, 2));
 
     const statsDir = path.join(__dirname, '..', 'lib', 'data', 'statistics');
     if (!fs.existsSync(statsDir)) {
@@ -481,8 +486,7 @@ async function main() {
 
     console.log(JSON.stringify({
         files: [
-            'lib/data/statistics/cached_daily_method_advisor.json',
-            'data/cached_daily_method_advisor.json'
+            'lib/data/statistics/cached_daily_method_advisor.json'
         ],
         latestDataDate: cache.latestDataDate,
         records: cache.records.length,

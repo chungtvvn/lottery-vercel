@@ -86,3 +86,8 @@ TEST_INFRA.md
 TEST_READY.md
 reports/five-method-daily-selector-*.md
 reports/recent-method-advisor-*.md
+
+# 2026-10-27 upgrade: future generated caches only. Already-tracked files are
+# NOT removed by these entries (gitignore does not untrack existing files).
+lib/data/statistics/cached_*.json
+data/cached_*.json

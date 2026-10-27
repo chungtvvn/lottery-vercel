@@ -297,19 +297,14 @@ async function generate() {
         fs.writeFileSync(dataCacheFile, JSON.stringify(payload, null, 2), 'utf8');
     }
 
-    // Direct synchronization into cached_daily_method_advisor.json
+    // Direct synchronization into the canonical cached_daily_method_advisor.json
+    // (2026-10-27 consolidation: no data/ duplicate copy is written.)
     try {
         const advisorLibFile = path.join(process.cwd(), 'lib', 'data', 'statistics', 'cached_daily_method_advisor.json');
         if (fs.existsSync(advisorLibFile)) {
             const adv = JSON.parse(fs.readFileSync(advisorLibFile, 'utf8'));
             adv.loDropoff27 = payload;
             fs.writeFileSync(advisorLibFile, JSON.stringify(adv, null, 2), 'utf8');
-        }
-        const advisorDataFile = path.join(process.cwd(), 'data', 'cached_daily_method_advisor.json');
-        if (fs.existsSync(advisorDataFile)) {
-            const adv = JSON.parse(fs.readFileSync(advisorDataFile, 'utf8'));
-            adv.loDropoff27 = payload;
-            fs.writeFileSync(advisorDataFile, JSON.stringify(adv, null, 2), 'utf8');
         }
     } catch (_) {}
 

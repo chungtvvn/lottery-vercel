@@ -1182,13 +1182,11 @@ async function hydrateDailyMethodAdvisorFromR2() {
         }
 
         const statsPath = path.join(DATA_DIR, 'statistics', 'cached_daily_method_advisor.json');
-        const dataPath = path.join(__dirname, '..', 'data', 'cached_daily_method_advisor.json');
 
         const jsonStr = JSON.stringify(remoteAdv);
         await fs.mkdir(path.dirname(statsPath), { recursive: true });
         await fs.writeFile(statsPath, jsonStr, 'utf8');
-        await fs.mkdir(path.dirname(dataPath), { recursive: true });
-        await fs.writeFile(dataPath, jsonStr, 'utf8');
+        // CANONICAL CACHE (2026-10-27 consolidation): no data/ duplicate write.
 
         console.log(`[DailyAdvisor] Hydrate cached_daily_method_advisor từ R2 (latestDataDate=${remoteAdv.latestDataDate || 'none'}) thành công.`);
         return true;

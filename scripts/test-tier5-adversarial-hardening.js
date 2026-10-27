@@ -24,7 +24,7 @@ const crypto = require('crypto');
 const ROOT_DIR = path.resolve(__dirname, '..');
 const service = require(path.join(ROOT_DIR, 'lib', 'services', 'crossHedgingPortfolioService'));
 const RAW_DATA_PATH = path.join(ROOT_DIR, 'lib', 'data', 'xsmb-2-digits.json');
-const CACHE_PATH = path.join(ROOT_DIR, 'data', 'cached_daily_method_advisor.json');
+const CACHE_PATH = path.join(ROOT_DIR, 'lib', 'data', 'statistics', 'cached_daily_method_advisor.json');
 const HTML_PATH = path.join(ROOT_DIR, 'views', 'daily-advisor.html');
 const JS_PATH = path.join(ROOT_DIR, 'public', 'js', 'daily-advisor.js');
 

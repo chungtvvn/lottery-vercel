@@ -7,7 +7,7 @@ const { computePentaConsensusForDate } = require('../lib/services/pentaConsensus
 
 const ROOT_DIR = path.join(__dirname, '..');
 const ADV_STATS_FILE = path.join(ROOT_DIR, 'lib', 'data', 'statistics', 'cached_daily_method_advisor.json');
-const ADV_DATA_FILE = path.join(ROOT_DIR, 'data', 'cached_daily_method_advisor.json');
+// CANONICAL CACHE (2026-10-27 consolidation): no data/ duplicate of the advisor cache.
 const REG_STATS_FILE = path.join(ROOT_DIR, 'lib', 'data', 'statistics', 'daily_locked_bets_registry.json');
 const REG_DATA_FILE = path.join(ROOT_DIR, 'data', 'daily_locked_bets_registry.json');
 
@@ -241,9 +241,6 @@ async function fixShadowDate20() {
 
     // 9. Save cached_daily_method_advisor.json and gz
     fs.writeFileSync(ADV_STATS_FILE, JSON.stringify(adv, null, 2), 'utf8');
-    if (fs.existsSync(ADV_DATA_FILE)) {
-        fs.writeFileSync(ADV_DATA_FILE, JSON.stringify(adv, null, 2), 'utf8');
-    }
     const gzPath = ADV_STATS_FILE + '.gz';
     fs.writeFileSync(gzPath, zlib.gzipSync(Buffer.from(JSON.stringify(adv))));
     console.log(`✅ Đã lưu và nén ${gzPath}`);

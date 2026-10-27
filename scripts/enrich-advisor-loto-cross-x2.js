@@ -294,10 +294,7 @@ async function enrichAdvisorCache() {
     console.log(`Penta Consensus settledLedger generated: ${pentaSettledLedger.length} days.`);
 
     fs.writeFileSync(advisorPath, JSON.stringify(adv, null, 2), 'utf8');
-    const dataAdvPath = path.join(process.cwd(), 'data', 'cached_daily_method_advisor.json');
-    try {
-        fs.writeFileSync(dataAdvPath, JSON.stringify(adv, null, 2), 'utf8');
-    } catch (_) {}
+    // CANONICAL CACHE (2026-10-27 consolidation): no data/ duplicate write.
     console.log(`✅ Đã lưu ${advisorPath}`);
 
     if (regDisk) {

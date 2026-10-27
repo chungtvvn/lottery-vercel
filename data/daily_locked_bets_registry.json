@@ -29374,7 +29374,7 @@
               "46",
               "13"
             ],
-            "stakeK": 70000,
+            "stakeK": 77000,
             "targetPayoutVipK": 252000,
             "targetPayoutSingleK": 84000
           },
@@ -29538,7 +29538,7 @@
             "46",
             "13"
           ],
-          "stakeK": 70000
+          "stakeK": 77000
         },
         "loXien5": {
           "top5": [
@@ -29837,9 +29837,9 @@
           "isDeHit": false,
           "isVipHit": false,
           "dePayoutK": 0,
-          "deStakeK": 70000,
-          "deProfitK": -70000,
-          "dePnlK": -70000,
+          "deStakeK": 77000,
+          "deProfitK": -77000,
+          "dePnlK": -77000,
           "loHits": 4,
           "loPayoutK": 56000,
           "loStakeK": 66000,
@@ -29851,8 +29851,8 @@
           "xienProfitK": -11000,
           "xienPnlK": -11000,
           "totalPayoutK": 56000,
-          "totalStakeK": 147000,
-          "totalProfitK": -91000,
+          "totalStakeK": 154000,
+          "totalProfitK": -98000,
           "isWin": false,
           "isAbstain": false,
           "details": {
@@ -29959,9 +29959,9 @@
           "isHit": false,
           "isVipHit": false,
           "isSingleHit": false,
-          "stakeK": 70000,
+          "stakeK": 77000,
           "payoutK": 0,
-          "profitK": -70000,
+          "profitK": -77000,
           "isWin": false,
           "methodName": "🔮 Đề Markov Bậc 2 & Gap Hazard (Sweet-Spot)"
         },
@@ -32443,7 +32443,7 @@
             "79",
             "85"
           ],
-          "stakeK": 70000
+          "stakeK": 77000
         },
         "loXien5": {
           "top5": [
@@ -32881,7 +32881,7 @@
               "79",
               "85"
             ],
-            "stakeK": 70000,
+            "stakeK": 77000,
             "targetPayoutVipK": 252000,
             "targetPayoutSingleK": 84000
           },
@@ -37710,9 +37710,9 @@
           "isDeHit": true,
           "isVipHit": true,
           "dePayoutK": 252000,
-          "deStakeK": 70000,
-          "deProfitK": 182000,
-          "dePnlK": 182000,
+          "deStakeK": 77000,
+          "deProfitK": 175000,
+          "dePnlK": 175000,
           "loHits": 1,
           "loPayoutK": 8000,
           "loStakeK": 68200,
@@ -37724,8 +37724,8 @@
           "xienProfitK": -11000,
           "xienPnlK": -11000,
           "totalPayoutK": 260000,
-          "totalStakeK": 149200,
-          "totalProfitK": 110800,
+          "totalStakeK": 156200,
+          "totalProfitK": 103800,
           "isWin": true,
           "isAbstain": false,
           "details": {
@@ -37832,9 +37832,9 @@
           "isHit": true,
           "isVipHit": true,
           "isSingleHit": false,
-          "stakeK": 70000,
+          "stakeK": 77000,
           "payoutK": 252000,
-          "profitK": 182000,
+          "profitK": 175000,
           "isWin": true,
           "methodName": "🔮 Đề Markov Bậc 2 & Gap Hazard (Sweet-Spot)"
         },
@@ -38018,7 +38018,7 @@
             "28",
             "21"
           ],
-          "stakeK": 70000
+          "stakeK": 77000
         },
         "loXien5": {
           "top5": [
@@ -38457,7 +38457,7 @@
               "28",
               "21"
             ],
-            "stakeK": 70000,
+            "stakeK": 77000,
             "targetPayoutVipK": 252000,
             "targetPayoutSingleK": 84000
           },
@@ -43900,9 +43900,9 @@
           "isDeHit": false,
           "isVipHit": false,
           "dePayoutK": 0,
-          "deStakeK": 70000,
-          "deProfitK": -70000,
-          "dePnlK": -70000,
+          "deStakeK": 77000,
+          "deProfitK": -77000,
+          "dePnlK": -77000,
           "loHits": 5,
           "loPayoutK": 56000,
           "loStakeK": 68200,
@@ -43914,8 +43914,8 @@
           "xienProfitK": -11000,
           "xienPnlK": -11000,
           "totalPayoutK": 56000,
-          "totalStakeK": 149200,
-          "totalProfitK": -93200,
+          "totalStakeK": 156200,
+          "totalProfitK": -100200,
           "isWin": false,
           "isAbstain": false,
           "details": {
@@ -44022,9 +44022,9 @@
           "isHit": false,
           "isVipHit": false,
           "isSingleHit": false,
-          "stakeK": 70000,
+          "stakeK": 77000,
           "payoutK": 0,
-          "profitK": -70000,
+          "profitK": -77000,
           "isWin": false,
           "methodName": "🔮 Đề Markov Bậc 2 & Gap Hazard (Sweet-Spot)"
         },
@@ -44214,7 +44214,7 @@
             "28",
             "21"
           ],
-          "stakeK": 70000
+          "stakeK": 77000
         },
         "loXien5": {
           "top5": [
@@ -44673,7 +44673,7 @@
               "28",
               "21"
             ],
-            "stakeK": 70000,
+            "stakeK": 77000,
             "targetPayoutVipK": 252000,
             "targetPayoutSingleK": 84000
           },
@@ -49704,9 +49704,9 @@
           "isDeHit": false,
           "isVipHit": false,
           "dePayoutK": 0,
-          "deStakeK": 70000,
-          "deProfitK": -70000,
-          "dePnlK": -70000,
+          "deStakeK": 77000,
+          "deProfitK": -77000,
+          "dePnlK": -77000,
           "loHits": 6,
           "loPayoutK": 104000,
           "loStakeK": 68200,
@@ -49718,8 +49718,8 @@
           "xienProfitK": 1000,
           "xienPnlK": 1000,
           "totalPayoutK": 116000,
-          "totalStakeK": 149200,
-          "totalProfitK": -33200,
+          "totalStakeK": 156200,
+          "totalProfitK": -40200,
           "isWin": false,
           "isAbstain": false,
           "details": {
@@ -49826,9 +49826,9 @@
           "isHit": false,
           "isVipHit": false,
           "isSingleHit": false,
-          "stakeK": 70000,
+          "stakeK": 77000,
           "payoutK": 0,
-          "profitK": -70000,
+          "profitK": -77000,
           "isWin": false,
           "methodName": "🔮 Đề Markov Bậc 2 & Gap Hazard (Sweet-Spot)"
         },
@@ -50017,7 +50017,7 @@
             "87",
             "94"
           ],
-          "stakeK": 70000
+          "stakeK": 77000
         },
         "lo4EngineFusion": {
           "predictionDate": "2026-10-18",
@@ -50391,7 +50391,7 @@
               "87",
               "94"
             ],
-            "stakeK": 70000,
+            "stakeK": 77000,
             "targetPayoutVipK": 252000,
             "targetPayoutSingleK": 84000
           },
@@ -51526,9 +51526,9 @@
           "isDeHit": true,
           "isVipHit": false,
           "dePayoutK": 84000,
-          "deStakeK": 70000,
-          "deProfitK": 14000,
-          "dePnlK": 14000,
+          "deStakeK": 77000,
+          "deProfitK": 7000,
+          "dePnlK": 7000,
           "loHits": 3,
           "loPayoutK": 72000,
           "loStakeK": 66000,
@@ -51540,8 +51540,8 @@
           "xienProfitK": 1000,
           "xienPnlK": 1000,
           "totalPayoutK": 168000,
-          "totalStakeK": 147000,
-          "totalProfitK": 21000,
+          "totalStakeK": 154000,
+          "totalProfitK": 14000,
           "isWin": true,
           "isAbstain": false,
           "details": {
@@ -51648,9 +51648,9 @@
           "isHit": true,
           "isVipHit": false,
           "isSingleHit": true,
-          "stakeK": 70000,
+          "stakeK": 77000,
           "payoutK": 84000,
-          "profitK": 14000,
+          "profitK": 7000,
           "isWin": true,
           "methodName": "🔮 Đề Markov Bậc 2 & Gap Hazard"
         },
@@ -52315,7 +52315,7 @@
             "21",
             "33"
           ],
-          "stakeK": 70000
+          "stakeK": 77000
         },
         "loXien5": {
           "top5": [
@@ -52701,7 +52701,7 @@
               "21",
               "33"
             ],
-            "stakeK": 70000,
+            "stakeK": 77000,
             "targetPayoutVipK": 252000,
             "targetPayoutSingleK": 84000
           },
@@ -58244,9 +58244,9 @@
           "isDeHit": false,
           "isVipHit": false,
           "dePayoutK": 0,
-          "deStakeK": 70000,
-          "deProfitK": -70000,
-          "dePnlK": -70000,
+          "deStakeK": 77000,
+          "deProfitK": -77000,
+          "dePnlK": -77000,
           "loHits": 3,
           "loPayoutK": 40000,
           "loStakeK": 66000,
@@ -58258,8 +58258,8 @@
           "xienProfitK": -11000,
           "xienPnlK": -11000,
           "totalPayoutK": 40000,
-          "totalStakeK": 147000,
-          "totalProfitK": -107000,
+          "totalStakeK": 154000,
+          "totalProfitK": -114000,
           "isWin": false,
           "isAbstain": false,
           "details": {
@@ -58366,9 +58366,9 @@
           "isHit": false,
           "isVipHit": false,
           "isSingleHit": false,
-          "stakeK": 70000,
+          "stakeK": 77000,
           "payoutK": 0,
-          "profitK": -70000,
+          "profitK": -77000,
           "isWin": false,
           "methodName": "🔮 Đề Markov Bậc 2 & Gap Hazard (Sweet-Spot)"
         },
@@ -58793,7 +58793,7 @@
             "28",
             "33"
           ],
-          "stakeK": 70000
+          "stakeK": 77000
         },
         "lo4EngineFusion": {
           "predictionDate": "2026-10-20",
@@ -59142,7 +59142,7 @@
               "28",
               "33"
             ],
-            "stakeK": 70000
+            "stakeK": 77000
           },
           "pillar2_Lo": {
             "numbers": [
@@ -59679,9 +59679,9 @@
           "isDeHit": true,
           "isVipHit": true,
           "dePayoutK": 252000,
-          "deStakeK": 70000,
-          "deProfitK": 182000,
-          "dePnlK": 182000,
+          "deStakeK": 77000,
+          "deProfitK": 175000,
+          "dePnlK": 175000,
           "loHits": 7,
           "loPayoutK": 200000,
           "loStakeK": 66000,
@@ -59693,8 +59693,8 @@
           "xienProfitK": 73000,
           "xienPnlK": 73000,
           "totalPayoutK": 536000,
-          "totalStakeK": 147000,
-          "totalProfitK": 389000,
+          "totalStakeK": 154000,
+          "totalProfitK": 382000,
           "isWin": true,
           "isAbstain": false,
           "details": {
@@ -59801,9 +59801,9 @@
           "isHit": true,
           "isVipHit": true,
           "isSingleHit": false,
-          "stakeK": 70000,
+          "stakeK": 77000,
           "payoutK": 252000,
-          "profitK": 182000,
+          "profitK": 175000,
           "isWin": true,
           "methodName": "🔮 Đề Markov Bậc 2 & Gap Hazard (Sweet-Spot)"
         },
