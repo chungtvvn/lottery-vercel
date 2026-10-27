@@ -43,22 +43,13 @@ async function main() {
         console.log(`[DailyAdvisor] Chưa có cache R2 cũ: ${error.message}`);
     }
 
-    if (!existingCache || !existingCache.dualMerge || !existingCache.streakAwareDeAdvisor) {
-        try {
-            const fs = require('fs');
-            const path = require('path');
-            const localAdvFile = path.join(__dirname, '..', 'lib', 'data', 'statistics', 'cached_daily_method_advisor.json');
-            if (fs.existsSync(localAdvFile)) {
-                existingCache = JSON.parse(fs.readFileSync(localAdvFile, 'utf8'));
-            }
-        } catch (_) {}
-    }
+    // R2-only: existingCache already comes from R2 above; no local-file fallback.
 
     const registryService = require('../lib/services/dailyLockedBetsRegistryService');
     try {
         const remoteReg = await loadJsonWithSupabaseFallback('daily_locked_bets_registry.json');
         if (remoteReg && remoteReg.dates && typeof remoteReg.dates === 'object') {
-            const cur = registryService.loadRegistry();
+            const cur = await registryService.loadRegistry();
             const mergedDates = { ...(remoteReg.dates || {}) };
             if (cur && cur.dates) {
                 for (const [date, val] of Object.entries(cur.dates)) {
@@ -73,7 +64,7 @@ async function main() {
                     }
                 }
             }
-            registryService.saveRegistry({
+            await registryService.saveRegistry({
                 ...remoteReg,
                 dates: mergedDates
             });
@@ -82,7 +73,7 @@ async function main() {
     } catch (e) {
         console.warn('[DailyAdvisor] Không tải được SSOT Registry từ R2:', e.message);
     }
-    const currentReg = registryService.loadRegistry();
+    const currentReg = await registryService.loadRegistry();
 
     const raw = await getRawData();
     const cache = await service.generateAndWriteCache({
@@ -156,7 +147,7 @@ async function main() {
             const d = String(r.date || r.ngay || '').slice(0, 10);
             if (d && (r.special != null || r.prize1 != null)) rawMap.set(d, r);
         });
-        const currentReg = registryService.loadRegistry();
+        const currentReg = await registryService.loadRegistry();
         Object.entries(currentReg.dates || {}).forEach(([d, entry]) => {
             if (!entry.isSettled && rawMap.has(d)) {
                 try {

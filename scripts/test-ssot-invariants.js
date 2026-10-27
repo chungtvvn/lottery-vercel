@@ -101,14 +101,16 @@ check('registerDailyBet never mutates an existing bet with crossX2/loCrossX2 top
 });
 check('Shadow dropoff merge is registry-wins: fill-missing only, longer copy logged', () => {
     const src = fs.readFileSync(path.join(__dirname, '..', 'app', 'api', 'daily-advisor', 'route.js'), 'utf8');
-    const start = src.indexOf('Explicit shadow cache file fallback');
+    const start = src.indexOf('Explicit shadow cache (R2) fill-in');
     const end = src.indexOf('Secondary R2 fallback');
     assert.ok(start >= 0 && end > start, 'shadow fallback block must exist');
     const block = src.slice(start, end);
     assert.ok(block.includes('registry wins: ignoring longer shadow cache for deDropoffMerge'), 'de shadow log missing');
     assert.ok(block.includes('registry wins: ignoring longer shadow cache for loDropoff27'), 'lo shadow log missing');
     assert.ok(!block.includes('>= (payload'), 'old longer-shadow-overwrites rule must be gone from the shadow block');
+    assert.ok(block.includes("getR2Json('cached_de_dropoff_merge_shadow.json'"), 'de shadow must be read from R2');
     assert.ok(block.includes('if (!payload?.deDropoffMerge)'), 'shadow must only fill a missing deDropoffMerge');
+    assert.ok(block.includes("getR2Json('cached_lo_dropoff_27_shadow.json'"), 'lo shadow must be read from R2');
     assert.ok(block.includes('if (!payload?.loDropoff27)'), 'shadow must only fill a missing loDropoff27');
 });
 

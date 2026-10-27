@@ -1,3 +1,21 @@
+/**
+ * DEPRECATED — DO NOT USE IN ANY PIPELINE (owner decision 27/10/2026).
+ *
+ * Cloudflare R2 is now the ONLY store for all computed data (prefixes
+ * `statistics/` and `data/`). Downloading R2 objects back into
+ * `lib/data/` re-creates exactly the local/R2 drift this change removes
+ * (see scripts/r2-only-migration-manifest.md): a stale local copy can then
+ * be served, re-uploaded, or merged over newer live data.
+ *
+ * This file is kept ONLY as a one-off emergency snapshot tool, to be run
+ * manually by an operator who understands the drift risk — never from a
+ * cron job, npm script, or another script. Its only pipeline caller
+ * (`r2:sync:down` in package.json) was removed on 27/10/2026.
+ *
+ * The code below is intentionally UNCHANGED. If you need local data for
+ * debugging, take a snapshot to a scratch directory outside the repo
+ * instead of restoring it into `lib/data/`.
+ */
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');

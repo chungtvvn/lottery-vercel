@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getRawData, loadJsonWithSupabaseFallback } from '@/lib/data-access';
+import { getR2Json } from '@/lib/r2Store';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -91,7 +92,7 @@ function readSpecial(row) {
     return Number.isInteger(number) ? number : null;
 }
 
-function settleFromRaw(payload, rawRows) {
+async function settleFromRaw(payload, rawRows) {
     const actualByDate = new Map(
         (rawRows || []).map(row => [normalizeDate(row?.date || row?.ngay), readSpecial(row)])
             .filter(([date, actual]) => date && actual !== null)
@@ -225,15 +226,15 @@ function settleFromRaw(payload, rawRows) {
             });
         }
     }));
+    // R2-only (was a local disk read). historyPayload is currently assigned
+    // but never consumed downstream, so a missing key is logged loudly and
+    // does not fail the whole advisor response.
     let historyPayload = null;
     try {
-        const fs = require('fs');
-        const path = require('path');
-        const localHist = path.join(process.cwd(), 'lib', 'data', 'statistics', 'cached_prediction_history.json');
-        if (fs.existsSync(localHist)) {
-            historyPayload = JSON.parse(fs.readFileSync(localHist, 'utf8'));
-        }
-    } catch (_) {}
+        historyPayload = await getR2Json('cached_prediction_history.json', 'statistics');
+    } catch (error) {
+        console.error(`[daily-advisor] R2 history unavailable (statistics/cached_prediction_history.json): ${error.message}`);
+    }
 
     // SSOT: Khóa bất biến tuyệt đối dữ liệu đã sinh và lưu trong cache/file
     // CẤM TUYỆT ĐỐI tái sinh (re-synthesize/re-train) thuật toán on-the-fly trong GET request
@@ -310,13 +311,10 @@ export async function GET(request) {
             payload = await loadJsonWithSupabaseFallback('cached_daily_method_advisor.json');
         } catch (_) {}
 
+        // R2-only: the first load above already read R2. No local-file
+        // substitute — a missing/invalid cache fails loudly here.
         if (!payload || !Array.isArray(payload.records)) {
-            const fs = require('fs');
-            const path = require('path');
-            const localFile = path.join(process.cwd(), 'lib', 'data', 'statistics', 'cached_daily_method_advisor.json');
-            if (fs.existsSync(localFile)) {
-                payload = JSON.parse(fs.readFileSync(localFile, 'utf8'));
-            }
+            throw new Error('Cache gợi ý chưa được sinh (R2 statistics/cached_daily_method_advisor.json thiếu hoặc không hợp lệ)');
         }
 
         if (!payload || !Array.isArray(payload.records)) {
@@ -324,140 +322,150 @@ export async function GET(request) {
         }
 
         // Guarantee that dualMerge, tripleMerge, adaptiveDualMerge are populated with complete full-year backtest ledgers
-        const fs = require('fs');
-        const path = require('path');
-        const localFile = path.join(process.cwd(), 'lib', 'data', 'statistics', 'cached_daily_method_advisor.json');
-        if (fs.existsSync(localFile)) {
+        // R2-only re-read of the same advisor cache (previously a local disk
+        // read). Registry-wins merge semantics below are unchanged: the
+        // cache only fills sections missing in the payload, and a longer
+        // cache ledger is logged, never used — except triCoreDe,
+        // deDropoffMerge, loDropoff27 and semanticResonanceSuite, which keep
+        // their pre-existing newer-or-longer-wins rules.
+        let cachePayload = null;
+        try {
+            cachePayload = await getR2Json('cached_daily_method_advisor.json', 'statistics');
+        } catch (error) {
+            console.error(`[daily-advisor] R2 advisor cache re-read failed (statistics/cached_daily_method_advisor.json): ${error.message}`);
+        }
+        if (cachePayload) {
             try {
-                const localPayload = JSON.parse(fs.readFileSync(localFile, 'utf8'));
-                if (localPayload?.latestDataDate && (!payload.latestDataDate || localPayload.latestDataDate >= payload.latestDataDate)) {
-                    payload.latestDataDate = localPayload.latestDataDate;
-                    if (localPayload.pendingPredictionDate) {
-                        payload.pendingPredictionDate = localPayload.pendingPredictionDate;
+                if (cachePayload?.latestDataDate && (!payload.latestDataDate || cachePayload.latestDataDate >= payload.latestDataDate)) {
+                    payload.latestDataDate = cachePayload.latestDataDate;
+                    if (cachePayload.pendingPredictionDate) {
+                        payload.pendingPredictionDate = cachePayload.pendingPredictionDate;
                     }
                 }
-                if (!payload?.dualMerge) { payload.dualMerge = localPayload.dualMerge; } else if ((localPayload?.dualMerge?.settledLedger?.length || 0) > (payload?.dualMerge?.settledLedger?.length || 0)) { console.log('[daily-advisor] registry wins: ignoring longer cache ledger for dualMerge'); }
-                if (!payload?.adaptiveDualMerge) { payload.adaptiveDualMerge = localPayload.adaptiveDualMerge; } else if ((localPayload?.adaptiveDualMerge?.settledLedger?.length || 0) > (payload?.adaptiveDualMerge?.settledLedger?.length || 0)) { console.log('[daily-advisor] registry wins: ignoring longer cache ledger for adaptiveDualMerge'); }
-                if (!payload?.tripleMerge) { payload.tripleMerge = localPayload.tripleMerge; } else if ((localPayload?.tripleMerge?.settledLedger?.length || 0) > (payload?.tripleMerge?.settledLedger?.length || 0)) { console.log('[daily-advisor] registry wins: ignoring longer cache ledger for tripleMerge'); }
-                if (!payload?.loDualMerge) { payload.loDualMerge = localPayload.loDualMerge; } else if ((localPayload?.loDualMerge?.settledLedger?.length || 0) > (payload?.loDualMerge?.settledLedger?.length || 0)) { console.log('[daily-advisor] registry wins: ignoring longer cache ledger for loDualMerge'); }
-                if (!payload?.loQuantumBayesFusion) { payload.loQuantumBayesFusion = localPayload.loQuantumBayesFusion; } else if ((localPayload?.loQuantumBayesFusion?.settledLedger?.length || 0) > (payload?.loQuantumBayesFusion?.settledLedger?.length || 0)) { console.log('[daily-advisor] registry wins: ignoring longer cache ledger for loQuantumBayesFusion'); }
-                if (!payload?.loTriHarmonic) { payload.loTriHarmonic = localPayload.loTriHarmonic; } else if ((localPayload?.loTriHarmonic?.settledLedger?.length || 0) > (payload?.loTriHarmonic?.settledLedger?.length || 0)) { console.log('[daily-advisor] registry wins: ignoring longer cache ledger for loTriHarmonic'); }
+                if (!payload?.dualMerge) { payload.dualMerge = cachePayload.dualMerge; } else if ((cachePayload?.dualMerge?.settledLedger?.length || 0) > (payload?.dualMerge?.settledLedger?.length || 0)) { console.log('[daily-advisor] registry wins: ignoring longer cache ledger for dualMerge'); }
+                if (!payload?.adaptiveDualMerge) { payload.adaptiveDualMerge = cachePayload.adaptiveDualMerge; } else if ((cachePayload?.adaptiveDualMerge?.settledLedger?.length || 0) > (payload?.adaptiveDualMerge?.settledLedger?.length || 0)) { console.log('[daily-advisor] registry wins: ignoring longer cache ledger for adaptiveDualMerge'); }
+                if (!payload?.tripleMerge) { payload.tripleMerge = cachePayload.tripleMerge; } else if ((cachePayload?.tripleMerge?.settledLedger?.length || 0) > (payload?.tripleMerge?.settledLedger?.length || 0)) { console.log('[daily-advisor] registry wins: ignoring longer cache ledger for tripleMerge'); }
+                if (!payload?.loDualMerge) { payload.loDualMerge = cachePayload.loDualMerge; } else if ((cachePayload?.loDualMerge?.settledLedger?.length || 0) > (payload?.loDualMerge?.settledLedger?.length || 0)) { console.log('[daily-advisor] registry wins: ignoring longer cache ledger for loDualMerge'); }
+                if (!payload?.loQuantumBayesFusion) { payload.loQuantumBayesFusion = cachePayload.loQuantumBayesFusion; } else if ((cachePayload?.loQuantumBayesFusion?.settledLedger?.length || 0) > (payload?.loQuantumBayesFusion?.settledLedger?.length || 0)) { console.log('[daily-advisor] registry wins: ignoring longer cache ledger for loQuantumBayesFusion'); }
+                if (!payload?.loTriHarmonic) { payload.loTriHarmonic = cachePayload.loTriHarmonic; } else if ((cachePayload?.loTriHarmonic?.settledLedger?.length || 0) > (payload?.loTriHarmonic?.settledLedger?.length || 0)) { console.log('[daily-advisor] registry wins: ignoring longer cache ledger for loTriHarmonic'); }
                 // CANONICAL (registry wins): cache only fills a missing
                 // dynamicMetaAdvisor; a longer cache copy is logged, not used.
-                if (localPayload?.dynamicMetaAdvisor && !payload?.dynamicMetaAdvisor) {
-                    payload.dynamicMetaAdvisor = localPayload.dynamicMetaAdvisor;
-                } else if (localPayload?.dynamicMetaAdvisor && (localPayload.dynamicMetaAdvisor.liveDiary?.length || 0) > (payload.dynamicMetaAdvisor.liveDiary?.length || 0)) {
+                if (cachePayload?.dynamicMetaAdvisor && !payload?.dynamicMetaAdvisor) {
+                    payload.dynamicMetaAdvisor = cachePayload.dynamicMetaAdvisor;
+                } else if (cachePayload?.dynamicMetaAdvisor && (cachePayload.dynamicMetaAdvisor.liveDiary?.length || 0) > (payload.dynamicMetaAdvisor.liveDiary?.length || 0)) {
                     console.log('[daily-advisor] registry wins: ignoring longer cache dynamicMetaAdvisor');
                 }
                 // CANONICAL (registry wins): cache only fills a missing
                 // metaLearner; a longer cache copy is logged, not used.
-                if (localPayload?.metaLearner && !payload?.metaLearner) {
-                    payload.metaLearner = localPayload.metaLearner;
-                } else if (localPayload?.metaLearner && (localPayload.metaLearner.settledLedger?.length || 0) > (payload.metaLearner.settledLedger?.length || 0)) {
+                if (cachePayload?.metaLearner && !payload?.metaLearner) {
+                    payload.metaLearner = cachePayload.metaLearner;
+                } else if (cachePayload?.metaLearner && (cachePayload.metaLearner.settledLedger?.length || 0) > (payload.metaLearner.settledLedger?.length || 0)) {
                     console.log('[daily-advisor] registry wins: ignoring longer cache metaLearner ledger');
                 }
-                if (!payload?.streakAwareDeAdvisor && localPayload?.streakAwareDeAdvisor) {
-                    payload.streakAwareDeAdvisor = localPayload.streakAwareDeAdvisor;
+                if (!payload?.streakAwareDeAdvisor && cachePayload?.streakAwareDeAdvisor) {
+                    payload.streakAwareDeAdvisor = cachePayload.streakAwareDeAdvisor;
                 }
-                if (!payload?.deMarkovGapHazard && localPayload?.deMarkovGapHazard) {
-                    payload.deMarkovGapHazard = localPayload.deMarkovGapHazard;
+                if (!payload?.deMarkovGapHazard && cachePayload?.deMarkovGapHazard) {
+                    payload.deMarkovGapHazard = cachePayload.deMarkovGapHazard;
                 }
-                if (!payload?.dePositionalGraphFlow && localPayload?.dePositionalGraphFlow) {
-                    payload.dePositionalGraphFlow = localPayload.dePositionalGraphFlow;
+                if (!payload?.dePositionalGraphFlow && cachePayload?.dePositionalGraphFlow) {
+                    payload.dePositionalGraphFlow = cachePayload.dePositionalGraphFlow;
                 }
-                if (!payload?.loQuadHybrid && localPayload?.loQuadHybrid) {
-                    payload.loQuadHybrid = localPayload.loQuadHybrid;
+                if (!payload?.loQuadHybrid && cachePayload?.loQuadHybrid) {
+                    payload.loQuadHybrid = cachePayload.loQuadHybrid;
                 }
-                if (!payload?.loPentaMatrix && localPayload?.loPentaMatrix) {
-                    payload.loPentaMatrix = localPayload.loPentaMatrix;
+                if (!payload?.loPentaMatrix && cachePayload?.loPentaMatrix) {
+                    payload.loPentaMatrix = cachePayload.loPentaMatrix;
                 }
-                if (!payload?.loPositionalBridgeFlow && localPayload?.loPositionalBridgeFlow) {
-                    payload.loPositionalBridgeFlow = localPayload.loPositionalBridgeFlow;
+                if (!payload?.loPositionalBridgeFlow && cachePayload?.loPositionalBridgeFlow) {
+                    payload.loPositionalBridgeFlow = cachePayload.loPositionalBridgeFlow;
                 }
-                if (!payload?.loHawkesClustering && localPayload?.loHawkesClustering) {
-                    payload.loHawkesClustering = localPayload.loHawkesClustering;
+                if (!payload?.loHawkesClustering && cachePayload?.loHawkesClustering) {
+                    payload.loHawkesClustering = cachePayload.loHawkesClustering;
                 }
-                if (!payload?.loXien4Synergy && localPayload?.loXien4Synergy) {
-                    payload.loXien4Synergy = localPayload.loXien4Synergy;
+                if (!payload?.loXien4Synergy && cachePayload?.loXien4Synergy) {
+                    payload.loXien4Synergy = cachePayload.loXien4Synergy;
                 }
                 // CANONICAL (registry wins): cache only fills a missing
                 // lo4EngineFusion; a longer cache copy is logged, not used.
                 if (!payload?.lo4EngineFusion?.modes && !payload?.lo4EngineFusion?.settledLedger) {
-                    payload.lo4EngineFusion = localPayload.lo4EngineFusion;
-                } else if ((localPayload?.lo4EngineFusion?.settledLedger?.length || 0) > (payload?.lo4EngineFusion?.settledLedger?.length || 0)) {
+                    payload.lo4EngineFusion = cachePayload.lo4EngineFusion;
+                } else if ((cachePayload?.lo4EngineFusion?.settledLedger?.length || 0) > (payload?.lo4EngineFusion?.settledLedger?.length || 0)) {
                     console.log('[daily-advisor] registry wins: ignoring longer cache lo4EngineFusion ledger');
                 }
-                if (!payload?.loTop5ConsensusXien && localPayload?.loTop5ConsensusXien) {
-                    payload.loTop5ConsensusXien = localPayload.loTop5ConsensusXien;
+                if (!payload?.loTop5ConsensusXien && cachePayload?.loTop5ConsensusXien) {
+                    payload.loTop5ConsensusXien = cachePayload.loTop5ConsensusXien;
                 }
-                if (localPayload?.crossHedgingPortfolio) {
-                    const localLedgerLen = localPayload.crossHedgingPortfolio.settledLedger?.length || 0;
+                if (cachePayload?.crossHedgingPortfolio) {
+                    const cacheLedgerLen = cachePayload.crossHedgingPortfolio.settledLedger?.length || 0;
                     const r2LedgerLen = payload.crossHedgingPortfolio?.settledLedger?.length || 0;
                     // CANONICAL (registry wins): cache only fills a missing
                     // crossHedgingPortfolio; a longer cache copy is logged.
                     if (!payload.crossHedgingPortfolio) {
-                        payload.crossHedgingPortfolio = localPayload.crossHedgingPortfolio;
-                    } else if (localLedgerLen > r2LedgerLen) {
+                        payload.crossHedgingPortfolio = cachePayload.crossHedgingPortfolio;
+                    } else if (cacheLedgerLen > r2LedgerLen) {
                         console.log('[daily-advisor] registry wins: ignoring longer cache crossHedgingPortfolio ledger');
                     }
                 }
-                if (localPayload?.triCoreDe) {
-                    const localTarget = localPayload.triCoreDe.latestRecommendation?.targetDate || '';
+                if (cachePayload?.triCoreDe) {
+                    const cacheTarget = cachePayload.triCoreDe.latestRecommendation?.targetDate || '';
                     const r2Target = payload?.triCoreDe?.latestRecommendation?.targetDate || '';
-                    if (!payload.triCoreDe || localTarget >= r2Target) {
-                        payload.triCoreDe = localPayload.triCoreDe;
+                    if (!payload.triCoreDe || cacheTarget >= r2Target) {
+                        payload.triCoreDe = cachePayload.triCoreDe;
                     }
                 }
-                if (localPayload?.deDropoffMerge) {
-                    const localTarget = localPayload.deDropoffMerge.latestRecommendation?.targetDate || '';
+                if (cachePayload?.deDropoffMerge) {
+                    const cacheTarget = cachePayload.deDropoffMerge.latestRecommendation?.targetDate || '';
                     const r2Target = payload?.deDropoffMerge?.latestRecommendation?.targetDate || '';
-                    const localLen = localPayload.deDropoffMerge.settledLedger?.length || 0;
+                    const cacheLen = cachePayload.deDropoffMerge.settledLedger?.length || 0;
                     const r2Len = payload?.deDropoffMerge?.settledLedger?.length || 0;
-                    if (!payload.deDropoffMerge || localLen >= r2Len || localTarget >= r2Target) {
-                        payload.deDropoffMerge = localPayload.deDropoffMerge;
+                    if (!payload.deDropoffMerge || cacheLen >= r2Len || cacheTarget >= r2Target) {
+                        payload.deDropoffMerge = cachePayload.deDropoffMerge;
                     }
                 }
-                if (localPayload?.loDropoff27) {
-                    const localTarget = localPayload.loDropoff27.latestRecommendation?.targetDate || '';
+                if (cachePayload?.loDropoff27) {
+                    const cacheTarget = cachePayload.loDropoff27.latestRecommendation?.targetDate || '';
                     const r2Target = payload?.loDropoff27?.latestRecommendation?.targetDate || '';
-                    const localLen = localPayload.loDropoff27.settledLedger?.length || 0;
+                    const cacheLen = cachePayload.loDropoff27.settledLedger?.length || 0;
                     const r2Len = payload?.loDropoff27?.settledLedger?.length || 0;
-                    if (!payload.loDropoff27 || localLen >= r2Len || localTarget >= r2Target) {
-                        payload.loDropoff27 = localPayload.loDropoff27;
+                    if (!payload.loDropoff27 || cacheLen >= r2Len || cacheTarget >= r2Target) {
+                        payload.loDropoff27 = cachePayload.loDropoff27;
                     }
                 }
-                if (localPayload?.semanticResonanceSuite) {
-                    const localTarget = localPayload.semanticResonanceSuite.latestRecommendation?.targetDate || '';
+                if (cachePayload?.semanticResonanceSuite) {
+                    const cacheTarget = cachePayload.semanticResonanceSuite.latestRecommendation?.targetDate || '';
                     const r2Target = payload?.semanticResonanceSuite?.latestRecommendation?.targetDate || '';
-                    if (!payload.semanticResonanceSuite || localTarget >= r2Target) {
-                        payload.semanticResonanceSuite = localPayload.semanticResonanceSuite;
+                    if (!payload.semanticResonanceSuite || cacheTarget >= r2Target) {
+                        payload.semanticResonanceSuite = cachePayload.semanticResonanceSuite;
                     }
                 }
 
-                // Explicit shadow cache file fallback for deDropoffMerge and loDropoff27
+                // Explicit shadow cache (R2) fill-in for deDropoffMerge and loDropoff27
                 // CANONICAL (registry wins, same rule as the main merge above):
                 // a shadow cache copy only fills a section missing in the
                 // payload; a longer shadow copy is logged, never overwrites.
+                // A missing R2 shadow key is logged loudly for that section
+                // and leaves the payload section untouched.
                 try {
-                    const deDropoffShadowFile = path.join(process.cwd(), 'lib', 'data', 'statistics', 'cached_de_dropoff_merge_shadow.json');
-                    if (fs.existsSync(deDropoffShadowFile)) {
-                        const shadowDe = JSON.parse(fs.readFileSync(deDropoffShadowFile, 'utf8'));
-                        if (!payload?.deDropoffMerge) {
-                            payload.deDropoffMerge = shadowDe;
-                        } else if ((shadowDe?.settledLedger?.length || 0) > (payload.deDropoffMerge.settledLedger?.length || 0)) {
-                            console.log('[daily-advisor] registry wins: ignoring longer shadow cache for deDropoffMerge');
-                        }
+                    const shadowDe = await getR2Json('cached_de_dropoff_merge_shadow.json', 'statistics');
+                    if (!payload?.deDropoffMerge) {
+                        payload.deDropoffMerge = shadowDe;
+                    } else if ((shadowDe?.settledLedger?.length || 0) > (payload.deDropoffMerge.settledLedger?.length || 0)) {
+                        console.log('[daily-advisor] registry wins: ignoring longer shadow cache for deDropoffMerge');
                     }
-                    const loDropoffShadowFile = path.join(process.cwd(), 'lib', 'data', 'statistics', 'cached_lo_dropoff_27_shadow.json');
-                    if (fs.existsSync(loDropoffShadowFile)) {
-                        const shadowLo = JSON.parse(fs.readFileSync(loDropoffShadowFile, 'utf8'));
-                        if (!payload?.loDropoff27) {
-                            payload.loDropoff27 = shadowLo;
-                        } else if ((shadowLo?.settledLedger?.length || 0) > (payload.loDropoff27.settledLedger?.length || 0)) {
-                            console.log('[daily-advisor] registry wins: ignoring longer shadow cache for loDropoff27');
-                        }
+                } catch (error) {
+                    console.error(`[daily-advisor] R2 shadow unavailable (statistics/cached_de_dropoff_merge_shadow.json): ${error.message}`);
+                }
+                try {
+                    const shadowLo = await getR2Json('cached_lo_dropoff_27_shadow.json', 'statistics');
+                    if (!payload?.loDropoff27) {
+                        payload.loDropoff27 = shadowLo;
+                    } else if ((shadowLo?.settledLedger?.length || 0) > (payload.loDropoff27.settledLedger?.length || 0)) {
+                        console.log('[daily-advisor] registry wins: ignoring longer shadow cache for loDropoff27');
                     }
-                } catch (_) {}
+                } catch (error) {
+                    console.error(`[daily-advisor] R2 shadow unavailable (statistics/cached_lo_dropoff_27_shadow.json): ${error.message}`);
+                }
             } catch (_) {}
         }
 
@@ -481,7 +489,7 @@ export async function GET(request) {
             let localReg = null;
             try {
                 const regService = require('@/lib/services/dailyLockedBetsRegistryService');
-                localReg = (regService.loadRegistry || regService.getRegistry)();
+                localReg = await (regService.loadRegistry || regService.getRegistry)();
             } catch (_) {}
             let r2Reg = null;
             try {
@@ -521,7 +529,8 @@ export async function GET(request) {
         const raw = await getRawData();
         const { isPredictionLockActive } = require('@/lib/utils/predictionLockGuard');
         const nextTargetDate = payload?.streakAwareDeAdvisor?.latestRecommendation?.predictionDate || payload?.pendingPredictionDate;
-        const lockStatus = isPredictionLockActive(nextTargetDate, raw);
+        const { isPredictionLockActiveAsync } = require('@/lib/utils/predictionLockGuard');
+        const lockStatus = await isPredictionLockActiveAsync(nextTargetDate, raw);
         if (lockStatus.isLocked) {
             if (payload?.streakAwareDeAdvisor?.latestRecommendation) {
                 payload.streakAwareDeAdvisor.latestRecommendation.snapshotLock = lockStatus;
@@ -563,7 +572,7 @@ export async function GET(request) {
             }
         }
 
-        const settled = settleFromRaw(payload, raw);
+        const settled = await settleFromRaw(payload, raw);
 
         // ĐỒNG BỘ VÀ ĐỐI SOÁT SSOT REGISTRY VỚI KẾT QUẢ MỞ THƯỞNG
         if (payload.dailyLockedBetsRegistry && Array.isArray(raw)) {
@@ -573,10 +582,10 @@ export async function GET(request) {
                 if (d) rawMap.set(d, r);
             });
             const { settleDateDirectly } = require('@/lib/services/dailyLockedBetsRegistryService');
-            Object.entries(payload.dailyLockedBetsRegistry.dates || {}).forEach(([d, entry]) => {
+            for (const [d, entry] of Object.entries(payload.dailyLockedBetsRegistry.dates || {})) {
                 if (!entry.isSettled && rawMap.has(d)) {
                     try {
-                        const settledEntry = settleDateDirectly(d, rawMap.get(d));
+                        const settledEntry = await settleDateDirectly(d, rawMap.get(d));
                         if (settledEntry) {
                             payload.dailyLockedBetsRegistry.dates[d] = settledEntry;
                         }
@@ -584,7 +593,7 @@ export async function GET(request) {
                         console.error(`[API daily-advisor] Error settling locked bets for ${d}:`, err);
                     }
                 }
-            });
+            }
 
             // Đồng bộ ngược vào settled ledgers để frontend luôn nhận đủ 100% dữ liệu
             const chLedger = settled.crossHedgingPortfolio?.settledLedger || [];

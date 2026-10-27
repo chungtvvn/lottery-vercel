@@ -837,7 +837,7 @@ Trang thai hien tai: R2 la production source. Khong bat dong thoi Supabase sync 
 ```bash
 npm run dev
 npm run build
-npm run r2:sync:down
+REMOVED 2026-10-27 (R2-only): npm run r2:sync:down was removed; sync-from-r2.js is deprecated and must not be used in any pipeline — R2 is the only store.
 npm run stats:audit
 npm run test:so-le-theo-cap
 npm run test:prediction-history-immutability
