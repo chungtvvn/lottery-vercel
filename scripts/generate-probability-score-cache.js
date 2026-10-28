@@ -27,7 +27,21 @@ async function main() {
     let history = null;
     let existing = null;
     try {
-        if (!useLocalHistory) history = await loadJsonWithSupabaseFallback('cached_prediction_history.json');
+        if (!useLocalHistory) {
+            history = await loadJsonWithSupabaseFallback('cached_prediction_history.json');
+        } else {
+            const fs = require('fs');
+            const localHistFile = path.join(__dirname, '..', 'lib', 'data', 'statistics', 'cached_prediction_history.json');
+            if (fs.existsSync(localHistFile)) {
+                try {
+                    const loaded = JSON.parse(fs.readFileSync(localHistFile, 'utf8'));
+                    history = loaded.history || loaded.records || loaded;
+                } catch (_) {}
+            }
+            if (!history) {
+                history = await loadJsonWithSupabaseFallback('cached_prediction_history.json');
+            }
+        }
         existing = await loadJsonWithSupabaseFallback('cached_probability_score.json');
     } catch (error) {
         console.log(`[ProbabilityScore] Chưa có cache R2 cũ: ${error.message}`);

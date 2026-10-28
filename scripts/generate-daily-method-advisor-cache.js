@@ -76,6 +76,24 @@ async function main() {
     const currentReg = await registryService.loadRegistry();
 
     const raw = await getRawData();
+    const latestRawDate = raw?.at(-1)?.date;
+    const expectedPredictionDate = nextIsoDate(latestRawDate);
+
+    // Đảm bảo history có đủ snapshot ngày tiếp theo; nếu cục bộ thiếu thì tự động nạp từ R2
+    const hasExpectedDate = (runs) => Array.isArray(runs) && runs.some(r => r?.predictionDate === expectedPredictionDate);
+    if (!hasExpectedDate(history)) {
+        try {
+            console.log(`[DailyAdvisor] History hiện tại thiếu ngày kế tiếp ${expectedPredictionDate}, đang nạp từ R2...`);
+            const r2History = await loadJsonWithSupabaseFallback('cached_prediction_history.json');
+            const r2Runs = Array.isArray(r2History) ? r2History : r2History?.history || r2History?.records || null;
+            if (hasExpectedDate(r2Runs) || (r2Runs?.length || 0) >= (history?.length || 0)) {
+                history = r2Runs;
+            }
+        } catch (e) {
+            console.warn('[DailyAdvisor] Không tải được history từ R2:', e.message);
+        }
+    }
+
     const cache = await service.generateAndWriteCache({
         history: history || undefined,
         raw,
@@ -91,7 +109,6 @@ async function main() {
         existingCache: existingCache,
         dailyLockedBetsRegistry: currentReg
     });
-    const expectedPredictionDate = nextIsoDate(cache.latestDataDate);
     const pendingSnapshot = cache.records.find(record => record?.predictionDate === expectedPredictionDate);
     if (!pendingSnapshot || pendingSnapshot.settled || pendingSnapshot.main?.numbers?.length !== service.BET_COUNT) {
         throw new Error(`Thiếu snapshot ngày kế tiếp ${expectedPredictionDate || 'unknown'} sau khi sinh Daily Advisor.`);
