@@ -3423,71 +3423,79 @@
             const isWin = (info.isLotoWin != null) ? info.isLotoWin : (lotoProfitK > 0 || (hits > 0 && lotoPayoutK > lotoStakeK));
             const isPending = Boolean(info.isPending);
 
-            const getMethodsText = (b, color = '#0f172a') => {
+            const getMethodsTip = (b) => {
                 const m = Array.isArray(b.methods) ? b.methods.join('+') : (b.methods || '');
-                return m ? ` <span class="text-[9px] font-sans font-black ml-0.5" style="color: ${color} !important;">(${escapeHtml(m)})</span>` : '';
+                return m ? `PP: ${m}` : '';
             };
 
             const renderChipX5 = (b) => {
                 const isHit = !isPending && (b.hits || 0) > 0;
+                const tip = getMethodsTip(b);
+                const titleAttr = tip ? ` title="${escapeHtml(tip)}"` : '';
                 if (isHit) {
                     return `
-                        <span class="px-2.5 py-1 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black font-mono text-xs ring-2 ring-emerald-300 shadow-md scale-105 animate-pulse" style="color: #ffffff !important;">
-                            🎯 ${number(b.num)}${getMethodsText(b, '#d1fae5')} <span class="bg-emerald-950 text-emerald-200 px-1 py-0.2 rounded text-[9px] font-black ml-0.5">(${b.hits}n)</span>
+                        <span${titleAttr} class="px-2 py-0.5 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black font-mono text-xs ring-2 ring-emerald-300 shadow-sm scale-105 inline-flex items-center gap-1 cursor-default" style="color: #ffffff !important;">
+                            🎯 ${number(b.num)} <span class="bg-emerald-950 text-emerald-200 px-1 py-0.2 rounded text-[9px] font-black">(${b.hits}n)</span>
                         </span>
                     `;
                 }
                 return `
-                    <span class="lo-tier-chip-x5 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all" style="background-color: #fef08a !important; border: 2px solid #eab308 !important; color: #020617 !important;">
-                        ${number(b.num)}${getMethodsText(b, '#713f12')}
+                    <span${titleAttr} class="lo-tier-chip-x5 px-2 py-0.5 rounded-lg font-mono text-xs font-black shadow-2xs hover:shadow-sm transition-all inline-flex items-center justify-center cursor-default" style="background-color: #fef08a !important; border: 2px solid #eab308 !important; color: #020617 !important;">
+                        ${number(b.num)}
                     </span>
                 `;
             };
 
             const renderChipX4 = (b) => {
                 const isHit = !isPending && (b.hits || 0) > 0;
+                const tip = getMethodsTip(b);
+                const titleAttr = tip ? ` title="${escapeHtml(tip)}"` : '';
                 if (isHit) {
                     return `
-                        <span class="px-2.5 py-1 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black font-mono text-xs ring-2 ring-emerald-300 shadow-md scale-105 animate-pulse" style="color: #ffffff !important;">
-                            🎯 ${number(b.num)}${getMethodsText(b, '#d1fae5')} <span class="bg-emerald-950 text-emerald-200 px-1 py-0.2 rounded text-[9px] font-black ml-0.5">(${b.hits}n)</span>
+                        <span${titleAttr} class="px-2 py-0.5 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black font-mono text-xs ring-2 ring-emerald-300 shadow-sm scale-105 inline-flex items-center gap-1 cursor-default" style="color: #ffffff !important;">
+                            🎯 ${number(b.num)} <span class="bg-emerald-950 text-emerald-200 px-1 py-0.2 rounded text-[9px] font-black">(${b.hits}n)</span>
                         </span>
                     `;
                 }
                 return `
-                    <span class="lo-tier-chip-x4 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all" style="background-color: #fed7aa !important; border: 2px solid #f97316 !important; color: #020617 !important;">
-                        ${number(b.num)}${getMethodsText(b, '#7c2d12')}
+                    <span${titleAttr} class="lo-tier-chip-x4 px-2 py-0.5 rounded-lg font-mono text-xs font-black shadow-2xs hover:shadow-sm transition-all inline-flex items-center justify-center cursor-default" style="background-color: #fed7aa !important; border: 2px solid #f97316 !important; color: #020617 !important;">
+                        ${number(b.num)}
                     </span>
                 `;
             };
 
             const renderChipX3 = (b) => {
                 const isHit = !isPending && (b.hits || 0) > 0;
+                const tip = getMethodsTip(b);
+                const titleAttr = tip ? ` title="${escapeHtml(tip)}"` : '';
                 if (isHit) {
                     return `
-                        <span class="px-2.5 py-1 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black font-mono text-xs ring-2 ring-emerald-300 shadow-md scale-105 animate-pulse" style="color: #ffffff !important;">
-                            🎯 ${number(b.num)}${getMethodsText(b, '#d1fae5')} <span class="bg-emerald-950 text-emerald-200 px-1 py-0.2 rounded text-[9px] font-black ml-0.5">(${b.hits}n)</span>
+                        <span${titleAttr} class="px-2 py-0.5 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black font-mono text-xs ring-2 ring-emerald-300 shadow-sm scale-105 inline-flex items-center gap-1 cursor-default" style="color: #ffffff !important;">
+                            🎯 ${number(b.num)} <span class="bg-emerald-950 text-emerald-200 px-1 py-0.2 rounded text-[9px] font-black">(${b.hits}n)</span>
                         </span>
                     `;
                 }
                 return `
-                    <span class="lo-tier-chip-x3 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all" style="background-color: #bae6fd !important; border: 2px solid #0284c7 !important; color: #020617 !important;">
-                        ${number(b.num)}${getMethodsText(b, '#082f49')}
+                    <span${titleAttr} class="lo-tier-chip-x3 px-2 py-0.5 rounded-lg font-mono text-xs font-black shadow-2xs hover:shadow-sm transition-all inline-flex items-center justify-center cursor-default" style="background-color: #bae6fd !important; border: 2px solid #0284c7 !important; color: #020617 !important;">
+                        ${number(b.num)}
                     </span>
                 `;
             };
 
             const renderChipX1 = (b) => {
                 const isHit = !isPending && (b.hits || 0) > 0;
+                const tip = getMethodsTip(b);
+                const titleAttr = tip ? ` title="${escapeHtml(tip)}"` : '';
                 if (isHit) {
                     return `
-                        <span class="px-2.5 py-1 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black font-mono text-xs ring-2 ring-emerald-300 shadow-md scale-105 animate-pulse" style="color: #ffffff !important;">
-                            🎯 ${number(b.num)}${getMethodsText(b, '#d1fae5')} <span class="bg-emerald-950 text-emerald-200 px-1 py-0.2 rounded text-[9px] font-black ml-0.5">(${b.hits}n)</span>
+                        <span${titleAttr} class="px-2 py-0.5 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black font-mono text-xs ring-2 ring-emerald-300 shadow-sm scale-105 inline-flex items-center gap-1 cursor-default" style="color: #ffffff !important;">
+                            🎯 ${number(b.num)} <span class="bg-emerald-950 text-emerald-200 px-1 py-0.2 rounded text-[9px] font-black">(${b.hits}n)</span>
                         </span>
                     `;
                 }
                 return `
-                    <span class="lo-tier-chip-x1 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all" style="background-color: #e2e8f0 !important; border: 2px solid #64748b !important; color: #020617 !important;">
-                        ${number(b.num)}${getMethodsText(b, '#0f172a')}
+                    <span${titleAttr} class="lo-tier-chip-x1 px-2 py-0.5 rounded-lg font-mono text-xs font-black shadow-2xs hover:shadow-sm transition-all inline-flex items-center justify-center cursor-default" style="background-color: #e2e8f0 !important; border: 2px solid #64748b !important; color: #020617 !important;">
+                        ${number(b.num)}
                     </span>
                 `;
             };
@@ -3523,54 +3531,58 @@
                         </div>
                     ` : ''}
 
-                    <div class="space-y-2.5">
-                        ${tierX5Nums.length ? `
-                            <div>
-                                <div class="lo-tier-header-x5 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #78350f !important;">
-                                    <span>👑 TẦNG SIÊU VIP (CƯỢC X5 · 11M/SỐ · ${tierX5Nums.length} SỐ):</span>
-                                    <span class="text-[10px] font-bold" style="color: #92400e !important;">Trùng 4 PP</span>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <div class="space-y-2">
+                            ${tierX5Nums.length ? `
+                                <div class="p-2 rounded-xl bg-amber-50/50 border border-amber-200">
+                                    <div class="lo-tier-header-x5 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #78350f !important;">
+                                        <span>👑 TẦNG SIÊU VIP (CƯỢC X5 · 11M/SỐ · ${tierX5Nums.length} SỐ):</span>
+                                        <span class="text-[10px] font-bold" style="color: #92400e !important;">Trùng 4 PP</span>
+                                    </div>
+                                    <div class="flex flex-wrap gap-1.5">
+                                        ${tierX5Nums.map(renderChipX5).join('')}
+                                    </div>
                                 </div>
-                                <div class="flex flex-wrap gap-1.5">
-                                    ${tierX5Nums.map(renderChipX5).join('')}
-                                </div>
-                            </div>
-                        ` : ''}
+                            ` : ''}
 
-                        ${tierX4Nums.length ? `
-                            <div>
-                                <div class="lo-tier-header-x4 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #78350f !important;">
-                                    <span>⚡ TẦNG CỰC VIP (CƯỢC X4 · 8.8M/SỐ · ${tierX4Nums.length} SỐ):</span>
-                                    <span class="text-[10px] font-bold" style="color: #92400e !important;">Trùng 3 PP</span>
+                            ${tierX4Nums.length ? `
+                                <div class="p-2 rounded-xl bg-orange-50/40 border border-orange-200">
+                                    <div class="lo-tier-header-x4 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #78350f !important;">
+                                        <span>⚡ TẦNG CỰC VIP (CƯỢC X4 · 8.8M/SỐ · ${tierX4Nums.length} SỐ):</span>
+                                        <span class="text-[10px] font-bold" style="color: #92400e !important;">Trùng 3 PP</span>
+                                    </div>
+                                    <div class="flex flex-wrap gap-1.5">
+                                        ${tierX4Nums.map(renderChipX4).join('')}
+                                    </div>
                                 </div>
-                                <div class="flex flex-wrap gap-1.5">
-                                    ${tierX4Nums.map(renderChipX4).join('')}
-                                </div>
-                            </div>
-                        ` : ''}
+                            ` : ''}
 
-                        ${tierX3Nums.length ? `
-                            <div>
-                                <div class="lo-tier-header-x3 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #0369a1 !important;">
-                                    <span>⚡ TẦNG TRIỂN VỌNG (CƯỢC X3 · 6.6M/SỐ · ${tierX3Nums.length} SỐ):</span>
-                                    <span class="text-[10px] font-bold" style="color: #0284c7 !important;">Trùng 2 PP</span>
+                            ${tierX3Nums.length ? `
+                                <div class="p-2 rounded-xl bg-sky-50/40 border border-sky-200">
+                                    <div class="lo-tier-header-x3 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #0369a1 !important;">
+                                        <span>⚡ TẦNG TRIỂN VỌNG (CƯỢC X3 · 6.6M/SỐ · ${tierX3Nums.length} SỐ):</span>
+                                        <span class="text-[10px] font-bold" style="color: #0284c7 !important;">Trùng 2 PP</span>
+                                    </div>
+                                    <div class="flex flex-wrap gap-1.5">
+                                        ${tierX3Nums.map(renderChipX3).join('')}
+                                    </div>
                                 </div>
-                                <div class="flex flex-wrap gap-1.5">
-                                    ${tierX3Nums.map(renderChipX3).join('')}
-                                </div>
-                            </div>
-                        ` : ''}
+                            ` : ''}
+                        </div>
 
-                        ${tierX1Nums.length ? `
-                            <div>
-                                <div class="lo-tier-header-x1 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #1e293b !important;">
-                                    <span>🛡️ TẦNG BẢO HIỂM (CƯỢC X1 · 2.2M/SỐ · ${tierX1Nums.length} SỐ):</span>
-                                    <span class="text-[10px] font-bold" style="color: #475569 !important;">Không trùng</span>
+                        <div class="space-y-2">
+                            ${tierX1Nums.length ? `
+                                <div class="p-2 rounded-xl bg-slate-50 border border-slate-200">
+                                    <div class="lo-tier-header-x1 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #1e293b !important;">
+                                        <span>🛡️ TẦNG BẢO HIỂM (CƯỢC X1 · 2.2M/SỐ · ${tierX1Nums.length} SỐ):</span>
+                                        <span class="text-[10px] font-bold" style="color: #475569 !important;">Không trùng</span>
+                                    </div>
+                                    <div class="flex flex-wrap gap-1.5">
+                                        ${tierX1Nums.map(renderChipX1).join('')}
+                                    </div>
                                 </div>
-                                <div class="flex flex-wrap gap-1.5">
-                                    ${tierX1Nums.map(renderChipX1).join('')}
-                                </div>
-                            </div>
-                        ` : ''}
+                            ` : ''}
+                        </div>
                     </div>
                 </div>
             `;
@@ -3600,54 +3612,57 @@
                 betMap[number(b.num)] = b;
             });
 
-            const getMethodsText = (n, color = '#0f172a') => {
+            const getMethodsTip = (n) => {
                 const b = betMap[n];
                 if (!b) return '';
                 const m = Array.isArray(b.methods) ? b.methods.join('+') : (b.methods || '');
-                return m ? ` <span class="text-[9px] font-sans font-black ml-0.5" style="color: ${color} !important;">(${escapeHtml(m)})</span>` : '';
+                return m ? `PP: ${m}` : '';
             };
 
             const renderCrossChip = (n, mult, tierKey) => {
                 const hits = isPending ? 0 : (prizeCountsInfo[n] || 0);
                 const isHit = !isPending && hits > 0;
+                const tip = getMethodsTip(n);
+                const titleAttr = tip ? ` title="${escapeHtml(tip)}"` : '';
+
                 if (isHit) {
                     return `
-                        <span class="px-2.5 py-1 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black font-mono text-xs ring-2 ring-emerald-300 shadow-md scale-105 animate-pulse inline-flex items-center gap-1" style="color: #ffffff !important;">
-                            🎯 ${n}${getMethodsText(n, '#d1fae5')} <span class="bg-emerald-950 text-emerald-200 px-1 py-0.2 rounded text-[9px] font-black ml-0.5">(${hits}n)</span>
+                        <span${titleAttr} class="px-2 py-0.5 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black font-mono text-xs ring-2 ring-emerald-300 shadow-sm scale-105 inline-flex items-center gap-1 cursor-default" style="color: #ffffff !important;">
+                            🎯 ${n} <span class="bg-emerald-950 text-emerald-200 px-1 py-0.2 rounded text-[9px] font-black">(${hits}n)</span>
                         </span>
                     `;
                 }
                 if (tierKey === 'X5') {
                     return `
-                        <span class="lo-tier-chip-x5 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all inline-flex items-center gap-1" style="background-color: #fef08a !important; border: 2px solid #eab308 !important; color: #020617 !important;">
-                            ${n}${getMethodsText(n, '#713f12')}
+                        <span${titleAttr} class="lo-tier-chip-x5 px-2 py-0.5 rounded-lg font-mono text-xs font-black shadow-2xs hover:shadow-sm transition-all inline-flex items-center justify-center cursor-default" style="background-color: #fef08a !important; border: 2px solid #eab308 !important; color: #020617 !important;">
+                            ${n}
                         </span>
                     `;
                 }
                 if (tierKey === 'X4') {
                     return `
-                        <span class="lo-tier-chip-x4 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all inline-flex items-center gap-1" style="background-color: #fed7aa !important; border: 2px solid #f97316 !important; color: #020617 !important;">
-                            ${n}${getMethodsText(n, '#7c2d12')}
+                        <span${titleAttr} class="lo-tier-chip-x4 px-2 py-0.5 rounded-lg font-mono text-xs font-black shadow-2xs hover:shadow-sm transition-all inline-flex items-center justify-center cursor-default" style="background-color: #fed7aa !important; border: 2px solid #f97316 !important; color: #020617 !important;">
+                            ${n}
                         </span>
                     `;
                 }
                 if (tierKey === 'X3') {
                     return `
-                        <span class="lo-tier-chip-x3 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all inline-flex items-center gap-1" style="background-color: #bae6fd !important; border: 2px solid #0284c7 !important; color: #020617 !important;">
-                            ${n}${getMethodsText(n, '#082f49')}
+                        <span${titleAttr} class="lo-tier-chip-x3 px-2 py-0.5 rounded-lg font-mono text-xs font-black shadow-2xs hover:shadow-sm transition-all inline-flex items-center justify-center cursor-default" style="background-color: #bae6fd !important; border: 2px solid #0284c7 !important; color: #020617 !important;">
+                            ${n}
                         </span>
                     `;
                 }
                 if (tierKey === 'X2') {
                     return `
-                        <span class="lo-tier-chip-x2 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all inline-flex items-center gap-1" style="background-color: #fef3c7 !important; border: 2px solid #d97706 !important; color: #020617 !important;">
-                            ⚡ ${n}${getMethodsText(n, '#92400e')}
+                        <span${titleAttr} class="lo-tier-chip-x2 px-2 py-0.5 rounded-lg font-mono text-xs font-black shadow-2xs hover:shadow-sm transition-all inline-flex items-center justify-center cursor-default" style="background-color: #fef3c7 !important; border: 2px solid #d97706 !important; color: #020617 !important;">
+                            ⚡ ${n}
                         </span>
                     `;
                 }
                 return `
-                    <span class="lo-tier-chip-x1 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-xs hover:shadow-sm transition-all inline-flex items-center gap-1" style="background-color: #e2e8f0 !important; border: 2px solid #64748b !important; color: #020617 !important;">
-                        ${n}${getMethodsText(n, '#0f172a')}
+                    <span${titleAttr} class="lo-tier-chip-x1 px-2 py-0.5 rounded-lg font-mono text-xs font-black shadow-2xs hover:shadow-sm transition-all inline-flex items-center justify-center cursor-default" style="background-color: #e2e8f0 !important; border: 2px solid #64748b !important; color: #020617 !important;">
+                        ${n}
                     </span>
                 `;
             };
@@ -3656,115 +3671,115 @@
             const totalHits = isPending ? 0 : allCrossNumbers.reduce((acc, n) => acc + (prizeCountsInfo[n] || 0), 0);
 
             return `
-                <div class="bg-slate-50/60 rounded-xl p-3 sm:p-4 border-2 border-emerald-300 space-y-3 text-slate-800">
+                <div class="bg-slate-50/60 rounded-xl p-2.5 sm:p-3 border-2 border-emerald-300 space-y-2.5 text-slate-800">
                     <!-- Header -->
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-200 pb-2.5">
-                        <div>
-                            <span class="rounded bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black text-[10px] px-2 py-0.5 uppercase tracking-wide shadow-xs">
-                                🚀 LÔ ĐỘT PHÁ X2 (NÂNG HẠNG CHÉO VỚI SHADOW)
+                    <div class="flex flex-wrap items-center justify-between gap-1.5 border-b border-emerald-200 pb-2">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="rounded bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black text-[10px] px-2 py-0.5 uppercase tracking-wide shadow-xs shrink-0">
+                                🚀 LÔ ĐỘT PHÁ X2 (NÂNG HẠNG SHADOW)
                             </span>
-                            ${!isPending ? `<span class="rounded ${info.isLive ? 'bg-red-100 text-red-800 border border-red-300' : 'bg-slate-200 text-slate-700'} font-black text-[10px] px-2 py-0.5 uppercase ml-1">${info.isLive ? '🔴 ĐỐI SOÁT LIVE' : '🛡️ STRICT PIT'}</span>` : ''}
-                            <h4 class="font-black text-sm text-emerald-950 mt-1 flex items-center gap-1.5">
-                                <span>Kỳ mở thưởng: ${formatDateVi(info.date)}</span>
-                                <span class="text-xs text-slate-500 font-normal">(${allCrossNumbers.length} số tổng hợp)</span>
-                            </h4>
+                            ${!isPending ? `<span class="rounded ${info.isLive ? 'bg-red-100 text-red-800 border border-red-300' : 'bg-slate-200 text-slate-700'} font-black text-[10px] px-2 py-0.5 uppercase shrink-0">${info.isLive ? '🔴 LIVE' : '🛡️ PIT'}</span>` : ''}
+                            <span class="font-black text-xs text-emerald-950 shrink-0">Kỳ: ${formatDateVi(info.date)}</span>
+                            <span class="text-[11px] text-slate-500 font-normal shrink-0">(${allCrossNumbers.length} số)</span>
                         </div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-1.5 shrink-0">
                             ${isPending
                                 ? '<span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300">⏳ Chờ 18:30</span>'
                                 : (isWin
                                     ? `<span class="text-xs font-black px-2.5 py-0.5 rounded bg-emerald-100 text-emerald-900 border border-emerald-300">🔥 THẮNG (+${moneyM(profitKX2)})</span>`
                                     : `<span class="text-xs font-bold px-2.5 py-0.5 rounded bg-rose-100 text-rose-800 border border-rose-300">❌ THUA (${moneyM(profitKX2)})</span>`)}
-                            <button type="button" class="btn-copy-expanded-numbers text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-sm flex items-center gap-1 cursor-pointer" data-date="${info.date}" data-tab="lo4CrossX2">
+                            <button type="button" class="btn-copy-expanded-numbers text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-sm flex items-center gap-1 cursor-pointer shrink-0" data-date="${info.date}" data-tab="lo4CrossX2">
                                 <i class="bi bi-clipboard-check"></i> Copy dàn X2
                             </button>
                         </div>
                     </div>
 
-                    <!-- Callout: Giải thích cơ chế -->
-                    <div class="rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 p-2.5 text-[11px] text-emerald-950 leading-relaxed space-y-1">
-                        <div>
-                            💡 <strong>Cơ chế Nâng Hạng Chéo X2:</strong> Các số nằm ở tầng <strong>X1</strong> của Lô Ghép 4 nếu xuất hiện ở nhóm đồng thuận cao (<strong>&ge; X3</strong>: X5, X4 hoặc X3) bên <strong>Shadow Monitor</strong> sẽ được nâng hạng lên <strong>Tier X2</strong> (Cược 4.4M/số [200 điểm], ăn 16.0M/nháy). Các số còn lại giữ nguyên Tier X1 (Cược 2.2M/số [100 điểm], ăn 8.0M/nháy).
-                        </div>
-                        <div class="text-[10px] text-emerald-800 italic">
-                            * Kiểm định Strict PIT 2026: Lô Ghép 4 tăng thêm <strong>+187,0M VNĐ</strong> lợi nhuận ròng, Max Drawdown giảm từ 153.2M xuống 147.6M.
-                        </div>
+                    <!-- Callout: Giải thích cơ chế siêu gọn -->
+                    <div class="rounded-lg bg-emerald-50/80 border border-emerald-200 px-2.5 py-1.5 text-[11px] text-emerald-950 flex flex-wrap items-center justify-between gap-1 leading-snug">
+                        <div>💡 <strong>Cơ chế X2:</strong> Số tầng X1 trùng Shadow &ge;X3 được nâng lên <strong>Tier X2 (4.4M/số)</strong>, ăn 16M/nháy. Số còn lại cược X1 (2.2M/số).</div>
+                        <div class="text-[10px] text-emerald-800 italic shrink-0">* Strict PIT 2026: +187M LN ròng, MDD giảm 153.2M &rarr; 147.6M</div>
                     </div>
 
                     <!-- Bố cục 2 cột compact trên màn hình rộng / độ phân giải cao -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        ${tierX5.length > 0 ? `
-                            <div class="p-2 rounded-xl bg-amber-50/50 border border-amber-200 flex flex-col justify-between">
-                                <div class="lo-tier-header-x5 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #78350f !important;">
-                                    <span class="truncate">👑 TẦNG SIÊU VIP (CƯỢC X5 · 11M · ${tierX5.length} SỐ):</span>
-                                    <span class="text-[10px] font-bold shrink-0 ml-1" style="color: #92400e !important;">500đ · Trùng 4 PP</span>
+                        <!-- Cột 1: Các tầng gốc cao (X5, X4, X3) -->
+                        <div class="space-y-2">
+                            ${tierX5.length > 0 ? `
+                                <div class="p-2 rounded-xl bg-amber-50/50 border border-amber-200">
+                                    <div class="lo-tier-header-x5 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #78350f !important;">
+                                        <span class="truncate">👑 TẦNG SIÊU VIP (CƯỢC X5 · 11M · ${tierX5.length} SỐ):</span>
+                                        <span class="text-[10px] font-bold shrink-0 ml-1" style="color: #92400e !important;">Trùng 4 PP</span>
+                                    </div>
+                                    <div class="flex flex-wrap gap-1.5 items-center">
+                                        ${tierX5.map(n => renderCrossChip(n, 5, 'X5')).join('')}
+                                    </div>
                                 </div>
-                                <div class="flex flex-wrap gap-1.5 items-center">
-                                    ${tierX5.map(n => renderCrossChip(n, 5, 'X5')).join('')}
-                                </div>
-                            </div>
-                        ` : ''}
+                            ` : ''}
 
-                        ${tierX4.length > 0 ? `
-                            <div class="p-2 rounded-xl bg-orange-50/40 border border-orange-200 flex flex-col justify-between">
-                                <div class="lo-tier-header-x4 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #78350f !important;">
-                                    <span class="truncate">⚡ TẦNG CỰC VIP (CƯỢC X4 · 8.8M · ${tierX4.length} SỐ):</span>
-                                    <span class="text-[10px] font-bold shrink-0 ml-1" style="color: #92400e !important;">400đ · Trùng 3 PP</span>
+                            ${tierX4.length > 0 ? `
+                                <div class="p-2 rounded-xl bg-orange-50/40 border border-orange-200">
+                                    <div class="lo-tier-header-x4 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #78350f !important;">
+                                        <span class="truncate">⚡ TẦNG CỰC VIP (CƯỢC X4 · 8.8M · ${tierX4.length} SỐ):</span>
+                                        <span class="text-[10px] font-bold shrink-0 ml-1" style="color: #92400e !important;">Trùng 3 PP</span>
+                                    </div>
+                                    <div class="flex flex-wrap gap-1.5 items-center">
+                                        ${tierX4.map(n => renderCrossChip(n, 4, 'X4')).join('')}
+                                    </div>
                                 </div>
-                                <div class="flex flex-wrap gap-1.5 items-center">
-                                    ${tierX4.map(n => renderCrossChip(n, 4, 'X4')).join('')}
-                                </div>
-                            </div>
-                        ` : ''}
+                            ` : ''}
 
-                        ${tierX3.length > 0 ? `
-                            <div class="p-2 rounded-xl bg-sky-50/40 border border-sky-200 flex flex-col justify-between">
-                                <div class="lo-tier-header-x3 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #0369a1 !important;">
-                                    <span class="truncate">⚡ TẦNG TRIỂN VỌNG (CƯỢC X3 · 6.6M · ${tierX3.length} SỐ):</span>
-                                    <span class="text-[10px] font-bold shrink-0 ml-1" style="color: #0284c7 !important;">300đ · Trùng 2 PP</span>
+                            ${tierX3.length > 0 ? `
+                                <div class="p-2 rounded-xl bg-sky-50/40 border border-sky-200">
+                                    <div class="lo-tier-header-x3 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #0369a1 !important;">
+                                        <span class="truncate">⚡ TẦNG TRIỂN VỌNG (CƯỢC X3 · 6.6M · ${tierX3.length} SỐ):</span>
+                                        <span class="text-[10px] font-bold shrink-0 ml-1" style="color: #0284c7 !important;">300đ · Trùng 2 PP</span>
+                                    </div>
+                                    <div class="flex flex-wrap gap-1.5 items-center">
+                                        ${tierX3.map(n => renderCrossChip(n, 3, 'X3')).join('')}
+                                    </div>
                                 </div>
-                                <div class="flex flex-wrap gap-1.5 items-center">
-                                    ${tierX3.map(n => renderCrossChip(n, 3, 'X3')).join('')}
-                                </div>
-                            </div>
-                        ` : ''}
-
-                        <!-- ⚡ TẦNG X2 ĐỘT PHÁ NÂNG HẠNG (TIÊU ĐIỂM) -->
-                        <div class="p-2 rounded-xl bg-gradient-to-r from-amber-100/70 to-yellow-50/80 border-2 border-amber-400 shadow-xs flex flex-col justify-between">
-                            <div class="flex items-center justify-between text-[11px] mb-1" style="color: #b45309 !important;">
-                                <span class="font-black uppercase truncate flex items-center gap-1.5">
-                                    <i class="bi bi-rocket-takeoff-fill text-amber-600"></i>
-                                    🚀 TẦNG X2 ĐỘT PHÁ (${tierX2.length} SỐ):
-                                </span>
-                                <span class="text-[10px] font-bold shrink-0 ml-1 bg-amber-200 text-amber-950 px-1.5 py-0.2 rounded">200đ · Nâng từ X1</span>
-                            </div>
-                            ${tierX2.length > 0 ? `
-                                <div class="flex flex-wrap gap-1.5 items-center">
-                                    ${tierX2.map(n => renderCrossChip(n, 2, 'X2')).join('')}
-                                </div>
-                            ` : `
-                                <div class="text-[10px] text-slate-500 italic p-1 bg-white/70 rounded-lg border border-amber-200">
-                                    0 số nâng X2 (Không có số X1 nào đạt &ge; X3 bên Shadow &rarr; Cược như gốc).
-                                </div>
-                            `}
+                            ` : ''}
                         </div>
 
-                        <!-- 🛡️ TẦNG X1 BỌC LÓT CÒN LẠI -->
-                        ${tierX1.length > 0 ? `
-                            <div class="p-2 rounded-xl bg-slate-50 border border-slate-200 md:col-span-2">
-                                <div class="lo-tier-header-x1 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #1e293b !important;">
-                                    <span class="truncate">🛡️ TẦNG X1 BỌC LÓT CÒN LẠI (CƯỢC X1 · 2.2M · ${tierX1.length} SỐ):</span>
-                                    <span class="text-[10px] font-bold shrink-0 ml-1" style="color: #475569 !important;">100đ · Không thăng hạng</span>
+                        <!-- Cột 2: Phân tầng Đột Phá X2 & Bọc lót X1 -->
+                        <div class="space-y-2">
+                            <!-- ⚡ TẦNG X2 ĐỘT PHÁ NÂNG HẠNG (TIÊU ĐIỂM) -->
+                            <div class="p-2 rounded-xl bg-gradient-to-r from-amber-100/70 to-yellow-50/80 border-2 border-amber-400 shadow-xs">
+                                <div class="flex items-center justify-between text-[11px] mb-1" style="color: #b45309 !important;">
+                                    <span class="font-black uppercase truncate flex items-center gap-1.5">
+                                        <i class="bi bi-rocket-takeoff-fill text-amber-600"></i>
+                                        🚀 TẦNG X2 ĐỘT PHÁ (${tierX2.length} SỐ):
+                                    </span>
+                                    <span class="text-[10px] font-bold shrink-0 ml-1 bg-amber-200 text-amber-950 px-1.5 py-0.2 rounded">200đ · Nâng từ X1</span>
                                 </div>
-                                <div class="flex flex-wrap gap-1.5 items-center">
-                                    ${tierX1.map(n => renderCrossChip(n, 1, 'X1')).join('')}
-                                </div>
+                                ${tierX2.length > 0 ? `
+                                    <div class="flex flex-wrap gap-1.5 items-center">
+                                        ${tierX2.map(n => renderCrossChip(n, 2, 'X2')).join('')}
+                                    </div>
+                                ` : `
+                                    <div class="text-[10px] text-slate-500 italic p-1 bg-white/70 rounded-lg border border-amber-200">
+                                        0 số nâng X2 (Không có số X1 nào đạt &ge; X3 bên Shadow &rarr; Cược như gốc).
+                                    </div>
+                                `}
                             </div>
-                        ` : ''}
+
+                            <!-- 🛡️ TẦNG X1 BỌC LÓT CÒN LẠI -->
+                            ${tierX1.length > 0 ? `
+                                <div class="p-2 rounded-xl bg-slate-50 border border-slate-200">
+                                    <div class="lo-tier-header-x1 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #1e293b !important;">
+                                        <span class="truncate">🛡️ TẦNG X1 BỌC LÓT (${tierX1.length} SỐ):</span>
+                                        <span class="text-[10px] font-bold shrink-0 ml-1" style="color: #475569 !important;">100đ · Cược 2.2M</span>
+                                    </div>
+                                    <div class="flex flex-wrap gap-1.5 items-center">
+                                        ${tierX1.map(n => renderCrossChip(n, 1, 'X1')).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
                     </div>
 
                     <!-- Bảng tài chính tổng kết -->
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs font-mono">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 pt-1 text-xs font-mono">
                         <div class="bg-white p-2 rounded-lg border border-slate-200">
                             <span class="text-slate-500 block text-[10px]">Vốn Cược X2:</span>
                             <strong class="text-slate-900 font-bold">${moneyM(stakeKX2)}</strong>
@@ -5388,11 +5403,36 @@
         }
     }
 
+    function clampExpandedCardToViewport(el) {
+        if (!el) return;
+        const card = el.classList?.contains('diary-card-viewport-wrapper') 
+            ? el 
+            : el.querySelector('.diary-card-viewport-wrapper');
+        if (!card) return;
+
+        const scrollContainer = card.closest('.overflow-x-auto');
+        const updateWidth = () => {
+            if (!document.body.contains(card)) return;
+            const visibleW = scrollContainer ? scrollContainer.clientWidth : window.innerWidth;
+            const clampedW = Math.max(280, visibleW - 16);
+            card.style.maxWidth = `${clampedW}px`;
+        };
+
+        updateWidth();
+
+        if (scrollContainer && window.ResizeObserver && !card.__roAttached) {
+            card.__roAttached = true;
+            const ro = new ResizeObserver(updateWidth);
+            ro.observe(scrollContainer);
+        }
+    }
+
     function switchDiaryExpandedTab(date, tabId) {
         const container = document.getElementById(`diaryExpandedContent-${date}`);
         if (!container) return;
         currentExpandedType = tabId;
         container.innerHTML = renderDiaryExpandedCard(date, tabId);
+        clampExpandedCardToViewport(container);
         updateDiaryCellIndicators(date, tabId);
     }
 
@@ -5436,41 +5476,41 @@
         const contentHtml = renderDiaryPopoverContent(activeInfo, currentTab);
 
         return `
-            <div class="rounded-2xl bg-white border-2 border-amber-300 p-4 sm:p-5 text-slate-800 shadow-xl space-y-4">
+            <div class="diary-card-viewport-wrapper sticky left-0 box-border w-full rounded-2xl bg-white border-2 border-amber-300 p-3 sm:p-4 text-slate-800 shadow-xl space-y-3" style="max-width: calc(100vw - 2.5rem);">
                 <!-- Header bar -->
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
-                    <div class="flex items-center gap-2.5 flex-wrap">
-                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400 text-slate-950 font-black text-xs shadow-sm">
-                            <i class="bi bi-calendar-check-fill"></i> Ngày ${formatDateVi(date)}
+                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2.5">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-xs shadow-sm shrink-0">
+                            <i class="bi bi-calendar-check-fill"></i> ${formatDateVi(date)}
                         </span>
-                        <span class="text-xs text-slate-700 font-bold">
-                            Giải Đặc Biệt: <strong class="text-slate-950 font-mono text-base px-2.5 py-0.5 bg-slate-100 border border-slate-300 rounded-lg font-black shadow-2xs">${actualSpec != null ? number(actualSpec) : '--'}</strong>
+                        <span class="text-xs text-slate-700 font-bold shrink-0">
+                            Đặc Biệt: <strong class="text-slate-950 font-mono text-sm px-2 py-0.5 bg-slate-100 border border-slate-300 rounded font-black">${actualSpec != null ? number(actualSpec) : '--'}</strong>
                         </span>
-                        <span class="text-xs font-mono font-bold ${dayTotalK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">
-                            Lãi ròng ngày: <strong class="text-sm font-black">${moneyM(dayTotalK, { signed: true })}</strong>
+                        <span class="text-xs font-mono font-bold ${dayTotalK >= 0 ? 'text-emerald-700' : 'text-rose-700'} shrink-0">
+                            Lãi ròng: <strong class="text-xs font-black">${moneyM(dayTotalK, { signed: true })}</strong>
                         </span>
                     </div>
-                    <div class="flex items-center gap-2 shrink-0">
-                        <button type="button" class="btn-copy-lo-xien-expanded text-xs font-bold px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-sm flex items-center gap-1.5 font-sans cursor-pointer" data-date="${date}">
-                            <i class="bi bi-clipboard2-check"></i> Copy Lô + Xiên
+                    <div class="flex items-center gap-1.5 shrink-0 flex-wrap">
+                        <button type="button" class="btn-copy-lo-xien-expanded text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-sm flex items-center gap-1 font-sans cursor-pointer shrink-0" data-date="${date}">
+                            <i class="bi bi-clipboard2-check"></i> Copy Lô+Xiên
                         </button>
-                        <button type="button" class="btn-copy-expanded-numbers text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-all shadow-sm flex items-center gap-1.5 font-sans cursor-pointer" data-date="${date}" data-tab="${currentTab}">
-                            <i class="bi bi-clipboard-check"></i> Sao chép ${currentTab === 'de' ? 'dàn Đề' : (currentTab === 'loStd' ? 'Top 20' : (currentTab === 'loX2' ? 'Top 7' : (currentTab === 'lo4Engine' ? 'dàn Ghép 4' : (currentTab === 'loXien5' ? '5 dàn Xiên 4' : 'dàn số'))))}
+                        <button type="button" class="btn-copy-expanded-numbers text-xs font-bold px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-all shadow-sm flex items-center gap-1 font-sans cursor-pointer shrink-0" data-date="${date}" data-tab="${currentTab}">
+                            <i class="bi bi-clipboard-check"></i> Sao chép ${currentTab === 'de' ? 'dàn Đề' : (currentTab === 'loStd' ? 'Top 20' : (currentTab === 'loX2' ? 'Top 7' : (currentTab === 'lo4Engine' ? 'dàn Ghép 4' : (currentTab === 'lo4CrossX2' ? 'dàn X2' : (currentTab === 'loXien5' ? '5 dàn X4' : 'dàn số')))))}
                         </button>
-                        <button type="button" class="btn-diary-collapse-row text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition-all flex items-center gap-1 cursor-pointer" data-date="${date}">
+                        <button type="button" class="btn-diary-collapse-row text-xs font-bold px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition-all flex items-center gap-1 cursor-pointer shrink-0" data-date="${date}">
                             <i class="bi bi-chevron-up"></i> Thu gọn
                         </button>
                     </div>
                 </div>
 
                 <!-- Tab Pills Selector -->
-                <div class="flex flex-wrap items-center gap-1.5 border-b border-slate-200 pb-2.5">
-                    <span class="text-[10px] font-black uppercase text-slate-600 mr-1">Xem dàn:</span>
+                <div class="flex flex-wrap items-center gap-1.5 border-b border-slate-200 pb-2">
+                    <span class="text-[10px] font-black uppercase text-slate-600 mr-1 shrink-0">Xem dàn:</span>
                     ${TABS.map(tab => {
                         const isActive = (tab.id === currentTab);
                         return `
                             <button type="button" 
-                                    class="diary-exp-tab-btn rounded-lg px-2.5 py-1 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${isActive ? 'bg-amber-400 text-slate-950 font-black shadow-md ring-2 ring-amber-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-semibold'}" 
+                                    class="diary-exp-tab-btn rounded-lg px-2 py-0.5 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer shrink-0 ${isActive ? 'bg-amber-400 text-slate-950 font-black shadow-xs ring-1 ring-amber-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-semibold'}" 
                                     data-date="${date}" 
                                     data-tab="${tab.id}">
                                 <i class="bi ${tab.icon}"></i> ${tab.label}
@@ -5480,7 +5520,7 @@
                 </div>
 
                 <!-- Tab Content Body -->
-                <div class="diary-exp-content-body max-h-[600px] overflow-y-auto pr-1 custom-scrollbar">
+                <div class="diary-exp-content-body max-h-[600px] overflow-y-auto pr-0.5 custom-scrollbar">
                     ${contentHtml}
                 </div>
             </div>
@@ -5521,12 +5561,13 @@
         newRow.id = `diaryExpandedRow-${date}`;
         newRow.className = 'diary-expanded-row transition-all';
         newRow.innerHTML = `
-            <td colspan="${colCount}" class="p-2 sm:p-4 bg-amber-50/40 border-y-2 border-amber-300" id="diaryExpandedContent-${date}">
+            <td colspan="${colCount}" class="p-1 sm:p-2 bg-amber-50/40 border-y-2 border-amber-300" id="diaryExpandedContent-${date}">
                 ${renderDiaryExpandedCard(date, type)}
             </td>
         `;
 
         tr.parentNode.insertBefore(newRow, tr.nextSibling);
+        clampExpandedCardToViewport(newRow);
         updateDiaryCellIndicators(date, type);
 
         // Cuộn nhẹ để hàng mở rộng vừa vặn tầm mắt
@@ -5561,11 +5602,13 @@
                     const info = getDiaryInfo(date, tab);
                     if (info) {
                         if (tab === 'lo4CrossX2') {
-                            const t5 = (info.tierX5 || []).join(',');
-                            const t4 = (info.tierX4 || []).join(',');
-                            const t3 = (info.tierX3 || []).join(',');
-                            const t2 = (info.tierX2 || []).join(',');
-                            const t1 = (info.tierX1 || []).join(',');
+                            const crossX2 = info.crossX2 || {};
+                            const baseLo4 = info.baseLo4 || getDiaryInfo(date, 'lo4Engine') || {};
+                            const t5 = (info.tierX5?.length ? info.tierX5 : (crossX2.tierX5 || baseLo4.tierX5 || [])).map(number).join(',');
+                            const t4 = (info.tierX4?.length ? info.tierX4 : (crossX2.tierX4 || baseLo4.tierX4 || [])).map(number).join(',');
+                            const t3 = (info.tierX3?.length ? info.tierX3 : (crossX2.tierX3 || baseLo4.tierX3 || [])).map(number).join(',');
+                            const t2 = (info.tierX2?.length ? info.tierX2 : (crossX2.tierX2 || [])).map(number).join(',');
+                            const t1 = (info.tierX1?.length ? info.tierX1 : (crossX2.tierX1 || (baseLo4.tierX1 || []).filter(n => !(crossX2.tierX2 || []).map(number).includes(number(n))))).map(number).join(',');
                             const lines = [
                                 `X5: ${t5}`.trimEnd(),
                                 `X4: ${t4}`.trimEnd(),
@@ -5574,6 +5617,7 @@
                                 `X1: ${t1}`.trimEnd()
                             ];
                             copyRawText(lines.join('\n'), `Đã sao chép dàn Lô Đột Phá X2 theo phân tầng ngày ${formatDateVi(date)}!`);
+                            return;
                         } else if (tab === 'lo4Engine' && info.betNumbers?.length) {
                             copyNumbers(info.betNumbers.map(b => b.num));
                         } else if (tab === 'loXien5') {
