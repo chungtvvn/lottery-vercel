@@ -2914,68 +2914,116 @@ function hasValidAdvisorData(payload) {
   );
 }
 
+// Cache in-memory trong worker isolate (tồn tại suốt vòng đời isolate, response 0ms)
+let _memAdvisorPayload = null;
+let _memAdvisorTime = 0;
+const WORKER_MEM_CACHE_TTL_MS = 60 * 1000; // 60 giây
+
 async function getLockedAdvisorPayload(env, options = {}) {
-  let advisorPayload = await fetchPredictionJson(env, '/api/daily-advisor').catch(err => {
-    console.warn('Failed to fetch /api/daily-advisor, will try fallback:', err?.message || err);
+  const vnDate = getVietnamDate();
+  const kvKey = `LOCKED_ADVISOR_${vnDate}`;
+  const latestKvKey = 'LOCKED_ADVISOR_LATEST';
+
+  // 1. FAST PATH 1: Trả về ngay từ RAM Worker Isolate (0ms)
+  if (!options.force && _memAdvisorPayload && (Date.now() - _memAdvisorTime < WORKER_MEM_CACHE_TTL_MS)) {
+    const predictionDate = _memAdvisorPayload?.crossHedgingPortfolio?.latestRecommendation?.targetDate
+      || _memAdvisorPayload?.crossHedgingPortfolio?.targetDate
+      || _memAdvisorPayload?.streakAwareDeAdvisor?.latestRecommendation?.predictionDate
+      || _memAdvisorPayload?.pendingPredictionDate
+      || vnDate;
+    return { advisorPayload: _memAdvisorPayload, predictionDate };
+  }
+
+  // 2. FAST PATH 2: Đọc ngay từ Cloudflare Edge KV (~15ms) TRƯỚC KHI tải mạng nặng
+  if (!options.force && env.TELEGRAM_STATE) {
+    try {
+      const saved = (await env.TELEGRAM_STATE.get(kvKey, 'json'))
+        || (await env.TELEGRAM_STATE.get(latestKvKey, 'json'));
+      if (saved && hasValidAdvisorData(saved) && saved.dailyLockedBetsRegistry?.dates) {
+        _memAdvisorPayload = saved;
+        _memAdvisorTime = Date.now();
+        const predictionDate = saved?.crossHedgingPortfolio?.latestRecommendation?.targetDate
+          || saved?.crossHedgingPortfolio?.targetDate
+          || saved?.streakAwareDeAdvisor?.latestRecommendation?.predictionDate
+          || saved?.pendingPredictionDate
+          || vnDate;
+        return { advisorPayload: saved, predictionDate };
+      }
+    } catch (kvErr) {
+      console.warn('KV early read error:', kvErr);
+    }
+  }
+
+  // 3. NETWORK PATH: Ưu tiên tải bản Telegram view siêu gọn (~200KB thay vì 25MB)
+  let advisorPayload = await fetchPredictionJson(env, '/api/daily-advisor?view=telegram').catch(err => {
+    console.warn('Failed to fetch /api/daily-advisor?view=telegram, will try full fallback:', err?.message || err);
     return null;
   });
 
   if (!hasValidAdvisorData(advisorPayload)) {
+    advisorPayload = await fetchPredictionJson(env, '/api/daily-advisor').catch(err => {
+      console.warn('Failed to fetch /api/daily-advisor, will try R2 fallback:', err?.message || err);
+      return null;
+    });
+  }
+
+  // 4. FALLBACK NHANH: Đọc daily_locked_bets_registry.json từ R2 (chỉ 2MB, không tải 57MB)
+  if (!hasValidAdvisorData(advisorPayload)) {
     try {
       const r2Base = String(env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || 'https://pub-df6c4a2a06ff417cad48f09d66fd7bf0.r2.dev').replace(/\/$/, '');
-      const r2Res = await fetch(`${r2Base}/statistics/cached_daily_method_advisor.json?_t=${Date.now()}`, {
+      const regRes = await fetch(`${r2Base}/statistics/daily_locked_bets_registry.json?_t=${Date.now()}`, {
         headers: { accept: 'application/json', 'cache-control': 'no-cache', pragma: 'no-cache' }
       });
-      if (r2Res.ok) {
-        const r2Json = await r2Res.json();
-        if (hasValidAdvisorData(r2Json)) {
-          advisorPayload = r2Json;
+      if (regRes.ok) {
+        const regJson = await regRes.json();
+        if (regJson?.dates) {
+          const regDates = Object.keys(regJson.dates).sort();
+          advisorPayload = {
+            latestDataDate: regDates[regDates.length - 1],
+            pendingPredictionDate: vnDate,
+            dailyLockedBetsRegistry: regJson
+          };
         }
       }
-    } catch (r2Err) {
-      console.warn('R2 fallback fetch error:', r2Err);
+    } catch (regErr) {
+      console.warn('R2 registry quick fallback error:', regErr);
+    }
+
+    // 5. ULTIMATE FALLBACK: File 57MB từ R2 chỉ tải khi mọi nguồn khác đều hỏng
+    if (!hasValidAdvisorData(advisorPayload)) {
+      try {
+        const r2Base = String(env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || 'https://pub-df6c4a2a06ff417cad48f09d66fd7bf0.r2.dev').replace(/\/$/, '');
+        const r2Res = await fetch(`${r2Base}/statistics/cached_daily_method_advisor.json?_t=${Date.now()}`, {
+          headers: { accept: 'application/json', 'cache-control': 'no-cache', pragma: 'no-cache' }
+        });
+        if (r2Res.ok) {
+          const r2Json = await r2Res.json();
+          if (hasValidAdvisorData(r2Json)) {
+            advisorPayload = r2Json;
+          }
+        }
+      } catch (r2Err) {
+        console.warn('R2 full advisor fallback error:', r2Err);
+      }
     }
   }
 
-  // Merge latest dailyLockedBetsRegistry from R2 to ensure complete SSOT dates
-  try {
-    const r2Base = String(env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || 'https://pub-df6c4a2a06ff417cad48f09d66fd7bf0.r2.dev').replace(/\/$/, '');
-    const regRes = await fetch(`${r2Base}/statistics/daily_locked_bets_registry.json?_t=${Date.now()}`, {
-      headers: { accept: 'application/json', 'cache-control': 'no-cache', pragma: 'no-cache' }
-    });
-    if (regRes.ok) {
-      const regJson = await regRes.json();
-      if (regJson?.dates) {
-        if (!advisorPayload.dailyLockedBetsRegistry) {
+  // Đảm bảo có đầy đủ dữ liệu đối soát dailyLockedBetsRegistry
+  if (advisorPayload && (!advisorPayload.dailyLockedBetsRegistry || !advisorPayload.dailyLockedBetsRegistry.dates)) {
+    try {
+      const r2Base = String(env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || 'https://pub-df6c4a2a06ff417cad48f09d66fd7bf0.r2.dev').replace(/\/$/, '');
+      const regRes = await fetch(`${r2Base}/statistics/daily_locked_bets_registry.json?_t=${Date.now()}`, {
+        headers: { accept: 'application/json', 'cache-control': 'no-cache', pragma: 'no-cache' }
+      });
+      if (regRes.ok) {
+        const regJson = await regRes.json();
+        if (regJson?.dates) {
           advisorPayload.dailyLockedBetsRegistry = { ...regJson };
-        } else {
-          const mergedDates = { ...(advisorPayload.dailyLockedBetsRegistry.dates || {}) };
-          for (const d of Object.keys(regJson.dates)) {
-            const incoming = regJson.dates[d];
-            const existing = mergedDates[d];
-            if (!existing) {
-              mergedDates[d] = incoming;
-            } else if (existing.isSettled && !incoming?.isSettled) {
-              // Preserve settled state
-              mergedDates[d] = {
-                ...incoming,
-                ...existing,
-                isSettled: true,
-                settlement: existing.settlement || incoming.settlement
-              };
-            } else {
-              mergedDates[d] = {
-                ...existing,
-                ...incoming
-              };
-            }
-          }
-          advisorPayload.dailyLockedBetsRegistry.dates = mergedDates;
         }
       }
+    } catch (regErr) {
+      console.warn('R2 registry fetch error:', regErr);
     }
-  } catch (regErr) {
-    console.warn('R2 registry fetch error:', regErr);
   }
 
   if (!advisorPayload) advisorPayload = {};
@@ -2987,7 +3035,13 @@ async function getLockedAdvisorPayload(env, options = {}) {
     || advisorPayload?.loQuantumBayesFusion?.latestRecommendation?.predictionDate
     || advisorPayload?.dualMerge?.latestRecommendation?.predictionDate
     || advisorPayload?.pendingPredictionDate
-    || getVietnamDate();
+    || vnDate;
+
+  // Cập nhật bộ nhớ isolate RAM
+  if (hasValidAdvisorData(advisorPayload) || advisorPayload?.dailyLockedBetsRegistry?.dates) {
+    _memAdvisorPayload = advisorPayload;
+    _memAdvisorTime = Date.now();
+  }
 
   if (!env.TELEGRAM_STATE) {
     return { advisorPayload, predictionDate };
@@ -3004,33 +3058,22 @@ async function getLockedAdvisorPayload(env, options = {}) {
     const parts = vnFormatter.formatToParts(new Date());
     const m = {};
     for (const p of parts) m[p.type] = p.value;
-    const vnDate = `${m.year}-${m.month}-${m.day}`;
+    const nowVnDate = `${m.year}-${m.month}-${m.day}`;
     const vnHour = parseInt(m.hour, 10);
-    if (vnDate === String(predictionDate).slice(0, 10) && vnHour >= 12) {
+    if (nowVnDate === String(predictionDate).slice(0, 10) && vnHour >= 12) {
       inLockWindow = true;
     }
   } catch (_) {}
 
-  const kvKey = `LOCKED_ADVISOR_${predictionDate}`;
+  // Ghi vào KV để các request sau (và tất cả user khác) truy cập tức thì trong 15ms
   try {
-    if (!options.force) {
-      const saved = await env.TELEGRAM_STATE.get(kvKey, 'json');
-      const savedLatestDate = saved?.latestDataDate || '';
-      const currentLatestDate = advisorPayload?.latestDataDate || '';
-      const savedSettledCount = Object.keys(saved?.dailyLockedBetsRegistry?.dates || {}).filter(d => saved.dailyLockedBetsRegistry.dates[d]?.isSettled).length;
-      const currentSettledCount = Object.keys(advisorPayload?.dailyLockedBetsRegistry?.dates || {}).filter(d => advisorPayload.dailyLockedBetsRegistry.dates[d]?.isSettled).length;
-
-      // Only reuse saved KV snapshot if current advisorPayload does NOT have newer settled data
-      if (saved && hasValidAdvisorData(saved) && (!currentLatestDate || savedLatestDate >= currentLatestDate) && currentSettledCount <= savedSettledCount) {
-        // Use the locked snapshot from KV
-        return { advisorPayload: saved, predictionDate };
-      }
-    }
-    if ((inLockWindow || options.force) && hasValidAdvisorData(advisorPayload)) {
-      await env.TELEGRAM_STATE.put(kvKey, JSON.stringify(advisorPayload), { expirationTtl: 86400 });
+    if ((inLockWindow || options.force || true) && (hasValidAdvisorData(advisorPayload) || advisorPayload?.dailyLockedBetsRegistry?.dates)) {
+      const targetKvKey = `LOCKED_ADVISOR_${predictionDate}`;
+      await env.TELEGRAM_STATE.put(targetKvKey, JSON.stringify(advisorPayload), { expirationTtl: 86400 });
+      await env.TELEGRAM_STATE.put(latestKvKey, JSON.stringify(advisorPayload), { expirationTtl: 86400 });
     }
   } catch (err) {
-    console.warn('KV locked advisor read/write error:', err);
+    console.warn('KV locked advisor write error:', err);
   }
 
   return { advisorPayload, predictionDate };

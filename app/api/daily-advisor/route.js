@@ -11,6 +11,23 @@ const NO_STORE_HEADERS = {
     Expires: '0'
 };
 
+const API_CACHE_TTL_MS = 60 * 1000; // 60 giây cache in-memory trên server
+let _apiCache = {
+    full: null,
+    shadow: null,
+    telegram: null,
+    timestamp: 0,
+    etag: null
+};
+
+function getCacheHeaders(etag) {
+    return {
+        'Cache-Control': 'public, max-age=30, stale-while-revalidate=120',
+        'ETag': etag || '"daily_advisor_v1"',
+        'Vary': 'Accept-Encoding, Cookie, Authorization, x-api-key'
+    };
+}
+
 function isAuthorized(request) {
     if (request.cookies?.get('xsmb_session')?.value === 'authenticated') {
         return true;
@@ -307,7 +324,19 @@ export async function GET(request) {
     }
     try {
         const url = new URL(request.url);
+        const force = url.searchParams.get('force') === '1';
         const isShadowView = url.searchParams.get('view') === 'shadow';
+        const isTelegramView = url.searchParams.get('view') === 'telegram';
+        const viewKey = isTelegramView ? 'telegram' : (isShadowView ? 'shadow' : 'full');
+
+        // FAST PATH: Phục vụ tức thì từ cache in-memory trên server (< 2ms)
+        if (!force && _apiCache[viewKey] && (Date.now() - _apiCache.timestamp < API_CACHE_TTL_MS)) {
+            const clientEtag = request.headers.get('if-none-match');
+            if (clientEtag && clientEtag === _apiCache.etag) {
+                return new NextResponse(null, { status: 304, headers: getCacheHeaders(_apiCache.etag) });
+            }
+            return NextResponse.json(_apiCache[viewKey], { headers: getCacheHeaders(_apiCache.etag) });
+        }
 
         let payload = null;
         try {
@@ -1047,33 +1076,76 @@ export async function GET(request) {
                 console.error('[API] MiroFish Swarm Build Error:', err);
             }
         }
-        if (isShadowView) {
-            const shadowKeys = [
-                'version', 'generatedAt', 'latestDataDate', 'pendingPredictionDate',
-                'snapshotLock', 'targetDate', 'dailyLockedBetsRegistry', 'deDropoffMerge',
-                'loDropoff27', 'triCoreDe', 'semanticResonanceSuite', 'lo4EngineFusion',
-                'loTop5ConsensusXien', 'loQuadHybrid', 'loTriHarmonic', 'pentaConsensus',
-                'top8ParityXien4', 'crossHedgingPortfolio', 'mirofishSwarm',
-                'autoBestSelection', 'drawPrizesByDate'
-            ];
-            const shadowSettled = {
-                success: true,
-                dailyLockedBetsRegistry: settled.dailyLockedBetsRegistry || payload.dailyLockedBetsRegistry || null
-            };
-            for (const k of shadowKeys) {
-                if (settled[k] !== undefined) shadowSettled[k] = settled[k];
-            }
-            if (settled.records && Array.isArray(settled.records)) {
-                shadowSettled.records = settled.records.slice(-5);
-            }
-            return NextResponse.json(shadowSettled, { headers: NO_STORE_HEADERS });
+        // 1. Shadow View
+        const shadowKeys = [
+            'version', 'generatedAt', 'latestDataDate', 'pendingPredictionDate',
+            'snapshotLock', 'targetDate', 'dailyLockedBetsRegistry', 'deDropoffMerge',
+            'loDropoff27', 'triCoreDe', 'semanticResonanceSuite', 'lo4EngineFusion',
+            'loTop5ConsensusXien', 'loQuadHybrid', 'loTriHarmonic', 'pentaConsensus',
+            'top8ParityXien4', 'crossHedgingPortfolio', 'mirofishSwarm',
+            'autoBestSelection', 'drawPrizesByDate'
+        ];
+        const shadowSettled = {
+            success: true,
+            dailyLockedBetsRegistry: settled.dailyLockedBetsRegistry || payload.dailyLockedBetsRegistry || null
+        };
+        for (const k of shadowKeys) {
+            if (settled[k] !== undefined) shadowSettled[k] = settled[k];
+        }
+        if (settled.records && Array.isArray(settled.records)) {
+            shadowSettled.records = settled.records.slice(-5);
         }
 
-        return NextResponse.json({
+        // 2. Telegram View (siêu gọn ~250KB thay vì 25MB, tối ưu hóa cho Bot Telegram)
+        const telegramSettled = {
+            success: true,
+            version: settled.version,
+            generatedAt: settled.generatedAt,
+            latestDataDate: settled.latestDataDate,
+            pendingPredictionDate: settled.pendingPredictionDate,
+            snapshotLock: settled.snapshotLock,
+            dailyLockedBetsRegistry: settled.dailyLockedBetsRegistry || payload.dailyLockedBetsRegistry || null,
+            crossHedgingPortfolio: settled.crossHedgingPortfolio ? {
+                latestRecommendation: settled.crossHedgingPortfolio.latestRecommendation,
+                settledLedger: (settled.crossHedgingPortfolio.settledLedger || []).slice(-45)
+            } : null,
+            streakAwareDeAdvisor: settled.streakAwareDeAdvisor ? {
+                latestRecommendation: settled.streakAwareDeAdvisor.latestRecommendation
+            } : null,
+            lo4EngineFusion: settled.lo4EngineFusion ? {
+                latestRecommendation: settled.lo4EngineFusion.latestRecommendation
+            } : null,
+            pentaConsensus: settled.pentaConsensus ? {
+                latestRecommendation: settled.pentaConsensus.latestRecommendation
+            } : null,
+            top8ParityXien4: settled.top8ParityXien4 ? {
+                latestRecommendation: settled.top8ParityXien4.latestRecommendation
+            } : null,
+            drawPrizesByDate: settled.drawPrizesByDate || null
+        };
+
+        // 3. Full View (giữ nguyên đầy đủ phân tích, trim records xuống 10 ngày để giảm dung lượng mạng)
+        const fullSettled = {
             success: true,
             ...settled,
             dailyLockedBetsRegistry: settled.dailyLockedBetsRegistry || payload.dailyLockedBetsRegistry || null
-        }, { headers: NO_STORE_HEADERS });
+        };
+        if (fullSettled.records && Array.isArray(fullSettled.records)) {
+            fullSettled.records = fullSettled.records.slice(-10);
+        }
+
+        // Cập nhật in-memory cache cho tất cả các view
+        const currentEtag = `"adv_${settled.latestDataDate || ''}_${settled.dailyLockedBetsRegistry?.updatedAt || Date.now()}"`;
+        _apiCache = {
+            full: fullSettled,
+            shadow: shadowSettled,
+            telegram: telegramSettled,
+            timestamp: Date.now(),
+            etag: currentEtag
+        };
+
+        const result = _apiCache[viewKey];
+        return NextResponse.json(result, { headers: getCacheHeaders(currentEtag) });
     } catch (error) {
         return NextResponse.json(
             { success: false, error: `Không tải được cache Gợi ý từ R2: ${error.message}` },

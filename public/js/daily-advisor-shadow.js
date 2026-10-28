@@ -1427,7 +1427,7 @@
         } catch (_) {}
 
         try {
-            const advisorRes = await fetch(`/api/daily-advisor?view=shadow&_t=${Date.now()}`, { cache: 'no-store' });
+            const advisorRes = await fetch('/api/daily-advisor?view=shadow');
             const advisorData = await advisorRes.json();
             if (!advisorData.success) throw new Error(advisorData.error || 'Lỗi nạp dữ liệu');
             cachedAdvisorData = advisorData;

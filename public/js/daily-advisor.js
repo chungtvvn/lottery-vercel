@@ -16541,11 +16541,37 @@
         initMethodPlaySlipsModal();
         initMirofishModalEvents();
 
+        let hasRenderedFromCache = false;
         try {
-            const res = await fetch(`/api/daily-advisor?_t=${Date.now()}`, { cache: 'no-store' });
+            const cachedStr = sessionStorage.getItem('xsmb_daily_advisor_cache');
+            if (cachedStr) {
+                const localCache = JSON.parse(cachedStr);
+                if (localCache && localCache.success && (localCache.dailyLockedBetsRegistry || localCache.crossHedgingPortfolio)) {
+                    payload = localCache;
+                    renderUnifiedCombatView(payload);
+                    renderDualMergeView(payload.dualMerge);
+                    renderDeResearchEnsembleView(payload);
+                    if (payload?.tripleMerge) renderTripleMergeView(payload.tripleMerge);
+                    if (payload?.adaptiveDualMerge) renderAdaptiveDualMergeView(payload.adaptiveDualMerge);
+                    if (payload?.metaLearner) renderMetaLearnerView(payload.metaLearner);
+                    if (payload?.mirofishSwarm) renderMiroFishSwarmView(payload.mirofishSwarm);
+                    highlightBestDeMethod(payload);
+                    initHistoricalMethodPlaySlipsSection();
+                    renderInPageHistoricalPlaySlips(payload.pendingPredictionDate || '2026-09-30');
+                    hasRenderedFromCache = true;
+                }
+            }
+        } catch (_) {}
+
+        try {
+            const res = await fetch('/api/daily-advisor');
             const data = await res.json();
             if (!data.success) throw new Error(data.error || 'Lỗi tải dữ liệu');
             payload = data;
+
+            try {
+                sessionStorage.setItem('xsmb_daily_advisor_cache', JSON.stringify(data));
+            } catch (_) {}
 
             // Render all views
             renderUnifiedCombatView(payload);
@@ -16562,10 +16588,12 @@
             renderInPageHistoricalPlaySlips(payload.pendingPredictionDate || '2026-09-30');
         } catch (error) {
             console.error('Lỗi khi tải dữ liệu daily advisor:', error);
-            const errBox = byId('errorBox');
-            if (errBox) {
-                errBox.textContent = `Không thể tải dữ liệu: ${error.message}`;
-                errBox.classList.remove('hidden');
+            if (!hasRenderedFromCache) {
+                const errBox = byId('errorBox');
+                if (errBox) {
+                    errBox.textContent = `Không thể tải dữ liệu: ${error.message}`;
+                    errBox.classList.remove('hidden');
+                }
             }
         }
     }
