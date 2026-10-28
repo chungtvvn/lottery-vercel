@@ -7279,12 +7279,14 @@
 
                 const copyPentaLoX2Btn = e.target.closest('.btn-copy-slip-penta-lo-x2');
                 if (copyPentaLoX2Btn) {
+                    const targetDate = copyPentaLoX2Btn.getAttribute('data-date');
                     const x5 = copyPentaLoX2Btn.getAttribute('data-x5') || '';
                     const x4 = copyPentaLoX2Btn.getAttribute('data-x4') || '';
                     const x3 = copyPentaLoX2Btn.getAttribute('data-x3') || '';
                     const x2 = copyPentaLoX2Btn.getAttribute('data-x2') || '';
                     const x1 = copyPentaLoX2Btn.getAttribute('data-x1') || '';
                     const lines = [
+                        `Ngày ${formatDateVi(targetDate)}`,
                         `X5: ${x5}`.trimEnd(),
                         `X4: ${x4}`.trimEnd(),
                         `X3: ${x3}`.trimEnd(),
@@ -7292,7 +7294,7 @@
                         `X1: ${x1}`.trimEnd()
                     ];
                     navigator.clipboard.writeText(lines.join('\n'));
-                    showToast(`📋 Đã sao chép dàn Lô Đột Phá X2 ngày ${formatDateVi(copyPentaLoX2Btn.getAttribute('data-date'))}!`);
+                    showToast(`📋 Đã sao chép dàn Lô Đột Phá X2 ngày ${formatDateVi(targetDate)}!`);
                 }
 
                 const copyPentaXien5Btn = e.target.closest('.btn-copy-slip-penta-xien5');
@@ -7325,12 +7327,14 @@
 
                 const copyQuadLoX2Btn = e.target.closest('.btn-copy-slip-quad-lo-x2');
                 if (copyQuadLoX2Btn) {
+                    const targetDate = copyQuadLoX2Btn.getAttribute('data-date');
                     const x5 = copyQuadLoX2Btn.getAttribute('data-x5') || '';
                     const x4 = copyQuadLoX2Btn.getAttribute('data-x4') || '';
                     const x3 = copyQuadLoX2Btn.getAttribute('data-x3') || '';
                     const x2 = copyQuadLoX2Btn.getAttribute('data-x2') || '';
                     const x1 = copyQuadLoX2Btn.getAttribute('data-x1') || '';
                     const lines = [
+                        `Ngày ${formatDateVi(targetDate)}`,
                         `X5: ${x5}`.trimEnd(),
                         `X4: ${x4}`.trimEnd(),
                         `X3: ${x3}`.trimEnd(),
@@ -7338,7 +7342,7 @@
                         `X1: ${x1}`.trimEnd()
                     ];
                     navigator.clipboard.writeText(lines.join('\n'));
-                    showToast(`📋 Đã sao chép dàn Lô Đột Phá X2 Tứ Trụ ngày ${formatDateVi(copyQuadLoX2Btn.getAttribute('data-date'))}!`);
+                    showToast(`📋 Đã sao chép dàn Lô Đột Phá X2 Tứ Trụ ngày ${formatDateVi(targetDate)}!`);
                 }
 
                 const copyQuadXien5Btn = e.target.closest('.btn-copy-slip-quad-xien5');

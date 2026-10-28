@@ -5610,6 +5610,7 @@
                             const t2 = (info.tierX2?.length ? info.tierX2 : (crossX2.tierX2 || [])).map(number).join(',');
                             const t1 = (info.tierX1?.length ? info.tierX1 : (crossX2.tierX1 || (baseLo4.tierX1 || []).filter(n => !(crossX2.tierX2 || []).map(number).includes(number(n))))).map(number).join(',');
                             const lines = [
+                                `Ngày ${formatDateVi(date)}`,
                                 `X5: ${t5}`.trimEnd(),
                                 `X4: ${t4}`.trimEnd(),
                                 `X3: ${t3}`.trimEnd(),
