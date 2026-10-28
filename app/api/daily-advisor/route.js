@@ -306,6 +306,9 @@ export async function GET(request) {
         return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401, headers: NO_STORE_HEADERS });
     }
     try {
+        const url = new URL(request.url);
+        const isShadowView = url.searchParams.get('view') === 'shadow';
+
         let payload = null;
         try {
             payload = await loadJsonWithSupabaseFallback('cached_daily_method_advisor.json');
@@ -317,23 +320,9 @@ export async function GET(request) {
             throw new Error('Cache gợi ý chưa được sinh (R2 statistics/cached_daily_method_advisor.json thiếu hoặc không hợp lệ)');
         }
 
-        if (!payload || !Array.isArray(payload.records)) {
-            throw new Error('Cache gợi ý chưa được sinh');
-        }
-
         // Guarantee that dualMerge, tripleMerge, adaptiveDualMerge are populated with complete full-year backtest ledgers
-        // R2-only re-read of the same advisor cache (previously a local disk
-        // read). Registry-wins merge semantics below are unchanged: the
-        // cache only fills sections missing in the payload, and a longer
-        // cache ledger is logged, never used — except triCoreDe,
-        // deDropoffMerge, loDropoff27 and semanticResonanceSuite, which keep
-        // their pre-existing newer-or-longer-wins rules.
-        let cachePayload = null;
-        try {
-            cachePayload = await getR2Json('cached_daily_method_advisor.json', 'statistics');
-        } catch (error) {
-            console.error(`[daily-advisor] R2 advisor cache re-read failed (statistics/cached_daily_method_advisor.json): ${error.message}`);
-        }
+        // Payload was already loaded from R2 above; avoid redundant re-download of 60MB.
+        let cachePayload = payload;
         if (cachePayload) {
             try {
                 if (cachePayload?.latestDataDate && (!payload.latestDataDate || cachePayload.latestDataDate >= payload.latestDataDate)) {
@@ -440,6 +429,12 @@ export async function GET(request) {
                     }
                 }
 
+                // Explicit shadow cache (R2) fill-in for deDropoffMerge and loDropoff27
+                // CANONICAL (registry wins, same rule as the main merge above):
+                // a shadow cache copy only fills a section missing in the
+                // payload; a longer shadow copy is logged, never overwrites.
+                // A missing R2 shadow key is logged loudly for that section
+                // and leaves the payload section untouched.
                 // Explicit shadow cache (R2) fill-in for deDropoffMerge and loDropoff27
                 // CANONICAL (registry wins, same rule as the main merge above):
                 // a shadow cache copy only fills a section missing in the
@@ -1052,6 +1047,28 @@ export async function GET(request) {
                 console.error('[API] MiroFish Swarm Build Error:', err);
             }
         }
+        if (isShadowView) {
+            const shadowKeys = [
+                'version', 'generatedAt', 'latestDataDate', 'pendingPredictionDate',
+                'snapshotLock', 'targetDate', 'dailyLockedBetsRegistry', 'deDropoffMerge',
+                'loDropoff27', 'triCoreDe', 'semanticResonanceSuite', 'lo4EngineFusion',
+                'loTop5ConsensusXien', 'loQuadHybrid', 'loTriHarmonic', 'pentaConsensus',
+                'top8ParityXien4', 'crossHedgingPortfolio', 'mirofishSwarm',
+                'autoBestSelection', 'drawPrizesByDate'
+            ];
+            const shadowSettled = {
+                success: true,
+                dailyLockedBetsRegistry: settled.dailyLockedBetsRegistry || payload.dailyLockedBetsRegistry || null
+            };
+            for (const k of shadowKeys) {
+                if (settled[k] !== undefined) shadowSettled[k] = settled[k];
+            }
+            if (settled.records && Array.isArray(settled.records)) {
+                shadowSettled.records = settled.records.slice(-5);
+            }
+            return NextResponse.json(shadowSettled, { headers: NO_STORE_HEADERS });
+        }
+
         return NextResponse.json({
             success: true,
             ...settled,

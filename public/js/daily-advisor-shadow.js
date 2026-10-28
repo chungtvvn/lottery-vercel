@@ -1185,33 +1185,42 @@
     }
 
     async function initShadowMonitor() {
+        let hasRenderedFromCache = false;
         try {
-            const [advisorRes, analysisRes] = await Promise.all([
-                fetch(`/api/daily-advisor?_t=${Date.now()}`, { cache: 'no-store' }),
-                fetch(`/api/daily-advisor/analysis?_t=${Date.now()}`, { cache: 'no-store' }).catch(() => null)
-            ]);
+            const localCacheStr = sessionStorage.getItem('xsmb_shadow_advisor_cache');
+            if (localCacheStr) {
+                const localCache = JSON.parse(localCacheStr);
+                if (localCache && localCache.success && (localCache.dailyLockedBetsRegistry || localCache.deDropoffMerge)) {
+                    cachedAdvisorData = localCache;
+                    renderShadowDashboard(localCache);
+                    initShadowSlipModal();
+                    hasRenderedFromCache = true;
+                }
+            }
+        } catch (_) {}
 
+        try {
+            const advisorRes = await fetch(`/api/daily-advisor?view=shadow&_t=${Date.now()}`, { cache: 'no-store' });
             const advisorData = await advisorRes.json();
             if (!advisorData.success) throw new Error(advisorData.error || 'Lỗi nạp dữ liệu');
             cachedAdvisorData = advisorData;
 
-            let analysisData = null;
-            if (analysisRes && analysisRes.ok) {
-                try {
-                    analysisData = await analysisRes.json();
-                } catch (_) {
-                    analysisData = null;
-                }
-            }
+            try {
+                sessionStorage.setItem('xsmb_shadow_advisor_cache', JSON.stringify(advisorData));
+            } catch (_) {}
 
-            renderShadowDashboard(advisorData, analysisData);
-            initShadowSlipModal();
+            renderShadowDashboard(advisorData);
+            if (!hasRenderedFromCache) {
+                initShadowSlipModal();
+            }
         } catch (err) {
             console.error('Shadow Monitor Error:', err);
-            const errBox = byId('shadowErrorBox');
-            if (errBox) {
-                errBox.textContent = `Không thể tải dữ liệu: ${err.message}`;
-                errBox.classList.remove('hidden');
+            if (!hasRenderedFromCache) {
+                const errBox = byId('shadowErrorBox');
+                if (errBox) {
+                    errBox.textContent = `Không thể tải dữ liệu: ${err.message}`;
+                    errBox.classList.remove('hidden');
+                }
             }
         }
     }
