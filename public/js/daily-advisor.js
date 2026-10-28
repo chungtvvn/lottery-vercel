@@ -3691,72 +3691,72 @@
                         </div>
                     </div>
 
-                    <!-- Bố cục phân tầng dọc space-y-2.5 đồng nhất tuyệt đối với Dàn Lô Gốc -->
-                    <div class="space-y-2.5">
+                    <!-- Bố cục 2 cột compact trên màn hình rộng / độ phân giải cao -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                         ${tierX5.length > 0 ? `
-                            <div>
+                            <div class="p-2 rounded-xl bg-amber-50/50 border border-amber-200 flex flex-col justify-between">
                                 <div class="lo-tier-header-x5 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #78350f !important;">
-                                    <span>👑 TẦNG SIÊU VIP (CƯỢC X5 · 11M/SỐ · ${tierX5.length} SỐ):</span>
-                                    <span class="text-[10px] font-bold" style="color: #92400e !important;">500đ · Trùng 4 PP</span>
+                                    <span class="truncate">👑 TẦNG SIÊU VIP (CƯỢC X5 · 11M · ${tierX5.length} SỐ):</span>
+                                    <span class="text-[10px] font-bold shrink-0 ml-1" style="color: #92400e !important;">500đ · Trùng 4 PP</span>
                                 </div>
-                                <div class="flex flex-wrap gap-1.5">
+                                <div class="flex flex-wrap gap-1.5 items-center">
                                     ${tierX5.map(n => renderCrossChip(n, 5, 'X5')).join('')}
                                 </div>
                             </div>
                         ` : ''}
 
                         ${tierX4.length > 0 ? `
-                            <div>
+                            <div class="p-2 rounded-xl bg-orange-50/40 border border-orange-200 flex flex-col justify-between">
                                 <div class="lo-tier-header-x4 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #78350f !important;">
-                                    <span>⚡ TẦNG CỰC VIP (CƯỢC X4 · 8.8M/SỐ · ${tierX4.length} SỐ):</span>
-                                    <span class="text-[10px] font-bold" style="color: #92400e !important;">400đ · Trùng 3 PP</span>
+                                    <span class="truncate">⚡ TẦNG CỰC VIP (CƯỢC X4 · 8.8M · ${tierX4.length} SỐ):</span>
+                                    <span class="text-[10px] font-bold shrink-0 ml-1" style="color: #92400e !important;">400đ · Trùng 3 PP</span>
                                 </div>
-                                <div class="flex flex-wrap gap-1.5">
+                                <div class="flex flex-wrap gap-1.5 items-center">
                                     ${tierX4.map(n => renderCrossChip(n, 4, 'X4')).join('')}
                                 </div>
                             </div>
                         ` : ''}
 
                         ${tierX3.length > 0 ? `
-                            <div>
+                            <div class="p-2 rounded-xl bg-sky-50/40 border border-sky-200 flex flex-col justify-between">
                                 <div class="lo-tier-header-x3 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #0369a1 !important;">
-                                    <span>⚡ TẦNG TRIỂN VỌNG (CƯỢC X3 · 6.6M/SỐ · ${tierX3.length} SỐ):</span>
-                                    <span class="text-[10px] font-bold" style="color: #0284c7 !important;">300đ · Trùng 2 PP</span>
+                                    <span class="truncate">⚡ TẦNG TRIỂN VỌNG (CƯỢC X3 · 6.6M · ${tierX3.length} SỐ):</span>
+                                    <span class="text-[10px] font-bold shrink-0 ml-1" style="color: #0284c7 !important;">300đ · Trùng 2 PP</span>
                                 </div>
-                                <div class="flex flex-wrap gap-1.5">
+                                <div class="flex flex-wrap gap-1.5 items-center">
                                     ${tierX3.map(n => renderCrossChip(n, 3, 'X3')).join('')}
                                 </div>
                             </div>
                         ` : ''}
 
                         <!-- ⚡ TẦNG X2 ĐỘT PHÁ NÂNG HẠNG (TIÊU ĐIỂM) -->
-                        <div class="p-2.5 rounded-xl bg-amber-50/90 border-2 border-amber-400 shadow-xs space-y-1.5">
-                            <div class="flex items-center justify-between text-[11px] flex-wrap gap-1" style="color: #b45309 !important;">
-                                <span class="font-black uppercase flex items-center gap-1.5">
+                        <div class="p-2 rounded-xl bg-gradient-to-r from-amber-100/70 to-yellow-50/80 border-2 border-amber-400 shadow-xs flex flex-col justify-between">
+                            <div class="flex items-center justify-between text-[11px] mb-1" style="color: #b45309 !important;">
+                                <span class="font-black uppercase truncate flex items-center gap-1.5">
                                     <i class="bi bi-rocket-takeoff-fill text-amber-600"></i>
-                                    🚀 TẦNG X2 ĐỘT PHÁ (SHADOW &ge; X3 · CƯỢC 4.4M/SỐ [200đ] · ĂN 16.0M/NHÁY · ${tierX2.length} SỐ):
+                                    🚀 TẦNG X2 ĐỘT PHÁ (${tierX2.length} SỐ):
                                 </span>
-                                <span class="text-[10px] font-bold bg-amber-200 text-amber-950 px-2 py-0.5 rounded">Thăng hạng từ X1</span>
+                                <span class="text-[10px] font-bold shrink-0 ml-1 bg-amber-200 text-amber-950 px-1.5 py-0.2 rounded">200đ · Nâng từ X1</span>
                             </div>
                             ${tierX2.length > 0 ? `
-                                <div class="flex flex-wrap gap-1.5 pt-0.5">
+                                <div class="flex flex-wrap gap-1.5 items-center">
                                     ${tierX2.map(n => renderCrossChip(n, 2, 'X2')).join('')}
                                 </div>
                             ` : `
-                                <div class="text-xs text-slate-500 italic p-1 bg-white/70 rounded-lg border border-amber-200">
-                                    0 số nâng X2 trong kỳ này (Không có số X1 nào của Lô Ghép 4 đạt &ge; X3 bên Shadow Monitor &rarr; Giữ nguyên cơ cấu cược như phương án gốc).
+                                <div class="text-[10px] text-slate-500 italic p-1 bg-white/70 rounded-lg border border-amber-200">
+                                    0 số nâng X2 (Không có số X1 nào đạt &ge; X3 bên Shadow &rarr; Cược như gốc).
                                 </div>
                             `}
                         </div>
 
                         <!-- 🛡️ TẦNG X1 BỌC LÓT CÒN LẠI -->
                         ${tierX1.length > 0 ? `
-                            <div>
+                            <div class="p-2 rounded-xl bg-slate-50 border border-slate-200 md:col-span-2">
                                 <div class="lo-tier-header-x1 text-[11px] font-black uppercase mb-1 flex items-center justify-between" style="color: #1e293b !important;">
-                                    <span>🛡️ TẦNG X1 BỌC LÓT CÒN LẠI (CƯỢC X1 · 2.2M/SỐ · ${tierX1.length} SỐ):</span>
-                                    <span class="text-[10px] font-bold" style="color: #475569 !important;">100đ · Không thăng hạng</span>
+                                    <span class="truncate">🛡️ TẦNG X1 BỌC LÓT CÒN LẠI (CƯỢC X1 · 2.2M · ${tierX1.length} SỐ):</span>
+                                    <span class="text-[10px] font-bold shrink-0 ml-1" style="color: #475569 !important;">100đ · Không thăng hạng</span>
                                 </div>
-                                <div class="flex flex-wrap gap-1.5">
+                                <div class="flex flex-wrap gap-1.5 items-center">
                                     ${tierX1.map(n => renderCrossChip(n, 1, 'X1')).join('')}
                                 </div>
                             </div>
@@ -5561,18 +5561,19 @@
                     const info = getDiaryInfo(date, tab);
                     if (info) {
                         if (tab === 'lo4CrossX2') {
-                            const crossAll = [
-                                ...(info.tierX5 || []),
-                                ...(info.tierX4 || []),
-                                ...(info.tierX3 || []),
-                                ...(info.tierX2 || []),
-                                ...(info.tierX1 || [])
+                            const t5 = (info.tierX5 || []).join(',');
+                            const t4 = (info.tierX4 || []).join(',');
+                            const t3 = (info.tierX3 || []).join(',');
+                            const t2 = (info.tierX2 || []).join(',');
+                            const t1 = (info.tierX1 || []).join(',');
+                            const lines = [
+                                `X5: ${t5}`.trimEnd(),
+                                `X4: ${t4}`.trimEnd(),
+                                `X3: ${t3}`.trimEnd(),
+                                `X2: ${t2}`.trimEnd(),
+                                `X1: ${t1}`.trimEnd()
                             ];
-                            if (crossAll.length) {
-                                copyNumbers(crossAll);
-                            } else if (info.betNumbers?.length) {
-                                copyNumbers(info.betNumbers.map(b => b.num));
-                            }
+                            copyRawText(lines.join('\n'), `Đã sao chép dàn Lô Đột Phá X2 theo phân tầng ngày ${formatDateVi(date)}!`);
                         } else if (tab === 'lo4Engine' && info.betNumbers?.length) {
                             copyNumbers(info.betNumbers.map(b => b.num));
                         } else if (tab === 'loXien5') {
