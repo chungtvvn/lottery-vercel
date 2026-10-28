@@ -107,7 +107,7 @@ jobs:
           XOSO_RETRY_INTERVAL_SECONDS: ${{ github.event_name == 'workflow_dispatch' && inputs.xoso_retry_interval_seconds || '60' }}
           XOSO_TARGET_DATE: ${{ steps.xoso_target.outputs.date }}
           LOTTERY_DATA_SOURCE: 'r2'
-          LOTTERY_STATS_SOURCE: 'local'
+          LOTTERY_STATS_SOURCE: 'r2'
           FORCE_REGENERATE_STATS: ${{ github.event_name == 'workflow_dispatch' && inputs.force_regenerate_stats || vars.FORCE_REGENERATE_STATS || '0' }}
           GENERATE_PROFIT_REPORT_CACHE: ${{ github.event_name == 'workflow_dispatch' && inputs.generate_profit_report_cache || '0' }}
           CLOUDFLARE_R2_CLEAR_STATS_PREFIX: ${{ github.event_name == 'workflow_dispatch' && inputs.clear_r2_statistics || '0' }}
@@ -241,7 +241,7 @@ jobs:
         env:
           DAILY_MILESTONE20Y_ONLY: '1'
           LOTTERY_DATA_SOURCE: 'r2'
-          LOTTERY_STATS_SOURCE: 'local'
+          LOTTERY_STATS_SOURCE: 'r2'
           SYNC_R2_AFTER_UPDATE: '1'
           SYNC_SUPABASE_AFTER_UPDATE: '0'
           MILESTONE20Y_GENERATE_CACHE: '1'
@@ -299,7 +299,7 @@ jobs:
         env:
           DAILY_LOTO_ONLY: '1'
           LOTTERY_DATA_SOURCE: 'r2'
-          LOTTERY_STATS_SOURCE: 'local'
+          LOTTERY_STATS_SOURCE: 'r2'
           SYNC_R2_AFTER_UPDATE: '1'
           SYNC_SUPABASE_AFTER_UPDATE: '0'
           LOTO_GENERATE_CACHE: '1'
