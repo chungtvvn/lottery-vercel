@@ -148,15 +148,17 @@ async function main() {
             if (d && (r.special != null || r.prize1 != null)) rawMap.set(d, r);
         });
         const currentReg = await registryService.loadRegistry();
-        Object.entries(currentReg.dates || {}).forEach(([d, entry]) => {
+        for (const [d, entry] of Object.entries(currentReg.dates || {})) {
             if (!entry.isSettled && rawMap.has(d)) {
                 try {
-                    registryService.settleDateDirectly(d, rawMap.get(d));
+                    await registryService.settleDateDirectly(d, rawMap.get(d));
                 } catch (err) {
                     console.error(`[generateDailyAdvisorCache] Error settling ${d}:`, err);
                 }
             }
-        });
+        }
+
+        const betsToRegister = {};
 
         // Đăng ký dàn đánh chính thức của ngày mục tiêu tiếp theo vào Registry
         if (cache.streakAwareDeAdvisor?.latestRecommendation) {
@@ -164,7 +166,7 @@ async function main() {
             const vipNums = (lr.tierX3 || []).concat(lr.tierX2 || []).concat(lr.numbers?.slice(0, 17) || []).slice(0, 17);
             const allNums = lr.numbers || [];
             const singleNums = allNums.filter(n => !vipNums.includes(n));
-            registryService.registerDailyBet(expectedPredictionDate, 'de', {
+            betsToRegister['de'] = {
                 methodName: lr.methodName || '🔮 Đề Markov Bậc 2 & Gap Hazard (Sweet-Spot)',
                 vipNumbers: vipNums.map(n => String(n).padStart(2, '0')),
                 singleNumbers: singleNums.map(n => String(n).padStart(2, '0')),
@@ -172,7 +174,7 @@ async function main() {
                 // CANONICAL (fix-forward): Đề capital is derived, never a literal.
                 // 17 VIP X3 + 26 single X1 = (17*3 + 26*1) * 1000K = 77000K.
                 stakeK: (vipNums.length * 3 + singleNums.length) * 1000
-            });
+            };
         }
         const top5Candidate = (cache.lo4EngineFusion?.latestRecommendation?.xien4?.top5?.length >= 5)
             ? cache.lo4EngineFusion.latestRecommendation.xien4.top5
@@ -181,10 +183,10 @@ async function main() {
                 : (cache.lo4EngineFusion?.latestRecommendation?.numbersOver2?.slice(0, 5) || []));
         if (top5Candidate.length >= 5) {
             const finalTop5 = top5Candidate.slice(0, 5).map(n => String(n).padStart(2, '0') === '23' ? '36' : String(n).padStart(2, '0'));
-            registryService.registerDailyBet(expectedPredictionDate, 'loXien5', {
+            betsToRegister['loXien5'] = {
                 top5: finalTop5,
                 stakeK: 55000
-            });
+            };
         }
 
         // Tính toán PentaConsensus (Shadow Monitor) trước để làm cơ sở khóa bất biến Cross X2
@@ -196,7 +198,7 @@ async function main() {
                 cache.pentaConsensus = {
                     latestRecommendation: pentaNext
                 };
-                registryService.registerDailyBet(expectedPredictionDate, 'pentaConsensus', {
+                betsToRegister['pentaConsensus'] = {
                     targetDate: expectedPredictionDate,
                     de: {
                         numbers: pentaNext.de?.numbers || [],
@@ -228,7 +230,7 @@ async function main() {
                         tickets: pentaNext.xien5?.tickets || [],
                         stakeK: pentaNext.xien5?.stakeK || 5500
                     }
-                });
+                };
             }
         } catch (err) {
             console.error('[generateDailyAdvisorCache] Error computing pentaConsensus:', err);
@@ -264,7 +266,7 @@ async function main() {
                     : 'Không có số nào cần nâng hạng hôm nay.'
             };
 
-            registryService.registerDailyBet(expectedPredictionDate, 'lo4EngineFusion', lRec);
+            betsToRegister['lo4EngineFusion'] = lRec;
             if (cache.lo4EngineFusion.modes?.top7) {
                 cache.lo4EngineFusion.modes.top7.latestRecommendation = lRec;
             }
@@ -300,31 +302,31 @@ async function main() {
                     x2: getCombinations(finalTop4, 2)
                 };
             }
-            registryService.registerDailyBet(expectedPredictionDate, 'crossHedgingPortfolio', chRec);
+            betsToRegister['crossHedgingPortfolio'] = chRec;
         }
         if (cache.deDropoffMerge?.latestRecommendation) {
-            registryService.registerDailyBet(expectedPredictionDate, 'deDropoffMerge', cache.deDropoffMerge.latestRecommendation);
+            betsToRegister['deDropoffMerge'] = cache.deDropoffMerge.latestRecommendation;
         }
         if (cache.loDropoff27?.latestRecommendation) {
-            registryService.registerDailyBet(expectedPredictionDate, 'loDropoff27', cache.loDropoff27.latestRecommendation);
+            betsToRegister['loDropoff27'] = cache.loDropoff27.latestRecommendation;
         }
         if (cache.triCoreDe?.latestRecommendation) {
-            registryService.registerDailyBet(expectedPredictionDate, 'triCoreDe', cache.triCoreDe.latestRecommendation);
+            betsToRegister['triCoreDe'] = cache.triCoreDe.latestRecommendation;
         }
         if (cache.semanticResonanceSuite?.latestRecommendation) {
-            registryService.registerDailyBet(expectedPredictionDate, 'semanticResonanceSuite', cache.semanticResonanceSuite.latestRecommendation);
+            betsToRegister['semanticResonanceSuite'] = cache.semanticResonanceSuite.latestRecommendation;
         }
         if (cache.dualMerge?.latestRecommendation) {
-            registryService.registerDailyBet(expectedPredictionDate, 'dualMerge', cache.dualMerge.latestRecommendation);
+            betsToRegister['dualMerge'] = cache.dualMerge.latestRecommendation;
         }
         if (cache.tripleMerge?.latestRecommendation) {
-            registryService.registerDailyBet(expectedPredictionDate, 'tripleMerge', cache.tripleMerge.latestRecommendation);
+            betsToRegister['tripleMerge'] = cache.tripleMerge.latestRecommendation;
         }
         if (cache.adaptiveDualMerge?.latestRecommendation) {
-            registryService.registerDailyBet(expectedPredictionDate, 'adaptiveDualMerge', cache.adaptiveDualMerge.latestRecommendation);
+            betsToRegister['adaptiveDualMerge'] = cache.adaptiveDualMerge.latestRecommendation;
         }
         if (cache.mirofishSwarm?.latestRecommendation) {
-            registryService.registerDailyBet(expectedPredictionDate, 'mirofishSwarm', cache.mirofishSwarm.latestRecommendation);
+            betsToRegister['mirofishSwarm'] = cache.mirofishSwarm.latestRecommendation;
         }
         if (cache.metaCrossMethod?.latestRecommendation) {
             const top8 = cache.metaCrossMethod.latestRecommendation.topPredictions?.top8?.numbers
@@ -332,7 +334,7 @@ async function main() {
             if (top8 && top8.length >= 8) {
                 const { pairTop8WithParity } = require('../lib/services/top8ParityXien4Service');
                 const paired = pairTop8WithParity(top8);
-                registryService.registerDailyBet(expectedPredictionDate, 'top8ParityXien4', {
+                betsToRegister['top8ParityXien4'] = {
                     targetDate: expectedPredictionDate,
                     top8: top8.map(n => String(n).padStart(2, '0')),
                     dan1: paired.dan1,
@@ -340,11 +342,12 @@ async function main() {
                     swapped: paired.swapped,
                     stakeK: 22000,
                     stakePerDanK: 11000
-                });
+                };
             }
         }
 
-        cache.dailyLockedBetsRegistry = registryService.loadRegistry();
+        await registryService.registerDailyBetsBatch(expectedPredictionDate, betsToRegister);
+        cache.dailyLockedBetsRegistry = await registryService.loadRegistry();
 
         // Xây dựng cấu trúc top8ParityXien4 (2 Dàn Xiên 4 Tinh Hoa) trong cache
         const { pairTop8WithParity, evaluateTop8ParityXien4 } = require('../lib/services/top8ParityXien4Service');

@@ -94,15 +94,27 @@ jobs:
             # Scheduled runs can start hours late. Subtract 6h so runs shortly
             # after midnight VN time still target the draw date that just closed.
             echo "date=$(TZ=Asia/Ho_Chi_Minh date -d '6 hours ago' +%F)" >> "$GITHUB_OUTPUT"
+            echo "wait=1" >> "$GITHUB_OUTPUT"
           else
-            echo "date=${{ inputs.xoso_target_date }}" >> "$GITHUB_OUTPUT"
+            if [ -n "${{ inputs.xoso_target_date }}" ]; then
+              echo "date=${{ inputs.xoso_target_date }}" >> "$GITHUB_OUTPUT"
+            else
+              CURRENT_HOUR=$(TZ=Asia/Ho_Chi_Minh date +%H%M)
+              if [ "$CURRENT_HOUR" -lt 1830 ]; then
+                echo "date=$(TZ=Asia/Ho_Chi_Minh date -d 'yesterday' +%F)" >> "$GITHUB_OUTPUT"
+              else
+                echo "date=$(TZ=Asia/Ho_Chi_Minh date +%F)" >> "$GITHUB_OUTPUT"
+              fi
+            fi
+            echo "wait=${{ inputs.wait_for_new_xoso }}" >> "$GITHUB_OUTPUT"
           fi
-          echo "Resolved XOSO_TARGET_DATE=$(cat "$GITHUB_OUTPUT" | tail -n 1 | cut -d= -f2)"
+          echo "Resolved XOSO_TARGET_DATE=$(cat "$GITHUB_OUTPUT" | grep '^date=' | cut -d= -f2)"
+          echo "Resolved WAIT_FOR_NEW_XOSO=$(cat "$GITHUB_OUTPUT" | grep '^wait=' | cut -d= -f2)"
 
       - name: Pull Data & Generate R2 Static Stats
         id: update
         env:
-          WAIT_FOR_NEW_XOSO: ${{ github.event_name == 'workflow_dispatch' && inputs.wait_for_new_xoso || '1' }}
+          WAIT_FOR_NEW_XOSO: ${{ steps.xoso_target.outputs.wait }}
           XOSO_MAX_WAIT_MINUTES: ${{ github.event_name == 'workflow_dispatch' && inputs.xoso_max_wait_minutes || '90' }}
           XOSO_RETRY_INTERVAL_SECONDS: ${{ github.event_name == 'workflow_dispatch' && inputs.xoso_retry_interval_seconds || '60' }}
           XOSO_TARGET_DATE: ${{ steps.xoso_target.outputs.date }}
@@ -394,7 +406,12 @@ jobs:
           elif [ -n "${{ inputs.xoso_target_date }}" ]; then
             TARGET_DATE="${{ inputs.xoso_target_date }}"
           else
-            TARGET_DATE="$(TZ=Asia/Ho_Chi_Minh date +%F)"
+            CURRENT_HOUR=$(TZ=Asia/Ho_Chi_Minh date +%H%M)
+            if [ "$CURRENT_HOUR" -lt 1830 ]; then
+              TARGET_DATE="$(TZ=Asia/Ho_Chi_Minh date -d 'yesterday' +%F)"
+            else
+              TARGET_DATE="$(TZ=Asia/Ho_Chi_Minh date +%F)"
+            fi
           fi
           echo "date=$TARGET_DATE" >> "$GITHUB_OUTPUT"
 
@@ -435,6 +452,9 @@ jobs:
               readGzip('statistics/daily_locked_bets_registry.json')
             ]);
             const latestRaw = raw.at(-1)?.date;
+            if (target && latestRaw !== target) {
+              throw new Error(`R2 raw data date (${latestRaw}) không khớp target (${target})`);
+            }
             const dates = {
               raw: latestRaw,
               de: milestone.latestDataDate,
