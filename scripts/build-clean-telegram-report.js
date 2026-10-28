@@ -570,20 +570,9 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
         const pCrossProfitK = sPentaCross.profitK !== undefined ? sPentaCross.profitK : (pCrossPayoutK - pCrossStakeK);
         const pCrossPromoted = (sPentaCross.x2Nums || []).map(numStr);
 
-        const pentaXienTop5 = (sPenta.xien5?.top5 || []).map(numStr);
-        const pentaH5 = sPenta.xien5?.h5 || 0;
-        const pentaXienStakeK = sPenta.xien5?.stakeK || 5500;
-        const pentaXienPayoutK = sPenta.xien5?.payoutK || 0;
-        const pentaXienProfitK = sPenta.xien5?.profitK || -pentaXienStakeK;
-        let pentaXienWinDesc = '';
-        if (pentaH5 >= 5) pentaXienWinDesc = '👑 Ăn 5 dàn X4 (192M)';
-        else if (pentaH5 === 4) pentaXienWinDesc = '👑 Ăn 1 dàn X4 + 4 dàn X3 (72M)';
-        else if (pentaH5 === 3) pentaXienWinDesc = '🔥 Ăn 2 dàn X3 + 3 dàn X2 (20.4M)';
-        else if (pentaH5 === 2) pentaXienWinDesc = '🛡️ Ăn 3 dàn X2 (3.6M)';
-        else pentaXienWinDesc = 'Trượt';
-
-        const pentaTotalStakeK = pentaDeStakeK + pentaLoStakeK + pentaXienStakeK;
-        const pentaTotalPayoutK = pentaDePayoutK + pentaLoPayoutK + pentaXienPayoutK;
+        // 2 Dàn Xiên 4 Tinh Hoa (Top 8 Chẵn/Lẻ · Vốn 22M) - Đồng bộ logic y hệt Daily
+        const pentaTotalStakeK = pentaDeStakeK + pentaLoStakeK + top8StakeK;
+        const pentaTotalPayoutK = pentaDePayoutK + pentaLoPayoutK + top8PayoutK;
         const pentaTotalProfitK = pentaTotalPayoutK - pentaTotalStakeK;
 
         // Lũy kế Gộp 5 (từ 07/10)
@@ -591,11 +580,12 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
         const pentaDates = Object.keys(advisorPayload?.drawPrizesByDate || {}).filter(d => d >= '2026-10-07' && d <= settledDate).sort();
         pentaDates.forEach(d => {
             const res = computePentaConsensusForDate(d, advisorPayload);
+            const rX8 = resolveTop8SettlementForDate(d, advisorPayload);
             if (res && !res.isPending) {
                 pentaCumDeK += res.de.profitK;
                 pentaCumLoK += res.lo.profitK;
-                pentaCumXienK += res.xien5.profitK;
-                pentaCumProfitK += res.combo.profitK;
+                pentaCumXienK += (rX8.profitK || 0);
+                pentaCumProfitK += (res.de.profitK + res.lo.profitK + (rX8.profitK || 0));
             }
         });
         const pentaTotalDays = pentaDates.length || 12;
@@ -629,11 +619,13 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
             `    └ <b>Dàn Chuẩn Gộp 5:</b> Vốn: ${formatCostK(pentaLoStakeK)} · Thưởng: ${formatCostK(pentaLoPayoutK)} · Lãi: <b>${formatMoneyK(pentaLoProfitK)}</b>`,
             `    └ 🚀 <b>Dàn Đột Phá X2:</b> Vốn: ${formatCostK(pCrossStakeK)} · Thưởng: ${formatCostK(pCrossPayoutK)} · Lãi: <b>${formatMoneyK(pCrossProfitK)}</b>`,
             `       └ <i>Nâng X2 từ Lô 4: ${pCrossPromoted.length ? `[${pCrossPromoted.join(', ')}]` : 'Không nâng'}</i>`,
-            `  • <b>Xiên 5 Siêu Gộp (5 Dàn Xiên 4 · Vốn 5.5M):</b> ${pentaXienWinDesc}`,
-            `    └ Top 5 [${pentaXienTop5.join(', ')}] về ${pentaH5}/5 con · Lãi: <b>${formatMoneyK(pentaXienProfitK)}</b>`,
+            `  • <b>Dàn Lô Xiên Đối Chiếu:</b>`,
+            `    └ 🎲 <b>2 Dàn Xiên 4 Tinh Hoa (22M):</b> Thưởng: ${formatCostK(top8PayoutK)} · Lãi: <b>${formatMoneyK(top8ProfitK)}</b>`,
+            `       • Dàn 1 [${(sTop8.dan1 || []).join(', ')}]: Nổ ${h1}/4 con${h1 >= 2 ? ' (Ăn vé X2)' : ''} 👉 ${formatMoneyK(sTop8.profit1 || -11000)}`,
+            `       • Dàn 2 [${(sTop8.dan2 || []).join(', ')}]: Nổ ${h2}/4 con${h2 >= 2 ? ' (Ăn vé X2)' : ''} 👉 ${formatMoneyK(sTop8.profit2 || -11000)}`,
             `  👉 <b>TỔNG KẾT NGÀY (/daily-advisor-shadow):</b>`,
             `    └ Vốn: ${formatCostK(pentaTotalStakeK)} · Thưởng: ${formatCostK(pentaTotalPayoutK)} · Lãi ròng: <b>${formatMoneyK(pentaTotalProfitK)}</b>`,
-            `    └ <b>Lũy kế (Gộp 5 từ 07/10):</b> <b>${formatM(pentaCumProfitK)}</b> (${pentaTotalDays} kỳ · Đề: ${formatM(pentaCumDeK)} | Lô: ${formatM(pentaCumLoK)} | Xiên 5: ${formatM(pentaCumXienK)})`,
+            `    └ <b>Lũy kế (Gộp 5 từ 07/10):</b> <b>${formatM(pentaCumProfitK)}</b> (${pentaTotalDays} kỳ · Đề: ${formatM(pentaCumDeK)} | Lô: ${formatM(pentaCumLoK)} | Xiên 4: ${formatM(pentaCumXienK)})`,
             ''
         );
     }
@@ -834,10 +826,12 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     }
 
     lines.push(
-        `  • <b>Xiên 5 Siêu Gộp (5 Dàn Xiên 4 Ghép Top 5 Ngũ Trụ · Vốn 5.5M · 1.1M/dàn):</b>`,
-        `    └ 👑 <b>Top 5 Lô ngũ trụ:</b> <code>[${escapeHtml(pentaNextXienTop5.join(', '))}]</code>`,
-        `    └ 5 Dàn: <code>${escapeHtml(pentaNextXienTickets[0].join(', '))}</code> | <code>${escapeHtml(pentaNextXienTickets[1].join(', '))}</code> | <code>${escapeHtml(pentaNextXienTickets[2].join(', '))}</code> | <code>${escapeHtml(pentaNextXienTickets[3].join(', '))}</code> | <code>${escapeHtml(pentaNextXienTickets[4].join(', '))}</code>`,
-        `  👉 <b>Tổng vốn đầu tư /daily-advisor-shadow:</b> <b>${formatCostK(pentaNextTotalStakeK)}</b>`,
+        `  • <b>Dàn Lô Xiên Thực Chiến:</b>`,
+        `    └ 🎲 <b>2 Dàn Xiên 4 Tinh Hoa (Top 8 Chẵn/Lẻ · Vốn 22M · 11M/dàn):</b>`,
+        `       • Dàn 1: <code>${escapeHtml(nextDan1.join(', '))}</code> (11M)`,
+        `       • Dàn 2: <code>${escapeHtml(nextDan2.join(', '))}</code> (11M)`,
+        `       └ <i>Quây 11 vé/dàn: Nổ 2 con = 12M · 3 con = 84M · 4 con = 384M</i>`,
+        `  👉 <b>Tổng vốn đầu tư /daily-advisor-shadow:</b> <b>${formatCostK(pentaNextDeStakeK + pentaNextLoStakeK + 22000)}</b>`,
         '',
         divider,
         `🔒 <b>BẢO CHỨNG BẤT BIẾN SSOT:</b>`,
@@ -858,6 +852,574 @@ function buildTelegramReport(dePayload, lotoPayload, historyPayload = {}, adviso
     };
 }
 
+const MAIN_MENU_KEYBOARD = {
+    inline_keyboard: [
+        [
+            { text: '🔮 Dự Đoán Daily Advisor', callback_data: 'menu_today_daily' },
+            { text: '👑 Dự Đoán Shadow Monitor', callback_data: 'menu_today_shadow' }
+        ],
+        [
+            { text: '📊 Đối Soát Theo Ngày', callback_data: 'menu_audit' },
+            { text: '📋 Text Copy Nhanh', callback_data: 'menu_copy_fast' }
+        ],
+        [
+            { text: '📜 Toàn Bộ Báo Cáo', callback_data: 'menu_report' },
+            { text: '💰 Bảng Mức Cược (Lỗ/Lãi)', callback_data: 'menu_tiers' }
+        ]
+    ]
+};
+
+const BACK_TO_MAIN_KEYBOARD = {
+    inline_keyboard: [
+        [
+            { text: '🔙 Quay Lại Menu Chính', callback_data: 'menu_main' }
+        ]
+    ]
+};
+
+const SUB_NAV_DAILY_KEYBOARD = {
+    inline_keyboard: [
+        [
+            { text: '👑 Xem Shadow Monitor', callback_data: 'menu_today_shadow' },
+            { text: '📊 Đối Soát Ngày', callback_data: 'menu_audit' }
+        ],
+        [
+            { text: '📋 Text Copy Nhanh', callback_data: 'menu_copy_fast' },
+            { text: '🔙 Menu Chính', callback_data: 'menu_main' }
+        ]
+    ]
+};
+
+const SUB_NAV_SHADOW_KEYBOARD = {
+    inline_keyboard: [
+        [
+            { text: '🔮 Xem Daily Advisor', callback_data: 'menu_today_daily' },
+            { text: '📊 Đối Soát Ngày', callback_data: 'menu_audit' }
+        ],
+        [
+            { text: '📋 Text Copy Nhanh', callback_data: 'menu_copy_fast' },
+            { text: '🔙 Menu Chính', callback_data: 'menu_main' }
+        ]
+    ]
+};
+
+function buildAuditResultKeyboard(date) {
+    return {
+        inline_keyboard: [
+            [
+                { text: '📅 Chọn Ngày Khác', callback_data: 'menu_audit' },
+                { text: '🔮 Dự Đoán Hôm Nay', callback_data: 'menu_today_daily' }
+            ],
+            [
+                { text: '🔙 Quay Lại Menu Chính', callback_data: 'menu_main' }
+            ]
+        ]
+    };
+}
+
+function buildAuditDatesKeyboard(advisorPayload = {}) {
+    const reg = advisorPayload?.dailyLockedBetsRegistry?.dates || {};
+    const settled = Object.keys(reg).filter(d => reg[d]?.isSettled).sort().reverse();
+    if (!settled.length) {
+        const ch = advisorPayload?.crossHedgingPortfolio?.settledLedger || [];
+        settled.push(...ch.map(r => r.date).filter(Boolean).sort().reverse());
+    }
+    const dates = [...new Set(settled)].slice(0, 9);
+
+    const rows = [];
+    let currentRow = [];
+    for (const d of dates) {
+        const parts = d.split('-');
+        const label = `📅 ${parts[2]}/${parts[1]}`;
+        currentRow.push({ text: label, callback_data: `audit_date:${d}` });
+        if (currentRow.length === 3) {
+            rows.push(currentRow);
+            currentRow = [];
+        }
+    }
+    if (currentRow.length) rows.push(currentRow);
+    rows.push([{ text: '🔙 Quay Lại Menu Chính', callback_data: 'menu_main' }]);
+    return { inline_keyboard: rows };
+}
+
+function resolveTop8SettlementForDate(date, payload) {
+    const regEntry = payload?.dailyLockedBetsRegistry?.dates?.[date];
+    const s = regEntry?.settlement?.top8ParityXien4;
+    const b = regEntry?.bets?.top8ParityXien4;
+    const rec = payload?.top8ParityXien4?.latestRecommendation;
+    const ledgerRow = payload?.top8ParityXien4?.settledLedger?.find(r => r.date === date);
+
+    let dan1 = (s?.dan1 || b?.dan1 || (date === rec?.targetDate ? rec?.dan1 : null) || ledgerRow?.dan1 || []).map(numStr);
+    let dan2 = (s?.dan2 || b?.dan2 || (date === rec?.targetDate ? rec?.dan2 : null) || ledgerRow?.dan2 || []).map(numStr);
+    let top8 = (s?.top8 || b?.top8 || (date === rec?.targetDate ? rec?.top8 : null) || ledgerRow?.top8 || [...dan1, ...dan2]).map(numStr);
+
+    const drawPrizesObj = payload?.drawPrizesByDate?.[date] || regEntry?.actualResult || null;
+    const prizes = drawPrizesObj?.prizes || [];
+
+    let hits1 = 0, hits2 = 0;
+    let hitNums1 = [], hitNums2 = [];
+    let payout1 = 0, payout2 = 0, payoutK = 0;
+    const stakeK = 22000;
+
+    if (s?.payoutK !== undefined) {
+        hits1 = s.hits1 || 0;
+        hits2 = s.hits2 || 0;
+        hitNums1 = (s.hitNums1 || []).map(numStr);
+        hitNums2 = (s.hitNums2 || []).map(numStr);
+        payout1 = s.payout1 || 0;
+        payout2 = s.payout2 || 0;
+        payoutK = s.payoutK || 0;
+    } else if (prizes.length && dan1.length >= 4 && dan2.length >= 4) {
+        const prizeCount = {};
+        prizes.forEach(p => { const str = numStr(p); prizeCount[str] = (prizeCount[str] || 0) + 1; });
+        hitNums1 = dan1.filter(n => (prizeCount[n] || 0) > 0);
+        hitNums2 = dan2.filter(n => (prizeCount[n] || 0) > 0);
+        hits1 = hitNums1.length;
+        hits2 = hitNums2.length;
+        const calcPayout = (h) => (h >= 4 ? 384000 : (h === 3 ? 84000 : (h === 2 ? 12000 : 0)));
+        payout1 = calcPayout(hits1);
+        payout2 = calcPayout(hits2);
+        payoutK = payout1 + payout2;
+    } else if (ledgerRow) {
+        hits1 = ledgerRow.hits1 || 0;
+        hits2 = ledgerRow.hits2 || 0;
+        hitNums1 = (ledgerRow.hitNums1 || []).map(numStr);
+        hitNums2 = (ledgerRow.hitNums2 || []).map(numStr);
+        payout1 = ledgerRow.payout1 || 0;
+        payout2 = ledgerRow.payout2 || 0;
+        payoutK = ledgerRow.payoutK || 0;
+    }
+
+    const profit1 = payout1 - 11000;
+    const profit2 = payout2 - 11000;
+    const profitK = payoutK - stakeK;
+
+    return {
+        dan1,
+        dan2,
+        top8,
+        hits1,
+        hits2,
+        hitNums1,
+        hitNums2,
+        payout1,
+        payout2,
+        payoutK,
+        profit1,
+        profit2,
+        profitK,
+        stakeK,
+        isWin: profitK > 0
+    };
+}
+
+function buildDailyPredictionMessage(predictionDate, advisorPayload = {}) {
+    const reg = advisorPayload?.dailyLockedBetsRegistry?.dates || {};
+    const regNext = reg[predictionDate] || {};
+    const nBets = regNext.bets || {};
+
+    const nDe = nBets.de || advisorPayload?.crossHedgingPortfolio?.latestRecommendation?.pillar1_De || {};
+    let advNextDeVip = (nDe.vipNumbers || []).map(numStr);
+    let advNextDeSingle = (nDe.singleNumbers || []).map(numStr);
+    const advDeVipSet = new Set(advNextDeVip);
+    advNextDeSingle = advNextDeSingle.filter(n => !advDeVipSet.has(n));
+    let advNextDeAll = (nDe.numbers || [...advNextDeVip, ...advNextDeSingle]).map(numStr);
+    const advNextDeStakeK = nDe.stakeK || 77000;
+
+    const nLo = nBets.lo4EngineFusion || advisorPayload?.lo4EngineFusion?.latestRecommendation || {};
+    let advNextLoX5 = (nLo.tierX5 || []).map(numStr);
+    let advNextLoX4 = (nLo.tierX4 || []).map(numStr);
+    let advNextLoX3 = (nLo.tierX3 || []).map(numStr);
+    const nextCrossX2 = nBets.lo4EngineFusion?.crossX2 || nLo.crossX2 || {};
+    let advNextLoX2 = (nextCrossX2.tierX2 || []).map(numStr);
+    let advNextLoX1 = (nextCrossX2.tierX1 && nextCrossX2.tierX1.length ? nextCrossX2.tierX1 : nLo.tierX1 || []).map(numStr);
+    const higherLoTiers = new Set([...advNextLoX5, ...advNextLoX4, ...advNextLoX3, ...advNextLoX2]);
+    advNextLoX1 = advNextLoX1.filter(n => !higherLoTiers.has(n));
+    let advNextLoAll = (nLo.allNumbers || nLo.distinctNumbers || [...advNextLoX5, ...advNextLoX4, ...advNextLoX3, ...advNextLoX2, ...advNextLoX1]).map(numStr);
+    const advNextLoStakeK = nextCrossX2.stakeKX2 || nLo.totalLotoStakeK || 74800;
+
+    const top8Data = resolveTop8SettlementForDate(predictionDate, advisorPayload);
+    const nextDan1 = top8Data.dan1;
+    const nextDan2 = top8Data.dan2;
+
+    const nXien = nBets.loXien5 || {};
+    let advNextXienTop5 = (nXien.top5 || []).map(numStr);
+    if (advNextXienTop5.length < 5) advNextXienTop5 = advNextLoAll.slice(0, 5);
+
+    const nextXien4 = nBets.lo4EngineFusion?.xien4 || nLo.xien4 || {};
+    const nextXien4Top4 = (nextXien4.top4 || nextXien4.numbers || advNextLoAll.slice(0, 4)).map(numStr);
+
+    const advNextTotalStakeK = advNextDeStakeK + advNextLoStakeK + 22000;
+
+    const lines = [
+        `🎯 <b>DỰ ĐOÁN DAILY ADVISOR — NGÀY ${displayDate(predictionDate)}</b>`,
+        `🔒 <i>100% Khớp Bất Biến SSOT (/daily-advisor)</i>`,
+        `━━━━━━━━━━━━━━━━━━━━`,
+        `💎 <b>ĐỀ THỰC CHIẾN (${advNextDeAll.length} số · Vốn ${formatCostK(advNextDeStakeK)}):</b>`,
+        `  • 👑 <b>VIP X3 (${advNextDeVip.length} số · cược 3.0M/số, ăn 252M):</b>`,
+        `    <code>${advNextDeVip.join(', ')}</code>`,
+        `  • 🛡️ <b>Bọc Lót X1 (${advNextDeSingle.length} số · cược 1.0M/số, ăn 84M):</b>`,
+        `    <code>${advNextDeSingle.join(', ')}</code>`,
+        ``,
+        `🎰 <b>LÔ GHÉP 4 ĐỘNG CƠ (${advNextLoAll.length} số · Vốn ${formatCostK(advNextLoStakeK)}):</b>`
+    ];
+    if (advNextLoX5.length) lines.push(`  • 👑 <b>Siêu VIP X5 (${advNextLoX5.length} số · 11M/số [500đ], ăn 40M/nháy):</b> <code>${advNextLoX5.join(', ')}</code>`);
+    if (advNextLoX4.length) lines.push(`  • 🔥 <b>Cực VIP X4 (${advNextLoX4.length} số · 8.8M/số [400đ], ăn 32M/nháy):</b> <code>${advNextLoX4.join(', ')}</code>`);
+    if (advNextLoX3.length) lines.push(`  • ⚡ <b>Triển Vọng X3 (${advNextLoX3.length} số · 6.6M/số [300đ], ăn 24M/nháy):</b> <code>${advNextLoX3.join(', ')}</code>`);
+    if (advNextLoX2.length) lines.push(`  • 🚀 <b>Đột Phá Nâng X2 (${advNextLoX2.length} số · 4.4M/số [200đ], ăn 16M/nháy):</b> <code>${advNextLoX2.join(', ')}</code>\n    └ 💡 <i>Lý do: Đồng thuận cao (>= X3) bên Shadow Monitor</i>`);
+    if (advNextLoX1.length) lines.push(`  • 🛡️ <b>Bảo Hiểm X1 (${advNextLoX1.length} số · 2.2M/số [100đ], ăn 8M/nháy):</b> <code>${advNextLoX1.join(', ')}</code>`);
+
+    lines.push(
+        ``,
+        `🎲 <b>2 DÀN XIÊN 4 TINH HOA (Top 8 Chẵn/Lẻ · Vốn 22M · 11M/dàn):</b>`,
+        `  • Dàn 1: <code>${nextDan1.join(', ')}</code> (11M)`,
+        `  • Dàn 2: <code>${nextDan2.join(', ')}</code> (11M)`,
+        `  └ <i>Quây 11 vé/dàn: Nổ 2 con = 12M · 3 con = 84M · 4 con = 384M</i>`,
+        ``,
+        `👑 <b>Dàn Xiên 5 (55M):</b> <code>[${advNextXienTop5.join(', ')}]</code>`,
+        `🎯 <b>Bộ 4 Quây 11 vé (11M):</b> <code>[${nextXien4Top4.join(', ')}]</code>`,
+        ``,
+        `💰 <b>TỔNG VỐN ĐẦU TƯ DAILY:</b> <b>${formatCostK(advNextTotalStakeK)}</b>`,
+        `━━━━━━━━━━━━━━━━━━━━`,
+        `📋 <b>TEXT COPY DÀN X2 (Bấm vào khối để copy):</b>`,
+        `<code>Ngày ${displayDate(predictionDate)}`,
+        advNextLoX5.length ? `X5: ${advNextLoX5.join(',')}` : '',
+        advNextLoX4.length ? `X4: ${advNextLoX4.join(',')}` : '',
+        advNextLoX3.length ? `X3: ${advNextLoX3.join(',')}` : '',
+        advNextLoX2.length ? `X2: ${advNextLoX2.join(',')}` : '',
+        advNextLoX1.length ? `X1: ${advNextLoX1.join(',')}` : '',
+        `</code>`
+    );
+
+    return lines.filter(Boolean).join('\n');
+}
+
+function buildShadowPredictionMessage(predictionDate, advisorPayload = {}) {
+    const reg = advisorPayload?.dailyLockedBetsRegistry?.dates || {};
+    const regNext = reg[predictionDate] || {};
+    const nBets = regNext.bets || {};
+
+    const nPenta = nBets.pentaConsensus || advisorPayload?.pentaConsensus?.latestRecommendation || {};
+    let pentaNextDeX2 = (nPenta.de?.x2Nums || []).map(numStr);
+    let pentaNextDeX1 = (nPenta.de?.x1Nums || []).map(numStr);
+    const pdX2Set = new Set(pentaNextDeX2);
+    pentaNextDeX1 = pentaNextDeX1.filter(n => !pdX2Set.has(n));
+    let pentaNextDeAll = (nPenta.de?.numbers || [...pentaNextDeX2, ...pentaNextDeX1]).map(numStr);
+    const pentaNextDeStakeK = nPenta.de?.stakeK || (pentaNextDeX2.length * 400 + pentaNextDeX1.length * 200);
+
+    let pentaNextLoX5 = (nPenta.lo?.x5Nums || []).map(numStr);
+    let pentaNextLoX4 = (nPenta.lo?.x4Nums || []).map(numStr);
+    let pentaNextLoX3 = (nPenta.lo?.x3Nums || []).map(numStr);
+    let pentaNextLoCrossX2 = (nPenta.loCrossX2?.x2Nums || []).map(numStr);
+    let pentaNextLoX1 = (nPenta.loCrossX2?.x1Nums || nPenta.lo?.x1Nums || []).map(numStr);
+    const p5Set = new Set(pentaNextLoX5);
+    pentaNextLoX4 = pentaNextLoX4.filter(n => !p5Set.has(n));
+    const p4Set = new Set([...p5Set, ...pentaNextLoX4]);
+    pentaNextLoX3 = pentaNextLoX3.filter(n => !p4Set.has(n));
+    const p3Set = new Set([...p4Set, ...pentaNextLoX3]);
+    pentaNextLoCrossX2 = pentaNextLoCrossX2.filter(n => !p3Set.has(n));
+    const p2Set = new Set([...p3Set, ...pentaNextLoCrossX2]);
+    pentaNextLoX1 = pentaNextLoX1.filter(n => !p2Set.has(n));
+    let pentaNextLoAll = (nPenta.lo?.numbers || [...pentaNextLoX5, ...pentaNextLoX4, ...pentaNextLoX3, ...pentaNextLoCrossX2, ...pentaNextLoX1]).map(numStr);
+    const pentaNextLoStakeK = nPenta.loCrossX2?.stakeK || nPenta.lo?.stakeK || 83600;
+
+    const top8Data = resolveTop8SettlementForDate(predictionDate, advisorPayload);
+    const nextDan1 = top8Data.dan1;
+    const nextDan2 = top8Data.dan2;
+
+    const pentaNextTotalStakeK = pentaNextDeStakeK + pentaNextLoStakeK + 22000;
+
+    const lines = [
+        `👑 <b>DỰ ĐOÁN SHADOW MONITOR (GỘP 5 PP) — NGÀY ${displayDate(predictionDate)}</b>`,
+        `🔒 <i>100% Khớp Bất Biến SSOT (/daily-advisor-shadow)</i>`,
+        `━━━━━━━━━━━━━━━━━━━━`,
+        `💎 <b>ĐỀ SIÊU GỘP 5 PP (${pentaNextDeAll.length} số · Vốn ${formatCostK(pentaNextDeStakeK)}):</b>`,
+        `  • 👑 <b>VIP X2 (trùng >= 3 hệ · ${pentaNextDeX2.length} số · cược 400K/số, ăn 33.6M):</b>`,
+        `    <code>${pentaNextDeX2.join(', ')}</code>`,
+        `  • 🛡️ <b>Bọc Lót X1 (trùng < 3 hệ · ${pentaNextDeX1.length} số · cược 200K/số, ăn 16.8M):</b>`,
+        `    <code>${pentaNextDeX1.join(', ')}</code>`,
+        ``,
+        `🎰 <b>LÔ SIÊU GỘP 5 PP (${pentaNextLoAll.length} số · Vốn ${formatCostK(pentaNextLoStakeK)}):</b>`
+    ];
+    if (pentaNextLoX5.length) lines.push(`  • 👑 <b>Siêu VIP X5 (${pentaNextLoX5.length} số · 11M/số [500đ], ăn 40M/nháy):</b> <code>${pentaNextLoX5.join(', ')}</code>`);
+    if (pentaNextLoX4.length) lines.push(`  • 🔥 <b>Cực VIP X4 (${pentaNextLoX4.length} số · 8.8M/số [400đ], ăn 32M/nháy):</b> <code>${pentaNextLoX4.join(', ')}</code>`);
+    if (pentaNextLoX3.length) lines.push(`  • ⚡ <b>Triển Vọng X3 (${pentaNextLoX3.length} số · 6.6M/số [300đ], ăn 24M/nháy):</b> <code>${pentaNextLoX3.join(', ')}</code>`);
+    if (pentaNextLoCrossX2.length) lines.push(`  • 🚀 <b>Đột Phá Nâng X2 (${pentaNextLoCrossX2.length} số · 4.4M/số [200đ], ăn 16M/nháy):</b> <code>${pentaNextLoCrossX2.join(', ')}</code>\n    └ 💡 <i>Lý do: Nằm trong Top High Set Lô Ghép 4 Advisor</i>`);
+    if (pentaNextLoX1.length) lines.push(`  • 🛡️ <b>Bảo Hiểm X1 (${pentaNextLoX1.length} số · 2.2M/số [100đ], ăn 8M/nháy):</b> <code>${pentaNextLoX1.join(', ')}</code>`);
+
+    lines.push(
+        ``,
+        `🎲 <b>2 DÀN XIÊN 4 TINH HOA (Top 8 Chẵn/Lẻ · Vốn 22M · 11M/dàn):</b>`,
+        `  • Dàn 1: <code>${nextDan1.join(', ')}</code> (11M)`,
+        `  • Dàn 2: <code>${nextDan2.join(', ')}</code> (11M)`,
+        `  └ <i>Quây 11 vé/dàn: Nổ 2 con = 12M · 3 con = 84M · 4 con = 384M</i>`,
+        ``,
+        `💰 <b>TỔNG VỐN ĐẦU TƯ SHADOW:</b> <b>${formatCostK(pentaNextTotalStakeK)}</b>`,
+        `━━━━━━━━━━━━━━━━━━━━`,
+        `📋 <b>TEXT COPY DÀN SHADOW (Bấm vào khối để copy):</b>`,
+        `<code>Ngày ${displayDate(predictionDate)}`,
+        pentaNextLoX5.length ? `X5: ${pentaNextLoX5.join(',')}` : '',
+        pentaNextLoX4.length ? `X4: ${pentaNextLoX4.join(',')}` : '',
+        pentaNextLoX3.length ? `X3: ${pentaNextLoX3.join(',')}` : '',
+        pentaNextLoCrossX2.length ? `X2: ${pentaNextLoCrossX2.join(',')}` : '',
+        pentaNextLoX1.length ? `X1: ${pentaNextLoX1.join(',')}` : '',
+        `</code>`
+    );
+
+    return lines.filter(Boolean).join('\n');
+}
+
+function buildAuditMessageForDate(targetDate, advisorPayload = {}) {
+    const reg = advisorPayload?.dailyLockedBetsRegistry?.dates || {};
+    const regEntry = reg[targetDate] || {};
+    const sBets = regEntry.bets || {};
+    const sSettlement = regEntry.settlement || {};
+
+    const drawPrizesObj = advisorPayload?.drawPrizesByDate?.[targetDate] || regEntry?.actualResult || null;
+    const isPending = !regEntry?.isSettled && (!drawPrizesObj || (drawPrizesObj.special === undefined && (!drawPrizesObj.prizes || drawPrizesObj.prizes.length === 0)));
+
+    // A. Daily Advisor
+    const sDe = sSettlement.de || sSettlement.crossHedgingPortfolio || {};
+    const actualSpecial = sDe.actualSpecial 
+        || sSettlement.lo4EngineFusion?.actualSpecial
+        || drawPrizesObj?.special
+        || null;
+
+    const isDeHit = sDe.isHit ?? (sDe.deHits > 0 || (sDe.profitK || 0) > 0);
+    const isDeVipHit = sDe.isVipHit ?? false;
+    const deSpecialStr = actualSpecial != null ? numStr(actualSpecial) : '--';
+    let deResultText = '';
+    if (actualSpecial != null) {
+        if (isDeVipHit) deResultText = `👑 <b>TRÚNG ĐỀ VIP X3 (số ${deSpecialStr}) ăn 252M!</b>`;
+        else if (isDeHit) deResultText = `✅ <b>TRÚNG ĐỀ BỌC LÓT X1 (số ${deSpecialStr}) ăn 84M!</b>`;
+        else deResultText = `❌ <b>Trượt Đề (ĐB về ${deSpecialStr})</b>`;
+    } else {
+        deResultText = `⏳ <i>Đang chờ mở thưởng</i>`;
+    }
+    const advDeStakeK = sDe.stakeK || sDe.deStakeK || 77000;
+    const advDePayoutK = sDe.payoutK || sDe.dePayoutK || (isDeHit ? (isDeVipHit ? 252000 : 84000) : 0);
+    const advDeProfitK = sDe.profitK ?? sDe.deProfitK ?? (advDePayoutK - advDeStakeK);
+
+    const sLo = sSettlement.lo4EngineFusion || {};
+    const advLoHits = sLo.totalHits ?? sSettlement.crossHedgingPortfolio?.loHits ?? 0;
+    const advLoHitNums = sLo.hitNumbers || [];
+    const advLoStakeK = sLo.lotoStakeK || sSettlement.crossHedgingPortfolio?.loStakeK || 66000;
+    const advLoPayoutK = sLo.lotoPayoutK || sSettlement.crossHedgingPortfolio?.loPayoutK || 0;
+    const advLoProfitK = sLo.lotoProfitK ?? sSettlement.crossHedgingPortfolio?.loProfitK ?? (advLoPayoutK - advLoStakeK);
+    const loHitsText = advLoHits > 0 
+        ? `🔥 <b>Nổ ${advLoHits} nháy</b>${advLoHitNums.length ? ` [${advLoHitNums.join(', ')}]` : ''}`
+        : (isPending ? `⏳ <i>Đang chờ mở thưởng</i>` : `❌ <b>Trượt Lô (0 nháy)</b>`);
+
+    const sLoCrossX2 = sLo.crossX2 || sBets.lo4EngineFusion?.crossX2 || {};
+    const loX2StakeK = sLoCrossX2.dayLotoStakeKX2 || advLoStakeK;
+    const loX2PayoutK = sLoCrossX2.dayLotoPayoutKX2 !== undefined ? sLoCrossX2.dayLotoPayoutKX2 : advLoPayoutK;
+    const loX2ProfitK = sLoCrossX2.dayLotoProfitKX2 !== undefined ? sLoCrossX2.dayLotoProfitKX2 : advLoProfitK;
+    const loPromotedX2 = (sLoCrossX2.tierX2 || []).map(numStr);
+    const loX2Hits = sLoCrossX2.x2Hits || 0;
+
+    const top8Data = resolveTop8SettlementForDate(targetDate, advisorPayload);
+    const top8StakeK = top8Data.stakeK || 22000;
+    const top8PayoutK = isPending ? 0 : top8Data.payoutK;
+    const top8ProfitK = isPending ? -top8StakeK : top8Data.profitK;
+    const h1 = top8Data.hits1;
+    const h2 = top8Data.hits2;
+
+    const sXien = sSettlement.loXien5 || {};
+    let advXienTop5 = (sXien.top5 || sBets.loXien5?.top5 || []).map(numStr);
+    const advH5 = sXien.h5 !== undefined ? sXien.h5 : 0;
+    const advXienStakeK = sXien.stakeK || 55000;
+    const advXienPayoutK = sXien.payoutK || 0;
+    const advXienProfitK = sXien.profitK !== undefined ? sXien.profitK : (advXienPayoutK - advXienStakeK);
+
+    const sXien4 = sLo.xien4 || sBets.lo4EngineFusion?.xien4 || {};
+    const xien4Hits = sLo.xienHitsCount ?? 0;
+    const xien4Top4 = (sLo.xienTop4 || sXien4.top4 || sXien4.numbers || []).map(numStr);
+    const xien4StakeK = sLo.xienStakeK || 11000;
+    const xien4PayoutK = sLo.xienPayoutK || 0;
+    const xien4ProfitK = sLo.xienProfitK !== undefined ? sLo.xienProfitK : (xien4PayoutK - xien4StakeK);
+
+    const advTotalStakeK = advDeStakeK + advLoStakeK + top8StakeK;
+    const advTotalPayoutK = advDePayoutK + advLoPayoutK + top8PayoutK;
+    const advTotalProfitK = advTotalPayoutK - advTotalStakeK;
+
+    // B. Shadow Monitor
+    const sPenta = sSettlement.pentaConsensus || advisorPayload?.pentaConsensus?.settledLedger?.find(r => r.date === targetDate) || {};
+    const pentaDeStakeK = sPenta.de?.stakeK || 15600;
+    const pentaDePayoutK = sPenta.de?.payoutK || (sPenta.de?.isHitX2 ? 33600 : (sPenta.de?.isHitX1 ? 16800 : 0));
+    const pentaDeProfitK = sPenta.de?.profitK !== undefined ? sPenta.de.profitK : (pentaDePayoutK - pentaDeStakeK);
+    let pentaDeResultText = '';
+    if (actualSpecial != null) {
+        if (sPenta.de?.isHitX2) pentaDeResultText = `👑 <b>TRÚNG ĐỀ X2 (ăn 33.6M)!</b>`;
+        else if (sPenta.de?.isHitX1) pentaDeResultText = `✅ <b>TRÚNG ĐỀ X1 (ăn 16.8M)!</b>`;
+        else pentaDeResultText = `❌ <b>Trượt Đề (ĐB về ${deSpecialStr})</b>`;
+    } else {
+        pentaDeResultText = `⏳ <i>Đang chờ mở thưởng</i>`;
+    }
+
+    const pentaLoHits = sPenta.lo?.hits || 0;
+    const pentaLoHitNums = sPenta.lo?.hitNums || [];
+    const pentaLoStakeK = sPenta.lo?.stakeK || 83600;
+    const pentaLoPayoutK = sPenta.lo?.payoutK || 0;
+    const pentaLoProfitK = sPenta.lo?.profitK !== undefined ? sPenta.lo.profitK : (pentaLoPayoutK - pentaLoStakeK);
+    const pentaLoHitsText = pentaLoHits > 0 
+        ? `🔥 <b>Nổ ${pentaLoHits} nháy</b>${pentaLoHitNums.length ? ` [${pentaLoHitNums.join(', ')}]` : ''}`
+        : (isPending ? `⏳ <i>Đang chờ mở thưởng</i>` : `❌ <b>Trượt Lô (0 nháy)</b>`);
+
+    const sPentaCross = sPenta.loCrossX2 || sSettlement.pentaConsensus?.loCrossX2 || {};
+    const pCrossStakeK = sPentaCross.stakeK || pentaLoStakeK;
+    const pCrossPayoutK = sPentaCross.payoutK || pentaLoPayoutK;
+    const pCrossProfitK = sPentaCross.profitK !== undefined ? sPentaCross.profitK : (pCrossPayoutK - pCrossStakeK);
+    const pCrossPromoted = (sPentaCross.x2Nums || []).map(numStr);
+
+    const pentaTotalStakeK = pentaDeStakeK + pentaLoStakeK + top8StakeK;
+    const pentaTotalPayoutK = pentaDePayoutK + pentaLoPayoutK + top8PayoutK;
+    const pentaTotalProfitK = pentaTotalPayoutK - pentaTotalStakeK;
+
+    const lines = [
+        `🏆 <b>BÁO CÁO ĐỐI SOÁT NGÀY ${displayDate(targetDate)}</b>`,
+        `🎯 <i>Giải Đặc Biệt: <b>${escapeHtml(deSpecialStr)}</b></i>`,
+        `━━━━━━━━━━━━━━━━━━━━`,
+        `<b>A. 📊 NHẬT KÝ ĐỐI SOÁT (/daily-advisor)</b>`,
+        `  • <b>Đề Thực Chiến:</b> ${deResultText}`,
+        `    └ Vốn: ${formatCostK(advDeStakeK)} · Thưởng: ${formatCostK(advDePayoutK)} · Lãi: <b>${formatMoneyK(advDeProfitK)}</b>`,
+        `  • <b>Lô Ghép 4 Động Cơ:</b> ${loHitsText}`,
+        `    └ <b>Dàn Gốc:</b> Vốn: ${formatCostK(advLoStakeK)} · Thưởng: ${formatCostK(advLoPayoutK)} · Lãi: <b>${formatMoneyK(advLoProfitK)}</b>`,
+        `    └ 🚀 <b>Dàn Đột Phá X2:</b> Vốn: ${formatCostK(loX2StakeK)} · Thưởng: ${formatCostK(loX2PayoutK)} · Lãi: <b>${formatMoneyK(loX2ProfitK)}</b>`,
+        `       └ <i>Nâng X2: ${loPromotedX2.length ? `[${loPromotedX2.join(', ')}] (${loX2Hits} nháy)` : 'Không nâng'}</i>`,
+        `  • <b>Các Dàn Lô Xiên:</b>`,
+        `    └ 🎲 <b>2 Dàn Xiên 4 Tinh Hoa (22M):</b> Thưởng: ${formatCostK(top8PayoutK)} · Lãi: <b>${formatMoneyK(top8ProfitK)}</b>`,
+        `       • Dàn 1 [${(top8Data.dan1 || []).join(', ')}]: Nổ ${h1}/4 con${h1 >= 2 ? ' (Ăn vé X2)' : ''} 👉 ${formatMoneyK(top8Data.profit1)}`,
+        `       • Dàn 2 [${(top8Data.dan2 || []).join(', ')}]: Nổ ${h2}/4 con${h2 >= 2 ? ' (Ăn vé X2)' : ''} 👉 ${formatMoneyK(top8Data.profit2)}`,
+        `    └ 👑 <b>Dàn Xiên 5 (55M):</b> [${advXienTop5.join(', ')}] về ${advH5}/5 · Lãi: <b>${formatMoneyK(advXienProfitK)}</b>`,
+        `    └ 🎯 <b>Bộ 4 Quây 11 vé (11M):</b> [${xien4Top4.join(', ')}] về ${xien4Hits}/4 · Lãi: <b>${formatMoneyK(xien4ProfitK)}</b>`,
+        `  👉 <b>TỔNG KẾT NGÀY DAILY:</b>`,
+        `    └ Vốn: ${formatCostK(advTotalStakeK)} · Thưởng: ${formatCostK(advTotalPayoutK)} · Lãi ròng: <b>${formatMoneyK(advTotalProfitK)}</b>`,
+        ``,
+        `<b>B. 👑 PHƯƠNG PHÁP GỘP 5 (/daily-advisor-shadow)</b>`,
+        `  • <b>Đề Siêu Gộp 5 PP:</b> ${pentaDeResultText}`,
+        `    └ Vốn: ${formatCostK(pentaDeStakeK)} · Thưởng: ${formatCostK(pentaDePayoutK)} · Lãi: <b>${formatMoneyK(pentaDeProfitK)}</b>`,
+        `  • <b>Lô Siêu Gộp 5 PP:</b> ${pentaLoHitsText}`,
+        `    └ <b>Dàn Gốc:</b> Vốn: ${formatCostK(pentaLoStakeK)} · Thưởng: ${formatCostK(pentaLoPayoutK)} · Lãi: <b>${formatMoneyK(pentaLoProfitK)}</b>`,
+        `    └ 🚀 <b>Dàn Đột Phá X2:</b> Vốn: ${formatCostK(pCrossStakeK)} · Thưởng: ${formatCostK(pCrossPayoutK)} · Lãi: <b>${formatMoneyK(pCrossProfitK)}</b>`,
+        `       └ <i>Nâng X2: ${pCrossPromoted.length ? `[${pCrossPromoted.join(', ')}]` : 'Không nâng'}</i>`,
+        `  • <b>Dàn Lô Xiên:</b>`,
+        `    └ 🎲 <b>2 Dàn Xiên 4 Tinh Hoa (22M):</b> Thưởng: ${formatCostK(top8PayoutK)} · Lãi: <b>${formatMoneyK(top8ProfitK)}</b>`,
+        `       • Dàn 1 [${(top8Data.dan1 || []).join(', ')}]: Nổ ${h1}/4 con${h1 >= 2 ? ' (Ăn vé X2)' : ''} 👉 ${formatMoneyK(top8Data.profit1)}`,
+        `       • Dàn 2 [${(top8Data.dan2 || []).join(', ')}]: Nổ ${h2}/4 con${h2 >= 2 ? ' (Ăn vé X2)' : ''} 👉 ${formatMoneyK(top8Data.profit2)}`,
+        `  👉 <b>TỔNG KẾT NGÀY SHADOW:</b>`,
+        `    └ Vốn: ${formatCostK(pentaTotalStakeK)} · Thưởng: ${formatCostK(pentaTotalPayoutK)} · Lãi ròng: <b>${formatMoneyK(pentaTotalProfitK)}</b>`
+    ];
+
+    return lines.join('\n');
+}
+
+function buildFastCopyMessage(predictionDate, advisorPayload = {}) {
+    const reg = advisorPayload?.dailyLockedBetsRegistry?.dates || {};
+    const regNext = reg[predictionDate] || {};
+    const nBets = regNext.bets || {};
+
+    // Daily Advisor
+    const nDe = nBets.de || advisorPayload?.crossHedgingPortfolio?.latestRecommendation?.pillar1_De || {};
+    let advNextDeVip = (nDe.vipNumbers || []).map(numStr);
+    let advNextDeSingle = (nDe.singleNumbers || []).map(numStr);
+    const advDeVipSet = new Set(advNextDeVip);
+    advNextDeSingle = advNextDeSingle.filter(n => !advDeVipSet.has(n));
+
+    const nLo = nBets.lo4EngineFusion || advisorPayload?.lo4EngineFusion?.latestRecommendation || {};
+    let advNextLoX5 = (nLo.tierX5 || []).map(numStr);
+    let advNextLoX4 = (nLo.tierX4 || []).map(numStr);
+    let advNextLoX3 = (nLo.tierX3 || []).map(numStr);
+    const nextCrossX2 = nBets.lo4EngineFusion?.crossX2 || nLo.crossX2 || {};
+    let advNextLoX2 = (nextCrossX2.tierX2 || []).map(numStr);
+    let advNextLoX1 = (nextCrossX2.tierX1 && nextCrossX2.tierX1.length ? nextCrossX2.tierX1 : nLo.tierX1 || []).map(numStr);
+    const higherLoTiers = new Set([...advNextLoX5, ...advNextLoX4, ...advNextLoX3, ...advNextLoX2]);
+    advNextLoX1 = advNextLoX1.filter(n => !higherLoTiers.has(n));
+
+    // Shadow
+    const nPenta = nBets.pentaConsensus || advisorPayload?.pentaConsensus?.latestRecommendation || {};
+    let pentaNextDeX2 = (nPenta.de?.x2Nums || []).map(numStr);
+    let pentaNextDeX1 = (nPenta.de?.x1Nums || []).map(numStr);
+    const pdX2Set = new Set(pentaNextDeX2);
+    pentaNextDeX1 = pentaNextDeX1.filter(n => !pdX2Set.has(n));
+
+    let pentaNextLoX5 = (nPenta.lo?.x5Nums || []).map(numStr);
+    let pentaNextLoX4 = (nPenta.lo?.x4Nums || []).map(numStr);
+    let pentaNextLoX3 = (nPenta.lo?.x3Nums || []).map(numStr);
+    let pentaNextLoCrossX2 = (nPenta.loCrossX2?.x2Nums || []).map(numStr);
+    let pentaNextLoX1 = (nPenta.loCrossX2?.x1Nums || nPenta.lo?.x1Nums || []).map(numStr);
+    const p5Set = new Set(pentaNextLoX5);
+    pentaNextLoX4 = pentaNextLoX4.filter(n => !p5Set.has(n));
+    const p4Set = new Set([...p5Set, ...pentaNextLoX4]);
+    pentaNextLoX3 = pentaNextLoX3.filter(n => !p4Set.has(n));
+    const p3Set = new Set([...p4Set, ...pentaNextLoX3]);
+    pentaNextLoCrossX2 = pentaNextLoCrossX2.filter(n => !p3Set.has(n));
+    const p2Set = new Set([...p3Set, ...pentaNextLoCrossX2]);
+    pentaNextLoX1 = pentaNextLoX1.filter(n => !p2Set.has(n));
+
+    // 2 Dàn Xiên 4
+    const top8Data = resolveTop8SettlementForDate(predictionDate, advisorPayload);
+    const dan1 = top8Data.dan1;
+    const dan2 = top8Data.dan2;
+
+    const dateStr = displayDate(predictionDate);
+    const lines = [
+        `📋 <b>DÀN SỐ TEXT COPY NHANH (NGÀY ${dateStr})</b>`,
+        `<i>Chạm vào từng khối <code>...</code> để tự động sao chép:</i>`,
+        `━━━━━━━━━━━━━━━━━━━━`,
+        `🔮 <b>1. DAILY ADVISOR — DÀN LÔ X2:</b>`,
+        `<code>Ngày ${dateStr}`,
+        advNextLoX5.length ? `X5: ${advNextLoX5.join(',')}` : '',
+        advNextLoX4.length ? `X4: ${advNextLoX4.join(',')}` : '',
+        advNextLoX3.length ? `X3: ${advNextLoX3.join(',')}` : '',
+        advNextLoX2.length ? `X2: ${advNextLoX2.join(',')}` : '',
+        advNextLoX1.length ? `X1: ${advNextLoX1.join(',')}` : '',
+        `</code>`,
+        ``,
+        `👑 <b>2. SHADOW MONITOR — DÀN LÔ GỘP 5:</b>`,
+        `<code>Ngày ${dateStr}`,
+        pentaNextLoX5.length ? `X5: ${pentaNextLoX5.join(',')}` : '',
+        pentaNextLoX4.length ? `X4: ${pentaNextLoX4.join(',')}` : '',
+        pentaNextLoX3.length ? `X3: ${pentaNextLoX3.join(',')}` : '',
+        pentaNextLoCrossX2.length ? `X2: ${pentaNextLoCrossX2.join(',')}` : '',
+        pentaNextLoX1.length ? `X1: ${pentaNextLoX1.join(',')}` : '',
+        `</code>`,
+        ``,
+        `🎲 <b>3. 2 DÀN XIÊN 4 TINH HOA (22M):</b>`,
+        `<code>Ngày ${dateStr}`,
+        `Xiên 4 Dàn 1: ${dan1.join(',')}`,
+        `Xiên 4 Dàn 2: ${dan2.join(',')}`,
+        `</code>`,
+        ``,
+        `💎 <b>4. DÀN ĐỀ THỰC CHIẾN & SHADOW:</b>`,
+        `<code>Ngày ${dateStr}`,
+        `Đề VIP Daily: ${advNextDeVip.join(',')}`,
+        `Đề Lót Daily: ${advNextDeSingle.join(',')}`,
+        `Đề VIP Shadow: ${pentaNextDeX2.join(',')}`,
+        `Đề Lót Shadow: ${pentaNextDeX1.join(',')}`,
+        `</code>`
+    ];
+
+    return lines.filter(Boolean).join('\n');
+}
+
+function buildMainMenuMessage() {
+    return [
+        `🤖 <b>XSMB SMART PREDICTOR & AUDIT BOT</b>`,
+        `<i>Hệ thống AI Phân Tích & Đối Soát Bất Biến 100% Strict PIT</i>`,
+        `━━━━━━━━━━━━━━━━━━━━`,
+        `Chào mừng bạn! Hãy chọn một trong các chức năng dưới đây:`,
+        ``,
+        `• 🔮 <b>Dự Đoán Daily Advisor:</b> Đề VIP X3 + Lô Ghép 4 ĐC (X5-X1) + 2 Dàn Xiên 4`,
+        `• 👑 <b>Dự Đoán Shadow Monitor:</b> Đề Gộp 5 PP + Lô Siêu Gộp 5 + 2 Dàn Xiên 4`,
+        `• 📊 <b>Đối Soát Theo Ngày:</b> Xem chi tiết kết quả nổ, P&L của từng ngày`,
+        `• 📋 <b>Text Copy Nhanh:</b> Lấy toàn bộ dàn số để nạp trang cược`,
+        `• 📜 <b>Toàn Bộ Báo Cáo:</b> Báo cáo tổng hợp đầy đủ như hàng ngày`,
+        `• 💰 <b>Bảng Mức Cược:</b> Xem chi tiết bảng tính vốn, thưởng theo 4 mức`,
+        ``,
+        `💡 <i>Bạn cũng có thể gõ các lệnh nhanh:</i>`,
+        `<code>/daily</code> · <code>/shadow</code> · <code>/audit [ngày]</code> · <code>/copy</code> · <code>/cuoc</code>`
+    ].join('\n');
+}
 
 module.exports = {
     numStr,
@@ -868,5 +1430,17 @@ module.exports = {
     formatM,
     getXien5Combinations,
     computePentaConsensusForDate,
-    buildTelegramReport
+    buildTelegramReport,
+    MAIN_MENU_KEYBOARD,
+    BACK_TO_MAIN_KEYBOARD,
+    SUB_NAV_DAILY_KEYBOARD,
+    SUB_NAV_SHADOW_KEYBOARD,
+    buildAuditResultKeyboard,
+    buildAuditDatesKeyboard,
+    resolveTop8SettlementForDate,
+    buildDailyPredictionMessage,
+    buildShadowPredictionMessage,
+    buildAuditMessageForDate,
+    buildFastCopyMessage,
+    buildMainMenuMessage
 };

@@ -362,7 +362,7 @@ async function main() {
     assert.match(report.text, /Dàn Xiên 5 \(5 Dàn Xiên 4/);
     assert.match(report.text, /Đề Siêu Gộp 5 PP/);
     assert.match(report.text, /Lô Siêu Gộp 5 PP/);
-    assert.match(report.text, /Xiên 5 Siêu Gộp \(5 Dàn Xiên 4/);
+    assert.match(report.text, /2 Dàn Xiên 4 Tinh Hoa/);
     assert.ok(!report.text.includes('ĐỀ TINH HOA — DÀN 30 SỐ GỢI Ý'), 'Không chứa Đề 30 số cũ');
     assert.ok(!report.text.includes('LÔ CHUẨN TỐI ƯU (DÀN 20 SỐ)'), 'Không chứa Top 20 Lô cũ');
     assert.ok(!report.text.includes('DÀN 7 SỐ TĂNG TỐC'), 'Không chứa Top 7 Lô cũ');
@@ -408,7 +408,7 @@ async function main() {
         assert.match(liveReport.text, /Dàn Xiên 5 \(5 Dàn Xiên 4/);
         assert.match(liveReport.text, /Đề Siêu Gộp 5 PP/);
         assert.match(liveReport.text, /Lô Siêu Gộp 5 PP/);
-        assert.match(liveReport.text, /Xiên 5 Siêu Gộp \(5 Dàn Xiên 4/);
+        assert.match(liveReport.text, /2 Dàn Xiên 4 Tinh Hoa/);
         assert.match(liveReport.text, /Lũy kế \(\/daily-advisor từ 16\/09\)/);
         assert.match(liveReport.text, /Lũy kế \(Gộp 5 từ 07\/10\)/);
         assert.ok(!liveReport.text.includes('LÔ XIÊN 2 CHIẾN LƯỢC'), 'Live report không được chứa Lô Xiên 2');
@@ -446,6 +446,55 @@ async function main() {
         assert.match(sheetM3, /TỔNG VỐN ĐẦU TƯ TRỌN GÓI HÔM NAY:.*?VNĐ/);
         assert.ok(!sheetM3.includes('LÔ XIÊN 2 CHIẾN LƯỢC'), 'Bảng tính cược không được chứa Lô Xiên 2');
         console.log('=== BET CALCULATION SHEET (MỨC 3 MẶC ĐỊNH) PREVIEW ===\n' + sheetM3 + '\n====================================');
+
+        const {
+            buildDailyPredictionMessage,
+            buildShadowPredictionMessage,
+            buildAuditMessageForDate,
+            buildFastCopyMessage,
+            buildAuditDatesKeyboard,
+            MAIN_MENU_KEYBOARD
+        } = await loadWorkerModule();
+
+        // 3. Test interactive Daily Prediction message
+        const dailyMsg = buildDailyPredictionMessage(liveReport.predictionDate, liveAdvisor);
+        assert.match(dailyMsg, /DỰ ĐOÁN DAILY ADVISOR/);
+        assert.match(dailyMsg, /ĐỀ THỰC CHIẾN/);
+        assert.match(dailyMsg, /LÔ GHÉP 4 ĐỘNG CƠ/);
+        assert.match(dailyMsg, /2 DÀN XIÊN 4 TINH HOA/);
+        assert.match(dailyMsg, /TEXT COPY DÀN X2/);
+        assert.match(dailyMsg, /Ngày \d{2}\/\d{2}\/\d{4}/);
+
+        // 4. Test interactive Shadow Prediction message
+        const shadowMsg = buildShadowPredictionMessage(liveReport.predictionDate, liveAdvisor);
+        assert.match(shadowMsg, /DỰ ĐOÁN SHADOW MONITOR/);
+        assert.match(shadowMsg, /ĐỀ SIÊU GỘP 5 PP/);
+        assert.match(shadowMsg, /LÔ SIÊU GỘP 5 PP/);
+        assert.match(shadowMsg, /2 DÀN XIÊN 4 TINH HOA/);
+        assert.match(shadowMsg, /TEXT COPY DÀN SHADOW/);
+        assert.match(shadowMsg, /Ngày \d{2}\/\d{2}\/\d{4}/);
+
+        // 5. Test Fast Copy message
+        const copyMsg = buildFastCopyMessage(liveReport.predictionDate, liveAdvisor);
+        assert.match(copyMsg, /DÀN SỐ TEXT COPY NHANH/);
+        assert.match(copyMsg, /DAILY ADVISOR — DÀN LÔ X2/);
+        assert.match(copyMsg, /SHADOW MONITOR — DÀN LÔ GỘP 5/);
+        assert.match(copyMsg, /2 DÀN XIÊN 4 TINH HOA/);
+        assert.match(copyMsg, /DÀN ĐỀ THỰC CHIẾN & SHADOW/);
+
+        // 6. Test Audit message for settled date
+        const auditMsg = buildAuditMessageForDate('2026-10-27', liveAdvisor);
+        assert.match(auditMsg, /BÁO CÁO ĐỐI SOÁT NGÀY 27\/10\/2026/);
+        assert.match(auditMsg, /NHẬT KÝ ĐỐI SOÁT \(\/daily-advisor\)/);
+        assert.match(auditMsg, /PHƯƠNG PHÁP GỘP 5 \(\/daily-advisor-shadow\)/);
+        assert.match(auditMsg, /2 Dàn Xiên 4 Tinh Hoa/);
+
+        // 7. Test keyboards
+        assert.ok(Array.isArray(MAIN_MENU_KEYBOARD.inline_keyboard));
+        assert.ok(MAIN_MENU_KEYBOARD.inline_keyboard.length >= 3);
+        const auditKb = buildAuditDatesKeyboard(liveAdvisor);
+        assert.ok(Array.isArray(auditKb.inline_keyboard));
+        assert.ok(auditKb.inline_keyboard.length >= 2);
     } catch (e) {
         if (e.code === 'ENOENT') {
             console.warn('Skipping live local file test because cache file was not found:', e.message);
