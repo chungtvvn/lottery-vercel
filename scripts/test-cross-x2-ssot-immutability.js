@@ -73,11 +73,16 @@ const rawList = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'lib', 'da
 const raw21 = rawList.find(r => r.date === '2026-10-21');
 assert(raw21, 'Raw result for 2026-10-21 must exist');
 
-const reSettle = settleDateDirectly('2026-10-21', raw21);
-assert(reSettle?.settlement?.lo4EngineFusion?.crossX2?.tierX2?.length > 0, 'Re-settle must preserve crossX2.tierX2');
-assert.deepStrictEqual(reSettle.settlement.lo4EngineFusion.crossX2.tierX2, ['44', '52', '68'], 'Re-settle must match exact promoted numbers [44, 52, 68]');
-console.log('✔ PASS 4.1: Re-settle directly preserves exact tierX2 [44, 52, 68]:', reSettle.settlement.lo4EngineFusion.crossX2.tierX2);
+(async () => {
+    const reSettle = await settleDateDirectly('2026-10-21', raw21);
+    assert(reSettle?.settlement?.lo4EngineFusion?.crossX2?.tierX2?.length > 0, 'Re-settle must preserve crossX2.tierX2');
+    assert.deepStrictEqual(reSettle.settlement.lo4EngineFusion.crossX2.tierX2, ['44', '52', '68'], 'Re-settle must match exact promoted numbers [44, 52, 68]');
+    console.log('✔ PASS 4.1: Re-settle directly preserves exact tierX2 [44, 52, 68]:', reSettle.settlement.lo4EngineFusion.crossX2.tierX2);
 
-console.log('='.repeat(80));
-console.log('🎉 ALL LOTO CROSS X2 IMMUTABILITY & SSOT TESTS PASSED 100%!');
-console.log('='.repeat(80));
+    console.log('='.repeat(80));
+    console.log('🎉 ALL LOTO CROSS X2 IMMUTABILITY & SSOT TESTS PASSED 100%!');
+    console.log('='.repeat(80));
+})().catch(err => {
+    console.error(err);
+    process.exit(1);
+});

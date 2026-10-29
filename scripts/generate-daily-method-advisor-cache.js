@@ -59,7 +59,9 @@ async function main() {
                         mergedDates[date] = {
                             ...val,
                             ...mergedDates[date],
-                            bets: { ...(val.bets || {}), ...(mergedDates[date].bets || {}) }
+                            isSettled: Boolean(mergedDates[date].isSettled || val.isSettled),
+                            bets: { ...(val.bets || {}), ...(mergedDates[date].bets || {}) },
+                            settlement: { ...(val.settlement || {}), ...(mergedDates[date].settlement || {}) }
                         };
                     }
                 }
@@ -481,6 +483,14 @@ async function main() {
         fs.mkdirSync(statsDir, { recursive: true });
     }
     fs.writeFileSync(path.join(statsDir, 'cached_daily_method_advisor.json'), JSON.stringify(cache, null, 2));
+
+    if (cache.dailyLockedBetsRegistry) {
+        try {
+            const regPayload = JSON.stringify(cache.dailyLockedBetsRegistry, null, 2);
+            fs.writeFileSync(path.join(statsDir, 'daily_locked_bets_registry.json'), regPayload, 'utf8');
+            fs.writeFileSync(path.join(dataDir, 'daily_locked_bets_registry.json'), regPayload, 'utf8');
+        } catch (_) {}
+    }
 
     if (cache.deDropoffMerge) {
         try {

@@ -14,6 +14,8 @@
 
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '..', '.env.local'), quiet: true });
+require('dotenv').config({ path: path.join(__dirname, '..', '.env'), quiet: true });
 
 const ROOT_DIR = path.join(__dirname, '..');
 const STATS_DIR = path.join(ROOT_DIR, 'lib', 'data', 'statistics');
@@ -28,62 +30,85 @@ const RAW_FILE = path.join(ROOT_DIR, 'lib', 'data', 'xsmb-2-digits.json');
 const numStr = n => String(Number(n)).padStart(2, '0');
 const normalizeDate = d => String(d || '').slice(0, 10);
 
-function syncAll() {
+async function syncAll() {
     console.log('='.repeat(80));
     console.log('🚀 UNIFIED SSOT SYNCHRONIZATION RUNNING...');
     console.log('='.repeat(80));
 
-    // 1. Tải registry (gộp thông minh cả data/ và lib/data/statistics/)
+    const { loadRegistry, saveRegistry, settleDateDirectly } = require('../lib/services/dailyLockedBetsRegistryService');
+
+    // 1. Tải registry (ưu tiên R2, kết hợp đồng bộ local files)
+    let reg = null;
+    try {
+        reg = await loadRegistry();
+    } catch (err) {
+        console.warn('[SSOT Registry] Không thể tải từ R2, đọc local:', err.message);
+    }
     let reg1 = null, reg2 = null;
     try { if (fs.existsSync(REG_DATA_FILE)) reg1 = JSON.parse(fs.readFileSync(REG_DATA_FILE, 'utf8')); } catch (_) {}
     try { if (fs.existsSync(REG_STATS_FILE)) reg2 = JSON.parse(fs.readFileSync(REG_STATS_FILE, 'utf8')); } catch (_) {}
-    let reg = reg1 || reg2;
-    if (reg1?.dates && reg2?.dates) {
-        const merged = { ...reg2.dates, ...reg1.dates };
-        for (const [d, v] of Object.entries(reg2.dates)) {
-            if (merged[d]) {
-                merged[d] = {
+    if (!reg) reg = reg1 || reg2;
+    if (reg && (reg1?.dates || reg2?.dates)) {
+        const diskDates = { ...(reg2?.dates || {}), ...(reg1?.dates || {}) };
+        for (const [d, v] of Object.entries(diskDates)) {
+            if (!reg.dates[d]) {
+                reg.dates[d] = v;
+            } else {
+                reg.dates[d] = {
                     ...v,
-                    ...merged[d],
-                    isSettled: Boolean(merged[d].isSettled || v.isSettled),
-                    bets: { ...(v.bets || {}), ...(merged[d].bets || {}) },
-                    settlement: { ...(v.settlement || {}), ...(merged[d].settlement || {}) }
+                    ...reg.dates[d],
+                    isSettled: Boolean(reg.dates[d].isSettled || v.isSettled),
+                    bets: { ...(v.bets || {}), ...(reg.dates[d].bets || {}) },
+                    settlement: { ...(v.settlement || {}), ...(reg.dates[d].settlement || {}) }
                 };
             }
         }
-        reg = { ...(reg1 || reg2), dates: merged };
     }
     if (!reg || !reg.dates) {
         throw new Error('daily_locked_bets_registry.json không tồn tại hoặc bị lỗi!');
     }
 
     // 2. Tải raw data
-    const raw = JSON.parse(fs.readFileSync(RAW_FILE, 'utf8'));
+    let raw = [];
+    if (fs.existsSync(RAW_FILE)) {
+        raw = JSON.parse(fs.readFileSync(RAW_FILE, 'utf8'));
+    } else {
+        const { getRawData } = require('../lib/data-access');
+        raw = await getRawData();
+    }
     const rawMap = new Map();
     raw.forEach(r => {
         const d = normalizeDate(r.date || r.ngay);
         if (d) rawMap.set(d, r);
     });
 
-    const { settleDateDirectly } = require('../lib/services/dailyLockedBetsRegistryService');
-
     // 3. Tự động đối soát mọi ngày chưa kết toán nếu đã có kết quả mở thưởng
     let newlySettled = 0;
     const sortedDates = Object.keys(reg.dates).sort();
-    sortedDates.forEach(d => {
+    for (const d of sortedDates) {
         const entry = reg.dates[d];
         if (!entry.isSettled && rawMap.has(d)) {
             console.log(`[Settlement] Đối soát ngày ${d}...`);
-            const s = settleDateDirectly(d, rawMap.get(d));
-            if (s && s.isSettled) {
-                newlySettled++;
-                console.log(`  ✓ Đã kết toán ${d}: Đề PnL = ${s.settlement?.de?.profitK}K, Cross-Hedging PnL = ${s.settlement?.crossHedgingPortfolio?.totalProfitK}K`);
+            try {
+                const s = await settleDateDirectly(d, rawMap.get(d));
+                if (s && s.isSettled) {
+                    reg.dates[d] = s;
+                    newlySettled++;
+                    console.log(`  ✓ Đã kết toán ${d}: Đề PnL = ${s.settlement?.de?.profitK}K, Cross-Hedging PnL = ${s.settlement?.crossHedgingPortfolio?.totalProfitK}K`);
+                }
+            } catch (err) {
+                console.warn(`  ⚠️ Lỗi khi đối soát ngày ${d}: ${err.message}`);
             }
         }
-    });
+    }
 
     // Lưu lại registry đồng nhất
     reg.updatedAt = new Date().toISOString();
+    try {
+        await saveRegistry(reg);
+    } catch (saveErr) {
+        console.warn(`[Registry] Không thể lưu R2: ${saveErr.message}`);
+    }
     const regStr = JSON.stringify(reg, null, 2);
     fs.writeFileSync(REG_STATS_FILE, regStr, 'utf8');
     fs.writeFileSync(REG_DATA_FILE, regStr, 'utf8');
@@ -449,25 +474,28 @@ function syncAll() {
     if (top8ParityLedger.length > 0) adv.top8ParityXien4.settledLedger = top8ParityLedger;
 
     // 7. CẬP NHẬT LATEST RECOMMENDATION CHO NGÀY TIẾP THEO (PENDING)
-    if (latestEntry && latestEntry.bets) {
-        const lb = latestEntry.bets;
+    const pendingEntry = sortedDates.map(d => reg.dates[d]).filter(e => e && !e.isSettled).pop() || (latestEntry && !latestEntry.isSettled ? latestEntry : null);
+    if (pendingEntry && pendingEntry.bets) {
+        const targetDate = pendingEntry.targetDate;
+        const lb = pendingEntry.bets;
         if (lb.crossHedgingPortfolio) {
             adv.crossHedgingPortfolio.latestRecommendation = lb.crossHedgingPortfolio;
-            adv.crossHedgingPortfolio.targetDate = latestDate;
+            adv.crossHedgingPortfolio.targetDate = targetDate;
         }
         if (lb.lo4EngineFusion) {
             adv.lo4EngineFusion.latestRecommendation = lb.lo4EngineFusion;
-            if (adv.lo4EngineFusion.modes.top7) adv.lo4EngineFusion.modes.top7.latestRecommendation = lb.lo4EngineFusion;
-            if (adv.lo4EngineFusion.modes.top6) adv.lo4EngineFusion.modes.top6.latestRecommendation = lb.lo4EngineFusion;
+            if (adv.lo4EngineFusion.modes?.top7) adv.lo4EngineFusion.modes.top7.latestRecommendation = lb.lo4EngineFusion;
+            if (adv.lo4EngineFusion.modes?.top6) adv.lo4EngineFusion.modes.top6.latestRecommendation = lb.lo4EngineFusion;
         }
         if (lb.loXien5) {
+            if (!adv.loTop5ConsensusXien) adv.loTop5ConsensusXien = {};
             adv.loTop5ConsensusXien.top5Xien = lb.loXien5.top5;
             adv.loTop5ConsensusXien.top4Xien = lb.lo4EngineFusion?.xien4?.top4 || lb.loXien5.top5?.slice(0, 4);
         }
         if (lb.de) {
             if (!adv.streakAwareDeAdvisor) adv.streakAwareDeAdvisor = {};
             adv.streakAwareDeAdvisor.latestRecommendation = {
-                predictionDate: latestDate,
+                predictionDate: targetDate,
                 selectedMethod: 'deMarkovGapHazard',
                 selectedMethodLabel: lb.de.methodName,
                 methodName: lb.de.methodName,
@@ -476,12 +504,12 @@ function syncAll() {
                 tierX2: [],
                 singles: lb.de.singleNumbers,
                 stakeK: lb.de.stakeK,
-                snapshotLock: { isLocked: true, lockedAt: latestEntry.registeredAt }
+                snapshotLock: { isLocked: true, lockedAt: pendingEntry.registeredAt }
             };
         }
-        if (lb.deDropoffMerge) adv.deDropoffMerge.latestRecommendation = lb.deDropoffMerge;
-        if (lb.loDropoff27) adv.loDropoff27.latestRecommendation = lb.loDropoff27;
-        if (lb.triCoreDe) adv.triCoreDe.latestRecommendation = lb.triCoreDe;
+        if (lb.deDropoffMerge && adv.deDropoffMerge) adv.deDropoffMerge.latestRecommendation = lb.deDropoffMerge;
+        if (lb.loDropoff27 && adv.loDropoff27) adv.loDropoff27.latestRecommendation = lb.loDropoff27;
+        if (lb.triCoreDe && adv.triCoreDe) adv.triCoreDe.latestRecommendation = lb.triCoreDe;
         if (lb.pentaConsensus) {
             if (!adv.pentaConsensus) adv.pentaConsensus = {};
             adv.pentaConsensus.latestRecommendation = lb.pentaConsensus;
@@ -489,8 +517,8 @@ function syncAll() {
         if (lb.top8ParityXien4) {
             if (!adv.top8ParityXien4) adv.top8ParityXien4 = {};
             adv.top8ParityXien4.latestRecommendation = {
-                targetDate: latestDate,
-                predictionDate: latestDate,
+                targetDate: targetDate,
+                predictionDate: targetDate,
                 ...lb.top8ParityXien4
             };
         }
@@ -507,19 +535,17 @@ function syncAll() {
     console.log(`  CrossHedging settled ledger: ${chLedger.length} ngày, Lãi lũy kế: ${(cumTot / 1000).toFixed(1)}M VNĐ`);
     console.log(`  Lô 4 ĐC Top 7 ledger: ${lo7Ledger.length} ngày, Lãi lũy kế: ${(cumLo7 / 1000).toFixed(1)}M VNĐ`);
     console.log(`  Đề ledger: ${dmLedger.length} ngày, Lãi lũy kế: ${(cumDe / 1000).toFixed(1)}M VNĐ`);
-    console.log(`  Target Date hôm nay: ${latestDate} (${latestEntry.isSettled ? 'Đã kết toán' : 'Chờ mở thưởng'})`);
+    console.log(`  Target Date hôm nay: ${latestDate} (${latestEntry?.isSettled ? 'Đã kết toán' : 'Chờ mở thưởng'})`);
     console.log('='.repeat(80));
     console.log('✅ SYNC HOÀN TẤT!');
     console.log('='.repeat(80));
 }
 
 if (require.main === module) {
-    try {
-        syncAll();
-    } catch (e) {
+    syncAll().catch(e => {
         console.error('Lỗi khi sync SSOT:', e);
         process.exit(1);
-    }
+    });
 }
 
 module.exports = { syncAll };
