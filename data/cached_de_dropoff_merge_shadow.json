@@ -31,21 +31,21 @@
     "payoutK": 33600,
     "profitOnHitK": 21600
   },
-  "generatedAt": "2026-10-29T11:43:42.688Z",
+  "generatedAt": "2026-10-29T18:29:17.914Z",
   "latestDataDate": "2026-10-29",
   "pendingPredictionDate": "2026-10-30",
   "summary": {
     "all2026": {
       "totalDays": 298,
-      "wins": 133,
-      "losses": 165,
-      "hitRate": 0.4463087248322148,
+      "wins": 134,
+      "losses": 164,
+      "hitRate": 0.44966442953020136,
       "stakeK": 11920000,
-      "payoutK": 11172000,
-      "profitK": -748000,
-      "roi": -0.06275167785234899,
+      "payoutK": 11256000,
+      "profitK": -664000,
+      "roi": -0.05570469798657718,
       "maxLossStreak": 9,
-      "maxDrawdownK": 920000
+      "maxDrawdownK": 836000
     },
     "liveCombat": {
       "totalDays": 43,
@@ -256,7 +256,7 @@
     "snapshotLock": {
       "isLocked": false,
       "lockActive": false,
-      "lockReason": "Kỳ quay 2026-10-30 là ngày tương lai."
+      "lockReason": "Chưa đến 12:00 trưa (còn 607 phút). Dự đoán vẫn có thể cập nhật."
     }
   },
   "settledLedger": [
