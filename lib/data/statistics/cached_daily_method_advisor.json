@@ -160389,15 +160389,15 @@
               "64",
               "66",
               "59",
-              "01"
+              "57"
             ],
             "uniqueCount": 8,
             "unitCount": 8,
             "betCount": 8,
-            "hits": 2,
+            "hits": 1,
             "stakeK": 17600,
-            "payoutK": 16000,
-            "profitK": -1600,
+            "payoutK": 8000,
+            "profitK": -9600,
             "isWin": false,
             "result": "loss"
           },
@@ -160527,7 +160527,7 @@
               "64",
               "66",
               "59",
-              "01"
+              "57"
             ],
             "methodId": "loTriHarmonic",
             "methodLabel": "🌟 Tam Động Cơ",
@@ -290987,13 +290987,14 @@
         "losses": 117,
         "lossDays": 117,
         "hitDays": 289,
-        "totalHits": 904,
+        "totalHits": 903,
         "stakeK": 5244800,
-        "payoutK": 7232000,
-        "profitK": 1987200,
+        "payoutK": 7224000,
+        "profitK": 1979200,
         "hitRate": 0.9698,
         "winRate": 0.6074,
-        "roi": 0.3789
+        "roi": 0.37736424649176326,
+        "avgHitsPerDay": 3.030201342281879
       },
       "top10": {
         "methodId": "top10",
@@ -817773,15 +817774,15 @@
               "64",
               "66",
               "59",
-              "01"
+              "57"
             ],
             "uniqueCount": 8,
             "unitCount": 8,
             "betCount": 8,
-            "hits": 2,
+            "hits": 1,
             "stakeK": 17600,
-            "payoutK": 16000,
-            "profitK": -1600,
+            "payoutK": 8000,
+            "profitK": -9600,
             "isWin": false,
             "liveCumulativeProfitK": 315200,
             "result": "loss"

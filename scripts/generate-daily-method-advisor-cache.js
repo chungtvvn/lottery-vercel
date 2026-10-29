@@ -363,6 +363,11 @@ async function main() {
                     stakePerDanK: 11000
                 };
             }
+            betsToRegister['metaCrossMethod'] = {
+                targetDate: expectedPredictionDate,
+                topPredictions: cache.metaCrossMethod.latestRecommendation.topPredictions,
+                rankedNumbers: cache.metaCrossMethod.latestRecommendation.rankedNumbers
+            };
         }
 
         await registryService.registerDailyBetsBatch(expectedPredictionDate, betsToRegister);

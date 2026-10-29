@@ -504,12 +504,23 @@ export async function GET(request) {
                 const isLive = r.date >= '2026-08-28';
                 const rowPredictions = {};
                 const rowMethods = {};
+                const regDate = advisorData?.dailyLockedBetsRegistry?.dates?.[r.date];
 
                 countsList.forEach(c => {
                     const key = `top${c}`;
                     const m = r.methods?.[key];
                     let betNumbers = m?.betNumbers || (r.rankedNumbers || []).slice(0, c);
-                    let hits = m?.hits || 0;
+                    if (regDate?.bets) {
+                        if (c === 8 && regDate.bets.top8ParityXien4?.top8?.length >= 8) {
+                            betNumbers = regDate.bets.top8ParityXien4.top8.slice(0, 8);
+                        } else if (regDate.bets.metaCrossMethod?.topPredictions?.[key]?.numbers?.length === c) {
+                            betNumbers = regDate.bets.metaCrossMethod.topPredictions[key].numbers.slice(0, c);
+                        }
+                    }
+                    let hits = m?.hits ?? 0;
+                    if (regDate?.bets && (c === 8 || regDate.bets.metaCrossMethod?.topPredictions?.[key])) {
+                        hits = betNumbers.reduce((acc, num) => acc + (actualMap[num] || 0), 0);
+                    }
                     let stakeK = c * 2200;
                     let payoutK = hits * 8000;
                     let profitK = payoutK - stakeK;
