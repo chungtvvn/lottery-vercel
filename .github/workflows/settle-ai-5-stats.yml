@@ -1,0 +1,88 @@
+name: AI 5 Agents Daily Settlement (7h Tối VN)
+
+on:
+  schedule:
+    # 12:00 UTC = 19:00 GMT+7 (7h tối Việt Nam)
+    # 13:00 UTC = 20:00 GMT+7 (1 tiếng sau tự động thử lại nếu 19:00 chưa có kết quả)
+    # 14:00 UTC = 21:00 GMT+7 (dự phòng cuối ngày)
+    - cron: '0 12,13,14 * * *'
+  workflow_dispatch:
+    inputs:
+      target_date:
+        description: 'Ngày cần đối soát (YYYY-MM-DD); để trống sẽ lấy ngày hiện tại Việt Nam'
+        required: false
+        default: ''
+        type: string
+      force:
+        description: '1 = Bắt buộc đối soát lại dù ngày này đã có kết quả'
+        required: true
+        default: '0'
+        type: choice
+        options:
+          - '0'
+          - '1'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: settle-ai-5-stats-lock
+  cancel-in-progress: false
+
+jobs:
+  settle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NODE_OPTIONS: --max-old-space-size=4096
+      NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL: ${{ secrets.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL }}
+      CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
+      CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
+      CLOUDFLARE_R2_ENDPOINT: ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
+      CLOUDFLARE_R2_BUCKET: ${{ secrets.CLOUDFLARE_R2_BUCKET }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Resolve target date
+        id: target
+        run: |
+          if [ -n "${{ inputs.target_date }}" ]; then
+            echo "date=${{ inputs.target_date }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "date=$(TZ=Asia/Ho_Chi_Minh date +%F)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run AI 5 Stats Settlement
+        run: |
+          FORCE_FLAG=""
+          if [ "${{ inputs.force }}" = "1" ]; then
+            FORCE_FLAG="--force"
+          fi
+          node scripts/settle-ai-5-stats.js --date=${{ steps.target.outputs.date }} $FORCE_FLAG
+
+      - name: Commit & push updated settlement data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          if git diff --quiet -- data/ai_5_stats.json lib/data/statistics/ai_5_stats.json; then
+            echo "Không có thay đổi mới trong data/ai_5_stats.json."
+          else
+            git add data/ai_5_stats.json lib/data/statistics/ai_5_stats.json
+            git commit -m "fix(ai-5): settle daily predictions for ${{ steps.target.outputs.date }} [skip ci]"
+            git pull --rebase origin main
+            git push origin main
+            echo "Đã commit và push kết quả đối soát ngày ${{ steps.target.outputs.date }} lên main."
+          fi

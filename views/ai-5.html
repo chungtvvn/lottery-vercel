@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đối Soát & Đồng Thuận 5 AI | XSMB Stats</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        .badge-number {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .badge-number:hover {
+            transform: translateY(-2px) scale(1.05);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        .tab-ai-btn.active {
+            background-color: #4f46e5;
+            color: #ffffff;
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+            border-color: #4f46e5;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased selection:bg-indigo-500 selection:text-white">
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 flex translate-y-10 items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-600 px-5 py-3.5 text-white opacity-0 shadow-2xl transition-all duration-300 pointer-events-none">
+        <i class="bi bi-check-circle-fill text-lg"></i>
+        <span id="toastMessage" class="text-sm font-bold">Đã sao chép dàn số!</span>
+    </div>
+
+    <!-- Header Navigation -->
+    <header class="nav-glass-blur sticky top-0 z-40 mb-6 w-full border-b border-slate-200/80 bg-white/90 backdrop-blur-md">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="flex h-16 items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-amber-500 shadow-md shadow-indigo-500/20">
+                        <i class="bi bi-robot text-xl text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-base font-black tracking-tight text-slate-900 sm:text-lg">
+                            AI 5 Consensus <span class="rounded bg-purple-100 px-1.5 py-0.5 text-[10px] font-black text-purple-800">5 AGENTS</span>
+                        </h1>
+                        <p class="text-[11px] font-semibold text-slate-500">Đối Soát & Đồng Thuận 5 Siêu Trí Tuệ Nhân Tạo</p>
+                    </div>
+                </div>
+                
+                <!-- Desktop Nav -->
+                <nav class="hidden md:flex items-center space-x-1">
+                    <a href="/statistics" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Thống kê</a>
+                    <a href="/chain-frequency" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Mốc 20 năm</a>
+                    <a href="/simulation" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Lịch sử</a>
+                    <a href="/loto" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Lô</a>
+                    <a href="/daily-advisor" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">Gợi ý</a>
+                    <a href="/ai-5" class="nav-link-custom active px-3 py-2 text-sm font-semibold whitespace-nowrap">🤖 5 AI</a>
+                    <a href="/settings" class="nav-link-custom px-3 py-2 text-sm font-medium whitespace-nowrap">⚙️</a>
+                </nav>
+
+                <!-- Mobile Nav -->
+                <div class="flex md:hidden">
+                    <nav class="flex max-w-[290px] space-x-1 overflow-x-auto py-1 custom-scrollbar">
+                        <a href="/daily-advisor" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Gợi ý</a>
+                        <a href="/loto" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Lô</a>
+                        <a href="/ai-5" class="nav-link-custom active px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap">🤖 5 AI</a>
+                        <a href="/statistics" class="nav-link-custom px-2.5 py-1.5 text-xs font-medium whitespace-nowrap">Thống kê</a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
+        <!-- Subtabs Navigation -->
+        <div class="mb-6 flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-sm">
+            <a href="/daily-advisor" class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors">
+                <i class="bi bi-trophy-fill text-amber-500"></i> 👑 Đề Xuất Tinh Hoa Hợp Nhất
+            </a>
+            <a href="/daily-advisor-shadow" class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors">
+                <i class="bi bi-shield-check text-indigo-500"></i> 🔬 Nghiên Cứu Thực Chiến (Shadow)
+            </a>
+            <a href="/ai-5" class="flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 px-4 py-2.5 text-sm font-black text-white shadow-md transition-all">
+                <i class="bi bi-cpu-fill text-amber-300"></i> 🤖 Đối Soát 5 AI & Đồng Thuận Consensus
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-black bg-white/20 text-white shadow-xs uppercase tracking-wider animate-pulse">LIVE</span>
+            </a>
+            <a href="/loto" class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors">
+                <i class="bi bi-dice-5-fill text-emerald-500"></i> Lô 27 Giải
+            </a>
+        </div>
+
+        <!-- Hero Card -->
+        <div class="mb-8 rounded-3xl border border-purple-200/80 bg-gradient-to-br from-white via-purple-50/40 to-indigo-50/50 p-6 shadow-sm sm:p-8">
+            <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                <div class="space-y-3">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-purple-100 px-3 py-1 text-xs font-bold text-purple-900 border border-purple-200 shadow-2xs">
+                            <i class="bi bi-patch-check-fill text-purple-600"></i> 5 Độc Lập + 1 Gộp Đồng Thuận
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-900 border border-emerald-200 shadow-2xs">
+                            <i class="bi bi-clock-history text-emerald-600"></i> Tự động đối soát 19:00 hàng ngày
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold text-indigo-900 border border-indigo-200 shadow-2xs">
+                            <i class="bi bi-lock-fill text-indigo-600"></i> Niêm phong trước 18:15
+                        </span>
+                    </div>
+                    <h2 class="text-2xl font-black text-slate-900 sm:text-3xl">
+                        Đối Soát & Đồng Thuận 5 Siêu Trí Tuệ Nhân Tạo
+                    </h2>
+                    <p class="text-sm font-medium text-slate-600 max-w-3xl leading-relaxed">
+                        Hệ thống theo dõi và đối soát độc lập dự đoán hàng ngày của 5 mô hình AI hàng đầu: 
+                        <strong class="text-slate-900">ChatGPT</strong>, <strong class="text-slate-900">DeepSeek</strong>, <strong class="text-slate-900">Gemini</strong>, <strong class="text-slate-900">Grok</strong> và <strong class="text-slate-900">Muse</strong> (công thức tần suất chu kỳ 20 năm). 
+                        Đặc biệt, tích hợp <strong class="text-purple-700">Phương Pháp Gộp Consensus</strong> bầu chọn đa số nhằm lọc ra những con số có tỷ lệ đồng thuận cao nhất cho cả <strong class="text-slate-900">Đề (20 số)</strong> và <strong class="text-slate-900">Lô (6 số)</strong>.
+                    </p>
+                </div>
+                
+                <!-- Quick Metric Badge -->
+                <div class="flex flex-col sm:flex-row lg:flex-col gap-3 min-w-[260px] rounded-2xl border border-slate-200/90 bg-white/95 p-4 shadow-sm">
+                    <div class="text-xs font-black uppercase text-slate-400 tracking-wider">Chuẩn Bộ Dữ Liệu 20+6:</div>
+                    <div class="space-y-1.5 text-xs">
+                        <div class="flex items-center justify-between text-slate-600">
+                            <span>Quy mô cược mỗi AI:</span>
+                            <span class="font-bold text-slate-900 font-mono">20 Đề + 6 Lô</span>
+                        </div>
+                        <div class="flex items-center justify-between text-slate-600">
+                            <span>Kỳ vọng ngẫu nhiên Đề:</span>
+                            <span class="font-bold text-indigo-600 font-mono">20.0% ngày nổ</span>
+                        </div>
+                        <div class="flex items-center justify-between text-slate-600">
+                            <span>Kỳ vọng ngẫu nhiên Lô:</span>
+                            <span class="font-bold text-emerald-600 font-mono">1.62 nháy/ngày</span>
+                        </div>
+                        <div class="flex items-center justify-between text-slate-600 pt-1 border-t border-slate-100">
+                            <span>Cơ chế đối soát:</span>
+                            <span class="font-bold text-purple-700 font-mono">19:00 (Retry 20:00)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leaderboard / So Sánh 5 AI & Dàn Gộp Consensus -->
+        <section class="mb-10">
+            <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div>
+                    <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
+                        <i class="bi bi-bar-chart-fill text-indigo-600"></i> Bảng Xếp Hạng & So Sánh Hiệu Năng Thực Chiến
+                    </h3>
+                    <p class="text-xs text-slate-500">Đối soát lũy kế từ ngày đầu niêm phong (30/10/2026)</p>
+                </div>
+                <div class="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200 self-start sm:self-auto">
+                    Kinh tế học: Đề 1K ăn 84K · Lô 22K ăn 80K/nháy
+                </div>
+            </div>
+
+            <!-- Leaderboard Cards Grid -->
+            <div id="leaderboardGrid" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                <!-- Dynamically populated by ai-5.js -->
+                <div class="col-span-full py-8 text-center text-sm font-semibold text-slate-400">
+                    <i class="bi bi-arrow-repeat animate-spin text-lg mr-2"></i> Đang tải bảng xếp hạng...
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Dàn Dự Đoán Hôm Nay (Ngày Mới Nhất) -->
+        <section class="mb-10">
+            <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-600 text-white shadow-sm">
+                        <i class="bi bi-calendar-event"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
+                            <span>Dàn Dự Đoán Ngày <span id="predictionTargetDate">...</span></span>
+                            <span id="predictionStatusBadge" class="rounded-full px-2 py-0.5 text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300">
+                                ⏳ Chờ KQ 18h30
+                            </span>
+                        </h3>
+                        <p class="text-xs text-slate-500">Toàn bộ dàn số đã được niêm phong trước giờ quay</p>
+                    </div>
+                </div>
+
+                <!-- AI Selector Tabs -->
+                <div class="flex flex-wrap items-center gap-1.5 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xs" id="aiTabSelector">
+                    <button type="button" data-model="consensus" class="tab-ai-btn active flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-black transition">
+                        <span>👑 Dàn Gộp 5 AI</span>
+                    </button>
+                    <button type="button" data-model="chatgpt" class="tab-ai-btn flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+                        <span>🟢 ChatGPT</span>
+                    </button>
+                    <button type="button" data-model="deepseek" class="tab-ai-btn flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+                        <span>🔵 DeepSeek</span>
+                    </button>
+                    <button type="button" data-model="gemini" class="tab-ai-btn flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+                        <span>✨ Gemini</span>
+                    </button>
+                    <button type="button" data-model="grok" class="tab-ai-btn flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+                        <span>⚡ Grok</span>
+                    </button>
+                    <button type="button" data-model="muse" class="tab-ai-btn flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+                        <span>🔮 Muse</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Active AI Prediction Card View -->
+            <div id="todayPredictionContent" class="space-y-4">
+                <!-- Dynamically populated by ai-5.js -->
+            </div>
+        </section>
+
+        <!-- Section: Nhật Ký Đối Soát Từng Ngày (Historical Ledger) -->
+        <section>
+            <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-slate-200 pt-8">
+                <div>
+                    <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
+                        <i class="bi bi-journal-bookmark-fill text-indigo-600"></i> Nhật Ký Đối Soát Thực Tế Hàng Ngày
+                    </h3>
+                    <p class="text-xs text-slate-500">Chi tiết đối soát 27 giải mở thưởng và giải Đặc Biệt từng kỳ</p>
+                </div>
+
+                <!-- Ledger Model Filter -->
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-slate-500">Xem theo:</span>
+                    <select id="ledgerModelFilter" class="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 shadow-2xs focus:border-indigo-500 focus:outline-none">
+                        <option value="all">Toàn bộ (So sánh cả 5 AI + Gộp)</option>
+                        <option value="consensus">👑 Phương Pháp Gộp Consensus</option>
+                        <option value="chatgpt">🟢 ChatGPT (OpenAI)</option>
+                        <option value="deepseek">🔵 DeepSeek</option>
+                        <option value="gemini">✨ Gemini (Google)</option>
+                        <option value="grok">⚡ Grok (xAI)</option>
+                        <option value="muse">🔮 Muse (Tần suất & Chu kỳ)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Ledger Cards List -->
+            <div id="historicalLedgerList" class="space-y-4">
+                <!-- Dynamically populated by ai-5.js -->
+                <div class="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm font-semibold text-slate-400">
+                    <i class="bi bi-arrow-repeat animate-spin text-lg mr-2"></i> Đang tải nhật ký đối soát...
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="border-t border-slate-200 bg-white py-8 text-center text-xs text-slate-500">
+        <div class="mx-auto max-w-7xl px-4 space-y-1">
+            <p class="font-bold text-slate-700">Hệ Thống Đối Soát & Đồng Thuận 5 AI (XSMB Predictive Intelligence)</p>
+            <p>Dữ liệu được cập nhật hàng ngày tại <code class="font-mono text-indigo-600 font-bold">data/ai_5_stats.json</code> · Khóa niêm phong trước 18:15 · Đối soát tự động 19:00.</p>
+        </div>
+    </footer>
+
+    <!-- Client Script -->
+    <script src="/js/ai-5.js?v=20261030_v1"></script>
+</body>
+</html>

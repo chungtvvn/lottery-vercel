@@ -17,6 +17,7 @@
     "cache:profit-report": "node scripts/generate-profit-report-cache.js",
     "analyze:exclusion-overlap": "node scripts/analyze-exclusion-number-overlap.js",
     "test:so-le-theo-cap": "node scripts/test-so-le-theo-cap.js",
+    "test:ai-5-stats": "node scripts/test-ai-5-stats.js",
     "test:ssot-invariants": "node scripts/test-ssot-invariants.js",
     "test:ui-diary": "node scripts/test-ui-diary.js",
     "test:prediction-history-immutability": "node scripts/test-prediction-history-immutability.js",
