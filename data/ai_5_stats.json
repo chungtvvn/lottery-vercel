@@ -318,11 +318,39 @@
           "status": "missing"
         },
         "grok": {
-          "de": [],
-          "lo": [],
+          "de": [
+            "38",
+            "54",
+            "96",
+            "32",
+            "22",
+            "83",
+            "44",
+            "51",
+            "67",
+            "42",
+            "21",
+            "23",
+            "39",
+            "60",
+            "09",
+            "66",
+            "91",
+            "34",
+            "37",
+            "00"
+          ],
+          "lo": [
+            "34",
+            "35",
+            "75",
+            "62",
+            "99",
+            "87"
+          ],
           "method": "AI phân tích",
-          "notes": "Thiếu: trình duyệt kẹt, không trả lời sau khoảng 14 phút chờ (không hoạt động từ phút thứ ~4); không xác nhận được trạng thái đăng nhập; không bịa số.",
-          "status": "missing"
+          "notes": "Trả đủ 20+6 sau khi hỏi lại qua câu hỏi của trình duyệt (lượt đầu kẹt vì không đọc được file prompt; đã gửi lại prompt đã sửa với kết quả đúng 30/10 ĐB 69259). Lần thử đầu bị từ chối: \"High Demand — Grok is under heavy usage right now. Please try again later or upgrade your plan to get priority access.\"; lần thử thứ hai ở chat mới thành công.",
+          "status": "ok"
         },
         "deepseek": {
           "de": [
