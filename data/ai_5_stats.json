@@ -34,37 +34,37 @@
       "rates": {
         "chatgpt": {
           "days": 1,
-          "deHitRate": 0.0,
+          "deHitRate": 0,
           "deHits": 0,
-          "loHitsPerDay": 4.0,
+          "loHitsPerDay": 4,
           "loHitsTotal": 4
         },
         "gemini": {
           "days": 1,
-          "deHitRate": 0.0,
+          "deHitRate": 0,
           "deHits": 0,
-          "loHitsPerDay": 2.0,
+          "loHitsPerDay": 2,
           "loHitsTotal": 2
         },
         "grok": {
           "days": 1,
-          "deHitRate": 0.0,
+          "deHitRate": 0,
           "deHits": 0,
-          "loHitsPerDay": 3.0,
+          "loHitsPerDay": 3,
           "loHitsTotal": 3
         },
         "deepseek": {
           "days": 1,
-          "deHitRate": 0.0,
+          "deHitRate": 0,
           "deHits": 0,
-          "loHitsPerDay": 2.0,
+          "loHitsPerDay": 2,
           "loHitsTotal": 2
         },
         "muse": {
           "days": 1,
-          "deHitRate": 0.0,
+          "deHitRate": 0,
           "deHits": 0,
-          "loHitsPerDay": 1.0,
+          "loHitsPerDay": 1,
           "loHitsTotal": 1
         }
       },
@@ -424,6 +424,59 @@
         }
       },
       "special": null
+    },
+    {
+      "date": "2026-11-01",
+      "sources": {
+        "chatgpt": {
+          "de": [],
+          "lo": []
+        },
+        "deepseek": {
+          "de": [],
+          "lo": []
+        },
+        "gemini": {
+          "de": [],
+          "lo": []
+        },
+        "grok": {
+          "de": [],
+          "lo": []
+        },
+        "muse": {
+          "de": [
+            "01",
+            "08",
+            "09",
+            "15",
+            "17",
+            "22",
+            "24",
+            "32",
+            "34",
+            "36",
+            "38",
+            "39",
+            "54",
+            "59",
+            "60",
+            "65",
+            "66",
+            "70",
+            "91",
+            "96"
+          ],
+          "lo": [
+            "24",
+            "38",
+            "44",
+            "52",
+            "62",
+            "64"
+          ]
+        }
+      }
     }
   ],
   "meta": {

@@ -2,9 +2,94 @@
   "days": [
     {
       "date": "2026-10-30",
-      "prizes27": null,
-      "rates": null,
-      "results": null,
+      "prizes27": [
+        "59",
+        "81",
+        "63",
+        "53",
+        "52",
+        "06",
+        "42",
+        "04",
+        "03",
+        "14",
+        "23",
+        "37",
+        "70",
+        "12",
+        "60",
+        "47",
+        "33",
+        "65",
+        "71",
+        "75",
+        "57",
+        "36",
+        "24",
+        "94",
+        "77",
+        "48",
+        "25"
+      ],
+      "rates": {
+        "chatgpt": {
+          "days": 1,
+          "deHitRate": 0,
+          "deHits": 0,
+          "loHitsPerDay": 4,
+          "loHitsTotal": 4
+        },
+        "gemini": {
+          "days": 1,
+          "deHitRate": 0,
+          "deHits": 0,
+          "loHitsPerDay": 2,
+          "loHitsTotal": 2
+        },
+        "grok": {
+          "days": 1,
+          "deHitRate": 0,
+          "deHits": 0,
+          "loHitsPerDay": 3,
+          "loHitsTotal": 3
+        },
+        "deepseek": {
+          "days": 1,
+          "deHitRate": 0,
+          "deHits": 0,
+          "loHitsPerDay": 2,
+          "loHitsTotal": 2
+        },
+        "muse": {
+          "days": 1,
+          "deHitRate": 0,
+          "deHits": 0,
+          "loHitsPerDay": 1,
+          "loHitsTotal": 1
+        }
+      },
+      "results": {
+        "chatgpt": {
+          "deHit": false,
+          "loHits": 4
+        },
+        "gemini": {
+          "deHit": false,
+          "loHits": 2
+        },
+        "grok": {
+          "deHit": false,
+          "loHits": 3
+        },
+        "deepseek": {
+          "deHit": false,
+          "loHits": 2
+        },
+        "muse": {
+          "deHit": false,
+          "loHits": 1
+        }
+      },
       "sources": {
         "chatgpt": {
           "de": [
@@ -182,10 +267,166 @@
           "status": "ok"
         }
       },
-      "special": null
+      "special": "59"
     },
     {
       "date": "2026-10-31",
+      "prizes27": null,
+      "rates": null,
+      "results": null,
+      "sources": {
+        "chatgpt": {
+          "de": [
+            "36",
+            "70",
+            "65",
+            "39",
+            "32",
+            "60",
+            "24",
+            "09",
+            "38",
+            "54",
+            "96",
+            "83",
+            "67",
+            "22",
+            "21",
+            "44",
+            "42",
+            "51",
+            "98",
+            "58"
+          ],
+          "lo": [
+            "52",
+            "38",
+            "34",
+            "75",
+            "35",
+            "33"
+          ],
+          "method": "AI phân tích",
+          "notes": "Trả đủ 20+6 sau khi hỏi lại qua câu hỏi của trình duyệt (lượt đầu kẹt vì không đọc được file prompt; đã gửi lại prompt đã sửa với kết quả đúng 30/10 ĐB 69259).",
+          "status": "ok"
+        },
+        "gemini": {
+          "de": [],
+          "lo": [],
+          "method": "AI phân tích",
+          "notes": "chưa đăng nhập",
+          "status": "missing"
+        },
+        "grok": {
+          "de": [
+            "38",
+            "54",
+            "96",
+            "32",
+            "22",
+            "83",
+            "44",
+            "51",
+            "67",
+            "42",
+            "21",
+            "23",
+            "39",
+            "60",
+            "09",
+            "66",
+            "91",
+            "34",
+            "37",
+            "00"
+          ],
+          "lo": [
+            "34",
+            "35",
+            "75",
+            "62",
+            "99",
+            "87"
+          ],
+          "method": "AI phân tích",
+          "notes": "Trả đủ 20+6 sau khi hỏi lại qua câu hỏi của trình duyệt (lượt đầu kẹt vì không đọc được file prompt; đã gửi lại prompt đã sửa với kết quả đúng 30/10 ĐB 69259). Lần thử đầu bị từ chối: \"High Demand — Grok is under heavy usage right now. Please try again later or upgrade your plan to get priority access.\"; lần thử thứ hai ở chat mới thành công.",
+          "status": "ok"
+        },
+        "deepseek": {
+          "de": [
+            "36",
+            "70",
+            "65",
+            "39",
+            "32",
+            "60",
+            "24",
+            "09",
+            "38",
+            "54",
+            "96",
+            "83",
+            "67",
+            "22",
+            "21",
+            "44",
+            "42",
+            "51",
+            "98",
+            "58"
+          ],
+          "lo": [
+            "62",
+            "38",
+            "52",
+            "59",
+            "54",
+            "64"
+          ],
+          "method": "AI phân tích",
+          "notes": "Trả đủ 20+6 ngay lần đầu, không báo Server busy.",
+          "status": "ok"
+        },
+        "muse": {
+          "de": [
+            "01",
+            "08",
+            "09",
+            "15",
+            "17",
+            "22",
+            "24",
+            "32",
+            "34",
+            "36",
+            "38",
+            "39",
+            "54",
+            "59",
+            "60",
+            "65",
+            "66",
+            "70",
+            "91",
+            "96"
+          ],
+          "lo": [
+            "24",
+            "38",
+            "44",
+            "52",
+            "62",
+            "64"
+          ],
+          "method": "Công thức điểm tần suất (xem meta.museMethod), dữ liệu 7.599 kỳ tới 30/10/2026",
+          "notes": "",
+          "status": "ok"
+        }
+      },
+      "special": null
+    },
+    {
+      "date": "2026-11-01",
       "sources": {
         "chatgpt": {
           "de": [],
@@ -218,19 +459,19 @@
             "38",
             "39",
             "54",
+            "59",
             "60",
             "65",
             "66",
             "70",
-            "82",
             "91",
             "96"
           ],
           "lo": [
+            "24",
             "38",
             "44",
             "52",
-            "54",
             "62",
             "64"
           ]
