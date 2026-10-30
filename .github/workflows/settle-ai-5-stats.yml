@@ -2,10 +2,9 @@ name: AI 5 Agents Daily Settlement (7h Tối VN)
 
 on:
   schedule:
-    # 12:00 UTC = 19:00 GMT+7 (7h tối Việt Nam)
-    # 13:00 UTC = 20:00 GMT+7 (1 tiếng sau tự động thử lại nếu 19:00 chưa có kết quả)
-    # 14:00 UTC = 21:00 GMT+7 (dự phòng cuối ngày)
-    - cron: '0 12,13,14 * * *'
+    # Chạy lúc 19:00 VN (12:00 UTC) hàng ngày đối chiếu kết quả + lấy dữ liệu ngày mai
+    # Tự động retry mỗi 1 tiếng: 20:00 (13:00 UTC), 21:00 (14:00 UTC), 22:00 (15:00 UTC), 23:00 (16:00 UTC)
+    - cron: '0 12,13,14,15,16 * * *'
   workflow_dispatch:
     inputs:
       target_date:
@@ -42,14 +41,14 @@ jobs:
       CLOUDFLARE_R2_BUCKET: ${{ secrets.CLOUDFLARE_R2_BUCKET }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies

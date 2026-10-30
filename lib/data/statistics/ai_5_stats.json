@@ -1,1 +1,254 @@
-{"days":[{"date":"2026-10-30","prizes27":null,"rates":null,"results":null,"sources":{"chatgpt":{"de":["01","08","09","15","18","22","32","38","39","42","51","54","60","63","66","67","70","83","91","96"],"lo":["33","44","52","62","70","75"],"method":"AI phân tích","notes":"Lần đầu báo chưa nhận được file nên không đoán, sau khi đính kèm file mới trả số.","status":"ok"},"deepseek":{"de":["01","02","07","08","09","15","17","24","31","32","36","39","54","58","60","65","66","70","91","98"],"lo":["38","52","54","59","62","64"],"method":"AI phân tích","notes":"Chỉ đọc được 40% đầu file do giới hạn độ dài.","status":"ok"},"gemini":{"de":["07","09","15","17","22","24","28","31","32","36","38","39","44","54","58","60","65","66","70","91"],"lo":["34","35","38","52","62","75"],"method":"AI phân tích","notes":"","status":"ok"},"grok":{"de":["01","09","15","22","24","28","32","36","38","39","42","44","51","54","65","66","67","70","90","91"],"lo":["33","34","35","51","52","75"],"method":"AI phân tích","notes":"","status":"ok"},"muse":{"de":["01","08","09","15","17","22","24","32","34","36","38","39","54","60","65","66","70","82","91","96"],"lo":["38","44","52","54","62","64"],"method":"Công thức điểm tần suất (xem meta.museMethod), dữ liệu 7.598 kỳ tới 29/10/2026","notes":"","status":"ok"}},"special":null}],"meta":{"aiMethod":"4 AI (ChatGPT, Gemini, Grok, DeepSeek) tự phân tích lịch sử JSON + kết quả mới nhất theo prompt (tần suất, 100 kỳ gần nhất, số kỳ chưa về, xu hướng) và tự chọn 20 Đề + 6 Lô theo phân tích của từng AI.","baselines":{"deHitRate":0.2,"loHitsPerDay":1.62,"note":"Bộ 20+6: kỳ vọng Đề 20% ngày trúng, Lô 1,62 nháy/ngày ở 27 giải."},"createdAt":"2026-10-30 — lượt đầu: kỳ 30/10, tất cả 5 bộ đều khóa trước giờ quay 18:15.","honestyNote":"Mỗi số 00-99 đều có xác suất như nhau ở mỗi kỳ quay độc lập; 'phân tích' là tiêu chí chọn, không phải xác suất trúng thật đã được chứng minh cao hơn. Chỉ đo lường dài hạn mới cho biết bộ nào vượt baseline.","museMethod":"Muse phân tích bằng công thức điểm tần suất, tính lại mỗi ngày từ lịch sử mới nhất tới hôm qua: điểm Đề(n) = tần suất ĐB toàn lịch sử + 2 × tần suất ĐB 100 kỳ gần nhất; điểm Lô(n) = tần suất tổng 27 giải toàn lịch sử + 2 × tần suất tổng 27 giải 100 kỳ gần nhất; lấy top 20 Đề / top 6 Lô, hòa điểm lấy số nhỏ trước.","purpose":"Dataset cho trang thống kê mới về 5 AI: ChatGPT, Gemini, Grok, DeepSeek và Muse. Mỗi ngày 1 entry, mỗi nguồn 20 số Đề + 6 số Lô.","updateRule":"Lượt 18:40 hàng ngày (cron xsmb-ai-ask-1840): điền kết quả thật + điểm trúng/trượt của entry hôm nay, hỏi tiếp 4 AI cho ngày mai, tính bộ 20+6 của Muse bằng đúng công thức trên từ lịch sử mới nhất, ghi thêm entry ngày mai, cập nhật tỉ lệ lũy kế."}}
+{
+  "days": [
+    {
+      "date": "2026-10-30",
+      "prizes27": null,
+      "rates": null,
+      "results": null,
+      "sources": {
+        "chatgpt": {
+          "de": [
+            "01",
+            "08",
+            "09",
+            "15",
+            "18",
+            "22",
+            "32",
+            "38",
+            "39",
+            "42",
+            "51",
+            "54",
+            "60",
+            "63",
+            "66",
+            "67",
+            "70",
+            "83",
+            "91",
+            "96"
+          ],
+          "lo": [
+            "33",
+            "44",
+            "52",
+            "62",
+            "70",
+            "75"
+          ],
+          "method": "AI phân tích",
+          "notes": "Lần đầu báo chưa nhận được file nên không đoán, sau khi đính kèm file mới trả số.",
+          "status": "ok"
+        },
+        "deepseek": {
+          "de": [
+            "01",
+            "02",
+            "07",
+            "08",
+            "09",
+            "15",
+            "17",
+            "24",
+            "31",
+            "32",
+            "36",
+            "39",
+            "54",
+            "58",
+            "60",
+            "65",
+            "66",
+            "70",
+            "91",
+            "98"
+          ],
+          "lo": [
+            "38",
+            "52",
+            "54",
+            "59",
+            "62",
+            "64"
+          ],
+          "method": "AI phân tích",
+          "notes": "Chỉ đọc được 40% đầu file do giới hạn độ dài.",
+          "status": "ok"
+        },
+        "gemini": {
+          "de": [
+            "07",
+            "09",
+            "15",
+            "17",
+            "22",
+            "24",
+            "28",
+            "31",
+            "32",
+            "36",
+            "38",
+            "39",
+            "44",
+            "54",
+            "58",
+            "60",
+            "65",
+            "66",
+            "70",
+            "91"
+          ],
+          "lo": [
+            "34",
+            "35",
+            "38",
+            "52",
+            "62",
+            "75"
+          ],
+          "method": "AI phân tích",
+          "notes": "",
+          "status": "ok"
+        },
+        "grok": {
+          "de": [
+            "01",
+            "09",
+            "15",
+            "22",
+            "24",
+            "28",
+            "32",
+            "36",
+            "38",
+            "39",
+            "42",
+            "44",
+            "51",
+            "54",
+            "65",
+            "66",
+            "67",
+            "70",
+            "90",
+            "91"
+          ],
+          "lo": [
+            "33",
+            "34",
+            "35",
+            "51",
+            "52",
+            "75"
+          ],
+          "method": "AI phân tích",
+          "notes": "",
+          "status": "ok"
+        },
+        "muse": {
+          "de": [
+            "01",
+            "08",
+            "09",
+            "15",
+            "17",
+            "22",
+            "24",
+            "32",
+            "34",
+            "36",
+            "38",
+            "39",
+            "54",
+            "60",
+            "65",
+            "66",
+            "70",
+            "82",
+            "91",
+            "96"
+          ],
+          "lo": [
+            "38",
+            "44",
+            "52",
+            "54",
+            "62",
+            "64"
+          ],
+          "method": "Công thức điểm tần suất (xem meta.museMethod), dữ liệu 7.598 kỳ tới 29/10/2026",
+          "notes": "",
+          "status": "ok"
+        }
+      },
+      "special": null
+    },
+    {
+      "date": "2026-10-31",
+      "sources": {
+        "chatgpt": {
+          "de": [],
+          "lo": []
+        },
+        "deepseek": {
+          "de": [],
+          "lo": []
+        },
+        "gemini": {
+          "de": [],
+          "lo": []
+        },
+        "grok": {
+          "de": [],
+          "lo": []
+        },
+        "muse": {
+          "de": [
+            "01",
+            "08",
+            "09",
+            "15",
+            "17",
+            "22",
+            "24",
+            "32",
+            "34",
+            "36",
+            "38",
+            "39",
+            "54",
+            "60",
+            "65",
+            "66",
+            "70",
+            "82",
+            "91",
+            "96"
+          ],
+          "lo": [
+            "38",
+            "44",
+            "52",
+            "54",
+            "62",
+            "64"
+          ]
+        }
+      }
+    }
+  ],
+  "meta": {
+    "aiMethod": "4 AI (ChatGPT, Gemini, Grok, DeepSeek) tự phân tích lịch sử JSON + kết quả mới nhất theo prompt (tần suất, 100 kỳ gần nhất, số kỳ chưa về, xu hướng) và tự chọn 20 Đề + 6 Lô theo phân tích của từng AI.",
+    "baselines": {
+      "deHitRate": 0.2,
+      "loHitsPerDay": 1.62,
+      "note": "Bộ 20+6: kỳ vọng Đề 20% ngày trúng, Lô 1,62 nháy/ngày ở 27 giải."
+    },
+    "createdAt": "2026-10-30 — lượt đầu: kỳ 30/10, tất cả 5 bộ đều khóa trước giờ quay 18:15.",
+    "honestyNote": "Mỗi số 00-99 đều có xác suất như nhau ở mỗi kỳ quay độc lập; 'phân tích' là tiêu chí chọn, không phải xác suất trúng thật đã được chứng minh cao hơn. Chỉ đo lường dài hạn mới cho biết bộ nào vượt baseline.",
+    "museMethod": "Muse phân tích bằng công thức điểm tần suất, tính lại mỗi ngày từ lịch sử mới nhất tới hôm qua: điểm Đề(n) = tần suất ĐB toàn lịch sử + 2 × tần suất ĐB 100 kỳ gần nhất; điểm Lô(n) = tần suất tổng 27 giải toàn lịch sử + 2 × tần suất tổng 27 giải 100 kỳ gần nhất; lấy top 20 Đề / top 6 Lô, hòa điểm lấy số nhỏ trước.",
+    "purpose": "Dataset cho trang thống kê mới về 5 AI: ChatGPT, Gemini, Grok, DeepSeek và Muse. Mỗi ngày 1 entry, mỗi nguồn 20 số Đề + 6 số Lô.",
+    "updateRule": "Lượt 18:40 hàng ngày (cron xsmb-ai-ask-1840): điền kết quả thật + điểm trúng/trượt của entry hôm nay, hỏi tiếp 4 AI cho ngày mai, tính bộ 20+6 của Muse bằng đúng công thức trên từ lịch sử mới nhất, ghi thêm entry ngày mai, cập nhật tỉ lệ lũy kế."
+  }
+}
