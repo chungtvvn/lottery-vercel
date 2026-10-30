@@ -237,8 +237,13 @@
                                 <i class="bi bi-clipboard-check"></i> Đề Top 20
                             </button>
                             <button type="button" id="btnCopyLoTiered" class="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-rose-600 to-indigo-600 px-3 py-1.5 text-xs font-black text-white hover:opacity-95 transition shadow-xs cursor-pointer">
-                                <i class="bi bi-clipboard-check"></i> Copy Lô Đa Tầng
+                                <i class="bi bi-clipboard-check"></i> Copy Lô Đa Tầng (X5->X1)
                             </button>
+                            ${x1List.length ? `
+                                <button type="button" id="btnCopyLoX1" class="inline-flex items-center gap-1.5 rounded-xl bg-slate-100 border border-slate-300 text-slate-800 px-3 py-1.5 text-xs font-black hover:bg-slate-200 transition shadow-xs cursor-pointer">
+                                    <i class="bi bi-clipboard-check"></i> Copy Lô X1 (${x1List.length}s)
+                                </button>
+                            ` : ''}
                         </div>
                     </div>
 
@@ -399,17 +404,17 @@
                             </div>
                         ` : ''}
 
-                        <!-- Tầng X1 (Lót 1 AI nếu có) -->
+                        <!-- Tầng X1 (1 AI) -->
                         ${x1List.length ? `
                             <div class="flex flex-col sm:flex-row sm:items-center gap-2 pt-2 border-t border-slate-100">
-                                <span class="min-w-[170px] inline-flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-                                    <span class="rounded bg-slate-100 text-slate-700 border border-slate-200 px-2 py-0.5 text-[10px]">TẦNG X1 (LÓT)</span>
+                                <span class="min-w-[170px] inline-flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                                    <span class="rounded bg-slate-600 text-white px-2 py-0.5 text-[10px] font-black shadow-2xs">TẦNG X1 (1 AI)</span>
                                     <span>Cược 22K/số:</span>
                                 </span>
-                                <div class="flex flex-wrap gap-1.5">
+                                <div class="flex flex-wrap gap-2">
                                     ${x1List.map(n => `
-                                        <span class="inline-flex items-center justify-center px-2 py-1 rounded-lg font-mono text-xs bg-slate-50 border border-slate-200 text-slate-600">
-                                            ${n}
+                                        <span class="badge-number inline-flex items-center justify-center px-2.5 py-1.5 rounded-xl font-mono font-bold text-xs bg-slate-100 border border-slate-300 text-slate-800 shadow-2xs" title="Lô X1: ${n} (1 AI)">
+                                            ${n} <span class="text-[8px] font-sans ml-1 text-slate-500">(1/5)</span>
                                         </span>
                                     `).join('')}
                                 </div>
@@ -436,12 +441,16 @@
                 copyToClipboard(deNums.join(' '), 'Dàn Đề Gộp Top 20');
             });
             document.getElementById('btnCopyLoTiered')?.addEventListener('click', () => {
-                const lines = ['🎲 LÔ GỘP ĐA TẦNG 5 AI:'];
+                const lines = ['🎲 LÔ GỘP ĐA TẦNG 5 AI (X5 -> X1):'];
                 if (x5List.length) lines.push(`- Tầng X5 (Cược 110K): ${x5List.join(', ')}`);
                 if (x4List.length) lines.push(`- Tầng X4 (Cược 88K): ${x4List.join(', ')}`);
                 if (x3List.length) lines.push(`- Tầng X3 (Cược 66K): ${x3List.join(', ')}`);
                 if (x2List.length) lines.push(`- Tầng X2 (Cược 44K): ${x2List.join(', ')}`);
-                copyToClipboard(lines.join('\n'), 'Lô Đa Tầng 5 AI');
+                if (x1List.length) lines.push(`- Tầng X1 (Cược 22K): ${x1List.join(', ')}`);
+                copyToClipboard(lines.join('\n'), 'Lô Đa Tầng 5 AI (X5 -> X1)');
+            });
+            document.getElementById('btnCopyLoX1')?.addEventListener('click', () => {
+                copyToClipboard(x1List.join(' '), `Dàn Lô X1 (${x1List.length} số)`);
             });
             return;
         }
@@ -601,12 +610,12 @@
                                         <div class="flex flex-wrap gap-1">
                                             ${(cons.deTiers?.x2Nums || []).map(n => `
                                                 <span class="inline-flex items-center justify-center px-1.5 py-0.5 rounded font-mono font-black text-[11px] bg-amber-400 text-slate-950 shadow-2xs" title="Đề VIP X2: ${n}">
-                                                    ${n}
+                                                    ${n} <span class="text-[8px] ml-0.5">X2</span>
                                                 </span>
                                             `).join('')}
                                             ${(cons.deTiers?.x1Nums || []).map(n => `
                                                 <span class="inline-flex items-center justify-center px-1.5 py-0.5 rounded font-mono text-[11px] bg-indigo-100 text-indigo-900 border border-indigo-200" title="Đề Lót X1: ${n}">
-                                                    ${n}
+                                                    ${n} <span class="text-[8px] ml-0.5 font-bold text-indigo-700">X1</span>
                                                 </span>
                                             `).join('')}
                                         </div>
@@ -615,8 +624,8 @@
                                     <!-- Lô Đa Tầng -->
                                     <div class="space-y-1.5">
                                         <div class="text-[11px] font-bold text-slate-700 flex items-center justify-between">
-                                            <span>🎲 Lô Đa Tầng (X5 -> X2):</span>
-                                            <span class="font-mono text-indigo-700 text-[10px]">Cược theo hệ số</span>
+                                            <span>🎲 Lô Đa Tầng (X5 -> X1 · ${(cons.loTiers?.x5Nums?.length || 0) + (cons.loTiers?.x4Nums?.length || 0) + (cons.loTiers?.x3Nums?.length || 0) + (cons.loTiers?.x2Nums?.length || 0) + (cons.loTiers?.x1Nums?.length || 0)} số):</span>
+                                            <span class="font-mono text-indigo-700 text-[10px]">Cược theo hệ số 5..1</span>
                                         </div>
                                         <div class="flex flex-wrap gap-1">
                                             ${(cons.loTiers?.x5Nums || []).map(n => `
@@ -637,6 +646,11 @@
                                             ${(cons.loTiers?.x2Nums || []).map(n => `
                                                 <span class="inline-flex items-center justify-center px-1.5 py-0.5 rounded font-mono font-bold text-[11px] bg-teal-50 border border-teal-300 text-teal-900" title="Lô X2: ${n}">
                                                     ${n} <span class="text-[8px] ml-0.5">X2</span>
+                                                </span>
+                                            `).join('')}
+                                            ${(cons.loTiers?.x1Nums || []).map(n => `
+                                                <span class="inline-flex items-center justify-center px-1.5 py-0.5 rounded font-mono font-bold text-[11px] bg-slate-100 border border-slate-300 text-slate-800" title="Lô X1: ${n}">
+                                                    ${n} <span class="text-[8px] ml-0.5 text-slate-500">X1</span>
                                                 </span>
                                             `).join('')}
                                         </div>
