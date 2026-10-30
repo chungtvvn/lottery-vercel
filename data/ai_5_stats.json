@@ -276,11 +276,39 @@
       "results": null,
       "sources": {
         "chatgpt": {
-          "de": [],
-          "lo": [],
+          "de": [
+            "36",
+            "70",
+            "65",
+            "39",
+            "32",
+            "60",
+            "24",
+            "09",
+            "38",
+            "54",
+            "96",
+            "83",
+            "67",
+            "22",
+            "21",
+            "44",
+            "42",
+            "51",
+            "98",
+            "58"
+          ],
+          "lo": [
+            "52",
+            "38",
+            "34",
+            "75",
+            "35",
+            "33"
+          ],
           "method": "AI phân tích",
-          "notes": "Thiếu: trình duyệt kẹt, 3 lần thử ChatGPT trong lượt này đều không trả lời (mỗi lần kẹt trên 8 phút không hoạt động), không xác nhận được trạng thái đăng nhập; không bịa số. Lần đầu dùng nhầm bảng kết quả text-fetch (ĐB 73823) đã hủy, không dùng.",
-          "status": "missing"
+          "notes": "Trả đủ 20+6 sau khi hỏi lại qua câu hỏi của trình duyệt (lượt đầu kẹt vì không đọc được file prompt; đã gửi lại prompt đã sửa với kết quả đúng 30/10 ĐB 69259).",
+          "status": "ok"
         },
         "gemini": {
           "de": [],
