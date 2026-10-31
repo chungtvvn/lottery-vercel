@@ -1,4177 +1,4212 @@
 {
-  "days": [
-    {
-      "date": "2026-10-30",
-      "prizes27": [
-        "59",
-        "81",
-        "63",
-        "53",
-        "52",
-        "06",
-        "42",
-        "04",
-        "03",
-        "14",
-        "23",
-        "37",
-        "70",
-        "12",
-        "60",
-        "47",
-        "33",
-        "65",
-        "71",
-        "75",
-        "57",
-        "36",
-        "24",
-        "94",
-        "77",
-        "48",
-        "25"
-      ],
-      "rates": {
-        "consensus": {
-          "days": 1,
-          "de": {
-            "wins": 0,
-            "losses": 1,
-            "winRate": 0,
-            "stakeK": 41000,
-            "payoutK": 0,
-            "profitK": -41000,
-            "roi": -1,
-            "longestWin": 0,
-            "longestLoss": 1,
-            "currentWinStreak": 0,
-            "currentLossStreak": 1
-          },
-          "lo": {
-            "wins": 1,
-            "losses": 0,
-            "winRate": 1,
-            "totalHits": 5,
-            "avgHitsPerDay": 5,
-            "stakeK": 66000,
-            "payoutK": 96000,
-            "profitK": 30000,
-            "roi": 0.4545,
-            "longestWin": 1,
-            "longestLoss": 0,
-            "currentWinStreak": 1,
-            "currentLossStreak": 0
-          },
-          "combo": {
-            "wins": 0,
-            "winRate": 0,
-            "stakeK": 107000,
-            "payoutK": 96000,
-            "profitK": -11000,
-            "roi": -0.1028
-          }
-        },
-        "chatgpt": {
-          "days": 1,
-          "de": {
-            "wins": 0,
-            "losses": 1,
-            "winRate": 0,
-            "stakeK": 20000,
-            "payoutK": 0,
-            "profitK": -20000,
-            "roi": -1,
-            "longestWin": 0,
-            "longestLoss": 1,
-            "currentWinStreak": 0,
-            "currentLossStreak": 1
-          },
-          "lo": {
-            "wins": 1,
-            "losses": 0,
-            "winRate": 1,
-            "totalHits": 4,
-            "avgHitsPerDay": 4,
-            "stakeK": 13200,
-            "payoutK": 32000,
-            "profitK": 18800,
-            "roi": 1.4242,
-            "longestWin": 1,
-            "longestLoss": 0,
-            "currentWinStreak": 1,
-            "currentLossStreak": 0
-          },
-          "combo": {
-            "wins": 0,
-            "winRate": 0,
-            "stakeK": 33200,
-            "payoutK": 32000,
-            "profitK": -1200,
-            "roi": -0.0361
-          }
-        },
-        "deepseek": {
-          "days": 1,
-          "de": {
-            "wins": 0,
-            "losses": 1,
-            "winRate": 0,
-            "stakeK": 20000,
-            "payoutK": 0,
-            "profitK": -20000,
-            "roi": -1,
-            "longestWin": 0,
-            "longestLoss": 1,
-            "currentWinStreak": 0,
-            "currentLossStreak": 1
-          },
-          "lo": {
-            "wins": 1,
-            "losses": 0,
-            "winRate": 1,
-            "totalHits": 2,
-            "avgHitsPerDay": 2,
-            "stakeK": 13200,
-            "payoutK": 16000,
-            "profitK": 2800,
-            "roi": 0.2121,
-            "longestWin": 1,
-            "longestLoss": 0,
-            "currentWinStreak": 1,
-            "currentLossStreak": 0
-          },
-          "combo": {
-            "wins": 0,
-            "winRate": 0,
-            "stakeK": 33200,
-            "payoutK": 16000,
-            "profitK": -17200,
-            "roi": -0.5181
-          }
-        },
-        "gemini": {
-          "days": 1,
-          "de": {
-            "wins": 0,
-            "losses": 1,
-            "winRate": 0,
-            "stakeK": 20000,
-            "payoutK": 0,
-            "profitK": -20000,
-            "roi": -1,
-            "longestWin": 0,
-            "longestLoss": 1,
-            "currentWinStreak": 0,
-            "currentLossStreak": 1
-          },
-          "lo": {
-            "wins": 1,
-            "losses": 0,
-            "winRate": 1,
-            "totalHits": 2,
-            "avgHitsPerDay": 2,
-            "stakeK": 13200,
-            "payoutK": 16000,
-            "profitK": 2800,
-            "roi": 0.2121,
-            "longestWin": 1,
-            "longestLoss": 0,
-            "currentWinStreak": 1,
-            "currentLossStreak": 0
-          },
-          "combo": {
-            "wins": 0,
-            "winRate": 0,
-            "stakeK": 33200,
-            "payoutK": 16000,
-            "profitK": -17200,
-            "roi": -0.5181
-          }
-        },
-        "grok": {
-          "days": 1,
-          "de": {
-            "wins": 0,
-            "losses": 1,
-            "winRate": 0,
-            "stakeK": 20000,
-            "payoutK": 0,
-            "profitK": -20000,
-            "roi": -1,
-            "longestWin": 0,
-            "longestLoss": 1,
-            "currentWinStreak": 0,
-            "currentLossStreak": 1
-          },
-          "lo": {
-            "wins": 1,
-            "losses": 0,
-            "winRate": 1,
-            "totalHits": 3,
-            "avgHitsPerDay": 3,
-            "stakeK": 13200,
-            "payoutK": 24000,
-            "profitK": 10800,
-            "roi": 0.8182,
-            "longestWin": 1,
-            "longestLoss": 0,
-            "currentWinStreak": 1,
-            "currentLossStreak": 0
-          },
-          "combo": {
-            "wins": 0,
-            "winRate": 0,
-            "stakeK": 33200,
-            "payoutK": 24000,
-            "profitK": -9200,
-            "roi": -0.2771
-          }
-        },
-        "muse": {
-          "days": 1,
-          "de": {
-            "wins": 0,
-            "losses": 1,
-            "winRate": 0,
-            "stakeK": 20000,
-            "payoutK": 0,
-            "profitK": -20000,
-            "roi": -1,
-            "longestWin": 0,
-            "longestLoss": 1,
-            "currentWinStreak": 0,
-            "currentLossStreak": 1
-          },
-          "lo": {
-            "wins": 0,
-            "losses": 1,
-            "winRate": 0,
-            "totalHits": 1,
-            "avgHitsPerDay": 1,
-            "stakeK": 13200,
-            "payoutK": 8000,
-            "profitK": -5200,
-            "roi": -0.3939,
-            "longestWin": 0,
-            "longestLoss": 1,
-            "currentWinStreak": 0,
-            "currentLossStreak": 1
-          },
-          "combo": {
-            "wins": 0,
-            "winRate": 0,
-            "stakeK": 33200,
-            "payoutK": 8000,
-            "profitK": -25200,
-            "roi": -0.759
-          }
-        }
-      },
-      "results": {
-        "chatgpt": {
-          "de": {
-            "isHit": false,
-            "hitNumber": null,
-            "numbers": [
-              "01",
-              "08",
-              "09",
-              "15",
-              "18",
-              "22",
-              "32",
-              "38",
-              "39",
-              "42",
-              "51",
-              "54",
-              "60",
-              "63",
-              "66",
-              "67",
-              "70",
-              "83",
-              "91",
-              "96"
-            ],
-            "count": 20,
-            "stakeK": 20000,
-            "payoutK": 0,
-            "profitK": -20000,
-            "isWin": false
-          },
-          "lo": {
-            "hits": 4,
-            "hitMap": {
-              "33": 1,
-              "52": 1,
-              "70": 1,
-              "75": 1
-            },
-            "hitNumbers": [
-              "33",
-              "52",
-              "70",
-              "75"
-            ],
-            "numbers": [
-              "33",
-              "44",
-              "52",
-              "62",
-              "70",
-              "75"
-            ],
-            "count": 6,
-            "stakeK": 13200,
-            "payoutK": 32000,
-            "profitK": 18800,
-            "isWin": true
-          },
-          "totalStakeK": 33200,
-          "totalPayoutK": 32000,
-          "totalProfitK": -1200,
-          "isWin": false
-        },
-        "deepseek": {
-          "de": {
-            "isHit": false,
-            "hitNumber": null,
-            "numbers": [
-              "01",
-              "02",
-              "07",
-              "08",
-              "09",
-              "15",
-              "17",
-              "24",
-              "31",
-              "32",
-              "36",
-              "39",
-              "54",
-              "58",
-              "60",
-              "65",
-              "66",
-              "70",
-              "91",
-              "98"
-            ],
-            "count": 20,
-            "stakeK": 20000,
-            "payoutK": 0,
-            "profitK": -20000,
-            "isWin": false
-          },
-          "lo": {
-            "hits": 2,
-            "hitMap": {
-              "52": 1,
-              "59": 1
-            },
-            "hitNumbers": [
-              "52",
-              "59"
-            ],
-            "numbers": [
-              "38",
-              "52",
-              "54",
-              "59",
-              "62",
-              "64"
-            ],
-            "count": 6,
-            "stakeK": 13200,
-            "payoutK": 16000,
-            "profitK": 2800,
-            "isWin": true
-          },
-          "totalStakeK": 33200,
-          "totalPayoutK": 16000,
-          "totalProfitK": -17200,
-          "isWin": false
-        },
-        "gemini": {
-          "de": {
-            "isHit": false,
-            "hitNumber": null,
-            "numbers": [
-              "07",
-              "09",
-              "15",
-              "17",
-              "22",
-              "24",
-              "28",
-              "31",
-              "32",
-              "36",
-              "38",
-              "39",
-              "44",
-              "54",
-              "58",
-              "60",
-              "65",
-              "66",
-              "70",
-              "91"
-            ],
-            "count": 20,
-            "stakeK": 20000,
-            "payoutK": 0,
-            "profitK": -20000,
-            "isWin": false
-          },
-          "lo": {
-            "hits": 2,
-            "hitMap": {
-              "52": 1,
-              "75": 1
-            },
-            "hitNumbers": [
-              "52",
-              "75"
-            ],
-            "numbers": [
-              "34",
-              "35",
-              "38",
-              "52",
-              "62",
-              "75"
-            ],
-            "count": 6,
-            "stakeK": 13200,
-            "payoutK": 16000,
-            "profitK": 2800,
-            "isWin": true
-          },
-          "totalStakeK": 33200,
-          "totalPayoutK": 16000,
-          "totalProfitK": -17200,
-          "isWin": false
-        },
-        "grok": {
-          "de": {
-            "isHit": false,
-            "hitNumber": null,
-            "numbers": [
-              "01",
-              "09",
-              "15",
-              "22",
-              "24",
-              "28",
-              "32",
-              "36",
-              "38",
-              "39",
-              "42",
-              "44",
-              "51",
-              "54",
-              "65",
-              "66",
-              "67",
-              "70",
-              "90",
-              "91"
-            ],
-            "count": 20,
-            "stakeK": 20000,
-            "payoutK": 0,
-            "profitK": -20000,
-            "isWin": false
-          },
-          "lo": {
-            "hits": 3,
-            "hitMap": {
-              "33": 1,
-              "52": 1,
-              "75": 1
-            },
-            "hitNumbers": [
-              "33",
-              "52",
-              "75"
-            ],
-            "numbers": [
-              "33",
-              "34",
-              "35",
-              "51",
-              "52",
-              "75"
-            ],
-            "count": 6,
-            "stakeK": 13200,
-            "payoutK": 24000,
-            "profitK": 10800,
-            "isWin": true
-          },
-          "totalStakeK": 33200,
-          "totalPayoutK": 24000,
-          "totalProfitK": -9200,
-          "isWin": false
-        },
-        "muse": {
-          "de": {
-            "isHit": false,
-            "hitNumber": null,
-            "numbers": [
-              "01",
-              "08",
-              "09",
-              "15",
-              "17",
-              "22",
-              "24",
-              "32",
-              "34",
-              "36",
-              "38",
-              "39",
-              "54",
-              "60",
-              "65",
-              "66",
-              "70",
-              "82",
-              "91",
-              "96"
-            ],
-            "count": 20,
-            "stakeK": 20000,
-            "payoutK": 0,
-            "profitK": -20000,
-            "isWin": false
-          },
-          "lo": {
-            "hits": 1,
-            "hitMap": {
-              "52": 1
-            },
-            "hitNumbers": [
-              "52"
-            ],
-            "numbers": [
-              "38",
-              "44",
-              "52",
-              "54",
-              "62",
-              "64"
-            ],
-            "count": 6,
-            "stakeK": 13200,
-            "payoutK": 8000,
-            "profitK": -5200,
-            "isWin": false
-          },
-          "totalStakeK": 33200,
-          "totalPayoutK": 8000,
-          "totalProfitK": -25200,
-          "isWin": false
-        },
-        "consensus": {
-          "de": {
-            "isHit": false,
-            "hitNumber": null,
-            "hitTier": null,
-            "isHitX2": false,
-            "isHitX1": false,
-            "x2Nums": [
-              "01",
-              "09",
-              "15",
-              "22",
-              "24",
-              "32",
-              "36",
-              "38",
-              "39",
-              "54",
-              "60",
-              "65",
-              "66",
-              "70",
-              "91"
-            ],
-            "x1Nums": [
-              "07",
-              "08",
-              "17",
-              "28",
-              "31",
-              "42",
-              "44",
-              "51",
-              "58",
-              "67",
-              "96"
-            ],
-            "countX2": 15,
-            "countX1": 11,
-            "totalCount": 26,
-            "stakeK": 41000,
-            "payoutK": 0,
-            "profitK": -41000,
-            "isWin": false
-          },
-          "lo": {
-            "hits": 5,
-            "hitNumbers": [
-              "33",
-              "52",
-              "59",
-              "70",
-              "75"
-            ],
-            "breakdown": {
-              "33": {
-                "mult": 2,
-                "hits": 1,
-                "stakeK": 4400,
-                "payoutK": 16000,
-                "profitK": 11600
-              },
-              "34": {
-                "mult": 2,
-                "hits": 0,
-                "stakeK": 4400,
-                "payoutK": 0,
-                "profitK": -4400
-              },
-              "35": {
-                "mult": 2,
-                "hits": 0,
-                "stakeK": 4400,
-                "payoutK": 0,
-                "profitK": -4400
-              },
-              "38": {
-                "mult": 3,
-                "hits": 0,
-                "stakeK": 6600,
-                "payoutK": 0,
-                "profitK": -6600
-              },
-              "44": {
-                "mult": 2,
-                "hits": 0,
-                "stakeK": 4400,
-                "payoutK": 0,
-                "profitK": -4400
-              },
-              "51": {
-                "mult": 1,
-                "hits": 0,
-                "stakeK": 2200,
-                "payoutK": 0,
-                "profitK": -2200
-              },
-              "52": {
-                "mult": 5,
-                "hits": 1,
-                "stakeK": 11000,
-                "payoutK": 40000,
-                "profitK": 29000
-              },
-              "54": {
-                "mult": 2,
-                "hits": 0,
-                "stakeK": 4400,
-                "payoutK": 0,
-                "profitK": -4400
-              },
-              "59": {
-                "mult": 1,
-                "hits": 1,
-                "stakeK": 2200,
-                "payoutK": 8000,
-                "profitK": 5800
-              },
-              "62": {
-                "mult": 4,
-                "hits": 0,
-                "stakeK": 8800,
-                "payoutK": 0,
-                "profitK": -8800
-              },
-              "64": {
-                "mult": 2,
-                "hits": 0,
-                "stakeK": 4400,
-                "payoutK": 0,
-                "profitK": -4400
-              },
-              "70": {
-                "mult": 1,
-                "hits": 1,
-                "stakeK": 2200,
-                "payoutK": 8000,
-                "profitK": 5800
-              },
-              "75": {
-                "mult": 3,
-                "hits": 1,
-                "stakeK": 6600,
-                "payoutK": 24000,
-                "profitK": 17400
-              }
-            },
-            "numbers": [
-              "33",
-              "34",
-              "35",
-              "38",
-              "44",
-              "51",
-              "52",
-              "54",
-              "59",
-              "62",
-              "64",
-              "70",
-              "75"
-            ],
-            "count": 13,
-            "stakeK": 66000,
-            "payoutK": 96000,
-            "profitK": 30000,
-            "isWin": true
-          },
-          "deTiered": {
-            "isHit": false,
-            "hitNumber": null,
-            "hitTier": null,
-            "isHitX2": false,
-            "isHitX1": false,
-            "x2Nums": [
-              "01",
-              "09",
-              "15",
-              "22",
-              "24",
-              "32",
-              "36",
-              "38",
-              "39",
-              "54",
-              "60",
-              "65",
-              "66",
-              "70",
-              "91"
-            ],
-            "x1Nums": [
-              "07",
-              "08",
-              "17",
-              "28",
-              "31",
-              "42",
-              "44",
-              "51",
-              "58",
-              "67",
-              "96"
-            ],
-            "countX2": 15,
-            "countX1": 11,
-            "totalCount": 26,
-            "stakeK": 41000,
-            "payoutK": 0,
-            "profitK": -41000,
-            "isWin": false
-          },
-          "loTiered": {
-            "hits": 5,
-            "hitNumbers": [
-              "33",
-              "52",
-              "59",
-              "70",
-              "75"
-            ],
-            "breakdown": {
-              "33": {
-                "mult": 2,
-                "hits": 1,
-                "stakeK": 4400,
-                "payoutK": 16000,
-                "profitK": 11600
-              },
-              "34": {
-                "mult": 2,
-                "hits": 0,
-                "stakeK": 4400,
-                "payoutK": 0,
-                "profitK": -4400
-              },
-              "35": {
-                "mult": 2,
-                "hits": 0,
-                "stakeK": 4400,
-                "payoutK": 0,
-                "profitK": -4400
-              },
-              "38": {
-                "mult": 3,
-                "hits": 0,
-                "stakeK": 6600,
-                "payoutK": 0,
-                "profitK": -6600
-              },
-              "44": {
-                "mult": 2,
-                "hits": 0,
-                "stakeK": 4400,
-                "payoutK": 0,
-                "profitK": -4400
-              },
-              "51": {
-                "mult": 1,
-                "hits": 0,
-                "stakeK": 2200,
-                "payoutK": 0,
-                "profitK": -2200
-              },
-              "52": {
-                "mult": 5,
-                "hits": 1,
-                "stakeK": 11000,
-                "payoutK": 40000,
-                "profitK": 29000
-              },
-              "54": {
-                "mult": 2,
-                "hits": 0,
-                "stakeK": 4400,
-                "payoutK": 0,
-                "profitK": -4400
-              },
-              "59": {
-                "mult": 1,
-                "hits": 1,
-                "stakeK": 2200,
-                "payoutK": 8000,
-                "profitK": 5800
-              },
-              "62": {
-                "mult": 4,
-                "hits": 0,
-                "stakeK": 8800,
-                "payoutK": 0,
-                "profitK": -8800
-              },
-              "64": {
-                "mult": 2,
-                "hits": 0,
-                "stakeK": 4400,
-                "payoutK": 0,
-                "profitK": -4400
-              },
-              "70": {
-                "mult": 1,
-                "hits": 1,
-                "stakeK": 2200,
-                "payoutK": 8000,
-                "profitK": 5800
-              },
-              "75": {
-                "mult": 3,
-                "hits": 1,
-                "stakeK": 6600,
-                "payoutK": 24000,
-                "profitK": 17400
-              }
-            },
-            "numbers": [
-              "33",
-              "34",
-              "35",
-              "38",
-              "44",
-              "51",
-              "52",
-              "54",
-              "59",
-              "62",
-              "64",
-              "70",
-              "75"
-            ],
-            "count": 13,
-            "stakeK": 66000,
-            "payoutK": 96000,
-            "profitK": 30000,
-            "isWin": true
-          },
-          "flat": {
-            "de": {
-              "isHit": false,
-              "hitNumber": null,
-              "numbers": [
-                "01",
-                "07",
-                "08",
-                "09",
-                "15",
-                "17",
-                "22",
-                "24",
-                "28",
-                "31",
-                "32",
-                "36",
-                "38",
-                "39",
-                "54",
-                "60",
-                "65",
-                "66",
-                "70",
-                "91"
-              ],
-              "count": 20,
-              "stakeK": 20000,
-              "payoutK": 0,
-              "profitK": -20000,
-              "isWin": false
-            },
-            "lo": {
-              "hits": 3,
-              "hitMap": {
-                "33": 1,
-                "52": 1,
-                "75": 1
-              },
-              "hitNumbers": [
-                "33",
-                "52",
-                "75"
-              ],
-              "numbers": [
-                "33",
-                "34",
-                "38",
-                "52",
-                "62",
-                "75"
-              ],
-              "count": 6,
-              "stakeK": 13200,
-              "payoutK": 24000,
-              "profitK": 10800,
-              "isWin": true
-            },
-            "totalStakeK": 33200,
-            "totalPayoutK": 24000,
-            "totalProfitK": -9200,
-            "isWin": false
-          },
-          "consensusDetails": {
-            "deTiers": {
-              "x2Nums": [
-                "01",
-                "09",
-                "15",
-                "22",
-                "24",
-                "32",
-                "36",
-                "38",
-                "39",
-                "54",
-                "60",
-                "65",
-                "66",
-                "70",
-                "91"
-              ],
-              "x1Nums": [
-                "07",
-                "08",
-                "17",
-                "28",
-                "31",
-                "42",
-                "44",
-                "51",
-                "58",
-                "67",
-                "96"
-              ],
-              "tier5": [
-                "09",
-                "15",
-                "32",
-                "39",
-                "54",
-                "66",
-                "70",
-                "91"
-              ],
-              "tier4": [
-                "01",
-                "22",
-                "24",
-                "36",
-                "38",
-                "60",
-                "65"
-              ],
-              "tier3": [
-                "08",
-                "17"
-              ],
-              "tier2": [
-                "07",
-                "28",
-                "31",
-                "42",
-                "44",
-                "51",
-                "58",
-                "67",
-                "96"
-              ],
-              "tier1": [
-                "02",
-                "18",
-                "34",
-                "63",
-                "82",
-                "83",
-                "90",
-                "98"
-              ]
-            },
-            "loTiers": {
-              "x5Nums": [
-                "52"
-              ],
-              "x4Nums": [
-                "62"
-              ],
-              "x3Nums": [
-                "38",
-                "75"
-              ],
-              "x2Nums": [
-                "33",
-                "34",
-                "35",
-                "44",
-                "54",
-                "64"
-              ],
-              "x1Nums": [
-                "51",
-                "59",
-                "70"
-              ]
-            },
-            "deVotesMap": {
-              "15": {
-                "count": 5,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "grok",
-                  "muse"
-                ]
-              },
-              "17": {
-                "count": 3,
-                "models": [
-                  "deepseek",
-                  "gemini",
-                  "muse"
-                ]
-              },
-              "18": {
-                "count": 1,
-                "models": [
-                  "chatgpt"
-                ]
-              },
-              "22": {
-                "count": 4,
-                "models": [
-                  "chatgpt",
-                  "gemini",
-                  "grok",
-                  "muse"
-                ]
-              },
-              "24": {
-                "count": 4,
-                "models": [
-                  "deepseek",
-                  "gemini",
-                  "grok",
-                  "muse"
-                ]
-              },
-              "28": {
-                "count": 2,
-                "models": [
-                  "gemini",
-                  "grok"
-                ]
-              },
-              "31": {
-                "count": 2,
-                "models": [
-                  "deepseek",
-                  "gemini"
-                ]
-              },
-              "32": {
-                "count": 5,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "grok",
-                  "muse"
-                ]
-              },
-              "34": {
-                "count": 1,
-                "models": [
-                  "muse"
-                ]
-              },
-              "36": {
-                "count": 4,
-                "models": [
-                  "deepseek",
-                  "gemini",
-                  "grok",
-                  "muse"
-                ]
-              },
-              "38": {
-                "count": 4,
-                "models": [
-                  "chatgpt",
-                  "gemini",
-                  "grok",
-                  "muse"
-                ]
-              },
-              "39": {
-                "count": 5,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "grok",
-                  "muse"
-                ]
-              },
-              "42": {
-                "count": 2,
-                "models": [
-                  "chatgpt",
-                  "grok"
-                ]
-              },
-              "44": {
-                "count": 2,
-                "models": [
-                  "gemini",
-                  "grok"
-                ]
-              },
-              "51": {
-                "count": 2,
-                "models": [
-                  "chatgpt",
-                  "grok"
-                ]
-              },
-              "54": {
-                "count": 5,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "grok",
-                  "muse"
-                ]
-              },
-              "58": {
-                "count": 2,
-                "models": [
-                  "deepseek",
-                  "gemini"
-                ]
-              },
-              "60": {
-                "count": 4,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "muse"
-                ]
-              },
-              "63": {
-                "count": 1,
-                "models": [
-                  "chatgpt"
-                ]
-              },
-              "65": {
-                "count": 4,
-                "models": [
-                  "deepseek",
-                  "gemini",
-                  "grok",
-                  "muse"
-                ]
-              },
-              "66": {
-                "count": 5,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "grok",
-                  "muse"
-                ]
-              },
-              "67": {
-                "count": 2,
-                "models": [
-                  "chatgpt",
-                  "grok"
-                ]
-              },
-              "70": {
-                "count": 5,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "grok",
-                  "muse"
-                ]
-              },
-              "82": {
-                "count": 1,
-                "models": [
-                  "muse"
-                ]
-              },
-              "83": {
-                "count": 1,
-                "models": [
-                  "chatgpt"
-                ]
-              },
-              "90": {
-                "count": 1,
-                "models": [
-                  "grok"
-                ]
-              },
-              "91": {
-                "count": 5,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "grok",
-                  "muse"
-                ]
-              },
-              "96": {
-                "count": 2,
-                "models": [
-                  "chatgpt",
-                  "muse"
-                ]
-              },
-              "98": {
-                "count": 1,
-                "models": [
-                  "deepseek"
-                ]
-              },
-              "09": {
-                "count": 5,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "grok",
-                  "muse"
-                ]
-              },
-              "01": {
-                "count": 4,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "grok",
-                  "muse"
-                ]
-              },
-              "08": {
-                "count": 3,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "muse"
-                ]
-              },
-              "07": {
-                "count": 2,
-                "models": [
-                  "deepseek",
-                  "gemini"
-                ]
-              },
-              "02": {
-                "count": 1,
-                "models": [
-                  "deepseek"
-                ]
-              }
-            },
-            "loVotesMap": {
-              "33": {
-                "count": 2,
-                "models": [
-                  "chatgpt",
-                  "grok"
-                ]
-              },
-              "34": {
-                "count": 2,
-                "models": [
-                  "gemini",
-                  "grok"
-                ]
-              },
-              "35": {
-                "count": 2,
-                "models": [
-                  "gemini",
-                  "grok"
-                ]
-              },
-              "38": {
-                "count": 3,
-                "models": [
-                  "deepseek",
-                  "gemini",
-                  "muse"
-                ]
-              },
-              "44": {
-                "count": 2,
-                "models": [
-                  "chatgpt",
-                  "muse"
-                ]
-              },
-              "51": {
-                "count": 1,
-                "models": [
-                  "grok"
-                ]
-              },
-              "52": {
-                "count": 5,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "grok",
-                  "muse"
-                ]
-              },
-              "54": {
-                "count": 2,
-                "models": [
-                  "deepseek",
-                  "muse"
-                ]
-              },
-              "59": {
-                "count": 1,
-                "models": [
-                  "deepseek"
-                ]
-              },
-              "62": {
-                "count": 4,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "muse"
-                ]
-              },
-              "64": {
-                "count": 2,
-                "models": [
-                  "deepseek",
-                  "muse"
-                ]
-              },
-              "70": {
-                "count": 1,
-                "models": [
-                  "chatgpt"
-                ]
-              },
-              "75": {
-                "count": 3,
-                "models": [
-                  "chatgpt",
-                  "gemini",
-                  "grok"
-                ]
-              }
-            },
-            "loMultiplierMap": {
-              "33": 2,
-              "34": 2,
-              "35": 2,
-              "38": 3,
-              "44": 2,
-              "51": 1,
-              "52": 5,
-              "54": 2,
-              "59": 1,
-              "62": 4,
-              "64": 2,
-              "70": 1,
-              "75": 3
-            },
-            "loHighConsensus": [
-              "33",
-              "34",
-              "35",
-              "38",
-              "44",
-              "52",
-              "54",
-              "62",
-              "64",
-              "75"
-            ],
-            "loAllTiers": [
-              "33",
-              "34",
-              "35",
-              "38",
-              "44",
-              "51",
-              "52",
-              "54",
-              "59",
-              "62",
-              "64",
-              "70",
-              "75"
-            ]
-          },
-          "totalStakeK": 107000,
-          "totalPayoutK": 96000,
-          "totalProfitK": -11000,
-          "isWin": false,
-          "tieredStakeK": 107000,
-          "tieredPayoutK": 96000,
-          "tieredProfitK": -11000,
-          "isTieredWin": false
-        }
-      },
-      "sources": {
-        "chatgpt": {
-          "de": [
-            "01",
-            "08",
-            "09",
-            "15",
-            "18",
-            "22",
-            "32",
-            "38",
-            "39",
-            "42",
-            "51",
-            "54",
-            "60",
-            "63",
-            "66",
-            "67",
-            "70",
-            "83",
-            "91",
-            "96"
-          ],
-          "lo": [
-            "33",
-            "44",
-            "52",
-            "62",
-            "70",
-            "75"
-          ],
-          "method": "AI phân tích",
-          "notes": "Lần đầu báo chưa nhận được file nên không đoán, sau khi đính kèm file mới trả số.",
-          "status": "ok"
-        },
-        "deepseek": {
-          "de": [
-            "01",
-            "02",
-            "07",
-            "08",
-            "09",
-            "15",
-            "17",
-            "24",
-            "31",
-            "32",
-            "36",
-            "39",
-            "54",
-            "58",
-            "60",
-            "65",
-            "66",
-            "70",
-            "91",
-            "98"
-          ],
-          "lo": [
-            "38",
-            "52",
-            "54",
-            "59",
-            "62",
-            "64"
-          ],
-          "method": "AI phân tích",
-          "notes": "Chỉ đọc được 40% đầu file do giới hạn độ dài.",
-          "status": "ok"
-        },
-        "gemini": {
-          "de": [
-            "07",
-            "09",
-            "15",
-            "17",
-            "22",
-            "24",
-            "28",
-            "31",
-            "32",
-            "36",
-            "38",
-            "39",
-            "44",
-            "54",
-            "58",
-            "60",
-            "65",
-            "66",
-            "70",
-            "91"
-          ],
-          "lo": [
-            "34",
-            "35",
-            "38",
-            "52",
-            "62",
-            "75"
-          ],
-          "method": "AI phân tích",
-          "notes": "",
-          "status": "ok"
-        },
-        "grok": {
-          "de": [
-            "01",
-            "09",
-            "15",
-            "22",
-            "24",
-            "28",
-            "32",
-            "36",
-            "38",
-            "39",
-            "42",
-            "44",
-            "51",
-            "54",
-            "65",
-            "66",
-            "67",
-            "70",
-            "90",
-            "91"
-          ],
-          "lo": [
-            "33",
-            "34",
-            "35",
-            "51",
-            "52",
-            "75"
-          ],
-          "method": "AI phân tích",
-          "notes": "",
-          "status": "ok"
-        },
-        "muse": {
-          "de": [
-            "01",
-            "08",
-            "09",
-            "15",
-            "17",
-            "22",
-            "24",
-            "32",
-            "34",
-            "36",
-            "38",
-            "39",
-            "54",
-            "60",
-            "65",
-            "66",
-            "70",
-            "82",
-            "91",
-            "96"
-          ],
-          "lo": [
-            "38",
-            "44",
-            "52",
-            "54",
-            "62",
-            "64"
-          ],
-          "method": "Công thức điểm tần suất (xem meta.museMethod), dữ liệu 7.598 kỳ tới 29/10/2026",
-          "notes": "",
-          "status": "ok"
-        }
-      },
-      "special": "59",
-      "resultsTiered": {
-        "consensus": {
-          "de": {
-            "isHit": false,
-            "hitNumber": null,
-            "hitTier": null,
-            "isHitX2": false,
-            "isHitX1": false,
-            "x2Nums": [
-              "01",
-              "09",
-              "15",
-              "22",
-              "24",
-              "32",
-              "36",
-              "38",
-              "39",
-              "54",
-              "60",
-              "65",
-              "66",
-              "70",
-              "91"
-            ],
-            "x1Nums": [
-              "07",
-              "08",
-              "17",
-              "28",
-              "31",
-              "42",
-              "44",
-              "51",
-              "58",
-              "67",
-              "96"
-            ],
-            "countX2": 15,
-            "countX1": 11,
-            "totalCount": 26,
-            "stakeK": 41000,
-            "payoutK": 0,
-            "profitK": -41000,
-            "isWin": false
-          },
-          "lo": {
-            "hits": 5,
-            "hitNumbers": [
-              "33",
-              "52",
-              "59",
-              "70",
-              "75"
-            ],
-            "breakdown": {
-              "33": {
-                "mult": 2,
-                "hits": 1,
-                "stakeK": 4400,
-                "payoutK": 16000,
-                "profitK": 11600
-              },
-              "34": {
-                "mult": 2,
-                "hits": 0,
-                "stakeK": 4400,
-                "payoutK": 0,
-                "profitK": -4400
-              },
-              "35": {
-                "mult": 2,
-                "hits": 0,
-                "stakeK": 4400,
-                "payoutK": 0,
-                "profitK": -4400
-              },
-              "38": {
-                "mult": 3,
-                "hits": 0,
-                "stakeK": 6600,
-                "payoutK": 0,
-                "profitK": -6600
-              },
-              "44": {
-                "mult": 2,
-                "hits": 0,
-                "stakeK": 4400,
-                "payoutK": 0,
-                "profitK": -4400
-              },
-              "51": {
-                "mult": 1,
-                "hits": 0,
-                "stakeK": 2200,
-                "payoutK": 0,
-                "profitK": -2200
-              },
-              "52": {
-                "mult": 5,
-                "hits": 1,
-                "stakeK": 11000,
-                "payoutK": 40000,
-                "profitK": 29000
-              },
-              "54": {
-                "mult": 2,
-                "hits": 0,
-                "stakeK": 4400,
-                "payoutK": 0,
-                "profitK": -4400
-              },
-              "59": {
-                "mult": 1,
-                "hits": 1,
-                "stakeK": 2200,
-                "payoutK": 8000,
-                "profitK": 5800
-              },
-              "62": {
-                "mult": 4,
-                "hits": 0,
-                "stakeK": 8800,
-                "payoutK": 0,
-                "profitK": -8800
-              },
-              "64": {
-                "mult": 2,
-                "hits": 0,
-                "stakeK": 4400,
-                "payoutK": 0,
-                "profitK": -4400
-              },
-              "70": {
-                "mult": 1,
-                "hits": 1,
-                "stakeK": 2200,
-                "payoutK": 8000,
-                "profitK": 5800
-              },
-              "75": {
-                "mult": 3,
-                "hits": 1,
-                "stakeK": 6600,
-                "payoutK": 24000,
-                "profitK": 17400
-              }
-            },
-            "numbers": [
-              "33",
-              "34",
-              "35",
-              "38",
-              "44",
-              "51",
-              "52",
-              "54",
-              "59",
-              "62",
-              "64",
-              "70",
-              "75"
-            ],
-            "count": 13,
-            "stakeK": 66000,
-            "payoutK": 96000,
-            "profitK": 30000,
-            "isWin": true
-          },
-          "stakeK": 107000,
-          "payoutK": 96000,
-          "profitK": -11000,
-          "isWin": false
-        }
-      }
-    },
-    {
-      "date": "2026-10-31",
-      "prizes27": [
-        "57",
-        "48",
-        "64",
-        "97",
-        "44",
-        "04",
-        "08",
-        "24",
-        "14",
-        "28",
-        "40",
-        "70",
-        "64",
-        "70",
-        "34",
-        "51",
-        "36",
-        "97",
-        "55",
-        "20",
-        "46",
-        "32",
-        "47",
-        "78",
-        "53",
-        "31",
-        "46"
-      ],
-      "rates": {
-        "consensus": {
-          "days": 2,
-          "de": {
-            "wins": 0,
-            "losses": 2,
-            "winRate": 0,
-            "stakeK": 82000,
-            "payoutK": 0,
-            "profitK": -82000,
-            "roi": -1,
-            "longestWin": 0,
-            "longestLoss": 2,
-            "currentWinStreak": 0,
-            "currentLossStreak": 2
-          },
-          "lo": {
-            "wins": 2,
-            "losses": 0,
-            "winRate": 1,
-            "totalHits": 10,
-            "avgHitsPerDay": 5,
-            "stakeK": 132000,
-            "payoutK": 168000,
-            "profitK": 36000,
-            "roi": 0.2727,
-            "longestWin": 2,
-            "longestLoss": 0,
-            "currentWinStreak": 2,
-            "currentLossStreak": 0
-          },
-          "combo": {
-            "wins": 0,
-            "winRate": 0,
-            "stakeK": 214000,
-            "payoutK": 168000,
-            "profitK": -46000,
-            "roi": -0.215
-          }
-        },
-        "chatgpt": {
-          "days": 2,
-          "de": {
-            "wins": 0,
-            "losses": 2,
-            "winRate": 0,
-            "stakeK": 40000,
-            "payoutK": 0,
-            "profitK": -40000,
-            "roi": -1,
-            "longestWin": 0,
-            "longestLoss": 2,
-            "currentWinStreak": 0,
-            "currentLossStreak": 2
-          },
-          "lo": {
-            "wins": 1,
-            "losses": 1,
-            "winRate": 0.5,
-            "totalHits": 5,
-            "avgHitsPerDay": 2.5,
-            "stakeK": 26400,
-            "payoutK": 40000,
-            "profitK": 13600,
-            "roi": 0.5152,
-            "longestWin": 1,
-            "longestLoss": 1,
-            "currentWinStreak": 0,
-            "currentLossStreak": 1
-          },
-          "combo": {
-            "wins": 0,
-            "winRate": 0,
-            "stakeK": 66400,
-            "payoutK": 40000,
-            "profitK": -26400,
-            "roi": -0.3976
-          }
-        },
-        "deepseek": {
-          "days": 2,
-          "de": {
-            "wins": 0,
-            "losses": 2,
-            "winRate": 0,
-            "stakeK": 40000,
-            "payoutK": 0,
-            "profitK": -40000,
-            "roi": -1,
-            "longestWin": 0,
-            "longestLoss": 2,
-            "currentWinStreak": 0,
-            "currentLossStreak": 2
-          },
-          "lo": {
-            "wins": 2,
-            "losses": 0,
-            "winRate": 1,
-            "totalHits": 4,
-            "avgHitsPerDay": 2,
-            "stakeK": 26400,
-            "payoutK": 32000,
-            "profitK": 5600,
-            "roi": 0.2121,
-            "longestWin": 2,
-            "longestLoss": 0,
-            "currentWinStreak": 2,
-            "currentLossStreak": 0
-          },
-          "combo": {
-            "wins": 0,
-            "winRate": 0,
-            "stakeK": 66400,
-            "payoutK": 32000,
-            "profitK": -34400,
-            "roi": -0.5181
-          }
-        },
-        "gemini": {
-          "days": 2,
-          "de": {
-            "wins": 0,
-            "losses": 2,
-            "winRate": 0,
-            "stakeK": 40000,
-            "payoutK": 0,
-            "profitK": -40000,
-            "roi": -1,
-            "longestWin": 0,
-            "longestLoss": 2,
-            "currentWinStreak": 0,
-            "currentLossStreak": 2
-          },
-          "lo": {
-            "wins": 1,
-            "losses": 1,
-            "winRate": 0.5,
-            "totalHits": 3,
-            "avgHitsPerDay": 1.5,
-            "stakeK": 26400,
-            "payoutK": 24000,
-            "profitK": -2400,
-            "roi": -0.0909,
-            "longestWin": 1,
-            "longestLoss": 1,
-            "currentWinStreak": 0,
-            "currentLossStreak": 1
-          },
-          "combo": {
-            "wins": 0,
-            "winRate": 0,
-            "stakeK": 66400,
-            "payoutK": 24000,
-            "profitK": -42400,
-            "roi": -0.6386
-          }
-        },
-        "grok": {
-          "days": 2,
-          "de": {
-            "wins": 0,
-            "losses": 2,
-            "winRate": 0,
-            "stakeK": 40000,
-            "payoutK": 0,
-            "profitK": -40000,
-            "roi": -1,
-            "longestWin": 0,
-            "longestLoss": 2,
-            "currentWinStreak": 0,
-            "currentLossStreak": 2
-          },
-          "lo": {
-            "wins": 1,
-            "losses": 1,
-            "winRate": 0.5,
-            "totalHits": 4,
-            "avgHitsPerDay": 2,
-            "stakeK": 26400,
-            "payoutK": 32000,
-            "profitK": 5600,
-            "roi": 0.2121,
-            "longestWin": 1,
-            "longestLoss": 1,
-            "currentWinStreak": 0,
-            "currentLossStreak": 1
-          },
-          "combo": {
-            "wins": 0,
-            "winRate": 0,
-            "stakeK": 66400,
-            "payoutK": 32000,
-            "profitK": -34400,
-            "roi": -0.5181
-          }
-        },
-        "muse": {
-          "days": 2,
-          "de": {
-            "wins": 0,
-            "losses": 2,
-            "winRate": 0,
-            "stakeK": 40000,
-            "payoutK": 0,
-            "profitK": -40000,
-            "roi": -1,
-            "longestWin": 0,
-            "longestLoss": 2,
-            "currentWinStreak": 0,
-            "currentLossStreak": 2
-          },
-          "lo": {
-            "wins": 1,
-            "losses": 1,
-            "winRate": 0.5,
-            "totalHits": 5,
-            "avgHitsPerDay": 2.5,
-            "stakeK": 26400,
-            "payoutK": 40000,
-            "profitK": 13600,
-            "roi": 0.5152,
-            "longestWin": 1,
-            "longestLoss": 1,
-            "currentWinStreak": 1,
-            "currentLossStreak": 0
-          },
-          "combo": {
-            "wins": 0,
-            "winRate": 0,
-            "stakeK": 66400,
-            "payoutK": 40000,
-            "profitK": -26400,
-            "roi": -0.3976
-          }
-        }
-      },
-      "results": {
-        "chatgpt": {
-          "de": {
-            "isHit": false,
-            "hitNumber": null,
-            "numbers": [
-              "09",
-              "21",
-              "22",
-              "24",
-              "32",
-              "36",
-              "38",
-              "39",
-              "42",
-              "44",
-              "51",
-              "54",
-              "58",
-              "60",
-              "65",
-              "67",
-              "70",
-              "83",
-              "96",
-              "98"
-            ],
-            "count": 20,
-            "stakeK": 20000,
-            "payoutK": 0,
-            "profitK": -20000,
-            "isWin": false
-          },
-          "lo": {
-            "hits": 1,
-            "hitMap": {
-              "34": 1
-            },
-            "hitNumbers": [
-              "34"
-            ],
-            "numbers": [
-              "33",
-              "34",
-              "35",
-              "38",
-              "52",
-              "75"
-            ],
-            "count": 6,
-            "stakeK": 13200,
-            "payoutK": 8000,
-            "profitK": -5200,
-            "isWin": false
-          },
-          "totalStakeK": 33200,
-          "totalPayoutK": 8000,
-          "totalProfitK": -25200,
-          "isWin": false
-        },
-        "deepseek": {
-          "de": {
-            "isHit": false,
-            "hitNumber": null,
-            "numbers": [
-              "09",
-              "21",
-              "22",
-              "24",
-              "32",
-              "36",
-              "38",
-              "39",
-              "42",
-              "44",
-              "51",
-              "54",
-              "58",
-              "60",
-              "65",
-              "67",
-              "70",
-              "83",
-              "96",
-              "98"
-            ],
-            "count": 20,
-            "stakeK": 20000,
-            "payoutK": 0,
-            "profitK": -20000,
-            "isWin": false
-          },
-          "lo": {
-            "hits": 2,
-            "hitMap": {
-              "64": 2
-            },
-            "hitNumbers": [
-              "64"
-            ],
-            "numbers": [
-              "38",
-              "52",
-              "54",
-              "59",
-              "62",
-              "64"
-            ],
-            "count": 6,
-            "stakeK": 13200,
-            "payoutK": 16000,
-            "profitK": 2800,
-            "isWin": true
-          },
-          "totalStakeK": 33200,
-          "totalPayoutK": 16000,
-          "totalProfitK": -17200,
-          "isWin": false
-        },
-        "gemini": {
-          "de": {
-            "isHit": false,
-            "hitNumber": null,
-            "numbers": [
-              "09",
-              "21",
-              "22",
-              "24",
-              "32",
-              "36",
-              "38",
-              "39",
-              "42",
-              "44",
-              "51",
-              "54",
-              "58",
-              "60",
-              "65",
-              "67",
-              "70",
-              "83",
-              "96",
-              "98"
-            ],
-            "count": 20,
-            "stakeK": 20000,
-            "payoutK": 0,
-            "profitK": -20000,
-            "isWin": false
-          },
-          "lo": {
-            "hits": 1,
-            "hitMap": {
-              "34": 1
-            },
-            "hitNumbers": [
-              "34"
-            ],
-            "numbers": [
-              "33",
-              "34",
-              "35",
-              "52",
-              "62",
-              "75"
-            ],
-            "count": 6,
-            "stakeK": 13200,
-            "payoutK": 8000,
-            "profitK": -5200,
-            "isWin": false
-          },
-          "totalStakeK": 33200,
-          "totalPayoutK": 8000,
-          "totalProfitK": -25200,
-          "isWin": false
-        },
-        "grok": {
-          "de": {
-            "isHit": false,
-            "hitNumber": null,
-            "numbers": [
-              "00",
-              "09",
-              "21",
-              "22",
-              "23",
-              "32",
-              "34",
-              "37",
-              "38",
-              "39",
-              "42",
-              "44",
-              "51",
-              "54",
-              "60",
-              "66",
-              "67",
-              "83",
-              "91",
-              "96"
-            ],
-            "count": 20,
-            "stakeK": 20000,
-            "payoutK": 0,
-            "profitK": -20000,
-            "isWin": false
-          },
-          "lo": {
-            "hits": 1,
-            "hitMap": {
-              "34": 1
-            },
-            "hitNumbers": [
-              "34"
-            ],
-            "numbers": [
-              "34",
-              "35",
-              "62",
-              "75",
-              "87",
-              "99"
-            ],
-            "count": 6,
-            "stakeK": 13200,
-            "payoutK": 8000,
-            "profitK": -5200,
-            "isWin": false
-          },
-          "totalStakeK": 33200,
-          "totalPayoutK": 8000,
-          "totalProfitK": -25200,
-          "isWin": false
-        },
-        "muse": {
-          "de": {
-            "isHit": false,
-            "hitNumber": null,
-            "numbers": [
-              "01",
-              "08",
-              "09",
-              "15",
-              "17",
-              "22",
-              "24",
-              "32",
-              "34",
-              "36",
-              "38",
-              "39",
-              "54",
-              "59",
-              "60",
-              "65",
-              "66",
-              "70",
-              "91",
-              "96"
-            ],
-            "count": 20,
-            "stakeK": 20000,
-            "payoutK": 0,
-            "profitK": -20000,
-            "isWin": false
-          },
-          "lo": {
-            "hits": 4,
-            "hitMap": {
-              "24": 1,
-              "44": 1,
-              "64": 2
-            },
-            "hitNumbers": [
-              "24",
-              "44",
-              "64"
-            ],
-            "numbers": [
-              "24",
-              "38",
-              "44",
-              "52",
-              "62",
-              "64"
-            ],
-            "count": 6,
-            "stakeK": 13200,
-            "payoutK": 32000,
-            "profitK": 18800,
-            "isWin": true
-          },
-          "totalStakeK": 33200,
-          "totalPayoutK": 32000,
-          "totalProfitK": -1200,
-          "isWin": false
-        },
-        "consensus": {
-          "de": {
-            "isHit": false,
-            "hitNumber": null,
-            "hitTier": null,
-            "isHitX2": false,
-            "isHitX1": false,
-            "x2Nums": [
-              "09",
-              "21",
-              "22",
-              "24",
-              "32",
-              "36",
-              "38",
-              "39",
-              "42",
-              "44",
-              "51",
-              "54",
-              "60",
-              "65",
-              "67",
-              "70",
-              "83",
-              "96"
-            ],
-            "x1Nums": [
-              "34",
-              "58",
-              "66",
-              "91",
-              "98"
-            ],
-            "countX2": 18,
-            "countX1": 5,
-            "totalCount": 23,
-            "stakeK": 41000,
-            "payoutK": 0,
-            "profitK": -41000,
-            "isWin": false
-          },
-          "lo": {
-            "hits": 5,
-            "hitNumbers": [
-              "24",
-              "34",
-              "44",
-              "64"
-            ],
-            "breakdown": {
-              "24": {
-                "mult": 1,
-                "hits": 1,
-                "stakeK": 2200,
-                "payoutK": 8000,
-                "profitK": 5800
-              },
-              "33": {
-                "mult": 2,
-                "hits": 0,
-                "stakeK": 4400,
-                "payoutK": 0,
-                "profitK": -4400
-              },
-              "34": {
-                "mult": 3,
-                "hits": 1,
-                "stakeK": 6600,
-                "payoutK": 24000,
-                "profitK": 17400
-              },
-              "35": {
-                "mult": 3,
-                "hits": 0,
-                "stakeK": 6600,
-                "payoutK": 0,
-                "profitK": -6600
-              },
-              "38": {
-                "mult": 3,
-                "hits": 0,
-                "stakeK": 6600,
-                "payoutK": 0,
-                "profitK": -6600
-              },
-              "44": {
-                "mult": 1,
-                "hits": 1,
-                "stakeK": 2200,
-                "payoutK": 8000,
-                "profitK": 5800
-              },
-              "52": {
-                "mult": 4,
-                "hits": 0,
-                "stakeK": 8800,
-                "payoutK": 0,
-                "profitK": -8800
-              },
-              "54": {
-                "mult": 1,
-                "hits": 0,
-                "stakeK": 2200,
-                "payoutK": 0,
-                "profitK": -2200
-              },
-              "59": {
-                "mult": 1,
-                "hits": 0,
-                "stakeK": 2200,
-                "payoutK": 0,
-                "profitK": -2200
-              },
-              "62": {
-                "mult": 4,
-                "hits": 0,
-                "stakeK": 8800,
-                "payoutK": 0,
-                "profitK": -8800
-              },
-              "64": {
-                "mult": 2,
-                "hits": 2,
-                "stakeK": 4400,
-                "payoutK": 32000,
-                "profitK": 27600
-              },
-              "75": {
-                "mult": 3,
-                "hits": 0,
-                "stakeK": 6600,
-                "payoutK": 0,
-                "profitK": -6600
-              },
-              "87": {
-                "mult": 1,
-                "hits": 0,
-                "stakeK": 2200,
-                "payoutK": 0,
-                "profitK": -2200
-              },
-              "99": {
-                "mult": 1,
-                "hits": 0,
-                "stakeK": 2200,
-                "payoutK": 0,
-                "profitK": -2200
-              }
-            },
-            "numbers": [
-              "24",
-              "33",
-              "34",
-              "35",
-              "38",
-              "44",
-              "52",
-              "54",
-              "59",
-              "62",
-              "64",
-              "75",
-              "87",
-              "99"
-            ],
-            "count": 14,
-            "stakeK": 66000,
-            "payoutK": 72000,
-            "profitK": 6000,
-            "isWin": true
-          },
-          "deTiered": {
-            "isHit": false,
-            "hitNumber": null,
-            "hitTier": null,
-            "isHitX2": false,
-            "isHitX1": false,
-            "x2Nums": [
-              "09",
-              "21",
-              "22",
-              "24",
-              "32",
-              "36",
-              "38",
-              "39",
-              "42",
-              "44",
-              "51",
-              "54",
-              "60",
-              "65",
-              "67",
-              "70",
-              "83",
-              "96"
-            ],
-            "x1Nums": [
-              "34",
-              "58",
-              "66",
-              "91",
-              "98"
-            ],
-            "countX2": 18,
-            "countX1": 5,
-            "totalCount": 23,
-            "stakeK": 41000,
-            "payoutK": 0,
-            "profitK": -41000,
-            "isWin": false
-          },
-          "loTiered": {
-            "hits": 5,
-            "hitNumbers": [
-              "24",
-              "34",
-              "44",
-              "64"
-            ],
-            "breakdown": {
-              "24": {
-                "mult": 1,
-                "hits": 1,
-                "stakeK": 2200,
-                "payoutK": 8000,
-                "profitK": 5800
-              },
-              "33": {
-                "mult": 2,
-                "hits": 0,
-                "stakeK": 4400,
-                "payoutK": 0,
-                "profitK": -4400
-              },
-              "34": {
-                "mult": 3,
-                "hits": 1,
-                "stakeK": 6600,
-                "payoutK": 24000,
-                "profitK": 17400
-              },
-              "35": {
-                "mult": 3,
-                "hits": 0,
-                "stakeK": 6600,
-                "payoutK": 0,
-                "profitK": -6600
-              },
-              "38": {
-                "mult": 3,
-                "hits": 0,
-                "stakeK": 6600,
-                "payoutK": 0,
-                "profitK": -6600
-              },
-              "44": {
-                "mult": 1,
-                "hits": 1,
-                "stakeK": 2200,
-                "payoutK": 8000,
-                "profitK": 5800
-              },
-              "52": {
-                "mult": 4,
-                "hits": 0,
-                "stakeK": 8800,
-                "payoutK": 0,
-                "profitK": -8800
-              },
-              "54": {
-                "mult": 1,
-                "hits": 0,
-                "stakeK": 2200,
-                "payoutK": 0,
-                "profitK": -2200
-              },
-              "59": {
-                "mult": 1,
-                "hits": 0,
-                "stakeK": 2200,
-                "payoutK": 0,
-                "profitK": -2200
-              },
-              "62": {
-                "mult": 4,
-                "hits": 0,
-                "stakeK": 8800,
-                "payoutK": 0,
-                "profitK": -8800
-              },
-              "64": {
-                "mult": 2,
-                "hits": 2,
-                "stakeK": 4400,
-                "payoutK": 32000,
-                "profitK": 27600
-              },
-              "75": {
-                "mult": 3,
-                "hits": 0,
-                "stakeK": 6600,
-                "payoutK": 0,
-                "profitK": -6600
-              },
-              "87": {
-                "mult": 1,
-                "hits": 0,
-                "stakeK": 2200,
-                "payoutK": 0,
-                "profitK": -2200
-              },
-              "99": {
-                "mult": 1,
-                "hits": 0,
-                "stakeK": 2200,
-                "payoutK": 0,
-                "profitK": -2200
-              }
-            },
-            "numbers": [
-              "24",
-              "33",
-              "34",
-              "35",
-              "38",
-              "44",
-              "52",
-              "54",
-              "59",
-              "62",
-              "64",
-              "75",
-              "87",
-              "99"
-            ],
-            "count": 14,
-            "stakeK": 66000,
-            "payoutK": 72000,
-            "profitK": 6000,
-            "isWin": true
-          },
-          "flat": {
-            "de": {
-              "isHit": false,
-              "hitNumber": null,
-              "numbers": [
-                "09",
-                "21",
-                "22",
-                "24",
-                "32",
-                "36",
-                "38",
-                "39",
-                "42",
-                "44",
-                "51",
-                "54",
-                "58",
-                "60",
-                "65",
-                "67",
-                "70",
-                "83",
-                "96",
-                "98"
-              ],
-              "count": 20,
-              "stakeK": 20000,
-              "payoutK": 0,
-              "profitK": -20000,
-              "isWin": false
-            },
-            "lo": {
-              "hits": 1,
-              "hitMap": {
-                "34": 1
-              },
-              "hitNumbers": [
-                "34"
-              ],
-              "numbers": [
-                "34",
-                "35",
-                "38",
-                "52",
-                "62",
-                "75"
-              ],
-              "count": 6,
-              "stakeK": 13200,
-              "payoutK": 8000,
-              "profitK": -5200,
-              "isWin": false
-            },
-            "totalStakeK": 33200,
-            "totalPayoutK": 8000,
-            "totalProfitK": -25200,
-            "isWin": false
-          },
-          "consensusDetails": {
-            "deTiers": {
-              "x2Nums": [
-                "09",
-                "21",
-                "22",
-                "24",
-                "32",
-                "36",
-                "38",
-                "39",
-                "42",
-                "44",
-                "51",
-                "54",
-                "60",
-                "65",
-                "67",
-                "70",
-                "83",
-                "96"
-              ],
-              "x1Nums": [
-                "34",
-                "58",
-                "66",
-                "91",
-                "98"
-              ],
-              "tier5": [
-                "09",
-                "22",
-                "32",
-                "38",
-                "39",
-                "54",
-                "60",
-                "96"
-              ],
-              "tier4": [
-                "21",
-                "24",
-                "36",
-                "42",
-                "44",
-                "51",
-                "65",
-                "67",
-                "70",
-                "83"
-              ],
-              "tier3": [
-                "58",
-                "98"
-              ],
-              "tier2": [
-                "34",
-                "66",
-                "91"
-              ],
-              "tier1": [
-                "00",
-                "01",
-                "08",
-                "15",
-                "17",
-                "23",
-                "37",
-                "59"
-              ]
-            },
-            "loTiers": {
-              "x5Nums": [],
-              "x4Nums": [
-                "52",
-                "62"
-              ],
-              "x3Nums": [
-                "34",
-                "35",
-                "38",
-                "75"
-              ],
-              "x2Nums": [
-                "33",
-                "64"
-              ],
-              "x1Nums": [
-                "24",
-                "44",
-                "54",
-                "59",
-                "87",
-                "99"
-              ]
-            },
-            "deVotesMap": {
-              "15": {
-                "count": 1,
-                "models": [
-                  "muse"
-                ]
-              },
-              "17": {
-                "count": 1,
-                "models": [
-                  "muse"
-                ]
-              },
-              "21": {
-                "count": 4,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "grok"
-                ]
-              },
-              "22": {
-                "count": 5,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "grok",
-                  "muse"
-                ]
-              },
-              "23": {
-                "count": 1,
-                "models": [
-                  "grok"
-                ]
-              },
-              "24": {
-                "count": 4,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "muse"
-                ]
-              },
-              "32": {
-                "count": 5,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "grok",
-                  "muse"
-                ]
-              },
-              "34": {
-                "count": 2,
-                "models": [
-                  "grok",
-                  "muse"
-                ]
-              },
-              "36": {
-                "count": 4,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "muse"
-                ]
-              },
-              "37": {
-                "count": 1,
-                "models": [
-                  "grok"
-                ]
-              },
-              "38": {
-                "count": 5,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "grok",
-                  "muse"
-                ]
-              },
-              "39": {
-                "count": 5,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "grok",
-                  "muse"
-                ]
-              },
-              "42": {
-                "count": 4,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "grok"
-                ]
-              },
-              "44": {
-                "count": 4,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "grok"
-                ]
-              },
-              "51": {
-                "count": 4,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "grok"
-                ]
-              },
-              "54": {
-                "count": 5,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "grok",
-                  "muse"
-                ]
-              },
-              "58": {
-                "count": 3,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini"
-                ]
-              },
-              "59": {
-                "count": 1,
-                "models": [
-                  "muse"
-                ]
-              },
-              "60": {
-                "count": 5,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "grok",
-                  "muse"
-                ]
-              },
-              "65": {
-                "count": 4,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "muse"
-                ]
-              },
-              "66": {
-                "count": 2,
-                "models": [
-                  "grok",
-                  "muse"
-                ]
-              },
-              "67": {
-                "count": 4,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "grok"
-                ]
-              },
-              "70": {
-                "count": 4,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "muse"
-                ]
-              },
-              "83": {
-                "count": 4,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "grok"
-                ]
-              },
-              "91": {
-                "count": 2,
-                "models": [
-                  "grok",
-                  "muse"
-                ]
-              },
-              "96": {
-                "count": 5,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "grok",
-                  "muse"
-                ]
-              },
-              "98": {
-                "count": 3,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini"
-                ]
-              },
-              "09": {
-                "count": 5,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "grok",
-                  "muse"
-                ]
-              },
-              "00": {
-                "count": 1,
-                "models": [
-                  "grok"
-                ]
-              },
-              "01": {
-                "count": 1,
-                "models": [
-                  "muse"
-                ]
-              },
-              "08": {
-                "count": 1,
-                "models": [
-                  "muse"
-                ]
-              }
-            },
-            "loVotesMap": {
-              "24": {
-                "count": 1,
-                "models": [
-                  "muse"
-                ]
-              },
-              "33": {
-                "count": 2,
-                "models": [
-                  "chatgpt",
-                  "gemini"
-                ]
-              },
-              "34": {
-                "count": 3,
-                "models": [
-                  "chatgpt",
-                  "gemini",
-                  "grok"
-                ]
-              },
-              "35": {
-                "count": 3,
-                "models": [
-                  "chatgpt",
-                  "gemini",
-                  "grok"
-                ]
-              },
-              "38": {
-                "count": 3,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "muse"
-                ]
-              },
-              "44": {
-                "count": 1,
-                "models": [
-                  "muse"
-                ]
-              },
-              "52": {
-                "count": 4,
-                "models": [
-                  "chatgpt",
-                  "deepseek",
-                  "gemini",
-                  "muse"
-                ]
-              },
-              "54": {
-                "count": 1,
-                "models": [
-                  "deepseek"
-                ]
-              },
-              "59": {
-                "count": 1,
-                "models": [
-                  "deepseek"
-                ]
-              },
-              "62": {
-                "count": 4,
-                "models": [
-                  "deepseek",
-                  "gemini",
-                  "grok",
-                  "muse"
-                ]
-              },
-              "64": {
-                "count": 2,
-                "models": [
-                  "deepseek",
-                  "muse"
-                ]
-              },
-              "75": {
-                "count": 3,
-                "models": [
-                  "chatgpt",
-                  "gemini",
-                  "grok"
-                ]
-              },
-              "87": {
-                "count": 1,
-                "models": [
-                  "grok"
-                ]
-              },
-              "99": {
-                "count": 1,
-                "models": [
-                  "grok"
-                ]
-              }
-            },
-            "loMultiplierMap": {
-              "24": 1,
-              "33": 2,
-              "34": 3,
-              "35": 3,
-              "38": 3,
-              "44": 1,
-              "52": 4,
-              "54": 1,
-              "59": 1,
-              "62": 4,
-              "64": 2,
-              "75": 3,
-              "87": 1,
-              "99": 1
-            },
-            "loHighConsensus": [
-              "33",
-              "34",
-              "35",
-              "38",
-              "52",
-              "62",
-              "64",
-              "75"
-            ],
-            "loAllTiers": [
-              "24",
-              "33",
-              "34",
-              "35",
-              "38",
-              "44",
-              "52",
-              "54",
-              "59",
-              "62",
-              "64",
-              "75",
-              "87",
-              "99"
-            ]
-          },
-          "totalStakeK": 107000,
-          "totalPayoutK": 72000,
-          "totalProfitK": -35000,
-          "isWin": false,
-          "tieredStakeK": 107000,
-          "tieredPayoutK": 72000,
-          "tieredProfitK": -35000,
-          "isTieredWin": false
-        }
-      },
-      "sources": {
-        "chatgpt": {
-          "de": [
-            "36",
-            "70",
-            "65",
-            "39",
-            "32",
-            "60",
-            "24",
-            "09",
-            "38",
-            "54",
-            "96",
-            "83",
-            "67",
-            "22",
-            "21",
-            "44",
-            "42",
-            "51",
-            "98",
-            "58"
-          ],
-          "lo": [
-            "52",
-            "38",
-            "34",
-            "75",
-            "35",
-            "33"
-          ],
-          "method": "AI phân tích",
-          "notes": "Trả đủ 20+6 sau khi hỏi lại qua câu hỏi của trình duyệt (lượt đầu kẹt vì không đọc được file prompt; đã gửi lại prompt đã sửa với kết quả đúng 30/10 ĐB 69259).",
-          "status": "ok"
-        },
-        "gemini": {
-          "de": [
-            "09",
-            "21",
-            "22",
-            "24",
-            "32",
-            "36",
-            "38",
-            "39",
-            "42",
-            "44",
-            "51",
-            "54",
-            "58",
-            "60",
-            "65",
-            "67",
-            "70",
-            "83",
-            "96",
-            "98"
-          ],
-          "lo": [
-            "33",
-            "34",
-            "35",
-            "52",
-            "62",
-            "75"
-          ],
-          "method": "AI phân tích",
-          "notes": "Hỏi bù sau khi Chung đăng nhập lại Gemini sáng 31/10 (tối 30/10 thiếu do hết phiên).",
-          "status": "ok"
-        },
-        "grok": {
-          "de": [
-            "38",
-            "54",
-            "96",
-            "32",
-            "22",
-            "83",
-            "44",
-            "51",
-            "67",
-            "42",
-            "21",
-            "23",
-            "39",
-            "60",
-            "09",
-            "66",
-            "91",
-            "34",
-            "37",
-            "00"
-          ],
-          "lo": [
-            "34",
-            "35",
-            "75",
-            "62",
-            "99",
-            "87"
-          ],
-          "method": "AI phân tích",
-          "notes": "Trả đủ 20+6 sau khi hỏi lại qua câu hỏi của trình duyệt (lượt đầu kẹt vì không đọc được file prompt; đã gửi lại prompt đã sửa với kết quả đúng 30/10 ĐB 69259). Lần thử đầu bị từ chối: \"High Demand — Grok is under heavy usage right now. Please try again later or upgrade your plan to get priority access.\"; lần thử thứ hai ở chat mới thành công.",
-          "status": "ok"
-        },
-        "deepseek": {
-          "de": [
-            "36",
-            "70",
-            "65",
-            "39",
-            "32",
-            "60",
-            "24",
-            "09",
-            "38",
-            "54",
-            "96",
-            "83",
-            "67",
-            "22",
-            "21",
-            "44",
-            "42",
-            "51",
-            "98",
-            "58"
-          ],
-          "lo": [
-            "62",
-            "38",
-            "52",
-            "59",
-            "54",
-            "64"
-          ],
-          "method": "AI phân tích",
-          "notes": "Trả đủ 20+6 ngay lần đầu, không báo Server busy.",
-          "status": "ok"
-        },
-        "muse": {
-          "de": [
-            "01",
-            "08",
-            "09",
-            "15",
-            "17",
-            "22",
-            "24",
-            "32",
-            "34",
-            "36",
-            "38",
-            "39",
-            "54",
-            "59",
-            "60",
-            "65",
-            "66",
-            "70",
-            "91",
-            "96"
-          ],
-          "lo": [
-            "24",
-            "38",
-            "44",
-            "52",
-            "62",
-            "64"
-          ],
-          "method": "Công thức điểm tần suất (xem meta.museMethod), dữ liệu 7.599 kỳ tới 30/10/2026",
-          "notes": "",
-          "status": "ok"
-        }
-      },
-      "special": "57",
-      "resultsTiered": {
-        "consensus": {
-          "de": {
-            "isHit": false,
-            "hitNumber": null,
-            "hitTier": null,
-            "isHitX2": false,
-            "isHitX1": false,
-            "x2Nums": [
-              "09",
-              "21",
-              "22",
-              "24",
-              "32",
-              "36",
-              "38",
-              "39",
-              "42",
-              "44",
-              "51",
-              "54",
-              "60",
-              "65",
-              "67",
-              "70",
-              "83",
-              "96"
-            ],
-            "x1Nums": [
-              "34",
-              "58",
-              "66",
-              "91",
-              "98"
-            ],
-            "countX2": 18,
-            "countX1": 5,
-            "totalCount": 23,
-            "stakeK": 41000,
-            "payoutK": 0,
-            "profitK": -41000,
-            "isWin": false
-          },
-          "lo": {
-            "hits": 5,
-            "hitNumbers": [
-              "24",
-              "34",
-              "44",
-              "64"
-            ],
-            "breakdown": {
-              "24": {
-                "mult": 1,
-                "hits": 1,
-                "stakeK": 2200,
-                "payoutK": 8000,
-                "profitK": 5800
-              },
-              "33": {
-                "mult": 2,
-                "hits": 0,
-                "stakeK": 4400,
-                "payoutK": 0,
-                "profitK": -4400
-              },
-              "34": {
-                "mult": 3,
-                "hits": 1,
-                "stakeK": 6600,
-                "payoutK": 24000,
-                "profitK": 17400
-              },
-              "35": {
-                "mult": 3,
-                "hits": 0,
-                "stakeK": 6600,
-                "payoutK": 0,
-                "profitK": -6600
-              },
-              "38": {
-                "mult": 3,
-                "hits": 0,
-                "stakeK": 6600,
-                "payoutK": 0,
-                "profitK": -6600
-              },
-              "44": {
-                "mult": 1,
-                "hits": 1,
-                "stakeK": 2200,
-                "payoutK": 8000,
-                "profitK": 5800
-              },
-              "52": {
-                "mult": 4,
-                "hits": 0,
-                "stakeK": 8800,
-                "payoutK": 0,
-                "profitK": -8800
-              },
-              "54": {
-                "mult": 1,
-                "hits": 0,
-                "stakeK": 2200,
-                "payoutK": 0,
-                "profitK": -2200
-              },
-              "59": {
-                "mult": 1,
-                "hits": 0,
-                "stakeK": 2200,
-                "payoutK": 0,
-                "profitK": -2200
-              },
-              "62": {
-                "mult": 4,
-                "hits": 0,
-                "stakeK": 8800,
-                "payoutK": 0,
-                "profitK": -8800
-              },
-              "64": {
-                "mult": 2,
-                "hits": 2,
-                "stakeK": 4400,
-                "payoutK": 32000,
-                "profitK": 27600
-              },
-              "75": {
-                "mult": 3,
-                "hits": 0,
-                "stakeK": 6600,
-                "payoutK": 0,
-                "profitK": -6600
-              },
-              "87": {
-                "mult": 1,
-                "hits": 0,
-                "stakeK": 2200,
-                "payoutK": 0,
-                "profitK": -2200
-              },
-              "99": {
-                "mult": 1,
-                "hits": 0,
-                "stakeK": 2200,
-                "payoutK": 0,
-                "profitK": -2200
-              }
-            },
-            "numbers": [
-              "24",
-              "33",
-              "34",
-              "35",
-              "38",
-              "44",
-              "52",
-              "54",
-              "59",
-              "62",
-              "64",
-              "75",
-              "87",
-              "99"
-            ],
-            "count": 14,
-            "stakeK": 66000,
-            "payoutK": 72000,
-            "profitK": 6000,
-            "isWin": true
-          },
-          "stakeK": 107000,
-          "payoutK": 72000,
-          "profitK": -35000,
-          "isWin": false
-        }
-      }
-    },
-    {
-      "date": "2026-11-01",
-      "sources": {
-        "chatgpt": {
-          "de": [
-            "07",
-            "09",
-            "21",
-            "22",
-            "24",
-            "32",
-            "36",
-            "38",
-            "39",
-            "42",
-            "44",
-            "51",
-            "58",
-            "60",
-            "65",
-            "67",
-            "70",
-            "83",
-            "96",
-            "98"
-          ],
-          "lo": [
-            "33",
-            "34",
-            "35",
-            "52",
-            "64",
-            "75"
-          ],
-          "method": "AI phân tích",
-          "status": "ok",
-          "notes": "Trả đủ 20+6, prompt kèm link GitHub + xosomienbac.net và thống kê tóm tắt (file tổng hợp không đính kèm được qua khung chat)."
-        },
-        "deepseek": {
-          "de": [
-            "09",
-            "21",
-            "22",
-            "24",
-            "31",
-            "32",
-            "36",
-            "38",
-            "39",
-            "42",
-            "44",
-            "51",
-            "58",
-            "60",
-            "65",
-            "67",
-            "70",
-            "83",
-            "96",
-            "98"
-          ],
-          "lo": [
-            "34",
-            "38",
-            "52",
-            "54",
-            "59",
-            "62"
-          ],
-          "method": "AI phân tích",
-          "status": "ok",
-          "notes": "Trả đủ 20+6 ngay lần đầu, không báo Server busy."
-        },
-        "gemini": {
-          "de": [
-            "04",
-            "09",
-            "21",
-            "22",
-            "24",
-            "32",
-            "34",
-            "36",
-            "38",
-            "39",
-            "42",
-            "44",
-            "46",
-            "51",
-            "60",
-            "64",
-            "65",
-            "67",
-            "70",
-            "96"
-          ],
-          "lo": [
-            "34",
-            "38",
-            "52",
-            "62",
-            "64",
-            "75"
-          ],
-          "method": "AI phân tích",
-          "status": "ok",
-          "notes": "Trả đủ 20+6, prompt kèm link GitHub + xosomienbac.net và thống kê tóm tắt (file tổng hợp không đính kèm được qua khung chat)."
-        },
-        "grok": {
-          "de": [],
-          "lo": [],
-          "method": "AI phân tích",
-          "status": "missing",
-          "notes": "chưa đăng nhập: kẹt Cloudflare \"Verify you are human\" (thử 2 lần không qua), sau khi trình duyệt thay môi trường thì Grok hiện trang Sign in/Sign up, gửi prompt chỉ hiện yêu cầu đăng ký, không trả số. Không nhập mật khẩu, không tạo tài khoản."
-        },
-        "muse": {
-          "de": [
-            "01",
-            "08",
-            "09",
-            "15",
-            "17",
-            "22",
-            "24",
-            "32",
-            "34",
-            "36",
-            "38",
-            "39",
-            "54",
-            "59",
-            "60",
-            "65",
-            "66",
-            "70",
-            "91",
-            "96"
-          ],
-          "lo": [
-            "24",
-            "38",
-            "44",
-            "52",
-            "62",
-            "64"
-          ],
-          "method": "Muse phân tích (công thức điểm tần suất)",
-          "status": "ok"
-        }
-      },
-      "rates": null
-    },
-    {
-      "date": "2026-11-02",
-      "sources": {
-        "chatgpt": {
-          "de": [],
-          "lo": []
-        },
-        "deepseek": {
-          "de": [],
-          "lo": []
-        },
-        "gemini": {
-          "de": [],
-          "lo": []
-        },
-        "grok": {
-          "de": [],
-          "lo": []
-        },
-        "muse": {
-          "de": [
-            "01",
-            "08",
-            "09",
-            "15",
-            "17",
-            "22",
-            "24",
-            "32",
-            "34",
-            "36",
-            "38",
-            "39",
-            "54",
-            "59",
-            "60",
-            "65",
-            "66",
-            "70",
-            "91",
-            "96"
-          ],
-          "lo": [
-            "24",
-            "38",
-            "44",
-            "52",
-            "62",
-            "64"
-          ]
-        }
-      }
-    }
-  ],
-  "meta": {
-    "aiMethod": "4 AI (ChatGPT, Gemini, Grok, DeepSeek) tự phân tích lịch sử JSON + kết quả mới nhất theo prompt (tần suất, 100 kỳ gần nhất, số kỳ chưa về, xu hướng) và tự chọn 20 Đề + 6 Lô theo phân tích của từng AI.",
-    "baselines": {
-      "deHitRate": 0.2,
-      "loHitsPerDay": 1.62,
-      "note": "Bộ 20+6: kỳ vọng Đề 20% ngày trúng, Lô 1,62 nháy/ngày ở 27 giải."
-    },
-    "createdAt": "2026-10-30 — lượt đầu: kỳ 30/10, tất cả 5 bộ đều khóa trước giờ quay 18:15.",
-    "honestyNote": "Mỗi số 00-99 đều có xác suất như nhau ở mỗi kỳ quay độc lập; 'phân tích' là tiêu chí chọn, không phải xác suất trúng thật đã được chứng minh cao hơn. Chỉ đo lường dài hạn mới cho biết bộ nào vượt baseline.",
-    "museMethod": "Muse phân tích bằng công thức điểm tần suất, tính lại mỗi ngày từ lịch sử mới nhất tới hôm qua: điểm Đề(n) = tần suất ĐB toàn lịch sử + 2 × tần suất ĐB 100 kỳ gần nhất; điểm Lô(n) = tần suất tổng 27 giải toàn lịch sử + 2 × tần suất tổng 27 giải 100 kỳ gần nhất; lấy top 20 Đề / top 6 Lô, hòa điểm lấy số nhỏ trước.",
-    "purpose": "Dataset cho trang thống kê mới về 5 AI: ChatGPT, Gemini, Grok, DeepSeek và Muse. Mỗi ngày 1 entry, mỗi nguồn 20 số Đề + 6 số Lô.",
-    "updateRule": "Lượt 18:40 hàng ngày (cron xsmb-ai-ask-1840): điền kết quả thật + điểm trúng/trượt của entry hôm nay, hỏi tiếp 4 AI cho ngày mai, tính bộ 20+6 của Muse bằng đúng công thức trên từ lịch sử mới nhất, ghi thêm entry ngày mai, cập nhật tỉ lệ lũy kế."
-  },
-  "summary": {
+ "days": [
+  {
+   "date": "2026-10-30",
+   "prizes27": [
+    "59",
+    "81",
+    "63",
+    "53",
+    "52",
+    "06",
+    "42",
+    "04",
+    "03",
+    "14",
+    "23",
+    "37",
+    "70",
+    "12",
+    "60",
+    "47",
+    "33",
+    "65",
+    "71",
+    "75",
+    "57",
+    "36",
+    "24",
+    "94",
+    "77",
+    "48",
+    "25"
+   ],
+   "rates": {
     "consensus": {
-      "id": "consensus",
-      "name": "Phương Pháp Gộp 5 AI",
-      "days": 2,
-      "de": {
-        "wins": 0,
-        "losses": 2,
-        "winRate": 0,
-        "stakeK": 82000,
-        "payoutK": 0,
-        "profitK": -82000,
-        "roi": -1,
-        "longestWin": 0,
-        "longestLoss": 2,
-        "currentWinStreak": 0,
-        "currentLossStreak": 2
-      },
-      "lo": {
-        "wins": 2,
-        "losses": 0,
-        "winRate": 1,
-        "totalHits": 10,
-        "avgHitsPerDay": 5,
-        "stakeK": 132000,
-        "payoutK": 168000,
-        "profitK": 36000,
-        "roi": 0.2727,
-        "longestWin": 2,
-        "longestLoss": 0,
-        "currentWinStreak": 2,
-        "currentLossStreak": 0
-      },
-      "combo": {
-        "wins": 0,
-        "winRate": 0,
-        "stakeK": 214000,
-        "payoutK": 168000,
-        "profitK": -46000,
-        "roi": -0.215
-      },
-      "deTiered": {
-        "wins": 0,
-        "losses": 2,
-        "winRate": 0,
-        "stakeK": 82000,
-        "payoutK": 0,
-        "profitK": -82000,
-        "roi": -1
-      },
-      "loTiered": {
-        "wins": 2,
-        "losses": 0,
-        "winRate": 1,
-        "totalHits": 10,
-        "stakeK": 132000,
-        "payoutK": 168000,
-        "profitK": 36000,
-        "roi": 0.2727
-      }
+     "days": 1,
+     "de": {
+      "wins": 0,
+      "losses": 1,
+      "winRate": 0,
+      "stakeK": 41000,
+      "payoutK": 0,
+      "profitK": -41000,
+      "roi": -1,
+      "longestWin": 0,
+      "longestLoss": 1,
+      "currentWinStreak": 0,
+      "currentLossStreak": 1
+     },
+     "lo": {
+      "wins": 1,
+      "losses": 0,
+      "winRate": 1,
+      "totalHits": 5,
+      "avgHitsPerDay": 5,
+      "stakeK": 66000,
+      "payoutK": 96000,
+      "profitK": 30000,
+      "roi": 0.4545,
+      "longestWin": 1,
+      "longestLoss": 0,
+      "currentWinStreak": 1,
+      "currentLossStreak": 0
+     },
+     "combo": {
+      "wins": 0,
+      "winRate": 0,
+      "stakeK": 107000,
+      "payoutK": 96000,
+      "profitK": -11000,
+      "roi": -0.1028
+     }
     },
     "chatgpt": {
-      "id": "chatgpt",
-      "name": "ChatGPT",
-      "days": 2,
-      "de": {
-        "wins": 0,
-        "losses": 2,
-        "winRate": 0,
-        "stakeK": 40000,
-        "payoutK": 0,
-        "profitK": -40000,
-        "roi": -1,
-        "longestWin": 0,
-        "longestLoss": 2,
-        "currentWinStreak": 0,
-        "currentLossStreak": 2
-      },
-      "lo": {
-        "wins": 1,
-        "losses": 1,
-        "winRate": 0.5,
-        "totalHits": 5,
-        "avgHitsPerDay": 2.5,
-        "stakeK": 26400,
-        "payoutK": 40000,
-        "profitK": 13600,
-        "roi": 0.5152,
-        "longestWin": 1,
-        "longestLoss": 1,
-        "currentWinStreak": 0,
-        "currentLossStreak": 1
-      },
-      "combo": {
-        "wins": 0,
-        "winRate": 0,
-        "stakeK": 66400,
-        "payoutK": 40000,
-        "profitK": -26400,
-        "roi": -0.3976
-      }
+     "days": 1,
+     "de": {
+      "wins": 0,
+      "losses": 1,
+      "winRate": 0,
+      "stakeK": 20000,
+      "payoutK": 0,
+      "profitK": -20000,
+      "roi": -1,
+      "longestWin": 0,
+      "longestLoss": 1,
+      "currentWinStreak": 0,
+      "currentLossStreak": 1
+     },
+     "lo": {
+      "wins": 1,
+      "losses": 0,
+      "winRate": 1,
+      "totalHits": 4,
+      "avgHitsPerDay": 4,
+      "stakeK": 13200,
+      "payoutK": 32000,
+      "profitK": 18800,
+      "roi": 1.4242,
+      "longestWin": 1,
+      "longestLoss": 0,
+      "currentWinStreak": 1,
+      "currentLossStreak": 0
+     },
+     "combo": {
+      "wins": 0,
+      "winRate": 0,
+      "stakeK": 33200,
+      "payoutK": 32000,
+      "profitK": -1200,
+      "roi": -0.0361
+     }
     },
     "deepseek": {
-      "id": "deepseek",
-      "name": "DeepSeek",
-      "days": 2,
-      "de": {
-        "wins": 0,
-        "losses": 2,
-        "winRate": 0,
-        "stakeK": 40000,
-        "payoutK": 0,
-        "profitK": -40000,
-        "roi": -1,
-        "longestWin": 0,
-        "longestLoss": 2,
-        "currentWinStreak": 0,
-        "currentLossStreak": 2
-      },
-      "lo": {
-        "wins": 2,
-        "losses": 0,
-        "winRate": 1,
-        "totalHits": 4,
-        "avgHitsPerDay": 2,
-        "stakeK": 26400,
-        "payoutK": 32000,
-        "profitK": 5600,
-        "roi": 0.2121,
-        "longestWin": 2,
-        "longestLoss": 0,
-        "currentWinStreak": 2,
-        "currentLossStreak": 0
-      },
-      "combo": {
-        "wins": 0,
-        "winRate": 0,
-        "stakeK": 66400,
-        "payoutK": 32000,
-        "profitK": -34400,
-        "roi": -0.5181
-      }
+     "days": 1,
+     "de": {
+      "wins": 0,
+      "losses": 1,
+      "winRate": 0,
+      "stakeK": 20000,
+      "payoutK": 0,
+      "profitK": -20000,
+      "roi": -1,
+      "longestWin": 0,
+      "longestLoss": 1,
+      "currentWinStreak": 0,
+      "currentLossStreak": 1
+     },
+     "lo": {
+      "wins": 1,
+      "losses": 0,
+      "winRate": 1,
+      "totalHits": 2,
+      "avgHitsPerDay": 2,
+      "stakeK": 13200,
+      "payoutK": 16000,
+      "profitK": 2800,
+      "roi": 0.2121,
+      "longestWin": 1,
+      "longestLoss": 0,
+      "currentWinStreak": 1,
+      "currentLossStreak": 0
+     },
+     "combo": {
+      "wins": 0,
+      "winRate": 0,
+      "stakeK": 33200,
+      "payoutK": 16000,
+      "profitK": -17200,
+      "roi": -0.5181
+     }
     },
     "gemini": {
-      "id": "gemini",
-      "name": "Gemini",
-      "days": 2,
-      "de": {
-        "wins": 0,
-        "losses": 2,
-        "winRate": 0,
-        "stakeK": 40000,
-        "payoutK": 0,
-        "profitK": -40000,
-        "roi": -1,
-        "longestWin": 0,
-        "longestLoss": 2,
-        "currentWinStreak": 0,
-        "currentLossStreak": 2
-      },
-      "lo": {
-        "wins": 1,
-        "losses": 1,
-        "winRate": 0.5,
-        "totalHits": 3,
-        "avgHitsPerDay": 1.5,
-        "stakeK": 26400,
-        "payoutK": 24000,
-        "profitK": -2400,
-        "roi": -0.0909,
-        "longestWin": 1,
-        "longestLoss": 1,
-        "currentWinStreak": 0,
-        "currentLossStreak": 1
-      },
-      "combo": {
-        "wins": 0,
-        "winRate": 0,
-        "stakeK": 66400,
-        "payoutK": 24000,
-        "profitK": -42400,
-        "roi": -0.6386
-      }
+     "days": 1,
+     "de": {
+      "wins": 0,
+      "losses": 1,
+      "winRate": 0,
+      "stakeK": 20000,
+      "payoutK": 0,
+      "profitK": -20000,
+      "roi": -1,
+      "longestWin": 0,
+      "longestLoss": 1,
+      "currentWinStreak": 0,
+      "currentLossStreak": 1
+     },
+     "lo": {
+      "wins": 1,
+      "losses": 0,
+      "winRate": 1,
+      "totalHits": 2,
+      "avgHitsPerDay": 2,
+      "stakeK": 13200,
+      "payoutK": 16000,
+      "profitK": 2800,
+      "roi": 0.2121,
+      "longestWin": 1,
+      "longestLoss": 0,
+      "currentWinStreak": 1,
+      "currentLossStreak": 0
+     },
+     "combo": {
+      "wins": 0,
+      "winRate": 0,
+      "stakeK": 33200,
+      "payoutK": 16000,
+      "profitK": -17200,
+      "roi": -0.5181
+     }
     },
     "grok": {
-      "id": "grok",
-      "name": "Grok",
-      "days": 2,
-      "de": {
-        "wins": 0,
-        "losses": 2,
-        "winRate": 0,
-        "stakeK": 40000,
-        "payoutK": 0,
-        "profitK": -40000,
-        "roi": -1,
-        "longestWin": 0,
-        "longestLoss": 2,
-        "currentWinStreak": 0,
-        "currentLossStreak": 2
-      },
-      "lo": {
-        "wins": 1,
-        "losses": 1,
-        "winRate": 0.5,
-        "totalHits": 4,
-        "avgHitsPerDay": 2,
-        "stakeK": 26400,
-        "payoutK": 32000,
-        "profitK": 5600,
-        "roi": 0.2121,
-        "longestWin": 1,
-        "longestLoss": 1,
-        "currentWinStreak": 0,
-        "currentLossStreak": 1
-      },
-      "combo": {
-        "wins": 0,
-        "winRate": 0,
-        "stakeK": 66400,
-        "payoutK": 32000,
-        "profitK": -34400,
-        "roi": -0.5181
-      }
+     "days": 1,
+     "de": {
+      "wins": 0,
+      "losses": 1,
+      "winRate": 0,
+      "stakeK": 20000,
+      "payoutK": 0,
+      "profitK": -20000,
+      "roi": -1,
+      "longestWin": 0,
+      "longestLoss": 1,
+      "currentWinStreak": 0,
+      "currentLossStreak": 1
+     },
+     "lo": {
+      "wins": 1,
+      "losses": 0,
+      "winRate": 1,
+      "totalHits": 3,
+      "avgHitsPerDay": 3,
+      "stakeK": 13200,
+      "payoutK": 24000,
+      "profitK": 10800,
+      "roi": 0.8182,
+      "longestWin": 1,
+      "longestLoss": 0,
+      "currentWinStreak": 1,
+      "currentLossStreak": 0
+     },
+     "combo": {
+      "wins": 0,
+      "winRate": 0,
+      "stakeK": 33200,
+      "payoutK": 24000,
+      "profitK": -9200,
+      "roi": -0.2771
+     }
     },
     "muse": {
-      "id": "muse",
-      "name": "Muse",
-      "days": 2,
-      "de": {
-        "wins": 0,
-        "losses": 2,
-        "winRate": 0,
-        "stakeK": 40000,
+     "days": 1,
+     "de": {
+      "wins": 0,
+      "losses": 1,
+      "winRate": 0,
+      "stakeK": 20000,
+      "payoutK": 0,
+      "profitK": -20000,
+      "roi": -1,
+      "longestWin": 0,
+      "longestLoss": 1,
+      "currentWinStreak": 0,
+      "currentLossStreak": 1
+     },
+     "lo": {
+      "wins": 0,
+      "losses": 1,
+      "winRate": 0,
+      "totalHits": 1,
+      "avgHitsPerDay": 1,
+      "stakeK": 13200,
+      "payoutK": 8000,
+      "profitK": -5200,
+      "roi": -0.3939,
+      "longestWin": 0,
+      "longestLoss": 1,
+      "currentWinStreak": 0,
+      "currentLossStreak": 1
+     },
+     "combo": {
+      "wins": 0,
+      "winRate": 0,
+      "stakeK": 33200,
+      "payoutK": 8000,
+      "profitK": -25200,
+      "roi": -0.759
+     }
+    }
+   },
+   "results": {
+    "chatgpt": {
+     "de": {
+      "isHit": false,
+      "hitNumber": null,
+      "numbers": [
+       "01",
+       "08",
+       "09",
+       "15",
+       "18",
+       "22",
+       "32",
+       "38",
+       "39",
+       "42",
+       "51",
+       "54",
+       "60",
+       "63",
+       "66",
+       "67",
+       "70",
+       "83",
+       "91",
+       "96"
+      ],
+      "count": 20,
+      "stakeK": 20000,
+      "payoutK": 0,
+      "profitK": -20000,
+      "isWin": false
+     },
+     "lo": {
+      "hits": 4,
+      "hitMap": {
+       "33": 1,
+       "52": 1,
+       "70": 1,
+       "75": 1
+      },
+      "hitNumbers": [
+       "33",
+       "52",
+       "70",
+       "75"
+      ],
+      "numbers": [
+       "33",
+       "44",
+       "52",
+       "62",
+       "70",
+       "75"
+      ],
+      "count": 6,
+      "stakeK": 13200,
+      "payoutK": 32000,
+      "profitK": 18800,
+      "isWin": true
+     },
+     "totalStakeK": 33200,
+     "totalPayoutK": 32000,
+     "totalProfitK": -1200,
+     "isWin": false
+    },
+    "deepseek": {
+     "de": {
+      "isHit": false,
+      "hitNumber": null,
+      "numbers": [
+       "01",
+       "02",
+       "07",
+       "08",
+       "09",
+       "15",
+       "17",
+       "24",
+       "31",
+       "32",
+       "36",
+       "39",
+       "54",
+       "58",
+       "60",
+       "65",
+       "66",
+       "70",
+       "91",
+       "98"
+      ],
+      "count": 20,
+      "stakeK": 20000,
+      "payoutK": 0,
+      "profitK": -20000,
+      "isWin": false
+     },
+     "lo": {
+      "hits": 2,
+      "hitMap": {
+       "52": 1,
+       "59": 1
+      },
+      "hitNumbers": [
+       "52",
+       "59"
+      ],
+      "numbers": [
+       "38",
+       "52",
+       "54",
+       "59",
+       "62",
+       "64"
+      ],
+      "count": 6,
+      "stakeK": 13200,
+      "payoutK": 16000,
+      "profitK": 2800,
+      "isWin": true
+     },
+     "totalStakeK": 33200,
+     "totalPayoutK": 16000,
+     "totalProfitK": -17200,
+     "isWin": false
+    },
+    "gemini": {
+     "de": {
+      "isHit": false,
+      "hitNumber": null,
+      "numbers": [
+       "07",
+       "09",
+       "15",
+       "17",
+       "22",
+       "24",
+       "28",
+       "31",
+       "32",
+       "36",
+       "38",
+       "39",
+       "44",
+       "54",
+       "58",
+       "60",
+       "65",
+       "66",
+       "70",
+       "91"
+      ],
+      "count": 20,
+      "stakeK": 20000,
+      "payoutK": 0,
+      "profitK": -20000,
+      "isWin": false
+     },
+     "lo": {
+      "hits": 2,
+      "hitMap": {
+       "52": 1,
+       "75": 1
+      },
+      "hitNumbers": [
+       "52",
+       "75"
+      ],
+      "numbers": [
+       "34",
+       "35",
+       "38",
+       "52",
+       "62",
+       "75"
+      ],
+      "count": 6,
+      "stakeK": 13200,
+      "payoutK": 16000,
+      "profitK": 2800,
+      "isWin": true
+     },
+     "totalStakeK": 33200,
+     "totalPayoutK": 16000,
+     "totalProfitK": -17200,
+     "isWin": false
+    },
+    "grok": {
+     "de": {
+      "isHit": false,
+      "hitNumber": null,
+      "numbers": [
+       "01",
+       "09",
+       "15",
+       "22",
+       "24",
+       "28",
+       "32",
+       "36",
+       "38",
+       "39",
+       "42",
+       "44",
+       "51",
+       "54",
+       "65",
+       "66",
+       "67",
+       "70",
+       "90",
+       "91"
+      ],
+      "count": 20,
+      "stakeK": 20000,
+      "payoutK": 0,
+      "profitK": -20000,
+      "isWin": false
+     },
+     "lo": {
+      "hits": 3,
+      "hitMap": {
+       "33": 1,
+       "52": 1,
+       "75": 1
+      },
+      "hitNumbers": [
+       "33",
+       "52",
+       "75"
+      ],
+      "numbers": [
+       "33",
+       "34",
+       "35",
+       "51",
+       "52",
+       "75"
+      ],
+      "count": 6,
+      "stakeK": 13200,
+      "payoutK": 24000,
+      "profitK": 10800,
+      "isWin": true
+     },
+     "totalStakeK": 33200,
+     "totalPayoutK": 24000,
+     "totalProfitK": -9200,
+     "isWin": false
+    },
+    "muse": {
+     "de": {
+      "isHit": false,
+      "hitNumber": null,
+      "numbers": [
+       "01",
+       "08",
+       "09",
+       "15",
+       "17",
+       "22",
+       "24",
+       "32",
+       "34",
+       "36",
+       "38",
+       "39",
+       "54",
+       "60",
+       "65",
+       "66",
+       "70",
+       "82",
+       "91",
+       "96"
+      ],
+      "count": 20,
+      "stakeK": 20000,
+      "payoutK": 0,
+      "profitK": -20000,
+      "isWin": false
+     },
+     "lo": {
+      "hits": 1,
+      "hitMap": {
+       "52": 1
+      },
+      "hitNumbers": [
+       "52"
+      ],
+      "numbers": [
+       "38",
+       "44",
+       "52",
+       "54",
+       "62",
+       "64"
+      ],
+      "count": 6,
+      "stakeK": 13200,
+      "payoutK": 8000,
+      "profitK": -5200,
+      "isWin": false
+     },
+     "totalStakeK": 33200,
+     "totalPayoutK": 8000,
+     "totalProfitK": -25200,
+     "isWin": false
+    },
+    "consensus": {
+     "de": {
+      "isHit": false,
+      "hitNumber": null,
+      "hitTier": null,
+      "isHitX2": false,
+      "isHitX1": false,
+      "x2Nums": [
+       "01",
+       "09",
+       "15",
+       "22",
+       "24",
+       "32",
+       "36",
+       "38",
+       "39",
+       "54",
+       "60",
+       "65",
+       "66",
+       "70",
+       "91"
+      ],
+      "x1Nums": [
+       "07",
+       "08",
+       "17",
+       "28",
+       "31",
+       "42",
+       "44",
+       "51",
+       "58",
+       "67",
+       "96"
+      ],
+      "countX2": 15,
+      "countX1": 11,
+      "totalCount": 26,
+      "stakeK": 41000,
+      "payoutK": 0,
+      "profitK": -41000,
+      "isWin": false
+     },
+     "lo": {
+      "hits": 5,
+      "hitNumbers": [
+       "33",
+       "52",
+       "59",
+       "70",
+       "75"
+      ],
+      "breakdown": {
+       "33": {
+        "mult": 2,
+        "hits": 1,
+        "stakeK": 4400,
+        "payoutK": 16000,
+        "profitK": 11600
+       },
+       "34": {
+        "mult": 2,
+        "hits": 0,
+        "stakeK": 4400,
         "payoutK": 0,
-        "profitK": -40000,
-        "roi": -1,
-        "longestWin": 0,
-        "longestLoss": 2,
-        "currentWinStreak": 0,
-        "currentLossStreak": 2
+        "profitK": -4400
+       },
+       "35": {
+        "mult": 2,
+        "hits": 0,
+        "stakeK": 4400,
+        "payoutK": 0,
+        "profitK": -4400
+       },
+       "38": {
+        "mult": 3,
+        "hits": 0,
+        "stakeK": 6600,
+        "payoutK": 0,
+        "profitK": -6600
+       },
+       "44": {
+        "mult": 2,
+        "hits": 0,
+        "stakeK": 4400,
+        "payoutK": 0,
+        "profitK": -4400
+       },
+       "51": {
+        "mult": 1,
+        "hits": 0,
+        "stakeK": 2200,
+        "payoutK": 0,
+        "profitK": -2200
+       },
+       "52": {
+        "mult": 5,
+        "hits": 1,
+        "stakeK": 11000,
+        "payoutK": 40000,
+        "profitK": 29000
+       },
+       "54": {
+        "mult": 2,
+        "hits": 0,
+        "stakeK": 4400,
+        "payoutK": 0,
+        "profitK": -4400
+       },
+       "59": {
+        "mult": 1,
+        "hits": 1,
+        "stakeK": 2200,
+        "payoutK": 8000,
+        "profitK": 5800
+       },
+       "62": {
+        "mult": 4,
+        "hits": 0,
+        "stakeK": 8800,
+        "payoutK": 0,
+        "profitK": -8800
+       },
+       "64": {
+        "mult": 2,
+        "hits": 0,
+        "stakeK": 4400,
+        "payoutK": 0,
+        "profitK": -4400
+       },
+       "70": {
+        "mult": 1,
+        "hits": 1,
+        "stakeK": 2200,
+        "payoutK": 8000,
+        "profitK": 5800
+       },
+       "75": {
+        "mult": 3,
+        "hits": 1,
+        "stakeK": 6600,
+        "payoutK": 24000,
+        "profitK": 17400
+       }
+      },
+      "numbers": [
+       "33",
+       "34",
+       "35",
+       "38",
+       "44",
+       "51",
+       "52",
+       "54",
+       "59",
+       "62",
+       "64",
+       "70",
+       "75"
+      ],
+      "count": 13,
+      "stakeK": 66000,
+      "payoutK": 96000,
+      "profitK": 30000,
+      "isWin": true
+     },
+     "deTiered": {
+      "isHit": false,
+      "hitNumber": null,
+      "hitTier": null,
+      "isHitX2": false,
+      "isHitX1": false,
+      "x2Nums": [
+       "01",
+       "09",
+       "15",
+       "22",
+       "24",
+       "32",
+       "36",
+       "38",
+       "39",
+       "54",
+       "60",
+       "65",
+       "66",
+       "70",
+       "91"
+      ],
+      "x1Nums": [
+       "07",
+       "08",
+       "17",
+       "28",
+       "31",
+       "42",
+       "44",
+       "51",
+       "58",
+       "67",
+       "96"
+      ],
+      "countX2": 15,
+      "countX1": 11,
+      "totalCount": 26,
+      "stakeK": 41000,
+      "payoutK": 0,
+      "profitK": -41000,
+      "isWin": false
+     },
+     "loTiered": {
+      "hits": 5,
+      "hitNumbers": [
+       "33",
+       "52",
+       "59",
+       "70",
+       "75"
+      ],
+      "breakdown": {
+       "33": {
+        "mult": 2,
+        "hits": 1,
+        "stakeK": 4400,
+        "payoutK": 16000,
+        "profitK": 11600
+       },
+       "34": {
+        "mult": 2,
+        "hits": 0,
+        "stakeK": 4400,
+        "payoutK": 0,
+        "profitK": -4400
+       },
+       "35": {
+        "mult": 2,
+        "hits": 0,
+        "stakeK": 4400,
+        "payoutK": 0,
+        "profitK": -4400
+       },
+       "38": {
+        "mult": 3,
+        "hits": 0,
+        "stakeK": 6600,
+        "payoutK": 0,
+        "profitK": -6600
+       },
+       "44": {
+        "mult": 2,
+        "hits": 0,
+        "stakeK": 4400,
+        "payoutK": 0,
+        "profitK": -4400
+       },
+       "51": {
+        "mult": 1,
+        "hits": 0,
+        "stakeK": 2200,
+        "payoutK": 0,
+        "profitK": -2200
+       },
+       "52": {
+        "mult": 5,
+        "hits": 1,
+        "stakeK": 11000,
+        "payoutK": 40000,
+        "profitK": 29000
+       },
+       "54": {
+        "mult": 2,
+        "hits": 0,
+        "stakeK": 4400,
+        "payoutK": 0,
+        "profitK": -4400
+       },
+       "59": {
+        "mult": 1,
+        "hits": 1,
+        "stakeK": 2200,
+        "payoutK": 8000,
+        "profitK": 5800
+       },
+       "62": {
+        "mult": 4,
+        "hits": 0,
+        "stakeK": 8800,
+        "payoutK": 0,
+        "profitK": -8800
+       },
+       "64": {
+        "mult": 2,
+        "hits": 0,
+        "stakeK": 4400,
+        "payoutK": 0,
+        "profitK": -4400
+       },
+       "70": {
+        "mult": 1,
+        "hits": 1,
+        "stakeK": 2200,
+        "payoutK": 8000,
+        "profitK": 5800
+       },
+       "75": {
+        "mult": 3,
+        "hits": 1,
+        "stakeK": 6600,
+        "payoutK": 24000,
+        "profitK": 17400
+       }
+      },
+      "numbers": [
+       "33",
+       "34",
+       "35",
+       "38",
+       "44",
+       "51",
+       "52",
+       "54",
+       "59",
+       "62",
+       "64",
+       "70",
+       "75"
+      ],
+      "count": 13,
+      "stakeK": 66000,
+      "payoutK": 96000,
+      "profitK": 30000,
+      "isWin": true
+     },
+     "flat": {
+      "de": {
+       "isHit": false,
+       "hitNumber": null,
+       "numbers": [
+        "01",
+        "07",
+        "08",
+        "09",
+        "15",
+        "17",
+        "22",
+        "24",
+        "28",
+        "31",
+        "32",
+        "36",
+        "38",
+        "39",
+        "54",
+        "60",
+        "65",
+        "66",
+        "70",
+        "91"
+       ],
+       "count": 20,
+       "stakeK": 20000,
+       "payoutK": 0,
+       "profitK": -20000,
+       "isWin": false
       },
       "lo": {
-        "wins": 1,
-        "losses": 1,
-        "winRate": 0.5,
-        "totalHits": 5,
-        "avgHitsPerDay": 2.5,
-        "stakeK": 26400,
-        "payoutK": 40000,
-        "profitK": 13600,
-        "roi": 0.5152,
-        "longestWin": 1,
-        "longestLoss": 1,
-        "currentWinStreak": 1,
-        "currentLossStreak": 0
+       "hits": 3,
+       "hitMap": {
+        "33": 1,
+        "52": 1,
+        "75": 1
+       },
+       "hitNumbers": [
+        "33",
+        "52",
+        "75"
+       ],
+       "numbers": [
+        "33",
+        "34",
+        "38",
+        "52",
+        "62",
+        "75"
+       ],
+       "count": 6,
+       "stakeK": 13200,
+       "payoutK": 24000,
+       "profitK": 10800,
+       "isWin": true
       },
-      "combo": {
-        "wins": 0,
-        "winRate": 0,
-        "stakeK": 66400,
-        "payoutK": 40000,
-        "profitK": -26400,
-        "roi": -0.3976
-      }
+      "totalStakeK": 33200,
+      "totalPayoutK": 24000,
+      "totalProfitK": -9200,
+      "isWin": false
+     },
+     "consensusDetails": {
+      "deTiers": {
+       "x2Nums": [
+        "01",
+        "09",
+        "15",
+        "22",
+        "24",
+        "32",
+        "36",
+        "38",
+        "39",
+        "54",
+        "60",
+        "65",
+        "66",
+        "70",
+        "91"
+       ],
+       "x1Nums": [
+        "07",
+        "08",
+        "17",
+        "28",
+        "31",
+        "42",
+        "44",
+        "51",
+        "58",
+        "67",
+        "96"
+       ],
+       "tier5": [
+        "09",
+        "15",
+        "32",
+        "39",
+        "54",
+        "66",
+        "70",
+        "91"
+       ],
+       "tier4": [
+        "01",
+        "22",
+        "24",
+        "36",
+        "38",
+        "60",
+        "65"
+       ],
+       "tier3": [
+        "08",
+        "17"
+       ],
+       "tier2": [
+        "07",
+        "28",
+        "31",
+        "42",
+        "44",
+        "51",
+        "58",
+        "67",
+        "96"
+       ],
+       "tier1": [
+        "02",
+        "18",
+        "34",
+        "63",
+        "82",
+        "83",
+        "90",
+        "98"
+       ]
+      },
+      "loTiers": {
+       "x5Nums": [
+        "52"
+       ],
+       "x4Nums": [
+        "62"
+       ],
+       "x3Nums": [
+        "38",
+        "75"
+       ],
+       "x2Nums": [
+        "33",
+        "34",
+        "35",
+        "44",
+        "54",
+        "64"
+       ],
+       "x1Nums": [
+        "51",
+        "59",
+        "70"
+       ]
+      },
+      "deVotesMap": {
+       "15": {
+        "count": 5,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "grok",
+         "muse"
+        ]
+       },
+       "17": {
+        "count": 3,
+        "models": [
+         "deepseek",
+         "gemini",
+         "muse"
+        ]
+       },
+       "18": {
+        "count": 1,
+        "models": [
+         "chatgpt"
+        ]
+       },
+       "22": {
+        "count": 4,
+        "models": [
+         "chatgpt",
+         "gemini",
+         "grok",
+         "muse"
+        ]
+       },
+       "24": {
+        "count": 4,
+        "models": [
+         "deepseek",
+         "gemini",
+         "grok",
+         "muse"
+        ]
+       },
+       "28": {
+        "count": 2,
+        "models": [
+         "gemini",
+         "grok"
+        ]
+       },
+       "31": {
+        "count": 2,
+        "models": [
+         "deepseek",
+         "gemini"
+        ]
+       },
+       "32": {
+        "count": 5,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "grok",
+         "muse"
+        ]
+       },
+       "34": {
+        "count": 1,
+        "models": [
+         "muse"
+        ]
+       },
+       "36": {
+        "count": 4,
+        "models": [
+         "deepseek",
+         "gemini",
+         "grok",
+         "muse"
+        ]
+       },
+       "38": {
+        "count": 4,
+        "models": [
+         "chatgpt",
+         "gemini",
+         "grok",
+         "muse"
+        ]
+       },
+       "39": {
+        "count": 5,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "grok",
+         "muse"
+        ]
+       },
+       "42": {
+        "count": 2,
+        "models": [
+         "chatgpt",
+         "grok"
+        ]
+       },
+       "44": {
+        "count": 2,
+        "models": [
+         "gemini",
+         "grok"
+        ]
+       },
+       "51": {
+        "count": 2,
+        "models": [
+         "chatgpt",
+         "grok"
+        ]
+       },
+       "54": {
+        "count": 5,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "grok",
+         "muse"
+        ]
+       },
+       "58": {
+        "count": 2,
+        "models": [
+         "deepseek",
+         "gemini"
+        ]
+       },
+       "60": {
+        "count": 4,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "muse"
+        ]
+       },
+       "63": {
+        "count": 1,
+        "models": [
+         "chatgpt"
+        ]
+       },
+       "65": {
+        "count": 4,
+        "models": [
+         "deepseek",
+         "gemini",
+         "grok",
+         "muse"
+        ]
+       },
+       "66": {
+        "count": 5,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "grok",
+         "muse"
+        ]
+       },
+       "67": {
+        "count": 2,
+        "models": [
+         "chatgpt",
+         "grok"
+        ]
+       },
+       "70": {
+        "count": 5,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "grok",
+         "muse"
+        ]
+       },
+       "82": {
+        "count": 1,
+        "models": [
+         "muse"
+        ]
+       },
+       "83": {
+        "count": 1,
+        "models": [
+         "chatgpt"
+        ]
+       },
+       "90": {
+        "count": 1,
+        "models": [
+         "grok"
+        ]
+       },
+       "91": {
+        "count": 5,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "grok",
+         "muse"
+        ]
+       },
+       "96": {
+        "count": 2,
+        "models": [
+         "chatgpt",
+         "muse"
+        ]
+       },
+       "98": {
+        "count": 1,
+        "models": [
+         "deepseek"
+        ]
+       },
+       "09": {
+        "count": 5,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "grok",
+         "muse"
+        ]
+       },
+       "01": {
+        "count": 4,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "grok",
+         "muse"
+        ]
+       },
+       "08": {
+        "count": 3,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "muse"
+        ]
+       },
+       "07": {
+        "count": 2,
+        "models": [
+         "deepseek",
+         "gemini"
+        ]
+       },
+       "02": {
+        "count": 1,
+        "models": [
+         "deepseek"
+        ]
+       }
+      },
+      "loVotesMap": {
+       "33": {
+        "count": 2,
+        "models": [
+         "chatgpt",
+         "grok"
+        ]
+       },
+       "34": {
+        "count": 2,
+        "models": [
+         "gemini",
+         "grok"
+        ]
+       },
+       "35": {
+        "count": 2,
+        "models": [
+         "gemini",
+         "grok"
+        ]
+       },
+       "38": {
+        "count": 3,
+        "models": [
+         "deepseek",
+         "gemini",
+         "muse"
+        ]
+       },
+       "44": {
+        "count": 2,
+        "models": [
+         "chatgpt",
+         "muse"
+        ]
+       },
+       "51": {
+        "count": 1,
+        "models": [
+         "grok"
+        ]
+       },
+       "52": {
+        "count": 5,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "grok",
+         "muse"
+        ]
+       },
+       "54": {
+        "count": 2,
+        "models": [
+         "deepseek",
+         "muse"
+        ]
+       },
+       "59": {
+        "count": 1,
+        "models": [
+         "deepseek"
+        ]
+       },
+       "62": {
+        "count": 4,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "muse"
+        ]
+       },
+       "64": {
+        "count": 2,
+        "models": [
+         "deepseek",
+         "muse"
+        ]
+       },
+       "70": {
+        "count": 1,
+        "models": [
+         "chatgpt"
+        ]
+       },
+       "75": {
+        "count": 3,
+        "models": [
+         "chatgpt",
+         "gemini",
+         "grok"
+        ]
+       }
+      },
+      "loMultiplierMap": {
+       "33": 2,
+       "34": 2,
+       "35": 2,
+       "38": 3,
+       "44": 2,
+       "51": 1,
+       "52": 5,
+       "54": 2,
+       "59": 1,
+       "62": 4,
+       "64": 2,
+       "70": 1,
+       "75": 3
+      },
+      "loHighConsensus": [
+       "33",
+       "34",
+       "35",
+       "38",
+       "44",
+       "52",
+       "54",
+       "62",
+       "64",
+       "75"
+      ],
+      "loAllTiers": [
+       "33",
+       "34",
+       "35",
+       "38",
+       "44",
+       "51",
+       "52",
+       "54",
+       "59",
+       "62",
+       "64",
+       "70",
+       "75"
+      ]
+     },
+     "totalStakeK": 107000,
+     "totalPayoutK": 96000,
+     "totalProfitK": -11000,
+     "isWin": false,
+     "tieredStakeK": 107000,
+     "tieredPayoutK": 96000,
+     "tieredProfitK": -11000,
+     "isTieredWin": false
     }
+   },
+   "sources": {
+    "chatgpt": {
+     "de": [
+      "01",
+      "08",
+      "09",
+      "15",
+      "18",
+      "22",
+      "32",
+      "38",
+      "39",
+      "42",
+      "51",
+      "54",
+      "60",
+      "63",
+      "66",
+      "67",
+      "70",
+      "83",
+      "91",
+      "96"
+     ],
+     "lo": [
+      "33",
+      "44",
+      "52",
+      "62",
+      "70",
+      "75"
+     ],
+     "method": "AI phân tích",
+     "notes": "Lần đầu báo chưa nhận được file nên không đoán, sau khi đính kèm file mới trả số.",
+     "status": "ok"
+    },
+    "deepseek": {
+     "de": [
+      "01",
+      "02",
+      "07",
+      "08",
+      "09",
+      "15",
+      "17",
+      "24",
+      "31",
+      "32",
+      "36",
+      "39",
+      "54",
+      "58",
+      "60",
+      "65",
+      "66",
+      "70",
+      "91",
+      "98"
+     ],
+     "lo": [
+      "38",
+      "52",
+      "54",
+      "59",
+      "62",
+      "64"
+     ],
+     "method": "AI phân tích",
+     "notes": "Chỉ đọc được 40% đầu file do giới hạn độ dài.",
+     "status": "ok"
+    },
+    "gemini": {
+     "de": [
+      "07",
+      "09",
+      "15",
+      "17",
+      "22",
+      "24",
+      "28",
+      "31",
+      "32",
+      "36",
+      "38",
+      "39",
+      "44",
+      "54",
+      "58",
+      "60",
+      "65",
+      "66",
+      "70",
+      "91"
+     ],
+     "lo": [
+      "34",
+      "35",
+      "38",
+      "52",
+      "62",
+      "75"
+     ],
+     "method": "AI phân tích",
+     "notes": "",
+     "status": "ok"
+    },
+    "grok": {
+     "de": [
+      "01",
+      "09",
+      "15",
+      "22",
+      "24",
+      "28",
+      "32",
+      "36",
+      "38",
+      "39",
+      "42",
+      "44",
+      "51",
+      "54",
+      "65",
+      "66",
+      "67",
+      "70",
+      "90",
+      "91"
+     ],
+     "lo": [
+      "33",
+      "34",
+      "35",
+      "51",
+      "52",
+      "75"
+     ],
+     "method": "AI phân tích",
+     "notes": "",
+     "status": "ok"
+    },
+    "muse": {
+     "de": [
+      "01",
+      "08",
+      "09",
+      "15",
+      "17",
+      "22",
+      "24",
+      "32",
+      "34",
+      "36",
+      "38",
+      "39",
+      "54",
+      "60",
+      "65",
+      "66",
+      "70",
+      "82",
+      "91",
+      "96"
+     ],
+     "lo": [
+      "38",
+      "44",
+      "52",
+      "54",
+      "62",
+      "64"
+     ],
+     "method": "Công thức điểm tần suất (xem meta.museMethod), dữ liệu 7.598 kỳ tới 29/10/2026",
+     "notes": "",
+     "status": "ok"
+    }
+   },
+   "special": "59",
+   "resultsTiered": {
+    "consensus": {
+     "de": {
+      "isHit": false,
+      "hitNumber": null,
+      "hitTier": null,
+      "isHitX2": false,
+      "isHitX1": false,
+      "x2Nums": [
+       "01",
+       "09",
+       "15",
+       "22",
+       "24",
+       "32",
+       "36",
+       "38",
+       "39",
+       "54",
+       "60",
+       "65",
+       "66",
+       "70",
+       "91"
+      ],
+      "x1Nums": [
+       "07",
+       "08",
+       "17",
+       "28",
+       "31",
+       "42",
+       "44",
+       "51",
+       "58",
+       "67",
+       "96"
+      ],
+      "countX2": 15,
+      "countX1": 11,
+      "totalCount": 26,
+      "stakeK": 41000,
+      "payoutK": 0,
+      "profitK": -41000,
+      "isWin": false
+     },
+     "lo": {
+      "hits": 5,
+      "hitNumbers": [
+       "33",
+       "52",
+       "59",
+       "70",
+       "75"
+      ],
+      "breakdown": {
+       "33": {
+        "mult": 2,
+        "hits": 1,
+        "stakeK": 4400,
+        "payoutK": 16000,
+        "profitK": 11600
+       },
+       "34": {
+        "mult": 2,
+        "hits": 0,
+        "stakeK": 4400,
+        "payoutK": 0,
+        "profitK": -4400
+       },
+       "35": {
+        "mult": 2,
+        "hits": 0,
+        "stakeK": 4400,
+        "payoutK": 0,
+        "profitK": -4400
+       },
+       "38": {
+        "mult": 3,
+        "hits": 0,
+        "stakeK": 6600,
+        "payoutK": 0,
+        "profitK": -6600
+       },
+       "44": {
+        "mult": 2,
+        "hits": 0,
+        "stakeK": 4400,
+        "payoutK": 0,
+        "profitK": -4400
+       },
+       "51": {
+        "mult": 1,
+        "hits": 0,
+        "stakeK": 2200,
+        "payoutK": 0,
+        "profitK": -2200
+       },
+       "52": {
+        "mult": 5,
+        "hits": 1,
+        "stakeK": 11000,
+        "payoutK": 40000,
+        "profitK": 29000
+       },
+       "54": {
+        "mult": 2,
+        "hits": 0,
+        "stakeK": 4400,
+        "payoutK": 0,
+        "profitK": -4400
+       },
+       "59": {
+        "mult": 1,
+        "hits": 1,
+        "stakeK": 2200,
+        "payoutK": 8000,
+        "profitK": 5800
+       },
+       "62": {
+        "mult": 4,
+        "hits": 0,
+        "stakeK": 8800,
+        "payoutK": 0,
+        "profitK": -8800
+       },
+       "64": {
+        "mult": 2,
+        "hits": 0,
+        "stakeK": 4400,
+        "payoutK": 0,
+        "profitK": -4400
+       },
+       "70": {
+        "mult": 1,
+        "hits": 1,
+        "stakeK": 2200,
+        "payoutK": 8000,
+        "profitK": 5800
+       },
+       "75": {
+        "mult": 3,
+        "hits": 1,
+        "stakeK": 6600,
+        "payoutK": 24000,
+        "profitK": 17400
+       }
+      },
+      "numbers": [
+       "33",
+       "34",
+       "35",
+       "38",
+       "44",
+       "51",
+       "52",
+       "54",
+       "59",
+       "62",
+       "64",
+       "70",
+       "75"
+      ],
+      "count": 13,
+      "stakeK": 66000,
+      "payoutK": 96000,
+      "profitK": 30000,
+      "isWin": true
+     },
+     "stakeK": 107000,
+     "payoutK": 96000,
+     "profitK": -11000,
+     "isWin": false
+    }
+   }
+  },
+  {
+   "date": "2026-10-31",
+   "prizes27": [
+    "57",
+    "48",
+    "64",
+    "97",
+    "44",
+    "04",
+    "08",
+    "24",
+    "14",
+    "28",
+    "40",
+    "70",
+    "64",
+    "70",
+    "34",
+    "51",
+    "36",
+    "97",
+    "55",
+    "20",
+    "46",
+    "32",
+    "47",
+    "78",
+    "53",
+    "31",
+    "46"
+   ],
+   "rates": {
+    "consensus": {
+     "days": 2,
+     "de": {
+      "wins": 0,
+      "losses": 2,
+      "winRate": 0,
+      "stakeK": 82000,
+      "payoutK": 0,
+      "profitK": -82000,
+      "roi": -1,
+      "longestWin": 0,
+      "longestLoss": 2,
+      "currentWinStreak": 0,
+      "currentLossStreak": 2
+     },
+     "lo": {
+      "wins": 2,
+      "losses": 0,
+      "winRate": 1,
+      "totalHits": 10,
+      "avgHitsPerDay": 5,
+      "stakeK": 132000,
+      "payoutK": 168000,
+      "profitK": 36000,
+      "roi": 0.2727,
+      "longestWin": 2,
+      "longestLoss": 0,
+      "currentWinStreak": 2,
+      "currentLossStreak": 0
+     },
+     "combo": {
+      "wins": 0,
+      "winRate": 0,
+      "stakeK": 214000,
+      "payoutK": 168000,
+      "profitK": -46000,
+      "roi": -0.215
+     }
+    },
+    "chatgpt": {
+     "days": 2,
+     "de": {
+      "wins": 0,
+      "losses": 2,
+      "winRate": 0,
+      "stakeK": 40000,
+      "payoutK": 0,
+      "profitK": -40000,
+      "roi": -1,
+      "longestWin": 0,
+      "longestLoss": 2,
+      "currentWinStreak": 0,
+      "currentLossStreak": 2
+     },
+     "lo": {
+      "wins": 1,
+      "losses": 1,
+      "winRate": 0.5,
+      "totalHits": 5,
+      "avgHitsPerDay": 2.5,
+      "stakeK": 26400,
+      "payoutK": 40000,
+      "profitK": 13600,
+      "roi": 0.5152,
+      "longestWin": 1,
+      "longestLoss": 1,
+      "currentWinStreak": 0,
+      "currentLossStreak": 1
+     },
+     "combo": {
+      "wins": 0,
+      "winRate": 0,
+      "stakeK": 66400,
+      "payoutK": 40000,
+      "profitK": -26400,
+      "roi": -0.3976
+     }
+    },
+    "deepseek": {
+     "days": 2,
+     "de": {
+      "wins": 0,
+      "losses": 2,
+      "winRate": 0,
+      "stakeK": 40000,
+      "payoutK": 0,
+      "profitK": -40000,
+      "roi": -1,
+      "longestWin": 0,
+      "longestLoss": 2,
+      "currentWinStreak": 0,
+      "currentLossStreak": 2
+     },
+     "lo": {
+      "wins": 2,
+      "losses": 0,
+      "winRate": 1,
+      "totalHits": 4,
+      "avgHitsPerDay": 2,
+      "stakeK": 26400,
+      "payoutK": 32000,
+      "profitK": 5600,
+      "roi": 0.2121,
+      "longestWin": 2,
+      "longestLoss": 0,
+      "currentWinStreak": 2,
+      "currentLossStreak": 0
+     },
+     "combo": {
+      "wins": 0,
+      "winRate": 0,
+      "stakeK": 66400,
+      "payoutK": 32000,
+      "profitK": -34400,
+      "roi": -0.5181
+     }
+    },
+    "gemini": {
+     "days": 2,
+     "de": {
+      "wins": 0,
+      "losses": 2,
+      "winRate": 0,
+      "stakeK": 40000,
+      "payoutK": 0,
+      "profitK": -40000,
+      "roi": -1,
+      "longestWin": 0,
+      "longestLoss": 2,
+      "currentWinStreak": 0,
+      "currentLossStreak": 2
+     },
+     "lo": {
+      "wins": 1,
+      "losses": 1,
+      "winRate": 0.5,
+      "totalHits": 3,
+      "avgHitsPerDay": 1.5,
+      "stakeK": 26400,
+      "payoutK": 24000,
+      "profitK": -2400,
+      "roi": -0.0909,
+      "longestWin": 1,
+      "longestLoss": 1,
+      "currentWinStreak": 0,
+      "currentLossStreak": 1
+     },
+     "combo": {
+      "wins": 0,
+      "winRate": 0,
+      "stakeK": 66400,
+      "payoutK": 24000,
+      "profitK": -42400,
+      "roi": -0.6386
+     }
+    },
+    "grok": {
+     "days": 2,
+     "de": {
+      "wins": 0,
+      "losses": 2,
+      "winRate": 0,
+      "stakeK": 40000,
+      "payoutK": 0,
+      "profitK": -40000,
+      "roi": -1,
+      "longestWin": 0,
+      "longestLoss": 2,
+      "currentWinStreak": 0,
+      "currentLossStreak": 2
+     },
+     "lo": {
+      "wins": 1,
+      "losses": 1,
+      "winRate": 0.5,
+      "totalHits": 4,
+      "avgHitsPerDay": 2,
+      "stakeK": 26400,
+      "payoutK": 32000,
+      "profitK": 5600,
+      "roi": 0.2121,
+      "longestWin": 1,
+      "longestLoss": 1,
+      "currentWinStreak": 0,
+      "currentLossStreak": 1
+     },
+     "combo": {
+      "wins": 0,
+      "winRate": 0,
+      "stakeK": 66400,
+      "payoutK": 32000,
+      "profitK": -34400,
+      "roi": -0.5181
+     }
+    },
+    "muse": {
+     "days": 2,
+     "de": {
+      "wins": 0,
+      "losses": 2,
+      "winRate": 0,
+      "stakeK": 40000,
+      "payoutK": 0,
+      "profitK": -40000,
+      "roi": -1,
+      "longestWin": 0,
+      "longestLoss": 2,
+      "currentWinStreak": 0,
+      "currentLossStreak": 2
+     },
+     "lo": {
+      "wins": 1,
+      "losses": 1,
+      "winRate": 0.5,
+      "totalHits": 5,
+      "avgHitsPerDay": 2.5,
+      "stakeK": 26400,
+      "payoutK": 40000,
+      "profitK": 13600,
+      "roi": 0.5152,
+      "longestWin": 1,
+      "longestLoss": 1,
+      "currentWinStreak": 1,
+      "currentLossStreak": 0
+     },
+     "combo": {
+      "wins": 0,
+      "winRate": 0,
+      "stakeK": 66400,
+      "payoutK": 40000,
+      "profitK": -26400,
+      "roi": -0.3976
+     }
+    }
+   },
+   "results": {
+    "chatgpt": {
+     "de": {
+      "isHit": false,
+      "hitNumber": null,
+      "numbers": [
+       "09",
+       "21",
+       "22",
+       "24",
+       "32",
+       "36",
+       "38",
+       "39",
+       "42",
+       "44",
+       "51",
+       "54",
+       "58",
+       "60",
+       "65",
+       "67",
+       "70",
+       "83",
+       "96",
+       "98"
+      ],
+      "count": 20,
+      "stakeK": 20000,
+      "payoutK": 0,
+      "profitK": -20000,
+      "isWin": false
+     },
+     "lo": {
+      "hits": 1,
+      "hitMap": {
+       "34": 1
+      },
+      "hitNumbers": [
+       "34"
+      ],
+      "numbers": [
+       "33",
+       "34",
+       "35",
+       "38",
+       "52",
+       "75"
+      ],
+      "count": 6,
+      "stakeK": 13200,
+      "payoutK": 8000,
+      "profitK": -5200,
+      "isWin": false
+     },
+     "totalStakeK": 33200,
+     "totalPayoutK": 8000,
+     "totalProfitK": -25200,
+     "isWin": false
+    },
+    "deepseek": {
+     "de": {
+      "isHit": false,
+      "hitNumber": null,
+      "numbers": [
+       "09",
+       "21",
+       "22",
+       "24",
+       "32",
+       "36",
+       "38",
+       "39",
+       "42",
+       "44",
+       "51",
+       "54",
+       "58",
+       "60",
+       "65",
+       "67",
+       "70",
+       "83",
+       "96",
+       "98"
+      ],
+      "count": 20,
+      "stakeK": 20000,
+      "payoutK": 0,
+      "profitK": -20000,
+      "isWin": false
+     },
+     "lo": {
+      "hits": 2,
+      "hitMap": {
+       "64": 2
+      },
+      "hitNumbers": [
+       "64"
+      ],
+      "numbers": [
+       "38",
+       "52",
+       "54",
+       "59",
+       "62",
+       "64"
+      ],
+      "count": 6,
+      "stakeK": 13200,
+      "payoutK": 16000,
+      "profitK": 2800,
+      "isWin": true
+     },
+     "totalStakeK": 33200,
+     "totalPayoutK": 16000,
+     "totalProfitK": -17200,
+     "isWin": false
+    },
+    "gemini": {
+     "de": {
+      "isHit": false,
+      "hitNumber": null,
+      "numbers": [
+       "09",
+       "21",
+       "22",
+       "24",
+       "32",
+       "36",
+       "38",
+       "39",
+       "42",
+       "44",
+       "51",
+       "54",
+       "58",
+       "60",
+       "65",
+       "67",
+       "70",
+       "83",
+       "96",
+       "98"
+      ],
+      "count": 20,
+      "stakeK": 20000,
+      "payoutK": 0,
+      "profitK": -20000,
+      "isWin": false
+     },
+     "lo": {
+      "hits": 1,
+      "hitMap": {
+       "34": 1
+      },
+      "hitNumbers": [
+       "34"
+      ],
+      "numbers": [
+       "33",
+       "34",
+       "35",
+       "52",
+       "62",
+       "75"
+      ],
+      "count": 6,
+      "stakeK": 13200,
+      "payoutK": 8000,
+      "profitK": -5200,
+      "isWin": false
+     },
+     "totalStakeK": 33200,
+     "totalPayoutK": 8000,
+     "totalProfitK": -25200,
+     "isWin": false
+    },
+    "grok": {
+     "de": {
+      "isHit": false,
+      "hitNumber": null,
+      "numbers": [
+       "00",
+       "09",
+       "21",
+       "22",
+       "23",
+       "32",
+       "34",
+       "37",
+       "38",
+       "39",
+       "42",
+       "44",
+       "51",
+       "54",
+       "60",
+       "66",
+       "67",
+       "83",
+       "91",
+       "96"
+      ],
+      "count": 20,
+      "stakeK": 20000,
+      "payoutK": 0,
+      "profitK": -20000,
+      "isWin": false
+     },
+     "lo": {
+      "hits": 1,
+      "hitMap": {
+       "34": 1
+      },
+      "hitNumbers": [
+       "34"
+      ],
+      "numbers": [
+       "34",
+       "35",
+       "62",
+       "75",
+       "87",
+       "99"
+      ],
+      "count": 6,
+      "stakeK": 13200,
+      "payoutK": 8000,
+      "profitK": -5200,
+      "isWin": false
+     },
+     "totalStakeK": 33200,
+     "totalPayoutK": 8000,
+     "totalProfitK": -25200,
+     "isWin": false
+    },
+    "muse": {
+     "de": {
+      "isHit": false,
+      "hitNumber": null,
+      "numbers": [
+       "01",
+       "08",
+       "09",
+       "15",
+       "17",
+       "22",
+       "24",
+       "32",
+       "34",
+       "36",
+       "38",
+       "39",
+       "54",
+       "59",
+       "60",
+       "65",
+       "66",
+       "70",
+       "91",
+       "96"
+      ],
+      "count": 20,
+      "stakeK": 20000,
+      "payoutK": 0,
+      "profitK": -20000,
+      "isWin": false
+     },
+     "lo": {
+      "hits": 4,
+      "hitMap": {
+       "24": 1,
+       "44": 1,
+       "64": 2
+      },
+      "hitNumbers": [
+       "24",
+       "44",
+       "64"
+      ],
+      "numbers": [
+       "24",
+       "38",
+       "44",
+       "52",
+       "62",
+       "64"
+      ],
+      "count": 6,
+      "stakeK": 13200,
+      "payoutK": 32000,
+      "profitK": 18800,
+      "isWin": true
+     },
+     "totalStakeK": 33200,
+     "totalPayoutK": 32000,
+     "totalProfitK": -1200,
+     "isWin": false
+    },
+    "consensus": {
+     "de": {
+      "isHit": false,
+      "hitNumber": null,
+      "hitTier": null,
+      "isHitX2": false,
+      "isHitX1": false,
+      "x2Nums": [
+       "09",
+       "21",
+       "22",
+       "24",
+       "32",
+       "36",
+       "38",
+       "39",
+       "42",
+       "44",
+       "51",
+       "54",
+       "60",
+       "65",
+       "67",
+       "70",
+       "83",
+       "96"
+      ],
+      "x1Nums": [
+       "34",
+       "58",
+       "66",
+       "91",
+       "98"
+      ],
+      "countX2": 18,
+      "countX1": 5,
+      "totalCount": 23,
+      "stakeK": 41000,
+      "payoutK": 0,
+      "profitK": -41000,
+      "isWin": false
+     },
+     "lo": {
+      "hits": 5,
+      "hitNumbers": [
+       "24",
+       "34",
+       "44",
+       "64"
+      ],
+      "breakdown": {
+       "24": {
+        "mult": 1,
+        "hits": 1,
+        "stakeK": 2200,
+        "payoutK": 8000,
+        "profitK": 5800
+       },
+       "33": {
+        "mult": 2,
+        "hits": 0,
+        "stakeK": 4400,
+        "payoutK": 0,
+        "profitK": -4400
+       },
+       "34": {
+        "mult": 3,
+        "hits": 1,
+        "stakeK": 6600,
+        "payoutK": 24000,
+        "profitK": 17400
+       },
+       "35": {
+        "mult": 3,
+        "hits": 0,
+        "stakeK": 6600,
+        "payoutK": 0,
+        "profitK": -6600
+       },
+       "38": {
+        "mult": 3,
+        "hits": 0,
+        "stakeK": 6600,
+        "payoutK": 0,
+        "profitK": -6600
+       },
+       "44": {
+        "mult": 1,
+        "hits": 1,
+        "stakeK": 2200,
+        "payoutK": 8000,
+        "profitK": 5800
+       },
+       "52": {
+        "mult": 4,
+        "hits": 0,
+        "stakeK": 8800,
+        "payoutK": 0,
+        "profitK": -8800
+       },
+       "54": {
+        "mult": 1,
+        "hits": 0,
+        "stakeK": 2200,
+        "payoutK": 0,
+        "profitK": -2200
+       },
+       "59": {
+        "mult": 1,
+        "hits": 0,
+        "stakeK": 2200,
+        "payoutK": 0,
+        "profitK": -2200
+       },
+       "62": {
+        "mult": 4,
+        "hits": 0,
+        "stakeK": 8800,
+        "payoutK": 0,
+        "profitK": -8800
+       },
+       "64": {
+        "mult": 2,
+        "hits": 2,
+        "stakeK": 4400,
+        "payoutK": 32000,
+        "profitK": 27600
+       },
+       "75": {
+        "mult": 3,
+        "hits": 0,
+        "stakeK": 6600,
+        "payoutK": 0,
+        "profitK": -6600
+       },
+       "87": {
+        "mult": 1,
+        "hits": 0,
+        "stakeK": 2200,
+        "payoutK": 0,
+        "profitK": -2200
+       },
+       "99": {
+        "mult": 1,
+        "hits": 0,
+        "stakeK": 2200,
+        "payoutK": 0,
+        "profitK": -2200
+       }
+      },
+      "numbers": [
+       "24",
+       "33",
+       "34",
+       "35",
+       "38",
+       "44",
+       "52",
+       "54",
+       "59",
+       "62",
+       "64",
+       "75",
+       "87",
+       "99"
+      ],
+      "count": 14,
+      "stakeK": 66000,
+      "payoutK": 72000,
+      "profitK": 6000,
+      "isWin": true
+     },
+     "deTiered": {
+      "isHit": false,
+      "hitNumber": null,
+      "hitTier": null,
+      "isHitX2": false,
+      "isHitX1": false,
+      "x2Nums": [
+       "09",
+       "21",
+       "22",
+       "24",
+       "32",
+       "36",
+       "38",
+       "39",
+       "42",
+       "44",
+       "51",
+       "54",
+       "60",
+       "65",
+       "67",
+       "70",
+       "83",
+       "96"
+      ],
+      "x1Nums": [
+       "34",
+       "58",
+       "66",
+       "91",
+       "98"
+      ],
+      "countX2": 18,
+      "countX1": 5,
+      "totalCount": 23,
+      "stakeK": 41000,
+      "payoutK": 0,
+      "profitK": -41000,
+      "isWin": false
+     },
+     "loTiered": {
+      "hits": 5,
+      "hitNumbers": [
+       "24",
+       "34",
+       "44",
+       "64"
+      ],
+      "breakdown": {
+       "24": {
+        "mult": 1,
+        "hits": 1,
+        "stakeK": 2200,
+        "payoutK": 8000,
+        "profitK": 5800
+       },
+       "33": {
+        "mult": 2,
+        "hits": 0,
+        "stakeK": 4400,
+        "payoutK": 0,
+        "profitK": -4400
+       },
+       "34": {
+        "mult": 3,
+        "hits": 1,
+        "stakeK": 6600,
+        "payoutK": 24000,
+        "profitK": 17400
+       },
+       "35": {
+        "mult": 3,
+        "hits": 0,
+        "stakeK": 6600,
+        "payoutK": 0,
+        "profitK": -6600
+       },
+       "38": {
+        "mult": 3,
+        "hits": 0,
+        "stakeK": 6600,
+        "payoutK": 0,
+        "profitK": -6600
+       },
+       "44": {
+        "mult": 1,
+        "hits": 1,
+        "stakeK": 2200,
+        "payoutK": 8000,
+        "profitK": 5800
+       },
+       "52": {
+        "mult": 4,
+        "hits": 0,
+        "stakeK": 8800,
+        "payoutK": 0,
+        "profitK": -8800
+       },
+       "54": {
+        "mult": 1,
+        "hits": 0,
+        "stakeK": 2200,
+        "payoutK": 0,
+        "profitK": -2200
+       },
+       "59": {
+        "mult": 1,
+        "hits": 0,
+        "stakeK": 2200,
+        "payoutK": 0,
+        "profitK": -2200
+       },
+       "62": {
+        "mult": 4,
+        "hits": 0,
+        "stakeK": 8800,
+        "payoutK": 0,
+        "profitK": -8800
+       },
+       "64": {
+        "mult": 2,
+        "hits": 2,
+        "stakeK": 4400,
+        "payoutK": 32000,
+        "profitK": 27600
+       },
+       "75": {
+        "mult": 3,
+        "hits": 0,
+        "stakeK": 6600,
+        "payoutK": 0,
+        "profitK": -6600
+       },
+       "87": {
+        "mult": 1,
+        "hits": 0,
+        "stakeK": 2200,
+        "payoutK": 0,
+        "profitK": -2200
+       },
+       "99": {
+        "mult": 1,
+        "hits": 0,
+        "stakeK": 2200,
+        "payoutK": 0,
+        "profitK": -2200
+       }
+      },
+      "numbers": [
+       "24",
+       "33",
+       "34",
+       "35",
+       "38",
+       "44",
+       "52",
+       "54",
+       "59",
+       "62",
+       "64",
+       "75",
+       "87",
+       "99"
+      ],
+      "count": 14,
+      "stakeK": 66000,
+      "payoutK": 72000,
+      "profitK": 6000,
+      "isWin": true
+     },
+     "flat": {
+      "de": {
+       "isHit": false,
+       "hitNumber": null,
+       "numbers": [
+        "09",
+        "21",
+        "22",
+        "24",
+        "32",
+        "36",
+        "38",
+        "39",
+        "42",
+        "44",
+        "51",
+        "54",
+        "58",
+        "60",
+        "65",
+        "67",
+        "70",
+        "83",
+        "96",
+        "98"
+       ],
+       "count": 20,
+       "stakeK": 20000,
+       "payoutK": 0,
+       "profitK": -20000,
+       "isWin": false
+      },
+      "lo": {
+       "hits": 1,
+       "hitMap": {
+        "34": 1
+       },
+       "hitNumbers": [
+        "34"
+       ],
+       "numbers": [
+        "34",
+        "35",
+        "38",
+        "52",
+        "62",
+        "75"
+       ],
+       "count": 6,
+       "stakeK": 13200,
+       "payoutK": 8000,
+       "profitK": -5200,
+       "isWin": false
+      },
+      "totalStakeK": 33200,
+      "totalPayoutK": 8000,
+      "totalProfitK": -25200,
+      "isWin": false
+     },
+     "consensusDetails": {
+      "deTiers": {
+       "x2Nums": [
+        "09",
+        "21",
+        "22",
+        "24",
+        "32",
+        "36",
+        "38",
+        "39",
+        "42",
+        "44",
+        "51",
+        "54",
+        "60",
+        "65",
+        "67",
+        "70",
+        "83",
+        "96"
+       ],
+       "x1Nums": [
+        "34",
+        "58",
+        "66",
+        "91",
+        "98"
+       ],
+       "tier5": [
+        "09",
+        "22",
+        "32",
+        "38",
+        "39",
+        "54",
+        "60",
+        "96"
+       ],
+       "tier4": [
+        "21",
+        "24",
+        "36",
+        "42",
+        "44",
+        "51",
+        "65",
+        "67",
+        "70",
+        "83"
+       ],
+       "tier3": [
+        "58",
+        "98"
+       ],
+       "tier2": [
+        "34",
+        "66",
+        "91"
+       ],
+       "tier1": [
+        "00",
+        "01",
+        "08",
+        "15",
+        "17",
+        "23",
+        "37",
+        "59"
+       ]
+      },
+      "loTiers": {
+       "x5Nums": [],
+       "x4Nums": [
+        "52",
+        "62"
+       ],
+       "x3Nums": [
+        "34",
+        "35",
+        "38",
+        "75"
+       ],
+       "x2Nums": [
+        "33",
+        "64"
+       ],
+       "x1Nums": [
+        "24",
+        "44",
+        "54",
+        "59",
+        "87",
+        "99"
+       ]
+      },
+      "deVotesMap": {
+       "15": {
+        "count": 1,
+        "models": [
+         "muse"
+        ]
+       },
+       "17": {
+        "count": 1,
+        "models": [
+         "muse"
+        ]
+       },
+       "21": {
+        "count": 4,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "grok"
+        ]
+       },
+       "22": {
+        "count": 5,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "grok",
+         "muse"
+        ]
+       },
+       "23": {
+        "count": 1,
+        "models": [
+         "grok"
+        ]
+       },
+       "24": {
+        "count": 4,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "muse"
+        ]
+       },
+       "32": {
+        "count": 5,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "grok",
+         "muse"
+        ]
+       },
+       "34": {
+        "count": 2,
+        "models": [
+         "grok",
+         "muse"
+        ]
+       },
+       "36": {
+        "count": 4,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "muse"
+        ]
+       },
+       "37": {
+        "count": 1,
+        "models": [
+         "grok"
+        ]
+       },
+       "38": {
+        "count": 5,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "grok",
+         "muse"
+        ]
+       },
+       "39": {
+        "count": 5,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "grok",
+         "muse"
+        ]
+       },
+       "42": {
+        "count": 4,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "grok"
+        ]
+       },
+       "44": {
+        "count": 4,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "grok"
+        ]
+       },
+       "51": {
+        "count": 4,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "grok"
+        ]
+       },
+       "54": {
+        "count": 5,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "grok",
+         "muse"
+        ]
+       },
+       "58": {
+        "count": 3,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini"
+        ]
+       },
+       "59": {
+        "count": 1,
+        "models": [
+         "muse"
+        ]
+       },
+       "60": {
+        "count": 5,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "grok",
+         "muse"
+        ]
+       },
+       "65": {
+        "count": 4,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "muse"
+        ]
+       },
+       "66": {
+        "count": 2,
+        "models": [
+         "grok",
+         "muse"
+        ]
+       },
+       "67": {
+        "count": 4,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "grok"
+        ]
+       },
+       "70": {
+        "count": 4,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "muse"
+        ]
+       },
+       "83": {
+        "count": 4,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "grok"
+        ]
+       },
+       "91": {
+        "count": 2,
+        "models": [
+         "grok",
+         "muse"
+        ]
+       },
+       "96": {
+        "count": 5,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "grok",
+         "muse"
+        ]
+       },
+       "98": {
+        "count": 3,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini"
+        ]
+       },
+       "09": {
+        "count": 5,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "grok",
+         "muse"
+        ]
+       },
+       "00": {
+        "count": 1,
+        "models": [
+         "grok"
+        ]
+       },
+       "01": {
+        "count": 1,
+        "models": [
+         "muse"
+        ]
+       },
+       "08": {
+        "count": 1,
+        "models": [
+         "muse"
+        ]
+       }
+      },
+      "loVotesMap": {
+       "24": {
+        "count": 1,
+        "models": [
+         "muse"
+        ]
+       },
+       "33": {
+        "count": 2,
+        "models": [
+         "chatgpt",
+         "gemini"
+        ]
+       },
+       "34": {
+        "count": 3,
+        "models": [
+         "chatgpt",
+         "gemini",
+         "grok"
+        ]
+       },
+       "35": {
+        "count": 3,
+        "models": [
+         "chatgpt",
+         "gemini",
+         "grok"
+        ]
+       },
+       "38": {
+        "count": 3,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "muse"
+        ]
+       },
+       "44": {
+        "count": 1,
+        "models": [
+         "muse"
+        ]
+       },
+       "52": {
+        "count": 4,
+        "models": [
+         "chatgpt",
+         "deepseek",
+         "gemini",
+         "muse"
+        ]
+       },
+       "54": {
+        "count": 1,
+        "models": [
+         "deepseek"
+        ]
+       },
+       "59": {
+        "count": 1,
+        "models": [
+         "deepseek"
+        ]
+       },
+       "62": {
+        "count": 4,
+        "models": [
+         "deepseek",
+         "gemini",
+         "grok",
+         "muse"
+        ]
+       },
+       "64": {
+        "count": 2,
+        "models": [
+         "deepseek",
+         "muse"
+        ]
+       },
+       "75": {
+        "count": 3,
+        "models": [
+         "chatgpt",
+         "gemini",
+         "grok"
+        ]
+       },
+       "87": {
+        "count": 1,
+        "models": [
+         "grok"
+        ]
+       },
+       "99": {
+        "count": 1,
+        "models": [
+         "grok"
+        ]
+       }
+      },
+      "loMultiplierMap": {
+       "24": 1,
+       "33": 2,
+       "34": 3,
+       "35": 3,
+       "38": 3,
+       "44": 1,
+       "52": 4,
+       "54": 1,
+       "59": 1,
+       "62": 4,
+       "64": 2,
+       "75": 3,
+       "87": 1,
+       "99": 1
+      },
+      "loHighConsensus": [
+       "33",
+       "34",
+       "35",
+       "38",
+       "52",
+       "62",
+       "64",
+       "75"
+      ],
+      "loAllTiers": [
+       "24",
+       "33",
+       "34",
+       "35",
+       "38",
+       "44",
+       "52",
+       "54",
+       "59",
+       "62",
+       "64",
+       "75",
+       "87",
+       "99"
+      ]
+     },
+     "totalStakeK": 107000,
+     "totalPayoutK": 72000,
+     "totalProfitK": -35000,
+     "isWin": false,
+     "tieredStakeK": 107000,
+     "tieredPayoutK": 72000,
+     "tieredProfitK": -35000,
+     "isTieredWin": false
+    }
+   },
+   "sources": {
+    "chatgpt": {
+     "de": [
+      "36",
+      "70",
+      "65",
+      "39",
+      "32",
+      "60",
+      "24",
+      "09",
+      "38",
+      "54",
+      "96",
+      "83",
+      "67",
+      "22",
+      "21",
+      "44",
+      "42",
+      "51",
+      "98",
+      "58"
+     ],
+     "lo": [
+      "52",
+      "38",
+      "34",
+      "75",
+      "35",
+      "33"
+     ],
+     "method": "AI phân tích",
+     "notes": "Trả đủ 20+6 sau khi hỏi lại qua câu hỏi của trình duyệt (lượt đầu kẹt vì không đọc được file prompt; đã gửi lại prompt đã sửa với kết quả đúng 30/10 ĐB 69259).",
+     "status": "ok"
+    },
+    "gemini": {
+     "de": [
+      "09",
+      "21",
+      "22",
+      "24",
+      "32",
+      "36",
+      "38",
+      "39",
+      "42",
+      "44",
+      "51",
+      "54",
+      "58",
+      "60",
+      "65",
+      "67",
+      "70",
+      "83",
+      "96",
+      "98"
+     ],
+     "lo": [
+      "33",
+      "34",
+      "35",
+      "52",
+      "62",
+      "75"
+     ],
+     "method": "AI phân tích",
+     "notes": "Hỏi bù sau khi Chung đăng nhập lại Gemini sáng 31/10 (tối 30/10 thiếu do hết phiên).",
+     "status": "ok"
+    },
+    "grok": {
+     "de": [
+      "38",
+      "54",
+      "96",
+      "32",
+      "22",
+      "83",
+      "44",
+      "51",
+      "67",
+      "42",
+      "21",
+      "23",
+      "39",
+      "60",
+      "09",
+      "66",
+      "91",
+      "34",
+      "37",
+      "00"
+     ],
+     "lo": [
+      "34",
+      "35",
+      "75",
+      "62",
+      "99",
+      "87"
+     ],
+     "method": "AI phân tích",
+     "notes": "Trả đủ 20+6 sau khi hỏi lại qua câu hỏi của trình duyệt (lượt đầu kẹt vì không đọc được file prompt; đã gửi lại prompt đã sửa với kết quả đúng 30/10 ĐB 69259). Lần thử đầu bị từ chối: \"High Demand — Grok is under heavy usage right now. Please try again later or upgrade your plan to get priority access.\"; lần thử thứ hai ở chat mới thành công.",
+     "status": "ok"
+    },
+    "deepseek": {
+     "de": [
+      "36",
+      "70",
+      "65",
+      "39",
+      "32",
+      "60",
+      "24",
+      "09",
+      "38",
+      "54",
+      "96",
+      "83",
+      "67",
+      "22",
+      "21",
+      "44",
+      "42",
+      "51",
+      "98",
+      "58"
+     ],
+     "lo": [
+      "62",
+      "38",
+      "52",
+      "59",
+      "54",
+      "64"
+     ],
+     "method": "AI phân tích",
+     "notes": "Trả đủ 20+6 ngay lần đầu, không báo Server busy.",
+     "status": "ok"
+    },
+    "muse": {
+     "de": [
+      "01",
+      "08",
+      "09",
+      "15",
+      "17",
+      "22",
+      "24",
+      "32",
+      "34",
+      "36",
+      "38",
+      "39",
+      "54",
+      "59",
+      "60",
+      "65",
+      "66",
+      "70",
+      "91",
+      "96"
+     ],
+     "lo": [
+      "24",
+      "38",
+      "44",
+      "52",
+      "62",
+      "64"
+     ],
+     "method": "Công thức điểm tần suất (xem meta.museMethod), dữ liệu 7.599 kỳ tới 30/10/2026",
+     "notes": "",
+     "status": "ok"
+    }
+   },
+   "special": "57",
+   "resultsTiered": {
+    "consensus": {
+     "de": {
+      "isHit": false,
+      "hitNumber": null,
+      "hitTier": null,
+      "isHitX2": false,
+      "isHitX1": false,
+      "x2Nums": [
+       "09",
+       "21",
+       "22",
+       "24",
+       "32",
+       "36",
+       "38",
+       "39",
+       "42",
+       "44",
+       "51",
+       "54",
+       "60",
+       "65",
+       "67",
+       "70",
+       "83",
+       "96"
+      ],
+      "x1Nums": [
+       "34",
+       "58",
+       "66",
+       "91",
+       "98"
+      ],
+      "countX2": 18,
+      "countX1": 5,
+      "totalCount": 23,
+      "stakeK": 41000,
+      "payoutK": 0,
+      "profitK": -41000,
+      "isWin": false
+     },
+     "lo": {
+      "hits": 5,
+      "hitNumbers": [
+       "24",
+       "34",
+       "44",
+       "64"
+      ],
+      "breakdown": {
+       "24": {
+        "mult": 1,
+        "hits": 1,
+        "stakeK": 2200,
+        "payoutK": 8000,
+        "profitK": 5800
+       },
+       "33": {
+        "mult": 2,
+        "hits": 0,
+        "stakeK": 4400,
+        "payoutK": 0,
+        "profitK": -4400
+       },
+       "34": {
+        "mult": 3,
+        "hits": 1,
+        "stakeK": 6600,
+        "payoutK": 24000,
+        "profitK": 17400
+       },
+       "35": {
+        "mult": 3,
+        "hits": 0,
+        "stakeK": 6600,
+        "payoutK": 0,
+        "profitK": -6600
+       },
+       "38": {
+        "mult": 3,
+        "hits": 0,
+        "stakeK": 6600,
+        "payoutK": 0,
+        "profitK": -6600
+       },
+       "44": {
+        "mult": 1,
+        "hits": 1,
+        "stakeK": 2200,
+        "payoutK": 8000,
+        "profitK": 5800
+       },
+       "52": {
+        "mult": 4,
+        "hits": 0,
+        "stakeK": 8800,
+        "payoutK": 0,
+        "profitK": -8800
+       },
+       "54": {
+        "mult": 1,
+        "hits": 0,
+        "stakeK": 2200,
+        "payoutK": 0,
+        "profitK": -2200
+       },
+       "59": {
+        "mult": 1,
+        "hits": 0,
+        "stakeK": 2200,
+        "payoutK": 0,
+        "profitK": -2200
+       },
+       "62": {
+        "mult": 4,
+        "hits": 0,
+        "stakeK": 8800,
+        "payoutK": 0,
+        "profitK": -8800
+       },
+       "64": {
+        "mult": 2,
+        "hits": 2,
+        "stakeK": 4400,
+        "payoutK": 32000,
+        "profitK": 27600
+       },
+       "75": {
+        "mult": 3,
+        "hits": 0,
+        "stakeK": 6600,
+        "payoutK": 0,
+        "profitK": -6600
+       },
+       "87": {
+        "mult": 1,
+        "hits": 0,
+        "stakeK": 2200,
+        "payoutK": 0,
+        "profitK": -2200
+       },
+       "99": {
+        "mult": 1,
+        "hits": 0,
+        "stakeK": 2200,
+        "payoutK": 0,
+        "profitK": -2200
+       }
+      },
+      "numbers": [
+       "24",
+       "33",
+       "34",
+       "35",
+       "38",
+       "44",
+       "52",
+       "54",
+       "59",
+       "62",
+       "64",
+       "75",
+       "87",
+       "99"
+      ],
+      "count": 14,
+      "stakeK": 66000,
+      "payoutK": 72000,
+      "profitK": 6000,
+      "isWin": true
+     },
+     "stakeK": 107000,
+     "payoutK": 72000,
+     "profitK": -35000,
+     "isWin": false
+    }
+   }
+  },
+  {
+   "date": "2026-11-01",
+   "sources": {
+    "chatgpt": {
+     "de": [
+      "07",
+      "09",
+      "21",
+      "22",
+      "24",
+      "32",
+      "36",
+      "38",
+      "39",
+      "42",
+      "44",
+      "51",
+      "58",
+      "60",
+      "65",
+      "67",
+      "70",
+      "83",
+      "96",
+      "98"
+     ],
+     "lo": [
+      "33",
+      "34",
+      "35",
+      "52",
+      "64",
+      "75"
+     ],
+     "method": "AI phân tích",
+     "status": "ok",
+     "notes": "Trả đủ 20+6, prompt kèm link GitHub + xosomienbac.net và thống kê tóm tắt (file tổng hợp không đính kèm được qua khung chat)."
+    },
+    "deepseek": {
+     "de": [
+      "09",
+      "21",
+      "22",
+      "24",
+      "31",
+      "32",
+      "36",
+      "38",
+      "39",
+      "42",
+      "44",
+      "51",
+      "58",
+      "60",
+      "65",
+      "67",
+      "70",
+      "83",
+      "96",
+      "98"
+     ],
+     "lo": [
+      "34",
+      "38",
+      "52",
+      "54",
+      "59",
+      "62"
+     ],
+     "method": "AI phân tích",
+     "status": "ok",
+     "notes": "Trả đủ 20+6 ngay lần đầu, không báo Server busy."
+    },
+    "gemini": {
+     "de": [
+      "04",
+      "09",
+      "21",
+      "22",
+      "24",
+      "32",
+      "34",
+      "36",
+      "38",
+      "39",
+      "42",
+      "44",
+      "46",
+      "51",
+      "60",
+      "64",
+      "65",
+      "67",
+      "70",
+      "96"
+     ],
+     "lo": [
+      "34",
+      "38",
+      "52",
+      "62",
+      "64",
+      "75"
+     ],
+     "method": "AI phân tích",
+     "status": "ok",
+     "notes": "Trả đủ 20+6, prompt kèm link GitHub + xosomienbac.net và thống kê tóm tắt (file tổng hợp không đính kèm được qua khung chat)."
+    },
+    "grok": {
+     "de": [],
+     "lo": [],
+     "method": "AI phân tích",
+     "status": "missing",
+     "notes": "chưa đăng nhập: kẹt Cloudflare \"Verify you are human\" (thử 2 lần không qua), sau khi trình duyệt thay môi trường thì Grok hiện trang Sign in/Sign up, gửi prompt chỉ hiện yêu cầu đăng ký, không trả số. Không nhập mật khẩu, không tạo tài khoản."
+    },
+    "muse": {
+     "de": [
+      "01",
+      "08",
+      "09",
+      "15",
+      "17",
+      "22",
+      "24",
+      "32",
+      "34",
+      "36",
+      "38",
+      "39",
+      "54",
+      "59",
+      "60",
+      "65",
+      "66",
+      "70",
+      "91",
+      "96"
+     ],
+     "lo": [
+      "24",
+      "38",
+      "44",
+      "52",
+      "62",
+      "64"
+     ],
+     "method": "Muse phân tích (công thức điểm tần suất)",
+     "status": "ok"
+    },
+    "perplexity": {
+     "de": [
+      "01",
+      "08",
+      "09",
+      "15",
+      "17",
+      "24",
+      "32",
+      "36",
+      "38",
+      "39",
+      "44",
+      "54",
+      "60",
+      "65",
+      "66",
+      "67",
+      "70",
+      "83",
+      "91",
+      "96"
+     ],
+     "lo": [
+      "24",
+      "32",
+      "34",
+      "44",
+      "52",
+      "64"
+     ],
+     "method": "AI phân tích",
+     "status": "ok",
+     "notes": "Thay vị trí Grok cho kỳ 01/11 (Grok không vào được; Copilot cũng bị Cloudflare chặn 4 lần, đã bỏ Copilot theo lệnh 02:14). Perplexity trả sau khi Chung tự đăng nhập Google. Lưu ý của Perplexity: dàn dựa trên thống kê tóm tắt trong prompt, không tính lại toàn bộ JSON (file không đính kèm được); trang truy xuất chưa xác nhận kết quả 31/10. Không có cơ sở khẳng định xác suất cao hơn kỳ tới."
+    }
+   },
+   "rates": null
+  },
+  {
+   "date": "2026-11-02",
+   "sources": {
+    "chatgpt": {
+     "de": [],
+     "lo": []
+    },
+    "deepseek": {
+     "de": [],
+     "lo": []
+    },
+    "gemini": {
+     "de": [],
+     "lo": []
+    },
+    "grok": {
+     "de": [],
+     "lo": []
+    },
+    "muse": {
+     "de": [
+      "01",
+      "08",
+      "09",
+      "15",
+      "17",
+      "22",
+      "24",
+      "32",
+      "34",
+      "36",
+      "38",
+      "39",
+      "54",
+      "59",
+      "60",
+      "65",
+      "66",
+      "70",
+      "91",
+      "96"
+     ],
+     "lo": [
+      "24",
+      "38",
+      "44",
+      "52",
+      "62",
+      "64"
+     ]
+    }
+   }
   }
+ ],
+ "meta": {
+  "aiMethod": "4 AI (ChatGPT, Gemini, Grok, DeepSeek) tự phân tích lịch sử JSON + kết quả mới nhất theo prompt (tần suất, 100 kỳ gần nhất, số kỳ chưa về, xu hướng) và tự chọn 20 Đề + 6 Lô theo phân tích của từng AI.",
+  "baselines": {
+   "deHitRate": 0.2,
+   "loHitsPerDay": 1.62,
+   "note": "Bộ 20+6: kỳ vọng Đề 20% ngày trúng, Lô 1,62 nháy/ngày ở 27 giải."
+  },
+  "createdAt": "2026-10-30 — lượt đầu: kỳ 30/10, tất cả 5 bộ đều khóa trước giờ quay 18:15.",
+  "honestyNote": "Mỗi số 00-99 đều có xác suất như nhau ở mỗi kỳ quay độc lập; 'phân tích' là tiêu chí chọn, không phải xác suất trúng thật đã được chứng minh cao hơn. Chỉ đo lường dài hạn mới cho biết bộ nào vượt baseline.",
+  "museMethod": "Muse phân tích bằng công thức điểm tần suất, tính lại mỗi ngày từ lịch sử mới nhất tới hôm qua: điểm Đề(n) = tần suất ĐB toàn lịch sử + 2 × tần suất ĐB 100 kỳ gần nhất; điểm Lô(n) = tần suất tổng 27 giải toàn lịch sử + 2 × tần suất tổng 27 giải 100 kỳ gần nhất; lấy top 20 Đề / top 6 Lô, hòa điểm lấy số nhỏ trước.",
+  "purpose": "Dataset cho trang thống kê mới về 5 AI: ChatGPT, Gemini, Grok, DeepSeek và Muse. Mỗi ngày 1 entry, mỗi nguồn 20 số Đề + 6 số Lô.",
+  "updateRule": "Lượt 18:40 hàng ngày (cron xsmb-ai-ask-1840): điền kết quả thật + điểm trúng/trượt của entry hôm nay, hỏi tiếp 4 AI cho ngày mai, tính bộ 20+6 của Muse bằng đúng công thức trên từ lịch sử mới nhất, ghi thêm entry ngày mai, cập nhật tỉ lệ lũy kế."
+ },
+ "summary": {
+  "consensus": {
+   "id": "consensus",
+   "name": "Phương Pháp Gộp 5 AI",
+   "days": 2,
+   "de": {
+    "wins": 0,
+    "losses": 2,
+    "winRate": 0,
+    "stakeK": 82000,
+    "payoutK": 0,
+    "profitK": -82000,
+    "roi": -1,
+    "longestWin": 0,
+    "longestLoss": 2,
+    "currentWinStreak": 0,
+    "currentLossStreak": 2
+   },
+   "lo": {
+    "wins": 2,
+    "losses": 0,
+    "winRate": 1,
+    "totalHits": 10,
+    "avgHitsPerDay": 5,
+    "stakeK": 132000,
+    "payoutK": 168000,
+    "profitK": 36000,
+    "roi": 0.2727,
+    "longestWin": 2,
+    "longestLoss": 0,
+    "currentWinStreak": 2,
+    "currentLossStreak": 0
+   },
+   "combo": {
+    "wins": 0,
+    "winRate": 0,
+    "stakeK": 214000,
+    "payoutK": 168000,
+    "profitK": -46000,
+    "roi": -0.215
+   },
+   "deTiered": {
+    "wins": 0,
+    "losses": 2,
+    "winRate": 0,
+    "stakeK": 82000,
+    "payoutK": 0,
+    "profitK": -82000,
+    "roi": -1
+   },
+   "loTiered": {
+    "wins": 2,
+    "losses": 0,
+    "winRate": 1,
+    "totalHits": 10,
+    "stakeK": 132000,
+    "payoutK": 168000,
+    "profitK": 36000,
+    "roi": 0.2727
+   }
+  },
+  "chatgpt": {
+   "id": "chatgpt",
+   "name": "ChatGPT",
+   "days": 2,
+   "de": {
+    "wins": 0,
+    "losses": 2,
+    "winRate": 0,
+    "stakeK": 40000,
+    "payoutK": 0,
+    "profitK": -40000,
+    "roi": -1,
+    "longestWin": 0,
+    "longestLoss": 2,
+    "currentWinStreak": 0,
+    "currentLossStreak": 2
+   },
+   "lo": {
+    "wins": 1,
+    "losses": 1,
+    "winRate": 0.5,
+    "totalHits": 5,
+    "avgHitsPerDay": 2.5,
+    "stakeK": 26400,
+    "payoutK": 40000,
+    "profitK": 13600,
+    "roi": 0.5152,
+    "longestWin": 1,
+    "longestLoss": 1,
+    "currentWinStreak": 0,
+    "currentLossStreak": 1
+   },
+   "combo": {
+    "wins": 0,
+    "winRate": 0,
+    "stakeK": 66400,
+    "payoutK": 40000,
+    "profitK": -26400,
+    "roi": -0.3976
+   }
+  },
+  "deepseek": {
+   "id": "deepseek",
+   "name": "DeepSeek",
+   "days": 2,
+   "de": {
+    "wins": 0,
+    "losses": 2,
+    "winRate": 0,
+    "stakeK": 40000,
+    "payoutK": 0,
+    "profitK": -40000,
+    "roi": -1,
+    "longestWin": 0,
+    "longestLoss": 2,
+    "currentWinStreak": 0,
+    "currentLossStreak": 2
+   },
+   "lo": {
+    "wins": 2,
+    "losses": 0,
+    "winRate": 1,
+    "totalHits": 4,
+    "avgHitsPerDay": 2,
+    "stakeK": 26400,
+    "payoutK": 32000,
+    "profitK": 5600,
+    "roi": 0.2121,
+    "longestWin": 2,
+    "longestLoss": 0,
+    "currentWinStreak": 2,
+    "currentLossStreak": 0
+   },
+   "combo": {
+    "wins": 0,
+    "winRate": 0,
+    "stakeK": 66400,
+    "payoutK": 32000,
+    "profitK": -34400,
+    "roi": -0.5181
+   }
+  },
+  "gemini": {
+   "id": "gemini",
+   "name": "Gemini",
+   "days": 2,
+   "de": {
+    "wins": 0,
+    "losses": 2,
+    "winRate": 0,
+    "stakeK": 40000,
+    "payoutK": 0,
+    "profitK": -40000,
+    "roi": -1,
+    "longestWin": 0,
+    "longestLoss": 2,
+    "currentWinStreak": 0,
+    "currentLossStreak": 2
+   },
+   "lo": {
+    "wins": 1,
+    "losses": 1,
+    "winRate": 0.5,
+    "totalHits": 3,
+    "avgHitsPerDay": 1.5,
+    "stakeK": 26400,
+    "payoutK": 24000,
+    "profitK": -2400,
+    "roi": -0.0909,
+    "longestWin": 1,
+    "longestLoss": 1,
+    "currentWinStreak": 0,
+    "currentLossStreak": 1
+   },
+   "combo": {
+    "wins": 0,
+    "winRate": 0,
+    "stakeK": 66400,
+    "payoutK": 24000,
+    "profitK": -42400,
+    "roi": -0.6386
+   }
+  },
+  "grok": {
+   "id": "grok",
+   "name": "Grok",
+   "days": 2,
+   "de": {
+    "wins": 0,
+    "losses": 2,
+    "winRate": 0,
+    "stakeK": 40000,
+    "payoutK": 0,
+    "profitK": -40000,
+    "roi": -1,
+    "longestWin": 0,
+    "longestLoss": 2,
+    "currentWinStreak": 0,
+    "currentLossStreak": 2
+   },
+   "lo": {
+    "wins": 1,
+    "losses": 1,
+    "winRate": 0.5,
+    "totalHits": 4,
+    "avgHitsPerDay": 2,
+    "stakeK": 26400,
+    "payoutK": 32000,
+    "profitK": 5600,
+    "roi": 0.2121,
+    "longestWin": 1,
+    "longestLoss": 1,
+    "currentWinStreak": 0,
+    "currentLossStreak": 1
+   },
+   "combo": {
+    "wins": 0,
+    "winRate": 0,
+    "stakeK": 66400,
+    "payoutK": 32000,
+    "profitK": -34400,
+    "roi": -0.5181
+   }
+  },
+  "muse": {
+   "id": "muse",
+   "name": "Muse",
+   "days": 2,
+   "de": {
+    "wins": 0,
+    "losses": 2,
+    "winRate": 0,
+    "stakeK": 40000,
+    "payoutK": 0,
+    "profitK": -40000,
+    "roi": -1,
+    "longestWin": 0,
+    "longestLoss": 2,
+    "currentWinStreak": 0,
+    "currentLossStreak": 2
+   },
+   "lo": {
+    "wins": 1,
+    "losses": 1,
+    "winRate": 0.5,
+    "totalHits": 5,
+    "avgHitsPerDay": 2.5,
+    "stakeK": 26400,
+    "payoutK": 40000,
+    "profitK": 13600,
+    "roi": 0.5152,
+    "longestWin": 1,
+    "longestLoss": 1,
+    "currentWinStreak": 1,
+    "currentLossStreak": 0
+   },
+   "combo": {
+    "wins": 0,
+    "winRate": 0,
+    "stakeK": 66400,
+    "payoutK": 40000,
+    "profitK": -26400,
+    "roi": -0.3976
+   }
+  }
+ }
 }
