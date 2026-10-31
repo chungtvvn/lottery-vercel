@@ -106,7 +106,11 @@ assert(clientPayload.todayConsensus, 'Client payload must have todayConsensus');
 assert(clientPayload.todayConsensus.deTiers, 'todayConsensus must have deTiers');
 assert(clientPayload.todayConsensus.loTiers, 'todayConsensus must have loTiers');
 assert(Array.isArray(clientPayload.leaderboard) && clientPayload.leaderboard.length === 6, 'Leaderboard must contain 6 items');
-console.log('  ✔ Client payload contains all required UI fields, tiered consensus, and 6 leaderboard items');
+
+// Invariant: Ngày hôm nay chưa có kết quả -> Tuyệt đối không hiển thị ngày hôm sau trong nhật ký đối soát
+const hasFutureDayInHistory = clientPayload.history.some(d => String(d.date) > String(clientPayload.latestDate));
+assert.strictEqual(hasFutureDayInHistory, false, 'History must not contain future days when today is not settled');
+console.log('  ✔ Client payload contains all required UI fields, tiered consensus, 6 leaderboard items, and excludes future days from ledger');
 
 console.log('================================================================================');
 console.log('🎉 ALL AI 5 STATS & TIERED CONSENSUS TESTS PASSED 100%!');

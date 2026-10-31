@@ -679,17 +679,26 @@
         const list = document.getElementById('historicalLedgerList');
         if (!list) return;
 
-        if (!days.length) {
+        // Bảo vệ hiển thị: Nếu ngày hôm nay chưa có kết quả, tuyệt đối không hiển thị ngày hôm sau trong nhật ký đối soát
+        const activeDate = state.payload?.latestDate || state.payload?.latestDay?.date;
+        const visibleDays = (days || []).filter(d => {
+            if (!activeDate) return true;
+            const isDaySettled = Boolean(d.special && d.prizes27?.length === 27 && d.results);
+            if (isDaySettled) return true;
+            return String(d.date) <= String(activeDate);
+        });
+
+        if (!visibleDays.length) {
             list.innerHTML = '<div class="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-400">Chưa có nhật ký đối soát nào.</div>';
             return;
         }
 
         // Mặc định mở rộng ngày đầu tiên (mới nhất) nếu chưa có trạng thái
-        if (state.expandedDays.size === 0 && days.length > 0) {
-            state.expandedDays.add(days[0].date);
+        if (state.expandedDays.size === 0 && visibleDays.length > 0) {
+            state.expandedDays.add(visibleDays[0].date);
         }
 
-        const cardsHtml = days.map(day => {
+        const cardsHtml = visibleDays.map(day => {
             const dateStr = day.date;
             const isSettled = Boolean(day.special && day.prizes27?.length === 27 && day.results);
             const specialStr = day.special ? String(day.special).padStart(2, '0') : null;
