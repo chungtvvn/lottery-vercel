@@ -25,6 +25,7 @@ const {
     recomputeAllRates,
     calculateConsensus,
     computeMusePredictions,
+    getEffectiveSources,
     AI_MODELS,
     CONSENSUS_META
 } = require('../lib/services/ai5StatsService');
@@ -171,11 +172,12 @@ async function handleNextDayPredictions(data, targetDate) {
 
     // Đếm số lượng AI đã nạp số cho ngày tiếp theo
     const modelKeys = Object.keys(AI_MODELS);
+    const effectiveNextSources = getEffectiveSources(nextDayEntry.sources || {});
     let readyAiCount = 0;
     const missingAis = [];
 
     modelKeys.forEach(k => {
-        const s = nextDayEntry.sources?.[k];
+        const s = effectiveNextSources[k];
         const deCount = Array.isArray(s?.de) ? s.de.length : 0;
         const loCount = Array.isArray(s?.lo) ? s.lo.length : 0;
         if (deCount >= 20 && loCount >= 6) {
@@ -189,7 +191,7 @@ async function handleNextDayPredictions(data, targetDate) {
     
     if (readyAiCount === modelKeys.length) {
         // Tính dàn Gộp Consensus khi cả 5 AI đã có mặt
-        const consensus = calculateConsensus(nextDayEntry.sources);
+        const consensus = calculateConsensus(effectiveNextSources);
         console.log(`[settle-ai-5-stats] 👑 ĐẠI ĐỒNG THUẬN 5 AI NGÀY ${nextDate} ĐÃ SẴN SÀNG:`);
         console.log(`   - Đề X2 (VIP): ${consensus.deTiers?.x2Nums?.join(', ') || 'N/A'}`);
         console.log(`   - Đề X1 (Lót): ${consensus.deTiers?.x1Nums?.join(', ') || 'N/A'}`);
@@ -318,17 +320,18 @@ async function main() {
     // 3. Kiểm tra dàn số của ngày mục tiêu (targetDate) nếu chưa quay (ví dụ hôm nay 31/10)
     const targetEntry = (data.days || []).find(d => d.date === targetDate);
     if (targetEntry && targetEntry.sources) {
+        const effectiveTargetSources = getEffectiveSources(targetEntry.sources);
         const modelKeys = Object.keys(AI_MODELS);
         let readyCount = 0;
         modelKeys.forEach(k => {
-            const s = targetEntry.sources[k];
+            const s = effectiveTargetSources[k];
             if (Array.isArray(s?.de) && s.de.length >= 20 && Array.isArray(s?.lo) && s.lo.length >= 6) {
                 readyCount++;
             }
         });
 
         if (readyCount === modelKeys.length) {
-            const todayConsensus = calculateConsensus(targetEntry.sources);
+            const todayConsensus = calculateConsensus(effectiveTargetSources);
             console.log(`\n======================================================`);
             console.log(`👑 DÀN ĐỒNG THUẬN 5 AI NGÀY MỤC TIÊU (${targetDate}):`);
             console.log(`======================================================`);

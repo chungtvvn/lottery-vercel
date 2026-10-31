@@ -462,10 +462,15 @@
         }
 
         // VIEW 2: TỪNG AI RIÊNG BIỆT (ChatGPT, DeepSeek, Gemini, Grok, Muse)
-        const src = latestDay.sources?.[selectedModel] || {};
+        const sources = latestDay.sources || {};
+        let src = sources[selectedModel] || {};
+        if (selectedModel === 'grok' && (!src.de?.length) && sources.perplexity?.de?.length) {
+            src = sources.perplexity;
+        }
         const info = models[selectedModel] || { name: selectedModel, avatar: '🤖', provider: '' };
         const deNums = (src.de || []).map(x => String(x).padStart(2, '0'));
         const loNums = (src.lo || []).map(x => String(x).padStart(2, '0'));
+        const isFallback = selectedModel === 'grok' && (src.method?.includes('Perplexity') || src.notes?.includes('Perplexity'));
 
         container.innerHTML = `
             <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
@@ -473,7 +478,10 @@
                     <div class="flex items-center gap-3">
                         <span class="text-2xl">${info.avatar || '🤖'}</span>
                         <div>
-                            <h4 class="text-base font-black text-slate-900">${info.name} (${info.provider || 'AI Model'})</h4>
+                            <div class="flex items-center gap-2">
+                                <h4 class="text-base font-black text-slate-900">${info.name} (${info.provider || 'AI Model'})</h4>
+                                ${isFallback ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200" title="Dữ liệu từ Perplexity thay thế vị trí Grok">via Perplexity</span>' : ''}
+                            </div>
                             <p class="text-xs text-slate-500">${src.method || 'Mô hình AI phân tích tự động'}</p>
                         </div>
                     </div>
@@ -893,10 +901,14 @@
                                 <!-- Khối 2: Chi tiết 5 AI Độc Lập -->
                                 <div class="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                                     ${['chatgpt', 'deepseek', 'gemini', 'grok', 'muse'].map(mKey => {
-                                        const src = sources[mKey] || {};
+                                        let src = sources[mKey] || {};
+                                        if (mKey === 'grok' && (!src.de?.length) && sources.perplexity?.de?.length) {
+                                            src = sources.perplexity;
+                                        }
                                         const info = models[mKey] || { name: mKey, avatar: '🤖' };
                                         const de = src.de || [];
                                         const lo = src.lo || [];
+                                        const isFallback = mKey === 'grok' && (src.method?.includes('Perplexity') || src.notes?.includes('Perplexity'));
                                         return `
                                             <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-3 space-y-2 text-xs">
                                                 <div class="flex items-center justify-between font-bold text-slate-900 border-b border-slate-200/60 pb-1">
@@ -904,6 +916,11 @@
                                                         <span>${info.avatar || '🤖'}</span>
                                                         <span class="font-black">${info.name}</span>
                                                     </span>
+                                                    ${isFallback ? `
+                                                        <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200" title="Nguồn thay thế vị trí Grok">
+                                                            via Perplexity
+                                                        </span>
+                                                    ` : ''}
                                                 </div>
                                                 <div>
                                                     <div class="text-[10px] text-slate-500 font-bold mb-0.5">Đề (${de.length}s):</div>
@@ -1180,7 +1197,10 @@
 
                                             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                                                 ${activeModels.map(mKey => {
-                                                    const src = sources[mKey] || {};
+                                                    let src = sources[mKey] || {};
+                                                    if (mKey === 'grok' && (!src.de?.length) && sources.perplexity?.de?.length) {
+                                                        src = sources.perplexity;
+                                                    }
                                                     const r = results[mKey] || {};
                                                     const info = models[mKey] || { name: mKey, avatar: '🤖' };
                                                     const de = src.de || [];
@@ -1188,6 +1208,7 @@
                                                     const isWin = (r.totalProfitK || 0) >= 0;
                                                     const isDeHit = r.de?.isHit;
                                                     const loHits = r.lo?.hits || 0;
+                                                    const isFallback = mKey === 'grok' && (src.method?.includes('Perplexity') || src.notes?.includes('Perplexity'));
 
                                                     return `
                                                         <div class="rounded-2xl border border-slate-200 bg-white p-3.5 space-y-2.5 text-xs shadow-2xs">
@@ -1195,6 +1216,7 @@
                                                                 <span class="flex items-center gap-1.5">
                                                                     <span>${info.avatar || '🤖'}</span>
                                                                     <span class="font-black">${info.name}</span>
+                                                                    ${isFallback ? '<span class="text-[8px] font-bold px-1 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">via Perplexity</span>' : ''}
                                                                 </span>
                                                                 <span class="font-mono font-black ${isWin ? 'text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200' : 'text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200'} text-[11px]">
                                                                     ${formatMoney(r.totalProfitK)}
