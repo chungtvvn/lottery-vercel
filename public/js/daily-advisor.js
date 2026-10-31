@@ -602,7 +602,9 @@
                 viewDual?.classList.remove('hidden');
 
                 if (payload) {
-                    renderDeResearchEnsembleView(payload);
+                    if (typeof renderDeParityResearchView === 'function') {
+                        renderDeParityResearchView(payload);
+                    }
                 }
             }
         }
@@ -10885,6 +10887,13 @@
         renderDeParityDailyLedger(settledLedger, summary);
     }
 
+    // Backward-compatibility alias
+    function renderDeResearchEnsembleView(dataPayload) {
+        if (typeof renderDeParityResearchView === 'function') {
+            renderDeParityResearchView(dataPayload);
+        }
+    }
+
     function renderDeParityKpis(summary, champions) {
         if (!summary) return;
 
@@ -11487,10 +11496,8 @@
     // 1. RENDER THỰC CHIẾN GỘP (DUAL-MERGE ADVISOR)
     // ==========================================
     function renderDualMergeView(dualMergeData) {
-        if (payload?.deParityResearch || dualMergeData?.deParityResearch) {
+        if (typeof renderDeParityResearchView === 'function') {
             renderDeParityResearchView(payload || dualMergeData);
-        } else if (payload?.deResearchEnsemble || dualMergeData?.deResearchEnsemble) {
-            renderDeResearchEnsembleView(payload || dualMergeData);
         }
         if (!dualMergeData) return;
         const rec = dualMergeData.latestRecommendation;
@@ -16418,7 +16425,9 @@
                     payload = localCache;
                     renderUnifiedCombatView(payload);
                     renderDualMergeView(payload.dualMerge);
-                    renderDeResearchEnsembleView(payload);
+                    if (typeof renderDeParityResearchView === 'function') {
+                        renderDeParityResearchView(payload);
+                    }
                     if (payload?.tripleMerge) renderTripleMergeView(payload.tripleMerge);
                     if (payload?.adaptiveDualMerge) renderAdaptiveDualMergeView(payload.adaptiveDualMerge);
                     if (payload?.metaLearner) renderMetaLearnerView(payload.metaLearner);
@@ -16444,7 +16453,9 @@
             // Render all views
             renderUnifiedCombatView(payload);
             renderDualMergeView(payload.dualMerge);
-            renderDeResearchEnsembleView(payload);
+            if (typeof renderDeParityResearchView === 'function') {
+                renderDeParityResearchView(payload);
+            }
             if (payload?.tripleMerge) renderTripleMergeView(payload.tripleMerge);
             if (payload?.adaptiveDualMerge) renderAdaptiveDualMergeView(payload.adaptiveDualMerge);
             if (payload?.metaLearner) renderMetaLearnerView(payload.metaLearner);
