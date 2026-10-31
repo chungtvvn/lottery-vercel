@@ -10827,7 +10827,7 @@
             name: "Đề Ngũ Trụ AI (Penta-Core)",
             shortName: "Ngũ Trụ AI ⭐",
             tag: "⭐ QUÁN QUÂN ĐUÔI/ĐÍT (53.0%)",
-            desc: "Dựa trên dàn Đề Ngũ Trụ phân tích trọng số đa tầng, đạt tỷ lệ dự đoán Đuôi/Đít chính xác nhất (53.0%) và PnL 1:99 kỷ lục +106.4M VNĐ.",
+            desc: "Dựa trên dàn Đề Ngũ Trụ phân tích trọng số đa tầng, đạt tỷ lệ dự đoán Đuôi/Đít chính xác nhất (53.0%) theo chuẩn 1 ăn 84.",
             badgeClass: "border-purple-400 bg-purple-100 text-purple-950 font-black"
         },
         systemConsensus: {
@@ -10924,10 +10924,10 @@
         if (byId("kpiDeParityBothWinsText")) byId("kpiDeParityBothWinsText").textContent = "(" + (bothSt.bothWins || 0) + " / " + (bothSt.totalDays || 0) + " kỳ)";
         if (byId("kpiDeParityBothMaxStreak")) byId("kpiDeParityBothMaxStreak").textContent = (bothSt.maxBothStreak || 4) + " kỳ";
 
-        // KPI 4: Lợi Nhuận 1:99
+        // KPI 4: Lợi Nhuận 1 Ăn 84 Cặp 25s
         const optSt = summary.optimalHybrid || summary.pentaCoreDe || {};
-        const pnl = optSt.pnl1to99 || 86600;
-        const roi = optSt.roi1to99 || 11.6;
+        const pnl = optSt.pnl1to84 !== undefined ? optSt.pnl1to84 : (optSt.pnl !== undefined ? optSt.pnl : -41900);
+        const roi = optSt.roi1to84 !== undefined ? optSt.roi1to84 : (optSt.roi !== undefined ? optSt.roi : -5.6);
         if (byId("kpiDeParityPnlAmount")) {
             byId("kpiDeParityPnlAmount").textContent = (pnl >= 0 ? "+" : "") + fmt(pnl * 1000) + " đ";
             byId("kpiDeParityPnlAmount").className = "text-2xl font-black " + (pnl >= 0 ? "text-indigo-950" : "text-rose-600");
@@ -11095,8 +11095,10 @@
             const isBothChamp = champions?.both === mId;
 
             const rowBg = isOpt ? "bg-amber-50/70 font-semibold" : "hover:bg-slate-50/80";
-            const pnlClass = st.pnl1to99 >= 0 ? "text-emerald-700 font-bold" : "text-rose-600";
-            const roiClass = st.roi1to99 >= 0 ? "text-emerald-700 font-black" : "text-rose-600";
+            const pnlVal = st.pnl1to84 !== undefined ? st.pnl1to84 : (st.pnl !== undefined ? st.pnl : 0);
+            const roiVal = st.roi1to84 !== undefined ? st.roi1to84 : (st.roi !== undefined ? st.roi : 0);
+            const pnlClass = pnlVal >= 0 ? "text-emerald-700 font-bold" : "text-rose-600";
+            const roiClass = roiVal >= 0 ? "text-emerald-700 font-black" : "text-rose-600";
 
             return "<tr class=\"" + rowBg + " transition-colors\">" +
                 "<td class=\"py-3 px-3\">" +
@@ -11129,10 +11131,10 @@
                     "<div class=\"text-[10px] text-slate-400\">Max streak: <strong>" + st.maxBothStreak + "</strong></div>" +
                 "</td>" +
                 "<td class=\"py-3 px-3 text-right font-mono " + pnlClass + "\">" +
-                    (st.pnl1to99 >= 0 ? "+" : "") + fmt(st.pnl1to99 * 1000) + " đ" +
+                    (pnlVal >= 0 ? "+" : "") + fmt(pnlVal * 1000) + " đ" +
                 "</td>" +
                 "<td class=\"py-3 px-3 text-right font-mono " + roiClass + "\">" +
-                    (st.roi1to99 >= 0 ? "+" : "") + st.roi1to99 + "%" +
+                    (roiVal >= 0 ? "+" : "") + roiVal + "%" +
                 "</td>" +
                 "<td class=\"py-3 px-3 text-center\">" +
                     "<div class=\"font-mono text-slate-800\">~" + (st.avgFilteredNums || 12) + " số</div>" +
@@ -11284,8 +11286,8 @@
                 resultBadgeHtml = "<span class=\"px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-500\">❌ Trượt</span>";
             }
 
-            // Financial PnL
-            const pnlK = m.pnl1to99K || (isPairHit ? 7400 : -2500);
+            // Financial PnL (Chuẩn Đề 1 Ăn 84)
+            const pnlK = m.pnl1to84K !== undefined ? m.pnl1to84K : (m.pnlK !== undefined ? m.pnlK : (isPairHit ? 5900 : -2500));
             const pnlClass = pnlK > 0 ? "text-emerald-700 font-bold" : "text-slate-400";
             const pnlText = (pnlK > 0 ? "+" : "") + fmt(pnlK * 1000) + " đ";
 

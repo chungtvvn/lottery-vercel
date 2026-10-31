@@ -54,7 +54,7 @@ assert(optSt.headWinRate >= 50, 'Optimal Hybrid Head win rate should be >= 50%')
 assert(optSt.tailWinRate >= 50, 'Optimal Hybrid Tail win rate should be >= 50%');
 assert(optSt.bothWinRate >= 25, 'Optimal Hybrid Both win rate should beat random 25%');
 
-console.log(`✔ Optimal Hybrid Performance: Head ${optSt.headWinRate}%, Tail ${optSt.tailWinRate}%, Both ${optSt.bothWinRate}%, PnL 1:99: ${optSt.pnl1to99}K (ROI ${optSt.roi1to99}%)`);
+console.log(`✔ Optimal Hybrid Performance: Head ${optSt.headWinRate}%, Tail ${optSt.tailWinRate}%, Both ${optSt.bothWinRate}%, PnL (1 Ăn 84): ${optSt.pnl1to84 !== undefined ? optSt.pnl1to84 : optSt.pnl}K (ROI ${optSt.roi1to84 !== undefined ? optSt.roi1to84 : optSt.roi}%)`);
 
 // 5. Verify Ledger entries structure and hit logic
 pr.settledLedger.forEach(row => {
