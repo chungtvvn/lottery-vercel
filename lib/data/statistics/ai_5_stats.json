@@ -311,11 +311,39 @@
           "status": "ok"
         },
         "gemini": {
-          "de": [],
-          "lo": [],
+          "de": [
+            "09",
+            "21",
+            "22",
+            "24",
+            "32",
+            "36",
+            "38",
+            "39",
+            "42",
+            "44",
+            "51",
+            "54",
+            "58",
+            "60",
+            "65",
+            "67",
+            "70",
+            "83",
+            "96",
+            "98"
+          ],
+          "lo": [
+            "33",
+            "34",
+            "35",
+            "52",
+            "62",
+            "75"
+          ],
           "method": "AI phân tích",
-          "notes": "chưa đăng nhập",
-          "status": "missing"
+          "notes": "Hỏi bù sau khi Chung đăng nhập lại Gemini sáng 31/10 (tối 30/10 thiếu do hết phiên).",
+          "status": "ok"
         },
         "grok": {
           "de": [
