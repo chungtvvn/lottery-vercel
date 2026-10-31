@@ -158,6 +158,13 @@ async function main() {
         console.error('[generateDailyAdvisorCache] Error building mirofishSwarm:', err);
     }
 
+    try {
+        const { computeDeParityResearch } = require('../lib/services/deParityResearchService');
+        cache.deParityResearch = computeDeParityResearch(cache);
+    } catch (err) {
+        console.error('[generateDailyAdvisorCache] Error building deParityResearch:', err);
+    }
+
     // Tích hợp Single Source of Truth (SSOT) Registry
     try {
         const registryService = require('../lib/services/dailyLockedBetsRegistryService');
@@ -478,6 +485,7 @@ async function main() {
         pruneUnsettledLedger(cache.crossHedgingPortfolio?.settledLedger);
         pruneUnsettledLedger(cache.pentaConsensus?.settledLedger);
         pruneUnsettledLedger(cache.top8ParityXien4?.settledLedger);
+        pruneUnsettledLedger(cache.deParityResearch?.settledLedger);
     }
 
     // CANONICAL CACHE (2026-10-27 consolidation): only the canonical copy

@@ -93,7 +93,7 @@
                 <i class="bi bi-trophy-fill text-amber-300"></i> 👑 Đề Xuất Tinh Hoa Hợp Nhất (Đề + Lô)
             </button>
             <button type="button" id="tabBtnDualMerge" class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors">
-                <i class="bi bi-intersect text-indigo-500"></i> 🔬 Nghiên Cứu Đề Hàng Ngày: Top 20 DA vs Nửa Đầu Shadow
+                <i class="bi bi-intersect text-indigo-500"></i> 🔬 Nghiên Cứu Đề Hàng Ngày: Dự Đoán Đầu/Đít Chẵn Lẻ
                 <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-black bg-gradient-to-r from-amber-500 to-emerald-500 text-white shadow-xs uppercase tracking-wider animate-pulse">MỚI</span>
             </button>
             <a href="/daily-advisor-shadow" class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors">
@@ -2127,7 +2127,8 @@
     <!-- VIEW 1: THỰC CHIẾN GỘP (SECONDARY DE VIEW) -->
     <!-- ========================================== -->
         <!-- ========================================== -->
-    <!-- VIEW: NGHIÊN CỨU ĐỀ HÀNG NGÀY (TOP 20 DA VS NỬA ĐẦU SHADOW) -->
+    <!-- ========================================== -->
+    <!-- VIEW: NGHIÊN CỨU ĐỊNH LƯỢNG ĐỀ: DỰ ĐOÁN ĐẦU / ĐÍT CHẴN LẺ -->
     <!-- ========================================== -->
     <div id="dualMergeView" class="space-y-8 hidden">
         <!-- Hero Header -->
@@ -2136,494 +2137,472 @@
                 <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
                     <div>
                         <div class="inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-amber-500/20 px-3.5 py-1 text-xs font-black tracking-wider uppercase text-amber-300">
-                            <span class="h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span> 🔬 NGHIÊN CỨU ĐỊNH LƯỢNG ĐỀ 2026 · HỢP NHẤT ĐA TẦNG
+                            <span class="h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span> 🔬 NGHIÊN CỨU ĐỊNH LƯỢNG ĐỀ XSMB · PARITY RESEARCH
                         </div>
                         <h1 class="mt-3 text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
-                            Đối Soát & Hợp Nhất Đề: Top 20 DA vs Nửa Đầu Shadow
+                            Dự Đoán Đầu / Đít Chẵn Lẻ &amp; Backtest Strict PIT
                         </h1>
                         <p class="mt-2.5 max-w-3xl text-sm leading-relaxed text-slate-200">
-                            Khảo sát thực chứng 100% Strict Point-In-Time so sánh và phối hợp giữa <strong class="text-amber-300">Top 20 số</strong> của các động cơ Daily-Advisor với <strong class="text-emerald-300">Nửa đầu (Top 50%)</strong> của 4 Hệ Master Suite Shadow. Tối ưu hóa xác suất trúng và lợi nhuận ròng thực chiến.
+                            Khảo sát thực chứng định lượng 100% Strict Point-In-Time từ ngày 01/01/2026 đến nay. Dự đoán cực Chẵn/Lẻ cho <strong class="text-amber-300">Đầu Đề</strong>, <strong class="text-emerald-300">Đít Đề</strong> và <strong class="text-cyan-300">Dạng Cặp 25 Số</strong> dựa trên dữ liệu hệ thống (Markov Bậc 2 &amp; Gap Hazard, Ngũ Trụ AI, Đồng thuận 5 PP) kết hợp chu kỳ Quán Tính &amp; Bẻ Cầu Sóng Nhịp.
                         </p>
-                        <p class="mt-1 text-xs text-amber-200/80 font-semibold">
-                            📅 <strong>Dữ liệu thực tế:</strong> 283 kỳ năm 2026 (01/01 – 14/10) · <strong>Thực chiến Live:</strong> 28 kỳ niêm phong (từ 17/09/2026).
+                        <p class="mt-1 text-xs text-amber-200/80 font-semibold" id="deParityLatestDataThrough">
+                            📅 Đang tính toán dữ liệu đối soát toàn bộ năm 2026 · Strict PIT 100%
                         </p>
                     </div>
                     <div class="flex flex-wrap gap-2.5 text-xs font-black shrink-0">
-                        <a href="/exports/bao-cao-de-advisor-vs-shadow-2026.png" target="_blank" download="bao-cao-de-advisor-vs-shadow-2026.png" class="inline-flex items-center gap-2 rounded-2xl border border-amber-400/50 bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-2.5 text-slate-950 font-black shadow-lg hover:brightness-110 transition-all cursor-pointer">
-                            <i class="bi bi-file-earmark-image-fill"></i> 📱 TẢI ẢNH BÁO CÁO MOBILE HD
-                        </a>
-                        <span class="rounded-2xl border border-white/15 bg-white/10 px-4 py-2.5 backdrop-blur-sm shadow-sm">
-                            <i class="bi bi-shield-check text-emerald-400 mr-1"></i> STRICT PIT 100%
+                        <span class="rounded-2xl border border-emerald-400/40 bg-emerald-500/20 px-4 py-2.5 text-emerald-300 backdrop-blur-sm shadow-sm flex items-center gap-1.5 font-bold">
+                            <i class="bi bi-shield-check text-emerald-400"></i> STRICT PIT 100%
+                        </span>
+                        <span class="rounded-2xl border border-amber-400/40 bg-amber-500/20 px-4 py-2.5 text-amber-300 backdrop-blur-sm shadow-sm flex items-center gap-1.5 font-bold">
+                            <i class="bi bi-calendar2-check-fill text-amber-400"></i> <span id="deParityEvaluatedDaysHeader">298</span> KỲ 2026
+                        </span>
+                        <span class="rounded-2xl border border-indigo-400/40 bg-indigo-500/20 px-4 py-2.5 text-indigo-200 backdrop-blur-sm shadow-sm flex items-center gap-1.5 font-bold">
+                            <i class="bi bi-cash-stack text-indigo-400"></i> TRẢ THƯỞNG 1:99 ONLINE
                         </span>
                     </div>
-                </div>
-            </div>
-
-            <!-- 4 Quick KPI Summary Cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 border-t border-white/10 bg-black/40 p-5" id="deResearchKpiCards">
-                <div class="rounded-2xl border border-amber-400/40 bg-amber-500/10 p-4">
-                    <div class="text-[11px] font-black uppercase text-amber-300 tracking-wider">👑 VÙNG GIAO THOA VÀNG</div>
-                    <div class="mt-1 text-2xl font-black font-mono text-amber-400">18.3 Số · +73.7%</div>
-                    <div class="text-[11px] text-slate-300 mt-1">Dàn siêu tinh tuyển. Win Rate Live 32.1%, ROI 1:84 đạt +47.4%, ROI 1:99 đạt +73.7%.</div>
-                </div>
-                <div class="rounded-2xl border border-emerald-400/40 bg-emerald-500/10 p-4">
-                    <div class="text-[11px] font-black uppercase text-emerald-300 tracking-wider">⭐ SHADOW 1/2 ĐẦU GỘP</div>
-                    <div class="mt-1 text-2xl font-black font-mono text-emerald-400">20.6 Số · +71.3%</div>
-                    <div class="text-[11px] text-slate-300 mt-1">Trùng lặp nội tại >85%. Win Rate Live 35.7%, lãi ròng +41.2M VNĐ (1:99).</div>
-                </div>
-                <div class="rounded-2xl border border-indigo-400/40 bg-indigo-500/10 p-4">
-                    <div class="text-[11px] font-black uppercase text-indigo-300 tracking-wider">🛡️ HỢP NHẤT ĐA TẦNG</div>
-                    <div class="mt-1 text-2xl font-black font-mono text-indigo-300">43.5 Số · 60.7%</div>
-                    <div class="text-[11px] text-slate-300 mt-1">Bao phủ toàn diện. Nổ 17/28 kỳ Live. Max trượt đúng 2 kỳ. ROI +17.1% (1:84), +38.1% (1:99).</div>
-                </div>
-                <div class="rounded-2xl border border-rose-400/40 bg-rose-500/10 p-4">
-                    <div class="text-[11px] font-black uppercase text-rose-300 tracking-wider">⚠️ DA TOP 20 GỘP</div>
-                    <div class="mt-1 text-2xl font-black font-mono text-rose-400">51 – 60 Số · Phình Dàn</div>
-                    <div class="text-[11px] text-slate-300 mt-1">8 động cơ độc lập đẩy dàn lên 60 con. Tần suất nổ 67.9% nhưng phế 1:84 cao, cần chơi 1:99.</div>
                 </div>
             </div>
         </section>
 
-        <!-- DÀN SỐ ĐỀ XUẤT HÔM NAY (TODAY'S LIVE RECOMMENDATION) -->
-        <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-5">
-                <div>
-                    <div class="flex items-center gap-2">
-                        <span class="rounded-full bg-amber-100 text-amber-900 border border-amber-300 px-2.5 py-0.5 text-xs font-black uppercase">
-                            🔥 DÀN ĐỀ XUẤT NGÀY <span id="deResearchTargetDate">--/--/----</span>
-                        </span>
-                        <span class="text-xs text-slate-500 font-semibold" id="deResearchLatestDataThrough">Cập nhật sau mở thưởng kỳ trước</span>
-                    </div>
-                    <h2 class="mt-2 text-xl sm:text-2xl font-black text-slate-900">
-                        Dàn Số Nghiên Cứu Định Lượng Hôm Nay
-                    </h2>
-                    <p class="text-xs text-slate-600 mt-0.5">
-                        Chọn phương pháp để xem danh sách số được tối ưu hóa cho kỳ quay hôm nay:
-                    </p>
+        <!-- 4 KPI Summary Cards (Vinh Danh Quán Quân) -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Card 1: Quán quân Đầu -->
+            <div class="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 p-5 shadow-sm space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-black text-emerald-900 uppercase tracking-wider">⚡ Quán Quân Đầu Đề</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-200 text-emerald-950">WIN RATE CAO NHẤT</span>
                 </div>
-
-                <!-- 4 Mode Switcher Buttons -->
-                <div class="flex flex-wrap gap-2" id="deResearchModeButtons">
-                    <button type="button" data-research-mode="goldenIntersection" class="de-research-mode-btn rounded-xl border-2 border-amber-400 bg-amber-500 text-slate-950 font-black px-3.5 py-2 text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer">
-                        <i class="bi bi-star-fill text-amber-950"></i> 👑 Giao Thoa Vàng (<span id="countModeIntersection">--</span>s)
-                    </button>
-                    <button type="button" data-research-mode="shadowHalf" class="de-research-mode-btn rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold px-3.5 py-2 text-xs transition-all flex items-center gap-1.5 cursor-pointer">
-                        <i class="bi bi-shield-check text-emerald-600"></i> ⭐ Shadow 1/2 Đầu (<span id="countModeShadow">--</span>s)
-                    </button>
-                    <button type="button" data-research-mode="comprehensiveUnion" class="de-research-mode-btn rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold px-3.5 py-2 text-xs transition-all flex items-center gap-1.5 cursor-pointer">
-                        <i class="bi bi-layers-fill text-indigo-600"></i> 🛡️ Hợp Nhất Đa Tầng (<span id="countModeUnion">--</span>s)
-                    </button>
-                    <button type="button" data-research-mode="dailyAdvisor4Core" class="de-research-mode-btn rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold px-3.5 py-2 text-xs transition-all flex items-center gap-1.5 cursor-pointer">
-                        <i class="bi bi-grid text-slate-600"></i> DA 4 Core (<span id="countModeDA4">--</span>s)
-                    </button>
+                <div class="text-2xl font-black text-emerald-950" id="kpiDeParityHeadChampionName">Bẻ Cầu Sóng Nhịp</div>
+                <div class="flex items-baseline gap-2">
+                    <span class="text-3xl font-black text-emerald-700" id="kpiDeParityHeadWinRate">55.4%</span>
+                    <span class="text-xs font-bold text-emerald-900/80" id="kpiDeParityHeadWinsText">(165 / 298 kỳ)</span>
+                </div>
+                <div class="text-xs text-emerald-900/70 border-t border-emerald-200/60 pt-2 flex items-center justify-between">
+                    <span>Chuỗi thắng max: <strong class="font-bold text-emerald-950" id="kpiDeParityHeadMaxStreak">9 kỳ</strong></span>
+                    <span>Hòa vốn 50.5%: <strong class="text-emerald-700 font-bold">+4.9%</strong></span>
                 </div>
             </div>
 
-            <!-- Active Strategy Details Box -->
-            <div class="mt-5 rounded-2xl border-2 border-amber-200 bg-amber-50/50 p-5" id="deResearchActiveBox">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-amber-200/80 pb-3">
+            <!-- Card 2: Quán quân Đít/Đuôi -->
+            <div class="rounded-2xl border border-purple-200 bg-gradient-to-br from-purple-50 to-violet-50 p-5 shadow-sm space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-black text-purple-900 uppercase tracking-wider">⭐ Quán Quân Đít/Đuôi</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-purple-200 text-purple-950">ĐỘC QUYỀN AI</span>
+                </div>
+                <div class="text-2xl font-black text-purple-950" id="kpiDeParityTailChampionName">Đề Ngũ Trụ AI</div>
+                <div class="flex items-baseline gap-2">
+                    <span class="text-3xl font-black text-purple-700" id="kpiDeParityTailWinRate">53.0%</span>
+                    <span class="text-xs font-bold text-purple-900/80" id="kpiDeParityTailWinsText">(158 / 298 kỳ)</span>
+                </div>
+                <div class="text-xs text-purple-900/70 border-t border-purple-200/60 pt-2 flex items-center justify-between">
+                    <span>Chuỗi thắng max: <strong class="font-bold text-purple-950" id="kpiDeParityTailMaxStreak">12 kỳ</strong></span>
+                    <span>Hòa vốn 50.5%: <strong class="text-purple-700 font-bold">+2.5%</strong></span>
+                </div>
+            </div>
+
+            <!-- Card 3: Quán quân Cả Cặp 25 Số -->
+            <div class="rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-5 shadow-sm space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-black text-amber-900 uppercase tracking-wider">👑 Quán Quân Cặp 25 Số</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-200 text-amber-950">VƯỢT CHUẨN 25%</span>
+                </div>
+                <div class="text-2xl font-black text-amber-950" id="kpiDeParityBothChampionName">Quán Quân Hợp Nhất 👑</div>
+                <div class="flex items-baseline gap-2">
+                    <span class="text-3xl font-black text-amber-700" id="kpiDeParityBothWinRate">28.2%</span>
+                    <span class="text-xs font-bold text-amber-900/80" id="kpiDeParityBothWinsText">(84 / 298 kỳ)</span>
+                </div>
+                <div class="text-xs text-amber-900/70 border-t border-amber-200/60 pt-2 flex items-center justify-between">
+                    <span>Chuỗi thắng max: <strong class="font-bold text-amber-950" id="kpiDeParityBothMaxStreak">4 kỳ</strong></span>
+                    <span>Chuẩn ngẫu nhiên: <strong class="text-amber-800 font-bold">25.0%</strong></span>
+                </div>
+            </div>
+
+            <!-- Card 4: Hiệu Quả Lợi Nhuận 1:99 -->
+            <div class="rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 to-blue-50 p-5 shadow-sm space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-black text-indigo-900 uppercase tracking-wider">💰 Lợi Nhuận 1:99 Cặp 25s</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-indigo-200 text-indigo-950">VỐN 2.5M/NGÀY</span>
+                </div>
+                <div class="text-2xl font-black text-indigo-950" id="kpiDeParityPnlAmount">+86,600,000 đ</div>
+                <div class="flex items-baseline gap-2">
+                    <span class="text-3xl font-black text-indigo-700" id="kpiDeParityRoiRate">+11.6%</span>
+                    <span class="text-xs font-bold text-indigo-900/80">Tỷ suất ROI ròng</span>
+                </div>
+                <div class="text-xs text-indigo-900/70 border-t border-indigo-200/60 pt-2 flex items-center justify-between">
+                    <span>Ngũ Trụ AI đạt max: <strong class="font-bold text-indigo-950">+106.4M (+14.3%)</strong></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- CARD DỰ ĐOÁN HÔM NAY / KỲ TIẾP THEO (LIVE PREDICTION) -->
+        <section class="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xl space-y-6">
+            <!-- Header card -->
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-5">
+                <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 text-white font-bold text-xs px-3 py-1 shadow-xs">
+                            <i class="bi bi-broadcast animate-pulse text-amber-300"></i> DỰ ĐOÁN KỲ MỚI NHẤT
+                        </span>
+                        <span class="text-lg sm:text-xl font-black text-slate-900" id="deParityTargetDateBadge">Kỳ --/--/----</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1" id="deParityTargetSubText">
+                        Dữ liệu niêm phong Strict PIT trước giờ quay thưởng · Tính toán từ dàn Đề hệ thống
+                    </p>
+                </div>
+                <!-- 1-Click Copy All Predictions -->
+                <button type="button" id="btnCopyDeParityPairNumbers" class="rounded-xl border border-amber-400 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black px-4 py-2.5 text-xs shadow-md transition-all flex items-center gap-2 shrink-0 cursor-pointer">
+                    <i class="bi bi-clipboard2-check-fill"></i> <span>Sao Chép Dàn Cặp 25 Số</span>
+                </button>
+            </div>
+
+            <!-- Method Selector Pills -->
+            <div>
+                <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2.5">
+                    Chọn phương pháp hiển thị dự đoán:
+                </div>
+                <div class="flex flex-wrap gap-2" id="deParityMethodSelectorPills">
+                    <!-- Dynamic method pills rendered by JS -->
+                </div>
+            </div>
+
+            <!-- Active Method Description Banner -->
+            <div class="rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50/80 via-white to-amber-50/50 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                        <span class="font-black text-slate-900 text-sm sm:text-base" id="deParityActiveMethodName">Quán Quân Hợp Nhất 👑</span>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-200 text-amber-950 uppercase" id="deParityActiveMethodTag">👑 QUÁN QUÂN ĐA MÔ HÌNH</span>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed max-w-3xl" id="deParityActiveMethodDesc">
+                        Kết hợp thế mạnh tối ưu: Dự đoán Đầu từ Markov Bậc 2 &amp; Streak và Đít từ Ngũ Trụ AI, đạt win rate cao nhất toàn diện.
+                    </p>
+                </div>
+                <div class="text-right shrink-0">
+                    <div class="text-[11px] font-bold text-slate-400 uppercase">Dạng cược khuyến nghị</div>
+                    <div class="text-xs font-black text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg px-2.5 py-1 mt-0.5">
+                        Dàn 25 Số Cặp hoặc 50 Số Đầu/Đít
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prediction 3-Block Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <!-- Block 1: Dự Đoán Đầu -->
+                <div class="rounded-2xl border-2 border-indigo-200 bg-gradient-to-b from-indigo-50/40 to-white p-5 space-y-4 shadow-sm flex flex-col justify-between">
                     <div>
-                        <h3 class="text-base font-black text-amber-950 flex items-center gap-2" id="deResearchActiveTitle">
-                            👑 Vùng Giao Thoa Vàng (DA ∩ Shadow)
-                        </h3>
-                        <p class="text-xs text-amber-900/80 mt-0.5" id="deResearchActiveDesc">
-                            Dàn siêu tinh tuyển chỉ chọn các con số được cả Daily-Advisor lẫn Shadow cùng đồng thuận. Vốn nhẹ 1.8M/ngày, Win Rate Live 32.1%, ROI +73.7% (1:99).
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-black text-indigo-900 uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="bi bi-arrow-up-right-square-fill text-indigo-600"></i> DỰ ĐOÁN ĐẦU
+                            </span>
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-black bg-indigo-100 text-indigo-800" id="deParityHeadConfBadge">58% tin cậy</span>
+                        </div>
+                        <div class="mt-4 flex items-center justify-between">
+                            <span class="text-3xl font-black text-indigo-950 tracking-tight" id="deParityHeadChoiceVi">Đầu Lẻ</span>
+                            <span class="text-sm font-black px-3 py-1 rounded-xl bg-indigo-600 text-white font-mono" id="deParityHeadChoiceDigits">1, 3, 5, 7, 9</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-2">
+                            Bao gồm 50 số có chữ số hàng chục thuộc cực được dự đoán.
                         </p>
                     </div>
-                    <div class="flex items-center gap-2 shrink-0">
-                        <span class="rounded-full bg-amber-200 text-amber-950 font-black text-xs px-3 py-1" id="deResearchActiveCountBadge">-- số</span>
-                        <button type="button" id="btnCopyDeResearchNumbers" class="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black px-4 py-2 text-xs shadow-sm transition-all cursor-pointer">
-                            <i class="bi bi-clipboard-check-fill"></i> Copy Dàn
-                        </button>
-                    </div>
+                    <button type="button" id="btnCopyDeParityHeadNumbers" class="w-full rounded-xl border border-indigo-300 bg-white hover:bg-indigo-50 text-indigo-900 font-bold px-3 py-2 text-xs transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
+                        <i class="bi bi-copy"></i> <span>Sao Chép Dàn 50 Số Đầu</span>
+                    </button>
                 </div>
 
-                <!-- Number Chips Container -->
-                <div class="mt-4 flex flex-wrap gap-2" id="deResearchChipsContainer"></div>
+                <!-- Block 2: Dự Đoán Đít / Đuôi -->
+                <div class="rounded-2xl border-2 border-purple-200 bg-gradient-to-b from-purple-50/40 to-white p-5 space-y-4 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-black text-purple-900 uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="bi bi-arrow-down-right-square-fill text-purple-600"></i> DỰ ĐOÁN ĐÍT (ĐUÔI)
+                            </span>
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-black bg-purple-100 text-purple-800" id="deParityTailConfBadge">55% tin cậy</span>
+                        </div>
+                        <div class="mt-4 flex items-center justify-between">
+                            <span class="text-3xl font-black text-purple-950 tracking-tight" id="deParityTailChoiceVi">Đít Chẵn</span>
+                            <span class="text-sm font-black px-3 py-1 rounded-xl bg-purple-600 text-white font-mono" id="deParityTailChoiceDigits">0, 2, 4, 6, 8</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-2">
+                            Bao gồm 50 số có chữ số hàng đơn vị thuộc cực được dự đoán.
+                        </p>
+                    </div>
+                    <button type="button" id="btnCopyDeParityTailNumbers" class="w-full rounded-xl border border-purple-300 bg-white hover:bg-purple-50 text-purple-900 font-bold px-3 py-2 text-xs transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
+                        <i class="bi bi-copy"></i> <span>Sao Chép Dàn 50 Số Đít</span>
+                    </button>
+                </div>
+
+                <!-- Block 3: Dự Đoán Cặp 25 Số -->
+                <div class="rounded-2xl border-2 border-amber-300 bg-gradient-to-b from-amber-50/50 to-white p-5 space-y-4 shadow-md flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-black text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="bi bi-grid-fill text-amber-600"></i> DẠNG CẶP 25 SỐ
+                            </span>
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-200 text-amber-950">GIAO THOA ĐẦU &amp; ĐÍT</span>
+                        </div>
+                        <div class="mt-4 flex items-center justify-between">
+                            <span class="text-3xl font-black text-amber-950 tracking-tight" id="deParityFormChoiceVi">Lẻ - Chẵn</span>
+                            <span class="text-lg font-black px-3.5 py-1 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-mono shadow-xs" id="deParityFormChoiceCode">LC</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-2">
+                            Dàn 25 số chuẩn xác nhất khi cả Đầu và Đít đồng thời nổ đúng cực (ăn 99 lần vốn).
+                        </p>
+                    </div>
+                    <button type="button" id="btnCopyDeParityPairBlockBtn" class="w-full rounded-xl border border-amber-400 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3 py-2 text-xs transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
+                        <i class="bi bi-copy"></i> <span>Sao Chép Dàn 25 Số Cặp</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Numbers Display Container for Pair 25 Numbers -->
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                        <i class="bi bi-collection-fill text-slate-500"></i> Danh Sách Dàn 25 Số Cặp (<span id="deParityPairCountText">25 số</span>):
+                    </span>
+                    <span class="text-[11px] text-slate-500 font-medium">Bấm vào số để sao chép nhanh</span>
+                </div>
+                <div class="flex flex-wrap gap-2" id="deParityPairChipsContainer">
+                    <!-- Chips inserted dynamically -->
+                </div>
+            </div>
+
+            <!-- Special Block: Dàn Đề Tinh Lọc Hệ Thống (Filtered Numbers) -->
+            <div class="rounded-2xl border border-teal-200 bg-gradient-to-br from-teal-50/60 via-white to-emerald-50/40 p-5 space-y-4 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-teal-100 pb-3">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-black text-teal-950 flex items-center gap-1.5">
+                                <i class="bi bi-funnel-fill text-teal-600"></i> Dàn Đề Tinh Lọc Hệ Thống Theo Chẵn/Lẻ
+                            </span>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-teal-200 text-teal-950 uppercase" id="deParityFilteredCountBadge">-- Số</span>
+                        </div>
+                        <p class="text-xs text-slate-600 mt-0.5">
+                            Lọc trực tiếp từ dàn Đề Markov &amp; Gap Hazard của hệ thống, chỉ giữ lại các con số thuộc đúng cực Đầu &amp; Đít được dự đoán. Rút gọn danh mục tối đa, bứt phá đòn bẩy!
+                        </p>
+                    </div>
+                    <button type="button" id="btnCopyDeParityFilteredNumbers" class="rounded-xl border border-teal-300 bg-teal-600 hover:bg-teal-500 text-white font-bold px-4 py-2 text-xs transition-all flex items-center gap-1.5 shadow-xs shrink-0 cursor-pointer">
+                        <i class="bi bi-clipboard-check"></i> <span>Sao Chép Dàn Tinh Lọc</span>
+                    </button>
+                </div>
+                <div class="flex flex-wrap gap-2" id="deParityFilteredChipsContainer">
+                    <!-- Chips inserted dynamically -->
+                </div>
             </div>
         </section>
 
-        <!-- BẢNG ĐỐI SOÁT TỔNG HỢP HIỆU NĂNG (BENCHMARK PERFORMANCE) -->
-        <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-5">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <!-- BẢNG ĐỐI SOÁT HIỆU NĂNG 5 PHƯƠNG PHÁP (BENCHMARK TABLE) -->
+        <section class="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xl space-y-5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
                 <div>
-                    <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
-                        <i class="bi bi-table text-indigo-600"></i>
-                        <span>Bảng Thống Kê Hiệu Năng & Đối Soát Định Lượng</span>
-                    </h3>
-                    <p class="text-xs text-slate-500 mt-0.5">
-                        Kiểm định 100% Strict PIT · Mức cược chuẩn 100K/con · Xét cả 2 cơ chế trả thưởng 1:84 & 1:99
+                    <h2 class="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2">
+                        <i class="bi bi-table text-indigo-600"></i> Bảng Đối Soát Hiệu Năng 5 Phương Pháp Dự Đoán Chẵn Lẻ
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-1">
+                        Khảo sát toàn diện 100% Strict Point-In-Time qua 298 kỳ năm 2026 (01/01/2026 – Nay). Ngưỡng hòa vốn cược Đầu/Đít: 50.5%, Cặp 25s: 25.2%.
                     </p>
                 </div>
-
-                <!-- Window Switcher Toggles -->
-                <div class="inline-flex rounded-xl border border-slate-200 bg-slate-100 p-1">
-                    <button type="button" id="btnWindowLiveCombat" class="window-toggle-btn rounded-lg bg-white text-indigo-900 font-black px-3.5 py-1.5 text-xs shadow-xs transition-all cursor-pointer">
-                        🔥 Thực Chiến Live (28 kỳ từ 17/09)
-                    </button>
-                    <button type="button" id="btnWindowAll2026" class="window-toggle-btn rounded-lg text-slate-600 font-bold px-3.5 py-1.5 text-xs hover:text-slate-900 transition-all cursor-pointer">
-                        📅 Toàn Bộ Năm 2026 (283 kỳ)
-                    </button>
+                <div class="text-xs font-bold text-slate-600 bg-slate-100 rounded-xl px-3 py-2 border border-slate-200 shrink-0">
+                    <i class="bi bi-info-circle-fill text-indigo-500 mr-1"></i> Tỷ lệ trả thưởng giả định: <strong>1 ăn 99</strong>
                 </div>
             </div>
 
-            <!-- Benchmark Table Container -->
-            <div class="overflow-x-auto rounded-2xl border border-slate-200">
+            <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs border-collapse">
                     <thead>
-                        <tr class="border-b border-slate-200 bg-slate-50 text-slate-600 uppercase font-black text-[11px]">
-                            <th scope="col" class="px-4 py-3">Chiến Lược Thử Nghiệm</th>
-                            <th scope="col" class="px-3 py-3 text-center">TB Con</th>
-                            <th scope="col" class="px-3 py-3 text-center">Trúng</th>
-                            <th scope="col" class="px-3 py-3 text-center">Win Rate</th>
-                            <th scope="col" class="px-3 py-3 text-center">Hòa Vốn</th>
-                            <th scope="col" class="px-3 py-3 text-center">Lợi Thế</th>
-                            <th scope="col" class="px-3 py-3 text-center">Max Trượt</th>
-                            <th scope="col" class="px-4 py-3 text-right">ROI (1:84)</th>
-                            <th scope="col" class="px-4 py-3 text-right">ROI (1:99 Online)</th>
+                        <tr class="border-b border-slate-200 bg-slate-50 text-[11px] font-black uppercase text-slate-600">
+                            <th class="py-3 px-3">Phương Pháp Dự Đoán</th>
+                            <th class="py-3 px-3">Danh Hiệu / Đặc Điểm</th>
+                            <th class="py-3 px-3 text-center">Dự Đoán Đầu (50 số)</th>
+                            <th class="py-3 px-3 text-center">Dự Đoán Đuôi (50 số)</th>
+                            <th class="py-3 px-3 text-center">Cả Cặp (25 số)</th>
+                            <th class="py-3 px-3 text-right">Lãi/Lỗ 1:99 (Cặp 25s)</th>
+                            <th class="py-3 px-3 text-right">ROI (%)</th>
+                            <th class="py-3 px-3 text-center">Dàn Tinh Lọc</th>
                         </tr>
                     </thead>
-                    <tbody id="deResearchBenchmarkBody" class="divide-y divide-slate-100"></tbody>
+                    <tbody id="deParityBenchmarkTableBody" class="divide-y divide-slate-100">
+                        <!-- Populated by JS -->
+                    </tbody>
                 </table>
             </div>
         </section>
 
-        <!-- NHẬT KÝ ĐỐI SOÁT TỪNG KỲ MỞ THƯỞNG (INTERACTIVE DAILY SETTLED LEDGER) -->
-        <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-5">
-            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 border-b border-slate-100 pb-5">
+        <!-- BẢNG NHẬT KÝ ĐỐI SOÁT TỪNG KỲ (DAILY SETTLED LEDGER) -->
+        <section class="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xl space-y-6">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200 pb-5">
                 <div>
-                    <div class="flex items-center gap-2">
-                        <span class="rounded-full bg-emerald-100 text-emerald-950 font-black text-[10px] px-2.5 py-0.5 uppercase border border-emerald-300">
-                            <i class="bi bi-shield-check"></i> MINH BẠCH 100% STRICT PIT
-                        </span>
-                        <span class="text-xs text-slate-500 font-semibold">Bấm vào bất kỳ dòng nào để xem chi tiết toàn bộ dàn số</span>
-                    </div>
-                    <h3 class="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2 mt-1">
-                        <i class="bi bi-journal-check text-emerald-600"></i>
-                        <span>Nhật Ký Đối Soát Chi Tiết Từng Kỳ & Kết Toán Lãi/Lỗ</span>
-                    </h3>
-                    <p class="text-xs text-slate-500 mt-0.5">
-                        Theo dõi chi tiết số con đánh, tiền cược (vốn 100K/con), tiền thưởng và lãi ròng của từng phương pháp qua từng ngày mở thưởng.
+                    <h2 class="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2">
+                        <i class="bi bi-journal-check text-indigo-600"></i> Nhật Ký Đối Soát Thực Tế Từng Kỳ (Strict PIT Ledger)
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-1">
+                        Chi tiết kết quả mở thưởng, dự đoán và kết toán tài chính của từng kỳ mở thưởng năm 2026.
                     </p>
                 </div>
 
-                <!-- Payout Rate Switcher -->
-                <div class="flex items-center gap-2 self-start lg:self-auto bg-slate-50 p-1.5 rounded-2xl border border-slate-200">
-                    <span class="text-xs font-bold text-slate-600 px-2">Cơ chế cược:</span>
-                    <button type="button" id="btnLedgerPayout84" class="ledger-payout-btn rounded-xl bg-amber-500 text-slate-950 font-black px-3.5 py-1.5 text-xs shadow-xs transition-all cursor-pointer">
-                        1:84 (Truyền Thống)
-                    </button>
-                    <button type="button" id="btnLedgerPayout99" class="ledger-payout-btn rounded-xl text-slate-600 hover:text-slate-900 font-bold px-3.5 py-1.5 text-xs transition-all cursor-pointer">
-                        1:99 (Online)
-                    </button>
+                <!-- Controls: Filter & Search -->
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <!-- Method Selector for Ledger -->
+                    <div class="flex items-center gap-1.5">
+                        <label for="deParityLedgerMethodSelect" class="text-xs font-bold text-slate-500">Xem theo PP:</label>
+                        <select id="deParityLedgerMethodSelect" class="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 shadow-2xs focus:border-indigo-500 focus:outline-none">
+                            <option value="optimalHybrid" selected>Quán Quân Hợp Nhất 👑</option>
+                            <option value="streakReversion">Bẻ Cầu Sóng Nhịp ⚡</option>
+                            <option value="deMarkovGapHazard">Đề Markov Bậc 2 &amp; Hazard 🔮</option>
+                            <option value="pentaCoreDe">Đề Ngũ Trụ AI ⭐</option>
+                            <option value="systemConsensus">Đồng Thuận 5 PP 🛡️</option>
+                        </select>
+                    </div>
+
+                    <!-- Search Input -->
+                    <div class="relative">
+                        <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                        <input type="text" id="deParityLedgerSearchInput" placeholder="Tìm ngày, số đề..." class="rounded-xl border border-slate-300 bg-white pl-8 pr-3 py-1.5 text-xs font-medium text-slate-800 shadow-2xs focus:border-indigo-500 focus:outline-none w-36 sm:w-44">
+                    </div>
+
+                    <!-- Limit Select -->
+                    <select id="deParityLedgerLimitSelect" class="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 shadow-2xs focus:border-indigo-500 focus:outline-none">
+                        <option value="30" selected>30 kỳ gần nhất</option>
+                        <option value="60">60 kỳ gần nhất</option>
+                        <option value="90">90 kỳ gần nhất</option>
+                        <option value="all">Toàn bộ năm 2026</option>
+                    </select>
                 </div>
             </div>
 
-            <!-- Controls Strip: Method Focus Tabs & Status Filters -->
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200">
-                <!-- Method Focus Tabs -->
-                <div class="flex flex-wrap items-center gap-1.5" id="deResearchLedgerMethodTabs">
-                    <button type="button" data-ledger-method="goldenIntersection" class="ledger-method-tab-btn rounded-xl border-2 border-amber-400 bg-amber-500 text-slate-950 font-black px-3 py-1.5 text-xs shadow-xs transition-all cursor-pointer">
-                        👑 Giao Thoa Vàng
-                    </button>
-                    <button type="button" data-ledger-method="shadowHalf" class="ledger-method-tab-btn rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 font-bold px-3 py-1.5 text-xs transition-all cursor-pointer">
-                        ⭐ Shadow Nửa Đầu
-                    </button>
-                    <button type="button" data-ledger-method="comprehensiveUnion" class="ledger-method-tab-btn rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 font-bold px-3 py-1.5 text-xs transition-all cursor-pointer">
-                        🛡️ Hợp Nhất Đa Tầng
-                    </button>
-                    <button type="button" data-ledger-method="dailyAdvisor4Core" class="ledger-method-tab-btn rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 font-bold px-3 py-1.5 text-xs transition-all cursor-pointer">
-                        📊 DA 4 Core
-                    </button>
-                    <button type="button" data-ledger-method="allMethods" class="ledger-method-tab-btn rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 font-bold px-3 py-1.5 text-xs transition-all cursor-pointer">
-                        🔄 So Sánh Cả 4 Phương Pháp
-                    </button>
-                </div>
-
-                <!-- Status Filters -->
-                <div class="flex flex-wrap items-center gap-1.5" id="deResearchLedgerFilters">
-                    <button type="button" data-ledger-filter="all" class="research-ledger-filter-btn rounded-lg bg-indigo-600 text-white font-bold px-3 py-1.5 text-xs shadow-xs cursor-pointer">
-                        Tất cả (<span id="ledgerCountAll">--</span>)
-                    </button>
-                    <button type="button" data-ledger-filter="hit" class="research-ledger-filter-btn rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 font-bold px-3 py-1.5 text-xs cursor-pointer">
-                        🎯 Trúng (<span id="ledgerCountHit">--</span>)
-                    </button>
-                    <button type="button" data-ledger-filter="loss" class="research-ledger-filter-btn rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 font-bold px-3 py-1.5 text-xs cursor-pointer">
-                        ❌ Trượt (<span id="ledgerCountLoss">--</span>)
-                    </button>
-                </div>
+            <!-- Status Filter Tabs -->
+            <div class="flex flex-wrap gap-1.5 text-xs font-bold" id="deParityLedgerFilterButtons">
+                <button type="button" class="btn-de-parity-filter rounded-xl px-3 py-1.5 text-xs border border-amber-400 bg-amber-500 text-slate-950 font-black shadow-xs cursor-pointer transition-all" data-filter="all">
+                    Tất Cả (<span id="countFilterAll">298</span>)
+                </button>
+                <button type="button" class="btn-de-parity-filter rounded-xl px-3 py-1.5 text-xs border border-slate-200 bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-all" data-filter="hit_pair">
+                    🌟 Trúng Cả Cặp (<span id="countFilterPair">84</span>)
+                </button>
+                <button type="button" class="btn-de-parity-filter rounded-xl px-3 py-1.5 text-xs border border-slate-200 bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-all" data-filter="hit_head">
+                    🎯 Trúng Đầu (<span id="countFilterHead">168</span>)
+                </button>
+                <button type="button" class="btn-de-parity-filter rounded-xl px-3 py-1.5 text-xs border border-slate-200 bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-all" data-filter="hit_tail">
+                    🎯 Trúng Đít (<span id="countFilterTail">158</span>)
+                </button>
+                <button type="button" class="btn-de-parity-filter rounded-xl px-3 py-1.5 text-xs border border-slate-200 bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-all" data-filter="loss">
+                    ❌ Trượt Cả 2 (<span id="countFilterLoss">56</span>)
+                </button>
             </div>
 
-            <!-- Daily Ledger Table -->
-            <div class="overflow-x-auto rounded-2xl border border-slate-200 custom-scrollbar max-h-[620px] overflow-y-auto">
+            <!-- Ledger Table -->
+            <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs border-collapse">
-                    <thead class="sticky top-0 z-10 bg-slate-100 shadow-xs" id="deResearchDailyLedgerHeader">
-                        <!-- Dynamic columns depending on focused method -->
+                    <thead>
+                        <tr class="border-b border-slate-200 bg-slate-50 text-[11px] font-black uppercase text-slate-600">
+                            <th class="py-3 px-3">Ngày Mở Thưởng</th>
+                            <th class="py-3 px-3 text-center">ĐB Thực Tế</th>
+                            <th class="py-3 px-3 text-center">Đầu Thực Tế</th>
+                            <th class="py-3 px-3 text-center">Đít Thực Tế</th>
+                            <th class="py-3 px-3 text-center">Dạng Thực Tế</th>
+                            <th class="py-3 px-3 text-center">Dự Đoán (Đ-Đ-C)</th>
+                            <th class="py-3 px-3 text-center">Kết Quả Đối Soát</th>
+                            <th class="py-3 px-3 text-right">Lãi/Lỗ 1:99 (Cặp 25s)</th>
+                            <th class="py-3 px-3 text-center">Dàn Tinh Lọc</th>
+                            <th class="py-3 px-3 text-center">Dàn Số</th>
+                        </tr>
                     </thead>
-                    <tbody id="deResearchDailyLedgerBody" class="divide-y divide-slate-100 cursor-pointer"></tbody>
+                    <tbody id="deParityLedgerTableBody" class="divide-y divide-slate-100 font-mono">
+                        <!-- Populated by JS -->
+                    </tbody>
                 </table>
             </div>
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-slate-500 px-1 pt-1">
-                <span>💡 <em>Mẹo: Click vào bất kỳ dòng nào hoặc bấm nút <strong>👁️ Xem Dàn</strong> để mở modal xem toàn bộ dàn số chi tiết và con số trúng.</em></span>
-                <span id="deResearchLedgerSummaryFootnote" class="font-bold text-slate-700">Đang hiển thị: 👑 Vùng Giao Thoa Vàng</span>
-            </div>
         </section>
+    </div>
 
-        <!-- 4 PHÁT HIỆN TOÁN HỌC & 3 KHUYẾN NGHỊ THỰC CHIẾN -->
-        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- 4 Phát Hiện Toán Học -->
-            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
-                <h3 class="text-base font-black text-slate-900 flex items-center gap-2">
-                    <i class="bi bi-lightbulb-fill text-amber-500"></i>
-                    <span>Bốn Phát Hiện Toán Học & Định Lượng Cốt Lõi</span>
-                </h3>
-                <div class="space-y-3">
-                    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                        <div class="font-black text-xs text-amber-800 uppercase">1. Hiện tượng Phình Dàn của Daily-Advisor</div>
-                        <p class="text-xs text-slate-600 mt-1 leading-relaxed">
-                            Các động cơ Daily-Advisor độc lập phân tán. Khi gộp thuần túy, dàn bị nở ra <strong>32 đến 60 số</strong>. Ngưỡng hòa vốn bị đẩy lên <strong>60.7% – 71.9%</strong>, khiến cược phẳng truyền thống (1:84) bị âm nhẹ dù tần suất trúng cao.
-                        </p>
+    <!-- ========================================================================= -->
+    <!-- MODAL: TRA CỨU CHI TIẾT DÀN ĐÁNH TỪNG NGÀY (PARITY RESEARCH DAY MODAL) -->
+    <!-- ========================================================================= -->
+    <div id="deParityDayModal" class="fixed inset-0 z-[9999] hidden items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity">
+        <div class="relative w-full max-w-4xl rounded-3xl border-2 border-indigo-200 bg-white text-slate-800 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between border-b border-slate-200 p-4 sm:p-5 bg-gradient-to-r from-slate-50 via-indigo-50/30 to-amber-50/30">
+                <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="rounded-lg bg-indigo-600 text-white font-black text-xs px-2.5 py-1 uppercase tracking-wider">
+                            CHI TIẾT KỲ MỞ THƯỞNG
+                        </span>
+                        <span class="text-base sm:text-lg font-black text-slate-900" id="deParityModalTitleDate">Kỳ --/--/----</span>
                     </div>
-                    <div class="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4">
-                        <div class="font-black text-xs text-emerald-800 uppercase">2. Ưu thế Đột phá của Shadow (Trùng lặp > 85%)</div>
-                        <p class="text-xs text-slate-600 mt-1 leading-relaxed">
-                            Các hệ thống Shadow vốn là bộ lọc đồng thuận Bayes đã khử gan cứng. 4 hệ trong Shadow <strong>trùng khớp nhau tới >85%</strong>. Do đó tổng dàn chỉ có <strong>20.6 đến 21.4 con/ngày</strong>, giúp đạt <strong>ROI khủng +71.3% ở Live</strong>!
-                        </p>
-                    </div>
-                    <div class="rounded-2xl border border-amber-200 bg-amber-50/50 p-4">
-                        <div class="font-black text-xs text-amber-900 uppercase">3. Sức mạnh Tối thượng của Vùng Giao Thoa Vàng</div>
-                        <p class="text-xs text-slate-600 mt-1 leading-relaxed">
-                            Tập hợp các số được <strong>cả Daily-Advisor lẫn Shadow cùng xác nhận</strong> thu gọn dàn về <strong>17.6 đến 18.3 số/ngày</strong>. Dàn này sinh lời dương cả năm (+21.9M ở 1:84) và <strong>bứt phá +47.4% ROI (1:84), +73.7% ROI (1:99) ở Live</strong>.
-                        </p>
-                    </div>
-                    <div class="rounded-2xl border border-indigo-200 bg-indigo-50/50 p-4">
-                        <div class="font-black text-xs text-indigo-900 uppercase">4. Hiệu ứng Kênh Cược: Sự khác biệt giữa 1:84 và 1:99 Online</div>
-                        <p class="text-xs text-slate-600 mt-1 leading-relaxed">
-                            Chênh lệch phế 15 điểm ăn tạo ra bước nhảy vọt <strong>+17.8% ROI</strong> trên mọi dàn cược. Tỷ lệ 1 ăn 99 biến gần như mọi chiến lược từ hòa vốn thành siêu lợi nhuận (+13.8% đến +73.7% ROI).
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 3 Khuyến Nghị Thực Chiến & Quản Trị Vốn -->
-            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
-                <h3 class="text-base font-black text-slate-900 flex items-center gap-2">
-                    <i class="bi bi-shield-shaded text-indigo-600"></i>
-                    <span>Ba Khuyến Nghị Chiến Thuật & Quản Trị Vốn Sống Còn</span>
-                </h3>
-                <div class="space-y-3">
-                    <div class="rounded-2xl border-l-4 border-l-amber-500 border border-slate-200 bg-slate-50 p-4">
-                        <div class="flex items-center justify-between">
-                            <span class="font-black text-xs text-slate-900">👑 Chiến Thuật 1: Bắn Tỉa Tinh Tuyển (ROI Cực Đại)</span>
-                            <span class="rounded bg-amber-200 text-amber-950 font-black text-[10px] px-2 py-0.5">Vốn Mỏng</span>
-                        </div>
-                        <p class="text-xs text-slate-600 mt-1 leading-relaxed">
-                            Chỉ đánh duy nhất <strong>Vùng Giao Thoa Vàng (~18 số)</strong> hoặc <strong>Shadow Nửa Đầu Gộp (~21 số)</strong>. Vốn nhẹ 1.8M – 2.1M/ngày (100K/con). Kỳ vọng ROI +45% đến +73%.
-                        </p>
-                    </div>
-                    <div class="rounded-2xl border-l-4 border-l-emerald-500 border border-slate-200 bg-slate-50 p-4">
-                        <div class="flex items-center justify-between">
-                            <span class="font-black text-xs text-slate-900">🛡️ Chiến Thuật 2: Pháo Đài Bất Khả Xâm Phạm</span>
-                            <span class="rounded bg-emerald-200 text-emerald-950 font-black text-[10px] px-2 py-0.5">Ăn Đều</span>
-                        </div>
-                        <p class="text-xs text-slate-600 mt-1 leading-relaxed">
-                            Đánh dàn <strong>Hợp Nhất Đa Tầng (~43.5 số)</strong>. Win Rate Live 60.7% (17/28 kỳ). Max trượt đúng 2 kỳ trong suốt đợt Live. Phù hợp người sợ chuỗi thua dài.
-                        </p>
-                    </div>
-                    <div class="rounded-2xl border-l-4 border-l-violet-500 border border-slate-200 bg-slate-50 p-4">
-                        <div class="flex items-center justify-between">
-                            <span class="font-black text-xs text-slate-900">💎 Chiến Thuật 3: Phân Tầng Vốn Thông Minh (Tiered Sizing)</span>
-                            <span class="rounded bg-violet-200 text-violet-950 font-black text-[10px] px-2 py-0.5">Chuyên Nghiệp</span>
-                        </div>
-                        <p class="text-xs text-slate-600 mt-1 leading-relaxed">
-                            Cược <strong>300K/số cho dàn Giao Thoa Vàng (~18 số)</strong> và cược nhẹ <strong>100K/số cho dàn Lót (~44 số)</strong>. Win 71.4% (20/28 kỳ). Nổ VIP ăn 25.2M lãi đậm (+40.9M ở 1:84, +97.9M ở 1:99).
-                        </p>
-                    </div>
-                    <!-- Hộp cảnh báo quản trị vốn -->
-                    <div class="rounded-2xl border border-rose-300 bg-rose-50/80 p-4 text-xs text-rose-900 space-y-1">
-                        <div class="font-black text-[11px] uppercase flex items-center gap-1.5 text-rose-800">
-                            <i class="bi bi-exclamation-triangle-fill text-rose-600"></i> Nguyên Tắc Sống Còn Trong Quản Trị Vốn
-                        </div>
-                        <p class="leading-relaxed">
-                            Luôn chia quỹ đầu tư thành tối thiểu <strong>20 – 25 ngày cược độc lập</strong>. <strong>Tuyệt đối KHÔNG gấp thếp (Martingale)</strong> khi gặp chuỗi trượt. Ưu tiên các kênh cược tỷ lệ cao (&ge; 1:98) để tối đa hóa biên độ an toàn.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- CẨM NANG HƯỚNG DẪN ĐỊNH LƯỢNG & CƠ CHẾ TÍNH TOÁN MINH BẠCH -->
-        <section class="rounded-3xl border border-indigo-200 bg-gradient-to-br from-indigo-50/50 via-white to-amber-50/40 p-6 sm:p-8 shadow-sm space-y-6">
-            <div class="border-b border-indigo-100 pb-5">
-                <div class="inline-flex items-center gap-2 rounded-full border border-indigo-300 bg-indigo-100/70 px-3.5 py-1 text-xs font-black tracking-wider uppercase text-indigo-900">
-                    <i class="bi bi-book-half"></i> CẨM NANG NGHIÊN CỨU &amp; HƯỚNG DẪN THỰC CHIẾN
-                </div>
-                <h3 class="mt-2 text-xl sm:text-2xl font-black text-slate-900">
-                    Bản Chất Các Phương Pháp, Cơ Chế Vận Hành &amp; Công Thức Toán Học
-                </h3>
-                <p class="text-xs sm:text-sm text-slate-600 mt-1 max-w-4xl leading-relaxed">
-                    Tài liệu giải thích tường minh bản chất xác suất của từng dàn số, giải phẫu nguyên nhân thành công, công thức tính toán chi phí cược, tiền thưởng trúng và sự tác động của chênh lệch phế 1:84 vs 1:99 Online.
-                </p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <!-- Card 1: Bản Chất 4 Phương Pháp -->
-                <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3">
-                    <h4 class="text-sm font-black text-slate-900 flex items-center gap-2">
-                        <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-500 text-slate-950 font-black text-xs">1</span>
-                        <span>Bản Chất Của Từng Phương Pháp &amp; Vì Sao Hiệu Quả?</span>
-                    </h4>
-                    <div class="space-y-2.5 text-xs text-slate-600 leading-relaxed">
-                        <div class="rounded-xl border border-amber-200 bg-amber-50/50 p-3">
-                            <strong class="text-amber-950 font-bold">👑 Vùng Giao Thoa Vàng (DA ∩ Shadow):</strong>
-                            <p class="mt-1">
-                                Tập hợp các con số được <strong>đồng thuận tuyệt đối</strong> từ cả 2 trường phái độc lập: Máy học AI (Daily-Advisor) và Chuỗi Bayes (Shadow). Phép giao lọc bỏ 100% số rác, chỉ giữ lại ~18 con tinh tuyển. Vốn cược nhẹ nhất (1.8M/ngày), nhưng đạt <strong>ROI kỷ lục +73.7% ở Live</strong>.
-                            </p>
-                        </div>
-                        <div class="rounded-xl border border-emerald-200 bg-emerald-50/50 p-3">
-                            <strong class="text-emerald-950 font-bold">⭐ Shadow 1/2 Đầu Gộp:</strong>
-                            <p class="mt-1">
-                                Lấy 50% số đầu của 4 hệ Master Suite Shadow. Nhờ chia sẻ bộ lọc Bayesian chống gan, độ trùng khớp giữa các hệ lên tới <strong>> 85%</strong>. Dàn chỉ nở đến ~21 số, Win Rate Live 35.7%, mang lại <strong>lãi ròng +41.2M VNĐ (1:99)</strong>.
-                            </p>
-                        </div>
-                        <div class="rounded-xl border border-indigo-200 bg-indigo-50/50 p-3">
-                            <strong class="text-indigo-950 font-bold">🛡️ Hợp Nhất Đa Tầng (DA ∪ Shadow):</strong>
-                            <p class="mt-1">
-                                Phép hợp bảo hiểm rủi ro kép. Bao phủ rộng ~43 con. Nhờ tính bù trừ chéo, tỷ lệ nổ đạt <strong>60.7% (17/28 kỳ)</strong>, chuỗi trượt tối đa không bao giờ vượt quá <strong>2 kỳ</strong>. Phù hợp tuyệt đối với người chơi thích ăn đều.
-                            </p>
-                        </div>
-                        <div class="rounded-xl border border-rose-200 bg-rose-50/50 p-3">
-                            <strong class="text-rose-950 font-bold">⚠️ DA Top 20 Gộp &amp; Hiện Tượng Phình Dàn:</strong>
-                            <p class="mt-1">
-                                Các động cơ Daily-Advisor độc lập phân tán. Khi gộp thuần túy, dàn bị nở ra 51 – 60 con khiến ngưỡng hòa vốn bị đẩy lên 71.9%. Đánh kênh 1:84 sẽ bị âm phế (-5.7% ROI), nhưng đánh kênh 1:99 Online vẫn sinh lời <strong>+11.2% (+18.9M)</strong>.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card 2: Công Thức Toán Học Chi Tiết -->
-                <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3">
-                    <h4 class="text-sm font-black text-slate-900 flex items-center gap-2">
-                        <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-indigo-600 text-white font-black text-xs">2</span>
-                        <span>Công Thức Toán Học Tính Vốn, Thưởng &amp; Lãi Ròng (P&amp;L)</span>
-                    </h4>
-                    <div class="space-y-2.5 text-xs text-slate-600 leading-relaxed">
-                        <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                            <span class="font-bold text-slate-900 block">1. Chi phí cược mỗi ngày (Tiền Vốn):</span>
-                            <div class="mt-1 font-mono text-[11px] bg-white p-2 rounded-lg border border-slate-200 text-slate-800">
-                                Vốn Cược = Số Lượng Số × Mức Cược (100.000 VNĐ)<br>
-                                <em>Ví dụ: Dàn 18 số có tiền cược = 18 × 100K = 1.800.000 VNĐ</em>
-                            </div>
-                        </div>
-                        <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                            <span class="font-bold text-slate-900 block">2. Doanh thu trả thưởng khi Trúng Đề:</span>
-                            <div class="mt-1 font-mono text-[11px] bg-white p-2 rounded-lg border border-slate-200 text-slate-800">
-                                • Tỷ lệ 1:84: Tiền Thắng = 100K × 84 = <strong>8.400.000 VNĐ</strong><br>
-                                • Tỷ lệ 1:99 Online: Tiền Thắng = 100K × 99 = <strong>9.900.000 VNĐ</strong>
-                            </div>
-                        </div>
-                        <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                            <span class="font-bold text-slate-900 block">3. Lợi nhuận ròng hàng ngày (P&amp;L):</span>
-                            <div class="mt-1 font-mono text-[11px] bg-white p-2 rounded-lg border border-slate-200 text-slate-800">
-                                • Khi Trúng (1:84): Lãi Ròng = 8.400K - Vốn Cược<br>
-                                &nbsp;&nbsp;<em>(VD dàn 18 số trúng: 8.400K - 1.800K = +6.600.000 VNĐ)</em><br>
-                                • Khi Trượt: Lỗ Ròng = - Vốn Cược<br>
-                                &nbsp;&nbsp;<em>(VD dàn 18 số trượt: -1.800.000 VNĐ)</em>
-                            </div>
-                        </div>
-                        <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                            <span class="font-bold text-slate-900 block">4. Điểm hòa vốn lý thuyết (Break-even Rate):</span>
-                            <div class="mt-1 font-mono text-[11px] bg-white p-2 rounded-lg border border-slate-200 text-slate-800">
-                                P_hòa_vốn = (Số Con / 84) hoặc (Số Con / 99)<br>
-                                <em>Dàn 18 số ở 1:84 cần win ≥ 21.4%; ở 1:99 chỉ cần win ≥ 18.2%!</em>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card 3: So Sánh 1:84 vs 1:99 Online -->
-                <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3">
-                    <h4 class="text-sm font-black text-slate-900 flex items-center gap-2">
-                        <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-emerald-600 text-white font-black text-xs">3</span>
-                        <span>Hiệu Ứng Kênh Cược: Sự Khác Biệt Giữa 1:84 và 1:99 Online</span>
-                    </h4>
-                    <p class="text-xs text-slate-600">
-                        Chênh lệch 15 điểm ăn tạo ra một bước nhảy vọt lợi nhuận khổng lồ trên cùng một dàn số:
+                    <p class="text-xs text-slate-500 mt-1" id="deParityModalSubtitle">
+                        Đối soát dự đoán Chẵn/Lẻ và danh mục dàn số chi tiết
                     </p>
-                    <div class="overflow-x-auto rounded-xl border border-slate-200">
-                        <table class="w-full text-left text-[11px] border-collapse">
-                            <thead>
-                                <tr class="bg-slate-100 text-slate-700 font-black border-b border-slate-200">
-                                    <th scope="col" class="p-2">Chiến lược</th>
-                                    <th scope="col" class="p-2 text-center">TB Con</th>
-                                    <th scope="col" class="p-2 text-right">Lãi (1:84)</th>
-                                    <th scope="col" class="p-2 text-right">Lãi (1:99)</th>
-                                    <th scope="col" class="p-2 text-right">Chênh Lệch</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-100 font-mono">
-                                <tr>
-                                    <td class="p-2 font-bold font-sans">👑 Giao Thoa Vàng</td>
-                                    <td class="p-2 text-center">18.3</td>
-                                    <td class="p-2 text-right text-emerald-600 font-bold">+24.3M</td>
-                                    <td class="p-2 text-right text-emerald-700 font-black bg-emerald-50">+37.8M</td>
-                                    <td class="p-2 text-right text-amber-600 font-bold">+13.5M (+26.3% ROI)</td>
-                                </tr>
-                                <tr>
-                                    <td class="p-2 font-bold font-sans">⭐ Shadow Nửa Đầu</td>
-                                    <td class="p-2 text-center">20.6</td>
-                                    <td class="p-2 text-right text-emerald-600 font-bold">+26.2M</td>
-                                    <td class="p-2 text-right text-emerald-700 font-black bg-emerald-50">+41.2M</td>
-                                    <td class="p-2 text-right text-amber-600 font-bold">+15.0M (+26.0% ROI)</td>
-                                </tr>
-                                <tr>
-                                    <td class="p-2 font-bold font-sans">🛡️ Hợp Nhất Đa Tầng</td>
-                                    <td class="p-2 text-center">43.5</td>
-                                    <td class="p-2 text-right text-emerald-600 font-bold">+20.9M</td>
-                                    <td class="p-2 text-right text-emerald-700 font-black bg-emerald-50">+46.4M</td>
-                                    <td class="p-2 text-right text-amber-600 font-bold">+25.5M (+21.0% ROI)</td>
-                                </tr>
-                                <tr>
-                                    <td class="p-2 font-bold font-sans">⚠️ DA All 8 Gộp</td>
-                                    <td class="p-2 text-center">60.4</td>
-                                    <td class="p-2 text-right text-rose-600 font-bold">-9.6M</td>
-                                    <td class="p-2 text-right text-emerald-700 font-black bg-emerald-50">+18.9M</td>
-                                    <td class="p-2 text-right text-emerald-600 font-bold">+28.5M (Biến Lỗ Thành Lãi)</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                </div>
+                <button type="button" id="btnCloseDeParityDayModal" class="rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-700 h-9 w-9 flex items-center justify-center transition-colors cursor-pointer">
+                    <i class="bi bi-x-lg text-base"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-5 sm:p-6 overflow-y-auto space-y-6">
+                <!-- Special prize banner -->
+                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <div class="text-xs font-bold text-slate-500 uppercase">Giải Đặc Biệt thực tế</div>
+                        <div class="flex items-baseline gap-3 mt-1">
+                            <span class="text-3xl font-black text-rose-600 font-mono tracking-wider" id="deParityModalActualSp">--</span>
+                            <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700" id="deParityModalActualParityText">
+                                Đầu Chẵn - Đít Lẻ (CL)
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2 text-xs" id="deParityModalHitBadges">
+                        <!-- Hit badges inserted dynamically -->
                     </div>
                 </div>
 
-                <!-- Card 4: Hướng Dẫn Chọn Dàn & Quản Trị Vốn -->
-                <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3">
-                    <h4 class="text-sm font-black text-slate-900 flex items-center gap-2">
-                        <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-violet-600 text-white font-black text-xs">4</span>
-                        <span>Hướng Dẫn Lựa Chọn Phương Pháp Theo Hồ Sơ Người Chơi</span>
-                    </h4>
-                    <div class="space-y-2.5 text-xs text-slate-600 leading-relaxed">
-                        <div class="rounded-xl border border-amber-200 bg-amber-50/50 p-3">
-                            <strong class="text-amber-950 font-bold">1. Người vốn mỏng / Ưu tiên ROI cực đại:</strong>
-                            <p class="mt-1">
-                                Đánh duy nhất dàn <strong>Giao Thoa Vàng (~18 con)</strong> hoặc <strong>Shadow Nửa Đầu (~21 con)</strong>. Vốn chuẩn bị chỉ cần 1.8M – 2.1M/ngày. Tỷ suất lợi nhuận kỳ vọng từ +45% đến +73%.
-                            </p>
+                <!-- 5 Methods Comparison for this day -->
+                <div>
+                    <div class="text-xs font-black text-slate-700 uppercase tracking-wider mb-2.5">
+                        Dự đoán của 5 phương pháp trong kỳ này:
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5" id="deParityModalMethodsGrid">
+                        <!-- Grid items inserted dynamically -->
+                    </div>
+                </div>
+
+                <!-- Detailed Numbers of selected method -->
+                <div class="space-y-4 pt-2 border-t border-slate-200">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-black text-slate-800 uppercase tracking-wider">
+                            Dàn Số Cụ Thể Của Kỳ Này (<span id="deParityModalSelectedMethodName">Quán Quân Hợp Nhất 👑</span>):
+                        </span>
+                    </div>
+
+                    <!-- 25 Pair Numbers -->
+                    <div class="rounded-xl border border-amber-200 bg-amber-50/40 p-3.5 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-amber-950 flex items-center gap-1.5">
+                                <i class="bi bi-grid-fill text-amber-600"></i> Dàn 25 Số Cặp (<span id="deParityModalPairFormText">LC</span>):
+                            </span>
+                            <button type="button" id="btnCopyModalPairNums" class="text-xs text-amber-900 font-bold hover:underline cursor-pointer">Sao chép</button>
                         </div>
-                        <div class="rounded-xl border border-emerald-200 bg-emerald-50/50 p-3">
-                            <strong class="text-emerald-950 font-bold">2. Người sợ chuỗi thua dài / Thích nổ đều:</strong>
-                            <p class="mt-1">
-                                Đánh dàn <strong>Hợp Nhất Đa Tầng (~43 con)</strong>. Tần suất trúng 60.7% (10 kỳ trúng 6 kỳ). Max trượt chỉ 2 kỳ liên tiếp. Dòng tiền về đều đặn, tâm lý thi đấu cực kỳ thanh thản.
-                            </p>
+                        <div class="flex flex-wrap gap-1.5" id="deParityModalPairChips"></div>
+                    </div>
+
+                    <!-- Filtered Numbers -->
+                    <div class="rounded-xl border border-teal-200 bg-teal-50/40 p-3.5 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-teal-950 flex items-center gap-1.5">
+                                <i class="bi bi-funnel-fill text-teal-600"></i> Dàn Đề Tinh Lọc Hệ Thống:
+                            </span>
+                            <button type="button" id="btnCopyModalFilteredNums" class="text-xs text-teal-900 font-bold hover:underline cursor-pointer">Sao chép</button>
                         </div>
-                        <div class="rounded-xl border border-violet-200 bg-violet-50/50 p-3">
-                            <strong class="text-violet-950 font-bold">3. Người chơi chuyên nghiệp (Phân Tầng Vốn):</strong>
-                            <p class="mt-1">
-                                Đánh kết hợp: Đặt cược <strong>300K/con cho 18 số Giao Thoa Vàng</strong> (vốn 5.4M) và cược nhẹ <strong>100K/con cho các số còn lại của dàn Hợp Nhất</strong> (vốn 2.5M). Khi nổ VIP nhận 25.2M – 29.7M, lãi cực khủng!
-                            </p>
-                        </div>
+                        <div class="flex flex-wrap gap-1.5" id="deParityModalFilteredChips"></div>
                     </div>
                 </div>
             </div>
-        </section>
+
+            <!-- Modal Footer -->
+            <div class="border-t border-slate-200 bg-slate-50 p-4 flex justify-end">
+                <button type="button" id="btnDismissDeParityDayModal" class="rounded-xl border border-slate-300 bg-white hover:bg-slate-100 px-5 py-2 text-xs font-bold text-slate-700 transition-all cursor-pointer">
+                    Đóng
+                </button>
+            </div>
+        </div>
     </div>
 
 </main>
