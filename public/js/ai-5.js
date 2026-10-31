@@ -17,10 +17,15 @@
 
     const nf = new Intl.NumberFormat('vi-VN');
 
-    function formatMoney(k) {
-        if (k === null || k === undefined || Number.isNaN(k)) return '0K';
-        const sign = k > 0 ? '+' : '';
-        return `${sign}${nf.format(k)}K`;
+    function formatMoney(k, options = {}) {
+        if (k === null || k === undefined || Number.isNaN(k)) return '0M';
+        const inM = Number(k) / 1000;
+        const sign = (options.signed !== false && inM > 0) ? '+' : '';
+        const formatted = new Intl.NumberFormat('vi-VN', {
+            minimumFractionDigits: options.minDigits ?? (Number.isInteger(inM) ? 0 : 1),
+            maximumFractionDigits: options.maxDigits ?? 1
+        }).format(inM);
+        return `${sign}${formatted}M`;
     }
 
     function showToast(message) {
@@ -259,7 +264,7 @@
                                 </h5>
                             </div>
                             <div class="text-[11px] font-mono text-slate-500">
-                                X2: cược 2K (ăn 168K) · X1: cược 1K (ăn 84K)
+                                X2: cược 2M (ăn 168M) · X1: cược 1M (ăn 84M)
                             </div>
                         </div>
 
@@ -270,7 +275,7 @@
                                     <span class="rounded bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 px-2 py-0.5 text-[10px] font-black shadow-2xs">DÀN X2 (VIP)</span>
                                     <span>Đồng thuận cao (${deX2Nums.length} số):</span>
                                 </span>
-                                <span class="text-[11px] text-amber-800 font-bold font-mono">Cược 2K/số · Ăn 168K</span>
+                                <span class="text-[11px] text-amber-800 font-bold font-mono">Cược 2M/số · Ăn 168M</span>
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 ${deX2Nums.map(n => {
@@ -297,7 +302,7 @@
                                         <span class="rounded bg-indigo-100 text-indigo-900 border border-indigo-200 px-2 py-0.5 text-[10px] font-bold">DÀN X1 (LÓT)</span>
                                         <span>Bảo hiểm rủi ro (${deX1Nums.length} số):</span>
                                     </span>
-                                    <span class="text-[11px] text-slate-500 font-mono">Cược 1K/số · Ăn 84K</span>
+                                    <span class="text-[11px] text-slate-500 font-mono">Cược 1M/số · Ăn 84M</span>
                                 </div>
                                 <div class="flex flex-wrap gap-2">
                                     ${deX1Nums.map(n => {
@@ -316,7 +321,7 @@
                         <!-- Gợi ý Top 20 phẳng -->
                         <div class="pt-2 border-t border-dashed border-slate-200 text-xs text-slate-500 flex flex-wrap items-center justify-between gap-2">
                             <span>Hoặc đánh <strong>Top 20 Đề phẳng</strong>: ${deNums.join(' ')}</span>
-                            <span class="font-mono text-purple-700 font-bold">Vốn 20K · Ăn 84K</span>
+                            <span class="font-mono text-purple-700 font-bold">Vốn 20M · Ăn 84M</span>
                         </div>
                     </div>
 
@@ -332,7 +337,7 @@
                                 </h5>
                             </div>
                             <div class="text-[11px] font-mono text-slate-500">
-                                Hệ số cược = Số phiếu bầu (22K x Hệ số) · Ăn 80K x Hệ số/nháy
+                                Hệ số cược = Số phiếu bầu (2.2M x Hệ số) · Ăn 8M x Hệ số/nháy
                             </div>
                         </div>
 
@@ -341,7 +346,7 @@
                             <div class="flex flex-col sm:flex-row sm:items-center gap-2">
                                 <span class="min-w-[170px] inline-flex items-center gap-1.5 text-xs font-black text-rose-800">
                                     <span class="rounded bg-gradient-to-r from-rose-600 to-pink-600 text-white px-2 py-0.5 text-[10px] font-black shadow-2xs">TẦNG X5 (5 AI)</span>
-                                    <span>Cược 110K/số:</span>
+                                    <span>Cược 11M/số:</span>
                                 </span>
                                 <div class="flex flex-wrap gap-2">
                                     ${x5List.map(n => `
@@ -358,7 +363,7 @@
                             <div class="flex flex-col sm:flex-row sm:items-center gap-2">
                                 <span class="min-w-[170px] inline-flex items-center gap-1.5 text-xs font-black text-amber-900">
                                     <span class="rounded bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 px-2 py-0.5 text-[10px] font-black shadow-2xs">TẦNG X4 (4 AI)</span>
-                                    <span>Cược 88K/số:</span>
+                                    <span>Cược 8.8M/số:</span>
                                 </span>
                                 <div class="flex flex-wrap gap-2">
                                     ${x4List.map(n => `
@@ -375,7 +380,7 @@
                             <div class="flex flex-col sm:flex-row sm:items-center gap-2">
                                 <span class="min-w-[170px] inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800">
                                     <span class="rounded bg-emerald-600 text-white px-2 py-0.5 text-[10px] font-black shadow-2xs">TẦNG X3 (3 AI)</span>
-                                    <span>Cược 66K/số:</span>
+                                    <span>Cược 6.6M/số:</span>
                                 </span>
                                 <div class="flex flex-wrap gap-2">
                                     ${x3List.map(n => `
@@ -392,7 +397,7 @@
                             <div class="flex flex-col sm:flex-row sm:items-center gap-2">
                                 <span class="min-w-[170px] inline-flex items-center gap-1.5 text-xs font-bold text-teal-800">
                                     <span class="rounded bg-teal-600 text-white px-2 py-0.5 text-[10px] font-black shadow-2xs">TẦNG X2 (2 AI)</span>
-                                    <span>Cược 44K/số:</span>
+                                    <span>Cược 4.4M/số:</span>
                                 </span>
                                 <div class="flex flex-wrap gap-2">
                                     ${x2List.map(n => `
@@ -409,7 +414,7 @@
                             <div class="flex flex-col sm:flex-row sm:items-center gap-2 pt-2 border-t border-slate-100">
                                 <span class="min-w-[170px] inline-flex items-center gap-1.5 text-xs font-bold text-slate-700">
                                     <span class="rounded bg-slate-600 text-white px-2 py-0.5 text-[10px] font-black shadow-2xs">TẦNG X1 (1 AI)</span>
-                                    <span>Cược 22K/số:</span>
+                                    <span>Cược 2.2M/số:</span>
                                 </span>
                                 <div class="flex flex-wrap gap-2">
                                     ${x1List.map(n => `
@@ -424,7 +429,7 @@
                         <!-- Gợi ý Top 6 phẳng -->
                         <div class="pt-2 border-t border-dashed border-slate-200 text-xs text-slate-500 flex flex-wrap items-center justify-between gap-2">
                             <span>Hoặc đánh <strong>Top 6 Lô phẳng</strong>: ${loNums.join(' ')}</span>
-                            <span class="font-mono text-indigo-700 font-bold">Vốn 132K · Ăn 80K/nháy</span>
+                            <span class="font-mono text-indigo-700 font-bold">Vốn 13.2M · Ăn 8M/nháy</span>
                         </div>
                     </div>
                 </div>
@@ -442,11 +447,11 @@
             });
             document.getElementById('btnCopyLoTiered')?.addEventListener('click', () => {
                 const lines = ['🎲 LÔ GỘP ĐA TẦNG 5 AI (X5 -> X1):'];
-                if (x5List.length) lines.push(`- Tầng X5 (Cược 110K): ${x5List.join(', ')}`);
-                if (x4List.length) lines.push(`- Tầng X4 (Cược 88K): ${x4List.join(', ')}`);
-                if (x3List.length) lines.push(`- Tầng X3 (Cược 66K): ${x3List.join(', ')}`);
-                if (x2List.length) lines.push(`- Tầng X2 (Cược 44K): ${x2List.join(', ')}`);
-                if (x1List.length) lines.push(`- Tầng X1 (Cược 22K): ${x1List.join(', ')}`);
+                if (x5List.length) lines.push(`- Tầng X5 (Cược 11M): ${x5List.join(', ')}`);
+                if (x4List.length) lines.push(`- Tầng X4 (Cược 8.8M): ${x4List.join(', ')}`);
+                if (x3List.length) lines.push(`- Tầng X3 (Cược 6.6M): ${x3List.join(', ')}`);
+                if (x2List.length) lines.push(`- Tầng X2 (Cược 4.4M): ${x2List.join(', ')}`);
+                if (x1List.length) lines.push(`- Tầng X1 (Cược 2.2M): ${x1List.join(', ')}`);
                 copyToClipboard(lines.join('\n'), 'Lô Đa Tầng 5 AI (X5 -> X1)');
             });
             document.getElementById('btnCopyLoX1')?.addEventListener('click', () => {
@@ -496,7 +501,7 @@
                         <span class="text-xs font-black uppercase text-slate-700 tracking-wider">
                             Dàn Đề 20 Số của ${info.name}:
                         </span>
-                        <span class="text-xs text-slate-500 font-mono">Vốn 20K · 1 ăn 84K</span>
+                        <span class="text-xs text-slate-500 font-mono">Vốn 20M · 1 ăn 84M</span>
                     </div>
                     <div class="flex flex-wrap gap-2">
                         ${deNums.map(n => `
@@ -513,7 +518,7 @@
                         <span class="text-xs font-black uppercase text-slate-700 tracking-wider">
                             Dàn Lô 6 Số của ${info.name}:
                         </span>
-                        <span class="text-xs text-slate-500 font-mono">Vốn 132K (6 số x 22K) · 80K/nháy</span>
+                        <span class="text-xs text-slate-500 font-mono">Vốn 13.2M (6 số x 2.2M) · 8M/nháy</span>
                     </div>
                     <div class="flex flex-wrap gap-2">
                         ${loNums.map(n => `
@@ -605,7 +610,7 @@
                                     <div class="space-y-1.5">
                                         <div class="text-[11px] font-bold text-slate-700 flex items-center justify-between">
                                             <span>🎯 Đề Gộp (${(cons.deTiers?.x2Nums?.length || 0) + (cons.deTiers?.x1Nums?.length || 0)} số):</span>
-                                            <span class="font-mono text-purple-700 text-[10px]">X2 (2K) & X1 (1K)</span>
+                                            <span class="font-mono text-purple-700 text-[10px]">X2 (2M) & X1 (1M)</span>
                                         </div>
                                         <div class="flex flex-wrap gap-1">
                                             ${(cons.deTiers?.x2Nums || []).map(n => `

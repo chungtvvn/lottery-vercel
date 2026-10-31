@@ -5,6 +5,9 @@ on:
     # Chạy lúc 19:00 VN (12:00 UTC) hàng ngày đối chiếu kết quả + lấy dữ liệu ngày mai
     # Tự động retry mỗi 1 tiếng: 20:00 (13:00 UTC), 21:00 (14:00 UTC), 22:00 (15:00 UTC), 23:00 (16:00 UTC)
     - cron: '0 12,13,14,15,16 * * *'
+  push:
+    paths:
+      - 'data/ai_5_stats.json'
   workflow_dispatch:
     inputs:
       target_date:

@@ -112,6 +112,17 @@ async function findActualDrawResult(targetDate) {
     return null;
 }
 
+function formatMoneyM(valK, options = {}) {
+    if (valK === null || valK === undefined || Number.isNaN(valK)) return '0M';
+    const inM = Number(valK) / 1000;
+    const sign = (options.signed !== false && inM > 0) ? '+' : '';
+    const formatted = new Intl.NumberFormat('vi-VN', {
+        minimumFractionDigits: Number.isInteger(inM) ? 0 : 1,
+        maximumFractionDigits: 1
+    }).format(inM);
+    return `${sign}${formatted}M`;
+}
+
 async function handleNextDayPredictions(data, targetDate) {
     const nextDate = getNextDayStr(targetDate);
     console.log(`\n======================================================`);
@@ -186,6 +197,7 @@ async function handleNextDayPredictions(data, targetDate) {
         console.log(`   - Lô X4 (4 vote): ${consensus.loTiers?.x4Nums?.join(', ') || 'Không có'}`);
         console.log(`   - Lô X3 (3 vote): ${consensus.loTiers?.x3Nums?.join(', ') || 'Không có'}`);
         console.log(`   - Lô X2 (2 vote): ${consensus.loTiers?.x2Nums?.join(', ') || 'Không có'}`);
+        console.log(`   - Lô X1 (1 vote): ${consensus.loTiers?.x1Nums?.join(', ') || 'Không có'}`);
         console.log(`[settle-ai-5-stats] 🚀 Đầy đủ 5 AI! Sẵn sàng phục vụ thực chiến.`);
     } else {
         console.log(`[settle-ai-5-stats] ⚠️ Các AI còn thiếu số ngày ${nextDate}:`);
@@ -194,92 +206,150 @@ async function handleNextDayPredictions(data, targetDate) {
     }
 }
 
+function printSettlementReport(dayEntry, targetDate) {
+    const specialStr = String(dayEntry.special).padStart(2, '0').slice(-2);
+    console.log(`\n------------------------------------------------------`);
+    console.log(`📊 BẢNG KẾT QUẢ ĐỐI SOÁT NGÀY ${targetDate} (ĐB = ${specialStr}):`);
+    console.log(`------------------------------------------------------`);
+    
+    const res = dayEntry.results;
+    const modelOrder = ['consensus', ...Object.keys(AI_MODELS)];
+
+    modelOrder.forEach(mKey => {
+        const r = res[mKey];
+        if (!r) return;
+        const name = mKey === 'consensus' ? '👑 Gộp Consensus' : (AI_MODELS[mKey]?.name || mKey);
+        const deHitText = r.de.isHit ? `🎯 TRÚNG (${specialStr}) ${formatMoneyM(r.de.profitK)}` : `❌ Trượt (${formatMoneyM(r.de.profitK)})`;
+        const loHitText = `Nổ ${r.lo.hits} nháy [${r.lo.hitNumbers.join(' ')}] (${formatMoneyM(r.lo.profitK)})`;
+        const netProfitText = formatMoneyM(r.totalProfitK);
+        console.log(`  * ${name.padEnd(18)}: Đề ${deHitText.padEnd(26)} | Lô ${loHitText.padEnd(30)} | Net: ${netProfitText}`);
+    });
+
+    if (dayEntry.resultsTiered) {
+        const ct = dayEntry.resultsTiered.consensus;
+        if (ct) {
+            console.log(`\n  👑 [Consensus Đa Tầng]:`);
+            console.log(`     - Đề Tiered: ${ct.de.isHit ? `🎯 TRÚNG (${ct.de.hitTier}) ${formatMoneyM(ct.de.profitK)}` : `❌ Trượt (${formatMoneyM(ct.de.profitK)})`}`);
+            console.log(`     - Lô Tiered: Nổ ${ct.lo.hits} nháy [${ct.lo.hitNumbers.join(' ')}] (${formatMoneyM(ct.lo.profitK)}, Vốn: ${formatMoneyM(ct.lo.stakeK, { signed: false })}, Ăn: ${formatMoneyM(ct.lo.payoutK, { signed: false })})`);
+            console.log(`     - Net Tiered: ${formatMoneyM(ct.profitK)} (Vốn: ${formatMoneyM(ct.stakeK, { signed: false })}, Ăn: ${formatMoneyM(ct.payoutK, { signed: false })})`);
+        }
+    }
+
+    console.log(`------------------------------------------------------\n`);
+}
+
 async function main() {
     const options = parseArgs();
     const targetDate = options.date;
     console.log(`\n======================================================`);
     console.log(`🤖 AI 5 AGENTS DAILY SETTLEMENT (ĐỐI SOÁT 5 SIÊU TRÍ TUỆ)`);
-    console.log(`📅 Ngày đối soát: ${targetDate}`);
+    console.log(`📅 Ngày đối soát mục tiêu: ${targetDate}`);
     console.log(`⚡ Chế độ: force=${options.force}, waitMinutes=${options.waitMinutes}`);
     console.log(`======================================================\n`);
 
     const data = loadAi5StatsData();
-    let dayEntry = (data.days || []).find(d => d.date === targetDate);
+    let settledCount = 0;
 
-    if (!dayEntry) {
-        console.warn(`[settle-ai-5-stats] ⚠️ Không tìm thấy entry dự đoán của ngày ${targetDate} trong data/ai_5_stats.json.`);
-        console.warn(`Tiến hành khởi tạo và kiểm tra ngày tiếp theo...`);
-    } else {
-        const isAlreadySettled = Boolean(dayEntry.special && Array.isArray(dayEntry.prizes27) && dayEntry.prizes27.length === 27 && dayEntry.results);
-        
-        if (isAlreadySettled && !options.force) {
-            console.log(`[settle-ai-5-stats] 🟢 Ngày ${targetDate} đã được đối soát từ trước (ĐB=${dayEntry.special}). Bỏ qua phần đối soát.`);
+    // 1. Quét và đối soát tất cả các ngày trong quá khứ và hiện tại cần kết toán (ngày <= targetDate)
+    const sortedDays = [...(data.days || [])].sort((a, b) => String(a.date).localeCompare(String(b.date)));
+    
+    for (const dayEntry of sortedDays) {
+        if (dayEntry.date > targetDate) continue;
+
+        const isTarget = dayEntry.date === targetDate;
+        const isFullySettled = Boolean(
+            dayEntry.special &&
+            Array.isArray(dayEntry.prizes27) &&
+            dayEntry.prizes27.length === 27 &&
+            dayEntry.results &&
+            dayEntry.results.consensus &&
+            dayEntry.resultsTiered
+        );
+
+        if (isFullySettled && !options.force && (!isTarget || !options.force)) {
+            console.log(`[settle-ai-5-stats] 🟢 Ngày ${dayEntry.date} đã được đối soát hoàn chỉnh (ĐB=${dayEntry.special}). Bỏ qua.`);
+            continue;
+        }
+
+        console.log(`\n------------------------------------------------------`);
+        console.log(`🔍 TIẾN HÀNH ĐỐI SOÁT NGÀY: ${dayEntry.date}`);
+        console.log(`------------------------------------------------------`);
+
+        // Tìm kết quả mở thưởng XSMB
+        let actualDraw = null;
+        if (dayEntry.special && Array.isArray(dayEntry.prizes27) && dayEntry.prizes27.length === 27) {
+            actualDraw = { special: dayEntry.special, prizes27: dayEntry.prizes27 };
         } else {
-            // Tìm kết quả mở thưởng XSMB
-            let actualDraw = await findActualDrawResult(targetDate);
-            const startTime = Date.now();
-            const maxWaitMs = options.waitMinutes * 60 * 1000;
-
-            while (!actualDraw && options.waitMinutes > 0 && (Date.now() - startTime) < maxWaitMs) {
-                console.log(`[settle-ai-5-stats] ⏳ Chưa có kết quả ngày ${targetDate}, chờ 30 giây thử lại... (đã chờ ${Math.round((Date.now() - startTime)/1000)}s / ${options.waitMinutes * 60}s)`);
-                await sleep(30000);
-                actualDraw = await findActualDrawResult(targetDate);
-            }
-
-            if (!actualDraw) {
-                console.log(`[settle-ai-5-stats] ⏳ Chưa có kết quả quay thưởng XSMB ngày ${targetDate} (chưa đến 18:30 hoặc nguồn chưa cập nhật).`);
-                console.log(`[settle-ai-5-stats] 🔄 Tiến trình sẽ tự động thử lại sau 1 tiếng (cron retry tiếp theo qua GitHub Actions).`);
-            } else {
-                console.log(`[settle-ai-5-stats] ✅ Đã tìm thấy kết quả mở thưởng ngày ${targetDate}:`);
-                const specialStr = String(actualDraw.special).padStart(2, '0').slice(-2);
-                console.log(`   Giải Đặc Biệt (Đề): [${specialStr}]`);
-
-                // Thực hiện đối soát
-                settleDay(dayEntry, actualDraw);
-                console.log(`[settle-ai-5-stats] 🎯 Đối soát thành công cho cả 5 AI và Phương pháp Gộp Consensus (cả Phẳng và Đa Tầng)!`);
-
-                // Cập nhật lại tỷ lệ lũy kế
-                recomputeAllRates(data);
-
-                // In bảng kết quả chi tiết
-                console.log(`\n------------------------------------------------------`);
-                console.log(`📊 BẢNG KẾT QUẢ ĐỐI SOÁT NGÀY ${targetDate} (ĐB = ${specialStr}):`);
-                console.log(`------------------------------------------------------`);
-                
-                const res = dayEntry.results;
-                const modelOrder = ['consensus', ...Object.keys(AI_MODELS)];
-
-                modelOrder.forEach(mKey => {
-                    const r = res[mKey];
-                    if (!r) return;
-                    const name = mKey === 'consensus' ? '👑 Gộp Consensus' : (AI_MODELS[mKey]?.name || mKey);
-                    const deHitText = r.de.isHit ? `🎯 TRÚNG (${specialStr}) +${r.de.profitK}K` : `❌ Trượt (${r.de.profitK}K)`;
-                    const loHitText = `Nổ ${r.lo.hits} nháy [${r.lo.hitNumbers.join(' ')}] (${r.lo.profitK >= 0 ? '+' : ''}${r.lo.profitK}K)`;
-                    const netProfitText = `${r.totalProfitK >= 0 ? '+' : ''}${r.totalProfitK}K`;
-                    console.log(`  * ${name.padEnd(18)}: Đề ${deHitText.padEnd(26)} | Lô ${loHitText.padEnd(30)} | Net: ${netProfitText}`);
-                });
-
-                if (dayEntry.resultsTiered) {
-                    const ct = dayEntry.resultsTiered.consensus;
-                    if (ct) {
-                        console.log(`\n  👑 [Consensus Đa Tầng]:`);
-                        console.log(`     - Đề Tiered: ${ct.de.isHit ? `🎯 TRÚNG (${ct.de.hitTier}) +${ct.de.profitK}K` : `❌ Trượt (${ct.de.profitK}K)`}`);
-                        console.log(`     - Lô Tiered: Nổ ${ct.lo.hits} nháy (${ct.lo.profitK >= 0 ? '+' : ''}${ct.lo.profitK}K, stake: ${ct.lo.stakeK}K, payout: ${ct.lo.payoutK}K)`);
-                    }
+            actualDraw = await findActualDrawResult(dayEntry.date);
+            if (!actualDraw && isTarget && options.waitMinutes > 0) {
+                const startTime = Date.now();
+                const maxWaitMs = options.waitMinutes * 60 * 1000;
+                while (!actualDraw && (Date.now() - startTime) < maxWaitMs) {
+                    console.log(`[settle-ai-5-stats] ⏳ Chưa có kết quả ngày ${dayEntry.date}, chờ 30 giây thử lại... (đã chờ ${Math.round((Date.now() - startTime)/1000)}s / ${options.waitMinutes * 60}s)`);
+                    await sleep(30000);
+                    actualDraw = await findActualDrawResult(dayEntry.date);
                 }
-
-                console.log(`------------------------------------------------------\n`);
             }
+        }
+
+        if (!actualDraw) {
+            console.log(`[settle-ai-5-stats] ⏳ Chưa có kết quả quay thưởng XSMB ngày ${dayEntry.date} (chưa đến 18:30 hoặc nguồn chưa cập nhật).`);
+            if (isTarget) {
+                console.log(`[settle-ai-5-stats] 🔄 [Auto-Retry] Tiến trình sẽ tự động thử lại sau 1 tiếng (cron retry tiếp theo qua GitHub Actions).`);
+            }
+            continue;
+        }
+
+        const specialStr = String(actualDraw.special).padStart(2, '0').slice(-2);
+        console.log(`[settle-ai-5-stats] ✅ Đã tìm thấy kết quả mở thưởng ngày ${dayEntry.date}: ĐB = [${specialStr}], 27 giải Lô.`);
+
+        // Thực hiện đối soát
+        settleDay(dayEntry, actualDraw);
+        settledCount++;
+        console.log(`[settle-ai-5-stats] 🎯 Đối soát thành công ngày ${dayEntry.date} cho cả 5 AI và Consensus (Phẳng & Đa Tầng)!`);
+
+        // In bảng kết quả chi tiết
+        printSettlementReport(dayEntry, dayEntry.date);
+    }
+
+    // 2. Cập nhật lại toàn bộ tỷ lệ lũy kế & leaderboard
+    recomputeAllRates(data);
+
+    // 3. Kiểm tra dàn số của ngày mục tiêu (targetDate) nếu chưa quay (ví dụ hôm nay 31/10)
+    const targetEntry = (data.days || []).find(d => d.date === targetDate);
+    if (targetEntry && targetEntry.sources) {
+        const modelKeys = Object.keys(AI_MODELS);
+        let readyCount = 0;
+        modelKeys.forEach(k => {
+            const s = targetEntry.sources[k];
+            if (Array.isArray(s?.de) && s.de.length >= 20 && Array.isArray(s?.lo) && s.lo.length >= 6) {
+                readyCount++;
+            }
+        });
+
+        if (readyCount === modelKeys.length) {
+            const todayConsensus = calculateConsensus(targetEntry.sources);
+            console.log(`\n======================================================`);
+            console.log(`👑 DÀN ĐỒNG THUẬN 5 AI NGÀY MỤC TIÊU (${targetDate}):`);
+            console.log(`======================================================`);
+            console.log(`  🎯 Đề X2 (VIP): ${todayConsensus.deTiers?.x2Nums?.join(', ') || 'Không có'}`);
+            console.log(`  🎯 Đề X1 (Lót): ${todayConsensus.deTiers?.x1Nums?.join(', ') || 'Không có'}`);
+            console.log(`  🎲 Lô X5 (5 vote): ${todayConsensus.loTiers?.x5Nums?.join(', ') || 'Không có'}`);
+            console.log(`  🎲 Lô X4 (4 vote): ${todayConsensus.loTiers?.x4Nums?.join(', ') || 'Không có'}`);
+            console.log(`  🎲 Lô X3 (3 vote): ${todayConsensus.loTiers?.x3Nums?.join(', ') || 'Không có'}`);
+            console.log(`  🎲 Lô X2 (2 vote): ${todayConsensus.loTiers?.x2Nums?.join(', ') || 'Không có'}`);
+            console.log(`  🎲 Lô X1 (1 vote): ${todayConsensus.loTiers?.x1Nums?.join(', ') || 'Không có'}`);
+            console.log(`======================================================\n`);
         }
     }
 
-    // Tiếp tục: Xử lý và kiểm tra dự đoán ngày tiếp theo (Next Day)
+    // 4. Tiếp tục: Xử lý và kiểm tra dự đoán ngày tiếp theo (Next Day)
     await handleNextDayPredictions(data, targetDate);
 
-    // Lưu dữ liệu vào file
+    // 5. Lưu dữ liệu vào file
     saveAi5StatsData(data);
     console.log(`[settle-ai-5-stats] 💾 Đã lưu dữ liệu đối soát vào data/ai_5_stats.json & lib/data/statistics/ai_5_stats.json.`);
-    console.log(`🎉 Hoàn tất chu trình đối soát AI 5 Stats.\n`);
+    console.log(`🎉 Hoàn tất chu trình đối soát AI 5 Stats (đã cập nhật ${settledCount} ngày).\n`);
 }
 
 main().catch(err => {

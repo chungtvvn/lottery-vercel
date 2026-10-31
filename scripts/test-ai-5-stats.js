@@ -63,7 +63,7 @@ assert(settled.resultsTiered && settled.resultsTiered.consensus, 'Must have tier
 
 // Consensus Đề phẳng (Top 20 Đề)
 assert.strictEqual(settled.results.consensus.de.isHit, true, 'Consensus Đề phẳng must hit 54');
-assert.strictEqual(settled.results.consensus.de.profitK, 64, 'Consensus Đề phẳng profit must be +64K (84K - 20K)');
+assert.strictEqual(settled.results.consensus.de.profitK, 64000, 'Consensus Đề phẳng profit must be +64.000K (+64M)');
 
 // Consensus Đề đa tầng (X2 / X1)
 const deTiered = settled.resultsTiered.consensus.de;
