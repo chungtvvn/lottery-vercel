@@ -229,18 +229,24 @@
                     <p class="text-xs text-slate-500">Chi tiết đối soát 27 giải mở thưởng và giải Đặc Biệt từng kỳ</p>
                 </div>
 
-                <!-- Ledger Model Filter -->
-                <div class="flex items-center gap-2">
-                    <span class="text-xs font-bold text-slate-500">Xem theo:</span>
-                    <select id="ledgerModelFilter" class="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 shadow-2xs focus:border-indigo-500 focus:outline-none">
-                        <option value="all">Toàn bộ (So sánh cả 5 AI + Gộp)</option>
-                        <option value="consensus">👑 Phương Pháp Gộp Consensus</option>
-                        <option value="chatgpt">🟢 ChatGPT (OpenAI)</option>
-                        <option value="deepseek">🔵 DeepSeek</option>
-                        <option value="gemini">✨ Gemini (Google)</option>
-                        <option value="grok">⚡ Grok (xAI)</option>
-                        <option value="muse">🔮 Muse (Tần suất & Chu kỳ)</option>
-                    </select>
+                <!-- Controls: Collapse/Expand All & Model Filter -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <button id="btnToggleAllLedger" type="button" class="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-2xs hover:bg-slate-50 hover:text-indigo-600 transition-all flex items-center gap-1.5 cursor-pointer">
+                        <i class="bi bi-arrows-expand text-indigo-600" id="iconToggleAll"></i>
+                        <span id="textToggleAll">Mở rộng tất cả</span>
+                    </button>
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-xs font-bold text-slate-500">Xem theo:</span>
+                        <select id="ledgerModelFilter" class="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 shadow-2xs focus:border-indigo-500 focus:outline-none cursor-pointer">
+                            <option value="all">Toàn bộ (So sánh cả 5 AI + Gộp)</option>
+                            <option value="consensus">👑 Phương Pháp Gộp Consensus</option>
+                            <option value="chatgpt">🟢 ChatGPT (OpenAI)</option>
+                            <option value="deepseek">🔵 DeepSeek</option>
+                            <option value="gemini">✨ Gemini (Google)</option>
+                            <option value="grok">⚡ Grok (xAI)</option>
+                            <option value="muse">🔮 Muse (Tần suất & Chu kỳ)</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
