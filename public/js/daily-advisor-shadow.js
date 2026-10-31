@@ -68,6 +68,158 @@
     let cachedAdvisorData = null;
     let availableDatesList = [];
 
+    // Helper to check Head Parity (Đầu Chẵn/Lẻ)
+    function isHeadEven(numStrVal) {
+        const s = String(numStrVal ?? '').padStart(2, '0');
+        const head = parseInt(s[0], 10);
+        return !Number.isNaN(head) && head % 2 === 0;
+    }
+
+    // Thuật toán cân bằng Chẵn/Lẻ chia Top 8 thành 2 Dàn Xiên 4
+    function pairTop8WithParity(top8 = []) {
+        const n = (top8 || []).slice(0, 8).map(x => String(x).padStart(2, '0'));
+        if (n.length < 8) {
+            return {
+                dan1: n.slice(0, 4),
+                dan2: n.slice(4, 8),
+                swapped: false,
+                swapDetails: null
+            };
+        }
+
+        const p = n.map(isHeadEven);
+        const first3AllEven = p[0] && p[1] && p[2];
+        const first3AllOdd = !p[0] && !p[1] && !p[2];
+
+        let dan1 = [];
+        let dan2 = [];
+        let swapped = false;
+        let swapDetails = null;
+
+        if (first3AllEven && p[3]) {
+            // Cả 4 số đầu đều Chẵn -> Tìm số Lẻ đầu tiên trong các số thứ 5, 6, 7, 8
+            let swapIdx = -1;
+            for (let i = 4; i < 8; i++) {
+                if (!p[i]) {
+                    swapIdx = i;
+                    break;
+                }
+            }
+
+            if (swapIdx !== -1) {
+                swapped = true;
+                swapDetails = {
+                    type: 'ALL_EVEN_SWAP',
+                    originalN4: n[3],
+                    promotedNum: n[swapIdx],
+                    fromRank: swapIdx + 1
+                };
+                dan1 = [n[0], n[1], n[2], n[swapIdx]];
+                const rem = [n[3]];
+                for (let i = 4; i < 8; i++) {
+                    if (i !== swapIdx) rem.push(n[i]);
+                }
+                dan2 = rem;
+            } else {
+                dan1 = n.slice(0, 4);
+                dan2 = n.slice(4, 8);
+            }
+        } else if (first3AllOdd && !p[3]) {
+            // Cả 4 số đầu đều Lẻ -> Tìm số Chẵn đầu tiên trong các số thứ 5, 6, 7, 8
+            let swapIdx = -1;
+            for (let i = 4; i < 8; i++) {
+                if (p[i]) {
+                    swapIdx = i;
+                    break;
+                }
+            }
+
+            if (swapIdx !== -1) {
+                swapped = true;
+                swapDetails = {
+                    type: 'ALL_ODD_SWAP',
+                    originalN4: n[3],
+                    promotedNum: n[swapIdx],
+                    fromRank: swapIdx + 1
+                };
+                dan1 = [n[0], n[1], n[2], n[swapIdx]];
+                const rem = [n[3]];
+                for (let i = 4; i < 8; i++) {
+                    if (i !== swapIdx) rem.push(n[i]);
+                }
+                dan2 = rem;
+            } else {
+                dan1 = n.slice(0, 4);
+                dan2 = n.slice(4, 8);
+            }
+        } else {
+            dan1 = n.slice(0, 4);
+            dan2 = n.slice(4, 8);
+        }
+
+        return { dan1, dan2, swapped, swapDetails };
+    }
+
+    // Đánh giá 2 Dàn Xiên 4 Tinh Hoa từ Top 8 Lô Siêu Gộp 5 (Quây 11 vé/dàn · Vốn 22M)
+    function evaluatePentaXien4(allLoNums = [], prizeCount = {}, isPending = false, lockedX4 = null) {
+        let dan1 = lockedX4?.dan1 ? lockedX4.dan1.map(numStr) : null;
+        let dan2 = lockedX4?.dan2 ? lockedX4.dan2.map(numStr) : null;
+        let top8 = lockedX4?.top8 ? lockedX4.top8.map(numStr) : null;
+        let swapped = lockedX4?.swapped !== undefined ? Boolean(lockedX4.swapped) : false;
+
+        if (!dan1 || !dan2 || dan1.length < 4 || dan2.length < 4) {
+            top8 = (allLoNums || []).slice(0, 8).map(numStr);
+            const parity = pairTop8WithParity(top8);
+            dan1 = parity.dan1;
+            dan2 = parity.dan2;
+            swapped = parity.swapped;
+        }
+
+        let x4Hits1 = 0, x4Hits2 = 0;
+        let x4HitNums1 = [], x4HitNums2 = [];
+        let dan1Payout = 0, dan2Payout = 0, xien4PayoutK = 0;
+        const xien4StakeK = 22000;
+
+        if (!isPending && dan1.length >= 4 && dan2.length >= 4) {
+            x4HitNums1 = dan1.filter(n => (prizeCount[n] || 0) > 0);
+            x4HitNums2 = dan2.filter(n => (prizeCount[n] || 0) > 0);
+            x4Hits1 = x4HitNums1.length;
+            x4Hits2 = x4HitNums2.length;
+            const calcPayout = (h) => (h >= 4 ? 384000 : (h === 3 ? 84000 : (h === 2 ? 12000 : 0)));
+            dan1Payout = calcPayout(x4Hits1);
+            dan2Payout = calcPayout(x4Hits2);
+            xien4PayoutK = dan1Payout + dan2Payout;
+        } else if (lockedX4 && lockedX4.payoutK !== undefined) {
+            x4Hits1 = lockedX4.hits1 || 0;
+            x4Hits2 = lockedX4.hits2 || 0;
+            x4HitNums1 = (lockedX4.hitNums1 || []).map(numStr);
+            x4HitNums2 = (lockedX4.hitNums2 || []).map(numStr);
+            dan1Payout = lockedX4.dan1Payout || (lockedX4.payout1 || 0);
+            dan2Payout = lockedX4.dan2Payout || (lockedX4.payout2 || 0);
+            xien4PayoutK = lockedX4.payoutK || 0;
+        }
+        const xien4ProfitK = isPending ? 0 : (xien4PayoutK - xien4StakeK);
+        const isWin = isPending ? false : (xien4ProfitK > 0);
+
+        return {
+            dan1,
+            dan2,
+            top8: top8 || [...dan1, ...dan2],
+            swapped,
+            hits1: isPending ? 0 : x4Hits1,
+            hits2: isPending ? 0 : x4Hits2,
+            hitNums1: isPending ? [] : x4HitNums1,
+            hitNums2: isPending ? [] : x4HitNums2,
+            dan1Payout: isPending ? 0 : dan1Payout,
+            dan2Payout: isPending ? 0 : dan2Payout,
+            h4: isPending ? 0 : Math.max(x4Hits1, x4Hits2),
+            stakeK: xien4StakeK,
+            payoutK: isPending ? 0 : xien4PayoutK,
+            profitK: xien4ProfitK,
+            isWin
+        };
+    }
+
     // Helper to get 2 Dàn Xiên 4 Tinh Hoa (Top 8 Chẵn/Lẻ) - 100% SSOT Bất Biến
     function getImmutableLockedTop8ParityXien4(date, customData = null) {
         if (!date) return { top8: [], dan1: [], dan2: [], swapped: false };
@@ -451,68 +603,7 @@
                             isWin: (x2PayoutK - x2StakeK) > 0
                         };
                     })(),
-                    xien4: (() => {
-                        const parityX8 = getImmutableLockedTop8ParityXien4(targetDate, data);
-                        const xienDan1 = parityX8.dan1 || [];
-                        const xienDan2 = parityX8.dan2 || [];
-                        const xienTop8 = parityX8.top8 || [...xienDan1, ...xienDan2];
-
-                        const regX8 = regLocked?.settlement?.top8ParityXien4 || regLocked?.bets?.top8ParityXien4;
-                        const ledgerX8 = data?.top8ParityXien4?.settledLedger?.find(r => r.date === targetDate);
-
-                        let x4Hits1 = 0;
-                        let x4Hits2 = 0;
-                        let x4HitNums1 = [];
-                        let x4HitNums2 = [];
-                        let dan1Payout = 0;
-                        let dan2Payout = 0;
-                        let xien4PayoutK = 0;
-                        const xien4StakeK = 22000;
-
-                        if (drawPrizesObj?.prizes && xienDan1.length >= 4 && xienDan2.length >= 4) {
-                            x4HitNums1 = xienDan1.filter(n => (prizeCount[n] || 0) > 0);
-                            x4HitNums2 = xienDan2.filter(n => (prizeCount[n] || 0) > 0);
-                            x4Hits1 = x4HitNums1.length;
-                            x4Hits2 = x4HitNums2.length;
-                            const calcPayout = (h) => (h >= 4 ? 384000 : (h === 3 ? 84000 : (h === 2 ? 12000 : 0)));
-                            dan1Payout = calcPayout(x4Hits1);
-                            dan2Payout = calcPayout(x4Hits2);
-                            xien4PayoutK = dan1Payout + dan2Payout;
-                        } else if (regX8?.payoutK !== undefined) {
-                            x4Hits1 = regX8.hits1 || 0;
-                            x4Hits2 = regX8.hits2 || 0;
-                            x4HitNums1 = (regX8.hitNums1 || []).map(numStr);
-                            x4HitNums2 = (regX8.hitNums2 || []).map(numStr);
-                            dan1Payout = regX8.payout1 || 0;
-                            dan2Payout = regX8.payout2 || 0;
-                            xien4PayoutK = regX8.payoutK || 0;
-                        } else if (ledgerX8) {
-                            x4Hits1 = ledgerX8.hits1 || 0;
-                            x4Hits2 = ledgerX8.hits2 || 0;
-                            x4HitNums1 = (ledgerX8.hitNums1 || []).map(numStr);
-                            x4HitNums2 = (ledgerX8.hitNums2 || []).map(numStr);
-                            dan1Payout = ledgerX8.payout1 || 0;
-                            dan2Payout = ledgerX8.payout2 || 0;
-                            xien4PayoutK = ledgerX8.payoutK || 0;
-                        }
-                        const xien4ProfitK = xien4PayoutK - xien4StakeK;
-                        return {
-                            dan1: xienDan1,
-                            dan2: xienDan2,
-                            top8: xienTop8,
-                            hits1: x4Hits1,
-                            hits2: x4Hits2,
-                            hitNums1: x4HitNums1,
-                            hitNums2: x4HitNums2,
-                            dan1Payout,
-                            dan2Payout,
-                            h4: Math.max(x4Hits1, x4Hits2),
-                            stakeK: xien4StakeK,
-                            payoutK: xien4PayoutK,
-                            profitK: xien4ProfitK,
-                            isWin: xien4ProfitK > 0
-                        };
-                    })(),
+                    xien4: evaluatePentaXien4(allLoNums, prizeCount, false, s.xien4 || b?.xien4),
                     xien5: {
                         top5: s.xien5?.top5 || [],
                         tickets: b?.xien5?.tickets || getXien5Combinations(s.xien5?.top5 || []),
@@ -527,10 +618,9 @@
                         const dePayout = Number(s.de?.payoutK || 0);
                         const loStake = Number(s.lo?.stakeK || 0);
                         const loPayout = Number(s.lo?.payoutK || 0);
-                        const x4Stake = 22000;
-                        const x4Payout = Number((regLocked?.settlement?.top8ParityXien4?.payoutK != null)
-                            ? regLocked.settlement.top8ParityXien4.payoutK
-                            : ((data?.top8ParityXien4?.settledLedger?.find(r => r.date === targetDate)?.payoutK) || 0));
+                        const x4Info = evaluatePentaXien4(allLoNums, prizeCount, false, s.xien4 || b?.xien4);
+                        const x4Stake = x4Info.stakeK || 22000;
+                        const x4Payout = Number(x4Info.payoutK || 0);
                         const cStakeK = deStake + loStake + x4Stake;
                         const cPayoutK = dePayout + loPayout + x4Payout;
                         const cProfitK = cPayoutK - cStakeK;
@@ -623,70 +713,8 @@
                 });
                 const x2ProfitK = isPendingBet ? 0 : (x2PayoutK - x2StakeK);
 
-                // 4. 2 Dàn Xiên 4 Tinh Hoa (Top 8 Chẵn/Lẻ) - Vốn 22M
-                const parityX8 = getImmutableLockedTop8ParityXien4(targetDate, data);
-                const xienDan1 = parityX8.dan1 || [];
-                const xienDan2 = parityX8.dan2 || [];
-                const xienTop8 = parityX8.top8 || [...xienDan1, ...xienDan2];
-
-                const regX8 = regLocked?.settlement?.top8ParityXien4 || regLocked?.bets?.top8ParityXien4;
-                const ledgerX8 = data?.top8ParityXien4?.settledLedger?.find(r => r.date === targetDate);
-
-                let x4Hits1 = 0;
-                let x4Hits2 = 0;
-                let x4HitNums1 = [];
-                let x4HitNums2 = [];
-                let dan1Payout = 0;
-                let dan2Payout = 0;
-                let xien4PayoutK = 0;
-                const xien4StakeK = 22000;
-
-                if (!isPendingBet) {
-                    if (drawPrizesObj?.prizes && xienDan1.length >= 4 && xienDan2.length >= 4) {
-                        x4HitNums1 = xienDan1.filter(n => (prizeCount[n] || 0) > 0);
-                        x4HitNums2 = xienDan2.filter(n => (prizeCount[n] || 0) > 0);
-                        x4Hits1 = x4HitNums1.length;
-                        x4Hits2 = x4HitNums2.length;
-                        const calcPayout = (h) => (h >= 4 ? 384000 : (h === 3 ? 84000 : (h === 2 ? 12000 : 0)));
-                        dan1Payout = calcPayout(x4Hits1);
-                        dan2Payout = calcPayout(x4Hits2);
-                        xien4PayoutK = dan1Payout + dan2Payout;
-                    } else if (regX8?.payoutK !== undefined) {
-                        x4Hits1 = regX8.hits1 || 0;
-                        x4Hits2 = regX8.hits2 || 0;
-                        x4HitNums1 = (regX8.hitNums1 || []).map(numStr);
-                        x4HitNums2 = (regX8.hitNums2 || []).map(numStr);
-                        dan1Payout = regX8.payout1 || 0;
-                        dan2Payout = regX8.payout2 || 0;
-                        xien4PayoutK = regX8.payoutK || 0;
-                    } else if (ledgerX8) {
-                        x4Hits1 = ledgerX8.hits1 || 0;
-                        x4Hits2 = ledgerX8.hits2 || 0;
-                        x4HitNums1 = (ledgerX8.hitNums1 || []).map(numStr);
-                        x4HitNums2 = (ledgerX8.hitNums2 || []).map(numStr);
-                        dan1Payout = ledgerX8.payout1 || 0;
-                        dan2Payout = ledgerX8.payout2 || 0;
-                        xien4PayoutK = ledgerX8.payoutK || 0;
-                    }
-                }
-                const xien4ProfitK = isPendingBet ? 0 : (xien4PayoutK - xien4StakeK);
-                const isXien4Win = isPendingBet ? false : (xien4ProfitK > 0);
-                const xien4Info = {
-                    dan1: xienDan1,
-                    dan2: xienDan2,
-                    top8: xienTop8,
-                    hits1: x4Hits1,
-                    hits2: x4Hits2,
-                    hitNums1: x4HitNums1,
-                    hitNums2: x4HitNums2,
-                    dan1Payout,
-                    dan2Payout,
-                    h4: Math.max(x4Hits1, x4Hits2),
-                    stakeK: xien4StakeK,
-                    payoutK: xien4PayoutK,
-                    profitK: xien4ProfitK,
-                    isWin: isXien4Win
-                };
+                // 4. 2 Dàn Xiên 4 Tinh Hoa (Top 8 Lô Siêu Gộp 5 Chẵn/Lẻ) - Vốn 22M
+                const xien4Info = evaluatePentaXien4(allLoNums, prizeCount, isPendingBet, b.xien4);
 
                 // 4B. Dàn Xiên 5 (dữ liệu phụ)
                 const top5Nums = (b.xien5?.top5 || allLoNums.slice(0, 5)).map(numStr);
@@ -703,8 +731,8 @@
                 const xienProfitK = isPendingBet ? 0 : (xienPayoutK - xienStakeK);
 
                 // 5. Combo (3 Trụ: Đề + Lô + 2 Dàn Xiên 4)
-                const comboStakeK = deStakeK + loStakeK + xien4StakeK;
-                const comboPayoutK = dePayoutK + loPayoutK + xien4PayoutK;
+                const comboStakeK = deStakeK + loStakeK + xien4Info.stakeK;
+                const comboPayoutK = dePayoutK + loPayoutK + xien4Info.payoutK;
                 const comboProfitK = isPendingBet ? 0 : (comboPayoutK - comboStakeK);
                 const isComboWin = isPendingBet ? false : (comboProfitK > 0);
 
@@ -926,70 +954,8 @@
         const loProfitK = isPending ? 0 : (loPayoutK - loStakeK);
         const isLoWin = isPending ? false : (loProfitK > 0);
 
-        // 3. 2 Dàn Xiên 4 Tinh Hoa (Top 8 Chẵn/Lẻ) - Vốn 22M
-        const parityX8 = getImmutableLockedTop8ParityXien4(targetDate, data);
-        const xienDan1 = parityX8.dan1 || [];
-        const xienDan2 = parityX8.dan2 || [];
-        const xienTop8 = parityX8.top8 || [...xienDan1, ...xienDan2];
-
-        const regX8 = regLocked?.settlement?.top8ParityXien4 || regLocked?.bets?.top8ParityXien4;
-        const ledgerX8 = data?.top8ParityXien4?.settledLedger?.find(r => r.date === targetDate);
-
-        let x4Hits1 = 0;
-        let x4Hits2 = 0;
-        let x4HitNums1 = [];
-        let x4HitNums2 = [];
-        let dan1Payout = 0;
-        let dan2Payout = 0;
-        let xien4PayoutK = 0;
-        const xien4StakeK = 22000;
-
-        if (!isPending) {
-            if (drawPrizesObj?.prizes && xienDan1.length >= 4 && xienDan2.length >= 4) {
-                x4HitNums1 = xienDan1.filter(n => (prizeCount[n] || 0) > 0);
-                x4HitNums2 = xienDan2.filter(n => (prizeCount[n] || 0) > 0);
-                x4Hits1 = x4HitNums1.length;
-                x4Hits2 = x4HitNums2.length;
-                const calcPayout = (h) => (h >= 4 ? 384000 : (h === 3 ? 84000 : (h === 2 ? 12000 : 0)));
-                dan1Payout = calcPayout(x4Hits1);
-                dan2Payout = calcPayout(x4Hits2);
-                xien4PayoutK = dan1Payout + dan2Payout;
-            } else if (regX8?.payoutK !== undefined) {
-                x4Hits1 = regX8.hits1 || 0;
-                x4Hits2 = regX8.hits2 || 0;
-                x4HitNums1 = (regX8.hitNums1 || []).map(numStr);
-                x4HitNums2 = (regX8.hitNums2 || []).map(numStr);
-                dan1Payout = regX8.payout1 || 0;
-                dan2Payout = regX8.payout2 || 0;
-                xien4PayoutK = regX8.payoutK || 0;
-            } else if (ledgerX8) {
-                x4Hits1 = ledgerX8.hits1 || 0;
-                x4Hits2 = ledgerX8.hits2 || 0;
-                x4HitNums1 = (ledgerX8.hitNums1 || []).map(numStr);
-                x4HitNums2 = (ledgerX8.hitNums2 || []).map(numStr);
-                dan1Payout = ledgerX8.payout1 || 0;
-                dan2Payout = ledgerX8.payout2 || 0;
-                xien4PayoutK = ledgerX8.payoutK || 0;
-            }
-        }
-        const xien4ProfitK = isPending ? 0 : (xien4PayoutK - xien4StakeK);
-        const isXien4Win = isPending ? false : (xien4ProfitK > 0);
-        const xien4Info = {
-            dan1: xienDan1,
-            dan2: xienDan2,
-            top8: xienTop8,
-            hits1: x4Hits1,
-            hits2: x4Hits2,
-            hitNums1: x4HitNums1,
-            hitNums2: x4HitNums2,
-            dan1Payout,
-            dan2Payout,
-            h4: Math.max(x4Hits1, x4Hits2),
-            stakeK: xien4StakeK,
-            payoutK: xien4PayoutK,
-            profitK: xien4ProfitK,
-            isWin: isXien4Win
-        };
+        // 3. 2 Dàn Xiên 4 Tinh Hoa (Top 8 Lô Siêu Gộp 5 Chẵn/Lẻ) - Vốn 22M
+        const xien4Info = evaluatePentaXien4(allLoNums, prizeCount, isPending, null);
 
         // 3B. Dàn Xiên 5 (dữ liệu phụ)
         const top5Nums = allLoNums.slice(0, 5);
@@ -1009,8 +975,8 @@
         const isXienWin = isPending ? false : (xienProfitK > 0);
 
         // Combo Tổng Hợp 3 Trụ (Đề + Lô + 2 Dàn Xiên 4)
-        const comboStakeK = deStakeK + loStakeK + xien4StakeK;
-        const comboPayoutK = dePayoutK + loPayoutK + xien4PayoutK;
+        const comboStakeK = deStakeK + loStakeK + xien4Info.stakeK;
+        const comboPayoutK = dePayoutK + loPayoutK + xien4Info.payoutK;
         const comboProfitK = isPending ? 0 : (comboPayoutK - comboStakeK);
         const isComboWin = isPending ? false : (comboProfitK > 0);
 
@@ -2222,27 +2188,35 @@
             const copyBtn = byId('btnCopyXien5Tickets');
 
             if (strategy === 'pentaXien5' || strategy === 'lo4Xien4') {
-                const parityX8 = getImmutableLockedTop8ParityXien4(targetDate, data);
-                const dan1 = parityX8.dan1 || [];
-                const dan2 = parityX8.dan2 || [];
-                const top8 = parityX8.top8 || [...dan1, ...dan2];
+                const pentaData = computePentaConsensusForDate(targetDate, data);
+                const x4Info = pentaData?.xien4;
+                const dan1 = x4Info?.dan1 || [];
+                const dan2 = x4Info?.dan2 || [];
+                const top8 = x4Info?.top8 || [...dan1, ...dan2];
+                const isPending = Boolean(pentaData?.isPending);
+                const hitNums1 = new Set(x4Info?.hitNums1 || []);
+                const hitNums2 = new Set(x4Info?.hitNums2 || []);
 
-                if (titleLabel) titleLabel.innerHTML = '3. 🎲 2 Dàn Xiên 4 Tinh Hoa (Top 8 Chẵn/Lẻ Quây 11 Vé/Dàn · Vốn 22M)';
+                if (titleLabel) titleLabel.innerHTML = '3. 🎲 2 Dàn Xiên 4 Tinh Hoa (Top 8 Lô Siêu Gộp 5 · Vốn 22M)';
                 if (stakeBadge) stakeBadge.textContent = 'Vốn 22M/ngày';
-                if (subtext) subtext.innerHTML = 'Top 8 Chẵn/Lẻ chia 2 Dàn X4 Quây 11 vé/dàn (1 X4 + 4 X3 + 6 X2) · Cơ cấu: <strong>Nổ 4/4: +373M · 3/4: +73M · 2/4: +1M</strong>';
+                if (subtext) subtext.innerHTML = 'Top 8 Lô Siêu Gộp 5 cân bằng Chẵn/Lẻ chia 2 Dàn X4 Quây 11 vé/dàn (1 X4 + 4 X3 + 6 X2) · Cơ cấu: <strong>Nổ 4/4: +373M · 3/4: +73M · 2/4: +1M</strong>';
                 if (copyBtnLabel) copyBtnLabel.textContent = 'Copy 2 Dàn Xiên 4';
 
-                if (sourceTitle) sourceTitle.textContent = '🎲 Top 8 Cân Bằng Chẵn/Lẻ:';
+                if (sourceTitle) sourceTitle.textContent = '🎲 Top 8 Lô Siêu Gộp 5 (Cân Bằng Chẵn/Lẻ):';
                 if (chipsEl) {
                     chipsEl.innerHTML = `
                         <div class="space-y-2 w-full">
                             <div class="flex items-center gap-1.5 flex-wrap">
-                                <span class="px-2 py-0.5 rounded bg-purple-100 text-purple-950 font-bold text-[11px]">Dàn 1:</span>
-                                ${dan1.map(n => `<span class="px-2 py-1 rounded-lg bg-purple-600 text-white font-mono font-black text-xs shadow-xs">${n}</span>`).join(' ')}
+                                <span class="px-2 py-0.5 rounded bg-purple-100 text-purple-950 font-bold text-[11px]">Dàn 1${!isPending ? ` (${x4Info?.hits1 || 0}/4)` : ''}:</span>
+                                ${dan1.map(n => (!isPending && hitNums1.has(n))
+                                    ? `<span class="px-2 py-1 rounded-lg bg-emerald-600 text-white font-mono font-black text-xs shadow-xs ring-2 ring-emerald-300">🎯 ${n}</span>`
+                                    : `<span class="px-2 py-1 rounded-lg bg-purple-600 text-white font-mono font-black text-xs shadow-xs">${n}</span>`).join(' ')}
                             </div>
                             <div class="flex items-center gap-1.5 flex-wrap">
-                                <span class="px-2 py-0.5 rounded bg-indigo-100 text-indigo-950 font-bold text-[11px]">Dàn 2:</span>
-                                ${dan2.map(n => `<span class="px-2 py-1 rounded-lg bg-indigo-600 text-white font-mono font-black text-xs shadow-xs">${n}</span>`).join(' ')}
+                                <span class="px-2 py-0.5 rounded bg-indigo-100 text-indigo-950 font-bold text-[11px]">Dàn 2${!isPending ? ` (${x4Info?.hits2 || 0}/4)` : ''}:</span>
+                                ${dan2.map(n => (!isPending && hitNums2.has(n))
+                                    ? `<span class="px-2 py-1 rounded-lg bg-emerald-600 text-white font-mono font-black text-xs shadow-xs ring-2 ring-emerald-300">🎯 ${n}</span>`
+                                    : `<span class="px-2 py-1 rounded-lg bg-indigo-600 text-white font-mono font-black text-xs shadow-xs">${n}</span>`).join(' ')}
                             </div>
                         </div>
                     `;
@@ -2262,35 +2236,63 @@
 
                 if (ticketsHeader) ticketsHeader.textContent = 'CHI TIẾT 2 DÀN XIÊN 4 TINH HOA (QUÂY 11 VÉ/DÀN):';
                 if (ticketsContainer) {
+                    const renderDanTicket = (danTitle, danNums, hitsCount, hitPayoutK, isD1) => {
+                        const bgCard = isD1 ? 'bg-purple-50/70 border-purple-200' : 'bg-indigo-50/70 border-indigo-200';
+                        const textTitle = isD1 ? 'text-purple-950' : 'text-indigo-950';
+                        const textStake = isD1 ? 'text-purple-800' : 'text-indigo-800';
+                        const textNums = isD1 ? 'text-purple-900' : 'text-indigo-900';
+                        const hitSet = isD1 ? hitNums1 : hitNums2;
+
+                        let badgeHtml = '';
+                        if (!isPending) {
+                            if (hitsCount >= 4) badgeHtml = '<span class="px-2 py-0.5 rounded bg-amber-400 text-slate-950 font-black text-[10px] shadow-xs">👑 NỔ 4/4 (+373M)</span>';
+                            else if (hitsCount === 3) badgeHtml = '<span class="px-2 py-0.5 rounded bg-purple-600 text-white font-black text-[10px] shadow-xs">🔥 NỔ 3/4 (+73M)</span>';
+                            else if (hitsCount === 2) badgeHtml = '<span class="px-2 py-0.5 rounded bg-teal-600 text-white font-bold text-[10px] shadow-xs">✨ NỔ 2/4 (+1M)</span>';
+                            else badgeHtml = `<span class="px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 font-bold text-[10px]">${hitsCount}/4 con (-11M)</span>`;
+                        }
+
+                        return `
+                            <div class="p-3 rounded-xl ${bgCard} border space-y-1.5 text-xs">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-black ${textTitle}">${danTitle} (4 SỐ · QUÂY 11 VÉ):</span>
+                                    <div class="flex items-center gap-1.5">
+                                        ${badgeHtml}
+                                        <span class="font-bold ${textStake} font-mono">11.0M</span>
+                                    </div>
+                                </div>
+                                <div class="font-mono font-black text-sm ${textNums} tracking-wider flex items-center gap-1.5 flex-wrap">
+                                    [${danNums.map(n => (!isPending && hitSet.has(n))
+                                        ? `<span class="text-emerald-700 underline font-black">🎯${n}</span>`
+                                        : n).join(' - ')}]
+                                </div>
+                                <div class="text-[10px] text-slate-500 flex justify-between items-center">
+                                    <span>1 vé Xiên 4 + 4 vé Xiên 3 + 6 vé Xiên 2</span>
+                                    ${!isPending ? `<span>Thưởng: <strong class="text-amber-800 font-mono">${formatMoneyK(hitPayoutK, false)}</strong></span>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    };
+
                     ticketsContainer.innerHTML = `
-                        <div class="p-3 rounded-xl bg-purple-50/70 border border-purple-200 space-y-1.5 text-xs">
-                            <div class="flex justify-between items-center">
-                                <span class="font-black text-purple-950">DÀN 1 (4 SỐ · QUÂY 11 VÉ):</span>
-                                <span class="font-bold text-purple-800 font-mono">11.0M</span>
-                            </div>
-                            <div class="font-mono font-black text-sm text-purple-900 tracking-wider">[${dan1.join(' - ')}]</div>
-                            <div class="text-[10px] text-slate-500">1 vé Xiên 4 + 4 vé Xiên 3 + 6 vé Xiên 2</div>
-                        </div>
-                        <div class="p-3 rounded-xl bg-indigo-50/70 border border-indigo-200 space-y-1.5 text-xs">
-                            <div class="flex justify-between items-center">
-                                <span class="font-black text-indigo-950">DÀN 2 (4 SỐ · QUÂY 11 VÉ):</span>
-                                <span class="font-bold text-indigo-800 font-mono">11.0M</span>
-                            </div>
-                            <div class="font-mono font-black text-sm text-indigo-900 tracking-wider">[${dan2.join(' - ')}]</div>
-                            <div class="text-[10px] text-slate-500">1 vé Xiên 4 + 4 vé Xiên 3 + 6 vé Xiên 2</div>
-                        </div>
+                        ${renderDanTicket('DÀN 1', dan1, x4Info?.hits1 || 0, x4Info?.dan1Payout || 0, true)}
+                        ${renderDanTicket('DÀN 2', dan2, x4Info?.hits2 || 0, x4Info?.dan2Payout || 0, false)}
                     `;
                 }
 
                 if (footerStake) footerStake.innerHTML = 'Vốn cược: <strong class="text-slate-900">22.0M/ngày</strong> · 2 Dàn Xiên 4 Quây 11 vé';
                 if (metaProfitEl) {
-                    metaProfitEl.innerHTML = 'Cơ chế quây bảo hiểm: <strong class="text-purple-800 font-bold font-mono">Trúng 2 con có lãi (+1M)</strong> · Nổ 3 lãi 73M · Nổ 4 lãi 373M';
+                    if (!isPending && x4Info) {
+                        const pK = x4Info.profitK;
+                        metaProfitEl.innerHTML = `Kết toán 2 Dàn Xiên 4: <strong class="${pK > 0 ? 'text-emerald-700' : 'text-rose-700'} font-bold font-mono">${pK > 0 ? '+' : ''}${formatMoneyK(pK)}</strong> (Thưởng: ${formatMoneyK(x4Info.payoutK, false)})`;
+                    } else {
+                        metaProfitEl.innerHTML = 'Cơ chế quây bảo hiểm: <strong class="text-purple-800 font-bold font-mono">Trúng 2 con có lãi (+1M)</strong> · Nổ 3 lãi 73M · Nổ 4 lãi 373M';
+                    }
                 }
 
                 if (copyBtn) {
                     copyBtn.onclick = () => {
                         const lines = [
-                            `🎲 2 DÀN XIÊN 4 TINH HOA (TOP 8 CHẴN/LẺ) - NGÀY ${formatDateVi(targetDate)}:`,
+                            `🎲 2 DÀN XIÊN 4 TINH HOA (TOP 8 LÔ SIÊU GỘP 5) - NGÀY ${formatDateVi(targetDate)}:`,
                             `Dàn 1 (11M): ${dan1.join(', ')}`,
                             `Dàn 2 (11M): ${dan2.join(', ')}`,
                             `Vốn cược: 22M (Quây 11 vé/dàn: 1 X4 + 4 X3 + 6 X2)`
@@ -10351,6 +10353,12 @@
         } else {
             container.innerHTML = resultsStripHtml + fullEnsembleBannerHtml + dropoffSectionHtml + deSectionHtml + loSectionHtml + xien5SectionHtml + summaryCardHtml;
         }
+    }
+
+    if (typeof window !== 'undefined') {
+        window.computePentaConsensusForDate = computePentaConsensusForDate;
+        window.evaluatePentaXien4 = evaluatePentaXien4;
+        window.pairTop8WithParity = pairTop8WithParity;
     }
 
     if (document.readyState === 'loading') {

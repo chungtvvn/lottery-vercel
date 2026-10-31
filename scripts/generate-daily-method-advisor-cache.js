@@ -244,6 +244,13 @@ async function main() {
                         multiplierMap: pentaNext.loCrossX2.multiplierMap || {},
                         stakeK: pentaNext.loCrossX2.stakeK || 0
                     } : null,
+                    xien4: {
+                        top8: pentaNext.xien4?.top8 || (pentaNext.lo?.numbers || []).slice(0, 8),
+                        dan1: pentaNext.xien4?.dan1 || [],
+                        dan2: pentaNext.xien4?.dan2 || [],
+                        swapped: Boolean(pentaNext.xien4?.swapped),
+                        stakeK: 22000
+                    },
                     xien5: {
                         top5: pentaNext.xien5?.top5 || [],
                         tickets: pentaNext.xien5?.tickets || [],
