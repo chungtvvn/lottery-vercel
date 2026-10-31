@@ -702,59 +702,371 @@
                             </div>
                         </div>
                     ` : `
-                        <!-- CHẾ ĐỘ ĐÃ KẾT TOÁN: HIỂN THỊ KẾT QUẢ ĐỐI SOÁT & THẮNG/THUA -->
-                        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 pt-1">
-                            ${['consensus', 'chatgpt', 'deepseek', 'gemini', 'grok', 'muse'].map(mKey => {
-                                const r = results[mKey];
-                                if (!r) return '';
-                                const isConsensus = mKey === 'consensus';
-                                const info = isConsensus ? { name: '👑 Gộp 5 AI', avatar: '👑' } : (models[mKey] || { name: mKey, avatar: '🤖' });
-                                const deHit = r.de?.isHit;
-                                const loHits = r.lo?.hits || 0;
-                                const totalProfitK = r.totalProfitK || 0;
-                                const isWin = totalProfitK >= 0;
+                        <!-- CHẾ ĐỘ ĐÃ KẾT TOÁN: HIỂN THỊ ĐỐI SOÁT CHI TIẾT ĐA TẦNG TƯƠNG TỰ DAILY -->
+                        <div class="space-y-5 pt-1">
+                            <!-- THANH TỔNG HỢP NHANH CỦA NGÀY (QUICK KPI CARDS) -->
+                            <div class="grid gap-2.5 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
+                                ${['consensus', 'chatgpt', 'deepseek', 'gemini', 'grok', 'muse'].map(mKey => {
+                                    const r = results[mKey];
+                                    if (!r) return '';
+                                    const isCons = mKey === 'consensus';
+                                    const info = isCons ? { name: '👑 Gộp Consensus', avatar: '👑' } : (models[mKey] || { name: mKey, avatar: '🤖' });
+                                    const isWin = (r.totalProfitK || 0) >= 0;
+                                    const isSelected = filter === mKey;
+                                    const borderClass = isCons
+                                        ? 'border-2 border-purple-400 bg-purple-50/70 ring-1 ring-purple-200'
+                                        : (isSelected ? 'border-2 border-indigo-500 bg-indigo-50/50' : 'border border-slate-200 bg-slate-50/60');
+                                    return `
+                                        <div class="rounded-2xl p-2.5 text-xs space-y-1.5 ${borderClass} shadow-2xs">
+                                            <div class="flex items-center justify-between font-bold text-slate-900 border-b border-slate-200/60 pb-1">
+                                                <span class="flex items-center gap-1 truncate">
+                                                    <span>${info.avatar || '🤖'}</span>
+                                                    <span class="font-black text-[11px] truncate">${info.name}</span>
+                                                </span>
+                                            </div>
+                                            <div class="flex items-center justify-between text-[11px]">
+                                                <span class="text-slate-500">Đề:</span>
+                                                <span class="font-bold ${r.de?.isHit ? 'text-emerald-700 bg-emerald-100 px-1 rounded' : 'text-slate-400'}">
+                                                    ${r.de?.isHit ? `🎯 Trúng ${specialStr}` : 'Trượt'}
+                                                </span>
+                                            </div>
+                                            <div class="flex items-center justify-between text-[11px]">
+                                                <span class="text-slate-500">Lô:</span>
+                                                <span class="font-bold ${r.lo?.hits > 0 ? 'text-indigo-700 font-black' : 'text-slate-400'}">
+                                                    ${r.lo?.hits > 0 ? `Nổ ${r.lo?.hits}n` : 'Trượt'}
+                                                </span>
+                                            </div>
+                                            <div class="flex items-center justify-between pt-1 border-t border-slate-200/60 text-[11px]">
+                                                <span class="text-[9px] uppercase font-bold text-slate-400">Net:</span>
+                                                <span class="font-mono font-black ${isWin ? 'text-emerald-700' : 'text-rose-600'}">
+                                                    ${formatMoney(r.totalProfitK)}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
 
-                                const cardBorder = isConsensus
-                                    ? 'border-2 border-purple-300 bg-purple-50/40'
-                                    : 'border border-slate-200 bg-slate-50/50';
+                            <!-- KHỐI 1: PHƯƠNG PHÁP GỘP 5 AI (CONSENSUS ĐA TẦNG - TƯƠNG TỰ DAILY) -->
+                            ${(filter === 'all' || filter === 'consensus') ? (() => {
+                                const consRes = results.consensus || {};
+                                const deRes = consRes.de || consRes.deTiered || {};
+                                const loRes = consRes.lo || consRes.loTiered || {};
+                                const deX2Nums = cons.deTiers?.x2Nums || [];
+                                const deX1Nums = cons.deTiers?.x1Nums || [];
+                                const deVotesMap = cons.deVotesMap || {};
+
+                                const p27Counts = {};
+                                p27.forEach(p => {
+                                    const num = String(p).padStart(2, '0').slice(-2);
+                                    p27Counts[num] = (p27Counts[num] || 0) + 1;
+                                });
+
+                                const isConsWin = (consRes.totalProfitK || 0) >= 0;
 
                                 return `
-                                    <div class="rounded-2xl p-3 text-xs space-y-2 ${cardBorder}">
-                                        <div class="flex items-center justify-between font-bold text-slate-900 border-b border-slate-200/60 pb-1.5">
-                                            <span class="flex items-center gap-1.5">
-                                                <span>${info.avatar || '🤖'}</span>
-                                                <span class="font-black">${info.name}</span>
-                                            </span>
-                                        </div>
-
-                                        <!-- De Hit -->
-                                        <div class="flex items-center justify-between">
-                                            <span class="text-slate-500">Đề:</span>
-                                            ${deHit ? `
-                                                <span class="font-black text-emerald-700 bg-emerald-100 border border-emerald-300 px-1.5 py-0.2 rounded">
-                                                    🎯 Trúng ${specialStr}
+                                    <div class="rounded-3xl border-2 border-purple-300 bg-gradient-to-b from-purple-50/50 via-white to-purple-50/30 p-5 space-y-4 shadow-sm">
+                                        <!-- Header Consensus -->
+                                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-purple-200 pb-3">
+                                            <div class="flex items-center gap-2.5">
+                                                <span class="flex h-8 w-8 items-center justify-center rounded-2xl bg-purple-600 text-white shadow-xs text-sm">
+                                                    👑
                                                 </span>
-                                            ` : '<span class="text-slate-400 font-bold">Trượt</span>'}
+                                                <div>
+                                                    <h4 class="text-sm font-black text-purple-950 uppercase tracking-wide flex items-center gap-2">
+                                                        <span>PHƯƠNG PHÁP GỘP 5 AI (CONSENSUS ĐA TẦNG)</span>
+                                                        <span class="rounded bg-purple-200 text-purple-900 border border-purple-300 px-2 py-0.2 text-[10px] font-bold">
+                                                            Đồng Thuận Tối Cao
+                                                        </span>
+                                                    </h4>
+                                                    <p class="text-xs text-purple-800">
+                                                        Đề phân tầng X2/X1 · Lô phân tầng X5..X1 theo số vote từ 5 mô hình AI
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <!-- KPI Tổng Hợp của Consensus -->
+                                            <div class="flex flex-wrap items-center gap-2 text-xs font-mono">
+                                                <div class="rounded-xl bg-white border border-purple-200 px-3 py-1.5 shadow-2xs">
+                                                    <span class="text-slate-400 text-[10px] block uppercase font-bold">Vốn Tổng:</span>
+                                                    <span class="font-black text-slate-800">${formatMoney(consRes.totalStakeK, { signed: false })}</span>
+                                                </div>
+                                                <div class="rounded-xl bg-white border border-purple-200 px-3 py-1.5 shadow-2xs">
+                                                    <span class="text-slate-400 text-[10px] block uppercase font-bold">Thưởng Tổng:</span>
+                                                    <span class="font-black text-emerald-700">${formatMoney(consRes.totalPayoutK, { signed: false })}</span>
+                                                </div>
+                                                <div class="rounded-xl ${isConsWin ? 'bg-emerald-50 border border-emerald-300 text-emerald-800' : 'bg-rose-50 border border-rose-300 text-rose-800'} px-3 py-1.5 shadow-2xs font-bold">
+                                                    <span class="text-[10px] block uppercase opacity-75">Net Lãi/Lỗ:</span>
+                                                    <span class="text-sm font-black">${formatMoney(consRes.totalProfitK)}</span>
+                                                </div>
+                                            </div>
                                         </div>
 
-                                        <!-- Lo Hit -->
-                                        <div class="flex items-center justify-between">
-                                            <span class="text-slate-500">Lô:</span>
-                                            <span class="font-bold ${loHits >= 2 ? 'text-indigo-700 font-black' : (loHits === 1 ? 'text-slate-700' : 'text-slate-400')}">
-                                                ${loHits > 0 ? `Nổ ${loHits} nháy` : 'Trượt'}
-                                            </span>
+                                        <!-- CHI TIẾT 1: ĐỀ GỘP ĐA TẦNG (X2 VIP & X1 LÓT) -->
+                                        <div class="rounded-2xl bg-white border border-purple-200 p-4 space-y-3">
+                                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-100 pb-2">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-100 text-amber-800 text-xs font-black">
+                                                        🎯
+                                                    </span>
+                                                    <span class="text-xs font-black uppercase text-slate-900 tracking-wide">
+                                                        Đề Gộp Đa Tầng (${deX2Nums.length + deX1Nums.length} số):
+                                                    </span>
+                                                    <span class="rounded px-2 py-0.5 text-[10px] font-black ${deRes.isHit ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-slate-100 text-slate-600'}">
+                                                        ${deRes.isHit ? `🎯 TRÚNG ĐB (${specialStr})` : '❌ Trượt'}
+                                                    </span>
+                                                </div>
+                                                <div class="text-[11px] font-mono text-slate-500 flex items-center gap-3">
+                                                    <span>Vốn: <strong>${formatMoney(deRes.stakeK, { signed: false })}</strong></span>
+                                                    <span>Ăn: <strong class="text-emerald-700">${formatMoney(deRes.payoutK, { signed: false })}</strong></span>
+                                                    <span>Lãi: <strong class="${deRes.profitK >= 0 ? 'text-emerald-700' : 'text-rose-600'} font-black">${formatMoney(deRes.profitK)}</strong></span>
+                                                </div>
+                                            </div>
+
+                                            <!-- Dàn X2 (VIP Đồng thuận cao) -->
+                                            <div class="space-y-1.5">
+                                                <div class="flex items-center justify-between text-xs font-bold text-amber-950">
+                                                    <span class="flex items-center gap-1.5">
+                                                        <span class="rounded bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 px-2 py-0.5 text-[10px] font-black shadow-2xs">DÀN X2 (VIP)</span>
+                                                        <span>Đồng thuận cao (${deX2Nums.length} số):</span>
+                                                    </span>
+                                                    <span class="font-mono text-[11px] text-amber-800">Cược 2M/số · Ăn 168M</span>
+                                                </div>
+                                                <div class="flex flex-wrap gap-1.5">
+                                                    ${deX2Nums.map(n => {
+                                                        const isHit = specialStr && n === specialStr;
+                                                        const vote = deVotesMap[n]?.count || 2;
+                                                        if (isHit) {
+                                                            return `
+                                                                <div class="badge-number flex flex-col items-center justify-center min-w-[50px] h-12 px-2.5 rounded-2xl bg-gradient-to-tr from-amber-400 via-yellow-400 to-amber-500 text-slate-950 font-black ring-2 ring-amber-300 shadow-md scale-105 animate-pulse" title="🎯 NỔ ĐẶC BIỆT X2: ${n} · Ăn 168M">
+                                                                    <span class="font-mono text-sm leading-none font-black">${n}</span>
+                                                                    <span class="text-[8px] font-sans font-black text-rose-950 mt-0.5">⭐ NỔ ĐB</span>
+                                                                </div>
+                                                            `;
+                                                        }
+                                                        return `
+                                                            <div class="badge-number flex flex-col items-center justify-center min-w-[40px] h-11 px-2 rounded-2xl bg-amber-50/80 text-amber-950 border border-amber-300 font-mono font-bold text-xs shadow-2xs" title="Đề VIP X2: ${n} (${vote}/5 AI)">
+                                                                <span class="leading-none">${n}</span>
+                                                                <span class="text-[8px] font-sans opacity-70 mt-0.5">${vote}/5</span>
+                                                            </div>
+                                                        `;
+                                                    }).join('') || '<span class="text-xs text-slate-400">Không có số</span>'}
+                                                </div>
+                                            </div>
+
+                                            <!-- Dàn X1 (Lót Bảo Hiểm) -->
+                                            ${deX1Nums.length ? `
+                                                <div class="pt-2 border-t border-slate-100 space-y-1.5">
+                                                    <div class="flex items-center justify-between text-xs font-bold text-slate-700">
+                                                        <span class="flex items-center gap-1.5">
+                                                            <span class="rounded bg-indigo-100 text-indigo-900 border border-indigo-200 px-2 py-0.5 text-[10px] font-bold">DÀN X1 (LÓT)</span>
+                                                            <span>Bảo hiểm rủi ro (${deX1Nums.length} số):</span>
+                                                        </span>
+                                                        <span class="font-mono text-[11px] text-slate-500">Cược 1M/số · Ăn 84M</span>
+                                                    </div>
+                                                    <div class="flex flex-wrap gap-1.5">
+                                                        ${deX1Nums.map(n => {
+                                                            const isHit = specialStr && n === specialStr;
+                                                            const vote = deVotesMap[n]?.count || 1;
+                                                            if (isHit) {
+                                                                return `
+                                                                    <div class="badge-number flex flex-col items-center justify-center min-w-[50px] h-12 px-2.5 rounded-2xl bg-gradient-to-tr from-emerald-400 via-teal-400 to-emerald-500 text-white font-black ring-2 ring-emerald-300 shadow-md scale-105 animate-pulse" title="🎯 NỔ ĐẶC BIỆT X1: ${n} · Ăn 84M">
+                                                                        <span class="font-mono text-sm leading-none font-black">${n}</span>
+                                                                        <span class="text-[8px] font-sans font-black text-emerald-950 mt-0.5">⭐ NỔ ĐB</span>
+                                                                    </div>
+                                                                `;
+                                                            }
+                                                            return `
+                                                                <div class="badge-number flex flex-col items-center justify-center min-w-[40px] h-10 px-2 rounded-xl bg-indigo-50/60 text-indigo-950 border border-indigo-200 font-mono font-bold text-xs shadow-2xs" title="Đề Lót X1: ${n} (${vote}/5 AI)">
+                                                                    <span class="leading-none">${n}</span>
+                                                                    <span class="text-[8px] font-sans opacity-60 mt-0.5">${vote}/5</span>
+                                                                </div>
+                                                            `;
+                                                        }).join('')}
+                                                    </div>
+                                                </div>
+                                            ` : ''}
                                         </div>
 
-                                        <!-- Day Profit -->
-                                        <div class="flex items-center justify-between pt-1 border-t border-slate-200/60">
-                                            <span class="text-[10px] text-slate-400 uppercase font-bold">Lãi ngày:</span>
-                                            <span class="font-mono font-black ${isWin ? 'text-emerald-700' : 'text-rose-600'}">
-                                                ${formatMoney(totalProfitK)}
-                                            </span>
+                                        <!-- CHI TIẾT 2: LÔ GỘP ĐA TẦNG (HỆ SỐ X5 ĐẾN X1) -->
+                                        <div class="rounded-2xl bg-white border border-purple-200 p-4 space-y-3">
+                                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-100 pb-2">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-indigo-100 text-indigo-700 text-xs font-black">
+                                                        🎲
+                                                    </span>
+                                                    <span class="text-xs font-black uppercase text-slate-900 tracking-wide">
+                                                        Lô Gộp Đa Tầng (${loRes.numbers?.length || 0} số):
+                                                    </span>
+                                                    <span class="rounded px-2 py-0.5 text-[10px] font-black ${loRes.hits > 0 ? 'bg-indigo-100 text-indigo-800 border border-indigo-300' : 'bg-slate-100 text-slate-600'}">
+                                                        ${loRes.hits > 0 ? `🎯 NỔ ${loRes.hits} NHÁY` : '❌ Trượt'}
+                                                    </span>
+                                                    ${loRes.hitNumbers?.length ? `
+                                                        <span class="text-xs font-mono font-bold text-emerald-700">
+                                                            [${loRes.hitNumbers.join(' ')}]
+                                                        </span>
+                                                    ` : ''}
+                                                </div>
+                                                <div class="text-[11px] font-mono text-slate-500 flex items-center gap-3">
+                                                    <span>Vốn: <strong>${formatMoney(loRes.stakeK, { signed: false })}</strong></span>
+                                                    <span>Ăn: <strong class="text-emerald-700">${formatMoney(loRes.payoutK, { signed: false })}</strong></span>
+                                                    <span>Lãi: <strong class="${loRes.profitK >= 0 ? 'text-emerald-700' : 'text-rose-600'} font-black">${formatMoney(loRes.profitK)}</strong></span>
+                                                </div>
+                                            </div>
+
+                                            <!-- Các Tầng X5..X1 -->
+                                            <div class="space-y-2.5">
+                                                ${[5, 4, 3, 2, 1].map(mult => {
+                                                    const tierNums = cons.loTiers?.[`x${mult}Nums`] || [];
+                                                    if (!tierNums.length) return '';
+                                                    const stakePerNumK = mult * 2200;
+                                                    const payoutPerHitK = mult * 8000;
+                                                    let tHits = 0;
+                                                    tierNums.forEach(n => { tHits += (p27Counts[n] || 0); });
+                                                    const tPayoutK = tHits * payoutPerHitK;
+                                                    const tStakeK = tierNums.length * stakePerNumK;
+                                                    const tProfitK = tPayoutK - tStakeK;
+
+                                                    const tierBadgeClass = mult === 5 ? 'bg-gradient-to-r from-rose-600 to-pink-600 text-white' :
+                                                        mult === 4 ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 border border-amber-400' :
+                                                        mult === 3 ? 'bg-emerald-600 text-white' :
+                                                        mult === 2 ? 'bg-teal-600 text-white' : 'bg-slate-600 text-white';
+
+                                                    return `
+                                                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-50/70 border border-slate-200">
+                                                            <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                                                                <span class="min-w-[175px] inline-flex items-center gap-1.5 text-xs font-bold text-slate-800">
+                                                                    <span class="rounded px-2 py-0.5 text-[10px] font-black shadow-2xs ${tierBadgeClass}">TẦNG X${mult} (${mult}/5 AI)</span>
+                                                                    <span class="text-[11px] font-mono text-slate-500">Cược ${formatMoney(stakePerNumK, { signed: false })}/số</span>
+                                                                </span>
+                                                                <div class="flex flex-wrap gap-1.5">
+                                                                    ${tierNums.map(n => {
+                                                                        const h = p27Counts[n] || 0;
+                                                                        if (h > 0) {
+                                                                            const numProfitK = (h * payoutPerHitK) - stakePerNumK;
+                                                                            return `
+                                                                                <span class="badge-number inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-mono font-black text-xs ring-2 ring-emerald-300 shadow-md scale-105" title="Lô ${n}: Nổ ${h} nháy · Ăn ${formatMoney(h * payoutPerHitK, { signed: false })}">
+                                                                                    <span>🎯 ${n}</span>
+                                                                                    <span class="bg-emerald-950/80 text-emerald-200 px-1.5 py-0.2 rounded text-[9px] font-black font-sans">
+                                                                                        ${h}n · ${formatMoney(numProfitK)}
+                                                                                    </span>
+                                                                                </span>
+                                                                            `;
+                                                                        }
+                                                                        return `
+                                                                            <span class="badge-number inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-600 font-mono text-xs font-semibold" title="Lô ${n}: 0 nháy">
+                                                                                <span>${n}</span>
+                                                                                <span class="text-[8px] text-slate-400 font-sans">(0n)</span>
+                                                                            </span>
+                                                                        `;
+                                                                    }).join('')}
+                                                                </div>
+                                                            </div>
+                                                            <div class="text-[11px] font-mono text-right shrink-0">
+                                                                ${tHits > 0 ? `
+                                                                    <span class="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                                                                        Nổ ${tHits}n · ${formatMoney(tProfitK)}
+                                                                    </span>
+                                                                ` : `
+                                                                    <span class="text-slate-400">0n · -${formatMoney(tStakeK, { signed: false })}</span>
+                                                                `}
+                                                            </div>
+                                                        </div>
+                                                    `;
+                                                }).join('')}
+                                            </div>
                                         </div>
                                     </div>
                                 `;
-                            }).join('')}
+                            })() : ''}
+
+                            <!-- KHỐI 2: ĐỐI SOÁT CHI TIẾT 5 MÔ HÌNH AI ĐỘC LẬP -->
+                            ${(filter === 'all' || filter !== 'consensus') ? (() => {
+                                const activeModels = filter === 'all'
+                                    ? ['chatgpt', 'deepseek', 'gemini', 'grok', 'muse']
+                                    : [filter];
+
+                                const p27Counts = {};
+                                p27.forEach(p => {
+                                    const num = String(p).padStart(2, '0').slice(-2);
+                                    p27Counts[num] = (p27Counts[num] || 0) + 1;
+                                });
+
+                                return `
+                                    <div class="space-y-3">
+                                        <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+                                            <h5 class="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                                                <span>🤖</span>
+                                                <span>Chi Tiết Đối Soát Từng AI Độc Lập (Đề 20s · Lô 6s Phẳng):</span>
+                                            </h5>
+                                            <span class="text-xs text-slate-400 font-mono">Vốn Đề 20M · Vốn Lô 13.2M</span>
+                                        </div>
+
+                                        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                                            ${activeModels.map(mKey => {
+                                                const src = sources[mKey] || {};
+                                                const r = results[mKey] || {};
+                                                const info = models[mKey] || { name: mKey, avatar: '🤖' };
+                                                const de = (src.de || []).map(x => String(x).padStart(2, '0'));
+                                                const lo = (src.lo || []).map(x => String(x).padStart(2, '0'));
+
+                                                const isDeHit = r.de?.isHit || (specialStr && de.includes(specialStr));
+                                                const loHits = r.lo?.hits || 0;
+                                                const isWin = (r.totalProfitK || 0) >= 0;
+
+                                                return `
+                                                    <div class="rounded-2xl border border-slate-200 bg-white p-3.5 space-y-3 text-xs shadow-2xs hover:shadow-xs transition">
+                                                        <!-- Card Header -->
+                                                        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                                                            <div class="flex items-center gap-1.5">
+                                                                <span class="text-base">${info.avatar || '🤖'}</span>
+                                                                <span class="font-black text-slate-900">${info.name}</span>
+                                                            </div>
+                                                            <span class="font-mono font-black ${isWin ? 'text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200' : 'text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200'} text-[11px]">
+                                                                ${formatMoney(r.totalProfitK)}
+                                                            </span>
+                                                        </div>
+
+                                                        <!-- Dàn Đề 20 số -->
+                                                        <div class="space-y-1">
+                                                            <div class="flex items-center justify-between text-[10px] text-slate-500 font-bold">
+                                                                <span>Đề (20s · ${isDeHit ? '<strong class="text-emerald-700">Trúng ĐB</strong>' : 'Trượt'}):</span>
+                                                                <span class="font-mono ${r.de?.profitK >= 0 ? 'text-emerald-700 font-bold' : 'text-slate-400'}">${formatMoney(r.de?.profitK)}</span>
+                                                            </div>
+                                                            <div class="flex flex-wrap gap-1">
+                                                                ${de.map(n => {
+                                                                    const hit = specialStr && n === specialStr;
+                                                                    if (hit) {
+                                                                        return `<span class="inline-flex items-center px-2 py-0.5 rounded font-mono font-black text-xs bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 ring-2 ring-amber-300 shadow-xs animate-pulse" title="Trúng ĐB: ${n}">⭐ ${n}</span>`;
+                                                                    }
+                                                                    return `<span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[11px] bg-slate-100 text-slate-700">${n}</span>`;
+                                                                }).join('') || '<span class="text-slate-400 text-[10px]">Không có</span>'}
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Dàn Lô 6 số -->
+                                                        <div class="pt-2 border-t border-slate-100 space-y-1">
+                                                            <div class="flex items-center justify-between text-[10px] text-slate-500 font-bold">
+                                                                <span>Lô (6s · ${loHits > 0 ? `<strong class="text-indigo-700">Nổ ${loHits}n</strong>` : 'Trượt'}):</span>
+                                                                <span class="font-mono ${r.lo?.profitK >= 0 ? 'text-emerald-700 font-bold' : 'text-slate-400'}">${formatMoney(r.lo?.profitK)}</span>
+                                                            </div>
+                                                            <div class="flex flex-wrap gap-1">
+                                                                ${lo.map(n => {
+                                                                    const h = p27Counts[n] || 0;
+                                                                    if (h > 0) {
+                                                                        return `<span class="inline-flex items-center px-2 py-0.5 rounded font-mono font-black text-xs bg-emerald-600 text-white shadow-xs" title="Lô ${n}: Nổ ${h} nháy (+${formatMoney(h * 8000 - 2200)})">🎯 ${n} <span class="text-[9px] font-sans font-bold text-emerald-200 ml-0.5">(${h}n)</span></span>`;
+                                                                    }
+                                                                    return `<span class="inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[11px] bg-slate-100 text-slate-600">${n}</span>`;
+                                                                }).join('') || '<span class="text-slate-400 text-[10px]">Không có</span>'}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                `;
+                                            }).join('')}
+                                        </div>
+                                    </div>
+                                `;
+                            })() : ''}
                         </div>
                     `}
                 </article>

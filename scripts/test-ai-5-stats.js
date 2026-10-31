@@ -61,9 +61,13 @@ assert.strictEqual(settled.prizes27.length, 27, 'prizes27 length must be 27');
 assert(settled.results && settled.results.consensus, 'Must have flat consensus results');
 assert(settled.resultsTiered && settled.resultsTiered.consensus, 'Must have tiered consensus results');
 
-// Consensus Đề phẳng (Top 20 Đề)
-assert.strictEqual(settled.results.consensus.de.isHit, true, 'Consensus Đề phẳng must hit 54');
-assert.strictEqual(settled.results.consensus.de.profitK, 64000, 'Consensus Đề phẳng profit must be +64.000K (+64M)');
+// Consensus Đề đa tầng (Phương pháp cốt lõi)
+assert.strictEqual(settled.results.consensus.de.isHit, true, 'Consensus Đề đa tầng must hit 54');
+assert.strictEqual(settled.results.consensus.de.profitK, 127000, 'Consensus Đề đa tầng profit must be +127.000K (+127M)');
+
+// Consensus Đề phẳng (Tham chiếu)
+assert.strictEqual(settled.results.consensus.flat.de.isHit, true, 'Consensus Đề phẳng must hit 54');
+assert.strictEqual(settled.results.consensus.flat.de.profitK, 64000, 'Consensus Đề phẳng profit must be +64.000K (+64M)');
 
 // Consensus Đề đa tầng (X2 / X1)
 const deTiered = settled.resultsTiered.consensus.de;
