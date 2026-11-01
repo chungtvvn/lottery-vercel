@@ -4385,7 +4385,8 @@
           ],
           "method": "AI phân tích",
           "status": "ok",
-          "notes": "Trả đủ 20+6, prompt kèm link GitHub + xosomienbac.net và thống kê tóm tắt (file tổng hợp không đính kèm được qua khung chat)."
+          "notes": "Trả đủ 20+6, prompt kèm link GitHub + xosomienbac.net và thống kê tóm tắt (file tổng hợp không đính kèm được qua khung chat). Xiên 4 thiếu: không đọc được file/link JSON (báo vượt giới hạn 4MB).",
+          "xien4": []
         },
         "deepseek": {
           "de": [
@@ -4420,7 +4421,8 @@
           ],
           "method": "AI phân tích",
           "status": "ok",
-          "notes": "Trả đủ 20+6 ngay lần đầu, không báo Server busy."
+          "notes": "Trả đủ 20+6 ngay lần đầu, không báo Server busy. Xiên 4 thiếu: chỉ đọc được 40% file đính kèm.",
+          "xien4": []
         },
         "gemini": {
           "de": [
@@ -4455,42 +4457,28 @@
           ],
           "method": "AI phân tích",
           "status": "ok",
-          "notes": "Trả đủ 20+6, prompt kèm link GitHub + xosomienbac.net và thống kê tóm tắt (file tổng hợp không đính kèm được qua khung chat)."
+          "notes": "Trả đủ 20+6, prompt kèm link GitHub + xosomienbac.net và thống kê tóm tắt (file tổng hợp không đính kèm được qua khung chat). Xiên 4: tính từ file JSON đính kèm (đồng xuất hiện dàn1 48, dàn2 44 lần, đã kiểm chứng).",
+          "xien4": [
+            [
+              "31",
+              "38",
+              "43",
+              "92"
+            ],
+            [
+              "24",
+              "54",
+              "59",
+              "87"
+            ]
+          ]
         },
         "grok": {
-          "de": [
-            "09",
-            "18",
-            "21",
-            "22",
-            "24",
-            "32",
-            "36",
-            "38",
-            "39",
-            "42",
-            "44",
-            "51",
-            "60",
-            "65",
-            "66",
-            "67",
-            "70",
-            "83",
-            "91",
-            "96"
-          ],
-          "lo": [
-            "34",
-            "35",
-            "38",
-            "52",
-            "62",
-            "75"
-          ],
-          "method": "Perplexity AI (thay thế vị trí Grok do Grok kẹt Cloudflare)",
-          "status": "ok",
-          "notes": "Tính trực tiếp từ file lịch sử đính kèm (7.600 kỳ, kỳ cuối 31/10 khớp đủ 27 số, ĐB 57); tổng đếm kiểm chứng đúng (Đề 7.600/100, Lô 205.200/2.700); tần suất tính được khớp thống kê tóm tắt; luật chọn: Đề = top 10 toàn lịch sử + top 100 kỳ cuối (bù 18), Lô = top 3 toàn lịch sử + top 3 100 kỳ cuối. Thay bộ cũ lúc 02:22 theo lệnh hỏi lại kèm file (bộ cũ: Đề 36,70,65,39,32,60,24,09,66,91,01,15,54,08,17,38,96,83,67,44; Lô 34,52,64,24,32,44). Đáp án: https://www.perplexity.ai/search/a760cd8e-c9a1-408d-a00e-d895debdd71b"
+          "de": [],
+          "lo": [],
+          "method": "AI phân tích",
+          "status": "missing",
+          "notes": "chưa đăng nhập: kẹt Cloudflare \"Verify you are human\" (thử 2 lần không qua), sau khi trình duyệt thay môi trường thì Grok hiện trang Sign in/Sign up, gửi prompt chỉ hiện yêu cầu đăng ký, không trả số. Không nhập mật khẩu, không tạo tài khoản."
         },
         "muse": {
           "de": [
@@ -4524,7 +4512,22 @@
             "64"
           ],
           "method": "Muse phân tích (công thức điểm tần suất)",
-          "status": "ok"
+          "status": "ok",
+          "xien4": [
+            [
+              "62",
+              "52",
+              "38",
+              "64"
+            ],
+            [
+              "24",
+              "44",
+              "59",
+              "32"
+            ]
+          ],
+          "notes": " Xiên 4: top 8 Lô theo điểm Lô chia 2 dàn (tần suất Lô, không phải cùng xuất hiện)."
         },
         "perplexity": {
           "de": [
@@ -4559,7 +4562,8 @@
           ],
           "method": "AI phân tích (tính từ file lịch sử đính kèm)",
           "status": "ok",
-          "notes": "Tính trực tiếp từ file lịch sử đính kèm (7.600 kỳ, kỳ cuối 31/10 khớp đủ 27 số, ĐB 57); tổng đếm kiểm chứng đúng (Đề 7.600/100, Lô 205.200/2.700); tần suất tính được khớp thống kê tóm tắt; luật chọn: Đề = top 10 toàn lịch sử + top 100 kỳ cuối (bù 18), Lô = top 3 toàn lịch sử + top 3 100 kỳ cuối. Thay bộ cũ lúc 02:22 theo lệnh hỏi lại kèm file (bộ cũ: Đề 36,70,65,39,32,60,24,09,66,91,01,15,54,08,17,38,96,83,67,44; Lô 34,52,64,24,32,44). Đáp án: https://www.perplexity.ai/search/a760cd8e-c9a1-408d-a00e-d895debdd71b"
+          "notes": "Tính trực tiếp từ file lịch sử đính kèm (7.600 kỳ, kỳ cuối 31/10 khớp đủ 27 số, ĐB 57); tổng đếm kiểm chứng đúng (Đề 7.600/100, Lô 205.200/2.700); tần suất tính được khớp thống kê tóm tắt; luật chọn: Đề = top 10 toàn lịch sử + top 100 kỳ cuối (bù 18), Lô = top 3 toàn lịch sử + top 3 100 kỳ cuối. Thay bộ cũ lúc 02:22 theo lệnh hỏi lại kèm file (bộ cũ: Đề 36,70,65,39,32,60,24,09,66,91,01,15,54,08,17,38,96,83,67,44; Lô 34,52,64,24,32,44). Đáp án: https://www.perplexity.ai/search/a760cd8e-c9a1-408d-a00e-d895debdd71b Xiên 4 thiếu: không tải được nội dung link JSON.",
+          "xien4": []
         }
       },
       "rates": null
