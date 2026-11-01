@@ -6722,20 +6722,118 @@
       "date": "2026-11-02",
       "sources": {
         "chatgpt": {
-          "de": [],
-          "lo": []
-        },
-        "deepseek": {
-          "de": [],
-          "lo": []
+          "de": [
+            "01",
+            "09",
+            "21",
+            "22",
+            "24",
+            "32",
+            "36",
+            "38",
+            "39",
+            "42",
+            "44",
+            "51",
+            "60",
+            "65",
+            "66",
+            "67",
+            "70",
+            "83",
+            "91",
+            "96"
+          ],
+          "lo": [
+            "04",
+            "33",
+            "34",
+            "35",
+            "52",
+            "75"
+          ],
+          "xien4": [
+            [
+              "04",
+              "35",
+              "44",
+              "54"
+            ],
+            [
+              "34",
+              "38",
+              "48",
+              "52"
+            ]
+          ],
+          "method": "AI phân tích (tính từ file gọn đính kèm)",
+          "status": "ok",
+          "notes": "Tính từ file JSON gọn đính kèm (7.601 kỳ tới 01/11; đồng xuất hiện Xiên dàn1 40, dàn2 37 lần, đã kiểm chứng)"
         },
         "gemini": {
           "de": [],
-          "lo": []
+          "lo": [],
+          "xien4": [],
+          "method": "AI phân tích",
+          "status": "missing",
+          "notes": "chưa đăng nhập: trang chỉ hiện nút Sign in, không có khung chat (phiên hết hạn lần 3)"
         },
         "grok": {
           "de": [],
-          "lo": []
+          "lo": [],
+          "xien4": [],
+          "method": "AI phân tích",
+          "status": "missing",
+          "notes": "bị chặn (như các kỳ trước)"
+        },
+        "deepseek": {
+          "de": [
+            "97",
+            "65",
+            "67",
+            "89",
+            "36",
+            "73",
+            "12",
+            "58",
+            "08",
+            "46",
+            "43",
+            "34",
+            "59",
+            "28",
+            "61",
+            "85",
+            "05",
+            "72",
+            "31",
+            "52"
+          ],
+          "lo": [
+            "97",
+            "65",
+            "89",
+            "67",
+            "36",
+            "73"
+          ],
+          "xien4": [
+            [
+              "97",
+              "65",
+              "89",
+              "36"
+            ],
+            [
+              "67",
+              "73",
+              "12",
+              "58"
+            ]
+          ],
+          "method": "AI phân tích (tính từ file gọn đính kèm)",
+          "status": "ok",
+          "notes": "Tính từ file JSON gọn đính kèm; CỜ: bằng chứng tính toán không khớp file gốc (Đề 36: DeepSeek nói 86, file gốc 104; Lô top DeepSeek nói 36:2106, file gốc top là 62:2190) — số ghi nguyên văn, không sửa"
         },
         "muse": {
           "de": [
@@ -6767,7 +6865,73 @@
             "52",
             "62",
             "64"
-          ]
+          ],
+          "xien4": [
+            [
+              "62",
+              "52",
+              "38",
+              "64"
+            ],
+            [
+              "44",
+              "24",
+              "54",
+              "59"
+            ]
+          ],
+          "method": "Muse phân tích (công thức điểm tần suất)",
+          "status": "ok",
+          "notes": "Xiên 4: top 8 Lô theo điểm Lô chia 2 dàn (tần suất Lô, không phải cùng xuất hiện)"
+        },
+        "perplexity": {
+          "de": [
+            "32",
+            "96",
+            "38",
+            "22",
+            "67",
+            "83",
+            "44",
+            "42",
+            "21",
+            "51",
+            "39",
+            "09",
+            "60",
+            "66",
+            "91",
+            "17",
+            "54",
+            "59",
+            "18",
+            "57"
+          ],
+          "lo": [
+            "34",
+            "75",
+            "52",
+            "35",
+            "33",
+            "48"
+          ],
+          "xien4": [
+            [
+              "31",
+              "38",
+              "43",
+              "92"
+            ],
+            [
+              "11",
+              "49",
+              "52",
+              "54"
+            ]
+          ],
+          "method": "AI phân tích (tính từ file gọn đính kèm, thay grok)",
+          "status": "ok",
+          "notes": "Tính từ file JSON gọn đính kèm, thay grok (đồng xuất hiện Xiên dàn1 48, dàn2 44 lần, đã kiểm chứng)"
         }
       },
       "rates": null
