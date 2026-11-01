@@ -6771,12 +6771,53 @@
           "notes": "Tính từ file JSON gọn đính kèm (7.601 kỳ tới 01/11; đồng xuất hiện Xiên dàn1 40, dàn2 37 lần, đã kiểm chứng)"
         },
         "gemini": {
-          "de": [],
-          "lo": [],
-          "xien4": [],
-          "method": "AI phân tích",
-          "status": "missing",
-          "notes": "chưa đăng nhập: trang chỉ hiện nút Sign in, không có khung chat (phiên hết hạn lần 3)"
+          "de": [
+            "01",
+            "09",
+            "21",
+            "22",
+            "24",
+            "32",
+            "36",
+            "38",
+            "39",
+            "42",
+            "44",
+            "51",
+            "60",
+            "65",
+            "66",
+            "67",
+            "70",
+            "83",
+            "91",
+            "96"
+          ],
+          "lo": [
+            "34",
+            "35",
+            "38",
+            "52",
+            "64",
+            "75"
+          ],
+          "xien4": [
+            [
+              "31",
+              "38",
+              "43",
+              "92"
+            ],
+            [
+              "24",
+              "54",
+              "59",
+              "87"
+            ]
+          ],
+          "method": "AI phân tích (tính từ file gọn đính kèm)",
+          "status": "ok",
+          "notes": "Tính từ file JSON gọn đính kèm (7.601 kỳ tới 01/11; đồng xuất hiện Xiên dàn1 48, dàn2 44 lần, đã kiểm chứng). Bộ Đề trùng đúng bộ ChatGPT."
         },
         "grok": {
           "de": [],
@@ -6938,43 +6979,44 @@
       "xien4": {
         "dan1": [
           "38",
-          "52",
           "54",
-          "44"
+          "52",
+          "24"
         ],
         "dan2": [
-          "04",
-          "11",
-          "12",
-          "24"
+          "31",
+          "43",
+          "44",
+          "59"
         ],
         "top8": [
           "38",
-          "52",
           "54",
+          "52",
+          "24",
+          "31",
+          "43",
           "44",
-          "04",
-          "11",
-          "12",
-          "24"
+          "59"
         ],
         "swapped": false,
         "swapDetails": null,
         "fromConfig": false,
         "source": "top8_parity_consensus",
-        "note": "Tổng hợp đếm phiếu từ dàn Xiên 4 của các nguồn ok trong file (tạm thời 4 nguồn: chatgpt, deepseek, perplexity, muse; gemini đang hỏi bù, grok thiếu). Khi Gemini trả lời sẽ tính lại.",
+        "note": "Tổng hợp đếm phiếu từ dàn Xiên 4 của các nguồn ok trong file (5 nguồn: chatgpt, gemini, deepseek, perplexity, muse; grok thiếu, perplexity thay grok).",
         "votes": {
-          "11": 1,
-          "12": 1,
-          "24": 1,
-          "38": 3,
-          "44": 2,
+          "38": 4,
+          "54": 4,
           "52": 3,
-          "54": 3,
-          "04": 1
+          "24": 2,
+          "31": 2,
+          "43": 2,
+          "44": 2,
+          "59": 2
         },
         "okSources": [
           "chatgpt",
+          "gemini",
           "deepseek",
           "muse",
           "perplexity"
