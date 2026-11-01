@@ -7005,13 +7005,13 @@
         "source": "top8_parity_consensus",
         "note": "Tổng hợp đếm phiếu từ dàn Xiên 4 của các nguồn ok trong file (5 nguồn: chatgpt, gemini, deepseek, perplexity, muse; grok thiếu, perplexity thay grok).",
         "votes": {
-          "38": 4,
-          "54": 4,
-          "52": 3,
           "24": 2,
           "31": 2,
+          "38": 4,
           "43": 2,
           "44": 2,
+          "52": 3,
+          "54": 4,
           "59": 2
         },
         "okSources": [
