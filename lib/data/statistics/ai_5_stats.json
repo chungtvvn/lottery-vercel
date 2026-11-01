@@ -6934,7 +6934,52 @@
           "notes": "Tính từ file JSON gọn đính kèm, thay grok (đồng xuất hiện Xiên dàn1 48, dàn2 44 lần, đã kiểm chứng)"
         }
       },
-      "rates": null
+      "rates": null,
+      "xien4": {
+        "dan1": [
+          "38",
+          "52",
+          "54",
+          "44"
+        ],
+        "dan2": [
+          "04",
+          "11",
+          "12",
+          "24"
+        ],
+        "top8": [
+          "38",
+          "52",
+          "54",
+          "44",
+          "04",
+          "11",
+          "12",
+          "24"
+        ],
+        "swapped": false,
+        "swapDetails": null,
+        "fromConfig": false,
+        "source": "top8_parity_consensus",
+        "note": "Tổng hợp đếm phiếu từ dàn Xiên 4 của các nguồn ok trong file (tạm thời 4 nguồn: chatgpt, deepseek, perplexity, muse; gemini đang hỏi bù, grok thiếu). Khi Gemini trả lời sẽ tính lại.",
+        "votes": {
+          "38": 3,
+          "52": 3,
+          "54": 3,
+          "44": 2,
+          "04": 1,
+          "11": 1,
+          "12": 1,
+          "24": 1
+        },
+        "okSources": [
+          "chatgpt",
+          "deepseek",
+          "muse",
+          "perplexity"
+        ]
+      }
     }
   ],
   "meta": {
