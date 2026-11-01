@@ -644,8 +644,21 @@
         const isFallback = selectedModel === 'grok' && (src.method?.includes('Perplexity') || src.notes?.includes('Perplexity'));
 
         const aiX4 = src.xien4;
-        const aiDan1 = aiX4?.dan1 || [];
-        const aiDan2 = aiX4?.dan2 || [];
+        let aiDan1 = [];
+        let aiDan2 = [];
+        if (aiX4) {
+            if (Array.isArray(aiX4.dan1) && Array.isArray(aiX4.dan2)) {
+                aiDan1 = aiX4.dan1.map(x => String(x).padStart(2, '0'));
+                aiDan2 = aiX4.dan2.map(x => String(x).padStart(2, '0'));
+            } else if (Array.isArray(aiX4) && aiX4.length === 2 && Array.isArray(aiX4[0]) && Array.isArray(aiX4[1])) {
+                aiDan1 = aiX4[0].map(x => String(x).padStart(2, '0'));
+                aiDan2 = aiX4[1].map(x => String(x).padStart(2, '0'));
+            } else if (Array.isArray(aiX4) && aiX4.length === 8) {
+                aiDan1 = aiX4.slice(0, 4).map(x => String(x).padStart(2, '0'));
+                aiDan2 = aiX4.slice(4, 8).map(x => String(x).padStart(2, '0'));
+            }
+        }
+        const hasAiX4 = aiDan1.length === 4 && aiDan2.length === 4;
 
         container.innerHTML = `
             <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
@@ -669,6 +682,11 @@
                         <button type="button" id="btnCopyLoAI" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-black text-slate-800 hover:bg-slate-100 transition shadow-xs cursor-pointer">
                             <i class="bi bi-clipboard-check"></i> Copy Lô (6 số)
                         </button>
+                        ${hasAiX4 ? `
+                            <button type="button" id="btnCopyXien4AI" class="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50 px-3.5 py-2 text-xs font-black text-amber-900 hover:bg-amber-100 transition shadow-xs cursor-pointer">
+                                <i class="bi bi-clipboard-check"></i> Copy 2 Dàn Xiên 4
+                            </button>
+                        ` : ''}
                     </div>
                 </div>
 
@@ -715,20 +733,34 @@
 
                 <!-- 2 Dàn Xiên 4 của AI hoặc hướng dẫn -->
                 <div class="border-t border-slate-100 pt-4">
-                    ${aiDan1.length && aiDan2.length ? `
-                        <div class="space-y-2">
+                    ${hasAiX4 ? `
+                        <div class="space-y-3">
                             <div class="flex items-center justify-between">
                                 <span class="text-xs font-black uppercase text-slate-700 tracking-wider">2 Dàn Xiên 4 của ${info.name}:</span>
-                                <span class="text-xs text-slate-500 font-mono">Vốn 22M (11M x 2)</span>
+                                <span class="text-xs text-slate-500 font-mono">Vốn 22M (11M x 2) · Ăn tới 384M</span>
                             </div>
-                            <div class="grid gap-2 sm:grid-cols-2">
-                                <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200">
-                                    <div class="text-[10px] font-bold text-amber-800 mb-1">Dàn 1:</div>
-                                    <div class="font-mono font-bold text-xs text-slate-800">${aiDan1.join(' ')}</div>
+                            <div class="grid gap-3 sm:grid-cols-2">
+                                <div class="p-3 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-2">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[11px] font-black uppercase text-amber-900">Dàn 1 (4 số):</span>
+                                        <button type="button" id="btnCopyDan1AI" class="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-amber-200/80 text-amber-900 hover:bg-amber-300 transition cursor-pointer">
+                                            <i class="bi bi-clipboard"></i> Copy Dàn 1
+                                        </button>
+                                    </div>
+                                    <div class="flex flex-wrap gap-1.5">
+                                        ${aiDan1.map(n => `<span class="badge-number flex items-center justify-center px-3 py-1.5 rounded-xl bg-white border border-amber-300 text-amber-950 font-black font-mono text-xs shadow-2xs">${n}</span>`).join('')}
+                                    </div>
                                 </div>
-                                <div class="p-2.5 rounded-xl bg-indigo-50 border border-indigo-200">
-                                    <div class="text-[10px] font-bold text-indigo-800 mb-1">Dàn 2:</div>
-                                    <div class="font-mono font-bold text-xs text-slate-800">${aiDan2.join(' ')}</div>
+                                <div class="p-3 rounded-2xl bg-indigo-50/70 border border-indigo-200 space-y-2">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[11px] font-black uppercase text-indigo-900">Dàn 2 (4 số):</span>
+                                        <button type="button" id="btnCopyDan2AI" class="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-indigo-200/80 text-indigo-900 hover:bg-indigo-300 transition cursor-pointer">
+                                            <i class="bi bi-clipboard"></i> Copy Dàn 2
+                                        </button>
+                                    </div>
+                                    <div class="flex flex-wrap gap-1.5">
+                                        ${aiDan2.map(n => `<span class="badge-number flex items-center justify-center px-3 py-1.5 rounded-xl bg-white border border-indigo-300 text-indigo-950 font-black font-mono text-xs shadow-2xs">${n}</span>`).join('')}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -748,6 +780,17 @@
         document.getElementById('btnCopyLoAI')?.addEventListener('click', () => {
             copyToClipboard(loNums.join(' '), `Dàn Lô ${info.name}`);
         });
+        if (hasAiX4) {
+            document.getElementById('btnCopyXien4AI')?.addEventListener('click', () => {
+                copyToClipboard(`Dàn 1: ${aiDan1.join(' ')}\nDàn 2: ${aiDan2.join(' ')}`, `2 Dàn Xiên 4 ${info.name}`);
+            });
+            document.getElementById('btnCopyDan1AI')?.addEventListener('click', () => {
+                copyToClipboard(aiDan1.join(' '), `Dàn Xiên 4 Dàn 1 ${info.name}`);
+            });
+            document.getElementById('btnCopyDan2AI')?.addEventListener('click', () => {
+                copyToClipboard(aiDan2.join(' '), `Dàn Xiên 4 Dàn 2 ${info.name}`);
+            });
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -1599,11 +1642,27 @@
                                                                 </div>
                                                             ` : ''}
 
-                                                            ${state.ledgerCategory === 'xien4' ? `
+                                                            <!-- Dàn Xiên 4 của AI nếu có -->
+                                                            ${(state.ledgerCategory === 'all' || state.ledgerCategory === 'xien4') && r.xien4 ? `
+                                                                <div class="pt-2 border-t border-slate-100 space-y-1">
+                                                                    <div class="flex items-center justify-between text-[10px] text-slate-500 font-bold">
+                                                                        <span>Xiên 4 (2 dàn · ${r.xien4.h4Count > 0 ? '<strong class="text-amber-700">Ăn X4</strong>' : (r.xien4.h3Count > 0 ? '<strong class="text-amber-700">Ăn X3</strong>' : (r.xien4.h2Count > 0 ? '<strong class="text-amber-700">Ăn X2</strong>' : 'Trượt'))}):</span>
+                                                                        <span class="font-mono ${r.xien4.profitK >= 0 ? 'text-emerald-700 font-bold' : 'text-slate-400'}">${formatMoney(r.xien4.profitK)}</span>
+                                                                    </div>
+                                                                    <div class="space-y-0.5 text-[11px] font-mono">
+                                                                        <div class="text-[10px] text-amber-900 bg-amber-50/60 p-1 rounded border border-amber-200">
+                                                                            <span class="font-bold">D1 (${r.xien4.hits1}/4):</span> ${(r.xien4.dan1 || []).join(' ')}
+                                                                        </div>
+                                                                        <div class="text-[10px] text-indigo-900 bg-indigo-50/60 p-1 rounded border border-indigo-200">
+                                                                            <span class="font-bold">D2 (${r.xien4.hits2}/4):</span> ${(r.xien4.dan2 || []).join(' ')}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            ` : (state.ledgerCategory === 'xien4' ? `
                                                                 <div class="pt-2 border-t border-slate-100 text-[10px] text-slate-500">
                                                                     Mô hình này không có dàn xiên riêng, 6 số Lô được đưa vào bầu chọn Dàn Gộp.
                                                                 </div>
-                                                            ` : ''}
+                                                            ` : '')}
                                                         </div>
                                                     `;
                                                 }).join('')}

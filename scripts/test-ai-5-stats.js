@@ -145,6 +145,51 @@ const hasFutureDayInHistory = clientPayload.history.some(d => String(d.date) > S
 assert.strictEqual(hasFutureDayInHistory, false, 'History must not contain future days when today is not settled');
 console.log('  ✔ Client payload contains all required UI fields, tiered consensus, 6 leaderboard items, and excludes future days from ledger');
 
+// Test 6: normalizeXien4 multi-format parsing & individual AI Xiên 4
+console.log('6. Testing normalizeXien4 & individual model Xiên 4 support:');
+const objFormat = { dan1: ['31', '38', '43', '92'], dan2: ['00', '36', '62', '81'] };
+const arrArrFormat = [['31', '38', '43', '92'], ['00', '36', '62', '81']];
+const flat8Format = ['31', '38', '43', '92', '00', '36', '62', '81'];
+
+const normObj = service.normalizeXien4(objFormat);
+assert(normObj && normObj.dan1.length === 4 && normObj.dan2.length === 4, 'Object format must parse to dan1 and dan2');
+
+const normArrArr = service.normalizeXien4(arrArrFormat);
+assert(normArrArr && normArrArr.dan1.length === 4 && normArrArr.dan2.length === 4, 'Array of arrays must parse to dan1 and dan2');
+assert.deepStrictEqual(normArrArr.dan1, ['31', '38', '43', '92'], 'normArrArr dan1 must match');
+assert.deepStrictEqual(normArrArr.dan2, ['00', '36', '62', '81'], 'normArrArr dan2 must match');
+
+const normFlat = service.normalizeXien4(flat8Format);
+assert(normFlat && normFlat.dan1.length === 4 && normFlat.dan2.length === 4, 'Flat 8 numbers must parse to dan1 and dan2');
+
+assert.strictEqual(service.normalizeXien4(null), null, 'null must return null');
+assert.strictEqual(service.normalizeXien4([]), null, 'empty array must return null');
+assert.strictEqual(service.normalizeXien4({}), null, 'empty object must return null');
+
+// Kiểm tra ngày hôm nay (2026-11-01) các AI model có Xiên 4 đã được chuẩn hóa trong clientPayload
+const day20261101 = clientPayload.history.find(d => d.date === '2026-11-01');
+assert(day20261101, 'Day 2026-11-01 must exist in history');
+const chatgptSrc = day20261101.sources.chatgpt;
+assert(chatgptSrc && chatgptSrc.xien4, 'ChatGPT in 2026-11-01 must have xien4');
+assert(Array.isArray(chatgptSrc.xien4.dan1) && chatgptSrc.xien4.dan1.length === 4, 'ChatGPT xien4.dan1 must have 4 numbers');
+assert(Array.isArray(chatgptSrc.xien4.dan2) && chatgptSrc.xien4.dan2.length === 4, 'ChatGPT xien4.dan2 must have 4 numbers');
+console.log('  ✔ ChatGPT Xiên 4 chuẩn hóa:', chatgptSrc.xien4.dan1.join(' '), '|', chatgptSrc.xien4.dan2.join(' '));
+
+const deepseekSrc = day20261101.sources.deepseek;
+assert(deepseekSrc && deepseekSrc.xien4, 'DeepSeek in 2026-11-01 must have xien4');
+assert(Array.isArray(deepseekSrc.xien4.dan1) && deepseekSrc.xien4.dan1.length === 4, 'DeepSeek xien4.dan1 must have 4 numbers');
+console.log('  ✔ DeepSeek Xiên 4 chuẩn hóa:', deepseekSrc.xien4.dan1.join(' '), '|', deepseekSrc.xien4.dan2.join(' '));
+
+const geminiSrc = day20261101.sources.gemini;
+assert(geminiSrc && geminiSrc.xien4, 'Gemini in 2026-11-01 must have xien4');
+console.log('  ✔ Gemini Xiên 4 chuẩn hóa:', geminiSrc.xien4.dan1.join(' '), '|', geminiSrc.xien4.dan2.join(' '));
+
+const museSrc = day20261101.sources.muse;
+assert(museSrc && museSrc.xien4, 'Muse in 2026-11-01 must have xien4');
+console.log('  ✔ Muse Xiên 4 chuẩn hóa:', museSrc.xien4.dan1.join(' '), '|', museSrc.xien4.dan2.join(' '));
+
+console.log('  ✔ All normalizeXien4 formats & individual AI sources verified successfully');
+
 console.log('================================================================================');
 console.log('🎉 ALL AI 5 STATS & TIERED CONSENSUS TESTS PASSED 100%!');
 console.log('================================================================================');
