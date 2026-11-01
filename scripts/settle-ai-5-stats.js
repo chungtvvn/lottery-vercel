@@ -200,6 +200,9 @@ async function handleNextDayPredictions(data, targetDate) {
         console.log(`   - Lô X3 (3 vote): ${consensus.loTiers?.x3Nums?.join(', ') || 'Không có'}`);
         console.log(`   - Lô X2 (2 vote): ${consensus.loTiers?.x2Nums?.join(', ') || 'Không có'}`);
         console.log(`   - Lô X1 (1 vote): ${consensus.loTiers?.x1Nums?.join(', ') || 'Không có'}`);
+        if (consensus.xien4) {
+            console.log(`   - 💎 2 Dàn Xiên 4 Tinh Hoa: Dàn 1: [${consensus.xien4.dan1.join(', ')}] | Dàn 2: [${consensus.xien4.dan2.join(', ')}]`);
+        }
         console.log(`[settle-ai-5-stats] 🚀 Đầy đủ 5 AI! Sẵn sàng phục vụ thực chiến.`);
     } else {
         console.log(`[settle-ai-5-stats] ⚠️ Các AI còn thiếu số ngày ${nextDate}:`);
@@ -233,6 +236,12 @@ function printSettlementReport(dayEntry, targetDate) {
             console.log(`\n  👑 [Consensus Đa Tầng]:`);
             console.log(`     - Đề Tiered: ${ct.de.isHit ? `🎯 TRÚNG (${ct.de.hitTier}) ${formatMoneyM(ct.de.profitK)}` : `❌ Trượt (${formatMoneyM(ct.de.profitK)})`}`);
             console.log(`     - Lô Tiered: Nổ ${ct.lo.hits} nháy [${ct.lo.hitNumbers.join(' ')}] (${formatMoneyM(ct.lo.profitK)}, Vốn: ${formatMoneyM(ct.lo.stakeK, { signed: false })}, Ăn: ${formatMoneyM(ct.lo.payoutK, { signed: false })})`);
+            if (ct.xien4) {
+                const x4HitText = ct.xien4.isWin
+                    ? `🎉 ĂN XIÊN 4 (D1:${ct.xien4.hits1}/4, D2:${ct.xien4.hits2}/4) ${formatMoneyM(ct.xien4.profitK)}`
+                    : `❌ Trượt (D1:${ct.xien4.hits1}/4, D2:${ct.xien4.hits2}/4) (${formatMoneyM(ct.xien4.profitK)})`;
+                console.log(`     - 2 Xiên 4:  ${x4HitText} (Vốn: ${formatMoneyM(ct.xien4.stakeK, { signed: false })}, Ăn: ${formatMoneyM(ct.xien4.payoutK, { signed: false })})`);
+            }
             console.log(`     - Net Tiered: ${formatMoneyM(ct.profitK)} (Vốn: ${formatMoneyM(ct.stakeK, { signed: false })}, Ăn: ${formatMoneyM(ct.payoutK, { signed: false })})`);
         }
     }
@@ -342,6 +351,11 @@ async function main() {
             console.log(`  🎲 Lô X3 (3 vote): ${todayConsensus.loTiers?.x3Nums?.join(', ') || 'Không có'}`);
             console.log(`  🎲 Lô X2 (2 vote): ${todayConsensus.loTiers?.x2Nums?.join(', ') || 'Không có'}`);
             console.log(`  🎲 Lô X1 (1 vote): ${todayConsensus.loTiers?.x1Nums?.join(', ') || 'Không có'}`);
+            if (todayConsensus.xien4) {
+                console.log(`  💎 2 Dàn Xiên 4 Tinh Hoa:`);
+                console.log(`     - Dàn 1 (4 số): ${todayConsensus.xien4.dan1.join(', ')}`);
+                console.log(`     - Dàn 2 (4 số): ${todayConsensus.xien4.dan2.join(', ')}`);
+            }
             console.log(`======================================================\n`);
         }
     }

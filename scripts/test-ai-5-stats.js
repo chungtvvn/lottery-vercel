@@ -38,6 +38,15 @@ assert(Array.isArray(consensus.loTiers.x3Nums), 'Consensus must have loTiers.x3N
 assert(Array.isArray(consensus.loTiers.x2Nums), 'Consensus must have loTiers.x2Nums');
 assert(Array.isArray(consensus.loTiers.x1Nums), 'Consensus must have loTiers.x1Nums');
 
+// Test 2b: Consensus 2 Dàn Xiên 4 Tinh Hoa (Cân bằng chẵn lẻ)
+assert(consensus.xien4, 'Consensus must have xien4 object');
+assert(Array.isArray(consensus.xien4.dan1) && consensus.xien4.dan1.length === 4, 'Xiên 4 Dàn 1 must have 4 numbers');
+assert(Array.isArray(consensus.xien4.dan2) && consensus.xien4.dan2.length === 4, 'Xiên 4 Dàn 2 must have 4 numbers');
+assert(Array.isArray(consensus.xien4.top8) && consensus.xien4.top8.length === 8, 'Xiên 4 top8 must have 8 numbers');
+console.log('  ✔ Consensus Xiên 4 Dàn 1 (4s):', consensus.xien4.dan1.join(' '));
+console.log('  ✔ Consensus Xiên 4 Dàn 2 (4s):', consensus.xien4.dan2.join(' '));
+console.log('  ✔ Consensus Xiên 4 Top 8 Lô:', consensus.xien4.top8.join(' '));
+
 console.log('  ✔ Consensus Top 20 Đề:', consensus.deTop20.join(' '));
 console.log('  ✔ Consensus Đề X2 (VIP):', consensus.deTiers.x2Nums.join(' '));
 console.log('  ✔ Consensus Đề X1 (Lót):', consensus.deTiers.x1Nums.join(' '));
@@ -83,6 +92,16 @@ assert(loTiered.stakeK > 0, 'Consensus Lô đa tầng must have stake');
 assert(loTiered.payoutK > 0, 'Consensus Lô đa tầng must have payout');
 console.log(`  ✔ Consensus Lô Tiered: Nổ ${loTiered.hits} nháy, Vốn: ${loTiered.stakeK}K, Ăn: ${loTiered.payoutK}K, Lãi: ${loTiered.profitK}K`);
 
+// Test 3b: Settlement economics cho 2 Dàn Xiên 4 Tinh Hoa
+const x4Res = settled.results.consensus.xien4;
+assert(x4Res, 'Consensus results must contain xien4');
+assert.strictEqual(x4Res.stakeK, 22000, 'Consensus Xiên 4 stake must be 22.000K (11M/dàn x 2)');
+assert.strictEqual(x4Res.dan1StakeK, 11000, 'Dan 1 stake must be 11.000K');
+assert.strictEqual(x4Res.dan2StakeK, 11000, 'Dan 2 stake must be 11.000K');
+assert(typeof x4Res.payoutK === 'number', 'payoutK must be number');
+assert.strictEqual(x4Res.profitK, x4Res.payoutK - x4Res.stakeK, 'profitK must equal payoutK - stakeK');
+console.log(`  ✔ Consensus Xiên 4 Settled: Dàn 1 (${x4Res.hits1}/4), Dàn 2 (${x4Res.hits2}/4), Vốn: ${x4Res.stakeK}K, Ăn: ${x4Res.payoutK}K, Lãi: ${x4Res.profitK}K`);
+
 // Test 4: Rates accumulation
 console.log('4. Testing rates computation:');
 const testPayload = {
@@ -96,7 +115,12 @@ assert.strictEqual(testPayload.summary.consensus.de.wins, 1, 'Đề wins must be
 assert.strictEqual(testPayload.summary.consensus.de.winRate, 1.0, 'Đề winRate must be 1.0');
 assert(testPayload.summary.consensus.deTiered, 'Summary must contain deTiered stats');
 assert(testPayload.summary.consensus.loTiered, 'Summary must contain loTiered stats');
-console.log('  ✔ Rates accumulation verified successfully');
+assert(testPayload.summary.consensus.xien4, 'Summary must contain xien4 stats');
+assert.strictEqual(testPayload.summary.consensus.xien4.days, 1, 'Xiên 4 days must be 1');
+assert.strictEqual(testPayload.summary.consensus.xien4.stakeK, 22000, 'Xiên 4 stakeK must be 22.000K');
+assert(typeof testPayload.summary.consensus.xien4.profitK === 'number', 'Xiên 4 profitK must be number');
+assert(testPayload.summary.consensus.combo, 'Summary must contain combo stats');
+console.log('  ✔ Rates accumulation verified successfully (Đề riêng, Lô riêng, Xiên 4 riêng & Combo)');
 
 // Test 5: Client payload structure
 console.log('5. Testing client payload format:');
@@ -105,7 +129,16 @@ assert.strictEqual(clientPayload.success, true, 'Client payload success must be 
 assert(clientPayload.todayConsensus, 'Client payload must have todayConsensus');
 assert(clientPayload.todayConsensus.deTiers, 'todayConsensus must have deTiers');
 assert(clientPayload.todayConsensus.loTiers, 'todayConsensus must have loTiers');
+assert(clientPayload.todayConsensus.xien4, 'todayConsensus must have xien4');
+assert(Array.isArray(clientPayload.todayConsensus.xien4.dan1) && clientPayload.todayConsensus.xien4.dan1.length === 4, 'todayConsensus.xien4.dan1 must have 4 numbers');
+assert(Array.isArray(clientPayload.todayConsensus.xien4.dan2) && clientPayload.todayConsensus.xien4.dan2.length === 4, 'todayConsensus.xien4.dan2 must have 4 numbers');
 assert(Array.isArray(clientPayload.leaderboard) && clientPayload.leaderboard.length === 6, 'Leaderboard must contain 6 items');
+clientPayload.leaderboard.forEach(item => {
+    assert(item.de, `Leaderboard item ${item.id} must have de stats`);
+    assert(item.lo, `Leaderboard item ${item.id} must have lo stats`);
+    assert(item.xien4, `Leaderboard item ${item.id} must have xien4 stats`);
+    assert(item.combo, `Leaderboard item ${item.id} must have combo stats`);
+});
 
 // Invariant: Ngày hôm nay chưa có kết quả -> Tuyệt đối không hiển thị ngày hôm sau trong nhật ký đối soát
 const hasFutureDayInHistory = clientPayload.history.some(d => String(d.date) > String(clientPayload.latestDate));

@@ -151,16 +151,37 @@
 
         <!-- Leaderboard / So Sánh 5 AI & Dàn Gộp Consensus -->
         <section class="mb-10">
-            <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                     <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
                         <i class="bi bi-bar-chart-fill text-indigo-600"></i> Bảng Xếp Hạng & So Sánh Hiệu Năng Thực Chiến
                     </h3>
                     <p class="text-xs text-slate-500">Đối soát lũy kế từ ngày đầu niêm phong (30/10/2026)</p>
                 </div>
-                <div class="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200 self-start sm:self-auto">
-                    Quy chuẩn Daily: Đề 1M ăn 84M · Lô 2.2M ăn 8M/nháy
+
+                <!-- Tabs chọn phân loại để theo dõi riêng: Tất cả / Đề / Lô / Xiên 4 -->
+                <div class="flex flex-wrap items-center gap-1.5 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xs" id="leaderboardCategoryFilter">
+                    <button type="button" data-cat="combo" class="lb-filter-btn active flex items-center gap-1.5 rounded-xl border border-indigo-600 bg-indigo-600 text-white px-3 py-1.5 text-xs font-black shadow-xs transition">
+                        <span>✨ Tất Cả (Combo)</span>
+                    </button>
+                    <button type="button" data-cat="de" class="lb-filter-btn flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+                        <i class="bi bi-bullseye text-purple-600"></i>
+                        <span>🎯 Đề Riêng</span>
+                    </button>
+                    <button type="button" data-cat="lo" class="lb-filter-btn flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+                        <i class="bi bi-dice-6-fill text-indigo-600"></i>
+                        <span>🎲 Lô Riêng</span>
+                    </button>
+                    <button type="button" data-cat="xien4" class="lb-filter-btn flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+                        <i class="bi bi-dice-4-fill text-amber-600"></i>
+                        <span>💎 2 Dàn Xiên 4</span>
+                    </button>
                 </div>
+            </div>
+
+            <div class="mb-3 text-[11px] font-bold text-slate-600 bg-slate-100 px-3.5 py-2 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                <span>Quy chuẩn Daily: Đề 1M ăn 84M · Lô 2.2M ăn 8M/nháy · 2 Dàn Xiên 4: 11M/dàn (Ăn X4 384M · X3 84M · X2 12M)</span>
+                <span id="lbCurrentModeLabel" class="text-indigo-700 font-black">Chế độ: Đang xem Tất Cả (Combo)</span>
             </div>
 
             <!-- Leaderboard Cards Grid -->
@@ -236,9 +257,18 @@
                         <span id="textToggleAll">Mở rộng tất cả</span>
                     </button>
                     <div class="flex items-center gap-1.5">
-                        <span class="text-xs font-bold text-slate-500">Xem theo:</span>
+                        <span class="text-xs font-bold text-slate-500">Phân loại:</span>
+                        <select id="ledgerCategoryFilter" class="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 shadow-2xs focus:border-indigo-500 focus:outline-none cursor-pointer">
+                            <option value="all">Tất cả hạng mục</option>
+                            <option value="de">🎯 Chỉ xem Đề (20 số)</option>
+                            <option value="lo">🎲 Chỉ xem Lô (6 số)</option>
+                            <option value="xien4">💎 Chỉ xem 2 Dàn Xiên 4</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-xs font-bold text-slate-500">Mô hình:</span>
                         <select id="ledgerModelFilter" class="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 shadow-2xs focus:border-indigo-500 focus:outline-none cursor-pointer">
-                            <option value="all">Toàn bộ (So sánh cả 5 AI + Gộp)</option>
+                            <option value="all">Toàn bộ (5 AI + Gộp)</option>
                             <option value="consensus">👑 Phương Pháp Gộp Consensus</option>
                             <option value="chatgpt">🟢 ChatGPT (OpenAI)</option>
                             <option value="deepseek">🔵 DeepSeek</option>
