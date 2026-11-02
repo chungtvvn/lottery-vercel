@@ -9764,13 +9764,13 @@
         "note": "Tổng hợp đếm phiếu từ dàn Xiên 4 của các nguồn ok trong file (5 nguồn: chatgpt, deepseek, gemini, muse, perplexity; gemini tính từ file 5 năm, các nguồn còn lại từ toàn lịch sử; grok thiếu).",
         "votes": {
           "24": 3,
-          "44": 3,
-          "64": 3,
           "36": 2,
           "38": 2,
+          "44": 3,
           "52": 2,
           "54": 2,
-          "59": 2
+          "59": 2,
+          "64": 3
         },
         "okSources": [
           "chatgpt",
