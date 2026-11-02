@@ -9763,14 +9763,14 @@
         "source": "top8_parity_consensus",
         "note": "Tổng hợp đếm phiếu từ dàn Xiên 4 của các nguồn ok trong file (5 nguồn: chatgpt, deepseek, gemini, muse, perplexity; gemini nay tính từ toàn lịch sử bằng model Argon; grok thiếu).",
         "votes": {
-          "64": 4,
+          "24": 2,
+          "34": 2,
           "38": 3,
           "44": 3,
           "52": 3,
+          "54": 2,
           "62": 3,
-          "24": 2,
-          "34": 2,
-          "54": 2
+          "64": 4
         },
         "okSources": [
           "chatgpt",
