@@ -497,21 +497,28 @@
         const dan2 = x4Data?.dan2 || [];
 
         const sources = latestDay?.sources || {};
+
+        // Helper lấy nguồn dữ liệu chuẩn xác cho từng AI model (hỗ trợ fallback Perplexity cho Grok khi bị kẹt Cloudflare)
+        const getModelSrc = (mKey) => {
+            let s = sources[mKey] || {};
+            if (mKey === 'grok' && (!s.de?.length) && sources.perplexity?.de?.length) {
+                s = sources.perplexity;
+            }
+            return s;
+        };
+
         const readyCount = ['chatgpt', 'deepseek', 'gemini', 'grok', 'muse'].filter(m => {
-            const s = sources[m];
+            const s = getModelSrc(m);
             return s && (s.de?.length > 0 || s.lo?.length > 0);
         }).length;
 
         // Chuẩn bị dữ liệu chi tiết cho 5 AI độc lập ở accordion phía cuối
         const aiModelsList = ['chatgpt', 'deepseek', 'gemini', 'grok', 'muse'].map(mKey => {
-            let src = sources[mKey] || {};
-            if (mKey === 'grok' && (!src.de?.length) && sources.perplexity?.de?.length) {
-                src = sources.perplexity;
-            }
+            const src = getModelSrc(mKey);
             const info = models[mKey] || { name: mKey, avatar: '🤖', provider: '' };
             const mDeNums = (src.de || []).map(x => String(x).padStart(2, '0'));
             const mLoNums = (src.lo || []).map(x => String(x).padStart(2, '0'));
-            const isFallback = mKey === 'grok' && (src.method?.includes('Perplexity') || src.notes?.includes('Perplexity'));
+            const isFallback = mKey === 'grok' && (src.method?.includes('Perplexity') || src.notes?.includes('Perplexity') || src.isFallback);
 
             let mDan1 = [];
             let mDan2 = [];
@@ -561,7 +568,20 @@
                             ${readyCount}/5 Sẵn Sàng
                         </span>
                     </div>
-                ` : ''}
+                ` : `
+                    <div class="rounded-2xl border border-emerald-300 bg-emerald-50/90 p-3.5 flex items-center justify-between gap-3 text-xs text-emerald-950 shadow-2xs">
+                        <div class="flex items-center gap-2.5">
+                            <i class="bi bi-shield-check text-lg text-emerald-600"></i>
+                            <div>
+                                <span class="font-black">Dữ liệu thực chiến ngày ${latestDay.date}:</span>
+                                <span>Đã hội tụ đủ <strong>5/5 Mô Hình AI</strong>. Toàn bộ dàn số đã niêm phong bất biến và sẵn sàng đối soát lúc 19:00!</span>
+                            </div>
+                        </div>
+                        <span class="text-[10px] font-mono font-black bg-emerald-200/90 text-emerald-900 px-2.5 py-1 rounded-full shrink-0 border border-emerald-300 flex items-center gap-1">
+                            <i class="bi bi-check-circle-fill text-emerald-700"></i> 5/5 AI Sẵn Sàng
+                        </span>
+                    </div>
+                `}
 
                 <!-- GRID 3 CỘT MẶC ĐỊNH: CỘT ĐỀ · CỘT LÔ · CỘT XIÊN 4 -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
