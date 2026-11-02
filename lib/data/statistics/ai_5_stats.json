@@ -7043,9 +7043,9 @@
             "wins": 0,
             "losses": 4,
             "winRate": 0,
-            "stakeK": 162000,
+            "stakeK": 157000,
             "payoutK": 0,
-            "profitK": -162000,
+            "profitK": -157000,
             "roi": -1,
             "longestWin": 0,
             "longestLoss": 4,
@@ -7089,31 +7089,31 @@
             "days": 4,
             "wins": 0,
             "winRate": 0,
-            "stakeK": 514000,
+            "stakeK": 509000,
             "payoutK": 376000,
-            "profitK": -138000,
-            "roi": -0.2685
+            "profitK": -133000,
+            "roi": -0.2613
           },
           "deTiered": {
-            "days": 3,
+            "days": 4,
             "wins": 0,
-            "losses": 3,
+            "losses": 4,
             "winRate": 0,
-            "stakeK": 120000,
+            "stakeK": 157000,
             "payoutK": 0,
-            "profitK": -120000,
+            "profitK": -157000,
             "roi": -1
           },
           "loTiered": {
-            "days": 3,
-            "wins": 3,
+            "days": 4,
+            "wins": 4,
             "losses": 0,
             "winRate": 1,
-            "totalHits": 14,
-            "stakeK": 198000,
-            "payoutK": 256000,
-            "profitK": 58000,
-            "roi": 0.2929
+            "totalHits": 21,
+            "stakeK": 264000,
+            "payoutK": 352000,
+            "profitK": 88000,
+            "roi": 0.3333
           }
         },
         "chatgpt": {
@@ -7193,19 +7193,19 @@
           },
           "lo": {
             "days": 4,
-            "wins": 4,
-            "losses": 0,
-            "winRate": 1,
+            "wins": 3,
+            "losses": 1,
+            "winRate": 0.75,
             "totalHits": 8,
             "avgHitsPerDay": 2,
             "stakeK": 52800,
             "payoutK": 64000,
             "profitK": 11200,
             "roi": 0.2121,
-            "longestWin": 4,
-            "longestLoss": 0,
-            "currentWinStreak": 4,
-            "currentLossStreak": 0
+            "longestWin": 3,
+            "longestLoss": 1,
+            "currentWinStreak": 0,
+            "currentLossStreak": 1
           },
           "xien4": {
             "days": 2,
@@ -7300,9 +7300,9 @@
             "wins": 0,
             "losses": 4,
             "winRate": 0,
-            "stakeK": 60000,
+            "stakeK": 80000,
             "payoutK": 0,
-            "profitK": -60000,
+            "profitK": -80000,
             "roi": -1,
             "longestWin": 0,
             "longestLoss": 4,
@@ -7311,29 +7311,29 @@
           },
           "lo": {
             "days": 4,
-            "wins": 2,
-            "losses": 2,
-            "winRate": 0.5,
-            "totalHits": 6,
-            "avgHitsPerDay": 1.5,
-            "stakeK": 39600,
-            "payoutK": 48000,
-            "profitK": 8400,
+            "wins": 3,
+            "losses": 1,
+            "winRate": 0.75,
+            "totalHits": 8,
+            "avgHitsPerDay": 2,
+            "stakeK": 52800,
+            "payoutK": 64000,
+            "profitK": 11200,
             "roi": 0.2121,
-            "longestWin": 1,
+            "longestWin": 2,
             "longestLoss": 1,
-            "currentWinStreak": 0,
-            "currentLossStreak": 1
+            "currentWinStreak": 2,
+            "currentLossStreak": 0
           },
           "xien4": {
             "days": 1,
             "wins": 0,
             "losses": 1,
             "winRate": 0,
-            "stakeK": 0,
+            "stakeK": 22000,
             "payoutK": 0,
-            "profitK": 0,
-            "roi": 0,
+            "profitK": -22000,
+            "roi": -1,
             "h4Count": 0,
             "h3Count": 0,
             "h2Count": 0,
@@ -7346,10 +7346,10 @@
             "days": 4,
             "wins": 0,
             "winRate": 0,
-            "stakeK": 99600,
-            "payoutK": 48000,
-            "profitK": -51600,
-            "roi": -0.5181
+            "stakeK": 154800,
+            "payoutK": 64000,
+            "profitK": -90800,
+            "roi": -0.5866
           }
         },
         "muse": {
@@ -7438,25 +7438,7 @@
         "swapped": false,
         "swapDetails": null,
         "fromConfig": false,
-        "source": "top8_parity_consensus",
-        "note": "Tổng hợp đếm phiếu từ dàn Xiên 4 của các nguồn ok trong file (5 nguồn: chatgpt, gemini, deepseek, perplexity, muse; grok thiếu, perplexity thay grok).",
-        "votes": {
-          "24": 2,
-          "31": 2,
-          "38": 4,
-          "43": 2,
-          "44": 2,
-          "52": 3,
-          "54": 4,
-          "59": 2
-        },
-        "okSources": [
-          "chatgpt",
-          "gemini",
-          "deepseek",
-          "muse",
-          "perplexity"
-        ]
+        "source": "top8_parity_consensus"
       },
       "special": "29",
       "prizes27": [
@@ -7594,6 +7576,109 @@
           "totalProfitK": -39200,
           "isWin": false
         },
+        "deepseek": {
+          "de": {
+            "isHit": false,
+            "hitNumber": null,
+            "numbers": [
+              "05",
+              "08",
+              "12",
+              "28",
+              "31",
+              "34",
+              "36",
+              "43",
+              "46",
+              "52",
+              "58",
+              "59",
+              "61",
+              "65",
+              "67",
+              "72",
+              "73",
+              "85",
+              "89",
+              "97"
+            ],
+            "count": 20,
+            "stakeK": 20000,
+            "payoutK": 0,
+            "profitK": -20000,
+            "isWin": false
+          },
+          "lo": {
+            "hits": 1,
+            "hitMap": {
+              "97": 1
+            },
+            "hitNumbers": [
+              "97"
+            ],
+            "numbers": [
+              "36",
+              "65",
+              "67",
+              "73",
+              "89",
+              "97"
+            ],
+            "count": 6,
+            "stakeK": 13200,
+            "payoutK": 8000,
+            "profitK": -5200,
+            "isWin": false
+          },
+          "xien4": {
+            "dan1": [
+              "97",
+              "65",
+              "89",
+              "36"
+            ],
+            "dan2": [
+              "67",
+              "73",
+              "12",
+              "58"
+            ],
+            "hits1": 1,
+            "hits2": 0,
+            "hitNums1": [
+              "97"
+            ],
+            "hitNums2": [],
+            "payout1": 0,
+            "payout2": 0,
+            "profit1": -11000,
+            "profit2": -11000,
+            "stakeK": 22000,
+            "dan1StakeK": 11000,
+            "dan2StakeK": 11000,
+            "payoutK": 0,
+            "profitK": -22000,
+            "isWin": false,
+            "h4Count": 0,
+            "h3Count": 0,
+            "h2Count": 0,
+            "top8": [
+              "97",
+              "65",
+              "89",
+              "36",
+              "67",
+              "73",
+              "12",
+              "58"
+            ],
+            "fromConfig": true
+          },
+          "totalStakeK": 55200,
+          "totalPayoutK": 8000,
+          "totalProfitK": -47200,
+          "isWin": false
+        },
         "gemini": {
           "de": {
             "isHit": false,
@@ -7701,31 +7786,31 @@
           "totalProfitK": -31200,
           "isWin": false
         },
-        "deepseek": {
+        "grok": {
           "de": {
             "isHit": false,
             "hitNumber": null,
             "numbers": [
-              "97",
-              "65",
-              "67",
-              "89",
-              "36",
-              "73",
-              "12",
-              "58",
-              "08",
-              "46",
-              "43",
-              "34",
+              "09",
+              "17",
+              "18",
+              "21",
+              "22",
+              "32",
+              "38",
+              "39",
+              "42",
+              "44",
+              "51",
+              "54",
+              "57",
               "59",
-              "28",
-              "61",
-              "85",
-              "05",
-              "72",
-              "31",
-              "52"
+              "60",
+              "66",
+              "67",
+              "83",
+              "91",
+              "96"
             ],
             "count": 20,
             "stakeK": 20000,
@@ -7734,46 +7819,50 @@
             "isWin": false
           },
           "lo": {
-            "hits": 1,
+            "hits": 2,
             "hitMap": {
-              "97": 1
+              "33": 1,
+              "34": 1
             },
             "hitNumbers": [
-              "97"
+              "33",
+              "34"
             ],
             "numbers": [
-              "97",
-              "65",
-              "89",
-              "67",
-              "36",
-              "73"
+              "33",
+              "34",
+              "35",
+              "48",
+              "52",
+              "75"
             ],
             "count": 6,
             "stakeK": 13200,
-            "payoutK": 8000,
-            "profitK": -5200,
+            "payoutK": 16000,
+            "profitK": 2800,
             "isWin": true
           },
           "xien4": {
             "dan1": [
-              "97",
-              "65",
-              "89",
-              "36"
+              "31",
+              "38",
+              "43",
+              "92"
             ],
             "dan2": [
-              "67",
-              "73",
-              "12",
-              "58"
+              "11",
+              "49",
+              "52",
+              "54"
             ],
             "hits1": 1,
-            "hits2": 0,
+            "hits2": 1,
             "hitNums1": [
-              "97"
+              "43"
             ],
-            "hitNums2": [],
+            "hitNums2": [
+              "11"
+            ],
             "payout1": 0,
             "payout2": 0,
             "profit1": -11000,
@@ -7788,20 +7877,20 @@
             "h3Count": 0,
             "h2Count": 0,
             "top8": [
-              "97",
-              "65",
-              "89",
-              "36",
-              "67",
-              "73",
-              "12",
-              "58"
+              "31",
+              "38",
+              "43",
+              "92",
+              "11",
+              "49",
+              "52",
+              "54"
             ],
             "fromConfig": true
           },
           "totalStakeK": 55200,
-          "totalPayoutK": 8000,
-          "totalProfitK": -47200,
+          "totalPayoutK": 16000,
+          "totalProfitK": -39200,
           "isWin": false
         },
         "muse": {
@@ -7921,24 +8010,51 @@
             "hitTier": null,
             "isHitX2": false,
             "isHitX1": false,
-            "x2Nums": [],
-            "x1Nums": [],
-            "countX2": 0,
-            "countX1": 0,
-            "totalCount": 42,
-            "stakeK": 42000,
+            "x2Nums": [
+              "09",
+              "22",
+              "32",
+              "36",
+              "38",
+              "39",
+              "60",
+              "65",
+              "66",
+              "67",
+              "91",
+              "96"
+            ],
+            "x1Nums": [
+              "01",
+              "08",
+              "17",
+              "21",
+              "24",
+              "34",
+              "42",
+              "44",
+              "51",
+              "54",
+              "59",
+              "70",
+              "83"
+            ],
+            "countX2": 12,
+            "countX1": 13,
+            "totalCount": 25,
+            "stakeK": 37000,
             "payoutK": 0,
-            "profitK": -42000,
+            "profitK": -37000,
             "isWin": false
           },
           "lo": {
             "hits": 7,
             "hitNumbers": [
-              "34",
-              "33",
-              "64",
               "24",
+              "33",
+              "34",
               "62",
+              "64",
               "97"
             ],
             "breakdown": {
@@ -8069,6 +8185,27 @@
                 "profitK": -2200
               }
             },
+            "numbers": [
+              "04",
+              "24",
+              "33",
+              "34",
+              "35",
+              "36",
+              "38",
+              "44",
+              "48",
+              "52",
+              "62",
+              "64",
+              "65",
+              "67",
+              "73",
+              "75",
+              "89",
+              "97"
+            ],
+            "count": 18,
             "stakeK": 66000,
             "payoutK": 96000,
             "profitK": 30000,
@@ -8123,87 +8260,1186 @@
             "fromConfig": false,
             "source": "top8_parity_consensus"
           },
-          "totalStakeK": 130000,
+          "deTiered": {
+            "isHit": false,
+            "hitNumber": null,
+            "hitTier": null,
+            "isHitX2": false,
+            "isHitX1": false,
+            "x2Nums": [
+              "09",
+              "22",
+              "32",
+              "36",
+              "38",
+              "39",
+              "60",
+              "65",
+              "66",
+              "67",
+              "91",
+              "96"
+            ],
+            "x1Nums": [
+              "01",
+              "08",
+              "17",
+              "21",
+              "24",
+              "34",
+              "42",
+              "44",
+              "51",
+              "54",
+              "59",
+              "70",
+              "83"
+            ],
+            "countX2": 12,
+            "countX1": 13,
+            "totalCount": 25,
+            "stakeK": 37000,
+            "payoutK": 0,
+            "profitK": -37000,
+            "isWin": false
+          },
+          "loTiered": {
+            "hits": 7,
+            "hitNumbers": [
+              "24",
+              "33",
+              "34",
+              "62",
+              "64",
+              "97"
+            ],
+            "breakdown": {
+              "24": {
+                "mult": 1,
+                "hits": 1,
+                "stakeK": 2200,
+                "payoutK": 8000,
+                "profitK": 5800
+              },
+              "33": {
+                "mult": 2,
+                "hits": 1,
+                "stakeK": 4400,
+                "payoutK": 16000,
+                "profitK": 11600
+              },
+              "34": {
+                "mult": 3,
+                "hits": 1,
+                "stakeK": 6600,
+                "payoutK": 24000,
+                "profitK": 17400
+              },
+              "35": {
+                "mult": 3,
+                "hits": 0,
+                "stakeK": 6600,
+                "payoutK": 0,
+                "profitK": -6600
+              },
+              "36": {
+                "mult": 1,
+                "hits": 0,
+                "stakeK": 2200,
+                "payoutK": 0,
+                "profitK": -2200
+              },
+              "38": {
+                "mult": 2,
+                "hits": 0,
+                "stakeK": 4400,
+                "payoutK": 0,
+                "profitK": -4400
+              },
+              "44": {
+                "mult": 1,
+                "hits": 0,
+                "stakeK": 2200,
+                "payoutK": 0,
+                "profitK": -2200
+              },
+              "48": {
+                "mult": 1,
+                "hits": 0,
+                "stakeK": 2200,
+                "payoutK": 0,
+                "profitK": -2200
+              },
+              "52": {
+                "mult": 4,
+                "hits": 0,
+                "stakeK": 8800,
+                "payoutK": 0,
+                "profitK": -8800
+              },
+              "62": {
+                "mult": 1,
+                "hits": 1,
+                "stakeK": 2200,
+                "payoutK": 8000,
+                "profitK": 5800
+              },
+              "64": {
+                "mult": 2,
+                "hits": 2,
+                "stakeK": 4400,
+                "payoutK": 32000,
+                "profitK": 27600
+              },
+              "65": {
+                "mult": 1,
+                "hits": 0,
+                "stakeK": 2200,
+                "payoutK": 0,
+                "profitK": -2200
+              },
+              "67": {
+                "mult": 1,
+                "hits": 0,
+                "stakeK": 2200,
+                "payoutK": 0,
+                "profitK": -2200
+              },
+              "73": {
+                "mult": 1,
+                "hits": 0,
+                "stakeK": 2200,
+                "payoutK": 0,
+                "profitK": -2200
+              },
+              "75": {
+                "mult": 3,
+                "hits": 0,
+                "stakeK": 6600,
+                "payoutK": 0,
+                "profitK": -6600
+              },
+              "89": {
+                "mult": 1,
+                "hits": 0,
+                "stakeK": 2200,
+                "payoutK": 0,
+                "profitK": -2200
+              },
+              "97": {
+                "mult": 1,
+                "hits": 1,
+                "stakeK": 2200,
+                "payoutK": 8000,
+                "profitK": 5800
+              },
+              "04": {
+                "mult": 1,
+                "hits": 0,
+                "stakeK": 2200,
+                "payoutK": 0,
+                "profitK": -2200
+              }
+            },
+            "numbers": [
+              "04",
+              "24",
+              "33",
+              "34",
+              "35",
+              "36",
+              "38",
+              "44",
+              "48",
+              "52",
+              "62",
+              "64",
+              "65",
+              "67",
+              "73",
+              "75",
+              "89",
+              "97"
+            ],
+            "count": 18,
+            "stakeK": 66000,
+            "payoutK": 96000,
+            "profitK": 30000,
+            "isWin": true
+          },
+          "flat": {
+            "de": {
+              "isHit": false,
+              "hitNumber": null,
+              "numbers": [
+                "01",
+                "09",
+                "21",
+                "22",
+                "24",
+                "32",
+                "36",
+                "38",
+                "39",
+                "42",
+                "44",
+                "51",
+                "59",
+                "60",
+                "65",
+                "66",
+                "67",
+                "70",
+                "91",
+                "96"
+              ],
+              "count": 20,
+              "stakeK": 20000,
+              "payoutK": 0,
+              "profitK": -20000,
+              "isWin": false
+            },
+            "lo": {
+              "hits": 2,
+              "hitMap": {
+                "33": 1,
+                "34": 1
+              },
+              "hitNumbers": [
+                "33",
+                "34"
+              ],
+              "numbers": [
+                "33",
+                "34",
+                "35",
+                "38",
+                "52",
+                "75"
+              ],
+              "count": 6,
+              "stakeK": 13200,
+              "payoutK": 16000,
+              "profitK": 2800,
+              "isWin": true
+            },
+            "xien4": {
+              "dan1": [
+                "38",
+                "54",
+                "52",
+                "24"
+              ],
+              "dan2": [
+                "31",
+                "43",
+                "44",
+                "59"
+              ],
+              "hits1": 1,
+              "hits2": 1,
+              "hitNums1": [
+                "24"
+              ],
+              "hitNums2": [
+                "43"
+              ],
+              "payout1": 0,
+              "payout2": 0,
+              "profit1": -11000,
+              "profit2": -11000,
+              "stakeK": 22000,
+              "dan1StakeK": 11000,
+              "dan2StakeK": 11000,
+              "payoutK": 0,
+              "profitK": -22000,
+              "isWin": false,
+              "h4Count": 0,
+              "h3Count": 0,
+              "h2Count": 0,
+              "top8": [
+                "38",
+                "54",
+                "52",
+                "24",
+                "31",
+                "43",
+                "44",
+                "59"
+              ],
+              "swapped": false,
+              "swapDetails": null,
+              "fromConfig": false,
+              "source": "top8_parity_consensus"
+            },
+            "totalStakeK": 55200,
+            "totalPayoutK": 16000,
+            "totalProfitK": -39200,
+            "isWin": false
+          },
+          "consensusDetails": {
+            "deTiers": {
+              "x2Nums": [
+                "09",
+                "22",
+                "32",
+                "36",
+                "38",
+                "39",
+                "60",
+                "65",
+                "66",
+                "67",
+                "91",
+                "96"
+              ],
+              "x1Nums": [
+                "01",
+                "08",
+                "17",
+                "21",
+                "24",
+                "34",
+                "42",
+                "44",
+                "51",
+                "54",
+                "59",
+                "70",
+                "83"
+              ],
+              "tier5": [],
+              "tier4": [
+                "09",
+                "22",
+                "32",
+                "36",
+                "38",
+                "39",
+                "60",
+                "65",
+                "66",
+                "67",
+                "91",
+                "96"
+              ],
+              "tier3": [
+                "01",
+                "21",
+                "24",
+                "42",
+                "44",
+                "51",
+                "59",
+                "70",
+                "83"
+              ],
+              "tier2": [
+                "08",
+                "17",
+                "34",
+                "54"
+              ],
+              "tier1": [
+                "05",
+                "12",
+                "15",
+                "18",
+                "28",
+                "31",
+                "43",
+                "46",
+                "52",
+                "57",
+                "58",
+                "61",
+                "72",
+                "73",
+                "85",
+                "89",
+                "97"
+              ]
+            },
+            "loTiers": {
+              "x5Nums": [],
+              "x4Nums": [
+                "52"
+              ],
+              "x3Nums": [
+                "34",
+                "35",
+                "75"
+              ],
+              "x2Nums": [
+                "33",
+                "38",
+                "64"
+              ],
+              "x1Nums": [
+                "04",
+                "24",
+                "36",
+                "44",
+                "48",
+                "62",
+                "65",
+                "67",
+                "73",
+                "89",
+                "97"
+              ]
+            },
+            "deVotesMap": {
+              "12": {
+                "count": 1,
+                "models": [
+                  "deepseek"
+                ]
+              },
+              "15": {
+                "count": 1,
+                "models": [
+                  "muse"
+                ]
+              },
+              "17": {
+                "count": 2,
+                "models": [
+                  "grok",
+                  "muse"
+                ]
+              },
+              "18": {
+                "count": 1,
+                "models": [
+                  "grok"
+                ]
+              },
+              "21": {
+                "count": 3,
+                "models": [
+                  "chatgpt",
+                  "gemini",
+                  "grok"
+                ]
+              },
+              "22": {
+                "count": 4,
+                "models": [
+                  "chatgpt",
+                  "gemini",
+                  "grok",
+                  "muse"
+                ]
+              },
+              "24": {
+                "count": 3,
+                "models": [
+                  "chatgpt",
+                  "gemini",
+                  "muse"
+                ]
+              },
+              "28": {
+                "count": 1,
+                "models": [
+                  "deepseek"
+                ]
+              },
+              "31": {
+                "count": 1,
+                "models": [
+                  "deepseek"
+                ]
+              },
+              "32": {
+                "count": 4,
+                "models": [
+                  "chatgpt",
+                  "gemini",
+                  "grok",
+                  "muse"
+                ]
+              },
+              "34": {
+                "count": 2,
+                "models": [
+                  "deepseek",
+                  "muse"
+                ]
+              },
+              "36": {
+                "count": 4,
+                "models": [
+                  "chatgpt",
+                  "deepseek",
+                  "gemini",
+                  "muse"
+                ]
+              },
+              "38": {
+                "count": 4,
+                "models": [
+                  "chatgpt",
+                  "gemini",
+                  "grok",
+                  "muse"
+                ]
+              },
+              "39": {
+                "count": 4,
+                "models": [
+                  "chatgpt",
+                  "gemini",
+                  "grok",
+                  "muse"
+                ]
+              },
+              "42": {
+                "count": 3,
+                "models": [
+                  "chatgpt",
+                  "gemini",
+                  "grok"
+                ]
+              },
+              "43": {
+                "count": 1,
+                "models": [
+                  "deepseek"
+                ]
+              },
+              "44": {
+                "count": 3,
+                "models": [
+                  "chatgpt",
+                  "gemini",
+                  "grok"
+                ]
+              },
+              "46": {
+                "count": 1,
+                "models": [
+                  "deepseek"
+                ]
+              },
+              "51": {
+                "count": 3,
+                "models": [
+                  "chatgpt",
+                  "gemini",
+                  "grok"
+                ]
+              },
+              "52": {
+                "count": 1,
+                "models": [
+                  "deepseek"
+                ]
+              },
+              "54": {
+                "count": 2,
+                "models": [
+                  "grok",
+                  "muse"
+                ]
+              },
+              "57": {
+                "count": 1,
+                "models": [
+                  "grok"
+                ]
+              },
+              "58": {
+                "count": 1,
+                "models": [
+                  "deepseek"
+                ]
+              },
+              "59": {
+                "count": 3,
+                "models": [
+                  "deepseek",
+                  "grok",
+                  "muse"
+                ]
+              },
+              "60": {
+                "count": 4,
+                "models": [
+                  "chatgpt",
+                  "gemini",
+                  "grok",
+                  "muse"
+                ]
+              },
+              "61": {
+                "count": 1,
+                "models": [
+                  "deepseek"
+                ]
+              },
+              "65": {
+                "count": 4,
+                "models": [
+                  "chatgpt",
+                  "deepseek",
+                  "gemini",
+                  "muse"
+                ]
+              },
+              "66": {
+                "count": 4,
+                "models": [
+                  "chatgpt",
+                  "gemini",
+                  "grok",
+                  "muse"
+                ]
+              },
+              "67": {
+                "count": 4,
+                "models": [
+                  "chatgpt",
+                  "deepseek",
+                  "gemini",
+                  "grok"
+                ]
+              },
+              "70": {
+                "count": 3,
+                "models": [
+                  "chatgpt",
+                  "gemini",
+                  "muse"
+                ]
+              },
+              "72": {
+                "count": 1,
+                "models": [
+                  "deepseek"
+                ]
+              },
+              "73": {
+                "count": 1,
+                "models": [
+                  "deepseek"
+                ]
+              },
+              "83": {
+                "count": 3,
+                "models": [
+                  "chatgpt",
+                  "gemini",
+                  "grok"
+                ]
+              },
+              "85": {
+                "count": 1,
+                "models": [
+                  "deepseek"
+                ]
+              },
+              "89": {
+                "count": 1,
+                "models": [
+                  "deepseek"
+                ]
+              },
+              "91": {
+                "count": 4,
+                "models": [
+                  "chatgpt",
+                  "gemini",
+                  "grok",
+                  "muse"
+                ]
+              },
+              "96": {
+                "count": 4,
+                "models": [
+                  "chatgpt",
+                  "gemini",
+                  "grok",
+                  "muse"
+                ]
+              },
+              "97": {
+                "count": 1,
+                "models": [
+                  "deepseek"
+                ]
+              },
+              "09": {
+                "count": 4,
+                "models": [
+                  "chatgpt",
+                  "gemini",
+                  "grok",
+                  "muse"
+                ]
+              },
+              "01": {
+                "count": 3,
+                "models": [
+                  "chatgpt",
+                  "gemini",
+                  "muse"
+                ]
+              },
+              "08": {
+                "count": 2,
+                "models": [
+                  "deepseek",
+                  "muse"
+                ]
+              },
+              "05": {
+                "count": 1,
+                "models": [
+                  "deepseek"
+                ]
+              }
+            },
+            "loVotesMap": {
+              "24": {
+                "count": 1,
+                "models": [
+                  "muse"
+                ]
+              },
+              "33": {
+                "count": 2,
+                "models": [
+                  "chatgpt",
+                  "grok"
+                ]
+              },
+              "34": {
+                "count": 3,
+                "models": [
+                  "chatgpt",
+                  "gemini",
+                  "grok"
+                ]
+              },
+              "35": {
+                "count": 3,
+                "models": [
+                  "chatgpt",
+                  "gemini",
+                  "grok"
+                ]
+              },
+              "36": {
+                "count": 1,
+                "models": [
+                  "deepseek"
+                ]
+              },
+              "38": {
+                "count": 2,
+                "models": [
+                  "gemini",
+                  "muse"
+                ]
+              },
+              "44": {
+                "count": 1,
+                "models": [
+                  "muse"
+                ]
+              },
+              "48": {
+                "count": 1,
+                "models": [
+                  "grok"
+                ]
+              },
+              "52": {
+                "count": 4,
+                "models": [
+                  "chatgpt",
+                  "gemini",
+                  "grok",
+                  "muse"
+                ]
+              },
+              "62": {
+                "count": 1,
+                "models": [
+                  "muse"
+                ]
+              },
+              "64": {
+                "count": 2,
+                "models": [
+                  "gemini",
+                  "muse"
+                ]
+              },
+              "65": {
+                "count": 1,
+                "models": [
+                  "deepseek"
+                ]
+              },
+              "67": {
+                "count": 1,
+                "models": [
+                  "deepseek"
+                ]
+              },
+              "73": {
+                "count": 1,
+                "models": [
+                  "deepseek"
+                ]
+              },
+              "75": {
+                "count": 3,
+                "models": [
+                  "chatgpt",
+                  "gemini",
+                  "grok"
+                ]
+              },
+              "89": {
+                "count": 1,
+                "models": [
+                  "deepseek"
+                ]
+              },
+              "97": {
+                "count": 1,
+                "models": [
+                  "deepseek"
+                ]
+              },
+              "04": {
+                "count": 1,
+                "models": [
+                  "chatgpt"
+                ]
+              }
+            },
+            "loMultiplierMap": {
+              "24": 1,
+              "33": 2,
+              "34": 3,
+              "35": 3,
+              "36": 1,
+              "38": 2,
+              "44": 1,
+              "48": 1,
+              "52": 4,
+              "62": 1,
+              "64": 2,
+              "65": 1,
+              "67": 1,
+              "73": 1,
+              "75": 3,
+              "89": 1,
+              "97": 1,
+              "04": 1
+            },
+            "loHighConsensus": [
+              "33",
+              "34",
+              "35",
+              "38",
+              "52",
+              "64",
+              "75"
+            ],
+            "loAllTiers": [
+              "04",
+              "24",
+              "33",
+              "34",
+              "35",
+              "36",
+              "38",
+              "44",
+              "48",
+              "52",
+              "62",
+              "64",
+              "65",
+              "67",
+              "73",
+              "75",
+              "89",
+              "97"
+            ],
+            "xien4": {
+              "dan1": [
+                "38",
+                "54",
+                "52",
+                "24"
+              ],
+              "dan2": [
+                "31",
+                "43",
+                "44",
+                "59"
+              ],
+              "top8": [
+                "38",
+                "54",
+                "52",
+                "24",
+                "31",
+                "43",
+                "44",
+                "59"
+              ],
+              "swapped": false,
+              "swapDetails": null,
+              "fromConfig": false,
+              "source": "top8_parity_consensus"
+            }
+          },
+          "totalStakeK": 125000,
           "totalPayoutK": 96000,
-          "totalProfitK": -34000,
-          "isWin": false
-        },
-        "perplexity": {
+          "totalProfitK": -29000,
+          "isWin": false,
+          "tieredStakeK": 125000,
+          "tieredPayoutK": 96000,
+          "tieredProfitK": -29000,
+          "isTieredWin": false
+        }
+      },
+      "resultsTiered": {
+        "consensus": {
           "de": {
             "isHit": false,
             "hitNumber": null,
-            "numbers": [
-              "32",
-              "96",
-              "38",
-              "22",
-              "67",
-              "83",
-              "44",
-              "42",
-              "21",
-              "51",
-              "39",
+            "hitTier": null,
+            "isHitX2": false,
+            "isHitX1": false,
+            "x2Nums": [
               "09",
+              "22",
+              "32",
+              "36",
+              "38",
+              "39",
               "60",
+              "65",
               "66",
+              "67",
               "91",
+              "96"
+            ],
+            "x1Nums": [
+              "01",
+              "08",
               "17",
+              "21",
+              "24",
+              "34",
+              "42",
+              "44",
+              "51",
               "54",
               "59",
-              "18",
-              "57"
+              "70",
+              "83"
             ],
-            "count": 20,
-            "stakeK": 20000,
+            "countX2": 12,
+            "countX1": 13,
+            "totalCount": 25,
+            "stakeK": 37000,
             "payoutK": 0,
-            "profitK": -20000,
+            "profitK": -37000,
             "isWin": false
           },
           "lo": {
-            "hits": 2,
-            "hitMap": {
-              "33": 1,
-              "34": 1
-            },
+            "hits": 7,
             "hitNumbers": [
-              "34",
-              "33"
-            ],
-            "numbers": [
-              "34",
-              "75",
-              "52",
-              "35",
+              "24",
               "33",
-              "48"
+              "34",
+              "62",
+              "64",
+              "97"
             ],
-            "count": 6,
-            "stakeK": 13200,
-            "payoutK": 16000,
-            "profitK": 2800,
+            "breakdown": {
+              "24": {
+                "mult": 1,
+                "hits": 1,
+                "stakeK": 2200,
+                "payoutK": 8000,
+                "profitK": 5800
+              },
+              "33": {
+                "mult": 2,
+                "hits": 1,
+                "stakeK": 4400,
+                "payoutK": 16000,
+                "profitK": 11600
+              },
+              "34": {
+                "mult": 3,
+                "hits": 1,
+                "stakeK": 6600,
+                "payoutK": 24000,
+                "profitK": 17400
+              },
+              "35": {
+                "mult": 3,
+                "hits": 0,
+                "stakeK": 6600,
+                "payoutK": 0,
+                "profitK": -6600
+              },
+              "36": {
+                "mult": 1,
+                "hits": 0,
+                "stakeK": 2200,
+                "payoutK": 0,
+                "profitK": -2200
+              },
+              "38": {
+                "mult": 2,
+                "hits": 0,
+                "stakeK": 4400,
+                "payoutK": 0,
+                "profitK": -4400
+              },
+              "44": {
+                "mult": 1,
+                "hits": 0,
+                "stakeK": 2200,
+                "payoutK": 0,
+                "profitK": -2200
+              },
+              "48": {
+                "mult": 1,
+                "hits": 0,
+                "stakeK": 2200,
+                "payoutK": 0,
+                "profitK": -2200
+              },
+              "52": {
+                "mult": 4,
+                "hits": 0,
+                "stakeK": 8800,
+                "payoutK": 0,
+                "profitK": -8800
+              },
+              "62": {
+                "mult": 1,
+                "hits": 1,
+                "stakeK": 2200,
+                "payoutK": 8000,
+                "profitK": 5800
+              },
+              "64": {
+                "mult": 2,
+                "hits": 2,
+                "stakeK": 4400,
+                "payoutK": 32000,
+                "profitK": 27600
+              },
+              "65": {
+                "mult": 1,
+                "hits": 0,
+                "stakeK": 2200,
+                "payoutK": 0,
+                "profitK": -2200
+              },
+              "67": {
+                "mult": 1,
+                "hits": 0,
+                "stakeK": 2200,
+                "payoutK": 0,
+                "profitK": -2200
+              },
+              "73": {
+                "mult": 1,
+                "hits": 0,
+                "stakeK": 2200,
+                "payoutK": 0,
+                "profitK": -2200
+              },
+              "75": {
+                "mult": 3,
+                "hits": 0,
+                "stakeK": 6600,
+                "payoutK": 0,
+                "profitK": -6600
+              },
+              "89": {
+                "mult": 1,
+                "hits": 0,
+                "stakeK": 2200,
+                "payoutK": 0,
+                "profitK": -2200
+              },
+              "97": {
+                "mult": 1,
+                "hits": 1,
+                "stakeK": 2200,
+                "payoutK": 8000,
+                "profitK": 5800
+              },
+              "04": {
+                "mult": 1,
+                "hits": 0,
+                "stakeK": 2200,
+                "payoutK": 0,
+                "profitK": -2200
+              }
+            },
+            "numbers": [
+              "04",
+              "24",
+              "33",
+              "34",
+              "35",
+              "36",
+              "38",
+              "44",
+              "48",
+              "52",
+              "62",
+              "64",
+              "65",
+              "67",
+              "73",
+              "75",
+              "89",
+              "97"
+            ],
+            "count": 18,
+            "stakeK": 66000,
+            "payoutK": 96000,
+            "profitK": 30000,
             "isWin": true
           },
           "xien4": {
             "dan1": [
-              "31",
               "38",
-              "43",
-              "92"
+              "54",
+              "52",
+              "24"
             ],
             "dan2": [
-              "11",
-              "49",
-              "52",
-              "54"
+              "31",
+              "43",
+              "44",
+              "59"
             ],
             "hits1": 1,
             "hits2": 1,
             "hitNums1": [
-              "43"
+              "24"
             ],
             "hitNums2": [
-              "11"
+              "43"
             ],
             "payout1": 0,
             "payout2": 0,
@@ -8219,288 +9455,25 @@
             "h3Count": 0,
             "h2Count": 0,
             "top8": [
-              "31",
               "38",
-              "43",
-              "92",
-              "11",
-              "49",
+              "54",
               "52",
-              "54"
+              "24",
+              "31",
+              "43",
+              "44",
+              "59"
             ],
-            "fromConfig": true
+            "swapped": false,
+            "swapDetails": null,
+            "fromConfig": false,
+            "source": "top8_parity_consensus"
           },
-          "totalStakeK": 55200,
-          "totalPayoutK": 16000,
-          "totalProfitK": -39200,
-          "isWin": false
-        },
-        "grok": {
-          "de": {
-            "isHit": false,
-            "hitNumber": null,
-            "numbers": [],
-            "count": 0,
-            "stakeK": 0,
-            "payoutK": 0,
-            "profitK": 0,
-            "isWin": false
-          },
-          "lo": {
-            "hits": 0,
-            "hitMap": {},
-            "hitNumbers": [],
-            "numbers": [],
-            "count": 0,
-            "stakeK": 0,
-            "payoutK": 0,
-            "profitK": 0,
-            "isWin": false
-          },
-          "xien4": {
-            "dan1": [],
-            "dan2": [],
-            "hits1": 0,
-            "hits2": 0,
-            "hitNums1": [],
-            "hitNums2": [],
-            "payout1": 0,
-            "payout2": 0,
-            "profit1": 0,
-            "profit2": 0,
-            "stakeK": 0,
-            "dan1StakeK": 0,
-            "dan2StakeK": 0,
-            "payoutK": 0,
-            "profitK": 0,
-            "isWin": false,
-            "h4Count": 0,
-            "h3Count": 0,
-            "h2Count": 0,
-            "top8": [],
-            "fromConfig": true
-          },
-          "totalStakeK": 0,
-          "totalPayoutK": 0,
-          "totalProfitK": 0,
-          "isWin": false,
-          "status": "missing",
-          "notes": "bị chặn (như các kỳ trước) — số Perplexity đã chuyển về đúng slot perplexity, không ghi vào slot grok"
-        }
-      },
-      "resultsTiered": {
-        "de": {
-          "isHit": false,
-          "hitNumber": null,
-          "hitTier": null,
-          "isHitX2": false,
-          "isHitX1": false,
-          "x2Nums": [],
-          "x1Nums": [],
-          "countX2": 0,
-          "countX1": 0,
-          "totalCount": 42,
-          "stakeK": 42000,
-          "payoutK": 0,
-          "profitK": -42000,
-          "isWin": false
-        },
-        "lo": {
-          "hits": 7,
-          "hitNumbers": [
-            "34",
-            "33",
-            "64",
-            "24",
-            "62",
-            "97"
-          ],
-          "breakdown": {
-            "24": {
-              "mult": 1,
-              "hits": 1,
-              "stakeK": 2200,
-              "payoutK": 8000,
-              "profitK": 5800
-            },
-            "33": {
-              "mult": 2,
-              "hits": 1,
-              "stakeK": 4400,
-              "payoutK": 16000,
-              "profitK": 11600
-            },
-            "34": {
-              "mult": 3,
-              "hits": 1,
-              "stakeK": 6600,
-              "payoutK": 24000,
-              "profitK": 17400
-            },
-            "35": {
-              "mult": 3,
-              "hits": 0,
-              "stakeK": 6600,
-              "payoutK": 0,
-              "profitK": -6600
-            },
-            "36": {
-              "mult": 1,
-              "hits": 0,
-              "stakeK": 2200,
-              "payoutK": 0,
-              "profitK": -2200
-            },
-            "38": {
-              "mult": 2,
-              "hits": 0,
-              "stakeK": 4400,
-              "payoutK": 0,
-              "profitK": -4400
-            },
-            "44": {
-              "mult": 1,
-              "hits": 0,
-              "stakeK": 2200,
-              "payoutK": 0,
-              "profitK": -2200
-            },
-            "48": {
-              "mult": 1,
-              "hits": 0,
-              "stakeK": 2200,
-              "payoutK": 0,
-              "profitK": -2200
-            },
-            "52": {
-              "mult": 4,
-              "hits": 0,
-              "stakeK": 8800,
-              "payoutK": 0,
-              "profitK": -8800
-            },
-            "62": {
-              "mult": 1,
-              "hits": 1,
-              "stakeK": 2200,
-              "payoutK": 8000,
-              "profitK": 5800
-            },
-            "64": {
-              "mult": 2,
-              "hits": 2,
-              "stakeK": 4400,
-              "payoutK": 32000,
-              "profitK": 27600
-            },
-            "65": {
-              "mult": 1,
-              "hits": 0,
-              "stakeK": 2200,
-              "payoutK": 0,
-              "profitK": -2200
-            },
-            "67": {
-              "mult": 1,
-              "hits": 0,
-              "stakeK": 2200,
-              "payoutK": 0,
-              "profitK": -2200
-            },
-            "73": {
-              "mult": 1,
-              "hits": 0,
-              "stakeK": 2200,
-              "payoutK": 0,
-              "profitK": -2200
-            },
-            "75": {
-              "mult": 3,
-              "hits": 0,
-              "stakeK": 6600,
-              "payoutK": 0,
-              "profitK": -6600
-            },
-            "89": {
-              "mult": 1,
-              "hits": 0,
-              "stakeK": 2200,
-              "payoutK": 0,
-              "profitK": -2200
-            },
-            "97": {
-              "mult": 1,
-              "hits": 1,
-              "stakeK": 2200,
-              "payoutK": 8000,
-              "profitK": 5800
-            },
-            "04": {
-              "mult": 1,
-              "hits": 0,
-              "stakeK": 2200,
-              "payoutK": 0,
-              "profitK": -2200
-            }
-          },
-          "stakeK": 66000,
+          "stakeK": 125000,
           "payoutK": 96000,
-          "profitK": 30000,
-          "isWin": true
-        },
-        "xien4": {
-          "dan1": [
-            "38",
-            "54",
-            "52",
-            "24"
-          ],
-          "dan2": [
-            "31",
-            "43",
-            "44",
-            "59"
-          ],
-          "hits1": 1,
-          "hits2": 1,
-          "hitNums1": [
-            "24"
-          ],
-          "hitNums2": [
-            "43"
-          ],
-          "payout1": 0,
-          "payout2": 0,
-          "profit1": -11000,
-          "profit2": -11000,
-          "stakeK": 22000,
-          "dan1StakeK": 11000,
-          "dan2StakeK": 11000,
-          "payoutK": 0,
-          "profitK": -22000,
-          "isWin": false,
-          "h4Count": 0,
-          "h3Count": 0,
-          "h2Count": 0,
-          "top8": [
-            "38",
-            "54",
-            "52",
-            "24",
-            "31",
-            "43",
-            "44",
-            "59"
-          ],
-          "swapped": false,
-          "swapDetails": null,
-          "fromConfig": false,
-          "source": "top8_parity_consensus"
-        },
-        "totalStakeK": 130000,
-        "totalPayoutK": 96000,
-        "totalProfitK": -34000,
-        "isWin": false
+          "profitK": -29000,
+          "isWin": false
+        }
       }
     },
     {
@@ -8581,9 +9554,9 @@
         "wins": 0,
         "losses": 4,
         "winRate": 0,
-        "stakeK": 162000,
+        "stakeK": 157000,
         "payoutK": 0,
-        "profitK": -162000,
+        "profitK": -157000,
         "roi": -1,
         "longestWin": 0,
         "longestLoss": 4,
@@ -8627,31 +9600,31 @@
         "days": 4,
         "wins": 0,
         "winRate": 0,
-        "stakeK": 514000,
+        "stakeK": 509000,
         "payoutK": 376000,
-        "profitK": -138000,
-        "roi": -0.2685
+        "profitK": -133000,
+        "roi": -0.2613
       },
       "deTiered": {
-        "days": 3,
+        "days": 4,
         "wins": 0,
-        "losses": 3,
+        "losses": 4,
         "winRate": 0,
-        "stakeK": 120000,
+        "stakeK": 157000,
         "payoutK": 0,
-        "profitK": -120000,
+        "profitK": -157000,
         "roi": -1
       },
       "loTiered": {
-        "days": 3,
-        "wins": 3,
+        "days": 4,
+        "wins": 4,
         "losses": 0,
         "winRate": 1,
-        "totalHits": 14,
-        "stakeK": 198000,
-        "payoutK": 256000,
-        "profitK": 58000,
-        "roi": 0.2929
+        "totalHits": 21,
+        "stakeK": 264000,
+        "payoutK": 352000,
+        "profitK": 88000,
+        "roi": 0.3333
       }
     },
     "chatgpt": {
@@ -8735,19 +9708,19 @@
       },
       "lo": {
         "days": 4,
-        "wins": 4,
-        "losses": 0,
-        "winRate": 1,
+        "wins": 3,
+        "losses": 1,
+        "winRate": 0.75,
         "totalHits": 8,
         "avgHitsPerDay": 2,
         "stakeK": 52800,
         "payoutK": 64000,
         "profitK": 11200,
         "roi": 0.2121,
-        "longestWin": 4,
-        "longestLoss": 0,
-        "currentWinStreak": 4,
-        "currentLossStreak": 0
+        "longestWin": 3,
+        "longestLoss": 1,
+        "currentWinStreak": 0,
+        "currentLossStreak": 1
       },
       "xien4": {
         "days": 2,
@@ -8846,9 +9819,9 @@
         "wins": 0,
         "losses": 4,
         "winRate": 0,
-        "stakeK": 60000,
+        "stakeK": 80000,
         "payoutK": 0,
-        "profitK": -60000,
+        "profitK": -80000,
         "roi": -1,
         "longestWin": 0,
         "longestLoss": 4,
@@ -8857,29 +9830,29 @@
       },
       "lo": {
         "days": 4,
-        "wins": 2,
-        "losses": 2,
-        "winRate": 0.5,
-        "totalHits": 6,
-        "avgHitsPerDay": 1.5,
-        "stakeK": 39600,
-        "payoutK": 48000,
-        "profitK": 8400,
+        "wins": 3,
+        "losses": 1,
+        "winRate": 0.75,
+        "totalHits": 8,
+        "avgHitsPerDay": 2,
+        "stakeK": 52800,
+        "payoutK": 64000,
+        "profitK": 11200,
         "roi": 0.2121,
-        "longestWin": 1,
+        "longestWin": 2,
         "longestLoss": 1,
-        "currentWinStreak": 0,
-        "currentLossStreak": 1
+        "currentWinStreak": 2,
+        "currentLossStreak": 0
       },
       "xien4": {
         "days": 1,
         "wins": 0,
         "losses": 1,
         "winRate": 0,
-        "stakeK": 0,
+        "stakeK": 22000,
         "payoutK": 0,
-        "profitK": 0,
-        "roi": 0,
+        "profitK": -22000,
+        "roi": -1,
         "h4Count": 0,
         "h3Count": 0,
         "h2Count": 0,
@@ -8892,10 +9865,10 @@
         "days": 4,
         "wins": 0,
         "winRate": 0,
-        "stakeK": 99600,
-        "payoutK": 48000,
-        "profitK": -51600,
-        "roi": -0.5181
+        "stakeK": 154800,
+        "payoutK": 64000,
+        "profitK": -90800,
+        "roi": -0.5866
       }
     },
     "muse": {

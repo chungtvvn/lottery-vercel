@@ -274,6 +274,8 @@ async function main() {
             dayEntry.prizes27.length === 27 &&
             dayEntry.results &&
             dayEntry.results.consensus &&
+            dayEntry.results.consensus.loTiered &&
+            dayEntry.results.consensus.deTiered &&
             dayEntry.resultsTiered
         );
 
