@@ -7914,6 +7914,7 @@
           "totalProfitK": -11200,
           "isWin": false
         },
+<<<<<<< HEAD
         "grok": {
           "de": {
             "isHit": false,
@@ -8021,6 +8022,8 @@
           "totalProfitK": -39200,
           "isWin": false
         },
+=======
+>>>>>>> d0a45fe (data: sửa slot kết quả 02/11 — số Perplexity về đúng slot perplexity, grok giữ missing)
         "consensus": {
           "de": {
             "isHit": false,
@@ -8234,6 +8237,165 @@
           "totalPayoutK": 96000,
           "totalProfitK": -34000,
           "isWin": false
+        },
+        "perplexity": {
+          "de": {
+            "isHit": false,
+            "hitNumber": null,
+            "numbers": [
+              "32",
+              "96",
+              "38",
+              "22",
+              "67",
+              "83",
+              "44",
+              "42",
+              "21",
+              "51",
+              "39",
+              "09",
+              "60",
+              "66",
+              "91",
+              "17",
+              "54",
+              "59",
+              "18",
+              "57"
+            ],
+            "count": 20,
+            "stakeK": 20000,
+            "payoutK": 0,
+            "profitK": -20000,
+            "isWin": false
+          },
+          "lo": {
+            "hits": 2,
+            "hitMap": {
+              "34": 1,
+              "33": 1
+            },
+            "hitNumbers": [
+              "34",
+              "33"
+            ],
+            "numbers": [
+              "34",
+              "75",
+              "52",
+              "35",
+              "33",
+              "48"
+            ],
+            "count": 6,
+            "stakeK": 13200,
+            "payoutK": 16000,
+            "profitK": 2800,
+            "isWin": true
+          },
+          "xien4": {
+            "dan1": [
+              "31",
+              "38",
+              "43",
+              "92"
+            ],
+            "dan2": [
+              "11",
+              "49",
+              "52",
+              "54"
+            ],
+            "hits1": 1,
+            "hits2": 1,
+            "hitNums1": [
+              "43"
+            ],
+            "hitNums2": [
+              "11"
+            ],
+            "payout1": 0,
+            "payout2": 0,
+            "profit1": -11000,
+            "profit2": -11000,
+            "stakeK": 22000,
+            "dan1StakeK": 11000,
+            "dan2StakeK": 11000,
+            "payoutK": 0,
+            "profitK": -22000,
+            "isWin": false,
+            "h4Count": 0,
+            "h3Count": 0,
+            "h2Count": 0,
+            "top8": [
+              "31",
+              "38",
+              "43",
+              "92",
+              "11",
+              "49",
+              "52",
+              "54"
+            ],
+            "fromConfig": true
+          },
+          "totalStakeK": 55200,
+          "totalPayoutK": 16000,
+          "totalProfitK": -39200,
+          "isWin": false
+        },
+        "grok": {
+          "de": {
+            "isHit": false,
+            "hitNumber": null,
+            "numbers": [],
+            "count": 0,
+            "stakeK": 0,
+            "payoutK": 0,
+            "profitK": 0,
+            "isWin": false
+          },
+          "lo": {
+            "hits": 0,
+            "hitMap": {},
+            "hitNumbers": [],
+            "numbers": [],
+            "count": 0,
+            "stakeK": 0,
+            "payoutK": 0,
+            "profitK": 0,
+            "isWin": false
+          },
+          "xien4": {
+            "dan1": [],
+            "dan2": [],
+            "hits1": 0,
+            "hits2": 0,
+            "hitNums1": [],
+            "hitNums2": [],
+            "payout1": 0,
+            "payout2": 0,
+            "profit1": 0,
+            "profit2": 0,
+            "stakeK": 0,
+            "dan1StakeK": 0,
+            "dan2StakeK": 0,
+            "payoutK": 0,
+            "profitK": 0,
+            "isWin": false,
+            "h4Count": 0,
+            "h3Count": 0,
+            "h2Count": 0,
+            "top8": [],
+            "fromConfig": true
+          },
+          "totalStakeK": 0,
+          "totalPayoutK": 0,
+          "totalProfitK": 0,
+          "isWin": false,
+          "status": "missing",
+          "notes": "bị chặn (như các kỳ trước) — số Perplexity đã chuyển về đúng slot perplexity, không ghi vào slot grok"
         }
       },
       "resultsTiered": {
