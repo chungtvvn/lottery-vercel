@@ -9529,12 +9529,53 @@
           "notes": "Tính từ file JSON gọn đính kèm (7.602 kỳ tới 02/11)"
         },
         "gemini": {
-          "de": [],
-          "lo": [],
-          "xien4": [],
-          "method": "AI phân tích",
-          "status": "missing",
-          "notes": "đính kèm thành công nhưng Gemini báo file bị truncate ở 02/2017, không đọc/tính được toàn bộ → từ chối, không đưa số; thử lại 22:34 bằng file tiếp nối từ 01/02/2017 (3.504 kỳ tới 02/11) vẫn truncate ở 16/12/2025, thiếu cả năm 2026 + kỳ mới nhất 02/11 → vẫn từ chối, không đưa số"
+          "de": [
+            "17",
+            "18",
+            "20",
+            "24",
+            "29",
+            "36",
+            "37",
+            "38",
+            "39",
+            "42",
+            "48",
+            "49",
+            "51",
+            "54",
+            "67",
+            "68",
+            "70",
+            "78",
+            "79",
+            "80"
+          ],
+          "lo": [
+            "17",
+            "36",
+            "37",
+            "42",
+            "68",
+            "79"
+          ],
+          "xien4": [
+            [
+              "17",
+              "36",
+              "42",
+              "68"
+            ],
+            [
+              "24",
+              "37",
+              "79",
+              "80"
+            ]
+          ],
+          "method": "AI phân tích (tính từ file 5 năm gần nhất đính kèm)",
+          "status": "ok",
+          "notes": "Tính từ file 5 năm gần nhất đính kèm (1.806 kỳ 03/11/2021–02/11/2026) theo lệnh Chung sau 2 lần file toàn lịch sử bị truncate; cơ sở 5 năm, không phải toàn lịch sử CỜ: bằng chứng không khớp file 5 năm (Đề top Gemini nói 36:30, file thật 79:30 và 36 chỉ 24; Lô top Gemini nói 68:552, file thật 92:555 và 68 chỉ 506; Lô 100 kỳ gần Gemini nói 42:42, file thật 34:46 và 42 chỉ 27; lâu chưa về Gemini nói 84 từ 05/05/2024 gap 912, file thật 84 mới về 16/06/2026 gap 139) — số ghi nguyên văn, không sửa."
         },
         "grok": {
           "de": [],
@@ -9695,44 +9736,45 @@
       "rates": null,
       "xien4": {
         "dan1": [
+          "24",
           "44",
           "64",
-          "24",
-          "38"
+          "36"
         ],
         "dan2": [
-          "52",
-          "54",
-          "59",
-          "62"
-        ],
-        "top8": [
-          "44",
-          "64",
-          "24",
           "38",
           "52",
           "54",
-          "59",
           "62"
         ],
-        "swapped": false,
-        "swapDetails": null,
+        "top8": [
+          "24",
+          "44",
+          "64",
+          "36",
+          "38",
+          "52",
+          "54",
+          "59"
+        ],
+        "swapped": true,
+        "swapDetails": "dan2: 59 -> 62 (hạng 9)",
         "fromConfig": false,
         "source": "top8_parity_consensus",
-        "note": "Tổng hợp đếm phiếu từ dàn Xiên 4 của các nguồn ok trong file (4 nguồn: chatgpt, deepseek, perplexity, muse; gemini thiếu do file truncate, grok thiếu).",
+        "note": "Tổng hợp đếm phiếu từ dàn Xiên 4 của các nguồn ok trong file (5 nguồn: chatgpt, deepseek, gemini, muse, perplexity; gemini tính từ file 5 năm, các nguồn còn lại từ toàn lịch sử; grok thiếu).",
         "votes": {
-          "24": 2,
-          "38": 2,
+          "24": 3,
           "44": 3,
+          "64": 3,
+          "36": 2,
+          "38": 2,
           "52": 2,
           "54": 2,
-          "59": 2,
-          "62": 2,
-          "64": 3
+          "59": 2
         },
         "okSources": [
           "chatgpt",
+          "gemini",
           "deepseek",
           "muse",
           "perplexity"
