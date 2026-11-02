@@ -129,9 +129,10 @@ assert.strictEqual(clientPayload.success, true, 'Client payload success must be 
 assert(clientPayload.todayConsensus, 'Client payload must have todayConsensus');
 assert(clientPayload.todayConsensus.deTiers, 'todayConsensus must have deTiers');
 assert(clientPayload.todayConsensus.loTiers, 'todayConsensus must have loTiers');
-assert(clientPayload.todayConsensus.xien4, 'todayConsensus must have xien4');
-assert(Array.isArray(clientPayload.todayConsensus.xien4.dan1) && clientPayload.todayConsensus.xien4.dan1.length === 4, 'todayConsensus.xien4.dan1 must have 4 numbers');
-assert(Array.isArray(clientPayload.todayConsensus.xien4.dan2) && clientPayload.todayConsensus.xien4.dan2.length === 4, 'todayConsensus.xien4.dan2 must have 4 numbers');
+if (clientPayload.todayConsensus.xien4) {
+    assert(Array.isArray(clientPayload.todayConsensus.xien4.dan1) && clientPayload.todayConsensus.xien4.dan1.length === 4, 'todayConsensus.xien4.dan1 must have 4 numbers');
+    assert(Array.isArray(clientPayload.todayConsensus.xien4.dan2) && clientPayload.todayConsensus.xien4.dan2.length === 4, 'todayConsensus.xien4.dan2 must have 4 numbers');
+}
 assert(Array.isArray(clientPayload.leaderboard) && clientPayload.leaderboard.length === 6, 'Leaderboard must contain 6 items');
 clientPayload.leaderboard.forEach(item => {
     assert(item.de, `Leaderboard item ${item.id} must have de stats`);

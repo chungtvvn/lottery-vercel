@@ -76,15 +76,28 @@
         };
     }
 
+    /**
+     * Helper an toàn trích xuất số phiếu bầu từ deVotesMap / loVotesMap
+     * Xử lý triệt để lỗi in [object Object] khi map[n] là đối tượng { count, models }
+     */
+    function getVoteCount(map, n, defaultVal = 1) {
+        if (!map || map[n] === undefined || map[n] === null) return defaultVal;
+        if (typeof map[n] === 'number') return map[n];
+        if (typeof map[n] === 'object' && typeof map[n].count === 'number') return map[n].count;
+        return defaultVal;
+    }
+
     // -------------------------------------------------------------------------
-    // RENDER: Executive Leaderboard Cards
+    // RENDER: Executive Leaderboard Cards & Bảng Thống Kê Lũy Kế Chi Tiết
     // -------------------------------------------------------------------------
     function renderLeaderboard(leaderboard = [], models = {}) {
         const grid = document.getElementById('leaderboardGrid');
-        if (!grid) return;
+        const table = document.getElementById('cumulativeStatsTable');
+        if (!grid && !table) return;
 
         if (!leaderboard.length) {
-            grid.innerHTML = '<div class="col-span-full p-4 text-center text-xs text-slate-400">Chưa có dữ liệu thống kê.</div>';
+            if (grid) grid.innerHTML = '<div class="col-span-full p-4 text-center text-xs text-slate-400">Chưa có dữ liệu thống kê.</div>';
+            if (table) table.innerHTML = '<tr><td class="p-4 text-center text-xs text-slate-400">Chưa có dữ liệu thống kê.</td></tr>';
             return;
         }
 
@@ -116,134 +129,255 @@
         const isLoActive = state.leaderboardCategory === 'lo';
         const isXien4Active = state.leaderboardCategory === 'xien4';
 
-        const cardsHtml = sortedList.map(item => {
-            const isConsensus = item.id === 'consensus';
-            const info = isConsensus ? { name: '👑 Gộp Consensus', avatar: '👑' } : (models[item.id] || { name: item.id, avatar: '🤖' });
-            
-            const deWins = item.de?.wins || 0;
-            const deDays = item.days || 0;
-            const deWinRate = deDays > 0 ? (item.de?.winRate * 100).toFixed(1) : '0.0';
-            const deProfitK = item.deTiered?.profitK ?? item.de?.profitK ?? 0;
-            const deRoi = ((item.deTiered?.roi ?? item.de?.roi ?? 0) * 100).toFixed(1);
+        // 1. RENDER LEADERBOARD CARDS
+        if (grid) {
+            const cardsHtml = sortedList.map(item => {
+                const isConsensus = item.id === 'consensus';
+                const info = isConsensus ? { name: '👑 Gộp Consensus', avatar: '👑' } : (models[item.id] || { name: item.id, avatar: '🤖' });
+                
+                const deWins = item.de?.wins || 0;
+                const deDays = item.days || 0;
+                const deWinRate = deDays > 0 ? (item.de?.winRate * 100).toFixed(1) : '0.0';
+                const deProfitK = item.deTiered?.profitK ?? item.de?.profitK ?? 0;
+                const deStakeK = item.deTiered?.stakeK ?? item.de?.stakeK ?? 0;
+                const dePayoutK = item.deTiered?.payoutK ?? item.de?.payoutK ?? 0;
+                const deRoi = ((item.deTiered?.roi ?? item.de?.roi ?? 0) * 100).toFixed(1);
 
-            const loHits = item.loTiered?.hits ?? item.lo?.totalHits ?? 0;
-            const loAvg = item.lo?.avgHitsPerDay || 0;
-            const loProfitK = item.loTiered?.profitK ?? item.lo?.profitK ?? 0;
-            const loRoi = ((item.loTiered?.roi ?? item.lo?.roi ?? 0) * 100).toFixed(1);
+                const loHits = item.loTiered?.hits ?? item.lo?.totalHits ?? 0;
+                const loAvg = item.lo?.avgHitsPerDay || 0;
+                const loProfitK = item.loTiered?.profitK ?? item.lo?.profitK ?? 0;
+                const loStakeK = item.loTiered?.stakeK ?? item.lo?.stakeK ?? 0;
+                const loPayoutK = item.loTiered?.payoutK ?? item.lo?.payoutK ?? 0;
+                const loRoi = ((item.loTiered?.roi ?? item.lo?.roi ?? 0) * 100).toFixed(1);
 
-            const x4 = item.xien4 || {};
-            const x4Days = x4.days || 0;
-            const x4ProfitK = x4.profitK || 0;
-            const x4Roi = ((x4.roi || 0) * 100).toFixed(1);
-            const x4HasData = x4Days > 0;
+                const x4 = item.xien4 || {};
+                const x4Days = x4.days || 0;
+                const x4ProfitK = x4.profitK || 0;
+                const x4StakeK = x4.stakeK || 0;
+                const x4PayoutK = x4.payoutK || 0;
+                const x4Roi = ((x4.roi || 0) * 100).toFixed(1);
+                const x4HasData = x4Days > 0;
 
-            const comboProfitK = item.combo?.profitK || 0;
-            const comboRoi = ((item.combo?.roi || 0) * 100).toFixed(1);
+                const comboProfitK = item.combo?.profitK || 0;
+                const comboStakeK = item.combo?.stakeK || 0;
+                const comboPayoutK = item.combo?.payoutK || 0;
+                const comboRoi = ((item.combo?.roi || 0) * 100).toFixed(1);
 
-            // Active category footer metrics
-            let footerLabel = 'LÃI RÒNG NET:';
-            let footerProfitK = comboProfitK;
-            let footerRoi = comboRoi;
+                // Active category footer metrics
+                let footerLabel = 'LÃI RÒNG NET:';
+                let footerProfitK = comboProfitK;
+                let footerRoi = comboRoi;
 
-            if (isDeActive) {
-                footerLabel = 'LÃI RÒNG ĐỀ:';
-                footerProfitK = deProfitK;
-                footerRoi = deRoi;
-            } else if (isLoActive) {
-                footerLabel = 'LÃI RÒNG LÔ:';
-                footerProfitK = loProfitK;
-                footerRoi = loRoi;
-            } else if (isXien4Active) {
-                footerLabel = 'LÃI XIÊN 4:';
-                footerProfitK = x4ProfitK;
-                footerRoi = x4Roi;
-            }
+                if (isDeActive) {
+                    footerLabel = 'LÃI RÒNG ĐỀ:';
+                    footerProfitK = deProfitK;
+                    footerRoi = deRoi;
+                } else if (isLoActive) {
+                    footerLabel = 'LÃI RÒNG LÔ:';
+                    footerProfitK = loProfitK;
+                    footerRoi = loRoi;
+                } else if (isXien4Active) {
+                    footerLabel = 'LÃI XIÊN 4:';
+                    footerProfitK = x4ProfitK;
+                    footerRoi = x4Roi;
+                }
 
-            const isPositive = footerProfitK >= 0;
+                const isPositive = footerProfitK >= 0;
 
-            const borderClass = isConsensus
-                ? 'border-2 border-purple-400 bg-gradient-to-br from-purple-50/80 via-white to-indigo-50/50 shadow-md ring-2 ring-purple-300/40'
-                : 'border border-slate-200/90 bg-white shadow-2xs hover:border-slate-300 transition-all';
+                const borderClass = isConsensus
+                    ? 'border-2 border-purple-400 bg-gradient-to-br from-purple-50/80 via-white to-indigo-50/50 shadow-md ring-2 ring-purple-300/40'
+                    : 'border border-slate-200/90 bg-white shadow-2xs hover:border-slate-300 transition-all';
 
-            return `
-                <div class="rounded-3xl p-4 flex flex-col justify-between ${borderClass}">
-                    <div>
-                        <!-- Header Model -->
-                        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-3">
-                            <div class="flex items-center gap-2">
-                                <span class="text-xl">${info.avatar || '🤖'}</span>
-                                <div>
-                                    <h4 class="font-black text-sm text-slate-900">${info.name}</h4>
-                                    <span class="text-[10px] text-slate-400 font-bold uppercase">${item.days || 0} kỳ đối soát</span>
-                                </div>
-                            </div>
-                            ${isConsensus ? '<span class="rounded-full bg-purple-600 text-white px-2 py-0.5 text-[9px] font-black uppercase shadow-2xs">TOP META</span>' : ''}
-                        </div>
-
-                        <!-- Performance Stats: 3 Hạng Mục Riêng Biệt -->
-                        <div class="space-y-2 text-xs">
-                            <!-- Đề Stats -->
-                            <div class="rounded-xl p-2.5 border transition-all ${isDeActive ? 'bg-purple-50/80 border-purple-300 ring-1 ring-purple-200' : 'bg-slate-50/90 border-slate-100'}">
-                                <div class="flex items-center justify-between font-bold text-slate-700">
-                                    <span class="flex items-center gap-1"><i class="bi bi-bullseye text-purple-600"></i> Đề (20s):</span>
-                                    <span class="font-mono text-slate-900">${deWins}/${deDays} (${deWinRate}%)</span>
-                                </div>
-                                <div class="flex items-center justify-between text-[11px] mt-1 text-slate-500">
-                                    <span>Lãi Đề:</span>
-                                    <span class="font-mono font-bold ${deProfitK >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${formatMoney(deProfitK)}</span>
-                                </div>
-                            </div>
-
-                            <!-- Lô Stats -->
-                            <div class="rounded-xl p-2.5 border transition-all ${isLoActive ? 'bg-indigo-50/80 border-indigo-300 ring-1 ring-indigo-200' : 'bg-slate-50/90 border-slate-100'}">
-                                <div class="flex items-center justify-between font-bold text-slate-700">
-                                    <span class="flex items-center gap-1"><i class="bi bi-dice-6-fill text-indigo-600"></i> Lô (6s):</span>
-                                    <span class="font-mono text-slate-900">${loHits} nháy (${loAvg}N)</span>
-                                </div>
-                                <div class="flex items-center justify-between text-[11px] mt-1 text-slate-500">
-                                    <span>Lãi Lô:</span>
-                                    <span class="font-mono font-bold ${loProfitK >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${formatMoney(loProfitK)}</span>
-                                </div>
-                            </div>
-
-                            <!-- 2 Dàn Xiên 4 Stats -->
-                            <div class="rounded-xl p-2.5 border transition-all ${isXien4Active ? 'bg-amber-50/80 border-amber-300 ring-1 ring-amber-200' : 'bg-slate-50/90 border-slate-100'}">
-                                <div class="flex items-center justify-between font-bold text-slate-700">
-                                    <span class="flex items-center gap-1"><i class="bi bi-dice-4-fill text-amber-600"></i> 2 Dàn Xiên 4:</span>
-                                    <span class="font-mono text-[10px] text-slate-700 font-semibold">
-                                        ${x4HasData ? `X4:${x4.h4Count || 0} · X3:${x4.h3Count || 0} · X2:${x4.h2Count || 0}` : (isConsensus ? 'Chưa nổ' : 'Dàn Gộp')}
-                                    </span>
-                                </div>
-                                <div class="flex items-center justify-between text-[11px] mt-1 text-slate-500">
-                                    <span>Lãi Xiên 4:</span>
-                                    <span class="font-mono font-bold ${x4HasData ? (x4ProfitK >= 0 ? 'text-emerald-700' : 'text-rose-600') : 'text-slate-400'}">
-                                        ${x4HasData ? formatMoney(x4ProfitK) : '0M'}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Footer: Dynamic Net Profit & ROI based on active category -->
-                    <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between">
+                return `
+                    <div class="rounded-3xl p-4 flex flex-col justify-between ${borderClass}">
                         <div>
-                            <div class="text-[9px] font-bold uppercase text-slate-400">${footerLabel}</div>
-                            <div class="font-mono text-sm font-black ${isPositive ? 'text-emerald-700' : 'text-rose-600'}">
-                                ${formatMoney(footerProfitK)}
+                            <!-- Header Model -->
+                            <div class="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-3">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xl">${info.avatar || '🤖'}</span>
+                                    <div>
+                                        <h4 class="font-black text-sm text-slate-900">${info.name}</h4>
+                                        <span class="text-[10px] text-slate-400 font-bold uppercase">${item.days || 0} kỳ đối soát</span>
+                                    </div>
+                                </div>
+                                ${isConsensus ? '<span class="rounded-full bg-purple-600 text-white px-2 py-0.5 text-[9px] font-black uppercase shadow-2xs">TOP META</span>' : ''}
+                            </div>
+
+                            <!-- Performance Stats: 3 Hạng Mục Riêng Biệt -->
+                            <div class="space-y-2 text-xs">
+                                <!-- Đề Stats -->
+                                <div class="rounded-xl p-2.5 border transition-all ${isDeActive ? 'bg-purple-50/80 border-purple-300 ring-1 ring-purple-200' : 'bg-slate-50/90 border-slate-100'}">
+                                    <div class="flex items-center justify-between font-bold text-slate-700">
+                                        <span class="flex items-center gap-1"><i class="bi bi-bullseye text-purple-600"></i> Đề (20s):</span>
+                                        <span class="font-mono text-slate-900">${deWins}/${deDays} (${deWinRate}%)</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-[11px] mt-1 text-slate-500">
+                                        <span class="text-[10px] text-slate-400 font-mono">Vốn ${formatMoney(deStakeK, { signed: false })}</span>
+                                        <span class="font-mono font-bold ${deProfitK >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${formatMoney(deProfitK)}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Lô Stats -->
+                                <div class="rounded-xl p-2.5 border transition-all ${isLoActive ? 'bg-indigo-50/80 border-indigo-300 ring-1 ring-indigo-200' : 'bg-slate-50/90 border-slate-100'}">
+                                    <div class="flex items-center justify-between font-bold text-slate-700">
+                                        <span class="flex items-center gap-1"><i class="bi bi-dice-6-fill text-indigo-600"></i> Lô (6s):</span>
+                                        <span class="font-mono text-slate-900">${loHits} nháy (${loAvg}N)</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-[11px] mt-1 text-slate-500">
+                                        <span class="text-[10px] text-slate-400 font-mono">Vốn ${formatMoney(loStakeK, { signed: false })}</span>
+                                        <span class="font-mono font-bold ${loProfitK >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${formatMoney(loProfitK)}</span>
+                                    </div>
+                                </div>
+
+                                <!-- 2 Dàn Xiên 4 Stats -->
+                                <div class="rounded-xl p-2.5 border transition-all ${isXien4Active ? 'bg-amber-50/80 border-amber-300 ring-1 ring-amber-200' : 'bg-slate-50/90 border-slate-100'}">
+                                    <div class="flex items-center justify-between font-bold text-slate-700">
+                                        <span class="flex items-center gap-1"><i class="bi bi-dice-4-fill text-amber-600"></i> 2 Dàn Xiên 4:</span>
+                                        <span class="font-mono text-[10px] text-slate-700 font-semibold">
+                                            ${x4HasData ? `X4:${x4.h4Count || 0} · X3:${x4.h3Count || 0} · X2:${x4.h2Count || 0}` : (isConsensus ? 'Chưa nổ' : 'Chưa có')}
+                                        </span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-[11px] mt-1 text-slate-500">
+                                        <span class="text-[10px] text-slate-400 font-mono">${x4HasData ? `Vốn ${formatMoney(x4StakeK, { signed: false })}` : 'Chưa tham gia'}</span>
+                                        <span class="font-mono font-bold ${x4HasData ? (x4ProfitK >= 0 ? 'text-emerald-700' : 'text-rose-600') : 'text-slate-400'}">
+                                            ${x4HasData ? formatMoney(x4ProfitK) : '0M'}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="text-right">
-                            <div class="text-[9px] font-bold uppercase text-slate-400">ROI:</div>
-                            <div class="font-mono text-xs font-black ${isPositive ? 'text-emerald-700' : 'text-rose-600'}">
-                                ${footerRoi}%
+
+                        <!-- Footer: Dynamic Net Profit & ROI based on active category -->
+                        <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between">
+                            <div>
+                                <div class="text-[9px] font-bold uppercase text-slate-400">${footerLabel}</div>
+                                <div class="font-mono text-sm font-black ${isPositive ? 'text-emerald-700' : 'text-rose-600'}">
+                                    ${formatMoney(footerProfitK)}
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-[9px] font-bold uppercase text-slate-400">ROI:</div>
+                                <div class="font-mono text-xs font-black ${isPositive ? 'text-emerald-700' : 'text-rose-600'}">
+                                    ${footerRoi}%
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            `;
-        }).join('');
+                `;
+            }).join('');
 
-        grid.innerHTML = cardsHtml;
+            grid.innerHTML = cardsHtml;
+        }
+
+        // 2. RENDER BẢNG ĐỐI SOÁT LỖ / LÃI LŨY KẾ CHI TIẾT
+        if (table) {
+            table.innerHTML = `
+                <thead>
+                    <tr class="border-b border-slate-200 bg-slate-50/80 text-[11px] font-black text-slate-700 uppercase tracking-wider">
+                        <th class="py-2.5 px-3">Mô Hình</th>
+                        <th class="py-2.5 px-3 text-right ${isDeActive ? 'bg-purple-100/60 text-purple-900 font-black' : ''}">🎯 Đề Lũy Kế</th>
+                        <th class="py-2.5 px-3 text-right ${isLoActive ? 'bg-indigo-100/60 text-indigo-900 font-black' : ''}">🎲 Lô Lũy Kế</th>
+                        <th class="py-2.5 px-3 text-right ${isXien4Active ? 'bg-amber-100/60 text-amber-900 font-black' : ''}">💎 2 Dàn Xiên 4</th>
+                        <th class="py-2.5 px-3 text-right ${(!isDeActive && !isLoActive && !isXien4Active) ? 'bg-indigo-100/70 text-indigo-950 font-black' : 'bg-slate-100/80'}">👑 TỔNG LÃI NET</th>
+                        <th class="py-2.5 px-3 text-center">ROI</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-xs">
+                    ${sortedList.map(item => {
+                        const isCons = item.id === 'consensus';
+                        const info = isCons ? { name: '👑 Gộp Consensus 5 AI', avatar: '👑' } : (models[item.id] || { name: item.id, avatar: '🤖' });
+                        
+                        const deProfitK = item.deTiered?.profitK ?? item.de?.profitK ?? 0;
+                        const deStakeK = item.deTiered?.stakeK ?? item.de?.stakeK ?? 0;
+                        const dePayoutK = item.deTiered?.payoutK ?? item.de?.payoutK ?? 0;
+                        const deWins = item.de?.wins || 0;
+                        const deDays = item.days || 0;
+                        const deWinRate = deDays > 0 ? (item.de?.winRate * 100).toFixed(1) : '0.0';
+
+                        const loProfitK = item.loTiered?.profitK ?? item.lo?.profitK ?? 0;
+                        const loStakeK = item.loTiered?.stakeK ?? item.lo?.stakeK ?? 0;
+                        const loPayoutK = item.loTiered?.payoutK ?? item.lo?.payoutK ?? 0;
+                        const loHits = item.loTiered?.hits ?? item.lo?.totalHits ?? 0;
+                        const loAvg = item.lo?.avgHitsPerDay || 0;
+
+                        const x4 = item.xien4 || {};
+                        const x4Days = x4.days || 0;
+                        const x4ProfitK = x4.profitK || 0;
+                        const x4StakeK = x4.stakeK || 0;
+                        const x4PayoutK = x4.payoutK || 0;
+                        const x4HasData = x4Days > 0;
+
+                        const comboProfitK = item.combo?.profitK || 0;
+                        const comboStakeK = item.combo?.stakeK || 0;
+                        const comboPayoutK = item.combo?.payoutK || 0;
+                        const comboRoi = ((item.combo?.roi || 0) * 100).toFixed(1);
+
+                        const rowBg = isCons ? 'bg-purple-50/40 font-semibold' : 'hover:bg-slate-50/60 transition';
+
+                        return `
+                            <tr class="${rowBg}">
+                                <td class="py-2.5 px-3">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-base">${info.avatar || '🤖'}</span>
+                                        <div>
+                                            <div class="font-black text-slate-900">${info.name}</div>
+                                            <div class="text-[10px] text-slate-400 font-mono">${item.days || 0} kỳ đối soát</div>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- Đề -->
+                                <td class="py-2.5 px-3 text-right font-mono ${isDeActive ? 'bg-purple-50/50' : ''}">
+                                    <div class="font-black ${deProfitK >= 0 ? 'text-emerald-700' : 'text-rose-600'}">
+                                        ${formatMoney(deProfitK)}
+                                    </div>
+                                    <div class="text-[10px] text-slate-400">
+                                        Vốn ${formatMoney(deStakeK, { signed: false })} · Ăn ${formatMoney(dePayoutK, { signed: false })} (${deWins}/${deDays}k)
+                                    </div>
+                                </td>
+
+                                <!-- Lô -->
+                                <td class="py-2.5 px-3 text-right font-mono ${isLoActive ? 'bg-indigo-50/50' : ''}">
+                                    <div class="font-black ${loProfitK >= 0 ? 'text-emerald-700' : 'text-rose-600'}">
+                                        ${formatMoney(loProfitK)}
+                                    </div>
+                                    <div class="text-[10px] text-slate-400">
+                                        Vốn ${formatMoney(loStakeK, { signed: false })} · Ăn ${formatMoney(loPayoutK, { signed: false })} (${loHits}n)
+                                    </div>
+                                </td>
+
+                                <!-- Xiên 4 -->
+                                <td class="py-2.5 px-3 text-right font-mono ${isXien4Active ? 'bg-amber-50/50' : ''}">
+                                    <div class="font-black ${x4HasData ? (x4ProfitK >= 0 ? 'text-emerald-700' : 'text-rose-600') : 'text-slate-400'}">
+                                        ${x4HasData ? formatMoney(x4ProfitK) : '0M'}
+                                    </div>
+                                    <div class="text-[10px] text-slate-400">
+                                        ${x4HasData ? `Vốn ${formatMoney(x4StakeK, { signed: false })} · Ăn ${formatMoney(x4PayoutK, { signed: false })} (X4:${x4.h4Count || 0} · X3:${x4.h3Count || 0} · X2:${x4.h2Count || 0})` : 'Chưa có dàn'}
+                                    </div>
+                                </td>
+
+                                <!-- Tổng Combo -->
+                                <td class="py-2.5 px-3 text-right font-mono ${(!isDeActive && !isLoActive && !isXien4Active) ? 'bg-indigo-50/50' : 'bg-slate-50/50'}">
+                                    <div class="font-black text-sm ${comboProfitK >= 0 ? 'text-emerald-700' : 'text-rose-600'}">
+                                        ${formatMoney(comboProfitK)}
+                                    </div>
+                                    <div class="text-[10px] text-slate-400">
+                                        Vốn ${formatMoney(comboStakeK, { signed: false })} · Ăn ${formatMoney(comboPayoutK, { signed: false })}
+                                    </div>
+                                </td>
+
+                                <!-- ROI -->
+                                <td class="py-2.5 px-3 text-center font-mono font-bold">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black ${comboProfitK >= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                                        ${comboRoi}%
+                                    </span>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+            `;
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -296,8 +430,28 @@
             const dan1 = x4Data?.dan1 || [];
             const dan2 = x4Data?.dan2 || [];
 
+            const readyCount = ['chatgpt', 'deepseek', 'gemini', 'grok', 'muse'].filter(m => {
+                const s = (latestDay?.sources || {})[m];
+                return s && (s.de?.length > 0 || s.lo?.length > 0);
+            }).length;
+
             container.innerHTML = `
                 <div class="rounded-3xl border-2 border-purple-400/90 bg-gradient-to-br from-purple-50/70 via-white to-indigo-50/50 p-6 shadow-sm space-y-6">
+                    ${readyCount < 5 ? `
+                        <div class="rounded-2xl border border-amber-300 bg-amber-50/90 p-3.5 flex items-center justify-between gap-3 text-xs text-amber-900 shadow-2xs">
+                            <div class="flex items-center gap-2.5">
+                                <i class="bi bi-hourglass-split text-lg text-amber-600 animate-spin"></i>
+                                <div>
+                                    <span class="font-black">Đang chờ dữ liệu ngày ${latestDay.date}:</span>
+                                    <span>Hiện có <strong>${readyCount}/5 AI</strong> đã nạp số. Hệ thống đang đợi các AI còn lại trước giờ chốt 18:15.</span>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-mono font-black bg-amber-200/90 text-amber-900 px-2.5 py-1 rounded-full shrink-0 border border-amber-300">
+                                ${readyCount}/5 Sẵn Sàng
+                            </span>
+                        </div>
+                    ` : ''}
+
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-purple-200/80 pb-4">
                         <div class="flex items-center gap-2.5">
                             <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white shadow-md text-lg">
@@ -358,7 +512,7 @@
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 ${deX2Nums.map(n => {
-                                    const vote = deVotesMap[n]?.count || 1;
+                                    const vote = getVoteCount(deVotesMap, n, 2);
                                     const isDia = vote === 5;
                                     const badgeClass = isDia
                                         ? 'bg-gradient-to-tr from-purple-600 to-indigo-600 text-white ring-2 ring-purple-300'
@@ -385,7 +539,7 @@
                                 </div>
                                 <div class="flex flex-wrap gap-2">
                                     ${deX1Nums.map(n => {
-                                        const vote = deVotesMap[n]?.count || 1;
+                                        const vote = getVoteCount(deVotesMap, n, 1);
                                         return `
                                             <div class="badge-number flex flex-col items-center justify-center w-10 h-10 rounded-xl bg-indigo-50/80 text-indigo-900 border border-indigo-200 font-mono font-bold text-xs shadow-2xs" title="Đề Lót X1: ${n} (${vote}/5 AI)">
                                                 <span>${n}</span>
@@ -659,6 +813,29 @@
             }
         }
         const hasAiX4 = aiDan1.length === 4 && aiDan2.length === 4;
+        const hasNumbers = deNums.length > 0 || loNums.length > 0;
+
+        if (!hasNumbers) {
+            container.innerHTML = `
+                <div class="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm space-y-4 text-center">
+                    <div class="flex items-center justify-center gap-3">
+                        <span class="text-3xl">${info.avatar || '🤖'}</span>
+                        <div class="text-left">
+                            <h4 class="text-base font-black text-slate-900">${info.name} (${info.provider || 'AI Model'})</h4>
+                            <p class="text-xs text-slate-500">${src.method || 'Mô hình AI phân tích tự động'}</p>
+                        </div>
+                    </div>
+                    <div class="p-6 rounded-2xl bg-amber-50/70 border border-dashed border-amber-300 max-w-lg mx-auto space-y-2">
+                        <div class="text-2xl">⏳</div>
+                        <div class="text-sm font-black text-amber-950">Đang Chờ Dữ Liệu Dự Đoán Ngày ${latestDay.date}</div>
+                        <p class="text-xs text-amber-800 leading-relaxed">
+                            Mô hình <strong>${info.name}</strong> chưa cập nhật dàn số cho kỳ quay hôm nay. Hệ thống sẽ tự động hiển thị ngay khi nạp xong trước giờ quay thưởng (18:15).
+                        </p>
+                    </div>
+                </div>
+            `;
+            return;
+        }
 
         container.innerHTML = `
             <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
@@ -1044,21 +1221,21 @@
                                         </div>
                                         <div class="flex items-center justify-between text-[11px]">
                                             <span class="text-slate-500">Đề:</span>
-                                            <span class="font-bold ${r.de?.isHit ? 'text-emerald-700 bg-emerald-100 px-1 rounded' : 'text-slate-400'}">
-                                                ${r.de?.isHit ? `🎯 Trúng ${specialStr}` : 'Trượt'}
+                                            <span class="font-mono font-bold ${r.de?.isHit ? 'text-emerald-700' : 'text-slate-500'}">
+                                                ${r.de?.isHit ? `🎯 ${specialStr}` : 'Trượt'} <span class="text-[10px] font-normal ${r.de?.profitK >= 0 ? 'text-emerald-700' : 'text-slate-400'}">(${formatMoney(r.de?.profitK)})</span>
                                             </span>
                                         </div>
                                         <div class="flex items-center justify-between text-[11px]">
                                             <span class="text-slate-500">Lô:</span>
-                                            <span class="font-bold ${r.lo?.hits > 0 ? 'text-indigo-700 font-black' : 'text-slate-400'}">
-                                                ${r.lo?.hits > 0 ? `Nổ ${r.lo?.hits}n` : 'Trượt'}
+                                            <span class="font-mono font-bold ${r.lo?.hits > 0 ? 'text-indigo-700' : 'text-slate-500'}">
+                                                ${r.lo?.hits > 0 ? `Nổ ${r.lo?.hits}n` : 'Trượt'} <span class="text-[10px] font-normal ${r.lo?.profitK >= 0 ? 'text-emerald-700' : 'text-slate-400'}">(${formatMoney(r.lo?.profitK)})</span>
                                             </span>
                                         </div>
-                                        ${x4Str ? `
+                                        ${x4 ? `
                                             <div class="flex items-center justify-between text-[11px]">
                                                 <span class="text-slate-500">Xiên:</span>
-                                                <span class="font-bold ${x4.h2Count > 0 || x4.h3Count > 0 || x4.h4Count > 0 ? 'text-amber-700 font-black' : 'text-slate-400'}">
-                                                    ${x4Str}
+                                                <span class="font-mono font-bold ${x4.profitK >= 0 ? 'text-amber-700' : 'text-slate-500'}">
+                                                    ${x4Str} <span class="text-[10px] font-normal ${x4.profitK >= 0 ? 'text-emerald-700' : 'text-slate-400'}">(${formatMoney(x4.profitK)})</span>
                                                 </span>
                                             </div>
                                         ` : ''}
@@ -1326,7 +1503,7 @@
                                                         <div class="flex flex-wrap gap-1.5">
                                                             ${deX2Nums.map(n => {
                                                                 const isHit = specialStr && n === specialStr;
-                                                                const votes = deVotesMap[n] || 2;
+                                                                const votes = getVoteCount(deVotesMap, n, 2);
                                                                 if (isHit) {
                                                                     return `
                                                                         <span class="badge-number inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 font-mono font-black text-xs ring-2 ring-amber-300 shadow-md animate-pulse" title="Trúng ĐB: ${n}">
@@ -1357,6 +1534,7 @@
                                                         <div class="flex flex-wrap gap-1.5">
                                                             ${deX1Nums.map(n => {
                                                                 const isHit = specialStr && n === specialStr;
+                                                                const votes = getVoteCount(deVotesMap, n, 1);
                                                                 if (isHit) {
                                                                     return `
                                                                         <span class="badge-number inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-500 text-white font-mono font-black text-xs ring-2 ring-emerald-300 shadow-md" title="Trúng ĐB: ${n}">
@@ -1366,9 +1544,9 @@
                                                                     `;
                                                                 }
                                                                 return `
-                                                                    <span class="badge-number inline-flex items-center gap-1 px-2 py-1 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-mono text-xs" title="Đề Lót ${n} (1/5 vote)">
+                                                                    <span class="badge-number inline-flex items-center gap-1 px-2 py-1 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-mono text-xs" title="Đề Lót ${n} (${votes}/5 vote)">
                                                                         <span>${n}</span>
-                                                                        <span class="text-[8px] font-sans text-slate-400">1/5</span>
+                                                                        <span class="text-[8px] font-sans text-slate-400">${votes}/5</span>
                                                                     </span>
                                                                 `;
                                                             }).join('')}
@@ -1778,8 +1956,14 @@
                         lbModeLabel.textContent = 'Chế độ: Đang xem 2 Dàn Xiên 4 Tinh Hoa (Vốn 22M · Ăn X4 384M · X3 84M · X2 12M)';
                     }
                 }
+                // Đồng bộ lọc danh mục xuống bảng đối soát nhật ký
+                state.ledgerCategory = state.leaderboardCategory === 'combo' ? 'all' : state.leaderboardCategory;
+                const ledgerCatSelect = document.getElementById('ledgerCategoryFilter');
+                if (ledgerCatSelect) ledgerCatSelect.value = state.ledgerCategory;
+
                 if (state.payload) {
                     renderLeaderboard(state.payload.leaderboard, state.payload.models);
+                    renderLedger(state.payload.history, state.ledgerFilter, state.payload.models);
                 }
             });
         });

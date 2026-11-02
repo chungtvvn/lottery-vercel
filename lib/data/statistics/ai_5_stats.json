@@ -7005,13 +7005,13 @@
         "source": "top8_parity_consensus",
         "note": "Tổng hợp đếm phiếu từ dàn Xiên 4 của các nguồn ok trong file (5 nguồn: chatgpt, gemini, deepseek, perplexity, muse; grok thiếu, perplexity thay grok).",
         "votes": {
+          "38": 4,
+          "54": 4,
+          "52": 3,
           "24": 2,
           "31": 2,
-          "38": 4,
           "43": 2,
           "44": 2,
-          "52": 3,
-          "54": 4,
           "59": 2
         },
         "okSources": [
@@ -7021,59 +7021,6 @@
           "muse",
           "perplexity"
         ]
-      }
-    },
-    {
-      "date": "2026-11-03",
-      "sources": {
-        "chatgpt": {
-          "de": [],
-          "lo": []
-        },
-        "deepseek": {
-          "de": [],
-          "lo": []
-        },
-        "gemini": {
-          "de": [],
-          "lo": []
-        },
-        "grok": {
-          "de": [],
-          "lo": []
-        },
-        "muse": {
-          "de": [
-            "01",
-            "08",
-            "09",
-            "15",
-            "17",
-            "22",
-            "24",
-            "32",
-            "34",
-            "36",
-            "38",
-            "39",
-            "54",
-            "59",
-            "60",
-            "65",
-            "66",
-            "70",
-            "91",
-            "96"
-          ],
-          "lo": [
-            "24",
-            "38",
-            "44",
-            "52",
-            "62",
-            "64"
-          ]
-        }
       }
     }
   ],
