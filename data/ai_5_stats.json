@@ -9534,7 +9534,7 @@
           "xien4": [],
           "method": "AI phân tích",
           "status": "missing",
-          "notes": "đính kèm thành công nhưng Gemini báo file bị truncate ở 02/2017, không đọc/tính được toàn bộ → từ chối, không đưa số"
+          "notes": "đính kèm thành công nhưng Gemini báo file bị truncate ở 02/2017, không đọc/tính được toàn bộ → từ chối, không đưa số; thử lại 22:34 bằng file tiếp nối từ 01/02/2017 (3.504 kỳ tới 02/11) vẫn truncate ở 16/12/2025, thiếu cả năm 2026 + kỳ mới nhất 02/11 → vẫn từ chối, không đưa số"
         },
         "grok": {
           "de": [],
