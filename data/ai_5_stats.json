@@ -35,6 +35,7 @@
         "consensus": {
           "days": 1,
           "de": {
+            "days": 1,
             "wins": 0,
             "losses": 1,
             "winRate": 0,
@@ -48,6 +49,7 @@
             "currentLossStreak": 1
           },
           "lo": {
+            "days": 1,
             "wins": 1,
             "losses": 0,
             "winRate": 1,
@@ -80,6 +82,7 @@
             "currentLossStreak": 1
           },
           "combo": {
+            "days": 1,
             "wins": 0,
             "winRate": 0,
             "stakeK": 129000,
@@ -88,6 +91,7 @@
             "roi": -0.1628
           },
           "deTiered": {
+            "days": 1,
             "wins": 0,
             "losses": 1,
             "winRate": 0,
@@ -97,6 +101,7 @@
             "roi": -1
           },
           "loTiered": {
+            "days": 1,
             "wins": 1,
             "losses": 0,
             "winRate": 1,
@@ -110,6 +115,7 @@
         "chatgpt": {
           "days": 1,
           "de": {
+            "days": 1,
             "wins": 0,
             "losses": 1,
             "winRate": 0,
@@ -123,6 +129,7 @@
             "currentLossStreak": 1
           },
           "lo": {
+            "days": 1,
             "wins": 1,
             "losses": 0,
             "winRate": 1,
@@ -155,6 +162,7 @@
             "currentLossStreak": 0
           },
           "combo": {
+            "days": 1,
             "wins": 0,
             "winRate": 0,
             "stakeK": 33200,
@@ -166,6 +174,7 @@
         "deepseek": {
           "days": 1,
           "de": {
+            "days": 1,
             "wins": 0,
             "losses": 1,
             "winRate": 0,
@@ -179,6 +188,7 @@
             "currentLossStreak": 1
           },
           "lo": {
+            "days": 1,
             "wins": 1,
             "losses": 0,
             "winRate": 1,
@@ -211,6 +221,7 @@
             "currentLossStreak": 0
           },
           "combo": {
+            "days": 1,
             "wins": 0,
             "winRate": 0,
             "stakeK": 33200,
@@ -222,6 +233,7 @@
         "gemini": {
           "days": 1,
           "de": {
+            "days": 1,
             "wins": 0,
             "losses": 1,
             "winRate": 0,
@@ -235,6 +247,7 @@
             "currentLossStreak": 1
           },
           "lo": {
+            "days": 1,
             "wins": 1,
             "losses": 0,
             "winRate": 1,
@@ -267,6 +280,7 @@
             "currentLossStreak": 0
           },
           "combo": {
+            "days": 1,
             "wins": 0,
             "winRate": 0,
             "stakeK": 33200,
@@ -278,6 +292,7 @@
         "grok": {
           "days": 1,
           "de": {
+            "days": 1,
             "wins": 0,
             "losses": 1,
             "winRate": 0,
@@ -291,6 +306,7 @@
             "currentLossStreak": 1
           },
           "lo": {
+            "days": 1,
             "wins": 1,
             "losses": 0,
             "winRate": 1,
@@ -323,6 +339,7 @@
             "currentLossStreak": 0
           },
           "combo": {
+            "days": 1,
             "wins": 0,
             "winRate": 0,
             "stakeK": 33200,
@@ -334,6 +351,7 @@
         "muse": {
           "days": 1,
           "de": {
+            "days": 1,
             "wins": 0,
             "losses": 1,
             "winRate": 0,
@@ -347,6 +365,7 @@
             "currentLossStreak": 1
           },
           "lo": {
+            "days": 1,
             "wins": 0,
             "losses": 1,
             "winRate": 0,
@@ -379,6 +398,7 @@
             "currentLossStreak": 0
           },
           "combo": {
+            "days": 1,
             "wins": 0,
             "winRate": 0,
             "stakeK": 33200,
@@ -2220,6 +2240,7 @@
         "consensus": {
           "days": 2,
           "de": {
+            "days": 2,
             "wins": 0,
             "losses": 2,
             "winRate": 0,
@@ -2233,6 +2254,7 @@
             "currentLossStreak": 2
           },
           "lo": {
+            "days": 2,
             "wins": 2,
             "losses": 0,
             "winRate": 1,
@@ -2265,6 +2287,7 @@
             "currentLossStreak": 2
           },
           "combo": {
+            "days": 2,
             "wins": 0,
             "winRate": 0,
             "stakeK": 258000,
@@ -2273,6 +2296,7 @@
             "roi": -0.3023
           },
           "deTiered": {
+            "days": 2,
             "wins": 0,
             "losses": 2,
             "winRate": 0,
@@ -2282,6 +2306,7 @@
             "roi": -1
           },
           "loTiered": {
+            "days": 2,
             "wins": 2,
             "losses": 0,
             "winRate": 1,
@@ -2295,6 +2320,7 @@
         "chatgpt": {
           "days": 2,
           "de": {
+            "days": 2,
             "wins": 0,
             "losses": 2,
             "winRate": 0,
@@ -2308,6 +2334,7 @@
             "currentLossStreak": 2
           },
           "lo": {
+            "days": 2,
             "wins": 1,
             "losses": 1,
             "winRate": 0.5,
@@ -2340,6 +2367,7 @@
             "currentLossStreak": 0
           },
           "combo": {
+            "days": 2,
             "wins": 0,
             "winRate": 0,
             "stakeK": 66400,
@@ -2351,6 +2379,7 @@
         "deepseek": {
           "days": 2,
           "de": {
+            "days": 2,
             "wins": 0,
             "losses": 2,
             "winRate": 0,
@@ -2364,6 +2393,7 @@
             "currentLossStreak": 2
           },
           "lo": {
+            "days": 2,
             "wins": 2,
             "losses": 0,
             "winRate": 1,
@@ -2396,6 +2426,7 @@
             "currentLossStreak": 0
           },
           "combo": {
+            "days": 2,
             "wins": 0,
             "winRate": 0,
             "stakeK": 66400,
@@ -2407,6 +2438,7 @@
         "gemini": {
           "days": 2,
           "de": {
+            "days": 2,
             "wins": 0,
             "losses": 2,
             "winRate": 0,
@@ -2420,6 +2452,7 @@
             "currentLossStreak": 2
           },
           "lo": {
+            "days": 2,
             "wins": 1,
             "losses": 1,
             "winRate": 0.5,
@@ -2452,6 +2485,7 @@
             "currentLossStreak": 0
           },
           "combo": {
+            "days": 2,
             "wins": 0,
             "winRate": 0,
             "stakeK": 66400,
@@ -2463,6 +2497,7 @@
         "grok": {
           "days": 2,
           "de": {
+            "days": 2,
             "wins": 0,
             "losses": 2,
             "winRate": 0,
@@ -2476,6 +2511,7 @@
             "currentLossStreak": 2
           },
           "lo": {
+            "days": 2,
             "wins": 1,
             "losses": 1,
             "winRate": 0.5,
@@ -2508,6 +2544,7 @@
             "currentLossStreak": 0
           },
           "combo": {
+            "days": 2,
             "wins": 0,
             "winRate": 0,
             "stakeK": 66400,
@@ -2519,6 +2556,7 @@
         "muse": {
           "days": 2,
           "de": {
+            "days": 2,
             "wins": 0,
             "losses": 2,
             "winRate": 0,
@@ -2532,6 +2570,7 @@
             "currentLossStreak": 2
           },
           "lo": {
+            "days": 2,
             "wins": 1,
             "losses": 1,
             "winRate": 0.5,
@@ -2564,6 +2603,7 @@
             "currentLossStreak": 0
           },
           "combo": {
+            "days": 2,
             "wins": 0,
             "winRate": 0,
             "stakeK": 66400,
@@ -4596,6 +4636,7 @@
         "consensus": {
           "days": 3,
           "de": {
+            "days": 3,
             "wins": 0,
             "losses": 3,
             "winRate": 0,
@@ -4609,6 +4650,7 @@
             "currentLossStreak": 3
           },
           "lo": {
+            "days": 3,
             "wins": 3,
             "losses": 0,
             "winRate": 1,
@@ -4641,6 +4683,7 @@
             "currentLossStreak": 3
           },
           "combo": {
+            "days": 3,
             "wins": 0,
             "winRate": 0,
             "stakeK": 384000,
@@ -4649,6 +4692,7 @@
             "roi": -0.2708
           },
           "deTiered": {
+            "days": 3,
             "wins": 0,
             "losses": 3,
             "winRate": 0,
@@ -4658,6 +4702,7 @@
             "roi": -1
           },
           "loTiered": {
+            "days": 3,
             "wins": 3,
             "losses": 0,
             "winRate": 1,
@@ -4671,6 +4716,7 @@
         "chatgpt": {
           "days": 3,
           "de": {
+            "days": 3,
             "wins": 0,
             "losses": 3,
             "winRate": 0,
@@ -4684,6 +4730,7 @@
             "currentLossStreak": 3
           },
           "lo": {
+            "days": 3,
             "wins": 1,
             "losses": 2,
             "winRate": 0.3333,
@@ -4716,6 +4763,7 @@
             "currentLossStreak": 1
           },
           "combo": {
+            "days": 3,
             "wins": 0,
             "winRate": 0,
             "stakeK": 121600,
@@ -4727,6 +4775,7 @@
         "deepseek": {
           "days": 3,
           "de": {
+            "days": 3,
             "wins": 0,
             "losses": 3,
             "winRate": 0,
@@ -4740,6 +4789,7 @@
             "currentLossStreak": 3
           },
           "lo": {
+            "days": 3,
             "wins": 3,
             "losses": 0,
             "winRate": 1,
@@ -4772,6 +4822,7 @@
             "currentLossStreak": 1
           },
           "combo": {
+            "days": 3,
             "wins": 0,
             "winRate": 0,
             "stakeK": 121600,
@@ -4783,6 +4834,7 @@
         "gemini": {
           "days": 3,
           "de": {
+            "days": 3,
             "wins": 0,
             "losses": 3,
             "winRate": 0,
@@ -4796,6 +4848,7 @@
             "currentLossStreak": 3
           },
           "lo": {
+            "days": 3,
             "wins": 2,
             "losses": 1,
             "winRate": 0.6667,
@@ -4828,6 +4881,7 @@
             "currentLossStreak": 0
           },
           "combo": {
+            "days": 3,
             "wins": 1,
             "winRate": 0.3333,
             "stakeK": 121600,
@@ -4839,6 +4893,7 @@
         "grok": {
           "days": 3,
           "de": {
+            "days": 3,
             "wins": 0,
             "losses": 3,
             "winRate": 0,
@@ -4852,6 +4907,7 @@
             "currentLossStreak": 3
           },
           "lo": {
+            "days": 3,
             "wins": 2,
             "losses": 1,
             "winRate": 0.6667,
@@ -4884,6 +4940,7 @@
             "currentLossStreak": 0
           },
           "combo": {
+            "days": 3,
             "wins": 0,
             "winRate": 0,
             "stakeK": 99600,
@@ -4895,6 +4952,7 @@
         "muse": {
           "days": 3,
           "de": {
+            "days": 3,
             "wins": 1,
             "losses": 2,
             "winRate": 0.3333,
@@ -4908,6 +4966,7 @@
             "currentLossStreak": 0
           },
           "lo": {
+            "days": 3,
             "wins": 2,
             "losses": 1,
             "winRate": 0.6667,
@@ -4940,6 +4999,7 @@
             "currentLossStreak": 1
           },
           "combo": {
+            "days": 3,
             "wins": 1,
             "winRate": 0.3333,
             "stakeK": 121600,
@@ -7005,13 +7065,13 @@
         "source": "top8_parity_consensus",
         "note": "Tổng hợp đếm phiếu từ dàn Xiên 4 của các nguồn ok trong file (5 nguồn: chatgpt, gemini, deepseek, perplexity, muse; grok thiếu, perplexity thay grok).",
         "votes": {
-          "38": 4,
-          "54": 4,
-          "52": 3,
           "24": 2,
           "31": 2,
+          "38": 4,
           "43": 2,
           "44": 2,
+          "52": 3,
+          "54": 4,
           "59": 2
         },
         "okSources": [
@@ -7021,6 +7081,59 @@
           "muse",
           "perplexity"
         ]
+      }
+    },
+    {
+      "date": "2026-11-03",
+      "sources": {
+        "chatgpt": {
+          "de": [],
+          "lo": []
+        },
+        "deepseek": {
+          "de": [],
+          "lo": []
+        },
+        "gemini": {
+          "de": [],
+          "lo": []
+        },
+        "grok": {
+          "de": [],
+          "lo": []
+        },
+        "muse": {
+          "de": [
+            "01",
+            "08",
+            "09",
+            "15",
+            "17",
+            "22",
+            "24",
+            "32",
+            "34",
+            "36",
+            "38",
+            "39",
+            "54",
+            "59",
+            "60",
+            "65",
+            "66",
+            "70",
+            "91",
+            "96"
+          ],
+          "lo": [
+            "24",
+            "38",
+            "44",
+            "52",
+            "62",
+            "64"
+          ]
+        }
       }
     }
   ],
@@ -7043,6 +7156,7 @@
       "name": "Phương Pháp Gộp 5 AI",
       "days": 3,
       "de": {
+        "days": 3,
         "wins": 0,
         "losses": 3,
         "winRate": 0,
@@ -7056,6 +7170,7 @@
         "currentLossStreak": 3
       },
       "lo": {
+        "days": 3,
         "wins": 3,
         "losses": 0,
         "winRate": 1,
@@ -7088,6 +7203,7 @@
         "currentLossStreak": 3
       },
       "combo": {
+        "days": 3,
         "wins": 0,
         "winRate": 0,
         "stakeK": 384000,
@@ -7096,6 +7212,7 @@
         "roi": -0.2708
       },
       "deTiered": {
+        "days": 3,
         "wins": 0,
         "losses": 3,
         "winRate": 0,
@@ -7105,6 +7222,7 @@
         "roi": -1
       },
       "loTiered": {
+        "days": 3,
         "wins": 3,
         "losses": 0,
         "winRate": 1,
@@ -7120,6 +7238,7 @@
       "name": "ChatGPT",
       "days": 3,
       "de": {
+        "days": 3,
         "wins": 0,
         "losses": 3,
         "winRate": 0,
@@ -7133,6 +7252,7 @@
         "currentLossStreak": 3
       },
       "lo": {
+        "days": 3,
         "wins": 1,
         "losses": 2,
         "winRate": 0.3333,
@@ -7165,6 +7285,7 @@
         "currentLossStreak": 1
       },
       "combo": {
+        "days": 3,
         "wins": 0,
         "winRate": 0,
         "stakeK": 121600,
@@ -7178,6 +7299,7 @@
       "name": "DeepSeek",
       "days": 3,
       "de": {
+        "days": 3,
         "wins": 0,
         "losses": 3,
         "winRate": 0,
@@ -7191,6 +7313,7 @@
         "currentLossStreak": 3
       },
       "lo": {
+        "days": 3,
         "wins": 3,
         "losses": 0,
         "winRate": 1,
@@ -7223,6 +7346,7 @@
         "currentLossStreak": 1
       },
       "combo": {
+        "days": 3,
         "wins": 0,
         "winRate": 0,
         "stakeK": 121600,
@@ -7236,6 +7360,7 @@
       "name": "Gemini",
       "days": 3,
       "de": {
+        "days": 3,
         "wins": 0,
         "losses": 3,
         "winRate": 0,
@@ -7249,6 +7374,7 @@
         "currentLossStreak": 3
       },
       "lo": {
+        "days": 3,
         "wins": 2,
         "losses": 1,
         "winRate": 0.6667,
@@ -7281,6 +7407,7 @@
         "currentLossStreak": 0
       },
       "combo": {
+        "days": 3,
         "wins": 1,
         "winRate": 0.3333,
         "stakeK": 121600,
@@ -7294,6 +7421,7 @@
       "name": "Grok",
       "days": 3,
       "de": {
+        "days": 3,
         "wins": 0,
         "losses": 3,
         "winRate": 0,
@@ -7307,6 +7435,7 @@
         "currentLossStreak": 3
       },
       "lo": {
+        "days": 3,
         "wins": 2,
         "losses": 1,
         "winRate": 0.6667,
@@ -7339,6 +7468,7 @@
         "currentLossStreak": 0
       },
       "combo": {
+        "days": 3,
         "wins": 0,
         "winRate": 0,
         "stakeK": 99600,
@@ -7352,6 +7482,7 @@
       "name": "Muse",
       "days": 3,
       "de": {
+        "days": 3,
         "wins": 1,
         "losses": 2,
         "winRate": 0.3333,
@@ -7365,6 +7496,7 @@
         "currentLossStreak": 0
       },
       "lo": {
+        "days": 3,
         "wins": 2,
         "losses": 1,
         "winRate": 0.6667,
@@ -7397,6 +7529,7 @@
         "currentLossStreak": 1
       },
       "combo": {
+        "days": 3,
         "wins": 1,
         "winRate": 0.3333,
         "stakeK": 121600,
