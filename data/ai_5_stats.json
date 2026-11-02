@@ -9722,14 +9722,14 @@
         "source": "top8_parity_consensus",
         "note": "Tổng hợp đếm phiếu từ dàn Xiên 4 của các nguồn ok trong file (4 nguồn: chatgpt, deepseek, perplexity, muse; gemini thiếu do file truncate, grok thiếu).",
         "votes": {
-          "44": 3,
-          "64": 3,
           "24": 2,
           "38": 2,
+          "44": 3,
           "52": 2,
           "54": 2,
           "59": 2,
-          "62": 2
+          "62": 2,
+          "64": 3
         },
         "okSources": [
           "chatgpt",
