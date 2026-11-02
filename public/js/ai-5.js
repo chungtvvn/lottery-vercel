@@ -81,21 +81,13 @@
     /**
      * Helper an toàn trích xuất số phiếu bầu từ deVotesMap / loVotesMap
      * Xử lý triệt để lỗi in [object Object] khi map[n] là đối tượng { count, models }
-     * Luôn luôn trả về giá trị kiểu số nguyên nguyên thủy (primitive number)
      */
     function getVoteCount(map, n, defaultVal = 1) {
-        const fallback = Number(defaultVal) || 1;
-        if (!map) return fallback;
-        const entry = map[n] !== undefined ? map[n] : (map[String(n)] !== undefined ? map[String(n)] : map[Number(n)]);
-        if (entry === undefined || entry === null) return fallback;
-        if (typeof entry === 'number') return entry;
-        if (typeof entry === 'string' && !isNaN(Number(entry))) return Number(entry);
-        if (typeof entry === 'object') {
-            if (typeof entry.count === 'number') return entry.count;
-            if (Array.isArray(entry.models)) return entry.models.length;
-            if (entry.count !== undefined && !isNaN(Number(entry.count))) return Number(entry.count);
-        }
-        return fallback;
+        if (!map || map[n] === undefined || map[n] === null) return defaultVal;
+        if (typeof map[n] === 'number') return map[n];
+        if (typeof map[n] === 'object' && typeof map[n].count === 'number') return map[n].count;
+        if (typeof map[n] === 'object' && Array.isArray(map[n].models)) return map[n].models.length;
+        return defaultVal;
     }
 
     /**
@@ -598,11 +590,10 @@
                                         <span class="rounded bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 px-2 py-0.5 text-[10px] font-black shadow-2xs">DÀN X2 (VIP)</span>
                                         <span>Đồng thuận cao (${deX2Nums.length} số):</span>
                                     </span>
-                                    <span class="font-mono text-amber-900 text-[10px] font-black">Cược 2M/số</span>
                                 </div>
                                 <div class="flex flex-wrap gap-1.5">
                                     ${deX2Nums.map(n => {
-                                        const vote = Number(getVoteCount(deVotesMap, n, 2)) || 2;
+                                        const vote = getVoteCount(deVotesMap, n, 2);
                                         const isDia = vote === 5;
                                         const badgeClass = isDia
                                             ? 'bg-gradient-to-tr from-purple-600 to-indigo-600 text-white ring-2 ring-purple-300'
@@ -625,11 +616,10 @@
                                             <span class="rounded bg-indigo-100 text-indigo-900 border border-indigo-200 px-2 py-0.5 text-[10px] font-bold">DÀN X1 (LÓT)</span>
                                             <span>Bảo hiểm (${deX1Nums.length} số):</span>
                                         </span>
-                                        <span class="font-mono text-indigo-800 text-[10px] font-black">Cược 1M/số</span>
                                     </div>
                                     <div class="flex flex-wrap gap-1.5">
                                         ${deX1Nums.map(n => {
-                                            const vote = Number(getVoteCount(deVotesMap, n, 1)) || 1;
+                                            const vote = getVoteCount(deVotesMap, n, 1);
                                             return `
                                                 <div class="badge-number flex flex-col items-center justify-center w-9 h-9 rounded-xl bg-indigo-50/90 text-indigo-900 border border-indigo-200 font-mono font-bold text-xs shadow-2xs" title="Đề Lót X1: ${n} (${vote}/5 AI)">
                                                     <span>${n}</span>
@@ -1765,12 +1755,11 @@
                                                                         <span class="rounded bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 px-2 py-0.5 text-[10px] font-black shadow-2xs">DÀN X2 (VIP)</span>
                                                                         <span>Đồng thuận cao (${deX2Nums.length} số):</span>
                                                                     </span>
-                                                                    <span class="font-mono text-amber-900 text-[10px] font-black">Cược 2M/số</span>
                                                                 </div>
                                                                 <div class="flex flex-wrap gap-1.5">
                                                                     ${deX2Nums.map(n => {
                                                                         const isHit = specialStr && n === specialStr;
-                                                                        const votes = Number(getVoteCount(deVotesMap, n, 2)) || 2;
+                                                                        const votes = getVoteCount(deVotesMap, n, 2);
                                                                         if (isHit) {
                                                                             return `
                                                                                 <span class="badge-number inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 font-mono font-black text-xs ring-2 ring-amber-300 shadow-md animate-pulse" title="Trúng ĐB: ${n}">
@@ -1796,12 +1785,11 @@
                                                                         <span class="rounded bg-indigo-100 text-indigo-900 border border-indigo-200 px-2 py-0.5 text-[10px] font-bold">DÀN X1 (LÓT)</span>
                                                                         <span>Đồng thuận lót (${deX1Nums.length} số):</span>
                                                                     </span>
-                                                                    <span class="font-mono text-indigo-800 text-[10px] font-black">Cược 1M/số</span>
                                                                 </div>
                                                                 <div class="flex flex-wrap gap-1.5">
                                                                     ${deX1Nums.map(n => {
                                                                         const isHit = specialStr && n === specialStr;
-                                                                        const votes = Number(getVoteCount(deVotesMap, n, 1)) || 1;
+                                                                        const votes = getVoteCount(deVotesMap, n, 1);
                                                                         if (isHit) {
                                                                             return `
                                                                                 <span class="badge-number inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-500 text-white font-mono font-black text-xs ring-2 ring-emerald-300 shadow-md" title="Trúng ĐB: ${n}">

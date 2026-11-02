@@ -1,19 +1,17 @@
 import { NextResponse } from 'next/server';
-import { getCachedClientPayload } from '@/lib/services/ai5StatsService';
+import { buildClientPayload } from '@/lib/services/ai5StatsService';
 
-// Cấu hình ISR và Edge Cache trên Vercel:
-// Tự động lưu cache tĩnh mỗi lần Vercel build lại, phục vụ từ CDN cache trong 60s (SWR 300s).
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET(request) {
     try {
-        // Chỉ lấy 30 ngày gần nhất và lưu cache để tránh overload
-        const payload = getCachedClientPayload({ maxDays: 30 });
+        const payload = buildClientPayload();
         return NextResponse.json(payload, {
             headers: {
-                'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
-                'CDN-Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
-                'Vercel-CDN-Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300'
+                'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+                'Pragma': 'no-cache',
+                'Expires': '0'
             }
         });
     } catch (error) {

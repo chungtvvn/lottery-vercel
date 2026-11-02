@@ -9530,52 +9530,52 @@
         },
         "gemini": {
           "de": [
-            "17",
-            "18",
-            "20",
-            "24",
-            "29",
             "36",
-            "37",
-            "38",
-            "39",
-            "42",
-            "48",
-            "49",
-            "51",
-            "54",
-            "67",
-            "68",
             "70",
-            "78",
-            "79",
-            "80"
+            "65",
+            "39",
+            "09",
+            "24",
+            "32",
+            "60",
+            "66",
+            "91",
+            "21",
+            "22",
+            "38",
+            "42",
+            "44",
+            "51",
+            "67",
+            "83",
+            "96",
+            "98"
           ],
           "lo": [
-            "17",
-            "36",
-            "37",
-            "42",
-            "68",
-            "79"
+            "34",
+            "62",
+            "52",
+            "64",
+            "38",
+            "48"
           ],
           "xien4": [
             [
-              "17",
-              "36",
-              "42",
-              "68"
+              "34",
+              "48",
+              "52",
+              "62"
             ],
             [
-              "24",
-              "37",
-              "79",
-              "80"
+              "17",
+              "35",
+              "38",
+              "64"
             ]
           ],
-          "method": "AI phân tích (tính từ file 5 năm gần nhất đính kèm)",
+          "method": "AI phân tích (tính từ file toàn lịch sử đính kèm, model Gemini Argon)",
           "status": "ok",
-          "notes": "Tính từ file 5 năm gần nhất đính kèm (1.806 kỳ 03/11/2021–02/11/2026) theo lệnh Chung sau 2 lần file toàn lịch sử bị truncate; cơ sở 5 năm, không phải toàn lịch sử CỜ: bằng chứng không khớp file 5 năm (Đề top Gemini nói 36:30, file thật 79:30 và 36 chỉ 24; Lô top Gemini nói 68:552, file thật 92:555 và 68 chỉ 506; Lô 100 kỳ gần Gemini nói 42:42, file thật 34:46 và 42 chỉ 27; lâu chưa về Gemini nói 84 từ 05/05/2024 gap 912, file thật 84 mới về 16/06/2026 gap 139) — số ghi nguyên văn, không sửa."
+          "notes": "Tính từ file toàn lịch sử đính kèm bằng model Gemini Argon (23:07); bằng chứng khớp file gốc toàn bộ (Đề top 36:104, Lô top 62:2191, Lô 100 kỳ gần top 34:46, lâu chưa về 98:619) — bộ này thay bộ 5 năm trước đó (bộ 5 năm có cờ bằng chứng sai, xem lịch sử git). Văn bản Gemini mâu thuẫn nhỏ: nói Đề dùng 98, 58 đầu bảng gan nhưng dàn cuối có 98, không có 58; số ghi nguyên văn."
         },
         "grok": {
           "de": [],
@@ -9736,41 +9736,41 @@
       "rates": null,
       "xien4": {
         "dan1": [
-          "24",
-          "44",
           "64",
-          "36"
+          "38",
+          "44",
+          "52"
         ],
         "dan2": [
-          "38",
-          "52",
-          "54",
-          "62"
+          "62",
+          "24",
+          "34",
+          "54"
         ],
         "top8": [
-          "24",
-          "44",
           "64",
-          "36",
           "38",
+          "44",
           "52",
-          "54",
-          "59"
+          "62",
+          "24",
+          "34",
+          "54"
         ],
-        "swapped": true,
-        "swapDetails": "dan2: 59 -> 62 (hạng 9)",
+        "swapped": false,
+        "swapDetails": null,
         "fromConfig": false,
         "source": "top8_parity_consensus",
-        "note": "Tổng hợp đếm phiếu từ dàn Xiên 4 của các nguồn ok trong file (5 nguồn: chatgpt, deepseek, gemini, muse, perplexity; gemini tính từ file 5 năm, các nguồn còn lại từ toàn lịch sử; grok thiếu).",
+        "note": "Tổng hợp đếm phiếu từ dàn Xiên 4 của các nguồn ok trong file (5 nguồn: chatgpt, deepseek, gemini, muse, perplexity; gemini nay tính từ toàn lịch sử bằng model Argon; grok thiếu).",
         "votes": {
-          "24": 3,
-          "36": 2,
-          "38": 2,
+          "64": 4,
+          "38": 3,
           "44": 3,
-          "52": 2,
-          "54": 2,
-          "59": 2,
-          "64": 3
+          "52": 3,
+          "62": 3,
+          "24": 2,
+          "34": 2,
+          "54": 2
         },
         "okSources": [
           "chatgpt",
