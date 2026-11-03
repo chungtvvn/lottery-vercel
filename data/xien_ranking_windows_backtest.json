@@ -1,0 +1,366 @@
+{
+  "live": {
+    "S1_Top1to8_x_Top1to8": {
+      "id": "S1_Top1to8_x_Top1to8",
+      "name": "S1: Daily Top 1..8 × Shadow Top 1..8 (Baseline Chuẩn)",
+      "days": 46,
+      "stakeM": "2024.0",
+      "payoutM": "1896.0",
+      "profitM": "-128.0",
+      "roi": "-6.32",
+      "winDays": 13,
+      "breakEvenDays": 0,
+      "winRate": "28.3",
+      "h4": 0,
+      "h3": 16,
+      "h2": 46,
+      "danStats": {
+        "1A": {
+          "profitM": "34.0",
+          "roi": "6.7",
+          "h4": 0,
+          "h3": 5,
+          "h2": 10
+        },
+        "1B": {
+          "profitM": "70.0",
+          "roi": "13.8",
+          "h4": 0,
+          "h3": 5,
+          "h2": 13
+        },
+        "2A": {
+          "profitM": "58.0",
+          "roi": "11.5",
+          "h4": 0,
+          "h3": 5,
+          "h2": 12
+        },
+        "2B": {
+          "profitM": "-290.0",
+          "roi": "-57.3",
+          "h4": 0,
+          "h3": 1,
+          "h2": 11
+        }
+      }
+    },
+    "S2_Top1to8_x_Top5to12": {
+      "id": "S2_Top1to8_x_Top5to12",
+      "name": "S2: Daily Top 1..8 × Shadow Top 5..12 (User Đề Xuất)",
+      "days": 46,
+      "stakeM": "2024.0",
+      "payoutM": "1728.0",
+      "profitM": "-296.0",
+      "roi": "-14.62",
+      "winDays": 10,
+      "breakEvenDays": 0,
+      "winRate": "21.7",
+      "h4": 1,
+      "h3": 10,
+      "h2": 42,
+      "danStats": {
+        "1A": {
+          "profitM": "214.0",
+          "roi": "42.3",
+          "h4": 1,
+          "h3": 2,
+          "h2": 14
+        },
+        "1B": {
+          "profitM": "34.0",
+          "roi": "6.7",
+          "h4": 0,
+          "h3": 5,
+          "h2": 10
+        },
+        "2A": {
+          "profitM": "-242.0",
+          "roi": "-47.8",
+          "h4": 0,
+          "h3": 2,
+          "h2": 8
+        },
+        "2B": {
+          "profitM": "-302.0",
+          "roi": "-59.7",
+          "h4": 0,
+          "h3": 1,
+          "h2": 10
+        }
+      }
+    },
+    "S3_Top5to12_x_Top5to12": {
+      "id": "S3_Top5to12_x_Top5to12",
+      "name": "S3: Daily Top 5..12 × Shadow Top 5..12 (Cả 2 Tầng Sau)",
+      "days": 46,
+      "stakeM": "2024.0",
+      "payoutM": "468.0",
+      "profitM": "-1556.0",
+      "roi": "-76.88",
+      "winDays": 3,
+      "breakEvenDays": 0,
+      "winRate": "6.5",
+      "h4": 0,
+      "h3": 3,
+      "h2": 18,
+      "danStats": {
+        "1A": {
+          "profitM": "-338.0",
+          "roi": "-66.8",
+          "h4": 0,
+          "h3": 1,
+          "h2": 7
+        },
+        "1B": {
+          "profitM": "-362.0",
+          "roi": "-71.5",
+          "h4": 0,
+          "h3": 1,
+          "h2": 5
+        },
+        "2A": {
+          "profitM": "-482.0",
+          "roi": "-95.3",
+          "h4": 0,
+          "h3": 0,
+          "h2": 2
+        },
+        "2B": {
+          "profitM": "-374.0",
+          "roi": "-73.9",
+          "h4": 0,
+          "h3": 1,
+          "h2": 4
+        }
+      }
+    },
+    "S4_Top5to12_x_Top1to8": {
+      "id": "S4_Top5to12_x_Top1to8",
+      "name": "S4: Daily Top 5..12 × Shadow Top 1..8 (Đối Chứng Nghịch)",
+      "days": 46,
+      "stakeM": "2024.0",
+      "payoutM": "780.0",
+      "profitM": "-1244.0",
+      "roi": "-61.46",
+      "winDays": 5,
+      "breakEvenDays": 0,
+      "winRate": "10.9",
+      "h4": 0,
+      "h3": 5,
+      "h2": 30,
+      "danStats": {
+        "1A": {
+          "profitM": "-386.0",
+          "roi": "-76.3",
+          "h4": 0,
+          "h3": 0,
+          "h2": 10
+        },
+        "1B": {
+          "profitM": "-338.0",
+          "roi": "-66.8",
+          "h4": 0,
+          "h3": 1,
+          "h2": 7
+        },
+        "2A": {
+          "profitM": "-326.0",
+          "roi": "-64.4",
+          "h4": 0,
+          "h3": 1,
+          "h2": 8
+        },
+        "2B": {
+          "profitM": "-194.0",
+          "roi": "-38.3",
+          "h4": 0,
+          "h3": 3,
+          "h2": 5
+        }
+      }
+    }
+  },
+  "year2026": {
+    "S1_Top1to8_x_Top1to8": {
+      "id": "S1_Top1to8_x_Top1to8",
+      "name": "S1: Daily Top 1..8 × Shadow Top 1..8 (Baseline Chuẩn)",
+      "days": 298,
+      "stakeM": "13112.0",
+      "payoutM": "9036.0",
+      "profitM": "-4076.0",
+      "roi": "-31.09",
+      "winDays": 46,
+      "breakEvenDays": 0,
+      "winRate": "15.4",
+      "h4": 4,
+      "h3": 51,
+      "h2": 268,
+      "danStats": {
+        "1A": {
+          "profitM": "-662.0",
+          "roi": "-20.2",
+          "h4": 2,
+          "h3": 13,
+          "h2": 63
+        },
+        "1B": {
+          "profitM": "-1298.0",
+          "roi": "-39.6",
+          "h4": 0,
+          "h3": 13,
+          "h2": 74
+        },
+        "2A": {
+          "profitM": "-554.0",
+          "roi": "-16.9",
+          "h4": 2,
+          "h3": 14,
+          "h2": 65
+        },
+        "2B": {
+          "profitM": "-1562.0",
+          "roi": "-47.7",
+          "h4": 0,
+          "h3": 11,
+          "h2": 66
+        }
+      }
+    },
+    "S2_Top1to8_x_Top5to12": {
+      "id": "S2_Top1to8_x_Top5to12",
+      "name": "S2: Daily Top 1..8 × Shadow Top 5..12 (User Đề Xuất)",
+      "days": 298,
+      "stakeM": "13112.0",
+      "payoutM": "8760.0",
+      "profitM": "-4352.0",
+      "roi": "-33.19",
+      "winDays": 52,
+      "breakEvenDays": 0,
+      "winRate": "17.4",
+      "h4": 3,
+      "h3": 53,
+      "h2": 263,
+      "danStats": {
+        "1A": {
+          "profitM": "-650.0",
+          "roi": "-19.8",
+          "h4": 1,
+          "h3": 16,
+          "h2": 75
+        },
+        "1B": {
+          "profitM": "-842.0",
+          "roi": "-25.7",
+          "h4": 1,
+          "h3": 16,
+          "h2": 59
+        },
+        "2A": {
+          "profitM": "-1406.0",
+          "roi": "-42.9",
+          "h4": 1,
+          "h3": 8,
+          "h2": 68
+        },
+        "2B": {
+          "profitM": "-1454.0",
+          "roi": "-44.4",
+          "h4": 0,
+          "h3": 13,
+          "h2": 61
+        }
+      }
+    },
+    "S3_Top5to12_x_Top5to12": {
+      "id": "S3_Top5to12_x_Top5to12",
+      "name": "S3: Daily Top 5..12 × Shadow Top 5..12 (Cả 2 Tầng Sau)",
+      "days": 298,
+      "stakeM": "13112.0",
+      "payoutM": "7644.0",
+      "profitM": "-5468.0",
+      "roi": "-41.70",
+      "winDays": 39,
+      "breakEvenDays": 0,
+      "winRate": "13.1",
+      "h4": 3,
+      "h3": 39,
+      "h2": 268,
+      "danStats": {
+        "1A": {
+          "profitM": "-1082.0",
+          "roi": "-33.0",
+          "h4": 2,
+          "h3": 6,
+          "h2": 77
+        },
+        "1B": {
+          "profitM": "-1298.0",
+          "roi": "-39.6",
+          "h4": 0,
+          "h3": 14,
+          "h2": 67
+        },
+        "2A": {
+          "profitM": "-1778.0",
+          "roi": "-54.2",
+          "h4": 0,
+          "h3": 9,
+          "h2": 62
+        },
+        "2B": {
+          "profitM": "-1310.0",
+          "roi": "-40.0",
+          "h4": 1,
+          "h3": 10,
+          "h2": 62
+        }
+      }
+    },
+    "S4_Top5to12_x_Top1to8": {
+      "id": "S4_Top5to12_x_Top1to8",
+      "name": "S4: Daily Top 5..12 × Shadow Top 1..8 (Đối Chứng Nghịch)",
+      "days": 298,
+      "stakeM": "13112.0",
+      "payoutM": "8700.0",
+      "profitM": "-4412.0",
+      "roi": "-33.65",
+      "winDays": 50,
+      "breakEvenDays": 0,
+      "winRate": "16.8",
+      "h4": 3,
+      "h3": 53,
+      "h2": 258,
+      "danStats": {
+        "1A": {
+          "profitM": "-782.0",
+          "roi": "-23.9",
+          "h4": 2,
+          "h3": 11,
+          "h2": 67
+        },
+        "1B": {
+          "profitM": "-1670.0",
+          "roi": "-50.9",
+          "h4": 0,
+          "h3": 10,
+          "h2": 64
+        },
+        "2A": {
+          "profitM": "-530.0",
+          "roi": "-16.2",
+          "h4": 1,
+          "h3": 19,
+          "h2": 64
+        },
+        "2B": {
+          "profitM": "-1430.0",
+          "roi": "-43.6",
+          "h4": 0,
+          "h3": 13,
+          "h2": 63
+        }
+      }
+    }
+  }
+}
