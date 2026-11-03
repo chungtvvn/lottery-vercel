@@ -84,16 +84,18 @@
      * Luôn luôn trả về giá trị kiểu số nguyên nguyên thủy (primitive number)
      */
     function getVoteCount(map, n, defaultVal = 1) {
-        const fallback = Number(defaultVal) || 1;
+        const fallback = typeof defaultVal === 'number' ? defaultVal : (Number(defaultVal) || 1);
         if (!map) return fallback;
-        const entry = map[n] !== undefined ? map[n] : (map[String(n)] !== undefined ? map[String(n)] : map[Number(n)]);
+        const keyStr = String(n).padStart(2, '0');
+        const entry = map[keyStr] !== undefined ? map[keyStr] : (map[n] !== undefined ? map[n] : map[Number(n)]);
         if (entry === undefined || entry === null) return fallback;
-        if (typeof entry === 'number') return entry;
+        if (typeof entry === 'number') return isNaN(entry) ? fallback : entry;
         if (typeof entry === 'string' && !isNaN(Number(entry))) return Number(entry);
         if (typeof entry === 'object') {
-            if (typeof entry.count === 'number') return entry.count;
+            if (typeof entry.count === 'number' && !isNaN(entry.count)) return entry.count;
             if (Array.isArray(entry.models)) return entry.models.length;
             if (entry.count !== undefined && !isNaN(Number(entry.count))) return Number(entry.count);
+            if (typeof entry.votes === 'number' && !isNaN(entry.votes)) return entry.votes;
         }
         return fallback;
     }
@@ -623,14 +625,15 @@
                                 <div class="flex flex-wrap gap-1.5">
                                     ${deX2Nums.map(n => {
                                         const vote = Number(getVoteCount(deVotesMap, n, 2)) || 2;
-                                        const isDia = vote === 5;
+                                        const safeVote = typeof vote === 'number' && !isNaN(vote) ? vote : 2;
+                                        const isDia = safeVote === 5;
                                         const badgeClass = isDia
                                             ? 'bg-gradient-to-tr from-purple-600 to-indigo-600 text-white ring-2 ring-purple-300'
                                             : 'bg-gradient-to-br from-amber-300 to-yellow-400 text-slate-950 border border-amber-400';
                                         return `
-                                            <div class="badge-number flex flex-col items-center justify-center w-10 h-10 rounded-xl font-mono font-black text-xs shadow-2xs ${badgeClass}" title="Đề VIP X2: ${n} (${vote}/5 AI đồng thuận)">
+                                            <div class="badge-number flex flex-col items-center justify-center w-10 h-10 rounded-xl font-mono font-black text-xs shadow-2xs ${badgeClass}" title="Đề VIP X2: ${n} (${safeVote}/5 AI đồng thuận)">
                                                 <span>${n}</span>
-                                                <span class="text-[7.5px] font-sans font-bold -mt-0.5 opacity-90">${vote}/5</span>
+                                                <span class="text-[7.5px] font-sans font-bold -mt-0.5 opacity-90">${safeVote}/5</span>
                                             </div>
                                         `;
                                     }).join('') || '<span class="text-xs text-slate-400">Không có số</span>'}
@@ -650,10 +653,11 @@
                                     <div class="flex flex-wrap gap-1.5">
                                         ${deX1Nums.map(n => {
                                             const vote = Number(getVoteCount(deVotesMap, n, 1)) || 1;
+                                            const safeVote = typeof vote === 'number' && !isNaN(vote) ? vote : 1;
                                             return `
-                                                <div class="badge-number flex flex-col items-center justify-center w-9 h-9 rounded-xl bg-indigo-50/90 text-indigo-900 border border-indigo-200 font-mono font-bold text-xs shadow-2xs" title="Đề Lót X1: ${n} (${vote}/5 AI)">
+                                                <div class="badge-number flex flex-col items-center justify-center w-9 h-9 rounded-xl bg-indigo-50/90 text-indigo-900 border border-indigo-200 font-mono font-bold text-xs shadow-2xs" title="Đề Lót X1: ${n} (${safeVote}/5 AI)">
                                                     <span>${n}</span>
-                                                    <span class="text-[7.5px] font-sans -mt-0.5 opacity-70">${vote}/5</span>
+                                                    <span class="text-[7.5px] font-sans -mt-0.5 opacity-70">${safeVote}/5</span>
                                                 </div>
                                             `;
                                         }).join('')}
@@ -1791,6 +1795,7 @@
                                                                     ${deX2Nums.map(n => {
                                                                         const isHit = specialStr && n === specialStr;
                                                                         const votes = Number(getVoteCount(deVotesMap, n, 2)) || 2;
+                                                                        const safeVote = typeof votes === 'number' && !isNaN(votes) ? votes : 2;
                                                                         if (isHit) {
                                                                             return `
                                                                                 <span class="badge-number inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 font-mono font-black text-xs ring-2 ring-amber-300 shadow-md animate-pulse" title="Trúng ĐB: ${n}">
@@ -1800,9 +1805,9 @@
                                                                             `;
                                                                         }
                                                                         return `
-                                                                            <span class="badge-number inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-amber-50 border border-amber-300 text-amber-950 font-mono text-xs font-bold" title="Đề VIP ${n} (${votes}/5 vote)">
+                                                                            <span class="badge-number inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-amber-50 border border-amber-300 text-amber-950 font-mono text-xs font-bold" title="Đề VIP ${n} (${safeVote}/5 vote)">
                                                                                 <span>${n}</span>
-                                                                                <span class="text-[8px] font-sans text-amber-700 bg-amber-200/70 px-1 rounded">${votes}/5</span>
+                                                                                <span class="text-[8px] font-sans text-amber-700 bg-amber-200/70 px-1 rounded">${safeVote}/5</span>
                                                                             </span>
                                                                         `;
                                                                     }).join('')}
@@ -1822,6 +1827,7 @@
                                                                     ${deX1Nums.map(n => {
                                                                         const isHit = specialStr && n === specialStr;
                                                                         const votes = Number(getVoteCount(deVotesMap, n, 1)) || 1;
+                                                                        const safeVote = typeof votes === 'number' && !isNaN(votes) ? votes : 1;
                                                                         if (isHit) {
                                                                             return `
                                                                                 <span class="badge-number inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-500 text-white font-mono font-black text-xs ring-2 ring-emerald-300 shadow-md" title="Trúng ĐB: ${n}">
@@ -1831,9 +1837,9 @@
                                                                             `;
                                                                         }
                                                                         return `
-                                                                            <span class="badge-number inline-flex items-center gap-1 px-2 py-1 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-mono text-xs" title="Đề Lót ${n} (${votes}/5 vote)">
+                                                                            <span class="badge-number inline-flex items-center gap-1 px-2 py-1 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-mono text-xs" title="Đề Lót ${n} (${safeVote}/5 vote)">
                                                                                 <span>${n}</span>
-                                                                                <span class="text-[8px] font-sans text-slate-400">${votes}/5</span>
+                                                                                <span class="text-[8px] font-sans text-slate-400">${safeVote}/5</span>
                                                                             </span>
                                                                         `;
                                                                     }).join('')}
