@@ -9,13 +9,14 @@ export async function GET(request) {
         const { searchParams } = new URL(request.url);
         const forceRefresh = searchParams.get('refresh') === 'true' || searchParams.get('refresh') === '1';
         const parityMethod = searchParams.get('parityMethod') || 'optimalHybrid';
+        const betMode = searchParams.get('betMode') || 'tiered';
 
         let report = null;
         try {
-            report = await getDeFusionReportAsync({ forceRefresh, parityMethod });
+            report = await getDeFusionReportAsync({ forceRefresh, parityMethod, betMode });
         } catch (asyncErr) {
             console.warn('[API /api/de-fusion] Async report warning, falling back to safe sync:', asyncErr.message);
-            report = getDeFusionReport({ forceRefresh: true, parityMethod });
+            report = getDeFusionReport({ forceRefresh: true, parityMethod, betMode });
         }
 
         return NextResponse.json(report, {

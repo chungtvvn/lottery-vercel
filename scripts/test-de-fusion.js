@@ -46,21 +46,21 @@ assert.strictEqual(filteredLL.removedCount, 4);
 assert.strictEqual(filteredLL.filteredCount, 6);
 assert.strictEqual(filteredLL.filteredTop.length, 3); // 11, 33, 55
 assert.strictEqual(filteredLL.filteredBot.length, 3); // 01, 10, 13
-assert.strictEqual(filteredLL.origStakeK, 6 * 400 + 4 * 200); // 2400 + 800 = 3200K
-assert.strictEqual(filteredLL.filteredStakeK, 3 * 400 + 3 * 200); // 1200 + 600 = 1800K
-assert.strictEqual(filteredLL.savedStakeK, 1400); // Tiết kiệm 1.4M
+assert.strictEqual(filteredLL.origStakeK, 6 * 2000 + 4 * 1000); // 12000 + 4000 = 16000K
+assert.strictEqual(filteredLL.filteredStakeK, 3 * 2000 + 3 * 1000); // 6000 + 3000 = 9000K
+assert.strictEqual(filteredLL.savedStakeK, 7000); // Tiết kiệm 7.0M
 console.log('  ✅ 2. Kiểm thử hàm lọc applyAntiParityFilter: PASS');
 
-// 3. Kiểm thử Đánh giá cược evaluateDeBet
+// 3. Kiểm thử Đánh giá cược evaluateDeBet (Đơn vị 1M/số: X2 cược 2M ăn 168M, X1 cược 1M ăn 84M)
 // Trường hợp 1: Trúng số trong tầng X2 sau lọc (VD về 11)
 const evalHitX2 = evaluateDeBet(filteredLL, '11');
 assert.strictEqual(evalHitX2.isBaseHit, true);
 assert.strictEqual(evalHitX2.baseHitX2, true);
-assert.strictEqual(evalHitX2.basePayoutK, 33600);
+assert.strictEqual(evalHitX2.basePayoutK, 168000);
 assert.strictEqual(evalHitX2.isFilteredHit, true);
 assert.strictEqual(evalHitX2.fHitX2, true);
-assert.strictEqual(evalHitX2.fPayoutK, 33600);
-assert.strictEqual(evalHitX2.filteredProfitK, 33600 - 1800); // +31.8M
+assert.strictEqual(evalHitX2.fPayoutK, 168000);
+assert.strictEqual(evalHitX2.filteredProfitK, 168000 - 9000); // +159.0M
 assert.strictEqual(evalHitX2.isEliminatedLoss, false);
 
 // Trường hợp 2: Trúng số nằm trong danh sách bị loại (VD về 00)
@@ -69,7 +69,7 @@ assert.strictEqual(evalHitRemoved.isBaseHit, true);
 assert.strictEqual(evalHitRemoved.baseHitX2, true);
 assert.strictEqual(evalHitRemoved.isFilteredHit, false);
 assert.strictEqual(evalHitRemoved.fPayoutK, 0);
-assert.strictEqual(evalHitRemoved.filteredProfitK, -1800);
+assert.strictEqual(evalHitRemoved.filteredProfitK, -9000);
 assert.strictEqual(evalHitRemoved.isEliminatedLoss, true); // Đánh dấu bị loại nhầm
 
 // Trường hợp 3: Trượt cả hai (VD về 99)

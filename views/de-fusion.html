@@ -111,7 +111,7 @@
                 <div class="space-y-3 max-w-4xl">
                     <div class="flex flex-wrap items-center gap-2">
                         <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-900 border border-amber-300 shadow-2xs">
-                            <i class="bi bi-shield-check text-amber-600"></i> Phân Tầng Chuẩn Hóa: X2 (400K) &amp; X1 (200K)
+                            <i class="bi bi-shield-check text-amber-600"></i> Đơn Vị Đánh: 1M / Số (VIP X2: 2M · Lót X1: 1M · 1 ăn 84)
                         </span>
                         <span class="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-3 py-1 text-xs font-bold text-rose-900 border border-rose-300 shadow-2xs">
                             <i class="bi bi-filter-circle text-rose-600"></i> Bộ Lọc Loại Trừ Cực Đối Lập (Anti-Parity)
@@ -255,28 +255,28 @@
                     </div>
                 </div>
 
-                <!-- Tầng X2: Cược 400K / số -->
+                <!-- Tầng X2: Cược 2M / số -->
                 <div class="space-y-2">
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-black uppercase text-amber-900 flex items-center gap-1.5">
-                            <i class="bi bi-star-fill text-amber-500"></i> Tầng VIP X2 (Cược 400K/số · Ăn 33.6M)
+                            <i class="bi bi-star-fill text-amber-500"></i> Tầng VIP X2 (Cược 2M/số · Ăn 168M)
                             <span id="badgeCountX2" class="px-2 py-0.5 rounded-full text-[10px] bg-amber-100 text-amber-900 border border-amber-300 font-mono">0 số</span>
                         </span>
-                        <span class="text-[11px] text-slate-500">100% sinh lãi ròng &gt; +21M</span>
+                        <span class="text-[11px] text-slate-500" id="badgeProfitX2Hint">100% sinh lãi ròng &gt; +100M</span>
                     </div>
                     <div id="containerActiveTopX2" class="flex flex-wrap gap-1.5 p-3 rounded-xl bg-white border border-amber-200 min-h-[50px] items-center">
                         <!-- Chips top X2 -->
                     </div>
                 </div>
 
-                <!-- Tầng X1: Cược 200K / số -->
+                <!-- Tầng X1: Cược 1M / số -->
                 <div class="space-y-2">
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-black uppercase text-indigo-900 flex items-center gap-1.5">
-                            <i class="bi bi-shield text-indigo-500"></i> Tầng Lót X1 (Cược 200K/số · Ăn 16.8M)
+                            <i class="bi bi-shield text-indigo-500"></i> Tầng Lót X1 (Cược 1M/số · Ăn 84M)
                             <span id="badgeCountX1" class="px-2 py-0.5 rounded-full text-[10px] bg-indigo-100 text-indigo-900 border border-indigo-200 font-mono">0 số</span>
                         </span>
-                        <span class="text-[11px] text-slate-500">100% sinh lãi ròng &gt; +4.8M</span>
+                        <span class="text-[11px] text-slate-500" id="badgeProfitX1Hint">100% sinh lãi ròng &gt; +24M</span>
                     </div>
                     <div id="containerActiveBotX1" class="flex flex-wrap gap-1.5 p-3 rounded-xl bg-white border border-indigo-200 min-h-[50px] items-center">
                         <!-- Chips bot X1 -->
@@ -369,6 +369,11 @@
 
                 <!-- Ledger Controls -->
                 <div class="flex flex-wrap items-center gap-2">
+                    <select id="selectBetMode" class="rounded-xl border border-amber-300 bg-amber-50/90 px-3 py-1.5 text-xs font-bold text-amber-950 shadow-2xs">
+                        <option value="tiered" selected>💰 Đơn vị 1M: X2 (2M) &amp; X1 (1M)</option>
+                        <option value="flat">🎯 Đánh Phẳng: 1M / số (Ăn 84M)</option>
+                    </select>
+
                     <select id="selectLedgerStrat" class="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-2xs">
                         <option value="shadow">Shadow Đề Đa Động Cơ 40s</option>
                         <option value="daily">Daily Đề Chuẩn Hóa</option>
@@ -383,6 +388,11 @@
                         <option value="eliminated">Chỉ kỳ bị loại nhầm</option>
                         <option value="missBoth">Chỉ kỳ Trượt cả hai</option>
                     </select>
+
+                    <button type="button" id="btnToggleAllLedgerDetail" class="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 text-xs font-bold transition shadow-2xs cursor-pointer">
+                        <i class="bi bi-arrows-expand" id="iconToggleAllLedger"></i>
+                        <span id="textToggleAllLedger">Mở rộng chi tiết dàn số</span>
+                    </button>
 
                     <input type="text" id="inputLedgerSearch" placeholder="Tìm ngày / số đề..." class="rounded-xl border border-slate-300 px-3 py-1.5 text-xs font-mono w-36 shadow-2xs">
                 </div>
@@ -403,6 +413,7 @@
                             <th class="py-3 px-3 text-center">Tiết Kiệm</th>
                             <th class="py-3 px-3 text-right">Lãi Ngày</th>
                             <th class="py-3 px-3 text-right font-black text-emerald-900 bg-emerald-50/60">LŨY KẾ LIVE</th>
+                            <th class="py-3 px-3 text-center">Chi Tiết Dàn</th>
                         </tr>
                     </thead>
                     <tbody id="settledLedgerTbody" class="divide-y divide-slate-100 font-mono">
