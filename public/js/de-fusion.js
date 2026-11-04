@@ -12,13 +12,15 @@
     'use strict';
 
     let currentReport = null;
-    let activeTodayStrat = 'shadow'; // 'shadow' | 'daily' | 'triCore' | 'fusion'
+    let activeTodayStrat = 'ai5Ensemble'; // Mặc định phương pháp có profit tốt nhất
     let currentBenchmarkScope = 'live'; // 'live' | 'all'
     let ledgerLimit = 40;
+    let hasUserSelectedLedgerStrat = false;
+    let hasUserSelectedTodayStrat = false;
 
     // Quản lý trạng thái mở rộng chi tiết dàn số từng ngày
     const expandedLedgerDates = new Set();
-    const activeStratInRow = {}; // { [date]: 'shadow' | 'daily' | 'triCore' | 'fusion' }
+    const activeStratInRow = {}; // { [date]: 'ai5Ensemble' | 'mirofish' | 'fusion' | 'triCore' | 'shadow' | 'daily' }
 
     const STRAT_CONFIG = {
         shadow: {
@@ -99,9 +101,18 @@
             if (!data || !data.success) throw new Error(data?.error || 'Lỗi tải dữ liệu');
 
             currentReport = data;
+
+            // Tự động nhận diện phương pháp có lợi nhuận cao nhất để đặt làm mặc định
+            const bestStratId = getBestProfitStrategy(data.summary, currentBenchmarkScope);
+            if (!hasUserSelectedTodayStrat) {
+                activeTodayStrat = bestStratId;
+                updateTodayTabButtons(bestStratId);
+            }
+
             renderHeaderBadges(data);
             renderTodayRecommendation(data);
             renderBenchmarkTable(data.summary);
+            updateLedgerStrategySelect(data.summary);
             renderSettledLedger();
         } catch (err) {
             console.error('[de-fusion] Error loading data:', err);
@@ -136,14 +147,22 @@
                 currentBenchmarkScope = 'live';
                 btnScopeLive.className = 'px-3.5 py-2 rounded-xl text-xs font-black transition-all bg-emerald-600 text-white shadow-sm flex items-center gap-1.5';
                 btnScopeAll.className = 'px-3.5 py-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-slate-900 hover:bg-white flex items-center gap-1.5';
-                if (currentReport) renderBenchmarkTable(currentReport.summary);
+                if (currentReport) {
+                    renderBenchmarkTable(currentReport.summary);
+                    updateLedgerStrategySelect(currentReport.summary);
+                    renderSettledLedger();
+                }
             };
 
             btnScopeAll.onclick = () => {
                 currentBenchmarkScope = 'all';
                 btnScopeAll.className = 'px-3.5 py-2 rounded-xl text-xs font-black transition-all bg-indigo-600 text-white shadow-sm flex items-center gap-1.5';
                 btnScopeLive.className = 'px-3.5 py-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-slate-900 hover:bg-white flex items-center gap-1.5';
-                if (currentReport) renderBenchmarkTable(currentReport.summary);
+                if (currentReport) {
+                    renderBenchmarkTable(currentReport.summary);
+                    updateLedgerStrategySelect(currentReport.summary);
+                    renderSettledLedger();
+                }
             };
         }
 
@@ -151,14 +170,9 @@
         const tabBtns = document.querySelectorAll('.strat-tab-btn');
         tabBtns.forEach(btn => {
             btn.onclick = () => {
-                tabBtns.forEach(b => {
-                    b.classList.remove('active', 'bg-indigo-600', 'text-white', 'border-indigo-600', 'shadow-sm');
-                    b.classList.add('bg-slate-50', 'text-slate-700', 'border-slate-200');
-                });
-                btn.classList.remove('bg-slate-50', 'text-slate-700', 'border-slate-200');
-                btn.classList.add('active', 'bg-indigo-600', 'text-white', 'border-indigo-600', 'shadow-sm');
-
-                activeTodayStrat = btn.getAttribute('data-strat') || 'shadow';
+                hasUserSelectedTodayStrat = true;
+                activeTodayStrat = btn.getAttribute('data-strat') || 'ai5Ensemble';
+                updateTodayTabButtons(activeTodayStrat);
                 if (currentReport) renderTodayRecommendation(currentReport);
             };
         });
@@ -175,7 +189,12 @@
 
         // Ledger controls
         const selStrat = byId('selectLedgerStrat');
-        if (selStrat) selStrat.onchange = () => renderSettledLedger();
+        if (selStrat) {
+            selStrat.onchange = () => {
+                hasUserSelectedLedgerStrat = true;
+                renderSettledLedger();
+            };
+        }
 
         const selFilter = byId('selectLedgerFilter');
         if (selFilter) selFilter.onchange = () => renderSettledLedger();
@@ -261,6 +280,79 @@
         textSpan.textContent = isAllExpanded ? 'Thu gọn chi tiết' : 'Mở rộng chi tiết dàn số';
         if (icon) {
             icon.className = isAllExpanded ? 'bi bi-arrows-collapse' : 'bi bi-arrows-expand';
+        }
+    }
+
+    function getBestProfitStrategy(summary, scope = 'live') {
+        if (!summary) return 'ai5Ensemble';
+        const strats = Object.keys(summary);
+        if (!strats.length) return 'ai5Ensemble';
+
+        let bestId = strats[0];
+        let maxProfit = -Infinity;
+
+        strats.forEach(sId => {
+            const item = summary[sId];
+            const scopeData = scope === 'all' ? (item?.full2026 || item) : (item?.live || item);
+            const profit = scopeData?.filtered?.netProfitM ?? -Infinity;
+            if (profit > maxProfit) {
+                maxProfit = profit;
+                bestId = sId;
+            }
+        });
+
+        return bestId;
+    }
+
+    function updateTodayTabButtons(stratId) {
+        const tabBtns = document.querySelectorAll('.strat-tab-btn');
+        tabBtns.forEach(btn => {
+            const bStrat = btn.getAttribute('data-strat');
+            if (bStrat === stratId) {
+                btn.classList.remove('bg-slate-50', 'text-slate-700', 'border-slate-200');
+                btn.classList.add('active', 'bg-indigo-600', 'text-white', 'border-indigo-600', 'shadow-sm');
+            } else {
+                btn.classList.remove('active', 'bg-indigo-600', 'text-white', 'border-indigo-600', 'shadow-sm');
+                btn.classList.add('bg-slate-50', 'text-slate-700', 'border-slate-200');
+            }
+        });
+    }
+
+    function updateLedgerStrategySelect(summary) {
+        const select = byId('selectLedgerStrat');
+        if (!select || !summary) return;
+
+        const isLiveScope = currentBenchmarkScope === 'live';
+        const bestStratId = getBestProfitStrategy(summary, currentBenchmarkScope);
+
+        // Sắp xếp các phương pháp theo thứ tự lợi nhuận giảm dần
+        const strats = Object.keys(summary).sort((a, b) => {
+            const dataA = isLiveScope ? (summary[a]?.live || summary[a]) : (summary[a]?.full2026 || summary[a]);
+            const dataB = isLiveScope ? (summary[b]?.live || summary[b]) : (summary[b]?.full2026 || summary[b]);
+            const pA = dataA?.filtered?.netProfitM ?? -Infinity;
+            const pB = dataB?.filtered?.netProfitM ?? -Infinity;
+            return pB - pA;
+        });
+
+        const currentVal = select.value;
+        select.innerHTML = strats.map(sId => {
+            const cfg = STRAT_CONFIG[sId] || { name: sId };
+            const item = summary[sId];
+            const scopeData = isLiveScope ? (item?.live || item) : (item?.full2026 || item);
+            const profit = scopeData?.filtered?.netProfitM;
+            const profitStr = profit !== undefined ? `${profit >= 0 ? '+' : ''}${profit.toFixed(1)}M` : '';
+            const isBest = sId === bestStratId;
+            const crown = isBest ? '👑 ' : '';
+            const topBadge = isBest ? ' · TOP 1 LÃI' : '';
+            const label = `${crown}${cfg.shortName || cfg.name} (${profitStr}${topBadge})`;
+            return `<option value="${sId}">${label}</option>`;
+        }).join('');
+
+        // Nếu người dùng chưa chọn thủ công hoặc giá trị hiện tại không còn hợp lệ, luôn để mặc định là phương pháp có profit tốt nhất
+        if (!hasUserSelectedLedgerStrat || !strats.includes(currentVal)) {
+            select.value = bestStratId;
+        } else {
+            select.value = currentVal;
         }
     }
 
