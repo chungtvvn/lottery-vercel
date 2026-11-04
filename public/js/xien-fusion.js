@@ -104,13 +104,13 @@
             },
             {
                 key: 'fusion',
-                title: '⚡ 4 Dàn Ghép Mới (Fusion)',
-                subTitle: 'D1×S1 & D2×S2 chéo thông minh',
+                title: '⚡ Bộ Đôi Ghép Tinh Hoa (1A + 2A)',
+                subTitle: 'Daily D1 đầu + Shadow S1 đầu & D2 + S2',
                 data: fusion,
                 borderClass: 'border-2 border-amber-400 bg-gradient-to-br from-amber-500/10 via-orange-50/40 to-white ring-2 ring-amber-300/50 shadow-md',
                 badgeBg: 'bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black',
                 isHighlight: true,
-                dailyStake: '44M/ngày (4 dàn × 11M)'
+                dailyStake: '22M/ngày (2 dàn × 11M)'
             }
         ];
 
@@ -227,9 +227,9 @@
                 rowClass: 'hover:bg-indigo-50/30'
             },
             {
-                name: '⚡ 4 Dàn Ghép Mới (Fusion Engine)',
-                dansCount: 4,
-                dailyStake: '44M',
+                name: '⚡ Bộ Đôi Ghép Tinh Hoa (Dàn 1A + 2A)',
+                dansCount: 2,
+                dailyStake: '22M',
                 totalStake: fusion.stakeK,
                 totalPayout: fusion.payoutK,
                 profit: fusion.profitK,
@@ -295,36 +295,36 @@
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-amber-100/70 border border-amber-300 p-3.5 rounded-2xl text-xs text-amber-950">
                     <div class="flex items-center gap-2">
                         <i class="bi bi-info-circle-fill text-amber-700 text-base"></i>
-                        <span><strong>Quy chuẩn thể thức:</strong> Đánh 4 Dàn Ghép, mỗi dàn 4 số theo hình thức Quây 11 vé (11M/dàn). Tổng vốn 44M/ngày.</span>
+                        <span><strong>Quy chuẩn thể thức:</strong> Đánh Bộ Đôi Ghép Tinh Hoa (Dàn 1A & 2A), mỗi dàn 4 số theo hình thức Quây 11 vé (11M/dàn). Tổng vốn 22M/ngày (cân bằng 1:1 với Daily và Shadow).</span>
                     </div>
                     <span class="font-mono font-black text-amber-900 bg-amber-200/90 px-3 py-1 rounded-xl shrink-0 text-center">
                         Ăn 4: 384M · Ăn 3: 84M · Ăn 2: 12M
                     </span>
                 </div>
 
-                <!-- 4 DÀN GHÉP FUSION MỚI (GRID 4 CỘT HOẶC 2x2) -->
+                <!-- 2 DÀN GHÉP FUSION MỚI (GRID 2 CỘT) -->
                 <div>
                     <h3 class="text-xs font-black uppercase text-amber-950 tracking-wide mb-3 flex items-center gap-2">
                         <span class="h-2 w-2 rounded-full bg-amber-500"></span>
-                        <span>4 DÀN XIÊN 4 GHÉP THỰC CHIẾN NGÀY ${targetDate}:</span>
+                        <span>2 DÀN XIÊN 4 GHÉP TINH HOA THỰC CHIẾN NGÀY ${targetDate}:</span>
                     </h3>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         ${dans.map((d, idx) => `
-                            <div class="rounded-2xl border-2 border-amber-300 bg-white p-4 space-y-3 shadow-2xs hover:border-amber-400 transition-all flex flex-col justify-between">
+                            <div class="rounded-2xl border-2 border-amber-300 bg-white p-5 space-y-3 shadow-2xs hover:border-amber-400 transition-all flex flex-col justify-between">
                                 <div class="space-y-1.5">
                                     <div class="flex items-center justify-between">
-                                        <span class="rounded bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 px-2 py-0.5 text-[10px] font-black shadow-2xs">
+                                        <span class="rounded bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 px-2.5 py-0.5 text-xs font-black shadow-2xs">
                                             DÀN ${d.id}
                                         </span>
-                                        <span class="font-mono text-amber-900 text-[10px] font-bold">11M / Quây 11 vé</span>
+                                        <span class="font-mono text-amber-900 text-xs font-bold">11M / Quây 11 vé</span>
                                     </div>
-                                    <p class="text-[11px] text-slate-500 font-medium">${d.name}</p>
+                                    <p class="text-xs text-slate-600 font-bold">${d.name}</p>
                                 </div>
 
-                                <div class="flex flex-wrap gap-2 pt-1">
+                                <div class="flex flex-wrap gap-2.5 pt-2">
                                     ${d.numbers.map(n => `
-                                        <span class="badge-number flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-br from-amber-200 via-amber-300 to-yellow-400 border border-amber-400 font-mono font-black text-sm text-slate-950 shadow-2xs" title="Số: ${n}">
+                                        <span class="badge-number flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-200 via-amber-300 to-yellow-400 border border-amber-400 font-mono font-black text-base text-slate-950 shadow-2xs" title="Số: ${n}">
                                             ${n}
                                         </span>
                                     `).join('')}
@@ -340,10 +340,10 @@
                         <div class="flex items-center gap-2">
                             <span class="h-2 w-2 rounded-full bg-indigo-500"></span>
                             <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wide">
-                                DÀN XIÊN 2 TỔNG HỢP (${xien2Pairs.length} CẶP TỪ 4 DÀN GHÉP):
+                                DÀN XIÊN 2 TỔNG HỢP (${xien2Pairs.length} CẶP TỪ DÀN 1A & 2A):
                             </h4>
                         </div>
-                        <span class="text-[11px] text-slate-500">Trích xuất tổ hợp chập 2</span>
+                        <span class="text-[11px] text-slate-500 font-mono">Tổ hợp chập 2 từ 1A & 2A</span>
                     </div>
 
                     <div class="flex flex-wrap gap-2">
@@ -393,13 +393,14 @@
 
         // Gắn sự kiện nút Copy
         const copyFusionBtn = document.getElementById('copyFusionBtn');
-        if (copyFusionBtn && fusion?.copyTextFusion) {
-            copyFusionBtn.onclick = () => copyToClipboard(fusion.copyTextFusion, 'Đã copy 4 Dàn Xiên Ghép!');
+        if (copyFusionBtn && (fusion?.copyTextFusion || fusion?.copyText)) {
+            const textToCopy = fusion.copyTextFusion || fusion.copyText;
+            copyFusionBtn.onclick = () => copyToClipboard(textToCopy, 'Đã copy Bộ Đôi Xiên Ghép 1A + 2A!');
         }
 
         const copyPairsBtn = document.getElementById('copyPairsBtn');
         if (copyPairsBtn && fusion?.copyTextPairs) {
-            copyPairsBtn.onclick = () => copyToClipboard(fusion.copyTextPairs, 'Đã copy tất cả các cặp Xiên 2!');
+            copyPairsBtn.onclick = () => copyToClipboard(fusion.copyTextPairs, 'Đã copy tất cả các cặp Xiên 2 từ 1A & 2A!');
         }
     }
 
@@ -466,7 +467,7 @@
                         <!-- Badge Kết Quả Fusion -->
                         <div class="flex items-center gap-2">
                             <span class="rounded-xl px-3 py-1 text-xs font-mono font-black ${isFusionWin ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-slate-100 text-slate-600'}">
-                                ${isFusionWin ? `🔥 FUSION THẮNG (${formatMoney(fusion?.profitK)})` : `❌ FUSION (-44M)`}
+                                ${isFusionWin ? `🔥 FUSION THẮNG (${formatMoney(fusion?.profitK)})` : `❌ FUSION (-22M)`}
                             </span>
                         </div>
                     </div>
@@ -592,26 +593,26 @@
                             </div>
                         </div>
 
-                        <!-- CỘT 3: 4 DÀN GHÉP MỚI (FUSION · 44M) -->
+                        <!-- CỘT 3: BỘ ĐÔI DÀN GHÉP TINH HOA (FUSION 1A + 2A · 22M) -->
                         <div class="rounded-2xl border-2 border-amber-400 bg-amber-50/40 p-4 space-y-3 flex flex-col justify-between shadow-2xs">
                             <div class="space-y-2">
                                 <div class="flex items-center justify-between text-xs font-bold text-amber-950 border-b border-amber-200 pb-2">
                                     <span class="flex items-center gap-1.5">
-                                        <span class="rounded bg-gradient-to-r from-amber-500 to-orange-500 text-white px-2 py-0.2 text-[10px] font-black">4 DÀN FUSION</span>
+                                        <span class="rounded bg-gradient-to-r from-amber-500 to-orange-500 text-white px-2 py-0.2 text-[10px] font-black">FUSION 1A + 2A</span>
                                     </span>
                                     <span class="font-mono font-black ${fusionProfitColor} text-sm">
                                         ${formatMoney(fusion?.profitK)}
                                     </span>
                                 </div>
 
-                                <!-- Chi tiết 4 dàn ghép -->
-                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                <!-- Chi tiết 2 dàn ghép 1A & 2A -->
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                                     ${(fusion?.dans || []).map(d => {
                                         const isWinDan = d.hits >= 2;
                                         return `
-                                            <div class="p-2 rounded-xl bg-white border ${isWinDan ? 'border-emerald-300 ring-1 ring-emerald-200' : 'border-slate-200'} space-y-1">
-                                                <div class="flex items-center justify-between text-[10px]">
-                                                    <strong class="text-slate-800">${d.name}</strong>
+                                            <div class="p-2.5 rounded-xl bg-white border ${isWinDan ? 'border-emerald-300 ring-1 ring-emerald-200' : 'border-slate-200'} space-y-1.5">
+                                                <div class="flex items-center justify-between text-[11px]">
+                                                    <strong class="text-slate-900">${d.name}</strong>
                                                     <span class="font-mono font-black ${d.hits >= 2 ? 'text-emerald-700' : 'text-slate-400'}">
                                                         ${d.hits}/4 ${d.hits >= 2 ? `(+${formatMoney(d.payoutK, { signed: false })})` : ''}
                                                     </span>
@@ -620,7 +621,7 @@
                                                     ${(d.dan || []).map(n => {
                                                         const isHit = actSet.has(String(n).padStart(2, '0'));
                                                         return `
-                                                            <span class="px-1.5 py-0.2 rounded font-mono text-[11px] font-bold ${isHit ? 'bg-amber-400 text-slate-950 ring-1 ring-amber-300' : 'bg-slate-50 text-slate-500'}">
+                                                            <span class="px-2 py-0.5 rounded font-mono text-xs font-bold ${isHit ? 'bg-amber-400 text-slate-950 ring-1 ring-amber-300' : 'bg-slate-50 text-slate-500'}">
                                                                 ${n}
                                                             </span>
                                                         `;
@@ -633,7 +634,7 @@
                             </div>
 
                             <div class="pt-2 border-t border-amber-200 text-[11px] font-mono flex items-center justify-between text-amber-950">
-                                <span>Vốn: 44M · Ăn: <strong>${formatMoney(fusion?.payoutK, { signed: false })}</strong></span>
+                                <span>Vốn: 22M · Ăn: <strong>${formatMoney(fusion?.payoutK, { signed: false })}</strong></span>
                                 <span>Lũy kế: <strong class="${fusion?.cumProfitK >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${formatMoney(fusion?.cumProfitK)}</strong></span>
                             </div>
                         </div>

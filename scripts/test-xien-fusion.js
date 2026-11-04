@@ -62,16 +62,17 @@ const pairs = extractXien2Pairs([
 ]);
 assert.strictEqual(pairs.length, 6, '1 dàn 4 số phải sinh ra đúng C(4,2) = 6 cặp Xiên 2');
 
-// 5. Kiểm thử toàn bộ báo cáo lịch sử (Registry 46 ngày)
+// 5. Kiểm thử toàn bộ báo cáo lịch sử (Registry 46 ngày) với Bộ Đôi Tinh Hoa 1A + 2A
 const report = getXienFusionReport({ forceRefresh: true });
 assert.strictEqual(report.success, true, 'Báo cáo phải thành công');
 assert.strictEqual(report.summary.totalDays, 46, 'Phải đối soát đủ 46 ngày');
 assert.strictEqual(report.summary.daily.stakeK, 1012000, 'Vốn Daily 46 ngày = 1.012M');
 assert.strictEqual(report.summary.shadow.stakeK, 1012000, 'Vốn Shadow 46 ngày = 1.012M');
-assert.strictEqual(report.summary.fusion.stakeK, 2024000, 'Vốn Fusion 4 dàn = 2.024M');
+assert.strictEqual(report.summary.fusion.stakeK, 1012000, 'Vốn Fusion bộ đôi 1A + 2A (22M/ngày) = 1.012M');
 
-// Xác nhận Fusion tăng gấp đôi số nháy nổ X3 và X2
-assert.strictEqual(report.summary.fusion.h3, 16, 'Fusion nổ đúng 16 lần X3 (gấp đôi Daily)');
-assert.strictEqual(report.summary.fusion.h2, 46, 'Fusion nổ đúng 46 lần X2 (gấp đôi Daily)');
+// Xác nhận Fusion 1A + 2A dương tiền (+92M)
+assert.strictEqual(report.summary.fusion.profitK, 92000, 'Fusion 1A + 2A phải đạt lãi ròng dương +92M');
+assert.strictEqual(report.summary.fusion.h3, 10, 'Fusion 1A + 2A nổ đúng 10 lần X3');
+assert.strictEqual(report.summary.fusion.h2, 22, 'Fusion 1A + 2A nổ đúng 22 lần X2');
 
-console.log('✅ TẤT CẢ 5 BÀI TEST ĐỀU PASSED 100%!');
+console.log('✅ TẤT CẢ BÀI TEST XIÊN FUSION 1A + 2A ĐỀU PASSED 100%!');
