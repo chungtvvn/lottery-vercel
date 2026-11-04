@@ -50,6 +50,12 @@
             name: 'Daily Đề Gộp Chuẩn Hóa',
             shortName: 'Daily Chuẩn',
             desc: 'Dàn VIP cược X2 (2M) + Dàn Lót cược X1 (1M) · Đơn vị đánh 1M/số'
+        },
+        ai5Ensemble: {
+            id: 'ai5Ensemble',
+            name: 'Đồng Thuận 5 AI Đề 50s',
+            shortName: '5 AI Đề 50s',
+            desc: '25 số VIP X2 (2M) + 25 số Lót X1 (1M) · Quán quân tỷ lệ trúng Live (66.7%), Lãi khủng (+783M)'
         }
     };
 
@@ -437,9 +443,19 @@
             }
         }
 
-        const order = ['mirofish', 'fusion', 'triCore', 'shadow', 'daily'];
+        const order = ['ai5Ensemble', 'mirofish', 'fusion', 'triCore', 'shadow', 'daily'];
         const formatStrategyName = (sId) => {
             const cfg = STRAT_CONFIG[sId] || {};
+            if (sId === 'ai5Ensemble') {
+                return `
+                    <div class="flex items-center gap-1.5">
+                        <strong class="text-slate-900 font-bold">${cfg.name}</strong>
+                        <span class="px-1.5 py-0.2 rounded bg-purple-100 text-purple-800 font-black text-[9px] border border-purple-300">ĐỒNG THUẬN 5 AI 🤖</span>
+                        <span class="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-black text-[9px] border border-amber-300">TOP 1 TỶ LỆ TRÚNG 🎯</span>
+                    </div>
+                    <div class="text-[10px] text-slate-500">${cfg.desc}</div>
+                `;
+            }
             if (sId === 'mirofish') {
                 return `
                     <div class="flex items-center gap-1.5">
@@ -483,6 +499,7 @@
         };
 
         const formatFormat = (sId) => {
+            if (sId === 'ai5Ensemble') return '<span class="font-mono">25s X2 + 25s X1 (50s)</span>';
             if (sId === 'mirofish') return '<span class="font-mono">22s X2 + 16s X1 (38s)</span>';
             if (sId === 'shadow') return '<span class="font-mono">20s X2 + 20s X1 (40s)</span>';
             if (sId === 'triCore') return '<span class="font-mono">12s X2 + 12s X1 (24s)</span>';
@@ -686,13 +703,13 @@
                 html += `
                     <tr id="detailRow-${r.date}" class="bg-slate-50/95 border-b-2 border-indigo-200 transition-all font-sans">
                         <td colspan="11" class="p-4 sm:p-6">
-                            <!-- THANH CHUYỂN TAB 5 PHƯƠNG PHÁP -->
+                            <!-- THANH CHUYỂN TAB 6 PHƯƠNG PHÁP -->
                             <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
                                 <div class="flex items-center gap-1.5 flex-wrap">
                                     <span class="text-xs font-bold text-slate-500 uppercase tracking-wide mr-1">
                                         <i class="bi bi-layers-fill text-indigo-600"></i> Xem Chi Tiết Phương Pháp:
                                     </span>
-                                    ${['mirofish', 'fusion', 'triCore', 'shadow', 'daily'].map(stId => {
+                                    ${['ai5Ensemble', 'mirofish', 'fusion', 'triCore', 'shadow', 'daily'].map(stId => {
                                         const stRes = r.strategies[stId];
                                         if (!stRes) return '';
                                         const isCur = stId === activeStratId;
