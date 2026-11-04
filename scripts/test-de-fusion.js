@@ -89,15 +89,18 @@ assert(report.summary.shadow, 'Summary phải có shadow');
 assert(report.summary.daily, 'Summary phải có daily');
 assert(report.summary.triCore, 'Summary phải có triCore');
 assert(report.summary.fusion, 'Summary phải có fusion');
+assert(report.summary.mirofish, 'Summary phải có mirofish');
 
 // Kiểm tra đối tượng Live và Full2026
 assert(report.summary.shadow.live, 'Summary shadow phải có live');
 assert(report.summary.shadow.full2026, 'Summary shadow phải có full2026');
 assert(report.summary.triCore.live, 'Summary triCore phải có live');
 assert(report.summary.triCore.live.filtered.netProfitM > 0, 'Tri-Core Live sau lọc phải có lãi ròng dương');
+assert(report.summary.mirofish.live.filtered.netProfitM > 0, 'MiroFish Live sau lọc phải có lãi ròng dương');
 
 console.log(`  📊 [Live TriCore] Base: ${report.summary.triCore.live.base.netProfitM}M -> Filtered: +${report.summary.triCore.live.filtered.netProfitM}M (ROI: +${report.summary.triCore.live.filtered.roi}%)`);
 console.log(`  📊 [Live Shadow] Base: +${report.summary.shadow.live.base.netProfitM}M -> Filtered: +${report.summary.shadow.live.filtered.netProfitM}M (ROI: +${report.summary.shadow.live.filtered.roi}%)`);
+console.log(`  📊 [Live MiroFish] Base: +${report.summary.mirofish.live.base.netProfitM}M -> Filtered: +${report.summary.mirofish.live.filtered.netProfitM}M (ROI: +${report.summary.mirofish.live.filtered.roi}%)`);
 
 // Kiểm tra Settled Ledger có isLive và liveAccumProfitK
 const latestLiveRow = report.settledLedger.find(r => r.isLive);

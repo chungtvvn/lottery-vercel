@@ -27,23 +27,29 @@
             shortName: 'Shadow 40s',
             desc: '20 số Top X2 (2M) + 20 số Bot X1 (1M) · Đơn vị đánh 1M/số'
         },
-        daily: {
-            id: 'daily',
-            name: 'Daily Đề Gộp Chuẩn Hóa',
-            shortName: 'Daily Chuẩn',
-            desc: 'Dàn VIP cược X2 (2M) + Dàn Lót cược X1 (1M) · Đơn vị đánh 1M/số'
-        },
         triCore: {
             id: 'triCore',
             name: 'Đề Tam Trụ Tri-Core 24s',
             shortName: 'Tri-Core 24s',
-            desc: '12 số Top X2 (2M) + 12 số Bot X1 (1M) · Đơn vị đánh 1M/số'
+            desc: '12 số Top X2 (2M) + 12 số Bot X1 (1M) · Vốn nhẹ nhất, ROI số 1 (+13.8%)'
         },
         fusion: {
             id: 'fusion',
             name: 'Đề Tinh Hoa Hợp Nhất Fusion 36s',
             shortName: 'Fusion 36s',
-            desc: '18 số Top X2 (2M) + 18 số Bot X1 (1M) · Đơn vị đánh 1M/số'
+            desc: '18 số Top X2 (2M) + 18 số Bot X1 (1M) · Tỷ lệ nổ cao nhất Live (+210M)'
+        },
+        mirofish: {
+            id: 'mirofish',
+            name: 'Trí Tuệ Bầy Đàn MiroFish 38s',
+            shortName: 'MiroFish 38s',
+            desc: '7 Tác tử AI Debate: Top 22 X2 + Bot 16 X1 · Quán quân lợi nhuận Live (+439M)'
+        },
+        daily: {
+            id: 'daily',
+            name: 'Daily Đề Gộp Chuẩn Hóa',
+            shortName: 'Daily Chuẩn',
+            desc: 'Dàn VIP cược X2 (2M) + Dàn Lót cược X1 (1M) · Đơn vị đánh 1M/số'
         }
     };
 
@@ -431,14 +437,32 @@
             }
         }
 
-        const order = ['shadow', 'triCore', 'daily', 'fusion'];
+        const order = ['mirofish', 'fusion', 'triCore', 'shadow', 'daily'];
         const formatStrategyName = (sId) => {
             const cfg = STRAT_CONFIG[sId] || {};
+            if (sId === 'mirofish') {
+                return `
+                    <div class="flex items-center gap-1.5">
+                        <strong class="text-slate-900 font-bold">${cfg.name}</strong>
+                        <span class="px-1.5 py-0.2 rounded bg-cyan-100 text-cyan-800 font-black text-[9px] border border-cyan-300">TOP 1 LÃI LIVE 🏆</span>
+                    </div>
+                    <div class="text-[10px] text-slate-500">${cfg.desc}</div>
+                `;
+            }
             if (sId === 'triCore') {
                 return `
                     <div class="flex items-center gap-1.5">
                         <strong class="text-slate-900 font-bold">${cfg.name}</strong>
-                        <span class="px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 font-black text-[9px] border border-emerald-300">TOP ROI ⭐</span>
+                        <span class="px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 font-black text-[9px] border border-emerald-300">TOP 1 ROI ⭐</span>
+                    </div>
+                    <div class="text-[10px] text-slate-500">${cfg.desc}</div>
+                `;
+            }
+            if (sId === 'fusion') {
+                return `
+                    <div class="flex items-center gap-1.5">
+                        <strong class="text-slate-900 font-bold">${cfg.name}</strong>
+                        <span class="px-1.5 py-0.2 rounded bg-purple-100 text-purple-800 font-black text-[9px] border border-purple-300">TOP NỔ CAO NHẤT 👑</span>
                     </div>
                     <div class="text-[10px] text-slate-500">${cfg.desc}</div>
                 `;
@@ -447,7 +471,7 @@
                 return `
                     <div class="flex items-center gap-1.5">
                         <strong class="text-slate-900 font-bold">${cfg.name}</strong>
-                        <span class="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-black text-[9px] border border-amber-300">CHUẨN ĐỒNG THUẬN 👑</span>
+                        <span class="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-black text-[9px] border border-amber-300">CHUẨN ĐỒNG THUẬN 🛡️</span>
                     </div>
                     <div class="text-[10px] text-slate-500">${cfg.desc}</div>
                 `;
@@ -459,10 +483,11 @@
         };
 
         const formatFormat = (sId) => {
+            if (sId === 'mirofish') return '<span class="font-mono">22s X2 + 16s X1 (38s)</span>';
             if (sId === 'shadow') return '<span class="font-mono">20s X2 + 20s X1 (40s)</span>';
             if (sId === 'triCore') return '<span class="font-mono">12s X2 + 12s X1 (24s)</span>';
-            if (sId === 'daily') return '<span class="font-mono">VIP X2 + Lót X1 (~34-43s)</span>';
             if (sId === 'fusion') return '<span class="font-mono">18s X2 + 18s X1 (36s)</span>';
+            if (sId === 'daily') return '<span class="font-mono">VIP X2 + Lót X1 (~34-43s)</span>';
             return '--';
         };
 
@@ -661,13 +686,13 @@
                 html += `
                     <tr id="detailRow-${r.date}" class="bg-slate-50/95 border-b-2 border-indigo-200 transition-all font-sans">
                         <td colspan="11" class="p-4 sm:p-6">
-                            <!-- THANH CHUYỂN TAB 4 PHƯƠNG PHÁP -->
+                            <!-- THANH CHUYỂN TAB 5 PHƯƠNG PHÁP -->
                             <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
                                 <div class="flex items-center gap-1.5 flex-wrap">
                                     <span class="text-xs font-bold text-slate-500 uppercase tracking-wide mr-1">
                                         <i class="bi bi-layers-fill text-indigo-600"></i> Xem Chi Tiết Phương Pháp:
                                     </span>
-                                    ${['shadow', 'daily', 'triCore', 'fusion'].map(stId => {
+                                    ${['mirofish', 'fusion', 'triCore', 'shadow', 'daily'].map(stId => {
                                         const stRes = r.strategies[stId];
                                         if (!stRes) return '';
                                         const isCur = stId === activeStratId;
