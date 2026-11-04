@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Đề Tinh Hoa & Bộ Lọc Chẵn Lẻ (Anti-Parity Engine) · Daily vs Shadow</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    boxShadow: {
+                        '2xs': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+                        'glow-amber': '0 0 25px -5px rgba(245, 158, 11, 0.4)',
+                        'glow-purple': '0 0 25px -5px rgba(168, 85, 247, 0.4)',
+                        'glow-emerald': '0 0 25px -5px rgba(16, 185, 129, 0.4)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .badge-num { transition: all 0.15s ease-in-out; }
+        .badge-num:hover { transform: translateY(-1px) scale(1.08); }
+    </style>
+</head>
+<body class="min-h-full font-sans text-slate-800 antialiased selection:bg-amber-500 selection:text-white">
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur-md">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="flex h-16 items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <a href="/de-fusion" class="flex items-center gap-2.5">
+                        <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-amber-500 via-rose-500 to-indigo-600 text-white shadow-md text-xl">
+                            🎯
+                        </span>
+                        <div>
+                            <span class="text-base font-black tracking-tight text-slate-900 block leading-tight">ĐỀ FUSION &amp; CHẴN LẺ</span>
+                            <span class="text-[10px] font-bold text-amber-600 block uppercase tracking-wider">Anti-Parity Exclusion Engine</span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Desktop Nav -->
+                <nav class="hidden md:flex items-center space-x-1 text-sm font-semibold text-slate-600">
+                    <a href="/daily-advisor" class="px-3 py-2 rounded-xl hover:bg-slate-100 hover:text-slate-900 transition-colors">Daily Advisor</a>
+                    <a href="/daily-advisor-shadow" class="px-3 py-2 rounded-xl hover:bg-slate-100 hover:text-slate-900 transition-colors">Shadow</a>
+                    <a href="/ai-5" class="px-3 py-2 rounded-xl hover:bg-slate-100 hover:text-slate-900 transition-colors">5 AI</a>
+                    <a href="/xien-fusion" class="px-3 py-2 rounded-xl hover:bg-slate-100 hover:text-slate-900 transition-colors">⚡ Xiên Ghép</a>
+                    <a href="/de-fusion" class="px-3 py-2 rounded-xl bg-amber-50 text-amber-900 border border-amber-300 font-bold transition-all shadow-2xs">🎯 Đề Fusion</a>
+                    <a href="/loto" class="px-3 py-2 rounded-xl hover:bg-slate-100 hover:text-slate-900 transition-colors">Lô 27 Giải</a>
+                    <a href="/statistics" class="px-3 py-2 rounded-xl hover:bg-slate-100 hover:text-slate-900 transition-colors">Thống Kê</a>
+                </nav>
+
+                <!-- Mobile Nav -->
+                <div class="flex md:hidden">
+                    <nav class="flex max-w-[280px] space-x-1 overflow-x-auto py-1 custom-scrollbar">
+                        <a href="/daily-advisor" class="px-2 py-1 text-xs font-medium text-slate-600 whitespace-nowrap">Gợi ý</a>
+                        <a href="/daily-advisor-shadow" class="px-2 py-1 text-xs font-medium text-slate-600 whitespace-nowrap">Shadow</a>
+                        <a href="/ai-5" class="px-2 py-1 text-xs font-medium text-slate-600 whitespace-nowrap">5 AI</a>
+                        <a href="/xien-fusion" class="px-2 py-1 text-xs font-medium text-slate-600 whitespace-nowrap">⚡ Xiên</a>
+                        <a href="/de-fusion" class="px-2 py-1 text-xs font-bold text-amber-900 bg-amber-100 rounded-lg whitespace-nowrap">🎯 Đề Fusion</a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
+
+        <!-- Subtabs Navigation -->
+        <div class="my-5 flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-sm">
+            <a href="/daily-advisor" class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors">
+                <i class="bi bi-trophy-fill text-amber-500"></i> 👑 Đề Xuất Tinh Hoa Hợp Nhất
+            </a>
+            <a href="/daily-advisor-shadow" class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors">
+                <i class="bi bi-shield-check text-indigo-500"></i> 🔬 Nghiên Cứu Thực Chiến (Shadow)
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-black bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-sm uppercase tracking-wider">NEW</span>
+            </a>
+            <a href="/ai-5" class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors">
+                <i class="bi bi-cpu-fill text-purple-600"></i> 🤖 5 AI Thực Chiến &amp; Consensus
+            </a>
+            <a href="/xien-fusion" class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors">
+                <i class="bi bi-lightning-charge-fill text-amber-500"></i> ⚡ Xiên Ghép
+            </a>
+            <a href="/de-fusion" class="flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 via-rose-500 to-indigo-600 px-4 py-2.5 text-sm font-black text-white shadow-md transition-all">
+                <i class="bi bi-crosshair text-yellow-200 animate-pulse"></i> 🎯 Đề Tinh Hoa &amp; Chẵn Lẻ
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-black bg-white/20 text-white shadow-xs uppercase tracking-wider">ANTI-PARITY</span>
+            </a>
+        </div>
+
+        <!-- HERO BANNER & GIẢI THÍCH THUẬT TOÁN -->
+        <div class="mb-8 rounded-3xl border border-amber-300 bg-gradient-to-br from-amber-500/10 via-rose-50/40 to-white p-6 shadow-sm sm:p-8">
+            <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                <div class="space-y-3 max-w-4xl">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-900 border border-amber-300 shadow-2xs">
+                            <i class="bi bi-shield-check text-amber-600"></i> Phân Tầng Chuẩn Hóa: X2 (400K) &amp; X1 (200K)
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-3 py-1 text-xs font-bold text-rose-900 border border-rose-300 shadow-2xs">
+                            <i class="bi bi-filter-circle text-rose-600"></i> Bộ Lọc Loại Trừ Cực Đối Lập (Anti-Parity)
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-900 border border-emerald-300 shadow-2xs">
+                            <i class="bi bi-piggy-bank-fill text-emerald-600"></i> Tiết Kiệm 20% - 35% Tiền Vốn
+                        </span>
+                    </div>
+
+                    <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-snug">
+                        Chuyên Trang Đề Tinh Hoa &amp; Khắc Tinh Chẵn Lẻ Đối Lập
+                    </h1>
+
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        Hệ thống lấy dàn số <strong>Đề Daily</strong> (đã quy chuẩn về tầng X2 và X1) và <strong>Đề Shadow Đa Động Cơ 40s</strong> làm mặc định, kết hợp cùng <strong>Đề Tam Trụ Tri-Core 24s</strong> và <strong>Dàn Ghép Tinh Hoa Fusion</strong>.
+                        Tất cả các dàn được đưa qua <strong>Bộ Lọc Đối Xứng Nghịch Chẵn/Lẻ</strong>: Dựa vào dự đoán Đầu/Đít của Quán quân AI ngày hôm đó để loại bỏ triệt để 25 số nằm ở cực đối lập hoàn toàn, vừa bảo toàn tỷ lệ trúng cao nhất, vừa cắt giảm 20% - 35% vốn cược mỗi ngày!
+                    </p>
+
+                    <!-- Cơ chế loại trừ trực quan -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
+                        <div class="rounded-xl border border-slate-200 bg-white p-2.5 text-xs shadow-2xs">
+                            <div class="font-bold text-slate-700">Đoán <span class="text-amber-700 font-black">Lẻ - Lẻ (LL)</span></div>
+                            <div class="text-[11px] text-rose-600 font-semibold mt-1"><i class="bi bi-x-circle-fill"></i> Loại toàn bộ <strong>CC</strong></div>
+                        </div>
+                        <div class="rounded-xl border border-slate-200 bg-white p-2.5 text-xs shadow-2xs">
+                            <div class="font-bold text-slate-700">Đoán <span class="text-indigo-700 font-black">Chẵn - Chẵn (CC)</span></div>
+                            <div class="text-[11px] text-rose-600 font-semibold mt-1"><i class="bi bi-x-circle-fill"></i> Loại toàn bộ <strong>LL</strong></div>
+                        </div>
+                        <div class="rounded-xl border border-slate-200 bg-white p-2.5 text-xs shadow-2xs">
+                            <div class="font-bold text-slate-700">Đoán <span class="text-purple-700 font-black">Chẵn - Lẻ (CL)</span></div>
+                            <div class="text-[11px] text-rose-600 font-semibold mt-1"><i class="bi bi-x-circle-fill"></i> Loại toàn bộ <strong>LC</strong></div>
+                        </div>
+                        <div class="rounded-xl border border-slate-200 bg-white p-2.5 text-xs shadow-2xs">
+                            <div class="font-bold text-slate-700">Đoán <span class="text-teal-700 font-black">Lẻ - Chẵn (LC)</span></div>
+                            <div class="text-[11px] text-rose-600 font-semibold mt-1"><i class="bi bi-x-circle-fill"></i> Loại toàn bộ <strong>CL</strong></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Date Badge -->
+                <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shrink-0 w-full lg:w-72 space-y-2">
+                    <div class="flex items-center justify-between text-xs text-slate-500">
+                        <span>Kỳ dự đoán:</span>
+                        <strong id="badgeTargetDate" class="text-sm font-black text-indigo-700 font-mono">--/--/----</strong>
+                    </div>
+                    <div class="flex items-center justify-between text-xs text-slate-500">
+                        <span>Dữ liệu chốt đến:</span>
+                        <span id="badgeDataThrough" class="font-bold text-slate-800 font-mono">--/--/----</span>
+                    </div>
+                    <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+                        <span>Mô hình Chẵn/Lẻ:</span>
+                        <span id="badgeParityMethod" class="font-bold text-amber-700">Quán Quân Hợp Nhất 👑</span>
+                    </div>
+                    <div class="pt-2 flex gap-2">
+                        <button id="btnRefreshData" class="w-full flex items-center justify-center gap-1.5 rounded-xl bg-slate-900 px-3 py-2 text-xs font-bold text-white hover:bg-slate-800 transition-all shadow-xs">
+                            <i class="bi bi-arrow-clockwise"></i> Làm Mới Dữ Liệu
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LIVE TODAY RECOMMENDATION SECTION -->
+        <div class="mb-10 rounded-3xl border-2 border-indigo-200 bg-white p-6 shadow-sm sm:p-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-black bg-rose-100 text-rose-800 border border-rose-300 animate-pulse">
+                            LIVE TODAY
+                        </span>
+                        <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                            Gói Dàn Đề Đề Xuất Ngày <span id="todayTargetDateText" class="text-indigo-600 font-mono">--/--/----</span>
+                        </h2>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1">
+                        Dàn số đã được đồng bộ hóa từ Daily, Shadow và đi qua Bộ lọc loại trừ cực đối lập Anti-Parity.
+                    </p>
+                </div>
+
+                <!-- Parity Verdict Banner Today -->
+                <div id="todayParityBanner" class="rounded-2xl border border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50 px-4 py-3 flex items-center gap-4">
+                    <div class="text-center">
+                        <span class="text-[10px] font-bold text-slate-500 block uppercase">Dự đoán Hôm Nay</span>
+                        <span id="todayPredFormVi" class="text-base font-black text-amber-900 font-mono">Lẻ - Lẻ (LL)</span>
+                    </div>
+                    <div class="h-8 w-px bg-amber-200"></div>
+                    <div class="text-center">
+                        <span class="text-[10px] font-bold text-rose-600 block uppercase"><i class="bi bi-slash-circle-fill"></i> Loại Trừ Triệt Để</span>
+                        <span id="todayOppFormVi" class="text-base font-black text-rose-700 font-mono">Chẵn - Chẵn (CC)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Strategy Selector Tabs Today -->
+            <div class="mt-6 flex flex-wrap gap-2" role="tablist">
+                <button type="button" class="strat-tab-btn active px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm border transition-all bg-indigo-600 text-white border-indigo-600 shadow-sm" data-strat="shadow">
+                    <i class="bi bi-shield-check"></i> 1. Đề Shadow Đa Động Cơ 40s
+                </button>
+                <button type="button" class="strat-tab-btn px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm border transition-all bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100" data-strat="daily">
+                    <i class="bi bi-star-fill text-amber-500"></i> 2. Đề Daily Chuẩn Hóa
+                </button>
+                <button type="button" class="strat-tab-btn px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm border transition-all bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100" data-strat="triCore">
+                    <i class="bi bi-gem text-emerald-600"></i> 3. Đề Tam Trụ Tri-Core 24s (Top ROI)
+                </button>
+                <button type="button" class="strat-tab-btn px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm border transition-all bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100" data-strat="fusion">
+                    <i class="bi bi-intersect text-purple-600"></i> 4. Đề Tinh Hoa Fusion 36s
+                </button>
+            </div>
+
+            <!-- Active Strategy Content Box -->
+            <div class="mt-6 rounded-2xl border border-slate-200 bg-slate-50/70 p-5 sm:p-6 space-y-6">
+                <!-- Economics Summary Row -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="rounded-xl border border-slate-200 bg-white p-3">
+                        <span class="text-[11px] font-bold text-slate-500 block">Dàn Gốc (Chưa Lọc)</span>
+                        <div class="mt-1 flex items-baseline gap-2">
+                            <span id="activeOrigCount" class="text-xl font-black text-slate-800 font-mono">-- số</span>
+                            <span id="activeOrigStake" class="text-xs font-bold text-slate-500">(-- M)</span>
+                        </div>
+                    </div>
+                    <div class="rounded-xl border border-indigo-200 bg-indigo-50/50 p-3">
+                        <span class="text-[11px] font-bold text-indigo-700 block">Dàn Sau Lọc Anti-Parity</span>
+                        <div class="mt-1 flex items-baseline gap-2">
+                            <span id="activeFilteredCount" class="text-xl font-black text-indigo-900 font-mono">-- số</span>
+                            <span id="activeFilteredStake" class="text-xs font-bold text-indigo-700">(-- M)</span>
+                        </div>
+                    </div>
+                    <div class="rounded-xl border border-emerald-200 bg-emerald-50/50 p-3">
+                        <span class="text-[11px] font-bold text-emerald-700 block">Tiền Vốn Tiết Kiệm</span>
+                        <div class="mt-1 flex items-baseline gap-2">
+                            <span id="activeSavedStake" class="text-xl font-black text-emerald-800 font-mono">+-- M</span>
+                            <span id="activeSavedPct" class="text-xs font-bold text-emerald-600">(--%)</span>
+                        </div>
+                    </div>
+                    <div class="rounded-xl border border-amber-200 bg-amber-50/50 p-3">
+                        <span class="text-[11px] font-bold text-amber-700 block">Thưởng Khi Nổ</span>
+                        <div class="mt-1 text-xs font-bold text-slate-800 leading-tight">
+                            Nổ X2 ăn <strong class="text-amber-900 font-black">33.6M</strong><br>
+                            Nổ X1 ăn <strong class="text-slate-900 font-black">16.8M</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tầng X2: Cược 400K / số -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-black uppercase text-amber-900 flex items-center gap-1.5">
+                            <i class="bi bi-star-fill text-amber-500"></i> Tầng VIP X2 (Cược 400K/số · Ăn 33.6M)
+                            <span id="badgeCountX2" class="px-2 py-0.5 rounded-full text-[10px] bg-amber-100 text-amber-900 border border-amber-300 font-mono">0 số</span>
+                        </span>
+                        <span class="text-[11px] text-slate-500">100% sinh lãi ròng &gt; +21M</span>
+                    </div>
+                    <div id="containerActiveTopX2" class="flex flex-wrap gap-1.5 p-3 rounded-xl bg-white border border-amber-200 min-h-[50px] items-center">
+                        <!-- Chips top X2 -->
+                    </div>
+                </div>
+
+                <!-- Tầng X1: Cược 200K / số -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-black uppercase text-indigo-900 flex items-center gap-1.5">
+                            <i class="bi bi-shield text-indigo-500"></i> Tầng Lót X1 (Cược 200K/số · Ăn 16.8M)
+                            <span id="badgeCountX1" class="px-2 py-0.5 rounded-full text-[10px] bg-indigo-100 text-indigo-900 border border-indigo-200 font-mono">0 số</span>
+                        </span>
+                        <span class="text-[11px] text-slate-500">100% sinh lãi ròng &gt; +4.8M</span>
+                    </div>
+                    <div id="containerActiveBotX1" class="flex flex-wrap gap-1.5 p-3 rounded-xl bg-white border border-indigo-200 min-h-[50px] items-center">
+                        <!-- Chips bot X1 -->
+                    </div>
+                </div>
+
+                <!-- Các số bị loại trừ (Gạch chéo) -->
+                <div class="space-y-2 pt-2 border-t border-slate-200">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-rose-700 flex items-center gap-1.5">
+                            <i class="bi bi-x-circle-fill text-rose-500"></i> Các Số Bị Loại Bỏ (Cực Đối Lập Nghịch Chẵn/Lẻ)
+                            <span id="badgeCountRemoved" class="px-2 py-0.5 rounded-full text-[10px] bg-rose-100 text-rose-800 border border-rose-300 font-mono">0 số</span>
+                        </span>
+                        <span class="text-[11px] text-slate-400">Không cược, tiết kiệm chi phí</span>
+                    </div>
+                    <div id="containerActiveRemoved" class="flex flex-wrap gap-1.5 p-3 rounded-xl bg-rose-50/50 border border-rose-200 min-h-[40px] items-center">
+                        <!-- Chips removed -->
+                    </div>
+                </div>
+
+                <!-- Copy Buttons Bar -->
+                <div class="flex flex-wrap gap-2 pt-3 border-t border-slate-200">
+                    <button type="button" id="btnCopyFiltered" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold text-xs sm:text-sm hover:from-amber-600 hover:to-orange-700 transition-all shadow-md">
+                        <i class="bi bi-clipboard-check-fill"></i> Copy Vé Cược Sau Lọc (Khuyên Dùng)
+                    </button>
+                    <button type="button" id="btnCopyOriginal" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-700 font-bold text-xs sm:text-sm hover:bg-slate-100 transition-all">
+                        <i class="bi bi-clipboard"></i> Copy Toàn Bộ Dàn Gốc (Chưa Lọc)
+                    </button>
+                    <span id="copyToast" class="hidden items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-100 px-3 py-1.5 rounded-xl border border-emerald-300">
+                        <i class="bi bi-check-circle-fill"></i> Đã sao chép vào bộ nhớ tạm!
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- BENCHMARK SUMMARY COMPARISON TABLE -->
+        <div class="mb-10 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                        <i class="bi bi-bar-chart-line-fill text-indigo-600"></i> Bảng So Sánh Hiệu Suất: Gốc vs Sau Lọc Anti-Parity
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-1">
+                        Kiểm định 100% Strict Point-In-Time trên toàn bộ <span id="summaryTotalDays" class="font-bold text-slate-800">299</span> kỳ năm 2026.
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-6 overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-200 bg-slate-50/80 text-slate-600 font-bold">
+                            <th class="py-3 px-3">Chiến Lược Đề</th>
+                            <th class="py-3 px-3 text-center">Thể Thức</th>
+                            <th class="py-3 px-3 text-center bg-slate-100/70 border-x border-slate-200">GỐC: Thắng / Tỷ Lệ</th>
+                            <th class="py-3 px-3 text-center bg-slate-100/70 border-r border-slate-200">GỐC: PnL / ROI</th>
+                            <th class="py-3 px-3 text-center bg-emerald-50/80 border-r border-emerald-200 text-emerald-950 font-black">SAU LỌC: Thắng / Tỷ Lệ</th>
+                            <th class="py-3 px-3 text-center bg-emerald-50/80 border-r border-emerald-200 text-emerald-950 font-black">SAU LỌC: Vốn Tiết Kiệm</th>
+                            <th class="py-3 px-3 text-center bg-emerald-50/80 text-emerald-950 font-black">SAU LỌC: PnL / ROI</th>
+                        </tr>
+                    </thead>
+                    <tbody id="benchmarkTableTbody" class="divide-y divide-slate-100 font-medium">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SETTLED LEDGER SECTION -->
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                        <i class="bi bi-journal-text text-amber-600"></i> Sổ Cái Đối Soát Thực Nghiệm Lịch Sử 2026
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-1">
+                        Chi tiết từng ngày mở thưởng, giải đặc biệt, dạng chẵn lẻ, cực đối lập bị loại và kết quả tài chính từng dàn.
+                    </p>
+                </div>
+
+                <!-- Ledger Controls -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <select id="selectLedgerStrat" class="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-2xs">
+                        <option value="shadow">Shadow Đề Đa Động Cơ 40s</option>
+                        <option value="daily">Daily Đề Chuẩn Hóa</option>
+                        <option value="triCore">Đề Tam Trụ Tri-Core 24s</option>
+                        <option value="fusion">Fusion Tinh Hoa 36s</option>
+                    </select>
+
+                    <select id="selectLedgerFilter" class="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-2xs">
+                        <option value="all">Tất cả kỳ quay</option>
+                        <option value="hitFiltered">Chỉ kỳ Sau Lọc Trúng</option>
+                        <option value="eliminated">Chỉ kỳ bị loại nhầm</option>
+                        <option value="missBoth">Chỉ kỳ Trượt cả hai</option>
+                    </select>
+
+                    <input type="text" id="inputLedgerSearch" placeholder="Tìm ngày / số đề..." class="rounded-xl border border-slate-300 px-3 py-1.5 text-xs font-mono w-36 shadow-2xs">
+                </div>
+            </div>
+
+            <!-- Ledger Table -->
+            <div class="mt-6 overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-200 bg-slate-50/80 text-slate-600 font-bold">
+                            <th class="py-3 px-3">Ngày</th>
+                            <th class="py-3 px-3 text-center">Đề Về (GĐB)</th>
+                            <th class="py-3 px-3">Dự Đoán Chẵn/Lẻ</th>
+                            <th class="py-3 px-3">Cực Loại Bỏ</th>
+                            <th class="py-3 px-3 text-center">Dàn Gốc</th>
+                            <th class="py-3 px-3 text-center">Dàn Sau Lọc</th>
+                            <th class="py-3 px-3 text-center">Tiết Kiệm</th>
+                            <th class="py-3 px-3 text-right">Lãi/Lỗ Sau Lọc</th>
+                        </tr>
+                    </thead>
+                    <tbody id="settledLedgerTbody" class="divide-y divide-slate-100 font-mono">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-4 flex items-center justify-between text-xs text-slate-500 pt-3 border-t border-slate-100">
+                <span id="ledgerCountInfo">Hiển thị -- / -- kỳ</span>
+                <button type="button" id="btnLoadMoreLedger" class="px-3 py-1.5 rounded-xl border border-slate-300 bg-white font-bold text-slate-700 hover:bg-slate-50 transition-all">
+                    Xem Thêm 30 Kỳ
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Client Script -->
+    <script src="/js/de-fusion.js?v=20261104_v1"></script>
+</body>
+</html>
