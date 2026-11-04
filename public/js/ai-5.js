@@ -121,6 +121,166 @@
     }
 
     // -------------------------------------------------------------------------
+    // RENDER: 4 Thẻ KPI Pills Thống Kê Lỗ Lãi Lũy Kế Toàn Diện Từng Loại
+    // -------------------------------------------------------------------------
+    function renderCumulativePills(summary = {}, models = {}) {
+        const container = document.getElementById('ai5CumulativePills');
+        if (!container) return;
+
+        const cons = summary.consensus || {};
+        const de = cons.deTiered || cons.de || {};
+        const lo = cons.loTiered || cons.lo || {};
+        const x4 = cons.xien4 || {};
+        const combo = cons.combo || {};
+
+        const deProfit = de.profitK || 0;
+        const loProfit = lo.profitK || 0;
+        const x4Profit = x4.profitK || 0;
+        const comboProfit = combo.profitK || 0;
+
+        const deDays = de.days || cons.days || 0;
+        const deWins = de.wins || 0;
+        const deWinRate = deDays > 0 ? ((deWins / deDays) * 100).toFixed(1) : '0.0';
+        const deRoi = ((de.roi || 0) * 100).toFixed(1);
+
+        const loDays = lo.days || cons.days || 0;
+        const loWins = lo.wins || 0;
+        const loHits = lo.totalHits || 0;
+        const loAvgHits = loDays > 0 ? (loHits / loDays).toFixed(2) : '0.0';
+        const loRoi = ((lo.roi || 0) * 100).toFixed(1);
+
+        const x4Days = x4.days || 0;
+        const x4Wins = x4.wins || 0;
+        const x4Roi = ((x4.roi || 0) * 100).toFixed(1);
+
+        const comboDays = combo.days || cons.days || 0;
+        const comboWins = combo.wins || 0;
+        const comboRoi = ((combo.roi || 0) * 100).toFixed(1);
+
+        const activeCat = state.leaderboardCategory;
+
+        container.innerHTML = `
+            <!-- Pill 1: Lũy Kế Combo 5 AI (Bù Trừ Chéo) -->
+            <div class="cursor-pointer rounded-2xl p-3.5 flex items-center justify-between shadow-2xs transition-all border ${activeCat === 'combo' ? 'border-2 border-indigo-500 bg-indigo-50/80 ring-2 ring-indigo-300' : 'border-slate-200 bg-white hover:border-slate-300'}" data-pill-cat="combo" title="Bấm để lọc xem toàn diện Tất Cả Combo">
+                <div class="flex items-center gap-2.5">
+                    <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white font-black text-sm shadow-xs">💰</span>
+                    <div>
+                        <div class="font-bold text-slate-900 text-xs flex items-center gap-1">
+                            <span>Lũy Kế Combo 5 AI:</span>
+                            <span class="rounded bg-indigo-100 text-indigo-900 text-[9px] font-black px-1.5 py-0.2">Bù Trừ Chéo</span>
+                        </div>
+                        <div class="text-[10px] text-slate-500 mt-0.5">Vốn ${formatMoney(combo.stakeK, { signed: false })} · Ăn ${formatMoney(combo.payoutK, { signed: false })}</div>
+                    </div>
+                </div>
+                <div class="text-right font-mono">
+                    <div class="font-black text-sm ${comboProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${formatMoney(comboProfit)}</div>
+                    <div class="text-[9px] font-bold ${comboProfit >= 0 ? 'text-emerald-600' : 'text-rose-500'} font-sans">ROI: ${comboRoi}%</div>
+                </div>
+            </div>
+
+            <!-- Pill 2: Lũy Kế Đề Gộp 5 AI -->
+            <div class="cursor-pointer rounded-2xl p-3.5 flex items-center justify-between shadow-2xs transition-all border ${activeCat === 'de' ? 'border-2 border-purple-500 bg-purple-50/80 ring-2 ring-purple-300' : 'border-slate-200 bg-white hover:border-slate-300'}" data-pill-cat="de" title="Bấm để lọc xem riêng Đề Gộp">
+                <div class="flex items-center gap-2.5">
+                    <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-600 text-white font-black text-sm shadow-xs">🎯</span>
+                    <div>
+                        <div class="font-bold text-slate-900 text-xs flex items-center gap-1">
+                            <span>Lũy Kế Đề Gộp:</span>
+                            <span class="rounded bg-purple-100 text-purple-900 text-[9px] font-black px-1.5 py-0.2">X2 & X1</span>
+                        </div>
+                        <div class="text-[10px] text-slate-500 mt-0.5">Ăn ${deWins}/${deDays} ngày (${deWinRate}%)</div>
+                    </div>
+                </div>
+                <div class="text-right font-mono">
+                    <div class="font-black text-sm ${deProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${formatMoney(deProfit)}</div>
+                    <div class="text-[9px] font-bold ${deProfit >= 0 ? 'text-emerald-600' : 'text-rose-500'} font-sans">ROI: ${deRoi}%</div>
+                </div>
+            </div>
+
+            <!-- Pill 3: Lũy Kế Lô Gộp 5 AI -->
+            <div class="cursor-pointer rounded-2xl p-3.5 flex items-center justify-between shadow-2xs transition-all border ${activeCat === 'lo' ? 'border-2 border-teal-500 bg-teal-50/80 ring-2 ring-teal-300' : 'border-slate-200 bg-white hover:border-slate-300'}" data-pill-cat="lo" title="Bấm để lọc xem riêng Lô Gộp">
+                <div class="flex items-center gap-2.5">
+                    <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-teal-600 text-white font-black text-sm shadow-xs">🎲</span>
+                    <div>
+                        <div class="font-bold text-slate-900 text-xs flex items-center gap-1">
+                            <span>Lũy Kế Lô Gộp:</span>
+                            <span class="rounded bg-teal-100 text-teal-900 text-[9px] font-black px-1.5 py-0.2">Tầng X5..X1</span>
+                        </div>
+                        <div class="text-[10px] text-slate-500 mt-0.5">Nổ ${loHits} nháy (${loAvgHits}n/kỳ)</div>
+                    </div>
+                </div>
+                <div class="text-right font-mono">
+                    <div class="font-black text-sm ${loProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${formatMoney(loProfit)}</div>
+                    <div class="text-[9px] font-bold ${loProfit >= 0 ? 'text-emerald-600' : 'text-rose-500'} font-sans">ROI: ${loRoi}%</div>
+                </div>
+            </div>
+
+            <!-- Pill 4: Lũy Kế 2 Dàn Xiên 4 -->
+            <div class="cursor-pointer rounded-2xl p-3.5 flex items-center justify-between shadow-2xs transition-all border ${activeCat === 'xien4' ? 'border-2 border-amber-500 bg-amber-50/80 ring-2 ring-amber-300' : 'border-slate-200 bg-white hover:border-slate-300'}" data-pill-cat="xien4" title="Bấm để lọc xem riêng 2 Dàn Xiên 4">
+                <div class="flex items-center gap-2.5">
+                    <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500 text-slate-950 font-black text-sm shadow-xs">💎</span>
+                    <div>
+                        <div class="font-bold text-slate-900 text-xs flex items-center gap-1">
+                            <span>Lũy Kế Xiên 4:</span>
+                            <span class="rounded bg-amber-100 text-amber-900 text-[9px] font-black px-1.5 py-0.2">2 Dàn Vốn 22M</span>
+                        </div>
+                        <div class="text-[10px] text-slate-500 mt-0.5">${x4Days > 0 ? `X4:${x4.h4Count || 0} · X3:${x4.h3Count || 0} · X2:${x4.h2Count || 0}` : 'Chưa có'}</div>
+                    </div>
+                </div>
+                <div class="text-right font-mono">
+                    <div class="font-black text-sm ${x4Profit >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${formatMoney(x4Profit)}</div>
+                    <div class="text-[9px] font-bold ${x4Profit >= 0 ? 'text-emerald-600' : 'text-rose-500'} font-sans">ROI: ${x4Roi}%</div>
+                </div>
+            </div>
+        `;
+
+        container.querySelectorAll('[data-pill-cat]').forEach(pill => {
+            pill.addEventListener('click', () => {
+                const cat = pill.dataset.pillCat;
+                if (cat) switchLeaderboardCategory(cat);
+            });
+        });
+    }
+
+    function switchLeaderboardCategory(cat) {
+        state.leaderboardCategory = cat || 'combo';
+        const lbFilterBtns = document.querySelectorAll('.lb-filter-btn');
+        const lbModeLabel = document.getElementById('lbCurrentModeLabel');
+
+        lbFilterBtns.forEach(b => {
+            if (b.dataset.cat === state.leaderboardCategory) {
+                b.classList.add('active', 'border-indigo-600', 'bg-indigo-600', 'text-white');
+                b.classList.remove('border-slate-200', 'bg-white', 'text-slate-600');
+            } else {
+                b.classList.remove('active', 'border-indigo-600', 'bg-indigo-600', 'text-white');
+                b.classList.add('border-slate-200', 'bg-white', 'text-slate-600');
+            }
+        });
+
+        if (lbModeLabel) {
+            if (state.leaderboardCategory === 'combo') {
+                lbModeLabel.textContent = 'Chế độ: Đang xem Tất Cả (Combo: Đề + Lô + Xiên 4)';
+            } else if (state.leaderboardCategory === 'de') {
+                lbModeLabel.textContent = 'Chế độ: Đang xem Đề Riêng (Vốn 20M · Ăn 84M / Đa Tầng X2 & X1)';
+            } else if (state.leaderboardCategory === 'lo') {
+                lbModeLabel.textContent = 'Chế độ: Đang xem Lô Riêng (Vốn 13.2M · Ăn 8M/nháy / Đa Tầng X5..X1)';
+            } else if (state.leaderboardCategory === 'xien4') {
+                lbModeLabel.textContent = 'Chế độ: Đang xem 2 Dàn Xiên 4 Tinh Hoa (Vốn 22M · Ăn X4 384M · X3 84M · X2 12M)';
+            }
+        }
+
+        // Đồng bộ lọc danh mục xuống bảng đối soát nhật ký
+        state.ledgerCategory = state.leaderboardCategory === 'combo' ? 'all' : state.leaderboardCategory;
+        const ledgerCatSelect = document.getElementById('ledgerCategoryFilter');
+        if (ledgerCatSelect) ledgerCatSelect.value = state.ledgerCategory;
+
+        if (state.payload) {
+            renderCumulativePills(state.payload.summary, state.payload.models);
+            renderLeaderboard(state.payload.leaderboard, state.payload.models);
+            renderLedger(state.payload.history, state.ledgerFilter, state.payload.models);
+        }
+    }
+
+    // -------------------------------------------------------------------------
     // RENDER: Executive Leaderboard Cards & Bảng Thống Kê Lũy Kế Chi Tiết
     // -------------------------------------------------------------------------
     function renderLeaderboard(leaderboard = [], models = {}) {
@@ -202,26 +362,26 @@
                 const comboRoi = ((item.combo?.roi || 0) * 100).toFixed(1);
 
                 // Active category footer metrics
-                let footerLabel = 'LÃI RÒNG NET:';
+                let footerLabel = 'LÃI LŨY KẾ NET:';
                 let footerProfitK = comboProfitK;
                 let footerRoi = comboRoi;
                 let footerWins = comboWins;
                 let footerDays = comboDays;
 
                 if (isDeActive) {
-                    footerLabel = 'LÃI RÒNG ĐỀ:';
+                    footerLabel = 'LÃI LŨY KẾ ĐỀ:';
                     footerProfitK = deProfitK;
                     footerRoi = deRoi;
                     footerWins = deWins;
                     footerDays = deDays;
                 } else if (isLoActive) {
-                    footerLabel = 'LÃI RÒNG LÔ:';
+                    footerLabel = 'LÃI LŨY KẾ LÔ:';
                     footerProfitK = loProfitK;
                     footerRoi = loRoi;
                     footerWins = loWins;
                     footerDays = loDays;
                 } else if (isXien4Active) {
-                    footerLabel = 'LÃI XIÊN 4:';
+                    footerLabel = 'LÃI LŨY KẾ XIÊN 4:';
                     footerProfitK = x4ProfitK;
                     footerRoi = x4Roi;
                     footerWins = x4Wins;
@@ -254,7 +414,7 @@
                                 <!-- Đề Stats -->
                                 <div class="rounded-xl p-2.5 border transition-all ${isDeActive ? 'bg-purple-50/80 border-purple-300 ring-1 ring-purple-200' : 'bg-slate-50/90 border-slate-100'}">
                                     <div class="flex items-center justify-between font-bold text-slate-700">
-                                        <span class="flex items-center gap-1"><i class="bi bi-bullseye text-purple-600"></i> Đề (20s):</span>
+                                        <span class="flex items-center gap-1"><i class="bi bi-bullseye text-purple-600"></i> Đề Lũy Kế:</span>
                                         <div class="flex items-center gap-1.5">
                                             ${renderWinDaysBadge(deWins, deDays, 'dương')}
                                             <span class="font-mono text-slate-900 font-bold">${deWinRate}%</span>
@@ -269,7 +429,7 @@
                                 <!-- Lô Stats -->
                                 <div class="rounded-xl p-2.5 border transition-all ${isLoActive ? 'bg-indigo-50/80 border-indigo-300 ring-1 ring-indigo-200' : 'bg-slate-50/90 border-slate-100'}">
                                     <div class="flex items-center justify-between font-bold text-slate-700">
-                                        <span class="flex items-center gap-1"><i class="bi bi-dice-6-fill text-indigo-600"></i> Lô (6s):</span>
+                                        <span class="flex items-center gap-1"><i class="bi bi-dice-6-fill text-indigo-600"></i> Lô Lũy Kế:</span>
                                         <div class="flex items-center gap-1.5">
                                             ${renderWinDaysBadge(loWins, loDays, 'dương')}
                                             <span class="font-mono text-slate-900 font-bold">${loHits}N</span>
@@ -284,7 +444,7 @@
                                 <!-- 2 Dàn Xiên 4 Stats -->
                                 <div class="rounded-xl p-2.5 border transition-all ${isXien4Active ? 'bg-amber-50/80 border-amber-300 ring-1 ring-amber-200' : 'bg-slate-50/90 border-slate-100'}">
                                     <div class="flex items-center justify-between font-bold text-slate-700">
-                                        <span class="flex items-center gap-1"><i class="bi bi-dice-4-fill text-amber-600"></i> 2 Dàn Xiên 4:</span>
+                                        <span class="flex items-center gap-1"><i class="bi bi-dice-4-fill text-amber-600"></i> Xiên 4 Lũy Kế:</span>
                                         <div class="flex items-center gap-1.5">
                                             ${x4HasData ? renderWinDaysBadge(x4Wins, x4Days, 'dương') : '<span class="text-[10px] text-slate-400 font-normal">Chưa có</span>'}
                                         </div>
@@ -1320,6 +1480,13 @@
             const deX1Nums = cons.deTiers?.x1Nums || [];
             const isConsWin = (consRes.totalProfitK || 0) >= 0;
 
+            const rates = day.rates || {};
+            const consRates = rates.consensus || {};
+            const cumDeProfitK = consRates.deTiered?.profitK ?? consRates.de?.profitK ?? null;
+            const cumLoProfitK = consRates.loTiered?.profitK ?? consRates.lo?.profitK ?? null;
+            const cumXienProfitK = consRates.xien4?.profitK ?? null;
+            const cumComboProfitK = consRates.combo?.profitK ?? null;
+
             const p27Counts = {};
             p27.forEach(p => {
                 const num = String(p).padStart(2, '0').slice(-2);
@@ -1410,9 +1577,15 @@
 
                                 <div class="flex flex-wrap items-center gap-2 self-start sm:self-auto">
                                     <div class="rounded-2xl ${isConsWin ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : 'bg-rose-100 text-rose-900 border border-rose-300'} px-3.5 py-1.5 font-mono text-xs shadow-2xs">
-                                        <span class="text-[9px] block uppercase font-bold opacity-75">LÃI RÒNG NET:</span>
+                                        <span class="text-[9px] block uppercase font-bold opacity-75">LÃI NGÀY:</span>
                                         <span class="text-sm font-black">${formatMoney(consRes.totalProfitK)}</span>
                                     </div>
+                                    ${cumComboProfitK !== null ? `
+                                        <div class="rounded-2xl ${cumComboProfitK >= 0 ? 'bg-emerald-50 text-emerald-900 border-2 border-emerald-400' : 'bg-rose-50 text-rose-900 border-2 border-rose-300'} px-3.5 py-1.5 font-mono text-xs shadow-2xs">
+                                            <span class="text-[9px] block uppercase font-black tracking-wider text-slate-600">LŨY KẾ COMBO:</span>
+                                            <span class="text-sm font-black ${cumComboProfitK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${formatMoney(cumComboProfitK)}</span>
+                                        </div>
+                                    ` : ''}
                                     <div class="text-[11px] font-mono text-slate-500 bg-white/90 border border-purple-200 rounded-2xl px-3 py-1.5 shadow-2xs">
                                         <div>Vốn: <strong>${formatMoney(consRes.totalStakeK, { signed: false })}</strong></div>
                                         <div>Ăn: <strong class="text-emerald-700">${formatMoney(consRes.totalPayoutK, { signed: false })}</strong></div>
@@ -1439,9 +1612,17 @@
                                             <span>Dàn X1 (Lót): <strong>${deX1Nums.length}s</strong></span>
                                         </div>
                                     </div>
-                                    <div class="pt-2 border-t border-purple-100 flex items-center justify-between font-mono text-xs">
-                                        <span class="text-[10px] text-slate-400">Vốn ${formatMoney(deRes.stakeK, { signed: false })} · Ăn ${formatMoney(deRes.payoutK, { signed: false })}</span>
-                                        <span class="font-black ${deRes.profitK >= 0 ? 'text-emerald-700' : 'text-slate-500'}">${formatMoney(deRes.profitK)}</span>
+                                    <div class="pt-2 border-t border-purple-100 space-y-1">
+                                        <div class="flex items-center justify-between font-mono text-xs">
+                                            <span class="text-[10px] text-slate-400">Vốn ${formatMoney(deRes.stakeK, { signed: false })} · Ăn ${formatMoney(deRes.payoutK, { signed: false })}</span>
+                                            <span class="font-black ${deRes.profitK >= 0 ? 'text-emerald-700' : 'text-slate-500'}">Ngày: ${formatMoney(deRes.profitK)}</span>
+                                        </div>
+                                        ${cumDeProfitK !== null ? `
+                                            <div class="flex items-center justify-between font-mono text-xs pt-1 border-t border-purple-100/60 bg-purple-50/70 px-2 py-0.5 rounded-lg">
+                                                <span class="text-[10px] font-bold text-purple-900">LŨY KẾ ĐỀ:</span>
+                                                <span class="font-black ${cumDeProfitK >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${formatMoney(cumDeProfitK)}</span>
+                                            </div>
+                                        ` : ''}
                                     </div>
                                 </div>
 
@@ -1467,9 +1648,17 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="pt-2 border-t border-indigo-100 flex items-center justify-between font-mono text-xs">
-                                        <span class="text-[10px] text-slate-400">Vốn ${formatMoney(loRes.stakeK, { signed: false })} · Ăn ${formatMoney(loRes.payoutK, { signed: false })}</span>
-                                        <span class="font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">${formatMoney(loRes.profitK)}</span>
+                                    <div class="pt-2 border-t border-indigo-100 space-y-1">
+                                        <div class="flex items-center justify-between font-mono text-xs">
+                                            <span class="text-[10px] text-slate-400">Vốn ${formatMoney(loRes.stakeK, { signed: false })} · Ăn ${formatMoney(loRes.payoutK, { signed: false })}</span>
+                                            <span class="font-black text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">Ngày: ${formatMoney(loRes.profitK)}</span>
+                                        </div>
+                                        ${cumLoProfitK !== null ? `
+                                            <div class="flex items-center justify-between font-mono text-xs pt-1 border-t border-indigo-100/60 bg-indigo-50/70 px-2 py-0.5 rounded-lg">
+                                                <span class="text-[10px] font-bold text-indigo-900">LŨY KẾ LÔ:</span>
+                                                <span class="font-black ${cumLoProfitK >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${formatMoney(cumLoProfitK)}</span>
+                                            </div>
+                                        ` : ''}
                                     </div>
                                 </div>
 
@@ -1496,9 +1685,17 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="pt-2 border-t border-amber-100 flex items-center justify-between font-mono text-xs">
-                                        <span class="text-[10px] text-slate-400">${x4Res ? `Vốn ${formatMoney(x4Res.stakeK, { signed: false })} · Ăn ${formatMoney(x4Res.payoutK, { signed: false })}` : 'Vốn 0M'}</span>
-                                        <span class="font-black ${x4Res && x4Res.profitK >= 0 ? 'text-emerald-700' : 'text-slate-500'}">${formatMoney(x4Res?.profitK || 0)}</span>
+                                    <div class="pt-2 border-t border-amber-100 space-y-1">
+                                        <div class="flex items-center justify-between font-mono text-xs">
+                                            <span class="text-[10px] text-slate-400">${x4Res ? `Vốn ${formatMoney(x4Res.stakeK, { signed: false })} · Ăn ${formatMoney(x4Res.payoutK, { signed: false })}` : 'Vốn 0M'}</span>
+                                            <span class="font-black ${x4Res && x4Res.profitK >= 0 ? 'text-emerald-700' : 'text-slate-500'}">Ngày: ${formatMoney(x4Res?.profitK || 0)}</span>
+                                        </div>
+                                        ${cumXienProfitK !== null ? `
+                                            <div class="flex items-center justify-between font-mono text-xs pt-1 border-t border-amber-100/60 bg-amber-50/70 px-2 py-0.5 rounded-lg">
+                                                <span class="text-[10px] font-bold text-amber-900">LŨY KẾ XIÊN 4:</span>
+                                                <span class="font-black ${cumXienProfitK >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${formatMoney(cumXienProfitK)}</span>
+                                            </div>
+                                        ` : ''}
                                     </div>
                                 </div>
                             </div>
@@ -1719,6 +1916,13 @@
 
                                     const isConsWin = (consRes.totalProfitK || 0) >= 0;
 
+            const rates = day.rates || {};
+            const consRates = rates.consensus || {};
+            const cumDeProfitK = consRates.deTiered?.profitK ?? consRates.de?.profitK ?? null;
+            const cumLoProfitK = consRates.loTiered?.profitK ?? consRates.lo?.profitK ?? null;
+            const cumXienProfitK = consRates.xien4?.profitK ?? null;
+            const cumComboProfitK = consRates.combo?.profitK ?? null;
+
                                     return `
                                         <div class="rounded-3xl border-2 border-purple-300 bg-gradient-to-b from-purple-50/50 via-white to-purple-50/30 p-5 space-y-4 shadow-sm">
                                             <!-- Header Consensus -->
@@ -1751,9 +1955,15 @@
                                                         <span class="font-black text-emerald-700">${formatMoney(consRes.totalPayoutK, { signed: false })}</span>
                                                     </div>
                                                     <div class="rounded-xl ${isConsWin ? 'bg-emerald-50 border border-emerald-300 text-emerald-800' : 'bg-rose-50 border border-rose-300 text-rose-800'} px-3 py-1.5 shadow-2xs font-bold">
-                                                        <span class="text-[10px] block uppercase opacity-75">Net Lãi/Lỗ:</span>
+                                                        <span class="text-[10px] block uppercase opacity-75">Net Ngày:</span>
                                                         <span class="text-sm font-black">${formatMoney(consRes.totalProfitK)}</span>
                                                     </div>
+                                                    ${cumComboProfitK !== null ? `
+                                                        <div class="rounded-xl ${cumComboProfitK >= 0 ? 'bg-emerald-100 border border-emerald-400 text-emerald-900' : 'bg-rose-100 border border-rose-300 text-rose-900'} px-3 py-1.5 shadow-2xs font-bold">
+                                                            <span class="text-[10px] block uppercase font-black text-slate-600">Lũy Kế Combo:</span>
+                                                            <span class="text-sm font-black ${cumComboProfitK >= 0 ? 'text-emerald-700' : 'text-rose-700'}">${formatMoney(cumComboProfitK)}</span>
+                                                        </div>
+                                                    ` : ''}
                                                 </div>
                                             </div>
 
@@ -1776,10 +1986,14 @@
                                                                     </span>
                                                                 </div>
                                                             </div>
-                                                            <div class="text-[11px] font-mono text-slate-500 flex items-center justify-between bg-slate-50 p-2 rounded-xl border border-slate-100">
-                                                                <span>Vốn: ${formatMoney(deRes.stakeK, { signed: false })}</span>
-                                                                <span>Ăn: <strong class="text-emerald-700">${formatMoney(deRes.payoutK, { signed: false })}</strong></span>
-                                                                <span class="${deRes.profitK >= 0 ? 'text-emerald-700' : 'text-rose-600'} font-black">${formatMoney(deRes.profitK)}</span>
+                                                            <div class="text-[11px] font-mono text-slate-500 flex flex-wrap items-center justify-between gap-1.5 bg-slate-50 p-2 rounded-xl border border-slate-100">
+                                                                <div>Vốn: ${formatMoney(deRes.stakeK, { signed: false })} · Ăn: <strong class="text-emerald-700">${formatMoney(deRes.payoutK, { signed: false })}</strong></div>
+                                                                <div class="flex items-center gap-2">
+                                                                    <span>Ngày: <strong class="${deRes.profitK >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${formatMoney(deRes.profitK)}</strong></span>
+                                                                    ${cumDeProfitK !== null ? `
+                                                                        <span class="px-1.5 py-0.2 rounded bg-purple-100 text-purple-900 border border-purple-200 font-bold">Lũy Kế Đề: <strong class="${cumDeProfitK >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${formatMoney(cumDeProfitK)}</strong></span>
+                                                                    ` : ''}
+                                                                </div>
                                                             </div>
 
                                                             <!-- Dàn X2 (VIP Đồng thuận cao) -->
@@ -1866,10 +2080,14 @@
                                                                     </span>
                                                                 </div>
                                                             </div>
-                                                            <div class="text-[11px] font-mono text-slate-500 flex items-center justify-between bg-slate-50 p-2 rounded-xl border border-slate-100">
-                                                                <span>Vốn: ${formatMoney(loRes.stakeK, { signed: false })}</span>
-                                                                <span>Ăn: <strong class="text-emerald-700">${formatMoney(loRes.payoutK, { signed: false })}</strong></span>
-                                                                <span class="${loRes.profitK >= 0 ? 'text-emerald-700' : 'text-rose-600'} font-black">${formatMoney(loRes.profitK)}</span>
+                                                            <div class="text-[11px] font-mono text-slate-500 flex flex-wrap items-center justify-between gap-1.5 bg-slate-50 p-2 rounded-xl border border-slate-100">
+                                                                <div>Vốn: ${formatMoney(loRes.stakeK, { signed: false })} · Ăn: <strong class="text-emerald-700">${formatMoney(loRes.payoutK, { signed: false })}</strong></div>
+                                                                <div class="flex items-center gap-2">
+                                                                    <span>Ngày: <strong class="${loRes.profitK >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${formatMoney(loRes.profitK)}</strong></span>
+                                                                    ${cumLoProfitK !== null ? `
+                                                                        <span class="px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-900 border border-indigo-200 font-bold">Lũy Kế Lô: <strong class="${cumLoProfitK >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${formatMoney(cumLoProfitK)}</strong></span>
+                                                                    ` : ''}
+                                                                </div>
                                                             </div>
 
                                                             <!-- Các Tầng X5..X1 -->
@@ -1952,10 +2170,14 @@
                                                                     </span>
                                                                 </div>
                                                             </div>
-                                                            <div class="text-[11px] font-mono text-slate-500 flex items-center justify-between bg-slate-50 p-2 rounded-xl border border-slate-100">
-                                                                <span>Vốn: ${formatMoney(x4Res.stakeK, { signed: false })}</span>
-                                                                <span>Ăn: <strong class="text-emerald-700">${formatMoney(x4Res.payoutK, { signed: false })}</strong></span>
-                                                                <span class="${x4Res.profitK >= 0 ? 'text-emerald-700' : 'text-rose-600'} font-black">${formatMoney(x4Res.profitK)}</span>
+                                                            <div class="text-[11px] font-mono text-slate-500 flex flex-wrap items-center justify-between gap-1.5 bg-slate-50 p-2 rounded-xl border border-slate-100">
+                                                                <div>Vốn: ${formatMoney(x4Res.stakeK, { signed: false })} · Ăn: <strong class="text-emerald-700">${formatMoney(x4Res.payoutK, { signed: false })}</strong></div>
+                                                                <div class="flex items-center gap-2">
+                                                                    <span>Ngày: <strong class="${x4Res.profitK >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${formatMoney(x4Res.profitK)}</strong></span>
+                                                                    ${cumXienProfitK !== null ? `
+                                                                        <span class="px-1.5 py-0.2 rounded bg-amber-100 text-amber-900 border border-amber-200 font-bold">Lũy Kế Xiên 4: <strong class="${cumXienProfitK >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${formatMoney(cumXienProfitK)}</strong></span>
+                                                                    ` : ''}
+                                                                </div>
                                                             </div>
 
                                                             <div class="space-y-2">
@@ -2059,6 +2281,12 @@
                                                             src = sources.perplexity;
                                                         }
                                                         const r = results[mKey] || {};
+                                                        const mRates = rates[mKey] || {};
+                                                        const mCumCombo = mRates.combo?.profitK ?? null;
+                                                        const mCumDe = mRates.de?.profitK ?? null;
+                                                        const mCumLo = mRates.lo?.profitK ?? null;
+                                                        const mCumXien = mRates.xien4?.profitK ?? null;
+
                                                         const info = models[mKey] || { name: mKey, avatar: '🤖' };
                                                         const de = src.de || [];
                                                         const lo = src.lo || [];
@@ -2075,9 +2303,14 @@
                                                                         <span class="font-black">${info.name}</span>
                                                                         ${isFallback ? '<span class="text-[8px] font-bold px-1 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">via Perplexity</span>' : ''}
                                                                     </span>
-                                                                    <span class="font-mono font-black ${isWin ? 'text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200' : 'text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200'} text-[11px]">
-                                                                        ${formatMoney(r.totalProfitK)}
-                                                                    </span>
+                                                                    <div class="text-right font-mono">
+                                                                        <span class="font-black ${isWin ? 'text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200' : 'text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200'} text-[11px]">
+                                                                            ${formatMoney(r.totalProfitK)}
+                                                                        </span>
+                                                                        ${mCumCombo !== null ? `
+                                                                            <div class="text-[9px] text-slate-400 font-sans mt-0.5">LK: <strong class="${mCumCombo >= 0 ? 'text-emerald-700' : 'text-rose-600'} font-mono">${formatMoney(mCumCombo)}</strong></div>
+                                                                        ` : ''}
+                                                                    </div>
                                                                 </div>
 
                                                                 <!-- Dàn Đề 20 số -->
@@ -2085,7 +2318,10 @@
                                                                     <div class="space-y-1">
                                                                         <div class="flex items-center justify-between text-[10px] text-slate-500 font-bold">
                                                                             <span>Đề (20s · ${isDeHit ? '<strong class="text-emerald-700">Trúng ĐB</strong>' : 'Trượt'}):</span>
-                                                                            <span class="font-mono ${r.de?.profitK >= 0 ? 'text-emerald-700 font-bold' : 'text-slate-400'}">${formatMoney(r.de?.profitK)}</span>
+                                                                            <div class="flex items-center gap-1 font-mono">
+                                                                                <span class="${r.de?.profitK >= 0 ? 'text-emerald-700 font-bold' : 'text-slate-400'}">${formatMoney(r.de?.profitK)}</span>
+                                                                                ${mCumDe !== null ? `<span class="text-[9px] text-slate-400 font-sans">(LK: <strong class="${mCumDe >= 0 ? 'text-emerald-700' : 'text-rose-600'} font-mono">${formatMoney(mCumDe)}</strong>)</span>` : ''}
+                                                                            </div>
                                                                         </div>
                                                                         <div class="flex flex-wrap gap-1">
                                                                             ${de.map(n => {
@@ -2104,7 +2340,10 @@
                                                                     <div class="pt-2 border-t border-slate-100 space-y-1">
                                                                         <div class="flex items-center justify-between text-[10px] text-slate-500 font-bold">
                                                                             <span>Lô (6s · ${loHits > 0 ? `<strong class="text-indigo-700">Nổ ${loHits}n</strong>` : 'Trượt'}):</span>
-                                                                            <span class="font-mono ${r.lo?.profitK >= 0 ? 'text-emerald-700 font-bold' : 'text-slate-400'}">${formatMoney(r.lo?.profitK)}</span>
+                                                                            <div class="flex items-center gap-1 font-mono">
+                                                                                <span class="${r.lo?.profitK >= 0 ? 'text-emerald-700 font-bold' : 'text-slate-400'}">${formatMoney(r.lo?.profitK)}</span>
+                                                                                ${mCumLo !== null ? `<span class="text-[9px] text-slate-400 font-sans">(LK: <strong class="${mCumLo >= 0 ? 'text-emerald-700' : 'text-rose-600'} font-mono">${formatMoney(mCumLo)}</strong>)</span>` : ''}
+                                                                            </div>
                                                                         </div>
                                                                         <div class="flex flex-wrap gap-1">
                                                                             ${lo.map(n => {
@@ -2123,7 +2362,10 @@
                                                                     <div class="pt-2 border-t border-slate-100 space-y-1">
                                                                         <div class="flex items-center justify-between text-[10px] text-slate-500 font-bold">
                                                                             <span>Xiên 4 (2 dàn · ${r.xien4.h4Count > 0 ? '<strong class="text-amber-700">Ăn X4</strong>' : (r.xien4.h3Count > 0 ? '<strong class="text-amber-700">Ăn X3</strong>' : (r.xien4.h2Count > 0 ? '<strong class="text-amber-700">Ăn X2</strong>' : 'Trượt'))}):</span>
-                                                                            <span class="font-mono ${r.xien4.profitK >= 0 ? 'text-emerald-700 font-bold' : 'text-slate-400'}">${formatMoney(r.xien4.profitK)}</span>
+                                                                            <div class="flex items-center gap-1 font-mono">
+                                                                                <span class="${r.xien4.profitK >= 0 ? 'text-emerald-700 font-bold' : 'text-slate-400'}">${formatMoney(r.xien4.profitK)}</span>
+                                                                                ${mCumXien !== null ? `<span class="text-[9px] text-slate-400 font-sans">(LK: <strong class="${mCumXien >= 0 ? 'text-emerald-700' : 'text-rose-600'} font-mono">${formatMoney(mCumXien)}</strong>)</span>` : ''}
+                                                                            </div>
                                                                         </div>
                                                                         <div class="space-y-0.5 text-[11px] font-mono">
                                                                             <div class="text-[10px] text-amber-900 bg-amber-50/60 p-1 rounded border border-amber-200">
@@ -2177,6 +2419,7 @@
             if (!data || !data.success) throw new Error(data.error || 'Lỗi tải API AI 5');
 
             state.payload = data;
+            renderCumulativePills(data.summary, data.models);
             renderLeaderboard(data.leaderboard, data.models);
             renderTodayPrediction(data.latestDay, data.todayConsensus, state.selectedModel, data.models);
             renderLedger(data.history, state.ledgerFilter, data.models);
@@ -2233,37 +2476,9 @@
 
         // Leaderboard category filter buttons (Tất cả / Đề / Lô / Xiên 4)
         const lbFilterBtns = document.querySelectorAll('.lb-filter-btn');
-        const lbModeLabel = document.getElementById('lbCurrentModeLabel');
         lbFilterBtns.forEach(btn => {
             btn.addEventListener('click', () => {
-                lbFilterBtns.forEach(b => {
-                    b.classList.remove('active', 'border-indigo-600', 'bg-indigo-600', 'text-white');
-                    b.classList.add('border-slate-200', 'bg-white', 'text-slate-600');
-                });
-                btn.classList.add('active', 'border-indigo-600', 'bg-indigo-600', 'text-white');
-                btn.classList.remove('border-slate-200', 'bg-white', 'text-slate-600');
-
-                state.leaderboardCategory = btn.dataset.cat || 'combo';
-                if (lbModeLabel) {
-                    if (state.leaderboardCategory === 'combo') {
-                        lbModeLabel.textContent = 'Chế độ: Đang xem Tất Cả (Combo: Đề + Lô + Xiên 4)';
-                    } else if (state.leaderboardCategory === 'de') {
-                        lbModeLabel.textContent = 'Chế độ: Đang xem Đề Riêng (Vốn 20M · Ăn 84M / Đa Tầng X2 & X1)';
-                    } else if (state.leaderboardCategory === 'lo') {
-                        lbModeLabel.textContent = 'Chế độ: Đang xem Lô Riêng (Vốn 13.2M · Ăn 8M/nháy / Đa Tầng X5..X1)';
-                    } else if (state.leaderboardCategory === 'xien4') {
-                        lbModeLabel.textContent = 'Chế độ: Đang xem 2 Dàn Xiên 4 Tinh Hoa (Vốn 22M · Ăn X4 384M · X3 84M · X2 12M)';
-                    }
-                }
-                // Đồng bộ lọc danh mục xuống bảng đối soát nhật ký
-                state.ledgerCategory = state.leaderboardCategory === 'combo' ? 'all' : state.leaderboardCategory;
-                const ledgerCatSelect = document.getElementById('ledgerCategoryFilter');
-                if (ledgerCatSelect) ledgerCatSelect.value = state.ledgerCategory;
-
-                if (state.payload) {
-                    renderLeaderboard(state.payload.leaderboard, state.payload.models);
-                    renderLedger(state.payload.history, state.ledgerFilter, state.payload.models);
-                }
+                switchLeaderboardCategory(btn.dataset.cat || 'combo');
             });
         });
     });
