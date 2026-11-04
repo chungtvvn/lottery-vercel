@@ -319,9 +319,19 @@
                     <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
                         <i class="bi bi-bar-chart-line-fill text-indigo-600"></i> Bảng So Sánh Hiệu Suất: Gốc vs Sau Lọc Anti-Parity
                     </h2>
-                    <p class="text-xs text-slate-500 mt-1">
-                        Kiểm định 100% Strict Point-In-Time trên toàn bộ <span id="summaryTotalDays" class="font-bold text-slate-800">299</span> kỳ năm 2026.
+                    <p class="text-xs text-slate-500 mt-1" id="benchmarkSubtitle">
+                        Phần đối soát lịch sử <strong class="text-emerald-700 font-bold">chỉ tính quãng thời gian Live thực chiến để tính lũy kế</strong>, dữ liệu còn lại dùng để tham khảo.
                     </p>
+                </div>
+
+                <!-- Scope Toggle Buttons -->
+                <div class="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-100 border border-slate-200 self-start sm:self-auto">
+                    <button type="button" id="btnScopeLive" class="px-3.5 py-2 rounded-xl text-xs font-black transition-all bg-emerald-600 text-white shadow-sm flex items-center gap-1.5">
+                        <span class="inline-block w-2 h-2 rounded-full bg-white animate-pulse"></span> 🔴 Live Thực Chiến (<span id="btnScopeLiveDays">49</span> kỳ)
+                    </button>
+                    <button type="button" id="btnScopeAll" class="px-3.5 py-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-slate-900 hover:bg-white flex items-center gap-1.5">
+                        <i class="bi bi-book"></i> Toàn Năm 2026 (<span id="btnScopeAllDays">303</span> kỳ tham khảo)
+                    </button>
                 </div>
             </div>
 
@@ -332,10 +342,10 @@
                             <th class="py-3 px-3">Chiến Lược Đề</th>
                             <th class="py-3 px-3 text-center">Thể Thức</th>
                             <th class="py-3 px-3 text-center bg-slate-100/70 border-x border-slate-200">GỐC: Thắng / Tỷ Lệ</th>
-                            <th class="py-3 px-3 text-center bg-slate-100/70 border-r border-slate-200">GỐC: PnL / ROI</th>
+                            <th class="py-3 px-3 text-center bg-slate-100/70 border-r border-slate-200">GỐC: Lãi / ROI</th>
                             <th class="py-3 px-3 text-center bg-emerald-50/80 border-r border-emerald-200 text-emerald-950 font-black">SAU LỌC: Thắng / Tỷ Lệ</th>
                             <th class="py-3 px-3 text-center bg-emerald-50/80 border-r border-emerald-200 text-emerald-950 font-black">SAU LỌC: Vốn Tiết Kiệm</th>
-                            <th class="py-3 px-3 text-center bg-emerald-50/80 text-emerald-950 font-black">SAU LỌC: PnL / ROI</th>
+                            <th class="py-3 px-3 text-center bg-emerald-50/80 text-emerald-950 font-black">SAU LỌC: Lũy Kế Lãi / ROI</th>
                         </tr>
                     </thead>
                     <tbody id="benchmarkTableTbody" class="divide-y divide-slate-100 font-medium">
@@ -350,10 +360,10 @@
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
                 <div>
                     <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                        <i class="bi bi-journal-text text-amber-600"></i> Sổ Cái Đối Soát Thực Nghiệm Lịch Sử 2026
+                        <i class="bi bi-journal-text text-amber-600"></i> Sổ Cái Đối Soát Lịch Sử: Tính Lũy Kế Thực Chiến
                     </h2>
                     <p class="text-xs text-slate-500 mt-1">
-                        Chi tiết từng ngày mở thưởng, giải đặc biệt, dạng chẵn lẻ, cực đối lập bị loại và kết quả tài chính từng dàn.
+                        Cột <strong class="text-emerald-700">Lũy Kế Live</strong> chỉ cộng dồn trong các kỳ Live thực chiến niêm phong khóa số. Các kỳ trước đó đánh dấu nhãn Tham khảo.
                     </p>
                 </div>
 
@@ -367,7 +377,8 @@
                     </select>
 
                     <select id="selectLedgerFilter" class="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-2xs">
-                        <option value="all">Tất cả kỳ quay</option>
+                        <option value="liveOnly" selected>🔴 Chỉ xem Live Thực Chiến (Tính lũy kế)</option>
+                        <option value="all">Xem Toàn bộ (Live + Lịch sử tham khảo)</option>
                         <option value="hitFiltered">Chỉ kỳ Sau Lọc Trúng</option>
                         <option value="eliminated">Chỉ kỳ bị loại nhầm</option>
                         <option value="missBoth">Chỉ kỳ Trượt cả hai</option>
@@ -383,13 +394,15 @@
                     <thead>
                         <tr class="border-b border-slate-200 bg-slate-50/80 text-slate-600 font-bold">
                             <th class="py-3 px-3">Ngày</th>
+                            <th class="py-3 px-3 text-center">Chế Độ</th>
                             <th class="py-3 px-3 text-center">Đề Về (GĐB)</th>
                             <th class="py-3 px-3">Dự Đoán Chẵn/Lẻ</th>
                             <th class="py-3 px-3">Cực Loại Bỏ</th>
                             <th class="py-3 px-3 text-center">Dàn Gốc</th>
                             <th class="py-3 px-3 text-center">Dàn Sau Lọc</th>
                             <th class="py-3 px-3 text-center">Tiết Kiệm</th>
-                            <th class="py-3 px-3 text-right">Lãi/Lỗ Sau Lọc</th>
+                            <th class="py-3 px-3 text-right">Lãi Ngày</th>
+                            <th class="py-3 px-3 text-right font-black text-emerald-900 bg-emerald-50/60">LŨY KẾ LIVE</th>
                         </tr>
                     </thead>
                     <tbody id="settledLedgerTbody" class="divide-y divide-slate-100 font-mono">

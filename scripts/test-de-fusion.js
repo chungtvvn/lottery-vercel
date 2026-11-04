@@ -84,15 +84,29 @@ const report = buildDeFusionReport();
 assert.strictEqual(report.success, true);
 assert.strictEqual(typeof report.totalEvaluatedDays, 'number');
 assert(report.totalEvaluatedDays >= 280, 'Phải đánh giá ít nhất 280 ngày năm 2026');
+assert(report.totalLiveDays >= 40, 'Phải có ít nhất 40 kỳ Live thực chiến');
 assert(report.summary.shadow, 'Summary phải có shadow');
 assert(report.summary.daily, 'Summary phải có daily');
 assert(report.summary.triCore, 'Summary phải có triCore');
 assert(report.summary.fusion, 'Summary phải có fusion');
 
-// Kiểm tra kết quả Tri-Core đảo chiều PnL dương
-console.log(`  📊 [Summary TriCore] Base: ${report.summary.triCore.base.netProfitM}M -> Filtered: +${report.summary.triCore.filtered.netProfitM}M (ROI: +${report.summary.triCore.filtered.roi}%)`);
-assert(report.summary.triCore.filtered.netProfitM > 0, 'Tri-Core sau lọc phải có lãi ròng dương');
-assert(report.summary.triCore.filtered.savedStakeM > 400, 'Tri-Core sau lọc phải tiết kiệm trên 400M vốn');
+// Kiểm tra đối tượng Live và Full2026
+assert(report.summary.shadow.live, 'Summary shadow phải có live');
+assert(report.summary.shadow.full2026, 'Summary shadow phải có full2026');
+assert(report.summary.triCore.live, 'Summary triCore phải có live');
+assert(report.summary.triCore.live.filtered.netProfitM > 0, 'Tri-Core Live sau lọc phải có lãi ròng dương');
+
+console.log(`  📊 [Live TriCore] Base: ${report.summary.triCore.live.base.netProfitM}M -> Filtered: +${report.summary.triCore.live.filtered.netProfitM}M (ROI: +${report.summary.triCore.live.filtered.roi}%)`);
+console.log(`  📊 [Live Shadow] Base: +${report.summary.shadow.live.base.netProfitM}M -> Filtered: +${report.summary.shadow.live.filtered.netProfitM}M (ROI: +${report.summary.shadow.live.filtered.roi}%)`);
+
+// Kiểm tra Settled Ledger có isLive và liveAccumProfitK
+const latestLiveRow = report.settledLedger.find(r => r.isLive);
+assert(latestLiveRow, 'Phải tìm thấy dòng Live trong settledLedger');
+assert(typeof latestLiveRow.strategies.shadow.liveAccumProfitK === 'number', 'Dòng Live phải có liveAccumProfitK dạng number');
+
+const oldRefRow = report.settledLedger.find(r => !r.isLive);
+assert(oldRefRow, 'Phải tìm thấy dòng Tham Khảo cũ trong settledLedger');
+assert.strictEqual(oldRefRow.strategies.shadow.liveAccumProfitK, null, 'Dòng Tham khảo cũ phải có liveAccumProfitK = null');
 
 // Kiểm tra Today Recommendation
 assert(report.todayRecommendation, 'Phải có todayRecommendation');

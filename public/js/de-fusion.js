@@ -2,6 +2,7 @@
  * public/js/de-fusion.js
  * 
  * Logic giao diện Chuyên Trang Đề Tinh Hoa & Khắc Tinh Chẵn Lẻ Đối Lập (Anti-Parity Engine)
+ * Quy chuẩn: Phần đối soát lịch sử chỉ tính quãng thời gian Live thực chiến để tính lũy kế, còn lại để tham khảo.
  */
 
 (function () {
@@ -9,7 +10,8 @@
 
     let currentReport = null;
     let activeTodayStrat = 'shadow'; // 'shadow' | 'daily' | 'triCore' | 'fusion'
-    let ledgerLimit = 30;
+    let currentBenchmarkScope = 'live'; // 'live' | 'all'
+    let ledgerLimit = 40;
 
     const STRAT_CONFIG = {
         shadow: {
@@ -94,6 +96,25 @@
             };
         }
 
+        // Scope Switchers: Live vs Toàn Năm (Tham khảo)
+        const btnScopeLive = byId('btnScopeLive');
+        const btnScopeAll = byId('btnScopeAll');
+        if (btnScopeLive && btnScopeAll) {
+            btnScopeLive.onclick = () => {
+                currentBenchmarkScope = 'live';
+                btnScopeLive.className = 'px-3.5 py-2 rounded-xl text-xs font-black transition-all bg-emerald-600 text-white shadow-sm flex items-center gap-1.5';
+                btnScopeAll.className = 'px-3.5 py-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-slate-900 hover:bg-white flex items-center gap-1.5';
+                if (currentReport) renderBenchmarkTable(currentReport.summary);
+            };
+
+            btnScopeAll.onclick = () => {
+                currentBenchmarkScope = 'all';
+                btnScopeAll.className = 'px-3.5 py-2 rounded-xl text-xs font-black transition-all bg-indigo-600 text-white shadow-sm flex items-center gap-1.5';
+                btnScopeLive.className = 'px-3.5 py-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-slate-900 hover:bg-white flex items-center gap-1.5';
+                if (currentReport) renderBenchmarkTable(currentReport.summary);
+            };
+        }
+
         // Tabs chiến lược hôm nay
         const tabBtns = document.querySelectorAll('.strat-tab-btn');
         tabBtns.forEach(btn => {
@@ -143,6 +164,9 @@
         if (byId('badgeTargetDate')) byId('badgeTargetDate').textContent = fmtDate(data.pendingPredictionDate);
         if (byId('badgeDataThrough')) byId('badgeDataThrough').textContent = fmtDate(data.latestDataDate);
         if (byId('todayTargetDateText')) byId('todayTargetDateText').textContent = fmtDate(data.pendingPredictionDate);
+
+        if (byId('btnScopeLiveDays')) byId('btnScopeLiveDays').textContent = data.totalLiveDays || 49;
+        if (byId('btnScopeAllDays')) byId('btnScopeAllDays').textContent = data.totalEvaluatedDays || 303;
 
         if (data.todayParity) {
             if (byId('todayPredFormVi')) byId('todayPredFormVi').textContent = `${data.todayParity.predFormVi} (${data.todayParity.predForm})`;
@@ -261,6 +285,16 @@
         const tbody = byId('benchmarkTableTbody');
         if (!tbody || !summary) return;
 
+        const isLiveScope = currentBenchmarkScope === 'live';
+        const subTitle = byId('benchmarkSubtitle');
+        if (subTitle) {
+            if (isLiveScope) {
+                subTitle.innerHTML = 'Phần đối soát lịch sử <strong class="text-emerald-700 font-bold">chỉ tính quãng thời gian Live thực chiến để tính lũy kế</strong>, dữ liệu còn lại dùng để tham khảo.';
+            } else {
+                subTitle.innerHTML = 'Dữ liệu đối soát <strong class="text-indigo-700 font-bold">toàn năm 2026 (Backtest đầy đủ)</strong> dùng để nghiên cứu tham khảo bước sóng dài hạn.';
+            }
+        }
+
         const order = ['shadow', 'triCore', 'daily', 'fusion'];
         const formatStrategyName = (sId) => {
             const cfg = STRAT_CONFIG[sId] || {};
@@ -299,8 +333,12 @@
         tbody.innerHTML = order.map(sId => {
             const item = summary[sId];
             if (!item) return '';
-            const b = item.base || {};
-            const f = item.filtered || {};
+
+            // Chọn data theo scope: Live vs Full2026
+            const scopeData = isLiveScope ? (item.live || item) : (item.full2026 || item);
+            const b = scopeData.base || {};
+            const f = scopeData.filtered || {};
+            const totalDays = scopeData.totalDays || item.totalDays;
 
             const bProfitClass = b.netProfitM >= 0 ? 'text-emerald-700 font-bold' : 'text-slate-600';
             const fProfitClass = f.netProfitM >= 0 ? 'text-emerald-700 font-black text-sm' : (f.netProfitM > b.netProfitM ? 'text-indigo-700 font-bold' : 'text-rose-600 font-bold');
@@ -310,7 +348,7 @@
                     <td class="py-3 px-3">${formatStrategyName(sId)}</td>
                     <td class="py-3 px-3 text-center text-slate-600">${formatFormat(sId)}</td>
                     <td class="py-3 px-3 text-center bg-slate-50/50 border-x border-slate-200">
-                        <span class="font-bold text-slate-800">${b.wins}/${item.totalDays}</span>
+                        <span class="font-bold text-slate-800">${b.wins}/${totalDays}</span>
                         <span class="text-slate-500 text-[10px]">(${b.winRate}%)</span>
                     </td>
                     <td class="py-3 px-3 text-center bg-slate-50/50 border-r border-slate-200">
@@ -318,7 +356,7 @@
                         <div class="text-[10px] text-slate-400">ROI: ${b.roi}%</div>
                     </td>
                     <td class="py-3 px-3 text-center bg-emerald-50/30 border-r border-emerald-100">
-                        <span class="font-black text-emerald-950">${f.wins}/${item.totalDays}</span>
+                        <span class="font-black text-emerald-950">${f.wins}/${totalDays}</span>
                         <span class="text-emerald-700 text-[10px] font-bold">(${f.winRate}%)</span>
                     </td>
                     <td class="py-3 px-3 text-center bg-emerald-50/30 border-r border-emerald-100">
@@ -339,7 +377,7 @@
         if (!tbody || !currentReport || !currentReport.settledLedger) return;
 
         const selStrat = byId('selectLedgerStrat')?.value || 'shadow';
-        const selFilter = byId('selectLedgerFilter')?.value || 'all';
+        const selFilter = byId('selectLedgerFilter')?.value || 'liveOnly';
         const search = (byId('inputLedgerSearch')?.value || '').trim().toLowerCase();
 
         const allRows = currentReport.settledLedger;
@@ -354,7 +392,8 @@
                 if (!matchDate && !matchSpecial) return false;
             }
 
-            // Outcome filter
+            // Outcome / Scope filter
+            if (selFilter === 'liveOnly') return r.isLive;
             if (selFilter === 'hitFiltered') return stratRes.isFilteredHit;
             if (selFilter === 'eliminated') return stratRes.isEliminatedLoss;
             if (selFilter === 'missBoth') return !stratRes.isBaseHit && !stratRes.isFilteredHit;
@@ -365,11 +404,16 @@
         const displayRows = filteredRows.slice(0, ledgerLimit);
 
         if (byId('ledgerCountInfo')) {
-            byId('ledgerCountInfo').textContent = `Hiển thị ${displayRows.length} / ${filteredRows.length} kỳ (Tổng ${allRows.length} kỳ)`;
+            const liveTotal = allRows.filter(r => r.isLive).length;
+            if (selFilter === 'liveOnly') {
+                byId('ledgerCountInfo').innerHTML = `Hiển thị <strong>${displayRows.length}</strong> / <strong>${filteredRows.length}</strong> kỳ Live thực chiến (Tính lũy kế)`;
+            } else {
+                byId('ledgerCountInfo').innerHTML = `Hiển thị <strong>${displayRows.length}</strong> / <strong>${filteredRows.length}</strong> kỳ (Gồm ${liveTotal} kỳ Live thực chiến + ${allRows.length - liveTotal} kỳ tham khảo)`;
+            }
         }
 
         if (displayRows.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" class="py-6 text-center text-slate-400 italic font-sans">Không tìm thấy bản ghi đối soát phù hợp</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="10" class="py-6 text-center text-slate-400 italic font-sans">Không tìm thấy bản ghi đối soát phù hợp</td></tr>';
             return;
         }
 
@@ -377,6 +421,11 @@
             const s = r.strategies[selStrat];
             const p = r.parityPrediction || {};
             const actStr = r.actualSpecial;
+
+            // Badge Chế Độ
+            const modeBadge = r.isLive
+                ? '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300 whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span> LIVE</span>'
+                : '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-slate-100 text-slate-500 whitespace-nowrap">Tham khảo</span>';
 
             // Form hit status
             const formHitBadge = p.isFormHit
@@ -399,13 +448,22 @@
             else if (s.fHitX1) fBadge = '<span class="text-emerald-800 font-black px-2 py-0.5 rounded bg-emerald-200 border border-emerald-400 shadow-2xs">NỔ X1 ⭐</span>';
             else if (s.isEliminatedLoss) fBadge = '<span class="text-rose-700 font-black px-1.5 py-0.5 rounded bg-rose-100 border border-rose-300" title="Gốc trúng nhưng bị loại do rơi vào cực đối lập">BỊ LOẠI NHẦM ❌</span>';
 
-            // Profit color
+            // Daily Profit
             const pnlK = s.filteredProfitK;
             const pnlClass = pnlK > 0 ? 'text-emerald-700 font-black' : (pnlK === 0 ? 'text-slate-600' : 'text-slate-500');
 
+            // Cumulative Live Profit Column
+            let accumCell = '<td class="py-2.5 px-3 text-right font-sans text-slate-400 text-[10px] italic whitespace-nowrap bg-slate-50/50">-- (Tham khảo)</td>';
+            if (s.liveAccumProfitK !== null) {
+                const accumK = s.liveAccumProfitK;
+                const accumClass = accumK > 0 ? 'text-emerald-800 font-black' : (accumK === 0 ? 'text-slate-700 font-bold' : 'text-rose-600 font-black');
+                accumCell = `<td class="py-2.5 px-3 text-right font-mono text-xs ${accumClass} whitespace-nowrap bg-emerald-50/40">${fmtM(accumK)}</td>`;
+            }
+
             return `
-                <tr class="hover:bg-slate-50 transition-colors">
+                <tr class="hover:bg-slate-50 transition-colors ${r.isLive ? 'bg-white' : 'bg-slate-50/40'}">
                     <td class="py-2.5 px-3 font-mono font-bold text-slate-800 whitespace-nowrap">${fmtDate(r.date)}</td>
+                    <td class="py-2.5 px-3 text-center">${modeBadge}</td>
                     <td class="py-2.5 px-3 text-center">
                         <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-900 text-white font-mono font-black text-xs shadow-xs">
                             ${actStr}
@@ -435,6 +493,7 @@
                     <td class="py-2.5 px-3 text-right font-mono ${pnlClass} whitespace-nowrap">
                         ${fmtM(pnlK)}
                     </td>
+                    ${accumCell}
                 </tr>
             `;
         }).join('');
