@@ -1,7 +1,7 @@
 /**
  * public/js/ai-5.js
  * 
- * Logic giao diện cho trang Đối Soát & Đồng Thuận 5 AI (ChatGPT, DeepSeek, Gemini, Grok, Muse)
+ * Logic giao diện cho trang Đối Soát & Đồng Thuận 5 AI (ChatGPT, Claude, Gemini, Grok, Muse)
  * Hỗ trợ phân tầng Đề (Tier X2 & X1) và Lô (Tier X5 đến X1) tương tự Daily,
  * cùng chế độ đối soát hiển thị đầy đủ dàn số cho ngày đang chờ kết quả.
  */
@@ -660,24 +660,27 @@
 
         const sources = latestDay?.sources || {};
 
-        // Helper lấy nguồn dữ liệu chuẩn xác cho từng AI model (hỗ trợ fallback Perplexity cho Grok khi bị kẹt Cloudflare)
+        // Helper lấy nguồn dữ liệu chuẩn xác cho từng AI model (hỗ trợ fallback Perplexity cho Grok, DeepSeek cho Claude khi xem lịch sử)
         const getModelSrc = (mKey) => {
             let s = sources[mKey] || {};
             if (mKey === 'grok' && (!s.de?.length) && sources.perplexity?.de?.length) {
                 s = sources.perplexity;
             }
+            if (mKey === 'claude' && (!s.de?.length) && sources.deepseek?.de?.length) {
+                s = sources.deepseek;
+            }
             return s;
         };
 
-        const readyCount = ['chatgpt', 'deepseek', 'gemini', 'grok', 'muse'].filter(m => {
+        const readyCount = ['chatgpt', 'claude', 'gemini', 'grok', 'muse'].filter(m => {
             const s = getModelSrc(m);
             return s && (s.de?.length > 0 || s.lo?.length > 0);
         }).length;
 
         // Chuẩn bị dữ liệu chi tiết cho 5 AI độc lập ở accordion phía cuối
-        const aiModelsList = ['chatgpt', 'deepseek', 'gemini', 'grok', 'muse'].map(mKey => {
+        const aiModelsList = ['chatgpt', 'claude', 'gemini', 'grok', 'muse'].map(mKey => {
             const src = getModelSrc(mKey);
-            const info = models[mKey] || { name: mKey, avatar: '🤖', provider: '' };
+            const info = models[mKey] || (mKey === 'claude' ? { name: 'Claude', avatar: '🟣', provider: 'Anthropic' } : { name: mKey, avatar: '🤖', provider: '' });
             const mDeNums = (src.de || []).map(x => String(x).padStart(2, '0'));
             const mLoNums = (src.lo || []).map(x => String(x).padStart(2, '0'));
             const isFallback = mKey === 'grok' && (src.method?.includes('Perplexity') || src.notes?.includes('Perplexity') || src.isFallback);
@@ -1040,7 +1043,7 @@
                                         5 Mô Hình
                                     </span>
                                 </h4>
-                                <p class="text-xs text-slate-500">Xem dàn Đề 20s, Lô 6s và Xiên 4 riêng biệt của ChatGPT, DeepSeek, Gemini, Grok, Muse</p>
+                                <p class="text-xs text-slate-500">Xem dàn Đề 20s, Lô 6s và Xiên 4 riêng biệt của ChatGPT, Claude, Gemini, Grok, Muse</p>
                             </div>
                         </div>
                         <div class="flex items-center gap-2 shrink-0">
@@ -1704,10 +1707,10 @@
                             <div class="pt-3 border-t border-purple-200/60 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 text-xs">
                                 <div class="flex items-center gap-1.5 flex-wrap">
                                     <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wide">5 AI Đóng Góp Ý Kiến:</span>
-                                    ${['chatgpt', 'deepseek', 'gemini', 'grok', 'muse'].map(mKey => {
-                                        const r = results[mKey];
+                                    ${['chatgpt', 'claude', 'gemini', 'grok', 'muse'].map(mKey => {
+                                        const r = results[mKey] || (mKey === 'claude' ? results.deepseek : null);
                                         if (!r) return '';
-                                        const info = models[mKey] || { name: mKey, avatar: '🤖' };
+                                        const info = models[mKey] || (mKey === 'claude' ? { name: 'Claude', avatar: '🟣' } : { name: mKey, avatar: '🤖' });
                                         const isWin = (r.totalProfitK || 0) >= 0;
                                         return `
                                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-[11px] shadow-2xs font-semibold" title="${info.name}: Đề ${r.de?.isHit ? 'Ăn ĐB' : 'Trượt'} · Lô ${r.lo?.hits || 0}n · Net ${formatMoney(r.totalProfitK)}">
@@ -1839,12 +1842,15 @@
                                     </button>
                                     <div id="dayAiContainer-${dateStr}" class="${isDayAiExpanded ? '' : 'hidden'} pt-3 space-y-3">
                                         <div class="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                                            ${['chatgpt', 'deepseek', 'gemini', 'grok', 'muse'].map(mKey => {
+                                            ${['chatgpt', 'claude', 'gemini', 'grok', 'muse'].map(mKey => {
                                                 let src = sources[mKey] || {};
                                                 if (mKey === 'grok' && (!src.de?.length) && sources.perplexity?.de?.length) {
                                                     src = sources.perplexity;
                                                 }
-                                                const info = models[mKey] || { name: mKey, avatar: '🤖' };
+                                                if (mKey === 'claude' && (!src.de?.length) && sources.deepseek?.de?.length) {
+                                                    src = sources.deepseek;
+                                                }
+                                                const info = models[mKey] || (mKey === 'claude' ? { name: 'Claude', avatar: '🟣' } : { name: mKey, avatar: '🤖' });
                                                 const de = src.de || [];
                                                 const lo = src.lo || [];
                                                 const isFallback = mKey === 'grok' && (src.method?.includes('Perplexity') || src.notes?.includes('Perplexity'));
@@ -2254,8 +2260,8 @@
                                 <!-- KHỐI 2: ĐỐI SOÁT CHI TIẾT 5 MÔ HÌNH AI ĐỘC LẬP (ACCORDION THU GỌN Ở CUỐI) -->
                                 ${(filter === 'all' || filter !== 'consensus') ? (() => {
                                     const activeModels = filter === 'all'
-                                        ? ['chatgpt', 'deepseek', 'gemini', 'grok', 'muse']
-                                        : [filter];
+                                        ? ['chatgpt', 'claude', 'gemini', 'grok', 'muse']
+                                        : (filter === 'deepseek' ? ['claude'] : [filter]);
 
                                     const p27Counts = {};
                                     p27.forEach(p => {
@@ -2280,14 +2286,17 @@
                                                         if (mKey === 'grok' && (!src.de?.length) && sources.perplexity?.de?.length) {
                                                             src = sources.perplexity;
                                                         }
-                                                        const r = results[mKey] || {};
-                                                        const mRates = rates[mKey] || {};
+                                                        if (mKey === 'claude' && (!src.de?.length) && sources.deepseek?.de?.length) {
+                                                            src = sources.deepseek;
+                                                        }
+                                                        const r = results[mKey] || (mKey === 'claude' ? results.deepseek : {}) || {};
+                                                        const mRates = rates[mKey] || (mKey === 'claude' ? rates.deepseek : {}) || {};
                                                         const mCumCombo = mRates.combo?.profitK ?? null;
                                                         const mCumDe = mRates.de?.profitK ?? null;
                                                         const mCumLo = mRates.lo?.profitK ?? null;
                                                         const mCumXien = mRates.xien4?.profitK ?? null;
 
-                                                        const info = models[mKey] || { name: mKey, avatar: '🤖' };
+                                                        const info = models[mKey] || (mKey === 'claude' ? { name: 'Claude', avatar: '🟣' } : { name: mKey, avatar: '🤖' });
                                                         const de = src.de || [];
                                                         const lo = src.lo || [];
                                                         const isWin = (r.totalProfitK || 0) >= 0;

@@ -171,7 +171,7 @@
             "roi": -0.0361
           }
         },
-        "deepseek": {
+        "claude": {
           "days": 1,
           "de": {
             "days": 1,
@@ -405,6 +405,65 @@
             "payoutK": 8000,
             "profitK": -25200,
             "roi": -0.759
+          }
+        },
+        "deepseek": {
+          "days": 1,
+          "de": {
+            "days": 1,
+            "wins": 0,
+            "losses": 1,
+            "winRate": 0,
+            "stakeK": 20000,
+            "payoutK": 0,
+            "profitK": -20000,
+            "roi": -1,
+            "longestWin": 0,
+            "longestLoss": 1,
+            "currentWinStreak": 0,
+            "currentLossStreak": 1
+          },
+          "lo": {
+            "days": 1,
+            "wins": 1,
+            "losses": 0,
+            "winRate": 1,
+            "totalHits": 2,
+            "avgHitsPerDay": 2,
+            "stakeK": 13200,
+            "payoutK": 16000,
+            "profitK": 2800,
+            "roi": 0.2121,
+            "longestWin": 1,
+            "longestLoss": 0,
+            "currentWinStreak": 1,
+            "currentLossStreak": 0
+          },
+          "xien4": {
+            "days": 0,
+            "wins": 0,
+            "losses": 0,
+            "winRate": 0,
+            "stakeK": 0,
+            "payoutK": 0,
+            "profitK": 0,
+            "roi": 0,
+            "h4Count": 0,
+            "h3Count": 0,
+            "h2Count": 0,
+            "longestWin": 0,
+            "longestLoss": 0,
+            "currentWinStreak": 0,
+            "currentLossStreak": 0
+          },
+          "combo": {
+            "days": 1,
+            "wins": 0,
+            "winRate": 0,
+            "stakeK": 33200,
+            "payoutK": 16000,
+            "profitK": -17200,
+            "roi": -0.5181
           }
         }
       },
@@ -2376,7 +2435,7 @@
             "roi": -0.3976
           }
         },
-        "deepseek": {
+        "claude": {
           "days": 2,
           "de": {
             "days": 2,
@@ -2610,6 +2669,65 @@
             "payoutK": 40000,
             "profitK": -26400,
             "roi": -0.3976
+          }
+        },
+        "deepseek": {
+          "days": 2,
+          "de": {
+            "days": 2,
+            "wins": 0,
+            "losses": 2,
+            "winRate": 0,
+            "stakeK": 40000,
+            "payoutK": 0,
+            "profitK": -40000,
+            "roi": -1,
+            "longestWin": 0,
+            "longestLoss": 2,
+            "currentWinStreak": 0,
+            "currentLossStreak": 2
+          },
+          "lo": {
+            "days": 2,
+            "wins": 2,
+            "losses": 0,
+            "winRate": 1,
+            "totalHits": 4,
+            "avgHitsPerDay": 2,
+            "stakeK": 26400,
+            "payoutK": 32000,
+            "profitK": 5600,
+            "roi": 0.2121,
+            "longestWin": 2,
+            "longestLoss": 0,
+            "currentWinStreak": 2,
+            "currentLossStreak": 0
+          },
+          "xien4": {
+            "days": 0,
+            "wins": 0,
+            "losses": 0,
+            "winRate": 0,
+            "stakeK": 0,
+            "payoutK": 0,
+            "profitK": 0,
+            "roi": 0,
+            "h4Count": 0,
+            "h3Count": 0,
+            "h2Count": 0,
+            "longestWin": 0,
+            "longestLoss": 0,
+            "currentWinStreak": 0,
+            "currentLossStreak": 0
+          },
+          "combo": {
+            "days": 2,
+            "wins": 0,
+            "winRate": 0,
+            "stakeK": 66400,
+            "payoutK": 32000,
+            "profitK": -34400,
+            "roi": -0.5181
           }
         }
       },
@@ -4772,7 +4890,7 @@
             "roi": -0.5066
           }
         },
-        "deepseek": {
+        "claude": {
           "days": 3,
           "de": {
             "days": 3,
@@ -5006,6 +5124,65 @@
             "payoutK": 160000,
             "profitK": 38400,
             "roi": 0.3158
+          }
+        },
+        "deepseek": {
+          "days": 3,
+          "de": {
+            "days": 3,
+            "wins": 0,
+            "losses": 3,
+            "winRate": 0,
+            "stakeK": 60000,
+            "payoutK": 0,
+            "profitK": -60000,
+            "roi": -1,
+            "longestWin": 0,
+            "longestLoss": 3,
+            "currentWinStreak": 0,
+            "currentLossStreak": 3
+          },
+          "lo": {
+            "days": 3,
+            "wins": 3,
+            "losses": 0,
+            "winRate": 1,
+            "totalHits": 7,
+            "avgHitsPerDay": 2.33,
+            "stakeK": 39600,
+            "payoutK": 56000,
+            "profitK": 16400,
+            "roi": 0.4141,
+            "longestWin": 3,
+            "longestLoss": 0,
+            "currentWinStreak": 3,
+            "currentLossStreak": 0
+          },
+          "xien4": {
+            "days": 1,
+            "wins": 0,
+            "losses": 1,
+            "winRate": 0,
+            "stakeK": 22000,
+            "payoutK": 0,
+            "profitK": -22000,
+            "roi": -1,
+            "h4Count": 0,
+            "h3Count": 0,
+            "h2Count": 0,
+            "longestWin": 0,
+            "longestLoss": 1,
+            "currentWinStreak": 0,
+            "currentLossStreak": 1
+          },
+          "combo": {
+            "days": 3,
+            "wins": 0,
+            "winRate": 0,
+            "stakeK": 121600,
+            "payoutK": 56000,
+            "profitK": -65600,
+            "roi": -0.5395
           }
         }
       },
@@ -7175,7 +7352,7 @@
             "roi": -0.5701
           }
         },
-        "deepseek": {
+        "claude": {
           "days": 4,
           "de": {
             "days": 4,
@@ -7409,6 +7586,65 @@
             "payoutK": 204000,
             "profitK": 27200,
             "roi": 0.1538
+          }
+        },
+        "deepseek": {
+          "days": 4,
+          "de": {
+            "days": 4,
+            "wins": 0,
+            "losses": 4,
+            "winRate": 0,
+            "stakeK": 80000,
+            "payoutK": 0,
+            "profitK": -80000,
+            "roi": -1,
+            "longestWin": 0,
+            "longestLoss": 4,
+            "currentWinStreak": 0,
+            "currentLossStreak": 4
+          },
+          "lo": {
+            "days": 4,
+            "wins": 3,
+            "losses": 1,
+            "winRate": 0.75,
+            "totalHits": 8,
+            "avgHitsPerDay": 2,
+            "stakeK": 52800,
+            "payoutK": 64000,
+            "profitK": 11200,
+            "roi": 0.2121,
+            "longestWin": 3,
+            "longestLoss": 1,
+            "currentWinStreak": 0,
+            "currentLossStreak": 1
+          },
+          "xien4": {
+            "days": 2,
+            "wins": 0,
+            "losses": 2,
+            "winRate": 0,
+            "stakeK": 44000,
+            "payoutK": 0,
+            "profitK": -44000,
+            "roi": -1,
+            "h4Count": 0,
+            "h3Count": 0,
+            "h2Count": 0,
+            "longestWin": 0,
+            "longestLoss": 2,
+            "currentWinStreak": 0,
+            "currentLossStreak": 2
+          },
+          "combo": {
+            "days": 4,
+            "wins": 0,
+            "winRate": 0,
+            "stakeK": 176800,
+            "payoutK": 64000,
+            "profitK": -112800,
+            "roi": -0.638
           }
         }
       },
@@ -9873,7 +10109,7 @@
             "roi": -0.6207
           }
         },
-        "deepseek": {
+        "claude": {
           "days": 5,
           "de": {
             "days": 5,
@@ -10107,6 +10343,65 @@
             "payoutK": 212000,
             "profitK": -20000,
             "roi": -0.0862
+          }
+        },
+        "deepseek": {
+          "days": 5,
+          "de": {
+            "days": 5,
+            "wins": 0,
+            "losses": 5,
+            "winRate": 0,
+            "stakeK": 100000,
+            "payoutK": 0,
+            "profitK": -100000,
+            "roi": -1,
+            "longestWin": 0,
+            "longestLoss": 5,
+            "currentWinStreak": 0,
+            "currentLossStreak": 5
+          },
+          "lo": {
+            "days": 5,
+            "wins": 3,
+            "losses": 2,
+            "winRate": 0.6,
+            "totalHits": 9,
+            "avgHitsPerDay": 1.8,
+            "stakeK": 66000,
+            "payoutK": 72000,
+            "profitK": 6000,
+            "roi": 0.0909,
+            "longestWin": 3,
+            "longestLoss": 2,
+            "currentWinStreak": 0,
+            "currentLossStreak": 2
+          },
+          "xien4": {
+            "days": 3,
+            "wins": 0,
+            "losses": 3,
+            "winRate": 0,
+            "stakeK": 66000,
+            "payoutK": 0,
+            "profitK": -66000,
+            "roi": -1,
+            "h4Count": 0,
+            "h3Count": 0,
+            "h2Count": 0,
+            "longestWin": 0,
+            "longestLoss": 3,
+            "currentWinStreak": 0,
+            "currentLossStreak": 3
+          },
+          "combo": {
+            "days": 5,
+            "wins": 0,
+            "winRate": 0,
+            "stakeK": 232000,
+            "payoutK": 72000,
+            "profitK": -160000,
+            "roi": -0.6897
           }
         }
       },
@@ -12504,7 +12799,7 @@
             "roi": -0.3454
           }
         },
-        "deepseek": {
+        "claude": {
           "days": 6,
           "de": {
             "days": 6,
@@ -12738,6 +13033,65 @@
             "payoutK": 260000,
             "profitK": -27200,
             "roi": -0.0947
+          }
+        },
+        "deepseek": {
+          "days": 6,
+          "de": {
+            "days": 6,
+            "wins": 1,
+            "losses": 5,
+            "winRate": 0.1667,
+            "stakeK": 120000,
+            "payoutK": 84000,
+            "profitK": -36000,
+            "roi": -0.3,
+            "longestWin": 1,
+            "longestLoss": 5,
+            "currentWinStreak": 1,
+            "currentLossStreak": 0
+          },
+          "lo": {
+            "days": 6,
+            "wins": 4,
+            "losses": 2,
+            "winRate": 0.6667,
+            "totalHits": 14,
+            "avgHitsPerDay": 2.33,
+            "stakeK": 79200,
+            "payoutK": 112000,
+            "profitK": 32800,
+            "roi": 0.4141,
+            "longestWin": 3,
+            "longestLoss": 2,
+            "currentWinStreak": 1,
+            "currentLossStreak": 0
+          },
+          "xien4": {
+            "days": 4,
+            "wins": 1,
+            "losses": 3,
+            "winRate": 0.25,
+            "stakeK": 88000,
+            "payoutK": 84000,
+            "profitK": -4000,
+            "roi": -0.0455,
+            "h4Count": 0,
+            "h3Count": 1,
+            "h2Count": 0,
+            "longestWin": 1,
+            "longestLoss": 3,
+            "currentWinStreak": 1,
+            "currentLossStreak": 0
+          },
+          "combo": {
+            "days": 6,
+            "wins": 1,
+            "winRate": 0.1667,
+            "stakeK": 287200,
+            "payoutK": 280000,
+            "profitK": -7200,
+            "roi": -0.0251
           }
         }
       },
@@ -15225,9 +15579,9 @@
         "roi": -0.3454
       }
     },
-    "deepseek": {
-      "id": "deepseek",
-      "name": "DeepSeek",
+    "claude": {
+      "id": "claude",
+      "name": "Claude",
       "days": 6,
       "de": {
         "days": 6,
@@ -15467,6 +15821,67 @@
         "payoutK": 260000,
         "profitK": -27200,
         "roi": -0.0947
+      }
+    },
+    "deepseek": {
+      "id": "deepseek",
+      "name": "DeepSeek",
+      "days": 6,
+      "de": {
+        "days": 6,
+        "wins": 1,
+        "losses": 5,
+        "winRate": 0.1667,
+        "stakeK": 120000,
+        "payoutK": 84000,
+        "profitK": -36000,
+        "roi": -0.3,
+        "longestWin": 1,
+        "longestLoss": 5,
+        "currentWinStreak": 1,
+        "currentLossStreak": 0
+      },
+      "lo": {
+        "days": 6,
+        "wins": 4,
+        "losses": 2,
+        "winRate": 0.6667,
+        "totalHits": 14,
+        "avgHitsPerDay": 2.33,
+        "stakeK": 79200,
+        "payoutK": 112000,
+        "profitK": 32800,
+        "roi": 0.4141,
+        "longestWin": 3,
+        "longestLoss": 2,
+        "currentWinStreak": 1,
+        "currentLossStreak": 0
+      },
+      "xien4": {
+        "days": 4,
+        "wins": 1,
+        "losses": 3,
+        "winRate": 0.25,
+        "stakeK": 88000,
+        "payoutK": 84000,
+        "profitK": -4000,
+        "roi": -0.0455,
+        "h4Count": 0,
+        "h3Count": 1,
+        "h2Count": 0,
+        "longestWin": 1,
+        "longestLoss": 3,
+        "currentWinStreak": 1,
+        "currentLossStreak": 0
+      },
+      "combo": {
+        "days": 6,
+        "wins": 1,
+        "winRate": 0.1667,
+        "stakeK": 287200,
+        "payoutK": 280000,
+        "profitK": -7200,
+        "roi": -0.0251
       }
     }
   }

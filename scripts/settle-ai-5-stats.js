@@ -4,7 +4,7 @@
 /**
  * scripts/settle-ai-5-stats.js
  * 
- * Script đối soát tự động hàng ngày cho 5 AI (ChatGPT, DeepSeek, Gemini, Grok, Muse) và Phương pháp Gộp Consensus:
+ * Script đối soát tự động hàng ngày cho 5 AI (ChatGPT, Claude, Gemini, Grok, Muse) và Phương pháp Gộp Consensus:
  * - Chạy lúc 19:00 VN hàng ngày (12:00 UTC) qua GitHub Actions, tự động retry mỗi 1 tiếng (19h, 20h, 21h, 22h, 23h VN).
  * - Lấy kết quả mở thưởng XSMB (từ xoso.com.vn, SSOT registry, hoặc R2).
  * - Nếu chưa có kết quả (chưa quay xong): log thông báo và chờ hoặc kết thúc an toàn để retry sau 1 tiếng.
@@ -136,7 +136,7 @@ async function handleNextDayPredictions(data, targetDate) {
             date: nextDate,
             sources: {
                 chatgpt: { de: [], lo: [] },
-                deepseek: { de: [], lo: [] },
+                claude: { de: [], lo: [] },
                 gemini: { de: [], lo: [] },
                 grok: { de: [], lo: [] },
                 muse: { de: [], lo: [] }
