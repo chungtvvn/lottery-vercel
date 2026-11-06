@@ -1,0 +1,1020 @@
+{
+  "metadata": {
+    "title": "Báo cáo Thực nghiệm Toàn diện 2026: Ensemble 5 AI vs Các Phương Pháp Hiện Tại",
+    "generatedAt": "2026-11-06T03:28:28.211Z",
+    "fullDraws": 299,
+    "liveDraws": 45,
+    "strictPit": true,
+    "theoreticalExpectationBounds": true
+  },
+  "deStrategies": {
+    "tiered": {
+      "shadow": {
+        "strategyId": "shadow",
+        "totalDays": 43,
+        "base": {
+          "wins": 21,
+          "winRate": 48.8,
+          "totalStakeM": 2580,
+          "totalPayoutM": 2688,
+          "netProfitM": 108,
+          "roi": 4.2
+        },
+        "filtered": {
+          "wins": 16,
+          "winRate": 37.2,
+          "totalStakeM": 1912,
+          "totalPayoutM": 2016,
+          "netProfitM": 104,
+          "roi": 5.4,
+          "savedStakeM": 668,
+          "savedPct": 25.9,
+          "eliminatedLosses": 5
+        },
+        "live": {
+          "totalDays": 43,
+          "base": {
+            "wins": 21,
+            "winRate": 48.8,
+            "totalStakeM": 2580,
+            "totalPayoutM": 2688,
+            "netProfitM": 108,
+            "roi": 4.2
+          },
+          "filtered": {
+            "wins": 16,
+            "winRate": 37.2,
+            "totalStakeM": 1912,
+            "totalPayoutM": 2016,
+            "netProfitM": 104,
+            "roi": 5.4,
+            "savedStakeM": 668,
+            "savedPct": 25.9,
+            "eliminatedLosses": 5
+          }
+        },
+        "full2026": {
+          "totalDays": 297,
+          "base": {
+            "wins": 135,
+            "winRate": 45.5,
+            "totalStakeM": 17820,
+            "totalPayoutM": 16212,
+            "netProfitM": -1608,
+            "roi": -9
+          },
+          "filtered": {
+            "wins": 111,
+            "winRate": 37.4,
+            "totalStakeM": 14027,
+            "totalPayoutM": 13356,
+            "netProfitM": -671,
+            "roi": -4.8,
+            "savedStakeM": 3793,
+            "savedPct": 21.3,
+            "eliminatedLosses": 24
+          }
+        }
+      },
+      "triCore": {
+        "strategyId": "triCore",
+        "totalDays": 45,
+        "base": {
+          "wins": 13,
+          "winRate": 28.9,
+          "totalStakeM": 1620,
+          "totalPayoutM": 1680,
+          "netProfitM": 60,
+          "roi": 3.7
+        },
+        "filtered": {
+          "wins": 11,
+          "winRate": 24.4,
+          "totalStakeM": 1181,
+          "totalPayoutM": 1344,
+          "netProfitM": 163,
+          "roi": 13.8,
+          "savedStakeM": 439,
+          "savedPct": 27.1,
+          "eliminatedLosses": 2
+        },
+        "live": {
+          "totalDays": 45,
+          "base": {
+            "wins": 13,
+            "winRate": 28.9,
+            "totalStakeM": 1620,
+            "totalPayoutM": 1680,
+            "netProfitM": 60,
+            "roi": 3.7
+          },
+          "filtered": {
+            "wins": 11,
+            "winRate": 24.4,
+            "totalStakeM": 1181,
+            "totalPayoutM": 1344,
+            "netProfitM": 163,
+            "roi": 13.8,
+            "savedStakeM": 439,
+            "savedPct": 27.1,
+            "eliminatedLosses": 2
+          }
+        },
+        "full2026": {
+          "totalDays": 299,
+          "base": {
+            "wins": 78,
+            "winRate": 26.1,
+            "totalStakeM": 10764,
+            "totalPayoutM": 9660,
+            "netProfitM": -1104,
+            "roi": -10.3
+          },
+          "filtered": {
+            "wins": 68,
+            "winRate": 22.7,
+            "totalStakeM": 8194,
+            "totalPayoutM": 8400,
+            "netProfitM": 206,
+            "roi": 2.5,
+            "savedStakeM": 2570,
+            "savedPct": 23.9,
+            "eliminatedLosses": 10
+          }
+        }
+      },
+      "fusion": {
+        "strategyId": "fusion",
+        "totalDays": 42,
+        "base": {
+          "wins": 19,
+          "winRate": 45.2,
+          "totalStakeM": 2268,
+          "totalPayoutM": 2520,
+          "netProfitM": 252,
+          "roi": 11.1
+        },
+        "filtered": {
+          "wins": 15,
+          "winRate": 35.7,
+          "totalStakeM": 1722,
+          "totalPayoutM": 1932,
+          "netProfitM": 210,
+          "roi": 12.2,
+          "savedStakeM": 546,
+          "savedPct": 24.1,
+          "eliminatedLosses": 4
+        },
+        "live": {
+          "totalDays": 42,
+          "base": {
+            "wins": 19,
+            "winRate": 45.2,
+            "totalStakeM": 2268,
+            "totalPayoutM": 2520,
+            "netProfitM": 252,
+            "roi": 11.1
+          },
+          "filtered": {
+            "wins": 15,
+            "winRate": 35.7,
+            "totalStakeM": 1722,
+            "totalPayoutM": 1932,
+            "netProfitM": 210,
+            "roi": 12.2,
+            "savedStakeM": 546,
+            "savedPct": 24.1,
+            "eliminatedLosses": 4
+          }
+        },
+        "full2026": {
+          "totalDays": 296,
+          "base": {
+            "wins": 101,
+            "winRate": 34.1,
+            "totalStakeM": 15984,
+            "totalPayoutM": 13356,
+            "netProfitM": -2628,
+            "roi": -16.4
+          },
+          "filtered": {
+            "wins": 82,
+            "winRate": 27.7,
+            "totalStakeM": 12633,
+            "totalPayoutM": 10836,
+            "netProfitM": -1797,
+            "roi": -14.2,
+            "savedStakeM": 3351,
+            "savedPct": 21,
+            "eliminatedLosses": 19
+          }
+        }
+      },
+      "mirofish": {
+        "strategyId": "mirofish",
+        "totalDays": 45,
+        "base": {
+          "wins": 21,
+          "winRate": 46.7,
+          "totalStakeM": 2803,
+          "totalPayoutM": 2940,
+          "netProfitM": 137,
+          "roi": 4.9
+        },
+        "filtered": {
+          "wins": 18,
+          "winRate": 40,
+          "totalStakeM": 2081,
+          "totalPayoutM": 2520,
+          "netProfitM": 439,
+          "roi": 21.1,
+          "savedStakeM": 722,
+          "savedPct": 25.8,
+          "eliminatedLosses": 3
+        },
+        "live": {
+          "totalDays": 45,
+          "base": {
+            "wins": 21,
+            "winRate": 46.7,
+            "totalStakeM": 2803,
+            "totalPayoutM": 2940,
+            "netProfitM": 137,
+            "roi": 4.9
+          },
+          "filtered": {
+            "wins": 18,
+            "winRate": 40,
+            "totalStakeM": 2081,
+            "totalPayoutM": 2520,
+            "netProfitM": 439,
+            "roi": 21.1,
+            "savedStakeM": 722,
+            "savedPct": 25.8,
+            "eliminatedLosses": 3
+          }
+        },
+        "full2026": {
+          "totalDays": 299,
+          "base": {
+            "wins": 127,
+            "winRate": 42.5,
+            "totalStakeM": 18512,
+            "totalPayoutM": 17640,
+            "netProfitM": -872,
+            "roi": -4.7
+          },
+          "filtered": {
+            "wins": 105,
+            "winRate": 35.1,
+            "totalStakeM": 14402,
+            "totalPayoutM": 14784,
+            "netProfitM": 382,
+            "roi": 2.7,
+            "savedStakeM": 4110,
+            "savedPct": 22.2,
+            "eliminatedLosses": 22
+          }
+        }
+      },
+      "daily": {
+        "strategyId": "daily",
+        "totalDays": 44,
+        "base": {
+          "wins": 16,
+          "winRate": 36.4,
+          "totalStakeM": 2614,
+          "totalPayoutM": 2268,
+          "netProfitM": -346,
+          "roi": -13.2
+        },
+        "filtered": {
+          "wins": 12,
+          "winRate": 27.3,
+          "totalStakeM": 2017,
+          "totalPayoutM": 1848,
+          "netProfitM": -169,
+          "roi": -8.4,
+          "savedStakeM": 597,
+          "savedPct": 22.8,
+          "eliminatedLosses": 4
+        },
+        "live": {
+          "totalDays": 44,
+          "base": {
+            "wins": 16,
+            "winRate": 36.4,
+            "totalStakeM": 2614,
+            "totalPayoutM": 2268,
+            "netProfitM": -346,
+            "roi": -13.2
+          },
+          "filtered": {
+            "wins": 12,
+            "winRate": 27.3,
+            "totalStakeM": 2017,
+            "totalPayoutM": 1848,
+            "netProfitM": -169,
+            "roi": -8.4,
+            "savedStakeM": 597,
+            "savedPct": 22.8,
+            "eliminatedLosses": 4
+          }
+        },
+        "full2026": {
+          "totalDays": 298,
+          "base": {
+            "wins": 95,
+            "winRate": 31.9,
+            "totalStakeM": 17854,
+            "totalPayoutM": 14028,
+            "netProfitM": -3826,
+            "roi": -21.4
+          },
+          "filtered": {
+            "wins": 76,
+            "winRate": 25.5,
+            "totalStakeM": 13713,
+            "totalPayoutM": 11256,
+            "netProfitM": -2457,
+            "roi": -17.9,
+            "savedStakeM": 4141,
+            "savedPct": 23.2,
+            "eliminatedLosses": 19
+          }
+        }
+      },
+      "ai5Ensemble": {
+        "strategyId": "ai5Ensemble",
+        "totalDays": 45,
+        "base": {
+          "wins": 30,
+          "winRate": 66.7,
+          "totalStakeM": 3375,
+          "totalPayoutM": 4116,
+          "netProfitM": 741,
+          "roi": 22
+        },
+        "filtered": {
+          "wins": 24,
+          "winRate": 53.3,
+          "totalStakeM": 2493,
+          "totalPayoutM": 3276,
+          "netProfitM": 783,
+          "roi": 31.4,
+          "savedStakeM": 882,
+          "savedPct": 26.1,
+          "eliminatedLosses": 6
+        },
+        "live": {
+          "totalDays": 45,
+          "base": {
+            "wins": 30,
+            "winRate": 66.7,
+            "totalStakeM": 3375,
+            "totalPayoutM": 4116,
+            "netProfitM": 741,
+            "roi": 22
+          },
+          "filtered": {
+            "wins": 24,
+            "winRate": 53.3,
+            "totalStakeM": 2493,
+            "totalPayoutM": 3276,
+            "netProfitM": 783,
+            "roi": 31.4,
+            "savedStakeM": 882,
+            "savedPct": 26.1,
+            "eliminatedLosses": 6
+          }
+        },
+        "full2026": {
+          "totalDays": 299,
+          "base": {
+            "wins": 150,
+            "winRate": 50.2,
+            "totalStakeM": 22425,
+            "totalPayoutM": 19404,
+            "netProfitM": -3021,
+            "roi": -13.5
+          },
+          "filtered": {
+            "wins": 119,
+            "winRate": 39.8,
+            "totalStakeM": 16784,
+            "totalPayoutM": 15540,
+            "netProfitM": -1244,
+            "roi": -7.4,
+            "savedStakeM": 5641,
+            "savedPct": 25.2,
+            "eliminatedLosses": 31
+          }
+        }
+      }
+    },
+    "flat": {
+      "shadow": {
+        "strategyId": "shadow",
+        "totalDays": 43,
+        "base": {
+          "wins": 21,
+          "winRate": 48.8,
+          "totalStakeM": 1720,
+          "totalPayoutM": 1764,
+          "netProfitM": 44,
+          "roi": 2.6
+        },
+        "filtered": {
+          "wins": 16,
+          "winRate": 37.2,
+          "totalStakeM": 1281,
+          "totalPayoutM": 1344,
+          "netProfitM": 63,
+          "roi": 4.9,
+          "savedStakeM": 439,
+          "savedPct": 25.5,
+          "eliminatedLosses": 5
+        },
+        "live": {
+          "totalDays": 43,
+          "base": {
+            "wins": 21,
+            "winRate": 48.8,
+            "totalStakeM": 1720,
+            "totalPayoutM": 1764,
+            "netProfitM": 44,
+            "roi": 2.6
+          },
+          "filtered": {
+            "wins": 16,
+            "winRate": 37.2,
+            "totalStakeM": 1281,
+            "totalPayoutM": 1344,
+            "netProfitM": 63,
+            "roi": 4.9,
+            "savedStakeM": 439,
+            "savedPct": 25.5,
+            "eliminatedLosses": 5
+          }
+        },
+        "full2026": {
+          "totalDays": 297,
+          "base": {
+            "wins": 135,
+            "winRate": 45.5,
+            "totalStakeM": 11880,
+            "totalPayoutM": 11340,
+            "netProfitM": -540,
+            "roi": -4.5
+          },
+          "filtered": {
+            "wins": 111,
+            "winRate": 37.4,
+            "totalStakeM": 9296,
+            "totalPayoutM": 9324,
+            "netProfitM": 28,
+            "roi": 0.3,
+            "savedStakeM": 2584,
+            "savedPct": 21.8,
+            "eliminatedLosses": 24
+          }
+        }
+      },
+      "triCore": {
+        "strategyId": "triCore",
+        "totalDays": 45,
+        "base": {
+          "wins": 13,
+          "winRate": 28.9,
+          "totalStakeM": 1080,
+          "totalPayoutM": 1092,
+          "netProfitM": 12,
+          "roi": 1.1
+        },
+        "filtered": {
+          "wins": 11,
+          "winRate": 24.4,
+          "totalStakeM": 786,
+          "totalPayoutM": 924,
+          "netProfitM": 138,
+          "roi": 17.6,
+          "savedStakeM": 294,
+          "savedPct": 27.2,
+          "eliminatedLosses": 2
+        },
+        "live": {
+          "totalDays": 45,
+          "base": {
+            "wins": 13,
+            "winRate": 28.9,
+            "totalStakeM": 1080,
+            "totalPayoutM": 1092,
+            "netProfitM": 12,
+            "roi": 1.1
+          },
+          "filtered": {
+            "wins": 11,
+            "winRate": 24.4,
+            "totalStakeM": 786,
+            "totalPayoutM": 924,
+            "netProfitM": 138,
+            "roi": 17.6,
+            "savedStakeM": 294,
+            "savedPct": 27.2,
+            "eliminatedLosses": 2
+          }
+        },
+        "full2026": {
+          "totalDays": 299,
+          "base": {
+            "wins": 78,
+            "winRate": 26.1,
+            "totalStakeM": 7176,
+            "totalPayoutM": 6552,
+            "netProfitM": -624,
+            "roi": -8.7
+          },
+          "filtered": {
+            "wins": 68,
+            "winRate": 22.7,
+            "totalStakeM": 5419,
+            "totalPayoutM": 5712,
+            "netProfitM": 293,
+            "roi": 5.4,
+            "savedStakeM": 1757,
+            "savedPct": 24.5,
+            "eliminatedLosses": 10
+          }
+        }
+      },
+      "fusion": {
+        "strategyId": "fusion",
+        "totalDays": 42,
+        "base": {
+          "wins": 19,
+          "winRate": 45.2,
+          "totalStakeM": 1512,
+          "totalPayoutM": 1596,
+          "netProfitM": 84,
+          "roi": 5.6
+        },
+        "filtered": {
+          "wins": 15,
+          "winRate": 35.7,
+          "totalStakeM": 1149,
+          "totalPayoutM": 1260,
+          "netProfitM": 111,
+          "roi": 9.7,
+          "savedStakeM": 363,
+          "savedPct": 24,
+          "eliminatedLosses": 4
+        },
+        "live": {
+          "totalDays": 42,
+          "base": {
+            "wins": 19,
+            "winRate": 45.2,
+            "totalStakeM": 1512,
+            "totalPayoutM": 1596,
+            "netProfitM": 84,
+            "roi": 5.6
+          },
+          "filtered": {
+            "wins": 15,
+            "winRate": 35.7,
+            "totalStakeM": 1149,
+            "totalPayoutM": 1260,
+            "netProfitM": 111,
+            "roi": 9.7,
+            "savedStakeM": 363,
+            "savedPct": 24,
+            "eliminatedLosses": 4
+          }
+        },
+        "full2026": {
+          "totalDays": 296,
+          "base": {
+            "wins": 101,
+            "winRate": 34.1,
+            "totalStakeM": 10656,
+            "totalPayoutM": 8484,
+            "netProfitM": -2172,
+            "roi": -20.4
+          },
+          "filtered": {
+            "wins": 82,
+            "winRate": 27.7,
+            "totalStakeM": 8250,
+            "totalPayoutM": 6888,
+            "netProfitM": -1362,
+            "roi": -16.5,
+            "savedStakeM": 2406,
+            "savedPct": 22.6,
+            "eliminatedLosses": 19
+          }
+        }
+      },
+      "mirofish": {
+        "strategyId": "mirofish",
+        "totalDays": 45,
+        "base": {
+          "wins": 21,
+          "winRate": 46.7,
+          "totalStakeM": 1724,
+          "totalPayoutM": 1764,
+          "netProfitM": 40,
+          "roi": 2.3
+        },
+        "filtered": {
+          "wins": 18,
+          "winRate": 40,
+          "totalStakeM": 1281,
+          "totalPayoutM": 1512,
+          "netProfitM": 231,
+          "roi": 18,
+          "savedStakeM": 443,
+          "savedPct": 25.7,
+          "eliminatedLosses": 3
+        },
+        "live": {
+          "totalDays": 45,
+          "base": {
+            "wins": 21,
+            "winRate": 46.7,
+            "totalStakeM": 1724,
+            "totalPayoutM": 1764,
+            "netProfitM": 40,
+            "roi": 2.3
+          },
+          "filtered": {
+            "wins": 18,
+            "winRate": 40,
+            "totalStakeM": 1281,
+            "totalPayoutM": 1512,
+            "netProfitM": 231,
+            "roi": 18,
+            "savedStakeM": 443,
+            "savedPct": 25.7,
+            "eliminatedLosses": 3
+          }
+        },
+        "full2026": {
+          "totalDays": 299,
+          "base": {
+            "wins": 127,
+            "winRate": 42.5,
+            "totalStakeM": 11385,
+            "totalPayoutM": 10668,
+            "netProfitM": -717,
+            "roi": -6.3
+          },
+          "filtered": {
+            "wins": 105,
+            "winRate": 35.1,
+            "totalStakeM": 8797,
+            "totalPayoutM": 8820,
+            "netProfitM": 23,
+            "roi": 0.3,
+            "savedStakeM": 2588,
+            "savedPct": 22.7,
+            "eliminatedLosses": 22
+          }
+        }
+      },
+      "daily": {
+        "strategyId": "daily",
+        "totalDays": 44,
+        "base": {
+          "wins": 16,
+          "winRate": 36.4,
+          "totalStakeM": 1700,
+          "totalPayoutM": 1344,
+          "netProfitM": -356,
+          "roi": -20.9
+        },
+        "filtered": {
+          "wins": 12,
+          "winRate": 27.3,
+          "totalStakeM": 1295,
+          "totalPayoutM": 1008,
+          "netProfitM": -287,
+          "roi": -22.2,
+          "savedStakeM": 405,
+          "savedPct": 23.8,
+          "eliminatedLosses": 4
+        },
+        "live": {
+          "totalDays": 44,
+          "base": {
+            "wins": 16,
+            "winRate": 36.4,
+            "totalStakeM": 1700,
+            "totalPayoutM": 1344,
+            "netProfitM": -356,
+            "roi": -20.9
+          },
+          "filtered": {
+            "wins": 12,
+            "winRate": 27.3,
+            "totalStakeM": 1295,
+            "totalPayoutM": 1008,
+            "netProfitM": -287,
+            "roi": -22.2,
+            "savedStakeM": 405,
+            "savedPct": 23.8,
+            "eliminatedLosses": 4
+          }
+        },
+        "full2026": {
+          "totalDays": 298,
+          "base": {
+            "wins": 95,
+            "winRate": 31.9,
+            "totalStakeM": 10442,
+            "totalPayoutM": 7980,
+            "netProfitM": -2462,
+            "roi": -23.6
+          },
+          "filtered": {
+            "wins": 76,
+            "winRate": 25.5,
+            "totalStakeM": 7973,
+            "totalPayoutM": 6384,
+            "netProfitM": -1589,
+            "roi": -19.9,
+            "savedStakeM": 2469,
+            "savedPct": 23.6,
+            "eliminatedLosses": 19
+          }
+        }
+      },
+      "ai5Ensemble": {
+        "strategyId": "ai5Ensemble",
+        "totalDays": 45,
+        "base": {
+          "wins": 30,
+          "winRate": 66.7,
+          "totalStakeM": 2250,
+          "totalPayoutM": 2520,
+          "netProfitM": 270,
+          "roi": 12
+        },
+        "filtered": {
+          "wins": 24,
+          "winRate": 53.3,
+          "totalStakeM": 1678,
+          "totalPayoutM": 2016,
+          "netProfitM": 338,
+          "roi": 20.1,
+          "savedStakeM": 572,
+          "savedPct": 25.4,
+          "eliminatedLosses": 6
+        },
+        "live": {
+          "totalDays": 45,
+          "base": {
+            "wins": 30,
+            "winRate": 66.7,
+            "totalStakeM": 2250,
+            "totalPayoutM": 2520,
+            "netProfitM": 270,
+            "roi": 12
+          },
+          "filtered": {
+            "wins": 24,
+            "winRate": 53.3,
+            "totalStakeM": 1678,
+            "totalPayoutM": 2016,
+            "netProfitM": 338,
+            "roi": 20.1,
+            "savedStakeM": 572,
+            "savedPct": 25.4,
+            "eliminatedLosses": 6
+          }
+        },
+        "full2026": {
+          "totalDays": 299,
+          "base": {
+            "wins": 150,
+            "winRate": 50.2,
+            "totalStakeM": 14950,
+            "totalPayoutM": 12600,
+            "netProfitM": -2350,
+            "roi": -15.7
+          },
+          "filtered": {
+            "wins": 119,
+            "winRate": 39.8,
+            "totalStakeM": 11132,
+            "totalPayoutM": 9996,
+            "netProfitM": -1136,
+            "roi": -10.2,
+            "savedStakeM": 3818,
+            "savedPct": 25.5,
+            "eliminatedLosses": 31
+          }
+        }
+      }
+    }
+  },
+  "loStrategies": {
+    "ai5Ensemble": {
+      "live": {
+        "top6": {
+          "days": 45,
+          "hitDays": 38,
+          "hitRate": 84.4,
+          "winDays": 17,
+          "winRate": 37.8,
+          "breakEvenDays": 0,
+          "totalHits": 66,
+          "avgHits": 1.467,
+          "totalStake": 594,
+          "totalPayout": 528,
+          "netProfit": -66,
+          "roi": -11.1,
+          "maxDrawdown": 131.2,
+          "maxLossStreak": 7
+        },
+        "top7": {
+          "days": 45,
+          "hitDays": 38,
+          "hitRate": 84.4,
+          "winDays": 19,
+          "winRate": 42.2,
+          "breakEvenDays": 0,
+          "totalHits": 72,
+          "avgHits": 1.6,
+          "totalStake": 693,
+          "totalPayout": 576,
+          "netProfit": -117,
+          "roi": -16.9,
+          "maxDrawdown": 170.4,
+          "maxLossStreak": 5
+        },
+        "top20": {
+          "days": 45,
+          "hitDays": 45,
+          "hitRate": 100,
+          "winDays": 21,
+          "winRate": 46.7,
+          "breakEvenDays": 0,
+          "totalHits": 238,
+          "avgHits": 5.289,
+          "totalStake": 1980,
+          "totalPayout": 1904,
+          "netProfit": -76,
+          "roi": -3.8,
+          "maxDrawdown": 164,
+          "maxLossStreak": 8
+        }
+      },
+      "full": {
+        "top6": {
+          "days": 299,
+          "hitDays": 242,
+          "hitRate": 80.9,
+          "winDays": 138,
+          "winRate": 46.2,
+          "breakEvenDays": 0,
+          "totalHits": 486,
+          "avgHits": 1.625,
+          "totalStake": 3946.8,
+          "totalPayout": 3888,
+          "netProfit": -58.8,
+          "roi": -1.5,
+          "maxDrawdown": 136,
+          "maxLossStreak": 7
+        },
+        "top7": {
+          "days": 299,
+          "hitDays": 259,
+          "hitRate": 86.6,
+          "winDays": 161,
+          "winRate": 53.8,
+          "breakEvenDays": 0,
+          "totalHits": 569,
+          "avgHits": 1.903,
+          "totalStake": 4604.6,
+          "totalPayout": 4552,
+          "netProfit": -52.6,
+          "roi": -1.1,
+          "maxDrawdown": 173.2,
+          "maxLossStreak": 5
+        },
+        "top20": {
+          "days": 299,
+          "hitDays": 298,
+          "hitRate": 99.7,
+          "winDays": 134,
+          "winRate": 44.8,
+          "breakEvenDays": 0,
+          "totalHits": 1600,
+          "avgHits": 5.351,
+          "totalStake": 13156,
+          "totalPayout": 12800,
+          "netProfit": -356,
+          "roi": -2.7,
+          "maxDrawdown": 476,
+          "maxLossStreak": 9
+        }
+      }
+    },
+    "qmbf": {
+      "live": {
+        "top6": {
+          "days": 45,
+          "hitDays": 43,
+          "hitRate": 95.6,
+          "winDays": 34,
+          "winRate": 75.6,
+          "totalHits": 106,
+          "avgHits": 2.356,
+          "totalStake": 594,
+          "totalPayout": 848,
+          "netProfit": 254,
+          "roi": 42.8,
+          "maxDrawdown": 23.6,
+          "maxLossStreak": 3
+        },
+        "top7": {
+          "days": 45,
+          "hitDays": 43,
+          "hitRate": 95.6,
+          "winDays": 39,
+          "winRate": 86.7,
+          "totalHits": 117,
+          "avgHits": 2.6,
+          "totalStake": 693,
+          "totalPayout": 936,
+          "netProfit": 243,
+          "roi": 35.1,
+          "maxDrawdown": 22.2,
+          "maxLossStreak": 1
+        },
+        "top20": {
+          "days": 45,
+          "hitDays": 45,
+          "hitRate": 100,
+          "winDays": 29,
+          "winRate": 64.4,
+          "totalHits": 294,
+          "avgHits": 6.533,
+          "totalStake": 1980,
+          "totalPayout": 2352,
+          "netProfit": 372,
+          "roi": 18.8,
+          "maxDrawdown": 44,
+          "maxLossStreak": 4
+        }
+      },
+      "full": {
+        "top6": {
+          "days": 299,
+          "hitDays": 259,
+          "hitRate": 86.6,
+          "winDays": 168,
+          "winRate": 56.2,
+          "totalHits": 538,
+          "avgHits": 1.799,
+          "totalStake": 3946.8,
+          "totalPayout": 4304,
+          "netProfit": 357.2,
+          "roi": 9.1,
+          "maxDrawdown": 140.4,
+          "maxLossStreak": 4
+        },
+        "top7": {
+          "days": 299,
+          "hitDays": 268,
+          "hitRate": 89.6,
+          "winDays": 198,
+          "winRate": 66.2,
+          "totalHits": 635,
+          "avgHits": 2.124,
+          "totalStake": 4604.6,
+          "totalPayout": 5080,
+          "netProfit": 475.4,
+          "roi": 10.3,
+          "maxDrawdown": 89,
+          "maxLossStreak": 4
+        },
+        "top20": {
+          "days": 299,
+          "hitDays": 299,
+          "hitRate": 100,
+          "winDays": 155,
+          "winRate": 51.8,
+          "totalHits": 1711,
+          "avgHits": 5.722,
+          "totalStake": 13156,
+          "totalPayout": 13688,
+          "netProfit": 532,
+          "roi": 4,
+          "maxDrawdown": 228,
+          "maxLossStreak": 6
+        }
+      }
+    }
+  }
+}

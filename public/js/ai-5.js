@@ -1590,17 +1590,100 @@
                             </div>
                         ` : ""}
 
-                        <!-- CỘT 2: LÔ GỘP ĐA TẦNG -->
+                        <!-- CỘT 2: LÔ GỘP ĐA TẦNG (PHÂN TẦNG THEO HỆ SỐ VOTE X5..X1) -->
                         ${(state.ledgerCategory === "all" || state.ledgerCategory === "lo") ? (() => {
-                            const loTiers = cons.loTiers || {};
+                            const consDetails = consRes.consensusDetails || {};
+                            const loTiers = cons.loTiers || consDetails.loTiers || {};
+                            const x5Nums = loTiers.x5Nums || [];
+                            const x4Nums = loTiers.x4Nums || [];
+                            const x3Nums = loTiers.x3Nums || [];
+                            const x2Nums = loTiers.x2Nums || [];
+                            const x1Nums = loTiers.x1Nums || [];
+                            const loTop6 = cons.loTop6 || [];
                             const allLoNums = [
-                                ...(loTiers.x5Nums || []),
-                                ...(loTiers.x4Nums || []),
-                                ...(loTiers.x3Nums || []),
-                                ...(loTiers.x2Nums || []),
-                                ...(loTiers.x1Nums || [])
+                                ...x5Nums,
+                                ...x4Nums,
+                                ...x3Nums,
+                                ...x2Nums,
+                                ...x1Nums
                             ];
-                            const displayLo = allLoNums.length > 0 ? allLoNums : (cons.loTop6 || []);
+                            const displayLo = allLoNums.length > 0 ? allLoNums : loTop6;
+                            const breakdown = loRes.breakdown || {};
+
+                            const tierConfigs = [
+                                {
+                                    key: 'x5',
+                                    mult: 5,
+                                    name: 'TẦNG X5',
+                                    sub: '5/5 AI Đồng Thuận',
+                                    nums: x5Nums,
+                                    stakePerNumM: 11.0,
+                                    payoutPerHitM: 40.0,
+                                    badgeBg: 'bg-gradient-to-r from-rose-600 to-pink-600 text-white',
+                                    ringClass: 'ring-rose-300',
+                                    containerBg: 'bg-rose-50/50 border-rose-200/80',
+                                    headerColor: 'text-rose-950',
+                                    icon: '💎'
+                                },
+                                {
+                                    key: 'x4',
+                                    mult: 4,
+                                    name: 'TẦNG X4',
+                                    sub: '4/5 AI Đồng Thuận',
+                                    nums: x4Nums,
+                                    stakePerNumM: 8.8,
+                                    payoutPerHitM: 32.0,
+                                    badgeBg: 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black',
+                                    ringClass: 'ring-amber-300',
+                                    containerBg: 'bg-amber-50/50 border-amber-200/80',
+                                    headerColor: 'text-amber-950',
+                                    icon: '👑'
+                                },
+                                {
+                                    key: 'x3',
+                                    mult: 3,
+                                    name: 'TẦNG X3',
+                                    sub: '3/5 AI Đa Số',
+                                    nums: x3Nums,
+                                    stakePerNumM: 6.6,
+                                    payoutPerHitM: 24.0,
+                                    badgeBg: 'bg-emerald-600 text-white font-black',
+                                    ringClass: 'ring-emerald-300',
+                                    containerBg: 'bg-emerald-50/50 border-emerald-200/80',
+                                    headerColor: 'text-emerald-950',
+                                    icon: '⭐'
+                                },
+                                {
+                                    key: 'x2',
+                                    mult: 2,
+                                    name: 'TẦNG X2',
+                                    sub: '2/5 AI Đồng Thuận',
+                                    nums: x2Nums,
+                                    stakePerNumM: 4.4,
+                                    payoutPerHitM: 16.0,
+                                    badgeBg: 'bg-teal-600 text-white font-bold',
+                                    ringClass: 'ring-teal-300',
+                                    containerBg: 'bg-teal-50/40 border-teal-200/80',
+                                    headerColor: 'text-teal-950',
+                                    icon: '🎲'
+                                },
+                                {
+                                    key: 'x1',
+                                    mult: 1,
+                                    name: 'TẦNG X1',
+                                    sub: '1/5 AI Lót Dự Phòng',
+                                    nums: x1Nums,
+                                    stakePerNumM: 2.2,
+                                    payoutPerHitM: 8.0,
+                                    badgeBg: 'bg-slate-600 text-white font-bold',
+                                    ringClass: 'ring-slate-300',
+                                    containerBg: 'bg-slate-50 border-slate-200',
+                                    headerColor: 'text-slate-800',
+                                    icon: '🛡️'
+                                }
+                            ];
+
+                            const activeTiers = tierConfigs.filter(t => t.nums && t.nums.length > 0);
 
                             return `
                                 <div class="rounded-2xl bg-white border border-indigo-200 p-4 space-y-3.5 flex flex-col justify-between shadow-xs">
@@ -1610,7 +1693,7 @@
                                                 <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-100 text-indigo-900 text-sm font-black">🎲</span>
                                                 <div>
                                                     <h5 class="text-xs font-black text-slate-900 uppercase">Lô Gộp Đa Tầng (${displayLo.length} số)</h5>
-                                                    <span class="text-[10px] text-slate-500">Phân tầng theo vote (X5..X1) hoặc Top 6</span>
+                                                    <span class="text-[10px] text-slate-500">Phân tầng X5..X1 (Theo Phiếu Bầu 5 AI)</span>
                                                 </div>
                                             </div>
                                             ${isSettled ? `
@@ -1632,32 +1715,91 @@
                                             </div>
                                         ` : ""}
 
-                                        <!-- Danh sách số Lô -->
-                                        <div class="space-y-1.5">
-                                            <div class="flex items-center justify-between text-xs font-bold text-slate-700">
-                                                <span>Dàn Lô Đồng Thuận:</span>
-                                                <button type="button" class="btn-copy-day-dan px-2 py-0.5 rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-800 text-[10px] font-bold border border-indigo-200 transition cursor-pointer flex items-center gap-1" data-copy-text="${displayLo.join(" ")}" data-copy-label="Dàn Lô Gộp ngày ${dateStr}">
-                                                    <i class="bi bi-clipboard"></i> Copy Dàn Lô
-                                                </button>
-                                            </div>
-                                            <div class="flex flex-wrap gap-1.5 p-2 rounded-xl bg-slate-50 border border-slate-200 min-h-[40px] items-center">
-                                                ${displayLo.map(n => {
-                                                    const hits = p27Counts[n] || 0;
-                                                    if (hits > 0) {
-                                                        return `
-                                                            <span class="badge-number inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-600 text-white font-mono font-black text-xs ring-2 ring-emerald-300 shadow-xs" title="🎯 Lô ${n}: Nổ ${hits} nháy">
-                                                                <span>${n}</span>
-                                                                <span class="rounded bg-white text-emerald-900 font-bold px-1 text-[8px] font-sans">${hits}n</span>
+                                        <!-- DANH SÁCH LÔ PHÂN TẦNG X5 ĐẾN X1 -->
+                                        <div class="space-y-2.5">
+                                            ${activeTiers.length > 0 ? activeTiers.map(tier => {
+                                                return `
+                                                    <div class="space-y-1.5 pt-2 first:pt-0 border-t first:border-t-0 border-indigo-100/80">
+                                                        <div class="flex items-center justify-between text-xs font-bold ${tier.headerColor}">
+                                                            <span class="flex items-center gap-1.5">
+                                                                <span class="rounded ${tier.badgeBg} px-2 py-0.5 text-[10px] font-black shadow-2xs">${tier.name}</span>
+                                                                <span>${tier.sub} (${tier.nums.length}s):</span>
                                                             </span>
-                                                        `;
-                                                    }
-                                                    return `
-                                                        <span class="badge-number inline-flex items-center px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-slate-600 font-mono text-xs shadow-2xs">
-                                                            ${n}
-                                                        </span>
-                                                    `;
-                                                }).join("")}
-                                            </div>
+                                                            <div class="flex items-center gap-1.5">
+                                                                <span class="font-mono text-[10px] text-slate-500 font-bold">${tier.stakePerNumM}M/số · Ăn ${tier.payoutPerHitM}M/n</span>
+                                                                <button type="button" class="btn-copy-day-dan p-1 rounded hover:bg-slate-100 text-slate-700 transition cursor-pointer" data-copy-text="${tier.nums.join(" ")}" data-copy-label="Dàn Lô ${tier.name} ngày ${dateStr}" title="Copy ${tier.name}">
+                                                                    <i class="bi bi-clipboard text-xs"></i>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                        <div class="flex flex-wrap gap-1.5 p-2 rounded-xl ${tier.containerBg} border min-h-[40px] items-center">
+                                                            ${tier.nums.map(n => {
+                                                                const hits = p27Counts[n] || 0;
+                                                                const winM = (hits * tier.payoutPerHitM).toFixed(0);
+                                                                if (hits > 0) {
+                                                                    return `
+                                                                        <span class="badge-number inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-600 text-white font-mono font-black text-xs ring-2 ${tier.ringClass} shadow-xs animate-pulse" title="🎯 NỔ ${hits} NHÁY LÔ ${n} [${tier.name}]: Ăn ${winM}M">
+                                                                            <span>🎯 ${n}</span>
+                                                                            <span class="rounded bg-white text-emerald-900 font-bold px-1 text-[8px] font-sans">${hits}n (+${winM}M)</span>
+                                                                        </span>
+                                                                    `;
+                                                                }
+                                                                return `
+                                                                    <span class="badge-number inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-slate-700 font-mono text-xs font-semibold shadow-2xs" title="Lô ${n} (${tier.mult}/5 AI bầu chọn)">
+                                                                        <span>${n}</span>
+                                                                        <span class="text-[8px] font-sans text-slate-400 font-bold">${tier.mult}/5</span>
+                                                                    </span>
+                                                                `;
+                                                            }).join("")}
+                                                        </div>
+                                                    </div>
+                                                `;
+                                            }).join("") : `
+                                                <div class="space-y-1.5">
+                                                    <div class="flex items-center justify-between text-xs font-bold text-slate-700">
+                                                        <span>Dàn Lô Đồng Thuận (${displayLo.length} số):</span>
+                                                        <button type="button" class="btn-copy-day-dan px-2 py-0.5 rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-800 text-[10px] font-bold border border-indigo-200 transition cursor-pointer flex items-center gap-1" data-copy-text="${displayLo.join(" ")}" data-copy-label="Dàn Lô Gộp ngày ${dateStr}">
+                                                            <i class="bi bi-clipboard"></i> Copy Dàn Lô
+                                                        </button>
+                                                    </div>
+                                                    <div class="flex flex-wrap gap-1.5 p-2 rounded-xl bg-slate-50 border border-slate-200 min-h-[40px] items-center">
+                                                        ${displayLo.map(n => {
+                                                            const hits = p27Counts[n] || 0;
+                                                            if (hits > 0) {
+                                                                return `
+                                                                    <span class="badge-number inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-600 text-white font-mono font-black text-xs ring-2 ring-emerald-300 shadow-xs animate-pulse">
+                                                                        <span>🎯 ${n}</span>
+                                                                        <span class="rounded bg-white text-emerald-900 font-bold px-1 text-[8px] font-sans">${hits}n</span>
+                                                                    </span>
+                                                                `;
+                                                            }
+                                                            return `
+                                                                <span class="badge-number inline-flex items-center px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-slate-600 font-mono text-xs shadow-2xs">
+                                                                    ${n}
+                                                                </span>
+                                                            `;
+                                                        }).join("")}
+                                                    </div>
+                                                </div>
+                                            `}
+                                        </div>
+                                    </div>
+
+                                    <!-- FOOTER CỘT 2: ACTION BUTTONS SAO CHÉP -->
+                                    <div class="pt-3 border-t border-indigo-100 space-y-2">
+                                        <div class="text-[11px] text-slate-500 flex items-center justify-between font-mono">
+                                            <span>Hoặc Top 6 Phẳng: Vốn 13.2M</span>
+                                            <span class="text-indigo-700 font-bold">Ăn 8M/nháy</span>
+                                        </div>
+                                        <div class="flex flex-wrap gap-1.5">
+                                            <button type="button" class="btn-copy-day-dan flex-1 py-1.5 px-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-95 text-white font-black text-[11px] transition shadow-2xs text-center cursor-pointer" data-copy-text="${allLoNums.join(" ")}" data-copy-label="Toàn bộ Dàn Lô Đa Tầng ngày ${dateStr}">
+                                                <i class="bi bi-clipboard-check"></i> Copy Lô Đa Tầng (${allLoNums.length}s)
+                                            </button>
+                                            ${loTop6.length > 0 ? `
+                                                <button type="button" class="btn-copy-day-dan py-1.5 px-2.5 rounded-xl bg-white hover:bg-slate-50 text-indigo-900 border border-indigo-300 font-bold text-[11px] transition shadow-2xs text-center cursor-pointer" data-copy-text="${loTop6.join(" ")}" data-copy-label="Dàn Lô Top 6 Phẳng ngày ${dateStr}">
+                                                    <i class="bi bi-dice-6-fill"></i> Top 6 (${loTop6.length}s)
+                                                </button>
+                                            ` : ""}
                                         </div>
                                     </div>
                                 </div>
