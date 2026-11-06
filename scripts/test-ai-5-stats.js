@@ -189,13 +189,14 @@ const museSrc = day20261101.sources.muse;
 assert(museSrc && museSrc.xien4, 'Muse in 2026-11-01 must have xien4');
 console.log('  ✔ Muse Xiên 4 chuẩn hóa:', museSrc.xien4.dan1.join(' '), '|', museSrc.xien4.dan2.join(' '));
 
-const day20261105 = clientPayload.latestDay;
-assert(day20261105 && day20261105.date === '2026-11-05', 'Day 2026-11-05 must be latest actionable day');
+const day20261105 = clientPayload.history.find(d => d.date === '2026-11-05');
+assert(day20261105, 'Day 2026-11-05 must exist in history');
 const claudeSrc = day20261105.sources.claude;
 assert(claudeSrc && claudeSrc.de && claudeSrc.de.length === 20, 'Claude in 2026-11-05 must have 20 De numbers');
 assert(claudeSrc && claudeSrc.lo && claudeSrc.lo.length === 6, 'Claude in 2026-11-05 must have 6 Lo numbers');
-assert(clientPayload.todayConsensus, '2026-11-05 consensus must be computed');
-const vote09 = clientPayload.todayConsensus.deVotesMap['09'];
+const cons20261105 = day20261105.consensus;
+assert(cons20261105, '2026-11-05 consensus must be computed');
+const vote09 = cons20261105.deVotesMap['09'];
 assert(vote09 && vote09.count === 5, 'Number 09 must have unanimous 5/5 votes');
 assert(vote09.models.includes('claude'), 'Vote models must include claude');
 console.log('  ✔ Claude (Anthropic) 2026-11-05 verified: 20 Đề, 6 Lô, 5 AI Consensus computed successfully');
