@@ -25,6 +25,7 @@ const {
     recomputeAllRates,
     calculateConsensus,
     computeMusePredictions,
+    computeAll5AIPredictions,
     getEffectiveSources,
     AI_MODELS,
     CONSENSUS_META
@@ -146,28 +147,26 @@ async function handleNextDayPredictions(data, targetDate) {
         console.log(`[settle-ai-5-stats] ➕ Đã khởi tạo entry dự thảo cho ngày tiếp theo: ${nextDate}`);
     }
 
-    // Tự động tính toán dự đoán Muse (AI nội bộ hệ thống) nếu chưa có
-    const museSources = nextDayEntry.sources?.muse;
-    const hasMuseDe = Array.isArray(museSources?.de) && museSources.de.length >= 20;
-    const hasMuseLo = Array.isArray(museSources?.lo) && museSources.lo.length >= 6;
-
-    if (!hasMuseDe || !hasMuseLo) {
-        try {
-            const { getRawData } = require('../lib/data-access');
-            const raw = await getRawData();
-            if (Array.isArray(raw) && raw.length > 0) {
-                const musePred = computeMusePredictions(raw);
-                if (!nextDayEntry.sources) nextDayEntry.sources = {};
-                nextDayEntry.sources.muse = musePred;
-                console.log(`[settle-ai-5-stats] 🧠 Đã tự động kích hoạt Muse AI và tính toán thành công cho ngày ${nextDate}:`);
-                console.log(`   - Đề (20s): ${musePred.de.slice(0, 10).join(', ')}...`);
-                console.log(`   - Lô (6s):  ${musePred.lo.join(', ')}`);
+    // Tự động tính toán toán học độc lập 100% cho toàn bộ 5 AI (Muse, Perplexity/Grok, Gemini, ChatGPT, Claude)
+    // từ lịch sử XSMB theo công thức Ensemble 5 AI đặc tả
+    const autoPreds = computeAll5AIPredictions(nextDate);
+    if (autoPreds) {
+        if (!nextDayEntry.sources) nextDayEntry.sources = {};
+        for (const [mKey, pred] of Object.entries(autoPreds)) {
+            const cur = nextDayEntry.sources[mKey];
+            const hasDe = Array.isArray(cur?.de) && cur.de.length >= 19;
+            const hasLo = Array.isArray(cur?.lo) && cur.lo.length >= 6;
+            if (!hasDe || !hasLo) {
+                nextDayEntry.sources[mKey] = {
+                    de: pred.de,
+                    lo: pred.lo,
+                    method: `Nội bộ tự động tính (${AI_MODELS[mKey]?.name || mKey})`,
+                    status: 'auto_computed',
+                    isAutoComputed: true
+                };
+                console.log(`[settle-ai-5-stats] 🧠 Tự động tính toán nội bộ thành công cho ${mKey.toUpperCase()}: ${pred.de.length} Đề, ${pred.lo.length} Lô.`);
             }
-        } catch (e) {
-            console.warn(`[settle-ai-5-stats] ⚠️ Không thể tự động tính Muse AI: ${e.message}`);
         }
-    } else {
-        console.log(`[settle-ai-5-stats] 🧠 Muse AI ngày ${nextDate} đã sẵn sàng (${museSources.de.length} Đề, ${museSources.lo.length} Lô).`);
     }
 
     // Đếm số lượng AI đã nạp số cho ngày tiếp theo
@@ -180,10 +179,10 @@ async function handleNextDayPredictions(data, targetDate) {
         const s = effectiveNextSources[k];
         const deCount = Array.isArray(s?.de) ? s.de.length : 0;
         const loCount = Array.isArray(s?.lo) ? s.lo.length : 0;
-        if (deCount >= 20 && loCount >= 6) {
+        if (deCount >= 18 && loCount >= 6) {
             readyAiCount++;
         } else {
-            missingAis.push(`${AI_MODELS[k]?.name || k} (Đề: ${deCount}/20, Lô: ${loCount}/6)`);
+            missingAis.push(`${AI_MODELS[k]?.name || k} (Đề: ${deCount}/19-20, Lô: ${loCount}/6)`);
         }
     });
 
@@ -328,15 +327,17 @@ async function main() {
     // 2. Cập nhật lại toàn bộ tỷ lệ lũy kế & leaderboard
     recomputeAllRates(data);
 
-    // 3. Kiểm tra dàn số của ngày mục tiêu (targetDate) nếu chưa quay (ví dụ hôm nay 31/10)
+    // 3. Kiểm tra dàn số của ngày mục tiêu (targetDate) nếu chưa quay (ví dụ hôm nay)
     const targetEntry = (data.days || []).find(d => d.date === targetDate);
-    if (targetEntry && targetEntry.sources) {
-        const effectiveTargetSources = getEffectiveSources(targetEntry.sources);
+    if (targetEntry) {
+        if (!targetEntry.sources) targetEntry.sources = {};
+        const effectiveTargetSources = getEffectiveSources(targetEntry.sources, targetDate);
+        targetEntry.sources = effectiveTargetSources;
         const modelKeys = Object.keys(AI_MODELS);
         let readyCount = 0;
         modelKeys.forEach(k => {
             const s = effectiveTargetSources[k];
-            if (Array.isArray(s?.de) && s.de.length >= 20 && Array.isArray(s?.lo) && s.lo.length >= 6) {
+            if (Array.isArray(s?.de) && s.de.length >= 19 && Array.isArray(s?.lo) && s.lo.length >= 6) {
                 readyCount++;
             }
         });
