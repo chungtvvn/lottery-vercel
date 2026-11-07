@@ -22253,7 +22253,35 @@
           "isAutoComputed": true
         }
       },
-      "rates": null
+      "rates": null,
+      "xien4": {
+        "dan1": [
+          "17",
+          "24",
+          "52",
+          "64"
+        ],
+        "dan2": [
+          "04",
+          "14",
+          "34",
+          "75"
+        ],
+        "top8": [
+          "24",
+          "52",
+          "64",
+          "17",
+          "75",
+          "34",
+          "04",
+          "14"
+        ],
+        "swapped": false,
+        "swapDetails": null,
+        "fromConfig": false,
+        "source": "top8_parity_consensus"
+      }
     }
   ],
   "meta": {
