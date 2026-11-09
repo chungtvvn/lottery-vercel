@@ -17,6 +17,8 @@
     let ledgerLimit = 40;
     let hasUserSelectedLedgerStrat = false;
     let hasUserSelectedTodayStrat = false;
+    let deFusionFromDate = null;
+    let deFusionToDate = null;
 
     // Quản lý trạng thái mở rộng chi tiết dàn số từng ngày
     const expandedLedgerDates = new Set();
@@ -201,6 +203,54 @@
 
         const inpSearch = byId('inputLedgerSearch');
         if (inpSearch) inpSearch.oninput = () => renderSettledLedger();
+
+        // Date Range Controls
+        const dfFrom = byId('deFusionFromDate');
+        const dfTo = byId('deFusionToDate');
+        const dfReset = byId('btnResetDeFusionDate');
+        if (dfFrom) {
+            dfFrom.onchange = (e) => {
+                deFusionFromDate = e.target.value;
+                renderSettledLedger();
+            };
+        }
+        if (dfTo) {
+            dfTo.onchange = (e) => {
+                deFusionToDate = e.target.value;
+                renderSettledLedger();
+            };
+        }
+        document.querySelectorAll('.btn-defusion-quick-date').forEach(btn => {
+            btn.onclick = () => {
+                const range = btn.dataset.range;
+                const allDates = (currentReport?.settledLedger || []).map(r => r.date).sort();
+                const latestDate = allDates[allDates.length - 1] || new Date().toISOString().slice(0, 10);
+                deFusionToDate = latestDate;
+
+                if (range === '7d') {
+                    const d = new Date(latestDate);
+                    d.setDate(d.getDate() - 6);
+                    deFusionFromDate = d.toISOString().slice(0, 10);
+                } else if (range === '30d') {
+                    const d = new Date(latestDate);
+                    d.setDate(d.getDate() - 29);
+                    deFusionFromDate = d.toISOString().slice(0, 10);
+                } else if (range === 'all') {
+                    deFusionFromDate = allDates[0] || '2026-01-01';
+                }
+                renderSettledLedger();
+            };
+        });
+        if (dfReset) {
+            dfReset.onclick = () => {
+                const allDates = (currentReport?.settledLedger || []).map(r => r.date).sort();
+                const latestDate = allDates[allDates.length - 1] || new Date().toISOString().slice(0, 10);
+                deFusionToDate = latestDate;
+                const firstLive = (currentReport?.settledLedger || []).filter(r => r.isLive).map(r => r.date).sort()[0];
+                deFusionFromDate = firstLive || allDates[0] || '2026-01-01';
+                renderSettledLedger();
+            };
+        }
 
         const btnLoadMore = byId('btnLoadMoreLedger');
         if (btnLoadMore) {
@@ -652,6 +702,10 @@
             const stratRes = r.strategies?.[selStrat];
             if (!stratRes) return false;
 
+            // Date range filter
+            if (deFusionFromDate && r.date < deFusionFromDate) return false;
+            if (deFusionToDate && r.date > deFusionToDate) return false;
+
             // Search filter
             if (search) {
                 const matchDate = r.date.includes(search);
@@ -677,8 +731,77 @@
         const selFilter = byId('selectLedgerFilter')?.value || 'liveOnly';
 
         const allRows = currentReport.settledLedger;
+
+        // Khởi tạo ngày mặc định nếu chưa có (toDate luôn là ngày mới nhất)
+        const allDates = allRows.map(r => r.date).sort();
+        const minAvailableDate = allDates[0] || '2026-01-01';
+        const maxAvailableDate = allDates[allDates.length - 1] || '2026-12-31';
+
+        if (!deFusionToDate) deFusionToDate = maxAvailableDate;
+        if (!deFusionFromDate) {
+            const firstLive = allRows.filter(r => r.isLive).map(r => r.date).sort()[0];
+            deFusionFromDate = firstLive || minAvailableDate;
+        }
+
+        const dfFromInp = byId('deFusionFromDate');
+        const dfToInp = byId('deFusionToDate');
+        const dfInfoEl = byId('deFusionDateRangeInfo');
+        if (dfFromInp) {
+            dfFromInp.min = minAvailableDate;
+            dfFromInp.max = maxAvailableDate;
+            dfFromInp.value = deFusionFromDate;
+        }
+        if (dfToInp) {
+            dfToInp.min = minAvailableDate;
+            dfToInp.max = maxAvailableDate;
+            dfToInp.value = deFusionToDate;
+        }
+        if (dfInfoEl) {
+            dfInfoEl.textContent = `(Xem từ ${deFusionFromDate} đến ${deFusionToDate} · Mặc định đến hôm nay)`;
+        }
+
         const filteredRows = getFilteredLedgerRows();
         const displayRows = filteredRows.slice(0, ledgerLimit);
+
+        // Tính lũy kế động theo thứ tự tăng dần thời gian (ASC: cũ đến mới)
+        const sortedAsc = [...filteredRows].sort((a, b) => a.date.localeCompare(b.date));
+        let runningDynamicCumK = 0;
+        let stratWins = 0;
+        const cumMapByDate = {};
+
+        sortedAsc.forEach(r => {
+            const s = r.strategies?.[selStrat];
+            if (s) {
+                runningDynamicCumK += (s.filteredProfitK || 0);
+                if (s.isFilteredHit) stratWins++;
+                cumMapByDate[r.date] = runningDynamicCumK;
+            }
+        });
+
+        // Cập nhật thẻ tóm tắt lũy kế Đề trong khoảng ngày
+        const stratNameEl = byId('deFusionStratName');
+        const winCountEl = byId('deFusionWinCount');
+        const cumProfitEl = byId('deFusionCumProfit');
+        if (stratNameEl) {
+            const stratLabels = {
+                ai5Ensemble: 'Đồng Thuận 5 AI Đề 50s',
+                mirofish: 'Trí Tuệ Bầy Đàn MiroFish 38s',
+                fusion: 'Fusion Tinh Hoa 36s',
+                triCore: 'Đề Tam Trụ Tri-Core 24s',
+                shadow: 'Shadow Đề Đa Động Cơ 40s',
+                daily: 'Daily Đề Chuẩn Hóa'
+            };
+            stratNameEl.textContent = stratLabels[selStrat] || selStrat;
+        }
+        if (winCountEl) {
+            const total = filteredRows.length;
+            const rate = total > 0 ? ((stratWins / total) * 100).toFixed(1) : '0.0';
+            winCountEl.textContent = `${stratWins}/${total} kỳ (${rate}%)`;
+        }
+        if (cumProfitEl) {
+            cumProfitEl.textContent = fmtM(runningDynamicCumK);
+            cumProfitEl.className = `text-base font-black ${runningDynamicCumK >= 0 ? 'text-emerald-700' : 'text-rose-600'}`;
+        }
 
         if (byId('ledgerCountInfo')) {
             const liveTotal = allRows.filter(r => r.isLive).length;
@@ -690,7 +813,7 @@
         }
 
         if (displayRows.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="11" class="py-6 text-center text-slate-400 italic font-sans">Không tìm thấy bản ghi đối soát phù hợp</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="11" class="py-6 text-center text-slate-400 italic font-sans">Không tìm thấy bản ghi đối soát phù hợp trong khoảng ngày này</td></tr>';
             return;
         }
 
@@ -734,12 +857,12 @@
             const pnlK = s.filteredProfitK;
             const pnlClass = pnlK > 0 ? 'text-emerald-700 font-black' : (pnlK === 0 ? 'text-slate-600' : 'text-slate-500');
 
-            // Cumulative Live Profit Column
+            // Cumulative Live Profit Column (Dùng lũy kế động theo khoảng ngày)
+            const dynCumK = cumMapByDate[r.date] !== undefined ? cumMapByDate[r.date] : s.liveAccumProfitK;
             let accumCell = '<td class="py-2.5 px-3 text-right font-sans text-slate-400 text-[10px] italic whitespace-nowrap bg-slate-50/50">-- (Tham khảo)</td>';
-            if (s.liveAccumProfitK !== null) {
-                const accumK = s.liveAccumProfitK;
-                const accumClass = accumK > 0 ? 'text-emerald-800 font-black' : (accumK === 0 ? 'text-slate-700 font-bold' : 'text-rose-600 font-black');
-                accumCell = `<td class="py-2.5 px-3 text-right font-mono text-xs ${accumClass} whitespace-nowrap bg-emerald-50/40">${fmtM(accumK)}</td>`;
+            if (dynCumK !== null && dynCumK !== undefined) {
+                const accumClass = dynCumK > 0 ? 'text-emerald-800 font-black' : (dynCumK === 0 ? 'text-slate-700 font-bold' : 'text-rose-600 font-black');
+                accumCell = `<td class="py-2.5 px-3 text-right font-mono text-xs ${accumClass} whitespace-nowrap bg-emerald-50/40" title="Lũy kế từ ${deFusionFromDate} đến ${r.date}">${fmtM(dynCumK)}</td>`;
             }
 
             // DÒNG TỔNG QUAN CHÍNH

@@ -15,6 +15,8 @@
     const state = {
         payload: null,
         filter: 'all',
+        fromDate: null,
+        toDate: null,
         expandedDays: new Set(),
         showPairsForDate: null
     };
@@ -416,8 +418,51 @@
             return;
         }
 
+        const allDates = (history || []).map(d => d.date).sort();
+        const minAvailableDate = allDates[0] || '2026-01-01';
+        const maxAvailableDate = allDates[allDates.length - 1] || '2026-12-31';
+
+        // Mặc định toDate luôn là ngày mới nhất
+        if (!state.toDate) state.toDate = maxAvailableDate;
+        if (!state.fromDate) state.fromDate = minAvailableDate;
+
+        const xFromInp = document.getElementById('xienFusionFromDate');
+        const xToInp = document.getElementById('xienFusionToDate');
+        const xInfoEl = document.getElementById('xienFusionDateRangeInfo');
+        if (xFromInp) {
+            xFromInp.min = minAvailableDate;
+            xFromInp.max = maxAvailableDate;
+            xFromInp.value = state.fromDate;
+        }
+        if (xToInp) {
+            xToInp.min = minAvailableDate;
+            xToInp.max = maxAvailableDate;
+            xToInp.value = state.toDate;
+        }
+        if (xInfoEl) {
+            xInfoEl.textContent = `(Xem từ ${state.fromDate} đến ${state.toDate} · Mặc định đến hôm nay)`;
+        }
+
+        // Lọc theo khoảng ngày
+        const rangeFiltered = history.filter(day => {
+            if (state.fromDate && day.date < state.fromDate) return false;
+            if (state.toDate && day.date > state.toDate) return false;
+            return true;
+        });
+
+        // Tính toán lũy kế động theo thứ tự tăng dần thời gian (ASC: cũ đến mới)
+        const sortedAsc = [...rangeFiltered].sort((a, b) => a.date.localeCompare(b.date));
+        let cumFusionK = 0, cumDailyK = 0, cumShadowK = 0;
+        const cumMapByDate = {};
+        sortedAsc.forEach(day => {
+            cumFusionK += (day.fusion?.profitK || 0);
+            cumDailyK += (day.daily?.profitK || 0);
+            cumShadowK += (day.shadow?.profitK || 0);
+            cumMapByDate[day.date] = { cumFusionK, cumDailyK, cumShadowK };
+        });
+
         // Lọc danh sách theo filter
-        const filtered = history.filter(day => {
+        const filtered = rangeFiltered.filter(day => {
             if (filter === 'fusion_win') return (day.fusion?.profitK || 0) > 0;
             if (filter === 'daily_win') return (day.daily?.profitK || 0) > 0;
             if (filter === 'shadow_win') return (day.shadow?.profitK || 0) > 0;
@@ -428,7 +473,7 @@
         });
 
         if (!filtered.length) {
-            container.innerHTML = '<div class="p-8 text-center text-xs text-slate-400">Không có ngày nào khớp với bộ lọc đã chọn.</div>';
+            container.innerHTML = '<div class="p-8 text-center text-xs text-slate-400">Không có ngày nào khớp với bộ lọc và khoảng ngày đã chọn.</div>';
             return;
         }
 
@@ -447,6 +492,12 @@
             const fusionCardBorder = isFusionWin
                 ? 'border-2 border-emerald-400/80 bg-gradient-to-b from-emerald-50/40 via-white to-white'
                 : 'border border-slate-200 bg-white';
+
+            const dayCum = cumMapByDate[date] || {
+                cumFusionK: fusion?.cumProfitK || 0,
+                cumDailyK: daily?.cumProfitK || 0,
+                cumShadowK: shadow?.cumProfitK || 0
+            };
 
             return `
                 <article class="rounded-3xl p-5 sm:p-6 shadow-sm space-y-4 ${fusionCardBorder}">
@@ -530,7 +581,7 @@
 
                             <div class="pt-2 border-t border-slate-200 text-[11px] font-mono flex items-center justify-between text-slate-500">
                                 <span>Vốn: 22M · Ăn: ${formatMoney(daily?.payoutK, { signed: false })}</span>
-                                <span>Lũy kế: <strong class="${daily?.cumProfitK >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${formatMoney(daily?.cumProfitK)}</strong></span>
+                                <span>Lũy kế: <strong class="${dayCum.cumDailyK >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${formatMoney(dayCum.cumDailyK)}</strong></span>
                             </div>
                         </div>
 
@@ -589,7 +640,7 @@
 
                             <div class="pt-2 border-t border-indigo-200/60 text-[11px] font-mono flex items-center justify-between text-slate-500">
                                 <span>Vốn: 22M · Ăn: ${formatMoney(shadow?.payoutK, { signed: false })}</span>
-                                <span>Lũy kế: <strong class="${shadow?.cumProfitK >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${formatMoney(shadow?.cumProfitK)}</strong></span>
+                                <span>Lũy kế: <strong class="${dayCum.cumShadowK >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${formatMoney(dayCum.cumShadowK)}</strong></span>
                             </div>
                         </div>
 
@@ -635,7 +686,7 @@
 
                             <div class="pt-2 border-t border-amber-200 text-[11px] font-mono flex items-center justify-between text-amber-950">
                                 <span>Vốn: 22M · Ăn: <strong>${formatMoney(fusion?.payoutK, { signed: false })}</strong></span>
-                                <span>Lũy kế: <strong class="${fusion?.cumProfitK >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${formatMoney(fusion?.cumProfitK)}</strong></span>
+                                <span>Lũy kế: <strong class="${dayCum.cumFusionK >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${formatMoney(dayCum.cumFusionK)}</strong></span>
                             </div>
                         </div>
 
@@ -704,6 +755,60 @@
         if (filterSelect) {
             filterSelect.addEventListener('change', (e) => {
                 state.filter = e.target.value;
+                if (state.payload?.history) {
+                    renderHistoryJournal(state.payload.history, state.filter);
+                }
+            });
+        }
+
+        // Date Range Controls
+        const xFromInp = document.getElementById('xienFusionFromDate');
+        const xToInp = document.getElementById('xienFusionToDate');
+        const xResetBtn = document.getElementById('btnResetXienFusionDate');
+        if (xFromInp) {
+            xFromInp.addEventListener('change', (e) => {
+                state.fromDate = e.target.value;
+                if (state.payload?.history) {
+                    renderHistoryJournal(state.payload.history, state.filter);
+                }
+            });
+        }
+        if (xToInp) {
+            xToInp.addEventListener('change', (e) => {
+                state.toDate = e.target.value;
+                if (state.payload?.history) {
+                    renderHistoryJournal(state.payload.history, state.filter);
+                }
+            });
+        }
+        document.querySelectorAll('.btn-xienfusion-quick-date').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const range = btn.dataset.range;
+                const allDates = (state.payload?.history || []).map(d => d.date).sort();
+                const latestDate = allDates[allDates.length - 1] || new Date().toISOString().slice(0, 10);
+                state.toDate = latestDate;
+
+                if (range === '7d') {
+                    const d = new Date(latestDate);
+                    d.setDate(d.getDate() - 6);
+                    state.fromDate = d.toISOString().slice(0, 10);
+                } else if (range === '30d') {
+                    const d = new Date(latestDate);
+                    d.setDate(d.getDate() - 29);
+                    state.fromDate = d.toISOString().slice(0, 10);
+                } else if (range === 'all') {
+                    state.fromDate = allDates[0] || '2026-01-01';
+                }
+                if (state.payload?.history) {
+                    renderHistoryJournal(state.payload.history, state.filter);
+                }
+            });
+        });
+        if (xResetBtn) {
+            xResetBtn.addEventListener('click', () => {
+                const allDates = (state.payload?.history || []).map(d => d.date).sort();
+                state.toDate = allDates[allDates.length - 1] || new Date().toISOString().slice(0, 10);
+                state.fromDate = allDates[0] || '2026-01-01';
                 if (state.payload?.history) {
                     renderHistoryJournal(state.payload.history, state.filter);
                 }

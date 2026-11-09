@@ -311,6 +311,96 @@
                 </div>
             </div>
 
+            <!-- BỘ CHỌN KHOẢNG NGÀY ĐỐI SOÁT & TÍNH LŨY KẾ ĐỘNG (TỪ NGÀY ... ĐẾN NGÀY ...) -->
+            <div class="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-slate-50 border border-slate-200 p-3 text-xs">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="font-bold text-slate-700 flex items-center gap-1">
+                        <i class="bi bi-calendar-range text-indigo-600"></i> Xem Lũy Kế Khoảng Ngày:
+                    </span>
+                    <div class="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-xl border border-slate-200 shadow-2xs font-mono">
+                        <span class="text-slate-400 text-[11px] font-bold">Từ:</span>
+                        <input type="date" id="ledgerFromDate" class="border-0 bg-transparent text-slate-800 font-bold focus:outline-none text-xs cursor-pointer">
+                    </div>
+                    <div class="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-xl border border-slate-200 shadow-2xs font-mono">
+                        <span class="text-slate-400 text-[11px] font-bold">Đến:</span>
+                        <input type="date" id="ledgerToDate" class="border-0 bg-transparent text-slate-800 font-bold focus:outline-none text-xs cursor-pointer">
+                    </div>
+                    <span class="text-[11px] text-slate-500 font-sans italic" id="ledgerDateRangeInfo">(Mặc định đến ngày hiện tại)</span>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-1.5">
+                    <button type="button" class="btn-ledger-quick-date px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold text-[11px] transition shadow-2xs cursor-pointer" data-range="7d">
+                        7 ngày qua
+                    </button>
+                    <button type="button" class="btn-ledger-quick-date px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold text-[11px] transition shadow-2xs cursor-pointer" data-range="30d">
+                        30 ngày qua
+                    </button>
+                    <button type="button" class="btn-ledger-quick-date px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 font-bold text-[11px] transition shadow-2xs cursor-pointer" data-range="all">
+                        Toàn bộ
+                    </button>
+                    <button type="button" id="btnResetLedgerDate" class="px-2.5 py-1 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-800 font-black text-[11px] transition cursor-pointer flex items-center gap-1" title="Đặt lại đến ngày hiện tại">
+                        <i class="bi bi-arrow-counterclockwise"></i> Hôm nay
+                    </button>
+                </div>
+            </div>
+
+            <!-- KHỐI KPI THỐNG KÊ LŨY KẾ RIÊNG TỪNG MÓN: ĐỀ, LÔ, XIÊN 4 & COMBO TỔNG -->
+            <div class="mb-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs" id="ledgerCumulativeSummaryCards">
+                <!-- Card 1: Lũy Kế Đề -->
+                <div class="rounded-2xl border-2 border-amber-300 bg-gradient-to-br from-amber-50 via-yellow-50 to-white p-3.5 shadow-2xs hover:shadow-xs transition">
+                    <div class="flex items-center justify-between">
+                        <span class="flex h-7 w-7 items-center justify-center rounded-xl bg-amber-500 text-slate-950 font-black text-xs shadow-xs">💎</span>
+                        <span class="rounded bg-amber-100 text-amber-900 text-[10px] font-black px-2 py-0.5 border border-amber-200 uppercase font-mono" id="ledgerDeHitBadge">--</span>
+                    </div>
+                    <div class="mt-2">
+                        <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Lũy Kế Đề:</div>
+                        <div class="font-mono text-xl font-black text-slate-900 mt-0.5" id="ledgerCumDeProfit">+0đ</div>
+                        <div class="text-[10px] text-slate-500 mt-0.5" id="ledgerDeSummarySubtext">Ăn ĐB: 0 kỳ · Vốn 0đ</div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Lũy Kế Lô -->
+                <div class="rounded-2xl border-2 border-indigo-300 bg-gradient-to-br from-indigo-50 via-blue-50 to-white p-3.5 shadow-2xs hover:shadow-xs transition">
+                    <div class="flex items-center justify-between">
+                        <span class="flex h-7 w-7 items-center justify-center rounded-xl bg-indigo-600 text-white font-black text-xs shadow-xs">🎲</span>
+                        <span class="rounded bg-indigo-100 text-indigo-900 text-[10px] font-black px-2 py-0.5 border border-indigo-200 uppercase font-mono" id="ledgerLoHitBadge">--</span>
+                    </div>
+                    <div class="mt-2">
+                        <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Lũy Kế Lô:</div>
+                        <div class="font-mono text-xl font-black text-slate-900 mt-0.5" id="ledgerCumLoProfit">+0đ</div>
+                        <div class="text-[10px] text-slate-500 mt-0.5" id="ledgerLoSummarySubtext">Trúng 0 nháy · Vốn 0đ</div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Lũy Kế Xiên 4 -->
+                <div class="rounded-2xl border-2 border-purple-300 bg-gradient-to-br from-purple-50 via-fuchsia-50 to-white p-3.5 shadow-2xs hover:shadow-xs transition">
+                    <div class="flex items-center justify-between">
+                        <span class="flex h-7 w-7 items-center justify-center rounded-xl bg-purple-600 text-white font-black text-xs shadow-xs">💎</span>
+                        <span class="rounded bg-purple-100 text-purple-900 text-[10px] font-black px-2 py-0.5 border border-purple-200 uppercase font-mono" id="ledgerXienHitBadge">--</span>
+                    </div>
+                    <div class="mt-2">
+                        <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Lũy Kế 2 Xiên 4:</div>
+                        <div class="font-mono text-xl font-black text-slate-900 mt-0.5" id="ledgerCumXienProfit">+0đ</div>
+                        <div class="text-[10px] text-slate-500 mt-0.5" id="ledgerXienSummarySubtext">Ăn X2/X3/X4: 0 lần</div>
+                    </div>
+                </div>
+
+                <!-- Card 4: Tổng Lũy Kế Combo -->
+                <div class="rounded-2xl border-2 border-emerald-400 bg-gradient-to-br from-emerald-50 via-teal-50 to-white p-3.5 shadow-2xs ring-1 ring-emerald-300 hover:shadow-xs transition">
+                    <div class="flex items-center justify-between">
+                        <span class="flex h-7 w-7 items-center justify-center rounded-xl bg-emerald-600 text-white font-black text-xs shadow-xs">👑</span>
+                        <span class="rounded bg-emerald-100 text-emerald-900 text-[10px] font-black px-2 py-0.5 border border-emerald-300 uppercase font-mono" id="ledgerComboWinRate">--</span>
+                    </div>
+                    <div class="mt-2">
+                        <div class="text-[11px] font-bold text-emerald-950 uppercase tracking-wider flex items-center gap-1">
+                            <span>Lũy Kế Tổng (Combo):</span>
+                        </div>
+                        <div class="font-mono text-xl font-black text-emerald-700 mt-0.5" id="ledgerCumComboProfit">+0đ</div>
+                        <div class="text-[10px] text-emerald-800 font-sans mt-0.5" id="ledgerComboSummarySubtext">Thắng 0/0 ngày · ROI 0%</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Ledger Cards List -->
             <div id="historicalLedgerList" class="space-y-4">
                 <!-- Dynamically populated by ai-5.js -->

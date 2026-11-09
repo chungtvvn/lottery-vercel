@@ -65,6 +65,8 @@
     let currentShadowYear = '2026';              // '2026', '2025', or 'all'
     let currentShadowPhase = 'from0710';         // 'from0710' (Bắt đầu từ 07/10/2026) hoặc 'allHistory'
     const SHADOW_START_DATE = '2026-10-07';      // Mốc thời gian bắt đầu đối soát theo yêu cầu
+    let shadowDiaryFromDate = null;
+    let shadowDiaryToDate = null;
     let cachedAdvisorData = null;
     let availableDatesList = [];
 
@@ -2838,6 +2840,11 @@
                     const phase = btn.getAttribute('data-shadow-phase');
                     if (phase) {
                         currentShadowPhase = phase;
+                        if (currentShadowPhase === 'from0710') {
+                            shadowDiaryFromDate = SHADOW_START_DATE;
+                        } else {
+                            shadowDiaryFromDate = '2026-01-01';
+                        }
                     }
                     const yr = btn.getAttribute('data-shadow-year');
                     if (yr) currentShadowYear = yr;
@@ -2861,6 +2868,60 @@
             });
         }
         setupYearFilters();
+
+        // Setup Date Range Controls cho Nhật Ký Shadow
+        function setupShadowDateFilters() {
+            const fromInp = byId('shadowDiaryFromDate');
+            const toInp = byId('shadowDiaryToDate');
+            const resetBtn = byId('btnResetShadowDiaryDate');
+            const quickBtns = document.querySelectorAll('.btn-shadow-quick-date');
+
+            if (fromInp) {
+                fromInp.onchange = e => {
+                    shadowDiaryFromDate = e.target.value;
+                    renderShadowSettledTable();
+                };
+            }
+            if (toInp) {
+                toInp.onchange = e => {
+                    shadowDiaryToDate = e.target.value;
+                    renderShadowSettledTable();
+                };
+            }
+
+            quickBtns.forEach(btn => {
+                btn.onclick = () => {
+                    const range = btn.dataset.range;
+                    const latestDate = cachedAdvisorData?.latestDate || new Date().toISOString().slice(0, 10);
+                    shadowDiaryToDate = latestDate;
+
+                    if (range === '7d') {
+                        const d = new Date(latestDate);
+                        d.setDate(d.getDate() - 6);
+                        shadowDiaryFromDate = d.toISOString().slice(0, 10);
+                    } else if (range === '30d') {
+                        const d = new Date(latestDate);
+                        d.setDate(d.getDate() - 29);
+                        shadowDiaryFromDate = d.toISOString().slice(0, 10);
+                    } else if (range === 'from0710') {
+                        shadowDiaryFromDate = SHADOW_START_DATE;
+                    } else if (range === 'all') {
+                        shadowDiaryFromDate = '2026-01-01';
+                    }
+                    renderShadowSettledTable();
+                };
+            });
+
+            if (resetBtn) {
+                resetBtn.onclick = () => {
+                    const latestDate = cachedAdvisorData?.latestDate || new Date().toISOString().slice(0, 10);
+                    shadowDiaryToDate = latestDate;
+                    shadowDiaryFromDate = SHADOW_START_DATE;
+                    renderShadowSettledTable();
+                };
+            }
+        }
+        setupShadowDateFilters();
 
         // 3. Compute and render rigorous metrics for Đề Dropoff 40s / Tri-Core 24s
         function computeAndRenderMetrics(mode) {
@@ -3828,6 +3889,52 @@
             ...loTop5XienLedger.map(r => r.date),
             ...resSuiteLedger.map(r => r.date)
         ])).filter(Boolean).sort();
+
+        const minAvailableDate = allDates[0] || '2026-01-01';
+        const maxAvailableDate = allDates[allDates.length - 1] || '2026-12-31';
+
+        // Mặc định toDate luôn là ngày hiện tại (maxAvailableDate)
+        if (!shadowDiaryToDate) {
+            shadowDiaryToDate = maxAvailableDate;
+        }
+        if (!shadowDiaryFromDate) {
+            shadowDiaryFromDate = currentShadowPhase === 'from0710' ? SHADOW_START_DATE : minAvailableDate;
+        }
+
+        const sFromInp = byId('shadowDiaryFromDate');
+        const sToInp = byId('shadowDiaryToDate');
+        const sInfoEl = byId('shadowDiaryDateRangeInfo');
+        if (sFromInp) {
+            sFromInp.min = minAvailableDate;
+            sFromInp.max = maxAvailableDate;
+            sFromInp.value = shadowDiaryFromDate;
+        }
+        if (sToInp) {
+            sToInp.min = minAvailableDate;
+            sToInp.max = maxAvailableDate;
+            sToInp.value = shadowDiaryToDate;
+        }
+        if (sInfoEl) {
+            sInfoEl.textContent = `(Xem từ ${shadowDiaryFromDate} đến ${shadowDiaryToDate} · Mặc định đến hôm nay)`;
+        }
+
+        // Lọc toàn bộ các sổ cái theo khoảng ngày đã chọn [shadowDiaryFromDate, shadowDiaryToDate]
+        if (shadowDiaryFromDate) {
+            deDropoffLedger = deDropoffLedger.filter(r => (r.date || '') >= shadowDiaryFromDate);
+            loLedger = loLedger.filter(r => (r.date || '') >= shadowDiaryFromDate);
+            deLedger = deLedger.filter(r => (r.date || '') >= shadowDiaryFromDate);
+            loTriLedger = loTriLedger.filter(r => (r.date || '') >= shadowDiaryFromDate);
+            loTop5XienLedger = loTop5XienLedger.filter(r => (r.date || '') >= shadowDiaryFromDate);
+            resSuiteLedger = resSuiteLedger.filter(r => (r.date || '') >= shadowDiaryFromDate);
+        }
+        if (shadowDiaryToDate) {
+            deDropoffLedger = deDropoffLedger.filter(r => (r.date || '') <= shadowDiaryToDate);
+            loLedger = loLedger.filter(r => (r.date || '') <= shadowDiaryToDate);
+            deLedger = deLedger.filter(r => (r.date || '') <= shadowDiaryToDate);
+            loTriLedger = loTriLedger.filter(r => (r.date || '') <= shadowDiaryToDate);
+            loTop5XienLedger = loTop5XienLedger.filter(r => (r.date || '') <= shadowDiaryToDate);
+            resSuiteLedger = resSuiteLedger.filter(r => (r.date || '') <= shadowDiaryToDate);
+        }
 
         let filteredDatesForSelector = allDates;
         if (currentShadowPhase === 'from0710') {

@@ -884,6 +884,42 @@
                 </div>
             </div>
 
+            <!-- BỘ CHỌN KHOẢNG NGÀY ĐỐI SOÁT & TÍNH LŨY KẾ ĐỘNG (TỪ NGÀY ... ĐẾN NGÀY ...) -->
+            <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-slate-50 border border-slate-200 p-3 text-xs">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="font-bold text-slate-700 flex items-center gap-1">
+                        <i class="bi bi-calendar-range text-indigo-600"></i> Xem Lũy Kế Khoảng Ngày:
+                    </span>
+                    <div class="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-xl border border-slate-200 shadow-2xs font-mono">
+                        <span class="text-slate-400 text-[11px] font-bold">Từ:</span>
+                        <input type="date" id="shadowDiaryFromDate" class="border-0 bg-transparent text-slate-800 font-bold focus:outline-none text-xs cursor-pointer">
+                    </div>
+                    <div class="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-xl border border-slate-200 shadow-2xs font-mono">
+                        <span class="text-slate-400 text-[11px] font-bold">Đến:</span>
+                        <input type="date" id="shadowDiaryToDate" class="border-0 bg-transparent text-slate-800 font-bold focus:outline-none text-xs cursor-pointer">
+                    </div>
+                    <span class="text-[11px] text-slate-500 font-sans italic" id="shadowDiaryDateRangeInfo">(Mặc định đến ngày hiện tại)</span>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-1.5">
+                    <button type="button" class="btn-shadow-quick-date px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold text-[11px] transition shadow-2xs cursor-pointer" data-range="7d">
+                        7 ngày qua
+                    </button>
+                    <button type="button" class="btn-shadow-quick-date px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold text-[11px] transition shadow-2xs cursor-pointer" data-range="30d">
+                        30 ngày qua
+                    </button>
+                    <button type="button" class="btn-shadow-quick-date px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 font-bold text-[11px] transition shadow-2xs cursor-pointer" data-range="from0710">
+                        Từ 07/10
+                    </button>
+                    <button type="button" class="btn-shadow-quick-date px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold text-[11px] transition shadow-2xs cursor-pointer" data-range="all">
+                        Toàn bộ
+                    </button>
+                    <button type="button" id="btnResetShadowDiaryDate" class="px-2.5 py-1 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-800 font-black text-[11px] transition cursor-pointer flex items-center gap-1" title="Đặt lại đến ngày hiện tại">
+                        <i class="bi bi-arrow-counterclockwise"></i> Hôm nay
+                    </button>
+                </div>
+            </div>
+
             <!-- Category Sub-tabs: 5 Tab Chính Rõ Ràng & Dropdown Tra Cứu Hệ Ứng Viên Khác -->
             <div class="flex flex-wrap items-center gap-1.5 border-b border-slate-100 pb-3" id="shadowLedgerCategoryTabs">
                 <button type="button" data-shadow-cat="pentaSuite" class="shadow-cat-btn active rounded-xl bg-slate-900 text-white font-black text-xs px-3.5 py-2 transition-all shadow-xs flex items-center gap-1.5 ring-2 ring-amber-400 cursor-pointer">

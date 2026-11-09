@@ -210,6 +210,8 @@
     let payload = null;
     let currentMainTab = 'unifiedCombat'; // 'unifiedCombat' | 'dualMerge'
     let unifiedTimeframe = 'sep16'; // 'sep16' | 'live' | 'all'
+    let unifiedDiaryFromDate = null;
+    let unifiedDiaryToDate = null;
     let currentDiaryCategory = 'all'; // 'all' | 'de' | 'lo4Engine' | 'loStd' | 'loX2' | 'loXi3' | 'loXi4' | 'loXien5'
     let unifiedStatusFilter = 'all'; // 'all' | 'win' | 'loss'
     let dualMergeLogLimit = '30'; // Mặc định 30 ngày gần nhất
@@ -6269,23 +6271,45 @@
         }
 
         let sortedDates = [...allDatesSet].sort();
+        const minAvailableDate = sortedDates[0] || '2026-01-01';
+        const maxAvailableDate = sortedDates[sortedDates.length - 1] || '2026-12-31';
 
-        let filteredDates = sortedDates;
-        if (unifiedTimeframe === 'sep16') {
-            filteredDates = sortedDates.filter(d => d >= '2026-09-16');
-        } else if (unifiedTimeframe === 'live') {
-            filteredDates = sortedDates.filter(d => d >= '2026-08-28');
+        // Mặc định toDate luôn là ngày hiện tại (maxAvailableDate)
+        if (!unifiedDiaryToDate) {
+            unifiedDiaryToDate = maxAvailableDate;
         }
+        if (!unifiedDiaryFromDate) {
+            if (unifiedTimeframe === 'sep16') unifiedDiaryFromDate = '2026-09-16';
+            else if (unifiedTimeframe === 'live') unifiedDiaryFromDate = '2026-08-28';
+            else unifiedDiaryFromDate = minAvailableDate;
+        }
+
+        const fromInp = byId('unifiedDiaryFromDate');
+        const toInp = byId('unifiedDiaryToDate');
+        const infoEl = byId('unifiedDiaryDateRangeInfo');
+        if (fromInp) {
+            fromInp.min = minAvailableDate;
+            fromInp.max = maxAvailableDate;
+            fromInp.value = unifiedDiaryFromDate;
+        }
+        if (toInp) {
+            toInp.min = minAvailableDate;
+            toInp.max = maxAvailableDate;
+            toInp.value = unifiedDiaryToDate;
+        }
+        if (infoEl) {
+            infoEl.textContent = `(Xem từ ${unifiedDiaryFromDate} đến ${unifiedDiaryToDate} · Mặc định đến hôm nay)`;
+        }
+
+        let filteredDates = sortedDates.filter(d => {
+            if (unifiedDiaryFromDate && d < unifiedDiaryFromDate) return false;
+            if (unifiedDiaryToDate && d > unifiedDiaryToDate) return false;
+            return true;
+        });
 
         const tfTextEl = byId('unifiedDiaryActiveTimeframeText');
         if (tfTextEl) {
-            if (unifiedTimeframe === 'sep16') {
-                tfTextEl.textContent = 'Đang xem: Mốc thực chiến mới (Từ 16/09/2026)';
-            } else if (unifiedTimeframe === 'live') {
-                tfTextEl.textContent = `Đang xem: Thực chiến Live (${filteredDates.length} kỳ từ 28/08 đến 15/09)`;
-            } else {
-                tfTextEl.textContent = `Đang xem: Toàn bộ lịch sử 2026 (${filteredDates.length} kỳ)`;
-            }
+            tfTextEl.textContent = `Đang xem: Lũy kế ${filteredDates.length} kỳ (Từ ${unifiedDiaryFromDate} đến ${unifiedDiaryToDate})`;
         }
 
         if (filteredDates.length === 0 && unifiedTimeframe === 'sep16') {
@@ -9038,10 +9062,67 @@
                 btn.classList.add('active', 'bg-indigo-600', 'text-white');
                 btn.classList.remove('text-slate-600');
                 unifiedTimeframe = btn.dataset.unifiedTimeframe;
+                if (unifiedTimeframe === 'sep16') unifiedDiaryFromDate = '2026-09-16';
+                else if (unifiedTimeframe === 'live') unifiedDiaryFromDate = '2026-08-28';
+                else if (unifiedTimeframe === 'all') unifiedDiaryFromDate = '2026-01-01';
                 renderUnifiedCombatDiary(deLedger, loDiary, loAllDiary);
                 renderUnifiedKpiCards(deLedger, loDiary, globalLoSummary, globalMetaSummary);
             };
         });
+
+        // Date Range Controls cho Nhật Ký Đối Soát Thực Chiến
+        const uFromInp = byId('unifiedDiaryFromDate');
+        const uToInp = byId('unifiedDiaryToDate');
+        const uResetBtn = byId('btnResetUnifiedDiaryDate');
+
+        if (uFromInp) {
+            uFromInp.onchange = e => {
+                unifiedDiaryFromDate = e.target.value;
+                renderUnifiedCombatDiary(deLedger, loDiary, loAllDiary);
+                renderUnifiedKpiCards(deLedger, loDiary, globalLoSummary, globalMetaSummary);
+            };
+        }
+        if (uToInp) {
+            uToInp.onchange = e => {
+                unifiedDiaryToDate = e.target.value;
+                renderUnifiedCombatDiary(deLedger, loDiary, loAllDiary);
+                renderUnifiedKpiCards(deLedger, loDiary, globalLoSummary, globalMetaSummary);
+            };
+        }
+
+        document.querySelectorAll('.btn-unified-quick-date').forEach(btn => {
+            btn.onclick = () => {
+                const range = btn.dataset.range;
+                const latestDate = payload?.latestDate || new Date().toISOString().slice(0, 10);
+                unifiedDiaryToDate = latestDate;
+
+                if (range === '7d') {
+                    const d = new Date(latestDate);
+                    d.setDate(d.getDate() - 6);
+                    unifiedDiaryFromDate = d.toISOString().slice(0, 10);
+                } else if (range === '30d') {
+                    const d = new Date(latestDate);
+                    d.setDate(d.getDate() - 29);
+                    unifiedDiaryFromDate = d.toISOString().slice(0, 10);
+                } else if (range === 'sep16') {
+                    unifiedDiaryFromDate = '2026-09-16';
+                } else if (range === 'all') {
+                    unifiedDiaryFromDate = '2026-01-01';
+                }
+                renderUnifiedCombatDiary(deLedger, loDiary, loAllDiary);
+                renderUnifiedKpiCards(deLedger, loDiary, globalLoSummary, globalMetaSummary);
+            };
+        });
+
+        if (uResetBtn) {
+            uResetBtn.onclick = () => {
+                const latestDate = payload?.latestDate || new Date().toISOString().slice(0, 10);
+                unifiedDiaryToDate = latestDate;
+                unifiedDiaryFromDate = '2026-09-16';
+                renderUnifiedCombatDiary(deLedger, loDiary, loAllDiary);
+                renderUnifiedKpiCards(deLedger, loDiary, globalLoSummary, globalMetaSummary);
+            };
+        }
 
         const statusSelect = byId('unifiedDiaryStatusFilter');
         if (statusSelect) {

@@ -15,6 +15,8 @@
         leaderboardCategory: 'combo', // 'combo', 'de', 'lo', 'xien4'
         ledgerFilter: 'all',
         ledgerCategory: 'all', // 'all', 'de', 'lo', 'xien4'
+        ledgerFromDate: null,
+        ledgerToDate: null,
         expandedDays: new Set(),
         aiDetailsOpen: false,
         expandedDayAis: new Set()
@@ -2164,6 +2166,181 @@
     }
 
     // -------------------------------------------------------------------------
+    // TÍNH TOÁN & HIỂN THỊ LŨY KẾ ĐỘNG TỪNG MÓN (ĐỀ, LÔ, XIÊN 4, COMBO) THEO KHOẢNG NGÀY
+    // -------------------------------------------------------------------------
+    function updateLedgerDateControls(minDate, maxDate) {
+        const fromInput = document.getElementById("ledgerFromDate");
+        const toInput = document.getElementById("ledgerToDate");
+        const infoEl = document.getElementById("ledgerDateRangeInfo");
+
+        if (fromInput) {
+            if (minDate) fromInput.min = minDate;
+            if (maxDate) fromInput.max = maxDate;
+            if (state.ledgerFromDate) fromInput.value = state.ledgerFromDate;
+        }
+        if (toInput) {
+            if (minDate) toInput.min = minDate;
+            if (maxDate) toInput.max = maxDate;
+            if (state.ledgerToDate) toInput.value = state.ledgerToDate;
+        }
+        if (infoEl && state.ledgerFromDate && state.ledgerToDate) {
+            infoEl.textContent = `(Xem từ ${state.ledgerFromDate} đến ${state.ledgerToDate} · Mặc định đến hôm nay)`;
+        }
+    }
+
+    function computeDynamicLedgerRates(days = [], filter = "all") {
+        // days sorted ASC theo thời gian để tính lũy kế đúng dòng tiền
+        const sortedAsc = [...days].sort((a, b) => String(a.date).localeCompare(String(b.date)));
+        const targetModel = filter !== "all" ? (filter === "deepseek" ? "claude" : filter) : "consensus";
+
+        let cumDe = 0, cumDeStake = 0, deWins = 0;
+        let cumLo = 0, cumLoStake = 0, loHits = 0, loWins = 0;
+        let cumXien = 0, cumXienStake = 0, xienWins = 0;
+        let cumCombo = 0, cumComboStake = 0, comboWins = 0;
+        let settledCount = 0;
+        const cumMapByDate = {};
+
+        sortedAsc.forEach(day => {
+            const isSettled = Boolean(day.special && day.prizes27?.length === 27 && day.results);
+            if (!isSettled) {
+                cumMapByDate[day.date] = { cumDe, cumLo, cumXien, cumCombo, dProfit: 0, lProfit: 0, xProfit: 0, cProfit: 0 };
+                return;
+            }
+            settledCount++;
+            const res = day.results?.[targetModel] || (targetModel === "consensus" ? day.results?.consensus : null) || {};
+
+            // Đề
+            const deRes = res.deTiered || res.de || {};
+            const dProfit = deRes.profitK || 0;
+            const dStake = deRes.stakeK || 0;
+            const dHit = Boolean(deRes.isHit);
+            cumDe += dProfit;
+            cumDeStake += dStake;
+            if (dHit) deWins++;
+
+            // Lô
+            const loRes = res.loTiered || res.lo || {};
+            const lProfit = loRes.profitK || 0;
+            const lStake = loRes.stakeK || 0;
+            const lHits = loRes.hits || 0;
+            const lWin = Boolean(loRes.isWin || lHits > 0);
+            cumLo += lProfit;
+            cumLoStake += lStake;
+            loHits += lHits;
+            if (lWin) loWins++;
+
+            // Xiên 4
+            const xRes = res.xien4 || {};
+            const xProfit = xRes.profitK || 0;
+            const xStake = xRes.stakeK || 0;
+            const xHit = Boolean(xRes.isWin || (xRes.h2Count > 0 || xRes.h3Count > 0 || xRes.h4Count > 0));
+            cumXien += xProfit;
+            cumXienStake += xStake;
+            if (xHit) xienWins++;
+
+            // Combo (Tổng hợp Đề + Lô + Xiên 4)
+            const cProfit = res.totalProfitK !== undefined ? res.totalProfitK : (dProfit + lProfit + xProfit);
+            const cStake = res.totalStakeK !== undefined ? res.totalStakeK : (dStake + lStake + xStake);
+            const cWin = res.isWin !== undefined ? res.isWin : (cProfit >= 0);
+            cumCombo += cProfit;
+            cumComboStake += cStake;
+            if (cWin) comboWins++;
+
+            cumMapByDate[day.date] = {
+                cumDe, cumLo, cumXien, cumCombo,
+                dProfit, lProfit, xProfit, cProfit,
+                cumDeStake, cumLoStake, cumXienStake, cumComboStake
+            };
+        });
+
+        return {
+            cumDe, cumDeStake, deWins,
+            cumLo, cumLoStake, loHits, loWins,
+            cumXien, cumXienStake, xienWins,
+            cumCombo, cumComboStake, comboWins,
+            settledCount,
+            cumMapByDate
+        };
+    }
+
+    function renderLedgerSummaryKPIs(stats) {
+        const {
+            cumDe, cumDeStake, deWins,
+            cumLo, cumLoStake, loHits, loWins,
+            cumXien, cumXienStake, xienWins,
+            cumCombo, cumComboStake, comboWins,
+            settledCount
+        } = stats;
+
+        // 1. Đề
+        const cumDeEl = document.getElementById("ledgerCumDeProfit");
+        const deHitBadge = document.getElementById("ledgerDeHitBadge");
+        const deSubtext = document.getElementById("ledgerDeSummarySubtext");
+        if (cumDeEl) {
+            cumDeEl.textContent = formatMoney(cumDe);
+            cumDeEl.className = `font-mono text-xl font-black mt-0.5 ${cumDe >= 0 ? "text-emerald-700" : "text-rose-600"}`;
+        }
+        if (deHitBadge) {
+            const deWinRate = settledCount > 0 ? ((deWins / settledCount) * 100).toFixed(1) : "0.0";
+            deHitBadge.textContent = `${deWins}/${settledCount} kỳ (${deWinRate}%)`;
+        }
+        if (deSubtext) {
+            const deRoi = cumDeStake > 0 ? ((cumDe / cumDeStake) * 100).toFixed(1) : "0.0";
+            deSubtext.textContent = `Ăn ĐB: ${deWins} kỳ · Vốn: ${formatMoney(cumDeStake, { signed: false })} · ROI: ${deRoi}%`;
+        }
+
+        // 2. Lô
+        const cumLoEl = document.getElementById("ledgerCumLoProfit");
+        const loHitBadge = document.getElementById("ledgerLoHitBadge");
+        const loSubtext = document.getElementById("ledgerLoSummarySubtext");
+        if (cumLoEl) {
+            cumLoEl.textContent = formatMoney(cumLo);
+            cumLoEl.className = `font-mono text-xl font-black mt-0.5 ${cumLo >= 0 ? "text-emerald-700" : "text-rose-600"}`;
+        }
+        if (loHitBadge) {
+            loHitBadge.textContent = `${loHits} nháy · ${loWins}/${settledCount} ngày`;
+        }
+        if (loSubtext) {
+            const loRoi = cumLoStake > 0 ? ((cumLo / cumLoStake) * 100).toFixed(1) : "0.0";
+            loSubtext.textContent = `Trúng ${loHits} nháy · Vốn: ${formatMoney(cumLoStake, { signed: false })} · ROI: ${loRoi}%`;
+        }
+
+        // 3. Xiên 4
+        const cumXienEl = document.getElementById("ledgerCumXienProfit");
+        const xienHitBadge = document.getElementById("ledgerXienHitBadge");
+        const xienSubtext = document.getElementById("ledgerXienSummarySubtext");
+        if (cumXienEl) {
+            cumXienEl.textContent = formatMoney(cumXien);
+            cumXienEl.className = `font-mono text-xl font-black mt-0.5 ${cumXien >= 0 ? "text-emerald-700" : "text-rose-600"}`;
+        }
+        if (xienHitBadge) {
+            const xWinRate = settledCount > 0 ? ((xienWins / settledCount) * 100).toFixed(1) : "0.0";
+            xienHitBadge.textContent = `${xienWins}/${settledCount} kỳ (${xWinRate}%)`;
+        }
+        if (xienSubtext) {
+            const xRoi = cumXienStake > 0 ? ((cumXien / cumXienStake) * 100).toFixed(1) : "0.0";
+            xienSubtext.textContent = `Ăn Xiên: ${xienWins} lần · Vốn: ${formatMoney(cumXienStake, { signed: false })} · ROI: ${xRoi}%`;
+        }
+
+        // 4. Combo Tổng
+        const cumComboEl = document.getElementById("ledgerCumComboProfit");
+        const comboWinBadge = document.getElementById("ledgerComboWinRate");
+        const comboSubtext = document.getElementById("ledgerComboSummarySubtext");
+        if (cumComboEl) {
+            cumComboEl.textContent = formatMoney(cumCombo);
+            cumComboEl.className = `font-mono text-xl font-black mt-0.5 ${cumCombo >= 0 ? "text-emerald-700" : "text-rose-600"}`;
+        }
+        if (comboWinBadge) {
+            const cWinRate = settledCount > 0 ? ((comboWins / settledCount) * 100).toFixed(1) : "0.0";
+            comboWinBadge.textContent = `Thắng ${comboWins}/${settledCount} ngày (${cWinRate}%)`;
+        }
+        if (comboSubtext) {
+            const cRoi = cumComboStake > 0 ? ((cumCombo / cumComboStake) * 100).toFixed(1) : "0.0";
+            comboSubtext.textContent = `Tổng Vốn: ${formatMoney(cumComboStake, { signed: false })} · ROI: ${cRoi}%`;
+        }
+    }
+
+    // -------------------------------------------------------------------------
     // RENDER: Historical Settlement Ledger (Nhật ký đối soát từng ngày)
     // Tái cấu trúc mới: Thẻ trực quan, highlight trúng/trượt & thắng/thua, sub-tabs mượt mà
     // -------------------------------------------------------------------------
@@ -2185,12 +2362,43 @@
             return;
         }
 
-        // Mặc định mở rộng ngày đầu tiên (mới nhất) nếu chưa có trạng thái
-        if (state.expandedDays.size === 0 && visibleDays.length > 0) {
-            state.expandedDays.add(visibleDays[0].date);
+        // Khởi tạo ngày mặc định: toDate luôn mặc định là ngày hiện tại (hoặc ngày mới nhất có dữ liệu)
+        const allDates = visibleDays.map(d => d.date).sort();
+        const minAvailableDate = allDates[0];
+        const maxAvailableDate = allDates[allDates.length - 1];
+
+        if (!state.ledgerToDate) {
+            state.ledgerToDate = maxAvailableDate;
+        }
+        if (!state.ledgerFromDate) {
+            state.ledgerFromDate = minAvailableDate;
         }
 
-        const cardsHtml = visibleDays.map(day => {
+        // Cập nhật giá trị lên giao diện Date Controls
+        updateLedgerDateControls(minAvailableDate, maxAvailableDate);
+
+        // Lọc ngày theo khoảng được chọn [fromDate, toDate]
+        const rangeDays = visibleDays.filter(d => {
+            if (state.ledgerFromDate && d.date < state.ledgerFromDate) return false;
+            if (state.ledgerToDate && d.date > state.ledgerToDate) return false;
+            return true;
+        });
+
+        // Tính toán lũy kế động riêng từng món (Đề, Lô, Xiên 4, Combo) theo khoảng ngày được chọn
+        const dynamicStats = computeDynamicLedgerRates(rangeDays, filter);
+        renderLedgerSummaryKPIs(dynamicStats);
+
+        if (!rangeDays.length) {
+            list.innerHTML = `<div class="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-400">Không có dữ liệu đối soát trong khoảng ngày từ ${state.ledgerFromDate} đến ${state.ledgerToDate}.</div>`;
+            return;
+        }
+
+        // Mặc định mở rộng ngày đầu tiên (mới nhất) nếu chưa có trạng thái
+        if (state.expandedDays.size === 0 && rangeDays.length > 0) {
+            state.expandedDays.add(rangeDays[0].date);
+        }
+
+        const cardsHtml = rangeDays.map(day => {
             const dateStr = day.date;
             const isSettled = Boolean(day.special && day.prizes27?.length === 27 && day.results);
             const specialStr = day.special ? String(day.special).padStart(2, "0") : null;
@@ -2207,9 +2415,9 @@
             const totalProfitK = consRes.totalProfitK || 0;
             const isConsWin = totalProfitK >= 0;
 
-            const rates = day.rates || {};
-            const consRates = rates.consensus || {};
-            const cumCombo = consRates.combo?.profitK ?? null;
+            // Lấy lũy kế động của ngày này từ dynamicStats
+            const dayCum = dynamicStats.cumMapByDate[dateStr] || { cumDe: 0, cumLo: 0, cumXien: 0, cumCombo: 0 };
+            const cumCombo = dayCum.cumCombo;
 
             const p27Counts = {};
             p27.forEach(p => {
@@ -2290,7 +2498,7 @@
 
                                 <!-- Huy hiệu LŨY KẾ COMBO -->
                                 ${cumCombo !== null ? `
-                                    <div class="px-3 py-1 rounded-xl ${cumCombo >= 0 ? "bg-emerald-50 text-emerald-950 border border-emerald-300" : "bg-rose-50 text-rose-950 border border-rose-300"} text-xs font-mono font-black shadow-2xs hidden sm:flex items-center gap-1.5">
+                                    <div class="px-3 py-1 rounded-xl ${cumCombo >= 0 ? "bg-emerald-50 text-emerald-950 border border-emerald-300" : "bg-rose-50 text-rose-950 border border-rose-300"} text-xs font-mono font-black shadow-2xs hidden sm:flex items-center gap-1.5" title="Lũy kế Combo từ ${state.ledgerFromDate || ''} đến ${dateStr}">
                                         <span class="text-[9px] uppercase font-bold text-slate-500">LŨY KẾ:</span>
                                         <span class="text-xs font-black ${cumCombo >= 0 ? "text-emerald-700" : "text-rose-700"}">${formatMoney(cumCombo)}</span>
                                     </div>
@@ -2352,6 +2560,18 @@
                                 ` : `<span class="text-slate-400 font-mono">22M</span>`}
                             </span>
                         </div>
+
+                        <!-- Dải Lũy Kế Riêng Từng Món (Đề, Lô, Xiên) -->
+                        ${isSettled ? `
+                            <div class="flex items-center gap-1.5 font-mono text-[11px] bg-white px-2.5 py-1 rounded-xl border border-slate-200 shadow-2xs shrink-0" title="Lũy kế riêng từng món từ ${state.ledgerFromDate || ''} đến ${dateStr}">
+                                <span class="text-[10px] font-sans font-bold text-slate-500 flex items-center gap-1"><i class="bi bi-graph-up-arrow text-indigo-600"></i> Lũy Kế:</span>
+                                <span class="font-black ${dayCum.cumDe >= 0 ? 'text-emerald-700' : 'text-rose-600'}" title="Lũy kế Đề đến ngày này">Đề: ${formatMoney(dayCum.cumDe)}</span>
+                                <span class="text-slate-300">·</span>
+                                <span class="font-black ${dayCum.cumLo >= 0 ? 'text-emerald-700' : 'text-rose-600'}" title="Lũy kế Lô đến ngày này">Lô: ${formatMoney(dayCum.cumLo)}</span>
+                                <span class="text-slate-300">·</span>
+                                <span class="font-black ${dayCum.cumXien >= 0 ? 'text-emerald-700' : 'text-rose-600'}" title="Lũy kế Xiên 4 đến ngày này">Xiên: ${formatMoney(dayCum.cumXien)}</span>
+                            </div>
+                        ` : ""}
 
                         <!-- 5 Pill mini tóm tắt ý kiến 5 AI -->
                         <div class="flex items-center gap-1.5 flex-wrap">
@@ -2534,9 +2754,75 @@
         }
     }
 
+    function setupLedgerDateFilters() {
+        const fromInput = document.getElementById("ledgerFromDate");
+        const toInput = document.getElementById("ledgerToDate");
+        const btnReset = document.getElementById("btnResetLedgerDate");
+        const quickBtns = document.querySelectorAll(".btn-ledger-quick-date");
+
+        if (fromInput) {
+            fromInput.addEventListener("change", (e) => {
+                state.ledgerFromDate = e.target.value;
+                if (state.payload) {
+                    renderLedger(state.payload.history, state.ledgerFilter, state.payload.models);
+                }
+            });
+        }
+
+        if (toInput) {
+            toInput.addEventListener("change", (e) => {
+                state.ledgerToDate = e.target.value;
+                if (state.payload) {
+                    renderLedger(state.payload.history, state.ledgerFilter, state.payload.models);
+                }
+            });
+        }
+
+        quickBtns.forEach(btn => {
+            btn.addEventListener("click", () => {
+                const range = btn.dataset.range;
+                const activeDate = state.payload?.latestDate || state.payload?.latestDay?.date || new Date().toISOString().slice(0, 10);
+                state.ledgerToDate = activeDate;
+
+                const allDates = (state.payload?.history || []).map(d => d.date).sort();
+                const minDate = allDates[0] || activeDate;
+
+                if (range === "7d") {
+                    const d = new Date(activeDate);
+                    d.setDate(d.getDate() - 6);
+                    state.ledgerFromDate = d.toISOString().slice(0, 10);
+                } else if (range === "30d") {
+                    const d = new Date(activeDate);
+                    d.setDate(d.getDate() - 29);
+                    state.ledgerFromDate = d.toISOString().slice(0, 10);
+                } else if (range === "all") {
+                    state.ledgerFromDate = minDate;
+                }
+
+                if (state.payload) {
+                    renderLedger(state.payload.history, state.ledgerFilter, state.payload.models);
+                }
+            });
+        });
+
+        if (btnReset) {
+            btnReset.addEventListener("click", () => {
+                const allDates = (state.payload?.history || []).map(d => d.date).sort();
+                const minDate = allDates[0];
+                const maxDate = state.payload?.latestDate || state.payload?.latestDay?.date || (allDates[allDates.length - 1]);
+                state.ledgerFromDate = minDate;
+                state.ledgerToDate = maxDate;
+                if (state.payload) {
+                    renderLedger(state.payload.history, state.ledgerFilter, state.payload.models);
+                }
+            });
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         loadData();
         setupToggleAllLedger();
+        setupLedgerDateFilters();
 
         // Model selector buttons for today's prediction
         const tabBtns = document.querySelectorAll('.tab-ai-btn');
