@@ -893,30 +893,81 @@
                                 </div>
                             </div>
 
-                            <!-- CỘT PHẢI: LÔ GỘP 360 NGÀY (TOP 6 CONSENSUS) -->
+                            <!-- CỘT PHẢI: LÔ GỘP 360 ĐA TẦNG (MULTI-TIER X5 -> X1) -->
                             <div class="p-4 rounded-2xl bg-white border border-emerald-200 shadow-2xs space-y-3 flex flex-col justify-between">
-                                <div>
+                                <div class="space-y-3">
                                     <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-                                        <span class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
-                                            <span class="text-sm">🎲</span> Dàn Lô Gộp 360 Ngày (Top 6 Consensus)
-                                        </span>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-sm">🎲</span>
+                                            <div>
+                                                <h5 class="font-bold text-slate-800 text-xs">Lô Gộp 360 Đa Tầng (${newStrategy.lo.numbers.length} số)</h5>
+                                                <span class="text-[10px] text-slate-500 font-normal">Tầng X5 đến X1 (Theo Phiếu Bầu 360)</span>
+                                            </div>
+                                        </div>
                                         <span class="text-[10px] text-indigo-700 font-bold bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
                                             Cửa sổ 360 ngày
                                         </span>
                                     </div>
 
-                                    <div class="space-y-2 mt-2">
-                                        <div class="flex items-center justify-between text-xs">
-                                            <span class="text-slate-600 font-semibold">Danh sách 6 số mạnh nhất:</span>
-                                            <span class="font-mono text-indigo-900 text-[10px] font-bold">10 điểm = ${newStrategy.decisionMultiplier * 2.2}M/số (Ăn ${newStrategy.decisionMultiplier * 8}M/nháy)</span>
-                                        </div>
-                                        <div class="flex flex-wrap gap-2">
-                                            ${newStrategy.lo.numbers.map((n, i) => `
-                                                <div class="flex flex-col items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-tr from-indigo-600 to-blue-600 text-white font-mono font-black text-sm shadow-2xs">
-                                                    <span>${n}</span>
-                                                    <span class="text-[8px] font-sans opacity-80">Top ${i+1}</span>
+                                    <!-- Kinh tế học Lô Đa Tầng -->
+                                    <div class="text-[11px] font-mono text-slate-600 bg-indigo-50/70 p-2 rounded-xl border border-indigo-100 flex items-center justify-between">
+                                        <span>Cược: Hệ số x ${newStrategy.decisionMultiplier * 2.2}M</span>
+                                        <span>Ăn: Hệ số x ${newStrategy.decisionMultiplier * 8}M/nháy</span>
+                                    </div>
+
+                                    <!-- Danh sách các Tầng X5 đến X1 -->
+                                    <div class="space-y-2 text-xs">
+                                        ${newStrategy.lo.tiers?.x5Nums?.length ? `
+                                            <div class="flex items-center justify-between gap-1.5">
+                                                <span class="rounded bg-gradient-to-r from-rose-600 to-pink-600 text-white px-2 py-0.5 text-[10px] font-black shrink-0">TẦNG X5 (5 AI)</span>
+                                                <div class="flex flex-wrap gap-1 justify-end">
+                                                    ${newStrategy.lo.tiers.x5Nums.map(n => `<span class="badge-number font-mono font-black text-xs px-2.5 py-1 rounded-xl bg-rose-600 text-white shadow-2xs">${n} (5/5)</span>`).join('')}
                                                 </div>
-                                            `).join('')}
+                                            </div>
+                                        ` : ''}
+
+                                        ${newStrategy.lo.tiers?.x4Nums?.length ? `
+                                            <div class="flex items-center justify-between gap-1.5">
+                                                <span class="rounded bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 px-2 py-0.5 text-[10px] font-black shrink-0">TẦNG X4 (4 AI)</span>
+                                                <div class="flex flex-wrap gap-1 justify-end">
+                                                    ${newStrategy.lo.tiers.x4Nums.map(n => `<span class="badge-number font-mono font-black text-xs px-2.5 py-1 rounded-xl bg-amber-400 text-slate-950 shadow-2xs">${n} (4/5)</span>`).join('')}
+                                                </div>
+                                            </div>
+                                        ` : ''}
+
+                                        ${newStrategy.lo.tiers?.x3Nums?.length ? `
+                                            <div class="flex items-center justify-between gap-1.5">
+                                                <span class="rounded bg-emerald-600 text-white px-2 py-0.5 text-[10px] font-black shrink-0">TẦNG X3 (3 AI)</span>
+                                                <div class="flex flex-wrap gap-1 justify-end">
+                                                    ${newStrategy.lo.tiers.x3Nums.map(n => `<span class="badge-number font-mono font-black text-xs px-2.5 py-1 rounded-xl bg-emerald-600 text-white shadow-2xs">${n} (3/5)</span>`).join('')}
+                                                </div>
+                                            </div>
+                                        ` : ''}
+
+                                        ${newStrategy.lo.tiers?.x2Nums?.length ? `
+                                            <div class="flex items-center justify-between gap-1.5">
+                                                <span class="rounded bg-teal-600 text-white px-2 py-0.5 text-[10px] font-black shrink-0">TẦNG X2 (2 AI)</span>
+                                                <div class="flex flex-wrap gap-1 justify-end">
+                                                    ${newStrategy.lo.tiers.x2Nums.map(n => `<span class="badge-number font-mono font-bold text-xs px-2 py-0.5 rounded-xl bg-teal-50 border border-teal-300 text-teal-900">${n} (2/5)</span>`).join('')}
+                                                </div>
+                                            </div>
+                                        ` : ''}
+
+                                        ${newStrategy.lo.tiers?.x1Nums?.length ? `
+                                            <div class="flex items-center justify-between gap-1.5 pt-1.5 border-t border-slate-100">
+                                                <span class="rounded bg-slate-600 text-white px-2 py-0.5 text-[10px] font-bold shrink-0">TẦNG X1 (1 AI)</span>
+                                                <div class="flex flex-wrap gap-1 justify-end">
+                                                    ${newStrategy.lo.tiers.x1Nums.map(n => `<span class="badge-number font-mono text-[11px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">${n}</span>`).join('')}
+                                                </div>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+
+                                    <!-- Top 6 phụ trợ -->
+                                    <div class="p-2 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
+                                        <span class="text-slate-500 font-semibold">Hoặc Top 6 Tinh Hoa:</span>
+                                        <div class="flex gap-1 font-mono font-black text-indigo-900 text-xs">
+                                            ${(newStrategy.lo.top6 || []).map(n => `<span class="px-1.5 py-0.5 bg-white border border-indigo-200 rounded text-[11px]">${n}</span>`).join('')}
                                         </div>
                                     </div>
                                 </div>
@@ -928,11 +979,14 @@
                                         <span class="text-slate-400">(Đề: ${formatMoney(newStrategy.de.plannedStakeK, { signed: false })} · Lô: ${formatMoney(newStrategy.lo.plannedStakeK, { signed: false })})</span>
                                     </div>
                                     <div class="flex items-center gap-2">
-                                        <button type="button" id="btnCopyNewLo" class="flex-1 py-1.5 px-2 rounded-xl bg-indigo-100 hover:bg-indigo-200 text-indigo-900 font-bold text-[11px] transition shadow-2xs cursor-pointer text-center">
-                                            <i class="bi bi-clipboard-check"></i> Copy Top 6 Lô
+                                        <button type="button" id="btnCopyNewLoTiered" class="flex-1 py-1.5 px-2 rounded-xl bg-gradient-to-r from-indigo-600 to-teal-600 hover:opacity-95 text-white font-black text-[11px] transition shadow-2xs cursor-pointer text-center">
+                                            <i class="bi bi-clipboard-check"></i> Copy Lô Đa Tầng (${newStrategy.lo.numbers.length}s)
+                                        </button>
+                                        <button type="button" id="btnCopyNewLo" class="py-1.5 px-2.5 rounded-xl bg-white hover:bg-slate-50 text-indigo-900 border border-indigo-300 font-bold text-[11px] transition shadow-2xs cursor-pointer text-center">
+                                            <i class="bi bi-dice-6-fill"></i> Top 6
                                         </button>
                                         <button type="button" id="btnCopyNewAll" class="flex-1 py-1.5 px-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 text-white font-black text-[11px] transition shadow-xs cursor-pointer text-center">
-                                            <i class="bi bi-clipboard-check"></i> Copy Toàn Bộ Mới
+                                            <i class="bi bi-clipboard-check"></i> Copy Cả Bộ
                                         </button>
                                     </div>
                                 </div>
@@ -1495,18 +1549,41 @@
             document.getElementById('btnCopyNewDeAll')?.addEventListener('click', () => {
                 copyToClipboard(newStrategy.de.numbers.join(' '), `Dàn Đề Gộp Lọc Anti-Parity (${newStrategy.de.totalCount} số)`);
             });
+            document.getElementById('btnCopyNewLoTiered')?.addEventListener('click', () => {
+                const lines = [`🎲 LÔ GỘP 360 ĐA TẦNG NGÀY ${latestDay.date} (${newStrategy.lo.numbers.length} số):`];
+                const t = newStrategy.lo.tiers || {};
+                const mult = newStrategy.decisionMultiplier || 1;
+                if (t.x5Nums?.length) lines.push(`- Tầng X5 (Cược ${mult * 11}M): ${t.x5Nums.join(' ')}`);
+                if (t.x4Nums?.length) lines.push(`- Tầng X4 (Cược ${mult * 8.8}M): ${t.x4Nums.join(' ')}`);
+                if (t.x3Nums?.length) lines.push(`- Tầng X3 (Cược ${mult * 6.6}M): ${t.x3Nums.join(' ')}`);
+                if (t.x2Nums?.length) lines.push(`- Tầng X2 (Cược ${mult * 4.4}M): ${t.x2Nums.join(' ')}`);
+                if (t.x1Nums?.length) lines.push(`- Tầng X1 (Cược ${mult * 2.2}M): ${t.x1Nums.join(' ')}`);
+                copyToClipboard(lines.join('\n'), 'Lô Đa Tầng 360 (X5 -> X1)');
+            });
             document.getElementById('btnCopyNewLo')?.addEventListener('click', () => {
-                copyToClipboard(newStrategy.lo.numbers.join(' '), `Top 6 Lô Đồng Thuận 360 Ngày (${newStrategy.lo.numbers.length} số)`);
+                const top6 = newStrategy.lo.top6 || newStrategy.lo.numbers.slice(0, 6);
+                copyToClipboard(top6.join(' '), `Top 6 Lô Đồng Thuận 360 Ngày (${top6.length} số)`);
             });
             document.getElementById('btnCopyNewAll')?.addEventListener('click', () => {
+                const t = newStrategy.lo.tiers || {};
+                const mult = newStrategy.decisionMultiplier || 1;
                 const lines = [
                     `⚡ PHƯƠNG PHÁP MỚI: TÍN HIỆU HỒI PHỤC 360 (${latestDay.date})`,
                     `Quyết định: ${newStrategy.decisionLabel} (Tín hiệu ${newStrategy.scoreComposite}/100)`,
                     `Dạng Chẵn/Lẻ: ${newStrategy.predFormVi} (Loại trừ ${newStrategy.oppFormVi})`,
-                    `- Đề VIP X2 (${newStrategy.de.countX2}s): ${newStrategy.de.x2Nums.join(' ')}`,
-                    `- Đề Lót X1 (${newStrategy.de.countX1}s): ${newStrategy.de.x1Nums.join(' ')}`,
-                    `- Top 6 Lô 360: ${newStrategy.lo.numbers.join(' ')}`
-                ];
+                    '',
+                    `🎯 1. ĐỀ GỘP 360 LỌC ANTI-PARITY (${newStrategy.de.totalCount} số):`,
+                    `- VIP X2 (Cược ${mult * 2}M): ${newStrategy.de.x2Nums.join(' ')}`,
+                    newStrategy.de.countX1 > 0 ? `- Lót X1 (Cược ${mult * 1}M): ${newStrategy.de.x1Nums.join(' ')}` : '',
+                    '',
+                    `🎲 2. LÔ GỘP 360 ĐA TẦNG (${newStrategy.lo.numbers.length} số, Vốn: ${formatMoney(newStrategy.lo.plannedStakeK, { signed: false })}):`,
+                    t.x5Nums?.length ? `- Tầng X5 (Cược ${mult * 11}M): ${t.x5Nums.join(' ')}` : '',
+                    t.x4Nums?.length ? `- Tầng X4 (Cược ${mult * 8.8}M): ${t.x4Nums.join(' ')}` : '',
+                    t.x3Nums?.length ? `- Tầng X3 (Cược ${mult * 6.6}M): ${t.x3Nums.join(' ')}` : '',
+                    t.x2Nums?.length ? `- Tầng X2 (Cược ${mult * 4.4}M): ${t.x2Nums.join(' ')}` : '',
+                    t.x1Nums?.length ? `- Tầng X1 (Cược ${mult * 2.2}M): ${t.x1Nums.join(' ')}` : '',
+                    `- Hoặc Top 6 Tinh Hoa: ${(newStrategy.lo.top6 || []).join(' ')}`
+                ].filter(Boolean);
                 copyToClipboard(lines.join('\n'), 'Toàn bộ Phương Pháp Mới');
             });
         }
@@ -3084,8 +3161,8 @@
                                                     <span class="font-mono font-bold ${nStrat.de.isHit ? 'text-emerald-700' : 'text-slate-700'}">${nStrat.de.isHit ? (nStrat.de.isHitX2 ? '👑 NỔ VIP X2' : '⭐ NỔ LÓT X1') : 'Trượt'} (Lãi: ${formatMoney(nStrat.de.profitK)})</span>
                                                 </div>
                                                 <div class="flex justify-between items-center">
-                                                    <span>Lô 360 (Top 6):</span>
-                                                    <span class="font-mono font-bold ${nStrat.lo.hits > 0 ? 'text-emerald-700' : 'text-slate-700'}">${nStrat.lo.hits > 0 ? `Nổ ${nStrat.lo.hits} nháy` : 'Trượt'} (Lãi: ${formatMoney(nStrat.lo.profitK)})</span>
+                                                    <span>Lô Đa Tầng 360 (${nStrat.lo.numbers?.length || 0}s):</span>
+                                                    <span class="font-mono font-bold ${nStrat.lo.hits > 0 ? 'text-emerald-700' : 'text-slate-700'}">${nStrat.lo.hits > 0 ? `🎯 Nổ ${nStrat.lo.hits} nháy (${(nStrat.lo.hitNums || []).join(', ')})` : 'Trượt'} (Lãi: ${formatMoney(nStrat.lo.profitK)})</span>
                                                 </div>
                                                 <div class="flex justify-between items-center text-[11px] text-slate-500">
                                                     <span>Dạng Chẵn/Lẻ:</span>
