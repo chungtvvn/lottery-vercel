@@ -639,7 +639,8 @@
             }
         }
 
-        // DỮ LIỆU DÀN GỘP 5 AI (CONSENSUS)
+        // DỮ LIỆU DÀN GỘP 5 AI (CONSENSUS) & PHƯƠNG PHÁP MỚI
+        const newStrategy = state.payload?.todayNewStrategy || latestDay?.newStrategy || null;
         const deNums = consensus?.deTop20 || [];
         const deTiers = consensus?.deTiers || {};
         const deX2Nums = deTiers.x2Nums || consensus?.deVip || [];
@@ -749,6 +750,206 @@
                         </span>
                     </div>
                 `}
+
+                ${newStrategy ? `
+                    <!-- THẺ PHƯƠNG PHÁP MỚI: TÍN HIỆU HỒI PHỤC 360 (CHẠY SONG SONG) -->
+                    <div class="rounded-3xl border-2 border-emerald-400 bg-gradient-to-br from-emerald-50/70 via-white to-teal-50/40 p-5 sm:p-6 shadow-sm space-y-4">
+                        <!-- Header -->
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-emerald-200/80 pb-3.5">
+                            <div class="flex items-center gap-3">
+                                <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-600 text-white shadow-xs text-xl">
+                                    ⚡
+                                </span>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <h4 class="text-base sm:text-lg font-black text-slate-900 tracking-tight">Phương Pháp Mới: Tín Hiệu Hồi Phục 360</h4>
+                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-900 border border-emerald-300 uppercase tracking-wider">Song Song 5 AI</span>
+                                    </div>
+                                    <p class="text-xs text-slate-600">Cửa sổ 360 ngày · Lọc Anti-Parity Chẵn/Lẻ · Tự động phát hiện tín hiệu & ra quyết định cược</p>
+                                </div>
+                            </div>
+
+                            <!-- Quyết Định Hôm Nay -->
+                            <div class="flex items-center gap-2 shrink-0">
+                                <span class="px-4 py-2 rounded-xl text-xs font-black shadow-xs ${
+                                    newStrategy.decision === 'RECOVERY_BET'
+                                        ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white animate-pulse ring-2 ring-amber-300'
+                                        : (newStrategy.decision === 'BET' ? 'bg-emerald-600 text-white animate-pulse ring-2 ring-emerald-300' : 'bg-slate-700 text-white')
+                                }">
+                                    ${newStrategy.decisionLabel}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Khối Đo Tín Hiệu (Signal Scores Bar) -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 bg-white/90 p-3.5 rounded-2xl border border-emerald-200 text-xs">
+                            <!-- Điểm tổng hợp -->
+                            <div class="flex flex-col justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
+                                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Điểm Tín Hiệu Hợp Lực:</div>
+                                <div class="flex items-baseline gap-2 mt-1">
+                                    <span class="font-mono text-2xl font-black ${newStrategy.scoreComposite >= 60 ? 'text-emerald-700' : 'text-slate-600'}">${newStrategy.scoreComposite}</span>
+                                    <span class="text-xs text-slate-400 font-bold">/ 100</span>
+                                </div>
+                                <div class="w-full bg-slate-200 rounded-full h-1.5 mt-1.5 overflow-hidden">
+                                    <div class="h-1.5 rounded-full ${newStrategy.scoreComposite >= 60 ? 'bg-emerald-500' : 'bg-slate-400'}" style="width: ${newStrategy.scoreComposite}%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Điểm Đề -->
+                            <div class="flex flex-col justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
+                                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Tín Hiệu Đề (S_Đề):</div>
+                                <div class="flex items-baseline gap-2 mt-1">
+                                    <span class="font-mono text-2xl font-black text-purple-700">${newStrategy.scoreDe}</span>
+                                    <span class="text-xs text-slate-400 font-bold">/ 100</span>
+                                </div>
+                                <span class="text-[10px] text-slate-500">Độ đồng thuận Đề</span>
+                            </div>
+
+                            <!-- Điểm Lô -->
+                            <div class="flex flex-col justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
+                                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Tín Hiệu Lô (S_Lô):</div>
+                                <div class="flex items-baseline gap-2 mt-1">
+                                    <span class="font-mono text-2xl font-black text-indigo-700">${newStrategy.scoreLo}</span>
+                                    <span class="text-xs text-slate-400 font-bold">/ 100</span>
+                                </div>
+                                <span class="text-[10px] text-slate-500">Độ đồng thuận Lô 360</span>
+                            </div>
+
+                            <!-- Dạng Chẵn/Lẻ -->
+                            <div class="flex flex-col justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
+                                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Dạng Chẵn/Lẻ Khuyên:</div>
+                                <div class="mt-1">
+                                    <span class="font-mono text-base font-black text-amber-950 bg-amber-100 px-2 py-0.5 rounded border border-amber-300">${newStrategy.predForm} (${newStrategy.predFormVi})</span>
+                                </div>
+                                <span class="text-[10px] text-rose-700 font-bold mt-1">Loại trừ: ${newStrategy.oppForm} (${newStrategy.oppFormVi})</span>
+                            </div>
+                        </div>
+
+                        <!-- Lý do ra quyết định -->
+                        <div class="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200 text-xs text-emerald-950 flex items-center gap-2">
+                            <i class="bi bi-info-circle-fill text-emerald-600 text-base"></i>
+                            <span><strong>Định vị chiến thuật:</strong> ${newStrategy.decisionReason}</span>
+                        </div>
+
+                        <!-- DÀN SỐ CỦA PHƯƠNG PHÁP MỚI -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <!-- CỘT TRÁI: ĐỀ GỘP 360 LỌC ANTI-PARITY (VIP X2 & LÓT X1) -->
+                            <div class="p-4 rounded-2xl bg-white border border-emerald-200 shadow-2xs space-y-3">
+                                <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                                    <span class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                                        <span class="text-sm">🎯</span> Dàn Đề Gộp Lọc Anti-Parity (${newStrategy.de.totalCount} số)
+                                    </span>
+                                    <span class="text-[10px] text-purple-700 font-bold bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                                        Đã loại 25 số ${newStrategy.oppForm}
+                                    </span>
+                                </div>
+
+                                <!-- Dàn VIP X2 -->
+                                <div class="space-y-1.5">
+                                    <div class="flex items-center justify-between text-xs">
+                                        <span class="font-black text-amber-950 flex items-center gap-1">
+                                            <span class="rounded bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 px-1.5 py-0.5 text-[9px] font-black">VIP X2</span>
+                                            <span>Trùng dạng ${newStrategy.predForm} (${newStrategy.de.countX2} số):</span>
+                                        </span>
+                                        <span class="font-mono text-amber-900 text-[10px] font-bold">Cược ${newStrategy.decisionMultiplier * 2}M/số (Ăn ${newStrategy.decisionMultiplier * 168}M)</span>
+                                    </div>
+                                    <div class="flex flex-wrap gap-1">
+                                        ${newStrategy.de.x2Nums.map(n => `
+                                            <span class="inline-flex items-center justify-center font-mono font-black text-xs w-8 h-8 rounded-lg bg-gradient-to-br from-amber-300 to-yellow-400 text-slate-950 border border-amber-400 shadow-2xs">
+                                                ${n}
+                                            </span>
+                                        `).join('') || '<span class="text-slate-400 text-xs italic">Không có số</span>'}
+                                    </div>
+                                </div>
+
+                                <!-- Dàn Lót X1 -->
+                                ${newStrategy.de.countX1 > 0 ? `
+                                    <div class="space-y-1.5 pt-2 border-t border-slate-100">
+                                        <div class="flex items-center justify-between text-xs">
+                                            <span class="font-bold text-slate-700 flex items-center gap-1">
+                                                <span class="rounded bg-indigo-100 text-indigo-900 px-1.5 py-0.5 text-[9px] font-bold border border-indigo-200">LÓT X1</span>
+                                                <span>Đầu/Đít ${newStrategy.predForm} (${newStrategy.de.countX1} số):</span>
+                                            </span>
+                                            <span class="font-mono text-indigo-800 text-[10px] font-bold">Cược ${newStrategy.decisionMultiplier * 1}M/số (Ăn ${newStrategy.decisionMultiplier * 84}M)</span>
+                                        </div>
+                                        <div class="flex flex-wrap gap-1">
+                                            ${newStrategy.de.x1Nums.map(n => `
+                                                <span class="inline-flex items-center justify-center font-mono font-bold text-xs w-8 h-8 rounded-lg bg-indigo-50 text-indigo-900 border border-indigo-200 shadow-2xs">
+                                                    ${n}
+                                                </span>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                ` : ''}
+
+                                <!-- Copy buttons -->
+                                <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
+                                    <button type="button" id="btnCopyNewDeX2" class="flex-1 py-1.5 px-2 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-950 font-black text-[11px] transition shadow-2xs cursor-pointer text-center">
+                                        <i class="bi bi-clipboard-check"></i> Copy VIP X2 (${newStrategy.de.countX2}s)
+                                    </button>
+                                    <button type="button" id="btnCopyNewDeAll" class="flex-1 py-1.5 px-2 rounded-xl bg-purple-100 hover:bg-purple-200 text-purple-900 font-bold text-[11px] transition shadow-2xs cursor-pointer text-center">
+                                        <i class="bi bi-clipboard-check"></i> Copy Cả Dàn Đề (${newStrategy.de.totalCount}s)
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- CỘT PHẢI: LÔ GỘP 360 NGÀY (TOP 6 CONSENSUS) -->
+                            <div class="p-4 rounded-2xl bg-white border border-emerald-200 shadow-2xs space-y-3 flex flex-col justify-between">
+                                <div>
+                                    <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                                        <span class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                                            <span class="text-sm">🎲</span> Dàn Lô Gộp 360 Ngày (Top 6 Consensus)
+                                        </span>
+                                        <span class="text-[10px] text-indigo-700 font-bold bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
+                                            Cửa sổ 360 ngày
+                                        </span>
+                                    </div>
+
+                                    <div class="space-y-2 mt-2">
+                                        <div class="flex items-center justify-between text-xs">
+                                            <span class="text-slate-600 font-semibold">Danh sách 6 số mạnh nhất:</span>
+                                            <span class="font-mono text-indigo-900 text-[10px] font-bold">10 điểm = ${newStrategy.decisionMultiplier * 2.2}M/số (Ăn ${newStrategy.decisionMultiplier * 8}M/nháy)</span>
+                                        </div>
+                                        <div class="flex flex-wrap gap-2">
+                                            ${newStrategy.lo.numbers.map((n, i) => `
+                                                <div class="flex flex-col items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-tr from-indigo-600 to-blue-600 text-white font-mono font-black text-sm shadow-2xs">
+                                                    <span>${n}</span>
+                                                    <span class="text-[8px] font-sans opacity-80">Top ${i+1}</span>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Kế hoạch vốn & Nút copy -->
+                                <div class="pt-2 border-t border-slate-100 space-y-2">
+                                    <div class="text-[11px] font-mono text-slate-600 flex items-center justify-between">
+                                        <span>Dự toán Vốn: ${newStrategy.decision === 'SKIP' ? '<strong class="text-slate-700">0đ (Nghỉ cược)</strong>' : `<strong class="text-indigo-900 font-black">${formatMoney(newStrategy.combo.plannedStakeK, { signed: false })}</strong>`}</span>
+                                        <span class="text-slate-400">(Đề: ${formatMoney(newStrategy.de.plannedStakeK, { signed: false })} · Lô: ${formatMoney(newStrategy.lo.plannedStakeK, { signed: false })})</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" id="btnCopyNewLo" class="flex-1 py-1.5 px-2 rounded-xl bg-indigo-100 hover:bg-indigo-200 text-indigo-900 font-bold text-[11px] transition shadow-2xs cursor-pointer text-center">
+                                            <i class="bi bi-clipboard-check"></i> Copy Top 6 Lô
+                                        </button>
+                                        <button type="button" id="btnCopyNewAll" class="flex-1 py-1.5 px-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 text-white font-black text-[11px] transition shadow-xs cursor-pointer text-center">
+                                            <i class="bi bi-clipboard-check"></i> Copy Toàn Bộ Mới
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TIÊU ĐỀ PHÂN TÁCH: CÁCH HIỆN TẠI (5 AI ĐÁNH ĐỀU 100%) -->
+                    <div class="flex items-center gap-3 pt-2">
+                        <div class="h-px bg-slate-200 flex-1"></div>
+                        <span class="text-[11px] font-black text-slate-500 uppercase tracking-widest bg-slate-100 px-3.5 py-1 rounded-full border border-slate-200 flex items-center gap-1.5">
+                            <i class="bi bi-collection-fill text-indigo-600"></i>
+                            <span>Cách Hiện Tại: Đồng Thuận 5 AI (Cửa Sổ 100 Kỳ · Đánh Đều)</span>
+                        </span>
+                        <div class="h-px bg-slate-200 flex-1"></div>
+                    </div>
+                ` : ''}
 
                 <!-- GRID 3 CỘT MẶC ĐỊNH: CỘT ĐỀ · CỘT LÔ · CỘT XIÊN 4 -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
@@ -1285,6 +1486,30 @@
                 }
             };
         });
+
+        // 7. Nút Copy của Phương Pháp Mới (Tín Hiệu Hồi Phục 360)
+        if (newStrategy) {
+            document.getElementById('btnCopyNewDeX2')?.addEventListener('click', () => {
+                copyToClipboard(newStrategy.de.x2Nums.join(' '), `Dàn Đề VIP X2 Mới (${newStrategy.de.countX2} số)`);
+            });
+            document.getElementById('btnCopyNewDeAll')?.addEventListener('click', () => {
+                copyToClipboard(newStrategy.de.numbers.join(' '), `Dàn Đề Gộp Lọc Anti-Parity (${newStrategy.de.totalCount} số)`);
+            });
+            document.getElementById('btnCopyNewLo')?.addEventListener('click', () => {
+                copyToClipboard(newStrategy.lo.numbers.join(' '), `Top 6 Lô Đồng Thuận 360 Ngày (${newStrategy.lo.numbers.length} số)`);
+            });
+            document.getElementById('btnCopyNewAll')?.addEventListener('click', () => {
+                const lines = [
+                    `⚡ PHƯƠNG PHÁP MỚI: TÍN HIỆU HỒI PHỤC 360 (${latestDay.date})`,
+                    `Quyết định: ${newStrategy.decisionLabel} (Tín hiệu ${newStrategy.scoreComposite}/100)`,
+                    `Dạng Chẵn/Lẻ: ${newStrategy.predFormVi} (Loại trừ ${newStrategy.oppFormVi})`,
+                    `- Đề VIP X2 (${newStrategy.de.countX2}s): ${newStrategy.de.x2Nums.join(' ')}`,
+                    `- Đề Lót X1 (${newStrategy.de.countX1}s): ${newStrategy.de.x1Nums.join(' ')}`,
+                    `- Top 6 Lô 360: ${newStrategy.lo.numbers.join(' ')}`
+                ];
+                copyToClipboard(lines.join('\n'), 'Toàn bộ Phương Pháp Mới');
+            });
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -2341,6 +2566,165 @@
     }
 
     // -------------------------------------------------------------------------
+    // RENDER: Khối Đối Chiếu Song Song Tổng Hợp (Old Strategy vs New Strategy)
+    // -------------------------------------------------------------------------
+    function computeComparisonForDays(days) {
+        const settledDays = (days || []).filter(d => Boolean(d.special && d.prizes27?.length === 27 && d.results));
+        let oldStakeK = 0, oldPayoutK = 0, oldProfitK = 0, oldWins = 0;
+        let newStakeK = 0, newPayoutK = 0, newProfitK = 0, newWins = 0, newPlayed = 0, newSkipped = 0, newSavedK = 0;
+
+        settledDays.forEach(d => {
+            const consRes = d.results?.consensus || {};
+            const oldS = (consRes.deTiered?.stakeK || consRes.de?.stakeK || 0) + (consRes.loTiered?.stakeK || consRes.lo?.stakeK || 0);
+            const oldP = (consRes.deTiered?.payoutK || consRes.de?.payoutK || 0) + (consRes.loTiered?.payoutK || consRes.lo?.payoutK || 0);
+            const oldProf = oldP - oldS;
+            oldStakeK += oldS;
+            oldPayoutK += oldP;
+            oldProfitK += oldProf;
+            if (oldProf > 0) oldWins++;
+
+            const ns = d.newStrategy;
+            if (ns && ns.isSettled) {
+                newStakeK += ns.combo.stakeK;
+                newPayoutK += ns.combo.payoutK;
+                newProfitK += ns.combo.profitK;
+                if (ns.decision !== 'SKIP') {
+                    newPlayed++;
+                    if (ns.combo.isWin) newWins++;
+                } else {
+                    newSkipped++;
+                    newSavedK += ns.combo.savedStakeK;
+                }
+            }
+        });
+
+        const count = settledDays.length;
+        return {
+            settledDaysCount: count,
+            oldStrategy: {
+                name: 'Cách Hiện Tại (Đánh Đều 100% Cả 5 AI)',
+                days: count,
+                stakeM: (oldStakeK / 1000).toFixed(1),
+                profitM: (oldProfitK / 1000).toFixed(1),
+                roi: oldStakeK > 0 ? (oldProfitK / oldStakeK * 100).toFixed(2) + '%' : '0%',
+                winDays: oldWins,
+                winRate: count > 0 ? (oldWins / count * 100).toFixed(1) + '%' : '0%'
+            },
+            newStrategy: {
+                name: 'Phương Pháp Mới: Tín Hiệu Hồi Phục 360',
+                days: count,
+                playedDays: newPlayed,
+                skippedDays: newSkipped,
+                stakeM: (newStakeK / 1000).toFixed(1),
+                profitM: (newProfitK / 1000).toFixed(1),
+                roi: newStakeK > 0 ? (newProfitK / newStakeK * 100).toFixed(2) + '%' : '0%',
+                winDays: newWins,
+                winRate: newPlayed > 0 ? (newWins / newPlayed * 100).toFixed(1) + '%' : '0%',
+                savedStakeM: (newSavedK / 1000).toFixed(1)
+            },
+            diff: {
+                profitDiffM: ((newProfitK - oldProfitK) / 1000).toFixed(1),
+                stakeSavedM: ((oldStakeK - newStakeK) / 1000).toFixed(1),
+                isProfitSuperior: newProfitK > oldProfitK
+            }
+        };
+    }
+
+    function renderDualStrategyComparisonCard(comparison) {
+        const el = document.getElementById('dualStrategyComparisonCard');
+        if (!el || !comparison || !comparison.oldStrategy || !comparison.newStrategy) return;
+
+        const old = comparison.oldStrategy;
+        const n = comparison.newStrategy;
+        const diff = comparison.diff || {};
+
+        el.innerHTML = `
+            <div class="rounded-3xl border-2 border-indigo-200 bg-gradient-to-br from-indigo-50/50 via-white to-purple-50/30 p-5 shadow-xs space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-indigo-100 pb-3">
+                    <div class="flex items-center gap-2.5">
+                        <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-600 text-white font-black text-sm shadow-xs">
+                            ⚖️
+                        </span>
+                        <div>
+                            <h4 class="text-sm font-black text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
+                                <span>Đối Chiếu Hiệu Quả Song Song: Cách Hiện Tại vs Phương Pháp Mới</span>
+                                <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-900 border border-indigo-300 font-bold">${comparison.settledDaysCount} kỳ đã kết toán</span>
+                            </h4>
+                            <p class="text-[11px] text-slate-500">So sánh thực tế giữa chiến lược đánh đều hàng ngày và chiến lược Tín Hiệu Hồi Phục 360</p>
+                        </div>
+                    </div>
+                    <div class="text-left sm:text-right shrink-0">
+                        <span class="inline-flex items-center gap-1 text-xs font-black px-2.5 py-1 rounded-xl bg-emerald-100 text-emerald-900 border border-emerald-300 shadow-2xs">
+                            <i class="bi bi-graph-up-arrow text-emerald-700"></i> Lợi Nhuận Vượt Trội +${diff.profitDiffM}M
+                        </span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                    <!-- CỘT 1: CÁCH CŨ -->
+                    <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-2">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-1.5">
+                            <span class="font-black text-slate-800 flex items-center gap-1.5">
+                                <span class="text-sm">🏛️</span> Cách Hiện Tại
+                            </span>
+                            <span class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Đánh đều 100%</span>
+                        </div>
+                        <div class="space-y-1 font-sans">
+                            <div class="flex justify-between"><span class="text-slate-500">Số kỳ đã chơi:</span> <span class="font-bold text-slate-800">${old.days}/${old.days} kỳ (100%)</span></div>
+                            <div class="flex justify-between"><span class="text-slate-500">Tổng vốn cược:</span> <span class="font-mono font-bold text-slate-800">${old.stakeM}M</span></div>
+                            <div class="flex justify-between"><span class="text-slate-500">Lãi / Lỗ Ròng:</span> <span class="font-mono font-black ${Number(old.profitM) >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${Number(old.profitM) >= 0 ? '+' : ''}${old.profitM}M</span></div>
+                            <div class="flex justify-between"><span class="text-slate-500">ROI:</span> <span class="font-mono font-black ${Number(old.profitM) >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${old.roi}</span></div>
+                            <div class="flex justify-between"><span class="text-slate-500">Tỷ lệ ngày thắng:</span> <span class="font-bold text-slate-800">${old.winDays}/${old.days} kỳ (${old.winRate})</span></div>
+                        </div>
+                    </div>
+
+                    <!-- CỘT 2: PHƯƠNG PHÁP MỚI -->
+                    <div class="p-3.5 rounded-2xl bg-gradient-to-br from-emerald-50/80 to-teal-50/40 border-2 border-emerald-300 shadow-2xs space-y-2 ring-1 ring-emerald-200">
+                        <div class="flex items-center justify-between border-b border-emerald-100 pb-1.5">
+                            <span class="font-black text-emerald-950 flex items-center gap-1.5">
+                                <span class="text-sm">⚡</span> Tín Hiệu Hồi Phục 360
+                            </span>
+                            <span class="text-[10px] font-black text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300">Chọn lọc tín hiệu</span>
+                        </div>
+                        <div class="space-y-1 font-sans">
+                            <div class="flex justify-between"><span class="text-emerald-900">Số kỳ vào lệnh:</span> <span class="font-bold text-emerald-950">${n.playedDays}/${n.days} kỳ (Nghỉ ${n.skippedDays} kỳ)</span></div>
+                            <div class="flex justify-between"><span class="text-emerald-900">Tổng vốn cược:</span> <span class="font-mono font-bold text-emerald-950">${n.stakeM}M</span></div>
+                            <div class="flex justify-between"><span class="text-emerald-900">Lãi / Lỗ Ròng:</span> <span class="font-mono font-black text-emerald-700 text-sm">${Number(n.profitM) >= 0 ? '+' : ''}${n.profitM}M</span></div>
+                            <div class="flex justify-between"><span class="text-emerald-900">ROI:</span> <span class="font-mono font-black text-emerald-700">${n.roi}</span></div>
+                            <div class="flex justify-between"><span class="text-emerald-900">Vốn né rủi ro:</span> <span class="font-mono font-black text-indigo-700">+${n.savedStakeM}M</span></div>
+                        </div>
+                    </div>
+
+                    <!-- CỘT 3: CHÊNH LỆCH ĐỘT PHÁ -->
+                    <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-2 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between border-b border-slate-100 pb-1.5">
+                                <span class="font-black text-slate-800 flex items-center gap-1.5">
+                                    <span class="text-sm">💎</span> Chênh Lệch Thực Tế
+                                </span>
+                                <span class="text-[10px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">Đột phá</span>
+                            </div>
+                            <div class="space-y-1.5 pt-1 text-slate-600">
+                                <div class="flex items-center justify-between">
+                                    <span>Lợi nhuận vượt trội:</span>
+                                    <span class="font-mono font-black text-emerald-700 text-sm">+${diff.profitDiffM}M</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span>Tiết kiệm vốn rủi ro:</span>
+                                    <span class="font-mono font-black text-indigo-700">+${diff.stakeSavedM}M</span>
+                                </div>
+                                <div class="text-[10px] text-slate-500 pt-1 leading-relaxed">
+                                    Nhờ cơ chế bỏ cược ngày tín hiệu xấu và đòn bẩy bù lỗ 2.0x khi tín hiệu hồi phục, danh mục chuyển bại thành thắng ngoạn mục!
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // -------------------------------------------------------------------------
     // RENDER: Historical Settlement Ledger (Nhật ký đối soát từng ngày)
     // Tái cấu trúc mới: Thẻ trực quan, highlight trúng/trượt & thắng/thua, sub-tabs mượt mà
     // -------------------------------------------------------------------------
@@ -2388,6 +2772,10 @@
         const dynamicStats = computeDynamicLedgerRates(rangeDays, filter);
         renderLedgerSummaryKPIs(dynamicStats);
 
+        // Hiển thị Khối Đối Chiếu Song Song Tổng Hợp (Cách Hiện Tại vs Phương Pháp Mới)
+        const comparisonStats = computeComparisonForDays(rangeDays) || state.payload?.comparisonSummary;
+        renderDualStrategyComparisonCard(comparisonStats);
+
         if (!rangeDays.length) {
             list.innerHTML = `<div class="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-400">Không có dữ liệu đối soát trong khoảng ngày từ ${state.ledgerFromDate} đến ${state.ledgerToDate}.</div>`;
             return;
@@ -2406,6 +2794,7 @@
             const results = day.results || {};
             const sources = day.sources || {};
             const cons = day.consensus || {};
+            const nStrat = day.newStrategy;
             const isExpanded = state.expandedDays.has(dateStr);
 
             const consRes = results.consensus || {};
@@ -2573,6 +2962,23 @@
                             </div>
                         ` : ""}
 
+                        <!-- Pill tóm tắt Phương Pháp Mới -->
+                        ${nStrat ? `
+                            <div class="flex items-center gap-1 shrink-0 font-sans text-[11px]">
+                                ${nStrat.decision === 'SKIP' ? `
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[10px] font-bold ${totalProfitK < 0 ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : 'bg-slate-100 text-slate-700 border border-slate-300'}" title="${nStrat.decisionReason}">
+                                        <span>🛡️ Mới: NGHỈ CƯỢC</span>
+                                        ${totalProfitK < 0 ? `<strong class="text-emerald-800 font-mono">(Né lỗ +${formatMoney(nStrat.combo.savedStakeK, { signed: false })})</strong>` : `<span class="text-slate-500">(Bảo toàn vốn)</span>`}
+                                    </span>
+                                ` : `
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[10px] font-black font-mono ${nStrat.combo.profitK >= 0 ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'} shadow-2xs" title="${nStrat.decisionReason}">
+                                        <span>${nStrat.decisionLabel}:</span>
+                                        <span>${formatMoney(nStrat.combo.profitK)}</span>
+                                    </span>
+                                `}
+                            </div>
+                        ` : ''}
+
                         <!-- 5 Pill mini tóm tắt ý kiến 5 AI -->
                         <div class="flex items-center gap-1.5 flex-wrap">
                             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider hidden sm:inline">5 AI:</span>
@@ -2599,6 +3005,103 @@
 
                     <!-- VÙNG CHI TIẾT MỞ RỘNG (EXPANDED CONTAINER - SUB-TABS 6 MÔ HÌNH ĐỒNG NHẤT VỚI TAB KHÁC) -->
                     <div id="ledgerDetail-${dateStr}" class="${isExpanded ? "" : "hidden"} border-t-2 border-indigo-100 bg-slate-50/70 p-4 sm:p-6 space-y-4">
+                        
+                        <!-- KHỐI ĐỐI CHIẾU SONG SONG 2 PHƯƠNG PHÁP TRONG NGÀY -->
+                        ${nStrat ? `
+                            <div class="p-4 rounded-2xl bg-gradient-to-r from-slate-50 via-indigo-50/40 to-emerald-50/50 border border-slate-200 text-xs space-y-3">
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-200/80 pb-2.5">
+                                    <span class="font-black text-slate-900 flex items-center gap-1.5 text-xs sm:text-sm">
+                                        <i class="bi bi-arrow-left-right text-indigo-600 text-base"></i>
+                                        <span>Đối Chiếu Song Song Ngày ${dateStr}: Cách Hiện Tại vs Phương Pháp Mới</span>
+                                    </span>
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span class="text-[10px] font-bold text-slate-500">Tín hiệu:</span>
+                                        <span class="font-mono font-black text-[11px] px-2 py-0.5 rounded-lg bg-white border border-slate-200 ${nStrat.scoreComposite >= 60 ? 'text-emerald-700' : 'text-slate-600'}">
+                                            S = ${nStrat.scoreComposite}/100 (Đề: ${nStrat.scoreDe} · Lô: ${nStrat.scoreLo})
+                                        </span>
+                                        <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-black shadow-2xs ${
+                                            nStrat.decision === 'RECOVERY_BET' ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white animate-pulse' : (nStrat.decision === 'BET' ? 'bg-emerald-600 text-white animate-pulse' : 'bg-slate-700 text-white')
+                                        }">
+                                            ${nStrat.decisionLabel}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <!-- CỘT TRÁI: CÁCH HIỆN TẠI -->
+                                    <div class="p-3.5 rounded-xl bg-white border border-slate-200 space-y-2 text-xs shadow-2xs">
+                                        <div class="flex items-center justify-between border-b border-slate-100 pb-1.5 font-bold">
+                                            <span class="text-slate-900 flex items-center gap-1">
+                                                <span>🏛️ Cách Hiện Tại (Đánh Đều 100%)</span>
+                                            </span>
+                                            <span class="font-mono font-black ${totalProfitK >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${formatMoney(totalProfitK)}</span>
+                                        </div>
+                                        <div class="space-y-1.5 text-slate-600 font-sans">
+                                            <div class="flex justify-between items-center">
+                                                <span>Đề Tiered (50s):</span>
+                                                <span class="font-mono font-bold ${deRes.isHit ? 'text-emerald-700' : 'text-slate-700'}">${deRes.isHit ? (deRes.hitTier === 'X2' ? '👑 NỔ VIP X2' : '⭐ NỔ LÓT X1') : 'Trượt'} (Vốn: ${formatMoney(deRes.stakeK || 0, { signed: false })})</span>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <span>Lô Tiered (Top 6):</span>
+                                                <span class="font-mono font-bold ${loRes.hits > 0 ? 'text-emerald-700' : 'text-slate-700'}">${loRes.hits > 0 ? `Nổ ${loRes.hits} nháy` : 'Trượt'} (Vốn: ${formatMoney(loRes.stakeK || 0, { signed: false })})</span>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <span>2 Xiên 4 (22M):</span>
+                                                <span class="font-mono font-bold ${(x4Res?.profitK || 0) >= 0 ? 'text-emerald-700' : 'text-slate-500'}">${x4Res && (x4Res.h2Count > 0 || x4Res.h3Count > 0 || x4Res.h4Count > 0) ? 'Ăn Xiên' : 'Trượt'}</span>
+                                            </div>
+                                            <div class="flex justify-between items-center border-t border-slate-100 pt-1.5 font-semibold text-slate-800">
+                                                <span>Tổng Ngày & Lũy Kế Cũ:</span>
+                                                <span class="font-mono">Lãi: <strong class="${totalProfitK >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${formatMoney(totalProfitK)}</strong> · LK: <strong>${formatMoney(cumCombo)}</strong></span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- CỘT PHẢI: PHƯƠNG PHÁP MỚI -->
+                                    <div class="p-3.5 rounded-xl bg-white border-2 border-emerald-300 space-y-2 text-xs shadow-2xs ring-1 ring-emerald-200">
+                                        <div class="flex items-center justify-between border-b border-emerald-100 pb-1.5 font-bold">
+                                            <span class="text-emerald-950 flex items-center gap-1">
+                                                <span>⚡ Phương Pháp Mới (Tín Hiệu 360)</span>
+                                            </span>
+                                            <span class="font-mono font-black ${nStrat.combo.profitK > 0 ? 'text-emerald-700' : (nStrat.decision === 'SKIP' ? 'text-slate-600' : 'text-rose-600')}">
+                                                ${nStrat.decision === 'SKIP' ? '🛡️ Tiết kiệm ' + formatMoney(nStrat.combo.savedStakeK, { signed: false }) : formatMoney(nStrat.combo.profitK)}
+                                            </span>
+                                        </div>
+                                        <div class="space-y-1.5 text-slate-600 font-sans">
+                                            ${nStrat.decision === 'SKIP' ? `
+                                                <div class="text-[11px] p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 space-y-1">
+                                                    <div class="font-bold text-slate-900 flex items-center gap-1">
+                                                        <i class="bi bi-shield-check text-indigo-600"></i>
+                                                        <span>NGHỈ CƯỢC BẢO TOÀN VỐN:</span>
+                                                    </div>
+                                                    <div class="leading-relaxed">${nStrat.decisionReason}</div>
+                                                    <div class="font-mono font-bold pt-1 ${totalProfitK < 0 ? 'text-emerald-700' : 'text-slate-600'}">
+                                                        ${totalProfitK < 0 ? `🛡️ Tiết kiệm thành công ${formatMoney(nStrat.combo.savedStakeK, { signed: false })} tiền cược (Cách cũ bị thua lỗ)!` : `Vốn bảo toàn 0đ (Lũy kế giữ nguyên).`}
+                                                    </div>
+                                                </div>
+                                            ` : `
+                                                <div class="flex justify-between items-center">
+                                                    <span>Đề 360 (${nStrat.de.totalCount}s lọc ${nStrat.oppForm}):</span>
+                                                    <span class="font-mono font-bold ${nStrat.de.isHit ? 'text-emerald-700' : 'text-slate-700'}">${nStrat.de.isHit ? (nStrat.de.isHitX2 ? '👑 NỔ VIP X2' : '⭐ NỔ LÓT X1') : 'Trượt'} (Lãi: ${formatMoney(nStrat.de.profitK)})</span>
+                                                </div>
+                                                <div class="flex justify-between items-center">
+                                                    <span>Lô 360 (Top 6):</span>
+                                                    <span class="font-mono font-bold ${nStrat.lo.hits > 0 ? 'text-emerald-700' : 'text-slate-700'}">${nStrat.lo.hits > 0 ? `Nổ ${nStrat.lo.hits} nháy` : 'Trượt'} (Lãi: ${formatMoney(nStrat.lo.profitK)})</span>
+                                                </div>
+                                                <div class="flex justify-between items-center text-[11px] text-slate-500">
+                                                    <span>Dạng Chẵn/Lẻ:</span>
+                                                    <span class="font-mono font-bold text-amber-900 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">${nStrat.predFormVi} (VIP X2: ${nStrat.de.countX2}s)</span>
+                                                </div>
+                                            `}
+                                            <div class="flex justify-between items-center border-t border-emerald-100 pt-1.5 font-semibold text-slate-800">
+                                                <span>Tổng Ngày & Lũy Kế Mới:</span>
+                                                <span class="font-mono">Lãi: <strong class="${nStrat.combo.profitK > 0 ? 'text-emerald-700' : (nStrat.decision === 'SKIP' ? 'text-slate-600' : 'text-rose-600')}">${formatMoney(nStrat.combo.profitK)}</strong> · LK: <strong class="text-indigo-700">${formatMoney(nStrat.combo.cumProfitK)}</strong></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+
                         <!-- THANH SUB-TABS 6 MÔ HÌNH / PHƯƠNG PHÁP -->
                         <div class="flex flex-wrap items-center justify-between gap-2.5 pb-3 border-b border-slate-200">
                             <div class="flex items-center gap-1.5 flex-wrap">

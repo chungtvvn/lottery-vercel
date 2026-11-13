@@ -203,6 +203,20 @@ console.log('  ✔ Claude (Anthropic) 2026-11-05 verified: 20 Đề, 6 Lô, 5 AI
 
 console.log('  ✔ All normalizeXien4 formats & individual AI sources verified successfully');
 
+// Test 7: Signal Rebound 360 & Dual Strategy Comparison
+console.log('7. Testing Signal Rebound 360 & Dual Strategy Comparison:');
+assert(clientPayload.todayNewStrategy, 'todayNewStrategy must exist in payload');
+assert(['BET', 'RECOVERY_BET', 'SKIP'].includes(clientPayload.todayNewStrategy.decision), 'Decision must be BET, RECOVERY_BET, or SKIP');
+assert(clientPayload.todayNewStrategy.scoreComposite >= 0 && clientPayload.todayNewStrategy.scoreComposite <= 100, 'Score composite must be 0-100');
+assert(Array.isArray(clientPayload.todayNewStrategy.de.numbers), 'New strategy De numbers must be array');
+assert(Array.isArray(clientPayload.todayNewStrategy.lo.numbers), 'New strategy Lo numbers must be array');
+assert(clientPayload.comparisonSummary, 'comparisonSummary must exist in payload');
+assert(clientPayload.comparisonSummary.oldStrategy, 'comparisonSummary.oldStrategy must exist');
+assert(clientPayload.comparisonSummary.newStrategy, 'comparisonSummary.newStrategy must exist');
+assert(clientPayload.comparisonSummary.diff, 'comparisonSummary.diff must exist');
+console.log(`  ✔ Today Signal Rebound: Decision=${clientPayload.todayNewStrategy.decisionLabel}, Score=${clientPayload.todayNewStrategy.scoreComposite}/100, Đề X2=${clientPayload.todayNewStrategy.de.countX2}s, Lót X1=${clientPayload.todayNewStrategy.de.countX1}s, Lô=${clientPayload.todayNewStrategy.lo.count}s`);
+console.log(`  ✔ Comparison Summary: Old Profit=${clientPayload.comparisonSummary.oldStrategy.profitM}M, New Profit=${clientPayload.comparisonSummary.newStrategy.profitM}M, Profit Diff=+${clientPayload.comparisonSummary.diff.profitDiffM}M`);
+
 console.log('================================================================================');
 console.log('🎉 ALL AI 5 STATS & TIERED CONSENSUS TESTS PASSED 100%!');
 console.log('================================================================================');
