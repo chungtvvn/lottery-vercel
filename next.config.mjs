@@ -9,6 +9,7 @@ const nextConfig = {
             { source: '/statistics/api/v2/quick-stats-history', destination: '/api/statistics/quick-stats-history' },
             { source: '/statistics/api/v2/stats', destination: '/api/statistics/stats' },
             { source: '/statistics/api/v2/potential-streaks', destination: '/api/statistics/potential-streaks' },
+            { source: '/de-fusion-research', destination: '/de-fusion-research-2026.html' },
         ];
     },
 
