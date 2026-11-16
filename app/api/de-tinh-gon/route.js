@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getDeTinhGonReport } from '@/lib/services/deTinhGonService';
+import { getDeTinhGonReportAsync, getDeTinhGonReport } from '@/lib/services/deTinhGonService';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -11,7 +11,13 @@ export async function GET(request) {
         const parityMethod = searchParams.get('parityMethod') || 'optimalHybrid';
         const betMode = searchParams.get('betMode') || 'tiered';
 
-        const report = getDeTinhGonReport({ forceRefresh, parityMethod, betMode });
+        let report = null;
+        try {
+            report = await getDeTinhGonReportAsync({ forceRefresh, parityMethod, betMode });
+        } catch (asyncErr) {
+            console.warn('[API /api/de-tinh-gon] Async report warning, falling back to safe sync:', asyncErr.message);
+            report = getDeTinhGonReport({ forceRefresh: true, parityMethod, betMode });
+        }
 
         return NextResponse.json(report, {
             headers: {
