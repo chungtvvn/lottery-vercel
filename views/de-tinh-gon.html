@@ -101,7 +101,33 @@
             </a>
         </div>
 
-        <!-- HERO BANNER -->
+        <!-- MASTER SPECIAL TOPIC SWITCHER: ĐỀ TINH GỌN vs LÔ TINH GỌN -->
+        <div class="mb-6 flex flex-col sm:flex-row items-center justify-between gap-3 p-2 rounded-3xl bg-slate-100 border border-slate-200">
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+                <button type="button" id="btnMasterModeDe" class="master-mode-btn active flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-black transition-all bg-white text-slate-900 shadow-md border border-slate-200/80 cursor-pointer">
+                    <span class="text-base">🎯</span>
+                    <span>CỐ VẤN ĐỀ TINH GỌN</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-900 border border-amber-300">1 Ăn 84</span>
+                </button>
+                <button type="button" id="btnMasterModeLo" class="master-mode-btn flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer">
+                    <span class="text-base">⚡</span>
+                    <span>CỐ VẤN LÔ TINH GỌN &amp; TRICORE</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-900 border border-emerald-300">22K Ăn 80K</span>
+                </button>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <button id="btnRefreshData" class="inline-flex items-center justify-center gap-1.5 rounded-2xl bg-slate-900 px-4 py-2.5 text-xs font-bold text-white shadow-md hover:bg-slate-800 transition-all cursor-pointer">
+                    <i class="bi bi-arrow-clockwise"></i> Cập Nhật
+                </button>
+                <span class="text-[11px] font-semibold text-slate-400" id="lastUpdatedTime">Đang tải...</span>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- PHÂN HỆ 1: CỐ VẤN ĐỀ TINH GỌN & TRICORE 24S -->
+        <!-- ========================================== -->
+        <div id="deSectionContainer">
+        <!-- HERO BANNER ĐỀ -->
         <div class="mb-8 rounded-3xl border border-amber-300 bg-gradient-to-br from-amber-500/10 via-rose-50/40 to-white p-6 shadow-sm sm:p-8">
             <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
                 <div class="space-y-3 max-w-4xl">
@@ -126,13 +152,6 @@
                         <strong>TriCore 24s</strong> (Quán quân Lợi nhuận <span class="text-emerald-700 font-extrabold">+623 Triệu VNĐ</span>, ROI <span class="text-indigo-700 font-extrabold">+8.5%</span>) 
                         và <strong>Đề Tinh Gọn Sweet-Spot 17s / 15s</strong> (Chiến lược tinh hoa từ 5 AI Consensus đạt lãi dương <span class="text-emerald-700 font-extrabold">+149M</span> năm 2026 và tiết kiệm ròng <span class="text-amber-700 font-extrabold">+1.75 TỶ</span> qua 5 năm đa niên).
                     </p>
-                </div>
-
-                <div class="flex flex-col gap-2 shrink-0">
-                    <button id="btnRefreshData" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-bold text-white shadow-md hover:bg-slate-800 transition-all">
-                        <i class="bi bi-arrow-clockwise"></i> Cập Nhật Dữ Liệu
-                    </button>
-                    <span class="text-right text-[11px] font-semibold text-slate-400" id="lastUpdatedTime">Đang tải...</span>
                 </div>
             </div>
         </div>
@@ -577,6 +596,450 @@
                 </div>
             </div>
         </div>
+        </div> <!-- KẾT THÚC #deSectionContainer -->
+
+        <!-- ========================================== -->
+        <!-- PHÂN HỆ 2: CỐ VẤN LÔ TINH GỌN & TRICORE   -->
+        <!-- ========================================== -->
+        <div id="lotoSectionContainer" class="hidden">
+            <!-- HERO BANNER LÔ -->
+            <div class="mb-8 rounded-3xl border border-emerald-300 bg-gradient-to-br from-emerald-500/10 via-teal-50/40 to-white p-6 shadow-sm sm:p-8">
+                <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                    <div class="space-y-3 max-w-4xl">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-900 border border-emerald-300 shadow-2xs">
+                                <i class="bi bi-check-circle-fill text-emerald-600"></i> 100% Strict Point-In-Time (Strict PIT)
+                            </span>
+                            <span class="inline-flex items-center gap-1.5 rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold text-indigo-900 border border-indigo-300 shadow-2xs">
+                                <i class="bi bi-cash-stack text-indigo-600"></i> Tỷ Lệ Chuẩn XSMB: 1 Điểm 22K (2.2M) Ăn 80K (8.0M/nháy)
+                            </span>
+                            <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-900 border border-amber-300 shadow-2xs">
+                                <i class="bi bi-lightning-charge-fill text-amber-600"></i> Đánh Phẳng (Flat) vs Dàn Phân Tầng X2/X1
+                            </span>
+                        </div>
+
+                        <h1 class="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
+                            CỐ VẤN LÔ TINH GỌN TRICORE &amp; 5 AI ENSEMBLE
+                        </h1>
+
+                        <p class="text-sm leading-relaxed text-slate-600 sm:text-base">
+                            Báo cáo thực nghiệm &amp; đối soát chi tiết 315 kỳ năm 2026: Giải đáp chính xác <strong>Dạng nào tốt nhất? Đánh phẳng (Flat) hay Dàn Phân Tầng X2/X1 tốt hơn?</strong>
+                            <br>
+                            • <strong>TriCore Lô (Tam Động Cơ):</strong> Đánh Phẳng thắng lớn! Quán quân ROI <strong>Bạch Thủ Top 1 Flat (+102M, ROI +15.5%)</strong> và Quán quân tần suất <strong>Thất Thủ Top 7 Flat (52.2% ngày có lãi, nổ 532 nháy)</strong>.
+                            <br>
+                            • <strong>5 AI Ensemble Lô (Ngũ Hợp):</strong> Phân Tầng X2/X1 thắng lớn! Quán quân Lợi Nhuận <strong>Top 6 Phân Tầng Chẵn Lẻ (+63M, ROI +1.1%)</strong> và Quán quân An Toàn <strong>Top 4 Phân Tầng VIP (Win Rate 51.8%, Lãi +29M, Max chuỗi trượt chỉ 5 ngày)</strong>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KHU VỰC PHÂN TÍCH CỐT LÕI: ĐÁNH PHẲNG VS PHÂN TẦNG X2/X1 -->
+            <div class="mb-10 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="mb-6 pb-4 border-b border-slate-100">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 font-black text-sm">
+                            <i class="bi bi-diagram-3-fill"></i>
+                        </span>
+                        <div>
+                            <h2 class="text-lg font-black text-slate-900">KẾT QUẢ NGHIÊN CỨU &amp; SO SÁNH: FLAT VS DÀN PHÂN TẦNG X1/X2</h2>
+                            <span class="text-xs text-slate-500 font-medium">Bản chất toán học và cấu hình tối ưu nhất cho từng phương pháp</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Khối TriCore Lô -->
+                    <div class="rounded-3xl border-2 border-amber-300 bg-gradient-to-br from-amber-500/5 via-amber-50/20 to-white p-6 space-y-4 shadow-sm">
+                        <div class="flex items-center justify-between pb-3 border-b border-amber-200/80">
+                            <div class="flex items-center gap-2.5">
+                                <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-500 text-white font-black text-lg shadow-sm">
+                                    🌟
+                                </span>
+                                <div>
+                                    <h3 class="text-base font-black text-slate-900">PHƯƠNG PHÁP 1: TRICORE LÔ</h3>
+                                    <span class="text-[11px] font-bold text-amber-700">Tam Động Cơ Tri-Harmonic: Fourier + Co-Affinity + Bayesian</span>
+                                </div>
+                            </div>
+                            <span class="px-3 py-1 rounded-full text-xs font-black bg-amber-100 text-amber-900 border border-amber-300">
+                                FLAT THẮNG ÁP ĐẢO 🏆
+                            </span>
+                        </div>
+
+                        <div class="rounded-2xl bg-white border border-amber-200 p-4 space-y-2 shadow-2xs">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Dạng Tốt Nhất Theo ROI:</span>
+                                <span class="text-sm font-black text-emerald-700">+102M (ROI +15.5%)</span>
+                            </div>
+                            <p class="text-sm font-extrabold text-slate-900">🥇 Top 1 Bạch Thủ Flat (Cược phẳng 22K)</p>
+                            <p class="text-xs text-slate-600 leading-relaxed">
+                                Trúng 86/299 ngày (28.8% Win Rate), nổ 95 nháy. Tần suất trúng vượt trội xa mức ngẫu nhiên 23.8%, đem lại tỷ suất sinh lời kỷ lục +15.5% (+102 Triệu VNĐ).
+                            </p>
+                        </div>
+
+                        <div class="rounded-2xl bg-white border border-amber-200 p-4 space-y-2 shadow-2xs">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Dạng Tốt Nhất Nổ Đều:</span>
+                                <span class="text-sm font-black text-indigo-700">52.2% Ngày Có Lãi</span>
+                            </div>
+                            <p class="text-sm font-extrabold text-slate-900">🎯 Top 7 Thất Thủ Flat (Cược phẳng 22K/số)</p>
+                            <p class="text-xs text-slate-600 leading-relaxed">
+                                Nổ tới <strong>532 nháy (1.78 nháy/ngày)</strong>. 156/299 ngày có lãi, chuỗi thua tối đa chỉ 6 ngày. Dòng tiền về đều như vắt chanh.
+                            </p>
+                        </div>
+
+                        <div class="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-950 space-y-1">
+                            <p class="font-bold text-amber-900 flex items-center gap-1.5">
+                                <i class="bi bi-info-circle-fill text-amber-600"></i> Tại sao TriCore KHÔNG NÊN phân tầng X1/X2?
+                            </p>
+                            <p class="text-slate-600">
+                                Thuật toán Fourier phổ nhịp rơi tập trung toàn bộ trọng số xác suất vào Top 1. Khi thử nghiệm phân tầng Top 6 (2 X2 + 4 X1) bị lỗ -382M, và phân tầng Chẵn Lẻ lỗ -523M do phân tán tiền cược vào các số thứ cấp. Do đó, <strong>với TriCore Lô: BẮT BUỘC ĐÁNH PHẲNG (FLAT)</strong>.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Khối 5 AI Ensemble Lô -->
+                    <div class="rounded-3xl border-2 border-emerald-300 bg-gradient-to-br from-emerald-500/5 via-teal-50/20 to-white p-6 space-y-4 shadow-sm">
+                        <div class="flex items-center justify-between pb-3 border-b border-emerald-200/80">
+                            <div class="flex items-center gap-2.5">
+                                <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-600 text-white font-black text-lg shadow-sm">
+                                    👑
+                                </span>
+                                <div>
+                                    <h3 class="text-base font-black text-slate-900">PHƯƠNG PHÁP 2: 5 AI ENSEMBLE LÔ</h3>
+                                    <span class="text-[11px] font-bold text-emerald-700">Ngũ Hợp Đồng Thuận 5 AI v8.0 (Penta-Matrix)</span>
+                                </div>
+                            </div>
+                            <span class="px-3 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-900 border border-emerald-300">
+                                PHÂN TẦNG THẮNG LỚN ⭐
+                            </span>
+                        </div>
+
+                        <div class="rounded-2xl bg-white border border-emerald-200 p-4 space-y-2 shadow-2xs">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Dạng Tốt Nhất Lợi Nhuận:</span>
+                                <span class="text-sm font-black text-emerald-700">+63M (ROI +1.1%)</span>
+                            </div>
+                            <p class="text-sm font-extrabold text-slate-900">👑 Top 6 Phân Tầng Chẵn Lẻ (Parity Tiering)</p>
+                            <p class="text-xs text-slate-600 leading-relaxed">
+                                Cùng Đầu cược X2 (44K), Khác Đầu cược X1 (22K). Sinh lời ròng <strong>+63 Triệu VNĐ (+1.1% ROI)</strong>, biến từ Top 6 Flat (+13M) thành cỗ máy sinh lời dương ổn định.
+                            </p>
+                        </div>
+
+                        <div class="rounded-2xl bg-white border border-emerald-200 p-4 space-y-2 shadow-2xs">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Dạng Tốt Nhất An Toàn:</span>
+                                <span class="text-sm font-black text-indigo-700">Win Rate 51.8% · Max Loss 5d</span>
+                            </div>
+                            <p class="text-sm font-extrabold text-slate-900">🛡️ Top 4 Phân Tầng VIP (2 X2 + 2 X1)</p>
+                            <p class="text-xs text-slate-600 leading-relaxed">
+                                Top 2 VIP cược X2 (44K), 2 số tiếp theo cược X1 (22K). Lãi ròng <strong>+29 Triệu VNĐ</strong>, rút ngắn chuỗi thua tối đa từ 13 ngày (ở Flat) xuống chỉ còn đúng <strong>5 ngày</strong>!
+                            </p>
+                        </div>
+
+                        <div class="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-950 space-y-1">
+                            <p class="font-bold text-emerald-900 flex items-center gap-1.5">
+                                <i class="bi bi-info-circle-fill text-emerald-600"></i> Tại sao 5 AI Lô NÊN phân tầng X1/X2?
+                            </p>
+                            <p class="text-slate-600">
+                                5 AI bình bầu tạo ra phân phối đều. Khi kết hợp phân tầng theo Đầu Chẵn/Lẻ (trùng với dự đoán Đầu Chẵn Lẻ chính xác 56.5%), nhóm số Cùng Đầu nhận hỏa lực X2 giúp nhân đôi biên độ lợi nhuận, khắc phục hoàn toàn nhược điểm cược phẳng bị hòa vốn. Do đó, <strong>với 5 AI Lô: PHÂN TẦNG X2/X1 VƯỢT TRỘI HOÀN TOÀN</strong>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KHU VỰC DÀN SỐ LÔ GỢI Ý HÔM NAY (ACTIONABLE CARDS & COPY) -->
+            <div class="mb-10 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
+                    <div>
+                        <h2 class="text-lg font-black text-slate-900 flex items-center gap-2">
+                            <i class="bi bi-bullseye text-emerald-600"></i> DÀN SỐ LÔ GỢI Ý ĐÁNH HÔM NAY (CHỌN CẤU HÌNH)
+                        </h2>
+                        <p class="text-xs text-slate-500 font-medium">Nhấp chọn cấu hình chiến lược để xem dàn số và sao chép nhanh</p>
+                    </div>
+
+                    <!-- Strategy Tabs Selector for Lô -->
+                    <div class="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-slate-100 border border-slate-200" id="lotoStrategyTabs">
+                        <button class="loto-strat-tab-btn active px-3.5 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-900 shadow-2xs cursor-pointer" data-loto-strat="tri_top1">
+                            🌟 TriCore Top 1 (ROI +15.5%)
+                        </button>
+                        <button class="loto-strat-tab-btn px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer" data-loto-strat="penta_parity_top6">
+                            👑 5 AI Top 6 Phân Tầng (+63M)
+                        </button>
+                        <button class="loto-strat-tab-btn px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer" data-loto-strat="penta_tiered_top4">
+                            🛡️ 5 AI Top 4 VIP (Max Loss 5d)
+                        </button>
+                        <button class="loto-strat-tab-btn px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer" data-loto-strat="tri_top7">
+                            🎯 TriCore Top 7 Flat (52.2% Nổ)
+                        </button>
+                        <button class="loto-strat-tab-btn px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer" data-loto-strat="penta_top7">
+                            💎 5 AI Top 7 Flat (56.2% Nổ)
+                        </button>
+                        <button class="loto-strat-tab-btn px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer" data-loto-strat="tri_top2">
+                            🌟 TriCore Top 2 Song Thủ
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Dynamic Content for Active Loto Strategy -->
+                <div id="todayLotoStrategyContainer">
+                    <div class="text-center py-12 text-slate-400">
+                        <i class="bi bi-hourglass-split text-3xl animate-spin inline-block mb-3"></i>
+                        <p class="text-sm font-semibold">Đang tổng hợp dữ liệu dàn Lô hôm nay...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BẢNG SO SÁNH HIỆU NĂNG CÁC PHƯƠNG ÁN LÔ NĂM 2026 -->
+            <div class="mb-10 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+                    <div>
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-900 mb-2">
+                            <i class="bi bi-table"></i> BẢNG ĐỐI CHIẾU LÔ THỰC NGHIỆM 2026
+                        </span>
+                        <h2 class="text-lg font-black text-slate-900" id="lotoSummaryTableTitle">
+                            BẢNG SO SÁNH HIỆU NĂNG CÁC PHƯƠNG ÁN LÔ NĂM 2026 (299 KỲ QUAY)
+                        </h2>
+                        <p class="text-xs text-slate-500 font-medium" id="lotoSummaryTableSubtitle">
+                            Đánh giá đối đầu Flat (Cược phẳng 22K) vs Dàn Phân Tầng X2 (44K) / X1 (22K) · 1 nháy trúng nhận 80K
+                        </p>
+                    </div>
+
+                    <!-- LOTO HORIZON TOGGLE -->
+                    <div class="flex items-center gap-1.5 p-1 bg-slate-100 rounded-2xl border border-slate-200">
+                        <button id="btnLotoHorizon299" class="px-3.5 py-2 rounded-xl text-xs font-black transition-all bg-white text-emerald-900 shadow-xs border border-emerald-200 cursor-pointer">
+                            🏆 Tập Chuẩn 299 Kỳ (+102M)
+                        </button>
+                        <button id="btnLotoHorizon315" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 transition-all cursor-pointer">
+                            📅 Toàn Bộ 315 Kỳ Live (+99M)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                        <thead>
+                            <tr class="border-b border-slate-200 bg-slate-50/75 text-slate-600 font-bold text-[11px] uppercase tracking-wider">
+                                <th class="p-3">Phương Pháp &amp; Cấu Hình</th>
+                                <th class="p-3 text-center">Thể Loại</th>
+                                <th class="p-3 text-center">Số Kỳ Đánh</th>
+                                <th class="p-3 text-center">Ngày Có Lãi (Tỷ lệ)</th>
+                                <th class="p-3 text-center">Tổng Nháy (TB/kỳ)</th>
+                                <th class="p-3 text-right">Tổng Vốn</th>
+                                <th class="p-3 text-right">Tổng Thưởng</th>
+                                <th class="p-3 text-right">LÃI RÒNG</th>
+                                <th class="p-3 text-right">ROI (%)</th>
+                                <th class="p-3 text-center">Max Chuỗi Trượt</th>
+                                <th class="p-3 text-left">Kết Luận Thực Nghiệm</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lotoSummaryTableBody" class="divide-y divide-slate-100 font-medium">
+                            <tr>
+                                <td colspan="11" class="p-6 text-center text-slate-400">Đang tải dữ liệu kiểm định Lô 2026...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- GỢI Ý CHIẾN THUẬT & CẨM NANG QUẢN TRỊ VỐN LÔ -->
+            <div class="mb-10 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="mb-6 pb-4 border-b border-slate-100">
+                    <h2 class="text-lg font-black text-slate-900 flex items-center gap-2">
+                        <i class="bi bi-lightbulb-fill text-amber-500"></i> GỢI Ý CHIẾN THUẬT LÔ &amp; CẨM NANG QUẢN TRỊ VỐN
+                    </h2>
+                    <p class="text-xs text-slate-500 font-medium">Lựa chọn cấu hình phù hợp với khẩu vị vốn và mục tiêu sinh lời</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Khẩu vị Lô 1 -->
+                    <div class="rounded-2xl border border-amber-200 bg-amber-50/40 p-5 space-y-3">
+                        <div class="flex items-center gap-2.5">
+                            <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-600 text-white font-black text-sm">1</span>
+                            <div>
+                                <h3 class="text-sm font-extrabold text-amber-950">KHẨU VỊ 1: TỐI ĐA HÓA TỶ SUẤT ROI</h3>
+                                <span class="text-[11px] font-bold text-amber-700">Khuyến nghị chọn: TriCore Lô — Top 1 Bạch Thủ Flat</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            • <strong>Hiệu quả năm 2026:</strong> <span class="text-emerald-700 font-black">+102 Triệu VNĐ (+15.5% ROI)</span>.<br>
+                            • <strong>Cơ chế:</strong> Cược duy nhất 1 số Bạch Thủ xếp hạng #1 của Tam Động Cơ TriCore. Cược phẳng 22K (2.2M) ăn 80K (8M/nháy).<br>
+                            • <strong>Ưu điểm:</strong> Vốn cược cả năm cực kỳ tiết kiệm (chỉ 658M). Khi nổ nháy ăn trọn vẹn, ROI đứng đầu toàn bộ các phương pháp Lô.
+                        </p>
+                    </div>
+
+                    <!-- Khẩu vị Lô 2 -->
+                    <div class="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-5 space-y-3">
+                        <div class="flex items-center gap-2.5">
+                            <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-600 text-white font-black text-sm">2</span>
+                            <div>
+                                <h3 class="text-sm font-extrabold text-emerald-950">KHẨU VỊ 2: LÃI RÒNG ỔN ĐỊNH &amp; ĐÒN BẨY HỎA LỰC</h3>
+                                <span class="text-[11px] font-bold text-emerald-700">Khuyến nghị chọn: 5 AI Lô — Top 6 Phân Tầng Chẵn Lẻ (Parity Tiering)</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            • <strong>Hiệu quả năm 2026:</strong> <span class="text-emerald-700 font-black">+63 Triệu VNĐ (+1.1% ROI)</span>.<br>
+                            • <strong>Cơ chế:</strong> Dàn 6 số đồng thuận 5 AI. Nhóm Cùng Đầu cược X2 (44K/con), nhóm Khác Đầu cược X1 (22K/con).<br>
+                            • <strong>Tại sao vượt trội?</strong> Chuyển hóa dàn Top 6 Flat từ hòa vốn (+13M) lên mức lãi ròng +63M nhờ kích hoạt đòn bẩy vào nhánh Chẵn Lẻ ưu thế.
+                        </p>
+                    </div>
+
+                    <!-- Khẩu vị Lô 3 -->
+                    <div class="rounded-2xl border border-indigo-200 bg-indigo-50/40 p-5 space-y-3">
+                        <div class="flex items-center gap-2.5">
+                            <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-600 text-white font-black text-sm">3</span>
+                            <div>
+                                <h3 class="text-sm font-extrabold text-indigo-950">KHẨU VỊ 3: AN TOÀN TUYỆT ĐỐI &amp; CHUỖI TRƯỢT THẤP</h3>
+                                <span class="text-[11px] font-bold text-indigo-700">Khuyến nghị chọn: 5 AI Lô — Top 4 Phân Tầng VIP (2 X2 + 2 X1)</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            • <strong>Hiệu quả năm 2026:</strong> <span class="text-indigo-700 font-black">Win Rate 51.8% · Max Loss chỉ 5 ngày</span> · Lãi ròng +29M.<br>
+                            • <strong>Cơ chế:</strong> 2 số VIP cược X2 (44K), 2 số Lót cược X1 (22K).<br>
+                            • <strong>Phù hợp cho ai?</strong> Người chơi kỷ luật, tuyệt đối không muốn chịu chuỗi thua dài hạn. Max chuỗi trượt chỉ 5 ngày (giảm từ 13 ngày của Top 4 Flat).
+                        </p>
+                    </div>
+
+                    <!-- Khẩu vị Lô 4 -->
+                    <div class="rounded-2xl border border-purple-200 bg-purple-50/40 p-5 space-y-3">
+                        <div class="flex items-center gap-2.5">
+                            <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-600 text-white font-black text-sm">4</span>
+                            <div>
+                                <h3 class="text-sm font-extrabold text-purple-950">KHẨU VỊ 4: DÒNG TIỀN NỔ ĐỀU ĐẶN NHẤT</h3>
+                                <span class="text-[11px] font-bold text-purple-700">Khuyến nghị chọn: 5 AI Lô — Top 7 Thất Thủ Flat (hoặc TriCore Top 7)</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            • <strong>Kỷ lục nổ nháy:</strong> <span class="text-emerald-700 font-black">56.2% ngày có lãi (168/299 ngày)</span>, nổ <strong>571 nháy (1.91 nháy/ngày)</strong>.<br>
+                            • <strong>Cơ chế:</strong> Cược phẳng 22K cho 7 số tinh hoa của 5 AI. Gần như 2 ngày thì có hơn 1 ngày có lãi, chuỗi trượt tối đa chỉ 5 ngày.<br>
+                            • <strong>Phù hợp cho ai?</strong> Người thích cảm giác nổ nháy liên tục hàng ngày, tâm lý thoải mái vững vàng.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SỔ CÁI ĐỐI SOÁT LÔ LỊCH SỬ TỪNG NGÀY (LOTO SETTLED LEDGER) -->
+            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
+                    <div>
+                        <div class="flex items-center gap-2 mb-1 flex-wrap">
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300">
+                                <i class="bi bi-shield-check"></i> 100% STRICT POINT-IN-TIME
+                            </span>
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-900 border border-indigo-300" id="lotoLedgerCountBadge">
+                                315 / 315 Kỳ Đánh
+                            </span>
+                        </div>
+                        <h2 class="text-lg font-black text-slate-900 flex items-center gap-2">
+                            <i class="bi bi-clock-history text-slate-700"></i> SỔ CÁI ĐỐI SOÁT LÔ CHI TIẾT TỪNG NGÀY NĂM 2026
+                        </h2>
+                        <p class="text-xs text-slate-500 font-medium">
+                            Minh bạch 100%: Click vào bất kỳ hàng nào để xem đầy đủ 27 giải mở thưởng thực tế, từng con số dự đoán và số nháy nổ (🔥 Nổ 2 nháy, 1 nháy).
+                        </p>
+                    </div>
+
+                    <!-- THANH TÁC VỤ & BỘ LỌC ĐỐI SOÁT LÔ -->
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button type="button" id="btnToggleAllLotoLedger" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer">
+                            <i class="bi bi-arrows-expand" id="iconToggleAllLotoLedger"></i>
+                            <span id="textToggleAllLotoLedger">Mở Rộng Tất Cả Phiếu Lô</span>
+                        </button>
+                        <button type="button" id="btnShowAllLotoLedger" class="px-3 py-1.5 rounded-xl border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer">
+                            <i class="bi bi-list-check"></i>
+                            <span>Xem Trọn Vẹn 315 Kỳ</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- BỘ LỌC ĐA TIÊU CHÍ CHO LÔ -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-4 p-3.5 bg-slate-50 rounded-2xl border border-slate-200/70">
+                    <!-- Lọc Theo Tháng -->
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wide mb-1">
+                            <i class="bi bi-calendar-month"></i> Tháng / Năm
+                        </label>
+                        <select id="lotoLedgerMonthFilter" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 focus:border-emerald-500 focus:outline-none shadow-2xs">
+                            <option value="ALL">Toàn Bộ Năm 2026 (315 Kỳ)</option>
+                            <option value="2026-11">Tháng 11/2026 (15 Kỳ)</option>
+                            <option value="2026-10">Tháng 10/2026 (30 Kỳ)</option>
+                            <option value="2026-09">Tháng 09/2026 (30 Kỳ)</option>
+                            <option value="2026-08">Tháng 08/2026 (31 Kỳ)</option>
+                            <option value="2026-07">Tháng 07/2026 (31 Kỳ)</option>
+                            <option value="2026-06">Tháng 06/2026 (30 Kỳ)</option>
+                            <option value="2026-05">Tháng 05/2026 (31 Kỳ)</option>
+                            <option value="2026-04">Tháng 04/2026 (30 Kỳ)</option>
+                            <option value="2026-03">Tháng 03/2026 (31 Kỳ)</option>
+                            <option value="2026-02">Tháng 02/2026 (28 Kỳ)</option>
+                            <option value="2026-01">Tháng 01/2026 (28 Kỳ)</option>
+                        </select>
+                    </div>
+
+                    <!-- Lọc Theo Kết Quả Lô -->
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wide mb-1">
+                            <i class="bi bi-funnel"></i> Kết Quả Phương Pháp
+                        </label>
+                        <select id="lotoLedgerOutcomeFilter" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 focus:border-emerald-500 focus:outline-none shadow-2xs">
+                            <option value="ALL">Tất Cả Kết Quả</option>
+                            <option value="TRI_TOP1_WIN">🌟 Chỉ Kỳ TriCore Top 1 Nổ (+5.8M)</option>
+                            <option value="PENTA_PARITY_WIN">👑 Chỉ Kỳ 5 AI Top 6 Parity Có Lãi</option>
+                            <option value="PENTA_TIERED_WIN">🛡️ Chỉ Kỳ 5 AI Top 4 VIP Có Lãi</option>
+                            <option value="TRI_TOP7_WIN">🎯 Chỉ Kỳ TriCore Top 7 Có Lãi</option>
+                            <option value="PENTA_TOP7_WIN">💎 Chỉ Kỳ 5 AI Top 7 Có Lãi</option>
+                            <option value="LOSS_ALL">❌ Kỳ Cả 2 Đều Trượt</option>
+                        </select>
+                    </div>
+
+                    <!-- Tìm Kiếm Nhanh -->
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wide mb-1">
+                            <i class="bi bi-search"></i> Tìm Ngày / Con Số
+                        </label>
+                        <input type="text" id="lotoLedgerSearchInput" placeholder="Ví dụ: 2026-10 hoặc 52..." class="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 focus:border-emerald-500 focus:outline-none shadow-2xs">
+                    </div>
+                </div>
+
+                <!-- BẢNG SỔ CÁI ĐỐI SOÁT LÔ -->
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                        <thead>
+                            <tr class="border-b border-slate-200 bg-slate-50/75 text-slate-600 font-bold text-[11px] uppercase tracking-wider">
+                                <th class="p-3 w-10 text-center">#</th>
+                                <th class="p-3">Ngày</th>
+                                <th class="p-3 text-center">27 Giải (ĐB)</th>
+                                <th class="p-3 text-center">Dự Đoán CL</th>
+                                <th class="p-3 text-center">TriCore Top 1</th>
+                                <th class="p-3 text-center">5 AI Top 6 Parity</th>
+                                <th class="p-3 text-center">5 AI Top 4 VIP</th>
+                                <th class="p-3 text-center">TriCore Top 7</th>
+                                <th class="p-3 text-center">5 AI Top 7</th>
+                                <th class="p-3 text-right">Lũy Kế Top 1</th>
+                                <th class="p-3 text-center">Chi Tiết Phiếu</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lotoLedgerTableBody" class="divide-y divide-slate-100 font-medium">
+                            <tr>
+                                <td colspan="11" class="p-6 text-center text-slate-400">Đang tải sổ cái đối soát Lô...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100">
+                    <span class="text-xs text-slate-500 font-medium" id="lotoLedgerPagingInfo">
+                        Hiển thị 30 / 315 ngày
+                    </span>
+                    <div class="flex items-center gap-2">
+                        <button id="btnLoadMoreLotoLedger" class="px-5 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors shadow-2xs cursor-pointer">
+                            Xem Thêm 50 Kỳ Tiếp Theo
+                        </button>
+                        <button id="btnLoadAllLotoLedgerBottom" class="px-5 py-2 rounded-xl text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors shadow-2xs cursor-pointer">
+                            Hiển Thị Tất Cả 315 Kỳ
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div> <!-- KẾT THÚC #lotoSectionContainer -->
 
     </main>
 
