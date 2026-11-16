@@ -753,6 +753,18 @@ async function generate() {
                                 <td class="py-2.5 px-3 text-right text-emerald-400 font-bold">+1.72%</td>
                                 <td class="py-2.5 px-3 text-center"><span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">TOP 3</span></td>
                             </tr>
+                            <tr class="hover:bg-gray-800/50 bg-gray-900/30">
+                                <td class="py-2.5 px-3">14</td>
+                                <td class="py-2.5 px-3 text-amber-300 font-sans">Đột Phá E: Dàn 15 số (12 X2 + 3 X1 - Cắt 2 cuối X1)</td>
+                                <td class="py-2.5 px-3">15.0s (12+3)</td>
+                                <td class="py-2.5 px-3">53 (17.7%)</td>
+                                <td class="py-2.5 px-3 text-center text-emerald-400">43 / 10</td>
+                                <td class="py-2.5 px-3 text-right">8,073.0M</td>
+                                <td class="py-2.5 px-3 text-right text-emerald-400">14,352.0M (64%)</td>
+                                <td class="py-2.5 px-3 text-right text-amber-300 font-bold">-9.0M</td>
+                                <td class="py-2.5 px-3 text-right text-amber-300 font-bold">-0.11%</td>
+                                <td class="py-2.5 px-3 text-center"><span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold">Hòa vốn 2026 (5 năm +1.75 Tỷ)</span></td>
+                            </tr>
                             <tr class="hover:bg-gray-800/50">
                                 <td class="py-2.5 px-3">13</td>
                                 <td class="py-2.5 px-3 text-gray-300 font-sans">Đột Phá D: Chỉ đánh 12 số X2 Thuần</td>
@@ -763,7 +775,7 @@ async function generate() {
                                 <td class="py-2.5 px-3 text-right text-emerald-400">15,249.0M (68%)</td>
                                 <td class="py-2.5 px-3 text-right text-emerald-400 font-bold">+48.0M</td>
                                 <td class="py-2.5 px-3 text-right text-emerald-400 font-bold">+0.67%</td>
-                                <td class="py-2.5 px-3 text-center text-gray-400">Top 4</td>
+                                <td class="py-2.5 px-3 text-center text-gray-400">Top 5</td>
                             </tr>
 
                             <!-- Nhóm PA1 35s -->
@@ -1080,6 +1092,200 @@ async function generate() {
                     </div>
                 </div>
             </div>
+
+            <!-- SPECIAL DEEP-DIVE: DÀN 15 SỐ (CẮT 2 CON CUỐI X1 CỦA DÀN 17S) -->
+            <div class="bg-gradient-to-r from-purple-950/40 via-gray-900 to-amber-950/40 border border-purple-500/40 rounded-xl p-6 space-y-5">
+                <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-800 pb-3 gap-2">
+                    <div>
+                        <span class="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/40 text-[10px] font-bold uppercase tracking-wider">
+                            Nghiên Cứu Mở Rộng Theo Yêu Cầu
+                        </span>
+                        <h3 class="text-lg font-black text-white flex items-center gap-2 mt-1">
+                            <span>🔬</span> Đột Phá Mở Rộng: Nếu Cắt Tiếp 2 Con Cuối X1 (Dàn 15 Số: 12 X2 + 3 X1) Thì Ra Sao?
+                        </h3>
+                        <p class="text-xs text-gray-400 mt-0.5">Khảo sát toàn diện 5 năm đa niên (2022 – 2026, 1,758 kỳ) và bóc tách từng tháng năm 2026</p>
+                    </div>
+                    <span class="text-xs px-3 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold self-start md:self-auto">
+                        5 Năm Tiết Kiệm Ròng +1,754 Triệu VNĐ (+1.75 TỶ)
+                    </span>
+                </div>
+
+                <!-- 2 Hộp KPI Đối Soát -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-gray-950 p-4 rounded-xl border border-emerald-500/30 space-y-2">
+                        <div class="text-xs text-emerald-400 uppercase font-bold flex items-center gap-1.5">
+                            <span>🏛️</span> Dài Hạn Đa Niên (5 Năm 2022 – 2026): CẮT CÓ LÃI RẤT LỚN
+                        </div>
+                        <p class="text-xs text-gray-300 leading-relaxed">
+                            Trong suốt 1,758 kỳ (5 năm), 2 con cuối X1 (vị trí 16 và 17) chỉ trúng đúng <strong>21 lần (1.19%)</strong>, thấp hơn rất nhiều so với điểm hòa vốn (2.38%).
+                        </p>
+                        <div class="text-xs font-mono text-emerald-300 bg-emerald-950/30 p-2.5 rounded border border-emerald-500/20 space-y-0.5">
+                            <div>• Tiết kiệm tiền vốn cược: <strong>+3,518.0M (+3.51 TỶ ĐỒNG)</strong></div>
+                            <div>• Tiền thưởng bị hụt mất: <strong>-1,764.0M</strong> (chỉ mất 21 lần trúng)</div>
+                            <div>• <strong>LÃI RÒNG TIẾT KIỆM ĐƯỢC: +1,754.0 TRIỆU VNĐ (HƠN 1.75 TỶ)!</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-950 p-4 rounded-xl border border-amber-500/30 space-y-2">
+                        <div class="text-xs text-amber-400 uppercase font-bold flex items-center gap-1.5">
+                            <span>⚡</span> Ngắn Hạn Năm 2026: GIỮ 17 SỐ CÓ LỢI HƠN +158M
+                        </div>
+                        <p class="text-xs text-gray-300 leading-relaxed">
+                            Riêng năm 2026, vị trí 17 rơi vào chu kỳ đột biến bùng nổ (nổ 7 lần rank 17, cộng rank 16 là <strong>9 lần / 299 kỳ = 3.01% > 2.38%</strong>).
+                        </p>
+                        <div class="text-xs font-mono text-amber-300 bg-amber-950/30 p-2.5 rounded border border-amber-500/20 space-y-0.5">
+                            <div>• Dàn 17s (12 X2 + 5 X1): <strong>LÃI DƯƠNG +149.0M (ROI +1.72%)</strong></div>
+                            <div>• Dàn 15s (12 X2 + 3 X1): <strong>LÃI ÂM NHẸ -9.0M (ROI -0.11%)</strong></div>
+                            <div>• <strong>Chênh lệch 2026: Dàn 17s tốt hơn Dàn 15s +158.0M</strong></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bảng 1: So sánh 5 năm Đa Niên (W = 365) -->
+                <div class="space-y-2">
+                    <div class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                        <span>📊</span> Bảng So Sánh 5 Năm Đa Niên (2022 – 2026) Giữa Dàn 17s vs Dàn 15s (W = 365 ngày):
+                    </div>
+                    <div class="overflow-x-auto custom-scrollbar">
+                        <table class="w-full text-xs text-left text-gray-300 min-w-[750px]">
+                            <thead class="bg-gray-800 text-gray-300 uppercase text-[10px] font-semibold">
+                                <tr>
+                                    <th class="py-2 px-3">Năm</th>
+                                    <th class="py-2 px-3 text-center">Số kỳ</th>
+                                    <th class="py-2 px-3 text-right">Dàn 17s Lãi (M)</th>
+                                    <th class="py-2 px-3 text-right text-purple-300 font-bold">Dàn 15s Lãi (M)</th>
+                                    <th class="py-2 px-3 text-right text-emerald-400">Tiết kiệm vốn</th>
+                                    <th class="py-2 px-3 text-right text-red-400">Thưởng hụt</th>
+                                    <th class="py-2 px-3 text-right text-emerald-400 font-bold">Lãi Ròng Chênh Lệch</th>
+                                    <th class="py-2 px-3 text-center">2 Số Bị Cắt Nổ</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-800 font-mono text-[11px]">
+                                <tr>
+                                    <td class="py-2 px-3 font-sans font-semibold">2022</td>
+                                    <td class="py-2 px-3 text-center">361</td>
+                                    <td class="py-2 px-3 text-right text-red-400">-1,397.0M</td>
+                                    <td class="py-2 px-3 text-right text-purple-300 font-bold">-1,179.0M</td>
+                                    <td class="py-2 px-3 text-right text-emerald-400">+722.0M</td>
+                                    <td class="py-2 px-3 text-right text-red-400">-504.0M</td>
+                                    <td class="py-2 px-3 text-right text-emerald-400 font-bold">+218.0M</td>
+                                    <td class="py-2 px-3 text-center text-gray-400">6 lần (1.66%)</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3 font-sans font-semibold">2023</td>
+                                    <td class="py-2 px-3 text-center">361</td>
+                                    <td class="py-2 px-3 text-right text-red-400">-1,313.0M</td>
+                                    <td class="py-2 px-3 text-right text-purple-300 font-bold">-1,011.0M</td>
+                                    <td class="py-2 px-3 text-right text-emerald-400">+722.0M</td>
+                                    <td class="py-2 px-3 text-right text-red-400">-420.0M</td>
+                                    <td class="py-2 px-3 text-right text-emerald-400 font-bold">+302.0M</td>
+                                    <td class="py-2 px-3 text-center text-gray-400">5 lần (1.39%)</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3 font-sans font-semibold">2024</td>
+                                    <td class="py-2 px-3 text-center">362</td>
+                                    <td class="py-2 px-3 text-right text-red-400">-3,106.0M</td>
+                                    <td class="py-2 px-3 text-right text-purple-300 font-bold">-2,718.0M</td>
+                                    <td class="py-2 px-3 text-right text-emerald-400">+724.0M</td>
+                                    <td class="py-2 px-3 text-right text-red-400">-336.0M</td>
+                                    <td class="py-2 px-3 text-right text-emerald-400 font-bold">+388.0M</td>
+                                    <td class="py-2 px-3 text-center text-gray-400">4 lần (1.10%)</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3 font-sans font-semibold">2025</td>
+                                    <td class="py-2 px-3 text-center">361</td>
+                                    <td class="py-2 px-3 text-right text-red-400">-1,733.0M</td>
+                                    <td class="py-2 px-3 text-right text-purple-300 font-bold">-1,179.0M</td>
+                                    <td class="py-2 px-3 text-right text-emerald-400">+722.0M</td>
+                                    <td class="py-2 px-3 text-right text-red-400">-168.0M</td>
+                                    <td class="py-2 px-3 text-right text-emerald-400 font-bold">+554.0M</td>
+                                    <td class="py-2 px-3 text-center text-gray-400">2 lần (0.55%)</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3 font-sans font-semibold">2026</td>
+                                    <td class="py-2 px-3 text-center">314</td>
+                                    <td class="py-2 px-3 text-right text-red-400">-2,134.0M</td>
+                                    <td class="py-2 px-3 text-right text-purple-300 font-bold">-1,842.0M</td>
+                                    <td class="py-2 px-3 text-right text-emerald-400">+628.0M</td>
+                                    <td class="py-2 px-3 text-right text-red-400">-336.0M</td>
+                                    <td class="py-2 px-3 text-right text-emerald-400 font-bold">+292.0M</td>
+                                    <td class="py-2 px-3 text-center text-gray-400">4 lần (1.27%)</td>
+                                </tr>
+                            </tbody>
+                            <tfoot class="bg-gray-800 font-mono font-bold text-xs border-t-2 border-gray-700">
+                                <tr>
+                                    <td class="py-2.5 px-3 uppercase font-sans">TỔNG 5 NĂM</td>
+                                    <td class="py-2.5 px-3 text-center">1,759</td>
+                                    <td class="py-2.5 px-3 text-right text-red-400">-9,683.0M</td>
+                                    <td class="py-2.5 px-3 text-right text-purple-300 text-sm font-black">-7,929.0M</td>
+                                    <td class="py-2.5 px-3 text-right text-emerald-400">+3,518.0M</td>
+                                    <td class="py-2.5 px-3 text-right text-red-400">-1,764.0M</td>
+                                    <td class="py-2.5 px-3 text-right text-emerald-400 text-sm font-black">+1,754.0M</td>
+                                    <td class="py-2.5 px-3 text-center text-emerald-400">21 lần (1.19%)</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Bảng 2: So sánh 10 Tháng Năm 2026 (SSOT Advisor) -->
+                <div class="space-y-2">
+                    <div class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                        <span>📅</span> Bảng Đối Soát 10 Tháng Năm 2026 (299 Kỳ Thực Tế):
+                    </div>
+                    <div class="overflow-x-auto custom-scrollbar">
+                        <table class="w-full text-xs text-left text-gray-300 min-w-[750px]">
+                            <thead class="bg-gray-800 text-gray-300 uppercase text-[10px] font-semibold">
+                                <tr>
+                                    <th class="py-2 px-3">Tháng</th>
+                                    <th class="py-2 px-3 text-center">Số kỳ</th>
+                                    <th class="py-2 px-3 text-right text-emerald-400 font-bold">Dàn 17s Lãi (M)</th>
+                                    <th class="py-2 px-3 text-right text-amber-300 font-bold">Dàn 15s Lãi (M)</th>
+                                    <th class="py-2 px-3 text-right">Chênh lệch (M)</th>
+                                    <th class="py-2 px-3 text-center">Số ngày nổ 2 con cắt</th>
+                                    <th class="py-2 px-3">Chi tiết ngày nổ (vị trí 16 & 17)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-800 font-mono text-[11px]">
+                                <tr><td class="py-2 px-3 font-sans">2026-01</td><td class="py-2 px-3 text-center">31</td><td class="py-2 px-3 text-right text-red-400">-227.0M</td><td class="py-2 px-3 text-right text-red-400">-249.0M</td><td class="py-2 px-3 text-right text-red-400">-22.0M</td><td class="py-2 px-3 text-center text-amber-400">1</td><td class="py-2 px-3 font-sans text-gray-400">2026-01-19 (ĐB 86, rank #16)</td></tr>
+                                <tr><td class="py-2 px-3 font-sans">2026-02</td><td class="py-2 px-3 text-center">24</td><td class="py-2 px-3 text-right text-red-400">-360.0M</td><td class="py-2 px-3 text-right text-red-400">-312.0M</td><td class="py-2 px-3 text-right text-emerald-400 font-bold">+48.0M</td><td class="py-2 px-3 text-center text-gray-500">0</td><td class="py-2 px-3 font-sans text-emerald-400">Không nổ $\to$ Cắt lời thêm +48M vốn</td></tr>
+                                <tr><td class="py-2 px-3 font-sans">2026-03</td><td class="py-2 px-3 text-center">31</td><td class="py-2 px-3 text-right text-emerald-400 font-bold">+697.0M</td><td class="py-2 px-3 text-right text-emerald-400 font-bold">+675.0M</td><td class="py-2 px-3 text-right text-red-400">-22.0M</td><td class="py-2 px-3 text-center text-amber-400">1</td><td class="py-2 px-3 font-sans text-gray-400">2026-03-13 (ĐB 59, rank #16)</td></tr>
+                                <tr><td class="py-2 px-3 font-sans">2026-04</td><td class="py-2 px-3 text-center">30</td><td class="py-2 px-3 text-right text-red-400">-198.0M</td><td class="py-2 px-3 text-right text-red-400">-222.0M</td><td class="py-2 px-3 text-right text-red-400">-24.0M</td><td class="py-2 px-3 text-center text-amber-400">1</td><td class="py-2 px-3 font-sans text-gray-400">2026-04-23 (ĐB 39, rank #17)</td></tr>
+                                <tr><td class="py-2 px-3 font-sans">2026-05</td><td class="py-2 px-3 text-center">31</td><td class="py-2 px-3 text-right text-red-400">-143.0M</td><td class="py-2 px-3 text-right text-red-400">-81.0M</td><td class="py-2 px-3 text-right text-emerald-400 font-bold">+62.0M</td><td class="py-2 px-3 text-center text-gray-500">0</td><td class="py-2 px-3 font-sans text-emerald-400">Không nổ $\to$ Cắt giảm lỗ được +62M</td></tr>
+                                <tr><td class="py-2 px-3 font-sans">2026-06</td><td class="py-2 px-3 text-center">30</td><td class="py-2 px-3 text-right text-gray-400">-30.0M</td><td class="py-2 px-3 text-right text-gray-400">-54.0M</td><td class="py-2 px-3 text-right text-red-400">-24.0M</td><td class="py-2 px-3 text-center text-amber-400">1</td><td class="py-2 px-3 font-sans text-gray-400">2026-06-06 (ĐB 65, rank #17)</td></tr>
+                                <tr><td class="py-2 px-3 font-sans">2026-07</td><td class="py-2 px-3 text-center">31</td><td class="py-2 px-3 text-right text-emerald-400 font-bold">+361.0M</td><td class="py-2 px-3 text-right text-emerald-400 font-bold">+423.0M</td><td class="py-2 px-3 text-right text-emerald-400 font-bold">+62.0M</td><td class="py-2 px-3 text-center text-gray-500">0</td><td class="py-2 px-3 font-sans text-emerald-400">Không nổ $\to$ Cắt tăng lãi lên +423M</td></tr>
+                                <tr><td class="py-2 px-3 font-sans">2026-08</td><td class="py-2 px-3 text-center">31</td><td class="py-2 px-3 text-right text-red-400">-143.0M</td><td class="py-2 px-3 text-right text-red-400">-249.0M</td><td class="py-2 px-3 text-right text-red-400 font-bold">-106.0M</td><td class="py-2 px-3 text-center text-red-400 font-bold">2</td><td class="py-2 px-3 font-sans text-gray-400">2026-08-02 (ĐB 09, #17), 2026-08-23 (ĐB 38, #17)</td></tr>
+                                <tr><td class="py-2 px-3 font-sans">2026-09</td><td class="py-2 px-3 text-center">30</td><td class="py-2 px-3 text-right text-red-400">-282.0M</td><td class="py-2 px-3 text-right text-red-400">-306.0M</td><td class="py-2 px-3 text-right text-red-400">-24.0M</td><td class="py-2 px-3 text-center text-amber-400">1</td><td class="py-2 px-3 font-sans text-gray-400">2026-09-18 (ĐB 67, rank #17)</td></tr>
+                                <tr><td class="py-2 px-3 font-sans">2026-10</td><td class="py-2 px-3 text-center">30</td><td class="py-2 px-3 text-right text-emerald-400 font-bold">+474.0M</td><td class="py-2 px-3 text-right text-emerald-400 font-bold">+366.0M</td><td class="py-2 px-3 text-right text-red-400 font-bold">-108.0M</td><td class="py-2 px-3 text-center text-red-400 font-bold">2</td><td class="py-2 px-3 font-sans text-gray-400">2026-10-02 (ĐB 83, #17), 2026-10-23 (ĐB 67, #17)</td></tr>
+                            </tbody>
+                            <tfoot class="bg-gray-800 font-mono font-bold text-xs border-t-2 border-gray-700">
+                                <tr>
+                                    <td class="py-2.5 px-3 uppercase font-sans">CẢ NĂM 2026</td>
+                                    <td class="py-2.5 px-3 text-center">299</td>
+                                    <td class="py-2.5 px-3 text-right text-emerald-400 text-sm font-black">+149.0M</td>
+                                    <td class="py-2.5 px-3 text-right text-amber-300 text-sm font-black">-9.0M</td>
+                                    <td class="py-2.5 px-3 text-right text-red-400 font-bold">-158.0M</td>
+                                    <td class="py-2.5 px-3 text-center text-red-400 font-bold">9 lần (3.01%)</td>
+                                    <td class="py-2.5 px-3 font-sans text-amber-300">Vị trí 17 nổ đột biến 7 lần</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Đúc kết & Điểm cân bằng biên -->
+                <div class="bg-gray-950 p-4 rounded-xl border border-gray-800 text-xs text-gray-300 leading-relaxed space-y-1.5">
+                    <strong class="text-white text-sm">Điểm Cân Bằng Biên & Khuyến Nghị Vận Hành:</strong>
+                    <p>
+                        • <strong>Công thức điểm hòa vốn:</strong> Nuôi 2 con X1 tốn 2M/ngày. Tiền thưởng ăn 1 nháy là 84M. 
+                        Điểm hòa vốn biên là $2/84 \approx <strong>2.38%</strong>. Nếu 2 con này nổ ít hơn 2.38%, cắt đi sẽ có lãi ròng; nếu nổ nhiều hơn 2.38%, giữ lại sẽ có lợi hơn.
+                    </p>
+                    <p>
+                        • <strong>Kết luận:</strong> Trong dài hạn 5 năm, tỷ lệ nổ thực tế của 2 con này chỉ đạt <strong>1.19% < 2.38%</strong>, giúp <strong>tiết kiệm ròng hơn 1.75 TỶ ĐỒNG</strong>. 
+                        Tuy nhiên trong năm 2026, vị trí 17 nổ bùng nổ 7 lần (tỷ lệ 3.01% > 2.38%), nên giữ nguyên dàn <strong>17 số (12 X2 + 5 X1)</strong> đem lại mức lãi dương cao nhất (+149.0M).
+                    </p>
+                </div>
+            </div>
         </section>
 
         <!-- ==================== TAB 4: PHÂN TÍCH CHI TIẾT 10 THÁNG (2026) ==================== -->
@@ -1098,6 +1304,7 @@ async function generate() {
                                 <th class="py-3 px-3 text-center">Số kỳ</th>
                                 <th class="py-3 px-3 text-right">PA1 Đề 35s</th>
                                 <th class="py-3 px-3 text-right text-amber-400">Đề 17s (12+5)</th>
+                                <th class="py-3 px-3 text-right text-purple-300">Đề 15s (12+3)</th>
                                 <th class="py-3 px-3 text-right text-blue-400">Đề 17 X2</th>
                                 <th class="py-3 px-3 text-right text-emerald-400">Lô Top 7</th>
                                 <th class="py-3 px-3 text-right text-purple-400 font-bold">COMBO 1 (12+5 & Lô)</th>
@@ -1110,6 +1317,7 @@ async function generate() {
                                 <td class="py-2.5 px-3 text-center text-gray-400">31</td>
                                 <td class="py-2.5 px-3 text-right text-red-400">-563.0M</td>
                                 <td class="py-2.5 px-3 text-right text-red-400">-227.0M</td>
+                                <td class="py-2.5 px-3 text-right text-red-400">-249.0M</td>
                                 <td class="py-2.5 px-3 text-right text-red-400">-204.0M</td>
                                 <td class="py-2.5 px-3 text-right text-emerald-400">+66.6M</td>
                                 <td class="py-2.5 px-3 text-right text-red-400 font-semibold">-160.4M</td>
@@ -1120,6 +1328,7 @@ async function generate() {
                                 <td class="py-2.5 px-3 text-center text-gray-400">24</td>
                                 <td class="py-2.5 px-3 text-right text-red-400">-286.0M</td>
                                 <td class="py-2.5 px-3 text-right text-red-400">-360.0M</td>
+                                <td class="py-2.5 px-3 text-right text-red-400">-312.0M</td>
                                 <td class="py-2.5 px-3 text-right text-red-400">-480.0M</td>
                                 <td class="py-2.5 px-3 text-right text-red-400">-49.6M</td>
                                 <td class="py-2.5 px-3 text-right text-red-400 font-semibold">-409.6M</td>
@@ -1130,6 +1339,7 @@ async function generate() {
                                 <td class="py-2.5 px-3 text-center text-gray-400">31</td>
                                 <td class="py-2.5 px-3 text-right text-emerald-400 font-bold">+498.0M</td>
                                 <td class="py-2.5 px-3 text-right text-emerald-400 font-bold">+697.0M</td>
+                                <td class="py-2.5 px-3 text-right text-emerald-400 font-bold">+675.0M</td>
                                 <td class="py-2.5 px-3 text-right text-emerald-400 font-bold">+626.0M</td>
                                 <td class="py-2.5 px-3 text-right text-emerald-400">+2.6M</td>
                                 <td class="py-2.5 px-3 text-right text-emerald-400 font-black">+699.6M</td>
@@ -1140,6 +1350,7 @@ async function generate() {
                                 <td class="py-2.5 px-3 text-center text-gray-400">30</td>
                                 <td class="py-2.5 px-3 text-right text-red-400">-291.0M</td>
                                 <td class="py-2.5 px-3 text-right text-red-400">-198.0M</td>
+                                <td class="py-2.5 px-3 text-right text-red-400">-222.0M</td>
                                 <td class="py-2.5 px-3 text-right text-red-400">-176.0M</td>
                                 <td class="py-2.5 px-3 text-right text-red-400">-6.0M</td>
                                 <td class="py-2.5 px-3 text-right text-red-400 font-semibold">-204.0M</td>
@@ -1150,6 +1361,7 @@ async function generate() {
                                 <td class="py-2.5 px-3 text-center text-gray-400">31</td>
                                 <td class="py-2.5 px-3 text-right text-red-400">-115.0M</td>
                                 <td class="py-2.5 px-3 text-right text-red-400">-143.0M</td>
+                                <td class="py-2.5 px-3 text-right text-red-400">-81.0M</td>
                                 <td class="py-2.5 px-3 text-right text-red-400">-214.0M</td>
                                 <td class="py-2.5 px-3 text-right text-emerald-400">+66.6M</td>
                                 <td class="py-2.5 px-3 text-right text-gray-300 font-semibold">-76.4M</td>
@@ -1160,6 +1372,7 @@ async function generate() {
                                 <td class="py-2.5 px-3 text-center text-gray-400">30</td>
                                 <td class="py-2.5 px-3 text-right text-emerald-400">+37.0M</td>
                                 <td class="py-2.5 px-3 text-right text-gray-400">-30.0M</td>
+                                <td class="py-2.5 px-3 text-right text-gray-400">-54.0M</td>
                                 <td class="py-2.5 px-3 text-right text-gray-400">-12.0M</td>
                                 <td class="py-2.5 px-3 text-right text-emerald-400">+50.0M</td>
                                 <td class="py-2.5 px-3 text-right text-emerald-400 font-semibold">+20.0M</td>
@@ -1170,6 +1383,7 @@ async function generate() {
                                 <td class="py-2.5 px-3 text-center text-gray-400">31</td>
                                 <td class="py-2.5 px-3 text-right text-emerald-400 font-bold">+158.0M</td>
                                 <td class="py-2.5 px-3 text-right text-emerald-400 font-bold">+361.0M</td>
+                                <td class="py-2.5 px-3 text-right text-emerald-400 font-bold">+423.0M</td>
                                 <td class="py-2.5 px-3 text-right text-emerald-400 font-bold">+458.0M</td>
                                 <td class="py-2.5 px-3 text-right text-gray-400">-5.4M</td>
                                 <td class="py-2.5 px-3 text-right text-emerald-400 font-black">+355.6M</td>
@@ -1180,6 +1394,7 @@ async function generate() {
                                 <td class="py-2.5 px-3 text-center text-gray-400">31</td>
                                 <td class="py-2.5 px-3 text-right text-red-400">-137.0M</td>
                                 <td class="py-2.5 px-3 text-right text-red-400">-143.0M</td>
+                                <td class="py-2.5 px-3 text-right text-red-400">-249.0M</td>
                                 <td class="py-2.5 px-3 text-right text-red-400">-34.0M</td>
                                 <td class="py-2.5 px-3 text-right text-emerald-400">+98.6M</td>
                                 <td class="py-2.5 px-3 text-right text-gray-300 font-semibold">-44.4M</td>
@@ -1190,6 +1405,7 @@ async function generate() {
                                 <td class="py-2.5 px-3 text-center text-gray-400">30</td>
                                 <td class="py-2.5 px-3 text-right text-red-400">-325.0M</td>
                                 <td class="py-2.5 px-3 text-right text-red-400">-282.0M</td>
+                                <td class="py-2.5 px-3 text-right text-red-400">-306.0M</td>
                                 <td class="py-2.5 px-3 text-right text-red-400">-178.0M</td>
                                 <td class="py-2.5 px-3 text-right text-emerald-400">+50.0M</td>
                                 <td class="py-2.5 px-3 text-right text-red-400 font-semibold">-232.0M</td>
@@ -1200,6 +1416,7 @@ async function generate() {
                                 <td class="py-2.5 px-3 text-center text-gray-400">30</td>
                                 <td class="py-2.5 px-3 text-right text-emerald-400 font-bold">+512.0M</td>
                                 <td class="py-2.5 px-3 text-right text-emerald-400 font-bold">+474.0M</td>
+                                <td class="py-2.5 px-3 text-right text-emerald-400 font-bold">+366.0M</td>
                                 <td class="py-2.5 px-3 text-right text-emerald-400 font-bold">+492.0M</td>
                                 <td class="py-2.5 px-3 text-right text-emerald-400 font-bold">+202.0M</td>
                                 <td class="py-2.5 px-3 text-right text-emerald-400 font-black">+676.0M</td>
@@ -1212,6 +1429,7 @@ async function generate() {
                                 <td class="py-3 px-3 text-center">299</td>
                                 <td class="py-3 px-3 text-right text-blue-300">-850.0M</td>
                                 <td class="py-3 px-3 text-right text-amber-400">+149.0M</td>
+                                <td class="py-3 px-3 text-right text-purple-300 font-bold">-9.0M</td>
                                 <td class="py-3 px-3 text-right text-blue-400">+278.0M</td>
                                 <td class="py-3 px-3 text-right text-emerald-400">+475.4M</td>
                                 <td class="py-3 px-3 text-right text-purple-400 text-sm font-black">+624.4M</td>
