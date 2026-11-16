@@ -427,6 +427,15 @@
         const stratData = todayRec[activeTodayStrat];
         if (!stratData) return;
 
+        const triCallout = byId('triCoreSpecialCallout');
+        if (triCallout) {
+            if (activeTodayStrat === 'triCore') {
+                triCallout.classList.remove('hidden');
+            } else {
+                triCallout.classList.add('hidden');
+            }
+        }
+
         const econ = data.economicUnits || {};
         const isFlat = econ.betMode === 'flat';
         const unitX2Text = isFlat ? 'Cược 1M/số · Ăn 84M' : 'Cược 2M/số · Ăn 168M';

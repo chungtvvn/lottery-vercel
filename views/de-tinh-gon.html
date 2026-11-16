@@ -447,46 +447,134 @@
 
         <!-- SỔ CÁI ĐỐI SOÁT LỊCH SỬ TỪNG NGÀY (SETTLED LEDGER) -->
         <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
                 <div>
+                    <div class="flex items-center gap-2 mb-1 flex-wrap">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                            <i class="bi bi-shield-check"></i> 100% STRICT POINT-IN-TIME
+                        </span>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-900 border border-indigo-300" id="ledgerCountBadge">
+                            315 / 315 Kỳ Đánh
+                        </span>
+                    </div>
                     <h2 class="text-lg font-black text-slate-900 flex items-center gap-2">
-                        <i class="bi bi-clock-history text-slate-600"></i> SỔ CÁI ĐỐI SOÁT KẾT QUẢ TỪNG NGÀY
+                        <i class="bi bi-clock-history text-slate-700"></i> SỔ CÁI ĐỐI SOÁT CHI TIẾT TỪNG NGÀY NĂM 2026
                     </h2>
-                    <p class="text-xs text-slate-500 font-medium">Chi tiết giải đặc biệt, dạng dự đoán và kết quả trúng thưởng của từng cấu hình</p>
+                    <p class="text-xs text-slate-500 font-medium">
+                        Minh bạch 100%: Click vào bất kỳ hàng nào để xem đầy đủ danh sách số đã chốt trước giờ quay, phân tầng X2/X1, số trúng và số bị loại trừ.
+                    </p>
                 </div>
 
-                <div class="flex items-center gap-2">
-                    <input type="text" id="ledgerSearchInput" placeholder="Tìm theo ngày (YYYY-MM-DD)..." class="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-medium focus:border-amber-500 focus:outline-none">
-                    <span class="text-xs font-bold text-slate-500" id="ledgerCountBadge">0 ngày</span>
+                <!-- THANH TÁC VỤ & BỘ LỌC ĐỐI SOÁT -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <button type="button" id="btnToggleAllLedger" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer">
+                        <i class="bi bi-arrows-expand" id="iconToggleAllLedger"></i>
+                        <span id="textToggleAllLedger">Mở Rộng Tất Cả Phiếu</span>
+                    </button>
+                    <button type="button" id="btnShowAllLedger" class="px-3 py-1.5 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 text-xs font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer">
+                        <i class="bi bi-list-check"></i>
+                        <span>Xem Trọn Vẹn 315 Kỳ</span>
+                    </button>
                 </div>
             </div>
 
+            <!-- BỘ LỌC ĐA TIÊU CHÍ (THÁNG, KẾT QUẢ, TÌM KIẾM) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-4 p-3.5 bg-slate-50 rounded-2xl border border-slate-200/70">
+                <!-- Lọc Theo Tháng -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wide mb-1">
+                        <i class="bi bi-calendar-month"></i> Tháng / Năm
+                    </label>
+                    <select id="ledgerMonthFilter" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 focus:border-amber-500 focus:outline-none shadow-2xs">
+                        <option value="ALL">Toàn Bộ Năm 2026 (315 Kỳ)</option>
+                        <option value="2026-11">Tháng 11/2026 (15 Kỳ)</option>
+                        <option value="2026-10">Tháng 10/2026 (30 Kỳ)</option>
+                        <option value="2026-09">Tháng 09/2026 (30 Kỳ)</option>
+                        <option value="2026-08">Tháng 08/2026 (31 Kỳ)</option>
+                        <option value="2026-07">Tháng 07/2026 (31 Kỳ)</option>
+                        <option value="2026-06">Tháng 06/2026 (30 Kỳ)</option>
+                        <option value="2026-05">Tháng 05/2026 (31 Kỳ)</option>
+                        <option value="2026-04">Tháng 04/2026 (30 Kỳ)</option>
+                        <option value="2026-03">Tháng 03/2026 (31 Kỳ)</option>
+                        <option value="2026-02">Tháng 02/2026 (28 Kỳ)</option>
+                        <option value="2026-01">Tháng 01/2026 (28 Kỳ)</option>
+                    </select>
+                </div>
+
+                <!-- Lọc Theo Kết Quả TriCore PA B -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wide mb-1">
+                        <i class="bi bi-funnel"></i> Kết Quả TriCore PA B
+                    </label>
+                    <select id="ledgerOutcomeFilter" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 focus:border-amber-500 focus:outline-none shadow-2xs">
+                        <option value="ALL">Tất Cả Kết Quả</option>
+                        <option value="WIN_ANY">Chỉ Kỳ Thắng (Ăn X2 hoặc X1)</option>
+                        <option value="WIN_X2">👑 Chỉ Kỳ Ăn X2 (+168M)</option>
+                        <option value="WIN_X1">⭐ Chỉ Kỳ Ăn X1 (+84M)</option>
+                        <option value="LOSS">❌ Chỉ Kỳ Trượt</option>
+                    </select>
+                </div>
+
+                <!-- Lọc Theo Dạng Chẵn/Lẻ -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wide mb-1">
+                        <i class="bi bi-pie-chart"></i> Dạng Dự Đoán CL
+                    </label>
+                    <select id="ledgerParityFilter" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 focus:border-amber-500 focus:outline-none shadow-2xs">
+                        <option value="ALL">Tất Cả 4 Dạng</option>
+                        <option value="LL">LL (Lẻ - Lẻ)</option>
+                        <option value="LC">LC (Lẻ - Chẵn)</option>
+                        <option value="CL">CL (Chẵn - Lẻ)</option>
+                        <option value="CC">CC (Chẵn - Chẵn)</option>
+                    </select>
+                </div>
+
+                <!-- Tìm Kiếm Nhanh -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wide mb-1">
+                        <i class="bi bi-search"></i> Tìm Ngày / Con Số
+                    </label>
+                    <input type="text" id="ledgerSearchInput" placeholder="Ví dụ: 2026-10 hoặc 53..." class="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 focus:border-amber-500 focus:outline-none shadow-2xs">
+                </div>
+            </div>
+
+            <!-- BẢNG SỔ CÁI ĐỐI SOÁT -->
             <div class="overflow-x-auto custom-scrollbar">
                 <table class="w-full text-left border-collapse text-xs sm:text-sm">
                     <thead>
                         <tr class="border-b border-slate-200 bg-slate-50/75 text-slate-600 font-bold text-[11px] uppercase tracking-wider">
+                            <th class="p-3 w-10 text-center">#</th>
                             <th class="p-3">Ngày</th>
                             <th class="p-3 text-center">Đặc Biệt</th>
-                            <th class="p-3 text-center">Dự Đoán</th>
+                            <th class="p-3 text-center">Dự Đoán CL</th>
                             <th class="p-3 text-center">TriCore PA B</th>
                             <th class="p-3 text-center">TriCore PA D</th>
                             <th class="p-3 text-center">Sweet-Spot 17s</th>
                             <th class="p-3 text-center">Sweet-Spot 15s</th>
-                            <th class="p-3 text-right">Lũy Kế TriCore PA B</th>
+                            <th class="p-3 text-right">Lũy Kế PA B</th>
+                            <th class="p-3 text-center">Chi Tiết Dàn Số</th>
                         </tr>
                     </thead>
                     <tbody id="ledgerTableBody" class="divide-y divide-slate-100 font-medium">
                         <tr>
-                            <td colspan="8" class="p-6 text-center text-slate-400">Đang tải sổ cái đối soát...</td>
+                            <td colspan="10" class="p-6 text-center text-slate-400">Đang tải sổ cái đối soát...</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
             
-            <div class="mt-4 flex justify-center">
-                <button id="btnLoadMoreLedger" class="px-5 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors">
-                    Xem Thêm Các Ngày Cũ Hơn
-                </button>
+            <div class="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100">
+                <span class="text-xs text-slate-500 font-medium" id="ledgerPagingInfo">
+                    Hiển thị 30 / 315 ngày
+                </span>
+                <div class="flex items-center gap-2">
+                    <button id="btnLoadMoreLedger" class="px-5 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors shadow-2xs cursor-pointer">
+                        Xem Thêm 50 Kỳ Tiếp Theo
+                    </button>
+                    <button id="btnLoadAllLedgerBottom" class="px-5 py-2 rounded-xl text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors shadow-2xs cursor-pointer">
+                        Hiển Thị Tất Cả 315 Kỳ
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -498,6 +586,6 @@
     </footer>
 
     <!-- Logic JS -->
-    <script src="/js/de-tinh-gon.js?v=20261116_v1"></script>
+    <script src="/js/de-tinh-gon.js?v=20261116_v2"></script>
 </body>
 </html>
