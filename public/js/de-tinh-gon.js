@@ -162,6 +162,9 @@
         // 3. Hiển thị bảng tổng kết 2026
         renderSummaryTable();
 
+        // 3.1. Hiển thị bảng phân kỳ 11 tháng năm 2026
+        renderMonthlyTable();
+
         // 4. Hiển thị bảng đa niên 5 năm
         renderMultiYearTable();
 
@@ -325,12 +328,44 @@
         `;
     }
 
+    let activeHorizon = '299'; // '299' (mẫu chuẩn nghiên cứu) hoặc '315' (toàn bộ thực tế)
+
     /**
      * Hiển thị bảng tổng kết 2026
      */
     function renderSummaryTable() {
         const tbody = document.getElementById('summaryTableBody');
-        const list = currentReport.summaries || [];
+        const titleEl = document.getElementById('summaryTableTitle');
+        const subtitleEl = document.getElementById('summaryTableSubtitle');
+
+        const is315 = activeHorizon === '315';
+        const list = (is315 && currentReport.summaries315) 
+            ? currentReport.summaries315 
+            : (currentReport.summaries299 || currentReport.summaries || []);
+
+        if (titleEl && subtitleEl) {
+            if (is315) {
+                titleEl.textContent = 'BẢNG SO SÁNH HIỆU NĂNG CÁC PHƯƠNG ÁN NĂM 2026 (TOÀN BỘ 315 KỲ LIVE)';
+                subtitleEl.textContent = 'Toàn bộ 315 kỳ quay thực tế từ 01/01/2026 đến 15/11/2026 · Tỷ lệ 1 ăn 84 · X2 cược 2M (ăn 168M) / X1 cược 1M (ăn 84M)';
+            } else {
+                titleEl.textContent = 'BẢNG SO SÁNH HIỆU NĂNG CÁC PHƯƠNG ÁN NĂM 2026 (299 KỲ QUAY CHUẨN)';
+                subtitleEl.textContent = 'Tập mẫu nghiên cứu chuẩn mực từ 01/01/2026 đến 30/10/2026 · Tỷ lệ 1 ăn 84 · X2 cược 2M (ăn 168M) / X1 cược 1M (ăn 84M)';
+            }
+        }
+
+        // Cập nhật giao diện nút toggle horizon
+        const btn299 = document.getElementById('btnHorizon299');
+        const btn315 = document.getElementById('btnHorizon315');
+        if (btn299 && btn315) {
+            if (is315) {
+                btn315.className = 'px-3.5 py-2 rounded-xl text-xs font-black transition-all bg-white text-indigo-900 shadow-xs border border-indigo-200';
+                btn299.className = 'px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 transition-all';
+            } else {
+                btn299.className = 'px-3.5 py-2 rounded-xl text-xs font-black transition-all bg-white text-indigo-900 shadow-xs border border-indigo-200';
+                btn315.className = 'px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 transition-all';
+            }
+        }
+
         if (!list.length) return;
 
         tbody.innerHTML = list.map(item => {
@@ -362,6 +397,49 @@
                     <td class="p-3 text-right font-mono text-sm ${profitClass}">${item.profitFormatted}</td>
                     <td class="p-3 text-right font-mono text-sm ${roiClass}">${item.roiFormatted}</td>
                     <td class="p-3 text-center font-mono text-slate-500">${item.maxLossStreak} kỳ</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    /**
+     * Hiển thị bảng phân tích 11 tháng năm 2026
+     */
+    function renderMonthlyTable() {
+        const tbody = document.getElementById('monthlyTableBody');
+        if (!tbody) return;
+        const list = currentReport.monthlyBreakdown || [];
+        if (!list.length) {
+            tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-slate-400">Không có dữ liệu phân kỳ theo tháng</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = list.map(row => {
+            const isTriBProfit = row.tri_paB.profitM >= 0;
+            const triBProfitClass = isTriBProfit ? 'text-emerald-700 font-black' : 'text-rose-600 font-bold';
+            const triBRoiClass = row.tri_paB.roi >= 0 ? 'text-emerald-700 font-black' : 'text-rose-600 font-bold';
+
+            const isTriDProfit = row.tri_paD.profitM >= 0;
+            const triDProfitClass = isTriDProfit ? 'text-emerald-700 font-black' : 'text-rose-600 font-bold';
+
+            const isSSProfit = row.ss17_base.profitM >= 0;
+            const ssProfitClass = isSSProfit ? 'text-emerald-700 font-black' : 'text-rose-600 font-bold';
+
+            return `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="p-3 font-bold text-slate-900">${row.monthLabel}</td>
+                    <td class="p-3 text-center font-mono">${row.days}</td>
+                    <td class="p-3 text-center font-mono">
+                        ${row.tri_paB.wins}/${row.days} <span class="text-[10px] text-slate-400">(${row.tri_paB.x2Wins}X2, ${row.tri_paB.x1Wins}X1)</span>
+                    </td>
+                    <td class="p-3 text-right font-mono ${triBProfitClass}">${row.tri_paB.profitFormatted}</td>
+                    <td class="p-3 text-right font-mono ${triBRoiClass}">${row.tri_paB.roiFormatted}</td>
+                    <td class="p-3 text-center font-mono">
+                        ${row.tri_paD.wins}/${row.days} <span class="text-[10px] text-slate-400">(${row.tri_paD.x2Wins}X2, ${row.tri_paD.x1Wins}X1)</span>
+                    </td>
+                    <td class="p-3 text-right font-mono ${triDProfitClass}">${row.tri_paD.profitFormatted}</td>
+                    <td class="p-3 text-right font-mono ${ssProfitClass}">${row.ss17_base.profitFormatted}</td>
+                    <td class="p-3 text-xs text-slate-600 leading-snug max-w-md">${row.note}</td>
                 </tr>
             `;
         }).join('');
@@ -482,6 +560,17 @@
                 activeStrategy = btn.getAttribute('data-strat');
                 renderActiveStrategy();
             });
+        });
+
+        // Chuyển mốc thời gian kiểm định (299 kỳ chuẩn vs 315 kỳ toàn bộ)
+        document.getElementById('btnHorizon299')?.addEventListener('click', () => {
+            activeHorizon = '299';
+            renderSummaryTable();
+        });
+
+        document.getElementById('btnHorizon315')?.addEventListener('click', () => {
+            activeHorizon = '315';
+            renderSummaryTable();
         });
 
         // Nút Cập nhật dữ liệu
