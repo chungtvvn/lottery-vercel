@@ -36,10 +36,62 @@
 
     // Các cấu hình chiến lược hiển thị
     const STRATEGY_DEFINITIONS = {
+        tri_tier: {
+            id: 'tri_tier',
+            name: 'TriCore Hybrid Tri-Tier Consensus',
+            badge: 'KỶ LỤC LÃI RÒNG +765M 🔥',
+            badgeClass: 'bg-emerald-100 text-emerald-900 border-emerald-300',
+            profit: '+765 Triệu VNĐ',
+            roi: '+7.8%',
+            desc: 'VIP Hạt Nhân (Giao thoa Cùng Đầu) cược X3 (3M, ăn 252M) · Chủ Lực (Cùng Đầu) cược X2 (2M, ăn 168M) · Bảo Hiểm (Cùng Đít) cược X1 (1M, ăn 84M). ĐỈNH CAO LÃI RÒNG!',
+            getData: (rep) => {
+                const tt = rep.today?.consensus?.hybrid_tri_tier || {};
+                return {
+                    x3: tt.x3 || [],
+                    x2: tt.x2 || [],
+                    x1: tt.x1 || [],
+                    stakeDesc: 'T1: Cùng Đầu Giao Thoa (3M) · T2: Cùng Đầu còn lại (2M) · T3: Cùng Đít (1M)'
+                };
+            }
+        },
+        consensus_union: {
+            id: 'consensus_union',
+            name: 'Đề Đồng Thuận Nhị Trụ (Union Tiered)',
+            badge: 'VUA WIN RATE 37.8% 👑',
+            badgeClass: 'bg-amber-100 text-amber-900 border-amber-300',
+            profit: '+418 Triệu VNĐ',
+            roi: '+4.0%',
+            desc: 'Hạt nhân giao thoa (TriCore ∩ 5 AI, ~3.4s) cược X2 (2M). Bọc lót vành đai (~28.4s) cược X1 (1M). Nổ 113/299 kỳ, trung bình 2.6 ngày nổ 1 lần!',
+            getData: (rep) => {
+                const u = rep.today?.consensus?.union_tiered || {};
+                return {
+                    x2: u.x2 || [],
+                    x1: u.x1 || [],
+                    stakeDesc: 'Giao thoa hạt nhân cược X2 (2M) · Bọc lót vành đai cược X1 (1M) · Ăn X2 = 168M, Ăn X1 = 84M'
+                };
+            }
+        },
+        core_intersect: {
+            id: 'core_intersect',
+            name: 'Siêu Hạt Nhân Giao Thoa (Core Intersect)',
+            badge: 'VUA ROI +42.1% ⭐',
+            badgeClass: 'bg-cyan-100 text-cyan-900 border-cyan-300',
+            profit: '+423 Triệu VNĐ',
+            roi: '+42.1%',
+            desc: 'Chỉ đánh tập giao thoa giữa TriCore và 5 AI (~3.4 số). Cược phẳng 1M/số. Vốn siêu tiết kiệm (1-4M/ngày), tỷ suất sinh lời cực đại +42.1%!',
+            getData: (rep) => {
+                const ci = rep.today?.consensus?.core_intersect || {};
+                return {
+                    x2: [],
+                    x1: ci.numbers || [],
+                    stakeDesc: 'Cược phẳng 1M/số (Tổng cược chỉ ~3.4M/ngày) · Ăn 84M'
+                };
+            }
+        },
         tri_paB: {
             id: 'tri_paB',
             name: 'TriCore 24s — Phương Án B (Tối Ưu Cùng Đầu)',
-            badge: 'QUÁN QUÂN LÃI RÒNG 2026',
+            badge: 'LÃI RÒNG +623M 🏆',
             badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-300',
             profit: '+623 Triệu VNĐ',
             roi: '+6.8%',
@@ -244,6 +296,25 @@
                     stakeDesc: 'Cặp Song Thủ 2 con cược 22K/con (Tổng cược 4.4M) · Ăn 8M/nháy'
                 };
             }
+        },
+        rrf_top2: {
+            id: 'rrf_top2',
+            name: 'Song Thủ Dung Hợp RRF Top 2 (TriCore + 5 AI)',
+            badge: 'ĐẢO CHIỀU DƯƠNG +12M ⚡',
+            badgeClass: 'bg-cyan-100 text-cyan-900 border-cyan-300',
+            profit: '+12 Triệu VNĐ (ROI +0.9%)',
+            roi: '44.5% ngày có lãi (133 ngày)',
+            desc: 'Dung hợp thứ hạng Reciprocal Rank Fusion giữa TriCore và 5 AI giúp Top 2 đảo chiều từ âm sang DƯƠNG +12M VNĐ (nổ 166 nháy).',
+            type: 'flat',
+            getData: (rep) => {
+                const rrf2 = rep.loto?.today?.consensus?.rrfTop2 || [];
+                return {
+                    numbers: rrf2,
+                    x2: [],
+                    x1: rrf2,
+                    stakeDesc: 'Cặp Song Thủ RRF cược phẳng 22K/con (Tổng cược 4.4M) · Ăn 8M/nháy'
+                };
+            }
         }
     };
 
@@ -323,19 +394,22 @@
         const container = document.getElementById('todayStrategyContainer');
         const data = stratDef.getData(currentReport);
 
+        const x3List = data.x3 || [];
         const x2List = data.x2 || [];
         const x1List = data.x1 || [];
         const cut2List = data.cut2 || [];
         const removedList = data.removed || [];
 
-        const allNumbers = [...x2List, ...x1List];
+        const allNumbers = [...x3List, ...x2List, ...x1List];
         const allText = allNumbers.join(', ');
+        const x3Text = x3List.join(', ');
         const x2Text = x2List.join(', ');
         const x1Text = x1List.join(', ');
 
+        const x3StakeM = x3List.length * 3;
         const x2StakeM = x2List.length * 2;
         const x1StakeM = x1List.length * 1;
-        const totalStakeM = x2StakeM + x1StakeM;
+        const totalStakeM = x3StakeM + x2StakeM + x1StakeM;
 
         let cut2Section = '';
         if (cut2List.length > 0) {
@@ -381,7 +455,7 @@
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <button onclick="window.copyToClipboard('${allText}', this)" class="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2 text-xs font-black shadow-xs transition-all">
+                        <button onclick="window.copyToClipboard('${allText}', this)" class="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2 text-xs font-black shadow-xs transition-all cursor-pointer">
                             <i class="bi bi-clipboard-check"></i> Copy Trọn Dàn (${allNumbers.length}s)
                         </button>
                     </div>
@@ -392,13 +466,13 @@
                     <div class="bg-white rounded-xl p-3 border border-slate-200">
                         <span class="text-[10px] font-bold text-slate-400 uppercase">Quy mô hôm nay</span>
                         <div class="text-lg font-black text-slate-900 font-mono">${allNumbers.length} số</div>
-                        <span class="text-[10px] text-slate-500">${x2List.length} X2 + ${x1List.length} X1</span>
+                        <span class="text-[10px] text-slate-500">${x3List.length > 0 ? `${x3List.length} X3 + ` : ''}${x2List.length} X2 + ${x1List.length} X1</span>
                     </div>
 
                     <div class="bg-white rounded-xl p-3 border border-slate-200">
                         <span class="text-[10px] font-bold text-slate-400 uppercase">Vốn cược dự kiến</span>
                         <div class="text-lg font-black text-amber-700 font-mono">${totalStakeM}M</div>
-                        <span class="text-[10px] text-slate-500">${x2StakeM}M X2 + ${x1StakeM}M X1</span>
+                        <span class="text-[10px] text-slate-500">${x3List.length > 0 ? `${x3StakeM}M X3 + ` : ''}${x2StakeM}M X2 + ${x1StakeM}M X1</span>
                     </div>
 
                     <div class="bg-white rounded-xl p-3 border border-slate-200">
@@ -414,7 +488,33 @@
                     </div>
                 </div>
 
+                <!-- Dàn Siêu VIP X3 (nếu có) -->
+                ${x3List.length > 0 ? `
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="flex h-5 w-5 items-center justify-center rounded-md bg-rose-600 text-white font-black text-[11px] shadow-sm animate-pulse">X3</span>
+                            <span class="text-xs font-black text-rose-900 uppercase tracking-wider">
+                                DÀN SIÊU VIP X3 (${x3List.length} số) — Cược 3M / số · Ăn 252M 👑
+                            </span>
+                        </div>
+                        <button onclick="window.copyToClipboard('${x3Text}', this)" class="text-xs font-bold text-rose-700 hover:text-rose-900 inline-flex items-center gap-1 cursor-pointer">
+                            <i class="bi bi-copy"></i> Chép X3
+                        </button>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2 p-3 bg-rose-50/80 rounded-xl border border-rose-200/90 shadow-2xs">
+                        ${x3List.map(n => `
+                            <span class="badge-num inline-flex items-center justify-center h-9 w-9 rounded-xl font-mono text-sm font-black bg-gradient-to-tr from-rose-500 to-rose-600 text-white shadow-md border border-rose-300">
+                                ${n}
+                            </span>
+                        `).join('')}
+                    </div>
+                </div>
+                ` : ''}
+
                 <!-- Dàn VIP X2 -->
+                ${x2List.length > 0 ? `
                 <div class="space-y-2">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2">
@@ -423,19 +523,20 @@
                                 DÀN VIP X2 (${x2List.length} số) — Cược 2M / số · Ăn 168M
                             </span>
                         </div>
-                        <button onclick="window.copyToClipboard('${x2Text}', this)" class="text-xs font-bold text-amber-700 hover:text-amber-900 inline-flex items-center gap-1">
+                        <button onclick="window.copyToClipboard('${x2Text}', this)" class="text-xs font-bold text-amber-700 hover:text-amber-900 inline-flex items-center gap-1 cursor-pointer">
                             <i class="bi bi-copy"></i> Chép X2
                         </button>
                     </div>
 
                     <div class="flex flex-wrap gap-2 p-3 bg-amber-50/60 rounded-xl border border-amber-200/80">
-                        ${x2List.length > 0 ? x2List.map(n => `
+                        ${x2List.map(n => `
                             <span class="badge-num inline-flex items-center justify-center h-9 w-9 rounded-xl font-mono text-sm font-black bg-gradient-to-tr from-amber-400 to-amber-500 text-amber-950 shadow-2xs border border-amber-300">
                                 ${n}
                             </span>
-                        `).join('') : '<span class="text-xs text-slate-400 italic">Không có số X2</span>'}
+                        `).join('')}
                     </div>
                 </div>
+                ` : ''}
 
                 <!-- Dàn Lót X1 -->
                 ${x1List.length > 0 ? `
@@ -447,6 +548,20 @@
                                 DÀN LÓT BẢO HIỂM X1 (${x1List.length} số) — Cược 1M / số · Ăn 84M
                             </span>
                         </div>
+                        <button onclick="window.copyToClipboard('${x1Text}', this)" class="text-xs font-bold text-indigo-700 hover:text-indigo-900 inline-flex items-center gap-1 cursor-pointer">
+                            <i class="bi bi-copy"></i> Chép X1
+                        </button>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2 p-3 bg-indigo-50/60 rounded-xl border border-indigo-200/80">
+                        ${x1List.map(n => `
+                            <span class="badge-num inline-flex items-center justify-center h-9 w-9 rounded-xl font-mono text-sm font-bold bg-white text-indigo-950 shadow-2xs border border-indigo-200">
+                                ${n}
+                            </span>
+                        `).join('')}
+                    </div>
+                </div>
+                ` : ''}
                         <button onclick="window.copyToClipboard('${x1Text}', this)" class="text-xs font-bold text-indigo-700 hover:text-indigo-900 inline-flex items-center gap-1">
                             <i class="bi bi-copy"></i> Chép X1
                         </button>
@@ -656,12 +771,15 @@
         const oppForm = row.oppForm;
         const pHead = row.predHead;
 
-        const curStrat = activeStratInSlip[date] || 'tri_paB';
+        const curStrat = activeStratInSlip[date] || 'tri_tier';
 
         const STRAT_TABS = [
+            { id: 'tri_tier', name: 'Hybrid Tri-Tier', icon: '🔥', badge: 'Lãi +765M' },
+            { id: 'consensus_union', name: 'Đồng Thuận 31.8s', icon: '👑', badge: '37.8% Win' },
+            { id: 'core_intersect', name: 'Siêu Hạt Nhân 3.4s', icon: '⭐', badge: 'ROI +42.1%' },
             { id: 'tri_paB', name: 'TriCore PA B (Tối Ưu)', icon: '🏛️', badge: 'Lãi +623M' },
-            { id: 'tri_paD', name: 'TriCore PA D (Rút Gọn)', icon: '⚡', badge: 'ROI +8.5%' },
             { id: 'tri_paD2', name: 'TriCore PA D2 (Dồn X2)', icon: '🔥', badge: 'Lãi +660M' },
+            { id: 'tri_paD', name: 'TriCore PA D (Rút Gọn)', icon: '⚡', badge: 'ROI +8.5%' },
             { id: 'ss17_base', name: 'Sweet-Spot 17s (Gốc)', icon: '💎', badge: 'Lãi +149M' },
             { id: 'ss15_base', name: 'Sweet-Spot 15s (Cắt 2s)', icon: '🎯', badge: '+1.75 Tỷ/5N' },
             { id: 'tri_base', name: 'TriCore Gốc (Sau Lọc)', icon: '📐', badge: '18s' }
@@ -669,18 +787,32 @@
 
         // Trích xuất cấu hình chiến lược hiện tại
         let stratData = null;
+        let x3List = [];
         let x2List = [];
         let x1List = [];
         let removedList = [];
         let cutList = [];
         let isHit = false;
+        let isX3 = false;
         let isX2 = false;
         let isX1 = false;
         let stakeK = 0;
         let payoutK = 0;
         let profitK = 0;
 
-        if (curStrat === 'tri_paB') {
+        if (curStrat === 'tri_tier') {
+            stratData = row.consensus?.tri_tier;
+            x3List = stratData?.x3 || [];
+            x2List = stratData?.x2 || [];
+            x1List = stratData?.x1 || [];
+        } else if (curStrat === 'consensus_union') {
+            stratData = row.consensus?.union_tiered;
+            x2List = stratData?.x2 || [];
+            x1List = stratData?.x1 || [];
+        } else if (curStrat === 'core_intersect') {
+            stratData = row.consensus?.core_intersect;
+            x1List = stratData?.numbers || [];
+        } else if (curStrat === 'tri_paB') {
             stratData = row.triCore?.paB;
             x2List = stratData?.x2 || [];
             x1List = stratData?.x1 || [];
@@ -715,6 +847,7 @@
 
         if (stratData) {
             isHit = stratData.isHit;
+            isX3 = Boolean(stratData.isX3);
             isX2 = stratData.isX2;
             isX1 = stratData.isX1;
             stakeK = stratData.stakeK || 0;
@@ -722,7 +855,7 @@
             profitK = stratData.profitK || 0;
         }
 
-        const allNumbersToCopy = [...x2List, ...x1List].join(' ');
+        const allNumbersToCopy = [...x3List, ...x2List, ...x1List].join(' ');
         const profitClass = profitK > 0 ? 'text-emerald-700 font-black' : (profitK < 0 ? 'text-rose-600 font-bold' : 'text-slate-600');
         const profitSign = profitK > 0 ? '+' : '';
 
@@ -783,16 +916,39 @@
                     <div>
                         <span class="text-slate-400 block text-[10px] font-bold uppercase">Kết Quả &amp; Lợi Nhuận</span>
                         <div class="mt-0.5 font-mono ${profitClass}">
-                            ${isX2 ? '👑 ĂN X2 (+168M)' : (isX1 ? '⭐ ĂN X1 (+84M)' : '❌ TRƯỢT')}
+                            ${isX3 ? '👑 ĂN X3 (+252M)' : (isX2 ? '👑 ĂN X2 (+168M)' : (isX1 ? '⭐ ĂN X1 (+84M)' : '❌ TRƯỢT'))}
                             · <strong>${profitSign}${Math.round(profitK / 1000)}M</strong>
                         </div>
                     </div>
                 </div>
 
-                <!-- CHI TIẾT CÁC TẦNG SỐ: VIP X2, LÓT X1, BỊ LOẠI TRỪ, BỊ CẮT -->
+                <!-- CHI TIẾT CÁC TẦNG SỐ: VIP X3, VIP X2, LÓT X1, BỊ LOẠI TRỪ, BỊ CẮT -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                     <!-- KHỐI 1: CÁC SỐ CƯỢC THỰC CHIẾN -->
                     <div class="rounded-xl border border-emerald-200 bg-white p-3.5 space-y-3 shadow-2xs">
+                        <!-- Tầng Siêu VIP X3 (nếu có) -->
+                        ${x3List.length > 0 ? `
+                        <div>
+                            <div class="flex items-center justify-between text-[11px] font-bold text-rose-900 mb-1.5">
+                                <span class="flex items-center gap-1">
+                                    <span class="w-4 h-4 rounded-full bg-rose-600 text-white font-black text-[9px] flex items-center justify-center animate-pulse">3</span>
+                                    <span>TẦNG SIÊU VIP X3 (${x3List.length} số · Cược 3M · Ăn 252M):</span>
+                                </span>
+                                <span class="text-[10px] text-rose-700 font-mono">Vốn ${x3List.length * 3}M</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1 p-2 rounded-lg bg-rose-50/70 border border-rose-300 min-h-[38px] items-center">
+                                ${x3List.map(n => {
+                                    const isWin = n === act;
+                                    return `
+                                        <span class="inline-flex items-center justify-center px-2 py-0.5 rounded font-mono text-xs font-black transition-all ${isWin ? 'bg-rose-500 text-white ring-2 ring-rose-600 shadow-md animate-pulse' : 'bg-white text-rose-950 border border-rose-300'}" title="${isWin ? '👑 SỐ TRÚNG ĐẶC BIỆT ĂN X3 (+252M)' : 'VIP X3: ' + n}">
+                                            ${n}${isWin ? ' 👑' : ''}
+                                        </span>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                        ` : ''}
+
                         <!-- Tầng VIP X2 -->
                         <div>
                             <div class="flex items-center justify-between text-[11px] font-bold text-amber-900 mb-1.5">
@@ -1863,6 +2019,37 @@
             console.error('Không thể chép:', err);
             prompt('Sao chép dàn số:', text);
         });
+    };
+
+    /**
+     * Hàm chuyển đổi nhanh chiến lược Đề từ bảng radar
+     */
+    window.switchDeStrategy = function (stratId) {
+        if (STRATEGY_DEFINITIONS[stratId]) {
+            activeStrategy = stratId;
+            document.querySelectorAll('#strategyTabs .strat-tab-btn').forEach(btn => {
+                if (btn.getAttribute('data-strat') === stratId) {
+                    btn.classList.add('active', 'bg-white', 'text-slate-900', 'shadow-2xs');
+                    btn.classList.remove('text-slate-600');
+                } else {
+                    btn.classList.remove('active', 'bg-white', 'text-slate-900', 'shadow-2xs');
+                    btn.classList.add('text-slate-600');
+                }
+            });
+            renderActiveStrategy();
+            const el = document.getElementById('todayStrategyContainer');
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    };
+
+    /**
+     * Hàm chuyển sang chế độ Cố Vấn Lô từ bảng radar
+     */
+    window.switchToLotoMode = function () {
+        const btnLo = document.getElementById('btnMasterModeLo');
+        if (btnLo) btnLo.click();
+        const el = document.getElementById('todayLotoStrategyContainer');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     };
 
     // Khởi chạy
