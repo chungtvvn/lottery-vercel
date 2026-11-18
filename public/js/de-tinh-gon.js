@@ -14,7 +14,7 @@
 
     let currentReport = null;
     let activeMasterMode = 'de'; // 'de' (Cố vấn Đề) hoặc 'lo' (Cố vấn Lô)
-    let activeStrategy = 'tri_paB'; // Mặc định TriCore PA B (Quán quân lợi nhuận +623M)
+    let activeStrategy = 'de_dynamic_governor'; // Mặc định Bộ Điều Chuyển Động (Kỷ lục lãi ròng +1.55 TỶ)
     let activeHorizon = '299'; // '299' (mốc chuẩn) hoặc '315' (toàn bộ)
     let ledgerLimit = 30;
     const expandedLedgerDates = new Set();
@@ -25,7 +25,7 @@
     let ledgerSearchVal = '';
 
     // Trạng thái phân hệ Lô Tinh Gọn & TriCore
-    let activeLotoStrategy = 'tri_top1'; // Mặc định TriCore Top 1 (Quán quân ROI +15.5%)
+    let activeLotoStrategy = 'lo_dynamic_governor'; // Mặc định Lô Điều Chuyển (Kỷ lục lãi ròng +165M)
     let activeLotoHorizon = '299'; // '299' hoặc '315'
     let lotoLedgerLimit = 30;
     const expandedLotoLedgerDates = new Set();
@@ -36,6 +36,28 @@
 
     // Các cấu hình chiến lược hiển thị
     const STRATEGY_DEFINITIONS = {
+        de_dynamic_governor: {
+            id: 'de_dynamic_governor',
+            name: '👑 Bộ Điều Chuyển Linh Hoạt (Bắn Thường vs Dùng Skill)',
+            badge: 'KỶ LỤC LÃI +1.550 TỶ · ROI +18.4% 👑',
+            badgeClass: 'bg-amber-100 text-amber-900 border-amber-300',
+            profit: '+1.550 Triệu VNĐ',
+            roi: '+18.4%',
+            desc: 'Cơ chế tác chiến thông minh: Hội tụ mạnh (≥ 2 số Giao Thoa Cùng Đầu) -> DÙNG SKILL Tam Tầng đòn bẩy X3/X2. Chưa đủ hội tụ -> BẮN THƯỜNG cược phẳng X1 (1M/số) trên Sweet-Spot 15s để giữ vốn. Tiết kiệm 1.373 TỶ tiền cược, lãi tăng gấp đôi lên +1.55 TỶ!',
+            getData: (rep) => {
+                const gov = rep.today?.governor || {};
+                const cfg = gov.activeConfig || {};
+                return {
+                    x3: cfg.x3 || [],
+                    x2: cfg.x2 || [],
+                    x1: cfg.x1 || [],
+                    governor: gov,
+                    stakeDesc: gov.isSkill
+                        ? '🔥 HÔM NAY DÙNG SKILL: X3 VIP Cùng Đầu (3M), X2 Cùng Đầu (2M), X1 Cùng Đít (1M)'
+                        : '🛡️ HÔM NAY BẮN THƯỜNG: Cược phẳng X1 (1M/số) trên dàn Sweet-Spot 15s (15M) để bảo vệ vốn'
+                };
+            }
+        },
         tri_tier: {
             id: 'tri_tier',
             name: 'TriCore Hybrid Tri-Tier Consensus',
@@ -183,6 +205,28 @@
 
     // Các cấu hình chiến lược Lô hiển thị
     const LOTO_STRATEGY_DEFINITIONS = {
+        lo_dynamic_governor: {
+            id: 'lo_dynamic_governor',
+            name: '👑 Lô Điều Chuyển (Bắn Thường vs Dùng Skill)',
+            badge: 'KỶ LỤC LÃI +165M · ROI +13.7% 👑',
+            badgeClass: 'bg-cyan-100 text-cyan-900 border-cyan-300',
+            profit: '+165 Triệu VNĐ',
+            roi: '+13.7%',
+            desc: 'Cơ chế linh hoạt: Khi TriCore Top 1 == 5 AI Top 1 (Đồng Thuận Kép, 41.5% số ngày, nổ 29.8%) -> DÙNG SKILL kích hoạt cược 66K/điểm (ăn 24M/nháy). Khác nhau -> BẮN THƯỜNG cược phẳng 22K/điểm để giữ vốn. Lãi tăng từ +102M lên +165M!',
+            type: 'flat',
+            getData: (rep) => {
+                const lGov = rep.loto?.today?.governor || {};
+                return {
+                    numbers: lGov.numbers || [],
+                    x2: [],
+                    x1: lGov.numbers || [],
+                    governor: lGov,
+                    stakeDesc: lGov.isSkill
+                        ? '🔥 HÔM NAY DÙNG SKILL: Cược hỏa lực X3 (66K/điểm = 6.6M) vào Bạch Thủ Đồng Thuận Kép (Ăn 24M/nháy)'
+                        : '🛡️ HÔM NAY BẮN THƯỜNG: Cược phẳng 22K/điểm = 2.2M (bảo vệ vốn, không dồn đòn bẩy)'
+                };
+            }
+        },
         tri_top1: {
             id: 'tri_top1',
             name: 'TriCore Lô — Top 1 Bạch Thủ Flat',
@@ -363,6 +407,9 @@
         document.getElementById('todayOppForm').textContent = (p.oppFormVi || p.oppForm || 'Chẵn - Chẵn') + ' (' + (p.oppForm || 'CC') + ')';
         document.getElementById('lastUpdatedTime').textContent = 'Cập nhật lúc: ' + new Date(currentReport.generatedAt).toLocaleTimeString('vi-VN');
 
+        // 1.1. Cập nhật banner Tác Chiến Hôm Nay: Bắn Thường hay Dùng Skill
+        renderTacticalBanner();
+
         // 2. Hiển thị chiến lược hôm nay đang được chọn
         renderActiveStrategy();
 
@@ -382,6 +429,69 @@
         renderActiveLotoStrategy();
         renderLotoSummaryTable();
         renderLotoLedgerTable();
+    }
+
+    /**
+     * Cập nhật banner Tác Chiến Hôm Nay: Bắn Thường hay Dùng Skill
+     */
+    function renderTacticalBanner() {
+        if (!currentReport) return;
+        const deGov = currentReport.today?.governor || {};
+        const loGov = currentReport.loto?.today?.governor || {};
+
+        const badgeEl = document.getElementById('todayTacticalModeBadge');
+        const titleEl = document.getElementById('todayTacticalTitle');
+        const descEl = document.getElementById('todayTacticalDesc');
+        const actionEl = document.getElementById('todayTacticalActionContainer');
+
+        if (!badgeEl || !titleEl || !descEl) return;
+
+        if (activeMasterMode === 'de') {
+            const isSkill = deGov.isSkill;
+            badgeEl.className = isSkill 
+                ? 'px-3 py-1 rounded-full text-xs font-black tracking-wider bg-rose-500 text-white shadow-md animate-pulse border border-rose-300'
+                : 'px-3 py-1 rounded-full text-xs font-black tracking-wider bg-emerald-600 text-white shadow-md border border-emerald-400';
+            badgeEl.innerHTML = isSkill 
+                ? '<i class="bi bi-fire"></i> HÔM NAY: DÙNG SKILL (HỎA LỰC X2/X3)'
+                : '<i class="bi bi-shield-check"></i> HÔM NAY: BẮN THƯỜNG (PHÒNG THỦ GIỮ VỐN)';
+            
+            titleEl.innerHTML = isSkill
+                ? '🔥 TÍN HIỆU ĐỀ HÔM NAY: HỘI TỤ VÀNG — KÍCH HOẠT DÙNG SKILL!'
+                : '🛡️ TÍN HIỆU ĐỀ HÔM NAY: BÌNH THƯỜNG — BẮN THƯỜNG BẢO TOÀN VỐN';
+            
+            descEl.innerHTML = (deGov.reason || '') + ' <strong class="text-white">' + (deGov.action || '') + '</strong>';
+
+            if (actionEl) {
+                actionEl.innerHTML = `
+                    <button onclick="window.switchDeStrategy('de_dynamic_governor')" class="px-4 py-2.5 rounded-xl ${isSkill ? 'bg-rose-500 hover:bg-rose-400 text-white' : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black'} text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer">
+                        <i class="bi bi-crosshair"></i> Xem Dàn Đề Tác Chiến Hôm Nay
+                    </button>
+                `;
+            }
+        } else {
+            // Lô mode
+            const isSkill = loGov.isSkill;
+            badgeEl.className = isSkill 
+                ? 'px-3 py-1 rounded-full text-xs font-black tracking-wider bg-cyan-400 text-slate-950 shadow-md animate-pulse border border-cyan-200'
+                : 'px-3 py-1 rounded-full text-xs font-black tracking-wider bg-slate-700 text-white shadow-md border border-slate-500';
+            badgeEl.innerHTML = isSkill 
+                ? '<i class="bi bi-fire"></i> LÔ HÔM NAY: DÙNG SKILL (ĐỒNG THUẬN KÉP 66K)'
+                : '<i class="bi bi-shield-check"></i> LÔ HÔM NAY: BẮN THƯỜNG (CƯỢC PHẲNG 22K)';
+            
+            titleEl.innerHTML = isSkill
+                ? '⚡ TÍN HIỆU LÔ HÔM NAY: ĐỒNG THUẬN KÉP TRI == 5AI — DÙNG SKILL!'
+                : '🛡️ TÍN HIỆU LÔ HÔM NAY: KHÁC BIỆT — BẮN THƯỜNG GIỮ VỐN';
+            
+            descEl.innerHTML = (loGov.reason || '') + ' <strong class="text-white">' + (loGov.action || '') + '</strong>';
+
+            if (actionEl) {
+                actionEl.innerHTML = `
+                    <button onclick="window.switchLotoStrategy('lo_dynamic_governor')" class="px-4 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black text-xs transition-all shadow-md flex items-center gap-1.5 cursor-pointer">
+                        <i class="bi bi-crosshair"></i> Xem Dàn Lô Tác Chiến Hôm Nay
+                    </button>
+                `;
+            }
+        }
     }
 
     /**
@@ -460,6 +570,26 @@
                         </button>
                     </div>
                 </div>
+
+                ${data.governor ? `
+                <!-- Hộp Tác Chiến Điều Chuyển Hôm Nay -->
+                <div class="rounded-2xl p-4.5 ${data.governor.isSkill ? 'bg-gradient-to-r from-rose-50 via-amber-50 to-rose-50 border border-rose-200 shadow-sm text-slate-900' : 'bg-emerald-50/80 border border-emerald-200 text-slate-900'}">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 mb-2 border-b ${data.governor.isSkill ? 'border-rose-200' : 'border-emerald-200'}">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider ${data.governor.isSkill ? 'bg-rose-500 text-white animate-pulse' : 'bg-emerald-600 text-white'}">
+                                ${data.governor.statusBadge}
+                            </span>
+                            <span class="text-xs font-black text-slate-900 uppercase">CHẾ ĐỘ: ${data.governor.mode}</span>
+                        </div>
+                        <span class="text-[11px] font-bold text-slate-500">Giao Thoa Cùng Đầu: ${data.governor.intSameHeadCount} số (${(data.governor.intSameHeadNumbers || []).join(', ') || 'Không có'})</span>
+                    </div>
+                    <p class="text-xs text-slate-700 leading-relaxed">${data.governor.reason}</p>
+                    <div class="mt-2.5 pt-2 border-t ${data.governor.isSkill ? 'border-rose-100' : 'border-emerald-100'} flex items-start gap-1.5 text-xs font-bold text-slate-900">
+                        <i class="bi bi-bullseye ${data.governor.isSkill ? 'text-rose-600' : 'text-emerald-600'} mt-0.5 shrink-0"></i>
+                        <span>${data.governor.action}</span>
+                    </div>
+                </div>
+                ` : ''}
 
                 <!-- Thống kê nhanh vốn & chỉ số -->
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -556,20 +686,6 @@
                     <div class="flex flex-wrap gap-2 p-3 bg-indigo-50/60 rounded-xl border border-indigo-200/80">
                         ${x1List.map(n => `
                             <span class="badge-num inline-flex items-center justify-center h-9 w-9 rounded-xl font-mono text-sm font-bold bg-white text-indigo-950 shadow-2xs border border-indigo-200">
-                                ${n}
-                            </span>
-                        `).join('')}
-                    </div>
-                </div>
-                ` : ''}
-                        <button onclick="window.copyToClipboard('${x1Text}', this)" class="text-xs font-bold text-indigo-700 hover:text-indigo-900 inline-flex items-center gap-1">
-                            <i class="bi bi-copy"></i> Chép X1
-                        </button>
-                    </div>
-
-                    <div class="flex flex-wrap gap-2 p-3 bg-indigo-50/60 rounded-xl border border-indigo-200/80">
-                        ${x1List.map(n => `
-                            <span class="badge-num inline-flex items-center justify-center h-9 w-9 rounded-xl font-mono text-sm font-black bg-gradient-to-tr from-indigo-100 to-indigo-200 text-indigo-950 shadow-2xs border border-indigo-300">
                                 ${n}
                             </span>
                         `).join('')}
@@ -771,9 +887,10 @@
         const oppForm = row.oppForm;
         const pHead = row.predHead;
 
-        const curStrat = activeStratInSlip[date] || 'tri_tier';
+        const curStrat = activeStratInSlip[date] || activeStrategy || 'de_dynamic_governor';
 
         const STRAT_TABS = [
+            { id: 'de_dynamic_governor', name: 'Điều Chuyển Động', icon: '👑', badge: 'Lãi +1.55 TỶ' },
             { id: 'tri_tier', name: 'Hybrid Tri-Tier', icon: '🔥', badge: 'Lãi +765M' },
             { id: 'consensus_union', name: 'Đồng Thuận 31.8s', icon: '👑', badge: '37.8% Win' },
             { id: 'core_intersect', name: 'Siêu Hạt Nhân 3.4s', icon: '⭐', badge: 'ROI +42.1%' },
@@ -800,7 +917,18 @@
         let payoutK = 0;
         let profitK = 0;
 
-        if (curStrat === 'tri_tier') {
+        if (curStrat === 'de_dynamic_governor') {
+            const gov = row.governor;
+            if (gov?.isSkill) {
+                stratData = row.consensus?.tri_tier;
+                x3List = stratData?.x3 || [];
+                x2List = stratData?.x2 || [];
+                x1List = stratData?.x1 || [];
+            } else {
+                stratData = row.sweetSpot?.s15_base;
+                x1List = row.sweetSpot?.pool15 || [];
+            }
+        } else if (curStrat === 'tri_tier') {
             stratData = row.consensus?.tri_tier;
             x3List = stratData?.x3 || [];
             x2List = stratData?.x2 || [];
@@ -1163,7 +1291,14 @@
             html += `
                 <tr class="ledger-main-row hover:bg-amber-50/40 transition-colors cursor-pointer ${isExpanded ? 'bg-amber-50/30' : ''}" data-date="${row.date}">
                     <td class="p-3 text-center text-slate-400 font-mono text-xs">${idx + 1}</td>
-                    <td class="p-3 font-mono font-bold text-slate-900 whitespace-nowrap">${row.date}</td>
+                    <td class="p-3 font-mono font-bold text-slate-900 whitespace-nowrap">
+                        <div class="flex items-center gap-1.5">
+                            <span>${row.date}</span>
+                            ${row.governor?.isSkill 
+                                ? '<span class="px-1.5 py-0.5 rounded text-[9px] font-black bg-rose-500 text-white shadow-xs" title="Ngày hội tụ mạnh: DÙNG SKILL">🔥 SKILL</span>'
+                                : '<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-200 text-slate-700" title="Ngày bình thường: BẮN THƯỜNG">🛡️ THƯỜNG</span>'}
+                        </div>
+                    </td>
                     <td class="p-3 text-center">
                         <span class="inline-flex items-center justify-center h-7 w-7 rounded-lg font-mono font-black text-xs bg-slate-900 text-white shadow-2xs">
                             ${act}
@@ -1341,6 +1476,25 @@
                         </button>
                     </div>
                 </div>
+
+                ${data.governor ? `
+                <!-- Hộp Tác Chiến Điều Chuyển Hôm Nay -->
+                <div class="rounded-2xl p-4.5 ${data.governor.isSkill ? 'bg-gradient-to-r from-cyan-50 via-blue-50 to-cyan-50 border border-cyan-200 shadow-sm text-slate-900' : 'bg-slate-100 border border-slate-300 text-slate-900'}">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 mb-2 border-b ${data.governor.isSkill ? 'border-cyan-200' : 'border-slate-300'}">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider ${data.governor.isSkill ? 'bg-cyan-500 text-slate-950 animate-pulse' : 'bg-slate-700 text-white'}">
+                                ${data.governor.statusBadge}
+                            </span>
+                            <span class="text-xs font-black text-slate-900 uppercase">CHẾ ĐỘ LÔ: ${data.governor.mode}</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-700 leading-relaxed">${data.governor.reason}</p>
+                    <div class="mt-2.5 pt-2 border-t ${data.governor.isSkill ? 'border-cyan-100' : 'border-slate-200'} flex items-start gap-1.5 text-xs font-bold text-slate-900">
+                        <i class="bi bi-crosshair ${data.governor.isSkill ? 'text-cyan-600' : 'text-slate-700'} mt-0.5 shrink-0"></i>
+                        <span>${data.governor.action}</span>
+                    </div>
+                </div>
+                ` : ''}
 
                 <!-- Thống kê vốn & giải thưởng của dàn -->
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -1539,7 +1693,14 @@
             html += `
                 <tr class="loto-ledger-main-row hover:bg-emerald-50/40 transition-colors cursor-pointer ${isExpanded ? 'bg-emerald-50/30' : ''}" data-loto-date="${d}">
                     <td class="p-3 text-center text-slate-400 font-mono text-xs">${idx + 1}</td>
-                    <td class="p-3 font-mono font-bold text-slate-900 whitespace-nowrap">${d}</td>
+                    <td class="p-3 font-mono font-bold text-slate-900 whitespace-nowrap">
+                        <div class="flex items-center gap-1.5">
+                            <span>${d}</span>
+                            ${row.dynamicGovernor?.isSkill 
+                                ? '<span class="px-1.5 py-0.5 rounded text-[9px] font-black bg-cyan-500 text-slate-950 shadow-xs" title="Đồng thuận kép: DÙNG SKILL">🔥 SKILL</span>'
+                                : '<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-200 text-slate-700" title="Bình thường: BẮN THƯỜNG">🛡️ THƯỜNG</span>'}
+                        </div>
+                    </td>
                     <td class="p-3 text-center">
                         <span class="inline-flex items-center justify-center h-7 w-7 rounded-lg font-mono font-black text-xs bg-slate-900 text-white shadow-2xs" title="Giải ĐB: ${specialNum}">
                             ${specialNum}
@@ -1816,6 +1977,7 @@
                 renderLotoSummaryTable();
                 renderLotoLedgerTable();
             }
+            renderTacticalBanner();
         }
 
         btnMasterDe?.addEventListener('click', () => switchMasterMode('de'));
@@ -2050,6 +2212,27 @@
         if (btnLo) btnLo.click();
         const el = document.getElementById('todayLotoStrategyContainer');
         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    };
+
+    /**
+     * Hàm chuyển đổi nhanh chiến lược Lô
+     */
+    window.switchLotoStrategy = function (stratId) {
+        if (LOTO_STRATEGY_DEFINITIONS[stratId]) {
+            activeLotoStrategy = stratId;
+            document.querySelectorAll('#lotoStrategyTabs .loto-strat-tab-btn').forEach(btn => {
+                if (btn.getAttribute('data-loto-strat') === stratId) {
+                    btn.classList.add('active', 'bg-white', 'text-slate-900', 'shadow-2xs');
+                    btn.classList.remove('text-slate-600');
+                } else {
+                    btn.classList.remove('active', 'bg-white', 'text-slate-900', 'shadow-2xs');
+                    btn.classList.add('text-slate-600');
+                }
+            });
+            renderActiveLotoStrategy();
+            const el = document.getElementById('todayLotoStrategyContainer');
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
     };
 
     // Khởi chạy

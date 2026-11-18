@@ -236,53 +236,80 @@
                     </div>
                 </div>
 
+                <!-- BANNER CHỈ DẪN TÁC CHIẾN HÔM NAY: BẮN THƯỜNG HAY DÙNG SKILL -->
+                <div class="mb-6 rounded-2xl bg-gradient-to-r from-amber-500/20 via-purple-500/20 to-emerald-500/20 border border-white/20 p-4 sm:p-5 shadow-lg">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="space-y-1.5">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-400 text-slate-950 shadow-sm">
+                                    ⚡ BỘ ĐIỀU CHUYỂN TÁC CHIẾN
+                                </span>
+                                <span id="todayTacticalModeBadge" class="px-3 py-1 rounded-full text-xs font-black tracking-wider bg-slate-800 text-white border border-white/20">
+                                    Đang xác định trạng thái...
+                                </span>
+                            </div>
+                            <h3 class="text-base sm:text-lg font-black text-white" id="todayTacticalTitle">
+                                HÔM NAY: BẮN THƯỜNG HAY DÙNG SKILL?
+                            </h3>
+                            <p class="text-xs text-slate-300 max-w-3xl leading-relaxed" id="todayTacticalDesc">
+                                Cơ chế điều phối vốn động: Khi xuất hiện Hội Tụ Vàng (≥ 2 số Giao Thoa Cùng Đầu ở Đề hoặc Đồng Thuận Kép ở Lô) -> <strong class="text-amber-300">DÙNG SKILL</strong> tung đòn bẩy X2/X3. Khi thị trường bình thường -> <strong class="text-emerald-300">BẮN THƯỜNG</strong> cược phẳng bảo toàn vốn.
+                            </p>
+                        </div>
+                        <div class="shrink-0 flex flex-col sm:flex-row items-start sm:items-center gap-2" id="todayTacticalActionContainer">
+                            <button onclick="window.switchDeStrategy('de_dynamic_governor')" class="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs transition-all shadow-md flex items-center gap-1.5">
+                                <i class="bi bi-crosshair"></i> Xem Dàn Tác Chiến Hôm Nay
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 3 THẺ ĐỘT PHÁ ĐỀ & LÔ ĐỈNH CAO -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <!-- Thẻ 1: VUA WIN RATE ĐỀ (Đồng Thuận Nhị Trụ 31.8s) -->
-                    <div class="cursor-pointer group relative rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-400/60 p-4 transition-all duration-200" onclick="window.switchDeStrategy('consensus_union')">
+                    <!-- Thẻ 1: VUA HIỆU QUẢ LINH HOẠT (Bắn Thường vs Dùng Skill: +1.55 TỶ) -->
+                    <div class="cursor-pointer group relative rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-400/60 p-4 transition-all duration-200" onclick="window.switchDeStrategy('de_dynamic_governor')">
                         <div class="flex items-center justify-between mb-2">
                             <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-400/20 text-amber-300 border border-amber-400/40">
-                                👑 VUA WIN RATE ĐỀ
+                                👑 VUA HIỆU QUẢ LINH HOẠT
                             </span>
-                            <span class="text-xs font-mono font-black text-amber-300">37.8% (113 kỳ nổ)</span>
+                            <span class="text-xs font-mono font-black text-amber-300">+1.550M (ROI +18.4%)</span>
                         </div>
-                        <h4 class="text-sm font-black text-white group-hover:text-amber-300 transition-colors">Đề Đồng Thuận Nhị Trụ (31.8s)</h4>
-                        <p class="text-[11px] text-slate-300 mt-1 leading-snug">Hạt nhân giao thoa (TriCore ∩ 5 AI) cược X2, bọc lót cược X1. Trung bình cứ 2.6 ngày nổ 1 lần!</p>
+                        <h4 class="text-sm font-black text-white group-hover:text-amber-300 transition-colors">Bộ Điều Chuyển (Bắn Thường vs Dùng Skill)</h4>
+                        <p class="text-[11px] text-slate-300 mt-1 leading-snug">Hội tụ mạnh (≥ 2 số Cùng Đầu) DÙNG SKILL X3/X2. Chưa đủ hội tụ BẮN THƯỜNG X1. Tiết kiệm 1.37 TỶ vốn, lãi tăng gấp đôi!</p>
+                        <div class="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between text-xs font-mono">
+                            <span class="text-slate-400">Trúng 2026:</span>
+                            <span class="font-black text-amber-300">71/299 kỳ (Skill +1.27 TỶ, Thường +276M)</span>
+                        </div>
+                    </div>
+
+                    <!-- Thẻ 2: VUA WIN RATE ĐỀ (Đồng Thuận Nhị Trụ 31.8s) -->
+                    <div class="cursor-pointer group relative rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-400/60 p-4 transition-all duration-200" onclick="window.switchDeStrategy('consensus_union')">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-400/20 text-emerald-300 border border-emerald-400/40">
+                                🔥 VUA WIN RATE ĐỀ
+                            </span>
+                            <span class="text-xs font-mono font-black text-emerald-300">37.8% (113 kỳ nổ)</span>
+                        </div>
+                        <h4 class="text-sm font-black text-white group-hover:text-emerald-300 transition-colors">Đề Đồng Thuận Nhị Trụ (31.8s)</h4>
+                        <p class="text-[11px] text-slate-300 mt-1 leading-snug">Hạt nhân giao thoa (TriCore ∩ 5 AI) cược X2, bọc lót cược X1. Trung bình cứ 2.6 ngày nổ 1 lần (+418M)!</p>
                         <div class="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between text-xs font-mono">
                             <span class="text-slate-400">Lãi ròng 2026:</span>
                             <span class="font-black text-emerald-400">+418 Triệu VNĐ (ROI +4.0%)</span>
                         </div>
                     </div>
 
-                    <!-- Thẻ 2: VUA LÃI RÒNG ĐỀ (Hybrid Tri-Tier Consensus) -->
-                    <div class="cursor-pointer group relative rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-400/60 p-4 transition-all duration-200" onclick="window.switchDeStrategy('tri_tier')">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-400/20 text-emerald-300 border border-emerald-400/40">
-                                🔥 KỶ LỤC LÃI RÒNG ĐỀ
-                            </span>
-                            <span class="text-xs font-mono font-black text-emerald-300">+765M (ROI +7.8%)</span>
-                        </div>
-                        <h4 class="text-sm font-black text-white group-hover:text-emerald-300 transition-colors">TriCore Hybrid Tri-Tier</h4>
-                        <p class="text-[11px] text-slate-300 mt-1 leading-snug">VIP Giao Thoa Cùng Đầu cược X3 (3M), Cùng Đầu cược X2 (2M), Cùng Đít cược X1 (1M). 10 kỳ nổ X3!</p>
-                        <div class="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between text-xs font-mono">
-                            <span class="text-slate-400">Trúng thưởng:</span>
-                            <span class="font-black text-emerald-400">68/299 kỳ (Nổ 10 X3, 38 X2)</span>
-                        </div>
-                    </div>
-
-                    <!-- Thẻ 3: VUA ROI & LÃI LÔ (TriCore Top 1 & 5 AI Top 6) -->
+                    <!-- Thẻ 3: VUA LÔ ĐIỀU CHUYỂN (Lô Bắn Thường vs Dùng Skill +165M) -->
                     <div class="cursor-pointer group relative rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-400/60 p-4 transition-all duration-200" onclick="window.switchToLotoMode()">
                         <div class="flex items-center justify-between mb-2">
                             <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-cyan-400/20 text-cyan-300 border border-cyan-400/40">
-                                ⚡ BỘ ĐÔI LÔ BỨT PHÁ
+                                ⚡ VUA LÔ ĐIỀU CHUYỂN
                             </span>
-                            <span class="text-xs font-mono font-black text-cyan-300">ROI +15.5% · Lãi +102M</span>
+                            <span class="text-xs font-mono font-black text-cyan-300">LÃI +165M · ROI +13.7%</span>
                         </div>
-                        <h4 class="text-sm font-black text-white group-hover:text-cyan-300 transition-colors">TriCore Top 1 &amp; 5 AI Top 6</h4>
-                        <p class="text-[11px] text-slate-300 mt-1 leading-snug">Top 1 Bạch Thủ Flat (+102M, 95 nháy) và Top 6 Phân Tầng Chẵn Lẻ X2/X1 (+63M, 495 nháy).</p>
+                        <h4 class="text-sm font-black text-white group-hover:text-cyan-300 transition-colors">Lô Điều Chuyển (Tri == 5AI)</h4>
+                        <p class="text-[11px] text-slate-300 mt-1 leading-snug">Đồng Thuận Kép DÙNG SKILL 66K (29.8% nổ). Khác nhau BẮN THƯỜNG 22K. Lãi tăng từ +102M lên +165M!</p>
                         <div class="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between text-xs font-mono">
-                            <span class="text-slate-400">Khử Lô Gan:</span>
-                            <span class="font-black text-cyan-300">93.5% giải nằm ở nhịp ≤ 10d</span>
+                            <span class="text-slate-400">Tổng nháy 2026:</span>
+                            <span class="font-black text-cyan-300">171 nháy (86 ngày thắng)</span>
                         </div>
                     </div>
                 </div>
@@ -301,7 +328,10 @@
                 
                 <!-- Strategy Tabs Selector -->
                 <div class="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-slate-100 border border-slate-200" id="strategyTabs">
-                    <button class="strat-tab-btn active px-3.5 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-900 shadow-2xs" data-strat="tri_tier">
+                    <button class="strat-tab-btn active px-3.5 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-900 shadow-2xs" data-strat="de_dynamic_governor">
+                        👑 Điều Chuyển Động (+1.55 TỶ)
+                    </button>
+                    <button class="strat-tab-btn px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all" data-strat="tri_tier">
                         🔥 Hybrid Tri-Tier (+765M)
                     </button>
                     <button class="strat-tab-btn px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all" data-strat="consensus_union">
@@ -850,7 +880,10 @@
 
                     <!-- Strategy Tabs Selector for Lô -->
                     <div class="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-slate-100 border border-slate-200" id="lotoStrategyTabs">
-                        <button class="loto-strat-tab-btn active px-3.5 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-900 shadow-2xs cursor-pointer" data-loto-strat="tri_top1">
+                        <button class="loto-strat-tab-btn active px-3.5 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-900 shadow-2xs cursor-pointer" data-loto-strat="lo_dynamic_governor">
+                            👑 Lô Điều Chuyển (+165M)
+                        </button>
+                        <button class="loto-strat-tab-btn px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer" data-loto-strat="tri_top1">
                             🌟 TriCore Top 1 (ROI +15.5%)
                         </button>
                         <button class="loto-strat-tab-btn px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer" data-loto-strat="penta_parity_top6">
