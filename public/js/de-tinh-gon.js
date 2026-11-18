@@ -16,6 +16,9 @@
     let activeMasterMode = 'de'; // 'de' (Cố vấn Đề) hoặc 'lo' (Cố vấn Lô)
     let activeStrategy = 'de_dynamic_governor'; // Mặc định Bộ Điều Chuyển Động (Kỷ lục lãi ròng +1.55 TỶ)
     let activeHorizon = '299'; // '299' (mốc chuẩn) hoặc '315' (toàn bộ)
+    let activeTacticalMode = 'auto'; // 'normal' | 'skill' | 'auto' | 'custom'
+    let isAdvancedTabsOpen = false;
+    let ledgerGovFilter = 'ALL'; // 'ALL' | 'SKILL' | 'NORMAL'
     let ledgerLimit = 30;
     const expandedLedgerDates = new Set();
     const activeStratInSlip = {}; // { [date]: 'tri_paB' | 'tri_paD' | 'tri_paD2' | 'tri_base' | 'ss17_base' | 'ss15_base' }
@@ -27,6 +30,9 @@
     // Trạng thái phân hệ Lô Tinh Gọn & TriCore
     let activeLotoStrategy = 'lo_dynamic_governor'; // Mặc định Lô Điều Chuyển (Kỷ lục lãi ròng +165M)
     let activeLotoHorizon = '299'; // '299' hoặc '315'
+    let activeLotoTacticalMode = 'auto'; // 'normal' | 'skill' | 'auto' | 'custom'
+    let isLotoAdvancedTabsOpen = false;
+    let lotoLedgerGovFilter = 'ALL'; // 'ALL' | 'SKILL' | 'NORMAL'
     let lotoLedgerLimit = 30;
     const expandedLotoLedgerDates = new Set();
     const activeLotoStratInSlip = {};
@@ -409,6 +415,8 @@
 
         // 1.1. Cập nhật banner Tác Chiến Hôm Nay: Bắn Thường hay Dùng Skill
         renderTacticalBanner();
+        updateTacticalButtonsUI();
+        updateLotoTacticalButtonsUI();
 
         // 2. Hiển thị chiến lược hôm nay đang được chọn
         renderActiveStrategy();
@@ -463,8 +471,14 @@
 
             if (actionEl) {
                 actionEl.innerHTML = `
-                    <button onclick="window.switchDeStrategy('de_dynamic_governor')" class="px-4 py-2.5 rounded-xl ${isSkill ? 'bg-rose-500 hover:bg-rose-400 text-white' : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black'} text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer">
-                        <i class="bi bi-crosshair"></i> Xem Dàn Đề Tác Chiến Hôm Nay
+                    <button type="button" onclick="window.setTacticalMode('normal')" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-all border border-white/20 flex items-center gap-1.5 cursor-pointer">
+                        <span>🛡️</span> Xem Đánh Thường
+                    </button>
+                    <button type="button" onclick="window.setTacticalMode('skill')" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-all border border-white/20 flex items-center gap-1.5 cursor-pointer">
+                        <span>🔥</span> Xem Dùng Skill
+                    </button>
+                    <button type="button" onclick="window.setTacticalMode('auto')" class="px-4 py-2 rounded-xl ${isSkill ? 'bg-rose-500 hover:bg-rose-400 text-white' : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'} font-black text-xs transition-all shadow-md flex items-center gap-1.5 cursor-pointer">
+                        <span>⚡</span> Theo Đề Xuất AI
                     </button>
                 `;
             }
@@ -486,8 +500,14 @@
 
             if (actionEl) {
                 actionEl.innerHTML = `
-                    <button onclick="window.switchLotoStrategy('lo_dynamic_governor')" class="px-4 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black text-xs transition-all shadow-md flex items-center gap-1.5 cursor-pointer">
-                        <i class="bi bi-crosshair"></i> Xem Dàn Lô Tác Chiến Hôm Nay
+                    <button type="button" onclick="window.setLotoTacticalMode('normal')" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-all border border-white/20 flex items-center gap-1.5 cursor-pointer">
+                        <span>🛡️</span> Lô Đánh Thường (22K)
+                    </button>
+                    <button type="button" onclick="window.setLotoTacticalMode('skill')" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-all border border-white/20 flex items-center gap-1.5 cursor-pointer">
+                        <span>🔥</span> Lô Dùng Skill (66K)
+                    </button>
+                    <button type="button" onclick="window.setLotoTacticalMode('auto')" class="px-4 py-2 rounded-xl ${isSkill ? 'bg-cyan-400 hover:bg-cyan-300 text-slate-950' : 'bg-slate-700 hover:bg-slate-600 text-white'} font-black text-xs transition-all shadow-md flex items-center gap-1.5 cursor-pointer">
+                        <span>⚡</span> Theo Đề Xuất AI Lô
                     </button>
                 `;
             }
@@ -550,12 +570,14 @@
             `;
         }
 
+        const isFlat = x3List.length === 0 && x2List.length === 0;
+
         container.innerHTML = `
             <div class="rounded-2xl border border-slate-200 bg-slate-50/50 p-5 space-y-6">
                 <!-- Header Card -->
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-slate-200/80">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 pb-4 border-b border-slate-200/80">
                     <div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2 flex-wrap">
                             <h3 class="text-base font-black text-slate-900">${stratDef.name}</h3>
                             <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black border ${stratDef.badgeClass}">
                                 ${stratDef.badge}
@@ -564,9 +586,13 @@
                         <p class="text-xs text-slate-600 mt-1">${stratDef.desc}</p>
                     </div>
 
-                    <div class="flex items-center gap-2">
-                        <button onclick="window.copyToClipboard('${allText}', this)" class="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2 text-xs font-black shadow-xs transition-all cursor-pointer">
-                            <i class="bi bi-clipboard-check"></i> Copy Trọn Dàn (${allNumbers.length}s)
+                    <!-- NÚT COPY THAO TÁC THƯỜNG -->
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <button onclick="window.copyBettingSyntax('${activeStrategy}', this)" class="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 px-3.5 py-2 text-xs font-black shadow-xs transition-all cursor-pointer">
+                            <i class="bi bi-chat-quote-fill"></i> Copy Cú Pháp Gửi Thầu / Zalo
+                        </button>
+                        <button onclick="window.copyToClipboard('${allText}', this)" class="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-3 py-2 text-xs font-bold shadow-xs transition-all cursor-pointer">
+                            <i class="bi bi-clipboard"></i> Chép Số (${allNumbers.length}s)
                         </button>
                     </div>
                 </div>
@@ -596,13 +622,13 @@
                     <div class="bg-white rounded-xl p-3 border border-slate-200">
                         <span class="text-[10px] font-bold text-slate-400 uppercase">Quy mô hôm nay</span>
                         <div class="text-lg font-black text-slate-900 font-mono">${allNumbers.length} số</div>
-                        <span class="text-[10px] text-slate-500">${x3List.length > 0 ? `${x3List.length} X3 + ` : ''}${x2List.length} X2 + ${x1List.length} X1</span>
+                        <span class="text-[10px] text-slate-500">${x3List.length > 0 ? `${x3List.length} X3 + ` : ''}${x2List.length > 0 ? `${x2List.length} X2 + ` : ''}${x1List.length} X1</span>
                     </div>
 
                     <div class="bg-white rounded-xl p-3 border border-slate-200">
                         <span class="text-[10px] font-bold text-slate-400 uppercase">Vốn cược dự kiến</span>
                         <div class="text-lg font-black text-amber-700 font-mono">${totalStakeM}M</div>
-                        <span class="text-[10px] text-slate-500">${x3List.length > 0 ? `${x3StakeM}M X3 + ` : ''}${x2StakeM}M X2 + ${x1StakeM}M X1</span>
+                        <span class="text-[10px] text-slate-500">${x3List.length > 0 ? `${x3StakeM}M X3 + ` : ''}${x2List.length > 0 ? `${x2StakeM}M X2 + ` : ''}${x1StakeM}M X1</span>
                     </div>
 
                     <div class="bg-white rounded-xl p-3 border border-slate-200">
@@ -618,6 +644,33 @@
                     </div>
                 </div>
 
+                ${isFlat ? `
+                <!-- DÀN CƯỢC PHẲNG ĐỀU TAY 1M (ĐÁNH THƯỜNG) -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-emerald-600 text-white font-black text-xs shadow-sm">1M</span>
+                            <span class="text-xs sm:text-sm font-black text-emerald-950 uppercase tracking-wider">
+                                🎯 DÀN ĐỀ CƯỢC PHẲNG ĐỀU TAY (${allNumbers.length} số) — Cược 1M / số · Ăn 84M
+                            </span>
+                        </div>
+                        <button onclick="window.copyToClipboard('${allText}', this)" class="text-xs font-bold text-emerald-700 hover:text-emerald-900 inline-flex items-center gap-1 cursor-pointer">
+                            <i class="bi bi-copy"></i> Chép Dãy Số
+                        </button>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2.5 p-4 bg-emerald-50/70 rounded-2xl border border-emerald-200 shadow-2xs">
+                        ${allNumbers.map(n => `
+                            <div class="flex flex-col items-center">
+                                <span class="badge-num inline-flex items-center justify-center h-10 w-10 rounded-xl font-mono text-sm font-black bg-white text-emerald-950 shadow-xs border border-emerald-300">
+                                    ${n}
+                                </span>
+                                <span class="text-[9px] font-bold text-emerald-700 mt-1 font-mono">1.000k</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                ` : `
                 <!-- Dàn Siêu VIP X3 (nếu có) -->
                 ${x3List.length > 0 ? `
                 <div class="space-y-2">
@@ -692,6 +745,7 @@
                     </div>
                 </div>
                 ` : ''}
+                `}
 
                 <!-- Số cắt & số loại trừ -->
                 ${cut2Section}
@@ -850,6 +904,10 @@
     function getFilteredLedgerRows() {
         const allList = currentReport?.settledLedger || [];
         return allList.filter(row => {
+            // Lọc Tác Chiến: SKILL vs THƯỜNG
+            if (ledgerGovFilter === 'SKILL' && !row.governor?.isSkill) return false;
+            if (ledgerGovFilter === 'NORMAL' && row.governor?.isSkill) return false;
+
             // Lọc tháng
             if (ledgerMonthFilter !== 'ALL') {
                 if (!row.date.startsWith(ledgerMonthFilter)) return false;
@@ -1261,6 +1319,13 @@
             pagingInfo.textContent = `Hiển thị ${Math.min(ledgerLimit, filtered.length)} / ${filtered.length} ngày (Tổng ${allList.length} kỳ đối soát)`;
         }
 
+        const elAll = document.getElementById('countGovFilterAll');
+        const elSkill = document.getElementById('countGovFilterSkill');
+        const elNormal = document.getElementById('countGovFilterNormal');
+        if (elAll) elAll.textContent = allList.length;
+        if (elSkill) elSkill.textContent = allList.filter(r => r.governor?.isSkill).length;
+        if (elNormal) elNormal.textContent = allList.filter(r => !r.governor?.isSkill).length;
+
         const slice = filtered.slice(0, ledgerLimit);
 
         if (slice.length === 0) {
@@ -1459,9 +1524,9 @@
         container.innerHTML = `
             <div class="rounded-2xl border border-slate-200 bg-slate-50/50 p-5 space-y-6">
                 <!-- Header Card -->
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-slate-200/80">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 pb-4 border-b border-slate-200/80">
                     <div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2 flex-wrap">
                             <h3 class="text-base font-black text-slate-900">${stratDef.name}</h3>
                             <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black border ${stratDef.badgeClass}">
                                 ${stratDef.badge}
@@ -1470,9 +1535,13 @@
                         <p class="text-xs text-slate-600 mt-1">${stratDef.desc}</p>
                     </div>
 
-                    <div class="flex items-center gap-2">
-                        <button onclick="window.copyToClipboard('${allText}', this)" class="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2 text-xs font-black shadow-xs transition-all cursor-pointer">
-                            <i class="bi bi-clipboard-check"></i> Sao Chép Dàn Đánh
+                    <!-- NÚT COPY THAO TÁC THƯỜNG CHO LÔ -->
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <button onclick="window.copyLotoBettingSyntax('${activeLotoStrategy}', this)" class="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white px-3.5 py-2 text-xs font-black shadow-xs transition-all cursor-pointer">
+                            <i class="bi bi-chat-quote-fill"></i> Copy Cú Pháp Lô Gửi Thầu / Zalo
+                        </button>
+                        <button onclick="window.copyToClipboard('${allText}', this)" class="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-3 py-2 text-xs font-bold shadow-xs transition-all cursor-pointer">
+                            <i class="bi bi-clipboard"></i> Chép Số (${allNumbers.length}s)
                         </button>
                     </div>
                 </div>
@@ -1601,6 +1670,13 @@
     function getFilteredLotoLedgerRows() {
         let list = currentReport?.loto?.settledLedger || [];
 
+        // Lọc Tác Chiến Lô: SKILL vs THƯỜNG
+        if (lotoLedgerGovFilter === 'SKILL') {
+            list = list.filter(r => r.consensus?.isConsensusTop1);
+        } else if (lotoLedgerGovFilter === 'NORMAL') {
+            list = list.filter(r => !r.consensus?.isConsensusTop1);
+        }
+
         // Lọc tháng
         if (lotoLedgerMonthFilter !== 'ALL') {
             list = list.filter(r => r.date && r.date.startsWith(lotoLedgerMonthFilter));
@@ -1653,6 +1729,13 @@
         if (pagingInfo) {
             pagingInfo.textContent = `Hiển thị ${Math.min(lotoLedgerLimit, filtered.length)} / ${filtered.length} ngày (Tổng ${allList.length} kỳ đối soát Lô)`;
         }
+
+        const elLotoAll = document.getElementById('countLotoGovFilterAll');
+        const elLotoSkill = document.getElementById('countLotoGovFilterSkill');
+        const elLotoNormal = document.getElementById('countLotoGovFilterNormal');
+        if (elLotoAll) elLotoAll.textContent = allList.length;
+        if (elLotoSkill) elLotoSkill.textContent = allList.filter(r => r.consensus?.isConsensusTop1).length;
+        if (elLotoNormal) elLotoNormal.textContent = allList.filter(r => !r.consensus?.isConsensusTop1).length;
 
         const slice = filtered.slice(0, lotoLedgerLimit);
 
@@ -1983,22 +2066,6 @@
         btnMasterDe?.addEventListener('click', () => switchMasterMode('de'));
         btnMasterLo?.addEventListener('click', () => switchMasterMode('lo'));
 
-        // Chuyển tab chiến lược Lô
-        const lotoTabBtns = document.querySelectorAll('.loto-strat-tab-btn');
-        lotoTabBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                lotoTabBtns.forEach(b => {
-                    b.classList.remove('active', 'bg-white', 'text-slate-900', 'shadow-2xs');
-                    b.classList.add('text-slate-600');
-                });
-                btn.classList.add('active', 'bg-white', 'text-slate-900', 'shadow-2xs');
-                btn.classList.remove('text-slate-600');
-
-                activeLotoStrategy = btn.getAttribute('data-loto-strat');
-                renderActiveLotoStrategy();
-            });
-        });
-
         // Chuyển mốc thời gian kiểm định Lô (299 kỳ chuẩn vs 315 kỳ toàn bộ)
         document.getElementById('btnLotoHorizon299')?.addEventListener('click', () => {
             activeLotoHorizon = '299';
@@ -2070,8 +2137,8 @@
             renderLotoLedgerTable();
         });
 
-        // Chuyển tab chiến lược Đề
-        const tabBtns = document.querySelectorAll('.strat-tab-btn');
+        // Chuyển tab chiến lược Đề nâng cao
+        const tabBtns = document.querySelectorAll('#strategyTabs .strat-tab-btn');
         tabBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 tabBtns.forEach(b => {
@@ -2082,7 +2149,57 @@
                 btn.classList.remove('text-slate-600');
 
                 activeStrategy = btn.getAttribute('data-strat');
+                activeTacticalMode = 'custom';
+                updateTacticalButtonsUI();
                 renderActiveStrategy();
+            });
+        });
+
+        // Chuyển tab chiến lược Lô nâng cao
+        const lotoTabBtns = document.querySelectorAll('#lotoStrategyTabs .loto-strat-tab-btn');
+        lotoTabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                lotoTabBtns.forEach(b => {
+                    b.classList.remove('active', 'bg-white', 'text-slate-900', 'shadow-2xs');
+                    b.classList.add('text-slate-600');
+                });
+                btn.classList.add('active', 'bg-white', 'text-slate-900', 'shadow-2xs');
+                btn.classList.remove('text-slate-600');
+
+                activeLotoStrategy = btn.getAttribute('data-loto-strat');
+                activeLotoTacticalMode = 'custom';
+                updateLotoTacticalButtonsUI();
+                renderActiveLotoStrategy();
+            });
+        });
+
+        // Bộ lọc Tác chiến nhanh trong Sổ cái Đề: Tất Cả / Skill / Bắn Thường
+        document.querySelectorAll('#ledgerGovFilterGroup .ledger-gov-filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('#ledgerGovFilterGroup .ledger-gov-filter-btn').forEach(b => {
+                    b.classList.remove('active', 'bg-white', 'text-slate-900', 'shadow-2xs');
+                    b.classList.add('text-slate-600');
+                });
+                btn.classList.add('active', 'bg-white', 'text-slate-900', 'shadow-2xs');
+                btn.classList.remove('text-slate-600');
+                ledgerGovFilter = btn.getAttribute('data-gov-filter') || 'ALL';
+                ledgerLimit = 30;
+                renderLedgerTable();
+            });
+        });
+
+        // Bộ lọc Tác chiến nhanh trong Sổ cái Lô: Tất Cả / Skill / Bắn Thường
+        document.querySelectorAll('#lotoLedgerGovFilterGroup .loto-ledger-gov-filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('#lotoLedgerGovFilterGroup .loto-ledger-gov-filter-btn').forEach(b => {
+                    b.classList.remove('active', 'bg-white', 'text-slate-900', 'shadow-2xs');
+                    b.classList.add('text-slate-600');
+                });
+                btn.classList.add('active', 'bg-white', 'text-slate-900', 'shadow-2xs');
+                btn.classList.remove('text-slate-600');
+                lotoLedgerGovFilter = btn.getAttribute('data-loto-gov-filter') || 'ALL';
+                lotoLedgerLimit = 30;
+                renderLotoLedgerTable();
             });
         });
 
@@ -2165,6 +2282,251 @@
     }
 
     /**
+     * Cập nhật giao diện thanh chuyển chế độ tác chiến Đề
+     */
+    function updateTacticalButtonsUI() {
+        const btnNormal = document.getElementById('btnTacticalNormal');
+        const btnSkill = document.getElementById('btnTacticalSkill');
+        const btnAuto = document.getElementById('btnTacticalAuto');
+        const activeBadge = document.getElementById('activeTacticalBadge');
+        const autoText = document.getElementById('tacticalAutoText');
+
+        const deGov = currentReport?.today?.governor;
+        if (autoText && deGov) {
+            autoText.textContent = deGov.isSkill ? 'Khuyên: 🔥 Dùng Skill' : 'Khuyên: 🛡️ Bắn Thường';
+        }
+
+        [btnNormal, btnSkill, btnAuto].forEach(b => {
+            if (!b) return;
+            b.classList.remove('active', 'bg-white', 'text-slate-900', 'shadow-sm', 'border', 'border-slate-200');
+            b.classList.add('text-slate-700');
+        });
+
+        if (activeTacticalMode === 'normal') {
+            if (btnNormal) {
+                btnNormal.classList.add('active', 'bg-white', 'text-slate-900', 'shadow-sm', 'border', 'border-slate-200');
+                btnNormal.classList.remove('text-slate-700');
+            }
+            if (activeBadge) activeBadge.innerHTML = '🛡️ ĐÁNH THƯỜNG (CƯỢC PHẲNG 1M)';
+        } else if (activeTacticalMode === 'skill') {
+            if (btnSkill) {
+                btnSkill.classList.add('active', 'bg-white', 'text-slate-900', 'shadow-sm', 'border', 'border-slate-200');
+                btnSkill.classList.remove('text-slate-700');
+            }
+            if (activeBadge) activeBadge.innerHTML = '🔥 DÙNG SKILL (HỎA LỰC PHÂN TẦNG)';
+        } else if (activeTacticalMode === 'auto') {
+            if (btnAuto) {
+                btnAuto.classList.add('active', 'bg-white', 'text-slate-900', 'shadow-sm', 'border', 'border-slate-200');
+                btnAuto.classList.remove('text-slate-700');
+            }
+            if (activeBadge) activeBadge.innerHTML = deGov?.isSkill ? '⚡ THEO AI: 🔥 DÙNG SKILL' : '⚡ THEO AI: 🛡️ BẮN THƯỜNG';
+        } else {
+            if (activeBadge) activeBadge.innerHTML = `⚙️ TÙY CHỌN: ${STRATEGY_DEFINITIONS[activeStrategy]?.name || 'Nâng Cao'}`;
+        }
+    }
+
+    /**
+     * Cập nhật giao diện thanh chuyển chế độ tác chiến Lô
+     */
+    function updateLotoTacticalButtonsUI() {
+        const btnNormal = document.getElementById('btnLotoTacticalNormal');
+        const btnSkill = document.getElementById('btnLotoTacticalSkill');
+        const btnAuto = document.getElementById('btnLotoTacticalAuto');
+        const activeBadge = document.getElementById('activeLotoTacticalBadge');
+        const autoText = document.getElementById('lotoTacticalAutoText');
+
+        const loGov = currentReport?.loto?.today?.governor;
+        if (autoText && loGov) {
+            autoText.textContent = loGov.isSkill ? 'Khuyên: 🔥 Dùng Skill 66K' : 'Khuyên: 🛡️ Bắn Thường 22K';
+        }
+
+        [btnNormal, btnSkill, btnAuto].forEach(b => {
+            if (!b) return;
+            b.classList.remove('active', 'bg-white', 'text-slate-900', 'shadow-sm', 'border', 'border-slate-200');
+            b.classList.add('text-slate-700');
+        });
+
+        if (activeLotoTacticalMode === 'normal') {
+            if (btnNormal) {
+                btnNormal.classList.add('active', 'bg-white', 'text-slate-900', 'shadow-sm', 'border', 'border-slate-200');
+                btnNormal.classList.remove('text-slate-700');
+            }
+            if (activeBadge) activeBadge.innerHTML = '🛡️ LÔ ĐÁNH THƯỜNG (22K/ĐIỂM)';
+        } else if (activeLotoTacticalMode === 'skill') {
+            if (btnSkill) {
+                btnSkill.classList.add('active', 'bg-white', 'text-slate-900', 'shadow-sm', 'border', 'border-slate-200');
+                btnSkill.classList.remove('text-slate-700');
+            }
+            if (activeBadge) activeBadge.innerHTML = '🔥 LÔ DÙNG SKILL (44K/66K)';
+        } else if (activeLotoTacticalMode === 'auto') {
+            if (btnAuto) {
+                btnAuto.classList.add('active', 'bg-white', 'text-slate-900', 'shadow-sm', 'border', 'border-slate-200');
+                btnAuto.classList.remove('text-slate-700');
+            }
+            if (activeBadge) activeBadge.innerHTML = loGov?.isSkill ? '⚡ THEO AI: 🔥 DÙNG SKILL 66K' : '⚡ THEO AI: 🛡️ BẮN THƯỜNG 22K';
+        } else {
+            if (activeBadge) activeBadge.innerHTML = `⚙️ TÙY CHỌN: ${LOTO_STRATEGY_DEFINITIONS[activeLotoStrategy]?.name || 'Nâng Cao'}`;
+        }
+    }
+
+    /**
+     * Chuyển đổi chế độ tác chiến Đề chuẩn thao tác thường (Đánh Thường vs Dùng Skill vs Theo AI)
+     */
+    window.setTacticalMode = function (mode) {
+        activeTacticalMode = mode;
+        if (mode === 'normal') {
+            activeStrategy = 'ss15_base';
+        } else if (mode === 'skill') {
+            activeStrategy = 'tri_tier';
+        } else if (mode === 'auto') {
+            activeStrategy = 'de_dynamic_governor';
+        }
+        document.querySelectorAll('#strategyTabs .strat-tab-btn').forEach(btn => {
+            if (btn.getAttribute('data-strat') === activeStrategy) {
+                btn.classList.add('active', 'bg-white', 'text-slate-900', 'shadow-2xs');
+                btn.classList.remove('text-slate-600');
+            } else {
+                btn.classList.remove('active', 'bg-white', 'text-slate-900', 'shadow-2xs');
+                btn.classList.add('text-slate-600');
+            }
+        });
+        updateTacticalButtonsUI();
+        renderActiveStrategy();
+        const el = document.getElementById('todayStrategyContainer');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    };
+
+    /**
+     * Chuyển đổi chế độ tác chiến Lô chuẩn thao tác thường (Lô Đánh Thường vs Lô Dùng Skill vs Theo AI)
+     */
+    window.setLotoTacticalMode = function (mode) {
+        activeLotoTacticalMode = mode;
+        if (mode === 'normal') {
+            activeLotoStrategy = 'tri_top1';
+        } else if (mode === 'skill') {
+            const loGov = currentReport?.loto?.today?.governor;
+            activeLotoStrategy = loGov?.isSkill ? 'lo_dynamic_governor' : 'penta_parity_top6';
+        } else if (mode === 'auto') {
+            activeLotoStrategy = 'lo_dynamic_governor';
+        }
+        document.querySelectorAll('#lotoStrategyTabs .loto-strat-tab-btn').forEach(btn => {
+            if (btn.getAttribute('data-loto-strat') === activeLotoStrategy) {
+                btn.classList.add('active', 'bg-white', 'text-slate-900', 'shadow-2xs');
+                btn.classList.remove('text-slate-600');
+            } else {
+                btn.classList.remove('active', 'bg-white', 'text-slate-900', 'shadow-2xs');
+                btn.classList.add('text-slate-600');
+            }
+        });
+        updateLotoTacticalButtonsUI();
+        renderActiveLotoStrategy();
+        const el = document.getElementById('todayLotoStrategyContainer');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    };
+
+    /**
+     * Mở rộng / thu gọn 9 biến thể toán học Đề nâng cao
+     */
+    window.toggleAdvancedTabs = function () {
+        const container = document.getElementById('advancedStrategyTabsContainer');
+        const textEl = document.getElementById('textToggleAdvancedTabs');
+        const iconEl = document.getElementById('iconToggleAdvancedTabs');
+        if (!container) return;
+        isAdvancedTabsOpen = !isAdvancedTabsOpen;
+        if (isAdvancedTabsOpen) {
+            container.classList.remove('hidden');
+            if (textEl) textEl.textContent = '⚙️ Thu gọn 9 biến thể toán học nâng cao';
+            if (iconEl) { iconEl.classList.remove('bi-chevron-down'); iconEl.classList.add('bi-chevron-up'); }
+        } else {
+            container.classList.add('hidden');
+            if (textEl) textEl.textContent = '⚙️ Xem chi tiết 9 biến thể toán học nâng cao (PA B, PA D, PA D2, Consensus...)';
+            if (iconEl) { iconEl.classList.remove('bi-chevron-up'); iconEl.classList.add('bi-chevron-down'); }
+        }
+    };
+
+    /**
+     * Mở rộng / thu gọn 8 biến thể Lô nâng cao
+     */
+    window.toggleLotoAdvancedTabs = function () {
+        const container = document.getElementById('advancedLotoStrategyTabsContainer');
+        const textEl = document.getElementById('textToggleLotoAdvancedTabs');
+        const iconEl = document.getElementById('iconToggleLotoAdvancedTabs');
+        if (!container) return;
+        isLotoAdvancedTabsOpen = !isLotoAdvancedTabsOpen;
+        if (isLotoAdvancedTabsOpen) {
+            container.classList.remove('hidden');
+            if (textEl) textEl.textContent = '⚙️ Thu gọn 8 biến thể Lô nâng cao';
+            if (iconEl) { iconEl.classList.remove('bi-chevron-down'); iconEl.classList.add('bi-chevron-up'); }
+        } else {
+            container.classList.add('hidden');
+            if (textEl) textEl.textContent = '⚙️ Xem chi tiết 8 biến thể Lô nâng cao (Top 1, Top 2, Top 4, Top 7...)';
+            if (iconEl) { iconEl.classList.remove('bi-chevron-up'); iconEl.classList.add('bi-chevron-down'); }
+        }
+    };
+
+    /**
+     * Tạo và sao chép cú pháp tin nhắn Đề chuẩn gửi thầu / Zalo
+     */
+    window.copyBettingSyntax = function (stratKey, btnElement) {
+        const stratDef = STRATEGY_DEFINITIONS[stratKey || activeStrategy];
+        if (!stratDef || !currentReport) return;
+        const data = stratDef.getData(currentReport);
+        const targetDate = currentReport?.today?.targetDate || '';
+        const dateFormatted = targetDate ? targetDate.split('-').reverse().slice(0, 2).join('/') : 'Hôm Nay';
+
+        const x3List = data.x3 || [];
+        const x2List = data.x2 || [];
+        const x1List = data.x1 || [];
+        const allNumbers = [...x3List, ...x2List, ...x1List];
+
+        let message = '';
+        if (x3List.length > 0 || x2List.length > 0) {
+            const totalStakeK = x3List.length * 3000 + x2List.length * 2000 + x1List.length * 1000;
+            message = `Đề phân tầng ngày ${dateFormatted}:\n` +
+                (x3List.length ? `👑 VIP X3 (3.000k/số): ${x3List.join(', ')}\n` : '') +
+                (x2List.length ? `⭐ CHỦ LỰC X2 (2.000k/số): ${x2List.join(', ')}\n` : '') +
+                (x1List.length ? `🛡️ LÓT X1 (1.000k/số): ${x1List.join(', ')}\n` : '') +
+                `Tổng vốn: ${totalStakeK.toLocaleString('vi-VN')}k (${allNumbers.length} số)`;
+        } else {
+            const totalStakeK = allNumbers.length * 1000;
+            message = `Đề ngày ${dateFormatted} (Cược phẳng 1.000k/số):\n${allNumbers.join(', ')} (${allNumbers.length} số)\nTổng vốn: ${totalStakeK.toLocaleString('vi-VN')}k · Ăn 84.000k`;
+        }
+
+        window.copyToClipboard(message, btnElement);
+    };
+
+    /**
+     * Tạo và sao chép cú pháp tin nhắn Lô chuẩn gửi thầu / Zalo
+     */
+    window.copyLotoBettingSyntax = function (stratKey, btnElement) {
+        const stratDef = LOTO_STRATEGY_DEFINITIONS[stratKey || activeLotoStrategy];
+        if (!stratDef || !currentReport) return;
+        const data = stratDef.getData(currentReport);
+        const targetDate = currentReport?.today?.targetDate || '';
+        const dateFormatted = targetDate ? targetDate.split('-').reverse().slice(0, 2).join('/') : 'Hôm Nay';
+
+        const x2List = data.x2 || [];
+        const x1List = data.x1 || [];
+        const allNumbers = data.numbers || [...x2List, ...x1List];
+
+        let message = '';
+        if (stratDef.type === 'tiered' || x2List.length > 0) {
+            const totalPoints = x2List.length * 200 + x1List.length * 100;
+            const totalStakeK = x2List.length * 4400 + x1List.length * 2200;
+            message = `Lô phân tầng ngày ${dateFormatted}:\n` +
+                (x2List.length ? `👑 VIP X2 (44k = 200đ): ${x2List.join(', ')}\n` : '') +
+                (x1List.length ? `🛡️ LÓT X1 (22k = 100đ): ${x1List.join(', ')}\n` : '') +
+                `Tổng điểm: ${totalPoints}đ · Tổng vốn: ${totalStakeK.toLocaleString('vi-VN')}k`;
+        } else {
+            const totalPoints = allNumbers.length * 100;
+            const totalStakeK = allNumbers.length * 2200;
+            message = `Lô ngày ${dateFormatted} (Cược phẳng 22k/điểm = 100đ/số):\n${allNumbers.join(', ')} (${allNumbers.length} số)\nTổng điểm: ${totalPoints}đ · Tổng vốn: ${totalStakeK.toLocaleString('vi-VN')}k · Ăn 80k/nháy (8.000k)`;
+        }
+
+        window.copyToClipboard(message, btnElement);
+    };
+
+    /**
      * Hàm sao chép toàn cục
      */
     window.copyToClipboard = function (text, btnElement) {
@@ -2189,6 +2551,7 @@
     window.switchDeStrategy = function (stratId) {
         if (STRATEGY_DEFINITIONS[stratId]) {
             activeStrategy = stratId;
+            activeTacticalMode = 'custom';
             document.querySelectorAll('#strategyTabs .strat-tab-btn').forEach(btn => {
                 if (btn.getAttribute('data-strat') === stratId) {
                     btn.classList.add('active', 'bg-white', 'text-slate-900', 'shadow-2xs');
@@ -2198,6 +2561,7 @@
                     btn.classList.add('text-slate-600');
                 }
             });
+            updateTacticalButtonsUI();
             renderActiveStrategy();
             const el = document.getElementById('todayStrategyContainer');
             if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -2220,6 +2584,7 @@
     window.switchLotoStrategy = function (stratId) {
         if (LOTO_STRATEGY_DEFINITIONS[stratId]) {
             activeLotoStrategy = stratId;
+            activeLotoTacticalMode = 'custom';
             document.querySelectorAll('#lotoStrategyTabs .loto-strat-tab-btn').forEach(btn => {
                 if (btn.getAttribute('data-loto-strat') === stratId) {
                     btn.classList.add('active', 'bg-white', 'text-slate-900', 'shadow-2xs');
@@ -2229,6 +2594,7 @@
                     btn.classList.add('text-slate-600');
                 }
             });
+            updateLotoTacticalButtonsUI();
             renderActiveLotoStrategy();
             const el = document.getElementById('todayLotoStrategyContainer');
             if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });

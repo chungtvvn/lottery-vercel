@@ -255,9 +255,15 @@
                                 Cơ chế điều phối vốn động: Khi xuất hiện Hội Tụ Vàng (≥ 2 số Giao Thoa Cùng Đầu ở Đề hoặc Đồng Thuận Kép ở Lô) -> <strong class="text-amber-300">DÙNG SKILL</strong> tung đòn bẩy X2/X3. Khi thị trường bình thường -> <strong class="text-emerald-300">BẮN THƯỜNG</strong> cược phẳng bảo toàn vốn.
                             </p>
                         </div>
-                        <div class="shrink-0 flex flex-col sm:flex-row items-start sm:items-center gap-2" id="todayTacticalActionContainer">
-                            <button onclick="window.switchDeStrategy('de_dynamic_governor')" class="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs transition-all shadow-md flex items-center gap-1.5">
-                                <i class="bi bi-crosshair"></i> Xem Dàn Tác Chiến Hôm Nay
+                        <div class="shrink-0 flex flex-wrap items-center gap-2" id="todayTacticalActionContainer">
+                            <button type="button" onclick="window.setTacticalMode('normal')" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-all border border-white/20 flex items-center gap-1.5 cursor-pointer">
+                                <span>🛡️</span> Xem Đánh Thường
+                            </button>
+                            <button type="button" onclick="window.setTacticalMode('skill')" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-all border border-white/20 flex items-center gap-1.5 cursor-pointer">
+                                <span>🔥</span> Xem Dùng Skill
+                            </button>
+                            <button type="button" onclick="window.setTacticalMode('auto')" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-xs transition-all shadow-md flex items-center gap-1.5 cursor-pointer">
+                                <span>⚡</span> Theo Đề Xuất AI
                             </button>
                         </div>
                     </div>
@@ -316,45 +322,100 @@
             </div>
         </div>
 
-        <!-- KHU VỰC DÀN SỐ GỢI Ý HÔM NAY (INTERACTIVE ACTIONABLE CARDS) -->
+        <!-- KHU VỰC DÀN SỐ GỢI Ý HÔM NAY (CHUẨN THAO TÁC THƯỜNG: ĐÁNH THƯỜNG VS DÙNG SKILL) -->
         <div class="mb-10 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
-                <div>
-                    <h2 class="text-lg font-black text-slate-900 flex items-center gap-2">
-                        <i class="bi bi-bullseye text-amber-600"></i> DÀN SỐ GỢI Ý ĐÁNH HÔM NAY (CHỌN CẤU HÌNH)
-                    </h2>
-                    <p class="text-xs text-slate-500 font-medium">Nhấp chọn cấu hình chiến lược để xem dàn phân tầng và sao chép nhanh</p>
+            <!-- BỘ CHUYỂN ĐỔI CHẾ ĐỘ TÁC CHIẾN CHÍNH THỨC -->
+            <div class="pb-5 mb-5 border-b border-slate-100">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-2 mb-1 flex-wrap">
+                            <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-0.5 text-xs font-bold text-amber-900 border border-amber-300">
+                                <i class="bi bi-crosshair text-amber-600"></i> CHẾ ĐỘ THAO TÁC ĐỀ HÔM NAY
+                            </span>
+                            <span id="activeTacticalBadge" class="inline-flex items-center gap-1 rounded-full bg-slate-900 text-white px-2.5 py-0.5 text-[10px] font-black uppercase">
+                                ⚡ THEO ĐỀ XUẤT AI
+                            </span>
+                        </div>
+                        <h2 class="text-xl font-black text-slate-900">
+                            DÀN SỐ ĐỀ HÔM NAY: CHỌN CƠ CHẾ VÀO TIỀN
+                        </h2>
+                        <p class="text-xs text-slate-500 font-medium">
+                            Chuyển đổi linh hoạt giữa <strong>ĐÁNH THƯỜNG</strong> (cược phẳng đều tay 1M) và <strong>DÙNG SKILL</strong> (hỏa lực phân tầng X3/X2 đòn bẩy)
+                        </p>
+                    </div>
+
+                    <!-- 3 NÚT CHUYỂN CHUẨN THAO TÁC THƯỜNG -->
+                    <div class="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100 rounded-2xl border border-slate-200 shadow-inner">
+                        <!-- Nút 1: ĐÁNH THƯỜNG -->
+                        <button type="button" id="btnTacticalNormal" onclick="window.setTacticalMode('normal')" class="tactical-btn flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer text-slate-700 hover:text-slate-900">
+                            <span class="text-lg">🛡️</span>
+                            <div class="text-left">
+                                <div class="text-xs font-black leading-tight">ĐÁNH THƯỜNG</div>
+                                <div class="text-[10px] font-medium opacity-75">Cược phẳng 1M · 15s</div>
+                            </div>
+                        </button>
+
+                        <!-- Nút 2: DÙNG SKILL -->
+                        <button type="button" id="btnTacticalSkill" onclick="window.setTacticalMode('skill')" class="tactical-btn flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer text-slate-700 hover:text-slate-900">
+                            <span class="text-lg">🔥</span>
+                            <div class="text-left">
+                                <div class="text-xs font-black leading-tight">DÙNG SKILL</div>
+                                <div class="text-[10px] font-medium opacity-75">Hỏa lực X3/X2 · Tam Tầng</div>
+                            </div>
+                        </button>
+
+                        <!-- Nút 3: THEO ĐỀ XUẤT AI -->
+                        <button type="button" id="btnTacticalAuto" onclick="window.setTacticalMode('auto')" class="tactical-btn active flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer bg-white text-slate-900 shadow-sm border border-slate-200">
+                            <span class="text-lg">⚡</span>
+                            <div class="text-left">
+                                <div class="text-xs font-black leading-tight">THEO ĐỀ XUẤT AI</div>
+                                <div class="text-[10px] font-medium opacity-75" id="tacticalAutoText">Đang phân tích...</div>
+                            </div>
+                        </button>
+                    </div>
                 </div>
-                
-                <!-- Strategy Tabs Selector -->
-                <div class="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-slate-100 border border-slate-200" id="strategyTabs">
-                    <button class="strat-tab-btn active px-3.5 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-900 shadow-2xs" data-strat="de_dynamic_governor">
-                        👑 Điều Chuyển Động (+1.55 TỶ)
+
+                <!-- THANH MỞ RỘNG BIẾN THỂ NÂNG CAO -->
+                <div class="mt-4 pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <button type="button" id="btnToggleAdvancedTabs" onclick="window.toggleAdvancedTabs()" class="text-xs font-bold text-slate-500 hover:text-slate-800 flex items-center gap-1.5 transition cursor-pointer">
+                        <i class="bi bi-sliders text-amber-600"></i>
+                        <span id="textToggleAdvancedTabs">⚙️ Xem chi tiết 9 biến thể toán học nâng cao (PA B, PA D, PA D2, Consensus...)</span>
+                        <i class="bi bi-chevron-down text-[10px]" id="iconToggleAdvancedTabs"></i>
                     </button>
-                    <button class="strat-tab-btn px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all" data-strat="tri_tier">
-                        🔥 Hybrid Tri-Tier (+765M)
-                    </button>
-                    <button class="strat-tab-btn px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all" data-strat="consensus_union">
-                        👑 Đồng Thuận 31.8s (37.8%)
-                    </button>
-                    <button class="strat-tab-btn px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all" data-strat="core_intersect">
-                        ⭐ Siêu Hạt Nhân (+42.1%)
-                    </button>
-                    <button class="strat-tab-btn px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all" data-strat="tri_paB">
-                        🏛️ TriCore PA B (+623M)
-                    </button>
-                    <button class="strat-tab-btn px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all" data-strat="tri_paD2">
-                        🔥 TriCore PA D2 (+660M)
-                    </button>
-                    <button class="strat-tab-btn px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all" data-strat="tri_paD">
-                        ⚡ TriCore PA D (ROI +8.5%)
-                    </button>
-                    <button class="strat-tab-btn px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all" data-strat="ss17_base">
-                        💎 Sweet-Spot 17s (+149M)
-                    </button>
-                    <button class="strat-tab-btn px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all" data-strat="ss15_base">
-                        🎯 Sweet-Spot 15s (+1.75 TỶ)
-                    </button>
+                    <span class="text-[11px] text-slate-400 italic">Nhấp vào từng biến thể nếu bạn muốn khảo sát chuyên sâu</span>
+                </div>
+
+                <!-- 9 Tabs nâng cao (ẩn mặc định, mở ra khi click) -->
+                <div id="advancedStrategyTabsContainer" class="hidden mt-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
+                    <div class="flex flex-wrap items-center gap-1.5" id="strategyTabs">
+                        <button class="strat-tab-btn active px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-white text-slate-900 shadow-2xs border border-slate-200 cursor-pointer" data-strat="de_dynamic_governor">
+                            👑 Điều Chuyển Động (+1.55 TỶ)
+                        </button>
+                        <button class="strat-tab-btn px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer" data-strat="tri_tier">
+                            🔥 Hybrid Tri-Tier (+765M)
+                        </button>
+                        <button class="strat-tab-btn px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer" data-strat="consensus_union">
+                            👑 Đồng Thuận 31.8s (37.8%)
+                        </button>
+                        <button class="strat-tab-btn px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer" data-strat="core_intersect">
+                            ⭐ Siêu Hạt Nhân (+42.1%)
+                        </button>
+                        <button class="strat-tab-btn px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer" data-strat="tri_paB">
+                            🏛️ TriCore PA B (+623M)
+                        </button>
+                        <button class="strat-tab-btn px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer" data-strat="tri_paD2">
+                            🔥 TriCore PA D2 (+660M)
+                        </button>
+                        <button class="strat-tab-btn px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer" data-strat="tri_paD">
+                            ⚡ TriCore PA D (ROI +8.5%)
+                        </button>
+                        <button class="strat-tab-btn px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer" data-strat="ss17_base">
+                            💎 Sweet-Spot 17s (+149M)
+                        </button>
+                        <button class="strat-tab-btn px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer" data-strat="ss15_base">
+                            🎯 Sweet-Spot 15s (+1.75 TỶ)
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -606,6 +667,19 @@
 
                 <!-- THANH TÁC VỤ & BỘ LỌC ĐỐI SOÁT -->
                 <div class="flex flex-wrap items-center gap-2">
+                    <!-- BỘ LỌC TÁC CHIẾN NHANH: TẤT CẢ / SKILL / THƯỜNG -->
+                    <div class="flex items-center gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200" id="ledgerGovFilterGroup">
+                        <button type="button" class="ledger-gov-filter-btn active px-3 py-1 rounded-lg text-xs font-black bg-white text-slate-900 shadow-2xs cursor-pointer transition-all" data-gov-filter="ALL">
+                            📋 Tất Cả (<span id="countGovFilterAll">315</span>)
+                        </button>
+                        <button type="button" class="ledger-gov-filter-btn px-3 py-1 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 cursor-pointer transition-all" data-gov-filter="SKILL">
+                            🔥 DÙNG SKILL (<span id="countGovFilterSkill">124</span>)
+                        </button>
+                        <button type="button" class="ledger-gov-filter-btn px-3 py-1 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 cursor-pointer transition-all" data-gov-filter="NORMAL">
+                            🛡️ BẮN THƯỜNG (<span id="countGovFilterNormal">191</span>)
+                        </button>
+                    </div>
+
                     <button type="button" id="btnToggleAllLedger" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer">
                         <i class="bi bi-arrows-expand" id="iconToggleAllLedger"></i>
                         <span id="textToggleAllLedger">Mở Rộng Tất Cả Phiếu</span>
@@ -868,42 +942,97 @@
                 </div>
             </div>
 
-            <!-- KHU VỰC DÀN SỐ LÔ GỢI Ý HÔM NAY (ACTIONABLE CARDS & COPY) -->
+            <!-- KHU VỰC DÀN SỐ LÔ GỢI Ý HÔM NAY (CHUẨN THAO TÁC THƯỜNG: ĐÁNH THƯỜNG VS DÙNG SKILL) -->
             <div class="mb-10 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
-                    <div>
-                        <h2 class="text-lg font-black text-slate-900 flex items-center gap-2">
-                            <i class="bi bi-bullseye text-emerald-600"></i> DÀN SỐ LÔ GỢI Ý ĐÁNH HÔM NAY (CHỌN CẤU HÌNH)
-                        </h2>
-                        <p class="text-xs text-slate-500 font-medium">Nhấp chọn cấu hình chiến lược để xem dàn số và sao chép nhanh</p>
+                <!-- BỘ CHUYỂN ĐỔI CHẾ ĐỘ TÁC CHIẾN LÔ CHÍNH THỨC -->
+                <div class="pb-5 mb-5 border-b border-slate-100">
+                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-0.5 text-xs font-bold text-emerald-900 border border-emerald-300">
+                                    <i class="bi bi-crosshair text-emerald-600"></i> CHẾ ĐỘ THAO TÁC LÔ HÔM NAY
+                                </span>
+                                <span id="activeLotoTacticalBadge" class="inline-flex items-center gap-1 rounded-full bg-slate-900 text-white px-2.5 py-0.5 text-[10px] font-black uppercase">
+                                    ⚡ THEO ĐỀ XUẤT AI LÔ
+                                </span>
+                            </div>
+                            <h2 class="text-xl font-black text-slate-900">
+                                DÀN SỐ LÔ HÔM NAY: CHỌN CƠ CHẾ VÀO TIỀN
+                            </h2>
+                            <p class="text-xs text-slate-500 font-medium">
+                                Chuyển đổi giữa <strong>LÔ ĐÁNH THƯỜNG</strong> (cược phẳng 22K bảo vệ vốn) và <strong>LÔ DÙNG SKILL</strong> (hỏa lực 44K/66K săn lãi)
+                            </p>
+                        </div>
+
+                        <!-- 3 NÚT CHUYỂN CHUẨN THAO TÁC LÔ -->
+                        <div class="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100 rounded-2xl border border-slate-200 shadow-inner">
+                            <!-- Nút 1: LÔ ĐÁNH THƯỜNG -->
+                            <button type="button" id="btnLotoTacticalNormal" onclick="window.setLotoTacticalMode('normal')" class="loto-tactical-btn flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer text-slate-700 hover:text-slate-900">
+                                <span class="text-lg">🛡️</span>
+                                <div class="text-left">
+                                    <div class="text-xs font-black leading-tight">LÔ ĐÁNH THƯỜNG</div>
+                                    <div class="text-[10px] font-medium opacity-75">Cược phẳng 22K/điểm</div>
+                                </div>
+                            </button>
+
+                            <!-- Nút 2: LÔ DÙNG SKILL -->
+                            <button type="button" id="btnLotoTacticalSkill" onclick="window.setLotoTacticalMode('skill')" class="loto-tactical-btn flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer text-slate-700 hover:text-slate-900">
+                                <span class="text-lg">🔥</span>
+                                <div class="text-left">
+                                    <div class="text-xs font-black leading-tight">LÔ DÙNG SKILL</div>
+                                    <div class="text-[10px] font-medium opacity-75">Hỏa lực X3 66K / X2 44K</div>
+                                </div>
+                            </button>
+
+                            <!-- Nút 3: THEO ĐỀ XUẤT AI LÔ -->
+                            <button type="button" id="btnLotoTacticalAuto" onclick="window.setLotoTacticalMode('auto')" class="loto-tactical-btn active flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer bg-white text-slate-900 shadow-sm border border-slate-200">
+                                <span class="text-lg">⚡</span>
+                                <div class="text-left">
+                                    <div class="text-xs font-black leading-tight">THEO ĐỀ XUẤT AI LÔ</div>
+                                    <div class="text-[10px] font-medium opacity-75" id="lotoTacticalAutoText">Đang phân tích...</div>
+                                </div>
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Strategy Tabs Selector for Lô -->
-                    <div class="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-slate-100 border border-slate-200" id="lotoStrategyTabs">
-                        <button class="loto-strat-tab-btn active px-3.5 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-900 shadow-2xs cursor-pointer" data-loto-strat="lo_dynamic_governor">
-                            👑 Lô Điều Chuyển (+165M)
+                    <!-- THANH MỞ RỘNG BIẾN THỂ LÔ NÂNG CAO -->
+                    <div class="mt-4 pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <button type="button" id="btnToggleLotoAdvancedTabs" onclick="window.toggleLotoAdvancedTabs()" class="text-xs font-bold text-slate-500 hover:text-slate-800 flex items-center gap-1.5 transition cursor-pointer">
+                            <i class="bi bi-sliders text-emerald-600"></i>
+                            <span id="textToggleLotoAdvancedTabs">⚙️ Xem chi tiết 8 biến thể Lô nâng cao (Top 1, Top 2, Top 4, Top 7...)</span>
+                            <i class="bi bi-chevron-down text-[10px]" id="iconToggleLotoAdvancedTabs"></i>
                         </button>
-                        <button class="loto-strat-tab-btn px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer" data-loto-strat="tri_top1">
-                            🌟 TriCore Top 1 (ROI +15.5%)
-                        </button>
-                        <button class="loto-strat-tab-btn px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer" data-loto-strat="penta_parity_top6">
-                            👑 5 AI Top 6 Phân Tầng (+63M)
-                        </button>
-                        <button class="loto-strat-tab-btn px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer" data-loto-strat="penta_tiered_top4">
-                            🛡️ 5 AI Top 4 VIP (Max Loss 5d)
-                        </button>
-                        <button class="loto-strat-tab-btn px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer" data-loto-strat="tri_top7">
-                            🎯 TriCore Top 7 Flat (52.2% Nổ)
-                        </button>
-                        <button class="loto-strat-tab-btn px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer" data-loto-strat="penta_top7">
-                            💎 5 AI Top 7 Flat (56.2% Nổ)
-                        </button>
-                        <button class="loto-strat-tab-btn px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer" data-loto-strat="rrf_top2">
-                            ⚡ Song Thủ RRF Top 2 (+12M)
-                        </button>
-                        <button class="loto-strat-tab-btn px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer" data-loto-strat="tri_top2">
-                            🌟 TriCore Top 2 Song Thủ
-                        </button>
+                        <span class="text-[11px] text-slate-400 italic">Nhấp vào từng biến thể nếu bạn muốn khảo sát chuyên sâu</span>
+                    </div>
+
+                    <!-- 8 Tabs nâng cao Lô (ẩn mặc định, mở ra khi click) -->
+                    <div id="advancedLotoStrategyTabsContainer" class="hidden mt-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
+                        <div class="flex flex-wrap items-center gap-1.5" id="lotoStrategyTabs">
+                            <button class="loto-strat-tab-btn active px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-white text-slate-900 shadow-2xs border border-slate-200 cursor-pointer" data-loto-strat="lo_dynamic_governor">
+                                👑 Lô Điều Chuyển (+165M)
+                            </button>
+                            <button class="loto-strat-tab-btn px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer" data-loto-strat="tri_top1">
+                                🌟 TriCore Top 1 (ROI +15.5%)
+                            </button>
+                            <button class="loto-strat-tab-btn px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer" data-loto-strat="penta_parity_top6">
+                                👑 5 AI Top 6 Phân Tầng (+63M)
+                            </button>
+                            <button class="loto-strat-tab-btn px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer" data-loto-strat="penta_tiered_top4">
+                                🛡️ 5 AI Top 4 VIP (Max Loss 5d)
+                            </button>
+                            <button class="loto-strat-tab-btn px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer" data-loto-strat="tri_top7">
+                                🎯 TriCore Top 7 Flat (52.2% Nổ)
+                            </button>
+                            <button class="loto-strat-tab-btn px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer" data-loto-strat="penta_top7">
+                                💎 5 AI Top 7 Flat (56.2% Nổ)
+                            </button>
+                            <button class="loto-strat-tab-btn px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer" data-loto-strat="rrf_top2">
+                                ⚡ Song Thủ RRF Top 2 (+12M)
+                            </button>
+                            <button class="loto-strat-tab-btn px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all cursor-pointer" data-loto-strat="tri_top2">
+                                🌟 TriCore Top 2 Song Thủ
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -1066,6 +1195,19 @@
 
                     <!-- THANH TÁC VỤ & BỘ LỌC ĐỐI SOÁT LÔ -->
                     <div class="flex flex-wrap items-center gap-2">
+                        <!-- BỘ LỌC TÁC CHIẾN LÔ NHANH: TẤT CẢ / SKILL / THƯỜNG -->
+                        <div class="flex items-center gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200" id="lotoLedgerGovFilterGroup">
+                            <button type="button" class="loto-ledger-gov-filter-btn active px-3 py-1 rounded-lg text-xs font-black bg-white text-slate-900 shadow-2xs cursor-pointer transition-all" data-loto-gov-filter="ALL">
+                                📋 Tất Cả (<span id="countLotoGovFilterAll">315</span>)
+                            </button>
+                            <button type="button" class="loto-ledger-gov-filter-btn px-3 py-1 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 cursor-pointer transition-all" data-loto-gov-filter="SKILL">
+                                🔥 DÙNG SKILL (<span id="countLotoGovFilterSkill">124</span>)
+                            </button>
+                            <button type="button" class="loto-ledger-gov-filter-btn px-3 py-1 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 cursor-pointer transition-all" data-loto-gov-filter="NORMAL">
+                                🛡️ BẮN THƯỜNG (<span id="countLotoGovFilterNormal">191</span>)
+                            </button>
+                        </div>
+
                         <button type="button" id="btnToggleAllLotoLedger" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer">
                             <i class="bi bi-arrows-expand" id="iconToggleAllLotoLedger"></i>
                             <span id="textToggleAllLotoLedger">Mở Rộng Tất Cả Phiếu Lô</span>
