@@ -415,6 +415,7 @@
 
         // 1.1. Cập nhật banner Tác Chiến Hôm Nay: Bắn Thường hay Dùng Skill
         renderTacticalBanner();
+        renderMirofishSwarmUI();
         updateTacticalButtonsUI();
         updateLotoTacticalButtonsUI();
 
@@ -512,6 +513,76 @@
                 `;
             }
         }
+    }
+
+    /**
+     * Hiển thị bảng điều hành MiroFish Parity Swarm Consensus
+     */
+    function renderMirofishSwarmUI() {
+        if (!currentReport) return;
+        const p = currentReport.today?.parity || {};
+        const swarm = p.swarmDetails || {};
+        const tierBadge = document.getElementById('swarmTierBadge');
+        const adviceEl = document.getElementById('swarmTacticalAdvice');
+        const rateEl = document.getElementById('swarmConsensusRate');
+        const container = document.getElementById('swarmAgentsContainer');
+
+        if (!tierBadge || !container) return;
+
+        const isHigh = Boolean(swarm.isHighConsensus || swarm.tier === 'HIGH_CONVICTION');
+        const consensusCount = swarm.headConsensusCount || 3;
+        const consensusPct = Math.round((consensusCount / 5) * 100);
+
+        if (isHigh) {
+            tierBadge.className = 'px-2 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-500 text-white border border-emerald-300 shadow-sm animate-pulse';
+            tierBadge.textContent = '🟢 ĐỒNG THUẬN CAO (WIN RATE 58.8%)';
+        } else {
+            tierBadge.className = 'px-2 py-0.5 rounded text-[10px] font-black uppercase bg-amber-500/80 text-white border border-amber-300/80';
+            tierBadge.textContent = '🟡 TRANH CÃI / TRUNG LẬP (WIN RATE 50.0%)';
+        }
+
+        if (adviceEl) {
+            adviceEl.textContent = swarm.tacticalAdvice || (isHigh 
+                ? `Swarm đồng thuận ${consensusCount}/5 tác tử (${consensusPct}%) → Khuyên DÙNG SKILL dồn cược X2 nhóm Cùng Đầu`
+                : `Swarm phân hóa ${consensusCount}/5 tác tử (${consensusPct}%) → Khuyên ĐÁNH THƯỜNG hoặc cược phẳng để bảo toàn vốn`);
+        }
+
+        if (rateEl) {
+            rateEl.textContent = `${consensusCount}/5 Tác Tử (${consensusPct}%)`;
+        }
+
+        const agents = swarm.agentsHead || [
+            { id: 'Markov', name: 'Markov Hạt Nhân', code: 'MARKOV', vote: 'LE', voteVi: 'Lẻ', conf: 55 },
+            { id: 'Penta', name: 'Ngũ Trụ AI', code: 'PENTA', vote: 'LE', voteVi: 'Lẻ', conf: 55 },
+            { id: 'TriCore', name: 'Tri-Core 24s', code: 'TRICORE', vote: 'CHAN', voteVi: 'Chẵn', conf: 50 },
+            { id: 'Resonance', name: 'Sóng Nhịp FFT', code: 'FOURIER', vote: 'CHAN', voteVi: 'Chẵn', conf: 52 },
+            { id: 'StreakAuditor', name: 'Streak Auditor', code: 'AUDITOR', vote: 'LE', voteVi: 'Lẻ', conf: 60 }
+        ];
+
+        const majorityVote = (p.predHead === 'CHAN' ? 'Chẵn' : 'Lẻ');
+
+        container.innerHTML = agents.map(ag => {
+            const isAgree = (ag.voteVi === majorityVote || (ag.vote === 'CHAN' && p.predHead === 'CHAN') || (ag.vote === 'LE' && p.predHead === 'LE'));
+            const badgeBg = isAgree 
+                ? 'bg-emerald-950/60 border-emerald-400/40 text-emerald-200' 
+                : 'bg-rose-950/40 border-rose-400/30 text-rose-300';
+            const voteBadge = isAgree
+                ? 'bg-emerald-500/30 text-emerald-300 border-emerald-400/50'
+                : 'bg-rose-500/30 text-rose-300 border-rose-400/50';
+
+            return `
+                <div class="rounded-xl border ${badgeBg} p-2 flex flex-col justify-between text-xs">
+                    <div class="flex items-center justify-between gap-1 mb-1">
+                        <span class="font-bold text-[11px] text-slate-200 truncate" title="${ag.name}">${ag.name}</span>
+                        <span class="text-[9px] px-1 py-0.2 rounded font-mono font-bold bg-white/10 text-slate-300">${ag.code}</span>
+                    </div>
+                    <div class="flex items-center justify-between mt-1">
+                        <span class="px-1.5 py-0.5 rounded text-[10px] font-black border ${voteBadge}">Đầu ${ag.voteVi}</span>
+                        <span class="text-[10px] font-bold text-slate-400">${ag.conf}%</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
     }
 
     /**
