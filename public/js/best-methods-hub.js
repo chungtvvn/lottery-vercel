@@ -12,6 +12,7 @@
     let _chartEnabledSeries = {
         balanced: true,
         de_dynamic_governor: true,
+        lo_5ai_pure_2plus: true,
         lo_semantic_tiered7: true,
         lo_qmbf_top7_flat: true
     };
@@ -101,10 +102,25 @@
     function renderHero(rep) {
         const byId = Object.fromEntries(rep.methods.map(m => [m.id, m]));
         const deChamp = byId.de_dynamic_governor;
-        const loChamp = byId.lo_semantic_tiered7;
+        const lo5AiPure = byId.lo_5ai_pure_2plus;
+        const lo5AiTop2 = byId.lo_5ai_borda_top2;
+        const loChamp = lo5AiPure || byId.lo_semantic_tiered7;
         const loSafe = byId.lo_qmbf_top7_flat;
         const xienChamp = byId.xien4_daily_balanced;
         const ai5Champ = byId.ai5_signal_rebound_360;
+
+        // Đồng bộ động số lượng nút lọc nhóm Leaderboard
+        const allCnt = rep.methods.length;
+        const deCnt = rep.methods.filter(m => m.category === 'DE').length;
+        const loCnt = rep.methods.filter(m => m.category === 'LO').length;
+        const othCnt = rep.methods.filter(m => m.category === 'XIEN' || m.category === 'AI5').length;
+        document.querySelectorAll('[data-bm-cat]').forEach(btn => {
+            const c = btn.getAttribute('data-bm-cat');
+            if (c === 'ALL') btn.textContent = `Tất cả (${allCnt})`;
+            else if (c === 'DE') btn.textContent = `🎯 Đề (${deCnt})`;
+            else if (c === 'LO') btn.textContent = `🚀 Lô (${loCnt})`;
+            else if (c === 'OTHER') btn.textContent = `⚡ Xiên & 5AI (${othCnt})`;
+        });
 
         if ($('bmTargetDateBadge')) $('bmTargetDateBadge').textContent = fmtDateVi(rep.targetDate);
         if ($('bmSourceCutoffBadge')) {
@@ -135,9 +151,11 @@
             },
             {
                 eyebrow: '🔥 QUÁN QUÂN LÔ 2026',
-                title: 'Lô Semantic & QMBF Top 7',
+                title: lo5AiPure ? 'Lô 5AI Đa Tầng Thuần (≥2 AI)' : 'Lô Semantic & QMBF Top 7',
                 value: loChamp ? fmtProfit(loChamp.full2026.profitM) : '--',
-                sub: loSafe ? `Phẳng Top 7: ${fmtProfit(loSafe.full2026.profitM)} · ${loSafe.full2026.profitableRate}% ngày lãi · DD ${loSafe.full2026.maxDrawdownM}M` : '',
+                sub: lo5AiPure
+                    ? `ROI ${fmtRoi(lo5AiPure.full2026.roi)} · Song Thủ 5AI: ${lo5AiTop2 ? `${fmtProfit(lo5AiTop2.full2026.profitM)} (${fmtRoi(lo5AiTop2.full2026.roi)})` : '--'} · Top 7: ${loSafe ? fmtProfit(loSafe.full2026.profitM) : '--'}`
+                    : (loSafe ? `Phẳng Top 7: ${fmtProfit(loSafe.full2026.profitM)} · ${loSafe.full2026.profitableRate}% ngày lãi · DD ${loSafe.full2026.maxDrawdownM}M` : ''),
                 accent: 'text-emerald-300'
             },
             {
@@ -149,7 +167,7 @@
             },
             {
                 eyebrow: '🤖 5 AI TÍN HIỆU 360 LIVE',
-                title: 'Lọc Bỏ Ngày Xấu (SKIP)',
+                title: 'Động Cơ 5 Trường Phái v2',
                 value: ai5Champ ? fmtProfit(ai5Champ.full2026.profitM) : '--',
                 sub: ai5Champ ? `ROI ${fmtRoi(ai5Champ.full2026.roi)} · Đánh ${ai5Champ.full2026.days}/${ai5Champ.full2026.totalTracked} kỳ · 7d: ${fmtProfitShort(ai5Champ.last7d.profitM)}` : '',
                 accent: 'text-purple-300'
@@ -256,6 +274,8 @@
         const loTop6 = byId.lo_qmbf_top6;
         const loGov = byId.lo_dynamic_governor;
         const loTop2 = byId.lo_qmbf_top2;
+        const lo5AiPure = byId.lo_5ai_pure_2plus;
+        const lo5AiTop2 = byId.lo_5ai_borda_top2;
 
         const xien = byId.xien4_daily_balanced;
         const ai5 = byId.ai5_signal_rebound_360;
@@ -403,72 +423,84 @@
                 </div>
             </div>
 
-            <!-- CARD 3: XIÊN 4 LIVE & 5 AI TÍN HIỆU 360 -->
+            <!-- CARD 3: 🔥 LÔ 5AI ĐA TẦNG THUẦN & XIÊN 4 LIVE -->
             <div class="bm-card p-5 flex flex-col justify-between">
                 <div class="space-y-4">
                     <div class="flex items-start justify-between gap-2 border-b border-slate-100 pb-3">
                         <div>
                             <div class="flex flex-wrap items-center gap-1.5">
-                                <span class="rounded-md bg-purple-100 text-purple-900 px-2 py-0.5 text-[10px] font-black uppercase">⚡ XIÊN &amp; 5 AI 360</span>
-                                <span class="rounded-md px-2 py-0.5 text-[10px] font-black ${ai5?.today?.decision === 'SKIP' ? 'bg-slate-200 text-slate-700' : 'bg-emerald-100 text-emerald-800'}">
-                                    ${ai5?.today?.tacticalBadge || 'BET'}
+                                <span class="rounded-md bg-rose-100 text-rose-900 px-2 py-0.5 text-[10px] font-black uppercase">🔥 LÔ 5AI THUẦN ≥2</span>
+                                <span class="rounded-md px-2 py-0.5 text-[10px] font-black bg-emerald-100 text-emerald-800">
+                                    2026: ${lo5AiPure ? `${fmtProfit(lo5AiPure.full2026.profitM)} (${fmtRoi(lo5AiPure.full2026.roi)})` : '--'}
                                 </span>
                             </div>
-                            <h3 class="mt-1.5 text-base font-black text-slate-900">Xiên 4 Daily &amp; Cổng Tín Hiệu 5AI</h3>
+                            <h3 class="mt-1.5 text-base font-black text-slate-900">Lô 5AI Đa Tầng Thuần &amp; Xiên 4</h3>
                         </div>
                         <div class="text-right shrink-0">
-                            <span class="block text-[10px] font-bold text-slate-400">Điểm 5AI 360</span>
-                            <span class="text-sm font-black text-purple-700 bm-tabular">${ai5?.today?.scoreComposite ?? '--'}/100</span>
+                            <span class="block text-[10px] font-bold text-slate-400">Vốn Lô 5AI</span>
+                            <span class="text-sm font-black text-rose-700 bm-tabular">${lo5AiPure?.today?.estimatedStakeM ?? 0}M</span>
+                        </div>
+                    </div>
+
+                    <!-- 🔥 Lô 5AI Đa Tầng Thuần (>= 2 Trường Phái) -->
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-extrabold text-rose-800">🔥 Lô 5AI Hội Tụ ≥2 Trường Phái (${lo5AiPure?.today?.count || 0}s):</span>
+                            <button type="button" class="bm-copy-btn-soft" data-copy-text="${(lo5AiPure?.today?.copySyntax || '').replace(/"/g, '&quot;')}" data-copy-label="Đã copy Lô 5AI Đa Tầng Thuần!"><i class="bi bi-clipboard"></i> Copy</button>
+                        </div>
+                        ${(lo5AiPure?.today?.count || 0) === 0 ? `
+                            <div class="rounded-xl bg-slate-100 border border-slate-200 p-2.5 text-xs font-bold text-slate-700 text-center">
+                                🛡️ Hôm nay 0 số đạt ≥2 trường phái → Nghỉ Lô 5AI 0đ
+                            </div>
+                        ` : `
+                            <div class="space-y-1.5">
+                                ${lo5AiPure.today.x5?.length ? `<div class="flex items-center justify-between rounded-xl bg-rose-50/80 border border-rose-200 px-2.5 py-1.5"><span class="text-[10px] font-black text-rose-800">X5 (11M)</span><div class="flex flex-wrap gap-1">${renderChips(lo5AiPure.today.x5, 'bm-chip-x3')}</div></div>` : ''}
+                                ${lo5AiPure.today.x4?.length ? `<div class="flex items-center justify-between rounded-xl bg-amber-50/80 border border-amber-200 px-2.5 py-1.5"><span class="text-[10px] font-black text-amber-900">X4 (8.8M)</span><div class="flex flex-wrap gap-1">${renderChips(lo5AiPure.today.x4, 'bm-chip-x2')}</div></div>` : ''}
+                                ${lo5AiPure.today.x3?.length ? `<div class="flex items-center justify-between rounded-xl bg-emerald-50/80 border border-emerald-200 px-2.5 py-1.5"><span class="text-[10px] font-black text-emerald-900">X3 (6.6M)</span><div class="flex flex-wrap gap-1">${renderChips(lo5AiPure.today.x3, 'bm-chip-lo-vip')}</div></div>` : ''}
+                                ${lo5AiPure.today.x2?.length ? `<div class="flex items-center justify-between rounded-xl bg-teal-50/70 border border-teal-200 px-2.5 py-1.5"><span class="text-[10px] font-black text-teal-900">X2 (4.4M)</span><div class="flex flex-wrap gap-1">${renderChips(lo5AiPure.today.x2, 'bm-chip-lo')}</div></div>` : ''}
+                            </div>
+                        `}
+                        <div class="flex items-center justify-between rounded-xl bg-amber-50/70 border border-amber-200/90 px-3 py-1.5">
+                            <span class="text-[11px] font-extrabold text-amber-900">⚡ Song Thủ 5AI Top 2 (ROI ${fmtRoi(lo5AiTop2?.full2026?.roi)}):</span>
+                            <div class="flex items-center gap-1.5">
+                                ${renderChips(lo5AiTop2?.today?.all || [], 'bm-chip-x2')}
+                                <button type="button" class="text-[11px] font-bold text-blue-600 hover:underline cursor-pointer ml-1" data-copy-text="${(lo5AiTop2?.today?.all || []).join(', ')}" data-copy-label="Đã copy Song Thủ 5AI Top 2!">Copy</button>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Xiên 4 Daily -->
-                    <div class="space-y-2">
+                    <div class="pt-3 border-t border-slate-100 space-y-2">
                         <div class="flex items-center justify-between">
                             <span class="text-xs font-extrabold text-amber-800">⚡ Xiên 4 Quây — 2 Dàn Daily (22M · ROI ${fmtRoi(xien?.full2026?.roi)}):</span>
                             <button type="button" class="bm-copy-btn-soft" data-copy-text="${(xien?.today?.copySyntax || '').replace(/"/g, '&quot;')}" data-copy-label="Đã copy 2 Dàn Xiên 4!"><i class="bi bi-clipboard"></i> Copy</button>
                         </div>
-                        <div class="grid grid-cols-1 gap-2">
-                            <div class="flex items-center justify-between rounded-xl bg-amber-50/70 border border-amber-200/80 px-3 py-2">
+                        <div class="grid grid-cols-1 gap-1.5">
+                            <div class="flex items-center justify-between rounded-xl bg-amber-50/60 border border-amber-200/80 px-3 py-1.5">
                                 <span class="text-[11px] font-black text-amber-900">Dàn 1 (11M)</span>
                                 <div class="flex gap-1.5">${renderChips(xien?.today?.dan1 || [], 'bm-chip-xien')}</div>
                             </div>
-                            <div class="flex items-center justify-between rounded-xl bg-amber-50/70 border border-amber-200/80 px-3 py-2">
+                            <div class="flex items-center justify-between rounded-xl bg-amber-50/60 border border-amber-200/80 px-3 py-1.5">
                                 <span class="text-[11px] font-black text-amber-900">Dàn 2 (11M)</span>
                                 <div class="flex gap-1.5">${renderChips(xien?.today?.dan2 || [], 'bm-chip-xien')}</div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 5 AI Signal Rebound 360 -->
-                    <div class="pt-3 border-t border-slate-100 space-y-2">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-extrabold text-purple-800">🤖 5 AI Tín Hiệu Hồi Phục 360:</span>
-                            <span class="text-[11px] font-black text-emerald-700 bm-tabular">Live: ${fmtProfit(ai5?.full2026?.profitM)} (${fmtRoi(ai5?.full2026?.roi)})</span>
-                        </div>
-                        <p class="text-[11px] text-slate-600 leading-relaxed bg-slate-50 rounded-xl p-2.5 border border-slate-200/80">
-                            ${ai5?.today?.reason || ''}
-                        </p>
-                        ${ai5?.today?.decision !== 'SKIP' ? `
-                            <div>
-                                <div class="text-[11px] font-bold text-slate-500 mb-1">Lô 5AI Cửa Sổ 360 (Top 6):</div>
-                                <div class="flex flex-wrap gap-1.5">${renderChips(ai5?.today?.loTop6 || [], 'bm-chip-lo')}</div>
-                            </div>
-                        ` : `
-                            <div class="rounded-xl bg-slate-100 border border-slate-200 p-2.5 text-xs font-bold text-slate-700 text-center">
-                                🛡️ Hôm nay hệ thống 5AI 360 khóa cược (SKIP) để bảo toàn vốn
-                            </div>
-                        `}
+                    <!-- Trạng thái cổng 5AI 360 -->
+                    <div class="rounded-xl bg-slate-50 border border-slate-200/80 px-3 py-2 text-[11px] text-slate-600 flex items-center justify-between gap-2">
+                        <span>🤖 Cổng Combo 5AI 360 (${ai5?.today?.scoreComposite ?? '--'}đ):</span>
+                        <span class="font-black ${ai5?.today?.decision === 'SKIP' ? 'text-slate-600' : 'text-emerald-700'}">${ai5?.today?.tacticalBadge || 'BET'}</span>
                     </div>
                 </div>
 
                 <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
                     <div class="flex items-center gap-3">
+                        <a href="/ai-5" class="text-xs font-bold text-rose-700 hover:underline">Chi tiết 5 AI →</a>
                         <a href="/xien-fusion" class="text-xs font-bold text-amber-700 hover:underline">Xiên Ghép →</a>
-                        <a href="/ai-5" class="text-xs font-bold text-purple-700 hover:underline">5 AI 360 →</a>
                     </div>
-                    <button type="button" class="bm-copy-btn" data-copy-text="${(ai5?.today?.copySyntax || '').replace(/"/g, '&quot;')}" data-copy-label="Đã copy dàn 5 AI Tín Hiệu 360!">
-                        <i class="bi bi-clipboard-check"></i> Copy 5AI 360
+                    <button type="button" class="bm-copy-btn" data-copy-text="${(lo5AiPure?.today?.copySyntax || '').replace(/"/g, '&quot;')}" data-copy-label="Đã copy Lô 5AI Đa Tầng Thuần!">
+                        <i class="bi bi-fire"></i> Copy Lô 5AI Thuần
                     </button>
                 </div>
             </div>
@@ -587,7 +619,8 @@
         const seriesDefs = [
             { id: 'balanced', label: '👑 Bộ Cân Bằng (Đề + Lô)', color: '#2563eb' },
             { id: 'de_dynamic_governor', label: '🎯 Đề Dynamic Governor', color: '#d97706' },
-            { id: 'lo_semantic_tiered7', label: '🔥 Lô Semantic Top 7 X2/X1', color: '#059669' },
+            { id: 'lo_5ai_pure_2plus', label: '🔥 Lô 5AI Đa Tầng Thuần', color: '#e11d48' },
+            { id: 'lo_semantic_tiered7', label: '💎 Lô Semantic Top 7 X2/X1', color: '#059669' },
             { id: 'lo_qmbf_top7_flat', label: '🚀 Lô Top 7 Phẳng', color: '#7c3aed' }
         ];
 
@@ -749,6 +782,8 @@
             const totalDayP = rows.reduce((s, r) => s + (r.portfolios?.[pKey]?.dayProfitM || 0), 0);
             const winDays = rows.filter(r => (r.portfolios?.[pKey]?.dayProfitM || 0) > 0).length;
             const deHits = rows.filter(r => r.methods?.de_dynamic_governor?.isHit).length;
+            const lo5AiWins = rows.filter(r => r.methods?.lo_5ai_pure_2plus?.isWin).length;
+            const lo5AiP = rows.reduce((s, r) => s + (r.methods?.lo_5ai_pure_2plus?.profitM || 0), 0);
             const loWins = rows.filter(r => r.methods?.lo_qmbf_top7_flat?.isWin).length;
             const activePort = rep.portfolios.find(p => p.id === pKey);
 
@@ -756,7 +791,8 @@
                 <span class="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700">Hiển thị: <strong>${rows.length}</strong> kỳ</span>
                 <span class="rounded-lg bg-blue-50 border border-blue-200 px-2.5 py-1 text-xs font-bold text-blue-800">Bộ vốn: ${activePort?.name?.replace(/^[^\s]+\s/, '') || pKey}</span>
                 <span class="rounded-lg ${totalDayP >= 0 ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'} border px-2.5 py-1 text-xs font-black bm-tabular">Tổng lãi đoạn này: ${fmtProfitShort(totalDayP)}</span>
-                <span class="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700">Đề nổ: <strong>${deHits}</strong> · Lô Top 7 lãi: <strong>${loWins}/${rows.length}</strong> · Ngày dương: <strong>${winDays}/${rows.length}</strong></span>
+                <span class="rounded-lg ${lo5AiP >= 0 ? 'bg-rose-50 border-rose-200 text-rose-900' : 'bg-slate-100 border-slate-200 text-slate-700'} border px-2.5 py-1 text-xs font-bold bm-tabular">🔥 Lô 5AI Thuần: <strong>${fmtProfitShort(lo5AiP)}</strong> (${lo5AiWins}/${rows.length} lãi)</span>
+                <span class="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700">Đề nổ: <strong>${deHits}</strong> · Top 7 lãi: <strong>${loWins}/${rows.length}</strong> · Ngày dương: <strong>${winDays}/${rows.length}</strong></span>
             `;
         }
 
@@ -773,7 +809,7 @@
         };
 
         if (rows.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="10" class="py-8 text-center text-sm text-slate-400">Không tìm thấy kỳ mở thưởng phù hợp với bộ lọc.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="11" class="py-8 text-center text-sm text-slate-400">Không tìm thấy kỳ mở thưởng phù hợp với bộ lọc.</td></tr>';
             return;
         }
 
@@ -788,6 +824,7 @@
                     </td>
                     <td class="py-2.5 px-2 text-center">${renderCell(r.methods?.de_dynamic_governor, false)}</td>
                     <td class="py-2.5 px-2 text-center">${renderCell(r.methods?.de_core_intersect, false)}</td>
+                    <td class="py-2.5 px-2 text-center">${renderCell(r.methods?.lo_5ai_pure_2plus, true)}</td>
                     <td class="py-2.5 px-2 text-center">${renderCell(r.methods?.lo_qmbf_top7_flat, true)}</td>
                     <td class="py-2.5 px-2 text-center">${renderCell(r.methods?.lo_semantic_tiered7, true)}</td>
                     <td class="py-2.5 px-2 text-center">${renderCell(r.methods?.lo_dynamic_governor, true)}</td>

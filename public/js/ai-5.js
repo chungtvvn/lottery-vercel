@@ -893,33 +893,54 @@
                                 </div>
                             </div>
 
-                            <!-- CỘT PHẢI: LÔ GỘP 360 ĐA TẦNG (MULTI-TIER X5 -> X1) -->
-                            <div class="p-4 rounded-2xl bg-white border border-emerald-200 shadow-2xs space-y-3 flex flex-col justify-between">
+                            <!-- CỘT PHẢI: 🔥 LÔ GỘP ĐA TẦNG THUẦN 5 AI (CHỐNG LẶP SỐ · CHỈ CƯỢC >=2 TRƯỜNG PHÁI) -->
+                            <div class="p-4 rounded-2xl bg-white border-2 border-emerald-300 shadow-2xs space-y-3 flex flex-col justify-between">
                                 <div class="space-y-3">
                                     <div class="flex items-center justify-between border-b border-slate-100 pb-2">
                                         <div class="flex items-center gap-2">
-                                            <span class="text-sm">🎲</span>
+                                            <span class="text-sm">🔥</span>
                                             <div>
-                                                <h5 class="font-bold text-slate-800 text-xs">Lô Gộp 360 Đa Tầng (${newStrategy.lo.numbers.length} số)</h5>
-                                                <span class="text-[10px] text-slate-500 font-normal">Tầng X5 đến X1 (Theo Phiếu Bầu 360)</span>
+                                                <h5 class="font-black text-slate-900 text-xs">Lô Gộp Đa Tầng Thuần (${newStrategy.lo.numbers.length} số ≥2 AI)</h5>
+                                                <span class="text-[10px] text-emerald-700 font-semibold">5 trường phái độc lập · Chỉ đánh X5..X2 (cắt 100% nhiễu 1-vote)</span>
                                             </div>
                                         </div>
-                                        <span class="text-[10px] text-indigo-700 font-bold bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
-                                            Cửa sổ 360 ngày
+                                        <span class="text-[10px] text-rose-700 font-black bg-rose-50 px-2 py-0.5 rounded border border-rose-200 shrink-0">
+                                            Thuần ≥2 AI
                                         </span>
                                     </div>
 
-                                    <!-- Kinh tế học Lô Đa Tầng -->
+                                    <!-- Hiệu suất Live độc lập Lô Thuần (tách riêng Đề 360) -->
+                                    ${state.payload?.lo5AiPureSummary ? (() => {
+                                        const ps = state.payload.lo5AiPureSummary;
+                                        const isPos = Number(ps.profitM) >= 0;
+                                        return `
+                                            <div class="rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 p-2.5 flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                                                <div class="font-bold text-emerald-950">
+                                                    <span>🔥 Độc Lập 1.0x (${ps.playedDays}/${ps.days} kỳ):</span>
+                                                    <span class="font-mono ml-1 ${isPos ? 'text-emerald-700 font-black' : 'text-rose-600 font-black'}">${isPos ? '+' : ''}${ps.profitM}M (${ps.roi})</span>
+                                                </div>
+                                                <span class="text-[10px] font-mono text-slate-600">Nổ ${ps.totalHits} nháy · Lãi ${ps.winDays}/${ps.playedDays} ngày</span>
+                                            </div>
+                                        `;
+                                    })() : ''}
+
+                                    <!-- Kinh tế học Lô Đa Tầng Thuần -->
                                     <div class="text-[11px] font-mono text-slate-600 bg-indigo-50/70 p-2 rounded-xl border border-indigo-100 flex items-center justify-between">
-                                        <span>Cược: Hệ số x ${newStrategy.decisionMultiplier * 2.2}M</span>
-                                        <span>Ăn: Hệ số x ${newStrategy.decisionMultiplier * 8}M/nháy</span>
+                                        <span>Đánh độc lập 1.0x: <strong>${formatMoney(newStrategy.lo.baseStakeK, { signed: false })}</strong></span>
+                                        <span>Ăn: Hệ số × 8M/nháy</span>
                                     </div>
 
-                                    <!-- Danh sách các Tầng X5 đến X1 -->
+                                    <!-- Danh sách các Tầng Thuần X5 đến X2 (ZERO X1 noise) -->
                                     <div class="space-y-2 text-xs">
+                                        ${newStrategy.lo.numbers.length === 0 ? `
+                                            <div class="rounded-xl bg-slate-100 border border-slate-200 p-3 text-center text-xs font-bold text-slate-600">
+                                                🛡️ Hôm nay 5 trường phái phân tán (0 số đạt ≥2 AI) → Nghỉ Lô 0đ bảo toàn vốn!
+                                            </div>
+                                        ` : ''}
+
                                         ${newStrategy.lo.tiers?.x5Nums?.length ? `
                                             <div class="flex items-center justify-between gap-1.5">
-                                                <span class="rounded bg-gradient-to-r from-rose-600 to-pink-600 text-white px-2 py-0.5 text-[10px] font-black shrink-0">TẦNG X5 (5 AI)</span>
+                                                <span class="rounded bg-gradient-to-r from-rose-600 to-pink-600 text-white px-2 py-0.5 text-[10px] font-black shrink-0">TẦNG X5 (11M)</span>
                                                 <div class="flex flex-wrap gap-1 justify-end">
                                                     ${newStrategy.lo.tiers.x5Nums.map(n => `<span class="badge-number font-mono font-black text-xs px-2.5 py-1 rounded-xl bg-rose-600 text-white shadow-2xs">${n} (5/5)</span>`).join('')}
                                                 </div>
@@ -928,7 +949,7 @@
 
                                         ${newStrategy.lo.tiers?.x4Nums?.length ? `
                                             <div class="flex items-center justify-between gap-1.5">
-                                                <span class="rounded bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 px-2 py-0.5 text-[10px] font-black shrink-0">TẦNG X4 (4 AI)</span>
+                                                <span class="rounded bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 px-2 py-0.5 text-[10px] font-black shrink-0">TẦNG X4 (8.8M)</span>
                                                 <div class="flex flex-wrap gap-1 justify-end">
                                                     ${newStrategy.lo.tiers.x4Nums.map(n => `<span class="badge-number font-mono font-black text-xs px-2.5 py-1 rounded-xl bg-amber-400 text-slate-950 shadow-2xs">${n} (4/5)</span>`).join('')}
                                                 </div>
@@ -937,7 +958,7 @@
 
                                         ${newStrategy.lo.tiers?.x3Nums?.length ? `
                                             <div class="flex items-center justify-between gap-1.5">
-                                                <span class="rounded bg-emerald-600 text-white px-2 py-0.5 text-[10px] font-black shrink-0">TẦNG X3 (3 AI)</span>
+                                                <span class="rounded bg-emerald-600 text-white px-2 py-0.5 text-[10px] font-black shrink-0">TẦNG X3 (6.6M)</span>
                                                 <div class="flex flex-wrap gap-1 justify-end">
                                                     ${newStrategy.lo.tiers.x3Nums.map(n => `<span class="badge-number font-mono font-black text-xs px-2.5 py-1 rounded-xl bg-emerald-600 text-white shadow-2xs">${n} (3/5)</span>`).join('')}
                                                 </div>
@@ -946,47 +967,66 @@
 
                                         ${newStrategy.lo.tiers?.x2Nums?.length ? `
                                             <div class="flex items-center justify-between gap-1.5">
-                                                <span class="rounded bg-teal-600 text-white px-2 py-0.5 text-[10px] font-black shrink-0">TẦNG X2 (2 AI)</span>
+                                                <span class="rounded bg-teal-600 text-white px-2 py-0.5 text-[10px] font-black shrink-0">TẦNG X2 (4.4M)</span>
                                                 <div class="flex flex-wrap gap-1 justify-end">
                                                     ${newStrategy.lo.tiers.x2Nums.map(n => `<span class="badge-number font-mono font-bold text-xs px-2 py-0.5 rounded-xl bg-teal-50 border border-teal-300 text-teal-900">${n} (2/5)</span>`).join('')}
                                                 </div>
                                             </div>
                                         ` : ''}
-
-                                        ${newStrategy.lo.tiers?.x1Nums?.length ? `
-                                            <div class="flex items-center justify-between gap-1.5 pt-1.5 border-t border-slate-100">
-                                                <span class="rounded bg-slate-600 text-white px-2 py-0.5 text-[10px] font-bold shrink-0">TẦNG X1 (1 AI)</span>
-                                                <div class="flex flex-wrap gap-1 justify-end">
-                                                    ${newStrategy.lo.tiers.x1Nums.map(n => `<span class="badge-number font-mono text-[11px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">${n}</span>`).join('')}
-                                                </div>
-                                            </div>
-                                        ` : ''}
                                     </div>
 
-                                    <!-- Top 6 phụ trợ -->
-                                    <div class="p-2 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
-                                        <span class="text-slate-500 font-semibold">Hoặc Top 6 Tinh Hoa:</span>
-                                        <div class="flex gap-1 font-mono font-black text-indigo-900 text-xs">
-                                            ${(newStrategy.lo.top6 || []).map(n => `<span class="px-1.5 py-0.5 bg-white border border-indigo-200 rounded text-[11px]">${n}</span>`).join('')}
+                                    <!-- Song Thủ Top 2 Borda + Top 6 Borda Tinh Hoa -->
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                                        <div class="p-2 rounded-xl bg-amber-50/70 border border-amber-200 flex items-center justify-between">
+                                            <span class="text-amber-900 font-bold text-[11px]">⚡ Song Thủ Top 2:</span>
+                                            <div class="flex gap-1 font-mono font-black text-amber-950">
+                                                ${(newStrategy.lo.top2 || (newStrategy.lo.top6 || []).slice(0, 2)).map(n => `<span class="px-1.5 py-0.5 bg-white border border-amber-300 rounded text-[11px]">${n}</span>`).join('')}
+                                            </div>
+                                        </div>
+                                        <div class="p-2 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                                            <span class="text-slate-600 font-semibold text-[11px]">Top 6 Borda:</span>
+                                            <div class="flex gap-1 font-mono font-black text-indigo-900">
+                                                ${(newStrategy.lo.top6 || []).map(n => `<span class="px-1 py-0.5 bg-white border border-indigo-200 rounded text-[10px]">${n}</span>`).join('')}
+                                            </div>
                                         </div>
                                     </div>
+
+                                    <!-- Chi tiết 5 trường phái độc lập -->
+                                    ${newStrategy.lo.schoolPicks ? `
+                                        <details class="rounded-xl bg-slate-50/80 border border-slate-200/80 px-2.5 py-2 text-[11px]">
+                                            <summary class="cursor-pointer font-bold text-slate-600 flex items-center justify-between">
+                                                <span><i class="bi bi-diagram-3 text-emerald-600 mr-1"></i>Xem số độc lập của 5 trường phái hôm nay</span>
+                                                <span class="text-[10px] text-slate-400">Đổi mới &gt;60%/ngày</span>
+                                            </summary>
+                                            <div class="mt-2 space-y-1 font-mono text-[10px] text-slate-700">
+                                                <div class="flex justify-between gap-2"><span class="font-sans font-bold text-emerald-700">🟢 ChatGPT (Markov D-1):</span><span>${(newStrategy.lo.schoolPicks.chatgpt || []).join(', ')}</span></div>
+                                                <div class="flex justify-between gap-2"><span class="font-sans font-bold text-purple-700">🟣 Claude (Cầu/Rơi/Lộn):</span><span>${(newStrategy.lo.schoolPicks.claude || []).join(', ')}</span></div>
+                                                <div class="flex justify-between gap-2"><span class="font-sans font-bold text-amber-700">✨ Gemini (EMA Ngắn):</span><span>${(newStrategy.lo.schoolPicks.gemini || []).join(', ')}</span></div>
+                                                <div class="flex justify-between gap-2"><span class="font-sans font-bold text-slate-700">⚡ Grok (Weibull Hazard):</span><span>${(newStrategy.lo.schoolPicks.grok || []).join(', ')}</span></div>
+                                                <div class="flex justify-between gap-2"><span class="font-sans font-bold text-indigo-700">🔮 Muse (Nhịp 60/180 & Lag-2):</span><span>${(newStrategy.lo.schoolPicks.muse || []).join(', ')}</span></div>
+                                            </div>
+                                        </details>
+                                    ` : ''}
                                 </div>
 
                                 <!-- Kế hoạch vốn & Nút copy -->
                                 <div class="pt-2 border-t border-slate-100 space-y-2">
                                     <div class="text-[11px] font-mono text-slate-600 flex items-center justify-between">
-                                        <span>Dự toán Vốn: ${newStrategy.decision === 'SKIP' ? '<strong class="text-slate-700">0đ (Nghỉ cược)</strong>' : `<strong class="text-indigo-900 font-black">${formatMoney(newStrategy.combo.plannedStakeK, { signed: false })}</strong>`}</span>
-                                        <span class="text-slate-400">(Đề: ${formatMoney(newStrategy.de.plannedStakeK, { signed: false })} · Lô: ${formatMoney(newStrategy.lo.plannedStakeK, { signed: false })})</span>
+                                        <span>Vốn Lô Thuần 1.0x: <strong class="text-emerald-800 font-black">${formatMoney(newStrategy.lo.baseStakeK, { signed: false })}</strong></span>
+                                        <span class="text-slate-400">Combo 360: ${newStrategy.decision === 'SKIP' ? '0đ (SKIP)' : formatMoney(newStrategy.combo.plannedStakeK, { signed: false })}</span>
                                     </div>
-                                    <div class="flex items-center gap-2">
-                                        <button type="button" id="btnCopyNewLoTiered" class="flex-1 py-1.5 px-2 rounded-xl bg-gradient-to-r from-indigo-600 to-teal-600 hover:opacity-95 text-white font-black text-[11px] transition shadow-2xs cursor-pointer text-center">
-                                            <i class="bi bi-clipboard-check"></i> Copy Lô Đa Tầng (${newStrategy.lo.numbers.length}s)
+                                    <div class="flex flex-wrap items-center gap-1.5">
+                                        <button type="button" id="btnCopyNewLoTiered" class="flex-1 py-1.5 px-2 rounded-xl bg-gradient-to-r from-rose-600 to-amber-600 hover:opacity-95 text-white font-black text-[11px] transition shadow-2xs cursor-pointer text-center">
+                                            <i class="bi bi-fire"></i> Copy Lô Thuần ≥2 (${newStrategy.lo.numbers.length}s)
+                                        </button>
+                                        <button type="button" id="btnCopyNewLoTop2" class="py-1.5 px-2.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-950 border border-amber-300 font-black text-[11px] transition shadow-2xs cursor-pointer text-center">
+                                            ⚡ Top 2
                                         </button>
                                         <button type="button" id="btnCopyNewLo" class="py-1.5 px-2.5 rounded-xl bg-white hover:bg-slate-50 text-indigo-900 border border-indigo-300 font-bold text-[11px] transition shadow-2xs cursor-pointer text-center">
-                                            <i class="bi bi-dice-6-fill"></i> Top 6
+                                            Top 6
                                         </button>
-                                        <button type="button" id="btnCopyNewAll" class="flex-1 py-1.5 px-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 text-white font-black text-[11px] transition shadow-xs cursor-pointer text-center">
-                                            <i class="bi bi-clipboard-check"></i> Copy Cả Bộ
+                                        <button type="button" id="btnCopyNewAll" class="py-1.5 px-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] transition shadow-2xs cursor-pointer text-center">
+                                            Cả Bộ
                                         </button>
                                     </div>
                                 </div>
@@ -1550,41 +1590,49 @@
                 copyToClipboard(newStrategy.de.numbers.join(' '), `Dàn Đề Gộp Lọc Anti-Parity (${newStrategy.de.totalCount} số)`);
             });
             document.getElementById('btnCopyNewLoTiered')?.addEventListener('click', () => {
-                const lines = [`🎲 LÔ GỘP 360 ĐA TẦNG NGÀY ${latestDay.date} (${newStrategy.lo.numbers.length} số):`];
+                if (!newStrategy.lo.numbers.length) {
+                    copyToClipboard(`🛡️ Ngày ${latestDay.date}: Lô 5AI Đa Tầng Thuần không có số ≥2 trường phái → Nghỉ Lô 0đ.`, 'Thông báo nghỉ Lô Thuần');
+                    return;
+                }
+                const lines = [`🔥 LÔ GỘP ĐA TẦNG THUẦN 5 AI (≥2 TRƯỜNG PHÁI) NGÀY ${latestDay.date} (${newStrategy.lo.numbers.length} số · Vốn ${formatMoney(newStrategy.lo.baseStakeK, { signed: false })}):`];
                 const t = newStrategy.lo.tiers || {};
-                const mult = newStrategy.decisionMultiplier || 1;
-                if (t.x5Nums?.length) lines.push(`- Tầng X5 (Cược ${mult * 11}M): ${t.x5Nums.join(' ')}`);
-                if (t.x4Nums?.length) lines.push(`- Tầng X4 (Cược ${mult * 8.8}M): ${t.x4Nums.join(' ')}`);
-                if (t.x3Nums?.length) lines.push(`- Tầng X3 (Cược ${mult * 6.6}M): ${t.x3Nums.join(' ')}`);
-                if (t.x2Nums?.length) lines.push(`- Tầng X2 (Cược ${mult * 4.4}M): ${t.x2Nums.join(' ')}`);
-                if (t.x1Nums?.length) lines.push(`- Tầng X1 (Cược ${mult * 2.2}M): ${t.x1Nums.join(' ')}`);
-                copyToClipboard(lines.join('\n'), 'Lô Đa Tầng 360 (X5 -> X1)');
+                if (t.x5Nums?.length) lines.push(`- Tầng X5 (Cược 11M/số): ${t.x5Nums.join(' ')}`);
+                if (t.x4Nums?.length) lines.push(`- Tầng X4 (Cược 8.8M/số): ${t.x4Nums.join(' ')}`);
+                if (t.x3Nums?.length) lines.push(`- Tầng X3 (Cược 6.6M/số): ${t.x3Nums.join(' ')}`);
+                if (t.x2Nums?.length) lines.push(`- Tầng X2 (Cược 4.4M/số): ${t.x2Nums.join(' ')}`);
+                copyToClipboard(lines.join('\n'), 'Lô Gộp Đa Tầng Thuần ≥2 AI');
+            });
+            document.getElementById('btnCopyNewLoTop2')?.addEventListener('click', () => {
+                const top2 = newStrategy.lo.top2 || (newStrategy.lo.top6 || []).slice(0, 2);
+                copyToClipboard(top2.join(' '), `Song Thủ Top 2 Borda 5 AI (${top2.length} số · 4.4M)`);
             });
             document.getElementById('btnCopyNewLo')?.addEventListener('click', () => {
                 const top6 = newStrategy.lo.top6 || newStrategy.lo.numbers.slice(0, 6);
-                copyToClipboard(top6.join(' '), `Top 6 Lô Đồng Thuận 360 Ngày (${top6.length} số)`);
+                copyToClipboard(top6.join(' '), `Top 6 Borda Lô 5 AI Động (${top6.length} số · 13.2M)`);
             });
             document.getElementById('btnCopyNewAll')?.addEventListener('click', () => {
                 const t = newStrategy.lo.tiers || {};
                 const mult = newStrategy.decisionMultiplier || 1;
+                const top2 = newStrategy.lo.top2 || (newStrategy.lo.top6 || []).slice(0, 2);
                 const lines = [
-                    `⚡ PHƯƠNG PHÁP MỚI: TÍN HIỆU HỒI PHỤC 360 (${latestDay.date})`,
-                    `Quyết định: ${newStrategy.decisionLabel} (Tín hiệu ${newStrategy.scoreComposite}/100)`,
+                    `⚡ PHƯƠNG PHÁP MỚI: 5 AI ĐA TRƯỜNG PHÁI ĐỘNG & TÍN HIỆU 360 (${latestDay.date})`,
+                    `Quyết định Combo 360: ${newStrategy.decisionLabel} (Tín hiệu ${newStrategy.scoreComposite}/100)`,
                     `Dạng Chẵn/Lẻ: ${newStrategy.predFormVi} (Loại trừ ${newStrategy.oppFormVi})`,
                     '',
-                    `🎯 1. ĐỀ GỘP 360 LỌC ANTI-PARITY (${newStrategy.de.totalCount} số):`,
-                    `- VIP X2 (Cược ${mult * 2}M): ${newStrategy.de.x2Nums.join(' ')}`,
-                    newStrategy.de.countX1 > 0 ? `- Lót X1 (Cược ${mult * 1}M): ${newStrategy.de.x1Nums.join(' ')}` : '',
+                    `🔥 1. LÔ GỘP ĐA TẦNG THUẦN ≥2 AI (ĐỘC LẬP 1.0X · ${newStrategy.lo.numbers.length} số · Vốn ${formatMoney(newStrategy.lo.baseStakeK, { signed: false })}):`,
+                    t.x5Nums?.length ? `- Tầng X5 (11M): ${t.x5Nums.join(' ')}` : '',
+                    t.x4Nums?.length ? `- Tầng X4 (8.8M): ${t.x4Nums.join(' ')}` : '',
+                    t.x3Nums?.length ? `- Tầng X3 (6.6M): ${t.x3Nums.join(' ')}` : '',
+                    t.x2Nums?.length ? `- Tầng X2 (4.4M): ${t.x2Nums.join(' ')}` : '',
+                    newStrategy.lo.numbers.length === 0 ? '- Không có số ≥2 trường phái → Nghỉ Lô 0đ' : '',
+                    `- Song Thủ Top 2 Borda (4.4M): ${top2.join(' ')}`,
+                    `- Top 6 Borda Phẳng (13.2M): ${(newStrategy.lo.top6 || []).join(' ')}`,
                     '',
-                    `🎲 2. LÔ GỘP 360 ĐA TẦNG (${newStrategy.lo.numbers.length} số, Vốn: ${formatMoney(newStrategy.lo.plannedStakeK, { signed: false })}):`,
-                    t.x5Nums?.length ? `- Tầng X5 (Cược ${mult * 11}M): ${t.x5Nums.join(' ')}` : '',
-                    t.x4Nums?.length ? `- Tầng X4 (Cược ${mult * 8.8}M): ${t.x4Nums.join(' ')}` : '',
-                    t.x3Nums?.length ? `- Tầng X3 (Cược ${mult * 6.6}M): ${t.x3Nums.join(' ')}` : '',
-                    t.x2Nums?.length ? `- Tầng X2 (Cược ${mult * 4.4}M): ${t.x2Nums.join(' ')}` : '',
-                    t.x1Nums?.length ? `- Tầng X1 (Cược ${mult * 2.2}M): ${t.x1Nums.join(' ')}` : '',
-                    `- Hoặc Top 6 Tinh Hoa: ${(newStrategy.lo.top6 || []).join(' ')}`
+                    `🎯 2. ĐỀ GỘP 360 LỌC ANTI-PARITY (${newStrategy.de.totalCount} số):`,
+                    `- VIP X2 (Cược ${mult * 2}M): ${newStrategy.de.x2Nums.join(' ')}`,
+                    newStrategy.de.countX1 > 0 ? `- Lót X1 (Cược ${mult * 1}M): ${newStrategy.de.x1Nums.join(' ')}` : ''
                 ].filter(Boolean);
-                copyToClipboard(lines.join('\n'), 'Toàn bộ Phương Pháp Mới');
+                copyToClipboard(lines.join('\n'), 'Toàn bộ Phương Pháp Mới 5 AI');
             });
         }
     }
@@ -2537,15 +2585,15 @@
                             </div>
                         </div>
 
-                        <!-- CỘT 2: LÔ GỘP 360 ĐA TẦNG (TẦNG X5 ĐẾN X1) -->
+                        <!-- CỘT 2: 🔥 LÔ GỘP ĐA TẦNG THUẦN 5 AI (CHỈ X5..X2 >= 2 TRƯỜNG PHÁI) -->
                         <div class="rounded-2xl bg-white border border-teal-200 p-4 space-y-3.5 flex flex-col justify-between shadow-xs">
                             <div class="space-y-3">
                                 <div class="flex items-center justify-between border-b border-teal-100 pb-2">
                                     <div class="flex items-center gap-2">
-                                        <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-teal-100 text-teal-900 text-sm font-black">🎲</span>
+                                        <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-rose-100 text-rose-900 text-sm font-black">🔥</span>
                                         <div>
-                                            <h5 class="text-xs font-black text-slate-900 uppercase">Lô Gộp 360 Đa Tầng (${loNumbers.length} số)</h5>
-                                            <span class="text-[10px] text-slate-500">Phân tầng X5..X1 theo phiếu bầu 360 ngày${isSkip ? ' (Nghỉ Cược - Theo Dõi)' : ''}</span>
+                                            <h5 class="text-xs font-black text-slate-900 uppercase">Lô Gộp Đa Tầng Thuần (${loNumbers.length} số ≥2 AI)</h5>
+                                            <span class="text-[10px] text-slate-500">5 Trường Phái Động · Chỉ đánh X5..X2 (không nhiễu 1-vote)</span>
                                         </div>
                                     </div>
                                     ${isSettled ? `
@@ -2557,16 +2605,24 @@
                                     `}
                                 </div>
 
-                                ${isSettled ? `
+                                ${isSettled && lo.pureFlat ? `
+                                    <div class="text-[11px] font-mono text-slate-600 flex flex-wrap items-center justify-between gap-1.5 bg-teal-50/60 p-2.5 rounded-xl border border-teal-100">
+                                        <div>Lô Thuần 1.0x: Vốn ${formatMoney(lo.pureFlat.stakeK, { signed: false })} · Ăn <strong class="text-emerald-700">${formatMoney(lo.pureFlat.payoutK, { signed: false })}</strong></div>
+                                        <div class="flex items-center gap-1.5">
+                                            <span>Lãi: <strong class="${(lo.pureFlat.profitK || 0) >= 0 ? "text-emerald-700" : "text-rose-600"}">${formatMoney(lo.pureFlat.profitK || 0)}</strong></span>
+                                            ${lo.cumPureProfitK !== undefined ? `<span class="text-slate-400 font-sans">(LK: <strong class="${lo.cumPureProfitK >= 0 ? "text-emerald-700" : "text-rose-600"} font-mono">${formatMoney(lo.cumPureProfitK)}</strong>)</span>` : ''}
+                                        </div>
+                                    </div>
+                                ` : (isSettled ? `
                                     <div class="text-[11px] font-mono text-slate-600 flex flex-wrap items-center justify-between gap-1.5 bg-teal-50/60 p-2.5 rounded-xl border border-teal-100">
                                         <div>Vốn ${isSkip ? '0đ (Nghỉ cược)' : formatMoney(lo.stakeK, { signed: false })} · Ăn <strong class="text-emerald-700">${isSkip ? '0đ' : formatMoney(lo.payoutK, { signed: false })}</strong></div>
                                         <div class="flex items-center gap-1.5">
                                             <span>Lãi: <strong class="${(lo.profitK || 0) >= 0 ? "text-emerald-700" : "text-rose-600"}">${formatMoney(lo.profitK || 0)}</strong></span>
                                         </div>
                                     </div>
-                                ` : ""}
+                                ` : "")}
 
-                                <!-- DANH SÁCH LÔ 360 PHÂN TẦNG X5 ĐẾN X1 -->
+                                <!-- DANH SÁCH LÔ THUẦN PHÂN TẦNG X5 ĐẾN X2 -->
                                 <div class="space-y-2.5">
                                     ${activeTiers.length > 0 ? activeTiers.map(tier => {
                                         return `
@@ -2577,8 +2633,8 @@
                                                         <span>${tier.sub} (${tier.nums.length}s):</span>
                                                     </span>
                                                     <div class="flex items-center gap-1.5">
-                                                        <span class="font-mono text-[10px] text-slate-500 font-bold">${tier.stakePerNumM}M/số · Ăn ${tier.payoutPerHitM}M/n</span>
-                                                        <button type="button" class="btn-copy-day-dan p-1 rounded hover:bg-slate-100 text-slate-700 transition cursor-pointer" data-copy-text="${tier.nums.join(" ")}" data-copy-label="Dàn Lô ${tier.name} 360 ngày ${dateStr}" title="Copy ${tier.name}">
+                                                        <span class="font-mono text-[10px] text-slate-500 font-bold">${(tier.mult * 2.2).toFixed(1)}M/số · Ăn ${(tier.mult * 8).toFixed(0)}M/n</span>
+                                                        <button type="button" class="btn-copy-day-dan p-1 rounded hover:bg-slate-100 text-slate-700 transition cursor-pointer" data-copy-text="${tier.nums.join(" ")}" data-copy-label="Dàn Lô ${tier.name} Thuần ngày ${dateStr}" title="Copy ${tier.name}">
                                                             <i class="bi bi-clipboard text-xs"></i>
                                                         </button>
                                                     </div>
@@ -2586,17 +2642,17 @@
                                                 <div class="flex flex-wrap gap-1.5 p-2 rounded-xl ${tier.containerBg} border min-h-[40px] items-center">
                                                     ${tier.nums.map(n => {
                                                         const hits = p27Counts[n] || 0;
-                                                        const winM = (hits * Number(tier.payoutPerHitM)).toFixed(0);
+                                                        const winM = (hits * tier.mult * 8).toFixed(0);
                                                         if (hits > 0) {
                                                             return `
-                                                                <span class="badge-number inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-600 text-white font-mono font-black text-xs ring-2 ${tier.ringClass} shadow-xs animate-pulse" title="🎯 NỔ ${hits} NHÁY LÔ ${n} [${tier.name} 360]: ${isSkip ? 'Nếu đánh ăn +' + winM + 'M' : 'Ăn ' + winM + 'M'}">
+                                                                <span class="badge-number inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-600 text-white font-mono font-black text-xs ring-2 ${tier.ringClass} shadow-xs" title="🎯 NỔ ${hits} NHÁY LÔ ${n} [${tier.name} Thuần]: Ăn +${winM}M">
                                                                     <span>🎯 ${n}</span>
                                                                     <span class="rounded bg-white text-emerald-900 font-bold px-1 text-[8px] font-sans">${hits}n (+${winM}M)</span>
                                                                 </span>
                                                             `;
                                                         }
                                                         return `
-                                                            <span class="badge-number inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-slate-700 font-mono text-xs font-semibold shadow-2xs" title="Lô ${n} (${tier.mult}/5 AI bầu chọn 360 ngày)">
+                                                            <span class="badge-number inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-slate-700 font-mono text-xs font-semibold shadow-2xs" title="Lô ${n} (${tier.mult}/5 trường phái)">
                                                                 <span>${n}</span>
                                                                 <span class="text-[8px] font-sans text-slate-400 font-bold">${tier.mult}/5</span>
                                                             </span>
@@ -2606,22 +2662,22 @@
                                             </div>
                                         `;
                                     }).join("") : `
-                                        <span class="text-slate-400 italic text-xs">Chưa có số Lô</span>
+                                        <span class="text-slate-500 italic text-xs">🛡️ Kỳ này không có số đạt ≥2 trường phái → Nghỉ Lô 0đ bảo toàn vốn.</span>
                                     `}
                                 </div>
                             </div>
 
-                            <!-- Footer Cột Lô: Gợi ý Top 6 & Action Buttons -->
+                            <!-- Footer Cột Lô: Song Thủ Top 2, Top 6 Borda & Action Buttons -->
                             <div class="pt-3 border-t border-teal-100 space-y-2">
                                 <div class="text-[11px] text-slate-500 flex items-center justify-between font-mono">
-                                    <span>Top 6 Tinh Hoa 360:</span>
-                                    <span class="text-teal-800 font-bold font-mono">${(loTop6 || []).join(' ')}</span>
+                                    <span>⚡ Song Thủ Top 2: <strong class="text-amber-800">${(lo.top2 || loTop6.slice(0, 2)).join(' ')}</strong></span>
+                                    <span>Top 6: <strong class="text-teal-800">${(loTop6 || []).join(' ')}</strong></span>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <button type="button" class="btn-copy-day-dan flex-1 py-1.5 px-2 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-black text-[11px] transition shadow-2xs text-center cursor-pointer" data-copy-text="${loNumbers.join(' ')}" data-copy-label="Dàn Lô Đa Tầng 360 ngày ${dateStr}">
-                                        <i class="bi bi-clipboard-check"></i> Copy Lô Đa Tầng (${loNumbers.length}s)
+                                    <button type="button" class="btn-copy-day-dan flex-1 py-1.5 px-2 rounded-xl bg-gradient-to-r from-rose-600 to-amber-600 text-white font-black text-[11px] transition shadow-2xs text-center cursor-pointer" data-copy-text="${loNumbers.join(' ')}" data-copy-label="Dàn Lô Đa Tầng Thuần ≥2 ngày ${dateStr}">
+                                        <i class="bi bi-fire"></i> Copy Lô Thuần (${loNumbers.length}s)
                                     </button>
-                                    <button type="button" class="btn-copy-day-dan py-1.5 px-2.5 rounded-xl bg-white border border-teal-300 text-teal-900 font-bold text-[11px] transition shadow-2xs text-center cursor-pointer" data-copy-text="${loTop6.join(' ')}" data-copy-label="Top 6 Lô 360 ngày ${dateStr}">
+                                    <button type="button" class="btn-copy-day-dan py-1.5 px-2.5 rounded-xl bg-white border border-teal-300 text-teal-900 font-bold text-[11px] transition shadow-2xs text-center cursor-pointer" data-copy-text="${loTop6.join(' ')}" data-copy-label="Top 6 Borda Lô 5AI ngày ${dateStr}">
                                         <i class="bi bi-dice-6-fill"></i> Top 6
                                     </button>
                                 </div>
@@ -3066,6 +3122,7 @@
         const settledDays = (days || []).filter(d => Boolean(d.special && d.prizes27?.length === 27 && d.results));
         let oldStakeK = 0, oldPayoutK = 0, oldProfitK = 0, oldWins = 0;
         let newStakeK = 0, newPayoutK = 0, newProfitK = 0, newWins = 0, newPlayed = 0, newSkipped = 0, newSavedK = 0;
+        let pureLoStakeK = 0, pureLoPayoutK = 0, pureLoProfitK = 0, pureLoWins = 0, pureLoPlayed = 0, pureLoHits = 0;
 
         settledDays.forEach(d => {
             const consRes = d.results?.consensus || {};
@@ -3089,12 +3146,33 @@
                     newSkipped++;
                     newSavedK += ns.combo.savedStakeK;
                 }
+                const pf = ns.lo?.pureFlat;
+                if (pf) {
+                    pureLoStakeK += pf.stakeK || 0;
+                    pureLoPayoutK += pf.payoutK || 0;
+                    pureLoProfitK += pf.profitK || 0;
+                    pureLoHits += pf.hits || 0;
+                    if (pf.played) {
+                        pureLoPlayed++;
+                        if (pf.isWin) pureLoWins++;
+                    }
+                }
             }
         });
 
         const count = settledDays.length;
         return {
             settledDaysCount: count,
+            lo5AiPure: {
+                days: count,
+                playedDays: pureLoPlayed,
+                stakeM: (pureLoStakeK / 1000).toFixed(1),
+                profitM: (pureLoProfitK / 1000).toFixed(1),
+                roi: pureLoStakeK > 0 ? (pureLoProfitK / pureLoStakeK * 100).toFixed(2) + '%' : '0%',
+                winDays: pureLoWins,
+                totalHits: pureLoHits,
+                winRate: pureLoPlayed > 0 ? (pureLoWins / pureLoPlayed * 100).toFixed(1) + '%' : '0%'
+            },
             oldStrategy: {
                 name: 'Cách Hiện Tại (Đánh Đều 100% Cả 5 AI)',
                 days: count,
@@ -3130,6 +3208,7 @@
 
         const old = comparison.oldStrategy;
         const n = comparison.newStrategy;
+        const lp = comparison.lo5AiPure || state.payload?.lo5AiPureSummary || null;
         const diff = comparison.diff || {};
 
         el.innerHTML = `
@@ -3141,15 +3220,15 @@
                         </span>
                         <div>
                             <h4 class="text-sm font-black text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
-                                <span>Đối Chiếu Hiệu Quả Song Song: Cách Hiện Tại vs Phương Pháp Mới</span>
+                                <span>Đối Chiếu Thực Chiến: Cách Cũ vs Combo 360 vs 🔥 Lô Đa Tầng Thuần ≥2 AI</span>
                                 <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-900 border border-indigo-300 font-bold">${comparison.settledDaysCount} kỳ đã kết toán</span>
                             </h4>
-                            <p class="text-[11px] text-slate-500">So sánh thực tế giữa chiến lược đánh đều hàng ngày và chiến lược Tín Hiệu Hồi Phục 360</p>
+                            <p class="text-[11px] text-slate-500">Tách bạch riêng hiệu quả <strong>Lô Gộp Đa Tầng Thuần (5 trường phái động)</strong> khỏi Đề 360 để theo dõi trực tiếp hàng ngày</p>
                         </div>
                     </div>
                     <div class="text-left sm:text-right shrink-0">
-                        <span class="inline-flex items-center gap-1 text-xs font-black px-2.5 py-1 rounded-xl bg-emerald-100 text-emerald-900 border border-emerald-300 shadow-2xs">
-                            <i class="bi bi-graph-up-arrow text-emerald-700"></i> Lợi Nhuận Vượt Trội +${diff.profitDiffM}M
+                        <span class="inline-flex items-center gap-1 text-xs font-black px-2.5 py-1 rounded-xl ${Number(diff.profitDiffM) >= 0 ? 'bg-emerald-100 text-emerald-900 border-emerald-300' : 'bg-slate-100 text-slate-700 border-slate-300'} border shadow-2xs">
+                            <i class="bi bi-graph-up-arrow text-emerald-700"></i> Combo Chênh ${Number(diff.profitDiffM) >= 0 ? '+' : ''}${diff.profitDiffM}M
                         </span>
                     </div>
                 </div>
@@ -3159,12 +3238,12 @@
                     <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-2">
                         <div class="flex items-center justify-between border-b border-slate-100 pb-1.5">
                             <span class="font-black text-slate-800 flex items-center gap-1.5">
-                                <span class="text-sm">🏛️</span> Cách Hiện Tại
+                                <span class="text-sm">🏛️</span> Cách Hiện Tại (Cũ)
                             </span>
                             <span class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Đánh đều 100%</span>
                         </div>
                         <div class="space-y-1 font-sans">
-                            <div class="flex justify-between"><span class="text-slate-500">Số kỳ đã chơi:</span> <span class="font-bold text-slate-800">${old.days}/${old.days} kỳ (100%)</span></div>
+                            <div class="flex justify-between"><span class="text-slate-500">Số kỳ đã chơi:</span> <span class="font-bold text-slate-800">${old.days}/${old.days} kỳ</span></div>
                             <div class="flex justify-between"><span class="text-slate-500">Tổng vốn cược:</span> <span class="font-mono font-bold text-slate-800">${old.stakeM}M</span></div>
                             <div class="flex justify-between"><span class="text-slate-500">Lãi / Lỗ Ròng:</span> <span class="font-mono font-black ${Number(old.profitM) >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${Number(old.profitM) >= 0 ? '+' : ''}${old.profitM}M</span></div>
                             <div class="flex justify-between"><span class="text-slate-500">ROI:</span> <span class="font-mono font-black ${Number(old.profitM) >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${old.roi}</span></div>
@@ -3172,46 +3251,40 @@
                         </div>
                     </div>
 
-                    <!-- CỘT 2: PHƯƠNG PHÁP MỚI -->
-                    <div class="p-3.5 rounded-2xl bg-gradient-to-br from-emerald-50/80 to-teal-50/40 border-2 border-emerald-300 shadow-2xs space-y-2 ring-1 ring-emerald-200">
+                    <!-- CỘT 2: COMBO TÍN HIỆU 360 -->
+                    <div class="p-3.5 rounded-2xl bg-gradient-to-br from-emerald-50/80 to-teal-50/40 border border-emerald-300 shadow-2xs space-y-2">
                         <div class="flex items-center justify-between border-b border-emerald-100 pb-1.5">
                             <span class="font-black text-emerald-950 flex items-center gap-1.5">
-                                <span class="text-sm">⚡</span> Tín Hiệu Hồi Phục 360
+                                <span class="text-sm">⚡</span> Combo Tín Hiệu 360
                             </span>
-                            <span class="text-[10px] font-black text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300">Chọn lọc tín hiệu</span>
+                            <span class="text-[10px] font-black text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300">Đề + Lô SKIP Gate</span>
                         </div>
                         <div class="space-y-1 font-sans">
-                            <div class="flex justify-between"><span class="text-emerald-900">Số kỳ vào lệnh:</span> <span class="font-bold text-emerald-950">${n.playedDays}/${n.days} kỳ (Nghỉ ${n.skippedDays} kỳ)</span></div>
+                            <div class="flex justify-between"><span class="text-emerald-900">Số kỳ vào lệnh:</span> <span class="font-bold text-emerald-950">${n.playedDays}/${n.days} kỳ (Nghỉ ${n.skippedDays})</span></div>
                             <div class="flex justify-between"><span class="text-emerald-900">Tổng vốn cược:</span> <span class="font-mono font-bold text-emerald-950">${n.stakeM}M</span></div>
-                            <div class="flex justify-between"><span class="text-emerald-900">Lãi / Lỗ Ròng:</span> <span class="font-mono font-black text-emerald-700 text-sm">${Number(n.profitM) >= 0 ? '+' : ''}${n.profitM}M</span></div>
-                            <div class="flex justify-between"><span class="text-emerald-900">ROI:</span> <span class="font-mono font-black text-emerald-700">${n.roi}</span></div>
+                            <div class="flex justify-between"><span class="text-emerald-900">Lãi / Lỗ Ròng:</span> <span class="font-mono font-black ${Number(n.profitM) >= 0 ? 'text-emerald-700' : 'text-rose-600'} text-sm">${Number(n.profitM) >= 0 ? '+' : ''}${n.profitM}M</span></div>
+                            <div class="flex justify-between"><span class="text-emerald-900">ROI:</span> <span class="font-mono font-black ${Number(n.profitM) >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${n.roi}</span></div>
                             <div class="flex justify-between"><span class="text-emerald-900">Vốn né rủi ro:</span> <span class="font-mono font-black text-indigo-700">+${n.savedStakeM}M</span></div>
                         </div>
                     </div>
 
-                    <!-- CỘT 3: CHÊNH LỆCH ĐỘT PHÁ -->
-                    <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-2 flex flex-col justify-between">
-                        <div>
-                            <div class="flex items-center justify-between border-b border-slate-100 pb-1.5">
-                                <span class="font-black text-slate-800 flex items-center gap-1.5">
-                                    <span class="text-sm">💎</span> Chênh Lệch Thực Tế
-                                </span>
-                                <span class="text-[10px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">Đột phá</span>
-                            </div>
-                            <div class="space-y-1.5 pt-1 text-slate-600">
-                                <div class="flex items-center justify-between">
-                                    <span>Lợi nhuận vượt trội:</span>
-                                    <span class="font-mono font-black text-emerald-700 text-sm">+${diff.profitDiffM}M</span>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span>Tiết kiệm vốn rủi ro:</span>
-                                    <span class="font-mono font-black text-indigo-700">+${diff.stakeSavedM}M</span>
-                                </div>
-                                <div class="text-[10px] text-slate-500 pt-1 leading-relaxed">
-                                    Nhờ cơ chế bỏ cược ngày tín hiệu xấu và đòn bẩy bù lỗ 2.0x khi tín hiệu hồi phục, danh mục chuyển bại thành thắng ngoạn mục!
-                                </div>
-                            </div>
+                    <!-- CỘT 3: 🔥 LÔ GỘP ĐA TẦNG THUẦN >=2 AI (ĐỘC LẬP 1.0X) -->
+                    <div class="p-3.5 rounded-2xl bg-gradient-to-br from-rose-50/80 via-amber-50/40 to-white border-2 border-rose-300 shadow-2xs space-y-2 ring-1 ring-rose-200">
+                        <div class="flex items-center justify-between border-b border-rose-100 pb-1.5">
+                            <span class="font-black text-rose-950 flex items-center gap-1.5">
+                                <span class="text-sm">🔥</span> Lô Đa Tầng Thuần ≥2 AI
+                            </span>
+                            <span class="text-[10px] font-black text-rose-800 bg-rose-100 px-2 py-0.5 rounded border border-rose-300">Độc Lập 1.0x</span>
                         </div>
+                        ${lp ? `
+                            <div class="space-y-1 font-sans">
+                                <div class="flex justify-between"><span class="text-rose-900">Số kỳ vào lệnh:</span> <span class="font-bold text-rose-950">${lp.playedDays}/${lp.days} kỳ (${lp.totalHits} nháy)</span></div>
+                                <div class="flex justify-between"><span class="text-rose-900">Tổng vốn Lô:</span> <span class="font-mono font-bold text-rose-950">${lp.stakeM}M</span></div>
+                                <div class="flex justify-between"><span class="text-rose-900">Lãi / Lỗ Lô Ròng:</span> <span class="font-mono font-black ${Number(lp.profitM) >= 0 ? 'text-emerald-700' : 'text-rose-600'} text-sm">${Number(lp.profitM) >= 0 ? '+' : ''}${lp.profitM}M</span></div>
+                                <div class="flex justify-between"><span class="text-rose-900">ROI Riêng Lô:</span> <span class="font-mono font-black ${Number(lp.profitM) >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${lp.roi}</span></div>
+                                <div class="flex justify-between"><span class="text-rose-900">Ngày Lô có lãi:</span> <span class="font-bold text-rose-950">${lp.winDays}/${lp.playedDays} kỳ (${lp.winRate})</span></div>
+                            </div>
+                        ` : '<div class="text-slate-400 italic">Đang tính toán...</div>'}
                     </div>
                 </div>
             </div>
@@ -3608,18 +3681,18 @@
                                                 </div>
                                             `}
 
-                                            <!-- CHI TIẾT CÁC CON LÔ GỘP MỚI 360 (HIỂN THỊ ĐẦY ĐỦ CẢ KHI NGHỈ CƯỢC ĐỂ THEO DÕI) -->
+                                            <!-- CHI TIẾT CÁC CON LÔ GỘP ĐA TẦNG THUẦN >=2 AI (HIỂN THỊ ĐẦY ĐỦ ĐỂ THEO DÕI ĐỘC LẬP 1.0X) -->
                                             <div class="pt-1.5 border-t border-emerald-100 space-y-1">
                                                 <div class="flex items-center justify-between text-[11px] font-bold text-emerald-950">
-                                                    <span class="flex items-center gap-1">
-                                                        <span>🎲 Các Con Lô Mới (${nStrat.lo.numbers?.length || 0}s)${nStrat.decision === 'SKIP' ? ' <span class="text-[9px] font-bold text-slate-600 bg-slate-200 px-1 py-0.2 rounded">Nghỉ cược</span>' : ''}:</span>
-                                                        <span class="text-[10px] text-emerald-800 font-normal">Top 6: ${(nStrat.lo.top6 || []).slice(0, 6).join(' ')}</span>
+                                                    <span class="flex items-center gap-1 flex-wrap">
+                                                        <span>🔥 Lô Thuần ≥2 AI (${nStrat.lo.numbers?.length || 0}s):</span>
+                                                        ${nStrat.lo.pureFlat ? `<span class="font-mono text-[10px] px-1.5 py-0.2 rounded ${nStrat.lo.pureFlat.profitK >= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-700'}">1.0x: ${formatMoney(nStrat.lo.pureFlat.profitK)} (${nStrat.lo.pureFlat.hits}nh)</span>` : ''}
                                                     </span>
-                                                    <button type="button" class="btn-copy-day-dan text-[10px] text-emerald-700 hover:text-emerald-900 font-bold flex items-center gap-0.5 cursor-pointer" data-copy-text="${(nStrat.lo.numbers || []).join(' ')}" data-copy-label="Dàn Lô Mới 360 ngày ${dateStr}">
-                                                        <i class="bi bi-clipboard"></i> Copy Lô Mới
+                                                    <button type="button" class="btn-copy-day-dan text-[10px] text-emerald-700 hover:text-emerald-900 font-bold flex items-center gap-0.5 cursor-pointer" data-copy-text="${(nStrat.lo.numbers || []).join(' ')}" data-copy-label="Dàn Lô Thuần ≥2 ngày ${dateStr}">
+                                                        <i class="bi bi-clipboard"></i> Copy Lô Thuần
                                                     </button>
                                                 </div>
-                                                <div class="space-y-1 p-2 rounded-xl ${nStrat.decision === 'SKIP' ? 'bg-slate-50 border border-slate-200' : 'bg-emerald-50/60 border border-emerald-200'}">
+                                                <div class="space-y-1 p-2 rounded-xl bg-emerald-50/60 border border-emerald-200">
                                                     ${renderLoChipsHtml(nStrat.lo.tiers, nStrat.lo.numbers, p27Counts, isSettled)}
                                                 </div>
                                             </div>
