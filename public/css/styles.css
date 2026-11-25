@@ -1295,3 +1295,319 @@ body .bg-gradient-to-tr.bg-clip-text.text-transparent {
     backface-visibility: hidden;
 }
 
+/* ========================================================================= */
+/* XSMB Stats v2 - Refined Light Prism Command Center & Contrast Safeguards  */
+/* ========================================================================= */
+
+/* Fix contrast bug where dark hero sections (bg-slate-950 text-white) were washed to white */
+body section.bg-gradient-to-br.from-slate-950,
+body section.bg-gradient-to-r.from-slate-950,
+body .bm-hero {
+    background: linear-gradient(135deg, #0b1220 0%, #111c33 52%, #132a36 100%) !important;
+    color: #f8fafc !important;
+    border: 1px solid rgba(148, 163, 184, 0.22) !important;
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.18) !important;
+}
+
+body section.bg-gradient-to-br.from-slate-950 h1,
+body section.bg-gradient-to-br.from-slate-950 h2,
+body section.bg-gradient-to-br.from-slate-950 h3,
+body section.bg-gradient-to-br.from-slate-950 .text-white,
+body .bm-hero h1,
+body .bm-hero h2,
+body .bm-hero .bm-hero-title {
+    color: #ffffff !important;
+}
+
+body section.bg-gradient-to-br.from-slate-950 p,
+body section.bg-gradient-to-br.from-slate-950 .text-slate-200,
+body section.bg-gradient-to-br.from-slate-950 .text-slate-300,
+body .bm-hero .bm-hero-sub {
+    color: #cbd5e1 !important;
+}
+
+body section.bg-gradient-to-br.from-slate-950 .bg-white\/10,
+body section.bg-gradient-to-br.from-slate-950 .bg-black\/40 {
+    background: rgba(15, 23, 42, 0.52) !important;
+    border-color: rgba(148, 163, 184, 0.22) !important;
+    color: #f1f5f9 !important;
+}
+
+/* Calm visual hierarchy: stop gratuitous shimmer animations & giant section hover glow */
+body .bg-gradient-to-r,
+body .bg-gradient-to-tr {
+    animation: none !important;
+}
+
+body section:hover,
+body article:hover {
+    box-shadow: var(--shadow-soft) !important;
+}
+
+header .animate-pulse,
+nav .animate-pulse {
+    animation: none !important;
+}
+
+/* Unified Navigation Bar */
+.xsmb-unified-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.92) !important;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05) !important;
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+}
+
+.xsmb-nav-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.45rem 0.78rem;
+    border-radius: 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #475569 !important;
+    border: 1px solid transparent;
+    white-space: nowrap;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.xsmb-nav-pill:hover {
+    color: #0f172a !important;
+    background: rgba(15, 23, 42, 0.05) !important;
+    transform: none !important;
+}
+
+.xsmb-nav-pill.is-active {
+    color: #0f172a !important;
+    background: linear-gradient(135deg, #eff6ff 0%, #ecfdf5 100%) !important;
+    border-color: rgba(37, 99, 235, 0.28) !important;
+    font-weight: 800;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.10);
+}
+
+.xsmb-nav-dropdown-panel {
+    background: #ffffff !important;
+    border: 1px solid rgba(15, 23, 42, 0.10) !important;
+    box-shadow: 0 20px 44px rgba(15, 23, 42, 0.14) !important;
+}
+
+/* Best Methods Command Center (.bm-*) */
+.bm-card {
+    background: #ffffff !important;
+    border: 1px solid rgba(15, 23, 42, 0.09) !important;
+    border-radius: 1.25rem;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.045) !important;
+    color: #0f172a !important;
+}
+
+.bm-card-interactive {
+    cursor: pointer;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.bm-card-interactive:hover {
+    border-color: rgba(37, 99, 235, 0.35) !important;
+    box-shadow: 0 12px 30px rgba(37, 99, 235, 0.09) !important;
+    transform: translateY(-2px);
+}
+
+.bm-card-interactive.is-selected {
+    border: 2px solid #2563eb !important;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%) !important;
+    box-shadow: 0 14px 34px rgba(37, 99, 235, 0.14) !important;
+}
+
+.bm-kpi-dark {
+    background: rgba(255, 255, 255, 0.07) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 1rem;
+    color: #f8fafc !important;
+}
+
+.bm-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    height: 1.9rem;
+    padding: 0 0.45rem;
+    border-radius: 0.55rem;
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    font-variant-numeric: tabular-nums;
+}
+
+.bm-chip-x3 {
+    background: linear-gradient(135deg, #b91c1c, #e11d48) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(225, 29, 72, 0.45) !important;
+    box-shadow: 0 3px 10px rgba(225, 29, 72, 0.22);
+}
+
+.bm-chip-x2 {
+    background: linear-gradient(135deg, #fef3c7, #fde68a) !important;
+    color: #78350f !important;
+    border: 1px solid rgba(217, 119, 6, 0.45) !important;
+}
+
+.bm-chip-x1 {
+    background: #f1f5f9 !important;
+    color: #1e293b !important;
+    border: 1px solid rgba(15, 23, 42, 0.14) !important;
+}
+
+.bm-chip-lo-vip {
+    background: linear-gradient(135deg, #059669, #0d9488) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(5, 150, 105, 0.4) !important;
+}
+
+.bm-chip-lo {
+    background: #eff6ff !important;
+    color: #1d4ed8 !important;
+    border: 1px solid rgba(37, 99, 235, 0.24) !important;
+}
+
+.bm-chip-xien {
+    background: #fffbeb !important;
+    color: #92400e !important;
+    border: 1px solid rgba(217, 119, 6, 0.34) !important;
+}
+
+.bm-pill-btn {
+    padding: 0.42rem 0.85rem;
+    border-radius: 0.65rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #475569 !important;
+    background: #f1f5f9 !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.bm-pill-btn:hover {
+    color: #0f172a !important;
+    background: #e2e8f0 !important;
+    transform: none !important;
+}
+
+.bm-pill-btn.is-active {
+    color: #ffffff !important;
+    background: #0f172a !important;
+    border-color: #0f172a !important;
+    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.18);
+}
+
+.bm-copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.38rem 0.72rem;
+    border-radius: 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: #0f172a !important;
+    color: #ffffff !important;
+    border: 1px solid #0f172a !important;
+    cursor: pointer;
+}
+
+.bm-copy-btn:hover {
+    background: #1d4ed8 !important;
+    border-color: #1d4ed8 !important;
+}
+
+.bm-copy-btn-soft {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.32rem 0.62rem;
+    border-radius: 0.55rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+    border: 1px solid rgba(15, 23, 42, 0.14) !important;
+    cursor: pointer;
+}
+
+.bm-copy-btn-soft:hover {
+    background: #e0e7ff !important;
+    color: #1d4ed8 !important;
+    border-color: rgba(37, 99, 235, 0.32) !important;
+}
+
+.bm-tabular {
+    font-variant-numeric: tabular-nums;
+}
+
+.bm-form-dot {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 9999px;
+}
+
+.bm-form-dot.win { background: #10b981; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.18); }
+.bm-form-dot.loss { background: #f43f5e; box-shadow: 0 0 0 2px rgba(244, 63, 94, 0.16); }
+.bm-form-dot.skip { background: #94a3b8; }
+
+.bm-table th {
+    font-size: 0.7rem !important;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 800 !important;
+    color: #475569 !important;
+    white-space: nowrap;
+}
+
+.bm-table td {
+    font-size: 0.8125rem;
+    vertical-align: middle;
+}
+
+/* Mode switcher bar on /daily-advisor */
+.bm-mode-bar {
+    background: #ffffff !important;
+    border: 1px solid rgba(15, 23, 42, 0.09) !important;
+    border-radius: 1rem;
+    padding: 0.35rem;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04) !important;
+}
+
+.bm-mode-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.6rem 1rem;
+    border-radius: 0.72rem;
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: #475569 !important;
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    cursor: pointer;
+    transition: all 0.16s ease;
+}
+
+.bm-mode-tab:hover {
+    color: #0f172a !important;
+    background: #f1f5f9 !important;
+    transform: none !important;
+}
+
+.bm-mode-tab.is-active {
+    color: #ffffff !important;
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%) !important;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.18) !important;
+}
+
+

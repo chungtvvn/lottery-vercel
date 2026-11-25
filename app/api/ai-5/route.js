@@ -1,14 +1,20 @@
 import { NextResponse } from 'next/server';
-import { getCachedClientPayload } from '@/lib/services/ai5StatsService';
+import { getCachedClientPayloadAsync, getCachedClientPayload } from '@/lib/services/ai5StatsService';
 
-// Cấu hình ISR và Edge Cache trên Vercel:
-// Tự động lưu cache tĩnh mỗi lần Vercel build lại, phục vụ từ CDN cache trong 60s (SWR 300s).
+export const dynamic = 'force-dynamic';
 export const revalidate = 60;
 
 export async function GET(request) {
     try {
-        // Chỉ lấy 30 ngày gần nhất và lưu cache để tránh overload
-        const payload = getCachedClientPayload({ maxDays: 30 });
+        const { searchParams } = new URL(request.url);
+        const force = searchParams.get('refresh') === 'true' || searchParams.get('refresh') === '1';
+        let payload = null;
+        try {
+            payload = await getCachedClientPayloadAsync({ maxDays: 30, force });
+        } catch (asyncErr) {
+            console.warn('[API /api/ai-5] Async R2 fallback to sync:', asyncErr.message);
+            payload = getCachedClientPayload({ maxDays: 30 });
+        }
         return NextResponse.json(payload, {
             headers: {
                 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',

@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thực Chiến Gộp | Gợi Ý XSMB Stats</title>
+    <title>Trung Tâm Tinh Hoa Đề &amp; Lô | XSMB Stats</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="/css/styles.css">
@@ -94,42 +97,28 @@
     </header>
 
     <main class="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
-        <!-- Subtabs Navigation -->
-        <div class="mb-6 flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-sm" aria-label="Tab Gợi ý">
-            <button type="button" id="tabBtnUnifiedCombat" class="flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 via-indigo-600 to-violet-600 px-4 py-2.5 text-sm font-black text-white shadow-md transition-all">
-                <i class="bi bi-trophy-fill text-amber-300"></i> 👑 Đề Xuất Tinh Hoa Hợp Nhất (Đề + Lô)
-            </button>
-            <button type="button" id="tabBtnDualMerge" class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors">
-                <i class="bi bi-intersect text-indigo-500"></i> 🔬 Nghiên Cứu Đề Hàng Ngày: Dự Đoán Đầu/Đít Chẵn Lẻ
-                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-black bg-gradient-to-r from-amber-500 to-emerald-500 text-white shadow-xs uppercase tracking-wider animate-pulse">MỚI</span>
-            </button>
-            <a href="/daily-advisor-shadow" class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors">
-                <i class="bi bi-shield-check text-indigo-500"></i> 🔬 Nghiên Cứu Thực Chiến (Shadow)
-                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-black bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-sm uppercase tracking-wider animate-pulse">NEW</span>
-            </a>
-            <a href="/ai-5" class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-purple-700 bg-purple-50/70 hover:bg-purple-100/90 border border-purple-200 transition-all shadow-2xs">
-                <i class="bi bi-cpu-fill text-purple-600"></i> 🤖 5 AI Thực Chiến
-                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-black bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-2xs uppercase tracking-wider animate-pulse">HOT</span>
-            </a>
-            <a href="/xien-fusion" class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-amber-800 bg-amber-50/70 hover:bg-amber-100/90 border border-amber-300 transition-all shadow-2xs">
-                <i class="bi bi-lightning-charge-fill text-amber-500"></i> ⚡ Xiên Ghép
-                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-black bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-2xs uppercase tracking-wider animate-pulse">FUSION</span>
-            </a>
-            <a href="/de-fusion" class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-rose-800 bg-rose-50/70 hover:bg-rose-100/90 border border-rose-300 transition-all shadow-2xs">
-                <i class="bi bi-crosshair text-rose-600"></i> 🎯 Đề Fusion &amp; Chẵn Lẻ
-                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-black bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-2xs uppercase tracking-wider animate-pulse">NEW</span>
-            </a>
-            <a href="/de-tinh-gon" class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-amber-800 bg-amber-50/70 hover:bg-amber-100/90 border border-amber-300 transition-all shadow-2xs">
-                <i class="bi bi-gem text-amber-600"></i> 💎 Đề Tinh Gọn &amp; TriCore
-                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-black bg-gradient-to-r from-amber-500 to-emerald-500 text-white shadow-2xs uppercase tracking-wider animate-pulse">ROI +8.5%</span>
-            </a>
-            <a href="/probability-score" class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors">
-                <i class="bi bi-grid-3x3-gap"></i> Điểm xác suất
-            </a>
-            <button type="button" id="btnOpenSystemUpdatesModal" class="ml-auto flex items-center gap-1.5 rounded-xl border border-amber-300/80 bg-gradient-to-r from-amber-50 to-indigo-50 px-3 py-2 text-xs font-bold text-slate-800 hover:from-amber-100 hover:to-indigo-100 transition-all shadow-xs">
-                <i class="bi bi-megaphone-fill text-amber-500 animate-pulse"></i> <span>Có gì mới? (Cập nhật hệ thống)</span>
-                <span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-black bg-rose-500 text-white animate-pulse">MỚI</span>
-            </button>
+        <!-- Clean 3-Mode Switcher -->
+        <div class="bm-mode-bar mb-6 flex flex-wrap items-center justify-between gap-2" aria-label="Chế độ xem">
+            <div class="flex flex-wrap items-center gap-1.5">
+                <button type="button" id="tabBtnBestHub" class="bm-mode-tab is-active">
+                    <i class="bi bi-trophy-fill text-amber-400"></i>
+                    <span>Trung Tâm Tinh Hoa &amp; Theo Dõi Hàng Ngày</span>
+                </button>
+                <button type="button" id="tabBtnUnifiedCombat" class="bm-mode-tab">
+                    <i class="bi bi-layers-fill text-indigo-500"></i>
+                    <span>Kho Phương Pháp Chuyên Sâu</span>
+                </button>
+                <button type="button" id="tabBtnDualMerge" class="bm-mode-tab">
+                    <i class="bi bi-intersect text-emerald-600"></i>
+                    <span>Nghiên Cứu Chẵn/Lẻ Đầu-Đít</span>
+                </button>
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="button" id="btnOpenSystemUpdatesModal" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer">
+                    <i class="bi bi-megaphone-fill text-amber-600"></i>
+                    <span>Nhật ký cập nhật</span>
+                </button>
+            </div>
         </div>
 
         <!-- Error Container -->
@@ -163,9 +152,228 @@
         </div>
 
         <!-- ========================================================================= -->
-        <!-- VIEW 0: ĐỀ XUẤT TINH HOA THỰC CHIẾN HỢP NHẤT (ĐỀ + LÔ) [MẶC ĐỊNH]       -->
+        <!-- VIEW DEFAULT: TRUNG TÂM TINH HOA & THEO DÕI HIỆU QUẢ HÀNG NGÀY           -->
         <!-- ========================================================================= -->
-        <div id="unifiedCombatView" class="space-y-8">
+        <div id="bestMethodsHubView" class="space-y-7">
+            <!-- Loading State -->
+            <div id="bmLoadingState" class="bm-card p-10 text-center">
+                <div class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-blue-600 mb-3">
+                    <i class="bi bi-arrow-repeat animate-spin text-xl"></i>
+                </div>
+                <div class="text-sm font-bold text-slate-800">Đang đồng bộ dữ liệu thực chiến Live Strict PIT từ Cloudflare R2...</div>
+                <div class="text-xs text-slate-500 mt-1">Tự động tuyển chọn các phương pháp Đề / Lô / Xiên có lợi nhuận thực dương 2026</div>
+            </div>
+
+            <!-- Error State -->
+            <div id="bmErrorState" class="hidden rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-bold text-rose-700"></div>
+
+            <!-- Main Loaded Content -->
+            <div id="bmHubContent" class="hidden space-y-7">
+                <!-- 1. COMMAND HERO & TOP KPI STRIP -->
+                <section class="bm-hero rounded-3xl p-6 sm:p-7">
+                    <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                        <div class="max-w-3xl">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-400/20 border border-amber-400/40 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-amber-300">
+                                    <i class="bi bi-trophy-fill"></i> TUYỂN CHỌN TINH HOA 2026
+                                </span>
+                                <span id="bmLockStatusBadge" class="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 px-3 py-1 text-xs font-bold text-emerald-300">
+                                    <i class="bi bi-shield-check"></i> Strict PIT 100%
+                                </span>
+                                <span id="bmSourceCutoffBadge" class="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/15 px-3 py-1 text-xs font-semibold text-slate-200">
+                                    Mốc nguồn: D-1
+                                </span>
+                            </div>
+                            <h1 class="bm-hero-title mt-3 text-2xl sm:text-3xl font-black tracking-tight">
+                                Trung Tâm Tinh Hoa Đề &amp; Lô — Kỳ <span id="bmTargetDateBadge" class="text-amber-300 font-mono">--/--/----</span>
+                            </h1>
+                            <p class="bm-hero-sub mt-2 text-sm leading-relaxed">
+                                Chỉ giữ lại các phương pháp Đề, Lô, Xiên và 5 AI 360 đạt <strong>lãi ròng thực dương</strong> qua kiểm chứng Strict PIT 2026 — loại bỏ số ảo, tách bạch <em>Tần suất nổ</em> vs <em>Tỷ lệ có lãi</em>, theo dõi minh bạch từng ngày.
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2 shrink-0">
+                            <button type="button" id="btnBmRefresh" class="inline-flex items-center gap-1.5 rounded-xl bg-white/15 hover:bg-white/25 border border-white/20 px-4 py-2.5 text-xs font-extrabold text-white transition cursor-pointer">
+                                <i class="bi bi-arrow-clockwise"></i> Làm mới dữ liệu
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 4 Hero KPIs -->
+                    <div id="bmHeroKpiStrip" class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5"></div>
+                </section>
+
+                <!-- 2. BỘ CHỌN HỒ SƠ VỐN CÓ LỢI NHẤT CHO NGƯỜI DÙNG -->
+                <section class="space-y-3.5">
+                    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+                        <div>
+                            <h2 class="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2">
+                                <i class="bi bi-wallet2 text-blue-600"></i>
+                                Chọn Hồ Sơ Vốn Phù Hợp &amp; Có Lợi Nhất Cho Bạn
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-0.5">
+                                Nhấn chọn 1 trong 3 gói phối hợp Đề + Lô dưới đây để xem lợi nhuận cộng dồn và theo dõi trực tiếp trên Nhật ký hàng ngày.
+                            </p>
+                        </div>
+                    </div>
+                    <div id="bmPortfolioGrid" class="grid grid-cols-1 lg:grid-cols-3 gap-4"></div>
+                </section>
+
+                <!-- 3. PHIẾU CHỐT THỰC CHIẾN HÔM NAY (3 ACTION CARDS) -->
+                <section class="space-y-3.5">
+                    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+                        <div>
+                            <h2 class="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2">
+                                <i class="bi bi-lightning-charge-fill text-amber-500"></i>
+                                Phiếu Chốt Thực Chiến Hôm Nay (1-Click Copy)
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-0.5">
+                                Dàn số sống tính trực tiếp từ mốc đóng cửa D-1, tự động phân tầng VIP / Lót và áp dụng bộ lọc Chẵn-Lẻ Anti-Parity.
+                            </p>
+                        </div>
+                    </div>
+                    <div id="bmTodayPlaybookGrid" class="grid grid-cols-1 lg:grid-cols-3 gap-4"></div>
+                </section>
+
+                <!-- 4. BẢNG XẾP HẠNG CÁC PHƯƠNG PHÁP TỐT NHẤT (STRICT PIT LEADERBOARD) -->
+                <section class="bm-card overflow-hidden">
+                    <div class="p-5 sm:p-6 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-lg font-black text-slate-900 flex items-center gap-2">
+                                <i class="bi bi-bar-chart-steps text-blue-600"></i>
+                                Bảng Xếp Hạng Hiệu Suất Các Phương Pháp Tinh Hoa
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-0.5">
+                                Sắp xếp theo lợi nhuận ròng thực tế · Tách riêng <strong>Hit Rate</strong> (nổ nháy) và <strong>Profitable Rate</strong> (ngày có lãi) + Cận dưới Wilson 95% (W95⁻).
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <div class="flex flex-wrap items-center gap-1">
+                                <button type="button" data-bm-cat="ALL" class="bm-pill-btn is-active">Tất cả (11)</button>
+                                <button type="button" data-bm-cat="DE" class="bm-pill-btn">🎯 Đề (4)</button>
+                                <button type="button" data-bm-cat="LO" class="bm-pill-btn">🚀 Lô (5)</button>
+                                <button type="button" data-bm-cat="OTHER" class="bm-pill-btn">⚡ Xiên &amp; 5AI (2)</button>
+                            </div>
+                            <span class="hidden sm:inline text-slate-300">|</span>
+                            <div class="flex items-center gap-1">
+                                <button type="button" data-bm-tf="full2026" class="bm-pill-btn is-active">Cả năm 2026</button>
+                                <button type="button" data-bm-tf="last30d" class="bm-pill-btn">30 ngày</button>
+                                <button type="button" data-bm-tf="last7d" class="bm-pill-btn">7 ngày</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto custom-scrollbar">
+                        <table class="bm-table w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200">
+                                    <th class="py-3 pl-4 pr-3">Phương Pháp &amp; Vai Trò</th>
+                                    <th class="py-3 px-3 text-center">Vốn / Kỳ</th>
+                                    <th class="py-3 px-3 text-center">Tần Suất Nổ</th>
+                                    <th class="py-3 px-3 text-center">Tỷ Lệ Có Lãi</th>
+                                    <th class="py-3 px-3 text-right">Lợi Nhuận Ròng</th>
+                                    <th class="py-3 px-3 text-center">ROI</th>
+                                    <th class="py-3 px-3 text-center">Max DD / Thua</th>
+                                    <th class="py-3 px-3 text-center">Phong Độ 7 Kỳ</th>
+                                    <th class="py-3 pl-3 pr-4 text-center">Hôm Nay</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bmLeaderboardBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 5. BIỂU ĐỒ ĐƯỜNG VỐN CỘNG DỒN (INTERACTIVE EQUITY CURVE) -->
+                <section class="bm-card p-5 sm:p-6 space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                            <h2 class="text-lg font-black text-slate-900 flex items-center gap-2">
+                                <i class="bi bi-graph-up-arrow text-emerald-600"></i>
+                                Biểu Đồ Đường Vốn Cộng Dồn Thực Chiến (Equity Curve)
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-0.5">
+                                Di chuột lên biểu đồ để xem chi tiết từng kỳ mở thưởng · Nhấn vào chú thích bên dưới để bật/tắt đường phương pháp.
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button type="button" data-bm-chart-range="ALL" class="bm-pill-btn is-active">Toàn bộ 2026</button>
+                            <button type="button" data-bm-chart-range="60" class="bm-pill-btn">60 ngày</button>
+                            <button type="button" data-bm-chart-range="30" class="bm-pill-btn">30 ngày</button>
+                        </div>
+                    </div>
+                    <div id="bmChartLegend" class="flex flex-wrap items-center gap-2"></div>
+                    <div id="bmEquityChartWrap" class="rounded-2xl border border-slate-100 bg-slate-50/50 p-2 sm:p-3 overflow-hidden"></div>
+                </section>
+
+                <!-- 6. NHẬT KÝ THEO DÕI HIỆU QUẢ HÀNG NGÀY (DAILY LIVE PERFORMANCE TRACKER) -->
+                <section class="bm-card overflow-hidden">
+                    <div class="p-5 sm:p-6 border-b border-slate-100 space-y-3.5">
+                        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                            <div>
+                                <h2 class="text-lg font-black text-slate-900 flex items-center gap-2">
+                                    <i class="bi bi-calendar2-check-fill text-indigo-600"></i>
+                                    Nhật Ký Theo Dõi Hiệu Quả Hàng Ngày (Daily Live Tracker)
+                                </h2>
+                                <p class="text-xs text-slate-500 mt-0.5">
+                                    Đối chiếu lãi/lỗ từng kỳ mở thưởng của tất cả phương pháp tinh hoa và lũy kế theo Hồ sơ vốn bạn đang chọn.
+                                </p>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <div class="flex items-center gap-1">
+                                    <button type="button" data-bm-ledger-range="7" class="bm-pill-btn">7 ngày</button>
+                                    <button type="button" data-bm-ledger-range="14" class="bm-pill-btn is-active">14 ngày</button>
+                                    <button type="button" data-bm-ledger-range="30" class="bm-pill-btn">30 ngày</button>
+                                    <button type="button" data-bm-ledger-range="ALL" class="bm-pill-btn">Cả năm</button>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <button type="button" data-bm-ledger-outcome="ALL" class="bm-pill-btn is-active">Tất cả</button>
+                                    <button type="button" data-bm-ledger-outcome="WIN" class="bm-pill-btn">Thắng</button>
+                                    <button type="button" data-bm-ledger-outcome="LOSS" class="bm-pill-btn">Thua</button>
+                                </div>
+                                <input id="bmLedgerSearch" type="text" placeholder="Tìm ngày / GĐB..." class="w-36 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500">
+                            </div>
+                        </div>
+                        <div id="bmLedgerSummaryStrip" class="flex flex-wrap items-center gap-2"></div>
+                    </div>
+
+                    <div class="overflow-x-auto custom-scrollbar max-h-[600px]">
+                        <table class="bm-table w-full text-left border-collapse">
+                            <thead class="sticky top-0 z-10">
+                                <tr class="bg-slate-50 border-b border-slate-200">
+                                    <th class="py-3 pl-4 pr-2">Ngày</th>
+                                    <th class="py-3 px-2 text-center">GĐB</th>
+                                    <th class="py-3 px-2 text-center">Đề Dynamic</th>
+                                    <th class="py-3 px-2 text-center">Đề Hạt Nhân</th>
+                                    <th class="py-3 px-2 text-center">Lô Top 7 Phẳng</th>
+                                    <th class="py-3 px-2 text-center">Lô Semantic X2/X1</th>
+                                    <th class="py-3 px-2 text-center">Lô Bạch Thủ</th>
+                                    <th class="py-3 px-2 text-center">5AI 360</th>
+                                    <th class="py-3 px-2 text-right">Lãi Ngày (Bộ)</th>
+                                    <th class="py-3 pl-2 pr-4 text-right">Lũy Kế (Bộ)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bmDailyLedgerBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 7. MINH BẠCH KIỂM TOÁN (COLLAPSIBLE AUDIT NOTE) -->
+                <details class="bm-card p-5">
+                    <summary class="flex items-center justify-between cursor-pointer list-none font-extrabold text-sm text-slate-700">
+                        <span class="flex items-center gap-2">
+                            <i class="bi bi-shield-exclamation text-amber-600"></i>
+                            Minh bạch kiểm toán: Các phương pháp cũ đang âm vốn 2026 (đã chuyển về Tab "Kho Phương Pháp Chuyên Sâu")
+                        </span>
+                        <i class="bi bi-chevron-down text-slate-400"></i>
+                    </summary>
+                    <div id="bmDemotedList" class="mt-4 space-y-2"></div>
+                </details>
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- VIEW 0 (LEGACY ARCHIVE): KHO PHƯƠNG PHÁP CHUYÊN SÂU (ĐA HỆ)              -->
+        <!-- ========================================================================= -->
+        <div id="unifiedCombatView" class="space-y-8 hidden">
             <!-- Hero Header Thực Chiến Tinh Hoa Hợp Nhất -->
             <section class="overflow-hidden rounded-3xl border border-amber-300/40 bg-gradient-to-br from-slate-950 via-indigo-950 to-amber-950 text-white shadow-2xl shadow-indigo-950/30">
                 <div class="px-6 py-8 sm:px-8">
@@ -2924,6 +3132,8 @@
         </div>
     </div>
 
-    <script src="/js/daily-advisor.js?v=20261028_advisor_copy_date_v17"></script>
+    <script src="/js/unified-nav.js?v=20261125_v1"></script>
+    <script src="/js/best-methods-hub.js?v=20261125_v1"></script>
+    <script src="/js/daily-advisor.js?v=20261125_hub_v18"></script>
 </body>
 </html>

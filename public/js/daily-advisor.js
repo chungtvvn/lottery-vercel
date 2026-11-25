@@ -574,45 +574,46 @@
     // TAB SWITCHING LOGIC (UNIFIED COMBAT VS DUAL MERGE DE)
     // ==========================================
     function setupTabSwitching() {
+        const btnBestHub = byId('tabBtnBestHub');
         const btnUnified = byId('tabBtnUnifiedCombat');
         const btnDual = byId('tabBtnDualMerge');
 
+        const viewBestHub = byId('bestMethodsHubView');
         const viewUnified = byId('unifiedCombatView');
         const viewDual = byId('dualMergeView');
 
         function switchTab(tab) {
             currentMainTab = tab;
 
-            // Reset all tab buttons
-            btnUnified?.classList.remove('bg-gradient-to-r', 'from-amber-500', 'via-indigo-600', 'to-violet-600', 'text-white', 'font-black', 'shadow-md');
-            btnUnified?.classList.add('text-slate-600', 'hover:bg-slate-100', 'font-bold');
-
-            btnDual?.classList.remove('bg-gradient-to-r', 'from-amber-500', 'to-indigo-600', 'text-white', 'font-black', 'shadow-md');
-            btnDual?.classList.add('text-slate-600', 'hover:bg-slate-100', 'font-bold');
-
-            // Hide all tab views
+            [btnBestHub, btnUnified, btnDual].forEach(b => b?.classList.remove('is-active'));
+            viewBestHub?.classList.add('hidden');
             viewUnified?.classList.add('hidden');
             viewDual?.classList.add('hidden');
 
-            if (tab === 'unifiedCombat') {
-                btnUnified?.classList.add('bg-gradient-to-r', 'from-amber-500', 'via-indigo-600', 'to-violet-600', 'text-white', 'font-black', 'shadow-md');
-                btnUnified?.classList.remove('text-slate-600', 'hover:bg-slate-100', 'font-bold');
+            if (tab === 'bestHub') {
+                btnBestHub?.classList.add('is-active');
+                viewBestHub?.classList.remove('hidden');
+            } else if (tab === 'unifiedCombat') {
+                btnUnified?.classList.add('is-active');
                 viewUnified?.classList.remove('hidden');
             } else {
-                btnDual?.classList.add('bg-gradient-to-r', 'from-amber-500', 'to-indigo-600', 'text-white', 'font-black', 'shadow-md');
-                btnDual?.classList.remove('text-slate-600', 'hover:bg-slate-100', 'font-bold');
+                btnDual?.classList.add('is-active');
                 viewDual?.classList.remove('hidden');
 
-                if (payload) {
-                    if (typeof renderDeParityResearchView === 'function') {
-                        renderDeParityResearchView(payload);
-                    }
+                if (payload && typeof renderDeParityResearchView === 'function') {
+                    renderDeParityResearchView(payload);
                 }
             }
         }
 
+        if (btnBestHub) btnBestHub.onclick = () => switchTab('bestHub');
         if (btnUnified) btnUnified.onclick = () => switchTab('unifiedCombat');
         if (btnDual) btnDual.onclick = () => switchTab('dualMerge');
+
+        // Default to Best Methods Hub if present
+        if (viewBestHub) {
+            switchTab('bestHub');
+        }
     }
 
     // ==========================================
