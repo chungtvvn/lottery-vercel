@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCachedClientPayloadAsync, getCachedClientPayload } from '@/lib/services/ai5StatsService';
+import { buildUnified5AiPayloadAsync } from '@/lib/services/ai5UnifiedService';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 60;
@@ -8,13 +8,7 @@ export async function GET(request) {
     try {
         const { searchParams } = new URL(request.url);
         const force = searchParams.get('refresh') === 'true' || searchParams.get('refresh') === '1';
-        let payload = null;
-        try {
-            payload = await getCachedClientPayloadAsync({ maxDays: 30, force });
-        } catch (asyncErr) {
-            console.warn('[API /api/ai-5] Async R2 fallback to sync:', asyncErr.message);
-            payload = getCachedClientPayload({ maxDays: 30 });
-        }
+        const payload = await buildUnified5AiPayloadAsync({ force });
         return NextResponse.json(payload, {
             headers: {
                 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
