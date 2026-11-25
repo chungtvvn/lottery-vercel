@@ -704,7 +704,7 @@
 
             strip.innerHTML = `
                 <span class="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700">Hiển thị: <strong>${rows.length}</strong> kỳ</span>
-                <span class="rounded-lg ${pureP >= 0 ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'} border px-2.5 py-1 text-xs font-black bm-tabular">🔥 Lô Thuần ≥2: ${fmtProfitShort(pureP)} (${pureWins}/${rows.length} lãi · ${pureHits} nháy)</span>
+                <span class="rounded-lg ${pureP >= 0 ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'} border px-2.5 py-1 text-xs font-black bm-tabular">🔥 Lô Gộp Đa Tầng 5 AI: ${fmtProfitShort(pureP)} (${pureWins}/${rows.length} lãi · ${pureHits} nháy)</span>
                 <span class="rounded-lg bg-amber-50 border border-amber-200 px-2.5 py-1 text-xs font-bold text-amber-900 bm-tabular">⚡ Top 2: ${fmtProfitShort(top2P)}</span>
                 <span class="rounded-lg bg-blue-50 border border-blue-200 px-2.5 py-1 text-xs font-bold text-blue-900 bm-tabular">🎲 Top 6: ${fmtProfitShort(top6P)}</span>
                 <span class="rounded-lg bg-purple-50 border border-purple-200 px-2.5 py-1 text-xs font-bold text-purple-900 bm-tabular">🎯 Đề Hạt Nhân: ${fmtProfitShort(deP)}</span>
@@ -736,24 +736,110 @@
 
         const schoolMetaList = data.schools || [];
 
+        const tierMeta = [
+            { key: 'x5Nums', mult: 5, tag: 'X5', stakePerNumM: 11.0, winPerHitM: 40.0, chipMiss: 'bg-rose-50 border-rose-300 text-rose-900', tagCls: 'bg-rose-600 text-white', boxCls: 'bg-rose-50/60 border-rose-200' },
+            { key: 'x4Nums', mult: 4, tag: 'X4', stakePerNumM: 8.8, winPerHitM: 32.0, chipMiss: 'bg-amber-50 border-amber-300 text-amber-950', tagCls: 'bg-amber-400 text-slate-950', boxCls: 'bg-amber-50/60 border-amber-200' },
+            { key: 'x3Nums', mult: 3, tag: 'X3', stakePerNumM: 6.6, winPerHitM: 24.0, chipMiss: 'bg-indigo-50 border-indigo-300 text-indigo-950', tagCls: 'bg-indigo-600 text-white', boxCls: 'bg-indigo-50/60 border-indigo-200' },
+            { key: 'x2Nums', mult: 2, tag: 'X2', stakePerNumM: 4.4, winPerHitM: 16.0, chipMiss: 'bg-teal-50/80 border-teal-200 text-teal-900', tagCls: 'bg-teal-600 text-white', boxCls: 'bg-teal-50/50 border-teal-200' }
+        ];
+
         tbody.innerHTML = rows.map(r => {
             const isExp = _expandedDates.has(r.date);
-            const hitSet = new Set(r.pure?.hitNums || []);
+            const p27Counts = {};
+            (r.prizes27 || []).forEach(n => { p27Counts[n] = (p27Counts[n] || 0) + 1; });
+
+            const tiers = r.pure?.tiers || {};
+            const multByNum = {};
+            tierMeta.forEach(tm => {
+                (tiers[tm.key] || []).forEach(n => { multByNum[n] = tm; });
+            });
+
+            // Hiển thị chip kèm nhãn Tầng (X5/X4/X3/X2) ngay trên dòng chính của bảng
             const pureChips = (r.pure?.numbers || []).length === 0
                 ? '<span class="text-[11px] italic text-slate-400">0 số (Nghỉ 0đ)</span>'
                 : (r.pure.numbers || []).map(n => {
-                    const isHit = hitSet.has(n);
-                    return isHit
-                        ? `<span class="inline-flex items-center rounded bg-emerald-600 text-white font-mono text-[11px] font-black px-1.5 py-0.5 shadow-2xs">${n}</span>`
-                        : `<span class="inline-flex items-center rounded bg-slate-100 border border-slate-200 text-slate-700 font-mono text-[11px] font-semibold px-1.5 py-0.5">${n}</span>`;
+                    const tm = multByNum[n] || tierMeta[3];
+                    const h = p27Counts[n] || 0;
+                    if (h > 0) {
+                        return `<span class="inline-flex items-center gap-0.5 rounded-md bg-emerald-600 text-white font-mono text-[11px] font-black px-1.5 py-0.5 shadow-2xs" title="🎯 Nổ ${h} nháy · Tầng ${tm.tag} (+${(h * tm.winPerHitM).toFixed(0)}M)"><span>${n}</span><span class="rounded bg-white/20 px-1 text-[9px] font-sans">${tm.tag}${h > 1 ? `·${h}n` : ''}</span></span>`;
+                    }
+                    return `<span class="inline-flex items-center gap-0.5 rounded-md border ${tm.chipMiss} font-mono text-[11px] font-bold px-1.5 py-0.5" title="Tầng ${tm.tag} (${tm.stakePerNumM}M/con)"><span>${n}</span><span class="rounded px-1 text-[8.5px] font-sans font-black ${tm.tagCls}">${tm.tag}</span></span>`;
                 }).join(' ');
 
-            const p27Counts = {};
-            (r.prizes27 || []).forEach(n => { p27Counts[n] = (p27Counts[n] || 0) + 1; });
+            const activeTierBlocks = tierMeta
+                .filter(tm => (tiers[tm.key] || []).length > 0)
+                .map(tm => {
+                    const nums = tiers[tm.key] || [];
+                    const tierStakeM = nums.length * tm.stakePerNumM;
+                    let tierHits = 0;
+                    let tierPayoutM = 0;
+                    const chips = nums.map(n => {
+                        const h = p27Counts[n] || 0;
+                        tierHits += h;
+                        tierPayoutM += h * tm.winPerHitM;
+                        const voters = schoolMetaList
+                            .filter(sc => (r.schools?.[sc.id]?.numbers || []).includes(n))
+                            .map(sc => sc.name);
+                        const voterTxt = voters.length ? voters.join('+') : `${tm.mult} AI`;
+                        if (h > 0) {
+                            return `<span class="inline-flex items-center gap-1 rounded-lg bg-emerald-600 text-white font-mono text-xs font-black px-2 py-1 shadow-2xs"><span>🎯 ${n}</span><span class="rounded bg-white text-emerald-900 px-1 text-[9px] font-sans">${h}n +${(h * tm.winPerHitM).toFixed(0)}M</span><span class="text-[9px] font-sans opacity-90">(${voterTxt})</span></span>`;
+                        }
+                        return `<span class="inline-flex items-center gap-1 rounded-lg bg-white border border-slate-200 text-slate-700 font-mono text-xs font-bold px-2 py-1"><span>${n}</span><span class="text-[9px] font-sans font-semibold text-slate-400">(${voterTxt})</span></span>`;
+                    }).join('');
+                    const tierProfM = tierPayoutM - tierStakeM;
+                    return `
+                        <div class="rounded-xl border ${tm.boxCls} p-2.5 space-y-1.5">
+                            <div class="flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                                <span class="flex items-center gap-1.5 font-extrabold text-slate-800">
+                                    <span class="rounded px-1.5 py-0.5 text-[10px] font-black ${tm.tagCls}">TẦNG ${tm.tag} (${tm.mult}/5 AI)</span>
+                                    <span>${nums.length} số · Vốn ${tierStakeM.toFixed(1)}M (${tm.stakePerNumM}M/con · Ăn ${tm.winPerHitM}M/n)</span>
+                                </span>
+                                <span class="font-mono font-black ${profitColor(tierProfM)}">${tierHits} nháy · ${fmtProfitShort(tierProfM)}</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5">${chips}</div>
+                        </div>
+                    `;
+                }).join('');
 
             const detailRow = isExp ? `
                 <tr class="bg-slate-50/90 border-b border-slate-200">
                     <td colspan="9" class="p-4 space-y-3">
+                        <!-- KHỐI 1: CHI TIẾT 🔥 LÔ GỘP ĐA TẦNG 5 AI THEO TỪNG TẦNG X5..X2 -->
+                        <div class="rounded-2xl bg-white border-2 border-rose-200 p-3.5 space-y-2.5 shadow-2xs">
+                            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm">🔥</span>
+                                    <span class="text-xs font-black text-slate-900 uppercase">Chi Tiết Lô Gộp Đa Tầng 5 AI — Ngày ${fmtDateVi(r.date)}</span>
+                                    <span class="rounded-md bg-rose-50 text-rose-800 border border-rose-200 px-2 py-0.5 text-[10px] font-black">${r.pure?.count || 0} số ≥2 trường phái</span>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-2 font-mono text-xs">
+                                    <span class="text-slate-500">Vốn: <strong class="text-slate-800">${r.pure?.stakeM ?? 0}M</strong></span>
+                                    <span class="text-slate-300">·</span>
+                                    <span class="text-slate-500">Ăn: <strong class="text-emerald-700">${r.pure?.payoutM ?? 0}M</strong> (${r.pure?.hits || 0} nháy)</span>
+                                    <span class="text-slate-300">·</span>
+                                    <span class="${profitColor(r.pure?.profitM)}">Lãi: ${fmtProfitShort(r.pure?.profitM)}</span>
+                                    <span class="text-slate-300">·</span>
+                                    <span class="text-blue-700 font-black">LK: ${fmtProfit(r.pure?.cumProfitM)}</span>
+                                </div>
+                            </div>
+                            ${activeTierBlocks || '<div class="text-xs text-slate-500 italic">🛡️ Kỳ này không có số đạt ≥2 trường phái → Nghỉ Lô Đa Tầng (0đ bảo toàn vốn).</div>'}
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-slate-100 text-[11px]">
+                                <div class="rounded-lg bg-amber-50/70 border border-amber-200 px-2.5 py-1.5 flex items-center justify-between">
+                                    <span class="font-bold text-amber-950">⚡ Top 2: <span class="font-mono">${(r.top2?.numbers || []).join(', ')}</span></span>
+                                    <span class="font-mono font-black ${profitColor(r.top2?.profitM)}">${fmtProfitShort(r.top2?.profitM)}</span>
+                                </div>
+                                <div class="rounded-lg bg-blue-50/70 border border-blue-200 px-2.5 py-1.5 flex items-center justify-between">
+                                    <span class="font-bold text-blue-950">🎲 Top 6: <span class="font-mono">${(r.top6?.numbers || []).join(', ')}</span></span>
+                                    <span class="font-mono font-black ${profitColor(r.top6?.profitM)}">${fmtProfitShort(r.top6?.profitM)}</span>
+                                </div>
+                                <div class="rounded-lg bg-purple-50/70 border border-purple-200 px-2.5 py-1.5 flex items-center justify-between">
+                                    <span class="font-bold text-purple-950">🎯 Đề 5AI: <span class="font-mono">${(r.deCore?.numbers || []).join(', ') || 'Nghỉ'}</span></span>
+                                    <span class="font-mono font-black ${profitColor(r.deCore?.profitM)}">${r.deCore?.played ? fmtProfitShort(r.deCore?.profitM) : 'SKIP'}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- KHỐI 2: 5 TRƯỜNG PHÁI ĐỘC LẬP -->
                         <div class="grid grid-cols-1 md:grid-cols-5 gap-2.5">
                             ${schoolMetaList.map(sc => {
                                 const ds = r.schools?.[sc.id] || { numbers: [], hits: 0, profitM: 0 };
@@ -775,6 +861,8 @@
                                 `;
                             }).join('')}
                         </div>
+
+                        <!-- KHỐI 3: BẢNG 27 GIẢI XSMB -->
                         <div class="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white border border-slate-200 px-3 py-2 text-[11px]">
                             <div class="flex flex-wrap items-center gap-1">
                                 <span class="font-bold text-slate-500 mr-1">27 Giải XSMB (${fmtDateVi(r.date)}):</span>
@@ -797,7 +885,10 @@
                     <td class="py-2.5 px-2">
                         <div class="flex flex-wrap items-center gap-1">${pureChips}</div>
                     </td>
-                    <td class="py-2.5 px-2 text-center">${renderPnlPill(r.pure, true)}</td>
+                    <td class="py-2.5 px-2 text-center">
+                        <div>${renderPnlPill(r.pure, true)}</div>
+                        <div class="text-[9.5px] font-mono text-slate-400 mt-0.5">Vốn ${r.pure?.stakeM ?? 0}M</div>
+                    </td>
                     <td class="py-2.5 px-2 text-center">${renderPnlPill(r.top2, true)}</td>
                     <td class="py-2.5 px-2 text-center">${renderPnlPill(r.top6, true)}</td>
                     <td class="py-2.5 px-2 text-center">${renderPnlPill(r.deCore, false)}</td>
@@ -888,6 +979,10 @@
             if (!data || !data.success) throw new Error(data?.error || 'Dữ liệu 5 AI không hợp lệ');
 
             _data = data;
+            // Tự động mở sẵn chi tiết ngày mới nhất khi tải lần đầu để thấy ngay bảng Lô Gộp Đa Tầng 5 AI
+            if (_expandedDates.size === 0 && Array.isArray(data.ledger) && data.ledger.length > 0) {
+                _expandedDates.add(data.ledger[0].date);
+            }
             if (loading) loading.classList.add('hidden');
             if (content) content.classList.remove('hidden');
 
